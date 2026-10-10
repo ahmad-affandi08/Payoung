@@ -183,6 +183,22 @@ Firebase Cloud Messaging hanya untuk notifikasi push; tidak ada analitik Firebas
    Hasil: `build/app/outputs/bundle/release/app-release.aab`. Setiap unggahan wajib menaikkan angka build (`+N`).
 5. Pemilik: siapkan `google-services.json` proyek Firebase produksi (tidak di repo) sebelum build.
 
+### Memperbarui build yang sudah diunggah (pengujian tertutup)
+
+1. `git pull origin main`; pastikan `Aplikasi/Kasir/android/key.properties` dan `payou-release.jks` ada (keystore unggah yang sama).
+2. Naikkan **kode build** di `Aplikasi/Kasir/pubspec.yaml`: `version: 1.0.0+N`, dengan N lebih besar dari kode versi unggahan terakhir
+   (lihat Uji dan rilis › Pengujian tertutup › rincian rilis, kolom Versi, mis. "1 (1.0.0)"). Biarkan nama versi `1.0.0` selama
+   `versiAplikasi` di `Penyedia.dart` masih tertanam `'1.0.0'`: nilai itu dilaporkan ke server (P-10), jadi menaikkan nama versi di
+   `pubspec.yaml` saja membuat Play Console dan server menampilkan versi berbeda.
+3. Bangun: `cd Aplikasi/Kasir && flutter build appbundle --release -t lib/UtamaProduksi.dart --dart-define=ALAMAT_SERVER=https://dashboard.payoung.id/`
+   (±1,5 menit). Hasil: `Aplikasi/Kasir/build/app/outputs/bundle/release/app-release.aab`.
+4. Play Console › Uji dan rilis › Pengujian tertutup › track (mis. Alpha) › **Buat rilis baru** › unggah AAB › isi catatan rilis ›
+   Berikutnya › Simpan › kirim untuk ditinjau.
+5. Setelah disetujui, penguji menerima pembaruan lewat Play Store; ID aplikasi dan kunci sama, jadi aktivasi perangkat & data lokal tetap.
+   Perubahan yang hanya di aplikasi tidak perlu deploy server. Aplikasi Pemilik tidak perlu diunggah ulang bila tidak berubah.
+6. Galat umum: "Kode versi N sudah digunakan" (kode build belum naik); build gagal soal kunci (`key.properties`/keystore hilang);
+   "lib/main.dart not found" (lupa `-t lib/UtamaProduksi.dart`); unggahan ditolak karena tanda tangan (keystore berbeda).
+
 ## 9. Urutan rilis yang disarankan
 
 1. **Pengujian internal** (≤ 100 penguji, tanpa peninjauan panjang): uji printer, QRIS, offline di 2–3 perangkat asli.
