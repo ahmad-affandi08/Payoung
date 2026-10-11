@@ -7,7 +7,6 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -558,7 +557,6 @@ export default function DaftarTokoOnline(props: Props) {
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <JudulHalaman>Toko online & pengiriman</JudulHalaman>
                         <p className="text-teks-sekunder">
                             Kelola kanal publik, pesanan masuk, zona ongkir, dan kurir.
                         </p>

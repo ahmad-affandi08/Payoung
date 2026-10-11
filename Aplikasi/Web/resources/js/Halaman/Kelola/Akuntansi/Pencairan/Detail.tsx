@@ -9,7 +9,6 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -92,7 +91,6 @@ export default function HalamanDetailPencairan({ Pencairan, Baris, Jurnal, Riway
     return (
         <TataLetakAplikasi judul={`Pencairan ${Pencairan.Nomor}`}>
             <div className="flex flex-wrap items-center gap-3">
-                <JudulHalaman className="break-all">{Pencairan.Nomor}</JudulHalaman>
                 <LabelStatus
                     jenis={Pencairan.Status === 'Diposting' ? 'sukses' : 'bahaya'}
                     teks={Pencairan.LabelStatus}

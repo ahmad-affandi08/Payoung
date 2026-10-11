@@ -9,7 +9,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import { Button } from '@/Komponen/Ui/button';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsDetailKendaraan } from '@/Tipe/Bengkel';
@@ -24,7 +23,6 @@ export default function HalamanDetailKendaraan({ Kendaraan: k, Riwayat }: PropsD
             jejak={[{ label: 'Kendaraan pelanggan', href: AlamatKendaraan }]}
         >
             <div className="flex flex-wrap items-center gap-3">
-                <JudulHalaman className="font-mono break-all">{k.NomorPolisi}</JudulHalaman>
                 <LabelStatus jenis={k.Aktif ? 'sukses' : 'netral'} teks={k.Aktif ? 'Aktif' : 'Diarsipkan'} />
             </div>
             <AksiHalaman>

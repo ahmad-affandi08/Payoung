@@ -16,7 +16,6 @@ import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
@@ -98,7 +97,6 @@ export default function HalamanDetailSuratJalan({
     return (
         <TataLetakAplikasi judul={`Surat jalan ${SuratJalan.Nomor}`}>
             <div className="flex flex-wrap items-center gap-3">
-                <JudulHalaman className="break-all">{SuratJalan.Nomor}</JudulHalaman>
                 <LabelStatusGrosir status={SuratJalan.Status} label={SuratJalan.LabelStatus} />
             </div>
 

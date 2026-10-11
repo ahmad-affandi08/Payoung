@@ -14,7 +14,6 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { Button } from '@/Komponen/Ui/button';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -397,7 +396,6 @@ export default function HalamanDetailPerintahKerja({
             jejak={[{ label: 'Perintah kerja', href: AlamatPerintahKerja }]}
         >
             <div className="flex flex-wrap items-center gap-3">
-                <JudulHalaman className="font-mono break-all">{pk.Nomor}</JudulHalaman>
                 <LabelStatus jenis={JenisStatusPerintahKerja(pk.Status)} teks={pk.LabelStatus} />
             </div>
 

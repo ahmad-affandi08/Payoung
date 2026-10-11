@@ -132,6 +132,7 @@
 | D-96 | Dari pemilik produk ("pastikan menu retur dari stok outlet ke Gudang ini gimana?"). Keputusan agen (D-12, D-17): retur stok outlet → Gudang **tidak** diberi dokumen baru; ia adalah transfer stok biasa dan hanya diberi pintasan bernama "Retur ke Gudang" dengan lokasi terisi otomatis. Entri menu "Transfer stok" tetap bertanda lanjutan (tersembunyi di Mode sederhana, tetap lewat Ctrl+K). Detail di versi 5.33. |
 | D-97 | Dari pemilik produk ("url notifikasi di DOKU ribet, tidak seperti Midtrans yang sekali pasang"). Keputusan agen (D-12, D-17): status pembayaran langganan ditanyakan ke DOKU saat pemilik kembali ke halaman tagihan sehingga lunas tanpa bergantung pada URL notifikasi per metode bayar; `override_notification_url` per transaksi tidak dipakai karena perlu diaktifkan DOKU dulu. Detail di versi 5.34. |
 | D-98 | Dari pemilik produk ("saya coba upgrade dari Pro ke Bisnis itu tidak bisa"). Keputusan agen (D-12, D-17): yang dibangun naik paket (prorata selisih, paket berganti saat lunas); turun paket sengaja ditunda karena menyentuh BR-P04.4 (kelebihan kapasitas) dan butuh keputusan pemilik produk. Detail di versi 5.35. |
+| D-99 | Dari pemilik produk ("lihat toko online ... scan siapa tau ada kejadian seperti ini di page atau menu lain"). Keputusan agen (D-12, D-17): satu halaman = satu `<h1>` dari tata letak; judul tambahan di isi halaman dilarang dan dijaga test. Detail di versi 5.36. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

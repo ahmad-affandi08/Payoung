@@ -2230,7 +2230,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-UhjC76_I.js",
+    "file": "assets/Aplikasi-BYBte1_t.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -3229,7 +3229,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Akuntansi/Pencairan/Detail.tsx": {
-    "file": "assets/Detail-CnKalnmk.js",
+    "file": "assets/Detail-D_ovThUg.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Akuntansi/Pencairan/Detail.tsx",
     "isDynamicEntry": true,
@@ -3239,7 +3239,6 @@
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_TabelData-B_RXv865.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
@@ -3378,7 +3377,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Bengkel/Kendaraan/Detail.tsx": {
-    "file": "assets/Detail-BZlVWHUE.js",
+    "file": "assets/Detail-OhO14r_e.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Bengkel/Kendaraan/Detail.tsx",
     "isDynamicEntry": true,
@@ -3387,7 +3386,6 @@
       "_dist-D4veJNCv.js",
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_TabelData-B_RXv865.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Tombol-DXR0xsyT.js",
       "_Panel-mmKd9gvY.js",
@@ -3430,7 +3428,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Bengkel/PerintahKerja/Detail.tsx": {
-    "file": "assets/Detail-B2TEHadj.js",
+    "file": "assets/Detail-Cj9IL_yQ.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Bengkel/PerintahKerja/Detail.tsx",
     "isDynamicEntry": true,
@@ -3441,7 +3439,6 @@
       "_TabelData-B_RXv865.js",
       "_PemilihTanggal-BoIFhPtM.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
@@ -3625,7 +3622,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Grosir/Faktur/Detail.tsx": {
-    "file": "assets/Detail-BwqxgugM.js",
+    "file": "assets/Detail-BnTuAMrq.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Grosir/Faktur/Detail.tsx",
     "isDynamicEntry": true,
@@ -3635,7 +3632,6 @@
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_BidangTeks-CprBAjmq.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
@@ -3714,7 +3710,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Grosir/Pesanan/Detail.tsx": {
-    "file": "assets/Detail-C2C61IOr.js",
+    "file": "assets/Detail-Ch8VQSQi.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Grosir/Pesanan/Detail.tsx",
     "isDynamicEntry": true,
@@ -3725,7 +3721,6 @@
       "_TabelData-B_RXv865.js",
       "_BidangTeks-CprBAjmq.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
@@ -3826,7 +3821,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Grosir/Retur/Detail.tsx": {
-    "file": "assets/Detail-C-Ve7Z1A.js",
+    "file": "assets/Detail-BBenZPom.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Grosir/Retur/Detail.tsx",
     "isDynamicEntry": true,
@@ -3836,7 +3831,6 @@
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_TabelData-B_RXv865.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
@@ -3874,7 +3868,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Grosir/SuratJalan/Detail.tsx": {
-    "file": "assets/Detail-DBsg486y.js",
+    "file": "assets/Detail-DndKKpIb.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Grosir/SuratJalan/Detail.tsx",
     "isDynamicEntry": true,
@@ -3884,7 +3878,6 @@
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_TabelData-B_RXv865.js",
       "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_button-CdBDerbX.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
@@ -7200,7 +7193,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/TokoOnline/Daftar.tsx": {
-    "file": "assets/Daftar-DSJHEIvp.js",
+    "file": "assets/Daftar-BJStFMD3.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/TokoOnline/Daftar.tsx",
     "isDynamicEntry": true,
@@ -7210,7 +7203,6 @@
       "_TataLetakAplikasi-Cmq4cMTj.js",
       "_external-link-oKMUc9Zk.js",
       "_BidangTeks-CprBAjmq.js",
-      "_JudulHalaman-DypeVZDV.js",
       "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",

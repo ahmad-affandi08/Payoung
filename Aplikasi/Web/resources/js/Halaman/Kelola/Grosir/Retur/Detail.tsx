@@ -16,7 +16,6 @@ import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -91,7 +90,6 @@ export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat
     return (
         <TataLetakAplikasi judul={`Retur ${Retur.Nomor}`}>
             <div className="flex flex-wrap items-center gap-3">
-                <JudulHalaman className="break-all">{Retur.Nomor}</JudulHalaman>
                 <LabelStatusGrosir status={Retur.Status} label={Retur.LabelStatus} />
             </div>
 
