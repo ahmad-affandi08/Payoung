@@ -1,0 +1,1 @@
+import{r as e}from"./CetakTes-DerUVdet.js";export{e as TiruanInertia};

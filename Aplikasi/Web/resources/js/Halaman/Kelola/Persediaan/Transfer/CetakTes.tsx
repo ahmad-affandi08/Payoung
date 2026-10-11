@@ -5,6 +5,7 @@ import { RenderUji } from '@/Komponen/Katalog/TiruanInertia';
 import type { PropsCetakTransferStok } from '@/Tipe/DokumenPersediaan';
 
 import HalamanCetakTransferStok from './Cetak';
+import HalamanCetakAmbilTransferStok from './CetakAmbil';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -76,5 +77,19 @@ describe('Cetak surat jalan transfer stok (D-94)', () => {
 
         expect(screen.getByText(/Dibatalkan/)).toBeTruthy();
         expect(screen.getByText('Salah gudang tujuan')).toBeTruthy();
+    });
+
+    it('daftar ambil barang: kotak centang Diambil, tanpa kolom tanda terima & tanpa nilai uang (D-95)', () => {
+        const { container } = RenderUji(
+            <HalamanCetakAmbilTransferStok {...Data({ Status: 'Draf', LabelStatus: 'Draf', Nomor: null })} />,
+        );
+
+        expect(screen.getByRole('heading', { level: 1, name: 'Daftar Ambil Barang' })).toBeTruthy();
+        expect(screen.getByText('Ambil dari')).toBeTruthy();
+        expect(screen.getByRole('columnheader', { name: 'Diambil' })).toBeTruthy();
+        expect(screen.getByText('Petugas pengambil')).toBeTruthy();
+        expect(screen.getByText('Pemeriksa')).toBeTruthy();
+        expect(screen.queryByText('Pembawa')).toBeNull();
+        expect(container.textContent).not.toMatch(/Rp\s?\d/);
     });
 });

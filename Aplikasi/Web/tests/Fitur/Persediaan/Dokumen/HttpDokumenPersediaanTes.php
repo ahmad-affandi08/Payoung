@@ -128,6 +128,33 @@ describe('F-05b HTTP transfer stok', function (): void {
         MasukOutlet($this, $t['Tenant']->Id, $lain->Id)->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak")->assertNotFound();
     });
 
+    it('D-95 daftar ambil barang: boleh untuk draf & dalam perjalanan, 409 setelah diterima; form Buat terisi lokasi dari ?asal/?tujuan', function (): void {
+        $t = SiapkanHttpDokumen();
+        $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '12')]);
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        $this->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak-ambil")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/CetakAmbil')
+            ->where('Transfer.Status', 'Draf')
+            ->has('Baris', 1)
+            ->missing('Baris.0.NilaiKirim'));
+
+        $kirim = app(KirimTransferStok::class)->Jalankan($draf, $t['Pemilik']->Id);
+        $this->get("/kelola/persediaan/transfer/{$kirim->Uuid}/cetak-ambil")->assertOk();
+
+        $this->post("/kelola/persediaan/transfer/{$kirim->Uuid}/terima", ['Tanggal' => B::Kemarin(), 'Baris' => [['Urutan' => 1, 'Jumlah' => '12']]])->assertSessionHasNoErrors();
+        $this->get("/kelola/persediaan/transfer/{$kirim->Uuid}/cetak-ambil")->assertStatus(409);
+
+        $this->get('/kelola/persediaan/transfer/buat?tujuan='.$t['GudangCabang']->Uuid)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/Form')
+            ->where('Awal.UuidGudangTujuan', $t['GudangCabang']->Uuid)
+            ->where('Awal.UuidGudangAsal', ''));
+        $this->get('/kelola/persediaan/transfer/buat?asal='.$t['Gudang']->Uuid)->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Awal.UuidGudangAsal', $t['Gudang']->Uuid));
+        // Lokasi yang bukan milik tenant tidak boleh dipakai sebagai isian awal.
+        $this->get('/kelola/persediaan/transfer/buat?tujuan='.Str::ulid())->assertNotFound();
+    });
+
     it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403); tanpa persediaan.lihat 403', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '1')]);

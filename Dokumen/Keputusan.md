@@ -96,6 +96,7 @@
 | D-92 | Dari pemilik produk (11/10/2026): semua yang tampil ke publik harus modern. Keputusan agen (D-12, D-17): audit visual per halaman, lalu perbaiki yang tertinggal dengan komponen bersama (shell situs untuk halaman calon pengguna, `KerangkaPelanggan` untuk halaman pelanggan toko) daripada menggaya satu per satu. Halaman yang sudah modern tidak diubah. Detail di versi 5.29. |
 | D-93 | Dari pemilik produk (12/10/2026): situs pemasaran terlalu polos dan generik, minta tampilan berwarna ala Majoo/Moka. Keputusan agen (D-12, D-17): tetap memakai token palet Payoung, tetapi situs pemasaran dikecualikan dari aturan "90/10" dan larangan dekorasi (back-office, kasir, dan Owner tidak berubah); warna tegas dipakai sebagai pita bagian, panggung visual, dan ubin ikon. Detail di versi 5.30. |
 | D-94 | Dari pemilik produk (12/10/2026): transfer stok perlu surat jalan. Keputusan agen (D-12, D-17): dokumen cetak transfer memakai bingkai surat jalan grosir dan **tidak menampilkan nilai**, karena dipegang pembawa dan dicocokkan petugas gudang tujuan; draf tidak bisa dicetak. Detail di versi 5.31. |
+| D-95 | Lanjutan D-94 atas permintaan pemilik produk ("lanjut"). Keputusan agen (D-12, D-17): kanvas tidak mendapat dokumen baru karena muat/bongkar sudah transfer stok dan memakai surat jalan transfer; yang ditambah hanya daftar ambil barang, panel transfer harian di Kanvas, dan isian awal form. Detail di versi 5.32. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

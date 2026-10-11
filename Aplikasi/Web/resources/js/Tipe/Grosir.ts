@@ -598,8 +598,21 @@ export type RekapKanvas = {
     Produk: BarisRekapKanvas[];
 };
 
+/** D-95: satu transfer muat/bongkar kendaraan pada hari bisnis terpilih. */
+export type TransferKanvas = {
+    Uuid: string;
+    Nomor: string | null;
+    Arah: 'Muat' | 'Bongkar';
+    Status: string;
+    LabelStatus: string;
+    NamaLawan: string;
+    JumlahBaris: number;
+    BisaCetak: boolean;
+};
+
 export type PropsDaftarKanvas = {
     Kanvas: KendaraanKanvas[];
+    Transfer: TransferKanvas[];
     UuidTerpilih: string | null;
     Tanggal: string;
     Rekap: RekapKanvas | null;

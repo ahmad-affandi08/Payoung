@@ -23,7 +23,7 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisRekapKanvas, KendaraanKanvas, PropsDaftarKanvas, RekapKanvas } from '@/Tipe/Grosir';
+import type { BarisRekapKanvas, KendaraanKanvas, PropsDaftarKanvas, RekapKanvas, TransferKanvas } from '@/Tipe/Grosir';
 import { CekBatasPenuh, FormatBatas } from '@/Tipe/Organisasi';
 
 const alamat = `${AlamatGrosir}/kanvas`;
@@ -112,6 +112,73 @@ const kolomRekap: KolomTabel<BarisRekapKanvas>[] = [
     KolomJumlah('Bongkar', 'Bongkar'),
     KolomJumlah('Lain', 'Penyesuaian lain', 'rendah'),
     KolomJumlah('Sisa', 'Sisa akhir'),
+];
+
+/** D-95: transfer muat/bongkar kendaraan pada hari itu, dengan jalan ke detail dan cetak surat jalan. */
+const kolomTransfer: KolomTabel<TransferKanvas>[] = [
+    {
+        id: 'Nomor',
+        accessorFn: (t) => t.Nomor ?? '(draf)',
+        header: 'Nomor',
+        meta: { label: 'Nomor', prioritas: 'utama', wajib: true, kelasSel: 'font-mono' },
+        cell: ({ row: { original: t } }) => (
+            <Link href={`/kelola/persediaan/transfer/${t.Uuid}`} className="font-semibold text-brand hover:underline">
+                {t.Nomor ?? '(draf)'}
+            </Link>
+        ),
+    },
+    {
+        id: 'Arah',
+        accessorKey: 'Arah',
+        header: 'Arah',
+        meta: { label: 'Arah', prioritas: 'penting' },
+        cell: ({ row: { original: t } }) => (
+            <span className="break-words">
+                {t.Arah === 'Muat' ? 'Muat dari' : 'Bongkar ke'} {t.NamaLawan}
+            </span>
+        ),
+    },
+    {
+        id: 'JumlahBaris',
+        accessorKey: 'JumlahBaris',
+        header: 'Barang',
+        meta: { label: 'Barang', prioritas: 'rendah', angka: true },
+        cell: ({ row: { original: t } }) => `${String(t.JumlahBaris)} jenis`,
+    },
+    {
+        id: 'Status',
+        accessorKey: 'LabelStatus',
+        header: 'Status',
+        meta: { label: 'Status', prioritas: 'penting' },
+    },
+    {
+        id: 'Cetak',
+        header: 'Dokumen',
+        enableSorting: false,
+        meta: { label: 'Dokumen', prioritas: 'penting' },
+        cell: ({ row: { original: t } }) => (
+            <span className="flex flex-wrap gap-x-3 gap-y-1">
+                {t.BisaCetak ? (
+                    <a
+                        href={`/kelola/persediaan/transfer/${t.Uuid}/cetak`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-brand hover:underline"
+                    >
+                        Surat jalan
+                    </a>
+                ) : null}
+                <a
+                    href={`/kelola/persediaan/transfer/${t.Uuid}/cetak-ambil`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-brand hover:underline"
+                >
+                    Daftar ambil
+                </a>
+            </span>
+        ),
+    },
 ];
 
 /** Ringkasan uang & setoran hari itu (Rupiah tabular rata kanan; teks selalu menyertai warna). */
@@ -236,6 +303,7 @@ export default function HalamanDaftarKanvas({
     UuidTerpilih,
     Tanggal,
     Rekap,
+    Transfer,
     BatasOutlet,
     Izin,
     IzinKanvas,
@@ -313,10 +381,22 @@ export default function HalamanDaftarKanvas({
                         {IzinKanvas.Transfer ? (
                             <div className="ml-auto flex flex-wrap gap-2">
                                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                                    <Link href="/kelola/persediaan/transfer/buat">Muat stok</Link>
+                                    <Link
+                                        href={`/kelola/persediaan/transfer/buat${
+                                            terpilih.UuidGudang === null ? '' : `?tujuan=${terpilih.UuidGudang}`
+                                        }`}
+                                    >
+                                        Muat stok
+                                    </Link>
                                 </Button>
                                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                                    <Link href="/kelola/persediaan/transfer/buat">Bongkar stok</Link>
+                                    <Link
+                                        href={`/kelola/persediaan/transfer/buat${
+                                            terpilih.UuidGudang === null ? '' : `?asal=${terpilih.UuidGudang}`
+                                        }`}
+                                    >
+                                        Bongkar stok
+                                    </Link>
                                 </Button>
                             </div>
                         ) : null}
@@ -327,6 +407,19 @@ export default function HalamanDaftarKanvas({
                         </Pemberitahuan>
                     ) : null}
                     <RingkasanRekapKanvas rekap={Rekap} />
+                    {Transfer.length > 0 ? (
+                        <section aria-label="Transfer muat dan bongkar hari ini" className="flex flex-col gap-2">
+                            <h3 className="text-subjudul font-semibold text-teks-utama">Muat & bongkar hari ini</h3>
+                            <TabelData
+                                id="grosir-kanvas-transfer"
+                                label={`Transfer ${terpilih.Nama}`}
+                                kolom={kolomTransfer}
+                                sumber={{ mode: 'lokal', data: Transfer }}
+                                ambilIdBaris={(t) => t.Uuid}
+                                kosong={{ ilustrasi: true, judul: 'Belum ada transfer hari ini.' }}
+                            />
+                        </section>
+                    ) : null}
                     <TabelData
                         id="grosir-kanvas-rekap"
                         label={`Rekap barang ${terpilih.Nama}`}

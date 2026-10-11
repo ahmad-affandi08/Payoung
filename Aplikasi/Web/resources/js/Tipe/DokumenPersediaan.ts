@@ -87,6 +87,8 @@ export type PropsFormTransferStok = {
     } | null;
     OpsiGudangAsal: OpsiGudang[];
     OpsiGudangTujuan: OpsiGudang[];
+    /** D-95: lokasi awal dari tombol Muat/Bongkar di halaman Kanvas (kosong bila tidak ada). */
+    Awal?: { UuidGudangAsal: string; UuidGudangTujuan: string };
     HariIni: string;
     BatasBaris: number;
 };

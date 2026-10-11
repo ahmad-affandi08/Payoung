@@ -10,6 +10,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\DaftarOutletKanvas;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
+use App\Domain\Persediaan\Kueri\TransferKanvasHarian;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use App\Http\Permintaan\Kelola\Grosir\BuatOutletKanvasPermintaan;
 use Carbon\CarbonImmutable;
@@ -34,6 +35,7 @@ final class KanvasKontroler extends DasarGrosirKontroler
         TanggalBisnisOutlet $tanggalBisnis,
         PemakaianBatasOrganisasi $pemakaian,
         PastikanBatasPaket $batasPaket,
+        TransferKanvasHarian $transferHarian,
     ): Response {
         $kanvas = $daftar->Ambil($this->IdOutletBoleh());
         $uuidDiminta = $permintaan->query('outlet');
@@ -69,6 +71,7 @@ final class KanvasKontroler extends DasarGrosirKontroler
             'UuidTerpilih' => $terpilih['Uuid'] ?? null,
             'Tanggal' => $tanggal->toDateString(),
             'Rekap' => $terpilih === null ? null : $rekap->Ambil($terpilih['Id'], $terpilih['IdGudang'], $tanggal),
+            'Transfer' => ($terpilih['IdGudang'] ?? null) === null ? [] : $transferHarian->Ambil($terpilih['IdGudang'], $tanggal),
             'BatasOutlet' => $batasPaket->AmbilRingkasan($this->IdTenant(), 'BatasOutlet', $pemakaian->HitungOutlet()),
             'Izin' => $this->AmbilIzinGrosir(),
             'IzinKanvas' => [

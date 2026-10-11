@@ -254,6 +254,12 @@ describe('Modul Salesman bagian 3: rekap harian kanvas', function (): void {
             ])
             ->and($shift->KasSeharusnya)->toBe('780000.00');
 
+        // D-95: transfer muat & bongkar hari itu ikut ke halaman (arah dilihat dari bak kendaraan), tanpa nilai barang.
+        expect(array_column($props['Transfer'], 'Arah'))->toBe(['Muat', 'Bongkar'])
+            ->and(array_unique(array_column($props['Transfer'], 'NamaLawan')))->toBe(['Gudang Pusat Sragen'])
+            ->and($props['Transfer'][0])->not->toHaveKey('NilaiKirim')
+            ->and($props['Transfer'][0]['BisaCetak'])->toBeTrue();
+
         // BR-05.1: Sisa rekap = Σ MutasiStok lokasi kendaraan = SaldoStok; seluruh buku stok & jurnal tenant konsisten.
         $sigma = BigDecimal::of((string) MutasiStok::query()->where('IdGudang', $bak->Id)->where('IdProduk', $mi->Id)->sum('Jumlah'))->toScale(4);
         expect((string) $sigma)->toBe('12.0000')
@@ -263,7 +269,7 @@ describe('Modul Salesman bagian 3: rekap harian kanvas', function (): void {
         // Tanggal lain diturunkan dari buku stok: kemarin kendaraan kosong; besok mulai dengan sisa hari ini.
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
         $masuk()->get('/kelola/grosir/kanvas?outlet='.$k['Outlet']->Uuid.'&tanggal='.$kemarin)->assertInertia(fn (AssertableInertia $h) => $h
-            ->where('Tanggal', $kemarin)->where('Rekap.Produk', [])->where('Rekap.Uang.JumlahTransaksi', 0)->where('Rekap.Setoran.JumlahShiftTertutup', 0));
+            ->where('Tanggal', $kemarin)->where('Transfer', [])->where('Rekap.Produk', [])->where('Rekap.Uang.JumlahTransaksi', 0)->where('Rekap.Setoran.JumlahShiftTertutup', 0));
         $masuk()->get('/kelola/grosir/kanvas?outlet='.$k['Outlet']->Uuid.'&tanggal=2026-10-03')->assertInertia(fn (AssertableInertia $h) => $h
             ->where('Rekap.Produk.0.Awal', '12.0000')->where('Rekap.Produk.0.Terjual', '0.0000')->where('Rekap.Produk.0.Sisa', '12.0000'));
         // Tanggal tidak valid = hari bisnis kendaraan.

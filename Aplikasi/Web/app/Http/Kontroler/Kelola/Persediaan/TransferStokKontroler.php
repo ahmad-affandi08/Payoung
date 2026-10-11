@@ -48,9 +48,20 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         ]);
     }
 
-    public function Buat(): Response
+    public function Buat(Request $permintaan): Response
     {
-        return $this->RenderForm('Buat', null);
+        // D-95: tombol Muat/Bongkar di halaman Kanvas membawa lokasi bak kendaraan lewat `?asal=` / `?tujuan=` (uuid).
+        $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''];
+
+        foreach (['asal' => 'UuidGudangAsal', 'tujuan' => 'UuidGudangTujuan'] as $kunci => $kolom) {
+            $uuid = $permintaan->query($kunci);
+
+            if (is_string($uuid) && $uuid !== '') {
+                $awal[$kolom] = $this->CariGudangTenant($uuid)->uuid;
+            }
+        }
+
+        return $this->RenderForm('Buat', null, $awal);
     }
 
     public function Simpan(SimpanTransferStokPermintaan $permintaan, SimpanTransferStok $simpan): RedirectResponse
@@ -96,6 +107,22 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         $usaha = $profil->Ambil($this->IdTenant());
 
         return Inertia::render('Kelola/Persediaan/Transfer/Cetak', [
+            ...$cetak->Ambil($t),
+            'Usaha' => ['Nama' => $usaha['Nama'], 'Npwp' => $usaha['Npwp']],
+        ]);
+    }
+
+    /**
+     * Daftar ambil barang (*picking list*) untuk petugas gudang asal (D-95): barang & jumlah yang harus diambil dari rak,
+     * dengan kotak centang. Berguna sebelum barang dikirim, jadi hanya untuk draf dan transfer yang masih dalam perjalanan.
+     */
+    public function CetakAmbil(string $transferStok, DokumenCetakTransferStok $cetak, ProfilTenant $profil): Response
+    {
+        $t = $this->CariTransfer($transferStok);
+        abort_unless($t->Status === StatusTransferStok::Draf || $t->Status->CekDalamPerjalanan(), 409, 'Daftar ambil barang hanya untuk transfer yang masih draf atau dalam perjalanan.');
+        $usaha = $profil->Ambil($this->IdTenant());
+
+        return Inertia::render('Kelola/Persediaan/Transfer/CetakAmbil', [
             ...$cetak->Ambil($t),
             'Usaha' => ['Nama' => $usaha['Nama'], 'Npwp' => $usaha['Npwp']],
         ]);
@@ -168,12 +195,14 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
 
     /**
      * @param  array<string, mixed>|null  $transfer
+     * @param  array{UuidGudangAsal: string, UuidGudangTujuan: string}  $awal
      */
-    private function RenderForm(string $mode, ?array $transfer): Response
+    private function RenderForm(string $mode, ?array $transfer, array $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => '']): Response
     {
         return Inertia::render('Kelola/Persediaan/Transfer/Form', [
             'Mode' => $mode,
             'Transfer' => $transfer,
+            'Awal' => $awal,
             'OpsiGudangAsal' => $this->AmbilOpsiGudangDokumen(),
             'OpsiGudangTujuan' => $this->AmbilOpsiGudangDokumen(semuaOutlet: true),
             'HariIni' => $this->HariIni(),

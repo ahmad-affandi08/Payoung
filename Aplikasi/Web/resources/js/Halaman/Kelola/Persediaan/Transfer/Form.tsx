@@ -58,12 +58,13 @@ export default function HalamanFormTransferStok({
     OpsiGudangTujuan,
     HariIni,
     BatasBaris,
+    Awal,
 }: PropsFormTransferStok) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
     const [uuidBaru] = useState(() => (Transfer === null ? BuatUlid() : null));
-    const [asal, AturAsal] = useState(Transfer?.UuidGudangAsal ?? '');
-    const [tujuan, AturTujuan] = useState(Transfer?.UuidGudangTujuan ?? '');
+    const [asal, AturAsal] = useState(Transfer?.UuidGudangAsal ?? Awal?.UuidGudangAsal ?? '');
+    const [tujuan, AturTujuan] = useState(Transfer?.UuidGudangTujuan ?? Awal?.UuidGudangTujuan ?? '');
     const [tanggal, AturTanggal] = useState(Transfer?.Tanggal ?? HariIni);
     const [catatan, AturCatatan] = useState(Transfer?.Catatan ?? '');
     const [daftar, AturDaftar] = useState<BarisForm[]>(() =>

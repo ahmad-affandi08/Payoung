@@ -33,6 +33,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::post('/persediaan/transfer', [TransferStokKontroler::class, 'Simpan'])->middleware($kelola)->name('kelola.persediaan.transfer.simpan');
     Route::get('/persediaan/transfer/{transferStok}', [TransferStokKontroler::class, 'Detail'])->middleware($lihat)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.detail');
     Route::get('/persediaan/transfer/{transferStok}/cetak', [TransferStokKontroler::class, 'Cetak'])->middleware($lihat)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.cetak');
+    Route::get('/persediaan/transfer/{transferStok}/cetak-ambil', [TransferStokKontroler::class, 'CetakAmbil'])->middleware($lihat)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.cetak-ambil');
     Route::get('/persediaan/transfer/{transferStok}/ubah', [TransferStokKontroler::class, 'Ubah'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.ubah');
     Route::put('/persediaan/transfer/{transferStok}', [TransferStokKontroler::class, 'Perbarui'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.perbarui');
     Route::post('/persediaan/transfer/{transferStok}/kirim', [TransferStokKontroler::class, 'Kirim'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.kirim');

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDaftarKanvas, { BuatAlamatRekap } from '@/Halaman/Kelola/Grosir/Kanvas/Daftar';
@@ -61,6 +61,7 @@ const rekap: RekapKanvas = {
 function Props(ubah: Partial<PropsDaftarKanvas> = {}): PropsDaftarKanvas {
     return {
         Kanvas: [kendaraan],
+        Transfer: [],
         UuidTerpilih: kendaraan.Uuid,
         Tanggal: '2026-10-02',
         Rekap: rekap,
@@ -109,10 +110,54 @@ describe('Grosir › Kanvas (Modul Salesman bagian 3)', () => {
         expect(screen.getByText('Kurang Rp 25.000')).toBeTruthy();
         expect(screen.getByText('2 transaksi | 1 void | 1 retur')).toBeTruthy();
 
+        // D-95: tombol membawa lokasi bak kendaraan, jadi form transfer terisi lokasi tujuan (muat) / asal (bongkar).
         expect(screen.getByRole('link', { name: 'Muat stok' }).getAttribute('href')).toBe(
-            '/kelola/persediaan/transfer/buat',
+            '/kelola/persediaan/transfer/buat?tujuan=01J9GDG0000000000000000001',
         );
-        expect(screen.getByRole('link', { name: 'Bongkar stok' })).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Bongkar stok' }).getAttribute('href')).toBe(
+            '/kelola/persediaan/transfer/buat?asal=01J9GDG0000000000000000001',
+        );
+    });
+
+    it('D-95: transfer muat & bongkar hari itu tampil dengan tautan detail, surat jalan, dan daftar ambil', () => {
+        RenderUji(
+            <HalamanDaftarKanvas
+                {...Props({
+                    Transfer: [
+                        {
+                            Uuid: '01J9TRF0000000000000000001',
+                            Nomor: 'TRF/20261002/0001',
+                            Arah: 'Muat',
+                            Status: 'Dikirim',
+                            LabelStatus: 'Dikirim',
+                            NamaLawan: 'Gudang Pusat',
+                            JumlahBaris: 3,
+                            BisaCetak: true,
+                        },
+                        {
+                            Uuid: '01J9TRF0000000000000000002',
+                            Nomor: null,
+                            Arah: 'Bongkar',
+                            Status: 'Draf',
+                            LabelStatus: 'Draf',
+                            NamaLawan: 'Gudang Pusat',
+                            JumlahBaris: 1,
+                            BisaCetak: false,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('link', { name: 'TRF/20261002/0001' }).getAttribute('href')).toBe(
+            '/kelola/persediaan/transfer/01J9TRF0000000000000000001',
+        );
+        expect(screen.getAllByText('Muat dari Gudang Pusat').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Bongkar ke Gudang Pusat').length).toBeGreaterThan(0);
+        // Surat jalan hanya untuk yang sudah dikirim; daftar ambil tersedia juga untuk draf.
+        const panel = within(screen.getByRole('region', { name: 'Transfer muat dan bongkar hari ini' }));
+        expect(panel.getAllByRole('link', { name: 'Surat jalan' })).toHaveLength(1);
+        expect(panel.getAllByRole('link', { name: 'Daftar ambil' })).toHaveLength(2);
     });
 
     it('tanpa izin transfer, tautan muat & bongkar tidak tampil; shift terbuka ditandai', () => {
