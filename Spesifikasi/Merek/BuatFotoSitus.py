@@ -8,7 +8,7 @@ hasilnya di `AlatSitus/Hasil/PlayStore/`, tidak masuk Git). Tidak ada gambar kar
 Pakai:  python3 Spesifikasi/Merek/BuatFotoSitus.py
 
 Tablet disimpan 1600 x 1000 px, ponsel 540 x 1080 px; WebP kualitas 80 agar tiap berkas tetap di bawah ~150 KB.
-Berkas hasil di `Aplikasi/Web/public/situs/produk/` dirujuk `Komponen/Situs/SpesimenSitus.tsx`.
+Berkas hasil di `Aplikasi/Web/resources/js/Aset/Situs/` dirujuk `Komponen/Situs/SpesimenSitus.tsx`.
 """
 from pathlib import Path
 
@@ -17,25 +17,25 @@ from PIL import Image
 AKAR = Path(__file__).resolve().parents[2]
 KASIR = AKAR / 'Aplikasi/Kasir/AlatSitus/Hasil/PlayStore'
 PEMILIK = AKAR / 'Aplikasi/Pemilik/AlatSitus/Hasil/PlayStore'
-TUJUAN = AKAR / 'Aplikasi/Web/public/situs/produk'
+TUJUAN = AKAR / 'Aplikasi/Web/resources/js/Aset/Situs'
 
 TABLET = (1600, 1000)
 PONSEL = (540, 1080)
 
 DAFTAR = {
-    'kasir-jual': (KASIR / 'Tablet1Jual.png', TABLET),
-    'kasir-bayar': (KASIR / 'Tablet2Bayar.png', TABLET),
-    'kasir-berhasil': (KASIR / 'Tablet3Berhasil.png', TABLET),
-    'kasir-shift': (KASIR / 'Tablet4Shift.png', TABLET),
-    'kasir-riwayat': (KASIR / 'Tablet5Riwayat.png', TABLET),
-    'kasir-kas': (KASIR / 'Tablet6Kas.png', TABLET),
-    'kasir-hp-jual': (KASIR / 'Hp1Jual.png', PONSEL),
-    'pemilik-beranda': (PEMILIK / 'PemilikHp1Beranda.png', PONSEL),
-    'pemilik-laporan': (PEMILIK / 'PemilikHp2Laporan.png', PONSEL),
-    'pemilik-persetujuan': (PEMILIK / 'PemilikHp3Persetujuan.png', PONSEL),
-    'pemilik-shift': (PEMILIK / 'PemilikHp4Shift.png', PONSEL),
-    'pemilik-karyawan': (PEMILIK / 'PemilikHp5Karyawan.png', PONSEL),
-    'pemilik-insight': (PEMILIK / 'PemilikHp6Insight.png', PONSEL),
+    'KasirJual': (KASIR / 'Tablet1Jual.png', TABLET),
+    'KasirBayar': (KASIR / 'Tablet2Bayar.png', TABLET),
+    'KasirBerhasil': (KASIR / 'Tablet3Berhasil.png', TABLET),
+    'KasirShift': (KASIR / 'Tablet4Shift.png', TABLET),
+    'KasirRiwayat': (KASIR / 'Tablet5Riwayat.png', TABLET),
+    'KasirKas': (KASIR / 'Tablet6Kas.png', TABLET),
+    'KasirHpJual': (KASIR / 'Hp1Jual.png', PONSEL),
+    'PemilikBeranda': (PEMILIK / 'PemilikHp1Beranda.png', PONSEL),
+    'PemilikLaporan': (PEMILIK / 'PemilikHp2Laporan.png', PONSEL),
+    'PemilikPersetujuan': (PEMILIK / 'PemilikHp3Persetujuan.png', PONSEL),
+    'PemilikShift': (PEMILIK / 'PemilikHp4Shift.png', PONSEL),
+    'PemilikKaryawan': (PEMILIK / 'PemilikHp5Karyawan.png', PONSEL),
+    'PemilikInsight': (PEMILIK / 'PemilikHp6Insight.png', PONSEL),
 }
 
 

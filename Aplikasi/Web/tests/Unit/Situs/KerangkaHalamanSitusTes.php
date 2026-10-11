@@ -19,10 +19,11 @@ it('mengambil sorotan pertama dari blok HeroGeser beserta gambar spesimennya', f
         ->and($pembuka)->not->toBeNull()
         ->and($pembuka['Judul'])->toBe($bagian[0]['Sorotan'][0]['Judul'])
         ->and($pembuka['TombolUtama']['Label'])->toBe('Coba gratis')
-        ->and($pembuka['Gambar']['Url'])->toBe('/situs/produk/kasir-jual.webp')
+        ->and($pembuka['Gambar']['Url'])->toBeNull()
+        ->and($pembuka['Gambar']['Berkas'])->toBe('KasirJual')
         ->and($pembuka['Gambar']['Lebar'])->toBe(1600);
 
-    expect(public_path('situs/produk/kasir-jual.webp'))->toBeFile();
+    expect(resource_path('js/Aset/Situs/KasirJual.webp'))->toBeFile();
 });
 
 it('mengambil blok Hero biasa dan memakai gambar unggahan bila ada', function (): void {
@@ -39,10 +40,12 @@ it('mengambil blok Hero biasa dan memakai gambar unggahan bila ada', function ()
     expect(KerangkaHalamanSitus::AmbilPembuka([]))->toBeNull();
 });
 
-it('semua berkas spesimen yang dirujuk skema ada di public/situs/produk (kecuali struk dan jurnal)', function (): void {
+it('semua berkas spesimen yang dirujuk skema ada di resources/js/Aset/Situs dan terdaftar di manifest build (kecuali struk dan jurnal)', function (): void {
     $tanpaBerkas = ['Struk', 'Jurnal'];
     $ref = new ReflectionClassConstant(KerangkaHalamanSitus::class, 'FOTO');
     $peta = $ref->getValue();
+    // Gambar ikut build Vite: tanpa entri di manifest, alamatnya tidak bisa dibuat (hosting tanpa Node memakai build ter-commit).
+    $manifest = json_decode((string) file_get_contents(public_path('build/manifest.json')), true);
 
     foreach (SkemaBagianSitus::SPESIMEN as $nama) {
         if (in_array($nama, $tanpaBerkas, true)) {
@@ -50,7 +53,8 @@ it('semua berkas spesimen yang dirujuk skema ada di public/situs/produk (kecuali
         }
 
         expect($peta)->toHaveKey($nama);
-        expect(public_path("situs/produk/{$peta[$nama][0]}.webp"))->toBeFile();
+        expect(resource_path("js/Aset/Situs/{$peta[$nama][0]}.webp"))->toBeFile();
+        expect($manifest)->toHaveKey("resources/js/Aset/Situs/{$peta[$nama][0]}.webp");
     }
 });
 

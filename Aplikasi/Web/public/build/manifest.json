@@ -1120,6 +1120,16 @@
       "_PemilihJam-B6SiiXcy.js"
     ]
   },
+  "_PemilikLaporan-Dg7Sf7nX.js": {
+    "file": "assets/PemilikLaporan-Dg7Sf7nX.js",
+    "name": "PemilikLaporan",
+    "assets": [
+      "assets/KasirBayar-IQCdn7RN.webp",
+      "assets/KasirJual-DY-kik07.webp",
+      "assets/PemilikBeranda-hDbkYmjC.webp",
+      "assets/PemilikLaporan-B6PWPY3N.webp"
+    ]
+  },
   "_PenandaJurnal-Bt5aqgVG.js": {
     "file": "assets/PenandaJurnal-Bt5aqgVG.js",
     "name": "PenandaJurnal",
@@ -1438,8 +1448,8 @@
       "_Organisasi-B3yeo597.js"
     ]
   },
-  "_TataLetakAutentikasi-BrqFAQUo.js": {
-    "file": "assets/TataLetakAutentikasi-BrqFAQUo.js",
+  "_TataLetakAutentikasi-CP5APrbf.js": {
+    "file": "assets/TataLetakAutentikasi-CP5APrbf.js",
     "name": "TataLetakAutentikasi",
     "imports": [
       "_jsx-runtime-CM6s92_4.js",
@@ -1449,6 +1459,7 @@
       "_chevron-left-FMlmDbTT.js",
       "_Pemberitahuan-CcgKu3e5.js",
       "_JudulHalaman-BY2PGtjm.js",
+      "_PemilikLaporan-Dg7Sf7nX.js",
       "_LogoMerek-D-g788Tk.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
@@ -2100,7 +2111,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-BmDqqOjs.js",
+    "file": "assets/Aplikasi-lyHaKjWJ.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -2496,6 +2507,54 @@
     "file": "assets/LogoHorizontalPutih-CkjKo6oq.webp",
     "src": "resources/js/Aset/Merek/LogoHorizontalPutih.webp"
   },
+  "resources/js/Aset/Situs/KasirBayar.webp": {
+    "file": "assets/KasirBayar-IQCdn7RN.webp",
+    "src": "resources/js/Aset/Situs/KasirBayar.webp"
+  },
+  "resources/js/Aset/Situs/KasirBerhasil.webp": {
+    "file": "assets/KasirBerhasil-n9sJFrAr.webp",
+    "src": "resources/js/Aset/Situs/KasirBerhasil.webp"
+  },
+  "resources/js/Aset/Situs/KasirHpJual.webp": {
+    "file": "assets/KasirHpJual-luAc3d9s.webp",
+    "src": "resources/js/Aset/Situs/KasirHpJual.webp"
+  },
+  "resources/js/Aset/Situs/KasirJual.webp": {
+    "file": "assets/KasirJual-DY-kik07.webp",
+    "src": "resources/js/Aset/Situs/KasirJual.webp"
+  },
+  "resources/js/Aset/Situs/KasirKas.webp": {
+    "file": "assets/KasirKas-DoKIWIPz.webp",
+    "src": "resources/js/Aset/Situs/KasirKas.webp"
+  },
+  "resources/js/Aset/Situs/KasirRiwayat.webp": {
+    "file": "assets/KasirRiwayat-DrzAziZw.webp",
+    "src": "resources/js/Aset/Situs/KasirRiwayat.webp"
+  },
+  "resources/js/Aset/Situs/KasirShift.webp": {
+    "file": "assets/KasirShift-TltYt--6.webp",
+    "src": "resources/js/Aset/Situs/KasirShift.webp"
+  },
+  "resources/js/Aset/Situs/PemilikBeranda.webp": {
+    "file": "assets/PemilikBeranda-hDbkYmjC.webp",
+    "src": "resources/js/Aset/Situs/PemilikBeranda.webp"
+  },
+  "resources/js/Aset/Situs/PemilikInsight.webp": {
+    "file": "assets/PemilikInsight-D7WoFRwA.webp",
+    "src": "resources/js/Aset/Situs/PemilikInsight.webp"
+  },
+  "resources/js/Aset/Situs/PemilikKaryawan.webp": {
+    "file": "assets/PemilikKaryawan-CjjjjWN_.webp",
+    "src": "resources/js/Aset/Situs/PemilikKaryawan.webp"
+  },
+  "resources/js/Aset/Situs/PemilikLaporan.webp": {
+    "file": "assets/PemilikLaporan-B6PWPY3N.webp",
+    "src": "resources/js/Aset/Situs/PemilikLaporan.webp"
+  },
+  "resources/js/Aset/Situs/PemilikPersetujuan.webp": {
+    "file": "assets/PemilikPersetujuan--sOrN4RM.webp",
+    "src": "resources/js/Aset/Situs/PemilikPersetujuan.webp"
+  },
   "resources/js/Fitur/Absensi/MesinWajah.ts": {
     "file": "assets/MesinWajah-BloA_oiJ.js",
     "name": "MesinWajah",
@@ -2510,7 +2569,7 @@
     ]
   },
   "resources/js/Halaman/Autentikasi/AturUlangKataSandi.tsx": {
-    "file": "assets/AturUlangKataSandi-BIJTkdU2.js",
+    "file": "assets/AturUlangKataSandi-kwtUf8ob.js",
     "name": "AturUlangKataSandi",
     "src": "resources/js/Halaman/Autentikasi/AturUlangKataSandi.tsx",
     "isDynamicEntry": true,
@@ -2518,11 +2577,11 @@
       "_jsx-runtime-CM6s92_4.js",
       "_BidangTeks-DQ05sFCU.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/Daftar.tsx": {
-    "file": "assets/Daftar-BBIcaY2o.js",
+    "file": "assets/Daftar-CYDiriKn.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Autentikasi/Daftar.tsx",
     "isDynamicEntry": true,
@@ -2534,13 +2593,13 @@
       "_label-8sWii6H3.js",
       "_BagianBidang-CqGdnmhy.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js",
+      "_TataLetakAutentikasi-CP5APrbf.js",
       "_BidangPilihan-DhVLlqMr.js",
       "_TombolGoogle-xTH-RMJS.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/GantiKataSandi.tsx": {
-    "file": "assets/GantiKataSandi-CVuFn3kF.js",
+    "file": "assets/GantiKataSandi-OqYG35yM.js",
     "name": "GantiKataSandi",
     "src": "resources/js/Halaman/Autentikasi/GantiKataSandi.tsx",
     "isDynamicEntry": true,
@@ -2548,7 +2607,7 @@
       "_jsx-runtime-CM6s92_4.js",
       "_BidangTeks-DQ05sFCU.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/KeamananAkun.tsx": {
@@ -2571,7 +2630,7 @@
     ]
   },
   "resources/js/Halaman/Autentikasi/LengkapiGoogle.tsx": {
-    "file": "assets/LengkapiGoogle-BZeEyLpa.js",
+    "file": "assets/LengkapiGoogle-Dat3zf49.js",
     "name": "LengkapiGoogle",
     "src": "resources/js/Halaman/Autentikasi/LengkapiGoogle.tsx",
     "isDynamicEntry": true,
@@ -2582,12 +2641,12 @@
       "_checkbox-D96XNH9x.js",
       "_label-8sWii6H3.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js",
+      "_TataLetakAutentikasi-CP5APrbf.js",
       "_BidangPilihan-DhVLlqMr.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/LupaKataSandi.tsx": {
-    "file": "assets/LupaKataSandi-077eibqj.js",
+    "file": "assets/LupaKataSandi-Xkr8Jq8D.js",
     "name": "LupaKataSandi",
     "src": "resources/js/Halaman/Autentikasi/LupaKataSandi.tsx",
     "isDynamicEntry": true,
@@ -2595,11 +2654,11 @@
       "_jsx-runtime-CM6s92_4.js",
       "_BidangTeks-DQ05sFCU.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/Masuk.tsx": {
-    "file": "assets/Masuk-8p46A61x.js",
+    "file": "assets/Masuk-CT0rCXmA.js",
     "name": "Masuk",
     "src": "resources/js/Halaman/Autentikasi/Masuk.tsx",
     "isDynamicEntry": true,
@@ -2607,13 +2666,13 @@
       "_jsx-runtime-CM6s92_4.js",
       "_BidangTeks-DQ05sFCU.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js",
+      "_TataLetakAutentikasi-CP5APrbf.js",
       "_TombolGoogle-xTH-RMJS.js",
       "_KotakCentang-Bmc6F6x8.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/PersetujuanLegal.tsx": {
-    "file": "assets/PersetujuanLegal-CO5CSXg3.js",
+    "file": "assets/PersetujuanLegal-bd3p119C.js",
     "name": "PersetujuanLegal",
     "src": "resources/js/Halaman/Autentikasi/PersetujuanLegal.tsx",
     "isDynamicEntry": true,
@@ -2622,12 +2681,12 @@
       "_Pemberitahuan-CcgKu3e5.js",
       "_Tombol-CslgV6xr.js",
       "_FormatWaktu-bKvj24HB.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js",
+      "_TataLetakAutentikasi-CP5APrbf.js",
       "_KotakCentang-Bmc6F6x8.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/PilihTenant.tsx": {
-    "file": "assets/PilihTenant-DK2ISbSS.js",
+    "file": "assets/PilihTenant-DpfWFx6B.js",
     "name": "PilihTenant",
     "src": "resources/js/Halaman/Autentikasi/PilihTenant.tsx",
     "isDynamicEntry": true,
@@ -2638,11 +2697,11 @@
       "_store-HgLlXI-Z.js",
       "_button-BNkvmRc7.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Halaman/Autentikasi/VerifikasiDuaFaktor.tsx": {
-    "file": "assets/VerifikasiDuaFaktor-CsqZoiE2.js",
+    "file": "assets/VerifikasiDuaFaktor-Dz-r3ZkK.js",
     "name": "VerifikasiDuaFaktor",
     "src": "resources/js/Halaman/Autentikasi/VerifikasiDuaFaktor.tsx",
     "isDynamicEntry": true,
@@ -2650,7 +2709,7 @@
       "_jsx-runtime-CM6s92_4.js",
       "_BidangTeks-DQ05sFCU.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Halaman/Kelola/Akuntansi/Akun/Daftar.tsx": {
@@ -8090,7 +8149,7 @@
     ]
   },
   "resources/js/Halaman/Situs/Halaman.tsx": {
-    "file": "assets/Halaman-abC8FhwC.js",
+    "file": "assets/Halaman-DgR-V7gw.js",
     "name": "Halaman",
     "src": "resources/js/Halaman/Situs/Halaman.tsx",
     "isDynamicEntry": true,
@@ -8118,11 +8177,22 @@
       "_wifi-off-rKR--tKB.js",
       "_JudulHalaman-BY2PGtjm.js",
       "_Tombol-CslgV6xr.js",
+      "_PemilikLaporan-Dg7Sf7nX.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
       "_KotakCentang-Bmc6F6x8.js",
       "_BidangTeksPanjang-ScSjot6s.js",
       "_TeksKaya-CGoaCQ4p.js"
+    ],
+    "assets": [
+      "assets/KasirBerhasil-n9sJFrAr.webp",
+      "assets/KasirShift-TltYt--6.webp",
+      "assets/KasirRiwayat-DrzAziZw.webp",
+      "assets/KasirKas-DoKIWIPz.webp",
+      "assets/KasirHpJual-luAc3d9s.webp",
+      "assets/PemilikPersetujuan--sOrN4RM.webp",
+      "assets/PemilikKaryawan-CjjjjWN_.webp",
+      "assets/PemilikInsight-D7WoFRwA.webp"
     ]
   },
   "resources/js/Halaman/Situs/Pengembang.tsx": {
@@ -8137,7 +8207,7 @@
     ]
   },
   "resources/js/Halaman/Undangan/Terima.tsx": {
-    "file": "assets/Terima-DULVAOnl.js",
+    "file": "assets/Terima-BwWiKezM.js",
     "name": "Terima",
     "src": "resources/js/Halaman/Undangan/Terima.tsx",
     "isDynamicEntry": true,
@@ -8147,7 +8217,7 @@
       "_Pemberitahuan-CcgKu3e5.js",
       "_button-BNkvmRc7.js",
       "_Tombol-CslgV6xr.js",
-      "_TataLetakAutentikasi-BrqFAQUo.js"
+      "_TataLetakAutentikasi-CP5APrbf.js"
     ]
   },
   "resources/js/Komponen/Laporan/GrafikPenjualanHarian.tsx": {
@@ -8225,7 +8295,7 @@
     ]
   },
   "resources/js/Situs.tsx": {
-    "file": "assets/Situs-D2cPl8xn.js",
+    "file": "assets/Situs-CnzHGhhB.js",
     "name": "Situs",
     "src": "resources/js/Situs.tsx",
     "isEntry": true,

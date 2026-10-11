@@ -2,10 +2,22 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/Komponen/Ui/utils';
 import type { NamaSpesimen } from '@/Tipe/Situs';
+import gambarKasirJual from '@/Aset/Situs/KasirJual.webp';
+import gambarKasirBayar from '@/Aset/Situs/KasirBayar.webp';
+import gambarKasirBerhasil from '@/Aset/Situs/KasirBerhasil.webp';
+import gambarKasirShift from '@/Aset/Situs/KasirShift.webp';
+import gambarKasirRiwayat from '@/Aset/Situs/KasirRiwayat.webp';
+import gambarKasirKas from '@/Aset/Situs/KasirKas.webp';
+import gambarKasirHpJual from '@/Aset/Situs/KasirHpJual.webp';
+import gambarPemilikBeranda from '@/Aset/Situs/PemilikBeranda.webp';
+import gambarPemilikLaporan from '@/Aset/Situs/PemilikLaporan.webp';
+import gambarPemilikPersetujuan from '@/Aset/Situs/PemilikPersetujuan.webp';
+import gambarPemilikKaryawan from '@/Aset/Situs/PemilikKaryawan.webp';
+import gambarPemilikInsight from '@/Aset/Situs/PemilikInsight.webp';
 
 /**
  * Spesimen keluaran Payoung untuk situs pemasaran (D-25, D-39): tangkapan layar asli aplikasi Kasir & Pemilik
- * (berkas statis di `public/situs/produk`, jadi bisa dipakai isi bawaan), serta struk dan jurnal yang benar-benar
+ * (berkas di `resources/js/Aset/Situs`, ikut build Vite supaya selalu terkirim bersama aset lain), serta struk dan jurnal yang benar-benar
  * dihasilkan produk. Dipakai sebagai visual hero dan blok gambar-teks bila konsol belum mengunggah gambar.
  *
  * Kenapa bukan ilustrasi:
@@ -142,62 +154,62 @@ const PONSEL = { lebar: 540, tinggi: 1080 } as const;
 
 export const FOTO = {
     KasirJual: {
-        src: '/situs/produk/kasir-jual.webp',
+        src: gambarKasirJual,
         ...TABLET,
         alt: 'Aplikasi Kasir Payoung di tablet: katalog menu kafe, keranjang berisi Es Kopi Susu Aren, Croissant Cokelat, dan Matcha Latte, total Rp 95.700 dengan PBJT 10%.',
     },
     KasirBayar: {
-        src: '/situs/produk/kasir-bayar.webp',
+        src: gambarKasirBayar,
         ...TABLET,
         alt: 'Layar Bayar aplikasi Kasir Payoung: total Rp 95.700, pilihan Tunai, QRIS, EDC, transfer, dan e-wallet, tombol Uang pas, papan angka, dan Bagi tagihan.',
     },
     KasirBerhasil: {
-        src: '/situs/produk/kasir-berhasil.webp',
+        src: gambarKasirBerhasil,
         ...TABLET,
         alt: 'Layar pembayaran berhasil di aplikasi Kasir Payoung dengan nomor transaksi, tombol Kirim struk, dan Transaksi baru.',
     },
     KasirShift: {
-        src: '/situs/produk/kasir-shift.webp',
+        src: gambarKasirShift,
         ...TABLET,
         alt: 'Layar Shift aplikasi Kasir Payoung: penjualan shift Rp 551.100, rincian per metode bayar, produk terlaris, dan daftar periksa sebelum tutup shift.',
     },
     KasirRiwayat: {
-        src: '/situs/produk/kasir-riwayat.webp',
+        src: gambarKasirRiwayat,
         ...TABLET,
         alt: 'Riwayat transaksi hari ini di aplikasi Kasir Payoung dengan rincian transaksi, cetak ulang struk, kirim struk, retur atau tukar, dan batalkan transaksi.',
     },
     KasirKas: {
-        src: '/situs/produk/kasir-kas.webp',
+        src: gambarKasirKas,
         ...TABLET,
         alt: 'Layar Kas aplikasi Kasir Payoung: perkiraan kas di laci Rp 746.600, asal uang di laci, serta kas masuk dan keluar.',
     },
     KasirHp: {
-        src: '/situs/produk/kasir-hp-jual.webp',
+        src: gambarKasirHpJual,
         ...PONSEL,
         alt: 'Aplikasi Kasir Payoung di ponsel Android: katalog menu, keranjang dua baris Rp 47.300, dan tombol Bayar.',
     },
     PemilikBeranda: {
-        src: '/situs/produk/pemilik-beranda.webp',
+        src: gambarPemilikBeranda,
         ...PONSEL,
         alt: 'Aplikasi Pemilik Payoung: omzet hari ini Rp 8.475.000, naik 14% dari kemarin, perlu tindakan stok susu hampir habis, dan omzet per outlet.',
     },
     PemilikLaporan: {
-        src: '/situs/produk/pemilik-laporan.webp',
+        src: gambarPemilikLaporan,
         ...PONSEL,
         alt: 'Laporan di aplikasi Pemilik Payoung: penjualan per produk dengan pilihan kategori, kasir, dan jam.',
     },
     PemilikPersetujuan: {
-        src: '/situs/produk/pemilik-persetujuan.webp',
+        src: gambarPemilikPersetujuan,
         ...PONSEL,
         alt: 'Persetujuan jarak jauh di aplikasi Pemilik Payoung: kas keluar di atas batas dan diskon manual 20%, dengan tombol Tolak dan Setujui.',
     },
     PemilikKaryawan: {
-        src: '/situs/produk/pemilik-karyawan.webp',
+        src: gambarPemilikKaryawan,
         ...PONSEL,
         alt: 'Pantau karyawan di aplikasi Pemilik Payoung: kehadiran hari ini, yang belum absen masuk, serta komisi dan target bulan ini.',
     },
     PemilikInsight: {
-        src: '/situs/produk/pemilik-insight.webp',
+        src: gambarPemilikInsight,
         ...PONSEL,
         alt: 'Insight mingguan di aplikasi Pemilik Payoung: penjualan bersih minggu lalu, produk terlaris, yang naik dan turun paling banyak, dan saran restock.',
     },

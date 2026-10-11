@@ -33,8 +33,9 @@
                     @endif
                 </div>
                 <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-panel border border-garis bg-brand-lembut p-3 sm:aspect-[16/11] sm:p-6">
-                    @if ($pembuka['Gambar'])
-                        <img src="{{ $pembuka['Gambar']['Url'] }}" alt="{{ $pembuka['Gambar']['Alt'] }}" @if ($pembuka['Gambar']['Lebar']) width="{{ $pembuka['Gambar']['Lebar'] }}" @endif @if ($pembuka['Gambar']['Tinggi']) height="{{ $pembuka['Gambar']['Tinggi'] }}" @endif fetchpriority="high" decoding="async" class="max-h-full w-auto max-w-full rounded-kontrol object-contain">
+                    @php($urlGambar = $pembuka['Gambar'] ? ($pembuka['Gambar']['Url'] ?? \App\Domain\Situs\Layanan\KerangkaHalamanSitus::UrlBerkas($pembuka['Gambar']['Berkas'] ?? null)) : null)
+                    @if ($urlGambar)
+                        <img src="{{ $urlGambar }}" alt="{{ $pembuka['Gambar']['Alt'] }}" @if ($pembuka['Gambar']['Lebar']) width="{{ $pembuka['Gambar']['Lebar'] }}" @endif @if ($pembuka['Gambar']['Tinggi']) height="{{ $pembuka['Gambar']['Tinggi'] }}" @endif fetchpriority="high" decoding="async" class="max-h-full w-auto max-w-full rounded-kontrol object-contain">
                     @endif
                 </div>
             </div>

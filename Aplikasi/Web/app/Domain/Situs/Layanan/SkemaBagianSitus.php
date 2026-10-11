@@ -32,7 +32,7 @@ final class SkemaBagianSitus
     ];
 
     /**
-     * Spesimen = tangkapan layar **asli** aplikasi Payoung (berkas statis `public/situs/produk`, dibuat
+     * Spesimen = tangkapan layar **asli** aplikasi Payoung (berkas di `resources/js/Aset/Situs` yang ikut build Vite, dibuat
      * `Spesifikasi/Merek/BuatFotoSitus.py`) atau keluaran produk (struk, jurnal). Dipakai isi bawaan karena gambar
      * unggahan konsol dirujuk lewat Uuid. Peta ke berkas ada di `Komponen/Situs/SpesimenSitus.tsx`.
      */

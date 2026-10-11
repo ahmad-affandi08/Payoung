@@ -1,6 +1,10 @@
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
+import gambarKasirBayar from '@/Aset/Situs/KasirBayar.webp';
+import gambarKasirJual from '@/Aset/Situs/KasirJual.webp';
+import gambarPemilikBeranda from '@/Aset/Situs/PemilikBeranda.webp';
+import gambarPemilikLaporan from '@/Aset/Situs/PemilikLaporan.webp';
 import { LogoMerek } from '@/Komponen/Merek/LogoMerek';
 import { cn } from '@/Komponen/Ui/utils';
 import type { PenawaranAuth } from '@/Tipe/Aplikasi';
@@ -50,7 +54,7 @@ type Iklan = {
     label: string;
     judul: string;
     teks: string;
-    /** Tangkapan layar asli aplikasi (`public/situs/produk`), bukan ilustrasi buatan. */
+    /** Tangkapan layar asli aplikasi (`Aset/Situs`, ikut build Vite), bukan ilustrasi buatan. */
     gambar?: { src: string; alt: string };
     sorot?: string[];
 };
@@ -79,7 +83,7 @@ export function SusunIklan(penawaran: PenawaranAuth | null, lisensi: boolean): I
                         ? `Coba gratis ${penawaran.MasaTrialHari} hari, tanpa kartu kredit`
                         : 'Tanpa kartu kredit',
                 ],
-                gambar: { src: '/situs/produk/kasir-bayar.webp', alt: 'Layar pembayaran aplikasi kasir Payoung' },
+                gambar: { src: gambarKasirBayar, alt: 'Layar pembayaran aplikasi kasir Payoung' },
             });
         } else if (penawaran) {
             daftar.push({
@@ -118,21 +122,21 @@ export function SusunIklan(penawaran: PenawaranAuth | null, lisensi: boolean): I
             label: 'Tetap jalan tanpa internet',
             judul: 'Kasir tidak berhenti saat sinyal putus',
             teks: 'Transaksi disimpan di perangkat dan tersinkron otomatis begitu internet kembali.',
-            gambar: { src: '/situs/produk/kasir-jual.webp', alt: 'Layar penjualan aplikasi kasir Payoung' },
+            gambar: { src: gambarKasirJual, alt: 'Layar penjualan aplikasi kasir Payoung' },
         },
         {
             kunci: 'pantau',
             label: 'Pantau dari HP',
             judul: 'Omzet, stok, dan shift dalam genggaman',
             teks: 'Aplikasi Pemilik menampilkan penjualan hari ini, laporan, dan shift kasir dari mana saja.',
-            gambar: { src: '/situs/produk/pemilik-beranda.webp', alt: 'Beranda aplikasi Pemilik Payoung' },
+            gambar: { src: gambarPemilikBeranda, alt: 'Beranda aplikasi Pemilik Payoung' },
         },
         {
             kunci: 'lengkap',
             label: 'Lengkap untuk usaha Anda',
             judul: 'Stok, akuntansi, promo, dan toko online',
             teks: 'Laporan laba rugi otomatis, loyalti pelanggan, self-order QR, serta absensi karyawan dalam satu sistem.',
-            gambar: { src: '/situs/produk/pemilik-laporan.webp', alt: 'Laporan di aplikasi Pemilik Payoung' },
+            gambar: { src: gambarPemilikLaporan, alt: 'Laporan di aplikasi Pemilik Payoung' },
         },
     );
 

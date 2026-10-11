@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Situs\Layanan;
 
+use Illuminate\Support\Facades\Vite;
+use Throwable;
+
 /**
  * Kerangka HTML dari server untuk halaman situs pemasaran (D-21, tanpa SSR Node di hosting bersama).
  *
@@ -18,22 +21,43 @@ namespace App\Domain\Situs\Layanan;
  */
 final class KerangkaHalamanSitus
 {
-    /** Spesimen → berkas statis (tablet 1600 × 1000, ponsel 540 × 1080). Selaras `Komponen/Situs/SpesimenSitus.tsx`. */
+    /**
+     * Spesimen → berkas gambar di `resources/js/Aset/Situs` (tablet 1600 × 1000, ponsel 540 × 1080). Selaras
+     * `Komponen/Situs/SpesimenSitus.tsx`. Berkasnya ikut build Vite (alamat bernama ber-hash dari manifest), bukan berkas
+     * statis di `public/`, supaya terkirim bersama aset lain di hosting mana pun.
+     */
     private const FOTO = [
-        'Kasir' => ['kasir-jual', 1600, 1000],
-        'KasirBayar' => ['kasir-bayar', 1600, 1000],
-        'KasirBerhasil' => ['kasir-berhasil', 1600, 1000],
-        'KasirShift' => ['kasir-shift', 1600, 1000],
-        'KasirRiwayat' => ['kasir-riwayat', 1600, 1000],
-        'KasirKas' => ['kasir-kas', 1600, 1000],
-        'KasirHp' => ['kasir-hp-jual', 540, 1080],
-        'Pemilik' => ['pemilik-beranda', 540, 1080],
-        'PemilikDuo' => ['pemilik-beranda', 540, 1080],
-        'PemilikLaporan' => ['pemilik-laporan', 540, 1080],
-        'PemilikPersetujuan' => ['pemilik-persetujuan', 540, 1080],
-        'PemilikKaryawan' => ['pemilik-karyawan', 540, 1080],
-        'PemilikInsight' => ['pemilik-insight', 540, 1080],
+        'Kasir' => ['KasirJual', 1600, 1000],
+        'KasirBayar' => ['KasirBayar', 1600, 1000],
+        'KasirBerhasil' => ['KasirBerhasil', 1600, 1000],
+        'KasirShift' => ['KasirShift', 1600, 1000],
+        'KasirRiwayat' => ['KasirRiwayat', 1600, 1000],
+        'KasirKas' => ['KasirKas', 1600, 1000],
+        'KasirHp' => ['KasirHpJual', 540, 1080],
+        'Pemilik' => ['PemilikBeranda', 540, 1080],
+        'PemilikDuo' => ['PemilikBeranda', 540, 1080],
+        'PemilikLaporan' => ['PemilikLaporan', 540, 1080],
+        'PemilikPersetujuan' => ['PemilikPersetujuan', 540, 1080],
+        'PemilikKaryawan' => ['PemilikKaryawan', 540, 1080],
+        'PemilikInsight' => ['PemilikInsight', 540, 1080],
     ];
+
+    /**
+     * Alamat gambar spesimen dari manifest Vite (`/build/assets/KasirJual-HASH.webp`), atau null bila manifest belum
+     * memuatnya (mis. build belum dijalankan): kerangka lalu tampil tanpa gambar, bukan galat.
+     */
+    public static function UrlBerkas(?string $berkas): ?string
+    {
+        if ($berkas === null || $berkas === '') {
+            return null;
+        }
+
+        try {
+            return Vite::asset("resources/js/Aset/Situs/{$berkas}.webp");
+        } catch (Throwable) {
+            return null;
+        }
+    }
 
     private const KUNCI_JUDUL = ['Judul', 'Nama', 'Pertanyaan'];
 
@@ -45,7 +69,7 @@ final class KerangkaHalamanSitus
      * Isi pembuka dari blok pertama halaman, atau null bila halaman tanpa blok.
      *
      * @param  list<array<string, mixed>>  $bagian
-     * @return array{Label: ?string, Judul: string, Teks: ?string, TombolUtama: ?array<string, string>, TombolKedua: ?array<string, string>, Gambar: ?array{Url: string, Lebar: ?int, Tinggi: ?int, Alt: string}}|null
+     * @return array{Label: ?string, Judul: string, Teks: ?string, TombolUtama: ?array<string, string>, TombolKedua: ?array<string, string>, Gambar: ?array{Url: ?string, Berkas: ?string, Lebar: ?int, Tinggi: ?int, Alt: string}}|null
      */
     public static function AmbilPembuka(array $bagian): ?array
     {
@@ -66,13 +90,14 @@ final class KerangkaHalamanSitus
         if (is_array($sumber['Gambar'] ?? null) && is_string($sumber['Gambar']['Url'] ?? null)) {
             $gambar = [
                 'Url' => $sumber['Gambar']['Url'],
+                'Berkas' => null,
                 'Lebar' => is_int($sumber['Gambar']['Lebar'] ?? null) ? $sumber['Gambar']['Lebar'] : null,
                 'Tinggi' => is_int($sumber['Gambar']['Tinggi'] ?? null) ? $sumber['Gambar']['Tinggi'] : null,
                 'Alt' => (string) ($sumber['Gambar']['Alt'] ?? ''),
             ];
         } elseif (is_string($sumber['Spesimen'] ?? null) && isset(self::FOTO[$sumber['Spesimen']])) {
             [$berkas, $lebar, $tinggi] = self::FOTO[$sumber['Spesimen']];
-            $gambar = ['Url' => "/situs/produk/{$berkas}.webp", 'Lebar' => $lebar, 'Tinggi' => $tinggi, 'Alt' => 'Tangkapan layar aplikasi Payoung'];
+            $gambar = ['Url' => null, 'Berkas' => $berkas, 'Lebar' => $lebar, 'Tinggi' => $tinggi, 'Alt' => 'Tangkapan layar aplikasi Payoung'];
         }
 
         $teks = $sumber['Teks'] ?? $sumber['Subjudul'] ?? null;
