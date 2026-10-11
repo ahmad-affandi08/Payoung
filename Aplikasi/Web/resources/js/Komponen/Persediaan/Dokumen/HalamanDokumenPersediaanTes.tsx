@@ -282,6 +282,10 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
         expect(screen.getAllByRole('link', { name: 'Buat transfer' })[0]?.getAttribute('href')).toBe(
             '/kelola/persediaan/transfer/buat',
         );
+        // D-96: pintasan retur stok dari area jual ke Gudang.
+        expect(screen.getAllByRole('link', { name: 'Retur ke Gudang' })[0]?.getAttribute('href')).toBe(
+            '/kelola/persediaan/transfer/buat?arah=retur-ke-gudang',
+        );
         cleanup();
 
         RenderUji(
@@ -293,6 +297,7 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
             />,
         );
         expect(screen.queryByRole('link', { name: 'Buat transfer' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Retur ke Gudang' })).toBeNull();
         expect(screen.getByText('Minta pengelola persediaan membuat transfer.')).toBeTruthy();
     });
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Persediaan;
 
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Persediaan\Aksi\BatalkanTransferStok;
 use App\Domain\Persediaan\Aksi\KirimTransferStok;
 use App\Domain\Persediaan\Aksi\SimpanTransferStok;
@@ -51,7 +52,9 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
     public function Buat(Request $permintaan): Response
     {
         // D-95: tombol Muat/Bongkar di halaman Kanvas membawa lokasi bak kendaraan lewat `?asal=` / `?tujuan=` (uuid).
-        $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''];
+        $awal = $permintaan->query('arah') === 'retur-ke-gudang'
+            ? $this->SusunAwalReturKeGudang()
+            : ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''];
 
         foreach (['asal' => 'UuidGudangAsal', 'tujuan' => 'UuidGudangTujuan'] as $kunci => $kolom) {
             $uuid = $permintaan->query($kunci);
@@ -191,6 +194,32 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         abort_if($tujuan && ! $this->CekBolehOutlet($t->IdOutletTujuan), 403, 'Hanya pengguna di outlet tujuan yang bisa menerima transfer ini.');
 
         return $t;
+    }
+
+    /**
+     * D-96: pintasan "Retur ke Gudang" — stok sisa/tak laku dikembalikan dari area jual (Toko) ke Gudang di outlet
+     * yang sama. Lokasi asal = Toko pertama yang boleh dipakai pengguna; tujuan = Gudang aktif di outlet itu.
+     * Tidak ada pasangan yang cocok → kosong, pengguna memilih sendiri.
+     *
+     * @return array{UuidGudangAsal: string, UuidGudangTujuan: string}
+     */
+    private function SusunAwalReturKeGudang(): array
+    {
+        $tujuan = $this->AmbilOpsiGudangDokumen(semuaOutlet: true);
+
+        foreach ($this->AmbilOpsiGudangDokumen() as $asal) {
+            if ($asal['Jenis'] !== JenisGudang::Toko->value) {
+                continue;
+            }
+
+            foreach ($tujuan as $g) {
+                if ($g['Jenis'] === JenisGudang::Gudang->value && $g['NamaOutlet'] === $asal['NamaOutlet']) {
+                    return ['UuidGudangAsal' => $asal['Uuid'], 'UuidGudangTujuan' => $g['Uuid']];
+                }
+            }
+        }
+
+        return ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''];
     }
 
     /**

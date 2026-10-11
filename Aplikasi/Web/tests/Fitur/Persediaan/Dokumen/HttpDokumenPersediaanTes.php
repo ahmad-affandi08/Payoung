@@ -155,6 +155,27 @@ describe('F-05b HTTP transfer stok', function (): void {
         $this->get('/kelola/persediaan/transfer/buat?tujuan='.Str::ulid())->assertNotFound();
     });
 
+    it('D-96: pintasan Retur ke Gudang mengisi Toko → Gudang di outlet yang sama; tanpa pasangan dibiarkan kosong', function (): void {
+        $t = SiapkanHttpDokumen();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        // Belum ada lokasi berjenis Gudang di outlet utama → tidak ada pasangan, formulir kosong.
+        $this->get('/kelola/persediaan/transfer/buat?arah=retur-ke-gudang')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Awal.UuidGudangAsal', '')
+            ->where('Awal.UuidGudangTujuan', ''));
+
+        $gudang = BantuanPersediaan::BuatGudang($t['Outlet'], 'Gudang Belakang', JenisGudang::Gudang);
+
+        $this->get('/kelola/persediaan/transfer/buat?arah=retur-ke-gudang')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/Form')
+            ->where('Awal.UuidGudangAsal', $t['Gudang']->Uuid)
+            ->where('Awal.UuidGudangTujuan', $gudang->Uuid));
+
+        // Parameter asal/tujuan eksplisit tetap menang atas pintasan.
+        $this->get('/kelola/persediaan/transfer/buat?arah=retur-ke-gudang&tujuan='.$t['GudangCabang']->Uuid)->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Awal.UuidGudangTujuan', $t['GudangCabang']->Uuid));
+    });
+
     it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403); tanpa persediaan.lihat 403', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '1')]);
