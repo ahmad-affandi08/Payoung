@@ -7979,30 +7979,9 @@
                         "Jenis": "Stok"
                     },
                     {
-                        "Nama": "Kangkung Segar per Ikat",
-                        "Kategori": "Sayur",
-                        "Harga": "3000",
-                        "KodeSatuan": "IKAT",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Sawi Hijau per Kilogram",
-                        "Kategori": "Sayur",
-                        "Harga": "14000",
-                        "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
                         "Nama": "Wortel Lokal per Kilogram",
                         "Kategori": "Sayur",
                         "Harga": "16000",
-                        "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Kentang Dieng per Kilogram",
-                        "Kategori": "Sayur",
-                        "Harga": "20000",
                         "KodeSatuan": "KG",
                         "Jenis": "Stok"
                     },
@@ -8017,13 +7996,6 @@
                         "Nama": "Cabai Rawit Merah per Kilogram",
                         "Kategori": "Bumbu dapur",
                         "Harga": "60000",
-                        "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Cabai Merah Keriting per Kilogram",
-                        "Kategori": "Bumbu dapur",
-                        "Harga": "45000",
                         "KodeSatuan": "KG",
                         "Jenis": "Stok"
                     },
@@ -8056,24 +8028,10 @@
                         "Jenis": "Stok"
                     },
                     {
-                        "Nama": "Apel Malang per Kilogram",
-                        "Kategori": "Buah",
-                        "Harga": "32000",
-                        "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
                         "Nama": "Beras Medium Karung 25 kg",
                         "Kategori": "Sembako",
                         "Harga": "310000",
                         "KodeSatuan": "KARUNG",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Beras Premium Kemasan 5 kg",
-                        "Kategori": "Sembako",
-                        "Harga": "78500",
-                        "KodeSatuan": "PCS",
                         "Jenis": "Stok"
                     },
                     {
@@ -8084,45 +8042,10 @@
                         "Jenis": "Stok"
                     },
                     {
-                        "Nama": "Gula Pasir per Kilogram",
-                        "Kategori": "Sembako",
-                        "Harga": "18500",
-                        "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
                         "Nama": "Telur Ayam Ras per Kilogram",
                         "Kategori": "Telur & lauk",
                         "Harga": "29000",
                         "KodeSatuan": "KG",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Telur Ayam Ras Eceran per Butir",
-                        "Kategori": "Telur & lauk",
-                        "Harga": "2000",
-                        "KodeSatuan": "BUTIR",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Tempe Papan",
-                        "Kategori": "Telur & lauk",
-                        "Harga": "6000",
-                        "KodeSatuan": "PCS",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Tahu Putih Bungkus",
-                        "Kategori": "Telur & lauk",
-                        "Harga": "8000",
-                        "KodeSatuan": "BUNGKUS",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Air Mineral Botol 600 ml",
-                        "Kategori": "Minuman",
-                        "Harga": "3500",
-                        "KodeSatuan": "BOTOL",
                         "Jenis": "Stok"
                     },
                     {
@@ -8671,13 +8594,6 @@
                         "Kategori": "Produk & minuman",
                         "Harga": "9000",
                         "KodeSatuan": "BOTOL",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Whey Protein Sachet",
-                        "Kategori": "Produk & minuman",
-                        "Harga": "25000",
-                        "KodeSatuan": "PCS",
                         "Jenis": "Stok"
                     }
                 ]
@@ -9732,13 +9648,6 @@
                         "Jenis": "Stok"
                     },
                     {
-                        "Nama": "Tempat Makan Stainless",
-                        "Kategori": "Aksesoris & kandang",
-                        "Harga": "35000",
-                        "KodeSatuan": "PCS",
-                        "Jenis": "Stok"
-                    },
-                    {
                         "Nama": "Sampo Hewan Anti Kutu 250 ml",
                         "Kategori": "Perawatan & vitamin",
                         "Harga": "45000",
@@ -9763,13 +9672,6 @@
                         "Nama": "Grooming Anjing Kecil",
                         "Kategori": "Grooming & jasa",
                         "Harga": "100000",
-                        "KodeSatuan": "PCS",
-                        "Jenis": "Jasa"
-                    },
-                    {
-                        "Nama": "Penitipan Hewan per Hari",
-                        "Kategori": "Grooming & jasa",
-                        "Harga": "40000",
                         "KodeSatuan": "PCS",
                         "Jenis": "Jasa"
                     }
@@ -10282,23 +10184,9 @@
                         "Jenis": "Stok"
                     },
                     {
-                        "Nama": "Krisan Putih per Ikat",
-                        "Kategori": "Bunga potong",
-                        "Harga": "40000",
-                        "KodeSatuan": "IKAT",
-                        "Jenis": "Stok"
-                    },
-                    {
                         "Nama": "Sansevieria Pot Kecil",
                         "Kategori": "Tanaman hias",
                         "Harga": "45000",
-                        "KodeSatuan": "PCS",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Kaktus Mini Pot",
-                        "Kategori": "Tanaman hias",
-                        "Harga": "20000",
                         "KodeSatuan": "PCS",
                         "Jenis": "Stok"
                     },
@@ -10320,13 +10208,6 @@
                         "Nama": "Kartu Ucapan",
                         "Kategori": "Hadiah & kartu",
                         "Harga": "3000",
-                        "KodeSatuan": "PCS",
-                        "Jenis": "Stok"
-                    },
-                    {
-                        "Nama": "Boneka Kecil Hadiah",
-                        "Kategori": "Hadiah & kartu",
-                        "Harga": "35000",
                         "KodeSatuan": "PCS",
                         "Jenis": "Stok"
                     },

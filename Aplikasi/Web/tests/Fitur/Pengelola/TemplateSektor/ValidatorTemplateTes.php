@@ -145,12 +145,12 @@ describe('Validasi otomatis template (BR-P03.3)', function (): void {
         SatuanStandar::query()->where('Kode', 'PORSI')->update(['Aktif' => false]);
         $isi = AmbilIsiTemplateAwal('FNB-QSR');
         $isi['KunciFitur'][] = 'pos.terbang';
-        $isi['KodeSatuan'][] = 'KARUNG';
+        $isi['KodeSatuan'][] = 'TIDAKADA';
 
         expect(AmbilPesanValidasi($isi, 'KunciFitur'))->toBe(['Fitur pos.terbang tidak ada di katalog fitur (P-04).'])
             ->and(AmbilPesanValidasi($isi, 'KodeSatuan'))->toBe([
                 'Satuan PORSI tidak ada atau tidak aktif di satuan standar (P-02).',
-                'Satuan KARUNG tidak ada atau tidak aktif di satuan standar (P-02).',
+                'Satuan TIDAKADA tidak ada atau tidak aktif di satuan standar (P-02).',
             ]);
     });
 
