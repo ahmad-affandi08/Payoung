@@ -37,6 +37,8 @@ type PilihanPaket = {
     HargaBulanan: string;
     HargaTahunan: string;
     PaketBerjalan: boolean;
+    /** D-98: pratinjau naik paket (selisih prorata sebelum PPN); null bila bukan naik paket. */
+    NaikPaket: { Selisih: string; Subtotal: string; HariDitagih: number; HariPeriode: number } | null;
     BisaDipilih: boolean;
 };
 
@@ -183,6 +185,8 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
         KodeKupon: '',
     });
     const perpanjangan = langganan.Status === 'Aktif' || langganan.Status === 'Tertunggak';
+    const naikPaket = pilihan.find((paket) => paket.Kode === formulir.data.KodePaket)?.NaikPaket ?? null;
+    const adaNaikPaket = pilihan.some((paket) => paket.NaikPaket !== null);
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -201,7 +205,11 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
         <Card className="p-4 rounded-panel shadow-none">
             <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
                 <h2 className="text-subjudul font-semibold text-teks-utama">
-                    {perpanjangan ? 'Perpanjang langganan' : 'Pilih paket berbayar'}
+                    {adaNaikPaket
+                        ? 'Perpanjang atau naik paket'
+                        : perpanjangan
+                          ? 'Perpanjang langganan'
+                          : 'Pilih paket berbayar'}
                 </h2>
                 <FieldSet className="gap-2">
                     <FieldLegend id={idLegenda} className="mb-0 text-label font-semibold text-teks-utama">
@@ -253,10 +261,19 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                                                             Paket Anda saat ini
                                                         </span>
                                                     ) : null}
+                                                    {paket.NaikPaket ? (
+                                                        <span className="block text-keterangan text-teks-sekunder">
+                                                            Naik paket: bayar selisih{' '}
+                                                            {FormatRupiah(paket.NaikPaket.Subtotal)} untuk{' '}
+                                                            {paket.NaikPaket.HariDitagih} dari{' '}
+                                                            {paket.NaikPaket.HariPeriode} hari periode ini (belum
+                                                            termasuk PPN). Paket langsung berganti setelah lunas.
+                                                        </span>
+                                                    ) : null}
                                                     {!paket.BisaDipilih ? (
                                                         <span className="block text-keterangan text-teks-sekunder">
-                                                            Ganti paket saat langganan aktif belum tersedia. Hubungi tim
-                                                            kami.
+                                                            Turun paket berlaku mulai periode berikutnya. Hubungi tim
+                                                            kami untuk mengaturnya.
                                                         </span>
                                                     ) : null}
                                                 </label>
@@ -277,33 +294,40 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                         <FieldError className="text-keterangan font-semibold">{formulir.errors.KodePaket}</FieldError>
                     ) : null}
                 </FieldSet>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <BidangPilihan
-                        label="Siklus tagihan"
-                        nilai={formulir.data.Siklus}
-                        opsi={[
-                            { Nilai: 'Bulanan', Label: 'Bulanan' },
-                            { Nilai: 'Tahunan', Label: 'Tahunan (lebih hemat)' },
-                        ]}
-                        saatBerubah={(nilai) => formulir.setData('Siklus', nilai)}
-                        galat={formulir.errors.Siklus}
-                        required
-                    />
-                    <BidangTeks
-                        label="Kode kupon (opsional)"
-                        kode
-                        maxLength={30}
-                        nilai={formulir.data.KodeKupon}
-                        saatBerubah={(nilai) => formulir.setData('KodeKupon', nilai.toUpperCase())}
-                        galat={formulir.errors.KodeKupon}
-                    />
-                </div>
+                {naikPaket ? (
+                    <p className="text-keterangan text-teks-sekunder">
+                        Siklus tagihan tetap {langganan.SiklusTagihan === 'Tahunan' ? 'tahunan' : 'bulanan'} dan masa
+                        berlangganan tidak berubah. Perpanjangan berikutnya memakai harga paket baru.
+                    </p>
+                ) : (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <BidangPilihan
+                            label="Siklus tagihan"
+                            nilai={formulir.data.Siklus}
+                            opsi={[
+                                { Nilai: 'Bulanan', Label: 'Bulanan' },
+                                { Nilai: 'Tahunan', Label: 'Tahunan (lebih hemat)' },
+                            ]}
+                            saatBerubah={(nilai) => formulir.setData('Siklus', nilai)}
+                            galat={formulir.errors.Siklus}
+                            required
+                        />
+                        <BidangTeks
+                            label="Kode kupon (opsional)"
+                            kode
+                            maxLength={30}
+                            nilai={formulir.data.KodeKupon}
+                            saatBerubah={(nilai) => formulir.setData('KodeKupon', nilai.toUpperCase())}
+                            galat={formulir.errors.KodeKupon}
+                        />
+                    </div>
+                )}
                 <p className="text-keterangan text-teks-sekunder">
                     Harga belum termasuk PPN. Rincian PPN dan total tampil di tagihan sebelum Anda membayar.
                 </p>
                 <div>
                     <Tombol type="submit" memproses={formulir.processing} disabled={formulir.data.KodePaket === ''}>
-                        Buat tagihan
+                        {naikPaket ? 'Buat tagihan naik paket' : 'Buat tagihan'}
                     </Tombol>
                 </div>
             </form>

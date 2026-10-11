@@ -300,21 +300,69 @@ describe('Isolasi tenant (CLAUDE.md #11)', function (): void {
     });
 });
 
-describe('Ganti paket & perpanjangan (F-19, proration ditunda)', function (): void {
-    it('saat Aktif hanya perpanjangan paket berjalan yang bisa ditagih; jatuh tempo di akhir periode', function (): void {
-        Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->update([
+describe('Naik paket & perpanjangan (F-19, D-98)', function (): void {
+    /** Langganan Pro Aktif, periode 30 hari dengan 10 hari tersisa (selisih prorata 10/30). */
+    function AktifkanPaketProUntukUji(object $tes): void
+    {
+        Langganan::query()->where('IdTenant', $tes->tenant->Id)->sole()->update([
             'Status' => StatusLangganan::Aktif,
+            'SiklusTagihan' => 'Bulanan',
             'PeriodeMulai' => now()->subDays(20),
             'PeriodeSelesai' => now()->addDays(10),
         ]);
+    }
 
-        BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
-            ->post('/kelola/langganan/tagihan', ['KodePaket' => 'BISNIS', 'Siklus' => 'Bulanan'])
-            ->assertSessionHasErrors('KodePaket');
+    it('saat Aktif, paket yang sama = perpanjangan dengan jatuh tempo di akhir periode', function (): void {
+        AktifkanPaketProUntukUji($this);
 
         $tagihan = BuatTagihanUji($this, $this->pemilik, $this->tenant);
         expect($tagihan->Jenis)->toBe(JenisTagihanLangganan::Perpanjangan)
             ->and($tagihan->JatuhTempoPada->equalTo(now()->addDays(10)))->toBeTrue();
+    });
+
+    it('D-98: Pro ke Bisnis saat Aktif menerbitkan tagihan naik paket berisi selisih prorata; paket belum berganti sebelum lunas', function (): void {
+        AktifkanPaketProUntukUji($this);
+        $halaman = BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->get('/kelola/langganan')->assertOk();
+        $pilihan = collect($halaman->viewData('page')['props']['PilihanPaket'])->keyBy('Kode');
+        $selisih = (int) $pilihan['BISNIS']['HargaBulanan'] - (int) $pilihan['PRO']['HargaBulanan'];
+        $diharapkan = (int) round($selisih * 10 / 30);
+
+        // Pratinjau di pilihan paket = angka yang nanti ditagihkan.
+        expect($pilihan['BISNIS']['BisaDipilih'])->toBeTrue()
+            ->and((int) $pilihan['BISNIS']['NaikPaket']['Subtotal'])->toBe($diharapkan)
+            ->and($pilihan['BISNIS']['NaikPaket']['HariDitagih'])->toBe(10)
+            ->and($pilihan['BISNIS']['NaikPaket']['HariPeriode'])->toBe(30)
+            ->and($pilihan['PRO']['NaikPaket'])->toBeNull()
+            ->and($pilihan['STARTER']['BisaDipilih'])->toBeFalse();
+
+        $tagihan = BuatTagihanUji($this, $this->pemilik, $this->tenant, 'BISNIS');
+
+        expect($tagihan->Jenis)->toBe(JenisTagihanLangganan::NaikPaket)
+            ->and($tagihan->Paket->Kode)->toBe('BISNIS')
+            ->and($tagihan->PaketAsal()->first()?->Kode)->toBe('PRO')
+            ->and((int) $tagihan->Subtotal)->toBe($diharapkan)
+            ->and($tagihan->HariDitagih)->toBe(10)
+            ->and($tagihan->HariPeriode)->toBe(30)
+            ->and($tagihan->Diskon)->toBe('0.00')
+            ->and($tagihan->JatuhTempoPada->lessThanOrEqualTo(now()->addDays(10)))->toBeTrue();
+        expect(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->Paket->Kode)->toBe('PRO');
+        expect(LogAudit::query()->where('Peristiwa', 'langganan.tagihan-naik-paket')->count())->toBe(1);
+    });
+
+    it('D-98: turun paket, paket sama dengan siklus beda kupon, dan langganan tidak aktif ditolak dengan alasan jelas', function (): void {
+        AktifkanPaketProUntukUji($this);
+        $masuk = fn () => BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant);
+
+        $masuk()->post('/kelola/langganan/tagihan', ['KodePaket' => 'STARTER', 'Siklus' => 'Bulanan'])->assertSessionHasErrors('KodePaket');
+        expect(TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $this->tenant->Id)->count())->toBe(0);
+
+        $kupon = BuatKuponUji('NAIK10', 'Persen', '10', 1);
+        $masuk()->post('/kelola/langganan/tagihan', ['KodePaket' => 'BISNIS', 'Siklus' => 'Bulanan', 'KodeKupon' => $kupon->Kode])->assertSessionHasErrors('KodeKupon');
+        expect(TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $this->tenant->Id)->count())->toBe(0);
+
+        // Tertunggak: bukan naik paket (jalur aktivasi biasa), jadi tidak diblokir oleh aturan naik paket.
+        Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->update(['Status' => StatusLangganan::Tertunggak]);
+        expect(BuatTagihanUji($this, $this->pemilik, $this->tenant, 'BISNIS')->Jenis)->toBe(JenisTagihanLangganan::Aktivasi);
     });
 
     it('langganan Berhenti tidak bisa membuat tagihan', function (): void {

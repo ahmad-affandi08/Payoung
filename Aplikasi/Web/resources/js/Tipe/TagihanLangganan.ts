@@ -18,7 +18,7 @@ export type RincianAddonTagihan = {
 export type TagihanLangganan = {
     Uuid: string;
     Nomor: string;
-    Jenis: 'Aktivasi' | 'Perpanjangan' | 'Addon';
+    Jenis: 'Aktivasi' | 'Perpanjangan' | 'Addon' | 'NaikPaket';
     LabelJenis: string;
     Status: StatusTagihanLangganan;
     LabelStatus: string;
@@ -30,6 +30,8 @@ export type TagihanLangganan = {
     /** Subtotal paket saja (Subtotal − add-on), dihitung server. */
     SubtotalPaket: string;
     RincianAddon: RincianAddonTagihan[];
+    /** D-98: rincian naik paket (null untuk jenis lain). */
+    NaikPaket: { NamaPaketAsal: string | null; HariDitagih: number | null; HariPeriode: number | null } | null;
     KodeKupon: string | null;
     Diskon: string;
     TarifPpn: string;

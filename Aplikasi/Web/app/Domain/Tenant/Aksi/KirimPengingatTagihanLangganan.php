@@ -65,8 +65,8 @@ final class KirimPengingatTagihanLangganan
                 $tagihanTerbuka = TagihanLangganan::query()
                     ->with('Paket')
                     ->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())
-                    // D-49: tagihan add-on berumur pendek dan dibatalkan otomatis bila tidak dibayar; tanpa pengingat.
-                    ->where('Jenis', '!=', JenisTagihanLangganan::Addon->value)
+                    // D-49/D-98: tagihan add-on & naik paket berumur pendek dan dibatalkan otomatis bila tidak dibayar; tanpa pengingat.
+                    ->whereNotIn('Jenis', [JenisTagihanLangganan::Addon->value, JenisTagihanLangganan::NaikPaket->value])
                     ->orderBy('Id')
                     ->get();
 

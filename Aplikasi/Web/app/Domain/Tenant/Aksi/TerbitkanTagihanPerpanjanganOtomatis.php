@@ -94,7 +94,7 @@ final class TerbitkanTagihanPerpanjanganOtomatis
             $awalJendela = CarbonImmutable::instance($langganan->PeriodeSelesai)->setTimezone('Asia/Jakarta')
                 ->subDays(self::HARI_SEBELUM_PERIODE_SELESAI)->startOfDay();
             $sudahAda = TagihanLangganan::query()
-                ->where('Jenis', '!=', JenisTagihanLangganan::Addon->value)
+                ->whereNotIn('Jenis', [JenisTagihanLangganan::Addon->value, JenisTagihanLangganan::NaikPaket->value])
                 ->where(fn ($kueri) => $kueri->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())->orWhere('TerbitPada', '>=', $awalJendela))
                 ->exists();
 
@@ -108,8 +108,8 @@ final class TerbitkanTagihanPerpanjanganOtomatis
                 return 0;
             }
 
-            // D-49: tagihan add-on tidak dihitung sebagai tagihan paket; yang belum dibayar dibatalkan agar perpanjangan terbit.
-            $this->penerbit->BatalkanTagihanAddonTerbuka($langganan->IdTenant, 'Dibatalkan otomatis karena tagihan perpanjangan terbit.');
+            // D-49/D-98: tagihan add-on & naik paket tidak dihitung sebagai tagihan paket; yang belum dibayar dibatalkan agar perpanjangan terbit.
+            $this->penerbit->BatalkanTagihanTengahPeriodeTerbuka($langganan->IdTenant, 'Dibatalkan otomatis karena tagihan perpanjangan terbit.');
 
             $this->penerbit->Terbitkan(
                 $langganan,

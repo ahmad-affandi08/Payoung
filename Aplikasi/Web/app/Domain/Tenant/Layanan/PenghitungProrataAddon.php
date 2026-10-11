@@ -44,6 +44,36 @@ final class PenghitungProrataAddon
         ];
     }
 
+    /**
+     * Prorata untuk jumlah penuh satu periode yang sudah diketahui (D-98: selisih harga naik paket). Aturan hari dan
+     * pembulatan sama dengan `Hitung()`.
+     *
+     * @return array{Subtotal: Uang, Prorata: bool, HariDitagih: int, HariPeriode: int}
+     */
+    public function HitungDariJumlahPenuh(Uang $penuh, CarbonInterface $sekarang, CarbonInterface $periodeMulai, CarbonInterface $periodeSelesai): array
+    {
+        if ($penuh->BernilaiNegatif()) {
+            throw new InvalidArgumentException('Jumlah penuh tidak boleh negatif.');
+        }
+
+        $hariPeriode = max(1, self::HariKeAtas($periodeMulai, $periodeSelesai));
+        $hariSisa = $periodeSelesai->greaterThan($sekarang) ? self::HariKeAtas($sekarang, $periodeSelesai) : 0;
+        $hariDitagih = max(1, min($hariPeriode, $hariSisa));
+        $prorata = $hariDitagih < $hariPeriode;
+        $nilai = BigRational::of($penuh->KeString());
+
+        if ($prorata) {
+            $nilai = $nilai->multipliedBy(BigRational::ofFraction($hariDitagih, $hariPeriode));
+        }
+
+        return [
+            'Subtotal' => Uang::Dari(BigDecimal::of($nilai->toScale(0, RoundingMode::HalfUp))),
+            'Prorata' => $prorata,
+            'HariDitagih' => $hariDitagih,
+            'HariPeriode' => $hariPeriode,
+        ];
+    }
+
     /** Selisih hari utuh, dibulatkan ke atas (aritmetika bilangan bulat; detik pecahan diabaikan). */
     private static function HariKeAtas(CarbonInterface $dari, CarbonInterface $sampai): int
     {

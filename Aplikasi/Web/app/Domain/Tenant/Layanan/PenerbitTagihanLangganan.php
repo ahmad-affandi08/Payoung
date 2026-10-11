@@ -47,6 +47,7 @@ final class PenerbitTagihanLangganan
         private readonly PencatatAudit $audit,
         private readonly PenghitungProrataAddon $prorataAddon,
         private readonly KelayakanBeliAddon $kelayakanAddon,
+        private readonly PenghitungNaikPaket $naikPaket,
     ) {}
 
     /**
@@ -257,17 +258,102 @@ final class PenerbitTagihanLangganan
     }
 
     /**
-     * D-49: tagihan add-on yang belum dibayar tidak boleh menghalangi tagihan paket (BR-P08.4: satu tagihan terbuka).
-     * Tagihan add-on terbuka tanpa pembayaran yang sedang diproses dibatalkan, lalu pemilik membelinya lagi bila perlu.
-     *
-     * @return int jumlah tagihan add-on yang dibatalkan
+     * D-98: naik paket di tengah periode. Menagih selisih harga paket baru dan paket berjalan (siklus yang sama)
+     * secara prorata sampai akhir periode berjalan; paket berganti saat tagihan lunas (`PelunasTagihanLangganan`).
+     * Harga paket berjalan memakai jangkar grandfathering tenant (BR-P04.1), harga paket baru = harga berlaku hari ini.
+     * Kupon tidak berlaku. Pemanggil mengunci baris `Langganan` di dalam transaksi dan memastikan tidak ada tagihan
+     * terbuka lain.
      */
-    public function BatalkanTagihanAddonTerbuka(int $idTenant, string $alasan): int
+    public function TerbitkanNaikPaket(Langganan $langganan, Paket $paketBaru, ?int $idPengguna): TagihanLangganan
+    {
+        $idTenant = $langganan->IdTenant;
+        $sekarang = CarbonImmutable::now();
+        $paketLama = Paket::query()->whereKey($langganan->IdPaket)->first();
+
+        if ($paketLama === null) {
+            throw new PelanggaranAturanBisnis('NaikPaketTidakBisa', 'Naik paket hanya bisa saat langganan berbayar masih aktif. Perpanjang atau aktifkan langganan Anda dulu.', 'KodePaket');
+        }
+
+        if (! $this->gerbang->CekAktif()) {
+            throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
+        }
+
+        $hitung = $this->naikPaket->Hitung($langganan, $paketLama, $paketBaru, $sekarang, $this->tagihanTenant->AmbilMulaiLanggananPaket($paketLama->Id));
+        $hargaBaru = $hitung['HargaBaru'];
+        $siklus = $hitung['Siklus'];
+        $tarif = null;
+
+        if ((bool) config('tagihan.PlatformPkp')) {
+            $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
+                ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.');
+        }
+
+        $rincian = $this->kalkulator->Hitung(
+            subtotal: $hitung['Subtotal'],
+            jumlahBulan: 1,
+            tarifPersen: $tarif?->Tarif,
+            pengaliDppPembilang: $tarif->PengaliDppPembilang ?? 1,
+            pengaliDppPenyebut: $tarif->PengaliDppPenyebut ?? 1,
+        );
+
+        if ($rincian->total->BernilaiNol()) {
+            throw new PelanggaranAturanBisnis('TotalNol', 'Tagihan naik paket ini bernilai Rp 0 dan belum bisa diproses otomatis. Hubungi tim kami.');
+        }
+
+        $akhirPeriode = CarbonImmutable::instance($langganan->PeriodeSelesai
+            ?? throw new PelanggaranAturanBisnis('NaikPaketTidakBisa', 'Periode langganan belum tercatat. Hubungi tim kami.', 'KodePaket'));
+        $jatuhTempo = $sekarang->addDays((int) config('tagihan.HariJatuhTempo'));
+        $jatuhTempo = $jatuhTempo->greaterThan($akhirPeriode) ? $akhirPeriode : $jatuhTempo;
+        $tagihan = TagihanLangganan::query()->create([
+            'IdTenant' => $idTenant,
+            'Nomor' => $this->penomor->Ambil($sekarang),
+            'Jenis' => JenisTagihanLangganan::NaikPaket,
+            'Status' => StatusTagihanLangganan::Terbit,
+            'IdPaket' => $paketBaru->Id,
+            'IdHargaPaket' => $hargaBaru->Id,
+            'IdPaketAsal' => $paketLama->Id,
+            'Siklus' => $siklus,
+            'JumlahBulan' => PenghitungPeriodeLangganan::JumlahBulan($siklus),
+            'HariDitagih' => $hitung['HariDitagih'],
+            'HariPeriode' => $hitung['HariPeriode'],
+            'Subtotal' => $rincian->subtotal->KeString(),
+            'Diskon' => '0.00',
+            'IdTarifPajak' => $tarif?->Id,
+            'TarifPpn' => $tarif->Tarif ?? '0',
+            'PengaliDppPembilang' => $tarif->PengaliDppPembilang ?? 1,
+            'PengaliDppPenyebut' => $tarif->PengaliDppPenyebut ?? 1,
+            'DasarPengenaanPajak' => $rincian->dasarPengenaanPajak->KeString(),
+            'JumlahPpn' => $rincian->jumlahPpn->KeString(),
+            'Total' => $rincian->total->KeString(),
+            'TerbitPada' => $sekarang,
+            'JatuhTempoPada' => $jatuhTempo,
+            'IdPenggunaPembuat' => $idPengguna,
+            // Pemilik yang menaikkan paketnya sendiri sudah tahu tagihannya terbit; tagihan tengah periode tanpa pengingat.
+            'PengingatTerakhir' => $idPengguna === null ? null : TahapPengingatTagihan::Tentukan($sekarang, $jatuhTempo)?->value,
+        ]);
+
+        $this->audit->Catat('langganan.tagihan-naik-paket', $tagihan, nilaiBaru: [
+            'Nomor' => $tagihan->Nomor, 'PaketAsal' => $paketLama->Kode, 'PaketBaru' => $paketBaru->Kode, 'Siklus' => $siklus->value,
+            'Selisih' => $hitung['Selisih']->KeString(), 'HariDitagih' => $hitung['HariDitagih'], 'HariPeriode' => $hitung['HariPeriode'],
+            'Total' => $rincian->total->KeString(),
+        ], idTenant: $idTenant);
+
+        return $tagihan;
+    }
+
+    /**
+     * D-49/D-98: tagihan tengah periode (add-on, naik paket) yang belum dibayar tidak boleh menghalangi tagihan paket
+     * (BR-P08.4: satu tagihan terbuka). Yang terbuka tanpa pembayaran yang sedang diproses dibatalkan, lalu pemilik
+     * membelinya lagi bila perlu.
+     *
+     * @return int jumlah tagihan yang dibatalkan
+     */
+    public function BatalkanTagihanTengahPeriodeTerbuka(int $idTenant, string $alasan): int
     {
         $jumlah = 0;
         $daftar = TagihanLangganan::query()
             ->where('IdTenant', $idTenant)
-            ->where('Jenis', JenisTagihanLangganan::Addon->value)
+            ->whereIn('Jenis', [JenisTagihanLangganan::Addon->value, JenisTagihanLangganan::NaikPaket->value])
             ->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())
             ->lockForUpdate()
             ->get();

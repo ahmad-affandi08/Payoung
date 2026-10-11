@@ -80,6 +80,21 @@ function FiturAddonAktifUji(object $tenant, string $kunci = 'kanal.toko-online')
 }
 
 describe('Penghitung prorata (D-49)', function (): void {
+    it('D-98: prorata untuk jumlah penuh (selisih naik paket) memakai aturan hari yang sama', function (): void {
+        $hitung = new PenghitungProrataAddon;
+        $mulai = Carbon::parse('2026-09-01 10:00:00');
+        $selesai = Carbon::parse('2026-10-01 10:00:00');
+
+        $awal = $hitung->HitungDariJumlahPenuh(Uang::Dari('200000'), $mulai, $mulai, $selesai);
+        expect($awal['Prorata'])->toBeFalse()->and($awal['Subtotal']->KeString())->toBe('200000.00')->and($awal['HariDitagih'])->toBe(30);
+
+        $tengah = $hitung->HitungDariJumlahPenuh(Uang::Dari('200000'), Carbon::parse('2026-09-21 10:00:00'), $mulai, $selesai);
+        expect($tengah['HariDitagih'])->toBe(10)->and($tengah['HariPeriode'])->toBe(30)->and($tengah['Subtotal']->KeString())->toBe('66667.00');
+
+        $akhir = $hitung->HitungDariJumlahPenuh(Uang::Dari('200000'), Carbon::parse('2026-10-01 09:59:00'), $mulai, $selesai);
+        expect($akhir['HariDitagih'])->toBe(1)->and($akhir['Subtotal']->KeString())->toBe('6667.00');
+    });
+
     it('harga penuh di awal periode; prorata hari tersisa dibulatkan ke atas; minimal sehari; tahunan = 12 bulan', function (): void {
         $hitung = new PenghitungProrataAddon;
         $mulai = Carbon::parse('2026-09-01 10:00:00');

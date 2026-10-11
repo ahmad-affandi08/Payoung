@@ -21,6 +21,7 @@ const tagihan: TagihanLangganan = {
     Subtotal: '200000.00',
     SubtotalPaket: '200000.00',
     RincianAddon: [],
+    NaikPaket: null,
     KodeKupon: null,
     Diskon: '0.00',
     TarifPpn: '12.000000',
@@ -40,7 +41,7 @@ const tagihan: TagihanLangganan = {
 function RenderTagihan(tambahan: Partial<PropsRender> = {}) {
     return render(
         <HalamanTagihanLangganan
-            Tagihan={tagihan}
+            Tagihan={tambahan.Tagihan ?? tagihan}
             Pembayaran={[]}
             BolehBayarOnline={tambahan.BolehBayarOnline ?? false}
             BolehBatalkan={tambahan.BolehBatalkan ?? true}
@@ -51,6 +52,7 @@ function RenderTagihan(tambahan: Partial<PropsRender> = {}) {
 type PropsRender = {
     BolehBayarOnline: boolean;
     BolehBatalkan: boolean;
+    Tagihan: TagihanLangganan;
 };
 
 describe('Langganan/Tagihan (P-08): bayar online & konfirmasi batal', () => {
@@ -75,6 +77,23 @@ describe('Langganan/Tagihan (P-08): bayar online & konfirmasi batal', () => {
             {},
             expect.anything(),
         );
+    });
+
+    it('D-98: tagihan naik paket menjelaskan paket asal, paket baru, dan prorata harinya', () => {
+        RenderTagihan({
+            Tagihan: {
+                ...tagihan,
+                Jenis: 'NaikPaket',
+                LabelJenis: 'Naik paket',
+                NamaPaket: 'Bisnis',
+                SubtotalPaket: '66667.00',
+                Subtotal: '66667.00',
+                NaikPaket: { NamaPaketAsal: 'Pro', HariDitagih: 10, HariPeriode: 30 },
+            },
+        });
+
+        expect(screen.getByText(/Naik paket Pro ke Bisnis/)).toBeTruthy();
+        expect(screen.getByText(/prorata 10 dari 30 hari periode berjalan/)).toBeTruthy();
     });
 
     it('tanpa izin batalkan: tidak ada tombol batalkan', () => {

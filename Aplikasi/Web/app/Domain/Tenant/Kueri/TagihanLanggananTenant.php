@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Kueri;
 
+use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Layanan\PenghitungNaikPaket;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\Paket;
 use App\Domain\Tenant\Model\PembayaranLangganan;
@@ -26,6 +28,7 @@ final class TagihanLanggananTenant
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly HargaPaketBerlaku $hargaBerlaku,
+        private readonly PenghitungNaikPaket $naikPaket,
     ) {}
 
     /**
@@ -74,6 +77,8 @@ final class TagihanLanggananTenant
             ->get();
 
         $hasil = [];
+        $aktif = $langganan !== null && $langganan->Status === StatusLangganan::Aktif;
+        $paketAsal = $aktif ? $paket->firstWhere('Id', $langganan->IdPaket) : null;
 
         foreach ($paket as $item) {
             $paketBerjalan = $berjalan && $item->Id === $langganan?->IdPaket;
@@ -83,6 +88,24 @@ final class TagihanLanggananTenant
                 continue;
             }
 
+            // D-98: saat langganan Aktif, paket yang lebih mahal bisa dipilih (naik paket, selisih prorata); paket yang
+            // lebih murah tidak (turun paket berlaku periode berikutnya, lewat tim kami).
+            $naik = null;
+
+            if ($aktif && ! $paketBerjalan && $paketAsal !== null && $langganan !== null) {
+                try {
+                    $hitung = $this->naikPaket->Hitung($langganan, $paketAsal, $item, $sekarang, $this->AmbilMulaiLanggananPaket($paketAsal->Id));
+                    $naik = [
+                        'Selisih' => $hitung['Selisih']->KeString(),
+                        'Subtotal' => $hitung['Subtotal']->KeString(),
+                        'HariDitagih' => $hitung['HariDitagih'],
+                        'HariPeriode' => $hitung['HariPeriode'],
+                    ];
+                } catch (PelanggaranAturanBisnis) {
+                    $naik = null;
+                }
+            }
+
             $hasil[] = [
                 'Kode' => $item->Kode,
                 'Nama' => $item->Nama,
@@ -90,8 +113,8 @@ final class TagihanLanggananTenant
                 'HargaBulanan' => $harga->AmbilHargaBulanan()->KeString(),
                 'HargaTahunan' => $harga->AmbilHargaTahunan()->KeString(),
                 'PaketBerjalan' => $paketBerjalan,
-                // Ganti paket saat Aktif butuh proration (F-19), belum tersedia di Fase 0.
-                'BisaDipilih' => $paketBerjalan || $langganan?->Status !== StatusLangganan::Aktif,
+                'NaikPaket' => $naik,
+                'BisaDipilih' => $paketBerjalan || ! $aktif || $naik !== null,
             ];
         }
 
@@ -167,6 +190,12 @@ final class TagihanLanggananTenant
                 'Subtotal' => $baris->Subtotal,
             ])->all()),
             'SubtotalPaket' => $subtotalPaket->KeString(),
+            // D-98: rincian naik paket (kosong untuk jenis lain).
+            'NaikPaket' => $tagihan->Jenis === JenisTagihanLangganan::NaikPaket ? [
+                'NamaPaketAsal' => $tagihan->PaketAsal()->first()?->Nama,
+                'HariDitagih' => $tagihan->HariDitagih,
+                'HariPeriode' => $tagihan->HariPeriode,
+            ] : null,
             'Uuid' => $tagihan->Uuid,
             'Nomor' => $tagihan->Nomor,
             'Jenis' => $tagihan->Jenis->value,

@@ -61,8 +61,10 @@ final class LaporanLanggananPlatform
             ->get(['Id', 'IdTenant', 'IdPaket', 'Jenis', 'JumlahBulan', 'Subtotal', 'Diskon', 'PeriodeMulai', 'PeriodeSelesai', 'DibayarPada'])
             ->all());
 
-        // D-49: MRR/ARR/churn dihitung dari tagihan paket; tagihan add-on hanya masuk ke pendapatan (grup "Add-on").
-        $lunasPaket = array_values(array_filter($lunas, fn (TagihanLangganan $t): bool => $t->Jenis !== JenisTagihanLangganan::Addon));
+        // D-49/D-98: MRR/ARR/churn dihitung dari tagihan paket (aktivasi, perpanjangan); tagihan add-on hanya masuk ke
+        // pendapatan (grup "Add-on"), tagihan naik paket (selisih prorata) masuk pendapatan paket barunya. MRR paket baru
+        // terbaca penuh sejak perpanjangan berikutnya.
+        $lunasPaket = array_values(array_filter($lunas, fn (TagihanLangganan $t): bool => ! $t->Jenis->CekTengahPeriode()));
         $mrrAkhir = $this->HitungMrrPerTenant($lunasPaket, $akhir);
         $mrrAwal = $this->HitungMrrPerTenant($lunasPaket, $awal);
 

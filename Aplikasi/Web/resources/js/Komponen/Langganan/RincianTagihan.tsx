@@ -62,7 +62,23 @@ export default function RincianTagihan({ tagihan, namaTenant }: PropsRincianTagi
                                 scope="row"
                                 className="h-auto px-4 py-2 font-normal whitespace-normal text-inherit"
                             >
-                                Paket {tagihan.NamaPaket} | {tagihan.Siklus === 'Tahunan' ? '12 bulan' : '1 bulan'}
+                                {tagihan.Jenis === 'NaikPaket' ? (
+                                    <>
+                                        Naik paket {tagihan.NaikPaket?.NamaPaketAsal ?? ''} ke {tagihan.NamaPaket}
+                                        <span className="block text-keterangan text-teks-sekunder">
+                                            Selisih harga {tagihan.Siklus === 'Tahunan' ? 'tahunan' : 'bulanan'}
+                                            {tagihan.NaikPaket?.HariDitagih != null &&
+                                            tagihan.NaikPaket.HariPeriode != null
+                                                ? `, prorata ${tagihan.NaikPaket.HariDitagih} dari ${tagihan.NaikPaket.HariPeriode} hari periode berjalan`
+                                                : ''}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        Paket {tagihan.NamaPaket} |{' '}
+                                        {tagihan.Siklus === 'Tahunan' ? '12 bulan' : '1 bulan'}
+                                    </>
+                                )}
                             </TableHead>
                             <TableCell className="px-4 py-2 text-right tabular-nums">
                                 {FormatRupiah(tagihan.SubtotalPaket)}

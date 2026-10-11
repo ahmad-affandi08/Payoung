@@ -226,6 +226,46 @@ describe('BR-P08.11 rekonsiliasi pembayaran gerbang tersangkut', function (): vo
             ->and($panggilan)->toBeInt();
     });
 
+    it('D-98: naik paket lunas lewat DOKU mengganti paket langganan tanpa menggeser periode; putaran ulang tidak mengubah apa pun', function (): void {
+        /** @var array{Tenant: Tenant, Pengguna: Pengguna} $data */
+        $data = BantuanTagihan::DaftarTenant();
+        $langganan = Langganan::query()->where('IdTenant', $data['Tenant']->Id)->sole();
+        $periodeSelesai = now()->addDays(10)->startOfSecond();
+        $langganan->update(['Status' => StatusLangganan::Aktif, 'SiklusTagihan' => 'Bulanan', 'PeriodeMulai' => now()->subDays(20), 'PeriodeSelesai' => $periodeSelesai]);
+
+        BantuanTagihan::Masuk($this, $data['Pengguna'], $data['Tenant'])
+            ->post(BantuanTagihan::Url('/kelola/langganan/tagihan'), ['KodePaket' => 'BISNIS', 'Siklus' => 'Bulanan'])
+            ->assertSessionHasNoErrors();
+        $this->flushSession();
+        $tagihan = TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $data['Tenant']->Id)->latest('Id')->firstOrFail();
+        expect($tagihan->Jenis->value)->toBe('NaikPaket');
+
+        BantuanTagihan::Masuk($this, $data['Pengguna'], $data['Tenant'])
+            ->postJson(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}/bayar-online"))
+            ->assertOk();
+        $this->flushSession();
+        $pembayaran = PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->latest('Id')->firstOrFail();
+
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'SUCCESS', $tagihan->Total));
+        Carbon::setTestNow(now()->addMinutes(16));
+
+        $this->artisan('tagihan:rekonsiliasi-gerbang')->assertSuccessful();
+
+        $sesudah = Langganan::query()->where('IdTenant', $data['Tenant']->Id)->sole();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and($sesudah->Paket->Kode)->toBe('BISNIS')
+            ->and($sesudah->Status)->toBe(StatusLangganan::Aktif)
+            ->and($sesudah->SiklusTagihan->value)->toBe('Bulanan')
+            ->and($sesudah->PeriodeSelesai?->toDateTimeString())->toBe($periodeSelesai->toDateTimeString())
+            ->and($tagihan->PeriodeSelesai?->toDateTimeString())->toBe($periodeSelesai->toDateTimeString())
+            ->and($tagihan->MulaiLanggananPaket?->toDateString())->toBe(now()->toDateString());
+
+        // Putaran ulang: pembayaran sudah selesai, tidak ditanyakan lagi dan paket tidak berubah.
+        expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Diperiksa'])->toBe(0)
+            ->and(Langganan::query()->where('IdTenant', $data['Tenant']->Id)->sole()->Paket->Kode)->toBe('BISNIS');
+    });
+
     it('gerbang billing dinonaktifkan: tidak ada yang ditanyakan', function (): void {
         SiapkanPembayaranTersangkut($this);
         config()->set('integrasi.GerbangBilling', null);

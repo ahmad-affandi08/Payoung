@@ -20,7 +20,8 @@ use App\Domain\Tenant\Model\TagihanLangganan;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Owner membuat tagihan langganan untuk upgrade dari Trial/Gratis, aktivasi ulang, atau perpanjangan.
+ * Owner membuat tagihan langganan untuk upgrade dari Trial/Gratis, aktivasi ulang, perpanjangan, atau naik paket di
+ * tengah periode (D-98; turun paket berlaku periode berikutnya dan belum tersedia mandiri).
  * Pembayaran langganan platform diproses melalui gerbang pembayaran online.
  */
 final class BuatTagihanLangganan
@@ -47,7 +48,7 @@ final class BuatTagihanLangganan
             }
 
             // D-49: tagihan add-on yang belum dibayar tidak boleh menghalangi tagihan paket.
-            $this->penerbit->BatalkanTagihanAddonTerbuka($idTenant, 'Dibatalkan otomatis karena tagihan paket dibuat.');
+            $this->penerbit->BatalkanTagihanTengahPeriodeTerbuka($idTenant, 'Dibatalkan otomatis karena tagihan paket dibuat.');
             $terbuka = TagihanLangganan::query()->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())->first();
 
             if ($terbuka !== null) {
@@ -58,6 +59,16 @@ final class BuatTagihanLangganan
             }
 
             $paket = $this->TentukanPaket($langganan, $kodePaket);
+
+            // D-98: ganti paket saat langganan Aktif = naik paket, selisih harga prorata sampai akhir periode.
+            if ($langganan->Status === StatusLangganan::Aktif && $paket->Id !== $langganan->IdPaket) {
+                if ($kodeKupon !== null && trim($kodeKupon) !== '') {
+                    throw new PelanggaranAturanBisnis('KuponTidakBerlaku', 'Kupon belum bisa dipakai untuk naik paket. Kosongkan kode kupon, atau pakai kupon saat perpanjangan.', 'KodeKupon');
+                }
+
+                return $this->penerbit->TerbitkanNaikPaket($langganan, $paket, $idPengguna);
+            }
+
             $jenis = $this->TentukanJenis($langganan, $paket);
             $kupon = $kodeKupon === null || trim($kodeKupon) === '' ? null : $this->CariKupon($idTenant, strtoupper(trim($kodeKupon)), $paket);
 
@@ -89,14 +100,6 @@ final class BuatTagihanLangganan
     {
         if ($this->CekBerjalan($langganan) && $paket->Id === $langganan->IdPaket) {
             return JenisTagihanLangganan::Perpanjangan;
-        }
-
-        if ($langganan->Status === StatusLangganan::Aktif) {
-            throw new PelanggaranAturanBisnis(
-                'GantiPaketBelumTersedia',
-                'Ganti paket saat langganan masih aktif belum tersedia. Perpanjang paket Anda sekarang, atau hubungi tim kami untuk pindah paket.',
-                'KodePaket',
-            );
         }
 
         return JenisTagihanLangganan::Aktivasi;

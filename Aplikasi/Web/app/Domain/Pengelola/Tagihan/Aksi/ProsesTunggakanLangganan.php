@@ -53,7 +53,7 @@ final class ProsesTunggakanLangganan
     private function BatalkanTagihanAddonKedaluwarsa(CarbonImmutable $sekarang): void
     {
         $daftarId = DaftarTagihanPlatform::KueriTagihan()
-            ->where('Jenis', JenisTagihanLangganan::Addon->value)
+            ->whereIn('Jenis', [JenisTagihanLangganan::Addon->value, JenisTagihanLangganan::NaikPaket->value])
             ->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())
             ->where('JatuhTempoPada', '<=', $sekarang)
             ->orderBy('Id')
@@ -77,7 +77,7 @@ final class ProsesTunggakanLangganan
                 }
 
                 $lama = $tagihan->Status;
-                $tagihan->update(['Status' => StatusTagihanLangganan::Dibatalkan, 'DibatalkanPada' => $sekarang, 'AlasanBatal' => 'Kedaluwarsa: tagihan add-on tidak dibayar sampai jatuh tempo.']);
+                $tagihan->update(['Status' => StatusTagihanLangganan::Dibatalkan, 'DibatalkanPada' => $sekarang, 'AlasanBatal' => 'Kedaluwarsa: tagihan add-on atau naik paket tidak dibayar sampai jatuh tempo.']);
                 $this->audit->Catat(
                     'tagihan.addon-kedaluwarsa',
                     $tagihan,

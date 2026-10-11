@@ -82,6 +82,10 @@ final class PelunasTagihanLangganan
             return $this->LunasiAddon($langganan, $tagihan, $pembayaran, $diterima, $sekarang, $idVerifikatorPengelola);
         }
 
+        if ($tagihan->Jenis === JenisTagihanLangganan::NaikPaket) {
+            return $this->LunasiNaikPaket($langganan, $tagihan, $pembayaran, $diterima, $sekarang, $idVerifikatorPengelola);
+        }
+
         if ($langganan->Status !== StatusLangganan::Aktif && ! $langganan->Status->BisaBerubahKe(StatusLangganan::Aktif)) {
             throw new PelanggaranAturanBisnis('LanggananTidakBisaAktif', "Langganan berstatus {$langganan->Status->AmbilLabel()} tidak bisa diaktifkan dari tagihan.");
         }
@@ -223,6 +227,66 @@ final class PelunasTagihanLangganan
             false,
             langgananTidakBerubah: true,
         );
+    }
+
+    /**
+     * D-98: tagihan naik paket lunas → paket langganan berganti saat itu juga. Siklus dan periode langganan tidak
+     * berubah (selisih sudah ditagih prorata sampai akhir periode); perpanjangan berikutnya memakai paket baru. Hanya
+     * sah selama langganan masih Aktif di paket asal dan periodenya belum berakhir; kalau tidak, pembayaran dibiarkan
+     * `Menunggu` untuk ditinjau pengelola (jangan memberi paket mahal tanpa sisa periode yang dibayar).
+     * `MulaiLanggananPaket` = hari ini: jangkar grandfathering paket baru dimulai dari naik paket (BR-P04.1).
+     */
+    private function LunasiNaikPaket(
+        Langganan $langganan,
+        TagihanLangganan $tagihan,
+        PembayaranLangganan $pembayaran,
+        Uang $diterima,
+        CarbonImmutable $sekarang,
+        ?int $idVerifikatorPengelola,
+    ): HasilPelunasanLangganan {
+        if (
+            $langganan->Status !== StatusLangganan::Aktif
+            || $langganan->IdPaket !== $tagihan->IdPaketAsal
+            || $langganan->PeriodeSelesai === null
+            || ! $langganan->PeriodeSelesai->greaterThan($sekarang)
+        ) {
+            throw new PelanggaranAturanBisnis(
+                'NaikPaketTidakBerlaku',
+                'Tagihan naik paket tidak bisa diproses: paket atau periode langganan sudah berubah sejak tagihan terbit. Tolak pembayaran ini atau hubungi tim kami.',
+            );
+        }
+
+        $statusTagihanLama = $tagihan->Status->value;
+        $langgananLama = [
+            'Status' => $langganan->Status->value,
+            'IdPaket' => $langganan->IdPaket,
+            'SiklusTagihan' => $langganan->SiklusTagihan->value,
+            'PeriodeMulai' => $langganan->PeriodeMulai?->toIso8601ZuluString(),
+            'PeriodeSelesai' => $langganan->PeriodeSelesai->toIso8601ZuluString(),
+        ];
+        $selesai = CarbonImmutable::instance($langganan->PeriodeSelesai);
+
+        $pembayaran->update([
+            'Status' => StatusPembayaranLangganan::Diterima,
+            'IdPenggunaPengelolaVerifikator' => $idVerifikatorPengelola,
+            'DiverifikasiPada' => $sekarang,
+            'JumlahDiterima' => $diterima->KeString(),
+        ]);
+
+        $tagihan->update([
+            'Status' => StatusTagihanLangganan::Lunas,
+            'DibayarPada' => $sekarang,
+            'PeriodeMulai' => $sekarang,
+            'PeriodeSelesai' => $selesai,
+            'MulaiLanggananPaket' => $sekarang->toDateString(),
+        ]);
+
+        $langganan->update(['IdPaket' => $tagihan->IdPaket]);
+
+        // P-12 (BR-P12.1): komisi mitra perujuk juga lahir dari tagihan naik paket yang lunas.
+        $this->komisiMitra->CatatDariTagihan($tagihan);
+
+        return new HasilPelunasanLangganan(['Mulai' => $sekarang, 'Selesai' => $selesai], $langgananLama, $statusTagihanLama, false);
     }
 
     /** Memperpanjang add-on yang ditagih pada tagihan perpanjangan sampai akhir periode baru (D-49). */

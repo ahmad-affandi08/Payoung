@@ -178,6 +178,7 @@ describe('Langganan: add-on mandiri (D-49)', () => {
             JumlahBulan: 1,
             Subtotal: '18000.00',
             SubtotalPaket: '0.00',
+            NaikPaket: null,
             RincianAddon: [
                 {
                     KodeAddon: 'TOKO_ONLINE',

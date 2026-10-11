@@ -31,8 +31,11 @@ use LogicException;
  * @property StatusTagihanLangganan $Status
  * @property int $IdPaket
  * @property int $IdHargaPaket
+ * @property int|null $IdPaketAsal paket sebelum naik paket (jenis `NaikPaket`, D-98)
  * @property SiklusTagihan $Siklus
  * @property int $JumlahBulan
+ * @property int|null $HariDitagih hari yang ditagih pada jenis `NaikPaket` (prorata)
+ * @property int|null $HariPeriode hari satu periode pada jenis `NaikPaket`
  * @property string $Subtotal
  * @property int|null $IdKuponLangganan
  * @property string|null $KodeKupon
@@ -76,6 +79,9 @@ final class TagihanLangganan extends ModelDasar
     /** @var array<string, mixed> */
     protected $attributes = [
         'IdKuponLangganan' => null,
+        'IdPaketAsal' => null,
+        'HariDitagih' => null,
+        'HariPeriode' => null,
         'KodeKupon' => null,
         'Diskon' => '0.00',
         'IdTarifPajak' => null,
@@ -144,9 +150,21 @@ final class TagihanLangganan extends ModelDasar
         return $this->hasMany(TagihanLanggananAddon::class, 'IdTagihanLangganan', 'Id');
     }
 
+    /**
+     * @return BelongsTo<Paket, $this>
+     */
+    public function PaketAsal(): BelongsTo
+    {
+        return $this->belongsTo(Paket::class, 'IdPaketAsal', 'Id');
+    }
+
     /** Nama layanan yang ditagih untuk pesan ke pemilik: nama paket, atau nama add-on pada tagihan `Addon`. */
     public function AmbilNamaLayanan(): string
     {
+        if ($this->Jenis === JenisTagihanLangganan::NaikPaket) {
+            return "Naik ke paket {$this->Paket->Nama}";
+        }
+
         if ($this->Jenis !== JenisTagihanLangganan::Addon) {
             return $this->Paket->Nama;
         }
@@ -171,6 +189,8 @@ final class TagihanLangganan extends ModelDasar
             'Status' => StatusTagihanLangganan::class,
             'Siklus' => SiklusTagihan::class,
             'JumlahBulan' => 'integer',
+            'HariDitagih' => 'integer',
+            'HariPeriode' => 'integer',
             'Subtotal' => 'decimal:2',
             'Diskon' => 'decimal:2',
             'TarifPpn' => 'decimal:6',
