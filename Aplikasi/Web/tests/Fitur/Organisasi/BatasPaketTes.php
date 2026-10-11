@@ -129,7 +129,7 @@ describe('BR-02.1 / BR-P04.3: batas pengguna ditegakkan server', function (): vo
         TenantPengguna::query()->where('IdPengguna', $mantan->Id)->update(['Status' => StatusKeanggotaan::Nonaktif->value]);
         BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
 
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$mantan->Uuid}/aktifkan")->assertSessionHasErrors('Umum');
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Aktifkan', 'UuidPengguna' => $mantan->Uuid])->assertSessionHasErrors('Umum');
         expect(TenantPengguna::query()->where('IdPengguna', $mantan->Id)->value('Status'))->toBe(StatusKeanggotaan::Nonaktif);
     });
 });

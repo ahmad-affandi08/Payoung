@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Karyawan\Kueri;
 
-use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
-use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\WajahKaryawan;
 use App\Domain\Organisasi\Kueri\DaftarAnggota;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -21,36 +18,11 @@ use Illuminate\Support\Collection;
  */
 final class DaftarKaryawan
 {
-    public const KOLOM_URUT = ['Nama', 'Jabatan', 'DibuatPada'];
-
-    public const KOLOM_SARING = ['Status', 'Outlet'];
-
-    public const URUT_BAWAAN = 'Nama';
-
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly DaftarAnggota $anggota,
         private readonly PetaUuidOutlet $outlet,
     ) {}
-
-    /**
-     * @return array{Data: list<array<string, mixed>>, Meta: array{Halaman: int, PerHalaman: int, Total: int, JumlahHalaman: int}}
-     */
-    public function Ambil(DataPermintaanTabel $p, bool $lihatGaji): array
-    {
-        $status = $p->AmbilDaftar('Status', array_map(fn (StatusKaryawan $s): string => $s->value, StatusKaryawan::cases()));
-        $uuidOutlet = $p->AmbilDaftar('Outlet');
-        $idOutlet = $uuidOutlet === [] ? null : array_values($this->outlet->AmbilIdDariUuid($uuidOutlet));
-        $kueri = Karyawan::query()
-            ->when($status !== [], fn (Builder $k) => $k->whereIn('Status', $status))
-            ->when($idOutlet !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $idOutlet ?? []))
-            ->when($p->cari !== '', function (Builder $k) use ($p): void {
-                $pola = PenerapKueriTabel::PolaCari($p->cari);
-                $k->where(fn (Builder $q) => $q->where('Nama', 'like', $pola)->orWhere('Jabatan', 'like', $pola));
-            });
-
-        return PenerapKueriTabel::Terapkan($kueri, $p, ['Nama' => 'Nama', 'Jabatan' => 'Jabatan', 'DibuatPada' => 'DibuatPada'], fn (Collection $baris): array => $this->Petakan($baris, $lihatGaji));
-    }
 
     /**
      * D-101: semua karyawan tenant dalam bentuk baris daftar (untuk halaman Tim yang menggabungkan akun & karyawan).

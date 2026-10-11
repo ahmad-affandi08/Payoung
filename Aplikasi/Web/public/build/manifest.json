@@ -13,16 +13,6 @@
       "_jsx-runtime-B23tBWN-.js"
     ]
   },
-  "_AksiMassalPengguna-BAlsgplY.js": {
-    "file": "assets/AksiMassalPengguna-BAlsgplY.js",
-    "name": "AksiMassalPengguna",
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_Tombol-DXR0xsyT.js",
-      "_PilihanCari-OiS9kb-H.js"
-    ]
-  },
   "_AturanFormStokAwal-B1VLvtf6.js": {
     "file": "assets/AturanFormStokAwal-B1VLvtf6.js",
     "name": "AturanFormStokAwal",
@@ -554,19 +544,6 @@
       "_PemilihProduk-CJTfIAVT.js"
     ]
   },
-  "_FormulirKaryawan-CXyvSCQ3.js": {
-    "file": "assets/FormulirKaryawan-CXyvSCQ3.js",
-    "name": "FormulirKaryawan",
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_BidangTeks-CprBAjmq.js",
-      "_Tombol-DXR0xsyT.js",
-      "_BidangPilihan-edcMlaOP.js",
-      "_DialogFormulir-fcvosOed.js",
-      "_BidangUang-omTlwhei.js"
-    ]
-  },
   "_FormulirPelanggan-Bm_03UAl.js": {
     "file": "assets/FormulirPelanggan-Bm_03UAl.js",
     "name": "FormulirPelanggan",
@@ -1018,27 +995,6 @@
       "_card-CfPPfcfQ.js"
     ]
   },
-  "_PanelAbsenHp-CbpswcbR.js": {
-    "file": "assets/PanelAbsenHp-CbpswcbR.js",
-    "name": "PanelAbsenHp",
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_query--HFt-u_p.js",
-      "_KunciKueri-DnO2hw4p.js",
-      "_useQuery-pyTw6Ntf.js",
-      "_BidangTeks-CprBAjmq.js",
-      "_Pemberitahuan-DaMIOt0o.js",
-      "_button-CdBDerbX.js",
-      "_Tombol-DXR0xsyT.js",
-      "_FormatWaktu-bKvj24HB.js",
-      "_sheet-5BA3-XrW.js",
-      "_skeleton-34rnVOeq.js",
-      "_LabelStatus-BNc1w6KA.js",
-      "_DialogKonfirmasi-B3sDUbpX.js",
-      "_FormulirKaryawan-CXyvSCQ3.js"
-    ]
-  },
   "_PanelKesiapanAkun-CbmmPj83.js": {
     "file": "assets/PanelKesiapanAkun-CbmmPj83.js",
     "name": "PanelKesiapanAkun",
@@ -1388,15 +1344,6 @@
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_NavigasiTab-CD-Nqae7.js"
-    ]
-  },
-  "_TabPengguna-D14TcWzM.js": {
-    "file": "assets/TabPengguna-D14TcWzM.js",
-    "name": "TabPengguna",
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_TabTautan-DnwQUHmf.js"
     ]
   },
   "_TabReferensi-D1MxeJ5Y.js": {
@@ -2274,7 +2221,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-CLrm47aQ.js",
+    "file": "assets/Aplikasi-TZ2PPxT_.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -2349,9 +2296,7 @@
       "resources/js/Halaman/Kelola/Grosir/SuratJalan/Detail.tsx",
       "resources/js/Halaman/Kelola/Karyawan/Absensi.tsx",
       "resources/js/Halaman/Kelola/Karyawan/AturanKehadiran.tsx",
-      "resources/js/Halaman/Kelola/Karyawan/Buat.tsx",
       "resources/js/Halaman/Kelola/Karyawan/BuatAturanKomisi.tsx",
-      "resources/js/Halaman/Kelola/Karyawan/Daftar.tsx",
       "resources/js/Halaman/Kelola/Karyawan/DetailGaji.tsx",
       "resources/js/Halaman/Kelola/Karyawan/Gaji.tsx",
       "resources/js/Halaman/Kelola/Karyawan/Jadwal.tsx",
@@ -2443,8 +2388,6 @@
       "resources/js/Halaman/Kelola/Pengaturan/ProfilUsaha.tsx",
       "resources/js/Halaman/Kelola/Pengaturan/Webhook.tsx",
       "resources/js/Halaman/Kelola/Pengguna/Buat.tsx",
-      "resources/js/Halaman/Kelola/Pengguna/Daftar.tsx",
-      "resources/js/Halaman/Kelola/Pengguna/Tambah.tsx",
       "resources/js/Halaman/Kelola/Penjualan/Daftar.tsx",
       "resources/js/Halaman/Kelola/Penjualan/Detail.tsx",
       "resources/js/Halaman/Kelola/Penjualan/Retur.tsx",
@@ -3984,20 +3927,6 @@
       "_BilahAksiForm-CoykKHrC.js"
     ]
   },
-  "resources/js/Halaman/Kelola/Karyawan/Buat.tsx": {
-    "file": "assets/Buat-e9KKpHj_.js",
-    "name": "Buat",
-    "src": "resources/js/Halaman/Kelola/Karyawan/Buat.tsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_TataLetakAplikasi-9zW44ofK.js",
-      "_DaftarGalatServer-Cg2MkyNA.js",
-      "_KartuFormulir-CpHYw9d3.js",
-      "_FormulirKaryawan-CXyvSCQ3.js"
-    ]
-  },
   "resources/js/Halaman/Kelola/Karyawan/BuatAturanKomisi.tsx": {
     "file": "assets/BuatAturanKomisi-BPGnEmhH.js",
     "name": "BuatAturanKomisi",
@@ -4010,28 +3939,6 @@
       "_DaftarGalatServer-Cg2MkyNA.js",
       "_KartuFormulir-CpHYw9d3.js",
       "_FormulirAturanKomisi-BRMea9Ix.js"
-    ]
-  },
-  "resources/js/Halaman/Kelola/Karyawan/Daftar.tsx": {
-    "file": "assets/Daftar-C-34ctr5.js",
-    "name": "Daftar",
-    "src": "resources/js/Halaman/Kelola/Karyawan/Daftar.tsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_TataLetakAplikasi-9zW44ofK.js",
-      "_TabelData-Chrrm2Kt.js",
-      "_Pemberitahuan-DaMIOt0o.js",
-      "_button-CdBDerbX.js",
-      "_Format-D1Z2MPC0.js",
-      "_LabelStatus-BNc1w6KA.js",
-      "_Organisasi-B3yeo597.js",
-      "_AksiHalaman-Cf0yLRyX.js",
-      "_PesanHanyaLihat-Bz2R5I7G.js",
-      "_MenuAksiBaris-C1Lehqzs.js",
-      "_FormulirKaryawan-CXyvSCQ3.js",
-      "_PanelAbsenHp-CbpswcbR.js"
     ]
   },
   "resources/js/Halaman/Kelola/Karyawan/DetailGaji.tsx": {
@@ -4082,7 +3989,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Karyawan/Jadwal.tsx": {
-    "file": "assets/Jadwal-S_GAm8UP.js",
+    "file": "assets/Jadwal-lCJ291PJ.js",
     "name": "Jadwal",
     "src": "resources/js/Halaman/Kelola/Karyawan/Jadwal.tsx",
     "isDynamicEntry": true,
@@ -5853,7 +5760,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Pengguna/Buat.tsx": {
-    "file": "assets/Buat-CEW6mnw2.js",
+    "file": "assets/Buat-BvNvwecC.js",
     "name": "Buat",
     "src": "resources/js/Halaman/Kelola/Pengguna/Buat.tsx",
     "isDynamicEntry": true,
@@ -5867,56 +5774,6 @@
       "_KartuFormulir-CpHYw9d3.js",
       "_AjakanTambahBatas-JcxAM6Hx.js",
       "_FormAksesPengguna-E2NCS_1M.js"
-    ]
-  },
-  "resources/js/Halaman/Kelola/Pengguna/Daftar.tsx": {
-    "file": "assets/Daftar-BgiI4kex.js",
-    "name": "Daftar",
-    "src": "resources/js/Halaman/Kelola/Pengguna/Daftar.tsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_TataLetakAplikasi-9zW44ofK.js",
-      "_TabelData-Chrrm2Kt.js",
-      "_BagianTataLetak-Cg8MbfFz.js",
-      "_Pemberitahuan-DaMIOt0o.js",
-      "_button-CdBDerbX.js",
-      "_Tombol-DXR0xsyT.js",
-      "_FormatWaktu-bKvj24HB.js",
-      "_LabelStatus-BNc1w6KA.js",
-      "_DialogFormulir-fcvosOed.js",
-      "_Organisasi-B3yeo597.js",
-      "_AksiHalaman-Cf0yLRyX.js",
-      "_DialogKonfirmasi-B3sDUbpX.js",
-      "_MenuAksiBaris-C1Lehqzs.js",
-      "_AjakanTambahBatas-JcxAM6Hx.js",
-      "_FormPin-CbnDzKil.js",
-      "_FormAksesPengguna-E2NCS_1M.js",
-      "_TabPengguna-D14TcWzM.js",
-      "_AksiMassalPengguna-BAlsgplY.js"
-    ]
-  },
-  "resources/js/Halaman/Kelola/Pengguna/Tambah.tsx": {
-    "file": "assets/Tambah-C2RHpjMb.js",
-    "name": "Tambah",
-    "src": "resources/js/Halaman/Kelola/Pengguna/Tambah.tsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_dist-D4veJNCv.js",
-      "_TataLetakAplikasi-9zW44ofK.js",
-      "_BidangTeks-CprBAjmq.js",
-      "_Pemberitahuan-DaMIOt0o.js",
-      "_JudulHalaman-DypeVZDV.js",
-      "_Tombol-DXR0xsyT.js",
-      "_BidangPilihan-edcMlaOP.js",
-      "_Organisasi-B3yeo597.js",
-      "_KotakCentang-BG03jzWX.js",
-      "_DaftarGalatServer-Cg2MkyNA.js",
-      "_KartuFormulir-CpHYw9d3.js",
-      "_GrupCentang-BrgWu9Um.js",
-      "_AjakanTambahBatas-JcxAM6Hx.js"
     ]
   },
   "resources/js/Halaman/Kelola/Penjualan/Daftar.tsx": {
@@ -6005,7 +5862,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Peran/Daftar.tsx": {
-    "file": "assets/Daftar-B-7bx8FY.js",
+    "file": "assets/Daftar-7_9f-wuD.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/Peran/Daftar.tsx",
     "isDynamicEntry": true,
@@ -6019,7 +5876,7 @@
       "_DialogFormulir-fcvosOed.js",
       "_Organisasi-B3yeo597.js",
       "_MenuAksiBaris-C1Lehqzs.js",
-      "_TabPengguna-D14TcWzM.js",
+      "_TabTautan-DnwQUHmf.js",
       "_FormPeran-B9EYD7ZZ.js"
     ]
   },
@@ -7208,32 +7065,39 @@
     ]
   },
   "resources/js/Halaman/Kelola/Tim/Daftar.tsx": {
-    "file": "assets/Daftar-asvLg9ZU.js",
+    "file": "assets/Daftar-OtAE4Knh.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/Tim/Daftar.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
+      "_query--HFt-u_p.js",
+      "_KunciKueri-DnO2hw4p.js",
       "_TataLetakAplikasi-9zW44ofK.js",
+      "_useQuery-pyTw6Ntf.js",
       "_TabelData-Chrrm2Kt.js",
       "_BagianTataLetak-Cg8MbfFz.js",
+      "_BidangTeks-CprBAjmq.js",
       "_Pemberitahuan-DaMIOt0o.js",
       "_button-CdBDerbX.js",
+      "_Tombol-DXR0xsyT.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
+      "_sheet-5BA3-XrW.js",
+      "_skeleton-34rnVOeq.js",
+      "_PilihanCari-OiS9kb-H.js",
+      "_BidangPilihan-edcMlaOP.js",
       "_LabelStatus-BNc1w6KA.js",
       "_DialogFormulir-fcvosOed.js",
       "_Organisasi-B3yeo597.js",
       "_AksiHalaman-Cf0yLRyX.js",
       "_DialogKonfirmasi-B3sDUbpX.js",
       "_MenuAksiBaris-C1Lehqzs.js",
+      "_BidangUang-omTlwhei.js",
       "_AjakanTambahBatas-JcxAM6Hx.js",
-      "_FormulirKaryawan-CXyvSCQ3.js",
-      "_PanelAbsenHp-CbpswcbR.js",
       "_FormPin-CbnDzKil.js",
-      "_FormAksesPengguna-E2NCS_1M.js",
-      "_AksiMassalPengguna-BAlsgplY.js"
+      "_FormAksesPengguna-E2NCS_1M.js"
     ]
   },
   "resources/js/Halaman/Kelola/Tim/Tambah.tsx": {
@@ -7260,7 +7124,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Tim/TimTes.tsx": {
-    "file": "assets/TimTes-CSMwVfoy.js",
+    "file": "assets/TimTes-DgfWTxT7.js",
     "name": "TimTes",
     "src": "resources/js/Halaman/Kelola/Tim/TimTes.tsx",
     "isDynamicEntry": true,

@@ -43,16 +43,6 @@ export type AbsenHpKaryawan = {
     } | null;
 };
 
-export type PropsDaftarKaryawan = {
-    Karyawan: HasilTabel<BarisKaryawan>;
-    OpsiPengguna: OpsiUuidNama[];
-    OpsiOutlet: OpsiUuidNama[];
-    Izin: { Kelola: boolean };
-};
-
-/** Halaman penuh "Tambah karyawan" (`/kelola/karyawan/buat`). */
-export type PropsBuatKaryawan = Pick<PropsDaftarKaryawan, 'OpsiPengguna' | 'OpsiOutlet'>;
-
 export type SelJadwal = { JamMulai: string; JamSelesai: string; OutletLain: boolean } | null;
 
 export type BarisJadwal = {

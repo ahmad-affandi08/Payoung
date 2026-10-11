@@ -2,9 +2,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanAbsensi, { FormatDurasiMenit } from '@/Halaman/Kelola/Karyawan/Absensi';
-import HalamanBuatKaryawan from '@/Halaman/Kelola/Karyawan/Buat';
 import HalamanBuatAturanKomisi from '@/Halaman/Kelola/Karyawan/BuatAturanKomisi';
-import HalamanDaftarKaryawan from '@/Halaman/Kelola/Karyawan/Daftar';
 import HalamanAturanKomisi, { FormatNilaiKomisi } from '@/Halaman/Kelola/Karyawan/Komisi';
 import HalamanLaporanKomisi from '@/Halaman/Kelola/Karyawan/LaporanKomisi';
 import HalamanJadwalKerja, {
@@ -110,7 +108,7 @@ describe('Halaman karyawan (F-18)', () => {
         );
     });
 
-    it('daftar: tombol tambah & kolom gaji hanya untuk karyawan.kelola; absensi menampilkan terlambat', () => {
+    it('absensi menampilkan terlambat (daftar karyawan kini di halaman Tim, lihat TimTes)', () => {
         const baris: BarisKaryawan = {
             Uuid: '01J9KRY0000000000000000001',
             Nama: 'Rina Wulandari',
@@ -129,33 +127,6 @@ describe('Halaman karyawan (F-18)', () => {
             TautanAbsen: false,
             StatusWajah: null,
         };
-        RenderUji(
-            <HalamanDaftarKaryawan
-                Karyawan={BuatHasilTabel([baris])}
-                OpsiPengguna={[]}
-                OpsiOutlet={[Outlet]}
-                Izin={{ Kelola: true }}
-            />,
-        );
-        expect(screen.getAllByRole('link', { name: 'Tambah karyawan' })[0]?.getAttribute('href')).toBe(
-            '/kelola/karyawan/buat',
-        );
-        expect(screen.getAllByText('Rp 3.500.000').length).toBeGreaterThan(0);
-        // D-46: karyawan tanpa akun diberi tahu, bukan dibiarkan kosong.
-        expect(screen.getAllByText('Belum punya akun (absen lewat HP)').length).toBeGreaterThan(0);
-        cleanup();
-
-        RenderUji(
-            <HalamanDaftarKaryawan
-                Karyawan={BuatHasilTabel([{ ...baris, GajiPokok: null }])}
-                OpsiPengguna={[]}
-                OpsiOutlet={[Outlet]}
-                Izin={{ Kelola: false }}
-            />,
-        );
-        expect(screen.queryByRole('link', { name: 'Tambah karyawan' })).toBeNull();
-        cleanup();
-
         window.history.replaceState({}, '', '/kelola/karyawan/absensi');
         const absensi: BarisAbsensi = {
             Uuid: '01J9ABS0000000000000000001',
@@ -235,32 +206,6 @@ describe('Halaman karyawan (F-18)', () => {
             />,
         );
         expect(screen.getByText('Rp 1.250.000')).toBeTruthy();
-    });
-
-    it('halaman tambah karyawan: kirim POST ke /kelola/karyawan (isian kosong = null); Batal kembali ke daftar', () => {
-        window.history.replaceState({}, '', '/kelola/karyawan/buat');
-        RenderUji(<HalamanBuatKaryawan OpsiPengguna={[]} OpsiOutlet={[Outlet]} />);
-        fireEvent.change(screen.getByLabelText('Nama karyawan'), { target: { value: 'Rina Wulandari' } });
-        fireEvent.change(screen.getByLabelText('Jabatan (opsional)'), { target: { value: 'Barista' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan karyawan' }));
-        expect(tiruanRouter.post).toHaveBeenCalledWith(
-            '/kelola/karyawan',
-            {
-                Nama: 'Rina Wulandari',
-                Jabatan: 'Barista',
-                LevelStaf: null,
-                GajiPokok: null,
-                TarifLemburPerJam: null,
-                PotonganTerlambatPerMenit: null,
-                PotonganTidakMasukPerHari: null,
-                UuidPengguna: null,
-                UuidOutlet: null,
-            },
-            expect.anything(),
-        );
-
-        fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
-        expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/karyawan');
     });
 
     it('halaman tambah aturan komisi: kirim POST ke /kelola/karyawan/komisi; Batal kembali ke daftar aturan', () => {

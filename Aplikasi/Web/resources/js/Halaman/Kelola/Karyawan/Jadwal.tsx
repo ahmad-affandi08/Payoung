@@ -180,7 +180,7 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
 
             {Jadwal.Baris.length === 0 ? (
                 <Pemberitahuan jenis="info" judul="Belum ada karyawan di outlet ini">
-                    Tambahkan karyawan dengan outlet utama ini di menu Daftar karyawan.
+                    Tambahkan karyawan dengan outlet utama ini di menu Tim.
                 </Pemberitahuan>
             ) : (
                 <ul className="flex flex-col gap-3" aria-label="Jadwal per karyawan">

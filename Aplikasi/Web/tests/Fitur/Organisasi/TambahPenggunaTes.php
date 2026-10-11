@@ -33,11 +33,13 @@ function IsianTambahPenggunaUji(int $idTenant, array $isian = []): array
 {
     BantuanOrganisasi::AturKonteks($idTenant);
 
+    // D-101: tambah staf lewat formulir Tim; berisi email = jenis Dashboard, tanpa email = Kasir (PIN).
     return [
         'Nama' => 'Siti Kasir',
         'Peran' => BantuanOrganisasi::Peran($idTenant, PeranTenantBawaan::Kasir)->Uuid,
         'SemuaOutlet' => false,
         'Outlet' => [Outlet::query()->where('Kode', 'UTAMA')->value('Uuid')],
+        'Akses' => isset($isian['Email']) ? 'Dashboard' : 'Kasir',
         ...$isian,
     ];
 }
@@ -47,7 +49,7 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => true, 'Jabatan' => 'Barista']))
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => true, 'Jabatan' => 'Barista']))
             ->assertSessionHasNoErrors();
 
         BantuanOrganisasi::AturKonteks($tenant->Id);
@@ -61,8 +63,8 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915']))
-            ->assertRedirect(route('kelola.pengguna.daftar'))
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915']))
+            ->assertRedirect(route('kelola.tim.daftar'))
             ->assertSessionHasNoErrors();
 
         $kasir = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
@@ -85,9 +87,9 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
-        $this->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id))->assertSessionHasErrors('Pin');
-        $this->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '123456']))->assertSessionHasErrors('Pin');
-        $this->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Email' => 'siti@contoh.id']))->assertSessionHasErrors('KataSandi');
+        $this->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id))->assertSessionHasErrors('Pin');
+        $this->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '123456']))->assertSessionHasErrors('Pin');
+        $this->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Email' => 'siti@contoh.id']))->assertSessionHasErrors('KataSandi');
         expect(Pengguna::query()->where('Nama', 'Siti Kasir')->exists())->toBeFalse();
     });
 
@@ -95,7 +97,7 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, [
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, [
                 'Nama' => 'Andi Admin',
                 'Email' => 'Andi@Contoh.id',
                 'KataSandi' => 'awal12345',
@@ -125,7 +127,7 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         ['Pemilik' => $pemilikB] = BantuanOrganisasi::BuatTenant('Kopi B');
 
         BantuanOrganisasi::Masuk($this, $pemilikA, $tenantA->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenantA->Id, ['Email' => $pemilikB->Email, 'KataSandi' => 'awal12345']))
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenantA->Id, ['Email' => $pemilikB->Email, 'KataSandi' => 'awal12345']))
             ->assertSessionHasErrors('Email');
         expect(Hash::check('awal12345', $pemilikB->refresh()->KataSandi))->toBeFalse();
     });
@@ -136,13 +138,13 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         $admin = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Admin);
 
         BantuanOrganisasi::Masuk($this, $kasir, $tenant->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915']))
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915']))
             ->assertForbidden();
 
         $this->post('/keluar');
         $this->flushSession();
         BantuanOrganisasi::Masuk($this, $admin, $tenant->Id)
-            ->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, [
+            ->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, [
                 'Pin' => '482915',
                 'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Pemilik)->Uuid,
             ]))
@@ -152,22 +154,23 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
 });
 
 describe('D-46 data karyawan & pengguna saling terhubung', function (): void {
-    it('daftar pengguna menunjukkan tautan karyawan; "Catat sebagai karyawan" menautkan akun tanpa mengisi nama dua kali, sekali saja', function (): void {
+    it('daftar Tim menggabungkan akun dan karyawannya jadi satu baris; "Catat sebagai karyawan" menautkan akun tanpa mengisi nama dua kali, sekali saja', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
-        $masuk->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => false]))->assertSessionHasNoErrors();
+        $masuk->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => false]))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $siti = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
         expect(Karyawan::query()->where('IdPengguna', $siti->Id)->exists())->toBeFalse();
 
-        $anggota = fn () => collect($this->get('/kelola/pengguna')->assertOk()->inertiaProps('Anggota'))->firstWhere('Uuid', $siti->Uuid);
-        expect($anggota()['UuidKaryawan'])->toBeNull()->and($anggota()['StatusKaryawan'])->toBeNull();
+        $baris = fn () => collect($this->get('/kelola/tim')->assertOk()->inertiaProps('Tim'))->firstWhere('UuidPengguna', $siti->Uuid);
+        expect($baris()['Karyawan'])->toBeNull();
 
         $this->post("/kelola/pengguna/{$siti->Uuid}/karyawan")->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $karyawan = Karyawan::query()->where('IdPengguna', $siti->Id)->sole();
         expect($karyawan->Nama)->toBe('Siti Kasir');
-        expect($anggota()['UuidKaryawan'])->toBe($karyawan->Uuid)->and($anggota()['StatusKaryawan'])->toBe('Aktif');
+        expect($baris()['Karyawan']['Uuid'])->toBe($karyawan->Uuid)->and($baris()['Karyawan']['Status'])->toBe('Aktif')
+            ->and(collect($this->get('/kelola/tim')->inertiaProps('Tim'))->where('Nama', 'Siti Kasir'))->toHaveCount(1);
 
         $this->post("/kelola/pengguna/{$siti->Uuid}/karyawan")->assertSessionHasErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
@@ -176,7 +179,7 @@ describe('D-46 data karyawan & pengguna saling terhubung', function (): void {
 
     it('"Catat sebagai karyawan" butuh karyawan.kelola dan hanya untuk anggota tenant ini', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => false]))->assertSessionHasNoErrors();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => false]))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $siti = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
@@ -193,10 +196,10 @@ describe('D-46 data karyawan & pengguna saling terhubung', function (): void {
         $karyawan = Karyawan::query()->create(['Nama' => 'Siti Kasir', 'Jabatan' => 'Barista', 'GajiPokok' => '2500000']);
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
-        $this->get("/kelola/pengguna/buat?karyawan={$karyawan->Uuid}")->assertInertia(fn ($h) => $h->component('Kelola/Pengguna/Tambah')
+        $this->get("/kelola/tim/buat?karyawan={$karyawan->Uuid}")->assertInertia(fn ($h) => $h->component('Kelola/Tim/Tambah')
             ->where('KaryawanTertaut.Nama', 'Siti Kasir')->where('KaryawanTertaut.Jabatan', 'Barista'));
 
-        $masuk->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'UuidKaryawan' => $karyawan->Uuid]))->assertSessionHasNoErrors();
+        $masuk->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'UuidKaryawan' => $karyawan->Uuid]))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $siti = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
         expect(Karyawan::query()->count())->toBe(1)
@@ -204,8 +207,8 @@ describe('D-46 data karyawan & pengguna saling terhubung', function (): void {
             ->and($karyawan->GajiPokok)->toBe('2500000.00');
 
         // Karyawan yang sudah punya akun tidak lagi ditawari "Buatkan akun" dan tidak bisa ditautkan dua kali.
-        $this->get("/kelola/pengguna/buat?karyawan={$karyawan->Uuid}")->assertInertia(fn ($h) => $h->where('KaryawanTertaut', null));
-        $masuk->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Nama' => 'Siti Dua', 'Pin' => '482916', 'UuidKaryawan' => $karyawan->Uuid]))->assertSessionHasErrors('UuidKaryawan');
+        $this->get("/kelola/tim/buat?karyawan={$karyawan->Uuid}")->assertInertia(fn ($h) => $h->where('KaryawanTertaut', null));
+        $masuk->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Nama' => 'Siti Dua', 'Pin' => '482916', 'UuidKaryawan' => $karyawan->Uuid]))->assertSessionHasErrors('UuidKaryawan');
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect(Pengguna::query()->where('Nama', 'Siti Dua')->exists())->toBeFalse();
     });
@@ -213,11 +216,12 @@ describe('D-46 data karyawan & pengguna saling terhubung', function (): void {
     it('karyawan yang tertaut ke akun memakai nama akun, apa pun yang diketik di formulir karyawan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
-        $masuk->post('/kelola/pengguna', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => false]))->assertSessionHasNoErrors();
+        $masuk->post('/kelola/tim', IsianTambahPenggunaUji($tenant->Id, ['Pin' => '482915', 'JugaKaryawan' => true]))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $siti = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
+        $karyawan = Karyawan::query()->where('IdPengguna', $siti->Id)->sole();
 
-        $masuk->post('/kelola/karyawan', ['Nama' => 'Nama Lain Sekali', 'UuidPengguna' => $siti->Uuid])->assertSessionHasNoErrors();
+        $masuk->put("/kelola/karyawan/{$karyawan->Uuid}", ['Nama' => 'Nama Lain Sekali', 'UuidPengguna' => $siti->Uuid])->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect(Karyawan::query()->where('IdPengguna', $siti->Id)->sole()->Nama)->toBe('Siti Kasir');
     });

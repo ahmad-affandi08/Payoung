@@ -91,13 +91,14 @@ describe('Izin per peran di rute back-office (WajibIzinTenant)', function (): vo
 
         $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertInertia(fn (AssertableInertia $halaman) => $halaman->component('Kelola/TanpaIzin'));
     })->with([
-        'Admin buka pengguna' => [PeranTenantBawaan::Admin, '/kelola/pengguna', true],
+        'Admin buka tim' => [PeranTenantBawaan::Admin, '/kelola/tim', true],
         'Admin buka log audit' => [PeranTenantBawaan::Admin, '/kelola/log-audit', true],
         'Manajer buka outlet' => [PeranTenantBawaan::ManajerOutlet, '/kelola/outlet', true],
-        'Manajer buka pengguna' => [PeranTenantBawaan::ManajerOutlet, '/kelola/pengguna', true],
+        'Manajer buka tim' => [PeranTenantBawaan::ManajerOutlet, '/kelola/tim', true],
         'Manajer buka log audit' => [PeranTenantBawaan::ManajerOutlet, '/kelola/log-audit', false],
         'Akuntan buka outlet' => [PeranTenantBawaan::Akuntan, '/kelola/outlet', true],
-        'Akuntan buka pengguna' => [PeranTenantBawaan::Akuntan, '/kelola/pengguna', false],
+        // Akuntan punya karyawan.lihat (rekap gaji) tetapi bukan pengguna.lihat: Tim terbuka, isinya hanya data karyawan (lihat TimTes).
+        'Akuntan buka tim' => [PeranTenantBawaan::Akuntan, '/kelola/tim', true],
         'Kasir buka outlet' => [PeranTenantBawaan::Kasir, '/kelola/outlet', false],
         'Kasir buka peran' => [PeranTenantBawaan::Kasir, '/kelola/peran', false],
         'Staf gudang buka log audit' => [PeranTenantBawaan::StafGudang, '/kelola/log-audit', false],

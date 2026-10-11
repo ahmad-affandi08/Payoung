@@ -48,7 +48,7 @@ export default function HalamanBuatUndangan({ Peran, Outlet, BatasPengguna }: Pr
                     peran={peranTerlihat}
                     outlet={Outlet}
                     tombol="Kirim undangan"
-                    saatBatal={() => router.visit('/kelola/pengguna')}
+                    saatBatal={() => router.visit('/kelola/tim')}
                 />
             </KartuFormulir>
         </TataLetakAplikasi>

@@ -84,7 +84,7 @@ describe('Peran & akses outlet anggota (F-02 langkah 3)', function (): void {
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $admin, $tenant->Id);
 
         $masuk()->put("/kelola/pengguna/{$pemilik->Uuid}/akses", ['Peran' => $peranKasir, 'SemuaOutlet' => true])->assertSessionHasErrors('Umum');
-        $masuk()->post("/kelola/pengguna/{$pemilik->Uuid}/nonaktifkan")->assertSessionHasErrors('Umum');
+        $masuk()->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $pemilik->Uuid])->assertSessionHasErrors('Umum');
         $masuk()->put("/kelola/pengguna/{$kasir->Uuid}/akses", ['Peran' => $peranPemilik, 'SemuaOutlet' => true])->assertSessionHasErrors('Peran');
         $masuk()->put("/kelola/pengguna/{$admin->Uuid}/akses", ['Peran' => $peranKasir, 'SemuaOutlet' => true])->assertSessionHasErrors('Umum');
 
@@ -117,7 +117,7 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
             ->post('/kelola/pengguna/undangan', ['Email' => 'kasir.baru@contoh.id', 'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Kasir)->Uuid, 'SemuaOutlet' => true])
             ->assertSessionHasNoErrors();
 
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$admin->Uuid}/nonaktifkan")->assertSessionHasNoErrors();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $admin->Uuid])->assertSessionHasNoErrors();
 
         $anggota = AnggotaUji($tenant->Id, $admin->Id);
         expect($anggota->Status)->toBe(StatusKeanggotaan::Nonaktif)->and($anggota->DinonaktifkanPada)->not->toBeNull()
@@ -125,7 +125,7 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
         BantuanOrganisasi::Masuk($this, $admin, $tenant->Id)->get('/kelola/outlet')->assertRedirect(route('pilih-tenant'));
         $this->assertDatabaseHas('LogAudit', ['IdTenant' => $tenant->Id, 'Peristiwa' => 'pengguna.nonaktifkan', 'IdObjek' => $anggota->Id]);
 
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$admin->Uuid}/aktifkan")->assertSessionHasNoErrors();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Aktifkan', 'UuidPengguna' => $admin->Uuid])->assertSessionHasNoErrors();
         expect(AnggotaUji($tenant->Id, $admin->Id)->Status)->toBe(StatusKeanggotaan::Aktif);
         BantuanOrganisasi::Masuk($this, $admin, $tenant->Id)->get('/kelola/outlet')->assertOk();
     });
@@ -134,12 +134,12 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $pemilikKedua = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Pemilik);
 
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$pemilik->Uuid}/nonaktifkan")->assertSessionHasErrors('Umum');
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$pemilikKedua->Uuid}/nonaktifkan")->assertSessionHasNoErrors();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $pemilik->Uuid])->assertSessionHasErrors('Umum');
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $pemilikKedua->Uuid])->assertSessionHasNoErrors();
 
         // Sisa satu Pemilik aktif: tidak ada jalan menonaktifkannya.
         expect(TenantPengguna::query()->where('IdTenant', $tenant->Id)->where('Pemilik', true)->where('Status', 'Aktif')->count())->toBe(1);
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post("/kelola/pengguna/{$pemilik->Uuid}/nonaktifkan")->assertSessionHasErrors('Umum');
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $pemilik->Uuid])->assertSessionHasErrors('Umum');
         expect(AnggotaUji($tenant->Id, $pemilik->Id)->Status)->toBe(StatusKeanggotaan::Aktif);
     });
 
@@ -158,7 +158,7 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
             ->post('/kelola/pengguna/undangan', ['Email' => 'calon@contoh.id', 'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Akuntan)->Uuid, 'SemuaOutlet' => true])
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/kelola/pengguna');
+            ->assertRedirect(route('kelola.tim.daftar'));
 
         $manajer = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::ManajerOutlet);
         BantuanOrganisasi::Masuk($this, $manajer, $tenant->Id)->get('/kelola/pengguna/undangan/buat')->assertForbidden();
@@ -171,10 +171,10 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
             ->post('/kelola/pengguna/undangan', ['Email' => 'calon@contoh.id', 'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Akuntan)->Uuid, 'SemuaOutlet' => true])
             ->assertSessionHasNoErrors();
 
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/pengguna')
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/tim')
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
-                ->component('Kelola/Pengguna/Daftar')
-                ->has('Anggota', 2)
+                ->component('Kelola/Tim/Daftar')
+                ->has('Tim', 2)
                 ->has('Undangan', 1)
                 ->where('Undangan.0.Email', 'calon@contoh.id')
                 ->where('Undangan.0.NamaPeran', 'Akuntan')
@@ -191,7 +191,7 @@ describe('Aksi massal anggota', function (): void {
         $kasir2 = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
-        $masuk()->post("/kelola/pengguna/{$kasir1->Uuid}/nonaktifkan")->assertSessionHasNoErrors();
+        $masuk()->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $kasir1->Uuid])->assertSessionHasNoErrors();
         $masuk()->post('/kelola/pengguna/massal', ['Aksi' => 'Nonaktifkan', 'Uuid' => [$kasir1->Uuid, $kasir2->Uuid]])
             ->assertSessionHasNoErrors()
             ->assertSessionHas('Kilat', '1 pengguna dinonaktifkan dan langsung keluar dari usaha ini. 1 dilewati karena sudah begitu.');

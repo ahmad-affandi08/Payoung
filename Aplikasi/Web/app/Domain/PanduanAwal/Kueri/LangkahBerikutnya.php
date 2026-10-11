@@ -91,7 +91,7 @@ final class LangkahBerikutnya
                 'Kunci' => 'UndangStaf',
                 'Judul' => 'Undang staf',
                 'Keterangan' => 'Kasir dan admin masuk dengan akun masing-masing.',
-                'Tautan' => route('kelola.pengguna.daftar'),
+                'Tautan' => route('kelola.tim.daftar'),
                 'Selesai' => $this->pemakaianOrganisasi->HitungPengguna($idTenant) > 1,
             ];
         }

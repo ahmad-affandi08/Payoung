@@ -23,42 +23,36 @@ type IsianKaryawan = {
     UuidOutlet: string;
 };
 
-function BuatIsian(k: BarisKaryawan | null): IsianKaryawan {
+function BuatIsian(k: BarisKaryawan): IsianKaryawan {
     return {
-        Nama: k?.Nama ?? '',
-        Jabatan: k?.Jabatan ?? '',
-        LevelStaf: k?.LevelStaf ?? '',
-        GajiPokok: (k?.GajiPokok ?? '').replace(/\.00$/, ''),
-        TarifLemburPerJam: (k?.TarifLemburPerJam ?? '').replace(/\.00$/, ''),
-        PotonganTerlambatPerMenit: (k?.PotonganTerlambatPerMenit ?? '').replace(/\.00$/, ''),
-        PotonganTidakMasukPerHari: (k?.PotonganTidakMasukPerHari ?? '').replace(/\.00$/, ''),
-        UuidPengguna: k?.UuidPengguna ?? '',
-        UuidOutlet: k?.UuidOutlet ?? '',
+        Nama: k.Nama,
+        Jabatan: k.Jabatan ?? '',
+        LevelStaf: k.LevelStaf ?? '',
+        GajiPokok: (k.GajiPokok ?? '').replace(/\.00$/, ''),
+        TarifLemburPerJam: (k.TarifLemburPerJam ?? '').replace(/\.00$/, ''),
+        PotonganTerlambatPerMenit: (k.PotonganTerlambatPerMenit ?? '').replace(/\.00$/, ''),
+        PotonganTidakMasukPerHari: (k.PotonganTidakMasukPerHari ?? '').replace(/\.00$/, ''),
+        UuidPengguna: k.UuidPengguna ?? '',
+        UuidOutlet: k.UuidOutlet ?? '',
     };
 }
 
 /** Isian kosong dikirim sebagai null. */
-export function SusunDataKaryawan(isian: IsianKaryawan): Record<string, string | null> {
+function SusunDataKaryawan(isian: IsianKaryawan): Record<string, string | null> {
     return Object.fromEntries(Object.entries(isian).map(([k, v]) => [k, v.trim() === '' ? null : v.trim()]));
 }
 
 type PropsIsiFormulirKaryawan = {
-    karyawan: BarisKaryawan | null;
+    karyawan: BarisKaryawan;
     opsiPengguna: OpsiUuidNama[];
     opsiOutlet: OpsiUuidNama[];
-    /** Dipanggil setelah tersimpan (panel ubah menutup diri). Halaman tambah tidak memakainya: server mengarahkan. */
+    /** Dipanggil setelah tersimpan (panel ubah menutup diri). */
     saatSelesai?: () => void;
     saatBatal: () => void;
 };
 
-/** Isian formulir karyawan (F-18), dipakai halaman "Tambah karyawan" dan panel ubah; `karyawan` null = tambah. */
-export function IsiFormulirKaryawan({
-    karyawan,
-    opsiPengguna,
-    opsiOutlet,
-    saatSelesai,
-    saatBatal,
-}: PropsIsiFormulirKaryawan) {
+/** Isian formulir ubah karyawan (F-18). Karyawan baru ditambahkan lewat halaman Tambah anggota tim (D-101). */
+function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, saatBatal }: PropsIsiFormulirKaryawan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
     const [isian, AturIsian] = useState<IsianKaryawan>(() => BuatIsian(karyawan));
@@ -76,11 +70,7 @@ export function IsiFormulirKaryawan({
             onSuccess: () => saatSelesai?.(),
         };
 
-        if (karyawan === null) {
-            router.post(AlamatKaryawan, SusunDataKaryawan(isian), opsi);
-        } else {
-            router.put(`${AlamatKaryawan}/${karyawan.Uuid}`, SusunDataKaryawan(isian), opsi);
-        }
+        router.put(`${AlamatKaryawan}/${karyawan.Uuid}`, SusunDataKaryawan(isian), opsi);
     };
 
     return (
@@ -90,7 +80,7 @@ export function IsiFormulirKaryawan({
                 nilai={akun?.Nama ?? isian.Nama}
                 saatBerubah={(nilai) => Ubah({ Nama: nilai })}
                 galat={galat.Nama}
-                {...(akun ? { keterangan: 'Nama mengikuti akun yang ditautkan. Ubah di Pengguna.' } : {})}
+                {...(akun ? { keterangan: 'Nama mengikuti akun yang ditautkan.' } : {})}
                 disabled={akun !== undefined}
                 maxLength={150}
                 required
@@ -166,7 +156,7 @@ export function IsiFormulirKaryawan({
     );
 }
 
-/** Panel ubah karyawan (F-18). Tambah karyawan memakai halaman penuh `/kelola/karyawan/buat`. */
+/** Panel ubah karyawan (F-18), dibuka dari menu aksi baris di halaman Tim. */
 export default function FormulirKaryawan({
     karyawan,
     opsiPengguna,

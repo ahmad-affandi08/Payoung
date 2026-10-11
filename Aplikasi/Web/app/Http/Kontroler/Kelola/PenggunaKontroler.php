@@ -5,21 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola;
 
 use App\Domain\Karyawan\Aksi\SimpanKaryawan;
-use App\Domain\Karyawan\Aksi\TambahStaf;
 use App\Domain\Karyawan\Data\DataKaryawan;
-use App\Domain\Karyawan\Kueri\PetaKaryawanPengguna;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Aksi\BatalkanUndangan;
 use App\Domain\Organisasi\Aksi\UbahAksesAnggota;
 use App\Domain\Organisasi\Aksi\UbahAnggotaMassal;
-use App\Domain\Organisasi\Aksi\UbahStatusAnggota;
 use App\Domain\Organisasi\Aksi\UndangPengguna;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
-use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
-use App\Domain\Organisasi\Kueri\DaftarAnggota;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -29,7 +24,6 @@ use App\Domain\Organisasi\Model\UndanganPengguna;
 use App\Domain\Tenant\Kueri\RingkasanTenant;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use App\Http\Permintaan\Kelola\AksesAnggotaPermintaan;
-use App\Http\Permintaan\Kelola\TambahPenggunaPermintaan;
 use App\Http\Permintaan\Kelola\UndangPenggunaPermintaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,67 +32,12 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Pengguna tenant: daftar anggota, tambah langsung (D-22) atau undangan, peran & akses outlet, nonaktif/aktif
- * (F-02 langkah 3, BR-02.1).
+ * Anggota tenant: undangan email, peran & akses outlet, aksi massal, dan catat sebagai karyawan (F-02 langkah 3,
+ * BR-02.1). Daftar, tambah langsung (D-22), dan nonaktif/aktif ada di Tim (`TimKontroler`, D-101).
  * Anggota dicari lewat `Uuid` pengguna di dalam tenant aktif; pengguna yang bukan anggota tenant ini → 404.
  */
 final class PenggunaKontroler extends DasarKelolaKontroler
 {
-    public function Daftar(DaftarAnggota $daftar, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket, PetaKaryawanPengguna $peta): Response
-    {
-        $idTenant = $this->IdTenant();
-        $anggota = $daftar->AmbilAnggota($idTenant);
-        $idPengguna = Pengguna::query()->whereIn('Uuid', array_column($anggota, 'Uuid'))->pluck('Id', 'Uuid')->all();
-        $karyawan = $peta->Ambil(array_values(array_map('intval', $idPengguna)));
-
-        return Inertia::render('Kelola/Pengguna/Daftar', [
-            // D-46: tiap anggota menunjukkan apakah akunnya sudah tercatat sebagai karyawan.
-            'Anggota' => array_map(fn (array $a): array => $a + [
-                'UuidKaryawan' => $karyawan[(int) ($idPengguna[$a['Uuid']] ?? 0)]['Uuid'] ?? null,
-                'StatusKaryawan' => $karyawan[(int) ($idPengguna[$a['Uuid']] ?? 0)]['Status'] ?? null,
-            ], $anggota),
-            'BolehCatatKaryawan' => app(AksesPengguna::class)->CekIzin($idTenant, $this->Pelaku()->Id, IzinTenant::KaryawanKelola),
-            'Undangan' => $daftar->AmbilUndanganMenunggu($idTenant),
-            'Peran' => self::AmbilOpsiPeran(),
-            'Outlet' => self::AmbilOpsiOutlet(),
-            'BatasPengguna' => $batasPaket->AmbilRingkasan($idTenant, 'BatasPengguna', $pemakaian->HitungPengguna($idTenant)),
-            'UuidSaya' => $this->Pelaku()->Uuid,
-        ]);
-    }
-
-    /** D-22: halaman "Tambah pengguna" (langsung, tanpa undangan email); kursi paket tetap ditampilkan. */
-    public function Buat(Request $permintaan, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket): Response
-    {
-        $idTenant = $this->IdTenant();
-        $bolehKaryawan = app(AksesPengguna::class)->CekIzin($idTenant, $this->Pelaku()->Id, IzinTenant::KaryawanKelola);
-        $uuidKaryawan = $bolehKaryawan ? $permintaan->query('karyawan') : null;
-        // D-46: "Buatkan akun" dari daftar karyawan mengisi nama & jabatan dan menautkan akun baru ke karyawan itu.
-        $tertaut = is_string($uuidKaryawan) ? Karyawan::query()->where('Uuid', strtoupper($uuidKaryawan))->whereNull('IdPengguna')->first(['Uuid', 'Nama', 'Jabatan']) : null;
-
-        return Inertia::render('Kelola/Pengguna/Tambah', [
-            'KaryawanTertaut' => $tertaut === null ? null : ['Uuid' => $tertaut->Uuid, 'Nama' => $tertaut->Nama, 'Jabatan' => $tertaut->Jabatan],
-            'BolehCatatKaryawan' => $bolehKaryawan,
-            'Peran' => self::AmbilOpsiPeran(),
-            'Outlet' => self::AmbilOpsiOutlet(),
-            'BatasPengguna' => $batasPaket->AmbilRingkasan($idTenant, 'BatasPengguna', $pemakaian->HitungPengguna($idTenant)),
-        ]);
-    }
-
-    public function Tambah(TambahPenggunaPermintaan $permintaan, TambahStaf $tambah, AksesPengguna $akses): RedirectResponse
-    {
-        $data = $permintaan->AmbilPenggunaBaru();
-        // Audit #34: "Catat juga sebagai karyawan" hanya untuk pemegang izin karyawan.kelola.
-        $jugaKaryawan = $permintaan->boolean('JugaKaryawan')
-            && $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanKelola);
-        $uuidTertaut = $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanKelola) ? $permintaan->AmbilUuidKaryawan() : null;
-        $pengguna = $tambah->Jalankan($this->Pelaku(), $data, $permintaan->AmbilAkses(), $jugaKaryawan, $permintaan->AmbilJabatan(), $uuidTertaut);
-        $pesan = $pengguna->CekHanyaKasir()
-            ? "{$pengguna->Nama} ditambahkan sebagai karyawan kasir. Ia masuk aplikasi kasir dengan PIN yang Anda buat."
-            : "{$pengguna->Nama} ditambahkan. Berikan email & kata sandi awal kepadanya; ia wajib menggantinya saat pertama masuk.";
-
-        return redirect()->route('kelola.pengguna.daftar')->with('Kilat', $pesan);
-    }
-
     /** Halaman penuh "Undang pengguna" (pola sama dengan Tambah produk); kursi paket tetap ditampilkan. */
     public function BuatUndangan(PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket): Response
     {
@@ -126,7 +65,7 @@ final class PenggunaKontroler extends DasarKelolaKontroler
             idPengguna: $this->Pelaku()->Id,
         ));
 
-        return back()->with('Kilat', "{$model->Nama} dicatat sebagai karyawan. Atur jadwal dan gajinya di menu Karyawan.");
+        return back()->with('Kilat', "{$model->Nama} dicatat sebagai karyawan. Atur jadwal dan gajinya di menu Tim.");
     }
 
     public function Undang(UndangPenggunaPermintaan $permintaan, UndangPengguna $undang, RingkasanTenant $ringkasan): RedirectResponse
@@ -135,7 +74,7 @@ final class PenggunaKontroler extends DasarKelolaKontroler
         $namaTenant = $ringkasan->Ambil([$this->IdTenant()])[0]['Nama'] ?? '';
         $undang->Jalankan($this->Pelaku(), $email, $permintaan->AmbilAkses(), $namaTenant);
 
-        return redirect()->route('kelola.pengguna.daftar')->with('Kilat', "Undangan terkirim ke {$email}. Berlaku ".config('organisasi.JamBerlakuUndangan').' jam.');
+        return redirect()->route('kelola.tim.daftar')->with('Kilat', "Undangan terkirim ke {$email}. Berlaku ".config('organisasi.JamBerlakuUndangan').' jam.');
     }
 
     public function BatalkanUndangan(string $undangan, BatalkanUndangan $batalkan): RedirectResponse
@@ -152,14 +91,6 @@ final class PenggunaKontroler extends DasarKelolaKontroler
         $ubah->Jalankan($this->Pelaku()->Id, $anggota, $permintaan->AmbilAkses());
 
         return back()->with('Kilat', "Peran & akses {$nama} disimpan.");
-    }
-
-    public function Nonaktifkan(string $pengguna, UbahStatusAnggota $ubah): RedirectResponse
-    {
-        [$anggota, $nama] = $this->CariAnggota($pengguna);
-        $ubah->Jalankan($this->Pelaku()->Id, $anggota, StatusKeanggotaan::Nonaktif);
-
-        return back()->with('Kilat', "{$nama} dinonaktifkan dan langsung keluar dari usaha ini.");
     }
 
     /** Aksi massal anggota terpilih: nonaktifkan, aktifkan kembali, atau ganti peran. Izin dicek per aksi. */
@@ -184,14 +115,6 @@ final class PenggunaKontroler extends DasarKelolaKontroler
         $lewat = $hasil['Dilewati'] > 0 ? " {$hasil['Dilewati']} dilewati karena sudah begitu." : '';
 
         return back()->with('Kilat', "{$hasil['Diubah']} pengguna {$kata}.{$lewat}");
-    }
-
-    public function Aktifkan(string $pengguna, UbahStatusAnggota $ubah): RedirectResponse
-    {
-        [$anggota, $nama] = $this->CariAnggota($pengguna);
-        $ubah->Jalankan($this->Pelaku()->Id, $anggota, StatusKeanggotaan::Aktif);
-
-        return back()->with('Kilat', "{$nama} aktif kembali.");
     }
 
     /**

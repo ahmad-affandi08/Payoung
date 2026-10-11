@@ -228,7 +228,7 @@ describe('rekap gaji: lembur, potongan terlambat & tidak masuk', function (): vo
     it('formulir karyawan menyimpan tarif; tarif tidak ditulis ke log audit dan hanya terlihat pemegang karyawan.kelola', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Tarif Karyawan');
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
-        $this->post('/kelola/karyawan', ['Nama' => 'Gita Lembur', 'GajiPokok' => '2500000', 'TarifLemburPerJam' => '15000', 'PotonganTerlambatPerMenit' => '500', 'PotonganTidakMasukPerHari' => '85000'])->assertRedirect();
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Gita Lembur', 'GajiPokok' => '2500000', 'TarifLemburPerJam' => '15000', 'PotonganTerlambatPerMenit' => '500', 'PotonganTidakMasukPerHari' => '85000'])->assertRedirect();
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $gita = Karyawan::query()->where('Nama', 'Gita Lembur')->sole();
@@ -236,7 +236,7 @@ describe('rekap gaji: lembur, potongan terlambat & tidak masuk', function (): vo
         expect($gita->TarifLemburPerJam)->toBe('15000.00')
             ->and($gita->PotonganTidakMasukPerHari)->toBe('85000.00')
             ->and($audit)->not->toContain('15000')->not->toContain('85000');
-        $this->post('/kelola/karyawan', ['Nama' => 'Hana', 'TarifLemburPerJam' => 'abc'])->assertSessionHasErrors('TarifLemburPerJam');
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Hana', 'TarifLemburPerJam' => 'abc'])->assertSessionHasErrors('TarifLemburPerJam');
     });
 });
 

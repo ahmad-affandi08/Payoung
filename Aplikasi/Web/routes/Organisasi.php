@@ -74,19 +74,13 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $izi
     Route::post('/tim', [TimKontroler::class, 'Simpan'])->middleware($izinSalahSatu(IzinTenant::PenggunaUndang, IzinTenant::KaryawanKelola))->name('kelola.tim.simpan');
     Route::post('/tim/status', [TimKontroler::class, 'Status'])->middleware($izinSalahSatu(IzinTenant::PenggunaNonaktifkan, IzinTenant::KaryawanKelola))->name('kelola.tim.status');
 
-    // Pengguna & peran (F-02 langkah 3, §19.1).
-    Route::get('/pengguna', [PenggunaKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::PenggunaLihat))->name('kelola.pengguna.daftar');
-    // D-22: tambah pengguna langsung (email + kata sandi awal, atau karyawan kasir tanpa email dengan PIN).
-    Route::get('/pengguna/buat', [PenggunaKontroler::class, 'Buat'])->middleware($izin(IzinTenant::PenggunaUndang))->name('kelola.pengguna.formulir');
-    Route::post('/pengguna', [PenggunaKontroler::class, 'Tambah'])->middleware($izin(IzinTenant::PenggunaUndang))->name('kelola.pengguna.tambah');
+    // Akses & undangan anggota (F-02 langkah 3, §19.1). Daftar & tambah ada di Tim (D-101).
     Route::get('/pengguna/undangan/buat', [PenggunaKontroler::class, 'BuatUndangan'])->middleware($izin(IzinTenant::PenggunaUndang))->name('kelola.pengguna.undangan.formulir');
     Route::post('/pengguna/undangan', [PenggunaKontroler::class, 'Undang'])->middleware($izin(IzinTenant::PenggunaUndang))->name('kelola.pengguna.undangan.buat');
     Route::post('/pengguna/undangan/{undangan}/batalkan', [PenggunaKontroler::class, 'BatalkanUndangan'])->middleware($izin(IzinTenant::PenggunaUndang))->name('kelola.pengguna.undangan.batalkan');
     Route::post('/pengguna/massal', [PenggunaKontroler::class, 'Massal'])->middleware($izin(IzinTenant::PenggunaLihat))->name('kelola.pengguna.massal');
     Route::post('/pengguna/{pengguna}/karyawan', [PenggunaKontroler::class, 'CatatSebagaiKaryawan'])->middleware($izin(IzinTenant::KaryawanKelola))->name('kelola.pengguna.karyawan');
     Route::put('/pengguna/{pengguna}/akses', [PenggunaKontroler::class, 'UbahAkses'])->middleware($izin(IzinTenant::PenggunaUbah))->name('kelola.pengguna.akses');
-    Route::post('/pengguna/{pengguna}/nonaktifkan', [PenggunaKontroler::class, 'Nonaktifkan'])->middleware($izin(IzinTenant::PenggunaNonaktifkan))->name('kelola.pengguna.nonaktifkan');
-    Route::post('/pengguna/{pengguna}/aktifkan', [PenggunaKontroler::class, 'Aktifkan'])->middleware($izin(IzinTenant::PenggunaNonaktifkan))->name('kelola.pengguna.aktifkan');
 
     Route::get('/peran', [PeranKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::PenggunaLihat))->name('kelola.peran.daftar');
     Route::get('/peran/buat', [PeranKontroler::class, 'Buat'])->middleware($izin(IzinTenant::PeranKelola))->name('kelola.peran.buat');

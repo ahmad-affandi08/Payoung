@@ -49,7 +49,7 @@ describe('Isolasi tenant F-02 (§13.4): ID tebakan lintas tenant diperlakukan se
         $masukA()->put("/kelola/peran/{$peranB->Uuid}", ['Nama' => 'Diubah', 'Izin' => ['penjualan.buat']])->assertNotFound();
         $masukA()->delete("/kelola/peran/{$peranB->Uuid}")->assertNotFound();
         $masukA()->put("/kelola/pengguna/{$kasirB->Uuid}/akses", ['Peran' => BantuanOrganisasi::Peran($tenantA->Id, PeranTenantBawaan::Admin)->Uuid, 'SemuaOutlet' => true])->assertNotFound();
-        $masukA()->post("/kelola/pengguna/{$kasirB->Uuid}/nonaktifkan")->assertNotFound();
+        $masukA()->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $kasirB->Uuid])->assertNotFound();
         $masukA()->post("/kelola/pengguna/undangan/{$undanganB->Uuid}/batalkan")->assertNotFound();
 
         // Memakai peran atau outlet tenant B saat mengundang di tenant A juga ditolak.
@@ -72,7 +72,7 @@ describe('Isolasi tenant F-02 (§13.4): ID tebakan lintas tenant diperlakukan se
         $masukA = fn () => BantuanOrganisasi::Masuk($this, $pemilikA, $tenantA->Id);
 
         $masukA()->get('/kelola/outlet')->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Outlet', 1)->has('Merek', 1)->where('Merek.0.Nama', 'Kopi Nusantara'));
-        $masukA()->get('/kelola/pengguna')->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Anggota', 1)->where('Anggota.0.Email', $pemilikA->Email));
+        $masukA()->get('/kelola/tim')->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Tim', 1)->where('Tim.0.Email', $pemilikA->Email));
         $masukA()->get('/kelola/peran')->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Peran', count(PeranTenantBawaan::cases())));
         $masukA()->get('/kelola/log-audit')->assertInertia(function (AssertableInertia $halaman): void {
             $halaman->where('Log.Data', fn ($log) => collect($log)->every(fn (array $baris) => $baris['Peristiwa'] !== 'merek.buat'));

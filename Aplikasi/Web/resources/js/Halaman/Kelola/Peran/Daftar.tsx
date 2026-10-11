@@ -32,7 +32,7 @@ export default function HalamanDaftarPeran({ Peran, DaftarIzin }: PropsDaftar) {
     const labelIzin = new Map(DaftarIzin.map((izin) => [izin.Kunci, izin.Label]));
 
     return (
-        <TataLetakAplikasi judul="Pengguna & peran">
+        <TataLetakAplikasi judul="Peran & izin">
             <TabPengguna />
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-isi text-teks-sekunder">

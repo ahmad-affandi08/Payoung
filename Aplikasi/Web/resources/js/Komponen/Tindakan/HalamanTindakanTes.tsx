@@ -2,9 +2,9 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { useState, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import HalamanDaftarPengguna from '@/Halaman/Kelola/Pengguna/Daftar';
 import HalamanDaftarPerangkat from '@/Halaman/Kelola/Perangkat/Daftar';
 import HalamanDokumenLegal from '@/Halaman/Pengelola/Legal/Dokumen';
+import HalamanDaftarTim from '@/Halaman/Kelola/Tim/Daftar';
 import TampilTenant from '@/Halaman/Pengelola/Tenant/Tampil';
 import { BukaMenu, PilihTab } from '@/Pengujian/InteraksiRadix';
 import { RenderDenganKueri } from '@/Pengujian/RenderKueri';
@@ -125,49 +125,60 @@ afterEach(() => cleanup());
 
 const batas = { Terpakai: 2, Batas: 5 };
 
-describe('Kelola/Pengguna: aksi baris & konfirmasi nonaktifkan (F-02, BR-02.1)', () => {
-    const anggota = [
-        {
-            Uuid: 'U-SAYA',
+describe('Kelola/Tim: aksi baris & konfirmasi nonaktifkan (F-02 BR-02.1, D-101)', () => {
+    const izin = {
+        Tambah: true,
+        Undang: true,
+        UbahAkses: true,
+        Nonaktifkan: true,
+        AturPin: true,
+        KelolaKaryawan: false,
+    };
+    const BuatAkun = (ubah: Record<string, unknown>) => ({
+        Kunci: 'U-2',
+        Nama: 'Budi Santoso',
+        Jabatan: null,
+        Email: 'budi@kopinusantara.id',
+        Pemilik: false,
+        UuidPengguna: 'U-2',
+        StatusAkun: 'Aktif' as const,
+        UuidPeran: 'R-K',
+        NamaPeran: 'Kasir',
+        SemuaOutlet: false,
+        UuidOutlet: ['O-1'],
+        Karyawan: null,
+        Status: 'Aktif' as const,
+        ...ubah,
+    });
+    const tim = [
+        BuatAkun({
+            Kunci: 'U-SAYA',
             Nama: 'Rina Wulandari',
             Email: 'rina@kopinusantara.id',
             Pemilik: true,
+            UuidPengguna: 'U-SAYA',
             UuidPeran: 'R-P',
             NamaPeran: 'Pemilik',
             SemuaOutlet: true,
             UuidOutlet: [],
-            Status: 'Aktif' as const,
-            DinonaktifkanPada: null,
-            UuidKaryawan: null,
-            StatusKaryawan: null,
-        },
-        {
-            Uuid: 'U-2',
-            Nama: 'Budi Santoso',
-            Email: 'budi@kopinusantara.id',
-            Pemilik: false,
-            UuidPeran: 'R-K',
-            NamaPeran: 'Kasir',
-            SemuaOutlet: false,
-            UuidOutlet: ['O-1'],
-            Status: 'Aktif' as const,
-            DinonaktifkanPada: null,
-            UuidKaryawan: null,
-            StatusKaryawan: null,
-        },
+        }),
+        BuatAkun({}),
     ];
     const props = {
-        Anggota: anggota,
+        Tim: tim,
         Undangan: [],
         Peran: [{ Uuid: 'R-K', Nama: 'Kasir', Pemilik: false, SemuaOutletBawaan: false }],
         Outlet: [{ Uuid: 'O-1', Kode: 'JKT1', Nama: 'Kopi Nusantara Sudirman' }],
+        OpsiOutlet: [{ Uuid: 'O-1', Nama: 'Kopi Nusantara Sudirman' }],
+        OpsiPengguna: [],
         BatasPengguna: batas,
         UuidSaya: 'U-SAYA',
+        Izin: izin,
     };
 
-    it('akun sendiri tanpa menu aksi; nonaktifkan lewat AlertDialog lalu POST ke URL yang sama', () => {
+    it('akun sendiri tanpa menu aksi; nonaktifkan lewat AlertDialog lalu POST ke /kelola/tim/status', () => {
         AturPropsAplikasi([], true);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} />);
+        RenderDenganKueri(<HalamanDaftarTim {...props} />);
 
         expect(screen.queryByRole('button', { name: 'Aksi untuk Rina Wulandari' })).toBeNull();
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Budi Santoso' }));
@@ -175,21 +186,27 @@ describe('Kelola/Pengguna: aksi baris & konfirmasi nonaktifkan (F-02, BR-02.1)',
 
         const dialog = screen.getByRole('alertdialog', { name: 'Nonaktifkan Budi Santoso?' });
         expect(AmbilKiriman()).toEqual([]);
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Nonaktifkan pengguna' }));
-        expect(AmbilKiriman()).toEqual([{ metode: 'post', url: '/kelola/pengguna/U-2/nonaktifkan', data: {} }]);
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Nonaktifkan' }));
+        expect(AmbilKiriman()).toEqual([
+            {
+                metode: 'post',
+                url: '/kelola/tim/status',
+                data: { Aksi: 'Nonaktifkan', UuidPengguna: 'U-2', UuidKaryawan: null },
+            },
+        ]);
 
         // Dialog tertutup setelah berhasil.
         act(() => uji.opsiTerakhir?.onSuccess?.());
         expect(screen.queryByRole('alertdialog')).toBeNull();
     });
 
-    it('ubah akses membuka panel samping dan mengirim PUT dengan nama field yang sama', () => {
+    it('ubah peran & outlet membuka panel samping dan mengirim PUT dengan nama field yang sama', () => {
         AturPropsAplikasi([], true);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} />);
+        RenderDenganKueri(<HalamanDaftarTim {...props} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Budi Santoso' }));
-        fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah akses' }));
-        const panel = screen.getByRole('dialog', { name: 'Peran & akses Budi Santoso' });
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah peran & outlet' }));
+        const panel = screen.getByRole('dialog', { name: 'Peran & outlet Budi Santoso' });
         fireEvent.click(within(panel).getByRole('button', { name: 'Simpan akses' }));
 
         expect(AmbilKiriman()).toEqual([
@@ -203,7 +220,7 @@ describe('Kelola/Pengguna: aksi baris & konfirmasi nonaktifkan (F-02, BR-02.1)',
 
     it('atur ulang PIN kasir langsung dari menu baris: dialog 6 angka lalu PUT ke /pengguna/{uuid}/pin', () => {
         AturPropsAplikasi([], true);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} />);
+        RenderDenganKueri(<HalamanDaftarTim {...props} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Budi Santoso' }));
         fireEvent.click(screen.getByRole('menuitem', { name: 'Atur ulang PIN' }));
@@ -223,51 +240,68 @@ describe('Kelola/Pengguna: aksi baris & konfirmasi nonaktifkan (F-02, BR-02.1)',
 
     it('tanpa izin atur PIN, menu baris tidak menawarkan "Atur ulang PIN"', () => {
         AturPropsAplikasi(['pengguna.ubah'], false);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} />);
+        RenderDenganKueri(<HalamanDaftarTim {...props} Izin={{ ...izin, AturPin: false }} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Budi Santoso' }));
-        expect(screen.getByRole('menuitem', { name: 'Ubah akses' })).toBeTruthy();
+        expect(screen.getByRole('menuitem', { name: 'Ubah peran & outlet' })).toBeTruthy();
         expect(screen.queryByRole('menuitem', { name: 'Atur ulang PIN' })).toBeNull();
     });
 
-    it('D-46: kolom Karyawan terlihat; "Catat sebagai karyawan" hanya untuk akun tanpa karyawan', () => {
+    it('D-46: "Catat sebagai karyawan" hanya untuk akun tanpa karyawan dan hanya bagi pemegang karyawan.kelola', () => {
         AturPropsAplikasi([], true);
-        const dengan = [
-            ...props.Anggota,
-            ...props.Anggota.slice(1).map((a) => ({
-                ...a,
-                Uuid: 'U-3',
-                Nama: 'Sari Dewi',
-                UuidKaryawan: 'K-3',
-                StatusKaryawan: 'Aktif' as const,
-            })),
-        ];
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} Anggota={dengan} BolehCatatKaryawan />);
-
-        expect(screen.getAllByText('Bukan karyawan').length).toBeGreaterThan(0);
-        expect(screen.getAllByRole('link').some((l) => l.getAttribute('href') === '/kelola/karyawan')).toBe(true);
+        const karyawan = {
+            Uuid: 'K-3',
+            Nama: 'Sari Dewi',
+            Jabatan: null,
+            LevelStaf: null,
+            GajiPokok: null,
+            TarifLemburPerJam: null,
+            PotonganTerlambatPerMenit: null,
+            PotonganTidakMasukPerHari: null,
+            UuidPengguna: 'U-3',
+            NamaPengguna: 'Sari Dewi',
+            UuidOutlet: null,
+            NamaOutlet: null,
+            Status: 'Aktif' as const,
+            LabelStatus: 'Aktif',
+            TautanAbsen: false,
+            StatusWajah: null,
+        };
+        const dengan = [...tim, BuatAkun({ Kunci: 'U-3', Nama: 'Sari Dewi', UuidPengguna: 'U-3', Karyawan: karyawan })];
+        RenderDenganKueri(<HalamanDaftarTim {...props} Tim={dengan} Izin={{ ...izin, KelolaKaryawan: true }} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Sari Dewi' }));
         expect(screen.queryByRole('menuitem', { name: 'Catat sebagai karyawan' })).toBeNull();
+        expect(screen.getByRole('menuitem', { name: 'Ubah data & gaji' })).toBeTruthy();
     });
 
     it('D-46: "Catat sebagai karyawan" mengirim POST ke URL akun', () => {
         AturPropsAplikasi([], true);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} BolehCatatKaryawan />);
+        RenderDenganKueri(<HalamanDaftarTim {...props} Izin={{ ...izin, KelolaKaryawan: true }} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk Budi Santoso' }));
         fireEvent.click(screen.getByRole('menuitem', { name: 'Catat sebagai karyawan' }));
         expect(AmbilKiriman()).toEqual([{ metode: 'post', url: '/kelola/pengguna/U-2/karyawan', data: {} }]);
     });
 
-    it('tanpa izin ubah/nonaktifkan: tidak ada menu aksi', () => {
+    it('tanpa izin ubah/nonaktifkan: tidak ada menu aksi, tetapi tombol tambah tetap ada untuk pemegang izin undang', () => {
         AturPropsAplikasi(['pengguna.undang']);
-        RenderDenganKueri(<HalamanDaftarPengguna {...props} />);
+        RenderDenganKueri(
+            <HalamanDaftarTim
+                {...props}
+                Izin={{
+                    Tambah: true,
+                    Undang: true,
+                    UbahAkses: false,
+                    Nonaktifkan: false,
+                    AturPin: false,
+                    KelolaKaryawan: false,
+                }}
+            />,
+        );
 
         expect(screen.queryByRole('button', { name: 'Aksi untuk Budi Santoso' })).toBeNull();
-        // Audit #34: satu pintu "Tambah staf"; undangan email tersedia di halaman tambah staf.
-        expect(screen.getByRole('link', { name: 'Tambah staf' }).getAttribute('href')).toBe('/kelola/pengguna/buat');
-        expect(screen.queryByRole('link', { name: 'Undang lewat email' })).toBeNull();
+        expect(screen.getByRole('link', { name: 'Tambah anggota tim' }).getAttribute('href')).toBe('/kelola/tim/buat');
     });
 });
 

@@ -385,7 +385,7 @@ describe('Kelola/Pengguna (F-02 langkah 3): undang pengguna di halaman penuh', (
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
-        expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/pengguna');
+        expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/tim');
     });
 
     it('kursi penuh menampilkan peringatan batas paket', () => {

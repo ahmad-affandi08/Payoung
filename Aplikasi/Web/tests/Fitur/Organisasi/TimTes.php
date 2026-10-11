@@ -64,12 +64,26 @@ describe('D-101 daftar Tim: satu baris per orang', function (): void {
             ->and($tim->pluck('Status')->unique()->all())->toBe(['Aktif']);
     });
 
-    it('pelihat tanpa izin lihat pengguna tidak menerima email atau peran; tanpa izin lihat karyawan tidak menerima data karyawan', function (): void {
+    it('pelihat tanpa izin lihat pengguna (Akuntan) hanya menerima data karyawan: tanpa email, peran, akun, dan undangan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
-        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim', IsianTimUji($tenant->Id, ['GajiPokok' => '2500000']))->assertSessionHasNoErrors();
+        $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
+        $masuk->post('/kelola/tim', IsianTimUji($tenant->Id, ['GajiPokok' => '2500000']))->assertSessionHasNoErrors();
+        $masuk->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Pelayan'])->assertSessionHasNoErrors();
+        $akuntan = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Akuntan);
+
+        $tim = collect(BantuanOrganisasi::Masuk($this, $akuntan, $tenant->Id)->get('/kelola/tim')->assertOk()->inertiaProps('Tim'));
+
+        // Hanya dua karyawan; tidak ada baris akun (Pemilik, Akuntan) dan tidak ada data akses.
+        expect($tim->pluck('Nama')->sort()->values()->all())->toBe(['Rina Pelayan', 'Siti Barista'])
+            ->and($tim->every(fn (array $b): bool => $b['Email'] === null && $b['UuidPengguna'] === null && $b['NamaPeran'] === null))->toBeTrue()
+            // Gaji hanya untuk karyawan.kelola.
+            ->and($tim->every(fn (array $b): bool => $b['Karyawan']['GajiPokok'] === null))->toBeTrue();
+    });
+
+    it('kasir tanpa izin lihat apa pun tidak bisa membuka Tim', function (): void {
+        ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
 
-        // Kasir tidak punya izin lihat karyawan maupun pengguna → tidak bisa membuka halaman Tim.
         BantuanOrganisasi::Masuk($this, $kasir, $tenant->Id)->get('/kelola/tim')->assertForbidden();
     });
 

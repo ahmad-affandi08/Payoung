@@ -71,7 +71,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         // D-27: Langganan, Outlet, Pengguna, Perangkat, dan Log audit keluar dari menu samping.
         expect(screen.queryByRole('link', { name: 'Langganan' })).toBeNull();
         expect(screen.queryByRole('link', { name: 'Outlet' })).toBeNull();
-        expect(screen.queryByRole('link', { name: 'Pengguna & peran' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Peran & izin' })).toBeNull();
     });
 
     it('Kasir tanpa izin tidak melihat Bantuan, tetapi Pengaturan tetap ada', () => {

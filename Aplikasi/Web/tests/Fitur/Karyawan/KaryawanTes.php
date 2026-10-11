@@ -67,60 +67,64 @@ function SiapkanKaryawan(TestCase $tes, string $nama = 'Kopi Senja Karyawan'): a
 }
 
 describe('F-18 data karyawan', function (): void {
-    it('tambah tertaut akun, akun ganda ditolak, ubah, nonaktifkan; gaji hanya untuk karyawan.kelola', function (): void {
+    it('tambah tanpa akun, tautkan akun lalu akun ganda ditolak, ubah, nonaktifkan; gaji hanya untuk karyawan.kelola', function (): void {
         $k = SiapkanKaryawan($this);
 
-        $this->post('/kelola/karyawan', ['Nama' => 'Rina Wulandari', 'Jabatan' => 'Barista', 'LevelStaf' => 'Senior', 'GajiPokok' => '3500000', 'UuidPengguna' => $k['Kasir']->Uuid, 'UuidOutlet' => $k['Outlet']->Uuid])
-            ->assertSessionHasNoErrors()->assertRedirect('/kelola/karyawan');
-        $this->post('/kelola/karyawan', ['Nama' => 'Rina Kedua', 'UuidPengguna' => $k['Kasir']->Uuid])->assertSessionHasErrors('UuidPengguna');
-        $this->post('/kelola/karyawan', ['Nama' => 'Pak Joko Tukang Parkir', 'GajiPokok' => '1,5'])->assertSessionHasErrors('GajiPokok');
-        $this->post('/kelola/karyawan', ['Nama' => 'Pak Joko Tukang Parkir'])->assertSessionHasNoErrors();
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Wulandari', 'Jabatan' => 'Barista', 'LevelStaf' => 'Senior', 'GajiPokok' => '3500000', 'UuidOutlet' => $k['Outlet']->Uuid])
+            ->assertSessionHasNoErrors()->assertRedirect(route('kelola.tim.daftar'));
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Pak Joko Tukang Parkir', 'GajiPokok' => '1,5'])->assertSessionHasErrors('GajiPokok');
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Pak Joko Tukang Parkir'])->assertSessionHasNoErrors();
 
-        $rina = Karyawan::query()->where('IdPengguna', $k['Kasir']->Id)->sole();
-        expect($rina->IdPengguna)->toBe($k['Kasir']->Id)
-            ->and((string) $rina->GajiPokok)->toBe('3500000.00')
-            ->and($rina->IdOutlet)->toBe($k['Outlet']->Id);
+        $rina = Karyawan::query()->where('Nama', 'Rina Wulandari')->sole();
+        $joko = Karyawan::query()->where('Nama', 'Pak Joko Tukang Parkir')->sole();
+        expect($rina->IdPengguna)->toBeNull()->and((string) $rina->GajiPokok)->toBe('3500000.00')->and($rina->IdOutlet)->toBe($k['Outlet']->Id);
+
+        // Menautkan akun ke karyawan lewat panel ubah; satu akun hanya boleh tertaut ke satu karyawan.
+        $this->put("/kelola/karyawan/{$rina->Uuid}", ['Nama' => 'Rina Wulandari', 'Jabatan' => 'Barista', 'GajiPokok' => '3500000', 'UuidPengguna' => $k['Kasir']->Uuid, 'UuidOutlet' => $k['Outlet']->Uuid])->assertSessionHasNoErrors();
+        $this->put("/kelola/karyawan/{$joko->Uuid}", ['Nama' => 'Rina Kedua', 'UuidPengguna' => $k['Kasir']->Uuid])->assertSessionHasErrors('UuidPengguna');
+        expect($rina->refresh()->IdPengguna)->toBe($k['Kasir']->Id);
 
         $this->put("/kelola/karyawan/{$rina->Uuid}", ['Nama' => 'Rina Wulandari', 'Jabatan' => 'Kepala Barista', 'UuidPengguna' => $k['Kasir']->Uuid])->assertSessionHasNoErrors();
         expect($rina->refresh()->Jabatan)->toBe('Kepala Barista')->and($rina->GajiPokok)->toBeNull();
-        $this->post("/kelola/karyawan/{$rina->Uuid}/nonaktifkan")->assertSessionHasNoErrors();
+        $this->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidKaryawan' => $rina->Uuid])->assertSessionHasNoErrors();
         expect($rina->refresh()->Status)->toBe(StatusKaryawan::Nonaktif)
             ->and(LogAudit::query()->where('Peristiwa', 'karyawan.nonaktifkan')->count())->toBe(1)
             ->and(LogAudit::query()->where('Peristiwa', 'karyawan.tambah')->value('NilaiBaru'))->not->toContain('3500000');
 
-        $this->getJson('/kelola/karyawan?cari='.urlencode($rina->Nama))->assertOk()->assertJsonPath('Meta.Total', 1)->assertJsonPath('Data.0.Jabatan', 'Kepala Barista');
-        $this->post("/kelola/karyawan/{$rina->Uuid}/aktifkan")->assertSessionHasNoErrors();
+        $baris = fn () => collect($this->get('/kelola/tim')->assertOk()->inertiaProps('Tim'))->first(fn (array $b): bool => ($b['Karyawan']['Uuid'] ?? null) === $rina->Uuid);
+        expect($baris()['Karyawan']['Jabatan'])->toBe('Kepala Barista')->and($baris()['Status'])->not->toBe('Aktif');
+        $this->post('/kelola/tim/status', ['Aksi' => 'Aktifkan', 'UuidKaryawan' => $rina->Uuid])->assertSessionHasNoErrors();
         $this->put("/kelola/karyawan/{$rina->Uuid}", ['Nama' => 'Rina Wulandari', 'GajiPokok' => '4000000'])->assertSessionHasNoErrors();
 
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Supervisor);
-        $this->get('/kelola/karyawan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Kelola/Karyawan/Daftar')->where('Izin.Kelola', false)->where('Karyawan.Data.1.GajiPokok', null)->has('OpsiPengguna', 0));
-        $this->post('/kelola/karyawan', ['Nama' => 'Tidak Boleh'])->assertForbidden();
+        $this->get('/kelola/tim')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Tim/Daftar')->where('Izin.KelolaKaryawan', false)->has('OpsiPengguna', 0)
+            ->where('Tim', fn ($tim) => collect($tim)->every(fn (array $b): bool => ($b['Karyawan']['GajiPokok'] ?? null) === null)));
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Tidak Boleh'])->assertForbidden();
 
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir);
-        $this->get('/kelola/karyawan')->assertForbidden();
+        $this->get('/kelola/tim')->assertForbidden();
     });
 
-    it('halaman tambah (halaman penuh): opsi akun & outlet; tanpa karyawan.kelola 403', function (): void {
+    it('halaman tambah (halaman penuh): opsi outlet & izin; tanpa izin tambah 403', function (): void {
         $k = SiapkanKaryawan($this);
-        $this->get('/kelola/karyawan/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Kelola/Karyawan/Buat')
-            ->has('OpsiPengguna')
-            ->has('OpsiPengguna.0', fn (AssertableInertia $o) => $o->hasAll(['Uuid', 'Nama']))
+        $this->get('/kelola/tim/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Tim/Tambah')
+            ->where('BolehKaryawan', true)->where('BolehAkun', true)
             ->has('OpsiOutlet.0', fn (AssertableInertia $o) => $o->hasAll(['Uuid', 'Nama']))
-            ->missing('Karyawan'));
+            ->where('KaryawanTertaut', null));
 
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Supervisor);
-        $this->get('/kelola/karyawan/buat')->assertForbidden();
+        $this->get('/kelola/tim/buat')->assertForbidden();
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir);
-        $this->get('/kelola/karyawan/buat')->assertForbidden();
+        $this->get('/kelola/tim/buat')->assertForbidden();
     });
 });
 
 describe('F-18 jadwal kerja', function (): void {
     it('simpan, ubah, hapus jadwal minggu; jam tidak valid & bentrok outlet lain ditolak; salin minggu lalu', function (): void {
         $k = SiapkanKaryawan($this);
-        $this->post('/kelola/karyawan', ['Nama' => 'Dimas Pratama', 'UuidOutlet' => $k['Outlet']->Uuid])->assertSessionHasNoErrors();
+        $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Dimas Pratama', 'UuidOutlet' => $k['Outlet']->Uuid])->assertSessionHasNoErrors();
         $dimas = Karyawan::query()->sole();
         $senin = CarbonImmutable::parse('2026-09-21');
         $isian = fn (array $sel): array => ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21', 'Sel' => $sel];

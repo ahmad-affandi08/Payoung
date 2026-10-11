@@ -26,7 +26,6 @@ $izin = static fn (IzinTenant $izin): string => WajibIzinTenant::class.':'.$izin
 $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 
 Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])->prefix('karyawan')->group(function () use ($izin, $ulid): void {
-    Route::get('/', [KaryawanKontroler::class, 'Daftar'])->name('kelola.karyawan.daftar');
     Route::get('/jadwal', [JadwalKerjaKontroler::class, 'Tampil'])->name('kelola.karyawan.jadwal');
     Route::get('/absensi', [AbsensiKontroler::class, 'Daftar'])->name('kelola.karyawan.absensi.daftar');
     // F-18 bagian 5 (D-44): aturan kehadiran (jadwal ↔ absensi ↔ notifikasi).
@@ -42,17 +41,13 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
     Route::get('/absensi/{absensi}/swafoto/{jenis}', [AbsensiKontroler::class, 'Swafoto'])->where(['absensi' => $ulid, 'jenis' => 'masuk|keluar'])->name('kelola.karyawan.absensi.swafoto');
 
     Route::middleware($izin(IzinTenant::KaryawanKelola))->group(function () use ($ulid): void {
-        Route::get('/buat', [KaryawanKontroler::class, 'Buat'])->name('kelola.karyawan.buat');
         // v3.34: koreksi & tambah absensi manual.
         Route::post('/absensi', [AbsensiKontroler::class, 'Tambah'])->name('kelola.karyawan.absensi.tambah');
         Route::put('/aturan-kehadiran', [AturanKehadiranKontroler::class, 'Simpan'])->name('kelola.karyawan.aturan-kehadiran.simpan');
         // F-18 bagian 4 (D-37, K37): kalibrasi ambang kemiripan wajah absensi web.
         Route::get('/absensi/kalibrasi-wajah', [AbsensiKontroler::class, 'KalibrasiWajah'])->name('kelola.karyawan.absensi.kalibrasi-wajah');
         Route::put('/absensi/{absensi}', [AbsensiKontroler::class, 'Koreksi'])->where('absensi', $ulid)->name('kelola.karyawan.absensi.koreksi');
-        Route::post('/', [KaryawanKontroler::class, 'Simpan'])->name('kelola.karyawan.simpan');
         Route::put('/{karyawan}', [KaryawanKontroler::class, 'Perbarui'])->where('karyawan', $ulid)->name('kelola.karyawan.perbarui');
-        Route::post('/{karyawan}/nonaktifkan', [KaryawanKontroler::class, 'Nonaktifkan'])->where('karyawan', $ulid)->name('kelola.karyawan.nonaktifkan');
-        Route::post('/{karyawan}/aktifkan', [KaryawanKontroler::class, 'Aktifkan'])->where('karyawan', $ulid)->name('kelola.karyawan.aktifkan');
         // F-18 bagian 4 (D-37): absen HP pribadi lewat web — tautan pribadi & wajah terdaftar.
         Route::get('/{karyawan}/absen-hp', [AbsenHpKaryawanKontroler::class, 'Tampilkan'])->where('karyawan', $ulid)->name('kelola.karyawan.absen-hp');
         Route::post('/{karyawan}/tautan-absen', [AbsenHpKaryawanKontroler::class, 'BuatTautan'])->where('karyawan', $ulid)->name('kelola.karyawan.tautan-absen.buat');
