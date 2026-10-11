@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
  * D-22: tambah pengguna langsung. Email kosong = karyawan hanya kasir (wajib PIN 6 angka); email terisi wajib kata
  * sandi awal (diganti pengguna saat pertama masuk).
  */
-final class TambahPenggunaPermintaan extends AksesAnggotaPermintaan
+class TambahPenggunaPermintaan extends AksesAnggotaPermintaan
 {
     /**
      * @return array<string, list<mixed>>

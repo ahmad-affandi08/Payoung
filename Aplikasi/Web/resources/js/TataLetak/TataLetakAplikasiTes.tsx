@@ -322,7 +322,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             'Grosir',
             // F-16a: data pelanggan.
             'Pelanggan',
-            'Karyawan',
+            'Tim',
             'Akuntansi',
             'Pengaturan',
             'Bantuan',

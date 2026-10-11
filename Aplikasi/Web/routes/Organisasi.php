@@ -10,6 +10,7 @@ use App\Http\Kontroler\Kelola\MerekKontroler;
 use App\Http\Kontroler\Kelola\OutletKontroler;
 use App\Http\Kontroler\Kelola\PenggunaKontroler;
 use App\Http\Kontroler\Kelola\PeranKontroler;
+use App\Http\Kontroler\Kelola\TimKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +21,10 @@ use Illuminate\Support\Facades\Route;
  */
 
 $izin = static fn (IzinTenant $izin): string => WajibIzinTenant::class.':'.$izin->value;
+// D-101: salah satu dari beberapa izin cukup.
+$izinSalahSatu = static fn (IzinTenant ...$izin): string => WajibIzinTenant::class.':'.implode('|', array_map(static fn (IzinTenant $i): string => $i->value, $izin));
 
-Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): void {
+Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $izinSalahSatu): void {
     // Outlet, lokasi stok, merek (F-02 langkah 1–2).
     Route::get('/outlet', [OutletKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::OutletLihat))->name('kelola.outlet.daftar');
     Route::get('/outlet/buat', [OutletKontroler::class, 'Buat'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.buat');
@@ -64,6 +67,12 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): voi
     Route::post('/merek', [MerekKontroler::class, 'Simpan'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.merek.simpan');
     Route::put('/merek/{merek}', [MerekKontroler::class, 'Ubah'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.merek.ubah');
     Route::delete('/merek/{merek}', [MerekKontroler::class, 'Hapus'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.merek.hapus');
+
+    // Tim (D-101): satu daftar & satu formulir untuk akun (pengguna) dan data karyawan.
+    Route::get('/tim', [TimKontroler::class, 'Daftar'])->middleware($izinSalahSatu(IzinTenant::KaryawanLihat, IzinTenant::PenggunaLihat))->name('kelola.tim.daftar');
+    Route::get('/tim/buat', [TimKontroler::class, 'Buat'])->middleware($izinSalahSatu(IzinTenant::PenggunaUndang, IzinTenant::KaryawanKelola))->name('kelola.tim.buat');
+    Route::post('/tim', [TimKontroler::class, 'Simpan'])->middleware($izinSalahSatu(IzinTenant::PenggunaUndang, IzinTenant::KaryawanKelola))->name('kelola.tim.simpan');
+    Route::post('/tim/status', [TimKontroler::class, 'Status'])->middleware($izinSalahSatu(IzinTenant::PenggunaNonaktifkan, IzinTenant::KaryawanKelola))->name('kelola.tim.status');
 
     // Pengguna & peran (F-02 langkah 3, §19.1).
     Route::get('/pengguna', [PenggunaKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::PenggunaLihat))->name('kelola.pengguna.daftar');

@@ -10,6 +10,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
@@ -120,6 +121,13 @@ export default function HalamanDaftarKaryawan({ Karyawan, OpsiPengguna, OpsiOutl
 
     return (
         <TataLetakAplikasi judul="Karyawan">
+            <Pemberitahuan jenis="info" judul="Pengguna dan karyawan kini digabung di menu Tim">
+                Satu daftar, satu formulir tambah, dan nonaktif sekaligus untuk akun &amp; jadwalnya.{' '}
+                <Link href="/kelola/tim" className="font-semibold text-brand underline">
+                    Buka Tim
+                </Link>
+                .
+            </Pemberitahuan>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Karyawan dijadwalkan per outlet dan absen masuk/keluar di aplikasi kasir dengan PIN akunnya, atau dari
                 HP pribadi lewat tautan absen (wajah + lokasi outlet), termasuk karyawan tanpa akun.

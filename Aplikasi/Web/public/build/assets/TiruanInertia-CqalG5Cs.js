@@ -1,1 +1,0 @@
-import{r as e}from"./CetakTes-PnUplFSy.js";export{e as TiruanInertia};

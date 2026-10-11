@@ -27,9 +27,12 @@ final class TambahStaf
         private readonly PencatatAudit $audit,
     ) {}
 
-    public function Jalankan(Pengguna $pelaku, DataPenggunaBaru $data, DataAksesAnggota $akses, bool $jugaKaryawan, ?string $jabatan, ?string $uuidKaryawanTertaut = null): Pengguna
+    /**
+     * @param  DataKaryawan|null  $rinciKaryawan  D-101: level staf, gaji, tarif lembur & potongan dari formulir Tim; nama, akun, outlet, dan jabatan tetap ditentukan di sini.
+     */
+    public function Jalankan(Pengguna $pelaku, DataPenggunaBaru $data, DataAksesAnggota $akses, bool $jugaKaryawan, ?string $jabatan, ?string $uuidKaryawanTertaut = null, ?DataKaryawan $rinciKaryawan = null): Pengguna
     {
-        return DB::transaction(function () use ($pelaku, $data, $akses, $jugaKaryawan, $jabatan, $uuidKaryawanTertaut): Pengguna {
+        return DB::transaction(function () use ($pelaku, $data, $akses, $jugaKaryawan, $jabatan, $uuidKaryawanTertaut, $rinciKaryawan): Pengguna {
             $karyawanAda = $uuidKaryawanTertaut === null ? null : Karyawan::query()->where('Uuid', $uuidKaryawanTertaut)->lockForUpdate()->first();
 
             if ($uuidKaryawanTertaut !== null && ($karyawanAda === null || $karyawanAda->IdPengguna !== null)) {
@@ -50,11 +53,14 @@ final class TambahStaf
                 $this->simpanKaryawan->Jalankan(new DataKaryawan(
                     nama: $pengguna->Nama,
                     jabatan: $jabatan,
-                    levelStaf: null,
-                    gajiPokok: null,
+                    levelStaf: $rinciKaryawan?->levelStaf,
+                    gajiPokok: $rinciKaryawan?->gajiPokok,
                     uuidPengguna: $pengguna->Uuid,
                     uuidOutlet: $akses->semuaOutlet ? null : ($akses->uuidOutlet[0] ?? null),
                     idPengguna: $pelaku->Id,
+                    tarifLemburPerJam: $rinciKaryawan?->tarifLemburPerJam,
+                    potonganTerlambatPerMenit: $rinciKaryawan?->potonganTerlambatPerMenit,
+                    potonganTidakMasukPerHari: $rinciKaryawan?->potonganTidakMasukPerHari,
                 ));
             }
 

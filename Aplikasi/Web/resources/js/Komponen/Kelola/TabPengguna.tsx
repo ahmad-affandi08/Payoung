@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/react';
 import TabTautan from '@/Komponen/Navigasi/TabTautan';
 
 const daftarTab = [
-    { label: 'Pengguna', href: '/kelola/pengguna' },
+    { label: 'Tim', href: '/kelola/tim' },
     { label: 'Peran & izin', href: '/kelola/peran' },
 ];
 
@@ -15,9 +15,6 @@ export default function TabPengguna() {
     const { url } = usePage();
 
     return (
-        <TabTautan
-            label="Pengguna & peran"
-            tab={daftarTab.map((tab) => ({ ...tab, aktif: url.startsWith(tab.href) }))}
-        />
+        <TabTautan label="Tim & peran" tab={daftarTab.map((tab) => ({ ...tab, aktif: url.startsWith(tab.href) }))} />
     );
 }

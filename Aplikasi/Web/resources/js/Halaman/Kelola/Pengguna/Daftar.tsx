@@ -244,6 +244,13 @@ export default function HalamanDaftarPengguna({
 
     return (
         <TataLetakAplikasi judul="Pengguna & peran">
+            <Pemberitahuan jenis="info" judul="Pengguna dan karyawan kini digabung di menu Tim">
+                Satu daftar, satu formulir tambah, dan nonaktif sekaligus untuk akun &amp; jadwalnya.{' '}
+                <Link href="/kelola/tim" className="font-semibold text-brand underline">
+                    Buka Tim
+                </Link>
+                .
+            </Pemberitahuan>
             <TabPengguna />
             <AksiHalaman
                 keterangan={

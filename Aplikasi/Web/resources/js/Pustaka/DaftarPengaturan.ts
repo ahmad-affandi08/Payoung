@@ -228,9 +228,9 @@ export const daftarPengaturan: GrupPengaturan[] = [
         judul: 'Akses & keamanan',
         butir: [
             {
-                label: 'Pengguna & peran',
-                keterangan: 'Anggota usaha, izin per peran, dan PIN kasir mereka.',
-                href: '/kelola/pengguna',
+                label: 'Peran & izin',
+                keterangan: 'Izin tiap peran. Anggota tim, akses masuk, dan PIN kasir ada di menu Tim.',
+                href: '/kelola/peran',
                 izin: IzinTenant.PenggunaLihat,
             },
             {

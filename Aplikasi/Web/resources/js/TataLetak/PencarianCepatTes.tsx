@@ -101,7 +101,9 @@ describe('Pencarian cepat di kepala halaman', () => {
         const alamat = halaman.map((h) => h.href);
 
         expect(alamat).toContain('/kelola/outlet');
-        expect(alamat).toContain('/kelola/pengguna');
+        // D-101: anggota tim pindah ke menu Tim; Pengaturan menyisakan Peran & izin.
+        expect(alamat).toContain('/kelola/peran');
+        expect(alamat).toContain('/kelola/tim');
         expect(alamat).toContain('/kelola/satuan');
         expect(alamat).toContain('/kelola/kasir/struk');
         expect(halaman.find((h) => h.href === '/kelola/outlet')?.grup).toBe('Pengaturan › Usaha');

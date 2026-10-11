@@ -53,6 +53,16 @@ final class DaftarKaryawan
     }
 
     /**
+     * D-101: semua karyawan tenant dalam bentuk baris daftar (untuk halaman Tim yang menggabungkan akun & karyawan).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function AmbilSemua(bool $lihatGaji): array
+    {
+        return $this->Petakan(Karyawan::query()->orderBy('Nama')->get(), $lihatGaji);
+    }
+
+    /**
      * Karyawan aktif (pilihan saring & jadwal).
      *
      * @return list<array{Uuid: string, Nama: string}>

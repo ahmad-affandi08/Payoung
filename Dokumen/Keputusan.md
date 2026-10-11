@@ -102,6 +102,7 @@
 | D-98 | Dari pemilik produk ("saya coba upgrade dari Pro ke Bisnis itu tidak bisa"). Keputusan agen (D-12, D-17): yang dibangun naik paket (prorata selisih, paket berganti saat lunas); turun paket sengaja ditunda karena menyentuh BR-P04.4 (kelebihan kapasitas) dan butuh keputusan pemilik produk. Detail di versi 5.35. |
 | D-99 | Dari pemilik produk ("lihat toko online ... scan siapa tau ada kejadian seperti ini di page atau menu lain"). Keputusan agen (D-12, D-17): satu halaman = satu `<h1>` dari tata letak; judul tambahan di isi halaman dilarang dan dijaga test. Detail di versi 5.36. |
 | D-100 | Dari pemilik produk (tangkapan layar kolom centang yang jelek). Keputusan agen (D-12, D-17): warna baris terpilih satu per baris, sel menempel mewarisinya. Detail di versi 5.37. |
+| D-101 | Dari pemilik produk ("karyawan dan pengguna ini masih ribet banget dan bisa double", setuju usulan agen: grup Tim, peran tetap di Pengaturan). Keputusan agen (D-12, D-17): dua entitas tetap, satu daftar & satu formulir, nonaktif bersama; membuka kembali penundaan grup "Tim" di D-46. Detail di versi 5.38. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

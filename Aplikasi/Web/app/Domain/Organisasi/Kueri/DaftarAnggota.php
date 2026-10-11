@@ -89,6 +89,22 @@ final class DaftarAnggota
     }
 
     /**
+     * D-101: Uuid → Id semua anggota tenant (aktif maupun nonaktif), untuk menggabungkan akun dengan data karyawan.
+     *
+     * @return array<string, int>
+     */
+    public function AmbilPetaIdPengguna(int $idTenant): array
+    {
+        $hasil = [];
+
+        foreach (TenantPengguna::query()->where('IdTenant', $idTenant)->with('Pengguna:Id,Uuid')->get() as $baris) {
+            $hasil[$baris->Pengguna->Uuid] = $baris->Pengguna->Id;
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Nama pelaku untuk log audit. Hanya pengguna yang pernah menjadi anggota tenant ini yang ditampilkan.
      *
      * @param  list<int>  $idPengguna

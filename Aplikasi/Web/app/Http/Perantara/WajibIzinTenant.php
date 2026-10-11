@@ -16,6 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Izin tenant untuk rute back-office (PRD §19.1). Pemakaian: `->middleware(WajibIzinTenant::class.':outlet.kelola')`,
  * dipasang setelah `IdentifikasiTenantSesi`. Pemilik selalu lolos. Tanpa izin → halaman "Tanpa izin" (§17.6.6), 403.
+ * Beberapa izin dipisah `|` = cukup salah satu (D-101: halaman Tim terbuka bagi pemegang `karyawan.lihat` atau
+ * `pengguna.lihat`).
  */
 final class WajibIzinTenant
 {
@@ -29,8 +31,12 @@ final class WajibIzinTenant
         $idPengguna = Auth::guard('web')->id();
         $idTenant = $this->konteks->Ambil();
 
-        if (is_int($idPengguna) && $idTenant !== null && $this->akses->CekIzin($idTenant, $idPengguna, IzinTenant::from($izin))) {
-            return $next($request);
+        if (is_int($idPengguna) && $idTenant !== null) {
+            foreach (explode('|', $izin) as $kunci) {
+                if ($this->akses->CekIzin($idTenant, $idPengguna, IzinTenant::from($kunci))) {
+                    return $next($request);
+                }
+            }
         }
 
         if ($request->expectsJson() && ! $request->hasHeader('X-Inertia')) {

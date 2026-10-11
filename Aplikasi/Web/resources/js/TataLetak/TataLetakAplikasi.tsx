@@ -70,6 +70,8 @@ type ItemMenu = {
     label: string;
     href: string;
     izin: KunciIzinTenant | null;
+    /** D-101: izin alternatif — cukup salah satu dari `izin` atau `atau` (menu Tim terbuka bagi pemegang lihat karyawan atau lihat pengguna). */
+    atau?: KunciIzinTenant;
     ikon?: NamaIkonNavigasi;
     fitur?: string;
     pemisah?: boolean;
@@ -202,9 +204,9 @@ const menuPelanggan: ItemMenu[] = [
     },
 ];
 
-// F-18: karyawan, jadwal kerja, rekap absensi (karyawan.lihat).
+// D-101: grup "Tim" — satu daftar untuk akun masuk (pengguna) dan data karyawan; jadwal, absensi, komisi, gaji (karyawan.lihat).
 const menuKaryawan: ItemMenu[] = [
-    { label: 'Daftar karyawan', href: '/kelola/karyawan', izin: IzinTenant.KaryawanLihat },
+    { label: 'Daftar tim', href: '/kelola/tim', izin: IzinTenant.KaryawanLihat, atau: IzinTenant.PenggunaLihat },
     { label: 'Jadwal kerja', href: '/kelola/karyawan/jadwal', izin: IzinTenant.KaryawanLihat },
     { label: 'Absensi', href: '/kelola/karyawan/absensi', izin: IzinTenant.KaryawanLihat },
     // F-18 bagian 2: komisi (aturannya pindah ke Pengaturan, D-27).
@@ -417,11 +419,11 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         sub: menuPelanggan,
     },
     {
-        label: 'Karyawan',
-        href: '/kelola/karyawan',
+        label: 'Tim',
+        href: '/kelola/tim',
         izin: null,
         ikon: 'Karyawan',
-        labelSub: 'Menu karyawan',
+        labelSub: 'Menu tim',
         sub: menuKaryawan,
     },
     {
@@ -595,14 +597,10 @@ function CekGrupMenu(menu: ItemMenu | GrupMenu): menu is GrupMenu {
 /** Halaman yang rumahnya di Pengaturan (D-27), untuk menyalakan menu Pengaturan saat salah satunya dibuka. */
 const butirPengaturan: ItemMenu[] = daftarPengaturan.flatMap(({ butir }) => butir);
 
-/** Grup Pengaturan yang memuat jalur ini; `/kelola/peran` ikut grup "Pengguna & peran". */
+/** Grup Pengaturan yang memuat jalur ini. */
 function CariGrupPengaturan(jalur: string): GrupPengaturan | undefined {
-    const rumah = jalur.startsWith('/kelola/peran') ? '/kelola/pengguna' : null;
-
     return daftarPengaturan.find(({ butir }) =>
-        butir.some((item) =>
-            rumah === null ? jalur === item.href || jalur.startsWith(`${item.href}/`) : item.href === rumah,
-        ),
+        butir.some((item) => jalur === item.href || jalur.startsWith(`${item.href}/`)),
     );
 }
 
@@ -669,7 +667,9 @@ export function SaringMenuTerlihat(
     opsi: { sektorOutlet?: string[]; sederhana?: boolean } = {},
 ): MenuTerlihat[] {
     const CekBoleh = (menu: ItemMenu) =>
-        (menu.izin === null || PunyaIzinTenant(akses, menu.izin)) &&
+        (menu.izin === null ||
+            PunyaIzinTenant(akses, menu.izin) ||
+            (menu.atau !== undefined && PunyaIzinTenant(akses, menu.atau))) &&
         CekSesuaiSektor(menu, opsi.sektorOutlet ?? []) &&
         !(opsi.sederhana === true && menu.lanjutan === true);
 
