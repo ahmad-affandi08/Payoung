@@ -14,10 +14,10 @@
 @source '../Komponen/Merek';
 @source '../Komponen/Navigasi/IkonNavigasi.tsx';
 @source '../Komponen/Formulir/{BagianBidang,BidangTeks,BidangTeksPanjang,KotakCentang,Tombol}.tsx';
-@source '../Komponen/Ui/{button,checkbox,field,input,label,separator,sheet,spinner,textarea}.tsx';
+@source '../Komponen/Ui/{badge,button,checkbox,field,input,label,separator,sheet,spinner,textarea}.tsx';
 @source '../Komponen/Ui/utils.ts';
-@source '../Tipe/Situs.ts';
-@source '../Komponen/Umpan/JudulHalaman.tsx';
+@source '../Tipe/{Situs,Kompatibilitas}.ts';
+@source '../Komponen/Umpan/{JudulHalaman,LabelStatus}.tsx';
 @source '../Pustaka/{AnalitikSitus,DaftarIsiTeks,Format,FormatWaktu}.ts';
 @source '../../views/Situs.blade.php';
 @source '../../views/situs';

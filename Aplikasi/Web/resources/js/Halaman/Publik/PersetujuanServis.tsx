@@ -4,6 +4,7 @@ import { useState } from 'react';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import KerangkaPelanggan from '@/Komponen/Publik/KerangkaPelanggan';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -29,10 +30,9 @@ export default function HalamanPersetujuanServis({ NamaToko, AlamatDasar, Perint
     const Tolak = () => router.post(`${AlamatDasar}/tolak`, { Catatan: catatan === '' ? null : catatan }, pilihan);
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-4 bg-latar px-4 py-6 text-isi text-teks-utama">
+        <KerangkaPelanggan toko={NamaToko}>
             <Head title={`Persetujuan servis ${pk.Nomor}`} />
             <header className="flex flex-col gap-1 border-b border-garis pb-4">
-                <p className="text-label text-teks-sekunder">{NamaToko}</p>
                 <JudulHalaman>Estimasi servis {pk.Kendaraan?.NomorPolisi ?? ''}</JudulHalaman>
                 <p className="text-keterangan text-teks-sekunder">
                     <span className="font-mono">{pk.Nomor}</span> | {pk.Kendaraan?.Label ?? ''} | a.n.{' '}
@@ -148,6 +148,6 @@ export default function HalamanPersetujuanServis({ NamaToko, AlamatDasar, Perint
                     bila ada perubahan.
                 </Pemberitahuan>
             )}
-        </main>
+        </KerangkaPelanggan>
     );
 }

@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import KerangkaPelanggan from '@/Komponen/Publik/KerangkaPelanggan';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
@@ -42,7 +43,7 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
     const [memproses, AturMemproses] = useState(false);
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-4 bg-latar px-4 py-6 text-isi text-teks-utama">
+        <KerangkaPelanggan toko={Toko?.Nama}>
             <Head title="Status reservasi" />
             {!Ditemukan || !r ? (
                 <>
@@ -52,7 +53,6 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
             ) : (
                 <>
                     <header className="flex flex-col gap-1 border-b border-garis pb-3">
-                        <p className="text-label text-teks-sekunder">{Toko?.Nama}</p>
                         <JudulHalaman>Reservasi {r.Nomor}</JudulHalaman>
                     </header>
                     {props.Kilat ? <Pemberitahuan jenis="sukses">{props.Kilat}</Pemberitahuan> : null}
@@ -91,6 +91,6 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
                     ) : null}
                 </>
             )}
-        </main>
+        </KerangkaPelanggan>
     );
 }

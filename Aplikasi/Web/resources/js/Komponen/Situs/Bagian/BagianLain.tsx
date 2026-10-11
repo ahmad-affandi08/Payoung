@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { Check, ChevronDown, Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { Check, ChevronDown, Clock, Mail, MapPin, MessageCircle, Phone, Smartphone } from 'lucide-react';
 
 import { SPESIMEN } from '@/Komponen/Situs/SpesimenSitus';
 import TeksKaya from '@/Komponen/Situs/TeksKaya';
@@ -207,9 +207,15 @@ export function BagianUnduhAplikasi({ bagian, latar, garisAtas }: PropsBagian<'U
         <WadahBagian latar={latar} garisAtas={garisAtas}>
             <KepalaBagian label={bagian.Label} judul={bagian.Judul} subjudul={bagian.Subjudul} gelap={gelap} />
             {tersedia.length === 0 ? (
-                <p className={cn('text-isi', gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder')}>
-                    Tautan unduhan segera tersedia. Hubungi kami untuk mendapatkan aplikasinya.
-                </p>
+                <div className={cn('flex items-start gap-4', KelasKartu(latar))}>
+                    <Smartphone
+                        aria-hidden
+                        className={cn('size-6 shrink-0', gelap ? 'text-brand-gelap-teks' : 'text-brand')}
+                    />
+                    <p className={cn('text-isi', gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder')}>
+                        Tautan unduhan segera tersedia. Hubungi kami untuk mendapatkan aplikasinya.
+                    </p>
+                </div>
             ) : (
                 <ul className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
                     {tersedia.map((p) => (
@@ -247,9 +253,15 @@ export function BagianKontak({ bagian, latar, garisAtas }: PropsBagian<'Kontak'>
         <WadahBagian latar={latar} garisAtas={garisAtas}>
             <KepalaBagian label={bagian.Label} judul={bagian.Judul} subjudul={bagian.Subjudul} gelap={gelap} />
             {!ada ? (
-                <p className={cn('text-isi', gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder')}>
-                    Kontak sedang disiapkan.
-                </p>
+                <div className={cn('flex items-start gap-4', KelasKartu(latar))}>
+                    <MessageCircle
+                        aria-hidden
+                        className={cn('size-6 shrink-0', gelap ? 'text-brand-gelap-teks' : 'text-brand')}
+                    />
+                    <p className={cn('text-isi', gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder')}>
+                        Kontak sedang disiapkan. Sementara itu, tinggalkan nomor WhatsApp Anda di formulir demo.
+                    </p>
+                </div>
             ) : (
                 <ul className="grid gap-4 sm:grid-cols-2">
                     {k.TautanWhatsApp ? (

@@ -128,6 +128,16 @@ describe('Situs pemasaran D-21: utilitas', () => {
         expect(screen.getAllByRole('listitem')).toHaveLength(2);
     });
 
+    it('TeksKaya membaca judul dan daftar yang ditulis tanpa baris kosong di sekitarnya (halaman Tentang kami)', () => {
+        render(<TeksKaya teks={'Pembuka.\n## Tiga hal\n- **Satu** dulu\n- Dua\nPenutup.'} />);
+
+        expect(screen.getByRole('heading', { name: 'Tiga hal' }).tagName).toBe('H3');
+        expect(screen.getAllByRole('listitem')).toHaveLength(2);
+        expect(screen.getByText('Pembuka.')).toBeTruthy();
+        expect(screen.getByText('Penutup.')).toBeTruthy();
+        expect(screen.queryByText(/## /)).toBeNull();
+    });
+
     it('TeksKaya merender judul bertingkat & daftar bernomor yang dipakai dokumen legal (D-28)', () => {
         // `## ` tetap h3 seperti sebelum D-28, supaya artikel blog yang sudah terbit tidak berubah tampilannya.
         render(

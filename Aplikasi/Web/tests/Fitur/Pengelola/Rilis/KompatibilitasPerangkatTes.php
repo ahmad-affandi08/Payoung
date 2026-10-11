@@ -96,7 +96,7 @@ describe('v1.98 daftar kompatibilitas perangkat (HCL)', function (): void {
         // Setelah permintaan ke domain pengelola, alamat relatif ikut host itu: pakai domain utama eksplisit.
         $publik = $this->get('http://localhost/kompatibilitas-perangkat')->assertOk();
         $publik->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Publik/KompatibilitasPerangkat')
+            ->component('Situs/KompatibilitasPerangkat')
             ->has('Baris', 4)
             ->where('Baris.2.Nama', 'RPP02N')
             ->where('Baris.2.Status', 'Tersertifikasi')

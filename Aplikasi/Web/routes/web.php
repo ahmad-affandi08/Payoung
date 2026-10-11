@@ -98,6 +98,10 @@ if ($saas) {
         Route::get('/pengembang', [PengembangKontroler::class, 'Tampilkan'])->name('situs.pengembang');
         // P-06 dokumen legal publik. D-28: ikut shell & bundle situs, jadi ada kepala, kaki, dan jalan kembali.
         Route::get('/legal/{jenis}', [DokumenLegalPublikKontroler::class, 'Tampilkan'])->name('legal.tampil');
+        // v1.98 Hardware Compatibility List publik (PRD §17.2.5a). D-92: ikut shell & bundle situs (kepala, kaki, pencarian).
+        Route::get('/kompatibilitas-perangkat', [KompatibilitasPerangkatPublikKontroler::class, 'Tampilkan'])
+            ->middleware('throttle:60,1')
+            ->name('publik.kompatibilitas-perangkat');
     });
 
     // D-21 halaman situs pemasaran (`/fitur`, `/solusi/kafe-resto`, …). Didaftarkan sebelum rute `/{slugTenant}` (toko
@@ -129,10 +133,6 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kode', TautanBerhentiLangganan::POLA)
         ->middleware('throttle:30,1')
         ->name('publik.berhenti-langganan.kirim');
-    // v1.98 Hardware Compatibility List publik (PRD §17.2.5a).
-    Route::get('/kompatibilitas-perangkat', [KompatibilitasPerangkatPublikKontroler::class, 'Tampilkan'])
-        ->middleware('throttle:60,1')
-        ->name('publik.kompatibilitas-perangkat');
 
     // D-57 Masuk dengan Google. Di luar grup `guest`: tujuan "tautkan" dipakai pengguna yang sudah masuk (Keamanan akun).
     Route::get('/masuk/google', [MasukGoogleKontroler::class, 'Mulai'])->middleware('throttle:20,1')->name('masuk.google');

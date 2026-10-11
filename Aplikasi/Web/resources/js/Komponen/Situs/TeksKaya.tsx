@@ -45,6 +45,52 @@ function RenderInline(teks: string, kunci: string): ReactNode[] {
     return hasil;
 }
 
+type JenisBlok = 'p' | 'ul' | 'ol' | 'h2' | 'h3' | 'h4';
+type Blok = { jenis: JenisBlok; baris: string[] };
+
+function AmbilJenisBaris(baris: string): JenisBlok {
+    if (baris.startsWith('### ')) return 'h4';
+    if (baris.startsWith('## ')) return 'h3';
+    if (baris.startsWith('# ')) return 'h2';
+    if (baris.trimStart().startsWith('- ')) return 'ul';
+    if (/^\s*\d+\.\s/.test(baris)) return 'ol';
+
+    return 'p';
+}
+
+/**
+ * Menguraikan teks menjadi blok per baris. Baris kosong memisahkan blok; selain itu judul selalu berdiri sendiri
+ * dan daftar/paragraf berhenti di baris yang jenisnya berbeda, jadi judul atau daftar yang ditulis tanpa baris kosong
+ * di sekitarnya tetap terbaca sebagai judul/daftar (sebelumnya tampil sebagai teks mentah "## ...").
+ */
+function UraiBlok(teks: string): Blok[] {
+    const hasil: Blok[] = [];
+    let kini: Blok | null = null;
+
+    for (const mentah of teks.split('\n')) {
+        if (mentah.trim() === '') {
+            kini = null;
+            continue;
+        }
+
+        const jenis = AmbilJenisBaris(mentah);
+        const judul = jenis === 'h2' || jenis === 'h3' || jenis === 'h4';
+
+        if (kini === null || judul || kini.jenis !== jenis) {
+            kini = { jenis, baris: [] };
+            hasil.push(kini);
+        }
+
+        kini.baris.push(mentah);
+
+        if (judul) {
+            kini = null;
+        }
+    }
+
+    return hasil;
+}
+
 /**
  * Teks bebas tanpa HTML (D-21, dipakai juga dokumen legal D-28): paragraf dipisah baris kosong, `# `/`## `/`### `
  * judul bertingkat, `- ` butir daftar, `1. ` daftar bernomor, baris baru di dalam paragraf dipertahankan,
@@ -63,32 +109,31 @@ export default function TeksKaya({
     /** Beri id pada judul `# ` dan `## ` supaya bisa ditautkan dari daftar isi (dokumen legal). */
     jangkar?: boolean;
 }) {
-    const blok = teks.split(/\n{2,}/);
+    const blok = UraiBlok(teks);
 
     return (
         <div className={`flex flex-col gap-4 ${className ?? ''}`}>
-            {blok.map((isi, i) => {
-                const baris = isi.split('\n').filter((b) => b.trim() !== '');
+            {blok.map((b, i) => {
+                const { baris } = b;
 
-                if (baris.length > 0 && baris.every((b) => b.trimStart().startsWith('- '))) {
+                if (b.jenis === 'ul') {
                     return (
                         <ul key={i} className="flex list-disc flex-col gap-1 pl-5">
-                            {baris.map((b, j) => (
-                                <li key={j}>{RenderInline(b.trimStart().slice(2), `${i}-${j}`)}</li>
+                            {baris.map((l, j) => (
+                                <li key={j}>{RenderInline(l.trimStart().slice(2), `${i}-${j}`)}</li>
                             ))}
                         </ul>
                     );
                 }
 
-                // Daftar bernomor: setiap baris diawali "1. ", "2. ", dan seterusnya. Nomor awalnya dipakai apa
-                // adanya supaya pasal yang dikutip sebagian tetap bernomor benar.
-                if (baris.length > 0 && baris.every((b) => /^\s*\d+\.\s/.test(b))) {
+                // Daftar bernomor: nomor awalnya dipakai apa adanya supaya pasal yang dikutip sebagian tetap bernomor benar.
+                if (b.jenis === 'ol') {
                     const mulai = Number(/^\s*(\d+)\./.exec(baris[0] ?? '')?.[1] ?? 1);
 
                     return (
                         <ol key={i} start={mulai} className="flex list-decimal flex-col gap-1 pl-5">
-                            {baris.map((b, j) => (
-                                <li key={j}>{RenderInline(b.replace(/^\s*\d+\.\s/, ''), `${i}-${j}`)}</li>
+                            {baris.map((l, j) => (
+                                <li key={j}>{RenderInline(l.replace(/^\s*\d+\.\s/, ''), `${i}-${j}`)}</li>
                             ))}
                         </ol>
                     );
@@ -96,44 +141,48 @@ export default function TeksKaya({
 
                 // Judul bertingkat. `## ` tetap `h3` seperti sebelumnya supaya artikel blog yang sudah terbit tidak
                 // berubah tampilannya; `# ` dan `### ` menambah tingkat di atas & di bawahnya.
-                if (baris.length === 1 && baris[0]?.startsWith('### ')) {
+                if (b.jenis === 'h4') {
                     return (
                         <h4 key={i} className="text-subjudul font-semibold text-teks-utama">
-                            {baris[0].slice(4)}
+                            {(baris[0] ?? '').slice(4)}
                         </h4>
                     );
                 }
 
-                if (baris.length === 1 && baris[0]?.startsWith('## ')) {
+                if (b.jenis === 'h3') {
+                    const isi = (baris[0] ?? '').slice(3);
+
                     return (
                         <h3
                             key={i}
-                            {...(jangkar ? { id: BuatIdJudul(baris[0].slice(3)) } : {})}
+                            {...(jangkar ? { id: BuatIdJudul(isi) } : {})}
                             className="scroll-mt-24 text-judul font-bold text-teks-utama"
                         >
-                            {baris[0].slice(3)}
+                            {isi}
                         </h3>
                     );
                 }
 
-                if (baris.length === 1 && baris[0]?.startsWith('# ')) {
+                if (b.jenis === 'h2') {
+                    const isi = (baris[0] ?? '').slice(2);
+
                     return (
                         <h2
                             key={i}
-                            {...(jangkar ? { id: BuatIdJudul(baris[0].slice(2)) } : {})}
+                            {...(jangkar ? { id: BuatIdJudul(isi) } : {})}
                             className="scroll-mt-24 text-tampilan font-bold text-teks-utama"
                         >
-                            {baris[0].slice(2)}
+                            {isi}
                         </h2>
                     );
                 }
 
                 return (
                     <p key={i}>
-                        {baris.map((b, j) => (
+                        {baris.map((l, j) => (
                             <Fragment key={j}>
                                 {j > 0 ? <br /> : null}
-                                {RenderInline(b, `${i}-${j}`)}
+                                {RenderInline(l, `${i}-${j}`)}
                             </Fragment>
                         ))}
                     </p>

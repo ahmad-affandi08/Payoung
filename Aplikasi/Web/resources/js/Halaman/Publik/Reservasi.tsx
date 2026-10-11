@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import KerangkaPelanggan from '@/Komponen/Publik/KerangkaPelanggan';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
@@ -53,16 +54,16 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
 
     if (!props.Aktif) {
         return (
-            <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-4 bg-latar px-4 py-8 text-isi text-teks-utama">
+            <KerangkaPelanggan>
                 <Head title="Reservasi" />
                 <JudulHalaman>Reservasi online belum dibuka</JudulHalaman>
                 <p className="text-teks-sekunder">Hubungi toko langsung untuk membuat janji.</p>
-            </main>
+            </KerangkaPelanggan>
         );
     }
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-4 bg-latar px-4 py-6 text-isi text-teks-utama">
+        <KerangkaPelanggan toko={props.Toko?.Nama}>
             <Head title={`Reservasi ${props.Toko?.Nama ?? ''}`} />
             <header className="flex flex-col gap-1 border-b border-garis pb-3">
                 <p className="text-label text-teks-sekunder">Reservasi online</p>
@@ -153,6 +154,6 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
                     </Tombol>
                 </form>
             )}
-        </main>
+        </KerangkaPelanggan>
     );
 }

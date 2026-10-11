@@ -4,6 +4,7 @@ import { useState } from 'react';
 import BidangBerkas from '@/Komponen/Formulir/BidangBerkas';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import KerangkaPelanggan from '@/Komponen/Publik/KerangkaPelanggan';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -54,10 +55,9 @@ export default function HalamanPortalKurir({ NamaToko, NamaKurir, AlamatDasar, P
     const selesai = Pengiriman.filter((p) => p.Status !== 'Dikemas' && p.Status !== 'Dikirim');
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-4 bg-latar px-4 py-6 text-isi text-teks-utama">
+        <KerangkaPelanggan toko={NamaToko}>
             <Head title="Portal kurir" />
             <header className="border-b border-garis pb-4">
-                <p className="text-label text-teks-sekunder">{NamaToko}</p>
                 <JudulHalaman>Pengiriman {NamaKurir}</JudulHalaman>
             </header>
             {props.Kilat ? <Pemberitahuan jenis="sukses">{props.Kilat}</Pemberitahuan> : null}
@@ -88,7 +88,7 @@ export default function HalamanPortalKurir({ NamaToko, NamaKurir, AlamatDasar, P
                     </ul>
                 </section>
             ) : null}
-        </main>
+        </KerangkaPelanggan>
     );
 }
 
