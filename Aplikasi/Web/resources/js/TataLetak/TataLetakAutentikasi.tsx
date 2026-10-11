@@ -56,7 +56,7 @@ export default function TataLetakAutentikasi({ judul, keterangan, children, leba
                     <header className="flex flex-col gap-3">
                         {/* D-20: situs pemasaran bisa di domain lain, jadi tautan biasa (bukan kunjungan Inertia). */}
                         <a href={props.UrlPemasaran ?? '/'} className="mb-2 self-start">
-                            <LogoMerek nama={props.NamaAplikasi} className={`h-12 ${KELAS_HANYA_KECIL[lebar]}`} />
+                            <LogoMerek nama={props.NamaAplikasi} className={`h-14 ${KELAS_HANYA_KECIL[lebar]}`} />
                         </a>
                         {!lisensi && penawaran && promo ? (
                             <p

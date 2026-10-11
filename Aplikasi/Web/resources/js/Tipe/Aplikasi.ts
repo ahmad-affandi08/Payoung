@@ -95,4 +95,6 @@ export type PenawaranAuth = {
         PersenDiskon: number;
         HargaTerkunci: boolean;
     } | null;
+    /** Semua paket berbayar yang dijual, apa adanya dari katalog server (tanpa angka tulisan tangan). */
+    Paket: { Nama: string; HargaBulanan: string; HargaNormal: string | null; Sorotan: string[] }[];
 };

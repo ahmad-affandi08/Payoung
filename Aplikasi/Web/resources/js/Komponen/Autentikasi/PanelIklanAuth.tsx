@@ -27,6 +27,24 @@ function AmbilKurangiGerak(): boolean {
     return typeof window.matchMedia === 'function' && window.matchMedia(KUERI_KURANGI_GERAK).matches;
 }
 
+/** "Starter, Pro, dan Bisnis" dari daftar nama paket di katalog. */
+function GabungNama(nama: string[]): string {
+    if (nama.length < 2) {
+        return nama.join('');
+    }
+
+    return `${nama.slice(0, -1).join(', ')} dan ${nama[nama.length - 1] ?? ''}`;
+}
+
+/** "Pro: Rp 149.000/bulan (normal Rp 249.000) | 3 outlet, 5 perangkat…" seluruhnya dari data katalog. */
+function BarisPaket(paket: PenawaranAuth['Paket'][number]): string {
+    const harga = `${paket.Nama}: ${FormatRupiah(paket.HargaBulanan)}/bulan`;
+    const normal = paket.HargaNormal === null ? '' : ` (normal ${FormatRupiah(paket.HargaNormal)})`;
+    const batas = paket.Sorotan.length > 0 ? ` | ${paket.Sorotan.join(', ')}` : '';
+
+    return `${harga}${normal}${batas}`;
+}
+
 type Iklan = {
     kunci: string;
     label: string;
@@ -60,7 +78,6 @@ export function SusunIklan(penawaran: PenawaranAuth | null, lisensi: boolean): I
                     penawaran.MasaTrialHari > 0
                         ? `Coba gratis ${penawaran.MasaTrialHari} hari, tanpa kartu kredit`
                         : 'Tanpa kartu kredit',
-                    'Paket Pro dan Bisnis mencakup beberapa outlet dalam satu tagihan',
                 ],
                 gambar: { src: '/situs/produk/kasir-bayar.webp', alt: 'Layar pembayaran aplikasi kasir Payoung' },
             });
@@ -69,7 +86,7 @@ export function SusunIklan(penawaran: PenawaranAuth | null, lisensi: boolean): I
                 kunci: 'harga',
                 label: 'Harga terjangkau',
                 judul: `Mulai ${FormatRupiah(penawaran.HargaBulanan)} per bulan`,
-                teks: 'Paket Pro dan Bisnis mencakup beberapa outlet dalam satu tagihan, bukan bayar per outlet.',
+                teks: `Paket ${penawaran.NamaPaket} untuk usaha yang baru mulai, naik paket kapan saja.`,
                 sorot:
                     penawaran.MasaTrialHari > 0
                         ? [`Coba gratis ${penawaran.MasaTrialHari} hari, tanpa kartu kredit`]
@@ -83,6 +100,16 @@ export function SusunIklan(penawaran: PenawaranAuth | null, lisensi: boolean): I
                 teks: 'Siapkan toko dalam hitungan menit, lalu upgrade saat usaha Anda berkembang.',
             });
         }
+    }
+
+    if (!lisensi && penawaran && penawaran.Paket.length > 1) {
+        daftar.push({
+            kunci: 'paket',
+            label: 'Pilih sesuai usaha',
+            judul: `Paket ${GabungNama(penawaran.Paket.map((paket) => paket.Nama))}`,
+            teks: 'Harga dan batas tiap paket diambil langsung dari daftar paket Payoung.',
+            sorot: penawaran.Paket.map((paket) => BarisPaket(paket)),
+        });
     }
 
     daftar.push(
@@ -156,7 +183,7 @@ export default function PanelIklanAuth({
             onFocusCapture={() => AturDitahan(true)}
             onBlurCapture={() => AturDitahan(false)}
         >
-            <LogoMerek nama={nama} varian="putih" className="h-12 self-start" />
+            <LogoMerek nama={nama} varian="putih" className="h-16 self-start xl:h-18" />
 
             <section aria-roledescription="carousel" aria-label="Keunggulan Payoung" className="flex flex-col gap-8">
                 <div className="grid">

@@ -24,6 +24,11 @@ const penawaranPromo: PenawaranAuth = {
         PersenDiskon: 40,
         HargaTerkunci: true,
     },
+    Paket: [
+        { Nama: 'Starter', HargaBulanan: '59000.00', HargaNormal: '99000.00', Sorotan: ['1 outlet', '2 pengguna'] },
+        { Nama: 'Pro', HargaBulanan: '149000.00', HargaNormal: '249000.00', Sorotan: ['3 outlet'] },
+        { Nama: 'Bisnis', HargaBulanan: '299000.00', HargaNormal: null, Sorotan: [] },
+    ],
 };
 
 function PromoUji(): NonNullable<PenawaranAuth['Promo']> {
@@ -56,7 +61,31 @@ describe('SusunIklan', () => {
         expect(iklan[0]?.teks).toContain('31 Jan 2027');
         expect(iklan[0]?.teks).toContain('tetap di harga ini');
         expect(iklan[0]?.sorot?.[0]).toBe('Coba gratis 14 hari, tanpa kartu kredit');
-        expect(iklan.map((butir) => butir.kunci)).toEqual(['promo', 'offline', 'pantau', 'lengkap']);
+        expect(iklan.map((butir) => butir.kunci)).toEqual(['promo', 'paket', 'offline', 'pantau', 'lengkap']);
+    });
+
+    it('iklan paket memuat nama, harga, harga normal, dan batas apa adanya dari data, tanpa klaim tulisan tangan', () => {
+        const paket = SusunIklan(penawaranPromo, false).find((butir) => butir.kunci === 'paket');
+
+        expect(paket?.judul).toBe('Paket Starter, Pro dan Bisnis');
+        expect(paket?.sorot).toEqual([
+            'Starter: Rp 59.000/bulan (normal Rp 99.000) | 1 outlet, 2 pengguna',
+            'Pro: Rp 149.000/bulan (normal Rp 249.000) | 3 outlet',
+            'Bisnis: Rp 299.000/bulan',
+        ]);
+        expect(JSON.stringify(SusunIklan(penawaranPromo, false))).not.toContain('beberapa outlet');
+    });
+
+    it('satu paket saja tidak menampilkan iklan daftar paket', () => {
+        const satu = SusunIklan(
+            {
+                ...penawaranPromo,
+                Paket: [penawaranPromo.Paket[0] ?? { Nama: 'A', HargaBulanan: '1', HargaNormal: null, Sorotan: [] }],
+            },
+            false,
+        );
+
+        expect(satu.map((butir) => butir.kunci)).not.toContain('paket');
     });
 
     it('tanpa kunci harga janji "tetap di harga ini" tidak muncul; tanpa promo tidak ada diskon', () => {
@@ -82,14 +111,14 @@ describe('PanelIklanAuth (carousel)', () => {
         expect(SlideAktif()?.textContent).toContain('Diskon peluncuran 40%');
 
         act(() => vi.advanceTimersByTime(SELANG_IKLAN_MS));
-        expect(SlideAktif()?.textContent).toContain('Tetap jalan tanpa internet');
+        expect(SlideAktif()?.textContent).toContain('Paket Starter, Pro dan Bisnis');
 
         // Disorot mouse: tidak lagi berganti.
         fireEvent.mouseEnter(screen.getByRole('region', { name: 'Keunggulan Payoung' }).parentElement as HTMLElement);
         act(() => vi.advanceTimersByTime(SELANG_IKLAN_MS * 3));
-        expect(SlideAktif()?.textContent).toContain('Tetap jalan tanpa internet');
+        expect(SlideAktif()?.textContent).toContain('Paket Starter, Pro dan Bisnis');
 
-        fireEvent.click(screen.getByRole('button', { name: /Iklan 3: Pantau dari HP/ }));
+        fireEvent.click(screen.getByRole('button', { name: /Iklan 4: Pantau dari HP/ }));
         expect(SlideAktif()?.textContent).toContain('Omzet, stok, dan shift');
         fireEvent.click(screen.getByRole('button', { name: 'Iklan berikutnya' }));
         expect(SlideAktif()?.textContent).toContain('Stok, akuntansi, promo');

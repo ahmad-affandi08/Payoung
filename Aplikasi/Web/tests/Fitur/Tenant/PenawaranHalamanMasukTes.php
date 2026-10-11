@@ -31,7 +31,14 @@ it('halaman masuk & daftar membawa penawaran termurah dengan diskon peluncuran d
         ->where('Penawaran.Promo.HargaBulananNormal', '99000.00')
         ->where('Penawaran.Promo.PersenDiskon', 40)
         ->where('Penawaran.Promo.BerlakuSampai', '2027-01-31')
-        ->where('Penawaran.Promo.HargaTerkunci', true);
+        ->where('Penawaran.Promo.HargaTerkunci', true)
+        // Daftar paket di iklan = paket berbayar berharga tetap dari katalog (GRATIS & ENTERPRISE tidak ikut).
+        ->where('Penawaran.Paket.0.Nama', 'Starter')
+        ->where('Penawaran.Paket.0.HargaBulanan', '59000.00')
+        ->where('Penawaran.Paket.0.HargaNormal', '99000.00')
+        ->where('Penawaran.Paket.1.Nama', 'Pro')
+        ->where('Penawaran.Paket.2.Nama', 'Bisnis')
+        ->has('Penawaran.Paket', 3);
 
     $this->get('/masuk')->assertOk()->assertInertia(fn (AssertableInertia $halaman) => $penawaran($halaman->component('Autentikasi/Masuk')));
     $this->get('/daftar')->assertOk()->assertInertia(fn (AssertableInertia $halaman) => $penawaran($halaman->component('Autentikasi/Daftar')));
@@ -43,7 +50,8 @@ it('setelah promo berakhir harga normal tampil tanpa diskon', function (): void 
 
     $this->get('/masuk')->assertOk()->assertInertia(fn (AssertableInertia $halaman) => $halaman
         ->where('Penawaran.HargaBulanan', '99000.00')
-        ->where('Penawaran.Promo', null));
+        ->where('Penawaran.Promo', null)
+        ->where('Penawaran.Paket.0.HargaNormal', null));
 });
 
 it('tanpa paket berbayar yang dijual tidak ada penawaran (iklan tidak menyebut harga yang tidak ada)', function (): void {

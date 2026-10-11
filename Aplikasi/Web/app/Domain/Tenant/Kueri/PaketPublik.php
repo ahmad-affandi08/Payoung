@@ -76,16 +76,28 @@ final class PaketPublik
      * terendah yang berlaku hari ini, beserta diskon peluncuran bila ada. Null bila tidak ada paket berbayar yang dijual
      * (mis. edisi Lisensi), sehingga iklan tidak pernah menyebut harga yang tidak ada.
      *
-     * @return array{NamaPaket: string, HargaBulanan: string, MasaTrialHari: int, Promo: array{HargaBulananNormal: string, HargaTahunanNormal: string, BerlakuSampai: string, PersenDiskon: int, HargaTerkunci: bool}|null}|null
+     * `Paket` = semua paket berbayar berharga tetap yang dijual (nama, harga, harga normal bila diskon, tiga batas
+     * pertama), semuanya dibaca dari katalog sehingga iklan tidak pernah memuat angka atau klaim paket yang ditulis
+     * tangan.
+     *
+     * @return array{NamaPaket: string, HargaBulanan: string, MasaTrialHari: int, Promo: array{HargaBulananNormal: string, HargaTahunanNormal: string, BerlakuSampai: string, PersenDiskon: int, HargaTerkunci: bool}|null, Paket: list<array{Nama: string, HargaBulanan: string, HargaNormal: string|null, Sorotan: list<string>}>}|null
      */
     public function AmbilPenawaranTermurah(): ?array
     {
         $termurah = null;
+        $daftar = [];
 
         foreach ($this->Ambil() as $paket) {
             if ($paket['HargaNegosiasi'] || $paket['HargaBulanan'] === null || Uang::Dari($paket['HargaBulanan'])->BernilaiNol()) {
                 continue;
             }
+
+            $daftar[] = [
+                'Nama' => $paket['Nama'],
+                'HargaBulanan' => $paket['HargaBulanan'],
+                'HargaNormal' => $paket['Promo']['HargaBulananNormal'] ?? null,
+                'Sorotan' => array_slice($paket['Batas'], 0, 3),
+            ];
 
             if ($termurah === null || Uang::Dari($paket['HargaBulanan'])->Bandingkan(Uang::Dari($termurah['HargaBulanan'])) < 0) {
                 $termurah = $paket;
@@ -97,6 +109,7 @@ final class PaketPublik
             'HargaBulanan' => $termurah['HargaBulanan'] ?? '0',
             'MasaTrialHari' => $termurah['MasaTrialHari'],
             'Promo' => $termurah['Promo'],
+            'Paket' => $daftar,
         ];
     }
 
