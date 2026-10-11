@@ -97,6 +97,8 @@ php artisan katalog:lengkapi-fitur --kering   # setelah update: lihat fitur kata
 php artisan katalog:lengkapi-fitur            # terapkan (aditif, aman diulang; mis. persetujuan jarak jauh di paket Bisnis)
 php artisan katalog:terapkan --kering        # setelah update: lihat harga paket/add-on/fitur baru dari rilis (D-86)
 php artisan katalog:terapkan                 # terapkan satu kali: harga promo peluncuran + harga normal terjadwal, add-on, fitur; berlaku untuk semua tenant di tagihan berikutnya (aman diulang)
+php artisan template:terapkan --kering      # setelah tarif PPN terbit: lihat template sektor yang akan terbit dari rilis (D-88)
+php artisan template:terapkan               # terapkan: template baru & versi baru LANGSUNG TERBIT tanpa draf; tenant lama tidak berubah; berhenti dengan kode gagal bila ada yang tidak lolos validasi (aman diulang)
 php artisan storage:link                     # bila galat "undefined function exec()": ln -s ../storage/app/public public/storage
 php artisan pengelola:buat-super-admin --nama="Nama Anda" --email="email@anda"   # akun pertama konsol; kata sandi ditanyakan
 ```

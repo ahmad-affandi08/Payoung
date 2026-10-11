@@ -133,7 +133,8 @@ const menuPersediaan: ItemMenu[] = [
         label: 'Bahan terbuang',
         href: '/kelola/persediaan/bahan-terbuang',
         izin: IzinTenant.PersediaanLihat,
-        sektor: ['FNB', 'RTL-BLD'],
+        // D-88: toko sayur/buah, kelontong, pet shop, florist, dan apotek juga membuang barang (layu, busuk, kedaluwarsa).
+        sektor: ['FNB', 'RTL-BLD', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR', 'RTL-PHR'],
         lanjutan: true,
     },
 ];

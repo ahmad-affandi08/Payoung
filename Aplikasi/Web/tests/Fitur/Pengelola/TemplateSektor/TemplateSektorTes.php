@@ -71,7 +71,7 @@ describe('Izin template sektor (BR-P03.5)', function (): void {
     it('semua peran bisa melihat, tetapi hanya pemilik bagian yang bisa mengubahnya', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Analis));
         $this->get(BantuanPengelola::Url('/template-sektor'))
-            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->component('Pengelola/TemplateSektor/Daftar')->has('Template', 14));
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->component('Pengelola/TemplateSektor/Daftar')->has('Template', 19));
         $this->get(UrlVersi('FNB-CAF', 1))
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
                 ->component('Pengelola/TemplateSektor/Editor')

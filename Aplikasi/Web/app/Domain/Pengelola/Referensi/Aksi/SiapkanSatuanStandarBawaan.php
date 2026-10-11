@@ -31,6 +31,14 @@ final class SiapkanSatuanStandarBawaan
         // Sektor Apotek (§9.5, template RTL-PHR): kemasan obat.
         ['STRIP', 'Strip', 'strip', false],
         ['TUBE', 'Tube', 'tube', false],
+        // Sektor sayur/buah & sembako (RTL-FRS), florist (RTL-FLR), pet shop (RTL-PET), gym & kursus (SVC-FIT) (D-88).
+        ['IKAT', 'Ikat', 'ikat', false],
+        ['KARUNG', 'Karung', 'krg', false],
+        ['BUNGKUS', 'Bungkus', 'bks', false],
+        ['BUTIR', 'Butir', 'btr', false],
+        ['TANGKAI', 'Tangkai', 'tkai', false],
+        ['SESI', 'Sesi', 'sesi', false],
+        ['BULAN', 'Bulan', 'bln', false],
     ];
 
     public function Jalankan(): void
