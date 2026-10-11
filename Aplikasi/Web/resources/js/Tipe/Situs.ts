@@ -11,11 +11,20 @@ export type GambarSitus = {
     Tinggi: number | null;
 };
 
+/** Sektor di menu Solusi (D-91): satu halaman per sektor usaha. */
+export type SektorMenuSitus = { Nama: string; Ringkas: string; Ikon: string; Tautan: string };
+
+/** Kolom menu Solusi: satu kelompok usaha (Kafe & Resto, Toko & Retail, Jasa) beserta sektornya. */
+export type KelompokMenuSitus = { Judul: string; Tautan: string; Ikon: string; Sektor: SektorMenuSitus[] };
+
+/** Butir menu utama; `Solusi` terisi pada butir dropdown sektor (`@solusi`). */
+export type ButirMenuSitus = TautanSitus & { Solusi?: KelompokMenuSitus[] };
+
 export type DataSitus = {
     NamaSitus: string;
     Slogan: string | null;
     Logo: GambarSitus | null;
-    Menu: TautanSitus[];
+    Menu: ButirMenuSitus[];
     MenuKaki: { Judul: string; Tautan: TautanSitus[] }[];
     TeksKaki: string | null;
     Kontak: {

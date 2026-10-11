@@ -357,6 +357,23 @@ describe('D-21 pengaturan situs', function (): void {
     });
 });
 
+describe('D-91 menu Solusi di pengaturan situs', function (): void {
+    it('butir menu utama boleh @solusi (dropdown sektor), tetapi pintasan itu ditolak di tautan lain', function (): void {
+        MasukSebagaiKontenSitus($this);
+        $isian = [...PengaturanSitusBerlaku::AmbilBawaan()];
+        $isian['Menu'] = [['Label' => 'Solusi', 'Tautan' => '@solusi'], ['Label' => 'Harga', 'Tautan' => '/harga']];
+
+        $this->put(BantuanPengelola::Url('/situs/pengaturan'), $isian)->assertSessionHasNoErrors();
+        expect(PengaturanSitus::query()->sole()->Nilai['Menu'][0]['Tautan'])->toBe('@solusi');
+
+        $salah = $isian;
+        $salah['MenuKaki'] = [['Judul' => 'Produk', 'Tautan' => [['Label' => 'Solusi', 'Tautan' => '@solusi']]]];
+        $salah['Pengumuman'] = ['Aktif' => true, 'Teks' => 'Promo', 'Tautan' => '@solusi'];
+        $this->put(BantuanPengelola::Url('/situs/pengaturan'), $salah)
+            ->assertSessionHasErrors(['MenuKaki.0.Tautan.0.Tautan', 'Pengumuman.Tautan']);
+    });
+});
+
 describe('D-21 pustaka gambar', function (): void {
     it('unggah PNG → dilayani publik dengan cache; SVG ditolak; gambar terpakai tidak bisa dihapus', function (): void {
         MasukSebagaiKontenSitus($this);

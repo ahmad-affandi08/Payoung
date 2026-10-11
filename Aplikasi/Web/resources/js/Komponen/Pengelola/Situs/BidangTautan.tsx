@@ -18,6 +18,7 @@ export const SARAN_TAUTAN = [
     { Nilai: '@unduh-android', Label: 'Unduh aplikasi Android' },
     { Nilai: '@unduh-ios', Label: 'Unduh aplikasi iOS' },
     { Nilai: '@unduh-windows', Label: 'Unduh aplikasi Windows' },
+    { Nilai: '@solusi', Label: 'Menu Solusi (dropdown sektor, hanya untuk Menu atas)' },
     { Nilai: '/', Label: 'Beranda' },
     { Nilai: '/fitur', Label: 'Fitur' },
     { Nilai: '/harga', Label: 'Harga' },

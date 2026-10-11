@@ -167,6 +167,66 @@ describe('Situs pemasaran D-21: tata letak & blok', () => {
         expect(screen.getByText(/© 2026 Payoung/)).toBeTruthy();
     });
 
+    it('menu Solusi jadi dropdown sektor per kelompok: buka dengan klik, tutup dengan Esc, tautan sektor ada (D-91)', () => {
+        situs = BuatSitus({
+            Menu: [
+                { Label: 'Fitur', Tautan: '/fitur' },
+                {
+                    Label: 'Solusi',
+                    Tautan: '@solusi',
+                    Solusi: [
+                        {
+                            Judul: 'Kafe & Resto',
+                            Tautan: '/solusi/kafe-resto',
+                            Ikon: 'Coffee',
+                            Sektor: [
+                                {
+                                    Nama: 'Kafe & kedai kopi',
+                                    Ringkas: 'Mode cepat & meja',
+                                    Ikon: 'Coffee',
+                                    Tautan: '/solusi/kafe-kedai-kopi',
+                                },
+                            ],
+                        },
+                        {
+                            Judul: 'Toko & Retail',
+                            Tautan: '/solusi/toko-retail',
+                            Ikon: 'Store',
+                            Sektor: [
+                                {
+                                    Nama: 'Toko sayur, buah & sembako',
+                                    Ringkas: 'Timbang per kg',
+                                    Ikon: 'ShoppingBasket',
+                                    Tautan: '/solusi/toko-sayur-sembako',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                { Label: 'Harga', Tautan: '/harga' },
+            ],
+        });
+        render(<TataLetakSitus judul="Harga">isi</TataLetakSitus>);
+
+        const [pemicu] = screen.getAllByRole('button', { name: 'Solusi' });
+        if (!pemicu) {
+            throw new Error('Tombol Solusi tidak ada');
+        }
+        expect(pemicu.getAttribute('aria-expanded')).toBe('false');
+
+        fireEvent.click(pemicu);
+        expect(pemicu.getAttribute('aria-expanded')).toBe('true');
+        expect(screen.getAllByRole('link', { name: /Toko sayur, buah & sembako/ })[0]?.getAttribute('href')).toBe(
+            '/solusi/toko-sayur-sembako',
+        );
+        expect(screen.getAllByRole('link', { name: 'Kafe & Resto' })[0]?.getAttribute('href')).toBe(
+            '/solusi/kafe-resto',
+        );
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(pemicu.getAttribute('aria-expanded')).toBe('false');
+    });
+
     it('banner cookie & tombol WhatsApp satu tumpukan, jadi banner tidak menutupi tombolnya (D-28)', () => {
         // Sebelumnya banner `fixed bottom-0 z-50` dan tombol `fixed bottom-4 z-30` memakai area yang sama, jadi
         // tombolnya tertutup sampai pengunjung memilih. Sekarang keduanya berada di satu wadah tepi bawah.

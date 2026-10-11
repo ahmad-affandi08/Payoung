@@ -6,6 +6,7 @@ namespace App\Domain\Situs\Kueri;
 
 use App\Domain\Bersama\Web\AlamatDomain;
 use App\Domain\Situs\Layanan\KontenSitusBawaan;
+use App\Domain\Situs\Layanan\SektorSitus;
 use App\Domain\Situs\Layanan\ValidatorBagianSitus;
 use App\Domain\Situs\Model\GambarSitus;
 use App\Domain\Situs\Model\HalamanSitus;
@@ -22,6 +23,7 @@ final class PenyusunHalamanSitus
     public function __construct(
         private readonly PengaturanSitusBerlaku $pengaturan,
         private readonly PaketPublik $paket,
+        private readonly MenuSolusiSitus $menuSolusi,
     ) {}
 
     /**
@@ -96,7 +98,7 @@ final class PenyusunHalamanSitus
             'NamaSitus' => $p['NamaSitus'],
             'Slogan' => $p['Slogan'],
             'Logo' => $logo,
-            'Menu' => $tautan($p['Menu'] ?? []),
+            'Menu' => $this->SusunMenu($p['Menu'] ?? [], $tautan),
             'MenuKaki' => array_values(array_map(fn (array $kolom): array => ['Judul' => (string) $kolom['Judul'], 'Tautan' => $tautan($kolom['Tautan'] ?? [])], $p['MenuKaki'] ?? [])),
             'TeksKaki' => $p['TeksKaki'],
             'Kontak' => [
@@ -122,6 +124,49 @@ final class PenyusunHalamanSitus
                 'IdMetaPixel' => is_string($p['Analitik']['IdMetaPixel'] ?? null) ? $p['Analitik']['IdMetaPixel'] : null,
             ],
         ];
+    }
+
+    /**
+     * Menu utama kepala situs. Butir `@solusi` menjadi dropdown sektor (`MenuSolusiSitus`, D-91) yang membawa `Solusi`
+     * (kolom per kelompok). Pengaturan lama yang masih memuat tiga butir kelompok datar (Kafe & Resto, Toko & Retail,
+     * Jasa) dilipat menjadi satu dropdown "Solusi" supaya pemasangan yang menyimpan menunya di konsol ikut berubah
+     * tanpa harus menyunting menu. Bila tidak ada sektor tampil, butir `@solusi` dihilangkan.
+     *
+     * @param  list<array<string, mixed>>  $menu
+     * @param  callable(list<array<string, mixed>>): list<array{Label: string, Tautan: string}>  $tautan
+     * @return list<array<string, mixed>>
+     */
+    private function SusunMenu(array $menu, callable $tautan): array
+    {
+        $kelompokDatar = array_map(static fn (string $k): string => '/solusi/'.$k, array_keys(SektorSitus::KELOMPOK));
+        $tautanMenu = array_map(static fn (array $m): string => (string) $m['Tautan'], $menu);
+        $lama = ! in_array('@solusi', $tautanMenu, true) && array_diff($kelompokDatar, $tautanMenu) === [];
+        $solusi = null;
+        $hasil = [];
+        $sudah = false;
+
+        foreach ($menu as $butir) {
+            $nilai = (string) $butir['Tautan'];
+
+            if ($nilai === '@solusi' || ($lama && in_array($nilai, $kelompokDatar, true))) {
+                if ($sudah) {
+                    continue;
+                }
+
+                $sudah = true;
+                $solusi ??= $this->menuSolusi->Ambil();
+
+                if ($solusi !== []) {
+                    $hasil[] = ['Label' => $nilai === '@solusi' ? (string) $butir['Label'] : 'Solusi', 'Tautan' => '@solusi', 'Solusi' => $solusi];
+                }
+
+                continue;
+            }
+
+            $hasil[] = $tautan([$butir])[0];
+        }
+
+        return $hasil;
     }
 
     /**

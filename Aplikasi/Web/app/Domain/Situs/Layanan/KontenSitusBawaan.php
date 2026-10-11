@@ -18,9 +18,19 @@ namespace App\Domain\Situs\Layanan;
 final class KontenSitusBawaan
 {
     /**
+     * Halaman utama situs ditambah satu halaman per sektor usaha (`SektorSitus`, D-91).
+     *
      * @return array<string, array{Judul: string, JudulSeo: string, DeskripsiSeo: string, Bagian: list<array<string, mixed>>}>
      */
     public static function AmbilHalaman(): array
+    {
+        return self::AmbilHalamanUtama() + SektorSitus::AmbilHalaman();
+    }
+
+    /**
+     * @return array<string, array{Judul: string, JudulSeo: string, DeskripsiSeo: string, Bagian: list<array<string, mixed>>}>
+     */
+    private static function AmbilHalamanUtama(): array
     {
         $ctaDaftar = [
             'Jenis' => 'Cta',

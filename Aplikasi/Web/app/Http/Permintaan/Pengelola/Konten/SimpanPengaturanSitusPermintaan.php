@@ -24,6 +24,12 @@ final class SimpanPengaturanSitusPermintaan extends FormRequest
                 $gagal('Tautan harus diawali "/", "#", "https://", "mailto:", "tel:", atau pintasan seperti @daftar.');
             }
         };
+        // Butir menu utama boleh `@solusi` (dropdown sektor, D-91); pintasan itu tidak berlaku untuk tautan lain.
+        $tautanMenu = static function (string $atribut, mixed $nilai, Closure $gagal): void {
+            if (is_string($nilai) && $nilai !== '' && $nilai !== '@solusi' && ! ValidatorBagianSitus::CekTautanValid($nilai)) {
+                $gagal('Tautan harus diawali "/", "#", "https://", "mailto:", "tel:", atau pintasan seperti @daftar atau @solusi.');
+            }
+        };
         $gambar = ['nullable', 'string', 'size:26', Rule::exists('GambarSitus', 'Uuid')];
         $https = ['nullable', 'string', 'max:255', 'url:https'];
 
@@ -53,7 +59,7 @@ final class SimpanPengaturanSitusPermintaan extends FormRequest
             'Pengumuman.Tautan' => ['nullable', 'string', 'max:500', $tautan],
             'Menu' => ['present', 'array', 'max:10'],
             'Menu.*.Label' => ['required', 'string', 'max:30'],
-            'Menu.*.Tautan' => ['required', 'string', 'max:500', $tautan],
+            'Menu.*.Tautan' => ['required', 'string', 'max:500', $tautanMenu],
             'MenuKaki' => ['present', 'array', 'max:5'],
             'MenuKaki.*.Judul' => ['required', 'string', 'max:40'],
             'MenuKaki.*.Tautan' => ['present', 'array', 'max:10'],

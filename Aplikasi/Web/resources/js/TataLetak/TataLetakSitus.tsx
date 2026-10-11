@@ -3,6 +3,7 @@ import { Menu, MessageCircle } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { LogoMerek } from '@/Komponen/Merek/LogoMerek';
+import { MenuSolusiDesktop, MenuSolusiSeluler } from '@/Komponen/Situs/MenuSolusi';
 import PersetujuanCookie from '@/Komponen/Situs/PersetujuanCookie';
 import { AdaAnalitik, BukaPengaturanCookie } from '@/Pustaka/AnalitikSitus';
 import TautanSitus from '@/Komponen/Situs/TautanSitus';
@@ -128,18 +129,27 @@ export default function TataLetakSitus({ judul, children, pratinjau = false }: P
                     </TautanSitus>
                     <nav aria-label="Menu utama" className="hidden lg:block">
                         <ul className="flex items-center gap-1">
-                            {situs.Menu.map((m) => (
-                                <li key={`${m.Label}-${m.Tautan}`}>
-                                    <TautanSitus
-                                        href={m.Tautan}
-                                        className={`inline-flex min-h-11 items-center rounded-kontrol px-3 text-isi font-medium hover:bg-permukaan-sorot ${
-                                            CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
-                                        }`}
-                                    >
-                                        {m.Label}
-                                    </TautanSitus>
-                                </li>
-                            ))}
+                            {situs.Menu.map((m) =>
+                                m.Solusi ? (
+                                    <MenuSolusiDesktop
+                                        key={`${m.Label}-${m.Tautan}`}
+                                        butir={m}
+                                        aktif={jalurKini.startsWith('/solusi')}
+                                        jalurKini={jalurKini}
+                                    />
+                                ) : (
+                                    <li key={`${m.Label}-${m.Tautan}`}>
+                                        <TautanSitus
+                                            href={m.Tautan}
+                                            className={`inline-flex min-h-11 items-center rounded-kontrol px-3 text-isi font-medium hover:bg-permukaan-sorot ${
+                                                CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
+                                            }`}
+                                        >
+                                            {m.Label}
+                                        </TautanSitus>
+                                    </li>
+                                ),
+                            )}
                         </ul>
                     </nav>
                     <div className="flex items-center gap-2">
@@ -173,17 +183,25 @@ export default function TataLetakSitus({ judul, children, pratinjau = false }: P
                                         }
                                     }}
                                 >
-                                    {situs.Menu.map((m) => (
-                                        <TautanSitus
-                                            key={`${m.Label}-${m.Tautan}`}
-                                            href={m.Tautan}
-                                            className={`flex min-h-12 items-center rounded-kontrol px-3 text-subjudul font-medium hover:bg-permukaan-sorot ${
-                                                CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
-                                            }`}
-                                        >
-                                            {m.Label}
-                                        </TautanSitus>
-                                    ))}
+                                    {situs.Menu.map((m) =>
+                                        m.Solusi ? (
+                                            <MenuSolusiSeluler
+                                                key={`${m.Label}-${m.Tautan}`}
+                                                butir={m}
+                                                aktif={jalurKini.startsWith('/solusi')}
+                                            />
+                                        ) : (
+                                            <TautanSitus
+                                                key={`${m.Label}-${m.Tautan}`}
+                                                href={m.Tautan}
+                                                className={`flex min-h-12 items-center rounded-kontrol px-3 text-subjudul font-medium hover:bg-permukaan-sorot ${
+                                                    CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
+                                                }`}
+                                            >
+                                                {m.Label}
+                                            </TautanSitus>
+                                        ),
+                                    )}
                                 </nav>
                                 <div className="mt-4 flex flex-col gap-2 border-t border-garis p-4">
                                     <TombolSitus href={situs.TombolMasuk.Tautan} varian="kedua">

@@ -56,9 +56,8 @@ final class PengaturanSitusBerlaku
             'Pengumuman' => ['Aktif' => false, 'Teks' => null, 'Tautan' => null],
             'Menu' => [
                 ['Label' => 'Fitur', 'Tautan' => '/fitur'],
-                ['Label' => 'Kafe & Resto', 'Tautan' => '/solusi/kafe-resto'],
-                ['Label' => 'Toko & Retail', 'Tautan' => '/solusi/toko-retail'],
-                ['Label' => 'Jasa', 'Tautan' => '/solusi/jasa'],
+                // D-91: `@solusi` menjadi dropdown sektor (daftar dari template sektor aktif).
+                ['Label' => 'Solusi', 'Tautan' => '@solusi'],
                 ['Label' => 'Harga', 'Tautan' => '/harga'],
                 ['Label' => 'Kontak', 'Tautan' => '/kontak'],
             ],
