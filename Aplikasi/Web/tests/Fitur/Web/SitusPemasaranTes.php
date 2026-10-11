@@ -157,6 +157,23 @@ describe('D-21 halaman publik', function (): void {
         $this->get('https://dashboard.payoung.test/masuk')->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow');
     });
 
+    it('D-89: robots.txt menunjuk ke peta situs dan JSON-LD memuat Organisasi + WebSite', function (): void {
+        AturDomainSitusUji();
+        app(SiapkanHalamanSitusBawaan::class)->Jalankan();
+
+        expect((string) file_get_contents(public_path('robots.txt')))->toContain('Sitemap: https://payoung.id/peta-situs')
+            ->and((string) file_get_contents(public_path('robots.txt')))->toContain('Disallow: /kelola');
+
+        $html = $this->get('https://payoung.test/')->assertOk()->getContent();
+        preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $html, $cocok);
+        $graf = json_decode($cocok[1] ?? '{}', true)['@graph'] ?? [];
+
+        expect(array_column($graf, '@type'))->toBe(['Organization', 'WebSite'])
+            ->and($graf[0]['logo'])->toBe('https://payoung.test/apple-touch-icon.png')
+            ->and($graf[1]['inLanguage'])->toBe('id-ID')
+            ->and($graf[1]['publisher']['@id'])->toBe($graf[0]['@id']);
+    });
+
     it('D-20: halaman situs di domain tenant dialihkan ke domain pemasaran', function (): void {
         AturDomainSitusUji();
 

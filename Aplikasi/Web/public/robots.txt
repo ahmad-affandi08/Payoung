@@ -3,3 +3,5 @@ Disallow: /kelola
 Disallow: /pratinjau-situs
 Disallow: /s/
 Disallow: /api/
+
+Sitemap: https://payoung.id/peta-situs

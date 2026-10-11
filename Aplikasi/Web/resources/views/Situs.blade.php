@@ -15,12 +15,26 @@
         'author' => ['@type' => 'Organization', 'name' => $seo['Artikel']['Penulis'] ?? $namaSitus],
         'publisher' => ['@type' => 'Organization', 'name' => $namaSitus],
         'mainEntityOfPage' => $seo['Kanonik'] ?? null,
-    ]) : array_filter([
+    ]) : [
+        // D-89: Organisasi + situs web (nama situs & logo untuk hasil pencarian merek), alamat dasar dari domain pemasaran.
         '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        'name' => $namaSitus,
-        'url' => $seo['Kanonik'] ?? null,
-    ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+        '@graph' => [
+            array_filter([
+                '@type' => 'Organization',
+                '@id' => \App\Domain\Bersama\Web\AlamatDomain::BuatUrlAbsolutPemasaran('/').'#organisasi',
+                'name' => $namaSitus,
+                'url' => \App\Domain\Bersama\Web\AlamatDomain::BuatUrlAbsolutPemasaran('/'),
+                'logo' => \App\Domain\Bersama\Web\AlamatDomain::BuatUrlAbsolutPemasaran('/apple-touch-icon.png'),
+            ]),
+            [
+                '@type' => 'WebSite',
+                'name' => $namaSitus,
+                'url' => \App\Domain\Bersama\Web\AlamatDomain::BuatUrlAbsolutPemasaran('/'),
+                'inLanguage' => 'id-ID',
+                'publisher' => ['@id' => \App\Domain\Bersama\Web\AlamatDomain::BuatUrlAbsolutPemasaran('/').'#organisasi'],
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
     $bagianHalaman = is_array($page['props']['Halaman']['Bagian'] ?? null) ? $page['props']['Halaman']['Bagian'] : [];
     $kerangka = [
         'pembuka' => \App\Domain\Situs\Layanan\KerangkaHalamanSitus::AmbilPembuka($bagianHalaman),
