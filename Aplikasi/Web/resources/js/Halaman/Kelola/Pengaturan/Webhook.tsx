@@ -1,5 +1,4 @@
 import { router, useForm } from '@inertiajs/react';
-import { Check, Copy } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
@@ -7,14 +6,13 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
-import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
+import DialogRahasia, { NilaiRahasia, useRahasiaSekali } from '@/Komponen/Umpan/DialogRahasia';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
-import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { KirimanWebhook, PropsHalamanWebhook, WebhookTenant } from '@/Tipe/ApiPublik';
@@ -116,6 +114,7 @@ function RingkasanHasil({ kiriman: k }: { kiriman: KirimanWebhook }) {
  * 30 menit, 2 jam, lalu 12 jam; log 30 hari terakhir bisa dikirim ulang.
  */
 export default function HalamanWebhook({ Webhook, Kiriman, OpsiPeristiwa, RahasiaBaru }: PropsHalamanWebhook) {
+    const rahasia = useRahasiaSekali(RahasiaBaru);
     const [buat, AturBuat] = useState(false);
     const [hapus, AturHapus] = useState<WebhookTenant | null>(null);
 
@@ -140,8 +139,6 @@ export default function HalamanWebhook({ Webhook, Kiriman, OpsiPeristiwa, Rahasi
                     .
                 </AjakanTambahBatas>
             </p>
-
-            {RahasiaBaru ? <KartuRahasiaBaru nama={RahasiaBaru.Nama} rahasia={RahasiaBaru.Rahasia} /> : null}
 
             <AksiHalaman>
                 <Tombol onClick={() => AturBuat(true)}>Tambah webhook</Tombol>
@@ -191,43 +188,26 @@ export default function HalamanWebhook({ Webhook, Kiriman, OpsiPeristiwa, Rahasi
                     judul: 'Belum ada kiriman. Kiriman muncul setelah ada penjualan, void, atau retur.',
                 }}
             />
+            {rahasia.aktif ? (
+                <DialogRahasiaBaru
+                    nama={rahasia.aktif.Nama}
+                    rahasia={rahasia.aktif.Rahasia}
+                    saatSelesai={rahasia.selesai}
+                />
+            ) : null}
         </TataLetakAplikasi>
     );
 }
 
-function KartuRahasiaBaru({ nama, rahasia }: { nama: string; rahasia: string }) {
-    const [tersalin, AturTersalin] = useState(false);
-    const Salin = () => {
-        void navigator.clipboard
-            ?.writeText(rahasia)
-            .then(() => AturTersalin(true))
-            .catch(() => AturTersalin(false));
-    };
-
+function DialogRahasiaBaru({ nama, rahasia, saatSelesai }: { nama: string; rahasia: string; saatSelesai: () => void }) {
     return (
-        <Panel judul={`Rahasia webhook ${nama}`}>
-            <Pemberitahuan jenis="peringatan">
-                Salin rahasia ini sekarang dan pasang di aplikasi penerima untuk memeriksa tanda tangan. Rahasia tidak
-                bisa ditampilkan lagi; bila hilang, hapus lalu tambahkan webhook baru.
-            </Pemberitahuan>
-            <p className="font-mono text-label break-all text-teks-utama">{rahasia}</p>
-            <div>
-                <Tombol varian="sekunder" onClick={Salin}>
-                    {tersalin ? (
-                        <>
-                            <Check className="size-4" aria-hidden /> Rahasia tersalin
-                        </>
-                    ) : (
-                        <>
-                            <Copy className="size-4" aria-hidden /> Salin rahasia
-                        </>
-                    )}
-                </Tombol>
-            </div>
-            <p aria-live="polite" className="sr-only">
-                {tersalin ? 'Rahasia tersalin ke papan klip.' : ''}
-            </p>
-        </Panel>
+        <DialogRahasia
+            judul={`Webhook ${nama} dibuat`}
+            peringatan="Salin rahasia penandatangan ini sekarang dan pasang di aplikasi penerima untuk memeriksa tanda tangan. Rahasia tidak bisa ditampilkan lagi; bila hilang, hapus lalu tambahkan webhook baru."
+            saatSelesai={saatSelesai}
+        >
+            <NilaiRahasia nilai={rahasia} jenis="rahasia" />
+        </DialogRahasia>
     );
 }
 

@@ -136,6 +136,7 @@
 | D-100 | Dari pemilik produk (tangkapan layar kolom centang yang jelek). Keputusan agen (D-12, D-17): warna baris terpilih satu per baris, sel menempel mewarisinya. Detail di versi 5.37. |
 | D-101 | Dari pemilik produk ("karyawan dan pengguna ini masih ribet banget dan bisa double", setuju usulan agen: grup Tim, peran tetap di Pengaturan). Keputusan agen (D-12, D-17): dua entitas tetap, satu daftar & satu formulir, nonaktif bersama; membuka kembali penundaan grup "Tim" di D-46. Detail di versi 5.38. |
 | D-102 | Dari pemilik produk ("hapus sepenuhnya" halaman Pengguna & Karyawan lama). Keputusan agen (D-12, D-17): hapus halaman & rute yang digantikan Tim; pertahankan hanya endpoint yang masih dipanggil dari halaman Tim. Detail di versi 5.39. |
+| D-103 | Dari pemilik produk ("kenapa harus muncul di atas tabel" lalu memilih "dialog aja ... jangan sampai ada inkonsistensi"). Keputusan agen (D-12, D-17): satu komponen `DialogRahasia` untuk semua nilai rahasia sekali-tampil, tanpa `Kilat` sukses di alur itu. Detail di versi 5.40. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

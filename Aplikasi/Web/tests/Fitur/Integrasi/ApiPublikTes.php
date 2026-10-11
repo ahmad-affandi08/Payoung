@@ -60,7 +60,8 @@ function BuatTokenUji(mixed $tes, array $k, array $cakupan): string
     BantuanOrganisasi::Masuk($tes, $k['Pemilik'], $k['Tenant']->Id)
         ->post('/kelola/pengaturan/api', ['Nama' => 'Aplikasi akuntansi', 'Cakupan' => $cakupan])
         ->assertRedirect('/kelola/pengaturan/api')
-        ->assertSessionHasNoErrors();
+        ->assertSessionHasNoErrors()
+        ->assertSessionMissing('Kilat');
     $token = session('TokenApiBaru')['Token'] ?? null;
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect($token)->toBeString()->toMatch('/^payoung_\d+_[A-Za-z0-9]{40}$/');

@@ -7,13 +7,14 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import KartuKodeAktivasi from '@/Komponen/Kelola/KartuKodeAktivasi';
+import DialogKodeAktivasi from '@/Komponen/Kelola/DialogKodeAktivasi';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import { Card } from '@/Komponen/Ui/card';
+import { useRahasiaSekali } from '@/Komponen/Umpan/DialogRahasia';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -114,6 +115,7 @@ export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangk
     const [formTerbuka, AturFormTerbuka] = useState(false);
     const [cabut, AturCabut] = useState<Perangkat | null>(null);
     const [ubah, AturUbah] = useState<Perangkat | null>(null);
+    const kodeBaru = useRahasiaSekali(KodeAktivasiBaru);
 
     return (
         <TataLetakAplikasi judul="Perangkat">
@@ -121,8 +123,6 @@ export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangk
                 Setiap aplikasi kasir, layar dapur, atau perangkat gudang didaftarkan di sini lalu diaktifkan dengan
                 kode 8 karakter atau QR. Kode perangkat dipakai untuk nomor transaksi saat offline.
             </p>
-
-            {KodeAktivasiBaru ? <KartuKodeAktivasi kode={KodeAktivasiBaru} /> : null}
 
             {Outlet.length > 0 ? (
                 <ul className="grid grid-cols-1 gap-2 text-label sm:grid-cols-2 lg:grid-cols-4">
@@ -213,6 +213,7 @@ export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangk
                     judul: 'Belum ada perangkat. Tambahkan perangkat kasir pertama untuk mulai berjualan.',
                 }}
             />
+            {kodeBaru.aktif ? <DialogKodeAktivasi kode={kodeBaru.aktif} saatSelesai={kodeBaru.selesai} /> : null}
         </TataLetakAplikasi>
     );
 }

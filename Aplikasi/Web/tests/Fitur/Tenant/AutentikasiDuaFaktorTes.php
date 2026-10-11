@@ -57,7 +57,8 @@ describe('Aktivasi 2FA (§20.2, BR-00.8)', function (): void {
         expect($pengguna->refresh()->CekDuaFaktorAktif())->toBeFalse();
 
         $this->post('/kelola/keamanan/dua-faktor', ['Kode' => BantuanAutentikasi::KodeSaatIni($rahasia)])
-            ->assertRedirect(route('kelola.keamanan'));
+            ->assertRedirect(route('kelola.keamanan'))
+            ->assertSessionMissing('Kilat');
 
         $pengguna->refresh();
         expect($pengguna->CekDuaFaktorAktif())->toBeTrue()

@@ -7,6 +7,8 @@ import TombolGoogle from '@/Komponen/Formulir/TombolGoogle';
 import { Button } from '@/Komponen/Ui/button';
 import Panel from '@/Komponen/Kelola/Panel';
 import { Separator } from '@/Komponen/Ui/separator';
+import DialogKodePemulihan from '@/Komponen/Autentikasi/DialogKodePemulihan';
+import { useRahasiaSekali } from '@/Komponen/Umpan/DialogRahasia';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -45,6 +47,7 @@ export default function HalamanKeamananAkun({
     Google,
 }: PropsKeamananAkun) {
     const adaGoogle = Google.Tersedia || Google.Tertaut;
+    const kodePemulihan = useRahasiaSekali(KodePemulihanBaru);
 
     return (
         <TataLetakAplikasi judul="Keamanan akun">
@@ -108,7 +111,6 @@ export default function HalamanKeamananAkun({
                                     Aktifkan verifikasi dua langkah sebelum membuka menu lain di back-office.
                                 </Pemberitahuan>
                             ) : null}
-                            {KodePemulihanBaru ? <DaftarKodePemulihan kode={KodePemulihanBaru} /> : null}
                             {Aktivasi ? <FormulirAktivasi aktivasi={Aktivasi} /> : null}
                             {DuaFaktor.Aktif ? (
                                 <FormulirNonaktifkan wajib={DuaFaktor.Wajib} sisaKode={DuaFaktor.SisaKodePemulihan} />
@@ -131,6 +133,9 @@ export default function HalamanKeamananAkun({
                     </div>
                 </div>
             </div>
+            {kodePemulihan.aktif ? (
+                <DialogKodePemulihan kode={kodePemulihan.aktif} saatSelesai={kodePemulihan.selesai} />
+            ) : null}
         </TataLetakAplikasi>
     );
 }
@@ -355,24 +360,6 @@ function PanelGoogle({ google }: { google: PropsKeamananAkun['Google'] }) {
                 </div>
             )}
         </Panel>
-    );
-}
-
-function DaftarKodePemulihan({ kode }: { kode: string[] }) {
-    return (
-        <div className="flex flex-col gap-3">
-            <Pemberitahuan jenis="peringatan" judul="Simpan kode pemulihan ini sekarang">
-                Kode hanya ditampilkan sekali. Setiap kode bisa dipakai satu kali untuk masuk bila ponsel Anda tidak
-                tersedia.
-            </Pemberitahuan>
-            <ul className="grid grid-cols-2 gap-2 font-mono text-isi text-teks-utama">
-                {kode.map((baris) => (
-                    <li key={baris} className="rounded-kontrol border border-garis bg-latar px-3 py-2 text-center">
-                        {baris}
-                    </li>
-                ))}
-            </ul>
-        </div>
     );
 }
 

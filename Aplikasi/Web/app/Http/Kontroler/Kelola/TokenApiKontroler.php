@@ -48,7 +48,6 @@ final class TokenApiKontroler extends DasarKelolaKontroler
         $hasil = $buat->Jalankan($this->IdTenant(), $this->Pelaku()->Id, (string) $valid['Nama'], array_values(array_map('strval', (array) $valid['Cakupan'])), $kedaluwarsa ?: null);
 
         return redirect()->route('kelola.pengaturan.api')
-            ->with('Kilat', "Token {$hasil['Model']->Nama} dibuat. Salin sekarang: token tidak bisa dilihat lagi.")
             ->with(self::KUNCI_TOKEN_BARU, ['Nama' => $hasil['Model']->Nama, 'Token' => $hasil['Token']]);
     }
 

@@ -104,7 +104,7 @@ final class KeamananAkunKontroler extends Kontroler
         $sesi->migrate(true);
         $sesi->flash(SesiAutentikasiTenant::KODE_PEMULIHAN_BARU, $kodePemulihan);
 
-        return redirect()->route('kelola.keamanan')->with('Kilat', 'Verifikasi dua langkah aktif. Simpan kode pemulihan di bawah.');
+        return redirect()->route('kelola.keamanan');
     }
 
     public function NonaktifkanDuaFaktor(NonaktifkanDuaFaktorPermintaan $permintaan, NonaktifkanDuaFaktorPengguna $nonaktifkan): RedirectResponse

@@ -44,7 +44,8 @@ describe('F-02 langkah 5: tambah perangkat & kode aktivasi di back-office', func
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
             ->post('/kelola/perangkat', ['Nama' => 'Kasir Depan', 'Outlet' => $outlet->Uuid, 'Jenis' => 'Kasir'])
             ->assertRedirect('/kelola/perangkat')
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('Kilat');
 
         $kode = session('KodeAktivasiBaru');
         expect($kode['Kode'])->toMatch('/^[2-9A-HJ-NP-Z]{8}$/')

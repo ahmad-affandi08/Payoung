@@ -26,7 +26,8 @@ describe('F-01 langkah 6: perangkat kasir (memakai aktivasi F-02b)', function ()
 
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->post('/kelola/panduan-awal/perangkat', ['Nama' => 'Kasir Depan Dekat Pintu Masuk'])
             ->assertRedirect('/kelola/panduan-awal/perangkat')
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('Kilat');
         $kode = session('KodeAktivasiBaru');
 
         BantuanOrganisasi::AturKonteks($tenant->Id);

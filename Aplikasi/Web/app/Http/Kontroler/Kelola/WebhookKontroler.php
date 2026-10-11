@@ -47,7 +47,6 @@ final class WebhookKontroler extends DasarKelolaKontroler
         $hasil = $buat->Jalankan($this->IdTenant(), $this->Pelaku()->Id, (string) $valid['Nama'], (string) $valid['Url'], array_values(array_map('strval', (array) $valid['Peristiwa'])));
 
         return redirect()->route('kelola.pengaturan.webhook')
-            ->with('Kilat', "Webhook {$hasil['Model']->Nama} dibuat. Salin rahasia penandatangan sekarang: tidak bisa dilihat lagi.")
             ->with(self::KUNCI_RAHASIA_BARU, ['Nama' => $hasil['Model']->Nama, 'Rahasia' => $hasil['Rahasia']]);
     }
 

@@ -66,7 +66,7 @@ final class PerangkatKontroler extends DasarKelolaKontroler
         $outlet = $this->CariOutletAktif($permintaan->string('Outlet')->toString());
         $hasil = $buat->Jalankan($outlet, $permintaan->string('Nama')->toString(), JenisPerangkat::from($permintaan->string('Jenis')->toString()), $this->Pelaku()->Id);
 
-        return $this->KembaliDenganKode($hasil['Perangkat'], $hasil['Kode'], $hasil['KedaluwarsaPada'], "Perangkat {$hasil['Perangkat']->Nama} ({$hasil['Perangkat']->Kode}) ditambahkan.");
+        return $this->KembaliDenganKode($hasil['Perangkat'], $hasil['Kode'], $hasil['KedaluwarsaPada']);
     }
 
     public function Ubah(string $perangkat, SimpanPerangkatPermintaan $permintaan, UbahNamaPerangkat $ubah): RedirectResponse
@@ -81,7 +81,7 @@ final class PerangkatKontroler extends DasarKelolaKontroler
         $baris = $this->CariPerangkat($perangkat);
         $kode = $buatKode->Jalankan($baris, $this->Pelaku()->Id);
 
-        return $this->KembaliDenganKode($baris, $kode['Kode'], $kode['KedaluwarsaPada'], "Kode aktivasi baru untuk {$baris->Nama} dibuat. Kode sebelumnya tidak berlaku lagi.");
+        return $this->KembaliDenganKode($baris, $kode['Kode'], $kode['KedaluwarsaPada']);
     }
 
     public function Cabut(string $perangkat, CabutPerangkat $cabut): RedirectResponse
@@ -91,10 +91,9 @@ final class PerangkatKontroler extends DasarKelolaKontroler
         return back()->with('Kilat', "Perangkat {$baris->Nama} ({$baris->Kode}) dicabut dan tidak bisa dipakai lagi.");
     }
 
-    private function KembaliDenganKode(Perangkat $perangkat, string $kode, Carbon $kedaluwarsa, string $pesan): RedirectResponse
+    private function KembaliDenganKode(Perangkat $perangkat, string $kode, Carbon $kedaluwarsa): RedirectResponse
     {
         return redirect()->route('kelola.perangkat.daftar')
-            ->with('Kilat', $pesan)
             ->with(self::KUNCI_KODE_BARU, [
                 'UuidPerangkat' => $perangkat->Uuid,
                 'NamaPerangkat' => $perangkat->Nama,

@@ -83,7 +83,8 @@ function DaftarkanWebhookUji(mixed $tes, array $k, array $peristiwa, string $url
     BantuanOrganisasi::Masuk($tes, $k['Pemilik'], $k['Tenant']->Id)
         ->post('/kelola/pengaturan/webhook', ['Nama' => 'Sistem gudang', 'Url' => $url, 'Peristiwa' => $peristiwa])
         ->assertRedirect('/kelola/pengaturan/webhook')
-        ->assertSessionHasNoErrors();
+        ->assertSessionHasNoErrors()
+        ->assertSessionMissing('Kilat');
     $rahasia = (string) (session('RahasiaWebhookBaru')['Rahasia'] ?? '');
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect($rahasia)->toHaveLength(48);

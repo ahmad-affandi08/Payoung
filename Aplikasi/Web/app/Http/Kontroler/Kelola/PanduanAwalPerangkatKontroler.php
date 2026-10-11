@@ -64,7 +64,7 @@ final class PanduanAwalPerangkatKontroler extends DasarPanduanAwalKontroler
     {
         $hasil = $buat->Jalankan($this->OutletPanduan(), $permintaan->string('Nama')->toString(), JenisPerangkat::Kasir, $this->Pelaku()->Id);
 
-        return $this->KembaliDenganKode($hasil['Perangkat'], $hasil['Kode'], $hasil['KedaluwarsaPada'], "Perangkat {$hasil['Perangkat']->Nama} ({$hasil['Perangkat']->Kode}) ditambahkan. Masukkan kode aktivasi di aplikasi kasir.");
+        return $this->KembaliDenganKode($hasil['Perangkat'], $hasil['Kode'], $hasil['KedaluwarsaPada']);
     }
 
     public function BuatKodeAktivasi(string $perangkat, DaftarPerangkat $daftar, BuatKodeAktivasi $buatKode): RedirectResponse
@@ -72,13 +72,12 @@ final class PanduanAwalPerangkatKontroler extends DasarPanduanAwalKontroler
         $baris = $daftar->CariDiOutlet($perangkat, $this->OutletPanduan()->Id) ?? abort(404);
         $kode = $buatKode->Jalankan($baris, $this->Pelaku()->Id);
 
-        return $this->KembaliDenganKode($baris, $kode['Kode'], $kode['KedaluwarsaPada'], "Kode aktivasi baru untuk {$baris->Nama} dibuat. Kode sebelumnya tidak berlaku lagi.");
+        return $this->KembaliDenganKode($baris, $kode['Kode'], $kode['KedaluwarsaPada']);
     }
 
-    private function KembaliDenganKode(Perangkat $perangkat, string $kode, Carbon $kedaluwarsa, string $pesan): RedirectResponse
+    private function KembaliDenganKode(Perangkat $perangkat, string $kode, Carbon $kedaluwarsa): RedirectResponse
     {
         return redirect()->route('kelola.panduan-awal.perangkat')
-            ->with('Kilat', $pesan)
             ->with(self::KUNCI_KODE_BARU, [
                 'UuidPerangkat' => $perangkat->Uuid,
                 'NamaPerangkat' => $perangkat->Nama,

@@ -1,5 +1,4 @@
 import { router, useForm } from '@inertiajs/react';
-import { Check, Copy } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
@@ -7,15 +6,14 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
-import Panel from '@/Komponen/Kelola/Panel';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
+import DialogRahasia, { NilaiRahasia, useRahasiaSekali } from '@/Komponen/Umpan/DialogRahasia';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
-import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsHalamanTokenApi, TokenApi } from '@/Tipe/ApiPublik';
@@ -75,6 +73,7 @@ const kolom: KolomTabel<TokenApi>[] = [
  * untuk membaca data lewat `/api/v1`. Token asli hanya tampil sekali setelah dibuat; cabut berlaku seketika.
  */
 export default function HalamanTokenApi({ Token, OpsiCakupan, TokenBaru, AlamatApi }: PropsHalamanTokenApi) {
+    const rahasia = useRahasiaSekali(TokenBaru);
     const [buat, AturBuat] = useState(false);
     const [cabut, AturCabut] = useState<TokenApi | null>(null);
 
@@ -93,8 +92,6 @@ export default function HalamanTokenApi({ Token, OpsiCakupan, TokenBaru, AlamatA
                     .
                 </AjakanTambahBatas>
             </p>
-
-            {TokenBaru ? <KartuTokenBaru nama={TokenBaru.Nama} token={TokenBaru.Token} /> : null}
 
             <AksiHalaman>
                 <Tombol onClick={() => AturBuat(true)}>Buat token</Tombol>
@@ -121,43 +118,22 @@ export default function HalamanTokenApi({ Token, OpsiCakupan, TokenBaru, AlamatA
                     judul: 'Belum ada token API. Buat token untuk menyambungkan aplikasi lain.',
                 }}
             />
+            {rahasia.aktif ? (
+                <DialogTokenBaru nama={rahasia.aktif.Nama} token={rahasia.aktif.Token} saatSelesai={rahasia.selesai} />
+            ) : null}
         </TataLetakAplikasi>
     );
 }
 
-function KartuTokenBaru({ nama, token }: { nama: string; token: string }) {
-    const [tersalin, AturTersalin] = useState(false);
-    const Salin = () => {
-        void navigator.clipboard
-            ?.writeText(token)
-            .then(() => AturTersalin(true))
-            .catch(() => AturTersalin(false));
-    };
-
+function DialogTokenBaru({ nama, token, saatSelesai }: { nama: string; token: string; saatSelesai: () => void }) {
     return (
-        <Panel judul={`Token ${nama}`}>
-            <Pemberitahuan jenis="peringatan">
-                Salin token ini sekarang dan simpan di tempat aman. Token tidak bisa ditampilkan lagi; bila hilang,
-                cabut lalu buat token baru.
-            </Pemberitahuan>
-            <p className="font-mono text-label break-all text-teks-utama">{token}</p>
-            <div>
-                <Tombol varian="sekunder" onClick={Salin}>
-                    {tersalin ? (
-                        <>
-                            <Check className="size-4" aria-hidden /> Token tersalin
-                        </>
-                    ) : (
-                        <>
-                            <Copy className="size-4" aria-hidden /> Salin token
-                        </>
-                    )}
-                </Tombol>
-            </div>
-            <p aria-live="polite" className="sr-only">
-                {tersalin ? 'Token tersalin ke papan klip.' : ''}
-            </p>
-        </Panel>
+        <DialogRahasia
+            judul={`Token ${nama} dibuat`}
+            peringatan="Salin token ini sekarang dan simpan di tempat aman. Token tidak bisa ditampilkan lagi; bila hilang, cabut lalu buat token baru."
+            saatSelesai={saatSelesai}
+        >
+            <NilaiRahasia nilai={token} jenis="token" />
+        </DialogRahasia>
     );
 }
 

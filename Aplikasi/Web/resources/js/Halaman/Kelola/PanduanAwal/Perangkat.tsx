@@ -5,13 +5,14 @@ import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import FormPin from '@/Komponen/Kelola/FormPin';
-import KartuKodeAktivasi from '@/Komponen/Kelola/KartuKodeAktivasi';
+import DialogKodeAktivasi from '@/Komponen/Kelola/DialogKodeAktivasi';
 import Panel from '@/Komponen/Kelola/Panel';
 import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwal/RingkasanGalatFormulir';
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
+import { useRahasiaSekali } from '@/Komponen/Umpan/DialogRahasia';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { CekBatasPenuh, FormatBatas } from '@/Tipe/Organisasi';
@@ -68,6 +69,7 @@ export default function HalamanPerangkatPanduan({
 }: PropsPerangkatPanduan) {
     const elemenFormulir = useRef<HTMLFormElement>(null);
     const [memproses, AturMemproses] = useState<string | null>(null);
+    const kodeBaru = useRahasiaSekali(KodeAktivasiBaru);
     const batasPenuh = CekBatasPenuh(Outlet.BatasPerangkat);
     const formulir = useForm({ Nama: Perangkat.length === 0 ? 'Kasir 1' : '' });
 
@@ -96,8 +98,6 @@ export default function HalamanPerangkatPanduan({
                 <span className="font-semibold text-teks-utama">{FormatBatas(Outlet.BatasPerangkat, 'perangkat')}</span>
                 .
             </p>
-
-            {KodeAktivasiBaru ? <KartuKodeAktivasi kode={KodeAktivasiBaru} /> : null}
 
             {/* Audit kemudahan pakai #2: tanpa PIN, pemilik baru tahu saat masuk di aplikasi kasir gagal. */}
             {PinSayaDiatur ? (
@@ -190,6 +190,7 @@ export default function HalamanPerangkatPanduan({
                     judul: 'Belum ada perangkat kasir di outlet ini. Tambahkan satu untuk mulai berjualan di aplikasi kasir.',
                 }}
             />
+            {kodeBaru.aktif ? <DialogKodeAktivasi kode={kodeBaru.aktif} saatSelesai={kodeBaru.selesai} /> : null}
         </TataLetakPanduan>
     );
 }
