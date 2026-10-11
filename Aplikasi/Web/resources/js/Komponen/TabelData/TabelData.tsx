@@ -212,8 +212,10 @@ function SelData<T>({ cell, menempel }: { cell: Cell<T, unknown>; menempel: bool
                 'px-3 py-2 align-top whitespace-normal',
                 meta?.angka && 'text-right whitespace-nowrap tabular-nums',
                 cell.column.id === 'pilih' && 'w-10',
-                cell.column.id === 'aksi' && 'sticky right-0 w-12 bg-permukaan',
-                menempel && 'sticky left-0 z-[1] bg-permukaan',
+                // `bg-inherit`: sel menempel harus buram (isi yang tergulir tidak tembus) tetapi ikut warna barisnya, jadi baris
+                // terpilih/disorot tidak terbelah dua warna.
+                cell.column.id === 'aksi' && 'sticky right-0 w-12 bg-inherit',
+                menempel && 'sticky left-0 z-[1] bg-inherit',
                 meta?.kelasSel,
             )}
         >
@@ -259,6 +261,7 @@ function BarisBertumpuk<T>({ row, alamatDetail }: { row: Row<T>; alamatDetail: (
             className={cn(
                 'flex gap-3 border-b border-garis px-4 py-3 last:border-b-0',
                 alamat && 'cursor-pointer hover:bg-permukaan-redup',
+                row.getIsSelected() && 'bg-brand-lembut hover:bg-brand-lembut-sorot',
             )}
             onClick={(e) => TanganiKlikBaris(e, alamat)}
         >
@@ -652,7 +655,8 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
                                     key={row.id}
                                     data-state={row.getIsSelected() ? 'selected' : undefined}
                                     className={cn(
-                                        'border-garis data-[state=selected]:bg-brand-lembut',
+                                        'border-garis bg-permukaan hover:bg-permukaan-redup',
+                                        'data-[state=selected]:border-brand-lembut-sorot data-[state=selected]:bg-brand-lembut data-[state=selected]:hover:bg-brand-lembut-sorot',
                                         props.alamatDetail && 'cursor-pointer',
                                     )}
                                     onClick={(e) => TanganiKlikBaris(e, props.alamatDetail?.(row.original))}

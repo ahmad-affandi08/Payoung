@@ -445,6 +445,14 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
 
         fireEvent.click(screen.getByRole('checkbox', { name: 'Pilih semua baris di halaman ini' }));
         expect(screen.getByText('25 dipilih')).toBeTruthy();
+        // Sel menempel harus ikut warna barisnya: `bg-permukaan` di sel membuat baris terpilih terbelah dua warna.
+        const barisTerpilih = document.querySelectorAll('tbody tr[data-state="selected"]');
+        expect(barisTerpilih.length).toBe(25);
+        barisTerpilih.forEach((baris) =>
+            baris
+                .querySelectorAll('td')
+                .forEach((sel) => expect(sel.className).not.toMatch(/(^|\s)bg-permukaan(\s|$)/)),
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Pilih semua 132 hasil' }));
         expect(screen.getByText('Semua 132 hasil dipilih')).toBeTruthy();
         expect(AksiMassal).toHaveBeenLastCalledWith(25, true, 132);
