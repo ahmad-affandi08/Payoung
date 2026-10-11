@@ -58,6 +58,7 @@ final class KirimTransferStok
         private readonly CatatMutasiStok $catatMutasi,
         private readonly PenyusunJurnalPersediaan $penyusunJurnal,
         private readonly PencatatJurnalPersediaan $pencatatJurnal,
+        private readonly CatatPemenuhanPermintaanStok $pemenuhanPermintaan,
         private readonly PencatatRiwayatStatus $riwayat,
         private readonly PencatatAudit $audit,
     ) {}
@@ -194,6 +195,8 @@ final class KirimTransferStok
             'TotalNilaiKirim' => $transfer->TotalNilaiKirim,
             'NomorJurnal' => $jurnal?->nomor,
         ], idPengguna: $idPengguna);
+
+        $this->pemenuhanPermintaan->Jalankan($transfer, $idPengguna);
 
         return $transfer;
     }

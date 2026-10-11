@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Kasir;
 
+use App\Domain\Kasir\Aksi\SiapkanKategoriBiayaBawaan;
 use App\Domain\Kasir\Aksi\SimpanKategoriKas;
 use App\Domain\Kasir\Aksi\UbahStatusKategoriKas;
 use App\Domain\Kasir\Kueri\DaftarKategoriKas;
@@ -31,6 +32,16 @@ final class KategoriKasKontroler extends DasarKelolaKontroler
         $kategori = $simpan->Jalankan($permintaan->AmbilData());
 
         return to_route('kelola.kasir.kategori-kas')->with('Kilat', "Kategori \"{$kategori->Nama}\" disimpan.");
+    }
+
+    /** D-106: tambah kategori biaya umum (Listrik, Transport, dst.) beserta akun bebannya; aditif, tidak menimpa. */
+    public function SiapkanBiayaUmum(SiapkanKategoriBiayaBawaan $siapkan): RedirectResponse
+    {
+        $jumlah = $siapkan->Jalankan();
+
+        return to_route('kelola.kasir.kategori-kas')->with('Kilat', $jumlah === 0
+            ? 'Kategori biaya umum sudah lengkap, tidak ada yang perlu ditambahkan.'
+            : "{$jumlah} kategori biaya umum ditambahkan. Ubah atau nonaktifkan yang tidak perlu.");
     }
 
     public function Perbarui(string $kategoriKas, SimpanKategoriKasPermintaan $permintaan, SimpanKategoriKas $simpan): RedirectResponse

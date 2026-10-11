@@ -27,6 +27,14 @@ final class PenomorDokumenPersediaan
         return $this->Susun(JenisDokumenBernomor::TransferStok, $tanggal, $kode);
     }
 
+    /** `MS/{TUJUAN}-{ASAL}/{YYMM}/{SEQ4}`: lokasi yang meminta lebih dulu, lalu lokasi yang diminta mengirim (D-105). */
+    public function AmbilPermintaanStok(CarbonInterface $tanggal, string $kodeTujuan, string $kodeAsal): string
+    {
+        $kode = self::Rapikan($kodeTujuan, self::PANJANG_KODE_TRANSFER).'-'.self::Rapikan($kodeAsal, self::PANJANG_KODE_TRANSFER);
+
+        return $this->Susun(JenisDokumenBernomor::PermintaanStok, $tanggal, $kode);
+    }
+
     public function AmbilOpname(CarbonInterface $tanggal, string $kodeLokasi): string
     {
         return $this->Susun(JenisDokumenBernomor::StokOpname, $tanggal, self::Rapikan($kodeLokasi, 20));

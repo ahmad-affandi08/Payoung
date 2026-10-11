@@ -26,7 +26,7 @@ final class SimpanTransferStokPermintaan extends FormRequest
         $maksimal = (int) config('persediaan.Dokumen.MaksimalBaris', 500);
 
         return [
-            ...($this->isMethod('post') ? ['Uuid' => ['nullable', 'ulid']] : ['VersiDiubahPada' => ['required', 'string', 'max:40']]),
+            ...($this->isMethod('post') ? ['Uuid' => ['nullable', 'ulid'], 'UuidPermintaanStok' => ['nullable', 'ulid']] : ['VersiDiubahPada' => ['required', 'string', 'max:40']]),
             'UuidGudangAsal' => ['required', 'ulid'],
             'UuidGudangTujuan' => ['required', 'ulid'],
             'Tanggal' => ['required', 'date_format:Y-m-d'],
@@ -83,6 +83,7 @@ final class SimpanTransferStokPermintaan extends FormRequest
                 idNomorSeri: is_string($b['UuidNomorSeri'] ?? null) ? ($seri[$b['UuidNomorSeri']] ?? 0) : null,
             ), $baris),
             versiDiubahPada: $this->isMethod('put') && is_string($this->validated('VersiDiubahPada')) ? (string) $this->validated('VersiDiubahPada') : null,
+            uuidPermintaanStok: $this->isMethod('post') && is_string($this->validated('UuidPermintaanStok')) ? (string) $this->validated('UuidPermintaanStok') : null,
         );
     }
 }

@@ -128,6 +128,33 @@ describe('F-05b HTTP transfer stok', function (): void {
         MasukOutlet($this, $t['Tenant']->Id, $lain->Id)->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak")->assertNotFound();
     });
 
+    it('D-105 form terima per barang: Rusak & Ditolak diterima, angka tak valid ditolak, detail menampilkan jumlah dikembalikan', function (): void {
+        $t = SiapkanHttpDokumen();
+        $uuid = (string) Str::ulid();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+        $this->post('/kelola/persediaan/transfer', [
+            'Uuid' => $uuid, 'UuidGudangAsal' => $t['Gudang']->Uuid, 'UuidGudangTujuan' => $t['GudangCabang']->Uuid, 'Tanggal' => B::Kemarin(),
+            'Baris' => [['UuidProduk' => $t['Produk']['Stok']->Uuid, 'Jumlah' => '12']],
+        ])->assertSessionHasNoErrors();
+        $this->post("/kelola/persediaan/transfer/{$uuid}/kirim")->assertSessionHasNoErrors();
+
+        $this->post("/kelola/persediaan/transfer/{$uuid}/terima", ['Tanggal' => B::Kemarin(), 'Baris' => [['Urutan' => 1, 'Jumlah' => '8', 'Rusak' => '2,5']]])->assertSessionHasErrors('Baris.0.Rusak');
+        $this->post("/kelola/persediaan/transfer/{$uuid}/terima", ['Tanggal' => B::Kemarin(), 'Baris' => [['Urutan' => 1, 'Jumlah' => '8', 'Rusak' => '3', 'Ditolak' => '2']]])->assertSessionHasErrors();
+        $this->post("/kelola/persediaan/transfer/{$uuid}/terima", ['Tanggal' => B::Kemarin(), 'Baris' => [['Urutan' => 1, 'Jumlah' => '8', 'Rusak' => '2', 'Ditolak' => '2']]])->assertSessionHasNoErrors();
+
+        $transfer = TransferStok::query()->where('Uuid', $uuid)->firstOrFail();
+        $detail = $transfer->Detail()->sole();
+
+        expect($transfer->Status)->toBe(StatusTransferStok::Diterima)
+            ->and($detail->JumlahDiterima)->toBe('8.0000')->and($detail->JumlahSusut)->toBe('2.0000')->and($detail->JumlahDitolak)->toBe('2.0000')
+            ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
+
+        $this->get("/kelola/persediaan/transfer/{$uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Baris.0.JumlahDitolak', '2.0000')
+            ->where('Baris.0.JumlahSusut', '2.0000')
+            ->where('Baris.0.JumlahSisa', '0.0000'));
+    });
+
     it('D-95 daftar ambil barang: boleh untuk draf & dalam perjalanan, 409 setelah diterima; form Buat terisi lokasi dari ?asal/?tujuan', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '12')]);

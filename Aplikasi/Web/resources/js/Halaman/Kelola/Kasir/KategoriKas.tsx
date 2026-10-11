@@ -65,6 +65,7 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
     const galat = props.errors;
     const [form, AturForm] = useState<{ uuid: string | null; isian: IsianKategori; akunManual: boolean } | null>(null);
     const [memproses, AturMemproses] = useState(false);
+    const [memprosesBiaya, AturMemprosesBiaya] = useState(false);
     const [tampilKode, AturTampilKode] = useTampilKodeAkun();
 
     /** Audit kemudahan pakai #15: akun jurnal disarankan dari nama kategori sampai pengguna memilihnya sendiri. */
@@ -110,6 +111,18 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
         }
     };
 
+    /** D-106: sekali klik menambah kategori biaya umum + akun bebannya; yang sudah ada tidak diubah. */
+    const SiapkanBiayaUmum = () =>
+        router.post(
+            `${alamat}/biaya-umum`,
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => AturMemprosesBiaya(true),
+                onFinish: () => AturMemprosesBiaya(false),
+            },
+        );
+
     const UbahStatus = (kategori: BarisKategoriKas) =>
         router.put(`${alamat}/${kategori.Uuid}/status`, { Aktif: !kategori.Aktif }, { preserveScroll: true });
 
@@ -121,6 +134,9 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
                 dinonaktifkan, tidak dihapus.
             </p>
             <AksiHalaman>
+                <Tombol varian="sekunder" memproses={memprosesBiaya} onClick={SiapkanBiayaUmum}>
+                    Tambah biaya umum (listrik, transport, dll.)
+                </Tombol>
                 <Button onClick={() => Buka(null)}>Tambah kategori kas</Button>
             </AksiHalaman>
 
@@ -159,7 +175,7 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
                 )}
                 kosong={{
                     ilustrasi: true,
-                    judul: 'Belum ada kategori kas. Tambahkan minimal satu kategori kas keluar agar kasir bisa mencatat pengeluaran dari laci.',
+                    judul: 'Belum ada kategori kas. Klik "Tambah biaya umum" untuk memulai dengan listrik, air, transport, dan biaya harian lain.',
                 }}
             />
 

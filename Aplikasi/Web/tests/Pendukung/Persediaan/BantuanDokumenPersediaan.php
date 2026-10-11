@@ -54,7 +54,7 @@ final class BantuanDokumenPersediaan
     /**
      * @param  list<DataBarisDokumenStok>  $baris
      */
-    public static function DrafTransfer(Gudang $asal, Gudang $tujuan, array $baris, ?string $tanggal = null): TransferStok
+    public static function DrafTransfer(Gudang $asal, Gudang $tujuan, array $baris, ?string $tanggal = null, ?string $uuidPermintaanStok = null): TransferStok
     {
         return app(SimpanTransferStok::class)->Jalankan(new DataTransferStok(
             (string) Str::ulid(),
@@ -63,6 +63,7 @@ final class BantuanDokumenPersediaan
             CarbonImmutable::parse($tanggal ?? self::Kemarin()),
             'Kirim stok mingguan ke cabang',
             $baris,
+            uuidPermintaanStok: $uuidPermintaanStok,
         ), null);
     }
 

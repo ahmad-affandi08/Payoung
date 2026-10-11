@@ -8,6 +8,7 @@ use App\Domain\Akuntansi\Aksi\TambahkanAkunTemplate;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Kasir\Aksi\SiapkanKategoriBiayaBawaan;
 use App\Domain\Katalog\Aksi\TambahkanKategoriTemplate;
 use App\Domain\Katalog\Aksi\TambahkanSatuanTemplate;
 use App\Domain\Katalog\Data\DataSatuanStandar;
@@ -52,6 +53,7 @@ final class TerapkanTemplateSektor
         private readonly TambahkanFiturOutletTemplate $tambahFitur,
         private readonly LengkapiPengaturanTenant $lengkapiPengaturan,
         private readonly SiapkanMetodePembayaranBawaan $siapkanMetodePembayaran,
+        private readonly SiapkanKategoriBiayaBawaan $siapkanKategoriBiaya,
         private readonly CatatTemplateOutlet $catatTemplate,
         private readonly TambahkanStasiunDapurTemplate $tambahStasiun,
         private readonly TandaiLangkahPanduan $tandai,
@@ -94,6 +96,7 @@ final class TerapkanTemplateSektor
                 ['Sektor' => array_values(array_unique([$kodeTemplate, ...$sektorLain]))],
             );
             $this->siapkanMetodePembayaran->Jalankan($idTenant);
+            $this->siapkanKategoriBiaya->Jalankan();
             $this->tandai->Jalankan(LangkahPanduan::Sektor, StatusLangkahPanduan::Selesai, $outlet->Id);
 
             $hasil = new HasilPenerapanTemplate(

@@ -25,6 +25,12 @@ const petaJenis: Record<string, JenisLabel> = {
     Disetujui: 'sukses',
     Diposting: 'sukses',
     Dibatalkan: 'bahaya',
+    // D-105 permintaan stok.
+    Diajukan: 'peringatan',
+    DiprosesSebagian: 'peringatan',
+    Selesai: 'sukses',
+    Ditutup: 'netral',
+    Ditolak: 'bahaya',
 };
 
 /** Warna label status dokumen persediaan F-05b; teks tetap dari server (`LabelStatus`), warna hanya penguat. */

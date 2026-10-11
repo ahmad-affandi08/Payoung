@@ -10,8 +10,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Validasi penerimaan transfer stok (F-05b): tanggal terima dan jumlah diterima per baris (`Urutan`), satuan dasar.
- * Jumlah 0 = baris itu tidak diterima pada penerimaan ini.
+ * Validasi penerimaan transfer stok (F-05b, D-105): tanggal terima dan, per baris (`Urutan`), jumlah diterima
+ * (`Jumlah`), jumlah rusak (`Rusak`, diterima tetapi tidak layak jual), dan jumlah ditolak (`Ditolak`, dikembalikan ke
+ * lokasi asal), satuan dasar. Rusak & Ditolak boleh dikosongkan. Semuanya 0 = baris itu tidak diproses kali ini.
  */
 final class TerimaTransferStokPermintaan extends FormRequest
 {
@@ -24,7 +25,9 @@ final class TerimaTransferStokPermintaan extends FormRequest
             'Tanggal' => ['required', 'date_format:Y-m-d'],
             'Baris' => ['required', 'array', 'min:1', 'max:'.(int) config('persediaan.Dokumen.MaksimalBaris', 500)],
             'Baris.*.Urutan' => ['required', 'integer', 'min:1'],
-            'Baris.*.Jumlah' => ['required', SimpanStokAwalPermintaan::POLA_JUMLAH],
+            'Baris.*.Jumlah' => ['nullable', SimpanStokAwalPermintaan::POLA_JUMLAH],
+            'Baris.*.Rusak' => ['nullable', SimpanStokAwalPermintaan::POLA_JUMLAH],
+            'Baris.*.Ditolak' => ['nullable', SimpanStokAwalPermintaan::POLA_JUMLAH],
         ];
     }
 
@@ -34,8 +37,10 @@ final class TerimaTransferStokPermintaan extends FormRequest
     public function messages(): array
     {
         return [
-            'Baris.required' => 'Isi jumlah diterima minimal satu barang.',
+            'Baris.required' => 'Isi jumlah diterima, rusak, atau ditolak minimal satu barang.',
             'Baris.*.Jumlah.regex' => 'Jumlah diterima berupa angka tanpa titik ribuan, maksimal 4 angka desimal.',
+            'Baris.*.Rusak.regex' => 'Jumlah rusak berupa angka tanpa titik ribuan, maksimal 4 angka desimal.',
+            'Baris.*.Ditolak.regex' => 'Jumlah ditolak berupa angka tanpa titik ribuan, maksimal 4 angka desimal.',
         ];
     }
 
@@ -52,6 +57,11 @@ final class TerimaTransferStokPermintaan extends FormRequest
         /** @var list<array<string, mixed>> $baris */
         $baris = array_values((array) $this->validated('Baris'));
 
-        return array_map(fn (array $b): DataTerimaTransfer => new DataTerimaTransfer((int) $b['Urutan'], Kuantitas::Dari((string) $b['Jumlah'])), $baris);
+        return array_map(fn (array $b): DataTerimaTransfer => new DataTerimaTransfer(
+            (int) $b['Urutan'],
+            Kuantitas::Dari((string) (($b['Jumlah'] ?? '') === '' ? '0' : $b['Jumlah'])),
+            Kuantitas::Dari((string) (($b['Rusak'] ?? '') === '' ? '0' : $b['Rusak'])),
+            Kuantitas::Dari((string) (($b['Ditolak'] ?? '') === '' ? '0' : $b['Ditolak'])),
+        ), $baris);
     }
 }

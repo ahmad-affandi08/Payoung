@@ -67,7 +67,7 @@ final class TutupTransferStok
 
             $idTransit = (int) $transfer->IdGudangTransit;
             $tanggal = $this->pemeriksaLokasi->HariIni($transfer->IdOutletTujuan);
-            $detail = $transfer->Detail()->orderBy('Urutan')->get()->filter(fn (TransferStokDetail $d): bool => ! AritmetikaHpp::CekNol(self::Sisa($d)))->values();
+            $detail = $transfer->Detail()->orderBy('Urutan')->get()->filter(fn (TransferStokDetail $d): bool => ! AritmetikaHpp::CekNol($d->AmbilSisa()))->values();
             $produk = $this->infoProduk->AmbilBanyak(array_values(array_unique($detail->pluck('IdProduk')->all())), true);
             $this->pengunciSaldo->Kunci(array_values($detail->map(fn (TransferStokDetail $d): array => [$d->IdProduk, $idTransit])->all()));
             $totalSusut = Uang::Nol();
@@ -87,9 +87,9 @@ final class TutupTransferStok
                         idProduk: $d->IdProduk,
                         idGudang: $idTransit,
                         jenisMutasi: JenisMutasi::Susut,
-                        jumlah: self::Sisa($d)->Negasi(),
+                        jumlah: $d->AmbilSisa()->Negasi(),
                         modeNilai: ModeNilaiMutasi::Ditentukan,
-                        nilai: AritmetikaHpp::AmbilMaksimum(Uang::Dari($d->NilaiKirim)->Kurangi(Uang::Dari($d->NilaiDiterima)), Uang::Nol()),
+                        nilai: $d->AmbilSisaNilai(),
                         idReferensiDetail: $d->Id,
                         idBatchStok: $d->IdBatchStokTransit,
                         idNomorSeri: $d->IdNomorSeri,
@@ -98,8 +98,8 @@ final class TutupTransferStok
 
                 foreach ($detail as $d) {
                     $nilai = AritmetikaHpp::AmbilMutlak($hasil->baris['S/'.$d->Id]->totalHpp);
-                    $d->JumlahSusut = self::Sisa($d)->Tambah(Kuantitas::Dari($d->JumlahSusut))->KeString();
-                    $d->NilaiSusut = $nilai->KeString();
+                    $d->JumlahSusut = $d->AmbilSisa()->Tambah(Kuantitas::Dari($d->JumlahSusut))->KeString();
+                    $d->NilaiSusut = Uang::Dari($d->NilaiSusut)->Tambah($nilai)->KeString();
                     $d->save();
                     $totalSusut = $totalSusut->Tambah($nilai);
                 }
@@ -126,7 +126,7 @@ final class TutupTransferStok
             $transfer->UbahStatus(StatusTransferStok::Diterima);
             $transfer->fill([
                 'AlasanSelisih' => mb_substr($alasan, 0, 255),
-                'TotalNilaiSusut' => $totalSusut->KeString(),
+                'TotalNilaiSusut' => Uang::Dari($transfer->TotalNilaiSusut)->Tambah($totalSusut)->KeString(),
                 'DitutupOleh' => $idPengguna,
                 'DitutupPada' => now(),
                 'DiubahOleh' => $idPengguna,
@@ -143,10 +143,5 @@ final class TutupTransferStok
 
             return $transfer;
         }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
-    }
-
-    private static function Sisa(TransferStokDetail $d): Kuantitas
-    {
-        return Kuantitas::Dari($d->JumlahDikirim)->Kurangi(Kuantitas::Dari($d->JumlahDiterima))->Kurangi(Kuantitas::Dari($d->JumlahSusut));
     }
 }

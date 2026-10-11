@@ -9,7 +9,7 @@ import type { OpsiPeranPengguna } from '@/Tipe/Organisasi';
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
 const Peran: OpsiPeranPengguna[] = [
-    { Uuid: '01J9PRN0000000000000000001', Nama: 'Kasir', Pemilik: false, SemuaOutletBawaan: false },
+    { Uuid: '01J9PRN0000000000000000001', Nama: 'Kasir', Pemilik: false, Cakupan: 'Terpilih' as const },
 ];
 
 function Konteks(baris: { Uuid: string; Nama: string }[]) {

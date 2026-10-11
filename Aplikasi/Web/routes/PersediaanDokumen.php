@@ -7,6 +7,7 @@ use App\Http\Kontroler\Kelola\Persediaan\BahanTerbuangKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\OrderProduksiKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\PelacakanStokKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\PenyesuaianStokKontroler;
+use App\Http\Kontroler\Kelola\Persediaan\PermintaanStokKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\StokOpnameKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\TransferStokKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -40,6 +41,15 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::post('/persediaan/transfer/{transferStok}/terima', [TransferStokKontroler::class, 'Terima'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.terima');
     Route::post('/persediaan/transfer/{transferStok}/tutup', [TransferStokKontroler::class, 'Tutup'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.tutup');
     Route::post('/persediaan/transfer/{transferStok}/batalkan', [TransferStokKontroler::class, 'Batalkan'])->middleware($kelola)->where('transferStok', $ulid)->name('kelola.persediaan.transfer.batalkan');
+
+    // D-105: permintaan stok dari outlet yang butuh barang; dijawab dengan transfer biasa.
+    Route::get('/persediaan/permintaan', [PermintaanStokKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.persediaan.permintaan.daftar');
+    Route::get('/persediaan/permintaan/buat', [PermintaanStokKontroler::class, 'Buat'])->middleware($kelola)->name('kelola.persediaan.permintaan.buat');
+    Route::post('/persediaan/permintaan', [PermintaanStokKontroler::class, 'Simpan'])->middleware($kelola)->name('kelola.persediaan.permintaan.simpan');
+    Route::get('/persediaan/permintaan/{permintaanStok}', [PermintaanStokKontroler::class, 'Detail'])->middleware($lihat)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.detail');
+    Route::post('/persediaan/permintaan/{permintaanStok}/batalkan', [PermintaanStokKontroler::class, 'Batalkan'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.batalkan');
+    Route::post('/persediaan/permintaan/{permintaanStok}/tolak', [PermintaanStokKontroler::class, 'Tolak'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.tolak');
+    Route::post('/persediaan/permintaan/{permintaanStok}/tutup', [PermintaanStokKontroler::class, 'Tutup'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.tutup');
 
     Route::get('/persediaan/opname', [StokOpnameKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.persediaan.opname.daftar');
     Route::post('/persediaan/opname', [StokOpnameKontroler::class, 'Mulai'])->middleware($kelola)->name('kelola.persediaan.opname.mulai');

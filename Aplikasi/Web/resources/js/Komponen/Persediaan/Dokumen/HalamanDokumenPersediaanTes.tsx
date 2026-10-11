@@ -7,7 +7,10 @@ import HalamanPengaturanPersediaan from '@/Halaman/Kelola/Persediaan/Pengaturan'
 import HalamanDetailPenyesuaianStok from '@/Halaman/Kelola/Persediaan/Penyesuaian/Detail';
 import HalamanFormPenyesuaianStok, { PeriksaBarisPenyesuaian } from '@/Halaman/Kelola/Persediaan/Penyesuaian/Form';
 import HalamanDaftarTransferStok from '@/Halaman/Kelola/Persediaan/Transfer/Daftar';
-import HalamanDetailTransferStok, { PeriksaJumlahTerima } from '@/Halaman/Kelola/Persediaan/Transfer/Detail';
+import HalamanDetailTransferStok, {
+    PeriksaBagianTerima,
+    PeriksaJumlahTerima,
+} from '@/Halaman/Kelola/Persediaan/Transfer/Detail';
 import { PeriksaBarisTransfer } from '@/Halaman/Kelola/Persediaan/Transfer/Form';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { AmbilJenisLabelDokumen, PeriksaAlasan } from '@/Komponen/Persediaan/Dokumen/KomponenDokumen';
@@ -41,10 +44,12 @@ function BarisTransfer(perubahan: Partial<BarisDetailTransferStok> = {}): BarisD
         JumlahDikirim: '30.0000',
         JumlahDiterima: '12.0000',
         JumlahSusut: '0.0000',
+        JumlahDitolak: '0.0000',
         JumlahSisa: '18.0000',
         NilaiKirim: '1155000.00',
         NilaiDiterima: '462000.00',
         NilaiSusut: '0.00',
+        NilaiDitolak: '0.00',
         UuidBatchStok: null,
         NomorBatch: null,
         TanggalKedaluwarsa: null,
@@ -311,7 +316,9 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
         UbahNilai(isian, '19');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan penerimaan' }));
         expect(tiruanRouter.post).not.toHaveBeenCalled();
-        expect(within(dialog).getByText('Melebihi sisa dalam perjalanan.')).toBeTruthy();
+        expect(
+            within(dialog).getByText('Diterima + rusak + dikembalikan melebihi sisa dalam perjalanan.'),
+        ).toBeTruthy();
 
         UbahNilai(isian, '10');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan penerimaan' }));
@@ -320,6 +327,43 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
             { Tanggal: '2026-09-24', Baris: [{ Urutan: 1, Jumlah: '10' }] },
             expect.anything(),
         );
+    });
+
+    it('D-105 terima per barang: bagi sisa jadi diterima, rusak, dan dikembalikan; total tidak boleh melebihi sisa', () => {
+        RenderUji(<HalamanDetailTransferStok {...PropsTransfer()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Terima barang' }));
+        const dialog = screen.getByRole('dialog');
+
+        UbahNilai(within(dialog).getByLabelText('Diterima Minyak Goreng Sawit 2 L'), '10');
+        UbahNilai(within(dialog).getByLabelText('Rusak Minyak Goreng Sawit 2 L'), '3');
+        UbahNilai(within(dialog).getByLabelText('Dikembalikan Minyak Goreng Sawit 2 L'), '6');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan penerimaan' }));
+        expect(tiruanRouter.post).not.toHaveBeenCalled();
+        expect(
+            within(dialog).getByText('Diterima + rusak + dikembalikan melebihi sisa dalam perjalanan.'),
+        ).toBeTruthy();
+
+        UbahNilai(within(dialog).getByLabelText('Dikembalikan Minyak Goreng Sawit 2 L'), '5');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan penerimaan' }));
+        expect(tiruanRouter.post).toHaveBeenCalledWith(
+            `/kelola/persediaan/transfer/${Uuid}/terima`,
+            { Tanggal: '2026-09-24', Baris: [{ Urutan: 1, Jumlah: '10', Rusak: '3', Ditolak: '5' }] },
+            expect.anything(),
+        );
+    });
+
+    it('D-105 PeriksaBagianTerima: bagian tak valid dilaporkan per bagian; semua kosong dianggap tidak diproses', () => {
+        expect(PeriksaBagianTerima({ Terima: '', Rusak: '', Ditolak: '' }, '18.0000', false)).toBeNull();
+        expect(PeriksaBagianTerima({ Terima: '10', Rusak: '3', Ditolak: '5' }, '18.0000', false)).toBeNull();
+        expect(PeriksaBagianTerima({ Terima: '1.5', Rusak: '', Ditolak: '' }, '18.0000', false)).toEqual({
+            Terima: 'Jumlah tidak valid.',
+        });
+        expect(PeriksaBagianTerima({ Terima: '', Rusak: '-1', Ditolak: '' }, '18.0000', false)).toEqual({
+            Rusak: 'Jumlah tidak valid.',
+        });
+        expect(PeriksaBagianTerima({ Terima: '', Rusak: '', Ditolak: '19' }, '18.0000', false)).toEqual({
+            Total: 'Diterima + rusak + dikembalikan melebihi sisa dalam perjalanan.',
+        });
     });
 
     it('tutup dengan selisih wajib alasan; draf menampilkan kirim dengan konfirmasi', () => {

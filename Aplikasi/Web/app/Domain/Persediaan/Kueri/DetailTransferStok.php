@@ -6,10 +6,10 @@ namespace App\Domain\Persediaan\Kueri;
 
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Akuntansi\Kueri\JurnalSumber;
-use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Persediaan\Enum\StatusTransferStok;
+use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Persediaan\Model\TransferStokDetail;
 
@@ -35,9 +35,12 @@ final class DetailTransferStok
         $gudang = $this->infoGudang->AmbilBanyak(array_values(array_filter([$t->IdGudangAsal, $t->IdGudangTujuan, $t->IdGudangTransit])));
         [$riwayat, $nama] = $this->riwayat->Ambil(TransferStok::JENIS_DOKUMEN, $t->Id, fn (string $s): string => StatusTransferStok::tryFrom($s)?->AmbilLabel() ?? $s, [$t->DibuatOleh, $t->DikirimOleh, $t->DitutupOleh, $t->DibatalkanOleh]);
 
+        $permintaan = $t->IdPermintaanStok === null ? null : PermintaanStok::query()->find($t->IdPermintaanStok);
+
         return [
             'Transfer' => [
                 'Uuid' => $t->Uuid,
+                'Permintaan' => $permintaan === null ? null : ['Uuid' => $permintaan->Uuid, 'Nomor' => $permintaan->Nomor],
                 'Nomor' => $t->Nomor,
                 'Status' => $t->Status->value,
                 'LabelStatus' => $t->Status->AmbilLabel(),
@@ -113,7 +116,7 @@ final class DetailTransferStok
 
         return array_values($detail->map(function (TransferStokDetail $d) use ($produk, $uuidBatch, $uuidSeri): array {
             $info = $produk[$d->IdProduk] ?? null;
-            $sisa = Kuantitas::Dari($d->JumlahDikirim)->Kurangi(Kuantitas::Dari($d->JumlahDiterima))->Kurangi(Kuantitas::Dari($d->JumlahSusut));
+            $sisa = $d->AmbilSisa();
 
             return [
                 'Urutan' => $d->Urutan,
@@ -126,10 +129,12 @@ final class DetailTransferStok
                 'JumlahDikirim' => $d->JumlahDikirim,
                 'JumlahDiterima' => $d->JumlahDiterima,
                 'JumlahSusut' => $d->JumlahSusut,
+                'JumlahDitolak' => $d->JumlahDitolak,
                 'JumlahSisa' => $sisa->KeString(),
                 'NilaiKirim' => $d->NilaiKirim,
                 'NilaiDiterima' => $d->NilaiDiterima,
                 'NilaiSusut' => $d->NilaiSusut,
+                'NilaiDitolak' => $d->NilaiDitolak,
                 'UuidBatchStok' => $d->IdBatchStok === null ? null : ($uuidBatch[$d->IdBatchStok] ?? null),
                 'NomorBatch' => $d->NomorBatch,
                 'TanggalKedaluwarsa' => $d->TanggalKedaluwarsa?->format('Y-m-d'),

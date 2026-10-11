@@ -103,6 +103,9 @@ export default function HalamanDaftarTransferStok({ Transfer, OpsiGudang, OpsiSt
     const tombolBuat = Izin.Kelola ? (
         <>
             <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                <Link href="/kelola/persediaan/permintaan">Permintaan stok</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                 <Link href={`${AlamatTransfer}/buat?arah=retur-ke-gudang`}>Retur ke Gudang</Link>
             </Button>
             <Button asChild className="h-8 pointer-coarse:h-11">

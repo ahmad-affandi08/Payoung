@@ -17,6 +17,7 @@ use App\Domain\Persediaan\Layanan\PemeriksaLokasiDokumen;
 use App\Domain\Persediaan\Layanan\PenjagaVersiDokumen;
 use App\Domain\Persediaan\Model\BatchStok;
 use App\Domain\Persediaan\Model\NomorSeri;
+use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Persediaan\Model\TransferStokDetail;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\DB;
  * (`StatusTidakSesuai`) dengan versi optimistis (`DokumenBerubah`). Lokasi asal ≠ tujuan, keduanya aktif dan bukan
  * lokasi dalam perjalanan; tanggal tidak di masa depan; baris diperiksa `PemeriksaBarisStok` terhadap lokasi asal
  * (batch/nomor seri asal wajib ada di sana). Draf belum mengubah stok. Audit `transfer-stok.buat`/`transfer-stok.ubah`.
+ * D-105: draf baru boleh menjawab permintaan stok terbuka (`uuidPermintaanStok`): lokasi tujuannya sama dengan lokasi
+ * yang meminta dan outlet asalnya sama dengan outlet yang diminta; baru terhitung terpenuhi saat transfer dikirim.
  */
 final class SimpanTransferStok
 {
@@ -75,10 +78,12 @@ final class SimpanTransferStok
 
             $this->pemeriksaLokasi->PastikanBukanMasaDepan($data->tanggal, $asal->idOutlet);
             $produk = $this->pemeriksaBaris->Periksa($data->baris, $asal->id, true);
+            $idPermintaan = $ada === null ? $this->PeriksaPermintaan($data->uuidPermintaanStok, $asal->idOutlet, $tujuan->id) : $transfer->IdPermintaanStok;
             $lama = $ada === null ? null : ['JumlahBaris' => $transfer->JumlahBaris, 'IdGudangAsal' => $transfer->IdGudangAsal, 'IdGudangTujuan' => $transfer->IdGudangTujuan];
             $catatan = $data->catatan === null ? null : trim($data->catatan);
 
             $transfer->fill([
+                'IdPermintaanStok' => $idPermintaan,
                 'IdGudangAsal' => $asal->id,
                 'IdOutletAsal' => $asal->idOutlet,
                 'IdGudangTujuan' => $tujuan->id,
@@ -112,6 +117,27 @@ final class SimpanTransferStok
 
             return $transfer;
         }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
+    }
+
+    /** D-105: permintaan harus terbuka, meminta ke outlet asal ini, dan untuk lokasi tujuan yang sama. */
+    private function PeriksaPermintaan(?string $uuid, ?int $idOutletAsal, int $idGudangTujuan): ?int
+    {
+        if ($uuid === null || $uuid === '') {
+            return null;
+        }
+
+        $permintaan = PermintaanStok::query()->where('Uuid', strtoupper($uuid))->first()
+            ?? throw new PelanggaranAturanBisnis('PermintaanTidakDikenal', 'Permintaan stok tidak ditemukan.', 'UuidPermintaanStok');
+
+        if (! $permintaan->Status->CekTerbuka()) {
+            throw new PelanggaranAturanBisnis('PermintaanSudahBerakhir', "Permintaan {$permintaan->Nomor} berstatus {$permintaan->Status->AmbilLabel()} dan tidak menerima transfer lagi.", 'UuidPermintaanStok');
+        }
+
+        if ($permintaan->IdOutletAsal !== $idOutletAsal || $permintaan->IdGudangTujuan !== $idGudangTujuan) {
+            throw new PelanggaranAturanBisnis('PermintaanTidakCocok', "Transfer ini harus dikirim dari outlet yang diminta dan ke lokasi yang meminta di permintaan {$permintaan->Nomor}.", 'UuidPermintaanStok');
+        }
+
+        return $permintaan->Id;
     }
 
     /**

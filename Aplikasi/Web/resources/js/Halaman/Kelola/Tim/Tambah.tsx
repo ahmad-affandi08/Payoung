@@ -5,9 +5,9 @@ import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
-import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import KartuFormulir from '@/Komponen/Formulir/KartuFormulir';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
+import CakupanOutletPeran, { TerapkanCakupanPeran } from '@/Komponen/Kelola/CakupanOutletPeran';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import { cn } from '@/Komponen/Ui/utils';
@@ -58,6 +58,7 @@ const PeranRingkas: Record<string, string> = {
     Kasir: 'Berjualan di aplikasi kasir.',
     Supervisor: 'Kasir + menyetujui diskon, void, retur, kas keluar.',
     'Manajer Outlet': 'Mengelola outlet: produk, stok, laporan.',
+    'Staf Gudang': 'Terima & kirim barang antar-outlet, opname stok.',
     Admin: 'Semua menu kecuali kepemilikan & langganan.',
 };
 
@@ -105,16 +106,11 @@ export default function HalamanTambahTim({
     const kasir = d.Akses === 'Kasir';
     const punyaKaryawan = BolehKaryawan && (!akun || d.JugaKaryawan || KaryawanTertaut !== null);
     const peranTerpilih = peranTerlihat.find((baris) => baris.Uuid === d.Peran);
-    const semuaOutletPaksa = peranTerpilih?.Pemilik ?? false;
     const penuh = CekBatasPenuh(BatasPengguna) && akun;
 
     const PilihPeran = (uuid: string) => {
         const baris = peranTerlihat.find((item) => item.Uuid === uuid);
-        formulir.setData({
-            ...d,
-            Peran: uuid,
-            SemuaOutlet: baris?.Pemilik === true || (baris?.SemuaOutletBawaan ?? false),
-        });
+        formulir.setData({ ...d, Peran: uuid, ...TerapkanCakupanPeran(baris, Outlet, d) });
     };
 
     const Kirim = (peristiwa: FormEvent) => {
@@ -319,31 +315,14 @@ export default function HalamanTambahTim({
                                 required
                                 kosong="Pilih peran"
                             />
-                            <KotakCentang
-                                label={
-                                    semuaOutletPaksa
-                                        ? 'Semua outlet (Pemilik selalu mengakses semua outlet)'
-                                        : 'Semua outlet, termasuk outlet baru'
-                                }
-                                nilai={d.SemuaOutlet || semuaOutletPaksa}
-                                saatBerubah={(nilai) => formulir.setData('SemuaOutlet', nilai)}
+                            <CakupanOutletPeran
+                                peran={peranTerpilih}
+                                outlet={Outlet}
+                                nilai={{ SemuaOutlet: d.SemuaOutlet, Outlet: d.Outlet }}
+                                saatBerubah={(isian) => formulir.setData({ ...d, ...isian })}
+                                galatSemuaOutlet={galat.SemuaOutlet}
+                                galatOutlet={galat.Outlet}
                             />
-                            {galat.SemuaOutlet ? (
-                                <p className="text-keterangan font-semibold text-bahaya">{galat.SemuaOutlet}</p>
-                            ) : null}
-                            {!d.SemuaOutlet && !semuaOutletPaksa ? (
-                                <GrupCentang
-                                    legenda="Outlet yang ditugaskan"
-                                    opsi={Outlet.map((baris) => ({
-                                        nilai: baris.Uuid,
-                                        label: `${baris.Kode} | ${baris.Nama}`,
-                                    }))}
-                                    terpilih={d.Outlet}
-                                    saatBerubah={(terpilih) => formulir.setData('Outlet', terpilih)}
-                                    galat={galat.Outlet}
-                                    required
-                                />
-                            ) : null}
                             {BolehKaryawan && KaryawanTertaut === null ? (
                                 <KotakCentang
                                     label="Bukan karyawan (hanya akun akses, misal akuntan luar)"

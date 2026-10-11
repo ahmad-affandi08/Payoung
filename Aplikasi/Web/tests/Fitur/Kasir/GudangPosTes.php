@@ -185,6 +185,34 @@ describe('transfer masuk', function (): void {
         expect(BantuanPembelian::PeriksaInvarian($k['Tenant']->Id))->toBe([]);
     });
 
+    it('D-105 terima per barang dari aplikasi: Rusak jadi susut, Ditolak kembali ke asal; Jumlah saja tetap diterima (kompatibel mundur)', function (): void {
+        $k = SiapkanGudangPos($this);
+        $cabang = BantuanDokumenPersediaan::BuatOutlet();
+        $gudangCabang = BantuanPersediaan::BuatGudang($cabang, 'Toko Cabang Solo Baru', JenisGudang::Toko);
+        BantuanStokAwal::BuatDanPosting($gudangCabang, [BantuanStokAwal::Baris($k['Produk']['Stok'], '100', '38500')], $k['Pemilik']->Id, CarbonImmutable::now('Asia/Jakarta')->subDays(3)->format('Y-m-d'));
+        $transfer = app(KirimTransferStok::class)->Jalankan(
+            BantuanDokumenPersediaan::DrafTransfer($gudangCabang, $k['Gudang'], [BantuanDokumenPersediaan::Baris($k['Produk']['Stok'], '30')]),
+            $k['Pemilik']->Id,
+        );
+        $terima = fn (array $baris): TestResponse => KirimGudang($this, $k['Token'], 'POST', "gudang/transfer/{$transfer->Uuid}/terima", [
+            'UuidPengguna' => $k['StafGudang']->Uuid,
+            'Baris' => [$baris],
+        ]);
+
+        // Rusak & Ditolak tanpa Jumlah diterima; angka tidak valid ditolak validasi.
+        $terima(['Urutan' => 1, 'Rusak' => '2,5'])->assertStatus(422);
+        expect($terima(['Urutan' => 1, 'Jumlah' => '20', 'Rusak' => '4', 'Ditolak' => '3'])->assertOk()->json('Transfer.Baris.0.Sisa'))->toBe('3.0000')
+            ->and($terima(['Urutan' => 1, 'Ditolak' => '3'])->assertOk()->json('Transfer.Status'))->toBe(StatusTransferStok::Diterima->value);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $detail = TransferStok::query()->sole()->Detail()->sole();
+
+        expect($detail->JumlahDiterima)->toBe('20.0000')->and($detail->JumlahSusut)->toBe('4.0000')->and($detail->JumlahDitolak)->toBe('6.0000')
+            ->and(BantuanDokumenPersediaan::Saldo($k['Produk']['Stok'], $k['Gudang'])[0])->toBe('20.0000')
+            ->and(BantuanDokumenPersediaan::Saldo($k['Produk']['Stok'], $gudangCabang)[0])->toBe('76.0000');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(BantuanPembelian::PeriksaInvarian($k['Tenant']->Id))->toBe([]);
+    });
+
     it('transfer keluar dari outlet ini (bukan tujuan) tidak bisa diterima dari perangkat ini', function (): void {
         $k = SiapkanGudangPos($this);
         $cabang = BantuanDokumenPersediaan::BuatOutlet();

@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Kelola\Persediaan;
 
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Organisasi\Enum\JenisGudang;
+use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Persediaan\Aksi\BatalkanTransferStok;
 use App\Domain\Persediaan\Aksi\KirimTransferStok;
 use App\Domain\Persediaan\Aksi\SimpanTransferStok;
@@ -14,8 +15,10 @@ use App\Domain\Persediaan\Aksi\TutupTransferStok;
 use App\Domain\Persediaan\Enum\StatusTransferStok;
 use App\Domain\Persediaan\Kebijakan\DokumenPersediaanKebijakan;
 use App\Domain\Persediaan\Kueri\DaftarTransferStok;
+use App\Domain\Persediaan\Kueri\DetailPermintaanStok;
 use App\Domain\Persediaan\Kueri\DetailTransferStok;
 use App\Domain\Persediaan\Kueri\DokumenCetakTransferStok;
+use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Persediaan\AlasanDokumenPersediaanPermintaan;
@@ -49,8 +52,15 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan): Response
+    public function Buat(Request $permintaan, DetailPermintaanStok $detailPermintaan): Response
     {
+        // D-105: tombol "Penuhi" di permintaan stok membawa isi permintaan (`?permintaan=` uuid) ke form transfer.
+        $uuidPermintaan = $permintaan->query('permintaan');
+
+        if (is_string($uuidPermintaan) && $uuidPermintaan !== '') {
+            return $this->RenderForm('Buat', null, $this->SusunAwalDariPermintaan($uuidPermintaan, $detailPermintaan));
+        }
+
         // D-95: tombol Muat/Bongkar di halaman Kanvas membawa lokasi bak kendaraan lewat `?asal=` / `?tujuan=` (uuid).
         $awal = $permintaan->query('arah') === 'retur-ke-gudang'
             ? $this->SusunAwalReturKeGudang()
@@ -223,8 +233,29 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
     }
 
     /**
+     * D-105: isi awal form transfer dari permintaan stok. Pengguna harus mengakses outlet yang diminta mengirim (403),
+     * permintaan harus masih terbuka (409). Lokasi asal bawaan = lokasi yang diminta bila boleh dipakai, kalau tidak
+     * lokasi pertama di outlet itu yang boleh diakses.
+     *
+     * @return array<string, mixed>
+     */
+    private function SusunAwalDariPermintaan(string $uuid, DetailPermintaanStok $detailPermintaan): array
+    {
+        $p = PermintaanStok::query()->where('Uuid', $uuid)->firstOrFail();
+        abort_unless($this->CekBolehOutlet($p->IdOutletAsal) || $this->CekBolehOutlet($p->IdOutletTujuan), 404);
+        abort_unless($this->CekBolehOutlet($p->IdOutletAsal), 403, 'Hanya pengguna di outlet yang diminta mengirim yang bisa memenuhi permintaan ini.');
+        abort_unless($p->Status->CekTerbuka(), 409, "Permintaan {$p->Nomor} berstatus {$p->Status->AmbilLabel()} dan tidak menerima transfer lagi.");
+
+        $diminta = app(InfoGudang::class)->AmbilBanyak([$p->IdGudangAsal])[$p->IdGudangAsal] ?? null;
+        $bisa = array_values(array_filter($this->AmbilOpsiGudangDokumen(), fn (array $g): bool => $g['Uuid'] === ($diminta->uuid ?? '')));
+        $asal = $bisa[0]['Uuid'] ?? ($this->AmbilOpsiGudangDokumen()[0]['Uuid'] ?? '');
+
+        return $detailPermintaan->AmbilAwalTransfer($p, $asal);
+    }
+
+    /**
      * @param  array<string, mixed>|null  $transfer
-     * @param  array{UuidGudangAsal: string, UuidGudangTujuan: string}  $awal
+     * @param  array<string, mixed>  $awal
      */
     private function RenderForm(string $mode, ?array $transfer, array $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => '']): Response
     {

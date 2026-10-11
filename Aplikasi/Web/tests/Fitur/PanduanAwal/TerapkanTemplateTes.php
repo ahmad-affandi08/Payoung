@@ -7,6 +7,7 @@ use App\Domain\Akuntansi\Model\Akun;
 use App\Domain\Akuntansi\Model\PemetaanAkun;
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
+use App\Domain\Kasir\Aksi\SiapkanKategoriBiayaBawaan;
 use App\Domain\Katalog\Model\Kategori;
 use App\Domain\Katalog\Model\Satuan;
 use App\Domain\Organisasi\Model\Outlet;
@@ -59,11 +60,14 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
 
         $akunTemplate = collect($versi->Isi['Akun']);
         $akun = Akun::query()->get()->keyBy('Kode');
-        expect($akun->keys()->sort()->values()->all())->toBe($akunTemplate->pluck('Kode')->sort()->values()->all())
+        // D-106: penerapan template juga menyiapkan akun beban biaya umum (bukan akun Sistem, bukan bagian template).
+        $kodeBiaya = collect(SiapkanKategoriBiayaBawaan::KATEGORI)->map(fn (array $a): string => $a[0])->unique()->sort()->values()->all();
+        expect($akun->keys()->sort()->values()->all())->toBe($akunTemplate->pluck('Kode')->merge($kodeBiaya)->sort()->values()->all())
+            ->and($akun->only($kodeBiaya)->every(fn (Akun $a): bool => ! $a->Sistem && $a->Jenis->value === 'Beban'))->toBeTrue()
             // 46 sejak v2.74 (PiutangBelumDifakturkan 1-1470, BR-12.2), 47 sejak v2.97 (PendapatanPengiriman 4-3100, F-17 bagian 3),
             // 49 sejak v3.42 (Giro Mundur Diterima 1-1480 & Hutang Giro 2-1180, F-12 giro), 50 sejak v3.61 (Kliring Tukar
-            // Barang 2-1800, K-11).
-            ->and($akun->count())->toBe(50)
+            // Barang 2-1800, K-11), 58 sejak D-106 (delapan akun beban biaya umum 6-2100…6-2800).
+            ->and($akun->count())->toBe(58)
             ->and($akun->has('4-1010'))->toBeTrue()
             ->and($akun->has('4-1020'))->toBeTrue();
 

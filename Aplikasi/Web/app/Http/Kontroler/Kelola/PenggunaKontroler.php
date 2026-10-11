@@ -12,7 +12,6 @@ use App\Domain\Organisasi\Aksi\UbahAksesAnggota;
 use App\Domain\Organisasi\Aksi\UbahAnggotaMassal;
 use App\Domain\Organisasi\Aksi\UndangPengguna;
 use App\Domain\Organisasi\Enum\IzinTenant;
-use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
@@ -118,7 +117,7 @@ final class PenggunaKontroler extends DasarKelolaKontroler
     }
 
     /**
-     * @return array<int, array{Uuid: string, Nama: string, Pemilik: bool, SemuaOutletBawaan: bool}>
+     * @return array<int, array{Uuid: string, Nama: string, Pemilik: bool, Cakupan: string}>
      */
     private static function AmbilOpsiPeran(): array
     {
@@ -126,7 +125,7 @@ final class PenggunaKontroler extends DasarKelolaKontroler
             'Uuid' => $peran->Uuid,
             'Nama' => $peran->Nama,
             'Pemilik' => $peran->CekPemilik(),
-            'SemuaOutletBawaan' => $peran->Kode !== null && (PeranTenantBawaan::tryFrom($peran->Kode)?->CekSemuaOutletBawaan() ?? false),
+            'Cakupan' => $peran->AmbilCakupanOutlet()->value,
         ])->values()->all();
     }
 

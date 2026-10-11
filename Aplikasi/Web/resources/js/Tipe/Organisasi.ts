@@ -100,7 +100,9 @@ export function CekBatasPenuh(batas: Batas): boolean {
 export type IzinPeran = { Kunci: string; Label: string; Kelompok: string; KhususPemilik: boolean };
 
 /** Opsi peran & outlet untuk formulir undangan / ubah akses pengguna. */
-export type OpsiPeranPengguna = { Uuid: string; Nama: string; Pemilik: boolean; SemuaOutletBawaan: boolean };
+/** Cakupan outlet yang dibawa peran (D-104): Semua (Admin/Akuntan/Pemilik), Terpilih (peran operasional), Bebas (peran kustom). */
+export type CakupanOutlet = 'Semua' | 'Terpilih' | 'Bebas';
+export type OpsiPeranPengguna = { Uuid: string; Nama: string; Pemilik: boolean; Cakupan: CakupanOutlet };
 export type OpsiOutletPengguna = { Uuid: string; Kode: string; Nama: string };
 
 /** Props halaman penuh "Tambah outlet". */

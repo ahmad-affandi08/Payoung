@@ -7,6 +7,7 @@ import type { OpsiGudang, PelacakanProduk } from '@/Tipe/Persediaan';
  */
 
 export type StatusTransferStok = 'Draf' | 'Dikirim' | 'DiterimaSebagian' | 'Diterima' | 'Dibatalkan';
+export type StatusPermintaanStok = 'Diajukan' | 'DiprosesSebagian' | 'Selesai' | 'Ditutup' | 'Ditolak' | 'Dibatalkan';
 export type StatusStokOpname = 'Berlangsung' | 'Ditinjau' | 'Disetujui' | 'Dibatalkan';
 export type StatusPenyesuaianStok = 'Draf' | 'MenungguPersetujuan' | 'Diposting' | 'Dibatalkan';
 export type AlasanPenyesuaian = 'Rusak' | 'Hilang' | 'Kedaluwarsa' | 'Sampel' | 'KonsumsiInternal' | 'Lainnya';
@@ -74,6 +75,14 @@ export type BarisFormTransferStok = ProdukBarisDokumen & {
     UuidNomorSeri: string | null;
     NomorSeri: string | null;
 };
+/** Isi awal form transfer: lokasi dari tombol Muat/Bongkar (D-95), atau lokasi + baris dari permintaan stok yang dipenuhi (D-105). */
+export type AwalFormTransferStok = {
+    UuidGudangAsal: string;
+    UuidGudangTujuan: string;
+    UuidPermintaanStok?: string;
+    NomorPermintaan?: string;
+    Baris?: BarisFormTransferStok[];
+};
 export type PropsFormTransferStok = {
     Mode: 'Buat' | 'Ubah';
     Transfer: {
@@ -88,7 +97,7 @@ export type PropsFormTransferStok = {
     OpsiGudangAsal: OpsiGudang[];
     OpsiGudangTujuan: OpsiGudang[];
     /** D-95: lokasi awal dari tombol Muat/Bongkar di halaman Kanvas (kosong bila tidak ada). */
-    Awal?: { UuidGudangAsal: string; UuidGudangTujuan: string };
+    Awal?: AwalFormTransferStok;
     HariIni: string;
     BatasBaris: number;
 };
@@ -97,10 +106,12 @@ export type BarisDetailTransferStok = ProdukBarisDokumen & {
     JumlahDikirim: string;
     JumlahDiterima: string;
     JumlahSusut: string;
+    JumlahDitolak: string;
     JumlahSisa: string;
     NilaiKirim: string;
     NilaiDiterima: string;
     NilaiSusut: string;
+    NilaiDitolak: string;
     UuidBatchStok: string | null;
     NomorBatch: string | null;
     TanggalKedaluwarsa: string | null;
@@ -119,6 +130,8 @@ export type PropsDetailTransferStok = {
         NamaGudangTujuan: string;
         NamaOutletTujuan: string | null;
         NamaGudangTransit: string | null;
+        /** D-105: permintaan stok yang dijawab transfer ini. */
+        Permintaan?: { Uuid: string; Nomor: string } | null;
         Catatan: string | null;
         JumlahBaris: number;
         TotalNilaiKirim: string;
@@ -347,4 +360,74 @@ export type PropsCetakTransferStok = {
         NomorSeri: string | null;
     }[];
     Usaha: { Nama: string | null; Npwp: string | null };
+};
+
+// ---- Permintaan stok (D-105) ----
+export type BarisDaftarPermintaanStok = {
+    Uuid: string;
+    Nomor: string;
+    Tanggal: string;
+    NamaGudangAsal: string;
+    NamaOutletAsal: string | null;
+    NamaGudangTujuan: string;
+    NamaOutletTujuan: string | null;
+    Status: StatusPermintaanStok;
+    LabelStatus: string;
+    JumlahBaris: number;
+    PerluDikirim: boolean;
+};
+export type PropsDaftarPermintaanStok = {
+    Permintaan: HasilTabel<BarisDaftarPermintaanStok>;
+    OpsiGudang: OpsiGudang[];
+    OpsiStatus: OpsiStatus<StatusPermintaanStok>;
+    Izin: IzinDokumenPersediaan;
+};
+export type BarisFormPermintaanStok = ProdukBarisDokumen & { Jumlah: string };
+export type PropsFormPermintaanStok = {
+    /** Lokasi yang boleh meminta (lokasi di outlet pengguna) dan lokasi yang bisa diminta mengirim (semua outlet). */
+    OpsiGudangTujuan: OpsiGudang[];
+    OpsiGudangAsal: OpsiGudang[];
+    UuidGudangTujuanAwal: string;
+    HariIni: string;
+    BatasBaris: number;
+};
+export type BarisDetailPermintaanStok = ProdukBarisDokumen & {
+    Urutan: number;
+    JumlahDiminta: string;
+    JumlahDikirim: string;
+    JumlahSisa: string;
+};
+export type PropsDetailPermintaanStok = {
+    Permintaan: {
+        Uuid: string;
+        Nomor: string;
+        Status: StatusPermintaanStok;
+        LabelStatus: string;
+        Tanggal: string;
+        NamaGudangAsal: string;
+        NamaOutletAsal: string | null;
+        UuidGudangAsal: string;
+        NamaGudangTujuan: string;
+        NamaOutletTujuan: string | null;
+        UuidGudangTujuan: string;
+        Catatan: string | null;
+        JumlahBaris: number;
+        Alasan: string | null;
+        DibuatOleh: string | null;
+        DibuatPada: string;
+        DitutupOleh: string | null;
+        DitutupPada: string | null;
+    };
+    Baris: BarisDetailPermintaanStok[];
+    Transfer: {
+        Uuid: string;
+        Nomor: string | null;
+        Tanggal: string;
+        Status: StatusTransferStok;
+        LabelStatus: string;
+        JumlahBaris: number;
+    }[];
+    Riwayat: RiwayatDokumenPersediaan[];
+    Tindakan: { Penuhi: boolean; Tolak: boolean; Batalkan: boolean; Tutup: boolean };
+    Izin: IzinDokumenPersediaan;
 };

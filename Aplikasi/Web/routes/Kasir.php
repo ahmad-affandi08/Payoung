@@ -40,6 +40,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
 
     Route::get('/kasir/kategori-kas', [KategoriKasKontroler::class, 'Daftar'])->middleware($akuntansi)->name('kelola.kasir.kategori-kas');
     Route::post('/kasir/kategori-kas', [KategoriKasKontroler::class, 'Simpan'])->middleware($akuntansi)->name('kelola.kasir.kategori-kas.simpan');
+    Route::post('/kasir/kategori-kas/biaya-umum', [KategoriKasKontroler::class, 'SiapkanBiayaUmum'])->middleware($akuntansi)->name('kelola.kasir.kategori-kas.biaya-umum');
     Route::put('/kasir/kategori-kas/{kategoriKas}', [KategoriKasKontroler::class, 'Perbarui'])->middleware($akuntansi)->where('kategoriKas', $ulid)->name('kelola.kasir.kategori-kas.perbarui');
     Route::put('/kasir/kategori-kas/{kategoriKas}/status', [KategoriKasKontroler::class, 'UbahStatus'])->middleware($akuntansi)->where('kategoriKas', $ulid)->name('kelola.kasir.kategori-kas.status');
 

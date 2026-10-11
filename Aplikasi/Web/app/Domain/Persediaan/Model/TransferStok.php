@@ -27,6 +27,7 @@ use LogicException;
  * @property int $IdGudangTujuan
  * @property int|null $IdOutletTujuan
  * @property int|null $IdGudangTransit
+ * @property int|null $IdPermintaanStok
  * @property Carbon $Tanggal
  * @property StatusTransferStok $Status
  * @property string|null $Catatan
@@ -59,7 +60,7 @@ final class TransferStok extends ModelDasar
     protected $table = 'TransferStok';
 
     /** @var list<string> */
-    private const KOLOM_ISI = ['IdGudangAsal', 'IdOutletAsal', 'IdGudangTujuan', 'IdOutletTujuan', 'Catatan', 'JumlahBaris'];
+    private const KOLOM_ISI = ['IdPermintaanStok', 'IdGudangAsal', 'IdOutletAsal', 'IdGudangTujuan', 'IdOutletTujuan', 'Catatan', 'JumlahBaris'];
 
     /** @var array<string, mixed> */
     protected $attributes = [

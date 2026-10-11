@@ -7,6 +7,7 @@ namespace App\Domain\Organisasi\Layanan;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Organisasi\Data\DataAksesAnggota;
+use App\Domain\Organisasi\Enum\CakupanOutletPeran;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Model\Outlet;
@@ -17,6 +18,10 @@ use App\Domain\Organisasi\Model\Peran;
  * - Hanya Pemilik yang bisa menunjuk Pemilik lain; peran Pemilik selalu mendapat semua outlet.
  * - Anti-eskalasi: pelaku bukan Pemilik hanya bisa memberi peran yang izinnya ia miliki semua, dan hanya outlet
  *   yang ia sendiri boleh akses.
+ * - Cakupan outlet mengikuti peran (D-104): peran tingkat usaha (Admin, Akuntan) selalu semua outlet; peran operasional
+ *   (Manajer Outlet, Staf Gudang, Kasir, ...) dipasang per outlet di formulir; peran kustom bebas memilih. Server hanya
+ *   memaksa cakupan "Semua" (tidak ada Admin setengah terkurung); klien API lama yang mengirim "semua outlet" untuk peran
+ *   operasional tetap diterima.
  * - Tanpa "semua outlet", minimal satu outlet aktif dipilih.
  */
 final class PemeriksaAksesAnggota
@@ -49,7 +54,9 @@ final class PemeriksaAksesAnggota
             }
         }
 
-        $semuaOutlet = $data->semuaOutlet || $peran->CekPemilik();
+        $cakupan = $peran->AmbilCakupanOutlet();
+
+        $semuaOutlet = $cakupan === CakupanOutletPeran::Semua || $data->semuaOutlet || $peran->CekPemilik();
 
         if ($semuaOutlet) {
             if (! $pelaku['SemuaOutlet']) {

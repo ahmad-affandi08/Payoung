@@ -60,10 +60,12 @@ enum PeranTenantBawaan: string
         };
     }
 
-    /** Peran yang wajar diberi akses ke semua outlet saat diundang (bisa diubah per pengguna). */
-    public function CekSemuaOutletBawaan(): bool
+    /** Cakupan outlet peran bawaan (D-104): peran tingkat usaha selalu semua outlet, peran operasional memilih outlet. */
+    public function AmbilCakupanOutlet(): CakupanOutletPeran
     {
-        return in_array($this, [self::Pemilik, self::Admin, self::Akuntan], true);
+        return in_array($this, [self::Pemilik, self::Admin, self::Akuntan], true)
+            ? CakupanOutletPeran::Semua
+            : CakupanOutletPeran::Terpilih;
     }
 
     /**

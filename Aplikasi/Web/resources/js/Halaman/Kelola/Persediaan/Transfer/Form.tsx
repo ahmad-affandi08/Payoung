@@ -14,6 +14,7 @@ import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Button } from '@/Komponen/Ui/button';
 import { FormatJumlahStok, FormatLabelGudang } from '@/Pustaka/FormatPersediaan';
 import { AmbilTandaDesimal, CekDesimalValid } from '@/Pustaka/HitungDesimal';
@@ -68,7 +69,7 @@ export default function HalamanFormTransferStok({
     const [tanggal, AturTanggal] = useState(Transfer?.Tanggal ?? HariIni);
     const [catatan, AturCatatan] = useState(Transfer?.Catatan ?? '');
     const [daftar, AturDaftar] = useState<BarisForm[]>(() =>
-        (Transfer?.Baris ?? []).map((b) => ({ ...b, Kunci: BuatKunci(), SaldoDiGudang: null })),
+        (Transfer?.Baris ?? Awal?.Baris ?? []).map((b) => ({ ...b, Kunci: BuatKunci(), SaldoDiGudang: null })),
     );
     const [periksa, AturPeriksa] = useState(false);
     const [memproses, AturMemproses] = useState(false);
@@ -152,7 +153,16 @@ export default function HalamanFormTransferStok({
         const opsi = { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) };
 
         if (Transfer === null) {
-            router.post(alamat, { ...masukan, Uuid: uuidBaru ?? BuatUlid(), Lanjutkan: lanjutkan.current }, opsi);
+            router.post(
+                alamat,
+                {
+                    ...masukan,
+                    Uuid: uuidBaru ?? BuatUlid(),
+                    ...(Awal?.UuidPermintaanStok ? { UuidPermintaanStok: Awal.UuidPermintaanStok } : {}),
+                    Lanjutkan: lanjutkan.current,
+                },
+                opsi,
+            );
         } else {
             router.put(
                 `${alamat}/${Transfer.Uuid}`,
@@ -166,8 +176,16 @@ export default function HalamanFormTransferStok({
         <TataLetakAplikasi judul={judul}>
             <DaftarGalatServer
                 galat={galatServer}
-                kecuali={['UuidGudangAsal', 'UuidGudangTujuan', 'Tanggal', 'Catatan', 'Baris']}
+                kecuali={['UuidGudangAsal', 'UuidGudangTujuan', 'Tanggal', 'Catatan', 'Baris', 'UuidPermintaanStok']}
             />
+            {Awal?.UuidPermintaanStok ? (
+                <Pemberitahuan jenis="info" judul={`Menjawab permintaan ${Awal.NomorPermintaan ?? ''}`.trim()}>
+                    Barang dan jumlah diisi dari permintaan. Ubah seperlunya, pilih batch atau nomor seri bila produknya
+                    dilacak, lalu kirim. Produk bernomor seri tidak diisi otomatis. Permintaan baru terhitung terpenuhi
+                    saat transfer ini dikirim.
+                    {galatServer.UuidPermintaanStok ? ` ${galatServer.UuidPermintaanStok}` : ''}
+                </Pemberitahuan>
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"

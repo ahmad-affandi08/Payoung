@@ -3,9 +3,8 @@ import type { FormEvent } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
-import GrupCentang from '@/Komponen/Formulir/GrupCentang';
-import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import CakupanOutletPeran, { TerapkanCakupanPeran } from '@/Komponen/Kelola/CakupanOutletPeran';
 import type { OpsiOutletPengguna, OpsiPeranPengguna } from '@/Tipe/Organisasi';
 
 export type IsianAkses = { Email: string; Peran: string; SemuaOutlet: boolean; Outlet: string[] };
@@ -35,18 +34,23 @@ export default function FormAksesPengguna({
     saatSelesai,
     saatBatal,
 }: PropsFormAksesPengguna) {
-    const formulir = useForm<IsianAkses>(awal);
+    // Isian awal diselaraskan dengan cakupan peran: anggota lama berperan operasional yang dulu "semua outlet" harus memilih outlet.
+    const formulir = useForm<IsianAkses>(() => ({
+        ...awal,
+        ...TerapkanCakupanPeran(
+            peran.find((baris) => baris.Uuid === awal.Peran),
+            outlet,
+            awal,
+        ),
+    }));
     const peranTerpilih = peran.find((baris) => baris.Uuid === formulir.data.Peran);
-    const semuaOutletPaksa = peranTerpilih?.Pemilik ?? false;
 
     const PilihPeran = (uuid: string) => {
         const baris = peran.find((item) => item.Uuid === uuid);
         formulir.setData({
             ...formulir.data,
             Peran: uuid,
-            SemuaOutlet:
-                baris?.Pemilik === true ||
-                (metode === 'post' ? (baris?.SemuaOutletBawaan ?? false) : formulir.data.SemuaOutlet),
+            ...TerapkanCakupanPeran(baris, outlet, formulir.data),
         });
     };
 
@@ -84,28 +88,14 @@ export default function FormAksesPengguna({
                 required
                 kosong="Pilih peran"
             />
-            <KotakCentang
-                label={
-                    semuaOutletPaksa
-                        ? 'Semua outlet (Pemilik selalu mengakses semua outlet)'
-                        : 'Semua outlet, termasuk outlet baru'
-                }
-                nilai={formulir.data.SemuaOutlet || semuaOutletPaksa}
-                saatBerubah={(nilai) => formulir.setData('SemuaOutlet', nilai)}
+            <CakupanOutletPeran
+                peran={peranTerpilih}
+                outlet={outlet}
+                nilai={{ SemuaOutlet: formulir.data.SemuaOutlet, Outlet: formulir.data.Outlet }}
+                saatBerubah={(isian) => formulir.setData({ ...formulir.data, ...isian })}
+                galatSemuaOutlet={formulir.errors.SemuaOutlet}
+                galatOutlet={formulir.errors.Outlet}
             />
-            {formulir.errors.SemuaOutlet ? (
-                <p className="text-keterangan font-semibold text-bahaya">{formulir.errors.SemuaOutlet}</p>
-            ) : null}
-            {!formulir.data.SemuaOutlet && !semuaOutletPaksa ? (
-                <GrupCentang
-                    legenda="Outlet yang ditugaskan"
-                    opsi={outlet.map((baris) => ({ nilai: baris.Uuid, label: `${baris.Kode} | ${baris.Nama}` }))}
-                    terpilih={formulir.data.Outlet}
-                    saatBerubah={(terpilih) => formulir.setData('Outlet', terpilih)}
-                    galat={formulir.errors.Outlet}
-                    required
-                />
-            ) : null}
             <div className="flex flex-wrap gap-2">
                 <Tombol type="submit" memproses={formulir.processing}>
                     {tombol}

@@ -113,7 +113,7 @@ final class DokumenGudangPos
             'Catatan' => $t->Catatan,
             'Baris' => array_values($t->Detail->sortBy('Urutan')->map(function (TransferStokDetail $d) use ($produk): array {
                 $info = $produk[$d->IdProduk] ?? null;
-                $sisa = Kuantitas::Dari($d->JumlahDikirim)->Kurangi(Kuantitas::Dari($d->JumlahDiterima))->Kurangi(Kuantitas::Dari($d->JumlahSusut));
+                $sisa = $d->AmbilSisa();
 
                 return [
                     'Urutan' => $d->Urutan,

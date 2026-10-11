@@ -293,6 +293,15 @@ describe('F-06 halaman kasir back-office', () => {
         );
     });
 
+    it('D-106 kategori kas: tombol "Tambah biaya umum" mengirim satu permintaan tanpa mengisi apa pun', () => {
+        tiruanRouter.post.mockClear();
+        RenderUji(<HalamanKategoriKas Kategori={[]} OpsiAkun={{ Keluar: [], Masuk: [] }} />);
+
+        fireEvent.click(screen.getByRole('button', { name: /Tambah biaya umum/ }));
+
+        expect(tiruanRouter.post).toHaveBeenCalledWith('/kelola/kasir/kategori-kas/biaya-umum', {}, expect.anything());
+    });
+
     it('pengaturan kasir: batas tanpa float ("200000.00" → "200000") dan tombol simpan aktif setelah berubah', () => {
         expect(UbahKeMasukanUang('200000.00')).toBe('200000');
         expect(UbahKeMasukanUang('150000.50')).toBe('150000.50');

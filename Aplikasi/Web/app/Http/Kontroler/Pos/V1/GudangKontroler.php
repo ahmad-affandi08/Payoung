@@ -40,8 +40,8 @@ use Illuminate\Http\Request;
  * - `GET gudang/pesanan-pembelian?kata=` PO siap diterima; `POST gudang/penerimaan` GRN dari PO yang sudah disetujui
  *   (izin `pembelian.kelola` atau `persediaan.kelola`: staf gudang hanya mengisi jumlah, harga & pemasok dari PO; F-04
  *   langkah 5: stok bertambah saat diposting, batch/kedaluwarsa & nomor seri per baris).
- * - `GET gudang/transfer` transfer masuk; `POST gudang/transfer/{uuid}/terima` terima (boleh sebagian) (izin
- *   `persediaan.kelola`, F-05b).
+ * - `GET gudang/transfer` transfer masuk; `POST gudang/transfer/{uuid}/terima` terima (boleh sebagian; per barang `Jumlah`
+ *   diterima, `Rusak` susut, `Ditolak` kembali ke asal, D-105) (izin `persediaan.kelola`, F-05b).
  * - `GET gudang/opname` opname berlangsung; `POST gudang/opname/{uuid}/hitung` simpan lembar hitung (izin
  *   `persediaan.kelola`); tinjau & setujui tetap di back-office.
  *
@@ -146,7 +146,10 @@ final class GudangKontroler extends Kontroler
             'UuidPengguna' => ['required', 'string', 'ulid'],
             'Baris' => ['required', 'array', 'min:1', 'max:'.(int) config('persediaan.Dokumen.MaksimalBaris', 500)],
             'Baris.*.Urutan' => ['required', 'integer', 'min:1', 'distinct'],
-            'Baris.*.Jumlah' => ['required', 'string', self::POLA_JUMLAH],
+            'Baris.*.Jumlah' => ['nullable', 'string', self::POLA_JUMLAH],
+            // D-105: opsional, jadi aplikasi lama yang hanya mengirim Jumlah tetap berlaku.
+            'Baris.*.Rusak' => ['nullable', 'string', self::POLA_JUMLAH],
+            'Baris.*.Ditolak' => ['nullable', 'string', self::POLA_JUMLAH],
         ]);
         $perangkat = AutentikasiPerangkat::AmbilPerangkat($permintaan);
         $pelaku = $this->AmbilPelaku($perangkat, (string) $valid['UuidPengguna'], [IzinTenant::PersediaanKelola], 'menerima transfer stok');
@@ -158,7 +161,12 @@ final class GudangKontroler extends Kontroler
         $baris = array_values((array) $valid['Baris']);
         $terima->Jalankan(
             $t,
-            array_map(fn (array $b): DataTerimaTransfer => new DataTerimaTransfer((int) $b['Urutan'], Kuantitas::Dari((string) $b['Jumlah'])), $baris),
+            array_map(fn (array $b): DataTerimaTransfer => new DataTerimaTransfer(
+                (int) $b['Urutan'],
+                Kuantitas::Dari(($b['Jumlah'] ?? '') === '' ? '0' : (string) $b['Jumlah']),
+                Kuantitas::Dari(($b['Rusak'] ?? '') === '' ? '0' : (string) $b['Rusak']),
+                Kuantitas::Dari(($b['Ditolak'] ?? '') === '' ? '0' : (string) $b['Ditolak']),
+            ), $baris),
             $this->tanggalBisnis->Hitung($perangkat->IdOutlet),
             $pelaku->id,
         );

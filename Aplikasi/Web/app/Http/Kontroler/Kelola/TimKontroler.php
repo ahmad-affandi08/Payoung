@@ -13,7 +13,6 @@ use App\Domain\Karyawan\Kueri\DaftarTim;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Aksi\UbahStatusAnggota;
 use App\Domain\Organisasi\Enum\IzinTenant;
-use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
@@ -166,7 +165,7 @@ final class TimKontroler extends DasarKelolaKontroler
     }
 
     /**
-     * @return array<int, array{Uuid: string, Nama: string, Pemilik: bool, SemuaOutletBawaan: bool}>
+     * @return array<int, array{Uuid: string, Nama: string, Pemilik: bool, Cakupan: string}>
      */
     private static function AmbilOpsiPeran(): array
     {
@@ -174,7 +173,7 @@ final class TimKontroler extends DasarKelolaKontroler
             'Uuid' => $peran->Uuid,
             'Nama' => $peran->Nama,
             'Pemilik' => $peran->CekPemilik(),
-            'SemuaOutletBawaan' => $peran->Kode !== null && (PeranTenantBawaan::tryFrom($peran->Kode)?->CekSemuaOutletBawaan() ?? false),
+            'Cakupan' => $peran->AmbilCakupanOutlet()->value,
         ])->values()->all();
     }
 

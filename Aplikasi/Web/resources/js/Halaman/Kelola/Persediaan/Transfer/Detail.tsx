@@ -21,7 +21,7 @@ import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatJumlahStok, FormatNilai } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
-import { AmbilTandaDesimal, BandingkanDesimal, CekDesimalValid } from '@/Pustaka/HitungDesimal';
+import { AmbilTandaDesimal, BandingkanDesimal, CekDesimalValid, JumlahkanDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisDetailTransferStok, PropsDetailTransferStok } from '@/Tipe/DokumenPersediaan';
@@ -77,10 +77,17 @@ const kolomBaris: KolomTabel<BarisDetailTransferStok>[] = [
     },
     {
         id: 'JumlahSusut',
-        header: 'Selisih (susut)',
+        header: 'Rusak / selisih (susut)',
         enableSorting: false,
-        meta: { label: 'Selisih (susut)', angka: true, prioritas: 'rendah' },
+        meta: { label: 'Rusak / selisih (susut)', angka: true, prioritas: 'rendah' },
         cell: ({ row }) => FormatJumlahStok(row.original.JumlahSusut, row.original.SimbolSatuan),
+    },
+    {
+        id: 'JumlahDitolak',
+        header: 'Dikembalikan',
+        enableSorting: false,
+        meta: { label: 'Dikembalikan', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => FormatJumlahStok(row.original.JumlahDitolak, row.original.SimbolSatuan),
     },
     {
         id: 'NilaiKirim',
@@ -104,6 +111,42 @@ export function PeriksaJumlahTerima(jumlah: string, sisa: string, bolehDesimal: 
     return BandingkanDesimal(jumlah, sisa) > 0 ? 'Melebihi sisa dalam perjalanan.' : null;
 }
 
+export type BagianTerima = { Terima: string; Rusak: string; Ditolak: string };
+export type GalatBagianTerima = Partial<Record<keyof BagianTerima | 'Total', string>>;
+
+/**
+ * D-105: satu barang bisa dibagi tiga: diterima, rusak, dikembalikan ke asal. Tiap bagian valid sendiri-sendiri, dan
+ * jumlah ketiganya tidak boleh melebihi sisa dalam perjalanan. Kosong/0 di ketiganya = barang tidak diproses.
+ */
+export function PeriksaBagianTerima(
+    bagian: BagianTerima,
+    sisa: string,
+    bolehDesimal: boolean,
+): GalatBagianTerima | null {
+    const galat: GalatBagianTerima = {};
+    const nilai: string[] = [];
+
+    for (const kunci of ['Terima', 'Rusak', 'Ditolak'] as const) {
+        const teks = bagian[kunci];
+
+        if (teks === '' || (CekDesimalValid(teks) && AmbilTandaDesimal(teks) === 0)) {
+            continue;
+        }
+
+        if (!CekDesimalValid(teks) || AmbilTandaDesimal(teks) < 0 || (!bolehDesimal && teks.includes('.'))) {
+            galat[kunci] = 'Jumlah tidak valid.';
+        } else {
+            nilai.push(teks);
+        }
+    }
+
+    if (Object.keys(galat).length === 0 && nilai.length > 0 && BandingkanDesimal(JumlahkanDesimal(nilai), sisa) > 0) {
+        galat.Total = 'Diterima + rusak + dikembalikan melebihi sisa dalam perjalanan.';
+    }
+
+    return Object.keys(galat).length === 0 ? null : galat;
+}
+
 /** F-05b: detail transfer stok: kirim (J-05.2), terima parsial (J-05.3), tutup dengan selisih (J-05.4), batal draf. */
 export default function HalamanDetailTransferStok({
     Transfer,
@@ -124,6 +167,8 @@ export default function HalamanDetailTransferStok({
             Baris.map((b) => [b.Urutan, AmbilTandaDesimal(b.JumlahSisa) > 0 ? b.JumlahSisa.replace(/\.?0+$/, '') : '']),
         ),
     );
+    const [rusak, AturRusak] = useState<Record<number, string>>({});
+    const [tolak, AturTolak] = useState<Record<number, string>>({});
     const [periksaTerima, AturPeriksaTerima] = useState(false);
     const nomor = Transfer.Nomor ?? 'Draf tanpa nomor';
     const barisSisa = Baris.filter((b) => AmbilTandaDesimal(b.JumlahSisa) > 0);
@@ -136,14 +181,23 @@ export default function HalamanDetailTransferStok({
             onSuccess: () => AturDialog(null),
         });
 
+    const BagianBaris = (urutan: number): BagianTerima => ({
+        Terima: terima[urutan] ?? '',
+        Rusak: rusak[urutan] ?? '',
+        Ditolak: tolak[urutan] ?? '',
+    });
+    const Positif = (teks: string) => teks !== '' && CekDesimalValid(teks) && AmbilTandaDesimal(teks) > 0;
+
     const KirimTerima = () => {
         AturPeriksaTerima(true);
         const galatBaris = barisSisa.some(
-            (b) => PeriksaJumlahTerima(terima[b.Urutan] ?? '', b.JumlahSisa, b.BolehDesimal) !== null,
+            (b) => PeriksaBagianTerima(BagianBaris(b.Urutan), b.JumlahSisa, b.BolehDesimal) !== null,
         );
-        const isi = barisSisa.filter(
-            (b) => (terima[b.Urutan] ?? '') !== '' && AmbilTandaDesimal(terima[b.Urutan] ?? '0') > 0,
-        );
+        const isi = barisSisa.filter((b) => {
+            const bagian = BagianBaris(b.Urutan);
+
+            return Positif(bagian.Terima) || Positif(bagian.Rusak) || Positif(bagian.Ditolak);
+        });
 
         if (galatBaris || isi.length === 0) {
             return;
@@ -151,7 +205,16 @@ export default function HalamanDetailTransferStok({
 
         Kirim('terima', {
             Tanggal: tanggalTerima,
-            Baris: isi.map((b) => ({ Urutan: b.Urutan, Jumlah: terima[b.Urutan] })),
+            Baris: isi.map((b) => {
+                const bagian = BagianBaris(b.Urutan);
+
+                return {
+                    Urutan: b.Urutan,
+                    Jumlah: Positif(bagian.Terima) ? bagian.Terima : '0',
+                    ...(Positif(bagian.Rusak) ? { Rusak: bagian.Rusak } : {}),
+                    ...(Positif(bagian.Ditolak) ? { Ditolak: bagian.Ditolak } : {}),
+                };
+            }),
         });
     };
 
@@ -262,6 +325,16 @@ export default function HalamanDetailTransferStok({
                             {Transfer.DikirimOleh ? ` oleh ${Transfer.DikirimOleh}` : ''}
                         </Keterangan>
                     ) : null}
+                    {Transfer.Permintaan ? (
+                        <Keterangan label="Menjawab permintaan">
+                            <Link
+                                href={`/kelola/persediaan/permintaan/${Transfer.Permintaan.Uuid}`}
+                                className="font-mono break-all text-brand underline"
+                            >
+                                {Transfer.Permintaan.Nomor}
+                            </Link>
+                        </Keterangan>
+                    ) : null}
                     {Transfer.Catatan ? <Keterangan label="Catatan">{Transfer.Catatan}</Keterangan> : null}
                 </dl>
             </Panel>
@@ -317,7 +390,7 @@ export default function HalamanDetailTransferStok({
                     jenis="dialog"
                     lebar="lebar"
                     judul="Terima barang"
-                    keterangan="Isi jumlah yang benar-benar diterima. Kosongkan barang yang belum datang."
+                    keterangan="Per barang: isi yang diterima baik, yang rusak, dan yang dikembalikan ke pengirim. Kosongkan barang yang belum datang."
                     galatUmum={galat.Umum}
                     saatTutup={() => AturDialog(null)}
                 >
@@ -336,41 +409,66 @@ export default function HalamanDetailTransferStok({
                             className="flex max-h-[50vh] flex-col divide-y divide-garis overflow-y-auto"
                             aria-label="Jumlah diterima"
                         >
-                            {barisSisa.map((b) => (
-                                <li
-                                    key={b.Urutan}
-                                    className="grid gap-2 py-2 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-start"
-                                >
-                                    <div className="min-w-0">
-                                        <span className="block font-semibold break-words text-teks-utama">
-                                            {b.NamaProduk}
-                                        </span>
-                                        <span className="block text-keterangan text-teks-sekunder">
-                                            Sisa {FormatJumlahStok(b.JumlahSisa, b.SimbolSatuan)}
-                                            {b.NomorBatch ? ` | batch ${b.NomorBatch}` : ''}
-                                            {b.NomorSeri ? ` | ${b.NomorSeri}` : ''}
-                                        </span>
-                                    </div>
-                                    <BidangJumlah
-                                        label={`Diterima ${b.NamaProduk}`}
-                                        labelTersembunyi
-                                        nilai={terima[b.Urutan] ?? ''}
-                                        saatBerubah={(nilai) => AturTerima((lama) => ({ ...lama, [b.Urutan]: nilai }))}
-                                        desimal={b.BolehDesimal ? 4 : 0}
-                                        akhiran={b.SimbolSatuan}
-                                        galat={
-                                            periksaTerima
-                                                ? (PeriksaJumlahTerima(
-                                                      terima[b.Urutan] ?? '',
-                                                      b.JumlahSisa,
-                                                      b.BolehDesimal,
-                                                  ) ?? undefined)
-                                                : undefined
-                                        }
-                                    />
-                                </li>
-                            ))}
+                            {barisSisa.map((b) => {
+                                const galatBaris = periksaTerima
+                                    ? PeriksaBagianTerima(BagianBaris(b.Urutan), b.JumlahSisa, b.BolehDesimal)
+                                    : null;
+                                const desimal = b.BolehDesimal ? 4 : 0;
+
+                                return (
+                                    <li key={b.Urutan} className="flex flex-col gap-2 py-3">
+                                        <div className="min-w-0">
+                                            <span className="block font-semibold break-words text-teks-utama">
+                                                {b.NamaProduk}
+                                            </span>
+                                            <span className="block text-keterangan text-teks-sekunder">
+                                                Sisa {FormatJumlahStok(b.JumlahSisa, b.SimbolSatuan)}
+                                                {b.NomorBatch ? ` | batch ${b.NomorBatch}` : ''}
+                                                {b.NomorSeri ? ` | ${b.NomorSeri}` : ''}
+                                            </span>
+                                        </div>
+                                        <div className="grid gap-2 sm:grid-cols-3">
+                                            <BidangJumlah
+                                                label={`Diterima ${b.NamaProduk}`}
+                                                nilai={terima[b.Urutan] ?? ''}
+                                                saatBerubah={(nilai) =>
+                                                    AturTerima((lama) => ({ ...lama, [b.Urutan]: nilai }))
+                                                }
+                                                desimal={desimal}
+                                                akhiran={b.SimbolSatuan}
+                                                galat={galatBaris?.Terima ?? galatBaris?.Total}
+                                            />
+                                            <BidangJumlah
+                                                label={`Rusak ${b.NamaProduk}`}
+                                                nilai={rusak[b.Urutan] ?? ''}
+                                                saatBerubah={(nilai) =>
+                                                    AturRusak((lama) => ({ ...lama, [b.Urutan]: nilai }))
+                                                }
+                                                desimal={desimal}
+                                                akhiran={b.SimbolSatuan}
+                                                galat={galatBaris?.Rusak}
+                                            />
+                                            <BidangJumlah
+                                                label={`Dikembalikan ${b.NamaProduk}`}
+                                                nilai={tolak[b.Urutan] ?? ''}
+                                                saatBerubah={(nilai) =>
+                                                    AturTolak((lama) => ({ ...lama, [b.Urutan]: nilai }))
+                                                }
+                                                desimal={desimal}
+                                                akhiran={b.SimbolSatuan}
+                                                galat={galatBaris?.Ditolak}
+                                            />
+                                        </div>
+                                    </li>
+                                );
+                            })}
                         </ul>
+                        <p className="text-keterangan text-teks-sekunder">
+                            <span className="font-semibold text-teks-utama">Rusak</span> = barang sampai tetapi tidak
+                            layak jual (dicatat sebagai susut).{' '}
+                            <span className="font-semibold text-teks-utama">Dikembalikan</span> = barang ditolak dan
+                            kembali ke {Transfer.NamaGudangAsal}.
+                        </p>
                         <div className="flex flex-wrap justify-end gap-2">
                             <Tombol varian="sekunder" onClick={() => AturDialog(null)} disabled={memproses}>
                                 Kembali

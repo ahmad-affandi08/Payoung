@@ -6,6 +6,7 @@ namespace App\Domain\Organisasi\Model;
 
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Organisasi\Enum\CakupanOutletPeran;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -51,6 +52,16 @@ final class Peran extends ModelDasar
     public function CekPemilik(): bool
     {
         return $this->Kode === PeranTenantBawaan::Pemilik->value;
+    }
+
+    /** Cakupan outlet peran ini (D-104): peran bawaan menurut enum-nya, peran kustom bebas. */
+    public function AmbilCakupanOutlet(): CakupanOutletPeran
+    {
+        if ($this->Kode === null) {
+            return CakupanOutletPeran::Bebas;
+        }
+
+        return PeranTenantBawaan::tryFrom($this->Kode)?->AmbilCakupanOutlet() ?? CakupanOutletPeran::Bebas;
     }
 
     /**

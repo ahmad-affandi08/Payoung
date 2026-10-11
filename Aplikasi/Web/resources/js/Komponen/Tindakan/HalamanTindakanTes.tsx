@@ -167,7 +167,7 @@ describe('Kelola/Tim: aksi baris & konfirmasi nonaktifkan (F-02 BR-02.1, D-101)'
     const props = {
         Tim: tim,
         Undangan: [],
-        Peran: [{ Uuid: 'R-K', Nama: 'Kasir', Pemilik: false, SemuaOutletBawaan: false }],
+        Peran: [{ Uuid: 'R-K', Nama: 'Kasir', Pemilik: false, Cakupan: 'Terpilih' as const }],
         Outlet: [{ Uuid: 'O-1', Kode: 'JKT1', Nama: 'Kopi Nusantara Sudirman' }],
         OpsiOutlet: [{ Uuid: 'O-1', Nama: 'Kopi Nusantara Sudirman' }],
         OpsiPengguna: [],

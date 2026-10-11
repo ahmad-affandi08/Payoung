@@ -23,5 +23,7 @@ final readonly class DataTransferStok
         public ?string $catatan,
         public array $baris,
         public ?string $versiDiubahPada = null,
+        /** D-105: transfer ini menjawab permintaan stok (uuid); hanya dipakai saat membuat draf. */
+        public ?string $uuidPermintaanStok = null,
     ) {}
 }

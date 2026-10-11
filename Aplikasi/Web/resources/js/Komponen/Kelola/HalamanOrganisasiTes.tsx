@@ -9,6 +9,7 @@ import HalamanBuatPeran from '@/Halaman/Kelola/Peran/Buat';
 import HalamanDaftarPeran from '@/Halaman/Kelola/Peran/Daftar';
 import HalamanPin from '@/Halaman/Kelola/Pin';
 import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -365,8 +366,8 @@ describe('Kelola/Peran (§19.1): buat peran di halaman penuh', () => {
 
 describe('Kelola/Pengguna (F-02 langkah 3): undang pengguna di halaman penuh', () => {
     const peran = [
-        { Uuid: 'R-P', Nama: 'Pemilik', Pemilik: true, SemuaOutletBawaan: true },
-        { Uuid: 'R-K', Nama: 'Kasir', Pemilik: false, SemuaOutletBawaan: false },
+        { Uuid: 'R-P', Nama: 'Pemilik', Pemilik: true, Cakupan: 'Semua' as const },
+        { Uuid: 'R-K', Nama: 'Kasir', Pemilik: false, Cakupan: 'Terpilih' as const },
     ];
     const outletOpsi = [{ Uuid: 'O-1', Kode: 'JKT1', Nama: 'Kopi Nusantara Sudirman' }];
 
@@ -375,13 +376,17 @@ describe('Kelola/Pengguna (F-02 langkah 3): undang pengguna di halaman penuh', (
         RenderUji(<HalamanBuatUndangan Peran={peran} Outlet={outletOpsi} BatasPengguna={batas} />);
 
         fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@kopinusantara.id' } });
-        fireEvent.click(screen.getByLabelText('JKT1 | Kopi Nusantara Sudirman'));
+        // D-104: pilihan outlet baru muncul setelah peran dipilih (peran operasional = outlet tertentu).
+        expect(screen.queryByLabelText('JKT1 | Kopi Nusantara Sudirman')).toBeNull();
+        PilihOpsi(screen.getByRole('combobox', { name: /Peran/ }), 'R-K');
+        // Usaha hanya punya satu outlet: outlet peran operasional terisi otomatis.
+        expect(screen.getByLabelText('JKT1 | Kopi Nusantara Sudirman').getAttribute('aria-checked')).toBe('true');
         fireEvent.click(screen.getByRole('button', { name: 'Kirim undangan' }));
 
         expect(kirimanForm[0]).toEqual({
             metode: 'post',
             url: '/kelola/pengguna/undangan',
-            data: { Email: 'budi@kopinusantara.id', Peran: '', SemuaOutlet: false, Outlet: ['O-1'] },
+            data: { Email: 'budi@kopinusantara.id', Peran: 'R-K', SemuaOutlet: false, Outlet: ['O-1'] },
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Batal' }));

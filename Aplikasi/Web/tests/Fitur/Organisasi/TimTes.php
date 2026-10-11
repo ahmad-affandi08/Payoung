@@ -6,7 +6,9 @@ use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Organisasi\Model\Peran;
 use App\Domain\Organisasi\Model\TenantPengguna;
 use Illuminate\Support\Facades\Mail;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -226,5 +228,59 @@ describe('D-101 nonaktifkan & aktifkan satu orang sekaligus', function (): void 
         BantuanOrganisasi::Masuk($this, $kasir, $tenant->Id)->post('/kelola/tim/status', ['Aksi' => 'Nonaktifkan', 'UuidPengguna' => $siti->Uuid])->assertForbidden();
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect(TenantPengguna::query()->where('IdTenant', $tenant->Id)->where('IdPengguna', $siti->Id)->value('Status'))->toBe(StatusKeanggotaan::Aktif);
+    });
+});
+
+describe('D-104 cakupan outlet mengikuti peran', function (): void {
+    it('formulir Tim menyebut cakupan tiap peran: Admin/Akuntan/Pemilik Semua, peran operasional Terpilih, peran kustom Bebas', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        Peran::query()->create(['Nama' => 'Admin Cabang', 'Bawaan' => false]);
+
+        $peran = collect(BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/tim/buat')->assertOk()->inertiaProps('Peran'));
+        $cakupan = fn (string $nama): ?string => $peran->firstWhere('Nama', $nama)['Cakupan'] ?? null;
+
+        expect($cakupan('Pemilik (Owner)'))->toBe('Semua')
+            ->and($cakupan('Admin'))->toBe('Semua')
+            ->and($cakupan('Akuntan'))->toBe('Semua')
+            ->and($cakupan('Manajer Outlet'))->toBe('Terpilih')
+            ->and($cakupan('Staf Gudang'))->toBe('Terpilih')
+            ->and($cakupan('Kasir'))->toBe('Terpilih')
+            ->and($cakupan('Admin Cabang'))->toBe('Bebas');
+    });
+
+    it('Admin selalu mendapat semua outlet: pilihan outlet yang terkirim diabaikan, tidak ada Admin setengah terkurung', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim', IsianTimUji($tenant->Id, [
+            'Nama' => 'Admin Cabang A',
+            'Akses' => 'Dashboard',
+            'Email' => 'admin.a@contoh.id',
+            'KataSandi' => 'Rahasia123',
+            'Pin' => '',
+            'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Admin)->Uuid,
+            'SemuaOutlet' => false,
+        ]))->assertSessionHasNoErrors();
+
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $admin = Pengguna::query()->where('Email', 'admin.a@contoh.id')->sole();
+        $anggota = TenantPengguna::query()->where('IdTenant', $tenant->Id)->where('IdPengguna', $admin->Id)->sole();
+
+        expect($anggota->SemuaOutlet)->toBeTrue()
+            ->and(OutletPengguna::query()->where('IdPengguna', $admin->Id)->count())->toBe(0);
+    });
+
+    it('Staf Gudang tetap terkurung di outlet yang dipilih', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/tim', IsianTimUji($tenant->Id, [
+            'Nama' => 'Gudang Cabang',
+            'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::StafGudang)->Uuid,
+        ]))->assertSessionHasNoErrors();
+
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $gudang = Pengguna::query()->where('Nama', 'Gudang Cabang')->sole();
+        $anggota = TenantPengguna::query()->where('IdTenant', $tenant->Id)->where('IdPengguna', $gudang->Id)->sole();
+
+        expect($anggota->SemuaOutlet)->toBeFalse()
+            ->and(OutletPengguna::query()->where('IdPengguna', $gudang->Id)->count())->toBe(1);
     });
 });

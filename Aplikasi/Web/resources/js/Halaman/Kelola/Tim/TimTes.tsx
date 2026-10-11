@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AturHalamanUji, kirimanForm, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
 import type { BarisTim, PropsDaftarTim, PropsTambahTim } from '@/Tipe/Tim';
 
@@ -16,8 +17,8 @@ const UUID_PERAN_KASIR = '01K5PERAN00000000000000001';
 const UUID_PERAN_ADMIN = '01K5PERAN00000000000000002';
 const outlet = [{ Uuid: UUID_OUTLET, Kode: 'UTAMA', Nama: 'Toko Utama' }];
 const peran = [
-    { Uuid: UUID_PERAN_KASIR, Nama: 'Kasir', Pemilik: false, SemuaOutletBawaan: false },
-    { Uuid: UUID_PERAN_ADMIN, Nama: 'Admin', Pemilik: false, SemuaOutletBawaan: true },
+    { Uuid: UUID_PERAN_KASIR, Nama: 'Kasir', Pemilik: false, Cakupan: 'Terpilih' as const },
+    { Uuid: UUID_PERAN_ADMIN, Nama: 'Admin', Pemilik: false, Cakupan: 'Semua' as const },
 ];
 const BuatKaryawan = (
     uuid: string,
@@ -284,5 +285,64 @@ describe('Tambah anggota tim (D-101): satu formulir, tiga jenis akses', () => {
         fireEvent.click(screen.getByRole('radio', { name: /Tanpa akun masuk/ }));
         expect(screen.queryByText('Batas akun masuk paket sudah tercapai')).toBeNull();
         expect((screen.getByRole('button', { name: 'Tambah ke tim' }) as HTMLButtonElement).disabled).toBe(false);
+    });
+});
+
+describe('D-104 cakupan outlet mengikuti peran di formulir Tambah anggota', () => {
+    const peranCakupan = [
+        { Uuid: 'R-ADMIN', Nama: 'Admin', Pemilik: false, Cakupan: 'Semua' as const },
+        { Uuid: 'R-GUDANG', Nama: 'Staf Gudang', Pemilik: false, Cakupan: 'Terpilih' as const },
+        { Uuid: 'R-KUSTOM', Nama: 'Admin Cabang', Pemilik: false, Cakupan: 'Bebas' as const },
+    ];
+    const outletDua = [
+        { Uuid: UUID_OUTLET, Kode: 'UTAMA', Nama: 'Toko Utama' },
+        { Uuid: '01K5OUTLET00000000000000B2', Kode: 'CAB2', Nama: 'Cabang Dua' },
+    ];
+
+    it('Staf Gudang tampil sebagai pilihan cepat "Tugasnya"', () => {
+        Render(<HalamanTambahTim {...PropsTambah({ Peran: peranCakupan, Outlet: outletDua })} />);
+
+        expect(screen.getByRole('radio', { name: /Staf Gudang/ })).toBeTruthy();
+        expect(screen.getByText(/Terima & kirim barang antar-outlet/)).toBeTruthy();
+    });
+
+    it('Admin: tanpa pilihan outlet dan tanpa saklar, hanya penjelasan "semua outlet"', () => {
+        Render(<HalamanTambahTim {...PropsTambah({ Peran: peranCakupan, Outlet: outletDua })} />);
+
+        fireEvent.click(screen.getByRole('radio', { name: /Admin/ }));
+        expect(screen.getByText('Akses: semua outlet.')).toBeTruthy();
+        expect(screen.queryByLabelText('UTAMA | Toko Utama')).toBeNull();
+        expect(screen.queryByLabelText(/Semua outlet, termasuk outlet baru/)).toBeNull();
+    });
+
+    it('Staf Gudang: hanya pilihan outlet (tanpa saklar semua outlet), dan outlet yang dicentang terkirim', () => {
+        Render(<HalamanTambahTim {...PropsTambah({ Peran: peranCakupan, Outlet: outletDua })} />);
+
+        fireEvent.click(screen.getByRole('radio', { name: /Staf Gudang/ }));
+        expect(screen.queryByLabelText(/Semua outlet, termasuk outlet baru/)).toBeNull();
+        fireEvent.click(screen.getByLabelText('CAB2 | Cabang Dua'));
+        fireEvent.change(screen.getAllByLabelText(/^Nama/)[0] as HTMLElement, { target: { value: 'Budi Gudang' } });
+        fireEvent.change(screen.getAllByLabelText(/PIN kasir/)[0] as HTMLElement, { target: { value: '482915' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah ke tim' }));
+
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'post',
+            url: '/kelola/tim',
+            data: { Peran: 'R-GUDANG', SemuaOutlet: false, Outlet: ['01K5OUTLET00000000000000B2'] },
+        });
+    });
+
+    it('usaha dengan satu outlet: outlet Staf Gudang terisi otomatis', () => {
+        Render(<HalamanTambahTim {...PropsTambah({ Peran: peranCakupan })} />);
+
+        fireEvent.click(screen.getByRole('radio', { name: /Staf Gudang/ }));
+        expect(screen.getByLabelText('UTAMA | Toko Utama').getAttribute('aria-checked')).toBe('true');
+    });
+
+    it('peran kustom tetap menawarkan saklar semua outlet', () => {
+        Render(<HalamanTambahTim {...PropsTambah({ Peran: peranCakupan, Outlet: outletDua })} />);
+
+        PilihOpsi(screen.getByRole('combobox', { name: /Peran/ }), 'R-KUSTOM');
+        expect(screen.getByLabelText(/Semua outlet, termasuk outlet baru/)).toBeTruthy();
     });
 });

@@ -71,6 +71,9 @@ enum JenisDokumenBernomor: string
     /** F-17 bagian 4: nomor antrian kios, urut harian per outlet (ditampilkan sebagai K001, bukan nomor dokumen). */
     case AntrianKios = 'AntrianKios';
 
+    /** F-05b (D-105): permintaan stok antar lokasi `MS/{TUJUAN}-{ASAL}/{YYMM}/{SEQ4}` disusun `PenomorDokumenPersediaan`. */
+    case PermintaanStok = 'PermintaanStok';
+
     public function AmbilAwalan(): string
     {
         return match ($this) {
@@ -101,13 +104,14 @@ enum JenisDokumenBernomor: string
             self::BiayaTambahanPembelian => 'BY',
             self::PerintahKerja => 'WO',
             self::AntrianKios => 'KI',
+            self::PermintaanStok => 'MS',
         };
     }
 
     public function AmbilPanjangUrut(): int
     {
         return match ($this) {
-            self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi => 4,
+            self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
             self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja => 4,
