@@ -19,7 +19,7 @@ export default function HalamanMasuk({ MasukGoogle = false }: { MasukGoogle?: bo
     };
 
     return (
-        <TataLetakAutentikasi judul="Masuk">
+        <TataLetakAutentikasi judul="Masuk" keterangan="Selamat datang kembali. Lanjutkan mengelola toko Anda.">
             <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
                 <BidangTeks
                     label="Email"
@@ -39,14 +39,16 @@ export default function HalamanMasuk({ MasukGoogle = false }: { MasukGoogle?: bo
                     galat={formulir.errors.KataSandi}
                     required
                 />
-                <Link href="/lupa-kata-sandi" className="self-start text-label font-semibold text-brand underline">
-                    Lupa kata sandi?
-                </Link>
-                <KotakCentang
-                    label="Ingat saya di perangkat ini"
-                    nilai={formulir.data.Ingat}
-                    saatBerubah={(nilai) => formulir.setData('Ingat', nilai)}
-                />
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <KotakCentang
+                        label="Ingat saya di perangkat ini"
+                        nilai={formulir.data.Ingat}
+                        saatBerubah={(nilai) => formulir.setData('Ingat', nilai)}
+                    />
+                    <Link href="/lupa-kata-sandi" className="text-label font-semibold text-brand underline">
+                        Lupa kata sandi?
+                    </Link>
+                </div>
                 <Tombol type="submit" memproses={formulir.processing}>
                     Masuk
                 </Tombol>

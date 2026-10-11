@@ -72,6 +72,35 @@ final class PaketPublik
     }
 
     /**
+     * Penawaran termurah untuk iklan di halaman masuk/daftar (D-87): paket berbayar berharga tetap dengan harga bulanan
+     * terendah yang berlaku hari ini, beserta diskon peluncuran bila ada. Null bila tidak ada paket berbayar yang dijual
+     * (mis. edisi Lisensi), sehingga iklan tidak pernah menyebut harga yang tidak ada.
+     *
+     * @return array{NamaPaket: string, HargaBulanan: string, MasaTrialHari: int, Promo: array{HargaBulananNormal: string, HargaTahunanNormal: string, BerlakuSampai: string, PersenDiskon: int, HargaTerkunci: bool}|null}|null
+     */
+    public function AmbilPenawaranTermurah(): ?array
+    {
+        $termurah = null;
+
+        foreach ($this->Ambil() as $paket) {
+            if ($paket['HargaNegosiasi'] || $paket['HargaBulanan'] === null || Uang::Dari($paket['HargaBulanan'])->BernilaiNol()) {
+                continue;
+            }
+
+            if ($termurah === null || Uang::Dari($paket['HargaBulanan'])->Bandingkan(Uang::Dari($termurah['HargaBulanan'])) < 0) {
+                $termurah = $paket;
+            }
+        }
+
+        return $termurah === null ? null : [
+            'NamaPaket' => $termurah['Nama'],
+            'HargaBulanan' => $termurah['HargaBulanan'] ?? '0',
+            'MasaTrialHari' => $termurah['MasaTrialHari'],
+            'Promo' => $termurah['Promo'],
+        ];
+    }
+
+    /**
      * Harga yang berlaku hari ini disebut promo bila sudah dijadwalkan versi harga terbit yang LEBIH MAHAL sesudah
      * `BerlakuSampai` (D-86): harga normal yang dicoret tampil hanya bila benar-benar akan berlaku, bukan coretan kosong.
      * `HargaTerkunci` = langganan yang dimulai selama promo tetap di harga promo (versi normal tidak diterapkan ke

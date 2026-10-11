@@ -82,3 +82,17 @@ export type PenawaranFitur = {
 };
 
 export type FiturPaket = { NamaPaket: string | null; Terkunci: Record<string, PenawaranFitur> };
+
+/** D-87: iklan harga di panel halaman masuk/daftar; berasal dari katalog (`PaketPublik::AmbilPenawaranTermurah`). */
+export type PenawaranAuth = {
+    NamaPaket: string;
+    HargaBulanan: string;
+    MasaTrialHari: number;
+    Promo: {
+        HargaBulananNormal: string;
+        HargaTahunanNormal: string;
+        BerlakuSampai: string;
+        PersenDiskon: number;
+        HargaTerkunci: boolean;
+    } | null;
+};

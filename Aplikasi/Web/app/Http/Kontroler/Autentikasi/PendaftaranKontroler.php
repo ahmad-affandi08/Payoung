@@ -10,6 +10,7 @@ use App\Domain\Integrasi\MasukGoogle\KonfigurasiGoogle;
 use App\Domain\Organisasi\Aksi\KirimVerifikasiEmail;
 use App\Domain\Tenant\Aksi\CatatAtribusiMitra;
 use App\Domain\Tenant\Aksi\DaftarkanTenant;
+use App\Domain\Tenant\Kueri\PaketPublik;
 use App\Domain\Tenant\Kueri\PaketTersedia;
 use App\Domain\Tenant\Kueri\StatusPendaftaran;
 use App\Domain\Tenant\Model\Paket;
@@ -33,7 +34,7 @@ final class PendaftaranKontroler extends Kontroler
     /** P-12: cookie atribusi tautan mitra (`kode|unix detik klik pertama`), berlaku `CatatAtribusiMitra::HARI_BERLAKU`. */
     public const COOKIE_MITRA = 'payoung_mitra';
 
-    public function Tampilkan(Request $permintaan, StatusPendaftaran $status, PaketTersedia $paket, PemeriksaCaptcha $captcha): Response
+    public function Tampilkan(Request $permintaan, StatusPendaftaran $status, PaketTersedia $paket, PemeriksaCaptcha $captcha, PaketPublik $paketPublik): Response
     {
         $daftarPaket = array_values(array_map(
             fn (Paket $baris) => ['Kode' => $baris->Kode, 'Nama' => $baris->Nama, 'MasaTrialHari' => $baris->MasaTrialHari],
@@ -54,6 +55,8 @@ final class PendaftaranKontroler extends Kontroler
             // BR-00.6: kode yang tidak tersedia (salah ketik, negosiasi) jatuh ke paket bawaan, bukan paket pertama.
             'PaketTerpilih' => in_array($diminta, $kodeTersedia, true) ? $diminta : (string) config('tenant.KodePaketTrialBawaan'),
             'MasukGoogle' => app(KonfigurasiGoogle::class)->CekAktif(),
+            // D-87: iklan di panel samping (harga & diskon peluncuran asli dari katalog).
+            'Penawaran' => $paketPublik->AmbilPenawaranTermurah(),
             'KunciSitusCaptcha' => $captcha->CekAktif() ? (string) config('integrasi.Turnstile.KunciSitus') : null,
         ]);
     }

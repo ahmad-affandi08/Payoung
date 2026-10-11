@@ -10,6 +10,7 @@ use App\Domain\Integrasi\MasukGoogle\KonfigurasiGoogle;
 use App\Domain\Organisasi\Aksi\VerifikasiDuaFaktorPengguna;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Tenant\Kueri\PaketPublik;
 use App\Domain\Tenant\Kueri\RingkasanTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Perantara\IdentifikasiTenantSesi;
@@ -38,9 +39,13 @@ final class SesiKontroler extends Kontroler
     /** BR-00.8: percobaan kode 2FA per masuk tertunda, dengan jeda 5 menit. */
     public const BATAS_PERCOBAAN_DUA_FAKTOR = 5;
 
-    public function TampilkanMasuk(KonfigurasiGoogle $google): Response
+    public function TampilkanMasuk(KonfigurasiGoogle $google, PaketPublik $paketPublik): Response
     {
-        return Inertia::render('Autentikasi/Masuk', ['MasukGoogle' => $google->CekAktif()]);
+        return Inertia::render('Autentikasi/Masuk', [
+            'MasukGoogle' => $google->CekAktif(),
+            // D-87: iklan di panel samping (harga & diskon peluncuran asli dari katalog).
+            'Penawaran' => $paketPublik->AmbilPenawaranTermurah(),
+        ]);
     }
 
     public function Masuk(MasukPermintaan $permintaan, KeanggotaanPengguna $keanggotaan): RedirectResponse

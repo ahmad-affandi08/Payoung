@@ -50,6 +50,11 @@ export function AturHalamanUji(galat: Record<string, string> = {}, url = '/kelol
     Object.values(tiruanRouter).forEach((fungsi) => fungsi.mockClear());
 }
 
+/** Tambahkan props halaman (mis. `Penawaran`, `Edisi`) di atas props bersama yang sudah disiapkan `AturHalamanUji`. */
+export function TambahPropsHalamanUji(tambahan: Record<string, unknown>): void {
+    halaman.props = { ...halaman.props, ...tambahan };
+}
+
 type AturData<T> = ((kunci: keyof T, nilai: unknown) => void) & ((data: T | ((lama: T) => T)) => void);
 
 function useFormTiruan<T extends object>(awal: T | (() => T)) {
