@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{a as t}from"./dist-D4veJNCv.js";import{t as n}from"./TabTautan-DnwQUHmf.js";var r=e(),i=[{label:`Pengguna`,href:`/kelola/pengguna`},{label:`Peran & izin`,href:`/kelola/peran`}];function a(){let{url:e}=t();return(0,r.jsx)(n,{label:`Pengguna & peran`,tab:i.map(t=>({...t,aktif:e.startsWith(t.href)}))})}export{a as t};

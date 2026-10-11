@@ -1,1 +1,0 @@
-import{o as e,t}from"./jsx-runtime-CM6s92_4.js";import{t as n}from"./TabTautan-C5U4VOYU.js";var r=t(),i=[{label:`Pengguna`,href:`/kelola/pengguna`},{label:`Peran & izin`,href:`/kelola/peran`}];function a(){let{url:t}=e();return(0,r.jsx)(n,{label:`Pengguna & peran`,tab:i.map(e=>({...e,aktif:t.startsWith(e.href)}))})}export{a as t};

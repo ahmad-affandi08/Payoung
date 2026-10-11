@@ -14,7 +14,9 @@ use App\Domain\Persediaan\Enum\StatusTransferStok;
 use App\Domain\Persediaan\Kebijakan\DokumenPersediaanKebijakan;
 use App\Domain\Persediaan\Kueri\DaftarTransferStok;
 use App\Domain\Persediaan\Kueri\DetailTransferStok;
+use App\Domain\Persediaan\Kueri\DokumenCetakTransferStok;
 use App\Domain\Persediaan\Model\TransferStok;
+use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Persediaan\AlasanDokumenPersediaanPermintaan;
 use App\Http\Permintaan\Kelola\Persediaan\SimpanTransferStokPermintaan;
 use App\Http\Permintaan\Kelola\Persediaan\TerimaTransferStokPermintaan;
@@ -80,6 +82,22 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
             ],
             'Izin' => $this->AmbilIzinDokumen(),
             'HariIni' => $this->HariIni(),
+        ]);
+    }
+
+    /**
+     * Cetak A4 surat jalan transfer (D-94): tanpa nilai barang, dengan kolom tanda tangan pengirim, pembawa, dan penerima.
+     * Draf belum punya pergerakan stok sehingga tidak dicetak; yang dibatalkan tetap bisa dibuka dengan tanda DIBATALKAN.
+     */
+    public function Cetak(string $transferStok, DokumenCetakTransferStok $cetak, ProfilTenant $profil): Response
+    {
+        $t = $this->CariTransfer($transferStok);
+        abort_if($t->Status === StatusTransferStok::Draf, 409, 'Transfer masih draf. Kirim dulu supaya surat jalannya bisa dicetak.');
+        $usaha = $profil->Ambil($this->IdTenant());
+
+        return Inertia::render('Kelola/Persediaan/Transfer/Cetak', [
+            ...$cetak->Ambil($t),
+            'Usaha' => ['Nama' => $usaha['Nama'], 'Npwp' => $usaha['Npwp']],
         ]);
     }
 

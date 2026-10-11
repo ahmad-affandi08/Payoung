@@ -1,3 +1,0 @@
-import{A as e,l as t,t as n}from"./jsx-runtime-CM6s92_4.js";import{a as r,i,o as a,r as o,t as s}from"./BagianBidang-CqGdnmhy.js";import{t as c}from"./textarea-DCkg4eGB.js";var l=e(t(),1),u=n();function d({label:e,nilai:t,saatBerubah:n,keterangan:d=`Satu per baris.`,galat:f,disabled:p}){let m=(0,l.useId)();return(0,u.jsxs)(i,{galat:f,children:[(0,u.jsx)(a,{htmlFor:m,children:e}),(0,u.jsx)(c,{id:m,rows:Math.max(3,t.length+1),value:t.join(`
-`),onChange:e=>n(e.target.value.split(`
-`)),disabled:p,"aria-invalid":f?!0:void 0,"aria-describedby":`${m}-keterangan`,className:s(f,`h-auto py-2 field-sizing-fixed`)}),(0,u.jsx)(r,{id:`${m}-keterangan`,children:d}),f?(0,u.jsx)(o,{children:f}):null]})}export{d as t};

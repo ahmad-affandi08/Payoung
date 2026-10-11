@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-CM6s92_4.js";import{t}from"./LabelStatus-CKIHMl5W.js";import{n}from"./FormatPersediaan-GurfdCt3.js";var r=e();function i({status:e,label:i}){return(0,r.jsx)(t,{jenis:n(e),teks:i})}export{i as t};

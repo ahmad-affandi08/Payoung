@@ -166,6 +166,13 @@ export default function HalamanDetailTransferStok({
                     <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                         <Link href={alamat}>Kembali ke daftar</Link>
                     </Button>
+                    {Transfer.Status !== 'Draf' ? (
+                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                            <a href={`${alamat}/${Transfer.Uuid}/cetak`} target="_blank" rel="noreferrer">
+                                Cetak surat jalan
+                            </a>
+                        </Button>
+                    ) : null}
                     {Tindakan.Ubah ? (
                         <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                             <Link href={`${alamat}/${Transfer.Uuid}/ubah`}>Ubah draf</Link>

@@ -1,1 +1,0 @@
-import{A as e,l as t,t as n}from"./jsx-runtime-CM6s92_4.js";var r=e(t(),1),i=n();function a({keterangan:e,children:t}){return r.Children.toArray(t).length===0&&e===void 0?null:(0,i.jsxs)(`div`,{className:`flex flex-wrap items-center gap-2`,children:[e,(0,i.jsx)(`div`,{className:`ml-auto flex flex-wrap items-center gap-2`,children:t})]})}export{a as t};

@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-CM6s92_4.js";import{t}from"./Pemberitahuan-C2E2JmyB.js";var n=e();function r(){return(0,n.jsx)(t,{jenis:`info`,judul:`Paket sesi tersedia di paket Pro ke atas`,children:`Naikkan paket di menu Langganan untuk menjual paket sesi (misal 10x creambath) dan mencatat pemakaiannya di kasir.`})}export{r as t};

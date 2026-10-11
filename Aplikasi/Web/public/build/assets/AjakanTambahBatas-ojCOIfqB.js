@@ -1,1 +1,0 @@
-import{o as e}from"./jsx-runtime-CM6s92_4.js";function t({children:t,teksLisensi:n=`minta berkas lisensi dengan batas lebih besar ke penjual lisensi Payoung`}){let{props:r}=e();return r.Edisi===`Lisensi`?n:t}export{t};

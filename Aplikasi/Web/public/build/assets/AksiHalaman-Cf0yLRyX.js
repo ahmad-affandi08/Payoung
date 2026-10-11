@@ -1,0 +1,1 @@
+import{i as e,t,tt as n}from"./jsx-runtime-B23tBWN-.js";var r=n(e(),1),i=t();function a({keterangan:e,children:t}){return r.Children.toArray(t).length===0&&e===void 0?null:(0,i.jsxs)(`div`,{className:`flex flex-wrap items-center gap-2`,children:[e,(0,i.jsx)(`div`,{className:`ml-auto flex flex-wrap items-center gap-2`,children:t})]})}export{a as t};

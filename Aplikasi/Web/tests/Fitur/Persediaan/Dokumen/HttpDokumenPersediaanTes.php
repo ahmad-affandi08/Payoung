@@ -102,6 +102,32 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->assertJsonPath('Data.0.LabelStatus', 'Diterima');
     });
 
+    it('D-94 cetak surat jalan transfer: draf 409; setelah kirim memuat barang & batch tanpa nilai; outlet lain 404', function (): void {
+        $t = SiapkanHttpDokumen();
+        $batch = BatchStok::query()->where('NomorBatch', 'UHT-2609A')->sole();
+        $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '12'), B::Baris($t['Produk']['Batch'], '5', null, $batch->Id)]);
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        $this->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak")->assertStatus(409);
+
+        app(KirimTransferStok::class)->Jalankan($draf, $t['Pemilik']->Id);
+
+        $this->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/Cetak')
+            ->where('Transfer.Status', 'Dikirim')
+            ->where('Transfer.NamaGudangTujuan', 'Toko Cabang Solo Baru')
+            ->has('Baris', 2)
+            ->where('Baris.0.Jumlah', '12.0000')
+            ->where('Baris.1.NomorBatch', 'UHT-2609A')
+            // Nilai barang tidak boleh ikut ke kertas yang dipegang pembawa.
+            ->missing('Baris.0.NilaiKirim')
+            ->missing('Transfer.TotalNilaiKirim')
+            ->has('Usaha.Nama'));
+
+        $lain = B::BuatOutlet('KLATEN', 'Cabang Klaten');
+        MasukOutlet($this, $t['Tenant']->Id, $lain->Id)->get("/kelola/persediaan/transfer/{$draf->Uuid}/cetak")->assertNotFound();
+    });
+
     it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403); tanpa persediaan.lihat 403', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '1')]);

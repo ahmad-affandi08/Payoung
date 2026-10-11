@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./Pemberitahuan-DaMIOt0o.js";var n=e();function r(){return(0,n.jsx)(t,{jenis:`info`,judul:`Loyalti tersedia di paket Pro ke atas`,children:`Tier dan pengaturan poin bisa disiapkan sekarang, tetapi poin baru diberikan dan tier baru dievaluasi setelah paket dinaikkan di menu Langganan.`})}export{r as t};

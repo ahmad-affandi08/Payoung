@@ -317,3 +317,32 @@ export type PropsDetailPenyesuaianStok = {
     Izin: IzinDokumenPersediaan;
     BatasPersetujuan: string;
 };
+
+/** D-94: data cetak surat jalan transfer stok (tanpa nilai barang). */
+export type PropsCetakTransferStok = {
+    Transfer: {
+        Nomor: string | null;
+        Status: StatusTransferStok;
+        LabelStatus: string;
+        Tanggal: string;
+        NamaGudangAsal: string;
+        NamaOutletAsal: string | null;
+        NamaGudangTujuan: string;
+        NamaOutletTujuan: string | null;
+        Catatan: string | null;
+        AlasanBatal: string | null;
+        NamaPengirim: string | null;
+        DikirimPada: string | null;
+    };
+    Baris: {
+        Urutan: number;
+        NamaProduk: string;
+        Sku: string | null;
+        SimbolSatuan: string;
+        Jumlah: string;
+        NomorBatch: string | null;
+        TanggalKedaluwarsa: string | null;
+        NomorSeri: string | null;
+    }[];
+    Usaha: { Nama: string | null; Npwp: string | null };
+};
