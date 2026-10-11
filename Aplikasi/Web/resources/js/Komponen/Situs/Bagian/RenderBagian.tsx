@@ -109,6 +109,27 @@ export function HitungIrama(bagian: BagianSitus[]): IramaBagian[] {
     return hasil;
 }
 
+/**
+ * Mewarnai irama (D-93): bagian "latar" menjadi apricot lembut (peach) dan jeda gelap menjadi teal pekat, sehingga
+ * deretan putih-krem-putih digantikan putih-peach-putih-teal. Nuansa teal lembut tidak dipakai sebagai pita karena palet
+ * Slate Teal yang kalem membuatnya terbaca abu-abu. Irama putus/garis dari {@link HitungIrama} tidak berubah.
+ */
+export function WarnaiIrama(bagian: BagianSitus[], irama: IramaBagian[]): LatarBagian[] {
+    return bagian.map((b, i) => {
+        const dasar = irama[i]?.latar ?? 'permukaan';
+
+        if (b.Jenis === 'Hero') {
+            return dasar;
+        }
+
+        if (dasar === 'latar') {
+            return 'aksen';
+        }
+
+        return dasar === 'navy' ? 'brand' : dasar;
+    });
+}
+
 /** Mode penyunting editor visual (D-63): blok bisa diklik untuk memilihnya di editor. */
 export type PenyuntingBlok = { terpilih: number | null; saatPilih: (indeks: number) => void };
 
@@ -145,6 +166,7 @@ function BlokPenyunting({
 /** Render daftar blok halaman situs (D-21). Blok Hero pertama memakai `<h1>`. */
 export default function RenderBagian({ bagian, penyunting }: { bagian: BagianSitus[]; penyunting?: PenyuntingBlok }) {
     const irama = HitungIrama(bagian);
+    const warna = WarnaiIrama(bagian, irama);
     const Bungkus = (i: number, isi: ReactNode) =>
         penyunting ? (
             <BlokPenyunting key={`p-${i}`} indeks={i} penyunting={penyunting}>
@@ -158,7 +180,8 @@ export default function RenderBagian({ bagian, penyunting }: { bagian: BagianSit
         <>
             {bagian.map((b, i) => {
                 const kunci = `${b.Jenis}-${i}`;
-                const { latar, garisAtas } = irama[i] ?? { latar: 'permukaan' as LatarBagian, garisAtas: false };
+                const garisAtas = irama[i]?.garisAtas ?? false;
+                const latar: LatarBagian = warna[i] ?? 'permukaan';
 
                 switch (b.Jenis) {
                     case 'Hero':

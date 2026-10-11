@@ -1,4 +1,4 @@
-import IkonSitus from '@/Komponen/Situs/IkonSitus';
+import ChipIkon from '@/Komponen/Situs/ChipIkon';
 import TombolSitus from '@/Komponen/Situs/TombolSitus';
 import { cn } from '@/Komponen/Ui/utils';
 import type { BagianSitus } from '@/Tipe/Situs';
@@ -29,16 +29,11 @@ export function BagianLangkah({ bagian, latar, garisAtas }: PropsBagian<'Langkah
                         <div className="flex items-center gap-3">
                             <span
                                 aria-hidden
-                                className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-brand text-judul font-bold text-brand-teks"
+                                className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-aksen text-judul font-bold text-teks-utama"
                             >
                                 {i + 1}
                             </span>
-                            {item.Ikon ? (
-                                <IkonSitus
-                                    nama={item.Ikon}
-                                    className={cn('size-6', gelap ? 'text-aksen' : 'text-brand')}
-                                />
-                            ) : null}
+                            <ChipIkon nama={item.Ikon} indeks={i + 1} gelap={gelap} />
                         </div>
                         <h3 className={cn('text-subjudul font-semibold', gelap ? 'text-permukaan' : 'text-teks-utama')}>
                             <span className="sr-only">Langkah {i + 1}: </span>
@@ -59,7 +54,7 @@ export function BagianLangkah({ bagian, latar, garisAtas }: PropsBagian<'Langkah
             </ol>
             {bagian.Tombol ? (
                 <div className="mt-8">
-                    <TombolSitus href={bagian.Tombol.Tautan} ukuran="besar">
+                    <TombolSitus href={bagian.Tombol.Tautan} ukuran="besar" varian="aksen">
                         {bagian.Tombol.Label}
                     </TombolSitus>
                 </div>
@@ -82,12 +77,7 @@ export function BagianIntegrasi({ bagian, latar, garisAtas }: PropsBagian<'Integ
                 {bagian.Kelompok.map((k, i) => (
                     <li key={`${k.Judul}-${i}`} className={cn('flex flex-col gap-3', KelasKartu(latar))}>
                         <div className="flex items-center gap-3">
-                            {k.Ikon ? (
-                                <IkonSitus
-                                    nama={k.Ikon}
-                                    className={cn('size-6', gelap ? 'text-aksen' : 'text-brand')}
-                                />
-                            ) : null}
+                            <ChipIkon nama={k.Ikon} indeks={i} gelap={gelap} />
                             <h3
                                 className={cn(
                                     'text-subjudul font-semibold',
@@ -112,10 +102,10 @@ export function BagianIntegrasi({ bagian, latar, garisAtas }: PropsBagian<'Integ
                                 <li
                                     key={n.Nama}
                                     className={cn(
-                                        'rounded-full border px-3 py-1 text-label font-semibold',
+                                        'rounded-full px-3 py-1 text-label font-semibold',
                                         gelap
-                                            ? 'border-brand-gelap-garis text-permukaan'
-                                            : 'border-garis-input bg-permukaan text-teks-utama',
+                                            ? 'bg-brand-gelap-sorot text-permukaan'
+                                            : 'bg-brand-lembut text-brand-gelap',
                                     )}
                                 >
                                     {n.Nama}

@@ -56,7 +56,7 @@ export default function BagianFormulirProspek({
     return (
         <WadahBagian latar={latar} id="formulir-prospek" garisAtas={garisAtas}>
             <KepalaBagian label={bagian.Label} judul={bagian.Judul} subjudul={bagian.Subjudul} />
-            <div className="w-full max-w-2xl rounded-panel border border-garis bg-permukaan p-4 sm:p-6">
+            <div className="mx-auto w-full max-w-2xl rounded-3xl border border-garis bg-permukaan p-5 sm:p-8">
                 {props.ProspekTerkirim ? (
                     <div role="status" className="flex flex-col items-center gap-2 py-6 text-center">
                         <CircleCheck className="size-10 text-sukses" aria-hidden />

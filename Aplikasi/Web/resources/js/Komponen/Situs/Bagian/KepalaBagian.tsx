@@ -3,11 +3,11 @@ import type { ReactNode } from 'react';
 import { cn } from '@/Komponen/Ui/utils';
 
 /** Latar satu bagian. `navy`/`merek` adalah jeda gelap yang memutus deretan bagian terang (D-25). */
-export type LatarBagian = 'permukaan' | 'latar' | 'navy' | 'merek';
+export type LatarBagian = 'permukaan' | 'latar' | 'navy' | 'merek' | 'teal' | 'aksen' | 'brand';
 
 /** Bagian berlatar gelap: teks dibalik menjadi terang. */
 export function CekGelap(latar: LatarBagian): boolean {
-    return latar === 'navy' || latar === 'merek';
+    return latar === 'navy' || latar === 'merek' || latar === 'brand';
 }
 
 type PropsKepalaBagian = {
@@ -16,24 +16,16 @@ type PropsKepalaBagian = {
     subjudul?: string | null;
     rata?: 'tengah' | 'kiri';
     gelap?: boolean;
-    /** Garis Aksen di atas kepala bagian sebagai penanda (pengganti kotak ikon, D-25). */
-    aksen?: boolean;
 };
 
 /**
  * Label kecil, judul bagian (h2), dan pengantar. Tidak merender apa pun bila ketiganya kosong.
  *
- * Bawaan **rata kiri** (D-25): rata tengah dipakai hanya bila bagian itu memang perlu dibaca sebagai
- * pengumuman (mis. ajakan penutup), supaya halaman tidak menjadi dinding teks rata tengah.
+ * D-93: bawaan **rata tengah** dengan label berbentuk pil berwarna (apricot lembut di latar terang, apricot padat di
+ * latar gelap). Bagian yang kepalanya berdampingan dengan visual (gambar-teks, teks panjang, formulir) meminta `rata="kiri"`.
+ * Sebelumnya (D-25) bawaannya rata kiri dengan garis aksen tipis di atas judul, yang terbaca seragam dan generik.
  */
-export function KepalaBagian({
-    label,
-    judul,
-    subjudul,
-    rata = 'kiri',
-    gelap = false,
-    aksen = true,
-}: PropsKepalaBagian) {
+export function KepalaBagian({ label, judul, subjudul, rata = 'tengah', gelap = false }: PropsKepalaBagian) {
     if (!label && !judul && !subjudul) {
         return null;
     }
@@ -45,12 +37,11 @@ export function KepalaBagian({
                 rata === 'tengah' ? 'mx-auto items-center text-center' : '',
             )}
         >
-            {aksen ? <span className="h-[3px] w-10 shrink-0 rounded-full bg-aksen" aria-hidden /> : null}
             {label ? (
                 <p
                     className={cn(
-                        'text-label font-semibold tracking-wide uppercase',
-                        gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder',
+                        'rounded-full px-3 py-1 text-label font-semibold tracking-wide uppercase',
+                        gelap ? 'bg-aksen text-teks-utama' : 'bg-aksen-lembut text-peringatan',
                     )}
                 >
                     {label}
@@ -94,6 +85,10 @@ const KELAS_LATAR: Record<LatarBagian, string> = {
     latar: 'bg-latar',
     navy: 'bg-teks-utama',
     merek: 'bg-brand-gelap',
+    // D-93: pita warna. `teal`/`aksen` = nuansa lembut berselang-seling; `brand` = teal pekat untuk angka & sorotan.
+    teal: 'bg-brand-lembut',
+    aksen: 'bg-aksen-lembut',
+    brand: 'bg-brand',
 };
 
 /** Pembungkus satu bagian: latar, jarak vertikal, lebar isi seragam, dan animasi masuk (D-25). */
@@ -105,7 +100,7 @@ export function WadahBagian({
     garisAtas = false,
 }: PropsWadahBagian) {
     return (
-        <section id={id} className={cn('py-14 sm:py-20', KELAS_LATAR[latar], garisAtas && 'border-t border-garis')}>
+        <section id={id} className={cn('py-16 sm:py-24', KELAS_LATAR[latar], garisAtas && 'border-t border-garis')}>
             <div className={cn('muncul-saat-gulir mx-auto px-4', sempit ? 'max-w-3xl' : 'max-w-6xl')}>{children}</div>
         </section>
     );
@@ -121,9 +116,10 @@ export function KelasKartu(latar: LatarBagian, dapatDiklik = false): string {
     }
 
     return cn(
-        'rounded-panel border border-garis p-6',
-        latar === 'latar' ? 'bg-permukaan' : 'bg-latar',
-        dapatDiklik && 'hover:border-brand',
+        'rounded-3xl border border-garis p-6 transition-[border-color,transform] motion-reduce:transition-none',
+        // Kartu putih di atas pita berwarna; di atas putih memakai latar krem supaya tetap terbaca sebagai kartu.
+        latar === 'permukaan' ? 'bg-latar' : 'bg-permukaan',
+        dapatDiklik && 'hover:-translate-y-0.5 hover:border-brand',
     );
 }
 

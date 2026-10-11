@@ -112,7 +112,7 @@ export default function TataLetakSitus({ judul, children, pratinjau = false }: P
                 </div>
             ) : null}
             {situs.Pengumuman ? (
-                <div className="bg-brand-gelap px-4 py-2 text-center text-label text-permukaan">
+                <div className="bg-aksen px-4 py-2 text-center text-label font-semibold text-teks-utama">
                     {situs.Pengumuman.Tautan ? (
                         <TautanSitus href={situs.Pengumuman.Tautan} className="underline underline-offset-2">
                             {situs.Pengumuman.Teks}
@@ -153,10 +153,14 @@ export default function TataLetakSitus({ judul, children, pratinjau = false }: P
                         </ul>
                     </nav>
                     <div className="flex items-center gap-2">
-                        <TombolSitus href={situs.TombolMasuk.Tautan} varian="kedua" className="hidden sm:inline-flex">
+                        <TombolSitus
+                            href={situs.TombolMasuk.Tautan}
+                            varian="garis-merek"
+                            className="hidden sm:inline-flex"
+                        >
                             {situs.TombolMasuk.Label}
                         </TombolSitus>
-                        <TombolSitus href={situs.TombolDaftar.Tautan} className="whitespace-nowrap">
+                        <TombolSitus href={situs.TombolDaftar.Tautan} varian="aksen" className="whitespace-nowrap">
                             {situs.TombolDaftar.Label}
                         </TombolSitus>
                         <Sheet open={menuTerbuka} onOpenChange={AturMenuTerbuka}>
@@ -261,10 +265,10 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
     const kontak = situs.Kontak;
 
     return (
-        <footer className="border-t border-garis bg-latar text-teks-sekunder">
+        <footer className="bg-brand-gelap text-brand-gelap-teks">
             <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
                 <div className="flex flex-col gap-4">
-                    <LogoMerek nama={situs.NamaSitus} className="h-12 self-start" />
+                    <LogoMerek nama={situs.NamaSitus} varian="putih" className="h-12 self-start" />
                     {situs.TeksKaki ? <p className="text-isi">{situs.TeksKaki}</p> : null}
                     <address className="flex flex-col gap-1 text-isi not-italic">
                         {kontak.TautanWhatsApp && kontak.WhatsApp ? (
@@ -272,18 +276,18 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                                 href={kontak.TautanWhatsApp}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hover:text-brand"
+                                className="hover:text-aksen"
                             >
                                 WhatsApp {kontak.WhatsApp}
                             </a>
                         ) : null}
                         {kontak.Email ? (
-                            <a href={`mailto:${kontak.Email}`} className="hover:text-brand">
+                            <a href={`mailto:${kontak.Email}`} className="hover:text-aksen">
                                 {kontak.Email}
                             </a>
                         ) : null}
                         {kontak.Telepon ? (
-                            <a href={`tel:${kontak.Telepon.replace(/[^\d+]/g, '')}`} className="hover:text-brand">
+                            <a href={`tel:${kontak.Telepon.replace(/[^\d+]/g, '')}`} className="hover:text-aksen">
                                 {kontak.Telepon}
                             </a>
                         ) : null}
@@ -293,11 +297,11 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                 </div>
                 {situs.MenuKaki.map((kolom) => (
                     <nav key={kolom.Judul} aria-label={kolom.Judul} className="flex flex-col gap-3">
-                        <h2 className="text-isi font-semibold text-teks-utama">{kolom.Judul}</h2>
+                        <h2 className="text-isi font-semibold text-permukaan">{kolom.Judul}</h2>
                         <ul className="flex flex-col gap-2">
                             {kolom.Tautan.map((t) => (
                                 <li key={`${t.Label}-${t.Tautan}`}>
-                                    <TautanSitus href={t.Tautan} className="text-isi hover:text-brand">
+                                    <TautanSitus href={t.Tautan} className="text-isi hover:text-aksen">
                                         {t.Label}
                                     </TautanSitus>
                                 </li>
@@ -306,7 +310,7 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                     </nav>
                 ))}
             </div>
-            <div className="border-t border-garis max-sm:pb-20">
+            <div className="border-t border-brand-gelap-garis max-sm:pb-20">
                 <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-label sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         © {situs.Tahun} {situs.NamaSitus}
@@ -314,7 +318,7 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
                         {AdaAnalitik(situs.Analitik) ? (
-                            <button type="button" onClick={BukaPengaturanCookie} className="hover:text-brand">
+                            <button type="button" onClick={BukaPengaturanCookie} className="hover:text-aksen">
                                 Pengaturan cookie
                             </button>
                         ) : null}
@@ -324,7 +328,7 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                                 href={tautan}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hover:text-brand"
+                                className="hover:text-aksen"
                             >
                                 {LABEL_UNDUH[kunci] ?? kunci}
                             </a>
@@ -335,7 +339,7 @@ function KakiSitus({ situs }: { situs: DataSitus }) {
                                 href={tautan}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hover:text-brand"
+                                className="hover:text-aksen"
                             >
                                 {LABEL_MEDIA_SOSIAL[kunci] ?? kunci}
                             </a>

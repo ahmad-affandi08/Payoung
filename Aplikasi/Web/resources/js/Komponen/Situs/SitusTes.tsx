@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import TataLetakSitus from '@/TataLetak/TataLetakSitus';
 import type { BagianSitus, DataSitus } from '@/Tipe/Situs';
 
-import RenderBagian, { HitungIrama } from './Bagian/RenderBagian';
+import RenderBagian, { HitungIrama, WarnaiIrama } from './Bagian/RenderBagian';
 import { CekTautanHalamanSitus } from './TautanSitus';
 import TeksKaya from './TeksKaya';
 
@@ -77,6 +77,22 @@ describe('Situs pemasaran D-21: utilitas', () => {
             // Cta selalu berlatar merek dan memutus irama: sesudahnya mulai putih tanpa garis.
             { latar: 'merek', garisAtas: false },
             { latar: 'permukaan', garisAtas: false },
+        ]);
+    });
+
+    it('WarnaiIrama: latar krem menjadi peach, jeda gelap menjadi teal pekat, hero tidak diubah (D-93)', () => {
+        const bagian = [
+            { Jenis: 'Hero', Latar: 'Terang' },
+            ...Array.from({ length: 5 }, () => ({ Jenis: 'Keunggulan' })),
+        ] as unknown as BagianSitus[];
+
+        expect(WarnaiIrama(bagian, HitungIrama(bagian))).toEqual([
+            'permukaan',
+            'aksen',
+            'permukaan',
+            'aksen',
+            'permukaan',
+            'brand',
         ]);
     });
 
@@ -412,7 +428,7 @@ describe('Situs pemasaran D-21: tata letak & blok', () => {
         // Tanpa kunci harga, janji "terkunci" tidak boleh muncul.
         expect(screen.getByText(/Promo sampai 31 Jan 2027\./).textContent).not.toContain('terkunci');
     });
-    it('blok Keunggulan: tanpa kotak ikon berwarna, dan tiga tata letak punya bentuk berbeda (D-25)', () => {
+    it('blok Keunggulan: ikon dalam kotak berwarna bergilir nada (D-93), dan tiga tata letak punya bentuk berbeda (D-25)', () => {
         situs = BuatSitus();
         const item = [
             { Ikon: 'WifiOff', Judul: 'Tetap jalan offline', Teks: 'Transaksi tersimpan di perangkat.' },
@@ -431,19 +447,19 @@ describe('Situs pemasaran D-21: tata letak & blok', () => {
 
         const { container } = render(<RenderBagian bagian={[Blok('Grid')]} />);
 
-        // Kotak ikon BrandLembut dibuang: ikon menjadi 20px monokrom sebaris dengan judul.
-        expect(container.querySelector('.bg-brand-lembut')).toBeNull();
-        // Penanda bagian sekarang garis Aksen, bukan kotak ikon.
-        expect(container.querySelector('.bg-aksen')).toBeTruthy();
+        // D-93 membalik D-25: ikon kembali berkotak, tetapi tiap butir bernada berbeda (apricot, teal, ...) supaya deretan
+        // kartu tidak seragam abu-abu. Nada dibaca dari urutan butir.
+        expect(container.querySelector('span.bg-aksen')).toBeTruthy();
+        expect(container.querySelector('span.bg-brand')).toBeTruthy();
         expect(screen.getByRole('heading', { level: 3, name: /Tetap jalan offline/ })).toBeTruthy();
         // Grid: tiap item adalah kartu berbingkai.
-        expect(container.querySelectorAll('li.rounded-panel')).toHaveLength(2);
+        expect(container.querySelectorAll('li.rounded-3xl')).toHaveLength(2);
 
         cleanup();
         const daftar = render(<RenderBagian bagian={[Blok('Daftar')]} />).container;
 
         // Daftar: tanpa bingkai kartu, item dipisah garis atas 1px.
-        expect(daftar.querySelectorAll('li.rounded-panel')).toHaveLength(0);
+        expect(daftar.querySelectorAll('li.rounded-3xl')).toHaveLength(0);
         expect(daftar.querySelectorAll('li.border-t')).toHaveLength(2);
 
         cleanup();

@@ -2,6 +2,7 @@ import { CheckIcon } from 'lucide-react';
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import IkonSitus from '@/Komponen/Situs/IkonSitus';
+import PanggungSpesimen from '@/Komponen/Situs/PanggungSpesimen';
 import { SPESIMEN } from '@/Komponen/Situs/SpesimenSitus';
 import TombolSitus from '@/Komponen/Situs/TombolSitus';
 import { cn } from '@/Komponen/Ui/utils';
@@ -51,7 +52,12 @@ export function BagianTabUsaha({ bagian, latar, garisAtas }: Props) {
     return (
         <WadahBagian latar={latar} garisAtas={garisAtas} id="jenis-usaha">
             <KepalaBagian label={bagian.Label} judul={bagian.Judul} subjudul={bagian.Subjudul} />
-            <div role="tablist" aria-label="Jenis usaha" onKeyDown={SaatTekan} className="mb-8 flex flex-wrap gap-2">
+            <div
+                role="tablist"
+                aria-label="Jenis usaha"
+                onKeyDown={SaatTekan}
+                className="mb-10 flex flex-wrap justify-center gap-2"
+            >
                 {bagian.Item.map((item, i) => (
                     <button
                         key={`${item.Label}-${i}`}
@@ -68,7 +74,7 @@ export function BagianTabUsaha({ bagian, latar, garisAtas }: Props) {
                         className={cn(
                             'inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-isi font-semibold transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
                             i === aktif
-                                ? 'border-brand bg-brand text-brand-teks'
+                                ? 'border-aksen bg-aksen text-teks-utama'
                                 : 'border-garis-input bg-permukaan text-teks-utama hover:bg-permukaan-sorot',
                         )}
                     >
@@ -101,24 +107,22 @@ export function BagianTabUsaha({ bagian, latar, garisAtas }: Props) {
                                             key={p.Teks}
                                             className="flex items-start gap-2 text-subjudul text-teks-utama"
                                         >
-                                            <CheckIcon
-                                                aria-hidden
-                                                strokeWidth={2.5}
-                                                className="mt-1 size-4 shrink-0 text-sukses"
-                                            />
+                                            <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-sukses-lembut text-sukses">
+                                                <CheckIcon aria-hidden strokeWidth={3} className="size-4" />
+                                            </span>
                                             {p.Teks}
                                         </li>
                                     ))}
                                 </ul>
                             ) : null}
                             {item.Tombol ? (
-                                <TombolSitus href={item.Tombol.Tautan} varian="garis-merek">
+                                <TombolSitus href={item.Tombol.Tautan} varian="utama">
                                     {item.Tombol.Label}
                                 </TombolSitus>
                             ) : null}
                         </div>
                         {item.Gambar || Spesimen ? (
-                            <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-panel border border-garis bg-brand-lembut p-3 [container-type:size] sm:aspect-[16/11] sm:p-6">
+                            <PanggungSpesimen warna={latar === 'aksen' ? 'teal' : 'aksen'} tetap className="p-3 sm:p-6">
                                 {item.Gambar ? (
                                     <GambarBagian
                                         gambar={item.Gambar}
@@ -127,7 +131,7 @@ export function BagianTabUsaha({ bagian, latar, garisAtas }: Props) {
                                 ) : Spesimen ? (
                                     <Spesimen penuhTinggi className="max-w-none" />
                                 ) : null}
-                            </div>
+                            </PanggungSpesimen>
                         ) : null}
                     </div>
                 );

@@ -87,11 +87,11 @@ export default function BagianHarga({
                 gelap={CekGelap(latar)}
             />
             {adaTahunan ? (
-                <div className="mb-8 flex">
+                <div className="mb-10 flex justify-center">
                     <div
                         role="radiogroup"
                         aria-label="Periode tagihan"
-                        className="inline-flex rounded-kontrol border border-garis bg-permukaan p-1"
+                        className="inline-flex rounded-full border border-garis bg-permukaan p-1"
                     >
                         {(['Bulanan', 'Tahunan'] as const).map((p) => (
                             <button
@@ -101,7 +101,7 @@ export default function BagianHarga({
                                 aria-checked={periode === p}
                                 onClick={() => AturPeriode(p)}
                                 className={cn(
-                                    'min-h-10 rounded-kontrol px-4 text-isi font-semibold',
+                                    'min-h-10 rounded-full px-5 text-isi font-semibold',
                                     periode === p
                                         ? 'bg-brand text-brand-teks'
                                         : 'text-teks-utama hover:bg-permukaan-sorot',
@@ -126,8 +126,8 @@ export default function BagianHarga({
                             <li
                                 key={paket.Kode}
                                 className={cn(
-                                    'relative flex flex-col gap-5 rounded-panel border bg-permukaan p-6',
-                                    disorot ? 'border-2 border-brand' : 'border-garis',
+                                    'relative flex flex-col gap-5 rounded-3xl border bg-permukaan p-6',
+                                    disorot ? 'border-2 border-aksen ring-4 ring-aksen/25' : 'border-garis',
                                 )}
                             >
                                 {disorot ? (
@@ -156,7 +156,7 @@ export default function BagianHarga({
                                 </div>
                                 <TombolSitus
                                     href={paket.HargaNegosiasi ? tautanKontak : bagian.TautanDaftar}
-                                    varian={disorot ? 'utama' : 'garis-merek'}
+                                    varian={disorot ? 'aksen' : 'garis-merek'}
                                 >
                                     {paket.HargaNegosiasi ? 'Hubungi kami' : (bagian.TeksTombol ?? 'Mulai sekarang')}
                                 </TombolSitus>

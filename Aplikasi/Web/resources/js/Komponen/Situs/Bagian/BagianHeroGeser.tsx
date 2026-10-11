@@ -9,6 +9,7 @@ import {
     type PointerEvent,
 } from 'react';
 
+import PanggungSpesimen from '@/Komponen/Situs/PanggungSpesimen';
 import { SPESIMEN } from '@/Komponen/Situs/SpesimenSitus';
 import TombolSitus from '@/Komponen/Situs/TombolSitus';
 import { cn } from '@/Komponen/Ui/utils';
@@ -51,10 +52,7 @@ function PanggungVisual({ sorotan, prioritas, dimuat }: { sorotan: SorotanHero; 
     const Spesimen = !sorotan.Gambar && sorotan.Spesimen ? SPESIMEN[sorotan.Spesimen] : null;
 
     return (
-        <div
-            className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-panel border border-garis bg-brand-lembut p-3 [container-type:size] sm:aspect-[16/11] sm:p-6"
-            aria-hidden={dimuat ? undefined : true}
-        >
+        <PanggungSpesimen warna="teal" tetap className="p-3 sm:p-6">
             {!dimuat ? null : sorotan.Gambar ? (
                 <GambarBagian
                     gambar={sorotan.Gambar}
@@ -64,7 +62,7 @@ function PanggungVisual({ sorotan, prioritas, dimuat }: { sorotan: SorotanHero; 
             ) : Spesimen ? (
                 <Spesimen prioritas={prioritas} penuhTinggi className="max-w-none" />
             ) : null}
-        </div>
+        </PanggungSpesimen>
     );
 }
 
@@ -160,7 +158,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
         <section
             aria-roledescription="carousel"
             aria-label="Sorotan Payoung"
-            className="border-b border-garis bg-permukaan"
+            className="bg-brand-gelap"
             onKeyDown={SaatTekan}
             onMouseEnter={() => AturTertahan(true)}
             onMouseLeave={() => AturTertahan(false)}
@@ -171,7 +169,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                 }
             }}
         >
-            <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:pt-16 sm:pb-10">
+            <div className="mx-auto max-w-6xl px-4 pt-12 pb-10 sm:pt-20 sm:pb-12">
                 <div
                     className="grid touch-pan-y"
                     aria-live={otomatisJalan ? 'off' : 'polite'}
@@ -198,25 +196,27 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                                 )}
                             >
                                 <div className="flex min-w-0 flex-col items-start gap-5">
-                                    <p className="rounded-full bg-brand-lembut px-3 py-1 text-label font-semibold text-brand">
+                                    <p className="rounded-full bg-aksen px-3 py-1 text-label font-semibold text-teks-utama">
                                         {s.Label}
                                     </p>
                                     {judulHalaman ? (
-                                        <JudulHalaman skala="sorotan">{s.Judul}</JudulHalaman>
+                                        <JudulHalaman skala="sorotan" className="text-permukaan">
+                                            {s.Judul}
+                                        </JudulHalaman>
                                     ) : (
-                                        <h2 className="text-sorotan-hp font-bold text-teks-utama sm:text-sorotan">
+                                        <h2 className="text-sorotan-hp font-bold text-permukaan sm:text-sorotan">
                                             {s.Judul}
                                         </h2>
                                     )}
                                     {s.Teks ? (
-                                        <p className="text-pengantar max-w-xl whitespace-pre-line text-teks-sekunder">
+                                        <p className="text-pengantar max-w-xl whitespace-pre-line text-brand-gelap-teks">
                                             {s.Teks}
                                         </p>
                                     ) : null}
                                     {s.TombolUtama || s.TombolKedua ? (
                                         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                                             {s.TombolUtama ? (
-                                                <TombolSitus href={s.TombolUtama.Tautan} ukuran="besar">
+                                                <TombolSitus href={s.TombolUtama.Tautan} ukuran="besar" varian="aksen">
                                                     {s.TombolUtama.Label}
                                                 </TombolSitus>
                                             ) : null}
@@ -224,7 +224,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                                                 <TombolSitus
                                                     href={s.TombolKedua.Tautan}
                                                     ukuran="besar"
-                                                    varian="garis-merek"
+                                                    varian="garis-terang"
                                                 >
                                                     {s.TombolKedua.Label}
                                                 </TombolSitus>
@@ -244,7 +244,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                             type="button"
                             onClick={() => Pilih(aktif - 1)}
                             aria-label="Sorotan sebelumnya"
-                            className="inline-flex size-11 items-center justify-center rounded-full border border-garis-input bg-permukaan text-teks-utama hover:bg-permukaan-sorot focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                            className="inline-flex size-11 items-center justify-center rounded-full border border-brand-gelap-gulir text-permukaan hover:bg-brand-gelap-sorot focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                         >
                             <ChevronLeftIcon className="size-5" aria-hidden />
                         </button>
@@ -263,8 +263,8 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                                         className={cn(
                                             'h-2 rounded-full transition-[width,background-color] duration-200 motion-reduce:transition-none group-focus-visible:ring-[3px] group-focus-visible:ring-ring/50',
                                             i === aktif
-                                                ? 'w-6 bg-brand'
-                                                : 'w-2 bg-garis-input group-hover:bg-teks-sekunder',
+                                                ? 'w-6 bg-aksen'
+                                                : 'w-2 bg-brand-gelap-gulir group-hover:bg-brand-gelap-teks',
                                         )}
                                     />
                                 </button>
@@ -274,7 +274,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                             type="button"
                             onClick={() => Pilih(aktif + 1)}
                             aria-label="Sorotan berikutnya"
-                            className="inline-flex size-11 items-center justify-center rounded-full border border-garis-input bg-permukaan text-teks-utama hover:bg-permukaan-sorot focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                            className="inline-flex size-11 items-center justify-center rounded-full border border-brand-gelap-gulir text-permukaan hover:bg-brand-gelap-sorot focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                         >
                             <ChevronRightIcon className="size-5" aria-hidden />
                         </button>
@@ -283,7 +283,7 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                                 type="button"
                                 onClick={() => AturBerhenti((b) => !b)}
                                 aria-label={otomatisJalan ? 'Jeda pergantian otomatis' : 'Putar pergantian otomatis'}
-                                className="ml-1 inline-flex size-11 items-center justify-center rounded-full text-teks-sekunder hover:bg-permukaan-sorot hover:text-teks-utama focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                                className="ml-1 inline-flex size-11 items-center justify-center rounded-full text-brand-gelap-teks hover:bg-brand-gelap-sorot hover:text-permukaan focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                             >
                                 {otomatisJalan ? (
                                     <PauseIcon className="size-5" aria-hidden />
@@ -296,18 +296,15 @@ export default function BagianHeroGeser({ bagian, utama }: Props) {
                 ) : null}
 
                 {(bagian.Poin ?? []).length > 0 || bagian.Catatan ? (
-                    <div className="mt-8 flex flex-col gap-3 border-t border-garis pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+                    <div className="mt-8 flex flex-col gap-3 border-t border-brand-gelap-garis pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
                         {(bagian.Poin ?? []).map((p) => (
-                            <p
-                                key={p.Teks}
-                                className="flex items-center gap-2 text-label font-semibold text-teks-utama"
-                            >
-                                <CheckIcon aria-hidden strokeWidth={2.5} className="size-4 shrink-0 text-sukses" />
+                            <p key={p.Teks} className="flex items-center gap-2 text-label font-semibold text-permukaan">
+                                <CheckIcon aria-hidden strokeWidth={2.5} className="size-4 shrink-0 text-aksen" />
                                 {p.Teks}
                             </p>
                         ))}
                         {bagian.Catatan ? (
-                            <p className="text-label text-teks-sekunder sm:ml-auto">{bagian.Catatan}</p>
+                            <p className="text-label text-brand-gelap-teks sm:ml-auto">{bagian.Catatan}</p>
                         ) : null}
                     </div>
                 ) : null}

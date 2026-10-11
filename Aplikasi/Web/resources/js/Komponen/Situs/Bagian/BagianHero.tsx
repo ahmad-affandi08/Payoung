@@ -1,5 +1,6 @@
 import { CheckIcon } from 'lucide-react';
 
+import PanggungSpesimen from '@/Komponen/Situs/PanggungSpesimen';
 import { SPESIMEN } from '@/Komponen/Situs/SpesimenSitus';
 import TombolSitus from '@/Komponen/Situs/TombolSitus';
 import { cn } from '@/Komponen/Ui/utils';
@@ -10,7 +11,8 @@ import { GambarBagian } from './KepalaBagian';
 type Props = { bagian: Extract<BagianSitus, { Jenis: 'Hero' }>; utama: boolean };
 
 const KELAS_LATAR = {
-    Terang: 'bg-permukaan border-b border-garis',
+    // D-93: hero berlatar teal gelap seperti beranda; `Terang` dipertahankan sebagai nama pilihan di konsol saja.
+    Terang: 'bg-brand-gelap',
     Merek: 'bg-brand-gelap',
     Navy: 'bg-teks-utama',
 } as const;
@@ -26,7 +28,7 @@ const KELAS_LATAR = {
 export default function BagianHero({ bagian, utama }: Props) {
     const Judul = utama ? 'h1' : 'h2';
     const latar = bagian.Latar ?? 'Terang';
-    const gelap = latar !== 'Terang';
+    const gelap = true;
     // Spesimen keluaran produk dipakai sebagai jangkar visual selama belum ada gambar (D-25).
     const Spesimen = !bagian.Gambar && bagian.Spesimen ? SPESIMEN[bagian.Spesimen] : null;
     const adaGambar = Boolean(bagian.Gambar) || Spesimen !== null;
@@ -44,7 +46,7 @@ export default function BagianHero({ bagian, utama }: Props) {
                         <p
                             className={cn(
                                 'rounded-full px-3 py-1 text-label font-semibold',
-                                gelap ? 'bg-aksen text-teks-utama' : 'bg-brand-lembut text-brand',
+                                gelap ? 'bg-aksen text-teks-utama' : 'bg-aksen text-teks-utama',
                             )}
                         >
                             {bagian.Label}
@@ -74,7 +76,7 @@ export default function BagianHero({ bagian, utama }: Props) {
                                 <TombolSitus
                                     href={bagian.TombolUtama.Tautan}
                                     ukuran="besar"
-                                    varian={gelap ? 'terang' : 'utama'}
+                                    varian={gelap ? 'aksen' : 'utama'}
                                 >
                                     {bagian.TombolUtama.Label}
                                 </TombolSitus>
@@ -103,7 +105,7 @@ export default function BagianHero({ bagian, utama }: Props) {
                                     <CheckIcon
                                         aria-hidden="true"
                                         strokeWidth={2.5}
-                                        className={cn('size-4 shrink-0', gelap ? 'text-aksen' : 'text-sukses')}
+                                        className={cn('size-4 shrink-0', gelap ? 'text-aksen' : 'text-brand')}
                                     />
                                     {p.Teks}
                                 </li>
@@ -117,16 +119,11 @@ export default function BagianHero({ bagian, utama }: Props) {
                     ) : null}
                 </div>
                 {bagian.Gambar ? (
-                    <GambarBagian
-                        gambar={bagian.Gambar}
-                        prioritas={utama}
-                        className={cn(
-                            'h-auto w-full rounded-panel border',
-                            gelap ? 'border-brand-gelap-garis' : 'border-garis',
-                        )}
-                    />
+                    <GambarBagian gambar={bagian.Gambar} prioritas={utama} className="h-auto w-full rounded-3xl" />
                 ) : Spesimen ? (
-                    <Spesimen prioritas={utama} className="min-w-0 justify-self-center lg:justify-self-end" />
+                    <PanggungSpesimen warna={gelap ? 'teal' : 'aksen'} className="min-w-0 sm:p-10">
+                        <Spesimen prioritas={utama} className="min-w-0" />
+                    </PanggungSpesimen>
                 ) : null}
             </div>
         </section>

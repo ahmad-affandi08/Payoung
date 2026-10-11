@@ -1,4 +1,4 @@
-import IkonSitus from '@/Komponen/Situs/IkonSitus';
+import ChipIkon from '@/Komponen/Situs/ChipIkon';
 import TautanSitus from '@/Komponen/Situs/TautanSitus';
 import { cn } from '@/Komponen/Ui/utils';
 import type { BagianSitus } from '@/Tipe/Situs';
@@ -15,10 +15,20 @@ const KOLOM = {
  * Judul item dengan ikon garis 24px berwarna merek di atasnya (D-39), tetap tanpa kotak ikon berwarna (D-25).
  * Ikon raster lama yang kecil dan buram diganti ikon garis lucide yang tajam di layar retina.
  */
-function JudulItem({ ikon, judul, gelap }: { ikon: string | null; judul: string; gelap: boolean }) {
+function JudulItem({
+    ikon,
+    judul,
+    gelap,
+    indeks = 0,
+}: {
+    ikon: string | null;
+    judul: string;
+    gelap: boolean;
+    indeks?: number;
+}) {
     return (
-        <div className="flex flex-col gap-3">
-            {ikon ? <IkonSitus nama={ikon} className={cn('size-6', gelap ? 'text-aksen' : 'text-brand')} /> : null}
+        <div className="flex flex-col gap-4">
+            <ChipIkon nama={ikon} indeks={indeks} gelap={gelap} />
             <h3 className={cn('text-subjudul font-semibold', gelap ? 'text-permukaan' : 'text-teks-utama')}>{judul}</h3>
         </div>
     );
@@ -62,7 +72,7 @@ export function BagianKeunggulan({ bagian, latar, garisAtas }: PropsKeunggulan) 
                                 gelap ? 'border-brand-gelap-garis' : 'border-garis',
                             )}
                         >
-                            <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} />
+                            <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} indeks={i} />
                             {item.Teks ? <TeksItem teks={item.Teks} gelap={gelap} /> : null}
                         </li>
                     ))}
@@ -73,7 +83,7 @@ export function BagianKeunggulan({ bagian, latar, garisAtas }: PropsKeunggulan) 
                         <li
                             key={`${item.Judul}-${i}`}
                             className={cn(
-                                'flex flex-col gap-3',
+                                'relative isolate flex flex-col gap-3 overflow-hidden',
                                 KelasKartu(latar),
                                 // Kartu utama berlatar merek gelap (jangkar visual), supaya ruang kosongnya terbaca
                                 // sebagai kartu yang disengaja dan bukan lubang di tengah grid.
@@ -85,7 +95,15 @@ export function BagianKeunggulan({ bagian, latar, garisAtas }: PropsKeunggulan) 
                         >
                             {i === 0 ? (
                                 <>
-                                    {item.Ikon ? <IkonSitus nama={item.Ikon} className="size-12 text-aksen" /> : null}
+                                    <span
+                                        aria-hidden
+                                        className="absolute -right-16 -bottom-16 -z-10 size-72 rounded-full bg-brand-gelap-sorot"
+                                    />
+                                    <span
+                                        aria-hidden
+                                        className="absolute top-10 right-10 -z-10 size-20 rounded-full bg-aksen"
+                                    />
+                                    <ChipIkon nama={item.Ikon} indeks={1} gelap ukuran="besar" />
                                     <div className="flex flex-col gap-3">
                                         <h3 className="text-judul font-bold text-permukaan">{item.Judul}</h3>
                                         {item.Teks ? (
@@ -97,7 +115,7 @@ export function BagianKeunggulan({ bagian, latar, garisAtas }: PropsKeunggulan) 
                                 </>
                             ) : (
                                 <>
-                                    <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} />
+                                    <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} indeks={i} />
                                     {item.Teks ? <TeksItem teks={item.Teks} gelap={gelap} /> : null}
                                 </>
                             )}
@@ -108,7 +126,7 @@ export function BagianKeunggulan({ bagian, latar, garisAtas }: PropsKeunggulan) 
                 <ul className={`grid gap-4 ${KOLOM[bagian.Kolom ?? '3']}`}>
                     {bagian.Item.map((item, i) => (
                         <li key={`${item.Judul}-${i}`} className={cn('flex flex-col gap-3', KelasKartu(latar))}>
-                            <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} />
+                            <JudulItem ikon={item.Ikon} judul={item.Judul} gelap={gelap} indeks={i} />
                             {item.Teks ? <TeksItem teks={item.Teks} gelap={gelap} /> : null}
                         </li>
                     ))}
@@ -151,7 +169,12 @@ export function BagianSektor({
                                 />
                             ) : null}
                             <div className="flex flex-col gap-2">
-                                <JudulItem ikon={item.Gambar ? null : item.Ikon} judul={item.Nama} gelap={gelap} />
+                                <JudulItem
+                                    ikon={item.Gambar ? null : item.Ikon}
+                                    judul={item.Nama}
+                                    gelap={gelap}
+                                    indeks={i}
+                                />
                                 {item.Teks ? <TeksItem teks={item.Teks} gelap={gelap} /> : null}
                             </div>
                             {item.Tautan ? (
@@ -191,11 +214,14 @@ export function BagianSektor({
 /** Angka statistik; isinya ditulis pengelola (jangan mengarang angka, D-21). */
 export function BagianStatistik({ bagian }: { bagian: Extract<BagianSitus, { Jenis: 'Statistik' }> }) {
     return (
-        <WadahBagian latar="merek">
+        <WadahBagian latar="brand">
             <KepalaBagian label={bagian.Label} judul={bagian.Judul} subjudul={bagian.Subjudul} gelap />
-            <dl className="grid grid-cols-2 gap-6 lg:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
                 {bagian.Item.map((item, i) => (
-                    <div key={`${item.Angka}-${i}`} className="flex flex-col-reverse justify-end gap-2">
+                    <div
+                        key={`${item.Angka}-${i}`}
+                        className="flex flex-col-reverse justify-end gap-2 rounded-3xl bg-brand-gelap p-6"
+                    >
                         <dt className="text-isi text-brand-gelap-teks">{item.Keterangan}</dt>
                         <dd className="text-sorotan-hp font-bold text-aksen sm:text-sorotan">{item.Angka}</dd>
                     </div>
