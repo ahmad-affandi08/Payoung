@@ -12,6 +12,7 @@ use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\Pendukung\Tenant\BantuanTagihan;
@@ -196,6 +197,33 @@ describe('BR-P08.11 rekonsiliasi pembayaran gerbang tersangkut', function (): vo
                 && $permintaan->url() === BantuanTagihan::ALAMAT_DOKU.$target
                 && $permintaan->header('Signature') === ['HMACSHA256='.base64_encode(hash_hmac('sha256', $komponen, BantuanTagihan::KUNCI_RAHASIA_DOKU, true))];
         });
+    });
+
+    it('v5.34: membuka halaman tagihan sesudah bayar langsung melunasi lewat API status DOKU tanpa menunggu webhook, dan dibatasi satu pertanyaan per jeda', function (): void {
+        ['Tenant' => $tenant, 'Tagihan' => $tagihan, 'Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
+        $pengguna = Pengguna::query()->withoutGlobalScopes()->where('Email', '!=', '')->latest('Id')->firstOrFail();
+        Cache::flush();
+
+        // Masih PENDING: halaman terbuka, tagihan belum lunas.
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'PENDING', $tagihan->Total));
+        BantuanTagihan::Masuk($this, $pengguna, $tenant)
+            ->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))->assertOk();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu);
+
+        // Muat ulang segera: masih dalam jeda, DOKU tidak ditanya lagi.
+        $panggilan = BantuanTagihan::JumlahPanggilanStatusDoku();
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'SUCCESS', $tagihan->Total));
+        BantuanTagihan::Masuk($this, $pengguna, $tenant)
+            ->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))->assertOk();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu);
+
+        // Lewat jeda dan DOKU sudah SUCCESS: lunas pada pemuatan halaman itu juga.
+        Cache::flush();
+        BantuanTagihan::Masuk($this, $pengguna, $tenant)
+            ->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))->assertOk();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and($panggilan)->toBeInt();
     });
 
     it('gerbang billing dinonaktifkan: tidak ada yang ditanyakan', function (): void {

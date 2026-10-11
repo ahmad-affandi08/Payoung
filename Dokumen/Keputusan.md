@@ -98,6 +98,7 @@
 | D-94 | Dari pemilik produk (12/10/2026): transfer stok perlu surat jalan. Keputusan agen (D-12, D-17): dokumen cetak transfer memakai bingkai surat jalan grosir dan **tidak menampilkan nilai**, karena dipegang pembawa dan dicocokkan petugas gudang tujuan; draf tidak bisa dicetak. Detail di versi 5.31. |
 | D-95 | Lanjutan D-94 atas permintaan pemilik produk ("lanjut"). Keputusan agen (D-12, D-17): kanvas tidak mendapat dokumen baru karena muat/bongkar sudah transfer stok dan memakai surat jalan transfer; yang ditambah hanya daftar ambil barang, panel transfer harian di Kanvas, dan isian awal form. Detail di versi 5.32. |
 | D-96 | Dari pemilik produk ("pastikan menu retur dari stok outlet ke Gudang ini gimana?"). Keputusan agen (D-12, D-17): retur stok outlet → Gudang **tidak** diberi dokumen baru; ia adalah transfer stok biasa dan hanya diberi pintasan bernama "Retur ke Gudang" dengan lokasi terisi otomatis. Entri menu "Transfer stok" tetap bertanda lanjutan (tersembunyi di Mode sederhana, tetap lewat Ctrl+K). Detail di versi 5.33. |
+| D-97 | Dari pemilik produk ("url notifikasi di DOKU ribet, tidak seperti Midtrans yang sekali pasang"). Keputusan agen (D-12, D-17): status pembayaran langganan ditanyakan ke DOKU saat pemilik kembali ke halaman tagihan sehingga lunas tanpa bergantung pada URL notifikasi per metode bayar; `override_notification_url` per transaksi tidak dipakai karena perlu diaktifkan DOKU dulu. Detail di versi 5.34. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

@@ -16,6 +16,7 @@ use App\Domain\Tenant\Aksi\BatalkanTagihanLangganan;
 use App\Domain\Tenant\Aksi\BeliAddonLangganan;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Aksi\MulaiPembayaranGerbangLangganan;
+use App\Domain\Tenant\Aksi\SegarkanPembayaranGerbangLangganan;
 use App\Domain\Tenant\Aksi\UbahPerpanjanganAddonLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Kueri\AddonLanggananTenant;
@@ -65,10 +66,23 @@ final class LanggananKontroler extends Kontroler
             ->with('Kilat', "Tagihan {$tagihan->Nomor} dibuat. Silakan selesaikan pembayaran online.");
     }
 
-    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang): Response
+    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, SegarkanPembayaranGerbangLangganan $segarkan): Response
     {
         $data = $this->kueri->CariTagihan($tagihan);
         abort_if($data === null, 404);
+
+        // v5.34: kembali dari halaman bayar DOKU = tanyakan status ke DOKU sekarang, jangan menunggu webhook.
+        $berubah = false;
+
+        foreach ($data->Pembayaran as $baris) {
+            $berubah = $segarkan->Jalankan($baris) || $berubah;
+        }
+
+        if ($berubah) {
+            $data = $this->kueri->CariTagihan($tagihan);
+            abort_if($data === null, 404);
+        }
+
         $pembayaran = $data->Pembayaran->sortByDesc('Id')->values();
         // Pembatalan tetap diblokir pembayaran `Menunggu` apa pun, termasuk transaksi gerbang yang sedang berjalan:
         // kalau tidak, tagihan bisa dibatalkan tepat saat uangnya sedang masuk.
