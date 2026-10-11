@@ -23,4 +23,14 @@ describe('LogoMerek', () => {
             'IkonMerekPutih.png',
         );
     });
+
+    it('menjaga perbandingan gambar logo saat wadah menyempit (tidak gepeng)', () => {
+        render(<LogoMerek nama="Payoung" className="h-12" />);
+
+        const gambar = screen.getByRole('img', { name: 'Payoung' });
+
+        expect(gambar.className).toContain('w-auto');
+        expect(gambar.className).toContain('object-contain');
+        expect(gambar.className).toContain('shrink-0');
+    });
 });
