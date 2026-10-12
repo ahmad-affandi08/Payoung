@@ -15,6 +15,7 @@ use App\Http\Kontroler\Kelola\Akuntansi\RekonsiliasiBankKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TagihanQrisTanpaPenjualanKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TransaksiKasBankKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TutupBukuKontroler;
+use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -66,7 +67,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::LaporanKeuanganL
     Route::get('/akuntansi/giro', [GiroKontroler::class, 'Daftar'])->name('kelola.akuntansi.giro.daftar');
 
     Route::get('/akuntansi/laporan/buku-besar', [LaporanKeuanganKontroler::class, 'BukuBesar'])->name('kelola.akuntansi.laporan.buku-besar');
-    Route::get('/akuntansi/laporan/buku-besar/ekspor', [LaporanKeuanganKontroler::class, 'EksporBukuBesar'])->name('kelola.akuntansi.laporan.buku-besar.ekspor');
+    Route::get('/akuntansi/laporan/buku-besar/ekspor', [LaporanKeuanganKontroler::class, 'EksporBukuBesar'])->middleware(EksporDiLatarBelakang::class)->name('kelola.akuntansi.laporan.buku-besar.ekspor');
     Route::get('/akuntansi/laporan/neraca-saldo', [LaporanKeuanganKontroler::class, 'NeracaSaldo'])->name('kelola.akuntansi.laporan.neraca-saldo');
     Route::get('/akuntansi/laporan/neraca-saldo/ekspor', [LaporanKeuanganKontroler::class, 'EksporNeracaSaldo'])->name('kelola.akuntansi.laporan.neraca-saldo.ekspor');
     Route::get('/akuntansi/laporan/laba-rugi', [LaporanKeuanganKontroler::class, 'LabaRugi'])->name('kelola.akuntansi.laporan.laba-rugi');

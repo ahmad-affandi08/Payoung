@@ -53,6 +53,13 @@ return [
     'HariBerlakuEkspor' => 7,
     'JamJedaEkspor' => 24,
 
+    // D-124 Pusat Unduhan: ekspor laporan besar disiapkan di latar belakang dan disimpan di disk privat beberapa hari.
+    'DiskUnduhan' => env('TENANT_DISK_UNDUHAN', 'local'),
+    'HariBerlakuUnduhan' => 7,
+    'MaksUnduhanAktif' => 3,
+    'MaksBarisEksporBesar' => 100000,
+    'MenitBatasProsesUnduhan' => 60,
+
     // Audit E5 / P-07 (UU PDP): masa tunggu permintaan penghapusan data (bisa dibatalkan Owner) dan lama lampiran pembukuan
     // dipertahankan setelah akun ditutup (ketentuan perpajakan: dokumen pembukuan disimpan 10 tahun).
     'HariTungguPenghapusan' => 14,

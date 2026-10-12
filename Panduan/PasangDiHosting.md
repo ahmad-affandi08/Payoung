@@ -221,6 +221,8 @@ Periksa dengan `php artisan schedule:list` (jam tampil dalam UTC) dan dasbor Ope
 
 Scheduler juga menjalankan antrean (`queue:work --stop-when-empty`), jadi tidak perlu proses lain.
 
+**Pusat Unduhan (D-124):** ekspor besar disiapkan di akhir permintaan yang sama (bukan lewat antrean), jadi tidak butuh pengaturan tambahan selain `php artisan migrate --force`. Syaratnya PHP berjalan lewat **PHP-FPM atau LiteSpeed** (bawaan Hostinger) agar respons dilepas ke peramban lebih dulu; di `mod_php` peramban menunggu sampai berkas selesai. Berkas disimpan di disk `TENANT_DISK_UNDUHAN` (bawaan `local`, privat) dan dibersihkan harian oleh `unduhan:bersihkan`; pastikan `max_execution_time` tidak memutus proses terlalu cepat untuk laporan sangat besar (kode memanggil `set_time_limit(0)`, tetapi sebagian hosting mengabaikannya).
+
 ## 9. Percepat
 
 ```bash

@@ -12,6 +12,7 @@ use App\Http\Kontroler\Kelola\Karyawan\KasbonKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\KomisiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\RekapGajiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\TargetPenjualanKontroler;
+use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -33,7 +34,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
     // F-18 bagian 2: aturan & laporan komisi.
     Route::get('/komisi', [KomisiKontroler::class, 'Aturan'])->name('kelola.karyawan.komisi');
     Route::get('/komisi/laporan', [KomisiKontroler::class, 'Laporan'])->name('kelola.karyawan.komisi.laporan');
-    Route::get('/komisi/laporan/ekspor', [KomisiKontroler::class, 'EksporLaporan'])->name('kelola.karyawan.komisi.laporan.ekspor');
+    Route::get('/komisi/laporan/ekspor', [KomisiKontroler::class, 'EksporLaporan'])->middleware(EksporDiLatarBelakang::class)->name('kelola.karyawan.komisi.laporan.ekspor');
     // F-18 bagian 3: kasbon karyawan (J-18.1).
     Route::get('/kasbon', [KasbonKontroler::class, 'Daftar'])->name('kelola.karyawan.kasbon');
     // F-18 bagian 3: target penjualan & progres.

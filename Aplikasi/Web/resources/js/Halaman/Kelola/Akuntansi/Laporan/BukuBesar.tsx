@@ -107,6 +107,7 @@ export default function HalamanBukuBesar({ Saring, Akun, Mutasi, OpsiAkun, OpsiO
                 opsiOutlet={OpsiOutlet}
                 opsiAkun={OpsiAkun}
                 ekspor={Akun ? `${alamat}/ekspor?${BuatQueryLaporan(Saring)}` : null}
+                eksporBesar
             />
 
             {Akun === null ? (

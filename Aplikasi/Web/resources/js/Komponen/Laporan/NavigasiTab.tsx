@@ -38,17 +38,21 @@ export function TautanEkspor({
     query,
     label = 'Ekspor',
     format,
+    eksporBesar = false,
 }: {
     alamat: string;
     query: Record<string, string>;
     label?: string;
     format?: readonly FormatEkspor[];
+    /** D-124: tawarkan "Ekspor besar" (hanya rute yang memasang `EksporDiLatarBelakang`). */
+    eksporBesar?: boolean;
 }) {
     return (
         <TombolEkspor
             alamat={alamat}
             query={BuatQueryLaporan(query)}
             label={label}
+            eksporBesar={eksporBesar}
             {...(format === undefined ? {} : { format })}
         />
     );

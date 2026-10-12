@@ -70,7 +70,7 @@ export default function HalamanDaftarPenjualan({ Penjualan, OpsiOutlet, OpsiStat
                 urutBawaan="-DibuatOfflinePada"
                 cari="Cari nomor atau nama kasir"
                 saring={saring}
-                ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true }}
+                ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                 aksiMassal={(konteks: KonteksAksiMassal<BarisPenjualan>) => (
                     <AksiMassalEkspor konteks={konteks} alamat={`${alamat}/ekspor`} ambilUuid={(b) => b.Uuid} />
                 )}

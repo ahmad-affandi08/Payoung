@@ -45,7 +45,7 @@ type PropsBilahAlat<T> = {
     teksCari: string;
     cari: string | false;
     saring: DefinisiSaring[];
-    ekspor?: { alamat: string; label?: string; query: string; laporan?: boolean };
+    ekspor?: { alamat: string; label?: string; query: string; laporan?: boolean; eksporBesar?: boolean };
     aksiAlat?: ReactNode;
     AturCari: (teks: string) => void;
     AturSaring: (id: string, nilai: string) => void;
@@ -303,6 +303,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
             alamat={props.ekspor.alamat}
             query={props.ekspor.query}
             label={props.ekspor.label ?? 'Ekspor'}
+            eksporBesar={props.ekspor.eksporBesar === true}
             className={kelasTombolAlat}
         />
     ) : props.ekspor ? (

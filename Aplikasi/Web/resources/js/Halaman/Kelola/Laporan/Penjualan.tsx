@@ -390,7 +390,7 @@ function IsiTab({
                     ambilIdBaris={(b) => String(b.Id)}
                     urutBawaan="-Waktu"
                     cari="Cari nomor transaksi atau produk"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true }}
+                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                     kosong={kosong}
                 />
             );
@@ -404,7 +404,7 @@ function IsiTab({
                     ambilIdBaris={(b) => String(b.IdProduk)}
                     urutBawaan="-Bersih"
                     cari="Cari nama produk"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true }}
+                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                     kosong={kosong}
                 />
             );
@@ -418,7 +418,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-Bersih"
                     cari="Cari kategori"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={kosong}
                 />
             );
@@ -444,7 +450,13 @@ function IsiTab({
                         ambilIdBaris={(b) => String(b.Jam)}
                         urutBawaan="Jam"
                         cari={false}
-                        ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
                         kosong={kosong}
                     />
                 </div>
@@ -460,7 +472,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-Bersih"
                     cari="Cari nama kasir"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={kosong}
                 />
             );
@@ -474,7 +492,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-Bersih"
                     cari={false}
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={kosong}
                 />
             );
@@ -488,7 +512,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-Bersih"
                     cari="Cari metode bayar"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={kosong}
                 />
             );
@@ -502,7 +532,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-TotalDiskon"
                     cari="Cari nama kasir"
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={{
                         ilustrasi: true,
                         judul: 'Belum ada penjualan berdiskon pada periode dan saring ini.',
@@ -525,7 +561,13 @@ function IsiTab({
                         ambilIdBaris={(b) => b.Kunci}
                         urutBawaan="-Skor"
                         cari="Cari nama kasir"
-                        ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
                         kosong={{
                             ilustrasi: true,
                             judul: 'Belum ada transaksi kasir pada periode dan saring ini.',
@@ -562,7 +604,13 @@ function IsiTab({
                         sumber={{ mode: 'lokal', data: abc.Baris }}
                         ambilIdBaris={(b) => String(b.IdProduk)}
                         cari="Cari nama produk"
-                        ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
                         kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan saring ini.' }}
                     />
                 </div>
@@ -596,7 +644,13 @@ function IsiTab({
                         sumber={{ mode: 'lokal', data: menu.Baris }}
                         ambilIdBaris={(b) => String(b.IdProduk)}
                         cari="Cari nama produk"
-                        ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
                         kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan saring ini.' }}
                     />
                 </div>
@@ -612,7 +666,13 @@ function IsiTab({
                     ambilIdBaris={(b) => b.Tanggal}
                     urutBawaan="Tanggal"
                     cari={false}
-                    ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, query: queryEkspor }}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
                     kosong={kosong}
                 />
             );

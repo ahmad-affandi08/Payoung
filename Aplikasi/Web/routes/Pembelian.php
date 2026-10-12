@@ -13,6 +13,7 @@ use App\Http\Kontroler\Kelola\Pembelian\PengaturanPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PesananPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ProdukPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ReturPembelianKontroler;
+use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -68,7 +69,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
     Route::get('/faktur/{faktur}/lampiran', [FakturPembelianKontroler::class, 'Lampiran'])->where('faktur', $ulid)->name('kelola.pembelian.faktur.lampiran');
 
     Route::get('/hutang', [HutangKontroler::class, 'Hutang'])->name('kelola.pembelian.hutang.daftar');
-    Route::get('/hutang/ekspor', [HutangKontroler::class, 'EksporHutang'])->name('kelola.pembelian.hutang.ekspor');
+    Route::get('/hutang/ekspor', [HutangKontroler::class, 'EksporHutang'])->middleware(EksporDiLatarBelakang::class)->name('kelola.pembelian.hutang.ekspor');
     Route::get('/pembayaran', [HutangKontroler::class, 'Daftar'])->name('kelola.pembelian.pembayaran.daftar');
     Route::get('/pembayaran/buat', [HutangKontroler::class, 'Buat'])->name('kelola.pembelian.pembayaran.buat');
     Route::post('/pembayaran', [HutangKontroler::class, 'Simpan'])->name('kelola.pembelian.pembayaran.simpan');

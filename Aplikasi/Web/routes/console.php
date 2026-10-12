@@ -44,6 +44,8 @@ $jadwalSaas('pembayaran:bersihkan-berkas-pendaftaran')->hourly()->withoutOverlap
 $jadwalSaas('langganan:terapkan-turun-paket')->hourly()->withoutOverlapping(60)->runInBackground();
 // Audit E5: hapus berkas ekspor data usaha yang kedaluwarsa.
 $jadwalSaas('ekspor-data:bersihkan')->dailyAt('03:30')->withoutOverlapping(60)->runInBackground();
+// D-124 Pusat Unduhan: hapus berkas kedaluwarsa dan tandai penyiapan yang macet.
+Schedule::command('unduhan:bersihkan')->dailyAt('03:35')->withoutOverlapping(60)->runInBackground();
 // P-07 (UU PDP): lampiran pembukuan tenant tertutup dihapus setelah masa retensi pajak lewat.
 $jadwalSaas('penghapusan-data:hapus-retensi')->monthlyOn(1, '03:45')->withoutOverlapping(120)->runInBackground();
 // Audit E2: ukur ulang penyimpanan berkas tenant (batas paket) tiap dini hari.

@@ -30,7 +30,7 @@ final class RegistriAnonimisasi
     public const HAPUS_BARIS = [
         'KirimanWebhook', 'WebhookTenant', 'TokenApiTenant', 'GerbangPembayaranTenant', 'WhatsappTenant',
         'KodeAktivasi', 'KodeMasukPelanggan', 'SesiPelangganOnline', 'UndanganPengguna', 'KunciIdempotensi',
-        'WajahKaryawan', 'PendaftaranMerchantPembayaran', 'EksporDataTenant', 'CatatanTenant', 'NotifikasiPengguna',
+        'WajahKaryawan', 'PendaftaranMerchantPembayaran', 'EksporDataTenant', 'BerkasUnduhan', 'CatatanTenant', 'NotifikasiPengguna',
         'PesanKeluar', 'PengingatPiutang', 'NotifikasiPesananOnline', 'PenerimaKampanye', 'KampanyePesan',
         'OutletPengguna', 'TenantPengguna',
     ];

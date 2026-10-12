@@ -277,6 +277,8 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::group([], base_path('routes/Penjualan.php'));
             // F-14a Laporan inti (penjualan, pajak, stok).
             Route::group([], base_path('routes/Laporan.php'));
+            // D-124 Pusat Unduhan: ekspor laporan besar yang disiapkan di latar belakang.
+            Route::group([], base_path('routes/Unduhan.php'));
             // F-16a Pelanggan (CRM-01).
             Route::group([], base_path('routes/Pelanggan.php'));
             // F-16c Promo (CRM-05).

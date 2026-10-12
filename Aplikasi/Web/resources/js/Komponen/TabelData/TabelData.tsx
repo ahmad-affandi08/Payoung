@@ -69,7 +69,7 @@ export type PropsTabelData<T> = {
     /** Nama baris untuk tombol menu aksi yang dibacakan, mis. "Aksi Minuman" (bawaan "Aksi baris"). */
     labelBaris?: (baris: T) => string;
     aksiMassal?: (konteks: KonteksAksiMassal<T>) => ReactNode;
-    ekspor?: { alamat: string; label?: string; query?: string; laporan?: boolean };
+    ekspor?: { alamat: string; label?: string; query?: string; laporan?: boolean; eksporBesar?: boolean };
     /** `ilustrasi` (D-18): ilustrasi subjek untuk daftar utama yang belum berisi data. */
     kosong: { judul: string; aksi?: ReactNode; ilustrasi?: boolean };
     aksiAlat?: ReactNode;

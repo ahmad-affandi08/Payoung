@@ -367,6 +367,13 @@ const menuLaporan: ItemMenu[] = [
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
+    // D-124: ekspor laporan besar yang disiapkan di latar belakang; baris yang tampil selalu milik pengguna sendiri.
+    {
+        label: 'Pusat Unduhan',
+        href: '/kelola/unduhan',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        atau: IzinTenant.LaporanKeuanganLihat,
+    },
 ];
 
 /** Item sub-menu yang aktif untuk URL ini: awalan terpanjang menang (/kelola/produk/impor vs /kelola/produk). */

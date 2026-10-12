@@ -35,13 +35,22 @@ type PropsSaringLaporan = {
     opsiAkun?: OpsiPilihan[];
     /** Tautan ekspor (alamat + query saringan) untuk tombol Excel/CSV/cetak; null = belum bisa diekspor. */
     ekspor?: string | null;
+    /** D-124: tawarkan "Ekspor besar" (rute ekspor memasang `EksporDiLatarBelakang`; buku besar). */
+    eksporBesar?: boolean;
 };
 
 /**
  * Saringan laporan keuangan F-13a: periode (`PemilihRentangTanggal`), outlet dan akun (`BidangPilihan` dengan kotak
  * cari). Setiap perubahan memuat ulang laporan lewat Inertia dengan saringan di URL (bisa dibagikan/di-bookmark).
  */
-export default function SaringLaporan({ alamat, saring, opsiOutlet, opsiAkun, ekspor }: PropsSaringLaporan) {
+export default function SaringLaporan({
+    alamat,
+    saring,
+    opsiOutlet,
+    opsiAkun,
+    ekspor,
+    eksporBesar = false,
+}: PropsSaringLaporan) {
     const Terapkan = (ubah: Partial<SaringLengkap>) => {
         const baru = { ...saring, ...ubah };
         router.get(`${alamat}?${BuatQueryLaporan(baru)}`, {}, { preserveScroll: true, preserveState: true });
@@ -95,6 +104,7 @@ export default function SaringLaporan({ alamat, saring, opsiOutlet, opsiAkun, ek
                         <TombolEkspor
                             alamat={ekspor.split('?')[0] ?? ekspor}
                             query={ekspor.includes('?') ? ekspor.slice(ekspor.indexOf('?') + 1) : ''}
+                            eksporBesar={eksporBesar}
                             className="w-full sm:w-auto"
                         />
                     )}

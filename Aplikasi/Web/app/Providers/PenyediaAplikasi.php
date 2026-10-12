@@ -10,6 +10,7 @@ use App\Domain\Bersama\Peristiwa\PeristiwaIntegrasi;
 use App\Domain\Bersama\Sinkron\Kontrak\PenjagaAsalItemSinkron;
 use App\Domain\Bersama\Sinkron\Layanan\PenandaSinkronPos;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Bersama\Unduhan\Layanan\BatasEksporLaporan;
 use App\Domain\Dukungan\Peristiwa\TiketDukunganDibalasPelapor;
 use App\Domain\Dukungan\Peristiwa\TiketDukunganDibuat;
 use App\Domain\Integrasi\ApiPublik\Penangan\AntrekanWebhookIntegrasi;
@@ -80,6 +81,8 @@ final class PenyediaAplikasi extends ServiceProvider
         $this->app->scoped(PemberitahuProdukDiubah::class);
         // Audit P0 F-01: perangkat asal item outbox (cache perangkat per permintaan).
         $this->app->scoped(PenjagaAsalItemSinkron::class, PenjagaAsalSinkronPerangkat::class);
+        // D-124: batas baris ekspor laporan (5.000 langsung; lebih besar hanya saat disiapkan di latar belakang).
+        $this->app->scoped(BatasEksporLaporan::class);
         // D-35: back-office edisi Lisensi mengatur integrasi server lewat kontrak, bukan domain Pengelola langsung.
         $this->app->bind(PengaturIntegrasiServer::class, PengaturIntegrasiServerLisensi::class);
         $this->app->bind(PenyiapDataBawaan::class, SiapkanDataBawaanLisensi::class);

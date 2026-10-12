@@ -299,7 +299,7 @@ export default function HalamanLaporanStok({
                         { nilai: 'restock', label: 'Saran restock' },
                     ]}
                 />
-                <TautanEkspor alamat={`${alamat}/ekspor`} query={{ ...query, tab: Saring.Tab }} />
+                <TautanEkspor alamat={`${alamat}/ekspor`} query={{ ...query, tab: Saring.Tab }} eksporBesar />
             </div>
 
             {Nilai ? (

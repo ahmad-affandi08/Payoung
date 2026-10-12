@@ -10,6 +10,7 @@ use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Laporan\PembuatDefinisiLaporan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Bersama\Unduhan\Layanan\BatasEksporLaporan;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -124,13 +125,15 @@ abstract class DasarKelolaKontroler extends Kontroler
 
     /**
      * Semua baris tabel server sesuai saringan & cari yang sedang aktif, dibaca halaman demi halaman lewat kueri daftar
-     * yang sama dengan layar (angka ekspor = angka di layar). Dibatasi `$maks` baris supaya ekspor tetap wajar.
+     * yang sama dengan layar (angka ekspor = angka di layar). Dibatasi `$maks` baris supaya ekspor tetap wajar; tanpa `$maks`
+     * batasnya 5.000 baris, atau jauh lebih besar saat ekspor disiapkan di latar belakang (D-124 Pusat Unduhan).
      *
      * @param  Closure(DataPermintaanTabel): array{Data: list<array<string, mixed>>, Meta: array{JumlahHalaman: int}}  $ambil
      * @return list<array<string, mixed>>
      */
-    protected function AmbilSemuaBarisTabel(DataPermintaanTabel $tabel, Closure $ambil, int $maks = 5000): array
+    protected function AmbilSemuaBarisTabel(DataPermintaanTabel $tabel, Closure $ambil, ?int $maks = null): array
     {
+        $maks ??= app(BatasEksporLaporan::class)->Maks();
         $hasil = [];
         $ukuran = max(DataPermintaanTabel::UKURAN_HALAMAN);
 

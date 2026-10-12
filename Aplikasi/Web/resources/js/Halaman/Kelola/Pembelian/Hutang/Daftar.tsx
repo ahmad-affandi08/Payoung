@@ -121,7 +121,7 @@ export default function HalamanDaftarHutang({ Hutang, OpsiUmur, OpsiPemasok, Izi
                 sumber={{ mode: 'server', alamat, awal: Hutang }}
                 ambilIdBaris={(f) => f.Uuid}
                 urutBawaan="JatuhTempo"
-                ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true }}
+                ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                 cari="Cari nomor atau nomor faktur pemasok"
                 saring={saring}
                 alamatDetail={(f) => `${alamatFaktur}/${f.Uuid}`}

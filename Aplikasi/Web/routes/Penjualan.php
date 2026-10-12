@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Penjualan\PenjualanKontroler;
 use App\Http\Kontroler\Kelola\Penjualan\PesananPenjualanKontroler;
+use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -19,7 +20,7 @@ $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 
 Route::middleware([SiapkanAuditTenant::class, $lihat])->group(function () use ($ulid): void {
     Route::get('/penjualan', [PenjualanKontroler::class, 'Daftar'])->name('kelola.penjualan.daftar');
-    Route::get('/penjualan/ekspor', [PenjualanKontroler::class, 'Ekspor'])->middleware('throttle:10,1')->name('kelola.penjualan.ekspor');
+    Route::get('/penjualan/ekspor', [PenjualanKontroler::class, 'Ekspor'])->middleware('throttle:10,1')->middleware(EksporDiLatarBelakang::class)->name('kelola.penjualan.ekspor');
     Route::get('/penjualan/{penjualan}', [PenjualanKontroler::class, 'Detail'])->where('penjualan', $ulid)->name('kelola.penjualan.detail');
     // F-09: daftar void & retur (dasar laporan anti-fraud BR-09.3) dan detail retur.
     Route::get('/penjualan/void-retur', [PenjualanKontroler::class, 'VoidRetur'])->name('kelola.penjualan.void-retur');

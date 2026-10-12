@@ -293,7 +293,7 @@ export default function HalamanDaftarPiutangPelanggan({
                 sumber={{ mode: 'server', alamat: AlamatPiutang, awal: Piutang }}
                 ambilIdBaris={(p) => p.Uuid}
                 urutBawaan="JatuhTempo"
-                ekspor={{ alamat: `${AlamatPiutang}/ekspor`, label: 'Ekspor', laporan: true }}
+                ekspor={{ alamat: `${AlamatPiutang}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                 cari="Cari nomor penjualan atau nama pelanggan"
                 saring={saring}
                 ringkasan={(hasil) => (

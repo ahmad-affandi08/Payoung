@@ -29,6 +29,7 @@ final class DaftarFolderBerkasTenant
         ['katalog.Impor.Disk', 'impor/{id}'],
         ['merchant.DiskBerkas', 'merchant/kyc/{id}'],
         ['tenant.DiskEkspor', 'ekspor-data/{id}'],
+        ['tenant.DiskUnduhan', 'unduhan/{id}'],
     ];
 
     /**
