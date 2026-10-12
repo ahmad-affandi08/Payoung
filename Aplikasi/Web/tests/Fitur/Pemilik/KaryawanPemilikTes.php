@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Tenant\BantuanAutentikasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -77,6 +78,7 @@ it('kehadiran hari ini (terlambat, sedang bekerja, belum masuk dijadwalkan), tar
 it('OWN-11 insight mingguan: minggu lalu vs sebelumnya untuk Aplikasi Pemilik; tanpa penjualan = null', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-22 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Insight Owner');
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
     $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Pandan Wangi 5 kg', '40', '60000', '75000.00');
     $token = TokenPemilikKaryawanUji($this, $k['Pemilik']);
     $ambil = fn () => $this->withToken($token)->withHeaders(['X-Tenant' => $k['Tenant']->Uuid, 'X-Versi-Aplikasi' => '1.0.0'])->getJson('/api/pemilik/v1/insight');

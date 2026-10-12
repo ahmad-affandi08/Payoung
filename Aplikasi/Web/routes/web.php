@@ -50,6 +50,7 @@ use App\Http\Perantara\Pengelola\CatatAuditPengelola;
 use App\Http\Perantara\Pengelola\TolakDomainPengelola;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibDuaFaktorTenant;
+use App\Http\Perantara\WajibFiturPaket;
 use App\Http\Perantara\WajibGantiKataSandiTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use App\Http\Perantara\WajibPanduanAwal;
@@ -187,7 +188,7 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
 
         // Auth tenant: persetujuan ulang dokumen legal (BR-P06.5) lalu 2FA wajib (BR-00.8), setelah tenant aktif diketahui.
         // F-00: saat langganan Ditangguhkan, perubahan data ditolak kecuali langganan, keamanan, bantuan, dan legal.
-        Route::middleware([WajibGantiKataSandiTenant::class, IdentifikasiTenantSesi::class, WajibPersetujuanLegal::class, WajibDuaFaktorTenant::class, BatasiTenantDitangguhkan::class, WajibPanduanAwal::class])->prefix('kelola')->group(function () use ($izin, $saas): void {
+        Route::middleware([WajibGantiKataSandiTenant::class, IdentifikasiTenantSesi::class, WajibPersetujuanLegal::class, WajibDuaFaktorTenant::class, BatasiTenantDitangguhkan::class, WajibPanduanAwal::class, WajibFiturPaket::class])->prefix('kelola')->group(function () use ($izin, $saas): void {
             Route::get('/', [BerandaKelolaKontroler::class, 'Beranda'])->name('kelola.beranda');
             // D-23 C: Kotak Tindakan (butir disaring izin & outlet; menandai dicek butuh `tindakan.tinjau`).
             Route::get('/tindakan', [TindakanKontroler::class, 'Daftar'])->name('kelola.tindakan.daftar');

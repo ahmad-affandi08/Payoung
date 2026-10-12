@@ -11,6 +11,7 @@ use App\Domain\Organisasi\Model\Outlet;
 use Tests\Pendukung\Katalog\BantuanHarga;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -31,6 +32,7 @@ it('form produk, kategori, daftar harga, harga daftar, dan batas stok menolak Uu
     $gudangB = Gudang::query()->orderBy('Id')->firstOrFail();
 
     $a = BantuanKatalog::SiapkanTenantProduk('Toko Sumber Rejeki');
+    BantuanFitur::Beri($a['Tenant']->Id, 'harga.daftar-harga');
     $produkA = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Bubuk Robusta 250 gram', 'IdKelompokPajak' => $a['KelompokPajak']->Id], '35000.00', $a['Pcs']);
     $satuanProdukA = BantuanHarga::SatuanDasar($produkA);
     $daftarA = BantuanHarga::BuatDaftarHarga('Harga Grosir A');

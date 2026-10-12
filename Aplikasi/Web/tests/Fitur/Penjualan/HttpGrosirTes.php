@@ -20,6 +20,7 @@ use Tests\Pendukung\Katalog\BantuanHarga;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -34,6 +35,7 @@ beforeEach(function (): void {
     Carbon::setTestNow('2026-09-27 03:00:00');
     BantuanPendaftaran::SiapkanPrasyarat();
     $this->k = BantuanPersediaan::SiapkanTenant('Grosir Sumber Pangan');
+    BantuanFitur::Beri($this->k['Tenant']->Id, 'piutang.grosir');
     $this->gula = BantuanKatalog::BuatProduk(['Nama' => 'Gula Pasir Kemasan 1 kg'], '15000.00', $this->k['Pcs']);
     $this->satuan = BantuanHarga::SatuanDasar($this->gula);
     BantuanStokAwal::BuatDanPosting(

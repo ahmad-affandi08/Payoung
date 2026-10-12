@@ -33,7 +33,7 @@ const labelBatas: Record<string, string> = {
     BatasPengguna: 'Pengguna',
     BatasSku: 'SKU',
     KuotaPesanWaBulanan: 'Pesan WA per bulan',
-    BatasPenyimpananMb: 'Penyimpanan (MB)',
+    BatasPenyimpananMb: 'Penyimpanan (MB, belum ditegakkan)',
 };
 
 function BuatKolom(namaFitur: Map<string, string>): KolomTabel<Addon>[] {

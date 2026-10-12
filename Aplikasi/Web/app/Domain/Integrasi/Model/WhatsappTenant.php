@@ -6,8 +6,8 @@ namespace App\Domain\Integrasi\Model;
 
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Integrasi\Enum\PenyediaWhatsapp;
 use App\Domain\Integrasi\Enum\StatusUjiGerbang;
-use App\Domain\Pengelola\Integrasi\Enum\PenyediaIntegrasi;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
  * @property int $Id
  * @property string $Uuid
  * @property int $IdTenant
- * @property PenyediaIntegrasi $Penyedia
+ * @property PenyediaWhatsapp $Penyedia
  * @property array<string, string|int> $Pengaturan
  * @property array<string, string> $Kredensial
  * @property array<string, string> $PetunjukKredensial
@@ -45,7 +45,7 @@ final class WhatsappTenant extends ModelDasar
     protected function casts(): array
     {
         return [
-            'Penyedia' => PenyediaIntegrasi::class,
+            'Penyedia' => PenyediaWhatsapp::class,
             'Pengaturan' => 'array',
             'Kredensial' => 'encrypted:array',
             'PetunjukKredensial' => 'array',

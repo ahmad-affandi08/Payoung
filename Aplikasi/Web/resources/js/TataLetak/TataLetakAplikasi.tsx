@@ -167,14 +167,36 @@ const menuPembelian: ItemMenu[] = [
 
 // Grosir (F-12, §9.7, D-32): satu alur jual-kirim-tagih beserta returnya, cermin grup "Pembelian" di sisi beli.
 const menuGrosir: ItemMenu[] = [
-    { label: 'Pesanan grosir', href: '/kelola/grosir/pesanan', izin: IzinTenant.GrosirKelola },
-    { label: 'Surat jalan', href: '/kelola/grosir/surat-jalan', izin: IzinTenant.GrosirKelola },
-    { label: 'Faktur penjualan', href: '/kelola/grosir/faktur', izin: IzinTenant.GrosirKelola },
-    { label: 'Retur grosir', href: '/kelola/grosir/retur', izin: IzinTenant.GrosirKelola },
+    { label: 'Pesanan grosir', href: '/kelola/grosir/pesanan', izin: IzinTenant.GrosirKelola, fitur: 'piutang.grosir' },
+    {
+        label: 'Surat jalan',
+        href: '/kelola/grosir/surat-jalan',
+        izin: IzinTenant.GrosirKelola,
+        fitur: 'piutang.grosir',
+    },
+    {
+        label: 'Faktur penjualan',
+        href: '/kelola/grosir/faktur',
+        izin: IzinTenant.GrosirKelola,
+        fitur: 'piutang.grosir',
+    },
+    { label: 'Retur grosir', href: '/kelola/grosir/retur', izin: IzinTenant.GrosirKelola, fitur: 'piutang.grosir' },
     // Modul Salesman bagian 1: kunjungan & pesanan dari aplikasi salesman.
-    { label: 'Kunjungan salesman', href: '/kelola/grosir/kunjungan', izin: IzinTenant.GrosirKelola, lanjutan: true },
+    {
+        label: 'Kunjungan salesman',
+        href: '/kelola/grosir/kunjungan',
+        izin: IzinTenant.GrosirKelola,
+        fitur: 'piutang.grosir',
+        lanjutan: true,
+    },
     // Modul Salesman bagian 3: kendaraan kanvas & rekap harian (muat, terjual, bongkar, setoran).
-    { label: 'Kanvas', href: '/kelola/grosir/kanvas', izin: IzinTenant.GrosirKelola, lanjutan: true },
+    {
+        label: 'Kanvas',
+        href: '/kelola/grosir/kanvas',
+        izin: IzinTenant.GrosirKelola,
+        fitur: 'piutang.grosir',
+        lanjutan: true,
+    },
 ];
 
 // F-06: grup menu "Shift & kas" (pemantauan back-office; layar kasir ada di aplikasi Flutter): shift (laporan.penjualan.lihat), kategori kas (akuntansi.kelola), pengaturan (outlet.kelola).
@@ -312,16 +334,27 @@ const menuAkuntansi: ItemMenu[] = [
  */
 const menuLaporan: ItemMenu[] = [
     { label: 'Laporan penjualan', href: '/kelola/laporan/penjualan', izin: IzinTenant.LaporanPenjualanLihat },
-    { label: 'Laporan pajak', href: '/kelola/laporan/pajak', izin: IzinTenant.LaporanKeuanganLihat },
-    { label: 'Laporan stok', href: '/kelola/laporan/stok', izin: IzinTenant.PersediaanLihat },
+    {
+        label: 'Laporan pajak',
+        href: '/kelola/laporan/pajak',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'laporan.lengkap',
+    },
+    { label: 'Laporan stok', href: '/kelola/laporan/stok', izin: IzinTenant.PersediaanLihat, fitur: 'laporan.lengkap' },
     // Apotek (§9.5): obat wajib resep & data pendukung SIPNAP.
     {
         label: 'Laporan apotek',
         href: '/kelola/laporan/apotek',
         izin: IzinTenant.LaporanPenjualanLihat,
+        fitur: 'laporan.lengkap',
         sektor: ['RTL-PHR'],
     },
-    { label: 'Laba rugi', href: '/kelola/akuntansi/laporan/laba-rugi', izin: IzinTenant.LaporanKeuanganLihat },
+    {
+        label: 'Laba rugi',
+        href: '/kelola/akuntansi/laporan/laba-rugi',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'laporan.lengkap',
+    },
     {
         label: 'Neraca',
         href: '/kelola/akuntansi/laporan/neraca',

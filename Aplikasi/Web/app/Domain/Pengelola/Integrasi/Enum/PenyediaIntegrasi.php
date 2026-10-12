@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Integrasi\Enum;
 
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
+use App\Domain\Integrasi\Enum\PenyediaWhatsapp;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiDokuBilling;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiDokuPartner;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiFcm;
@@ -105,6 +106,12 @@ enum PenyediaIntegrasi: string
             return [self::MODE, ...$gerbang->AmbilBidangPengaturan()];
         }
 
+        $whatsapp = $this->AmbilPenyediaWhatsapp();
+
+        if ($whatsapp !== null) {
+            return $whatsapp->AmbilBidangPengaturan();
+        }
+
         return match ($this) {
             self::Google => [
                 ['Kunci' => 'ClientId', 'Label' => 'Client ID (aplikasi web)', 'Wajib' => true, 'Jenis' => 'Teks', 'Keterangan' => 'OAuth client jenis "Web application" dari Google Cloud Console › APIs & Services › Credentials. Tambahkan Authorized redirect URI: https://<domain dashboard>/masuk/google/panggilan-balik.'],
@@ -117,28 +124,6 @@ enum PenyediaIntegrasi: string
                 ['Kunci' => 'Endpoint', 'Label' => 'Endpoint', 'Jenis' => 'Url', 'Wajib' => true, 'Keterangan' => 'Misal https://<akun>.r2.cloudflarestorage.com'],
                 ['Kunci' => 'Wilayah', 'Label' => 'Wilayah (region)', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Cloudflare R2: auto'],
                 ['Kunci' => 'Bucket', 'Label' => 'Bucket', 'Jenis' => 'Teks', 'Wajib' => true],
-            ],
-            self::MetaCloud => [
-                ['Kunci' => 'IdNomorTelepon', 'Label' => 'Phone number ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Dari WhatsApp Manager › API Setup.'],
-                ['Kunci' => 'VersiApi', 'Label' => 'Versi Graph API', 'Jenis' => 'Teks', 'Wajib' => true, 'Bawaan' => 'v21.0'],
-                ['Kunci' => 'NamaTemplatStruk', 'Label' => 'Nama templat struk', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 3 variabel: {{1}} toko, {{2}} total, {{3}} tautan struk. Kosong = kirim teks (hanya dalam 24 jam setelah pelanggan mengirim pesan).'],
-                ['Kunci' => 'NamaTemplatPengingatPiutang', 'Label' => 'Nama templat pengingat piutang', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} toko, {{2}} nomor nota, {{3}} sisa tagihan, {{4}} tanggal jatuh tempo. Kosong = kirim teks (hanya dalam 24 jam setelah pelanggan mengirim pesan).'],
-                ['Kunci' => 'NamaTemplatPengingatReservasi', 'Label' => 'Nama templat pengingat reservasi', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} toko, {{2}} layanan, {{3}} waktu, {{4}} tautan reservasi. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatPengingatTagihan', 'Label' => 'Nama templat pengingat tagihan langganan', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} nama, {{2}} kalimat pengingat, {{3}} jumlah, {{4}} tautan bayar. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatRingkasanTindakan', 'Label' => 'Nama templat ringkasan pagi', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} nama, {{2}} nama usaha, {{3}} ringkasan satu baris, {{4}} tautan Kotak Tindakan. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatInsightMingguan', 'Label' => 'Nama templat insight mingguan', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} nama, {{2}} nama usaha, {{3}} ringkasan satu baris, {{4}} tautan laporan. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatLaundrySiap', 'Label' => 'Nama templat cucian siap', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 3 variabel: {{1}} toko, {{2}} nomor nota, {{3}} tautan status. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatKodeMasuk', 'Label' => 'Nama templat kode masuk', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat autentikasi (Authentication) yang disetujui Meta dengan tombol salin kode: {{1}} kode 6 digit. Dipakai pembeli toko online yang masuk dengan WhatsApp. Kosong = kirim teks (hanya dalam 24 jam setelah pembeli mengirim pesan, jadi sebaiknya diisi).'],
-                ['Kunci' => 'NamaTemplatStatusPesanan', 'Label' => 'Nama templat status pesanan', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat utilitas yang disetujui Meta dengan 4 variabel: {{1}} toko, {{2}} nomor pesanan, {{3}} status, {{4}} tautan status. Dipakai pemberitahuan pesanan toko online. Kosong = kirim teks.'],
-                ['Kunci' => 'NamaTemplatPromosi', 'Label' => 'Nama templat promosi', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Templat pemasaran (Marketing) yang disetujui Meta dengan 4 variabel: {{1}} toko, {{2}} nama pelanggan, {{3}} isi pesan, {{4}} tautan berhenti berlangganan. Wajib untuk kampanye pesan WhatsApp lewat API resmi.'],
-                ['Kunci' => 'BahasaTemplat', 'Label' => 'Kode bahasa templat', 'Jenis' => 'Teks', 'Wajib' => true, 'Bawaan' => 'id'],
-            ],
-            self::Fonnte, self::StarSender => [],
-            self::Wablas => [
-                ['Kunci' => 'Domain', 'Label' => 'Domain server Wablas', 'Jenis' => 'Url', 'Wajib' => true, 'Keterangan' => 'Misal https://jkt.wablas.com (lihat dasbor Wablas).'],
-            ],
-            self::Watzap => [
-                ['Kunci' => 'KunciNomor', 'Label' => 'Number key', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Kunci nomor WhatsApp di dasbor Watzap.'],
             ],
             self::DokuBilling => [
                 self::MODE,
@@ -169,6 +154,12 @@ enum PenyediaIntegrasi: string
             return $gerbang->AmbilBidangKredensial();
         }
 
+        $whatsapp = $this->AmbilPenyediaWhatsapp();
+
+        if ($whatsapp !== null) {
+            return $whatsapp->AmbilBidangKredensial();
+        }
+
         return match ($this) {
             self::Turnstile => [['Kunci' => 'KunciRahasia', 'Label' => 'Kunci rahasia (secret key)', 'Wajib' => true]],
             self::Google => [['Kunci' => 'ClientSecret', 'Label' => 'Client secret', 'Wajib' => true]],
@@ -176,13 +167,6 @@ enum PenyediaIntegrasi: string
                 ['Kunci' => 'IdKunciAkses', 'Label' => 'ID kunci akses (access key ID)', 'Wajib' => true],
                 ['Kunci' => 'KunciAksesRahasia', 'Label' => 'Kunci akses rahasia (secret access key)', 'Wajib' => true],
             ],
-            self::MetaCloud => [['Kunci' => 'TokenAkses', 'Label' => 'Token akses permanen (system user)', 'Wajib' => true]],
-            self::Fonnte => [['Kunci' => 'Token', 'Label' => 'Token perangkat Fonnte', 'Wajib' => true]],
-            self::Wablas => [
-                ['Kunci' => 'Token', 'Label' => 'Token Wablas', 'Wajib' => true],
-                ['Kunci' => 'KunciRahasia', 'Label' => 'Secret key Wablas (bila diaktifkan)', 'Wajib' => false],
-            ],
-            self::StarSender, self::Watzap => [['Kunci' => 'KunciApi', 'Label' => 'API key', 'Wajib' => true]],
             // Satu berkas JSON berisi client_email, private_key, dan project_id; tidak ada yang perlu diketik terpisah.
             self::Fcm => [['Kunci' => 'AkunLayanan', 'Label' => 'Akun layanan Firebase (isi berkas JSON)', 'Wajib' => true]],
             self::DokuBilling, self::DokuPartner => [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]],
@@ -229,11 +213,7 @@ enum PenyediaIntegrasi: string
             self::Turnstile => 'Cloudflare Turnstile',
             self::S3 => 'S3-compatible (misal Cloudflare R2)',
             self::Doku => $this->AmbilPenyediaGerbang()?->AmbilLabel() ?? $this->value,
-            self::MetaCloud => 'WhatsApp Cloud API (resmi, Meta)',
-            self::Fonnte => 'Fonnte (tidak resmi)',
-            self::Wablas => 'Wablas (tidak resmi)',
-            self::StarSender => 'StarSender (tidak resmi)',
-            self::Watzap => 'Watzap (tidak resmi)',
+            self::MetaCloud, self::Fonnte, self::Wablas, self::StarSender, self::Watzap => $this->AmbilPenyediaWhatsapp()?->AmbilLabel() ?? $this->value,
             self::Fcm => 'Firebase Cloud Messaging',
             self::DokuBilling => 'Akun DOKU Payoung (induk)',
             self::Google => 'Google (Masuk dengan Google)',
@@ -260,14 +240,19 @@ enum PenyediaIntegrasi: string
             self::ZohoMail => 'Pakai smtp.zoho.com.au/.eu sesuai pusat data akun.',
             self::Hostinger => '',
             self::Doku => $this->AmbilPenyediaGerbang()?->AmbilKeterangan() ?? '',
-            self::MetaCloud => 'Resmi dan aman dari pemblokiran. Di luar 24 jam percakapan wajib memakai templat yang disetujui Meta (berbayar per percakapan).',
+            self::MetaCloud, self::Fonnte, self::Wablas, self::StarSender, self::Watzap => $this->AmbilPenyediaWhatsapp()?->AmbilKeterangan() ?? '',
             self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. Setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku.',
             self::DokuPartner => 'Akun Partner Payoung di DOKU (Brand ID partner + secret key) untuk mendaftarkan merchant tenant lewat KYB: tenant cukup mengunggah foto KTP, selfie, foto tempat usaha, dan rekening. Payoung harus berstatus Partner di DOKU. URL callback KYB tidak perlu disetel manual: alamatnya dikirim otomatis saat pendaftaran (https://<domain-aplikasi>/webhook/pembayaran/doku-partner). Aktivasi QRIS per Brand masih dilakukan di DOKU Dashboard.',
             self::Google => 'Pemilik toko daftar dan masuk dengan akun Google. Masuk dengan Google menggantikan verifikasi dua langkah (2FA). Panduan lengkap: Panduan/LoginGoogle.md.',
             self::Fcm => 'Satu proyek Firebase melayani Android & iOS sekaligus; sertifikat APNs diunggah di Firebase, bukan di sini. Isi berkas akun layanan dari Setelan proyek → Akun layanan → Buat kunci baru.',
-            self::Fonnte, self::Wablas, self::StarSender, self::Watzap => 'Tidak resmi (WhatsApp Web): murah dan mudah, tetapi nomor bisa diblokir WhatsApp bila mengirim massal. Pakai nomor khusus, bukan nomor utama usaha.',
             default => '',
         };
+    }
+
+    /** D-108: definisi penyedia WhatsApp ada di katalog `PenyediaWhatsapp` (domain Integrasi), dipakai juga WhatsApp milik tenant. */
+    public function AmbilPenyediaWhatsapp(): ?PenyediaWhatsapp
+    {
+        return PenyediaWhatsapp::tryFrom($this->value);
     }
 
     /** v2.06: definisi penyedia gerbang pembayaran dipindah ke katalog `PenyediaGerbang` (domain Integrasi). */

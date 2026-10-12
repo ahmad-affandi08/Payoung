@@ -12,6 +12,7 @@ use App\Domain\Organisasi\Model\UndanganPengguna;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
@@ -23,6 +24,7 @@ describe('Isolasi tenant F-02 (§13.4): ID tebakan lintas tenant diperlakukan se
     it('Pemilik tenant A tidak bisa membuka atau mengubah outlet, gudang, merek, peran, anggota, dan undangan tenant B', function (): void {
         ['Tenant' => $tenantA, 'Pemilik' => $pemilikA] = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
         ['Tenant' => $tenantB, 'Pemilik' => $pemilikB] = BantuanOrganisasi::BuatTenant('Toko Budi');
+        BantuanFitur::Beri($tenantA->Id, 'stok.multi-gudang');
         $kasirB = BantuanOrganisasi::TambahAnggota($tenantB->Id, PeranTenantBawaan::Kasir);
         BantuanOrganisasi::Masuk($this, $pemilikB, $tenantB->Id)->post('/kelola/peran', ['Nama' => 'Rahasia B', 'Izin' => ['penjualan.buat']]);
         BantuanOrganisasi::Masuk($this, $pemilikB, $tenantB->Id)

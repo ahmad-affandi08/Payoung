@@ -37,6 +37,7 @@ use App\Http\Kontroler\Pos\V1\VoucherKontroler;
 use App\Http\Perantara\AutentikasiPerangkat;
 use App\Http\Perantara\IdempotensiPos;
 use App\Http\Perantara\PastikanLanggananPosAktif;
+use App\Http\Perantara\WajibFiturPaket;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -73,7 +74,7 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
     Route::post('/shift/{uuidShift}/tutup-paksa', [ShiftKontroler::class, 'TutupPaksa'])->middleware('throttle:pos-10')->where('uuidShift', '[0-9A-HJKMNP-TV-Z]{26}')->name('pos.shift.tutup-paksa');
 
     // Endpoint berjualan: POS terkunci saat langganan Ditangguhkan/Berhenti.
-    Route::middleware(PastikanLanggananPosAktif::class)->group(function (): void {
+    Route::middleware([PastikanLanggananPosAktif::class, WajibFiturPaket::class])->group(function (): void {
         // F-02b: masuk kasir dengan PIN (kunci 5 menit setelah 5 kali salah, §20.2).
         Route::post('/kasir/masuk-pin', [KasirKontroler::class, 'MasukPin'])->middleware('throttle:pos-60')->name('pos.kasir.masuk-pin');
 

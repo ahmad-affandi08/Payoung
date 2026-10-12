@@ -19,11 +19,13 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanHarga;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
     $this->t = BantuanKatalog::SiapkanTenantProduk();
+    BantuanFitur::Beri($this->t['Tenant']->Id, 'harga.daftar-harga');
     $this->produk = BantuanKatalog::BuatProduk(['Nama' => 'Sabun Mandi Cair Aroma Sereh Wangi 450 ml'], '5000.00', $this->t['Pcs']);
     $this->pcs = BantuanHarga::SatuanDasar($this->produk);
     $this->pak = BantuanHarga::TambahSatuan($this->produk, BantuanKatalog::BuatSatuan('Pak', 'pak'), '10');

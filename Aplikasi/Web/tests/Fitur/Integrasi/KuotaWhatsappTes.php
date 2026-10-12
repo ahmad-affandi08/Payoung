@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
+use App\Domain\Integrasi\Enum\PenyediaWhatsapp;
 use App\Domain\Integrasi\Layanan\PenyediaTindakanWhatsapp;
 use App\Domain\Integrasi\Model\PemakaianPesanWa;
 use App\Domain\Integrasi\Model\WhatsappTenant;
@@ -11,7 +12,6 @@ use App\Domain\Integrasi\Whatsapp\MeterKuotaWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PengirimWhatsappBerkuota;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
-use App\Domain\Pengelola\Integrasi\Enum\PenyediaIntegrasi;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Penjualan\Kueri\KesiapanNotifikasiPesananOnline;
 use App\Domain\Tenant\Enum\JenisOverride;
@@ -170,7 +170,7 @@ describe('D-108 kuota pesan WhatsApp nomor Payoung', function (): void {
         expect($penyedia->Kumpulkan($tanpaIzin))->toBe([]);
 
         $baris = WhatsappTenant::query()->create([
-            'Penyedia' => PenyediaIntegrasi::Fonnte, 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenSendiri-1234'],
+            'Penyedia' => PenyediaWhatsapp::Fonnte, 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenSendiri-1234'],
             'PetunjukKredensial' => ['Token' => '••••1234'], 'StatusUji' => 'Berhasil', 'Aktif' => true, 'IdTenant' => $t['Tenant']->Id,
         ]);
         expect($penyedia->Kumpulkan($konteks))->toBe([]);
@@ -187,7 +187,7 @@ describe('F-17 kesiapan kabar pesanan toko online lewat WhatsApp', function (): 
         expect($nol['Siap'])->toBeFalse()->and($nol['Alasan'])->toContain('tidak menyertakan kuota')->and($nol['GagalBulanIni'])->toBe(0);
 
         $baris = WhatsappTenant::query()->create([
-            'Penyedia' => PenyediaIntegrasi::Fonnte, 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenSendiri-1234'],
+            'Penyedia' => PenyediaWhatsapp::Fonnte, 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenSendiri-1234'],
             'PetunjukKredensial' => ['Token' => '••••1234'], 'StatusUji' => 'Berhasil', 'Aktif' => true, 'IdTenant' => $t['Tenant']->Id,
         ]);
         expect($siap($t['Tenant']->Id)['Siap'])->toBeTrue();

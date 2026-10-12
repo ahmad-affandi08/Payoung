@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -49,6 +50,7 @@ function AturNoHpInsight(Pengguna $pengguna, string $noHp): void
 it('Owner menerima insight minggu lalu vs minggu sebelumnya; sekali per minggu; Kasir tanpa izin laporan tidak menerima', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-21 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Insight Wonogiri');
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
     $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Pandan Wangi Karung 5 kg', '40', '60000', '75000.00');
     $gula = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Gula Pasir Lokal Kemasan 1 kg', '100', '14000', '18000.00');
     $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -90,6 +92,7 @@ it('Owner menerima insight minggu lalu vs minggu sebelumnya; sekali per minggu; 
 it('anggota ber-izin laporan penjualan tanpa persediaan.lihat menerima insight tanpa saran restock (data stok)', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-21 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Insight Sragen');
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
     $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Pandan Wangi Karung 5 kg', '40', '60000', '75000.00');
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $peranKasir = BantuanOrganisasi::Peran($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -113,6 +116,7 @@ it('anggota ber-izin laporan penjualan tanpa persediaan.lihat menerima insight t
 it('sakelar di laporan penjualan: Owner bawaan aktif, berhenti = tidak dikirim; tanpa penjualan tidak dikirim', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-21 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Insight Wonogiri');
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
     AturNoHpInsight($k['Pemilik'], '081277770021');
     $pemilik = fn () => BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
     $pemilik()->get('/kelola/laporan/penjualan')->assertInertia(fn (AssertableInertia $h) => $h

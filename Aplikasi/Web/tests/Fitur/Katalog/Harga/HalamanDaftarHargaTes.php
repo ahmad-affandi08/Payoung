@@ -13,11 +13,13 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanHarga;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
     $this->t = BantuanKatalog::SiapkanTenantProduk();
+    BantuanFitur::Beri($this->t['Tenant']->Id, 'harga.daftar-harga');
     $this->solo = BantuanHarga::BuatOutlet('SLO1', 'Outlet Solo Baru');
     $this->bandara = BantuanHarga::BuatOutlet('CGK1', 'Outlet Bandara Soetta');
 });
@@ -211,6 +213,7 @@ describe('F-03 daftar harga (E.7)', function (): void {
         $kasir()->put("/kelola/daftar-harga/{$daftar->Uuid}/harga", ['Baris' => []])->assertForbidden();
 
         $lain = BantuanKatalog::SiapkanTenantProduk('Toko Makmur Jaya');
+        BantuanFitur::Beri($lain['Tenant']->Id, 'harga.daftar-harga');
         $masukLain = fn () => BantuanKatalog::MasukSebagai($this, $lain['Tenant']->Id);
         $masukLain()->get("/kelola/daftar-harga/{$daftar->Uuid}")->assertNotFound();
         $masukLain()->put("/kelola/daftar-harga/{$daftar->Uuid}", IsiFormDaftarHarga())->assertNotFound();

@@ -157,6 +157,13 @@ describe('Halaman & pesanan kios', function (): void {
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         PengaturanTokoOnline::query()->create(['Aktif' => false, 'QrisAktif' => true]);
+        // Sakelar hidup saja belum cukup: gerbang pembayaran toko dan metode QRIS dinamis harus ada (KesiapanQrisOnline).
+        $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k, 'QrisOnline'))
+            ->assertUnprocessable()->assertJsonPath('Galat.Kode', 'MetodePembayaranTidakAktif');
+
+        BantuanGerbangTenant::Aktifkan($k['Tenant']->Id);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        BantuanPenjualan::BuatMetode(JenisMetodePembayaran::QrisDinamis, 'QRIS Otomatis');
         $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k, 'QrisOnline'))->assertCreated()
             ->assertJsonPath('Status', 'MenungguPembayaran')->assertJsonPath('PerluBayar', true)->assertJsonPath('BayarDiKasir', false);
         $this->get($k['AlamatKios'])->assertInertia(fn (AssertableInertia $h) => $h->where('Pembayaran.Qris', true));

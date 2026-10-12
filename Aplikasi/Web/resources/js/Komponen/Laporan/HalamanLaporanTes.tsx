@@ -6,7 +6,7 @@ import HalamanLaporanPajak from '@/Halaman/Kelola/Laporan/Pajak';
 import HalamanLaporanPenjualan from '@/Halaman/Kelola/Laporan/Penjualan';
 import HalamanLaporanStok from '@/Halaman/Kelola/Laporan/Stok';
 import { AmbilHrefEkspor } from '@/Pengujian/InteraksiRadix';
-import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { AmbilMaksimum, HitungPerubahanPersen, HitungTingkatPanas } from '@/Pustaka/Laporan';
 import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
 import type {
@@ -292,6 +292,25 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getAllByText('Tinggi | 80').length).toBeGreaterThan(0);
         expect(screen.getAllByText('3 void tunai ≤ 10 menit setelah bayar').length).toBeGreaterThan(0);
         expect(screen.getByText(/Skor risiko adalah petunjuk untuk diperiksa, bukan bukti/)).toBeTruthy();
+    });
+
+    it('D-111: tab anti-fraud disembunyikan bila paket belum memuat fitur anti-fraud', () => {
+        TambahPropsHalamanUji({
+            FiturPaket: {
+                NamaPaket: 'Pro',
+                Terkunci: {
+                    'keamanan.anti-fraud': {
+                        Nama: 'Anti-fraud',
+                        Paket: { Kode: 'BISNIS', Nama: 'Bisnis', HargaBulanan: '349000.00' },
+                        Addon: null,
+                    },
+                },
+            },
+        });
+        RenderUji(<HalamanLaporanPenjualan {...PropsPenjualan()} />);
+
+        expect(screen.queryByRole('link', { name: 'Anti-fraud' })).toBeNull();
+        expect(screen.getByRole('link', { name: 'Ringkasan harian' })).toBeTruthy();
     });
 
     it('tab per produk: TabelData mode server dengan ekspor sesuai saring; keadaan kosong', () => {

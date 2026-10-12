@@ -61,15 +61,23 @@ it('isian kosong dilaporkan gagal tanpa menghubungi DOKU', function (array $peng
 ]);
 
 it('5xx, jawaban tanpa token, dan jaringan putus dilaporkan gagal dengan pesan bersih', function (): void {
-    Http::fake(['api-uat.doku.com/*' => Http::response([], 503)]);
+    // Stub `Http::fake` bersifat kumulatif (yang pertama cocok menang), jadi satu stub berurutan menggantikan tiga panggilan fake.
+    $panggilan = 0;
+    Http::fake(['api-uat.doku.com/*' => function () use (&$panggilan) {
+        $panggilan++;
+
+        return match ($panggilan) {
+            1 => Http::response([], 503),
+            2 => Http::response(['hasil' => 'ok'], 200),
+            default => throw new ConnectionException('timeout memanggil '.KUNCI_UJI_PARTNER),
+        };
+    }]);
     $uji = (new PengujiDokuPartner)->Uji(['IdKlien' => ID_KLIEN_UJI_PARTNER], ['KunciRahasia' => KUNCI_UJI_PARTNER]);
     expect($uji->berhasil)->toBeFalse()->and($uji->pesan)->toContain('503');
 
-    Http::fake(['api-uat.doku.com/*' => Http::response(['hasil' => 'ok'], 200)]);
     $tanpaToken = (new PengujiDokuPartner)->Uji(['IdKlien' => ID_KLIEN_UJI_PARTNER], ['KunciRahasia' => KUNCI_UJI_PARTNER]);
     expect($tanpaToken->berhasil)->toBeFalse()->and($tanpaToken->pesan)->toContain('token tidak terbaca');
 
-    Http::fake(['api-uat.doku.com/*' => fn () => throw new ConnectionException('timeout memanggil '.KUNCI_UJI_PARTNER)]);
     $putus = (new PengujiDokuPartner)->Uji(['IdKlien' => ID_KLIEN_UJI_PARTNER], ['KunciRahasia' => KUNCI_UJI_PARTNER]);
     expect($putus->berhasil)->toBeFalse()->and($putus->pesan)->toContain('Tidak bisa menghubungi DOKU')->not->toContain(KUNCI_UJI_PARTNER);
 });

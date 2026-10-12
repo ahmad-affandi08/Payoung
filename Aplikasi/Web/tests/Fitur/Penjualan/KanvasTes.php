@@ -30,6 +30,7 @@ use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
 use Tests\Pendukung\Persediaan\PemeriksaInvarian;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -70,6 +71,7 @@ function IsianOutletKanvasUji(Outlet $outlet, array $ubah = []): array
 describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
     it('pintasan Tambah kendaraan kanvas: outlet Kanvas "Kanvas {plat}" kode KNV1/KNV2 + lokasi stok Toko, tercatat di audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Distributor Sembako Sukoharjo');
+        BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
         $masuk()->post('/kelola/grosir/kanvas', ['NomorKendaraan' => '  ad   1234 xy '])->assertSessionHasNoErrors()->assertRedirect();
@@ -109,6 +111,7 @@ describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
 
     it('BR-02.1: kendaraan kanvas memakai kuota outlet paket; paket penuh ditolak tanpa outlet/lokasi stok baru', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Kanvas Gratisan', kodePaket: 'GRATIS');
+        BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
             ->post('/kelola/grosir/kanvas', ['NomorKendaraan' => 'AD 1234 XY'])
@@ -122,6 +125,7 @@ describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
 
     it('ubah outlet: sakelar kanvas + nomor kendaraan tersimpan & teraudit; klien tanpa kunci Kanvas tidak mengubahnya; dimatikan = plat dikosongkan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Toko Grosir Kanvas Klaten');
+        BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $outlet = Outlet::query()->firstOrFail();
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
@@ -155,6 +159,7 @@ describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
 describe('Modul Salesman bagian 3: rekap harian kanvas', function (): void {
     it('satu hari penuh: muat 100, jual 30 tunai + 20 tempo, satu void, retur 2, bongkar 40 → rekap barang, uang & setoran benar; Sisa = Σ mutasi = SaldoStok', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Distributor Mi Instan Sragen');
+        BantuanFitur::Beri($k['Tenant']->Id, 'piutang.grosir');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hari = '2026-10-02';
         $kemarin = '2026-10-01';
@@ -283,6 +288,7 @@ describe('Modul Salesman bagian 3: rekap harian kanvas', function (): void {
             ->assertSessionHasNoErrors();
 
         ['Tenant' => $b, 'Pemilik' => $pemilikB] = BantuanOrganisasi::BuatTenant('Kanvas Tenant B Wonogiri');
+        BantuanFitur::Beri($b->Id, 'piutang.grosir');
         BantuanOrganisasi::Masuk($this, $pemilikB, $b->Id)
             ->get('/kelola/grosir/kanvas?outlet='.$a['Outlet']->Uuid)
             ->assertOk()
@@ -297,6 +303,7 @@ describe('Modul Salesman bagian 3: rekap harian kanvas', function (): void {
 
     it('izin: Kasir ditolak (grosir.kelola); Supervisor boleh melihat rekap tetapi tidak menambah kendaraan (outlet.kelola)', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Kanvas Izin Karanganyar');
+        BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
 
         BantuanKatalog::MasukSebagai($this, $tenant->Id, PeranTenantBawaan::Kasir);
         $this->get('/kelola/grosir/kanvas')->assertForbidden();

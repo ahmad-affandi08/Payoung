@@ -139,7 +139,7 @@ describe('Katalog paket (P-04)', function (): void {
 
         $log = LogAuditPengelola::query()->where('Aksi', 'katalog.paket.ubah')->sole();
         expect($log->Alasan)->toBe('Sesuaikan batas')
-            ->and($log->NilaiLama['Fitur'] ?? [])->toContain('franchise.royalti')
+            ->and($log->NilaiLama['Fitur'] ?? [])->toContain('piutang.grosir')
             ->and($log->NilaiBaru['Fitur'] ?? [])->toBe(['laporan.dasar', 'pos.retail']);
     });
 

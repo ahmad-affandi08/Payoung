@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Integrasi\Kueri;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Enum\PenyediaWhatsapp;
 use App\Domain\Integrasi\Model\WhatsappTenant;
 use App\Domain\Integrasi\Whatsapp\DaftarPenyediaWhatsapp;
 use App\Domain\Integrasi\Whatsapp\MeterKuotaWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
-use App\Domain\Pengelola\Integrasi\Enum\PenyediaIntegrasi;
 
 /**
  * Data halaman Pengaturan › WhatsApp (D-108): kuota pesan nomor Payoung bulan ini, penyedia yang bisa dipasang beserta
@@ -45,7 +45,7 @@ final class HalamanWhatsappTenant
                 'DiujiPada' => $baris->DiujiPada?->toIso8601String(),
                 'Aktif' => $baris->Aktif,
             ],
-            'DaftarPenyedia' => array_map(fn (PenyediaIntegrasi $p): array => [
+            'DaftarPenyedia' => array_map(fn (PenyediaWhatsapp $p): array => [
                 'Nilai' => $p->value,
                 'Label' => $p->AmbilLabel(),
                 'Keterangan' => $p->AmbilKeterangan(),

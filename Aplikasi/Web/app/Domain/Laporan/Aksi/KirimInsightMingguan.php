@@ -14,6 +14,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\KontakAnggotaTenant;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
 use App\Domain\Tenant\Kueri\ProfilTenant;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -25,17 +26,25 @@ use Throwable;
  */
 final class KirimInsightMingguan
 {
+    public const KUNCI_FITUR = 'laporan.insight';
+
     public function __construct(
         private readonly KontakAnggotaTenant $kontak,
         private readonly KonteksTindakanPengguna $konteks,
         private readonly InsightMingguan $insight,
         private readonly ProfilTenant $profil,
         private readonly PembuatPengirimWhatsapp $whatsapp,
+        private readonly PemeriksaFiturTenant $fitur,
     ) {}
 
     /** @return int jumlah pesan terkirim */
     public function Jalankan(int $idTenant, CarbonImmutable $hariIni): int
     {
+        // D-111: insight mingguan adalah add-on "Forecast & insight" (`laporan.insight`); tanpa fiturnya tidak dikirim.
+        if ((bool) config('tenant.PenegakanFiturPaket', true) && ! $this->fitur->CekAktif($idTenant, self::KUNCI_FITUR)) {
+            return 0;
+        }
+
         $pengirim = $this->whatsapp->AmbilAktif();
 
         if ($pengirim === null) {

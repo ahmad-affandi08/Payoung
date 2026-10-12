@@ -14,6 +14,7 @@ use App\Http\Kontroler\Pemilik\V1\PerangkatKontroler;
 use App\Http\Kontroler\Pemilik\V1\PersetujuanKontroler;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\IdentifikasiTenantPemilik;
+use App\Http\Perantara\WajibFiturPaket;
 use App\Http\Perantara\WajibIzinPemilik;
 use Illuminate\Support\Facades\Route;
 
@@ -41,7 +42,7 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
     Route::post('/keluar', [AutentikasiKontroler::class, 'Keluar'])->middleware('throttle:pemilik-30')->name('pemilik.keluar');
     Route::get('/profil', [AutentikasiKontroler::class, 'Profil'])->middleware('throttle:pemilik-60')->name('pemilik.profil');
 
-    Route::middleware([IdentifikasiTenantPemilik::class, 'throttle:pemilik-60'])->group(function () use ($izin): void {
+    Route::middleware([IdentifikasiTenantPemilik::class, WajibFiturPaket::class, 'throttle:pemilik-60'])->group(function () use ($izin): void {
         // OWN-02: dasbor (polling 60 detik saat layar aktif, §17.3.3).
         Route::get('/dasbor', [DasborKontroler::class, 'Tampilkan'])->middleware($izin(IzinTenant::LaporanPenjualanLihat))->name('pemilik.dasbor');
 

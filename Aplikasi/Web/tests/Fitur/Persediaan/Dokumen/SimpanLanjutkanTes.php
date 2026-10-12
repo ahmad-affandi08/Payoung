@@ -22,6 +22,7 @@ use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan as B;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
 use Tests\Pendukung\Persediaan\PemeriksaInvarian;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -40,6 +41,7 @@ beforeEach(function (): void {
 function SiapkanLanjutkan(): array
 {
     $t = BantuanPersediaan::SiapkanTenant('Toko Sembako Lanjut Jaya Boyolali');
+    BantuanFitur::Beri($t['Tenant']->Id, 'stok.transfer');
     $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
     $cabang = B::BuatOutlet();
     $gudangCabang = BantuanPersediaan::BuatGudang($cabang, 'Toko Cabang Solo Baru', JenisGudang::Toko);

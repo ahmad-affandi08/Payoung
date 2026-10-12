@@ -12,6 +12,10 @@ return [
     // BR-00.3: paket tujuan saat trial berakhir tanpa pembayaran.
     'KodePaketGratis' => env('TENANT_PAKET_GRATIS', 'GRATIS'),
 
+    // D-111 (BR-P04.3): server menolak rute fitur yang tidak ada di paket/add-on/override tenant (`PetaFiturRute`).
+    // Matikan sementara hanya selama masa peralihan; pengecualian per tenant lewat override fitur di konsol.
+    'PenegakanFiturPaket' => (bool) env('TENANT_PENEGAKAN_FITUR_PAKET', true),
+
     // BR-00.4: percobaan registrasi per IP per jam.
     'BatasRegistrasiPerJam' => 5,
 

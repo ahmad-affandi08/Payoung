@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Permintaan\Kelola\Pengaturan;
 
 use App\Domain\Integrasi\Data\DataWhatsappTenant;
+use App\Domain\Integrasi\Enum\PenyediaWhatsapp;
 use App\Domain\Integrasi\Whatsapp\DaftarPenyediaWhatsapp;
-use App\Domain\Pengelola\Integrasi\Enum\PenyediaIntegrasi;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +22,7 @@ final class SimpanWhatsappTenantPermintaan extends FormRequest
     public function rules(): array
     {
         $aturan = [
-            'Penyedia' => ['required', 'string', Rule::in(array_map(fn (PenyediaIntegrasi $p): string => $p->value, DaftarPenyediaWhatsapp::Ambil()))],
+            'Penyedia' => ['required', 'string', Rule::in(array_map(fn (PenyediaWhatsapp $p): string => $p->value, DaftarPenyediaWhatsapp::Ambil()))],
             'Pengaturan' => ['present', 'array'],
             'Kredensial' => ['present', 'array'],
         ];
@@ -56,7 +56,7 @@ final class SimpanWhatsappTenantPermintaan extends FormRequest
 
     public function AmbilData(): DataWhatsappTenant
     {
-        $penyedia = PenyediaIntegrasi::from($this->string('Penyedia')->toString());
+        $penyedia = PenyediaWhatsapp::from($this->string('Penyedia')->toString());
         $pengaturan = [];
         $kredensial = [];
 
@@ -75,9 +75,9 @@ final class SimpanWhatsappTenantPermintaan extends FormRequest
         return new DataWhatsappTenant($penyedia, $pengaturan, $kredensial);
     }
 
-    private function AmbilPenyedia(): ?PenyediaIntegrasi
+    private function AmbilPenyedia(): ?PenyediaWhatsapp
     {
-        $penyedia = PenyediaIntegrasi::tryFrom($this->string('Penyedia')->toString());
+        $penyedia = PenyediaWhatsapp::tryFrom($this->string('Penyedia')->toString());
 
         return $penyedia !== null && DaftarPenyediaWhatsapp::CekDikenal($penyedia) ? $penyedia : null;
     }

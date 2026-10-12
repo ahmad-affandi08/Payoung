@@ -8,6 +8,7 @@ import SaringLaporan from '@/Komponen/Laporan/SaringLaporan';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
+import { PakaiFiturTerkunci } from '@/Pustaka/FiturPaket';
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { BuatQueryLaporan } from '@/Pustaka/Laporan';
@@ -626,7 +627,11 @@ function IsiTab({
 export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     // D-48: Menu engineering hanya bermakna untuk usaha makanan & minuman (atau bila tab itu sedang dibuka).
     const tampilMenu = PakaiSektor(['FNB']) || props.Saring.Tab === 'menu';
-    const tabTerlihat = daftarTab.filter((tab) => tab.nilai !== 'menu' || tampilMenu);
+    // D-111: tab Anti-fraud adalah fitur paket (`keamanan.anti-fraud`); server menolaknya di luar paket, jadi tab disembunyikan.
+    const antiFraudTerkunci = PakaiFiturTerkunci('keamanan.anti-fraud');
+    const tabTerlihat = daftarTab.filter(
+        (tab) => (tab.nilai !== 'menu' || tampilMenu) && (tab.nilai !== 'anti-fraud' || !antiFraudTerkunci),
+    );
     const { Saring, Total } = props;
     const query = {
         dari: Saring.Dari,

@@ -15,6 +15,7 @@ use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 use Tests\TestCase;
 
@@ -47,6 +48,7 @@ function IsianOutletUji(int $idTenant, array $ubah = []): array
 function MasukPemilikOutlet(TestCase $tes): array
 {
     ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+    BantuanFitur::Beri($tenant->Id, 'stok.multi-gudang');
 
     return ['Tenant' => $tenant, 'Pemilik' => $pemilik, 'Tes' => BantuanOrganisasi::Masuk($tes, $pemilik, $tenant->Id)];
 }

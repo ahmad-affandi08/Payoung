@@ -130,5 +130,5 @@ export const labelBatas: Record<string, string> = {
     BatasPengguna: 'Pengguna',
     BatasSku: 'SKU',
     KuotaPesanWaBulanan: 'Kuota pesan WA per bulan',
-    BatasPenyimpananMb: 'Penyimpanan (MB)',
+    BatasPenyimpananMb: 'Penyimpanan (MB, belum ditegakkan)',
 };

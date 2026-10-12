@@ -516,6 +516,29 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(tiruanRouter.visit).not.toHaveBeenCalled();
     });
 
+    it('D-111: menu grosir dan laporan lanjutan bergembok bila paket belum memuat fiturnya', () => {
+        const penawaran = {
+            Paket: { Kode: 'BISNIS', Nama: 'Bisnis', HargaBulanan: '349000.00' },
+            Addon: null,
+        };
+        propsHalaman = {
+            ...BuatProps({}, [], true),
+            FiturPaket: {
+                NamaPaket: 'Pro',
+                Terkunci: {
+                    'piutang.grosir': { Nama: 'Piutang & grosir', ...penawaran },
+                    'laporan.lengkap': { Nama: 'Laporan lengkap', ...penawaran },
+                },
+            },
+        };
+        render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Grosir' }));
+        expect(screen.queryByRole('link', { name: 'Pesanan grosir' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Pesanan grosir (perlu naik paket)' }));
+        expect(within(screen.getByRole('dialog')).getByText('Piutang & grosir belum termasuk paket Pro')).toBeTruthy();
+    });
+
     it('D-23: anggota tanpa langganan.kelola hanya diminta menghubungi Pemilik', () => {
         propsHalaman = {
             ...BuatProps({}, ['pelanggan.lihat']),

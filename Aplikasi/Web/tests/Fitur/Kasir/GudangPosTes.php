@@ -22,6 +22,7 @@ use Tests\Pendukung\Pembelian\BantuanPembelian;
 use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 use Tests\TestCase;
 
@@ -42,7 +43,7 @@ function SiapkanGudangPos(TestCase $tes): array
     $t = BantuanPembelian::SiapkanTenant();
     $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
     $perangkat = BantuanPerangkat::BuatDanAktifkan($tes, $t['Tenant']->Id, $t['Outlet']);
-    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    BantuanFitur::Beri($t['Tenant']->Id, 'stok.transfer');
 
     return [
         ...$t,

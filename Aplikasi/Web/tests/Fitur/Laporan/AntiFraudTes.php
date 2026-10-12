@@ -13,6 +13,7 @@ use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -29,6 +30,7 @@ beforeEach(function (): void {
 
 it('kasir dengan void tunai cepat, void tinggi, buka laci manual, dan kas kurang berisiko Tinggi; kasir lain Rendah', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Minimarket Jujur Makmur Sragen');
+    BantuanFitur::Beri($k['Tenant']->Id, 'keamanan.anti-fraud');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
     $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];
 
@@ -92,6 +94,7 @@ it('kasir dengan void tunai cepat, void tinggi, buka laci manual, dan kas kurang
 
 it('audit F-15/F-16: kas kurang dibebankan ke kasir pemilik shift walau ditutup supervisor; void berjam mundur tidak dihitung void cepat', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Minimarket Adil Sukoharjo');
+    BantuanFitur::Beri($k['Tenant']->Id, 'keamanan.anti-fraud');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
     $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];
 
