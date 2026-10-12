@@ -97,7 +97,8 @@ final class PelaksanaRefundLangganan
         $akhirBaru = $tagihan->Jenis === JenisTagihanLangganan::Perpanjangan && $tagihan->PeriodeMulai !== null
             ? CarbonImmutable::instance($tagihan->PeriodeMulai)
             : $sekarang;
-        $langganan->update(['PeriodeSelesai' => $akhirBaru]);
+        // BR-P04.4: perpanjangan ke paket lebih murah (turun paket) yang dikembalikan juga mengembalikan paket sebelumnya.
+        $langganan->update(['PeriodeSelesai' => $akhirBaru] + ($tagihan->Jenis === JenisTagihanLangganan::Perpanjangan && $tagihan->IdPaketAsal !== null ? ['IdPaket' => $tagihan->IdPaketAsal] : []));
 
         return true;
     }

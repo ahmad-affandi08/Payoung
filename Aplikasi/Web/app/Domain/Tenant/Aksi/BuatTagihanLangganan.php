@@ -11,6 +11,7 @@ use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\PermintaanTurunPaketMenunggu;
 use App\Domain\Tenant\Layanan\PenerbitTagihanLangganan;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\KuponLanggananPemakaian;
@@ -29,6 +30,7 @@ final class BuatTagihanLangganan
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly PenerbitTagihanLangganan $penerbit,
+        private readonly PermintaanTurunPaketMenunggu $turunPaket,
     ) {}
 
     public function Jalankan(int $idPengguna, string $kodePaket, SiklusTagihan $siklus, ?string $kodeKupon = null): TagihanLangganan
@@ -58,12 +60,31 @@ final class BuatTagihanLangganan
                 );
             }
 
+            // BR-P04.4: permintaan turun paket yang menunggu menggantikan paket berjalan di tagihan perpanjangan berikutnya.
+            $turun = $this->CekBerjalan($langganan) ? $this->turunPaket->Cari($langganan->Id) : null;
+
+            if ($turun !== null && in_array(strtoupper(trim($kodePaket)), [$langganan->Paket->Kode, $turun->PaketTujuan->Kode], true)) {
+                if ($turun->PaketTujuan->Kode === (string) config('tenant.KodePaketGratis')) {
+                    throw new PelanggaranAturanBisnis('TurunKeGratis', 'Langganan Anda dijadwalkan turun ke paket Gratis saat periode ini berakhir. Batalkan permintaan turun paket dulu bila ingin memperpanjang.', 'KodePaket');
+                }
+
+                $paket = $this->TentukanPaket($langganan, $turun->PaketTujuan->Kode);
+                $kupon = $kodeKupon === null || trim($kodeKupon) === '' ? null : $this->CariKupon($idTenant, strtoupper(trim($kodeKupon)), $paket);
+
+                return $this->penerbit->Terbitkan($langganan, $paket, JenisTagihanLangganan::Perpanjangan, $siklus, $kupon, $idPengguna, $langganan->Paket);
+            }
+
             $paket = $this->TentukanPaket($langganan, $kodePaket);
 
             // D-98: ganti paket saat langganan Aktif = naik paket, selisih harga prorata sampai akhir periode.
             if ($langganan->Status === StatusLangganan::Aktif && $paket->Id !== $langganan->IdPaket) {
                 if ($kodeKupon !== null && trim($kodeKupon) !== '') {
                     throw new PelanggaranAturanBisnis('KuponTidakBerlaku', 'Kupon belum bisa dipakai untuk naik paket. Kosongkan kode kupon, atau pakai kupon saat perpanjangan.', 'KodeKupon');
+                }
+
+                // Naik paket menggantikan rencana turun paket yang masih menunggu.
+                if ($turun !== null) {
+                    app(BatalkanTurunPaket::class)->Jalankan($turun->Uuid, $idPengguna, 'Diganti dengan naik paket.');
                 }
 
                 return $this->penerbit->TerbitkanNaikPaket($langganan, $paket, $idPengguna);

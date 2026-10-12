@@ -63,11 +63,12 @@ final class PenerbitTagihanLangganan
         SiklusTagihan $siklus,
         ?KuponLangganan $kupon,
         ?int $idPengguna,
+        ?Paket $paketAsal = null,
     ): TagihanLangganan {
         $idTenant = $langganan->IdTenant;
         $sekarang = CarbonImmutable::now();
 
-        $harga = $this->hargaBerlaku->Cari($paket->Id, $sekarang, $jenis === JenisTagihanLangganan::Perpanjangan ? $this->tagihanTenant->AmbilMulaiLanggananPaket($paket->Id) : null)
+        $harga = $this->hargaBerlaku->Cari($paket->Id, $sekarang, $jenis === JenisTagihanLangganan::Perpanjangan && $paketAsal === null ? $this->tagihanTenant->AmbilMulaiLanggananPaket($paket->Id) : null)
             ?? throw new PelanggaranAturanBisnis('HargaBelumTersedia', "Harga paket {$paket->Nama} belum tersedia. Hubungi tim kami.", 'KodePaket');
         $subtotal = $siklus === SiklusTagihan::Tahunan ? $harga->AmbilHargaTahunan() : $harga->AmbilHargaBulanan();
 
@@ -114,6 +115,8 @@ final class PenerbitTagihanLangganan
             'Jenis' => $jenis,
             'Status' => StatusTagihanLangganan::Terbit,
             'IdPaket' => $paket->Id,
+            // BR-P04.4: perpanjangan ke paket yang lebih murah (turun paket) menyebut paket asalnya supaya periode tetap menyambung.
+            'IdPaketAsal' => $paketAsal?->Id,
             'IdHargaPaket' => $harga->Id,
             'Siklus' => $siklus,
             'JumlahBulan' => $jumlahBulan,
@@ -156,7 +159,7 @@ final class PenerbitTagihanLangganan
 
         $this->audit->Catat($idPengguna === null ? 'langganan.tagihan-otomatis' : 'langganan.tagihan-buat', $tagihan, nilaiBaru: [
             'Nomor' => $tagihan->Nomor, 'Jenis' => $jenis->value, 'Paket' => $paket->Kode, 'Siklus' => $siklus->value,
-            'Total' => $rincian->total->KeString(), 'KodeKupon' => $kupon?->Kode,
+            'Total' => $rincian->total->KeString(), 'KodeKupon' => $kupon?->Kode, 'PaketAsal' => $paketAsal?->Kode,
             'Addon' => array_map(fn (array $baris): string => $baris['Addon']->Kode, $barisAddon),
         ], idTenant: $idTenant);
 

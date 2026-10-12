@@ -92,16 +92,18 @@ final class PelunasTagihanLangganan
 
         // Menyambung periode berjalan hanya bila tagihan perpanjangan untuk paket yang sama persis; selain itu
         // periode dimulai saat pembayaran diterima, sehingga masa tenggang tidak menjadi hari gratis.
+        $samaPaket = $langganan->IdPaket === $tagihan->IdPaket;
+        // BR-P04.4: perpanjangan ke paket lebih murah (turun paket) tetap menyambung periode berjalan; ia menyebut paket asalnya.
         $lanjutan = $tagihan->Jenis === JenisTagihanLangganan::Perpanjangan
             && in_array($langganan->Status, [StatusLangganan::Aktif, StatusLangganan::Tertunggak], true)
-            && $langganan->IdPaket === $tagihan->IdPaket;
+            && ($samaPaket || ($tagihan->IdPaketAsal !== null && $tagihan->IdPaketAsal === $langganan->IdPaket));
         $periode = $this->periode->Hitung(
             $lanjutan ? JenisTagihanLangganan::Perpanjangan : JenisTagihanLangganan::Aktivasi,
             $tagihan->Siklus,
             $sekarang,
             $langganan->PeriodeSelesai,
         );
-        $mulaiPaket = $lanjutan ? $mulaiPaketSebelumnya : null;
+        $mulaiPaket = $lanjutan && $samaPaket ? $mulaiPaketSebelumnya : null;
 
         $statusTagihanLama = $tagihan->Status->value;
         $langgananLama = [

@@ -142,9 +142,10 @@ describe('Pendaftaran tenant (F-00)', function (): void {
         expect($asal->BisaBerubahKe($tujuan))->toBe($sah);
     })->with(function (): array {
         // P-07 (BR-P07.4, BR-P07.5) menambah tangguhkan manual dari Trial/Aktif/Gratis dan pemulihan ke Trial/Tertunggak.
+        // BR-P04.4 (D-117) menambah Aktif → Gratis untuk turun paket mandiri saat periode berbayar berakhir.
         $sah = [
             'Trial' => ['Aktif', 'Gratis', 'Ditangguhkan'],
-            'Aktif' => ['Tertunggak', 'Berhenti', 'Ditangguhkan'],
+            'Aktif' => ['Tertunggak', 'Berhenti', 'Ditangguhkan', 'Gratis'],
             'Tertunggak' => ['Aktif', 'Ditangguhkan'],
             'Ditangguhkan' => ['Aktif', 'Gratis', 'Berhenti', 'Trial', 'Tertunggak'],
             'Gratis' => ['Aktif', 'Ditangguhkan'],

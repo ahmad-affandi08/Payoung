@@ -5,6 +5,7 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BagianAddon, { type DataAddonLangganan } from '@/Komponen/Langganan/BagianAddon';
+import PanelTurunPaket, { type DataTurunPaket } from '@/Komponen/Langganan/PanelTurunPaket';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
@@ -48,6 +49,7 @@ type PropsLangganan = {
     PilihanPaket: PilihanPaket[];
     Tagihan: TagihanLangganan[];
     HariMasaTenggang: number;
+    TurunPaket?: DataTurunPaket;
 };
 
 const jenisStatusLangganan = {
@@ -66,6 +68,7 @@ export default function HalamanLangganan({
     PilihanPaket,
     Tagihan,
     HariMasaTenggang,
+    TurunPaket,
 }: PropsLangganan) {
     const tagihanTerbuka = Tagihan.find((tagihan) => tagihan.Status === 'Terbit' || tagihan.Status === 'JatuhTempo');
 
@@ -97,6 +100,7 @@ export default function HalamanLangganan({
             ) : Langganan !== null && Langganan.Status !== 'Berhenti' ? (
                 <FormPilihPaket pilihan={PilihanPaket} langganan={Langganan} />
             ) : null}
+            {TurunPaket ? <PanelTurunPaket data={TurunPaket} /> : null}
             <BagianAddon addon={Addon} />
             <RiwayatTagihan tagihan={Tagihan} />
         </TataLetakAplikasi>

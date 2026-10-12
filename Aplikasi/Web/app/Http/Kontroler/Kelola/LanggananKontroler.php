@@ -13,10 +13,13 @@ use App\Domain\Dukungan\Enum\KategoriTiketDukungan;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Tenant\Aksi\AjukanTurunPaket;
 use App\Domain\Tenant\Aksi\BatalkanTagihanLangganan;
+use App\Domain\Tenant\Aksi\BatalkanTurunPaket;
 use App\Domain\Tenant\Aksi\BeliAddonLangganan;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Aksi\MulaiPembayaranGerbangLangganan;
+use App\Domain\Tenant\Aksi\PindahKeGratis;
 use App\Domain\Tenant\Aksi\SegarkanPembayaranGerbangLangganan;
 use App\Domain\Tenant\Aksi\UbahPerpanjanganAddonLangganan;
 use App\Domain\Tenant\Aksi\UnggahBuktiTransfer;
@@ -24,6 +27,7 @@ use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\AddonLanggananTenant;
 use App\Domain\Tenant\Kueri\PenawaranFiturTenant;
+use App\Domain\Tenant\Kueri\PratinjauTurunPaket;
 use App\Domain\Tenant\Kueri\RekeningTujuanPlatform;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\PembayaranLangganan;
@@ -46,9 +50,10 @@ final class LanggananKontroler extends Kontroler
 {
     public function __construct(private readonly TagihanLanggananTenant $kueri) {}
 
-    public function Tampilkan(AddonLanggananTenant $addon): Response
+    public function Tampilkan(AddonLanggananTenant $addon, PratinjauTurunPaket $turunPaket): Response
     {
         return Inertia::render('Kelola/Langganan/Indeks', [
+            'TurunPaket' => $turunPaket->Ambil(),
             'Langganan' => $this->kueri->AmbilLangganan(),
             'Addon' => $addon->Ambil(app(KonteksTenant::class)->Wajib()),
             'PilihanPaket' => $this->kueri->AmbilPilihanPaket(),
@@ -165,6 +170,55 @@ final class LanggananKontroler extends Kontroler
 
         return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan->Uuid])
             ->with('Kilat', "Tagihan {$tagihan->Nomor} dibuat. Add-on aktif begitu pembayaran selesai.");
+    }
+
+    /** BR-P04.4: minta turun paket (berlaku pada perpanjangan berikutnya atau saat periode berakhir untuk Gratis). */
+    public function AjukanTurunPaket(Request $permintaan, AjukanTurunPaket $ajukan): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            'KodePaket' => ['required', 'string', 'max:30'],
+            'UuidOutletTetap' => ['nullable', 'array', 'max:200'],
+            'UuidOutletTetap.*' => ['string', 'max:36'],
+            'UuidAnggotaTetap' => ['nullable', 'array', 'max:500'],
+            'UuidAnggotaTetap.*' => ['string', 'max:36'],
+        ], attributes: ['KodePaket' => 'paket']);
+        $turun = $ajukan->Jalankan(
+            $this->PenggunaMasuk()->Id,
+            (string) $valid['KodePaket'],
+            array_values(array_map('strval', $valid['UuidOutletTetap'] ?? [])),
+            array_values(array_map('strval', $valid['UuidAnggotaTetap'] ?? [])),
+        );
+        $gratis = $turun->PaketTujuan->Kode === (string) config('tenant.KodePaketGratis');
+        $tanggal = $turun->BerlakuPada->copy()->setTimezone('Asia/Jakarta')->translatedFormat('j F Y');
+
+        return back()->with('Kilat', $gratis
+            ? "Langganan akan turun ke paket Gratis pada {$tanggal}. Sampai saat itu semua fitur paket Anda tetap bisa dipakai."
+            : "Paket {$turun->PaketTujuan->Nama} berlaku mulai perpanjangan berikutnya (setelah {$tanggal}). Sampai saat itu paket Anda tidak berubah.");
+    }
+
+    /** Langganan ditangguhkan karena tunggakan: pindah ke paket Gratis seketika (kasir terbuka lagi dalam batas Gratis). */
+    public function PindahKeGratis(Request $permintaan, PindahKeGratis $pindah): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            'UuidOutletTetap' => ['nullable', 'array', 'max:200'],
+            'UuidOutletTetap.*' => ['string', 'max:36'],
+            'UuidAnggotaTetap' => ['nullable', 'array', 'max:500'],
+            'UuidAnggotaTetap.*' => ['string', 'max:36'],
+        ]);
+        $pindah->Jalankan(
+            $this->PenggunaMasuk()->Id,
+            array_values(array_map('strval', $valid['UuidOutletTetap'] ?? [])),
+            array_values(array_map('strval', $valid['UuidAnggotaTetap'] ?? [])),
+        );
+
+        return back()->with('Kilat', 'Usaha Anda sekarang memakai paket Gratis. Kasir terbuka lagi dalam batas paket Gratis; data tidak dihapus.');
+    }
+
+    public function BatalkanTurunPaket(string $turunPaket, BatalkanTurunPaket $batalkan): RedirectResponse
+    {
+        $batalkan->Jalankan($turunPaket, $this->PenggunaMasuk()->Id);
+
+        return back()->with('Kilat', 'Permintaan turun paket dibatalkan. Paket Anda tidak berubah.');
     }
 
     /** D-49: berhenti berlangganan add-on (aktif sampai akhir periode, tidak ditagih lagi). */

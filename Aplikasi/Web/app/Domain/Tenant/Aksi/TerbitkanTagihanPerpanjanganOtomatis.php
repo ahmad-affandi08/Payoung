@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\PermintaanTurunPaketMenunggu;
 use App\Domain\Tenant\Layanan\PenerbitTagihanLangganan;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\Langganan;
@@ -42,6 +43,7 @@ final class TerbitkanTagihanPerpanjanganOtomatis
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly PenerbitTagihanLangganan $penerbit,
+        private readonly PermintaanTurunPaketMenunggu $turunPaket,
     ) {}
 
     /**
@@ -102,11 +104,21 @@ final class TerbitkanTagihanPerpanjanganOtomatis
                 return 0;
             }
 
-            $paket = Paket::query()->whereKey($langganan->IdPaket)->first();
+            $paketBerjalan = Paket::query()->whereKey($langganan->IdPaket)->first();
 
-            if ($paket === null || $paket->HargaNegosiasi || $paket->Kode === (string) config('tenant.KodePaketGratis')) {
+            if ($paketBerjalan === null || $paketBerjalan->HargaNegosiasi || $paketBerjalan->Kode === (string) config('tenant.KodePaketGratis')) {
                 return 0;
             }
+
+            // BR-P04.4: turun paket yang menunggu. Ke Gratis tidak ada tagihan (langganan turun saat periode berakhir);
+            // ke paket lebih murah, perpanjangan ditagih dengan paket tujuan.
+            $turun = $this->turunPaket->Cari($langganan->Id);
+
+            if ($turun !== null && $turun->PaketTujuan->Kode === (string) config('tenant.KodePaketGratis')) {
+                return 0;
+            }
+
+            $paket = $turun === null ? $paketBerjalan : $turun->PaketTujuan;
 
             // D-49/D-98: tagihan add-on & naik paket tidak dihitung sebagai tagihan paket; yang belum dibayar dibatalkan agar perpanjangan terbit.
             $this->penerbit->BatalkanTagihanTengahPeriodeTerbuka($langganan->IdTenant, 'Dibatalkan otomatis karena tagihan perpanjangan terbit.');
@@ -118,6 +130,7 @@ final class TerbitkanTagihanPerpanjanganOtomatis
                 $langganan->SiklusTagihan,
                 $this->CariKuponLanjutan($langganan->IdTenant, $paket),
                 null,
+                $turun === null ? null : $paketBerjalan,
             );
 
             return 1;

@@ -216,6 +216,10 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
                         // D-112: bukti transfer hanya untuk tagihan manual (paket harga negosiasi).
                         Route::post('/langganan/tagihan/{tagihan}/bukti', [LanggananKontroler::class, 'UnggahBukti'])->middleware('throttle:10,1')->name('kelola.langganan.tagihan.bukti');
                         Route::post('/langganan/tagihan/{tagihan}/batalkan', [LanggananKontroler::class, 'Batalkan'])->name('kelola.langganan.tagihan.batalkan');
+                        // BR-P04.4: turun paket mandiri (berlaku perpanjangan berikutnya / akhir periode untuk Gratis).
+                        Route::post('/langganan/turun-paket', [LanggananKontroler::class, 'AjukanTurunPaket'])->middleware('throttle:10,1')->name('kelola.langganan.turun-paket.ajukan');
+                        Route::post('/langganan/pindah-gratis', [LanggananKontroler::class, 'PindahKeGratis'])->middleware('throttle:5,1')->name('kelola.langganan.pindah-gratis');
+                        Route::post('/langganan/turun-paket/{turunPaket}/batalkan', [LanggananKontroler::class, 'BatalkanTurunPaket'])->name('kelola.langganan.turun-paket.batalkan');
                     });
                 }
 

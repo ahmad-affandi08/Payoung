@@ -33,7 +33,7 @@ use LogicException;
  * @property int|null $IdHargaPaket kosong pada tagihan manual (harga kesepakatan, D-112)
  * @property bool $Manual diterbitkan Keuangan/Super Admin untuk paket harga negosiasi (D-112)
  * @property string|null $Keterangan
- * @property int|null $IdPaketAsal paket sebelum naik paket (jenis `NaikPaket`, D-98)
+ * @property int|null $IdPaketAsal paket sebelum naik paket (jenis `NaikPaket`, D-98) atau sebelum turun paket (perpanjangan ke paket lebih murah, BR-P04.4)
  * @property SiklusTagihan $Siklus
  * @property int $JumlahBulan
  * @property int|null $HariDitagih hari yang ditagih pada jenis `NaikPaket` (prorata)
