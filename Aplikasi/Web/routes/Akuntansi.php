@@ -12,6 +12,7 @@ use App\Http\Kontroler\Kelola\Akuntansi\LaporanKeuanganKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\PemetaanAkunKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\PencairanKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\RekonsiliasiBankKontroler;
+use App\Http\Kontroler\Kelola\Akuntansi\TagihanQrisTanpaPenjualanKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TransaksiKasBankKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TutupBukuKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -53,6 +54,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::LaporanKeuanganL
     Route::get('/akuntansi/pencairan', [PencairanKontroler::class, 'Daftar'])->name('kelola.akuntansi.pencairan.daftar');
     Route::get('/akuntansi/pencairan/rekap-potongan/ekspor', [PencairanKontroler::class, 'EksporRekapPotongan'])->name('kelola.akuntansi.pencairan.rekap-potongan.ekspor');
     Route::get('/akuntansi/pencairan/{pencairan}', [PencairanKontroler::class, 'Detail'])->where('pencairan', $ulid)->name('kelola.akuntansi.pencairan.detail');
+    // E8: uang QRIS yang masuk tanpa penjualan (daftar; tutup & buka kembali di bawah).
+    Route::get('/akuntansi/qris-tanpa-penjualan', [TagihanQrisTanpaPenjualanKontroler::class, 'Daftar'])->name('kelola.akuntansi.qris-tanpa-penjualan.daftar');
     // FIN-10 (v3.38): aset tetap & penyusutan (daftar & rincian).
     Route::get('/akuntansi/aset-tetap', [AsetTetapKontroler::class, 'Daftar'])->name('kelola.akuntansi.aset-tetap.daftar');
     Route::get('/akuntansi/aset-tetap/{asetTetap}', [AsetTetapKontroler::class, 'Detail'])->where('asetTetap', $ulid)->name('kelola.akuntansi.aset-tetap.detail');
@@ -104,6 +107,9 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::AkuntansiKelola)
     Route::get('/akuntansi/pencairan/buat', [PencairanKontroler::class, 'Buat'])->name('kelola.akuntansi.pencairan.buat');
     Route::post('/akuntansi/pencairan', [PencairanKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.pencairan.simpan');
     Route::post('/akuntansi/pencairan/{pencairan}/batalkan', [PencairanKontroler::class, 'Batalkan'])->where('pencairan', $ulid)->name('kelola.akuntansi.pencairan.batalkan');
+    // E8: tutup (kembalikan / akui pendapatan lain) dan buka kembali uang QRIS tanpa penjualan.
+    Route::post('/akuntansi/qris-tanpa-penjualan/{tagihan}/tutup', [TagihanQrisTanpaPenjualanKontroler::class, 'Tutup'])->where('tagihan', $ulid)->middleware('throttle:60,1')->name('kelola.akuntansi.qris-tanpa-penjualan.tutup');
+    Route::post('/akuntansi/qris-tanpa-penjualan/{tagihan}/buka-kembali', [TagihanQrisTanpaPenjualanKontroler::class, 'BukaKembali'])->where('tagihan', $ulid)->middleware('throttle:60,1')->name('kelola.akuntansi.qris-tanpa-penjualan.buka-kembali');
     // FIN-10 (v3.38): catat, susutkan, lepas, batalkan aset tetap. `buat` sebelum `{asetTetap}` (pola pencairan).
     Route::get('/akuntansi/aset-tetap/buat', [AsetTetapKontroler::class, 'Buat'])->name('kelola.akuntansi.aset-tetap.buat');
     Route::post('/akuntansi/aset-tetap', [AsetTetapKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.aset-tetap.simpan');

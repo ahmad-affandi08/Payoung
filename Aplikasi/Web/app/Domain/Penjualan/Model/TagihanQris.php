@@ -6,6 +6,7 @@ namespace App\Domain\Penjualan\Model;
 
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Penjualan\Enum\HasilPenutupanTagihanQris;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use Illuminate\Support\Carbon;
@@ -42,6 +43,11 @@ use Illuminate\Support\Carbon;
  * @property int $PercobaanRekonsiliasi
  * @property bool $PerluTinjauan
  * @property string|null $AlasanTinjauan
+ * @property Carbon|null $DitutupPada
+ * @property int|null $DitutupOleh
+ * @property HasilPenutupanTagihanQris|null $HasilPenutupan
+ * @property string|null $CatatanPenutupan
+ * @property int|null $IdJurnalPenutupan
  * @property Carbon|null $DibuatPada
  * @property Carbon|null $DiubahPada
  */
@@ -69,6 +75,11 @@ final class TagihanQris extends ModelDasar
         'PercobaanRekonsiliasi' => 0,
         'PerluTinjauan' => false,
         'AlasanTinjauan' => null,
+        'DitutupPada' => null,
+        'DitutupOleh' => null,
+        'HasilPenutupan' => null,
+        'CatatanPenutupan' => null,
+        'IdJurnalPenutupan' => null,
     ];
 
     /**
@@ -87,6 +98,8 @@ final class TagihanQris extends ModelDasar
             'TerakhirDicekPada' => 'datetime',
             'PercobaanRekonsiliasi' => 'integer',
             'PerluTinjauan' => 'boolean',
+            'DitutupPada' => 'datetime',
+            'HasilPenutupan' => HasilPenutupanTagihanQris::class,
         ];
     }
 

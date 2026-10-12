@@ -75,6 +75,7 @@ Ekstensi sektor, contoh: F&B menambah `4-1010 Penjualan Makanan`, `4-1020 Penjua
 | J-12.3 | Surat jalan grosir dibatalkan (belum difakturkan) | jurnal pembalik J-12.1 | jurnal pembalik J-12.1 |
 | J-12.4 | Retur grosir diposting (BR-12.7; nota kredit bila sudah difakturkan) | Retur Penjualan + PPN/PB1 (kontra) + Persediaan | Piutang Usaha **atau** Piutang Belum Difakturkan ; HPP ; Diskon Penjualan |
 | J-12.5 | Hapus-buku piutang diposting (BR-12.8) | Beban Piutang Tak Tertagih | Piutang Usaha |
+| J-08.2 | Uang QRIS tanpa penjualan diakui sebagai pendapatan lain (BR-08.8) | Kas / Bank (akun pilihan operator) | Pendapatan Lain |
 | J-07.3 | DP pre-order diterima | Kas | Uang Muka Pelanggan |
 | J-09.1 | Void | Pembalik penuh J-07.1 & J-07.2 | |
 | J-09.2 | Retur penjualan | Retur Penjualan + PPN/PB1 (kontra) ; Persediaan | Kas/Piutang/Nota Kredit ; HPP |

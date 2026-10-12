@@ -13,6 +13,7 @@ use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
 use App\Domain\Bersama\Tindakan\Layanan\PembuatButirTinjauan;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
+use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use App\Domain\Penjualan\Model\IsiDeposit;
 use App\Domain\Penjualan\Model\Penjualan;
 use App\Domain\Penjualan\Model\PesananOnline;
@@ -47,17 +48,6 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
                 'Diterima dari kasir dengan catatan (misal stok minus, diskon/izin berubah, dikirim setelah shift ditutup).',
                 '/kelola/penjualan?saring[PerluTinjauan]=Ya',
                 fn (Penjualan $p): DataRincianTindakan => new DataRincianTindakan($p->Uuid, $p->Nomor, $p->AlasanTinjauan, $p->TanggalBisnis->toDateString(), '/kelola/penjualan/'.$p->Uuid),
-            );
-            $butir[] = PembuatButirTinjauan::Buat(
-                $this->KueriTagihanQris($konteks->idOutletBoleh),
-                'TagihanQris',
-                'TagihanQris',
-                'tagihan-qris.tinjauan',
-                'Penjualan',
-                'Uang QRIS masuk tanpa penjualan',
-                'Pelanggan membayar QRIS dinamis setelah tagihannya kedaluwarsa, dibatalkan, atau tidak pasti. Cocokkan dengan penjualan atau kembalikan dananya.',
-                '/kelola/penjualan',
-                fn (TagihanQris $t): DataRincianTindakan => new DataRincianTindakan($t->Uuid, $t->NomorPesanan, $t->AlasanTinjauan, $t->LunasPada?->setTimezone('Asia/Jakarta')->toDateString(), null),
             );
             $butir[] = PembuatButirTinjauan::Buat(
                 $this->KueriRetur($konteks->idOutletBoleh),
@@ -95,6 +85,17 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
         }
 
         if ($konteks->CekIzin('akuntansi.kelola')) {
+            $butir[] = PembuatButirTinjauan::Buat(
+                $this->KueriTagihanQris($konteks->idOutletBoleh),
+                'TagihanQris',
+                'TagihanQris',
+                'tagihan-qris.tinjauan',
+                'Penjualan',
+                'Uang QRIS masuk tanpa penjualan',
+                'Pelanggan membayar QRIS dinamis setelah tagihannya kedaluwarsa, dibatalkan, atau tidak pasti. Kembalikan dananya ke pelanggan atau akui sebagai pendapatan lain.',
+                '/kelola/akuntansi/qris-tanpa-penjualan?saring[Penutupan]=Terbuka',
+                fn (TagihanQris $t): DataRincianTindakan => new DataRincianTindakan($t->Uuid, $t->NomorPesanan, $t->AlasanTinjauan, $t->LunasPada?->setTimezone('Asia/Jakarta')->toDateString(), '/kelola/akuntansi/qris-tanpa-penjualan?cari='.$t->Uuid),
+            );
             $butirRefund = $this->ButirUangMukaOnlineBelumKembali($konteks->idOutletBoleh);
 
             if ($butirRefund !== null) {
@@ -292,7 +293,7 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
      */
     private function KueriTagihanQris(?array $idOutlet): Builder
     {
-        return TagihanQris::query()->where('TagihanQris.PerluTinjauan', true)->whereNull('TagihanQris.UuidPenjualan')
+        return TagihanQris::query()->where('TagihanQris.PerluTinjauan', true)->whereNull('TagihanQris.UuidPenjualan')->where('TagihanQris.Sumber', SumberTagihanQris::Pos->value)
             ->when($idOutlet !== null, fn ($k) => $k->whereIn('TagihanQris.IdOutlet', $idOutlet));
     }
 

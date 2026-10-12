@@ -558,3 +558,28 @@ export type PropsDaftarGiro = {
     HariIni: string;
     Izin: { Kelola: boolean };
 };
+
+/** E8: uang QRIS yang masuk tanpa penjualan (tagihan QRIS POS `Lunas` tanpa penjualan). */
+export type HasilPenutupanQris = 'Dikembalikan' | 'DiakuiPendapatan';
+
+export type BarisQrisTanpaPenjualan = {
+    Uuid: string;
+    NomorPesanan: string;
+    KodeOutlet: string;
+    LunasPada: string | null;
+    Jumlah: string;
+    AlasanTinjauan: string | null;
+    Ditutup: boolean;
+    HasilPenutupan: HasilPenutupanQris | null;
+    LabelHasil: string | null;
+    CatatanPenutupan: string | null;
+    DitutupPada: string | null;
+};
+
+export type PropsDaftarQrisTanpaPenjualan = {
+    Tagihan: HasilTabel<BarisQrisTanpaPenjualan>;
+    OpsiAkun: { Uuid: string; Kode: string; Nama: string }[];
+    OpsiHasil: { Nilai: HasilPenutupanQris; Label: string }[];
+    HariIni: string;
+    Izin: { Kelola: boolean };
+};
