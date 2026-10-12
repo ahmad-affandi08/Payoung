@@ -34,6 +34,7 @@ use App\Http\Kontroler\Pengelola\Rilis\PengumumanPlatformKontroler;
 use App\Http\Kontroler\Pengelola\Rilis\RilisAplikasiKontroler;
 use App\Http\Kontroler\Pengelola\SesiKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanKontroler;
+use App\Http\Kontroler\Pengelola\Tagihan\TagihanManualKontroler;
 use App\Http\Kontroler\Pengelola\TemplateSektor\TemplateSektorKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TenantKontroler;
@@ -336,6 +337,19 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::get('/laporan-langganan', [TagihanKontroler::class, 'Laporan'])->name('pengelola.tagihan.laporan');
             Route::get('/tagihan/{tagihan}', [TagihanKontroler::class, 'Tampilkan'])->name('pengelola.tagihan.tampil');
             Route::get('/tagihan/pembayaran/{pembayaran}/bukti', [TagihanKontroler::class, 'LihatBukti'])->name('pengelola.tagihan.pembayaran.bukti');
+            // D-112: tagihan manual, pembayaran dicatat langsung, hapus-buku, dan refund (P-08, BR-P08.2).
+            Route::middleware($izin(IzinPengelola::TagihanTerbitkan))->group(function (): void {
+                Route::post('/tenant/{tenant}/tagihan-manual', [TagihanManualKontroler::class, 'Terbitkan'])->name('pengelola.tagihan.manual.terbit');
+                Route::post('/tagihan/{tagihan}/catat-pembayaran', [TagihanManualKontroler::class, 'CatatPembayaran'])->name('pengelola.tagihan.catat-pembayaran');
+                Route::post('/tagihan/{tagihan}/hapus-buku', [TagihanManualKontroler::class, 'HapusBuku'])->middleware(WajibDuaFaktorBaru::class)->name('pengelola.tagihan.hapus-buku');
+            });
+            Route::post('/tagihan/{tagihan}/refund', [TagihanManualKontroler::class, 'AjukanRefund'])
+                ->middleware([$izin(IzinPengelola::TagihanRefund), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tagihan.refund.ajukan');
+            Route::middleware([$izin(IzinPengelola::TagihanRefundSetujui), WajibDuaFaktorBaru::class])->group(function (): void {
+                Route::post('/tagihan/refund/{refund}/setujui', [TagihanManualKontroler::class, 'SetujuiRefund'])->name('pengelola.tagihan.refund.setujui');
+                Route::post('/tagihan/refund/{refund}/tolak', [TagihanManualKontroler::class, 'TolakRefund'])->name('pengelola.tagihan.refund.tolak');
+            });
             Route::middleware($izin(IzinPengelola::TagihanVerifikasi))->group(function (): void {
                 Route::post('/tagihan/pembayaran/terima-massal', [TagihanKontroler::class, 'TerimaMassal'])->name('pengelola.tagihan.pembayaran.terima-massal');
                 Route::post('/tagihan/pembayaran/{pembayaran}/terima', [TagihanKontroler::class, 'Terima'])->name('pengelola.tagihan.pembayaran.terima');

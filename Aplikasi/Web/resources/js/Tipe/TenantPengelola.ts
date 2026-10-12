@@ -120,6 +120,7 @@ export type PilihanTenant = {
     Penanda: Pilihan[];
     KolomBatas: string[];
     Fitur: Pilihan[];
+    PaketNegosiasi: Pilihan[];
 };
 
 export type AturanTenant = { MaksHariTrial: number; MaksKaliTrial: number; MaksHariOverride: number };

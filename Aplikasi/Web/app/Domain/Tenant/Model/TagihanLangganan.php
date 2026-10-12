@@ -30,7 +30,9 @@ use LogicException;
  * @property JenisTagihanLangganan $Jenis
  * @property StatusTagihanLangganan $Status
  * @property int $IdPaket
- * @property int $IdHargaPaket
+ * @property int|null $IdHargaPaket kosong pada tagihan manual (harga kesepakatan, D-112)
+ * @property bool $Manual diterbitkan Keuangan/Super Admin untuk paket harga negosiasi (D-112)
+ * @property string|null $Keterangan
  * @property int|null $IdPaketAsal paket sebelum naik paket (jenis `NaikPaket`, D-98)
  * @property SiklusTagihan $Siklus
  * @property int $JumlahBulan
@@ -52,6 +54,9 @@ use LogicException;
  * @property Carbon|null $DibayarPada
  * @property Carbon|null $DibatalkanPada
  * @property string|null $AlasanBatal
+ * @property Carbon|null $DihapusBukuPada
+ * @property string|null $AlasanHapusBuku
+ * @property Carbon|null $DikembalikanPada
  * @property Carbon|null $PeriodeMulai
  * @property Carbon|null $PeriodeSelesai
  * @property Carbon|null $MulaiLanggananPaket
@@ -59,6 +64,7 @@ use LogicException;
  * @property string|null $PengingatTerakhir tahap pengingat terakhir yang dikirim (`TahapPengingatTagihan`)
  * @property Carbon|null $PengingatTerakhirPada
  * @property int|null $IdPenggunaPembuat
+ * @property int|null $IdPenggunaPengelolaPembuat
  * @property Carbon|null $DibuatPada
  * @property-read Paket $Paket
  * @property-read Collection<int, PembayaranLangganan> $Pembayaran
@@ -70,7 +76,7 @@ final class TagihanLangganan extends ModelDasar
 
     /** Kolom yang boleh berubah setelah terbit. */
     public const KOLOM_BOLEH_BERUBAH = [
-        'Status', 'DibayarPada', 'DibatalkanPada', 'AlasanBatal', 'PeriodeMulai', 'PeriodeSelesai', 'MulaiLanggananPaket',
+        'Status', 'DibayarPada', 'DibatalkanPada', 'AlasanBatal', 'DihapusBukuPada', 'AlasanHapusBuku', 'DikembalikanPada', 'PeriodeMulai', 'PeriodeSelesai', 'MulaiLanggananPaket',
         'RefGateway', 'PengingatTerakhir', 'PengingatTerakhirPada', self::UPDATED_AT,
     ];
 
@@ -78,6 +84,13 @@ final class TagihanLangganan extends ModelDasar
 
     /** @var array<string, mixed> */
     protected $attributes = [
+        'IdHargaPaket' => null,
+        'Manual' => false,
+        'Keterangan' => null,
+        'IdPenggunaPengelolaPembuat' => null,
+        'DihapusBukuPada' => null,
+        'AlasanHapusBuku' => null,
+        'DikembalikanPada' => null,
         'IdKuponLangganan' => null,
         'IdPaketAsal' => null,
         'HariDitagih' => null,
@@ -203,6 +216,9 @@ final class TagihanLangganan extends ModelDasar
             'JatuhTempoPada' => 'datetime',
             'DibayarPada' => 'datetime',
             'DibatalkanPada' => 'datetime',
+            'DihapusBukuPada' => 'datetime',
+            'DikembalikanPada' => 'datetime',
+            'Manual' => 'boolean',
             'PeriodeMulai' => 'datetime',
             'PeriodeSelesai' => 'datetime',
             'MulaiLanggananPaket' => 'date',

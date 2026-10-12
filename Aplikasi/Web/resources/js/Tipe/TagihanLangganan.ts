@@ -22,6 +22,9 @@ export type TagihanLangganan = {
     LabelJenis: string;
     Status: StatusTagihanLangganan;
     LabelStatus: string;
+    /** D-112: diterbitkan Keuangan untuk paket harga negosiasi; dibayar dengan transfer, bukan lewat gerbang. */
+    Manual: boolean;
+    Keterangan: string | null;
     KodePaket: string;
     NamaPaket: string;
     Siklus: 'Bulanan' | 'Tahunan';
@@ -44,13 +47,17 @@ export type TagihanLangganan = {
     JatuhTempoPada: string;
     DibayarPada: string | null;
     DibatalkanPada: string | null;
+    AlasanBatal: string | null;
+    DihapusBukuPada: string | null;
+    AlasanHapusBuku: string | null;
+    DikembalikanPada: string | null;
     PeriodeMulai: string | null;
     PeriodeSelesai: string | null;
 };
 
 export type StatusPembayaranLangganan = 'Menunggu' | 'Diterima' | 'Ditolak';
 
-export type MetodePembayaranLangganan = 'TransferManual' | 'Gateway';
+export type MetodePembayaranLangganan = 'TransferManual' | 'Gateway' | 'Kupon';
 
 export type PembayaranLangganan = {
     Uuid: string;
@@ -88,6 +95,35 @@ export function JenisLabelTagihan(status: StatusTagihanLangganan): 'sukses' | 'p
 export function JenisLabelPembayaran(status: StatusPembayaranLangganan): 'sukses' | 'peringatan' | 'bahaya' {
     switch (status) {
         case 'Diterima':
+            return 'sukses';
+        case 'Ditolak':
+            return 'bahaya';
+        default:
+            return 'peringatan';
+    }
+}
+
+export type StatusRefundLangganan = 'Diajukan' | 'Disetujui' | 'Ditolak';
+
+/** D-112: pengajuan refund tagihan lunas (P-08, BR-P08.2). Bentuk = DaftarTagihanPlatform::PetakanRefund. */
+export type RefundLangganan = {
+    Uuid: string;
+    Status: StatusRefundLangganan;
+    LabelStatus: string;
+    Jumlah: string;
+    Alasan: string;
+    CatatanPengembalian: string | null;
+    Pengaju: string | null;
+    Pemutus: string | null;
+    DiajukanPada: string | null;
+    DiputuskanPada: string | null;
+    AlasanTolak: string | null;
+    LayananDiakhiri: boolean;
+};
+
+export function JenisLabelRefund(status: StatusRefundLangganan): 'sukses' | 'peringatan' | 'bahaya' {
+    switch (status) {
+        case 'Disetujui':
             return 'sukses';
         case 'Ditolak':
             return 'bahaya';

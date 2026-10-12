@@ -11,12 +11,15 @@ use App\Domain\Organisasi\Model\TenantPengguna;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Enum\JenisKupon;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
+use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
+use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\KuponLanggananPemakaian;
 use App\Domain\Tenant\Model\Langganan;
+use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Carbon;
@@ -155,6 +158,31 @@ describe('Membuat tagihan (BR-P08.1, BR-P04.1, BR-P04.7, §12.2)', function (): 
             ->and($pemakaian->IdTenant)->toBe($this->tenant->Id)
             ->and($pemakaian->BulanDiskon)->toBe(3)
             ->and($pemakaian->Diskon)->toBe('298800.00');
+    });
+
+    it('D-112: kupon 100% menerbitkan tagihan Rp 0 yang langsung lunas, tanpa gerbang, dan mengaktifkan paket', function (): void {
+        // Tagihan Rp 0 tidak butuh gerbang pembayaran: tetap bisa walau gerbang billing belum dikonfigurasi.
+        config()->set('integrasi.GerbangBilling', null);
+        BuatKuponUji('GRATIS100', 'Persen', '100', 1);
+        $tagihan = BuatTagihanUji($this, $this->pemilik, $this->tenant, kupon: 'GRATIS100');
+
+        expect($tagihan->Total)->toBe('0.00')
+            ->and($tagihan->Diskon)->toBe($tagihan->Subtotal)
+            ->and($tagihan->JumlahPpn)->toBe('0.00')
+            ->and($tagihan->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and($tagihan->DibayarPada)->not->toBeNull();
+
+        $pembayaran = PembayaranLangganan::query()->withoutGlobalScopes()->sole();
+        expect($pembayaran->Metode)->toBe(MetodePembayaranLangganan::Kupon)
+            ->and($pembayaran->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($pembayaran->JumlahDiterima)->toBe('0.00');
+
+        $langganan = Langganan::query()->where('IdTenant', $this->tenant->Id)->sole();
+        expect($langganan->Status)->toBe(StatusLangganan::Aktif)
+            ->and($langganan->PeriodeMulai)->not->toBeNull()
+            ->and($langganan->PeriodeSelesai?->isAfter($langganan->PeriodeMulai))->toBeTrue()
+            ->and(KuponLanggananPemakaian::query()->sole()->BulanDiskon)->toBe(1)
+            ->and(LogAudit::query()->where('Peristiwa', 'langganan.tagihan-lunas-kupon')->exists())->toBeTrue();
     });
 
     it('invariant: Total = Subtotal − Diskon + PPN dan DPP = ⌊(Subtotal − Diskon) × 11/12⌋ untuk semua paket & siklus', function (string $paket, string $siklus): void {

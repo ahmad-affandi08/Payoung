@@ -21,6 +21,8 @@ type PropsBidangBerkas = {
     maksimal: number;
     ukuranMaksimalKb: number;
     galat?: string | undefined;
+    /** Berkas wajib diisi: keterangan tidak lagi bertuliskan "Opsional". */
+    wajib?: boolean;
 };
 
 /** Pilih beberapa berkas lampiran dengan batas jumlah, jenis, dan ukuran yang disebutkan jelas (PRD §17.6.7). */
@@ -32,10 +34,11 @@ export default function BidangBerkas({
     maksimal,
     ukuranMaksimalKb,
     galat,
+    wajib = false,
 }: PropsBidangBerkas) {
     const id = useId();
     const masukan = useRef<HTMLInputElement>(null);
-    const keterangan = `Opsional. Maksimal ${maksimal} berkas, masing-masing ${FormatUkuranBerkas(ukuranMaksimalKb * 1024)} (${ekstensi.join(', ')}).`;
+    const keterangan = `${wajib ? 'Wajib diisi.' : 'Opsional.'} Maksimal ${maksimal} berkas, masing-masing ${FormatUkuranBerkas(ukuranMaksimalKb * 1024)} (${ekstensi.join(', ')}).`;
     const Hapus = (indeks: number) => {
         saatBerubah(berkas.filter((_, i) => i !== indeks));
 

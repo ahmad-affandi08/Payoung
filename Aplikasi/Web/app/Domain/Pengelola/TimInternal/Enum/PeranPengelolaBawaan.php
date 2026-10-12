@@ -81,6 +81,8 @@ enum PeranPengelolaBawaan: string
                 // P-08: tagihan & verifikasi pembayaran (§19.3).
                 IzinPengelola::TagihanLihat,
                 IzinPengelola::TagihanVerifikasi,
+                IzinPengelola::TagihanTerbitkan,
+                IzinPengelola::TagihanRefund,
                 // P-12: pencairan komisi mitra.
                 IzinPengelola::MitraLihat,
                 IzinPengelola::MitraPencairan,

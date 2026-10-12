@@ -1,3 +1,4 @@
+import { AntreanRefund, type BarisRefundMenunggu } from '@/Komponen/Langganan/TindakanTagihanPengelola';
 import { Link } from '@inertiajs/react';
 
 import AksiMassalVerifikasi from '@/Komponen/Pengelola/AksiMassalVerifikasi';
@@ -27,6 +28,8 @@ type PropsDaftarTagihan = {
     Ringkasan: { MenungguVerifikasi: number; BelumDibayar: number };
     OpsiStatus: Pilihan[];
     BolehVerifikasi?: boolean;
+    RefundMenunggu?: BarisRefundMenunggu[];
+    BolehSetujuiRefund?: boolean;
 };
 
 const kolomAntrean: KolomTabel<BarisAntrean>[] = [
@@ -159,6 +162,8 @@ export default function HalamanDaftarTagihan({
     Ringkasan,
     OpsiStatus,
     BolehVerifikasi = false,
+    RefundMenunggu = [],
+    BolehSetujuiRefund = false,
 }: PropsDaftarTagihan) {
     return (
         <TataLetakPengelola judul="Tagihan langganan">
@@ -175,6 +180,7 @@ export default function HalamanDaftarTagihan({
                     <KartuRingkasan nilai={Ringkasan.BelumDibayar} label="tagihan belum dibayar" />
                 </li>
             </ul>
+            <AntreanRefund antrean={RefundMenunggu} boleh={BolehSetujuiRefund} />
             <section aria-labelledby="judul-antrean" className="flex flex-col gap-2">
                 <h2 id="judul-antrean" className="text-subjudul font-semibold text-teks-utama">
                     Menunggu verifikasi

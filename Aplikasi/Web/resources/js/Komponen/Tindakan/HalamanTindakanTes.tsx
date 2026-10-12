@@ -443,6 +443,7 @@ describe('Pengelola/Tenant 360°: Tabs & tindakan berisiko (P-07, BR-P07.3)', ()
         Penanda: [{ Nilai: 'Uji', Label: 'Uji' }],
         KolomBatas: ['BatasOutlet'],
         Fitur: [],
+        PaketNegosiasi: [{ Nilai: 'ENTERPRISE', Label: 'Enterprise' }],
     };
     const aturan = { MaksHariTrial: 14, MaksKaliTrial: 2, MaksHariOverride: 30 };
 
@@ -481,6 +482,38 @@ describe('Pengelola/Tenant 360°: Tabs & tindakan berisiko (P-07, BR-P07.3)', ()
         ]);
         act(() => uji.opsiTerakhir?.onSuccess?.());
         expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+
+    it('D-112: tagihan manual untuk paket harga negosiasi hanya bagi pemegang izin tagihan.terbitkan', () => {
+        AturPropsPengelola(['tenant.lihat']);
+        const { unmount: Lepas } = RenderDenganKueri(
+            <TampilTenant Tenant={BuatTenant()} Pilihan={pilihan} Aturan={aturan} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Terbitkan tagihan manual' })).toBeNull();
+        Lepas();
+
+        AturPropsPengelola(['tenant.lihat', 'tagihan.terbitkan']);
+        RenderDenganKueri(<TampilTenant Tenant={BuatTenant()} Pilihan={pilihan} Aturan={aturan} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Terbitkan tagihan manual' }));
+        const dialog = screen.getByRole('dialog', { name: 'Terbitkan tagihan manual' });
+        fireEvent.change(within(dialog).getByLabelText(/Harga kesepakatan/), { target: { value: '12000000' } });
+        fireEvent.change(within(dialog).getByLabelText(/Keterangan kontrak/), {
+            target: { value: 'Kontrak Enterprise 12 bulan' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Terbitkan tagihan' }));
+
+        expect(AmbilKiriman()).toEqual([
+            {
+                metode: 'post',
+                url: '/tenant/T-1/tagihan-manual',
+                data: {
+                    KodePaket: 'ENTERPRISE',
+                    Siklus: 'Tahunan',
+                    Subtotal: '12000000',
+                    Keterangan: 'Kontrak Enterprise 12 bulan',
+                },
+            },
+        ]);
     });
 
     it('cabut override dari tab override memakai AlertDialog', () => {

@@ -47,6 +47,8 @@ final class TagihanKontroler extends Kontroler
             'Antrean' => $this->kueri->AmbilAntrean(),
             'Ringkasan' => $this->kueri->HitungRingkasan(),
             'BolehVerifikasi' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanVerifikasi),
+            'RefundMenunggu' => $this->kueri->AmbilRefundMenunggu(),
+            'BolehSetujuiRefund' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
             'OpsiStatus' => array_map(fn (StatusTagihanLangganan $pilihan): array => ['Nilai' => $pilihan->value, 'Label' => $pilihan->AmbilLabel()], StatusTagihanLangganan::cases()),
         ]);
     }
@@ -87,6 +89,7 @@ final class TagihanKontroler extends Kontroler
     {
         $data = $this->kueri->CariTagihan($tagihan);
         abort_if($data === null, 404);
+        $pelaku = $this->AmbilPelaku();
         $pembayaran = $this->kueri->AmbilPembayaranTagihan($data);
         $namaVerifikator = PenggunaPengelola::query()
             ->whereKey(array_values(array_filter(array_map(fn (PembayaranLangganan $baris): ?int => $baris->IdPenggunaPengelolaVerifikator, $pembayaran))))
@@ -103,6 +106,13 @@ final class TagihanKontroler extends Kontroler
                 'JumlahDiterima' => $baris->JumlahDiterima,
                 'Verifikator' => $baris->IdPenggunaPengelolaVerifikator === null ? null : ($namaVerifikator[$baris->IdPenggunaPengelolaVerifikator] ?? null),
             ], $pembayaran),
+            'Refund' => $this->kueri->AmbilRefundTagihan($data),
+            'Izin' => [
+                'Terbitkan' => $pelaku->PunyaIzin(IzinPengelola::TagihanTerbitkan),
+                'Refund' => $pelaku->PunyaIzin(IzinPengelola::TagihanRefund),
+                'SetujuiRefund' => $pelaku->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
+            ],
+            'BatasRefundTanpaPersetujuan' => (string) config('tagihan.BatasRefundTanpaPersetujuan'),
         ]);
     }
 

@@ -4,6 +4,7 @@ import { useId, type FormEvent } from 'react';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import RincianTagihan from '@/Komponen/Langganan/RincianTagihan';
+import { PanelTindakanTagihan, RiwayatRefund } from '@/Komponen/Langganan/TindakanTagihanPengelola';
 import { Card } from '@/Komponen/Ui/card';
 import { Label } from '@/Komponen/Ui/label';
 import { Textarea } from '@/Komponen/Ui/textarea';
@@ -13,17 +14,31 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakPengelola from '@/TataLetak/TataLetakPengelola';
 import { IzinPengelola, PunyaIzin, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
-import { JenisLabelPembayaran, type PembayaranLangganan, type TagihanLangganan } from '@/Tipe/TagihanLangganan';
+import {
+    JenisLabelPembayaran,
+    type PembayaranLangganan,
+    type RefundLangganan,
+    type TagihanLangganan,
+} from '@/Tipe/TagihanLangganan';
 
 type BarisPembayaran = PembayaranLangganan & { JumlahDiterima: string | null; Verifikator: string | null };
 
 type PropsDetailTagihan = {
     Tagihan: TagihanLangganan & { NamaTenant: string };
     Pembayaran: BarisPembayaran[];
+    Refund?: RefundLangganan[];
+    Izin?: { Terbitkan: boolean; Refund: boolean; SetujuiRefund: boolean };
+    BatasRefundTanpaPersetujuan?: string;
 };
 
 /** Detail tagihan & verifikasi bukti transfer (P-08 langkah 3). Terima hanya bila jumlah di rekening cocok. */
-export default function HalamanDetailTagihan({ Tagihan, Pembayaran }: PropsDetailTagihan) {
+export default function HalamanDetailTagihan({
+    Tagihan,
+    Pembayaran,
+    Refund = [],
+    Izin = { Terbitkan: false, Refund: false, SetujuiRefund: false },
+    BatasRefundTanpaPersetujuan = '1000000',
+}: PropsDetailTagihan) {
     const { props } = usePage<PropsBersamaPengelola>();
     const bolehVerifikasi = PunyaIzin(props.Pengguna, IzinPengelola.TagihanVerifikasi);
 
@@ -31,6 +46,13 @@ export default function HalamanDetailTagihan({ Tagihan, Pembayaran }: PropsDetai
         <TataLetakPengelola judul={`Tagihan ${Tagihan.Nomor}`} jejak={[{ label: 'Semua tagihan', href: '/tagihan' }]}>
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
             <RincianTagihan tagihan={Tagihan} namaTenant={Tagihan.NamaTenant} />
+            <PanelTindakanTagihan
+                tagihan={Tagihan}
+                izin={Izin}
+                adaPembayaranMenunggu={Pembayaran.some((baris) => baris.Status === 'Menunggu')}
+                batasRefund={BatasRefundTanpaPersetujuan}
+            />
+            <RiwayatRefund refund={Refund} />
             <section aria-labelledby="judul-pembayaran" className="flex flex-col gap-3">
                 <h2 id="judul-pembayaran" className="text-subjudul font-semibold text-teks-utama">
                     Pembayaran

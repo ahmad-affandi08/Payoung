@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola;
 
+use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Dukungan\Aksi\BuatTiketDukungan;
@@ -18,14 +19,18 @@ use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Aksi\MulaiPembayaranGerbangLangganan;
 use App\Domain\Tenant\Aksi\SegarkanPembayaranGerbangLangganan;
 use App\Domain\Tenant\Aksi\UbahPerpanjanganAddonLangganan;
+use App\Domain\Tenant\Aksi\UnggahBuktiTransfer;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
+use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\AddonLanggananTenant;
 use App\Domain\Tenant\Kueri\PenawaranFiturTenant;
+use App\Domain\Tenant\Kueri\RekeningTujuanPlatform;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Kelola\Langganan\BatalkanTagihanLanggananPermintaan;
 use App\Http\Permintaan\Kelola\Langganan\BuatTagihanLanggananPermintaan;
+use App\Http\Permintaan\Kelola\Langganan\UnggahBuktiTransferPermintaan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,11 +67,15 @@ final class LanggananKontroler extends Kontroler
             $permintaan->AmbilKodeKupon(),
         );
 
-        return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan->Uuid])
-            ->with('Kilat', "Tagihan {$tagihan->Nomor} dibuat. Silakan selesaikan pembayaran online.");
+        // D-112: kupon 100% membuat tagihan Rp 0 yang langsung lunas, tidak ada yang dibayar.
+        $pesan = $tagihan->Status === StatusTagihanLangganan::Lunas
+            ? "Tagihan {$tagihan->Nomor} bernilai Rp 0 karena kupon, jadi langsung lunas. Paket {$tagihan->Paket->Nama} sudah aktif."
+            : "Tagihan {$tagihan->Nomor} dibuat. Silakan selesaikan pembayaran online.";
+
+        return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan->Uuid])->with('Kilat', $pesan);
     }
 
-    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, SegarkanPembayaranGerbangLangganan $segarkan): Response
+    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, SegarkanPembayaranGerbangLangganan $segarkan, RekeningTujuanPlatform $rekening): Response
     {
         $data = $this->kueri->CariTagihan($tagihan);
         abort_if($data === null, 404);
@@ -92,7 +101,10 @@ final class LanggananKontroler extends Kontroler
         return Inertia::render('Kelola/Langganan/Tagihan', [
             'Tagihan' => TagihanLanggananTenant::PetakanTagihan($data),
             'Pembayaran' => array_values($pembayaran->map(fn (PembayaranLangganan $baris): array => TagihanLanggananTenant::PetakanPembayaran($baris))->all()),
-            'BolehBayarOnline' => $terbuka && $gerbang->CekAktif(),
+            // D-112: tagihan manual (paket harga negosiasi) dibayar dengan transfer; tagihan biasa hanya lewat gerbang (D-82).
+            'BolehBayarOnline' => $terbuka && ! $data->Manual && $gerbang->CekAktif(),
+            'BolehUnggahBukti' => $terbuka && $data->Manual && ! $adaPembayaranMenunggu && $rekening->Ambil() !== [],
+            'RekeningTujuan' => $data->Manual ? $rekening->Ambil() : [],
             'BolehBatalkan' => $terbuka && ! $adaPembayaranMenunggu,
         ]);
     }
@@ -114,6 +126,23 @@ final class LanggananKontroler extends Kontroler
         );
 
         return response()->json(['UrlBayar' => $hasil->urlBayar]);
+    }
+
+    /** D-112: Owner mengunggah bukti transfer untuk tagihan manual; diverifikasi Keuangan di antrean P-08. */
+    public function UnggahBukti(string $tagihan, UnggahBuktiTransferPermintaan $permintaan, UnggahBuktiTransfer $unggah): RedirectResponse
+    {
+        $data = $this->kueri->CariTagihan($tagihan);
+        abort_if($data === null, 404);
+
+        if (! $data->Manual) {
+            throw new PelanggaranAturanBisnis('BukanTagihanManual', 'Tagihan ini dibayar lewat pembayaran online, bukan transfer.');
+        }
+
+        $pengguna = $this->PenggunaMasuk();
+        $unggah->Jalankan($tagihan, $permintaan->AmbilData(), $pengguna->Id, $pengguna->Nama, (string) $pengguna->Email);
+
+        return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan])
+            ->with('Kilat', 'Bukti transfer terkirim. Tim keuangan akan memeriksanya; Anda diberi tahu lewat email.');
     }
 
     public function Batalkan(string $tagihan, BatalkanTagihanLanggananPermintaan $permintaan, BatalkanTagihanLangganan $batalkan): RedirectResponse

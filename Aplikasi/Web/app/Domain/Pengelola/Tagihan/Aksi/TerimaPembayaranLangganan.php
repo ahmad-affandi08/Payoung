@@ -63,7 +63,7 @@ final class TerimaPembayaranLangganan
                 $diterima,
                 CarbonImmutable::now(),
                 idVerifikatorPengelola: $verifikator->Id,
-                mulaiPaketSebelumnya: $this->AmbilMulaiPaketSebelumnya($tagihan),
+                mulaiPaketSebelumnya: self::AmbilMulaiPaketSebelumnya($tagihan),
             );
 
             $this->audit->Catat(
@@ -90,7 +90,7 @@ final class TerimaPembayaranLangganan
     }
 
     /** Jangkar grandfathering (BR-P04.1) diteruskan dari tagihan lunas sebelumnya untuk paket yang sama. */
-    private function AmbilMulaiPaketSebelumnya(TagihanLangganan $tagihan): ?CarbonImmutable
+    public static function AmbilMulaiPaketSebelumnya(TagihanLangganan $tagihan): ?CarbonImmutable
     {
         $sebelumnya = DaftarTagihanPlatform::KueriTagihan()
             ->where('IdTenant', $tagihan->IdTenant)

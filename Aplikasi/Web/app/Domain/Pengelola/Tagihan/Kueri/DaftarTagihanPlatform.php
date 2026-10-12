@@ -7,10 +7,13 @@ namespace App\Domain\Pengelola\Tagihan\Kueri;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
+use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
+use App\Domain\Tenant\Enum\StatusRefundLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\PembayaranLangganan;
+use App\Domain\Tenant\Model\RefundLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,6 +45,14 @@ final class DaftarTagihanPlatform
     public static function KueriPembayaran(): Builder
     {
         return app(KonteksPengelola::class)->KueriDataPlatform(PembayaranLangganan::class);
+    }
+
+    /**
+     * @return Builder<RefundLangganan>
+     */
+    public static function KueriRefund(): Builder
+    {
+        return app(KonteksPengelola::class)->KueriDataPlatform(RefundLangganan::class);
     }
 
     /**
@@ -125,6 +136,68 @@ final class DaftarTagihanPlatform
             ->orderByDesc('Id')
             ->get()
             ->all());
+    }
+
+    /**
+     * Pengajuan refund satu tagihan, terbaru di atas, lengkap dengan nama pengaju dan pemutus.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function AmbilRefundTagihan(TagihanLangganan $tagihan): array
+    {
+        return $this->PetakanRefund(array_values(self::KueriRefund()->where('IdTagihanLangganan', $tagihan->Id)->orderByDesc('Id')->get()->all()));
+    }
+
+    /**
+     * Antrean refund di atas batas yang menunggu keputusan Super Admin (P-08, BR-P08.2), terlama di atas.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function AmbilRefundMenunggu(): array
+    {
+        $refund = self::KueriRefund()->where('Status', StatusRefundLangganan::Diajukan->value)->orderBy('Id')->limit(100)->get();
+        $tagihan = self::KueriTagihan()->whereIn('Id', $refund->pluck('IdTagihanLangganan')->all())->get()->keyBy('Id');
+        $namaTenant = $this->AmbilNamaTenant($refund->pluck('IdTenant')->unique()->values()->all());
+
+        return array_map(function (array $baris) use ($tagihan, $namaTenant, $refund): array {
+            $model = $refund->firstWhere('Uuid', $baris['Uuid']);
+            $terkait = $model === null ? null : $tagihan->get($model->IdTagihanLangganan);
+
+            return [
+                ...$baris,
+                'UuidTagihan' => $terkait?->Uuid,
+                'NomorTagihan' => $terkait?->Nomor,
+                'NamaTenant' => $model === null ? '—' : ($namaTenant[$model->IdTenant] ?? '—'),
+            ];
+        }, $this->PetakanRefund(array_values($refund->all())));
+    }
+
+    /**
+     * @param  list<RefundLangganan>  $refund
+     * @return list<array<string, mixed>>
+     */
+    private function PetakanRefund(array $refund): array
+    {
+        $idPelaku = array_values(array_unique(array_filter(array_merge(
+            array_map(fn (RefundLangganan $baris): int => $baris->IdPenggunaPengelolaPengaju, $refund),
+            array_map(fn (RefundLangganan $baris): ?int => $baris->IdPenggunaPengelolaPemutus, $refund),
+        ))));
+        $nama = PenggunaPengelola::query()->whereKey($idPelaku)->pluck('Nama', 'Id')->all();
+
+        return array_map(fn (RefundLangganan $baris): array => [
+            'Uuid' => $baris->Uuid,
+            'Status' => $baris->Status->value,
+            'LabelStatus' => $baris->Status->AmbilLabel(),
+            'Jumlah' => $baris->Jumlah,
+            'Alasan' => $baris->Alasan,
+            'CatatanPengembalian' => $baris->CatatanPengembalian,
+            'Pengaju' => $nama[$baris->IdPenggunaPengelolaPengaju] ?? null,
+            'Pemutus' => $baris->IdPenggunaPengelolaPemutus === null ? null : ($nama[$baris->IdPenggunaPengelolaPemutus] ?? null),
+            'DiajukanPada' => $baris->DibuatPada?->toIso8601ZuluString(),
+            'DiputuskanPada' => $baris->DiputuskanPada?->toIso8601ZuluString(),
+            'AlasanTolak' => $baris->AlasanTolak,
+            'LayananDiakhiri' => $baris->LayananDiakhiri,
+        ], $refund);
     }
 
     /**

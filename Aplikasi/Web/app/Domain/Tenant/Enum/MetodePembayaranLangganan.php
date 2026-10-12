@@ -12,12 +12,15 @@ enum MetodePembayaranLangganan: string
 {
     case TransferManual = 'TransferManual';
     case Gateway = 'Gateway';
+    /** Tagihan Rp 0 (kupon 100%): lunas otomatis tanpa uang masuk (D-112). */
+    case Kupon = 'Kupon';
 
     public function AmbilLabel(): string
     {
         return match ($this) {
             self::TransferManual => 'Transfer manual',
             self::Gateway => 'Pembayaran online',
+            self::Kupon => 'Kupon 100%',
         };
     }
 }

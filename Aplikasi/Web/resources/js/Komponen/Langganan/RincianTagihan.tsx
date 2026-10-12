@@ -38,6 +38,26 @@ export default function RincianTagihan({ tagihan, namaTenant }: PropsRincianTagi
                     <dt className="text-keterangan text-teks-sekunder">Jatuh tempo</dt>
                     <dd>{FormatTanggalWaktu(tagihan.JatuhTempoPada)}</dd>
                 </div>
+                {tagihan.Keterangan ? (
+                    <div className="sm:col-span-2">
+                        <dt className="text-keterangan text-teks-sekunder">Keterangan</dt>
+                        <dd>{tagihan.Keterangan}</dd>
+                    </div>
+                ) : null}
+                {tagihan.DihapusBukuPada ? (
+                    <div className="sm:col-span-2">
+                        <dt className="text-keterangan text-teks-sekunder">
+                            Dihapus-buku {FormatTanggalWaktu(tagihan.DihapusBukuPada)}
+                        </dt>
+                        <dd>{tagihan.AlasanHapusBuku}</dd>
+                    </div>
+                ) : null}
+                {tagihan.DikembalikanPada ? (
+                    <div>
+                        <dt className="text-keterangan text-teks-sekunder">Dikembalikan (refund)</dt>
+                        <dd>{FormatTanggalWaktu(tagihan.DikembalikanPada)}</dd>
+                    </div>
+                ) : null}
                 {tagihan.DibayarPada ? (
                     <div>
                         <dt className="text-keterangan text-teks-sekunder">Lunas</dt>

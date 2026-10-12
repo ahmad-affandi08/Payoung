@@ -52,6 +52,11 @@ final class TenantKontroler extends Kontroler
                 'Penanda' => array_map(fn (PenandaTenant $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], PenandaTenant::cases()),
                 'KolomBatas' => Paket::KOLOM_BATAS,
                 'Fitur' => array_map(fn (array $fitur) => ['Nilai' => $fitur['Kunci'], 'Label' => "{$fitur['Nama']} ({$fitur['Kunci']})"], $katalog->AmbilFitur()),
+                // D-112: paket harga negosiasi yang boleh ditagih manual oleh Keuangan.
+                'PaketNegosiasi' => array_map(
+                    fn (Paket $paket) => ['Nilai' => $paket->Kode, 'Label' => $paket->Nama],
+                    array_values(Paket::query()->where('HargaNegosiasi', true)->orderBy('Urutan')->get()->all()),
+                ),
             ],
             'Aturan' => [
                 'MaksHariTrial' => PerpanjangTrial::MAKS_HARI,

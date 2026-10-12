@@ -8,6 +8,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Bersama\Tenant\LingkupTenant;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Tenant\Model\PembayaranLangganan;
+use App\Domain\Tenant\Model\RefundLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +35,7 @@ final class KonteksPengelola
      *
      * @var list<class-string<Model>>
      */
-    public const MODEL_DATA_PLATFORM = [TagihanLangganan::class, PembayaranLangganan::class];
+    public const MODEL_DATA_PLATFORM = [TagihanLangganan::class, PembayaranLangganan::class, RefundLangganan::class];
 
     private int $kedalamanLintas = 0;
 

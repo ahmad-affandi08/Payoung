@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import PanelTransferManual, { type RekeningTujuan } from '@/Komponen/Langganan/PanelTransferManual';
 import RincianTagihan from '@/Komponen/Langganan/RincianTagihan';
 import TombolBayarOnline from '@/Komponen/Langganan/TombolBayarOnline';
 import TabelData from '@/Komponen/TabelData/TabelData';
@@ -29,6 +30,8 @@ type PropsTagihan = {
     Pembayaran: PembayaranLangganan[];
     BolehBayarOnline: boolean;
     BolehBatalkan: boolean;
+    BolehUnggahBukti?: boolean;
+    RekeningTujuan?: RekeningTujuan[];
 };
 
 /** Detail tagihan dan pembayaran online lewat DOKU Checkout (gerbang billing platform). */
@@ -37,6 +40,8 @@ export default function HalamanTagihanLangganan({
     Pembayaran,
     BolehBayarOnline,
     BolehBatalkan,
+    BolehUnggahBukti = false,
+    RekeningTujuan = [],
 }: PropsTagihan) {
     const [membatalkan, AturMembatalkan] = useState(false);
 
@@ -61,6 +66,16 @@ export default function HalamanTagihanLangganan({
             ) : null}
             <RincianTagihan tagihan={Tagihan} />
             {BolehBayarOnline ? <TombolBayarOnline uuidTagihan={Tagihan.Uuid} /> : null}
+            {Tagihan.Manual &&
+            RekeningTujuan.length > 0 &&
+            (Tagihan.Status === 'Terbit' || Tagihan.Status === 'JatuhTempo') ? (
+                <PanelTransferManual
+                    uuidTagihan={Tagihan.Uuid}
+                    total={Tagihan.Total}
+                    rekening={RekeningTujuan}
+                    bolehUnggah={BolehUnggahBukti}
+                />
+            ) : null}
             <RiwayatPembayaran pembayaran={Pembayaran} />
             {BolehBatalkan ? (
                 <div>

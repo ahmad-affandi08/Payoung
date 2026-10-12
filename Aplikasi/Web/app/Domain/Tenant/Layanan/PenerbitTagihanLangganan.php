@@ -10,6 +10,7 @@ use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
 use App\Domain\Pajak\Kueri\TarifPajakBerlaku;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
+use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
@@ -48,6 +49,7 @@ final class PenerbitTagihanLangganan
         private readonly PenghitungProrataAddon $prorataAddon,
         private readonly KelayakanBeliAddon $kelayakanAddon,
         private readonly PenghitungNaikPaket $naikPaket,
+        private readonly PelunasTagihanLangganan $pelunas,
     ) {}
 
     /**
@@ -70,10 +72,6 @@ final class PenerbitTagihanLangganan
 
         if ($subtotal->Bandingkan(Uang::Nol()) <= 0) {
             throw new PelanggaranAturanBisnis('PaketTanpaBiaya', "Paket {$paket->Nama} tidak memerlukan tagihan.", 'KodePaket');
-        }
-
-        if (! $this->gerbang->CekAktif()) {
-            throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
         }
 
         $tarif = null;
@@ -101,9 +99,11 @@ final class PenerbitTagihanLangganan
             tambahan: $totalAddon,
         );
 
-        // Tagihan Rp 0 (kupon 100%) butuh aktivasi tanpa transfer; ditunda sampai alur itu dirancang.
-        if ($rincian->total->BernilaiNol()) {
-            throw new PelanggaranAturanBisnis('TotalNol', 'Tagihan dengan kupon ini bernilai Rp 0 dan belum bisa diproses otomatis. Hubungi tim kami.', 'KodeKupon');
+        // D-112: tagihan Rp 0 (kupon 100%) tidak butuh gerbang; ia terbit lalu langsung lunas (lihat akhir metode ini).
+        $gratis = $rincian->total->BernilaiNol();
+
+        if (! $gratis && ! $this->gerbang->CekAktif()) {
+            throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
         }
 
         $jatuhTempo = $this->TentukanJatuhTempo($jenis, $langganan, $sekarang);
@@ -159,7 +159,100 @@ final class PenerbitTagihanLangganan
             'Addon' => array_map(fn (array $baris): string => $baris['Addon']->Kode, $barisAddon),
         ], idTenant: $idTenant);
 
+        if ($gratis) {
+            $this->LunasiTanpaBayar($langganan, $tagihan, $sekarang);
+        }
+
         return $tagihan;
+    }
+
+    /**
+     * D-112: tagihan manual untuk paket harga negosiasi (Enterprise), diterbitkan Keuangan/Super Admin. Tidak ada
+     * `HargaPaket`: `$subtotal` (sebelum PPN) adalah harga kesepakatan untuk satu siklus. Kupon tidak berlaku. Dibayar
+     * dengan transfer (bukti diunggah Owner atau dicatat langsung Keuangan), tidak lewat gerbang. Pemanggil mengunci baris
+     * `Langganan` di dalam transaksi dan memastikan tidak ada tagihan terbuka lain.
+     */
+    public function TerbitkanManual(
+        Langganan $langganan,
+        Paket $paket,
+        JenisTagihanLangganan $jenis,
+        SiklusTagihan $siklus,
+        Uang $subtotal,
+        string $keterangan,
+        int $idPenggunaPengelola,
+    ): TagihanLangganan {
+        $sekarang = CarbonImmutable::now();
+
+        if ($subtotal->Bandingkan(Uang::Nol()) <= 0) {
+            throw new PelanggaranAturanBisnis('HargaTidakSah', 'Harga kesepakatan harus lebih dari Rp 0.', 'Subtotal');
+        }
+
+        $tarif = null;
+
+        if ((bool) config('tagihan.PlatformPkp')) {
+            $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
+                ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan.');
+        }
+
+        $jumlahBulan = PenghitungPeriodeLangganan::JumlahBulan($siklus);
+        $rincian = $this->kalkulator->Hitung(
+            subtotal: $subtotal,
+            jumlahBulan: $jumlahBulan,
+            tarifPersen: $tarif?->Tarif,
+            pengaliDppPembilang: $tarif->PengaliDppPembilang ?? 1,
+            pengaliDppPenyebut: $tarif->PengaliDppPenyebut ?? 1,
+        );
+        $jatuhTempo = $this->TentukanJatuhTempo($jenis, $langganan, $sekarang);
+        $tagihan = TagihanLangganan::query()->create([
+            'IdTenant' => $langganan->IdTenant,
+            'Nomor' => $this->penomor->Ambil($sekarang),
+            'Jenis' => $jenis,
+            'Status' => StatusTagihanLangganan::Terbit,
+            'Manual' => true,
+            'Keterangan' => $keterangan,
+            'IdPaket' => $paket->Id,
+            'IdHargaPaket' => null,
+            'Siklus' => $siklus,
+            'JumlahBulan' => $jumlahBulan,
+            'Subtotal' => $rincian->subtotal->KeString(),
+            'Diskon' => '0.00',
+            'IdTarifPajak' => $tarif?->Id,
+            'TarifPpn' => $tarif->Tarif ?? '0',
+            'PengaliDppPembilang' => $tarif->PengaliDppPembilang ?? 1,
+            'PengaliDppPenyebut' => $tarif->PengaliDppPenyebut ?? 1,
+            'DasarPengenaanPajak' => $rincian->dasarPengenaanPajak->KeString(),
+            'JumlahPpn' => $rincian->jumlahPpn->KeString(),
+            'Total' => $rincian->total->KeString(),
+            'TerbitPada' => $sekarang,
+            'JatuhTempoPada' => $jatuhTempo,
+            'IdPenggunaPengelolaPembuat' => $idPenggunaPengelola,
+            // Tagihan dari Keuangan belum diketahui Owner: pengingat pertama dikirim penjadwal.
+            'PengingatTerakhir' => null,
+        ]);
+
+        return $tagihan;
+    }
+
+    /**
+     * D-112: tagihan Rp 0 karena kupon 100% dilunasi di transaksi yang sama lewat `PelunasTagihanLangganan` (jalur yang
+     * sama dengan transfer dan gerbang), dengan pembayaran bermetode `Kupon` bernilai nol. Paket, siklus, dan periode
+     * langganan berubah persis seperti pembayaran sungguhan; kupon memakai bulan diskonnya seperti biasa.
+     */
+    private function LunasiTanpaBayar(Langganan $langganan, TagihanLangganan $tagihan, CarbonImmutable $sekarang): void
+    {
+        $pembayaran = PembayaranLangganan::query()->create([
+            'IdTenant' => $tagihan->IdTenant,
+            'IdTagihanLangganan' => $tagihan->Id,
+            'Metode' => MetodePembayaranLangganan::Kupon,
+            'Status' => StatusPembayaranLangganan::Menunggu,
+            'Jumlah' => '0.00',
+        ]);
+        $lanjutan = $tagihan->Jenis === JenisTagihanLangganan::Perpanjangan ? $this->tagihanTenant->AmbilMulaiLanggananPaket($tagihan->IdPaket) : null;
+        $hasil = $this->pelunas->Lunasi($langganan, $tagihan, $pembayaran, Uang::Nol(), $sekarang, mulaiPaketSebelumnya: $lanjutan);
+        $this->audit->Catat('langganan.tagihan-lunas-kupon', $tagihan, nilaiLama: ['Status' => $hasil->statusTagihanLama], nilaiBaru: [
+            'Nomor' => $tagihan->Nomor, 'Status' => $tagihan->Status->value, 'KodeKupon' => $tagihan->KodeKupon,
+            'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->Siklus),
+        ], idTenant: $tagihan->IdTenant);
     }
 
     /**

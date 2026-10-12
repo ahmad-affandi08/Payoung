@@ -1,1 +1,0 @@
-function e(e){switch(e){case`Lunas`:return`sukses`;case`Terbit`:return`peringatan`;case`JatuhTempo`:return`bahaya`;default:return`netral`}}function t(e){switch(e){case`Diterima`:return`sukses`;case`Ditolak`:return`bahaya`;default:return`peringatan`}}export{e as n,t};

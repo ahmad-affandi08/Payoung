@@ -3,6 +3,7 @@ import { useId, type FormEvent, type ReactNode } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import BidangUang from '@/Komponen/Formulir/BidangUang';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
@@ -28,7 +29,7 @@ type PropsKerangka = {
  * Kerangka formulir tindakan dalam dialog: judul, penjelasan akibat, galat aturan bisnis, tombol kirim & batal.
  * Tindakan berisiko (varian bahaya: tangguhkan, cabut override) memakai AlertDialog.
  */
-function KerangkaForm({
+export function KerangkaForm({
     judul,
     keterangan,
     labelKirim,
@@ -63,7 +64,7 @@ function KerangkaForm({
 }
 
 /** Pelanggaran aturan bisnis dari server dikirim di kunci `Umum` (PelanggaranAturanBisnis). */
-function AmbilGalatUmum(galat: Partial<Record<string, string>>): string | undefined {
+export function AmbilGalatUmum(galat: Partial<Record<string, string>>): string | undefined {
     return galat.Umum;
 }
 
@@ -413,5 +414,71 @@ export function FormCatatan({ uuid }: { uuid: string }) {
                 </Tombol>
             </div>
         </form>
+    );
+}
+
+const OPSI_SIKLUS_TAGIHAN = [
+    { Nilai: 'Bulanan', Label: 'Bulanan' },
+    { Nilai: 'Tahunan', Label: 'Tahunan' },
+];
+
+/** D-112: Keuangan menerbitkan tagihan manual untuk paket harga negosiasi (mis. Enterprise). */
+export function FormTagihanManual({ uuid, paket, saatSelesai }: PropsDasar & { paket: Pilihan[] }) {
+    const formulir = useForm({ KodePaket: paket[0]?.Nilai ?? '', Siklus: 'Tahunan', Subtotal: '', Keterangan: '' });
+    const Kirim = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+        formulir.post(`/tenant/${uuid}/tagihan-manual`, { preserveScroll: true, onSuccess: saatSelesai });
+    };
+
+    return (
+        <KerangkaForm
+            judul="Terbitkan tagihan manual"
+            keterangan={
+                <p>
+                    Untuk paket harga negosiasi. Isi harga kesepakatan <strong>sebelum PPN</strong> untuk satu siklus;
+                    PPN dan nomor tagihan dihitung otomatis. Pemilik usaha membayar dengan transfer dan mengunggah
+                    buktinya, atau Anda mencatat pembayaran yang sudah masuk dari halaman tagihan.
+                </p>
+            }
+            labelKirim="Terbitkan tagihan"
+            memproses={formulir.processing}
+            galatUmum={AmbilGalatUmum(formulir.errors)}
+            saatKirim={Kirim}
+            saatBatal={saatSelesai}
+        >
+            <BidangPilihan
+                label="Paket"
+                nilai={formulir.data.KodePaket}
+                opsi={paket}
+                saatBerubah={(nilai) => formulir.setData('KodePaket', nilai)}
+                galat={formulir.errors.KodePaket}
+                required
+            />
+            <BidangPilihan
+                label="Siklus tagihan"
+                nilai={formulir.data.Siklus}
+                opsi={OPSI_SIKLUS_TAGIHAN}
+                saatBerubah={(nilai) => formulir.setData('Siklus', nilai)}
+                galat={formulir.errors.Siklus}
+                required
+            />
+            <BidangUang
+                label="Harga kesepakatan (sebelum PPN)"
+                nilai={formulir.data.Subtotal}
+                saatBerubah={(nilai) => formulir.setData('Subtotal', nilai)}
+                galat={formulir.errors.Subtotal}
+                required
+            />
+            <BidangTeksPanjang
+                label="Keterangan kontrak"
+                nilai={formulir.data.Keterangan}
+                baris={3}
+                maksimal={300}
+                saatBerubah={(nilai) => formulir.setData('Keterangan', nilai)}
+                galat={formulir.errors.Keterangan}
+                keterangan="Tampil di tagihan, misal nomor kontrak atau cakupan layanan."
+                required
+            />
+        </KerangkaForm>
     );
 }

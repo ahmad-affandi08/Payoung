@@ -9,6 +9,7 @@ import {
     FormOverride,
     FormPenanda,
     FormPerpanjangTrial,
+    FormTagihanManual,
     FormTangguhkan,
 } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import PanelPendaftaranMerchant from '@/Komponen/Pengelola/Tenant/PanelPendaftaranMerchant';
@@ -27,7 +28,15 @@ import { labelBatas, type AturanTenant, type PilihanTenant, type Tampilan360 } f
 
 type PropsTampil = { Tenant: Tampilan360; Pilihan: PilihanTenant; Aturan: AturanTenant };
 
-type Tindakan = 'trial' | 'override' | 'tangguhkan' | 'aktifkan' | 'penanda' | { cabut: string; kunci: string } | null;
+type Tindakan =
+    | 'trial'
+    | 'override'
+    | 'tagihan-manual'
+    | 'tangguhkan'
+    | 'aktifkan'
+    | 'penanda'
+    | { cabut: string; kunci: string }
+    | null;
 
 const labelAksi: Record<string, string> = {
     'tenant.trial.perpanjang': 'Perpanjang trial',
@@ -151,6 +160,15 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
             label: 'Aktifkan kembali',
             boleh: PunyaIzin(pengguna, IzinPengelola.TenantAktifkan) && Langganan?.BisaDiaktifkan === true,
         },
+        {
+            kunci: 'tagihan-manual',
+            label: 'Terbitkan tagihan manual',
+            boleh:
+                PunyaIzin(pengguna, IzinPengelola.TagihanTerbitkan) &&
+                Pilihan.PaketNegosiasi.length > 0 &&
+                status !== null &&
+                status !== 'Berhenti',
+        },
         { kunci: 'penanda', label: 'Ubah penanda', boleh: PunyaIzin(pengguna, IzinPengelola.TenantPenandaUbah) },
         {
             kunci: 'tangguhkan',
@@ -211,6 +229,9 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                     aturan={Aturan}
                     saatSelesai={Tutup}
                 />
+            ) : null}
+            {tindakan === 'tagihan-manual' ? (
+                <FormTagihanManual uuid={Profil.Uuid} paket={Pilihan.PaketNegosiasi} saatSelesai={Tutup} />
             ) : null}
             {tindakan === 'tangguhkan' ? (
                 <FormTangguhkan uuid={Profil.Uuid} pilihanKategori={Pilihan.KategoriPenangguhan} saatSelesai={Tutup} />
