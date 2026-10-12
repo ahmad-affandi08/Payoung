@@ -67,6 +67,7 @@ export const IzinPengelola = {
     TagihanTerbitkan: 'tagihan.terbitkan',
     TagihanRefund: 'tagihan.refund',
     TagihanRefundSetujui: 'tagihan.refund.setujui',
+    TagihanPengaturan: 'tagihan.pengaturan',
     // P-09
     DukunganTiketLihat: 'dukungan.tiket.lihat',
     DukunganTiketTangani: 'dukungan.tiket.tangani',

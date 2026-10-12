@@ -160,7 +160,7 @@ describe('Tagihan manual paket harga negosiasi (E4)', function (): void {
 
     it('Owner mengunggah bukti transfer tagihan manual, Keuangan menerima: Lunas dan langganan Enterprise aktif 12 bulan', function (): void {
         $tagihan = TerbitkanManualUji($this, $this->keuangan, $this->tenant);
-        config()->set('tagihan.RekeningTujuan', [['Kode' => 'UTAMA', 'NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234567890', 'AtasNama' => 'PT Kasir Nusantara Digital']]);
+        BantuanTagihan::AturRekeningTujuan();
 
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))
@@ -201,7 +201,7 @@ describe('Tagihan manual paket harga negosiasi (E4)', function (): void {
             ->post(BantuanTagihan::Url('/kelola/langganan/tagihan'), ['KodePaket' => 'PRO', 'Siklus' => 'Bulanan'])
             ->assertSessionHasNoErrors();
         $tagihan = TagihanLangganan::query()->withoutGlobalScopes()->sole();
-        config()->set('tagihan.RekeningTujuan', [['Kode' => 'UTAMA', 'NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234567890', 'AtasNama' => 'PT Kasir Nusantara Digital']]);
+        BantuanTagihan::AturRekeningTujuan();
 
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->post(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}/bukti"), [
@@ -455,6 +455,88 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
         MasukManual($this, $this->keuangan)->post(BantuanPengelola::Url("/tagihan/{$tagihan->Uuid}/refund"), ['Alasan' => 'Salah paket, minta dikembalikan'])->assertSessionHasNoErrors();
 
         expect(RefundLangganan::query()->withoutGlobalScopes()->sole()->Status)->toBe(StatusRefundLangganan::Diajukan);
+    });
+
+    it('D-114: rekening tujuan transfer diatur Super Admin dari konsol: kode otomatis, maksimal 5, validasi nomor, teraudit, tampil di halaman Owner', function (): void {
+        $rekening = [
+            ['NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234 567 890', 'AtasNama' => 'PT Kasir Nusantara Digital'],
+            ['NamaBank' => 'Bank Mandiri', 'NomorRekening' => '137-00-1234567-8', 'AtasNama' => 'PT Kasir Nusantara Digital'],
+        ];
+
+        // Sebelum disimpan dari konsol, nilai awal server (env) dipakai: di sini kosong, jadi tagihan manual belum bisa dibayar.
+        MasukManual($this, $this->superAdmin)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->where('PengaturanPenagihan.Boleh', true)
+                ->where('PengaturanPenagihan.RekeningDariKonsol', false)
+                ->has('PengaturanPenagihan.Rekening', 0));
+
+        // Keuangan dan peran lain tidak boleh mengubah rekening tujuan.
+        MasukManual($this, $this->keuangan)
+            ->put(BantuanPengelola::Url('/tagihan/pengaturan/rekening-tujuan'), ['Rekening' => $rekening, 'Alasan' => 'Coba ubah sendiri'])
+            ->assertForbidden();
+        MasukManual($this, $this->keuangan)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('PengaturanPenagihan.Boleh', false));
+
+        // Validasi: nomor harus angka, atas nama wajib, alasan wajib, maksimal 5 baris.
+        $ubah = fn (array $isian) => MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/rekening-tujuan'), $isian);
+        $ubah(['Rekening' => [['NamaBank' => 'BCA', 'NomorRekening' => 'abc', 'AtasNama' => 'PT Kasir']], 'Alasan' => 'Rekening baru'])->assertSessionHasErrors('Rekening.0.NomorRekening');
+        $ubah(['Rekening' => [['NamaBank' => 'BCA', 'NomorRekening' => '1234567890', 'AtasNama' => '']], 'Alasan' => 'Rekening baru'])->assertSessionHasErrors('Rekening.0.AtasNama');
+        $ubah(['Rekening' => $rekening, 'Alasan' => ''])->assertSessionHasErrors('Alasan');
+        $ubah(['Rekening' => array_fill(0, 6, $rekening[0]), 'Alasan' => 'Terlalu banyak'])->assertSessionHasErrors('Rekening');
+
+        $ubah(['Rekening' => $rekening, 'Alasan' => 'Rekening operasional resmi perusahaan'])->assertSessionHasNoErrors();
+
+        $log = LogAuditPengelola::query()->where('Aksi', 'tagihan.rekening-tujuan.ubah')->sole();
+        expect($log->NilaiLama)->toBe(['Rekening' => []])
+            ->and($log->NilaiBaru['Rekening'][0])->toBe(['Kode' => 'UTAMA', 'NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234 567 890', 'AtasNama' => 'PT Kasir Nusantara Digital'])
+            ->and($log->NilaiBaru['Rekening'][1]['Kode'])->toBe('REK2')
+            ->and($log->Alasan)->toBe('Rekening operasional resmi perusahaan');
+
+        MasukManual($this, $this->superAdmin)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->where('PengaturanPenagihan.RekeningDariKonsol', true)
+                ->has('PengaturanPenagihan.Rekening', 2));
+
+        // Owner melihat rekening dari konsol di halaman tagihan manual.
+        $tagihan = TerbitkanManualUji($this, $this->keuangan, $this->tenant);
+        BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
+            ->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('RekeningTujuan', 2)->where('RekeningTujuan.1.Kode', 'REK2'));
+    });
+
+    it('D-114: status PKP platform diatur Super Admin dari konsol; berlaku untuk tagihan berikutnya saja dan teraudit', function (): void {
+        $ubah = fn (array $isian) => MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/pkp'), $isian);
+
+        // Nilai awal server (env) dipakai selama belum disimpan: PKP, tagihan memuat PPN.
+        $sebelum = TerbitkanManualUji($this, $this->keuangan, $this->tenant);
+        expect($sebelum->JumlahPpn)->not->toBe('0.00');
+        MasukManual($this, $this->superAdmin)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('PengaturanPenagihan.PlatformPkp', true)->where('PengaturanPenagihan.PkpDariKonsol', false));
+
+        MasukManual($this, $this->keuangan)->put(BantuanPengelola::Url('/tagihan/pengaturan/pkp'), ['Pkp' => false, 'Alasan' => 'Coba ubah sendiri'])->assertForbidden();
+        $ubah(['Pkp' => false, 'Alasan' => ''])->assertSessionHasErrors('Alasan');
+        $ubah(['Pkp' => false, 'Alasan' => 'SPPKP belum terbit, jangan tagih PPN'])->assertSessionHasNoErrors();
+
+        $log = LogAuditPengelola::query()->where('Aksi', 'tagihan.pkp.ubah')->sole();
+        expect($log->NilaiLama)->toBe(['Pkp' => true])->and($log->NilaiBaru)->toBe(['Pkp' => false]);
+
+        // Tagihan lama tidak berubah; tagihan baru tanpa PPN.
+        $sebelum->Status = StatusTagihanLangganan::Dibatalkan;
+        $sebelum->save();
+        $sesudah = TerbitkanManualUji($this, $this->keuangan, $this->tenant);
+        expect($sebelum->refresh()->JumlahPpn)->not->toBe('0.00')
+            ->and($sesudah->JumlahPpn)->toBe('0.00')
+            ->and($sesudah->IdTarifPajak)->toBeNull()
+            ->and($sesudah->Total)->toBe('12000000.00');
+
+        MasukManual($this, $this->superAdmin)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('PengaturanPenagihan.PlatformPkp', false)->where('PengaturanPenagihan.PkpDariKonsol', true));
+
+        // Dinyalakan lagi: tagihan berikutnya memuat PPN.
+        $ubah(['Pkp' => true, 'Alasan' => 'SPPKP sudah terbit'])->assertSessionHasNoErrors();
+        $sesudah->Status = StatusTagihanLangganan::Dibatalkan;
+        $sesudah->save();
+        expect(TerbitkanManualUji($this, $this->keuangan, $this->tenant)->JumlahPpn)->not->toBe('0.00');
     });
 
     it('tagihan Rp 0 (kupon 100%) dan tagihan yang belum lunas tidak bisa di-refund', function (): void {

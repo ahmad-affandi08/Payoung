@@ -67,6 +67,7 @@ enum IzinPengelola: string
     case TagihanTerbitkan = 'tagihan.terbitkan';
     case TagihanRefund = 'tagihan.refund';
     case TagihanRefundSetujui = 'tagihan.refund.setujui';
+    case TagihanPengaturan = 'tagihan.pengaturan';
     // P-09 Tiket dukungan (§19.3: Dukungan & Super Admin).
     case DukunganTiketLihat = 'dukungan.tiket.lihat';
     case DukunganTiketTangani = 'dukungan.tiket.tangani';
@@ -132,6 +133,7 @@ enum IzinPengelola: string
             self::TagihanTerbitkan => 'Menerbitkan tagihan manual, mencatat pembayaran langsung, dan menghapus-buku tagihan langganan',
             self::TagihanRefund => 'Mengajukan refund tagihan langganan',
             self::TagihanRefundSetujui => 'Memutuskan refund langganan di atas batas',
+            self::TagihanPengaturan => 'Mengatur rekening tujuan transfer dan status PKP untuk penagihan langganan',
             // P-09
             self::DukunganTiketLihat => 'Melihat antrean & percakapan tiket dukungan semua tenant',
             self::DukunganTiketTangani => 'Mengambil, menugaskan, membalas, dan mengubah status tiket dukungan',

@@ -16,10 +16,12 @@ use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Layanan\PengaturanPenagihanPlatform;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\KuponLanggananPemakaian;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\PembayaranLangganan;
+use App\Domain\Tenant\Model\PengaturanPlatform;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Carbon;
@@ -230,7 +232,7 @@ describe('Membuat tagihan (BR-P08.1, BR-P04.1, BR-P04.7, §12.2)', function (): 
             ->assertSessionHasErrors(['Umum' => 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.']);
         expect(DB::table('NomorUrutTagihanLangganan')->count())->toBe(0);
 
-        config()->set('tagihan.PlatformPkp', false);
+        PengaturanPlatform::query()->create(['Kunci' => PengaturanPenagihanPlatform::KUNCI_PKP, 'Nilai' => '0']);
         $tagihan = BuatTagihanUji($this, $this->pemilik, $this->tenant);
         expect($tagihan->JumlahPpn)->toBe('0.00')
             ->and($tagihan->IdTarifPajak)->toBeNull()

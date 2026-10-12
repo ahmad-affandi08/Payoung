@@ -3,6 +3,7 @@ import {
     PanelBatasRefund,
     type BarisRefundMenunggu,
 } from '@/Komponen/Langganan/TindakanTagihanPengelola';
+import { PanelPengaturanPenagihan, type PengaturanPenagihan } from '@/Komponen/Langganan/PengaturanPenagihanPengelola';
 import { Link } from '@inertiajs/react';
 
 import AksiMassalVerifikasi from '@/Komponen/Pengelola/AksiMassalVerifikasi';
@@ -35,6 +36,7 @@ type PropsDaftarTagihan = {
     RefundMenunggu?: BarisRefundMenunggu[];
     BolehSetujuiRefund?: boolean;
     BatasRefund?: string;
+    PengaturanPenagihan?: PengaturanPenagihan;
 };
 
 const kolomAntrean: KolomTabel<BarisAntrean>[] = [
@@ -170,6 +172,7 @@ export default function HalamanDaftarTagihan({
     RefundMenunggu = [],
     BolehSetujuiRefund = false,
     BatasRefund = '1000000',
+    PengaturanPenagihan,
 }: PropsDaftarTagihan) {
     return (
         <TataLetakPengelola judul="Tagihan langganan">
@@ -188,6 +191,7 @@ export default function HalamanDaftarTagihan({
             </ul>
             <AntreanRefund antrean={RefundMenunggu} boleh={BolehSetujuiRefund} />
             <PanelBatasRefund batas={BatasRefund} boleh={BolehSetujuiRefund} />
+            {PengaturanPenagihan ? <PanelPengaturanPenagihan pengaturan={PengaturanPenagihan} /> : null}
             <section aria-labelledby="judul-antrean" className="flex flex-col gap-2">
                 <h2 id="judul-antrean" className="text-subjudul font-semibold text-teks-utama">
                     Menunggu verifikasi

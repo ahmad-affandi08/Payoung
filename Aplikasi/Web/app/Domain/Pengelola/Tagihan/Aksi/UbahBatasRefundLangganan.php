@@ -7,10 +7,10 @@ namespace App\Domain\Pengelola\Tagihan\Aksi;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Pengelola\Tagihan\Layanan\BatasRefundLangganan;
-use App\Domain\Pengelola\Tagihan\Model\PengaturanPlatform;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
+use App\Domain\Tenant\Model\PengaturanPlatform;
 use Illuminate\Support\Facades\DB;
 
 /**

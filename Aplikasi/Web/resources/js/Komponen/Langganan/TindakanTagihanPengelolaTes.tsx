@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AturHalamanUji, kirimanForm, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import PanelTransferManual from '@/Komponen/Langganan/PanelTransferManual';
+import { PanelPengaturanPenagihan, type PengaturanPenagihan } from '@/Komponen/Langganan/PengaturanPenagihanPengelola';
 import {
     AntreanRefund,
     PanelBatasRefund,
@@ -305,5 +306,100 @@ describe('PanelTransferManual (Owner, tagihan manual)', () => {
 
         expect(screen.queryByRole('button', { name: 'Unggah bukti transfer' })).toBeNull();
         expect(screen.getByText(/sedang diperiksa tim keuangan/)).toBeTruthy();
+    });
+});
+
+describe('PanelPengaturanPenagihan (D-114)', () => {
+    beforeEach(() => AturHalamanUji({}, '/tagihan'));
+    afterEach(() => cleanup());
+
+    const pengaturan: PengaturanPenagihan = {
+        Boleh: true,
+        PlatformPkp: false,
+        PkpDariKonsol: false,
+        Rekening: [
+            {
+                Kode: 'UTAMA',
+                NamaBank: 'Bank Central Asia',
+                NomorRekening: '1234567890',
+                AtasNama: 'PT Kasir Nusantara',
+            },
+        ],
+        RekeningDariKonsol: true,
+    };
+
+    it('menampilkan status PKP dan rekening; nilai awal server diberi penanda; peran tanpa izin tidak melihat tombol ubah', () => {
+        const { unmount: Lepas } = render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        expect(screen.getByText(/Bukan PKP \(tagihan tanpa PPN\)/)).toBeTruthy();
+        expect(screen.getAllByText('Nilai awal server')).toHaveLength(1);
+        expect(screen.getByText('1234567890')).toBeTruthy();
+        Lepas();
+
+        render(<PanelPengaturanPenagihan pengaturan={{ ...pengaturan, Boleh: false }} />);
+        expect(screen.queryByRole('button', { name: 'Ubah status PKP' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Ubah rekening' })).toBeNull();
+    });
+
+    it('Super Admin mengubah status PKP lewat PUT dengan alasan', () => {
+        render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah status PKP' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah status PKP' });
+        fireEvent.change(within(dialog).getByLabelText(/Alasan perubahan/), {
+            target: { value: 'SPPKP sudah terbit' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan status PKP' }));
+
+        expect(kirimanForm[0]).toMatchObject({
+            metode: 'put',
+            url: '/tagihan/pengaturan/pkp',
+            data: { Pkp: false, Alasan: 'SPPKP sudah terbit' },
+        });
+    });
+
+    it('Super Admin menambah rekening kedua dan mengirim seluruh daftar; maksimal lima rekening', () => {
+        render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah rekening' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah rekening tujuan transfer' });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Tambah rekening' }));
+        fireEvent.change(within(dialog).getByLabelText(/Nama bank \(rekening 2\)/), {
+            target: { value: 'Bank Mandiri' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Nomor rekening \(rekening 2\)/), {
+            target: { value: '1370012345678' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Atas nama \(rekening 2\)/), {
+            target: { value: 'PT Kasir Nusantara' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Alasan perubahan/), {
+            target: { value: 'Tambah rekening Mandiri' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan rekening' }));
+
+        expect(kirimanForm[0]).toMatchObject({
+            metode: 'put',
+            url: '/tagihan/pengaturan/rekening-tujuan',
+            data: {
+                Rekening: [
+                    { NamaBank: 'Bank Central Asia', NomorRekening: '1234567890', AtasNama: 'PT Kasir Nusantara' },
+                    { NamaBank: 'Bank Mandiri', NomorRekening: '1370012345678', AtasNama: 'PT Kasir Nusantara' },
+                ],
+                Alasan: 'Tambah rekening Mandiri',
+            },
+        });
+    });
+
+    it('tombol Tambah rekening hilang setelah lima rekening', () => {
+        render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah rekening' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah rekening tujuan transfer' });
+        for (let i = 0; i < 4; i++) {
+            fireEvent.click(within(dialog).getByRole('button', { name: 'Tambah rekening' }));
+        }
+
+        expect(within(dialog).queryByRole('button', { name: 'Tambah rekening' })).toBeNull();
     });
 });

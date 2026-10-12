@@ -11,8 +11,10 @@ use App\Domain\Pengelola\Referensi\Aksi\SiapkanPajakBawaan;
 use App\Domain\Tenant\Aksi\DaftarkanTenant;
 use App\Domain\Tenant\Aksi\UnggahBuktiTransfer;
 use App\Domain\Tenant\Data\DataBuktiTransfer;
+use App\Domain\Tenant\Layanan\PengaturanPenagihanPlatform;
 use App\Domain\Tenant\Model\HargaPaket;
 use App\Domain\Tenant\Model\PembayaranLangganan;
+use App\Domain\Tenant\Model\PengaturanPlatform;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use App\Http\Perantara\IdentifikasiTenantSesi;
@@ -171,6 +173,20 @@ final class BantuanTagihan
         app(KonteksTenant::class)->Atur($tenant->Id);
     }
 
+    /** Rekening tujuan transfer platform disimpan di pengaturan konsol (D-114), bukan di `.env`. */
+    public static function AturRekeningTujuan(): void
+    {
+        PengaturanPlatform::query()->updateOrCreate(
+            ['Kunci' => PengaturanPenagihanPlatform::KUNCI_REKENING],
+            ['Nilai' => json_encode([[
+                'Kode' => 'UTAMA',
+                'NamaBank' => 'Bank Central Asia',
+                'NomorRekening' => '1234567890',
+                'AtasNama' => 'PT Kasir Nusantara Digital',
+            ]], JSON_THROW_ON_ERROR)],
+        );
+    }
+
     /**
      * Pembayaran `Menunggu` berupa bukti transfer, lewat Aksi langsung. Halaman tagihan tenant tidak lagi menerima
      * unggahan bukti (tenant membayar lewat gerbang billing), tetapi Aksi & verifikasi platform atas bukti yang sudah
@@ -178,12 +194,7 @@ final class BantuanTagihan
      */
     public static function UnggahBuktiLangsung(Tenant $tenant, Pengguna $pemilik, TagihanLangganan $tagihan, ?string $tanggalTransfer = null): PembayaranLangganan
     {
-        config()->set('tagihan.RekeningTujuan', [[
-            'Kode' => 'UTAMA',
-            'NamaBank' => 'Bank Central Asia',
-            'NomorRekening' => '1234567890',
-            'AtasNama' => 'PT Kasir Nusantara Digital',
-        ]]);
+        self::AturRekeningTujuan();
         self::AturTenant($tenant);
 
         try {

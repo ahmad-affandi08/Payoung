@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Tagihan\Layanan;
 
 use App\Domain\Bersama\Nilai\Uang;
-use App\Domain\Pengelola\Tagihan\Model\PengaturanPlatform;
+use App\Domain\Tenant\Model\PengaturanPlatform;
 
 /**
  * Batas refund tanpa persetujuan kedua (BR-P08.2, D-113). Nilainya disimpan di `PengaturanPlatform` dan diubah Super

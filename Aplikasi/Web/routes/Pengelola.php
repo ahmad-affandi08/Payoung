@@ -346,6 +346,11 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::post('/tagihan/{tagihan}/refund', [TagihanManualKontroler::class, 'AjukanRefund'])
                 ->middleware([$izin(IzinPengelola::TagihanRefund), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tagihan.refund.ajukan');
+            // D-114: rekening tujuan transfer dan status PKP hanya Super Admin (izin tagihan.pengaturan).
+            Route::middleware([$izin(IzinPengelola::TagihanPengaturan), WajibDuaFaktorBaru::class])->group(function (): void {
+                Route::put('/tagihan/pengaturan/rekening-tujuan', [TagihanManualKontroler::class, 'SimpanRekeningTujuan'])->name('pengelola.tagihan.rekening-tujuan.simpan');
+                Route::put('/tagihan/pengaturan/pkp', [TagihanManualKontroler::class, 'UbahStatusPkp'])->name('pengelola.tagihan.pkp.ubah');
+            });
             Route::middleware([$izin(IzinPengelola::TagihanRefundSetujui), WajibDuaFaktorBaru::class])->group(function (): void {
                 Route::post('/tagihan/refund/{refund}/setujui', [TagihanManualKontroler::class, 'SetujuiRefund'])->name('pengelola.tagihan.refund.setujui');
                 Route::put('/tagihan/pengaturan/batas-refund', [TagihanManualKontroler::class, 'UbahBatasRefund'])->name('pengelola.tagihan.batas-refund.ubah');

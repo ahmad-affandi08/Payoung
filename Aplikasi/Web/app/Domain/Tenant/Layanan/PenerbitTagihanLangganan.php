@@ -50,6 +50,7 @@ final class PenerbitTagihanLangganan
         private readonly KelayakanBeliAddon $kelayakanAddon,
         private readonly PenghitungNaikPaket $naikPaket,
         private readonly PelunasTagihanLangganan $pelunas,
+        private readonly PengaturanPenagihanPlatform $pengaturan,
     ) {}
 
     /**
@@ -76,7 +77,7 @@ final class PenerbitTagihanLangganan
 
         $tarif = null;
 
-        if ((bool) config('tagihan.PlatformPkp')) {
+        if ($this->pengaturan->PlatformPkp()) {
             $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.');
         }
@@ -189,7 +190,7 @@ final class PenerbitTagihanLangganan
 
         $tarif = null;
 
-        if ((bool) config('tagihan.PlatformPkp')) {
+        if ($this->pengaturan->PlatformPkp()) {
             $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan.');
         }
@@ -287,7 +288,7 @@ final class PenerbitTagihanLangganan
         $hitung = $this->prorataAddon->Hitung($hargaAddon, $jumlahBulan, $jumlah, $sekarang, $langganan->PeriodeMulai, $langganan->PeriodeSelesai);
         $tarif = null;
 
-        if ((bool) config('tagihan.PlatformPkp')) {
+        if ($this->pengaturan->PlatformPkp()) {
             $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.');
         }
@@ -376,7 +377,7 @@ final class PenerbitTagihanLangganan
         $siklus = $hitung['Siklus'];
         $tarif = null;
 
-        if ((bool) config('tagihan.PlatformPkp')) {
+        if ($this->pengaturan->PlatformPkp()) {
             $tarif = $this->tarifBerlaku->Cari('Ppn', null, $sekarang)
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.');
         }

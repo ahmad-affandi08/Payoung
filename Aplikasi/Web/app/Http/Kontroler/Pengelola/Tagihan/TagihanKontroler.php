@@ -16,6 +16,7 @@ use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
+use App\Domain\Tenant\Layanan\PengaturanPenagihanPlatform;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Kontroler\Pengelola\PelakuPengelola;
@@ -38,7 +39,7 @@ final class TagihanKontroler extends Kontroler
 {
     use PelakuPengelola;
 
-    public function __construct(private readonly DaftarTagihanPlatform $kueri, private readonly BatasRefundLangganan $batasRefund) {}
+    public function __construct(private readonly DaftarTagihanPlatform $kueri, private readonly BatasRefundLangganan $batasRefund, private readonly PengaturanPenagihanPlatform $pengaturan) {}
 
     public function Daftar(Request $permintaan): Response|JsonResponse
     {
@@ -50,6 +51,13 @@ final class TagihanKontroler extends Kontroler
             'BolehVerifikasi' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanVerifikasi),
             'RefundMenunggu' => $this->kueri->AmbilRefundMenunggu(),
             'BatasRefund' => $this->batasRefund->Ambil()->KeString(),
+            'PengaturanPenagihan' => [
+                'Boleh' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanPengaturan),
+                'PlatformPkp' => $this->pengaturan->PlatformPkp(),
+                'PkpDariKonsol' => $this->pengaturan->PkpDariKonsol(),
+                'Rekening' => $this->pengaturan->Rekening(),
+                'RekeningDariKonsol' => $this->pengaturan->RekeningDariKonsol(),
+            ],
             'BolehSetujuiRefund' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
             'OpsiStatus' => array_map(fn (StatusTagihanLangganan $pilihan): array => ['Nilai' => $pilihan->value, 'Label' => $pilihan->AmbilLabel()], StatusTagihanLangganan::cases()),
         ]);
