@@ -14,7 +14,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Lampiran transaksi kas & bank (F-13a). Disimpan di disk privat `config('akuntansi.DiskLampiran')` dengan nama acak
+ * Lampiran dokumen akuntansi (F-13a transaksi kas & bank; FIN-05 jurnal umum). Disimpan di disk privat `config('akuntansi.DiskLampiran')` dengan nama acak
  * di folder per tenant, sehingga nama asli dari pengguna tidak pernah menjadi path. Diunduh hanya lewat rute yang
  * sudah memeriksa izin & batas outlet. Validasi jenis & ukuran di Permintaan.
  */
@@ -23,12 +23,12 @@ final class PenyimpanLampiranKasBank
     /**
      * @return array{Path: string, NamaAsli: string, Mime: string, Ukuran: int}
      */
-    public function Simpan(int $idTenant, UploadedFile $berkas): array
+    public function Simpan(int $idTenant, UploadedFile $berkas, string $folder = 'kas-bank'): array
     {
         $penjaga = app(PenjagaPenyimpanan::class);
         $penjaga->Pastikan($idTenant, (int) $berkas->getSize());
         $ekstensi = Str::lower($berkas->guessExtension() ?? $berkas->getClientOriginalExtension());
-        $path = $this->AmbilDisk()->putFileAs("akuntansi/kas-bank/{$idTenant}", $berkas, Str::ulid().'.'.$ekstensi);
+        $path = $this->AmbilDisk()->putFileAs("akuntansi/{$folder}/{$idTenant}", $berkas, Str::ulid().'.'.$ekstensi);
 
         if ($path === false) {
             throw new RuntimeException('Lampiran gagal disimpan.');
@@ -52,11 +52,16 @@ final class PenyimpanLampiranKasBank
 
     public function Unduh(TransaksiKasBank $transaksi): StreamedResponse
     {
-        $path = $transaksi->PathLampiran;
+        return $this->UnduhBerkas($transaksi->PathLampiran, $transaksi->NamaLampiran, $transaksi->MimeLampiran);
+    }
+
+    /** Unduh lampiran dokumen akuntansi mana pun (jurnal umum memakai ini juga): path dari kolom dokumennya, bukan dari pengguna. */
+    public function UnduhBerkas(?string $path, ?string $nama, ?string $mime): StreamedResponse
+    {
         abort_if($path === null || ! $this->AmbilDisk()->exists($path), 404);
 
-        return $this->AmbilDisk()->download($path, $transaksi->NamaLampiran ?? basename($path), [
-            'Content-Type' => $transaksi->MimeLampiran ?? 'application/octet-stream',
+        return $this->AmbilDisk()->download($path, $nama ?? basename($path), [
+            'Content-Type' => $mime ?? 'application/octet-stream',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

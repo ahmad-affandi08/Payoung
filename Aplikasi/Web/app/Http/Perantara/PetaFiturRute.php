@@ -60,6 +60,7 @@ final class PetaFiturRute
         ['Pola' => 'kelola.akuntansi.laporan.laba-rugi*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.akuntansi.laporan.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.jurnal.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
+        ['Pola' => 'kelola.akuntansi.jurnal-umum.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.akun.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.pemetaan.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.aset-tetap*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],

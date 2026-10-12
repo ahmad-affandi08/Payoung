@@ -8,6 +8,7 @@ use App\Http\Kontroler\Kelola\Akuntansi\BaganAkunKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\GiroKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\JadwalKasBankKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\JurnalKontroler;
+use App\Http\Kontroler\Kelola\Akuntansi\JurnalUmumKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\LaporanKeuanganKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\PemetaanAkunKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\PencairanKontroler;
@@ -38,6 +39,10 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::LaporanKeuanganL
     Route::get('/akuntansi/tutup-buku', [TutupBukuKontroler::class, 'Tampilkan'])->name('kelola.akuntansi.tutup-buku');
     Route::get('/akuntansi/jurnal', [JurnalKontroler::class, 'Daftar'])->name('kelola.akuntansi.jurnal.daftar');
     Route::get('/akuntansi/jurnal/{jurnal}', [JurnalKontroler::class, 'Detail'])->where('jurnal', $ulid)->name('kelola.akuntansi.jurnal.detail');
+
+    // FIN-05 (D-131): jurnal umum manual (lihat dokumen & lampirannya; catat/balik di grup `akuntansi.kelola`).
+    Route::get('/akuntansi/jurnal-umum/{jurnalUmum}', [JurnalUmumKontroler::class, 'Detail'])->where('jurnalUmum', $ulid)->name('kelola.akuntansi.jurnal-umum.detail');
+    Route::get('/akuntansi/jurnal-umum/{jurnalUmum}/lampiran', [JurnalUmumKontroler::class, 'Lampiran'])->where('jurnalUmum', $ulid)->name('kelola.akuntansi.jurnal-umum.lampiran');
 
     // F-13a: bagan akun & pemetaan akun (lihat).
     Route::get('/akuntansi/akun', [BaganAkunKontroler::class, 'Daftar'])->name('kelola.akuntansi.akun.daftar');
@@ -90,6 +95,11 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::AkuntansiKelola)
     Route::delete('/akuntansi/pemetaan', [PemetaanAkunKontroler::class, 'Hapus'])->name('kelola.akuntansi.pemetaan.hapus');
     // Audit kemudahan pakai #12: lengkapi akun & pemetaan yang belum ada dari template sektor (aditif).
     Route::post('/akuntansi/pemetaan/perbaiki-otomatis', [PemetaanAkunKontroler::class, 'PerbaikiOtomatis'])->middleware('throttle:10,1')->name('kelola.akuntansi.pemetaan.perbaiki-otomatis');
+
+    // FIN-05 (D-131): catat jurnal umum manual dan dokumen pembaliknya.
+    Route::get('/akuntansi/jurnal-umum/buat', [JurnalUmumKontroler::class, 'Buat'])->name('kelola.akuntansi.jurnal-umum.buat');
+    Route::post('/akuntansi/jurnal-umum', [JurnalUmumKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.jurnal-umum.simpan');
+    Route::post('/akuntansi/jurnal-umum/{jurnalUmum}/pembalik', [JurnalUmumKontroler::class, 'Balikkan'])->where('jurnalUmum', $ulid)->middleware('throttle:60,1')->name('kelola.akuntansi.jurnal-umum.pembalik');
 
     // F-13a: transaksi kas & bank (halaman catat, simpan & pembalik).
     Route::get('/akuntansi/kas-bank/buat', [TransaksiKasBankKontroler::class, 'Buat'])->name('kelola.akuntansi.kas-bank.buat');

@@ -35,13 +35,14 @@ const pembalik: BarisDaftarJurnal = {
     TautanSumber: null,
 };
 
-function BuatPropsDaftar(data: BarisDaftarJurnal[], jumlahHalaman = 1): PropsDaftarJurnal {
+function BuatPropsDaftar(data: BarisDaftarJurnal[], jumlahHalaman = 1, kelola = false): PropsDaftarJurnal {
     return {
         Jurnal: {
             Data: data,
             Meta: { Halaman: 1, PerHalaman: 25, Total: jumlahHalaman * 25, JumlahHalaman: jumlahHalaman },
         },
         OpsiJenisSumber: [{ Nilai: 'StokAwal', Label: 'Stok awal' }],
+        Izin: { Kelola: kelola },
     };
 }
 
@@ -109,6 +110,18 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         expect(screen.getByText('Jurnal pembalik')).toBeTruthy();
         expect(screen.getByText('Sudah dibalik')).toBeTruthy();
         expect(screen.getByText('Rp 0,01')).toBeTruthy();
+    });
+
+    it('FIN-05: tombol "Catat jurnal umum" hanya muncul bagi pemegang akuntansi.kelola', () => {
+        window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
+        const tampilan = RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([barisJurnal], 1, true)} />);
+        expect(screen.getByRole('link', { name: 'Catat jurnal umum' }).getAttribute('href')).toBe(
+            '/kelola/akuntansi/jurnal-umum/buat',
+        );
+        tampilan.unmount();
+
+        RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([barisJurnal], 1, false)} />);
+        expect(screen.queryByRole('link', { name: 'Catat jurnal umum' })).toBeNull();
     });
 
     it('saring (TabelData D-16): sumber & tanggal tersimpan di URL, cari ditahan lalu dikirim ke server', async () => {

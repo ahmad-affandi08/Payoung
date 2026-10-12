@@ -86,6 +86,9 @@ enum JenisSumberJurnal: string
     // v3.42 (F-12): pencairan giro/cek mundur ke rekening bank (sumber = baris `Giro`).
     case Giro = 'Giro';
 
+    // FIN-05 (D-131): jurnal umum manual oleh Akuntan/Pemilik (dan pembaliknya).
+    case JurnalUmum = 'JurnalUmum';
+
     public function AmbilLabel(): string
     {
         return match ($this) {
@@ -127,6 +130,7 @@ enum JenisSumberJurnal: string
             self::PembayaranKonsinyasi => 'Setoran konsinyasi',
             self::BiayaTambahanPembelian => 'Biaya tambahan pembelian',
             self::Giro => 'Pencairan giro',
+            self::JurnalUmum => 'Jurnal umum',
         };
     }
 
@@ -175,6 +179,7 @@ enum JenisSumberJurnal: string
             self::PembayaranKonsinyasi => '/kelola/pembelian/konsinyasi/setoran/'.$uuid,
             self::BiayaTambahanPembelian => '/kelola/pembelian/biaya-tambahan/'.$uuid,
             self::Giro => '/kelola/akuntansi/giro?cari='.$uuid,
+            self::JurnalUmum => '/kelola/akuntansi/jurnal-umum/'.$uuid,
         };
     }
 }

@@ -25,6 +25,7 @@ final class PengukurPenyimpanan
         ['katalog.DiskGambar', 'produk/{id}'],
         ['kasir.DiskBuktiKas', 'kasir/bukti-kas/{id}'],
         ['akuntansi.DiskLampiran', 'akuntansi/kas-bank/{id}'],
+        ['akuntansi.DiskLampiran', 'akuntansi/jurnal-umum/{id}'],
         ['akuntansi.DiskLampiran', 'pembelian/*/{id}'],
         ['karyawan.DiskSwafoto', 'karyawan/swafoto/{id}'],
         ['pemenuhan.DiskBukti', 'pemenuhan/bukti/{id}'],

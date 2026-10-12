@@ -22,6 +22,7 @@ export type BarisDaftarJurnal = {
 export type PropsDaftarJurnal = {
     Jurnal: HasilTabel<BarisDaftarJurnal>;
     OpsiJenisSumber: Pilihan[];
+    Izin: { Kelola: boolean };
 };
 export type PropsDetailJurnal = {
     Jurnal: BarisDaftarJurnal & {
@@ -581,5 +582,45 @@ export type PropsDaftarQrisTanpaPenjualan = {
     OpsiAkun: { Uuid: string; Kode: string; Nama: string }[];
     OpsiHasil: { Nilai: HasilPenutupanQris; Label: string }[];
     HariIni: string;
+    Izin: { Kelola: boolean };
+};
+
+/*
+ * FIN-05 (D-131): jurnal umum manual. Uang = string desimal, tanggal `YYYY-MM-DD`.
+ */
+export type JenisJurnalUmum = 'Umum' | 'Penyesuaian' | 'Koreksi';
+export type OpsiAkunJurnalUmum = { Uuid: string; Kode: string; Nama: string; Jenis: TipeAkun };
+export type PropsBuatJurnalUmum = {
+    UuidKlien: string;
+    TanggalBawaan: string;
+    OpsiJenis: { Nilai: JenisJurnalUmum; Label: string; Penjelasan: string }[];
+    OpsiOutlet: { Uuid: string; Nama: string }[];
+    OpsiAkun: OpsiAkunJurnalUmum[];
+    WajibOutlet: boolean;
+    Lampiran: { Ekstensi: string[]; UkuranMaksimalKb: number };
+};
+export type PropsDetailJurnalUmum = {
+    JurnalUmum: {
+        Uuid: string;
+        Nomor: string;
+        Jenis: JenisJurnalUmum;
+        LabelJenis: string;
+        Tanggal: string;
+        Referensi: string | null;
+        Keterangan: string;
+        TotalNilai: string;
+        Pembalik: boolean;
+        Dibalik: boolean;
+        DibuatOleh: string | null;
+        DibuatPada: string;
+        UuidDibalik: string | null;
+        NomorDibalik: string | null;
+        UuidPembalik: string | null;
+        NomorPembalik: string | null;
+        Lampiran: { Nama: string; Ukuran: number } | null;
+    };
+    Jurnal: { Uuid: string; Nomor: string };
+    Baris: PropsDetailJurnal['Baris'];
+    Total: PropsDetailJurnal['Total'];
     Izin: { Kelola: boolean };
 };

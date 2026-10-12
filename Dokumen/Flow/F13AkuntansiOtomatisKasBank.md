@@ -5,7 +5,7 @@
 - Setiap domain event yang punya dampak keuangan menghasilkan **Jurnal** melalui layanan `LayananPostingJurnal` memakai **Aturan Posting** (pemetaan event → akun) yang dapat dikonfigurasi per tenant (§11.3).
 - **Kas & Bank:** akun kas per outlet, rekening bank, transfer antar akun, penerimaan/pengeluaran lain, **rekonsiliasi bank** (import mutasi CSV, fase 3; **selesai v3.39**: `MutasiBank`, `/kelola/akuntansi/rekonsiliasi`).
 - **Biaya operasional:** input pengeluaran (listrik, sewa, gaji) dengan kategori beban & lampiran.
-- **Jurnal manual/umum** hanya untuk role Akuntan/Owner, wajib seimbang.
+- **Jurnal manual/umum** hanya untuk role Akuntan/Owner, wajib seimbang. **Selesai v5.73 (FIN-05, D-131)**: `JurnalUmum` `JM/{YYYY}/{MM}/{SEQ4}`, `/kelola/akuntansi/jurnal-umum`; akun kendali (persediaan, piutang, hutang, deposit, aset tetap, dst.) tidak boleh dijurnal manual; koreksi lewat dokumen pembalik.
 - **Aset tetap & penyusutan** (fase 3): garis lurus, jurnal penyusutan bulanan otomatis. **Selesai v3.38** (`AsetTetap`, `PenyusutanAset`, `/kelola/akuntansi/aset-tetap`, jadwal `akuntansi:susutkan-aset-tetap`); metode saldo menurun & revaluasi belum.
 
 **Rincian F-13a (v1.48, fase 1; diputuskan agen atas mandat D-12):**

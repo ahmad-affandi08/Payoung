@@ -63,6 +63,24 @@ final class DaftarAkunPilihan
     }
 
     /**
+     * FIN-05 jurnal umum manual: semua akun aktif kecuali akun kendali (`PenjagaAkunKendali`), urut kode. Aturan akhirnya
+     * tetap di `CatatJurnalUmum`; daftar ini hanya agar formulir tidak menawarkan akun yang pasti ditolak.
+     *
+     * @param  list<int>  $idDikecualikan
+     * @return list<array{Uuid: string, Kode: string, Nama: string, Jenis: string}>
+     */
+    public function AmbilUntukJurnalUmum(array $idDikecualikan): array
+    {
+        return array_values(Akun::query()
+            ->where('Aktif', true)
+            ->when($idDikecualikan !== [], fn ($k) => $k->whereNotIn('Id', $idDikecualikan))
+            ->orderBy('Kode')
+            ->get()
+            ->map(fn (Akun $a): array => ['Uuid' => $a->Uuid, 'Kode' => $a->Kode, 'Nama' => $a->Nama, 'Jenis' => $a->Jenis->value])
+            ->all());
+    }
+
+    /**
      * F-04 fase 1: akun kas/bank aktif (`Akun.KasBank`) untuk pembayaran hutang & belanja stok, urut kode.
      *
      * @return list<BarisAkun>

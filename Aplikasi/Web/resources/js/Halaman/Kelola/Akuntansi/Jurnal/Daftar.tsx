@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 
 import PenandaJurnal from '@/Komponen/Akuntansi/PenandaJurnal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
@@ -76,8 +77,11 @@ const kolom: KolomTabel<BarisDaftarJurnal>[] = [
     },
 ];
 
-/** F-05a: daftar jurnal (TabelData D-16), terbaru di atas. Jurnal hanya dibuat sistem; koreksi lewat pembalik. */
-export default function HalamanDaftarJurnal({ Jurnal, OpsiJenisSumber }: PropsDaftarJurnal) {
+/**
+ * F-05a: daftar jurnal (TabelData D-16), terbaru di atas. Jurnal dibuat sistem dari dokumen, atau oleh Akuntan/Pemilik
+ * lewat jurnal umum manual (FIN-05); koreksi selalu lewat pembalik.
+ */
+export default function HalamanDaftarJurnal({ Jurnal, OpsiJenisSumber, Izin }: PropsDaftarJurnal) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const saring: DefinisiSaring[] = [
         { id: 'Tanggal', label: 'Tanggal', jenis: 'rentangTanggal' },
@@ -92,9 +96,18 @@ export default function HalamanDaftarJurnal({ Jurnal, OpsiJenisSumber }: PropsDa
     return (
         <TataLetakAplikasi judul="Jurnal">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Jurnal dibuat otomatis dari dokumen seperti stok awal. Jurnal yang sudah diposting tidak bisa diubah;
-                koreksi dilakukan dengan membatalkan dokumen sumbernya sehingga terbentuk jurnal pembalik.
+                Jurnal dibuat otomatis dari dokumen seperti penjualan, pembelian, dan stok awal. Jurnal yang sudah
+                diposting tidak bisa diubah; koreksi dilakukan dengan membatalkan dokumen sumbernya sehingga terbentuk
+                jurnal pembalik. Untuk pencatatan yang tidak punya dokumen sendiri, misalnya penyesuaian akhir bulan,
+                catat jurnal umum.
             </p>
+            {Izin.Kelola ? (
+                <AksiHalaman>
+                    <Button asChild>
+                        <Link href="/kelola/akuntansi/jurnal-umum/buat">Catat jurnal umum</Link>
+                    </Button>
+                </AksiHalaman>
+            ) : null}
             <DaftarGalatServer galat={props.errors} />
 
             <TabelData

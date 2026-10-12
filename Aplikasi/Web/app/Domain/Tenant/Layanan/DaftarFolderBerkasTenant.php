@@ -41,6 +41,7 @@ final class DaftarFolderBerkasTenant
     public const PEMBUKUAN = [
         ['kasir.DiskBuktiKas', 'kasir/bukti-kas/{id}'],
         ['akuntansi.DiskLampiran', 'akuntansi/kas-bank/{id}'],
+        ['akuntansi.DiskLampiran', 'akuntansi/jurnal-umum/{id}'],
         ['akuntansi.DiskLampiran', 'pembelian/*/{id}'],
     ];
 

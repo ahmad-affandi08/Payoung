@@ -77,6 +77,9 @@ enum JenisDokumenBernomor: string
     /** F-05b (D-105): permintaan stok antar lokasi `MS/{TUJUAN}-{ASAL}/{YYMM}/{SEQ4}` disusun `PenomorDokumenPersediaan`. */
     case PermintaanStok = 'PermintaanStok';
 
+    /** FIN-05 (D-131): jurnal umum manual `JM/{YYYY}/{MM}/{SEQ4}`. Awalan `JU` sudah milik nomor `Jurnal` itu sendiri. */
+    case JurnalUmum = 'JurnalUmum';
+
     public function AmbilAwalan(): string
     {
         return match ($this) {
@@ -109,13 +112,14 @@ enum JenisDokumenBernomor: string
             self::PerintahKerja => 'WO',
             self::AntrianKios => 'KI',
             self::PermintaanStok => 'MS',
+            self::JurnalUmum => 'JM',
         };
     }
 
     public function AmbilPanjangUrut(): int
     {
         return match ($this) {
-            self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok => 4,
+            self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok, self::JurnalUmum => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
             self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja => 4,

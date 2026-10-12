@@ -8,7 +8,6 @@ use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Akuntansi\Kueri\DaftarJurnal;
 use App\Domain\Akuntansi\Kueri\DetailJurnal;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
-use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,10 +15,10 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Halaman jurnal (baca saja) `laporan.keuangan.lihat` (DesainF05a D, H-13). Jurnal tenant lain atau yang memuat baris
- * di luar outlet akses pengguna = 404.
+ * Halaman jurnal (baca saja) `laporan.keuangan.lihat` (DesainF05a D, H-13); tombol "Catat jurnal umum" (FIN-05) hanya
+ * bagi pemegang `akuntansi.kelola`. Jurnal tenant lain atau yang memuat baris di luar outlet akses pengguna = 404.
  */
-final class JurnalKontroler extends DasarKelolaKontroler
+final class JurnalKontroler extends DasarAkuntansiKontroler
 {
     public function __construct(
         private readonly DaftarJurnal $daftar,
@@ -35,6 +34,7 @@ final class JurnalKontroler extends DasarKelolaKontroler
                 fn (JenisSumberJurnal $j): array => ['Nilai' => $j->value, 'Label' => $j->AmbilLabel()],
                 JenisSumberJurnal::cases(),
             ),
+            'Izin' => ['Kelola' => $this->CekIzinKelola()],
         ]);
     }
 

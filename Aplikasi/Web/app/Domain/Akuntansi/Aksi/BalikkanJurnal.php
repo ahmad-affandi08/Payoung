@@ -27,9 +27,9 @@ final class BalikkanJurnal
     /**
      * @throws PelanggaranAturanBisnis JurnalTidakDikenal, JurnalSudahDibalik, PeriodeTerkunci, JurnalSumberGanda
      */
-    public function Jalankan(int $idJurnal, CarbonImmutable $tanggal, string $keterangan, JenisSumberJurnal $jenis, int $idSumber, string $kunciSumber, ?int $idPengguna): HasilPostingJurnal
+    public function Jalankan(int $idJurnal, CarbonImmutable $tanggal, string $keterangan, JenisSumberJurnal $jenis, int $idSumber, string $kunciSumber, ?int $idPengguna, ?string $uuidSumber = null, ?string $nomorSumber = null): HasilPostingJurnal
     {
-        return DB::transaction(function () use ($idJurnal, $tanggal, $keterangan, $jenis, $idSumber, $kunciSumber, $idPengguna): HasilPostingJurnal {
+        return DB::transaction(function () use ($idJurnal, $tanggal, $keterangan, $jenis, $idSumber, $kunciSumber, $idPengguna, $uuidSumber, $nomorSumber): HasilPostingJurnal {
             $asal = Jurnal::query()->whereKey($idJurnal)->sharedLock()->first();
 
             if (! $asal instanceof Jurnal) {
@@ -56,8 +56,8 @@ final class BalikkanJurnal
             return $this->posting->Jalankan(new DataJurnal(
                 jenisSumber: $jenis,
                 idSumber: $idSumber,
-                uuidSumber: $sumberSama ? $asal->UuidSumber : null,
-                nomorSumber: $sumberSama ? $asal->NomorSumber : null,
+                uuidSumber: $sumberSama ? $asal->UuidSumber : $uuidSumber,
+                nomorSumber: $sumberSama ? $asal->NomorSumber : $nomorSumber,
                 tanggal: $tanggal,
                 keterangan: $keterangan,
                 baris: array_values($baris),

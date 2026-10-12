@@ -131,6 +131,24 @@ enum PeranAkun: string
         return $this === self::DiskonPenjualan || $this === self::ReturPenjualan || $this === self::AkumulasiPenyusutan;
     }
 
+    /**
+     * FIN-05 (D-131): akun kendali yang saldonya adalah turunan buku pembantu (aturan #9 — stok & saldo akun adalah
+     * turunan peristiwa). Jurnal umum manual tidak boleh menyentuhnya: `SaldoStok`, `Piutang`, `Hutang`, deposit, sesi,
+     * giro, dan kartu aset tetap tidak ikut berubah, sehingga neraca dan buku pembantunya akan berselisih tanpa jejak.
+     * Penyesuaiannya lewat dokumen modulnya (penyesuaian stok, hapus-buku piutang, pembayaran hutang, dst.).
+     */
+    public function CekAkunKendali(): bool
+    {
+        return match ($this) {
+            self::PersediaanBarangDagang, self::PersediaanBahanBaku, self::PersediaanDalamPerjalanan,
+            self::PiutangUsaha, self::PiutangBelumDifakturkan, self::PiutangPencairan, self::PiutangKaryawan, self::PiutangKlaimPemasok,
+            self::HutangUsaha, self::HutangBelumDifakturkan, self::HutangKonsinyasi,
+            self::UangMukaPelanggan, self::DepositPelanggan, self::PendapatanDiterimaDimuka, self::KliringTukarBarang,
+            self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima, self::HutangGiro => true,
+            default => false,
+        };
+    }
+
     /** Peran kas & bank: akunnya ditandai akun kas/bank di bagan akun (F-13a transaksi kas & bank). */
     public function CekPeranKasBank(): bool
     {
