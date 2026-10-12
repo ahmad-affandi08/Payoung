@@ -10,6 +10,7 @@ use App\Domain\Integrasi\MasukGoogle\PemverifikasiTokenGoogle;
 use App\Domain\Integrasi\MasukGoogle\TokenGoogleTidakSah;
 use App\Domain\Organisasi\Aksi\CabutTokenPengguna;
 use App\Domain\Organisasi\Aksi\DaftarkanPerangkatPengguna;
+use App\Domain\Organisasi\Aksi\KirimTautanAturUlangKataSandi;
 use App\Domain\Organisasi\Aksi\MasukDenganGoogle;
 use App\Domain\Organisasi\Aksi\TerbitkanTokenPengguna;
 use App\Domain\Organisasi\Aksi\VerifikasiDuaFaktorPengguna;
@@ -17,9 +18,11 @@ use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\ProfilPemilik;
 use App\Domain\Organisasi\Layanan\PenyimpanTantanganDuaFaktor;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Http\Kontroler\Autentikasi\LupaKataSandiKontroler;
 use App\Http\Kontroler\Autentikasi\SesiKontroler;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Perantara\AutentikasiPemilik;
+use App\Http\Permintaan\Autentikasi\LupaKataSandiPermintaan;
 use App\Http\Permintaan\Pemilik\V1\MasukDuaFaktorPermintaan;
 use App\Http\Permintaan\Pemilik\V1\MasukGooglePermintaan;
 use App\Http\Permintaan\Pemilik\V1\MasukPermintaan;
@@ -115,6 +118,32 @@ final class AutentikasiKontroler extends Kontroler
         $this->PastikanBolehMasuk($pengguna);
 
         return $this->SelesaikanMasuk($permintaan, $pengguna);
+    }
+
+    /**
+     * Lupa kata sandi dari Aplikasi Owner: tautan atur ulang dikirim ke email seperti di web (`LupaKataSandiKontroler`),
+     * dengan batas per IP dan per email yang sama. Jawabannya selalu sama, terdaftar atau tidak (§25 no. 18).
+     */
+    public function LupaKataSandi(LupaKataSandiPermintaan $permintaan, KirimTautanAturUlangKataSandi $kirim): JsonResponse
+    {
+        $email = mb_strtolower(trim($permintaan->string('Email')->toString()));
+        $kunciIp = 'lupa-kata-sandi-ip:'.$permintaan->ip();
+        $kunciEmail = 'lupa-kata-sandi-email:'.hash('sha256', $email);
+
+        if (RateLimiter::tooManyAttempts($kunciIp, LupaKataSandiKontroler::BATAS_PERMINTAAN_PER_IP_PER_JAM)) {
+            $detik = RateLimiter::availableIn($kunciIp);
+
+            throw new PelanggaranAturanBisnis('TerlaluBanyakPercobaan', 'Terlalu banyak permintaan dari jaringan ini. Coba lagi dalam '.max(1, intdiv($detik + 59, 60)).' menit.', 'Email', 429, ['Detik' => $detik]);
+        }
+
+        RateLimiter::hit($kunciIp, 3600);
+
+        if (! RateLimiter::tooManyAttempts($kunciEmail, LupaKataSandiKontroler::BATAS_PERMINTAAN_PER_EMAIL_PER_JAM)) {
+            RateLimiter::hit($kunciEmail, 3600);
+            $kirim->Jalankan($email);
+        }
+
+        return response()->json(['Pesan' => LupaKataSandiKontroler::PESAN_TERKIRIM]);
     }
 
     /** D-57: aplikasi menanyakan apakah tombol Google ditampilkan, dan Client ID web yang dipakai sebagai `serverClientId`. */

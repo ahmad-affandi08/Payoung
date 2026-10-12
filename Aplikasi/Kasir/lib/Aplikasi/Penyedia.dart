@@ -523,8 +523,9 @@ final penyediaLayananKetersediaan = Provider<LayananKetersediaan>(
   (ref) => LayananKetersediaan(klien: ref.watch(penyediaKlienPos)),
 );
 
-/// F-17 BR-17.2: Uuid produk yang ditandai habis di outlet perangkat. Dimuat saat online (bersama pembaruan katalog);
-/// offline memakai keadaan terakhir.
+/// F-17 BR-17.2: Uuid produk yang ditandai habis di outlet perangkat. Dimuat saat online (bersama pembaruan katalog) dan
+/// disalin ke pengaturan lokal; saat offline (termasuk setelah aplikasi dimulai ulang) memakai salinan terakhir, bukan
+/// daftar kosong yang membuat semua produk tampil tersedia lagi.
 class PengaturProdukHabis extends Notifier<Set<String>> {
   @override
   Set<String> build() => const <String>{};
@@ -533,12 +534,35 @@ class PengaturProdukHabis extends Notifier<Set<String>> {
     final baru = await ref.read(penyediaLayananKetersediaan).Muat();
     if (baru != null) {
       state = baru;
+      await _Simpan();
+
+      return;
+    }
+
+    if (state.isEmpty) {
+      state = await _AmbilTersimpan();
     }
   }
 
   Future<void> Ubah(String uuidProduk, {required bool habis, required StafLokal kasir}) async {
     final akhir = await ref.read(penyediaLayananKetersediaan).Ubah(uuidProduk, habis: habis, kasir: kasir);
     state = akhir ? <String>{...state, uuidProduk} : (Set<String>.of(state)..remove(uuidProduk));
+    await _Simpan();
+  }
+
+  Future<void> _Simpan() =>
+      ref.read(penyediaRepositori).SimpanPengaturan(KunciPengaturan.produkHabis, jsonEncode(state.toList()..sort()));
+
+  Future<Set<String>> _AmbilTersimpan() async {
+    final teks = await ref.read(penyediaRepositori).AmbilPengaturan(KunciPengaturan.produkHabis);
+    if (teks == null) {
+      return const <String>{};
+    }
+    try {
+      return (jsonDecode(teks) as List<Object?>).whereType<String>().toSet();
+    } on FormatException {
+      return const <String>{};
+    }
   }
 }
 

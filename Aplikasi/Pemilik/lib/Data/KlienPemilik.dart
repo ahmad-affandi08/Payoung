@@ -496,6 +496,15 @@ class KlienPemilik {
     }, pakaiToken: false),
   );
 
+  /// Lupa kata sandi: server mengirim tautan atur ulang ke email dan selalu menjawab sama, terdaftar atau tidak.
+  /// Mengembalikan pesan jawaban server untuk ditampilkan apa adanya.
+  Future<String> LupaKataSandi(String email) async {
+    final json = await _Kirim('POST', 'lupa-kata-sandi', {'Email': email.trim()}, pakaiToken: false);
+    final pesan = UraiJson.AmbilTeks(json['Pesan']);
+
+    return pesan.isEmpty ? 'Jika email tersebut terdaftar, tautan atur ulang sudah dikirim.' : pesan;
+  }
+
   /// D-57: Client ID web Google untuk `serverClientId`; `null` bila toko belum mengaktifkan Masuk dengan Google.
   Future<String?> AmbilClientIdGoogle() async {
     final json = await _Kirim('GET', 'masuk/google/konfigurasi', null, pakaiToken: false);

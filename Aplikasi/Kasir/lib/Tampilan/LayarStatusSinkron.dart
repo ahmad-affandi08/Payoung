@@ -28,6 +28,9 @@ class LayarStatusSinkron extends ConsumerStatefulWidget {
   /// §18.3 butir 10: data tertunda lebih lama dari ini diberi peringatan.
   static const Duration batasTertunda = Duration(hours: 2);
 
+  /// Data produk, harga, dan pengaturan dari server yang lebih tua dari ini dianggap basi (perangkat lama offline).
+  static const Duration batasDataLama = Duration(days: 1);
+
   /// §18.3 butir 7: selisih jam perangkat − server lebih dari ini diberi peringatan.
   static const int batasSelisihJamDetik = 600;
 
@@ -187,6 +190,7 @@ class _LayarStatusSinkronState extends ConsumerState<LayarStatusSinkron> {
     final pengaturan = ref.watch(penyediaPengaturanSinkron).value ?? const <String, String>{};
     final terakhir = DateTime.tryParse(pengaturan[KunciPengaturan.sinkronTerakhir] ?? '');
     final selisih = int.tryParse(pengaturan[KunciPengaturan.selisihJamDetik] ?? '');
+    final dataDiperbarui = DateTime.tryParse(pengaturan[KunciPengaturan.dataAwalPada] ?? '')?.toLocal();
     final tertua = ref.watch(penyediaOutboxTertua).value;
     final sekarang = ref.watch(penyediaJam)();
     final ditinjau = ref.watch(penyediaPenjualanDitinjau).value ?? const <String>[];
@@ -195,6 +199,9 @@ class _LayarStatusSinkronState extends ConsumerState<LayarStatusSinkron> {
       if (tertua != null && sekarang.difference(tertua) > LayarStatusSinkron.batasTertunda)
         'Ada data belum terkirim sejak ${FormatWaktu.FormatTanggalJam(tertua)} (lebih dari 2 jam). Pastikan perangkat '
             'tersambung internet, lalu ketuk Kirim sekarang.',
+      if (dataDiperbarui != null && sekarang.difference(dataDiperbarui) > LayarStatusSinkron.batasDataLama)
+        'Data produk, harga, dan pengaturan toko terakhir diperbarui ${FormatWaktu.FormatTanggalJam(dataDiperbarui)} '
+            '(lebih dari 1 hari). Sambungkan perangkat ke internet agar harga dan promo terbaru dipakai.',
       if (selisih != null && selisih.abs() > LayarStatusSinkron.batasSelisihJamDetik)
         'Jam perangkat ${selisih > 0 ? 'lebih cepat' : 'lebih lambat'} ${(selisih.abs() / 60).round()} menit dari '
             'server. Perbaiki tanggal, jam, dan zona waktu perangkat agar waktu transaksi benar.',

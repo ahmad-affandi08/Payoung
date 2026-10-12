@@ -158,6 +158,38 @@ describe('BR-P08.11 rekonsiliasi pembayaran gerbang tersangkut', function (): vo
         expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Diperiksa'])->toBe(0);
     });
 
+    it('putaran harian pembayaran lama: yang tidak dibayar menurut gerbang ditutup supaya tagihan bebas, yang dibayar tapi jumlahnya beda tetap menunggu verifikasi manual', function (): void {
+        ['Tagihan' => $tagihan, 'Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
+        Carbon::setTestNow('2026-10-20 03:10:00');
+        $rekonsiliasi = app(RekonsiliasiPembayaranGerbangLangganan::class);
+
+        // Lewat jendela 15 menit: putaran biasa tidak lagi menanyakannya.
+        expect($rekonsiliasi->Jalankan()['Diperiksa'])->toBe(0);
+
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'SUCCESS', '1000.00'));
+        expect($rekonsiliasi->JalankanArsip())->toBe(['Diperiksa' => 1, 'Selesai' => 0, 'Menunggu' => 1, 'Gagal' => 0])
+            ->and($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu);
+
+        AturStatusGerbangRekonsiliasi(null);
+        expect($rekonsiliasi->JalankanArsip()['Gagal'])->toBe(1)
+            ->and($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu);
+
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'EXPIRED', $tagihan->Total));
+        $this->artisan('tagihan:rekonsiliasi-gerbang --arsip')
+            ->expectsOutput('1 pembayaran diperiksa, 1 selesai, 0 masih menunggu, 0 gagal diperiksa.')
+            ->assertSuccessful();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit);
+    });
+
+    it('pembayaran lebih tua dari 90 hari tidak ditanyakan lagi', function (): void {
+        ['Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
+        Carbon::setTestNow('2027-01-20 03:10:00');
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'EXPIRED', '1000.00'));
+
+        expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->JalankanArsip()['Diperiksa'])->toBe(0);
+    });
+
     it('FAILED & EXPIRED di gerbang menolak pembayaran sehingga tagihan bisa dibayar ulang', function (string $status): void {
         ['Tagihan' => $tagihan, 'Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
         AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, $status, $tagihan->Total));

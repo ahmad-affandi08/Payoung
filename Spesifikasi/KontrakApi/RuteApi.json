@@ -464,6 +464,11 @@
         "Jalur": "api/pemilik/v1/masuk/google",
         "Nama": "pemilik.masuk.google"
     },
+    "POST api/pemilik/v1/lupa-kata-sandi": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/lupa-kata-sandi",
+        "Nama": "pemilik.lupa-kata-sandi"
+    },
     "GET api/pos/v1/stok-tersedia": {
         "Metode": "GET",
         "Jalur": "api/pos/v1/stok-tersedia",

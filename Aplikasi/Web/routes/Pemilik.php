@@ -31,6 +31,8 @@ $izin = fn (IzinTenant $izin): string => WajibIzinPemilik::class.':'.$izin->valu
 Route::post('/masuk', [AutentikasiKontroler::class, 'Masuk'])->middleware('throttle:pemilik-30')->name('pemilik.masuk');
 Route::post('/masuk/dua-faktor', [AutentikasiKontroler::class, 'MasukDuaFaktor'])->middleware('throttle:pemilik-30')->name('pemilik.masuk.dua-faktor');
 
+Route::post('/lupa-kata-sandi', [AutentikasiKontroler::class, 'LupaKataSandi'])->middleware('throttle:pemilik-30')->name('pemilik.lupa-kata-sandi');
+
 // D-57: Masuk dengan Google (menggantikan 2FA). Konfigurasi dibaca aplikasi sebelum menampilkan tombol.
 Route::get('/masuk/google/konfigurasi', [AutentikasiKontroler::class, 'KonfigurasiGoogle'])->middleware('throttle:pemilik-30')->name('pemilik.masuk.google.konfigurasi');
 Route::post('/masuk/google', [AutentikasiKontroler::class, 'MasukGoogle'])->middleware('throttle:pemilik-30')->name('pemilik.masuk.google');

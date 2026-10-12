@@ -36,6 +36,9 @@ final class RekonsiliasiPembayaranGerbangLangganan
     /** Pembayaran yang lebih tua dari ini (misal jumlah berbeda, menunggu verifikasi manual) tidak ditanyakan lagi. */
     public const HARI_JENDELA = 7;
 
+    /** Putaran harian untuk pembayaran lama: yang lebih tua dari ini tidak ditanyakan lagi sama sekali. */
+    public const HARI_ARSIP = 90;
+
     public function __construct(
         private readonly GerbangBillingPlatform $gerbang,
         private readonly TerimaNotifikasiBillingLangganan $terima,
@@ -73,6 +76,60 @@ final class RekonsiliasiPembayaranGerbangLangganan
             }
 
             if ($notifikasi->status === StatusPembayaranGerbang::Menunggu) {
+                $hasil['Menunggu']++;
+
+                continue;
+            }
+
+            try {
+                $this->terima->Jalankan($notifikasi) ? $hasil['Selesai']++ : $hasil['Gagal']++;
+            } catch (Throwable $galat) {
+                report($galat);
+                $hasil['Gagal']++;
+            }
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Putaran harian untuk pembayaran yang sudah lewat `HARI_JENDELA` tetapi masih `Menunggu` (misal API status gerbang
+     * tidak terjangkau sepanjang jendela). Tanpa ini pembayaran itu tersangkut selamanya: tagihannya tidak bisa dibatalkan
+     * atau dibayar ulang, dan penangguhan tunggakan tertunda. Yang ditutup hanya yang gerbang nyatakan **tidak dibayar**
+     * (kedaluwarsa/gagal). Yang gerbang nyatakan lunas tetapi tidak bisa dilunasi otomatis (misal jumlah berbeda) dan
+     * yang masih menunggu dibiarkan: itu antrean verifikasi manual, bukan pembayaran yang boleh ditutup diam-diam.
+     *
+     * @return Hasil
+     */
+    public function JalankanArsip(): array
+    {
+        $hasil = ['Diperiksa' => 0, 'Selesai' => 0, 'Menunggu' => 0, 'Gagal' => 0];
+
+        if (! $this->gerbang->CekAktif()) {
+            return $hasil;
+        }
+
+        $daftar = DaftarTagihanPlatform::KueriPembayaran()
+            ->where('Metode', MetodePembayaranLangganan::Gateway->value)
+            ->where('Status', StatusPembayaranLangganan::Menunggu->value)
+            ->whereNotNull('RefGateway')
+            ->where('DibuatPada', '<', CarbonImmutable::now()->subDays(self::HARI_JENDELA))
+            ->where('DibuatPada', '>=', CarbonImmutable::now()->subDays(self::HARI_ARSIP))
+            ->orderBy('DibuatPada')
+            ->limit(self::BATAS_PER_PUTARAN)
+            ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada']);
+
+        foreach ($daftar as $pembayaran) {
+            $hasil['Diperiksa']++;
+            $notifikasi = $this->gerbang->CekStatus((string) $pembayaran->RefGateway, $pembayaran->DibuatPada ?? CarbonImmutable::now());
+
+            if ($notifikasi === null) {
+                $hasil['Gagal']++;
+
+                continue;
+            }
+
+            if (in_array($notifikasi->status, [StatusPembayaranGerbang::Menunggu, StatusPembayaranGerbang::Lunas], true)) {
                 $hasil['Menunggu']++;
 
                 continue;

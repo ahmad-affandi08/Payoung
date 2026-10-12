@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 import 'package:klien_api/KlienApi.dart';
+import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 
 import '../Pendukung/KatalogUji.dart';
@@ -95,4 +96,40 @@ void main() {
       },
     );
   }
+
+  testWidgets(
+    'data toko yang lebih dari sehari tidak diperbarui → peringatan dengan waktunya; segar → tanpa peringatan',
+    (tester) async {
+      final u = LingkunganUji.Buat();
+      await tester.runAsync(() async {
+        await u.SiapkanAktif();
+        await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
+        await u.repositori.SimpanPengaturan(
+          KunciPengaturan.dataAwalPada,
+          u.jam.subtract(const Duration(days: 3)).toUtc().toIso8601String(),
+        );
+      });
+      u.server.penangan = (p) async => throw http.ClientException('offline');
+      await PasangAplikasi(tester, u, ukuran: const Size(1280, 900));
+      await Tunggu(tester, const Duration(milliseconds: 600));
+      await PilihKasir(tester, 'Rina Wulandari');
+      await tester.pump();
+      await KetikPin(tester, KasusPin(0)['Pin']! as String);
+      await Tunggu(tester);
+
+      await tester.tap(find.text('Printer belum diatur'));
+      await Tunggu(tester);
+      expect(find.text('Status sinkron'), findsOneWidget);
+      expect(find.textContaining('terakhir diperbarui'), findsOneWidget);
+      expect(find.textContaining('lebih dari 1 hari'), findsOneWidget);
+
+      await tester.runAsync(
+        () => u.repositori.SimpanPengaturan(KunciPengaturan.dataAwalPada, u.jam.toUtc().toIso8601String()),
+      );
+      await Tunggu(tester);
+      expect(find.textContaining('lebih dari 1 hari'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await Lepas(tester, u);
+    },
+  );
 }

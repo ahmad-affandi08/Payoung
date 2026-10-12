@@ -22,6 +22,7 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
   final _kode = TextEditingController();
   final _alamat = TextEditingController();
   bool _sandiTerlihat = false;
+  bool _mengirimLupaSandi = false;
   String? _galatAlamat;
 
   /// D-35: isian alamat server toko sendiri (edisi Lisensi) terbuka bila sudah pernah diisi atau dibuka pemilik.
@@ -55,6 +56,29 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
     }
     setState(() => _galatAlamat = null);
     await ref.read(penyediaSesi.notifier).Masuk(_email.text, _sandi.text, alamatServer: alamatServer);
+  }
+
+  /// Kirim tautan atur ulang kata sandi ke email yang sudah diketik; jawaban server tampil apa adanya.
+  Future<void> _LupaKataSandi() async {
+    final email = _email.text.trim();
+    final pesan = ScaffoldMessenger.of(context);
+    if (email.isEmpty) {
+      pesan.showSnackBar(const SnackBar(content: Text('Isi email akun Anda dulu, lalu ketuk Lupa kata sandi.')));
+      return;
+    }
+    setState(() => _mengirimLupaSandi = true);
+    try {
+      final jawaban = await ref.read(penyediaKlien).LupaKataSandi(email);
+      pesan.showSnackBar(SnackBar(content: Text(jawaban)));
+    } on GalatApi catch (galat) {
+      pesan.showSnackBar(SnackBar(content: Text(galat.pesan)));
+    } on GalatJaringan {
+      pesan.showSnackBar(const SnackBar(content: Text('Tidak ada koneksi internet. Coba lagi saat perangkat online.')));
+    } finally {
+      if (mounted) {
+        setState(() => _mengirimLupaSandi = false);
+      }
+    }
   }
 
   @override
@@ -117,6 +141,14 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
                           ),
                         ),
                         onSubmitted: (_) => unawaited(_Masuk()),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          key: const ValueKey('LupaKataSandi'),
+                          onPressed: sesi.sibuk || _mengirimLupaSandi ? null : () => unawaited(_LupaKataSandi()),
+                          child: Text(_mengirimLupaSandi ? 'Mengirim…' : 'Lupa kata sandi?'),
+                        ),
                       ),
                       const SizedBox(height: TokenJarak.jarak8),
                       if (_pakaiServerSendiri)

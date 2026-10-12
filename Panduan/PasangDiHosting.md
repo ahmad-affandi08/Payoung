@@ -99,6 +99,10 @@ php artisan katalog:terapkan --kering        # setelah update: lihat harga paket
 php artisan katalog:terapkan                 # terapkan satu kali: harga promo peluncuran + harga normal terjadwal, add-on, fitur; berlaku untuk semua tenant di tagihan berikutnya (aman diulang)
 php artisan template:terapkan --kering      # setelah tarif PPN terbit: lihat template sektor yang akan terbit dari rilis (D-88)
 php artisan template:terapkan               # terapkan: template baru & versi baru LANGSUNG TERBIT tanpa draf; tenant lama tidak berubah; berhenti dengan kode gagal bila ada yang tidak lolos validasi (aman diulang)
+php artisan legal:siapkan-bawaan             # naskah awal dokumen legal (draf; terbitkan dari konsol setelah ditinjau)
+php artisan legal:siapkan-pembaruan          # setelah update: draf versi berikutnya untuk dokumen terbit yang masih berisi naskah lama
+php artisan kasir:siapkan-kategori-biaya     # setelah update (D-106): kategori biaya bawaan + akun beban untuk tenant lama; tenant baru mendapatkannya dari template sektor
+php artisan situs:segarkan-bawaan            # setelah update teks situs pemasaran bawaan (mis. v5.49): perbarui konten halaman bawaan
 php artisan storage:link                     # bila galat "undefined function exec()": ln -s ../storage/app/public public/storage
 php artisan pengelola:buat-super-admin --nama="Nama Anda" --email="email@anda"   # akun pertama konsol; kata sandi ditanyakan
 ```
@@ -292,3 +296,16 @@ flutter build apk --release -t lib/UtamaProduksi.dart --dart-define=ALAMAT_SERVE
 ```
 
 Tautan unduh hasilnya diisi di konsol → Situs pemasaran → Pengaturan → Tautan unduh aplikasi.
+
+## Pencatatan backup (alert P-11)
+
+Skrip backup server (cron harian) harus memanggil `php artisan pengelola:catat-backup` sesudah backup berhasil, supaya dasbor
+operasional konsol tahu kapan backup terakhir. Tanpa panggilan ini alert backup di dasbor akan terus merah. Perintah ini
+tidak membuat backup, hanya mencatat waktunya; backup basis data dan folder `storage/app` tetap diatur di hosting.
+
+## Rekonsiliasi pembayaran langganan
+
+Dua jadwal berjalan lewat `schedule:run`: `tagihan:rekonsiliasi-gerbang` tiap 15 menit (pembayaran DOKU yang webhook-nya
+tidak tiba) dan `tagihan:rekonsiliasi-gerbang --arsip` tiap hari 03.10 WIB (pembayaran yang masih Menunggu lewat 7 hari;
+yang tidak dibayar ditutup, yang dibayar dengan jumlah berbeda tetap menunggu verifikasi manual di konsol).
+

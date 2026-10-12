@@ -25,6 +25,10 @@ abstract final class KunciPengaturan {
   static const String menitKunciPin = 'MenitKunciPin';
   static const String dataAwalPada = 'DataAwalPada';
 
+  /// F-17 BR-17.2: JSON larik Uuid produk yang ditandai habis di outlet perangkat (salinan terakhir dari server), supaya
+  /// tanda "Habis" tidak hilang saat aplikasi dimulai ulang dalam keadaan offline.
+  static const String produkHabis = 'ProdukHabis';
+
   // F-07b/F-07c: identitas outlet untuk nomor penjualan, aturan diskon & pembulatan, profil pajak, katalog.
   static const String uuidOutlet = 'UuidOutlet';
 
@@ -637,6 +641,7 @@ class RepositoriKasir {
               KunciPengaturan.sinkronTerakhir,
               KunciPengaturan.selisihJamDetik,
               KunciPengaturan.penjualanPerluTinjauan,
+              KunciPengaturan.dataAwalPada,
             ]),
           ))
           .watch()
