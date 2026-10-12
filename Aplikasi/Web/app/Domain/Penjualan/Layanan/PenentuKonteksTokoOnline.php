@@ -42,7 +42,7 @@ final class PenentuKonteksTokoOnline
 
         $pengaturan = PengaturanTokoOnline::query()->first();
         $aktif = $pengaturan?->Aktif === true
-            && $this->fitur->CekAktifDiOutlet($idTenant, $outlet->Id, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)
+            && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)
             && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
 
         return new DataKonteksPesanSendiri(

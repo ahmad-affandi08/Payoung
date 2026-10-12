@@ -192,12 +192,12 @@ final class OutletKontroler extends DasarKelolaKontroler
             ],
             // F-17: pesan sendiri QR meja (sakelar outlet + fitur paket `kanal.self-order`).
             'PesanSendiri' => [
-                'FiturAktif' => $fitur->CekAktifDiOutlet($baris->IdTenant, $baris->Id, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
+                'FiturAktif' => $fitur->CekAktif($baris->IdTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
                 'Aktif' => $baris->PesanSendiriAktif,
             ],
             // F-17 bagian 4: kios pesan sendiri di layar sentuh outlet (tautan rahasia per outlet).
             'Kios' => [
-                'FiturAktif' => $fitur->CekAktifDiOutlet($baris->IdTenant, $baris->Id, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
+                'FiturAktif' => $fitur->CekAktif($baris->IdTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
                 'Aktif' => $baris->KiosAktif,
                 'Tautan' => is_string($baris->TokenKios) ? url('/'.$profil->AmbilSlug($baris->IdTenant)."/kios/{$baris->TokenKios}") : null,
                 'TautanAntrian' => is_string($baris->TokenKios) ? url('/'.$profil->AmbilSlug($baris->IdTenant)."/kios/{$baris->TokenKios}/antrian") : null,

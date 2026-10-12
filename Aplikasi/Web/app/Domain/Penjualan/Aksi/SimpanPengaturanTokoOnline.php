@@ -23,7 +23,7 @@ final class SimpanPengaturanTokoOnline
     /** @param array<string, mixed> $data */
     public function Jalankan(Outlet $outlet, array $data, int $idPengguna): void
     {
-        if ((bool) $data['Aktif'] && ! $this->fitur->CekAktifDiOutlet($outlet->IdTenant, $outlet->Id, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)) {
+        if ((bool) $data['Aktif'] && ! $this->fitur->CekAktif($outlet->IdTenant, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)) {
             throw new PelanggaranAturanBisnis('FiturTidakAktif', 'Toko online belum aktif di paket usaha ini. Tambahkan add-on Toko online.', 'Aktif');
         }
         // F-17 bagian 2: menyalakan QRIS tanpa gerbang aktif hanya akan menggantung pelanggan di halaman bayar,

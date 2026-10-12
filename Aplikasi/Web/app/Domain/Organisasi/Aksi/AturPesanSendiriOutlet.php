@@ -33,7 +33,7 @@ final class AturPesanSendiriOutlet
                 throw new PelanggaranAturanBisnis('OutletDiarsipkan', 'Outlet ini diarsipkan. Pulihkan outlet dulu untuk menerima pesanan QR.');
             }
 
-            if ($aktif && ! $this->fitur->CekAktifDiOutlet($outlet->IdTenant, $outlet->Id, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)) {
+            if ($aktif && ! $this->fitur->CekAktif($outlet->IdTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)) {
                 throw new PelanggaranAturanBisnis('FiturTidakAktif', 'Pesan sendiri lewat QR meja belum aktif di paket usaha ini. Tambahkan add-on Self-order QR di menu Langganan.');
             }
 

@@ -108,6 +108,7 @@
 | D-104 | Dari pemilik produk (pertanyaan admin outlet dan "jangan buat sistem ini jadi sulit digunakan", lalu "amati, tiru, modifikasi" dari Majoo). Keputusan agen (D-12, D-17): cakupan outlet melekat pada jenis peran (`CakupanOutletPeran`), formulir mengikuti peran. Detail di versi 5.41. |
 | D-105 | Dari pemilik produk ("kerjakan 1-3 sampai selesai"). Keputusan agen (D-12, D-17): Permintaan Stok sebagai dokumen non-akuntansi yang terpenuhi saat transfer dikirim, dan terima transfer per barang dengan tiga arah (terima/rusak/tolak-kembali ke pengirim). Detail di versi 5.42. |
 | D-106 | Dari calon pengguna lewat pemilik produk ("biaya listrik, transport, ada inputannya?"). Keputusan agen (D-12, D-17): kategori biaya umum + akun bebannya disiapkan otomatis, aditif. Detail di versi 5.43. |
+| D-107 | Dari pemilik produk (laporan trial paket Bisnis: toko online tak bisa disimpan). Keputusan agen (D-12, D-17): fitur kanal dicek tingkat tenant, filter modul template hanya untuk modul template. Detail di versi 5.44. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

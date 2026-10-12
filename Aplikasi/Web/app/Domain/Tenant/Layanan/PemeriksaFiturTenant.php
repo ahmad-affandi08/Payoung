@@ -39,7 +39,13 @@ final class PemeriksaFiturTenant
         return $this->evaluator->CekFiturAktif($this->sumber->Ambil($idTenant), $kunci);
     }
 
-    /** F-01 (BR-01.3): fitur aktif di satu outlet = paket/add-on/override ∩ modul yang diaktifkan template outlet. */
+    /**
+     * F-01 (BR-01.3): fitur aktif di satu outlet = paket/add-on/override ∩ modul yang diaktifkan template outlet.
+     * Hanya untuk fitur yang memang modul template (`pos.*`, `stok.*`, ...). Fitur kanal (`kanal.*`) bukan modul
+     * template, jadi dicek tingkat tenant lewat `CekAktif`; pemilihan outlet kanal ada di bendera outlet sendiri
+     * (`TokoOnlineAktif`, `PesanSendiriAktif`). Memakai method ini untuk kanal menolak semua tenant yang sudah
+     * menerapkan template, walau paketnya memuat fitur itu.
+     */
     public function CekAktifDiOutlet(int $idTenant, int $idOutlet, string $kunci): bool
     {
         return $this->evaluator->CekFiturAktif($this->sumber->Ambil($idTenant, idOutlet: $idOutlet), $kunci);

@@ -42,7 +42,7 @@ final class PenentuKonteksKios
 
         $aktif = $outlet->KiosAktif
             && $outlet->Status === StatusOrganisasi::Aktif
-            && $this->fitur->CekAktifDiOutlet($idTenant, $outlet->Id, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
+            && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
             && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
 
         return new DataKonteksPesanSendiri(

@@ -35,7 +35,7 @@ final class PenentuKonteksPesanSendiri
         }
 
         $aktif = $meja->bisaDipesan
-            && $this->fitur->CekAktifDiOutlet($idTenant, $meja->idOutlet, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
+            && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
             && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
 
         return new DataKonteksPesanSendiri($idTenant, $meja->idOutlet, $meja->kodeOutlet, $meja->namaOutlet, $meja->zonaWaktu, $meja->idMeja, $meja->uuidMeja, $meja->namaMeja, $aktif, $meja->uuidOutlet, $meja->kodeKota);

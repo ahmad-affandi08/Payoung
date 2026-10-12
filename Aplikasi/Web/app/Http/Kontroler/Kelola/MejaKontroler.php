@@ -150,7 +150,7 @@ final class MejaKontroler extends DasarKelolaKontroler
         return Inertia::render('Kelola/Outlet/QrMeja', [
             'Outlet' => ['Uuid' => $barisOutlet->Uuid, 'Kode' => $barisOutlet->Kode, 'Nama' => $barisOutlet->Nama],
             'NamaUsaha' => $profil->Ambil($this->IdTenant())['Nama'],
-            'PesanSendiriAktif' => $barisOutlet->PesanSendiriAktif && $fitur->CekAktifDiOutlet($barisOutlet->IdTenant, $barisOutlet->Id, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
+            'PesanSendiriAktif' => $barisOutlet->PesanSendiriAktif && $fitur->CekAktif($barisOutlet->IdTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
             'Meja' => array_values(array_filter(array_map(function (array $m) use ($model, $token, $qr, $profil): ?array {
                 $baris = $model->get($m['Uuid']);
 

@@ -218,10 +218,21 @@ function FormPengaturan({ props }: { props: Props }) {
                     saatBerubah={(v) => form.setData('PesanTutup', v)}
                 />
             </div>
-            <div className="sm:col-span-2">
-                <Tombol type="submit" memproses={form.processing}>
-                    Simpan pengaturan
-                </Tombol>
+            <div className="flex flex-col gap-2 sm:col-span-2">
+                {Object.values(form.errors).length > 0 ? (
+                    <div role="alert" className="rounded-kontrol border-l-4 border-bahaya bg-permukaan px-3 py-2">
+                        {Object.entries(form.errors).map(([kunci, pesan]) => (
+                            <p key={kunci} className="text-isi text-bahaya">
+                                {pesan}
+                            </p>
+                        ))}
+                    </div>
+                ) : null}
+                <div>
+                    <Tombol type="submit" memproses={form.processing}>
+                        Simpan pengaturan
+                    </Tombol>
+                </div>
             </div>
         </form>
     );
