@@ -9,7 +9,10 @@ import { cn } from '@/Komponen/Ui/utils';
 const NADA = [
     { terang: 'bg-aksen text-teks-utama', gelap: 'bg-aksen text-teks-utama' },
     { terang: 'bg-brand text-brand-teks', gelap: 'bg-permukaan text-brand-gelap' },
-    { terang: 'bg-info text-permukaan', gelap: 'bg-aksen text-teks-utama' },
+    {
+        terang: 'bg-info text-permukaan',
+        gelap: 'bg-aksen text-teks-utama',
+    },
     { terang: 'bg-sukses text-permukaan', gelap: 'bg-permukaan text-brand-gelap' },
 ] as const;
 

@@ -64,6 +64,10 @@ function JalurBolehD25(): array
         // sambutan), jadi memakai skala besar yang sama dengan hero; tetap bukan bagian back-office atau halaman tenant biasa.
         'Halaman/Publik/Kios.tsx',
         'Halaman/Publik/AntrianKios.tsx',
+        // D-87: panel iklan halaman masuk & daftar back-office adalah ruang pemasaran (harga peluncuran dari katalog)
+        // di panel merek gelap; Aksen Apricot di situ penanda merek (lencana, penunjuk slide), bukan penanda status.
+        'Komponen/Autentikasi/PanelIklanAuth.tsx',
+        'TataLetak/TataLetakAutentikasi.tsx',
     ];
 }
 
