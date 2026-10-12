@@ -126,6 +126,9 @@ abstract final class KunciPengaturan {
   /// K-15: bunyi & getar saat memindai ('0' = mati; bawaan hidup).
   static const String umpanBalikPindai = 'UmpanBalikPindai';
 
+  /// Kamera pemindai barcode di layar Jual: 'Depan' atau 'Belakang' (bawaan).
+  static const String kameraPindai = 'KameraPindai';
+
   // Cetak struk (PRD v1.79): pengaturan & identitas struk dari data awal (JSON `StrukPos`), alamat & telepon outlet,
   // logo 1 bit (JSON `GambarMonokrom`), dan profil printer perangkat ini (JSON `ProfilPrinter`, lokal saja).
   static const String struk = 'Struk';

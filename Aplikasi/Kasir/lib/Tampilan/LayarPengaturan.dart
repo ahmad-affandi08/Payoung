@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
+import '../Domain/Perangkat/PemindaiKamera.dart';
 import '../Domain/Perangkat/PengaturanPerangkat.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import 'BagianLogPerangkat.dart';
@@ -168,6 +169,18 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
             ],
           ),
         ),
+        if (ref.watch(penyediaPemindaiKamera).CekTersedia())
+          Bagian(
+            'Kamera pemindai barcode',
+            'Kamera yang dibuka tombol kamera di kolom cari layar Jual. Bisa diganti kapan saja dari strip kamera.',
+            SegmentedButton<ArahKamera>(
+              key: const ValueKey('KameraPindai'),
+              showSelectedIcon: false,
+              segments: [for (final a in ArahKamera.values) ButtonSegment(value: a, label: Text(a.label))],
+              selected: {pengaturan.kameraPindai},
+              onSelectionChanged: (pilihan) => _Simpan(pengaturan.copyWith(kameraPindai: pilihan.single)),
+            ),
+          ),
         Bagian(
           'Kunci otomatis',
           'Layar terkunci bila perangkat tidak disentuh selama waktu ini. Shift tetap terbuka.',

@@ -15,6 +15,7 @@ import '../Data/Printer/InfoPerangkatPlatform.dart';
 import '../Data/CacheGambarProduk.dart';
 import '../Data/KameraBuktiPlatform.dart';
 import '../Data/KameraSwafotoPlatform.dart';
+import '../Data/PemindaiKameraPlatform.dart';
 import '../Data/PemindaiQrPlatform.dart';
 import '../Data/LayarPelanggan/PabrikLayarPelanggan.dart';
 import '../Data/RepositoriAbsensi.dart';
@@ -22,6 +23,7 @@ import '../Domain/Diagnostik/LogLokal.dart';
 import '../Domain/Karyawan/LayananAbsensi.dart';
 import '../Domain/Perangkat/KameraBukti.dart';
 import '../Domain/Perangkat/KameraSwafoto.dart';
+import '../Domain/Perangkat/PemindaiKamera.dart';
 import '../Domain/Perangkat/PemindaiQr.dart';
 import '../Data/BasisData/BasisDataKasir.dart';
 import '../Data/PengubahLogoStruk.dart';
@@ -979,6 +981,10 @@ final penyediaKameraBukti = Provider<KameraBukti>((ref) => KameraBuktiPlatform()
 
 /// F-02 langkah 5: pemindai QR kode aktivasi (tiruan di test). Tidak tersedia di Windows.
 final penyediaPemindaiQr = Provider<PemindaiQr>((ref) => PemindaiQrPlatform());
+
+/// Pemindai barcode lewat kamera yang terus terbuka di layar Jual, dengan ganti kamera depan/belakang (tiruan di test).
+/// Tidak tersedia di Windows.
+final penyediaPemindaiKamera = Provider<PabrikPemindaiKamera>((ref) => PemindaiKameraPlatform());
 
 final penyediaRepositoriAbsensi = Provider<RepositoriAbsensi>(
   (ref) => RepositoriAbsensi(ref.watch(penyediaBasisData), ref.watch(penyediaRepositori)),

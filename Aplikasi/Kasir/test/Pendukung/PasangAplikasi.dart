@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptor_perangkat/AdaptorPerangkat.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +14,7 @@ import 'package:kasir/Domain/Diagnostik/LogLokal.dart';
 import 'package:kasir/Domain/Perangkat/KameraBukti.dart';
 import 'package:kasir/Domain/Perangkat/KameraSwafoto.dart';
 import 'package:kasir/Domain/Perangkat/LayananLayarPelanggan.dart';
+import 'package:kasir/Domain/Perangkat/PemindaiKamera.dart';
 import 'package:kasir/Domain/Perangkat/PemindaiQr.dart';
 import 'package:kasir/Domain/Perangkat/PenentuLokasi.dart';
 import 'package:kasir/Domain/Perangkat/PenjagaLayarMenyala.dart';
@@ -33,6 +34,7 @@ Future<void> PasangAplikasi(
   KameraSwafoto? kamera,
   KameraBukti? kameraBukti,
   PemindaiQr? pemindaiQr,
+  PemindaiKameraTiruan? pemindaiKamera,
   UmpanBalikPindai? umpanBalikPindai,
   LogLokal? logLokal,
   PenentuLokasi penentuLokasi = const PenentuLokasiTidakAda(),
@@ -59,6 +61,7 @@ Future<void> PasangAplikasi(
         penyediaKameraSwafoto.overrideWithValue(kamera ?? KameraSwafotoTiruan(tersedia: false)),
         penyediaKameraBukti.overrideWithValue(kameraBukti ?? KameraBuktiTiruan(tersedia: false)),
         penyediaPemindaiQr.overrideWithValue(pemindaiQr ?? PemindaiQrTiruan(tersedia: false)),
+        penyediaPemindaiKamera.overrideWithValue(pemindaiKamera ?? PemindaiKameraTiruan(tersedia: false)),
         penyediaPemindaiPrinter.overrideWithValue(u.pemindai),
         penyediaUmpanBalikPindai.overrideWithValue(umpanBalikPindai ?? const UmpanBalikPindai()),
         penyediaLogLokal.overrideWithValue(logLokal),
@@ -217,4 +220,85 @@ Future<void> PilihPenyetuju(WidgetTester tester, String nama) async {
     await tester.pump();
   }
   expect(find.text('PIN $nama'), findsOneWidget);
+}
+
+/// Pabrik pemindai kamera tiruan untuk layar Jual: [tersedia] false = tombol kamera tidak muncul (Windows),
+/// [jumlahKamera] 1 = perangkat hanya punya satu kamera, [galat] = kamera gagal dibuka (izin ditolak).
+/// Setiap [Buka] membuat sesi baru yang dicatat di [sesi] supaya test bisa mengirim kode dan memeriksa penutupannya.
+class PemindaiKameraTiruan implements PabrikPemindaiKamera {
+  PemindaiKameraTiruan({this.tersedia = true, this.jumlahKamera = 2, this.galat});
+
+  final bool tersedia;
+  final int jumlahKamera;
+  final String? galat;
+  final List<SesiPemindaiKameraTiruan> sesi = [];
+
+  /// Sesi yang masih terbuka (terakhir dibuka), atau null.
+  SesiPemindaiKameraTiruan? get aktif => sesi.where((s) => !s.tertutup).lastOrNull;
+
+  @override
+  bool CekTersedia() => tersedia;
+
+  @override
+  SesiPemindaiKameraTiruan Buka({required ArahKamera arah}) {
+    final baru = SesiPemindaiKameraTiruan(arahAwal: arah, jumlahKamera: jumlahKamera, galat: galat);
+    sesi.add(baru);
+    return baru;
+  }
+}
+
+class SesiPemindaiKameraTiruan implements SesiPemindaiKamera {
+  SesiPemindaiKameraTiruan({required this.arahAwal, required int jumlahKamera, String? galat})
+    : _keadaan = ValueNotifier(
+        KeadaanPemindaiKamera(
+          siap: galat == null,
+          arah: arahAwal,
+          jumlahKamera: jumlahKamera,
+          senterTersedia: arahAwal == ArahKamera.Belakang,
+          galat: galat,
+        ),
+      );
+
+  final ArahKamera arahAwal;
+  final ValueNotifier<KeadaanPemindaiKamera> _keadaan;
+  final StreamController<String> _kode = StreamController<String>.broadcast(sync: true);
+  bool tertutup = false;
+  int jumlahGanti = 0;
+  int jumlahSenter = 0;
+
+  /// Kamera mengirim [kode] seolah barcode terbaca.
+  void Kirim(String kode) => _kode.add(kode);
+
+  @override
+  Stream<String> get kodeTerbaca => _kode.stream;
+
+  @override
+  ValueListenable<KeadaanPemindaiKamera> get keadaan => _keadaan;
+
+  @override
+  Future<void> GantiKamera() async {
+    jumlahGanti++;
+    final arah = _keadaan.value.arah.lawan;
+    _keadaan.value = _keadaan.value.copyWith(
+      arah: arah,
+      senterTersedia: arah == ArahKamera.Belakang,
+      senterNyala: false,
+    );
+  }
+
+  @override
+  Future<void> UbahSenter() async {
+    jumlahSenter++;
+    _keadaan.value = _keadaan.value.copyWith(senterNyala: !_keadaan.value.senterNyala);
+  }
+
+  @override
+  Widget BangunPratinjau(BuildContext context) =>
+      const ColoredBox(key: ValueKey('PratinjauKameraTiruan'), color: Colors.black);
+
+  @override
+  Future<void> Tutup() async {
+    tertutup = true;
+    await _kode.close();
+  }
 }

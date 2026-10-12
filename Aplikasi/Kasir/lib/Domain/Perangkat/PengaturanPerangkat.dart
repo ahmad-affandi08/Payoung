@@ -1,4 +1,5 @@
 import '../../Data/RepositoriKasir.dart';
+import 'PemindaiKamera.dart';
 
 /// Ukuran tampilan per perangkat (PRD §17.2.7): skala teks Normal 1,0 / Besar 1,15.
 enum UkuranTampilan {
@@ -49,6 +50,7 @@ class PengaturanPerangkat {
     this.menitKunciOtomatis = menitKunciBawaan,
     this.tampilanKatalog = TampilanKatalog.Otomatis,
     this.umpanBalikPindai = true,
+    this.kameraPindai = ArahKamera.Belakang,
   });
 
   static const int menitKunciBawaan = 15;
@@ -64,6 +66,9 @@ class PengaturanPerangkat {
   /// K-15 (§17.2.7 prinsip 4): bunyi pendek + getar saat pindai berhasil/gagal; bisa dimatikan.
   final bool umpanBalikPindai;
 
+  /// Kamera yang dibuka pemindai kamera di layar Jual; berubah juga saat kasir menekan Ganti kamera.
+  final ArahKamera kameraPindai;
+
   Duration AmbilBatasDiam() => Duration(minutes: menitKunciOtomatis);
 
   PengaturanPerangkat copyWith({
@@ -72,12 +77,14 @@ class PengaturanPerangkat {
     int? menitKunciOtomatis,
     TampilanKatalog? tampilanKatalog,
     bool? umpanBalikPindai,
+    ArahKamera? kameraPindai,
   }) => PengaturanPerangkat(
     ukuran: ukuran ?? this.ukuran,
     posisiKeranjang: posisiKeranjang ?? this.posisiKeranjang,
     menitKunciOtomatis: menitKunciOtomatis ?? this.menitKunciOtomatis,
     tampilanKatalog: tampilanKatalog ?? this.tampilanKatalog,
     umpanBalikPindai: umpanBalikPindai ?? this.umpanBalikPindai,
+    kameraPindai: kameraPindai ?? this.kameraPindai,
   );
 
   /// Baca dari tabel `Pengaturan`; nilai kosong/tidak dikenal kembali ke bawaan.
@@ -87,12 +94,14 @@ class PengaturanPerangkat {
     final menit = int.tryParse(await repositori.AmbilPengaturan(KunciPengaturan.menitKunciOtomatis) ?? '');
     final tampilan = await repositori.AmbilPengaturan(KunciPengaturan.tampilanKatalog);
     final umpanBalik = await repositori.AmbilPengaturan(KunciPengaturan.umpanBalikPindai);
+    final kamera = await repositori.AmbilPengaturan(KunciPengaturan.kameraPindai);
     return PengaturanPerangkat(
       ukuran: UkuranTampilan.values.where((u) => u.name == ukuran).firstOrNull ?? UkuranTampilan.Normal,
       posisiKeranjang: PosisiKeranjang.values.where((p) => p.name == posisi).firstOrNull ?? PosisiKeranjang.Kanan,
       menitKunciOtomatis: menit != null && menit > 0 ? menit : menitKunciBawaan,
       tampilanKatalog: TampilanKatalog.values.where((t) => t.name == tampilan).firstOrNull ?? TampilanKatalog.Otomatis,
       umpanBalikPindai: umpanBalik != '0',
+      kameraPindai: ArahKamera.values.where((a) => a.name == kamera).firstOrNull ?? ArahKamera.Belakang,
     );
   }
 
@@ -102,5 +111,6 @@ class PengaturanPerangkat {
     await repositori.SimpanPengaturan(KunciPengaturan.menitKunciOtomatis, '$menitKunciOtomatis');
     await repositori.SimpanPengaturan(KunciPengaturan.tampilanKatalog, tampilanKatalog.name);
     await repositori.SimpanPengaturan(KunciPengaturan.umpanBalikPindai, umpanBalikPindai ? '1' : '0');
+    await repositori.SimpanPengaturan(KunciPengaturan.kameraPindai, kameraPindai.name);
   }
 }

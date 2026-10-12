@@ -23,6 +23,7 @@ import '../Domain/Penjualan/LayananPenjualan.dart';
 import '../Domain/Penjualan/LayananPreOrder.dart';
 import '../Domain/Penjualan/PengaliJumlah.dart';
 import '../Domain/Perangkat/LayananLayarPelanggan.dart';
+import '../Domain/Perangkat/PemindaiKamera.dart';
 import '../Domain/Perangkat/PengaturanPerangkat.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import 'Jual/DialogHargaTerbuka.dart';
@@ -37,6 +38,7 @@ import 'Jual/PanelRacikan.dart';
 import 'Jual/PanelPelanggan.dart';
 import 'Jual/PanelPreOrder.dart';
 import 'Jual/PanelTertahan.dart';
+import 'Jual/JalurKameraPindai.dart';
 import 'Jual/PanelVarian.dart';
 import 'Jual/PengenalPemindai.dart';
 import 'Jual/UmpanBalikPindai.dart';
@@ -124,6 +126,14 @@ class _LayarJualState extends ConsumerState<LayarJual> {
   final _fokusCari = FocusNode(debugLabel: 'Cari produk');
   final _fokusAkar = FocusNode(debugLabel: 'Layar Jual');
   final _pemindai = PengenalPemindai();
+
+  /// Pemindai kamera yang terus terbuka (strip di atas katalog); hanya di perangkat yang punya kamera (Android/iOS).
+  bool _kameraAktif = false;
+  HasilPindaiKamera? _hasilKamera;
+  int _nomorHasilKamera = 0;
+
+  /// Hasil `_JalankanPindai` terakhir: berhasil atau tidak, dan nama baris yang bertambah. Dibaca strip kamera.
+  ({bool berhasil, String? nama, String? satuan})? _hasilPindaiTerakhir;
   final _kunciBayar = GlobalKey<PanelBayarState>();
   final _kunciCekHarga = GlobalKey<PanelCekHargaState>();
   Timer? _pewaktuKatalog;
@@ -210,6 +220,9 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     }
     if (!widget.aktif) {
       _pemindai.Reset();
+      // Berpindah ke menu lain: kamera dimatikan (baterai & privasi); kasir membukanya lagi dari tombol kamera.
+      _kameraAktif = false;
+      _hasilKamera = null;
     }
   }
 
@@ -421,6 +434,8 @@ class _LayarJualState extends ConsumerState<LayarJual> {
         .map((b) => b.uuid)
         .firstOrNull;
     final berhasil = berubah != null || (_panel != panelSebelum && _panel != null);
+    final barisBerubah = berubah == null ? null : sesudah.where((b) => b.uuid == berubah).firstOrNull;
+    _hasilPindaiTerakhir = (berhasil: berhasil, nama: barisBerubah?.nama, satuan: barisBerubah?.namaSatuan);
     if (ref.read(penyediaPengaturanPerangkat).umpanBalikPindai) {
       final umpanBalik = ref.read(penyediaUmpanBalikPindai);
       unawaited(berhasil ? umpanBalik.Berhasil() : umpanBalik.Gagal());
@@ -433,6 +448,58 @@ class _LayarJualState extends ConsumerState<LayarJual> {
           setState(() => _uuidSorot = null);
         }
       });
+    }
+  }
+
+  /// Kamera pemindai: kode yang terbaca masuk lewat jalur yang sama dengan pemindai USB/Bluetooth ([_TanganiKode]),
+  /// lalu hasilnya ditulis di strip kamera karena keranjang bisa tertutup di layar HP.
+  void _SaatKodeKamera(String kode) {
+    // Panel lain (varian, item, pelanggan, ...) sedang meminta perhatian kasir: pindaian tidak boleh mengubah
+    // keranjang di belakangnya. Cek harga memang menerima pindaian.
+    if (!mounted || (_panel != null && _panel != _JenisPanel.CekHarga)) {
+      return;
+    }
+    final untukCekHarga = _panel == _JenisPanel.CekHarga;
+    _hasilPindaiTerakhir = null;
+    _pesan = null;
+    _TanganiKode(kode);
+    final hasil = _hasilPindaiTerakhir;
+    final HasilPindaiKamera tampil;
+    if (untukCekHarga) {
+      tampil = (nomor: ++_nomorHasilKamera, teks: 'Harga $kode ditampilkan di Cek harga.', galat: false);
+    } else if (hasil != null && hasil.berhasil) {
+      final nama = hasil.nama;
+      tampil = (
+        nomor: ++_nomorHasilKamera,
+        teks: nama == null
+            ? 'Lanjutkan di panel yang terbuka.'
+            : 'Ditambahkan: $nama${hasil.satuan == null || hasil.satuan!.isEmpty ? '' : ' (${hasil.satuan})'}',
+        galat: false,
+      );
+    } else {
+      tampil = (nomor: ++_nomorHasilKamera, teks: _pesan?.teks ?? 'Kode $kode tidak dikenal.', galat: true);
+    }
+    setState(() => _hasilKamera = tampil);
+  }
+
+  void _UbahKamera() {
+    setState(() {
+      _kameraAktif = !_kameraAktif;
+      _hasilKamera = null;
+      if (_kameraAktif) {
+        _fokusCari.unfocus();
+      }
+    });
+    if (!_kameraAktif) {
+      _FokusAkar();
+    }
+  }
+
+  /// Ingat kamera yang terakhir dipakai kasir (depan/belakang) untuk pembukaan berikutnya.
+  void _SimpanArahKamera(ArahKamera arah) {
+    final pengaturan = ref.read(penyediaPengaturanPerangkat);
+    if (pengaturan.kameraPindai != arah) {
+      unawaited(ref.read(penyediaPengaturanPerangkat.notifier).Simpan(pengaturan.copyWith(kameraPindai: arah)));
     }
   }
 
@@ -1492,7 +1559,16 @@ class _LayarJualState extends ConsumerState<LayarJual> {
                         hintText: ringkas ? 'Cari produk atau barcode' : 'Cari nama, SKU, atau barcode (F1)',
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _cari.text.isEmpty
-                            ? null
+                            ? (ref.watch(penyediaPemindaiKamera).CekTersedia()
+                                  ? IconButton(
+                                      key: const ValueKey('TombolKameraPindai'),
+                                      tooltip: _kameraAktif ? 'Tutup kamera pemindai' : 'Pindai dengan kamera',
+                                      isSelected: _kameraAktif,
+                                      onPressed: _UbahKamera,
+                                      icon: const Icon(Icons.photo_camera_outlined),
+                                      selectedIcon: const Icon(Icons.photo_camera),
+                                    )
+                                  : null)
                             : IconButton(
                                 tooltip: 'Hapus pencarian',
                                 onPressed: () => setState(_cari.clear),
@@ -1549,6 +1625,20 @@ class _LayarJualState extends ConsumerState<LayarJual> {
             },
           ),
         ),
+        if (_kameraAktif && ref.watch(penyediaPemindaiKamera).CekTersedia())
+          Padding(
+            padding: EdgeInsets.fromLTRB(tepi, 0, tepi, TokenJarak.jarak8),
+            child: JalurKameraPindai(
+              pabrik: ref.read(penyediaPemindaiKamera),
+              arahAwal: ref.read(penyediaPengaturanPerangkat).kameraPindai,
+              jam: ref.read(penyediaJam),
+              saatKode: _SaatKodeKamera,
+              saatArahBerubah: _SimpanArahKamera,
+              saatTutup: _UbahKamera,
+              hasil: _hasilKamera,
+              tinggi: sempit ? 168 : 208,
+            ),
+          ),
         if (katalog != null && (katalog.kategori.isNotEmpty || katalog.adaFavorit))
           SizedBox(
             height: TokenJarak.targetSentuh,
