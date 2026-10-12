@@ -35,11 +35,13 @@ final class ProsesBerkasUnduhan
         $berkas->update(['Status' => StatusBerkasUnduhan::Diproses, 'MulaiPada' => now()]);
         @set_time_limit(0);
         ignore_user_abort(true);
-        $sementara = tempnam(sys_get_temp_dir(), 'payoung-unduhan-');
+        // Folder sementara bernama acak (izin 0700), pola yang sama dengan `PenulisXlsxLaporan`.
+        $folder = sys_get_temp_dir().'/payoung-unduhan-'.bin2hex(random_bytes(8));
+        $sementara = $folder.'/berkas';
         $nivel = ob_get_level();
 
         try {
-            if ($sementara === false) {
+            if (! mkdir($folder, 0700, true) && ! is_dir($folder)) {
                 throw new PelanggaranAturanBisnis('UnduhanTidakDapatDibuat', self::GALAT_UMUM);
             }
 
@@ -89,9 +91,8 @@ final class ProsesBerkasUnduhan
         } finally {
             $this->batas->NonaktifkanLatarBelakang();
 
-            if (is_string($sementara)) {
-                @unlink($sementara);
-            }
+            @unlink($sementara);
+            @rmdir($folder);
         }
     }
 
