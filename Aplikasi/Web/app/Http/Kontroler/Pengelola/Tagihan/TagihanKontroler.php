@@ -11,6 +11,7 @@ use App\Domain\Pengelola\Tagihan\Aksi\TerimaPembayaranLanggananMassal;
 use App\Domain\Pengelola\Tagihan\Aksi\TolakPembayaranLangganan;
 use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Pengelola\Tagihan\Kueri\LaporanLanggananPlatform;
+use App\Domain\Pengelola\Tagihan\Layanan\BatasRefundLangganan;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
@@ -37,7 +38,7 @@ final class TagihanKontroler extends Kontroler
 {
     use PelakuPengelola;
 
-    public function __construct(private readonly DaftarTagihanPlatform $kueri) {}
+    public function __construct(private readonly DaftarTagihanPlatform $kueri, private readonly BatasRefundLangganan $batasRefund) {}
 
     public function Daftar(Request $permintaan): Response|JsonResponse
     {
@@ -48,6 +49,7 @@ final class TagihanKontroler extends Kontroler
             'Ringkasan' => $this->kueri->HitungRingkasan(),
             'BolehVerifikasi' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanVerifikasi),
             'RefundMenunggu' => $this->kueri->AmbilRefundMenunggu(),
+            'BatasRefund' => $this->batasRefund->Ambil()->KeString(),
             'BolehSetujuiRefund' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
             'OpsiStatus' => array_map(fn (StatusTagihanLangganan $pilihan): array => ['Nilai' => $pilihan->value, 'Label' => $pilihan->AmbilLabel()], StatusTagihanLangganan::cases()),
         ]);
@@ -112,7 +114,7 @@ final class TagihanKontroler extends Kontroler
                 'Refund' => $pelaku->PunyaIzin(IzinPengelola::TagihanRefund),
                 'SetujuiRefund' => $pelaku->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
             ],
-            'BatasRefundTanpaPersetujuan' => (string) config('tagihan.BatasRefundTanpaPersetujuan'),
+            'BatasRefundTanpaPersetujuan' => $this->batasRefund->Ambil()->KeString(),
         ]);
     }
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Tagihan\Aksi;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
-use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
+use App\Domain\Pengelola\Tagihan\Layanan\BatasRefundLangganan;
 use App\Domain\Pengelola\Tagihan\Layanan\PelaksanaRefundLangganan;
 use App\Domain\Pengelola\Tagihan\Layanan\PemberitahuRefundLangganan;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Keuangan/Super Admin mengajukan refund penuh tagihan yang sudah lunas (P-08, BR-P08.2, D-112, audit E6).
  *
- * - Refund sampai `config('tagihan.BatasRefundTanpaPersetujuan')` langsung disetujui dan dilaksanakan; di atasnya
+ * - Refund sampai ``BatasRefundLangganan` (diatur Super Admin di konsol, bawaan Rp 1.000.000) langsung disetujui dan dilaksanakan; di atasnya
  *   ditahan `Diajukan` sampai Super Admin memutuskan (`PutuskanRefundLangganan`). Super Admin yang mengajukan tidak
  *   terikat persetujuan kedua (D-34).
  * - Hanya refund penuh (sebesar total tagihan); refund sebagian belum didukung. Tagihan Rp 0 (kupon 100%) tidak
@@ -35,6 +35,7 @@ final class AjukanRefundLangganan
     public function __construct(
         private readonly PelaksanaRefundLangganan $pelaksana,
         private readonly PemberitahuRefundLangganan $pemberitahu,
+        private readonly BatasRefundLangganan $batas,
         private readonly PencatatAuditPengelola $audit,
     ) {}
 
@@ -77,7 +78,7 @@ final class AjukanRefundLangganan
                 'IdPenggunaPengelolaPengaju' => $pelaku->Id,
             ]);
             $langsung = $pelaku->PunyaIzin(IzinPengelola::TagihanRefundSetujui)
-                || $jumlah->Bandingkan(Uang::Dari((string) config('tagihan.BatasRefundTanpaPersetujuan'))) <= 0;
+                || $jumlah->Bandingkan($this->batas->Ambil()) <= 0;
 
             if ($langsung) {
                 $diakhiri = $this->pelaksana->Laksanakan($refund, $tagihan, $langganan, $pelaku, CarbonImmutable::now());

@@ -9,6 +9,7 @@ use App\Domain\Pengelola\Tagihan\Aksi\CatatPembayaranManualLangganan;
 use App\Domain\Pengelola\Tagihan\Aksi\HapusBukuTagihanLangganan;
 use App\Domain\Pengelola\Tagihan\Aksi\PutuskanRefundLangganan;
 use App\Domain\Pengelola\Tagihan\Aksi\TerbitkanTagihanManualLangganan;
+use App\Domain\Pengelola\Tagihan\Aksi\UbahBatasRefundLangganan;
 use App\Domain\Tenant\Enum\StatusRefundLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use App\Http\Kontroler\Kontroler;
@@ -17,6 +18,7 @@ use App\Http\Permintaan\Pengelola\Tagihan\AjukanRefundPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\AlasanTagihanPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\CatatPembayaranManualPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\TerbitkanTagihanManualPermintaan;
+use App\Http\Permintaan\Pengelola\Tagihan\UbahBatasRefundPermintaan;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -78,6 +80,14 @@ final class TagihanManualKontroler extends Kontroler
         $putuskan->Setujui($this->AmbilPelaku(), $refund);
 
         return back()->with('Kilat', 'Refund disetujui dan dilaksanakan. Kembalikan dananya ke rekening tenant.');
+    }
+
+    /** D-113: Super Admin mengubah batas refund tanpa persetujuan kedua dari konsol. */
+    public function UbahBatasRefund(UbahBatasRefundPermintaan $permintaan, UbahBatasRefundLangganan $ubah): RedirectResponse
+    {
+        $baru = $ubah->Jalankan($this->AmbilPelaku(), $permintaan->string('Batas')->toString(), $permintaan->AmbilAlasan());
+
+        return back()->with('Kilat', "Batas refund tanpa persetujuan kedua sekarang {$baru->FormatRupiah()}. Berlaku untuk pengajuan berikutnya.");
     }
 
     public function TolakRefund(string $refund, AlasanTagihanPermintaan $permintaan, PutuskanRefundLangganan $putuskan): RedirectResponse

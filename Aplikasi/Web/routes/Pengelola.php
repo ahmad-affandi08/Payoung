@@ -348,6 +348,7 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 ->name('pengelola.tagihan.refund.ajukan');
             Route::middleware([$izin(IzinPengelola::TagihanRefundSetujui), WajibDuaFaktorBaru::class])->group(function (): void {
                 Route::post('/tagihan/refund/{refund}/setujui', [TagihanManualKontroler::class, 'SetujuiRefund'])->name('pengelola.tagihan.refund.setujui');
+                Route::put('/tagihan/pengaturan/batas-refund', [TagihanManualKontroler::class, 'UbahBatasRefund'])->name('pengelola.tagihan.batas-refund.ubah');
                 Route::post('/tagihan/refund/{refund}/tolak', [TagihanManualKontroler::class, 'TolakRefund'])->name('pengelola.tagihan.refund.tolak');
             });
             Route::middleware($izin(IzinPengelola::TagihanVerifikasi))->group(function (): void {

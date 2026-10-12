@@ -5,6 +5,7 @@ import { AturHalamanUji, kirimanForm, tiruanRouter } from '@/Komponen/Katalog/Ti
 import PanelTransferManual from '@/Komponen/Langganan/PanelTransferManual';
 import {
     AntreanRefund,
+    PanelBatasRefund,
     PanelTindakanTagihan,
     RiwayatRefund,
     type BarisRefundMenunggu,
@@ -228,6 +229,36 @@ describe('Refund (BR-P08.2)', () => {
     it('antrean kosong tidak merender apa pun', () => {
         const { container } = render(<AntreanRefund antrean={[]} boleh />);
         expect(container.textContent).toBe('');
+    });
+});
+
+describe('PanelBatasRefund (D-113)', () => {
+    beforeEach(() => AturHalamanUji({}, '/tagihan'));
+    afterEach(() => cleanup());
+
+    it('Super Admin mengubah batas lewat PUT; peran lain hanya melihat nilainya', () => {
+        const { unmount: Lepas } = render(<PanelBatasRefund batas="1000000.00" boleh />);
+
+        expect(screen.getByText(/Rp\s?1\.000\.000/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah batas' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah batas refund' });
+        fireEvent.change(within(dialog).getByLabelText(/Batas refund tanpa persetujuan kedua/), {
+            target: { value: '5000000' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Alasan perubahan/), {
+            target: { value: 'Refund tahunan sering terjadi' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan batas' }));
+
+        expect(kirimanForm[0]).toMatchObject({
+            metode: 'put',
+            url: '/tagihan/pengaturan/batas-refund',
+            data: { Batas: '5000000', Alasan: 'Refund tahunan sering terjadi' },
+        });
+        Lepas();
+
+        render(<PanelBatasRefund batas="1000000.00" boleh={false} />);
+        expect(screen.queryByRole('button', { name: 'Ubah batas' })).toBeNull();
     });
 });
 

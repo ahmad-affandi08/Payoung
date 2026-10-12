@@ -421,6 +421,42 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
             ->and($komisi->AlasanBatal)->toContain($tagihan->Nomor);
     });
 
+    it('D-113: batas refund diubah Super Admin dari konsol: bawaan Rp 1 juta, berlaku untuk pengajuan berikutnya, teraudit', function (): void {
+        $tagihan = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant, 'Tahunan');
+        MasukManual($this, $this->superAdmin)->get(BantuanPengelola::Url('/tagihan'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('BatasRefund', '1000000.00')->where('BolehSetujuiRefund', true));
+
+        // Keuangan tidak boleh mengubahnya.
+        MasukManual($this, $this->keuangan)
+            ->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '9000000', 'Alasan' => 'Coba ubah sendiri'])
+            ->assertForbidden();
+
+        // Nilai tidak sah ditolak.
+        MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '-5', 'Alasan' => 'Nilai negatif'])->assertSessionHasErrors('Batas');
+        MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '2000000000', 'Alasan' => 'Terlalu besar sekali'])->assertSessionHasErrors('Batas');
+        MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '5000000', 'Alasan' => ''])->assertSessionHasErrors('Alasan');
+
+        MasukManual($this, $this->superAdmin)
+            ->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '5000000', 'Alasan' => 'Keuangan sering menangani refund tahunan'])
+            ->assertSessionHasNoErrors();
+
+        $log = LogAuditPengelola::query()->where('Aksi', 'tagihan.refund.batas-ubah')->sole();
+        expect($log->NilaiLama)->toBe(['Batas' => '1000000.00'])->and($log->NilaiBaru)->toBe(['Batas' => '5000000.00']);
+
+        // Tagihan tahunan ±Rp 2,65 juta kini di bawah batas: Keuangan langsung menyetujui.
+        MasukManual($this, $this->keuangan)->post(BantuanPengelola::Url("/tagihan/{$tagihan->Uuid}/refund"), ['Alasan' => 'Tenant tutup usaha, minta refund'])->assertSessionHasNoErrors();
+        expect(RefundLangganan::query()->withoutGlobalScopes()->sole()->Status)->toBe(StatusRefundLangganan::Disetujui);
+    });
+
+    it('D-113: batas 0 berarti semua refund Keuangan menunggu persetujuan Super Admin', function (): void {
+        $tagihan = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
+        MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/batas-refund'), ['Batas' => '0', 'Alasan' => 'Semua refund harus dicek'])->assertSessionHasNoErrors();
+
+        MasukManual($this, $this->keuangan)->post(BantuanPengelola::Url("/tagihan/{$tagihan->Uuid}/refund"), ['Alasan' => 'Salah paket, minta dikembalikan'])->assertSessionHasNoErrors();
+
+        expect(RefundLangganan::query()->withoutGlobalScopes()->sole()->Status)->toBe(StatusRefundLangganan::Diajukan);
+    });
+
     it('tagihan Rp 0 (kupon 100%) dan tagihan yang belum lunas tidak bisa di-refund', function (): void {
         KuponLangganan::query()->create(['Kode' => 'GRATIS100', 'Jenis' => 'Persen', 'Nilai' => '100', 'DurasiBulan' => 1]);
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)

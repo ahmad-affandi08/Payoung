@@ -386,3 +386,73 @@ function FormTolakRefund({ uuid, saatSelesai }: { uuid: string; saatSelesai: () 
         </KerangkaForm>
     );
 }
+
+/**
+ * D-113: batas refund tanpa persetujuan kedua (BR-P08.2). Semua yang melihat Tagihan tahu batasnya; hanya Super Admin
+ * (izin `tagihan.refund.setujui`) yang bisa mengubahnya, dan perubahan hanya berlaku untuk pengajuan berikutnya.
+ */
+export function PanelBatasRefund({ batas, boleh }: { batas: string; boleh: boolean }) {
+    const [mengubah, AturMengubah] = useState(false);
+
+    return (
+        <section aria-labelledby="judul-batas-refund" className="flex flex-col gap-2">
+            <h2 id="judul-batas-refund" className="text-subjudul font-semibold text-teks-utama">
+                Batas refund tanpa persetujuan kedua
+            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+                <p className="text-isi text-teks-sekunder">
+                    Refund sampai <strong className="tabular-nums text-teks-utama">{FormatRupiah(batas)}</strong>{' '}
+                    langsung dilaksanakan. Di atasnya menunggu persetujuan Super Admin.
+                </p>
+                {boleh ? (
+                    <Tombol varian="sekunder" onClick={() => AturMengubah(true)}>
+                        Ubah batas
+                    </Tombol>
+                ) : null}
+            </div>
+            {mengubah ? <FormUbahBatasRefund batas={batas} saatSelesai={() => AturMengubah(false)} /> : null}
+        </section>
+    );
+}
+
+function FormUbahBatasRefund({ batas, saatSelesai }: { batas: string; saatSelesai: () => void }) {
+    const formulir = useForm({ Batas: batas.replace(/\.\d+$/, ''), Alasan: '' });
+    const Kirim = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+        formulir.put('/tagihan/pengaturan/batas-refund', { preserveScroll: true, onSuccess: saatSelesai });
+    };
+
+    return (
+        <KerangkaForm
+            judul="Ubah batas refund"
+            keterangan={
+                <p>
+                    Isi 0 bila semua refund harus disetujui Super Admin lebih dulu. Perubahan tercatat di audit dan
+                    hanya berlaku untuk pengajuan refund berikutnya.
+                </p>
+            }
+            labelKirim="Simpan batas"
+            memproses={formulir.processing}
+            galatUmum={AmbilGalatUmum(formulir.errors)}
+            saatKirim={Kirim}
+            saatBatal={saatSelesai}
+        >
+            <BidangUang
+                label="Batas refund tanpa persetujuan kedua"
+                nilai={formulir.data.Batas}
+                saatBerubah={(nilai) => formulir.setData('Batas', nilai)}
+                galat={formulir.errors.Batas}
+                required
+            />
+            <BidangTeksPanjang
+                label="Alasan perubahan"
+                nilai={formulir.data.Alasan}
+                baris={2}
+                maksimal={500}
+                saatBerubah={(nilai) => formulir.setData('Alasan', nilai)}
+                galat={formulir.errors.Alasan}
+                required
+            />
+        </KerangkaForm>
+    );
+}

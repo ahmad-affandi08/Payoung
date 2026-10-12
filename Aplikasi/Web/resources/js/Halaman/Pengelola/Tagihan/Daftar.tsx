@@ -1,4 +1,8 @@
-import { AntreanRefund, type BarisRefundMenunggu } from '@/Komponen/Langganan/TindakanTagihanPengelola';
+import {
+    AntreanRefund,
+    PanelBatasRefund,
+    type BarisRefundMenunggu,
+} from '@/Komponen/Langganan/TindakanTagihanPengelola';
 import { Link } from '@inertiajs/react';
 
 import AksiMassalVerifikasi from '@/Komponen/Pengelola/AksiMassalVerifikasi';
@@ -30,6 +34,7 @@ type PropsDaftarTagihan = {
     BolehVerifikasi?: boolean;
     RefundMenunggu?: BarisRefundMenunggu[];
     BolehSetujuiRefund?: boolean;
+    BatasRefund?: string;
 };
 
 const kolomAntrean: KolomTabel<BarisAntrean>[] = [
@@ -164,6 +169,7 @@ export default function HalamanDaftarTagihan({
     BolehVerifikasi = false,
     RefundMenunggu = [],
     BolehSetujuiRefund = false,
+    BatasRefund = '1000000',
 }: PropsDaftarTagihan) {
     return (
         <TataLetakPengelola judul="Tagihan langganan">
@@ -181,6 +187,7 @@ export default function HalamanDaftarTagihan({
                 </li>
             </ul>
             <AntreanRefund antrean={RefundMenunggu} boleh={BolehSetujuiRefund} />
+            <PanelBatasRefund batas={BatasRefund} boleh={BolehSetujuiRefund} />
             <section aria-labelledby="judul-antrean" className="flex flex-col gap-2">
                 <h2 id="judul-antrean" className="text-subjudul font-semibold text-teks-utama">
                     Menunggu verifikasi

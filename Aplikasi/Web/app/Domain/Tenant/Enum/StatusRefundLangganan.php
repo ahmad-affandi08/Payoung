@@ -6,7 +6,7 @@ namespace App\Domain\Tenant\Enum;
 
 /**
  * Status pengajuan refund tagihan langganan (P-08, BR-P08.2): Diajukan → Disetujui / Ditolak. Keduanya final.
- * Refund di atas batas (`config('tagihan.BatasRefundTanpaPersetujuan')`) diajukan Keuangan lalu diputuskan Super Admin;
+ * Refund di atas batas (`BatasRefundLangganan`, diatur Super Admin di konsol) diajukan Keuangan lalu diputuskan Super Admin;
  * di bawah batas, atau diajukan Super Admin sendiri (D-34), langsung Disetujui.
  */
 enum StatusRefundLangganan: string

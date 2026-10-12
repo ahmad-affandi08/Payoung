@@ -19,9 +19,6 @@ return [
     // F-00: masa tenggang status Tertunggak sebelum Ditangguhkan.
     'HariMasaTenggang' => (int) env('TAGIHAN_HARI_MASA_TENGGANG', 7),
 
-    // BR-P08.2: refund di atas batas ini (Rupiah) diputuskan Super Admin; Super Admin sendiri tidak terikat (D-34).
-    'BatasRefundTanpaPersetujuan' => (string) env('TAGIHAN_BATAS_REFUND_TANPA_PERSETUJUAN', '1000000'),
-
     // Bukti transfer: gambar atau PDF, disimpan privat (disk `local` = storage/app/private), tidak pernah publik.
     'DiskBukti' => 'local',
     'FolderBukti' => 'tagihan-langganan/bukti',
