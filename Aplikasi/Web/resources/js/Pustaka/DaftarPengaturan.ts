@@ -267,6 +267,16 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 fitur: 'api.publik',
             },
             {
+                label: 'WhatsApp & kuota pesan',
+                keterangan:
+                    'Pantau kuota pesan WhatsApp bulan ini dan pasang nomor WhatsApp sendiri agar pesan tidak memakai kuota.',
+                href: '/kelola/pengaturan/whatsapp',
+                izin: IzinTenant.IntegrasiApiKelola,
+                fitur: 'integrasi.whatsapp',
+                // D-108: edisi Lisensi memakai halaman integrasi server di bawah.
+                edisi: 'Saas',
+            },
+            {
                 label: 'Email & WhatsApp server',
                 keterangan:
                     'Akun email, WhatsApp, dan penyimpanan berkas milik toko untuk server ini (edisi pasang sendiri).',

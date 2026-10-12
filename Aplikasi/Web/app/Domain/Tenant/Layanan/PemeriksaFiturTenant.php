@@ -34,6 +34,15 @@ final class PemeriksaFiturTenant
         private readonly EvaluatorFitur $evaluator,
     ) {}
 
+    /**
+     * Batas efektif satu kolom batas paket (paket + add-on, ditimpa override). Null = tak terbatas; tenant tanpa
+     * langganan bernilai 0. Kolom: `Paket::KOLOM_BATAS`.
+     */
+    public function AmbilBatasEfektif(int $idTenant, string $kolomBatas): ?int
+    {
+        return $this->evaluator->HitungBatasEfektif($this->sumber->Ambil($idTenant))[$kolomBatas] ?? null;
+    }
+
     public function CekAktif(int $idTenant, string $kunci): bool
     {
         return $this->evaluator->CekFiturAktif($this->sumber->Ambil($idTenant), $kunci);

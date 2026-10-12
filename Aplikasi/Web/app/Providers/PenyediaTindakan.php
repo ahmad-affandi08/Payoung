@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Domain\Akuntansi\Layanan\PenyediaTindakanAkuntansi;
 use App\Domain\Bengkel\Layanan\PenyediaTindakanBengkel;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan as KontrakPenyediaTindakan;
+use App\Domain\Integrasi\Layanan\PenyediaTindakanWhatsapp;
 use App\Domain\Karyawan\Layanan\PenyediaTindakanKehadiran;
 use App\Domain\Kasir\Layanan\PenyediaTindakanKasir;
 use App\Domain\Laporan\Layanan\PenyediaTindakanStok;
@@ -36,6 +37,7 @@ final class PenyediaTindakan extends ServiceProvider
             PenyediaTindakanPembelian::class,
             PenyediaTindakanAkuntansi::class,
             PenyediaTindakanPromo::class,
+            PenyediaTindakanWhatsapp::class,
             PenyediaTindakanPanduanAwal::class,
             PenyediaTindakanReservasi::class,
             PenyediaTindakanLaundry::class,

@@ -126,7 +126,7 @@ final class KirimPengingatTagihanLangganan
 
     private function KirimWhatsapp(TahapPengingatTagihan $tahap, string $nama, string $noHp, TagihanLangganan $tagihan, string $total, string $namaPaket, string $jatuhTempo, ?string $tanggalDitangguhkan): void
     {
-        $pengirim = $this->whatsapp->AmbilAktif();
+        $pengirim = $this->whatsapp->AmbilAktifPlatform();
 
         if ($pengirim === null) {
             return;

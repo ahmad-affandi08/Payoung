@@ -9,6 +9,7 @@ use App\Http\Kontroler\Kelola\IntegrasiServerKontroler;
 use App\Http\Kontroler\Kelola\PengaturanKontroler;
 use App\Http\Kontroler\Kelola\TokenApiKontroler;
 use App\Http\Kontroler\Kelola\WebhookKontroler;
+use App\Http\Kontroler\Kelola\WhatsappTenantKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,16 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
         Route::put('/webhook/{uuidWebhook}/status', [WebhookKontroler::class, 'UbahStatus'])->where('uuidWebhook', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('kelola.pengaturan.webhook.status');
         Route::delete('/webhook/{uuidWebhook}', [WebhookKontroler::class, 'Hapus'])->where('uuidWebhook', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('kelola.pengaturan.webhook.hapus');
         Route::post('/webhook/kiriman/{uuidKiriman}/kirim-ulang', [WebhookKontroler::class, 'KirimUlang'])->where('uuidKiriman', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('kelola.pengaturan.webhook.kirim-ulang');
+
+        // D-108: WhatsApp milik tenant (nomor sendiri, tanpa kuota Payoung) + pemantau kuota. Edisi Lisensi punya halaman
+        // integrasi server sendiri di bawah, jadi tidak memakai halaman ini.
+        if (! EdisiAplikasi::CekLisensi()) {
+            Route::get('/whatsapp', [WhatsappTenantKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.whatsapp');
+            Route::post('/whatsapp', [WhatsappTenantKontroler::class, 'Simpan'])->name('kelola.pengaturan.whatsapp.simpan');
+            Route::post('/whatsapp/uji', [WhatsappTenantKontroler::class, 'Uji'])->name('kelola.pengaturan.whatsapp.uji');
+            Route::post('/whatsapp/aktifkan', [WhatsappTenantKontroler::class, 'Aktifkan'])->name('kelola.pengaturan.whatsapp.aktifkan');
+            Route::post('/whatsapp/nonaktifkan', [WhatsappTenantKontroler::class, 'Nonaktifkan'])->name('kelola.pengaturan.whatsapp.nonaktifkan');
+        }
 
         // D-35: email, WhatsApp, dan penyimpanan berkas server toko. Hanya edisi Lisensi; di SaaS milik konsol.
         if (EdisiAplikasi::CekLisensi()) {
