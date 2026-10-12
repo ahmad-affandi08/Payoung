@@ -500,6 +500,48 @@ describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
         expect(kirimanForm[0]?.url).toBe('/kelola/produk/01J9PRODUKBARU000000000000A');
     });
 
+    it('mode Ubah: barcode yang diketik lalu Simpan ikut ditambahkan; yang tidak valid menahan simpan', () => {
+        render(
+            <HalamanFormProduk
+                {...PropsForm({
+                    Mode: 'Ubah',
+                    Kepala: BuatKepala(),
+                    Produk: {
+                        ...produkBaru,
+                        Nama: 'Es Kopi',
+                        Satuan: [
+                            {
+                                Uuid: null,
+                                UuidSatuan: 'SAT-PCS',
+                                KonversiKeDasar: '1',
+                                DefaultJual: true,
+                                DefaultBeli: true,
+                                Barcode: [],
+                                HargaAwal: [],
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+        fireEvent.click(screen.getByRole('tab', { name: /Satuan & barcode/ }));
+        const isian = screen.getByPlaceholderText<HTMLInputElement>('Pindai atau ketik barcode');
+
+        fireEvent.change(isian, { target: { value: 'ab' } });
+        fireEvent.blur(isian);
+        const sebelum = kirimanForm.length;
+
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }));
+        expect(kirimanForm.length).toBe(sebelum);
+        expect(screen.getByText('Barcode 3–64 karakter: huruf, angka, titik, atau strip.')).toBeTruthy();
+
+        fireEvent.change(isian, { target: { value: '8993175530021' } });
+        fireEvent.blur(isian);
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }));
+        expect(kirimanForm.at(-1)?.metode).toBe('put');
+        expect(JSON.stringify(kirimanForm.at(-1)?.data)).toContain('8993175530021');
+    });
+
     it('mode Ubah selalu tab bebas tanpa wizard, penunjuk langkah, atau sakelar mode', () => {
         render(<HalamanFormProduk {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala() })} />);
         expect(screen.queryByRole('button', { name: 'Formulir sederhana' })).toBeNull();

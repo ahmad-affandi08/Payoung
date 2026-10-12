@@ -6,6 +6,7 @@ import { BukaPilihan } from '@/Pengujian/InteraksiPilihan';
 import type { BarisHarga } from '@/Tipe/Katalog';
 
 import { AmbilGalatBerawalan, HitungKombinasiVarian, PindahkanItem } from './BantuanKatalog';
+import { TahanBilaBarcodeTertunda } from './BantuanKatalog';
 import BidangBarcode from './BidangBarcode';
 import BidangJumlah from './BidangJumlah';
 import PemilihProduk, { BuatUrlCariProduk } from './PemilihProduk';
@@ -104,6 +105,58 @@ describe('BidangBarcode (BR-03.1)', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Hapus barcode 8991234567890' }));
         expect(screen.queryByText('8991234567890')).toBeNull();
+    });
+});
+
+describe('BidangBarcode: ketikan yang ditinggalkan tidak hilang diam-diam', () => {
+    afterEach(() => cleanup());
+
+    it('meninggalkan isian menambahkan barcode yang valid; tombol Tambah sesudahnya tidak menggandakan', () => {
+        render(<BarcodeUji />);
+        const input = screen.getByLabelText<HTMLInputElement>('Barcode pcs');
+
+        fireEvent.change(input, { target: { value: '8997000111222' } });
+        expect(input.getAttribute('data-barcode-tertunda')).toBe('true');
+
+        fireEvent.blur(input);
+        expect(screen.getAllByText('8997000111222')).toHaveLength(1);
+        expect(input.value).toBe('');
+        expect(input.getAttribute('data-barcode-tertunda')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah barcode' }));
+        expect(screen.getAllByText('8997000111222')).toHaveLength(1);
+    });
+
+    it('ketikan tidak valid atau duplikat tetap di isian dengan pesannya, dan Lanjut/Simpan ditahan', () => {
+        render(
+            <div>
+                <BarcodeUji />
+            </div>,
+        );
+        const input = screen.getByLabelText<HTMLInputElement>('Barcode pcs');
+
+        fireEvent.change(input, { target: { value: '8990001' } });
+        fireEvent.blur(input);
+        expect(input.value).toBe('8990001');
+        expect(screen.getByText('Barcode 8990001 sudah dipakai di produk ini.')).toBeTruthy();
+        expect(input.getAttribute('data-barcode-tertunda')).toBe('true');
+
+        expect(TahanBilaBarcodeTertunda(document.body)).toBe(true);
+        expect(document.activeElement).toBe(input);
+
+        fireEvent.change(input, { target: { value: '' } });
+        expect(TahanBilaBarcodeTertunda(document.body)).toBe(false);
+    });
+
+    it('penahan menjelaskan apa yang harus dilakukan bila ketikan valid belum sempat ditambahkan', () => {
+        render(<BarcodeUji />);
+        const input = screen.getByLabelText<HTMLInputElement>('Barcode pcs');
+
+        fireEvent.change(input, { target: { value: '8997000111222' } });
+        act(() => {
+            expect(TahanBilaBarcodeTertunda(document.body)).toBe(true);
+        });
+        expect(screen.getByText('Barcode ini belum ditambahkan. Tekan Enter atau tombol Tambah barcode.')).toBeTruthy();
     });
 });
 

@@ -1,10 +1,10 @@
-import { useId, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import { Button } from '@/Komponen/Ui/button';
 import { Input } from '@/Komponen/Ui/input';
 import { Label } from '@/Komponen/Ui/label';
 
-import { PeriksaBarcode } from './BantuanKatalog';
+import { PeriksaBarcode, PERISTIWA_BARCODE_TERTUNDA } from './BantuanKatalog';
 
 type PropsBidangBarcode = {
     label: string;
@@ -35,6 +35,20 @@ export default function BidangBarcode({
     const [ketikan, AturKetikan] = useState('');
     const [galatLokal, AturGalatLokal] = useState<string | null>(null);
     const pesanGalat = galatLokal ?? galat;
+    const elemenInput = useRef<HTMLInputElement>(null);
+    const adaKetikan = ketikan.trim() !== '';
+
+    // Formulir pemanggil menahan Lanjut/Simpan bila ada barcode yang diketik tetapi belum ditambahkan
+    // (`TahanBilaBarcodeTertunda`); isian ini lalu menjelaskan apa yang harus dilakukan.
+    useEffect(() => {
+        const elemen = elemenInput.current;
+        const Beritahu = () =>
+            AturGalatLokal((lama) => lama ?? 'Barcode ini belum ditambahkan. Tekan Enter atau tombol Tambah barcode.');
+
+        elemen?.addEventListener(PERISTIWA_BARCODE_TERTUNDA, Beritahu);
+
+        return () => elemen?.removeEventListener(PERISTIWA_BARCODE_TERTUNDA, Beritahu);
+    }, []);
 
     const Tambah = () => {
         const barcode = ketikan.trim();
@@ -98,6 +112,11 @@ export default function BidangBarcode({
                     value={ketikan}
                     onChange={(peristiwa) => AturKetikan(peristiwa.target.value)}
                     onKeyDown={TekanTombol}
+                    // Barcode yang diketik lalu ditinggal (pindah isian, klik Lanjut/Simpan) ikut ditambahkan,
+                    // bukan hilang diam-diam. Yang tidak valid tetap di isian beserta pesannya.
+                    onBlur={Tambah}
+                    ref={elemenInput}
+                    data-barcode-tertunda={adaKetikan ? 'true' : undefined}
                     disabled={disabled}
                     autoComplete="off"
                     placeholder="Pindai atau ketik barcode"

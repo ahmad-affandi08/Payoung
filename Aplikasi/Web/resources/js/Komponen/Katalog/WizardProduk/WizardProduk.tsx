@@ -6,6 +6,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 
+import { TahanBilaBarcodeTertunda } from '@/Komponen/Katalog/BantuanKatalog';
+
 import type { KunciLangkah } from './LangkahProduk';
 import PenunjukLangkah from './PenunjukLangkah';
 import type { KontrolWizardProduk } from './useAlurWizardProduk';
@@ -71,8 +73,15 @@ export default function WizardProduk({
         }
     }, [nomorFokus]);
 
+    // Barcode yang diketik tetapi belum ditambahkan tidak boleh hilang diam-diam saat pindah langkah atau menyimpan.
+    const Tahan = () => TahanBilaBarcodeTertunda(wadahLangkah.current);
+
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
+
+        if (Tahan()) {
+            return;
+        }
 
         if (terakhir) {
             saatSimpan();
@@ -88,7 +97,7 @@ export default function WizardProduk({
                 aktif={aktif}
                 cekTerbuka={kontrol.CekTerbuka}
                 bergalat={bergalat}
-                saatPilih={(kunci) => kontrol.Lompat(kunci)}
+                saatPilih={(kunci) => (Tahan() ? false : kontrol.Lompat(kunci))}
             />
             {pesanGalat}
             <Card className="gap-0 rounded-panel p-4 shadow-none">
@@ -109,7 +118,7 @@ export default function WizardProduk({
             </Card>
             <BilahAksiForm>
                 {indeksAktif > 0 ? (
-                    <Tombol varian="sekunder" onClick={kontrol.Mundur}>
+                    <Tombol varian="sekunder" onClick={() => (Tahan() ? undefined : kontrol.Mundur())}>
                         Kembali
                     </Tombol>
                 ) : null}
@@ -123,7 +132,7 @@ export default function WizardProduk({
                     <Tombol type="submit">Lanjut</Tombol>
                 )}
                 {!terakhir && kontrol.CekTerjangkau('Tinjau') ? (
-                    <Tombol varian="sekunder" onClick={() => kontrol.Lompat('Tinjau')}>
+                    <Tombol varian="sekunder" onClick={() => (Tahan() ? false : kontrol.Lompat('Tinjau'))}>
                         Kembali ke tinjauan
                     </Tombol>
                 ) : null}

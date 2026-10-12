@@ -7,7 +7,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import { AmbilGalatBerawalan, CekAdaGalat } from '@/Komponen/Katalog/BantuanKatalog';
+import { AmbilGalatBerawalan, CekAdaGalat, TahanBilaBarcodeTertunda } from '@/Komponen/Katalog/BantuanKatalog';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import DaftarTab, { type ItemTab } from '@/Komponen/Katalog/DaftarTab';
 import PenyuntingAtributVarian from '@/Komponen/Katalog/PenyuntingAtributVarian';
@@ -320,6 +320,11 @@ export default function HalamanFormProduk({
 
     const KirimUbah = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
+
+        // Barcode yang diketik tetapi belum ditambahkan tidak boleh hilang diam-diam saat menyimpan.
+        if (TahanBilaBarcodeTertunda(elemenForm.current)) {
+            return;
+        }
 
         const tabSalah = PeriksaLokal();
 

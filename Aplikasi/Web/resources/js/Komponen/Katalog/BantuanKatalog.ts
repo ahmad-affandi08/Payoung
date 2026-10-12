@@ -101,3 +101,40 @@ export function HitungKombinasiVarian(atribut: { Nama: string; Nilai: string[] }
         )
         .filter((kombinasi) => kombinasi.length > 0);
 }
+
+/** Peristiwa yang dikirim ke isian barcode yang masih berisi ketikan belum ditambahkan (lihat `BidangBarcode`). */
+export const PERISTIWA_BARCODE_TERTUNDA = 'barcode-tertunda';
+
+/**
+ * Tahan Lanjut/Simpan bila di dalam [wadah] ada isian barcode yang diketik tetapi belum ditambahkan: isian itu
+ * difokuskan dan menjelaskan apa yang harus dilakukan. Barcode valid sudah ditambahkan otomatis saat isian
+ * ditinggalkan, jadi yang tersisa di sini hanyalah ketikan tidak valid atau duplikat. true = ditahan.
+ */
+export function TahanBilaBarcodeTertunda(wadah: ParentNode | null): boolean {
+    const isian = wadah?.querySelector<HTMLInputElement>('[data-barcode-tertunda="true"]');
+
+    if (!isian) {
+        return false;
+    }
+
+    const Tampilkan = () => {
+        isian.focus();
+        isian.dispatchEvent(new Event(PERISTIWA_BARCODE_TERTUNDA));
+    };
+    const panelTersembunyi = isian.closest<HTMLElement>('[role="tabpanel"][hidden]');
+
+    if (panelTersembunyi) {
+        // Mode tab: buka tab pemilik isian itu dulu, baru fokuskan setelah panelnya tampil.
+        const idPemicu = panelTersembunyi.getAttribute('aria-labelledby');
+
+        if (idPemicu !== null) {
+            document.getElementById(idPemicu)?.click();
+        }
+
+        window.setTimeout(Tampilkan, 0);
+    } else {
+        Tampilkan();
+    }
+
+    return true;
+}

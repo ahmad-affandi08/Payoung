@@ -454,6 +454,40 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(LabelLangkahAktif()).toBe('Satuan & barcode');
     });
 
+    it('barcode yang diketik lalu langsung Lanjut ikut tersimpan; yang tidak valid menahan Lanjut', () => {
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Air Mineral 600 ml');
+        Lanjut();
+        expect(LabelLangkahAktif()).toBe('Satuan & barcode');
+
+        const isian = screen.getByPlaceholderText<HTMLInputElement>('Pindai atau ketik barcode');
+
+        // Ketik lalu klik Lanjut tanpa Enter/Tambah: peramban memicu blur lebih dulu, barcode ikut ditambahkan.
+        fireEvent.change(isian, { target: { value: '8993175530021' } });
+        fireEvent.blur(isian);
+        Lanjut();
+        expect(LabelLangkahAktif()).not.toBe('Satuan & barcode');
+        fireEvent.click(TombolLangkah(/Satuan & barcode/));
+        expect(screen.getByText('8993175530021')).toBeTruthy();
+
+        // Ketikan tidak valid: tetap di langkah ini, isian difokuskan, pesannya terlihat.
+        const lagi = screen.getByPlaceholderText<HTMLInputElement>('Pindai atau ketik barcode');
+
+        fireEvent.change(lagi, { target: { value: 'ab' } });
+        fireEvent.blur(lagi);
+        Lanjut();
+        expect(LabelLangkahAktif()).toBe('Satuan & barcode');
+        expect(document.activeElement).toBe(lagi);
+        expect(screen.getByText('Barcode 3–64 karakter: huruf, angka, titik, atau strip.')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Kembali' }));
+        expect(LabelLangkahAktif()).toBe('Satuan & barcode');
+
+        fireEvent.change(lagi, { target: { value: '' } });
+        Lanjut();
+        expect(LabelLangkahAktif()).not.toBe('Satuan & barcode');
+    });
+
     it('penunjuk langkah: langkah aktif aria-current="step", langkah di depan terkunci dan klik tidak berpindah', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
 
