@@ -22,6 +22,7 @@ use App\Domain\Tenant\Enum\JenisOverride;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Kueri\SumberFiturTenant;
 use App\Domain\Tenant\Layanan\EvaluatorFitur;
+use App\Domain\Tenant\Layanan\PenjagaPenyimpanan;
 use App\Domain\Tenant\Model\AtribusiMitra;
 use App\Domain\Tenant\Model\DokumenLegal;
 use App\Domain\Tenant\Model\LanggananAddon;
@@ -49,6 +50,7 @@ final class TampilanTenant
         private readonly EvaluatorFitur $evaluator,
         private readonly PemakaianBatasOrganisasi $pemakaian,
         private readonly KlienPartnerDoku $klienPartner,
+        private readonly PenjagaPenyimpanan $penyimpanan,
     ) {}
 
     /**
@@ -73,6 +75,7 @@ final class TampilanTenant
                 // Dukungan sama dengan yang menolak tenant (BR-02.1, BR-P04.3).
                 'PakaiOutlet' => $this->pemakaian->HitungOutlet(),
                 'PakaiPengguna' => $this->pemakaian->HitungPengguna($tenant->Id),
+                'PakaiPenyimpananMb' => (int) ceil($this->penyimpanan->AmbilByte($tenant->Id) / 1048576),
                 'PendaftaranMerchant' => self::AmbilPendaftaranMerchant(),
             ],
             $tenant->Id,
@@ -115,6 +118,7 @@ final class TampilanTenant
             'Pemakaian' => [
                 ['Label' => 'Outlet', 'Pakai' => $organisasi['PakaiOutlet'], 'Batas' => $batas['BatasOutlet'] ?? null],
                 ['Label' => 'Pengguna', 'Pakai' => $organisasi['PakaiPengguna'], 'Batas' => $batas['BatasPengguna'] ?? null],
+                ['Label' => 'Penyimpanan (MB)', 'Pakai' => $organisasi['PakaiPenyimpananMb'], 'Batas' => $batas['BatasPenyimpananMb'] ?? null],
             ],
             'Organisasi' => [
                 'Outlet' => $organisasi['Outlet'],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Akuntansi\Layanan;
 
 use App\Domain\Akuntansi\Model\TransaksiKasBank;
+use App\Domain\Tenant\Layanan\PenjagaPenyimpanan;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -24,12 +25,16 @@ final class PenyimpanLampiranKasBank
      */
     public function Simpan(int $idTenant, UploadedFile $berkas): array
     {
+        $penjaga = app(PenjagaPenyimpanan::class);
+        $penjaga->Pastikan($idTenant, (int) $berkas->getSize());
         $ekstensi = Str::lower($berkas->guessExtension() ?? $berkas->getClientOriginalExtension());
         $path = $this->AmbilDisk()->putFileAs("akuntansi/kas-bank/{$idTenant}", $berkas, Str::ulid().'.'.$ekstensi);
 
         if ($path === false) {
             throw new RuntimeException('Lampiran gagal disimpan.');
         }
+
+        $penjaga->Catat($idTenant, (int) $berkas->getSize());
 
         return [
             'Path' => $path,

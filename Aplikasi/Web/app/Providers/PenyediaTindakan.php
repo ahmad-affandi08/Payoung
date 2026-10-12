@@ -12,6 +12,7 @@ use App\Domain\Karyawan\Layanan\PenyediaTindakanKehadiran;
 use App\Domain\Kasir\Layanan\PenyediaTindakanKasir;
 use App\Domain\Laporan\Layanan\PenyediaTindakanStok;
 use App\Domain\Organisasi\Layanan\PenyediaTindakanPerangkat;
+use App\Domain\Pajak\Layanan\PenyediaTindakanPajak;
 use App\Domain\PanduanAwal\Layanan\PenyediaTindakanPanduanAwal;
 use App\Domain\Pelanggan\Layanan\PenyediaTindakanPelanggan;
 use App\Domain\Pembelian\Layanan\PenyediaTindakanPembelian;
@@ -19,6 +20,7 @@ use App\Domain\Pemenuhan\Layanan\PenyediaTindakanLaundry;
 use App\Domain\Pemenuhan\Layanan\PenyediaTindakanReservasi;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanPenjualan;
 use App\Domain\Promo\Layanan\PenyediaTindakanPromo;
+use App\Domain\Tenant\Layanan\PenyediaTindakanPenyimpanan;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -38,6 +40,8 @@ final class PenyediaTindakan extends ServiceProvider
             PenyediaTindakanAkuntansi::class,
             PenyediaTindakanPromo::class,
             PenyediaTindakanWhatsapp::class,
+            PenyediaTindakanPajak::class,
+            PenyediaTindakanPenyimpanan::class,
             PenyediaTindakanPanduanAwal::class,
             PenyediaTindakanReservasi::class,
             PenyediaTindakanLaundry::class,

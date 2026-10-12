@@ -40,6 +40,8 @@ $jadwalSaas('tagihan:rekonsiliasi-gerbang --arsip')->dailyAt('03:10')->timezone(
 // foto KYC sementara yang tersisa lebih dari 24 jam dihapus tiap jam. Hanya edisi SaaS (butuh akun Partner Payoung).
 $jadwalSaas('pembayaran:segarkan-pendaftaran-merchant')->everyThirtyMinutes()->withoutOverlapping(30)->runInBackground();
 $jadwalSaas('pembayaran:bersihkan-berkas-pendaftaran')->hourly()->withoutOverlapping(60)->runInBackground();
+// Audit E2: ukur ulang penyimpanan berkas tenant (batas paket) tiap dini hari.
+$jadwalSaas('penyimpanan:ukur')->dailyAt('03:10')->withoutOverlapping(120)->runInBackground();
 
 // P-08 (v4.04): tagihan perpanjangan otomatis H-7 + pengingat H-7/H-3/H0/H+3 ke Owner, di jam kerja.
 $jadwalSaas('tagihan:terbitkan-perpanjangan')->dailyAt('08:20')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();

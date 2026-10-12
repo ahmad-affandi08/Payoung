@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\PanduanAwal\BantuanPanduanAwal;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 use Tests\TestCase;
@@ -139,4 +140,41 @@ it('pengingat: shift terbuka > 24 jam & bulan lalu belum tutup buku (mulai tangg
     $diurutkan = $angka;
     sort($diurutkan);
     expect($angka)->toBe($diurutkan);
+});
+
+it('E10: tarif pajak nasional yang akan berganti diumumkan di Kotak Tindakan bagi pemegang akuntansi.kelola; tarif pertama atau yang jauh di depan tidak', function (): void {
+    $k = SiapkanTindakan($this);
+    $hari = fn (int $maju): string => now('Asia/Jakarta')->addDays($maju)->toDateString();
+    $lama = BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '11.000000', berlakuMulai: $hari(-700), berlakuSampai: $hari(9));
+    $baru = BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000', berlakuMulai: $hari(10));
+    $jauh = BantuanPanduanAwal::TerbitkanTarif('PbjtMakananMinuman', null, '9.000000', berlakuMulai: $hari(200));
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+
+    $butir = [];
+    $this->get('/kelola/tindakan')->assertOk()->assertInertia(function (AssertableInertia $h) use (&$butir) {
+        $butir = $h->toArray()['props']['Butir'];
+
+        return $h;
+    });
+    $pajak = CariButir($butir, 'pajak.tarif.'.$baru->Id);
+    expect($pajak)->not->toBeNull()
+        ->and($pajak['Judul'])->toContain('12')->toContain('berubah')
+        ->and($pajak['Tingkat'])->toBe('Info')
+        ->and(CariButir($butir, 'pajak.tarif.'.$lama->Id))->toBeNull()
+        ->and(CariButir($butir, 'pajak.tarif.'.$jauh->Id))->toBeNull();
+
+    // Setelah tarif baru berlaku, butir naik jadi Perhatian lalu hilang seminggu kemudian.
+    $this->travelTo(now('Asia/Jakarta')->addDays(12));
+    $this->get('/kelola/tindakan')->assertInertia(function (AssertableInertia $h) use ($baru) {
+        expect(CariButir($h->toArray()['props']['Butir'], 'pajak.tarif.'.$baru->Id)['Tingkat'])->toBe('Perhatian');
+
+        return $h;
+    });
+    $this->travelTo(now('Asia/Jakarta')->addDays(10));
+    $this->get('/kelola/tindakan')->assertInertia(function (AssertableInertia $h) use ($baru) {
+        expect(CariButir($h->toArray()['props']['Butir'], 'pajak.tarif.'.$baru->Id))->toBeNull();
+
+        return $h;
+    });
 });

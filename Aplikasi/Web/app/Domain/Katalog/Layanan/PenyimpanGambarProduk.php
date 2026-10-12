@@ -6,6 +6,7 @@ namespace App\Domain\Katalog\Layanan;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Katalog\Model\Produk;
+use App\Domain\Tenant\Layanan\PenjagaPenyimpanan;
 use GdImage;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
@@ -32,6 +33,8 @@ final class PenyimpanGambarProduk
     /** Simpan gambar baru; mengembalikan path gambar besar. Gambar lama tidak disentuh. */
     public function Simpan(Produk $produk, UploadedFile $berkas): string
     {
+        $penjaga = app(PenjagaPenyimpanan::class);
+        $penjaga->Pastikan($produk->IdTenant, (int) $berkas->getSize());
         $gambar = $this->Baca($berkas);
         $webp = function_exists('imagewebp');
         $ekstensi = $webp ? 'webp' : 'jpg';
@@ -40,6 +43,7 @@ final class PenyimpanGambarProduk
         $disk = self::Disk();
         $disk->put($path, $this->Kodekan($this->UbahUkuran($gambar, (int) config('katalog.Gambar.SisiBesar', 800)), $webp));
         $disk->put(self::PathKecil($path), $this->Kodekan($this->UbahUkuran($gambar, (int) config('katalog.Gambar.SisiKecil', 256)), $webp));
+        $penjaga->Catat($produk->IdTenant, (int) $disk->size($path) + (int) $disk->size(self::PathKecil($path)));
 
         return $path;
     }
