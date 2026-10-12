@@ -73,6 +73,10 @@ enum IzinPengelola: string
     // P-09 Tiket dukungan (§19.3: Dukungan & Super Admin).
     case DukunganTiketLihat = 'dukungan.tiket.lihat';
     case DukunganTiketTangani = 'dukungan.tiket.tangani';
+    // PGL-16: masuk ke back-office tenant yang sudah memberi izin (Dukungan & Super Admin), dan akses darurat tanpa izin
+    // Owner (hanya Super Admin).
+    case DukunganAksesMasuk = 'dukungan.akses.masuk';
+    case DukunganAksesDarurat = 'dukungan.akses.darurat';
 
     // P-11 Monitoring operasional (§19.3: Teknis & Super Admin).
     case OperasionalLihat = 'operasional.lihat';
@@ -140,6 +144,8 @@ enum IzinPengelola: string
             // P-09
             self::DukunganTiketLihat => 'Melihat antrean & percakapan tiket dukungan semua tenant',
             self::DukunganTiketTangani => 'Mengambil, menugaskan, membalas, dan mengubah status tiket dukungan',
+            self::DukunganAksesMasuk => 'Masuk ke back-office tenant yang sudah memberi izin akses dukungan',
+            self::DukunganAksesDarurat => 'Membuka akses darurat ke tenant tanpa izin Owner (insiden keamanan atau permintaan hukum)',
             // P-11
             self::OperasionalLihat => 'Melihat dasbor operasional (scheduler, antrean, job gagal, backup)',
             self::OperasionalKelola => 'Mencoba ulang/membuang job gagal dan mencatat hasil backup',

@@ -18,6 +18,7 @@ use App\Http\Kontroler\Autentikasi\PendaftaranKontroler;
 use App\Http\Kontroler\Autentikasi\PersetujuanLegalKontroler;
 use App\Http\Kontroler\Autentikasi\SesiKontroler;
 use App\Http\Kontroler\Autentikasi\VerifikasiEmailKontroler;
+use App\Http\Kontroler\Dukungan\SesiDukunganKontroler;
 use App\Http\Kontroler\Kelola\BantuanKontroler;
 use App\Http\Kontroler\Kelola\BerandaKelolaKontroler;
 use App\Http\Kontroler\Kelola\LanggananKontroler;
@@ -44,6 +45,7 @@ use App\Http\Perantara\BagikanDataInertia;
 use App\Http\Perantara\BagikanDataSitus;
 use App\Http\Perantara\BatasiTenantDitangguhkan;
 use App\Http\Perantara\IdentifikasiTenantSesi;
+use App\Http\Perantara\PasangAksesDukungan;
 use App\Http\Perantara\PasangBingkaiPratinjau;
 use App\Http\Perantara\Pengelola\BagikanDataInertiaPengelola;
 use App\Http\Perantara\Pengelola\CatatAuditPengelola;
@@ -140,6 +142,13 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
     Route::get('/masuk/google/panggilan-balik', [MasukGoogleKontroler::class, 'PanggilanBalik'])->middleware('throttle:30,1')->name('masuk.google.panggilan-balik');
 
     // F-00 Registrasi & autentikasi tenant.
+    // PGL-16: sisi tenant akses dukungan. Masuk memakai token sekali pakai dari konsol (60 detik); sisanya halaman info.
+    Route::get('/dukungan/masuk/{idTenant}/{token}', [SesiDukunganKontroler::class, 'Masuk'])
+        ->where(['idTenant' => '[0-9]{1,12}', 'token' => '[A-Za-z0-9]{48}'])
+        ->middleware('throttle:20,1')
+        ->name('dukungan.masuk');
+    Route::get('/dukungan/berakhir', [SesiDukunganKontroler::class, 'Berakhir'])->middleware('throttle:60,1')->name('dukungan.berakhir');
+
     Route::middleware('guest:web')->group(function () use ($saas): void {
         if ($saas) {
             Route::get('/daftar', [PendaftaranKontroler::class, 'Tampilkan'])->name('daftar');
@@ -177,8 +186,10 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->name('ganti-email');
 
     // Auth tenant: AuthenticateSession mengakhiri sesi lain setelah kata sandi diatur ulang (BR-00.9).
-    Route::middleware(['auth:web', AuthenticateSession::class])->group(function () use ($izin, $saas): void {
+    // PGL-16: `PasangAksesDukungan` memeriksa sesi akses dukungan pada setiap permintaan (pengguna biasa lewat tanpa diubah).
+    Route::middleware(['auth:web', AuthenticateSession::class, PasangAksesDukungan::class])->group(function () use ($izin, $saas): void {
         Route::post('/keluar', [SesiKontroler::class, 'Keluar'])->name('keluar');
+        Route::post('/dukungan/akhiri', [SesiDukunganKontroler::class, 'Akhiri'])->name('dukungan.akhiri');
         // D-22: ganti kata sandi (wajib bila kata sandi awal dibuat admin tenant) sebelum memilih usaha.
         Route::get('/ganti-kata-sandi', [KataSandiKontroler::class, 'Tampilkan'])->name('kata-sandi.ganti');
         Route::post('/ganti-kata-sandi', [KataSandiKontroler::class, 'Simpan'])->middleware('throttle:10,1')->name('kata-sandi.simpan');

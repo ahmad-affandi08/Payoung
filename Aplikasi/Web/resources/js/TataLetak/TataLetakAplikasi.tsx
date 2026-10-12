@@ -26,6 +26,7 @@ import {
     useSidebar,
 } from '@/Komponen/Ui/sidebar';
 import { cn } from '@/Komponen/Ui/utils';
+import BannerAksesDukungan from '@/Komponen/Umpan/BannerAksesDukungan';
 import BannerPengumuman from '@/Komponen/Umpan/BannerPengumuman';
 import DialogHasil from '@/Komponen/Umpan/DialogHasil';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -985,6 +986,9 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                 <SidebarRail aria-hidden="true" aria-label={undefined} title="Buka atau tutup menu samping" />
             </Sidebar>
             <div data-slot="sidebar-inset" className="relative flex w-full min-w-0 flex-1 flex-col bg-latar">
+                {props.AksesDukungan ? (
+                    <BannerAksesDukungan sesi={props.AksesDukungan} namaUsaha={tenantAktif?.Nama ?? null} />
+                ) : null}
                 {/* D-27: remah roti pindah dari kepala ke atas judul halaman sebagai `JejakHalaman`. */}
                 <KepalaTataLetak
                     induk={namaInduk}

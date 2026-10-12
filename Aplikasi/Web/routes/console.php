@@ -26,6 +26,9 @@ $jadwalSaas('pengelola:ingatkan-hari-libur')->dailyAt('08:00')->timezone('Asia/J
 $jadwalSaas('pengelola:uji-integrasi')->hourly()->withoutOverlapping(120)->runInBackground();
 
 // BR-00.3: trial yang berakhir turun ke paket Gratis.
+// PGL-16: sesi akses dukungan yang waktunya habis diberi akhir dan alasan supaya riwayat Owner akurat.
+$jadwalSaas('dukungan:akhiri-kedaluwarsa')->everyFifteenMinutes()->withoutOverlapping(30)->runInBackground();
+
 $jadwalSaas('tenant:akhiri-trial')->hourly()->withoutOverlapping(120)->runInBackground();
 
 // P-08: tagihan lewat jatuh tempo, langganan Tertunggak lalu Ditangguhkan setelah masa tenggang.

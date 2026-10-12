@@ -112,6 +112,8 @@ enum PeranPengelolaBawaan: string
                 IzinPengelola::LegalLihat,
                 IzinPengelola::DukunganTiketLihat,
                 IzinPengelola::DukunganTiketTangani,
+                // PGL-16: Dukungan boleh masuk ke tenant yang memberi izin; akses darurat khusus Super Admin.
+                IzinPengelola::DukunganAksesMasuk,
             ],
             self::MitraPenjualan => [
                 IzinPengelola::ReferensiLihat,

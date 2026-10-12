@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Lisensi\Kontrak\PengaturIntegrasiServer;
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Kelola\AksesDukunganKontroler;
 use App\Http\Kontroler\Kelola\DataSayaKontroler;
 use App\Http\Kontroler\Kelola\IntegrasiServerKontroler;
 use App\Http\Kontroler\Kelola\PengaturanKontroler;
@@ -45,6 +46,16 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
         }
         Route::get('/data-saya/ekspor/{uuidEkspor}/unduh', [DataSayaKontroler::class, 'Unduh'])->where('uuidEkspor', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.unduh');
     });
+
+    // PGL-16 (P-09): Owner memberi/mencabut izin akses tim dukungan Payoung. Tidak ada di edisi Lisensi (tanpa konsol Payoung).
+    if (! EdisiAplikasi::CekLisensi()) {
+        Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::DukunganAksesKelola)])->group(function (): void {
+            Route::get('/akses-dukungan', [AksesDukunganKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.akses-dukungan');
+            Route::post('/akses-dukungan', [AksesDukunganKontroler::class, 'Beri'])->middleware('throttle:10,1')->name('kelola.pengaturan.akses-dukungan.beri');
+            Route::post('/akses-dukungan/{uuidAkses}/cabut', [AksesDukunganKontroler::class, 'Cabut'])->where('uuidAkses', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:20,1')->name('kelola.pengaturan.akses-dukungan.cabut');
+            Route::get('/akses-dukungan/sesi/{uuidSesi}/aktivitas', [AksesDukunganKontroler::class, 'Aktivitas'])->where('uuidSesi', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('kelola.pengaturan.akses-dukungan.aktivitas');
+        });
+    }
 
     // X7 Open API v1: token API publik (khusus Owner, paket ber-fitur `api.publik` dicek di Aksi).
     Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::IntegrasiApiKelola)])->group(function (): void {

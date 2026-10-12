@@ -16,7 +16,7 @@ final class AturanSlugSitus
         'masuk', 'daftar', 'kelola', 'legal', 's', 'api', 'webhook', 'sehat', 'undangan', 'verifikasi-email', 'ganti-email',
         'lupa-kata-sandi', 'atur-ulang-kata-sandi', 'keluar', 'pilih-tenant', 'kompatibilitas-perangkat', 'gambar-situs',
         'pratinjau-situs', 'peta-situs', 'ganti-kata-sandi', 'build', 'storage', 'meja', 'up', 'unduh-berkas', 'berhenti-langganan',
-        'prospek', 'blog', 'laporan-csp', 'pengembang',
+        'prospek', 'blog', 'laporan-csp', 'pengembang', 'dukungan',
     ];
 
     /** Pesan galat, atau null bila slug boleh dipakai. */

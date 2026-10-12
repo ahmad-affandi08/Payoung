@@ -11,6 +11,8 @@ use App\Domain\Bersama\Sinkron\Kontrak\PenjagaAsalItemSinkron;
 use App\Domain\Bersama\Sinkron\Layanan\PenandaSinkronPos;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Bersama\Unduhan\Layanan\BatasEksporLaporan;
+use App\Domain\Dukungan\Kontrak\GerbangPengelola;
+use App\Domain\Dukungan\Layanan\KonteksAksesDukungan;
 use App\Domain\Dukungan\Peristiwa\TiketDukunganDibalasPelapor;
 use App\Domain\Dukungan\Peristiwa\TiketDukunganDibuat;
 use App\Domain\Integrasi\ApiPublik\Penangan\AntrekanWebhookIntegrasi;
@@ -22,6 +24,7 @@ use App\Domain\Organisasi\Layanan\PenjagaAsalSinkronPerangkat;
 use App\Domain\Organisasi\Model\Perangkat;
 use App\Domain\Organisasi\Model\TokenAksesPengguna;
 use App\Domain\Pengelola\DataBawaan\Aksi\SiapkanDataBawaanLisensi;
+use App\Domain\Pengelola\Dukungan\Layanan\GerbangPengelolaDukungan;
 use App\Domain\Pengelola\Dukungan\Penangan\BeritahuPenanggungJawabBalasanPelapor;
 use App\Domain\Pengelola\Dukungan\Penangan\BeritahuTimTiketDukunganBaru;
 use App\Domain\Pengelola\Integrasi\Layanan\PenerapKonfigurasiIntegrasi;
@@ -86,6 +89,10 @@ final class PenyediaAplikasi extends ServiceProvider
         // D-35: back-office edisi Lisensi mengatur integrasi server lewat kontrak, bukan domain Pengelola langsung.
         $this->app->bind(PengaturIntegrasiServer::class, PengaturIntegrasiServerLisensi::class);
         $this->app->bind(PenyiapDataBawaan::class, SiapkanDataBawaanLisensi::class);
+        // PGL-16: sisi tenant memakai kontrak, sehingga kode tenant tidak menyentuh domain Pengelola.
+        $this->app->bind(GerbangPengelola::class, GerbangPengelolaDukungan::class);
+        // PGL-16: sesi akses dukungan yang sah hanya hidup selama satu permintaan/job.
+        $this->app->scoped(KonteksAksesDukungan::class);
     }
 
     /**

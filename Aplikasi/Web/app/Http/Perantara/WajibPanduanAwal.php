@@ -46,6 +46,8 @@ final class WajibPanduanAwal
         $idTenant = $this->konteks->Ambil();
 
         if ($request->routeIs(...self::RUTE_BEBAS)
+            // PGL-16: petugas dukungan boleh membuka semua halaman sekalipun panduan awal belum selesai.
+            || $request->attributes->has(PasangAksesDukungan::ATRIBUT)
             || ! $pengguna instanceof Pengguna
             || $idTenant === null
             || ! $this->progres->CekWajibBelumSelesai()) {

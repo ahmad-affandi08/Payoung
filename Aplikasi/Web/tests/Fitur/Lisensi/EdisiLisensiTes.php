@@ -303,7 +303,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
         $this->get('/blog')->assertNotFound();
     });
 
-    it('menu Langganan & Bantuan dimatikan juga untuk Pemilik lewat IzinNonaktif', function (): void {
+    it('menu Langganan, Bantuan & Akses dukungan dimatikan juga untuk Pemilik lewat IzinNonaktif', function (): void {
         app(PasangLisensi::class)->Jalankan(BantuanLisensi::Berkas(), 'Kopi Nusantara', PemilikLisensiUji());
         $pengguna = Pengguna::query()->sole();
 
@@ -312,7 +312,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
             // Halaman keamanan akun terbuka sebelum 2FA wajib Owner diaktifkan (BR-00.8).
             ->get('/kelola/keamanan')
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
-                ->where('Akses.IzinNonaktif', ['langganan.kelola', 'bantuan.tiket.lihat', 'bantuan.tiket.kelola'])
+                ->where('Akses.IzinNonaktif', ['langganan.kelola', 'bantuan.tiket.lihat', 'bantuan.tiket.kelola', 'dukungan.akses.kelola'])
                 ->where('Akses.Pemilik', true));
     });
 

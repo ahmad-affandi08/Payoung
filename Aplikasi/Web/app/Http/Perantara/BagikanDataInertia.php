@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Perantara;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Dukungan\Enum\JenisAksesDukungan;
+use App\Domain\Dukungan\Layanan\KonteksAksesDukungan;
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
@@ -40,6 +42,8 @@ final class BagikanDataInertia extends Middleware
         private readonly PersetujuanLegalTertunda $persetujuanLegal,
         // F-00: banner status langganan Tertunggak/Ditangguhkan.
         private readonly RingkasanLanggananTenant $ringkasanLangganan,
+        // PGL-16: banner merah selama sesi akses dukungan.
+        private readonly KonteksAksesDukungan $dukungan,
     ) {}
 
     /**
@@ -69,7 +73,8 @@ final class BagikanDataInertia extends Middleware
             ] : null,
             // Nama & status langganan tenant aktif hanya bila pengguna masih anggotanya (F-00: banner Tertunggak/Ditangguhkan).
             'TenantAktif' => function () use ($pengguna, $idTenant): ?array {
-                $anggota = $pengguna instanceof Pengguna && is_int($idTenant) && $this->keanggotaan->CekAnggota($pengguna->Id, $idTenant);
+                $anggota = $pengguna instanceof Pengguna && is_int($idTenant)
+                    && ($this->dukungan->CekPengguna($idTenant, $pengguna->Id) || $this->keanggotaan->CekAnggota($pengguna->Id, $idTenant));
                 $tenant = $anggota && is_int($idTenant) ? ($this->ringkasanTenant->Ambil([$idTenant])[0] ?? null) : null;
 
                 if ($tenant === null) {
@@ -94,6 +99,19 @@ final class BagikanDataInertia extends Middleware
                     'PeriodeSelesai' => $langganan === null ? null : $langganan['PeriodeSelesai']?->toIso8601ZuluString(),
                     'BatasTenggangPada' => $langganan === null ? null : $langganan['BatasTenggangPada']?->toIso8601ZuluString(),
                     'TagihanTertunda' => $langganan['TagihanTertunda'] ?? null,
+                ];
+            },
+            // PGL-16: banner merah "Anda mengakses akun … sebagai Dukungan" selama sesi akses dukungan; null untuk pengguna biasa.
+            'AksesDukungan' => function (): ?array {
+                $sesi = $this->dukungan->Ambil();
+
+                return $sesi === null ? null : [
+                    'NamaPetugas' => $sesi->namaPetugas,
+                    'Cakupan' => $sesi->cakupan->value,
+                    'LabelCakupan' => $sesi->cakupan->AmbilLabel(),
+                    'Darurat' => $sesi->jenis === JenisAksesDukungan::Darurat,
+                    'DataPribadiTerbuka' => $sesi->dataPribadiTerbuka,
+                    'BerakhirPada' => $sesi->berakhirPada->toIso8601ZuluString(),
                 ];
             },
             // BR-P06.5: banner di back-office selama masa pengumuman versi materiil, hanya untuk Owner tenant aktif.
@@ -130,7 +148,7 @@ final class BagikanDataInertia extends Middleware
                 // D-35: izin yang halamannya tidak ada di edisi Lisensi (langganan & tiket bantuan Payoung) dimatikan
                 // juga untuk Pemilik, supaya menu, Pengaturan, dan Ctrl+K tidak menautkan ke halaman 404.
                 $nonaktif = EdisiAplikasi::CekLisensi()
-                    ? [IzinTenant::LanggananKelola->value, IzinTenant::BantuanTiketLihat->value, IzinTenant::BantuanTiketKelola->value]
+                    ? [IzinTenant::LanggananKelola->value, IzinTenant::BantuanTiketLihat->value, IzinTenant::BantuanTiketKelola->value, IzinTenant::DukunganAksesKelola->value]
                     : [];
 
                 return $akses === null ? null : ['Pemilik' => $akses['Pemilik'], 'Izin' => array_values(array_diff($akses['Izin'], $nonaktif)), 'IzinNonaktif' => $nonaktif];

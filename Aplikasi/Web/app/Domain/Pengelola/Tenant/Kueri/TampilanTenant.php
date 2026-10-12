@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pengelola\Tenant\Kueri;
 
+use App\Domain\Dukungan\Kueri\RiwayatAksesDukungan;
 use App\Domain\Integrasi\Merchant\KlienPartnerDoku;
 use App\Domain\Integrasi\Model\PendaftaranMerchantPembayaran;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
@@ -52,6 +53,7 @@ final class TampilanTenant
         private readonly KlienPartnerDoku $klienPartner,
         private readonly PenjagaPenyimpanan $penyimpanan,
         private readonly PenghapusanDataTenant $penghapusanData,
+        private readonly RiwayatAksesDukungan $aksesDukungan,
     ) {}
 
     /**
@@ -78,6 +80,8 @@ final class TampilanTenant
                 'PakaiPengguna' => $this->pemakaian->HitungPengguna($tenant->Id),
                 'PakaiPenyimpananMb' => (int) ceil($this->penyimpanan->AmbilByte($tenant->Id) / 1048576),
                 'PendaftaranMerchant' => self::AmbilPendaftaranMerchant(),
+                // PGL-16: izin akses dukungan dan sesi petugas (nama, waktu, jumlah; tanpa data pribadi).
+                'AksesDukungan' => $this->aksesDukungan->Ambil(10),
             ],
             $tenant->Id,
         );
@@ -137,6 +141,7 @@ final class TampilanTenant
             'PersetujuanLegal' => $this->AmbilPersetujuanLegal($tenant->Id),
             'Override' => $this->AmbilOverride($tenant->Id),
             'Catatan' => $this->AmbilCatatan($tenant->Id),
+            'AksesDukungan' => $organisasi['AksesDukungan'],
             // UU PDP: permintaan penghapusan data dan penutupan akun (angka ringkasan saja, tanpa data pribadi).
             'PenghapusanData' => $this->penghapusanData->Ambil($tenant->Id),
             'Riwayat' => $this->audit->AmbilRiwayatTenant($tenant->Id, self::BATAS_RIWAYAT, [KonteksPengelola::AKSI_AUDIT]),

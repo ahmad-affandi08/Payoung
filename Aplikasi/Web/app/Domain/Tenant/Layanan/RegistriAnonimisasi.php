@@ -160,5 +160,9 @@ final class RegistriAnonimisasi
         'PembayaranLangganan.NomorRekeningTujuan' => 'Rekening milik platform, bukan data tenant.',
         'PersetujuanDokumenLegal.Ip' => 'Bukti persetujuan dokumen legal; dasar pembelaan hukum yang sah (UU PDP pasal 20).',
         'LogAuditPengelola.Ip' => 'Alamat IP staf platform, bukan data tenant; jejak audit tindakan pengelola.',
+        'SesiAksesDukungan.Ip' => 'Alamat IP petugas platform yang masuk lewat akses dukungan, bukan data tenant; jejak audit akses (PGL-16).',
+        'SesiAksesDukungan.HashToken' => 'Sidik token tukar sekali pakai milik sesi petugas platform (berlaku 60 detik); bukan data pribadi.',
+        'SesiAksesDukungan.TokenKedaluwarsaPada' => 'Batas waktu token tukar sesi petugas platform; bukan data pribadi.',
+        'SesiAksesDukungan.TokenDipakaiPada' => 'Waktu token tukar sesi petugas platform dipakai; bukan data pribadi.',
     ];
 }

@@ -7,6 +7,7 @@ use App\Domain\PanduanAwal\Model\TemplateSektorVersi;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Http\Kontroler\Pengelola\BerandaKontroler;
 use App\Http\Kontroler\Pengelola\DuaFaktorKontroler;
+use App\Http\Kontroler\Pengelola\Dukungan\AksesDukunganTenantKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\TiketDukunganKontroler;
 use App\Http\Kontroler\Pengelola\Integrasi\IntegrasiKontroler;
 use App\Http\Kontroler\Pengelola\Katalog\AddonKontroler;
@@ -468,6 +469,17 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::post('/tenant/{tenant}/penghapusan-data/{permintaan}/tolak', [PenghapusanDataTenantKontroler::class, 'Tolak'])
                 ->middleware([$izin(IzinPengelola::TenantPenghapusanDataKelola), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tenant.penghapusan-data.tolak');
+            // PGL-16 akses dukungan (P-09): masuk sebagai tenant hanya bila Owner memberi izin; akses darurat khusus Super Admin
+            // dengan 2FA baru, alasan tertulis, dan Owner diberi tahu.
+            Route::post('/tenant/{tenant}/akses-dukungan/masuk', [AksesDukunganTenantKontroler::class, 'Masuk'])
+                ->middleware([$izin(IzinPengelola::DukunganAksesMasuk), 'throttle:20,1'])
+                ->name('pengelola.tenant.akses-dukungan.masuk');
+            Route::post('/tenant/{tenant}/akses-dukungan/darurat', [AksesDukunganTenantKontroler::class, 'Darurat'])
+                ->middleware([$izin(IzinPengelola::DukunganAksesDarurat), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.akses-dukungan.darurat');
+            Route::post('/tenant/{tenant}/akses-dukungan/{akses}/cabut', [AksesDukunganTenantKontroler::class, 'Cabut'])
+                ->middleware([$izin(IzinPengelola::DukunganAksesDarurat), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.akses-dukungan.cabut');
             Route::put('/tenant/{tenant}/penanda', [TindakanTenantKontroler::class, 'UbahPenanda'])
                 ->middleware($izin(IzinPengelola::TenantPenandaUbah))
                 ->name('pengelola.tenant.penanda.ubah');

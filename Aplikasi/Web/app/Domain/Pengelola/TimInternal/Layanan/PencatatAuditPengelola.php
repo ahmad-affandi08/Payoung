@@ -37,6 +37,7 @@ final class PencatatAuditPengelola
         ?string $alasan = null,
         ?int $idPelaku = null,
         ?int $idTenant = null,
+        ?string $ip = null,
     ): LogAuditPengelola {
         $idObjek = $objek?->getKey();
 
@@ -49,7 +50,7 @@ final class PencatatAuditPengelola
             'NilaiLama' => $nilaiLama,
             'NilaiBaru' => $nilaiBaru,
             'Alasan' => $alasan,
-            'Ip' => $this->ip,
+            'Ip' => $ip ?? $this->ip,
         ]);
     }
 

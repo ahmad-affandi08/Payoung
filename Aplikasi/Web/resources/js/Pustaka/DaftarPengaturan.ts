@@ -57,6 +57,15 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.DataKelola,
             },
             {
+                label: 'Akses dukungan',
+                keterangan:
+                    'Izinkan tim Payoung membantu langsung di akun Anda untuk waktu terbatas. Anda bisa mencabutnya kapan saja dan melihat jejaknya.',
+                href: '/kelola/pengaturan/akses-dukungan',
+                izin: IzinTenant.DukunganAksesKelola,
+                // PGL-16: tidak ada di edisi Lisensi (tanpa konsol Payoung).
+                edisi: 'Saas',
+            },
+            {
                 label: 'Pusat Unduhan',
                 keterangan:
                     'Berkas laporan besar yang disiapkan di latar belakang. Tersedia 7 hari, lalu dihapus otomatis.',

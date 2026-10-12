@@ -17,6 +17,7 @@ use LogicException;
  * @property int $IdTenant
  * @property int|null $IdPengguna
  * @property int|null $IdPerangkat
+ * @property int|null $IdPenggunaPengelola petugas pengelola pelaku bila berasal dari sesi akses dukungan (PGL-16)
  * @property string $Peristiwa
  * @property string|null $JenisObjek
  * @property int|null $IdObjek

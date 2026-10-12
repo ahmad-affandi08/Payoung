@@ -386,6 +386,7 @@ describe('Kelola/Perangkat: cabut lewat AlertDialog (F-02 langkah 5, BR-02.3)', 
 
 function BuatTenant(): Tampilan360 {
     return {
+        AksesDukungan: { Aktif: null, Izin: [], Sesi: [] },
         MitraPerujuk: null,
         PendaftaranMerchant: { Pendaftaran: null, PartnerAktif: false },
         Profil: {

@@ -18,6 +18,16 @@ export type PengumumanPlatform = {
     TampilSampai: string;
 };
 
+/** PGL-16: sesi akses dukungan yang sedang berjalan (null = pengguna biasa). */
+export type AksesDukunganAktif = {
+    NamaPetugas: string;
+    Cakupan: 'BacaSaja' | 'BacaUbah';
+    LabelCakupan: string;
+    Darurat: boolean;
+    DataPribadiTerbuka: boolean;
+    BerakhirPada: string;
+};
+
 /** F-00 (BR-00.7): status `Langganan` tenant aktif, untuk banner Tertunggak/Ditangguhkan. */
 export type StatusLanggananTenant = 'Trial' | 'Aktif' | 'Tertunggak' | 'Ditangguhkan' | 'Berhenti' | 'Gratis';
 
@@ -59,6 +69,8 @@ export type PropsBersamaAplikasi = {
     PengumumanPlatform?: PengumumanPlatform[];
     /** Audit #33: kode template sektor outlet tenant aktif (`FNB-RST`, `WHS-DST`, …); kosong = tidak diketahui. */
     SektorOutlet?: string[];
+    /** PGL-16: ada hanya selama petugas Payoung masuk lewat akses dukungan. */
+    AksesDukungan?: AksesDukunganAktif | null;
     /** F-02: hak akses di tenant aktif (null di luar back-office). */
     Akses: { Pemilik: boolean; Izin: string[]; IzinNonaktif?: string[] } | null;
     /** D-23: fitur di luar paket (menu tetap tampil; klik = dialog naik paket / add-on). */

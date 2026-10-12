@@ -96,7 +96,50 @@ export type PermintaanPenghapusanData = {
     BerkasGagal: number;
 };
 
+/** PGL-16: satu izin akses dukungan (diberi Owner atau akses darurat) di tampilan 360° tenant. */
+export type IzinAksesDukungan = {
+    Uuid: string;
+    Jenis: 'Berizin' | 'Darurat';
+    LabelJenis: string;
+    Cakupan: 'BacaSaja' | 'BacaUbah';
+    LabelCakupan: string;
+    DataPribadiTerbuka: boolean;
+    NamaPemberi: string | null;
+    Alasan: string | null;
+    KategoriDarurat: string | null;
+    NomorTiket: string | null;
+    MulaiPada: string;
+    BerakhirPada: string;
+    DicabutPada: string | null;
+    Status: 'Berlaku' | 'Berakhir' | 'Dicabut';
+    JumlahSesi: number;
+};
+
+export type SesiAksesDukunganRingkas = {
+    Uuid: string;
+    NamaPetugas: string;
+    MulaiPada: string | null;
+    DiakhiriPada: string | null;
+    BerakhirPada: string;
+    Berjalan: boolean;
+    AlasanAkhir: string | null;
+    JumlahAktivitas: number;
+    JumlahUbah: number;
+    JumlahDitolak: number;
+};
+
+export type RiwayatAksesDukunganTenant = {
+    Aktif:
+        | (IzinAksesDukungan & {
+              SesiBerjalan: { NamaPetugas: string; MulaiPada: string | null; BerakhirPada: string }[];
+          })
+        | null;
+    Izin: IzinAksesDukungan[];
+    Sesi: SesiAksesDukunganRingkas[];
+};
+
 export type Tampilan360 = {
+    AksesDukungan: RiwayatAksesDukunganTenant;
     PendaftaranMerchant: { Pendaftaran: PendaftaranMerchantTenant | null; PartnerAktif: boolean };
     /** P-12: mitra perujuk (null = mendaftar langsung). */
     MitraPerujuk: { Uuid: string; Kode: string; Nama: string; MulaiPada: string } | null;

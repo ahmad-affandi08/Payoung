@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Organisasi\Kueri;
 
+use App\Domain\Dukungan\Layanan\KonteksAksesDukungan;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\OutletPengguna;
@@ -14,9 +15,15 @@ use App\Domain\Organisasi\Model\TenantPengguna;
  * Hak akses anggota aktif di satu tenant (PRD §19.1): izin dari peran utamanya dan outlet yang boleh diakses.
  * Pemilik selalu memegang semua izin dan semua outlet. Bukan anggota aktif = tanpa izin.
  * Dipanggil hanya setelah tenant aktif ditetapkan (`PeranIzin` & `OutletPengguna` memakai `MilikTenant`).
+ *
+ * PGL-16: identitas teknis petugas dukungan tidak punya keanggotaan, jadi tidak punya hak apa pun kecuali selama sesi
+ * akses dukungan yang sah pada permintaan ini (`KonteksAksesDukungan`): hak yang dipegang sesi itu (semua izin kecuali
+ * yang dilarang saat dukungan) dan semua outlet. Di luar konteks itu (antrean, perintah konsol) hasilnya tetap null.
  */
 final class AksesPengguna
 {
+    public function __construct(private readonly KonteksAksesDukungan $dukungan) {}
+
     /** @var array<string, array{Pemilik: bool, Izin: list<string>, SemuaOutlet: bool, IdPeran: int|null}|null> */
     private array $tembolok = [];
 
@@ -25,6 +32,12 @@ final class AksesPengguna
      */
     public function Ambil(int $idTenant, int $idPengguna): ?array
     {
+        $sesiDukungan = $this->dukungan->Ambil();
+
+        if ($sesiDukungan !== null && $this->dukungan->CekPengguna($idTenant, $idPengguna)) {
+            return ['Pemilik' => false, 'Izin' => $sesiDukungan->izin, 'SemuaOutlet' => true, 'IdPeran' => null];
+        }
+
         $kunci = "{$idTenant}:{$idPengguna}";
 
         if (array_key_exists($kunci, $this->tembolok)) {

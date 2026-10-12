@@ -22,6 +22,9 @@ final class PencatatAudit
 
     private ?int $idPerangkat = null;
 
+    /** PGL-16: pelaku pengelola bila permintaan ini berasal dari sesi akses dukungan (penanda di setiap baris audit). */
+    private ?int $idPenggunaPengelola = null;
+
     private ?string $ip = null;
 
     private ?string $agenPengguna = null;
@@ -45,6 +48,15 @@ final class PencatatAudit
         return $this->idPengguna;
     }
 
+    /**
+     * PGL-16: tandai semua audit permintaan ini sebagai dilakukan petugas pengelola lewat akses dukungan. Dipanggil
+     * `PasangAksesDukungan` setelah sesi terbukti sah; `null` melepas tanda.
+     */
+    public function AturPelakuPengelola(?int $idPenggunaPengelola): void
+    {
+        $this->idPenggunaPengelola = $idPenggunaPengelola;
+    }
+
     /** F-02b: perangkat pelaku diketahui setelah token/kode aktivasi diperiksa (API POS). */
     public function AturPerangkat(?int $idPerangkat): void
     {
@@ -62,8 +74,9 @@ final class PencatatAudit
         ?array $nilaiBaru = null,
         ?int $idTenant = null,
         ?int $idPengguna = null,
+        ?int $idPenggunaPengelola = null,
     ): LogAudit {
-        return $this->Tulis($peristiwa, $objek, $nilaiLama, $nilaiBaru, $idTenant ?? $this->konteks->Wajib(), $idPengguna ?? $this->idPengguna, $this->ip, $this->agenPengguna);
+        return $this->Tulis($peristiwa, $objek, $nilaiLama, $nilaiBaru, $idTenant ?? $this->konteks->Wajib(), $idPengguna ?? $this->idPengguna, $this->ip, $this->agenPengguna, $idPenggunaPengelola);
     }
 
     /**
@@ -96,6 +109,7 @@ final class PencatatAudit
         ?int $idPengguna,
         ?string $ip,
         ?string $agenPengguna,
+        ?int $idPenggunaPengelola = null,
     ): LogAudit {
         $idObjek = $objek?->getKey();
 
@@ -103,6 +117,7 @@ final class PencatatAudit
             'IdTenant' => $idTenant,
             'IdPengguna' => $idPengguna,
             'IdPerangkat' => $this->idPerangkat,
+            'IdPenggunaPengelola' => $idPenggunaPengelola ?? $this->idPenggunaPengelola,
             'Peristiwa' => $peristiwa,
             'JenisObjek' => $objek === null ? null : class_basename($objek),
             'IdObjek' => is_int($idObjek) ? $idObjek : null,

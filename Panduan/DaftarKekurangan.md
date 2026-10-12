@@ -166,7 +166,7 @@ Status: **TERBUKA** = belum dikerjakan; **MENUNGGU KEPUTUSAN** = ada di `Keputus
 
 | # | Fitur (ID PRD) | Catatan | Status |
 |---|---|---|---|
-| F1 | Akses dukungan berizin + alat bantu dukungan di konsol (PGL-16, P-09) | P0, Fase 1 "sebelum beta tertutup" | TERBUKA |
+| F1 | Akses dukungan berizin + alat bantu dukungan di konsol (PGL-16, P-09) | P0, Fase 1 "sebelum beta tertutup" | **SEBAGIAN (v5.74)**: akses dukungan berizin + akses darurat + penyamaran + jejak selesai (D-132); **alat bantu dukungan BR-P09.3 (PGL-16 bagian 2) masih terbuka** |
 | F2 | Jurnal umum manual (FIN-05) | **SELESAI @ v5.73 (D-131).** `/kelola/akuntansi/jurnal-umum/buat`, tombol di halaman Jurnal; akun kendali ditolak; koreksi lewat dokumen pembalik. Tidak dibuat: persetujuan kedua (four-eyes) dan butir Kotak Tindakan "jurnal umum belum ditinjau" (menunggu keputusan pemilik produk) | SELESAI |
 | F3 | OTP WhatsApp saat daftar (PLT-01, F-00) | | TERBUKA |
 | F4 | Aplikasi Owner: cek stok/kartu stok (OWN-06), aksi cepat: ubah harga, tandai habis, promo, pengeluaran berfoto (OWN-07), anti-fraud (OWN-09) | P1; anti-fraud sudah ada di web | TERBUKA |

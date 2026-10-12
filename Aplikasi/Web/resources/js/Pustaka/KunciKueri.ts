@@ -36,6 +36,10 @@ export const KunciKueri = {
         // K37: sebaran kemiripan wajah absensi web (kalibrasi ambang).
         KalibrasiWajah: () => ['Karyawan', 'KalibrasiWajah'] as const,
     },
+    // PGL-16: jejak permintaan satu sesi akses dukungan (Pengaturan › Akses dukungan).
+    Dukungan: {
+        AktivitasSesi: (uuid: string) => ['Dukungan', 'AktivitasSesi', uuid] as const,
+    },
     // F-05a: pemilih produk stok awal (GET /kelola/persediaan/produk/cari), polling status posting & impor stok awal.
     Persediaan: {
         CariProduk: (kata: string, uuidGudang: string | null) =>

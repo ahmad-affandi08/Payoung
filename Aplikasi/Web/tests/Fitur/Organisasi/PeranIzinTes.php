@@ -34,8 +34,8 @@ describe('Peran bawaan tenant (§19.1)', function (): void {
     });
 
     // v3.82: izin khusus Owner bertambah `integrasi.api.kelola` (token API publik); v5.58 menambah `data.kelola` (ekspor data &
-    // tutup akun), jadi Admin = semua − 3 izin.
-    it('Admin memegang semua izin kecuali langganan, token API & data usaha (khusus Owner); Kasir hanya berjualan', function (): void {
+    // tutup akun); v5.74 menambah `dukungan.akses.kelola` (izin akses tim dukungan), jadi Admin = semua − 4 izin.
+    it('Admin memegang semua izin kecuali langganan, token API, data usaha & akses dukungan (khusus Owner); Kasir hanya berjualan', function (): void {
         $tenant = BantuanOrganisasi::BuatTenant()['Tenant'];
 
         $izinAdmin = BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Admin)->AmbilKunciIzin();
@@ -44,7 +44,8 @@ describe('Peran bawaan tenant (§19.1)', function (): void {
         expect($izinAdmin)->not->toContain(IzinTenant::LanggananKelola->value)
             ->and($izinAdmin)->not->toContain(IzinTenant::IntegrasiApiKelola->value)
             ->and($izinAdmin)->not->toContain(IzinTenant::DataKelola->value)
-            ->and(count($izinAdmin))->toBe(count(IzinTenant::cases()) - 3)
+            ->and($izinAdmin)->not->toContain(IzinTenant::DukunganAksesKelola->value)
+            ->and(count($izinAdmin))->toBe(count(IzinTenant::cases()) - 4)
             ->and($izinKasir)->toBe([IzinTenant::PenjualanBuat->value, IzinTenant::ProdukLihat->value]);
     });
 

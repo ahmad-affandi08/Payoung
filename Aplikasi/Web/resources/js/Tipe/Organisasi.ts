@@ -18,6 +18,8 @@ export const IzinTenant = {
     DataKelola: 'data.kelola',
     BantuanTiketLihat: 'bantuan.tiket.lihat',
     BantuanTiketKelola: 'bantuan.tiket.kelola',
+    // PGL-16: memberi & mencabut izin akses tim dukungan Payoung (khusus Owner).
+    DukunganAksesKelola: 'dukungan.akses.kelola',
     // F-01 panduan awal (profil usaha, template sektor, pajak, produk awal, metode pembayaran).
     PanduanAwalKelola: 'panduan-awal.kelola',
     // F-03 master produk, harga & pajak (batas stok = persediaan.kelola, kelompok pajak = akuntansi.kelola).

@@ -71,6 +71,8 @@ enum IzinTenant: string
     // P-09 Bantuan (tiket dukungan ke tim platform).
     case BantuanTiketLihat = 'bantuan.tiket.lihat';
     case BantuanTiketKelola = 'bantuan.tiket.kelola';
+    // PGL-16 (P-09, D-132): memberi, melihat riwayat, dan mencabut izin akses tim dukungan Payoung ke usaha (khusus Owner).
+    case DukunganAksesKelola = 'dukungan.akses.kelola';
     // F-16a CRM-01 pelanggan (back-office; memilih & membuat pelanggan di POS cukup `penjualan.buat`).
     case PelangganLihat = 'pelanggan.lihat';
     case PelangganKelola = 'pelanggan.kelola';
@@ -152,6 +154,7 @@ enum IzinTenant: string
             self::DataKelola => 'Mengunduh ekspor data lengkap usaha dan menutup akun usaha',
             self::BantuanTiketLihat => 'Melihat tiket bantuan & balasan tim dukungan',
             self::BantuanTiketKelola => 'Membuat, membalas, dan menyelesaikan tiket bantuan',
+            self::DukunganAksesKelola => 'Memberi, memantau, dan mencabut izin akses tim dukungan Payoung ke usaha',
             self::PelangganLihat => 'Melihat data & riwayat belanja pelanggan',
             self::PelangganKelola => 'Menambah, mengubah, dan mengarsipkan pelanggan',
             self::PelangganDepositKelola => 'Menarik, menyesuaikan, dan membatalkan isi deposit pelanggan',
@@ -191,7 +194,7 @@ enum IzinTenant: string
             self::TokoOnlineKelola, self::PengirimanKelola => 'Penjualan',
             self::LaporanPenjualanLihat, self::LaporanKeuanganLihat, self::AkuntansiKelola, self::TindakanTinjau => 'Keuangan & laporan',
             self::LanggananKelola, self::DataKelola => 'Langganan',
-            self::BantuanTiketLihat, self::BantuanTiketKelola => 'Bantuan',
+            self::BantuanTiketLihat, self::BantuanTiketKelola, self::DukunganAksesKelola => 'Bantuan',
             self::PelangganLihat, self::PelangganKelola, self::PelangganDepositKelola, self::PelangganSesiKelola => 'Pelanggan',
             self::KaryawanLihat, self::KaryawanKelola => 'Karyawan',
             self::ApotekObatKerasJual, self::ApotekResepLihat => 'Apotek',
@@ -204,7 +207,22 @@ enum IzinTenant: string
      */
     public function CekKhususPemilik(): bool
     {
-        return $this === self::LanggananKelola || $this === self::IntegrasiApiKelola || $this === self::DataKelola;
+        return $this === self::LanggananKelola || $this === self::IntegrasiApiKelola || $this === self::DataKelola || $this === self::DukunganAksesKelola;
+    }
+
+    /**
+     * PGL-16 / BR-P09.1: izin yang tidak pernah dimiliki sesi akses dukungan walau cakupannya "Baca & ubah". Isinya
+     * hal yang menyangkut kata sandi, PIN, kredensial integrasi, siapa yang boleh masuk, dan uang langganan: petugas
+     * platform tidak boleh melihat atau mengubahnya, apa pun izin yang diberikan Owner.
+     */
+    public function CekDilarangSaatDukungan(): bool
+    {
+        return match ($this) {
+            self::PenggunaUndang, self::PenggunaUbah, self::PenggunaNonaktifkan, self::PenggunaPinAtur, self::PeranKelola,
+            self::LanggananKelola, self::DataKelola, self::IntegrasiApiKelola, self::PembayaranGerbangAtur,
+            self::PerangkatKelola, self::DukunganAksesKelola => true,
+            default => false,
+        };
     }
 
     /**

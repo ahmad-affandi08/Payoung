@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Organisasi\Kueri;
 
+use App\Domain\Dukungan\Model\PenggunaDukungan;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -113,6 +114,9 @@ final class DaftarAnggota
     public function AmbilNamaPengguna(int $idTenant, array $idPengguna): array
     {
         $anggota = TenantPengguna::query()->where('IdTenant', $idTenant)->whereIn('IdPengguna', $idPengguna)->pluck('IdPengguna')->all();
+        // PGL-16: dokumen yang disentuh petugas dukungan tercatat atas nama identitas teknisnya, yang tidak punya
+        // keanggotaan; namanya ("Dukungan Payoung | …") tetap harus terbaca di kolom "Dibuat oleh".
+        $anggota = [...$anggota, ...PenggunaDukungan::query()->whereIn('IdPengguna', $idPengguna)->pluck('IdPengguna')->all()];
 
         /** @var array<int, string> */
         return Pengguna::query()->whereKey($anggota)->pluck('Nama', 'Id')->all();
