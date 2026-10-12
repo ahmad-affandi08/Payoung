@@ -10,6 +10,7 @@ use App\Domain\Pajak\Enum\CakupanPajak;
 use App\Domain\Pajak\Enum\KategoriJenisPajak;
 use App\Domain\Pajak\Model\JenisPajak;
 use App\Domain\Pajak\Model\TarifPajak;
+use Brick\Math\BigDecimal;
 use Carbon\CarbonInterface;
 
 /**
@@ -81,6 +82,48 @@ final class TarifPajakBerlaku
         }
 
         return $this->CariData($kodeJenisPajak, null, $tanggal);
+    }
+
+    /**
+     * Apakah tarif ini (nilai dan pengali DPP sama) pernah terbit dan baru saja berakhir atau digantikan, paling lama
+     * `toleransiHari` sebelum `tanggal`? Dipakai sinkron POS untuk perangkat yang belum memperbarui tarif (CLAUDE.md #12):
+     * tarif yang benar-benar pernah ada diterima sebagai tinjauan, tarif karangan tetap ditolak.
+     */
+    public function CekBaruBerakhirDiOutlet(
+        string $kodeJenisPajak,
+        ?string $kodeKotaOutlet,
+        CarbonInterface $tanggal,
+        BigDecimal $tarif,
+        int $pengaliDppPembilang,
+        int $pengaliDppPenyebut,
+        int $toleransiHari,
+    ): bool {
+        $jenis = JenisPajak::query()->where('Kode', $kodeJenisPajak)->first();
+
+        if ($jenis === null) {
+            return false;
+        }
+
+        $daerah = $jenis->Cakupan === CakupanPajak::Daerah;
+
+        if ($daerah && $kodeKotaOutlet === null) {
+            return false;
+        }
+
+        $hari = $tanggal->toDateString();
+        $batasBawah = $tanggal->copy()->subDays($toleransiHari)->toDateString();
+
+        return TarifPajak::query()
+            ->where('IdJenisPajak', $jenis->Id)
+            ->where('Status', StatusDataMaster::Terbit->value)
+            ->where('KodeWilayah', $daerah ? $kodeKotaOutlet : null)
+            ->where('Tarif', (string) $tarif)
+            ->where('PengaliDppPembilang', $pengaliDppPembilang)
+            ->where('PengaliDppPenyebut', $pengaliDppPenyebut)
+            ->whereDate('BerlakuMulai', '<=', $hari)
+            ->whereNotNull('BerlakuSampai')
+            ->whereDate('BerlakuSampai', '>=', $batasBawah)
+            ->exists();
     }
 
     /**

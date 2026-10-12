@@ -107,7 +107,7 @@ use InvalidArgumentException;
  * saat dua kiriman bersamaan bertabrakan di indeks unik: dibaca ulang lalu dibandingkan); (2) shift milik perangkat ini
  * (`ShiftTidakDitemukan`); (3) kasir anggota tenant (`KasirTidakDitemukan`); (4) nomor BR-07.1
  * `INV/{KodeOutlet}/{YYMMDD}/{KodePerangkat}-{SEQ≥4}`, unik per tenant (`NomorTidakValid`/`NomorSudahDipakai`); (5) produk (`ProdukTidakDikenal`/`ProdukTidakBisaDijual`/`PelacakanBelumDidukung`/
- * `SatuanTidakDikenal`); (6) tarif pajak snapshot = `TarifPajak` terbit yang berlaku (`TarifPajakTidakSah`); (9) metode
+ * `SatuanTidakDikenal`); (6) tarif pajak snapshot = `TarifPajak` terbit yang berlaku (`TarifPajakTidakSah`; tarif yang baru berakhir ≤ 30 hari = diterima + `TarifPajakLama`); (9) metode
  * bayar (`MetodeBayarTidakDikenal`/`MetodeBayarBelumDidukung`/X8 `MetodeBayarBedaKanal`); (8) hitung ulang `MesinKalkulasi` = `Ringkasan`
  * (`HitunganTidakCocok`); (7) BR-07.3 diskon (`PenyetujuTidakBerwenang`); (9) pembayaran (`PembayaranTidakValid`/
  * `PembayaranKurang`).
@@ -126,6 +126,9 @@ use InvalidArgumentException;
  */
 final class TerimaPenjualanPos
 {
+    /** Tarif pajak yang baru berakhir sampai sekian hari sebelum tanggal bisnis diterima sebagai tinjauan, bukan ditolak. */
+    private const TOLERANSI_HARI_TARIF_LAMA = 30;
+
     private const TOLERANSI_JAM_DETIK = 600;
 
     /** Panjang kolom `Penjualan.AlasanTinjauan`. */
@@ -289,7 +292,7 @@ final class TerimaPenjualanPos
         // Apotek bagian 3: racikan (resep sementara per baris) divalidasi sebelum apa pun disimpan.
         $racikan = $this->racikan->Siapkan($data, $produk);
         $paketSesi = $this->AmbilPaketSesi($data, $produk);
-        $this->PeriksaTarifPajak($data, $outlet, $tanggalBisnis);
+        $tinjauan += $this->PeriksaTarifPajak($data, $outlet, $tanggalBisnis);
         $metode = $this->AmbilMetode($data);
 
         // (8) Hitung ulang.
@@ -794,24 +797,51 @@ final class TerimaPenjualanPos
         return $h->bruto->Kurangi($h->diskon)->Kurangi($h->diskonPesanan)->Kurangi($h->pajak->Kurangi($h->pajakEksklusif));
     }
 
-    /** CLAUDE.md #12: setiap pajak snapshot = TarifPajak terbit yang berlaku pada tanggal bisnis di wilayah outlet. */
-    private function PeriksaTarifPajak(DataPenjualanPos $data, DataOutletPenjualan $outlet, CarbonImmutable $tanggalBisnis): void
+    /**
+     * CLAUDE.md #12: setiap pajak snapshot = TarifPajak terbit yang berlaku pada tanggal bisnis di wilayah outlet.
+     * Tarif yang pernah terbit dan baru berakhir (perangkat belum memperbarui tarif, misal offline saat tarif berganti)
+     * diterima sebagai tinjauan `TarifPajakLama` karena uangnya sudah dipungut; tarif karangan atau sudah lama
+     * berakhir tetap ditolak (`TarifPajakTidakSah`).
+     *
+     * @return array<string, string> tinjauan
+     */
+    private function PeriksaTarifPajak(DataPenjualanPos $data, DataOutletPenjualan $outlet, CarbonImmutable $tanggalBisnis): array
     {
+        $lama = [];
+
         foreach ($data->pajak as $indeks => $pajak) {
             $tarif = $this->tarifBerlaku->CariDataOutlet($pajak->kode, $outlet->kodeKota, $tanggalBisnis);
             $cocok = $tarif !== null
                 && BigDecimal::of($tarif->tarif)->isEqualTo($pajak->tarif)
                 && $tarif->pengaliDppPembilang * $pajak->pengaliDppPenyebut === $tarif->pengaliDppPenyebut * $pajak->pengaliDppPembilang;
 
-            if (! $cocok) {
-                throw new PelanggaranAturanBisnis(
-                    'TarifPajakTidakSah',
-                    "Tarif {$pajak->kode} {$pajak->tarif}% tidak sesuai tarif yang berlaku pada {$tanggalBisnis->toDateString()}. Perbarui data aplikasi kasir.",
-                    "Pajak.{$indeks}",
-                    detail: ['Kode' => $pajak->kode, 'TarifBerlaku' => $tarif?->tarif],
-                );
+            if ($cocok) {
+                continue;
             }
+
+            if ($this->tarifBerlaku->CekBaruBerakhirDiOutlet(
+                $pajak->kode,
+                $outlet->kodeKota,
+                $tanggalBisnis,
+                $pajak->tarif,
+                $pajak->pengaliDppPembilang,
+                $pajak->pengaliDppPenyebut,
+                self::TOLERANSI_HARI_TARIF_LAMA,
+            )) {
+                $lama[] = "{$pajak->kode} {$pajak->tarif}% (berlaku sekarang: ".($tarif === null ? 'tidak ada' : $tarif->tarif).'%)';
+
+                continue;
+            }
+
+            throw new PelanggaranAturanBisnis(
+                'TarifPajakTidakSah',
+                "Tarif {$pajak->kode} {$pajak->tarif}% tidak sesuai tarif yang berlaku pada {$tanggalBisnis->toDateString()}. Perbarui data aplikasi kasir.",
+                "Pajak.{$indeks}",
+                detail: ['Kode' => $pajak->kode, 'TarifBerlaku' => $tarif?->tarif],
+            );
         }
+
+        return $lama === [] ? [] : ['TarifPajakLama' => 'TarifPajakLama: '.implode('; ', $lama).'; perangkat belum memperbarui tarif, pajak tercatat sesuai struk pelanggan'];
     }
 
     /**

@@ -34,7 +34,7 @@ use Throwable;
  * - Idempoten per `Uuid` (`Duplikat`); Uuid dipakai data lain = `UuidSudahDipakai`.
  * - Shift wajib milik perangkat pengirim dan masih aktif (dikunci baris agar serial dengan tutup shift F-11). Shift yang
  *   sudah `Tertutup` tetap menerima kas dengan `PerluTinjauan` (`ShiftSudahDitutup`, F-11).
- * - Pencatat: anggota outlet dengan izin `penjualan.buat`; pada shift yang bukan bersama (BR-06.2) hanya pembuka
+ * - Pencatat: anggota usaha; izin `penjualan.buat`/akses outlet yang hilang saat offline = diterima + `IzinBerubah` (K33); pada shift yang bukan bersama (BR-06.2) hanya pembuka
  *   shift atau pemegang `kas.keluar.setujui` (supervisor).
  * - Masuk/Keluar wajib kategori aktif yang jenisnya sama; Setoran tanpa kategori.
  * - BR-06.4: kas keluar di atas batas (`PengaturanKasirTenant`, bawaan Rp 200.000) wajib `UuidPenyetuju` yang punya
@@ -133,18 +133,30 @@ final class CatatMutasiKas
             throw new PelanggaranAturanBisnis('WaktuTidakValid', 'Waktu pencatatan lebih awal dari waktu buka shift.', 'DicatatPada');
         }
 
-        $pencatat = $this->CariAnggota($idTenant, $data->uuidPencatat, $shift->IdOutlet, 'UuidPencatat');
-
-        if (! $pencatat->CekIzin(IzinTenant::PenjualanBuat->value)) {
-            throw new PelanggaranAturanBisnis('TanpaIzin', "{$pencatat->nama} tidak punya izin mencatat kas di POS.", 'UuidPencatat', 403);
-        }
+        // K33 (v5.55): uang di laci sudah bergerak, jadi pencatat yang izin/outlet-nya berubah saat offline tetap diterima
+        // dengan tinjauan `IzinBerubah` (seperti penjualan). Yang bukan anggota usaha sama sekali tetap ditolak.
+        [$pencatat, $pencatatDiOutlet] = $this->anggota->CariDiTenant($idTenant, $data->uuidPencatat, $shift->IdOutlet)
+            ?? throw new PelanggaranAturanBisnis('KasirTidakDitemukan', 'Pengguna ini tidak terdaftar di usaha ini.', 'UuidPencatat');
+        $izinBerubah = array_values(array_filter([
+            $pencatatDiOutlet ? null : "{$pencatat->nama} tidak lagi terdaftar di outlet ini",
+            $pencatat->CekIzin(IzinTenant::PenjualanBuat->value) ? null : "{$pencatat->nama} tidak lagi punya izin mencatat kas di POS",
+        ]));
 
         if (! $shift->Bersama && $pencatat->id !== $shift->DibukaOleh && ! $pencatat->CekIzin(IzinTenant::KasKeluarSetujui->value)) {
             throw new PelanggaranAturanBisnis('BukanShiftSendiri', 'Kas hanya bisa dicatat oleh kasir pemilik shift atau supervisor (BR-06.2: shift ini bukan shift bersama).', 'UuidPencatat', 403);
         }
 
         $kategori = $this->AmbilKategori($data);
-        $penyetuju = $this->PeriksaPersetujuan($data, $idTenant, $shift->IdOutlet);
+        [$penyetuju, $penyetujuDiOutlet] = $this->PeriksaPersetujuan($data, $idTenant, $shift->IdOutlet);
+
+        if ($penyetuju !== null && ! $penyetujuDiOutlet) {
+            $izinBerubah[] = "penyetuju {$penyetuju->nama} tidak lagi terdaftar di outlet ini";
+        }
+
+        $tinjauan = array_values(array_filter([
+            $sudahDitutup ? 'ShiftSudahDitutup: kas diterima setelah shift ditutup, belum masuk hitungan kas tutup shift' : null,
+            $izinBerubah === [] ? null : 'IzinBerubah: '.implode('; ', $izinBerubah),
+        ]));
 
         $mutasi = MutasiKas::query()->create([
             'Uuid' => $data->uuid,
@@ -159,8 +171,8 @@ final class CatatMutasiKas
             'TanggalBisnis' => $this->tanggalBisnis->Hitung($shift->IdOutlet, $data->dicatatPada)->toDateString(),
             'DisetujuiOleh' => $penyetuju?->id,
             'DiterimaPada' => CarbonImmutable::now(),
-            'PerluTinjauan' => $sudahDitutup,
-            'AlasanTinjauan' => $sudahDitutup ? 'ShiftSudahDitutup: kas diterima setelah shift ditutup, belum masuk hitungan kas tutup shift' : null,
+            'PerluTinjauan' => $tinjauan !== [],
+            'AlasanTinjauan' => $tinjauan === [] ? null : implode('; ', $tinjauan),
         ]);
 
         $jurnal = $this->postingJurnal->Jalankan($this->penyusun->Susun($mutasi, $kategori, $shift->IdOutlet, $shift->Uuid));
@@ -176,17 +188,6 @@ final class CatatMutasiKas
         ], idPengguna: $pencatat->id);
 
         return StatusItemSinkron::Diterima;
-    }
-
-    private function CariAnggota(int $idTenant, string $uuid, int $idOutlet, string $bidang): DataAnggotaOutlet
-    {
-        $anggota = $this->anggota->Cari($idTenant, $uuid, $idOutlet);
-
-        if ($anggota === null) {
-            throw new PelanggaranAturanBisnis('KasirTidakDitemukan', 'Pengguna ini tidak terdaftar di outlet shift ini.', $bidang);
-        }
-
-        return $anggota;
     }
 
     private function AmbilKategori(DataMutasiKas $data): ?KategoriKas
@@ -214,7 +215,11 @@ final class CatatMutasiKas
         return $kategori;
     }
 
-    private function PeriksaPersetujuan(DataMutasiKas $data, int $idTenant, int $idOutlet): ?DataAnggotaOutlet
+    /**
+     * @return array{0: DataAnggotaOutlet|null, 1: bool} [penyetuju, punya akses outlet]; penyetuju yang sudah tidak di
+     *                                                   outlet tetapi pernah berwenang = tinjauan, bukan penolakan (K33)
+     */
+    private function PeriksaPersetujuan(DataMutasiKas $data, int $idTenant, int $idOutlet): array
     {
         $batas = $this->pengaturan->Ambil()->batasKasKeluar;
         $wajib = $data->jenis === JenisMutasiKas::Keluar && $data->jumlah->Bandingkan($batas) > 0;
@@ -226,15 +231,15 @@ final class CatatMutasiKas
                 ]);
             }
 
-            return null;
+            return [null, true];
         }
 
-        $penyetuju = $this->anggota->Cari($idTenant, $data->uuidPenyetuju, $idOutlet);
+        $ditemukan = $this->anggota->CariDiTenant($idTenant, $data->uuidPenyetuju, $idOutlet);
 
-        if ($penyetuju === null || ! $penyetuju->CekIzin(IzinTenant::KasKeluarSetujui->value)) {
+        if ($ditemukan === null || ! $ditemukan[0]->CekIzin(IzinTenant::KasKeluarSetujui->value)) {
             throw new PelanggaranAturanBisnis('PenyetujuTidakBerwenang', 'Penyetuju tidak punya izin menyetujui kas keluar di outlet ini.', 'UuidPenyetuju', 403);
         }
 
-        return $penyetuju;
+        return $ditemukan;
     }
 }

@@ -75,7 +75,7 @@ final class BantuanPanduanAwal
         ])->load('TemplateSektor');
     }
 
-    public static function TerbitkanTarif(string $kodeJenis, ?string $kodeWilayah, string $tarif, bool $biayaLayananMasukDpp = false): TarifPajak
+    public static function TerbitkanTarif(string $kodeJenis, ?string $kodeWilayah, string $tarif, bool $biayaLayananMasukDpp = false, ?string $berlakuMulai = null, ?string $berlakuSampai = null): TarifPajak
     {
         app(SiapkanPajakBawaan::class)->Jalankan();
         $jenis = JenisPajak::query()->where('Kode', $kodeJenis)->firstOrFail();
@@ -87,7 +87,8 @@ final class BantuanPanduanAwal
             'PengaliDppPenyebut' => $kodeJenis === 'Ppn' ? 12 : 1,
             'KodeWilayah' => $kodeWilayah,
             'BiayaLayananMasukDpp' => $biayaLayananMasukDpp,
-            'BerlakuMulai' => now('Asia/Jakarta')->subDays(10)->toDateString(),
+            'BerlakuMulai' => $berlakuMulai ?? now('Asia/Jakarta')->subDays(10)->toDateString(),
+            'BerlakuSampai' => $berlakuSampai,
             'Status' => StatusDataMaster::Terbit,
             'NomorDasarHukum' => $kodeWilayah === null ? 'UU HPP' : "Perda {$kodeWilayah}",
         ]);

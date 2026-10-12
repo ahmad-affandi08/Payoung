@@ -18,6 +18,7 @@ enum KodeAlasanTinjauan: string
     case DiskonMelebihiBatas = 'DiskonMelebihiBatas';
     case PengaturanBerbeda = 'PengaturanBerbeda';
     case PajakBerbeda = 'PajakBerbeda';
+    case TarifPajakLama = 'TarifPajakLama';
     case LokasiRusakTidakAda = 'LokasiRusakTidakAda';
     case PesananDibayarGanda = 'PesananDibayarGanda';
     case PesananTidakDikenal = 'PesananTidakDikenal';
@@ -63,6 +64,7 @@ enum KodeAlasanTinjauan: string
             self::DiskonMelebihiBatas => 'Diskon melebihi batas yang berlaku',
             self::PengaturanBerbeda => 'Pengaturan kasir di perangkat berbeda',
             self::PajakBerbeda => 'Pajak di perangkat berbeda dengan pengaturan pajak',
+            self::TarifPajakLama => 'Tarif pajak di perangkat sudah diganti',
             self::LokasiRusakTidakAda => 'Lokasi stok Rusak belum ada',
             self::PesananDibayarGanda => 'Pesanan meja sudah dibayar atau dibatalkan di perangkat lain',
             self::PesananTidakDikenal => 'Pesanan meja belum diterima server',

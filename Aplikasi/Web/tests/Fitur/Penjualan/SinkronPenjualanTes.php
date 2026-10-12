@@ -500,6 +500,27 @@ describe('F-07b aturan penolakan', function (): void {
         ]);
     });
 
+    it('E7: tarif PPN yang baru berakhir (perangkat belum memperbarui tarif) diterima + PerluTinjauan TarifPajakLama; tarif yang sudah lama berakhir atau karangan tetap TarifPajakTidakSah', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $hari = fn (int $mundur): string => now('Asia/Jakarta')->subDays($mundur)->toDateString();
+        BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '11.000000', berlakuMulai: $hari(730), berlakuSampai: $hari(11));
+        BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '10.000000', berlakuMulai: $hari(1095), berlakuSampai: $hari(200));
+        BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Tubruk Robusta Temanggung', 'Jenis' => JenisProduk::NonStok], '15000.00');
+        $item = fn (array $pajak) => BantuanPenjualan::Item($k, ['Pajak' => [$pajak], 'Baris' => [['Produk' => $kopi, 'Jumlah' => '1', 'Harga' => '15000.00']]]);
+        $itemLama = $item(['Ppn', '11.000000', 11, 12]);
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$itemLama, $item(['Ppn', '10.000000', 11, 12]), $item(['Ppn', '9.000000', 11, 12])]))
+            ->toBe([['Diterima', null], ['Ditolak', 'TarifPajakTidakSah'], ['Ditolak', 'TarifPajakTidakSah']]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $penjualan = Penjualan::query()->where('Uuid', $itemLama['Uuid'])->sole();
+        expect($penjualan->PerluTinjauan)->toBeTrue()
+            ->and($penjualan->AlasanTinjauan)->toContain('TarifPajakLama')->toContain('berlaku sekarang: 12.000000%')
+            ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
+    });
+
     it('BR-07.3 diskon manual (PRD v1.46): kasir tanpa izin atau di atas batas tanpa penyetuju, dan di atas 30% tanpa Pemilik = diterima + PerluTinjauan DiskonMelebihiBatas; supervisor menyetujui sampai 30%; penyetuju tanpa izin setujui = PenyetujuTidakBerwenang', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $pemilik = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Pemilik);

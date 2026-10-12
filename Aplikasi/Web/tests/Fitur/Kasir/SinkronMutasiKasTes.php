@@ -158,6 +158,29 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
         ]))->toBe([['Diterima', null], ['Diterima', null]]);
     });
 
+    it('K33: pencatat yang izin/outlet-nya berubah saat offline tetap diterima + PerluTinjauan IzinBerubah (uang sudah bergerak); bukan anggota usaha ditolak', function (): void {
+        $k = SiapkanShiftKasUji($this, bersama: true);
+        $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
+        $luarOutlet = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir, semuaOutlet: false);
+        $asing = BantuanKasir::Siapkan($this, 'Warung Bakso Pak Kumis');
+        $tanpaIzin = BantuanKasir::ItemMutasiKas($k['UuidShift'], $gudang, 'Keluar', '5000.00', $k['KategoriKeluar']);
+        $diLuarOutlet = BantuanKasir::ItemMutasiKas($k['UuidShift'], $luarOutlet, 'Masuk', '7000.00', $k['KategoriMasuk']);
+        $bukanAnggota = BantuanKasir::ItemMutasiKas($k['UuidShift'], $asing['Kasir'], 'Keluar', '5000.00', $k['KategoriKeluar']);
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$tanpaIzin, $diLuarOutlet, $bukanAnggota]))
+            ->toBe([['Diterima', null], ['Diterima', null], ['Ditolak', 'KasirTidakDitemukan']]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $a = MutasiKas::query()->where('Uuid', $tanpaIzin['Uuid'])->sole();
+        $b = MutasiKas::query()->where('Uuid', $diLuarOutlet['Uuid'])->sole();
+        expect($a->PerluTinjauan)->toBeTrue()
+            ->and($a->AlasanTinjauan)->toContain('IzinBerubah')->toContain('izin mencatat kas')
+            ->and($b->PerluTinjauan)->toBeTrue()
+            ->and($b->AlasanTinjauan)->toContain('IzinBerubah')->toContain('tidak lagi terdaftar di outlet')
+            ->and($a->IdJurnal)->not->toBeNull()
+            ->and(MutasiKas::query()->where('Uuid', $bukanAnggota['Uuid'])->exists())->toBeFalse();
+    });
+
     it('penolakan: shift perangkat lain, kategori salah jenis/nonaktif, jumlah 0, waktu sebelum buka shift; periode terkunci (§18/F-15) diterima & dibukukan di periode berikutnya', function (): void {
         $k = SiapkanShiftKasUji($this);
         $perangkat2 = BantuanPerangkat::BuatDanAktifkan($this, $k['Tenant']->Id, $k['Outlet'], 'Kasir Belakang');
