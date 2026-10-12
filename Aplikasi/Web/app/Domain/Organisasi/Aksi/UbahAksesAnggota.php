@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Organisasi\Aksi;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
-use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Organisasi\Data\DataAksesAnggota;
-use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Layanan\PemeriksaAksesAnggota;
 use App\Domain\Organisasi\Layanan\PenjagaAnggota;
@@ -37,10 +35,8 @@ final class UbahAksesAnggota
             $anggota = TenantPengguna::query()->lockForUpdate()->findOrFail($anggota->Id);
             $this->penjaga->PastikanBolehMengubah($idPelaku, $anggota);
 
-            if ($anggota->Status !== StatusKeanggotaan::Aktif) {
-                throw new PelanggaranAturanBisnis('AnggotaNonaktif', 'Aktifkan kembali anggota ini dulu sebelum mengubah aksesnya.');
-            }
-
+            // Anggota nonaktif boleh diganti perannya: akses masuknya tetap terblokir oleh status keanggotaan, dan tanpa ini
+            // peran yang dipakai anggota nonaktif tidak bisa dihapus sementara reaktivasi butuh kursi pengguna yang mungkin penuh.
             $hasil = $this->pemeriksaAkses->Periksa($idPelaku, $data);
 
             if ($anggota->Pemilik && ! $hasil['Peran']->CekPemilik()) {

@@ -72,6 +72,11 @@ type ItemMenu = {
     izin: KunciIzinTenant | null;
     /** D-101: izin alternatif — cukup salah satu dari `izin` atau `atau` (menu Tim terbuka bagi pemegang lihat karyawan atau lihat pengguna). */
     atau?: KunciIzinTenant;
+    /**
+     * Bagi pemegang `atau` yang tidak punya `izin`, item ini berubah menjadi tautan ke halaman lain (label baru, tanpa
+     * gembok paket): "Toko online & pengiriman" menjadi "Pengiriman" untuk Staf Gudang yang hanya berizin `pengiriman.kelola`.
+     */
+    gantiBilaHanyaAtau?: { label: string; href: string };
     ikon?: NamaIkonNavigasi;
     fitur?: string;
     pemisah?: boolean;
@@ -237,6 +242,9 @@ const menuPenjualan: ItemMenu[] = [
         label: 'Toko online & pengiriman',
         href: '/kelola/toko-online',
         izin: IzinTenant.TokoOnlineKelola,
+        // Staf Gudang berizin `pengiriman.kelola` tanpa `toko-online.kelola` tetap menjangkau halaman Pengiriman.
+        atau: IzinTenant.PengirimanKelola,
+        gantiBilaHanyaAtau: { label: 'Pengiriman', href: '/kelola/pengiriman' },
         fitur: 'kanal.toko-online',
     },
     { label: 'Shift kasir', href: '/kelola/kasir/shift', izin: IzinTenant.LaporanPenjualanLihat },
@@ -662,6 +670,19 @@ export { CekSesuaiSektor };
  * Menu utama yang boleh dilihat pemegang akses ini beserta sub-menunya; grup tanpa sub-menu boleh disembunyikan.
  * Audit #33: `sektorOutlet` menyaring menu khusus sektor; `sederhana` menyembunyikan menu `lanjutan`.
  */
+function PilihTampilanItem(akses: PropsBersamaAplikasi['Akses']) {
+    return (menu: ItemMenu): ItemMenu => {
+        if (menu.gantiBilaHanyaAtau === undefined || menu.izin === null || PunyaIzinTenant(akses, menu.izin)) {
+            return menu;
+        }
+
+        const tanpaFitur: ItemMenu = { ...menu, ...menu.gantiBilaHanyaAtau };
+        delete tanpaFitur.fitur;
+
+        return tanpaFitur;
+    };
+}
+
 export function SaringMenuTerlihat(
     akses: PropsBersamaAplikasi['Akses'],
     opsi: { sektorOutlet?: string[]; sederhana?: boolean } = {},
@@ -682,7 +703,7 @@ export function SaringMenuTerlihat(
             return [{ menu, labelSub: null, sub: [] }];
         }
 
-        const sub = menu.sub.filter(CekBoleh);
+        const sub = menu.sub.filter(CekBoleh).map(PilihTampilanItem(akses));
         const pertama = sub[0];
 
         return pertama === undefined ? [] : [{ menu: { ...menu, href: pertama.href }, labelSub: menu.labelSub, sub }];

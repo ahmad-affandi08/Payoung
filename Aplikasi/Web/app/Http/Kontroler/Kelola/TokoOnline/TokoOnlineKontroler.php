@@ -25,6 +25,7 @@ use App\Domain\Penjualan\Aksi\SimpanPengaturanTokoOnline;
 use App\Domain\Penjualan\Aksi\SimpanZonaPengiriman;
 use App\Domain\Penjualan\Aksi\UbahStatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
+use App\Domain\Penjualan\Kueri\KesiapanNotifikasiPesananOnline;
 use App\Domain\Penjualan\Layanan\PenentuAkunTokoOnline;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
@@ -41,7 +42,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class TokoOnlineKontroler extends DasarKelolaKontroler
 {
-    public function Tampilkan(PetaUuidOutlet $peta, ProfilTenant $profil, DaftarAkunPilihan $akun, AksesPengguna $akses, IdentitasPelanggan $identitas, PenentuAkunTokoOnline $akunPembeli, PembuatQrMeja $qr): Response
+    public function Tampilkan(PetaUuidOutlet $peta, ProfilTenant $profil, DaftarAkunPilihan $akun, AksesPengguna $akses, IdentitasPelanggan $identitas, PenentuAkunTokoOnline $akunPembeli, PembuatQrMeja $qr, KesiapanNotifikasiPesananOnline $kesiapanNotifikasi): Response
     {
         $boleh = $this->IdOutletBoleh();
         $outlet = $peta->AmbilRingkas($boleh, hanyaAktif: true);
@@ -62,6 +63,8 @@ final class TokoOnlineKontroler extends DasarKelolaKontroler
             // D-110: QR tautan toko untuk dibagikan atau dicetak.
             'QrSvg' => $qr->BuatSvg(url('/'.$profil->AmbilSlug($this->IdTenant()))),
             'Pengaturan' => $atur->only(['Aktif', 'BayarSaatAmbilAktif', 'CodAktif', 'QrisAktif', 'AkunPelangganAktif', 'NotifikasiWhatsappAktif', 'MinimalPesanan', 'MenitKedaluwarsa', 'PesanTutup']),
+            // Peringatan di sakelar notifikasi WhatsApp: kuota 0 atau WhatsApp belum tersambung membuat pesan gagal diam-diam.
+            'Notifikasi' => $kesiapanNotifikasi->Ambil($this->IdTenant()),
             // Sakelar akun pembeli hanya berarti bila platform punya WhatsApp aktif (kode masuk dikirim lewat sana).
             'AkunPembeliTersedia' => $akunPembeli->CekWhatsappTersedia(),
             // F-17 bagian 2: pengembalian uang muka memilih akun kas/bank, jadi daftarnya ikut dikirim.

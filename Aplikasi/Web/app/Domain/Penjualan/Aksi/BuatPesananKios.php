@@ -16,6 +16,7 @@ use App\Domain\Penjualan\Enum\JenisSantapKios;
 use App\Domain\Penjualan\Enum\MetodePembayaranOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Enum\SumberPesananOnline;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Layanan\PenghitungKios;
 use App\Domain\Penjualan\Layanan\PenghitungPesanSendiri;
 use App\Domain\Penjualan\Layanan\PenghitungTokoOnline;
@@ -46,6 +47,7 @@ final class BuatPesananKios
         private readonly PenghitungKios $penghitung,
         private readonly PenomorDokumen $penomor,
         private readonly PencadangStok $pencadang,
+        private readonly KesiapanQrisOnline $qris,
     ) {}
 
     public static function LabelAntrian(int $nomor): string
@@ -73,7 +75,7 @@ final class BuatPesananKios
             throw new PelanggaranAturanBisnis('MetodePembayaranTidakValid', 'Kios tidak melayani bayar di tempat tujuan.', 'MetodePembayaran');
         }
 
-        if ($pembayaran === MetodePembayaranOnline::QrisOnline && PengaturanTokoOnline::query()->value('QrisAktif') !== true) {
+        if ($pembayaran === MetodePembayaranOnline::QrisOnline && (PengaturanTokoOnline::query()->value('QrisAktif') !== true || ! $this->qris->CekSiap())) {
             throw new PelanggaranAturanBisnis('MetodePembayaranTidakAktif', 'Pembayaran QRIS di kios sedang tidak tersedia. Silakan bayar di kasir.', 'MetodePembayaran');
         }
 

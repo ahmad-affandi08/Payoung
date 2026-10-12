@@ -36,6 +36,11 @@ final class UbahStatusPesananOnline
         if ($status === StatusPesananOnline::Selesai && ! $this->selesai->CekSudahDibayar($pesanan)) {
             throw new PelanggaranAturanBisnis('PenjualanBelumLunas', 'Pesanan baru dapat diselesaikan setelah ditautkan ke penjualan yang lunas.', 'Status');
         }
+        // Pesanan yang sudah ditagih di kasir (penjualan lunas) membawa stok keluar, pendapatan, dan uang muka terpakai:
+        // membatalkannya hanya mengubah status sambil membiarkan semua itu. Pembalikannya lewat void/retur penjualan.
+        if ($status === StatusPesananOnline::Dibatalkan && $this->selesai->CekSudahDibayar($pesanan)) {
+            throw new PelanggaranAturanBisnis('PenjualanSudahLunas', 'Pesanan sudah ditagih di kasir. Batalkan lewat void atau retur penjualannya.', 'Status', 409);
+        }
         $pengiriman = $pesanan->JenisPemenuhan === JenisPemenuhanOnline::Kirim
             ? PengirimanPesanan::query()->where('IdPesananOnline', $pesanan->Id)->first()
             : null;

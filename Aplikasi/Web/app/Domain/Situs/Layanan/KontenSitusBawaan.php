@@ -282,7 +282,7 @@ final class KontenSitusBawaan
                     [
                         'Jenis' => 'Harga',
                         'Judul' => 'Mulai gratis, naik saat outlet bertambah',
-                        'Subjudul' => 'Harga per bulan untuk satu usaha. Naik atau turun paket kapan saja dari back-office.',
+                        'Subjudul' => 'Harga per bulan untuk satu usaha. Naik paket kapan saja dari back-office; turun paket lewat tim kami.',
                         'TampilkanTahunan' => true,
                         'PaketDisorot' => 'PRO',
                         'TeksTombol' => 'Mulai',
@@ -391,7 +391,7 @@ final class KontenSitusBawaan
                     [
                         'Jenis' => 'Harga',
                         'Judul' => 'Pilih paket sesuai jumlah outlet',
-                        'Subjudul' => 'Bayar tahunan lebih hemat. Naik atau turun paket kapan saja.',
+                        'Subjudul' => 'Bayar tahunan lebih hemat. Naik paket kapan saja; turun paket lewat tim kami.',
                         'TampilkanTahunan' => true,
                         'PaketDisorot' => 'PRO',
                         'TeksTombol' => 'Mulai',
@@ -403,7 +403,7 @@ final class KontenSitusBawaan
                         'Item' => [
                             ['Pertanyaan' => 'Apakah ada masa uji coba?', 'Jawaban' => 'Ada. Paket berbayar bisa dicoba gratis selama masa trial. Bila tidak diperpanjang, akun turun ke paket Gratis dan data Anda tetap ada.'],
                             ['Pertanyaan' => 'Bagaimana cara membayar?', 'Jawaban' => 'Buka menu Langganan di back-office dan bayar tagihan secara online lewat halaman pembayaran DOKU. Paket aktif setelah pembayaran diterima.'],
-                            ['Pertanyaan' => 'Bisakah pindah paket?', 'Jawaban' => 'Bisa naik atau turun paket kapan saja dari menu Langganan.'],
+                            ['Pertanyaan' => 'Bisakah pindah paket?', 'Jawaban' => 'Naik paket bisa kapan saja dari menu Langganan, selisih harganya dihitung untuk sisa periode. Untuk turun paket, hubungi tim kami lewat menu Bantuan.'],
                             ['Pertanyaan' => 'Kalau fitur yang saya butuh ada di paket lebih tinggi?', 'Jawaban' => 'Menunya tetap terlihat. Saat diklik, muncul pilihan naik paket atau membeli add-on untuk fitur itu saja.'],
                         ],
                     ],

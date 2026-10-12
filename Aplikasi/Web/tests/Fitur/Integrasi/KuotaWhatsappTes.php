@@ -13,6 +13,7 @@ use App\Domain\Integrasi\Whatsapp\PengirimWhatsappBerkuota;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Pengelola\Integrasi\Enum\PenyediaIntegrasi;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
+use App\Domain\Penjualan\Kueri\KesiapanNotifikasiPesananOnline;
 use App\Domain\Tenant\Enum\JenisOverride;
 use App\Domain\Tenant\Model\OverrideTenant;
 use Carbon\CarbonImmutable;
@@ -174,5 +175,41 @@ describe('D-108 kuota pesan WhatsApp nomor Payoung', function (): void {
         ]);
         expect($penyedia->Kumpulkan($konteks))->toBe([]);
         $baris->delete();
+    });
+});
+
+describe('F-17 kesiapan kabar pesanan toko online lewat WhatsApp', function (): void {
+    it('memberi tahu pemilik bila WhatsApp belum tersambung, kuota nol, kuota habis, dan siap bila ada sisa atau nomor sendiri', function (): void {
+        $siap = fn (int $idTenant): array => app(KesiapanNotifikasiPesananOnline::class)->Ambil($idTenant);
+
+        $t = SiapkanTenantKuota(0);
+        $nol = $siap($t['Tenant']->Id);
+        expect($nol['Siap'])->toBeFalse()->and($nol['Alasan'])->toContain('tidak menyertakan kuota')->and($nol['GagalBulanIni'])->toBe(0);
+
+        $baris = WhatsappTenant::query()->create([
+            'Penyedia' => PenyediaIntegrasi::Fonnte, 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenSendiri-1234'],
+            'PetunjukKredensial' => ['Token' => '••••1234'], 'StatusUji' => 'Berhasil', 'Aktif' => true, 'IdTenant' => $t['Tenant']->Id,
+        ]);
+        expect($siap($t['Tenant']->Id)['Siap'])->toBeTrue();
+        $baris->delete();
+
+        config(['integrasi.Whatsapp' => ['Penyedia' => null]]);
+        $belum = $siap($t['Tenant']->Id);
+        expect($belum['Siap'])->toBeFalse()->and($belum['Alasan'])->toContain('belum tersambung');
+    });
+
+    it('kuota terpakai habis menghasilkan peringatan kuota habis; masih ada sisa dianggap siap', function (): void {
+        $t = SiapkanTenantKuota(2);
+        $pengirim = app(PembuatPengirimWhatsapp::class)->AmbilAktif();
+        $siap = fn (): array => app(KesiapanNotifikasiPesananOnline::class)->Ambil($t['Tenant']->Id);
+
+        expect($siap()['Siap'])->toBeTrue();
+
+        $pengirim->Kirim(new PesanWhatsapp('6281234567890', 'Satu'));
+        $pengirim->Kirim(new PesanWhatsapp('6281234567890', 'Dua'));
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+
+        $habis = $siap();
+        expect($habis['Siap'])->toBeFalse()->and($habis['Alasan'])->toContain('sudah habis');
     });
 });

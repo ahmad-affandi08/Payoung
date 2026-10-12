@@ -16,6 +16,7 @@ use App\Domain\Penjualan\Data\DataKonteksPesanSendiri;
 use App\Domain\Penjualan\Enum\JenisPemenuhanOnline;
 use App\Domain\Penjualan\Enum\MetodePembayaranOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Layanan\PenghitungPesanSendiri;
 use App\Domain\Penjualan\Layanan\PenghitungTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
@@ -46,6 +47,7 @@ final class BuatPesananOnline
         private readonly IdentitasPelanggan $pelanggan,
         private readonly PesanVoucherPos $pesanVoucher,
         private readonly PencadangStok $pencadang,
+        private readonly KesiapanQrisOnline $qris,
     ) {}
 
     /**
@@ -87,7 +89,8 @@ final class BuatPesananOnline
         $metodeAktif = match ($pembayaran) {
             MetodePembayaranOnline::BayarSaatAmbil => $pengaturan->BayarSaatAmbilAktif,
             MetodePembayaranOnline::Cod => $pengaturan->CodAktif,
-            MetodePembayaranOnline::QrisOnline => $pengaturan->QrisAktif,
+            // Gerbang bisa dimatikan setelah sakelar QRIS dinyalakan: tolak di sini, jangan biarkan pesanan menggantung tanpa tagihan.
+            MetodePembayaranOnline::QrisOnline => $pengaturan->QrisAktif && $this->qris->CekSiap(),
         };
 
         if (! $metodeAktif) {

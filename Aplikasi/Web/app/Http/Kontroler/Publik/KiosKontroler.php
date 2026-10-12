@@ -16,6 +16,7 @@ use App\Domain\Penjualan\Enum\JenisSantapKios;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Enum\SumberPesananOnline;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Layanan\PembuatQrTagihanQris;
 use App\Domain\Penjualan\Layanan\PenentuKonteksKios;
 use App\Domain\Penjualan\Layanan\PenghitungKios;
@@ -66,7 +67,7 @@ final class KiosKontroler extends Kontroler
                 'Token' => $tokenKios,
                 'Toko' => ['Nama' => app(NamaTampilUsaha::class)->UntukOutlet($k->idOutlet, $idTenant)],
                 'Menu' => $k->aktif ? $this->AmbilMenu($menu, $k, JenisSantapKios::MakanDiTempat, $slugTenant, $tokenKios) : ['Kategori' => [], 'Produk' => []],
-                'Pembayaran' => ['BayarDiKasir' => true, 'Qris' => PengaturanTokoOnline::query()->value('QrisAktif') === true],
+                'Pembayaran' => ['BayarDiKasir' => true, 'Qris' => PengaturanTokoOnline::query()->value('QrisAktif') === true && app(KesiapanQrisOnline::class)->CekSiap()],
                 'DetikDiam' => self::DETIK_DIAM,
             ];
         }, fn (): null => null);

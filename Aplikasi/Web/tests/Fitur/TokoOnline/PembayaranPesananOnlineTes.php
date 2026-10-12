@@ -26,6 +26,7 @@ use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanGerbangTenant;
@@ -409,6 +410,44 @@ it('pesanan yang tidak dibayar hangus sesuai batas QRIS, yang sudah dibayar tida
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(PesananOnline::query()->whereKey($belum->Id)->value('Status'))->toBe(StatusPesananOnline::Kedaluwarsa)
         ->and(PesananOnline::query()->whereKey($dibayar->Id)->value('Status'))->toBe(StatusPesananOnline::MenungguKonfirmasi);
+});
+
+it('pesanan hangus dihitung dari QR terakhir: QR yang baru dibuka pembeli menahan pesanan, QR yang sudah lewat tenggang tidak', function (): void {
+    $status = 'PENDING';
+    PalsukanGerbangOnline($status);
+    $k = SiapkanBayarOnline($this);
+    [$qrBaru] = PesanBayarQris($this, $k);
+    [$qrBasi] = PesanBayarQris($this, $k);
+    $this->postJson("/{$k['Slug']}/pesanan/{$qrBaru->KodeAkses}/bayar")->assertCreated();
+    $this->postJson("/{$k['Slug']}/pesanan/{$qrBasi->KodeAkses}/bayar")->assertCreated();
+
+    // Kedua pesanan dibuat 40 menit lalu; QR pertama dibuat baru saja, QR kedua sudah kedaluwarsa 30 menit lalu.
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    PesananOnline::query()->update(['DibuatPada' => now()->subMinutes(40)]);
+    TagihanQris::query()->where('IdPesananOnline', $qrBasi->Id)->update(['KedaluwarsaPada' => now()->subMinutes(30)]);
+    $this->artisan('pesanan-online:kedaluwarsa')->assertSuccessful();
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(PesananOnline::query()->whereKey($qrBaru->Id)->value('Status'))->toBe(StatusPesananOnline::MenungguPembayaran)
+        ->and(PesananOnline::query()->whereKey($qrBasi->Id)->value('Status'))->toBe(StatusPesananOnline::Kedaluwarsa);
+});
+
+it('gerbang dimatikan setelah QRIS menyala: etalase tidak menawarkan QRIS dan checkout QRIS ditolak sebelum pesanan menggantung', function (): void {
+    $status = 'PENDING';
+    PalsukanGerbangOnline($status);
+    $k = SiapkanBayarOnline($this);
+    $this->getJson('/'.$k['Slug'])->assertOk();
+    $this->get('/'.$k['Slug'])->assertInertia(fn (AssertableInertia $h) => $h->where('Pembayaran.QrisOnline', true));
+
+    BantuanGerbangTenant::Nonaktifkan($k['Tenant']->Id);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(PengaturanTokoOnline::query()->sole()->QrisAktif)->toBeTrue();
+
+    $this->get('/'.$k['Slug'])->assertInertia(fn (AssertableInertia $h) => $h->where('Pembayaran.QrisOnline', false));
+    $this->postJson('/'.$k['Slug'].'/pesan', [...BantuanTokoOnline::Kiriman($k), 'MetodePembayaran' => 'QrisOnline'])
+        ->assertUnprocessable()->assertJsonPath('Galat.Kode', 'MetodePembayaranTidakAktif');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(PesananOnline::query()->count())->toBe(0);
 });
 
 it('sakelar QRIS tidak bisa dinyalakan tanpa gerbang pembayaran aktif', function (): void {

@@ -168,4 +168,23 @@ describe('D-108 WhatsApp milik tenant', function (): void {
         PaketFitur::query()->where('KunciFitur', 'integrasi.whatsapp')->delete();
         MasukWa($this, $c)->post('/kelola/pengaturan/whatsapp', ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenTokoC-1122']])->assertSessionHasErrors('Penyedia');
     });
+
+    it('turun ke paket tanpa fitur WhatsApp: nomor milik tenant berhenti dipakai di semua jalur dan pesan kembali ke nomor Payoung berkuota', function (): void {
+        $toko = TokoWa('Toko Turun Paket Solo');
+        $baris = WhatsappTenant::query()->create([
+            'Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => TOKEN_FONNTE_TOKO],
+            'PetunjukKredensial' => ['Token' => '••••4521'], 'StatusUji' => StatusUjiGerbang::Berhasil->value, 'Aktif' => true, 'IdTenant' => $toko['Tenant']->Id,
+        ]);
+        $pembuat = app(PembuatPengirimWhatsapp::class);
+        expect($pembuat->AmbilMilikTenant())->not->toBeNull()
+            ->and($pembuat->AmbilAktif())->not->toBeInstanceOf(PengirimWhatsappBerkuota::class);
+
+        OverrideTenant::query()->where('Kunci', 'integrasi.whatsapp')->delete();
+        PaketFitur::query()->where('KunciFitur', 'integrasi.whatsapp')->delete();
+        BantuanOrganisasi::AturKonteks($toko['Tenant']->Id);
+
+        expect($baris->refresh()->Aktif)->toBeTrue()
+            ->and($pembuat->AmbilMilikTenant())->toBeNull()
+            ->and($pembuat->AmbilAktif())->toBeInstanceOf(PengirimWhatsappBerkuota::class);
+    });
 });

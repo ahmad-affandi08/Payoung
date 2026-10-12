@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\Peran;
 use App\Domain\Organisasi\Model\PeranIzin;
 use App\Domain\Organisasi\Model\TenantPengguna;
@@ -213,6 +214,28 @@ describe('Peran kustom', function (): void {
             ->post('/kelola/peran', ['Nama' => 'Naik Pangkat', 'Izin' => ['penjualan.buat', 'audit.lihat']])
             ->assertSessionHasErrors('Izin');
         expect(Peran::query()->where('Nama', 'Naik Pangkat')->exists())->toBeFalse();
+    });
+
+    it('peran yang dipakai anggota nonaktif bisa dilepas dengan mengganti peran anggota itu, tanpa mengaktifkannya kembali', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/peran', ['Nama' => 'Barista Lama', 'Izin' => ['penjualan.buat']]);
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $lama = Peran::query()->where('Nama', 'Barista Lama')->sole();
+        $kasirPeran = BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Kasir);
+        $anggota = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
+        TenantPengguna::query()->where('IdPengguna', $anggota->Id)->update(['IdPeran' => $lama->Id, 'Status' => StatusKeanggotaan::Nonaktif->value]);
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->delete("/kelola/peran/{$lama->Uuid}")->assertSessionHasErrors('Umum');
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
+            ->put("/kelola/pengguna/{$anggota->Uuid}/akses", ['Peran' => $kasirPeran->Uuid, 'SemuaOutlet' => true])
+            ->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        expect(TenantPengguna::query()->where('IdPengguna', $anggota->Id)->sole()->Status)->toBe(StatusKeanggotaan::Nonaktif);
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->delete("/kelola/peran/{$lama->Uuid}")->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        expect(Peran::query()->whereKey($lama->Id)->exists())->toBeFalse();
     });
 
     it('peran kustom yang masih dipakai tidak bisa dihapus; yang tidak dipakai bisa', function (): void {

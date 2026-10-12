@@ -172,6 +172,19 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(screen.queryByRole('navigation', { name: 'Menu produk' })).toBeNull();
     });
 
+    it('Staf Gudang (pengiriman.kelola tanpa toko-online.kelola) menjangkau halaman Pengiriman; Pemilik tidak melihat menu ganda', () => {
+        const SubPenjualan = (menu: ReturnType<typeof SaringMenuTerlihat>) =>
+            (menu.find(({ menu: m }) => m.label === 'Penjualan & kasir')?.sub ?? []).map((m) => m.label);
+
+        const gudang = SaringMenuTerlihat({ Pemilik: false, Izin: ['pengiriman.kelola', 'laporan.penjualan.lihat'] });
+        expect(SubPenjualan(gudang)).toContain('Pengiriman');
+        expect(SubPenjualan(gudang)).not.toContain('Toko online & pengiriman');
+
+        const pemilik = SaringMenuTerlihat({ Pemilik: true, Izin: [] });
+        expect(SubPenjualan(pemilik)).toContain('Toko online & pengiriman');
+        expect(SubPenjualan(pemilik)).not.toContain('Pengiriman');
+    });
+
     it('audit #33: menu khusus sektor disaring sektor outlet; mode sederhana menyembunyikan menu lanjutan', () => {
         const akses = { Pemilik: true, Izin: [] };
         const Label = (menu: ReturnType<typeof SaringMenuTerlihat>) => menu.map(({ menu: m }) => m.label);

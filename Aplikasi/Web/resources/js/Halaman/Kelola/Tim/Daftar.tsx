@@ -185,10 +185,12 @@ export default function HalamanDaftarTim({
             aksi.push({ label: 'Absen dari HP', saatPilih: () => AturPilihan({ jenis: 'absenHp', orang }) });
         }
 
+        // Peran akun nonaktif tetap bisa diganti supaya peran lama bisa dihapus tanpa memakai kursi pengguna.
+        if (BolehSentuhAkun(orang) && Izin.UbahAkses) {
+            aksi.push({ label: 'Ubah peran & outlet', saatPilih: () => AturPilihan({ jenis: 'akses', orang }) });
+        }
+
         if (BolehSentuhAkun(orang) && akunAktif) {
-            if (Izin.UbahAkses) {
-                aksi.push({ label: 'Ubah peran & outlet', saatPilih: () => AturPilihan({ jenis: 'akses', orang }) });
-            }
             if (Izin.AturPin) {
                 aksi.push({ label: 'Atur ulang PIN', saatPilih: () => AturPilihan({ jenis: 'pin', orang }) });
             }

@@ -137,7 +137,7 @@ final class SektorSitus
                     ['QrCode', 'Nomor antrean & layar panggil', 'Nomor urut harian tercetak di struk dan tiket, dan layar panggil menampilkan pesanan yang siap.'],
                     ['Percent', 'PBJT & biaya layanan', 'Dihitung dari tarif yang berlaku untuk outlet Anda, bukan angka yang diketik manual.'],
                 ],
-                'Faq' => [$offline, ['Apakah ada self-order lewat QR di meja?', 'Ada. Tamu memindai QR meja, memilih menu dengan perkiraan total, lalu membayar di kasir atau lewat QRIS. Ketersediaan fitur mengikuti paket langganan; lihat halaman Harga.']],
+                'Faq' => [$offline, ['Apakah ada self-order lewat QR di meja?', 'Ada. Tamu memindai QR meja, memilih menu dengan perkiraan total, lalu membayar di kasir. Ketersediaan fitur mengikuti paket langganan; lihat halaman Harga.']],
                 'Seo' => 'Aplikasi kasir kafe dan kedai kopi: modifier ukuran-gula-es, tiket bar & dapur, mode cepat dan meja, stok bahan dari resep, PBJT, tetap jalan offline.',
             ],
             [
@@ -368,7 +368,7 @@ final class SektorSitus
                     ['Users', 'Komisi menempel ke orang', 'Aturan komisi per layanan, boleh dibagi ke beberapa staf, dan masuk ke rekap gaji tanpa dihitung ulang.'],
                     ['Wallet', 'Paket sesi dan deposit', 'Pelanggan membeli paket atau mengisi saldo; sisa sesi berkurang sendiri tiap kunjungan.'],
                     ['Smartphone', 'Absen di perangkat kasir', 'PIN dan swafoto, terhubung ke jadwal kerja dan target penjualan per staf.'],
-                    ['Star', 'Membership dan poin', 'Tier pelanggan dan poin yang bisa ditukar menjadi diskon.'],
+                    ['Star', 'Tier dan poin pelanggan', 'Tier pelanggan dan poin yang bisa ditukar menjadi diskon.'],
                     ['Boxes', 'Stok produk perawatan', 'Produk retail dan bahan pakai habis dikelola di stok yang sama.'],
                 ],
                 'Faq' => [['Apakah bisa ada beberapa kapster atau terapis?', 'Bisa. Setiap staf punya jadwal dan komisinya sendiri, dan reservasi dipilih per staf.'], ['Bagaimana mengurangi pelanggan yang lupa datang?', 'Pelanggan yang memesan reservasi diingatkan lewat WhatsApp sehari sebelumnya, dan reservasi tercatat per staf supaya jadwalnya tidak bentrok.']],
@@ -412,10 +412,10 @@ final class SektorSitus
             ],
             [
                 'Kode' => 'SVC-FIT', 'Slug' => 'gym-kursus', 'Nama' => 'Gym, kebugaran & kursus', 'NamaSeo' => 'Gym, Kebugaran & Kursus',
-                'Ringkas' => 'Membership, paket sesi, komisi pelatih', 'Ikon' => 'Heart', 'Spesimen' => 'PemilikKaryawan',
+                'Ringkas' => 'Tier anggota, paket sesi, komisi pelatih', 'Ikon' => 'Heart', 'Spesimen' => 'PemilikKaryawan',
                 'Judul' => 'Sisa sesi member terlihat sebelum ia bertanya',
-                'Sub' => 'Jual membership, tiket harian, dan paket sesi. Sisa sesi berkurang sendiri tiap kunjungan, dan komisi pelatih tersusun dari sesi yang benar-benar dipakai.',
-                'Poin' => ['Paket sesi & membership', 'Tiket harian', 'Komisi pelatih'],
+                'Sub' => 'Jual paket sesi dan tiket harian, lengkap dengan tier dan poin anggota. Sisa sesi berkurang sendiri tiap kunjungan, dan komisi pelatih tersusun dari sesi yang benar-benar dipakai.',
+                'Poin' => ['Paket sesi & tier anggota', 'Tiket harian', 'Komisi pelatih'],
                 'JudulFitur' => 'Untuk pusat kebugaran dan tempat kursus',
                 'Item' => [
                     ['Wallet', 'Paket sesi', 'Jual paket sekali, pakai sesi di kasir tiap kedatangan, dan sisa sesi yang hangus diurus otomatis.'],
@@ -426,7 +426,7 @@ final class SektorSitus
                     ['Smartphone', 'Absensi pelatih', 'Pelatih absen di perangkat kasir atau lewat HP dengan lokasi dan wajah.'],
                 ],
                 'Faq' => [['Bagaimana pendapatan dari paket dibukukan?', 'Penjualan paket dicatat sebagai pendapatan diterima dimuka, lalu diakui bertahap saat sesi dipakai atau hangus.'], $offline],
-                'Seo' => 'Aplikasi kasir gym, kebugaran, dan kursus: paket sesi, membership, tiket harian, reservasi kelas, komisi pelatih, loyalti anggota, absensi pelatih.',
+                'Seo' => 'Aplikasi kasir gym, kebugaran, dan kursus: paket sesi, tier anggota, tiket harian, reservasi kelas, komisi pelatih, loyalti anggota, absensi pelatih.',
             ],
             [
                 'Kode' => 'SVC-CWS', 'Slug' => 'cuci-kendaraan', 'Nama' => 'Cuci kendaraan', 'NamaSeo' => 'Cuci Motor & Mobil',

@@ -106,3 +106,18 @@ it('tautkan hanya memastikan tautan dari sinkron: penjualan yang sama idempoten,
     expect($lain->refresh()->IdPenjualan)->toBeNull()
         ->and($lain->Status)->toBe(StatusPesananOnline::MenungguKonfirmasi);
 });
+
+it('pesanan yang sudah ditagih di kasir (penjualan lunas) tidak bisa dibatalkan: arahkan ke void/retur', function (): void {
+    $k = BantuanTokoOnline::Siapkan($this);
+    $p = PesanOnlineUntukPos($k, 'Kirim');
+    PesananOnline::query()->whereKey($p->Id)->update(['Status' => StatusPesananOnline::Siap->value]);
+    $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id), 'Jumlah' => '1', 'Harga' => '38500.00']]], ['UuidPesananOnline' => $p->Uuid, 'Kanal' => 'Online']);
+    expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]]);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($p->refresh()->Status)->toBe(StatusPesananOnline::Siap)->and($p->IdPenjualan)->not->toBeNull();
+
+    $this->withToken($k['Token'])->postJson("/api/pos/v1/pesanan-online/{$p->Uuid}/status", ['UuidPengguna' => $k['Kasir']->Uuid, 'Status' => 'Dibatalkan', 'Alasan' => 'Pembeli berubah pikiran'])
+        ->assertStatus(409)->assertJsonPath('Galat.Kode', 'PenjualanSudahLunas');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($p->refresh()->Status)->toBe(StatusPesananOnline::Siap);
+});

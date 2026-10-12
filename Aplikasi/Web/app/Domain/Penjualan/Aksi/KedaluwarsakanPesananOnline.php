@@ -8,10 +8,12 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
 use App\Domain\Penjualan\Enum\PeristiwaPesananOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
+use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Enum\SumberPesananOnline;
 use App\Domain\Penjualan\Layanan\PemberitahuPesananOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
+use App\Domain\Penjualan\Model\TagihanQris;
 use App\Domain\Persediaan\Layanan\PencadangStok;
 use App\Domain\Promo\Aksi\LepasVoucherPos;
 use Illuminate\Support\Carbon;
@@ -28,6 +30,10 @@ use Illuminate\Support\Facades\DB;
  * beda: yang menahan pesanan itu QR yang sudah tidak berlaku, bukan staf yang belum menjawab, dan menahannya
  * dua jam hanya membuang jatah pesanan aktif pelanggan. Pesanan yang **sudah dibayar** tidak pernah hangus, meski
  * uangnya masuk setelah QR-nya lewat waktu (`DibayarPada` diisi `PenerapPembayaranPesananOnline`).
+ *
+ * Batas itu dihitung dari **QR terakhir**, bukan dari pesanan dibuat: pembeli bisa membuka halaman bayar belasan menit
+ * setelah memesan (QR baru dibuat saat itu), jadi pesanan yang punya tagihan QRIS masih hidup (`Menunggu` belum lewat
+ * kedaluwarsanya + tenggang, atau `TidakPasti` yang masih direkonsiliasi) tidak dihanguskan.
  *
  * Tidak ada efek stok maupun jurnal: pesanan yang belum ditagihkan sebagai `Penjualan` belum pernah menyentuh
  * keduanya. Uang muka yang sudah masuk tetap menjadi kewajiban yang harus dikembalikan lewat
@@ -97,7 +103,8 @@ final class KedaluwarsakanPesananOnline
                 || ! array_key_exists($pesanan->Status->value, self::BATAS)
                 || $pesanan->DibayarPada !== null
                 || $pesanan->DibuatPada === null
-                || $pesanan->DibuatPada->greaterThanOrEqualTo($batas)) {
+                || $pesanan->DibuatPada->greaterThanOrEqualTo($batas)
+                || $this->CekAdaTagihanQrisHidup($pesanan)) {
                 return 0;
             }
 
@@ -125,6 +132,28 @@ final class KedaluwarsakanPesananOnline
 
             return 1;
         });
+    }
+
+    /**
+     * Pesanan yang menunggu pembayaran dan punya tagihan QRIS yang masih bisa dibayar (atau belum pasti nasibnya)
+     * tidak boleh hangus: uang bisa masuk kapan saja sampai tagihannya lewat tenggang.
+     */
+    private function CekAdaTagihanQrisHidup(PesananOnline $pesanan): bool
+    {
+        if ($pesanan->Status !== StatusPesananOnline::MenungguPembayaran) {
+            return false;
+        }
+
+        return TagihanQris::query()
+            ->where('IdPesananOnline', $pesanan->Id)
+            ->where(function ($kueri): void {
+                $kueri->where('Status', StatusTagihanQris::TidakPasti->value)
+                    ->orWhere(function ($menunggu): void {
+                        $menunggu->where('Status', StatusTagihanQris::Menunggu->value)
+                            ->where('KedaluwarsaPada', '>=', now()->subMinutes(self::MENIT_TENGGANG_BAYAR));
+                    });
+            })
+            ->exists();
     }
 
     /** Status yang bisa hangus → menit menunggu (null = `PengaturanTokoOnline.MenitKedaluwarsa`). */

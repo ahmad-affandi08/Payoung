@@ -10,6 +10,7 @@ vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/Tiruan
 const props: ComponentProps<typeof HalamanTokoOnline> = {
     TautanPublik: 'https://payoung.id/kopi-senja',
     AkunPembeliTersedia: false,
+    Notifikasi: { Siap: true, Alasan: null, GagalBulanIni: 0 },
     QrSvg: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
     Pengaturan: {
         Aktif: false,
@@ -64,6 +65,37 @@ describe('Toko online › Pengaturan toko', () => {
 
         const peringatan = screen.getByRole('alert');
         expect(peringatan.textContent).toContain('Toko online belum aktif di paket usaha ini.');
+    });
+});
+
+describe('Toko online › Kabar pesanan lewat WhatsApp', () => {
+    beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
+
+    it('memperingatkan bila sakelar menyala tetapi WhatsApp belum bisa mengirim, dan menghitung kabar yang gagal', () => {
+        const propsKuotaHabis: ComponentProps<typeof HalamanTokoOnline> = {
+            ...propsSiap,
+            Pengaturan: { ...propsSiap.Pengaturan, NotifikasiWhatsappAktif: true },
+            Notifikasi: { Siap: false, Alasan: 'Kuota pesan WhatsApp bulan ini sudah habis.', GagalBulanIni: 3 },
+        };
+        RenderUji(<HalamanTokoOnline {...propsKuotaHabis} />);
+
+        const peringatan = screen.getByRole('alert');
+        expect(peringatan.textContent).toContain('Kuota pesan WhatsApp bulan ini sudah habis.');
+        expect(screen.getByRole('link', { name: 'Atur WhatsApp' }).getAttribute('href')).toBe(
+            '/kelola/pengaturan/whatsapp',
+        );
+        expect(screen.getByText(/3 kabar pesanan gagal terkirim/)).toBeTruthy();
+    });
+
+    it('tanpa peringatan bila WhatsApp siap atau sakelar mati', () => {
+        RenderUji(
+            <HalamanTokoOnline
+                {...propsSiap}
+                Notifikasi={{ Siap: false, Alasan: 'WhatsApp belum tersambung.', GagalBulanIni: 0 }}
+            />,
+        );
+
+        expect(screen.queryByRole('alert')).toBeNull();
     });
 });
 

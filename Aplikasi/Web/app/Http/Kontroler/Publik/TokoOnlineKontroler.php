@@ -22,6 +22,7 @@ use App\Domain\Penjualan\Enum\KanalPenjualan;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Kueri\RiwayatBelanjaPembeliOnline;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Layanan\PembuatQrTagihanQris;
 use App\Domain\Penjualan\Layanan\PenentuAkunTokoOnline;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
@@ -65,8 +66,10 @@ final class TokoOnlineKontroler extends Kontroler
             $atur = PengaturanTokoOnline::query()->first() ?? new PengaturanTokoOnline;
             $daftarOutlet = Outlet::query()->where('Status', 'Aktif')->where('TokoOnlineAktif', true)->orderBy('Nama')->get(['Uuid', 'Nama']);
             // QRIS bisa dipakai untuk ambil sendiri maupun kirim, jadi sakelarnya menghidupkan keduanya.
-            $bisaAmbil = $outlet->AmbilSendiriAktif && ($atur->BayarSaatAmbilAktif || $atur->QrisAktif);
-            $bisaKirim = $outlet->KirimAktif && ($atur->CodAktif || $atur->QrisAktif);
+            // Sakelar QRIS tidak cukup: gerbang bisa dimatikan setelahnya (KesiapanQrisOnline).
+            $qrisSiap = $atur->QrisAktif && app(KesiapanQrisOnline::class)->CekSiap();
+            $bisaAmbil = $outlet->AmbilSendiriAktif && ($atur->BayarSaatAmbilAktif || $qrisSiap);
+            $bisaKirim = $outlet->KirimAktif && ($atur->CodAktif || $qrisSiap);
             $akunAktif = $this->akun->CekAktif();
             $pembeli = $akunAktif ? $this->CariPembeli($request) : null;
 
@@ -77,7 +80,7 @@ final class TokoOnlineKontroler extends Kontroler
                 'Outlet' => $daftarOutlet->map(fn (Outlet $o): array => ['Uuid' => $o->Uuid, 'Nama' => $o->Nama])->values()->all(),
                 'OutletDipilih' => $outlet->Uuid,
                 'Pemenuhan' => ['AmbilSendiri' => $bisaAmbil, 'Kirim' => $bisaKirim],
-                'Pembayaran' => ['BayarSaatAmbil' => $atur->BayarSaatAmbilAktif, 'Cod' => $atur->CodAktif, 'QrisOnline' => $atur->QrisAktif],
+                'Pembayaran' => ['BayarSaatAmbil' => $atur->BayarSaatAmbilAktif, 'Cod' => $atur->CodAktif, 'QrisOnline' => $qrisSiap],
                 'MinimalPesanan' => $atur->MinimalPesanan,
                 'PesanTutup' => $atur->PesanTutup,
                 'Menu' => $k->aktif && ($bisaAmbil || $bisaKirim) ? $menu->Ambil($k->idOutlet, url("/{$slugTenant}/gambar/{uuid}"), KanalPenjualan::Online, true) : ['Kategori' => [], 'Produk' => []],

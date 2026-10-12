@@ -522,10 +522,13 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                 <TabsContent value="menyusul">
                     <Panel judul="Belum tersedia">
                         <ul className="grid gap-3 text-isi sm:grid-cols-2">
-                            <ModulMenyusul judul="Tagihan & pembayaran" modul="Billing & Dunning Platform (P-08)" />
                             <ModulMenyusul
-                                judul="Tiket & riwayat akses dukungan"
-                                modul="Dukungan & Akses Dukungan (P-09)"
+                                judul="Tagihan tenant ini"
+                                modul="tab tagihan per tenant (sementara lihat menu Tagihan)"
+                            />
+                            <ModulMenyusul
+                                judul="Tiket tenant ini"
+                                modul="tab tiket per tenant (sementara lihat menu Dukungan)"
                             />
                             <ModulMenyusul
                                 judul="Perangkat (platform, versi aplikasi, outbox tertunda)"

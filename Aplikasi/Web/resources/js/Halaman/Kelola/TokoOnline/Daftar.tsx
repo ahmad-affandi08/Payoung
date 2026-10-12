@@ -91,6 +91,7 @@ type Props = {
     /** D-110: QR (SVG) tautan toko untuk dibagikan atau dicetak. */
     QrSvg: string;
     AkunPembeliTersedia: boolean;
+    Notifikasi: { Siap: boolean; Alasan: string | null; GagalBulanIni: number };
     Pengaturan: {
         Aktif: boolean;
         BayarSaatAmbilAktif: boolean;
@@ -279,6 +280,20 @@ function FormPengaturan({ props }: { props: Props }) {
                     nilai={form.data.NotifikasiWhatsappAktif}
                     saatBerubah={(v) => form.setData('NotifikasiWhatsappAktif', v)}
                 />
+                {form.data.NotifikasiWhatsappAktif && !props.Notifikasi.Siap ? (
+                    <Pemberitahuan jenis="peringatan" judul="Kabar pesanan belum bisa terkirim">
+                        {props.Notifikasi.Alasan}{' '}
+                        <Link href="/kelola/pengaturan/whatsapp" className="font-semibold underline">
+                            Atur WhatsApp
+                        </Link>
+                    </Pemberitahuan>
+                ) : null}
+                {props.Notifikasi.GagalBulanIni > 0 ? (
+                    <p className="text-keterangan text-teks-sekunder">
+                        {props.Notifikasi.GagalBulanIni} kabar pesanan gagal terkirim dalam 30 hari terakhir. Hubungi
+                        pembeli langsung untuk pesanan yang terdampak.
+                    </p>
+                ) : null}
                 <KotakCentang
                     label="Pembeli bisa masuk dengan kode WhatsApp (riwayat belanja, poin, harga member)"
                     nilai={form.data.AkunPelangganAktif}

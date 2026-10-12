@@ -11,6 +11,7 @@ use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorMetaCloud;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorStarSender;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorWablas;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorWatzap;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,7 @@ final class PembuatPengirimWhatsapp
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly MeterKuotaWhatsapp $meter,
+        private readonly PemeriksaFiturTenant $fitur,
     ) {}
 
     /**
@@ -87,6 +89,14 @@ final class PembuatPengirimWhatsapp
     /** WhatsApp milik tenant aktif bila sudah diuji dan diaktifkan; null bila belum ada atau kredensialnya rusak. */
     public function AmbilMilikTenant(): ?PengirimWhatsapp
     {
+        // Nomor sendiri tidak berkuota, jadi satu-satunya penjaganya adalah fitur paket: tenant yang turun paket tidak
+        // boleh terus mengirim tanpa batas lewat nomor yang sudah tersimpan (laundry, reservasi, servis, insight).
+        $idTenant = $this->konteks->Ambil();
+
+        if ($idTenant !== null && ! $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
+            return null;
+        }
+
         $baris = WhatsappTenant::query()->where('Aktif', true)->first();
 
         return $baris === null ? null : $this->BuatDariTenant($baris);
