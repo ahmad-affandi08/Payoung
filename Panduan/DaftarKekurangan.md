@@ -153,3 +153,86 @@ Hasil empat penelusuran baca-kode (gerbang fitur paket, halaman & rute yatim, ja
 | E10 | ~~Event `TarifPajakTerbit` tanpa pendengar~~ SELESAI @ v5.56 (Kotak Tindakan `pajak.tarif.*`). Rute `POST pesanan-online/{uuid}/tautkan` dan metode klien `TautkanPesananOnline` tetap sebagai kompatibilitas mundur (CLAUDE.md #16) sampai dua versi minor berlalu. ~~Perintah baru di `PasangDiHosting.md`~~ SELESAI @ v5.50. | SELESAI @ v5.56 |
 | E11 | ~~Teks situs menyebut "cadangan rutin" padahal cadangan otomatis hosting belum diatur (lihat A10); tombol "Unduh aplikasi" di situs mengarah ke `/kontak`~~ | SELESAI @ v5.64 (teks diluruskan, tombol memakai `@unduh-android`); pencadangan otomatis sendiri = A10/D3 (infrastruktur) |
 
+
+## F. Audit kelengkapan PRD terhadap kode — 12 Oktober 2026 (PRD v5.72)
+
+Dipicu temuan bahwa cetak label (PRD-10) tercantum di PRD tetapi tidak pernah dibangun (kini selesai, D-129). Tujuh penelusuran baca-kode membandingkan PRD (§8 daftar fitur, §9 per sektor, §10.10 laporan, flow F-xx dan P-xx) dengan isi repo.
+
+**Batas audit (baca sebelum memakai tabel ini):** penelusuran hanya memeriksa **ada atau tidaknya kode**, bukan apakah fiturnya benar; tes tidak dijalankan. Tiga butir terbesar (jurnal umum manual, akses dukungan, gift card/feedback) diperiksa ulang dengan pencarian nama dan tidak ditemukan, tetapi pencarian itu berbasis tebakan nama. **Sebelum mengerjakan satu butir, verifikasi dulu ke kode dan PRD** (jangan menyalin status di sini sebagai fakta). Butir yang sudah ada di bagian A–E atau `KeputusanMenunggu.md` tidak diulang kecuali perlu.
+
+Status: **TERBUKA** = belum dikerjakan; **MENUNGGU KEPUTUSAN** = ada di `KeputusanMenunggu.md`; **DITUNDA** = sengaja ditunda PRD/pemilik produk; **?** = subagen tidak yakin, periksa dulu. Urutan usulan ada di akhir bagian ini.
+
+### F-a. Belum ada sama sekali (bobot tinggi)
+
+| # | Fitur (ID PRD) | Catatan | Status |
+|---|---|---|---|
+| F1 | Akses dukungan berizin + alat bantu dukungan di konsol (PGL-16, P-09) | P0, Fase 1 "sebelum beta tertutup" | TERBUKA |
+| F2 | Jurnal umum manual (FIN-05) | PRD §11 mengakuinya sebagai utang; memblokir jurnal penyesuaian akrual F-15 | TERBUKA |
+| F3 | OTP WhatsApp saat daftar (PLT-01, F-00) | | TERBUKA |
+| F4 | Aplikasi Owner: cek stok/kartu stok (OWN-06), aksi cepat: ubah harga, tandai habis, promo, pengeluaran berfoto (OWN-07), anti-fraud (OWN-09) | P1; anti-fraud sudah ada di web | TERBUKA |
+| F5 | Skor kesehatan tenant (PGL-09), insiden + halaman status publik (PGL-21), analitik platform (PGL-24), template komunikasi & help center (PGL-07, PLT-12) | P1 | TERBUKA |
+| F6 | Gift card / voucher bernilai (CRM-06) | | MENUNGGU KEPUTUSAN (K4) |
+| F7 | Feedback/rating pasca transaksi (CRM-08) | | TERBUKA |
+| F8 | Anggaran vs realisasi (FIN-11) | P3 | TERBUKA |
+| F9 | PPh 21 & BPJS otomatis (EMP-07) | P3 | MENUNGGU KEPUTUSAN (K9) |
+| F10 | Portal mitra (PGL-23); portal pemasok (INV-15) | portal pemasok P3; mitra: master/komisi sudah ada (v3.50) | TERBUKA / sebagian K24 |
+| F11 | Multi-bahasa POS (POS-19) | | TERBUKA |
+| F12 | Mode LAN (POS-24); widget & langganan Owner (OWN-12, OWN-13) | POS-24 = K-28; OWN-12/13 masuk Fase 4 | DITUNDA |
+
+### F-b. Dibangun sebagian
+
+| # | Fitur (ID PRD) | Yang kurang |
+|---|---|---|
+| F13 | OWN-01 login Owner | tanpa OTP, PIN, atau biometrik |
+| F14 | OWN-03 push Owner | pesanan online tanpa pemicu; void/diskon/refund tidak real-time; konfigurasi push iOS kurang |
+| F15 | OWN-04 persetujuan di Owner | PO dan penyesuaian stok tidak bisa disetujui dari Owner |
+| F16 | OWN-05 laporan di Owner | tanpa laba-rugi sederhana |
+| F17 | OWN-08 perangkat di Owner | tidak bisa mencabut perangkat |
+| F18 | PGL-18 / P-10 | flag fitur tidak dipakai kasir; Owner tanpa versi minimum dan flag |
+| F19 | POS-20 / POS-21 / POS-22 / POS-23 | tanpa jalur build/rilis Windows di CI; build iOS belum terbukti; tanpa adaptor SDK vendor / pemindai bawaan; tanpa pembaruan otomatis desktop |
+| F20 | SLS-04 self-order | tanpa bayar QRIS dari HP tamu; menu statis (tidak di-poll) |
+| F21 | PRD-11 ketersediaan per kanal | belum benar-benar per outlet × kanal |
+| F22 | INV-07 opname | satu penghitung; tanpa per rak |
+| F23 | INV-09 kedaluwarsa | peringatan H-30/H-7 tidak lewat push |
+| F24 | INV-13 draf PO | tidak bersumber dari saran forecast |
+| F25 | SLS-10 ojol | hanya input manual (rekonsiliasi pencairan API menyusul) |
+| F26 | TAX-05 | tidak ada laporan PPN masukan |
+| F27 | TAX-06 / TAX-07 | ekspor Coretax belum divalidasi (K22, K35); faktur pajak per transaksi POS tidak ada |
+| F28 | FIN-12 | tanpa ekspor jurnal / format Accurate, Jurnal.id, Zahir |
+| F29 | PGL-01 allowlist IP | DITUNDA |
+| F30 | PGL-03 template | tanpa sandbox pratinjau; tanpa tawaran pembaruan template ke tenant (BR-P03.6) |
+| F31 | PLT-10 / PLT-08 | impor pemasok tidak ada; web tanpa pusat notifikasi |
+
+### F-c. Laporan §10.10 yang kurang
+
+Per pelanggan; slow/fast moving; pembelian per pemasok, per produk, dan PO outstanding; food cost teoretis vs aktual (yang ada hanya % waste); waktu saji KDS (datanya ada, laporannya tidak); performa kasir; perbandingan outlet/brand; prediksi penjualan; rekomendasi harga/bundling. Status: TERBUKA.
+
+### F-d. Per sektor (§9)
+
+| Sektor | Belum ada |
+|---|---|
+| FnB | minimum charge; reservasi meja + DP; denah meja seret-lepas (kolom `PosisiX`/`PosisiY` di `Meja` ada tetapi tidak dipakai) |
+| Fashion | koleksi/musim; input stok grid ukuran × warna |
+| Apotek | HNA tersimpan; embalase/tuslah |
+| Servis | servis elektronik untuk unit non-kendaraan; resep untuk produk Jasa (salon); rebooking/follow-up salon; DP reservasi; antrian walk-in + booking satu tampilan |
+| Grosir | armada/rute dan konfirmasi terima; ongkir per jarak; harga per pelanggan individual; update harga massal per kategori |
+| Bakery | rencana produksi harian; diskon sore berbasis kedaluwarsa |
+
+### F-e. Flow tenant (F-xx) yang belum
+
+Bahan resep belum dikurangi dari lokasi produksi Dapur/Bar (BR-05.4; semua diambil dari gudang Toko) | Permintaan Pembelian (PR) | Nota Debit | kirim PO lewat WA/email | penyesuaian HPP untuk selisih harga faktur | shift virtual BR-07.4/BR-17.1 (MENUNGGU KEPUTUSAN, D-123) | stok berkurang saat kirim ke dapur (opsi) | void item belum masuk laporan dan belum punya opsi waste | izin harga manual kasir `pos.harga.timpa` | jam operasional outlet | kartu dashboard piutang/anomali | pola anti-fraud tambahan + push ke pemilik | gabung pelanggan ganda (K1) | hadiah produk dari poin | membership (K5) | kondisi promo per brand | stacking promo `combinable_with`/`cost_center` | bonus & kedaluwarsa deposit (K2, K3) | transfer paket sesi | invoice PDF & faktur pajak langganan (F-19) | pre-order dari back-office/online | DP bertahap | komisi bertingkat, target harian/per kategori | cuti/izin | potongan selisih kas di gaji | pencocokan wajah di absensi kasir.
+
+### F-f. Flow Platform Pengelola (P-xx) yang belum
+
+Override tarif pajak daerah (BR-P02.3) dan pemberitahuan tarif daerah | ganti paket manual (P-07) | tampilan 360° tenant tanpa tab tagihan/tiket/perangkat | tiket lewat email/WA | tombol Bantuan di Kasir/Owner dengan konteks otomatis | eskalasi L1 → L2 → Teknis dan SLA jam kerja | masking data (BR-P09.1) | metrik P-11: error rate/p95, outbox macet per perangkat, crash-free sessions, DB per tenant, alert WA/Telegram, runbook | hook CI unggah build (P-10) | pendaftaran mitra mandiri, verifikasi, kontrak (P-12) | pembukuan platform (BR-P08.3) | Sentry & uptime (K29).
+
+### F-g. Selisih dokumen & butir meragukan
+
+- Teks PRD P-05 masih menyebut Midtrans/Xendit dan lainnya padahal D-82 hanya DOKU (selisih dokumen, bukan fitur hilang).
+- **?** Ringkasan pagi INV-09, kamera web di opname INV-07, impor harga Excel PRD-09, SEO/SSR SLS-05, kanal email CRM-07, TAX-07 untuk penjualan non-grosir, peran per sektor di F-01.
+
+### F-h. Urutan pengerjaan yang diusulkan (menunggu persetujuan pemilik produk)
+
+1. F2 jurnal umum manual (FIN-05). 2. F1 akses dukungan berizin (PGL-16). 3. Void item di laporan + opsi waste, BR-05.4 lokasi produksi resep, notifikasi H-30/H-7 (F23). 4. F4 + F15 di Aplikasi Owner. 5. Laporan §10.10 (F-c). 6. F3 OTP WhatsApp registrasi.
+
+Tiap butir dikerjakan terikat ID flow (`/mulai-flow`), dengan tes terdampak, PRD (versi baru + D-xxx), dan status di `CLAUDE.md`; setelah selesai, ubah statusnya di sini menjadi SELESAI @ versi.
