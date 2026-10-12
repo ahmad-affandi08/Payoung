@@ -21,6 +21,7 @@ final class SimpanReturPembelianPermintaan extends FormRequest
             'UuidPenerimaan' => ['required', 'string', 'ulid'],
             'Tanggal' => ['required', 'date_format:Y-m-d'],
             'Alasan' => ['required', 'string', 'min:5', 'max:255'],
+            'UuidAkunRefund' => ['nullable', 'string', 'ulid'],
             'Baris' => ['required', 'array', 'min:1', 'max:500'],
             'Baris.*.IdBarisPenerimaan' => ['required', 'integer', 'min:1'],
             'Baris.*.Jumlah' => ['required', 'string', AturanPembelian::JUMLAH],
@@ -42,7 +43,7 @@ final class SimpanReturPembelianPermintaan extends FormRequest
      */
     public function attributes(): array
     {
-        return ['UuidPenerimaan' => 'penerimaan barang', 'Tanggal' => 'tanggal', 'Alasan' => 'alasan', 'Baris' => 'barang', 'Baris.*.Jumlah' => 'jumlah retur'];
+        return ['UuidPenerimaan' => 'penerimaan barang', 'Tanggal' => 'tanggal', 'Alasan' => 'alasan', 'UuidAkunRefund' => 'akun penerima pengembalian uang', 'Baris' => 'barang', 'Baris.*.Jumlah' => 'jumlah retur'];
     }
 
     public function AmbilData(int $idPengguna): DataReturPembelian
@@ -60,6 +61,7 @@ final class SimpanReturPembelianPermintaan extends FormRequest
                 array_values(array_map('strval', (array) ($b['NomorSeri'] ?? []))),
             ), $baris),
             $idPengguna,
+            is_string($this->validated('UuidAkunRefund')) ? (string) $this->validated('UuidAkunRefund') : null,
         );
     }
 }

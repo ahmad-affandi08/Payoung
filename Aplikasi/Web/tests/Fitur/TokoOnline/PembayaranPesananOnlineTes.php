@@ -393,6 +393,34 @@ it('pesanan berbayar yang ditolak muncul di Kotak Tindakan dan pengembaliannya d
         ->assertSessionHasErrors();
 });
 
+it('E8: pesanan berbayar yang belum ditagih di kasir lebih dari 12 jam muncul di Kotak Tindakan; yang baru dibayar atau sudah dibatalkan tidak', function (): void {
+    $status = 'PENDING';
+    PalsukanGerbangOnline($status);
+    $k = SiapkanBayarOnline($this);
+    [$pesanan] = PesanBayarQris($this, $k);
+    $this->postJson("/{$k['Slug']}/pesanan/{$pesanan->KodeAkses}/bayar")->assertCreated();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    WebhookBayarOnline($this, $k, TagihanQris::query()->sole()->NomorPesanan, '60000.00')->assertOk();
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->post("/kelola/toko-online/pesanan/{$pesanan->Uuid}/status", ['Status' => 'Dikonfirmasi'])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+
+    $konteks = new DataKonteksTindakan($k['Tenant']->Id, $k['Pemilik']->Id, true, [], null, CarbonImmutable::now('Asia/Jakarta')->startOfDay());
+    $cari = fn () => collect(app(PenyediaTindakanPenjualan::class)->Kumpulkan($konteks))->firstWhere('kunci', 'pesanan-online.berbayar-belum-ditagih');
+
+    // Baru dibayar: kasir masih punya waktu menagih.
+    expect($cari())->toBeNull();
+
+    $pesanan->refresh()->forceFill(['DibayarPada' => now()->subHours(13)])->save();
+    $butir = $cari();
+    expect($butir)->not->toBeNull()->and($butir->jumlah)->toBe(1)->and($butir->rincian[0]->judul)->toBe($pesanan->Nomor);
+
+    // Pesanan yang akhirnya dibatalkan punya butir pengembalian uangnya sendiri.
+    $this->post("/kelola/toko-online/pesanan/{$pesanan->Uuid}/status", ['Status' => 'Dibatalkan', 'Alasan' => 'Stok bahan habis'])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($cari())->toBeNull();
+});
+
 it('pesanan yang tidak dibayar hangus sesuai batas QRIS, yang sudah dibayar tidak pernah hangus', function (): void {
     $status = 'PENDING';
     PalsukanGerbangOnline($status);

@@ -9,6 +9,7 @@ use App\Domain\Akuntansi\Data\DataBarisJurnal;
 use App\Domain\Akuntansi\Data\DataJurnal;
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Akuntansi\Enum\PeranAkun;
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Dokumen\Enum\JenisDokumenBernomor;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
@@ -48,9 +49,10 @@ use Illuminate\Support\Facades\DB;
  * diretur; produk batch memakai batch penerimaannya, produk seri menyebut nomor seri yang diterima di GRN itu. Stok
  * keluar `ReturPembelian` bernilai HPP penerimaan (nilai GRN sebanding jumlah; sisa terakhir = sisa nilai) lewat buku
  * stok. Hutang berkurang: GRN sudah difakturkan → sisa hutang faktur (harga faktur + ongkir + PPN sebanding jumlah,
- * maksimal sisa hutang; lebih dari itu = nota debit/refund, fase berikutnya); belum difakturkan → hutang belum
- * difakturkan. Jurnal J-04.5 dengan penyeimbang Selisih HPP. Retur belanja stok belum didukung.
- * Audit `retur-pembelian.posting`.
+ * bagian yang memotong sisa hutang; sisanya **pengembalian uang dari pemasok** `NilaiRefund`, diterima ke akun kas/bank
+ * pilihan operator — E8, kasus faktur yang sudah dibayar dan belanja stok tunai); belum difakturkan → hutang belum
+ * difakturkan. Jurnal J-04.5 dengan penyeimbang Selisih HPP: Dr Hutang Usaha (bagian pemotong) + Dr kas/bank (refund),
+ * Cr Persediaan, Cr PPN Masukan. Audit `retur-pembelian.posting`.
  *
  * Urutan kunci: L1 Tenant (S) → GRN → faktur → penghitung RB (L7) → buku stok → penghitung JU.
  */
@@ -58,6 +60,7 @@ final class SimpanReturPembelian
 {
     public function __construct(
         private readonly PengaturanPersediaanTenant $pengaturanPersediaan,
+        private readonly DaftarAkunPilihan $akun,
         private readonly InfoGudang $infoGudang,
         private readonly InfoProdukStok $infoProduk,
         private readonly MutasiDokumen $mutasiDokumen,
@@ -72,7 +75,7 @@ final class SimpanReturPembelian
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis PenerimaanTidakValid, ReturBelanjaStok, AlasanTidakValid, MelebihiDiterima, MelebihiSisaHutang, …
+     * @throws PelanggaranAturanBisnis PenerimaanTidakValid, AlasanTidakValid, MelebihiDiterima, AkunRefundWajib, …
      */
     public function Jalankan(DataReturPembelian $data): ReturPembelian
     {
@@ -92,10 +95,6 @@ final class SimpanReturPembelian
 
         if ($grn === null || $grn->Status !== StatusDokumenTerposting::Diposting) {
             throw new PelanggaranAturanBisnis('PenerimaanTidakValid', 'Penerimaan barang tidak ditemukan atau sudah dibatalkan.', 'UuidPenerimaan');
-        }
-
-        if ($grn->BelanjaStok) {
-            throw new PelanggaranAturanBisnis('ReturBelanjaStok', 'Retur belanja stok belum didukung. Batalkan belanja stok bila seluruh barang dikembalikan, atau catat pengembalian uang di kas & bank.');
         }
 
         $faktur = $grn->IdFakturPembelian === null ? null : FakturPembelian::query()->whereKey($grn->IdFakturPembelian)->lockForUpdate()->first();
@@ -172,8 +171,24 @@ final class SimpanReturPembelian
         $nilaiHutang = array_reduce($olahan, fn (Uang $t, array $o): Uang => $t->Tambah($o['NilaiHutang']), Uang::Nol());
         $pajak = array_reduce($olahan, fn (Uang $t, array $o): Uang => $t->Tambah($o['Pajak']), Uang::Nol());
 
-        if ($faktur !== null && $nilaiHutang->Tambah($pajak)->Bandingkan($faktur->AmbilSisa()) > 0) {
-            throw new PelanggaranAturanBisnis('MelebihiSisaHutang', "Nilai retur {$nilaiHutang->Tambah($pajak)->FormatRupiah()} melebihi sisa hutang faktur {$faktur->Nomor} ({$faktur->AmbilSisa()->FormatRupiah()}). Pengembalian uang/nota debit belum didukung; batalkan dulu pembayaran fakturnya.", 'Baris');
+        // E8: bagian nilai retur yang melebihi sisa hutang faktur (sudah dibayar / belanja stok tunai) dikembalikan
+        // pemasok sebagai uang; sisanya memotong hutang. Tanpa faktur tidak ada uang yang dibayar, jadi tidak ada refund.
+        $nilaiFaktur = $nilaiHutang->Tambah($pajak);
+        $sisaHutang = $faktur === null ? Uang::Nol() : ($faktur->AmbilSisa()->BernilaiNegatif() ? Uang::Nol() : $faktur->AmbilSisa());
+        $potongHutang = $faktur === null ? Uang::Nol() : ($nilaiFaktur->Bandingkan($sisaHutang) > 0 ? $sisaHutang : $nilaiFaktur);
+        $refund = $nilaiFaktur->Kurangi($potongHutang);
+        $idAkunRefund = null;
+
+        if ($faktur !== null && ! $refund->BernilaiNol()) {
+            $idAkunRefund = $data->uuidAkunRefund === null || $data->uuidAkunRefund === '' ? null : ($this->akun->CariKasBankDariUuid($data->uuidAkunRefund)['Id'] ?? null);
+
+            if ($idAkunRefund === null) {
+                throw new PelanggaranAturanBisnis(
+                    'AkunRefundWajib',
+                    "Nilai retur {$nilaiFaktur->FormatRupiah()} melebihi sisa hutang faktur {$faktur->Nomor} ({$sisaHutang->FormatRupiah()}). Pilih akun kas/bank penerima pengembalian uang {$refund->FormatRupiah()} dari pemasok.",
+                    'UuidAkunRefund',
+                );
+            }
         }
 
         $gudang = $this->infoGudang->AmbilBanyak([$grn->IdGudang])[$grn->IdGudang];
@@ -190,6 +205,8 @@ final class SimpanReturPembelian
             'NilaiBarang' => $nilaiBarang->KeString(),
             'NilaiHutang' => $nilaiHutang->KeString(),
             'Pajak' => $pajak->KeString(),
+            'NilaiRefund' => $refund->KeString(),
+            'IdAkunRefund' => $idAkunRefund,
             'DibuatOleh' => $data->idPengguna,
         ]);
 
@@ -244,7 +261,8 @@ final class SimpanReturPembelian
         $lawan = $faktur === null
             ? [DataBarisJurnal::DariSelisih(PeranAkun::HutangBelumDifakturkan, $nilaiBarang, $grn->IdOutlet)]
             : [
-                DataBarisJurnal::DariSelisih(PeranAkun::HutangUsaha, $nilaiHutang->Tambah($pajak), $grn->IdOutlet),
+                DataBarisJurnal::DariSelisih(PeranAkun::HutangUsaha, $potongHutang, $grn->IdOutlet),
+                $idAkunRefund === null ? null : PenyusunJurnalPembelian::BarisAkun($idAkunRefund, $refund, $grn->IdOutlet, "Pengembalian uang retur {$retur->Nomor}"),
                 $faktur->PpnDikreditkan ? DataBarisJurnal::DariSelisih(PeranAkun::PpnMasukan, Uang::Nol()->Kurangi($pajak), $grn->IdOutlet) : null,
             ];
         $jurnal = $this->postingJurnal->Jalankan(new DataJurnal(
@@ -263,7 +281,8 @@ final class SimpanReturPembelian
 
         if ($faktur !== null) {
             $asal = $faktur->Status;
-            $faktur->JumlahRetur = Uang::Dari($faktur->JumlahRetur)->Tambah($nilaiHutang)->Tambah($pajak)->KeString();
+            // Hanya bagian pemotong hutang: bagian refund sudah dibayar, jadi tidak ada sisa tagihan untuk dikurangi.
+            $faktur->JumlahRetur = Uang::Dari($faktur->JumlahRetur)->Tambah($potongHutang)->KeString();
             $faktur->SelaraskanStatus();
             $faktur->save();
 
@@ -280,6 +299,7 @@ final class SimpanReturPembelian
             'NilaiBarang' => $retur->NilaiBarang,
             'NilaiHutang' => $retur->NilaiHutang,
             'Pajak' => $retur->Pajak,
+            'NilaiRefund' => $retur->NilaiRefund,
             'Alasan' => $alasan,
             'NomorJurnal' => $jurnal->nomor,
         ], idPengguna: $data->idPengguna);

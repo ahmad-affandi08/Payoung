@@ -33,6 +33,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class PenyediaTindakanPenjualan implements PenyediaTindakan
 {
+    /** Jam sejak pembayaran pesanan online sebelum belum-ditagihnya dianggap perlu perhatian (E8). */
+    private const JAM_BELUM_DITAGIH = 12;
+
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
         $butir = [];
@@ -81,6 +84,12 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
 
             if ($butirPesanan !== null) {
                 $butir[] = $butirPesanan;
+            }
+
+            $butirBelumDitagih = $this->ButirPesananOnlineBerbayarBelumDitagih($konteks->idOutletBoleh);
+
+            if ($butirBelumDitagih !== null) {
+                $butir[] = $butirBelumDitagih;
             }
         }
 
@@ -199,6 +208,50 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
                     $p->Nomor,
                     $p->JenisPemenuhan->AmbilLabel().', '.$p->AmbilTotal()->FormatRupiah(),
                     $p->DibuatPada?->setTimezone('Asia/Jakarta')->toDateString(),
+                    '/kelola/toko-online?cari='.rawurlencode($p->Nomor),
+                ),
+            )->all()),
+        );
+    }
+
+    /**
+     * E8: pesanan online yang **sudah dibayar di muka** tetapi belum ditagih di kasir (`IdPenjualan` kosong) lebih dari
+     * [JAM_BELUM_DITAGIH] jam sejak dibayar. Penjualan, stok keluar, dan pendapatannya baru terbentuk saat kasir
+     * menagihnya (BR-17.1), jadi selama itu uangnya hanya tercatat sebagai uang muka pelanggan dan stoknya belum keluar.
+     * Butir `Perhatian`: pesanan masih berjalan (dikonfirmasi/diproses/siap); yang ditolak atau dibatalkan punya butir
+     * pengembalian uang sendiri.
+     *
+     * @param  list<int>|null  $idOutlet
+     */
+    private function ButirPesananOnlineBerbayarBelumDitagih(?array $idOutlet): ?DataButirTindakan
+    {
+        $kueri = PesananOnline::query()
+            ->whereNotNull('DibayarPada')
+            ->whereNull('IdPenjualan')
+            ->whereIn('Status', [StatusPesananOnline::Dikonfirmasi->value, StatusPesananOnline::Diproses->value, StatusPesananOnline::Siap->value])
+            ->where('DibayarPada', '<=', now()->subHours(self::JAM_BELUM_DITAGIH))
+            ->when($idOutlet !== null, fn ($k) => $k->whereIn('IdOutlet', $idOutlet));
+        $jumlah = (clone $kueri)->count();
+
+        if ($jumlah === 0) {
+            return null;
+        }
+
+        return new DataButirTindakan(
+            'pesanan-online.berbayar-belum-ditagih',
+            'Penjualan',
+            TingkatTindakan::Perhatian,
+            'Pesanan online berbayar belum ditagih di kasir',
+            $jumlah.' pesanan sudah dibayar pelanggan lebih dari '.self::JAM_BELUM_DITAGIH.' jam lalu tetapi belum ditagih di kasir, jadi penjualan dan stok keluarnya belum tercatat. Buka layar Pesanan toko online di kasir lalu tagih.',
+            $jumlah,
+            '/kelola/toko-online',
+            'Buka pesanan',
+            array_values((clone $kueri)->orderBy('DibayarPada')->limit(DataButirTindakan::BATAS_RINCIAN)->get()->map(
+                fn (PesananOnline $p): DataRincianTindakan => new DataRincianTindakan(
+                    $p->Uuid,
+                    $p->Nomor,
+                    $p->JenisPemenuhan->AmbilLabel().', '.$p->AmbilTotal()->FormatRupiah().', '.$p->Status->AmbilLabel(),
+                    $p->DibayarPada?->setTimezone('Asia/Jakarta')->toDateString(),
                     '/kelola/toko-online?cari='.rawurlencode($p->Nomor),
                 ),
             )->all()),

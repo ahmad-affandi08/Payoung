@@ -127,10 +127,14 @@ final class BatalkanReturPembelian
 
         $nilaiHutang = Uang::Dari($retur->NilaiHutang);
         $pajak = Uang::Dari($retur->Pajak);
+        // E8: retur dengan pengembalian uang membalik dua sisi — hutang yang tadi dipotong, dan uang yang tadi diterima.
+        $refund = Uang::Dari($retur->NilaiRefund);
+        $potongHutang = $nilaiHutang->Tambah($pajak)->Kurangi($refund);
         $lawan = $faktur === null
             ? [DataBarisJurnal::DariSelisih(PeranAkun::HutangBelumDifakturkan, Uang::Nol()->Kurangi(Uang::Dari($retur->NilaiBarang)), $retur->IdOutlet)]
             : [
-                DataBarisJurnal::DariSelisih(PeranAkun::HutangUsaha, Uang::Nol()->Kurangi($nilaiHutang->Tambah($pajak)), $retur->IdOutlet),
+                DataBarisJurnal::DariSelisih(PeranAkun::HutangUsaha, Uang::Nol()->Kurangi($potongHutang), $retur->IdOutlet),
+                $retur->IdAkunRefund === null ? null : PenyusunJurnalPembelian::BarisAkun($retur->IdAkunRefund, Uang::Nol()->Kurangi($refund), $retur->IdOutlet, "Pembatalan pengembalian uang retur {$retur->Nomor}"),
                 $faktur->PpnDikreditkan ? DataBarisJurnal::DariSelisih(PeranAkun::PpnMasukan, $pajak, $retur->IdOutlet) : null,
             ];
         $produk = $this->infoProduk->AmbilBanyak(array_values(array_unique($detail->pluck('IdProduk')->all())), true);
@@ -167,7 +171,7 @@ final class BatalkanReturPembelian
 
         if ($faktur !== null) {
             $status = $faktur->Status;
-            $faktur->JumlahRetur = Uang::Dari($faktur->JumlahRetur)->Kurangi($nilaiHutang)->Kurangi($pajak)->KeString();
+            $faktur->JumlahRetur = Uang::Dari($faktur->JumlahRetur)->Kurangi($potongHutang)->KeString();
 
             if ($faktur->Status !== StatusFakturPembelian::Dibatalkan) {
                 $faktur->SelaraskanStatus();

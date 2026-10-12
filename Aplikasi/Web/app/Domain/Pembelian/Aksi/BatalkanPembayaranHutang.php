@@ -18,6 +18,7 @@ use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\PembayaranHutang;
 use App\Domain\Pembelian\Model\PembayaranHutangAlokasi;
+use App\Domain\Pembelian\Model\ReturPembelian;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -38,7 +39,7 @@ final class BatalkanPembayaranHutang
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis AlasanTidakValid, BagianBelanjaStok, BagianKompensasi
+     * @throws PelanggaranAturanBisnis AlasanTidakValid, BagianBelanjaStok, BagianKompensasi, AdaReturBerefund
      */
     public function Jalankan(PembayaranHutang $pembayaran, string $alasan, int $idPengguna, bool $olehGiro = false): PembayaranHutang
     {
@@ -76,6 +77,12 @@ final class BatalkanPembayaranHutang
             // F-16c bagian 4e: potong hutang dari klaim promo sudah menyelesaikan klaimnya; koreksi dengan dokumen lain.
             if ($terkunci->Kompensasi) {
                 throw new PelanggaranAturanBisnis('BagianKompensasi', 'Pembayaran ini hasil potong klaim promo pemasok dan tidak bisa dibatalkan. Koreksi selisihnya dengan jurnal atau transaksi kas/bank.');
+            }
+
+            // E8: faktur yang retur-nya sudah menerima pengembalian uang dari pemasok dihitung dari pembayaran ini; membatalkan
+            // pembayaran dulu membuat hutang kembali terbuka padahal uang refund sudah diterima.
+            if (ReturPembelian::query()->whereIn('IdFakturPembelian', $faktur->keys()->all())->where('Status', StatusDokumenTerposting::Diposting->value)->where('NilaiRefund', '>', 0)->exists()) {
+                throw new PelanggaranAturanBisnis('AdaReturBerefund', 'Faktur ini punya retur dengan pengembalian uang dari pemasok. Batalkan returnya dulu, baru pembayaran ini.');
             }
 
             foreach ($alokasi as $a) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Pembelian;
 
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Pembelian\Aksi\BatalkanReturPembelian;
@@ -36,7 +37,7 @@ final class ReturPembelianKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DetailPembelian $detail): Response|RedirectResponse
+    public function Buat(Request $permintaan, DetailPembelian $detail, DaftarAkunPilihan $akun): Response|RedirectResponse
     {
         $uuid = $permintaan->query('penerimaan');
 
@@ -49,6 +50,7 @@ final class ReturPembelianKontroler extends DasarPembelianKontroler
         return Inertia::render('Kelola/Pembelian/Retur/Form', [
             ...$detail->Penerimaan($grn),
             'HariIni' => $this->HariIni(),
+            'OpsiAkunRefund' => array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Kode' => $a['Kode'], 'Nama' => $a['Nama']], $akun->AmbilKasBank()),
         ]);
     }
 
@@ -57,7 +59,7 @@ final class ReturPembelianKontroler extends DasarPembelianKontroler
         $this->CariDokumen(PenerimaanBarang::class, (string) $permintaan->validated('UuidPenerimaan'));
         $retur = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.retur.detail', ['retur' => $retur->Uuid])->with('Kilat', "{$retur->Nomor} diposting. Stok berkurang dan hutang pemasok dikurangi.");
+        return to_route('kelola.pembelian.retur.detail', ['retur' => $retur->Uuid])->with('Kilat', "{$retur->Nomor} diposting. Stok berkurang, hutang pemasok dikurangi, dan uang yang dikembalikan pemasok dicatat ke akun kas/bank.");
     }
 
     public function Detail(string $retur, DetailPembelian $detail): Response

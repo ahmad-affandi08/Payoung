@@ -33,6 +33,8 @@ use LogicException;
  * @property string $NilaiBarang
  * @property string $NilaiHutang
  * @property string $Pajak
+ * @property string $NilaiRefund
+ * @property int|null $IdAkunRefund
  * @property int|null $IdJurnal
  * @property int|null $IdJurnalPembatalan
  * @property int|null $DibuatOleh
@@ -53,7 +55,7 @@ final class ReturPembelian extends ModelDasar
     protected $table = 'ReturPembelian';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Diposting', 'IdPemasok' => null, 'IdFakturPembelian' => null, 'IdJurnal' => null, 'IdJurnalPembatalan' => null, 'Pajak' => '0.00'];
+    protected $attributes = ['Status' => 'Diposting', 'IdPemasok' => null, 'IdFakturPembelian' => null, 'IdJurnal' => null, 'IdJurnalPembatalan' => null, 'Pajak' => '0.00', 'NilaiRefund' => '0.00', 'IdAkunRefund' => null];
 
     /**
      * @return list<string>

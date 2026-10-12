@@ -500,7 +500,11 @@ export type PropsDetailPembayaran = {
 };
 
 /* Retur */
-export type PropsFormRetur = PropsDetailPenerimaanData & { HariIni: string };
+export type PropsFormRetur = PropsDetailPenerimaanData & {
+    HariIni: string;
+    /** E8: akun kas/bank penerima pengembalian uang dari pemasok (faktur sudah dibayar / belanja stok tunai). */
+    OpsiAkunRefund: { Uuid: string; Kode: string; Nama: string }[];
+};
 export type PropsDetailRetur = {
     Retur: {
         Uuid: string;
@@ -517,6 +521,7 @@ export type PropsDetailRetur = {
         NilaiHutang: string;
         Pajak: string;
         Total: string;
+        NilaiRefund: string;
         AlasanBatal: string | null;
         DibuatOleh: string | null;
     };

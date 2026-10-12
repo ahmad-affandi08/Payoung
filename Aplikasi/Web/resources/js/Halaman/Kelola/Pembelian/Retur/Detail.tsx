@@ -16,6 +16,7 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
@@ -142,6 +143,9 @@ export default function HalamanDetailRetur({ Retur: r, Baris, Jurnal, Riwayat, I
                     baris={[
                         { label: 'Nilai persediaan keluar', nilai: r.NilaiBarang },
                         { label: 'Pengurang hutang', nilai: r.NilaiHutang },
+                        ...(BandingkanDesimal(r.NilaiRefund, '0') > 0
+                            ? [{ label: 'Uang dikembalikan pemasok', nilai: r.NilaiRefund }]
+                            : []),
                         { label: 'PPN masukan kontra', nilai: r.Pajak },
                         { label: 'Total retur', nilai: r.Total, tebal: true },
                     ]}

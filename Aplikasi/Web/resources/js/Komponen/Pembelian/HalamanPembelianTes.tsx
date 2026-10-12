@@ -558,6 +558,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
             Jurnal: [],
             Riwayat: [],
             HariIni: '2026-09-24',
+            OpsiAkunRefund: [{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1200', Nama: 'Bank BCA' }],
         };
         RenderUji(<HalamanFormRetur {...props} />);
         UbahNilai(screen.getByLabelText('Jumlah retur Minyak Goreng Sawit 2 L'), '21');
@@ -575,6 +576,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
                 UuidPenerimaan: Uuid,
                 Tanggal: '2026-09-24',
                 Alasan: 'Kemasan bocor saat diterima',
+                UuidAkunRefund: '01J9AKN0000000000000000001',
                 Baris: [{ IdBarisPenerimaan: 21, Jumlah: '3', NomorSeri: [] }],
             },
             expect.anything(),

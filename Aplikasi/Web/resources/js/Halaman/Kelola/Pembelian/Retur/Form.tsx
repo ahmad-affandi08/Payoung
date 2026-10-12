@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
+import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
@@ -41,11 +42,14 @@ export function PeriksaBarisRetur(baris: BarisDetailPenerimaan, isian: IsianRetu
 }
 
 /** F-04 fase 1: retur barang ke pemasok dari satu penerimaan (stok keluar, hutang berkurang; J-04.5). */
-export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni }: PropsFormRetur) {
+export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni, OpsiAkunRefund }: PropsFormRetur) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
     const [tanggal, AturTanggal] = useState(HariIni);
     const [alasan, AturAlasan] = useState('');
+    const [uuidAkunRefund, AturUuidAkunRefund] = useState(
+        OpsiAkunRefund.length === 1 ? (OpsiAkunRefund[0]?.Uuid ?? '') : '',
+    );
     const [isian, AturIsian] = useState<Record<number, IsianRetur>>(() =>
         Object.fromEntries(Baris.map((b) => [b.Id, { Jumlah: '', NomorSeri: [] }])),
     );
@@ -82,6 +86,7 @@ export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni }: Prop
                 UuidPenerimaan: p.Uuid,
                 Tanggal: tanggal,
                 Alasan: alasan.trim(),
+                ...(uuidAkunRefund === '' ? {} : { UuidAkunRefund: uuidAkunRefund }),
                 Baris: dipilih.map((b) => {
                     const i = isian[b.Id] ?? { Jumlah: '', NomorSeri: [] };
 
@@ -98,9 +103,11 @@ export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni }: Prop
         <TataLetakAplikasi judul={`Retur dari ${p.Nomor}`}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Barang keluar dari {p.NamaGudang} senilai harga saat diterima, dan hutang ke{' '}
-                {p.Pemasok?.Nama ?? 'pemasok'} berkurang. Jumlah dalam satuan dasar.
+                {p.Pemasok?.Nama ?? 'pemasok'} berkurang. Bila faktur sudah dibayar (termasuk belanja stok tunai),
+                bagian yang melebihi sisa hutang dicatat sebagai uang yang dikembalikan pemasok ke akun yang Anda pilih.
+                Jumlah dalam satuan dasar.
             </p>
-            <DaftarGalatServer galat={galat} kecuali={['Tanggal', 'Alasan']} />
+            <DaftarGalatServer galat={galat} kecuali={['Tanggal', 'Alasan', 'UuidAkunRefund']} />
             <form onSubmit={Simpan} noValidate aria-label="Retur pembelian" className="flex flex-col gap-4">
                 <Panel judul="Dokumen" idJudul="judul-dokumen-retur">
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -115,6 +122,13 @@ export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni }: Prop
                             galat={galat.Tanggal}
                         />
                     </div>
+                    <BidangPilihan
+                        label="Akun penerima pengembalian uang (bila faktur sudah dibayar)"
+                        nilai={uuidAkunRefund}
+                        opsi={OpsiAkunRefund.map((a) => ({ Nilai: a.Uuid, Label: `${a.Kode} ${a.Nama}` }))}
+                        saatBerubah={AturUuidAkunRefund}
+                        galat={galat.UuidAkunRefund}
+                    />
                     <BidangTeksPanjang
                         label="Alasan retur"
                         nilai={alasan}

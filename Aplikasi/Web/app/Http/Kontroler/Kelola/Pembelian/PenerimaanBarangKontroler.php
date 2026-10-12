@@ -129,7 +129,7 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
             'Izin' => $izin,
             'Tindakan' => [
                 'Batalkan' => $izin['Kelola'] && $aktif,
-                'Retur' => $izin['Kelola'] && $aktif && ! $grn->BelanjaStok,
+                'Retur' => $izin['Kelola'] && $aktif,
                 'Fakturkan' => $izin['Kelola'] && $aktif && ! $grn->BelanjaStok && $grn->IdFakturPembelian === null && $grn->IdPemasok !== null,
                 // v3.41: biaya pihak ketiga (ekspedisi, bea masuk) yang ditagih terpisah setelah barang diterima.
                 'BiayaTambahan' => $izin['Kelola'] && $aktif,

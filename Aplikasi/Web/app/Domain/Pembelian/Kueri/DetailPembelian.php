@@ -332,6 +332,7 @@ final class DetailPembelian
                 'NilaiHutang' => $r->NilaiHutang,
                 'Pajak' => $r->Pajak,
                 'Total' => Uang::Dari($r->NilaiHutang)->Tambah(Uang::Dari($r->Pajak))->KeString(),
+                'NilaiRefund' => $r->NilaiRefund,
                 'AlasanBatal' => $r->AlasanBatal,
                 'DibuatOleh' => $r->DibuatOleh === null ? null : ($pengguna[$r->DibuatOleh] ?? null),
             ],
