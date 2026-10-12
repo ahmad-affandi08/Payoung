@@ -78,7 +78,7 @@ final class KontenSitusBawaan
                                 'Judul' => 'Pantau semua outlet dari HP, tanpa minta laporan',
                                 'Teks' => 'Omzet hari ini, laporan, kehadiran karyawan, dan persetujuan diskon atau kas keluar dari jarak jauh.',
                                 'TombolUtama' => ['Label' => 'Coba gratis', 'Tautan' => '@daftar'],
-                                'TombolKedua' => ['Label' => 'Unduh aplikasi', 'Tautan' => '/kontak'],
+                                'TombolKedua' => ['Label' => 'Unduh aplikasi', 'Tautan' => '@unduh-android'],
                                 'Spesimen' => 'PemilikDuo',
                             ],
                             [
@@ -294,7 +294,7 @@ final class KontenSitusBawaan
                             ['Pertanyaan' => 'Apakah Payoung bisa dipakai tanpa internet?', 'Jawaban' => 'Bisa. Aplikasi kasir menyimpan transaksi di perangkat dan mengirimnya otomatis saat internet kembali. Nomor struk memakai kode perangkat supaya tidak bentrok antar kasir.'],
                             ['Pertanyaan' => 'Perangkat apa yang didukung?', 'Jawaban' => 'Android, iPhone/iPad, dan Windows. Printer dan perangkat yang sudah kami uji ada di halaman Perangkat kompatibel.'],
                             ['Pertanyaan' => 'Apakah cocok untuk usaha kecil yang baru mulai?', 'Jawaban' => 'Cocok. Paket Gratis dibuat untuk usaha mikro, dan panduan awal menyiapkan produk, pajak, serta perangkat langkah demi langkah. Kalau bingung, tim kami membantu lewat WhatsApp.'],
-                            ['Pertanyaan' => 'Apakah data usaha saya aman?', 'Jawaban' => 'Data tersimpan di server dengan cadangan rutin dan akses dibatasi per peran. Data sensitif seperti basis data kasir dan NPWP/NIK pelanggan disimpan terenkripsi. Kami bertindak sebagai pemroses data sesuai UU Perlindungan Data Pribadi.'],
+                            ['Pertanyaan' => 'Apakah data usaha saya aman?', 'Jawaban' => 'Akses ke data dibatasi per peran dan setiap perubahan penting tercatat. Pemilik usaha bisa mengunduh salinan data lengkap usahanya kapan saja dari menu Pengaturan. Data sensitif seperti basis data kasir dan NPWP/NIK pelanggan disimpan terenkripsi. Kami bertindak sebagai pemroses data sesuai UU Perlindungan Data Pribadi.'],
                             ['Pertanyaan' => 'Bisakah saya memindahkan data produk dari Excel?', 'Jawaban' => 'Bisa. Tempel daftar produk dari Excel atau WhatsApp di panduan awal, periksa hasilnya, lalu simpan. Impor pelanggan juga tersedia dari Excel/CSV.'],
                             ['Pertanyaan' => 'Bagaimana cara berlangganan?', 'Jawaban' => 'Daftar gratis, lalu pilih paket dari menu Langganan di back-office. Tagihan dibayar online lewat halaman pembayaran DOKU, dan paket aktif setelah pembayaran diterima.'],
                             ['Pertanyaan' => 'Apakah saya bisa minta demo dulu?', 'Jawaban' => 'Bisa. Tinggalkan nomor WhatsApp di halaman Kontak, dan tim kami menghubungi dalam 1 hari kerja.'],
