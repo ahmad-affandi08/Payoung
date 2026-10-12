@@ -367,13 +367,6 @@ const menuLaporan: ItemMenu[] = [
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
-    // D-124: ekspor laporan besar yang disiapkan di latar belakang; baris yang tampil selalu milik pengguna sendiri.
-    {
-        label: 'Pusat Unduhan',
-        href: '/kelola/unduhan',
-        izin: IzinTenant.LaporanPenjualanLihat,
-        atau: IzinTenant.LaporanKeuanganLihat,
-    },
 ];
 
 /** Item sub-menu yang aktif untuk URL ini: awalan terpanjang menang (/kelola/produk/impor vs /kelola/produk). */
@@ -614,7 +607,9 @@ export function SusunPencarian(
                 (item) =>
                     CekButirSesuaiEdisi(item, edisi) &&
                     CekSesuaiSektor(item, sektorOutlet) &&
-                    (item.izin === null || PunyaIzinTenant(akses, item.izin)),
+                    (item.izin === null ||
+                        PunyaIzinTenant(akses, item.izin) ||
+                        (item.atau !== undefined && PunyaIzinTenant(akses, item.atau))),
             )
             .map((item) => ({
                 label: item.label,

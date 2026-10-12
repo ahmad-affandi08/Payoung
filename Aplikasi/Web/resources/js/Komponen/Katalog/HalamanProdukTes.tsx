@@ -30,7 +30,7 @@ import {
     OpsiKelompokPajakUji,
     OpsiSatuanUji,
 } from './DataUjiKatalog';
-import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from './TiruanInertia';
+import { AturGalatBalasanUji, AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from './TiruanInertia';
 
 vi.mock('@inertiajs/react', async () => (await import('./TiruanInertia')).TiruanInertia);
 
@@ -167,27 +167,50 @@ function PropsForm(perubahan: Partial<PropsFormProduk> = {}): PropsFormProduk {
     };
 }
 
-describe('Kelola/Produk/Form (DesainF03 E.3)', () => {
-    // Test di blok ini menguji formulir lengkap (tab); mode Sederhana (D-23 B) diuji di blok berikutnya.
-    beforeEach(() => {
-        AturHalamanUji();
-        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
-    });
-    afterEach(() => {
-        cleanup();
-        window.localStorage.clear();
-    });
+/** Ketuk "Lanjut" di wizard tambah produk. */
+function Lanjut() {
+    fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
+}
+
+function IsiNama(nama: string) {
+    fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: nama } });
+}
+
+/** Langkah harga: buka baris harga dasar lalu isi harga per satuan dasar (tulis "5.000" seperti diketik pengguna). */
+function IsiHargaDasar(harga: string) {
+    fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
+    fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: harga } });
+}
+
+function LangkahAktif(): string {
+    return screen.getByRole('heading', {
+        level: 2,
+        name: /^(Jenis & nama|Satuan & barcode|Harga|Stok|Harga & stok|Varian|Pajak & tampilan|Tinjau & simpan)$/,
+    }).textContent;
+}
+
+describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () => {
+    // Menggantikan test formulir Lengkap (tab bebas) dan Sederhana (D-23 B) untuk TAMBAH produk.
+    beforeEach(() => AturHalamanUji());
+    afterEach(() => cleanup());
 
     it('Buat: satuan dasar otomatis, harga dasar + bertingkat, lalu POST body = FormProduk', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
 
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Sabun Mandi 90 g' } });
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
-        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '5.000' } });
+        IsiNama('Sabun Mandi 90 g');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Satuan & barcode');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Harga & stok');
+        IsiHargaDasar('5.000');
         fireEvent.click(screen.getByRole('button', { name: 'Tambah harga bertingkat' }));
         fireEvent.change(screen.getByLabelText('Mulai jumlah baris 2'), { target: { value: '12' } });
         fireEvent.change(screen.getByLabelText('Harga baris 2'), { target: { value: '4.500' } });
+        Lanjut();
+        expect(LangkahAktif()).toBe('Pajak & tampilan');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Tinjau & simpan');
+        expect(kirimanForm).toHaveLength(0);
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 
         expect(kirimanForm).toHaveLength(1);
@@ -212,16 +235,280 @@ describe('Kelola/Produk/Form (DesainF03 E.3)', () => {
         ]);
     });
 
-    it('harga bertingkat tidak valid ditahan di peramban dan tab Harga dibuka', () => {
+    it('bawaan wizard: langkah 1 menawarkan semua jenis (yang umum di atas) dengan contoh; langkah di depan terkunci', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
+
+        expect(screen.getByText('Langkah 1 dari 5')).toBeTruthy();
+        expect(screen.queryByRole('tab')).toBeNull();
+        expect(screen.getAllByRole('radio').map((r) => r.getAttribute('value'))).toEqual([
+            'Stok',
+            'Resep',
+            'Jasa',
+            'NonStok',
+            'IndukVarian',
+            'Produksi',
+            'Paket',
+            'BahanBaku',
+            'Konsinyasi',
+        ]);
+        expect(screen.getByText('Barang yang dihitung stoknya, misal sabun atau minuman botol.')).toBeTruthy();
+    });
+
+    it('harga bertingkat tidak valid ditahan di peramban: tetap di langkah harga dengan galat di barisnya', () => {
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
-        fireEvent.click(screen.getByRole('tab', { name: 'Umum' }));
+        Lanjut();
+
+        expect(LangkahAktif()).toBe('Harga & stok');
+        expect(screen.getByText('Isi harga. Tulis 0 bila gratis.')).toBeTruthy();
+        expect(kirimanForm).toHaveLength(0);
+    });
+
+    it('harga jual kosong ditahan di peramban dengan pesan jelas; harga 0 (gratis) boleh', () => {
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+        Lanjut();
+
+        expect(LangkahAktif()).toBe('Harga & stok');
+        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis.')).toBeTruthy();
+
+        IsiHargaDasar('0');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Pajak & tampilan');
+    });
+
+    it('galat server bersarang (Satuan.0.Barcode.1) tampil di isiannya dan langkahnya ditandai', () => {
+        AturHalamanUji({
+            Sku: 'SKU sudah dipakai produk lain.',
+            'Satuan.0.Barcode.1': 'Barcode 899 sudah dipakai Teh Botol.',
+        });
+        render(
+            <HalamanFormProduk
+                {...PropsForm({
+                    Produk: {
+                        ...produkBaru,
+                        Satuan: [
+                            {
+                                Uuid: null,
+                                UuidSatuan: 'SAT-PCS',
+                                KonversiKeDasar: '1',
+                                DefaultJual: true,
+                                DefaultBeli: true,
+                                Barcode: ['111', '899'],
+                                HargaAwal: [],
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getAllByText('Perlu diperbaiki')).toHaveLength(2);
+        expect(screen.getByText('SKU sudah dipakai produk lain.')).toBeTruthy();
+        expect(
+            screen.getByText('Ada 1 isian yang perlu diperbaiki. Lihat pesan di bawah isian tersebut.'),
+        ).toBeTruthy();
+
+        IsiNama('Teh Botol');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Satuan & barcode');
+        expect(screen.getByText('Barcode 899 sudah dipakai Teh Botol.')).toBeTruthy();
+    });
+
+    it('produk bervarian: langkah Varian muncul, langkah harga hilang, harga dijelaskan per varian', () => {
+        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'IndukVarian' } })} />);
+
+        expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
+        expect(screen.getByRole('button', { name: /Varian/ })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /Harga/ })).toBeNull();
+        IsiNama('Kaos Polos');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Varian');
+        expect(screen.getByText(/harga diisi per varian/)).toBeTruthy();
+    });
+
+    it('tanpa izin harga: tabel harga awal nonaktif, alasannya tertulis, dan harga tidak diwajibkan', () => {
+        render(<HalamanFormProduk {...PropsForm({ Izin: { ...IzinPenuh, UbahHarga: false } })} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+
+        expect(screen.getByText(/produk\.harga\.ubah/)).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Isi harga dasar' })).toBeNull();
+        Lanjut();
+        expect(LangkahAktif()).toBe('Pajak & tampilan');
+    });
+
+    it('Jasa + "Jual sebagai paket sesi" mengirim PaketSesi; jumlah sesi wajib; langkah satuan dilewati', () => {
+        render(<HalamanFormProduk {...PropsForm({ FiturPaketSesi: true })} />);
+        IsiNama('Paket Creambath 10x');
+        fireEvent.click(screen.getByRole('radio', { name: /Jasa/ }));
+        Lanjut();
+        expect(LangkahAktif()).toBe('Harga');
+        expect(screen.getByText('Langkah 2 dari 4')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Jual sebagai paket sesi' }));
+        IsiHargaDasar('450.000');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Harga');
+        expect(screen.getByText('Isi jumlah sesi, misal 10.')).toBeTruthy();
+        expect(kirimanForm).toHaveLength(0);
+
+        fireEvent.change(screen.getByLabelText('Jumlah sesi'), { target: { value: '10' } });
+        fireEvent.change(screen.getByLabelText('Masa berlaku (hari, opsional)'), { target: { value: '180' } });
+        Lanjut();
+        Lanjut();
+        expect(screen.getByText('10 sesi, berlaku 180 hari')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 
-        expect(kirimanForm).toHaveLength(0);
+        const body = kirimanForm[0]?.data as FormProduk;
+        expect(body.Jenis).toBe('Jasa');
+        expect(body.PaketSesi).toEqual({ JumlahSesi: '10', MasaBerlakuHari: '180' });
+        expect(body.Satuan[0]?.HargaAwal).toEqual([{ JumlahMinimum: '1', Harga: '450000' }]);
+    });
+
+    it('audit kemudahan pakai #11: stok sekarang + harga beli ikut terkirim, lokasi tunggal terpilih otomatis; Jasa tanpa isian', () => {
+        const opsiStok = {
+            Lokasi: [{ Uuid: '01K5GDG0000000000000000001', Nama: 'Gudang Toko', NamaOutlet: 'Toko Pusat' }],
+        };
+        render(<HalamanFormProduk {...PropsForm({ StokAwal: opsiStok })} />);
+
+        IsiNama('Sabun Cuci Piring 780 ml');
+        Lanjut();
+        Lanjut();
+        expect(screen.getByText('Stok sekarang (opsional)')).toBeTruthy();
+        expect(screen.queryByLabelText('Lokasi stok')).toBeNull();
+        IsiHargaDasar('15.000');
+        fireEvent.change(screen.getByLabelText(/Jumlah stok/), { target: { value: '24' } });
+        fireEvent.change(screen.getByLabelText('Harga beli per satuan'), { target: { value: '12.500' } });
+        Lanjut();
+        Lanjut();
+        expect(screen.getByText('24 pcs')).toBeTruthy();
+        expect(screen.getByText(/di Toko Pusat \| Gudang Toko/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
+
+        const body = kirimanForm[0]?.data as FormProduk;
+        expect(body.StokAwal).toEqual({ Jumlah: '24', HargaBeli: '12500', UuidGudang: '01K5GDG0000000000000000001' });
+        cleanup();
+
+        render(<HalamanFormProduk {...PropsForm({ StokAwal: opsiStok, Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
+        IsiNama('Potong rambut');
+        Lanjut();
+        expect(screen.queryByText('Stok sekarang (opsional)')).toBeNull();
+        cleanup();
+
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+        expect(screen.queryByText('Stok sekarang (opsional)')).toBeNull();
+    });
+
+    it('stok sekarang: banyak lokasi wajib dipilih bila jumlah diisi', () => {
+        const opsiStok = {
+            Lokasi: [
+                { Uuid: '01K5GDG0000000000000000001', Nama: 'Gudang Toko', NamaOutlet: 'Toko Pusat' },
+                { Uuid: '01K5GDG0000000000000000002', Nama: 'Gudang Belakang', NamaOutlet: 'Toko Pusat' },
+            ],
+        };
+        render(<HalamanFormProduk {...PropsForm({ StokAwal: opsiStok, Izin: { ...IzinPenuh, UbahHarga: false } })} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+        fireEvent.change(screen.getByLabelText(/Jumlah stok/), { target: { value: '24' } });
+        Lanjut();
+
+        expect(LangkahAktif()).toBe('Harga & stok');
+        expect(screen.getByText('Pilih lokasi stok.')).toBeTruthy();
+    });
+
+    it('fitur paket sesi di luar paket langganan: pilihan tidak tampil', () => {
+        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
+        IsiNama('Potong rambut');
+        Lanjut();
+
+        expect(screen.queryByText('Jual sebagai paket sesi')).toBeNull();
+    });
+
+    it('galat server membuka langkah pertama yang memuatnya dan menampilkan galatnya', () => {
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+        IsiHargaDasar('5.000');
+        Lanjut();
+        Lanjut();
+        expect(LangkahAktif()).toBe('Tinjau & simpan');
+
+        AturGalatBalasanUji({ Sku: 'SKU sudah dipakai produk lain.', KodeUnitCoretax: 'Kode satuan tidak dikenal.' });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
+
+        expect(kirimanForm).toHaveLength(1);
+        expect(LangkahAktif()).toBe('Jenis & nama');
+        expect(screen.getByText('SKU sudah dipakai produk lain.')).toBeTruthy();
+        expect(screen.getAllByText('Perlu diperbaiki')).toHaveLength(2);
+    });
+
+    it('F-07 mode service: produk Jasa punya isian durasi layanan (langkah pajak & tampilan) yang ikut dikirim; jenis lain tanpa isian', () => {
+        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
+        IsiNama('Potong rambut');
+        Lanjut();
+        IsiHargaDasar('50.000');
+        Lanjut();
+        fireEvent.change(screen.getByLabelText(/Durasi layanan/), { target: { value: '45 menit' } });
+        expect((screen.getByLabelText(/Durasi layanan/) as HTMLInputElement).value).toBe('45');
+        Lanjut();
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
+        expect((kirimanForm[0]?.data as FormProduk).DurasiMenit).toBe(45);
+        cleanup();
+
+        render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Sabun');
+        Lanjut();
+        Lanjut();
+        IsiHargaDasar('5.000');
+        Lanjut();
+        expect(LangkahAktif()).toBe('Pajak & tampilan');
+        expect(screen.queryByLabelText(/Durasi layanan/)).toBeNull();
+    });
+});
+
+describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
+    beforeEach(() => AturHalamanUji());
+    afterEach(() => cleanup());
+
+    it('Ubah dengan jenis terkunci: jenis hanya dibaca, PUT ke URL produk', () => {
+        render(
+            <HalamanFormProduk
+                {...PropsForm({
+                    Mode: 'Ubah',
+                    JenisTerkunci: true,
+                    Kepala: BuatKepala(),
+                    Produk: { ...produkBaru, Nama: 'Es Kopi' },
+                })}
+            />,
+        );
+
+        expect(screen.getByLabelText<HTMLInputElement>('Jenis produk').disabled).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }));
+        expect(kirimanForm[0]?.metode).toBe('put');
+        expect(kirimanForm[0]?.url).toBe('/kelola/produk/01J9PRODUKBARU000000000000A');
+    });
+
+    it('mode Ubah selalu tab bebas tanpa wizard, penunjuk langkah, atau sakelar mode', () => {
+        render(<HalamanFormProduk {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala() })} />);
+        expect(screen.queryByRole('button', { name: 'Formulir sederhana' })).toBeNull();
+        expect(screen.queryByText(/^Langkah \d dari \d$/)).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Lanjut' })).toBeNull();
+        expect(screen.getByRole('tab', { name: 'Umum' })).toBeTruthy();
+        // Tab bebas: Harga bisa dibuka langsung tanpa melewati langkah lain.
+        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
         expect(screen.getByRole('tab', { name: 'Harga' }).getAttribute('aria-selected')).toBe('true');
-        expect(screen.getByText('Isi harga. Tulis 0 bila gratis.')).toBeTruthy();
     });
 
     it('galat server bersarang (Satuan.0.Barcode.1) tampil di isian dan tab ditandai', () => {
@@ -232,6 +519,8 @@ describe('Kelola/Produk/Form (DesainF03 E.3)', () => {
         render(
             <HalamanFormProduk
                 {...PropsForm({
+                    Mode: 'Ubah',
+                    Kepala: BuatKepala(),
                     Produk: {
                         ...produkBaru,
                         Satuan: [
@@ -259,157 +548,40 @@ describe('Kelola/Produk/Form (DesainF03 E.3)', () => {
         ).toBeTruthy();
     });
 
-    it('produk bervarian: tab Varian muncul, harga dijelaskan per varian', () => {
-        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'IndukVarian' } })} />);
-
-        expect(screen.getByRole('tab', { name: 'Varian' })).toBeTruthy();
+    it('harga bertingkat tidak valid ditahan di peramban dan tab Harga dibuka (produk lama dengan satuan baru)', () => {
+        render(<HalamanFormProduk {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala() })} />);
         fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        expect(screen.getByText(/Harga diisi per varian/)).toBeTruthy();
-    });
-
-    it('Ubah dengan jenis terkunci: jenis hanya dibaca, PUT ke URL produk', () => {
-        render(
-            <HalamanFormProduk
-                {...PropsForm({
-                    Mode: 'Ubah',
-                    JenisTerkunci: true,
-                    Kepala: BuatKepala(),
-                    Produk: { ...produkBaru, Nama: 'Es Kopi' },
-                })}
-            />,
-        );
-
-        expect(screen.getByLabelText<HTMLInputElement>('Jenis produk').disabled).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
+        fireEvent.click(screen.getByRole('tab', { name: 'Umum' }));
         fireEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }));
-        expect(kirimanForm[0]?.metode).toBe('put');
-        expect(kirimanForm[0]?.url).toBe('/kelola/produk/01J9PRODUKBARU000000000000A');
+
+        expect(kirimanForm).toHaveLength(0);
+        expect(screen.getByRole('tab', { name: 'Harga' }).getAttribute('aria-selected')).toBe('true');
+        expect(screen.getByText('Isi harga. Tulis 0 bila gratis.')).toBeTruthy();
     });
 
     it('tanpa izin harga: tabel harga awal nonaktif dan alasannya tertulis', () => {
-        render(<HalamanFormProduk {...PropsForm({ Izin: { ...IzinPenuh, UbahHarga: false } })} />);
+        render(
+            <HalamanFormProduk
+                {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala(), Izin: { ...IzinPenuh, UbahHarga: false } })}
+            />,
+        );
         fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
 
         expect(screen.getByText(/produk\.harga\.ubah/)).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Isi harga dasar' })).toBeNull();
     });
-});
 
-describe('Kelola/Produk/Form mode Sederhana (D-23 B)', () => {
-    beforeEach(() => {
-        AturHalamanUji();
-        window.localStorage.clear();
-    });
-    afterEach(() => cleanup());
+    it('produk bervarian: tab Varian muncul, harga dijelaskan per varian', () => {
+        render(
+            <HalamanFormProduk
+                {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala(), Produk: { ...produkBaru, Jenis: 'IndukVarian' } })}
+            />,
+        );
 
-    it('bawaan Sederhana: nama, jenis, harga, kategori di satu layar; POST memakai harga dasar satuan dasar', () => {
-        render(<HalamanFormProduk {...PropsForm()} />);
-
-        expect(screen.queryByRole('tab', { name: 'Harga' })).toBeNull();
-        expect(screen.getByRole('button', { name: 'Formulir sederhana' }).getAttribute('aria-pressed')).toBe('true');
-        expect(screen.getByText(/Otomatis: satuan Pieces \(pcs\), pajak Makan & minum, tampil di kasir/)).toBeTruthy();
-        // Hanya jenis yang umum ditawarkan.
-        expect(screen.getAllByRole('radio').map((r) => r.getAttribute('value'))).toEqual([
-            'Stok',
-            'Resep',
-            'Jasa',
-            'NonStok',
-        ]);
-
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Teh Botol Sosro 450 ml' } });
-        fireEvent.change(screen.getByLabelText('Harga jual'), { target: { value: '6.500' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
-
-        const body = kirimanForm[0]?.data as FormProduk;
-        expect(body.Nama).toBe('Teh Botol Sosro 450 ml');
-        expect(body.Satuan[0]?.HargaAwal).toEqual([{ JumlahMinimum: '1', Harga: '6500' }]);
-        expect(body.PaketSesi).toBeNull();
-    });
-
-    it('harga jual kosong ditahan di peramban; pilihan Lengkap diingat di peramban', () => {
-        render(<HalamanFormProduk {...PropsForm()} />);
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Sabun' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
-
-        expect(kirimanForm).toHaveLength(0);
-        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis.')).toBeTruthy();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Formulir lengkap' }));
-        expect(screen.getByRole('tab', { name: 'Harga' })).toBeTruthy();
-        expect(window.localStorage.getItem('Katalog.FormProduk.Mode')).toBe('Lengkap');
-    });
-
-    it('Jasa + "Jual sebagai paket sesi" mengirim PaketSesi; jumlah sesi wajib', () => {
-        render(<HalamanFormProduk {...PropsForm({ FiturPaketSesi: true })} />);
-        expect(screen.queryByText('Jual sebagai paket sesi')).toBeNull();
-
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Paket Creambath 10x' } });
-        fireEvent.click(screen.getByRole('radio', { name: /Jasa/ }));
-        fireEvent.click(screen.getByRole('checkbox', { name: 'Jual sebagai paket sesi' }));
-        fireEvent.change(screen.getByLabelText('Harga paket'), { target: { value: '450.000' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
-        expect(kirimanForm).toHaveLength(0);
-        expect(screen.getByText('Isi jumlah sesi, misal 10.')).toBeTruthy();
-
-        fireEvent.change(screen.getByLabelText('Jumlah sesi'), { target: { value: '10' } });
-        fireEvent.change(screen.getByLabelText('Masa berlaku (hari, opsional)'), { target: { value: '180' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
-
-        const body = kirimanForm[0]?.data as FormProduk;
-        expect(body.Jenis).toBe('Jasa');
-        expect(body.PaketSesi).toEqual({ JumlahSesi: '10', MasaBerlakuHari: '180' });
-        expect(body.Satuan[0]?.HargaAwal).toEqual([{ JumlahMinimum: '1', Harga: '450000' }]);
-    });
-
-    it('audit kemudahan pakai #11: stok sekarang + harga beli ikut terkirim, lokasi tunggal terpilih otomatis; Jasa tanpa isian', () => {
-        const opsiStok = {
-            Lokasi: [{ Uuid: '01K5GDG0000000000000000001', Nama: 'Gudang Toko', NamaOutlet: 'Toko Pusat' }],
-        };
-        render(<HalamanFormProduk {...PropsForm({ StokAwal: opsiStok })} />);
-
-        expect(screen.getByText('Stok sekarang (opsional)')).toBeTruthy();
-        expect(screen.queryByLabelText('Lokasi stok')).toBeNull();
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Sabun Cuci Piring 780 ml' } });
-        fireEvent.change(screen.getByLabelText('Harga jual'), { target: { value: '15.000' } });
-        fireEvent.change(screen.getByLabelText(/Jumlah stok/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText('Harga beli per satuan'), { target: { value: '12.500' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
-
-        const body = kirimanForm[0]?.data as FormProduk;
-        expect(body.StokAwal).toEqual({ Jumlah: '24', HargaBeli: '12500', UuidGudang: '01K5GDG0000000000000000001' });
-
-        fireEvent.click(screen.getByRole('radio', { name: /Jasa/ }));
-        expect(screen.queryByText('Stok sekarang (opsional)')).toBeNull();
-        cleanup();
-
-        render(<HalamanFormProduk {...PropsForm()} />);
-        expect(screen.queryByText('Stok sekarang (opsional)')).toBeNull();
-    });
-
-    it('fitur paket sesi di luar paket langganan: pilihan tidak tampil; galat isian lanjutan membuka formulir lengkap', () => {
-        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
-        expect(screen.queryByText('Jual sebagai paket sesi')).toBeNull();
-        cleanup();
-
-        AturHalamanUji({ Sku: 'SKU sudah dipakai produk lain.' });
-        render(<HalamanFormProduk {...PropsForm()} />);
-        expect(screen.getByRole('tab', { name: /Umum.*perlu diperbaiki/ })).toBeTruthy();
-        expect(screen.getByText('Perbaiki isian yang ditandai di formulir lengkap.')).toBeTruthy();
-    });
-
-    it('F-07 mode service: produk Jasa punya isian durasi layanan yang ikut dikirim; jenis lain tanpa isian', () => {
-        render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
-        fireEvent.change(screen.getByLabelText(/Durasi layanan/), { target: { value: '45 menit' } });
-        expect((screen.getByLabelText(/Durasi layanan/) as HTMLInputElement).value).toBe('45');
-        cleanup();
-
-        render(<HalamanFormProduk {...PropsForm()} />);
-        expect(screen.queryByLabelText(/Durasi layanan/)).toBeNull();
-    });
-
-    it('mode Ubah selalu formulir lengkap tanpa sakelar', () => {
-        render(<HalamanFormProduk {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala() })} />);
-        expect(screen.queryByRole('button', { name: 'Formulir sederhana' })).toBeNull();
-        expect(screen.getByRole('tab', { name: 'Umum' })).toBeTruthy();
+        expect(screen.getByRole('tab', { name: 'Varian' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
+        expect(screen.getByText(/Harga diisi per varian/)).toBeTruthy();
     });
 });
 
@@ -827,9 +999,12 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
     });
 
     it('sakelar tampil (Switch) mengubah TampilDiPos/TampilOnline di body FormProduk', () => {
-        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
         render(<HalamanFormProduk {...PropsForm()} />);
-        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+        IsiNama('Sabun cair');
+        Lanjut();
+        Lanjut();
+        IsiHargaDasar('10.000');
+        Lanjut();
 
         const pos = screen.getByRole('switch', { name: 'Tampil di kasir (POS)' });
         const online = screen.getByRole('switch', { name: 'Tampil di toko online' });
@@ -838,60 +1013,61 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
 
         fireEvent.click(pos);
         fireEvent.click(online);
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Sabun cair' } });
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
-        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '10.000' } });
+        Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 
         const body = kirimanForm[0]?.data as FormProduk;
         expect(body.TampilDiPos).toBe(false);
         expect(body.TampilOnline).toBe(true);
-        window.localStorage.clear();
     });
 
     it('K-16: sakelar Favorit di kasir mengirim Favorit di body FormProduk dan hilang saat produk disembunyikan dari kasir', () => {
-        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
         render(<HalamanFormProduk {...PropsForm()} />);
-        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+        IsiNama('Kopi susu gula aren');
+        Lanjut();
+        Lanjut();
+        IsiHargaDasar('10.000');
+        Lanjut();
 
         const favorit = screen.getByRole('switch', { name: 'Favorit di kasir' });
         expect(favorit.getAttribute('aria-checked')).toBe('false');
         fireEvent.click(favorit);
         expect(screen.getByRole('switch', { name: 'Favorit di kasir' }).getAttribute('aria-checked')).toBe('true');
 
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Kopi susu gula aren' } });
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
-        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '10.000' } });
+        Lanjut();
+        expect(screen.getByText('Favorit di kasir').nextElementSibling?.textContent).toBe('Ya');
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
         expect((kirimanForm[0]?.data as FormProduk).Favorit).toBe(true);
 
-        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah Pajak & tampilan' }));
         fireEvent.click(screen.getByRole('switch', { name: 'Tampil di kasir (POS)' }));
         expect(screen.queryByRole('switch', { name: 'Favorit di kasir' })).toBeNull();
-        window.localStorage.clear();
     });
 
-    it('K-25: sakelar harga terbuka mengisi HargaTerbuka di body FormProduk', () => {
-        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
+    it('K-25: sakelar harga terbuka (langkah harga) mengisi HargaTerbuka di body dan membuat harga tidak wajib', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
-        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+        IsiNama('Barang lain-lain');
+        Lanjut();
+        Lanjut();
 
+        // Harga kosong ditahan sampai kasir diizinkan mengetik harga sendiri.
+        Lanjut();
+        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis.')).toBeTruthy();
         fireEvent.click(screen.getByRole('switch', { name: /Harga diketik kasir/ }));
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Barang lain-lain' } });
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
-        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '0' } });
+        Lanjut();
+        expect(screen.queryByText('Isi harga jual. Tulis 0 bila gratis.')).toBeNull();
+        Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 
-        expect((kirimanForm[0]?.data as FormProduk).HargaTerbuka).toBe(true);
-        window.localStorage.clear();
+        const body = kirimanForm[0]?.data as FormProduk;
+        expect(body.HargaTerbuka).toBe(true);
     });
 
     it('Apotek (§9.5): bagian golongan obat hanya untuk barang ber-batch; OWA untuk obat keras; HNA + margin mengisi harga', () => {
-        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
         render(<HalamanFormProduk {...PropsForm()} />);
+        IsiNama('Parasetamol');
+        Lanjut();
+        Lanjut();
         expect(screen.queryByText('Golongan obat (apotek)')).toBeNull();
         cleanup();
 
@@ -902,23 +1078,25 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
                 })}
             />,
         );
+        IsiNama('Asam Mefenamat 500 mg Tablet');
+        Lanjut();
+        Lanjut();
         expect(screen.getByText('Golongan obat (apotek)')).toBeTruthy();
         expect(screen.getByText(/Wajib resep dokter dan hanya bisa dijual apoteker/)).toBeTruthy();
         fireEvent.click(screen.getByRole('checkbox', { name: /Obat Wajib Apotek/ }));
         expect(screen.getByText(/Dijual tanpa resep oleh apoteker/)).toBeTruthy();
 
-        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Asam Mefenamat 500 mg Tablet' } });
-        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
         fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
         fireEvent.change(screen.getByLabelText(/HNA per/), { target: { value: '650' } });
         fireEvent.change(screen.getByLabelText('Margin (%)'), { target: { value: '25' } });
         fireEvent.click(screen.getByRole('button', { name: 'Pakai sebagai harga' }));
+        Lanjut();
+        Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 
         const body = kirimanForm[0]?.data as FormProduk;
         expect(body.GolonganObat).toBe('Keras');
         expect(body.ObatWajibApotek).toBe(true);
         expect(body.Satuan[0]?.HargaAwal[0]?.Harga).toBe('800.00');
-        window.localStorage.clear();
     });
 });

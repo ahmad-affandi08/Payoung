@@ -23,7 +23,11 @@ export const tiruanRouter = {
     visit: vi.fn(),
 };
 
-const halaman: { props: PropsBersamaAplikasi; url: string } = { props: BuatPropsBersama(), url: '/kelola/produk' };
+const halaman: { props: PropsBersamaAplikasi; url: string; galatBalasan: Record<string, string> | null } = {
+    props: BuatPropsBersama(),
+    url: '/kelola/produk',
+    galatBalasan: null,
+};
 
 export function BuatPropsBersama(galat: Record<string, string> = {}): PropsBersamaAplikasi {
     return {
@@ -46,8 +50,17 @@ export function BuatPropsBersama(galat: Record<string, string> = {}): PropsBersa
 export function AturHalamanUji(galat: Record<string, string> = {}, url = '/kelola/produk'): void {
     halaman.props = BuatPropsBersama(galat);
     halaman.url = url;
+    halaman.galatBalasan = null;
     kirimanForm.length = 0;
     Object.values(tiruanRouter).forEach((fungsi) => fungsi.mockClear());
+}
+
+/**
+ * Tiru server yang menolak kiriman form berikutnya: `errors` form berganti ke `galat` dan `onError` pemanggil
+ * dipanggil (seperti Inertia sesungguhnya). Dibersihkan oleh `AturHalamanUji`.
+ */
+export function AturGalatBalasanUji(galat: Record<string, string>): void {
+    halaman.galatBalasan = galat;
 }
 
 /** Tambahkan props halaman (mis. `Penawaran`, `Edisi`) di atas props bersama yang sudah disiapkan `AturHalamanUji`. */
@@ -59,6 +72,7 @@ type AturData<T> = ((kunci: keyof T, nilai: unknown) => void) & ((data: T | ((la
 
 function useFormTiruan<T extends object>(awal: T | (() => T)) {
     const [data, AturDataForm] = useState<T>(awal);
+    const [galatBalasan, AturGalatBalasan] = useState<Record<string, string> | null>(null);
     const AturDataTiruan = ((kunci: keyof T | T | ((lama: T) => T), nilai?: unknown) => {
         if (typeof kunci === 'function') {
             AturDataForm(kunci as (lama: T) => T);
@@ -68,15 +82,22 @@ function useFormTiruan<T extends object>(awal: T | (() => T)) {
             AturDataForm((lama) => ({ ...lama, [kunci]: nilai }));
         }
     }) as AturData<T>;
-    const BuatKirim = (metode: KirimanUji['metode']) => (url: string) => {
-        kirimanForm.push({ metode, url, data });
-    };
+    const BuatKirim =
+        (metode: KirimanUji['metode']) =>
+        (url: string, opsi?: { onError?: (galat: Record<string, string>) => void }) => {
+            kirimanForm.push({ metode, url, data });
+
+            if (halaman.galatBalasan !== null) {
+                AturGalatBalasan(halaman.galatBalasan);
+                opsi?.onError?.(halaman.galatBalasan);
+            }
+        };
 
     return {
         data,
         setData: AturDataTiruan,
-        errors: halaman.props.errors,
-        hasErrors: Object.keys(halaman.props.errors).length > 0,
+        errors: galatBalasan ?? halaman.props.errors,
+        hasErrors: Object.keys(galatBalasan ?? halaman.props.errors).length > 0,
         processing: false,
         isDirty: false,
         post: BuatKirim('post'),

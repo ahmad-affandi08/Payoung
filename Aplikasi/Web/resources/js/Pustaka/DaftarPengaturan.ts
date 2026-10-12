@@ -15,6 +15,8 @@ export type ButirPengaturan = {
     keterangan: string;
     href: string;
     izin: KunciIzinTenant | null;
+    /** Izin alternatif: butir tampil bila pengguna punya `izin` ATAU `atau` (mis. laporan penjualan atau keuangan). */
+    atau?: KunciIzinTenant;
     fitur?: string;
     /** D-35: butir yang rutenya hanya ada di satu edisi (misal integrasi server di edisi Lisensi). */
     edisi?: 'Saas' | 'Lisensi';
@@ -53,6 +55,16 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Unduh salinan lengkap data usaha Anda (UU PDP) dan, nanti, tutup akun usaha.',
                 href: '/kelola/pengaturan/data-saya',
                 izin: IzinTenant.DataKelola,
+            },
+            {
+                label: 'Pusat Unduhan',
+                keterangan:
+                    'Berkas laporan besar yang disiapkan di latar belakang. Tersedia 7 hari, lalu dihapus otomatis.',
+                href: '/kelola/unduhan',
+                // D-124: halaman ini sendiri tanpa izin khusus (baris yang tampil milik pengguna itu); butirnya hanya
+                // ditawarkan kepada yang bisa mengekspor laporan.
+                izin: IzinTenant.LaporanPenjualanLihat,
+                atau: IzinTenant.LaporanKeuanganLihat,
             },
         ],
     },

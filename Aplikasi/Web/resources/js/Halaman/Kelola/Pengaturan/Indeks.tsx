@@ -26,7 +26,9 @@ export default function HalamanPengaturan() {
     const CekBoleh = (butir: ButirPengaturan) =>
         CekButirSesuaiEdisi(butir, props.Edisi) &&
         CekSesuaiSektor(butir, props.SektorOutlet ?? []) &&
-        (butir.izin === null || PunyaIzinTenant(props.Akses, butir.izin));
+        (butir.izin === null ||
+            PunyaIzinTenant(props.Akses, butir.izin) ||
+            (butir.atau !== undefined && PunyaIzinTenant(props.Akses, butir.atau)));
     const CekTerkunci = (butir: ButirPengaturan) => butir.fitur !== undefined && terkunci[butir.fitur] !== undefined;
 
     // Kotak cari: 25 butir di 8 grup terlalu banyak untuk dipindai mata. Penyaringannya di `SaringPengaturan`

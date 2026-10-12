@@ -53,6 +53,8 @@ type PropsPenyuntingSatuanProduk = {
     /** Semua galat server formulir produk; kunci `Satuan.{i}.…` dibaca di sini. */
     galat: Record<string, string | undefined>;
     disabled?: boolean;
+    /** Teks bila satuan dasar belum dipilih; bergantung letak pilihan satuan dasar di formulir pemanggil. */
+    petunjukSatuanDasar?: string;
 };
 
 /**
@@ -66,6 +68,7 @@ export default function PenyuntingSatuanProduk({
     saatBerubah,
     galat,
     disabled = false,
+    petunjukSatuanDasar = 'Pilih satuan dasar di tab Umum lebih dulu.',
 }: PropsPenyuntingSatuanProduk) {
     const id = useId();
     const dasar = opsiSatuan.find((item) => item.Uuid === uuidSatuanDasar);
@@ -77,7 +80,7 @@ export default function PenyuntingSatuanProduk({
     const sisa = opsiSatuan.filter((item) => !terpakai.includes(item.Uuid));
 
     if (!dasar) {
-        return <p className="text-isi text-teks-sekunder">Pilih satuan dasar di tab Umum lebih dulu.</p>;
+        return <p className="text-isi text-teks-sekunder">{petunjukSatuanDasar}</p>;
     }
 
     return (
