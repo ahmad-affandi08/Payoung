@@ -124,6 +124,7 @@ void main() {
       expect(katalog.produk.single.hargaTermasukPajak, isNull);
       expect(katalog.produk.single.jenis, 'Resep');
       expect(katalog.produk.single.jumlahSesiPaket, isNull);
+      expect(katalog.produk.single.favorit, isFalse);
       expect(katalog.produkHarga.single.harga, '28000.00');
       expect(katalog.kelompokPajak.single.pajak.single.dasarPengenaan, 'SubtotalPlusLayanan');
       expect(katalog.kelompokPajak.single.pajak.single.kategori, isNull, reason: 'Server lama tanpa Kategori.');
@@ -149,7 +150,14 @@ void main() {
               'Jenis': 'Jasa',
               'PaketSesi': {'JumlahSesi': 10, 'MasaBerlakuHari': 90, 'Aktif': true},
             },
-            {'Uuid': 'P3', 'Nama': 'Ponsel', 'Pelacakan': 'Seri', 'MasaGaransiBulan': 12, 'HargaTerbuka': true},
+            {
+              'Uuid': 'P3',
+              'Nama': 'Ponsel',
+              'Pelacakan': 'Seri',
+              'MasaGaransiBulan': 12,
+              'HargaTerbuka': true,
+              'Favorit': true,
+            },
           ],
           'Terhapus': [
             {'Entitas': 'ProdukBarcode', 'Uuid': 'B1'},
@@ -166,6 +174,11 @@ void main() {
       expect(katalog.produk.last.masaGaransiBulan, 12);
       expect(katalog.produk[1].masaGaransiBulan, isNull, reason: 'Server lama atau produk tanpa garansi.');
       expect(katalog.produk.map((p) => p.hargaTerbuka), [false, false, true], reason: 'K-25; server lama = false.');
+      expect(katalog.produk.map((p) => p.favorit), [
+        false,
+        false,
+        true,
+      ], reason: 'K-16; server lama tanpa Favorit = false.');
       expect(katalog.terhapus.single.entitas, 'ProdukBarcode');
     });
 

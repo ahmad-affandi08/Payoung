@@ -2,10 +2,12 @@ import 'package:adaptor_perangkat/AdaptorPerangkat.dart';
 import 'package:inti/Inti.dart';
 
 import '../../Data/BasisData/BasisDataKasir.dart';
+import '../../Data/RepositoriPenjualan.dart';
 
 import 'package:klien_api/KlienApi.dart';
 
 import '../../Data/PesananMeja.dart';
+import '../Penjualan/BagianTagihan.dart';
 import '../Penjualan/Keranjang.dart';
 import '../Penjualan/LayananPenjualan.dart';
 import '../Pelanggan/LayananDeposit.dart';
@@ -130,6 +132,44 @@ abstract final class PenyusunDokumenKasir {
       const BarisGaris(),
       ...PenyusunStrukPenjualan.SusunKaki(identitas),
     ], bukaLaci: bukaLaci);
+  }
+
+  /// Struk satu tamu pada tagihan yang dibagi (K-14, BR-08.2, v5.68): total tagihan, bagian tamu ini, metode dan
+  /// kembaliannya. Rincian barang tidak dicetak (pembagian per orang/nominal tidak memisahkan barang); struk utama
+  /// memuatnya. [tamuKe] mulai dari 1.
+  static DokumenStruk SusunStrukTamu(
+    IdentitasStruk identitas,
+    BarisPenjualan penjualan,
+    BagianTagihan bagian,
+    int tamuKe, {
+    bool cetakUlang = false,
+  }) {
+    final tamu = bagian.tamu[tamuKe - 1];
+    final (tanggal, jam) = PenyusunStrukPenjualan.TanggalJam(penjualan.DibuatPada);
+    final angka = PenyusunStrukPenjualan.Angka;
+    final tunaiLebih = tamu.diterima.Bandingkan(tamu.porsi) > 0;
+    return DokumenStruk([
+      ...PenyusunStrukPenjualan.SusunKepala(identitas),
+      const BarisGaris(),
+      const BarisTeks('STRUK TAMU', rata: RataStruk.Tengah, tebal: true),
+      if (cetakUlang) const BarisTeks('CETAK ULANG', rata: RataStruk.Tengah, tebal: true),
+      if (penjualan.Status == StatusPenjualanLokal.divoid)
+        const BarisTeks('DIBATALKAN', rata: RataStruk.Tengah, tebal: true),
+      BarisTeks('Tamu $tamuKe dari ${bagian.tamu.length}', rata: RataStruk.Tengah, tebal: true, besar: true),
+      BarisTeks(bagian.rata ? 'Tagihan dibagi rata' : 'Tagihan dibagi per nominal', rata: RataStruk.Tengah),
+      BarisTeks(penjualan.Nomor),
+      BarisDuaKolom(tanggal, jam),
+      if (identitas.pengaturan.tampilkanKasir) BarisTeks('Kasir: ${penjualan.NamaKasir}'),
+      const BarisGaris(),
+      BarisDuaKolom('Total tagihan', Uang.Dari(penjualan.TotalAkhir).FormatRupiah()),
+      BarisDuaKolom('Bagian tamu $tamuKe', tamu.porsi.FormatRupiah(), tebal: true),
+      const BarisGaris(),
+      BarisDuaKolom(tunaiLebih ? '${tamu.namaMetode} diterima' : tamu.namaMetode, angka(tamu.diterima)),
+      if (tunaiLebih) BarisDuaKolom('Kembalian', angka(tamu.kembalian)),
+      const BarisGaris(),
+      const BarisTeks('Rincian pesanan ada di struk utama.', rata: RataStruk.Tengah),
+      ...PenyusunStrukPenjualan.SusunKaki(identitas),
+    ]);
   }
 
   /// Tagihan sementara (pre-bill, §9.1, v3.53) pesanan meja sebelum dibayar: item, subtotal, diskon, biaya layanan,

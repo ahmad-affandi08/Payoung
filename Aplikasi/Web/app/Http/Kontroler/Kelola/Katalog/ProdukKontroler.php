@@ -219,6 +219,8 @@ final class ProdukKontroler extends DasarKatalogKontroler
             'Pulihkan' => 'diaktifkan kembali',
             'Kategori' => 'dipindah kategorinya',
             'TampilDiPos' => 'ditampilkan di kasir',
+            'Favorit' => 'ditandai favorit di kasir',
+            'HapusFavorit' => 'dilepas dari favorit kasir',
             default => 'disembunyikan dari kasir',
         };
 

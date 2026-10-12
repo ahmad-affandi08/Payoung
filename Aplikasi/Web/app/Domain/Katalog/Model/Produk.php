@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property bool $Aktif
  * @property bool $TampilDiPos
  * @property bool $TampilOnline
+ * @property bool $Favorit K-16: ditandai pemilik, tampil di kategori "Favorit" kasir (tingkat tenant)
  * @property bool $HargaTerbuka
  * @property int|null $DurasiMenit F-07 mode service: lama layanan jasa untuk slot reservasi
  * @property GolonganObat|null $GolonganObat Apotek (§9.5): golongan obat; null = bukan obat
@@ -88,6 +89,7 @@ final class Produk extends ModelDasar
         'Aktif' => true,
         'TampilDiPos' => true,
         'TampilOnline' => false,
+        'Favorit' => false,
         'HargaTerbuka' => false,
         'DurasiMenit' => null,
         'MasaGaransiBulan' => null,
@@ -191,6 +193,7 @@ final class Produk extends ModelDasar
             'Aktif' => 'boolean',
             'TampilDiPos' => 'boolean',
             'TampilOnline' => 'boolean',
+            'Favorit' => 'boolean',
             'HargaTerbuka' => 'boolean',
             'DurasiMenit' => 'integer',
             'MasaGaransiBulan' => 'integer',

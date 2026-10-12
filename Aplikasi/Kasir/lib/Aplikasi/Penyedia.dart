@@ -367,6 +367,10 @@ class PengaturPrinter extends Notifier<StatusPrinter> {
     (l) => l.CetakPenjualan(uuidPenjualan, cetakUlang: cetakUlang, namaPelanggan: namaPelanggan, labelPoin: labelPoin),
   );
 
+  /// K-14: struk per tamu pada tagihan yang dibagi ([tamuKe] null = semua tamu).
+  Future<String?> CetakStrukTamu(String uuidPenjualan, {int? tamuKe, bool cetakUlang = false}) =>
+      _Jalankan((l) => l.CetakStrukTamu(uuidPenjualan, tamuKe: tamuKe, cetakUlang: cetakUlang));
+
   /// v1.97: cadangan saat printer thermal bermasalah: struk dibuka di dialog printer sistem (PDF/AirPrint/driver OS).
   /// Keadaan printer thermal di bilah status tidak diubah.
   Future<String?> CetakPenjualanLewatSistem(

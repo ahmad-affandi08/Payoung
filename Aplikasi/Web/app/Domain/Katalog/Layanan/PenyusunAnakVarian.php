@@ -72,6 +72,7 @@ final class PenyusunAnakVarian
             'BolehMinus' => $induk->BolehMinus,
             'TampilDiPos' => AturanProduk::TentukanTampilDiPos($jenis, $induk->TampilDiPos),
             'TampilOnline' => $induk->TampilOnline,
+            'Favorit' => AturanProduk::TentukanFavorit($jenis, $induk->Favorit),
             'Aktif' => ! $diarsipkan,
             'DiarsipkanPada' => $induk->DiarsipkanPada,
         ]);
@@ -163,6 +164,7 @@ final class PenyusunAnakVarian
             'HargaTermasukPajak' => $induk->HargaTermasukPajak,
             'TampilDiPos' => $induk->TampilDiPos,
             'TampilOnline' => $induk->TampilOnline,
+            'Favorit' => $induk->Favorit,
         ]);
         app(PemberitahuProdukDiubah::class)->TandaiBanyak(Produk::query()->where('IdInduk', $induk->Id)->get(['Id', 'Uuid', 'IdTenant']));
     }

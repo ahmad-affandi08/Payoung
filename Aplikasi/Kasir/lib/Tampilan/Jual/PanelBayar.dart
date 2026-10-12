@@ -11,6 +11,7 @@ import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Domain/GalatKasir.dart';
 import '../../Domain/Penjualan/AturanApotek.dart';
+import '../../Domain/Penjualan/BagianTagihan.dart';
 import '../../Domain/Penjualan/Keranjang.dart';
 import '../../Domain/Penjualan/KonteksPenjualan.dart';
 import '../../Domain/Penjualan/LayananPenjualan.dart';
@@ -20,6 +21,7 @@ import '../LembarMutasiKas.dart';
 import '../Struk/BagianCetakStruk.dart';
 import '../Struk/BagianTiketDapur.dart';
 import '../Struk/TombolKirimStruk.dart';
+import '../Struk/TombolStrukTamu.dart';
 import 'DialogQrisDinamis.dart';
 import 'DialogResep.dart';
 import 'PanelKeranjang.dart';
@@ -362,7 +364,14 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       }
       final kembalian = nominal.Kurangi(porsi);
       setState(() {
-        _entri.add(PembayaranMasukan(metode: metode, jumlah: porsi, referensi: _SusunReferensi(metode)));
+        _entri.add(
+          PembayaranMasukan(
+            metode: metode,
+            jumlah: porsi,
+            referensi: _SusunReferensi(metode),
+            tamu: BagianTamu(namaMetode: metode.Nama, porsi: porsi, diterima: nominal),
+          ),
+        );
         _infoBagi = kembalian.BernilaiNol()
             ? 'Tamu $_tamuKe lunas (${metode.Nama}).'
             : 'Tamu $_tamuKe lunas. Kembalian ${kembalian.FormatRupiah()}.';
@@ -373,7 +382,19 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       });
       return;
     }
-    final entri = PembayaranMasukan(metode: metode, jumlah: nominal, referensi: _SusunReferensi(metode));
+    final entri = PembayaranMasukan(
+      metode: metode,
+      jumlah: nominal,
+      referensi: _SusunReferensi(metode),
+      // K-14: bagian tamu ini (tamu terakhir menanggung sisa; tunai boleh menyerahkan lebih dari bagiannya).
+      tamu: _bagi == null
+          ? null
+          : BagianTamu(
+              namaMetode: metode.Nama,
+              porsi: nominal.Bandingkan(sisa) < 0 ? nominal : sisa,
+              diterima: nominal,
+            ),
+    );
     if (nominal.Bandingkan(sisa) < 0) {
       // Split (BR-08.1): simpan bagian ini, lanjutkan dengan metode lain.
       setState(() {
@@ -405,7 +426,18 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       return;
     }
     setState(() {
-      _entri.add(PembayaranMasukan(metode: metode, jumlah: nominal, referensi: tagihan.uuid));
+      _entri.add(
+        PembayaranMasukan(
+          metode: metode,
+          jumlah: nominal,
+          referensi: tagihan.uuid,
+          tamu: _bagi == null ? null : BagianTamu(namaMetode: metode.Nama, porsi: nominal, diterima: nominal),
+        ),
+      );
+      if (_bagi != null && nominal.Bandingkan(sisa) < 0) {
+        _infoBagi = 'Tamu $_tamuKe membayar ${nominal.FormatRupiah()} (${metode.Nama}).';
+        _tamuKe++;
+      }
       _metode = null;
       _nominal.clear();
       _galat = null;
@@ -595,9 +627,14 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       if (!await _PastikanPenyetujuTukar(k)) {
         return;
       }
+      final tamu = [for (final p in pembayaran) ?p.tamu];
       final hasil = await ref
           .read(penyediaLayananPenjualan)
           .Bayar(
+            // K-14: struk per tamu hanya bila tagihan benar-benar dibayar oleh dua tamu atau lebih.
+            bagianTagihan: _bagi != null && tamu.length >= 2
+                ? BagianTagihan(rata: !_bagi!.perNominal, tamu: tamu)
+                : null,
             keranjang: ref.read(penyediaKeranjangEfektif),
             pembayaran: _GabungTunai(pembayaran),
             kasir: widget.kasir,
@@ -1494,6 +1531,10 @@ class TampilanSelesai extends StatelessWidget {
                         // Selebar tombol cetak di atasnya (kolom meregangkan anak), dengan jarak yang sama.
                         const SizedBox(height: TokenJarak.jarak8),
                         TombolKirimStruk(uuidPenjualan: hasil.uuid),
+                        if (hasil.bagianTagihan != null) ...[
+                          const SizedBox(height: TokenJarak.jarak8),
+                          TombolStrukTamu(uuidPenjualan: hasil.uuid),
+                        ],
                         BagianTiketDapur(uuidPenjualan: hasil.uuid, namaPelanggan: hasil.namaPelanggan),
                       ],
                     ),

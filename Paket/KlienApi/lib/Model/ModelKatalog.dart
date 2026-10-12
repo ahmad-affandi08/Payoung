@@ -105,6 +105,7 @@ class ProdukPos {
     required this.uuidKelompokPajak,
     required this.hargaTermasukPajak,
     required this.tampilDiPos,
+    this.favorit = false,
     required this.uuidInduk,
     required this.urlGambarKecil,
     required this.aktif,
@@ -157,6 +158,9 @@ class ProdukPos {
   /// Null = ikut pengaturan pajak tenant.
   final bool? hargaTermasukPajak;
   final bool tampilDiPos;
+
+  /// K-16 (v5.68): produk favorit pilihan pemilik; tampil di kategori Favorit layar jual. Server lama tanpa field = false.
+  final bool favorit;
   final String? uuidInduk;
   final String? urlGambarKecil;
   final bool aktif;
@@ -174,6 +178,7 @@ class ProdukPos {
     uuidKelompokPajak: UraiJson.AmbilTeksAtauNull(json['UuidKelompokPajak']),
     hargaTermasukPajak: UraiJson.AmbilBenarAtauNull(json['HargaTermasukPajak']),
     tampilDiPos: UraiJson.AmbilBenar(json['TampilDiPos'], true),
+    favorit: UraiJson.AmbilBenar(json['Favorit']),
     uuidInduk: UraiJson.AmbilTeksAtauNull(json['UuidInduk']),
     urlGambarKecil: UraiJson.AmbilTeksAtauNull(json['UrlGambarKecil']),
     aktif: UraiJson.AmbilBenar(json['Aktif'], true),

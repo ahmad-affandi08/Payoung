@@ -121,6 +121,7 @@ class ProdukJual {
     this.jumlahSesiPaket,
     this.masaGaransiBulan,
     this.hargaTerbuka = false,
+    this.favorit = false,
     this.golonganObat,
     this.obatWajibApotek = false,
     this.prekursor = false,
@@ -201,6 +202,9 @@ class ProdukJual {
 
   /// K-25: harga diketik kasir saat produk ditambahkan (harga daftar, bila ada, jadi saran).
   final bool hargaTerbuka;
+
+  /// K-16 (v5.68): favorit pilihan pemilik (kategori Favorit di layar jual).
+  final bool favorit;
 
   /// Apotek (§9.5): golongan obat (`Bebas`/`BebasTerbatas`/`Keras`/`Psikotropika`/`Narkotika`; null = bukan obat),
   /// Obat Wajib Apotek, prekursor, dan wajib resep dari server. Aturan penyerahannya di `AturanApotek`.
@@ -342,6 +346,12 @@ class KatalogLokal {
     }).toList();
   }
 
+  /// K-16: produk favorit pilihan pemilik yang tampil di kasir (anak varian lewat induknya), urutan katalog.
+  List<ProdukJual> AmbilFavorit({String kata = ''}) => AmbilTampil(kata: kata).where((p) => p.favorit).toList();
+
+  /// K-16: ada favorit yang bisa ditampilkan (menentukan chip Favorit di bar kategori). Dihitung sekali per katalog.
+  late final bool adaFavorit = AmbilFavorit().isNotEmpty;
+
   /// Cari persis berdasarkan barcode lalu SKU (tanpa beda huruf besar/kecil). Dipakai pemindai & Enter di kolom cari.
   HasilCariKode? CariKode(String kode) {
     final rapi = kode.trim();
@@ -439,6 +449,7 @@ class KatalogLokal {
           jumlahSesiPaket: p.JumlahSesiPaket,
           masaGaransiBulan: p.MasaGaransiBulan,
           hargaTerbuka: p.HargaTerbuka,
+          favorit: p.Favorit,
           golonganObat: p.GolonganObat,
           obatWajibApotek: p.ObatWajibApotek,
           prekursor: p.Prekursor,

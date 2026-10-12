@@ -24,7 +24,7 @@ import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwa
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
-import { Field, FieldLabel, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
 import { Switch } from '@/Komponen/Ui/switch';
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
@@ -70,6 +70,7 @@ const galatPerTab: Record<KunciTab, string[]> = {
         'BolehMinus',
         'TampilDiPos',
         'TampilOnline',
+        'Favorit',
         'HargaTerbuka',
         'KodeBarangJasaCoretax',
         'KodeUnitCoretax',
@@ -264,6 +265,7 @@ export default function HalamanFormProduk({
             Jenis: nilai,
             Pelacakan: aturanBaru?.BolehPelacakan ? lama.Pelacakan : 'Tidak',
             TampilDiPos: aturanBaru?.BisaDijual || nilai === 'IndukVarian' ? lama.TampilDiPos : false,
+            Favorit: aturanBaru?.BisaDijual || nilai === 'IndukVarian' ? lama.Favorit : false,
             AtributVarian: nilai === 'IndukVarian' ? lama.AtributVarian : [],
             ...(lama.PaketSesi !== undefined && nilai !== 'Jasa' ? { PaketSesi: null } : {}),
         }));
@@ -928,7 +930,14 @@ export default function HalamanFormProduk({
                         <Switch
                             id={`${idForm}-tampil-pos`}
                             checked={data.TampilDiPos}
-                            onCheckedChange={(nilai) => Atur('TampilDiPos', nilai)}
+                            onCheckedChange={(nilai) =>
+                                formulir.setData((lama) => ({
+                                    ...lama,
+                                    TampilDiPos: nilai,
+                                    // Produk tersembunyi dari kasir tidak mungkin favorit (saklar Favorit ikut tersembunyi).
+                                    Favorit: nilai ? lama.Favorit : false,
+                                }))
+                            }
                         />
                         <FieldLabel htmlFor={`${idForm}-tampil-pos`} className="text-isi font-normal text-teks-utama">
                             {induk ? 'Tampilkan sebagai grup varian di kasir' : 'Tampil di kasir (POS)'}
@@ -937,6 +946,23 @@ export default function HalamanFormProduk({
                 ) : (
                     <p className="text-keterangan text-teks-sekunder">Jenis ini tidak tampil di kasir.</p>
                 )}
+                {(bisaDijual || induk) && data.TampilDiPos ? (
+                    <Field orientation="horizontal" className="min-h-10 items-center">
+                        <Switch
+                            id={`${idForm}-favorit`}
+                            checked={data.Favorit}
+                            onCheckedChange={(nilai) => Atur('Favorit', nilai)}
+                        />
+                        <FieldContent>
+                            <FieldLabel htmlFor={`${idForm}-favorit`} className="text-isi font-normal text-teks-utama">
+                                Favorit di kasir
+                            </FieldLabel>
+                            <FieldDescription className="text-keterangan text-teks-sekunder">
+                                Produk muncul di kategori Favorit di layar jual kasir.
+                            </FieldDescription>
+                        </FieldContent>
+                    </Field>
+                ) : null}
                 <Field orientation="horizontal" className="min-h-10 items-center">
                     <Switch
                         id={`${idForm}-tampil-online`}

@@ -47,6 +47,10 @@ class Penjualan extends Table {
   /// sengaja tidak disimpan di sini; hanya di muatan outbox `Penjualan.Buat` (basis data lokal terenkripsi, K-7).
   TextColumn get Resep => text().nullable()();
 
+  /// Skema 29 (K-14, v5.68): bagian bayar tiap tamu bila tagihan dibagi (JSON `BagianTagihan`), untuk struk per tamu
+  /// dan cetak ulangnya. Hanya lokal; tidak dikirim ke server.
+  TextColumn get BagianTagihan => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {Uuid};
 }

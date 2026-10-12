@@ -31,6 +31,7 @@ final class RingkasanAuditProduk
             'BolehMinus' => $produk->BolehMinus,
             'TampilDiPos' => $produk->TampilDiPos,
             'TampilOnline' => $produk->TampilOnline,
+            'Favorit' => $produk->Favorit,
             'HargaTerbuka' => $produk->HargaTerbuka,
             'GolonganObat' => $produk->GolonganObat?->value,
             'ObatWajibApotek' => $produk->ObatWajibApotek,

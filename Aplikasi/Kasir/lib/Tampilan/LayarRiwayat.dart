@@ -14,6 +14,7 @@ import 'Komponen/FormatWaktu.dart';
 import 'RuangKerja/BagianKerja.dart';
 import 'RuangKerja/IsiAreaKerja.dart';
 import 'Struk/TombolKirimStruk.dart';
+import 'Struk/TombolStrukTamu.dart';
 
 /// Pesan tetap bila riwayat gagal dimuat; detail galat hanya ke log (tidak menampilkan teks exception ke kasir).
 const String pesanGagalMuat = 'Riwayat transaksi tidak bisa dimuat. Coba lagi.';
@@ -555,6 +556,7 @@ class _IsiRincian extends ConsumerWidget {
     final p = riwayat.penjualan;
     final tombol = <Widget>[
       _TombolCetakUlang(uuidPenjualan: p.Uuid),
+      TombolStrukTamu(uuidPenjualan: p.Uuid, cetakUlang: true),
       TombolKirimStruk(uuidPenjualan: p.Uuid),
       if (saatRetur != null)
         SizedBox(

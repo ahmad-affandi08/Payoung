@@ -81,6 +81,7 @@ final class PerbaruiProdukSebagian
                 'Pelacakan' => $pelacakan,
                 'BolehMinus' => $bolehMinus,
                 'TampilDiPos' => AturanProduk::TentukanTampilDiPos($jenis, $data->tampilDiPos ?? $produk->TampilDiPos),
+                'Favorit' => AturanProduk::TentukanFavorit($jenis, $data->favorit ?? $produk->Favorit),
             ]);
 
             if ($data->kosongkanHargaTermasukPajak) {

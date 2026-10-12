@@ -8,6 +8,7 @@ import '../../Data/RepositoriKasir.dart';
 import '../../Data/RepositoriPenjualan.dart';
 import '../GalatKasir.dart';
 import '../Pelanggan/LayananDeposit.dart';
+import '../Penjualan/BagianTagihan.dart';
 import '../Penjualan/Keranjang.dart';
 import '../Penjualan/KonteksPenjualan.dart';
 import '../Penjualan/LayananPenjualan.dart';
@@ -67,6 +68,42 @@ class LayananStruk {
       bukaLaci: laci,
     );
     await PrinterStruk(pembuatTransport(profil), profil.lebar, umpanAkhir: profil.umpanAkhir).Cetak(dokumen);
+  }
+
+  /// Bagian bayar tiap tamu penjualan [uuidPenjualan] (K-14); null = penjualan tidak dibagi (atau hanya satu tamu).
+  Future<BagianTagihan?> AmbilBagianTagihan(String uuidPenjualan) async {
+    final baris = await penjualan.CariPenjualan(uuidPenjualan);
+    final json = baris?.BagianTagihan;
+    if (json == null) {
+      return null;
+    }
+    final bagian = BagianTagihan.DariJson((jsonDecode(json) as Map).cast<String, Object?>());
+    return bagian.tamu.length >= 2 ? bagian : null;
+  }
+
+  /// Struk per tamu (K-14): [tamuKe] mulai 1; null = semua tamu, satu struk per tamu berurutan. Dari data lokal,
+  /// jadi tetap jalan offline dan setelah transaksi tersinkron. Tanpa laci (uangnya sudah tercatat di struk utama).
+  Future<void> CetakStrukTamu(String uuidPenjualan, {int? tamuKe, bool cetakUlang = false}) async {
+    final profil = await _WajibProfil();
+    final baris = await penjualan.CariPenjualan(uuidPenjualan);
+    if (baris == null) {
+      throw const GalatKasir('PenjualanTidakDitemukan', 'Transaksi ini tidak ada di perangkat.');
+    }
+    final bagian = await AmbilBagianTagihan(uuidPenjualan);
+    if (bagian == null) {
+      throw const GalatKasir('TagihanTidakDibagi', 'Transaksi ini tidak dibagi per tamu.');
+    }
+    if (tamuKe != null && (tamuKe < 1 || tamuKe > bagian.tamu.length)) {
+      throw const GalatKasir('TamuTidakAda', 'Nomor tamu tidak ada di transaksi ini.');
+    }
+    final identitas = await IdentitasStruk.Muat(repositori);
+    for (final ke in tamuKe == null ? [for (var i = 1; i <= bagian.tamu.length; i++) i] : [tamuKe]) {
+      await PrinterStruk(
+        pembuatTransport(profil),
+        profil.lebar,
+        umpanAkhir: profil.umpanAkhir,
+      ).Cetak(PenyusunDokumenKasir.SusunStrukTamu(identitas, baris, bagian, ke, cetakUlang: cetakUlang));
+    }
   }
 
   /// Bukti void [uuidPenjualan] (cetak struk bagian 3b). [bukaLaci] untuk refund tunai dari laci.

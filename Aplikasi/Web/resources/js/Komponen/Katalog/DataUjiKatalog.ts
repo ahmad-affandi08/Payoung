@@ -104,6 +104,7 @@ export function BuatBarisProduk(nomor: number, perubahan: Partial<BarisProduk> =
         SimbolSatuan: 'pcs',
         JumlahVarian: 0,
         TampilDiPos: true,
+        Favorit: false,
         DiubahPada: '2026-09-20T03:15:00Z',
         Status: 'Aktif',
         UrlGambarKecil: null,

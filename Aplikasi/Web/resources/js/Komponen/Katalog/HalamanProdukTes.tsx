@@ -145,6 +145,7 @@ const produkBaru: FormProduk = {
     BolehMinus: 'Ikut',
     TampilDiPos: true,
     TampilOnline: false,
+    Favorit: false,
     Satuan: [],
     AtributVarian: [],
 };
@@ -432,6 +433,7 @@ function PropsDetail(perubahan: Partial<PropsDetailProduk> = {}): PropsDetailPro
             BolehMinus: 'Tidak',
             TampilDiPos: true,
             TampilOnline: false,
+            Favorit: false,
             UrlGambar: null,
             UrlGambarKecil: null,
             Satuan: [
@@ -481,6 +483,15 @@ function PropsDetail(perubahan: Partial<PropsDetailProduk> = {}): PropsDetailPro
 describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
+
+    it('K-16: detail produk menampilkan status Favorit di kasir (Ya/Tidak)', () => {
+        const { unmount: Bongkar } = RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
+        expect(screen.getByText('Favorit di kasir').nextElementSibling?.textContent).toBe('Tidak');
+        Bongkar();
+
+        RenderUji(<HalamanDetailProduk {...PropsDetail({ Produk: { ...PropsDetail().Produk, Favorit: true } })} />);
+        expect(screen.getByText('Favorit di kasir').nextElementSibling?.textContent).toBe('Ya');
+    });
 
     it('BR-03.2: produk terpakai tidak menawarkan hapus, alasan ditulis; arsip tetap bisa', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
@@ -836,6 +847,29 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
         const body = kirimanForm[0]?.data as FormProduk;
         expect(body.TampilDiPos).toBe(false);
         expect(body.TampilOnline).toBe(true);
+        window.localStorage.clear();
+    });
+
+    it('K-16: sakelar Favorit di kasir mengirim Favorit di body FormProduk dan hilang saat produk disembunyikan dari kasir', () => {
+        window.localStorage.setItem('Katalog.FormProduk.Mode', 'Lengkap');
+        render(<HalamanFormProduk {...PropsForm()} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+
+        const favorit = screen.getByRole('switch', { name: 'Favorit di kasir' });
+        expect(favorit.getAttribute('aria-checked')).toBe('false');
+        fireEvent.click(favorit);
+        expect(screen.getByRole('switch', { name: 'Favorit di kasir' }).getAttribute('aria-checked')).toBe('true');
+
+        fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: 'Kopi susu gula aren' } });
+        fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
+        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '10.000' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
+        expect((kirimanForm[0]?.data as FormProduk).Favorit).toBe(true);
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Pajak & tampilan' }));
+        fireEvent.click(screen.getByRole('switch', { name: 'Tampil di kasir (POS)' }));
+        expect(screen.queryByRole('switch', { name: 'Favorit di kasir' })).toBeNull();
         window.localStorage.clear();
     });
 

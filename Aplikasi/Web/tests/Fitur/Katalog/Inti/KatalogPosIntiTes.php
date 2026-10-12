@@ -140,3 +140,23 @@ describe('K-25 katalog POS: item harga terbuka', function (): void {
             ->and($produk[$biasa->Uuid]['HargaTerbuka'])->toBeFalse();
     });
 });
+
+describe('K-16 katalog POS: produk favorit pilihan pemilik', function (): void {
+    it('Produk membawa Favorit (tingkat tenant, false bila tidak ditandai); perubahan favorit masuk delta', function (): void {
+        Carbon::setTestNow('2026-10-01 03:00:00');
+        $t = BantuanKatalog::SiapkanTenantProduk();
+        $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Es Kopi Susu Gula Aren', 'Favorit' => true, 'IdKelompokPajak' => $t['KelompokPajak']->Id], null, $t['Pcs']);
+        $roti = BantuanKatalog::BuatProduk(['Nama' => 'Roti Bakar Cokelat Keju', 'IdKelompokPajak' => $t['KelompokPajak']->Id], null, $t['Pcs']);
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+
+        $produk = collect(AmbilBagianPosUji($t['Tenant']->Id, $t['Outlet']->Id, null)['Produk'])->keyBy('Uuid');
+        expect($produk[$kopi->Uuid]['Favorit'])->toBeTrue()->and($produk[$roti->Uuid]['Favorit'])->toBeFalse();
+
+        Carbon::setTestNow('2026-10-01 04:00:00');
+        $roti->update(['Favorit' => true]);
+        $delta = collect(AmbilBagianPosUji($t['Tenant']->Id, $t['Outlet']->Id, CarbonImmutable::parse('2026-10-01 03:30:00'))['Produk']);
+        Carbon::setTestNow();
+
+        expect($delta->pluck('Uuid')->all())->toBe([$roti->Uuid])->and($delta[0]['Favorit'])->toBeTrue();
+    });
+});

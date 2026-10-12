@@ -105,6 +105,9 @@ class LayarJual extends ConsumerStatefulWidget {
   /// K-16: penanda "kategori" Terlaris di bar kategori (bukan Uuid kategori sungguhan).
   static const String kategoriTerlaris = 'Terlaris';
 
+  /// K-16: penanda "kategori" Favorit (produk pilihan pemilik) di bar kategori.
+  static const String kategoriFavorit = 'Favorit';
+
   /// K-15: lama baris keranjang disorot setelah pindaian (transisinya 150 ms, §17.2.7 prinsip 4).
   static const Duration lamaSorot = Duration(milliseconds: 900);
 
@@ -1350,6 +1353,10 @@ class _LayarJualState extends ConsumerState<LayarJual> {
       return null;
     }
     final kata = PengaliJumlah.Urai(_cari.text).sisa;
+    if (_uuidKategori == LayarJual.kategoriFavorit) {
+      // Favorit dicabut pemilik selagi kategori ini terpilih: chip-nya hilang, jadi tampilkan semua produk.
+      return katalog.adaFavorit ? katalog.AmbilFavorit(kata: kata) : katalog.AmbilTampil(kata: kata);
+    }
     if (_uuidKategori != LayarJual.kategoriTerlaris) {
       return katalog.AmbilTampil(uuidKategori: _uuidKategori, kata: kata);
     }
@@ -1367,7 +1374,9 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     if (!mounted || _uuidKategori != null) {
       return;
     }
-    if (tersimpan == LayarJual.kategoriTerlaris || katalog.kategori.any((k) => k.Uuid == tersimpan)) {
+    if (tersimpan == LayarJual.kategoriTerlaris ||
+        (tersimpan == LayarJual.kategoriFavorit && katalog.adaFavorit) ||
+        katalog.kategori.any((k) => k.Uuid == tersimpan)) {
       setState(() => _uuidKategori = tersimpan);
     }
   }
@@ -1540,7 +1549,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
             },
           ),
         ),
-        if (katalog != null && katalog.kategori.isNotEmpty)
+        if (katalog != null && (katalog.kategori.isNotEmpty || katalog.adaFavorit))
           SizedBox(
             height: TokenJarak.targetSentuh,
             child: ListView(
@@ -1549,6 +1558,8 @@ class _LayarJualState extends ConsumerState<LayarJual> {
               children: [
                 for (final (uuid, nama) in [
                   (null, 'Semua'),
+                  // K-16: produk favorit pilihan pemilik (diatur di back-office).
+                  if (katalog.adaFavorit) (LayarJual.kategoriFavorit, 'Favorit'),
                   // K-16: produk yang paling sering dijual di perangkat ini (30 hari).
                   if (terlaris.isNotEmpty) (LayarJual.kategoriTerlaris, 'Terlaris'),
                   for (final k in katalog.kategori) (k.Uuid, k.Nama),
@@ -1556,9 +1567,16 @@ class _LayarJualState extends ConsumerState<LayarJual> {
                   Padding(
                     padding: const EdgeInsets.only(right: TokenJarak.jarak8),
                     child: ChoiceChip(
-                      avatar: uuid == LayarJual.kategoriTerlaris ? const Icon(Icons.trending_up) : null,
+                      avatar: switch (uuid) {
+                        LayarJual.kategoriTerlaris => const Icon(Icons.trending_up),
+                        LayarJual.kategoriFavorit => const Icon(Icons.star_outline),
+                        _ => null,
+                      },
                       label: Text(nama),
-                      selected: _uuidKategori == uuid,
+                      // Favorit dicabut saat terpilih: daftar menampilkan semua produk, jadi "Semua" yang tersorot.
+                      selected:
+                          _uuidKategori == uuid ||
+                          (uuid == null && _uuidKategori == LayarJual.kategoriFavorit && !katalog.adaFavorit),
                       onSelected: (_) => _PilihKategori(uuid),
                     ),
                   ),

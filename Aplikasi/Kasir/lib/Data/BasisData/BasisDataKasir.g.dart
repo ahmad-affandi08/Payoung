@@ -4256,6 +4256,17 @@ class $ProdukTable extends Produk with TableInfo<$ProdukTable, BarisProduk> {
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("TampilDiPos" IN (0, 1))'),
   );
+  static const VerificationMeta _FavoritMeta = const VerificationMeta('Favorit');
+  @override
+  late final GeneratedColumn<bool> Favorit = GeneratedColumn<bool>(
+    'Favorit',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("Favorit" IN (0, 1))'),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _UuidIndukMeta = const VerificationMeta('UuidInduk');
   @override
   late final GeneratedColumn<String> UuidInduk = GeneratedColumn<String>(
@@ -4377,6 +4388,7 @@ class $ProdukTable extends Produk with TableInfo<$ProdukTable, BarisProduk> {
     UuidKelompokPajak,
     HargaTermasukPajak,
     TampilDiPos,
+    Favorit,
     UuidInduk,
     UrlGambarKecil,
     Aktif,
@@ -4449,6 +4461,9 @@ class $ProdukTable extends Produk with TableInfo<$ProdukTable, BarisProduk> {
       context.handle(_TampilDiPosMeta, TampilDiPos.isAcceptableOrUnknown(data['TampilDiPos']!, _TampilDiPosMeta));
     } else if (isInserting) {
       context.missing(_TampilDiPosMeta);
+    }
+    if (data.containsKey('Favorit')) {
+      context.handle(_FavoritMeta, Favorit.isAcceptableOrUnknown(data['Favorit']!, _FavoritMeta));
     }
     if (data.containsKey('UuidInduk')) {
       context.handle(_UuidIndukMeta, UuidInduk.isAcceptableOrUnknown(data['UuidInduk']!, _UuidIndukMeta));
@@ -4529,6 +4544,7 @@ class $ProdukTable extends Produk with TableInfo<$ProdukTable, BarisProduk> {
         data['${effectivePrefix}HargaTermasukPajak'],
       ),
       TampilDiPos: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}TampilDiPos'])!,
+      Favorit: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}Favorit'])!,
       UuidInduk: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}UuidInduk']),
       UrlGambarKecil: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}UrlGambarKecil']),
       Aktif: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}Aktif'])!,
@@ -4561,6 +4577,9 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
   final String? UuidKelompokPajak;
   final bool? HargaTermasukPajak;
   final bool TampilDiPos;
+
+  /// Skema 30 (K-16, v5.68): favorit pilihan pemilik untuk kategori Favorit di layar jual.
+  final bool Favorit;
   final String? UuidInduk;
   final String? UrlGambarKecil;
   final bool Aktif;
@@ -4596,6 +4615,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
     this.UuidKelompokPajak,
     this.HargaTermasukPajak,
     required this.TampilDiPos,
+    required this.Favorit,
     this.UuidInduk,
     this.UrlGambarKecil,
     required this.Aktif,
@@ -4634,6 +4654,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
       map['HargaTermasukPajak'] = Variable<bool>(HargaTermasukPajak);
     }
     map['TampilDiPos'] = Variable<bool>(TampilDiPos);
+    map['Favorit'] = Variable<bool>(Favorit);
     if (!nullToAbsent || UuidInduk != null) {
       map['UuidInduk'] = Variable<String>(UuidInduk);
     }
@@ -4673,6 +4694,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
       UuidKelompokPajak: UuidKelompokPajak == null && nullToAbsent ? const Value.absent() : Value(UuidKelompokPajak),
       HargaTermasukPajak: HargaTermasukPajak == null && nullToAbsent ? const Value.absent() : Value(HargaTermasukPajak),
       TampilDiPos: Value(TampilDiPos),
+      Favorit: Value(Favorit),
       UuidInduk: UuidInduk == null && nullToAbsent ? const Value.absent() : Value(UuidInduk),
       UrlGambarKecil: UrlGambarKecil == null && nullToAbsent ? const Value.absent() : Value(UrlGambarKecil),
       Aktif: Value(Aktif),
@@ -4701,6 +4723,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
       UuidKelompokPajak: serializer.fromJson<String?>(json['UuidKelompokPajak']),
       HargaTermasukPajak: serializer.fromJson<bool?>(json['HargaTermasukPajak']),
       TampilDiPos: serializer.fromJson<bool>(json['TampilDiPos']),
+      Favorit: serializer.fromJson<bool>(json['Favorit']),
       UuidInduk: serializer.fromJson<String?>(json['UuidInduk']),
       UrlGambarKecil: serializer.fromJson<String?>(json['UrlGambarKecil']),
       Aktif: serializer.fromJson<bool>(json['Aktif']),
@@ -4729,6 +4752,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
       'UuidKelompokPajak': serializer.toJson<String?>(UuidKelompokPajak),
       'HargaTermasukPajak': serializer.toJson<bool?>(HargaTermasukPajak),
       'TampilDiPos': serializer.toJson<bool>(TampilDiPos),
+      'Favorit': serializer.toJson<bool>(Favorit),
       'UuidInduk': serializer.toJson<String?>(UuidInduk),
       'UrlGambarKecil': serializer.toJson<String?>(UrlGambarKecil),
       'Aktif': serializer.toJson<bool>(Aktif),
@@ -4755,6 +4779,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
     Value<String?> UuidKelompokPajak = const Value.absent(),
     Value<bool?> HargaTermasukPajak = const Value.absent(),
     bool? TampilDiPos,
+    bool? Favorit,
     Value<String?> UuidInduk = const Value.absent(),
     Value<String?> UrlGambarKecil = const Value.absent(),
     bool? Aktif,
@@ -4778,6 +4803,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
     UuidKelompokPajak: UuidKelompokPajak.present ? UuidKelompokPajak.value : this.UuidKelompokPajak,
     HargaTermasukPajak: HargaTermasukPajak.present ? HargaTermasukPajak.value : this.HargaTermasukPajak,
     TampilDiPos: TampilDiPos ?? this.TampilDiPos,
+    Favorit: Favorit ?? this.Favorit,
     UuidInduk: UuidInduk.present ? UuidInduk.value : this.UuidInduk,
     UrlGambarKecil: UrlGambarKecil.present ? UrlGambarKecil.value : this.UrlGambarKecil,
     Aktif: Aktif ?? this.Aktif,
@@ -4803,6 +4829,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
       UuidKelompokPajak: data.UuidKelompokPajak.present ? data.UuidKelompokPajak.value : this.UuidKelompokPajak,
       HargaTermasukPajak: data.HargaTermasukPajak.present ? data.HargaTermasukPajak.value : this.HargaTermasukPajak,
       TampilDiPos: data.TampilDiPos.present ? data.TampilDiPos.value : this.TampilDiPos,
+      Favorit: data.Favorit.present ? data.Favorit.value : this.Favorit,
       UuidInduk: data.UuidInduk.present ? data.UuidInduk.value : this.UuidInduk,
       UrlGambarKecil: data.UrlGambarKecil.present ? data.UrlGambarKecil.value : this.UrlGambarKecil,
       Aktif: data.Aktif.present ? data.Aktif.value : this.Aktif,
@@ -4831,6 +4858,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
           ..write('UuidKelompokPajak: $UuidKelompokPajak, ')
           ..write('HargaTermasukPajak: $HargaTermasukPajak, ')
           ..write('TampilDiPos: $TampilDiPos, ')
+          ..write('Favorit: $Favorit, ')
           ..write('UuidInduk: $UuidInduk, ')
           ..write('UrlGambarKecil: $UrlGambarKecil, ')
           ..write('Aktif: $Aktif, ')
@@ -4859,6 +4887,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
     UuidKelompokPajak,
     HargaTermasukPajak,
     TampilDiPos,
+    Favorit,
     UuidInduk,
     UrlGambarKecil,
     Aktif,
@@ -4886,6 +4915,7 @@ class BarisProduk extends DataClass implements Insertable<BarisProduk> {
           other.UuidKelompokPajak == this.UuidKelompokPajak &&
           other.HargaTermasukPajak == this.HargaTermasukPajak &&
           other.TampilDiPos == this.TampilDiPos &&
+          other.Favorit == this.Favorit &&
           other.UuidInduk == this.UuidInduk &&
           other.UrlGambarKecil == this.UrlGambarKecil &&
           other.Aktif == this.Aktif &&
@@ -4911,6 +4941,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
   final Value<String?> UuidKelompokPajak;
   final Value<bool?> HargaTermasukPajak;
   final Value<bool> TampilDiPos;
+  final Value<bool> Favorit;
   final Value<String?> UuidInduk;
   final Value<String?> UrlGambarKecil;
   final Value<bool> Aktif;
@@ -4935,6 +4966,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
     this.UuidKelompokPajak = const Value.absent(),
     this.HargaTermasukPajak = const Value.absent(),
     this.TampilDiPos = const Value.absent(),
+    this.Favorit = const Value.absent(),
     this.UuidInduk = const Value.absent(),
     this.UrlGambarKecil = const Value.absent(),
     this.Aktif = const Value.absent(),
@@ -4960,6 +4992,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
     this.UuidKelompokPajak = const Value.absent(),
     this.HargaTermasukPajak = const Value.absent(),
     required bool TampilDiPos,
+    this.Favorit = const Value.absent(),
     this.UuidInduk = const Value.absent(),
     this.UrlGambarKecil = const Value.absent(),
     required bool Aktif,
@@ -4990,6 +5023,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
     Expression<String>? UuidKelompokPajak,
     Expression<bool>? HargaTermasukPajak,
     Expression<bool>? TampilDiPos,
+    Expression<bool>? Favorit,
     Expression<String>? UuidInduk,
     Expression<String>? UrlGambarKecil,
     Expression<bool>? Aktif,
@@ -5015,6 +5049,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
       if (UuidKelompokPajak != null) 'UuidKelompokPajak': UuidKelompokPajak,
       if (HargaTermasukPajak != null) 'HargaTermasukPajak': HargaTermasukPajak,
       if (TampilDiPos != null) 'TampilDiPos': TampilDiPos,
+      if (Favorit != null) 'Favorit': Favorit,
       if (UuidInduk != null) 'UuidInduk': UuidInduk,
       if (UrlGambarKecil != null) 'UrlGambarKecil': UrlGambarKecil,
       if (Aktif != null) 'Aktif': Aktif,
@@ -5042,6 +5077,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
     Value<String?>? UuidKelompokPajak,
     Value<bool?>? HargaTermasukPajak,
     Value<bool>? TampilDiPos,
+    Value<bool>? Favorit,
     Value<String?>? UuidInduk,
     Value<String?>? UrlGambarKecil,
     Value<bool>? Aktif,
@@ -5067,6 +5103,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
       UuidKelompokPajak: UuidKelompokPajak ?? this.UuidKelompokPajak,
       HargaTermasukPajak: HargaTermasukPajak ?? this.HargaTermasukPajak,
       TampilDiPos: TampilDiPos ?? this.TampilDiPos,
+      Favorit: Favorit ?? this.Favorit,
       UuidInduk: UuidInduk ?? this.UuidInduk,
       UrlGambarKecil: UrlGambarKecil ?? this.UrlGambarKecil,
       Aktif: Aktif ?? this.Aktif,
@@ -5117,6 +5154,9 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
     }
     if (TampilDiPos.present) {
       map['TampilDiPos'] = Variable<bool>(TampilDiPos.value);
+    }
+    if (Favorit.present) {
+      map['Favorit'] = Variable<bool>(Favorit.value);
     }
     if (UuidInduk.present) {
       map['UuidInduk'] = Variable<String>(UuidInduk.value);
@@ -5171,6 +5211,7 @@ class ProdukCompanion extends UpdateCompanion<BarisProduk> {
           ..write('UuidKelompokPajak: $UuidKelompokPajak, ')
           ..write('HargaTermasukPajak: $HargaTermasukPajak, ')
           ..write('TampilDiPos: $TampilDiPos, ')
+          ..write('Favorit: $Favorit, ')
           ..write('UuidInduk: $UuidInduk, ')
           ..write('UrlGambarKecil: $UrlGambarKecil, ')
           ..write('Aktif: $Aktif, ')
@@ -8774,6 +8815,15 @@ class $PenjualanTable extends Penjualan with TableInfo<$PenjualanTable, BarisPen
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _BagianTagihanMeta = const VerificationMeta('BagianTagihan');
+  @override
+  late final GeneratedColumn<String> BagianTagihan = GeneratedColumn<String>(
+    'BagianTagihan',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     Uuid,
@@ -8802,6 +8852,7 @@ class $PenjualanTable extends Penjualan with TableInfo<$PenjualanTable, BarisPen
     NamaPemesan,
     PerintahKerja,
     Resep,
+    BagianTagihan,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8933,6 +8984,12 @@ class $PenjualanTable extends Penjualan with TableInfo<$PenjualanTable, BarisPen
     if (data.containsKey('Resep')) {
       context.handle(_ResepMeta, Resep.isAcceptableOrUnknown(data['Resep']!, _ResepMeta));
     }
+    if (data.containsKey('BagianTagihan')) {
+      context.handle(
+        _BagianTagihanMeta,
+        BagianTagihan.isAcceptableOrUnknown(data['BagianTagihan']!, _BagianTagihanMeta),
+      );
+    }
     return context;
   }
 
@@ -8971,6 +9028,7 @@ class $PenjualanTable extends Penjualan with TableInfo<$PenjualanTable, BarisPen
       NamaPemesan: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}NamaPemesan']),
       PerintahKerja: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}PerintahKerja']),
       Resep: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}Resep']),
+      BagianTagihan: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}BagianTagihan']),
     );
   }
 
@@ -9020,6 +9078,10 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
   /// Skema 27 (Apotek §9.5): ringkasan resep untuk struk (JSON `{NomorResep, TanggalResep, NamaDokter}`). Data pasien
   /// sengaja tidak disimpan di sini; hanya di muatan outbox `Penjualan.Buat` (basis data lokal terenkripsi, K-7).
   final String? Resep;
+
+  /// Skema 29 (K-14, v5.68): bagian bayar tiap tamu bila tagihan dibagi (JSON `BagianTagihan`), untuk struk per tamu
+  /// dan cetak ulangnya. Hanya lokal; tidak dikirim ke server.
+  final String? BagianTagihan;
   const BarisPenjualan({
     required this.Uuid,
     required this.Nomor,
@@ -9047,6 +9109,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
     this.NamaPemesan,
     this.PerintahKerja,
     this.Resep,
+    this.BagianTagihan,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9091,6 +9154,9 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
     if (!nullToAbsent || Resep != null) {
       map['Resep'] = Variable<String>(Resep);
     }
+    if (!nullToAbsent || BagianTagihan != null) {
+      map['BagianTagihan'] = Variable<String>(BagianTagihan);
+    }
     return map;
   }
 
@@ -9124,6 +9190,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
       NamaPemesan: NamaPemesan == null && nullToAbsent ? const Value.absent() : Value(NamaPemesan),
       PerintahKerja: PerintahKerja == null && nullToAbsent ? const Value.absent() : Value(PerintahKerja),
       Resep: Resep == null && nullToAbsent ? const Value.absent() : Value(Resep),
+      BagianTagihan: BagianTagihan == null && nullToAbsent ? const Value.absent() : Value(BagianTagihan),
     );
   }
 
@@ -9156,6 +9223,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
       NamaPemesan: serializer.fromJson<String?>(json['NamaPemesan']),
       PerintahKerja: serializer.fromJson<String?>(json['PerintahKerja']),
       Resep: serializer.fromJson<String?>(json['Resep']),
+      BagianTagihan: serializer.fromJson<String?>(json['BagianTagihan']),
     );
   }
   @override
@@ -9188,6 +9256,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
       'NamaPemesan': serializer.toJson<String?>(NamaPemesan),
       'PerintahKerja': serializer.toJson<String?>(PerintahKerja),
       'Resep': serializer.toJson<String?>(Resep),
+      'BagianTagihan': serializer.toJson<String?>(BagianTagihan),
     };
   }
 
@@ -9218,6 +9287,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
     Value<String?> NamaPemesan = const Value.absent(),
     Value<String?> PerintahKerja = const Value.absent(),
     Value<String?> Resep = const Value.absent(),
+    Value<String?> BagianTagihan = const Value.absent(),
   }) => BarisPenjualan(
     Uuid: Uuid ?? this.Uuid,
     Nomor: Nomor ?? this.Nomor,
@@ -9245,6 +9315,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
     NamaPemesan: NamaPemesan.present ? NamaPemesan.value : this.NamaPemesan,
     PerintahKerja: PerintahKerja.present ? PerintahKerja.value : this.PerintahKerja,
     Resep: Resep.present ? Resep.value : this.Resep,
+    BagianTagihan: BagianTagihan.present ? BagianTagihan.value : this.BagianTagihan,
   );
   BarisPenjualan copyWithCompanion(PenjualanCompanion data) {
     return BarisPenjualan(
@@ -9274,6 +9345,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
       NamaPemesan: data.NamaPemesan.present ? data.NamaPemesan.value : this.NamaPemesan,
       PerintahKerja: data.PerintahKerja.present ? data.PerintahKerja.value : this.PerintahKerja,
       Resep: data.Resep.present ? data.Resep.value : this.Resep,
+      BagianTagihan: data.BagianTagihan.present ? data.BagianTagihan.value : this.BagianTagihan,
     );
   }
 
@@ -9305,7 +9377,8 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
           ..write('NomorAntrian: $NomorAntrian, ')
           ..write('NamaPemesan: $NamaPemesan, ')
           ..write('PerintahKerja: $PerintahKerja, ')
-          ..write('Resep: $Resep')
+          ..write('Resep: $Resep, ')
+          ..write('BagianTagihan: $BagianTagihan')
           ..write(')'))
         .toString();
   }
@@ -9338,6 +9411,7 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
     NamaPemesan,
     PerintahKerja,
     Resep,
+    BagianTagihan,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -9368,7 +9442,8 @@ class BarisPenjualan extends DataClass implements Insertable<BarisPenjualan> {
           other.NomorAntrian == this.NomorAntrian &&
           other.NamaPemesan == this.NamaPemesan &&
           other.PerintahKerja == this.PerintahKerja &&
-          other.Resep == this.Resep);
+          other.Resep == this.Resep &&
+          other.BagianTagihan == this.BagianTagihan);
 }
 
 class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
@@ -9398,6 +9473,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
   final Value<String?> NamaPemesan;
   final Value<String?> PerintahKerja;
   final Value<String?> Resep;
+  final Value<String?> BagianTagihan;
   final Value<int> rowid;
   const PenjualanCompanion({
     this.Uuid = const Value.absent(),
@@ -9426,6 +9502,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
     this.NamaPemesan = const Value.absent(),
     this.PerintahKerja = const Value.absent(),
     this.Resep = const Value.absent(),
+    this.BagianTagihan = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PenjualanCompanion.insert({
@@ -9455,6 +9532,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
     this.NamaPemesan = const Value.absent(),
     this.PerintahKerja = const Value.absent(),
     this.Resep = const Value.absent(),
+    this.BagianTagihan = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : Uuid = Value(Uuid),
        Nomor = Value(Nomor),
@@ -9500,6 +9578,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
     Expression<String>? NamaPemesan,
     Expression<String>? PerintahKerja,
     Expression<String>? Resep,
+    Expression<String>? BagianTagihan,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -9529,6 +9608,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
       if (NamaPemesan != null) 'NamaPemesan': NamaPemesan,
       if (PerintahKerja != null) 'PerintahKerja': PerintahKerja,
       if (Resep != null) 'Resep': Resep,
+      if (BagianTagihan != null) 'BagianTagihan': BagianTagihan,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -9560,6 +9640,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
     Value<String?>? NamaPemesan,
     Value<String?>? PerintahKerja,
     Value<String?>? Resep,
+    Value<String?>? BagianTagihan,
     Value<int>? rowid,
   }) {
     return PenjualanCompanion(
@@ -9589,6 +9670,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
       NamaPemesan: NamaPemesan ?? this.NamaPemesan,
       PerintahKerja: PerintahKerja ?? this.PerintahKerja,
       Resep: Resep ?? this.Resep,
+      BagianTagihan: BagianTagihan ?? this.BagianTagihan,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -9674,6 +9756,9 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
     if (Resep.present) {
       map['Resep'] = Variable<String>(Resep.value);
     }
+    if (BagianTagihan.present) {
+      map['BagianTagihan'] = Variable<String>(BagianTagihan.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -9709,6 +9794,7 @@ class PenjualanCompanion extends UpdateCompanion<BarisPenjualan> {
           ..write('NamaPemesan: $NamaPemesan, ')
           ..write('PerintahKerja: $PerintahKerja, ')
           ..write('Resep: $Resep, ')
+          ..write('BagianTagihan: $BagianTagihan, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -23186,6 +23272,7 @@ typedef $$ProdukTableCreateCompanionBuilder = ProdukCompanion Function({
   Value<String?> UuidKelompokPajak,
   Value<bool?> HargaTermasukPajak,
   required bool TampilDiPos,
+  Value<bool> Favorit,
   Value<String?> UuidInduk,
   Value<String?> UrlGambarKecil,
   required bool Aktif,
@@ -23211,6 +23298,7 @@ typedef $$ProdukTableUpdateCompanionBuilder = ProdukCompanion Function({
   Value<String?> UuidKelompokPajak,
   Value<bool?> HargaTermasukPajak,
   Value<bool> TampilDiPos,
+  Value<bool> Favorit,
   Value<String?> UuidInduk,
   Value<String?> UrlGambarKecil,
   Value<bool> Aktif,
@@ -23262,6 +23350,9 @@ class $$ProdukTableFilterComposer extends Composer<_$BasisDataKasir, $ProdukTabl
 
   ColumnFilters<bool> get TampilDiPos =>
       $composableBuilder(column: $table.TampilDiPos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get Favorit =>
+      $composableBuilder(column: $table.Favorit, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get UuidInduk =>
       $composableBuilder(column: $table.UuidInduk, builder: (column) => ColumnFilters(column));
@@ -23337,6 +23428,9 @@ class $$ProdukTableOrderingComposer extends Composer<_$BasisDataKasir, $ProdukTa
   ColumnOrderings<bool> get TampilDiPos =>
       $composableBuilder(column: $table.TampilDiPos, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get Favorit =>
+      $composableBuilder(column: $table.Favorit, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get UuidInduk =>
       $composableBuilder(column: $table.UuidInduk, builder: (column) => ColumnOrderings(column));
 
@@ -23405,6 +23499,8 @@ class $$ProdukTableAnnotationComposer extends Composer<_$BasisDataKasir, $Produk
 
   GeneratedColumn<bool> get TampilDiPos => $composableBuilder(column: $table.TampilDiPos, builder: (column) => column);
 
+  GeneratedColumn<bool> get Favorit => $composableBuilder(column: $table.Favorit, builder: (column) => column);
+
   GeneratedColumn<String> get UuidInduk => $composableBuilder(column: $table.UuidInduk, builder: (column) => column);
 
   GeneratedColumn<String> get UrlGambarKecil =>
@@ -23471,6 +23567,7 @@ class $$ProdukTableTableManager
                 Value<String?> UuidKelompokPajak = const Value.absent(),
                 Value<bool?> HargaTermasukPajak = const Value.absent(),
                 Value<bool> TampilDiPos = const Value.absent(),
+                Value<bool> Favorit = const Value.absent(),
                 Value<String?> UuidInduk = const Value.absent(),
                 Value<String?> UrlGambarKecil = const Value.absent(),
                 Value<bool> Aktif = const Value.absent(),
@@ -23495,6 +23592,7 @@ class $$ProdukTableTableManager
                 UuidKelompokPajak: UuidKelompokPajak,
                 HargaTermasukPajak: HargaTermasukPajak,
                 TampilDiPos: TampilDiPos,
+                Favorit: Favorit,
                 UuidInduk: UuidInduk,
                 UrlGambarKecil: UrlGambarKecil,
                 Aktif: Aktif,
@@ -23521,6 +23619,7 @@ class $$ProdukTableTableManager
                 Value<String?> UuidKelompokPajak = const Value.absent(),
                 Value<bool?> HargaTermasukPajak = const Value.absent(),
                 required bool TampilDiPos,
+                Value<bool> Favorit = const Value.absent(),
                 Value<String?> UuidInduk = const Value.absent(),
                 Value<String?> UrlGambarKecil = const Value.absent(),
                 required bool Aktif,
@@ -23545,6 +23644,7 @@ class $$ProdukTableTableManager
                 UuidKelompokPajak: UuidKelompokPajak,
                 HargaTermasukPajak: HargaTermasukPajak,
                 TampilDiPos: TampilDiPos,
+                Favorit: Favorit,
                 UuidInduk: UuidInduk,
                 UrlGambarKecil: UrlGambarKecil,
                 Aktif: Aktif,
@@ -25267,6 +25367,7 @@ typedef $$PenjualanTableCreateCompanionBuilder = PenjualanCompanion Function({
   Value<String?> NamaPemesan,
   Value<String?> PerintahKerja,
   Value<String?> Resep,
+  Value<String?> BagianTagihan,
   Value<int> rowid,
 });
 typedef $$PenjualanTableUpdateCompanionBuilder = PenjualanCompanion Function({
@@ -25296,6 +25397,7 @@ typedef $$PenjualanTableUpdateCompanionBuilder = PenjualanCompanion Function({
   Value<String?> NamaPemesan,
   Value<String?> PerintahKerja,
   Value<String?> Resep,
+  Value<String?> BagianTagihan,
   Value<int> rowid,
 });
 
@@ -25419,6 +25521,9 @@ class $$PenjualanTableFilterComposer extends Composer<_$BasisDataKasir, $Penjual
   ColumnFilters<String> get Resep =>
       $composableBuilder(column: $table.Resep, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get BagianTagihan =>
+      $composableBuilder(column: $table.BagianTagihan, builder: (column) => ColumnFilters(column));
+
   Expression<bool> penjualanDetailRefs(Expression<bool> Function($$PenjualanDetailTableFilterComposer f) f) {
     final $$PenjualanDetailTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -25541,6 +25646,9 @@ class $$PenjualanTableOrderingComposer extends Composer<_$BasisDataKasir, $Penju
 
   ColumnOrderings<String> get Resep =>
       $composableBuilder(column: $table.Resep, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get BagianTagihan =>
+      $composableBuilder(column: $table.BagianTagihan, builder: (column) => ColumnOrderings(column));
 }
 
 class $$PenjualanTableAnnotationComposer extends Composer<_$BasisDataKasir, $PenjualanTable> {
@@ -25613,6 +25721,9 @@ class $$PenjualanTableAnnotationComposer extends Composer<_$BasisDataKasir, $Pen
       $composableBuilder(column: $table.PerintahKerja, builder: (column) => column);
 
   GeneratedColumn<String> get Resep => $composableBuilder(column: $table.Resep, builder: (column) => column);
+
+  GeneratedColumn<String> get BagianTagihan =>
+      $composableBuilder(column: $table.BagianTagihan, builder: (column) => column);
 
   Expression<T> penjualanDetailRefs<T extends Object>(
     Expression<T> Function($$PenjualanDetailTableAnnotationComposer a) f,
@@ -25706,6 +25817,7 @@ class $$PenjualanTableTableManager
                 Value<String?> NamaPemesan = const Value.absent(),
                 Value<String?> PerintahKerja = const Value.absent(),
                 Value<String?> Resep = const Value.absent(),
+                Value<String?> BagianTagihan = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PenjualanCompanion(
                 Uuid: Uuid,
@@ -25734,6 +25846,7 @@ class $$PenjualanTableTableManager
                 NamaPemesan: NamaPemesan,
                 PerintahKerja: PerintahKerja,
                 Resep: Resep,
+                BagianTagihan: BagianTagihan,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -25764,6 +25877,7 @@ class $$PenjualanTableTableManager
                 Value<String?> NamaPemesan = const Value.absent(),
                 Value<String?> PerintahKerja = const Value.absent(),
                 Value<String?> Resep = const Value.absent(),
+                Value<String?> BagianTagihan = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PenjualanCompanion.insert(
                 Uuid: Uuid,
@@ -25792,6 +25906,7 @@ class $$PenjualanTableTableManager
                 NamaPemesan: NamaPemesan,
                 PerintahKerja: PerintahKerja,
                 Resep: Resep,
+                BagianTagihan: BagianTagihan,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

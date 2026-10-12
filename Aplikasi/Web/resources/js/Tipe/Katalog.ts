@@ -74,6 +74,7 @@ export type BarisProduk = {
     SimbolSatuan: string;
     JumlahVarian: number;
     TampilDiPos: boolean;
+    Favorit: boolean;
     DiubahPada: string | null;
     Status: StatusProduk;
     UrlGambarKecil: string | null;
@@ -124,6 +125,8 @@ export type FormProduk = {
     BolehMinus: TigaKeadaan;
     TampilDiPos: boolean;
     TampilOnline: boolean;
+    /** K-16: produk favorit pilihan pemilik, tampil di kategori Favorit kasir. */
+    Favorit: boolean;
     /** K-25: kasir mengetik harga per transaksi (Stok, NonStok, Jasa, Resep); tidak ada = false. */
     HargaTerbuka?: boolean;
     Satuan: FormSatuanProduk[];
@@ -219,6 +222,7 @@ export type DetailProduk = {
     BolehMinus: TigaKeadaan;
     TampilDiPos: boolean;
     TampilOnline: boolean;
+    Favorit: boolean;
     HargaTerbuka?: boolean;
     GolonganObat?: GolonganObat | null;
     ObatWajibApotek?: boolean;

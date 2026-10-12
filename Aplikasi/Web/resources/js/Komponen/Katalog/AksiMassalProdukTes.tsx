@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AksiMassalProduk from '@/Komponen/Katalog/AksiMassalProduk';
@@ -21,6 +21,7 @@ function Baris(uuid: string, nama: string): BarisProduk {
         SimbolSatuan: 'pcs',
         JumlahVarian: 0,
         TampilDiPos: true,
+        Favorit: false,
         DiubahPada: null,
         Status: 'Aktif',
         UrlGambarKecil: null,
@@ -68,6 +69,26 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
         expect(tiruanRouter.post).toHaveBeenLastCalledWith(
             '/kelola/produk/massal',
             expect.objectContaining({ Aksi: 'Kategori', UuidKategori: '01J9KTG0000000000000000001' }),
+            expect.anything(),
+        );
+    });
+
+    it('K-16: Tandai favorit & Lepas favorit mengirim aksi Favorit/HapusFavorit dengan Uuid terpilih', () => {
+        const { container } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
+        const dalam = within(container);
+        const uuid = ['01J9PRD0000000000000000001', '01J9PRD0000000000000000002'];
+
+        fireEvent.click(dalam.getByRole('button', { name: 'Tandai favorit' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            '/kelola/produk/massal',
+            { Aksi: 'Favorit', Uuid: uuid, UuidKategori: null },
+            expect.anything(),
+        );
+
+        fireEvent.click(dalam.getByRole('button', { name: 'Lepas favorit' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            '/kelola/produk/massal',
+            { Aksi: 'HapusFavorit', Uuid: uuid, UuidKategori: null },
             expect.anything(),
         );
     });

@@ -26,5 +26,6 @@ final readonly class DataPerubahanProduk
         public ?bool $tampilOnline = null,
         public ?bool $bolehMinus = null,
         public ?PelacakanProduk $pelacakan = null,
+        public ?bool $favorit = null,
     ) {}
 }

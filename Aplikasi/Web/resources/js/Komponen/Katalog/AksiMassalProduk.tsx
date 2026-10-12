@@ -7,14 +7,15 @@ import DialogHargaMassal from '@/Komponen/Katalog/DialogHargaMassal';
 import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { BarisProduk } from '@/Tipe/Katalog';
 
-type AksiProduk = 'Arsipkan' | 'Pulihkan' | 'Kategori' | 'TampilDiPos' | 'SembunyikanDariPos';
+type AksiProduk =
+    'Arsipkan' | 'Pulihkan' | 'Kategori' | 'TampilDiPos' | 'SembunyikanDariPos' | 'Favorit' | 'HapusFavorit';
 
 /** Batas server `UbahProdukMassal::MAKS`. */
 export const MaksProdukMassal = 200;
 
 /**
  * Audit kemudahan pakai #19 (F-03): aksi untuk produk terpilih di daftar produk — pindah kategori, tampil/sembunyikan
- * di kasir, arsipkan/pulihkan. Hanya baris yang dicentang (bukan seluruh hasil saringan lintas halaman).
+ * di kasir, tandai/lepas favorit (K-16), arsipkan/pulihkan. Hanya baris yang dicentang (bukan seluruh hasil saringan lintas halaman).
  */
 export default function AksiMassalProduk({
     konteks,
@@ -85,6 +86,22 @@ export default function AksiMassalProduk({
                 onClick={() => Jalankan('SembunyikanDariPos')}
             >
                 Sembunyikan dari kasir
+            </Tombol>
+            <Tombol
+                varian="sekunder"
+                disabled={nonaktif}
+                memproses={memproses === 'Favorit'}
+                onClick={() => Jalankan('Favorit')}
+            >
+                Tandai favorit
+            </Tombol>
+            <Tombol
+                varian="sekunder"
+                disabled={nonaktif}
+                memproses={memproses === 'HapusFavorit'}
+                onClick={() => Jalankan('HapusFavorit')}
+            >
+                Lepas favorit
             </Tombol>
             <Tombol
                 varian="sekunder"

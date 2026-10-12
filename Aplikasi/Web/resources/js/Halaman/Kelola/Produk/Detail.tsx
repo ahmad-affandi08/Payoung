@@ -297,6 +297,7 @@ export default function HalamanDetailProduk({
                             </Baris>
                         ) : null}
                         <Baris label="Tampil di kasir">{Produk.TampilDiPos ? 'Ya' : 'Tidak'}</Baris>
+                        <Baris label="Favorit di kasir">{Produk.Favorit ? 'Ya' : 'Tidak'}</Baris>
                         <Baris label="Tampil di toko online">{Produk.TampilOnline ? 'Ya' : 'Tidak'}</Baris>
                         {Produk.HargaTerbuka ? <Baris label="Harga">Diketik kasir saat menjual</Baris> : null}
                         {Produk.GolonganObat ? (

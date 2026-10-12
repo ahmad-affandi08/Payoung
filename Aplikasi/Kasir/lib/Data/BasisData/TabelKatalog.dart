@@ -67,6 +67,9 @@ class Produk extends Table {
   TextColumn get UuidKelompokPajak => text().nullable()();
   BoolColumn get HargaTermasukPajak => boolean().nullable()();
   BoolColumn get TampilDiPos => boolean()();
+
+  /// Skema 30 (K-16, v5.68): favorit pilihan pemilik untuk kategori Favorit di layar jual.
+  BoolColumn get Favorit => boolean().withDefault(const Constant(false))();
   TextColumn get UuidInduk => text().nullable()();
   TextColumn get UrlGambarKecil => text().nullable()();
   BoolColumn get Aktif => boolean()();

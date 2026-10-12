@@ -91,6 +91,7 @@ final class DaftarProduk
             'SimbolSatuan' => (string) ($simbol->get($p->IdSatuanDasar) ?? ''),
             'JumlahVarian' => (int) ($jumlahVarian->get($p->Id) ?? 0),
             'TampilDiPos' => $p->TampilDiPos,
+            'Favorit' => $p->Favorit,
             'DiubahPada' => $p->DiubahPada?->toIso8601String(),
             'Status' => $p->AmbilStatus()->value,
             'UrlGambarKecil' => PenyimpanGambarProduk::BuatUrl($p, 'kecil'),

@@ -214,7 +214,7 @@ class BasisDataKasir extends _$BasisDataKasir {
   /// terbuka); 26 = Modul Salesman bagian 2 (pelanggan salesman, kunjungan, pesanan grosir lokal); 27 = Bengkel & Apotek
   /// bagian 2 (golongan obat produk, perintah kerja & ringkasan resep penjualan).
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -498,6 +498,26 @@ class BasisDataKasir extends _$BasisDataKasir {
         if (ada == 0) {
           await m.addColumn(penjualanDetail, penjualanDetail.Racikan);
         }
+      }
+      // Skema 29 (K-14 struk per tamu): bagian bayar tiap tamu pada penjualan lokal; hanya menambah kolom, outbox utuh.
+      if (dari >= 2 && dari < 29) {
+        final ada = await customSelect(
+          "SELECT COUNT(*) AS Jumlah FROM pragma_table_info('Penjualan') WHERE name = 'BagianTagihan'",
+        ).map((r) => r.read<int>('Jumlah')).getSingle();
+        if (ada == 0) {
+          await m.addColumn(penjualan, penjualan.BagianTagihan);
+        }
+      }
+      // Skema 30 (K-16 favorit): tanda favorit produk dari pemilik. Kursor katalog dihapus supaya sinkron berikutnya
+      // memuat ulang produk beserta tandanya; outbox & dokumen lama tidak disentuh.
+      if (dari >= 2 && dari < 30) {
+        final ada = await customSelect(
+          "SELECT COUNT(*) AS Jumlah FROM pragma_table_info('Produk') WHERE name = 'Favorit'",
+        ).map((r) => r.read<int>('Jumlah')).getSingle();
+        if (ada == 0) {
+          await m.addColumn(produk, produk.Favorit);
+        }
+        await (delete(pengaturan)..where((p) => p.Kunci.equals('KursorKatalog'))).go();
       }
     },
     beforeOpen: (detail) async {

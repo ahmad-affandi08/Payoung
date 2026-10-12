@@ -13,6 +13,7 @@ import '../Katalog/KatalogLokal.dart';
 import '../Katalog/LayananStokTersedia.dart';
 import '../Sesi/StafLokal.dart';
 import 'AturanApotek.dart';
+import 'BagianTagihan.dart';
 import 'Keranjang.dart';
 import 'KonteksPenjualan.dart';
 import 'Racikan.dart';
@@ -82,11 +83,14 @@ class HitunganKeranjang {
 
 /// Satu pembayaran yang dimasukkan kasir. Tunai: [jumlah] = uang diterima.
 class PembayaranMasukan {
-  const PembayaranMasukan({required this.metode, required this.jumlah, this.referensi});
+  const PembayaranMasukan({required this.metode, required this.jumlah, this.referensi, this.tamu});
 
   final BarisMetodePembayaran metode;
   final Uang jumlah;
   final String? referensi;
+
+  /// K-14: bagian tamu bila pembayaran ini bagian dari tagihan yang dibagi (untuk struk per tamu).
+  final BagianTamu? tamu;
 
   bool CekTunai() => metode.Jenis == JenisMetodeBayar.tunai;
 
@@ -108,6 +112,7 @@ class PenjualanTersimpan {
     this.namaPemesan,
     this.nomorReturTukar,
     this.kembalianTukar,
+    this.bagianTagihan,
     this.latihan = false,
   });
 
@@ -121,6 +126,9 @@ class PenjualanTersimpan {
   /// (barang pengganti lebih murah; null bila bukan tukar barang).
   final String? nomorReturTukar;
   final Uang? kembalianTukar;
+
+  /// K-14: rincian bagian tiap tamu bila tagihan dibagi (null = tidak dibagi atau hanya satu tamu).
+  final BagianTagihan? bagianTagihan;
 
   /// v3.52: nomor panggil (null = tidak bernomor antrian) & nama pemesan, ditampilkan besar setelah bayar.
   final String? nomorAntrian;
@@ -1221,6 +1229,7 @@ class LayananPenjualan {
     bool latihan = false,
     ResepPenjualan? resep,
     String? uuidApoteker,
+    BagianTagihan? bagianTagihan,
   }) async {
     final shift = await repositori.AmbilShiftAktif();
     if (shift == null) {
@@ -1334,6 +1343,7 @@ class LayananPenjualan {
             katalog: katalog,
             resep: resep,
             uuidApoteker: uuidApoteker,
+            bagianTagihan: bagianTagihan,
           );
         },
       );
@@ -1363,6 +1373,7 @@ class LayananPenjualan {
       namaPemesan: dokumen.penjualan.NamaPemesan.value,
       nomorReturTukar: nomorReturTukar,
       kembalianTukar: tukar?.nilai.Kurangi(dipakaiTukar!),
+      bagianTagihan: bagianTagihan,
     );
   }
 
@@ -1492,6 +1503,7 @@ class LayananPenjualan {
     KatalogLokal? katalog,
     ResepPenjualan? resep,
     String? uuidApoteker,
+    BagianTagihan? bagianTagihan,
   }) {
     final hasil = hitungan.hasil;
     // Apotek (§9.5): baris wajib resep yang ditutup resep ini ditandai `DenganResep` (server memakai tanda perangkat).
@@ -1642,6 +1654,7 @@ class LayananPenjualan {
                 }),
         ),
         Resep: Value(resep == null ? null : jsonEncode(resep.KeRingkasanStruk())),
+        BagianTagihan: Value(bagianTagihan == null ? null : jsonEncode(bagianTagihan.KeJson())),
       ),
       detail: [
         for (var i = 0; i < keranjang.baris.length; i++)

@@ -135,6 +135,8 @@ final class SimpanProduk
             'BolehMinus' => $bolehMinus,
             'TampilDiPos' => AturanProduk::TentukanTampilDiPos($data->jenis, $data->tampilDiPos),
             'TampilOnline' => $data->tampilOnline,
+            // K-16: tidak dikirim (null) = pertahankan nilai yang ada (produk baru: false).
+            'Favorit' => AturanProduk::TentukanFavorit($data->jenis, $data->favorit ?? $produk->Favorit),
             'HargaTerbuka' => $data->jenis->CekBolehHargaTerbuka() && ($data->hargaTerbuka ?? $produk->HargaTerbuka),
             'DurasiMenit' => $data->jenis === JenisProduk::Jasa ? $data->durasiMenit : null,
             // F-05h: hanya produk bernomor seri; impor & panduan awal tidak mengubah garansi yang sudah diatur.

@@ -155,6 +155,7 @@ class RepositoriKatalog {
             UuidKelompokPajak: Value(x.uuidKelompokPajak),
             HargaTermasukPajak: Value(x.hargaTermasukPajak),
             TampilDiPos: x.tampilDiPos,
+            Favorit: Value(x.favorit),
             UuidInduk: Value(x.uuidInduk),
             UrlGambarKecil: Value(x.urlGambarKecil),
             Aktif: x.aktif,

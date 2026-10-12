@@ -49,5 +49,7 @@ final readonly class DataProduk
         public ?bool $hargaTerbuka = null,
         // Apotek (§9.5): golongan obat, OWA, prekursor; null = tidak diubah (impor & sumber tanpa isian obat).
         public ?DataObatProduk $obat = null,
+        // K-16: produk favorit di kasir; null = tidak diubah (klien lama, impor, panduan awal); produk baru = false.
+        public ?bool $favorit = null,
     ) {}
 }

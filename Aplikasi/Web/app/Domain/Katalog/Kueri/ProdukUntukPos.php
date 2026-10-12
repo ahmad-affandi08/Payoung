@@ -79,6 +79,8 @@ final class ProdukUntukPos implements BagianKatalogPos
                 'BolehMinus' => $p->BolehMinus,
                 'TampilDiPos' => $p->TampilDiPos,
                 'TampilOnline' => $p->TampilOnline,
+                // K-16: produk favorit pilihan pemilik (kasir menampilkannya di kategori "Favorit").
+                'Favorit' => $p->Favorit,
                 // K-25: kasir mengetik harga per transaksi (harga daftar jadi saran).
                 'HargaTerbuka' => $p->HargaTerbuka,
                 // Apotek (§9.5): golongan obat & wajib resep (kasir meminta resep/apoteker sebelum bayar).

@@ -186,7 +186,7 @@ Firebase Cloud Messaging hanya untuk notifikasi push; tidak ada analitik Firebas
 ### Memperbarui build yang sudah diunggah (pengujian tertutup)
 
 1. `git pull origin main`; pastikan `Aplikasi/Kasir/android/key.properties` dan `payou-release.jks` ada (keystore unggah yang sama).
-2. Naikkan **kode build** di `Aplikasi/Kasir/pubspec.yaml` (sekarang `1.0.0+3`): `version: 1.0.0+N`, dengan N lebih besar dari kode versi unggahan terakhir
+2. Naikkan **kode build** di `Aplikasi/Kasir/pubspec.yaml` (sekarang `1.0.0+4`): `version: 1.0.0+N`, dengan N lebih besar dari kode versi unggahan terakhir
    (lihat Uji dan rilis › Pengujian tertutup › rincian rilis, kolom Versi, mis. "1 (1.0.0)"). Biarkan nama versi `1.0.0` selama
    `versiAplikasi` di `Penyedia.dart` masih tertanam `'1.0.0'`: nilai itu dilaporkan ke server (P-10), jadi menaikkan nama versi di
    `pubspec.yaml` saja membuat Play Console dan server menampilkan versi berbeda.

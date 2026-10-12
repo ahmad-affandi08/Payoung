@@ -126,6 +126,12 @@ final class AturanProduk
         return $jenis === JenisProduk::BahanBaku ? false : $tampilDiPos;
     }
 
+    /** K-16: BahanBaku tidak pernah tampil di POS, jadi tidak pernah favorit. Induk varian boleh (induklah yang tampil di kasir). */
+    public static function TentukanFavorit(JenisProduk $jenis, bool $favorit): bool
+    {
+        return $jenis === JenisProduk::BahanBaku ? false : $favorit;
+    }
+
     /** BR-03.1: SKU di-trim; kosong = otomatis; pola & keunikan per tenant (tanpa beda huruf besar/kecil). */
     public function TentukanSku(?string $sku, ?int $idProduk): string
     {

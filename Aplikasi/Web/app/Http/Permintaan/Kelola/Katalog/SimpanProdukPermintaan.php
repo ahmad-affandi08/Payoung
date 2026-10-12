@@ -58,6 +58,8 @@ final class SimpanProdukPermintaan extends FormRequest
             'BolehMinus' => ['required', $tigaKeadaan],
             'TampilDiPos' => ['required', 'boolean'],
             'TampilOnline' => ['required', 'boolean'],
+            // K-16: `sometimes` supaya klien lama (tanpa field ini) tidak mereset favorit saat mengedit.
+            'Favorit' => ['sometimes', 'boolean'],
             'HargaTerbuka' => ['sometimes', 'boolean'],
             // Apotek (§9.5): golongan obat (null = bukan obat); `sometimes` supaya klien lama tidak menghapus isian obat.
             'GolonganObat' => ['sometimes', 'nullable', Rule::enum(GolonganObat::class)],
@@ -213,6 +215,7 @@ final class SimpanProdukPermintaan extends FormRequest
             masaGaransiBulan: $this->filled('MasaGaransiBulan') ? $this->integer('MasaGaransiBulan') : null,
             kodeBarangJasaCoretax: $this->filled('KodeBarangJasaCoretax') ? $this->string('KodeBarangJasaCoretax')->toString() : null,
             kodeUnitCoretax: $this->filled('KodeUnitCoretax') ? $this->string('KodeUnitCoretax')->toString() : null,
+            favorit: $this->has('Favorit') ? $this->boolean('Favorit') : null,
             hargaTerbuka: $this->has('HargaTerbuka') ? $this->boolean('HargaTerbuka') : null,
             obat: $this->has('GolonganObat') ? new DataObatProduk(
                 $this->filled('GolonganObat') ? GolonganObat::from($this->string('GolonganObat')->toString()) : null,
