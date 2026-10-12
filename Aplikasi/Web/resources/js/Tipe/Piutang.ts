@@ -6,7 +6,7 @@ import type { JurnalDokumen, OpsiAkunKas, RiwayatDokumen } from '@/Tipe/Pembelia
  * (daftar, formulir, detail). Uang selalu string desimal "12345.68"; tanggal `YYYY-MM-DD`.
  */
 
-export type StatusPiutang = 'BelumLunas' | 'DibayarSebagian' | 'Lunas' | 'Dibatalkan';
+export type StatusPiutang = 'BelumLunas' | 'DibayarSebagian' | 'Lunas' | 'Dibatalkan' | 'DihapusBuku';
 export type StatusPelunasanPiutang = 'Diposting' | 'Dibatalkan';
 export type KelompokUmurPiutang =
     'BelumJatuhTempo' | 'Hari0Sampai30' | 'Hari31Sampai60' | 'Hari61Sampai90' | 'LebihDari90';
@@ -63,6 +63,26 @@ export type BarisPelunasan = {
     Jumlah: string;
     Status: StatusPelunasanPiutang;
     LabelStatus: string;
+};
+
+/** E8: dokumen hapus-buku piutang. */
+export type BarisHapusBuku = {
+    Uuid: string;
+    Nomor: string;
+    NomorPiutang: string;
+    Tanggal: string;
+    NamaPelanggan: string | null;
+    Jumlah: string;
+    Alasan: string;
+    Status: StatusPelunasanPiutang;
+    LabelStatus: string;
+    AlasanBatal: string | null;
+};
+
+export type PropsDaftarHapusBuku = {
+    HapusBuku: HasilTabel<BarisHapusBuku>;
+    OpsiStatus: OpsiNilai[];
+    Izin: IzinPiutang;
 };
 
 export type PropsDaftarPelunasan = {

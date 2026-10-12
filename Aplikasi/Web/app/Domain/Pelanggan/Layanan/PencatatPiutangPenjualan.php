@@ -82,9 +82,19 @@ final class PencatatPiutangPenjualan
     {
         $piutang = Piutang::query()->where('IdFakturPenjualan', $idFakturPenjualan)->first();
 
+        if ($piutang?->Status === StatusPiutang::DihapusBuku) {
+            return self::PesanDihapusBuku($piutang);
+        }
+
         return $piutang !== null && ! Uang::Dari($piutang->JumlahDibayar)->BernilaiNol()
             ? "Piutang {$piutang->Nomor} sudah dibayar sebagian. Batalkan pelunasannya dulu atau terbitkan nota kredit."
             : null;
+    }
+
+    /** E8: piutang yang sudah dihapus-buku tidak boleh dibatalkan/diretur/dikreditkan sebelum hapus-bukunya dibatalkan. */
+    private static function PesanDihapusBuku(Piutang $piutang): string
+    {
+        return "Piutang {$piutang->Nomor} sudah dihapus-buku. Batalkan hapus-bukunya dulu di halaman Piutang.";
     }
 
     /** Pembatalan faktur: sisa piutangnya dikurangi habis dan statusnya Dibatalkan. */
@@ -156,6 +166,10 @@ final class PencatatPiutangPenjualan
             return "Piutang {$piutang->Nomor} sudah dibatalkan.";
         }
 
+        if ($piutang->Status === StatusPiutang::DihapusBuku) {
+            return self::PesanDihapusBuku($piutang);
+        }
+
         if ($jumlah->Bandingkan($piutang->AmbilSisa()) > 0) {
             return "Nilai retur {$jumlah->FormatRupiah()} melebihi sisa tagihan {$piutang->AmbilSisa()->FormatRupiah()} di piutang {$piutang->Nomor}. "
                 .'Fakturnya sudah (hampir) dibayar, jadi pengembaliannya berupa refund uang, bukan pengurangan tagihan.';
@@ -206,9 +220,21 @@ final class PencatatPiutangPenjualan
     {
         $piutang = Piutang::query()->where('IdPenjualan', $idPenjualan)->first();
 
+        if ($piutang?->Status === StatusPiutang::DihapusBuku) {
+            return self::PesanDihapusBuku($piutang);
+        }
+
         return $piutang !== null && ! Uang::Dari($piutang->JumlahDibayar)->BernilaiNol()
             ? "Piutang {$piutang->Nomor} sudah dibayar sebagian. Gunakan retur."
             : null;
+    }
+
+    /** Retur penjualan tempo ditolak selama piutangnya dihapus-buku (null = boleh). */
+    public function PeriksaBisaDiretur(int $idPenjualan): ?string
+    {
+        $piutang = Piutang::query()->where('IdPenjualan', $idPenjualan)->first();
+
+        return $piutang?->Status === StatusPiutang::DihapusBuku ? self::PesanDihapusBuku($piutang) : null;
     }
 
     /** Void: sisa piutang dikurangi habis dan status Dibatalkan. */

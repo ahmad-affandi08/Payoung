@@ -27,7 +27,12 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
         Route::get('/pelunasan/buat', [PiutangKontroler::class, 'Buat'])->name('kelola.piutang.pelunasan.buat');
         Route::post('/pelunasan', [PiutangKontroler::class, 'Simpan'])->name('kelola.piutang.pelunasan.simpan');
         Route::post('/pelunasan/{pelunasan}/batalkan', [PiutangKontroler::class, 'Batalkan'])->where('pelunasan', $ulid)->name('kelola.piutang.pelunasan.batalkan');
+        Route::post('/{piutang}/hapus-buku', [PiutangKontroler::class, 'HapusBuku'])->where('piutang', $ulid)->name('kelola.piutang.hapus-buku.simpan');
+        Route::post('/hapus-buku/{hapusBuku}/batalkan', [PiutangKontroler::class, 'BatalkanHapusBuku'])->where('hapusBuku', $ulid)->name('kelola.piutang.hapus-buku.batalkan');
     });
+
+    // E8: hapus-buku piutang yang tidak akan tertagih.
+    Route::get('/hapus-buku', [PiutangKontroler::class, 'DaftarHapusBuku'])->name('kelola.piutang.hapus-buku.daftar');
 
     // D-23 D: pengingat piutang ke pelanggan (kirim sekarang & pengaturan otomatis).
     Route::middleware($izin(IzinTenant::PelangganKelola))->group(function () use ($ulid): void {

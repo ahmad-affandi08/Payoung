@@ -350,6 +350,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -398,7 +405,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Sembako",
@@ -911,6 +919,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -959,7 +974,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Kopi",
@@ -1471,6 +1487,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -1519,7 +1542,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Makanan",
@@ -2029,6 +2053,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -2077,7 +2108,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Makanan utama",
@@ -2577,6 +2609,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -2625,7 +2664,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Roti manis",
@@ -3108,6 +3148,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -3156,7 +3203,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Atasan",
@@ -3633,6 +3681,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -3681,7 +3736,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Ponsel",
@@ -4160,6 +4216,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -4208,7 +4271,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Semen & pasir",
@@ -4697,6 +4761,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -4745,7 +4816,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Sembako",
@@ -5226,6 +5298,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -5274,7 +5353,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Potong rambut",
@@ -5749,6 +5829,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -5797,7 +5884,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Kiloan",
@@ -6271,6 +6359,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -6319,7 +6414,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Fotokopi & cetak",
@@ -6795,6 +6891,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -6843,7 +6946,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Obat bebas",
@@ -7344,6 +7448,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -7392,7 +7503,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Jasa Servis",
@@ -7867,6 +7979,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -7915,7 +8034,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Sayur",
@@ -8408,6 +8528,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -8456,7 +8583,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Membership",
@@ -8949,6 +9077,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -8997,7 +9132,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Cuci motor",
@@ -9482,6 +9618,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -9530,7 +9673,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Makanan kucing",
@@ -10027,6 +10171,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "6-5100",
+                        "Nama": "Beban Piutang Tak Tertagih",
+                        "Tipe": "Beban",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "6-9000",
                         "Nama": "Beban Selisih Kas / Lain-lain",
                         "Tipe": "Beban",
@@ -10075,7 +10226,8 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
-                    "HutangGiro": "2-1180"
+                    "HutangGiro": "2-1180",
+                    "BebanPiutangTakTertagih": "6-5100"
                 },
                 "Kategori": [
                     "Buket",

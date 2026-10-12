@@ -54,6 +54,9 @@ enum JenisDokumenBernomor: string
     /** F-08 BR-08.4: pencairan dana non-tunai ke rekening toko (J-08.1). */
     case Pencairan = 'Pencairan';
 
+    /** E8: hapus-buku piutang `HB/{YYYY}/{MM}/{SEQ4}` per tenant. */
+    case HapusBukuPiutang = 'HapusBukuPiutang';
+
     /** FIN-10 (v3.38): aset tetap `AT-2610-0001`. */
     case AsetTetap = 'AsetTetap';
 
@@ -98,6 +101,7 @@ enum JenisDokumenBernomor: string
             self::FakturPenjualan => 'FJ',
             self::ReturGrosir => 'RG',
             self::Pencairan => 'PC',
+            self::HapusBukuPiutang => 'HB',
             self::AsetTetap => 'AT',
             self::DokumenKonsinyasi => 'KS',
             self::PembayaranKonsinyasi => 'BK',
@@ -114,7 +118,7 @@ enum JenisDokumenBernomor: string
             self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
-            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja => 4,
+            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja => 4,
             self::AntrianKios => 3,
         };
     }

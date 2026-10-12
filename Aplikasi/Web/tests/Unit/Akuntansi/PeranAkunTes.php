@@ -33,7 +33,10 @@ describe('PeranAkun: istilah kamus & alias kunci lama (P-03, BR-P03.4, DesainF01
             // K-11 (v3.61): kliring tukar barang (kewajiban, bukan kontra).
             ->and(PeranAkun::KliringTukarBarang->AmbilTipeAkun())->toBe(TipeAkun::Kewajiban)
             ->and(PeranAkun::KliringTukarBarang->CekWajibKontra())->toBeFalse()
-            ->and(PeranAkun::cases())->toHaveCount(41);
+            // E8: hapus-buku piutang (Dr beban piutang tak tertagih).
+            ->and(PeranAkun::BebanPiutangTakTertagih->AmbilTipeAkun())->toBe(TipeAkun::Beban)
+            ->and(PeranAkun::BebanPiutangTakTertagih->CekWajibKontra())->toBeFalse()
+            ->and(PeranAkun::cases())->toHaveCount(42);
     });
 
     it('DariKunci membaca kunci baru, kunci lama dari versi terbit, dan menolak kunci asing', function (): void {

@@ -63,6 +63,9 @@ enum JenisSumberJurnal: string
     // F-08 BR-08.4 (J-08.1): pencairan dana non-tunai ke rekening toko, dan pembatalannya.
     case Pencairan = 'Pencairan';
 
+    /** E8: hapus-buku piutang yang tidak akan tertagih (Dr beban piutang tak tertagih, Cr piutang usaha). */
+    case HapusBukuPiutang = 'HapusBukuPiutang';
+
     // F-17 toko online bagian 2: uang muka pesanan online diterima (J-17.1) dan dikembalikan (J-17.2).
     case PesananOnline = 'PesananOnline';
 
@@ -113,6 +116,7 @@ enum JenisSumberJurnal: string
             self::FakturPenjualan => 'Faktur penjualan grosir',
             self::ReturGrosir => 'Retur grosir',
             self::Pencairan => 'Pencairan dana',
+            self::HapusBukuPiutang => 'Hapus-buku piutang',
             self::PesananOnline => 'Uang muka pesanan online',
             self::AsetTetap => 'Aset tetap',
             self::PenyusutanAset => 'Penyusutan aset tetap',
@@ -159,6 +163,7 @@ enum JenisSumberJurnal: string
             self::FakturPenjualan => '/kelola/grosir/faktur/'.$uuid,
             self::ReturGrosir => '/kelola/grosir/retur/'.$uuid,
             self::Pencairan => '/kelola/akuntansi/pencairan/'.$uuid,
+            self::HapusBukuPiutang => '/kelola/piutang/hapus-buku?cari='.$uuid,
             self::PesananOnline => '/kelola/toko-online?cari='.$uuid,
             // Penyusutan memakai Uuid asetnya sebagai `UuidSumber`, jadi keduanya menuju rincian aset.
             self::AsetTetap, self::PenyusutanAset => '/kelola/akuntansi/aset-tetap/'.$uuid,

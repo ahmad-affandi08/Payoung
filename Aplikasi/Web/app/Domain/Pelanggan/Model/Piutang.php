@@ -79,7 +79,7 @@ final class Piutang extends ModelDasar
     /** Status mengikuti sisa (piutang dibatalkan tidak berubah). */
     public function SelaraskanStatus(): void
     {
-        if ($this->Status === StatusPiutang::Dibatalkan) {
+        if ($this->Status === StatusPiutang::Dibatalkan || $this->Status === StatusPiutang::DihapusBuku) {
             return;
         }
 

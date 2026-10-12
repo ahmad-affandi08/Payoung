@@ -51,6 +51,8 @@ enum PeranAkun: string
     case OverheadProduksiDibebankan = 'OverheadProduksiDibebankan';
     case BebanBiayaPembayaran = 'BebanBiayaPembayaran';
     case BebanSelisihKas = 'BebanSelisihKas';
+    // E8: hapus-buku piutang yang tidak akan tertagih (Dr beban, Cr PiutangUsaha).
+    case BebanPiutangTakTertagih = 'BebanPiutangTakTertagih';
 
     // FIN-10 (v3.38): aset tetap & penyusutan garis lurus.
     case AsetTetap = 'AsetTetap';
@@ -119,7 +121,7 @@ enum PeranAkun: string
             self::Penjualan, self::DiskonPenjualan, self::ReturPenjualan, self::PendapatanJasa,
             self::PendapatanBiayaLayanan, self::PendapatanPengiriman, self::PendapatanLain => TipeAkun::Pendapatan,
             self::Hpp, self::SelisihHpp, self::SusutPersediaan, self::OverheadProduksiDibebankan => TipeAkun::Hpp,
-            self::BebanBiayaPembayaran, self::BebanSelisihKas, self::BebanPenyusutan => TipeAkun::Beban,
+            self::BebanBiayaPembayaran, self::BebanSelisihKas, self::BebanPenyusutan, self::BebanPiutangTakTertagih => TipeAkun::Beban,
         };
     }
 
@@ -202,6 +204,7 @@ enum PeranAkun: string
             self::BebanPenyusutan => 'Beban penyusutan',
             self::GiroDiterima => 'Giro/cek mundur diterima (belum cair)',
             self::HutangGiro => 'Hutang giro (giro keluar belum cair)',
+            self::BebanPiutangTakTertagih => 'Beban piutang tak tertagih (hapus-buku piutang)',
         };
     }
 }

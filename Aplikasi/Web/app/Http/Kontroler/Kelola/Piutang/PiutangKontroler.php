@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Piutang;
 
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
+use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
@@ -13,7 +14,9 @@ use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Aksi\AntrekanPengingatPiutang;
 use App\Domain\Pelanggan\Aksi\AntrekanPengingatPiutangMassal;
+use App\Domain\Pelanggan\Aksi\BatalkanHapusBukuPiutang;
 use App\Domain\Pelanggan\Aksi\BatalkanPembayaranPiutang;
+use App\Domain\Pelanggan\Aksi\CatatHapusBukuPiutang;
 use App\Domain\Pelanggan\Aksi\SimpanPembayaranPiutang;
 use App\Domain\Pelanggan\Aksi\SimpanPengaturanPengingatPiutang;
 use App\Domain\Pelanggan\Enum\JenisPengingatPiutang;
@@ -29,6 +32,7 @@ use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
+use App\Http\Permintaan\Kelola\Piutang\HapusBukuPiutangPermintaan;
 use App\Http\Permintaan\Kelola\Piutang\SimpanPembayaranPiutangPermintaan;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
@@ -145,6 +149,33 @@ final class PiutangKontroler extends DasarKelolaKontroler
         $simpan->Jalankan((bool) $valid['Aktif'], (int) $valid['HariSebelum'], (bool) $valid['IngatkanSaatLewat'], $this->Pelaku()->Id);
 
         return back()->with('Kilat', $valid['Aktif'] ? 'Pengingat piutang otomatis aktif.' : 'Pengingat piutang otomatis dimatikan.');
+    }
+
+    /** E8: hapus-buku sisa piutang yang tidak akan tertagih (izin `akuntansi.kelola`). */
+    public function HapusBuku(HapusBukuPiutangPermintaan $permintaan, string $piutang, CatatHapusBukuPiutang $catat): RedirectResponse
+    {
+        $model = Piutang::query()->where('Uuid', $piutang)->firstOrFail();
+        abort_if(($idOutlet = $this->IdOutletBoleh()) !== null && ! in_array($model->IdOutlet, $idOutlet, true), 404);
+        $dokumen = $catat->Jalankan($model->Uuid, $permintaan->AmbilTanggal(), $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
+
+        return to_route('kelola.piutang.hapus-buku.daftar', ['cari' => $dokumen->Uuid])->with('Kilat', "{$dokumen->Nomor} diposting. Piutang {$model->Nomor} dihapus-buku sebagai beban.");
+    }
+
+    public function DaftarHapusBuku(Request $permintaan, DaftarPiutang $daftar): Response|JsonResponse
+    {
+        $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarPiutang::KOLOM_URUT, DaftarPiutang::URUT_BAWAAN_HAPUS_BUKU, DaftarPiutang::KOLOM_SARING);
+
+        return ResponsTabel::Kirim($permintaan, 'Kelola/Piutang/HapusBuku/Daftar', 'HapusBuku', fn (): array => $daftar->HapusBuku($tabel), fn (): array => [
+            'OpsiStatus' => array_map(fn (StatusDokumenTerposting $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusDokumenTerposting::cases()),
+            'Izin' => $this->AmbilIzin(),
+        ]);
+    }
+
+    public function BatalkanHapusBuku(AlasanPembelianPermintaan $permintaan, string $hapusBuku, BatalkanHapusBukuPiutang $batalkan): RedirectResponse
+    {
+        $dokumen = $batalkan->Jalankan($hapusBuku, $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
+
+        return to_route('kelola.piutang.hapus-buku.daftar', ['cari' => $dokumen->Uuid])->with('Kilat', "{$dokumen->Nomor} dibatalkan. Piutang kembali menjadi tagihan terbuka.");
     }
 
     public function Daftar(Request $permintaan, DaftarPiutang $daftar): Response|JsonResponse

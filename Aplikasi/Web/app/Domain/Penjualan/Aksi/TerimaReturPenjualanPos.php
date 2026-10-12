@@ -202,6 +202,12 @@ final class TerimaReturPenjualanPos
             );
         }
 
+        $masalahPiutang = $this->piutang->PeriksaBisaDiretur($penjualan->Id);
+
+        if ($masalahPiutang !== null) {
+            throw new PelanggaranAturanBisnis('ReturTidakDiizinkan', $masalahPiutang, 'UuidPenjualanAsal', 422, ['Status' => $penjualan->Status->value]);
+        }
+
         $metode = $this->AmbilMetode($data, $total, $this->piutang->AmbilSisa($penjualan->Id), $penjualan->IdPelanggan !== null);
 
         // Simpan dokumen, stok, jurnal.

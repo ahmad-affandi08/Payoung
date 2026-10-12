@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Pelanggan\Kueri;
 
+use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
 use App\Domain\Pelanggan\Enum\KelompokUmurPiutang;
 use App\Domain\Pelanggan\Enum\StatusPembayaranPiutang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
+use App\Domain\Pelanggan\Model\HapusBukuPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\PembayaranPiutang;
 use App\Domain\Pelanggan\Model\PengingatPiutang;
@@ -31,6 +33,8 @@ final class DaftarPiutang
     public const URUT_BAWAAN = 'JatuhTempo';
 
     public const URUT_BAWAAN_PELUNASAN = '-Tanggal';
+
+    public const URUT_BAWAAN_HAPUS_BUKU = '-Tanggal';
 
     /**
      * @param  list<int>|null  $idOutlet  outlet yang boleh diakses (null = semua)
@@ -122,6 +126,43 @@ final class DaftarPiutang
                 'Jumlah' => (string) $d->Jumlah,
                 'Status' => $d->Status->value,
                 'LabelStatus' => $d->Status->AmbilLabel(),
+            ])->all());
+        });
+    }
+
+    /**
+     * Daftar hapus-buku piutang (E8). `cari` mencocokkan nomor dokumen, nomor piutang, atau Uuid dokumen (tautan jurnal).
+     *
+     * @return array{Data: list<array<string, mixed>>, Meta: array{Halaman: int, PerHalaman: int, Total: int, JumlahHalaman: int}}
+     */
+    public function HapusBuku(DataPermintaanTabel $p): array
+    {
+        $kueri = HapusBukuPiutang::query();
+        $status = $p->AmbilDaftar('Status', array_map(fn (StatusDokumenTerposting $s): string => $s->value, StatusDokumenTerposting::cases()));
+
+        if ($status !== []) {
+            $kueri->whereIn('Status', $status);
+        }
+
+        if ($p->cari !== '') {
+            $pola = PenerapKueriTabel::PolaCari($p->cari);
+            $kueri->where(fn (Builder $dalam) => $dalam->where('Nomor', 'like', $pola)->orWhere('NomorPiutang', 'like', $pola)->orWhere('Uuid', $p->cari));
+        }
+
+        return PenerapKueriTabel::Terapkan($kueri, $p, ['Tanggal' => 'Tanggal', 'Nomor' => 'Nomor', 'Jumlah' => 'Jumlah'], function (Collection $baris): array {
+            $nama = Pelanggan::query()->whereKey($baris->pluck('IdPelanggan')->filter()->all())->pluck('Nama', 'Id');
+
+            return array_values($baris->map(fn (HapusBukuPiutang $d): array => [
+                'Uuid' => $d->Uuid,
+                'Nomor' => $d->Nomor,
+                'NomorPiutang' => $d->NomorPiutang,
+                'Tanggal' => $d->Tanggal->format('Y-m-d'),
+                'NamaPelanggan' => $d->IdPelanggan === null ? null : (string) ($nama[$d->IdPelanggan] ?? ''),
+                'Jumlah' => (string) $d->Jumlah,
+                'Alasan' => $d->Alasan,
+                'Status' => $d->Status->value,
+                'LabelStatus' => $d->Status->AmbilLabel(),
+                'AlasanBatal' => $d->AlasanBatal,
             ])->all());
         });
     }

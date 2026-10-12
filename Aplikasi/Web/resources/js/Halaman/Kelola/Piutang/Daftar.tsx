@@ -26,6 +26,7 @@ import type {
 
 import { FormatHariLewat } from '@/Halaman/Kelola/Pembelian/Hutang/Daftar';
 import AksiMassalPiutang from '@/Komponen/Piutang/AksiMassalPiutang';
+import DialogHapusBukuPiutang from '@/Komponen/Piutang/DialogHapusBukuPiutang';
 import { AlamatPiutang, HalamanDaftarPiutang, LabelStatusPiutang } from '@/Komponen/Piutang/BagianPiutang';
 
 const kolom: KolomTabel<BarisPiutang>[] = [
@@ -205,8 +206,10 @@ export default function HalamanDaftarPiutangPelanggan({
     OpsiPelanggan,
     Izin,
     Pengingat,
+    HariIni,
 }: PropsDaftarPiutang) {
     const [aturPengingat, AturAturPengingat] = useState(false);
+    const [dihapusBuku, AturDihapusBuku] = useState<BarisPiutang | null>(null);
     const bolehIngatkan = Izin.Ingatkan === true;
     const saring: DefinisiSaring[] = [
         {
@@ -222,21 +225,23 @@ export default function HalamanDaftarPiutangPelanggan({
             opsi: OpsiPelanggan.map((p) => ({ nilai: p.Uuid, label: p.Nama })),
         },
     ];
-    const tombol =
-        Izin.Kelola || (bolehIngatkan && Pengingat) ? (
-            <div className="flex flex-wrap gap-2">
-                {bolehIngatkan && Pengingat ? (
-                    <Tombol varian="sekunder" onClick={() => AturAturPengingat(true)}>
-                        Pengingat otomatis: {Pengingat.Aktif ? 'aktif' : 'mati'}
-                    </Tombol>
-                ) : null}
-                {Izin.Kelola ? (
-                    <Button asChild className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPiutang}/pelunasan/buat`}>Terima pelunasan</Link>
-                    </Button>
-                ) : null}
-            </div>
-        ) : null;
+    const tombol = (
+        <div className="flex flex-wrap gap-2">
+            {bolehIngatkan && Pengingat ? (
+                <Tombol varian="sekunder" onClick={() => AturAturPengingat(true)}>
+                    Pengingat otomatis: {Pengingat.Aktif ? 'aktif' : 'mati'}
+                </Tombol>
+            ) : null}
+            <Tombol varian="sekunder" onClick={() => router.visit(`${AlamatPiutang}/hapus-buku`)}>
+                Riwayat hapus-buku
+            </Tombol>
+            {Izin.Kelola ? (
+                <Button asChild className="h-8 pointer-coarse:h-11">
+                    <Link href={`${AlamatPiutang}/pelunasan/buat`}>Terima pelunasan</Link>
+                </Button>
+            ) : null}
+        </div>
+    );
     const AksiBaris = (p: BarisPiutang) => [
         ...(Izin.Kelola
             ? [
@@ -257,6 +262,10 @@ export default function HalamanDaftarPiutangPelanggan({
                           router.post(`${AlamatPiutang}/${p.Uuid}/pengingat`, {}, { preserveScroll: true }),
                   },
               ]
+            : []),
+        // E8: hanya piutang yang sudah lewat jatuh tempo boleh dihapus-buku.
+        ...(Izin.Kelola && p.HariLewat > 0
+            ? [{ label: 'Hapus-buku (tak tertagih)', saatPilih: () => AturDihapusBuku(p) }]
             : []),
         // v3.37: nota tagihan berisi semua piutang terbuka pelanggan ini (tab baru, siap cetak/PDF).
         ...(p.UuidPelanggan
@@ -309,6 +318,13 @@ export default function HalamanDaftarPiutangPelanggan({
                     judul: 'Tidak ada piutang terbuka. Semua penjualan tempo sudah lunas.',
                 }}
             />
+            {dihapusBuku ? (
+                <DialogHapusBukuPiutang
+                    piutang={dihapusBuku}
+                    hariIni={HariIni}
+                    saatTutup={() => AturDihapusBuku(null)}
+                />
+            ) : null}
             {aturPengingat && Pengingat ? (
                 <DialogPengingatOtomatis pengaturan={Pengingat} saatTutup={() => AturAturPengingat(false)} />
             ) : null}
