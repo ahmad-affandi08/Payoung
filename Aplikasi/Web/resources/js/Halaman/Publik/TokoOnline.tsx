@@ -1,70 +1,34 @@
 import { Head } from '@inertiajs/react';
 import {
-    CheckIcon,
     ClockIcon,
     MapPinIcon,
-    MinusIcon,
-    PlusIcon,
     QrCodeIcon,
     ReceiptTextIcon,
     SearchIcon,
     ShoppingBagIcon,
     StoreIcon,
-    TicketPercentIcon,
-    Trash2Icon,
     TruckIcon,
     UserRoundIcon,
-    UtensilsCrossedIcon,
 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
-import BidangTeks from '@/Komponen/Formulir/BidangTeks';
-import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
-import KotakCentang from '@/Komponen/Formulir/KotakCentang';
-import Tombol from '@/Komponen/Formulir/Tombol';
+import { useLebarLayar } from '@/Komponen/TabelData/useLebarLayar';
 import DialogMasukPembeli, {
     type AlamatPembeli,
     type HasilMasukPembeli,
     type ProfilPembeli,
 } from '@/Komponen/TokoOnline/DialogMasukPembeli';
+import KartuProduk from '@/Komponen/TokoOnline/KartuProduk';
+import LembarOpsiProduk from '@/Komponen/TokoOnline/LembarOpsiProduk';
+import PanelKeranjang, { type LangkahKeranjang } from '@/Komponen/TokoOnline/PanelKeranjang';
+import type { BarisKeranjang, CaraBayar, CaraMenerima, HasilHitung, ProdukToko } from '@/Komponen/TokoOnline/TipeToko';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { BuatUlid } from '@/Pustaka/Ulid';
 
-type Pilihan = { Uuid: string; Nama: string; Harga: string };
-type Kelompok = { Uuid: string; Nama: string; MinimalPilih: number; MaksimalPilih: number; Pilihan: Pilihan[] };
-type Produk = {
-    Uuid: string;
-    Nama: string;
-    Harga: string;
-    UrlGambar: string | null;
-    UuidKategori: string | null;
-    KelompokPilihan: Kelompok[];
-    Varian?: { Uuid: string; Nama: string; Harga: string | null; Tersedia: boolean }[];
-};
-type Baris = {
-    Uuid: string;
-    UuidProduk: string;
-    UuidVarian: string | null;
-    Jumlah: number;
-    Pilihan: string[];
-    Catatan: string;
-};
-type Hasil = {
-    Subtotal: string;
-    Diskon: string;
-    BiayaLayanan: string;
-    Pajak: { Nama: string; Tarif: string; Jumlah: string }[];
-    Ongkir: string;
-    /** Potongan promo gratis ongkir (F-16c); yang dibayar = Ongkir − DiskonOngkir, sudah termasuk di Total. */
-    DiskonOngkir: string;
-    Total: string;
-    Zona: { Nama: string; EstimasiHariMin: number; EstimasiHariMaks: number } | null;
-    /** v3.46: voucher yang berlaku di perhitungan ini (diperiksa server). */
-    Voucher?: { Kode: string; NamaPromo: string } | null;
-};
 type Props = {
     Aktif: boolean;
     Slug: string;
@@ -75,7 +39,7 @@ type Props = {
     Pembayaran: { BayarSaatAmbil: boolean; Cod: boolean; QrisOnline: boolean };
     MinimalPesanan: string;
     PesanTutup: string | null;
-    Menu: { Kategori: { Uuid: string; Nama: string }[]; Produk: Produk[] };
+    Menu: { Kategori: { Uuid: string; Nama: string }[]; Produk: ProdukToko[] };
     /** F-17 bagian 3: akun pembeli opsional (masuk dengan kode WhatsApp). */
     Akun: { Aktif: boolean; Pelanggan: ProfilPembeli | null; AlamatTerakhir: AlamatPembeli | null };
 };
@@ -91,6 +55,11 @@ async function Kirim<T>(url: string, badan: unknown): Promise<T> {
     return json;
 }
 
+/** Baris tanpa varian dan tanpa pilihan: satu produk polos selalu digabung ke satu baris. */
+function CekBarisPolos(b: BarisKeranjang, uuidProduk: string): boolean {
+    return b.UuidProduk === uuidProduk && b.UuidVarian === null && b.Pilihan.length === 0;
+}
+
 export default function TokoOnline({
     Aktif,
     Slug,
@@ -104,16 +73,19 @@ export default function TokoOnline({
     Menu,
     Akun,
 }: Props) {
+    const desktop = useLebarLayar() === 'desktop';
     const [pembeli, AturPembeli] = useState<ProfilPembeli | null>(Akun.Pelanggan);
     const [dialogMasuk, AturDialogMasuk] = useState(false);
-    const [baris, AturBaris] = useState<Baris[]>([]);
-    const [pilihanProduk, AturPilihanProduk] = useState<Record<string, { varian: string; pilihan: string[] }>>({});
-    const [jenis, AturJenis] = useState<'AmbilSendiri' | 'Kirim'>(Pemenuhan.AmbilSendiri ? 'AmbilSendiri' : 'Kirim');
+    const [baris, AturBaris] = useState<BarisKeranjang[]>([]);
+    const [produkOpsi, AturProdukOpsi] = useState<ProdukToko | null>(null);
+    const [laciBuka, AturLaciBuka] = useState(false);
+    const [langkah, AturLangkah] = useState<LangkahKeranjang>('keranjang');
+    const [jenis, AturJenis] = useState<CaraMenerima>(Pemenuhan.AmbilSendiri ? 'AmbilSendiri' : 'Kirim');
     const [kodePos, AturKodePos] = useState(Akun.AlamatTerakhir?.KodePos ?? '');
-    const [bayar, AturBayar] = useState<'BayarSaatAmbil' | 'Cod' | 'QrisOnline'>(
+    const [bayar, AturBayar] = useState<CaraBayar>(
         Pembayaran.QrisOnline ? 'QrisOnline' : Pemenuhan.AmbilSendiri ? 'BayarSaatAmbil' : 'Cod',
     );
-    const [hasil, AturHasil] = useState<Hasil | null>(null);
+    const [hasil, AturHasil] = useState<HasilHitung | null>(null);
     const [galat, AturGalat] = useState<string | null>(null);
     // v3.46: kode yang diketik, kode yang sedang dipakai di perhitungan, dan galat khusus voucher.
     const [isianVoucher, AturIsianVoucher] = useState('');
@@ -121,7 +93,7 @@ export default function TokoOnline({
     const [galatVoucher, AturGalatVoucher] = useState<string | null>(null);
     const [memproses, AturMemproses] = useState(false);
     const [setuju, AturSetuju] = useState(false);
-    const [pelanggan, AturPelanggan] = useState(() => ({
+    const [penerima, AturPenerima] = useState(() => ({
         NamaPelanggan: Akun.Pelanggan?.Nama ?? '',
         NoHp: Akun.Pelanggan?.NoHp ?? '',
         Email: Akun.Pelanggan?.Email ?? '',
@@ -144,14 +116,14 @@ export default function TokoOnline({
     // disinkronkan lewat efek: state tetap apa yang pelanggan pilih, tampilan & kiriman memakai yang berlaku.
     const bayarBerlaku = opsiBayar.some((o) => o.Nilai === bayar)
         ? bayar
-        : ((opsiBayar[0]?.Nilai ?? bayar) as typeof bayar);
+        : ((opsiBayar[0]?.Nilai ?? bayar) as CaraBayar);
 
     useEffect(() => {
         if (baris.length === 0 || (jenis === 'Kirim' && kodePos.length !== 5)) {
             return;
         }
         const tunda = window.setTimeout(() => {
-            void Kirim<Hasil>(`/${Slug}/keranjang/hitung`, {
+            void Kirim<HasilHitung>(`/${Slug}/keranjang/hitung`, {
                 Outlet: OutletDipilih,
                 JenisPemenuhan: jenis,
                 KodePos: kodePos || null,
@@ -184,49 +156,61 @@ export default function TokoOnline({
         AturVoucher(kode);
     }
 
-    function Tambah(p: Produk) {
-        const dipilih = pilihanProduk[p.Uuid] ?? { varian: '', pilihan: [] };
-        if ((p.Varian?.length ?? 0) > 0 && dipilih.varian === '') {
-            AturGalat(`Pilih varian ${p.Nama}.`);
-            return;
-        }
-        for (const k of p.KelompokPilihan) {
-            const jumlah = k.Pilihan.filter((x) => dipilih.pilihan.includes(x.Uuid)).length;
-            if (jumlah < k.MinimalPilih || jumlah > k.MaksimalPilih) {
-                AturGalat(`Pilihan ${k.Nama} untuk ${p.Nama} belum sesuai.`);
-                return;
+    /** Menambah satu ke baris yang sama persis (produk, varian, pilihan), atau membuat baris baru. */
+    function TambahBaris(uuidProduk: string, varian: string | null, pilihan: string[]) {
+        const kunci = [...pilihan].sort().join('|');
+        AturBaris((lama) => {
+            const ada = lama.find(
+                (b) =>
+                    b.UuidProduk === uuidProduk && b.UuidVarian === varian && [...b.Pilihan].sort().join('|') === kunci,
+            );
+
+            if (ada) {
+                return lama.map((b) => (b === ada ? { ...b, Jumlah: b.Jumlah + 1 } : b));
             }
-        }
-        AturBaris((lama) => [
-            ...lama,
-            {
-                Uuid: BuatUlid(),
-                UuidProduk: p.Uuid,
-                UuidVarian: dipilih.varian || null,
-                Jumlah: 1,
-                Pilihan: dipilih.pilihan,
-                Catatan: '',
-            },
-        ]);
-        AturPilihanProduk((lama) => ({ ...lama, [p.Uuid]: { varian: '', pilihan: [] } }));
+
+            return [
+                ...lama,
+                {
+                    Uuid: BuatUlid(),
+                    UuidProduk: uuidProduk,
+                    UuidVarian: varian,
+                    Jumlah: 1,
+                    Pilihan: pilihan,
+                    Catatan: '',
+                },
+            ];
+        });
         AturGalat(null);
     }
 
-    function SaatMasuk(hasil: HasilMasukPembeli) {
-        AturPembeli(hasil.Pelanggan);
+    function KurangiPolos(uuidProduk: string) {
+        AturBaris((lama) =>
+            lama.flatMap((b) => {
+                if (!CekBarisPolos(b, uuidProduk)) {
+                    return [b];
+                }
+
+                return b.Jumlah > 1 ? [{ ...b, Jumlah: b.Jumlah - 1 }] : [];
+            }),
+        );
+    }
+
+    function SaatMasuk(hasilMasuk: HasilMasukPembeli) {
+        AturPembeli(hasilMasuk.Pelanggan);
         AturDialogMasuk(false);
         // Data akun mengisi yang masih kosong; ketikan pembeli tidak ditimpa.
-        AturPelanggan((x) => {
-            const alamat = IsiAlamat(hasil.AlamatTerakhir);
+        AturPenerima((x) => {
+            const alamat = IsiAlamat(hasilMasuk.AlamatTerakhir);
             return {
                 ...x,
-                NamaPelanggan: x.NamaPelanggan || hasil.Pelanggan.Nama,
-                NoHp: hasil.Pelanggan.NoHp,
-                Email: x.Email || (hasil.Pelanggan.Email ?? ''),
+                NamaPelanggan: x.NamaPelanggan || hasilMasuk.Pelanggan.Nama,
+                NoHp: hasilMasuk.Pelanggan.NoHp,
+                Email: x.Email || (hasilMasuk.Pelanggan.Email ?? ''),
                 ...(x.Alamat === '' ? alamat : {}),
             };
         });
-        if (kodePos === '' && hasil.AlamatTerakhir?.KodePos) AturKodePos(hasil.AlamatTerakhir.KodePos);
+        if (kodePos === '' && hasilMasuk.AlamatTerakhir?.KodePos) AturKodePos(hasilMasuk.AlamatTerakhir.KodePos);
     }
 
     function UbahJumlah(uuid: string, selisih: number) {
@@ -240,7 +224,7 @@ export default function TokoOnline({
         try {
             const respons = await Kirim<{ UrlStatus: string }>(`/${Slug}/pesan`, {
                 Uuid: BuatUlid(),
-                ...pelanggan,
+                ...penerima,
                 Outlet: OutletDipilih,
                 JenisPemenuhan: jenis,
                 MetodePembayaran: bayarBerlaku,
@@ -256,6 +240,16 @@ export default function TokoOnline({
         }
     }
 
+    /** Desktop: kolom keranjang sudah terlihat (hanya digulir ke sana); HP/tablet: membuka laci keranjang. */
+    function BukaKeranjang() {
+        if (desktop) {
+            document.getElementById('keranjang')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+
+        AturLaciBuka(true);
+    }
+
     const [kategoriAktif, AturKategoriAktif] = useState('');
     const [cari, AturCari] = useState('');
     const jumlahItem = baris.reduce((n, b) => n + b.Jumlah, 0);
@@ -263,6 +257,15 @@ export default function TokoOnline({
         const peta = new Map<string, number>();
         for (const b of baris) {
             peta.set(b.UuidProduk, (peta.get(b.UuidProduk) ?? 0) + b.Jumlah);
+        }
+        return peta;
+    }, [baris]);
+    const jumlahPolosPerProduk = useMemo(() => {
+        const peta = new Map<string, number>();
+        for (const b of baris) {
+            if (b.UuidVarian === null && b.Pilihan.length === 0) {
+                peta.set(b.UuidProduk, (peta.get(b.UuidProduk) ?? 0) + b.Jumlah);
+            }
         }
         return peta;
     }, [baris]);
@@ -279,6 +282,45 @@ export default function TokoOnline({
         { nilai: 'AmbilSendiri' as const, label: 'Ambil sendiri', ikon: StoreIcon, ada: Pemenuhan.AmbilSendiri },
         { nilai: 'Kirim' as const, label: 'Dikirim', ikon: TruckIcon, ada: Pemenuhan.Kirim },
     ].filter((o) => o.ada);
+
+    const panel = (
+        <PanelKeranjang
+            langkah={langkah}
+            saatGantiLangkah={AturLangkah}
+            baris={baris}
+            produk={produk}
+            saatUbahJumlah={UbahJumlah}
+            saatHapus={(uuid) => AturBaris((x) => x.filter((z) => z.Uuid !== uuid))}
+            opsiPemenuhan={opsiPemenuhan}
+            jenis={jenis}
+            saatGantiJenis={AturJenis}
+            kodePos={kodePos}
+            saatGantiKodePos={AturKodePos}
+            isianVoucher={isianVoucher}
+            saatGantiIsianVoucher={AturIsianVoucher}
+            galatVoucher={galatVoucher}
+            saatPakaiVoucher={PakaiVoucher}
+            saatLepasVoucher={() => {
+                AturVoucher('');
+                AturIsianVoucher('');
+            }}
+            hasil={hasilBerlaku}
+            minimalPesanan={MinimalPesanan}
+            galat={galat}
+            pembeli={pembeli}
+            akunAktif={Akun.Aktif}
+            saatBukaMasuk={() => AturDialogMasuk(true)}
+            penerima={penerima}
+            saatGantiPenerima={(ubah) => AturPenerima((x) => ({ ...x, ...ubah }))}
+            opsiBayar={opsiBayar}
+            bayar={bayarBerlaku}
+            saatGantiBayar={AturBayar}
+            setuju={setuju}
+            saatGantiSetuju={AturSetuju}
+            memproses={memproses}
+            saatPesan={(e) => void Pesan(e)}
+        />
+    );
 
     return (
         <div className="min-h-dvh bg-latar text-teks-utama">
@@ -310,8 +352,9 @@ export default function TokoOnline({
                                     Masuk
                                 </button>
                             ) : null}
-                            <a
-                                href="#keranjang"
+                            <button
+                                type="button"
+                                onClick={BukaKeranjang}
                                 aria-label={`Keranjang, ${String(jumlahItem)} item`}
                                 className="relative flex size-10 items-center justify-center rounded-full bg-permukaan text-brand-gelap"
                             >
@@ -321,7 +364,7 @@ export default function TokoOnline({
                                         {jumlahItem}
                                     </span>
                                 ) : null}
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -425,7 +468,7 @@ export default function TokoOnline({
                 </nav>
             ) : null}
 
-            <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 pb-28 lg:grid-cols-[1fr_400px] lg:pb-8">
+            <div className="mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 pb-28 lg:grid-cols-[1fr_380px] lg:pb-8">
                 <section className="flex min-w-0 flex-col gap-4" aria-label="Daftar menu">
                     {!Aktif ? (
                         <Pemberitahuan jenis="peringatan">{PesanTutup ?? 'Toko online sedang tutup.'}</Pemberitahuan>
@@ -439,472 +482,46 @@ export default function TokoOnline({
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2">
-                            {produkTampil.map((p) => {
-                                const dipilih = pilihanProduk[p.Uuid] ?? { varian: '', pilihan: [] };
-                                const diKeranjang = jumlahPerProduk.get(p.Uuid) ?? 0;
-                                const perluPilih = (p.Varian?.length ?? 0) > 0 || p.KelompokPilihan.length > 0;
-
-                                return (
-                                    <article
-                                        key={p.Uuid}
-                                        className="flex flex-col overflow-hidden rounded-panel border border-garis bg-permukaan"
-                                    >
-                                        <div className="relative aspect-[4/3] w-full bg-brand-lembut">
-                                            {p.UrlGambar ? (
-                                                <img
-                                                    src={p.UrlGambar}
-                                                    alt=""
-                                                    loading="lazy"
-                                                    className="size-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="grid size-full place-items-center text-brand">
-                                                    <UtensilsCrossedIcon aria-hidden="true" className="size-10" />
-                                                </div>
-                                            )}
-                                            {diKeranjang > 0 ? (
-                                                <span className="absolute top-2 right-2 rounded-full bg-brand px-2.5 py-1 text-keterangan font-semibold text-brand-teks tabular-nums">
-                                                    {diKeranjang} di keranjang
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                        <div className="flex flex-1 flex-col gap-3 p-4">
-                                            <div className="flex flex-col gap-1">
-                                                <h2 className="text-subjudul font-semibold text-teks-utama">
-                                                    {p.Nama}
-                                                </h2>
-                                                <p className="text-subjudul font-semibold text-brand tabular-nums">
-                                                    {(p.Varian?.length ?? 0) > 0 ? 'Mulai ' : ''}
-                                                    {FormatRupiah(p.Harga)}
-                                                </p>
-                                            </div>
-                                            {(p.Varian?.length ?? 0) > 0 ? (
-                                                <BidangPilihan
-                                                    label="Varian"
-                                                    nilai={dipilih.varian}
-                                                    opsi={(p.Varian ?? [])
-                                                        .filter((v) => v.Tersedia)
-                                                        .map((v) => ({
-                                                            Nilai: v.Uuid,
-                                                            Label: `${v.Nama}${v.Harga ? ` | ${FormatRupiah(v.Harga)}` : ''}`,
-                                                        }))}
-                                                    kosong="Pilih varian"
-                                                    saatBerubah={(nilai) =>
-                                                        AturPilihanProduk((x) => ({
-                                                            ...x,
-                                                            [p.Uuid]: { ...dipilih, varian: nilai },
-                                                        }))
-                                                    }
-                                                />
-                                            ) : null}
-                                            {p.KelompokPilihan.map((k) => (
-                                                <fieldset key={k.Uuid} className="flex flex-col gap-2">
-                                                    <legend className="text-label font-semibold text-teks-utama">
-                                                        {k.Nama}
-                                                        <span className="font-normal text-teks-sekunder">
-                                                            {' '}
-                                                            (pilih {k.MinimalPilih}–{k.MaksimalPilih})
-                                                        </span>
-                                                    </legend>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {k.Pilihan.map((x) => {
-                                                            const aktif = dipilih.pilihan.includes(x.Uuid);
-
-                                                            return (
-                                                                <label
-                                                                    key={x.Uuid}
-                                                                    className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-label has-focus-visible:ring-2 has-focus-visible:ring-brand ${
-                                                                        aktif
-                                                                            ? 'border-brand bg-brand-lembut font-semibold text-teks-utama'
-                                                                            : 'border-garis text-teks-utama'
-                                                                    }`}
-                                                                >
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        className="sr-only"
-                                                                        checked={aktif}
-                                                                        onChange={(e) =>
-                                                                            AturPilihanProduk((lama) => ({
-                                                                                ...lama,
-                                                                                [p.Uuid]: {
-                                                                                    ...dipilih,
-                                                                                    pilihan: e.target.checked
-                                                                                        ? [...dipilih.pilihan, x.Uuid]
-                                                                                        : dipilih.pilihan.filter(
-                                                                                              (u) => u !== x.Uuid,
-                                                                                          ),
-                                                                                },
-                                                                            }))
-                                                                        }
-                                                                    />
-                                                                    {aktif ? (
-                                                                        <CheckIcon
-                                                                            aria-hidden="true"
-                                                                            className="size-4 text-brand"
-                                                                        />
-                                                                    ) : null}
-                                                                    {x.Nama}
-                                                                    {Number(x.Harga) > 0
-                                                                        ? ` (+${FormatRupiah(x.Harga)})`
-                                                                        : ''}
-                                                                </label>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </fieldset>
-                                            ))}
-                                            <div className="mt-auto">
-                                                <Tombol
-                                                    varian={perluPilih ? 'utama' : 'sekunder'}
-                                                    onClick={() => Tambah(p)}
-                                                >
-                                                    <PlusIcon aria-hidden="true" className="size-4" />
-                                                    Tambah
-                                                </Tombol>
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            {produkTampil.map((p) => (
+                                <KartuProduk
+                                    key={p.Uuid}
+                                    produk={p}
+                                    jumlahDiKeranjang={jumlahPerProduk.get(p.Uuid) ?? 0}
+                                    jumlahPolos={jumlahPolosPerProduk.get(p.Uuid) ?? 0}
+                                    saatTambah={() => TambahBaris(p.Uuid, null, [])}
+                                    saatKurang={() => KurangiPolos(p.Uuid)}
+                                    saatBukaOpsi={() => AturProdukOpsi(p)}
+                                />
+                            ))}
                         </div>
                     )}
                 </section>
 
-                <aside
-                    id="keranjang"
-                    aria-label="Keranjang"
-                    className="h-fit scroll-mt-4 rounded-panel border border-garis bg-permukaan p-4 lg:sticky lg:top-24"
-                >
-                    <div className="mb-4 flex items-center justify-between gap-2">
-                        <h2 className="text-judul font-semibold text-teks-utama">Keranjang</h2>
-                        {jumlahItem > 0 ? (
-                            <span className="rounded-full bg-brand-lembut px-2.5 py-1 text-keterangan font-semibold text-brand tabular-nums">
-                                {jumlahItem} item
-                            </span>
-                        ) : null}
-                    </div>
-                    {baris.length === 0 ? (
-                        <div className="flex flex-col items-center gap-2 py-6 text-center">
-                            <span className="grid size-14 place-items-center rounded-full bg-brand-lembut text-brand">
-                                <ShoppingBagIcon aria-hidden="true" className="size-7" />
-                            </span>
-                            <p className="text-isi font-semibold text-teks-utama">Keranjang masih kosong</p>
-                            <p className="text-keterangan text-teks-sekunder">
-                                Pilih menu di sebelah kiri, lalu tekan Tambah.
-                            </p>
-                        </div>
-                    ) : (
-                        <form onSubmit={Pesan} className="flex flex-col gap-5">
-                            <ul className="divide-y divide-garis rounded-panel border border-garis">
-                                {baris.map((b) => {
-                                    const barisProduk = produk.get(b.UuidProduk);
-                                    const rincian = [
-                                        barisProduk?.Varian?.find((v) => v.Uuid === b.UuidVarian)?.Nama,
-                                        ...(barisProduk?.KelompokPilihan.flatMap((k) =>
-                                            k.Pilihan.filter((x) => b.Pilihan.includes(x.Uuid)).map((x) => x.Nama),
-                                        ) ?? []),
-                                    ].filter((x): x is string => Boolean(x));
-
-                                    return (
-                                        <li key={b.Uuid} className="flex items-center gap-3 p-3">
-                                            <span className="flex min-w-0 flex-1 flex-col">
-                                                <span className="truncate text-isi font-semibold text-teks-utama">
-                                                    {barisProduk?.Nama}
-                                                </span>
-                                                {rincian.length > 0 ? (
-                                                    <span className="truncate text-keterangan text-teks-sekunder">
-                                                        {rincian.join(', ')}
-                                                    </span>
-                                                ) : null}
-                                            </span>
-                                            <div className="flex shrink-0 items-center gap-1">
-                                                <div className="flex items-center rounded-full border border-garis">
-                                                    <button
-                                                        type="button"
-                                                        aria-label="Kurangi jumlah"
-                                                        className="grid size-10 place-items-center rounded-full"
-                                                        onClick={() => UbahJumlah(b.Uuid, -1)}
-                                                    >
-                                                        <MinusIcon aria-hidden="true" className="size-4" />
-                                                    </button>
-                                                    <span className="w-6 text-center text-isi font-semibold tabular-nums">
-                                                        {b.Jumlah}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        aria-label="Tambah jumlah"
-                                                        className="grid size-10 place-items-center rounded-full"
-                                                        onClick={() => UbahJumlah(b.Uuid, 1)}
-                                                    >
-                                                        <PlusIcon aria-hidden="true" className="size-4" />
-                                                    </button>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    aria-label="Hapus"
-                                                    className="grid size-10 place-items-center rounded-full text-bahaya"
-                                                    onClick={() => AturBaris((x) => x.filter((z) => z.Uuid !== b.Uuid))}
-                                                >
-                                                    <Trash2Icon aria-hidden="true" className="size-4" />
-                                                </button>
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-
-                            <fieldset className="flex flex-col gap-2">
-                                <legend className="mb-1 text-label font-semibold text-teks-utama">Cara menerima</legend>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {opsiPemenuhan.map((o) => (
-                                        <label
-                                            key={o.nilai}
-                                            className={`flex min-h-14 cursor-pointer items-center gap-2 rounded-panel border p-3 text-isi font-semibold has-focus-visible:ring-2 has-focus-visible:ring-brand ${
-                                                jenis === o.nilai
-                                                    ? 'border-brand bg-brand-lembut text-teks-utama'
-                                                    : 'border-garis text-teks-utama'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="cara-menerima"
-                                                className="sr-only"
-                                                checked={jenis === o.nilai}
-                                                onChange={() => AturJenis(o.nilai)}
-                                            />
-                                            <o.ikon
-                                                aria-hidden="true"
-                                                className={`size-5 shrink-0 ${jenis === o.nilai ? 'text-brand' : 'text-teks-sekunder'}`}
-                                            />
-                                            {o.label}
-                                        </label>
-                                    ))}
-                                </div>
-                            </fieldset>
-                            {jenis === 'Kirim' ? (
-                                <div className="flex flex-col gap-3">
-                                    <BidangTeks
-                                        label="Kode pos"
-                                        nilai={kodePos}
-                                        saatBerubah={AturKodePos}
-                                        inputMode="numeric"
-                                        maxLength={5}
-                                        required
-                                    />
-                                    <BidangTeksPanjang
-                                        label="Alamat lengkap"
-                                        nilai={pelanggan.Alamat}
-                                        saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Alamat: v }))}
-                                        required
-                                    />
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        <BidangTeks
-                                            label="Kelurahan"
-                                            nilai={pelanggan.Kelurahan}
-                                            saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Kelurahan: v }))}
-                                            required
-                                        />
-                                        <BidangTeks
-                                            label="Kecamatan"
-                                            nilai={pelanggan.Kecamatan}
-                                            saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Kecamatan: v }))}
-                                            required
-                                        />
-                                        <BidangTeks
-                                            label="Kota/kabupaten"
-                                            nilai={pelanggan.Kota}
-                                            saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Kota: v }))}
-                                            required
-                                        />
-                                        <BidangTeks
-                                            label="Provinsi"
-                                            nilai={pelanggan.Provinsi}
-                                            saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Provinsi: v }))}
-                                            required
-                                        />
-                                    </div>
-                                </div>
+                {desktop ? (
+                    <aside
+                        id="keranjang"
+                        aria-label="Keranjang"
+                        className="flex max-h-[calc(100dvh-10rem)] flex-col rounded-panel border border-garis bg-permukaan lg:sticky lg:top-36"
+                    >
+                        <div className="flex items-center justify-between gap-2 border-b border-garis p-4">
+                            <h2 className="text-judul font-semibold text-teks-utama">Keranjang</h2>
+                            {jumlahItem > 0 ? (
+                                <span className="rounded-full bg-brand-lembut px-2.5 py-1 text-keterangan font-semibold text-brand tabular-nums">
+                                    {jumlahItem} item
+                                </span>
                             ) : null}
-
-                            <div className="flex flex-col gap-3">
-                                <h3 className="text-label font-semibold text-teks-utama">Data penerima</h3>
-                                {pembeli ? (
-                                    <Pemberitahuan jenis="info">
-                                        Pesanan tercatat di akun {pembeli.Nama} ({pembeli.NoHp})
-                                        {pembeli.Tier ? ` | harga member ${pembeli.Tier} sudah dihitung` : ''}.
-                                    </Pemberitahuan>
-                                ) : Akun.Aktif ? (
-                                    <p className="rounded-panel bg-brand-lembut p-3 text-keterangan text-teks-sekunder">
-                                        Sudah pernah belanja di sini?{' '}
-                                        <button
-                                            type="button"
-                                            className="font-semibold text-brand underline"
-                                            onClick={() => AturDialogMasuk(true)}
-                                        >
-                                            Masuk dengan WhatsApp
-                                        </button>{' '}
-                                        untuk mengisi data otomatis dan mengumpulkan poin. Tanpa masuk juga bisa.
-                                    </p>
-                                ) : null}
-                                <BidangTeks
-                                    label={pembeli ? 'Nama penerima' : 'Nama'}
-                                    nilai={pelanggan.NamaPelanggan}
-                                    saatBerubah={(v) => AturPelanggan((x) => ({ ...x, NamaPelanggan: v }))}
-                                    required
-                                />
-                                {pembeli ? null : (
-                                    <BidangTeks
-                                        label="Nomor WhatsApp"
-                                        nilai={pelanggan.NoHp}
-                                        saatBerubah={(v) => AturPelanggan((x) => ({ ...x, NoHp: v }))}
-                                        inputMode="tel"
-                                        required
-                                    />
-                                )}
-                                <BidangTeks
-                                    label="Email (opsional)"
-                                    nilai={pelanggan.Email}
-                                    saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Email: v }))}
-                                    jenis="email"
-                                />
-                                <BidangTeksPanjang
-                                    label="Catatan (opsional)"
-                                    nilai={pelanggan.Catatan}
-                                    saatBerubah={(v) => AturPelanggan((x) => ({ ...x, Catatan: v }))}
-                                    baris={3}
-                                    maksimal={500}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <h3 className="text-label font-semibold text-teks-utama">Pembayaran</h3>
-                                {opsiBayar.length > 1 ? (
-                                    <BidangPilihan
-                                        label="Cara bayar"
-                                        nilai={bayarBerlaku}
-                                        opsi={opsiBayar}
-                                        saatBerubah={(v) => AturBayar(v as typeof bayar)}
-                                    />
-                                ) : null}
-                                <p className="flex items-start gap-2 rounded-panel bg-permukaan-redup p-3 text-keterangan text-teks-sekunder">
-                                    <QrCodeIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand" />
-                                    {bayarBerlaku === 'QrisOnline'
-                                        ? 'Setelah pesanan dikirim, Anda akan mendapat QRIS untuk dibayar sekarang. Pesanan diproses toko setelah pembayaran masuk.'
-                                        : bayarBerlaku === 'Cod'
-                                          ? 'Bayar tunai ke kurir saat barang tiba.'
-                                          : 'Bayar di kasir saat mengambil pesanan.'}
-                                </p>
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-end gap-2">
-                                        <div className="min-w-0 flex-1">
-                                            <BidangTeks
-                                                label="Kode voucher (opsional)"
-                                                nilai={isianVoucher}
-                                                saatBerubah={AturIsianVoucher}
-                                                galat={galatVoucher ?? undefined}
-                                                kode
-                                            />
-                                        </div>
-                                        {hasilBerlaku?.Voucher ? (
-                                            <Tombol
-                                                varian="sekunder"
-                                                onClick={() => {
-                                                    AturVoucher('');
-                                                    AturIsianVoucher('');
-                                                }}
-                                            >
-                                                Lepas
-                                            </Tombol>
-                                        ) : (
-                                            <Tombol
-                                                varian="sekunder"
-                                                disabled={isianVoucher.trim() === '' || baris.length === 0}
-                                                onClick={PakaiVoucher}
-                                            >
-                                                Pakai
-                                            </Tombol>
-                                        )}
-                                    </div>
-                                    {hasilBerlaku?.Voucher ? (
-                                        <p className="inline-flex items-center gap-1.5 text-keterangan text-sukses">
-                                            <TicketPercentIcon aria-hidden="true" className="size-4" />
-                                            Voucher {hasilBerlaku.Voucher.Kode} dipakai:{' '}
-                                            {hasilBerlaku.Voucher.NamaPromo}
-                                        </p>
-                                    ) : null}
-                                </div>
-                            </div>
-
-                            <KotakCentang
-                                label="Saya setuju data ini dipakai untuk memproses pesanan dan pengiriman."
-                                nilai={setuju}
-                                saatBerubah={AturSetuju}
-                            />
-                            {galat ? <Pemberitahuan jenis="bahaya">{galat}</Pemberitahuan> : null}
-
-                            {hasilBerlaku ? (
-                                <dl className="flex flex-col gap-1.5 rounded-panel bg-permukaan-redup p-3 text-isi">
-                                    <div className="flex justify-between gap-3">
-                                        <dt className="text-teks-sekunder">Subtotal</dt>
-                                        <dd className="tabular-nums">{FormatRupiah(hasilBerlaku.Subtotal)}</dd>
-                                    </div>
-                                    {Number(hasilBerlaku.Diskon) > 0 ? (
-                                        <div className="flex justify-between gap-3 text-sukses">
-                                            <dt>Diskon promo</dt>
-                                            <dd className="tabular-nums">−{FormatRupiah(hasilBerlaku.Diskon)}</dd>
-                                        </div>
-                                    ) : null}
-                                    {Number(hasilBerlaku.Ongkir) > 0 ? (
-                                        <div className="flex justify-between gap-3">
-                                            <dt className="text-teks-sekunder">Ongkir</dt>
-                                            <dd className="tabular-nums">{FormatRupiah(hasilBerlaku.Ongkir)}</dd>
-                                        </div>
-                                    ) : null}
-                                    {Number(hasilBerlaku.DiskonOngkir) > 0 ? (
-                                        <div className="flex justify-between gap-3 text-sukses">
-                                            <dt>
-                                                {Number(hasilBerlaku.DiskonOngkir) === Number(hasilBerlaku.Ongkir)
-                                                    ? 'Gratis ongkir'
-                                                    : 'Diskon ongkir'}
-                                            </dt>
-                                            <dd className="tabular-nums">−{FormatRupiah(hasilBerlaku.DiskonOngkir)}</dd>
-                                        </div>
-                                    ) : null}
-                                    <div className="flex justify-between gap-3 border-t border-garis pt-2 text-subjudul font-semibold">
-                                        <dt>Total</dt>
-                                        <dd className="tabular-nums">{FormatRupiah(hasilBerlaku.Total)}</dd>
-                                    </div>
-                                    {hasilBerlaku.Zona ? (
-                                        <p className="text-keterangan text-teks-sekunder">
-                                            {hasilBerlaku.Zona.Nama} | perkiraan {hasilBerlaku.Zona.EstimasiHariMin}–
-                                            {hasilBerlaku.Zona.EstimasiHariMaks} hari
-                                        </p>
-                                    ) : null}
-                                </dl>
-                            ) : (
-                                <p className="text-keterangan text-teks-sekunder">
-                                    Minimal belanja {FormatRupiah(MinimalPesanan)}. Total dikunci oleh server sebelum
-                                    pesanan dikirim.
-                                </p>
-                            )}
-                            <Tombol
-                                type="submit"
-                                ukuran="besar"
-                                memproses={memproses}
-                                disabled={!hasilBerlaku || !setuju}
-                            >
-                                Kirim pesanan
-                            </Tombol>
-                        </form>
-                    )}
-                </aside>
+                        </div>
+                        <div className="overflow-y-auto p-4">{panel}</div>
+                    </aside>
+                ) : null}
             </div>
 
-            {Aktif && jumlahItem > 0 ? (
-                <a
-                    href="#keranjang"
-                    className="tepi-bawah-aman fixed inset-x-0 bottom-0 z-20 border-t border-garis bg-permukaan px-4 py-3 lg:hidden"
+            {Aktif && jumlahItem > 0 && !desktop ? (
+                <button
+                    type="button"
+                    onClick={() => AturLaciBuka(true)}
+                    className="tepi-bawah-aman fixed inset-x-0 bottom-0 z-20 border-t border-garis bg-permukaan px-4 py-3 text-left"
                 >
                     <span className="mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full bg-brand px-5 py-3 text-brand-teks">
                         <span className="inline-flex items-center gap-2 text-isi font-semibold">
@@ -915,7 +532,38 @@ export default function TokoOnline({
                             {hasilBerlaku ? FormatRupiah(hasilBerlaku.Total) : ''}
                         </span>
                     </span>
-                </a>
+                </button>
+            ) : null}
+
+            {!desktop ? (
+                <Sheet open={laciBuka} onOpenChange={AturLaciBuka}>
+                    <SheetContent
+                        side="bottom"
+                        aria-describedby={undefined}
+                        className="mx-auto max-h-[92dvh] w-full gap-0 overflow-hidden rounded-t-panel p-0 sm:max-w-xl"
+                    >
+                        <SheetHeader className="border-b border-garis p-4 pr-12">
+                            <SheetTitle className="text-judul">Keranjang</SheetTitle>
+                            <SheetDescription className="text-keterangan">
+                                {jumlahItem > 0
+                                    ? `${String(jumlahItem)} item | periksa pesanan lalu lanjut ke data pesanan.`
+                                    : 'Belum ada menu yang dipilih.'}
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="tepi-bawah-aman overflow-y-auto p-4">{panel}</div>
+                    </SheetContent>
+                </Sheet>
+            ) : null}
+
+            {produkOpsi ? (
+                <LembarOpsiProduk
+                    produk={produkOpsi}
+                    saatTambah={(varian, pilihan) => {
+                        TambahBaris(produkOpsi.Uuid, varian, pilihan);
+                        AturProdukOpsi(null);
+                    }}
+                    saatTutup={() => AturProdukOpsi(null)}
+                />
             ) : null}
 
             {dialogMasuk && Toko ? (

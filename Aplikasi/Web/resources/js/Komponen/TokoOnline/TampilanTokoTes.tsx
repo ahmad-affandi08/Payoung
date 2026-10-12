@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StatusPesananOnline from '@/Halaman/Publik/StatusPesananOnline';
@@ -90,16 +90,133 @@ describe('tampilan toko online', () => {
         expect(screen.getByText(/Tidak ada menu yang cocok/)).toBeTruthy();
     });
 
-    it('menambah menu: kartu menandai jumlah di keranjang dan bilah keranjang muncul', () => {
+    it('desktop: keranjang tampil sebagai kolom di samping menu; kartu menandai jumlah dan punya pengatur jumlah', () => {
         RenderUji(<HalamanTokoOnline {...props} />);
 
-        expect(screen.getByText('Keranjang masih kosong')).toBeTruthy();
+        const keranjang = screen.getByRole('complementary', { name: 'Keranjang' });
+        expect(within(keranjang).getByText('Keranjang masih kosong')).toBeTruthy();
+        expect(screen.queryByText(/Lihat keranjang/)).toBeNull();
+
+        fireEvent.click(screen.getAllByRole('button', { name: 'Tambah' })[0] as HTMLElement);
+        expect(screen.getByText('1 di keranjang')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah satu Kopi Susu Gula Aren' }));
+        expect(screen.getByText('2 di keranjang')).toBeTruthy();
+        expect(within(keranjang).getByRole('list', { name: 'Isi keranjang' })).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Kurangi Kopi Susu Gula Aren' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Kurangi Kopi Susu Gula Aren' }));
+        expect(screen.queryByText(/di keranjang/)).toBeNull();
+        expect(within(keranjang).getByText('Keranjang masih kosong')).toBeTruthy();
+    });
+
+    it('keranjang dua langkah: lanjut ke data pesanan lalu kembali; kirim pesanan menunggu persetujuan data', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() =>
+                Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            Subtotal: '25000.00',
+                            Diskon: '0.00',
+                            BiayaLayanan: '0.00',
+                            Pajak: [],
+                            Ongkir: '0.00',
+                            DiskonOngkir: '0.00',
+                            Total: '25000.00',
+                            Zona: null,
+                            Voucher: null,
+                        }),
+                        { status: 200, headers: { 'Content-Type': 'application/json' } },
+                    ),
+                ),
+            ),
+        );
+        RenderUji(<HalamanTokoOnline {...props} />);
         fireEvent.click(screen.getAllByRole('button', { name: 'Tambah' })[0] as HTMLElement);
 
+        const lanjut = screen.getByRole('button', { name: 'Lanjut ke data pesanan' });
+        expect(lanjut.hasAttribute('disabled')).toBe(true);
+        await waitFor(() => expect(lanjut.hasAttribute('disabled')).toBe(false));
+        fireEvent.click(lanjut);
+
+        expect(screen.getByRole('form', { name: 'Data pesanan' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Kirim pesanan' }).hasAttribute('disabled')).toBe(true);
+        fireEvent.click(screen.getByRole('checkbox'));
+        expect(screen.getByRole('button', { name: 'Kirim pesanan' }).hasAttribute('disabled')).toBe(false);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Kembali ke keranjang' }));
+        expect(screen.getByRole('button', { name: 'Lanjut ke data pesanan' })).toBeTruthy();
+    });
+
+    it('HP: keranjang tidak di dasar halaman; bilah bawah membuka laci keranjang', () => {
+        vi.stubGlobal('matchMedia', (kueri: string) => ({
+            matches: true,
+            media: kueri,
+            onchange: null,
+            addEventListener: () => undefined,
+            removeEventListener: () => undefined,
+            addListener: () => undefined,
+            removeListener: () => undefined,
+            dispatchEvent: () => false,
+        }));
+        RenderUji(<HalamanTokoOnline {...props} />);
+
+        expect(screen.queryByRole('complementary', { name: 'Keranjang' })).toBeNull();
+        expect(screen.queryByText(/Lihat keranjang/)).toBeNull();
+
+        fireEvent.click(screen.getAllByRole('button', { name: 'Tambah' })[0] as HTMLElement);
+        const bilah = screen.getByRole('button', { name: /Lihat keranjang/ });
+        fireEvent.click(bilah);
+
+        const laci = screen.getByRole('dialog', { name: 'Keranjang' });
+        expect(within(laci).getByRole('list', { name: 'Isi keranjang' })).toBeTruthy();
+        expect(within(laci).getByRole('button', { name: 'Lanjut ke data pesanan' })).toBeTruthy();
+    });
+
+    it('produk berpilihan membuka lembar opsi, memvalidasi aturan pilihan, lalu masuk keranjang', () => {
+        const berpilihan = {
+            ...props,
+            Menu: {
+                Kategori: [],
+                Produk: [
+                    {
+                        Uuid: 'P-3',
+                        Nama: 'Es Kopi Kampus',
+                        Harga: '22000.00',
+                        UrlGambar: null,
+                        UuidKategori: null,
+                        KelompokPilihan: [
+                            {
+                                Uuid: 'G-1',
+                                Nama: 'Tingkat manis',
+                                MinimalPilih: 1,
+                                MaksimalPilih: 1,
+                                Pilihan: [
+                                    { Uuid: 'X-1', Nama: 'Normal', Harga: '0.00' },
+                                    { Uuid: 'X-2', Nama: 'Extra shot', Harga: '5000.00' },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        };
+        RenderUji(<HalamanTokoOnline {...berpilihan} />);
+
+        expect(screen.queryByRole('button', { name: 'Tambah' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Pilih opsi' }));
+
+        const lembar = screen.getByRole('dialog', { name: 'Es Kopi Kampus' });
+        fireEvent.click(within(lembar).getByRole('button', { name: 'Tambah ke keranjang' }));
+        expect(within(lembar).getByText(/Pilihan Tingkat manis belum sesuai/)).toBeTruthy();
+
+        fireEvent.click(within(lembar).getByLabelText(/Extra shot/));
+        fireEvent.click(within(lembar).getByRole('button', { name: 'Tambah ke keranjang' }));
+
+        expect(screen.queryByRole('dialog', { name: 'Es Kopi Kampus' })).toBeNull();
         expect(screen.getByText('1 di keranjang')).toBeTruthy();
-        expect(screen.getByText(/Lihat keranjang/)).toBeTruthy();
-        fireEvent.click(screen.getByRole('button', { name: 'Tambah jumlah' }));
-        expect(screen.getByText('2 di keranjang')).toBeTruthy();
+        expect(within(screen.getByRole('complementary', { name: 'Keranjang' })).getByText('Extra shot')).toBeTruthy();
     });
 
     it('toko tutup: pesan tutup tampil dan tanpa pencarian menu', () => {
