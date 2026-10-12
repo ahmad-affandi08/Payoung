@@ -578,3 +578,33 @@ export type PropsFormulirPaketSesi = {
     PilihanJasa: { Nilai: string; Label: string; SudahPaket: boolean }[];
     FiturAktif: boolean;
 };
+
+/** PRD-10: satu baris cetak label = satu satuan produk (barcode terikat ke satuan). */
+export type BarisLabelServer = {
+    /** Uuid `ProdukSatuan`. */
+    Uuid: string;
+    UuidProduk: string;
+    Nama: string;
+    Sku: string | null;
+    NamaSatuan: string;
+    SimbolSatuan: string;
+    KonversiKeDasar: string;
+    Barcode: string[];
+    /** Harga dasar satuan ini; null bila belum ada. */
+    Harga: string | null;
+    Jumlah: number;
+};
+
+export type PropsLabelProduk = {
+    Baris: BarisLabelServer[];
+    /** True bila daftar dipotong karena melebihi batas baris. */
+    Terpotong: boolean;
+    Batas: { Baris: number; JumlahPerBaris: number; Total: number };
+    Izin: { Kelola: boolean };
+};
+
+/** GET /kelola/produk/label/cari?kata= */
+export type HasilCariLabel = { Data: BarisLabelServer[] };
+
+/** POST /kelola/produk/label/barcode-internal */
+export type HasilBarcodeLabel = { Data: { Uuid: string; Barcode: string; Baru: boolean }[] };

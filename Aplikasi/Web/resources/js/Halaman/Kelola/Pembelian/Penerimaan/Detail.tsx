@@ -107,6 +107,17 @@ export const kolomBarisPenerimaan: KolomTabel<BarisDetailPenerimaan>[] = [
     },
 ];
 
+/** PRD-10: tautan Cetak label barang diterima (satu stiker per satuan dasar); null bila tak ada barang yang bisa dilabeli. */
+export function BuatTautanLabel(baris: readonly BarisDetailPenerimaan[]): string | null {
+    const item = baris.flatMap((b) =>
+        b.UuidSatuanLabel !== null && b.JumlahLabel !== null && b.JumlahLabel > 0
+            ? [`Item[]=${b.UuidSatuanLabel}:${String(b.JumlahLabel)}`]
+            : [],
+    );
+
+    return item.length === 0 ? null : `/kelola/produk/label?${item.join('&')}`;
+}
+
 /** F-04 fase 1: detail penerimaan barang / belanja stok (batalkan, retur, fakturkan). */
 export default function HalamanDetailPenerimaan({
     Penerimaan: p,
@@ -118,6 +129,7 @@ export default function HalamanDetailPenerimaan({
     Tindakan,
 }: PropsDetailPenerimaan) {
     const [batalkan, AturBatalkan] = useState(false);
+    const tautanLabel = BuatTautanLabel(Baris);
 
     return (
         <TataLetakAplikasi judul={`${p.BelanjaStok ? 'Belanja stok' : 'Penerimaan'} ${p.Nomor}`}>
@@ -152,6 +164,11 @@ export default function HalamanDetailPenerimaan({
                 {Tindakan.Retur ? (
                     <Button asChild variant="outline">
                         <Link href={`${AlamatPembelian}/retur/buat?penerimaan=${p.Uuid}`}>Retur ke pemasok</Link>
+                    </Button>
+                ) : null}
+                {p.Status !== 'Dibatalkan' && tautanLabel !== null ? (
+                    <Button asChild variant="outline">
+                        <Link href={tautanLabel}>Cetak label barang diterima</Link>
                     </Button>
                 ) : null}
                 {Tindakan.BiayaTambahan === true ? (

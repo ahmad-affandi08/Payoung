@@ -22,6 +22,8 @@ export const KunciKueri = {
     // F-03: pemilih bahan/komponen (GET /kelola/produk/cari) dan polling status impor.
     Produk: {
         Cari: (kata: string, jenis: readonly string[]) => ['Produk', 'Cari', kata, [...jenis]] as const,
+        // PRD-10: pencarian baris label (satuan produk beserta barcode & harga).
+        CariLabel: (kata: string) => ['Produk', 'CariLabel', kata] as const,
     },
     Impor: {
         Status: (uuid: string) => ['Impor', 'Status', uuid] as const,

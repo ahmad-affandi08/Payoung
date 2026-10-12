@@ -198,11 +198,16 @@ export default function HalamanDaftarProduk({ Produk, Kategori, Jenis, BatasSku,
                 saring={saring}
                 alamatDetail={(produk) => `${alamat}/${produk.Uuid}`}
                 ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor ke Excel' }}
+                aksiMassal={(konteks: KonteksAksiMassal<BarisProduk>) => (
+                    <AksiMassalProduk
+                        konteks={konteks}
+                        kategori={Kategori}
+                        bolehUbahHarga={Izin.UbahHarga}
+                        bolehKelola={Izin.Kelola}
+                    />
+                )}
                 {...(Izin.Kelola
                     ? {
-                          aksiMassal: (konteks: KonteksAksiMassal<BarisProduk>) => (
-                              <AksiMassalProduk konteks={konteks} kategori={Kategori} bolehUbahHarga={Izin.UbahHarga} />
-                          ),
                           aksiBaris: (produk: BarisProduk) => {
                               const aktif = produk.Status === 'Aktif';
 

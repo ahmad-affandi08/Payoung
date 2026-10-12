@@ -21,11 +21,14 @@ export default function AksiMassalProduk({
     konteks,
     kategori,
     bolehUbahHarga = false,
+    bolehKelola = true,
 }: {
     konteks: KonteksAksiMassal<BarisProduk>;
     kategori: { Uuid: string; Jalur: string }[];
     /** Izin `produk.harga.ubah`: menampilkan tombol "Ubah harga…". */
     bolehUbahHarga?: boolean;
+    /** Izin `produk.kelola`: tanpa izin ini hanya "Cetak label" yang tampil (cukup `produk.lihat`). */
+    bolehKelola?: boolean;
 }) {
     const [dialogHarga, AturDialogHarga] = useState(false);
     const [uuidKategori, AturUuidKategori] = useState('');
@@ -53,87 +56,98 @@ export default function AksiMassalProduk({
                     Maksimal {MaksProdukMassal} produk sekali proses. Kurangi pilihan.
                 </p>
             ) : null}
-            <div className="w-56">
-                <PilihanCari
-                    label="Pindah ke kategori"
-                    nilai={uuidKategori}
-                    opsi={kategori.map((k) => ({ Nilai: k.Uuid, Label: k.Jalur }))}
-                    placeholder="Pilih kategori"
-                    saatBerubah={AturUuidKategori}
-                    aria-label="Kategori tujuan"
-                />
-            </div>
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif || uuidKategori === ''}
-                memproses={memproses === 'Kategori'}
-                onClick={() => Jalankan('Kategori')}
-            >
-                Pindahkan
-            </Tombol>
             <Tombol
                 varian="sekunder"
                 disabled={nonaktif}
-                memproses={memproses === 'TampilDiPos'}
-                onClick={() => Jalankan('TampilDiPos')}
+                onClick={() => router.get('/kelola/produk/label', { Produk: uuid })}
             >
-                Tampilkan di kasir
+                Cetak label
             </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif}
-                memproses={memproses === 'SembunyikanDariPos'}
-                onClick={() => Jalankan('SembunyikanDariPos')}
-            >
-                Sembunyikan dari kasir
-            </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif}
-                memproses={memproses === 'Favorit'}
-                onClick={() => Jalankan('Favorit')}
-            >
-                Tandai favorit
-            </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif}
-                memproses={memproses === 'HapusFavorit'}
-                onClick={() => Jalankan('HapusFavorit')}
-            >
-                Lepas favorit
-            </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif}
-                memproses={memproses === 'Pulihkan'}
-                onClick={() => Jalankan('Pulihkan')}
-            >
-                Pulihkan
-            </Tombol>
-            {bolehUbahHarga ? (
-                <Tombol varian="sekunder" disabled={nonaktif} onClick={() => AturDialogHarga(true)}>
-                    Ubah harga…
-                </Tombol>
+            {bolehKelola ? (
+                <>
+                    <div className="w-56">
+                        <PilihanCari
+                            label="Pindah ke kategori"
+                            nilai={uuidKategori}
+                            opsi={kategori.map((k) => ({ Nilai: k.Uuid, Label: k.Jalur }))}
+                            placeholder="Pilih kategori"
+                            saatBerubah={AturUuidKategori}
+                            aria-label="Kategori tujuan"
+                        />
+                    </div>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif || uuidKategori === ''}
+                        memproses={memproses === 'Kategori'}
+                        onClick={() => Jalankan('Kategori')}
+                    >
+                        Pindahkan
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif}
+                        memproses={memproses === 'TampilDiPos'}
+                        onClick={() => Jalankan('TampilDiPos')}
+                    >
+                        Tampilkan di kasir
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif}
+                        memproses={memproses === 'SembunyikanDariPos'}
+                        onClick={() => Jalankan('SembunyikanDariPos')}
+                    >
+                        Sembunyikan dari kasir
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif}
+                        memproses={memproses === 'Favorit'}
+                        onClick={() => Jalankan('Favorit')}
+                    >
+                        Tandai favorit
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif}
+                        memproses={memproses === 'HapusFavorit'}
+                        onClick={() => Jalankan('HapusFavorit')}
+                    >
+                        Lepas favorit
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        disabled={nonaktif}
+                        memproses={memproses === 'Pulihkan'}
+                        onClick={() => Jalankan('Pulihkan')}
+                    >
+                        Pulihkan
+                    </Tombol>
+                    {bolehUbahHarga ? (
+                        <Tombol varian="sekunder" disabled={nonaktif} onClick={() => AturDialogHarga(true)}>
+                            Ubah harga…
+                        </Tombol>
+                    ) : null}
+                    {dialogHarga ? (
+                        <DialogHargaMassal
+                            uuid={uuid}
+                            saatTutup={() => AturDialogHarga(false)}
+                            saatSelesai={() => {
+                                AturDialogHarga(false);
+                                konteks.bersihkan();
+                            }}
+                        />
+                    ) : null}
+                    <Tombol
+                        varian="bahaya"
+                        disabled={nonaktif}
+                        memproses={memproses === 'Arsipkan'}
+                        onClick={() => Jalankan('Arsipkan')}
+                    >
+                        Arsipkan
+                    </Tombol>
+                </>
             ) : null}
-            {dialogHarga ? (
-                <DialogHargaMassal
-                    uuid={uuid}
-                    saatTutup={() => AturDialogHarga(false)}
-                    saatSelesai={() => {
-                        AturDialogHarga(false);
-                        konteks.bersihkan();
-                    }}
-                />
-            ) : null}
-            <Tombol
-                varian="bahaya"
-                disabled={nonaktif}
-                memproses={memproses === 'Arsipkan'}
-                onClick={() => Jalankan('Arsipkan')}
-            >
-                Arsipkan
-            </Tombol>
         </div>
     );
 }

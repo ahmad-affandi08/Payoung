@@ -42,6 +42,7 @@ const Konteks = {
 describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
     beforeEach(() => {
         tiruanRouter.post.mockClear();
+        tiruanRouter.get.mockClear();
     });
 
     it('arsipkan & sembunyikan dari kasir mengirim Uuid terpilih; pindah kategori butuh kategori', () => {
@@ -71,6 +72,25 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
             expect.objectContaining({ Aksi: 'Kategori', UuidKategori: '01J9KTG0000000000000000001' }),
             expect.anything(),
         );
+    });
+
+    it('PRD-10: Cetak label membuka halaman label dengan produk terpilih; tanpa izin kelola hanya tombol itu yang tampil', () => {
+        const { container, unmount: Bongkar } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
+
+        fireEvent.click(within(container).getByRole('button', { name: 'Cetak label' }));
+        expect(tiruanRouter.get).toHaveBeenLastCalledWith('/kelola/produk/label', {
+            Produk: ['01J9PRD0000000000000000001', '01J9PRD0000000000000000002'],
+        });
+        Bongkar();
+
+        const { container: terbatas } = RenderUji(
+            <AksiMassalProduk konteks={Konteks} kategori={[]} bolehKelola={false} />,
+        );
+        const dalam = within(terbatas);
+        expect(dalam.getByRole('button', { name: 'Cetak label' })).toBeTruthy();
+        expect(dalam.queryByRole('button', { name: 'Arsipkan' })).toBeNull();
+        expect(dalam.queryByRole('button', { name: 'Tandai favorit' })).toBeNull();
+        expect(dalam.queryByRole('combobox', { name: 'Kategori tujuan' })).toBeNull();
     });
 
     it('K-16: Tandai favorit & Lepas favorit mengirim aksi Favorit/HapusFavorit dengan Uuid terpilih', () => {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Katalog\Model\ProdukSatuan;
 use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\OutletPengguna;
@@ -11,6 +12,7 @@ use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\Pemasok;
 use App\Domain\Pembelian\Model\PembayaranHutang;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
+use App\Domain\Pembelian\Model\PenerimaanBarangDetail;
 use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pembelian\Model\ReturPembelian;
 use Inertia\Testing\AssertableInertia;
@@ -83,7 +85,15 @@ describe('F-04 HTTP pembelian', function (): void {
         $this->get('/kelola/pembelian/retur/buat')
             ->assertRedirect('/kelola/pembelian/penerimaan')->assertSessionHasErrors('Umum')->assertSessionMissing('Kilat');
         $this->get("/kelola/pembelian/penerimaan/{$grn->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Kelola/Pembelian/Penerimaan/Detail')->where('Tindakan.Fakturkan', true)->where('Penerimaan.TotalNilai', '756000.00'));
+            ->component('Kelola/Pembelian/Penerimaan/Detail')->where('Tindakan.Fakturkan', true)->where('Penerimaan.TotalNilai', '756000.00')
+            // PRD-10: pintasan Cetak label barang diterima = satu stiker per satuan dasar (24 pcs).
+            ->where('Baris.0.UuidSatuanLabel', ProdukSatuan::query()->where('IdProduk', $minyak->Id)->value('Uuid'))
+            ->where('Baris.0.JumlahLabel', 24));
+        // Jumlah dasar pecahan (mis. kilogram) tidak punya jumlah stiker yang bermakna: pintasan tidak ditawarkan.
+        PenerimaanBarangDetail::query()->where('IdPenerimaanBarang', $grn->Id)->update(['JumlahDasar' => '2.5000']);
+        $this->get("/kelola/pembelian/penerimaan/{$grn->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Baris.0.UuidSatuanLabel', null)->where('Baris.0.JumlahLabel', null));
+        PenerimaanBarangDetail::query()->where('IdPenerimaanBarang', $grn->Id)->update(['JumlahDasar' => '24.0000']);
 
         $this->get("/kelola/pembelian/faktur/buat?penerimaan={$grn->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Pembelian/Faktur/Form')->where('UuidPemasok', $pemasok->Uuid)->has('Penerimaan', 1));

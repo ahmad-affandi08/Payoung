@@ -211,11 +211,24 @@ export default function HalamanDetailProduk({
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="produk ini" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
+            {!Izin.Kelola && Produk.DiarsipkanPada === null ? (
+                <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                        <Link href={`/kelola/produk/label?Produk[]=${Produk.Uuid}`}>Cetak label</Link>
+                    </Button>
+                </div>
+            ) : null}
+
             {Izin.Kelola ? (
                 <div className="flex flex-wrap gap-2">
                     <Button asChild className="h-8 pointer-coarse:h-11">
                         <Link href={`/kelola/produk/${Produk.Uuid}/ubah`}>Ubah produk</Link>
                     </Button>
+                    {Produk.DiarsipkanPada === null ? (
+                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                            <Link href={`/kelola/produk/label?Produk[]=${Produk.Uuid}`}>Cetak label</Link>
+                        </Button>
+                    ) : null}
                     {Produk.DiarsipkanPada === null ? (
                         <Tombol
                             varian="sekunder"

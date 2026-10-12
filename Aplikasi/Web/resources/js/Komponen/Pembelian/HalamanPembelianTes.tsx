@@ -6,6 +6,7 @@ import HalamanDaftarHutang, { FormatHariLewat } from '@/Halaman/Kelola/Pembelian
 import HalamanBuatPemasok from '@/Halaman/Kelola/Pembelian/Pemasok/Buat';
 import HalamanDaftarPemasok from '@/Halaman/Kelola/Pembelian/Pemasok/Daftar';
 import HalamanFormPembayaran, { PeriksaAlokasi } from '@/Halaman/Kelola/Pembelian/Pembayaran/Form';
+import { BuatTautanLabel } from '@/Halaman/Kelola/Pembelian/Penerimaan/Detail';
 import HalamanFormPenerimaan, { PeriksaBarisDariPesanan } from '@/Halaman/Kelola/Pembelian/Penerimaan/Form';
 import HalamanPengaturanPembelian from '@/Halaman/Kelola/Pembelian/Pengaturan';
 import HalamanDaftarPesanan from '@/Halaman/Kelola/Pembelian/Pesanan/Daftar';
@@ -154,9 +155,26 @@ function BarisPenerimaanRetur(perubahan: Partial<BarisDetailPenerimaan> = {}): B
         NomorSeriBisaDiretur: [],
         JumlahDiretur: '4.0000',
         SisaBisaDiretur: '20.0000',
+        UuidSatuanLabel: '01JBMYKSATUAN0000000000001',
+        JumlahLabel: 24,
         ...perubahan,
     };
 }
+
+describe('Pintasan Cetak label barang diterima (PRD-10)', () => {
+    it('satu stiker per satuan dasar; baris tanpa satuan atau jumlah bulat dilewati; kosong = tanpa tautan', () => {
+        expect(
+            BuatTautanLabel([
+                BarisPenerimaanRetur(),
+                BarisPenerimaanRetur({ UuidSatuanLabel: '01JBMYKSATUAN0000000000002', JumlahLabel: 288 }),
+                BarisPenerimaanRetur({ UuidSatuanLabel: null, JumlahLabel: null }),
+                BarisPenerimaanRetur({ UuidSatuanLabel: '01JBMYKSATUAN0000000000003', JumlahLabel: 0 }),
+            ]),
+        ).toBe('/kelola/produk/label?Item[]=01JBMYKSATUAN0000000000001:24&Item[]=01JBMYKSATUAN0000000000002:288');
+        expect(BuatTautanLabel([])).toBeNull();
+        expect(BuatTautanLabel([BarisPenerimaanRetur({ UuidSatuanLabel: null, JumlahLabel: null })])).toBeNull();
+    });
+});
 
 describe('Aturan halaman pembelian (F-04 fase 1)', () => {
     it('BR-04.1 penerimaan dari PO: 0/kosong boleh, batch wajib, seri = jumlah unit', () => {

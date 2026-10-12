@@ -38,6 +38,7 @@ function RuteTulisKatalogQa(array $t, Produk $produk, string $uuidSatuanProduk, 
         'produk.gambar.hapus' => ['delete', "/kelola/produk/{$produk->Uuid}/gambar"],
         'produk.varian.generasi' => ['post', "/kelola/produk/{$produk->Uuid}/varian"],
         'produk.barcode-internal' => ['post', "/kelola/produk/{$produk->Uuid}/satuan/{$uuidSatuanProduk}/barcode-internal"],
+        'produk.label.barcode-internal' => ['post', '/kelola/produk/label/barcode-internal'],
         'produk.batas-stok' => ['put', "/kelola/produk/{$produk->Uuid}/batas-stok"],
         'kategori.simpan' => ['post', '/kelola/kategori'],
         'satuan.simpan' => ['post', '/kelola/satuan'],
@@ -62,7 +63,7 @@ function RuteTulisKatalogQa(array $t, Produk $produk, string $uuidSatuanProduk, 
 function RuteBolehPeranQa(PeranTenantBawaan $peran): array
 {
     $katalog = ['produk.simpan', 'produk.perbarui', 'produk.arsipkan', 'produk.pulihkan', 'produk.hapus', 'produk.gambar.simpan', 'produk.gambar.hapus',
-        'produk.varian.generasi', 'produk.barcode-internal', 'kategori.simpan', 'satuan.simpan', 'kelompok-pilihan.simpan', 'kelompok-pilihan.hapus',
+        'produk.varian.generasi', 'produk.barcode-internal', 'produk.label.barcode-internal', 'kategori.simpan', 'satuan.simpan', 'kelompok-pilihan.simpan', 'kelompok-pilihan.hapus',
         'produk.pilihan', 'produk.resep', 'produk.komponen', 'produk.impor.unggah'];
 
     return match ($peran) {

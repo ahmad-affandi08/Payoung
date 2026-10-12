@@ -11,6 +11,7 @@ use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Katalog\Kueri\SatuanProdukPembelian;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\FakturPembelianDetail;
@@ -22,6 +23,7 @@ use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pembelian\Model\PesananPembelianDetail;
 use App\Domain\Pembelian\Model\ReturPembelian;
 use App\Domain\Pembelian\Model\ReturPembelianDetail;
+use Brick\Math\BigDecimal;
 use Illuminate\Support\Collection;
 
 /**
@@ -35,6 +37,7 @@ final class DetailPembelian
         private readonly PetaNamaPembelian $peta,
         private readonly JurnalSumber $jurnal,
         private readonly DaftarAkunPilihan $akun,
+        private readonly SatuanProdukPembelian $satuanProduk,
     ) {}
 
     /**
@@ -103,6 +106,17 @@ final class DetailPembelian
         $detailPo = $po === null ? collect() : PesananPembelianDetail::query()->where('IdPesananPembelian', $po->Id)->get()->keyBy('Id');
         $faktur = $grn->IdFakturPembelian === null ? null : FakturPembelian::query()->whereKey($grn->IdFakturPembelian)->first();
         $seriDiretur = [];
+        $detailGrn = $grn->Detail()->get();
+        $satuanDasar = [];
+
+        foreach ($this->satuanProduk->AmbilUntukProduk(array_values(array_map(intval(...), $detailGrn->pluck('IdProduk')->all()))) as $idProduk => $daftarSatuan) {
+            foreach ($daftarSatuan as $satuan) {
+                if (BigDecimal::of($satuan['Konversi'])->isEqualTo(1)) {
+                    $satuanDasar[$idProduk] = $satuan['Uuid'];
+                    break;
+                }
+            }
+        }
 
         foreach (ReturPembelianDetail::query()
             ->whereIn('IdReturPembelian', ReturPembelian::query()->where('IdPenerimaanBarang', $grn->Id)->where('Status', StatusDokumenTerposting::Diposting->value)->select('Id'))
@@ -136,9 +150,11 @@ final class DetailPembelian
                 'DibuatOleh' => $grn->DibuatOleh === null ? null : ($pengguna[$grn->DibuatOleh] ?? null),
                 'DibatalkanOleh' => $grn->DibatalkanOleh === null ? null : ($pengguna[$grn->DibatalkanOleh] ?? null),
             ],
-            'Baris' => array_values($grn->Detail()->get()->map(function (PenerimaanBarangDetail $d) use ($detailPo, $seriDiretur): array {
+            'Baris' => array_values($detailGrn->map(function (PenerimaanBarangDetail $d) use ($detailPo, $seriDiretur, $satuanDasar): array {
                 /** @var PesananPembelianDetail|null $p */
                 $p = $d->IdPesananPembelianDetail === null ? null : $detailPo->get($d->IdPesananPembelianDetail);
+                $dasar = BigDecimal::of($d->JumlahDasar);
+                $labelBisa = isset($satuanDasar[$d->IdProduk]) && $dasar->getFractionalPart()->isZero() && $dasar->isPositive();
 
                 return [
                     'Id' => $d->Id,
@@ -161,6 +177,9 @@ final class DetailPembelian
                     'NomorSeriBisaDiretur' => array_values(array_diff($d->DaftarNomorSeri ?? [], $seriDiretur[$d->Id] ?? [])),
                     'JumlahDiretur' => $d->JumlahDiretur,
                     'SisaBisaDiretur' => self::TidakNegatif(Kuantitas::Dari($d->JumlahDasar)->Kurangi(Kuantitas::Dari($d->JumlahDiretur)))->KeString(),
+                    // PRD-10: pintasan Cetak label barang diterima = satu stiker per satuan dasar (bukan per dus).
+                    'UuidSatuanLabel' => $labelBisa ? $satuanDasar[$d->IdProduk] : null,
+                    'JumlahLabel' => $labelBisa ? $dasar->toInt() : null,
                 ];
             })->all()),
             'Retur' => array_values(ReturPembelian::query()->where('IdPenerimaanBarang', $grn->Id)->orderBy('Id')->get()->map(fn (ReturPembelian $r): array => [

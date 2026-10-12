@@ -8,6 +8,7 @@ use App\Http\Kontroler\Kelola\Katalog\CariProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\GambarProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\KategoriKontroler;
 use App\Http\Kontroler\Kelola\Katalog\KetersediaanProdukKontroler;
+use App\Http\Kontroler\Kelola\Katalog\LabelProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\PaketSesiKontroler;
 use App\Http\Kontroler\Kelola\Katalog\ProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\SatuanKontroler;
@@ -44,6 +45,10 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::get('/produk/buat', [ProdukKontroler::class, 'Buat'])->middleware($kelola)->name('kelola.produk.buat');
     Route::post('/produk', [ProdukKontroler::class, 'Simpan'])->middleware($kelola)->name('kelola.produk.simpan');
     Route::get('/produk/cari', [CariProdukKontroler::class, 'Cari'])->middleware($lihat)->name('kelola.produk.cari');
+    // PRD-10: cetak label harga/barcode (halaman, pencarian baris, barcode internal atas pilihan sadar).
+    Route::get('/produk/label', [LabelProdukKontroler::class, 'Halaman'])->middleware($lihat)->name('kelola.produk.label');
+    Route::get('/produk/label/cari', [LabelProdukKontroler::class, 'Cari'])->middleware($lihat)->name('kelola.produk.label.cari');
+    Route::post('/produk/label/barcode-internal', [LabelProdukKontroler::class, 'BuatBarcode'])->middleware($kelola)->name('kelola.produk.label.barcode-internal');
     Route::get('/produk/{produk}', [ProdukKontroler::class, 'Detail'])->middleware($lihat)->where('produk', $ulid)->name('kelola.produk.detail');
     Route::get('/produk/{produk}/ubah', [ProdukKontroler::class, 'Ubah'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.ubah');
     Route::put('/produk/{produk}', [ProdukKontroler::class, 'Perbarui'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.perbarui');

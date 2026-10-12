@@ -52,6 +52,8 @@ describe('F-03 isolasi tenant rute Tim 1', function (): void {
         // Uuid produk A sebagai kunci idempotensi di tenant B tidak mengembalikan produk A.
         $masukB()->post('/kelola/produk', array_replace($formB, ['Uuid' => $produk->Uuid]))->assertSessionHasErrors();
         $masukB()->getJson('/kelola/produk/cari?kata=Rahasia')->assertOk()->assertExactJson(['Data' => []]);
+        $masukB()->getJson('/kelola/produk/label/cari?kata=Rahasia')->assertOk()->assertExactJson(['Data' => []]);
+        $masukB()->postJson('/kelola/produk/label/barcode-internal', ['Satuan' => [$satuanProduk->Uuid]])->assertStatus(422);
 
         BantuanOrganisasi::AturKonteks($a['Tenant']->Id);
         expect(Produk::query()->whereKey($produk->Id)->sole()->Nama)->toBe('Produk Rahasia Tenant A')

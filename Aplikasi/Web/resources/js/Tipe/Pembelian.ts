@@ -347,6 +347,9 @@ export type BarisDetailPenerimaan = {
     NomorSeriBisaDiretur: string[];
     JumlahDiretur: string;
     SisaBisaDiretur: string;
+    /** PRD-10: satuan dasar (Uuid `ProdukSatuan`) dan jumlah stiker untuk pintasan Cetak label; null bila tak bisa dihitung. */
+    UuidSatuanLabel: string | null;
+    JumlahLabel: number | null;
 };
 export type PropsDetailPenerimaanData = {
     Penerimaan: DetailPenerimaan;

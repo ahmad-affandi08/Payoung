@@ -49,7 +49,7 @@ Fitur khusus:
 - Barcode timbangan (prefix 21–29: harga/berat terenkode di barcode EAN-13; 20 dipakai barcode internal produk). Diatur di Pengaturan kasir, produk dicari dari 7 digit pertama (v3.55).
 - Multi-satuan otomatis dari barcode (scan barcode dus → satuan dus).
 - Cek harga cepat tanpa menambah ke keranjang.
-- Label harga & barcode cetak massal (fase 2).
+- Label harga & barcode cetak massal: halaman Cetak label (PRD-10, v5.71, D-129).
 
 ### 9.4 Fashion
 
