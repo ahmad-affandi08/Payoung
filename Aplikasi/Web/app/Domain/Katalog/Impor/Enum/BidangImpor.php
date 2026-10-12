@@ -25,6 +25,7 @@ enum BidangImpor: string
     case HargaTermasukPajak = 'HargaTermasukPajak';
     case TampilDiPos = 'TampilDiPos';
     case TampilOnline = 'TampilOnline';
+    case Favorit = 'Favorit';
     case BolehMinus = 'BolehMinus';
     case Pelacakan = 'Pelacakan';
     case NamaInduk = 'NamaInduk';
@@ -72,6 +73,7 @@ enum BidangImpor: string
             self::HargaTermasukPajak => 'Harga Termasuk Pajak',
             self::TampilDiPos => 'Tampil di POS',
             self::TampilOnline => 'Tampil Online',
+            self::Favorit => 'Favorit',
             self::BolehMinus => 'Boleh Jual Saat Stok Kosong',
             self::Pelacakan => 'Pelacakan',
             self::NamaInduk => 'Nama Induk Varian',
@@ -129,6 +131,7 @@ enum BidangImpor: string
             self::Barcode => 'Beberapa barcode dipisah koma, titik koma, atau |.',
             self::KelompokPajak => 'Nama kelompok pajak, atau PPN/PB1/Tanpa pajak.',
             self::HargaTermasukPajak => 'Ya, Tidak, atau kosong = ikut outlet.',
+            self::Favorit => 'Ya = tampil di kategori Favorit kasir. Kosong = tidak diubah. Bahan baku tidak bisa favorit.',
             self::NamaInduk => 'Isi untuk varian: nama produk induknya.',
             self::Varian => 'Misal "Ukuran: M; Warna: Merah".',
             self::JumlahGrosir1, self::JumlahGrosir2, self::JumlahGrosir3 => 'Jumlah minimal (lebih dari 1, naik berurutan).',

@@ -24,7 +24,7 @@ use InvalidArgumentException;
  *
  * Kunci `Data`: Nama, NamaStruk, Sku, Jenis (diisi eksplisit atau null), JenisAkhir, Kategori (jalur), Merek, Satuan,
  * HargaJual, Barcode, IdKelompokPajak, HargaTermasukPajak (Ya|Tidak|Ikut|null), TampilDiPos, TampilOnline,
- * BolehMinus, Pelacakan, Status, NamaInduk, Varian, SatuanAlternatif [{Nomor, Satuan, Konversi, Harga, Barcode}],
+ * Favorit (Ya|Tidak|null; K-16, bahan baku tetap tidak favorit lewat aturan produk), BolehMinus, Pelacakan, Status, NamaInduk, Varian, SatuanAlternatif [{Nomor, Satuan, Konversi, Harga, Barcode}],
  * Grosir ([{JumlahMinimum, Harga}] atau null bila kolom grosir tidak dipetakan). Null/kosong = tidak diubah.
  */
 final class ValidatorBarisImpor
@@ -164,6 +164,7 @@ final class ValidatorBarisImpor
                 'HargaTermasukPajak' => $urai(BidangImpor::HargaTermasukPajak, fn (string $t): ?string => PenguraiNilaiImpor::UraiTigaKeadaan($t, $preset)),
                 'TampilDiPos' => $urai(BidangImpor::TampilDiPos, fn (string $t): ?bool => PenguraiNilaiImpor::UraiBoolean($t, $preset)),
                 'TampilOnline' => $urai(BidangImpor::TampilOnline, fn (string $t): ?bool => PenguraiNilaiImpor::UraiBoolean($t, $preset)),
+                'Favorit' => $urai(BidangImpor::Favorit, fn (string $t): ?bool => PenguraiNilaiImpor::UraiBoolean($t, $preset)),
                 'BolehMinus' => $urai(BidangImpor::BolehMinus, fn (string $t): ?bool => PenguraiNilaiImpor::UraiBoolean($t, $preset)),
                 'Pelacakan' => $urai(BidangImpor::Pelacakan, fn (string $t): ?string => PenguraiNilaiImpor::UraiPelacakan($t)?->value),
                 'Status' => $urai(BidangImpor::Status, fn (string $t): ?string => PenguraiNilaiImpor::UraiStatus($t, $preset)?->value),

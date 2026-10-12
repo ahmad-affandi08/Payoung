@@ -46,6 +46,7 @@ final class ProdukUntukApiPublik
                 'Aktif' => $p->Aktif,
                 'TampilDiPos' => $p->TampilDiPos,
                 'TampilOnline' => $p->TampilOnline,
+                'Favorit' => $p->Favorit,
                 'HargaTerbuka' => $p->HargaTerbuka,
                 'Satuan' => array_values(collect($satuan->get($p->Id, []))->map(fn (ProdukSatuan $s): array => [
                     'Uuid' => $s->Uuid,

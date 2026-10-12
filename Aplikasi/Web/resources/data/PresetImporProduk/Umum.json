@@ -20,6 +20,7 @@
         "HargaTermasukPajak": ["Harga Termasuk Pajak"],
         "TampilDiPos": ["Tampil di POS", "Tampil di Kasir"],
         "TampilOnline": ["Tampil Online"],
+        "Favorit": ["Favorit", "Produk Favorit"],
         "BolehMinus": ["Boleh Jual Saat Stok Kosong", "Boleh Minus"],
         "Pelacakan": ["Pelacakan"],
         "NamaInduk": ["Nama Induk Varian", "Nama Induk"],

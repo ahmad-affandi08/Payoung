@@ -159,6 +159,7 @@ final class DataEksporProduk
             },
             BidangImpor::TampilDiPos->value => $produk->TampilDiPos ? 'Ya' : 'Tidak',
             BidangImpor::TampilOnline->value => $produk->TampilOnline ? 'Ya' : 'Tidak',
+            BidangImpor::Favorit->value => $produk->Favorit ? 'Ya' : 'Tidak',
             BidangImpor::BolehMinus->value => match ($produk->BolehMinus) {
                 true => 'Ya',
                 false => 'Tidak',

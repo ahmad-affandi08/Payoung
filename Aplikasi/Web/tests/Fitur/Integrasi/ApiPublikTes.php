@@ -112,6 +112,11 @@ it('token membaca produk & stok dengan kursor; tanpa cakupan 403; token tenant l
     $api('/api/v1/produk?kursor=rusak!!')->assertStatus(422)->assertJsonPath('Galat.Kode', 'KursorTidakValid');
     $api("/api/v1/produk/{$beras->Uuid}")->assertOk()->assertJsonPath('Data.Uuid', $beras->Uuid);
 
+    // K-16: penanda favorit ikut di bentuk produk (field baru, kompatibel mundur).
+    expect($halaman1['Data'][0])->toHaveKey('Favorit')->and($halaman1['Data'][0]['Favorit'])->toBeFalse();
+    $beras->forceFill(['Favorit' => true])->save();
+    $api("/api/v1/produk/{$beras->Uuid}")->assertOk()->assertJsonPath('Data.Favorit', true);
+
     $stok = $api('/api/v1/stok')->assertOk()->json('Data');
     expect(collect($stok)->firstWhere('UuidProduk', $beras->Uuid))->toMatchArray(['JumlahTersedia' => '40.0000', 'NamaGudang' => $k['Gudang']->Nama]);
 

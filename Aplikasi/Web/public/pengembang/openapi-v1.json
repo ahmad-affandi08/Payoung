@@ -1187,6 +1187,10 @@
           "TampilOnline": {
             "type": "boolean"
           },
+          "Favorit": {
+            "type": "boolean",
+            "description": "Produk favorit pilihan pemilik (tampil di kategori Favorit kasir)."
+          },
           "HargaTerbuka": {
             "type": "boolean"
           },
@@ -1250,6 +1254,7 @@
           "Aktif",
           "TampilDiPos",
           "TampilOnline",
+          "Favorit",
           "HargaTerbuka",
           "Satuan",
           "DiubahPada"

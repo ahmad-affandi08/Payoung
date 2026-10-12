@@ -307,6 +307,7 @@ final class PenerapImpor
             bolehMinus: is_bool($data['BolehMinus'] ?? null) ? $data['BolehMinus'] : null,
             tampilDiPos: is_bool($data['TampilDiPos'] ?? null) ? $data['TampilDiPos'] : true,
             tampilOnline: is_bool($data['TampilOnline'] ?? null) ? $data['TampilOnline'] : false,
+            favorit: is_bool($data['Favorit'] ?? null) ? $data['Favorit'] : null,
             satuan: $satuan,
             atributVarian: [],
             bolehUbahHarga: $bolehHarga,
@@ -382,6 +383,7 @@ final class PenerapImpor
             bolehMinus: is_bool($data['BolehMinus'] ?? null) ? $data['BolehMinus'] : null,
             tampilDiPos: is_bool($data['TampilDiPos'] ?? null) ? $data['TampilDiPos'] : true,
             tampilOnline: is_bool($data['TampilOnline'] ?? null) ? $data['TampilOnline'] : false,
+            favorit: is_bool($data['Favorit'] ?? null) ? $data['Favorit'] : null,
             satuan: [new DataSatuanProduk(null, $satuanDasar->Id, Kuantitas::Dari(1), true, true, [], [])],
             atributVarian: array_map(fn (array $a): DataAtributVarian => new DataAtributVarian($a['Nama'], [$a['Nilai']]), $atribut),
             bolehUbahHarga: $bolehHarga,
@@ -409,6 +411,7 @@ final class PenerapImpor
             kosongkanHargaTermasukPajak: ! $anak && $hargaTermasukPajak === 'Ikut',
             tampilDiPos: is_bool($data['TampilDiPos'] ?? null) ? $data['TampilDiPos'] : null,
             tampilOnline: $anak || ! is_bool($data['TampilOnline'] ?? null) ? null : $data['TampilOnline'],
+            favorit: is_bool($data['Favorit'] ?? null) ? $data['Favorit'] : null,
             bolehMinus: is_bool($data['BolehMinus'] ?? null) ? $data['BolehMinus'] : null,
             pelacakan: is_string($data['Pelacakan'] ?? null) ? PelacakanProduk::tryFrom($data['Pelacakan']) : null,
         ), SumberPerubahanKatalog::Impor);

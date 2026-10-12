@@ -403,6 +403,46 @@ it('produk.diubah: sekali per perubahan nyata dari harga, arsip, dan pulihkan; s
         ->and($kiriman[3]->Muatan['Data']['Aktif'])->toBeTrue();
 });
 
+it('produk.diubah terpicu saat Favorit berubah (form dan aksi massal), memuat Favorit, dan tidak terpicu bila nilainya sama', function (): void {
+    Http::fake(['gudang.contoh.co.id/*' => Http::response('', 204)]);
+    $t = BantuanKatalog::SiapkanTenantProduk('Toko Bangunan Sumber Rejeki Boyolali');
+    AktifkanFiturWebhook($t['Tenant']);
+    DaftarkanWebhookUji($this, $t, ['produk.diubah']);
+    $form = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], [
+        'Nama' => 'Kuas Cat Tembok 4 inci',
+        'Satuan' => [BantuanKatalog::IsiSatuanForm($t['Pcs'], '1', [], [['JumlahMinimum' => '1', 'Harga' => '18500']], defaultJual: true)],
+    ]);
+    $klien = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+    $hitung = function () use ($t): int {
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+
+        return KirimanWebhook::query()->where('Peristiwa', 'produk.diubah')->count();
+    };
+
+    $klien()->post('/kelola/produk', $form)->assertSessionHasNoErrors();
+    expect($hitung())->toBe(1);
+    $produk = Produk::query()->where('Uuid', $form['Uuid'])->firstOrFail();
+    $form['Satuan'][0]['Uuid'] = ProdukSatuan::query()->where('IdProduk', $produk->Id)->firstOrFail()->Uuid;
+    $form['Sku'] = $produk->Sku;
+
+    // Hanya Favorit yang berubah: satu kiriman baru, datanya memuat Favorit = true.
+    $klien()->put("/kelola/produk/{$form['Uuid']}", [...$form, 'Favorit' => true])->assertSessionHasNoErrors();
+    expect($hitung())->toBe(2);
+    $kiriman = KirimanWebhook::query()->where('Peristiwa', 'produk.diubah')->orderBy('Id')->get();
+    expect($kiriman[1]->Muatan['Data']['Favorit'])->toBeTrue();
+    PeriksaDataWebhookSesuaiSpesifikasi('produk.diubah', $kiriman[1]->Muatan['Data']);
+
+    // Nilai yang sama tidak mengirim apa pun.
+    $klien()->put("/kelola/produk/{$form['Uuid']}", [...$form, 'Favorit' => true])->assertSessionHasNoErrors();
+    expect($hitung())->toBe(2);
+
+    // Aksi massal "Hapus favorit" juga memicu, dan memuat Favorit = false.
+    $klien()->post('/kelola/produk/massal', ['Aksi' => 'HapusFavorit', 'Uuid' => [$form['Uuid']]])->assertSessionHasNoErrors();
+    expect($hitung())->toBe(3);
+    $terakhir = KirimanWebhook::query()->where('Peristiwa', 'produk.diubah')->latest('Id')->firstOrFail();
+    expect($terakhir->Muatan['Data']['Favorit'])->toBeFalse();
+});
+
 it('penangan webhook integrasi hanya diantrekan bila tenant punya webhook aktif yang melanggan peristiwa itu', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($t['Tenant']);
