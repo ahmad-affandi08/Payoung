@@ -12,6 +12,7 @@ use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pelanggan\Kueri\RiwayatPoin;
 use App\Domain\Pemenuhan\Kueri\StatusLaundryPublik;
 use App\Domain\Penjualan\Enum\StatusPenjualan;
+use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Model\Penjualan;
 use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\PenjualanPajak;
@@ -38,6 +39,7 @@ final class StrukDigitalPenjualan
         private readonly ProfilPajakOutlet $pajakOutlet,
         private readonly RiwayatPoin $poin,
         private readonly StatusLaundryPublik $laundry,
+        private readonly PenentuKonteksTokoOnline $tokoOnline,
     ) {}
 
     /**
@@ -107,9 +109,20 @@ final class StrukDigitalPenjualan
             'TotalRetur' => $totalRetur?->KeString(),
             // F-16c bagian 4a: poin pasti dihitung server (termasuk pengali tier & promo poin berlipat).
             'PoinDiperoleh' => $p->IdPelanggan === null || $p->Status === StatusPenjualan::Void ? null : $this->poin->AmbilPerolehanPenjualan($p->Id),
+            // D-110: tautan toko online outlet ini bila sedang menerima pesanan, supaya pembeli bisa memesan lagi dari struk.
+            'TokoOnline' => $this->AmbilTautanTokoOnline($idTenant, $outlet?->uuidOutlet),
             'CatatanKaki' => $struk->catatanKaki,
             'TeksPenutup' => $struk->teksPenutup,
             'Laundry' => $laundry,
         ];
+    }
+
+    private function AmbilTautanTokoOnline(int $idTenant, ?string $uuidOutlet): ?string
+    {
+        if ($uuidOutlet === null || $this->tokoOnline->Cari($uuidOutlet)?->aktif !== true) {
+            return null;
+        }
+
+        return url('/'.$this->profil->AmbilSlug($idTenant)).'?outlet='.$uuidOutlet;
     }
 }

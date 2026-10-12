@@ -7,7 +7,9 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
@@ -86,6 +88,8 @@ type Pesanan = {
 type Opsi = { Nilai: string; Label: string };
 type Props = {
     TautanPublik: string;
+    /** D-110: QR (SVG) tautan toko untuk dibagikan atau dicetak. */
+    QrSvg: string;
     AkunPembeliTersedia: boolean;
     Pengaturan: {
         Aktif: boolean;
@@ -109,6 +113,81 @@ type Props = {
 };
 
 const kelasKotak = 'rounded-xl border border-garis bg-permukaan p-4 shadow-sm';
+
+/** D-110: cara pembeli tahu toko online: tautan, QR, kirim lewat WhatsApp, dan poster cetak. */
+function PanelBagikan({ props }: { props: Props }) {
+    const [tersalin, AturTersalin] = useState(false);
+    const siap = props.Pengaturan.Aktif && props.Outlet.some((o) => o.TokoOnlineAktif);
+    const pesan = `Sekarang bisa pesan online di toko kami. Pilih menu dan pesan di sini: ${props.TautanPublik}`;
+    const Salin = () => {
+        void navigator.clipboard
+            ?.writeText(props.TautanPublik)
+            .then(() => AturTersalin(true))
+            .catch(() => AturTersalin(false));
+    };
+
+    return (
+        <section
+            aria-label="Bagikan toko"
+            className={`${kelasKotak} grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center`}
+        >
+            <img
+                src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(props.QrSvg)}`}
+                alt="QR toko online"
+                className="size-40 justify-self-center rounded-panel border border-garis bg-permukaan p-2"
+            />
+            <div className="flex min-w-0 flex-col gap-3">
+                <div>
+                    <h2 className="text-subjudul font-semibold">Bagikan toko online Anda</h2>
+                    <p className="text-keterangan text-teks-sekunder">
+                        Pembeli tidak akan menemukan toko ini sendiri. Bagikan tautan atau QR ini lewat WhatsApp, bio
+                        Instagram, dan tempel posternya di kasir, pintu, atau meja. Struk digital pelanggan juga
+                        otomatis memuat tautan ini.
+                    </p>
+                </div>
+                {siap ? null : (
+                    <Pemberitahuan jenis="peringatan">
+                        Toko belum menerima pesanan. Nyalakan &quot;Toko menerima pesanan&quot; dan &quot;Outlet tampil
+                        online&quot; di bawah, lalu simpan.
+                    </Pemberitahuan>
+                )}
+                <code className="min-w-0 rounded-kontrol border border-garis bg-latar px-2 py-1 font-mono text-keterangan break-all text-teks-utama">
+                    {props.TautanPublik}
+                </code>
+                <div className="flex flex-wrap gap-2">
+                    <Tombol varian="sekunder" onClick={Salin}>
+                        {tersalin ? 'Tautan tersalin' : 'Salin tautan'}
+                    </Tombol>
+                    <Tombol
+                        varian="sekunder"
+                        onClick={() =>
+                            window.open(
+                                `https://wa.me/?text=${encodeURIComponent(pesan)}`,
+                                '_blank',
+                                'noopener,noreferrer',
+                            )
+                        }
+                    >
+                        Kirim lewat WhatsApp
+                    </Tombol>
+                    <Button asChild variant="outline" className="font-semibold">
+                        <a
+                            href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(props.QrSvg)}`}
+                            download="qr-toko-online.svg"
+                        >
+                            Unduh QR
+                        </a>
+                    </Button>
+                    <Button asChild className="font-semibold">
+                        <a href="/kelola/toko-online/poster" target="_blank" rel="noreferrer">
+                            Cetak poster
+                        </a>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 function FormPengaturan({ props }: { props: Props }) {
     const awal = props.Outlet[0];
@@ -581,6 +660,7 @@ export default function DaftarTokoOnline(props: Props) {
                         Buka toko <ExternalLinkIcon className="size-4" />
                     </a>
                 </div>
+                <PanelBagikan props={props} />
                 <FormPengaturan props={props} />
                 <div className="grid gap-4 xl:grid-cols-2">
                     <FormZona outlet={props.Outlet} />

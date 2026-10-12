@@ -143,6 +143,7 @@
 | D-107 | Dari pemilik produk (laporan trial paket Bisnis: toko online tak bisa disimpan). Keputusan agen (D-12, D-17): fitur kanal dicek tingkat tenant, filter modul template hanya untuk modul template. Detail di versi 5.44. |
 | D-108 | Dari pemilik produk ("kita menjanjikan kuota ke user, padahal mereka bisa setup sendiri WA-nya?", memilih gabungan: kuota nomor Payoung yang ditegakkan + WhatsApp milik tenant tanpa kuota). Keputusan agen (D-12, D-17): meteran atomik per tenant per bulan WIB di `PembuatPengirimWhatsapp`, WhatsApp tenant meniru gerbang pembayaran D-19. Detail di versi 5.45. |
 | D-109 | Dari pemilik produk ("keranjangnya muncul di bawah aneh banget ... tampilan yang dilihat publik dibuat modern"). Keputusan agen (D-12, D-17): keranjang lengket di desktop dan laci bawah di HP, dua langkah, kartu menu horizontal, opsi produk di lembar bawah. Detail di versi 5.46. |
+| D-110 | Dari pemilik produk ("terus gimana cara orang mengetahui kalau outlet tersebut punya toko online?"). Keputusan agen (D-12, D-17): penemuan toko lewat saluran milik pemilik sendiri (tautan, QR, poster, struk digital, pratinjau tautan), bukan direktori platform. Detail di versi 5.47. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

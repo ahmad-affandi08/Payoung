@@ -43,6 +43,8 @@ export type StrukDigital = {
     TotalRetur: string | null;
     /** F-16c bagian 4a: poin yang diperoleh pelanggan dari transaksi ini (null = tidak ada). */
     PoinDiperoleh?: number | null;
+    /** D-110: tautan toko online outlet ini bila sedang menerima pesanan. */
+    TokoOnline?: string | null;
     CatatanKaki: string | null;
     TeksPenutup: string | null;
     /** Laundry (§9.9): status proses cucian bila transaksi ini bertiket laundry. */
@@ -180,6 +182,14 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
                     </section>
                     <footer className="border-t border-dashed border-garis pt-2 text-center">
                         {Struk.CatatanKaki ? <p>{Struk.CatatanKaki}</p> : null}
+                        {Struk.TokoOnline ? (
+                            <p className="mt-1">
+                                Mau pesan lagi dari rumah?{' '}
+                                <a href={Struk.TokoOnline} className="font-semibold text-brand underline">
+                                    Buka toko online
+                                </a>
+                            </p>
+                        ) : null}
                         <p>{Struk.TeksPenutup ?? PENUTUP_BAWAAN}</p>
                     </footer>
                 </article>

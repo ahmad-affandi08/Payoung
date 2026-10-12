@@ -324,7 +324,19 @@ export default function TokoOnline({
 
     return (
         <div className="min-h-dvh bg-latar text-teks-utama">
-            <Head title={Toko?.Nama ?? 'Toko online'} />
+            <Head title={Toko?.Nama ?? 'Toko online'}>
+                {/* D-110: pratinjau tautan di WhatsApp, Instagram, dan mesin pencari. */}
+                <meta
+                    name="description"
+                    content={`Pesan online dari ${Toko?.Nama ?? 'toko kami'}: pilih menu, ambil sendiri atau diantar, bayar mudah.`}
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={Toko?.Nama ?? 'Toko online'} />
+                <meta
+                    property="og:description"
+                    content={`Pesan online dari ${Toko?.Nama ?? 'toko kami'}${Toko?.Alamat ? ` | ${Toko.Alamat}` : ''}.`}
+                />
+            </Head>
 
             <header className="bg-brand-gelap text-permukaan">
                 <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 pt-5 pb-7">

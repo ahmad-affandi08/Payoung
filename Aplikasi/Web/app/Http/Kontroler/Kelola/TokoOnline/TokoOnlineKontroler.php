@@ -7,7 +7,9 @@ namespace App\Http\Kontroler\Kelola\TokoOnline;
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
+use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
+use App\Domain\Organisasi\Layanan\PembuatQrMeja;
 use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pemenuhan\Aksi\AturTautanPortalKurir;
 use App\Domain\Pemenuhan\Aksi\SimpanKurir;
@@ -24,6 +26,7 @@ use App\Domain\Penjualan\Aksi\SimpanZonaPengiriman;
 use App\Domain\Penjualan\Aksi\UbahStatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Layanan\PenentuAkunTokoOnline;
+use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\ZonaPengiriman;
@@ -38,7 +41,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class TokoOnlineKontroler extends DasarKelolaKontroler
 {
-    public function Tampilkan(PetaUuidOutlet $peta, ProfilTenant $profil, DaftarAkunPilihan $akun, AksesPengguna $akses, IdentitasPelanggan $identitas, PenentuAkunTokoOnline $akunPembeli): Response
+    public function Tampilkan(PetaUuidOutlet $peta, ProfilTenant $profil, DaftarAkunPilihan $akun, AksesPengguna $akses, IdentitasPelanggan $identitas, PenentuAkunTokoOnline $akunPembeli, PembuatQrMeja $qr): Response
     {
         $boleh = $this->IdOutletBoleh();
         $outlet = $peta->AmbilRingkas($boleh, hanyaAktif: true);
@@ -56,6 +59,8 @@ final class TokoOnlineKontroler extends DasarKelolaKontroler
 
         return Inertia::render('Kelola/TokoOnline/Daftar', [
             'TautanPublik' => url('/'.$profil->AmbilSlug($this->IdTenant())),
+            // D-110: QR tautan toko untuk dibagikan atau dicetak.
+            'QrSvg' => $qr->BuatSvg(url('/'.$profil->AmbilSlug($this->IdTenant()))),
             'Pengaturan' => $atur->only(['Aktif', 'BayarSaatAmbilAktif', 'CodAktif', 'QrisAktif', 'AkunPelangganAktif', 'NotifikasiWhatsappAktif', 'MinimalPesanan', 'MenitKedaluwarsa', 'PesanTutup']),
             // Sakelar akun pembeli hanya berarti bila platform punya WhatsApp aktif (kode masuk dikirim lewat sana).
             'AkunPembeliTersedia' => $akunPembeli->CekWhatsappTersedia(),
@@ -97,6 +102,21 @@ final class TokoOnlineKontroler extends DasarKelolaKontroler
             })->all(),
             'OpsiStatusPesanan' => array_map(fn (StatusPesananOnline $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusPesananOnline::PilihanStaf()),
             'OpsiStatusPengiriman' => array_map(fn (StatusPengirimanPesanan $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusPengirimanPesanan::cases()),
+        ]);
+    }
+
+    /** D-110: poster A5 berisi QR dan tautan toko online, dicetak atau disimpan PDF lewat peramban. */
+    public function Poster(ProfilTenant $profil, PembuatQrMeja $qr, PenentuKonteksTokoOnline $penentu, NamaTampilUsaha $namaTampil): Response
+    {
+        $idTenant = $this->IdTenant();
+        $url = url('/'.$profil->AmbilSlug($idTenant));
+        $konteks = $penentu->Cari();
+
+        return Inertia::render('Kelola/TokoOnline/Poster', [
+            'NamaToko' => $konteks === null ? $profil->Ambil($idTenant)['Nama'] : $namaTampil->UntukOutlet($konteks->idOutlet, $idTenant),
+            'Tautan' => $url,
+            'QrSvg' => $qr->BuatSvg($url),
+            'Aktif' => $konteks?->aktif === true,
         ]);
     }
 
