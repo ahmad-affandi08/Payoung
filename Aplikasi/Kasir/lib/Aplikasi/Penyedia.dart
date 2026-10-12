@@ -101,6 +101,25 @@ class ModeLatihan extends Notifier<bool> {
 
 final penyediaModeLatihan = NotifierProvider<ModeLatihan, bool>(ModeLatihan.new);
 
+/// F-18: staf yang menjawab "Nanti" pada tawaran absen pulang (saat kunci / ganti kasir) tidak ditawari lagi pada
+/// tanggal yang sama, supaya kunci layar saat istirahat tidak terus-menerus bertanya. Hanya di memori; kembali kosong
+/// saat aplikasi dibuka ulang, dan tidak berlaku lagi esok harinya.
+class TundaAbsenPulang extends Notifier<Map<String, String>> {
+  @override
+  Map<String, String> build() => const {};
+
+  bool CekDitunda(String uuidStaf, DateTime sekarang) => state[uuidStaf] == _Hari(sekarang);
+
+  void Tunda(String uuidStaf, DateTime sekarang) => state = {...state, uuidStaf: _Hari(sekarang)};
+
+  static String _Hari(DateTime waktu) {
+    final lokal = waktu.toLocal();
+    return '${lokal.year}-${lokal.month}-${lokal.day}';
+  }
+}
+
+final penyediaTundaAbsenPulang = NotifierProvider<TundaAbsenPulang, Map<String, String>>(TundaAbsenPulang.new);
+
 /// D-66: rel navigasi Ruang Kerja mulai tertutup (ikon saja). Test lain meng-override ke `false` supaya label menu
 /// tetap terlihat tanpa mengetuk tombol lebarkan dulu; test khusus rel memeriksa bawaan ini.
 final penyediaRelAwalDiciutkan = Provider<bool>((ref) => true);
