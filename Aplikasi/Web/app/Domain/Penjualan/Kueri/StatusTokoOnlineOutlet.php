@@ -17,7 +17,7 @@ final class StatusTokoOnlineOutlet
 
     public function CekAktif(?int $idOutlet): bool
     {
-        if ($idOutlet === null || PengaturanTokoOnline::query()->value('Aktif') !== 1) {
+        if ($idOutlet === null || PengaturanTokoOnline::query()->value('Aktif') !== true) {
             return false;
         }
 
