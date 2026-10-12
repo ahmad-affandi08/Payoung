@@ -42,6 +42,8 @@ $jadwalSaas('pembayaran:segarkan-pendaftaran-merchant')->everyThirtyMinutes()->w
 $jadwalSaas('pembayaran:bersihkan-berkas-pendaftaran')->hourly()->withoutOverlapping(60)->runInBackground();
 // BR-P04.4: terapkan turun paket yang sudah waktunya (ke Gratis saat periode berakhir, ke paket lebih murah setelah perpanjangan lunas).
 $jadwalSaas('langganan:terapkan-turun-paket')->hourly()->withoutOverlapping(60)->runInBackground();
+// Audit E5: hapus berkas ekspor data usaha yang kedaluwarsa.
+$jadwalSaas('ekspor-data:bersihkan')->dailyAt('03:30')->withoutOverlapping(60)->runInBackground();
 // Audit E2: ukur ulang penyimpanan berkas tenant (batas paket) tiap dini hari.
 $jadwalSaas('penyimpanan:ukur')->dailyAt('03:10')->withoutOverlapping(120)->runInBackground();
 

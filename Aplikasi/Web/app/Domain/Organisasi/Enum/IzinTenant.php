@@ -65,6 +65,8 @@ enum IzinTenant: string
     case LaporanKeuanganLihat = 'laporan.keuangan.lihat';
     case AkuntansiKelola = 'akuntansi.kelola';
     case LanggananKelola = 'langganan.kelola';
+    // Audit E5 (UU PDP): mengunduh ekspor data lengkap usaha dan mengajukan penutupan akun; khusus Pemilik.
+    case DataKelola = 'data.kelola';
 
     // P-09 Bantuan (tiket dukungan ke tim platform).
     case BantuanTiketLihat = 'bantuan.tiket.lihat';
@@ -147,6 +149,7 @@ enum IzinTenant: string
             self::LaporanKeuanganLihat => 'Melihat laporan keuangan',
             self::AkuntansiKelola => 'Mengelola jurnal, pajak, dan tutup buku',
             self::LanggananKelola => 'Mengelola langganan & tagihan',
+            self::DataKelola => 'Mengunduh ekspor data lengkap usaha dan menutup akun usaha',
             self::BantuanTiketLihat => 'Melihat tiket bantuan & balasan tim dukungan',
             self::BantuanTiketKelola => 'Membuat, membalas, dan menyelesaikan tiket bantuan',
             self::PelangganLihat => 'Melihat data & riwayat belanja pelanggan',
@@ -187,7 +190,7 @@ enum IzinTenant: string
             self::ReservasiKelola, self::LaundryKelola, self::BengkelKelola, self::GrosirKelola, self::GrosirSetujuiKredit, self::SalesmanKunjungan,
             self::TokoOnlineKelola, self::PengirimanKelola => 'Penjualan',
             self::LaporanPenjualanLihat, self::LaporanKeuanganLihat, self::AkuntansiKelola, self::TindakanTinjau => 'Keuangan & laporan',
-            self::LanggananKelola => 'Langganan',
+            self::LanggananKelola, self::DataKelola => 'Langganan',
             self::BantuanTiketLihat, self::BantuanTiketKelola => 'Bantuan',
             self::PelangganLihat, self::PelangganKelola, self::PelangganDepositKelola, self::PelangganSesiKelola => 'Pelanggan',
             self::KaryawanLihat, self::KaryawanKelola => 'Karyawan',
@@ -201,7 +204,7 @@ enum IzinTenant: string
      */
     public function CekKhususPemilik(): bool
     {
-        return $this === self::LanggananKelola || $this === self::IntegrasiApiKelola;
+        return $this === self::LanggananKelola || $this === self::IntegrasiApiKelola || $this === self::DataKelola;
     }
 
     /**

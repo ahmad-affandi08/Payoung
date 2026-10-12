@@ -47,4 +47,9 @@ return [
     'DiskLogo' => env('TENANT_DISK_LOGO', 'local'),
     'UkuranMaksimalLogoKb' => 1024,
     'EkstensiLogo' => ['png', 'jpg', 'jpeg', 'webp'],
+
+    // Audit E5 (UU PDP): ekspor data lengkap usaha (ZIP berisi CSV per tabel) di disk privat, berlaku beberapa hari.
+    'DiskEkspor' => env('TENANT_DISK_EKSPOR', 'local'),
+    'HariBerlakuEkspor' => 7,
+    'JamJedaEkspor' => 24,
 ];

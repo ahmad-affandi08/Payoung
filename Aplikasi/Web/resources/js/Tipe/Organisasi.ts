@@ -15,6 +15,7 @@ export const IzinTenant = {
     PerangkatKelola: 'perangkat.kelola',
     PenggunaPinAtur: 'pengguna.pin.atur',
     LanggananKelola: 'langganan.kelola',
+    DataKelola: 'data.kelola',
     BantuanTiketLihat: 'bantuan.tiket.lihat',
     BantuanTiketKelola: 'bantuan.tiket.kelola',
     // F-01 panduan awal (profil usaha, template sektor, pajak, produk awal, metode pembayaran).

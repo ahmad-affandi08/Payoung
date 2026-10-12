@@ -48,6 +48,12 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 // D-35: edisi Lisensi tidak berlangganan, jadi rutenya tidak ada di sana.
                 edisi: 'Saas',
             },
+            {
+                label: 'Data saya',
+                keterangan: 'Unduh salinan lengkap data usaha Anda (UU PDP) dan, nanti, tutup akun usaha.',
+                href: '/kelola/pengaturan/data-saya',
+                izin: IzinTenant.DataKelola,
+            },
         ],
     },
     {

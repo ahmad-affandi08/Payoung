@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Lisensi\Kontrak\PengaturIntegrasiServer;
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Kelola\DataSayaKontroler;
 use App\Http\Kontroler\Kelola\IntegrasiServerKontroler;
 use App\Http\Kontroler\Kelola\PengaturanKontroler;
 use App\Http\Kontroler\Kelola\TokenApiKontroler;
@@ -31,6 +32,13 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
         Route::get('/profil-usaha', [PengaturanKontroler::class, 'TampilkanProfilUsaha'])->name('kelola.pengaturan.profil-usaha');
         Route::post('/profil-usaha', [PengaturanKontroler::class, 'SimpanProfilUsaha'])->name('kelola.pengaturan.profil-usaha.simpan');
         Route::get('/profil-usaha/logo', [PengaturanKontroler::class, 'UnduhLogo'])->name('kelola.pengaturan.profil-usaha.logo');
+    });
+
+    // Audit E5 (UU PDP): ekspor data lengkap usaha (dan penutupan akun di SaaS); khusus Pemilik.
+    Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::DataKelola)])->group(function (): void {
+        Route::get('/data-saya', [DataSayaKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.data-saya');
+        Route::post('/data-saya/ekspor', [DataSayaKontroler::class, 'Minta'])->middleware('throttle:5,1')->name('kelola.pengaturan.data-saya.ekspor');
+        Route::get('/data-saya/ekspor/{uuidEkspor}/unduh', [DataSayaKontroler::class, 'Unduh'])->where('uuidEkspor', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.unduh');
     });
 
     // X7 Open API v1: token API publik (khusus Owner, paket ber-fitur `api.publik` dicek di Aksi).
