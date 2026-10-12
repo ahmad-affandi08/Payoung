@@ -36,11 +36,16 @@ class BarisPecahan {
 /// kas keluar di atas batas butuh supervisor berizin `kas.keluar.setujui` (PIN diperiksa `LayananMasuk`). Dokumen &
 /// entri outbox disimpan dalam satu transaksi SQLite.
 class LayananShift {
-  LayananShift({required this.repositori, PembuatUlid? ulid, DateTime Function()? jam})
+  LayananShift({required this.repositori, this.cekShiftKasirLain, PembuatUlid? ulid, DateTime Function()? jam})
     : _ulid = ulid ?? PembuatUlid(),
       _jam = jam ?? DateTime.now;
 
   final RepositoriKasir repositori;
+
+  /// BR-06.1 per kasir: menanyakan server (hanya saat online) apakah kasir ini masih punya shift terbuka di perangkat
+  /// lain. Jawaban kosong atau tidak bisa dijawab (offline) = shift tetap dibuka; server menandai bentrokan yang
+  /// datang belakangan sebagai `PerluTinjauan`.
+  final Future<List<ShiftKasirPerangkatLainPos>> Function(String uuidKasir)? cekShiftKasirLain;
   final PembuatUlid _ulid;
   final DateTime Function() _jam;
 
@@ -73,9 +78,26 @@ class LayananShift {
       throw const GalatKasir('ShiftSudahTerbuka', 'Perangkat ini masih punya shift terbuka. Tutup shift itu dulu.');
     }
 
+    final bersama = await CekShiftBersama();
+    final cek = cekShiftKasirLain;
+
+    // Shift bersama (BR-06.2) memang berdampingan dengan shift kasir lain di perangkat lain.
+    if (!bersama && cek != null) {
+      final lain = await cek(kasir.uuid);
+      if (lain.isNotEmpty) {
+        final pertama = lain.first;
+        final jam = pertama.dibukaPada.toLocal();
+        final hhmm = '${jam.hour.toString().padLeft(2, '0')}.${jam.minute.toString().padLeft(2, '0')}';
+        throw GalatKasir(
+          'ShiftKasirDiPerangkatLain',
+          '${kasir.nama} masih punya shift terbuka di "${pertama.namaPerangkat}" sejak $hhmm. Tutup shift itu dulu, '
+              'atau minta supervisor menutup paksanya dari back-office.',
+        );
+      }
+    }
+
     final sekarang = _jam().toUtc();
     final uuid = _ulid.Buat();
-    final bersama = await CekShiftBersama();
     final dataPecahan = pecahanTerisi == null || pecahanTerisi.isEmpty
         ? null
         : [

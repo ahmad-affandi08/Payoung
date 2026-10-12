@@ -144,6 +144,13 @@ class KlienPos {
     return [for (final s in UraiJson.AmbilDaftarPeta(json['Shift'])) ShiftTerbukaServerPos.DariJson(s)];
   }
 
+  /// Shift terbuka milik [uuidKasir] di perangkat lain pada outlet ini (BR-06.1). Kosong = aman membuka shift di
+  /// sini. Offline → `GalatJaringan`.
+  Future<List<ShiftKasirPerangkatLainPos>> CariShiftKasirDiPerangkatLain(String uuidKasir) async {
+    final json = await _Kirim('GET', 'shift/kasir-terbuka?UuidPengguna=${Uri.encodeQueryComponent(uuidKasir)}', null);
+    return [for (final s in UraiJson.AmbilDaftarPeta(json['Shift'])) ShiftKasirPerangkatLainPos.DariJson(s)];
+  }
+
   /// Tutup paksa shift lama perangkat ini oleh supervisor ([uuidPenyetuju], PIN sudah diperiksa di perangkat) dengan
   /// [alasan] tertulis. Server menolak penyetuju tanpa izin `shift.selisih.setujui` (`PenyetujuTidakBerwenang`) dan shift
   /// yang sudah tertutup (`ShiftTidakAktif`).

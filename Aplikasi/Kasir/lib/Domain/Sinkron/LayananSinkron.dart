@@ -178,6 +178,25 @@ class LayananSinkron {
     }
   }
 
+  /// BR-06.1 per kasir: shift terbuka [uuidKasir] di perangkat lain. Hanya bisa dijawab saat online; offline, lambat
+  /// (lebih dari [batasCekShiftLain]), atau galat server → daftar kosong, dan shift tetap dibuka lalu diperiksa server
+  /// (ditandai `PerluTinjauan`), supaya membuka shift tidak pernah tertahan oleh jaringan.
+  Future<List<ShiftKasirPerangkatLainPos>> CariShiftKasirDiPerangkatLain(String uuidKasir) async {
+    try {
+      return await klien.CariShiftKasirDiPerangkatLain(uuidKasir).timeout(batasCekShiftLain);
+    } on TimeoutException {
+      return const [];
+    } on FormatException {
+      return const [];
+    } on GalatJaringan {
+      return const [];
+    } on GalatApi {
+      return const [];
+    }
+  }
+
+  static const Duration batasCekShiftLain = Duration(seconds: 3);
+
   /// Kirim ulang semua penolakan karena shift (urutan terlama dulu) tanpa menutup apa pun: dipakai saat shift lama di
   /// server ternyata sudah ditutup (misal dari back-office).
   Future<void> JadwalkanUlangPenolakanShift() async {

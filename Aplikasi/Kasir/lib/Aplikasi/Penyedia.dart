@@ -218,7 +218,12 @@ final penyediaLayananMasuk = Provider<LayananMasuk>(
 );
 
 final penyediaLayananShift = Provider<LayananShift>(
-  (ref) => LayananShift(repositori: ref.watch(penyediaRepositori), jam: ref.watch(penyediaJam)),
+  (ref) => LayananShift(
+    repositori: ref.watch(penyediaRepositori),
+    // BR-06.1 per kasir: ditanyakan ke server saat online; dibaca lambat agar tidak membuat siklus penyedia.
+    cekShiftKasirLain: (uuidKasir) => ref.read(penyediaLayananSinkron).CariShiftKasirDiPerangkatLain(uuidKasir),
+    jam: ref.watch(penyediaJam),
+  ),
 );
 
 final penyediaLayananTutupShift = Provider<LayananTutupShift>(

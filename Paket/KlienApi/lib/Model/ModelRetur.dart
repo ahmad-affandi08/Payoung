@@ -278,6 +278,22 @@ class HasilCariPenjualan {
   );
 }
 
+/// Shift terbuka milik satu kasir di perangkat LAIN pada outlet yang sama (`shift/kasir-terbuka`, BR-06.1): dipakai
+/// sebelum membuka shift agar kasir tidak membuka shift ganda.
+class ShiftKasirPerangkatLainPos {
+  const ShiftKasirPerangkatLainPos({required this.uuid, required this.dibukaPada, required this.namaPerangkat});
+
+  final String uuid;
+  final DateTime dibukaPada;
+  final String namaPerangkat;
+
+  static ShiftKasirPerangkatLainPos DariJson(Map<String, Object?> json) => ShiftKasirPerangkatLainPos(
+    uuid: UraiJson.AmbilTeks(json['Uuid']),
+    dibukaPada: DateTime.parse(UraiJson.AmbilTeks(json['DibukaPada'])),
+    namaPerangkat: UraiJson.AmbilTeks(json['NamaPerangkat']),
+  );
+}
+
 /// Shift perangkat ini yang masih terbuka di server (`shift/terbuka`), untuk ditutup paksa supervisor bila menahan
 /// shift baru (`ShiftSudahTerbuka`).
 class ShiftTerbukaServerPos {

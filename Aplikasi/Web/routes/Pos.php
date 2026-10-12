@@ -71,6 +71,8 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
     // Shift lama perangkat yang masih terbuka di server dan menahan shift baru (`ShiftSudahTerbuka`): lihat & tutup
     // paksa oleh supervisor dari aplikasi. Di luar penjaga langganan seperti sinkron agar data tidak tertahan.
     Route::get('/shift/terbuka', [ShiftKontroler::class, 'Terbuka'])->middleware('throttle:pos-30')->name('pos.shift.terbuka');
+    // BR-06.1 per kasir: shift terbuka milik kasir ini di perangkat lain (dicek aplikasi sebelum membuka shift saat online).
+    Route::get('/shift/kasir-terbuka', [ShiftKontroler::class, 'KasirTerbuka'])->middleware('throttle:pos-30')->name('pos.shift.kasir-terbuka');
     Route::post('/shift/{uuidShift}/tutup-paksa', [ShiftKontroler::class, 'TutupPaksa'])->middleware('throttle:pos-10')->where('uuidShift', '[0-9A-HJKMNP-TV-Z]{26}')->name('pos.shift.tutup-paksa');
 
     // Endpoint berjualan: POS terkunci saat langganan Ditangguhkan/Berhenti.

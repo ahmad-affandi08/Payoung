@@ -104,6 +104,11 @@
         "Jalur": "api/pos/v1/shift/terbuka",
         "Nama": "pos.shift.terbuka"
     },
+    "GET api/pos/v1/shift/kasir-terbuka": {
+        "Metode": "GET",
+        "Jalur": "api/pos/v1/shift/kasir-terbuka",
+        "Nama": "pos.shift.kasir-terbuka"
+    },
     "POST api/pos/v1/shift/{uuidShift}/tutup-paksa": {
         "Metode": "POST",
         "Jalur": "api/pos/v1/shift/{uuidShift}/tutup-paksa",
