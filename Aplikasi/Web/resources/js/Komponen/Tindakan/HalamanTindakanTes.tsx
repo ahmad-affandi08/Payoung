@@ -433,6 +433,7 @@ function BuatTenant(): Tampilan360 {
             },
         ],
         Catatan: [],
+        PenghapusanData: [],
         Riwayat: [],
     };
 }

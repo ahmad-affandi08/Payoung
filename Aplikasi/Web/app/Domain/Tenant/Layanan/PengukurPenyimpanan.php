@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Tenant\Layanan;
 
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -22,7 +21,7 @@ final class PengukurPenyimpanan
      *
      * @var list<array{0: string, 1: string}>
      */
-    private const FOLDER = [
+    public const FOLDER = [
         ['katalog.DiskGambar', 'produk/{id}'],
         ['kasir.DiskBuktiKas', 'kasir/bukti-kas/{id}'],
         ['akuntansi.DiskLampiran', 'akuntansi/kas-bank/{id}'],
@@ -41,7 +40,7 @@ final class PengukurPenyimpanan
         foreach (self::FOLDER as [$kunciDisk, $pola]) {
             $disk = Storage::disk((string) config($kunciDisk));
 
-            foreach ($this->UraiFolder($disk, str_replace('{id}', (string) $idTenant, $pola)) as $folder) {
+            foreach (DaftarFolderBerkasTenant::UraiFolder($disk, $pola, $idTenant) as $folder) {
                 foreach ($disk->allFiles($folder) as $berkas) {
                     try {
                         $total += (int) $disk->size($berkas);
@@ -64,25 +63,5 @@ final class PengukurPenyimpanan
             ['IdTenant' => $idTenant],
             ['Byte' => $byte, 'DiukurPada' => now()],
         );
-    }
-
-    /**
-     * @param  Filesystem  $disk
-     * @return list<string>
-     */
-    private function UraiFolder($disk, string $pola): array
-    {
-        if (! str_contains($pola, '*')) {
-            return [$pola];
-        }
-
-        [$awal, $akhir] = explode('*', $pola, 2);
-        $hasil = [];
-
-        foreach ($disk->directories(rtrim($awal, '/')) as $anak) {
-            $hasil[] = $anak.$akhir;
-        }
-
-        return $hasil;
     }
 }

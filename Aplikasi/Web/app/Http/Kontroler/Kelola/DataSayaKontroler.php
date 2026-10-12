@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
+use App\Domain\Organisasi\Aksi\PastikanKataSandiPengguna;
+use App\Domain\Tenant\Aksi\AjukanPenghapusanData;
+use App\Domain\Tenant\Aksi\BatalkanPenghapusanData;
 use App\Domain\Tenant\Aksi\MintaEksporDataTenant;
 use App\Domain\Tenant\Enum\StatusEksporDataTenant;
 use App\Domain\Tenant\Kueri\DaftarEksporDataTenant;
+use App\Domain\Tenant\Kueri\StatusPenghapusanDataTenant;
 use App\Domain\Tenant\Model\EksporDataTenant;
+use App\Http\Permintaan\Kelola\AjukanPenghapusanDataPermintaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -17,15 +22,38 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Pengaturan › Data saya (audit E5, UU PDP; `/kelola/pengaturan/data-saya`, izin `data.kelola` khusus Pemilik): ekspor
- * data lengkap usaha (ZIP berisi CSV per tabel) dan, di edisi SaaS, penutupan akun.
+ * data lengkap usaha (ZIP berisi CSV per tabel) dan, di edisi SaaS, penutupan akun dengan penghapusan data.
  */
 final class DataSayaKontroler extends DasarKelolaKontroler
 {
-    public function Tampilkan(DaftarEksporDataTenant $daftar): Response
+    public function Tampilkan(DaftarEksporDataTenant $daftar, StatusPenghapusanDataTenant $penghapusan): Response
     {
         return Inertia::render('Kelola/Pengaturan/DataSaya', [
             'Ekspor' => $daftar->Ambil(),
+            'Penghapusan' => $penghapusan->Ambil(),
+            'PerluKataSandi' => ! $this->Pelaku()->KataSandiOtomatis,
         ]);
+    }
+
+    /**
+     * Pengajuan penghapusan data dan penutupan akun (UU PDP, P-07). Kata sandi diminta ulang (akun Google tanpa kata sandi
+     * dikecualikan), lalu `AjukanPenghapusanData` memeriksa Pemilik, ekspor yang sudah diunduh, dan masa tunggu 14 hari.
+     */
+    public function Ajukan(AjukanPenghapusanDataPermintaan $isian, PastikanKataSandiPengguna $verifikasi, AjukanPenghapusanData $ajukan): RedirectResponse
+    {
+        $pelaku = $this->Pelaku();
+        $verifikasi->Jalankan($pelaku, $isian->AmbilKataSandi());
+        $permintaan = $ajukan->Jalankan($pelaku->Id, $isian->AmbilAlasan());
+        $tanggal = $permintaan->BerlakuPada->copy()->setTimezone('Asia/Jakarta')->translatedFormat('j F Y');
+
+        return back()->with('Kilat', "Permintaan penghapusan data diterima. Paling cepat dilaksanakan {$tanggal}; Anda bisa membatalkannya kapan saja sebelum itu.");
+    }
+
+    public function Batalkan(BatalkanPenghapusanData $batalkan): RedirectResponse
+    {
+        $batalkan->Jalankan($this->Pelaku()->Id);
+
+        return back()->with('Kilat', 'Permintaan penghapusan data dibatalkan. Akun dan data Anda tetap berjalan.');
     }
 
     public function Minta(MintaEksporDataTenant $minta): RedirectResponse

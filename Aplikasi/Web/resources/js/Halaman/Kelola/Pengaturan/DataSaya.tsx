@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 
 import Tombol from '@/Komponen/Formulir/Tombol';
 import Panel from '@/Komponen/Kelola/Panel';
+import PanelTutupAkun, { type StatusPenghapusanData } from '@/Komponen/Kelola/PanelTutupAkun';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatUkuranBerkas } from '@/Pustaka/FormatUkuran';
@@ -25,6 +26,8 @@ type BarisEkspor = {
 
 type PropsDataSaya = {
     Ekspor: BarisEkspor[];
+    Penghapusan: StatusPenghapusanData;
+    PerluKataSandi: boolean;
 };
 
 const jenisStatus = {
@@ -35,8 +38,8 @@ const jenisStatus = {
     Kedaluwarsa: 'netral',
 } as const;
 
-/** Pengaturan › Data saya (UU PDP): ekspor data lengkap usaha. Penutupan akun menyusul di halaman yang sama. */
-export default function HalamanDataSaya({ Ekspor }: PropsDataSaya) {
+/** Pengaturan › Data saya (UU PDP): ekspor data lengkap usaha, lalu (edisi SaaS) tutup akun dan hapus data. */
+export default function HalamanDataSaya({ Ekspor, Penghapusan, PerluKataSandi }: PropsDataSaya) {
     const formulir = useForm({});
     const sedangDisiapkan = Ekspor.some((baris) => baris.Status === 'Antre' || baris.Status === 'Berjalan');
 
@@ -116,6 +119,7 @@ export default function HalamanDataSaya({ Ekspor }: PropsDataSaya) {
                         )}
                     </div>
                 </Panel>
+                <PanelTutupAkun status={Penghapusan} perluKataSandi={PerluKataSandi} />
             </div>
         </TataLetakAplikasi>
     );

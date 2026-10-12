@@ -76,6 +76,26 @@ export type PendaftaranMerchantTenant = {
     BisaDisegarkan: boolean;
 };
 
+/** UU PDP, P-07: permintaan penghapusan data satu tenant (angka ringkasan saja, tanpa data pribadi). */
+export type PermintaanPenghapusanData = {
+    Uuid: string;
+    Status: 'Menunggu' | 'Dibatalkan' | 'Ditolak' | 'Dilaksanakan';
+    DiajukanPada: string | null;
+    BerlakuPada: string;
+    MasaTungguSelesai: boolean;
+    Alasan: string | null;
+    CatatanPemutus: string | null;
+    DiputuskanPada: string | null;
+    DilaksanakanPada: string | null;
+    BuktiDikirimPada: string | null;
+    BerkasPembukuanDihapusPada: string | null;
+    TabelDianonimkan: number;
+    TabelDihapus: number;
+    PenggunaDianonimkan: number;
+    BerkasDihapus: number;
+    BerkasGagal: number;
+};
+
 export type Tampilan360 = {
     PendaftaranMerchant: { Pendaftaran: PendaftaranMerchantTenant | null; PartnerAktif: boolean };
     /** P-12: mitra perujuk (null = mendaftar langsung). */
@@ -112,6 +132,7 @@ export type Tampilan360 = {
     PersetujuanLegal: { Jenis: string; Versi: number | null; Pengguna: string; DisetujuiPada: string }[];
     Override: OverrideTenant[];
     Catatan: { Uuid: string; Isi: string; Penulis: string; DibuatPada: string }[];
+    PenghapusanData: PermintaanPenghapusanData[];
     Riwayat: RiwayatTindakan[];
 };
 

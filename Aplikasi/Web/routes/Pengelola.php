@@ -37,6 +37,7 @@ use App\Http\Kontroler\Pengelola\Tagihan\TagihanKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanManualKontroler;
 use App\Http\Kontroler\Pengelola\TemplateSektor\TemplateSektorKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
+use App\Http\Kontroler\Pengelola\Tenant\PenghapusanDataTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TindakanTenantKontroler;
 use App\Http\Kontroler\Pengelola\TimInternalKontroler;
@@ -460,6 +461,13 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::put('/tenant/{tenant}/pendaftaran-merchant/penampung-qris', [PendaftaranMerchantTenantKontroler::class, 'AturPenampungQris'])
                 ->middleware([$izin(IzinPengelola::IntegrasiKelola), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tenant.pendaftaran-merchant.penampung-qris');
+            // UU PDP: penghapusan data dan penutupan akun, hanya Super Admin dengan kode 2FA yang baru.
+            Route::post('/tenant/{tenant}/penghapusan-data/{permintaan}/laksanakan', [PenghapusanDataTenantKontroler::class, 'Laksanakan'])
+                ->middleware([$izin(IzinPengelola::TenantPenghapusanDataKelola), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.penghapusan-data.laksanakan');
+            Route::post('/tenant/{tenant}/penghapusan-data/{permintaan}/tolak', [PenghapusanDataTenantKontroler::class, 'Tolak'])
+                ->middleware([$izin(IzinPengelola::TenantPenghapusanDataKelola), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.penghapusan-data.tolak');
             Route::put('/tenant/{tenant}/penanda', [TindakanTenantKontroler::class, 'UbahPenanda'])
                 ->middleware($izin(IzinPengelola::TenantPenandaUbah))
                 ->name('pengelola.tenant.penanda.ubah');

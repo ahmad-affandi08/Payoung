@@ -51,6 +51,7 @@ final class TampilanTenant
         private readonly PemakaianBatasOrganisasi $pemakaian,
         private readonly KlienPartnerDoku $klienPartner,
         private readonly PenjagaPenyimpanan $penyimpanan,
+        private readonly PenghapusanDataTenant $penghapusanData,
     ) {}
 
     /**
@@ -136,6 +137,8 @@ final class TampilanTenant
             'PersetujuanLegal' => $this->AmbilPersetujuanLegal($tenant->Id),
             'Override' => $this->AmbilOverride($tenant->Id),
             'Catatan' => $this->AmbilCatatan($tenant->Id),
+            // UU PDP: permintaan penghapusan data dan penutupan akun (angka ringkasan saja, tanpa data pribadi).
+            'PenghapusanData' => $this->penghapusanData->Ambil($tenant->Id),
             'Riwayat' => $this->audit->AmbilRiwayatTenant($tenant->Id, self::BATAS_RIWAYAT, [KonteksPengelola::AKSI_AUDIT]),
         ];
     }

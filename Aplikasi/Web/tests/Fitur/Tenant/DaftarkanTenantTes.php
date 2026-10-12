@@ -143,12 +143,13 @@ describe('Pendaftaran tenant (F-00)', function (): void {
     })->with(function (): array {
         // P-07 (BR-P07.4, BR-P07.5) menambah tangguhkan manual dari Trial/Aktif/Gratis dan pemulihan ke Trial/Tertunggak.
         // BR-P04.4 (D-117) menambah Aktif → Gratis untuk turun paket mandiri saat periode berbayar berakhir.
+        // P-07 (D-119) menambah Berhenti dari Trial/Tertunggak/Gratis untuk penutupan akun lewat penghapusan data (UU PDP).
         $sah = [
-            'Trial' => ['Aktif', 'Gratis', 'Ditangguhkan'],
+            'Trial' => ['Aktif', 'Gratis', 'Ditangguhkan', 'Berhenti'],
             'Aktif' => ['Tertunggak', 'Berhenti', 'Ditangguhkan', 'Gratis'],
-            'Tertunggak' => ['Aktif', 'Ditangguhkan'],
+            'Tertunggak' => ['Aktif', 'Ditangguhkan', 'Berhenti'],
             'Ditangguhkan' => ['Aktif', 'Gratis', 'Berhenti', 'Trial', 'Tertunggak'],
-            'Gratis' => ['Aktif', 'Ditangguhkan'],
+            'Gratis' => ['Aktif', 'Ditangguhkan', 'Berhenti'],
             'Berhenti' => [],
         ];
         $kasus = [];

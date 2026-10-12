@@ -52,4 +52,9 @@ return [
     'DiskEkspor' => env('TENANT_DISK_EKSPOR', 'local'),
     'HariBerlakuEkspor' => 7,
     'JamJedaEkspor' => 24,
+
+    // Audit E5 / P-07 (UU PDP): masa tunggu permintaan penghapusan data (bisa dibatalkan Owner) dan lama lampiran pembukuan
+    // dipertahankan setelah akun ditutup (ketentuan perpajakan: dokumen pembukuan disimpan 10 tahun).
+    'HariTungguPenghapusan' => 14,
+    'TahunRetensiPembukuan' => 10,
 ];

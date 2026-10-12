@@ -38,6 +38,11 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
     Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::DataKelola)])->group(function (): void {
         Route::get('/data-saya', [DataSayaKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.data-saya');
         Route::post('/data-saya/ekspor', [DataSayaKontroler::class, 'Minta'])->middleware('throttle:5,1')->name('kelola.pengaturan.data-saya.ekspor');
+        // Penutupan akun hanya ada di edisi SaaS (edisi Lisensi: server milik pembeli).
+        if (! EdisiAplikasi::CekLisensi()) {
+            Route::post('/data-saya/penghapusan', [DataSayaKontroler::class, 'Ajukan'])->middleware('throttle:5,1')->name('kelola.pengaturan.data-saya.penghapusan');
+            Route::delete('/data-saya/penghapusan', [DataSayaKontroler::class, 'Batalkan'])->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.penghapusan.batal');
+        }
         Route::get('/data-saya/ekspor/{uuidEkspor}/unduh', [DataSayaKontroler::class, 'Unduh'])->where('uuidEkspor', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.unduh');
     });
 

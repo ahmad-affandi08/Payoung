@@ -77,7 +77,7 @@ describe('Izin P-07 per peran (§19.3)', function (): void {
 
         expect($izinTenant(PeranPengelolaBawaan::SuperAdmin))->toEqualCanonicalizing([
             'tenant.lihat', 'tenant.catatan.tulis', 'tenant.trial.perpanjang', 'tenant.override.kelola',
-            'tenant.tangguhkan', 'tenant.aktifkan', 'tenant.penanda.ubah',
+            'tenant.tangguhkan', 'tenant.aktifkan', 'tenant.penanda.ubah', 'tenant.penghapusan-data.kelola',
         ])
             ->and($izinTenant(PeranPengelolaBawaan::Dukungan))->toEqualCanonicalizing(['tenant.lihat', 'tenant.catatan.tulis', 'tenant.trial.perpanjang', 'tenant.override.kelola'])
             ->and($izinTenant(PeranPengelolaBawaan::MitraPenjualan))->toEqualCanonicalizing(['tenant.lihat', 'tenant.catatan.tulis', 'tenant.trial.perpanjang'])

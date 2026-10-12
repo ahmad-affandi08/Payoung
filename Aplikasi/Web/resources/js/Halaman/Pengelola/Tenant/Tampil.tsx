@@ -13,6 +13,7 @@ import {
     FormTangguhkan,
 } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import PanelPendaftaranMerchant from '@/Komponen/Pengelola/Tenant/PanelPendaftaranMerchant';
+import PanelPenghapusanData from '@/Komponen/Pengelola/Tenant/PanelPenghapusanData';
 import { LabelPenanda, LabelStatusLangganan } from '@/Komponen/Pengelola/Tenant/LabelLangganan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -46,6 +47,8 @@ const labelAksi: Record<string, string> = {
     'tenant.aktifkan': 'Aktifkan kembali',
     'tenant.catatan.tulis': 'Tulis catatan',
     'tenant.penanda.ubah': 'Ubah penanda',
+    'tenant.penghapusan-data-laksana': 'Laksanakan penghapusan data',
+    'tenant.penghapusan-data-tolak': 'Tolak penghapusan data',
     'tenant.merchant.segarkan': 'Segarkan status merchant DOKU',
     'tenant.merchant.penampung-qris': 'Isi ID QRIS merchant',
 };
@@ -201,6 +204,13 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                             pembayarannya diterima di menu Tagihan.
                         </>
                     ) : null}
+                </Pemberitahuan>
+            ) : null}
+
+            {Profil.Status === 'Ditutup' ? (
+                <Pemberitahuan jenis="info" judul="Akun ditutup">
+                    Data pribadi tenant ini sudah dihapus dan identitasnya dianonimkan atas permintaan Owner (UU PDP).
+                    Transaksi dan pembukuan tetap disimpan sesuai ketentuan perpajakan. Akun tidak bisa dibuka kembali.
                 </Pemberitahuan>
             ) : null}
 
@@ -361,6 +371,15 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                             />
                         )}
                     </Panel>
+
+                    <div className="lg:col-span-2">
+                        <PanelPenghapusanData
+                            uuidTenant={Profil.Uuid}
+                            slug={Profil.Slug}
+                            permintaan={Tenant.PenghapusanData}
+                            boleh={PunyaIzin(pengguna, IzinPengelola.TenantPenghapusanDataKelola)}
+                        />
+                    </div>
 
                     <PanelPendaftaranMerchant
                         uuidTenant={Profil.Uuid}

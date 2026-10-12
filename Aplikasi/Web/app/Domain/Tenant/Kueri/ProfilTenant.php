@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Kueri;
 
+use App\Domain\Tenant\Enum\StatusTenant;
 use App\Domain\Tenant\Model\Tenant;
 
 /**
@@ -29,16 +30,19 @@ final class ProfilTenant
         ];
     }
 
-    /** Tenant dengan Id ini ada (struk digital publik memasang konteks tenant dari kode struk). */
+    /**
+     * Tenant dengan Id ini ada dan akunnya belum ditutup (struk digital publik memasang konteks tenant dari kode struk).
+     * Akun yang ditutup lewat penghapusan data (UU PDP, P-07) tidak lagi melayani halaman publik apa pun.
+     */
     public function CekAda(int $idTenant): bool
     {
-        return Tenant::query()->whereKey($idTenant)->exists();
+        return Tenant::query()->whereKey($idTenant)->where('Status', '<>', StatusTenant::Ditutup->value)->exists();
     }
 
     /** F-17: tenant pemilik slug URL publik (`/{slugTenant}/meja/{token}`); null bila tidak dikenal. */
     public function CariIdDariSlug(string $slug): ?int
     {
-        $id = Tenant::query()->where('Slug', $slug)->value('Id');
+        $id = Tenant::query()->where('Slug', $slug)->where('Status', '<>', StatusTenant::Ditutup->value)->value('Id');
 
         return $id === null ? null : (int) $id;
     }

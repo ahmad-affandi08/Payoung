@@ -7,12 +7,15 @@ namespace App\Domain\Pengelola\Tenant\Layanan;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Bersama\Tenant\LingkupTenant;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
+use App\Domain\Tenant\Enum\StatusTenant;
 use App\Domain\Tenant\Model\PembayaranLangganan;
+use App\Domain\Tenant\Model\PermintaanPenghapusanData;
 use App\Domain\Tenant\Model\RefundLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 
@@ -35,7 +38,7 @@ final class KonteksPengelola
      *
      * @var list<class-string<Model>>
      */
-    public const MODEL_DATA_PLATFORM = [TagihanLangganan::class, PembayaranLangganan::class, RefundLangganan::class];
+    public const MODEL_DATA_PLATFORM = [TagihanLangganan::class, PembayaranLangganan::class, RefundLangganan::class, PermintaanPenghapusanData::class];
 
     private int $kedalamanLintas = 0;
 
@@ -118,12 +121,20 @@ final class KonteksPengelola
      * @param  Closure(Builder<TModel>): mixed  $saring  menyempitkan kueri ke baris yang butuh dikerjakan
      * @return list<int>
      */
-    public function IdTenantDenganPekerjaan(string $kelasModel, Closure $saring, int $batas = 5000): array
+    public function IdTenantDenganPekerjaan(string $kelasModel, Closure $saring, int $batas = 5000, bool $termasukDitutup = false): array
     {
         $kueri = $kelasModel::query()->withoutGlobalScope(LingkupTenant::class);
         $saring($kueri);
 
-        return array_values(array_map('intval', $kueri->toBase()->distinct()->orderBy('IdTenant')->limit($batas)->pluck('IdTenant')->all()));
+        $dasar = $kueri->toBase();
+
+        // Tenant yang akunnya sudah ditutup (UU PDP, P-07) tidak punya pekerjaan lagi; hanya penyapu retensi berkas yang
+        // sengaja mencarinya.
+        if (! $termasukDitutup) {
+            $dasar->whereNotIn('IdTenant', DB::table('Tenant')->where('Status', StatusTenant::Ditutup->value)->select('Id'));
+        }
+
+        return array_values(array_map('intval', $dasar->distinct()->orderBy('IdTenant')->limit($batas)->pluck('IdTenant')->all()));
     }
 
     /**

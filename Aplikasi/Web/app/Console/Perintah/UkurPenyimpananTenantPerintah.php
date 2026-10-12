@@ -6,6 +6,7 @@ namespace App\Console\Perintah;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
+use App\Domain\Tenant\Enum\StatusTenant;
 use App\Domain\Tenant\Layanan\PengukurPenyimpanan;
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
 use App\Domain\Tenant\Model\Tenant;
@@ -29,7 +30,7 @@ final class UkurPenyimpananTenantPerintah extends Command
 
         try {
             $daftar = $this->option('semua')
-                ? array_map('intval', Tenant::query()->orderBy('Id')->pluck('Id')->all())
+                ? array_map('intval', Tenant::query()->where('Status', '<>', StatusTenant::Ditutup->value)->orderBy('Id')->pluck('Id')->all())
                 : $pengelola->IdTenantDenganPekerjaan(PemakaianPenyimpanan::class, fn ($q) => $q);
 
             foreach ($daftar as $idTenant) {
