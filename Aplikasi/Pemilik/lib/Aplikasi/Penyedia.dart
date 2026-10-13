@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:klien_api/KlienApi.dart';
@@ -41,6 +42,7 @@ final penyediaKlien = Provider<KlienPemilik>((ref) {
   return KlienPemilik(
     alamatDasar: ref.watch(penyediaLingkungan).AmbilAlamatServer(tersimpan: ref.watch(penyediaAlamatServer)),
     versiAplikasi: versiAplikasi,
+    platform: defaultTargetPlatform == TargetPlatform.iOS ? 'Ios' : 'Android',
     ambilToken: () => sesi.Baca(PenyimpanSesi.kunciToken),
     ambilTenant: () => sesi.Baca(PenyimpanSesi.kunciTenant),
     klien: ref.watch(penyediaKlienHttp),
@@ -385,6 +387,32 @@ final penyediaKaryawan = FutureProvider.autoDispose<PantauKaryawanPemilik>(
   (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilPantauKaryawan()),
 );
 
+/// P-10 PGL-18: versi terbaru/minimal Aplikasi Owner dan flag fitur tenant aktif. Dibaca ulang tiap 15 menit selama
+/// sesi masuk (kill switch sampai tanpa menunggu aplikasi dibuka ulang). Gagal/offline/server lama = null: aplikasi
+/// tetap jalan penuh (fail-open), karena kunci tanpa kabar dianggap hidup.
+final penyediaKonfigurasiAplikasi = FutureProvider<KonfigurasiAplikasi?>((ref) async {
+  if (ref.watch(penyediaSesi).tahap != TahapSesi.Masuk) {
+    return null;
+  }
+  final selang = ref.watch(penyediaSelangKonfigurasi);
+  if (selang != null) {
+    final pewaktu = Timer(selang, ref.invalidateSelf);
+    ref.onDispose(pewaktu.cancel);
+  }
+  try {
+    return await ref.read(penyediaKlien).AmbilKonfigurasiAplikasi();
+  } on Object {
+    return null;
+  }
+});
+
+/// Selang baca ulang konfigurasi aplikasi. Null = tidak berulang (test: timer tidak boleh tertinggal).
+final penyediaSelangKonfigurasi = Provider<Duration?>((ref) => const Duration(minutes: 15));
+
+/// Flag fitur [kunci] (lihat `KunciFlagFitur`); belum ada kabar dari server = hidup.
+bool CekFlagFitur(WidgetRef ref, String kunci) =>
+    ref.watch(penyediaKonfigurasiAplikasi).value?.CekFlag(kunci) ?? true;
+
 /// P-10 PGL-19: pengumuman & jadwal pemeliharaan platform (dibaca saat Beranda dibuka & ditarik untuk menyegarkan).
 final penyediaPengumuman = FutureProvider.autoDispose<List<PengumumanAplikasi>>(
   (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilPengumuman()),
@@ -395,9 +423,14 @@ final penyediaNotifikasi = FutureProvider.autoDispose<DaftarNotifikasiPemilik>(
 );
 
 /// OWN-04: PO dan penyesuaian stok yang menunggu persetujuan.
-final penyediaDokumenPersetujuan = FutureProvider.autoDispose<List<DokumenMenunggu>>(
-  (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilDokumenPersetujuan()),
-);
+final penyediaDokumenPersetujuan = FutureProvider.autoDispose<List<DokumenMenunggu>>((ref) async {
+  // PGL-18: kill switch `pemilik.persetujuan-dokumen` mengosongkan daftar (kartu & lencana mengikuti) tanpa memanggil server.
+  final hidup = ref.watch(penyediaKonfigurasiAplikasi).value?.CekFlag(KunciFlagFitur.pemilikPersetujuanDokumen) ?? true;
+  if (!hidup) {
+    return const <DokumenMenunggu>[];
+  }
+  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilDokumenPersetujuan());
+});
 
 /// OWN-03 / X4: antrean persetujuan jarak jauh.
 final penyediaPersetujuan = FutureProvider.autoDispose<List<PermintaanPersetujuanPos>>(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:klien_api/KlienApi.dart' show KaryawanPos;
+import 'package:klien_api/KlienApi.dart' show KaryawanPos, KunciFlagFitur;
 import 'package:mesin_kasir/MesinKasir.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -295,10 +295,12 @@ class _PanelItemState extends ConsumerState<PanelItem> {
     }
   }
 
-  /// Harga manual hanya untuk baris dari daftar harga di keranjang biasa: baris racikan, harga terbuka, dan keranjang
+  /// Harga manual hanya untuk baris dari daftar harga di keranjang biasa, dan selama flag `kasir.harga-manual` tidak
+  /// dimatikan (kill switch, PGL-18): baris racikan, harga terbuka, dan keranjang
   /// yang menagih dokumen yang sudah disepakati (pesanan meja, pre-order, perintah kerja, tukar barang) tidak ikut.
-  bool _CekBolehUbahHarga(Keranjang keranjang) =>
+  bool _CekBolehUbahHarga(Keranjang keranjang, {required bool flagHidup}) =>
       _modeUbah &&
+      flagHidup &&
       !widget.baris!.hargaTerbuka &&
       widget.baris!.racikan == null &&
       keranjang.pesananMeja == null &&
@@ -310,7 +312,9 @@ class _PanelItemState extends ConsumerState<PanelItem> {
   /// `pos.harga.timpa` memilih penyetuju lewat PIN; dibatalkan = keranjang tidak berubah dan simpan dihentikan lewat
   /// [GalatKasir] `HargaBatal`.
   Future<Keranjang> _TerapkanHarga(Keranjang keranjang, LayananPenjualan layanan, String uuid) async {
-    if (!_CekBolehUbahHarga(keranjang)) {
+    // `read`, bukan `watch`: dipanggil dari aksi simpan, bukan dari `build`.
+    final flagHidup = ref.read(penyediaKonfigurasiAplikasi)?.CekFlag(KunciFlagFitur.kasirHargaManual) ?? true;
+    if (!_CekBolehUbahHarga(keranjang, flagHidup: flagHidup)) {
       return keranjang;
     }
     if (_pulihkanHarga) {
@@ -559,7 +563,11 @@ class _PanelItemState extends ConsumerState<PanelItem> {
             decoration: const InputDecoration(labelText: 'Catatan (opsional)', border: OutlineInputBorder()),
           ),
           ..._BangunStaf(context),
-          if (_CekBolehUbahHarga(ref.watch(penyediaKeranjang))) ..._BangunHarga(context),
+          if (_CekBolehUbahHarga(
+            ref.watch(penyediaKeranjang),
+            flagHidup: CekFlagKasir(ref, KunciFlagFitur.kasirHargaManual),
+          ))
+            ..._BangunHarga(context),
           if (_modeUbah) ...[
             const SizedBox(height: TokenJarak.jarak8),
             Text('Diskon item', style: teks.labelLarge),

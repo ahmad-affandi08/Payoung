@@ -18,6 +18,7 @@ class DaftarPengumuman extends ConsumerStatefulWidget {
 
 class _KeadaanDaftarPengumuman extends ConsumerState<DaftarPengumuman> {
   final Set<String> _ditutup = {};
+  bool _pembaruanDitutup = false;
 
   static Color AmbilWarna(TokenWarna warna, JenisPengumuman jenis) => switch (jenis) {
     JenisPengumuman.Penting => warna.bahaya,
@@ -40,10 +41,84 @@ class _KeadaanDaftarPengumuman extends ConsumerState<DaftarPengumuman> {
       for (final p in daftar)
         if (!(p.bolehDitutup && _ditutup.contains(p.uuid))) p,
     ];
-    if (tampil.isEmpty) {
+    // PGL-18: versi baru tersedia (belum wajib) diingatkan sebagai kartu Info yang bisa ditutup selama aplikasi berjalan.
+    final konfigurasi = ref.watch(penyediaKonfigurasiAplikasi).value;
+    final adaPembaruan = konfigurasi != null && konfigurasi.adaPembaruan && !_pembaruanDitutup;
+    if (tampil.isEmpty && !adaPembaruan) {
       return const SizedBox.shrink();
     }
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [for (final p in tampil) _Kartu(p)]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (adaPembaruan) _KartuPembaruan(konfigurasi),
+        for (final p in tampil) _Kartu(p),
+      ],
+    );
+  }
+
+  Widget _KartuPembaruan(KonfigurasiAplikasi konfigurasi) {
+    final warna = TokenWarna.AmbilDari(context);
+    final teks = Theme.of(context).textTheme;
+    final tujuan = konfigurasi.versiTerbaru ?? 'terbaru';
+    return Semantics(
+      container: true,
+      label: 'Pembaruan aplikasi: versi $tujuan tersedia',
+      child: Container(
+        margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+        decoration: BoxDecoration(
+          color: warna.permukaan,
+          border: Border(
+            left: BorderSide(color: warna.info, width: 4),
+            top: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+            right: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(
+          TokenJarak.jarak12,
+          TokenJarak.jarak8,
+          TokenJarak.jarak4,
+          TokenJarak.jarak12,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak4),
+              child: Icon(Icons.system_update_outlined, color: warna.info, size: 20),
+            ),
+            const SizedBox(width: TokenJarak.jarak8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: TokenJarak.jarak4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Pembaruan: versi $tujuan tersedia', style: teks.titleSmall),
+                    const SizedBox(height: TokenJarak.jarak4),
+                    Text(
+                      konfigurasi.tautanUnduh == null
+                          ? 'Perbarui lewat toko aplikasi perangkat ini.'
+                          : 'Unduh di ${konfigurasi.tautanUnduh}',
+                      style: teks.bodyMedium,
+                    ),
+                    if (konfigurasi.catatanRilis case final catatan? when catatan.trim().isNotEmpty) ...[
+                      const SizedBox(height: TokenJarak.jarak4),
+                      Text(catatan.trim(), style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Tutup pembaruan',
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() => _pembaruanDitutup = true),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _Kartu(PengumumanAplikasi p) {

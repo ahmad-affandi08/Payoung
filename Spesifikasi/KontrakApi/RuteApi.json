@@ -533,5 +533,10 @@
         "Metode": "POST",
         "Jalur": "api/pemilik/v1/persetujuan-dokumen/pesanan-pembelian/{dokumen}/tolak",
         "Nama": "pemilik.persetujuan-dokumen.pesanan-pembelian.tolak"
+    },
+    "GET api/pemilik/v1/konfigurasi-aplikasi": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/konfigurasi-aplikasi",
+        "Nama": "pemilik.konfigurasi-aplikasi"
     }
 }

@@ -778,12 +778,17 @@ class KlienPemilik {
     required this.versiAplikasi,
     required this.ambilToken,
     required this.ambilTenant,
+    this.platform,
     http.Client? klien,
     this.batasWaktu = const Duration(seconds: 20),
   }) : _klien = klien ?? http.Client();
 
   final Uri alamatDasar;
   final String versiAplikasi;
+
+  /// `Android` atau `Ios` (header `X-Platform-Aplikasi`): menentukan rilis yang dibandingkan di `konfigurasi-aplikasi`.
+  /// Null = tidak dikirim (server menganggap Android).
+  final String? platform;
   final FutureOr<String?> Function() ambilToken;
   final FutureOr<String?> Function() ambilTenant;
   final Duration batasWaktu;
@@ -908,6 +913,10 @@ class KlienPemilik {
     return [for (final p in UraiJson.AmbilDaftarPeta(json['Pengumuman'])) PengumumanAplikasi.DariJson(p)];
   }
 
+  /// P-10 PGL-18: versi terbaru/minimal Aplikasi Owner dan flag fitur tenant aktif (bentuk sama dengan konfigurasi POS).
+  Future<KonfigurasiAplikasi> AmbilKonfigurasiAplikasi() async =>
+      KonfigurasiAplikasi.DariJson(await _Kirim('GET', 'konfigurasi-aplikasi', null));
+
   Future<DaftarNotifikasiPemilik> AmbilNotifikasi() async =>
       DaftarNotifikasiPemilik.DariJson(await _Kirim('GET', 'notifikasi', null));
 
@@ -972,7 +981,11 @@ class KlienPemilik {
     bool pakaiToken = true,
   }) async {
     final permintaan = http.Request(metode, alamatDasar.resolve('api/pemilik/v1/$jalur'))
-      ..headers.addAll({'Accept': 'application/json', 'X-Versi-Aplikasi': versiAplikasi});
+      ..headers.addAll({
+        'Accept': 'application/json',
+        'X-Versi-Aplikasi': versiAplikasi,
+        'X-Platform-Aplikasi': ?platform,
+      });
     if (pakaiToken) {
       final token = await ambilToken();
       if (token != null && token.isNotEmpty) {

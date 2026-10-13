@@ -540,19 +540,21 @@ class _LembarReturState extends ConsumerState<LembarRetur> {
           style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
         ),
         const SizedBox(height: TokenJarak.jarak12),
-        // K28: pembeli tanpa struk — wajib PIN pemilik/berhak, tukar barang atau deposit saja.
-        SizedBox(
-          height: TokenJarak.targetSentuh,
-          child: OutlinedButton.icon(
-            key: const ValueKey('BukaReturTanpaStruk'),
-            onPressed: () => setState(() {
-              _tanpaStruk = true;
-              _galat = null;
-            }),
-            icon: const Icon(Icons.receipt_long_outlined),
-            label: const Text('Pembeli tidak membawa struk'),
+        // K28: pembeli tanpa struk — wajib PIN pemilik/berhak, tukar barang atau deposit saja. Kill switch
+        // `kasir.retur-tanpa-struk` (PGL-18) menyembunyikan jalur ini.
+        if (CekFlagKasir(ref, KunciFlagFitur.kasirReturTanpaStruk))
+          SizedBox(
+            height: TokenJarak.targetSentuh,
+            child: OutlinedButton.icon(
+              key: const ValueKey('BukaReturTanpaStruk'),
+              onPressed: () => setState(() {
+                _tanpaStruk = true;
+                _galat = null;
+              }),
+              icon: const Icon(Icons.receipt_long_outlined),
+              label: const Text('Pembeli tidak membawa struk'),
+            ),
           ),
-        ),
       ],
     ];
     if (hasil == null) {

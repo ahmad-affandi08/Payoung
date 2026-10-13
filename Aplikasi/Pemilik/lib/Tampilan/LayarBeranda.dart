@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:klien_api/KlienApi.dart' show KunciFlagFitur;
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
@@ -400,6 +401,8 @@ class _KartuKaryawan extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // PGL-18: kill switch `pemilik.karyawan` menyembunyikan kartu tanpa memanggil server.
+    if (!CekFlagFitur(ref, KunciFlagFitur.pemilikKaryawan)) return const SizedBox.shrink();
     final data = ref.watch(penyediaKaryawan).value;
     if (data == null) return const SizedBox.shrink();
     final warna = TokenWarna.AmbilDari(context);
@@ -427,6 +430,8 @@ class _KartuInsight extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // PGL-18: kill switch `pemilik.insight` menyembunyikan kartu tanpa memanggil server.
+    if (!CekFlagFitur(ref, KunciFlagFitur.pemilikInsight)) return const SizedBox.shrink();
     final data = ref.watch(penyediaInsight).value;
     if (data == null) return const SizedBox.shrink();
     final warna = TokenWarna.AmbilDari(context);

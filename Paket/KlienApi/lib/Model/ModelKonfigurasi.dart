@@ -1,6 +1,29 @@
 import 'UraiJson.dart';
 
-/// Isi `GET /api/pos/v1/konfigurasi-aplikasi` yang dipakai aplikasi (§14.6, P-10): versi terbaru & minimal untuk
+/// Kunci flag fitur yang dihormati aplikasi (P-10 PGL-18). Flag `Global` bernilai mati = kill switch yang mematikan fitur
+/// itu di semua tenant tanpa menunggu review store; kunci tanpa aturan dianggap hidup. Format kunci D-06
+/// (huruf kecil, kebab-case, titik). Pembacaan: `KonfigurasiAplikasi.CekFlag`.
+abstract final class KunciFlagFitur {
+  /// Aplikasi Kasir: kasir mengubah harga satu baris (`pos.harga.timpa`).
+  static const String kasirHargaManual = 'kasir.harga-manual';
+
+  /// Aplikasi Kasir: retur tanpa struk (K28).
+  static const String kasirReturTanpaStruk = 'kasir.retur-tanpa-struk';
+
+  /// Aplikasi Kasir: pemindai barcode kamera di layar Jual (D-130).
+  static const String kasirPindaiKamera = 'kasir.pindai-kamera';
+
+  /// Aplikasi Owner: kartu & layar insight mingguan (OWN-11).
+  static const String pemilikInsight = 'pemilik.insight';
+
+  /// Aplikasi Owner: kartu & layar pantau karyawan (OWN-10).
+  static const String pemilikKaryawan = 'pemilik.karyawan';
+
+  /// Aplikasi Owner: persetujuan PO dan penyesuaian stok jarak jauh (OWN-04).
+  static const String pemilikPersetujuanDokumen = 'pemilik.persetujuan-dokumen';
+}
+
+/// Isi `GET /api/pos/v1/konfigurasi-aplikasi` (dan `GET /api/pemilik/v1/konfigurasi-aplikasi`, bentuk sama) yang dipakai aplikasi (§14.6, P-10): versi terbaru & minimal untuk
 /// perangkat ini, tautan unduh, catatan rilis ("Yang baru"), flag fitur tenant, dan pengumuman platform (v3.45).
 class KonfigurasiAplikasi {
   const KonfigurasiAplikasi({

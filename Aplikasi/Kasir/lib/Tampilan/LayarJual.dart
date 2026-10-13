@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:klien_api/KlienApi.dart' show KunciFlagFitur;
 import 'package:mesin_kasir/MesinKasir.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -1562,7 +1563,8 @@ class _LayarJualState extends ConsumerState<LayarJual> {
                         hintText: ringkas ? 'Cari produk atau barcode' : 'Cari nama, SKU, atau barcode (F1)',
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _cari.text.isEmpty
-                            ? (ref.watch(penyediaPemindaiKamera).CekTersedia()
+                            ? (ref.watch(penyediaPemindaiKamera).CekTersedia() &&
+                                      CekFlagKasir(ref, KunciFlagFitur.kasirPindaiKamera)
                                   ? IconButton(
                                       key: const ValueKey('TombolKameraPindai'),
                                       tooltip: _kameraAktif ? 'Tutup kamera pemindai' : 'Pindai dengan kamera',
@@ -1628,7 +1630,9 @@ class _LayarJualState extends ConsumerState<LayarJual> {
             },
           ),
         ),
-        if (_kameraAktif && ref.watch(penyediaPemindaiKamera).CekTersedia())
+        if (_kameraAktif &&
+            ref.watch(penyediaPemindaiKamera).CekTersedia() &&
+            CekFlagKasir(ref, KunciFlagFitur.kasirPindaiKamera))
           Padding(
             padding: EdgeInsets.fromLTRB(tepi, 0, tepi, TokenJarak.jarak8),
             child: JalurKameraPindai(

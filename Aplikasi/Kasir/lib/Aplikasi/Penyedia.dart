@@ -1258,6 +1258,11 @@ final penyediaKonfigurasiAplikasi = NotifierProvider<PengaturKonfigurasiAplikasi
   PengaturKonfigurasiAplikasi.new,
 );
 
+/// P-10 PGL-18: flag fitur [kunci] (lihat `KunciFlagFitur`) menurut konfigurasi terakhir yang dibaca perangkat
+/// (±15 menit sekali saat tersambung). Belum pernah terbaca, offline, atau kunci tanpa aturan = hidup: kill switch hanya
+/// berlaku setelah perangkat membaca konfigurasi, dan tidak pernah mengunci kasir karena tidak ada sinyal.
+bool CekFlagKasir(WidgetRef ref, String kunci) => ref.watch(penyediaKonfigurasiAplikasi)?.CekFlag(kunci) ?? true;
+
 enum TahapSesi { Memuat, BelumAktif, PilihKasir, Masuk }
 
 /// Kunci layar ruang kerja (§17.2.7): `Terkunci` = buka dengan PIN kasir yang sama atau ganti kasir; `GantiKasir` =
