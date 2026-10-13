@@ -19,12 +19,15 @@ use App\Domain\Laporan\Model\RingkasanPenjualanHarian;
 use App\Domain\Organisasi\Kueri\AnggotaOutlet;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Organisasi\Kueri\ZonaWaktuOutlet;
+use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Penjualan\Data\DataAgregatPenjualan;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
 use App\Domain\Penjualan\Kueri\AgregatPenjualan;
 use App\Domain\Tenant\Kueri\PengaturanKasirTenant;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -47,7 +50,11 @@ final class LaporanPenjualan
 
     public const BATAS_EKSPOR_VOID_ITEM = 5000;
 
-    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu'];
+    public const BATAS_PELANGGAN = 200;
+
+    public const BATAS_EKSPOR_PELANGGAN = 5000;
+
+    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet'];
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -59,6 +66,7 @@ final class LaporanPenjualan
         private readonly PengaturanKasirTenant $pengaturanKasir,
         private readonly PenilaiRisikoKasir $penilai,
         private readonly PenilaiInsightProduk $insight,
+        private readonly IdentitasPelanggan $pelanggan,
     ) {}
 
     /**
@@ -157,6 +165,8 @@ final class LaporanPenjualan
             // X6 (v3.43): analisis ABC & menu engineering dari agregat per produk periode yang sama.
             'abc' => $this->insight->Abc($this->agregat->PerProduk($saring)),
             'menu' => $this->insight->Menu($this->agregat->PerProduk($saring)),
+            'pelanggan' => $this->PerPelanggan($saring),
+            'outlet' => $this->PerOutlet($saring),
             default => $this->Harian($saring),
         };
     }
@@ -306,6 +316,82 @@ final class LaporanPenjualan
         }
 
         return self::UrutBersih($hasil);
+    }
+
+    /**
+     * Penjualan bersih per pelanggan (§10.10 "per pelanggan"): urut omzet bersih, `Porsi` = bagian dari seluruh omzet
+     * bersih saring (termasuk transaksi tanpa pelanggan, baris "Tanpa pelanggan"). Dibatasi `$batas` baris teratas.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function PerPelanggan(DataSaringLaporanPenjualan $saring, int $batas = self::BATAS_PELANGGAN): array
+    {
+        $baris = $this->agregat->Agregasi($saring, ['Pelanggan']);
+        $nama = $this->pelanggan->AmbilNamaBanyak(array_map(fn (array $b): int => (int) $b['Kunci'][0], array_values($baris)));
+        $hasil = [];
+
+        foreach ($baris as $b) {
+            $id = (int) $b['Kunci'][0];
+            $tanpa = $id === 0;
+            $hasil[] = [
+                'Kunci' => $tanpa ? '' : ($nama[$id]['Uuid'] ?? (string) $id),
+                'NamaPelanggan' => $tanpa ? 'Tanpa pelanggan' : ($nama[$id]['Nama'] ?? 'Pelanggan tidak dikenal'),
+                ...$b['Agregat']->KeLarik(),
+            ];
+        }
+
+        return array_slice(self::TambahPorsi(self::UrutBersih($hasil)), 0, $batas);
+    }
+
+    /**
+     * Perbandingan outlet (§10.10 "perbandingan outlet"): angka yang sama dengan tab lain per outlet, ditambah margin
+     * laba kotor dan bagian dari omzet bersih. Merek tidak ditampilkan (D-76).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function PerOutlet(DataSaringLaporanPenjualan $saring): array
+    {
+        $baris = $this->agregat->Agregasi($saring, ['Outlet']);
+        $nama = [];
+
+        foreach ($this->outlet->AmbilRingkas($saring->idOutlet) as $o) {
+            $nama[$o['Id']] = $o;
+        }
+
+        $hasil = [];
+
+        foreach ($baris as $b) {
+            $id = (int) $b['Kunci'][0];
+            $hasil[] = ['Kunci' => $nama[$id]['Uuid'] ?? (string) $id, 'NamaOutlet' => $nama[$id]['Nama'] ?? 'Outlet tidak dikenal', ...$b['Agregat']->KeLarik()];
+        }
+
+        return self::TambahPorsi(self::UrutBersih($hasil));
+    }
+
+    /**
+     * Menambah `Porsi` (% omzet bersih terhadap jumlah semua baris) dan `Margin` (% laba kotor terhadap omzet bersih),
+     * 2 desimal, dari string desimal (tanpa float).
+     *
+     * @param  list<array<string, mixed>>  $baris
+     * @return list<array<string, mixed>>
+     */
+    private static function TambahPorsi(array $baris): array
+    {
+        $total = BigDecimal::zero();
+
+        foreach ($baris as $b) {
+            $total = $total->plus(self::Teks($b['Bersih']));
+        }
+
+        $persen = static fn (BigDecimal $bagian, BigDecimal $dasar): string => $dasar->isZero()
+            ? '0.00'
+            : (string) $bagian->multipliedBy(100)->dividedBy($dasar, 2, RoundingMode::HalfUp);
+
+        return array_values(array_map(fn (array $b): array => [
+            ...$b,
+            'Porsi' => $persen(BigDecimal::of(self::Teks($b['Bersih'])), $total),
+            'Margin' => $persen(BigDecimal::of(self::Teks($b['LabaKotor'])), BigDecimal::of(self::Teks($b['Bersih']))),
+        ], $baris));
     }
 
     /**
@@ -540,6 +626,8 @@ final class LaporanPenjualan
                 [$t('Kasir', 26), $n('Skor risiko', false), $t('Tingkat', 12), $n('Transaksi'), $n('Void'), $u('Nilai void'), $n('Void tunai cepat'), $n('Retur'), $u('Nilai retur'), $n('Transaksi berdiskon'), $u('Total diskon'), $n('Buka laci manual'), $n('Shift kas kurang'), $u('Total kas kurang'), $t('Alasan', 60)],
                 $ambil(array_map(fn (array $b): array => [...$b, 'Alasan' => implode('; ', $b['Alasan'])], $this->AntiFraud($saring)), ['NamaKasir', 'Skor', 'Tingkat', 'JumlahTransaksi', 'JumlahVoid', 'NilaiVoid', 'VoidCepatTunai', 'JumlahRetur', 'NilaiRetur', 'JumlahBerdiskon', 'TotalDiskon', 'BukaLaciManual', 'ShiftSelisihKurang', 'SelisihKurang', 'Alasan']),
             ],
+            'pelanggan' => [[$t('Pelanggan', 30), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Porsi %')], $ambil($this->PerPelanggan($saring, self::BATAS_EKSPOR_PELANGGAN), ['NamaPelanggan', ...$angka, 'RataRataKeranjang', 'Porsi'])],
+            'outlet' => [[$t('Outlet', 28), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Margin %'), $pr('Porsi %')], $ambil($this->PerOutlet($saring), ['NamaOutlet', ...$angka, 'RataRataKeranjang', 'Margin', 'Porsi'])],
             'abc' => [[$t('Produk', 32), $q('Qty (satuan dasar)'), $u('Bersih'), $pr('Porsi %'), $pr('Kumulatif %'), $t('Kelas', 10)], $ambil($this->insight->Abc($this->agregat->PerProduk($saring))['Baris'], ['NamaProduk', 'Qty', 'Bersih', 'Porsi', 'PorsiKumulatif', 'Kelas'])],
             'menu' => [[$t('Produk', 32), $q('Qty (satuan dasar)'), $u('Bersih'), $u('HPP'), $u('Margin per unit', false), $pr('Porsi qty %'), $t('Kelas', 14)], $ambil($this->insight->Menu($this->agregat->PerProduk($saring))['Baris'], ['NamaProduk', 'Qty', 'Bersih', 'Hpp', 'MarginPerUnit', 'PorsiQty', 'Kelas'])],
             default => [[new KolomLaporan('Tanggal', JenisKolom::Tanggal), ...$kolomAngka, $u('Rata-rata keranjang', false)], $ambil($this->Harian($saring), ['Tanggal', ...$angka, 'RataRataKeranjang'])],

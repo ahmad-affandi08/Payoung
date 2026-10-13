@@ -92,7 +92,9 @@ export type TabLaporanPenjualan =
     | 'void-item'
     | 'anti-fraud'
     | 'abc'
-    | 'menu';
+    | 'menu'
+    | 'pelanggan'
+    | 'outlet';
 
 export type SaringLaporanPenjualan = {
     Tab: TabLaporanPenjualan;
@@ -154,6 +156,10 @@ export type SelJam = { Hari: number; Jam: number; Bersih: string; JumlahTransaks
 export type IsiJam = { Sel: SelJam[]; PerJam: { Jam: number; Bersih: string; JumlahTransaksi: number }[] };
 export type BarisKasirLaporan = AngkaPenjualan & { Kunci: string; NamaKasir: string };
 export type BarisKanalLaporan = AngkaPenjualan & { Kunci: string; LabelKanal: string };
+/** Penjualan per pelanggan; `Kunci` kosong = transaksi tanpa pelanggan. `Porsi` = % omzet bersih. */
+export type BarisPelangganLaporan = AngkaPenjualan & { Kunci: string; NamaPelanggan: string; Porsi: string };
+/** Perbandingan outlet; `Margin` = % laba kotor terhadap omzet bersih. */
+export type BarisOutletLaporan = AngkaPenjualan & { Kunci: string; NamaOutlet: string; Porsi: string; Margin: string };
 export type BarisMetodeLaporan = {
     Kunci: string;
     NamaMetode: string;
@@ -259,6 +265,8 @@ export type PropsLaporanPenjualan = {
         | IsiJam
         | BarisKasirLaporan[]
         | BarisKanalLaporan[]
+        | BarisPelangganLaporan[]
+        | BarisOutletLaporan[]
         | BarisMetodeLaporan[]
         | BarisDiskonLaporan[]
         | BarisVoidItemLaporan[]

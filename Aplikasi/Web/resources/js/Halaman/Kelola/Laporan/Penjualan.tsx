@@ -8,6 +8,7 @@ import SaringLaporan from '@/Komponen/Laporan/SaringLaporan';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
+import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import { PakaiFiturTerkunci } from '@/Pustaka/FiturPaket';
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -20,6 +21,8 @@ import type {
     BarisDiskonLaporan,
     BarisHarian,
     BarisKanalLaporan,
+    BarisOutletLaporan,
+    BarisPelangganLaporan,
     BarisKasirLaporan,
     BarisKategoriLaporan,
     BarisMenuLaporan,
@@ -50,6 +53,8 @@ const daftarTab: { nilai: TabLaporanPenjualan; label: string }[] = [
     { nilai: 'anti-fraud', label: 'Anti-fraud' },
     { nilai: 'abc', label: 'Analisis ABC' },
     { nilai: 'menu', label: 'Menu engineering' },
+    { nilai: 'pelanggan', label: 'Per pelanggan' },
+    { nilai: 'outlet', label: 'Perbandingan outlet' },
 ];
 
 const kolomHarian: KolomTabel<BarisHarian>[] = [
@@ -181,6 +186,50 @@ const kolomKanal: KolomTabel<BarisKanalLaporan>[] = [
     ...KolomAngkaPenjualan<BarisKanalLaporan>(),
     KolomBilangan<BarisKanalLaporan>('JumlahTransaksi', 'Transaksi', 'penting'),
     KolomUang<BarisKanalLaporan>('RataRataKeranjang', 'Rata-rata keranjang', 'rendah'),
+];
+
+const KolomPorsi = <T extends { Porsi: string }>(): KolomTabel<T> =>
+    ({
+        id: 'Porsi',
+        accessorKey: 'Porsi',
+        header: 'Porsi',
+        sortingFn: (a, b, kolom) => BandingkanDesimal(String(a.getValue(kolom)), String(b.getValue(kolom))),
+        meta: { label: 'Porsi omzet', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => FormatPersen(row.original.Porsi),
+    }) as KolomTabel<T>;
+
+const kolomPelanggan: KolomTabel<BarisPelangganLaporan>[] = [
+    {
+        id: 'NamaPelanggan',
+        accessorKey: 'NamaPelanggan',
+        header: 'Pelanggan',
+        meta: { label: 'Pelanggan', prioritas: 'utama', wajib: true },
+    },
+    ...KolomAngkaPenjualan<BarisPelangganLaporan>(),
+    KolomBilangan<BarisPelangganLaporan>('JumlahTransaksi', 'Transaksi', 'penting'),
+    KolomUang<BarisPelangganLaporan>('RataRataKeranjang', 'Rata-rata keranjang', 'rendah'),
+    KolomPorsi<BarisPelangganLaporan>(),
+];
+
+const kolomOutlet: KolomTabel<BarisOutletLaporan>[] = [
+    {
+        id: 'NamaOutlet',
+        accessorKey: 'NamaOutlet',
+        header: 'Outlet',
+        meta: { label: 'Outlet', prioritas: 'utama', wajib: true },
+    },
+    ...KolomAngkaPenjualan<BarisOutletLaporan>(),
+    KolomBilangan<BarisOutletLaporan>('JumlahTransaksi', 'Transaksi', 'penting'),
+    KolomUang<BarisOutletLaporan>('RataRataKeranjang', 'Rata-rata keranjang', 'rendah'),
+    {
+        id: 'Margin',
+        accessorKey: 'Margin',
+        header: 'Margin',
+        sortingFn: (a, b, kolom) => BandingkanDesimal(String(a.getValue(kolom)), String(b.getValue(kolom))),
+        meta: { label: 'Margin laba kotor', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => FormatPersen(row.original.Margin),
+    },
+    KolomPorsi<BarisOutletLaporan>(),
 ];
 
 const kolomMetode: KolomTabel<BarisMetodeLaporan>[] = [
@@ -536,6 +585,46 @@ function IsiTab({
                     label="Penjualan per kanal"
                     kolom={kolomKanal}
                     sumber={{ mode: 'lokal', data: isi as BarisKanalLaporan[] }}
+                    ambilIdBaris={(b) => b.Kunci}
+                    urutBawaan="-Bersih"
+                    cari={false}
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
+                    kosong={kosong}
+                />
+            );
+        case 'pelanggan':
+            return (
+                <TabelData
+                    id="laporan-penjualan-pelanggan"
+                    label="Penjualan per pelanggan"
+                    kolom={kolomPelanggan}
+                    sumber={{ mode: 'lokal', data: isi as BarisPelangganLaporan[] }}
+                    ambilIdBaris={(b) => b.Kunci}
+                    urutBawaan="-Bersih"
+                    cari="Cari nama pelanggan"
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
+                    kosong={kosong}
+                />
+            );
+        case 'outlet':
+            return (
+                <TabelData
+                    id="laporan-penjualan-outlet"
+                    label="Perbandingan outlet"
+                    kolom={kolomOutlet}
+                    sumber={{ mode: 'lokal', data: isi as BarisOutletLaporan[] }}
                     ambilIdBaris={(b) => b.Kunci}
                     urutBawaan="-Bersih"
                     cari={false}

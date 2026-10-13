@@ -57,6 +57,8 @@ final class AgregatPenjualan
         'Outlet' => ['`Penjualan`.`IdOutlet`', '`ReturPenjualan`.`IdOutlet`'],
         'Kasir' => ['`Penjualan`.`IdPengguna`', '`ReturPenjualan`.`IdPengguna`'],
         'Kanal' => ['`Penjualan`.`Kanal`', self::KANAL_RETUR],
+        // Laporan per pelanggan (§10.10): retur mengikuti pelanggan penjualan asalnya; kosong = tanpa pelanggan.
+        'Pelanggan' => ['`Penjualan`.`IdPelanggan`', '`asal`.`IdPelanggan`'],
     ];
 
     /** Alias kolom dimensi di hasil kueri. */
@@ -95,7 +97,7 @@ final class AgregatPenjualan
     /**
      * Agregat per kombinasi dimensi. Kunci hasil = nilai dimensi digabung `|` (urutan sesuai `$dimensi`).
      *
-     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'>  $dimensi
+     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'|'Pelanggan'>  $dimensi
      * @return array<string, array{Kunci: list<string>, Agregat: DataAgregatPenjualan}>
      */
     public function Agregasi(DataSaringLaporanPenjualan $saring, array $dimensi): array
@@ -236,7 +238,7 @@ final class AgregatPenjualan
      * Uang per metode bayar: diterima (bersih kembalian untuk tunai), refund retur (pada tanggal/outlet/kasir retur),
      * dan bersih = diterima − refund. Urut bersih menurun.
      *
-     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'>  $dimensi
+     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'|'Pelanggan'>  $dimensi
      * @return list<array{Kunci: list<string>, IdMetodePembayaran: int, Jenis: string, Nama: string, Diterima: string, Refund: string, Bersih: string, JumlahTransaksi: int}>
      */
     public function PerMetode(DataSaringLaporanPenjualan $saring, array $dimensi = []): array
@@ -856,7 +858,7 @@ final class AgregatPenjualan
     /**
      * Kolom SQL dimensi untuk sisi penjualan (0) atau retur (1).
      *
-     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'>  $dimensi
+     * @param  list<'Tanggal'|'Outlet'|'Kasir'|'Kanal'|'Pelanggan'>  $dimensi
      * @param  0|1  $sisi
      * @return list<literal-string>
      */

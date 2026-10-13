@@ -252,6 +252,71 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('table', { name: 'Penjualan per jam' })).toBeTruthy();
     });
 
+    it('§10.10 tab per pelanggan & perbandingan outlet: nama, porsi, margin, dan ekspor sesuai saring', () => {
+        const { unmount } = RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: {
+                        Tab: 'pelanggan',
+                        Dari: '2026-10-01',
+                        Sampai: '2026-10-07',
+                        Outlet: '',
+                        Kasir: '',
+                        Kanal: '',
+                    },
+                    Isi: [
+                        {
+                            Kunci: 'u1',
+                            NamaPelanggan: 'Ani Wijayanti',
+                            ...Angka('115500.00', 2, '106500.00'),
+                            Porsi: '50.00',
+                        },
+                        {
+                            Kunci: '',
+                            NamaPelanggan: 'Tanpa pelanggan',
+                            ...Angka('77000.00', 1, '71000.00'),
+                            Porsi: '33.33',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Penjualan per pelanggan' })).toBeTruthy();
+        expect(screen.getByText('Ani Wijayanti')).toBeTruthy();
+        expect(screen.getByText('Tanpa pelanggan')).toBeTruthy();
+        expect(screen.getByText('50,00%')).toBeTruthy();
+        unmount();
+
+        RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: {
+                        Tab: 'outlet',
+                        Dari: '2026-10-01',
+                        Sampai: '2026-10-07',
+                        Outlet: '',
+                        Kasir: '',
+                        Kanal: '',
+                    },
+                    Isi: [
+                        {
+                            Kunci: 'o1',
+                            NamaOutlet: 'Warung Kopi Klaten',
+                            ...Angka('231000.00', 4, '51000.00'),
+                            Porsi: '100.00',
+                            Margin: '22.08',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Perbandingan outlet' })).toBeTruthy();
+        expect(screen.getByText('Warung Kopi Klaten')).toBeTruthy();
+        expect(screen.getByText('22,08%')).toBeTruthy();
+    });
+
     it('tab anti-fraud: tingkat risiko berteks + alasan, penjelasan skor', () => {
         RenderUji(
             <HalamanLaporanPenjualan
