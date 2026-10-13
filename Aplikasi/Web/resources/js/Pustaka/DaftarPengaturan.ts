@@ -175,6 +175,12 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.AkuntansiKelola,
             },
             {
+                label: 'Rak gudang',
+                keterangan: 'Bagi lokasi stok menjadi rak atau zona dan tempatkan produknya, untuk opname per rak.',
+                href: '/kelola/persediaan/rak',
+                izin: IzinTenant.PersediaanLihat,
+            },
+            {
                 label: 'Stok awal',
                 keterangan: 'Saldo stok pembuka per produk & lokasi, diposting sekali saat mulai memakai Payoung.',
                 href: '/kelola/persediaan/stok-awal',

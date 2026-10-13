@@ -17,6 +17,7 @@ use App\Domain\Persediaan\Enum\StatusStokOpname;
 use App\Domain\Persediaan\Model\BatchStok;
 use App\Domain\Persediaan\Model\MutasiStok;
 use App\Domain\Persediaan\Model\NomorSeri;
+use App\Domain\Persediaan\Model\ProdukRak;
 use App\Domain\Persediaan\Model\StokOpname;
 use App\Domain\Persediaan\Model\StokOpnameDetail;
 use Brick\Math\BigDecimal;
@@ -28,7 +29,9 @@ use Illuminate\Support\Facades\DB;
  * ada (per `urutan`), atau baris baru hasil hitung/pindai (produk tanpa snapshot, batch baru, nomor seri yang
  * ditemukan) yang langsung digabung ke baris yang sudah ada bila produk/batch/seri-nya sama. Baris baru bersistem
  * Σ mutasinya sampai penanda snapshot opname, sehingga BR-05.3 tetap berlaku. Opname kategori menolak produk di luar
- * kategori (`ProdukDiLuarKategori`). Jumlah fisik ≥ 0 (seri 0/1). Audit `stok-opname.hitung`.
+ * kategori (`ProdukDiLuarKategori`), opname per rak menolak produk yang tidak berada di rak itu (`ProdukDiLuarRak`).
+ * Setiap baris menyimpan siapa yang menghitung dan kapan (`DihitungOleh`/`DihitungPada`), jadi beberapa penghitung
+ * dapat mengisi lembar yang sama dan ringkasan per penghitung tersedia di detail. Jumlah fisik ≥ 0 (seri 0/1). Audit `stok-opname.hitung`.
  */
 final class SimpanHitungStokOpname
 {
@@ -58,7 +61,11 @@ final class SimpanHitungStokOpname
                 ...$baris->pluck('IdProduk')->all(),
                 ...array_map(fn (DataHitungOpname $h): ?int => $h->idProduk, $hitung),
             ], 'is_int'))), true);
-            $dalamKategori = $opname->IdKategori === null ? null : array_flip($this->kategori->AmbilIdProduk($opname->IdKategori));
+            $dalamKategori = match (true) {
+                $opname->IdKategori !== null => array_flip($this->kategori->AmbilIdProduk($opname->IdKategori)),
+                $opname->IdRak !== null => array_flip(array_map('intval', ProdukRak::query()->where('IdRak', $opname->IdRak)->pluck('IdProduk')->all())),
+                default => null,
+            };
             $waktu = now();
             $urutanBaru = (int) $baris->max('Urutan');
             $jumlahDiubah = 0;
@@ -111,7 +118,9 @@ final class SimpanHitungStokOpname
         }
 
         if ($dalamKategori !== null && ! isset($dalamKategori[$info->id])) {
-            throw new PelanggaranAturanBisnis('ProdukDiLuarKategori', "{$label}: {$info->nama} tidak termasuk kategori {$opname->NamaKategori} yang sedang diopname.", 'Hitung');
+            throw $opname->IdRak !== null
+                ? new PelanggaranAturanBisnis('ProdukDiLuarRak', "{$label}: {$info->nama} tidak berada di rak {$opname->NamaRak} yang sedang diopname.", 'Hitung')
+                : new PelanggaranAturanBisnis('ProdukDiLuarKategori', "{$label}: {$info->nama} tidak termasuk kategori {$opname->NamaKategori} yang sedang diopname.", 'Hitung');
         }
 
         $nomorBatch = $info->pelacakan === PelacakanProduk::Batch ? trim((string) $h->nomorBatch) : null;

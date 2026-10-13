@@ -14,7 +14,7 @@ use LogicException;
 
 /**
  * Dokumen stok opname per lokasi stok (F-05b, BR-05.3): seluruh produk atau satu kategori (`IdKategori`, termasuk
- * sub-kategori). Snapshot saldo sistem diambil saat mulai; hitung fisik disimpan di detail; persetujuan mencatat
+ * sub-kategori) atau satu rak (`IdRak`, F-05c). Snapshot saldo sistem diambil saat mulai; hitung fisik disimpan di detail; persetujuan mencatat
  * mutasi `OpnameLebih`/`OpnameKurang`. Tanpa hapus; Disetujui & Dibatalkan final. `KunciAktif` (kolom tersimpan)
  * menjaga satu opname aktif per lokasi & kategori.
  *
@@ -26,6 +26,8 @@ use LogicException;
  * @property int|null $IdOutlet
  * @property int|null $IdKategori
  * @property string|null $NamaKategori
+ * @property int|null $IdRak
+ * @property string|null $NamaRak
  * @property bool $HitungButa
  * @property StatusStokOpname $Status
  * @property Carbon $TanggalSnapshot
@@ -91,8 +93,8 @@ final class StokOpname extends ModelDasar
                 throw new LogicException("Stok opname berstatus {$asal->value} tidak bisa diubah.");
             }
 
-            if (array_intersect(array_keys($opname->getDirty()), ['IdGudang', 'IdKategori', 'HitungButa', 'TanggalSnapshot', 'SnapshotPada', 'IdMutasiSnapshot', 'Nomor']) !== []) {
-                throw new LogicException('Lokasi, kategori, snapshot, dan nomor stok opname tidak bisa diubah.');
+            if (array_intersect(array_keys($opname->getDirty()), ['IdGudang', 'IdKategori', 'IdRak', 'HitungButa', 'TanggalSnapshot', 'SnapshotPada', 'IdMutasiSnapshot', 'Nomor']) !== []) {
+                throw new LogicException('Lokasi, kategori, rak, snapshot, dan nomor stok opname tidak bisa diubah.');
             }
         });
         self::deleting(function (): void {

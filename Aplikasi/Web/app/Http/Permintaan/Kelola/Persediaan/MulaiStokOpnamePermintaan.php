@@ -7,7 +7,7 @@ namespace App\Http\Permintaan\Kelola\Persediaan;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Validasi mulai stok opname (F-05b): lokasi stok, kategori opsional (kosong = seluruh produk), hitung buta, catatan,
+ * Validasi mulai stok opname (F-05b): lokasi stok, kategori atau rak opsional (keduanya kosong = seluruh produk; tidak boleh keduanya), hitung buta, catatan,
  * dan `Uuid` klien opsional untuk idempotensi.
  */
 final class MulaiStokOpnamePermintaan extends FormRequest
@@ -21,6 +21,7 @@ final class MulaiStokOpnamePermintaan extends FormRequest
             'Uuid' => ['nullable', 'ulid'],
             'UuidGudang' => ['required', 'ulid'],
             'UuidKategori' => ['nullable', 'ulid'],
+            'UuidRak' => ['nullable', 'ulid'],
             'HitungButa' => ['required', 'boolean'],
             'Catatan' => ['nullable', 'string', 'max:500'],
         ];
@@ -31,6 +32,6 @@ final class MulaiStokOpnamePermintaan extends FormRequest
      */
     public function attributes(): array
     {
-        return ['UuidGudang' => 'lokasi stok', 'UuidKategori' => 'kategori', 'HitungButa' => 'hitung buta', 'Catatan' => 'catatan'];
+        return ['UuidGudang' => 'lokasi stok', 'UuidKategori' => 'kategori', 'UuidRak' => 'rak', 'HitungButa' => 'hitung buta', 'Catatan' => 'catatan'];
     }
 }

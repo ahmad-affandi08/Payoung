@@ -122,6 +122,8 @@ function BarisOpname(perubahan: Partial<BarisStokOpname> = {}): BarisStokOpname 
         DariSnapshot: true,
         JumlahSistem: null,
         JumlahFisik: null,
+        DihitungOleh: null,
+        DihitungPada: null,
         MutasiSelamaOpname: null,
         Selisih: null,
         NilaiSelisih: null,
@@ -140,6 +142,7 @@ function PropsOpname(perubahan: Partial<PropsDetailStokOpname> = {}): PropsDetai
             NamaGudang: 'Toko Utama',
             NamaOutlet: 'Outlet Utama',
             NamaKategori: null,
+            NamaRak: null,
             HitungButa: true,
             SistemTersembunyi: true,
             TanggalSnapshot: '2026-09-24',
@@ -157,6 +160,7 @@ function PropsOpname(perubahan: Partial<PropsDetailStokOpname> = {}): PropsDetai
             DisetujuiPada: null,
         },
         Baris: [BarisOpname()],
+        Penghitung: [],
         Jurnal: [],
         Riwayat: [],
         Tindakan: { Hitung: true, Ajukan: true, Kembalikan: false, Setujui: false, Batalkan: true },
@@ -513,6 +517,7 @@ describe('Kelola/Persediaan/Opname (F-05b, BR-05.3)', () => {
                 Opname={BuatHasilTabel([])}
                 OpsiGudang={[GudangUtama, GudangKedua]}
                 OpsiKategori={[]}
+                OpsiRak={[]}
                 OpsiStatus={[]}
                 Izin={IzinPenuh}
             />,

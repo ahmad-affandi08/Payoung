@@ -8,6 +8,7 @@ use App\Http\Kontroler\Kelola\Persediaan\OrderProduksiKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\PelacakanStokKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\PenyesuaianStokKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\PermintaanStokKontroler;
+use App\Http\Kontroler\Kelola\Persediaan\RakGudangKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\StokOpnameKontroler;
 use App\Http\Kontroler\Kelola\Persediaan\TransferStokKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -50,6 +51,16 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::post('/persediaan/permintaan/{permintaanStok}/batalkan', [PermintaanStokKontroler::class, 'Batalkan'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.batalkan');
     Route::post('/persediaan/permintaan/{permintaanStok}/tolak', [PermintaanStokKontroler::class, 'Tolak'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.tolak');
     Route::post('/persediaan/permintaan/{permintaanStok}/tutup', [PermintaanStokKontroler::class, 'Tutup'])->middleware($kelola)->where('permintaanStok', $ulid)->name('kelola.persediaan.permintaan.tutup');
+
+    // F-05c INV-07: rak gudang (cakupan opname per rak).
+    Route::get('/persediaan/rak', [RakGudangKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.persediaan.rak.daftar');
+    Route::post('/persediaan/rak', [RakGudangKontroler::class, 'Simpan'])->middleware($kelola)->name('kelola.persediaan.rak.simpan');
+    Route::get('/persediaan/rak/{rak}', [RakGudangKontroler::class, 'Detail'])->middleware($lihat)->where('rak', $ulid)->name('kelola.persediaan.rak.detail');
+    Route::put('/persediaan/rak/{rak}', [RakGudangKontroler::class, 'Ubah'])->middleware($kelola)->where('rak', $ulid)->name('kelola.persediaan.rak.ubah');
+    Route::post('/persediaan/rak/{rak}/nonaktifkan', [RakGudangKontroler::class, 'Nonaktifkan'])->middleware($kelola)->where('rak', $ulid)->name('kelola.persediaan.rak.nonaktifkan');
+    Route::post('/persediaan/rak/{rak}/aktifkan', [RakGudangKontroler::class, 'Aktifkan'])->middleware($kelola)->where('rak', $ulid)->name('kelola.persediaan.rak.aktifkan');
+    Route::post('/persediaan/rak/{rak}/produk', [RakGudangKontroler::class, 'TetapkanProduk'])->middleware($kelola)->where('rak', $ulid)->name('kelola.persediaan.rak.produk.tetapkan');
+    Route::delete('/persediaan/rak/{rak}/produk', [RakGudangKontroler::class, 'LepasProduk'])->middleware($kelola)->where('rak', $ulid)->name('kelola.persediaan.rak.produk.lepas');
 
     Route::get('/persediaan/opname', [StokOpnameKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.persediaan.opname.daftar');
     Route::post('/persediaan/opname', [StokOpnameKontroler::class, 'Mulai'])->middleware($kelola)->name('kelola.persediaan.opname.mulai');

@@ -240,6 +240,7 @@ class OpnameGudangPos {
     required this.nomor,
     required this.namaLokasi,
     required this.namaKategori,
+    this.namaRak,
     required this.hitungButa,
     required this.jumlahBaris,
     required this.jumlahDihitung,
@@ -250,6 +251,9 @@ class OpnameGudangPos {
   final String nomor;
   final String namaLokasi;
   final String? namaKategori;
+
+  /// F-05c: opname per rak (hanya produk di rak itu); null = tidak dibatasi rak. Server lama tidak mengirimnya.
+  final String? namaRak;
   final bool hitungButa;
   final int jumlahBaris;
   final int jumlahDihitung;
@@ -260,6 +264,7 @@ class OpnameGudangPos {
     nomor: UraiJson.AmbilTeks(json['Nomor']),
     namaLokasi: UraiJson.AmbilTeks(json['NamaLokasi']),
     namaKategori: UraiJson.AmbilTeksAtauNull(json['NamaKategori']),
+    namaRak: UraiJson.AmbilTeksAtauNull(json['NamaRak']),
     hitungButa: UraiJson.AmbilBenar(json['HitungButa']),
     jumlahBaris: UraiJson.AmbilBulat(json['JumlahBaris']),
     jumlahDihitung: UraiJson.AmbilBulat(json['JumlahDihitung']),

@@ -173,7 +173,7 @@ class _LembarGudangState extends ConsumerState<LembarGudang> {
     uuid: o.uuid,
     judul: o.nomor,
     keterangan:
-        '${o.namaLokasi}${o.namaKategori == null ? '' : ' | ${o.namaKategori}'} | ${o.jumlahDihitung}/${o.jumlahBaris} '
+        '${o.namaLokasi}${o.namaRak == null ? '' : ' | rak ${o.namaRak}'}${o.namaKategori == null ? '' : ' | ${o.namaKategori}'} | ${o.jumlahDihitung}/${o.jumlahBaris} '
         'dihitung${o.hitungButa ? ' | hitung buta' : ''}',
     asli: o,
     baris: [

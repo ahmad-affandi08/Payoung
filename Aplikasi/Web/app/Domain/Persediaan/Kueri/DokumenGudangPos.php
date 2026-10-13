@@ -147,6 +147,7 @@ final class DokumenGudangPos
             'Nomor' => $o->Nomor,
             'NamaLokasi' => self::NamaLokasi($gudang[$o->IdGudang] ?? null),
             'NamaKategori' => $o->NamaKategori,
+            'NamaRak' => $o->NamaRak,
             'HitungButa' => $o->HitungButa,
             'SnapshotPada' => $o->SnapshotPada->toIso8601ZuluString(),
             'JumlahBaris' => $o->JumlahBaris,

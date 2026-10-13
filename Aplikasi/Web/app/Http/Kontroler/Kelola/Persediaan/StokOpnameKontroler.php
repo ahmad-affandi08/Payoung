@@ -13,6 +13,7 @@ use App\Domain\Persediaan\Aksi\MulaiStokOpname;
 use App\Domain\Persediaan\Aksi\SetujuiStokOpname;
 use App\Domain\Persediaan\Aksi\SimpanHitungStokOpname;
 use App\Domain\Persediaan\Enum\StatusStokOpname;
+use App\Domain\Persediaan\Kueri\DaftarRakGudang;
 use App\Domain\Persediaan\Kueri\DaftarStokOpname;
 use App\Domain\Persediaan\Kueri\DetailStokOpname;
 use App\Domain\Persediaan\Model\StokOpname;
@@ -37,13 +38,14 @@ final class StokOpnameKontroler extends DasarDokumenPersediaanKontroler
 {
     private const ALAMAT = 'kelola.persediaan.opname.detail';
 
-    public function Daftar(Request $permintaan, DaftarStokOpname $daftar, PohonKategori $kategori): Response|JsonResponse
+    public function Daftar(Request $permintaan, DaftarStokOpname $daftar, PohonKategori $kategori, DaftarRakGudang $rak): Response|JsonResponse
     {
         $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarStokOpname::KOLOM_URUT, DaftarStokOpname::URUT_BAWAAN, DaftarStokOpname::KOLOM_SARING);
 
         return ResponsTabel::Kirim($permintaan, 'Kelola/Persediaan/Opname/Daftar', 'Opname', fn (): array => $daftar->AmbilTabel($tabel, $this->IdOutletBoleh()), fn (): array => [
             'OpsiGudang' => $this->AmbilOpsiGudangDokumen(hanyaAktif: false),
             'OpsiKategori' => array_map(fn (array $k): array => ['Uuid' => $k['Uuid'], 'Nama' => $k['Nama'], 'Jalur' => $k['Jalur']], $kategori->AmbilOpsi()),
+            'OpsiRak' => $rak->AmbilOpsiAktif($this->IdOutletBoleh()),
             'OpsiStatus' => array_map(fn (StatusStokOpname $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusStokOpname::cases()),
             'Izin' => $this->AmbilIzinDokumen(),
         ]);
@@ -60,6 +62,7 @@ final class StokOpnameKontroler extends DasarDokumenPersediaanKontroler
             is_string($permintaan->validated('Catatan')) ? (string) $permintaan->validated('Catatan') : null,
             $this->Pelaku()->Id,
             is_string($permintaan->validated('Uuid')) ? (string) $permintaan->validated('Uuid') : null,
+            is_string($permintaan->validated('UuidRak')) ? (string) $permintaan->validated('UuidRak') : null,
         );
 
         return redirect()->route(self::ALAMAT, ['stokOpname' => $opname->Uuid])

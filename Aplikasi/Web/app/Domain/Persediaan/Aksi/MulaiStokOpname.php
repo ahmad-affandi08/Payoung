@@ -18,6 +18,8 @@ use App\Domain\Persediaan\Layanan\PenomorDokumenPersediaan;
 use App\Domain\Persediaan\Model\BatchStok;
 use App\Domain\Persediaan\Model\MutasiStok;
 use App\Domain\Persediaan\Model\NomorSeri;
+use App\Domain\Persediaan\Model\ProdukRak;
+use App\Domain\Persediaan\Model\RakGudang;
 use App\Domain\Persediaan\Model\SaldoStok;
 use App\Domain\Persediaan\Model\StokOpname;
 use App\Domain\Persediaan\Model\StokOpnameDetail;
@@ -26,10 +28,11 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Memulai stok opname (F-05b, BR-05.3): lokasi stok aktif (bukan dalam perjalanan), seluruh produk atau satu
- * kategori (beserta sub-kategori). Satu opname aktif per lokasi: opname seluruh produk tidak boleh berbarengan
- * dengan opname lain di lokasi itu, opname kategori tidak boleh berbarengan dengan opname seluruh produk atau
- * kategori yang sama (`OpnameAktifSudahAda`). Snapshot = saldo sistem saat mulai (dibaca dengan kunci baca, sehingga
+ * Memulai stok opname (F-05b, BR-05.3): lokasi stok aktif (bukan dalam perjalanan), seluruh produk, satu kategori
+ * (beserta sub-kategori), atau satu rak (F-05c INV-07, `RakGudang`; kategori dan rak tidak digabung). Cakupan dua opname
+ * aktif di lokasi yang sama tidak boleh beririsan: opname seluruh produk bentrok dengan semua opname lain, selain itu
+ * bentrok bila ada produk yang sama (`OpnameAktifSudahAda`). Rak berbeda tidak pernah beririsan (satu produk satu rak),
+ * jadi beberapa penghitung dapat menghitung rak berbeda berbarengan. Snapshot = saldo sistem saat mulai (dibaca dengan kunci baca, sehingga
  * `IdMutasiSnapshot` = mutasi terakhir yang sudah masuk saldo): satu baris per produk bersaldo ≠ 0, per batch bersisa
  * untuk produk batch, per nomor seri tersedia untuk produk seri. Transaksi tetap berjalan selama opname.
  * Idempoten per Uuid klien. Audit `stok-opname.mulai`.
@@ -46,7 +49,7 @@ final class MulaiStokOpname
         private readonly PencatatAudit $audit,
     ) {}
 
-    public function Jalankan(int $idGudang, ?string $uuidKategori, bool $hitungButa, ?string $catatan, int $idPengguna, ?string $uuid = null): StokOpname
+    public function Jalankan(int $idGudang, ?string $uuidKategori, bool $hitungButa, ?string $catatan, int $idPengguna, ?string $uuid = null, ?string $uuidRak = null): StokOpname
     {
         if ($uuid !== null) {
             $ada = StokOpname::query()->where('Uuid', $uuid)->first();
@@ -57,7 +60,7 @@ final class MulaiStokOpname
         }
 
         try {
-            return DB::transaction(fn (): StokOpname => $this->Mulai($idGudang, $uuidKategori, $hitungButa, $catatan, $idPengguna, $uuid), max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
+            return DB::transaction(fn (): StokOpname => $this->Mulai($idGudang, $uuidKategori, $hitungButa, $catatan, $idPengguna, $uuid, $uuidRak), max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
         } catch (UniqueConstraintViolationException $galat) {
             if (str_contains($galat->getMessage(), 'UniqStokOpnameIdTenantKunciAktif')) {
                 throw new PelanggaranAturanBisnis('OpnameAktifSudahAda', 'Masih ada stok opname yang berjalan untuk lokasi dan kategori ini. Selesaikan atau batalkan dulu.', 'UuidGudang');
@@ -67,13 +70,37 @@ final class MulaiStokOpname
         }
     }
 
-    private function Mulai(int $idGudang, ?string $uuidKategori, bool $hitungButa, ?string $catatan, int $idPengguna, ?string $uuid): StokOpname
+    private function Mulai(int $idGudang, ?string $uuidKategori, bool $hitungButa, ?string $catatan, int $idPengguna, ?string $uuid, ?string $uuidRak): StokOpname
     {
         $gudang = $this->pemeriksaLokasi->AmbilLokasi($idGudang);
         $kategori = null;
+        $rak = null;
 
         if ($uuidKategori !== null && $uuidKategori !== '') {
             $kategori = $this->kategori->AmbilKategori($uuidKategori) ?? throw new PelanggaranAturanBisnis('KategoriTidakDikenal', 'Kategori tidak ditemukan.', 'UuidKategori');
+        }
+
+        if ($uuidRak !== null && $uuidRak !== '') {
+            if ($kategori !== null) {
+                throw new PelanggaranAturanBisnis('CakupanGanda', 'Pilih kategori atau rak, tidak keduanya. Opname per rak sudah membatasi produknya.', 'UuidRak');
+            }
+
+            $rak = RakGudang::query()->where('Uuid', $uuidRak)->where('IdGudang', $gudang->id)->first()
+                ?? throw new PelanggaranAturanBisnis('RakTidakDikenal', "Rak tidak ditemukan di {$gudang->nama}.", 'UuidRak');
+
+            if (! $rak->Aktif) {
+                throw new PelanggaranAturanBisnis('RakNonaktif', "Rak {$rak->Nama} nonaktif. Aktifkan dulu untuk memulai opname.", 'UuidRak');
+            }
+        }
+
+        $idProdukCakupan = match (true) {
+            $kategori !== null => $this->kategori->AmbilIdProduk($kategori['Id']),
+            $rak !== null => array_map('intval', ProdukRak::query()->where('IdRak', $rak->Id)->pluck('IdProduk')->all()),
+            default => null,
+        };
+
+        if ($rak !== null && $idProdukCakupan === []) {
+            throw new PelanggaranAturanBisnis('RakKosong', "Rak {$rak->Nama} belum berisi produk. Tempatkan produk di rak dulu.", 'UuidRak');
         }
 
         // Kunci rentang opname lokasi ini (next-key lock indeks IdTenant, IdGudang, Status) supaya dua mulai bersamaan berurutan.
@@ -84,20 +111,21 @@ final class MulaiStokOpname
             ->get();
 
         foreach ($aktif as $lain) {
-            if ($kategori === null || $lain->IdKategori === null || $lain->IdKategori === $kategori['Id']) {
+            if ($this->CekBeririsan($idProdukCakupan, $this->AmbilCakupan($lain))) {
+                $cakupanLain = $lain->NamaRak !== null ? " (rak {$lain->NamaRak})" : ($lain->NamaKategori !== null ? " (kategori {$lain->NamaKategori})" : '');
+
                 throw new PelanggaranAturanBisnis(
                     'OpnameAktifSudahAda',
-                    "Stok opname {$lain->Nomor} masih berjalan di {$gudang->nama}".($lain->NamaKategori !== null ? " (kategori {$lain->NamaKategori})" : '').'. Selesaikan atau batalkan dulu.',
+                    "Stok opname {$lain->Nomor} masih berjalan di {$gudang->nama}{$cakupanLain}. Selesaikan atau batalkan dulu.",
                     'UuidGudang',
                 );
             }
         }
 
-        $idProdukKategori = $kategori === null ? null : $this->kategori->AmbilIdProduk($kategori['Id']);
         $tanggal = $this->pemeriksaLokasi->HariIni($gudang->idOutlet);
         $saldo = SaldoStok::query()
             ->where('IdGudang', $gudang->id)
-            ->when($idProdukKategori !== null, fn ($k) => $k->whereIn('IdProduk', $idProdukKategori === [] ? [0] : $idProdukKategori))
+            ->when($idProdukCakupan !== null, fn ($k) => $k->whereIn('IdProduk', $idProdukCakupan === [] ? [0] : $idProdukCakupan))
             ->orderBy('IdProduk')
             ->sharedLock()
             ->get()
@@ -123,6 +151,8 @@ final class MulaiStokOpname
             'IdOutlet' => $gudang->idOutlet,
             'IdKategori' => $kategori['Id'] ?? null,
             'NamaKategori' => $kategori === null ? null : mb_substr($kategori['Nama'], 0, 150),
+            'IdRak' => $rak?->Id,
+            'NamaRak' => $rak === null ? null : mb_substr($rak->Nama, 0, 130),
             'HitungButa' => $hitungButa,
             'Status' => StatusStokOpname::Berlangsung,
             'TanggalSnapshot' => $tanggal->format('Y-m-d'),
@@ -201,10 +231,42 @@ final class MulaiStokOpname
             'IdGudang' => $gudang->id,
             'NamaGudang' => $gudang->nama,
             'Kategori' => $opname->NamaKategori,
+            'Rak' => $opname->NamaRak,
             'HitungButa' => $hitungButa,
             'JumlahBaris' => $opname->JumlahBaris,
         ], idPengguna: $idPengguna);
 
         return $opname;
+    }
+
+    /**
+     * Cakupan produk opname aktif: null = seluruh produk lokasi, selain itu daftar Id produk (kategori atau rak).
+     *
+     * @return array<int>|null
+     */
+    private function AmbilCakupan(StokOpname $o): ?array
+    {
+        if ($o->IdRak !== null) {
+            return array_map('intval', ProdukRak::query()->where('IdRak', $o->IdRak)->pluck('IdProduk')->all());
+        }
+
+        if ($o->IdKategori !== null) {
+            return $this->kategori->AmbilIdProduk($o->IdKategori);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<int>|null  $a
+     * @param  array<int>|null  $b
+     */
+    private function CekBeririsan(?array $a, ?array $b): bool
+    {
+        if ($a === null || $b === null) {
+            return true;
+        }
+
+        return array_intersect($a, $b) !== [];
     }
 }

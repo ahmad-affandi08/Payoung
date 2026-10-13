@@ -164,6 +164,8 @@ export type BarisDaftarStokOpname = {
     NamaGudang: string;
     NamaOutlet: string | null;
     NamaKategori: string | null;
+    /** F-05c: opname per rak; null = tidak dibatasi rak. */
+    NamaRak: string | null;
     HitungButa: boolean;
     Status: StatusStokOpname;
     LabelStatus: string;
@@ -172,10 +174,13 @@ export type BarisDaftarStokOpname = {
     TotalNilaiLebih: string;
     TotalNilaiKurang: string;
 };
+export type OpsiRakOpname = { Uuid: string; UuidGudang: string; Kode: string; Nama: string; JumlahProduk: number };
 export type PropsDaftarStokOpname = {
     Opname: HasilTabel<BarisDaftarStokOpname>;
     OpsiGudang: OpsiGudang[];
     OpsiKategori: { Uuid: string; Nama: string; Jalur: string }[];
+    /** Rak aktif berisi produk (F-05c), dipilih setelah lokasi stok. */
+    OpsiRak: OpsiRakOpname[];
     OpsiStatus: OpsiStatus<StatusStokOpname>;
     Izin: IzinDokumenPersediaan;
 };
@@ -188,6 +193,9 @@ export type BarisStokOpname = ProdukBarisDokumen & {
     /** null = disembunyikan (hitung buta selama berlangsung). */
     JumlahSistem: string | null;
     JumlahFisik: string | null;
+    /** F-05c: siapa yang menghitung baris ini dan kapan (null = belum dihitung). */
+    DihitungOleh: string | null;
+    DihitungPada: string | null;
     MutasiSelamaOpname: string | null;
     Selisih: string | null;
     NilaiSelisih: string | null;
@@ -202,6 +210,7 @@ export type PropsDetailStokOpname = {
         NamaGudang: string;
         NamaOutlet: string | null;
         NamaKategori: string | null;
+        NamaRak: string | null;
         HitungButa: boolean;
         SistemTersembunyi: boolean;
         TanggalSnapshot: string;
@@ -219,6 +228,8 @@ export type PropsDetailStokOpname = {
         DisetujuiPada: string | null;
     };
     Baris: BarisStokOpname[];
+    /** Ringkasan per penghitung (F-05c): baris yang dihitung tiap orang. */
+    Penghitung: { Nama: string; JumlahBaris: number; TerakhirPada: string | null }[];
     Jurnal: JurnalDokumenPersediaan[];
     Riwayat: RiwayatDokumenPersediaan[];
     Tindakan: { Hitung: boolean; Ajukan: boolean; Kembalikan: boolean; Setujui: boolean; Batalkan: boolean };
@@ -231,6 +242,34 @@ export type MasukanHitungOpname = {
     NomorBatch: string | null;
     TanggalKedaluwarsa: string | null;
     NomorSeri: string | null;
+};
+
+// ---- Rak gudang (F-05c INV-07) ----
+export type BarisRakGudang = {
+    Uuid: string;
+    UuidGudang: string;
+    NamaGudang: string;
+    NamaOutlet: string | null;
+    Kode: string;
+    Nama: string;
+    Urutan: number;
+    Aktif: boolean;
+    JumlahProduk: number;
+    /** Nomor opname per rak yang sedang berjalan; null = tidak ada. */
+    OpnameBerjalan: string | null;
+};
+export type PropsDaftarRakGudang = {
+    Rak: BarisRakGudang[];
+    OpsiGudang: OpsiGudang[];
+    Saring: { Gudang: string };
+    Izin: IzinDokumenPersediaan;
+};
+export type BarisProdukRak = { Uuid: string; Nama: string; Sku: string | null; SimbolSatuan: string };
+export type PropsDetailRakGudang = {
+    Produk: HasilTabel<BarisProdukRak>;
+    Rak: BarisRakGudang | null;
+    OpsiKategori: { Uuid: string; Nama: string; Jalur: string }[];
+    Izin: IzinDokumenPersediaan;
 };
 
 // ---- Penyesuaian ----

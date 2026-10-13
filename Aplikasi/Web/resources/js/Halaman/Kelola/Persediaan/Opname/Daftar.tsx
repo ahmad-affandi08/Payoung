@@ -56,7 +56,7 @@ const kolom: KolomTabel<BarisDaftarStokOpname>[] = [
             <>
                 <span className="block break-words text-teks-utama">{o.NamaGudang}</span>
                 <span className="block text-keterangan text-teks-sekunder">
-                    {o.NamaKategori ? `Kategori ${o.NamaKategori}` : 'Seluruh produk'}
+                    {o.NamaRak ? `Rak ${o.NamaRak}` : o.NamaKategori ? `Kategori ${o.NamaKategori}` : 'Seluruh produk'}
                     {o.NamaOutlet ? ` | ${o.NamaOutlet}` : ''}
                 </span>
             </>
@@ -92,6 +92,7 @@ export default function HalamanDaftarStokOpname({
     Opname,
     OpsiGudang,
     OpsiKategori,
+    OpsiRak,
     OpsiStatus,
     Izin,
 }: PropsDaftarStokOpname) {
@@ -101,6 +102,7 @@ export default function HalamanDaftarStokOpname({
     const [uuid] = useState(() => BuatUlid());
     const [gudang, AturGudang] = useState('');
     const [kategori, AturKategori] = useState('');
+    const [rak, AturRak] = useState('');
     const [buta, AturButa] = useState(false);
     const [catatan, AturCatatan] = useState('');
     const [periksa, AturPeriksa] = useState(false);
@@ -119,6 +121,7 @@ export default function HalamanDaftarStokOpname({
             opsi: OpsiGudang.map((g) => ({ nilai: g.Uuid, label: FormatLabelGudang(g) })),
         },
     ];
+    const opsiRakLokasi = OpsiRak.filter((r) => r.UuidGudang === gudang);
     const tombolMulai = Izin.Kelola ? <Tombol onClick={() => AturBuka(true)}>Mulai stok opname</Tombol> : null;
 
     const Mulai = () => {
@@ -134,6 +137,7 @@ export default function HalamanDaftarStokOpname({
                 Uuid: uuid,
                 UuidGudang: gudang,
                 UuidKategori: kategori === '' ? null : kategori,
+                UuidRak: rak === '' ? null : rak,
                 HitungButa: buta,
                 Catatan: catatan.trim() === '' ? null : catatan.trim(),
             },
@@ -157,7 +161,7 @@ export default function HalamanDaftarStokOpname({
                 sumber={{ mode: 'server', alamat: AlamatOpname, awal: Opname }}
                 ambilIdBaris={(o) => o.Uuid}
                 urutBawaan="-TanggalSnapshot"
-                cari="Cari nomor, catatan, atau kategori"
+                cari="Cari nomor, catatan, kategori, atau rak"
                 saring={saring}
                 alamatDetail={(o) => `${AlamatOpname}/${o.Uuid}`}
                 kosong={{
@@ -175,7 +179,7 @@ export default function HalamanDaftarStokOpname({
                     saatTutup={() => AturBuka(false)}
                 >
                     <div className="flex flex-col gap-3">
-                        <DaftarGalatServer galat={galat} kecuali={['Umum', 'UuidGudang', 'UuidKategori']} />
+                        <DaftarGalatServer galat={galat} kecuali={['Umum', 'UuidGudang', 'UuidKategori', 'UuidRak']} />
                         <BidangOutlet
                             label="Lokasi stok"
                             nilai={gudang}
@@ -184,7 +188,10 @@ export default function HalamanDaftarStokOpname({
                                 Nilai: g.Uuid,
                                 Label: FormatLabelGudang(g),
                             }))}
-                            saatBerubah={AturGudang}
+                            saatBerubah={(nilai) => {
+                                AturGudang(nilai);
+                                AturRak('');
+                            }}
                             galat={galat.UuidGudang ?? (periksa && gudang === '' ? 'Pilih lokasi stok.' : undefined)}
                         />
                         <BidangPilihan
@@ -192,9 +199,34 @@ export default function HalamanDaftarStokOpname({
                             nilai={kategori}
                             kosong="Seluruh produk"
                             opsi={OpsiKategori.map((k) => ({ Nilai: k.Uuid, Label: k.Jalur }))}
-                            saatBerubah={AturKategori}
+                            saatBerubah={(nilai) => {
+                                AturKategori(nilai);
+                                AturRak('');
+                            }}
                             galat={galat.UuidKategori}
                         />
+                        {opsiRakLokasi.length > 0 ? (
+                            <BidangPilihan
+                                label="Rak (opsional)"
+                                nilai={rak}
+                                kosong="Semua rak"
+                                opsi={opsiRakLokasi.map((r) => ({
+                                    Nilai: r.Uuid,
+                                    Label: `${r.Kode} | ${r.Nama} (${String(r.JumlahProduk)} produk)`,
+                                }))}
+                                saatBerubah={(nilai) => {
+                                    AturRak(nilai);
+                                    AturKategori('');
+                                }}
+                                galat={galat.UuidRak}
+                            />
+                        ) : null}
+                        {opsiRakLokasi.length > 0 ? (
+                            <p className="-mt-2 text-keterangan text-teks-sekunder">
+                                Rak membatasi hitung ke produk di rak itu, jadi beberapa orang bisa menghitung rak
+                                berbeda berbarengan.
+                            </p>
+                        ) : null}
                         <KotakCentang
                             label="Hitung buta: penghitung tidak melihat jumlah sistem"
                             nilai={buta}

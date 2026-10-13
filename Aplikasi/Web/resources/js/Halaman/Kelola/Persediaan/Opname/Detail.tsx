@@ -109,6 +109,13 @@ function KolomLembar(sembunyi: boolean): KolomTabel<BarisStokOpname>[] {
                     ? 'Belum dihitung'
                     : FormatJumlahStok(row.original.JumlahFisik, row.original.SimbolSatuan),
         },
+        {
+            id: 'DihitungOleh',
+            header: 'Dihitung oleh',
+            enableSorting: false,
+            meta: { label: 'Dihitung oleh', prioritas: 'rendah' },
+            cell: ({ row }) => row.original.DihitungOleh ?? '—',
+        },
     ];
 
     if (sembunyi) {
@@ -156,6 +163,7 @@ function KolomLembar(sembunyi: boolean): KolomTabel<BarisStokOpname>[] {
 export default function HalamanDetailStokOpname({
     Opname,
     Baris,
+    Penghitung,
     Jurnal,
     Riwayat,
     Tindakan,
@@ -356,7 +364,11 @@ export default function HalamanDetailStokOpname({
                         ) : null}
                     </Keterangan>
                     <Keterangan label="Cakupan">
-                        {Opname.NamaKategori ? `Kategori ${Opname.NamaKategori}` : 'Seluruh produk'}
+                        {Opname.NamaRak
+                            ? `Rak ${Opname.NamaRak}`
+                            : Opname.NamaKategori
+                              ? `Kategori ${Opname.NamaKategori}`
+                              : 'Seluruh produk'}
                     </Keterangan>
                     <Keterangan label="Snapshot">{FormatTanggalWaktu(Opname.SnapshotPada)}</Keterangan>
                     <Keterangan label="Dihitung">
@@ -379,6 +391,22 @@ export default function HalamanDetailStokOpname({
                     {Opname.Catatan ? <Keterangan label="Catatan">{Opname.Catatan}</Keterangan> : null}
                 </dl>
             </Panel>
+
+            {Penghitung.length > 0 ? (
+                <Panel judul="Penghitung" idJudul="judul-penghitung-opname" tingkat="h3">
+                    <ul aria-label="Ringkasan per penghitung" className="flex flex-col divide-y divide-garis text-isi">
+                        {Penghitung.map((p) => (
+                            <li key={p.Nama} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5">
+                                <span className="font-semibold text-teks-utama">{p.Nama}</span>
+                                <span className="text-teks-sekunder tabular-nums">
+                                    {p.JumlahBaris.toLocaleString('id-ID')} baris
+                                    {p.TerakhirPada ? ` | terakhir ${FormatTanggalWaktu(p.TerakhirPada)}` : ''}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </Panel>
+            ) : null}
 
             {Tindakan.Hitung ? (
                 <form onSubmit={Simpan} noValidate aria-label="Lembar hitung" className="flex flex-col gap-4">
