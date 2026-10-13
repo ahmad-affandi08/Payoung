@@ -120,6 +120,7 @@ export default function HalamanDaftarJurnal({ Jurnal, OpsiJenisSumber, Izin }: P
                 cari="Cari nomor jurnal, nomor dokumen, atau keterangan"
                 saring={saring}
                 alamatDetail={(jurnal) => `${alamat}/${jurnal.Uuid}`}
+                ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                 kosong={{
                     ilustrasi: true,
                     judul: 'Belum ada jurnal. Jurnal terbentuk otomatis saat stok awal diposting.',

@@ -39,6 +39,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::LaporanKeuanganL
     // F-15: tutup buku (daftar periode & status kunci).
     Route::get('/akuntansi/tutup-buku', [TutupBukuKontroler::class, 'Tampilkan'])->name('kelola.akuntansi.tutup-buku');
     Route::get('/akuntansi/jurnal', [JurnalKontroler::class, 'Daftar'])->name('kelola.akuntansi.jurnal.daftar');
+    // FIN-12 (F28): ekspor jurnal per baris untuk software akuntansi lain (Excel/CSV/cetak, cari & saringan tabel ikut).
+    Route::get('/akuntansi/jurnal/ekspor', [JurnalKontroler::class, 'Ekspor'])->middleware(EksporDiLatarBelakang::class)->name('kelola.akuntansi.jurnal.ekspor');
     Route::get('/akuntansi/jurnal/{jurnal}', [JurnalKontroler::class, 'Detail'])->where('jurnal', $ulid)->name('kelola.akuntansi.jurnal.detail');
 
     // FIN-05 (D-131): jurnal umum manual (lihat dokumen & lampirannya; catat/balik di grup `akuntansi.kelola`).
