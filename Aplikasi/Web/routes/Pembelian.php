@@ -8,6 +8,7 @@ use App\Http\Kontroler\Kelola\Pembelian\FakturPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\HutangKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ImporPemasokKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\KonsinyasiKontroler;
+use App\Http\Kontroler\Kelola\Pembelian\NotaDebitKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PemasokKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PenerimaanBarangKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PengaturanPembelianKontroler;
@@ -102,6 +103,13 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
     Route::post('/biaya-tambahan', [BiayaTambahanKontroler::class, 'Simpan'])->name('kelola.pembelian.biaya-tambahan.simpan');
     Route::get('/biaya-tambahan/{biaya}', [BiayaTambahanKontroler::class, 'Detail'])->where('biaya', $ulid)->name('kelola.pembelian.biaya-tambahan.detail');
     Route::post('/biaya-tambahan/{biaya}/batalkan', [BiayaTambahanKontroler::class, 'Batalkan'])->where('biaya', $ulid)->name('kelola.pembelian.biaya-tambahan.batalkan');
+
+    // v6.07 (F-04 BR-04.10): nota debit pembelian (selisih harga / klaim pemasok tanpa barang kembali) atas faktur.
+    Route::get('/nota-debit', [NotaDebitKontroler::class, 'Daftar'])->name('kelola.pembelian.nota-debit.daftar');
+    Route::get('/nota-debit/buat', [NotaDebitKontroler::class, 'Buat'])->name('kelola.pembelian.nota-debit.buat');
+    Route::post('/nota-debit', [NotaDebitKontroler::class, 'Simpan'])->name('kelola.pembelian.nota-debit.simpan');
+    Route::get('/nota-debit/{nota}', [NotaDebitKontroler::class, 'Detail'])->where('nota', $ulid)->name('kelola.pembelian.nota-debit.detail');
+    Route::post('/nota-debit/{nota}/batalkan', [NotaDebitKontroler::class, 'Batalkan'])->where('nota', $ulid)->name('kelola.pembelian.nota-debit.batalkan');
 
     // F-05i konsinyasi: penitip & hutang, dokumen titipan masuk/retur, rincian penitip, setoran.
     Route::get('/konsinyasi', [KonsinyasiKontroler::class, 'Daftar'])->name('kelola.pembelian.konsinyasi.daftar');

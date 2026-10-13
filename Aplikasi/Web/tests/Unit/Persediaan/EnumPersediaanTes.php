@@ -100,6 +100,8 @@ describe('F-05a enum persediaan (DesainF05a B.4)', function (): void {
             // F-05i (v3.40): dokumen titipan kini punya halaman rincian; v3.41 biaya tambahan pembelian.
             ->and(JenisReferensiMutasi::Konsinyasi->BuatTautan($uuid))->toBe('/kelola/pembelian/konsinyasi/dokumen/'.$uuid)
             ->and(JenisReferensiMutasi::BiayaTambahanPembelian->BuatTautan($uuid))->toBe('/kelola/pembelian/biaya-tambahan/'.$uuid)
+            ->and(JenisReferensiMutasi::NotaDebitPembelian->BuatTautan($uuid))->toBe('/kelola/pembelian/nota-debit/'.$uuid)
+            ->and(JenisSumberJurnal::NotaDebitPembelian->BuatTautan($uuid))->toBe('/kelola/pembelian/nota-debit/'.$uuid)
             ->and(JenisSumberJurnal::ReturPenjualan->BuatTautan($uuid))->toBe("/kelola/penjualan/retur/{$uuid}")
             ->and(JenisSumberJurnal::Penjualan->BuatTautan($uuid))->toBe("/kelola/penjualan/{$uuid}")
             ->and(JenisSumberJurnal::StokAwal->BuatTautan($uuid))->toBe("/kelola/persediaan/stok-awal/{$uuid}")

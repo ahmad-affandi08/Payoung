@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -109,6 +110,7 @@ export default function HalamanDetailFaktur({
     Penerimaan,
     Pembayaran,
     Retur,
+    NotaDebit = [],
     Jurnal,
     Riwayat,
     Izin,
@@ -135,7 +137,7 @@ export default function HalamanDetailFaktur({
                 </Pemberitahuan>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
+            <AksiHalaman>
                 {Tindakan.Bayar && f.Pemasok ? (
                     <Button asChild>
                         <Link href={`${AlamatPembelian}/pembayaran/buat?pemasok=${f.Pemasok.Uuid}&faktur=${f.Uuid}`}>
@@ -143,12 +145,17 @@ export default function HalamanDetailFaktur({
                         </Link>
                     </Button>
                 ) : null}
+                {Tindakan.NotaDebit ? (
+                    <Button asChild variant="outline">
+                        <Link href={`${AlamatPembelian}/nota-debit/buat?faktur=${f.Uuid}`}>Buat nota debit</Link>
+                    </Button>
+                ) : null}
                 {Tindakan.Batalkan ? (
                     <Button variant="destructive" onClick={() => AturBatalkan(true)}>
                         Batalkan faktur
                     </Button>
                 ) : null}
-            </div>
+            </AksiHalaman>
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">
@@ -194,7 +201,7 @@ export default function HalamanDetailFaktur({
                         },
                         { label: 'Total faktur', nilai: f.Total, tebal: true },
                         { label: 'Sudah dibayar', nilai: f.JumlahDibayar },
-                        { label: 'Dikurangi retur', nilai: f.JumlahRetur },
+                        { label: 'Dikurangi retur & nota debit', nilai: f.JumlahRetur },
                         { label: 'Sisa hutang', nilai: f.Sisa, tebal: true },
                     ]}
                 />
@@ -217,6 +224,14 @@ export default function HalamanDetailFaktur({
                     judul="Retur"
                     alamat={`${AlamatPembelian}/retur`}
                     dokumen={Retur.map((r) => ({ ...r, Nilai: r.Total }))}
+                    kosong=""
+                />
+            ) : null}
+            {NotaDebit.length > 0 ? (
+                <DaftarDokumenTerkait
+                    judul="Nota debit"
+                    alamat={`${AlamatPembelian}/nota-debit`}
+                    dokumen={NotaDebit.map((n) => ({ ...n, Nilai: n.Total }))}
                     kosong=""
                 />
             ) : null}

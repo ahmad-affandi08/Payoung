@@ -16,6 +16,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pembelian\Model\FakturPembelian;
+use App\Domain\Pembelian\Model\NotaDebitPembelian;
 use App\Domain\Pembelian\Model\PembayaranHutang;
 use App\Domain\Pembelian\Model\PembayaranHutangAlokasi;
 use App\Domain\Pembelian\Model\ReturPembelian;
@@ -83,6 +84,11 @@ final class BatalkanPembayaranHutang
             // pembayaran dulu membuat hutang kembali terbuka padahal uang refund sudah diterima.
             if (ReturPembelian::query()->whereIn('IdFakturPembelian', $faktur->keys()->all())->where('Status', StatusDokumenTerposting::Diposting->value)->where('NilaiRefund', '>', 0)->exists()) {
                 throw new PelanggaranAturanBisnis('AdaReturBerefund', 'Faktur ini punya retur dengan pengembalian uang dari pemasok. Batalkan returnya dulu, baru pembayaran ini.');
+            }
+
+            // Nota debit dengan pengembalian uang bernasib sama: hutang faktur sudah dipotong dengan memperhitungkan pembayaran ini.
+            if (NotaDebitPembelian::query()->whereIn('IdFakturPembelian', $faktur->keys()->all())->where('Status', StatusDokumenTerposting::Diposting->value)->where('NilaiRefund', '>', 0)->exists()) {
+                throw new PelanggaranAturanBisnis('AdaNotaDebitBerefund', 'Faktur ini punya nota debit dengan pengembalian uang dari pemasok. Batalkan nota debitnya dulu, baru pembayaran ini.');
             }
 
             foreach ($alokasi as $a) {

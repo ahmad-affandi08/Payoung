@@ -9,6 +9,7 @@ use App\Domain\Pembelian\Aksi\BatalkanFakturPembelian;
 use App\Domain\Pembelian\Aksi\SimpanFakturPembelian;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Kueri\DaftarDokumenPembelian;
+use App\Domain\Pembelian\Kueri\DaftarNotaDebit;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
 use App\Domain\Pembelian\Layanan\PenyimpanLampiranPembelian;
@@ -76,7 +77,7 @@ final class FakturPembelianKontroler extends DasarPembelianKontroler
         return to_route('kelola.pembelian.faktur.detail', ['faktur' => $faktur->Uuid])->with('Kilat', "{$faktur->Nomor} diposting. Hutang usaha tercatat, jatuh tempo {$faktur->JatuhTempo->format('d/m/Y')}.");
     }
 
-    public function Detail(string $faktur, DetailPembelian $detail): Response
+    public function Detail(string $faktur, DetailPembelian $detail, DaftarNotaDebit $notaDebit): Response
     {
         $f = $this->CariDokumen(FakturPembelian::class, $faktur);
         $izin = $this->AmbilIzinPembelian();
@@ -84,10 +85,12 @@ final class FakturPembelianKontroler extends DasarPembelianKontroler
 
         return Inertia::render('Kelola/Pembelian/Faktur/Detail', [
             ...$detail->Faktur($f),
+            'NotaDebit' => $notaDebit->UntukFaktur($f),
             'Izin' => $izin,
             'Tindakan' => [
                 'Bayar' => $izin['Kelola'] && $terbuka && ! $f->BelanjaStok,
                 'Batalkan' => $izin['Kelola'] && $f->Status === StatusFakturPembelian::BelumDibayar && ! $f->BelanjaStok,
+                'NotaDebit' => $izin['Kelola'] && $f->Status !== StatusFakturPembelian::Dibatalkan,
             ],
         ]);
     }

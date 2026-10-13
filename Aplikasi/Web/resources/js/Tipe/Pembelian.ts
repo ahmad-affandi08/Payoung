@@ -466,10 +466,12 @@ export type PropsDetailFaktur = {
     Penerimaan: (RingkasDokumen & { TotalNilai: string })[];
     Pembayaran: (RingkasDokumen & { Jumlah: string })[];
     Retur: (RingkasDokumen & { Total: string })[];
+    /** v6.07: nota debit aktif & riwayatnya atas faktur ini. */
+    NotaDebit?: (RingkasDokumen & { Total: string; LabelJenis: string; NilaiRefund: string })[];
     Jurnal: JurnalDokumen[];
     Riwayat: RiwayatDokumen[];
     Izin: IzinPembelian;
-    Tindakan: { Bayar: boolean; Batalkan: boolean };
+    Tindakan: { Bayar: boolean; Batalkan: boolean; NotaDebit?: boolean };
 };
 
 /* Pembayaran */
@@ -759,6 +761,74 @@ export type PropsDetailBiayaTambahan = {
         KePersediaan: string;
         KeHpp: string;
     }[];
+    Jurnal: JurnalSetoranKonsinyasi[];
+    Izin: IzinPembelian;
+    Tindakan: { Batalkan: boolean };
+};
+
+/* v6.07 (F-04 BR-04.10): nota debit pembelian. */
+export type JenisNotaDebit = 'SelisihHarga' | 'DiskonSusulan' | 'KlaimKerusakan' | 'KlaimKekurangan' | 'Lainnya';
+export type BarisNotaDebit = {
+    Uuid: string;
+    Nomor: string;
+    NomorNotaPemasok: string | null;
+    Tanggal: string;
+    Jenis: JenisNotaDebit;
+    LabelJenis: string;
+    NomorFaktur: string;
+    NamaPemasok: string | null;
+    Total: string;
+    NilaiRefund: string;
+    Status: StatusDokumenPembelian;
+};
+export type PropsDaftarNotaDebit = {
+    Nota: HasilTabel<BarisNotaDebit>;
+    OpsiJenis: Opsi<JenisNotaDebit>[];
+    OpsiStatus: Opsi<StatusDokumenPembelian>[];
+    Izin: IzinPembelian;
+};
+export type PropsBuatNotaDebit = {
+    Faktur: {
+        Uuid: string;
+        Nomor: string;
+        NomorFakturPemasok: string;
+        Tanggal: string;
+        Status: string;
+        Total: string;
+        SisaHutang: string;
+        PpnDikreditkan: boolean;
+        NamaPemasok: string | null;
+        Baris: { Id: number; NamaProduk: string; Nilai: string; SisaKlaim: string }[];
+    };
+    BatasPersetujuan: string;
+    OpsiJenis: Opsi<JenisNotaDebit>[];
+    OpsiAkun: OpsiAkunKas[];
+    HariIni: string;
+    BolehMelebihiBatas: boolean;
+};
+export type PropsDetailNotaDebit = {
+    Nota: {
+        Uuid: string;
+        Nomor: string;
+        NomorNotaPemasok: string | null;
+        Tanggal: string;
+        Jenis: JenisNotaDebit;
+        LabelJenis: string;
+        NilaiKlaim: string;
+        Pajak: string;
+        Total: string;
+        PotongHutang: string;
+        NilaiRefund: string;
+        KePersediaan: string;
+        KeHpp: string;
+        Alasan: string;
+        Status: StatusDokumenPembelian;
+        AlasanBatal: string | null;
+        NamaPemasok: string | null;
+        UuidFaktur: string | null;
+        NomorFaktur: string;
+    };
+    Baris: { Id: number; NamaProduk: string; NilaiKlaim: string; Pajak: string; KePersediaan: string; KeHpp: string }[];
     Jurnal: JurnalSetoranKonsinyasi[];
     Izin: IzinPembelian;
     Tindakan: { Batalkan: boolean };

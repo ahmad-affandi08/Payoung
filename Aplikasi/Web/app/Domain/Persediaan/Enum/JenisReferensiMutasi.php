@@ -31,6 +31,8 @@ enum JenisReferensiMutasi: string
     case ReturGrosir = 'ReturGrosir';
     // v3.41 (INV-14): biaya tambahan pembelian dari pihak ketiga (ekspedisi, bea masuk) yang menilai ulang stok.
     case BiayaTambahanPembelian = 'BiayaTambahanPembelian';
+    // v6.07 (F-04 BR-04.10): nota debit pembelian menurunkan nilai stok yang masih ada lewat penilaian ulang.
+    case NotaDebitPembelian = 'NotaDebitPembelian';
 
     public function AmbilLabel(): string
     {
@@ -50,6 +52,7 @@ enum JenisReferensiMutasi: string
             self::SuratJalan => 'Surat jalan grosir',
             self::ReturGrosir => 'Retur grosir',
             self::BiayaTambahanPembelian => 'Biaya tambahan pembelian',
+            self::NotaDebitPembelian => 'Nota debit pembelian',
         };
     }
 
@@ -81,6 +84,7 @@ enum JenisReferensiMutasi: string
             // F-05i (v3.40) & v3.41.
             self::Konsinyasi => '/kelola/pembelian/konsinyasi/dokumen/'.$uuid,
             self::BiayaTambahanPembelian => '/kelola/pembelian/biaya-tambahan/'.$uuid,
+            self::NotaDebitPembelian => '/kelola/pembelian/nota-debit/'.$uuid,
         };
     }
 }

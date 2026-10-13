@@ -83,6 +83,9 @@ enum JenisSumberJurnal: string
     // v3.41 (INV-14): biaya tambahan pembelian pihak ketiga (Dr persediaan/HPP, Cr kas/bank) dan pembatalannya.
     case BiayaTambahanPembelian = 'BiayaTambahanPembelian';
 
+    // v6.07 (F-04 BR-04.10, J-04.7): nota debit pembelian (Dr hutang/kas-bank, Cr persediaan/HPP/PPN masukan) dan pembatalannya.
+    case NotaDebitPembelian = 'NotaDebitPembelian';
+
     // v3.42 (F-12): pencairan giro/cek mundur ke rekening bank (sumber = baris `Giro`).
     case Giro = 'Giro';
 
@@ -129,6 +132,7 @@ enum JenisSumberJurnal: string
             self::PenyusutanAset => 'Penyusutan aset tetap',
             self::PembayaranKonsinyasi => 'Setoran konsinyasi',
             self::BiayaTambahanPembelian => 'Biaya tambahan pembelian',
+            self::NotaDebitPembelian => 'Nota debit pembelian',
             self::Giro => 'Pencairan giro',
             self::JurnalUmum => 'Jurnal umum',
         };
@@ -178,6 +182,7 @@ enum JenisSumberJurnal: string
             self::AsetTetap, self::PenyusutanAset => '/kelola/akuntansi/aset-tetap/'.$uuid,
             self::PembayaranKonsinyasi => '/kelola/pembelian/konsinyasi/setoran/'.$uuid,
             self::BiayaTambahanPembelian => '/kelola/pembelian/biaya-tambahan/'.$uuid,
+            self::NotaDebitPembelian => '/kelola/pembelian/nota-debit/'.$uuid,
             self::Giro => '/kelola/akuntansi/giro?cari='.$uuid,
             self::JurnalUmum => '/kelola/akuntansi/jurnal-umum/'.$uuid,
         };

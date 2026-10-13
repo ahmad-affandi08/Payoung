@@ -7,12 +7,14 @@ namespace App\Domain\Pembelian\Aksi;
 use App\Domain\Akuntansi\Aksi\BalikkanJurnal;
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
+use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Model\FakturPembelian;
+use App\Domain\Pembelian\Model\NotaDebitPembelian;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use Illuminate\Support\Facades\DB;
 
@@ -34,7 +36,7 @@ final class BatalkanFakturPembelian
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis AlasanTidakValid, BagianBelanjaStok, SudahDibayar, SudahDiretur
+     * @throws PelanggaranAturanBisnis AlasanTidakValid, BagianBelanjaStok, SudahDibayar, AdaNotaDebit, SudahDiretur
      */
     public function Jalankan(FakturPembelian $faktur, string $alasan, int $idPengguna): FakturPembelian
     {
@@ -58,6 +60,10 @@ final class BatalkanFakturPembelian
 
             if (! Uang::Dari($terkunci->JumlahDibayar)->BernilaiNol()) {
                 throw new PelanggaranAturanBisnis('SudahDibayar', 'Faktur yang sudah dibayar tidak bisa dibatalkan. Batalkan pembayarannya dulu.');
+            }
+
+            if (NotaDebitPembelian::query()->where('IdFakturPembelian', $terkunci->Id)->where('Status', StatusDokumenTerposting::Diposting->value)->exists()) {
+                throw new PelanggaranAturanBisnis('AdaNotaDebit', 'Faktur yang sudah punya nota debit tidak bisa dibatalkan. Batalkan nota debitnya dulu.');
             }
 
             if (! Uang::Dari($terkunci->JumlahRetur)->BernilaiNol()) {
