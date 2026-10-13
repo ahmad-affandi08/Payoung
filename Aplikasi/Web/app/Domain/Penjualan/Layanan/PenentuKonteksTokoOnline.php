@@ -7,6 +7,7 @@ namespace App\Domain\Penjualan\Layanan;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
+use App\Domain\Organisasi\Layanan\JamOperasionalOutlet;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Penjualan\Data\DataKonteksPesanSendiri;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
@@ -43,7 +44,8 @@ final class PenentuKonteksTokoOnline
         $pengaturan = PengaturanTokoOnline::query()->first();
         $aktif = $pengaturan?->Aktif === true
             && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)
-            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
+            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant))
+            && JamOperasionalOutlet::CekBuka($outlet->JamOperasional, now($outlet->ZonaWaktu));
 
         return new DataKonteksPesanSendiri(
             $idTenant, $outlet->Id, $outlet->Kode, $outlet->Nama, $outlet->ZonaWaktu,
@@ -51,12 +53,29 @@ final class PenentuKonteksTokoOnline
         );
     }
 
+    /**
+     * Kalimat "Buka lagi …" bila outlet sedang di luar jam operasionalnya; null bila jam tidak diatur atau outlet buka.
+     */
+    public function AmbilPesanTutupJam(int $idOutlet): ?string
+    {
+        $outlet = Outlet::query()->find($idOutlet);
+
+        return $outlet === null ? null : JamOperasionalOutlet::SusunPesanTutup($outlet->JamOperasional, now($outlet->ZonaWaktu));
+    }
+
     public function WajibAktif(?string $uuidOutlet = null): DataKonteksPesanSendiri
     {
         $konteks = $this->Cari($uuidOutlet);
 
         if ($konteks === null || ! $konteks->aktif) {
-            throw new PelanggaranAturanBisnis('TokoOnlineTidakAktif', 'Toko online sedang tidak menerima pesanan.', 'Umum', 409);
+            $pesanJam = $konteks === null ? null : $this->AmbilPesanTutupJam($konteks->idOutlet);
+
+            throw new PelanggaranAturanBisnis(
+                $pesanJam === null ? 'TokoOnlineTidakAktif' : 'OutletTutup',
+                $pesanJam === null ? 'Toko online sedang tidak menerima pesanan.' : "Outlet sedang di luar jam operasional. {$pesanJam}",
+                'Umum',
+                409,
+            );
         }
 
         return $konteks;

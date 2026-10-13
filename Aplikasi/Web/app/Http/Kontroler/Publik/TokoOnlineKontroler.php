@@ -82,7 +82,8 @@ final class TokoOnlineKontroler extends Kontroler
                 'Pemenuhan' => ['AmbilSendiri' => $bisaAmbil, 'Kirim' => $bisaKirim],
                 'Pembayaran' => ['BayarSaatAmbil' => $atur->BayarSaatAmbilAktif, 'Cod' => $atur->CodAktif, 'QrisOnline' => $qrisSiap],
                 'MinimalPesanan' => $atur->MinimalPesanan,
-                'PesanTutup' => $atur->PesanTutup,
+                // Pesan tutup manual pemilik lebih dulu; bila tidak ada, kalimat "Buka lagi …" dari jam operasional outlet.
+                'PesanTutup' => $atur->PesanTutup ?? $this->penentu->AmbilPesanTutupJam($k->idOutlet),
                 'Menu' => $k->aktif && ($bisaAmbil || $bisaKirim) ? $menu->Ambil($k->idOutlet, url("/{$slugTenant}/gambar/{uuid}"), KanalPenjualan::Online, true) : ['Kategori' => [], 'Produk' => []],
                 // F-17 bagian 3: akun pembeli opsional. Harga di `Menu` tetap harga umum; harga tier pembeli yang
                 // masuk dihitung server di keranjang/checkout.

@@ -33,6 +33,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $izi
     Route::put('/outlet/{outlet}', [OutletKontroler::class, 'Ubah'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.ubah');
     Route::post('/outlet/{outlet}/arsipkan', [OutletKontroler::class, 'Arsipkan'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.arsipkan');
     Route::post('/outlet/{outlet}/jenis-pesanan', [OutletKontroler::class, 'AturJenisPesanan'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.jenis-pesanan');
+    Route::post('/outlet/{outlet}/jam-operasional', [OutletKontroler::class, 'AturJamOperasional'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.jam-operasional');
     Route::post('/outlet/{outlet}/lokasi-absensi', [OutletKontroler::class, 'AturLokasiAbsensi'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.lokasi-absensi');
     // F-17 bagian 4: kios pesan sendiri outlet (sakelar + tautan rahasia).
     Route::post('/outlet/{outlet}/kios', [OutletKontroler::class, 'AturKios'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.kios');

@@ -9,6 +9,7 @@ import BagianMeja, { type ModeMejaOutlet } from '@/Komponen/Kelola/BagianMeja';
 import FormOutlet from '@/Komponen/Kelola/FormOutlet';
 import JenisPesananOutlet, { type JenisPesananOutletData } from '@/Komponen/Kelola/JenisPesananOutlet';
 import KiosOutlet, { type KiosOutletData } from '@/Komponen/Kelola/KiosOutlet';
+import JamOperasionalOutlet, { type JamOperasionalOutletData } from '@/Komponen/Kelola/JamOperasionalOutlet';
 import LokasiAbsensiOutlet, { type LokasiAbsensiOutletData } from '@/Komponen/Kelola/LokasiAbsensiOutlet';
 import type { PesanSendiriOutlet } from '@/Komponen/Kelola/PesanSendiriMeja';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
@@ -52,6 +53,8 @@ type PropsDetail = {
     PesanSendiri: PesanSendiriOutlet;
     JenisPesanan: JenisPesananOutletData;
     LokasiAbsensi: LokasiAbsensiOutletData;
+    /** F-e: jam operasional per hari; opsional supaya halaman lama tanpa data jam tetap terbuka. */
+    JamOperasional?: JamOperasionalOutletData;
     /** F-17 bagian 4: kios pesan sendiri; opsional supaya halaman lama tanpa data kios tetap terbuka. */
     Kios?: KiosOutletData;
 };
@@ -68,6 +71,7 @@ export default function HalamanDetailOutlet({
     PesanSendiri,
     JenisPesanan,
     LokasiAbsensi,
+    JamOperasional,
     Kios,
 }: PropsDetail) {
     const { props } = usePage<PropsBersamaAplikasi>();
@@ -148,6 +152,14 @@ export default function HalamanDetailOutlet({
                 data={JenisPesanan}
                 bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
             />
+
+            {JamOperasional ? (
+                <JamOperasionalOutlet
+                    alamatOutlet={alamat}
+                    data={JamOperasional}
+                    bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
+                />
+            ) : null}
 
             <LokasiAbsensiOutlet
                 alamatOutlet={alamat}

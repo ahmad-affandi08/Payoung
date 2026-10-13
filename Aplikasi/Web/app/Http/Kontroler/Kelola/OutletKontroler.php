@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola;
 
+use App\Domain\Organisasi\Aksi\AturJamOperasionalOutlet;
 use App\Domain\Organisasi\Aksi\AturJenisPesananOutlet;
 use App\Domain\Organisasi\Aksi\AturKiosOutlet;
 use App\Domain\Organisasi\Aksi\AturLayarAbsensiOutlet;
@@ -18,6 +19,7 @@ use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\JenisPesananOutlet;
 use App\Domain\Organisasi\Kueri\MejaOutlet;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
+use App\Domain\Organisasi\Layanan\JamOperasionalOutlet;
 use App\Domain\Organisasi\Layanan\PenjagaModeMeja;
 use App\Domain\Organisasi\Model\Gudang;
 use App\Domain\Organisasi\Model\Merek;
@@ -28,6 +30,7 @@ use App\Domain\Referensi\Kueri\WilayahKota;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
+use App\Http\Permintaan\Kelola\AturJamOperasionalOutletPermintaan;
 use App\Http\Permintaan\Kelola\AturJenisPesananOutletPermintaan;
 use App\Http\Permintaan\Kelola\AturLokasiAbsensiOutletPermintaan;
 use App\Http\Permintaan\Kelola\AturPesanSendiriOutletPermintaan;
@@ -106,6 +109,16 @@ final class OutletKontroler extends DasarKelolaKontroler
         return back()->with('Kilat', $baris->Lintang === null
             ? "Titik lokasi {$baris->Nama} dihapus. Absen dari HP tidak bisa di outlet ini."
             : "Lokasi absensi {$baris->Nama} disimpan (radius {$baris->RadiusAbsensiMeter} m).");
+    }
+
+    /** F-e: jam operasional per hari (jam lokal outlet); dipakai toko online untuk menutup pesanan di luar jam buka. */
+    public function AturJamOperasional(string $outlet, AturJamOperasionalOutletPermintaan $permintaan, AturJamOperasionalOutlet $atur): RedirectResponse
+    {
+        $baris = $atur->Jalankan($this->CariOutlet($outlet), $permintaan->AmbilJam());
+
+        return back()->with('Kilat', $baris->JamOperasional === null
+            ? "Jam operasional {$baris->Nama} dihapus. Outlet dianggap selalu buka."
+            : "Jam operasional {$baris->Nama} disimpan.");
     }
 
     /** F-18 bagian 4 (D-37): buat (ulang) tautan layar QR absensi outlet; tautan & kode lama langsung mati. */
@@ -189,6 +202,16 @@ final class OutletKontroler extends DasarKelolaKontroler
                 // Layar QR berganti (bukti hadir kedua): tautan rahasia untuk tablet/monitor outlet.
                 'TautanLayar' => is_string($baris->TokenLayarAbsen) ? url('/'.$profil->AmbilSlug($baris->IdTenant)."/layar-absen/{$baris->TokenLayarAbsen}") : null,
                 'WajibQr' => $baris->WajibQrAbsensi,
+            ],
+            // F-e: jam operasional per hari (kosong = tidak diatur, selalu buka).
+            'JamOperasional' => [
+                'Diatur' => $baris->JamOperasional !== null,
+                'Hari' => array_values(array_map(fn (string $nama): array => [
+                    'Nama' => $nama,
+                    'Buka' => $baris->JamOperasional[$nama]['Buka'] ?? null,
+                    'Tutup' => $baris->JamOperasional[$nama]['Tutup'] ?? null,
+                ], JamOperasionalOutlet::HARI)),
+                'ZonaWaktu' => $baris->ZonaWaktu,
             ],
             // F-17: pesan sendiri QR meja (sakelar outlet + fitur paket `kanal.self-order`).
             'PesanSendiri' => [

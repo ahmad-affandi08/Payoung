@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string $JamTutupBuku
  * @property array<string, mixed>|null $ProfilPajak
  * @property array<string, mixed>|null $PengaturanKasir jenis pesanan kasir (v3.51), null = otomatis menurut mode kasir
+ * @property array<string, array{Buka: string, Tutup: string}|null>|null $JamOperasional jam buka per hari (jam lokal), null = tidak diatur (selalu buka)
  * @property StatusOrganisasi $Status
  * @property bool $Kanvas Modul Salesman bagian 3: outlet ini kendaraan kanvas salesman (lokasi stok Toko = kendaraan)
  * @property string|null $NomorKendaraan plat nomor kendaraan kanvas, misal "AD 1234 XY"
@@ -74,6 +75,7 @@ final class Outlet extends ModelDasar
         'JamTutupBuku' => '04:00',
         'ProfilPajak' => null,
         'PengaturanKasir' => null,
+        'JamOperasional' => null,
         'Status' => 'Aktif',
         'Kanvas' => false,
         'NomorKendaraan' => null,
@@ -120,6 +122,7 @@ final class Outlet extends ModelDasar
         return [
             'ProfilPajak' => 'array',
             'PengaturanKasir' => 'array',
+            'JamOperasional' => 'array',
             'Status' => StatusOrganisasi::class,
             'Kanvas' => 'boolean',
             'PesanSendiriAktif' => 'boolean',
