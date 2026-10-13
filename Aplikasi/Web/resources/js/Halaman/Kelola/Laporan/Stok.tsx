@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import { KolomBilangan, KolomUang } from '@/Komponen/Laporan/KolomLaporan';
@@ -6,14 +6,18 @@ import NavigasiTab, { TautanEkspor } from '@/Komponen/Laporan/NavigasiTab';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
+import { Button } from '@/Komponen/Ui/button';
 import { Label } from '@/Komponen/Ui/label';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { BuatUrlKartuStok, FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
+import { IzinTenant, PunyaIzinTenant } from '@/Tipe/Organisasi';
 import type {
     BarisBatchKedaluwarsa,
     BarisPerputaranStok,
+    BarisRencanaProduksi,
     BarisSaranRestock,
     BarisStokKritis,
     NilaiPersediaan,
@@ -284,6 +288,88 @@ const kolomRestock: KolomTabel<BarisSaranRestock>[] = [
     },
 ];
 
+/** Alamat formulir order produksi yang sudah terisi dari satu baris rencana (§9.11). */
+export function BuatUrlDrafProduksi(b: BarisRencanaProduksi, tanggal: string): string {
+    const kueri = new URLSearchParams({
+        produk: b.UuidProduk,
+        gudang: b.UuidGudang,
+        jumlah: b.Rekomendasi.replace(/\.?0+$/, ''),
+        tanggal,
+    });
+
+    return `/kelola/persediaan/produksi/buat?${kueri.toString()}`;
+}
+
+function BuatKolomRencana(tanggal: string, bolehKelola: boolean): KolomTabel<BarisRencanaProduksi>[] {
+    return [
+        {
+            id: 'NamaProduk',
+            accessorKey: 'NamaProduk',
+            header: 'Produk',
+            meta: { label: 'Produk', prioritas: 'utama', wajib: true },
+            cell: ({ row: { original: b } }) => (
+                <>
+                    <span className="block text-teks-utama">{b.NamaProduk}</span>
+                    <span className="block text-label text-teks-sekunder">
+                        {b.NamaGudang}
+                        {b.NamaOutlet ? ` | ${b.NamaOutlet}` : ''}
+                    </span>
+                </>
+            ),
+        },
+        {
+            id: 'Rekomendasi',
+            accessorKey: 'Rekomendasi',
+            header: 'Produksi',
+            meta: { label: 'Produksi', angka: true, prioritas: 'utama' },
+            cell: ({ row: { original: b } }) =>
+                Number(b.Rekomendasi) > 0 ? (
+                    <span className="flex flex-wrap items-center justify-end gap-2">
+                        <span className="font-semibold">{FormatJumlahStok(b.Rekomendasi, b.SimbolSatuan)}</span>
+                        {bolehKelola ? (
+                            <Button asChild size="sm" variant="outline">
+                                <Link href={BuatUrlDrafProduksi(b, tanggal)}>Buat draf produksi</Link>
+                            </Button>
+                        ) : null}
+                    </span>
+                ) : (
+                    'Cukup'
+                ),
+        },
+        {
+            id: 'Kebutuhan',
+            accessorKey: 'Kebutuhan',
+            header: 'Kebutuhan',
+            meta: { label: 'Kebutuhan', angka: true, prioritas: 'penting' },
+            cell: ({ row: { original: b } }) => FormatJumlahStok(b.Kebutuhan, b.SimbolSatuan),
+        },
+        {
+            id: 'Saldo',
+            accessorKey: 'Saldo',
+            header: 'Saldo sekarang',
+            meta: { label: 'Saldo sekarang', angka: true, prioritas: 'penting' },
+            cell: ({ row: { original: b } }) => FormatJumlahStok(b.Saldo, b.SimbolSatuan),
+        },
+        {
+            id: 'RataHariSama',
+            accessorKey: 'RataHariSama',
+            header: 'Rata-rata hari yang sama',
+            enableSorting: false,
+            meta: { label: 'Rata-rata hari yang sama', angka: true, prioritas: 'rendah' },
+            cell: ({ row: { original: b } }) =>
+                b.Sampel === 0 ? '–' : FormatJumlahStok(b.RataHariSama, b.SimbolSatuan),
+        },
+        {
+            id: 'PreOrder',
+            accessorKey: 'PreOrder',
+            header: 'Pre-order',
+            enableSorting: false,
+            meta: { label: 'Pre-order', angka: true, prioritas: 'rendah' },
+            cell: ({ row: { original: b } }) => FormatJumlahStok(b.PreOrder, b.SimbolSatuan),
+        },
+    ];
+}
+
 /**
  * F-14a laporan stok (izin lihat persediaan): nilai persediaan per lokasi stok & kategori pada akhir tanggal
  * tertentu (dari buku stok), stok kritis (saldo ≤ batas minimum per lokasi), dan F-05g batch yang sudah lewat atau akan
@@ -298,7 +384,10 @@ export default function HalamanLaporanStok({
     Kedaluwarsa,
     Restock,
     Perputaran,
+    Rencana,
 }: PropsLaporanStok) {
+    const { props } = usePage<PropsBersamaAplikasi>();
+    const bolehKelola = PunyaIzinTenant(props.Akses, IzinTenant.PersediaanKelola);
     const query = {
         tanggal: Saring.Tanggal,
         gudang: Saring.Gudang,
@@ -317,6 +406,14 @@ export default function HalamanLaporanStok({
                 {Saring.Tab === 'nilai' ? (
                     <PemilihTanggal
                         label="Posisi pada tanggal"
+                        nilai={Saring.Tanggal}
+                        tanpaKosongkan
+                        saatBerubah={(tanggal) => Terapkan({ tanggal })}
+                    />
+                ) : null}
+                {Saring.Tab === 'rencana' ? (
+                    <PemilihTanggal
+                        label="Rencana untuk tanggal"
                         nilai={Saring.Tanggal}
                         tanpaKosongkan
                         saatBerubah={(tanggal) => Terapkan({ tanggal })}
@@ -379,6 +476,7 @@ export default function HalamanLaporanStok({
                         { nilai: 'kedaluwarsa', label: 'Kedaluwarsa' },
                         { nilai: 'restock', label: 'Saran restock' },
                         { nilai: 'perputaran', label: 'Slow & fast moving' },
+                        { nilai: 'rencana', label: 'Rencana produksi' },
                     ]}
                 />
                 <TautanEkspor alamat={`${alamat}/ekspor`} query={{ ...query, tab: Saring.Tab }} eksporBesar />
@@ -524,6 +622,32 @@ export default function HalamanLaporanStok({
                         kosong={{
                             ilustrasi: true,
                             judul: 'Belum ada pemakaian atau saldo stok untuk dianalisis.',
+                        }}
+                    />
+                </section>
+            ) : null}
+
+            {Rencana ? (
+                <section aria-labelledby="judul-rencana" className="flex flex-col gap-2">
+                    <h2 id="judul-rencana" className="text-subjudul font-semibold text-teks-utama">
+                        Rencana produksi {FormatTanggal(Rencana.Target)} ({String(Rencana.Baris.length)})
+                    </h2>
+                    <p className="max-w-3xl text-label text-teks-sekunder">
+                        Kebutuhan = yang lebih besar antara rata-rata pemakaian pada hari yang sama dalam{' '}
+                        {String(Rencana.Minggu)} minggu terakhir dan pre-order yang diambil pada tanggal itu (pre-order
+                        biasanya sudah ikut di riwayat penjualan, jadi tidak dijumlahkan). Produksi = kebutuhan − saldo
+                        sekarang. Ini perkiraan; sesuaikan dengan cuaca, promo, dan kapasitas oven sebelum produksi.
+                    </p>
+                    <TabelData
+                        id="laporan-stok-rencana"
+                        label="Rencana produksi"
+                        kolom={BuatKolomRencana(Rencana.Target, bolehKelola)}
+                        sumber={{ mode: 'lokal', data: Rencana.Baris }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        cari="Cari produk"
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Belum ada produk jenis Produksi dengan riwayat penjualan, saldo, atau pre-order.',
                         }}
                     />
                 </section>

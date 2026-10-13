@@ -279,6 +279,7 @@ final class LaporanKontroler extends DasarKelolaKontroler
             'Kedaluwarsa' => $tab === 'kedaluwarsa' ? $laporan->BatchKedaluwarsa($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang) : null,
             'Perputaran' => $tab === 'perputaran' ? $laporan->Perputaran($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari) : null,
             'Restock' => $tab === 'restock' ? $laporan->SaranRestock($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari) : null,
+            'Rencana' => $tab === 'rencana' ? $laporan->RencanaProduksi($this->IdOutletBoleh(), $tanggal->Hitung(null), $pada, $uuidGudang) : null,
         ]);
     }
 
@@ -311,6 +312,24 @@ final class LaporanKontroler extends DasarKelolaKontroler
                     $isi,
                 ),
                 [['Tanggal', $this->LabelPeriode($tanggal->Hitung(null), $tanggal->Hitung(null))], $saringanGudang, ['Rentang pemakaian', "{$hari} hari terakhir (sampai kemarin)"]],
+                null,
+                $this->LabelCakupan(),
+            );
+        }
+
+        if ($tab === 'rencana') {
+            $rencana = $laporan->RencanaProduksi($this->IdOutletBoleh(), $tanggal->Hitung(null), $pada, $uuidGudang);
+
+            return $this->SajikanLaporan(
+                $permintaan,
+                'Laporan Stok | Rencana Produksi',
+                "rencana-produksi-{$rencana['Target']}",
+                [$t('Produk', 32), $t('SKU', 16), $t('Satuan', 10), $t('Lokasi stok', 22), $t('Outlet', 22), $q('Rata-rata hari yang sama'), $q('Pre-order'), $q('Kebutuhan'), $q('Saldo'), $q('Rekomendasi produksi')],
+                array_map(
+                    fn (array $b): array => [$b['NamaProduk'], $b['Sku'], $b['SimbolSatuan'], $b['NamaGudang'], $b['NamaOutlet'], $b['RataHariSama'], $b['PreOrder'], $b['Kebutuhan'], $b['Saldo'], $b['Rekomendasi']],
+                    $rencana['Baris'],
+                ),
+                [['Untuk tanggal', $this->LabelPeriode($pada, $pada)], $saringanGudang, ['Dasar permintaan', "rata-rata hari yang sama dalam {$rencana['Minggu']} minggu terakhir, dibandingkan pre-order"]],
                 null,
                 $this->LabelCakupan(),
             );
@@ -412,12 +431,12 @@ final class LaporanKontroler extends DasarKelolaKontroler
     }
 
     /**
-     * @return array{0: 'nilai'|'kritis'|'kedaluwarsa'|'restock'|'perputaran', 1: CarbonImmutable, 2: string, 3: int}
+     * @return array{0: 'nilai'|'kritis'|'kedaluwarsa'|'restock'|'perputaran'|'rencana', 1: CarbonImmutable, 2: string, 3: int}
      */
     private function BacaSaringStok(Request $permintaan, CarbonImmutable $hariIni): array
     {
-        $tab = in_array($permintaan->query('tab'), ['kritis', 'kedaluwarsa', 'restock', 'perputaran'], true) ? $permintaan->query('tab') : 'nilai';
-        $pada = DataPeriodeLaporan::Urai($permintaan->query('tanggal')) ?? $hariIni;
+        $tab = in_array($permintaan->query('tab'), ['kritis', 'kedaluwarsa', 'restock', 'perputaran', 'rencana'], true) ? $permintaan->query('tab') : 'nilai';
+        $pada = DataPeriodeLaporan::Urai($permintaan->query('tanggal')) ?? ($tab === 'rencana' ? $hariIni->addDay() : $hariIni);
         $uuidGudang = is_string($permintaan->query('gudang')) ? $permintaan->query('gudang') : '';
         // X6: cakupan saran restock 7/14/30 hari; nilai lain jatuh ke bawaan 14.
         $hari = in_array((string) $permintaan->query('hari'), ['7', '14', '30'], true) ? (int) $permintaan->query('hari') : 14;
@@ -425,6 +444,11 @@ final class LaporanKontroler extends DasarKelolaKontroler
         // Slow/fast moving: rentang pemakaian 30/60/90 hari (bawaan 30).
         if ($tab === 'perputaran') {
             $hari = in_array((string) $permintaan->query('hari'), ['30', '60', '90'], true) ? (int) $permintaan->query('hari') : LaporanStok::RENTANG_BAWAAN_PERPUTARAN;
+        }
+
+        // Rencana produksi memang untuk hari yang akan datang (sampai 60 hari ke depan, mulai hari ini); tab lain tidak melewati hari ini.
+        if ($tab === 'rencana') {
+            return [$tab, $pada->lessThan($hariIni) ? $hariIni : ($pada->greaterThan($hariIni->addDays(60)) ? $hariIni->addDays(60) : $pada), $uuidGudang, $hari];
         }
 
         return [$tab, $pada->greaterThan($hariIni) ? $hariIni : $pada, $uuidGudang, $hari];

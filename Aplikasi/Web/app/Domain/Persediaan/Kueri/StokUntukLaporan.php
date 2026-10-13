@@ -140,6 +140,42 @@ final class StokUntukLaporan
     }
 
     /**
+     * Rencana produksi harian: pemakaian bersih (definisi sama dengan `AmbilPemakaian`) per produk × lokasi stok × tanggal
+     * bisnis, hanya untuk produk yang diminta. Pasangan-tanggal dengan pemakaian ≤ 0 tidak ikut (dianggap nol oleh pemanggil).
+     *
+     * @param  list<int>  $idGudang
+     * @param  list<int>  $idProduk
+     * @return array<string, array<string, string>> kunci luar = "IdProduk|IdGudang", kunci dalam = tanggal `Y-m-d`
+     */
+    public function AmbilPemakaianHarian(array $idGudang, array $idProduk, CarbonImmutable $dari, CarbonImmutable $sampai): array
+    {
+        if ($idGudang === [] || $idProduk === []) {
+            return [];
+        }
+
+        $hasil = [];
+
+        foreach (array_chunk(array_values(array_unique($idProduk)), 1000) as $potongan) {
+            $baris = MutasiStok::query()
+                ->whereIn('IdGudang', $idGudang)
+                ->whereIn('IdProduk', $potongan)
+                ->whereBetween('TanggalBisnis', [$dari->toDateString(), $sampai->toDateString()])
+                ->whereIn('JenisMutasi', [JenisMutasi::Penjualan->value, JenisMutasi::ReturPenjualan->value, JenisMutasi::ProduksiPakai->value, JenisMutasi::Susut->value])
+                ->groupBy('IdProduk', 'IdGudang', 'TanggalBisnis')
+                ->selectRaw('`IdProduk`, `IdGudang`, `TanggalBisnis`, -COALESCE(SUM(`Jumlah`), 0) AS `Pakai`')
+                ->havingRaw('SUM(`Jumlah`) < 0')
+                ->toBase()
+                ->get();
+
+            foreach ($baris as $b) {
+                $hasil["{$b->IdProduk}|{$b->IdGudang}"][substr((string) $b->TanggalBisnis, 0, 10)] = Kuantitas::Dari((string) $b->Pakai)->KeString();
+            }
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Pemakaian & selisih stok untuk food cost (§10.10): per produk × jenis mutasi pada rentang tanggal bisnis, jumlah dan
      * nilai (Σ TotalHpp) bertanda (keluar negatif). Jenis: penjualan, retur penjualan, bahan produksi, susut/terbuang,
      * penyesuaian, dan opname.

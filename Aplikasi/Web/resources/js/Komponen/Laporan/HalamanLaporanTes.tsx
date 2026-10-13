@@ -770,6 +770,7 @@ describe('F-14a laporan pajak & stok', () => {
             Kedaluwarsa: null,
             Restock: null,
             Perputaran: null,
+            Rencana: null,
         };
         RenderUji(<HalamanLaporanStok {...nilai} />);
         expect(screen.getAllByText('Rp 380.000').length).toBeGreaterThan(0);

@@ -6,6 +6,8 @@ namespace App\Http\Kontroler\Kelola\Persediaan;
 
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Persediaan\Aksi\BatalkanOrderProduksi;
 use App\Domain\Persediaan\Aksi\PostingOrderProduksi;
@@ -42,9 +44,13 @@ final class OrderProduksiKontroler extends DasarDokumenPersediaanKontroler
         ]);
     }
 
-    public function Buat(): Response
+    /**
+     * Formulir baru. Query `produk`, `gudang`, `jumlah`, `tanggal` (dari tab Rencana produksi, §9.11) mengisi formulir
+     * lebih dulu; nilai yang tidak sah atau di luar akses diabaikan diam-diam dan formulir tampil kosong seperti biasa.
+     */
+    public function Buat(Request $permintaan, InfoProdukStok $infoProduk): Response
     {
-        return $this->RenderForm('Buat', null);
+        return $this->RenderForm('Buat', null, $this->AmbilAwal($permintaan, $infoProduk));
     }
 
     /** Kebutuhan bahan standar dari resep versi terbaru untuk jumlah hasil (dipakai formulir, JSON). */
@@ -144,13 +150,54 @@ final class OrderProduksiKontroler extends DasarDokumenPersediaanKontroler
     }
 
     /**
-     * @param  array<string, mixed>|null  $order
+     * @return array{UuidGudang: string, Tanggal: string|null, JumlahHasil: string, Produk: array<string, mixed>}|null
      */
-    private function RenderForm(string $mode, ?array $order): Response
+    private function AmbilAwal(Request $permintaan, InfoProdukStok $infoProduk): ?array
+    {
+        $valid = validator($permintaan->query(), [
+            'produk' => ['required', 'ulid'],
+            'gudang' => ['required', 'ulid'],
+            'jumlah' => ['required', 'regex:/^\d{1,14}(\.\d{1,4})?$/'],
+            'tanggal' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        if ($valid->fails()) {
+            return null;
+        }
+
+        $uuidProduk = (string) $valid->validated()['produk'];
+        $produk = $infoProduk->AmbilDariUuid([$uuidProduk])[$uuidProduk] ?? null;
+        $gudangBoleh = array_values(array_filter($this->AmbilOpsiGudangDokumen(), fn (array $g): bool => $g['Uuid'] === $valid->validated()['gudang']));
+
+        if ($produk === null || $produk->jenis !== JenisProduk::Produksi || $produk->diarsipkan || $produk->dihapus || $produk->pelacakan === PelacakanProduk::Seri || $gudangBoleh === []) {
+            return null;
+        }
+
+        return [
+            'UuidGudang' => (string) $valid->validated()['gudang'],
+            'Tanggal' => isset($valid->validated()['tanggal']) ? (string) $valid->validated()['tanggal'] : null,
+            'JumlahHasil' => Kuantitas::Dari((string) $valid->validated()['jumlah'])->KeDesimal()->strippedOfTrailingZeros()->__toString(),
+            'Produk' => [
+                'Uuid' => $produk->uuid,
+                'Nama' => $produk->nama,
+                'Sku' => $produk->sku,
+                'SimbolSatuan' => $produk->simbolSatuan,
+                'BolehDesimal' => $produk->bolehDesimal,
+                'Pelacakan' => $produk->pelacakan->value,
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $order
+     * @param  array<string, mixed>|null  $awal
+     */
+    private function RenderForm(string $mode, ?array $order, ?array $awal = null): Response
     {
         return Inertia::render('Kelola/Persediaan/Produksi/Form', [
             'Mode' => $mode,
             'Order' => $order,
+            'Awal' => $awal,
             'OpsiGudang' => $this->AmbilOpsiGudangDokumen(),
             'HariIni' => $this->HariIni(),
             'MaksBahan' => PenyusunBahanProduksi::MAKS_BAHAN,

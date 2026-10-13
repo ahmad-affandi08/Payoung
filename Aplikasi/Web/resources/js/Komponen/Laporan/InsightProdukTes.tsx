@@ -162,6 +162,7 @@ describe('X6 saran restock di laporan stok', () => {
         Kritis: null,
         Kedaluwarsa: null,
         Perputaran: null,
+        Rencana: null,
         Restock: {
             HariDasar: 28,
             HariCakupan: 14,

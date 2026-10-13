@@ -132,6 +132,7 @@ describe('F-05e produksi: halaman', () => {
             <HalamanFormOrderProduksi
                 Mode="Buat"
                 Order={null}
+                Awal={null}
                 OpsiGudang={[GudangUtama, GudangKedua]}
                 HariIni="2026-09-27"
                 MaksBahan={100}

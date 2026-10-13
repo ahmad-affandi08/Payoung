@@ -102,9 +102,18 @@ export type IsianOrderProduksi = {
     Bahan: BahanOrderProduksi[];
 };
 
+/** Isian awal formulir baru dari tab Rencana produksi (§9.11); produk, lokasi, dan jumlah sudah terpilih. */
+export type AwalOrderProduksi = {
+    UuidGudang: string;
+    Tanggal: string | null;
+    JumlahHasil: string;
+    Produk: NonNullable<IsianOrderProduksi['Produk']>;
+};
+
 export type PropsFormOrderProduksi = {
     Mode: 'Buat' | 'Ubah';
     Order: IsianOrderProduksi | null;
+    Awal: AwalOrderProduksi | null;
     OpsiGudang: OpsiGudang[];
     HariIni: string;
     MaksBahan: number;

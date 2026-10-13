@@ -2352,7 +2352,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-DrUdLfKa.js",
+    "file": "assets/Aplikasi-aUem6nlQ.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -4776,7 +4776,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Laporan/Stok.tsx": {
-    "file": "assets/Stok-BeD6ZSwM.js",
+    "file": "assets/Stok-DTIa_kZ0.js",
     "name": "Stok",
     "src": "resources/js/Halaman/Kelola/Laporan/Stok.tsx",
     "isDynamicEntry": true,
@@ -4789,7 +4789,9 @@
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
       "_label-BUO0SdIL.js",
+      "_button-CdBDerbX.js",
       "_PilihanCari-OiS9kb-H.js",
+      "_Organisasi-DRB3I-Ds.js",
       "_NavigasiTab-DDKU-SQX.js",
       "_FormatPersediaan-vu63GuxB.js",
       "_KolomLaporan-Ce4BvkON.js"
@@ -6671,7 +6673,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Persediaan/Produksi/Form.tsx": {
-    "file": "assets/Form-mGHsTKiF.js",
+    "file": "assets/Form-B7UIcCGO.js",
     "name": "Form",
     "src": "resources/js/Halaman/Kelola/Persediaan/Produksi/Form.tsx",
     "isDynamicEntry": true,

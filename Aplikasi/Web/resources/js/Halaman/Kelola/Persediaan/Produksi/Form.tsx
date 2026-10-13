@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { Trash2Icon } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import { GalatBidang } from '@/Komponen/Formulir/BagianBidang';
@@ -64,6 +64,7 @@ async function AmbilBahanResep(
 export default function HalamanFormOrderProduksi({
     Mode,
     Order,
+    Awal,
     OpsiGudang,
     HariIni,
     MaksBahan,
@@ -72,10 +73,12 @@ export default function HalamanFormOrderProduksi({
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
     const [uuidBaru] = useState(() => (Order === null ? BuatUlid() : null));
-    const [gudang, AturGudang] = useState(Order?.UuidGudang ?? '');
-    const [tanggal, AturTanggal] = useState(Order?.Tanggal ?? HariIni);
-    const [produk, AturProduk] = useState<IsianOrderProduksi['Produk']>(Order?.Produk ?? null);
-    const [jumlahHasil, AturJumlahHasil] = useState(Order?.JumlahHasil ?? '');
+    // Formulir baru yang dibuka dari Rencana produksi sudah berisi produk, lokasi, jumlah, dan tanggal.
+    const awal = Order === null ? Awal : null;
+    const [gudang, AturGudang] = useState(Order?.UuidGudang ?? awal?.UuidGudang ?? '');
+    const [tanggal, AturTanggal] = useState(Order?.Tanggal ?? awal?.Tanggal ?? HariIni);
+    const [produk, AturProduk] = useState<IsianOrderProduksi['Produk']>(Order?.Produk ?? awal?.Produk ?? null);
+    const [jumlahHasil, AturJumlahHasil] = useState(Order?.JumlahHasil ?? awal?.JumlahHasil ?? '');
     const [overhead, AturOverhead] = useState(
         Order?.BiayaOverhead && AmbilTandaDesimal(Order.BiayaOverhead) > 0 ? Order.BiayaOverhead : '',
     );
@@ -94,8 +97,12 @@ export default function HalamanFormOrderProduksi({
     const jumlahValid = produk !== null && CekJumlahProduksi(jumlahHasil, produk.BolehDesimal);
     const batch = produk?.Pelacakan === 'Batch';
 
-    const IsiDariResep = async () => {
-        if (produk === null || !jumlahValid) {
+    const IsiDariResep = async (dariAwal?: { Uuid: string; Jumlah: string }) => {
+        const uuid = dariAwal?.Uuid ?? produk?.Uuid;
+        const banyak = dariAwal?.Jumlah ?? jumlahHasil;
+
+        // Dari Rencana produksi produk & jumlah sudah dipilih server; selain itu jumlah harus sah dulu.
+        if (uuid === undefined || (dariAwal === undefined && !jumlahValid)) {
             AturPeriksa(true);
 
             return;
@@ -105,7 +112,7 @@ export default function HalamanFormOrderProduksi({
         AturGalatResep(null);
 
         try {
-            const hasil = await AmbilBahanResep(produk.Uuid, jumlahHasil);
+            const hasil = await AmbilBahanResep(uuid, banyak);
 
             if ('Galat' in hasil) {
                 AturGalatResep(hasil.Galat);
@@ -118,6 +125,18 @@ export default function HalamanFormOrderProduksi({
             AturMemuatResep(false);
         }
     };
+
+    // Bahan langsung diisi dari resep sekali saja saat formulir dibuka dari Rencana produksi.
+    const sudahMuatAwal = useRef(false);
+
+    useEffect(() => {
+        if (awal !== null && !sudahMuatAwal.current) {
+            sudahMuatAwal.current = true;
+            void IsiDariResep({ Uuid: awal.Produk.Uuid, Jumlah: awal.JumlahHasil });
+        }
+        // Hanya sekali saat dipasang: `IsiDariResep` memakai state yang berubah dan tidak boleh memicu muat ulang.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const PilihHasil = (p: ProdukStokTerpilih) => {
         if (p.Jenis !== 'Produksi') {

@@ -10,8 +10,10 @@ use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Katalog\Kueri\ProdukUntukLaporan;
 use App\Domain\Laporan\Layanan\PenilaiMusimRestock;
+use App\Domain\Laporan\Layanan\PenilaiRencanaProduksi;
 use App\Domain\Organisasi\Data\DataInfoGudang;
 use App\Domain\Organisasi\Kueri\InfoGudang;
+use App\Domain\Penjualan\Kueri\PermintaanPreOrder;
 use App\Domain\Persediaan\Kueri\StokUntukLaporan;
 use App\Domain\Referensi\Kueri\HariLiburTerbit;
 use Brick\Math\BigDecimal;
@@ -47,6 +49,8 @@ final class LaporanStok
         private readonly ProdukUntukLaporan $produk,
         private readonly InfoProdukStok $infoProduk,
         private readonly HariLiburTerbit $hariLibur,
+        private readonly PermintaanPreOrder $preOrder,
+        private readonly PenilaiRencanaProduksi $penilaiProduksi,
     ) {}
 
     /**
@@ -241,6 +245,101 @@ final class LaporanStok
         usort($baris, fn (array $a, array $b): int => ($a['HariHabis'] ?? PHP_INT_MAX) <=> ($b['HariHabis'] ?? PHP_INT_MAX) ?: strcmp((string) $a['NamaProduk'], (string) $b['NamaProduk']));
 
         return ['HariDasar' => self::HARI_DASAR_RESTOCK, 'HariCakupan' => $hariCakupan, 'Musim' => $musim, 'Baris' => $baris];
+    }
+
+    /**
+     * Rencana produksi harian (§9.11 Bakery): untuk tiap produk jenis Produksi × lokasi stok, permintaan `$target` dari
+     * rata-rata hari-dalam-minggu yang sama (`PenilaiRencanaProduksi`) dan pre-order yang diambil pada tanggal itu,
+     * dibandingkan dengan saldo sekarang. Pre-order milik outlet dicatat pada lokasi stok outlet itu yang paling sering
+     * memakai produknya (atau lokasi pertama bila belum ada riwayat). Pasangan tanpa riwayat, saldo, dan pre-order tidak
+     * ikut. Urut rekomendasi terbesar.
+     *
+     * @param  list<int>|null  $idOutletBoleh
+     * @return array{Target: string, Minggu: int, Baris: list<array<string, mixed>>}
+     */
+    public function RencanaProduksi(?array $idOutletBoleh, CarbonImmutable $hariIni, CarbonImmutable $target, string $uuidGudang = ''): array
+    {
+        $gudang = $this->AmbilGudang($idOutletBoleh, $uuidGudang);
+        $produksi = [];
+
+        foreach ($this->infoProduk->AmbilSemuaBerstok() as $p) {
+            if ($p->jenis === JenisProduk::Produksi) {
+                $produksi[$p->id] = $p;
+            }
+        }
+
+        $idProduk = array_keys($produksi);
+        $dari = $target->subWeeks(PenilaiRencanaProduksi::MINGGU_DASAR);
+        $sampai = $hariIni->subDay();
+        $harian = $dari->greaterThan($sampai) ? [] : $this->stok->AmbilPemakaianHarian(array_keys($gudang), $idProduk, $dari, $sampai);
+        $saldo = $this->stok->AmbilSaldo(array_keys($gudang), $idProduk);
+        $pesanan = $this->preOrder->AmbilPerProduk($target, $idOutletBoleh);
+        $pasangan = [];
+
+        foreach (array_keys($harian) as $kunci) {
+            $pasangan[$kunci] = true;
+        }
+
+        foreach ($saldo as $kunci => $s) {
+            if (BigDecimal::of($s['Jumlah'])->isPositive()) {
+                $pasangan[$kunci] = true;
+            }
+        }
+
+        // Pre-order milik outlet → lokasi stok outlet itu yang paling banyak memakai produk tersebut.
+        $preOrderPerPasangan = [];
+
+        foreach ($pesanan as $idP => $jumlahPesanan) {
+            if (! isset($produksi[$idP])) {
+                continue;
+            }
+
+            $terbaik = null;
+            $terbaikPakai = null;
+            foreach ($gudang as $g) {
+                $kunci = "{$idP}|{$g->id}";
+                $pakai = array_reduce(array_values($harian[$kunci] ?? []), fn (BigDecimal $total, string $v): BigDecimal => $total->plus($v), BigDecimal::zero());
+
+                if ($terbaikPakai === null || $pakai->isGreaterThan($terbaikPakai)) {
+                    $terbaik = $kunci;
+                    $terbaikPakai = $pakai;
+                }
+            }
+
+            if ($terbaik !== null) {
+                $pasangan[$terbaik] = true;
+                $preOrderPerPasangan[$terbaik] = $jumlahPesanan;
+            }
+        }
+
+        $baris = [];
+
+        foreach (array_keys($pasangan) as $kunci) {
+            [$idP, $idG] = array_map('intval', explode('|', $kunci));
+            $p = $produksi[$idP] ?? null;
+            $g = $gudang[$idG] ?? null;
+
+            if ($p === null || $g === null) {
+                continue;
+            }
+
+            $nilai = $this->penilaiProduksi->Hitung($harian[$kunci] ?? [], $hariIni, $target, $preOrderPerPasangan[$kunci] ?? '0', $saldo[$kunci]['Jumlah'] ?? '0', $p->bolehDesimal);
+            $baris[] = [
+                'Kunci' => $p->uuid.'-'.$g->uuid,
+                'UuidProduk' => $p->uuid,
+                'NamaProduk' => $p->nama,
+                'Sku' => $p->sku,
+                'SimbolSatuan' => $p->simbolSatuan,
+                'UuidGudang' => $g->uuid,
+                'NamaGudang' => $g->nama,
+                'NamaOutlet' => $g->namaOutlet ?? '',
+                ...$nilai,
+            ];
+        }
+
+        usort($baris, fn (array $a, array $b): int => BigDecimal::of($b['Rekomendasi'])->compareTo(BigDecimal::of($a['Rekomendasi'])) ?: strcmp((string) $a['NamaProduk'], (string) $b['NamaProduk']));
+
+        return ['Target' => $target->toDateString(), 'Minggu' => PenilaiRencanaProduksi::MINGGU_DASAR, 'Baris' => $baris];
     }
 
     /**

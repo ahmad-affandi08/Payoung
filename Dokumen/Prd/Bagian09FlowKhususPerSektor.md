@@ -182,7 +182,7 @@ Booking online/WA → Konfirmasi → Reminder H-1 (WA) → Check-in
 
 ### 9.11 Bakery / Produksi Harian
 
-- Rencana produksi harian (berdasarkan forecast/pre-order).
+- Rencana produksi harian (berdasarkan forecast/pre-order; tab Rencana produksi di Laporan stok sejak v5.98).
 - Order produksi (F-05e) → stok produk jadi.
 - Pre-order kue ulang tahun: DP, spesifikasi kustom, tanggal ambil, status.
 - Produk expired hari yang sama → diskon sore otomatis (promo terjadwal) → sisa dicatat waste.

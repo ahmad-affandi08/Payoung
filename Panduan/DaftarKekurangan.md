@@ -216,7 +216,7 @@ Status: **TERBUKA** = belum dikerjakan; **MENUNGGU KEPUTUSAN** = ada di `Keputus
 | Apotek | HNA tersimpan; embalase/tuslah |
 | Servis | servis elektronik untuk unit non-kendaraan; resep untuk produk Jasa (salon); rebooking/follow-up salon; DP reservasi; antrian walk-in + booking satu tampilan |
 | Grosir | armada/rute dan konfirmasi terima; ongkir per jarak; harga per pelanggan individual; update harga massal per kategori |
-| Bakery | rencana produksi harian; diskon sore berbasis kedaluwarsa |
+| Bakery | ~~rencana produksi harian~~ (SELESAI @ v5.98); diskon sore berbasis kedaluwarsa |
 
 ### F-e. Flow tenant (F-xx) yang belum
 
