@@ -1014,7 +1014,8 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6">
                     <JejakHalaman jejak={[...SusunJejak(url, namaInduk, menuTerlihat), ...jejak]} />
                     <JudulHalaman>{judul}</JudulHalaman>
-                    {props.Pengguna && !props.Pengguna.EmailTerverifikasi ? (
+                    {/* PGL-16: petugas dukungan tidak mengurus akun Owner, jadi banner milik Owner tidak ditampilkan. */}
+                    {!props.AksesDukungan && props.Pengguna && !props.Pengguna.EmailTerverifikasi ? (
                         <Pemberitahuan jenis="peringatan" judul="Verifikasi email Anda">
                             <p>
                                 Kami mengirim tautan verifikasi ke {props.Pengguna.Email}. Buka tautan itu untuk
@@ -1039,7 +1040,7 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                         <BannerPengumuman pengumuman={props.PengumumanPlatform} />
                     ) : null}
                     {/* D-38: verifikasi dua langkah paket Bisnis ditunda selama trial, cukup pengingat. */}
-                    {props.PengingatDuaFaktor ? (
+                    {!props.AksesDukungan && props.PengingatDuaFaktor ? (
                         <Pemberitahuan jenis="info" judul="Aktifkan verifikasi dua langkah">
                             Paket Bisnis mewajibkan verifikasi dua langkah untuk Pemilik, Admin, dan Akuntan. Selama
                             masa coba Anda masih bisa memakai semua menu; setelahnya menu dibuka setelah verifikasi
@@ -1050,7 +1051,7 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                         </Pemberitahuan>
                     ) : null}
                     {/* BR-P06.5: pengumuman versi materiil dokumen legal selama masa pengumuman. */}
-                    {props.PengumumanLegal.length > 0 ? (
+                    {!props.AksesDukungan && props.PengumumanLegal.length > 0 ? (
                         <Pemberitahuan jenis="info" judul="Perubahan dokumen legal">
                             <ul className="flex flex-col gap-1">
                                 {props.PengumumanLegal.map((pengumuman) => (
@@ -1066,7 +1067,7 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                             <p className="mt-1">Anda akan diminta menyetujuinya setelah tanggal berlaku.</p>
                         </Pemberitahuan>
                     ) : null}
-                    {tenantAktif ? (
+                    {!props.AksesDukungan && tenantAktif ? (
                         <BannerLangganan
                             tenant={tenantAktif}
                             bolehBayar={PunyaIzinTenant(props.Akses, IzinTenant.LanggananKelola)}

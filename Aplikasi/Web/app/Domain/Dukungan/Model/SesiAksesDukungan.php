@@ -63,7 +63,14 @@ final class SesiAksesDukungan extends ModelDasar
     protected static function booted(): void
     {
         self::updating(static function (SesiAksesDukungan $sesi): void {
-            $terlarang = array_diff(array_keys($sesi->getDirty()), ['TokenDipakaiPada', 'MulaiPada', 'DiakhiriPada', 'AlasanAkhir', 'Ip', 'AgenPengguna', 'DiubahPada']);
+            $diubah = array_keys($sesi->getDirty());
+            $terlarang = array_diff($diubah, ['TokenDipakaiPada', 'MulaiPada', 'BerakhirPada', 'DiakhiriPada', 'AlasanAkhir', 'Ip', 'AgenPengguna', 'DiubahPada']);
+
+            // Batas waktu hanya dihitung ulang saat token ditukar (sejak itu umur sesi dihitung dari penukaran, dibatasi
+            // sisa umur izin); sesudahnya tidak boleh diperpanjang atau diubah.
+            if (in_array('BerakhirPada', $diubah, true) && ($sesi->getOriginal('TokenDipakaiPada') !== null || ! in_array('TokenDipakaiPada', $diubah, true))) {
+                $terlarang[] = 'BerakhirPada';
+            }
 
             if ($terlarang !== []) {
                 throw new \LogicException('Sesi akses dukungan tidak bisa diubah selain dipakai atau diakhiri: '.implode(', ', $terlarang).'.');

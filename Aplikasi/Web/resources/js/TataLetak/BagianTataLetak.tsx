@@ -317,7 +317,7 @@ export function MenuAkun({
                             />
                         ) : null}
                     </div>
-                    <div className="hidden flex-col items-start text-left sm:flex min-w-0">
+                    <div className="hidden flex-col items-start text-left lg:flex min-w-0">
                         <span className="max-w-40 truncate text-label font-semibold text-teks-utama leading-tight">
                             {tenant?.Nama ?? nama}
                         </span>
@@ -330,7 +330,7 @@ export function MenuAkun({
                     {tenant?.NamaPaket ? (
                         <Badge
                             variant="outline"
-                            className="hidden md:inline-flex text-keterangan px-1.5 py-0 h-4 border-brand/30 bg-brand/5 text-brand font-semibold shrink-0"
+                            className="hidden xl:inline-flex text-keterangan px-1.5 py-0 h-4 border-brand/30 bg-brand/5 text-brand font-semibold shrink-0"
                         >
                             {tenant.NamaPaket}
                         </Badge>

@@ -131,6 +131,35 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(screen.queryByRole('link', { name: 'Bayar tagihan di menu Langganan' })).toBeNull();
     });
 
+    it('PGL-16: sesi akses dukungan tidak menampilkan banner milik Owner, hanya bilah petugas', () => {
+        propsHalaman = {
+            ...BuatProps({ StatusLangganan: 'Tertunggak', PeriodeSelesai: '2026-09-19T17:00:00Z' }, [], true),
+            Pengguna: {
+                Uuid: '01J',
+                Nama: 'Rina Wulandari',
+                Email: 'rina@kopinusantara.id',
+                EmailTerverifikasi: false,
+            },
+            PengingatDuaFaktor: true,
+            PengumumanLegal: [{ Label: 'Syarat', Versi: 2, BerlakuMulai: '2026-11-01', Tautan: '/syarat' }],
+            AksesDukungan: {
+                NamaPetugas: 'Silvia Suryatmi',
+                Cakupan: 'BacaSaja',
+                LabelCakupan: 'Baca saja',
+                Darurat: false,
+                DataPribadiTerbuka: false,
+                BerakhirPada: '2026-10-12T07:00:00Z',
+            },
+        };
+        render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+
+        expect(screen.getByText(/Anda mengakses akun Kopi Nusantara sebagai Dukungan\./)).toBeTruthy();
+        expect(screen.queryByText('Verifikasi email Anda')).toBeNull();
+        expect(screen.queryByText('Aktifkan verifikasi dua langkah')).toBeNull();
+        expect(screen.queryByText('Perubahan dokumen legal')).toBeNull();
+        expect(screen.queryByText('Tagihan langganan belum dibayar')).toBeNull();
+    });
+
     it('F-03: grup menu Produk tampil sebagai sub-menu berisi kerja katalog harian', () => {
         propsHalaman = BuatProps({}, ['produk.lihat']);
         urlHalaman = '/kelola/kategori';

@@ -120,11 +120,11 @@ export default function PencarianCepat({ halaman, sumber }: PropsPencarianCepat)
                 onClick={() => AturTerbuka(true)}
                 aria-label="Pencarian cepat"
                 aria-keyshortcuts="Control+K Meta+K"
-                className="relative mr-1 size-8 min-w-0 gap-2 rounded-lg border-garis bg-permukaan px-0 text-label font-normal text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 sm:w-64 sm:justify-start sm:rounded-md sm:border-garis-input sm:px-3 sm:after:hidden sm:has-[>svg]:px-3 sm:pointer-coarse:h-11 lg:w-72"
+                className="relative mr-1 size-8 min-w-0 gap-2 rounded-lg border-garis bg-permukaan px-0 text-label font-normal text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 lg:w-72 lg:justify-start lg:rounded-md lg:border-garis-input lg:px-3 lg:after:hidden lg:has-[>svg]:px-3 lg:pointer-coarse:h-11"
             >
                 <SearchIcon aria-hidden="true" className="shrink-0" />
-                <span className="hidden min-w-0 flex-1 truncate text-left sm:inline">Cari halaman atau data…</span>
-                <Kbd aria-hidden="true" className="hidden shrink-0 sm:inline-flex">
+                <span className="hidden min-w-0 flex-1 truncate text-left lg:inline">Cari halaman atau data…</span>
+                <Kbd aria-hidden="true" className="hidden shrink-0 lg:inline-flex">
                     Ctrl K
                 </Kbd>
             </Button>

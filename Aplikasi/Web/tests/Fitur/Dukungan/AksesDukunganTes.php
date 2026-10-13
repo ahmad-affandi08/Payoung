@@ -172,6 +172,25 @@ describe('P-09 langkah 2: petugas masuk sebagai tenant', function (): void {
         $this->get((string) parse_url($url, PHP_URL_PATH))->assertRedirect(route('dukungan.berakhir', ['alasan' => 'TokenTidakSah']));
     });
 
+    it('token ditukar beberapa detik setelah dibuat: batas sesi dihitung ulang dari saat penukaran', function (): void {
+        $tenant = Bantuan::BuatTenant();
+        Bantuan::OwnerBeriIzin($this, $tenant, ['DurasiJam' => 72])->assertSessionHasNoErrors();
+        $url = Bantuan::PetugasMinta($this, Bantuan::BuatPetugas(), $tenant['Tenant'])->json('Url');
+
+        $this->travel(30)->seconds();
+        Bantuan::BukaAlamat($this, $url);
+        $this->get('/kelola')->assertOk();
+
+        BantuanOrganisasi::AturKonteks($tenant['Tenant']->Id);
+        $sesi = SesiAksesDukungan::query()->sole();
+        expect($sesi->TokenDipakaiPada)->not->toBeNull()
+            ->and($sesi->BerakhirPada->equalTo(now()->addHours(4)))->toBeTrue();
+
+        // Sesudah ditukar, batas waktu tidak boleh diperpanjang.
+        $sesi->BerakhirPada = now()->addHours(10);
+        expect(fn () => $sesi->save())->toThrow(LogicException::class);
+    });
+
     it('token tenant A tidak bisa dipakai di alamat tenant B', function (): void {
         $tenantA = Bantuan::BuatTenant('Toko A');
         $tenantB = Bantuan::BuatTenant('Toko B');

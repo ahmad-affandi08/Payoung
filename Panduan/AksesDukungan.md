@@ -29,7 +29,7 @@ Untuk **insiden keamanan** atau **permintaan hukum** saat tidak ada izin dari Ow
 ## Di server production
 
 - Jalankan migrasi: `php artisan migrate --force` (migrasi `2026_11_29_000196_BuatTabelAksesDukungan`).
-- Segarkan cache: `php artisan optimize:clear && php artisan optimize`, lalu build ulang frontend (`npm run build`).
+- Segarkan cache: `php artisan optimize:clear && php artisan optimize`. Hasil build frontend (`public/build`) sudah ikut di Git, jadi cukup `git pull`; `npm run build` hanya perlu bila server membangun sendiri.
 - Penjadwal harus aktif (`schedule:run` tiap menit): perintah `dukungan:akhiri-kedaluwarsa` berjalan tiap 15 menit untuk mengisi akhir sesi yang waktunya habis (aksesnya sendiri sudah tertutup per permintaan).
 - Edisi Lisensi (Payoung Mandiri) tidak memiliki fitur ini.
 
