@@ -37,6 +37,13 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.OutletKelola,
             },
             {
+                label: 'Pembaruan template usaha',
+                keterangan:
+                    'Lihat dan terapkan versi baru template jenis usaha: akun, kategori, satuan, dan fitur yang ditambahkan.',
+                href: '/kelola/pengaturan/pembaruan-template',
+                izin: IzinTenant.OutletKelola,
+            },
+            {
                 label: 'Outlet & gudang',
                 keterangan: 'Cabang, gudang, area & meja, zona waktu, jam tutup buku, dan profil pajak per outlet.',
                 href: '/kelola/outlet',

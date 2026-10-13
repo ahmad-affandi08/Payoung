@@ -351,6 +351,7 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::middleware($izin(IzinPengelola::TemplateDrafKelola))->group(function () use ($versi): void {
                 Route::post("{$versi}/duplikasi", [TemplateSektorKontroler::class, 'Duplikasi'])->name('pengelola.template-sektor.versi.duplikasi');
                 Route::post("{$versi}/validasi", [TemplateSektorKontroler::class, 'Validasi'])->name('pengelola.template-sektor.versi.validasi');
+                Route::post("{$versi}/uji-coba", [TemplateSektorKontroler::class, 'UjiCoba'])->middleware('throttle:10,1')->name('pengelola.template-sektor.versi.uji-coba');
                 Route::delete($versi, [TemplateSektorKontroler::class, 'HapusDraf'])->name('pengelola.template-sektor.versi.hapus');
             });
             Route::put("{$versi}/isi-bisnis", [TemplateSektorKontroler::class, 'SimpanIsiBisnis'])

@@ -12,11 +12,17 @@ import { cn } from '@/Komponen/Ui/utils';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { KirimJson } from '@/Pustaka/PermintaanJson';
 import TataLetakPengelola from '@/TataLetak/TataLetakPengelola';
 import { IzinPengelola, PunyaIzin, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
 import type { GalatValidasi, IsiTemplate, PilihanEditorTemplate } from '@/Tipe/TemplateSektor';
 
 type StatusVersi = 'Draf' | 'Terbit' | 'Usang';
+
+type HasilUjiCoba = {
+    Lolos: boolean;
+    Periksa: { Kunci: string; Label: string; Lolos: boolean; Keterangan: string }[];
+};
 
 type PropsEditor = {
     Template: { Kode: string; Nama: string; Keterangan: string | null };
@@ -60,6 +66,11 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
     const bolehKelolaDraf = PunyaIzin(pengguna, IzinPengelola.TemplateDrafKelola);
     const [memproses, AturMemproses] = useState(false);
     const [konfirmasi, AturKonfirmasi] = useState<'terbitkan' | 'hapus' | null>(null);
+    const [ujiCoba, AturUjiCoba] = useState<{ memproses: boolean; hasil: HasilUjiCoba | null; galat: string | null }>({
+        memproses: false,
+        hasil: null,
+        galat: null,
+    });
     const opsiKirim = {
         preserveScroll: true,
         onStart: () => AturMemproses(true),
@@ -74,6 +85,18 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
         },
     };
 
+    const JalankanUjiCoba = () => {
+        AturUjiCoba({ memproses: true, hasil: null, galat: null });
+        KirimJson<HasilUjiCoba>(`${url}/uji-coba`)
+            .then((hasil) => AturUjiCoba({ memproses: false, hasil, galat: null }))
+            .catch((galat: unknown) =>
+                AturUjiCoba({
+                    memproses: false,
+                    hasil: null,
+                    galat: galat instanceof Error ? galat.message : 'Uji coba gagal dijalankan.',
+                }),
+            );
+    };
     const Terbitkan = () => router.post(`${url}/terbitkan`, {}, opsiKonfirmasi);
     const HapusDraf = () => router.delete(url, opsiKonfirmasi);
 
@@ -82,6 +105,11 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
             judul={`${Template.Nama} | ${Template.Kode}`}
             aksi={
                 <div className="flex flex-wrap gap-2">
+                    {bolehKelolaDraf ? (
+                        <Tombol varian="sekunder" memproses={ujiCoba.memproses} onClick={JalankanUjiCoba}>
+                            Uji coba di tenant sementara
+                        </Tombol>
+                    ) : null}
                     {draf && bolehKelolaDraf ? (
                         <Tombol
                             varian="sekunder"
@@ -166,6 +194,8 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
                 {Versi.VersiAsal ? <span>Disalin dari versi {Versi.VersiAsal}</span> : null}
                 {Versi.DiterbitkanPada ? <span>Terbit {FormatTanggalWaktu(Versi.DiterbitkanPada)}</span> : null}
             </section>
+            {ujiCoba.galat ? <Pemberitahuan jenis="bahaya">{ujiCoba.galat}</Pemberitahuan> : null}
+            {ujiCoba.hasil ? <PanelUjiCoba hasil={ujiCoba.hasil} /> : null}
             {draf ? (
                 <HasilValidasi hasil={Versi.HasilValidasi} divalidasiPada={Versi.DivalidasiPada} />
             ) : (
@@ -243,6 +273,31 @@ function HasilValidasi({ hasil, divalidasiPada }: PropsHasilValidasi) {
                     <li key={indeks}>
                         <span className="font-semibold">{labelBagian[galat.Bagian] ?? galat.Bagian}:</span>{' '}
                         {galat.Pesan}
+                    </li>
+                ))}
+            </ul>
+        </Pemberitahuan>
+    );
+}
+
+/** Hasil pratinjau sandbox (P-03 langkah 4): satu baris per pemeriksaan, status selalu berteks. */
+function PanelUjiCoba({ hasil }: { hasil: HasilUjiCoba }) {
+    return (
+        <Pemberitahuan
+            jenis={hasil.Lolos ? 'sukses' : 'bahaya'}
+            judul={hasil.Lolos ? 'Uji coba lolos' : 'Uji coba menemukan masalah'}
+        >
+            <p>
+                Template diterapkan ke tenant sementara dengan transaksi contoh. Semua data uji sudah dibuang; tidak ada
+                tenant sungguhan yang berubah.
+            </p>
+            <ul className="mt-2 list-disc pl-5">
+                {hasil.Periksa.map((periksa) => (
+                    <li key={periksa.Kunci}>
+                        <span className="font-semibold">
+                            {periksa.Label} ({periksa.Lolos ? 'lolos' : 'gagal'}):
+                        </span>{' '}
+                        {periksa.Keterangan}
                     </li>
                 ))}
             </ul>

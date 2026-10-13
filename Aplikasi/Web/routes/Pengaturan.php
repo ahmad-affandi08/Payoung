@@ -8,6 +8,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\AksesDukunganKontroler;
 use App\Http\Kontroler\Kelola\DataSayaKontroler;
 use App\Http\Kontroler\Kelola\IntegrasiServerKontroler;
+use App\Http\Kontroler\Kelola\PembaruanTemplateKontroler;
 use App\Http\Kontroler\Kelola\PengaturanKontroler;
 use App\Http\Kontroler\Kelola\TokenApiKontroler;
 use App\Http\Kontroler\Kelola\WebhookKontroler;
@@ -33,6 +34,9 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
         Route::get('/profil-usaha', [PengaturanKontroler::class, 'TampilkanProfilUsaha'])->name('kelola.pengaturan.profil-usaha');
         Route::post('/profil-usaha', [PengaturanKontroler::class, 'SimpanProfilUsaha'])->name('kelola.pengaturan.profil-usaha.simpan');
         Route::get('/profil-usaha/logo', [PengaturanKontroler::class, 'UnduhLogo'])->name('kelola.pengaturan.profil-usaha.logo');
+        // P-03 langkah 6: tawaran pembaruan template jenis usaha (aditif, atas persetujuan Owner).
+        Route::get('/pembaruan-template', [PembaruanTemplateKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.pembaruan-template');
+        Route::post('/pembaruan-template/{uuidOutlet}/terapkan', [PembaruanTemplateKontroler::class, 'Terapkan'])->where('uuidOutlet', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:20,1')->name('kelola.pengaturan.pembaruan-template.terapkan');
     });
 
     // Audit E5 (UU PDP): ekspor data lengkap usaha (dan penutupan akun di SaaS); khusus Pemilik.

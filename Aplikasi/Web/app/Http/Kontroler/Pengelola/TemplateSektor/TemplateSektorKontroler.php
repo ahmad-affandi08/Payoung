@@ -12,6 +12,7 @@ use App\Domain\Pengelola\TemplateSektor\Aksi\HapusDrafTemplate;
 use App\Domain\Pengelola\TemplateSektor\Aksi\SimpanIsiTemplate;
 use App\Domain\Pengelola\TemplateSektor\Aksi\TerbitkanTemplate;
 use App\Domain\Pengelola\TemplateSektor\Aksi\UbahKeaktifanTemplate;
+use App\Domain\Pengelola\TemplateSektor\Aksi\UjiCobaTemplateSektor;
 use App\Domain\Pengelola\TemplateSektor\Aksi\ValidasiVersiTemplate;
 use App\Domain\Pengelola\TemplateSektor\Enum\BagianTemplate;
 use App\Domain\Pengelola\TemplateSektor\Kueri\DaftarTemplateSektor;
@@ -20,6 +21,7 @@ use App\Http\Kontroler\Pengelola\PelakuPengelola;
 use App\Http\Permintaan\Pengelola\TemplateSektor\BuatTemplateSektorPermintaan;
 use App\Http\Permintaan\Pengelola\TemplateSektor\SimpanAkunTemplatePermintaan;
 use App\Http\Permintaan\Pengelola\TemplateSektor\SimpanIsiBisnisTemplatePermintaan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -89,6 +91,12 @@ final class TemplateSektorKontroler extends Kontroler
         $hasil = $validasi->Jalankan($templateSektorVersi);
 
         return back()->with('Kilat', $hasil['Lolos'] ? 'Validasi lolos. Template siap diterbitkan.' : 'Validasi menemukan '.count($hasil['Galat']).' masalah.');
+    }
+
+    /** P-03 langkah 4: pratinjau sandbox. Jawaban JSON; semua data uji dibatalkan di server (tidak ada yang tersimpan). */
+    public function UjiCoba(TemplateSektor $templateSektor, TemplateSektorVersi $templateSektorVersi, UjiCobaTemplateSektor $uji): JsonResponse
+    {
+        return response()->json($uji->Jalankan($templateSektorVersi));
     }
 
     public function Terbitkan(TemplateSektor $templateSektor, TemplateSektorVersi $templateSektorVersi, TerbitkanTemplate $terbitkan): RedirectResponse

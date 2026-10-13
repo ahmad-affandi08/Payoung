@@ -316,6 +316,32 @@ const pilihan: PilihanEditorTemplate = {
     JenisProdukContoh: [{ Nilai: 'Stok', Label: 'Barang berstok' }],
 };
 
+function BuatIsiTemplateUji(): IsiTemplate {
+    return {
+        ModeKasir: ['Retail'],
+        ModeKasirDefault: 'Retail',
+        KunciFitur: [],
+        KodeSatuan: ['PCS'],
+        Kategori: [],
+        StasiunDapur: [],
+        AlasanVoid: [],
+        AlasanPenyesuaian: [],
+        LaporanUnggulan: [],
+        Pengaturan: {
+            PembulatanTunai: { Kelipatan: 100, Arah: 'Terdekat' },
+            MetodeHpp: 'RataRata',
+            PersenBiayaLayanan: '0',
+            BiayaLayananMasukDpp: false,
+            StokBolehMinus: false,
+            HargaTermasukPajak: true,
+        },
+        ProdukContoh: [],
+        Akun: [],
+        PemetaanAkun: {},
+        KelompokPajak: [],
+    };
+}
+
 describe('Template sektor (P-03)', () => {
     it('Checkbox kontra membalik saldo normal dan terkirim di PUT akun', () => {
         render(
@@ -427,6 +453,87 @@ describe('Template sektor (P-03)', () => {
             expect.objectContaining({ preserveScroll: true }),
         );
         expect(Konfirmasi).not.toHaveBeenCalled();
+    });
+
+    it('editor: uji coba sandbox memanggil endpoint dan menampilkan tiap pemeriksaan dengan teks lolos/gagal', async () => {
+        AturHalaman([IzinPengelola.TemplateDrafKelola], '/template-sektor/RTL-GEN/versi/2');
+        const FetchTiruan = vi.fn().mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: () =>
+                Promise.resolve({
+                    Lolos: false,
+                    Periksa: [
+                        {
+                            Kunci: 'Penerapan',
+                            Label: 'Penerapan ke tenant baru',
+                            Lolos: true,
+                            Keterangan: '40 akun ditambahkan.',
+                        },
+                        {
+                            Kunci: 'PeranAkun',
+                            Label: 'Semua peran akun terpetakan',
+                            Lolos: false,
+                            Keterangan: 'Belum terpetakan: HPP.',
+                        },
+                    ],
+                }),
+        });
+        vi.stubGlobal('fetch', FetchTiruan);
+        const isi = BuatIsiTemplateUji();
+        render(
+            <HalamanEditorTemplate
+                Template={{ Kode: 'RTL-GEN', Nama: 'Retail umum', Keterangan: null }}
+                Versi={{
+                    Versi: 2,
+                    Status: 'Draf',
+                    Isi: isi,
+                    HasilValidasi: null,
+                    DivalidasiPada: null,
+                    DiterbitkanPada: null,
+                    VersiAsal: 1,
+                }}
+                DaftarVersi={[{ Versi: 2, Status: 'Draf', DiterbitkanPada: null }]}
+                AdaDraf
+                Pilihan={pilihan}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Uji coba di tenant sementara' }));
+
+        expect(await screen.findByText('Uji coba menemukan masalah')).toBeTruthy();
+        expect(FetchTiruan).toHaveBeenCalledWith(
+            '/template-sektor/RTL-GEN/versi/2/uji-coba',
+            expect.objectContaining({ method: 'POST' }),
+        );
+        expect(screen.getByText('Penerapan ke tenant baru (lolos):')).toBeTruthy();
+        expect(screen.getByText('Semua peran akun terpetakan (gagal):')).toBeTruthy();
+        expect(screen.getByText(/Belum terpetakan: HPP\./)).toBeTruthy();
+        vi.unstubAllGlobals();
+    });
+
+    it('editor: tombol uji coba tidak ada tanpa izin kelola draf', () => {
+        AturHalaman([IzinPengelola.TemplateLihat], '/template-sektor/RTL-GEN/versi/2');
+        const isi = BuatIsiTemplateUji();
+        render(
+            <HalamanEditorTemplate
+                Template={{ Kode: 'RTL-GEN', Nama: 'Retail umum', Keterangan: null }}
+                Versi={{
+                    Versi: 1,
+                    Status: 'Terbit',
+                    Isi: isi,
+                    HasilValidasi: null,
+                    DivalidasiPada: null,
+                    DiterbitkanPada: null,
+                    VersiAsal: null,
+                }}
+                DaftarVersi={[{ Versi: 1, Status: 'Terbit', DiterbitkanPada: null }]}
+                AdaDraf={false}
+                Pilihan={pilihan}
+            />,
+        );
+
+        expect(screen.queryByRole('button', { name: 'Uji coba di tenant sementara' })).toBeNull();
     });
 });
 

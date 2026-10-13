@@ -14,6 +14,7 @@ use App\Domain\Laporan\Layanan\PenyediaTindakanStok;
 use App\Domain\Organisasi\Layanan\PenyediaTindakanPerangkat;
 use App\Domain\Pajak\Layanan\PenyediaTindakanPajak;
 use App\Domain\PanduanAwal\Layanan\PenyediaTindakanPanduanAwal;
+use App\Domain\PanduanAwal\Layanan\PenyediaTindakanPembaruanTemplate;
 use App\Domain\Pelanggan\Layanan\PenyediaTindakanPelanggan;
 use App\Domain\Pembelian\Layanan\PenyediaTindakanPembelian;
 use App\Domain\Pemenuhan\Layanan\PenyediaTindakanLaundry;
@@ -43,6 +44,7 @@ final class PenyediaTindakan extends ServiceProvider
             PenyediaTindakanPajak::class,
             PenyediaTindakanPenyimpanan::class,
             PenyediaTindakanPanduanAwal::class,
+            PenyediaTindakanPembaruanTemplate::class,
             PenyediaTindakanReservasi::class,
             PenyediaTindakanLaundry::class,
             PenyediaTindakanBengkel::class,

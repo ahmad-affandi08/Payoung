@@ -21,6 +21,7 @@ use App\Domain\PanduanAwal\Enum\LangkahPanduan;
 use App\Domain\PanduanAwal\Enum\StatusLangkahPanduan;
 use App\Domain\PanduanAwal\Kueri\TemplateTerbit;
 use App\Domain\PanduanAwal\Layanan\PembacaIsiTemplate;
+use App\Domain\PanduanAwal\Model\TemplateSektorVersi;
 use App\Domain\Penjualan\Aksi\SiapkanMetodePembayaranBawaan;
 use App\Domain\Referensi\Kueri\SatuanStandarAktif;
 use App\Domain\Tenant\Aksi\LengkapiPengaturanTenant;
@@ -62,12 +63,14 @@ final class TerapkanTemplateSektor
 
     /**
      * @param  list<string>  $sektorLain  kode template sektor tambahan untuk usaha campuran (hanya dicatat)
+     * @param  TemplateSektorVersi|null  $versiUji  P-03 langkah 4 (uji coba sandbox): memakai versi ini (boleh Draf)
+     *                                              alih-alih versi terbit; hanya dipakai di tenant sementara yang dibatalkan.
      */
-    public function Jalankan(Outlet $outlet, string $kodeTemplate, array $sektorLain = []): HasilPenerapanTemplate
+    public function Jalankan(Outlet $outlet, string $kodeTemplate, array $sektorLain = [], ?TemplateSektorVersi $versiUji = null): HasilPenerapanTemplate
     {
-        $versi = $this->templateTerbit->Cari($kodeTemplate)
+        $versi = $versiUji?->loadMissing('TemplateSektor') ?? $this->templateTerbit->Cari($kodeTemplate)
             ?? throw new PelanggaranAturanBisnis('TemplateTidakTersedia', 'Template ini belum tersedia. Pilih template lain.', 'KodeTemplate');
-        $sektorLain = $this->PeriksaSektorLain($kodeTemplate, $sektorLain);
+        $sektorLain = $versiUji === null ? $this->PeriksaSektorLain($kodeTemplate, $sektorLain) : [];
         $idTenant = $this->konteks->Wajib();
 
         return DB::transaction(function () use ($outlet, $versi, $kodeTemplate, $sektorLain, $idTenant): HasilPenerapanTemplate {
