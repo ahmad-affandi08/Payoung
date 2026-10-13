@@ -221,6 +221,8 @@ export type PengaturanStruk = {
     TeksPenutup: string | null;
     /** POS-11: QR & tautan struk digital `/s/{kodeStruk}` di bagian bawah struk. */
     TampilkanStrukDigital: boolean;
+    /** F7: struk digital meminta penilaian 1–5 bintang dari pelanggan. */
+    TampilkanUmpanBalik: boolean;
 };
 
 /** Data profil usaha untuk pratinjau struk (diubah di profil usaha, bukan di halaman ini). */

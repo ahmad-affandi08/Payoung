@@ -25,6 +25,7 @@ final class UbahPengaturanStrukPermintaan extends FormRequest
             ...array_fill_keys(self::SAKLAR, ['required', 'boolean']),
             // POS-11 (ditambah setelah v1.79): boleh tidak dikirim, bawaan hidup.
             'TampilkanStrukDigital' => ['sometimes', 'boolean'],
+            'TampilkanUmpanBalik' => ['sometimes', 'boolean'],
             // D-76: saklar & logo khusus satu outlet (kosong = pengaturan tenant). Logo: gambar, maks 1 MB.
             'UuidOutlet' => ['nullable', 'string', 'max:40'],
             'Logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
@@ -79,6 +80,7 @@ final class UbahPengaturanStrukPermintaan extends FormRequest
             catatanKaki: self::Rapikan($this->input('CatatanKaki')),
             teksPenutup: self::Rapikan($this->input('TeksPenutup')),
             tampilkanStrukDigital: $this->boolean('TampilkanStrukDigital', true),
+            tampilkanUmpanBalik: $this->boolean('TampilkanUmpanBalik', true),
         );
     }
 

@@ -8,7 +8,8 @@ namespace App\Domain\Tenant\Data;
  * Pengaturan struk tingkat tenant (PLT-06, POS-11; PRD v1.79), satu untuk semua outlet, disimpan di
  * `Tenant.Pengaturan.Struk`. Teks null/kosong = memakai bawaan aplikasi (nama usaha, kalimat penutup bawaan).
  * Tanda air paket Gratis tidak diatur di sini (fitur paket `struk.tanpa-watermark`). `TampilkanStrukDigital`: QR &
- * tautan struk digital `/s/{kodeStruk}` di bagian bawah struk cetak.
+ * tautan struk digital `/s/{kodeStruk}` di bagian bawah struk cetak. `TampilkanUmpanBalik` (F7, CRM-08): struk digital
+ * meminta penilaian 1–5 bintang dari pelanggan.
  */
 final readonly class DataPengaturanStruk
 {
@@ -34,12 +35,13 @@ final readonly class DataPengaturanStruk
         public ?string $catatanKaki = null,
         public ?string $teksPenutup = null,
         public bool $tampilkanStrukDigital = true,
+        public bool $tampilkanUmpanBalik = true,
     ) {}
 
     /**
      * Bentuk JSON (penyimpanan, halaman pengaturan, audit).
      *
-     * @return array{TampilkanLogo: bool, NamaDicetak: string|null, TeksKepala: list<string>, TampilkanAlamat: bool, TampilkanTelepon: bool, TampilkanNpwp: bool, TampilkanKasir: bool, TampilkanPelanggan: bool, TampilkanHemat: bool, CatatanKaki: string|null, TeksPenutup: string|null, TampilkanStrukDigital: bool}
+     * @return array{TampilkanLogo: bool, NamaDicetak: string|null, TeksKepala: list<string>, TampilkanAlamat: bool, TampilkanTelepon: bool, TampilkanNpwp: bool, TampilkanKasir: bool, TampilkanPelanggan: bool, TampilkanHemat: bool, CatatanKaki: string|null, TeksPenutup: string|null, TampilkanStrukDigital: bool, TampilkanUmpanBalik: bool}
      */
     public function KeLarik(): array
     {
@@ -56,6 +58,7 @@ final readonly class DataPengaturanStruk
             'CatatanKaki' => $this->catatanKaki,
             'TeksPenutup' => $this->teksPenutup,
             'TampilkanStrukDigital' => $this->tampilkanStrukDigital,
+            'TampilkanUmpanBalik' => $this->tampilkanUmpanBalik,
         ];
     }
 }

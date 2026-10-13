@@ -21,6 +21,7 @@ const bawaan: PengaturanStruk = {
     CatatanKaki: null,
     TeksPenutup: null,
     TampilkanStrukDigital: true,
+    TampilkanUmpanBalik: true,
 };
 
 const profil: ProfilPratinjauStruk = {

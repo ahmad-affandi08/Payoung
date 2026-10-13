@@ -58,7 +58,11 @@ final class LaporanPenjualan
 
     public const BATAS_BUNDLING = 50;
 
-    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet', 'waktu-saji', 'food-cost', 'performa-kasir', 'prediksi', 'bundling'];
+    public const BATAS_UMPAN_BALIK = 200;
+
+    public const BATAS_EKSPOR_UMPAN_BALIK = 5000;
+
+    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet', 'waktu-saji', 'food-cost', 'performa-kasir', 'prediksi', 'bundling', 'umpan-balik'];
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -183,6 +187,7 @@ final class LaporanPenjualan
             'performa-kasir' => $this->operasional->PerformaKasir($saring),
             'prediksi' => $this->Prediksi($saring),
             'bundling' => $this->Bundling($saring),
+            'umpan-balik' => $this->UmpanBalik($saring),
             default => $this->Harian($saring),
         };
     }
@@ -408,6 +413,40 @@ final class LaporanPenjualan
             'Porsi' => $persen(BigDecimal::of(self::Teks($b['Bersih'])), $total),
             'Margin' => $persen(BigDecimal::of(self::Teks($b['LabaKotor'])), BigDecimal::of(self::Teks($b['Bersih']))),
         ], $baris));
+    }
+
+    /**
+     * Umpan balik pelanggan (F7, CRM-08): ringkasan (jumlah, rata-rata, sebaran 1–5, tingkat respons terhadap jumlah
+     * transaksi pada saring) dan daftar terbaru dengan outlet, pelanggan (bila transaksinya bernama), nilai, komentar.
+     *
+     * @return array{Ringkasan: array<string, mixed>, Baris: list<array<string, mixed>>}
+     */
+    public function UmpanBalik(DataSaringLaporanPenjualan $saring, int $batas = self::BATAS_UMPAN_BALIK): array
+    {
+        $hasil = $this->agregat->UmpanBalik($saring, $batas);
+        $transaksi = $saring->CekTanpaOutlet() ? 0 : $this->agregat->Total($saring)->jumlahTransaksi;
+        $nama = $this->pelanggan->AmbilNamaBanyak(array_column($hasil['Baris'], 'IdPelanggan'));
+        $outlet = array_column($this->outlet->AmbilRingkas($saring->idOutlet), 'Nama', 'Id');
+        $jumlah = $hasil['Jumlah'];
+
+        return [
+            'Ringkasan' => [
+                'Jumlah' => $jumlah,
+                'RataRata' => $jumlah === 0 ? '0.00' : (string) BigDecimal::of($hasil['TotalNilai'])->dividedBy($jumlah, 2, RoundingMode::HalfUp),
+                'PerNilai' => $hasil['PerNilai'],
+                'JumlahTransaksi' => $transaksi,
+                'TingkatRespons' => $transaksi === 0 ? '0.00' : (string) BigDecimal::of($jumlah * 100)->dividedBy($transaksi, 2, RoundingMode::HalfUp),
+            ],
+            'Baris' => array_map(fn (array $b): array => [
+                'Kunci' => $b['Nomor'],
+                'Nomor' => $b['Nomor'],
+                'Waktu' => $b['Waktu'],
+                'NamaOutlet' => $outlet[$b['IdOutlet']] ?? '',
+                'NamaPelanggan' => $b['IdPelanggan'] === null ? null : ($nama[$b['IdPelanggan']]['Nama'] ?? null),
+                'Nilai' => $b['Nilai'],
+                'Komentar' => $b['Komentar'],
+            ], $hasil['Baris']),
+        ];
     }
 
     /**
@@ -720,6 +759,10 @@ final class LaporanPenjualan
             'bundling' => [
                 [$t('Produk A', 30), $t('Produk B', 30), $n('Transaksi bersama'), $pr('Porsi transaksi %'), $pr('Keyakinan A→B %'), $pr('Keyakinan B→A %'), new KolomLaporan('Lift', JenisKolom::Kuantitas), $u('Harga normal paket', false), $u('Harga paket saran', false)],
                 $ambil($this->Bundling($saring)['Baris'], ['NamaA', 'NamaB', 'Support', 'PorsiTransaksi', 'KeyakinanAB', 'KeyakinanBA', 'Lift', 'HargaNormal', 'HargaPaket']),
+            ],
+            'umpan-balik' => [
+                [new KolomLaporan('Waktu', JenisKolom::TanggalWaktu), $t('No Transaksi', 22), $t('Outlet', 24), $t('Pelanggan', 24), $n('Nilai (1-5)', false), $t('Komentar', 60)],
+                array_map(fn (array $b): array => [new DateTimeImmutable((string) $b['Waktu']), $b['Nomor'], $b['NamaOutlet'], $b['NamaPelanggan'], $b['Nilai'], $b['Komentar']], $this->UmpanBalik($saring, self::BATAS_EKSPOR_UMPAN_BALIK)['Baris']),
             ],
             'pelanggan' => [[$t('Pelanggan', 30), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Porsi %')], $ambil($this->PerPelanggan($saring, self::BATAS_EKSPOR_PELANGGAN), ['NamaPelanggan', ...$angka, 'RataRataKeranjang', 'Porsi'])],
             'outlet' => [[$t('Outlet', 28), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Margin %'), $pr('Porsi %')], $ambil($this->PerOutlet($saring), ['NamaOutlet', ...$angka, 'RataRataKeranjang', 'Margin', 'Porsi'])],

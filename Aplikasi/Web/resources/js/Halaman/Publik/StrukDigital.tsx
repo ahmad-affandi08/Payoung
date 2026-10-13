@@ -1,7 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import StatusLacakLaundry from '@/Komponen/Laundry/StatusLacakLaundry';
+import FormUmpanBalik, { type UmpanBalikStruk } from '@/Komponen/Struk/FormUmpanBalik';
 import { PENUTUP_BAWAAN } from '@/Komponen/Struk/PratinjauStruk';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -49,6 +50,8 @@ export type StrukDigital = {
     TeksPenutup: string | null;
     /** Laundry (§9.9): status proses cucian bila transaksi ini bertiket laundry. */
     Laundry?: StatusLaundryPublik | null;
+    /** F7: form penilaian (`Diminta`) atau penilaian yang sudah dikirim; null = tidak ditawarkan. */
+    UmpanBalik?: UmpanBalikStruk | null;
 };
 
 /** Nilai uang nol ("0.00", "-0.00"). */
@@ -75,6 +78,7 @@ function Baris({ kiri, kanan, tebal = false }: { kiri: string; kanan: string; te
  * belum terkirim dari kasir, dimatikan, atau tidak dikenal menampilkan keadaan "belum tersedia".
  */
 export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | null }) {
+    const { url } = usePage();
     if (Struk === null) {
         return (
             <>
@@ -193,6 +197,9 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
                         <p>{Struk.TeksPenutup ?? PENUTUP_BAWAAN}</p>
                     </footer>
                 </article>
+                {Struk.UmpanBalik ? (
+                    <FormUmpanBalik umpanBalik={Struk.UmpanBalik} alamat={`${url.split('?')[0] ?? url}/umpan-balik`} />
+                ) : null}
             </main>
         </>
     );

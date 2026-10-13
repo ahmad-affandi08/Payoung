@@ -90,7 +90,7 @@ final class LaporanKontroler extends DasarKelolaKontroler
         'harian' => 'Ringkasan Harian', 'detail' => 'Detail Penjualan', 'produk' => 'Penjualan per Produk', 'kategori' => 'Penjualan per Kategori',
         'jam' => 'Penjualan per Jam', 'kasir' => 'Penjualan per Kasir', 'kanal' => 'Penjualan per Kanal', 'metode' => 'Metode Pembayaran',
         'diskon' => 'Diskon per Kasir', 'void-item' => 'Void Item Pesanan Meja', 'anti-fraud' => 'Anti-fraud Kasir', 'abc' => 'Analisis ABC', 'menu' => 'Menu Engineering', 'pelanggan' => 'Penjualan per Pelanggan', 'outlet' => 'Perbandingan Outlet',
-        'waktu-saji' => 'Waktu Saji Dapur', 'food-cost' => 'Food Cost Teoretis vs Aktual', 'performa-kasir' => 'Performa Kasir', 'prediksi' => 'Prediksi Penjualan', 'bundling' => 'Rekomendasi Bundling',
+        'waktu-saji' => 'Waktu Saji Dapur', 'food-cost' => 'Food Cost Teoretis vs Aktual', 'performa-kasir' => 'Performa Kasir', 'prediksi' => 'Prediksi Penjualan', 'bundling' => 'Rekomendasi Bundling', 'umpan-balik' => 'Umpan Balik Pelanggan',
     ];
 
     public function EksporPenjualan(Request $permintaan, LaporanPenjualan $laporan, TanggalBisnisOutlet $tanggal): SymfonyResponse

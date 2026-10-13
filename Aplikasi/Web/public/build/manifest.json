@@ -685,12 +685,12 @@
       "_jsx-runtime-B23tBWN-.js"
     ]
   },
-  "_KartuArtikel-u9PkQlpq.js": {
-    "file": "assets/KartuArtikel-u9PkQlpq.js",
+  "_KartuArtikel-DTFtTYwu.js": {
+    "file": "assets/KartuArtikel-DTFtTYwu.js",
     "name": "KartuArtikel",
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_FormatWaktu-bKvj24HB.js"
     ]
   },
@@ -798,8 +798,8 @@
     "file": "assets/KlienKios-DPdTXozi.js",
     "name": "KlienKios"
   },
-  "_KlienKueri-BS9TSQQ9.js": {
-    "file": "assets/KlienKueri-BS9TSQQ9.js",
+  "_KlienKueri-B89e-ILl.js": {
+    "file": "assets/KlienKueri-B89e-ILl.js",
     "name": "KlienKueri",
     "imports": [
       "_dist-D4veJNCv.js",
@@ -808,7 +808,7 @@
       "_mutation-C7WRbpPX.js"
     ],
     "css": [
-      "assets/KlienKueri-CuwN2UAK.css"
+      "assets/KlienKueri-D-GmvvL2.css"
     ],
     "assets": [
       "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",
@@ -817,9 +817,9 @@
       "assets/atkinson-hyperlegible-mono-latin-wght-normal-CoA7y8X5.woff2"
     ]
   },
-  "_KlienKueri-CuwN2UAK.css": {
-    "file": "assets/KlienKueri-CuwN2UAK.css",
-    "src": "_KlienKueri-CuwN2UAK.css"
+  "_KlienKueri-D-GmvvL2.css": {
+    "file": "assets/KlienKueri-D-GmvvL2.css",
+    "src": "_KlienKueri-D-GmvvL2.css"
   },
   "_KolomLaporan-Ce4BvkON.js": {
     "file": "assets/KolomLaporan-Ce4BvkON.js",
@@ -1625,8 +1625,8 @@
       "_PenandaLingkungan-C0czGf4Z.js"
     ]
   },
-  "_TataLetakSitus-BLp54A9s.js": {
-    "file": "assets/TataLetakSitus-BLp54A9s.js",
+  "_TataLetakSitus-BY1cfzLi.js": {
+    "file": "assets/TataLetakSitus-BY1cfzLi.js",
     "name": "TataLetakSitus",
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
@@ -1641,6 +1641,7 @@
       "_monitor-Dk_jF5m4.js",
       "_qr-code-DTno0_wo.js",
       "_shield-check-BVpK5hfj.js",
+      "_star-Bvw3AiK0.js",
       "_store-CW6_YT-H.js",
       "_utensils-crossed-CdDVowu7.js",
       "_wifi-off-BRBUOtN2.js",
@@ -1675,12 +1676,12 @@
       "_TagihanLangganan-DcSjBy6K.js"
     ]
   },
-  "_TiruanInertia-CMQI3A54.js": {
-    "file": "assets/TiruanInertia-CMQI3A54.js",
+  "_TiruanInertia-BnUNmpkN.js": {
+    "file": "assets/TiruanInertia-BnUNmpkN.js",
     "name": "TiruanInertia",
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_KlienKueri-BS9TSQQ9.js",
+      "_KlienKueri-B89e-ILl.js",
       "_query--HFt-u_p.js",
       "_react-is-Cpl_12e5.js"
     ],
@@ -2186,6 +2187,13 @@
       "_createLucideIcon-r4wShc8y.js"
     ]
   },
+  "_star-Bvw3AiK0.js": {
+    "file": "assets/star-Bvw3AiK0.js",
+    "name": "star",
+    "imports": [
+      "_createLucideIcon-r4wShc8y.js"
+    ]
+  },
   "_store-CW6_YT-H.js": {
     "file": "assets/store-CW6_YT-H.js",
     "name": "store",
@@ -2314,13 +2322,13 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-C7o4ft5V.js",
+    "file": "assets/Aplikasi-DIOQd7e0.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_KlienKueri-BS9TSQQ9.js",
+      "_KlienKueri-B89e-ILl.js",
       "_dist-D4veJNCv.js",
       "_query--HFt-u_p.js"
     ],
@@ -4378,7 +4386,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Kasir/Struk.tsx": {
-    "file": "assets/Struk-DSw-iDxE.js",
+    "file": "assets/Struk-DHQ-2wVi.js",
     "name": "Struk",
     "src": "resources/js/Halaman/Kelola/Kasir/Struk.tsx",
     "isDynamicEntry": true,
@@ -4637,7 +4645,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Laporan/Penjualan.tsx": {
-    "file": "assets/Penjualan-DSPJYSNZ.js",
+    "file": "assets/Penjualan-BxPhLTrP.js",
     "name": "Penjualan",
     "src": "resources/js/Halaman/Kelola/Laporan/Penjualan.tsx",
     "isDynamicEntry": true,
@@ -6730,7 +6738,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Persediaan/Transfer/CetakTes.tsx": {
-    "file": "assets/CetakTes-DiIbxK0z.js",
+    "file": "assets/CetakTes-DhBQCSV0.js",
     "name": "CetakTes",
     "src": "resources/js/Halaman/Kelola/Persediaan/Transfer/CetakTes.tsx",
     "isDynamicEntry": true,
@@ -6738,10 +6746,10 @@
       "_jsx-runtime-B23tBWN-.js",
       "resources/js/Halaman/Kelola/Persediaan/Transfer/Cetak.tsx",
       "resources/js/Halaman/Kelola/Persediaan/Transfer/CetakAmbil.tsx",
-      "_TiruanInertia-CMQI3A54.js"
+      "_TiruanInertia-BnUNmpkN.js"
     ],
     "dynamicImports": [
-      "_TiruanInertia-CMQI3A54.js"
+      "_TiruanInertia-BnUNmpkN.js"
     ]
   },
   "resources/js/Halaman/Kelola/Persediaan/Transfer/Daftar.tsx": {
@@ -7524,20 +7532,20 @@
     ]
   },
   "resources/js/Halaman/Kelola/Tim/TimTes.tsx": {
-    "file": "assets/TimTes-bf0F9LcT.js",
+    "file": "assets/TimTes-DmqhGV-o.js",
     "name": "TimTes",
     "src": "resources/js/Halaman/Kelola/Tim/TimTes.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_KlienKueri-BS9TSQQ9.js",
+      "_KlienKueri-B89e-ILl.js",
       "_query--HFt-u_p.js",
-      "_TiruanInertia-CMQI3A54.js",
+      "_TiruanInertia-BnUNmpkN.js",
       "resources/js/Halaman/Kelola/Tim/Daftar.tsx",
       "resources/js/Halaman/Kelola/Tim/Tambah.tsx"
     ],
     "dynamicImports": [
-      "_TiruanInertia-CMQI3A54.js"
+      "_TiruanInertia-BnUNmpkN.js"
     ]
   },
   "resources/js/Halaman/Kelola/Tindakan.tsx": {
@@ -7597,17 +7605,17 @@
     ]
   },
   "resources/js/Halaman/Kelola/TokoOnline/PosterTes.tsx": {
-    "file": "assets/PosterTes-xiLIcEjf.js",
+    "file": "assets/PosterTes-CeFdy6rx.js",
     "name": "PosterTes",
     "src": "resources/js/Halaman/Kelola/TokoOnline/PosterTes.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_TiruanInertia-CMQI3A54.js",
+      "_TiruanInertia-BnUNmpkN.js",
       "resources/js/Halaman/Kelola/TokoOnline/Poster.tsx"
     ],
     "dynamicImports": [
-      "_TiruanInertia-CMQI3A54.js"
+      "_TiruanInertia-BnUNmpkN.js"
     ]
   },
   "resources/js/Halaman/Kelola/Unduhan/Daftar.tsx": {
@@ -8894,7 +8902,7 @@
     ]
   },
   "resources/js/Halaman/Publik/StrukDigital.tsx": {
-    "file": "assets/StrukDigital-CdrYl0Qi.js",
+    "file": "assets/StrukDigital-2A72-M8r.js",
     "name": "StrukDigital",
     "src": "resources/js/Halaman/Publik/StrukDigital.tsx",
     "isDynamicEntry": true,
@@ -8903,9 +8911,12 @@
       "_dist-D4veJNCv.js",
       "_check-CkeoWBtm.js",
       "_circle-DVpg3Dtj.js",
+      "_star-Bvw3AiK0.js",
       "_JudulHalaman-DypeVZDV.js",
       "_Format-D1Z2MPC0.js",
       "_FormatWaktu-bKvj24HB.js",
+      "_Tombol-DXR0xsyT.js",
+      "_BidangTeksPanjang-B2d2dvhC.js",
       "_PratinjauStruk-TQ1MMJZO.js",
       "_Laundry-Dr95-dLe.js"
     ]
@@ -8946,22 +8957,22 @@
     ]
   },
   "resources/js/Halaman/Situs/Artikel.tsx": {
-    "file": "assets/Artikel-BBFNTxa1.js",
+    "file": "assets/Artikel-DbnKa4ah.js",
     "name": "Artikel",
     "src": "resources/js/Halaman/Situs/Artikel.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_JudulHalaman-DypeVZDV.js",
       "_FormatWaktu-bKvj24HB.js",
       "_TeksKaya-Buw2x56K.js",
-      "_KartuArtikel-u9PkQlpq.js"
+      "_KartuArtikel-DTFtTYwu.js"
     ]
   },
   "resources/js/Halaman/Situs/Blog.tsx": {
-    "file": "assets/Blog-BX4vRHxB.js",
+    "file": "assets/Blog-BmoHc1Q_.js",
     "name": "Blog",
     "src": "resources/js/Halaman/Situs/Blog.tsx",
     "isDynamicEntry": true,
@@ -8969,20 +8980,20 @@
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
       "_createLucideIcon-r4wShc8y.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_JudulHalaman-DypeVZDV.js",
-      "_KartuArtikel-u9PkQlpq.js"
+      "_KartuArtikel-DTFtTYwu.js"
     ]
   },
   "resources/js/Halaman/Situs/DokumenLegal.tsx": {
-    "file": "assets/DokumenLegal-B4kddJyI.js",
+    "file": "assets/DokumenLegal-DcGMiaQO.js",
     "name": "DokumenLegal",
     "src": "resources/js/Halaman/Situs/DokumenLegal.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_calendar-clock-BqRujbm3.js",
       "_printer-CQAuhiCW.js",
       "_JudulHalaman-DypeVZDV.js",
@@ -8992,7 +9003,7 @@
     ]
   },
   "resources/js/Halaman/Situs/Halaman.tsx": {
-    "file": "assets/Halaman-okJKZCks.js",
+    "file": "assets/Halaman-zI02hxc_.js",
     "name": "Halaman",
     "src": "resources/js/Halaman/Situs/Halaman.tsx",
     "isDynamicEntry": true,
@@ -9000,7 +9011,7 @@
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
       "_createLucideIcon-r4wShc8y.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_tag-DqPHtgmk.js",
       "_check-CkeoWBtm.js",
       "_chevron-down-DbreiJNo.js",
@@ -9032,14 +9043,14 @@
     ]
   },
   "resources/js/Halaman/Situs/KompatibilitasPerangkat.tsx": {
-    "file": "assets/KompatibilitasPerangkat-dqBFSWEL.js",
+    "file": "assets/KompatibilitasPerangkat-B3kRxIhx.js",
     "name": "KompatibilitasPerangkat",
     "src": "resources/js/Halaman/Situs/KompatibilitasPerangkat.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_tag-DqPHtgmk.js",
       "_printer-CQAuhiCW.js",
       "_search-DhJtbKb0.js",
@@ -9050,14 +9061,14 @@
     ]
   },
   "resources/js/Halaman/Situs/Pengembang.tsx": {
-    "file": "assets/Pengembang-qYy6ybRS.js",
+    "file": "assets/Pengembang-M76qMFon.js",
     "name": "Pengembang",
     "src": "resources/js/Halaman/Situs/Pengembang.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
-      "_TataLetakSitus-BLp54A9s.js",
+      "_TataLetakSitus-BY1cfzLi.js",
       "_JudulHalaman-DypeVZDV.js"
     ]
   },
@@ -9091,13 +9102,13 @@
     ]
   },
   "resources/js/Pengelola.tsx": {
-    "file": "assets/Pengelola-3X_xZ0Tk.js",
+    "file": "assets/Pengelola-Bzl75VFn.js",
     "name": "Pengelola",
     "src": "resources/js/Pengelola.tsx",
     "isEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
-      "_KlienKueri-BS9TSQQ9.js",
+      "_KlienKueri-B89e-ILl.js",
       "_dist-D4veJNCv.js",
       "_query--HFt-u_p.js"
     ],
@@ -9153,7 +9164,7 @@
     ]
   },
   "resources/js/Situs.tsx": {
-    "file": "assets/Situs-CUoxh_gm.js",
+    "file": "assets/Situs-Do_9zxmm.js",
     "name": "Situs",
     "src": "resources/js/Situs.tsx",
     "isEntry": true,

@@ -25,6 +25,8 @@ import type {
     BarisOutletLaporan,
     BarisPelangganLaporan,
     BarisBundling,
+    BarisUmpanBalik,
+    IsiUmpanBalik,
     BarisFoodCost,
     BarisPrediksi,
     IsiBundling,
@@ -69,6 +71,7 @@ const daftarTab: { nilai: TabLaporanPenjualan; label: string }[] = [
     { nilai: 'food-cost', label: 'Food cost' },
     { nilai: 'prediksi', label: 'Prediksi penjualan' },
     { nilai: 'bundling', label: 'Rekomendasi bundling' },
+    { nilai: 'umpan-balik', label: 'Umpan balik' },
 ];
 
 const kolomHarian: KolomTabel<BarisHarian>[] = [
@@ -411,6 +414,50 @@ const kolomBundling: KolomTabel<BarisBundling>[] = [
             b.HargaPaket === null || b.HargaNormal === null
                 ? '–'
                 : `${FormatRupiah(b.HargaPaket)} (normal ${FormatRupiah(b.HargaNormal)})`,
+    },
+];
+
+const kolomUmpanBalik: KolomTabel<BarisUmpanBalik>[] = [
+    {
+        id: 'Waktu',
+        accessorKey: 'Waktu',
+        header: 'Waktu',
+        meta: { label: 'Waktu', prioritas: 'utama', wajib: true, kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => FormatTanggalWaktu(row.original.Waktu),
+    },
+    {
+        id: 'Nilai',
+        accessorKey: 'Nilai',
+        header: 'Nilai',
+        meta: { label: 'Nilai', prioritas: 'utama' },
+        cell: ({ row }) => (
+            <LabelStatus
+                jenis={row.original.Nilai >= 4 ? 'sukses' : row.original.Nilai === 3 ? 'netral' : 'bahaya'}
+                teks={`${String(row.original.Nilai)} dari 5`}
+            />
+        ),
+    },
+    {
+        id: 'Komentar',
+        accessorKey: 'Komentar',
+        header: 'Komentar',
+        enableSorting: false,
+        meta: { label: 'Komentar', prioritas: 'utama' },
+        cell: ({ row }) => row.original.Komentar ?? '–',
+    },
+    {
+        id: 'Nomor',
+        accessorKey: 'Nomor',
+        header: 'No transaksi',
+        meta: { label: 'No transaksi', prioritas: 'penting', kelasSel: 'font-mono whitespace-nowrap' },
+    },
+    { id: 'NamaOutlet', accessorKey: 'NamaOutlet', header: 'Outlet', meta: { label: 'Outlet', prioritas: 'rendah' } },
+    {
+        id: 'NamaPelanggan',
+        accessorKey: 'NamaPelanggan',
+        header: 'Pelanggan',
+        meta: { label: 'Pelanggan', prioritas: 'rendah' },
+        cell: ({ row }) => row.original.NamaPelanggan ?? '–',
     },
 ];
 
@@ -921,6 +968,65 @@ function IsiTab({
                         kosong={{
                             ilustrasi: true,
                             judul: 'Belum ada pasangan produk yang sering dibeli bersama pada periode ini.',
+                        }}
+                    />
+                </div>
+            );
+        }
+        case 'umpan-balik': {
+            const umpan = isi as IsiUmpanBalik;
+            const r = umpan.Ringkasan;
+
+            return (
+                <div className="flex flex-col gap-3">
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Penilaian pelanggan dari struk digital (1 sampai 5). Tingkat respons = penilaian masuk dibanding
+                        jumlah transaksi pada periode. Pelanggan yang tidak membuka struk digital tidak ikut menilai.
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-4">
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Rata-rata nilai</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {r.Jumlah === 0 ? '–' : `${r.RataRata.replace('.', ',')} dari 5`}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Penilaian masuk</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {String(r.Jumlah)} dari {String(r.JumlahTransaksi)} transaksi
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Tingkat respons</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {FormatPersen(r.TingkatRespons)}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Sebaran 5 | 4 | 3 | 2 | 1</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {(['5', '4', '3', '2', '1'] as const).map((n) => String(r.PerNilai[n])).join(' | ')}
+                            </dd>
+                        </div>
+                    </dl>
+                    <TabelData
+                        id="laporan-penjualan-umpan-balik"
+                        label="Umpan balik pelanggan"
+                        kolom={kolomUmpanBalik}
+                        sumber={{ mode: 'lokal', data: umpan.Baris }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        urutBawaan="-Waktu"
+                        cari="Cari komentar atau nomor transaksi"
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Belum ada penilaian pelanggan pada periode dan saring ini.',
                         }}
                     />
                 </div>

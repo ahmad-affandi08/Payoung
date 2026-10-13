@@ -127,6 +127,11 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kodeStruk', KodeStrukDigital::POLA)
         ->middleware('throttle:60,1')
         ->name('publik.struk-digital');
+    // F7 (CRM-08): penilaian pelanggan atas transaksi dari struk digital.
+    Route::post('/s/{kodeStruk}/umpan-balik', [StrukDigitalKontroler::class, 'KirimUmpanBalik'])
+        ->where('kodeStruk', KodeStrukDigital::POLA)
+        ->middleware('throttle:10,1')
+        ->name('publik.struk-digital.umpan-balik');
     // CRM-07: berhenti menerima pesan promosi dari tautan bertanda tangan di pesan kampanye (UU PDP).
     Route::get('/berhenti-langganan/{kode}', [BerhentiLanggananKontroler::class, 'Tampilkan'])
         ->where('kode', TautanBerhentiLangganan::POLA)

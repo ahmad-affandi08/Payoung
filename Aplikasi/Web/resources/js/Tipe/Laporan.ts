@@ -99,7 +99,8 @@ export type TabLaporanPenjualan =
     | 'food-cost'
     | 'performa-kasir'
     | 'prediksi'
-    | 'bundling';
+    | 'bundling'
+    | 'umpan-balik';
 
 export type SaringLaporanPenjualan = {
     Tab: TabLaporanPenjualan;
@@ -250,6 +251,26 @@ export type BarisBundling = {
     HargaPaket: string | null;
 };
 export type IsiBundling = { JumlahTransaksi: number; Terpotong: boolean; Baris: BarisBundling[] };
+/** F7 (CRM-08): umpan balik pelanggan dari struk digital. */
+export type BarisUmpanBalik = {
+    Kunci: string;
+    Nomor: string;
+    Waktu: string;
+    NamaOutlet: string;
+    NamaPelanggan: string | null;
+    Nilai: number;
+    Komentar: string | null;
+};
+export type IsiUmpanBalik = {
+    Ringkasan: {
+        Jumlah: number;
+        RataRata: string;
+        PerNilai: Record<'1' | '2' | '3' | '4' | '5', number>;
+        JumlahTransaksi: number;
+        TingkatRespons: string;
+    };
+    Baris: BarisUmpanBalik[];
+};
 /** Penjualan per pelanggan; `Kunci` kosong = transaksi tanpa pelanggan. `Porsi` = % omzet bersih. */
 export type BarisPelangganLaporan = AngkaPenjualan & { Kunci: string; NamaPelanggan: string; Porsi: string };
 /** Perbandingan outlet; `Margin` = % laba kotor terhadap omzet bersih. */
@@ -370,6 +391,7 @@ export type PropsLaporanPenjualan = {
         | BarisPerformaKasir[]
         | IsiPrediksi
         | IsiBundling
+        | IsiUmpanBalik
         | BarisMetodeLaporan[]
         | BarisDiskonLaporan[]
         | BarisVoidItemLaporan[]

@@ -19,7 +19,7 @@ final class PengaturanStrukTenant
     /** Kunci saklar tampil yang boleh berbeda per outlet (D-76); teks isian tetap satu untuk tenant. */
     public const SAKLAR_OUTLET = [
         'TampilkanLogo', 'TampilkanAlamat', 'TampilkanTelepon', 'TampilkanNpwp',
-        'TampilkanKasir', 'TampilkanPelanggan', 'TampilkanHemat', 'TampilkanStrukDigital',
+        'TampilkanKasir', 'TampilkanPelanggan', 'TampilkanHemat', 'TampilkanStrukDigital', 'TampilkanUmpanBalik',
     ];
 
     /**
@@ -50,6 +50,7 @@ final class PengaturanStrukTenant
             catatanKaki: self::AmbilTeks($struk['CatatanKaki'] ?? null, DataPengaturanStruk::PANJANG_CATATAN_KAKI_MAKSIMAL),
             teksPenutup: self::AmbilTeks($struk['TeksPenutup'] ?? null, DataPengaturanStruk::PANJANG_BARIS_MAKSIMAL),
             tampilkanStrukDigital: $saklar('TampilkanStrukDigital'),
+            tampilkanUmpanBalik: $saklar('TampilkanUmpanBalik'),
         );
     }
 

@@ -11,6 +11,7 @@ use App\Domain\Organisasi\Kueri\ProfilPajakOutlet;
 use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pelanggan\Kueri\RiwayatPoin;
 use App\Domain\Pemenuhan\Kueri\StatusLaundryPublik;
+use App\Domain\Penjualan\Aksi\KirimUmpanBalikTransaksi;
 use App\Domain\Penjualan\Enum\StatusPenjualan;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Model\Penjualan;
@@ -18,6 +19,7 @@ use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\PenjualanPajak;
 use App\Domain\Penjualan\Model\PenjualanPembayaran;
 use App\Domain\Penjualan\Model\ReturPenjualan;
+use App\Domain\Penjualan\Model\UmpanBalikTransaksi;
 use App\Domain\Tenant\Kueri\PengaturanStrukTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 
@@ -114,7 +116,27 @@ final class StrukDigitalPenjualan
             'CatatanKaki' => $struk->catatanKaki,
             'TeksPenutup' => $struk->teksPenutup,
             'Laundry' => $laundry,
+            // F7 (CRM-08): form penilaian bila diminta, atau penilaian yang sudah dikirim pelanggan.
+            'UmpanBalik' => $this->AmbilUmpanBalik($p, $struk->tampilkanUmpanBalik),
         ];
+    }
+
+    /**
+     * @return array{Diminta: bool, Nilai: int|null, Komentar: string|null}|null
+     */
+    private function AmbilUmpanBalik(Penjualan $p, bool $diaktifkan): ?array
+    {
+        $ada = UmpanBalikTransaksi::query()->where('IdPenjualan', $p->Id)->first();
+
+        if ($ada instanceof UmpanBalikTransaksi) {
+            return ['Diminta' => false, 'Nilai' => $ada->Nilai, 'Komentar' => $ada->Komentar];
+        }
+
+        $layak = $diaktifkan
+            && $p->Status !== StatusPenjualan::Void
+            && ! $p->DibuatOfflinePada->copy()->addDays(KirimUmpanBalikTransaksi::HARI_BERLAKU)->lessThan(now());
+
+        return $layak ? ['Diminta' => true, 'Nilai' => null, 'Komentar' => null] : null;
     }
 
     private function AmbilTautanTokoOnline(int $idTenant, ?string $uuidOutlet): ?string

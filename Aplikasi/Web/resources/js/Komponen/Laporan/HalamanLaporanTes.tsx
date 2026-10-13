@@ -525,6 +525,60 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByText(/sebagian tidak ikut dianalisis/)).toBeTruthy();
     });
 
+    it('F7 tab umpan balik: rata-rata, tingkat respons, sebaran, dan komentar pelanggan terbaca', () => {
+        RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: {
+                        Tab: 'umpan-balik',
+                        Dari: '2026-10-01',
+                        Sampai: '2026-10-07',
+                        Outlet: '',
+                        Kasir: '',
+                        Kanal: '',
+                    },
+                    Isi: {
+                        Ringkasan: {
+                            Jumlah: 2,
+                            RataRata: '4.50',
+                            PerNilai: { '1': 0, '2': 0, '3': 0, '4': 1, '5': 1 },
+                            JumlahTransaksi: 8,
+                            TingkatRespons: '25.00',
+                        },
+                        Baris: [
+                            {
+                                Kunci: 'u1',
+                                Nomor: 'INV/SLO/261005/K01-0003',
+                                Waktu: '2026-10-05T03:00:00Z',
+                                NamaOutlet: 'Toko Kelontong Berkah Solo',
+                                NamaPelanggan: null,
+                                Nilai: 5,
+                                Komentar: 'Pelayanan ramah',
+                            },
+                            {
+                                Kunci: 'u2',
+                                Nomor: 'INV/SLO/261006/K01-0004',
+                                Waktu: '2026-10-06T03:00:00Z',
+                                NamaOutlet: 'Toko Kelontong Berkah Solo',
+                                NamaPelanggan: 'Budi',
+                                Nilai: 4,
+                                Komentar: null,
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Umpan balik pelanggan' })).toBeTruthy();
+        expect(screen.getByText('4,50 dari 5')).toBeTruthy();
+        expect(screen.getByText('2 dari 8 transaksi')).toBeTruthy();
+        expect(screen.getByText('25,00%')).toBeTruthy();
+        expect(screen.getByText('1 | 1 | 0 | 0 | 0')).toBeTruthy();
+        expect(screen.getByText('Pelayanan ramah')).toBeTruthy();
+        expect(screen.getByText('5 dari 5')).toBeTruthy();
+    });
+
     it('tab anti-fraud: tingkat risiko berteks + alasan, penjelasan skor', () => {
         RenderUji(
             <HalamanLaporanPenjualan

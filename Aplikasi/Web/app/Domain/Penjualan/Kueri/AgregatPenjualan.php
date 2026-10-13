@@ -21,6 +21,7 @@ use App\Domain\Penjualan\Model\PesananTerbukaDetail;
 use App\Domain\Penjualan\Model\ReturPenjualan;
 use App\Domain\Penjualan\Model\ReturPenjualanDetail;
 use App\Domain\Penjualan\Model\ReturPenjualanPembayaran;
+use App\Domain\Penjualan\Model\UmpanBalikTransaksi;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as KueriDasar;
@@ -471,6 +472,59 @@ final class AgregatPenjualan
             ->when($batas !== null, fn (KueriDasar $k) => $k->limit((int) $batas));
 
         return array_values(array_map(fn (stdClass $b): array => self::PetakanProduk($b), $grup->get()->all()));
+    }
+
+    /**
+     * Umpan balik pelanggan (F7, CRM-08) atas penjualan tidak di-void yang cocok dengan saring: baris terbaru (maks.
+     * `$batas`) dan ringkasan seluruh umpan balik pada saring (jumlah, jumlah per nilai 1–5, total nilai).
+     *
+     * @return array{Jumlah: int, TotalNilai: int, PerNilai: array<int, int>, Baris: list<array{Nomor: string, Waktu: string, IdOutlet: int, IdPelanggan: int|null, Nilai: int, Komentar: string|null}>}
+     */
+    public function UmpanBalik(DataSaringLaporanPenjualan $saring, int $batas = 200): array
+    {
+        $kosong = ['Jumlah' => 0, 'TotalNilai' => 0, 'PerNilai' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0], 'Baris' => []];
+
+        if ($saring->CekTanpaOutlet()) {
+            return $kosong;
+        }
+
+        $dasar = fn (): Builder => $this->TerapkanUmpanBalik(UmpanBalikTransaksi::query(), $saring);
+        $ringkas = $dasar()->groupBy('UmpanBalikTransaksi.Nilai')->selectRaw('`UmpanBalikTransaksi`.`Nilai` AS `Nilai`, COUNT(*) AS `Jumlah`')->toBase()->get();
+        $hasil = $kosong;
+
+        foreach ($ringkas as $r) {
+            $hasil['PerNilai'][(int) $r->Nilai] = (int) $r->Jumlah;
+            $hasil['Jumlah'] += (int) $r->Jumlah;
+            $hasil['TotalNilai'] += (int) $r->Nilai * (int) $r->Jumlah;
+        }
+
+        foreach ($dasar()->orderByDesc('UmpanBalikTransaksi.DibuatPada')->orderByDesc('UmpanBalikTransaksi.Id')->limit($batas)
+            ->selectRaw('`Penjualan`.`Nomor` AS `Nomor`, `UmpanBalikTransaksi`.`DibuatPada` AS `Waktu`, `UmpanBalikTransaksi`.`IdOutlet` AS `IdOutlet`, `UmpanBalikTransaksi`.`IdPelanggan` AS `IdPelanggan`, `UmpanBalikTransaksi`.`Nilai` AS `Nilai`, `UmpanBalikTransaksi`.`Komentar` AS `Komentar`')
+            ->toBase()->get() as $b) {
+            $hasil['Baris'][] = [
+                'Nomor' => self::Teks($b->Nomor),
+                'Waktu' => (new \DateTimeImmutable(self::Teks($b->Waktu), new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'IdOutlet' => (int) $b->IdOutlet,
+                'IdPelanggan' => $b->IdPelanggan === null ? null : (int) $b->IdPelanggan,
+                'Nilai' => (int) $b->Nilai,
+                'Komentar' => $b->Komentar === null ? null : self::Teks($b->Komentar),
+            ];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * @param  Builder<UmpanBalikTransaksi>  $kueri
+     * @return Builder<UmpanBalikTransaksi>
+     */
+    private function TerapkanUmpanBalik(Builder $kueri, DataSaringLaporanPenjualan $saring): Builder
+    {
+        $kueri->join('Penjualan', fn (JoinClause $j) => $j->on('Penjualan.Id', '=', 'UmpanBalikTransaksi.IdPenjualan')->on('Penjualan.IdTenant', '=', 'UmpanBalikTransaksi.IdTenant'))
+            ->where('Penjualan.Status', '!=', StatusPenjualan::Void->value);
+        $this->TerapkanSaringJual($kueri, $saring);
+
+        return $kueri;
     }
 
     /**

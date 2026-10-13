@@ -1,8 +1,8 @@
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanStrukDigital, { type StrukDigital } from '@/Halaman/Publik/StrukDigital';
-import { RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturGalatBalasanUji, AturHalamanUji, kirimanForm, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -128,6 +128,50 @@ describe('Struk digital publik (POS-11)', () => {
         expect(screen.getByText(/Perkiraan selesai/)).toBeTruthy();
         expect(screen.getAllByText('(sudah)')).toHaveLength(2);
         expect(screen.getAllByText('(belum)')).toHaveLength(1);
+    });
+
+    it('F7: struk yang meminta penilaian mengirim bintang dan komentar ke alamat struk', () => {
+        AturHalamanUji({}, '/s/KODE123');
+        RenderUji(
+            <HalamanStrukDigital Struk={{ ...struk, UmpanBalik: { Diminta: true, Nilai: null, Komentar: null } }} />,
+        );
+        const kirim = screen.getByRole('button', { name: 'Kirim penilaian' });
+        expect((kirim as HTMLButtonElement).disabled).toBe(true);
+
+        fireEvent.click(screen.getByRole('radio', { name: /4 dari 5 bintang/ }));
+        fireEvent.change(screen.getByLabelText('Komentar (opsional)'), { target: { value: 'Enak dan cepat' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Kirim penilaian' }));
+
+        expect(kirimanForm).toEqual([
+            { metode: 'post', url: '/s/KODE123/umpan-balik', data: { Nilai: 4, Komentar: 'Enak dan cepat' } },
+        ]);
+    });
+
+    it('F7: galat umum dari server (batas waktu lewat) ditampilkan', () => {
+        AturHalamanUji({}, '/s/KODE123');
+        AturGalatBalasanUji({ Umum: 'Batas waktu memberi penilaian untuk transaksi ini sudah lewat.' });
+        RenderUji(
+            <HalamanStrukDigital Struk={{ ...struk, UmpanBalik: { Diminta: true, Nilai: null, Komentar: null } }} />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: /2 dari 5 bintang/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Kirim penilaian' }));
+
+        expect(screen.getByRole('alert').textContent).toContain('Batas waktu memberi penilaian');
+    });
+
+    it('F7: penilaian yang sudah dikirim tampil tanpa formulir; tanpa permintaan tidak ada bagian penilaian', () => {
+        RenderUji(
+            <HalamanStrukDigital Struk={{ ...struk, UmpanBalik: { Diminta: false, Nilai: 5, Komentar: 'Mantap' } }} />,
+        );
+        expect(screen.getByRole('region', { name: 'Penilaian Anda' })).toBeTruthy();
+        expect(screen.getByRole('img', { name: '5 dari 5 bintang' })).toBeTruthy();
+        expect(screen.getByText('Mantap')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Kirim penilaian' })).toBeNull();
+        cleanup();
+
+        RenderUji(<HalamanStrukDigital Struk={{ ...struk, UmpanBalik: null }} />);
+        expect(screen.queryByRole('region', { name: 'Penilaian Anda' })).toBeNull();
+        expect(screen.queryByRole('form', { name: 'Penilaian transaksi' })).toBeNull();
     });
 
     it('void ditandai dan struk tidak dikenal menampilkan keadaan belum tersedia', () => {

@@ -205,6 +205,7 @@ describe('F-06 PIN kasir offline & data awal (GET /api/pos/v1/data-awal)', funct
             'CatatanKaki' => 'Barang yang sudah dibeli bisa ditukar 7 hari.',
             'TeksPenutup' => null,
             'TampilkanStrukDigital' => true,
+            'TampilkanUmpanBalik' => true,
             'NamaUsaha' => $k['Outlet']->Nama,
             'Npwp' => '0123456789012345',
             'AdaLogo' => false,
