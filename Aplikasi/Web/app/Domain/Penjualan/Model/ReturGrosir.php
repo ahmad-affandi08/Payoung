@@ -45,6 +45,8 @@ use LogicException;
  * @property string $DasarPengenaanPajak
  * @property string $Pajak
  * @property string $Total
+ * @property string $NilaiRefund bagian nilai retur yang dikembalikan sebagai uang (melebihi sisa tagihan faktur)
+ * @property int|null $IdAkunRefund akun kas/bank sumber pengembalian uang
  * @property array<string, string>|null $RincianPajak
  * @property string $TotalHpp
  * @property string|null $Catatan
@@ -74,7 +76,7 @@ final class ReturGrosir extends ModelDasar
     private const KOLOM_STATUS = [
         'Status', 'IdJurnalPembatalan', 'DibatalkanOleh', 'DibatalkanPada', 'AlasanBatal', 'DiubahOleh',
         // Hasil posting dokumen ini sendiri, di transaksi yang sama.
-        'IdJurnal', 'TotalHpp', 'PerluTinjauan', 'AlasanTinjauan',
+        'IdJurnal', 'TotalHpp', 'PerluTinjauan', 'AlasanTinjauan', 'NilaiRefund', 'IdAkunRefund',
     ];
 
     protected $table = 'ReturGrosir';
@@ -84,6 +86,8 @@ final class ReturGrosir extends ModelDasar
         'Status' => 'Diposting',
         'IdFakturPenjualan' => null,
         'MengurangiPiutang' => false,
+        'NilaiRefund' => '0.00',
+        'IdAkunRefund' => null,
         'TarifPpn' => null,
         'PengaliDppPembilang' => null,
         'PengaliDppPenyebut' => null,
@@ -175,6 +179,7 @@ final class ReturGrosir extends ModelDasar
             'DasarPengenaanPajak' => 'decimal:2',
             'Pajak' => 'decimal:2',
             'Total' => 'decimal:2',
+            'NilaiRefund' => 'decimal:2',
             'RincianPajak' => 'array',
             'TotalHpp' => 'decimal:2',
             'PerluTinjauan' => 'boolean',

@@ -182,6 +182,12 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.AkuntansiKelola,
             },
             {
+                label: 'Armada pengiriman',
+                keterangan: 'Kendaraan dan pengemudi yang membawa surat jalan grosir, dipilih saat barang berangkat.',
+                href: '/kelola/grosir/armada',
+                izin: IzinTenant.GrosirKelola,
+            },
+            {
                 label: 'Rak gudang',
                 keterangan: 'Bagi lokasi stok menjadi rak atau zona dan tempatkan produknya, untuk opname per rak.',
                 href: '/kelola/persediaan/rak',

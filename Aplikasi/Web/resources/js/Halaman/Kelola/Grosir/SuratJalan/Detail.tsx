@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import PanelPengirimanGrosir from '@/Komponen/Grosir/PanelPengirimanGrosir';
 import {
     AlamatGrosir,
     DialogAlasanGrosir,
@@ -36,6 +37,9 @@ const kolom: KolomTabel<BarisDetailSuratJalan>[] = [
             <span className="flex flex-col">
                 <span className="font-semibold break-words">{b.NamaProduk}</span>
                 <span className="font-mono text-keterangan text-teks-sekunder">{b.Sku ?? 'Tanpa SKU'}</span>
+                {b.Rincian !== null ? (
+                    <span className="text-keterangan break-words text-teks-sekunder">{b.Rincian}</span>
+                ) : null}
             </span>
         ),
     },
@@ -87,6 +91,8 @@ export default function HalamanDetailSuratJalan({
     Retur,
     Jurnal,
     Riwayat,
+    RiwayatPengiriman,
+    OpsiArmada,
     Izin,
     Tindakan,
 }: PropsDetailSuratJalan) {
@@ -169,6 +175,15 @@ export default function HalamanDetailSuratJalan({
                 <KeteranganGrosir label="Kendaraan">{SuratJalan.NomorKendaraan ?? '—'}</KeteranganGrosir>
                 <KeteranganGrosir label="Penerima">{SuratJalan.NamaPenerima ?? '—'}</KeteranganGrosir>
             </KartuKeteranganGrosir>
+
+            {SuratJalan.Status === 'Diposting' ? (
+                <PanelPengirimanGrosir
+                    suratJalan={SuratJalan}
+                    opsiArmada={OpsiArmada}
+                    riwayat={RiwayatPengiriman}
+                    boleh={Tindakan.Pengiriman}
+                />
+            ) : null}
 
             <Panel judul="Barang yang diserahkan">
                 <TabelData

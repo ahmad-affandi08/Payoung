@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
+use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Pelanggan\Enum\StatusPelanggan;
 use App\Domain\Pelanggan\Model\Pelanggan;
@@ -57,6 +58,62 @@ afterEach(function (): void {
 });
 
 describe('HTTP back-office grosir', function (): void {
+    it('produk bernomor seri lewat rute: nomor seri dikirim per unit, tampil di cetak surat jalan (tanpa harga), retur memilih nomor, form retur menawarkan akun pengembalian uang', function (): void {
+        $ponsel = BantuanKatalog::BuatProduk(['Nama' => 'Ponsel Android 8/256 GB', 'Pelacakan' => PelacakanProduk::Seri->value], '2500000.00', $this->k['Pcs']);
+        BantuanStokAwal::BuatDanPosting(
+            $this->k['Gudang'],
+            [BantuanStokAwal::Baris($ponsel, '2', '2000000', nomorSeri: ['IMEI-0001', 'IMEI-0002'])],
+            $this->k['Pemilik']->Id,
+            '2026-09-02',
+        );
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        $this->post('/kelola/grosir/pesanan', [
+            'UuidPelanggan' => $this->toko->Uuid,
+            'UuidOutlet' => $this->k['Outlet']->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Baris' => [['UuidProduk' => $ponsel->Uuid, 'UuidProdukSatuan' => BantuanHarga::SatuanDasar($ponsel)->Uuid, 'Jumlah' => '2']],
+        ])->assertSessionHasNoErrors();
+        $pesanan = PesananGrosir::query()->sole();
+        $this->post("/kelola/grosir/pesanan/{$pesanan->Uuid}/konfirmasi")->assertSessionHasNoErrors();
+
+        $this->get("/kelola/grosir/pesanan/{$pesanan->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Baris.0.Pelacakan', 'Seri')
+            ->where('Baris.0.Konversi', '1.0000'));
+
+        // Jumlah nomor seri tidak sesuai → galat di formulir, tidak ada surat jalan.
+        $this->post("/kelola/grosir/pesanan/{$pesanan->Uuid}/kirim", [
+            'UuidGudang' => $this->k['Gudang']->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Baris' => [['Urutan' => 1, 'Jumlah' => '2', 'NomorSeri' => ['IMEI-0001']]],
+        ])->assertSessionHasErrors();
+        expect(SuratJalan::query()->count())->toBe(0);
+
+        $this->post("/kelola/grosir/pesanan/{$pesanan->Uuid}/kirim", [
+            'UuidGudang' => $this->k['Gudang']->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Baris' => [['Urutan' => 1, 'Jumlah' => '2', 'NomorSeri' => ['IMEI-0001', 'IMEI-0002']]],
+        ])->assertSessionHasNoErrors();
+        $suratJalan = SuratJalan::query()->sole();
+
+        $this->get("/kelola/grosir/surat-jalan/{$suratJalan->Uuid}/cetak")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Baris.0.Rincian', 'IMEI-0001, IMEI-0002')
+            ->missing('Baris.0.Harga'));
+        $this->get("/kelola/grosir/retur/buat/{$suratJalan->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Grosir/Retur/Buat')
+            ->where('Baris.0.SeriBisaDiretur', ['IMEI-0001', 'IMEI-0002'])
+            ->has('OpsiAkunRefund'));
+
+        $this->post('/kelola/grosir/retur', [
+            'UuidSuratJalan' => $suratJalan->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Alasan' => 'Layar retak dari pabrik',
+            'Baris' => [['Urutan' => 1, 'Jumlah' => '1', 'Kondisi' => 'LayakJual', 'NomorSeri' => ['IMEI-0002']]],
+        ])->assertSessionHasNoErrors();
+        $this->get("/kelola/grosir/retur/buat/{$suratJalan->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Baris.0.SeriBisaDiretur', ['IMEI-0001']));
+    });
+
     it('alur lengkap lewat rute: draf SO, konfirmasi, kirim, faktur, nomor Faktur Pajak, retur', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 

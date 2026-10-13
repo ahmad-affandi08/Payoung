@@ -1,11 +1,13 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
+import BidangDaftarTeks from '@/Komponen/Formulir/BidangDaftarTeks';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
+import { KalikanDesimal } from '@/Pustaka/HitungDesimal';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisDetailPesananGrosir, OpsiGudangGrosir } from '@/Tipe/Grosir';
 
@@ -38,6 +40,7 @@ export default function DialogKirimGrosir({
     const [jumlah, AturJumlah] = useState<Record<number, string>>(
         Object.fromEntries(bisaDikirim.map((b) => [b.Urutan, b.SisaKirim])),
     );
+    const [nomorSeri, AturNomorSeri] = useState<Record<number, string[]>>({});
     const [memproses, AturMemproses] = useState(false);
 
     const Kirim = (peristiwa: FormEvent) => {
@@ -51,7 +54,11 @@ export default function DialogKirimGrosir({
                 NomorKendaraan: nomorKendaraan,
                 Baris: bisaDikirim
                     .filter((b) => Number(jumlah[b.Urutan] ?? '0') > 0)
-                    .map((b) => ({ Urutan: b.Urutan, Jumlah: jumlah[b.Urutan] ?? '0' })),
+                    .map((b) => ({
+                        Urutan: b.Urutan,
+                        Jumlah: jumlah[b.Urutan] ?? '0',
+                        ...(b.Pelacakan === 'Seri' ? { NomorSeri: nomorSeri[b.Urutan] ?? [] } : {}),
+                    })),
             },
             {
                 preserveScroll: true,
@@ -119,10 +126,20 @@ export default function DialogKirimGrosir({
                                     label={`${String(b.Urutan)}. ${b.NamaProduk}`}
                                     nilai={jumlah[b.Urutan] ?? ''}
                                     saatBerubah={(nilai) => AturJumlah((lama) => ({ ...lama, [b.Urutan]: nilai }))}
-                                    keterangan={`Sisa ${FormatJumlahStok(b.SisaKirim, b.SimbolSatuan)}`}
+                                    keterangan={`Sisa ${FormatJumlahStok(b.SisaKirim, b.SimbolSatuan)}${b.Pelacakan === 'Batch' ? ' | batch dipilih otomatis (kedaluwarsa terdekat dulu)' : ''}`}
                                     inputMode="decimal"
                                     maxLength={20}
                                 />
+                                {b.Pelacakan === 'Seri' ? (
+                                    <BidangDaftarTeks
+                                        label={`Nomor seri ${b.NamaProduk}`}
+                                        nilai={nomorSeri[b.Urutan] ?? []}
+                                        saatBerubah={(daftar) =>
+                                            AturNomorSeri((lama) => ({ ...lama, [b.Urutan]: daftar }))
+                                        }
+                                        keterangan={`Satu nomor seri per baris; isi ${KalikanDesimal(jumlah[b.Urutan] ?? '0', b.Konversi, 0)} nomor sesuai jumlah yang diserahkan.`}
+                                    />
+                                ) : null}
                             </div>
                         ))
                     )}

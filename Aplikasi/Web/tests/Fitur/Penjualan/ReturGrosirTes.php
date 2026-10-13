@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Akuntansi\Enum\PeranAkun;
+use App\Domain\Akuntansi\Model\Akun;
 use App\Domain\Akuntansi\Model\JurnalDetail;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
@@ -10,6 +11,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Enum\JenisGudang;
+use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Aksi\BatalkanReturGrosir;
@@ -95,7 +97,7 @@ function SuratJalanUntukReturUji($tes, string $jumlah = '200', string $diskon = 
 }
 
 /** @param  list<array{0: int, 1: string, 2?: KondisiBarangRetur}>  $baris */
-function ReturUji($tes, SuratJalan $suratJalan, array $baris, string $tanggal = '2026-09-27', string $alasan = 'Kemasan sobek saat bongkar'): ReturGrosir
+function ReturUji($tes, SuratJalan $suratJalan, array $baris, string $tanggal = '2026-09-27', string $alasan = 'Kemasan sobek saat bongkar', ?string $uuidAkunRefund = null): ReturGrosir
 {
     return app(BuatReturGrosir::class)->Jalankan(new DataReturGrosir(
         uuidSuratJalan: $suratJalan->Uuid,
@@ -109,6 +111,7 @@ function ReturUji($tes, SuratJalan $suratJalan, array $baris, string $tanggal = 
             ),
             $baris,
         ),
+        uuidAkunRefund: $uuidAkunRefund,
     ), $tes->k['Pemilik']->Id);
 }
 
@@ -271,7 +274,7 @@ describe('BuatReturGrosir (BR-12.7, J-12.4)', function (): void {
         }
     });
 
-    it('menolak bila sisa tagihan fakturnya tidak cukup (kasus refund uang, bukan nota kredit)', function (): void {
+    it('sisa tagihan tidak cukup: ditolak tanpa akun pengembalian uang, tidak ada dokumen setengah jadi', function (): void {
         $suratJalan = SuratJalanUntukReturUji($this);
         $faktur = app(BuatFakturPenjualan::class)->Jalankan(
             new DataFakturPenjualan([$suratJalan->Uuid], CarbonImmutable::parse('2026-09-21')),
@@ -286,14 +289,67 @@ describe('BuatReturGrosir (BR-12.7, J-12.4)', function (): void {
 
         try {
             ReturUji($this, $suratJalan->refresh(), [[1, '50']]);
-            $this->fail('Retur 750.000 atas sisa tagihan 100.000 seharusnya ditolak.');
+            $this->fail('Retur 750.000 atas sisa tagihan 100.000 tanpa akun pengembalian uang seharusnya ditolak.');
         } catch (PelanggaranAturanBisnis $galat) {
-            expect($galat->kode)->toBe('SisaPiutangTidakCukup');
+            expect($galat->kode)->toBe('AkunRefundWajib');
         }
 
         // Tidak ada dokumen setengah jadi yang tertinggal, dan piutangnya tidak tersentuh.
         expect(ReturGrosir::query()->count())->toBe(0)
-            ->and($piutang->refresh()->JumlahDikurangi)->toBe('0.00');
+            ->and($piutang->refresh()->JumlahDikurangi)->toBe('0.00')
+            ->and(SisaStokReturUji($this))->toBe('800.0000');
+    });
+
+    it('BR-12.7: nilai retur melebihi sisa tagihan → sisa tagihan terpotong, selebihnya dikembalikan sebagai uang dari kas/bank (J-12.4 seimbang), pembatalan membalik keduanya', function (): void {
+        $suratJalan = SuratJalanUntukReturUji($this);
+        $faktur = app(BuatFakturPenjualan::class)->Jalankan(
+            new DataFakturPenjualan([$suratJalan->Uuid], CarbonImmutable::parse('2026-09-21')),
+            $this->k['Pemilik']->Id,
+        );
+        $piutang = Piutang::query()->where('IdFakturPenjualan', $faktur->Id)->sole();
+        $piutang->JumlahDibayar = '2900000.00';
+        $piutang->SelaraskanStatus();
+        $piutang->save();
+        $kas = Akun::query()->where('KasBank', true)->where('Aktif', true)->orderBy('Kode')->firstOrFail();
+
+        $retur = ReturUji($this, $suratJalan->refresh(), [[1, '50']], uuidAkunRefund: $kas->Uuid);
+
+        expect($retur->MengurangiPiutang)->toBeTrue()
+            ->and($retur->Total)->toBe('750000.00')
+            ->and($retur->NilaiRefund)->toBe('650000.00')
+            ->and($retur->IdAkunRefund)->toBe($kas->Id);
+        $piutang->refresh();
+        expect($piutang->JumlahDikurangi)->toBe('100000.00')
+            ->and($piutang->AmbilSisa()->KeString())->toBe('0.00')
+            ->and($piutang->Status)->toBe(StatusPiutang::Lunas);
+
+        $idJurnal = (int) $retur->IdJurnal;
+        $barisKas = JurnalDetail::query()->where('IdJurnal', $idJurnal)->where('IdAkun', $kas->Id)->get();
+        expect($barisKas)->toHaveCount(1)
+            ->and($barisKas->first()?->Kredit)->toBe('650000.00')
+            ->and(BarisJurnalReturUji($idJurnal, PeranAkun::PiutangUsaha))->toBe(['Debit' => '0.00', 'Kredit' => '100000.00'])
+            ->and(BarisJurnalReturUji($idJurnal, PeranAkun::ReturPenjualan))->toBe(['Debit' => '750000.00', 'Kredit' => '0.00'])
+            ->and(PemeriksaInvarian::PeriksaSemua($this->k['Tenant']->Id))->toBe([]);
+
+        // Akun yang bukan kas/bank ditolak.
+        $bukanKas = Akun::query()->where('KasBank', false)->orderBy('Kode')->firstOrFail();
+
+        try {
+            ReturUji($this, $suratJalan->refresh(), [[1, '10']], uuidAkunRefund: $bukanKas->Uuid);
+            $this->fail('Akun yang bukan kas/bank seharusnya ditolak.');
+        } catch (PelanggaranAturanBisnis $galat) {
+            expect($galat->kode)->toBe('AkunRefundWajib');
+        }
+
+        $dibatalkan = app(BatalkanReturGrosir::class)->Jalankan($retur->Uuid, 'Pembeli batal mengembalikan barang', $this->k['Pemilik']->Id);
+        $idPembalik = (int) $dibatalkan->IdJurnalPembatalan;
+        $pembalikKas = JurnalDetail::query()->where('IdJurnal', $idPembalik)->where('IdAkun', $kas->Id)->get();
+        expect($pembalikKas)->toHaveCount(1)
+            ->and($pembalikKas->first()?->Debit)->toBe('650000.00')
+            ->and(BarisJurnalReturUji($idPembalik, PeranAkun::PiutangUsaha))->toBe(['Debit' => '100000.00', 'Kredit' => '0.00'])
+            ->and($piutang->refresh()->JumlahDikurangi)->toBe('0.00')
+            ->and($piutang->AmbilSisa()->KeString())->toBe('100000.00')
+            ->and(PemeriksaInvarian::PeriksaSemua($this->k['Tenant']->Id))->toBe([]);
     });
 });
 

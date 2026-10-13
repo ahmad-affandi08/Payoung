@@ -11,6 +11,7 @@ use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\MilikTenant;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Penjualan\Enum\StatusPengirimanGrosir;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -46,6 +47,11 @@ use LogicException;
  * @property string|null $NomorKendaraan
  * @property string|null $NamaPenerima
  * @property string|null $Catatan
+ * @property StatusPengirimanGrosir $StatusPengiriman kabar lapangan (bukan status akuntansi), boleh berubah setelah diposting
+ * @property int|null $IdArmada
+ * @property Carbon|null $BerangkatPada
+ * @property Carbon|null $DiterimaPada
+ * @property string|null $CatatanPengiriman
  * @property int|null $IdFakturPenjualan
  * @property int|null $IdJurnal
  * @property int|null $IdJurnalPembatalan
@@ -75,6 +81,9 @@ final class SuratJalan extends ModelDasar
         // Hasil posting dokumen ini sendiri, di transaksi yang sama: HPP baru diketahui setelah mutasi stok dicatat
         // (nilai HPP berjalan) dan nomor jurnal setelah jurnalnya diposting. Cermin `PenerimaanBarang`.
         'IdJurnal', 'TotalHpp',
+        // Pelacakan pengiriman (kabar lapangan): berubah-ubah tanpa menyentuh angka dokumen. `NamaPengirim`, `NomorKendaraan`
+        // dan `NamaPenerima` ikut diperbarui karena itulah yang tercetak.
+        'StatusPengiriman', 'IdArmada', 'BerangkatPada', 'DiterimaPada', 'CatatanPengiriman', 'NamaPengirim', 'NomorKendaraan', 'NamaPenerima',
     ];
 
     protected $table = 'SuratJalan';
@@ -91,6 +100,11 @@ final class SuratJalan extends ModelDasar
         'NamaPenerima' => null,
         'Catatan' => null,
         'IdFakturPenjualan' => null,
+        'StatusPengiriman' => 'Disiapkan',
+        'IdArmada' => null,
+        'BerangkatPada' => null,
+        'DiterimaPada' => null,
+        'CatatanPengiriman' => null,
     ];
 
     /**
@@ -170,6 +184,9 @@ final class SuratJalan extends ModelDasar
         return [
             'Tanggal' => 'date',
             'Status' => StatusDokumenTerposting::class,
+            'StatusPengiriman' => StatusPengirimanGrosir::class,
+            'BerangkatPada' => 'datetime',
+            'DiterimaPada' => 'datetime',
             'TarifPpn' => 'decimal:6',
             'PengaliDppPembilang' => 'integer',
             'PengaliDppPenyebut' => 'integer',

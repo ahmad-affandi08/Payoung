@@ -77,16 +77,24 @@ final class PenyusunJurnalGrosir
         ?int $idOutlet,
         bool $mengurangiPiutang,
         bool $pembalik = false,
+        ?Uang $refund = null,
+        ?int $idAkunRefund = null,
     ): array {
+        $refund ??= Uang::Nol();
         $arah = fn (Uang $nilai): Uang => $pembalik ? Uang::Nol()->Kurangi($nilai) : $nilai;
+        // BR-12.7: bagian nilai retur yang melebihi sisa tagihan dikembalikan sebagai uang dari kas/bank.
+        $kreditPiutang = $total->Kurangi($refund);
         $baris = [
             DataBarisJurnal::DariSelisih(PeranAkun::ReturPenjualan, $arah($pendapatan), $idOutlet),
             DataBarisJurnal::DariSelisih(PeranAkun::DiskonPenjualan, $arah(Uang::Nol()->Kurangi($diskon)), $idOutlet),
             DataBarisJurnal::DariSelisih(
                 $mengurangiPiutang ? PeranAkun::PiutangUsaha : PeranAkun::PiutangBelumDifakturkan,
-                $arah(Uang::Nol()->Kurangi($total)),
+                $arah(Uang::Nol()->Kurangi($kreditPiutang)),
                 $idOutlet,
             ),
+            $idAkunRefund === null || $refund->BernilaiNol()
+                ? null
+                : self::BarisAkun($idAkunRefund, $arah(Uang::Nol()->Kurangi($refund)), $idOutlet, 'Pengembalian uang retur grosir'),
         ];
         $akunPajak = $this->penyusunPenjualan->TentukanAkunPajak(array_map('strval', array_keys($pajak)));
 
@@ -142,5 +150,17 @@ final class PenyusunJurnalGrosir
         $baris[] = DataBarisJurnal::DariSelisih(PeranAkun::Hpp, Uang::Nol()->Kurangi($totalPerubahan), $idOutlet);
 
         return array_values(array_filter($baris, fn (?DataBarisJurnal $b): bool => $b !== null));
+    }
+
+    /** Baris ke akun tertentu (mis. kas/bank pilihan pengguna): positif = debit, negatif = kredit, nol = tanpa baris. */
+    private static function BarisAkun(int $idAkun, Uang $bertanda, ?int $idOutlet, string $memo): ?DataBarisJurnal
+    {
+        if ($bertanda->BernilaiNol()) {
+            return null;
+        }
+
+        return $bertanda->BernilaiNegatif()
+            ? new DataBarisJurnal(null, $idAkun, $idOutlet, Uang::Nol(), Uang::Nol()->Kurangi($bertanda), $memo)
+            : new DataBarisJurnal(null, $idAkun, $idOutlet, $bertanda, Uang::Nol(), $memo);
     }
 }

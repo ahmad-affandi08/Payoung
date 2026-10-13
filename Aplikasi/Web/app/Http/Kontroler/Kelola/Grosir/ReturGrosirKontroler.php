@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Grosir;
 
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Penjualan\Aksi\BatalkanReturGrosir;
@@ -42,7 +43,7 @@ final class ReturGrosirKontroler extends DasarGrosirKontroler
     }
 
     /** Form retur atas satu surat jalan; sisa yang masih bisa diretur per baris datang dari server. */
-    public function Buat(string $suratJalan, DetailGrosir $detail): Response|RedirectResponse
+    public function Buat(string $suratJalan, DetailGrosir $detail, DaftarAkunPilihan $akun): Response|RedirectResponse
     {
         $dokumen = $this->CariDokumen(SuratJalan::class, $suratJalan);
 
@@ -54,6 +55,7 @@ final class ReturGrosirKontroler extends DasarGrosirKontroler
         return Inertia::render('Kelola/Grosir/Retur/Buat', [
             ...$detail->SuratJalan($dokumen),
             'OpsiKondisi' => self::Opsi(KondisiBarangRetur::class),
+            'OpsiAkunRefund' => array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Kode' => $a['Kode'], 'Nama' => $a['Nama']], $akun->AmbilKasBank()),
             'HariIni' => $this->HariIni(),
             'Izin' => $this->AmbilIzinGrosir(),
         ]);

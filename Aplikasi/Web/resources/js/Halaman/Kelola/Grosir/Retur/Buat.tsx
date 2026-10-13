@@ -2,6 +2,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
+import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -30,14 +31,14 @@ import {
     SkalaUang,
 } from '@/Pustaka/HitungDesimal';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { PropsBuatRetur } from '@/Tipe/Grosir';
+import type { BarisDetailSuratJalan, PropsBuatRetur } from '@/Tipe/Grosir';
 
 const alamat = `${AlamatGrosir}/retur`;
 const kelasSel = 'px-2 py-2 align-top whitespace-normal';
 const kelasKepala = 'px-2 text-label text-teks-sekunder';
 
 /** Jumlah yang diisi operator per baris surat jalan, ditambah kondisi barangnya. */
-type IsianBarisRetur = { Jumlah: string; Kondisi: string };
+type IsianBarisRetur = { Jumlah: string; Kondisi: string; NomorSeri: string[] };
 
 /**
  * Membuat retur grosir atas satu surat jalan (F-12, §9.7, BR-12.7, J-12.4).
@@ -46,22 +47,37 @@ type IsianBarisRetur = { Jumlah: string; Kondisi: string };
  * jalan, dan yang diisi operator cuma jumlah & kondisinya. Harga, HPP, dan tarif pajaknya tidak ada di formulir ini
  * karena semuanya disalin dari snapshot penyerahan — retur harus membalik angka yang dulu diakui, bukan angka hari ini.
  */
-export default function HalamanBuatReturGrosir({ SuratJalan, Baris, OpsiKondisi, HariIni, Izin }: PropsBuatRetur) {
+export default function HalamanBuatReturGrosir({
+    SuratJalan,
+    Baris,
+    OpsiKondisi,
+    OpsiAkunRefund,
+    HariIni,
+    Izin,
+}: PropsBuatRetur) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const bawaanKondisi = OpsiKondisi[0]?.Nilai ?? 'LayakJual';
     const [isian, AturIsian] = useState<Record<number, IsianBarisRetur>>({});
     const [tanggal, AturTanggal] = useState(HariIni);
     const [alasan, AturAlasan] = useState('');
     const [catatan, AturCatatan] = useState('');
+    const [akunRefund, AturAkunRefund] = useState('');
     const [memproses, AturMemproses] = useState(false);
 
-    const Ambil = (urutan: number): IsianBarisRetur => isian[urutan] ?? { Jumlah: '', Kondisi: bawaanKondisi };
+    const Ambil = (urutan: number): IsianBarisRetur =>
+        isian[urutan] ?? { Jumlah: '', Kondisi: bawaanKondisi, NomorSeri: [] };
     const Ubah = (urutan: number, perubahan: Partial<IsianBarisRetur>) =>
         AturIsian((lama) => ({ ...lama, [urutan]: { ...Ambil(urutan), ...perubahan } }));
 
     const bolehDiretur = Baris.filter((b) => BandingkanDesimal(b.SisaRetur, '0') > 0);
+    // Produk bernomor seri: jumlah retur = banyaknya nomor seri yang dicentang (satu per unit).
+    const AdalahSeri = (b: BarisDetailSuratJalan) => b.SeriBisaDiretur.length > 0;
     const terisi = bolehDiretur
-        .map((b) => ({ baris: b, ...Ambil(b.Urutan) }))
+        .map((b) => {
+            const nilai = Ambil(b.Urutan);
+
+            return { baris: b, ...nilai, Jumlah: AdalahSeri(b) ? String(nilai.NomorSeri.length) : nilai.Jumlah };
+        })
         .filter((b) => CekDesimalValid(b.Jumlah) && BandingkanDesimal(b.Jumlah, '0') > 0);
     const lebihDariSisa = terisi.filter((b) => BandingkanDesimal(b.Jumlah, b.baris.SisaRetur) > 0);
     // Perkiraan kasar: harga × jumlah. Diskon baris dialokasikan proporsional & pajaknya dihitung server.
@@ -79,7 +95,13 @@ export default function HalamanBuatReturGrosir({ SuratJalan, Baris, OpsiKondisi,
                 Tanggal: tanggal,
                 Alasan: alasan,
                 Catatan: catatan === '' ? null : catatan,
-                Baris: terisi.map((b) => ({ Urutan: b.baris.Urutan, Jumlah: b.Jumlah, Kondisi: b.Kondisi })),
+                UuidAkunRefund: akunRefund === '' ? null : akunRefund,
+                Baris: terisi.map((b) => ({
+                    Urutan: b.baris.Urutan,
+                    Jumlah: b.Jumlah,
+                    Kondisi: b.Kondisi,
+                    ...(AdalahSeri(b.baris) ? { NomorSeri: b.NomorSeri } : {}),
+                })),
             },
             { onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) },
         );
@@ -144,14 +166,30 @@ export default function HalamanBuatReturGrosir({ SuratJalan, Baris, OpsiKondisi,
                                             {FormatJumlahStok(b.SisaRetur, b.SimbolSatuan)}
                                         </TableCell>
                                         <TableCell className={kelasSel}>
-                                            <BidangJumlah
-                                                label={`Jumlah retur ${b.NamaProduk}`}
-                                                labelTersembunyi
-                                                nilai={nilai.Jumlah}
-                                                saatBerubah={(teks) => Ubah(b.Urutan, { Jumlah: teks })}
-                                                akhiran={b.SimbolSatuan}
-                                                galat={lebih ? 'Melebihi sisa yang bisa diretur.' : undefined}
-                                            />
+                                            {AdalahSeri(b) ? (
+                                                <GrupCentang
+                                                    legenda={`Nomor seri ${b.NamaProduk} yang dikembalikan`}
+                                                    opsi={b.SeriBisaDiretur.map((n) => ({ nilai: n, label: n }))}
+                                                    terpilih={nilai.NomorSeri}
+                                                    saatBerubah={(daftar) => Ubah(b.Urutan, { NomorSeri: daftar })}
+                                                />
+                                            ) : (
+                                                <>
+                                                    <BidangJumlah
+                                                        label={`Jumlah retur ${b.NamaProduk}`}
+                                                        labelTersembunyi
+                                                        nilai={nilai.Jumlah}
+                                                        saatBerubah={(teks) => Ubah(b.Urutan, { Jumlah: teks })}
+                                                        akhiran={b.SimbolSatuan}
+                                                        galat={lebih ? 'Melebihi sisa yang bisa diretur.' : undefined}
+                                                    />
+                                                    {b.Rincian !== null ? (
+                                                        <p className="mt-1 text-keterangan text-teks-sekunder">
+                                                            Kembali ke batch asal: {b.Rincian}
+                                                        </p>
+                                                    ) : null}
+                                                </>
+                                            )}
                                         </TableCell>
                                         <TableCell className={kelasSel}>
                                             <BidangPilihan
@@ -201,6 +239,24 @@ export default function HalamanBuatReturGrosir({ SuratJalan, Baris, OpsiKondisi,
                     galat={props.errors.Catatan}
                     maksimal={500}
                 />
+                {SuratJalan.NomorFaktur !== null ? (
+                    <BidangPilihan
+                        label="Kembalikan uang dari akun"
+                        nilai={akunRefund}
+                        opsi={[
+                            { Nilai: '', Label: 'Tidak ada pengembalian uang' },
+                            ...OpsiAkunRefund.map((a) => ({ Nilai: a.Uuid, Label: `${a.Kode} ${a.Nama}` })),
+                        ]}
+                        saatBerubah={AturAkunRefund}
+                        galat={props.errors.UuidAkunRefund}
+                    />
+                ) : null}
+                {SuratJalan.NomorFaktur !== null ? (
+                    <p className="text-keterangan text-teks-sekunder">
+                        Isi bila pembeli sudah membayar faktur ini sehingga nilai retur melebihi sisa tagihan:
+                        selebihnya dikembalikan sebagai uang dari akun ini.
+                    </p>
+                ) : null}
             </Panel>
 
             <BilahAksiForm>

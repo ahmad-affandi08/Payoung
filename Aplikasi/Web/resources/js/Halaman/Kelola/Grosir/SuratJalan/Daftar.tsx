@@ -9,9 +9,11 @@ import {
     KolomUangGrosir,
 } from '@/Komponen/Grosir/BagianDokumenGrosir';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
+import { JenisLabelPengiriman } from '@/Komponen/Grosir/PanelPengirimanGrosir';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
+import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { Link } from '@inertiajs/react';
 import type { BarisDaftarSuratJalan, PropsDaftarSuratJalan } from '@/Tipe/Grosir';
 
@@ -41,6 +43,18 @@ const kolom: KolomTabel<BarisDaftarSuratJalan>[] = [
             ),
     },
     KolomStatusGrosir(),
+    {
+        id: 'Pengiriman',
+        header: 'Pengiriman',
+        enableSorting: false,
+        meta: { label: 'Pengiriman', prioritas: 'penting', kelasSel: 'whitespace-nowrap' },
+        cell: ({ row: { original: d } }) =>
+            d.Status === 'Dibatalkan' ? (
+                <span className="text-teks-sekunder">—</span>
+            ) : (
+                <LabelStatus jenis={JenisLabelPengiriman(d.StatusPengiriman)} teks={d.LabelStatusPengiriman} />
+            ),
+    },
     KolomUangGrosir('Total', 'Total', (d) => d.Total, true),
 ];
 
@@ -49,7 +63,12 @@ const kolom: KolomTabel<BarisDaftarSuratJalan>[] = [
  * membukukan HPP & pendapatan, dan menerbitkan PPN keluaran. Saringan "Belum difakturkan" adalah tujuan butir Kotak
  * Tindakan BR-12.4 — nilai yang sudah diserahkan tetapi belum ditagihkan ke pembeli.
  */
-export default function HalamanDaftarSuratJalan({ SuratJalan, OpsiStatus, Izin }: PropsDaftarSuratJalan) {
+export default function HalamanDaftarSuratJalan({
+    SuratJalan,
+    OpsiStatus,
+    OpsiStatusPengiriman,
+    Izin,
+}: PropsDaftarSuratJalan) {
     return (
         <HalamanGrosir
             judul="Surat jalan grosir"
@@ -81,6 +100,12 @@ export default function HalamanDaftarSuratJalan({ SuratJalan, OpsiStatus, Izin }
                             { nilai: 'Belum', label: 'Belum difakturkan' },
                             { nilai: 'Sudah', label: 'Sudah difakturkan' },
                         ],
+                    },
+                    {
+                        id: 'Pengiriman',
+                        label: 'Pengiriman',
+                        jenis: 'pilihan',
+                        opsi: OpsiStatusPengiriman.map((o) => ({ nilai: o.Nilai, label: o.Label })),
                     },
                 ])}
                 alamatDetail={(d) => `${alamat}/${d.Uuid}`}

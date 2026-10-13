@@ -124,6 +124,8 @@ final class BatalkanReturGrosir
                 nilai: AritmetikaHpp::AmbilMutlak(Uang::Dari($m['TotalHpp'])),
                 hppSatuan: BigDecimal::of($m['HppSatuan']),
                 idReferensiDetail: $m['IdReferensiDetail'],
+                idBatchStok: $m['IdBatchStok'],
+                idNomorSeri: $m['IdNomorSeri'],
                 idMutasiAsal: $m['Id'],
             ), $asalMutasi),
         ));
@@ -152,6 +154,8 @@ final class BatalkanReturGrosir
                 $retur->IdOutlet,
                 $retur->MengurangiPiutang,
                 pembalik: true,
+                refund: Uang::Dari($retur->NilaiRefund),
+                idAkunRefund: $retur->IdAkunRefund,
             ),
             idPengguna: $idPengguna,
             kunciSumber: 'Pembatalan',
@@ -161,7 +165,7 @@ final class BatalkanReturGrosir
         if ($retur->MengurangiPiutang && $retur->IdFakturPenjualan !== null) {
             $this->pencatatPiutang->BatalkanPenguranganFaktur(
                 $retur->IdFakturPenjualan,
-                $retur->AmbilTotal(),
+                $retur->AmbilTotal()->Kurangi(Uang::Dari($retur->NilaiRefund)),
                 $idPengguna,
                 "Pembatalan retur grosir {$retur->Nomor}",
             );

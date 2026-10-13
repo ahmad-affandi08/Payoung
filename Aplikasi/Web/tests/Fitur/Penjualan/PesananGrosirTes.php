@@ -137,9 +137,10 @@ describe('SimpanPesananGrosir', function (): void {
             ->toThrow(PelanggaranAturanBisnis::class);
     });
 
-    it('cakupan bagian 1: produk jasa dan produk berpelacakan batch ditolak dengan sebabnya', function (): void {
+    it('cakupan: produk jasa ditolak dengan sebabnya; produk ber-batch dan bernomor seri kini diterima (alokasi di surat jalan)', function (): void {
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Antar Barang', 'Jenis' => JenisProduk::Jasa->value], '50000.00', $this->t['Pcs']);
         $batch = BantuanKatalog::BuatProduk(['Nama' => 'Susu UHT 1 liter', 'Pelacakan' => PelacakanProduk::Batch->value], '20000.00', $this->t['Pcs']);
+        $seri = BantuanKatalog::BuatProduk(['Nama' => 'Ponsel Android 8/256', 'Pelacakan' => PelacakanProduk::Seri->value], '2500000.00', $this->t['Pcs']);
 
         $galat = null;
 
@@ -151,15 +152,12 @@ describe('SimpanPesananGrosir', function (): void {
 
         expect($galat?->kode)->toBe('JenisProdukBelumDidukung');
 
-        $galatBatch = null;
+        $pesanan = SimpanGrosirUji($this, [
+            ['UuidProduk' => $batch->Uuid, 'Uuid' => BantuanHarga::SatuanDasar($batch)->Uuid, 'Jumlah' => '12'],
+            ['UuidProduk' => $seri->Uuid, 'Uuid' => BantuanHarga::SatuanDasar($seri)->Uuid, 'Jumlah' => '3'],
+        ]);
 
-        try {
-            SimpanGrosirUji($this, [['UuidProduk' => $batch->Uuid, 'Uuid' => BantuanHarga::SatuanDasar($batch)->Uuid, 'Jumlah' => '1']]);
-        } catch (PelanggaranAturanBisnis $e) {
-            $galatBatch = $e;
-        }
-
-        expect($galatBatch?->kode)->toBe('PelacakanBelumDidukung');
+        expect($pesanan->Detail)->toHaveCount(2);
     });
 });
 

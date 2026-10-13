@@ -7,12 +7,16 @@ namespace App\Http\Kontroler\Kelola\Grosir;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Penjualan\Aksi\BatalkanSuratJalan;
+use App\Domain\Penjualan\Aksi\CatatPengirimanSuratJalan;
+use App\Domain\Penjualan\Enum\StatusPengirimanGrosir;
 use App\Domain\Penjualan\Kueri\DaftarDokumenGrosir;
 use App\Domain\Penjualan\Kueri\DetailGrosir;
 use App\Domain\Penjualan\Kueri\DokumenCetakGrosir;
+use App\Domain\Penjualan\Model\Armada;
 use App\Domain\Penjualan\Model\SuratJalan;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Grosir\AlasanGrosirPermintaan;
+use App\Http\Permintaan\Kelola\Grosir\CatatPengirimanPermintaan;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -33,6 +37,7 @@ final class SuratJalanKontroler extends DasarGrosirKontroler
 
         return ResponsTabel::Kirim($permintaan, 'Kelola/Grosir/SuratJalan/Daftar', 'SuratJalan', fn (): array => $daftar->SuratJalan($tabel, $this->IdOutletBoleh()), fn (): array => [
             'OpsiStatus' => self::Opsi(StatusDokumenTerposting::class),
+            'OpsiStatusPengiriman' => self::Opsi(StatusPengirimanGrosir::class),
             'HariIni' => $this->HariIni(),
             'Izin' => $this->AmbilIzinGrosir(),
         ]);
@@ -47,8 +52,11 @@ final class SuratJalanKontroler extends DasarGrosirKontroler
             ...$detail->SuratJalan($dokumen),
             'Izin' => $izin,
             'Tindakan' => [
-                'Batalkan' => $izin['Kelola'] && $dokumen->Status === StatusDokumenTerposting::Diposting && $dokumen->IdFakturPenjualan === null,
+                'Batalkan' => $izin['Kelola'] && $dokumen->Status === StatusDokumenTerposting::Diposting && $dokumen->IdFakturPenjualan === null
+                    && $dokumen->StatusPengiriman !== StatusPengirimanGrosir::Diterima,
+                'Pengiriman' => $izin['Kelola'] && $dokumen->Status === StatusDokumenTerposting::Diposting,
             ],
+            'OpsiArmada' => array_values(Armada::query()->where('Aktif', true)->orderBy('Nama')->get()->map(fn (Armada $a): array => ['Uuid' => $a->Uuid, 'Nama' => $a->Nama, 'NomorKendaraan' => $a->NomorKendaraan, 'NamaPengemudi' => $a->NamaPengemudi])->all()),
         ]);
     }
 
@@ -59,6 +67,17 @@ final class SuratJalanKontroler extends DasarGrosirKontroler
             ...$cetak->SuratJalan($this->CariDokumen(SuratJalan::class, $suratJalan)),
             'Usaha' => $this->Usaha($profil),
         ]);
+    }
+
+    /** Kabar pengiriman: berangkat, diterima, gagal, atau batal berangkat (`langkah`). */
+    public function Pengiriman(CatatPengirimanPermintaan $permintaan, string $suratJalan, string $langkah, CatatPengirimanSuratJalan $catat): RedirectResponse
+    {
+        abort_unless(array_key_exists($langkah, CatatPengirimanPermintaan::LANGKAH), 404);
+        $dokumen = $this->CariDokumen(SuratJalan::class, $suratJalan);
+        $hasil = $catat->Jalankan($permintaan->AmbilData($dokumen->Uuid, $langkah), $this->Pelaku()->Id);
+
+        return to_route('kelola.grosir.surat-jalan.detail', ['suratJalan' => $hasil->Uuid])
+            ->with('Kilat', "Pengiriman {$hasil->Nomor}: {$hasil->StatusPengiriman->AmbilLabel()}.");
     }
 
     public function Batalkan(AlasanGrosirPermintaan $permintaan, string $suratJalan, BatalkanSuratJalan $batalkan): RedirectResponse

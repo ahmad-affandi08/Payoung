@@ -69,6 +69,7 @@ final class DokumenCetakGrosir
                     'Sku' => $d->Sku,
                     'SimbolSatuan' => $d->SimbolSatuan,
                     'Jumlah' => $d->Jumlah,
+                    'Rincian' => DetailGrosir::TeksRincian($d->RincianPelacakan),
                 ],
             )->all()),
         ];

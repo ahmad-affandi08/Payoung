@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
+use App\Domain\Penjualan\Enum\StatusPengirimanGrosir;
 use App\Domain\Penjualan\Enum\StatusPesananGrosir;
 use App\Domain\Penjualan\Model\FakturPenjualan;
 use App\Domain\Penjualan\Model\PesananGrosir;
@@ -30,7 +31,7 @@ final class DaftarDokumenGrosir
 {
     public const KOLOM_URUT = ['Tanggal', 'Nomor', 'Total', 'JatuhTempo'];
 
-    public const KOLOM_SARING = ['Status', 'Pelanggan', 'Tanggal', 'Difakturkan'];
+    public const KOLOM_SARING = ['Status', 'Pelanggan', 'Tanggal', 'Difakturkan', 'Pengiriman'];
 
     public const URUT_BAWAAN = '-Tanggal';
 
@@ -75,9 +76,11 @@ final class DaftarDokumenGrosir
     {
         $kueri = $this->Saring(SuratJalan::query(), $p, $idOutletBoleh, array_map(fn (StatusDokumenTerposting $s): string => $s->value, StatusDokumenTerposting::cases()));
         $difakturkan = $p->saring['Difakturkan'] ?? null;
+        $pengiriman = $p->saring['Pengiriman'] ?? null;
         $kueri = $kueri
             ->when($difakturkan === 'Belum', fn ($q) => $q->whereNull('IdFakturPenjualan'))
-            ->when($difakturkan === 'Sudah', fn ($q) => $q->whereNotNull('IdFakturPenjualan'));
+            ->when($difakturkan === 'Sudah', fn ($q) => $q->whereNotNull('IdFakturPenjualan'))
+            ->when(is_string($pengiriman) && StatusPengirimanGrosir::tryFrom($pengiriman) !== null, fn ($q) => $q->where('StatusPengiriman', $pengiriman));
 
         return PenerapKueriTabel::Terapkan($kueri, $p, ['Tanggal' => 'Tanggal', 'Nomor' => 'Nomor', 'Total' => 'Total'], function (Collection $baris): array {
             $pelanggan = $this->identitas->AmbilNamaBanyak($baris->pluck('IdPelanggan')->all());
@@ -95,6 +98,8 @@ final class DaftarDokumenGrosir
                 'KodeOutlet' => $outlet[$d->IdOutlet] ?? '',
                 'Status' => $d->Status->value,
                 'LabelStatus' => $d->Status->AmbilLabel(),
+                'StatusPengiriman' => $d->StatusPengiriman->value,
+                'LabelStatusPengiriman' => $d->StatusPengiriman->AmbilLabel(),
                 'Total' => $d->Total,
                 'TotalHpp' => $d->TotalHpp,
             ])->all());

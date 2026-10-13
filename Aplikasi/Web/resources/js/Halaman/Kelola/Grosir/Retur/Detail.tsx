@@ -18,6 +18,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
+import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
@@ -179,6 +180,14 @@ export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat
                         { label: 'Dasar pengenaan pajak', nilai: Retur.DasarPengenaanPajak },
                         { label: 'Pajak', nilai: Retur.Pajak },
                         { label: 'Total retur', nilai: Retur.Total, tebal: true },
+                        ...(BandingkanDesimal(Retur.NilaiRefund, '0') > 0
+                            ? [
+                                  {
+                                      label: `Dikembalikan ke pembeli${Retur.NamaAkunRefund === null ? '' : ` (${Retur.NamaAkunRefund})`}`,
+                                      nilai: Retur.NilaiRefund,
+                                  },
+                              ]
+                            : []),
                         { label: 'HPP dibalik', nilai: Retur.TotalHpp },
                     ]}
                 />

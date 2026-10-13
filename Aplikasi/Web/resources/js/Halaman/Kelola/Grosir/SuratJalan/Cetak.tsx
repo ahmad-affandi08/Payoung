@@ -69,6 +69,7 @@ export default function HalamanCetakSuratJalan({ SuratJalan, Baris, Usaha }: Pro
                             <TableCell className="whitespace-normal">
                                 {b.NamaProduk}
                                 {b.Sku ? <span className="block font-mono text-keterangan">{b.Sku}</span> : null}
+                                {b.Rincian ? <span className="block text-keterangan">{b.Rincian}</span> : null}
                             </TableCell>
                             <TableCell className="text-right tabular-nums">
                                 {FormatJumlahStok(b.Jumlah, b.SimbolSatuan)}

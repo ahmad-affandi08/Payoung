@@ -10,7 +10,6 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Enum\JenisProduk;
-use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Harga\Kueri\HargaProdukBerlaku;
 use App\Domain\Katalog\Model\Produk;
 use App\Domain\Katalog\Model\ProdukSatuan;
@@ -205,7 +204,8 @@ final class SimpanPesananGrosir
     }
 
     /**
-     * Cakupan bagian 1 (§25 no. 27d). Penolakannya sengaja eksplisit per sebab: menghitung resep atau paket di sini
+     * Cakupan grosir (§25 no. 27d): produk berstok biasa, ber-batch (FEFO saat surat jalan), atau bernomor seri (nomor
+     * dicatat saat surat jalan). Penolakannya sengaja eksplisit per sebab: menghitung resep atau paket di sini
      * berarti HPP dan pemotongan stoknya salah saat surat jalan diposting, dan itu jenis kesalahan yang baru terlihat
      * di laporan keuangan.
      */
@@ -218,15 +218,7 @@ final class SimpanPesananGrosir
         if ($produk->Jenis !== JenisProduk::Stok) {
             throw new PelanggaranAturanBisnis(
                 'JenisProdukBelumDidukung',
-                "Grosir bagian 1 baru mendukung produk berstok biasa; {$produk->Nama} berjenis {$produk->Jenis->value}.",
-                'Baris',
-            );
-        }
-
-        if ($produk->Pelacakan !== PelacakanProduk::Tidak) {
-            throw new PelanggaranAturanBisnis(
-                'PelacakanBelumDidukung',
-                "Grosir bagian 1 belum mendukung produk berpelacakan batch atau nomor seri ({$produk->Nama}).",
+                "Grosir mendukung produk berstok (biasa, ber-batch, atau bernomor seri); {$produk->Nama} berjenis {$produk->Jenis->value}.",
                 'Baris',
             );
         }

@@ -7,6 +7,9 @@ export type StatusPesananGrosir = 'Draf' | 'Dikonfirmasi' | 'SebagianDikirim' | 
 
 export type StatusDokumenGrosir = 'Diposting' | 'Dibatalkan';
 
+/** Kabar lapangan pengiriman surat jalan (terpisah dari status akuntansi). */
+export type StatusPengirimanGrosir = 'Disiapkan' | 'DalamPerjalanan' | 'Diterima' | 'Gagal';
+
 export type SumberPesananGrosir = 'BackOffice' | 'Salesman';
 
 export type HasilKunjungan = 'PesananDibuat' | 'TidakPesan' | 'TokoTutup' | 'Lainnya';
@@ -65,6 +68,8 @@ export type BarisDaftarSuratJalan = {
     KodeOutlet: string;
     Status: StatusDokumenGrosir;
     LabelStatus: string;
+    StatusPengiriman: StatusPengirimanGrosir;
+    LabelStatusPengiriman: string;
     Total: string;
     TotalHpp: string;
 };
@@ -112,6 +117,9 @@ export type BarisDetailPesananGrosir = {
     NamaProduk: string;
     Sku: string | null;
     SimbolSatuan: string;
+    /** Batch dialokasikan FEFO oleh server; nomor seri diisi operator saat menyerahkan barang. */
+    Pelacakan: 'Tidak' | 'Batch' | 'Seri';
+    Konversi: string;
     Jumlah: string;
     JumlahTerkirim: string;
     SisaKirim: string;
@@ -128,6 +136,10 @@ export type BarisDetailSuratJalan = {
     Jumlah: string;
     JumlahDiretur: string;
     SisaRetur: string;
+    /** Batch/nomor seri yang diserahkan, mis. "UHT-A (30), UHT-B (20)" atau "IMEI-1, IMEI-2"; null bila tanpa pelacakan. */
+    Rincian: string | null;
+    /** Nomor seri yang diserahkan dan belum diretur (kosong untuk produk tanpa nomor seri). */
+    SeriBisaDiretur: string[];
     Harga: string;
     Diskon: string;
     Subtotal: string;
@@ -144,6 +156,7 @@ export type PropsDaftarPesananGrosir = {
 export type PropsDaftarSuratJalan = {
     SuratJalan: Tabel<BarisDaftarSuratJalan>;
     OpsiStatus: Opsi[];
+    OpsiStatusPengiriman: Opsi[];
     HariIni: string;
     Izin: IzinGrosir;
 };
@@ -305,6 +318,12 @@ export type PropsDetailSuratJalan = {
         NamaPenerima: string | null;
         Catatan: string | null;
         AlasanBatal: string | null;
+        StatusPengiriman: StatusPengirimanGrosir;
+        LabelStatusPengiriman: string;
+        NamaArmada: string | null;
+        BerangkatPada: string | null;
+        DiterimaPada: string | null;
+        CatatanPengiriman: string | null;
         NomorPesanan: string | null;
         UuidPesanan: string | null;
         NomorFaktur: string | null;
@@ -315,8 +334,24 @@ export type PropsDetailSuratJalan = {
     Retur: ReturSuratJalan[];
     Jurnal: JurnalGrosir[];
     Riwayat: RiwayatGrosir[];
+    RiwayatPengiriman: RiwayatGrosir[];
+    OpsiArmada: ArmadaGrosir[];
     Izin: IzinGrosir;
-    Tindakan: { Batalkan: boolean };
+    Tindakan: { Batalkan: boolean; Pengiriman: boolean };
+};
+
+export type ArmadaGrosir = {
+    Uuid: string;
+    Nama: string;
+    NomorKendaraan: string;
+    NamaPengemudi: string | null;
+};
+
+export type BarisArmada = ArmadaGrosir & { Keterangan: string | null; Aktif: boolean };
+
+export type PropsDaftarArmada = {
+    Armada: BarisArmada[];
+    Izin: IzinGrosir;
 };
 
 export type PropsBuatRetur = {
@@ -326,6 +361,8 @@ export type PropsBuatRetur = {
     Jurnal: JurnalGrosir[];
     Riwayat: RiwayatGrosir[];
     OpsiKondisi: Opsi[];
+    /** Akun kas/bank sumber pengembalian uang bila faktur sudah (hampir) dibayar. */
+    OpsiAkunRefund: { Uuid: string; Kode: string; Nama: string }[];
     HariIni: string;
     Izin: IzinGrosir;
 };
@@ -364,6 +401,9 @@ export type PropsDetailRetur = {
         DasarPengenaanPajak: string;
         Pajak: string;
         Total: string;
+        /** Bagian nilai retur yang dikembalikan sebagai uang ke pembeli; "0.00" bila tidak ada. */
+        NilaiRefund: string;
+        NamaAkunRefund: string | null;
         TotalHpp: string;
         Catatan: string | null;
         PerluTinjauan: boolean;
@@ -439,6 +479,8 @@ export type BarisCetakTanpaHarga = {
     Sku: string | null;
     SimbolSatuan: string;
     Jumlah: string;
+    /** Batch/nomor seri yang diserahkan (surat jalan); tidak ada di dokumen lain. */
+    Rincian?: string | null;
 };
 
 export type PropsCetakSuratJalan = {

@@ -30,6 +30,9 @@ final class KirimPesananGrosirPermintaan extends FormRequest
             'Baris' => ['required', 'array', 'min:1', 'max:'.SimpanPesananGrosirPermintaan::MAKS_BARIS],
             'Baris.*.Urutan' => ['required', 'integer', 'min:1'],
             'Baris.*.Jumlah' => ['required', 'string', AturanGrosir::JUMLAH],
+            // Produk bernomor seri: satu nomor per unit.
+            'Baris.*.NomorSeri' => ['nullable', 'array', 'max:500'],
+            'Baris.*.NomorSeri.*' => ['string', 'max:60'],
         ];
     }
 
@@ -61,6 +64,7 @@ final class KirimPesananGrosirPermintaan extends FormRequest
             baris: array_map(fn (array $b): DataBarisSuratJalan => new DataBarisSuratJalan(
                 (int) $b['Urutan'],
                 AturanGrosir::Jumlah($b['Jumlah']),
+                AturanGrosir::DaftarTeks($b['NomorSeri'] ?? null),
             ), $baris),
             namaPengirim: AturanGrosir::Teks($this->validated('NamaPengirim')),
             nomorKendaraan: AturanGrosir::Teks($this->validated('NomorKendaraan')),

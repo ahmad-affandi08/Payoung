@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace App\Domain\Penjualan\Kueri;
 
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Akuntansi\Kueri\JurnalSumber;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Katalog\Enum\PelacakanProduk;
+use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Organisasi\Kueri\DaftarAnggota;
 use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
+use App\Domain\Penjualan\Aksi\CatatPengirimanSuratJalan;
+use App\Domain\Penjualan\Layanan\PelacakanGrosir;
+use App\Domain\Penjualan\Model\Armada;
 use App\Domain\Penjualan\Model\FakturPenjualan;
 use App\Domain\Penjualan\Model\PesananGrosir;
 use App\Domain\Penjualan\Model\PesananGrosirDetail;
@@ -36,6 +42,9 @@ final class DetailGrosir
         private readonly DaftarAnggota $anggota,
         private readonly InfoGudang $infoGudang,
         private readonly KonteksTenant $konteks,
+        private readonly DaftarAkunPilihan $akun,
+        private readonly InfoProdukStok $infoProduk,
+        private readonly PelacakanGrosir $pelacakan,
     ) {}
 
     /**
@@ -73,6 +82,9 @@ final class DetailGrosir
                 'NamaProduk' => $d->NamaProduk,
                 'Sku' => $d->Sku,
                 'SimbolSatuan' => $d->SimbolSatuan,
+                // Batch dialokasikan FEFO oleh server; nomor seri diisi operator saat surat jalan.
+                'Pelacakan' => $this->infoProduk->AmbilBanyak([$d->IdProduk], true)[$d->IdProduk]->pelacakan->value ?? PelacakanProduk::Tidak->value,
+                'Konversi' => $d->Konversi,
                 'Jumlah' => $d->Jumlah,
                 'JumlahTerkirim' => $d->JumlahTerkirim,
                 'SisaKirim' => $d->AmbilSisaKirim()->KeString(),
@@ -122,6 +134,12 @@ final class DetailGrosir
                 'NamaPenerima' => $suratJalan->NamaPenerima,
                 'Catatan' => $suratJalan->Catatan,
                 'AlasanBatal' => $suratJalan->AlasanBatal,
+                'StatusPengiriman' => $suratJalan->StatusPengiriman->value,
+                'LabelStatusPengiriman' => $suratJalan->StatusPengiriman->AmbilLabel(),
+                'NamaArmada' => $suratJalan->IdArmada === null ? null : Armada::query()->whereKey($suratJalan->IdArmada)->value('Nama'),
+                'BerangkatPada' => $suratJalan->BerangkatPada?->utc()->toIso8601ZuluString(),
+                'DiterimaPada' => $suratJalan->DiterimaPada?->utc()->toIso8601ZuluString(),
+                'CatatanPengiriman' => $suratJalan->CatatanPengiriman,
                 'NomorPesanan' => $pesanan?->Nomor,
                 'UuidPesanan' => $pesanan?->Uuid,
                 'NomorFaktur' => $faktur?->Nomor,
@@ -136,6 +154,8 @@ final class DetailGrosir
                 'Jumlah' => $d->Jumlah,
                 'JumlahDiretur' => $d->JumlahDiretur,
                 'SisaRetur' => $d->AmbilSisaRetur()->KeString(),
+                'Rincian' => self::TeksRincian($d->RincianPelacakan),
+                'SeriBisaDiretur' => array_map(fn (array $e): string => $e['Nomor'], $this->pelacakan->SisaSeri($d)),
                 'Harga' => $d->Harga,
                 'Diskon' => $d->Diskon,
                 'Subtotal' => $d->Subtotal,
@@ -154,6 +174,8 @@ final class DetailGrosir
             )->all()),
             'Jurnal' => $this->jurnal->Ambil(JenisSumberJurnal::SuratJalan, $suratJalan->Id),
             'Riwayat' => $this->Riwayat(SuratJalan::JENIS_DOKUMEN, $suratJalan->Id),
+            // Jejak waktu kabar pengiriman (berangkat, diterima, gagal) — terpisah dari riwayat status akuntansi.
+            'RiwayatPengiriman' => $this->Riwayat(CatatPengirimanSuratJalan::JENIS_RIWAYAT, $suratJalan->Id),
         ];
     }
 
@@ -179,6 +201,8 @@ final class DetailGrosir
                 'DasarPengenaanPajak' => $retur->DasarPengenaanPajak,
                 'Pajak' => $retur->Pajak,
                 'Total' => $retur->Total,
+                'NilaiRefund' => $retur->NilaiRefund,
+                'NamaAkunRefund' => $retur->IdAkunRefund === null ? null : ($this->akun->AmbilBanyak([$retur->IdAkunRefund])[$retur->IdAkunRefund]['Nama'] ?? null),
                 'TotalHpp' => $retur->TotalHpp,
                 'Catatan' => $retur->Catatan,
                 'PerluTinjauan' => $retur->PerluTinjauan,
@@ -287,5 +311,22 @@ final class DetailGrosir
             'Pada' => $r->DiubahPada?->toIso8601String() ?? '',
             'Alasan' => $r->Alasan,
         ])->all());
+    }
+
+    /**
+     * Rincian batch/nomor seri satu baris untuk ditampilkan: `UHT-A (30), UHT-B (20)` atau `IMEI-1, IMEI-2`.
+     *
+     * @param  list<array<string, string|null>>|null  $rincian
+     */
+    public static function TeksRincian(?array $rincian): ?string
+    {
+        if ($rincian === null || $rincian === []) {
+            return null;
+        }
+
+        return implode(', ', array_map(
+            fn (array $e): string => isset($e['Nomor']) ? (string) $e['Nomor'] : $e['NomorBatch'].' ('.rtrim(rtrim((string) $e['JumlahDasar'], '0'), '.').')',
+            $rincian,
+        ));
     }
 }

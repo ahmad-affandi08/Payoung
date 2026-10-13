@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Kelola\Grosir\ArmadaKontroler;
 use App\Http\Kontroler\Kelola\Grosir\FakturPenjualanKontroler;
 use App\Http\Kontroler\Kelola\Grosir\KanvasKontroler;
 use App\Http\Kontroler\Kelola\Grosir\KunjunganSalesKontroler;
@@ -45,6 +46,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::GrosirKelola)])-
     Route::get('/surat-jalan', [SuratJalanKontroler::class, 'Daftar'])->name('kelola.grosir.surat-jalan.daftar');
     Route::get('/surat-jalan/{suratJalan}', [SuratJalanKontroler::class, 'Detail'])->where('suratJalan', $ulid)->name('kelola.grosir.surat-jalan.detail');
     Route::get('/surat-jalan/{suratJalan}/cetak', [SuratJalanKontroler::class, 'Cetak'])->where('suratJalan', $ulid)->name('kelola.grosir.surat-jalan.cetak');
+    Route::post('/surat-jalan/{suratJalan}/pengiriman/{langkah}', [SuratJalanKontroler::class, 'Pengiriman'])->where('suratJalan', $ulid)->where('langkah', 'berangkat|diterima|gagal|batal-berangkat')->name('kelola.grosir.surat-jalan.pengiriman');
     Route::post('/surat-jalan/{suratJalan}/batalkan', [SuratJalanKontroler::class, 'Batalkan'])->where('suratJalan', $ulid)->name('kelola.grosir.surat-jalan.batalkan');
 
     Route::get('/faktur', [FakturPenjualanKontroler::class, 'Daftar'])->name('kelola.grosir.faktur.daftar');
@@ -61,6 +63,13 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::GrosirKelola)])-
     Route::get('/retur/{retur}', [ReturGrosirKontroler::class, 'Detail'])->where('retur', $ulid)->name('kelola.grosir.retur.detail');
     Route::get('/retur/{retur}/cetak', [ReturGrosirKontroler::class, 'Cetak'])->where('retur', $ulid)->name('kelola.grosir.retur.cetak');
     Route::post('/retur/{retur}/batalkan', [ReturGrosirKontroler::class, 'Batalkan'])->where('retur', $ulid)->name('kelola.grosir.retur.batalkan');
+
+    // Armada pengiriman (master; rumahnya Pengaturan).
+    Route::get('/armada', [ArmadaKontroler::class, 'Daftar'])->name('kelola.grosir.armada.daftar');
+    Route::post('/armada', [ArmadaKontroler::class, 'Simpan'])->name('kelola.grosir.armada.simpan');
+    Route::put('/armada/{armada}', [ArmadaKontroler::class, 'Ubah'])->where('armada', $ulid)->name('kelola.grosir.armada.ubah');
+    Route::post('/armada/{armada}/nonaktifkan', [ArmadaKontroler::class, 'Nonaktifkan'])->where('armada', $ulid)->name('kelola.grosir.armada.nonaktifkan');
+    Route::post('/armada/{armada}/aktifkan', [ArmadaKontroler::class, 'Aktifkan'])->where('armada', $ulid)->name('kelola.grosir.armada.aktifkan');
 
     // Modul Salesman bagian 1: kunjungan dari aplikasi salesman (hanya baca) + ekspor CSV.
     Route::get('/kunjungan', [KunjunganSalesKontroler::class, 'Daftar'])->name('kelola.grosir.kunjungan.daftar');

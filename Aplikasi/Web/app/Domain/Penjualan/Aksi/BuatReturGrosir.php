@@ -7,6 +7,7 @@ namespace App\Domain\Penjualan\Aksi;
 use App\Domain\Akuntansi\Aksi\PostingJurnal;
 use App\Domain\Akuntansi\Data\DataJurnal;
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Dokumen\Enum\JenisDokumenBernomor;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
@@ -19,6 +20,7 @@ use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Penjualan\Data\DataBarisReturGrosir;
 use App\Domain\Penjualan\Data\DataReturGrosir;
 use App\Domain\Penjualan\Enum\KondisiBarangRetur;
+use App\Domain\Penjualan\Layanan\PelacakanGrosir;
 use App\Domain\Penjualan\Layanan\PenghitungGrosir;
 use App\Domain\Penjualan\Layanan\PenomorGrosir;
 use App\Domain\Penjualan\Layanan\PenyusunJurnalGrosir;
@@ -28,6 +30,7 @@ use App\Domain\Penjualan\Model\SuratJalan;
 use App\Domain\Penjualan\Model\SuratJalanDetail;
 use App\Domain\Persediaan\Aksi\CatatMutasiStok;
 use App\Domain\Persediaan\Data\DataBarisMutasi;
+use App\Domain\Persediaan\Data\DataBatchMasuk;
 use App\Domain\Persediaan\Data\DataDokumenMutasi;
 use App\Domain\Persediaan\Enum\JenisMutasi;
 use App\Domain\Persediaan\Enum\JenisReferensiMutasi;
@@ -59,9 +62,10 @@ use LogicException;
  * **SO tidak diubah.** `JumlahTerkirim` tetap, karena penyerahannya memang pernah terjadi — sama seperti retur
  * pembelian yang tidak mengubah PO-nya. Retur adalah dokumen sesudahnya, bukan pembatalan pengiriman.
  *
- * Batas yang diketahui: bila faktur sudah (hampir) dibayar sehingga sisa tagihannya lebih kecil dari nilai retur,
- * dokumennya **ditolak** (`SisaPiutangTidakCukup`) — itu kasus refund uang, bukan pengurangan tagihan, dan memotong
- * sebisanya hanya akan menyembunyikan kewajiban toko di dokumen yang salah. Refund kas menyusul bila diminta.
+ * **Pengembalian uang:** bila faktur sudah (hampir) dibayar sehingga sisa tagihannya lebih kecil dari nilai retur,
+ * bagian sebatas sisa mengurangi tagihan dan selebihnya (`NilaiRefund`) dibayarkan kembali ke pembeli dari akun
+ * kas/bank pilihan (`uuidAkunRefund`, wajib hanya dalam kasus itu — `AkunRefundWajib`). Kewajiban toko ke pembeli
+ * tercatat sebagai kredit kas/bank di J-12.4, bukan disembunyikan sebagai tagihan negatif.
  */
 final class BuatReturGrosir
 {
@@ -74,18 +78,21 @@ final class BuatReturGrosir
         private readonly PenomorGrosir $penomor,
         private readonly PengunciSaldoStok $pengunciSaldo,
         private readonly InfoProdukStok $infoProduk,
+        private readonly PelacakanGrosir $pelacakan,
         private readonly PetaAkunPersediaan $petaAkunPersediaan,
         private readonly CatatMutasiStok $catatMutasi,
         private readonly PenyusunJurnalGrosir $penyusunJurnal,
         private readonly PostingJurnal $postingJurnal,
         private readonly PencatatPiutangPenjualan $pencatatPiutang,
+        private readonly DaftarAkunPilihan $akun,
         private readonly PencatatAudit $audit,
     ) {}
 
     /**
      * @throws PelanggaranAturanBisnis AlasanWajib, ReturTanpaBaris, SuratJalanTidakDitemukan, SuratJalanTidakAktif,
      *                                 BarisTidakDikenal, BarisGanda, JumlahReturTidakValid, JumlahReturMelebihiSisa,
-     *                                 TanggalReturSebelumPenyerahan, TanggalMasaDepan, SisaPiutangTidakCukup
+     *                                 TanggalReturSebelumPenyerahan, TanggalMasaDepan, SisaPiutangTidakCukup (piutang tak bisa dikurangi),
+     *                                 AkunRefundWajib
      */
     public function Jalankan(DataReturGrosir $data, int $idPengguna): ReturGrosir
     {
@@ -183,8 +190,13 @@ final class BuatReturGrosir
             'DiubahOleh' => $idPengguna,
         ]);
 
+        // BR-12.7: nilai retur sebatas sisa tagihan mengurangi tagihan; selebihnya (faktur sudah dibayar) dikembalikan
+        // sebagai uang dari kas/bank yang dipilih pengguna. Tanpa akun, dokumen ditolak seluruhnya (transaksi dibatalkan).
+        $refund = Uang::Nol();
+        $idAkunRefund = null;
+
         if ($mengurangiPiutang) {
-            $halangan = $this->pencatatPiutang->KurangiFaktur(
+            [$dikurangi, $halangan] = $this->pencatatPiutang->KurangiFakturSebisanya(
                 (int) $suratJalan->IdFakturPenjualan,
                 $hasil->total,
                 $idPengguna,
@@ -193,6 +205,22 @@ final class BuatReturGrosir
 
             if ($halangan !== null) {
                 throw new PelanggaranAturanBisnis('SisaPiutangTidakCukup', $halangan);
+            }
+
+            $refund = $hasil->total->Kurangi($dikurangi);
+
+            if (! $refund->BernilaiNol()) {
+                $idAkunRefund = $data->uuidAkunRefund === null || $data->uuidAkunRefund === '' ? null : ($this->akun->CariKasBankDariUuid($data->uuidAkunRefund)['Id'] ?? null);
+
+                if ($idAkunRefund === null) {
+                    throw new PelanggaranAturanBisnis(
+                        'AkunRefundWajib',
+                        "Nilai retur {$hasil->total->FormatRupiah()} melebihi sisa tagihan faktur ({$dikurangi->FormatRupiah()}). Pilih akun kas/bank sumber pengembalian uang {$refund->FormatRupiah()} ke pembeli.",
+                        'UuidAkunRefund',
+                    );
+                }
+
+                $retur->fill(['NilaiRefund' => $refund->KeString(), 'IdAkunRefund' => $idAkunRefund])->save();
             }
         }
 
@@ -218,9 +246,11 @@ final class BuatReturGrosir
                 'HargaTermasukPajak' => $satuBaris['HargaTermasukPajak'],
                 'IdKelompokPajak' => $satuBaris['IdKelompokPajak'],
                 'HppSatuan' => $satuBaris['HppSatuan'],
+                'RincianPelacakan' => $satuBaris['Rincian'],
             ]);
         }
 
+        [$barisMutasi, $kunciPerBaris] = $this->SusunMutasi($baris, $detailRetur);
         $hasilMutasi = $this->catatMutasi->Jalankan(new DataDokumenMutasi(
             jenisReferensi: JenisReferensiMutasi::ReturGrosir,
             idReferensi: $retur->Id,
@@ -229,17 +259,7 @@ final class BuatReturGrosir
             tanggalBisnis: $tanggal,
             idPengguna: $idPengguna,
             idPerangkat: null,
-            baris: array_values(array_map(fn (array $b): DataBarisMutasi => new DataBarisMutasi(
-                kunciBaris: 'R/'.$b['Urutan'],
-                idProduk: $b['IdProduk'],
-                idGudang: $b['IdGudang'],
-                jenisMutasi: JenisMutasi::ReturPenjualan,
-                jumlah: $b['JumlahDasar'],
-                modeNilai: ModeNilaiMutasi::Ditentukan,
-                nilai: $b['NilaiHpp'],
-                hppSatuan: BigDecimal::of($b['HppSatuan']),
-                idReferensiDetail: $detailRetur[$b['Urutan']]->Id,
-            ), $baris)),
+            baris: $barisMutasi,
         ));
 
         $produk = $this->infoProduk->AmbilBanyak(array_values(array_unique(array_column($baris, 'IdProduk'))), true);
@@ -247,13 +267,22 @@ final class BuatReturGrosir
         $totalHpp = Uang::Nol();
 
         foreach ($baris as $satuBaris) {
-            $mutasi = $hasilMutasi->baris['R/'.$satuBaris['Urutan']];
             $detail = $detailRetur[$satuBaris['Urutan']];
-            $detail->TotalHpp = $mutasi->totalHpp->KeString();
-            $detail->save();
-            $totalHpp = $totalHpp->Tambah($mutasi->totalHpp);
+            $hppBaris = Uang::Nol();
             $peran = $this->petaAkunPersediaan->UntukJenis($produk[$satuBaris['IdProduk']]->jenis)->value;
-            $perubahanPersediaan[$peran] = ($perubahanPersediaan[$peran] ?? Uang::Nol())->Tambah($mutasi->totalHpp);
+
+            foreach ($hasilMutasi->baris as $kunci => $mutasi) {
+                if ($kunciPerBaris[$kunci] !== $satuBaris['Urutan']) {
+                    continue;
+                }
+
+                $hppBaris = $hppBaris->Tambah($mutasi->totalHpp);
+                $perubahanPersediaan[$peran] = ($perubahanPersediaan[$peran] ?? Uang::Nol())->Tambah($mutasi->totalHpp);
+            }
+
+            $detail->TotalHpp = $hppBaris->KeString();
+            $detail->save();
+            $totalHpp = $totalHpp->Tambah($hppBaris);
         }
 
         $jurnal = $this->postingJurnal->Jalankan(new DataJurnal(
@@ -271,6 +300,8 @@ final class BuatReturGrosir
                 $perubahanPersediaan,
                 $retur->IdOutlet,
                 $mengurangiPiutang,
+                refund: $refund,
+                idAkunRefund: $idAkunRefund,
             ),
             idPengguna: $idPengguna,
         ));
@@ -298,6 +329,7 @@ final class BuatReturGrosir
             'Total' => $retur->Total,
             'TotalHpp' => $retur->TotalHpp,
             'MengurangiPiutang' => $mengurangiPiutang,
+            'NilaiRefund' => $refund->KeString(),
             'NomorJurnal' => $jurnal->nomor,
             'Alasan' => $alasan,
         ], idPengguna: $idPengguna);
@@ -308,7 +340,7 @@ final class BuatReturGrosir
     /**
      * @param  list<DataBarisReturGrosir>  $diminta
      * @param  array<int, SuratJalanDetail>  $detailKirim  berkunci Urutan
-     * @return list<array{Urutan: int, IdSuratJalanDetail: int, IdProduk: int, NamaProduk: string, Sku: string|null, SimbolSatuan: string, Konversi: string, Jumlah: Kuantitas, JumlahDasar: Kuantitas, Kondisi: KondisiBarangRetur, IdGudang: int, Harga: Uang, Diskon: Uang, HargaTermasukPajak: bool|null, IdKelompokPajak: int|null, HppSatuan: string, NilaiHpp: Uang}>
+     * @return list<array{Urutan: int, IdSuratJalanDetail: int, IdProduk: int, NamaProduk: string, Sku: string|null, SimbolSatuan: string, Konversi: string, Jumlah: Kuantitas, JumlahDasar: Kuantitas, Kondisi: KondisiBarangRetur, IdGudang: int, Harga: Uang, Diskon: Uang, HargaTermasukPajak: bool|null, IdKelompokPajak: int|null, HppSatuan: string, NilaiHpp: Uang, Rincian: list<array<string, string|null>>|null}>
      */
     private function SusunBaris(array $diminta, array $detailKirim, int $idGudangAsal, ?int $idGudangRusak): array
     {
@@ -345,6 +377,7 @@ final class BuatReturGrosir
 
             $jumlahDasar = $baris->jumlah->Kali($detail->Konversi);
             $hppSatuan = BigDecimal::of($detail->HppSatuan);
+            [$rincian, $nilaiHpp] = $this->RincianRetur($detail, $baris, $jumlahDasar, $hppSatuan);
             $hasil[] = [
                 'Urutan' => $detail->Urutan,
                 'IdSuratJalanDetail' => $detail->Id,
@@ -361,13 +394,116 @@ final class BuatReturGrosir
                 'Diskon' => $this->AlokasikanDiskon($detail, $baris->jumlah, $sisa),
                 'HargaTermasukPajak' => $detail->HargaTermasukPajak,
                 'IdKelompokPajak' => $detail->IdKelompokPajak,
-                'HppSatuan' => $detail->HppSatuan,
+                'HppSatuan' => $rincian === null ? $detail->HppSatuan : (string) BigDecimal::of($nilaiHpp->KeString())->dividedBy($jumlahDasar->KeDesimal(), 6, RoundingMode::HalfUp),
                 // Nilai stok yang kembali = HPP saat barang keluar, bukan HPP berjalan hari ini.
-                'NilaiHpp' => Uang::Dari($hppSatuan->multipliedBy($jumlahDasar->KeDesimal())->toScale(Uang::SKALA, RoundingMode::HalfUp)),
+                'NilaiHpp' => $nilaiHpp,
+                'Rincian' => $rincian,
             ];
         }
 
         return $hasil;
+    }
+
+    /**
+     * Bagian yang dilacak dari satu baris retur dan nilai HPP-nya. Tanpa pelacakan: seluruh jumlah pada HPP rata-rata
+     * baris. Ber-batch: dikembalikan ke batch asal (terbalik dari alokasi penyerahan) pada HPP tiap batch. Bernomor seri:
+     * nomor yang disebut harus bagian dari yang diserahkan dan belum diretur, jumlahnya sama dengan jumlah retur.
+     *
+     * @return array{0: list<array<string, string|null>>|null, 1: Uang}
+     */
+    private function RincianRetur(SuratJalanDetail $detail, DataBarisReturGrosir $baris, Kuantitas $jumlahDasar, BigDecimal $hppSatuan): array
+    {
+        $rincianKirim = $detail->RincianPelacakan ?? [];
+
+        if ($rincianKirim === []) {
+            return [null, Uang::Dari($hppSatuan->multipliedBy($jumlahDasar->KeDesimal())->toScale(Uang::SKALA, RoundingMode::HalfUp))];
+        }
+
+        $nilai = Uang::Nol();
+
+        if (isset($rincianKirim[0]['Nomor'])) {
+            $bulat = $jumlahDasar->KeDesimal()->toScale(0, RoundingMode::Down);
+
+            if (! $jumlahDasar->KeDesimal()->isEqualTo($bulat) || count($baris->nomorSeri) !== $bulat->toInt()) {
+                throw new PelanggaranAturanBisnis(
+                    'NomorSeriTidakSesuai',
+                    "{$detail->NamaProduk} memakai nomor seri: pilih {$bulat} nomor seri yang dikembalikan (satu per unit), bukan ".count($baris->nomorSeri).'.',
+                    'Baris',
+                );
+            }
+
+            $pilihan = $this->pelacakan->PilihReturSeri($detail, $baris->nomorSeri);
+
+            foreach ($pilihan as $e) {
+                $nilai = $nilai->Tambah(Uang::Dari(BigDecimal::of($e['HppSatuan'])->toScale(Uang::SKALA, RoundingMode::HalfUp)));
+            }
+
+            return [array_values(array_map(fn (array $e): array => ['Nomor' => $e['Nomor'], 'HppSatuan' => $e['HppSatuan']], $pilihan)), $nilai];
+        }
+
+        $alokasi = $this->pelacakan->AlokasikanReturBatch($detail, $jumlahDasar);
+
+        foreach ($alokasi as $e) {
+            $nilai = $nilai->Tambah(Uang::Dari(BigDecimal::of($e['HppSatuan'])->multipliedBy($e['JumlahDasar'])->toScale(Uang::SKALA, RoundingMode::HalfUp)));
+        }
+
+        return [$alokasi, $nilai];
+    }
+
+    /**
+     * Baris mutasi masuk. Tanpa pelacakan satu baris `R/{urutan}`; ber-batch satu baris per batch asal; bernomor seri satu
+     * baris per unit (`R/{urutan}#n`). Nilai tiap baris = HPP saat barang keluar.
+     *
+     * @param  list<array<string, mixed>>  $baris
+     * @param  array<int, ReturGrosirDetail>  $detailRetur  berkunci Urutan baris surat jalan
+     * @return array{0: list<DataBarisMutasi>, 1: array<string, int>}
+     */
+    private function SusunMutasi(array $baris, array $detailRetur): array
+    {
+        $hasil = [];
+        $kunciPerBaris = [];
+
+        foreach ($baris as $b) {
+            $dasar = 'R/'.$b['Urutan'];
+            $idDetail = $detailRetur[$b['Urutan']]->Id;
+            $rincian = $b['Rincian'];
+
+            if ($rincian === null) {
+                $kunciPerBaris[$dasar] = $b['Urutan'];
+                $hasil[] = new DataBarisMutasi($dasar, $b['IdProduk'], $b['IdGudang'], JenisMutasi::ReturPenjualan, $b['JumlahDasar'], ModeNilaiMutasi::Ditentukan, $b['NilaiHpp'], BigDecimal::of($b['HppSatuan']), $idDetail);
+
+                continue;
+            }
+
+            foreach (array_values($rincian) as $n => $e) {
+                $kunci = $dasar.'#'.($n + 1);
+                $kunciPerBaris[$kunci] = $b['Urutan'];
+                $hpp = BigDecimal::of((string) $e['HppSatuan']);
+
+                if (isset($e['Nomor'])) {
+                    $hasil[] = new DataBarisMutasi($kunci, $b['IdProduk'], $b['IdGudang'], JenisMutasi::ReturPenjualan, Kuantitas::Dari('1'), ModeNilaiMutasi::Ditentukan, Uang::Dari($hpp->toScale(Uang::SKALA, RoundingMode::HalfUp)), $hpp, $idDetail, nomorSeriMasuk: (string) $e['Nomor']);
+
+                    continue;
+                }
+
+                $jumlah = BigDecimal::of((string) $e['JumlahDasar']);
+                $kedaluwarsa = $e['TanggalKedaluwarsa'] ?? null;
+                $hasil[] = new DataBarisMutasi(
+                    $kunci,
+                    $b['IdProduk'],
+                    $b['IdGudang'],
+                    JenisMutasi::ReturPenjualan,
+                    Kuantitas::Dari((string) $jumlah),
+                    ModeNilaiMutasi::Ditentukan,
+                    Uang::Dari($hpp->multipliedBy($jumlah)->toScale(Uang::SKALA, RoundingMode::HalfUp)),
+                    $hpp,
+                    $idDetail,
+                    batchMasuk: new DataBatchMasuk((string) $e['NomorBatch'], $kedaluwarsa === null ? null : CarbonImmutable::parse((string) $kedaluwarsa)),
+                );
+            }
+        }
+
+        return [$hasil, $kunciPerBaris];
     }
 
     /**

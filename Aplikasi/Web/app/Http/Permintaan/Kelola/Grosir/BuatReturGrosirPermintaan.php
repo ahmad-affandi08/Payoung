@@ -27,10 +27,13 @@ final class BuatReturGrosirPermintaan extends FormRequest
             'Tanggal' => ['required', 'date_format:Y-m-d'],
             'Alasan' => ['required', 'string', 'min:5', 'max:255'],
             'Catatan' => ['nullable', 'string', 'max:500'],
+            'UuidAkunRefund' => ['nullable', 'string', 'ulid'],
             'Baris' => ['required', 'array', 'min:1', 'max:'.SimpanPesananGrosirPermintaan::MAKS_BARIS],
             'Baris.*.Urutan' => ['required', 'integer', 'min:1'],
             'Baris.*.Jumlah' => ['required', 'string', AturanGrosir::JUMLAH],
             'Baris.*.Kondisi' => ['nullable', Rule::enum(KondisiBarangRetur::class)],
+            'Baris.*.NomorSeri' => ['nullable', 'array', 'max:500'],
+            'Baris.*.NomorSeri.*' => ['string', 'max:60'],
         ];
     }
 
@@ -51,6 +54,7 @@ final class BuatReturGrosirPermintaan extends FormRequest
             'UuidSuratJalan' => 'surat jalan',
             'Tanggal' => 'tanggal',
             'Alasan' => 'alasan',
+            'UuidAkunRefund' => 'akun pengembalian uang',
             'Baris' => 'barang',
             'Baris.*.Jumlah' => 'jumlah',
             'Baris.*.Kondisi' => 'kondisi barang',
@@ -70,8 +74,10 @@ final class BuatReturGrosirPermintaan extends FormRequest
                 (int) $b['Urutan'],
                 AturanGrosir::Jumlah($b['Jumlah']),
                 KondisiBarangRetur::tryFrom(is_string($b['Kondisi'] ?? null) ? (string) $b['Kondisi'] : '') ?? KondisiBarangRetur::LayakJual,
+                AturanGrosir::DaftarTeks($b['NomorSeri'] ?? null),
             ), $baris),
             catatan: AturanGrosir::Teks($this->validated('Catatan')),
+            uuidAkunRefund: AturanGrosir::Teks($this->validated('UuidAkunRefund')),
         );
     }
 }

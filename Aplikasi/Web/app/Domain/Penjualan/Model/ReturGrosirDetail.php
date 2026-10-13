@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $IdKelompokPajak
  * @property string $HppSatuan
  * @property string $TotalHpp
+ * @property list<array<string, string|null>>|null $RincianPelacakan batch (NomorBatch, TanggalKedaluwarsa, JumlahDasar, HppSatuan) atau nomor seri (Nomor, HppSatuan); null = produk tanpa pelacakan
  * @property-read Produk $Produk
  * @property-read ReturGrosir $ReturGrosir
  * @property-read SuratJalanDetail $SuratJalanDetail
@@ -59,6 +60,7 @@ final class ReturGrosirDetail extends ModelDasar
         'IdKelompokPajak' => null,
         'HppSatuan' => '0.000000',
         'TotalHpp' => '0.00',
+        'RincianPelacakan' => null,
     ];
 
     public function AmbilJumlah(): Kuantitas
@@ -122,6 +124,7 @@ final class ReturGrosirDetail extends ModelDasar
             'HargaTermasukPajak' => 'boolean',
             'HppSatuan' => 'decimal:6',
             'TotalHpp' => 'decimal:2',
+            'RincianPelacakan' => 'array',
         ];
     }
 }

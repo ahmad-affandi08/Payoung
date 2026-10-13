@@ -18,6 +18,7 @@ use App\Domain\Penjualan\Enum\StatusPesananGrosir;
 use App\Domain\Penjualan\Layanan\PenyusunJurnalGrosir;
 use App\Domain\Penjualan\Model\PesananGrosir;
 use App\Domain\Penjualan\Model\PesananGrosirDetail;
+use App\Domain\Penjualan\Model\ReturGrosir;
 use App\Domain\Penjualan\Model\SuratJalan;
 use App\Domain\Penjualan\Model\SuratJalanDetail;
 use App\Domain\Persediaan\Aksi\CatatMutasiStok;
@@ -26,6 +27,8 @@ use App\Domain\Persediaan\Data\DataDokumenMutasi;
 use App\Domain\Persediaan\Enum\JenisMutasi;
 use App\Domain\Persediaan\Enum\JenisReferensiMutasi;
 use App\Domain\Persediaan\Enum\ModeNilaiMutasi;
+use App\Domain\Persediaan\Kueri\InfoBatchStok;
+use App\Domain\Persediaan\Kueri\InfoNomorSeri;
 use App\Domain\Persediaan\Kueri\MutasiDokumen;
 use App\Domain\Persediaan\Layanan\Hpp\AritmetikaHpp;
 use App\Domain\Persediaan\Layanan\PemeriksaLokasiDokumen;
@@ -55,6 +58,8 @@ final class BatalkanSuratJalan
     public function __construct(
         private readonly PemeriksaLokasiDokumen $pemeriksaLokasi,
         private readonly MutasiDokumen $mutasiDokumen,
+        private readonly InfoBatchStok $infoBatch,
+        private readonly InfoNomorSeri $infoSeri,
         private readonly PengunciSaldoStok $pengunciSaldo,
         private readonly InfoProdukStok $infoProduk,
         private readonly PetaAkunPersediaan $petaAkunPersediaan,
@@ -66,7 +71,7 @@ final class BatalkanSuratJalan
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis AlasanBatalWajib, SuratJalanTidakDitemukan, SudahDifakturkan
+     * @throws PelanggaranAturanBisnis AlasanBatalWajib, SuratJalanTidakDitemukan, SudahDifakturkan, SudahAdaRetur
      */
     public function Jalankan(string $uuidSuratJalan, string $alasan, int $idPengguna): SuratJalan
     {
@@ -105,6 +110,14 @@ final class BatalkanSuratJalan
             );
         }
 
+        // Barang yang sudah diretur sebagian tidak boleh dimasukkan lagi lewat pembatalan penuh (stok terhitung dua kali).
+        if (ReturGrosir::query()->where('IdSuratJalan', $suratJalan->Id)->where('Status', StatusDokumenTerposting::Diposting->value)->exists()) {
+            throw new PelanggaranAturanBisnis(
+                'SudahAdaRetur',
+                "Surat jalan {$suratJalan->Nomor} sudah punya retur. Batalkan returnya dulu supaya stok tidak terhitung dua kali.",
+            );
+        }
+
         $tanggal = CarbonImmutable::parse($suratJalan->Tanggal->format('Y-m-d'));
         $asalMutasi = array_values(array_filter(
             $this->mutasiDokumen->AmbilRingkasan(JenisReferensiMutasi::SuratJalan, $suratJalan->Id),
@@ -121,6 +134,9 @@ final class BatalkanSuratJalan
         $pasangan = array_values($pasangan);
         usort($pasangan, fn (array $a, array $b): int => $a <=> $b);
         $this->pengunciSaldo->Kunci($pasangan);
+        // Produk ber-batch kembali ke batch asalnya, produk bernomor seri kembali berstatus tersedia (F-05g/F-05h).
+        $batch = $this->infoBatch->AmbilBanyak(array_values(array_filter(array_map(fn (array $m): ?int => $m['IdBatchStok'], $asalMutasi))));
+        $nomorSeri = $this->infoSeri->AmbilNomor(array_values(array_filter(array_map(fn (array $m): ?int => $m['IdNomorSeri'], $asalMutasi))));
 
         $hasilMutasi = $this->catatMutasi->Jalankan(new DataDokumenMutasi(
             jenisReferensi: JenisReferensiMutasi::SuratJalan,
@@ -142,6 +158,8 @@ final class BatalkanSuratJalan
                 nilai: AritmetikaHpp::AmbilMutlak(Uang::Dari($m['TotalHpp'])),
                 hppSatuan: BigDecimal::of($m['HppSatuan']),
                 idReferensiDetail: $m['IdReferensiDetail'],
+                batchMasuk: $m['IdBatchStok'] === null ? null : $batch[$m['IdBatchStok']],
+                nomorSeriMasuk: $m['IdNomorSeri'] === null ? null : $nomorSeri[$m['IdNomorSeri']],
                 idMutasiAsal: $m['Id'],
             ), $asalMutasi),
         ));

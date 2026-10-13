@@ -187,6 +187,49 @@ final class PencatatPiutangPenjualan
         return null;
     }
 
+    /**
+     * Nota kredit dengan pengembalian uang (BR-12.7): mengurangi sisa tagihan faktur sebanyak yang masih ada (paling
+     * banyak [jumlah]) dan mengembalikan **bagian yang dikurangi**. Selisihnya (`jumlah − dikurangi`) adalah uang yang
+     * harus dikembalikan ke pembeli oleh pemanggil. Piutang yang tidak ada/dibatalkan/dihapus buku tetap ditolak
+     * dengan pesan karena tidak ada tagihan yang bisa dikurangi.
+     *
+     * @return array{0: Uang, 1: string|null} [bagian yang mengurangi tagihan, pesan penolakan bila tidak bisa]
+     */
+    public function KurangiFakturSebisanya(int $idFakturPenjualan, Uang $jumlah, int $idPengguna, string $alasan): array
+    {
+        $piutang = Piutang::query()->where('IdFakturPenjualan', $idFakturPenjualan)->lockForUpdate()->first();
+
+        if ($piutang === null) {
+            return [Uang::Nol(), 'Faktur ini belum punya piutang, jadi tidak ada tagihan yang bisa dikurangi.'];
+        }
+
+        if ($piutang->Status === StatusPiutang::Dibatalkan) {
+            return [Uang::Nol(), "Piutang {$piutang->Nomor} sudah dibatalkan."];
+        }
+
+        if ($piutang->Status === StatusPiutang::DihapusBuku) {
+            return [Uang::Nol(), self::PesanDihapusBuku($piutang)];
+        }
+
+        $sisa = $piutang->AmbilSisa();
+        $dikurangi = $jumlah->Bandingkan($sisa) > 0 ? ($sisa->BernilaiNegatif() ? Uang::Nol() : $sisa) : $jumlah;
+
+        if ($dikurangi->BernilaiNol()) {
+            return [$dikurangi, null];
+        }
+
+        $asal = $piutang->Status;
+        $piutang->JumlahDikurangi = Uang::Dari($piutang->JumlahDikurangi)->Tambah($dikurangi)->KeString();
+        $piutang->SelaraskanStatus();
+        $piutang->save();
+
+        if ($asal !== $piutang->Status) {
+            $this->riwayat->Catat(Piutang::JENIS_DOKUMEN, $piutang->Id, $asal->value, $piutang->Status->value, $idPengguna, $alasan);
+        }
+
+        return [$dikurangi, null];
+    }
+
     /** Pembatalan nota kredit: pengurangan tagihan dikembalikan sebesar nilai retur yang dibatalkan. */
     public function BatalkanPenguranganFaktur(int $idFakturPenjualan, Uang $jumlah, int $idPengguna, string $alasan): void
     {

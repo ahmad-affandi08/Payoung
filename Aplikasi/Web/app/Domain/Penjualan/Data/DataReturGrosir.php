@@ -8,6 +8,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * Masukan retur grosir (F-12, §9.7, BR-12.7): surat jalan mana yang barangnya kembali, dan baris mana saja.
+ * `uuidAkunRefund` = akun kas/bank sumber pengembalian uang, wajib hanya bila nilai retur melebihi sisa tagihan faktur.
  */
 final readonly class DataReturGrosir
 {
@@ -20,5 +21,6 @@ final readonly class DataReturGrosir
         public string $alasan,
         public array $baris,
         public ?string $catatan = null,
+        public ?string $uuidAkunRefund = null,
     ) {}
 }

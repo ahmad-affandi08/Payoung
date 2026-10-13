@@ -53,4 +53,18 @@ final class AturanGrosir
     {
         return is_string($nilai) && trim($nilai) !== '' ? trim($nilai) : null;
     }
+
+    /**
+     * Daftar teks (mis. nomor seri) yang sudah dipangkas; elemen kosong dibuang.
+     *
+     * @return list<string>
+     */
+    public static function DaftarTeks(mixed $nilai): array
+    {
+        if (! is_array($nilai)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(fn (mixed $n): string => is_string($n) ? trim($n) : '', $nilai), fn (string $n): bool => $n !== ''));
+    }
 }
