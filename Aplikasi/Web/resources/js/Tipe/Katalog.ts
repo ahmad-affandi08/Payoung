@@ -202,10 +202,15 @@ export type BarisBatasStok = {
     /** "" = kosong. */
     StokMaksimum: string;
 };
+/** Kanal tunggal tempat ketersediaan ditandai (PRD-11); "Semua kanal" dikirim tanpa `Kanal`. */
+export type KanalKetersediaan = 'Kasir' | 'TokoOnline' | 'SelfOrder';
 export type BarisKetersediaanOutlet = {
     UuidOutlet: string;
     NamaOutlet: string;
+    /** Habis di semua kanal. */
     Habis: boolean;
+    /** Habis efektif per kanal (true = habis). */
+    Kanal: Record<KanalKetersediaan, boolean>;
 };
 export type DetailProduk = {
     Uuid: string;

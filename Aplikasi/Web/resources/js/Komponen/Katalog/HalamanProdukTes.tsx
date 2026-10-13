@@ -683,8 +683,18 @@ function PropsDetail(perubahan: Partial<PropsDetailProduk> = {}): PropsDetailPro
             { UuidGudang: 'G-1', NamaGudang: 'Gudang utama', NamaOutlet: 'Solo', StokMinimum: '10', StokMaksimum: '' },
         ],
         Ketersediaan: [
-            { UuidOutlet: 'O-1', NamaOutlet: 'Outlet Solo Baru', Habis: false },
-            { UuidOutlet: 'O-2', NamaOutlet: 'Outlet Yogyakarta', Habis: true },
+            {
+                UuidOutlet: 'O-1',
+                NamaOutlet: 'Outlet Solo Baru',
+                Habis: false,
+                Kanal: { Kasir: false, TokoOnline: false, SelfOrder: false },
+            },
+            {
+                UuidOutlet: 'O-2',
+                NamaOutlet: 'Outlet Yogyakarta',
+                Habis: true,
+                Kanal: { Kasir: true, TokoOnline: true, SelfOrder: true },
+            },
         ],
         Riwayat: [],
         Jenis: AturanJenis,
@@ -762,6 +772,57 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
 
         RenderUji(<HalamanDetailProduk {...PropsDetail({ Ketersediaan: null })} />);
         expect(screen.queryByText('Ketersediaan per outlet')).toBeNull();
+    });
+
+    it('PRD-11: tandai habis per kanal mengirim Kanal; habis sebagian diberi label sendiri; Semua tidak mengirim Kanal', () => {
+        RenderUji(
+            <HalamanDetailProduk
+                {...PropsDetail({
+                    Ketersediaan: [
+                        {
+                            UuidOutlet: 'O-1',
+                            NamaOutlet: 'Outlet Solo Baru',
+                            Habis: false,
+                            Kanal: { Kasir: false, TokoOnline: true, SelfOrder: false },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByText('Habis sebagian')).toBeTruthy();
+        const kanal = screen.getByRole('list', { name: 'Kanal di Outlet Solo Baru' });
+        expect(within(kanal).getByText('Toko online | habis')).toBeTruthy();
+        expect(within(kanal).getByText('Kasir | ada')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tandai habis di kanal Kasir, Outlet Solo Baru' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/habis',
+            { UuidOutlet: 'O-1', Habis: true, Kanal: 'Kasir' },
+            expect.anything(),
+        );
+        cleanup();
+
+        RenderUji(
+            <HalamanDetailProduk
+                {...PropsDetail({
+                    Ketersediaan: [
+                        {
+                            UuidOutlet: 'O-1',
+                            NamaOutlet: 'Outlet Solo Baru',
+                            Habis: false,
+                            Kanal: { Kasir: false, TokoOnline: true, SelfOrder: false },
+                        },
+                    ],
+                })}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Tersedia lagi di kanal Toko online, Outlet Solo Baru' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/habis',
+            { UuidOutlet: 'O-1', Habis: false, Kanal: 'TokoOnline' },
+            expect.anything(),
+        );
     });
 
     it('batas stok: min > maks ditolak di peramban; tanpa izin persediaan hanya baca', () => {

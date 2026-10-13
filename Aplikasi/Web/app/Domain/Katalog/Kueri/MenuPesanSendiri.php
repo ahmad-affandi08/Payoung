@@ -8,6 +8,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\KanalKetersediaan;
 use App\Domain\Katalog\Harga\Kueri\HargaProdukBerlaku;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Katalog\Model\Kategori;
@@ -209,7 +210,8 @@ final class MenuPesanSendiri
     }
 
     /**
-     * `$idOutlet` diisi = produk yang ditandai habis di outlet itu (BR-17.2, 86) ikut dikeluarkan. Dikosongkan hanya
+     * `$idOutlet` diisi = produk yang ditandai habis di outlet itu (BR-17.2, 86) untuk kanal ini (toko online bila
+     * `$tampilOnline`, selain itu self-order/kios; baris `Semua` berlaku untuk keduanya, PRD-11) ikut dikeluarkan. Dikosongkan hanya
      * untuk rute gambar, yang tidak punya konteks outlet dan tidak membocorkan apa pun selain gambar produk menu.
      *
      * @return Builder<Produk>
@@ -221,7 +223,7 @@ final class MenuPesanSendiri
             ->where($tampilOnline ? 'TampilOnline' : 'TampilDiPos', true)
             ->whereNull('IdInduk')
             ->whereNotIn('Jenis', self::JenisTidakDijual(JenisProduk::IndukVarian))
-            ->when($idOutlet !== null, fn (Builder $k): Builder => $k->whereNotIn('Id', ProdukHabis::query()->where('IdOutlet', $idOutlet)->select('IdProduk')));
+            ->when($idOutlet !== null, fn (Builder $k): Builder => $k->whereNotIn('Id', ProdukHabis::query()->where('IdOutlet', $idOutlet)->whereIn('Kanal', [KanalKetersediaan::Semua->value, ($tampilOnline ? KanalKetersediaan::TokoOnline : KanalKetersediaan::SelfOrder)->value])->select('IdProduk')));
     }
 
     /**
@@ -236,7 +238,7 @@ final class MenuPesanSendiri
             ->where($tampilOnline ? 'TampilOnline' : 'TampilDiPos', true)
             ->whereNotNull('IdInduk')
             ->whereNotIn('Jenis', self::JenisTidakDijual())
-            ->when($idOutlet !== null, fn (Builder $k): Builder => $k->whereNotIn('Id', ProdukHabis::query()->where('IdOutlet', $idOutlet)->select('IdProduk')));
+            ->when($idOutlet !== null, fn (Builder $k): Builder => $k->whereNotIn('Id', ProdukHabis::query()->where('IdOutlet', $idOutlet)->whereIn('Kanal', [KanalKetersediaan::Semua->value, ($tampilOnline ? KanalKetersediaan::TokoOnline : KanalKetersediaan::SelfOrder)->value])->select('IdProduk')));
     }
 
     /**

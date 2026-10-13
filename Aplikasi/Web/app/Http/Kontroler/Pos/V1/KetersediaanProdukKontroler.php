@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 
 /**
  * F-17 BR-17.2 (tandai habis / "86") di POS: `GET /api/pos/v1/produk-habis` mengembalikan `{Produk: [Uuid, ...]}` yang
- * habis di outlet perangkat, dan `POST /api/pos/v1/produk/{uuid}/habis` `{UuidPengguna, Habis}` menandai habis atau
+ * habis di kanal kasir outlet perangkat (ditandai semua kanal atau khusus kasir, PRD-11), dan `POST /api/pos/v1/produk/{uuid}/habis` `{UuidPengguna, Habis}` menandai habis atau
  * tersedia lagi. Pelaku wajib anggota outlet ber-izin `produk.kelola`, `penjualan.buat`, atau `pesanan.meja.catat`.
  */
 final class KetersediaanProdukKontroler extends Kontroler
@@ -34,6 +34,7 @@ final class KetersediaanProdukKontroler extends Kontroler
             strtoupper($produk),
             $permintaan->boolean('Habis'),
             strtoupper($permintaan->string('UuidPengguna')->toString()),
+            kanal: $permintaan->AmbilKanal(),
         );
 
         return response()->json(['Uuid' => strtoupper($produk), 'Habis' => $habis]);

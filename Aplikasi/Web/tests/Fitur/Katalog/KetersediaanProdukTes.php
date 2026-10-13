@@ -5,7 +5,11 @@ declare(strict_types=1);
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Katalog\Aksi\UbahKetersediaanProduk;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\KanalKetersediaan;
+use App\Domain\Katalog\Kueri\MenuPesanSendiri;
+use App\Domain\Katalog\Kueri\ProdukHabisOutlet;
 use App\Domain\Katalog\Model\ProdukHabis;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
@@ -159,5 +163,151 @@ describe('F-17 BR-17.2 tandai habis dari aplikasi POS', function (): void {
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         expect(ProdukHabis::query()->count())->toBe(0);
+    });
+});
+
+describe('PRD-11 ketersediaan per outlet × kanal', function (): void {
+    function KanalAda(int $idProduk, int $idOutlet): array
+    {
+        return ProdukHabis::query()->where('IdProduk', $idProduk)->where('IdOutlet', $idOutlet)->orderBy('Kanal')->get()->map(fn (ProdukHabis $b): string => $b->Kanal->value)->all();
+    }
+
+    it('habis hanya di toko online: hilang dari toko online, tetap ada di self-order dan kasir', function (): void {
+        $k = BantuanTokoOnline::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        app(UbahKetersediaanProduk::class)->Jalankan($k['Outlet']->Id, $k['Kopi']->Uuid, true, idPenggunaBackOffice: $k['Pemilik']->Id, kanal: KanalKetersediaan::TokoOnline);
+
+        $this->get($k['AlamatToko'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('Menu.Produk', 1)->where('Menu.Produk.0.Nama', $k['Nasi']->Nama));
+        $this->postJson($k['AlamatToko'].'/keranjang/hitung', BantuanTokoOnline::Kiriman($k))
+            ->assertUnprocessable()->assertJsonPath('Galat.Kode', 'ProdukTidakTersedia');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $kueri = app(MenuPesanSendiri::class);
+        $selfOrder = array_column($kueri->Ambil($k['Outlet']->Id, '/g/{uuid}', tampilOnline: false)['Produk'], 'Nama');
+        $kasir = app(ProdukHabisOutlet::class)->AmbilUuid($k['Outlet']->Id);
+
+        expect($selfOrder)->toContain($k['Kopi']->Nama)
+            ->and($kasir)->toBe([])
+            ->and(KanalAda($k['Kopi']->Id, $k['Outlet']->Id))->toBe(['TokoOnline']);
+    });
+
+    it('habis hanya di self-order: hilang dari QR meja dan kios, tetap ada di toko online', function (): void {
+        $k = BantuanPesanSendiri::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        app(UbahKetersediaanProduk::class)->Jalankan($k['Outlet']->Id, $k['Nasi']->Uuid, true, idPenggunaBackOffice: $k['Pemilik']->Id, kanal: KanalKetersediaan::SelfOrder);
+
+        $this->get($k['Alamat'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('Menu.Produk', 1)->where('Menu.Produk.0.Nama', $k['Kopi']->Nama));
+        $this->postJson("{$k['Alamat']}/hitung", BantuanPesanSendiri::Kiriman([[$k['Nasi'], 1]]))
+            ->assertUnprocessable()->assertJsonPath('Galat.Kode', 'ProdukTidakTersedia');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $online = array_column(app(MenuPesanSendiri::class)->Ambil($k['Outlet']->Id, '/g/{uuid}', tampilOnline: true)['Produk'], 'Nama');
+        $k['Nasi']->forceFill(['TampilOnline' => true])->save();
+        $online = array_column(app(MenuPesanSendiri::class)->Ambil($k['Outlet']->Id, '/g/{uuid}', tampilOnline: true)['Produk'], 'Nama');
+
+        expect($online)->toContain($k['Nasi']->Nama);
+    });
+
+    it('habis hanya di kasir: daftar produk-habis POS memuatnya, menu online tidak terpengaruh', function (): void {
+        $k = BantuanKasir::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $produk = BantuanKatalog::BuatProduk(['Nama' => 'Soto Ayam Kampung Special', 'TampilOnline' => true], '27000.00');
+        $alamat = "/api/pos/v1/produk/{$produk->Uuid}/habis";
+
+        $this->withToken($k['Token'])->postJson($alamat, ['UuidPengguna' => $k['Kasir']->Uuid, 'Habis' => true, 'Kanal' => 'Kasir'])->assertOk()->assertJson(['Habis' => true]);
+        $this->withToken($k['Token'])->getJson('/api/pos/v1/produk-habis')->assertOk()->assertExactJson(['Produk' => [$produk->Uuid]]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $online = array_column(app(MenuPesanSendiri::class)->Ambil($k['Outlet']->Id, '/g/{uuid}', tampilOnline: true)['Produk'], 'Nama');
+        expect($online)->toContain('Soto Ayam Kampung Special');
+
+        // Kanal rusak ditolak; tanpa Kanal berarti semua kanal (kontrak lama).
+        $this->withToken($k['Token'])->postJson($alamat, ['UuidPengguna' => $k['Kasir']->Uuid, 'Habis' => true, 'Kanal' => 'Ojol'])->assertUnprocessable();
+        $this->withToken($k['Token'])->postJson($alamat, ['UuidPengguna' => $k['Kasir']->Uuid, 'Habis' => true])->assertOk();
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(KanalAda($produk->Id, $k['Outlet']->Id))->toBe(['Semua']);
+    });
+
+    it('transisi penyimpanan: Semua menggantikan kanal tunggal; kanal saat Semua tidak mengubah; tiga kanal digabung; tersedia di satu kanal memecah Semua', function (): void {
+        $k = BantuanTokoOnline::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $ubah = fn (bool $habis, KanalKetersediaan $kanal) => app(UbahKetersediaanProduk::class)->Jalankan($k['Outlet']->Id, $k['Kopi']->Uuid, $habis, idPenggunaBackOffice: $k['Pemilik']->Id, kanal: $kanal);
+        $id = [$k['Kopi']->Id, $k['Outlet']->Id];
+
+        $ubah(true, KanalKetersediaan::Kasir);
+        $ubah(true, KanalKetersediaan::Kasir);
+        expect(KanalAda(...$id))->toBe(['Kasir']);
+
+        $ubah(true, KanalKetersediaan::Semua);
+        expect(KanalAda(...$id))->toBe(['Semua']);
+
+        $ubah(true, KanalKetersediaan::TokoOnline);
+        expect(KanalAda(...$id))->toBe(['Semua']);
+
+        $ubah(false, KanalKetersediaan::TokoOnline);
+        expect(KanalAda(...$id))->toBe(['Kasir', 'SelfOrder']);
+
+        $ubah(true, KanalKetersediaan::TokoOnline);
+        expect(KanalAda(...$id))->toBe(['Semua']);
+
+        $ubah(false, KanalKetersediaan::Semua);
+        expect(KanalAda(...$id))->toBe([]);
+
+        $ubah(true, KanalKetersediaan::SelfOrder);
+        $ubah(false, KanalKetersediaan::SelfOrder);
+        $ubah(false, KanalKetersediaan::SelfOrder);
+        expect(KanalAda(...$id))->toBe([]);
+    });
+
+    it('audit hanya saat keadaan efektif berubah dan memuat kanal serta daftar kanal yang habis', function (): void {
+        $k = BantuanTokoOnline::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $ubah = fn (bool $habis, KanalKetersediaan $kanal) => app(UbahKetersediaanProduk::class)->Jalankan($k['Outlet']->Id, $k['Kopi']->Uuid, $habis, idPenggunaBackOffice: $k['Pemilik']->Id, kanal: $kanal);
+
+        $ubah(true, KanalKetersediaan::Kasir);
+        $ubah(true, KanalKetersediaan::Semua);
+        // Sudah habis di semua kanal: menandai satu kanal tidak mengubah keadaan efektif, jadi tidak dicatat.
+        $ubah(true, KanalKetersediaan::SelfOrder);
+        $ubah(false, KanalKetersediaan::Kasir);
+
+        $log = LogAudit::query()->whereIn('Peristiwa', ['produk.habis', 'produk.tersedia'])->orderBy('Id')->get();
+        expect($log)->toHaveCount(3)
+            ->and($log->pluck('Peristiwa')->all())->toBe(['produk.habis', 'produk.habis', 'produk.tersedia'])
+            ->and($log[0]->NilaiBaru['KanalHabis'])->toBe(['Kasir'])
+            ->and($log[1]->NilaiBaru['KanalHabis'])->toBe(['Kasir', 'TokoOnline', 'SelfOrder'])
+            ->and($log[2]->NilaiBaru['Kanal'])->toBe('Kasir')
+            ->and($log[2]->NilaiBaru['KanalHabis'])->toBe(['TokoOnline', 'SelfOrder']);
+    });
+
+    it('back-office: panel memuat keadaan per kanal; ubah per kanal lewat form; Kanal tidak dikenal ditolak', function (): void {
+        $k = BantuanTokoOnline::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $masuk = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);
+        $alamat = "/kelola/produk/{$k['Kopi']->Uuid}/habis";
+
+        $masuk()->post($alamat, ['UuidOutlet' => $k['Outlet']->Uuid, 'Habis' => true, 'Kanal' => 'SelfOrder'])->assertSessionHasNoErrors();
+        $masuk()->post($alamat, ['UuidOutlet' => $k['Outlet']->Uuid, 'Habis' => true, 'Kanal' => 'Ojol'])->assertSessionHasErrors('Kanal');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $masuk()->get("/kelola/produk/{$k['Kopi']->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Ketersediaan.0.Habis', false)
+            ->where('Ketersediaan.0.Kanal.SelfOrder', true)
+            ->where('Ketersediaan.0.Kanal.Kasir', false)
+            ->where('Ketersediaan.0.Kanal.TokoOnline', false));
+    });
+
+    it('migrasi: baris lama berarti semua kanal (bawaan Semua); satu produk bisa punya baris beberapa kanal tetapi tidak ganda', function (): void {
+        $k = BantuanTokoOnline::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+
+        ProdukHabis::query()->create(['IdProduk' => $k['Kopi']->Id, 'IdOutlet' => $k['Outlet']->Id]);
+        expect(ProdukHabis::query()->sole()->Kanal)->toBe(KanalKetersediaan::Semua);
+
+        ProdukHabis::query()->create(['IdProduk' => $k['Kopi']->Id, 'IdOutlet' => $k['Outlet']->Id, 'Kanal' => 'Kasir']);
+        expect(fn () => ProdukHabis::query()->create(['IdProduk' => $k['Kopi']->Id, 'IdOutlet' => $k['Outlet']->Id, 'Kanal' => 'Kasir']))
+            ->toThrow(UniqueConstraintViolationException::class);
     });
 });
