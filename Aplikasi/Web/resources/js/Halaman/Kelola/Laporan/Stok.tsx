@@ -13,6 +13,7 @@ import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type {
     BarisBatchKedaluwarsa,
+    BarisPerputaranStok,
     BarisSaranRestock,
     BarisStokKritis,
     NilaiPersediaan,
@@ -156,6 +157,71 @@ const opsiHariCakupan = [
     { Nilai: '30', Label: '30 hari' },
 ];
 
+const opsiRentangPerputaran = [
+    { Nilai: '30', Label: '30 hari' },
+    { Nilai: '60', Label: '60 hari' },
+    { Nilai: '90', Label: '90 hari' },
+];
+
+const labelKelasPerputaran = {
+    Cepat: 'Cepat laku',
+    Normal: 'Normal',
+    Lambat: 'Lambat laku',
+    Mati: 'Tidak bergerak',
+} as const;
+
+const kolomPerputaran: KolomTabel<BarisPerputaranStok>[] = [
+    {
+        id: 'NamaProduk',
+        accessorKey: 'NamaProduk',
+        header: 'Produk',
+        meta: { label: 'Produk', prioritas: 'utama', wajib: true },
+        cell: ({ row: { original: b } }) => (
+            <>
+                <span className="block text-teks-utama">{b.NamaProduk}</span>
+                {b.Sku ? <span className="block font-mono text-label text-teks-sekunder">{b.Sku}</span> : null}
+            </>
+        ),
+    },
+    {
+        id: 'Kelas',
+        accessorKey: 'Kelas',
+        header: 'Kelas',
+        meta: { label: 'Kelas', prioritas: 'utama' },
+        cell: ({ row }) => labelKelasPerputaran[row.original.Kelas],
+    },
+    {
+        id: 'Pakai',
+        accessorKey: 'Pakai',
+        header: 'Terpakai',
+        meta: { label: 'Terpakai', angka: true, prioritas: 'utama' },
+        cell: ({ row }) => FormatJumlahStok(row.original.Pakai, row.original.SimbolSatuan),
+    },
+    {
+        id: 'Saldo',
+        accessorKey: 'Saldo',
+        header: 'Saldo',
+        meta: { label: 'Saldo', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => FormatJumlahStok(row.original.Saldo, row.original.SimbolSatuan),
+    },
+    KolomUang<BarisPerputaranStok>('Nilai', 'Nilai persediaan', 'penting'),
+    {
+        id: 'HariCover',
+        accessorKey: 'HariCover',
+        header: 'Cukup untuk',
+        meta: { label: 'Cukup untuk', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => (row.original.HariCover === null ? '–' : `${String(row.original.HariCover)} hari`),
+    },
+    {
+        id: 'NamaGudang',
+        accessorKey: 'NamaGudang',
+        header: 'Lokasi stok',
+        meta: { label: 'Lokasi stok', prioritas: 'rendah' },
+        cell: ({ row }) =>
+            `${row.original.NamaGudang}${row.original.NamaOutlet ? ` | ${row.original.NamaOutlet}` : ''}`,
+    },
+];
+
 const kolomRestock: KolomTabel<BarisSaranRestock>[] = [
     {
         id: 'NamaProduk',
@@ -231,11 +297,12 @@ export default function HalamanLaporanStok({
     Kritis,
     Kedaluwarsa,
     Restock,
+    Perputaran,
 }: PropsLaporanStok) {
     const query = {
         tanggal: Saring.Tanggal,
         gudang: Saring.Gudang,
-        ...(Saring.Tab === 'restock' ? { hari: String(Saring.Hari) } : {}),
+        ...(Saring.Tab === 'restock' || Saring.Tab === 'perputaran' ? { hari: String(Saring.Hari) } : {}),
     };
     const Terapkan = (ubah: Record<string, string>) => {
         const baru = Object.fromEntries(
@@ -269,6 +336,20 @@ export default function HalamanLaporanStok({
                         />
                     </div>
                 ) : null}
+                {Saring.Tab === 'perputaran' ? (
+                    <div className="flex flex-col gap-1">
+                        <Label htmlFor="saring-laporan-rentang" className="text-label font-semibold text-teks-utama">
+                            Rentang pemakaian
+                        </Label>
+                        <PilihanCari
+                            id="saring-laporan-rentang"
+                            label="Rentang pemakaian"
+                            nilai={String(Saring.Hari)}
+                            opsi={opsiRentangPerputaran}
+                            saatBerubah={(hari) => Terapkan({ hari })}
+                        />
+                    </div>
+                ) : null}
                 {OpsiGudang.length > 1 ? (
                     <div className="flex flex-col gap-1">
                         <Label htmlFor="saring-laporan-gudang" className="text-label font-semibold text-teks-utama">
@@ -297,6 +378,7 @@ export default function HalamanLaporanStok({
                         { nilai: 'kritis', label: 'Stok kritis' },
                         { nilai: 'kedaluwarsa', label: 'Kedaluwarsa' },
                         { nilai: 'restock', label: 'Saran restock' },
+                        { nilai: 'perputaran', label: 'Slow & fast moving' },
                     ]}
                 />
                 <TautanEkspor alamat={`${alamat}/ekspor`} query={{ ...query, tab: Saring.Tab }} eksporBesar />
@@ -400,6 +482,48 @@ export default function HalamanLaporanStok({
                         kosong={{
                             ilustrasi: true,
                             judul: 'Tidak ada batch yang lewat atau mendekati kedaluwarsa dalam 30 hari.',
+                        }}
+                    />
+                </section>
+            ) : null}
+
+            {Perputaran ? (
+                <section aria-labelledby="judul-perputaran" className="flex flex-col gap-2">
+                    <h2 id="judul-perputaran" className="text-subjudul font-semibold text-teks-utama">
+                        Slow &amp; fast moving ({String(Perputaran.Baris.length)})
+                    </h2>
+                    <p className="max-w-3xl text-label text-teks-sekunder">
+                        Perputaran = pemakaian {String(Perputaran.Rentang)} hari terakhir (sampai kemarin) ÷ saldo
+                        sekarang. Cepat laku: 1 atau lebih (stok habis dalam rentang itu). Normal: 0,25 sampai kurang
+                        dari 1. Lambat laku: di bawah 0,25. Tidak bergerak: ada saldo tetapi tidak ada pemakaian.
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-5">
+                        {(['Cepat', 'Normal', 'Lambat', 'Mati'] as const).map((kelas) => (
+                            <div key={kelas}>
+                                <dt className="text-label text-teks-sekunder">{labelKelasPerputaran[kelas]}</dt>
+                                <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                    {String(Perputaran.Ringkasan[kelas].Jumlah)} produk
+                                </dd>
+                            </div>
+                        ))}
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Nilai stok lambat &amp; tidak bergerak</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {FormatRupiah(Perputaran.NilaiTertahan)}
+                            </dd>
+                        </div>
+                    </dl>
+                    <TabelData
+                        id="laporan-stok-perputaran"
+                        label="Slow dan fast moving"
+                        kolom={kolomPerputaran}
+                        sumber={{ mode: 'lokal', data: Perputaran.Baris }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        cari="Cari produk"
+                        alamatDetail={(b) => BuatUrlKartuStok(b.UuidProduk, b.UuidGudang)}
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Belum ada pemakaian atau saldo stok untuk dianalisis.',
                         }}
                     />
                 </section>

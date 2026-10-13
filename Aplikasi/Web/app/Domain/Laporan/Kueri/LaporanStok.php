@@ -34,6 +34,13 @@ final class LaporanStok
     /** X6: panjang periode dasar rata-rata pemakaian untuk saran restock. */
     public const HARI_DASAR_RESTOCK = 28;
 
+    /** Rentang pemakaian laporan slow/fast moving (hari) dan urutan kelasnya. */
+    public const RENTANG_BAWAAN_PERPUTARAN = 30;
+
+    public const RENTANG_PERPUTARAN = [30, 60, 90];
+
+    public const KELAS_PERPUTARAN = ['Cepat', 'Normal', 'Lambat', 'Mati'];
+
     public function __construct(
         private readonly InfoGudang $infoGudang,
         private readonly StokUntukLaporan $stok,
@@ -234,6 +241,93 @@ final class LaporanStok
         usort($baris, fn (array $a, array $b): int => ($a['HariHabis'] ?? PHP_INT_MAX) <=> ($b['HariHabis'] ?? PHP_INT_MAX) ?: strcmp((string) $a['NamaProduk'], (string) $b['NamaProduk']));
 
         return ['HariDasar' => self::HARI_DASAR_RESTOCK, 'HariCakupan' => $hariCakupan, 'Musim' => $musim, 'Baris' => $baris];
+    }
+
+    /**
+     * Laporan slow/fast moving (§10.10): pemakaian `$rentang` hari terakhir (sampai kemarin, sama dengan saran restock)
+     * dibandingkan dengan saldo sekarang per produk × lokasi stok. `Perputaran` = pemakaian ÷ saldo. Kelas: `Cepat`
+     * (≥ 1, stok habis dalam rentang itu atau saldo sudah nol/minus), `Normal` (0,25 s.d. < 1), `Lambat` (> 0 s.d. < 0,25),
+     * `Mati` (ada saldo tetapi tidak ada pemakaian sama sekali). Konsinyasi tidak ikut. `NilaiTertahan` = nilai persediaan
+     * kelas Lambat + Mati. Urut pemakaian terbesar; kelas Mati di akhir menurut nilai.
+     *
+     * @param  list<int>|null  $idOutletBoleh
+     * @return array{Rentang: int, Ringkasan: array<string, array{Jumlah: int, Nilai: string}>, NilaiTertahan: string, Baris: list<array<string, mixed>>}
+     */
+    public function Perputaran(?array $idOutletBoleh, CarbonImmutable $hariIni, string $uuidGudang = '', int $rentang = self::RENTANG_BAWAAN_PERPUTARAN): array
+    {
+        $gudang = $this->AmbilGudang($idOutletBoleh, $uuidGudang);
+        $sampai = $hariIni->subDay();
+        $pakai = [];
+
+        foreach ($this->stok->AmbilPemakaian(array_keys($gudang), $sampai->subDays($rentang - 1), $sampai) as $b) {
+            $pakai["{$b['IdProduk']}|{$b['IdGudang']}"] = $b['Pakai'];
+        }
+
+        $saldo = [];
+
+        foreach ($this->stok->AmbilNilaiPadaTanggal($hariIni, array_keys($gudang)) as $b) {
+            $saldo["{$b['IdProduk']}|{$b['IdGudang']}"] = $b;
+        }
+
+        $kunciSemua = array_values(array_unique([...array_keys($pakai), ...array_keys(array_filter($saldo, fn (array $b): bool => BigDecimal::of($b['Jumlah'])->isPositive()))]));
+        $info = $this->infoProduk->AmbilBanyak(array_values(array_unique(array_map(fn (string $k): int => (int) explode('|', $k)[0], $kunciSemua))));
+        $ringkasan = array_fill_keys(self::KELAS_PERPUTARAN, ['Jumlah' => 0, 'Nilai' => BigDecimal::zero()]);
+        $baris = [];
+
+        foreach ($kunciSemua as $kunci) {
+            [$idProduk, $idGudang] = array_map('intval', explode('|', $kunci));
+            $p = $info[$idProduk] ?? null;
+            $g = $gudang[$idGudang] ?? null;
+
+            if ($p === null || $g === null || $p->jenis === JenisProduk::Konsinyasi) {
+                continue;
+            }
+
+            $dipakai = BigDecimal::of($pakai[$kunci] ?? '0');
+            $sisa = BigDecimal::of($saldo[$kunci]['Jumlah'] ?? '0');
+            $nilai = BigDecimal::of($saldo[$kunci]['Nilai'] ?? '0');
+            $rasio = $sisa->isPositive() ? $dipakai->dividedBy($sisa, 4, RoundingMode::HalfUp) : null;
+            $rata = $dipakai->dividedBy($rentang, 4, RoundingMode::HalfUp);
+            $kelas = match (true) {
+                $dipakai->isZero() => 'Mati',
+                $rasio === null || $rasio->isGreaterThanOrEqualTo(1) => 'Cepat',
+                $rasio->isGreaterThanOrEqualTo('0.25') => 'Normal',
+                default => 'Lambat',
+            };
+            $ringkasan[$kelas]['Jumlah']++;
+            $ringkasan[$kelas]['Nilai'] = $ringkasan[$kelas]['Nilai']->plus($nilai);
+            $baris[] = [
+                'Kunci' => $p->uuid.'-'.$g->uuid,
+                'UuidProduk' => $p->uuid,
+                'NamaProduk' => $p->nama,
+                'Sku' => $p->sku,
+                'SimbolSatuan' => $p->simbolSatuan,
+                'UuidGudang' => $g->uuid,
+                'NamaGudang' => $g->nama,
+                'NamaOutlet' => $g->namaOutlet ?? '',
+                'Pakai' => (string) $dipakai->toScale(4),
+                'RataPerHari' => (string) $rata,
+                'Saldo' => (string) $sisa->toScale(4),
+                'Nilai' => (string) $nilai->toScale(2, RoundingMode::HalfUp),
+                'Perputaran' => $rasio === null ? null : (string) $rasio,
+                'HariCover' => $rata->isZero() || ! $sisa->isPositive() ? null : $sisa->dividedBy($rata, 0, RoundingMode::Down)->toInt(),
+                'Kelas' => $kelas,
+            ];
+        }
+
+        $urutKelas = array_flip(self::KELAS_PERPUTARAN);
+        usort($baris, fn (array $a, array $b): int => $urutKelas[$a['Kelas']] <=> $urutKelas[$b['Kelas']]
+            ?: ($a['Kelas'] === 'Mati'
+                ? BigDecimal::of($b['Nilai'])->compareTo($a['Nilai'])
+                : BigDecimal::of($b['Pakai'])->compareTo($a['Pakai']))
+            ?: strcmp((string) $a['NamaProduk'], (string) $b['NamaProduk']));
+
+        return [
+            'Rentang' => $rentang,
+            'Ringkasan' => array_map(fn (array $r): array => ['Jumlah' => $r['Jumlah'], 'Nilai' => (string) $r['Nilai']->toScale(2, RoundingMode::HalfUp)], $ringkasan),
+            'NilaiTertahan' => (string) $ringkasan['Lambat']['Nilai']->plus($ringkasan['Mati']['Nilai'])->toScale(2, RoundingMode::HalfUp),
+            'Baris' => $baris,
+        ];
     }
 
     /**

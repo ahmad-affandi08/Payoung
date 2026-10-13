@@ -112,6 +112,53 @@ it('saran restock: pemakaian hari ini belum dihitung, besok jadi laju harian; ca
     expect($csv)->toContain('Saran beli')->toContain('9.0000');
 });
 
+it('slow & fast moving: perputaran = pemakaian ÷ saldo; kelas Cepat/Lambat/Mati; pemakaian hari ini belum dihitung; rentang 30/60/90; ekspor', function (): void {
+    $k = SiapkanPenjualanInsight($this);
+    $sabun = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Sabun Cuci Piring 5 Liter', '12', '7500', '9000.00');
+    BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+    // Hari penjualan: periode dasar sampai kemarin, jadi belum ada pemakaian — semua yang bersaldo dianggap tidak bergerak.
+    $this->get('/kelola/laporan/stok?tab=perputaran')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Saring.Tab', 'perputaran')
+        ->where('Saring.Hari', 30)
+        ->where('Perputaran.Rentang', 30)
+        ->where('Perputaran.Ringkasan.Mati.Jumlah', 3)
+        ->where('Perputaran.Ringkasan.Cepat.Jumlah', 0));
+
+    $this->travelTo(CarbonImmutable::parse('2026-10-08 05:00:00', 'UTC'));
+
+    // Minyak: terpakai 10, saldo 2 → 5,0000 (Cepat). Teh: terpakai 1, saldo 9 → 0,1111 (Lambat). Sabun: tak terpakai (Mati).
+    $this->get('/kelola/laporan/stok?tab=perputaran')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Perputaran.Baris.0.NamaProduk', $k['Minyak']->Nama)
+        ->where('Perputaran.Baris.0.Kelas', 'Cepat')
+        ->where('Perputaran.Baris.0.Pakai', '10.0000')
+        ->where('Perputaran.Baris.0.Saldo', '2.0000')
+        ->where('Perputaran.Baris.0.Perputaran', '5.0000')
+        ->where('Perputaran.Baris.0.RataPerHari', '0.3333')
+        ->where('Perputaran.Baris.0.HariCover', 6)
+        ->where('Perputaran.Baris.1.NamaProduk', 'Teh Melati Celup Isi 25')
+        ->where('Perputaran.Baris.1.Kelas', 'Lambat')
+        ->where('Perputaran.Baris.1.Perputaran', '0.1111')
+        ->where('Perputaran.Baris.2.NamaProduk', 'Sabun Cuci Piring 5 Liter')
+        ->where('Perputaran.Baris.2.Kelas', 'Mati')
+        ->where('Perputaran.Baris.2.Perputaran', '0.0000')
+        ->where('Perputaran.Baris.2.HariCover', null)
+        ->where('Perputaran.Ringkasan.Cepat.Jumlah', 1)
+        ->where('Perputaran.Ringkasan.Lambat.Jumlah', 1)
+        ->where('Perputaran.Ringkasan.Mati.Jumlah', 1)
+        ->where('Perputaran.Ringkasan.Mati.Nilai', '90000.00')
+        ->where('Perputaran.NilaiTertahan', '117000.00'));
+
+    // Rentang 90 hari: rata-rata per hari ikut berubah; nilai di luar 30/60/90 kembali ke 30.
+    $this->get('/kelola/laporan/stok?tab=perputaran&hari=90')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Saring.Hari', 90)
+        ->where('Perputaran.Baris.0.RataPerHari', '0.1111'));
+    $this->get('/kelola/laporan/stok?tab=perputaran&hari=14')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Saring.Hari', 30));
+
+    $csv = $this->get('/kelola/laporan/stok/ekspor?tab=perputaran')->assertOk()->streamedContent();
+    expect($csv)->toContain('Kelas')->toContain('Cepat')->toContain('Mati')->toContain('Sabun Cuci Piring 5 Liter');
+});
+
 it('saran restock musiman: laju dikali faktor Ramadan/Lebaran tahun lalu (selaras Lebaran, bukan tanggal Masehi)', function (): void {
     HariLibur::query()->create(['Tanggal' => '2026-03-20', 'Nama' => 'Hari Raya Idul Fitri 1447 H', 'Jenis' => JenisHariLibur::Nasional, 'Status' => StatusDataMaster::Terbit]);
     HariLibur::query()->create(['Tanggal' => '2027-03-09', 'Nama' => 'Cuti Bersama Idul Fitri', 'Jenis' => JenisHariLibur::CutiBersama, 'Status' => StatusDataMaster::Terbit]);

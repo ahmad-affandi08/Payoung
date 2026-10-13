@@ -142,6 +142,7 @@ describe('X6 saran restock di laporan stok', () => {
         Nilai: null,
         Kritis: null,
         Kedaluwarsa: null,
+        Perputaran: null,
         Restock: {
             HariDasar: 28,
             HariCakupan: 14,
@@ -220,5 +221,77 @@ describe('X6 saran restock di laporan stok', () => {
             />,
         );
         expect(screen.getByText('Belum ada pemakaian stok dalam 28 hari terakhir.')).toBeTruthy();
+    });
+
+    it('slow & fast moving: ringkasan kelas, nilai tertahan, kolom kelas; pilihan rentang memuat ulang dengan saring', () => {
+        RenderUji(
+            <HalamanLaporanStok
+                {...props}
+                Saring={{ Tab: 'perputaran', Tanggal: '2026-10-07', Gudang: '', Hari: 30 }}
+                Restock={null}
+                Perputaran={{
+                    Rentang: 30,
+                    Ringkasan: {
+                        Cepat: { Jumlah: 1, Nilai: '60000.00' },
+                        Normal: { Jumlah: 0, Nilai: '0.00' },
+                        Lambat: { Jumlah: 1, Nilai: '250000.00' },
+                        Mati: { Jumlah: 1, Nilai: '90000.00' },
+                    },
+                    NilaiTertahan: '340000.00',
+                    Baris: [
+                        {
+                            Kunci: 'p1-g1',
+                            UuidProduk: 'p1',
+                            NamaProduk: 'Gula Pasir Lokal 1 kg',
+                            Sku: 'GLP-1KG',
+                            SimbolSatuan: 'pcs',
+                            UuidGudang: 'g1',
+                            NamaGudang: 'Toko',
+                            NamaOutlet: 'Toko Kelontong Berkah Solo',
+                            Pakai: '90.0000',
+                            RataPerHari: '3.0000',
+                            Saldo: '10.0000',
+                            Nilai: '60000.00',
+                            Perputaran: '9.0000',
+                            HariCover: 3,
+                            Kelas: 'Cepat',
+                        },
+                        {
+                            Kunci: 'p3-g1',
+                            UuidProduk: 'p3',
+                            NamaProduk: 'Sabun Cuci Piring 5 Liter',
+                            Sku: null,
+                            SimbolSatuan: 'pcs',
+                            UuidGudang: 'g1',
+                            NamaGudang: 'Toko',
+                            NamaOutlet: 'Toko Kelontong Berkah Solo',
+                            Pakai: '0.0000',
+                            RataPerHari: '0.0000',
+                            Saldo: '12.0000',
+                            Nilai: '90000.00',
+                            Perputaran: '0.0000',
+                            HariCover: null,
+                            Kelas: 'Mati',
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('heading', { name: 'Slow & fast moving (2)' })).toBeTruthy();
+        expect(screen.getAllByText('Cepat laku').length).toBeGreaterThan(1);
+        expect(screen.getAllByText('Tidak bergerak').length).toBeGreaterThan(0);
+        expect(screen.getByText('Rp 340.000')).toBeTruthy();
+        expect(screen.getByText('3 hari')).toBeTruthy();
+        expect(AmbilHrefEkspor('csv', 'Ekspor')).toBe(
+            '/kelola/laporan/stok/ekspor?tanggal=2026-10-07&hari=30&tab=perputaran&format=csv',
+        );
+
+        PilihOpsi(screen.getByRole('combobox', { name: /Rentang pemakaian/ }), '90');
+        expect(tiruanRouter.get).toHaveBeenCalledWith(
+            '/kelola/laporan/stok',
+            { tanggal: '2026-10-07', hari: '90', tab: 'perputaran' },
+            { preserveScroll: true, preserveState: true },
+        );
     });
 });

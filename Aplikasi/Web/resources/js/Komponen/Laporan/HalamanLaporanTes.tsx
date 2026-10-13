@@ -253,7 +253,7 @@ describe('F-14a laporan penjualan', () => {
     });
 
     it('§10.10 tab per pelanggan & perbandingan outlet: nama, porsi, margin, dan ekspor sesuai saring', () => {
-        const { unmount } = RenderUji(
+        const { unmount: Lepas } = RenderUji(
             <HalamanLaporanPenjualan
                 {...PropsPenjualan({
                     Saring: {
@@ -286,7 +286,7 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByText('Ani Wijayanti')).toBeTruthy();
         expect(screen.getByText('Tanpa pelanggan')).toBeTruthy();
         expect(screen.getByText('50,00%')).toBeTruthy();
-        unmount();
+        Lepas();
 
         RenderUji(
             <HalamanLaporanPenjualan
@@ -479,6 +479,7 @@ describe('F-14a laporan pajak & stok', () => {
             Kritis: null,
             Kedaluwarsa: null,
             Restock: null,
+            Perputaran: null,
         };
         RenderUji(<HalamanLaporanStok {...nilai} />);
         expect(screen.getAllByText('Rp 380.000').length).toBeGreaterThan(0);

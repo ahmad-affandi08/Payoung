@@ -233,6 +233,7 @@ final class LaporanKontroler extends DasarKelolaKontroler
             'Nilai' => $tab === 'nilai' ? $laporan->NilaiPersediaan($pada, $this->IdOutletBoleh(), $uuidGudang) : null,
             'Kritis' => $tab === 'kritis' ? $laporan->StokKritis($this->IdOutletBoleh(), $uuidGudang) : null,
             'Kedaluwarsa' => $tab === 'kedaluwarsa' ? $laporan->BatchKedaluwarsa($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang) : null,
+            'Perputaran' => $tab === 'perputaran' ? $laporan->Perputaran($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari) : null,
             'Restock' => $tab === 'restock' ? $laporan->SaranRestock($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari) : null,
         ]);
     }
@@ -252,6 +253,24 @@ final class LaporanKontroler extends DasarKelolaKontroler
         $q = static fn (string $judul): KolomLaporan => new KolomLaporan($judul, JenisKolom::Kuantitas);
         $n = static fn (string $judul): KolomLaporan => new KolomLaporan($judul, JenisKolom::Bilangan);
         $saringanGudang = ['Lokasi Stok', $namaGudang];
+
+        if ($tab === 'perputaran') {
+            $isi = $laporan->Perputaran($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari)['Baris'];
+
+            return $this->SajikanLaporan(
+                $permintaan,
+                'Laporan Stok | Slow & Fast Moving',
+                "laporan-perputaran-stok-{$hari}-hari",
+                [$t('Produk', 32), $t('SKU', 16), $t('Satuan', 10), $t('Lokasi stok', 22), $t('Outlet', 22), $t('Kelas', 10), $q("Terpakai {$hari} hari"), $q('Rata-rata per hari'), $q('Saldo'), new KolomLaporan('Nilai persediaan', JenisKolom::Uang), new KolomLaporan('Perputaran', JenisKolom::Kuantitas), $n('Cukup untuk (hari)')],
+                array_map(
+                    fn (array $b): array => [$b['NamaProduk'], $b['Sku'], $b['SimbolSatuan'], $b['NamaGudang'], $b['NamaOutlet'], $b['Kelas'], $b['Pakai'], $b['RataPerHari'], $b['Saldo'], $b['Nilai'], $b['Perputaran'], $b['HariCover']],
+                    $isi,
+                ),
+                [['Tanggal', $this->LabelPeriode($tanggal->Hitung(null), $tanggal->Hitung(null))], $saringanGudang, ['Rentang pemakaian', "{$hari} hari terakhir (sampai kemarin)"]],
+                null,
+                $this->LabelCakupan(),
+            );
+        }
 
         if ($tab === 'restock') {
             $isi = $laporan->SaranRestock($this->IdOutletBoleh(), $tanggal->Hitung(null), $uuidGudang, $hari)['Baris'];
@@ -349,15 +368,20 @@ final class LaporanKontroler extends DasarKelolaKontroler
     }
 
     /**
-     * @return array{0: 'nilai'|'kritis'|'kedaluwarsa'|'restock', 1: CarbonImmutable, 2: string, 3: int}
+     * @return array{0: 'nilai'|'kritis'|'kedaluwarsa'|'restock'|'perputaran', 1: CarbonImmutable, 2: string, 3: int}
      */
     private function BacaSaringStok(Request $permintaan, CarbonImmutable $hariIni): array
     {
-        $tab = in_array($permintaan->query('tab'), ['kritis', 'kedaluwarsa', 'restock'], true) ? $permintaan->query('tab') : 'nilai';
+        $tab = in_array($permintaan->query('tab'), ['kritis', 'kedaluwarsa', 'restock', 'perputaran'], true) ? $permintaan->query('tab') : 'nilai';
         $pada = DataPeriodeLaporan::Urai($permintaan->query('tanggal')) ?? $hariIni;
         $uuidGudang = is_string($permintaan->query('gudang')) ? $permintaan->query('gudang') : '';
         // X6: cakupan saran restock 7/14/30 hari; nilai lain jatuh ke bawaan 14.
         $hari = in_array((string) $permintaan->query('hari'), ['7', '14', '30'], true) ? (int) $permintaan->query('hari') : 14;
+
+        // Slow/fast moving: rentang pemakaian 30/60/90 hari (bawaan 30).
+        if ($tab === 'perputaran') {
+            $hari = in_array((string) $permintaan->query('hari'), ['30', '60', '90'], true) ? (int) $permintaan->query('hari') : LaporanStok::RENTANG_BAWAAN_PERPUTARAN;
+        }
 
         return [$tab, $pada->greaterThan($hariIni) ? $hariIni : $pada, $uuidGudang, $hari];
     }

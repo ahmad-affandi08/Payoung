@@ -363,13 +363,45 @@ export type BarisSaranRestock = {
 export type MusimRestock = { Jenis: 'Lebaran' | 'TahunLalu'; SelisihHari: number; Lebaran: string | null };
 export type SaranRestock = { HariDasar: number; HariCakupan: number; Musim: MusimRestock; Baris: BarisSaranRestock[] };
 
+/** Slow/fast moving: perputaran = pemakaian rentang ÷ saldo sekarang. */
+export type KelasPerputaran = 'Cepat' | 'Normal' | 'Lambat' | 'Mati';
+export type BarisPerputaranStok = {
+    Kunci: string;
+    UuidProduk: string;
+    NamaProduk: string;
+    Sku: string | null;
+    SimbolSatuan: string;
+    UuidGudang: string;
+    NamaGudang: string;
+    NamaOutlet: string;
+    Pakai: string;
+    RataPerHari: string;
+    Saldo: string;
+    Nilai: string;
+    Perputaran: string | null;
+    HariCover: number | null;
+    Kelas: KelasPerputaran;
+};
+export type PerputaranStok = {
+    Rentang: number;
+    Ringkasan: Record<KelasPerputaran, { Jumlah: number; Nilai: string }>;
+    NilaiTertahan: string;
+    Baris: BarisPerputaranStok[];
+};
+
 export type PropsLaporanStok = {
-    Saring: { Tab: 'nilai' | 'kritis' | 'kedaluwarsa' | 'restock'; Tanggal: string; Gudang: string; Hari: number };
+    Saring: {
+        Tab: 'nilai' | 'kritis' | 'kedaluwarsa' | 'restock' | 'perputaran';
+        Tanggal: string;
+        Gudang: string;
+        Hari: number;
+    };
     OpsiGudang: OpsiLaporan[];
     Nilai: NilaiPersediaan | null;
     Kritis: StokKritis | null;
     Kedaluwarsa: BatchKedaluwarsa | null;
     Restock: SaranRestock | null;
+    Perputaran: PerputaranStok | null;
 };
 
 /** Apotek (§9.5): satu baris penjualan obat keras/psikotropika/narkotika (`DaftarPenjualanObatResep`). */
