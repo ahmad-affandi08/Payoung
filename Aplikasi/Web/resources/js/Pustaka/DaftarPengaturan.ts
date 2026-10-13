@@ -257,6 +257,13 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.LaporanKeuanganLihat,
                 fitur: 'akuntansi.penuh',
             },
+            {
+                label: 'Anggaran',
+                keterangan: 'Susun anggaran tahunan per akun dan outlet, lalu bandingkan dengan realisasi dari jurnal.',
+                href: '/kelola/akuntansi/anggaran',
+                izin: IzinTenant.LaporanKeuanganLihat,
+                fitur: 'akuntansi.penuh',
+            },
         ],
     },
     {

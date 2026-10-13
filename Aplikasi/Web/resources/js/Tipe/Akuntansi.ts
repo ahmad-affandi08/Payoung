@@ -624,3 +624,49 @@ export type PropsDetailJurnalUmum = {
     Total: PropsDetailJurnal['Total'];
     Izin: { Kelola: boolean };
 };
+
+/** F8 (FIN-11): anggaran vs realisasi. `Status` menilai arah selisih (biaya di atas anggaran = Buruk). */
+export type StatusAnggaran = 'Sesuai' | 'Baik' | 'Buruk';
+export type BarisAnggaranLaporan = {
+    Id: string;
+    Jenis: 'Kepala' | 'Akun' | 'Subtotal' | 'Laba';
+    Kelompok: string;
+    Kode: string | null;
+    Label: string;
+    Anggaran: string | null;
+    Realisasi: string | null;
+    Selisih: string | null;
+    Capaian: string | null;
+    Status: StatusAnggaran | null;
+};
+export type PropsLaporanAnggaran = {
+    Saring: { Tahun: number; BulanDari: number; BulanSampai: number; Outlet: string };
+    Laporan: {
+        Periode: { Tahun: number; BulanDari: number; BulanSampai: number; Dari: string; Sampai: string };
+        AdaAnggaran: boolean;
+        Baris: BarisAnggaranLaporan[];
+        Ringkasan: Record<
+            'Pendapatan' | 'Hpp' | 'LabaKotor' | 'Beban' | 'LabaBersih',
+            { Anggaran: string; Realisasi: string }
+        >;
+    };
+    OpsiOutlet: { Uuid: string; Nama: string }[];
+    SeluruhUsahaBoleh: boolean;
+    Izin: { Kelola: boolean };
+};
+export type AkunAnggaran = {
+    Uuid: string;
+    Kode: string;
+    Nama: string;
+    Jenis: TipeAkun;
+    Aktif: boolean;
+    /** Dua belas angka (Januari = indeks 0); string kosong = tidak dianggarkan. */
+    PerBulan: string[];
+};
+export type PropsSusunAnggaran = {
+    Tahun: number;
+    Outlet: string;
+    OpsiOutlet: { Uuid: string; Nama: string }[];
+    SeluruhUsahaBoleh: boolean;
+    Akun: AkunAnggaran[];
+};

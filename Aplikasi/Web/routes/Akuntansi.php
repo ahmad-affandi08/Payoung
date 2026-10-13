@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Kelola\Akuntansi\AnggaranKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\AsetTetapKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\BaganAkunKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\GiroKontroler;
@@ -71,6 +72,10 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::LaporanKeuanganL
     // v3.42 (F-12): giro/cek mundur masuk & keluar.
     Route::get('/akuntansi/giro', [GiroKontroler::class, 'Daftar'])->name('kelola.akuntansi.giro.daftar');
 
+    // F8 (FIN-11): anggaran vs realisasi (laporan & ekspor; susun/simpan/salin di grup `akuntansi.kelola`).
+    Route::get('/akuntansi/anggaran', [AnggaranKontroler::class, 'Laporan'])->name('kelola.akuntansi.anggaran.laporan');
+    Route::get('/akuntansi/anggaran/ekspor', [AnggaranKontroler::class, 'Ekspor'])->name('kelola.akuntansi.anggaran.ekspor');
+
     Route::get('/akuntansi/laporan/buku-besar', [LaporanKeuanganKontroler::class, 'BukuBesar'])->name('kelola.akuntansi.laporan.buku-besar');
     Route::get('/akuntansi/laporan/buku-besar/ekspor', [LaporanKeuanganKontroler::class, 'EksporBukuBesar'])->middleware(EksporDiLatarBelakang::class)->name('kelola.akuntansi.laporan.buku-besar.ekspor');
     Route::get('/akuntansi/laporan/neraca-saldo', [LaporanKeuanganKontroler::class, 'NeracaSaldo'])->name('kelola.akuntansi.laporan.neraca-saldo');
@@ -100,6 +105,11 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::AkuntansiKelola)
     Route::get('/akuntansi/jurnal-umum/buat', [JurnalUmumKontroler::class, 'Buat'])->name('kelola.akuntansi.jurnal-umum.buat');
     Route::post('/akuntansi/jurnal-umum', [JurnalUmumKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.jurnal-umum.simpan');
     Route::post('/akuntansi/jurnal-umum/{jurnalUmum}/pembalik', [JurnalUmumKontroler::class, 'Balikkan'])->where('jurnalUmum', $ulid)->middleware('throttle:60,1')->name('kelola.akuntansi.jurnal-umum.pembalik');
+
+    // F8 (FIN-11): susun anggaran tahunan per akun & outlet, simpan, dan salin dari tahun lalu.
+    Route::get('/akuntansi/anggaran/susun', [AnggaranKontroler::class, 'Susun'])->name('kelola.akuntansi.anggaran.susun');
+    Route::put('/akuntansi/anggaran', [AnggaranKontroler::class, 'Simpan'])->middleware('throttle:30,1')->name('kelola.akuntansi.anggaran.simpan');
+    Route::post('/akuntansi/anggaran/salin', [AnggaranKontroler::class, 'Salin'])->middleware('throttle:30,1')->name('kelola.akuntansi.anggaran.salin');
 
     // F-13a: transaksi kas & bank (halaman catat, simpan & pembalik).
     Route::get('/akuntansi/kas-bank/buat', [TransaksiKasBankKontroler::class, 'Buat'])->name('kelola.akuntansi.kas-bank.buat');

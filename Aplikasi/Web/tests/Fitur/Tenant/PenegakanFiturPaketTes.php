@@ -92,6 +92,8 @@ describe('back-office /kelola', function (): void {
         // Laporan lengkap ada di Starter, akuntansi penuh tidak: laba rugi boleh, neraca tidak.
         $masuk()->get('/kelola/akuntansi/laporan/laba-rugi')->assertOk();
         $masuk()->get('/kelola/akuntansi/laporan/neraca')->assertRedirect('/kelola');
+        // F8: anggaran vs realisasi termasuk akuntansi penuh.
+        $masuk()->get('/kelola/akuntansi/anggaran')->assertRedirect('/kelola');
     });
 
     it('Gratis: laporan pajak/stok (laporan lengkap) dan data pelanggan baru ditolak, laporan penjualan dasar tetap terbuka', function (): void {

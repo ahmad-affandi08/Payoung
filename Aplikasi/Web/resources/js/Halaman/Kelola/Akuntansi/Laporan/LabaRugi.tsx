@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+
 import RingkasanAngka from '@/Komponen/Akuntansi/RingkasanAngka';
 import SaringLaporan, { BuatQueryLaporan } from '@/Komponen/Akuntansi/SaringLaporan';
 import TabelData from '@/Komponen/TabelData/TabelData';
@@ -78,7 +80,15 @@ export default function HalamanLabaRugi({ Saring, Laporan, OpsiOutlet }: PropsLa
         <TataLetakAplikasi judul="Laba rugi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Pendapatan dikurangi harga pokok penjualan (HPP) menjadi laba kotor, lalu dikurangi beban menjadi laba
-                bersih. Kolom kanan membandingkan dengan periode sebelumnya yang sama panjang.
+                bersih. Kolom kanan membandingkan dengan periode sebelumnya yang sama panjang. Untuk membandingkan
+                dengan target, buka{' '}
+                <Link
+                    href="/kelola/akuntansi/anggaran"
+                    className="font-semibold text-brand underline underline-offset-2"
+                >
+                    Anggaran vs realisasi
+                </Link>
+                .
             </p>
             <SaringLaporan
                 alamat={alamat}

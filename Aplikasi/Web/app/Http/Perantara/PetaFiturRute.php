@@ -64,6 +64,7 @@ final class PetaFiturRute
         ['Pola' => 'kelola.akuntansi.akun.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.pemetaan.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.aset-tetap*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
+        ['Pola' => 'kelola.akuntansi.anggaran.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
         ['Pola' => 'kelola.akuntansi.tutup-buku*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
 
         // Laporan
