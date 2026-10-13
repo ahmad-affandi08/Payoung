@@ -256,24 +256,28 @@ Kalau muncul "500 Server Error": `tail -50 storage/logs/laravel.log` lalu kirimk
 
 ## 12. Memperbarui ke versi terbaru
 
+Cukup **satu perintah** (tidak perlu menghafal daftar `artisan`):
+
 ```bash
 cd ~/domains/payoung.id/aplikasi
-git pull origin main                       # bila folder .git & akses GitHub tersedia; kalau tidak, unggah ulang kode
-cd Aplikasi/Web
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan organisasi:siapkan-peran       # izin baru masuk ke peran bawaan semua tenant (aman diulang)
-php artisan panduan-awal:siapkan-bawaan    # metode Tunai & data bawaan tenant lama (aman diulang)
-npm ci && npm run build                    # atau unggah public/build hasil build di komputer sendiri
-php artisan optimize
-php artisan queue:restart
+PHP=/opt/alt/php83/usr/bin/php bash Alat/Perbarui.sh
 ```
 
-`php artisan optimize` menyimpan cache **rute beserta middleware-nya**. Kalau perubahan menyentuh `routes/`,
-jalankan `php artisan optimize:clear` lebih dulu; tanpa itu rute lama yang ter-cache masih dipakai walau kodenya
-sudah diperbarui.
+Skrip itu menarik kode (`git pull`), memasang dependensi (`composer install --no-dev`), lalu menjalankan
+`php artisan rilis:pasang`, yang berurutan melakukan: migrasi, `organisasi:siapkan-peran`, `panduan-awal:siapkan-bawaan`,
+`katalog:lengkapi-fitur`, `template:terapkan`, `bantuan:siapkan-bawaan`, `kasir:siapkan-kategori-biaya`, lalu
+`optimize:clear`, `optimize`, `queue:restart`. Semua langkahnya aman diulang. Daftar langkahnya hidup di kode
+(`PasangRilisPerintah`), jadi langkah baru dari rilis berikutnya otomatis ikut tanpa mengubah cara Anda memperbarui.
 
-**Kalau copy situs pemasaran ikut berubah**, jalankan juga:
+- Lihat rencana tanpa mengubah apa pun: `bash Alat/Perbarui.sh --kering`.
+- `public/build` ikut di-commit, jadi tidak perlu Node di server (lihat bagian 5 bila ingin membangun sendiri).
+- Edisi Lisensi (Payoung Mandiri) otomatis memakai langkah yang sesuai (`lisensi:siapkan-data`, tanpa katalog/template/bantuan SaaS).
+- Berakhir dengan kode gagal dan menyebut langkah yang galat bila ada yang gagal; migrasi yang gagal menghentikan semuanya.
+
+**Sengaja tidak otomatis** karena menyangkut keputusan Anda atau menimpa suntingan: `katalog:terapkan` (mengubah harga
+paket/add-on), `legal:siapkan-pembaruan`, dan `situs:segarkan-bawaan` (ikut hanya bila memakai `--dengan-situs`).
+
+**Kalau copy situs pemasaran ikut berubah**, tambahkan `--dengan-situs` (atau jalankan terpisah):
 
 ```bash
 php artisan situs:segarkan-bawaan          # menimpa halaman payoung.id dengan isi bawaan terbaru
