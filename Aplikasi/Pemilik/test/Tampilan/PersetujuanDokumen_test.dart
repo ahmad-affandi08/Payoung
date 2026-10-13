@@ -18,7 +18,11 @@ void main() {
     sesi = PenyimpanSesiMemori();
   });
 
-  Future<http.Response> Penangan(http.Request p, List<Map<String, Object?>> po, List<Map<String, Object?>> penyesuaian) async {
+  Future<http.Response> Penangan(
+    http.Request p,
+    List<Map<String, Object?>> po,
+    List<Map<String, Object?>> penyesuaian,
+  ) async {
     final jalur = p.url.path.replaceFirst('/api/pemilik/v1/', '');
     if (jalur == 'masuk') {
       return JsonUji({

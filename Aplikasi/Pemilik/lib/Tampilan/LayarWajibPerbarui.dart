@@ -69,10 +69,7 @@ class LayarWajibPerbarui extends ConsumerWidget {
             const SizedBox(height: TokenJarak.jarak8),
             SizedBox(
               height: TokenJarak.targetSentuh,
-              child: TextButton(
-                onPressed: () => ref.read(penyediaSesi.notifier).Keluar(),
-                child: const Text('Keluar'),
-              ),
+              child: TextButton(onPressed: () => ref.read(penyediaSesi.notifier).Keluar(), child: const Text('Keluar')),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:kasir/Domain/GalatKasir.dart';
 import 'package:kasir/Domain/Katalog/KatalogLokal.dart';
 import 'package:kasir/Domain/Penjualan/Keranjang.dart';
 import 'package:kasir/Domain/Penjualan/KonteksPenjualan.dart';
+import 'package:kasir/Domain/Penjualan/LayananPenjualan.dart';
 import 'package:kasir/Domain/Sesi/StafLokal.dart';
 import 'package:mesin_kasir/MesinKasir.dart';
 
@@ -21,7 +22,11 @@ void main() {
   late StafLokal rina;
   late StafLokal supervisor;
 
-  const penyetujuTerpilih = PenyetujuDiskon(uuid: '01K5USR000000000SUPERV1S01', nama: 'Sari Supervisor', pemilik: false);
+  const penyetujuTerpilih = PenyetujuDiskon(
+    uuid: '01K5USR000000000SUPERV1S01',
+    nama: 'Sari Supervisor',
+    pemilik: false,
+  );
 
   setUp(() async {
     u = LingkunganUji.Buat();
@@ -116,7 +121,7 @@ void main() {
     keranjang = u.penjualan.UbahJumlah(keranjang, uuid, Kuantitas.DariBulat(3), katalog, k);
     keranjang = u.penjualan.HitungUlangHarga(keranjang, katalog, k);
     expect(keranjang.baris.single.hargaSatuan.KeString(), '12000.00');
-    expect(keranjang.baris.single.jumlah.KeString(), '3');
+    expect(keranjang.baris.single.jumlah.SamaDengan(Kuantitas.DariBulat(3)), isTrue);
 
     // Croissant yang sama ditambah lagi menjadi baris terpisah (tidak ikut harga manual).
     keranjang = u.penjualan.TambahBaris(
@@ -134,7 +139,13 @@ void main() {
     var keranjang = IsiCroissant();
     final uuid = keranjang.baris.single.uuid;
     final asal = keranjang.baris.single.hargaSatuan;
-    final diubah = u.penjualan.UbahHargaItem(keranjang, uuid, Uang.DariBulat(12000), 'Kemasan penyok', kasir: supervisor);
+    final diubah = u.penjualan.UbahHargaItem(
+      keranjang,
+      uuid,
+      Uang.DariBulat(12000),
+      'Kemasan penyok',
+      kasir: supervisor,
+    );
 
     for (final pulih in [
       u.penjualan.PulihkanHargaItem(diubah, uuid),
@@ -168,53 +179,55 @@ void main() {
 
     final pulih = Keranjang.DariJson(jsonDecode(jsonEncode(keranjang.KeJson())) as Map<String, Object?>);
     final item = pulih.baris.single;
-    expect((item.hargaSatuan.KeString(), item.alasanHarga, item.penyetujuHarga?.uuid), (
-      '12000.00',
-      'Kemasan penyok',
-      penyetujuTerpilih.uuid,
-    ));
+    expect(
+      (item.hargaSatuan.KeString(), item.alasanHarga, item.penyetujuHarga?.uuid),
+      ('12000.00', 'Kemasan penyok', penyetujuTerpilih.uuid),
+    );
     expect(item.hargaAsli, keranjang.baris.single.hargaAsli);
   });
 
-  test('bayar: Penjualan.Buat membawa HargaManual & UuidPenyetujuHarga; baris tanpa perubahan tidak membawanya', () async {
-    await u.shift.BukaShift(kasir: rina, kasAwal: Uang.DariBulat(500000));
-    var keranjang = IsiCroissant();
-    final asal = keranjang.baris.single.hargaSatuan;
-    keranjang = u.penjualan.UbahHargaItem(
-      keranjang,
-      keranjang.baris.single.uuid,
-      Uang.DariBulat(12000),
-      'Kemasan penyok',
-      kasir: rina,
-      penyetuju: penyetujuTerpilih,
-    );
-    keranjang = u.penjualan.TambahBaris(
-      keranjang,
-      u.penjualan.BuatBaris(katalog, k, katalog.CariProduk(UuidUji.americano)!),
-      katalog,
-      k,
-    );
+  test(
+    'bayar: Penjualan.Buat membawa HargaManual & UuidPenyetujuHarga; baris tanpa perubahan tidak membawanya',
+    () async {
+      await u.shift.BukaShift(kasir: rina, kasAwal: Uang.DariBulat(500000));
+      var keranjang = IsiCroissant();
+      final asal = keranjang.baris.single.hargaSatuan;
+      keranjang = u.penjualan.UbahHargaItem(
+        keranjang,
+        keranjang.baris.single.uuid,
+        Uang.DariBulat(12000),
+        'Kemasan penyok',
+        kasir: rina,
+        penyetuju: penyetujuTerpilih,
+      );
+      keranjang = u.penjualan.TambahBaris(
+        keranjang,
+        u.penjualan.BuatBaris(katalog, k, katalog.CariProduk(UuidUji.americano)!),
+        katalog,
+        k,
+      );
 
-    final hasil = await u.penjualan.Bayar(
-      keranjang: keranjang,
-      pembayaran: [
-        PembayaranMasukan(
-          metode: k.metodePembayaran.firstWhere((m) => m.Jenis == 'Tunai'),
-          jumlah: u.penjualan.Hitung(keranjang, k).hasil.totalAkhir,
-        ),
-      ],
-      kasir: rina,
-      k: k,
-    );
+      final hasil = await u.penjualan.Bayar(
+        keranjang: keranjang,
+        pembayaran: [
+          PembayaranMasukan(
+            metode: k.metodePembayaran.firstWhere((m) => m.Jenis == 'Tunai'),
+            jumlah: u.penjualan.Hitung(keranjang, k).hasil.totalAkhir,
+          ),
+        ],
+        kasir: rina,
+        k: k,
+      );
 
-    final outbox = (await u.db.select(u.db.outbox).get()).singleWhere((o) => o.Uuid == hasil.uuid);
-    final data = jsonDecode(outbox.Data) as Map<String, Object?>;
-    final baris = (data['Baris']! as List<Object?>).cast<Map<String, Object?>>();
-    expect(baris.first['HargaSatuan'], '12000.00');
-    expect(baris.first['HargaManual'], {'HargaAsli': asal.KeString(), 'Alasan': 'Kemasan penyok'});
-    expect(baris.last.containsKey('HargaManual'), isFalse);
-    expect(data['UuidPenyetujuHarga'], penyetujuTerpilih.uuid);
-  });
+      final outbox = (await u.db.select(u.db.outbox).get()).singleWhere((o) => o.Uuid == hasil.uuid);
+      final data = jsonDecode(outbox.Data) as Map<String, Object?>;
+      final baris = (data['Baris']! as List<Object?>).cast<Map<String, Object?>>();
+      expect(baris.first['HargaSatuan'], '12000.00');
+      expect(baris.first['HargaManual'], {'HargaAsli': asal.KeString(), 'Alasan': 'Kemasan penyok'});
+      expect(baris.last.containsKey('HargaManual'), isFalse);
+      expect(data['UuidPenyetujuHarga'], penyetujuTerpilih.uuid);
+    },
+  );
 
   test('bayar tanpa harga manual: muatan tidak membawa UuidPenyetujuHarga', () async {
     await u.shift.BukaShift(kasir: rina, kasAwal: Uang.DariBulat(500000));

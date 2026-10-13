@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 
 import 'Galat/GalatApi.dart';
+import 'Model/ModelBantuan.dart';
 import 'Model/ModelBengkel.dart';
 import 'Model/ModelKatalog.dart';
 import 'Model/ModelGudang.dart';
@@ -641,6 +642,57 @@ class KlienPos {
   /// Mengembalikan jumlah baris yang diterima. Tidak ada permintaan yang berlaku → `GalatApi` 409 `LogTidakDiminta`.
   Future<int> UnggahLog(List<String> baris) async =>
       UraiJson.AmbilBulat((await _Kirim('POST', 'perangkat/log', {'Baris': baris}))['Diterima']);
+
+  /// P-09: tiket bantuan staf [uuidPengguna] (hanya tiket yang dibuatnya sendiri). Perlu internet.
+  Future<List<TiketBantuan>> DaftarTiketBantuan(String uuidPengguna) async => TiketBantuan.DaftarDariJson(
+    (await _Kirim('GET', 'bantuan/tiket?UuidPengguna=${Uri.encodeQueryComponent(uuidPengguna)}', null))['Tiket'],
+  );
+
+  /// P-09: buat tiket bantuan. Konteks perangkat (outlet, versi, outbox tertunda) dilengkapi server; [layarAsal] dan
+  /// [logSingkat] (baris log lokal yang sudah disaring dari data pribadi) dikirim apa adanya lalu disaring ulang server.
+  Future<TiketBantuan> BuatTiketBantuan({
+    required String uuidPengguna,
+    required String kategori,
+    required String judul,
+    required String isi,
+    String? prioritas,
+    String? layarAsal,
+    List<String> logSingkat = const [],
+  }) async => TiketBantuan.DariJson(
+    UraiJson.AmbilPeta(
+      (await _Kirim('POST', 'bantuan/tiket', {
+        'UuidPengguna': uuidPengguna,
+        'Kategori': kategori,
+        'Judul': judul,
+        'Isi': isi,
+        'Prioritas': ?prioritas,
+        'LayarAsal': ?layarAsal,
+        if (logSingkat.isNotEmpty) 'LogSingkat': logSingkat,
+      }))['Tiket'],
+    ),
+  );
+
+  /// P-09: percakapan satu tiket milik staf [uuidPengguna].
+  Future<TiketBantuan> AmbilTiketBantuan(String uuidTiket, String uuidPengguna) async => TiketBantuan.DariJson(
+    UraiJson.AmbilPeta(
+      (await _Kirim(
+        'GET',
+        'bantuan/tiket/${Uri.encodeComponent(uuidTiket)}?UuidPengguna=${Uri.encodeQueryComponent(uuidPengguna)}',
+        null,
+      ))['Tiket'],
+    ),
+  );
+
+  /// P-09: balas tiket sendiri. Mengembalikan percakapan terbaru.
+  Future<TiketBantuan> BalasTiketBantuan(String uuidTiket, String uuidPengguna, String isi) async =>
+      TiketBantuan.DariJson(
+        UraiJson.AmbilPeta(
+          (await _Kirim('POST', 'bantuan/tiket/${Uri.encodeComponent(uuidTiket)}/balas', {
+            'UuidPengguna': uuidPengguna,
+            'Isi': isi,
+          }))['Tiket'],
+        ),
+      );
 
   /// Laporkan profil hardware & hasil Wizard Uji Perangkat (PRD v1.96) untuk dukungan teknis. Offline → `GalatJaringan`.
   Future<void> KirimProfilHardware(Map<String, Object?> profil) async {

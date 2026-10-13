@@ -49,10 +49,7 @@ class _KeadaanDaftarPengumuman extends ConsumerState<DaftarPengumuman> {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (adaPembaruan) _KartuPembaruan(konfigurasi),
-        for (final p in tampil) _Kartu(p),
-      ],
+      children: [if (adaPembaruan) _KartuPembaruan(konfigurasi), for (final p in tampil) _Kartu(p)],
     );
   }
 

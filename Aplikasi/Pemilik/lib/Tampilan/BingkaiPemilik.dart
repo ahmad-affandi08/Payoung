@@ -7,6 +7,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
 import '../Data/NotifikasiPush.dart';
+import 'LayarBantuan.dart';
 import 'LayarBeranda.dart';
 import 'LayarLaporan.dart';
 import 'LayarNotifikasi.dart';
@@ -130,6 +131,13 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
     );
   }
 
+  /// P-09: tombol Bantuan; nama tab aktif ikut sebagai layar asal tiket.
+  void _BukaBantuan() {
+    unawaited(
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LayarBantuan(layarAsal: _tujuan[_indeks].$3))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sesi = ref.watch(penyediaSesi);
@@ -146,6 +154,7 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
         surfaceTintColor: warna.brandGelap,
         title: Text(sesi.namaTenant ?? 'Payoung Owner', style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: [
+          IconButton(tooltip: 'Bantuan', onPressed: _BukaBantuan, icon: const Icon(Icons.help_outline)),
           IconButton(
             tooltip: belumDibaca > 0 ? 'Notifikasi ($belumDibaca belum dibaca)' : 'Notifikasi',
             onPressed: _BukaNotifikasi,

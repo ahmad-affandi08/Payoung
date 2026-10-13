@@ -4,6 +4,7 @@ library;
 export 'AlamatServer.dart';
 export 'Galat/GalatApi.dart';
 export 'KlienPos.dart';
+export 'Model/ModelBantuan.dart';
 export 'Model/ModelBengkel.dart';
 export 'Model/ModelKatalog.dart';
 export 'Model/ModelGudang.dart';

@@ -344,7 +344,10 @@ final penyediaAntiFraud = FutureProvider.autoDispose<List<RisikoKasirPemilik>>((
   final awal = s.tanggal.subtract(const Duration(days: 6));
   String Iso(DateTime t) =>
       '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
-  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilAntiFraud(dari: Iso(awal), sampai: s.tanggalIso, outlet: s.outlet));
+  return _Jaga(
+    ref,
+    () => ref.read(penyediaKlien).AmbilAntiFraud(dari: Iso(awal), sampai: s.tanggalIso, outlet: s.outlet),
+  );
 });
 
 class PengaturCariStok extends Notifier<String> {
@@ -410,12 +413,20 @@ final penyediaKonfigurasiAplikasi = FutureProvider<KonfigurasiAplikasi?>((ref) a
 final penyediaSelangKonfigurasi = Provider<Duration?>((ref) => const Duration(minutes: 15));
 
 /// Flag fitur [kunci] (lihat `KunciFlagFitur`); belum ada kabar dari server = hidup.
-bool CekFlagFitur(WidgetRef ref, String kunci) =>
-    ref.watch(penyediaKonfigurasiAplikasi).value?.CekFlag(kunci) ?? true;
+bool CekFlagFitur(WidgetRef ref, String kunci) => ref.watch(penyediaKonfigurasiAplikasi).value?.CekFlag(kunci) ?? true;
 
 /// P-10 PGL-19: pengumuman & jadwal pemeliharaan platform (dibaca saat Beranda dibuka & ditarik untuk menyegarkan).
 final penyediaPengumuman = FutureProvider.autoDispose<List<PengumumanAplikasi>>(
   (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilPengumuman()),
+);
+
+/// P-09: tiket bantuan tenant aktif (Aplikasi Owner melihat semua tiket tenantnya) dan percakapan satu tiket.
+final penyediaTiketBantuan = FutureProvider.autoDispose<List<TiketBantuan>>(
+  (ref) => _Jaga(ref, () => ref.read(penyediaKlien).DaftarTiketBantuan()),
+);
+
+final penyediaDetailTiketBantuan = FutureProvider.autoDispose.family<TiketBantuan, String>(
+  (ref, uuid) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilTiketBantuan(uuid)),
 );
 
 final penyediaNotifikasi = FutureProvider.autoDispose<DaftarNotifikasiPemilik>(

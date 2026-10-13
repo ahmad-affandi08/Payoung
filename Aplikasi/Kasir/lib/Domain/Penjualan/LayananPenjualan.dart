@@ -723,7 +723,10 @@ class LayananPenjualan {
     }
     return _UbahBaris(keranjang, uuidBaris, (b) {
       if (b.hargaTerbuka || b.racikan != null) {
-        throw GalatKasir('HargaTidakBisaDiubah', 'Harga "${b.nama}" ditentukan saat ditambahkan, bukan dari daftar harga.');
+        throw GalatKasir(
+          'HargaTidakBisaDiubah',
+          'Harga "${b.nama}" ditentukan saat ditambahkan, bukan dari daftar harga.',
+        );
       }
       final asal = b.hargaAsli ?? b.hargaSatuan;
       if (hargaBaru.SamaDengan(asal)) {
@@ -761,8 +764,7 @@ class LayananPenjualan {
           penyetujuHarga: () => null,
         );
 
-  Keranjang PulihkanHargaItem(Keranjang keranjang, String uuidBaris) =>
-      _UbahBaris(keranjang, uuidBaris, PulihkanHarga);
+  Keranjang PulihkanHargaItem(Keranjang keranjang, String uuidBaris) => _UbahBaris(keranjang, uuidBaris, PulihkanHarga);
 
   Keranjang HapusBaris(Keranjang keranjang, String uuidBaris) {
     final baris = keranjang.baris.where((b) => b.uuid != uuidBaris).toList();

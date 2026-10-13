@@ -397,7 +397,8 @@ class KartuStokPemilik {
       saldoAwal: UraiJson.AmbilDesimal(UraiJson.AmbilPeta(json['SaldoAwal'])['Jumlah']),
       saldoAkhir: UraiJson.AmbilDesimal(UraiJson.AmbilPeta(json['SaldoAkhir'])['Jumlah']),
       mutasi: [
-        for (final m in UraiJson.AmbilDaftarPeta(UraiJson.AmbilPeta(json['Mutasi'])['Data'])) MutasiStokPemilik.DariJson(m),
+        for (final m in UraiJson.AmbilDaftarPeta(UraiJson.AmbilPeta(json['Mutasi'])['Data']))
+          MutasiStokPemilik.DariJson(m),
       ],
     );
   }
@@ -866,8 +867,16 @@ class KlienPemilik {
       );
 
   /// OWN-09: skor risiko kasir periode [dari]–[sampai] (maks. 31 hari; izin laporan penjualan, paket Anti-fraud).
-  Future<List<RisikoKasirPemilik>> AmbilAntiFraud({required String dari, required String sampai, String? outlet}) async {
-    final json = await _Kirim('GET', _Jalur('laporan/anti-fraud', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null);
+  Future<List<RisikoKasirPemilik>> AmbilAntiFraud({
+    required String dari,
+    required String sampai,
+    String? outlet,
+  }) async {
+    final json = await _Kirim(
+      'GET',
+      _Jalur('laporan/anti-fraud', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}),
+      null,
+    );
     return [for (final k in UraiJson.AmbilDaftarPeta(json['Kasir'])) RisikoKasirPemilik.DariJson(k)];
   }
 
@@ -916,6 +925,42 @@ class KlienPemilik {
   /// P-10 PGL-18: versi terbaru/minimal Aplikasi Owner dan flag fitur tenant aktif (bentuk sama dengan konfigurasi POS).
   Future<KonfigurasiAplikasi> AmbilKonfigurasiAplikasi() async =>
       KonfigurasiAplikasi.DariJson(await _Kirim('GET', 'konfigurasi-aplikasi', null));
+
+  /// P-09: tiket bantuan tenant aktif (semua tiket tenant, sama dengan back-office), terbaru dulu.
+  Future<List<TiketBantuan>> DaftarTiketBantuan() async =>
+      TiketBantuan.DaftarDariJson((await _Kirim('GET', 'bantuan/tiket', null))['Tiket']);
+
+  /// P-09: buat tiket dari Aplikasi Owner. Versi & platform aplikasi ikut di header; [layarAsal] dan [logSingkat]
+  /// (disaring ulang server) dilampirkan sebagai konteks.
+  Future<TiketBantuan> BuatTiketBantuan({
+    required String kategori,
+    required String judul,
+    required String isi,
+    String? prioritas,
+    String? layarAsal,
+    List<String> logSingkat = const [],
+  }) async => TiketBantuan.DariJson(
+    UraiJson.AmbilPeta(
+      (await _Kirim('POST', 'bantuan/tiket', {
+        'Kategori': kategori,
+        'Judul': judul,
+        'Isi': isi,
+        'Prioritas': ?prioritas,
+        'LayarAsal': ?layarAsal,
+        if (logSingkat.isNotEmpty) 'LogSingkat': logSingkat,
+      }))['Tiket'],
+    ),
+  );
+
+  Future<TiketBantuan> AmbilTiketBantuan(String uuidTiket) async => TiketBantuan.DariJson(
+    UraiJson.AmbilPeta((await _Kirim('GET', 'bantuan/tiket/${Uri.encodeComponent(uuidTiket)}', null))['Tiket']),
+  );
+
+  Future<TiketBantuan> BalasTiketBantuan(String uuidTiket, String isi) async => TiketBantuan.DariJson(
+    UraiJson.AmbilPeta(
+      (await _Kirim('POST', 'bantuan/tiket/${Uri.encodeComponent(uuidTiket)}/balas', {'Isi': isi}))['Tiket'],
+    ),
+  );
 
   Future<DaftarNotifikasiPemilik> AmbilNotifikasi() async =>
       DaftarNotifikasiPemilik.DariJson(await _Kirim('GET', 'notifikasi', null));

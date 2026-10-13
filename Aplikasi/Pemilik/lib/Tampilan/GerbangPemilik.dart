@@ -23,7 +23,6 @@ class GerbangPemilik extends ConsumerWidget {
   };
 }
 
-Widget _GerbangVersi(KonfigurasiAplikasi? konfigurasi) =>
-    konfigurasi != null && konfigurasi.wajibPembaruan
+Widget _GerbangVersi(KonfigurasiAplikasi? konfigurasi) => konfigurasi != null && konfigurasi.wajibPembaruan
     ? LayarWajibPerbarui(konfigurasi: konfigurasi)
     : const BingkaiPemilik();

@@ -50,11 +50,7 @@ void main() {
       'stok' => JsonUji({
         'Ringkasan': {'NilaiPersediaan': '180000.00', 'JumlahProduk': 2, 'JumlahKritis': 1, 'JumlahMinus': 0},
         'Kritis': [
-          {
-            ...Saldo('Minyak Goreng 2 L', '6.0000', '180000.00'),
-            'Saldo': '6.0000',
-            'StokMinimum': '6.0000',
-          },
+          {...Saldo('Minyak Goreng 2 L', '6.0000', '180000.00'), 'Saldo': '6.0000', 'StokMinimum': '6.0000'},
         ],
         'Saldo': {
           'Data': [Saldo('Minyak Goreng 2 L', '6.0000', '180000.00'), Saldo('Gula Pasir 1 Kg', '40.0000', '560000.00')],

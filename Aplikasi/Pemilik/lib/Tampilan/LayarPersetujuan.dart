@@ -41,7 +41,8 @@ class LayarPersetujuan extends ConsumerWidget {
                 ),
               ),
             for (final p in daftar) _KartuPersetujuan(permintaan: p),
-            for (final d in ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[]) _KartuDokumen(dokumen: d),
+            for (final d in ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[])
+              _KartuDokumen(dokumen: d),
           ],
         ),
       ),
@@ -408,11 +409,7 @@ class _DialogAlasanTolakState extends State<_DialogAlasanTolak> {
       maxLength: 255,
       maxLines: 3,
       minLines: 1,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        errorText: _galat,
-        border: const OutlineInputBorder(),
-      ),
+      decoration: InputDecoration(labelText: widget.label, errorText: _galat, border: const OutlineInputBorder()),
     ),
     actions: [
       TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Batal')),

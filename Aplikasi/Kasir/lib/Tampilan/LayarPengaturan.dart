@@ -8,6 +8,7 @@ import '../Aplikasi/Penyedia.dart';
 import '../Domain/Perangkat/PemindaiKamera.dart';
 import '../Domain/Perangkat/PengaturanPerangkat.dart';
 import '../Domain/Sesi/StafLokal.dart';
+import 'BagianBantuan.dart';
 import 'BagianLogPerangkat.dart';
 import 'Komponen/AbsensiSaya.dart';
 import 'LembarMutasiKas.dart';
@@ -228,6 +229,12 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
           'Uji perangkat',
           'Periksa printer, pemotong kertas, laci, dan pemindai. Hasilnya membantu tim dukungan bila ada kendala.',
           const BagianUjiPerangkat(),
+        ),
+        Bagian(
+          'Bantuan',
+          'Hubungi tim Payoung langsung dari sini. Outlet, versi aplikasi, dan transaksi yang belum terkirim ikut tercatat otomatis. '
+              'Perlu internet.',
+          const BagianBantuan(),
         ),
         Bagian(
           'Log & laporan galat',

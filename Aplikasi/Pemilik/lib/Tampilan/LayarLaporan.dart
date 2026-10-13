@@ -374,7 +374,9 @@ class _StokState extends ConsumerState<_Stok> {
                         ListTile(
                           leading: Icon(Icons.warning_amber_outlined, color: warna.peringatan),
                           title: Text(k.nama),
-                          subtitle: Text('${k.lokasi} | minimum ${FormatTampilan.Jumlah(k.minimum ?? '0')} ${k.satuan}'),
+                          subtitle: Text(
+                            '${k.lokasi} | minimum ${FormatTampilan.Jumlah(k.minimum ?? '0')} ${k.satuan}',
+                          ),
                           trailing: Text('${FormatTampilan.Jumlah(k.jumlah)} ${k.satuan}', style: teks.titleSmall),
                           onTap: () => _BukaKartu(context, k),
                         ),

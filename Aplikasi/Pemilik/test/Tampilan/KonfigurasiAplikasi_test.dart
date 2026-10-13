@@ -64,7 +64,10 @@ void main() {
   testWidgets('di bawah versi minimal: layar Perbarui aplikasi menggantikan Beranda, dengan tautan & catatan rilis', (
     tester,
   ) async {
-    server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(saatIni: '1.0.0', terbaru: '1.4.0', minimal: '1.2.0'));
+    server.penangan = (p) => Penangan(
+      p,
+      konfigurasi: Konfigurasi(saatIni: '1.0.0', terbaru: '1.4.0', minimal: '1.2.0'),
+    );
     await PasangPemilik(tester, server: server, sesi: sesi);
 
     expect(find.text('Perbarui aplikasi'), findsOneWidget);
@@ -79,7 +82,10 @@ void main() {
   });
 
   testWidgets('versi baru tersedia tetapi belum wajib: kartu Pembaruan di Beranda, bisa ditutup', (tester) async {
-    server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(saatIni: '1.0.0', terbaru: '1.4.0', minimal: '1.0.0'));
+    server.penangan = (p) => Penangan(
+      p,
+      konfigurasi: Konfigurasi(saatIni: '1.0.0', terbaru: '1.4.0', minimal: '1.0.0'),
+    );
     await PasangPemilik(tester, server: server, sesi: sesi);
 
     expect(find.text('Rp 1.250.000'), findsOneWidget);
