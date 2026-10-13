@@ -11,6 +11,7 @@ use App\Http\Kontroler\Pemilik\V1\LaporanKontroler;
 use App\Http\Kontroler\Pemilik\V1\NotifikasiKontroler;
 use App\Http\Kontroler\Pemilik\V1\PengumumanKontroler;
 use App\Http\Kontroler\Pemilik\V1\PerangkatKontroler;
+use App\Http\Kontroler\Pemilik\V1\PersetujuanDokumenKontroler;
 use App\Http\Kontroler\Pemilik\V1\PersetujuanKontroler;
 use App\Http\Kontroler\Pemilik\V1\StokKontroler;
 use App\Http\Perantara\AutentikasiPemilik;
@@ -62,6 +63,17 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
             ->where('persetujuan', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pemilik.persetujuan.setujui');
         Route::post('/persetujuan/{persetujuan}/tolak', [PersetujuanKontroler::class, 'Tolak'])
             ->where('persetujuan', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pemilik.persetujuan.tolak');
+
+        // OWN-04: persetujuan dokumen jarak jauh (PO & penyesuaian stok). Daftar menyaring jenis menurut izin; aksi dijaga izin.
+        Route::get('/persetujuan-dokumen', [PersetujuanDokumenKontroler::class, 'Daftar'])->name('pemilik.persetujuan-dokumen');
+        Route::post('/persetujuan-dokumen/pesanan-pembelian/{dokumen}/setujui', [PersetujuanDokumenKontroler::class, 'SetujuiPesanan'])
+            ->where('dokumen', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware([$izin(IzinTenant::PembelianPoSetujui), 'throttle:pemilik-30'])->name('pemilik.persetujuan-dokumen.pesanan-pembelian.setujui');
+        Route::post('/persetujuan-dokumen/pesanan-pembelian/{dokumen}/tolak', [PersetujuanDokumenKontroler::class, 'TolakPesanan'])
+            ->where('dokumen', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware([$izin(IzinTenant::PembelianPoSetujui), 'throttle:pemilik-30'])->name('pemilik.persetujuan-dokumen.pesanan-pembelian.tolak');
+        Route::post('/persetujuan-dokumen/penyesuaian-stok/{dokumen}/setujui', [PersetujuanDokumenKontroler::class, 'SetujuiPenyesuaian'])
+            ->where('dokumen', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware([$izin(IzinTenant::PersediaanPenyesuaianSetujui), 'throttle:pemilik-30'])->name('pemilik.persetujuan-dokumen.penyesuaian-stok.setujui');
+        Route::post('/persetujuan-dokumen/penyesuaian-stok/{dokumen}/tolak', [PersetujuanDokumenKontroler::class, 'TolakPenyesuaian'])
+            ->where('dokumen', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware([$izin(IzinTenant::PersediaanPenyesuaianSetujui), 'throttle:pemilik-30'])->name('pemilik.persetujuan-dokumen.penyesuaian-stok.tolak');
 
         // OWN-03: pusat notifikasi persisten + pendaftaran token FCM pemasangan Aplikasi Owner.
         Route::get('/notifikasi', [NotifikasiKontroler::class, 'Daftar'])->name('pemilik.notifikasi');

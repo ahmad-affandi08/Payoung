@@ -16,9 +16,16 @@ use App\Domain\Organisasi\Model\Gudang;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\Perangkat;
+use App\Domain\Pembelian\Aksi\AjukanPesananPembelian;
+use App\Domain\Pembelian\Enum\StatusPesananPembelian;
+use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
+use App\Domain\Persediaan\Aksi\AjukanPenyesuaianStok;
+use App\Domain\Persediaan\Enum\AlasanPenyesuaian;
+use App\Domain\Persediaan\Enum\StatusPenyesuaianStok;
 use App\Domain\Persediaan\Kueri\KartuStok;
+use App\Domain\Persediaan\Model\PenyesuaianStok;
 use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
@@ -27,7 +34,12 @@ use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Laporan\BantuanLaporan;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Organisasi\BantuanPerangkat;
+use Tests\Pendukung\Pembelian\BantuanPembelian;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
+use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan;
+use Tests\Pendukung\Persediaan\BantuanPersediaan;
+use Tests\Pendukung\Persediaan\BantuanStokAwal;
+use Tests\Pendukung\Persediaan\PemeriksaInvarian;
 use Tests\Pendukung\Tenant\BantuanAutentikasi;
 use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
@@ -456,6 +468,89 @@ describe('OWN-06 cek stok & kartu stok', function (): void {
 
         $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
         AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $d['Tenant']->Uuid, '/stok')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
+    });
+});
+
+describe('OWN-04 persetujuan dokumen jarak jauh (PO & penyesuaian stok)', function (): void {
+    it('daftar menurut izin; Owner menyetujui/menolak PO dan penyesuaian stok dengan aturan yang sama dengan back-office', function (): void {
+        $t = BantuanPembelian::SiapkanTenant();
+        $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
+        $minyak = $produk['Stok'];
+        BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($minyak, '100', '38500')], $t['Pemilik']->Id, CarbonImmutable::now('Asia/Jakarta')->subDays(3)->format('Y-m-d'));
+        $pemasok = BantuanPembelian::BuatPemasok('PT Sumber Pangan Nusantara');
+        $staf = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+
+        $poDitolak = app(AjukanPesananPembelian::class)->Jalankan(BantuanPembelian::BuatPo($pemasok, $t['Gudang'], [[$minyak, '200', '31500']], $staf->Id), $staf->Id);
+        $poDisetujui = app(AjukanPesananPembelian::class)->Jalankan(BantuanPembelian::BuatPo($pemasok, $t['Gudang'], [[$minyak, '300', '31500']], $staf->Id), $staf->Id);
+        $penyesuaian = app(AjukanPenyesuaianStok::class)->Jalankan(BantuanDokumenPersediaan::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Hilang, [BantuanDokumenPersediaan::Baris($minyak, '-13')], 'Hilang saat bongkar muat'), $staf->Id);
+        expect($poDitolak->Status)->toBe(StatusPesananPembelian::MenungguPersetujuan)->and($penyesuaian->Status)->toBe(StatusPenyesuaianStok::MenungguPersetujuan);
+
+        $token = TokenPemilikUji($this, $t['Pemilik']);
+        $daftar = AmbilPemilikUji($this, $token, $t['Tenant']->Uuid, '/persetujuan-dokumen')->assertOk();
+        expect($daftar->json('PesananPembelian'))->toHaveCount(2)
+            ->and($daftar->json('PesananPembelian.0.Nomor'))->toBe($poDitolak->Nomor)
+            ->and($daftar->json('PesananPembelian.0.NamaPemasok'))->toBe('PT Sumber Pangan Nusantara')
+            ->and($daftar->json('PesananPembelian.0.Total'))->toBe('6300000.00')
+            ->and($daftar->json('PesananPembelian.0.DiajukanOleh'))->toBe($staf->Nama)
+            ->and($daftar->json('PesananPembelian.0.BisaDisetujui'))->toBeTrue()
+            ->and($daftar->json('PenyesuaianStok'))->toHaveCount(1)
+            ->and($daftar->json('PenyesuaianStok.0.NilaiPerkiraan'))->toBe('500500.00')
+            ->and($daftar->json('PenyesuaianStok.0.Alasan'))->toBe(AlasanPenyesuaian::Hilang->AmbilLabel())
+            ->and($daftar->json('PenyesuaianStok.0.BisaDisetujui'))->toBeTrue();
+
+        // Tanpa izin persetujuan: daftar kosong (bukan galat), aksi 403.
+        $kasir = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Kasir);
+        $tokenKasir = TokenPemilikUji($this, $kasir, 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenKasir, $t['Tenant']->Uuid, '/persetujuan-dokumen')->assertOk()->assertExactJson(['PesananPembelian' => [], 'PenyesuaianStok' => []]);
+        KirimPemilikUji($this, $tokenKasir, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDitolak->Uuid}/setujui")->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+        KirimPemilikUji($this, $tokenKasir, $t['Tenant']->Uuid, "/persetujuan-dokumen/penyesuaian-stok/{$penyesuaian->Uuid}/setujui")->assertStatus(403);
+
+        // Tolak: alasan wajib (min. 5), lalu kembali ke Draf dengan alasan tercatat.
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDitolak->Uuid}/tolak", ['Alasan' => 'x'])->assertStatus(422)->assertJsonPath('Galat.Kode', 'ValidasiGagal');
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDitolak->Uuid}/tolak", ['Alasan' => 'Harga terlalu tinggi, minta penawaran ulang'])
+            ->assertOk()->assertJsonPath('Dokumen.Status', 'Draf');
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDisetujui->Uuid}/setujui")->assertOk()->assertJsonPath('Dokumen.Status', 'Disetujui');
+        // Sudah diputuskan: tidak bisa diputuskan lagi (status dicek di bawah kunci).
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDisetujui->Uuid}/setujui")->assertStatus(422)->assertJsonPath('Galat.Kode', 'StatusTidakSesuai');
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/pesanan-pembelian/{$poDitolak->Uuid}/setujui")->assertStatus(422)->assertJsonPath('Galat.Kode', 'StatusTidakSesuai');
+
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/penyesuaian-stok/{$penyesuaian->Uuid}/setujui")->assertOk()->assertJsonPath('Dokumen.Status', 'Diposting');
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(PesananPembelian::query()->whereKey($poDitolak->Id)->value('AlasanDitolak'))->toBe('Harga terlalu tinggi, minta penawaran ulang')
+            ->and(PesananPembelian::query()->whereKey($poDisetujui->Id)->value('DisetujuiOleh'))->toBe($t['Pemilik']->Id)
+            ->and(BantuanDokumenPersediaan::Saldo($minyak, $t['Gudang'])[0])->toBe('87.0000')
+            ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
+
+        $akhir = AmbilPemilikUji($this, $token, $t['Tenant']->Uuid, '/persetujuan-dokumen')->assertOk();
+        expect($akhir->json('PesananPembelian'))->toBe([])->and($akhir->json('PenyesuaianStok'))->toBe([]);
+
+        // Penyesuaian kedua ditolak lewat Owner: kembali ke Draf, stok tidak bergerak.
+        $kedua = app(AjukanPenyesuaianStok::class)->Jalankan(BantuanDokumenPersediaan::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Hilang, [BantuanDokumenPersediaan::Baris($minyak, '-14')]), $staf->Id);
+        KirimPemilikUji($this, $token, $t['Tenant']->Uuid, "/persetujuan-dokumen/penyesuaian-stok/{$kedua->Uuid}/tolak", ['Alasan' => 'Hitung ulang dulu di gudang'])->assertOk()->assertJsonPath('Dokumen.Status', 'Draf');
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(BantuanDokumenPersediaan::Saldo($minyak, $t['Gudang'])[0])->toBe('87.0000')
+            ->and(PenyesuaianStok::query()->whereKey($kedua->Id)->value('AlasanTolak'))->toBe('Hitung ulang dulu di gudang');
+    });
+
+    it('persetujuan dokumen: tenant lain 403, dokumen tak dikenal 404, pengaju tidak boleh menyetujui sendiri (penyesuaian)', function (): void {
+        $t = BantuanPembelian::SiapkanTenant();
+        $minyak = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['Stok'];
+        BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($minyak, '100', '38500')], $t['Pemilik']->Id, CarbonImmutable::now('Asia/Jakarta')->subDays(3)->format('Y-m-d'));
+        $admin = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Admin);
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        $dokumen = app(AjukanPenyesuaianStok::class)->Jalankan(BantuanDokumenPersediaan::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Hilang, [BantuanDokumenPersediaan::Baris($minyak, '-13')]), $admin->Id);
+
+        $tokenAdmin = TokenPemilikUji($this, $admin, 'kata-sandi-uji');
+        $daftar = AmbilPemilikUji($this, $tokenAdmin, $t['Tenant']->Uuid, '/persetujuan-dokumen')->assertOk();
+        expect($daftar->json('PenyesuaianStok.0.BisaDisetujui'))->toBeFalse();
+        KirimPemilikUji($this, $tokenAdmin, $t['Tenant']->Uuid, "/persetujuan-dokumen/penyesuaian-stok/{$dokumen->Uuid}/setujui")->assertStatus(422)->assertJsonPath('Galat.Kode', 'PenyetujuTidakBoleh');
+        KirimPemilikUji($this, $tokenAdmin, $t['Tenant']->Uuid, '/persetujuan-dokumen/penyesuaian-stok/01ARZ3NDEKTSV4RRFFQ69G5FAV/setujui')->assertStatus(404);
+
+        $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
+        KirimPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $t['Tenant']->Uuid, "/persetujuan-dokumen/penyesuaian-stok/{$dokumen->Uuid}/setujui")->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(PenyesuaianStok::query()->whereKey($dokumen->Id)->value('Status'))->toBe(StatusPenyesuaianStok::MenungguPersetujuan);
     });
 });
 

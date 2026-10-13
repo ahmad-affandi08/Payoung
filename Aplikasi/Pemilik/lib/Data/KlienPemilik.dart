@@ -403,6 +403,69 @@ class KartuStokPemilik {
   }
 }
 
+/// OWN-04: dokumen (PO atau penyesuaian stok) yang menunggu persetujuan Owner.
+class DokumenMenunggu {
+  const DokumenMenunggu({
+    required this.jenis,
+    required this.uuid,
+    required this.nomor,
+    required this.judul,
+    required this.rincian,
+    required this.nilai,
+    required this.diajukanOleh,
+    required this.diajukanPada,
+    required this.bisaDisetujui,
+  });
+
+  /// `PesananPembelian` atau `PenyesuaianStok`.
+  final String jenis;
+  final String uuid;
+  final String? nomor;
+  final String judul;
+  final List<String> rincian;
+  final String nilai;
+  final String? diajukanOleh;
+  final DateTime? diajukanPada;
+
+  /// False bila pengguna sendiri pembuat/pengaju dokumen (pemisahan tugas); tombol setujui dimatikan.
+  final bool bisaDisetujui;
+
+  static DokumenMenunggu DariPesanan(Map<String, Object?> json) => DokumenMenunggu(
+    jenis: 'PesananPembelian',
+    uuid: UraiJson.AmbilTeks(json['Uuid']),
+    nomor: UraiJson.AmbilTeksAtauNull(json['Nomor']),
+    judul: 'PO ${UraiJson.AmbilTeks(json['NamaPemasok'])}',
+    rincian: [
+      '${UraiJson.AmbilBulat(json['JumlahBaris'])} barang',
+      if (UraiJson.AmbilTeksAtauNull(json['Catatan']) case final catatan?) catatan,
+    ],
+    nilai: UraiJson.AmbilDesimal(json['Total']),
+    diajukanOleh: UraiJson.AmbilTeksAtauNull(json['DiajukanOleh']),
+    diajukanPada: DateTime.tryParse(UraiJson.AmbilTeks(json['DiajukanPada']))?.toLocal(),
+    bisaDisetujui: UraiJson.AmbilBenar(json['BisaDisetujui']),
+  );
+
+  static DokumenMenunggu DariPenyesuaian(Map<String, Object?> json) {
+    final outlet = UraiJson.AmbilTeks(json['NamaOutlet']);
+    final gudang = UraiJson.AmbilTeks(json['NamaGudang']);
+    return DokumenMenunggu(
+      jenis: 'PenyesuaianStok',
+      uuid: UraiJson.AmbilTeks(json['Uuid']),
+      nomor: UraiJson.AmbilTeksAtauNull(json['Nomor']),
+      judul: 'Penyesuaian stok | ${UraiJson.AmbilTeks(json['Alasan'])}',
+      rincian: [
+        outlet.isEmpty ? gudang : '$outlet | $gudang',
+        '${UraiJson.AmbilBulat(json['JumlahBaris'])} barang',
+        if (UraiJson.AmbilTeksAtauNull(json['Keterangan']) case final keterangan?) keterangan,
+      ],
+      nilai: UraiJson.AmbilDesimal(json['NilaiPerkiraan']),
+      diajukanOleh: UraiJson.AmbilTeksAtauNull(json['DiajukanOleh']),
+      diajukanPada: DateTime.tryParse(UraiJson.AmbilTeks(json['DiajukanPada']))?.toLocal(),
+      bisaDisetujui: UraiJson.AmbilBenar(json['BisaDisetujui']),
+    );
+  }
+}
+
 class ShiftPemilik {
   const ShiftPemilik({
     required this.uuid,
@@ -858,6 +921,25 @@ class KlienPemilik {
     required String namaPerangkat,
   }) async {
     await _Kirim('POST', 'token-notifikasi', {'Token': token, 'Platform': platform, 'NamaPerangkat': namaPerangkat});
+  }
+
+  /// OWN-04: PO dan penyesuaian stok yang menunggu persetujuan (jenis tanpa izin pengguna tidak ikut).
+  Future<List<DokumenMenunggu>> AmbilDokumenPersetujuan() async {
+    final json = await _Kirim('GET', 'persetujuan-dokumen', null);
+    return [
+      for (final p in UraiJson.AmbilDaftarPeta(json['PesananPembelian'])) DokumenMenunggu.DariPesanan(p),
+      for (final p in UraiJson.AmbilDaftarPeta(json['PenyesuaianStok'])) DokumenMenunggu.DariPenyesuaian(p),
+    ];
+  }
+
+  /// OWN-04: setujui atau tolak ([alasan] 5–255 karakter) satu dokumen. Aturan sama dengan back-office.
+  Future<void> PutuskanDokumen(DokumenMenunggu dokumen, {required bool setujui, String? alasan}) async {
+    final jenis = dokumen.jenis == 'PesananPembelian' ? 'pesanan-pembelian' : 'penyesuaian-stok';
+    await _Kirim(
+      'POST',
+      'persetujuan-dokumen/$jenis/${Uri.encodeComponent(dokumen.uuid)}/${setujui ? 'setujui' : 'tolak'}',
+      setujui ? null : {'Alasan': alasan?.trim() ?? ''},
+    );
   }
 
   /// OWN-03 / X4: antrean persetujuan jarak jauh yang boleh diputuskan pengguna (terlama dulu).

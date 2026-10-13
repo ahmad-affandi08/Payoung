@@ -498,5 +498,40 @@
         "Metode": "GET",
         "Jalur": "api/pemilik/v1/laporan/anti-fraud",
         "Nama": "pemilik.laporan.anti-fraud"
+    },
+    "GET api/pemilik/v1/persetujuan-dokumen": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/persetujuan-dokumen",
+        "Nama": "pemilik.persetujuan-dokumen"
+    },
+    "GET api/pemilik/v1/stok": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/stok",
+        "Nama": "pemilik.stok"
+    },
+    "GET api/pemilik/v1/stok/kartu": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/stok/kartu",
+        "Nama": "pemilik.stok.kartu"
+    },
+    "POST api/pemilik/v1/persetujuan-dokumen/penyesuaian-stok/{dokumen}/setujui": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/persetujuan-dokumen/penyesuaian-stok/{dokumen}/setujui",
+        "Nama": "pemilik.persetujuan-dokumen.penyesuaian-stok.setujui"
+    },
+    "POST api/pemilik/v1/persetujuan-dokumen/penyesuaian-stok/{dokumen}/tolak": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/persetujuan-dokumen/penyesuaian-stok/{dokumen}/tolak",
+        "Nama": "pemilik.persetujuan-dokumen.penyesuaian-stok.tolak"
+    },
+    "POST api/pemilik/v1/persetujuan-dokumen/pesanan-pembelian/{dokumen}/setujui": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/persetujuan-dokumen/pesanan-pembelian/{dokumen}/setujui",
+        "Nama": "pemilik.persetujuan-dokumen.pesanan-pembelian.setujui"
+    },
+    "POST api/pemilik/v1/persetujuan-dokumen/pesanan-pembelian/{dokumen}/tolak": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/persetujuan-dokumen/pesanan-pembelian/{dokumen}/tolak",
+        "Nama": "pemilik.persetujuan-dokumen.pesanan-pembelian.tolak"
     }
 }

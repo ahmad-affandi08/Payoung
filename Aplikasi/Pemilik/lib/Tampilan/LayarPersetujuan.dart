@@ -6,6 +6,7 @@ import 'package:klien_api/KlienApi.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
+import '../Data/KlienPemilik.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 
@@ -18,7 +19,10 @@ class LayarPersetujuan extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
-      onRefresh: () => ref.refresh(penyediaPersetujuan.future),
+      onRefresh: () async {
+        ref.invalidate(penyediaDokumenPersetujuan);
+        await ref.refresh(penyediaPersetujuan.future);
+      },
       child: KeadaanData(
         nilai: ref.watch(penyediaPersetujuan),
         saatCobaLagi: () => ref.invalidate(penyediaPersetujuan),
@@ -26,7 +30,7 @@ class LayarPersetujuan extends ConsumerWidget {
           padding: const EdgeInsets.all(TokenJarak.jarak16),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            if (daftar.isEmpty)
+            if (daftar.isEmpty && (ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[]).isEmpty)
               const KotakPanel(
                 anak: KeadaanKosong(
                   ilustrasi: IlustrasiKosong.Umum,
@@ -37,6 +41,154 @@ class LayarPersetujuan extends ConsumerWidget {
                 ),
               ),
             for (final p in daftar) _KartuPersetujuan(permintaan: p),
+            for (final d in ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[]) _KartuDokumen(dokumen: d),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// OWN-04: PO atau penyesuaian stok yang menunggu persetujuan. Setujui dengan konfirmasi, tolak wajib alasan; aturan
+/// pemisahan tugas dijaga server (pembuat/pengaju tidak bisa menyetujui, tombol dimatikan dengan penjelasan).
+class _KartuDokumen extends ConsumerStatefulWidget {
+  const _KartuDokumen({required this.dokumen});
+
+  final DokumenMenunggu dokumen;
+
+  @override
+  ConsumerState<_KartuDokumen> createState() => _KartuDokumenState();
+}
+
+class _KartuDokumenState extends ConsumerState<_KartuDokumen> {
+  bool _sibuk = false;
+
+  Future<void> _Putuskan(bool setujui) async {
+    final d = widget.dokumen;
+    String? alasan;
+    if (setujui) {
+      final yakin = await showDialog<bool>(
+        context: context,
+        builder: (konteks) => AlertDialog(
+          title: Text('Setujui ${d.judul}?'),
+          content: Text(
+            d.jenis == 'PenyesuaianStok'
+                ? '${FormatTampilan.Rupiah(d.nilai)}. Stok langsung berubah dan jurnal dicatat.'
+                : '${FormatTampilan.Rupiah(d.nilai)}. PO bisa langsung dikirim ke pemasok.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(konteks).pop(false), child: const Text('Batal')),
+            FilledButton(onPressed: () => Navigator.of(konteks).pop(true), child: const Text('Ya, setujui')),
+          ],
+        ),
+      );
+      if (yakin != true) {
+        return;
+      }
+    } else {
+      alasan = await showDialog<String>(
+        context: context,
+        builder: (_) => const _DialogAlasanTolak(label: 'Alasan (dibaca pembuat dokumen)'),
+      );
+      if (alasan == null) {
+        return;
+      }
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() => _sibuk = true);
+    final pesan = ScaffoldMessenger.maybeOf(context);
+    try {
+      await ref.read(penyediaKlien).PutuskanDokumen(d, setujui: setujui, alasan: alasan);
+      pesan?.showSnackBar(SnackBar(content: Text(setujui ? '${d.judul} disetujui.' : '${d.judul} ditolak.')));
+    } on GalatApi catch (galat) {
+      pesan?.showSnackBar(SnackBar(content: Text(galat.pesan)));
+    } on GalatJaringan {
+      pesan?.showSnackBar(const SnackBar(content: Text('Tidak tersambung ke server. Coba lagi.')));
+    } finally {
+      if (mounted) {
+        setState(() => _sibuk = false);
+      }
+      ref.invalidate(penyediaDokumenPersetujuan);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    final d = widget.dokumen;
+    return Container(
+      margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+      decoration: BoxDecoration(
+        color: warna.permukaan,
+        border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+        borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(TokenJarak.jarak16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  backgroundColor: warna.peringatan.withValues(alpha: 0.12),
+                  child: Icon(
+                    d.jenis == 'PenyesuaianStok' ? Icons.inventory_2_outlined : Icons.local_shipping_outlined,
+                    color: warna.peringatan,
+                  ),
+                ),
+                const SizedBox(width: TokenJarak.jarak12),
+                Expanded(child: Text(d.judul, style: teks.titleMedium)),
+                Text(FormatTampilan.Rupiah(d.nilai), style: teks.titleMedium),
+              ],
+            ),
+            const SizedBox(height: TokenJarak.jarak4),
+            Text(
+              [
+                if (d.nomor != null) d.nomor!,
+                if (d.diajukanOleh != null) 'diajukan ${d.diajukanOleh}',
+                if (d.diajukanPada != null) FormatTampilan.TanggalJam(d.diajukanPada!),
+              ].join(' | '),
+              style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+            ),
+            const SizedBox(height: TokenJarak.jarak8),
+            for (final r in d.rincian) Text(r, style: teks.bodyMedium),
+            if (!d.bisaDisetujui)
+              Padding(
+                padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+                child: Text(
+                  'Dokumen ini Anda buat sendiri, jadi harus disetujui orang lain.',
+                  style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                ),
+              ),
+            const SizedBox(height: TokenJarak.jarak12),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: TokenJarak.targetSentuh,
+                    child: OutlinedButton(
+                      onPressed: _sibuk || !d.bisaDisetujui ? null : () => unawaited(_Putuskan(false)),
+                      child: const Text('Tolak'),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: TokenJarak.jarak12),
+                Expanded(
+                  child: SizedBox(
+                    height: TokenJarak.targetSentuh,
+                    child: FilledButton(
+                      onPressed: _sibuk || !d.bisaDisetujui ? null : () => unawaited(_Putuskan(true)),
+                      child: Text(_sibuk ? 'Mengirim…' : 'Setujui'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -219,7 +371,9 @@ class _KartuPersetujuanState extends ConsumerState<_KartuPersetujuan> {
 }
 
 class _DialogAlasanTolak extends StatefulWidget {
-  const _DialogAlasanTolak();
+  const _DialogAlasanTolak({this.label = 'Alasan (dibaca kasir)'});
+
+  final String label;
 
   @override
   State<_DialogAlasanTolak> createState() => _DialogAlasanTolakState();
@@ -255,7 +409,7 @@ class _DialogAlasanTolakState extends State<_DialogAlasanTolak> {
       maxLines: 3,
       minLines: 1,
       decoration: InputDecoration(
-        labelText: 'Alasan (dibaca kasir)',
+        labelText: widget.label,
         errorText: _galat,
         border: const OutlineInputBorder(),
       ),

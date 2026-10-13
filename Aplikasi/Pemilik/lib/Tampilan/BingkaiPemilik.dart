@@ -45,7 +45,11 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
     super.initState();
     final selang = ref.read(penyediaSelangPantauPersetujuan);
     if (selang != null) {
-      _pantau = Timer.periodic(selang, (_) => ref.invalidate(penyediaPersetujuan));
+      _pantau = Timer.periodic(selang, (_) {
+        ref
+          ..invalidate(penyediaPersetujuan)
+          ..invalidate(penyediaDokumenPersetujuan);
+      });
     }
     unawaited(_SiapkanPush());
   }
@@ -66,7 +70,9 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
       ..add(
         push.pesanMasuk.listen((pesan) {
           ref.invalidate(penyediaNotifikasi);
-          ref.invalidate(penyediaPersetujuan);
+          ref
+            ..invalidate(penyediaPersetujuan)
+            ..invalidate(penyediaDokumenPersetujuan);
           if (mounted && pesan.judul != null) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan.judul!)));
           }
@@ -95,7 +101,9 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
   void _BukaPesan(PesanPush pesan) {
     if (!mounted) return;
     ref.invalidate(penyediaNotifikasi);
-    ref.invalidate(penyediaPersetujuan);
+    ref
+      ..invalidate(penyediaPersetujuan)
+      ..invalidate(penyediaDokumenPersetujuan);
     if (pesan.data['Tautan'] == 'notifikasi') {
       _BukaNotifikasi();
       return;
@@ -126,7 +134,9 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
   Widget build(BuildContext context) {
     final sesi = ref.watch(penyediaSesi);
     final notifier = ref.read(penyediaSesi.notifier);
-    final menunggu = ref.watch(penyediaPersetujuan).value?.length ?? 0;
+    final menunggu =
+        (ref.watch(penyediaPersetujuan).value?.length ?? 0) +
+        (ref.watch(penyediaDokumenPersetujuan).value?.where((d) => d.bisaDisetujui).length ?? 0);
     final belumDibaca = ref.watch(penyediaNotifikasi).value?.belumDibaca ?? 0;
     final warna = TokenWarna.AmbilDari(context);
     return Scaffold(
@@ -162,7 +172,9 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
         selectedIndex: _indeks,
         onDestinationSelected: (i) {
           if (i == _indeksPersetujuan) {
-            ref.invalidate(penyediaPersetujuan);
+            ref
+              ..invalidate(penyediaPersetujuan)
+              ..invalidate(penyediaDokumenPersetujuan);
           }
           setState(() => _indeks = i);
         },

@@ -394,6 +394,11 @@ final penyediaNotifikasi = FutureProvider.autoDispose<DaftarNotifikasiPemilik>(
   (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilNotifikasi()),
 );
 
+/// OWN-04: PO dan penyesuaian stok yang menunggu persetujuan.
+final penyediaDokumenPersetujuan = FutureProvider.autoDispose<List<DokumenMenunggu>>(
+  (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilDokumenPersetujuan()),
+);
+
 /// OWN-03 / X4: antrean persetujuan jarak jauh.
 final penyediaPersetujuan = FutureProvider.autoDispose<List<PermintaanPersetujuanPos>>(
   (ref) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilPersetujuan()),

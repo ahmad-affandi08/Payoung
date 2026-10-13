@@ -86,6 +86,7 @@ final class PetaFiturRute
         ['Pola' => 'pos.gudang.penerimaan', 'Fitur' => 'pembelian.po', 'Mode' => 'semua', 'Nama' => 'Pesanan pembelian'],
         ['Pola' => 'pemilik.laporan.laba-rugi', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'pemilik.laporan.anti-fraud', 'Fitur' => 'keamanan.anti-fraud', 'Mode' => 'semua', 'Nama' => 'Anti-fraud'],
+        ['Pola' => 'pemilik.persetujuan-dokumen.pesanan-pembelian.*', 'Fitur' => 'pembelian.po', 'Mode' => 'semua', 'Nama' => 'Pesanan pembelian'],
         ['Pola' => 'pemilik.insight', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight'],
     ];
 }
