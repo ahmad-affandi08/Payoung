@@ -31,7 +31,7 @@
 **Harga (Price Engine):**
 
 Harga final ditentukan berlapis (prioritas tinggi ke rendah):
-1. Harga manual kasir (butuh izin `pos.harga.timpa`)
+1. Harga manual kasir (butuh izin `pos.harga.timpa`; selesai v6.19, D-138: alasan wajib, penyetuju ber-PIN bagi kasir tanpa izin, harga asli tersimpan, penjualan offline yang melanggar diterima sebagai tinjauan)
 2. Promo aktif (Promo Engine, F-16)
 3. **Price List** yang cocok (kombinasi outlet × channel × tier pelanggan × rentang waktu)
 4. Harga bertingkat qty (tiered): 1–11 = Rp 5.000, 12+ = Rp 4.500

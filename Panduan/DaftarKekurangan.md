@@ -319,3 +319,30 @@ Lima penelusuran baca-kode (tes tidak dijalankan; "ADA" berarti kodenya ditemuka
 4. PGL-18 flag di Kasir/Owner, PGL-20/P-11 observabilitas, jalur tiket P-09.
 5. OTP WhatsApp (PLT-01) bila penyedia WA sudah siap; SEO toko online (SLS-05 opsi ringan lewat Blade).
 6. Fitur sektor (reservasi meja + DP, minimum charge, grid ukuran × warna, servis non-kendaraan) menurut sektor tenant yang paling banyak mendaftar.
+
+## H. Penutupan empat butir urutan G — 13 Oktober 2026 (PRD v6.17–v6.22)
+
+Empat butir pertama "Urutan yang disarankan" bagian G dikerjakan (keputusan D-137 s.d. D-141). Hitungan di bawah hanya memasukkan yang selesai dan lolos tes. **Bagian Flutter yang hanya diverifikasi lewat paket Dart murni (klien API, domain, model) dihitung ADA; layar Flutter-nya belum dikompilasi** (SDK Flutter tidak muat di sandbox), jadi ditandai terpisah dan harus dibuktikan CI `melos run periksa`.
+
+**Hasil per kelompok ID (145 ID)**
+
+| Kelompok | ID | ADA terverifikasi | ADA, layar Flutter belum dikompilasi | SEBAGIAN | BELUM |
+|---|---|---|---|---|---|
+| PLT, CRM, EMP | 27 | 22 | 0 | 4 | 1 |
+| FIN, TAX, INV | 34 | 32 | 0 | 1 | 1 |
+| OWN, POS | 38 | 20 | 5 | 8 | 5 |
+| PGL, SLS, PRD | 46 | 38 | 1 | 6 | 1 |
+| **Jumlah** | **145** | **112** | **6** | **19** | **8** |
+
+**Yang berpindah dari G**
+- **OWN-04, OWN-05, OWN-08** (SEBAGIAN → ADA) dan **OWN-06, OWN-09** (BELUM → ADA): API `/api/pemilik/v1` + klien Dart + layar Owner. Layar belum dikompilasi.
+- **PGL-18** (SEBAGIAN → ADA): flag fitur dibaca Kasir (`CekFlagKasir`) dan Owner, ditambah versi minimum Owner (`LayarWajibPerbarui`). Layar belum dikompilasi.
+- **PGL-20 tetap SEBAGIAN:** error rate & p95 API, outbox perangkat macet, dan alert WhatsApp kritis selesai (v6.21). Belum: crash-free sessions, endpoint terlambat, galat sinkron terbanyak, Telegram & runbook, webhook keluar gagal per tenant, ukuran database per tenant.
+- **PGL-15 tetap SEBAGIAN:** SLA jam kerja WIB + hari libur P-02, eskalasi L1 → L2 → Teknis, tombol Bantuan dengan konteks otomatis di Kasir & Owner selesai (v6.22). Belum: tiket masuk dari WhatsApp/email.
+- **POS-23 tetap SEBAGIAN:** Owner kini punya cek versi minimum; auto-updater belum ada.
+- **Grosir** (bukan ID tersendiri): produk ber-batch/seri, refund kas retur, armada & status pengiriman surat jalan selesai (v6.18). **Ongkos kirim grosir sengaja belum dikerjakan** (menunggu keputusan pemilik produk).
+- **Harga manual kasir `pos.harga.timpa`** (lapis 1 price engine) selesai di server (tinjauan, bukan penolakan, untuk penjualan offline) dan di domain Kasir (v6.19, D-138).
+
+**Celah dari G yang ditutup:** grosir menolak batch/seri, tombol Bantuan dengan konteks otomatis.
+
+**Urutan yang tersisa dari G:** butir 5 (OTP WhatsApp PLT-01, SEO toko online SLS-05) dan butir 6 (fitur sektor).
