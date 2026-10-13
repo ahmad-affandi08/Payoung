@@ -8,6 +8,7 @@ use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Pajak\Enum\KategoriJenisPajak;
 use App\Domain\Pajak\Kueri\DaftarKelompokPajak;
+use App\Domain\Pembelian\Kueri\PpnMasukan;
 use App\Domain\Penjualan\Kueri\PajakPenjualanBulanan;
 use Carbon\CarbonImmutable;
 
@@ -23,11 +24,12 @@ final class LaporanPajak
         private readonly PajakPenjualanBulanan $pajak,
         private readonly DaftarKelompokPajak $kelompokPajak,
         private readonly PetaUuidOutlet $outlet,
+        private readonly PpnMasukan $ppnMasukan,
     ) {}
 
     /**
      * @param  list<int>|null  $idOutlet
-     * @return array{Pbjt: list<array<string, mixed>>, Ppn: list<array<string, mixed>>}
+     * @return array{Pbjt: list<array<string, mixed>>, Ppn: list<array<string, mixed>>, PpnMasukan: list<array<string, mixed>>, RingkasanPpn: array<string, string>}
      */
     public function Ambil(CarbonImmutable $dari, CarbonImmutable $sampai, ?array $idOutlet): array
     {
@@ -70,7 +72,47 @@ final class LaporanPajak
             $ppn[$kunci] = $ada;
         }
 
-        return ['Pbjt' => $pbjt, 'Ppn' => array_values($ppn)];
+        $masukan = array_map(fn (array $b): array => ['Kunci' => "{$b['Bulan']}|{$b['Tarif']}|".($b['Dikreditkan'] ? '1' : '0'), ...$b], $this->ppnMasukan->Ambil($dari, $sampai, $idOutlet));
+
+        return ['Pbjt' => $pbjt, 'Ppn' => array_values($ppn), 'PpnMasukan' => $masukan, 'RingkasanPpn' => self::RingkasPpn(array_values($ppn), $masukan)];
+    }
+
+    /**
+     * Ringkasan PPN periode: keluaran bersih (sesudah retur penjualan), masukan yang dapat dikreditkan bersih (sesudah retur
+     * pembelian), masukan yang tidak dapat dikreditkan (beban, tidak mengurangi PPN), dan selisih = keluaran − masukan
+     * dikreditkan (positif = kurang bayar, negatif = lebih bayar). Angka bantu pembukuan, bukan SPT.
+     *
+     * @param  list<array<string, mixed>>  $keluaran
+     * @param  list<array<string, mixed>>  $masukan
+     * @return array<string, string>
+     */
+    private static function RingkasPpn(array $keluaran, array $masukan): array
+    {
+        $teks = static fn (mixed $nilai): string => is_string($nilai) ? $nilai : '0';
+        $keluar = Uang::Nol();
+        $kredit = Uang::Nol();
+        $tanpaKredit = Uang::Nol();
+
+        foreach ($keluaran as $b) {
+            $keluar = $keluar->Tambah(Uang::Dari($teks($b['PajakBersih'] ?? null)));
+        }
+
+        foreach ($masukan as $b) {
+            $bersih = Uang::Dari($teks($b['PajakBersih'] ?? null));
+
+            if ($b['Dikreditkan'] === true) {
+                $kredit = $kredit->Tambah($bersih);
+            } else {
+                $tanpaKredit = $tanpaKredit->Tambah($bersih);
+            }
+        }
+
+        return [
+            'PpnKeluaran' => $keluar->KeString(),
+            'PpnMasukanKredit' => $kredit->KeString(),
+            'PpnMasukanTanpaKredit' => $tanpaKredit->KeString(),
+            'Selisih' => $keluar->Kurangi($kredit)->KeString(),
+        ];
     }
 
     /**

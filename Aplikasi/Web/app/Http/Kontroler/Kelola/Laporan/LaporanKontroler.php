@@ -136,6 +136,11 @@ final class LaporanKontroler extends DasarKelolaKontroler
     {
         [$periode, $uuidOutlet, $idOutlet] = $this->BacaSaringPajak($permintaan, $outlet, $tanggal->Hitung(null));
         $isi = $laporan->Ambil($periode->dari, $periode->sampai, $idOutlet);
+
+        if ($permintaan->query('jenis') === 'ppn-masukan') {
+            return $this->EksporPpnMasukan($permintaan, $isi['PpnMasukan'], $periode, $uuidOutlet, $outlet);
+        }
+
         $ppn = $permintaan->query('jenis') === 'ppn';
         $pilih = $ppn
             ? ['Bulan', 'NamaJenisPajak', 'Tarif', 'Dpp', 'Pajak', 'DppRetur', 'PajakRetur', 'DppBersih', 'PajakBersih', 'JumlahTransaksi']
@@ -165,6 +170,44 @@ final class LaporanKontroler extends DasarKelolaKontroler
             $kolom,
             $baris,
             [['Periode', $this->LabelPeriode($periode->dari, $periode->sampai)]],
+            null,
+            $this->LabelCakupan($namaOutlet),
+        );
+    }
+
+    /**
+     * Ekspor PPN masukan (TAX-05): per bulan × tarif × dapat/tidaknya dikreditkan, dengan baris ringkas kurang/lebih bayar
+     * di blok saringan kop.
+     *
+     * @param  list<array<string, mixed>>  $baris
+     */
+    private function EksporPpnMasukan(Request $permintaan, array $baris, DataPeriodeLaporan $periode, string $uuidOutlet, PetaUuidOutlet $outlet): SymfonyResponse
+    {
+        $kolom = [
+            new KolomLaporan('Bulan'), new KolomLaporan('Tarif (%)', JenisKolom::Persen), new KolomLaporan('Dapat dikreditkan', JenisKolom::Teks, 16),
+            new KolomLaporan('Jumlah faktur', JenisKolom::Bilangan, jumlahkan: true), new KolomLaporan('Nilai sebelum PPN', JenisKolom::Uang, jumlahkan: true),
+            new KolomLaporan('PPN masukan', JenisKolom::Uang, jumlahkan: true), new KolomLaporan('Nilai retur', JenisKolom::Uang, jumlahkan: true),
+            new KolomLaporan('PPN retur', JenisKolom::Uang, jumlahkan: true), new KolomLaporan('PPN masukan bersih', JenisKolom::Uang, jumlahkan: true),
+        ];
+        $isi = array_map(fn (array $b): array => [
+            self::Sel($b['Bulan'] ?? null), self::Sel($b['Tarif'] ?? null), $b['Dikreditkan'] === true ? 'Ya' : 'Tidak', self::Sel($b['JumlahFaktur'] ?? null),
+            self::Sel($b['Nilai'] ?? null), self::Sel($b['Pajak'] ?? null), self::Sel($b['NilaiRetur'] ?? null), self::Sel($b['PajakRetur'] ?? null), self::Sel($b['PajakBersih'] ?? null),
+        ], $baris);
+        $namaOutlet = '';
+
+        foreach ($outlet->AmbilRingkas($this->IdOutletBoleh()) as $o) {
+            if ($uuidOutlet !== '' && $o['Uuid'] === $uuidOutlet) {
+                $namaOutlet = $o['Nama'];
+            }
+        }
+
+        return $this->SajikanLaporan(
+            $permintaan,
+            'Laporan Pajak | PPN Masukan',
+            PembuatDefinisiLaporan::NamaBerkas('laporan-pajak', 'ppn-masukan', $periode->dari->toDateString(), $periode->sampai->toDateString()),
+            $kolom,
+            $isi,
+            [['Periode (tanggal faktur)', $this->LabelPeriode($periode->dari, $periode->sampai)]],
             null,
             $this->LabelCakupan($namaOutlet),
         );

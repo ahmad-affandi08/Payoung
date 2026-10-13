@@ -652,14 +652,42 @@ describe('F-14a laporan pajak & stok', () => {
             OpsiOutlet: [],
             Pbjt: [],
             Ppn: [baris],
+            PpnMasukan: [
+                {
+                    Kunci: '2026-10|12.000000|1',
+                    Bulan: '2026-10',
+                    Tarif: '12.000000',
+                    Dikreditkan: true,
+                    JumlahFaktur: 2,
+                    Nilai: '600000.00',
+                    Pajak: '72000.00',
+                    NilaiRetur: '50000.00',
+                    PajakRetur: '6000.00',
+                    PajakBersih: '66000.00',
+                },
+            ],
+            RingkasanPpn: {
+                PpnKeluaran: '9146.50',
+                PpnMasukanKredit: '66000.00',
+                PpnMasukanTanpaKredit: '0.00',
+                Selisih: '-56853.50',
+            },
         };
         RenderUji(<HalamanLaporanPajak {...props} />);
 
-        expect(screen.getByText('Oktober 2026')).toBeTruthy();
+        expect(screen.getAllByText('Oktober 2026').length).toBe(2);
         expect(screen.getByText('PPN 12%')).toBeTruthy();
-        expect(screen.getByText('Rp 9.146,50')).toBeTruthy();
+        expect(screen.getAllByText('Rp 9.146,50').length).toBeGreaterThan(0);
         expect(screen.getByText('Tidak ada PB1/PBJT pada periode ini.')).toBeTruthy();
-        expect(AmbilHrefEkspor('csv', /Ekspor PPN/)).toBe(
+        // TAX-05: PPN masukan, selisih lebih bayar (keluaran lebih kecil dari masukan yang dikreditkan).
+        expect(screen.getByText('PPN lebih bayar')).toBeTruthy();
+        expect(screen.getAllByText('Rp 66.000').length).toBeGreaterThan(1);
+        expect(screen.getByText('Rp 56.853,50')).toBeTruthy();
+        expect(screen.getByText('Ya')).toBeTruthy();
+        expect(AmbilHrefEkspor('csv', /Ekspor PPN masukan/)).toBe(
+            '/kelola/laporan/pajak/ekspor?dari=2026-10-01&sampai=2026-10-07&jenis=ppn-masukan&format=csv',
+        );
+        expect(AmbilHrefEkspor('csv', /^Ekspor PPN$/)).toBe(
             '/kelola/laporan/pajak/ekspor?dari=2026-10-01&sampai=2026-10-07&jenis=ppn&format=csv',
         );
     });

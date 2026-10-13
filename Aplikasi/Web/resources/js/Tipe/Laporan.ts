@@ -395,12 +395,35 @@ export type BarisPajakLaporan = {
     JumlahTransaksi: number;
 };
 
+/** TAX-05: PPN pada faktur pembelian per bulan × tarif × dapat/tidaknya dikreditkan, dikurangi PPN retur pembelian. */
+export type BarisPpnMasukan = {
+    Kunci: string;
+    Bulan: string;
+    Tarif: string;
+    Dikreditkan: boolean;
+    JumlahFaktur: number;
+    Nilai: string;
+    Pajak: string;
+    NilaiRetur: string;
+    PajakRetur: string;
+    PajakBersih: string;
+};
+export type RingkasanPpn = {
+    PpnKeluaran: string;
+    PpnMasukanKredit: string;
+    PpnMasukanTanpaKredit: string;
+    /** Keluaran − masukan dikreditkan: positif kurang bayar, negatif lebih bayar. */
+    Selisih: string;
+};
+
 export type PropsLaporanPajak = {
     Saring: { Dari: string; Sampai: string; Outlet: string };
     Peringatan: string | null;
     OpsiOutlet: OpsiLaporan[];
     Pbjt: BarisPajakLaporan[];
     Ppn: BarisPajakLaporan[];
+    PpnMasukan: BarisPpnMasukan[];
+    RingkasanPpn: RingkasanPpn;
 };
 
 /** Ringkasan kesiapan ekspor Faktur Pajak Keluaran Coretax (GET /kelola/laporan/pajak/faktur-keluaran, PRD v3.12). */
