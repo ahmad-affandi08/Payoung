@@ -368,6 +368,21 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
                 ->withoutMiddleware(ValidateCsrfToken::class)
                 ->middleware('throttle:pesan-sendiri-20')
                 ->name('publik.pesan-sendiri.pesan');
+            // BR-17.2: menu disegarkan berkala (produk "86" langsung hilang) + SLS-04 bayar QRIS dari HP tamu.
+            Route::get('/menu', [PesanSendiriKontroler::class, 'Menu'])->middleware('throttle:pesan-sendiri-60')->name('publik.pesan-sendiri.menu');
+            Route::post('/pesan-qris', [PesanSendiriKontroler::class, 'PesanQris'])
+                ->withoutMiddleware(ValidateCsrfToken::class)
+                ->middleware('throttle:pesan-sendiri-20')
+                ->name('publik.pesan-sendiri.pesan-qris');
+            Route::post('/pesan-qris/{kodeAkses}/bayar', [PesanSendiriKontroler::class, 'BayarQris'])
+                ->where('kodeAkses', '[A-Za-z0-9]{16}')
+                ->withoutMiddleware(ValidateCsrfToken::class)
+                ->middleware('throttle:pesan-sendiri-20')
+                ->name('publik.pesan-sendiri.bayar-qris');
+            Route::get('/pesan-qris/{kodeAkses}/status', [PesanSendiriKontroler::class, 'StatusBayarQris'])
+                ->where('kodeAkses', '[A-Za-z0-9]{16}')
+                ->middleware('throttle:pesan-sendiri-60')
+                ->name('publik.pesan-sendiri.status-qris');
         });
 
     // F-17 bagian 4: kios pesan sendiri di layar sentuh outlet (tanpa login, tanpa data pribadi) + layar antrian.

@@ -63,6 +63,8 @@ export const KunciKueri = {
         Hitung: (token: string, tanda: string) => ['PesanSendiri', 'Hitung', token, tanda] as const,
         Status: (token: string, uuid: string) => ['PesanSendiri', 'Status', token, uuid] as const,
         QrMeja: (uuidMeja: string) => ['PesanSendiri', 'QrMeja', uuidMeja] as const,
+        Menu: (token: string) => ['PesanSendiri', 'Menu', token] as const,
+        StatusQris: (token: string, kodeAkses: string) => ['PesanSendiri', 'StatusQris', token, kodeAkses] as const,
     },
     // F-17 bagian 4: kios pesan sendiri di layar sentuh outlet (menu per pilihan makan di sini/bawa pulang, harga keranjang
     // dari server, status pesanan, layar antrian).

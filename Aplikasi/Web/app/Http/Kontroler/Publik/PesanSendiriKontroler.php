@@ -9,10 +9,20 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Katalog\Kueri\MenuPesanSendiri;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
+use App\Domain\Penjualan\Aksi\BuatPesananMeja;
 use App\Domain\Penjualan\Aksi\BuatPesananSendiri;
+use App\Domain\Penjualan\Aksi\BuatTagihanQrisPesananOnline;
+use App\Domain\Penjualan\Enum\StatusPesananOnline;
+use App\Domain\Penjualan\Enum\StatusTagihanQris;
+use App\Domain\Penjualan\Enum\SumberPesananOnline;
 use App\Domain\Penjualan\Kueri\PesananSendiriTamu;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
+use App\Domain\Penjualan\Layanan\PembuatQrTagihanQris;
 use App\Domain\Penjualan\Layanan\PenentuKonteksPesanSendiri;
 use App\Domain\Penjualan\Layanan\PenghitungPesanSendiri;
+use App\Domain\Penjualan\Model\PengaturanTokoOnline;
+use App\Domain\Penjualan\Model\PesananOnline;
+use App\Domain\Penjualan\Model\TagihanQris;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Publik\HitungPesanSendiriPermintaan;
@@ -55,6 +65,7 @@ final class PesanSendiriKontroler extends Kontroler
                 'Meja' => ['Nama' => $konteks->namaMeja],
                 'Token' => $tokenMeja,
                 'Slug' => $slugTenant,
+                'Pembayaran' => ['Qris' => $konteks->aktif && PengaturanTokoOnline::query()->value('QrisAktif') === true && app(KesiapanQrisOnline::class)->CekSiap()],
                 'Menu' => $konteks->aktif
                     ? $menu->Ambil($konteks->idOutlet, url("/{$slugTenant}/meja/{$tokenMeja}/gambar/{uuid}"))
                     : ['Kategori' => [], 'Produk' => []],
@@ -67,6 +78,7 @@ final class PesanSendiriKontroler extends Kontroler
             'Meja' => null,
             'Token' => $tokenMeja,
             'Slug' => $slugTenant,
+            'Pembayaran' => ['Qris' => false],
             'Menu' => ['Kategori' => [], 'Produk' => []],
         ])->toResponse(request())->setStatusCode($props === null ? 404 : 200);
     }
@@ -103,6 +115,94 @@ final class PesanSendiriKontroler extends Kontroler
 
             return response()->json(['Uuid' => $pesanan->Uuid, 'Nomor' => $pesanan->Nomor, 'Status' => $pesanan->Status->value], $baru ? 201 : 200);
         });
+    }
+
+    /** BR-17.2: menu disegarkan peramban tiap 15–30 detik supaya produk yang ditandai habis ("86") langsung tampak. */
+    public function Menu(string $slugTenant, string $tokenMeja, MenuPesanSendiri $menu): JsonResponse
+    {
+        return $this->JalankanDalamTenant($slugTenant, function () use ($slugTenant, $tokenMeja, $menu): JsonResponse {
+            $konteks = $this->penentu->WajibAktif($tokenMeja);
+
+            return response()->json($menu->Ambil($konteks->idOutlet, url("/{$slugTenant}/meja/{$tokenMeja}/gambar/{uuid}")));
+        });
+    }
+
+    /** SLS-04: pesanan yang dibayar QRIS dari HP tamu (jalur `PesananOnline`, `Sumber` Meja); bayar di kasir tetap lewat `Pesan`. */
+    public function PesanQris(string $slugTenant, string $tokenMeja, KirimPesanSendiriPermintaan $permintaan, BuatPesananMeja $buat): JsonResponse
+    {
+        $hashIp = hash_hmac('sha256', (string) $permintaan->ip(), (string) config('app.key'));
+
+        return $this->JalankanDalamTenant($slugTenant, function () use ($tokenMeja, $permintaan, $buat, $hashIp): JsonResponse {
+            [$pesanan, $baru] = $buat->Jalankan($this->penentu->WajibAktif($tokenMeja), $permintaan->AmbilData(), $hashIp);
+
+            return response()->json($this->RingkasPesananQris($pesanan), $baru ? 201 : 200);
+        });
+    }
+
+    public function BayarQris(string $slugTenant, string $tokenMeja, string $kodeAkses, BuatTagihanQrisPesananOnline $buat, PembuatQrTagihanQris $qr): JsonResponse
+    {
+        return $this->JalankanDalamTenant($slugTenant, function () use ($tokenMeja, $kodeAkses, $buat, $qr): JsonResponse {
+            [$tagihan, $baru] = $buat->Jalankan($this->WajibPesananQris($tokenMeja, $kodeAkses));
+            $lunas = $tagihan->Status === StatusTagihanQris::Lunas;
+
+            return response()->json([
+                'Jumlah' => $tagihan->Jumlah,
+                'Status' => $tagihan->Status->value,
+                'SudahDibayar' => $lunas,
+                'KedaluwarsaPada' => $tagihan->KedaluwarsaPada->toIso8601String(),
+                'Qr' => $tagihan->HalamanBayar || $lunas ? null : $qr->BuatSvg($tagihan->IsiQr),
+                'UrlBayar' => $tagihan->HalamanBayar ? $tagihan->IsiQr : null,
+            ], $baru ? 201 : 200);
+        });
+    }
+
+    public function StatusBayarQris(string $slugTenant, string $tokenMeja, string $kodeAkses): JsonResponse
+    {
+        return $this->JalankanDalamTenant($slugTenant, function () use ($tokenMeja, $kodeAkses): JsonResponse {
+            $pesanan = $this->WajibPesananQris($tokenMeja, $kodeAkses);
+            $tagihan = TagihanQris::query()->where('IdPesananOnline', $pesanan->Id)->orderByDesc('Id')->first();
+
+            return response()->json([
+                ...$this->RingkasPesananQris($pesanan),
+                'StatusTagihan' => $tagihan?->Status->value,
+                'KedaluwarsaPada' => $tagihan?->KedaluwarsaPada->toIso8601String(),
+            ]);
+        });
+    }
+
+    /** @return array<string, mixed> */
+    private function RingkasPesananQris(PesananOnline $pesanan): array
+    {
+        return [
+            'KodeAkses' => $pesanan->KodeAkses,
+            'Nomor' => $pesanan->Nomor,
+            'Status' => $pesanan->Status->value,
+            'LabelStatus' => match ($pesanan->Status) {
+                StatusPesananOnline::MenungguPembayaran => 'Menunggu pembayaran',
+                StatusPesananOnline::MenungguKonfirmasi => 'Sudah dibayar, menunggu kasir menerima pesanan',
+                StatusPesananOnline::Dikonfirmasi, StatusPesananOnline::Diproses => 'Sedang disiapkan',
+                StatusPesananOnline::Siap => 'Siap diantar ke meja',
+                StatusPesananOnline::Selesai => 'Selesai',
+                StatusPesananOnline::Ditolak, StatusPesananOnline::Dibatalkan => 'Pesanan dibatalkan',
+                StatusPesananOnline::Kedaluwarsa => 'Pesanan kedaluwarsa',
+            },
+            'PerluBayar' => $pesanan->Status === StatusPesananOnline::MenungguPembayaran,
+            'SudahDibayar' => $pesanan->DibayarPada !== null,
+            'Total' => $pesanan->Total,
+        ];
+    }
+
+    /** Pesanan harus pesanan QRIS meja ini: kode akses toko online, kios, atau meja lain tidak bisa dibaca lewat tautan meja. */
+    private function WajibPesananQris(string $tokenMeja, string $kodeAkses): PesananOnline
+    {
+        $konteks = $this->penentu->WajibAktif($tokenMeja);
+        $pesanan = PesananOnline::query()->where('KodeAkses', strtoupper($kodeAkses))->first();
+
+        if (! $pesanan instanceof PesananOnline || $pesanan->Sumber !== SumberPesananOnline::Meja || $pesanan->IdMeja !== $konteks->idMeja) {
+            throw new PelanggaranAturanBisnis('PesananTidakDitemukan', 'Pesanan tidak ditemukan untuk meja ini.', 'Umum', 404);
+        }
+
+        return $pesanan;
     }
 
     public function Status(string $slugTenant, string $tokenMeja, string $uuid, PesananSendiriTamu $kueri): JsonResponse

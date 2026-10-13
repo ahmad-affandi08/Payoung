@@ -73,6 +73,7 @@ type Panggilan = { url: string; metode: string; badan: unknown };
 
 function PasangFetch(
     status: { Status: string; AlasanTolak: string | null } = { Status: 'MenungguKonfirmasi', AlasanTolak: null },
+    qrisLunas = false,
 ) {
     const panggilan: Panggilan[] = [];
     const FetchTiruan = vi.fn((url: string, opsi: RequestInit) => {
@@ -102,6 +103,39 @@ function PasangFetch(
                 Pembulatan: '0.00',
                 Total: '80850.00',
                 Catatan: 'Perkiraan. Total akhir mengikuti tagihan di kasir (promo, pembulatan, metode bayar).',
+            };
+        } else if (url.endsWith('/menu')) {
+            isi = { Kategori: props.Menu.Kategori, Produk: props.Menu.Produk.filter((p) => p.Uuid !== 'NASI') };
+        } else if (url.endsWith('/pesan-qris')) {
+            kode = 201;
+            isi = {
+                KodeAkses: 'KODEAKSES1234567',
+                Nomor: 'ME/SLO1/260926-0001',
+                Status: 'MenungguPembayaran',
+                LabelStatus: 'Menunggu pembayaran',
+                PerluBayar: true,
+                SudahDibayar: false,
+                Total: '80850.00',
+            };
+        } else if (url.endsWith('/bayar')) {
+            kode = 201;
+            isi = {
+                Jumlah: '80850.00',
+                Status: 'Menunggu',
+                SudahDibayar: false,
+                KedaluwarsaPada: '2026-09-26T10:15:00Z',
+                Qr: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+                UrlBayar: null,
+            };
+        } else if (url.endsWith('/status')) {
+            isi = {
+                KodeAkses: 'KODEAKSES1234567',
+                Nomor: 'ME/SLO1/260926-0001',
+                Status: qrisLunas ? 'MenungguKonfirmasi' : 'MenungguPembayaran',
+                LabelStatus: qrisLunas ? 'Sudah dibayar, menunggu kasir menerima pesanan' : 'Menunggu pembayaran',
+                PerluBayar: !qrisLunas,
+                SudahDibayar: qrisLunas,
+                Total: '80850.00',
             };
         } else if (url.endsWith('/pesan')) {
             kode = 201;
@@ -273,5 +307,69 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
             UuidProduk: 'ESTEH',
             UuidVarian: 'ESTEH-JUMBO',
         });
+    });
+    it('SLS-04: tanpa QRIS tombol bayar sekarang tidak ada; dengan QRIS ada dan membuka layar QR sampai lunas', async () => {
+        const panggilan = PasangFetch({ Status: 'MenungguKonfirmasi', AlasanTolak: null }, true);
+        RenderUji(<HalamanPesanSendiri {...props} Pembayaran={{ Qris: true }} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah Nasi Goreng Kampung Spesial Telur Mata Sapi' }));
+        fireEvent.click(screen.getByRole('button', { name: /Lihat keranjang \| 1 item/ }));
+        expect(screen.getByRole('button', { name: 'Kirim pesanan, bayar di kasir' })).toBeTruthy();
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Bayar sekarang dengan QRIS' }));
+            await Promise.resolve();
+        });
+
+        await waitFor(() => expect(screen.getByText('Pembayaran diterima')).toBeTruthy());
+        const kiriman = panggilan.find((p) => p.url === `${alamat}/pesan-qris`)?.badan as Record<string, unknown>;
+        expect(kiriman.Uuid).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
+        expect(
+            panggilan.some((p) => p.url === `${alamat}/pesan-qris/KODEAKSES1234567/bayar` && p.metode === 'POST'),
+        ).toBe(true);
+        expect(panggilan.some((p) => p.url === `${alamat}/pesan`)).toBe(false);
+        expect(JSON.parse(window.localStorage.getItem(`pesan-sendiri:${props.Token}:keranjang`) ?? '[]')).toEqual([]);
+        fireEvent.click(screen.getByRole('button', { name: 'Pesan lagi' }));
+        expect(screen.getByRole('heading', { name: 'Meja 7' })).toBeTruthy();
+    });
+
+    it('SLS-04: menunggu pembayaran menampilkan QR dan jumlah', async () => {
+        PasangFetch({ Status: 'MenungguKonfirmasi', AlasanTolak: null }, false);
+        RenderUji(<HalamanPesanSendiri {...props} Pembayaran={{ Qris: true }} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah Nasi Goreng Kampung Spesial Telur Mata Sapi' }));
+        fireEvent.click(screen.getByRole('button', { name: /Lihat keranjang \| 1 item/ }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Bayar sekarang dengan QRIS' }));
+            await Promise.resolve();
+        });
+
+        await waitFor(() => expect(screen.getByAltText('Kode QRIS untuk pembayaran')).toBeTruthy());
+        expect(screen.getByText('Rp 80.850')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Kembali ke menu' })).toBeTruthy();
+    });
+
+    it('tanpa QRIS: tombol QRIS tidak tampil dan label kirim tetap "Kirim pesanan"', () => {
+        PasangFetch();
+        RenderUji(<HalamanPesanSendiri {...props} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah Nasi Goreng Kampung Spesial Telur Mata Sapi' }));
+        fireEvent.click(screen.getByRole('button', { name: /Lihat keranjang \| 1 item/ }));
+
+        expect(screen.queryByRole('button', { name: 'Bayar sekarang dengan QRIS' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Kirim pesanan' })).toBeTruthy();
+    });
+
+    it('BR-17.2: menu disegarkan berkala; produk yang ditandai habis hilang dari daftar', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        PasangFetch();
+        RenderUji(<HalamanPesanSendiri {...props} />);
+        expect(screen.getByText('Nasi Goreng Kampung Spesial Telur Mata Sapi')).toBeTruthy();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(31000);
+        });
+
+        await waitFor(() => expect(screen.queryByText('Nasi Goreng Kampung Spesial Telur Mata Sapi')).toBeNull());
+        vi.useRealTimers();
     });
 });

@@ -32,6 +32,7 @@ use LogicException;
  * @property SumberPesananOnline $Sumber
  * @property JenisSantapKios|null $JenisSantap
  * @property int|null $NomorAntrian
+ * @property int|null $IdMeja
  * @property string|null $Email
  * @property string|null $Alamat
  * @property string|null $KodePos
@@ -75,7 +76,7 @@ final class PesananOnline extends ModelDasar
     protected $hidden = ['KodeAkses', 'NoHp', 'Email', 'Alamat', 'HashNoHp', 'HashIp'];
 
     protected $attributes = [
-        'Sumber' => 'Web', 'JenisSantap' => null, 'NomorAntrian' => null,
+        'Sumber' => 'Web', 'JenisSantap' => null, 'NomorAntrian' => null, 'IdMeja' => null,
         'IdPelanggan' => null, 'Email' => null, 'Alamat' => null, 'Kelurahan' => null, 'Kecamatan' => null,
         'Kota' => null, 'Provinsi' => null, 'KodePos' => null, 'IdZonaPengiriman' => null, 'Catatan' => null,
         'Diskon' => '0.00', 'BiayaLayanan' => '0.00', 'Pajak' => '0.00', 'Ongkir' => '0.00', 'DiskonOngkir' => '0.00',

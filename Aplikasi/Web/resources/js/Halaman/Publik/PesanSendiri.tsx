@@ -60,7 +60,31 @@ export type PropsPesanSendiri = {
     Token: string;
     Slug: string;
     Menu: { Kategori: { Uuid: string; Nama: string }[]; Produk: ProdukMenu[] };
+    /** SLS-04: `Qris` true bila gerbang & sakelar QRIS toko siap, sehingga tamu bisa bayar dari HP. */
+    Pembayaran?: { Qris: boolean };
 };
+
+type TagihanQrisMeja = {
+    Jumlah: string;
+    Status: string;
+    SudahDibayar: boolean;
+    KedaluwarsaPada: string;
+    Qr: string | null;
+    UrlBayar: string | null;
+};
+
+type PesananQrisMeja = {
+    KodeAkses: string;
+    Nomor: string;
+    Status: string;
+    LabelStatus: string;
+    PerluBayar: boolean;
+    SudahDibayar: boolean;
+    Total: string;
+};
+
+/** Menu disegarkan tiap 30 detik (BR-17.2: produk yang ditandai habis di POS langsung hilang dari HP tamu). */
+const JEDA_MENU_MS = 30000;
 
 /** Perkiraan total dari server (PRD v2.06); pesanan lama tanpa perkiraan = null. */
 export type PerkiraanTotal = {
@@ -239,7 +263,7 @@ const infoStatus: Record<
  * perangkat tamu) → nama & catatan opsional → "Kirim pesanan" → status dipantau tiap 5 detik sampai staf menerima
  * atau menolak. Harga, subtotal, dan validasi pilihan selalu dari server (web publik tidak menghitung harga).
  */
-export default function HalamanPesanSendiri({ Aktif, Toko, Meja, Token, Slug, Menu }: PropsPesanSendiri) {
+export default function HalamanPesanSendiri({ Aktif, Toko, Meja, Token, Slug, Menu, Pembayaran }: PropsPesanSendiri) {
     const alamat = `/${Slug}/meja/${Token}`;
     const daring = useDaring();
 
@@ -275,7 +299,13 @@ export default function HalamanPesanSendiri({ Aktif, Toko, Meja, Token, Slug, Me
                 </div>
             )}
             {Aktif ? (
-                <PemesananAktif alamat={alamat} token={Token} menu={Menu} daring={daring} />
+                <PemesananAktif
+                    alamat={alamat}
+                    token={Token}
+                    menuAwal={Menu}
+                    daring={daring}
+                    qris={Pembayaran?.Qris === true}
+                />
             ) : (
                 <Pemberitahuan jenis="info" judul="Pesan sendiri belum aktif">
                     Outlet ini belum menerima pesanan lewat QR. Silakan pesan langsung ke staf.
@@ -296,9 +326,31 @@ function KerangkaPublik({ judul, children }: { judul: string; children: ReactNod
     );
 }
 
-type PropsPemesanan = { alamat: string; token: string; menu: PropsPesanSendiri['Menu']; daring: boolean };
+type PropsPemesanan = {
+    alamat: string;
+    token: string;
+    menuAwal: PropsPesanSendiri['Menu'];
+    daring: boolean;
+    qris: boolean;
+};
 
-function PemesananAktif({ alamat, token, menu, daring }: PropsPemesanan) {
+function useMenuTersegarkan(alamat: string, token: string, menuAwal: PropsPesanSendiri['Menu'], daring: boolean) {
+    const kueri = useQuery({
+        queryKey: KunciKueri.PesanSendiri.Menu(token),
+        queryFn: ({ signal }) => KirimJson<PropsPesanSendiri['Menu']>(`${alamat}/menu`, undefined, signal),
+        initialData: menuAwal,
+        staleTime: JEDA_MENU_MS,
+        refetchInterval: daring ? JEDA_MENU_MS : false,
+        refetchOnWindowFocus: true,
+        retry: false,
+    });
+
+    return kueri.data;
+}
+
+function PemesananAktif({ alamat, token, menuAwal, daring, qris }: PropsPemesanan) {
+    const menu = useMenuTersegarkan(alamat, token, menuAwal, daring);
+    const [bayarQris, AturBayarQris] = useState<string | null>(null);
     const [keranjang, AturKeranjang] = useState<BarisKeranjang[]>(() => BacaKeranjang(token));
     const [riwayat, AturRiwayat] = useState<string[]>(() => BacaRiwayatPesanan(token));
     const [kategori, AturKategori] = useState(KATEGORI_SEMUA);
@@ -330,6 +382,17 @@ function PemesananAktif({ alamat, token, menu, daring }: PropsPemesanan) {
             TambahKeKeranjang(lama, { Uuid: BuatUlid(), UuidProduk: produk.Uuid, Jumlah: 1, Pilihan: [], Catatan: '' }),
         );
     };
+
+    if (bayarQris !== null) {
+        return (
+            <PanelBayarQris
+                alamat={alamat}
+                token={token}
+                kodeAkses={bayarQris}
+                saatKembali={() => AturBayarQris(null)}
+            />
+        );
+    }
 
     if (lihatStatus !== null) {
         return (
@@ -459,8 +522,14 @@ function PemesananAktif({ alamat, token, menu, daring }: PropsPemesanan) {
                     produkPerUuid={produkPerUuid}
                     hitung={hitung}
                     daring={daring}
+                    qris={qris}
                     aturKeranjang={AturKeranjang}
                     saatTutup={() => AturKeranjangTerbuka(false)}
+                    saatBayarQris={(kodeAkses) => {
+                        AturKeranjang([]);
+                        AturKeranjangTerbuka(false);
+                        AturBayarQris(kodeAkses);
+                    }}
                     saatTerkirim={(uuid) => {
                         AturRiwayat(CatatRiwayatPesanan(token, uuid));
                         AturKeranjang([]);
@@ -698,9 +767,11 @@ type PropsLembarKeranjang = {
     produkPerUuid: Map<string, ProdukMenu>;
     hitung: ReturnType<typeof useHitungKeranjang>;
     daring: boolean;
+    qris: boolean;
     aturKeranjang: (ubah: (lama: BarisKeranjang[]) => BarisKeranjang[]) => void;
     saatTutup: () => void;
     saatTerkirim: (uuid: string) => void;
+    saatBayarQris: (kodeAkses: string) => void;
 };
 
 function LembarKeranjang({
@@ -709,38 +780,48 @@ function LembarKeranjang({
     produkPerUuid,
     hitung,
     daring,
+    qris,
     aturKeranjang,
     saatTutup,
     saatTerkirim,
+    saatBayarQris,
 }: PropsLembarKeranjang) {
     const [nama, AturNama] = useState('');
     const [catatan, AturCatatan] = useState('');
     // Uuid kiriman tetap sama saat dicoba ulang (idempoten), dan diganti bila isi keranjang berubah.
     const kiriman = useRef<{ tanda: string; uuid: string } | null>(null);
 
+    const BuatBadan = () => {
+        const tanda = JSON.stringify(keranjang);
+
+        if (kiriman.current?.tanda !== tanda) {
+            kiriman.current = { tanda, uuid: BuatUlid() };
+        }
+
+        return {
+            Uuid: kiriman.current.uuid,
+            NamaPemesan: nama.trim() === '' ? null : nama.trim(),
+            Catatan: catatan.trim() === '' ? null : catatan.trim(),
+            Baris: keranjang.map((b) => ({
+                Uuid: b.Uuid,
+                UuidProduk: b.UuidProduk,
+                ...(b.UuidVarian ? { UuidVarian: b.UuidVarian } : {}),
+                Jumlah: b.Jumlah,
+                Pilihan: b.Pilihan,
+                Catatan: b.Catatan === '' ? null : b.Catatan,
+            })),
+        };
+    };
+
     const kirim = useMutation({
-        mutationFn: () => {
-            const tanda = JSON.stringify(keranjang);
-
-            if (kiriman.current?.tanda !== tanda) {
-                kiriman.current = { tanda, uuid: BuatUlid() };
-            }
-
-            return KirimJson<{ Uuid: string; Nomor: string; Status: StatusPesanan }>(`${alamat}/pesan`, {
-                Uuid: kiriman.current.uuid,
-                NamaPemesan: nama.trim() === '' ? null : nama.trim(),
-                Catatan: catatan.trim() === '' ? null : catatan.trim(),
-                Baris: keranjang.map((b) => ({
-                    Uuid: b.Uuid,
-                    UuidProduk: b.UuidProduk,
-                    ...(b.UuidVarian ? { UuidVarian: b.UuidVarian } : {}),
-                    Jumlah: b.Jumlah,
-                    Pilihan: b.Pilihan,
-                    Catatan: b.Catatan === '' ? null : b.Catatan,
-                })),
-            });
-        },
+        mutationFn: () =>
+            KirimJson<{ Uuid: string; Nomor: string; Status: StatusPesanan }>(`${alamat}/pesan`, BuatBadan()),
         onSuccess: (hasil) => saatTerkirim(hasil.Uuid),
+    });
+    // SLS-04: bayar sekarang dengan QRIS dari HP; pesanan dibuat menunggu pembayaran lalu layar QR dibuka.
+    const kirimQris = useMutation({
+        mutationFn: () => KirimJson<PesananQrisMeja>(`${alamat}/pesan-qris`, BuatBadan()),
+        onSuccess: (hasil) => saatBayarQris(hasil.KodeAkses),
     });
 
     const Kirim = (peristiwa: FormEvent) => {
@@ -836,8 +917,8 @@ function LembarKeranjang({
                             </div>
                         )}
                         <p className="text-keterangan text-teks-sekunder">
-                            {hitung.data?.Catatan ?? 'Perkiraan. Total akhir mengikuti tagihan di kasir.'} Bayar di
-                            kasir setelah selesai.
+                            {hitung.data?.Catatan ?? 'Perkiraan. Total akhir mengikuti tagihan di kasir.'}{' '}
+                            {qris ? 'Bayar di kasir atau sekarang dengan QRIS.' : 'Bayar di kasir setelah selesai.'}
                         </p>
                     </div>
                     {galatHitung ? <Pemberitahuan jenis="bahaya">{galatHitung}</Pemberitahuan> : null}
@@ -855,20 +936,30 @@ function LembarKeranjang({
                         maksimal={200}
                         baris={2}
                     />
-                    {kirim.error ? (
+                    {kirim.error || kirimQris.error ? (
                         <Pemberitahuan jenis="bahaya">
-                            {kirim.error instanceof GalatPesanSendiri
-                                ? kirim.error.message
+                            {(kirim.error ?? kirimQris.error) instanceof GalatPesanSendiri
+                                ? (kirim.error ?? kirimQris.error)?.message
                                 : 'Pesanan gagal dikirim. Coba lagi.'}
                         </Pemberitahuan>
                     ) : null}
                     <Tombol
                         type="submit"
                         memproses={kirim.isPending}
-                        disabled={keranjang.length === 0 || !daring || galatHitung !== null}
+                        disabled={keranjang.length === 0 || !daring || galatHitung !== null || kirimQris.isPending}
                     >
-                        Kirim pesanan
+                        {qris ? 'Kirim pesanan, bayar di kasir' : 'Kirim pesanan'}
                     </Tombol>
+                    {qris ? (
+                        <Tombol
+                            varian="sekunder"
+                            memproses={kirimQris.isPending}
+                            disabled={keranjang.length === 0 || !daring || galatHitung !== null || kirim.isPending}
+                            onClick={() => kirimQris.mutate()}
+                        >
+                            Bayar sekarang dengan QRIS
+                        </Tombol>
+                    ) : null}
                     {daring ? null : (
                         <p className="text-keterangan text-teks-sekunder">Menunggu koneksi internet untuk mengirim.</p>
                     )}
@@ -1001,6 +1092,76 @@ function PanelStatusPesanan({ alamat, token, uuid, saatKembali }: PropsPanelStat
             </ul>
             <Tombol varian={pesanan.Status === 'MenungguKonfirmasi' ? 'sekunder' : 'utama'} onClick={saatKembali}>
                 {pesanan.Status === 'MenungguKonfirmasi' ? 'Kembali ke menu' : 'Pesan lagi'}
+            </Tombol>
+        </section>
+    );
+}
+
+type PropsPanelBayarQris = { alamat: string; token: string; kodeAkses: string; saatKembali: () => void };
+
+/** SLS-04: layar bayar QRIS dari HP tamu. QR dibuat sekali (idempoten di server), status dipantau tiap 3 detik. */
+function PanelBayarQris({ alamat, token, kodeAkses, saatKembali }: PropsPanelBayarQris) {
+    const tagihan = useQuery({
+        queryKey: KunciKueri.PesanSendiri.StatusQris(token, `${kodeAkses}:tagihan`),
+        queryFn: () => KirimJson<TagihanQrisMeja>(`${alamat}/pesan-qris/${kodeAkses}/bayar`, {}),
+        staleTime: Infinity,
+        retry: false,
+    });
+    const status = useQuery({
+        queryKey: KunciKueri.PesanSendiri.StatusQris(token, kodeAkses),
+        queryFn: ({ signal }) =>
+            KirimJson<PesananQrisMeja>(`${alamat}/pesan-qris/${kodeAkses}/status`, undefined, signal),
+        refetchInterval: (kueri) => (kueri.state.data && !kueri.state.data.PerluBayar ? false : 3000),
+        retry: true,
+    });
+    const data = status.data;
+    const habis = data !== undefined && ['Kedaluwarsa', 'Dibatalkan', 'Ditolak'].includes(data.Status);
+    const lunas = data !== undefined && !data.PerluBayar && !habis;
+
+    return (
+        <section aria-label="Bayar dengan QRIS" className="flex flex-col gap-4">
+            <JudulHalaman skala="ringkas">Bayar dengan QRIS</JudulHalaman>
+            {tagihan.isPending ? (
+                <Skeleton className="h-64 w-full" aria-label="Menyiapkan QRIS" />
+            ) : tagihan.isError || !tagihan.data ? (
+                <Pemberitahuan jenis="bahaya">
+                    {tagihan.error instanceof GalatPesanSendiri
+                        ? tagihan.error.message
+                        : 'QRIS belum bisa ditampilkan. Kembali ke menu dan pilih bayar di kasir.'}
+                </Pemberitahuan>
+            ) : lunas ? (
+                <Pemberitahuan jenis="sukses" judul="Pembayaran diterima">
+                    Pesanan {data?.Nomor} sudah dibayar. {data?.LabelStatus}.
+                </Pemberitahuan>
+            ) : habis ? (
+                <Pemberitahuan jenis="bahaya">QR sudah kedaluwarsa. Kembali ke menu untuk memesan lagi.</Pemberitahuan>
+            ) : (
+                <div className="flex flex-col items-center gap-3 rounded-panel border border-garis bg-permukaan p-4 text-center">
+                    <p className="text-subjudul font-semibold tabular-nums">{FormatRupiah(tagihan.data.Jumlah)}</p>
+                    {tagihan.data.Qr ? (
+                        <img
+                            alt="Kode QRIS untuk pembayaran"
+                            className="size-64 rounded-kontrol border border-garis bg-permukaan p-2"
+                            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(tagihan.data.Qr)}`}
+                        />
+                    ) : tagihan.data.UrlBayar ? (
+                        <a
+                            href={tagihan.data.UrlBayar}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-11 items-center rounded-kontrol bg-brand px-4 text-label font-semibold text-brand-teks"
+                        >
+                            Buka halaman pembayaran
+                        </a>
+                    ) : null}
+                    <p role="status" aria-live="polite" className="text-keterangan text-teks-sekunder">
+                        Pindai dengan aplikasi bank atau dompet digital. Halaman ini berganti sendiri setelah pembayaran
+                        diterima.
+                    </p>
+                </div>
+            )}
+            <Tombol varian={lunas ? 'utama' : 'sekunder'} onClick={saatKembali}>
+                {lunas ? 'Pesan lagi' : 'Kembali ke menu'}
             </Tombol>
         </section>
     );

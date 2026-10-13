@@ -80,6 +80,9 @@ enum JenisDokumenBernomor: string
     /** FIN-05 (D-131): jurnal umum manual `JM/{YYYY}/{MM}/{SEQ4}`. Awalan `JU` sudah milik nomor `Jurnal` itu sendiri. */
     case JurnalUmum = 'JurnalUmum';
 
+    /** F-17 (SLS-04): pesanan QR meja yang dibayar QRIS dari HP tamu (jalur `PesananOnline`, `Sumber` Meja) `ME/{OUTLET}/{YYMMDD}-{SEQ4}`. */
+    case PesananMeja = 'PesananMeja';
+
     public function AmbilAwalan(): string
     {
         return match ($this) {
@@ -113,6 +116,7 @@ enum JenisDokumenBernomor: string
             self::AntrianKios => 'KI',
             self::PermintaanStok => 'MS',
             self::JurnalUmum => 'JM',
+            self::PesananMeja => 'ME',
         };
     }
 
@@ -122,7 +126,7 @@ enum JenisDokumenBernomor: string
             self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok, self::JurnalUmum => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
-            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja => 4,
+            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja, self::PesananMeja => 4,
             self::AntrianKios => 3,
         };
     }

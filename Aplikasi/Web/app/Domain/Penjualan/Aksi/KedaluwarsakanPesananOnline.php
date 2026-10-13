@@ -67,7 +67,7 @@ final class KedaluwarsakanPesananOnline
             $menitWeb = $hitungMenit ?? ($menit === null ? null : (int) $menit);
             $menitKios = $hitungMenit ?? self::MENIT_KEDALUWARSA_KIOS;
 
-            foreach ([[SumberPesananOnline::Web, $menitWeb], [SumberPesananOnline::Kios, $menitKios]] as [$sumber, $hitung]) {
+            foreach ([[SumberPesananOnline::Web, $menitWeb], [SumberPesananOnline::Kios, $menitKios], [SumberPesananOnline::Meja, $menitKios]] as [$sumber, $hitung]) {
                 if ($hitung === null) {
                     continue;
                 }
