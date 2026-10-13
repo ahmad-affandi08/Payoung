@@ -204,7 +204,7 @@ class LayananPenjualan {
   Keranjang HitungUlangHarga(Keranjang keranjang, KatalogLokal katalog, KonteksPenjualan k) => keranjang.Salin(
     baris: [
       for (final b in keranjang.baris)
-        b.uuidProdukSatuan == null || b.hargaTerbuka
+        b.uuidProdukSatuan == null || b.CekHargaDikunci
             ? b
             : b.Salin(
                 hargaSatuan:
@@ -545,7 +545,7 @@ class LayananPenjualan {
         jumlahDasarLama: LayananStokTersedia.HitungJumlahDasar(b.jumlah, b.uuidProduk, b.uuidProdukSatuan, katalog),
         kecualiBaris: b.uuid,
       );
-      final harga = b.uuidProdukSatuan == null || b.hargaTerbuka
+      final harga = b.uuidProdukSatuan == null || b.CekHargaDikunci
           ? null
           : TentukanHarga(
               katalog,
@@ -573,10 +573,10 @@ class LayananPenjualan {
   }) => _UbahBaris(keranjang, uuidBaris, (b) {
     final asal = jumlahBaru ?? b.jumlah;
     final jumlah = satuan.bolehDesimal ? asal : Kuantitas.DariDesimal(asal.KeDesimal().ceil());
-    if (b.hargaTerbuka) {
+    if (b.CekHargaDikunci) {
       throw GalatKasir(
         'HargaTerbukaSatuan',
-        'Harga "${b.nama}" diketik kasir. Hapus lalu tambahkan lagi dengan satuan lain.',
+        'Harga "${b.nama}" ditentukan kasir. Kembalikan harga aslinya atau hapus baris, lalu tambahkan lagi dengan satuan lain.',
       );
     }
     PastikanStokCukup(
@@ -699,6 +699,70 @@ class LayananPenjualan {
     final rapi = catatan?.trim();
     return _UbahBaris(keranjang, uuidBaris, (b) => b.Salin(catatan: () => rapi == null || rapi.isEmpty ? null : rapi));
   }
+
+  /// Harga manual (lapis 1 price engine, `pos.harga.timpa`): kasir ber-izin itu, atau penyetuju ber-PIN dengan izin
+  /// itu, mengubah harga satu baris dari harga price engine. Alasan wajib. Harga asal disimpan di `hargaAsli` supaya
+  /// bisa dipulihkan dan server bisa menandai perubahannya; server memeriksa ulang izinnya (pelanggaran = tinjauan,
+  /// bukan penolakan, karena penjualan offline sudah terjadi). Harga yang sama dengan harga asal = memulihkan.
+  Keranjang UbahHargaItem(
+    Keranjang keranjang,
+    String uuidBaris,
+    Uang hargaBaru,
+    String alasan, {
+    required StafLokal kasir,
+    PenyetujuDiskon? penyetuju,
+  }) {
+    if (keranjang.pesananMeja != null ||
+        keranjang.praPesan != null ||
+        keranjang.perintahKerja != null ||
+        keranjang.tukar != null) {
+      throw const GalatKasir(
+        'HargaDokumenTerikat',
+        'Harga pesanan ini sudah disepakati dan tidak bisa diubah dari keranjang.',
+      );
+    }
+    return _UbahBaris(keranjang, uuidBaris, (b) {
+      if (b.hargaTerbuka || b.racikan != null) {
+        throw GalatKasir('HargaTidakBisaDiubah', 'Harga "${b.nama}" ditentukan saat ditambahkan, bukan dari daftar harga.');
+      }
+      final asal = b.hargaAsli ?? b.hargaSatuan;
+      if (hargaBaru.SamaDengan(asal)) {
+        return PulihkanHarga(b);
+      }
+      if (hargaBaru.BernilaiNol() || hargaBaru.BernilaiNegatif()) {
+        throw GalatKasir('HargaTidakValid', 'Harga "${b.nama}" harus lebih dari Rp0. Untuk gratis, pakai diskon.');
+      }
+      final rapi = alasan.trim();
+      if (rapi.isEmpty) {
+        throw const GalatKasir('AlasanHargaWajib', 'Isi alasan mengubah harga.');
+      }
+      if (rapi.length > 100) {
+        throw const GalatKasir('AlasanHargaTerlaluPanjang', 'Alasan mengubah harga maksimal 100 karakter.');
+      }
+      if (!kasir.PunyaIzin(IzinKasir.posHargaTimpa) && penyetuju == null) {
+        throw const GalatKasir('HargaTanpaIzin', 'Mengubah harga perlu persetujuan supervisor dengan PIN.');
+      }
+      return b.Salin(
+        hargaSatuan: hargaBaru,
+        hargaAsli: () => asal,
+        alasanHarga: () => rapi,
+        penyetujuHarga: () => kasir.PunyaIzin(IzinKasir.posHargaTimpa) ? null : penyetuju,
+      );
+    });
+  }
+
+  /// Kembalikan harga baris ke harga price engine yang disimpan saat diubah ([ItemKeranjang.hargaAsli]).
+  static ItemKeranjang PulihkanHarga(ItemKeranjang baris) => baris.hargaAsli == null
+      ? baris
+      : baris.Salin(
+          hargaSatuan: baris.hargaAsli,
+          hargaAsli: () => null,
+          alasanHarga: () => null,
+          penyetujuHarga: () => null,
+        );
+
+  Keranjang PulihkanHargaItem(Keranjang keranjang, String uuidBaris) =>
+      _UbahBaris(keranjang, uuidBaris, PulihkanHarga);
 
   Keranjang HapusBaris(Keranjang keranjang, String uuidBaris) {
     final baris = keranjang.baris.where((b) => b.uuid != uuidBaris).toList();
@@ -1558,6 +1622,12 @@ class LayananPenjualan {
             'KodePajak': hitungan.kodePajakBaris[i],
             'DiskonManual': keranjang.baris[i].diskon?.KeJson(),
             'Catatan': keranjang.baris[i].catatan,
+            // Harga manual (`pos.harga.timpa`): hanya dikirim bila kasir mengubah harga dari price engine.
+            if (keranjang.baris[i].hargaAsli != null)
+              'HargaManual': {
+                'HargaAsli': keranjang.baris[i].hargaAsli!.KeString(),
+                'Alasan': keranjang.baris[i].alasanHarga ?? '',
+              },
             if (keranjang.baris[i].staf.isNotEmpty) 'Staf': keranjang.baris[i].staf,
             if (keranjang.baris[i].nomorSeri.isNotEmpty) 'NomorSeri': keranjang.baris[i].nomorSeri,
             if (denganResep.contains(keranjang.baris[i].uuid)) 'DenganResep': true,
@@ -1566,6 +1636,7 @@ class LayananPenjualan {
       ],
       'DiskonManualPesanan': keranjang.diskonPesanan?.KeJson(),
       'UuidPenyetujuDiskon': penyetuju?.uuid,
+      'UuidPenyetujuHarga': ?keranjang.baris.map((b) => b.penyetujuHarga?.uuid).nonNulls.firstOrNull,
       'Pembayaran': [
         for (var i = 0; i < pembayaran.length; i++)
           {

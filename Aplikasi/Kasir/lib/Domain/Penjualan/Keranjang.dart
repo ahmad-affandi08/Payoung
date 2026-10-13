@@ -71,6 +71,9 @@ class ItemKeranjang {
     this.nomorSeri = const [],
     this.hargaTerbuka = false,
     this.racikan,
+    this.hargaAsli,
+    this.alasanHarga,
+    this.penyetujuHarga,
   });
 
   final String uuid;
@@ -103,6 +106,15 @@ class ItemKeranjang {
   /// Apotek bagian 4: racikan yang dibawa baris jasa racik (null = baris biasa).
   final RacikanBaris? racikan;
 
+  /// Harga manual (lapis 1 price engine, `pos.harga.timpa`): harga price engine sebelum kasir mengubahnya. Null =
+  /// harga tidak diubah. [alasanHarga] wajib bila terisi; [penyetujuHarga] hanya bila kasirnya sendiri tanpa izin.
+  final Uang? hargaAsli;
+  final String? alasanHarga;
+  final PenyetujuDiskon? penyetujuHarga;
+
+  /// Harga ditentukan kasir (diketik atau diubah manual): tidak ditentukan ulang saat jumlah/satuan/pelanggan/kanal berubah.
+  bool get CekHargaDikunci => hargaTerbuka || hargaAsli != null;
+
   Uang AmbilHargaPilihan() => pilihan.fold(Uang.Nol(), (total, p) => total.Tambah(p.harga));
 
   /// Baris yang sama (produk, satuan, pilihan) tanpa catatan & diskon digabung saat produk ditambah lagi.
@@ -117,8 +129,8 @@ class ItemKeranjang {
       lain.staf.isEmpty &&
       nomorSeri.isEmpty &&
       lain.nomorSeri.isEmpty &&
-      !hargaTerbuka &&
-      !lain.hargaTerbuka &&
+      !CekHargaDikunci &&
+      !lain.CekHargaDikunci &&
       racikan == null &&
       lain.racikan == null &&
       pilihan.map((p) => p.uuid).toSet().containsAll(lain.pilihan.map((p) => p.uuid)) &&
@@ -136,6 +148,9 @@ class ItemKeranjang {
     List<String>? staf,
     List<String>? nomorSeri,
     RacikanBaris? racikan,
+    Uang? Function()? hargaAsli,
+    String? Function()? alasanHarga,
+    PenyetujuDiskon? Function()? penyetujuHarga,
   }) => ItemKeranjang(
     uuid: uuid,
     uuidProduk: uuidProduk,
@@ -154,6 +169,9 @@ class ItemKeranjang {
     nomorSeri: nomorSeri ?? this.nomorSeri,
     hargaTerbuka: hargaTerbuka,
     racikan: racikan ?? this.racikan,
+    hargaAsli: hargaAsli == null ? this.hargaAsli : hargaAsli(),
+    alasanHarga: alasanHarga == null ? this.alasanHarga : alasanHarga(),
+    penyetujuHarga: penyetujuHarga == null ? this.penyetujuHarga : penyetujuHarga(),
   );
 
   Map<String, Object?> KeJson() => {
@@ -174,6 +192,9 @@ class ItemKeranjang {
     'NomorSeri': nomorSeri,
     'HargaTerbuka': hargaTerbuka,
     'Racikan': racikan?.KeJson(),
+    'HargaAsli': hargaAsli?.KeString(),
+    'AlasanHarga': alasanHarga,
+    'PenyetujuHarga': penyetujuHarga?.KeJson(),
   };
 
   static ItemKeranjang DariJson(Map<String, Object?> json) => ItemKeranjang(
@@ -200,6 +221,10 @@ class ItemKeranjang {
     nomorSeri: [...(json['NomorSeri'] as List<Object?>? ?? const []).whereType<String>()],
     hargaTerbuka: json['HargaTerbuka'] == true,
     racikan: RacikanBaris.DariJson(json['Racikan']),
+    // Keranjang tertahan dari versi sebelum harga manual tidak punya kunci ini; harga tidak diubah.
+    hargaAsli: json['HargaAsli'] is String ? Uang.Dari(json['HargaAsli']! as String) : null,
+    alasanHarga: json['AlasanHarga'] as String?,
+    penyetujuHarga: PenyetujuDiskon.DariJson(json['PenyetujuHarga']),
   );
 }
 

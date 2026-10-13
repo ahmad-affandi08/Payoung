@@ -12,6 +12,8 @@ import '../../Domain/Penjualan/Keranjang.dart';
 import '../../Domain/Penjualan/LayananPenjualan.dart';
 import '../../Domain/Sesi/StafLokal.dart';
 import '../Komponen/FormatAngka.dart';
+import '../Komponen/MasukanUang.dart';
+import '../LembarMutasiKas.dart';
 import 'PanelDiskon.dart';
 
 /// Panel item keranjang (Rincian F-07c): pilih satuan, jumlah, pilihan wajib/opsional, catatan, dan (saat mengubah
@@ -49,6 +51,19 @@ class _PanelItemState extends ConsumerState<PanelItem> {
   String? _galat;
   String? _galatDiskon;
 
+  /// Harga manual (`pos.harga.timpa`): isian harga satuan baru + alasan. [_hargaDisentuh] membedakan harga yang
+  /// benar-benar diubah kasir dari harga yang hanya ditampilkan (harga bisa bergeser sendiri bila jumlah berubah).
+  late final TextEditingController _harga = TextEditingController(
+    text: widget.baris == null ? '' : MasukanUang.FormatTeks(widget.baris!.hargaSatuan),
+  );
+  late final TextEditingController _alasanHarga = TextEditingController(text: widget.baris?.alasanHarga ?? '');
+  bool _hargaDisentuh = false;
+  bool _pulihkanHarga = false;
+  String? _galatHarga;
+
+  /// Alasan yang paling sering dipakai; satu ketukan mengisi kolom alasan.
+  static const List<String> alasanHargaCepat = ['Barang cacat atau penyok', 'Mendekati kedaluwarsa', 'Tawar menawar'];
+
   bool get _modeUbah => widget.baris != null;
 
   bool get _bernomorSeri => widget.produk?.bernomorSeri ?? (widget.baris?.nomorSeri.isNotEmpty ?? false);
@@ -60,6 +75,8 @@ class _PanelItemState extends ConsumerState<PanelItem> {
     _jumlah.dispose();
     _catatan.dispose();
     _isianSeri.dispose();
+    _harga.dispose();
+    _alasanHarga.dispose();
     super.dispose();
   }
 
@@ -224,6 +241,10 @@ class _PanelItemState extends ConsumerState<PanelItem> {
       }
       keranjang = layanan.UbahJumlah(keranjang, uuid, jumlah, katalog, k);
       keranjang = layanan.AturCatatan(keranjang, uuid, _catatan.text);
+      keranjang = await _TerapkanHarga(keranjang, layanan, uuid);
+      if (!mounted) {
+        return;
+      }
 
       final diskon = _diskon;
       final diskonLama = widget.baris!.diskon;
@@ -264,12 +285,138 @@ class _PanelItemState extends ConsumerState<PanelItem> {
         setState(() {
           if (galat.kode.startsWith('Diskon') || galat.kode == 'TanpaIzin') {
             _galatDiskon = galat.pesan;
+          } else if (galat.kode.startsWith('Harga') || galat.kode.startsWith('AlasanHarga')) {
+            _galatHarga = galat.pesan;
           } else {
             _galat = galat.pesan;
           }
         });
       }
     }
+  }
+
+  /// Harga manual hanya untuk baris dari daftar harga di keranjang biasa: baris racikan, harga terbuka, dan keranjang
+  /// yang menagih dokumen yang sudah disepakati (pesanan meja, pre-order, perintah kerja, tukar barang) tidak ikut.
+  bool _CekBolehUbahHarga(Keranjang keranjang) =>
+      _modeUbah &&
+      !widget.baris!.hargaTerbuka &&
+      widget.baris!.racikan == null &&
+      keranjang.pesananMeja == null &&
+      keranjang.praPesan == null &&
+      keranjang.perintahKerja == null &&
+      keranjang.tukar == null;
+
+  /// Terapkan perubahan harga manual pada [keranjang] lokal (belum disimpan ke penyedia). Kasir tanpa izin
+  /// `pos.harga.timpa` memilih penyetuju lewat PIN; dibatalkan = keranjang tidak berubah dan simpan dihentikan lewat
+  /// [GalatKasir] `HargaBatal`.
+  Future<Keranjang> _TerapkanHarga(Keranjang keranjang, LayananPenjualan layanan, String uuid) async {
+    if (!_CekBolehUbahHarga(keranjang)) {
+      return keranjang;
+    }
+    if (_pulihkanHarga) {
+      return layanan.PulihkanHargaItem(keranjang, uuid);
+    }
+    final hargaBaru = MasukanUang.AmbilNilai(_harga);
+    if (!_hargaDisentuh || hargaBaru == null || hargaBaru.SamaDengan(widget.baris!.hargaSatuan)) {
+      return keranjang;
+    }
+    PenyetujuDiskon? penyetuju;
+    if (!widget.kasir.PunyaIzin(IzinKasir.posHargaTimpa)) {
+      if (_alasanHarga.text.trim().isEmpty) {
+        throw const GalatKasir('AlasanHargaWajib', 'Isi alasan mengubah harga.');
+      }
+      final staf = await MintaPenyetujuSementara(
+        context,
+        const DialogPinSupervisor(
+          izin: IzinKasir.posHargaTimpa,
+          pesan: 'Mengubah harga barang perlu persetujuan. Pilih penyetuju harga.',
+          judulDialog: 'Persetujuan ubah harga',
+          bolehJarakJauh: false,
+        ),
+      );
+      if (staf == null) {
+        throw const GalatKasir('HargaBatal', 'Perubahan harga dibatalkan karena belum disetujui.');
+      }
+      penyetuju = PenyetujuDiskon(uuid: staf.uuid, nama: staf.nama, pemilik: staf.pemilik);
+    }
+    return layanan.UbahHargaItem(
+      keranjang,
+      uuid,
+      hargaBaru,
+      _alasanHarga.text,
+      kasir: widget.kasir,
+      penyetuju: penyetuju,
+    );
+  }
+
+  List<Widget> _BangunHarga(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final baris = widget.baris!;
+    final berizin = widget.kasir.PunyaIzin(IzinKasir.posHargaTimpa);
+    return [
+      const SizedBox(height: TokenJarak.jarak16),
+      Text('Harga satuan', style: teks.labelLarge),
+      if (!berizin) ...[
+        const SizedBox(height: TokenJarak.jarak4),
+        Text('Mengubah harga perlu persetujuan supervisor dengan PIN.', style: teks.bodySmall),
+      ],
+      const SizedBox(height: TokenJarak.jarak8),
+      TextField(
+        controller: _harga,
+        enabled: !_pulihkanHarga,
+        keyboardType: TextInputType.number,
+        inputFormatters: [MasukanUang.pemformat],
+        textAlign: TextAlign.right,
+        style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+        onChanged: (_) => setState(() {
+          _hargaDisentuh = true;
+          _galatHarga = null;
+        }),
+        decoration: InputDecoration(
+          labelText: 'Harga satuan (Rp)',
+          prefixText: 'Rp ',
+          helperText: baris.hargaAsli == null
+              ? 'Harga daftar: ${baris.hargaSatuan.FormatRupiah()}'
+              : 'Harga daftar: ${baris.hargaAsli!.FormatRupiah()}',
+          errorText: _galatHarga,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      if (_hargaDisentuh && !_pulihkanHarga) ...[
+        const SizedBox(height: TokenJarak.jarak8),
+        TextField(
+          controller: _alasanHarga,
+          maxLength: 100,
+          decoration: const InputDecoration(labelText: 'Alasan ubah harga', border: OutlineInputBorder()),
+        ),
+        Wrap(
+          spacing: TokenJarak.jarak8,
+          runSpacing: TokenJarak.jarak8,
+          children: [
+            for (final a in alasanHargaCepat)
+              ActionChip(label: Text(a), onPressed: () => setState(() => _alasanHarga.text = a)),
+          ],
+        ),
+      ],
+      if (baris.hargaAsli != null) ...[
+        const SizedBox(height: TokenJarak.jarak8),
+        SizedBox(
+          height: TokenJarak.targetSentuh,
+          child: TextButton(
+            onPressed: () => setState(() {
+              _pulihkanHarga = !_pulihkanHarga;
+              _galatHarga = null;
+              if (_pulihkanHarga) {
+                _harga.text = MasukanUang.FormatTeks(baris.hargaAsli!);
+              } else {
+                _harga.text = MasukanUang.FormatTeks(baris.hargaSatuan);
+              }
+            }),
+            child: Text(_pulihkanHarga ? 'Batal kembalikan harga' : 'Kembalikan harga daftar'),
+          ),
+        ),
+      ],
+    ];
   }
 
   /// F-18: pilih staf yang melayani (maks. 5, komisi dibagi rata). Tanpa data karyawan = tidak ditampilkan.
@@ -412,6 +559,7 @@ class _PanelItemState extends ConsumerState<PanelItem> {
             decoration: const InputDecoration(labelText: 'Catatan (opsional)', border: OutlineInputBorder()),
           ),
           ..._BangunStaf(context),
+          if (_CekBolehUbahHarga(ref.watch(penyediaKeranjang))) ..._BangunHarga(context),
           if (_modeUbah) ...[
             const SizedBox(height: TokenJarak.jarak8),
             Text('Diskon item', style: teks.labelLarge),

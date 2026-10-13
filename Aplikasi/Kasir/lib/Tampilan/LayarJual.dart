@@ -762,6 +762,9 @@ class _LayarJualState extends ConsumerState<LayarJual> {
       hargaTermasukPajak: asal.hargaTermasukPajak,
       pajak: asal.pajak,
       hargaTerbuka: asal.hargaTerbuka,
+      hargaAsli: asal.hargaAsli,
+      alasanHarga: asal.alasanHarga,
+      penyetujuHarga: asal.penyetujuHarga,
     );
     try {
       final katalog = ref.read(penyediaKatalog).value ?? KatalogLokal.kosong;

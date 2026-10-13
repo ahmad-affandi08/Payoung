@@ -10,6 +10,9 @@ abstract final class IzinKasir {
   static const String kasKeluarSetujui = 'kas.keluar.setujui';
   static const String penjualanDiskonManual = 'penjualan.diskon.manual';
   static const String penjualanDiskonSetujui = 'penjualan.diskon.setujui';
+
+  /// Harga satu baris diubah kasir dari harga price engine (lapis 1); sama dengan `IzinTenant::PosHargaTimpa` server.
+  static const String posHargaTimpa = 'pos.harga.timpa';
   static const String shiftSelisihSetujui = 'shift.selisih.setujui';
 
   /// F-09: melayani & menyetujui void penjualan (retur memakai [penjualanRetur] sejak K-22).
