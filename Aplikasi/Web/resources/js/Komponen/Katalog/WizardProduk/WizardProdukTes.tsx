@@ -752,12 +752,14 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan produk' }).disabled).toBe(true);
     });
 
-    it('rapi di 360px: penunjuk ringkas di HP (bilah kemajuan) dan daftar langkah baru dari 640px, tanpa lebar tetap', () => {
+    it('rapi di 360px: penunjuk ringkas di HP (bilah kemajuan) dan daftar langkah baru bila wadahnya cukup lebar, tanpa lebar tetap', () => {
         const { container } = render(<HalamanFormProduk {...PropsForm()} />);
         const navigasi = screen.getByRole('navigation', { name: 'Langkah tambah produk' });
 
-        expect(navigasi.querySelector('ol')?.className).toMatch(/\bhidden\b.*\bsm:grid\b/);
-        expect(navigasi.querySelector('[role="progressbar"]')?.className).toContain('sm:hidden');
+        // Daftar penuh hanya bila wadahnya cukup lebar (container query: sidebar terbuka memakan lebar layar).
+        expect(navigasi.className).toContain('@container');
+        expect(navigasi.querySelector('ol')?.className).toMatch(/\bhidden\b.*@\w+:grid\b/);
+        expect(navigasi.querySelector('[role="progressbar"]')?.className).toMatch(/@\w+:hidden\b/);
         // Bilah aksi menempel di bawah di HP dan memakai ruang aman iOS.
         const bilah = screen.getByRole('button', { name: 'Lanjut' }).parentElement;
         expect(bilah?.className).toContain('sticky bottom-0');

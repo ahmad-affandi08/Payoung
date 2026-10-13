@@ -17,9 +17,22 @@ type PropsPenunjukLangkah<K extends string> = {
     saatPilih: (kunci: K) => void;
 };
 
+/** Kelas statis (Tailwind memindai teks) per kelompok jumlah langkah. */
+function KelasAmbang(jumlah: number): { ringkas: string; penuh: string } {
+    if (jumlah <= 4) {
+        return { ringkas: '@xl:hidden', penuh: '@xl:grid' };
+    }
+
+    return jumlah === 5
+        ? { ringkas: '@3xl:hidden', penuh: '@3xl:grid' }
+        : { ringkas: '@4xl:hidden', penuh: '@4xl:grid' };
+}
+
 /**
- * Penunjuk langkah wizard. Di HP ringkas ("Langkah 2 dari 5" + bilah kemajuan); dari 640px daftar semua
- * langkah. Langkah di depan yang belum dicapai terkunci: `disabled` + `aria-disabled`, ikon gembok, dan teks
+ * Penunjuk langkah wizard. Ringkas ("Langkah 2 dari 5" + bilah kemajuan) bila lebar wadahnya sempit; daftar semua
+ * langkah bila wadah cukup lebar untuk jumlah langkahnya (container query, bukan lebar layar: sidebar terbuka memakan
+ * ±256px, jadi 768px layar hanya menyisakan ±480px untuk daftar). Ambang: ≤ 4 langkah 36rem, 5 langkah 48rem, ≥ 6
+ * langkah 56rem, supaya tiap kolom ≥ ±140px dan label tidak terpotong. Langkah di depan yang belum dicapai terkunci: `disabled` + `aria-disabled`, ikon gembok, dan teks
  * tersembunyi "terkunci" untuk pembaca layar.
  */
 export default function PenunjukLangkah<K extends string>({
@@ -35,8 +48,10 @@ export default function PenunjukLangkah<K extends string>({
         langkah.findIndex((item) => item.Kunci === aktif),
     );
 
+    const kelas = KelasAmbang(langkah.length);
+
     return (
-        <nav aria-label={label} className="flex flex-col gap-2">
+        <nav aria-label={label} className="@container flex flex-col gap-2">
             <p className="text-label font-semibold text-teks-sekunder">
                 Langkah {String(indeksAktif + 1)} dari {String(langkah.length)}
             </p>
@@ -44,9 +59,9 @@ export default function PenunjukLangkah<K extends string>({
             <Progress
                 value={Math.round(((indeksAktif + 1) * 100) / Math.max(1, langkah.length))}
                 aria-hidden="true"
-                className="h-1.5 bg-permukaan-sorot sm:hidden"
+                className={cn('h-1.5 bg-permukaan-sorot', kelas.ringkas)}
             />
-            <ol className="hidden gap-2 sm:grid sm:grid-flow-col sm:auto-cols-fr">
+            <ol className={cn('hidden gap-2 grid-flow-col auto-cols-fr', kelas.penuh)}>
                 {langkah.map((item, indeks) => {
                     const sedangAktif = item.Kunci === aktif;
                     const terbuka = cekTerbuka(item.Kunci);
