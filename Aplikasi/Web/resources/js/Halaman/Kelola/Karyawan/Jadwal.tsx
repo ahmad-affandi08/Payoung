@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
@@ -176,6 +176,9 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                         Salin minggu lalu
                     </Button>
                 ) : null}
+                <Button asChild variant="outline">
+                    <Link href="/kelola/karyawan/cuti">Cuti & izin</Link>
+                </Button>
             </div>
 
             {Jadwal.Baris.length === 0 ? (
@@ -207,6 +210,12 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                                             <legend className="px-1 text-label text-teks-sekunder">
                                                 {namaHari[i]} {tanggal.slice(8, 10)}/{tanggal.slice(5, 7)}
                                             </legend>
+                                            {b.Cuti[tanggal] ? (
+                                                <p className="mb-1 text-keterangan font-semibold text-teks-utama">
+                                                    {b.Cuti[tanggal].Jenis}
+                                                    {b.Cuti[tanggal].Berbayar ? '' : ' | tidak digaji'}
+                                                </p>
+                                            ) : null}
                                             {awal?.OutletLain ? (
                                                 <p className="text-keterangan text-teks-sekunder">
                                                     Di outlet lain {awal.JamMulai}–{awal.JamSelesai}

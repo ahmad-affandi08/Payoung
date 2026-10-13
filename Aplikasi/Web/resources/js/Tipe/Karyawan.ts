@@ -45,12 +45,16 @@ export type AbsenHpKaryawan = {
 
 export type SelJadwal = { JamMulai: string; JamSelesai: string; OutletLain: boolean } | null;
 
+export type JenisCuti = 'Cuti' | 'Sakit' | 'Izin';
+
 export type BarisJadwal = {
     Uuid: string;
     Nama: string;
     Jabatan: string | null;
     Aktif: boolean;
     Jadwal: Record<string, SelJadwal>;
+    /** Hari cuti/izin yang berlaku minggu ini, kunci = tanggal `TTTT-BB-HH`. */
+    Cuti: Record<string, { Jenis: JenisCuti; Berbayar: boolean }>;
 };
 
 export type PropsJadwalKerja = {
@@ -167,6 +171,29 @@ export type PropsKasbon = {
     TotalSisa: string;
     OpsiKaryawan: OpsiUuidNama[];
     OpsiAkunKasBank: OpsiUuidNama[];
+    Izin: { Kelola: boolean };
+};
+
+/** F-18 EMP-03: cuti/izin/sakit karyawan. */
+export type StatusCuti = 'Aktif' | 'Dibatalkan';
+
+export type BarisCuti = {
+    Uuid: string;
+    Karyawan: string;
+    UuidKaryawan: string | null;
+    Jenis: JenisCuti;
+    TanggalMulai: string;
+    TanggalSelesai: string;
+    Berbayar: boolean;
+    Alasan: string | null;
+    Status: StatusCuti;
+    LabelStatus: string;
+    AlasanBatal: string | null;
+};
+
+export type PropsCuti = {
+    Cuti: HasilTabel<BarisCuti>;
+    OpsiKaryawan: OpsiUuidNama[];
     Izin: { Kelola: boolean };
 };
 

@@ -94,6 +94,7 @@ final class RegistriAnonimisasi
             'KemiripanWajahMasuk' => 'null', 'LintangKeluar' => 'null', 'BujurKeluar' => 'null', 'AkurasiKeluarMeter' => 'null',
             'JarakKeluarMeter' => 'null', 'KemiripanWajahKeluar' => 'null',
         ],
+        'CutiKaryawan' => ['Alasan' => 'null', 'AlasanBatal' => 'null'],
         'MetodePembayaran' => ['NomorRekening' => 'null', 'NamaPemilikRekening' => 'null', 'PathGambarQris' => 'null'],
         'Perangkat' => [
             'Nama' => 'unik:Perangkat Terhapus #', 'TokenPush' => 'null', 'HashToken' => 'null', 'KunciPinOffline' => 'null',
@@ -139,7 +140,7 @@ final class RegistriAnonimisasi
      */
     public const JENIS_OBJEK_AUDIT_PRIBADI = [
         'Pelanggan', 'Pemasok', 'Karyawan', 'Kurir', 'Kendaraan', 'PesananOnline', 'PesananSendiri', 'Reservasi', 'TiketLaundry',
-        'ResepPenjualan', 'WajahKaryawan', 'Pengguna', 'TenantPengguna', 'PendaftaranMerchantPembayaran', 'MetodePembayaran',
+        'ResepPenjualan', 'WajahKaryawan', 'CutiKaryawan', 'Pengguna', 'TenantPengguna', 'PendaftaranMerchantPembayaran', 'MetodePembayaran',
         'UndanganPengguna', 'Tenant', 'Outlet', 'SuratJalan', 'Giro', 'KunjunganSales', 'Absensi', 'Perangkat',
     ];
 

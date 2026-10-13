@@ -6,6 +6,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Karyawan\AbsenHpKaryawanKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\AbsensiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\AturanKehadiranKontroler;
+use App\Http\Kontroler\Kelola\Karyawan\CutiKaryawanKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\JadwalKerjaKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\KaryawanKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\KasbonKontroler;
@@ -37,6 +38,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
     Route::get('/komisi/laporan/ekspor', [KomisiKontroler::class, 'EksporLaporan'])->middleware(EksporDiLatarBelakang::class)->name('kelola.karyawan.komisi.laporan.ekspor');
     // F-18 bagian 3: kasbon karyawan (J-18.1).
     Route::get('/kasbon', [KasbonKontroler::class, 'Daftar'])->name('kelola.karyawan.kasbon');
+    // F-18 EMP-03: cuti/izin/sakit karyawan (dicatat pengelola; cuti berbayar bukan "tidak masuk" di rekap gaji).
+    Route::get('/cuti', [CutiKaryawanKontroler::class, 'Daftar'])->name('kelola.karyawan.cuti');
     // F-18 bagian 3: target penjualan & progres.
     Route::get('/target', [TargetPenjualanKontroler::class, 'Tampil'])->name('kelola.karyawan.target');
     Route::get('/absensi/{absensi}/swafoto/{jenis}', [AbsensiKontroler::class, 'Swafoto'])->where(['absensi' => $ulid, 'jenis' => 'masuk|keluar'])->name('kelola.karyawan.absensi.swafoto');
@@ -63,6 +66,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::put('/komisi/{aturan}', [KomisiKontroler::class, 'Perbarui'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.perbarui');
         Route::post('/komisi/{aturan}/arsipkan', [KomisiKontroler::class, 'Arsipkan'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.arsipkan');
         Route::post('/komisi/{aturan}/pulihkan', [KomisiKontroler::class, 'Pulihkan'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.pulihkan');
+        Route::post('/cuti', [CutiKaryawanKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.karyawan.cuti.simpan');
+        Route::post('/cuti/{cuti}/batal', [CutiKaryawanKontroler::class, 'Batalkan'])->where('cuti', $ulid)->name('kelola.karyawan.cuti.batal');
         Route::post('/kasbon', [KasbonKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.karyawan.kasbon.simpan');
         Route::post('/kasbon/{kasbon}/pelunasan', [KasbonKontroler::class, 'Lunasi'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.pelunasan');
         Route::post('/kasbon/{kasbon}/batal', [KasbonKontroler::class, 'Batalkan'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.batal');

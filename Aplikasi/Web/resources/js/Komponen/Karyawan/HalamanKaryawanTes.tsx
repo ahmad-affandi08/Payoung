@@ -26,6 +26,7 @@ function BarisJadwalUji(): BarisJadwal {
         Nama: 'Dimas Pratama Wicaksono Adiwijaya',
         Jabatan: 'Barista',
         Aktif: true,
+        Cuti: { '2026-09-23': { Jenis: 'Sakit', Berbayar: true } },
         Jadwal: {
             ...Object.fromEntries(Hari.map((t) => [t, null])),
             '2026-09-21': { JamMulai: '08:00', JamSelesai: '16:00', OutletLain: false },

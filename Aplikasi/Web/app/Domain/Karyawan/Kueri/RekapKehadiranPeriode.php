@@ -17,7 +17,8 @@ use Carbon\CarbonImmutable;
  * - `TerlambatMenit`: jumlah menit terlambat (melewati toleransi) pada hari berjadwal.
  * - `LemburMenit`: jumlah menit lembur (keluar melewati ambang lembur) pada hari yang sudah absen keluar.
  * - `HariTidakMasuk`: hari berjadwal **sebelum hari ini** tanpa satu pun absensi. Hari ini tidak dihitung (shift belum
- *   tentu selesai).
+ *   tentu selesai). Hari yang tercakup cuti/izin berbayar yang berlaku tidak dihitung; cuti tidak berbayar tetap dihitung
+ *   (dipotong sesuai tarif). Absensi yang tercatat pada hari cuti dinilai seperti biasa.
  */
 final class RekapKehadiranPeriode
 {
@@ -25,6 +26,7 @@ final class RekapKehadiranPeriode
         private readonly AturanKehadiranTenant $aturan,
         private readonly PenilaiKehadiran $penilai,
         private readonly ZonaWaktuOutlet $zona,
+        private readonly CutiAktifKaryawan $cuti,
     ) {}
 
     /**
@@ -41,6 +43,7 @@ final class RekapKehadiranPeriode
             $pertama[$a->IdKaryawan.'|'.$a->TanggalBisnis->toDateString()] ??= $a;
         }
 
+        $cuti = $this->cuti->AmbilPerTanggal($dari, $sampai);
         $selisih = $this->zona->AmbilSelisihDetik(array_values(array_unique(array_map('intval', $absensi->pluck('IdOutlet')->all()))));
         $hasil = [];
 
@@ -50,7 +53,7 @@ final class RekapKehadiranPeriode
             $a = $pertama[$j->IdKaryawan.'|'.$tanggal] ?? null;
 
             if ($a === null) {
-                if ($tanggal < $hariIni->toDateString()) {
+                if ($tanggal < $hariIni->toDateString() && ($cuti[$j->IdKaryawan][$tanggal]['Berbayar'] ?? false) !== true) {
                     $hasil[$j->IdKaryawan]['HariTidakMasuk']++;
                 }
 

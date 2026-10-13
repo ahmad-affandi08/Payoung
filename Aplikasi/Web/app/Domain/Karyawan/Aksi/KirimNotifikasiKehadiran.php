@@ -10,6 +10,7 @@ use App\Domain\Integrasi\Whatsapp\PengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
+use App\Domain\Karyawan\Kueri\CutiAktifKaryawan;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -34,6 +35,9 @@ use Throwable;
  *   **belum masuk**, atau yang masuk **terlambat** (melewati toleransi). Penerima = anggota ber-izin `karyawan.lihat`
  *   yang boleh mengakses outlet jadwal, satu pesan berisi semua kejadian putaran itu. Yang tepat waktu hanya ditandai.
  *
+ * Jadwal yang tercakup cuti/izin berlaku (berbayar atau tidak) dilewati tanpa penanda: karyawan memang tidak
+ * diharapkan masuk, dan bila cutinya dibatalkan sebelum shift berakhir, notifikasi berjalan normal di putaran berikutnya.
+ *
  * Penanda (`PengingatShiftPada`, `PeringatanKehadiranPada`) hanya diisi bila pesan benar-benar terkirim atau memang
  * tidak ada yang bisa dikirimi, jadi kegagalan sementara dicoba lagi di putaran berikutnya.
  */
@@ -49,6 +53,7 @@ final class KirimNotifikasiKehadiran
         private readonly PetaUuidOutlet $outlet,
         private readonly ProfilTenant $profil,
         private readonly PenilaiKehadiran $penilai,
+        private readonly CutiAktifKaryawan $cuti,
     ) {}
 
     /** @return array{Pengingat: int, Peringatan: int} jumlah pesan terkirim */
@@ -94,13 +99,18 @@ final class KirimNotifikasiKehadiran
             $nomorAnggota[$a['Id']] = $a['NoHp'];
         }
 
+        $cuti = $this->cuti->AmbilPerTanggal(
+            $sekarang->subDays(2)->toDateString(),
+            $sekarang->addDay()->toDateString(),
+            array_values(array_map('intval', $jadwal->pluck('IdKaryawan')->unique()->all())),
+        );
         $kejadian = [];
         $ditandai = [];
 
         foreach ($jadwal as $j) {
             $k = $karyawan->get($j->IdKaryawan);
 
-            if ($k === null) {
+            if ($k === null || isset($cuti[$j->IdKaryawan][$j->Tanggal->toDateString()])) {
                 continue;
             }
 
