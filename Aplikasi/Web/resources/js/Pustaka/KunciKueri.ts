@@ -39,6 +39,11 @@ export const KunciKueri = {
     // PGL-16: jejak permintaan satu sesi akses dukungan (Pengaturan › Akses dukungan).
     Dukungan: {
         AktivitasSesi: (uuid: string) => ['Dukungan', 'AktivitasSesi', uuid] as const,
+        // PGL-16 bagian 2: alat bantu di konsol (status perangkat, log, daftar kirim ulang).
+        AlatPerangkat: (uuidTenant: string) => ['Dukungan', 'AlatPerangkat', uuidTenant] as const,
+        AlatKirimUlang: (uuidTenant: string) => ['Dukungan', 'AlatKirimUlang', uuidTenant] as const,
+        AlatLog: (uuidTenant: string, uuidPerangkat: string) =>
+            ['Dukungan', 'AlatLog', uuidTenant, uuidPerangkat] as const,
     },
     // F-05a: pemilih produk stok awal (GET /kelola/persediaan/produk/cari), polling status posting & impor stok awal.
     Persediaan: {

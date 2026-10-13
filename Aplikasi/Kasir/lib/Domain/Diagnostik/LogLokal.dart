@@ -71,6 +71,7 @@ class LogLokal {
   Future<void>? _antrean;
 
   static const int batasKirim = 50;
+  static const int batasUnggah = 500;
   static const int panjangPesanMaksimal = 500;
   static const int panjangJejakMaksimal = 4000;
 
@@ -146,6 +147,29 @@ class LogLokal {
         .reversed
         .take(batasKirim)
         .toList();
+  }
+
+  /// PGL-16 bagian 2: unggah log lokal (semua tingkat, terlama dulu, maks. [batasUnggah] baris) atas permintaan dukungan.
+  /// Hanya dipanggil bila `konfigurasi-aplikasi` menandai `PermintaanLog.Diminta`. Mengembalikan jumlah baris yang
+  /// diterima server; offline = 0 (dicoba lagi pada pemeriksaan berikutnya). Server menjawab 409 `LogTidakDiminta` bila
+  /// permintaan sudah terpenuhi (misal dari pemeriksaan lain): dianggap selesai.
+  Future<int> UnggahAtasPermintaan(KlienPos klien) async {
+    final entri = (await AmbilTerbaru(batas: batasUnggah)).reversed.toList();
+    final baris = entri.isEmpty
+        ? ['${_jam().toUtc().toIso8601String()} [Info] LogLokal: log lokal masih kosong.']
+        : [for (final e in entri) _FormatBaris(e)];
+    try {
+      return await klien.UnggahLog(baris);
+    } on GalatJaringan {
+      return 0;
+    } on GalatApi {
+      return 0;
+    }
+  }
+
+  static String _FormatBaris(EntriLog e) {
+    final jejak = e.jejak == null ? '' : ' | ${e.jejak!.split('\n').first}';
+    return SaringPii('${e.waktu.toIso8601String()} [${e.tingkat.nilai}] ${e.sumber}: ${e.pesan}$jejak');
   }
 
   /// Kirim galat tertunda ke server. Mengembalikan jumlah terkirim; offline/galat server = 0 (dicoba lagi nanti).

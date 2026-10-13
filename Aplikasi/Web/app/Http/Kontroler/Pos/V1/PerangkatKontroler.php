@@ -8,6 +8,7 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Organisasi\Aksi\AktifkanPerangkat;
 use App\Domain\Organisasi\Aksi\CatatLaporanGalatPerangkat;
 use App\Domain\Organisasi\Aksi\SimpanProfilHardware;
+use App\Domain\Organisasi\Aksi\TerimaLogPerangkat;
 use App\Domain\Tenant\Kueri\RingkasanTenant;
 use App\Domain\Tenant\Kueri\StatusLanggananTenant;
 use App\Http\Kontroler\Kontroler;
@@ -95,5 +96,28 @@ final class PerangkatKontroler extends Kontroler
             $galat,
             is_string($versi) ? mb_substr(trim($versi), 0, 40) : null,
         )]);
+    }
+
+    /**
+     * `POST /api/pos/v1/perangkat/log` (PGL-16 bagian 2): log lokal yang diminta dukungan. Ditolak 409 `LogTidakDiminta` bila
+     * tidak ada permintaan yang berlaku.
+     */
+    public function UnggahLog(Request $permintaan, TerimaLogPerangkat $terima): JsonResponse
+    {
+        $data = $permintaan->validate([
+            'Baris' => ['required', 'array', 'min:1', 'max:'.TerimaLogPerangkat::MAKS_BARIS],
+            'Baris.*' => ['required', 'string', 'max:2000'],
+        ]);
+        $versi = $permintaan->header('X-Versi-Aplikasi');
+
+        /** @var list<string> $baris */
+        $baris = array_values($data['Baris']);
+        $log = $terima->Jalankan(
+            AutentikasiPerangkat::AmbilPerangkat($permintaan),
+            $baris,
+            is_string($versi) ? mb_substr(trim($versi), 0, 30) : null,
+        );
+
+        return response()->json(['Diterima' => $log->JumlahBaris]);
     }
 }

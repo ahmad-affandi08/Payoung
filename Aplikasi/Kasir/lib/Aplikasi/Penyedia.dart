@@ -1214,6 +1214,23 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
   @override
   KonfigurasiAplikasi? build() => null;
 
+  bool _mengunggahLog = false;
+
+  /// PGL-16 bagian 2: dukungan meminta log. Satu unggahan pada satu waktu; gagal (offline) dicoba lagi pada pemeriksaan
+  /// berikutnya karena server masih menandai permintaan itu.
+  Future<void> _UnggahLogBilaDiminta() async {
+    final log = ref.read(penyediaLogLokal);
+    if (log == null || _mengunggahLog) {
+      return;
+    }
+    _mengunggahLog = true;
+    try {
+      await log.UnggahAtasPermintaan(ref.read(penyediaKlienPos));
+    } finally {
+      _mengunggahLog = false;
+    }
+  }
+
   Future<void> Periksa({bool paksa = false}) async {
     final sekarang = ref.read(penyediaJam)();
     final terakhir = _terakhir;
@@ -1226,6 +1243,9 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
       state = konfigurasi;
       // Fitur paket yang diubah di konsol ikut sampai ke perangkat tanpa menunggu "Perbarui data kasir".
       await ref.read(penyediaLayananPersetujuanJarakJauh).SimpanKeadaan(konfigurasi.persetujuanJarakJauh);
+      if (konfigurasi.logDiminta) {
+        await _UnggahLogBilaDiminta();
+      }
     } on GalatJaringan {
       _terakhir = null;
     } on GalatApi {

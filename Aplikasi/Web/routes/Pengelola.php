@@ -8,6 +8,7 @@ use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Http\Kontroler\Pengelola\BerandaKontroler;
 use App\Http\Kontroler\Pengelola\DuaFaktorKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\AksesDukunganTenantKontroler;
+use App\Http\Kontroler\Pengelola\Dukungan\AlatDukunganKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\TiketDukunganKontroler;
 use App\Http\Kontroler\Pengelola\Integrasi\IntegrasiKontroler;
 use App\Http\Kontroler\Pengelola\Katalog\AddonKontroler;
@@ -480,6 +481,37 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::post('/tenant/{tenant}/akses-dukungan/{akses}/cabut', [AksesDukunganTenantKontroler::class, 'Cabut'])
                 ->middleware([$izin(IzinPengelola::DukunganAksesDarurat), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tenant.akses-dukungan.cabut');
+            // PGL-16 bagian 2: alat bantu dukungan (BR-P09.3). Hanya jalan bila izin akses dukungan tenant berlaku; alat yang
+            // mengubah data butuh cakupan "Baca & ubah". Cabut perangkat dan bangun ulang saldo stok meminta 2FA baru.
+            Route::middleware($izin(IzinPengelola::DukunganAlatPakai))->group(function (): void {
+                Route::get('/tenant/{tenant}/alat-dukungan/perangkat', [AlatDukunganKontroler::class, 'Perangkat'])
+                    ->middleware('throttle:60,1')
+                    ->name('pengelola.tenant.alat-dukungan.perangkat');
+                Route::get('/tenant/{tenant}/alat-dukungan/perangkat/{perangkat}/log', [AlatDukunganKontroler::class, 'LogPerangkat'])
+                    ->middleware('throttle:30,1')
+                    ->name('pengelola.tenant.alat-dukungan.log-perangkat');
+                Route::get('/tenant/{tenant}/alat-dukungan/kirim-ulang', [AlatDukunganKontroler::class, 'DaftarKirimUlang'])
+                    ->middleware('throttle:60,1')
+                    ->name('pengelola.tenant.alat-dukungan.kirim-ulang');
+                Route::post('/tenant/{tenant}/alat-dukungan/perangkat/{perangkat}/cabut', [AlatDukunganKontroler::class, 'CabutPerangkat'])
+                    ->middleware([WajibDuaFaktorBaru::class, 'throttle:20,1'])
+                    ->name('pengelola.tenant.alat-dukungan.cabut-perangkat');
+                Route::post('/tenant/{tenant}/alat-dukungan/perangkat/{perangkat}/minta-log', [AlatDukunganKontroler::class, 'MintaLog'])
+                    ->middleware('throttle:20,1')
+                    ->name('pengelola.tenant.alat-dukungan.minta-log');
+                Route::post('/tenant/{tenant}/alat-dukungan/saldo-stok/bangun-ulang', [AlatDukunganKontroler::class, 'BangunUlangSaldoStok'])
+                    ->middleware([WajibDuaFaktorBaru::class, 'throttle:6,1'])
+                    ->name('pengelola.tenant.alat-dukungan.saldo-stok');
+                Route::post('/tenant/{tenant}/alat-dukungan/ringkasan-harian/bangun-ulang', [AlatDukunganKontroler::class, 'BangunUlangRingkasanHarian'])
+                    ->middleware('throttle:10,1')
+                    ->name('pengelola.tenant.alat-dukungan.ringkasan-harian');
+                Route::post('/tenant/{tenant}/alat-dukungan/pesan/{pesan}/kirim-ulang', [AlatDukunganKontroler::class, 'KirimUlangPesan'])
+                    ->middleware('throttle:20,1')
+                    ->name('pengelola.tenant.alat-dukungan.kirim-ulang-pesan');
+                Route::post('/tenant/{tenant}/alat-dukungan/pengguna/{pengguna}/kirim-ulang-verifikasi', [AlatDukunganKontroler::class, 'KirimUlangVerifikasiEmail'])
+                    ->middleware('throttle:20,1')
+                    ->name('pengelola.tenant.alat-dukungan.verifikasi-email');
+            });
             Route::put('/tenant/{tenant}/penanda', [TindakanTenantKontroler::class, 'UbahPenanda'])
                 ->middleware($izin(IzinPengelola::TenantPenandaUbah))
                 ->name('pengelola.tenant.penanda.ubah');

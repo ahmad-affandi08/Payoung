@@ -37,6 +37,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $DiaktifkanPada
  * @property Carbon|null $TerakhirAktifPada
  * @property int $JumlahOutboxTertunda
+ * @property Carbon|null $MintaLogPada
+ * @property Carbon|null $LogDiunggahPada
  * @property Carbon|null $DicabutPada
  * @property Carbon $DibuatPada
  * @property-read Outlet $Outlet
@@ -44,6 +46,9 @@ use Illuminate\Support\Carbon;
 final class Perangkat extends ModelDasar
 {
     use MilikTenant;
+
+    /** PGL-16: permintaan unggah log dari dukungan berlaku sekian hari sejak diminta. */
+    public const HARI_PERMINTAAN_LOG = 7;
 
     protected $table = 'Perangkat';
 
@@ -62,6 +67,8 @@ final class Perangkat extends ModelDasar
         'DiaktifkanPada' => null,
         'TerakhirAktifPada' => null,
         'JumlahOutboxTertunda' => 0,
+        'MintaLogPada' => null,
+        'LogDiunggahPada' => null,
         'DicabutPada' => null,
     ];
 
@@ -73,6 +80,18 @@ final class Perangkat extends ModelDasar
     public function CekDicabut(): bool
     {
         return $this->DicabutPada !== null;
+    }
+
+    /** Dukungan meminta log, perangkat belum menjawab, dan permintaannya belum kedaluwarsa (PGL-16 bagian 2). */
+    public function CekPermintaanLogBerjalan(): bool
+    {
+        $diminta = $this->MintaLogPada;
+
+        if ($diminta === null || $diminta->lt(now()->subDays(self::HARI_PERMINTAAN_LOG))) {
+            return false;
+        }
+
+        return $this->LogDiunggahPada === null || $this->LogDiunggahPada->lt($diminta);
     }
 
     public function AmbilStatus(): string
@@ -105,6 +124,8 @@ final class Perangkat extends ModelDasar
             'DiaktifkanPada' => 'datetime',
             'TerakhirAktifPada' => 'datetime',
             'JumlahOutboxTertunda' => 'integer',
+            'MintaLogPada' => 'datetime',
+            'LogDiunggahPada' => 'datetime',
             'DicabutPada' => 'datetime',
         ];
     }

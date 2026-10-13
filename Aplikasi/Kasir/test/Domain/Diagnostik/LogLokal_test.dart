@@ -67,4 +67,63 @@ void main() {
     expect(await log.KirimTertunda(u.klien), 0, reason: 'Sudah terkirim tidak dikirim ulang.');
     expect(dikirim, hasLength(1));
   });
+
+  test(
+    'PGL-16 bagian 2: unggah atas permintaan mengirim semua tingkat, terlama dulu, tersaring dari data pribadi',
+    () async {
+      final u = LingkunganUji.Buat();
+      addTearDown(u.Tutup);
+      await u.SiapkanAktif();
+      final log = LogLokal(folder: folder, jam: () => jam);
+      await log.Catat(TingkatLog.info, 'Sinkron', 'Mulai sinkron untuk rina@contoh.id');
+      jam = jam.add(const Duration(seconds: 1));
+      await log.Catat(
+        TingkatLog.galat,
+        'Printer',
+        'Printer 0812 3456 7890 tidak menjawab',
+        jejak: StackTrace.fromString('#0 a\n#1 b'),
+      );
+
+      final dikirim = <Map<String, Object?>>[];
+      u.server.penangan = (p) async {
+        dikirim.add(jsonDecode(p.body) as Map<String, Object?>);
+        return JsonUji({'Diterima': 2});
+      };
+      expect(await log.UnggahAtasPermintaan(u.klien), 2);
+
+      final baris = (dikirim.single['Baris']! as List<Object?>).cast<String>();
+      expect(baris, hasLength(2));
+      expect(baris.first, contains('[Info] Sinkron: Mulai sinkron untuk [disamarkan]'));
+      expect(baris.last, contains('[Galat] Printer: Printer [disamarkan] tidak menjawab | #0 a'));
+      expect(baris.join(), isNot(contains('rina@contoh.id')));
+      expect(baris.join(), isNot(contains('3456')));
+    },
+  );
+
+  test('PGL-16 bagian 2: unggah offline atau permintaan sudah terpenuhi = 0 tanpa melempar; log kosong tetap mengirim satu baris', () async {
+    final u = LingkunganUji.Buat();
+    addTearDown(u.Tutup);
+    await u.SiapkanAktif();
+    final log = LogLokal(folder: folder, jam: () => jam);
+
+    u.server.penangan = (_) async => throw http.ClientException('offline');
+    expect(await log.UnggahAtasPermintaan(u.klien), 0);
+
+    u.server.penangan = (_) async => JsonUji({
+      'Galat': {
+        'Kode': 'LogTidakDiminta',
+        'Pesan': 'Tidak ada permintaan unggah log untuk perangkat ini.',
+        'Detail': <String, Object?>{},
+      },
+    }, 409);
+    expect(await log.UnggahAtasPermintaan(u.klien), 0);
+
+    final dikirim = <Map<String, Object?>>[];
+    u.server.penangan = (p) async {
+      dikirim.add(jsonDecode(p.body) as Map<String, Object?>);
+      return JsonUji({'Diterima': 1});
+    };
+    expect(await log.UnggahAtasPermintaan(u.klien), 1);
+    expect((dikirim.single['Baris']! as List<Object?>).single, contains('log lokal masih kosong'));
+  });
 }

@@ -29,7 +29,7 @@ const izinBerlaku = {
     JumlahSesi: 1,
 };
 
-const kosong: RiwayatAksesDukunganTenant = { Aktif: null, Izin: [], Sesi: [] };
+const kosong: RiwayatAksesDukunganTenant = { Aktif: null, Izin: [], Sesi: [], Alat: [] };
 
 const berjalan: RiwayatAksesDukunganTenant = {
     Aktif: {
@@ -51,6 +51,20 @@ const berjalan: RiwayatAksesDukunganTenant = {
             JumlahAktivitas: 12,
             JumlahUbah: 2,
             JumlahDitolak: 1,
+        },
+    ],
+    Alat: [
+        {
+            Uuid: '01K5ALAT000000000000000001',
+            Alat: 'BangunUlangSaldoStok',
+            LabelAlat: 'Bangun ulang saldo stok',
+            NamaPetugas: 'Silvia Suryatmi',
+            Status: 'Berhasil',
+            LabelStatus: 'Berhasil',
+            Ringkasan: '2 pasangan produk-lokasi diperbaiki. Tidak ada perbedaan tersisa.',
+            Sebelum: { JumlahPerbedaan: 2, Contoh: ['Saldo stok produk 12 di lokasi 3 menyimpang.'] },
+            Sesudah: { JumlahPerbedaan: 0, JumlahPasanganDiperbaiki: 2 },
+            DibuatPada: '2026-10-12T03:20:00Z',
         },
     ],
 };
@@ -104,6 +118,25 @@ describe('PGL-16 halaman Pengaturan › Akses dukungan (Owner)', () => {
         expect(kirimanForm.find((item) => item.url.endsWith('/cabut'))?.url).toBe(
             `/kelola/pengaturan/akses-dukungan/${izinBerlaku.Uuid}/cabut`,
         );
+    });
+
+    it('BR-P09.3: alat bantu yang dijalankan petugas tampil dengan keadaan sebelum dan sesudah', () => {
+        RenderUji(<HalamanAksesDukungan Riwayat={berjalan} PilihanTiket={[]} Aturan={aturan} />);
+
+        expect(screen.getByText('Bangun ulang saldo stok')).toBeTruthy();
+        expect(screen.getByText(/2 pasangan produk-lokasi diperbaiki/)).toBeTruthy();
+        expect(screen.queryByText('Perbedaan saldo')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Lihat sebelum & sesudah' }));
+
+        expect(screen.getAllByText('Perbedaan saldo')).toHaveLength(2);
+        expect(screen.getByText('Saldo stok produk 12 di lokasi 3 menyimpang.')).toBeTruthy();
+    });
+
+    it('tanpa alat yang pernah dijalankan, halaman menjelaskan apa yang akan tercatat', () => {
+        RenderUji(<HalamanAksesDukungan Riwayat={kosong} PilihanTiket={[]} Aturan={aturan} />);
+
+        expect(screen.getByText(/Belum ada alat bantu yang dijalankan/)).toBeTruthy();
     });
 
     it('riwayat sesi menampilkan jumlah permintaan, perubahan, dan penolakan; jejak dimuat saat dibuka', async () => {

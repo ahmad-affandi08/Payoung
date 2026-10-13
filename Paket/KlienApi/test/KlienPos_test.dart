@@ -845,6 +845,39 @@ void main() {
     expect(r.perKasir.single.jumlahTransaksi, 2);
   });
 
+  test(
+    'PGL-16 bagian 2: PermintaanLog.Diminta dibaca (server lama tanpa kunci = false) dan log diunggah ke perangkat/log',
+    () async {
+      Future<KonfigurasiAplikasi> Ambil(Map<String, Object?> isi) =>
+          BuatKlien((_) async => Json(isi, 200)).AmbilKonfigurasiAplikasi();
+
+      expect(
+        (await Ambil({
+          'PermintaanLog': {'Diminta': true, 'Sejak': '2026-10-12T03:00:00Z'},
+        })).logDiminta,
+        isTrue,
+      );
+      expect(
+        (await Ambil({
+          'PermintaanLog': {'Diminta': false, 'Sejak': null},
+        })).logDiminta,
+        isFalse,
+      );
+      expect((await Ambil({'Aplikasi': <String, Object?>{}})).logDiminta, isFalse);
+
+      final dikirim = <http.Request>[];
+      final klien = BuatKlien((permintaan) async {
+        dikirim.add(permintaan);
+        return Json({'Diterima': 2}, 200);
+      });
+      expect(await klien.UnggahLog(['baris satu', 'baris dua']), 2);
+      expect(dikirim.single.url.path, '/api/pos/v1/perangkat/log');
+      expect(jsonDecode(dikirim.single.body), {
+        'Baris': ['baris satu', 'baris dua'],
+      });
+    },
+  );
+
   test('K-21: laporan galat dikirim ke perangkat/galat', () async {
     final dikirim = <http.Request>[];
     final klien = BuatKlien((permintaan) async {

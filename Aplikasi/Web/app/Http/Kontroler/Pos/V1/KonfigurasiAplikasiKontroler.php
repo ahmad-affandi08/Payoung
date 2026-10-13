@@ -72,6 +72,11 @@ final class KonfigurasiAplikasiKontroler extends Kontroler
                 $outlet->TemplateSektor === null ? [] : [$outlet->TemplateSektor],
                 $versiSaatIni,
             ),
+            // PGL-16 bagian 2 (aditif): dukungan meminta perangkat mengunggah log lokalnya ke `POST perangkat/log`.
+            'PermintaanLog' => [
+                'Diminta' => $perangkat->CekPermintaanLogBerjalan(),
+                'Sejak' => $perangkat->CekPermintaanLogBerjalan() ? $perangkat->MintaLogPada?->utc()->toIso8601ZuluString() : null,
+            ],
             'Langganan' => PerangkatPosRespons::Langganan($status, $statusLangganan->CekBolehBertransaksiPos($status)),
             'Perangkat' => PerangkatPosRespons::Perangkat($perangkat),
             'Outlet' => PerangkatPosRespons::Outlet($outlet),

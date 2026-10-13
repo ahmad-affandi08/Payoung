@@ -282,6 +282,9 @@ erDiagram
 | `PenggunaDukungan` | IdPenggunaPengelola (unik), IdPengguna (unik, `Pengguna` teknis petugas tanpa keanggotaan tenant). Tabel global (v5.74) |
 | `SesiAksesDukungan` | IdTenant, Uuid, IdAksesDukungan, IdPenggunaPengelola, NamaPetugas, HashToken (unik; token tukar 60 detik), TokenKedaluwarsaPada, TokenDipakaiPada, MulaiPada, BerakhirPada, DiakhiriPada, AlasanAkhir (Selesai/Dicabut/Kedaluwarsa/Digantikan), Ip, AgenPengguna (v5.74) |
 | `AktivitasAksesDukungan` | IdTenant, IdSesiAksesDukungan, Metode, Rute, Jalur (tanpa query), StatusHttp, Ditolak, Alasan, DibuatPada. Append-only (v5.74) |
+| `HasilAlatDukungan` | IdTenant, Uuid, IdAksesDukungan, IdPenggunaPengelola, NamaPetugas, Alat, Status (Berhasil/TanpaPerubahan/Gagal), Ringkasan, Parameter, Sebelum, Sesudah (JSON, tanpa data pribadi), DibuatPada. Append-only (v5.76, PGL-16) |
+| `LogPerangkatDiunggah` | IdTenant, Uuid, IdPerangkat, VersiAplikasi, JumlahBaris, Isi (tersaring PII), DiunggahPada. Dihapus setelah 30 hari (v5.76) |
+| `Perangkat.MintaLogPada` / `LogDiunggahPada` | Permintaan unggah log dari dukungan (berlaku 7 hari) dan waktu dijawab (v5.76) |
 | `Pengumuman` | Judul, Isi, Jenis (Info/Pemeliharaan/CatatanRilis), Segmen JSON, MulaiPada, SelesaiPada |
 | `Insiden` | Judul, Tingkat, Status, Dampak, MulaiPada, SelesaiPada, Kronologi, PascaInsiden |
 | `DetakPenjadwal` / `AlertOperasional` | Nama (unik), TerakhirPada / Kunci (PenjadwalBerhenti/AntreanTertunda/BackupTerlambat), Tingkat (Kritis/Peringatan), Pesan, MulaiPada, SelesaiPada (null = aktif), EmailTerkirimPada (P-11, satu baris per insiden otomatis) |

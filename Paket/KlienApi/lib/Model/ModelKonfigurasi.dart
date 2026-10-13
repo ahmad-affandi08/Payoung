@@ -14,6 +14,7 @@ class KonfigurasiAplikasi {
     required this.flagFitur,
     this.pengumuman = const [],
     this.persetujuanJarakJauh,
+    this.logDiminta = false,
   });
 
   final String? versiSaatIni;
@@ -36,6 +37,10 @@ class KonfigurasiAplikasi {
   /// Fitur paket `persetujuan.jarak-jauh` aktif untuk tenant ini sekarang. Null = server lama yang belum mengirimnya
   /// (jangan mengubah keadaan lokal).
   final bool? persetujuanJarakJauh;
+
+  /// PGL-16 bagian 2: dukungan Payoung meminta perangkat ini mengunggah log lokalnya (`POST perangkat/log`). Server lama
+  /// tanpa kunci = false.
+  final bool logDiminta;
 
   /// Flag dengan kunci [kunci]; tanpa aturan = [bawaan].
   bool CekFlag(String kunci, {bool bawaan = true}) => flagFitur[kunci] ?? bawaan;
@@ -64,6 +69,7 @@ class KonfigurasiAplikasi {
             .where((p) => p.uuid.isNotEmpty && p.judul.isNotEmpty),
       ),
       persetujuanJarakJauh: jarakJauh is bool ? jarakJauh : null,
+      logDiminta: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['PermintaanLog'])['Diminta']),
     );
   }
 }

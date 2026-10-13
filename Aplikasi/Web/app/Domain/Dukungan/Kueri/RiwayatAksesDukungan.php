@@ -6,6 +6,7 @@ namespace App\Domain\Dukungan\Kueri;
 
 use App\Domain\Dukungan\Model\AksesDukungan;
 use App\Domain\Dukungan\Model\AktivitasAksesDukungan;
+use App\Domain\Dukungan\Model\HasilAlatDukungan;
 use App\Domain\Dukungan\Model\SesiAksesDukungan;
 use App\Domain\Dukungan\Model\TiketDukungan;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 final class RiwayatAksesDukungan
 {
     /**
-     * @return array{Aktif: array<string, mixed>|null, Izin: list<array<string, mixed>>, Sesi: list<array<string, mixed>>}
+     * @return array{Aktif: array<string, mixed>|null, Izin: list<array<string, mixed>>, Sesi: list<array<string, mixed>>, Alat: list<array<string, mixed>>}
      */
     public function Ambil(int $batas = 20): array
     {
@@ -42,6 +43,19 @@ final class RiwayatAksesDukungan
                     ->all()),
             ],
             'Izin' => array_values($baris->all()),
+            // BR-P09.3: alat bantu yang pernah dijalankan petugas, dengan keadaan sebelum dan sesudah.
+            'Alat' => array_values(HasilAlatDukungan::query()->orderByDesc('Id')->limit($batas)->get()->map(fn (HasilAlatDukungan $h): array => [
+                'Uuid' => $h->Uuid,
+                'Alat' => $h->Alat->value,
+                'LabelAlat' => $h->Alat->AmbilLabel(),
+                'NamaPetugas' => $h->NamaPetugas,
+                'Status' => $h->Status->value,
+                'LabelStatus' => $h->Status->AmbilLabel(),
+                'Ringkasan' => $h->Ringkasan,
+                'Sebelum' => $h->Sebelum,
+                'Sesudah' => $h->Sesudah,
+                'DibuatPada' => $h->DibuatPada->toIso8601String(),
+            ])->all()),
             'Sesi' => array_values($sesi->map(fn (SesiAksesDukungan $s): array => [
                 'Uuid' => $s->Uuid,
                 'NamaPetugas' => $s->NamaPetugas,

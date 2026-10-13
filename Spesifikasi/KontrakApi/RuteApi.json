@@ -478,5 +478,10 @@
         "Metode": "GET",
         "Jalur": "api/pos/v1/stok-tersedia",
         "Nama": "pos.stok-tersedia"
+    },
+    "POST api/pos/v1/perangkat/log": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/perangkat/log",
+        "Nama": "pos.perangkat.log"
     }
 }

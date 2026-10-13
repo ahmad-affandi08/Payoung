@@ -102,3 +102,23 @@ export async function KirimJson<T>(alamat: string, data: unknown = {}, metode: '
 
     return isi as T;
 }
+
+/** GET JSON dengan galat yang sama bentuknya dengan `KirimJson` (pesan Payoung, status, kode). */
+export async function AmbilJson<T>(alamat: string, sinyal?: AbortSignal): Promise<T> {
+    const respons = await fetch(alamat, {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        ...(sinyal === undefined ? {} : { signal: sinyal }),
+    });
+    const isi: unknown = await respons.json().catch(() => null);
+
+    if (!respons.ok) {
+        throw new GalatPermintaan(
+            AmbilPesanGalat(isi) ?? PesanStatusHttp(respons.status),
+            respons.status,
+            AmbilKodeGalat(isi),
+        );
+    }
+
+    return isi as T;
+}

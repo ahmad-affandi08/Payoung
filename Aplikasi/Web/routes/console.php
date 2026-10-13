@@ -28,6 +28,8 @@ $jadwalSaas('pengelola:uji-integrasi')->hourly()->withoutOverlapping(120)->runIn
 // BR-00.3: trial yang berakhir turun ke paket Gratis.
 // PGL-16: sesi akses dukungan yang waktunya habis diberi akhir dan alasan supaya riwayat Owner akurat.
 $jadwalSaas('dukungan:akhiri-kedaluwarsa')->everyFifteenMinutes()->withoutOverlapping(30)->runInBackground();
+// PGL-16 bagian 2: log perangkat yang diunggah untuk dukungan dihapus setelah 30 hari.
+$jadwalSaas('dukungan:bersihkan-log-perangkat')->dailyAt('03:20')->timezone('Asia/Jakarta')->withoutOverlapping(60)->runInBackground();
 
 $jadwalSaas('tenant:akhiri-trial')->hourly()->withoutOverlapping(120)->runInBackground();
 

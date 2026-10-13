@@ -66,6 +66,8 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
 
     // K-21: laporan galat aplikasi kasir (log harian `galat-perangkat`, tanpa data pribadi).
     Route::post('/perangkat/galat', [PerangkatKontroler::class, 'LaporGalat'])->middleware('throttle:pos-10')->name('pos.perangkat.galat');
+    // PGL-16 bagian 2: unggah log lokal yang diminta dukungan (diterima hanya bila ada permintaan yang berlaku).
+    Route::post('/perangkat/log', [PerangkatKontroler::class, 'UnggahLog'])->middleware('throttle:pos-10')->name('pos.perangkat.log');
     Route::post('/sinkron/kirim', [SinkronKontroler::class, 'Kirim'])->middleware('throttle:pos-120')->name('pos.sinkron.kirim');
 
     // Shift lama perangkat yang masih terbuka di server dan menahan shift baru (`ShiftSudahTerbuka`): lihat & tutup

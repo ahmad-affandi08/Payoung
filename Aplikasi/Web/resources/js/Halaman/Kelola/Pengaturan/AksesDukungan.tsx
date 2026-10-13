@@ -13,6 +13,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import RiwayatAlatDukungan from '@/Komponen/Dukungan/RiwayatAlatDukungan';
 import type { IzinAksesDukungan, RiwayatAksesDukunganTenant } from '@/Tipe/TenantPengelola';
 
 type Pilihan = { Nilai: string; Label: string };
@@ -162,6 +163,9 @@ export default function HalamanAksesDukungan({ Riwayat, PilihanTiket, Aturan }: 
                             ))}
                         </ul>
                     )}
+                </Panel>
+                <Panel judul="Alat bantu yang dijalankan" tingkat="h2">
+                    <RiwayatAlatDukungan alat={Riwayat.Alat} />
                 </Panel>
             </div>
 

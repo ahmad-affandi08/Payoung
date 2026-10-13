@@ -13,6 +13,7 @@ import {
     FormTangguhkan,
 } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import PanelAksesDukungan from '@/Komponen/Pengelola/Tenant/PanelAksesDukungan';
+import PanelAlatBantuDukungan from '@/Komponen/Pengelola/Tenant/PanelAlatBantuDukungan';
 import PanelPendaftaranMerchant from '@/Komponen/Pengelola/Tenant/PanelPendaftaranMerchant';
 import PanelPenghapusanData from '@/Komponen/Pengelola/Tenant/PanelPenghapusanData';
 import { LabelPenanda, LabelStatusLangganan } from '@/Komponen/Pengelola/Tenant/LabelLangganan';
@@ -390,6 +391,12 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                             bolehDarurat={PunyaIzin(pengguna, IzinPengelola.DukunganAksesDarurat)}
                         />
                     </div>
+
+                    {PunyaIzin(pengguna, IzinPengelola.DukunganAlatPakai) ? (
+                        <div className="lg:col-span-2">
+                            <PanelAlatBantuDukungan uuidTenant={Profil.Uuid} data={Tenant.AksesDukungan} />
+                        </div>
+                    ) : null}
 
                     <PanelPendaftaranMerchant
                         uuidTenant={Profil.Uuid}

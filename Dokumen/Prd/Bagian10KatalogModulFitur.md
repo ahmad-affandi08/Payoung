@@ -25,7 +25,7 @@ Dipakai tim internal {{APP}} (§8 Bagian A, §13.8, §19.3).
 | PGL-13 | Laporan MRR/ARR/churn/piutang langganan | P-08 | P1 · Fase 2 |
 | PGL-14 | Faktur pajak langganan (export Coretax), refund & nota kredit | P-08 | P2 · Fase 3 |
 | PGL-15 | Tiket dukungan + SLA per paket | P-09 | P0 (dasar) · Fase 0 → P1 (SLA & kanal WA) · Fase 2 |
-| PGL-16 | Akses dukungan berizin (baca saja / baca & ubah) + alat bantu dukungan | P-09 | P0 · Fase 1 (sebelum beta tertutup). **Akses dukungan & akses darurat selesai v5.74**; alat bantu menyusul |
+| PGL-16 | Akses dukungan berizin (baca saja / baca & ubah) + alat bantu dukungan | P-09 | P0 · Fase 1 (sebelum beta tertutup). **Akses dukungan & akses darurat selesai v5.74; alat bantu dukungan selesai v5.76 (D-133)** |
 | PGL-17 | Manajemen rilis aplikasi, rollout, versi minimum | P-10 | P0 · Fase 1 |
 | PGL-18 | Flag fitur (global/paket/tenant/persentase) & kill switch | P-10 | P1 · Fase 1 |
 | PGL-19 | Pengumuman, banner pemeliharaan, catatan rilis — v3.45 (Aplikasi Pemilik v3.47) | P-10 | P1 · Fase 2 |

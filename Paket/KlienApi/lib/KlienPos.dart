@@ -637,6 +637,11 @@ class KlienPos {
   Future<int> LaporGalat(List<Map<String, Object?>> galat) async =>
       UraiJson.AmbilBulat((await _Kirim('POST', 'perangkat/galat', {'Galat': galat}))['Diterima']);
 
+  /// PGL-16 bagian 2: unggah log lokal yang diminta dukungan (maks. 500 baris teks, sudah disaring dari data pribadi).
+  /// Mengembalikan jumlah baris yang diterima. Tidak ada permintaan yang berlaku → `GalatApi` 409 `LogTidakDiminta`.
+  Future<int> UnggahLog(List<String> baris) async =>
+      UraiJson.AmbilBulat((await _Kirim('POST', 'perangkat/log', {'Baris': baris}))['Diterima']);
+
   /// Laporkan profil hardware & hasil Wizard Uji Perangkat (PRD v1.96) untuk dukungan teknis. Offline → `GalatJaringan`.
   Future<void> KirimProfilHardware(Map<String, Object?> profil) async {
     await _Kirim('POST', 'perangkat/profil-hardware', profil);

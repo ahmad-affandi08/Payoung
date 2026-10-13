@@ -128,6 +128,20 @@ export type SesiAksesDukunganRingkas = {
     JumlahDitolak: number;
 };
 
+/** PGL-16 bagian 2 (BR-P09.3): satu alat bantu dukungan yang pernah dijalankan petugas, dengan keadaan sebelum/sesudah. */
+export type HasilAlatDukunganRingkas = {
+    Uuid: string;
+    Alat: string;
+    LabelAlat: string;
+    NamaPetugas: string;
+    Status: 'Berhasil' | 'TanpaPerubahan' | 'Gagal';
+    LabelStatus: string;
+    Ringkasan: string;
+    Sebelum: Record<string, unknown> | null;
+    Sesudah: Record<string, unknown> | null;
+    DibuatPada: string;
+};
+
 export type RiwayatAksesDukunganTenant = {
     Aktif:
         | (IzinAksesDukungan & {
@@ -136,6 +150,7 @@ export type RiwayatAksesDukunganTenant = {
         | null;
     Izin: IzinAksesDukungan[];
     Sesi: SesiAksesDukunganRingkas[];
+    Alat: HasilAlatDukunganRingkas[];
 };
 
 export type Tampilan360 = {

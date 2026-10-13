@@ -74,6 +74,7 @@ export const IzinPengelola = {
     DukunganTiketTangani: 'dukungan.tiket.tangani',
     DukunganAksesMasuk: 'dukungan.akses.masuk',
     DukunganAksesDarurat: 'dukungan.akses.darurat',
+    DukunganAlatPakai: 'dukungan.alat.pakai',
     // P-11
     OperasionalLihat: 'operasional.lihat',
     OperasionalKelola: 'operasional.kelola',

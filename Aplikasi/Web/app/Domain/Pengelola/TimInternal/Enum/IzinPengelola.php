@@ -77,6 +77,8 @@ enum IzinPengelola: string
     // Owner (hanya Super Admin).
     case DukunganAksesMasuk = 'dukungan.akses.masuk';
     case DukunganAksesDarurat = 'dukungan.akses.darurat';
+    // PGL-16 bagian 2: alat bantu dukungan di konsol (BR-P09.3); hanya berjalan bila ada izin akses yang berlaku.
+    case DukunganAlatPakai = 'dukungan.alat.pakai';
 
     // P-11 Monitoring operasional (§19.3: Teknis & Super Admin).
     case OperasionalLihat = 'operasional.lihat';
@@ -146,6 +148,7 @@ enum IzinPengelola: string
             self::DukunganTiketTangani => 'Mengambil, menugaskan, membalas, dan mengubah status tiket dukungan',
             self::DukunganAksesMasuk => 'Masuk ke back-office tenant yang sudah memberi izin akses dukungan',
             self::DukunganAksesDarurat => 'Membuka akses darurat ke tenant tanpa izin Owner (insiden keamanan atau permintaan hukum)',
+            self::DukunganAlatPakai => 'Memakai alat bantu dukungan (cabut perangkat, bangun ulang saldo stok dan ringkasan, kirim ulang pesan) pada tenant yang memberi izin akses',
             // P-11
             self::OperasionalLihat => 'Melihat dasbor operasional (scheduler, antrean, job gagal, backup)',
             self::OperasionalKelola => 'Mencoba ulang/membuang job gagal dan mencatat hasil backup',

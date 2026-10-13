@@ -27,11 +27,12 @@ const izin: IzinAksesDukungan = {
     JumlahSesi: 0,
 };
 
-const kosong: RiwayatAksesDukunganTenant = { Aktif: null, Izin: [], Sesi: [] };
+const kosong: RiwayatAksesDukunganTenant = { Aktif: null, Izin: [], Sesi: [], Alat: [] };
 const BuatRiwayatDenganIzin = (tambahan: Partial<IzinAksesDukungan> = {}): RiwayatAksesDukunganTenant => ({
     Aktif: { ...izin, ...tambahan, SesiBerjalan: [] },
     Izin: [{ ...izin, ...tambahan }],
     Sesi: [],
+    Alat: [],
 });
 
 describe('PGL-16 panel akses dukungan (konsol)', () => {
