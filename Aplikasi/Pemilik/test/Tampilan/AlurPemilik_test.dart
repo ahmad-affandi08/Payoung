@@ -160,6 +160,48 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('OWN-08 cabut perangkat: konfirmasi lalu POST cabut, galat izin tampil sebagai pesan', (tester) async {
+    var dicabut = false;
+    server.penangan = (p) async {
+      if (p.url.path.endsWith('/perangkat/P1/cabut')) {
+        dicabut = true;
+        return JsonUji({
+          'Perangkat': {
+            'Uuid': 'P1',
+            'Kode': 'SLB-K01',
+            'Nama': 'Kasir Depan',
+            'Jenis': 'Kasir',
+            'Outlet': 'Solo Baru',
+            'Status': 'Dicabut',
+            'TerakhirAktifPada': '2026-09-25T01:00:00Z',
+            'JumlahOutboxTertunda': 3,
+            'VersiAplikasi': '0.1.0',
+          },
+        });
+      }
+      return Penangan(p);
+    };
+    await PasangPemilik(tester, server: server, sesi: sesi);
+    await Masuk(tester);
+    await tester.tap(find.text('Perangkat'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Cabut perangkat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cabut "Kasir Depan"?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Batal'));
+    await tester.pumpAndSettle();
+    expect(dicabut, isFalse);
+
+    await tester.tap(find.byTooltip('Cabut perangkat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Ya, cabut'));
+    await tester.pumpAndSettle();
+    expect(dicabut, isTrue);
+    expect(find.text('"Kasir Depan" dicabut.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('2FA: kode diminta setelah kata sandi; banyak usaha → pilih usaha', (tester) async {
     server.penangan = (p) async {
       if (p.url.path.endsWith('/masuk')) {

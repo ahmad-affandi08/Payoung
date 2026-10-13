@@ -483,5 +483,10 @@
         "Metode": "POST",
         "Jalur": "api/pos/v1/perangkat/log",
         "Nama": "pos.perangkat.log"
+    },
+    "POST api/pemilik/v1/perangkat/{perangkat}/cabut": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/perangkat/{perangkat}/cabut",
+        "Nama": "pemilik.perangkat.cabut"
     }
 }

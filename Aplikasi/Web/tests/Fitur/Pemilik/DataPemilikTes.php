@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\Shift;
 use App\Domain\Katalog\Model\Kategori;
+use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Katalog\Model\ProdukGudang;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
@@ -42,6 +43,11 @@ function TokenPemilikUji(object $tes, Pengguna $pengguna, string $kataSandi = Ba
 function CabutPerangkatUji(Perangkat $perangkat): void
 {
     Perangkat::query()->whereKey($perangkat->Id)->update(['DicabutPada' => now()->subHour()]);
+}
+
+function KirimPemilikUji(object $tes, string $token, string $uuidTenant, string $url, array $data = []): TestResponse
+{
+    return $tes->withToken($token)->withHeaders(['X-Tenant' => $uuidTenant, 'X-Versi-Aplikasi' => '1.0.0'])->postJson('/api/pemilik/v1'.$url, $data);
 }
 
 function AmbilPemilikUji(object $tes, string $token, string $uuidTenant, string $url): TestResponse
@@ -334,5 +340,43 @@ describe('OWN-08 status perangkat POS', function (): void {
         $baru = BantuanPerangkat::BuatPerangkat($k['Tenant']->Id, $k['Outlet'], JenisPerangkat::Kasir, 'Kasir Belakang')['Perangkat'];
         $status = array_column(AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/perangkat')->assertOk()->json('Perangkat'), 'Status', 'Uuid');
         expect($status[$baru->Uuid])->toBe('BelumDiaktifkan');
+    });
+    it('OWN-08 cabut perangkat dari Owner: perangkat langsung ditolak POS, tercatat di audit, idempoten', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $perangkat = $k['Perangkat'];
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+
+        $respons = KirimPemilikUji($this, $token, $k['Tenant']->Uuid, "/perangkat/{$perangkat->Uuid}/cabut")->assertOk();
+        expect($respons->json('Perangkat.Uuid'))->toBe($perangkat->Uuid)
+            ->and($respons->json('Perangkat.Status'))->toBe('Dicabut');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect($perangkat->fresh()?->CekDicabut())->toBeTrue()
+            ->and(LogAudit::query()->where('Peristiwa', 'perangkat.cabut')->count())->toBe(1);
+
+        // Mengulang tidak mengubah apa pun dan tidak menambah audit.
+        KirimPemilikUji($this, $token, $k['Tenant']->Uuid, "/perangkat/{$perangkat->Uuid}/cabut")->assertOk()->assertJsonPath('Perangkat.Status', 'Dicabut');
+        expect(LogAudit::query()->where('Peristiwa', 'perangkat.cabut')->count())->toBe(1);
+    });
+
+    it('OWN-08 cabut perangkat: tanpa izin perangkat.kelola 403, perangkat di luar outlet akses 404, tenant lain 403', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $uuid = $k['Perangkat']->Uuid;
+
+        $tokenKasir = TokenPemilikUji($this, $k['Kasir'], 'kata-sandi-uji');
+        KirimPemilikUji($this, $tokenKasir, $k['Tenant']->Uuid, "/perangkat/{$uuid}/cabut")->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+
+        $cabang = BantuanJurnal::BuatOutlet();
+        $manajerCabang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet, semuaOutlet: false);
+        OutletPengguna::query()->create(['IdOutlet' => $cabang->Id, 'IdPengguna' => $manajerCabang->Id, 'IdPeran' => BantuanOrganisasi::Peran($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->Id]);
+        $tokenCabang = TokenPemilikUji($this, $manajerCabang, 'kata-sandi-uji');
+        KirimPemilikUji($this, $tokenCabang, $k['Tenant']->Uuid, "/perangkat/{$uuid}/cabut")->assertStatus(404);
+
+        $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
+        $tokenLain = TokenPemilikUji($this, $lain['Pemilik']);
+        KirimPemilikUji($this, $tokenLain, $k['Tenant']->Uuid, "/perangkat/{$uuid}/cabut")->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect($k['Perangkat']->fresh()?->CekDicabut())->toBeFalse();
     });
 });

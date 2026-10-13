@@ -69,6 +69,9 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
 
         // OWN-08: status perangkat POS.
         Route::get('/perangkat', [PerangkatKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::PerangkatLihat))->name('pemilik.perangkat');
+        Route::post('/perangkat/{perangkat}/cabut', [PerangkatKontroler::class, 'Cabut'])
+            ->where('perangkat', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
+            ->middleware([$izin(IzinTenant::PerangkatKelola), 'throttle:pemilik-30'])->name('pemilik.perangkat.cabut');
         // OWN-10: pantau karyawan (kehadiran hari ini, komisi & target bulan berjalan).
         Route::get('/karyawan', [KaryawanKontroler::class, 'Pantau'])->middleware($izin(IzinTenant::KaryawanLihat))->name('pemilik.karyawan');
     });

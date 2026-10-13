@@ -62,18 +62,36 @@ final class DaftarPerangkat
             ->orderByRaw('DicabutPada IS NOT NULL')
             ->orderBy('Kode')
             ->get()
-            ->map(fn (Perangkat $perangkat): array => [
-                'Uuid' => $perangkat->Uuid,
-                'Kode' => $perangkat->Kode,
-                'Nama' => $perangkat->Nama,
-                'Jenis' => $perangkat->Jenis->value,
-                'Outlet' => (string) $outlet->get($perangkat->IdOutlet)?->Nama,
-                'Status' => $perangkat->AmbilStatus(),
-                'TerakhirAktifPada' => $perangkat->TerakhirAktifPada?->utc()->toIso8601ZuluString(),
-                'JumlahOutboxTertunda' => $perangkat->JumlahOutboxTertunda,
-                'VersiAplikasi' => $perangkat->VersiAplikasi,
-            ])
+            ->map(fn (Perangkat $perangkat): array => self::BarisStatus($perangkat, (string) $outlet->get($perangkat->IdOutlet)?->Nama))
             ->all());
+    }
+
+    /**
+     * OWN-08: satu baris status (bentuk sama dengan `AmbilStatus`), dipakai jawaban `POST perangkat/{uuid}/cabut`.
+     *
+     * @return array{Uuid: string, Kode: string, Nama: string, Jenis: string, Outlet: string, Status: string, TerakhirAktifPada: string|null, JumlahOutboxTertunda: int, VersiAplikasi: string|null}
+     */
+    public function StatusSatu(Perangkat $perangkat): array
+    {
+        return self::BarisStatus($perangkat, (string) Outlet::query()->whereKey($perangkat->IdOutlet)->value('Nama'));
+    }
+
+    /**
+     * @return array{Uuid: string, Kode: string, Nama: string, Jenis: string, Outlet: string, Status: string, TerakhirAktifPada: string|null, JumlahOutboxTertunda: int, VersiAplikasi: string|null}
+     */
+    private static function BarisStatus(Perangkat $perangkat, string $namaOutlet): array
+    {
+        return [
+            'Uuid' => $perangkat->Uuid,
+            'Kode' => $perangkat->Kode,
+            'Nama' => $perangkat->Nama,
+            'Jenis' => $perangkat->Jenis->value,
+            'Outlet' => $namaOutlet,
+            'Status' => $perangkat->AmbilStatus(),
+            'TerakhirAktifPada' => $perangkat->TerakhirAktifPada?->utc()->toIso8601ZuluString(),
+            'JumlahOutboxTertunda' => $perangkat->JumlahOutboxTertunda,
+            'VersiAplikasi' => $perangkat->VersiAplikasi,
+        ];
     }
 
     /**

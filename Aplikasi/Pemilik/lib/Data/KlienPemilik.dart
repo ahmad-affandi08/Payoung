@@ -547,6 +547,11 @@ class KlienPemilik {
     return [for (final p in UraiJson.AmbilDaftarPeta(json['Perangkat'])) PerangkatPemilik.DariJson(p)];
   }
 
+  /// OWN-08: cabut perangkat POS (izin `perangkat.kelola`); perangkat langsung ditolak server. Idempoten.
+  Future<PerangkatPemilik> CabutPerangkat(String uuid) async => PerangkatPemilik.DariJson(
+    UraiJson.AmbilPeta((await _Kirim('POST', 'perangkat/${Uri.encodeComponent(uuid)}/cabut', null))['Perangkat']),
+  );
+
   /// OWN-11: insight minggu lalu; null bila belum ada penjualan dua minggu terakhir.
   Future<InsightMingguanPemilik?> AmbilInsight() async {
     final isi = UraiJson.AmbilPetaAtauNull((await _Kirim('GET', 'insight', null))['Insight']);
