@@ -7,9 +7,10 @@ use App\Http\Kontroler\Pengelola\GalatKontroler;
 use App\Http\Perantara\ArahkanDomainAplikasi;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
+use App\Http\Perantara\CatatMetrikApi;
 use App\Http\Perantara\PasangHeaderKeamanan;
-use App\Http\Perantara\WajibLisensiSah;
 use App\Http\Perantara\Pengelola\SiapkanSesiPengelola;
+use App\Http\Perantara\WajibLisensiSah;
 use App\Http\Respons\GalatApi;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
@@ -53,6 +54,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Audit F-14: header keamanan (CSP dasar, HSTS, nosniff, Referrer-Policy, Permissions-Policy) di semua respons.
         $middleware->append(PasangHeaderKeamanan::class);
+        // P-11 PGL-20: metrik API (jumlah, galat 5xx, latensi) per kelompok untuk dasbor operasional; dicatat saat terminate.
+        $middleware->append(CatatMetrikApi::class);
 
         // D-35 edisi Lisensi: tanpa lisensi sah untuk domain ini, semua permintaan dijawab 503 (no-op di edisi SaaS).
         $middleware->append(WajibLisensiSah::class);

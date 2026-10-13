@@ -9,6 +9,7 @@ use App\Domain\Pengelola\Operasional\Enum\JenisAlertOperasional;
 use App\Domain\Pengelola\Operasional\Enum\JenisCatatanBackup;
 use App\Domain\Pengelola\Operasional\Model\CatatanBackup;
 use App\Domain\Pengelola\Operasional\Model\DetakPenjadwal;
+use Brick\Math\BigDecimal;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,11 @@ use Illuminate\Support\Facades\DB;
  */
 final class KondisiOperasional
 {
+    public function __construct(
+        private readonly RingkasanMetrikApi $metrik,
+        private readonly PerangkatOutboxMacet $outboxMacet,
+    ) {}
+
     /**
      * @return array{TerakhirPada: Carbon|null, UmurDetik: int|null, Sehat: bool}
      */
@@ -120,6 +126,50 @@ final class KondisiOperasional
                 ? 'Belum ada backup berhasil yang tercatat.'
                 : 'Backup berhasil terakhir '.self::FormatUmur((int) $backup['BackupTerakhir']->SelesaiPada->diffInSeconds(now(), true))
                     .' lalu (batas '.config('operasional.BatasUmurBackupJam').' jam).';
+        }
+
+        return $masalah;
+    }
+
+    /**
+     * Masalah dari metrik API dan outbox perangkat (P-11, PGL-20). Lebih mahal daripada [AmbilMasalah] (membaca
+     * `MetrikApi` dan `Perangkat`), jadi hanya dipakai pemeriksa alert terjadwal, bukan banner tiap halaman.
+     *
+     * @return array<string, string> Kunci JenisAlertOperasional => pesan.
+     */
+    public function AmbilMasalahMetrik(): array
+    {
+        $masalah = [];
+        $jendela = (int) config('operasional.JendelaMetrikMenit');
+        $minimum = (int) config('operasional.MinimumPermintaanMetrik');
+        $batasGalat = BigDecimal::of((string) config('operasional.BatasErrorRatePersen'));
+        $batasP95 = (int) config('operasional.BatasP95PosMs');
+        $galat = [];
+
+        foreach ($this->metrik->Ambil($jendela) as $kelompok) {
+            if ($kelompok['Jumlah'] < $minimum) {
+                continue;
+            }
+
+            if (BigDecimal::of($kelompok['ErrorRatePersen'])->isGreaterThanOrEqualTo($batasGalat)) {
+                $galat[] = "{$kelompok['Kelompok']} {$kelompok['ErrorRatePersen']}% ({$kelompok['GalatServer']} dari {$kelompok['Jumlah']})";
+            }
+
+            if ($kelompok['Kelompok'] === 'Pos' && ($kelompok['P95Lebih'] || ($kelompok['P95Ms'] ?? 0) > $batasP95)) {
+                $masalah[JenisAlertOperasional::LatensiPosTinggi->value] = 'p95 API POS '.($kelompok['P95Lebih'] ? 'di atas 1.600' : "sampai {$kelompok['P95Ms']}")
+                    ." ms dalam {$jendela} menit terakhir (target {$batasP95} ms, {$kelompok['Jumlah']} permintaan).";
+            }
+        }
+
+        if ($galat !== []) {
+            $masalah[JenisAlertOperasional::ErrorRateTinggi->value] = "Galat server (5xx) dalam {$jendela} menit terakhir mencapai {$batasGalat}% atau lebih: ".implode('; ', $galat).'.';
+        }
+
+        $tenantMacet = $this->outboxMacet->HitungTenant();
+
+        if ($tenantMacet > 0) {
+            $masalah[JenisAlertOperasional::OutboxMacet->value] = "{$tenantMacet} tenant punya perangkat dengan transaksi belum terkirim lebih dari "
+                .config('operasional.BatasOutboxMacetJam').' jam. Daftarnya ada di dasbor operasional.';
         }
 
         return $masalah;

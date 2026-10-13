@@ -55,6 +55,16 @@ return [
             'lock_path' => storage_path('framework/cache/data'),
         ],
 
+        // P-11 PGL-20: penghitung metrik API per menit. Berkas lokal, bukan database: dicatat di setiap permintaan API
+        // sehingga tidak boleh menambah kueri. Angkanya perkiraan (tulis serentak bisa saling menimpa). Di test
+        // (`CACHE_STORE=array`) ikut array supaya tidak meninggalkan berkas.
+        'metrik' => [
+            'driver' => env('METRIK_CACHE_DRIVER', env('CACHE_STORE') === 'array' ? 'array' : 'file'),
+            'serialize' => false,
+            'path' => storage_path('framework/cache/metrik'),
+            'lock_path' => storage_path('framework/cache/metrik'),
+        ],
+
         'storage' => [
             'driver' => 'storage',
             'disk' => env('CACHE_STORAGE_DISK'),

@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $DiaktifkanPada
  * @property Carbon|null $TerakhirAktifPada
  * @property int $JumlahOutboxTertunda
+ * @property Carbon|null $OutboxTertundaSejak
  * @property Carbon|null $MintaLogPada
  * @property Carbon|null $LogDiunggahPada
  * @property Carbon|null $DicabutPada
@@ -67,6 +68,7 @@ final class Perangkat extends ModelDasar
         'DiaktifkanPada' => null,
         'TerakhirAktifPada' => null,
         'JumlahOutboxTertunda' => 0,
+        'OutboxTertundaSejak' => null,
         'MintaLogPada' => null,
         'LogDiunggahPada' => null,
         'DicabutPada' => null,
@@ -124,6 +126,7 @@ final class Perangkat extends ModelDasar
             'DiaktifkanPada' => 'datetime',
             'TerakhirAktifPada' => 'datetime',
             'JumlahOutboxTertunda' => 'integer',
+            'OutboxTertundaSejak' => 'datetime',
             'MintaLogPada' => 'datetime',
             'LogDiunggahPada' => 'datetime',
             'DicabutPada' => 'datetime',

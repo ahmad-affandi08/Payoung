@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Operasional\Kueri;
 
 use App\Domain\Pengelola\Integrasi\Kueri\PeringatanIntegrasi;
+use App\Domain\Pengelola\Operasional\Layanan\PengaturanAlertOperasional;
 use App\Domain\Pengelola\Operasional\Model\AlertOperasional;
 use App\Domain\Pengelola\Operasional\Model\CatatanBackup;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
@@ -13,8 +14,8 @@ use Throwable;
 
 /**
  * Isi dasbor operasional dasar (P-11 Fase 0): detak scheduler, antrean, job gagal, backup & uji restore, alert, dan
- * kesehatan server (status integrasi P-05, ukuran database, ruang disk). Metrik lain (error rate, outbox perangkat,
- * crash-free) menyusul bersama flow sumber datanya.
+ * kesehatan server (status integrasi P-05, ukuran database, ruang disk), serta (PGL-20) error rate & p95 API dan outbox
+ * macet. Crash-free sessions per versi menyusul bersama pelaporan crash dari aplikasi.
  */
 final class DasborOperasional
 {
@@ -22,6 +23,9 @@ final class DasborOperasional
         private readonly KondisiOperasional $kondisi,
         private readonly TugasGagal $tugasGagal,
         private readonly PeringatanIntegrasi $peringatanIntegrasi,
+        private readonly RingkasanMetrikApi $metrik,
+        private readonly PerangkatOutboxMacet $outboxMacet,
+        private readonly PengaturanAlertOperasional $pengaturanAlert,
     ) {}
 
     /**
@@ -55,6 +59,20 @@ final class DasborOperasional
                 'BatasJam' => (int) config('operasional.BatasUmurBackupJam'),
                 'Riwayat' => $this->AmbilRiwayatBackup(),
             ],
+            // PGL-20: error rate & p95 per kelompok API, dan perangkat dengan outbox macet.
+            'Metrik' => [
+                'Jendela' => (int) config('operasional.JendelaMetrikMenit'),
+                'Terkini' => $this->metrik->Ambil((int) config('operasional.JendelaMetrikMenit')),
+                'SatuJam' => $this->metrik->Ambil(60),
+                'BatasErrorRatePersen' => (string) config('operasional.BatasErrorRatePersen'),
+                'BatasP95PosMs' => (int) config('operasional.BatasP95PosMs'),
+                'MinimumPermintaan' => (int) config('operasional.MinimumPermintaanMetrik'),
+            ],
+            'OutboxMacet' => [
+                'BatasJam' => (int) config('operasional.BatasOutboxMacetJam'),
+                'Daftar' => $this->outboxMacet->AmbilDaftar(),
+            ],
+            'AlertWa' => ['Nomor' => $this->pengaturanAlert->NomorWa(), 'Maks' => PengaturanAlertOperasional::MAKS_NOMOR],
             'Alert' => [
                 'Aktif' => $this->AmbilAlert(true),
                 'Riwayat' => $this->AmbilAlert(false),
@@ -119,6 +137,7 @@ final class DasborOperasional
                 'MulaiPada' => $alert->MulaiPada->toIso8601String(),
                 'SelesaiPada' => $alert->SelesaiPada?->toIso8601String(),
                 'EmailTerkirimPada' => $alert->EmailTerkirimPada?->toIso8601String(),
+                'WaTerkirimPada' => $alert->WaTerkirimPada?->toIso8601String(),
             ])
             ->all());
     }

@@ -21,8 +21,13 @@ final class PencatatAktivitasPerangkat
         $versiBaru = $versiAplikasi !== null && $versiAplikasi !== '' && $versiAplikasi !== $perangkat->VersiAplikasi;
         $outboxBerubah = $outboxTertunda !== null && $outboxTertunda !== $perangkat->JumlahOutboxTertunda;
         $sudahLama = $perangkat->TerakhirAktifPada === null || $perangkat->TerakhirAktifPada->lt(now()->subSeconds(self::DETIK_JEDA));
+        // P-11 PGL-20: awal outbox tidak kosong dicatat untuk alert outbox macet; perangkat lama yang sudah punya outbox
+        // tertunda tetapi belum punya awal diberi awal saat kabar berikutnya masuk.
+        $jumlah = $outboxBerubah ? $outboxTertunda : $perangkat->JumlahOutboxTertunda;
+        $awalOutbox = $jumlah > 0 && $perangkat->OutboxTertundaSejak === null;
+        $akhirOutbox = $jumlah === 0 && $perangkat->OutboxTertundaSejak !== null;
 
-        if (! $versiBaru && ! $outboxBerubah && ! $sudahLama) {
+        if (! $versiBaru && ! $outboxBerubah && ! $sudahLama && ! $awalOutbox && ! $akhirOutbox) {
             return;
         }
 
@@ -30,6 +35,12 @@ final class PencatatAktivitasPerangkat
 
         if ($outboxBerubah) {
             $perangkat->JumlahOutboxTertunda = $outboxTertunda;
+        }
+
+        if ($awalOutbox) {
+            $perangkat->OutboxTertundaSejak = now();
+        } elseif ($akhirOutbox) {
+            $perangkat->OutboxTertundaSejak = null;
         }
 
         if ($versiBaru) {

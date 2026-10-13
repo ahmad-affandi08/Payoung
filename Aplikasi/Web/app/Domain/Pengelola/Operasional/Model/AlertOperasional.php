@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $MulaiPada
  * @property Carbon|null $SelesaiPada
  * @property Carbon|null $EmailTerkirimPada
+ * @property Carbon|null $WaTerkirimPada
  */
 final class AlertOperasional extends ModelDasar
 {
@@ -27,7 +28,7 @@ final class AlertOperasional extends ModelDasar
     protected bool $pakaiUuid = false;
 
     /** @var array<string, mixed> */
-    protected $attributes = ['SelesaiPada' => null, 'EmailTerkirimPada' => null];
+    protected $attributes = ['SelesaiPada' => null, 'EmailTerkirimPada' => null, 'WaTerkirimPada' => null];
 
     /**
      * @return array<string, string>
@@ -40,6 +41,7 @@ final class AlertOperasional extends ModelDasar
             'MulaiPada' => 'datetime',
             'SelesaiPada' => 'datetime',
             'EmailTerkirimPada' => 'datetime',
+            'WaTerkirimPada' => 'datetime',
         ];
     }
 }

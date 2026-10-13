@@ -3,6 +3,7 @@ import { type FormEvent, type ReactNode } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import {
     Alert as KotakPeringatan,
@@ -19,6 +20,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { FormatDurasi, FormatUkuranBerkas } from '@/Pustaka/FormatUkuran';
+import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakPengelola from '@/TataLetak/TataLetakPengelola';
 import { IzinPengelola, PunyaIzin, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
 import PemilihTanggalWaktu from '@/Komponen/Tanggal/PemilihTanggalWaktu';
@@ -44,6 +46,28 @@ type Alert = {
     MulaiPada: string;
     SelesaiPada: string | null;
     EmailTerkirimPada: string | null;
+    WaTerkirimPada: string | null;
+};
+
+type MetrikKelompok = {
+    Kelompok: string;
+    Jumlah: number;
+    GalatServer: number;
+    ErrorRatePersen: string;
+    RataRataMs: number | null;
+    P95Ms: number | null;
+    P95Lebih: boolean;
+};
+
+type PerangkatMacet = {
+    Uuid: string;
+    NamaTenant: string;
+    NamaOutlet: string;
+    NamaPerangkat: string;
+    JumlahOutbox: number;
+    TertundaSejak: string | null;
+    TerakhirAktifPada: string | null;
+    VersiAplikasi: string | null;
 };
 
 type BarisAntrean = { Antrean: string; Menunggu: number; Diproses: number; UmurTertuaDetik: number | null };
@@ -69,6 +93,16 @@ type Dasbor = {
         BatasJam: number;
         Riwayat: CatatanBackup[];
     };
+    Metrik: {
+        Jendela: number;
+        Terkini: MetrikKelompok[];
+        SatuJam: MetrikKelompok[];
+        BatasErrorRatePersen: string;
+        BatasP95PosMs: number;
+        MinimumPermintaan: number;
+    };
+    OutboxMacet: { BatasJam: number; Daftar: PerangkatMacet[] };
+    AlertWa: { Nomor: string[]; Maks: number };
     Alert: { Aktif: Alert[]; Riwayat: Alert[] };
     Kesehatan: {
         PeringatanIntegrasi: string[];
@@ -111,6 +145,144 @@ const kolomAntrean: KolomTabel<BarisAntrean>[] = [
         header: 'Umur tertua',
         meta: { label: 'Umur tertua', prioritas: 'penting' },
         cell: ({ row }) => FormatDurasi(row.original.UmurTertuaDetik),
+    },
+];
+
+const NamaKelompokApi: Record<string, string> = { Pos: 'API POS', Pemilik: 'API Owner', ApiPublik: 'API publik' };
+
+function TeksP95(baris: MetrikKelompok): string {
+    if (baris.Jumlah === 0 || (baris.P95Ms === null && !baris.P95Lebih)) {
+        return '—';
+    }
+
+    return baris.P95Lebih ? 'lebih dari 1.600 ms' : `paling lama ${String(baris.P95Ms)} ms`;
+}
+
+/** Status teks per kelompok API; aturan sama dengan alert di server (jumlah minimum, error rate, p95 POS). */
+function StatusMetrik(
+    baris: MetrikKelompok,
+    metrik: Dasbor['Metrik'],
+): { jenis: 'sukses' | 'peringatan' | 'bahaya' | 'netral'; teks: string } {
+    if (baris.Jumlah < metrik.MinimumPermintaan) {
+        return { jenis: 'netral', teks: 'Data sedikit' };
+    }
+
+    if (BandingkanDesimal(baris.ErrorRatePersen, metrik.BatasErrorRatePersen) >= 0) {
+        return { jenis: 'bahaya', teks: 'Error tinggi' };
+    }
+
+    if (baris.Kelompok === 'Pos' && (baris.P95Lebih || (baris.P95Ms ?? 0) > metrik.BatasP95PosMs)) {
+        return { jenis: 'peringatan', teks: 'Lambat' };
+    }
+
+    return { jenis: 'sukses', teks: 'Normal' };
+}
+
+function BuatKolomMetrik(metrik: Dasbor['Metrik']): KolomTabel<MetrikKelompok>[] {
+    return [
+        {
+            id: 'Kelompok',
+            accessorFn: (baris) => NamaKelompokApi[baris.Kelompok] ?? baris.Kelompok,
+            header: 'API',
+            enableSorting: false,
+            meta: { label: 'API', prioritas: 'utama', wajib: true },
+        },
+        {
+            id: 'Jumlah',
+            accessorKey: 'Jumlah',
+            header: 'Permintaan',
+            enableSorting: false,
+            meta: { label: 'Permintaan', angka: true, prioritas: 'penting' },
+            cell: ({ row }) => row.original.Jumlah.toLocaleString('id-ID'),
+        },
+        {
+            id: 'ErrorRate',
+            header: 'Galat server (5xx)',
+            enableSorting: false,
+            meta: { label: 'Galat server (5xx)', angka: true, prioritas: 'penting' },
+            cell: ({ row: { original: baris } }) =>
+                `${baris.ErrorRatePersen.replace('.', ',')}% (${baris.GalatServer.toLocaleString('id-ID')})`,
+        },
+        {
+            id: 'RataRata',
+            header: 'Rata-rata',
+            enableSorting: false,
+            meta: { label: 'Rata-rata', angka: true, prioritas: 'rendah' },
+            cell: ({ row }) => (row.original.RataRataMs === null ? '—' : `${String(row.original.RataRataMs)} ms`),
+        },
+        {
+            id: 'P95',
+            header: 'p95',
+            enableSorting: false,
+            meta: { label: 'p95', prioritas: 'penting' },
+            cell: ({ row }) => TeksP95(row.original),
+        },
+        {
+            id: 'Status',
+            header: 'Status',
+            enableSorting: false,
+            meta: { label: 'Status', prioritas: 'utama' },
+            cell: ({ row }) => {
+                const status = StatusMetrik(row.original, metrik);
+
+                return <LabelStatus jenis={status.jenis} teks={status.teks} />;
+            },
+        },
+    ];
+}
+
+const kolomOutboxMacet: KolomTabel<PerangkatMacet>[] = [
+    {
+        id: 'NamaTenant',
+        accessorKey: 'NamaTenant',
+        header: 'Tenant',
+        enableSorting: false,
+        meta: { label: 'Tenant', prioritas: 'utama', wajib: true },
+    },
+    {
+        id: 'Perangkat',
+        accessorFn: (baris) => `${baris.NamaPerangkat} ${baris.NamaOutlet}`,
+        header: 'Perangkat',
+        enableSorting: false,
+        meta: { label: 'Perangkat', prioritas: 'utama' },
+        cell: ({ row: { original: baris } }) => (
+            <span className="flex flex-col">
+                <span className="font-semibold break-words">{baris.NamaPerangkat}</span>
+                <span className="text-keterangan text-teks-sekunder">{baris.NamaOutlet}</span>
+            </span>
+        ),
+    },
+    {
+        id: 'JumlahOutbox',
+        accessorKey: 'JumlahOutbox',
+        header: 'Belum terkirim',
+        enableSorting: false,
+        meta: { label: 'Belum terkirim', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => `${row.original.JumlahOutbox.toLocaleString('id-ID')} transaksi`,
+    },
+    {
+        id: 'TertundaSejak',
+        accessorKey: 'TertundaSejak',
+        header: 'Tertunda sejak',
+        enableSorting: false,
+        meta: { label: 'Tertunda sejak', prioritas: 'penting', kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => (row.original.TertundaSejak ? FormatTanggalWaktu(row.original.TertundaSejak) : '—'),
+    },
+    {
+        id: 'TerakhirAktifPada',
+        accessorKey: 'TerakhirAktifPada',
+        header: 'Terakhir aktif',
+        enableSorting: false,
+        meta: { label: 'Terakhir aktif', prioritas: 'rendah', kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => (row.original.TerakhirAktifPada ? FormatTanggalWaktu(row.original.TerakhirAktifPada) : '—'),
+    },
+    {
+        id: 'VersiAplikasi',
+        accessorKey: 'VersiAplikasi',
+        header: 'Versi',
+        enableSorting: false,
+        meta: { label: 'Versi', prioritas: 'rendah', kelasSel: 'font-mono text-label' },
+        cell: ({ row }) => row.original.VersiAplikasi ?? '—',
     },
 ];
 
@@ -212,7 +384,8 @@ const kolomBackup: KolomTabel<CatatanBackup>[] = [
 export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
     const { props } = usePage<PropsBersamaPengelola>();
     const bolehKelola = PunyaIzin(props.Pengguna, IzinPengelola.OperasionalKelola);
-    const { Penjadwal, Antrean, TugasGagal, Backup, Alert, Kesehatan } = Dasbor;
+    const { Penjadwal, Antrean, TugasGagal, Backup, Alert, Kesehatan, Metrik, OutboxMacet, AlertWa } = Dasbor;
+    const kolomMetrik = BuatKolomMetrik(Metrik);
 
     return (
         <TataLetakPengelola judul="Operasional">
@@ -274,6 +447,49 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     sumber={{ mode: 'lokal', data: Antrean.PerAntrean }}
                     ambilIdBaris={(baris) => baris.Antrean}
                     kosong={{ ilustrasi: true, judul: 'Tidak ada job di antrean.' }}
+                />
+            </Bagian>
+
+            <Bagian judul={`Error rate & p95 API (${String(Metrik.Jendela)} menit terakhir)`}>
+                <p className="max-w-3xl text-label text-teks-sekunder">
+                    Alert kritis bila galat server (5xx) mencapai {String(Metrik.BatasErrorRatePersen)}% dengan paling
+                    sedikit {String(Metrik.MinimumPermintaan)} permintaan; peringatan bila p95 API POS melewati{' '}
+                    {String(Metrik.BatasP95PosMs)} ms. p95 dibaca dari kelompok latensi, jadi angkanya batas atas
+                    kelompok tempat persentil ke-95 jatuh. Data terlambat sampai satu menit.
+                </p>
+                <TabelData
+                    id="pengelola-operasional-metrik-terkini"
+                    label="Error rate dan p95 API menit terakhir"
+                    kolom={kolomMetrik}
+                    sumber={{ mode: 'lokal', data: Metrik.Terkini }}
+                    ambilIdBaris={(baris) => baris.Kelompok}
+                    kosong={{ judul: 'Belum ada metrik API.' }}
+                />
+                <p className="text-label font-semibold text-teks-utama">Satu jam terakhir</p>
+                <TabelData
+                    id="pengelola-operasional-metrik-sejam"
+                    label="Error rate dan p95 API satu jam terakhir"
+                    kolom={kolomMetrik}
+                    sumber={{ mode: 'lokal', data: Metrik.SatuJam }}
+                    ambilIdBaris={(baris) => baris.Kelompok}
+                    kosong={{ judul: 'Belum ada metrik API.' }}
+                />
+            </Bagian>
+
+            <Bagian judul={`Perangkat dengan outbox macet (${String(OutboxMacet.Daftar.length)})`}>
+                <p className="max-w-3xl text-label text-teks-sekunder">
+                    Transaksi sudah terjadi di kasir tetapi belum sampai ke server lebih dari{' '}
+                    {String(OutboxMacet.BatasJam)} jam. Hubungi tenant agar kasir tersambung ke internet; jangan
+                    mencabut perangkat sebelum outbox terkirim. Membuka daftar ini tercatat di log audit.
+                </p>
+                <TabelData
+                    id="pengelola-operasional-outbox-macet"
+                    label="Perangkat dengan outbox macet"
+                    kolom={kolomOutboxMacet}
+                    sumber={{ mode: 'lokal', data: OutboxMacet.Daftar }}
+                    ambilIdBaris={(baris) => baris.Uuid}
+                    cari="Cari tenant, outlet, atau perangkat"
+                    kosong={{ ilustrasi: true, judul: 'Tidak ada perangkat dengan outbox macet.' }}
                 />
             </Bagian>
 
@@ -393,6 +609,20 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                 </dl>
             </Bagian>
 
+            <Bagian judul="Penerima alert lewat WhatsApp">
+                <p className="max-w-3xl text-label text-teks-sekunder">
+                    Alert kritis dikirim ke nomor-nomor ini lewat WhatsApp Payoung, di samping email ke Teknis. Alert
+                    peringatan hanya lewat email. Kosongkan untuk mematikan alert WhatsApp.
+                </p>
+                {bolehKelola ? (
+                    <FormNomorWaAlert nomor={AlertWa.Nomor} maks={AlertWa.Maks} />
+                ) : (
+                    <p className="text-isi text-teks-utama">
+                        {AlertWa.Nomor.length === 0 ? 'Belum ada nomor penerima.' : AlertWa.Nomor.join(', ')}
+                    </p>
+                )}
+            </Bagian>
+
             <Bagian judul="Riwayat alert">
                 {Alert.Riwayat.length === 0 ? (
                     <p className="text-isi text-teks-sekunder">Belum ada alert yang selesai.</p>
@@ -456,9 +686,19 @@ function TeksWaktuAlert({ baris }: { baris: Alert }) {
 }
 
 function TeksEmailAlert({ baris }: { baris: Alert }) {
-    return baris.EmailTerkirimPada
+    const email = baris.EmailTerkirimPada
         ? `Email ke Teknis terkirim ${FormatTanggalWaktu(baris.EmailTerkirimPada)}`
         : 'Email belum terkirim (dicoba lagi pada pemeriksaan berikutnya)';
+
+    if (baris.Tingkat !== 'Kritis') {
+        return email;
+    }
+
+    return `${email} | ${
+        baris.WaTerkirimPada
+            ? `WhatsApp terkirim ${FormatTanggalWaktu(baris.WaTerkirimPada)}`
+            : 'WhatsApp belum terkirim'
+    }`;
 }
 
 /** Alert yang masih terbuka: kotak Alert per kejadian, tingkat selalu tertulis (tidak hanya warna). */
@@ -589,6 +829,32 @@ function FormCatatBackup() {
             <div className="sm:col-span-3">
                 <Tombol type="submit" varian="sekunder" memproses={formulir.processing}>
                     Simpan catatan
+                </Tombol>
+            </div>
+        </form>
+    );
+}
+
+function FormNomorWaAlert({ nomor, maks }: { nomor: string[]; maks: number }) {
+    const formulir = useForm({ NomorWa: nomor.join('\n') });
+    const Kirim = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+        formulir.post('/operasional/nomor-wa-alert', { preserveScroll: true });
+    };
+
+    return (
+        <form onSubmit={Kirim} className="grid gap-3" noValidate>
+            <BidangTeksPanjang
+                label={`Nomor WhatsApp (satu per baris, maksimal ${String(maks)})`}
+                nilai={formulir.data.NomorWa}
+                baris={3}
+                kode
+                saatBerubah={(nilai) => formulir.setData('NomorWa', nilai)}
+                galat={formulir.errors.NomorWa}
+            />
+            <div>
+                <Tombol type="submit" varian="sekunder" memproses={formulir.processing}>
+                    Simpan nomor penerima
                 </Tombol>
             </div>
         </form>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Pengelola\Operasional;
 
+use App\Domain\Pengelola\Operasional\Aksi\AturNomorWaAlertOperasional;
 use App\Domain\Pengelola\Operasional\Aksi\BuangTugasGagal;
 use App\Domain\Pengelola\Operasional\Aksi\CatatHasilBackup;
 use App\Domain\Pengelola\Operasional\Aksi\CobaUlangTugasGagal;
@@ -11,6 +12,7 @@ use App\Domain\Pengelola\Operasional\Kueri\DasborOperasional;
 use App\Domain\Pengelola\Operasional\Kueri\TugasGagal;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Kontroler\Pengelola\PelakuPengelola;
+use App\Http\Permintaan\Pengelola\Operasional\AturNomorWaAlertPermintaan;
 use App\Http\Permintaan\Pengelola\Operasional\CatatBackupPermintaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,5 +59,12 @@ final class OperasionalKontroler extends Kontroler
         $catatan = $catat->Jalankan($permintaan->AmbilData(), $this->AmbilPelaku());
 
         return back()->with('Kilat', "{$catatan->Jenis->AmbilLabel()} {$catatan->Hasil->value} tercatat.");
+    }
+
+    public function AturNomorWaAlert(AturNomorWaAlertPermintaan $permintaan, AturNomorWaAlertOperasional $atur): RedirectResponse
+    {
+        $nomor = $atur->Jalankan($this->AmbilPelaku(), $permintaan->AmbilNomor());
+
+        return back()->with('Kilat', $nomor === [] ? 'Alert WhatsApp dimatikan. Alert tetap dikirim lewat email.' : count($nomor).' nomor penerima alert WhatsApp disimpan.');
     }
 }
