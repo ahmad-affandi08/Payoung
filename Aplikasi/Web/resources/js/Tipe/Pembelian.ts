@@ -258,11 +258,29 @@ export type PropsDetailPesanan = {
     Pesanan: DetailPesanan;
     Baris: BarisDetailPesanan[];
     Penerimaan: (RingkasDokumen & { TotalNilai: string })[];
+    /** F-e: riwayat pengiriman PO ke pemasok lewat WhatsApp (10 terbaru). */
+    Pengiriman: PengirimanPesanan[];
     Riwayat: RiwayatDokumen[];
     Izin: IzinPembelian;
-    Tindakan: { Ubah: boolean; Ajukan: boolean; Setujui: boolean; Terima: boolean; Batalkan: boolean; Tutup: boolean };
+    Tindakan: {
+        Ubah: boolean;
+        Ajukan: boolean;
+        Setujui: boolean;
+        Terima: boolean;
+        KirimWhatsapp: boolean;
+        Batalkan: boolean;
+        Tutup: boolean;
+    };
 };
-export type PropsCetakPesanan = Omit<PropsDetailPesanan, 'Izin' | 'Tindakan'> & {
+export type PengirimanPesanan = {
+    Uuid: string;
+    Status: 'Diantrekan' | 'Terkirim' | 'Gagal' | 'Dibatalkan';
+    LabelStatus: string;
+    PesanGalat: string | null;
+    DibuatPada: string | null;
+    TerkirimPada: string | null;
+};
+export type PropsCetakPesanan = Omit<PropsDetailPesanan, 'Izin' | 'Tindakan' | 'Pengiriman'> & {
     Usaha: { Nama?: string; Npwp?: string | null };
 };
 

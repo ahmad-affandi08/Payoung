@@ -52,6 +52,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
     Route::get('/pesanan/{pesanan}/ubah', [PesananPembelianKontroler::class, 'Ubah'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.ubah');
     Route::put('/pesanan/{pesanan}', [PesananPembelianKontroler::class, 'Perbarui'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.perbarui');
     Route::post('/pesanan/{pesanan}/ajukan', [PesananPembelianKontroler::class, 'Ajukan'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.ajukan');
+    // F-e: kirim PO yang sudah disetujui ke pemasok lewat WhatsApp.
+    Route::post('/pesanan/{pesanan}/kirim-whatsapp', [PesananPembelianKontroler::class, 'KirimWhatsapp'])->where('pesanan', $ulid)->middleware('throttle:20,1')->name('kelola.pembelian.pesanan.kirim-whatsapp');
     Route::post('/pesanan/{pesanan}/batalkan', [PesananPembelianKontroler::class, 'Batalkan'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.batalkan');
     Route::post('/pesanan/{pesanan}/tutup', [PesananPembelianKontroler::class, 'Tutup'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.tutup');
     Route::get('/pesanan/{pesanan}/cetak', [PesananPembelianKontroler::class, 'Cetak'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.cetak');

@@ -19,6 +19,7 @@ use App\Domain\Pembelian\Model\PembayaranHutang;
 use App\Domain\Pembelian\Model\PembayaranHutangAlokasi;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Domain\Pembelian\Model\PenerimaanBarangDetail;
+use App\Domain\Pembelian\Model\PengirimanPesananPembelian;
 use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pembelian\Model\PesananPembelianDetail;
 use App\Domain\Pembelian\Model\ReturPembelian;
@@ -90,6 +91,14 @@ final class DetailPembelian
                 'Sisa' => self::TidakNegatif(Kuantitas::Dari($d->Jumlah)->Kurangi(Kuantitas::Dari($d->JumlahDiterima)))->KeString(),
             ])->all()),
             'Penerimaan' => $this->RingkasPenerimaan(PenerimaanBarang::query()->where('IdPesananPembelian', $po->Id)->orderBy('Id')->get()),
+            'Pengiriman' => array_values(PengirimanPesananPembelian::query()->where('IdPesananPembelian', $po->Id)->orderByDesc('Id')->limit(10)->get()->map(fn (PengirimanPesananPembelian $p): array => [
+                'Uuid' => $p->Uuid,
+                'Status' => $p->Status->value,
+                'LabelStatus' => $p->Status->AmbilLabel(),
+                'PesanGalat' => $p->PesanGalat,
+                'DibuatPada' => $p->DibuatPada?->toIso8601ZuluString(),
+                'TerkirimPada' => $p->TerkirimPada?->toIso8601ZuluString(),
+            ])->all()),
             'Riwayat' => $this->Riwayat(PesananPembelian::JENIS_DOKUMEN, $po->Id),
         ];
     }

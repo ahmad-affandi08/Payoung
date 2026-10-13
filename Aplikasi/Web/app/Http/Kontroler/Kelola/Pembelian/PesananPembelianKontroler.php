@@ -7,6 +7,7 @@ namespace App\Http\Kontroler\Kelola\Pembelian;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pembelian\Aksi\AjukanPesananPembelian;
+use App\Domain\Pembelian\Aksi\AntrekanPengirimanPesananPembelian;
 use App\Domain\Pembelian\Aksi\BatalkanPesananPembelian;
 use App\Domain\Pembelian\Aksi\BuatDrafPoOtomatis;
 use App\Domain\Pembelian\Aksi\SetujuiPesananPembelian;
@@ -93,6 +94,7 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
                 'Setujui' => $izin['Setujui'] && $po->Status === StatusPesananPembelian::MenungguPersetujuan && $po->DibuatOleh !== $idPelaku,
                 'Terima' => $izin['Kelola'] && $po->Status->CekBolehDiterima(),
                 'Batalkan' => $izin['Kelola'] && in_array($po->Status, [StatusPesananPembelian::Draf, StatusPesananPembelian::MenungguPersetujuan, StatusPesananPembelian::Disetujui], true),
+                'KirimWhatsapp' => $izin['Kelola'] && in_array($po->Status, [StatusPesananPembelian::Disetujui, StatusPesananPembelian::DiterimaSebagian, StatusPesananPembelian::Diterima], true),
                 'Tutup' => $izin['Kelola'] && in_array($po->Status, [StatusPesananPembelian::DiterimaSebagian, StatusPesananPembelian::Diterima], true),
             ],
         ]);
@@ -127,6 +129,17 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
             : "{$po->Nomor} menunggu persetujuan pemegang izin persetujuan PO.";
 
         return to_route('kelola.pembelian.pesanan.detail', ['pesanan' => $po->Uuid])->with('Kilat', $pesan);
+    }
+
+    /**
+     * Kirim PO yang sudah disetujui ke pemasok lewat WhatsApp (F-e): diantrekan, hasilnya tampil di riwayat pengiriman.
+     */
+    public function KirimWhatsapp(string $pesanan, AntrekanPengirimanPesananPembelian $antrekan): RedirectResponse
+    {
+        $po = $this->CariDokumen(PesananPembelian::class, $pesanan);
+        $antrekan->Jalankan($this->IdTenant(), $po, $this->Pelaku()->Id);
+
+        return to_route('kelola.pembelian.pesanan.detail', ['pesanan' => $po->Uuid])->with('Kilat', "{$po->Nomor} sedang dikirim ke WhatsApp {$po->Pemasok->Nama}.");
     }
 
     public function Setujui(string $pesanan, SetujuiPesananPembelian $setujui): RedirectResponse

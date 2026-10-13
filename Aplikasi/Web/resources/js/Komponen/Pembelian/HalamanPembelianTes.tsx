@@ -119,6 +119,7 @@ function PropsDetail(perubahan: Partial<PropsDetailPesanan['Tindakan']> = {}): P
             },
         ],
         Penerimaan: [],
+        Pengiriman: [],
         Riwayat: [],
         Izin: IzinPenuh,
         Tindakan: {
@@ -126,6 +127,7 @@ function PropsDetail(perubahan: Partial<PropsDetailPesanan['Tindakan']> = {}): P
             Ajukan: true,
             Setujui: false,
             Terima: false,
+            KirimWhatsapp: false,
             Batalkan: true,
             Tutup: false,
             ...perubahan,
@@ -376,6 +378,47 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
             { Alasan: 'Harga di atas anggaran bulan ini' },
             expect.anything(),
         );
+    });
+
+    it('detail pesanan: kirim ke WhatsApp pemasok hanya bila diizinkan; riwayat pengiriman berstatus berteks', () => {
+        RenderUji(<HalamanDetailPesanan {...PropsDetail()} />);
+        expect(screen.queryByRole('button', { name: 'Kirim ke WhatsApp pemasok' })).toBeNull();
+        expect(screen.queryByRole('list', { name: 'Riwayat pengiriman ke pemasok' })).toBeNull();
+        cleanup();
+
+        RenderUji(
+            <HalamanDetailPesanan
+                {...PropsDetail({ KirimWhatsapp: true })}
+                Pengiriman={[
+                    {
+                        Uuid: '01J9ZC5V7Q8R2T4W6Y8A0B2C4D',
+                        Status: 'Gagal',
+                        LabelStatus: 'Gagal',
+                        PesanGalat: 'Integrasi WhatsApp tidak aktif.',
+                        DibuatPada: '2026-09-29T03:00:00Z',
+                        TerkirimPada: null,
+                    },
+                    {
+                        Uuid: '01J9ZC5V7Q8R2T4W6Y8A0B2C4E',
+                        Status: 'Terkirim',
+                        LabelStatus: 'Terkirim',
+                        PesanGalat: null,
+                        DibuatPada: '2026-09-28T03:00:00Z',
+                        TerkirimPada: '2026-09-28T03:00:05Z',
+                    },
+                ]}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Kirim ke WhatsApp pemasok' }));
+        expect(tiruanRouter.post).toHaveBeenCalledWith(
+            `/kelola/pembelian/pesanan/${Uuid}/kirim-whatsapp`,
+            {},
+            expect.anything(),
+        );
+        const riwayat = screen.getByRole('list', { name: 'Riwayat pengiriman ke pemasok' });
+        expect(within(riwayat).getByText('Gagal')).toBeTruthy();
+        expect(within(riwayat).getByText('Terkirim')).toBeTruthy();
+        expect(within(riwayat).getByText('Integrasi WhatsApp tidak aktif.')).toBeTruthy();
     });
 
     it('terima dari PO: tanggal bawaan mundur sehari, jumlah bawaan = sisa, baris 0 tidak dikirim', () => {

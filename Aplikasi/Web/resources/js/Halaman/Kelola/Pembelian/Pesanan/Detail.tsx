@@ -16,6 +16,7 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import { Button } from '@/Komponen/Ui/button';
+import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -85,7 +86,14 @@ export const kolomBarisPesanan: KolomTabel<BarisDetailPesanan>[] = [
 type Dialog = 'Tolak' | 'Batalkan' | 'Tutup' | null;
 
 /** F-04 fase 1: detail pesanan pembelian (ajukan, setujui/tolak, terima barang, batalkan, tutup, cetak). */
-export default function HalamanDetailPesanan({ Pesanan, Baris, Penerimaan, Riwayat, Tindakan }: PropsDetailPesanan) {
+export default function HalamanDetailPesanan({
+    Pesanan,
+    Baris,
+    Penerimaan,
+    Pengiriman,
+    Riwayat,
+    Tindakan,
+}: PropsDetailPesanan) {
     const [dialog, AturDialog] = useState<Dialog>(null);
     const [memproses, AturMemproses] = useState(false);
     const Kirim = (aksi: string) =>
@@ -150,6 +158,11 @@ export default function HalamanDetailPesanan({ Pesanan, Baris, Penerimaan, Riway
                 {Tindakan.Terima ? (
                     <Button asChild>
                         <Link href={`${AlamatPembelian}/penerimaan/buat?pesanan=${Pesanan.Uuid}`}>Terima barang</Link>
+                    </Button>
+                ) : null}
+                {Tindakan.KirimWhatsapp ? (
+                    <Button variant="outline" onClick={() => Kirim('kirim-whatsapp')} disabled={memproses}>
+                        Kirim ke WhatsApp pemasok
                     </Button>
                 ) : null}
                 {Tindakan.Tutup ? (
@@ -227,6 +240,34 @@ export default function HalamanDetailPesanan({ Pesanan, Baris, Penerimaan, Riway
                 dokumen={Penerimaan.map((p) => ({ ...p, Nilai: p.TotalNilai }))}
                 kosong="Belum ada barang diterima untuk pesanan ini."
             />
+            {Pengiriman.length > 0 ? (
+                <Panel judul="Pengiriman ke pemasok" idJudul="judul-pengiriman-pesanan">
+                    <ul aria-label="Riwayat pengiriman ke pemasok" className="flex flex-col divide-y divide-garis">
+                        {Pengiriman.map((p) => (
+                            <li key={p.Uuid} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-isi">
+                                <LabelStatus
+                                    jenis={
+                                        p.Status === 'Terkirim'
+                                            ? 'sukses'
+                                            : p.Status === 'Gagal'
+                                              ? 'bahaya'
+                                              : p.Status === 'Dibatalkan'
+                                                ? 'netral'
+                                                : 'peringatan'
+                                    }
+                                    teks={p.LabelStatus}
+                                />
+                                <span className="text-teks-sekunder">
+                                    WhatsApp | {FormatTanggalWaktu(p.TerkirimPada ?? p.DibuatPada)}
+                                </span>
+                                {p.PesanGalat ? (
+                                    <span className="text-keterangan text-bahaya wrap-anywhere">{p.PesanGalat}</span>
+                                ) : null}
+                            </li>
+                        ))}
+                    </ul>
+                </Panel>
+            ) : null}
             <DaftarRiwayatDokumen riwayat={Riwayat} />
 
             {dialog === 'Tolak' ? (
