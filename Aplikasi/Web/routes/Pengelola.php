@@ -286,6 +286,8 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 Route::put('/dukungan/tiket/{tiketDukungan}/status', [TiketDukunganKontroler::class, 'UbahStatus'])->name('pengelola.dukungan.tiket.status.ubah');
                 Route::put('/dukungan/tiket/{tiketDukungan}/prioritas', [TiketDukunganKontroler::class, 'UbahPrioritas'])
                     ->name('pengelola.dukungan.tiket.prioritas.ubah');
+                Route::post('/dukungan/tiket/{tiketDukungan}/eskalasi', [TiketDukunganKontroler::class, 'Eskalasikan'])
+                    ->name('pengelola.dukungan.tiket.eskalasi');
             });
         });
 

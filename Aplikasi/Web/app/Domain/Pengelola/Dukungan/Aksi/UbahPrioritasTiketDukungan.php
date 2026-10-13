@@ -49,8 +49,10 @@ final class UbahPrioritasTiketDukungan
                 $tiket->Prioritas = $prioritas;
 
                 if ($tiket->ResponsPertamaPada === null) {
-                    $tiket->JamSla = $this->penghitungSla->HitungJam($this->paketTenant->AmbilKode($tiket->IdTenant), $prioritas);
-                    $tiket->BatasSlaPada = $this->penghitungSla->HitungBatas($tiket->DibuatPada, $tiket->JamSla);
+                    $kodePaket = $this->paketTenant->AmbilKode($tiket->IdTenant);
+                    $tiket->JamSla = $this->penghitungSla->HitungJam($kodePaket, $prioritas);
+                    $tiket->SlaJamKalender = $this->penghitungSla->CekKalender($kodePaket, $prioritas);
+                    $tiket->BatasSlaPada = $this->penghitungSla->HitungBatas($tiket->DibuatPada, $tiket->JamSla, $tiket->SlaJamKalender);
                 }
 
                 $tiket->save();

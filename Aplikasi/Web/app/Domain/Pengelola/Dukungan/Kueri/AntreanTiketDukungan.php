@@ -134,6 +134,8 @@ final class AntreanTiketDukungan
             'BatasSlaPada' => $baris->BatasSlaPada->toIso8601String(),
             'ResponsPertamaPada' => $baris->ResponsPertamaPada?->toIso8601String(),
             'LewatSla' => $baris->CekLewatSla($sekarang),
+            'TingkatEskalasi' => $baris->TingkatEskalasi->value,
+            'LabelEskalasi' => $baris->TingkatEskalasi->AmbilLabel(),
             'PesanTerakhirPada' => $baris->PesanTerakhirPada?->toIso8601String(),
             'DibuatPada' => $baris->DibuatPada->toIso8601String(),
         ], $tiket);

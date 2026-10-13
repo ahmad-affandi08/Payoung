@@ -72,11 +72,11 @@ describe('Membuat tiket dari back-office (P-09)', function (): void {
             && $surel->namaTenant === 'Kopi Nusantara');
     });
 
-    it('SLA per paket & prioritas: Gratis tetap 2 hari walau mendesak, Pro mendesak 4 jam', function (): void {
+    it('SLA per paket & prioritas: Gratis tetap 2 hari kerja (18 jam kerja) walau mendesak, Pro mendesak 4 jam', function (): void {
         ['Tenant' => $gratis, 'Pengguna' => $pemilikGratis] = BantuanDukungan::BuatTenant('Warung Bu Sri', 'sri@warung.id', 'GRATIS');
         ['Tenant' => $pro, 'Pengguna' => $pemilikPro] = BantuanDukungan::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id', 'PRO');
 
-        expect(BantuanDukungan::BuatTiket($gratis, $pemilikGratis, prioritas: PrioritasTiketDukungan::Mendesak)->JamSla)->toBe(48)
+        expect(BantuanDukungan::BuatTiket($gratis, $pemilikGratis, prioritas: PrioritasTiketDukungan::Mendesak)->JamSla)->toBe(18)
             ->and(BantuanDukungan::BuatTiket($pro, $pemilikPro, prioritas: PrioritasTiketDukungan::Mendesak)->JamSla)->toBe(4)
             ->and(BantuanDukungan::BuatTiket($pro, $pemilikPro, prioritas: PrioritasTiketDukungan::Rendah)->JamSla)->toBe(8);
     });

@@ -23,6 +23,8 @@ type BarisAntrean = {
     BatasSlaPada: string;
     ResponsPertamaPada: string | null;
     LewatSla: boolean;
+    TingkatEskalasi: 'L1' | 'L2' | 'Teknis';
+    LabelEskalasi: string;
     PesanTerakhirPada: string | null;
 };
 
@@ -98,6 +100,9 @@ const kolom: KolomTabel<BarisAntrean>[] = [
                     <LabelStatus jenis="bahaya" teks="Lewat SLA" />
                 ) : tiket.ResponsPertamaPada ? (
                     <span className="text-keterangan">Sudah direspons</span>
+                ) : null}
+                {tiket.TingkatEskalasi !== 'L1' ? (
+                    <LabelStatus jenis="peringatan" teks={`Eskalasi ${tiket.LabelEskalasi}`} />
                 ) : null}
             </>
         ),

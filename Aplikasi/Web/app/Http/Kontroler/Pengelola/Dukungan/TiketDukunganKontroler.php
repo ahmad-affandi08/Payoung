@@ -7,8 +7,10 @@ namespace App\Http\Kontroler\Pengelola\Dukungan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
+use App\Domain\Dukungan\Enum\TingkatEskalasiTiket;
 use App\Domain\Dukungan\Layanan\PenyimpanLampiran;
 use App\Domain\Pengelola\Dukungan\Aksi\BalasTiketDukunganPengelola;
+use App\Domain\Pengelola\Dukungan\Aksi\EskalasikanTiketDukungan;
 use App\Domain\Pengelola\Dukungan\Aksi\TugaskanTiketDukungan;
 use App\Domain\Pengelola\Dukungan\Aksi\UbahPrioritasTiketDukungan;
 use App\Domain\Pengelola\Dukungan\Aksi\UbahStatusTiketDukungan;
@@ -132,6 +134,17 @@ final class TiketDukunganKontroler extends Kontroler
         $tiket = $ubah->Jalankan($this->AmbilPelaku(), $tiketDukungan, PrioritasTiketDukungan::from($nilai));
 
         return back()->with('Kilat', "Prioritas tiket {$tiket->Nomor} menjadi {$tiket->Prioritas->AmbilLabel()}.");
+    }
+
+    public function Eskalasikan(string $tiketDukungan, Request $permintaan, EskalasikanTiketDukungan $eskalasi): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            'Tingkat' => ['required', 'string', Rule::in([TingkatEskalasiTiket::L2->value, TingkatEskalasiTiket::Teknis->value])],
+            'Alasan' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+        $tiket = $eskalasi->Jalankan($this->AmbilPelaku(), $tiketDukungan, TingkatEskalasiTiket::from((string) $valid['Tingkat']), (string) $valid['Alasan']);
+
+        return back()->with('Kilat', "Tiket {$tiket->Nomor} dieskalasi ke {$tiket->TingkatEskalasi->AmbilLabel()}; tim tujuan diberi tahu lewat email.");
     }
 
     /**

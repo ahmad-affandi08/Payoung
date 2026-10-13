@@ -10,6 +10,7 @@ use App\Domain\Dukungan\Enum\KanalTiketDukungan;
 use App\Domain\Dukungan\Enum\KategoriTiketDukungan;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
+use App\Domain\Dukungan\Enum\TingkatEskalasiTiket;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -30,7 +31,10 @@ use LogicException;
  * @property StatusTiketDukungan $Status
  * @property string $Judul
  * @property int|null $IdPenanggungJawab
+ * @property TingkatEskalasiTiket $TingkatEskalasi
+ * @property Carbon|null $DieskalasiPada
  * @property int $JamSla
+ * @property bool $SlaJamKalender true = jam kalender (tiket mendesak paket berbayar, tiket lama); false = jam kerja
  * @property Carbon $BatasSlaPada
  * @property Carbon|null $ResponsPertamaPada
  * @property Carbon|null $PesanTerakhirPada
@@ -52,6 +56,9 @@ final class TiketDukungan extends ModelDasar
         'Kanal' => 'BackOffice',
         'Status' => 'Baru',
         'IdPenanggungJawab' => null,
+        'SlaJamKalender' => true,
+        'TingkatEskalasi' => 'L1',
+        'DieskalasiPada' => null,
         'ResponsPertamaPada' => null,
         'PesanTerakhirPada' => null,
         'DiselesaikanPada' => null,
@@ -107,6 +114,9 @@ final class TiketDukungan extends ModelDasar
             'Prioritas' => PrioritasTiketDukungan::class,
             'Status' => StatusTiketDukungan::class,
             'JamSla' => 'integer',
+            'SlaJamKalender' => 'boolean',
+            'TingkatEskalasi' => TingkatEskalasiTiket::class,
+            'DieskalasiPada' => 'datetime',
             'BatasSlaPada' => 'datetime',
             'ResponsPertamaPada' => 'datetime',
             'PesanTerakhirPada' => 'datetime',

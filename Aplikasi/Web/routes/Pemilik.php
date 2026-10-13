@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Pemilik\V1\AutentikasiKontroler;
+use App\Http\Kontroler\Pemilik\V1\BantuanKontroler;
 use App\Http\Kontroler\Pemilik\V1\DasborKontroler;
 use App\Http\Kontroler\Pemilik\V1\InsightKontroler;
 use App\Http\Kontroler\Pemilik\V1\KaryawanKontroler;
@@ -86,6 +87,14 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
 
         // P-10 PGL-18: versi terbaru/minimal Aplikasi Owner + flag fitur tenant (kill switch); tanpa izin khusus.
         Route::get('/konfigurasi-aplikasi', [KonfigurasiAplikasiKontroler::class, 'Tampilkan'])->name('pemilik.konfigurasi-aplikasi');
+
+        // P-09: tombol Bantuan di Aplikasi Owner (tiket + konteks otomatis); tanpa izin khusus.
+        Route::get('/bantuan/tiket', [BantuanKontroler::class, 'Daftar'])->middleware('throttle:pemilik-30')->name('pemilik.bantuan.tiket.daftar');
+        Route::post('/bantuan/tiket', [BantuanKontroler::class, 'Buat'])->middleware('throttle:pemilik-30')->name('pemilik.bantuan.tiket.buat');
+        Route::get('/bantuan/tiket/{tiket}', [BantuanKontroler::class, 'Tampilkan'])->middleware('throttle:pemilik-60')
+            ->where('tiket', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pemilik.bantuan.tiket.tampil');
+        Route::post('/bantuan/tiket/{tiket}/balas', [BantuanKontroler::class, 'Balas'])->middleware('throttle:pemilik-30')
+            ->where('tiket', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pemilik.bantuan.tiket.balas');
 
         // OWN-08: status perangkat POS.
         Route::get('/perangkat', [PerangkatKontroler::class, 'Daftar'])->middleware($izin(IzinTenant::PerangkatLihat))->name('pemilik.perangkat');

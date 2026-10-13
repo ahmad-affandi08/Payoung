@@ -87,6 +87,8 @@ Schedule::command('integrasi:kirim-webhook')->everyMinute()->withoutOverlapping(
 
 // P-09: tiket selesai yang tidak dibuka lagi dalam 7 hari ditutup otomatis.
 $jadwalSaas('pengelola:tutup-tiket-selesai')->dailyAt('01:00')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
+// P-09: tiket yang melewati SLA respons pertama naik L1 → L2 → Teknis dan tim tujuan diberi tahu lewat email.
+$jadwalSaas('dukungan:eskalasikan-tiket')->everyTenMinutes()->withoutOverlapping(30)->runInBackground();
 
 // F-05a (DesainF05a C.9): pemeriksaan malam SaldoStok = Σ MutasiStok, rantai mutasi, lapisan FIFO, batch & seri (keluar 1 bila berbeda).
 Schedule::command('persediaan:bangun-ulang-saldo --periksa')->dailyAt('02:30')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();

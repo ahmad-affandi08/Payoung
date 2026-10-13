@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Kontroler\Pos\V1\BantuanKontroler;
 use App\Http\Kontroler\Pos\V1\BatchProdukKontroler;
 use App\Http\Kontroler\Pos\V1\DapurKontroler;
 use App\Http\Kontroler\Pos\V1\DataAwalKontroler;
@@ -69,6 +70,15 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
     // PGL-16 bagian 2: unggah log lokal yang diminta dukungan (diterima hanya bila ada permintaan yang berlaku).
     Route::post('/perangkat/log', [PerangkatKontroler::class, 'UnggahLog'])->middleware('throttle:pos-10')->name('pos.perangkat.log');
     Route::post('/sinkron/kirim', [SinkronKontroler::class, 'Kirim'])->middleware('throttle:pos-120')->name('pos.sinkron.kirim');
+
+    // P-09: tombol Bantuan di aplikasi kasir (tiket + konteks otomatis). Di luar penjaga langganan: tenant yang
+    // ditangguhkan justru paling perlu menghubungi dukungan.
+    Route::get('/bantuan/tiket', [BantuanKontroler::class, 'Daftar'])->middleware('throttle:pos-30')->name('pos.bantuan.tiket.daftar');
+    Route::post('/bantuan/tiket', [BantuanKontroler::class, 'Buat'])->middleware('throttle:pos-10')->name('pos.bantuan.tiket.buat');
+    Route::get('/bantuan/tiket/{tiket}', [BantuanKontroler::class, 'Tampilkan'])->middleware('throttle:pos-30')
+        ->where('tiket', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pos.bantuan.tiket.tampil');
+    Route::post('/bantuan/tiket/{tiket}/balas', [BantuanKontroler::class, 'Balas'])->middleware('throttle:pos-10')
+        ->where('tiket', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->name('pos.bantuan.tiket.balas');
 
     // Shift lama perangkat yang masih terbuka di server dan menahan shift baru (`ShiftSudahTerbuka`): lihat & tutup
     // paksa oleh supervisor dari aplikasi. Di luar penjaga langganan seperti sinkron agar data tidak tertahan.

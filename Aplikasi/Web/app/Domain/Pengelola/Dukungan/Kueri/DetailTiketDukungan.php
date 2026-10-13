@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Dukungan\Kueri;
 
 use App\Domain\Dukungan\Enum\JenisPengirimPesan;
-use App\Domain\Dukungan\Enum\KanalTiketDukungan;
 use App\Domain\Dukungan\Kueri\TiketDukunganTenant;
 use App\Domain\Dukungan\Model\TiketDukungan;
 use App\Domain\Dukungan\Model\TiketDukunganPesan;
@@ -44,11 +43,15 @@ final class DetailTiketDukungan
                 ...TiketDukunganTenant::PetakanRingkas($tiket),
                 'Kanal' => $tiket->Kanal->AmbilLabel(),
                 'JamSla' => $tiket->JamSla,
+                'SlaJamKalender' => $tiket->SlaJamKalender,
+                'TingkatEskalasi' => $tiket->TingkatEskalasi->value,
+                'LabelEskalasi' => $tiket->TingkatEskalasi->AmbilLabel(),
+                'DieskalasiPada' => $tiket->DieskalasiPada?->toIso8601String(),
                 'BatasSlaPada' => $tiket->BatasSlaPada->toIso8601String(),
                 'ResponsPertamaPada' => $tiket->ResponsPertamaPada?->toIso8601String(),
                 'LewatSla' => $tiket->CekLewatSla(),
                 'BisaDibukaLagi' => $tiket->CekBisaDibukaLagi(),
-                'Konteks' => $tiket->Kanal === KanalTiketDukungan::BackOffice ? ($tiket->Konteks ?? []) : [],
+                'Konteks' => array_map(fn (mixed $nilai): string => is_scalar($nilai) ? (string) $nilai : '', $tiket->Konteks ?? []),
                 'Tenant' => $tenant === null ? null : ['Nama' => $tenant['Nama'], 'Slug' => $tenant['Slug']],
                 'Pelapor' => $pelapor === null ? null : ['Nama' => $pelapor->Nama, 'Email' => $pelapor->Email],
                 'UuidPenanggungJawab' => $tiket->IdPenanggungJawab === null ? null

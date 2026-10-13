@@ -27,6 +27,10 @@ type DetailTiket = {
     LabelStatus: string;
     Kanal: string;
     JamSla: number;
+    SlaJamKalender: boolean;
+    TingkatEskalasi: 'L1' | 'L2' | 'Teknis';
+    LabelEskalasi: string;
+    DieskalasiPada: string | null;
     BatasSlaPada: string;
     ResponsPertamaPada: string | null;
     LewatSla: boolean;
@@ -67,6 +71,9 @@ export default function TiketDukungan({ Tiket, Penangan, PilihanStatus, PilihanP
                 </Link>
                 <LabelStatus jenis={jenisLabelStatusTiket[Tiket.Status]} teks={Tiket.LabelStatus} />
                 {Tiket.LewatSla ? <LabelStatus jenis="bahaya" teks="Lewat SLA" /> : null}
+                {Tiket.TingkatEskalasi !== 'L1' ? (
+                    <LabelStatus jenis="peringatan" teks={`Eskalasi ${Tiket.LabelEskalasi}`} />
+                ) : null}
             </div>
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
 
@@ -95,11 +102,19 @@ export default function TiketDukungan({ Tiket, Penangan, PilihanStatus, PilihanP
                             <Rincian label="Kanal" nilai={Tiket.Kanal} />
                             <Rincian label="Dibuat" nilai={FormatTanggalWaktu(Tiket.DibuatPada)} />
                             <Rincian
-                                label={`Batas respons pertama (SLA ${String(Tiket.JamSla)} jam)`}
+                                label={`Batas respons pertama (SLA ${String(Tiket.JamSla)} ${Tiket.SlaJamKalender ? 'jam kalender' : 'jam kerja'})`}
                                 nilai={FormatTanggalWaktu(Tiket.BatasSlaPada)}
                             />
                             <Rincian label="Respons pertama" nilai={FormatTanggalWaktu(Tiket.ResponsPertamaPada)} />
                             <Rincian label="Penanggung jawab" nilai={namaPenanggungJawab ?? 'Belum ada'} />
+                            <Rincian
+                                label="Tingkat penanganan"
+                                nilai={
+                                    Tiket.DieskalasiPada
+                                        ? `${Tiket.LabelEskalasi} | sejak ${FormatTanggalWaktu(Tiket.DieskalasiPada)}`
+                                        : Tiket.LabelEskalasi
+                                }
+                            />
                             {Object.entries(Tiket.Konteks).map(([kunci, nilai]) => (
                                 <Rincian key={kunci} label={kunci} nilai={nilai} />
                             ))}
@@ -125,7 +140,7 @@ function Rincian({ label, nilai }: { label: string; nilai: string }) {
     return (
         <div className="flex flex-col">
             <dt className="text-teks-sekunder">{label}</dt>
-            <dd className="break-words text-teks-utama">{nilai}</dd>
+            <dd className="break-words whitespace-pre-line text-teks-utama">{nilai}</dd>
         </div>
     );
 }
@@ -222,7 +237,15 @@ function PanelAksi({ tiket, alamat, masihTerbuka, penangan, pilihanStatus, pilih
     const [status, AturStatus] = useState('');
     const [alasan, AturAlasan] = useState('');
     const [prioritas, AturPrioritas] = useState(tiket.Prioritas);
+    const [tingkat, AturTingkat] = useState('');
+    const [alasanEskalasi, AturAlasanEskalasi] = useState('');
     const [memproses, AturMemproses] = useState(false);
+    // Eskalasi hanya naik: tujuan yang lebih tinggi dari tingkat sekarang.
+    const tujuanEskalasi = [
+        { Nilai: 'L2', Label: 'L2 | Dukungan senior' },
+        { Nilai: 'Teknis', Label: 'Teknis' },
+    ].filter((pilihan) => pilihan.Nilai === 'Teknis' || tiket.TingkatEskalasi === 'L1');
+    const bisaDieskalasi = tiket.TingkatEskalasi !== 'Teknis';
     const opsi = { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) };
     const statusTujuan = pilihanStatus.filter(
         (pilihan) =>
@@ -280,6 +303,45 @@ function PanelAksi({ tiket, alamat, masihTerbuka, penangan, pilihanStatus, pilih
                     >
                         Ubah prioritas
                     </Tombol>
+                    {bisaDieskalasi ? (
+                        <>
+                            <BidangPilihan
+                                label="Eskalasikan ke"
+                                nilai={tingkat}
+                                kosong="Pilih tingkat"
+                                opsi={tujuanEskalasi}
+                                saatBerubah={AturTingkat}
+                                galat={props.errors.Tingkat}
+                            />
+                            <BidangTeks
+                                label="Alasan eskalasi (wajib, internal)"
+                                nilai={alasanEskalasi}
+                                maxLength={500}
+                                saatBerubah={AturAlasanEskalasi}
+                                galat={props.errors.Alasan}
+                            />
+                            <Tombol
+                                varian="sekunder"
+                                memproses={memproses}
+                                disabled={tingkat === '' || alasanEskalasi.trim().length < 5}
+                                onClick={() =>
+                                    router.post(
+                                        `${alamat}/eskalasi`,
+                                        { Tingkat: tingkat, Alasan: alasanEskalasi },
+                                        {
+                                            ...opsi,
+                                            onSuccess: () => {
+                                                AturTingkat('');
+                                                AturAlasanEskalasi('');
+                                            },
+                                        },
+                                    )
+                                }
+                            >
+                                Eskalasikan tiket
+                            </Tombol>
+                        </>
+                    ) : null}
                 </div>
             ) : null}
             {statusTujuan.length > 0 ? (

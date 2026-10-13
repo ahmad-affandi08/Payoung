@@ -38,11 +38,13 @@ final class BuatTiketDukungan
     {
         $idTenant = $this->konteksTenant->Wajib();
         $uuid = (string) Str::ulid();
-        $jamSla = $this->penghitungSla->HitungJam($this->paketTenant->AmbilKode($idTenant), $data->prioritas);
+        $kodePaket = $this->paketTenant->AmbilKode($idTenant);
+        $jamSla = $this->penghitungSla->HitungJam($kodePaket, $data->prioritas);
+        $kalender = $this->penghitungSla->CekKalender($kodePaket, $data->prioritas);
         $lampiran = $this->penyimpanLampiran->Simpan($idTenant, $uuid, $data->lampiran);
 
         try {
-            return DB::transaction(function () use ($idTenant, $idPelapor, $namaPelapor, $data, $uuid, $jamSla, $lampiran): TiketDukungan {
+            return DB::transaction(function () use ($idTenant, $idPelapor, $namaPelapor, $data, $uuid, $jamSla, $kalender, $lampiran): TiketDukungan {
                 $sekarang = now();
                 $tiket = TiketDukungan::query()->create([
                     'Uuid' => $uuid,
@@ -55,7 +57,8 @@ final class BuatTiketDukungan
                     'Status' => StatusTiketDukungan::Baru,
                     'Judul' => $data->judul,
                     'JamSla' => $jamSla,
-                    'BatasSlaPada' => $this->penghitungSla->HitungBatas($sekarang, $jamSla),
+                    'SlaJamKalender' => $kalender,
+                    'BatasSlaPada' => $this->penghitungSla->HitungBatas($sekarang, $jamSla, $kalender),
                     'Konteks' => $data->konteks === [] ? null : $data->konteks,
                 ]);
 
