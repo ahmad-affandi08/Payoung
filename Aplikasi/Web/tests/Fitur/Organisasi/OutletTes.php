@@ -205,7 +205,7 @@ describe('Outlet (F-02 langkah 1)', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         $tes->post('/kelola/outlet', IsianOutletUji($tenant->Id))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
-        $utama = Outlet::query()->sole();
+        $utama = Outlet::query()->where('Kode', 'KNS')->sole();
         $solo = Outlet::query()->where('Kode', 'SLO1')->sole();
         $manajer = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::ManajerOutlet, semuaOutlet: false);
         OutletPengguna::query()->create(['IdOutlet' => $solo->Id, 'IdPengguna' => $manajer->Id, 'IdPeran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::ManajerOutlet)->Id]);
@@ -223,7 +223,7 @@ describe('Lokasi stok (F-02 langkah 2, BR-02.4)', function (): void {
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $utama = Outlet::query()->sole();
 
-        $tes->post("/kelola/outlet/{$utama->Uuid}/gudang", ['Nama' => 'Dapur', 'Kode' => 'utama-dpr', 'Jenis' => 'Dapur'])->assertSessionHasNoErrors();
+        $tes->post("/kelola/outlet/{$utama->Uuid}/gudang", ['Nama' => 'Dapur', 'Kode' => 'kns-dpr', 'Jenis' => 'Dapur'])->assertSessionHasNoErrors();
         $tes->post("/kelola/outlet/{$utama->Uuid}/gudang", ['Nama' => 'Gudang Belakang', 'Kode' => 'KNS-GB', 'Jenis' => 'Gudang'])->assertSessionHasNoErrors();
         $tes->post("/kelola/outlet/{$utama->Uuid}/gudang", ['Nama' => 'Dapur 2', 'Kode' => 'KNS-DPR', 'Jenis' => 'Dapur'])->assertSessionHasErrors('Kode');
         $tes->post("/kelola/outlet/{$utama->Uuid}/gudang", ['Nama' => 'Aneh', 'Kode' => 'KNS-X', 'Jenis' => 'Kulkas'])->assertSessionHasErrors('Jenis');
@@ -252,7 +252,7 @@ describe('Lokasi stok (F-02 langkah 2, BR-02.4)', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         $tes->post('/kelola/outlet', IsianOutletUji($tenant->Id))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($tenant->Id);
-        $utama = Outlet::query()->sole();
+        $utama = Outlet::query()->where('Kode', 'KNS')->sole();
         $gudangSolo = Gudang::query()->where('Kode', 'SLO1')->sole();
 
         $tes->put("/kelola/outlet/{$utama->Uuid}/gudang/{$gudangSolo->Uuid}", ['Nama' => 'Curian', 'Kode' => 'SLO1', 'Jenis' => 'Toko'])->assertNotFound();
