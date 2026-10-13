@@ -94,6 +94,9 @@ enum IzinPengelola: string
     case MitraKelola = 'mitra.kelola';
     case MitraPencairan = 'mitra.pencairan';
 
+    // P-07 PGL-24 analitik platform: angka agregat tanpa data pribadi (§19.3: Analis, Keuangan, Mitra & Penjualan).
+    case AnalitikLihat = 'analitik.lihat';
+
     public function AmbilLabel(): string
     {
         return match ($this) {
@@ -160,6 +163,7 @@ enum IzinPengelola: string
             self::MitraLihat => 'Melihat mitra, tenant rujukan, komisi & pencairan',
             self::MitraKelola => 'Menambah & mengubah mitra (kode, komisi, rekening) dan membatalkan komisi tertunda',
             self::MitraPencairan => 'Mencatat pencairan komisi bulanan mitra',
+            self::AnalitikLihat => 'Melihat analitik platform (funnel pendaftaran, adopsi fitur, retensi kohort)',
         };
     }
 }

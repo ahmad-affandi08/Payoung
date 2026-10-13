@@ -6,20 +6,16 @@ namespace App\Domain\Pengelola\Tenant\Aksi;
 
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
 use App\Domain\Dukungan\Model\TiketDukungan;
-use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Model\Perangkat;
-use App\Domain\Pelanggan\Model\Pelanggan;
-use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pengelola\Tenant\Enum\JenisTugasTenant;
 use App\Domain\Pengelola\Tenant\Enum\KategoriKesehatan;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
+use App\Domain\Pengelola\Tenant\Layanan\PengumpulFiturTenant;
 use App\Domain\Pengelola\Tenant\Layanan\PenilaiKesehatanTenant;
 use App\Domain\Pengelola\Tenant\Model\SkorKesehatanTenant;
 use App\Domain\Pengelola\Tenant\Model\TugasTenant;
 use App\Domain\Penjualan\Enum\StatusPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
-use App\Domain\Persediaan\Model\StokOpname;
-use App\Domain\Promo\Model\Promo;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusTenant;
 use App\Domain\Tenant\Model\Langganan;
@@ -61,6 +57,7 @@ final class HitungSkorKesehatanTenant
     public function __construct(
         private readonly KonteksPengelola $konteks,
         private readonly PenilaiKesehatanTenant $penilai,
+        private readonly PengumpulFiturTenant $fitur,
     ) {}
 
     /**
@@ -125,14 +122,7 @@ final class HitungSkorKesehatanTenant
         }
 
         $pernah = $this->Himpun($k->KueriLintas(Penjualan::class)->whereIn('IdTenant', $idTenant)->where('Status', '<>', StatusPenjualan::Void->value));
-        $tigaPuluh = $sekarang->subDays(30);
-        $fitur = [
-            $this->Himpun($k->KueriLintas(StokOpname::class)->whereIn('IdTenant', $idTenant)->where('DibuatPada', '>=', $tigaPuluh)),
-            $this->Himpun($k->KueriLintas(PesananPembelian::class)->whereIn('IdTenant', $idTenant)->where('DibuatPada', '>=', $tigaPuluh)),
-            $this->Himpun($k->KueriLintas(Pelanggan::class)->whereIn('IdTenant', $idTenant)->where('DibuatPada', '>=', $tigaPuluh)),
-            $this->Himpun($k->KueriLintas(Promo::class)->whereIn('IdTenant', $idTenant)),
-            $this->Himpun($k->KueriLintas(Karyawan::class)->whereIn('IdTenant', $idTenant)),
-        ];
+        $fiturPerTenant = $this->fitur->Kumpulkan($k, $idTenant, $sekarang);
         $batasOffline = $sekarang->subDays(self::HARI_PERANGKAT_OFFLINE);
         $offline = $this->HitungPer($k->KueriLintas(Perangkat::class)
             ->whereIn('IdTenant', $idTenant)
@@ -187,7 +177,7 @@ final class HitungSkorKesehatanTenant
                 'HariAktif' => $hariAktif,
                 'TransaksiMingguIni' => $ini,
                 'TransaksiMingguLalu' => $lalu,
-                'FiturDipakai' => count(array_filter($fitur, fn (array $f): bool => isset($f[$t->Id]))),
+                'FiturDipakai' => count($fiturPerTenant[$t->Id] ?? []),
                 'PerangkatLamaOffline' => $offline[$t->Id] ?? 0,
                 'TiketTerbukaLama' => $tiket[$t->Id] ?? 0,
                 'Tertunggak' => $tertunggak,

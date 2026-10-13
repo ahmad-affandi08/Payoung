@@ -68,6 +68,9 @@ $jadwalSaas('tenant:umumkan-dokumen-legal')->dailyAt('09:00')->timezone('Asia/Ja
 // P-07 PGL-09: skor kesehatan tenant harian + tugas otomatis tim (dini hari, setelah tutup harian otomatis).
 $jadwalSaas('tenant:hitung-skor-kesehatan')->dailyAt('03:30')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
 
+// P-07 PGL-24: bahan analitik platform (funnel, adopsi fitur, retensi) setelah skor kesehatan.
+$jadwalSaas('analitik:perbarui')->dailyAt('03:50')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
+
 // P-11 BR-P11.1: detak scheduler tiap menit + pemeriksaan alert operasional (scheduler, antrean, backup).
 $jadwalSaas('pengelola:detak')->everyMinute()->withoutOverlapping(10);
 

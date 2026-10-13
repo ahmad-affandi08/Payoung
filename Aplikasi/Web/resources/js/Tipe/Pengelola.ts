@@ -86,6 +86,8 @@ export const IzinPengelola = {
     MitraLihat: 'mitra.lihat',
     MitraKelola: 'mitra.kelola',
     MitraPencairan: 'mitra.pencairan',
+    // PGL-24
+    AnalitikLihat: 'analitik.lihat',
 } as const;
 
 export type Pilihan = { Nilai: string; Label: string };

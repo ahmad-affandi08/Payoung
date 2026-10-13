@@ -124,6 +124,8 @@ export const daftarMenuPengelola: GrupMenu[] = [
             { label: 'Situs pemasaran', href: '/situs/halaman', izin: IzinPengelola.SitusLihat, ikon: 'Lokasi' },
             // P-12 Mitra, reseller & referral: kanal akuisisi tenant, jadi serumpun dengan pemasaran.
             { label: 'Mitra', href: '/mitra', izin: IzinPengelola.MitraLihat, ikon: 'Loyalitas' },
+            // P-07 PGL-24: funnel pendaftaran, adopsi fitur, retensi kohort (agregat, tanpa data pribadi).
+            { label: 'Analitik', href: '/analitik', izin: IzinPengelola.AnalitikLihat, ikon: 'Grafik' },
         ],
     },
     {

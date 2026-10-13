@@ -17,6 +17,7 @@ namespace App\Domain\Pengelola\TimInternal\Enum;
  * P-09: tiket dukungan untuk Dukungan (Super Admin lewat semua izin). P-11: monitoring & job gagal untuk Teknis.
  * P-10: rilis aplikasi & flag fitur untuk Teknis.
  * P-12: Mitra & Penjualan mengelola mitra; Keuangan mencatat pencairan komisi (keduanya bisa melihat).
+ * PGL-24: analitik platform untuk Analis, Keuangan, dan Mitra & Penjualan.
  */
 enum PeranPengelolaBawaan: string
 {
@@ -86,6 +87,7 @@ enum PeranPengelolaBawaan: string
                 // P-12: pencairan komisi mitra.
                 IzinPengelola::MitraLihat,
                 IzinPengelola::MitraPencairan,
+                IzinPengelola::AnalitikLihat,
             ],
             self::Teknis => [
                 IzinPengelola::ReferensiLihat,
@@ -124,12 +126,15 @@ enum PeranPengelolaBawaan: string
                 // P-12: mitra, reseller & referral.
                 IzinPengelola::MitraLihat,
                 IzinPengelola::MitraKelola,
+                IzinPengelola::AnalitikLihat,
             ],
             self::Analis => [
                 IzinPengelola::ReferensiLihat,
                 IzinPengelola::KatalogLihat,
                 IzinPengelola::TemplateLihat,
                 IzinPengelola::LegalLihat,
+                // PGL-24: Analis hanya melihat angka agregat.
+                IzinPengelola::AnalitikLihat,
             ],
         };
 

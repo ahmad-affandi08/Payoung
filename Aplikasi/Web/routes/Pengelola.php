@@ -39,6 +39,7 @@ use App\Http\Kontroler\Pengelola\SesiKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanManualKontroler;
 use App\Http\Kontroler\Pengelola\TemplateSektor\TemplateSektorKontroler;
+use App\Http\Kontroler\Pengelola\Tenant\AnalitikKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\KesehatanTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PenghapusanDataTenantKontroler;
@@ -441,6 +442,11 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 ->middleware($izin(IzinPengelola::ReferensiHariLiburSetujui))
                 ->name('pengelola.referensi.hari-libur.tinjau');
         });
+
+        // P-07 PGL-24 analitik platform (agregat tanpa data pribadi; Analis, Keuangan, Mitra & Penjualan).
+        Route::get('/analitik', [AnalitikKontroler::class, 'Tampilkan'])
+            ->middleware($izin(IzinPengelola::AnalitikLihat))
+            ->name('pengelola.analitik.tampil');
 
         // P-07 Siklus hidup tenant (§19.3: izin per tindakan).
         Route::middleware($izin(IzinPengelola::TenantLihat))->group(function () use ($izin): void {
