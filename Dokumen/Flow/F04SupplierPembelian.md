@@ -19,7 +19,7 @@ flowchart LR
 ```
 
 **Langkah:**
-1. (Opsional) Outlet membuat **Permintaan Pembelian** atau sistem membuat draft dari *Smart Restock* (stok < min).
+1. (Opsional) Outlet membuat **Permintaan Pembelian** (selesai @ v6.06) atau sistem membuat draft dari *Smart Restock* (stok < min).
 2. **PO**: pilih supplier, lokasi tujuan, item × qty × satuan × harga, diskon, PPN masukan, ongkir, termin (tunai/tempo N hari).
 3. **Approval PO** jika total > batas yang dikonfigurasi (misal > Rp 5 juta butuh Owner).
 4. Kirim PO ke supplier (PDF, WA link, email).

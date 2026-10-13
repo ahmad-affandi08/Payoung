@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -16,6 +16,7 @@ import {
 } from '@/Komponen/Pembelian/DaftarPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
+import { Button } from '@/Komponen/Ui/button';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import type { BarisDaftarPesanan, PropsDaftarPesanan } from '@/Tipe/Pembelian';
 
@@ -60,6 +61,9 @@ export default function HalamanDaftarPesanan({ Pesanan, OpsiStatus, OpsiPemasok,
         );
     const tombol = (
         <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                <Link href={`${AlamatPembelian}/permintaan`}>Permintaan pembelian</Link>
+            </Button>
             {Izin.Kelola ? (
                 <Tombol varian="sekunder" onClick={SiapkanDraf} memproses={menyiapkan}>
                     Siapkan draf dari stok menipis

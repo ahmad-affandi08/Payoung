@@ -9,9 +9,11 @@ import type { OpsiGudang, PelacakanProduk } from '@/Tipe/Persediaan';
 
 export type StatusPesananPembelian =
     'Draf' | 'MenungguPersetujuan' | 'Disetujui' | 'DiterimaSebagian' | 'Diterima' | 'Ditutup' | 'Dibatalkan';
+export type StatusPermintaanPembelian = 'Draf' | 'Diajukan' | 'Disetujui' | 'DijadikanPo' | 'Dibatalkan';
 export type StatusDokumenPembelian = 'Diposting' | 'Dibatalkan';
 export type StatusFakturPembelian = 'BelumDibayar' | 'DibayarSebagian' | 'Lunas' | 'Dibatalkan';
-export type StatusPembelian = StatusPesananPembelian | StatusDokumenPembelian | StatusFakturPembelian;
+export type StatusPembelian =
+    StatusPesananPembelian | StatusPermintaanPembelian | StatusDokumenPembelian | StatusFakturPembelian;
 export type Opsi<T extends string = string> = { Nilai: T; Label: string };
 
 export type IzinPembelian = { Kelola: boolean; Setujui: boolean; LihatJurnal: boolean; Persediaan: boolean };
@@ -777,3 +779,81 @@ export type HasilImporPemasok = {
 };
 
 export type PropsImporPemasok = { Hasil: HasilImporPemasok | null; MaksimalBaris: number };
+
+/* Permintaan pembelian (PR) */
+export type BarisDaftarPermintaan = {
+    Uuid: string;
+    Nomor: string;
+    Tanggal: string;
+    DibutuhkanPada: string | null;
+    NamaPemasok: string | null;
+    NamaGudang: string;
+    NamaOutlet: string | null;
+    JumlahBaris: number;
+    Status: StatusPermintaanPembelian;
+    LabelStatus: string;
+};
+export type PropsDaftarPermintaan = {
+    Permintaan: HasilTabel<BarisDaftarPermintaan>;
+    OpsiStatus: Opsi<StatusPermintaanPembelian>[];
+    Izin: IzinPembelian;
+};
+export type IsianPermintaan = {
+    Uuid: string;
+    Nomor: string;
+    UuidPemasok: string | null;
+    UuidGudang: string;
+    Tanggal: string;
+    DibutuhkanPada: string | null;
+    Catatan: string | null;
+    Baris: IsianPesanan['Baris'];
+};
+export type PropsFormPermintaan = {
+    Mode: 'Buat' | 'Ubah';
+    Permintaan: IsianPermintaan | null;
+    OpsiPemasok: OpsiPemasok[];
+    OpsiGudang: OpsiGudang[];
+    HariIni: string;
+    MaksimalBaris: number;
+};
+export type DetailPermintaan = {
+    Uuid: string;
+    Nomor: string;
+    Tanggal: string;
+    DibutuhkanPada: string | null;
+    Status: StatusPermintaanPembelian;
+    LabelStatus: string;
+    Pemasok: RingkasPemasok | null;
+    UuidGudang: string | null;
+    NamaGudang: string;
+    NamaOutlet: string | null;
+    Catatan: string | null;
+    AlasanDitolak: string | null;
+    AlasanBatal: string | null;
+    DibuatOleh: string | null;
+    DiputuskanOleh: string | null;
+    DiputuskanPada: string | null;
+    Pesanan: { Uuid: string; Nomor: string } | null;
+};
+export type BarisDetailPermintaan = {
+    Id: number;
+    NamaProduk: string;
+    Sku: string | null;
+    SimbolSatuan: string;
+    Jumlah: string;
+    HargaPerkiraan: string;
+};
+export type PropsDetailPermintaan = {
+    Permintaan: DetailPermintaan;
+    Baris: BarisDetailPermintaan[];
+    Riwayat: RiwayatDokumen[];
+    Izin: IzinPembelian;
+    OpsiPemasok: OpsiPemasok[];
+    Tindakan: {
+        Ubah: boolean;
+        Ajukan: boolean;
+        Putuskan: boolean;
+        JadikanPo: boolean;
+        Batalkan: boolean;
+    };
+};

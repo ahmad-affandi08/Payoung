@@ -11,6 +11,7 @@ use App\Http\Kontroler\Kelola\Pembelian\KonsinyasiKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PemasokKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PenerimaanBarangKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PengaturanPembelianKontroler;
+use App\Http\Kontroler\Kelola\Pembelian\PermintaanPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PesananPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ProdukPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ReturPembelianKontroler;
@@ -57,6 +58,17 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
     Route::post('/pesanan/{pesanan}/batalkan', [PesananPembelianKontroler::class, 'Batalkan'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.batalkan');
     Route::post('/pesanan/{pesanan}/tutup', [PesananPembelianKontroler::class, 'Tutup'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.tutup');
     Route::get('/pesanan/{pesanan}/cetak', [PesananPembelianKontroler::class, 'Cetak'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.cetak');
+
+    // F-04 PR: permintaan pembelian dari outlet → disetujui → dijadikan draf PO.
+    Route::get('/permintaan', [PermintaanPembelianKontroler::class, 'Daftar'])->name('kelola.pembelian.permintaan.daftar');
+    Route::get('/permintaan/buat', [PermintaanPembelianKontroler::class, 'Buat'])->name('kelola.pembelian.permintaan.buat');
+    Route::post('/permintaan', [PermintaanPembelianKontroler::class, 'Simpan'])->name('kelola.pembelian.permintaan.simpan');
+    Route::get('/permintaan/{permintaan}', [PermintaanPembelianKontroler::class, 'Detail'])->where('permintaan', $ulid)->name('kelola.pembelian.permintaan.detail');
+    Route::get('/permintaan/{permintaan}/ubah', [PermintaanPembelianKontroler::class, 'Ubah'])->where('permintaan', $ulid)->name('kelola.pembelian.permintaan.ubah');
+    Route::put('/permintaan/{permintaanUuid}', [PermintaanPembelianKontroler::class, 'Perbarui'])->where('permintaanUuid', $ulid)->name('kelola.pembelian.permintaan.perbarui');
+    Route::post('/permintaan/{permintaan}/ajukan', [PermintaanPembelianKontroler::class, 'Ajukan'])->where('permintaan', $ulid)->name('kelola.pembelian.permintaan.ajukan');
+    Route::post('/permintaan/{permintaanUuid}/batalkan', [PermintaanPembelianKontroler::class, 'Batalkan'])->where('permintaanUuid', $ulid)->name('kelola.pembelian.permintaan.batalkan');
+    Route::post('/permintaan/{permintaanUuid}/jadikan-po', [PermintaanPembelianKontroler::class, 'JadikanPo'])->where('permintaanUuid', $ulid)->middleware('throttle:20,1')->name('kelola.pembelian.permintaan.jadikan-po');
 
     Route::get('/penerimaan', [PenerimaanBarangKontroler::class, 'Daftar'])->name('kelola.pembelian.penerimaan.daftar');
     Route::get('/penerimaan/buat', [PenerimaanBarangKontroler::class, 'Buat'])->name('kelola.pembelian.penerimaan.buat');
@@ -113,6 +125,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
 Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianPoSetujui)])->prefix('pembelian')->group(function () use ($ulid): void {
     Route::post('/pesanan/{pesanan}/setujui', [PesananPembelianKontroler::class, 'Setujui'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.setujui');
     Route::post('/pesanan/{pesanan}/tolak', [PesananPembelianKontroler::class, 'Tolak'])->where('pesanan', $ulid)->name('kelola.pembelian.pesanan.tolak');
+    Route::post('/permintaan/{permintaan}/setujui', [PermintaanPembelianKontroler::class, 'Setujui'])->where('permintaan', $ulid)->name('kelola.pembelian.permintaan.setujui');
+    Route::post('/permintaan/{permintaanUuid}/tolak', [PermintaanPembelianKontroler::class, 'Tolak'])->where('permintaanUuid', $ulid)->name('kelola.pembelian.permintaan.tolak');
     Route::get('/pengaturan', [PengaturanPembelianKontroler::class, 'Tampilkan'])->name('kelola.pembelian.pengaturan');
     Route::put('/pengaturan', [PengaturanPembelianKontroler::class, 'Simpan'])->name('kelola.pembelian.pengaturan.simpan');
 });

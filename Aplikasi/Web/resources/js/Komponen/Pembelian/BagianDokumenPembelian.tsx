@@ -18,11 +18,13 @@ export const AlamatPembelian = '/kelola/pembelian';
 export function AmbilJenisStatusPembelian(status: StatusPembelian): 'sukses' | 'peringatan' | 'bahaya' | 'netral' {
     switch (status) {
         case 'Disetujui':
+        case 'DijadikanPo':
         case 'Diterima':
         case 'Diposting':
         case 'Lunas':
             return 'sukses';
         case 'MenungguPersetujuan':
+        case 'Diajukan':
         case 'DiterimaSebagian':
         case 'DibayarSebagian':
         case 'BelumDibayar':
