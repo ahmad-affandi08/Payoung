@@ -55,12 +55,18 @@ final class TampilanTenant
         private readonly PenghapusanDataTenant $penghapusanData,
         private readonly RiwayatAksesDukungan $aksesDukungan,
         private readonly RingkasanKesehatanTenant $kesehatan,
+        private readonly RingkasanPerangkatTenant $perangkat,
+        private readonly RingkasanTiketTenant $tiket,
+        private readonly RingkasanTagihanTenant $tagihan,
     ) {}
 
     /**
+     * `$denganTiket` dan `$denganTagihan` menandakan pelaku boleh melihat tab itu (`dukungan.tiket.lihat`, `tagihan.lihat`);
+     * bila tidak, kuncinya `null` dan datanya tidak pernah dibaca.
+     *
      * @return array<string, mixed>
      */
-    public function Ambil(Tenant $tenant): array
+    public function Ambil(Tenant $tenant, bool $denganTiket = false, bool $denganTagihan = false): array
     {
         $tenant->loadMissing('Langganan.Paket');
         $organisasi = $this->konteks->JalankanLintasTenant(
@@ -83,6 +89,9 @@ final class TampilanTenant
                 'PendaftaranMerchant' => self::AmbilPendaftaranMerchant(),
                 // PGL-16: izin akses dukungan dan sesi petugas (nama, waktu, jumlah; tanpa data pribadi).
                 'AksesDukungan' => $this->aksesDukungan->Ambil(10),
+                // P-07 tab Perangkat & Tiket: dibaca dalam pembukaan yang sama (satu baris audit akses data tenant).
+                'Perangkat' => $this->perangkat->Ambil(),
+                'Tiket' => $denganTiket ? $this->tiket->Ambil() : null,
             ],
             $tenant->Id,
         );
@@ -143,6 +152,10 @@ final class TampilanTenant
             'Override' => $this->AmbilOverride($tenant->Id),
             'Catatan' => $this->AmbilCatatan($tenant->Id),
             'Kesehatan' => $this->kesehatan->Ambil($tenant),
+            'Perangkat' => $organisasi['Perangkat'],
+            'Tiket' => $organisasi['Tiket'],
+            // Tagihan adalah catatan platform (bukan data usaha), jadi dibaca tanpa pembukaan konteks tenant.
+            'Tagihan' => $denganTagihan ? $this->tagihan->Ambil($tenant) : null,
             'AksesDukungan' => $organisasi['AksesDukungan'],
             // UU PDP: permintaan penghapusan data dan penutupan akun (angka ringkasan saja, tanpa data pribadi).
             'PenghapusanData' => $this->penghapusanData->Ambil($tenant->Id),

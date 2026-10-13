@@ -389,6 +389,10 @@ function BuatTenant(): Tampilan360 {
         AksesDukungan: { Aktif: null, Izin: [], Sesi: [], Alat: [] },
         MitraPerujuk: null,
         Kesehatan: { Terbaru: null, Riwayat: [], Tugas: [] },
+        // Peran tanpa izin tagihan/tiket: tab disembunyikan; perangkat kosong.
+        Tagihan: null,
+        Tiket: null,
+        Perangkat: { Data: [], JumlahAktif: 0, JumlahOffline: 0, TotalOutboxTertunda: 0 },
         PendaftaranMerchant: { Pendaftaran: null, PartnerAktif: false },
         Profil: {
             Uuid: 'T-1',

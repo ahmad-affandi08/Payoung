@@ -234,6 +234,10 @@ export type Tampilan360 = {
     Override: OverrideTenant[];
     Catatan: { Uuid: string; Isi: string; Penulis: string; DibuatPada: string }[];
     Kesehatan: KesehatanTenant;
+    /** Tab tagihan & tiket hanya untuk pemegang `tagihan.lihat` / `dukungan.tiket.lihat`; null = tab disembunyikan. */
+    Tagihan: TagihanTenantRingkas | null;
+    Tiket: TiketTenantRingkas | null;
+    Perangkat: PerangkatTenantRingkas;
     PenghapusanData: PermintaanPenghapusanData[];
     Riwayat: RiwayatTindakan[];
 };
@@ -255,4 +259,59 @@ export const labelBatas: Record<string, string> = {
     BatasSku: 'SKU',
     KuotaPesanWaBulanan: 'Kuota pesan WA per bulan',
     BatasPenyimpananMb: 'Penyimpanan berkas (MB)',
+};
+
+/** P-07 tab Tagihan di tampilan 360° (hanya pemegang `tagihan.lihat`; null = tab disembunyikan). */
+export type TagihanTenantRingkas = {
+    Data: {
+        Uuid: string;
+        Nomor: string;
+        Jenis: string;
+        LabelJenis: string;
+        Status: string;
+        LabelStatus: string;
+        Total: string;
+        TerbitPada: string;
+        JatuhTempoPada: string;
+        DibayarPada: string | null;
+    }[];
+    JumlahTerbuka: number;
+    TotalTerbuka: string;
+};
+
+/** P-07 tab Tiket di tampilan 360° (hanya pemegang `dukungan.tiket.lihat`; null = tab disembunyikan). */
+export type TiketTenantRingkas = {
+    Data: {
+        Uuid: string;
+        Nomor: string;
+        Judul: string;
+        Status: string;
+        LabelStatus: string;
+        Prioritas: string;
+        LewatSla: boolean;
+        DibuatPada: string;
+    }[];
+    JumlahTerbuka: number;
+    JumlahLewatSla: number;
+};
+
+/** P-07 tab Perangkat di tampilan 360°. */
+export type PerangkatTenantRingkas = {
+    Data: {
+        Uuid: string;
+        Nama: string;
+        Kode: string;
+        Jenis: string;
+        Outlet: string;
+        Platform: string | null;
+        VersiAplikasi: string | null;
+        DiaktifkanPada: string | null;
+        TerakhirAktifPada: string | null;
+        OutboxTertunda: number;
+        Dicabut: boolean;
+        LamaOffline: boolean;
+    }[];
+    JumlahAktif: number;
+    JumlahOffline: number;
+    TotalOutboxTertunda: number;
 };

@@ -14,6 +14,7 @@ import {
 } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import PanelAksesDukungan from '@/Komponen/Pengelola/Tenant/PanelAksesDukungan';
 import PanelKesehatanTenant from '@/Komponen/Pengelola/Tenant/PanelKesehatanTenant';
+import { TabPerangkatTenant, TabTagihanTenant, TabTiketTenant } from '@/Komponen/Pengelola/Tenant/TabAktivitasTenant';
 import PanelAlatBantuDukungan from '@/Komponen/Pengelola/Tenant/PanelAlatBantuDukungan';
 import PanelPendaftaranMerchant from '@/Komponen/Pengelola/Tenant/PanelPendaftaranMerchant';
 import PanelPenghapusanData from '@/Komponen/Pengelola/Tenant/PanelPenghapusanData';
@@ -140,6 +141,7 @@ const kolomOverride: KolomTabel<Tampilan360['Override'][number]>[] = [
 
 /** Tampilan 360° dasar tenant & tindakan pengelola (P-07). Semua tindakan tercatat di riwayat (BR-P07.3). */
 export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
+    const { Tagihan, Tiket, Perangkat } = Tenant;
     const { props } = usePage<PropsBersamaPengelola>();
     const pengguna = props.Pengguna;
     const [tindakan, AturTindakan] = useState<Tindakan>(null);
@@ -285,8 +287,18 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                         <TabsTrigger value="catatan" className={kelasItemTabPanel}>
                             Catatan & riwayat
                         </TabsTrigger>
-                        <TabsTrigger value="menyusul" className={kelasItemTabPanel}>
-                            Belum tersedia
+                        {Tagihan !== null ? (
+                            <TabsTrigger value="tagihan" className={kelasItemTabPanel}>
+                                Tagihan ({Tagihan.JumlahTerbuka})
+                            </TabsTrigger>
+                        ) : null}
+                        {Tiket !== null ? (
+                            <TabsTrigger value="tiket" className={kelasItemTabPanel}>
+                                Tiket ({Tiket.JumlahTerbuka})
+                            </TabsTrigger>
+                        ) : null}
+                        <TabsTrigger value="perangkat" className={kelasItemTabPanel}>
+                            Perangkat ({Perangkat.JumlahAktif})
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -579,27 +591,18 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                     </Panel>
                 </TabsContent>
 
-                <TabsContent value="menyusul">
-                    <Panel judul="Belum tersedia">
-                        <ul className="grid gap-3 text-isi sm:grid-cols-2">
-                            <ModulMenyusul
-                                judul="Tagihan tenant ini"
-                                modul="tab tagihan per tenant (sementara lihat menu Tagihan)"
-                            />
-                            <ModulMenyusul
-                                judul="Tiket tenant ini"
-                                modul="tab tiket per tenant (sementara lihat menu Dukungan)"
-                            />
-                            <ModulMenyusul
-                                judul="Perangkat (platform, versi aplikasi, outbox tertunda)"
-                                modul="aktivasi perangkat POS"
-                            />
-                            <ModulMenyusul
-                                judul="Permintaan penghapusan data (UU PDP)"
-                                modul="alur penghapusan data (fase berikutnya)"
-                            />
-                        </ul>
-                    </Panel>
+                {Tagihan !== null ? (
+                    <TabsContent value="tagihan">
+                        <TabTagihanTenant tagihan={Tagihan} />
+                    </TabsContent>
+                ) : null}
+                {Tiket !== null ? (
+                    <TabsContent value="tiket">
+                        <TabTiketTenant tiket={Tiket} />
+                    </TabsContent>
+                ) : null}
+                <TabsContent value="perangkat">
+                    <TabPerangkatTenant perangkat={Perangkat} />
                 </TabsContent>
             </Tabs>
         </TataLetakPengelola>
@@ -616,14 +619,5 @@ function DaftarNilai({ isi }: { isi: [string, ReactNode][] }) {
                 </div>
             ))}
         </dl>
-    );
-}
-
-function ModulMenyusul({ judul, modul }: { judul: string; modul: string }) {
-    return (
-        <li className="rounded-kontrol border border-garis px-3 py-2">
-            <p className="font-semibold text-teks-utama">{judul}</p>
-            <p className="text-keterangan text-teks-sekunder">Tersedia setelah modul {modul}.</p>
-        </li>
     );
 }

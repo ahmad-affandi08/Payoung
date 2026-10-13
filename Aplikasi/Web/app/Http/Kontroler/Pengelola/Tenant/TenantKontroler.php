@@ -12,11 +12,13 @@ use App\Domain\Pengelola\Tenant\Enum\KategoriKesehatan;
 use App\Domain\Pengelola\Tenant\Enum\KategoriPenangguhan;
 use App\Domain\Pengelola\Tenant\Kueri\DaftarTenant;
 use App\Domain\Pengelola\Tenant\Kueri\TampilanTenant;
+use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Domain\Tenant\Enum\PenandaTenant;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Model\Paket;
 use App\Domain\Tenant\Model\Tenant;
 use App\Http\Kontroler\Kontroler;
+use App\Http\Kontroler\Pengelola\PelakuPengelola;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,6 +30,8 @@ use Inertia\Response;
  */
 final class TenantKontroler extends Kontroler
 {
+    use PelakuPengelola;
+
     public function Daftar(Request $permintaan, DaftarTenant $kueri): Response|JsonResponse
     {
         $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarTenant::KOLOM_URUT, '-DibuatPada', DaftarTenant::KOLOM_SARING);
@@ -44,8 +48,11 @@ final class TenantKontroler extends Kontroler
 
     public function Tampilkan(Tenant $tenant, TampilanTenant $kueri, DaftarKatalog $katalog): Response
     {
+        $pelaku = $this->AmbilPelaku();
+
         return Inertia::render('Pengelola/Tenant/Tampil', [
-            'Tenant' => $kueri->Ambil($tenant),
+            // Tab tagihan & tiket hanya untuk peran yang boleh melihatnya (§19.3); null = tab disembunyikan.
+            'Tenant' => $kueri->Ambil($tenant, $pelaku->PunyaIzin(IzinPengelola::DukunganTiketLihat), $pelaku->PunyaIzin(IzinPengelola::TagihanLihat)),
             'Pilihan' => [
                 'KategoriPenangguhan' => array_map(
                     fn (KategoriPenangguhan $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()],

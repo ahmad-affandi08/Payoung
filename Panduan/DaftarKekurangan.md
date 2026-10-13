@@ -224,7 +224,7 @@ Bahan resep dikurangi dari lokasi produksi Dapur/Bar (BR-05.4, SELESAI @ v5.79) 
 
 ### F-f. Flow Platform Pengelola (P-xx) yang belum
 
-Override tarif pajak daerah (BR-P02.3) dan pemberitahuan tarif daerah | ganti paket manual (P-07) | tampilan 360° tenant tanpa tab tagihan/tiket/perangkat | tiket lewat email/WA | tombol Bantuan di Kasir/Owner dengan konteks otomatis | eskalasi L1 → L2 → Teknis dan SLA jam kerja | masking data (BR-P09.1) | metrik P-11: error rate/p95, outbox macet per perangkat, crash-free sessions, DB per tenant, alert WA/Telegram, runbook | hook CI unggah build (P-10) | pendaftaran mitra mandiri, verifikasi, kontrak (P-12) | pembukuan platform (BR-P08.3) | Sentry & uptime (K29).
+Override tarif pajak daerah (BR-P02.3) dan pemberitahuan tarif daerah | ganti paket manual (P-07) | tampilan 360° tenant tanpa tab tagihan/tiket/perangkat (SELESAI @ v5.97) | tiket lewat email/WA | tombol Bantuan di Kasir/Owner dengan konteks otomatis | eskalasi L1 → L2 → Teknis dan SLA jam kerja | masking data (BR-P09.1) | metrik P-11: error rate/p95, outbox macet per perangkat, crash-free sessions, DB per tenant, alert WA/Telegram, runbook | hook CI unggah build (P-10) | pendaftaran mitra mandiri, verifikasi, kontrak (P-12) | pembukuan platform (BR-P08.3) | Sentry & uptime (K29).
 
 ### F-g. Selisih dokumen & butir meragukan
 
