@@ -13,6 +13,7 @@ use App\Domain\Pengelola\Tenant\Model\SkorKesehatanTenant;
 use App\Domain\Tenant\Enum\PenandaTenant;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Model\Langganan;
+use App\Domain\Tenant\Model\Paket;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Collection;
 
@@ -27,10 +28,10 @@ final class DaftarTenant
 
     public const KOLOM_URUT = ['DibuatPada', 'Nama'];
 
-    public const KOLOM_SARING = ['Status', 'Penanda', 'Kesehatan'];
+    public const KOLOM_SARING = ['Status', 'Penanda', 'Kesehatan', 'Paket'];
 
     /**
-     * Daftar untuk `TabelData` (D-16): cari nama/slug/email Owner; saring status langganan & penanda (pilihan banyak,
+     * Daftar untuk `TabelData` (D-16): cari nama/slug/email Owner; saring status langganan, paket & penanda (pilihan banyak,
      * `Tanpa` = tanpa penanda).
      *
      * @return array{Data: list<array<string, mixed>>, Meta: array{Halaman: int, PerHalaman: int, Total: int, JumlahHalaman: int}}
@@ -42,6 +43,7 @@ final class DaftarTenant
         $status = $permintaan->AmbilDaftar('Status', array_map(fn (StatusLangganan $s): string => $s->value, StatusLangganan::cases()));
         $penanda = $permintaan->AmbilDaftar('Penanda', [self::SARING_TANPA_PENANDA, ...array_map(fn (PenandaTenant $p): string => $p->value, PenandaTenant::cases())]);
         $kesehatan = $permintaan->AmbilDaftar('Kesehatan', array_map(fn (KategoriKesehatan $k): string => $k->value, KategoriKesehatan::cases()));
+        $paket = $permintaan->AmbilDaftar('Paket', array_map(fn (Paket $p): string => $p->Kode, array_values(Paket::query()->get(['Kode'])->all())));
         $penandaNilai = array_values(array_diff($penanda, [self::SARING_TANPA_PENANDA]));
         $tanpaPenanda = in_array(self::SARING_TANPA_PENANDA, $penanda, true);
 
@@ -55,6 +57,7 @@ final class DaftarTenant
                     ->where('Pemilik', true)
                     ->whereIn('IdPengguna', Pengguna::query()->select('Id')->where('Email', 'like', $pola)))))
             ->when($status !== [], fn ($kueri) => $kueri->whereIn('Id', Langganan::query()->select('IdTenant')->whereIn('Status', $status)))
+            ->when($paket !== [], fn ($kueri) => $kueri->whereIn('Id', Langganan::query()->select('IdTenant')->whereIn('IdPaket', Paket::query()->select('Id')->whereIn('Kode', $paket))))
             ->when($kesehatan !== [], fn ($kueri) => $kueri->whereIn('Id', SkorKesehatanTenant::query()
                 ->select('IdTenant')
                 ->where('Tanggal', SkorKesehatanTenant::query()->max('Tanggal'))

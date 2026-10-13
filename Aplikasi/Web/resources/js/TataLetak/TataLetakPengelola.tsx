@@ -30,6 +30,7 @@ import {
     type ButirJejak,
 } from './BagianTataLetak';
 import KepalaSidebarMerek from './KepalaSidebarMerek';
+import PencarianCepat, { type HalamanPencarian, type SumberPencarian } from './PencarianCepat';
 
 type PropsTataLetak = {
     judul: string;
@@ -157,6 +158,46 @@ export const daftarMenuPengelola: GrupMenu[] = [
 ];
 
 /**
+ * Sumber data pencarian cepat konsol. Aktif hanya bila halaman daftarnya ada di menu yang boleh dilihat pelaku; server
+ * tetap memeriksa izin pada endpoint JSON `TabelData` yang sama.
+ */
+const sumberPencarianPengelola: SumberPencarian[] = [
+    {
+        id: 'tenant',
+        label: 'Tenant',
+        alamat: '/tenant',
+        ikon: 'Pelanggan',
+        AmbilHasil: (b) => ({
+            judul: String(b.Nama),
+            keterangan: typeof b.EmailPemilik === 'string' ? b.EmailPemilik : null,
+            href: `/tenant/${String(b.Uuid)}`,
+        }),
+    },
+    {
+        id: 'tiket',
+        label: 'Tiket dukungan',
+        alamat: '/dukungan/tiket',
+        ikon: 'Dukungan',
+        AmbilHasil: (b) => ({
+            judul: `${String(b.Nomor)} ${String(b.Judul)}`,
+            keterangan: typeof b.NamaTenant === 'string' ? b.NamaTenant : null,
+            href: `/dukungan/tiket/${String(b.Uuid)}`,
+        }),
+    },
+    {
+        id: 'tagihan',
+        label: 'Tagihan langganan',
+        alamat: '/tagihan',
+        ikon: 'Akuntansi',
+        AmbilHasil: (b) => ({
+            judul: String(b.Nomor),
+            keterangan: typeof b.NamaTenant === 'string' ? b.NamaTenant : null,
+            href: `/tagihan/${String(b.Uuid)}`,
+        }),
+    },
+];
+
+/**
  * Menu aktif: Beranda hanya untuk "/", lainnya menurut segmen pertama URL (/katalog/addon → Katalog), ditambah
  * alamat lain yang dimiliki entri yang sama (/flag-fitur → Rilis aplikasi).
  */
@@ -180,6 +221,12 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
         }))
         .filter((grup) => grup.item.length > 0);
     const namaPlatform = `${props.NamaAplikasi} | Pengelola`;
+    // Ctrl+K: halaman dari menu yang terlihat + pencarian tenant, tiket, dan tagihan lewat endpoint JSON daftarnya.
+    const halamanPencarian: HalamanPencarian[] = grupTerlihat.flatMap((grup) =>
+        grup.item.map((menu) => ({ label: menu.label, href: menu.href, grup: grup.grup, ikon: menu.ikon })),
+    );
+    const alamatTerlihat = new Set(halamanPencarian.map((h) => h.href));
+    const sumberTerlihat = sumberPencarianPengelola.filter((sumber) => alamatTerlihat.has(sumber.alamat));
 
     return (
         <SidebarProvider defaultOpen={BacaSidebarTerbuka()}>
@@ -227,6 +274,7 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
                 <div className="sticky top-0 z-20">
                     <PenandaLingkungan lingkungan={props.Lingkungan} />
                     <KepalaTataLetak induk={namaPlatform} judul={judul} gelap lengket={false}>
+                        <PencarianCepat halaman={halamanPencarian} sumber={sumberTerlihat} />
                         <MenuAkun nama={pengguna?.Nama} email={pengguna?.Email} gelap tautanKeamanan="/keamanan" />
                     </KepalaTataLetak>
                 </div>

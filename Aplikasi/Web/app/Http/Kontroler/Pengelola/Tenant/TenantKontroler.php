@@ -39,6 +39,7 @@ final class TenantKontroler extends Kontroler
         return ResponsTabel::Kirim($permintaan, 'Pengelola/Tenant/Daftar', 'Tenant', fn (): array => $kueri->AmbilTabel($tabel), fn (): array => [
             'PilihanStatus' => array_map(fn (StatusLangganan $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], StatusLangganan::cases()),
             'PilihanKesehatan' => array_map(fn (KategoriKesehatan $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], KategoriKesehatan::cases()),
+            'PilihanPaket' => Paket::query()->orderBy('Urutan')->orderBy('Id')->get(['Kode', 'Nama'])->map(fn (Paket $paket): array => ['Nilai' => $paket->Kode, 'Label' => $paket->Nama])->values()->all(),
             'PilihanPenanda' => [
                 ['Nilai' => DaftarTenant::SARING_TANPA_PENANDA, 'Label' => 'Tanpa penanda'],
                 ...array_map(fn (PenandaTenant $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], PenandaTenant::cases()),

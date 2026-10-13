@@ -224,3 +224,36 @@ export type PropsFlagFitur = {
     OpsiPaket: Pilihan[];
     OpsiTenant: Pilihan[];
 };
+
+/** Ringkasan Beranda konsol; bagian `null` = pelaku tidak berizin melihatnya. */
+export type PropsBerandaPengelola = {
+    Ringkasan: {
+        Tenant: {
+            Total: number;
+            Baru7Hari: number;
+            Trial: number;
+            Berbayar: number;
+            Tertunggak: number;
+            Ditangguhkan: number;
+            Berisiko: number;
+            TugasTerbuka: number;
+            PenghapusanDataMenunggu: number;
+        } | null;
+        Tagihan: {
+            JatuhTempo: number;
+            NilaiJatuhTempo: string;
+            MenungguVerifikasi: number;
+            Terbit: number;
+            LunasBulanIni: number;
+        } | null;
+        Dukungan: { Terbuka: number; Baru: number; LewatSla: number } | null;
+        Operasional: {
+            PenjadwalSehat: boolean;
+            AntreanSehat: boolean;
+            BackupSehat: boolean;
+            AlertAktif: number;
+            InsidenAktif: number;
+        } | null;
+        Perhatian: { Judul: string; Keterangan: string; Tautan: string; Tingkat: 'bahaya' | 'peringatan' | 'info' }[];
+    };
+};

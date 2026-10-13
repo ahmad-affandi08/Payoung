@@ -58,6 +58,20 @@ describe('P-07 daftar tenant', function (): void {
         $cari(['cari' => '%'])->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('Tenant.Meta.Total', 0));
     });
 
+    it('menyaring menurut paket langganan dan menyediakan pilihannya', function (): void {
+        $kopi = BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
+        BantuanTenantPengelola::BuatTenant('Toko Bangunan Sinar Jaya', 'budi@sinarjaya.co.id');
+        $kodePaket = (string) Langganan::query()->where('IdTenant', $kopi->Id)->sole()->Paket->Kode;
+        BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Dukungan);
+
+        $this->get(BantuanPengelola::Url('/tenant?'.http_build_query(['saring' => ['Paket' => $kodePaket]])))->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->where('Tenant.Meta.Total', 2)
+                ->where('PilihanPaket.0.Nilai', fn ($nilai) => is_string($nilai) && $nilai !== ''));
+        $this->get(BantuanPengelola::Url('/tenant?'.http_build_query(['saring' => ['Paket' => 'TIDAK-ADA']])))->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('Tenant.Meta.Total', 2));
+    });
+
     it('berhalaman 25 baris per halaman (TabelData D-16)', function (): void {
         foreach (range(1, 26) as $nomor) {
             BantuanTenantPengelola::BuatTenant("Warung Makan Sederhana {$nomor}");

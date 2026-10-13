@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -63,6 +64,24 @@ describe('TataLetakPengelola: menu sesuai izin, penanda lingkungan, banner (P-01
         expect(screen.getByRole('button', { name: 'Tambah paket' })).toBeTruthy();
         expect(CekMenuPengelolaAktif('/', '/tenant')).toBe(false);
         expect(CekMenuPengelolaAktif('/referensi/tarif-pajak', '/referensi/wilayah')).toBe(true);
+    });
+
+    it('pencarian cepat Ctrl+K: halaman dari menu yang diizinkan, sumber tenant hanya bila Tenant ada di menu', () => {
+        propsHalaman = BuatProps(['tenant.lihat', 'audit.lihat']);
+        urlHalaman = '/';
+        render(
+            <QueryClientProvider client={new QueryClient()}>
+                <TataLetakPengelola judul="Beranda">isi</TataLetakPengelola>
+            </QueryClientProvider>,
+        );
+
+        fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+        const dialog = screen.getByRole('dialog');
+        expect(within(dialog).getByText('Tenant')).toBeTruthy();
+        expect(within(dialog).getByText('Log audit')).toBeTruthy();
+        // Tanpa izin lihat tagihan & dukungan, halamannya tidak ditawarkan.
+        expect(within(dialog).queryByText('Tagihan')).toBeNull();
+        expect(within(dialog).queryByText('Dukungan')).toBeNull();
     });
 
     it('menu dikelompokkan menurut pekerjaan; Tenant tepat di bawah Beranda, bukan paling bawah (D-30)', () => {

@@ -15,6 +15,7 @@ type PropsDaftar = {
     PilihanStatus: Pilihan[];
     PilihanPenanda: Pilihan[];
     PilihanKesehatan: Pilihan[];
+    PilihanPaket: Pilihan[];
 };
 
 const kolom: KolomTabel<BarisTenant>[] = [
@@ -83,7 +84,7 @@ const kolom: KolomTabel<BarisTenant>[] = [
 ];
 
 /** Daftar tenant (P-07, TabelData D-16): cari nama, slug, atau email Owner; saring status langganan & penanda. */
-export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanKesehatan }: PropsDaftar) {
+export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanKesehatan, PilihanPaket }: PropsDaftar) {
     return (
         <TataLetakPengelola judul="Tenant">
             <TabTenant />
@@ -101,6 +102,12 @@ export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanK
                         label: 'Status langganan',
                         jenis: 'pilihanBanyak',
                         opsi: PilihanStatus.map((o) => ({ nilai: o.Nilai, label: o.Label })),
+                    },
+                    {
+                        id: 'Paket',
+                        label: 'Paket',
+                        jenis: 'pilihanBanyak',
+                        opsi: PilihanPaket.map((o) => ({ nilai: o.Nilai, label: o.Label })),
                     },
                     {
                         id: 'Kesehatan',
