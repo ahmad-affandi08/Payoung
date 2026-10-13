@@ -33,7 +33,7 @@ final class SiapkanOrganisasiAwal
             'IdTenant' => $idTenant,
             'IdOutlet' => $outlet->Id,
             'Kode' => $kode,
-            'Nama' => 'Gudang Outlet Utama',
+            'Nama' => mb_substr("Gudang {$namaUsaha}", 0, 100),
             'Jenis' => JenisGudang::Toko,
         ]);
 

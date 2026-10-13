@@ -102,9 +102,9 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
 
         expect(AmbilPasanganSaldoUji($hasil))->toBe([
             'Beras Pandan Wangi Cianjur Premium 5 kg @ Gudang Belakang',
-            'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama',
+            'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya',
             'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Solo',
-            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama',
+            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya',
         ])
             ->and($hasil['Ringkasan'])->toBe(['TotalNilai' => '1558500.00', 'JumlahBaris' => 4, 'JumlahMinus' => 1])
             ->and($hasil['Saldo']['Total'])->toBe(4)
@@ -133,14 +133,14 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
 
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Ada'])))->toBe([
             'Beras Pandan Wangi Cianjur Premium 5 kg @ Gudang Belakang',
-            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama',
+            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya',
         ])
-            ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Nol'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama'])
+            ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Nol'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya'])
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Minus'])))->toBe(['Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Solo'])
             ->and(AmbilSaldoStokUji(['Keadaan' => 'Minus'])['Ringkasan'])->toBe(['TotalNilai' => '-115500.00', 'JumlahBaris' => 1, 'JumlahMinus' => 1])
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['UuidGudang' => $d['Toko']->Uuid])))->toBe([
-                'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama',
-                'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama',
+                'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya',
+                'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya',
             ])
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => 'minyak goreng'])))->toHaveCount(2)
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => 'brs-pw'])))->toBe(['Beras Pandan Wangi Cianjur Premium 5 kg @ Gudang Belakang'])
@@ -149,23 +149,23 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
         // Kata = barcode persis.
         $satuan = ProdukSatuan::query()->where('IdProduk', $d['Gula']->Id)->sole();
         ProdukBarcode::query()->create(['IdProduk' => $d['Gula']->Id, 'IdProdukSatuan' => $satuan->Id, 'Barcode' => '8991234500017']);
-        expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => '8991234500017'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama']);
+        expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => '8991234500017'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya']);
     });
 
     it('urut -Nilai (terbesar dulu) dan Jumlah (terkecil dulu); kolom urut/saring & nilai tak dikenal diabaikan', function (): void {
         SiapkanSaldoStokUji();
 
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Urut' => '-Nilai'])))->toBe([
-            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama',
+            'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya',
             'Beras Pandan Wangi Cianjur Premium 5 kg @ Gudang Belakang',
-            'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama',
+            'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya',
             'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Solo',
         ])
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Urut' => 'Jumlah'])))->toBe([
                 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Solo',
-                'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Outlet Utama',
+                'Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya',
                 'Beras Pandan Wangi Cianjur Premium 5 kg @ Gudang Belakang',
-                'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama',
+                'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya',
             ])
             ->and(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Rusak'])))->toHaveCount(4)
             ->and(DataPermintaanTabel::Dari(['cari' => ['x'], 'urut' => 'DROP TABLE', 'saring' => ['Gudang' => 123, 'Lain' => 'x']], DaftarSaldoStok::KOLOM_URUT, 'Nama', DaftarSaldoStok::KOLOM_SARING))
@@ -180,7 +180,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
         $h9 = AmbilSaldoStokUji(halaman: 9, perHalaman: 3);
 
         expect([$h1['Saldo']['HalamanSaatIni'], $h1['Saldo']['HalamanTerakhir'], $h1['Saldo']['Total'], count($h1['Saldo']['Data'])])->toBe([1, 2, 4, 3])
-            ->and(AmbilPasanganSaldoUji($h2))->toBe(['Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Outlet Utama'])
+            ->and(AmbilPasanganSaldoUji($h2))->toBe(['Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter @ Gudang Toko Sembako Berkah Jaya'])
             ->and($h9['Saldo']['HalamanSaatIni'])->toBe(2)
             ->and($h2['Ringkasan']['JumlahBaris'])->toBe(4);
     });
