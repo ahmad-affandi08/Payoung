@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $AlasanBatal
  * @property int|null $IdPembatal
  * @property int|null $IdPenyetujuBatal
+ * @property Carbon|null $TerbuangDicatatPada void item yang dicatat sebagai bahan terbuang (BR-07.5)
  * @property Carbon|null $DibuatPada
  */
 final class PesananTerbukaDetail extends ModelDasar
@@ -60,6 +61,7 @@ final class PesananTerbukaDetail extends ModelDasar
             'Status' => StatusBarisPesanan::class,
             'DikirimKeDapurPada' => 'datetime',
             'DibatalkanPada' => 'datetime',
+            'TerbuangDicatatPada' => 'datetime',
         ];
     }
 }

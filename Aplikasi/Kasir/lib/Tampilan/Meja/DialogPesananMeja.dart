@@ -225,6 +225,25 @@ Future<({bool lanjut, StafLokal? penyetuju})> MintaPenyetujuVoid(
   return (lanjut: penyetuju != null, penyetuju: penyetuju);
 }
 
+/// Tanya apakah item yang dibatalkan sudah dibuat/dimasak (BR-07.5 opsi waste). `true` = catat bahan terbuang, `false` =
+/// bahan tidak dikurangi, null = kasir mundur dari pembatalan.
+Future<bool?> TanyaSudahDibuat(BuildContext context, String namaProduk) => showDialog<bool>(
+  context: context,
+  barrierDismissible: false,
+  builder: (konteks) => AlertDialog(
+    title: Text('$namaProduk sudah dibuat?'),
+    content: const Text(
+      'Bila sudah dibuat atau dimasak, bahannya sudah terpakai. Pilih "Sudah dibuat" supaya bahan dicatat sebagai '
+      'bahan terbuang dan stok tetap akurat.',
+    ),
+    actions: [
+      TextButton(onPressed: () => Navigator.of(konteks).pop(), child: const Text('Kembali')),
+      OutlinedButton(onPressed: () => Navigator.of(konteks).pop(false), child: const Text('Belum dibuat')),
+      FilledButton(onPressed: () => Navigator.of(konteks).pop(true), child: const Text('Sudah dibuat')),
+    ],
+  ),
+);
+
 /// Batalkan satu baris pesanan tersimpan. Baris yang belum dikirim ke dapur cukup dikonfirmasi; yang sudah dikirim
 /// butuh alasan dan penyetuju (void item, BR-07.5). Hasil = pesan untuk kasir (null = tidak jadi).
 Future<String?> BatalkanBarisPesanan(
@@ -259,6 +278,18 @@ Future<String?> BatalkanBarisPesanan(
     }
     penyetuju = hasil.penyetuju;
   }
+  var sudahDibuat = false;
+  if (terkirim) {
+    if (!context.mounted) {
+      return null;
+    }
+    // BR-07.5 opsi waste: item yang sudah dibuat sudah memakai bahan, jadi dicatat sebagai bahan terbuang.
+    final jawab = await TanyaSudahDibuat(context, baris.namaProduk);
+    if (jawab == null) {
+      return null;
+    }
+    sudahDibuat = jawab;
+  }
   try {
     await ref
         .read(penyediaLayananPesananMeja)
@@ -268,6 +299,7 @@ Future<String?> BatalkanBarisPesanan(
           kasir: kasir,
           alasan: alasan,
           penyetuju: penyetuju,
+          catatTerbuang: sudahDibuat,
         );
     return '${baris.namaProduk} dibatalkan.';
   } on GalatKasir catch (galat) {

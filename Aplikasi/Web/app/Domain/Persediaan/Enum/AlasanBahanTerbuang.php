@@ -12,6 +12,7 @@ enum AlasanBahanTerbuang: string
     case SalahBuat = 'SalahBuat';
     case TidakTerjual = 'TidakTerjual';
     case Tumpah = 'Tumpah';
+    case VoidItem = 'VoidItem';
     case Lainnya = 'Lainnya';
 
     public function AmbilLabel(): string
@@ -22,6 +23,7 @@ enum AlasanBahanTerbuang: string
             self::SalahBuat => 'Salah buat / dikembalikan tamu',
             self::TidakTerjual => 'Sisa tidak terjual',
             self::Tumpah => 'Tumpah / jatuh',
+            self::VoidItem => 'Item dibatalkan setelah dibuat',
             self::Lainnya => 'Lainnya',
         };
     }

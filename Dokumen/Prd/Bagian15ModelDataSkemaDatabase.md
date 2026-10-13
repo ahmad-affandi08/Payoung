@@ -285,6 +285,7 @@ erDiagram
 | `HasilAlatDukungan` | IdTenant, Uuid, IdAksesDukungan, IdPenggunaPengelola, NamaPetugas, Alat, Status (Berhasil/TanpaPerubahan/Gagal), Ringkasan, Parameter, Sebelum, Sesudah (JSON, tanpa data pribadi), DibuatPada. Append-only (v5.76, PGL-16) |
 | `LogPerangkatDiunggah` | IdTenant, Uuid, IdPerangkat, VersiAplikasi, JumlahBaris, Isi (tersaring PII), DiunggahPada. Dihapus setelah 30 hari (v5.76) |
 | `PengingatKedaluwarsaBatch` | IdTenant, KunciBatch, Tingkat (H30/H7/Lewat), TanggalKedaluwarsa, DibuatPada. Unik per batch+tingkat+tanggal (v5.77, F23) |
+| `PesananTerbukaDetail.TerbuangDicatatPada` | Waktu bahan item yang di-void dicatat sebagai bahan terbuang (v5.78); null = tidak dicatat |
 | `Perangkat.MintaLogPada` / `LogDiunggahPada` | Permintaan unggah log dari dukungan (berlaku 7 hari) dan waktu dijawab (v5.76) |
 | `Pengumuman` | Judul, Isi, Jenis (Info/Pemeliharaan/CatatanRilis), Segmen JSON, MulaiPada, SelesaiPada |
 | `Insiden` | Judul, Tingkat, Status, Dampak, MulaiPada, SelesaiPada, Kronologi, PascaInsiden |

@@ -89,6 +89,7 @@ export type TabLaporanPenjualan =
     | 'kanal'
     | 'metode'
     | 'diskon'
+    | 'void-item'
     | 'anti-fraud'
     | 'abc'
     | 'menu';
@@ -174,6 +175,21 @@ export type BarisDiskonLaporan = {
     Kotor: string;
 };
 
+/** BR-07.5: void item pesanan meja (item sudah dikirim ke dapur lalu dibatalkan). `Waktu` ISO 8601 UTC. */
+export type BarisVoidItemLaporan = {
+    Kunci: string;
+    Waktu: string;
+    NamaOutlet: string;
+    Nomor: string;
+    NamaProduk: string;
+    Jumlah: string;
+    Nilai: string;
+    Alasan: string;
+    NamaPembatal: string;
+    NamaPenyetuju: string;
+    Terbuang: boolean;
+};
+
 /** F-14 anti-fraud (OWN-09): pola & skor risiko per kasir; skor adalah petunjuk untuk diperiksa, bukan bukti. */
 export type BarisAntiFraudLaporan = {
     Kunci: string;
@@ -245,6 +261,7 @@ export type PropsLaporanPenjualan = {
         | BarisKanalLaporan[]
         | BarisMetodeLaporan[]
         | BarisDiskonLaporan[]
+        | BarisVoidItemLaporan[]
         | BarisAntiFraudLaporan[]
         | IsiAbc
         | IsiMenu;

@@ -11,6 +11,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Pemenuhan\Aksi\BatalkanBarisTiketDapur;
 use App\Domain\Penjualan\Data\DataPesananTerbukaPos;
 use App\Domain\Penjualan\Enum\StatusBarisPesanan;
+use App\Domain\Penjualan\Layanan\PencatatTerbuangVoidItem;
 use App\Domain\Penjualan\Layanan\PenjagaPesananTerbuka;
 use App\Domain\Penjualan\Model\PesananTerbukaDetail;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,8 @@ use Illuminate\Support\Facades\DB;
  * Item outbox `PesananTerbuka.BatalkanBaris` (F-07 mode meja fase 1, BR-07.5): membatalkan baris pesanan terbuka
  * (tidak dihapus). Baris yang sudah dikirim ke dapur = **void item**: alasan wajib, butuh izin `penjualan.void` pada
  * pelaku atau penyetuju, dicatat di log audit `pesanan-terbuka.void-item` (dasar laporan void), dan baris tiket dapurnya
- * ditandai dibatalkan. Semua baris sudah batal → `Duplikat`.
+ * ditandai dibatalkan. Semua baris sudah batal → `Duplikat`. Opsi "waste" (v5.78): `CatatTerbuang` mencatat void item sebagai
+ * bahan terbuang (stok bahan sudah terpakai karena item sudah dibuat), lihat `PencatatTerbuangVoidItem`.
  */
 final class BatalkanBarisPesananTerbukaPos
 {
@@ -28,6 +30,7 @@ final class BatalkanBarisPesananTerbukaPos
         private readonly PenjagaPesananTerbuka $penjaga,
         private readonly BatalkanBarisTiketDapur $batalkanTiket,
         private readonly PencatatAudit $audit,
+        private readonly PencatatTerbuangVoidItem $terbuang,
     ) {}
 
     public function Jalankan(DataPesananTerbukaPos $data): StatusItemSinkron
@@ -74,11 +77,24 @@ final class BatalkanBarisPesananTerbukaPos
 
             if ($terkirim->isNotEmpty()) {
                 $this->batalkanTiket->Jalankan(array_values($terkirim->pluck('Uuid')->all()));
+                $dilewati = [];
+                $dicatat = [];
+
+                if ($data->catatTerbuang) {
+                    foreach ($terkirim as $b) {
+                        $catatan = $this->terbuang->Catat($b, $data->idOutlet, $data->idPerangkat, $pelaku->id, $data->waktu, $data->alasan);
+                        $catatan === null ? $dicatat[] = $b->NamaProduk : $dilewati[] = ['Nama' => $b->NamaProduk, 'Alasan' => $catatan];
+                    }
+                }
+
                 $this->audit->Catat('pesanan-terbuka.void-item', $pesanan, nilaiBaru: [
                     'Nomor' => $pesanan->Nomor,
                     'Item' => $terkirim->map(fn (PesananTerbukaDetail $b): array => ['Nama' => $b->NamaProduk, 'Jumlah' => (string) $b->Jumlah])->values()->all(),
                     'Alasan' => $data->alasan,
                     'IdPenyetuju' => $penyetuju?->id,
+                    'CatatTerbuang' => $data->catatTerbuang,
+                    'TerbuangDicatat' => $dicatat,
+                    'TerbuangDilewati' => $dilewati,
                 ], idPengguna: $pelaku->id);
             }
 

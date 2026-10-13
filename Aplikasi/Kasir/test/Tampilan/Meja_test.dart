@@ -179,9 +179,14 @@ void main() {
     await PilihPenyetuju(tester, 'Budi Santoso');
     await KetikPin(tester, KasusPin(1)['Pin']! as String);
     await Tunggu(tester);
+    // Item sudah di dapur: kasir ditanya apakah sudah dibuat (opsi bahan terbuang).
+    expect(find.textContaining('sudah dibuat?'), findsOneWidget);
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Belum dibuat'));
+    await Tunggu(tester);
     expect(find.text('Croissant Mentega Prancis Isi Cokelat Lumer Ukuran Jumbo dibatalkan.'), findsOneWidget);
     outbox = await AmbilOutbox(tester, u);
     final batal = outbox.firstWhere((o) => o.jenis == 'PesananTerbuka.BatalkanBaris');
+    expect(batal.data.containsKey('CatatTerbuang'), isFalse);
     expect(batal.data['Alasan'], 'Tamu ganti menu');
     expect(batal.data['UuidPenyetuju'], '01K5STAF000000000000000002');
 

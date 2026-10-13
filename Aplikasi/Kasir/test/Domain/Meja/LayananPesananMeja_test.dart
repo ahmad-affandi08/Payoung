@@ -272,6 +272,52 @@ void main() {
     );
 
     test(
+      'void item: CatatTerbuang hanya ikut outbox bila ada item terkirim dan kasir menandainya sudah dibuat',
+      () async {
+        await Siapkan();
+        final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
+        final draf = DrafContoh();
+        await u.pesananMeja.SimpanBaris(uuidPesanan: pesanan.uuid, draf: [draf.first], kasir: rina, kirimDapur: true);
+        await u.pesananMeja.SimpanBaris(uuidPesanan: pesanan.uuid, draf: [draf.last], kasir: rina, kirimDapur: false);
+
+        // Item belum dikirim: tidak ada yang bisa terbuang, kunci tidak dikirim walau diminta.
+        await u.pesananMeja.BatalkanBaris(
+          uuidPesanan: pesanan.uuid,
+          uuidBaris: [draf.last.uuid],
+          kasir: rina,
+          catatTerbuang: true,
+        );
+        expect(Data((await Outbox()).last).containsKey('CatatTerbuang'), isFalse);
+
+        // Item terkirim ditandai sudah dibuat → server mencatat bahan terbuang.
+        await u.pesananMeja.BatalkanBaris(
+          uuidPesanan: pesanan.uuid,
+          uuidBaris: [draf.first.uuid],
+          kasir: rina,
+          alasan: 'Tamu ganti menu',
+          penyetuju: budi,
+          catatTerbuang: true,
+        );
+        expect(Data((await Outbox()).last)['CatatTerbuang'], isTrue);
+      },
+    );
+
+    test('void item terkirim yang belum dibuat: kunci CatatTerbuang tidak dikirim', () async {
+      await Siapkan();
+      final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
+      final draf = DrafContoh();
+      await u.pesananMeja.SimpanBaris(uuidPesanan: pesanan.uuid, draf: [draf.first], kasir: rina, kirimDapur: true);
+      await u.pesananMeja.BatalkanBaris(
+        uuidPesanan: pesanan.uuid,
+        uuidBaris: [draf.first.uuid],
+        kasir: rina,
+        alasan: 'Tamu ganti menu',
+        penyetuju: budi,
+      );
+      expect(Data((await Outbox()).last).containsKey('CatatTerbuang'), isFalse);
+    });
+
+    test(
       'batal pesanan: ada item di dapur → kasir tanpa izin void butuh penyetuju; pesanan hilang dari daftar',
       () async {
         await Siapkan();

@@ -12,10 +12,12 @@ use App\Domain\Penjualan\Data\DataAgregatPenjualan;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
+use App\Domain\Penjualan\Enum\StatusBarisPesanan;
 use App\Domain\Penjualan\Enum\StatusPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
 use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\PenjualanPembayaran;
+use App\Domain\Penjualan\Model\PesananTerbukaDetail;
 use App\Domain\Penjualan\Model\ReturPenjualan;
 use App\Domain\Penjualan\Model\ReturPenjualanDetail;
 use App\Domain\Penjualan\Model\ReturPenjualanPembayaran;
@@ -592,6 +594,70 @@ final class AgregatPenjualan
                 'JumlahRetur' => (int) $b->Jumlah,
                 'NilaiRetur' => Uang::Dari(self::Teks($b->Nilai))->KeString(),
             ];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * BR-07.5: **void item** (baris pesanan meja yang sudah dikirim ke dapur lalu dibatalkan) dalam rentang tanggal bisnis,
+     * terbaru dulu. Tanggal bisnis = tanggal lokal outlet saat dibatalkan (selisih UTC per outlet dari `$offsetDetik`).
+     * `Nilai` = jumlah × (harga + pilihan) sebagai petunjuk kerugian, bukan angka akuntansi. `Terbuang` = bahan sudah dicatat
+     * sebagai bahan terbuang (opsi waste). Kasir pada saring = pembatal. Maksimal `$batas` baris.
+     *
+     * @param  array<int, int>  $offsetDetik  Id outlet → selisih UTC (detik)
+     * @return list<array{Uuid: string, Nomor: string, IdOutlet: int, NamaOutlet: string, Waktu: string, NamaProduk: string, Jumlah: string, Nilai: string, Alasan: string|null, IdPembatal: int|null, IdPenyetuju: int|null, Terbuang: bool}>
+     */
+    public function VoidItem(DataSaringLaporanPenjualan $saring, array $offsetDetik, int $batas = 200, int $offsetBawaan = 25200): array
+    {
+        if ($saring->CekTanpaOutlet()) {
+            return [];
+        }
+
+        $kueri = PesananTerbukaDetail::query()
+            ->join('PesananTerbuka', fn (JoinClause $j) => $j->on('PesananTerbuka.Id', '=', 'PesananTerbukaDetail.IdPesananTerbuka')->on('PesananTerbuka.IdTenant', '=', 'PesananTerbukaDetail.IdTenant'))
+            ->join('Outlet', 'Outlet.Id', '=', 'PesananTerbuka.IdOutlet')
+            ->where('PesananTerbukaDetail.Status', StatusBarisPesanan::Dibatalkan->value)
+            ->whereNotNull('PesananTerbukaDetail.DikirimKeDapurPada')
+            // Margin sehari di kedua sisi menutup selisih zona waktu; tanggal lokal dipastikan di bawah.
+            ->whereBetween('PesananTerbukaDetail.DibatalkanPada', [$saring->dari->startOfDay()->subDay()->toDateTimeString(), $saring->sampai->endOfDay()->addDay()->toDateTimeString()])
+            ->when($saring->idOutlet !== null, fn (Builder $k) => $k->whereIn('PesananTerbuka.IdOutlet', $saring->idOutlet ?? []))
+            ->when($saring->idKasir !== null, fn (Builder $k) => $k->where('PesananTerbukaDetail.IdPembatal', $saring->idKasir))
+            ->orderByDesc('PesananTerbukaDetail.DibatalkanPada')
+            ->orderByDesc('PesananTerbukaDetail.Id')
+            ->selectRaw('`PesananTerbukaDetail`.`Uuid` AS `Uuid`, `PesananTerbuka`.`Nomor` AS `Nomor`, `PesananTerbuka`.`IdOutlet` AS `IdOutlet`, `Outlet`.`Nama` AS `NamaOutlet`')
+            ->selectRaw('`PesananTerbukaDetail`.`DibatalkanPada` AS `Waktu`, `PesananTerbukaDetail`.`NamaProduk` AS `NamaProduk`, `PesananTerbukaDetail`.`Jumlah` AS `Jumlah`')
+            ->selectRaw('`PesananTerbukaDetail`.`HargaSatuan` AS `HargaSatuan`, `PesananTerbukaDetail`.`HargaPilihan` AS `HargaPilihan`, `PesananTerbukaDetail`.`AlasanBatal` AS `Alasan`')
+            ->selectRaw('`PesananTerbukaDetail`.`IdPembatal` AS `IdPembatal`, `PesananTerbukaDetail`.`IdPenyetujuBatal` AS `IdPenyetuju`, `PesananTerbukaDetail`.`TerbuangDicatatPada` AS `TerbuangPada`')
+            ->toBase();
+        $hasil = [];
+
+        foreach ($kueri->get() as $b) {
+            $lokal = (new \DateTimeImmutable(self::Teks($b->Waktu), new \DateTimeZone('UTC')))->modify(sprintf('%+d seconds', $offsetDetik[(int) $b->IdOutlet] ?? $offsetBawaan));
+            $tanggal = $lokal->format('Y-m-d');
+
+            if ($tanggal < $saring->dari->toDateString() || $tanggal > $saring->sampai->toDateString()) {
+                continue;
+            }
+
+            $hasil[] = [
+                'Uuid' => self::Teks($b->Uuid),
+                'Nomor' => self::Teks($b->Nomor),
+                'IdOutlet' => (int) $b->IdOutlet,
+                'NamaOutlet' => self::Teks($b->NamaOutlet),
+                'Waktu' => (new \DateTimeImmutable(self::Teks($b->Waktu), new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'NamaProduk' => self::Teks($b->NamaProduk),
+                'Jumlah' => Kuantitas::Dari(self::Teks($b->Jumlah))->KeString(),
+                'Nilai' => Uang::Dari(self::Teks($b->HargaSatuan))->Tambah(Uang::Dari(self::Teks($b->HargaPilihan)))->Kali(self::Teks($b->Jumlah))->KeString(),
+                'Alasan' => $b->Alasan === null ? null : self::Teks($b->Alasan),
+                'IdPembatal' => $b->IdPembatal === null ? null : (int) $b->IdPembatal,
+                'IdPenyetuju' => $b->IdPenyetuju === null ? null : (int) $b->IdPenyetuju,
+                'Terbuang' => $b->TerbuangPada !== null,
+            ];
+
+            if (count($hasil) >= $batas) {
+                break;
+            }
         }
 
         return $hasil;

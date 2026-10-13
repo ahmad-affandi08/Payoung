@@ -25,6 +25,7 @@ import type {
     BarisMenuLaporan,
     BarisMetodeLaporan,
     BarisProdukLaporan,
+    BarisVoidItemLaporan,
     IsiAbc,
     IsiJam,
     IsiMenu,
@@ -45,6 +46,7 @@ const daftarTab: { nilai: TabLaporanPenjualan; label: string }[] = [
     { nilai: 'kanal', label: 'Per kanal' },
     { nilai: 'metode', label: 'Metode bayar' },
     { nilai: 'diskon', label: 'Diskon' },
+    { nilai: 'void-item', label: 'Void item' },
     { nilai: 'anti-fraud', label: 'Anti-fraud' },
     { nilai: 'abc', label: 'Analisis ABC' },
     { nilai: 'menu', label: 'Menu engineering' },
@@ -214,6 +216,51 @@ const kolomDiskon: KolomTabel<BarisDiskonLaporan>[] = [
     KolomUang<BarisDiskonLaporan>('DiskonPesanan', 'Diskon pesanan', 'rendah'),
     KolomUang<BarisDiskonLaporan>('TotalDiskon', 'Total diskon'),
     KolomUang<BarisDiskonLaporan>('Kotor', 'Kotor', 'rendah'),
+];
+
+const kolomVoidItem: KolomTabel<BarisVoidItemLaporan>[] = [
+    {
+        id: 'Waktu',
+        accessorKey: 'Waktu',
+        header: 'Waktu',
+        meta: { label: 'Waktu', prioritas: 'utama', wajib: true, kelasSel: 'whitespace-nowrap text-teks-sekunder' },
+        cell: ({ row }) => FormatTanggalWaktu(row.original.Waktu),
+    },
+    { id: 'NamaProduk', accessorKey: 'NamaProduk', header: 'Item', meta: { label: 'Item', prioritas: 'utama' } },
+    KolomQty<BarisVoidItemLaporan>('Jumlah', 'Jumlah'),
+    KolomUang<BarisVoidItemLaporan>('Nilai', 'Nilai', 'penting'),
+    { id: 'Alasan', accessorKey: 'Alasan', header: 'Alasan', meta: { label: 'Alasan', prioritas: 'penting' } },
+    {
+        id: 'NamaPembatal',
+        accessorKey: 'NamaPembatal',
+        header: 'Dibatalkan oleh',
+        meta: { label: 'Dibatalkan oleh', prioritas: 'penting' },
+    },
+    {
+        id: 'NamaPenyetuju',
+        accessorKey: 'NamaPenyetuju',
+        header: 'Disetujui oleh',
+        meta: { label: 'Disetujui oleh', prioritas: 'rendah' },
+    },
+    {
+        id: 'Terbuang',
+        accessorKey: 'Terbuang',
+        header: 'Bahan terbuang',
+        meta: { label: 'Bahan terbuang', prioritas: 'penting', kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => (
+            <LabelStatus
+                jenis={row.original.Terbuang ? 'peringatan' : 'netral'}
+                teks={row.original.Terbuang ? 'Dicatat terbuang' : 'Tidak dicatat'}
+            />
+        ),
+    },
+    {
+        id: 'Nomor',
+        accessorKey: 'Nomor',
+        header: 'No pesanan',
+        meta: { label: 'No pesanan', prioritas: 'rendah', kelasSel: 'font-mono whitespace-nowrap' },
+    },
+    { id: 'NamaOutlet', accessorKey: 'NamaOutlet', header: 'Outlet', meta: { label: 'Outlet', prioritas: 'rendah' } },
 ];
 
 const JenisTingkat: Record<BarisAntiFraudLaporan['Tingkat'], 'sukses' | 'peringatan' | 'bahaya'> = {
@@ -544,6 +591,37 @@ function IsiTab({
                         judul: 'Belum ada penjualan berdiskon pada periode dan saring ini.',
                     }}
                 />
+            );
+        case 'void-item':
+            return (
+                <>
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Item pesanan meja yang sudah dikirim ke dapur lalu dibatalkan, terbaru dulu (paling banyak 200
+                        baris; persempit periode untuk melihat yang lebih lama). Nilai adalah petunjuk kerugian, bukan
+                        angka akuntansi. &quot;Dicatat terbuang&quot; berarti bahan sudah dikurangi dari stok sebagai
+                        bahan terbuang karena item sempat dibuat.
+                    </p>
+                    <TabelData
+                        id="laporan-penjualan-void-item"
+                        label="Void item pesanan meja"
+                        kolom={kolomVoidItem}
+                        sumber={{ mode: 'lokal', data: isi as BarisVoidItemLaporan[] }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        urutBawaan="-Waktu"
+                        cari="Cari item, alasan, atau nomor pesanan"
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Tidak ada void item pada periode dan saring ini.',
+                        }}
+                    />
+                </>
             );
         case 'anti-fraud':
             return (

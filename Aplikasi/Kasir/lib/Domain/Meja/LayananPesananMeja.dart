@@ -393,6 +393,7 @@ class LayananPesananMeja {
     required StafLokal kasir,
     String? alasan,
     StafLokal? penyetuju,
+    bool catatTerbuang = false,
   }) async {
     final pesanan = await _CariTerbuka(uuidPesanan);
     final dipilih = pesanan.AmbilBarisAktif().where((b) => uuidBaris.contains(b.uuid)).map((b) => b.uuid).toList();
@@ -431,6 +432,9 @@ class LayananPesananMeja {
             'Alasan': rapi.isEmpty ? null : rapi,
             'UuidPengguna': kasir.uuid,
             'UuidPenyetuju': setuju == null || setuju.uuid == kasir.uuid ? null : setuju.uuid,
+            // BR-07.5 opsi waste (v5.78): item yang sudah dibuat lalu dibatalkan mengurangi bahan sebagai bahan terbuang.
+            // Hanya berarti untuk item yang sudah dikirim ke dapur, jadi tidak dikirim untuk item yang masih ditahan.
+            if (catatTerbuang && CekAdaTerkirim(pesanan, dipilih)) 'CatatTerbuang': true,
             'DibatalkanPada': sekarang.toIso8601String(),
           },
         ),

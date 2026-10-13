@@ -46,7 +46,8 @@ final class BahanTerbuangKontroler extends DasarDokumenPersediaanKontroler
         return ResponsTabel::Kirim($permintaan, 'Kelola/Persediaan/BahanTerbuang/Daftar', 'BahanTerbuang', fn (): array => $daftar->AmbilTabel($tabel, $this->IdOutletBoleh()), fn (): array => [
             'Ringkasan' => [...$daftar->AmbilRingkasan($periode, $this->IdOutletBoleh()), 'Dari' => $dari, 'Sampai' => $sampai],
             'OpsiGudang' => $this->AmbilOpsiGudangDokumen(hanyaAktif: false),
-            'OpsiAlasan' => array_map(fn (AlasanBahanTerbuang $a): array => ['Nilai' => $a->value, 'Label' => $a->AmbilLabel()], AlasanBahanTerbuang::cases()),
+            // VoidItem hanya dibuat otomatis dari pembatalan item pesanan meja (BR-07.5), bukan dipilih manual.
+            'OpsiAlasan' => array_values(array_map(fn (AlasanBahanTerbuang $a): array => ['Nilai' => $a->value, 'Label' => $a->AmbilLabel()], array_filter(AlasanBahanTerbuang::cases(), fn (AlasanBahanTerbuang $a): bool => $a !== AlasanBahanTerbuang::VoidItem))),
             'OpsiStatus' => array_map(fn (StatusBahanTerbuang $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusBahanTerbuang::cases()),
             'HariIni' => $hariIni->format('Y-m-d'),
             'Izin' => [

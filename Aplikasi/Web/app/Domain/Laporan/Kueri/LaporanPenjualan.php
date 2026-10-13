@@ -42,7 +42,12 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class LaporanPenjualan
 {
-    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'anti-fraud', 'abc', 'menu'];
+    /** Tampilan tabel lokal ≤ 200 baris (D-16); ekspor memakai batas lebih besar. */
+    public const BATAS_VOID_ITEM = 200;
+
+    public const BATAS_EKSPOR_VOID_ITEM = 5000;
+
+    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu'];
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -147,6 +152,7 @@ final class LaporanPenjualan
             'kanal' => $this->PerKanal($saring),
             'metode' => $this->PerMetode($saring),
             'diskon' => $this->Diskon($saring),
+            'void-item' => $this->VoidItem($saring),
             'anti-fraud' => $this->AntiFraud($saring),
             // X6 (v3.43): analisis ABC & menu engineering dari agregat per produk periode yang sama.
             'abc' => $this->insight->Abc($this->agregat->PerProduk($saring)),
@@ -355,6 +361,32 @@ final class LaporanPenjualan
     }
 
     /**
+     * BR-07.5: void item pesanan meja (item sudah dikirim ke dapur lalu dibatalkan) dengan alasan, pembatal, penyetuju, dan
+     * apakah bahan dicatat terbuang. Terbaru dulu; paling banyak `BATAS_VOID_ITEM` baris untuk tampilan.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function VoidItem(DataSaringLaporanPenjualan $saring, int $batas = self::BATAS_VOID_ITEM): array
+    {
+        $baris = $this->agregat->VoidItem($saring, $this->zonaWaktu->AmbilSelisihDetik($saring->idOutlet), $batas);
+        $nama = $this->anggota->AmbilNama(array_values(array_filter(array_merge(array_column($baris, 'IdPembatal'), array_column($baris, 'IdPenyetuju')), fn (mixed $id): bool => is_int($id))));
+
+        return array_values(array_map(fn (array $b): array => [
+            'Kunci' => $b['Uuid'],
+            'Waktu' => $b['Waktu'],
+            'NamaOutlet' => $b['NamaOutlet'],
+            'Nomor' => $b['Nomor'],
+            'NamaProduk' => $b['NamaProduk'],
+            'Jumlah' => $b['Jumlah'],
+            'Nilai' => $b['Nilai'],
+            'Alasan' => $b['Alasan'] ?? '',
+            'NamaPembatal' => $b['IdPembatal'] === null ? '' : ($nama[$b['IdPembatal']]['Nama'] ?? 'Pengguna tidak dikenal'),
+            'NamaPenyetuju' => $b['IdPenyetuju'] === null ? '' : ($nama[$b['IdPenyetuju']]['Nama'] ?? 'Pengguna tidak dikenal'),
+            'Terbuang' => $b['Terbuang'],
+        ], $baris));
+    }
+
+    /**
      * F-14 anti-fraud per kasir (OWN-09, BR-09.3): pola void (termasuk void tunai ≤ 10 menit setelah bayar), retur,
      * diskon, buka laci tanpa transaksi, dan selisih kas tutup shift, beserta skor risiko & alasannya. Urut skor menurun.
      *
@@ -496,6 +528,14 @@ final class LaporanPenjualan
             'kanal' => [[$t('Kanal', 20), ...$kolomAngka, $u('Rata-rata keranjang', false)], $ambil($this->PerKanal($saring), ['LabelKanal', ...$angka, 'RataRataKeranjang'])],
             'metode' => [[$t('Metode bayar', 26), $t('Jenis', 16), $u('Diterima'), $u('Refund'), $u('Bersih'), $n('Jumlah transaksi')], $ambil($this->PerMetode($saring), ['NamaMetode', 'LabelJenis', 'Diterima', 'Refund', 'Bersih', 'JumlahTransaksi'])],
             'diskon' => [[$t('Kasir', 26), $n('Jumlah transaksi'), $n('Transaksi berdiskon'), $n('Diskon disetujui'), $u('Diskon baris'), $u('Diskon pesanan'), $u('Total diskon'), $u('Kotor')], $ambil($this->Diskon($saring), ['NamaKasir', 'JumlahTransaksi', 'JumlahBerdiskon', 'JumlahDisetujui', 'DiskonBaris', 'DiskonPesanan', 'TotalDiskon', 'Kotor'])],
+            'void-item' => [
+                [new KolomLaporan('Waktu', JenisKolom::TanggalWaktu), $t('Outlet', 24), $t('No Pesanan', 22), $t('Item', 32), $q('Jumlah', true), $u('Nilai'), $t('Alasan', 36), $t('Dibatalkan oleh', 22), $t('Disetujui oleh', 22), $t('Bahan terbuang', 16)],
+                (function () use ($saring): \Generator {
+                    foreach ($this->VoidItem($saring, self::BATAS_EKSPOR_VOID_ITEM) as $b) {
+                        yield [new DateTimeImmutable($b['Waktu']), $b['NamaOutlet'], $b['Nomor'], $b['NamaProduk'], $b['Jumlah'], $b['Nilai'], $b['Alasan'], $b['NamaPembatal'], $b['NamaPenyetuju'], $b['Terbuang'] ? 'Ya' : 'Tidak'];
+                    }
+                })(),
+            ],
             'anti-fraud' => [
                 [$t('Kasir', 26), $n('Skor risiko', false), $t('Tingkat', 12), $n('Transaksi'), $n('Void'), $u('Nilai void'), $n('Void tunai cepat'), $n('Retur'), $u('Nilai retur'), $n('Transaksi berdiskon'), $u('Total diskon'), $n('Buka laci manual'), $n('Shift kas kurang'), $u('Total kas kurang'), $t('Alasan', 60)],
                 $ambil(array_map(fn (array $b): array => [...$b, 'Alasan' => implode('; ', $b['Alasan'])], $this->AntiFraud($saring)), ['NamaKasir', 'Skor', 'Tingkat', 'JumlahTransaksi', 'JumlahVoid', 'NilaiVoid', 'VoidCepatTunai', 'JumlahRetur', 'NilaiRetur', 'JumlahBerdiskon', 'TotalDiskon', 'BukaLaciManual', 'ShiftSelisihKurang', 'SelisihKurang', 'Alasan']),
