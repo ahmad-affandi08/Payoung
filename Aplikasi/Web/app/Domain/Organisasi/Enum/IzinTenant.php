@@ -53,6 +53,9 @@ enum IzinTenant: string
     // K28 (F-09): PIN penyetuju retur tanpa struk (barang dikembalikan tanpa bukti beli). Bawaan Pemilik & Admin.
     case PenjualanReturTanpaStruk = 'penjualan.retur.tanpa-struk';
     case PenjualanDiskonManual = 'penjualan.diskon.manual';
+    // Price engine lapis 1 (§F-03): mengubah harga satu barang langsung di kasir (tawar-menawar, barang cacat). Tanpa izin ini
+    // kasir memakai PIN penyetuju yang punya izin; Supervisor & Manajer Outlet memilikinya bawaan.
+    case PosHargaTimpa = 'pos.harga.timpa';
     // F-06 BR-06.4: menyetujui kas keluar di atas batas dengan PIN (supervisor ke atas).
     case KasKeluarSetujui = 'kas.keluar.setujui';
     // F-07b BR-07.3: menyetujui diskon manual di atas batas kasir dengan PIN (supervisor ke atas).
@@ -143,6 +146,7 @@ enum IzinTenant: string
             self::PenjualanRetur => 'Menerima & menyetujui retur penjualan (termasuk tukar barang)',
             self::PenjualanReturTanpaStruk => 'Menyetujui retur tanpa struk (refund tukar barang atau deposit pelanggan)',
             self::PenjualanDiskonManual => 'Memberi diskon manual',
+            self::PosHargaTimpa => 'Mengubah harga barang langsung di kasir',
             self::KasKeluarSetujui => 'Menyetujui kas keluar di atas batas',
             self::PenjualanDiskonSetujui => 'Menyetujui diskon manual di atas batas kasir',
             self::PenjualanTempoSetujui => 'Menyetujui penjualan tempo di atas limit kredit atau saat piutang lewat jatuh tempo',
@@ -188,7 +192,7 @@ enum IzinTenant: string
             self::ProdukLihat, self::ProdukKelola, self::ProdukHargaUbah => 'Produk',
             self::PersediaanLihat, self::PersediaanKelola, self::PersediaanPenyesuaianSetujui, self::PersediaanStokAwalPosting, self::PersediaanTerbuangCatat,
             self::PembelianKelola, self::PembelianPoSetujui => 'Persediaan & pembelian',
-            self::PenjualanBuat, self::PenjualanVoid, self::PenjualanRetur, self::PenjualanReturTanpaStruk, self::PenjualanDiskonManual, self::KasKeluarSetujui,
+            self::PenjualanBuat, self::PenjualanVoid, self::PenjualanRetur, self::PenjualanReturTanpaStruk, self::PenjualanDiskonManual, self::PosHargaTimpa, self::KasKeluarSetujui,
             self::PenjualanDiskonSetujui, self::PenjualanTempoSetujui, self::ShiftSelisihSetujui, self::PesananMejaCatat,
             self::ReservasiKelola, self::LaundryKelola, self::BengkelKelola, self::GrosirKelola, self::GrosirSetujuiKredit, self::SalesmanKunjungan,
             self::TokoOnlineKelola, self::PengirimanKelola => 'Penjualan',

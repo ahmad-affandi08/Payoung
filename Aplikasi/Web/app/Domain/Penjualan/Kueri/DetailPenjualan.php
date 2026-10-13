@@ -125,6 +125,9 @@ final class DetailPenjualan
                 'Jumlah' => $d->Jumlah,
                 'SimbolSatuan' => $simbol[$d->IdSatuan] ?? '',
                 'HargaSatuan' => $d->HargaSatuan,
+                // Price engine lapis 1: harga sebelum diubah kasir + alasannya (null = harga price engine).
+                'HargaAsli' => $d->HargaAsli,
+                'AlasanHargaManual' => $d->AlasanHargaManual,
                 'HargaPilihan' => $d->HargaPilihan,
                 'Pilihan' => array_values(array_map(fn (array $p): string => $p['Nama'], $d->Pilihan ?? [])),
                 'Bruto' => $d->Bruto,

@@ -35,6 +35,7 @@ use LogicException;
  * @property Carbon $TanggalBisnis
  * @property int $IdPengguna
  * @property int|null $IdPenyetujuDiskon
+ * @property int|null $IdPenyetujuHarga penyetuju (PIN) perubahan harga baris bila kasirnya tanpa izin `pos.harga.timpa`
  * @property int|null $IdPenyetujuTempo
  * @property int|null $IdApoteker Apotek (§9.5): apoteker yang menyerahkan obat keras/OWA/psikotropika/narkotika
  * @property bool $HargaTermasukPajak

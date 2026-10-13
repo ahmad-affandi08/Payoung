@@ -16,6 +16,7 @@ use App\Domain\Pajak\Enum\DasarPengenaanPajak;
 use App\Domain\Penjualan\Aksi\TerimaPenjualanPos;
 use App\Domain\Penjualan\Data\DataBarisPenjualanPos;
 use App\Domain\Penjualan\Data\DataDiskonManual;
+use App\Domain\Penjualan\Data\DataHargaManual;
 use App\Domain\Penjualan\Data\DataPajakPenjualanPos;
 use App\Domain\Penjualan\Data\DataPembayaranPenjualanPos;
 use App\Domain\Penjualan\Data\DataPenjualanPos;
@@ -124,6 +125,10 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
             'Baris.*.DiskonManual.Persen' => ['sometimes', 'nullable', 'string', $persenDiskon],
             'Baris.*.DiskonManual.Jumlah' => ['sometimes', 'nullable', 'string', $uang],
             'Baris.*.Catatan' => ['sometimes', 'nullable', 'string', 'max:255'],
+            // Price engine lapis 1: harga baris diubah kasir (izin `pos.harga.timpa` atau PIN penyetuju).
+            'Baris.*.HargaManual' => ['sometimes', 'nullable', 'array'],
+            'Baris.*.HargaManual.HargaAsli' => ['required_with:Baris.*.HargaManual', 'string', $uang],
+            'Baris.*.HargaManual.Alasan' => ['sometimes', 'nullable', 'string', 'max:100'],
             // F-18: staf yang melayani baris (komisi).
             'Baris.*.Staf' => ['sometimes', 'nullable', 'array', 'max:'.PencatatKomisiPenjualan::MAKS_STAF_PER_BARIS],
             'Baris.*.Staf.*' => ['string', 'ulid', 'distinct'],
@@ -143,6 +148,7 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
             'DiskonManualPesanan.Persen' => ['sometimes', 'nullable', 'string', $persenDiskon],
             'DiskonManualPesanan.Jumlah' => ['sometimes', 'nullable', 'string', $uang],
             'UuidPenyetujuDiskon' => ['sometimes', 'nullable', 'string', 'ulid'],
+            'UuidPenyetujuHarga' => ['sometimes', 'nullable', 'string', 'ulid'],
             'Pembayaran' => ['required', 'array', 'min:1', 'max:10'],
             'Pembayaran.*.Uuid' => ['required', 'string', 'ulid', 'distinct'],
             'Pembayaran.*.UuidMetodePembayaran' => ['required', 'string', 'ulid'],
@@ -262,6 +268,7 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
             uuidPerintahKerja: is_string($valid['UuidPerintahKerja'] ?? null) ? strtoupper($valid['UuidPerintahKerja']) : null,
             resep: is_array($valid['Resep'] ?? null) ? self::AmbilResep($valid['Resep']) : null,
             uuidApoteker: is_string($valid['UuidApoteker'] ?? null) ? strtoupper($valid['UuidApoteker']) : null,
+            uuidPenyetujuHarga: is_string($valid['UuidPenyetujuHarga'] ?? null) ? strtoupper($valid['UuidPenyetujuHarga']) : null,
         ));
     }
 
@@ -334,6 +341,9 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
                 nomorSeri: is_array($b['NomorSeri'] ?? null) ? array_values(array_map(fn ($n): string => trim((string) $n), $b['NomorSeri'])) : [],
                 denganResep: is_bool($b['DenganResep'] ?? null) ? $b['DenganResep'] : null,
                 racikan: is_array($b['Racikan'] ?? null) ? self::AmbilRacikan($b['Racikan'], $indeks) : null,
+                hargaManual: is_array($b['HargaManual'] ?? null)
+                    ? new DataHargaManual(Uang::Dari((string) $b['HargaManual']['HargaAsli']), is_string($b['HargaManual']['Alasan'] ?? null) ? trim($b['HargaManual']['Alasan']) : '')
+                    : null,
             );
         }
 

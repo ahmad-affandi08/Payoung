@@ -43,6 +43,7 @@ use App\Domain\Pemenuhan\Data\DataBarisKirimDapur;
 use App\Domain\Pemenuhan\Data\DataKirimDapur;
 use App\Domain\Pemenuhan\Layanan\PencatatLaundryPenjualan;
 use App\Domain\Penjualan\Data\DataBarisPenjualanPos;
+use App\Domain\Penjualan\Data\DataHargaManual;
 use App\Domain\Penjualan\Data\DataPajakPenjualanPos;
 use App\Domain\Penjualan\Data\DataPenjualanPos;
 use App\Domain\Penjualan\Data\DataRacikanSiap;
@@ -59,6 +60,7 @@ use App\Domain\Penjualan\Kalkulasi\MesinKalkulasi;
 use App\Domain\Penjualan\Kalkulasi\MesinPromo;
 use App\Domain\Penjualan\Kalkulasi\PromoTerpakai;
 use App\Domain\Penjualan\Layanan\PemeriksaDiskonPenjualan;
+use App\Domain\Penjualan\Layanan\PemeriksaHargaManual;
 use App\Domain\Penjualan\Layanan\PemeriksaPromoPenjualan;
 use App\Domain\Penjualan\Layanan\PemeriksaSnapshotPengaturanPenjualan;
 use App\Domain\Penjualan\Layanan\PemeriksaTukarBarang;
@@ -153,6 +155,7 @@ final class TerimaPenjualanPos
         private readonly TarifPajakBerlaku $tarifBerlaku,
         private readonly PengaturanKasirTenant $pengaturanKasir,
         private readonly PemeriksaDiskonPenjualan $pemeriksaDiskon,
+        private readonly PemeriksaHargaManual $pemeriksaHarga,
         private readonly PemeriksaSnapshotPengaturanPenjualan $pemeriksaSnapshot,
         private readonly MesinKalkulasi $mesin,
         private readonly CatatMutasiStok $catatMutasi,
@@ -320,6 +323,17 @@ final class TerimaPenjualanPos
 
         $tinjauan += array_diff_key($pemeriksaanDiskon->tinjauan, ['IzinBerubah' => true]);
 
+        // Price engine lapis 1: harga baris yang diubah kasir (izin `pos.harga.timpa` atau PIN penyetuju).
+        $pemeriksaanHarga = $this->pemeriksaHarga->Periksa(
+            $this->KumpulkanHargaManual($data, $produk),
+            $kasir,
+            $data->uuidPenyetujuHarga,
+            $idTenant,
+            $outlet->idOutlet,
+        );
+        $penyetujuHarga = $pemeriksaanHarga->penyetuju;
+        $tinjauan += $pemeriksaanHarga->tinjauan;
+
         // PRD v1.46 (a): snapshot pengaturan & pajak dibandingkan dengan pengaturan server pada tanggal bisnis.
         $tinjauan += $this->pemeriksaSnapshot->Periksa($data, $produk, $outlet, $pengaturan, $tanggalBisnis);
 
@@ -400,7 +414,7 @@ final class TerimaPenjualanPos
         $tinjauan += $tinjauanResep;
 
         // Simpan dokumen, stok, jurnal.
-        $penjualan = $this->SimpanPenjualan($data, $shift->id, $outlet, $kasir, $penyetuju, $tanggalBisnis, $hasil, $totalDibayar, $pesanan?->Id, $idPelanggan, $penyetujuTempo?->id, $praPesan?->Id, $returTukar?->Id, $apoteker?->id);
+        $penjualan = $this->SimpanPenjualan($data, $shift->id, $outlet, $kasir, $penyetuju, $tanggalBisnis, $hasil, $totalDibayar, $pesanan?->Id, $idPelanggan, $penyetujuTempo?->id, $praPesan?->Id, $returTukar?->Id, $apoteker?->id, $penyetujuHarga?->id);
         $detail = $this->SimpanDetail($data, $penjualan, $produk, $hasil, $denganResep, $racikan);
         $this->resep->Catat($data, $penjualan->Id, $outlet->idOutlet, $apoteker);
         $this->penutupPesanan->Tutup($pesanan, $penjualan);
@@ -968,6 +982,25 @@ final class TerimaPenjualanPos
     }
 
     /**
+     * Baris yang membawa `HargaManual` (price engine lapis 1) untuk diperiksa `PemeriksaHargaManual`.
+     *
+     * @param  array<string, DataProdukPenjualan>  $produk
+     * @return list<array{Nama: string, Harga: Uang, Manual: DataHargaManual}>
+     */
+    private function KumpulkanHargaManual(DataPenjualanPos $data, array $produk): array
+    {
+        $hasil = [];
+
+        foreach ($data->baris as $baris) {
+            if ($baris->hargaManual !== null) {
+                $hasil[] = ['Nama' => $produk[$baris->uuidProduk]->nama ?? $baris->uuidProduk, 'Harga' => $baris->hargaSatuan, 'Manual' => $baris->hargaManual];
+            }
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Pasangan [dasar, diskon manual] per baris ber-diskon manual dan untuk diskon pesanan (BR-07.3).
      *
      * @return list<array{0: Uang, 1: Uang}>
@@ -1139,6 +1172,7 @@ final class TerimaPenjualanPos
         ?int $idPesananPenjualan = null,
         ?int $idReturTukar = null,
         ?int $idApoteker = null,
+        ?int $idPenyetujuHarga = null,
     ): Penjualan {
         return Penjualan::query()->create([
             'Uuid' => $data->uuid,
@@ -1155,6 +1189,7 @@ final class TerimaPenjualanPos
             'IdPengguna' => $kasir->id,
             'IdPenyetujuDiskon' => $penyetuju?->id,
             'IdPenyetujuTempo' => $idPenyetujuTempo,
+            'IdPenyetujuHarga' => $idPenyetujuHarga,
             'IdApoteker' => $idApoteker,
             'HargaTermasukPajak' => $data->hargaTermasukPajak,
             'PersenBiayaLayanan' => (string) $data->persenBiayaLayanan->toScale(2),
@@ -1220,6 +1255,9 @@ final class TerimaPenjualanPos
                 'Jumlah' => $baris->jumlah->KeString(),
                 'JumlahDasar' => $baris->jumlah->Kali($konversi)->KeString(),
                 'HargaSatuan' => $baris->hargaSatuan->KeString(),
+                // Price engine lapis 1: jejak harga sebelum diubah kasir (null = harga price engine, atau tidak berubah).
+                'HargaAsli' => $baris->hargaManual !== null && ! $baris->hargaManual->hargaAsli->SamaDengan($baris->hargaSatuan) ? $baris->hargaManual->hargaAsli->KeString() : null,
+                'AlasanHargaManual' => $baris->hargaManual !== null && ! $baris->hargaManual->hargaAsli->SamaDengan($baris->hargaSatuan) && trim($baris->hargaManual->alasan) !== '' ? mb_substr(trim($baris->hargaManual->alasan), 0, 100) : null,
                 'HargaPilihan' => $baris->hargaPilihan->KeString(),
                 'Pilihan' => $baris->pilihan === [] ? null : $baris->pilihan,
                 'HargaTermasukPajak' => $baris->hargaTermasukPajak ?? $data->hargaTermasukPajak,

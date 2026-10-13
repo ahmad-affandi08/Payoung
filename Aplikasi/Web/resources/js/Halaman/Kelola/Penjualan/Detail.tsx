@@ -40,6 +40,12 @@ const kolomBaris: KolomTabel<BarisDetailPenjualan>[] = [
                 {b.Catatan ? (
                     <span className="block text-label break-words text-teks-sekunder">{b.Catatan}</span>
                 ) : null}
+                {b.HargaAsli !== null ? (
+                    <span className="block text-label break-words text-peringatan">
+                        Harga diubah kasir dari {FormatRupiah(b.HargaAsli)}
+                        {b.AlasanHargaManual ? ` | ${b.AlasanHargaManual}` : ''}
+                    </span>
+                ) : null}
                 {b.Racikan ? (
                     <span className="block text-label break-words text-teks-sekunder">
                         Racikan {b.Racikan.Nama} | {b.Racikan.JumlahKemasan} kemasan

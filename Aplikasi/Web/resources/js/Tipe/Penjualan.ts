@@ -81,6 +81,9 @@ export type BarisDetailPenjualan = {
     Jumlah: string;
     SimbolSatuan: string;
     HargaSatuan: string;
+    /** Harga sebelum diubah kasir (price engine lapis 1); null bila harga mengikuti price engine. */
+    HargaAsli: string | null;
+    AlasanHargaManual: string | null;
     HargaPilihan: string;
     Pilihan: string[];
     Bruto: string;

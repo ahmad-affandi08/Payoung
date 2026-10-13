@@ -78,5 +78,7 @@ final readonly class DataPenjualanPos
         // Apotek (§9.5): resep dokter untuk baris obat wajib resep & apoteker yang menyerahkan obat keras/OWA.
         public ?DataResepPenjualanPos $resep = null,
         public ?string $uuidApoteker = null,
+        // Price engine lapis 1: penyetuju (PIN) perubahan harga baris bila kasirnya tanpa izin `pos.harga.timpa`.
+        public ?string $uuidPenyetujuHarga = null,
     ) {}
 }

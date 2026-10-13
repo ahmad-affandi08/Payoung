@@ -30,6 +30,8 @@ use LogicException;
  * @property string $JumlahDasar
  * @property string $HargaSatuan
  * @property string $HargaPilihan
+ * @property string|null $HargaAsli harga sebelum diubah kasir (price engine lapis 1); null = harga price engine
+ * @property string|null $AlasanHargaManual
  * @property list<array{UuidPilihan: string, Nama: string, Harga: string}>|null $Pilihan
  * @property bool $HargaTermasukPajak
  * @property list<array{Kode: string, Tarif: string, PengaliDppPembilang: int, PengaliDppPenyebut: int, DasarPengenaan: string}>|null $SnapshotPajak
@@ -70,6 +72,7 @@ final class PenjualanDetail extends ModelDasar
             'JumlahDasar' => 'decimal:4',
             'HargaSatuan' => 'decimal:2',
             'HargaPilihan' => 'decimal:2',
+            'HargaAsli' => 'decimal:2',
             'Pilihan' => 'array',
             'HargaTermasukPajak' => 'boolean',
             'SnapshotPajak' => 'array',

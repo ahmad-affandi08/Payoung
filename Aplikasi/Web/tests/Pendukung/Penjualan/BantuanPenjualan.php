@@ -196,7 +196,7 @@ final class BantuanPenjualan
      * Penyebut, DasarPengenaan?, KenaBiayaKirim?]`), `BiayaKirim`, `DiskonKirim` (F-17 bagian 3),
      * `HargaTermasukPajak`, `PersenBiayaLayanan`, `PembulatanTunai`
      * (`[Kelipatan, Arah]`), `DiskonManualPesanan`, `TukarPoin` (`['Poin' => 50, 'Nilai' => '5000']`), `Promo`
-     * (`[['Promo' => Promo, 'Baris' => [indeks => '7700.00'], 'Pesanan' => '0.00']]`, potongan promo perangkat), `Kasir` (Pengguna), `Penyetuju` (Pengguna), `DibuatPada`; `timpa` =
+     * (`[['Promo' => Promo, 'Baris' => [indeks => '7700.00'], 'Pesanan' => '0.00']]`, potongan promo perangkat), `Kasir` (Pengguna), `Penyetuju` (Pengguna), `PenyetujuHarga` (Pengguna), `DibuatPada`; `timpa` =
      * kunci `Data` yang ditimpa setelah dihitung (misal `Ringkasan` palsu).
      *
      * @param  array<string, mixed>  $k  hasil `Siapkan()`
@@ -243,6 +243,8 @@ final class BantuanPenjualan
                 'KodePajak' => $b['KodePajak'] ?? null,
                 'DiskonManual' => $b['DiskonManual'] ?? null,
                 'Catatan' => $b['Catatan'] ?? null,
+                // Harga manual kasir (`pos.harga.timpa`): `['HargaAsli' => '40000.00', 'Alasan' => '...']`.
+                ...(isset($b['HargaManual']) ? ['HargaManual' => $b['HargaManual']] : []),
                 // F-18: staf yang melayani baris (Uuid karyawan).
                 ...(isset($b['Staf']) ? ['Staf' => $b['Staf']] : []),
                 // F-05h: nomor seri/IMEI unit yang dijual.
@@ -305,6 +307,7 @@ final class BantuanPenjualan
                 'Baris' => $baris,
                 'DiskonManualPesanan' => $opsi['DiskonManualPesanan'] ?? null,
                 'UuidPenyetujuDiskon' => $penyetuju?->Uuid,
+                ...(isset($opsi['PenyetujuHarga']) ? ['UuidPenyetujuHarga' => $opsi['PenyetujuHarga']->Uuid] : []),
                 'Pembayaran' => $pembayaran,
                 'Ringkasan' => [
                     'Subtotal' => $hasilAkhir['Subtotal']->KeString(),

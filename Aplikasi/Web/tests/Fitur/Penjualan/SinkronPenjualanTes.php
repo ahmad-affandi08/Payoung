@@ -992,6 +992,50 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
             ->and($p->IdPenyetujuDiskon)->toBe($spvLuar->Id);
     });
 
+    it('harga manual kasir: supervisor ber-izin pos.harga.timpa = diterima bersih + HargaAsli & alasan tersimpan; kasir tanpa izin = tinjauan HargaManualTanpaIzin; dengan PIN penyetuju ber-izin = bersih; alasan kosong = HargaManualTanpaAlasan; harga sama dengan asli bukan perubahan', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Bubuk Robusta Temanggung 250 gram', 'Jenis' => JenisProduk::NonStok], '40000.00');
+        $manual = fn (string $harga = '35000.00', string $alasan = 'Kemasan penyok'): array => ['Produk' => $kopi, 'Jumlah' => '1', 'Harga' => $harga, 'HargaManual' => ['HargaAsli' => '40000.00', 'Alasan' => $alasan]];
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [
+            $supervisor = BantuanPenjualan::Item($k, ['Baris' => [$manual()], 'Kasir' => $k['Supervisor']]),
+            $tanpaIzin = BantuanPenjualan::Item($k, ['Baris' => [$manual()]]),
+            $disetujui = BantuanPenjualan::Item($k, ['Baris' => [$manual()], 'PenyetujuHarga' => $k['Supervisor']]),
+            $tanpaAlasan = BantuanPenjualan::Item($k, ['Baris' => [$manual('35000.00', '  ')], 'Kasir' => $k['Supervisor']]),
+            $sama = BantuanPenjualan::Item($k, ['Baris' => [$manual('40000.00')]]),
+        ]))->toBe([['Diterima', null], ['Diterima', null], ['Diterima', null], ['Diterima', null], ['Diterima', null]]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $p = fn (array $item): Penjualan => Penjualan::query()->where('Uuid', $item['Uuid'])->sole();
+        $detail = fn (array $item): PenjualanDetail => PenjualanDetail::query()->where('IdPenjualan', $p($item)->Id)->sole();
+
+        expect($p($supervisor)->PerluTinjauan)->toBeFalse()
+            ->and($detail($supervisor)->HargaSatuan)->toBe('35000.00')
+            ->and($detail($supervisor)->HargaAsli)->toBe('40000.00')
+            ->and($detail($supervisor)->AlasanHargaManual)->toBe('Kemasan penyok')
+            ->and($p($tanpaIzin)->AlasanTinjauan)->toStartWith('HargaManualTanpaIzin: ')
+            ->and($p($disetujui)->PerluTinjauan)->toBeFalse()
+            ->and($p($disetujui)->IdPenyetujuHarga)->toBe($k['Supervisor']->Id)
+            ->and($p($tanpaAlasan)->AlasanTinjauan)->toStartWith('HargaManualTanpaAlasan: ')
+            ->and($p($sama)->PerluTinjauan)->toBeFalse()
+            ->and($detail($sama)->HargaAsli)->toBeNull()
+            ->and($detail($sama)->AlasanHargaManual)->toBeNull();
+    });
+
+    it('harga manual kasir: UuidPenyetujuHarga bukan anggota tenant, anggota tenant lain, atau tanpa izin pos.harga.timpa = Ditolak PenyetujuTidakBerwenang', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $lain = BantuanPenjualan::Siapkan($this, 'Warung Bakso Pak Kumis');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Bubuk Robusta Temanggung 250 gram', 'Jenis' => JenisProduk::NonStok], '40000.00');
+        $baris = [['Produk' => $kopi, 'Jumlah' => '1', 'Harga' => '35000.00', 'HargaManual' => ['HargaAsli' => '40000.00', 'Alasan' => 'Kemasan penyok']]];
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [
+            BantuanPenjualan::Item($k, ['Baris' => $baris, 'PenyetujuHarga' => $lain['Supervisor']]),
+            BantuanPenjualan::Item($k, ['Baris' => $baris, 'PenyetujuHarga' => $k['Kasir']]),
+            BantuanPenjualan::Item($k, ['Baris' => $baris], ['UuidPenyetujuHarga' => BantuanKasir::Uuid()]),
+        ]))->toBe([['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang']]);
+    });
+
     it('(saran 1) bentrok indeks unik (1062) saat dua kiriman bersamaan: penjualan dibaca ulang; Nomor & TotalAkhir sama = Duplikat, selain itu UuidSudahDipakai/NomorSudahDipakai; galat database lain diteruskan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);

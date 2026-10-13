@@ -38,5 +38,7 @@ final readonly class DataBarisPenjualanPos
         public ?bool $denganResep = null,
         // Apotek bagian 3: obat racikan (komponen dikurangi dari stok; baris = produk Jasa racik).
         public ?DataRacikanPenjualanPos $racikan = null,
+        // Price engine lapis 1: harga baris diubah kasir (izin `pos.harga.timpa` atau PIN penyetuju); null = harga price engine.
+        public ?DataHargaManual $hargaManual = null,
     ) {}
 }

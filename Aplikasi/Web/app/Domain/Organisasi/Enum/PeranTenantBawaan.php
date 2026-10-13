@@ -89,6 +89,7 @@ enum PeranTenantBawaan: string
                 IzinTenant::PenjualanVoid,
                 IzinTenant::PenjualanRetur,
                 IzinTenant::PenjualanDiskonManual,
+                IzinTenant::PosHargaTimpa,
                 IzinTenant::KasKeluarSetujui,
                 IzinTenant::PenjualanDiskonSetujui,
                 IzinTenant::PenjualanTempoSetujui,
@@ -129,6 +130,7 @@ enum PeranTenantBawaan: string
                 IzinTenant::PenjualanVoid,
                 IzinTenant::PenjualanRetur,
                 IzinTenant::PenjualanDiskonManual,
+                IzinTenant::PosHargaTimpa,
                 // F-06 BR-06.4: PIN supervisor untuk kas keluar di atas batas.
                 IzinTenant::KasKeluarSetujui,
                 // F-07b BR-07.3: PIN supervisor untuk diskon manual di atas batas kasir.

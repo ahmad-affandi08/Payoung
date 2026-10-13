@@ -109,6 +109,8 @@ const propsDetail: PropsDetailPenjualan = {
             Jumlah: '2.0000',
             SimbolSatuan: 'pcs',
             HargaSatuan: '38500.00',
+            HargaAsli: '40000.00',
+            AlasanHargaManual: 'Kemasan penyok',
             HargaPilihan: '0.00',
             Pilihan: [],
             Bruto: '77000.00',
@@ -192,6 +194,7 @@ describe('F-07b halaman penjualan back-office', () => {
         expect(screen.getByText('−Rp 70')).toBeTruthy();
         expect(screen.getByText('Rp 96.500')).toBeTruthy();
         expect(screen.getByText('Budi Santoso')).toBeTruthy();
+        expect(screen.getByText('Harga diubah kasir dari Rp 40.000 | Kemasan penyok')).toBeTruthy();
         expect(screen.getByRole('link', { name: 'JU/2026/09/000009' }).getAttribute('href')).toBe(
             '/kelola/akuntansi/jurnal/01K5JURNAL0000000000000009',
         );
