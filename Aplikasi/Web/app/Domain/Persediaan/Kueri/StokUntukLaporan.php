@@ -138,4 +138,38 @@ final class StokUntukLaporan
             'Pakai' => Kuantitas::Dari((string) $b->Pakai)->KeString(),
         ], $baris->all()));
     }
+
+    /**
+     * Pemakaian & selisih stok untuk food cost (§10.10): per produk × jenis mutasi pada rentang tanggal bisnis, jumlah dan
+     * nilai (Σ TotalHpp) bertanda (keluar negatif). Jenis: penjualan, retur penjualan, bahan produksi, susut/terbuang,
+     * penyesuaian, dan opname.
+     *
+     * @param  list<int>  $idGudang
+     * @return list<array{IdProduk: int, JenisMutasi: string, Jumlah: string, Nilai: string}>
+     */
+    public function AmbilPemakaianPerJenis(array $idGudang, CarbonImmutable $dari, CarbonImmutable $sampai): array
+    {
+        if ($idGudang === []) {
+            return [];
+        }
+
+        $baris = MutasiStok::query()
+            ->whereIn('IdGudang', $idGudang)
+            ->whereBetween('TanggalBisnis', [$dari->toDateString(), $sampai->toDateString()])
+            ->whereIn('JenisMutasi', [
+                JenisMutasi::Penjualan->value, JenisMutasi::ReturPenjualan->value, JenisMutasi::ProduksiPakai->value, JenisMutasi::Susut->value,
+                JenisMutasi::PenyesuaianMasuk->value, JenisMutasi::PenyesuaianKeluar->value, JenisMutasi::OpnameLebih->value, JenisMutasi::OpnameKurang->value,
+            ])
+            ->groupBy('IdProduk', 'JenisMutasi')
+            ->selectRaw('`IdProduk`, `JenisMutasi`, COALESCE(SUM(`Jumlah`), 0) AS `Jumlah`, COALESCE(SUM(`TotalHpp`), 0) AS `Nilai`')
+            ->toBase()
+            ->get();
+
+        return array_values(array_map(fn (object $b): array => [
+            'IdProduk' => (int) $b->IdProduk,
+            'JenisMutasi' => (string) $b->JenisMutasi,
+            'Jumlah' => Kuantitas::Dari((string) $b->Jumlah)->KeString(),
+            'Nilai' => Uang::Dari((string) $b->Nilai)->KeString(),
+        ], $baris->all()));
+    }
 }

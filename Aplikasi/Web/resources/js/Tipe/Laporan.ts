@@ -94,7 +94,10 @@ export type TabLaporanPenjualan =
     | 'abc'
     | 'menu'
     | 'pelanggan'
-    | 'outlet';
+    | 'outlet'
+    | 'waktu-saji'
+    | 'food-cost'
+    | 'performa-kasir';
 
 export type SaringLaporanPenjualan = {
     Tab: TabLaporanPenjualan;
@@ -103,6 +106,8 @@ export type SaringLaporanPenjualan = {
     Outlet: string;
     Kasir: string;
     Kanal: string;
+    /** Tab waktu saji: target menit (tiket lebih lama dihitung terlambat). */
+    Target?: number;
 };
 
 export type BarisHarian = AngkaPenjualan & { Tanggal: string };
@@ -156,6 +161,62 @@ export type SelJam = { Hari: number; Jam: number; Bersih: string; JumlahTransaks
 export type IsiJam = { Sel: SelJam[]; PerJam: { Jam: number; Bersih: string; JumlahTransaksi: number }[] };
 export type BarisKasirLaporan = AngkaPenjualan & { Kunci: string; NamaKasir: string };
 export type BarisKanalLaporan = AngkaPenjualan & { Kunci: string; LabelKanal: string };
+/** Waktu saji per stasiun dapur (detik); `null` = KDS tidak menandai tahap itu. */
+export type BarisWaktuSaji = {
+    Kunci: string;
+    NamaStasiun: string;
+    JumlahTiket: number;
+    TungguRataRata: number | null;
+    MasakRataRata: number | null;
+    TotalRataRata: number;
+    TotalMedian: number;
+    TotalP90: number;
+    TotalTerlama: number;
+    SajikanRataRata: number | null;
+    LewatTarget: number;
+    PersenLewatTarget: string;
+};
+/** Food cost per bahan: nilai teoretis (resep × terjual), terbuang, dan selisih stok; kerugian positif. */
+export type BarisFoodCost = {
+    Kunci: string;
+    NamaProduk: string;
+    SimbolSatuan: string;
+    QtyTeoretis: string;
+    NilaiTeoretis: string;
+    QtyTerbuang: string;
+    NilaiTerbuang: string;
+    QtySelisih: string;
+    NilaiSelisih: string;
+    NilaiAktual: string;
+    VarianPersen: string | null;
+};
+export type IsiFoodCost = {
+    Ringkasan: {
+        Penjualan: string;
+        Teoretis: string;
+        Terbuang: string;
+        Selisih: string;
+        Aktual: string;
+        TeoretisPersen: string;
+        AktualPersen: string;
+        SelisihPoin: string;
+    };
+    Baris: BarisFoodCost[];
+};
+export type BarisPerformaKasir = {
+    Kunci: string;
+    NamaKasir: string;
+    JumlahTransaksi: number;
+    Bersih: string;
+    RataRataKeranjang: string;
+    JamKerja: string;
+    ShiftDitutup: number;
+    TransaksiPerJam: string | null;
+    OmzetPerJam: string | null;
+    JumlahVoid: number;
+    PersenVoid: string;
+    SelisihKurang: string;
+};
 /** Penjualan per pelanggan; `Kunci` kosong = transaksi tanpa pelanggan. `Porsi` = % omzet bersih. */
 export type BarisPelangganLaporan = AngkaPenjualan & { Kunci: string; NamaPelanggan: string; Porsi: string };
 /** Perbandingan outlet; `Margin` = % laba kotor terhadap omzet bersih. */
@@ -256,6 +317,7 @@ export type PropsLaporanPenjualan = {
     OpsiOutlet: OpsiLaporan[];
     OpsiKasir: OpsiLaporan[];
     OpsiKanal: OpsiLaporan[];
+    OpsiTarget?: number[];
     Total: AngkaPenjualan;
     Isi:
         | BarisHarian[]
@@ -267,6 +329,9 @@ export type PropsLaporanPenjualan = {
         | BarisKanalLaporan[]
         | BarisPelangganLaporan[]
         | BarisOutletLaporan[]
+        | BarisWaktuSaji[]
+        | IsiFoodCost
+        | BarisPerformaKasir[]
         | BarisMetodeLaporan[]
         | BarisDiskonLaporan[]
         | BarisVoidItemLaporan[]

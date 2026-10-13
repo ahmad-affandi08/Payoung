@@ -11,7 +11,8 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import { PakaiFiturTerkunci } from '@/Pustaka/FiturPaket';
 import { PakaiSektor } from '@/Pustaka/Sektor';
-import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
+import { FormatDurasi, FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { BuatQueryLaporan } from '@/Pustaka/Laporan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type {
@@ -23,6 +24,10 @@ import type {
     BarisKanalLaporan,
     BarisOutletLaporan,
     BarisPelangganLaporan,
+    BarisFoodCost,
+    BarisPerformaKasir,
+    BarisWaktuSaji,
+    IsiFoodCost,
     BarisKasirLaporan,
     BarisKategoriLaporan,
     BarisMenuLaporan,
@@ -55,6 +60,9 @@ const daftarTab: { nilai: TabLaporanPenjualan; label: string }[] = [
     { nilai: 'menu', label: 'Menu engineering' },
     { nilai: 'pelanggan', label: 'Per pelanggan' },
     { nilai: 'outlet', label: 'Perbandingan outlet' },
+    { nilai: 'performa-kasir', label: 'Performa kasir' },
+    { nilai: 'waktu-saji', label: 'Waktu saji dapur' },
+    { nilai: 'food-cost', label: 'Food cost' },
 ];
 
 const kolomHarian: KolomTabel<BarisHarian>[] = [
@@ -230,6 +238,118 @@ const kolomOutlet: KolomTabel<BarisOutletLaporan>[] = [
         cell: ({ row }) => FormatPersen(row.original.Margin),
     },
     KolomPorsi<BarisOutletLaporan>(),
+];
+
+const KolomDurasi = <T extends object>(
+    id: keyof T & string,
+    label: string,
+    prioritas: 'utama' | 'penting' | 'rendah' = 'penting',
+): KolomTabel<T> =>
+    ({
+        id,
+        accessorKey: id,
+        header: label,
+        meta: { label, angka: true, prioritas, kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => {
+            const nilai = row.original[id] as number | null;
+
+            return nilai === null ? '–' : FormatDurasi(nilai);
+        },
+    }) as KolomTabel<T>;
+
+const kolomWaktuSaji: KolomTabel<BarisWaktuSaji>[] = [
+    {
+        id: 'NamaStasiun',
+        accessorKey: 'NamaStasiun',
+        header: 'Stasiun',
+        meta: { label: 'Stasiun', prioritas: 'utama', wajib: true },
+    },
+    KolomBilangan<BarisWaktuSaji>('JumlahTiket', 'Tiket', 'utama'),
+    KolomDurasi<BarisWaktuSaji>('TotalRataRata', 'Rata-rata total', 'utama'),
+    KolomDurasi<BarisWaktuSaji>('TotalMedian', 'Median', 'penting'),
+    KolomDurasi<BarisWaktuSaji>('TotalP90', 'Persentil 90', 'penting'),
+    KolomDurasi<BarisWaktuSaji>('TotalTerlama', 'Terlama', 'rendah'),
+    KolomDurasi<BarisWaktuSaji>('TungguRataRata', 'Rata-rata tunggu', 'rendah'),
+    KolomDurasi<BarisWaktuSaji>('MasakRataRata', 'Rata-rata masak', 'rendah'),
+    KolomDurasi<BarisWaktuSaji>('SajikanRataRata', 'Rata-rata sajikan', 'rendah'),
+    {
+        id: 'LewatTarget',
+        accessorKey: 'LewatTarget',
+        header: 'Lewat target',
+        meta: { label: 'Lewat target', angka: true, prioritas: 'utama' },
+        cell: ({ row }) => `${String(row.original.LewatTarget)} (${FormatPersen(row.original.PersenLewatTarget)})`,
+    },
+];
+
+const kolomFoodCost: KolomTabel<BarisFoodCost>[] = [
+    {
+        id: 'NamaProduk',
+        accessorKey: 'NamaProduk',
+        header: 'Bahan / produk',
+        meta: { label: 'Bahan / produk', prioritas: 'utama', wajib: true },
+    },
+    KolomUang<BarisFoodCost>('NilaiTeoretis', 'Teoretis', 'penting'),
+    KolomUang<BarisFoodCost>('NilaiTerbuang', 'Terbuang', 'penting'),
+    KolomUang<BarisFoodCost>('NilaiSelisih', 'Selisih stok', 'penting'),
+    KolomUang<BarisFoodCost>('NilaiAktual', 'Aktual', 'utama'),
+    {
+        id: 'VarianPersen',
+        accessorKey: 'VarianPersen',
+        header: 'Varian',
+        meta: { label: 'Varian vs teoretis', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => (row.original.VarianPersen === null ? '–' : FormatPersen(row.original.VarianPersen)),
+    },
+    {
+        id: 'QtyTerbuang',
+        accessorKey: 'QtyTerbuang',
+        header: 'Jumlah terbuang',
+        enableSorting: false,
+        meta: { label: 'Jumlah terbuang', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => FormatJumlahStok(row.original.QtyTerbuang, row.original.SimbolSatuan),
+    },
+];
+
+const kolomPerformaKasir: KolomTabel<BarisPerformaKasir>[] = [
+    {
+        id: 'NamaKasir',
+        accessorKey: 'NamaKasir',
+        header: 'Kasir',
+        meta: { label: 'Kasir', prioritas: 'utama', wajib: true },
+    },
+    KolomBilangan<BarisPerformaKasir>('JumlahTransaksi', 'Transaksi', 'utama'),
+    KolomUang<BarisPerformaKasir>('Bersih', 'Penjualan bersih', 'utama'),
+    KolomUang<BarisPerformaKasir>('RataRataKeranjang', 'Rata-rata keranjang', 'penting'),
+    {
+        id: 'JamKerja',
+        accessorKey: 'JamKerja',
+        header: 'Jam kerja',
+        sortingFn: (a, b, kolom) => BandingkanDesimal(String(a.getValue(kolom)), String(b.getValue(kolom))),
+        meta: { label: 'Jam kerja', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => `${row.original.JamKerja.replace('.', ',')} jam`,
+    },
+    {
+        id: 'TransaksiPerJam',
+        accessorKey: 'TransaksiPerJam',
+        header: 'Transaksi per jam',
+        meta: { label: 'Transaksi per jam', angka: true, prioritas: 'penting' },
+        cell: ({ row }) =>
+            row.original.TransaksiPerJam === null ? '–' : row.original.TransaksiPerJam.replace('.', ','),
+    },
+    {
+        id: 'OmzetPerJam',
+        accessorKey: 'OmzetPerJam',
+        header: 'Omzet per jam',
+        meta: { label: 'Omzet per jam', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => (row.original.OmzetPerJam === null ? '–' : FormatRupiah(row.original.OmzetPerJam)),
+    },
+    {
+        id: 'PersenVoid',
+        accessorKey: 'PersenVoid',
+        header: 'Void',
+        meta: { label: 'Void', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => `${String(row.original.JumlahVoid)} (${FormatPersen(row.original.PersenVoid)})`,
+    },
+    KolomUang<BarisPerformaKasir>('SelisihKurang', 'Selisih kas kurang', 'rendah'),
 ];
 
 const kolomMetode: KolomTabel<BarisMetodeLaporan>[] = [
@@ -638,6 +758,105 @@ function IsiTab({
                     kosong={kosong}
                 />
             );
+        case 'performa-kasir':
+            return (
+                <TabelData
+                    id="laporan-penjualan-performa-kasir"
+                    label="Performa kasir"
+                    kolom={kolomPerformaKasir}
+                    sumber={{ mode: 'lokal', data: isi as BarisPerformaKasir[] }}
+                    ambilIdBaris={(b) => b.Kunci}
+                    urutBawaan="-Bersih"
+                    cari="Cari nama kasir"
+                    ekspor={{
+                        alamat: `${alamat}/ekspor`,
+                        label: 'Ekspor',
+                        laporan: true,
+                        eksporBesar: true,
+                        query: queryEkspor,
+                    }}
+                    kosong={kosong}
+                />
+            );
+        case 'waktu-saji':
+            return (
+                <div className="flex flex-col gap-3">
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Dari tiket dapur yang sudah siap. Total = dikirim ke dapur sampai siap; tunggu dan masak hanya
+                        terisi bila KDS menandai tahap Dimasak. Persentil 90 berarti 9 dari 10 tiket selesai lebih cepat
+                        dari angka itu.
+                    </p>
+                    <TabelData
+                        id="laporan-penjualan-waktu-saji"
+                        label="Waktu saji dapur per stasiun"
+                        kolom={kolomWaktuSaji}
+                        sumber={{ mode: 'lokal', data: isi as BarisWaktuSaji[] }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        urutBawaan="-JumlahTiket"
+                        cari="Cari stasiun"
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={{ judul: 'Belum ada tiket dapur yang selesai pada periode dan saring ini.' }}
+                    />
+                </div>
+            );
+        case 'food-cost': {
+            const food = isi as IsiFoodCost;
+            const r = food.Ringkasan;
+
+            return (
+                <div className="flex flex-col gap-3">
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Teoretis = nilai bahan yang seharusnya terpakai menurut penjualan dan produksi (resep × jumlah
+                        terjual). Aktual = teoretis + bahan terbuang + selisih stok dari penyesuaian dan opname. Selisih
+                        positif berarti kerugian. Persentase terhadap penjualan bersih periode.
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-4">
+                        {(
+                            [
+                                ['Penjualan bersih', FormatRupiah(r.Penjualan)],
+                                [
+                                    'Food cost teoretis',
+                                    `${FormatRupiah(r.Teoretis)} (${FormatPersen(r.TeoretisPersen)})`,
+                                ],
+                                ['Food cost aktual', `${FormatRupiah(r.Aktual)} (${FormatPersen(r.AktualPersen)})`],
+                                ['Selisih aktual − teoretis', `${r.SelisihPoin.replace('.', ',')} poin persen`],
+                                ['Bahan terbuang', FormatRupiah(r.Terbuang)],
+                                ['Selisih stok (penyesuaian & opname)', FormatRupiah(r.Selisih)],
+                            ] as [string, string][]
+                        ).map(([label, nilai]) => (
+                            <div key={label} className="min-w-0">
+                                <dt className="text-label text-teks-sekunder">{label}</dt>
+                                <dd className="text-isi font-semibold break-words text-teks-utama tabular-nums">
+                                    {nilai}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                    <TabelData
+                        id="laporan-penjualan-food-cost"
+                        label="Food cost per bahan"
+                        kolom={kolomFoodCost}
+                        sumber={{ mode: 'lokal', data: food.Baris }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        cari="Cari bahan atau produk"
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={{ judul: 'Belum ada pemakaian bahan pada periode dan saring ini.' }}
+                    />
+                </div>
+            );
+        }
         case 'metode':
             return (
                 <TabelData
@@ -853,11 +1072,14 @@ function IsiTab({
  */
 export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     // D-48: Menu engineering hanya bermakna untuk usaha makanan & minuman (atau bila tab itu sedang dibuka).
-    const tampilMenu = PakaiSektor(['FNB']) || props.Saring.Tab === 'menu';
+    const sektorFnb = PakaiSektor(['FNB']);
+    const tabFnb = ['menu', 'waktu-saji', 'food-cost'];
     // D-111: tab Anti-fraud adalah fitur paket (`keamanan.anti-fraud`); server menolaknya di luar paket, jadi tab disembunyikan.
     const antiFraudTerkunci = PakaiFiturTerkunci('keamanan.anti-fraud');
     const tabTerlihat = daftarTab.filter(
-        (tab) => (tab.nilai !== 'menu' || tampilMenu) && (tab.nilai !== 'anti-fraud' || !antiFraudTerkunci),
+        (tab) =>
+            (!tabFnb.includes(tab.nilai) || sektorFnb || props.Saring.Tab === tab.nilai) &&
+            (tab.nilai !== 'anti-fraud' || !antiFraudTerkunci),
     );
     const { Saring, Total } = props;
     const query = {
@@ -866,6 +1088,7 @@ export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
         outlet: Saring.Outlet,
         kasir: Saring.Kasir,
         kanal: Saring.Kanal,
+        ...(Saring.Tab === 'waktu-saji' ? { target: String(Saring.Target ?? 15) } : {}),
     };
     const ringkasan: [string, string][] = [
         ['Penjualan bersih', FormatRupiah(Total.Bersih)],
@@ -896,6 +1119,19 @@ export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
                         : []),
                     { kunci: 'kasir', label: 'Kasir', kosong: 'Semua kasir', opsi: props.OpsiKasir },
                     { kunci: 'kanal', label: 'Kanal', kosong: 'Semua kanal', opsi: props.OpsiKanal },
+                    ...(Saring.Tab === 'waktu-saji'
+                        ? [
+                              {
+                                  kunci: 'target',
+                                  label: 'Target waktu saji',
+                                  kosong: '15 menit',
+                                  opsi: (props.OpsiTarget ?? [15]).map((m) => ({
+                                      Nilai: String(m),
+                                      Label: `${String(m)} menit`,
+                                  })),
+                              },
+                          ]
+                        : []),
                 ]}
             />
 

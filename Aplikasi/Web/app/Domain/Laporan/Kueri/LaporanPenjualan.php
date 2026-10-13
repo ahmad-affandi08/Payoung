@@ -54,7 +54,7 @@ final class LaporanPenjualan
 
     public const BATAS_EKSPOR_PELANGGAN = 5000;
 
-    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet'];
+    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet', 'waktu-saji', 'food-cost', 'performa-kasir'];
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -67,6 +67,7 @@ final class LaporanPenjualan
         private readonly PenilaiRisikoKasir $penilai,
         private readonly PenilaiInsightProduk $insight,
         private readonly IdentitasPelanggan $pelanggan,
+        private readonly LaporanOperasional $operasional,
     ) {}
 
     /**
@@ -102,6 +103,8 @@ final class LaporanPenjualan
         }
 
         $kanal = KanalPenjualan::tryFrom(is_string($query['kanal'] ?? null) ? $query['kanal'] : '');
+        $target = (int) (is_string($query['target'] ?? null) ? $query['target'] : 0);
+        $target = in_array($target, LaporanOperasional::TARGET_SAJI_OPSI, true) ? $target : LaporanOperasional::TARGET_SAJI_BAWAAN;
 
         return [
             'Tab' => $tab,
@@ -109,7 +112,7 @@ final class LaporanPenjualan
             'UuidOutlet' => $uuidOutlet,
             'UuidKasir' => $uuidKasir,
             'Kanal' => $kanal->value ?? '',
-            'Saring' => new DataSaringLaporanPenjualan($periode->dari, $periode->sampai, $idOutlet, $idKasir, $kanal),
+            'Saring' => new DataSaringLaporanPenjualan($periode->dari, $periode->sampai, $idOutlet, $idKasir, $kanal, $target),
         ];
     }
 
@@ -132,7 +135,9 @@ final class LaporanPenjualan
                 'Outlet' => $saring['UuidOutlet'],
                 'Kasir' => $saring['UuidKasir'],
                 'Kanal' => $saring['Kanal'],
+                'Target' => $s->targetSajiMenit,
             ],
+            'OpsiTarget' => LaporanOperasional::TARGET_SAJI_OPSI,
             'Peringatan' => $saring['Periode']->peringatan,
             'MaksHari' => DataPeriodeLaporan::MAKS_HARI,
             'OpsiOutlet' => array_map(fn (array $o): array => ['Nilai' => $o['Uuid'], 'Label' => $o['Nama']], $this->outlet->AmbilRingkas($idOutletBoleh)),
@@ -167,6 +172,9 @@ final class LaporanPenjualan
             'menu' => $this->insight->Menu($this->agregat->PerProduk($saring)),
             'pelanggan' => $this->PerPelanggan($saring),
             'outlet' => $this->PerOutlet($saring),
+            'waktu-saji' => $this->operasional->WaktuSaji($saring, $saring->targetSajiMenit),
+            'food-cost' => $this->operasional->FoodCost($saring),
+            'performa-kasir' => $this->operasional->PerformaKasir($saring),
             default => $this->Harian($saring),
         };
     }
@@ -625,6 +633,18 @@ final class LaporanPenjualan
             'anti-fraud' => [
                 [$t('Kasir', 26), $n('Skor risiko', false), $t('Tingkat', 12), $n('Transaksi'), $n('Void'), $u('Nilai void'), $n('Void tunai cepat'), $n('Retur'), $u('Nilai retur'), $n('Transaksi berdiskon'), $u('Total diskon'), $n('Buka laci manual'), $n('Shift kas kurang'), $u('Total kas kurang'), $t('Alasan', 60)],
                 $ambil(array_map(fn (array $b): array => [...$b, 'Alasan' => implode('; ', $b['Alasan'])], $this->AntiFraud($saring)), ['NamaKasir', 'Skor', 'Tingkat', 'JumlahTransaksi', 'JumlahVoid', 'NilaiVoid', 'VoidCepatTunai', 'JumlahRetur', 'NilaiRetur', 'JumlahBerdiskon', 'TotalDiskon', 'BukaLaciManual', 'ShiftSelisihKurang', 'SelisihKurang', 'Alasan']),
+            ],
+            'waktu-saji' => [
+                [$t('Stasiun', 24), $n('Jumlah tiket'), $n('Rata-rata tunggu (detik)', false), $n('Rata-rata masak (detik)', false), $n('Rata-rata total (detik)', false), $n('Median total (detik)', false), $n('Persentil 90 (detik)', false), $n('Terlama (detik)', false), $n('Rata-rata sajikan (detik)', false), $n("Lewat target {$saring->targetSajiMenit} menit"), $pr('Persen lewat target')],
+                $ambil($this->operasional->WaktuSaji($saring, $saring->targetSajiMenit), ['NamaStasiun', 'JumlahTiket', 'TungguRataRata', 'MasakRataRata', 'TotalRataRata', 'TotalMedian', 'TotalP90', 'TotalTerlama', 'SajikanRataRata', 'LewatTarget', 'PersenLewatTarget']),
+            ],
+            'food-cost' => [
+                [$t('Bahan/produk', 32), $q('Terpakai teoretis'), $u('Nilai teoretis'), $q('Terbuang'), $u('Nilai terbuang'), $q('Selisih stok'), $u('Nilai selisih stok'), $u('Nilai aktual'), $pr('Varian vs teoretis %')],
+                $ambil($this->operasional->FoodCost($saring)['Baris'], ['NamaProduk', 'QtyTeoretis', 'NilaiTeoretis', 'QtyTerbuang', 'NilaiTerbuang', 'QtySelisih', 'NilaiSelisih', 'NilaiAktual', 'VarianPersen']),
+            ],
+            'performa-kasir' => [
+                [$t('Kasir', 26), $n('Transaksi'), $u('Penjualan bersih'), $u('Rata-rata keranjang', false), new KolomLaporan('Jam kerja', JenisKolom::Kuantitas), $n('Shift ditutup'), new KolomLaporan('Transaksi per jam', JenisKolom::Kuantitas), $u('Omzet per jam', false), $n('Void'), $pr('Void %'), $u('Selisih kas kurang')],
+                $ambil($this->operasional->PerformaKasir($saring), ['NamaKasir', 'JumlahTransaksi', 'Bersih', 'RataRataKeranjang', 'JamKerja', 'ShiftDitutup', 'TransaksiPerJam', 'OmzetPerJam', 'JumlahVoid', 'PersenVoid', 'SelisihKurang']),
             ],
             'pelanggan' => [[$t('Pelanggan', 30), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Porsi %')], $ambil($this->PerPelanggan($saring, self::BATAS_EKSPOR_PELANGGAN), ['NamaPelanggan', ...$angka, 'RataRataKeranjang', 'Porsi'])],
             'outlet' => [[$t('Outlet', 28), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Margin %'), $pr('Porsi %')], $ambil($this->PerOutlet($saring), ['NamaOutlet', ...$angka, 'RataRataKeranjang', 'Margin', 'Porsi'])],

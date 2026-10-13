@@ -65,4 +65,31 @@ final class PolaKasKasir
 
         return $hasil;
     }
+
+    /**
+     * Detik kerja per kasir: Σ (tutup − buka) shift yang sudah ditutup pada rentang tanggal bisnis, tanpa shift bersama
+     * (tidak milik satu kasir). Dasar laporan performa kasir (transaksi & omzet per jam kerja).
+     *
+     * @param  list<int>|null  $idOutlet  null = semua outlet
+     * @return array<int, int> Id kasir → detik
+     */
+    public function DetikKerjaPerKasir(CarbonInterface $dari, CarbonInterface $sampai, ?array $idOutlet, ?int $idKasir = null): array
+    {
+        $hasil = [];
+
+        foreach (Shift::query()
+            ->whereNotNull('DitutupPada')
+            ->where('Bersama', false)
+            ->whereBetween('TanggalBisnis', [$dari->toDateString(), $sampai->toDateString()])
+            ->when($idOutlet !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $idOutlet ?? []))
+            ->when($idKasir !== null, fn (Builder $k) => $k->where('DibukaOleh', $idKasir))
+            ->selectRaw('`DibukaOleh` AS `IdKasir`, COALESCE(SUM(GREATEST(TIMESTAMPDIFF(SECOND, `DibukaPada`, `DitutupPada`), 0)), 0) AS `Detik`')
+            ->groupBy('DibukaOleh')
+            ->toBase()
+            ->get() as $b) {
+            $hasil[(int) $b->IdKasir] = (int) (is_numeric($b->Detik) ? $b->Detik : 0);
+        }
+
+        return $hasil;
+    }
 }

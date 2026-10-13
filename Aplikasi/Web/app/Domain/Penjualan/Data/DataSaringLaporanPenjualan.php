@@ -23,6 +23,8 @@ final readonly class DataSaringLaporanPenjualan
         public ?array $idOutlet = null,
         public ?int $idKasir = null,
         public ?KanalPenjualan $kanal = null,
+        // Tab waktu saji KDS: tiket yang melewati target ini (menit) dihitung terlambat.
+        public int $targetSajiMenit = 15,
     ) {}
 
     public function CekTanpaOutlet(): bool

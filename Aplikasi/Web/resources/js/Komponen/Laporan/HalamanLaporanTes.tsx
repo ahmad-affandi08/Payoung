@@ -318,6 +318,118 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByText('22,08%')).toBeTruthy();
     });
 
+    it('§10.10 tab waktu saji, food cost, dan performa kasir: durasi terbaca, persen, dan pilihan target', () => {
+        const Saring = (tab: 'waktu-saji' | 'food-cost' | 'performa-kasir') => ({
+            Tab: tab,
+            Dari: '2026-10-01',
+            Sampai: '2026-10-07',
+            Outlet: '',
+            Kasir: '',
+            Kanal: '',
+            Target: 15,
+        });
+        const { unmount: LepasSaji } = RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('waktu-saji'),
+                    OpsiTarget: [5, 15, 30],
+                    Isi: [
+                        {
+                            Kunci: 's1',
+                            NamaStasiun: 'Dapur',
+                            JumlahTiket: 4,
+                            TungguRataRata: null,
+                            MasakRataRata: 1200,
+                            TotalRataRata: 1200,
+                            TotalMedian: 1100,
+                            TotalP90: 1500,
+                            TotalTerlama: 1800,
+                            SajikanRataRata: 90,
+                            LewatTarget: 3,
+                            PersenLewatTarget: '75.00',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Waktu saji dapur per stasiun' })).toBeTruthy();
+        expect(screen.getAllByText('20 menit').length).toBeGreaterThan(0);
+        expect(screen.getByText('3 (75,00%)')).toBeTruthy();
+        expect(screen.getByRole('combobox', { name: /Target waktu saji/ })).toBeTruthy();
+        LepasSaji();
+
+        const { unmount: LepasFood } = RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('food-cost'),
+                    Isi: {
+                        Ringkasan: {
+                            Penjualan: '125000.00',
+                            Teoretis: '40000.00',
+                            Terbuang: '16000.00',
+                            Selisih: '8000.00',
+                            Aktual: '64000.00',
+                            TeoretisPersen: '32.00',
+                            AktualPersen: '51.20',
+                            SelisihPoin: '19.20',
+                        },
+                        Baris: [
+                            {
+                                Kunci: 'p1',
+                                NamaProduk: 'Biji Kopi Arabika',
+                                SimbolSatuan: 'g',
+                                QtyTeoretis: '500.0000',
+                                NilaiTeoretis: '40000.00',
+                                QtyTerbuang: '200.0000',
+                                NilaiTerbuang: '16000.00',
+                                QtySelisih: '100.0000',
+                                NilaiSelisih: '8000.00',
+                                NilaiAktual: '64000.00',
+                                VarianPersen: '60.00',
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Food cost per bahan' })).toBeTruthy();
+        expect(screen.getByText(/32,00%/)).toBeTruthy();
+        expect(screen.getByText(/51,20%/)).toBeTruthy();
+        expect(screen.getByText('19,20 poin persen')).toBeTruthy();
+        expect(screen.getByText('60,00%')).toBeTruthy();
+        LepasFood();
+
+        RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('performa-kasir'),
+                    Isi: [
+                        {
+                            Kunci: 'k1',
+                            NamaKasir: 'Rina Wulandari',
+                            JumlahTransaksi: 2,
+                            Bersih: '75000.00',
+                            RataRataKeranjang: '37500.00',
+                            JamKerja: '2.00',
+                            ShiftDitutup: 1,
+                            TransaksiPerJam: '1.00',
+                            OmzetPerJam: '37500.00',
+                            JumlahVoid: 1,
+                            PersenVoid: '33.33',
+                            SelisihKurang: '0.00',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Performa kasir' })).toBeTruthy();
+        expect(screen.getByText('2,00 jam')).toBeTruthy();
+        expect(screen.getByText('1 (33,33%)')).toBeTruthy();
+    });
+
     it('tab anti-fraud: tingkat risiko berteks + alasan, penjelasan skor', () => {
         RenderUji(
             <HalamanLaporanPenjualan

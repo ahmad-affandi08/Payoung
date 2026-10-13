@@ -2314,7 +2314,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-BbNzHHQc.js",
+    "file": "assets/Aplikasi-sgY-XGbV.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -4637,7 +4637,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Laporan/Penjualan.tsx": {
-    "file": "assets/Penjualan-QZdvw3Ou.js",
+    "file": "assets/Penjualan-Ct4Cw243.js",
     "name": "Penjualan",
     "src": "resources/js/Halaman/Kelola/Laporan/Penjualan.tsx",
     "isDynamicEntry": true,
@@ -4655,6 +4655,7 @@
       "_HitungDesimal-CM8lGat2.js",
       "_Laporan-B1RZFeBO.js",
       "_NavigasiTab-DDKU-SQX.js",
+      "_FormatPersediaan-vu63GuxB.js",
       "_KolomLaporan-Ce4BvkON.js",
       "_SaringLaporan-DbeRzzIk.js"
     ]
