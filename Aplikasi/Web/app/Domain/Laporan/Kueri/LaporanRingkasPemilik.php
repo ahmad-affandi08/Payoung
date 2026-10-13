@@ -32,6 +32,17 @@ final class LaporanRingkasPemilik
     ) {}
 
     /**
+     * OWN-09: skor risiko kasir (void tunai cepat, void/diskon/retur terhadap rata-rata, buka laci, kas kurang) yang
+     * sama persis dengan tab Anti-fraud laporan penjualan; urut skor menurun, tiap skor membawa alasan berteks.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function AntiFraud(DataSaringLaporanPenjualan $saring): array
+    {
+        return $this->laporan->AntiFraud($saring);
+    }
+
+    /**
      * @return array{Kelompok: string, Baris: list<array{Nama: string, Jumlah: string, Omzet: string}>, Total: array{Jumlah: string, Omzet: string}}
      */
     public function Penjualan(string $kelompok, DataSaringLaporanPenjualan $saring): array

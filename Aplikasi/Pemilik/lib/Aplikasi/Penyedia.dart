@@ -314,8 +314,9 @@ final penyediaLaporan = FutureProvider.autoDispose<LaporanPenjualanPemilik>((ref
   );
 });
 
-/// OWN-05: layar Laporan menampilkan Penjualan (per kelompok) atau Laba rugi (bulan dari tanggal terpilih).
-enum ModeLaporan { Penjualan, LabaRugi }
+/// OWN-05/09: layar Laporan menampilkan Penjualan (per kelompok), Laba rugi (bulan dari tanggal terpilih), atau
+/// Anti-fraud (7 hari berakhir di tanggal terpilih).
+enum ModeLaporan { Penjualan, LabaRugi, AntiFraud }
 
 class PengaturModeLaporan extends Notifier<ModeLaporan> {
   @override
@@ -334,6 +335,14 @@ final penyediaLabaRugi = FutureProvider.autoDispose<LabaRugiPemilik>((ref) {
   final awal = DateTime(s.tanggal.year, s.tanggal.month);
   final akhir = DateTime(s.tanggal.year, s.tanggal.month + 1, 0);
   return _Jaga(ref, () => ref.read(penyediaKlien).AmbilLabaRugi(dari: Iso(awal), sampai: Iso(akhir), outlet: s.outlet));
+});
+
+final penyediaAntiFraud = FutureProvider.autoDispose<List<RisikoKasirPemilik>>((ref) {
+  final s = ref.watch(penyediaSaringan);
+  final awal = s.tanggal.subtract(const Duration(days: 6));
+  String Iso(DateTime t) =>
+      '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilAntiFraud(dari: Iso(awal), sampai: s.tanggalIso, outlet: s.outlet));
 });
 
 final penyediaShift = FutureProvider.autoDispose<List<ShiftPemilik>>((ref) {

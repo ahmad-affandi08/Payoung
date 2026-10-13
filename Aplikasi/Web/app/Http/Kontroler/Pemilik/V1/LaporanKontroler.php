@@ -9,8 +9,8 @@ use App\Domain\Akuntansi\Kueri\LabaRugi;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Laporan\Kueri\LaporanRingkasPemilik;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
-use App\Http\Permintaan\Pemilik\V1\LaporanLabaRugiPermintaan;
 use App\Http\Permintaan\Pemilik\V1\LaporanPenjualanPermintaan;
+use App\Http\Permintaan\Pemilik\V1\LaporanRentangPermintaan;
 use App\Http\Permintaan\Pemilik\V1\ShiftPermintaan;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -50,11 +50,30 @@ final class LaporanKontroler extends DasarPemilikKontroler
     }
 
     /**
+     * Anti-fraud kasir (OWN-09, izin `laporan.penjualan.lihat`, paket Anti-fraud): skor risiko per kasir beserta alasan
+     * berteks, dibatasi outlet akses. Skor adalah petunjuk untuk diperiksa, bukan bukti.
+     */
+    public function AntiFraud(LaporanRentangPermintaan $permintaan, LaporanRingkasPemilik $laporan): JsonResponse
+    {
+        $dari = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('dari'));
+        $sampai = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('sampai'));
+        abort_unless($dari instanceof CarbonImmutable && $sampai instanceof CarbonImmutable, 422);
+
+        if ($dari->diffInDays($sampai) + 1 > self::HARI_MAKS) {
+            throw new PelanggaranAturanBisnis('RentangTerlaluPanjang', 'Rentang laporan paling panjang '.self::HARI_MAKS.' hari. Persempit tanggalnya.', 'sampai');
+        }
+
+        $idOutlet = $this->SaringOutlet($permintaan->query('outlet') === null ? null : (string) $permintaan->string('outlet'), $this->IdOutletBoleh($permintaan));
+
+        return response()->json(['Kasir' => $laporan->AntiFraud(new DataSaringLaporanPenjualan($dari, $sampai, $idOutlet))]);
+    }
+
+    /**
      * Laba rugi sederhana (izin `laporan.keuangan.lihat`): pendapatan, HPP, laba kotor, beban, laba bersih untuk
      * periode dan periode pembanding sama panjang, ditambah rincian per akun. Sumbernya kueri yang sama dengan
      * back-office, jadi angkanya selalu sama dengan laporan di web.
      */
-    public function LabaRugi(LaporanLabaRugiPermintaan $permintaan, LabaRugi $kueri): JsonResponse
+    public function LabaRugi(LaporanRentangPermintaan $permintaan, LabaRugi $kueri): JsonResponse
     {
         $dari = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('dari'));
         $sampai = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('sampai'));

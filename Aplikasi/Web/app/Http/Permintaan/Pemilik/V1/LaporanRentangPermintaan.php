@@ -6,8 +6,8 @@ namespace App\Http\Permintaan\Pemilik\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/** `GET /api/pemilik/v1/laporan/laba-rugi?dari=&sampai=&outlet=` (OWN-05, laba rugi sederhana). */
-final class LaporanLabaRugiPermintaan extends FormRequest
+/** `GET /api/pemilik/v1/laporan/{laba-rugi|anti-fraud}?dari=&sampai=&outlet=` (OWN-05 laba rugi, OWN-09 anti-fraud). */
+final class LaporanRentangPermintaan extends FormRequest
 {
     /**
      * @return array<string, list<mixed>>

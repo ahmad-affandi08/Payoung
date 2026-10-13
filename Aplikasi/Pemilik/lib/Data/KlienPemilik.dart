@@ -229,6 +229,36 @@ class LabaRugiPemilik {
   }
 }
 
+/// OWN-09: skor risiko satu kasir pada periode laporan, dengan alasan berteks (petunjuk untuk diperiksa, bukan bukti).
+class RisikoKasirPemilik {
+  const RisikoKasirPemilik({
+    required this.nama,
+    required this.skor,
+    required this.tingkat,
+    required this.alasan,
+    required this.jumlahTransaksi,
+    required this.jumlahVoid,
+  });
+
+  final String nama;
+  final int skor;
+
+  /// `Tinggi`, `Sedang`, atau `Rendah`.
+  final String tingkat;
+  final List<String> alasan;
+  final int jumlahTransaksi;
+  final int jumlahVoid;
+
+  static RisikoKasirPemilik DariJson(Map<String, Object?> json) => RisikoKasirPemilik(
+    nama: UraiJson.AmbilTeks(json['NamaKasir']),
+    skor: UraiJson.AmbilBulat(json['Skor']),
+    tingkat: UraiJson.AmbilTeks(json['Tingkat']),
+    alasan: [for (final a in (json['Alasan'] as List<Object?>? ?? const [])) UraiJson.AmbilTeks(a)],
+    jumlahTransaksi: UraiJson.AmbilBulat(json['JumlahTransaksi']),
+    jumlahVoid: UraiJson.AmbilBulat(json['JumlahVoid']),
+  );
+}
+
 class ShiftPemilik {
   const ShiftPemilik({
     required this.uuid,
@@ -622,6 +652,12 @@ class KlienPemilik {
       LabaRugiPemilik.DariJson(
         await _Kirim('GET', _Jalur('laporan/laba-rugi', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null),
       );
+
+  /// OWN-09: skor risiko kasir periode [dari]–[sampai] (maks. 31 hari; izin laporan penjualan, paket Anti-fraud).
+  Future<List<RisikoKasirPemilik>> AmbilAntiFraud({required String dari, required String sampai, String? outlet}) async {
+    final json = await _Kirim('GET', _Jalur('laporan/anti-fraud', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null);
+    return [for (final k in UraiJson.AmbilDaftarPeta(json['Kasir'])) RisikoKasirPemilik.DariJson(k)];
+  }
 
   Future<List<ShiftPemilik>> AmbilShift({required String tanggal, String? outlet}) async {
     final json = await _Kirim('GET', _Jalur('shift', {'tanggal': tanggal, 'outlet': ?outlet}), null);

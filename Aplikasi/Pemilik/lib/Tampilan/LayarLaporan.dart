@@ -8,7 +8,7 @@ import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 
 /// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal pada tanggal & outlet terpilih, atau laba rugi
-/// bulan berjalan (dibandingkan bulan sebelumnya).
+/// bulan berjalan (dibandingkan bulan sebelumnya), atau skor risiko kasir 7 hari terakhir.
 class LayarLaporan extends ConsumerWidget {
   const LayarLaporan({super.key});
 
@@ -25,12 +25,17 @@ class LayarLaporan extends ConsumerWidget {
           segments: const [
             ButtonSegment(value: ModeLaporan.Penjualan, label: Text('Penjualan')),
             ButtonSegment(value: ModeLaporan.LabaRugi, label: Text('Laba rugi')),
+            ButtonSegment(value: ModeLaporan.AntiFraud, label: Text('Anti-fraud')),
           ],
           selected: {mode},
           onSelectionChanged: (pilih) => ref.read(penyediaModeLaporan.notifier).Atur(pilih.first),
         ),
         const SizedBox(height: TokenJarak.jarak12),
-        if (mode == ModeLaporan.LabaRugi) const _LabaRugi() else const _Penjualan(),
+        switch (mode) {
+          ModeLaporan.Penjualan => const _Penjualan(),
+          ModeLaporan.LabaRugi => const _LabaRugi(),
+          ModeLaporan.AntiFraud => const _AntiFraud(),
+        },
       ],
     );
   }
@@ -214,4 +219,64 @@ class _LabaRugi extends ConsumerWidget {
     'Hpp' => 'HPP',
     _ => 'Beban',
   };
+}
+
+/// Anti-fraud kasir (OWN-09): skor risiko per kasir selama 7 hari berakhir di tanggal terpilih, urut skor menurun.
+/// Setiap skor membawa alasan berteks; skor adalah petunjuk untuk diperiksa, bukan bukti kesalahan.
+class _AntiFraud extends ConsumerWidget {
+  const _AntiFraud();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return KeadaanData(
+      nilai: ref.watch(penyediaAntiFraud),
+      saatCobaLagi: () => ref.invalidate(penyediaAntiFraud),
+      isi: (daftar) => daftar.isEmpty
+          ? const KotakPanel(
+              anak: KeadaanKosong(
+                ilustrasi: IlustrasiKosong.Laporan,
+                ikon: Icons.shield_outlined,
+                judul: 'Belum ada aktivitas kasir untuk dinilai.',
+                keterangan: 'Skor risiko kasir 7 hari terakhir muncul di sini setelah ada transaksi.',
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '7 hari terakhir. Skor adalah petunjuk untuk diperiksa, bukan bukti kesalahan.',
+                  style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                ),
+                const SizedBox(height: TokenJarak.jarak8),
+                for (final k in daftar)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+                    child: KotakPanel(
+                      anak: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: Text(k.nama, style: teks.titleSmall)),
+                              Text('Risiko ${k.tingkat.toLowerCase()} | skor ${k.skor}', style: teks.titleSmall),
+                            ],
+                          ),
+                          Text(
+                            '${k.jumlahTransaksi} transaksi | ${k.jumlahVoid} void',
+                            style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                          ),
+                          if (k.alasan.isEmpty)
+                            Text('Tidak ada pola yang mencurigakan.', style: teks.bodyMedium)
+                          else
+                            for (final a in k.alasan) Text('• $a', style: teks.bodyMedium),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+    );
+  }
 }

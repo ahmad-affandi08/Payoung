@@ -9,20 +9,24 @@ use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\Shift;
 use App\Domain\Katalog\Model\Kategori;
 use App\Domain\Katalog\Model\ProdukGudang;
+use App\Domain\Laporan\Kueri\LaporanPenjualan;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\Perangkat;
+use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
 use Tests\Pendukung\Akuntansi\BantuanJurnal;
+use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Laporan\BantuanLaporan;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Organisasi\BantuanPerangkat;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Tenant\BantuanAutentikasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
@@ -306,6 +310,53 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
 
         $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
         AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-07')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
+    });
+
+    it('OWN-09 anti-fraud: skor risiko kasir sama dengan tab Anti-fraud back-office; wajib izin laporan & fitur Anti-fraud; rentang maks 31 hari', function (): void {
+        $k = BantuanPenjualan::Siapkan($this, 'Minimarket Jujur Makmur Sragen');
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];
+        $jual = [];
+        for ($i = 0; $i < 4; $i++) {
+            $jual[] = BantuanPenjualan::Jual($this, $k, $baris);
+        }
+        foreach (array_slice($jual, 0, 3) as $p) {
+            expect(BantuanKasir::KirimRingkas($this, $k['Token'], [BantuanPenjualan::ItemVoid($k, $p)]))->toBe([['Diterima', null]]);
+        }
+        for ($i = 0; $i < 10; $i++) {
+            expect(BantuanKasir::KirimRingkas($this, $k['Token'], [BantuanPenjualan::Item($k, $baris, ['UuidPengguna' => $k['Supervisor']->Uuid])]))->toBe([['Diterima', null]]);
+        }
+
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+        $url = '/laporan/anti-fraud?dari=2026-10-01&sampai=2026-10-07';
+
+        // Tanpa fitur Anti-fraud di paket: ditolak server.
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, $url)->assertStatus(403);
+
+        BantuanFitur::Beri($k['Tenant']->Id, 'keamanan.anti-fraud');
+        $respons = AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, $url)->assertOk();
+        $kasir = $respons->json('Kasir');
+        expect($kasir[0]['NamaKasir'])->toBe($k['Kasir']->Nama)
+            ->and($kasir[0]['JumlahTransaksi'])->toBe(4)
+            ->and($kasir[0]['JumlahVoid'])->toBe(3)
+            ->and($kasir[0]['VoidCepatTunai'])->toBe(3)
+            ->and($kasir[0]['Tingkat'])->toBe('Sedang')
+            ->and($kasir[0]['Skor'])->toBe(50)
+            ->and($kasir[0]['Alasan'])->toContain('3 void tunai ≤ 10 menit setelah bayar')
+            ->and($kasir[1]['NamaKasir'])->toBe($k['Supervisor']->Nama)
+            ->and($kasir[1]['Tingkat'])->toBe('Rendah');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $web = app(LaporanPenjualan::class)->AntiFraud(new DataSaringLaporanPenjualan(CarbonImmutable::parse('2026-10-01'), CarbonImmutable::parse('2026-10-07'), null));
+        expect($kasir)->toBe($web);
+
+        $tokenKasir = TokenPemilikUji($this, $k['Kasir'], 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenKasir, $k['Tenant']->Uuid, $url)->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/anti-fraud?dari=2026-09-06&sampai=2026-10-07')->assertStatus(422)->assertJsonPath('Galat.Kode', 'RentangTerlaluPanjang');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, $url.'&outlet=01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertStatus(404);
+
+        $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
+        AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $k['Tenant']->Uuid, $url)->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
     });
 
     it('daftar shift satu tanggal bisnis: terbuka tanpa selisih, tertutup dengan selisih; tanggal lain kosong', function (): void {
