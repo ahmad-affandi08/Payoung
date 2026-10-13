@@ -180,7 +180,7 @@ final class DaftarPerintahKerja
                 'DibuatPada' => $pk->DibuatPada?->toIso8601ZuluString(),
                 'Status' => $pk->Status->value,
                 'LabelStatus' => $pk->Status->AmbilLabel(),
-                'Kendaraan' => $k === null ? null : ['Uuid' => $k->Uuid, 'NomorPolisi' => $k->NomorPolisi, 'Label' => $k->AmbilLabel()],
+                'Kendaraan' => $k === null ? null : ['Uuid' => $k->Uuid, 'Jenis' => $k->Jenis->value, 'NomorPolisi' => $k->NomorPolisi, 'Label' => $k->AmbilLabel()],
                 'Pelanggan' => ['Uuid' => $pelanggan[$pk->IdPelanggan]['Uuid'] ?? null, 'Nama' => $pelanggan[$pk->IdPelanggan]['Nama'] ?? '-'],
                 'KmMasuk' => $pk->KmMasuk,
                 'Keluhan' => $pk->Keluhan,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Bengkel\Aksi;
 
 use App\Domain\Bengkel\Data\DataPerintahKerja;
+use App\Domain\Bengkel\Enum\JenisUnitServis;
 use App\Domain\Bengkel\Enum\StatusPerintahKerja;
 use App\Domain\Bengkel\Layanan\PenyusunBarisPerintahKerja;
 use App\Domain\Bengkel\Model\Kendaraan;
@@ -58,11 +59,11 @@ final class SimpanPerintahKerja
             $kendaraan = Kendaraan::query()->where('Uuid', $data->uuidKendaraan)->lockForUpdate()->first();
 
             if ($kendaraan === null || ! $kendaraan->Aktif) {
-                throw new PelanggaranAturanBisnis('KendaraanTidakDikenal', 'Kendaraan tidak ditemukan atau sudah diarsipkan.', 'UuidKendaraan');
+                throw new PelanggaranAturanBisnis('KendaraanTidakDikenal', 'Unit servis tidak ditemukan atau sudah diarsipkan.', 'UuidKendaraan');
             }
 
             if ($kendaraan->IdPelanggan !== $idPelanggan) {
-                throw new PelanggaranAturanBisnis('KendaraanBukanMilikPelanggan', "Kendaraan {$kendaraan->NomorPolisi} terdaftar atas pelanggan lain.", 'UuidKendaraan');
+                throw new PelanggaranAturanBisnis('KendaraanBukanMilikPelanggan', ucfirst($kendaraan->AmbilSebutan()).' terdaftar atas pelanggan lain.', 'UuidKendaraan');
             }
 
             $outlet = Outlet::query()->whereKey($data->idOutlet)->first()
@@ -88,7 +89,7 @@ final class SimpanPerintahKerja
                 'IdOutlet' => $outlet->Id,
                 'IdPelanggan' => $idPelanggan,
                 'IdKendaraan' => $kendaraan->Id,
-                'KmMasuk' => $data->kmMasuk,
+                'KmMasuk' => $kendaraan->Jenis === JenisUnitServis::Kendaraan ? $data->kmMasuk : null,
                 'Keluhan' => mb_substr($keluhan, 0, 2000),
                 'Diagnosis' => $data->diagnosis === null || trim($data->diagnosis) === '' ? null : mb_substr(trim($data->diagnosis), 0, 2000),
                 'EstimasiSelesaiPada' => $data->estimasiSelesaiPada?->utc(),
@@ -148,7 +149,7 @@ final class SimpanPerintahKerja
                 ]);
             }
 
-            if ($data->kmMasuk !== null && ($kendaraan->KmTerakhir === null || $data->kmMasuk > $kendaraan->KmTerakhir)) {
+            if ($kendaraan->Jenis === JenisUnitServis::Kendaraan && $data->kmMasuk !== null && ($kendaraan->KmTerakhir === null || $data->kmMasuk > $kendaraan->KmTerakhir)) {
                 $kendaraan->KmTerakhir = $data->kmMasuk;
                 $kendaraan->save();
             }

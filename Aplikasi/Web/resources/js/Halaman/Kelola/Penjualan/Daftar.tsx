@@ -18,8 +18,8 @@ const alamat = '/kelola/penjualan';
 export default function HalamanDaftarPenjualan({ Penjualan, OpsiOutlet, OpsiStatus, OpsiKanal }: PropsDaftarPenjualan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     // Bengkel (§9.10): grup menu ini sudah di batas 7 sub-menu (D-27), jadi perintah kerja dibuka dari sini & Ctrl+K.
-    // Hanya untuk usaha bengkel (SVC-WRK): toko kelontong, kafe, dsb. tidak perlu melihatnya.
-    const bengkel = PunyaIzinTenant(props.Akses, IzinTenant.BengkelKelola) && PakaiSektor(['SVC-WRK']);
+    // Hanya untuk bengkel (SVC-WRK) dan toko elektronik yang menerima servis (RTL-ELC): kafe, kelontong, dsb. tidak perlu melihatnya.
+    const bengkel = PunyaIzinTenant(props.Akses, IzinTenant.BengkelKelola) && PakaiSektor(['SVC-WRK', 'RTL-ELC']);
     const saring: DefinisiSaring[] = [
         ...(OpsiOutlet.length > 1
             ? [

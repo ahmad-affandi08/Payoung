@@ -264,16 +264,17 @@ class _LembarPerintahKerjaState extends ConsumerState<LembarPerintahKerja> {
           spacing: TokenJarak.jarak8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(pk.nomorPolisi ?? 'Tanpa kendaraan', style: teks.titleMedium),
+            Text(pk.pengenalUnit ?? 'Tanpa unit', style: teks.titleMedium),
             TeksKode(pk.nomor, gaya: teks.bodySmall),
             Text(pk.labelStatus, style: teks.labelMedium),
           ],
         ),
         Text(
           [
-            ?pk.labelKendaraan,
+            if (!pk.unitPerangkat) ?pk.labelKendaraan,
+            if (pk.unitPerangkat) ?pk.nomorPolisi,
             pk.namaPelanggan ?? 'Pelanggan umum',
-            if (pk.kmMasuk != null) 'KM ${pk.kmMasuk}',
+            if (!pk.unitPerangkat && pk.kmMasuk != null) 'KM ${pk.kmMasuk}',
           ].join(' | '),
           style: teks.bodyMedium,
         ),
@@ -351,7 +352,7 @@ class _BarisPerintahKerja extends StatelessWidget {
                     spacing: TokenJarak.jarak8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(pk.nomorPolisi ?? 'Tanpa kendaraan', style: teks.titleSmall),
+                      Text(pk.pengenalUnit ?? 'Tanpa unit', style: teks.titleSmall),
                       TeksKode(pk.nomor, gaya: teks.bodySmall),
                     ],
                   ),

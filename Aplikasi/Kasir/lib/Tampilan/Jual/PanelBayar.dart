@@ -1054,7 +1054,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       if (keranjang.perintahKerja case final pk?)
         Padding(
           padding: const EdgeInsets.only(bottom: TokenJarak.jarak8),
-          child: Text(['Menagih perintah kerja ${pk.nomor}', ?pk.nomorPolisi].join(' | '), style: teks.bodySmall),
+          child: Text(['Menagih perintah kerja ${pk.nomor}', ?pk.pengenalUnit].join(' | '), style: teks.bodySmall),
         ),
       if (keranjang.tukar case final tukar?)
         Padding(

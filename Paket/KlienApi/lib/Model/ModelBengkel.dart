@@ -59,7 +59,7 @@ class BarisPerintahKerjaPos {
 }
 
 /// Perintah kerja bengkel untuk kasir (§9.10, perlu online, hanya baca). [siapTagih] = disetujui pelanggan & belum
-/// ditagih. [pelanggan] `{Uuid, Nama, NoHp (tersamar), KodeTier}`; [kendaraan] `{Uuid, NomorPolisi, Label}`.
+/// ditagih. [pelanggan] `{Uuid, Nama, NoHp (tersamar), KodeTier}`; [kendaraan] `{Uuid, Jenis (Kendaraan|Perangkat, D-142), NomorPolisi (plat atau IMEI/seri), Label}`.
 class PerintahKerjaPos {
   const PerintahKerjaPos({
     required this.uuid,
@@ -95,6 +95,13 @@ class PerintahKerjaPos {
 
   String? get nomorPolisi => UraiJson.AmbilTeksAtauNull(kendaraan?['NomorPolisi']);
   String? get labelKendaraan => UraiJson.AmbilTeksAtauNull(kendaraan?['Label']);
+
+  /// `Kendaraan` atau `Perangkat` (servis elektronik, D-142); server lama tanpa `Jenis` = Kendaraan.
+  String get jenisUnit => UraiJson.AmbilTeks(kendaraan?['Jenis'], 'Kendaraan');
+  bool get unitPerangkat => jenisUnit == 'Perangkat';
+
+  /// Judul singkat unit: plat kendaraan, atau merek & tipe perangkat (IMEI boleh kosong).
+  String? get pengenalUnit => unitPerangkat ? labelKendaraan : nomorPolisi;
   String? get namaPelanggan => UraiJson.AmbilTeksAtauNull(pelanggan?['Nama']);
 
   static PerintahKerjaPos DariJson(Map<String, Object?> json) => PerintahKerjaPos(

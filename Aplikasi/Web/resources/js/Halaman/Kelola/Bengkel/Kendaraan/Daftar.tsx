@@ -11,28 +11,29 @@ import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import { JudulUnit, KataUnit, LabelJenisUnit, PakaiJenisUnitBawaan, RincianUnit } from '@/Pustaka/UnitServis';
 import type { Kendaraan, PropsDaftarKendaraan } from '@/Tipe/Bengkel';
 
 const kolom: KolomTabel<Kendaraan>[] = [
     {
         id: 'NomorPolisi',
         accessorKey: 'NomorPolisi',
-        header: 'Nomor polisi',
-        meta: { label: 'Nomor polisi', prioritas: 'utama', wajib: true },
+        header: 'Nomor polisi / IMEI',
+        meta: { label: 'Nomor polisi / IMEI', prioritas: 'utama', wajib: true },
         cell: ({ row: { original: k } }) => (
             <Link href={`${AlamatKendaraan}/${k.Uuid}`} className="font-mono font-semibold text-brand underline">
-                {k.NomorPolisi}
+                {JudulUnit(k)}
             </Link>
         ),
     },
     {
         id: 'Merek',
         accessorKey: 'Merek',
-        header: 'Kendaraan',
-        meta: { label: 'Kendaraan', prioritas: 'penting' },
+        header: 'Unit',
+        meta: { label: 'Unit', prioritas: 'penting' },
         cell: ({ row: { original: k } }) => (
             <span className="flex flex-col gap-0.5 break-words">
-                <span>{k.Label}</span>
+                <span>{RincianUnit(k) === '' ? LabelJenisUnit[k.Jenis] : RincianUnit(k)}</span>
                 {k.Warna ? <span className="text-keterangan text-teks-sekunder">{k.Warna}</span> : null}
             </span>
         ),
@@ -81,6 +82,15 @@ const kolom: KolomTabel<Kendaraan>[] = [
 
 const saring: DefinisiSaring[] = [
     {
+        id: 'Jenis',
+        label: 'Jenis unit',
+        jenis: 'pilihan',
+        opsi: [
+            { nilai: 'Kendaraan', label: LabelJenisUnit.Kendaraan },
+            { nilai: 'Perangkat', label: LabelJenisUnit.Perangkat },
+        ],
+    },
+    {
         id: 'Aktif',
         label: 'Status',
         jenis: 'pilihan',
@@ -97,25 +107,29 @@ const saring: DefinisiSaring[] = [
  */
 export default function HalamanDaftarKendaraan({ Kendaraan: data }: PropsDaftarKendaraan) {
     const [dialog, AturDialog] = useState<Kendaraan | 'baru' | null>(null);
+    const bawaan = PakaiJenisUnitBawaan();
+    const kata = bawaan === null ? 'Unit servis' : KataUnit(bawaan);
 
     return (
-        <TataLetakAplikasi judul="Kendaraan pelanggan" jejak={[{ label: 'Perintah kerja', href: AlamatPerintahKerja }]}>
-            <AksiHalaman keterangan="Kendaraan terhubung ke pelanggan. Nomor polisi unik di antara kendaraan aktif.">
-                <Tombol onClick={() => AturDialog('baru')}>Tambah kendaraan</Tombol>
+        <TataLetakAplikasi judul={`${kata} pelanggan`} jejak={[{ label: 'Perintah kerja', href: AlamatPerintahKerja }]}>
+            <AksiHalaman keterangan="Unit terhubung ke pelanggan. Nomor polisi atau IMEI unik di antara unit aktif.">
+                <Tombol onClick={() => AturDialog('baru')}>Tambah {kata.toLowerCase()}</Tombol>
             </AksiHalaman>
             <TabelData
                 id="bengkel-kendaraan"
-                label="Daftar kendaraan pelanggan"
+                label={`Daftar ${kata.toLowerCase()} pelanggan`}
                 kolom={kolom}
                 sumber={{ mode: 'server', alamat: AlamatKendaraan, awal: data }}
                 ambilIdBaris={(k) => k.Uuid}
                 urutBawaan="NomorPolisi"
-                cari="Cari nomor polisi, merek, atau tipe"
+                cari="Cari nomor polisi, IMEI, merek, atau tipe"
                 saring={saring}
                 alamatDetail={(k) => `${AlamatKendaraan}/${k.Uuid}`}
                 aksiBaris={(k: Kendaraan) => (
                     <>
-                        <DropdownMenuItem onSelect={() => AturDialog(k)}>Ubah kendaraan</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => AturDialog(k)}>
+                            Ubah {KataUnit(k.Jenis).toLowerCase()}
+                        </DropdownMenuItem>
                         {k.Aktif ? (
                             <DropdownMenuItem asChild>
                                 <Link href={`${AlamatPerintahKerja}/buat?kendaraan=${k.Uuid}`}>
@@ -125,7 +139,7 @@ export default function HalamanDaftarKendaraan({ Kendaraan: data }: PropsDaftarK
                         ) : null}
                     </>
                 )}
-                kosong={{ ilustrasi: true, judul: 'Belum ada kendaraan pelanggan.' }}
+                kosong={{ ilustrasi: true, judul: `Belum ada ${kata.toLowerCase()} pelanggan.` }}
             />
             {dialog !== null ? (
                 <DialogKendaraan

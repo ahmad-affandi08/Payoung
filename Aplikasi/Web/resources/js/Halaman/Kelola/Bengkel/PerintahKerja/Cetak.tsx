@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { JudulUnit, KataUnit, RincianUnit } from '@/Pustaka/UnitServis';
 import type { PropsCetakPerintahKerja } from '@/Tipe/Bengkel';
 
 /**
@@ -43,9 +44,9 @@ export default function HalamanCetakPerintahKerja({ PerintahKerja: pk, Usaha }: 
                     <p className="font-semibold">{pk.Pelanggan.Nama}</p>
                     {pk.Pelanggan.NoHp ? <p>{pk.Pelanggan.NoHp}</p> : null}
                 </AlamatCetak>
-                <AlamatCetak judul="Kendaraan">
-                    <p className="font-mono font-semibold">{pk.Kendaraan?.NomorPolisi ?? '-'}</p>
-                    <p>{pk.Kendaraan?.Label ?? ''}</p>
+                <AlamatCetak judul={pk.Kendaraan === null ? 'Unit servis' : KataUnit(pk.Kendaraan.Jenis)}>
+                    <p className="font-mono font-semibold">{JudulUnit(pk.Kendaraan)}</p>
+                    <p>{RincianUnit(pk.Kendaraan)}</p>
                     {pk.KmMasuk !== null ? <p>KM masuk {pk.KmMasuk.toLocaleString('id-ID')}</p> : null}
                 </AlamatCetak>
                 <AlamatCetak judul="Keluhan">

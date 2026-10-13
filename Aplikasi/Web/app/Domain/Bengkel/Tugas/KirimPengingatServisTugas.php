@@ -69,9 +69,9 @@ final class KirimPengingatServisTugas implements ShouldQueue
             try {
                 $hasil = $pengirim->Kirim(new PesanWhatsapp(
                     $kontak['NoHp'],
-                    "Halo {$kontak['Nama']}, kendaraan {$kendaraan->NomorPolisi} dijadwalkan servis berkala pada {$tanggal}{$km}.\nHubungi {$toko} untuk mengatur jadwal servisnya.",
+                    "Halo {$kontak['Nama']}, {$kendaraan->AmbilSebutan()} dijadwalkan servis berkala pada {$tanggal}{$km}.\nHubungi {$toko} untuk mengatur jadwal servisnya.",
                     $templat,
-                    $templat === null ? [] : [$kontak['Nama'], $kendaraan->NomorPolisi, $tanggal, $toko],
+                    $templat === null ? [] : [$kontak['Nama'], $kendaraan->AmbilPengenal(), $tanggal, $toko],
                 ));
             } catch (Throwable $galat) {
                 report($galat);

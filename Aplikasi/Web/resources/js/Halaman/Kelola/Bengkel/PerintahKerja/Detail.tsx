@@ -19,6 +19,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { JudulUnit, KataUnit, RincianUnit } from '@/Pustaka/UnitServis';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import {
@@ -345,15 +346,17 @@ function PanelServisBerikutnya({ pk, hariIni }: { pk: PerintahKerja; hariIni: st
                         galat={props.errors.ServisBerikutnyaPada}
                         min={hariIni}
                     />
-                    <BidangJumlah
-                        label="Atau saat KM mencapai"
-                        nilai={km}
-                        saatBerubah={AturKm}
-                        galat={props.errors.ServisBerikutnyaKm}
-                        desimal={0}
-                        digitBulat={7}
-                        akhiran="km"
-                    />
+                    {pk.Kendaraan?.Jenis === 'Perangkat' ? null : (
+                        <BidangJumlah
+                            label="Atau saat KM mencapai"
+                            nilai={km}
+                            saatBerubah={AturKm}
+                            galat={props.errors.ServisBerikutnyaKm}
+                            desimal={0}
+                            digitBulat={7}
+                            akhiran="km"
+                        />
+                    )}
                 </div>
                 {pk.PengingatServisTerkirimPada ? (
                     <p className="text-keterangan text-teks-sekunder">
@@ -456,22 +459,26 @@ export default function HalamanDetailPerintahKerja({
                         <span className="block text-teks-sekunder tabular-nums">{pk.Pelanggan.NoHp}</span>
                     ) : null}
                 </KeteranganGrosir>
-                <KeteranganGrosir label="Kendaraan">
+                <KeteranganGrosir label={pk.Kendaraan === null ? 'Unit servis' : KataUnit(pk.Kendaraan.Jenis)}>
                     {pk.Kendaraan ? (
                         <Link
                             href={`/kelola/bengkel/kendaraan/${pk.Kendaraan.Uuid}`}
                             className="font-mono font-semibold text-brand underline"
                         >
-                            {pk.Kendaraan.NomorPolisi}
+                            {JudulUnit(pk.Kendaraan)}
                         </Link>
                     ) : (
                         '-'
                     )}
-                    {pk.Kendaraan ? <span className="block text-teks-sekunder">{pk.Kendaraan.Label}</span> : null}
+                    {pk.Kendaraan && RincianUnit(pk.Kendaraan) !== '' ? (
+                        <span className="block text-teks-sekunder">{RincianUnit(pk.Kendaraan)}</span>
+                    ) : null}
                 </KeteranganGrosir>
-                <KeteranganGrosir label="KM masuk">
-                    {pk.KmMasuk === null ? '-' : `${pk.KmMasuk.toLocaleString('id-ID')} km`}
-                </KeteranganGrosir>
+                {pk.Kendaraan?.Jenis === 'Perangkat' ? null : (
+                    <KeteranganGrosir label="KM masuk">
+                        {pk.KmMasuk === null ? '-' : `${pk.KmMasuk.toLocaleString('id-ID')} km`}
+                    </KeteranganGrosir>
+                )}
                 <KeteranganGrosir label="Outlet">{pk.Outlet.Nama}</KeteranganGrosir>
                 <KeteranganGrosir label="Masuk">{FormatTanggalWaktu(pk.DibuatPada)}</KeteranganGrosir>
                 <KeteranganGrosir label="Perkiraan selesai">

@@ -1811,7 +1811,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
           switch ((keranjang.tukar, keranjang.perintahKerja)) {
             (final tukar?, _) => 'Tukar barang | ${tukar.nilai.FormatRupiah()}',
             // Bengkel bagian 2: keranjang menagih perintah kerja → kendaraannya jadi judul.
-            (null, final pk?) => 'Servis ${pk.nomorPolisi ?? pk.nomor}',
+            (null, final pk?) => 'Servis ${pk.pengenalUnit ?? pk.nomor}',
             _ => null,
           },
       lencanaProduk: {
@@ -1912,7 +1912,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     final judul =
         keranjang.pesananMeja?.AmbilJudul() ??
         switch ((keranjang.tukar, keranjang.perintahKerja)) {
-          (null, final pk?) => 'Servis ${pk.nomorPolisi ?? pk.nomor}',
+          (null, final pk?) => 'Servis ${pk.pengenalUnit ?? pk.nomor}',
           (null, null) => 'Keranjang',
           _ => 'Tukar barang',
         };

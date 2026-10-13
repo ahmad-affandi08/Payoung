@@ -562,25 +562,25 @@ const halamanTurunan: (HalamanPencarian & { induk: string; izin?: KunciIzinTenan
         ikon: 'Gudang',
         sektor: ['RTL-ELC', 'SVC-WRK', 'WHS'],
     },
-    // Bengkel (§9.10): grup "Penjualan & kasir" sudah 7 sub-menu (D-27); perintah kerja & kendaraan dibuka dari tombol
+    // Bengkel & servis elektronik (§9.10, §9.6, D-142): grup "Penjualan & kasir" sudah 7 sub-menu (D-27); perintah kerja & unit dibuka dari tombol
     // di Daftar penjualan, detail pelanggan, Kotak Tindakan, dan Ctrl+K. Tetap disaring izin `bengkel.kelola`.
     {
         induk: '/kelola/penjualan',
-        label: 'Perintah kerja bengkel',
+        label: 'Perintah kerja servis',
         href: '/kelola/bengkel/perintah-kerja',
         grup: 'Penjualan & kasir',
         ikon: 'Struk',
         izin: IzinTenant.BengkelKelola,
-        sektor: ['SVC-WRK'],
+        sektor: ['SVC-WRK', 'RTL-ELC'],
     },
     {
         induk: '/kelola/penjualan',
-        label: 'Kendaraan pelanggan',
+        label: 'Kendaraan & perangkat pelanggan',
         href: '/kelola/bengkel/kendaraan',
         grup: 'Penjualan & kasir',
         ikon: 'Struk',
         izin: IzinTenant.BengkelKelola,
-        sektor: ['SVC-WRK'],
+        sektor: ['SVC-WRK', 'RTL-ELC'],
     },
 ];
 

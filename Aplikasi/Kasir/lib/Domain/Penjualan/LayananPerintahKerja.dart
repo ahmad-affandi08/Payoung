@@ -97,6 +97,7 @@ class LayananPerintahKerja {
         nomor: pk.nomor,
         nomorPolisi: pk.nomorPolisi,
         labelKendaraan: pk.labelKendaraan,
+        jenisUnit: pk.jenisUnit,
       ),
     );
   }

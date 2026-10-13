@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Bengkel\Aksi;
 
 use App\Domain\Bengkel\Data\DataKendaraan;
+use App\Domain\Bengkel\Enum\JenisUnitServis;
 use App\Domain\Bengkel\Layanan\NomorPolisi;
+use App\Domain\Bengkel\Layanan\NomorSeriUnit;
 use App\Domain\Bengkel\Model\Kendaraan;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
@@ -28,12 +30,21 @@ final class SimpanKendaraan
 
     public function Jalankan(DataKendaraan $data, int $idPengguna, ?string $uuidKendaraan = null): Kendaraan
     {
-        $nomor = NomorPolisi::Normalisasi($data->nomorPolisi)
-            ?? throw new PelanggaranAturanBisnis('NomorPolisiTidakValid', 'Nomor polisi tidak valid. Contoh: AD 1234 XY.', 'NomorPolisi');
+        $perangkat = $data->jenis === JenisUnitServis::Perangkat;
+        $nomor = $perangkat ? NomorSeriUnit::Normalisasi($data->nomorPolisi) : NomorPolisi::Normalisasi($data->nomorPolisi);
+
+        if ($nomor === false || (! $perangkat && $nomor === null)) {
+            throw new PelanggaranAturanBisnis(
+                $perangkat ? 'NomorSeriTidakValid' : 'NomorPolisiTidakValid',
+                $perangkat ? 'IMEI / nomor seri tidak valid. Gunakan huruf, angka, spasi, titik, atau tanda hubung (3-40 karakter), atau kosongkan.' : 'Nomor polisi tidak valid. Contoh: AD 1234 XY.',
+                'NomorPolisi',
+            );
+        }
+
         $merek = trim($data->merek);
 
         if ($merek === '') {
-            throw new PelanggaranAturanBisnis('MerekWajib', 'Merek kendaraan wajib diisi.', 'Merek');
+            throw new PelanggaranAturanBisnis('MerekWajib', $perangkat ? 'Merek perangkat wajib diisi.' : 'Merek kendaraan wajib diisi.', 'Merek');
         }
 
         $idPelanggan = $this->pelanggan->CariId($data->uuidPelanggan);
@@ -43,31 +54,36 @@ final class SimpanKendaraan
         }
 
         if ($data->tahun !== null && ($data->tahun < 1950 || $data->tahun > now()->year + 1)) {
-            throw new PelanggaranAturanBisnis('TahunTidakValid', 'Tahun kendaraan tidak masuk akal.', 'Tahun');
+            throw new PelanggaranAturanBisnis('TahunTidakValid', 'Tahun unit tidak masuk akal.', 'Tahun');
         }
 
         try {
-            return DB::transaction(function () use ($data, $idPengguna, $uuidKendaraan, $nomor, $merek, $idPelanggan): Kendaraan {
+            return DB::transaction(function () use ($data, $idPengguna, $uuidKendaraan, $nomor, $merek, $idPelanggan, $perangkat): Kendaraan {
                 $kendaraan = $uuidKendaraan === null
                     ? new Kendaraan
                     : (Kendaraan::query()->where('Uuid', $uuidKendaraan)->lockForUpdate()->first()
                         ?? throw new PelanggaranAturanBisnis('KendaraanTidakDikenal', 'Kendaraan tidak ditemukan.', 'Umum', 404));
-                $lama = $kendaraan->exists ? $kendaraan->only(['NomorPolisi', 'Merek', 'Tipe', 'Tahun', 'IdPelanggan', 'KmTerakhir', 'Aktif']) : null;
+                $lama = $kendaraan->exists ? $kendaraan->only(['Jenis', 'NomorPolisi', 'Merek', 'Tipe', 'Tahun', 'IdPelanggan', 'KmTerakhir', 'Aktif']) : null;
 
-                if ($data->aktif && Kendaraan::query()->where('NomorPolisi', $nomor)->where('Aktif', true)->when($kendaraan->exists, fn ($k) => $k->whereKeyNot($kendaraan->Id))->exists()) {
-                    throw new PelanggaranAturanBisnis('NomorPolisiSudahAda', "Kendaraan {$nomor} sudah terdaftar. Cari kendaraan itu, atau arsipkan dulu bila sudah berganti pemilik.", 'NomorPolisi');
+                if ($nomor !== null && $data->aktif && Kendaraan::query()->where('NomorPolisi', $nomor)->where('Aktif', true)->when($kendaraan->exists, fn ($k) => $k->whereKeyNot($kendaraan->Id))->exists()) {
+                    throw new PelanggaranAturanBisnis('NomorPolisiSudahAda', ($perangkat ? 'Perangkat' : 'Kendaraan')." {$nomor} sudah terdaftar. Cari unit itu, atau arsipkan dulu bila sudah berganti pemilik.", 'NomorPolisi');
+                }
+
+                if ($kendaraan->exists && $kendaraan->Jenis !== $data->jenis) {
+                    throw new PelanggaranAturanBisnis('JenisUnitTidakBisaBerubah', 'Jenis unit tidak bisa diubah. Buat unit baru dengan jenis yang benar.', 'Jenis');
                 }
 
                 $kendaraan->fill([
                     'IdPelanggan' => $idPelanggan,
+                    'Jenis' => $data->jenis,
                     'NomorPolisi' => $nomor,
                     'Merek' => mb_substr($merek, 0, 50),
                     'Tipe' => self::Teks($data->tipe, 80),
                     'Tahun' => $data->tahun,
                     'Warna' => self::Teks($data->warna, 30),
-                    'NomorRangka' => self::Teks($data->nomorRangka === null ? null : mb_strtoupper($data->nomorRangka), 40),
-                    'NomorMesin' => self::Teks($data->nomorMesin === null ? null : mb_strtoupper($data->nomorMesin), 40),
-                    'KmTerakhir' => $data->kmTerakhir,
+                    'NomorRangka' => $perangkat ? null : self::Teks($data->nomorRangka === null ? null : mb_strtoupper($data->nomorRangka), 40),
+                    'NomorMesin' => $perangkat ? null : self::Teks($data->nomorMesin === null ? null : mb_strtoupper($data->nomorMesin), 40),
+                    'KmTerakhir' => $perangkat ? null : $data->kmTerakhir,
                     'Catatan' => self::Teks($data->catatan, 255),
                     'Aktif' => $data->aktif,
                 ]);
@@ -77,13 +93,13 @@ final class SimpanKendaraan
                 }
 
                 $kendaraan->save();
-                $this->audit->Catat($lama === null ? 'bengkel.kendaraan-buat' : 'bengkel.kendaraan-ubah', $kendaraan, $lama, $kendaraan->only(['NomorPolisi', 'Merek', 'Tipe', 'Tahun', 'IdPelanggan', 'KmTerakhir', 'Aktif']), idPengguna: $idPengguna);
+                $this->audit->Catat($lama === null ? 'bengkel.kendaraan-buat' : 'bengkel.kendaraan-ubah', $kendaraan, $lama, $kendaraan->only(['Jenis', 'NomorPolisi', 'Merek', 'Tipe', 'Tahun', 'IdPelanggan', 'KmTerakhir', 'Aktif']), idPengguna: $idPengguna);
 
                 return $kendaraan;
             });
         } catch (QueryException $galat) {
             if (($galat->errorInfo[1] ?? null) === 1062) {
-                throw new PelanggaranAturanBisnis('NomorPolisiSudahAda', "Kendaraan {$nomor} sudah terdaftar.", 'NomorPolisi');
+                throw new PelanggaranAturanBisnis('NomorPolisiSudahAda', ($perangkat ? 'Perangkat' : 'Kendaraan')." {$nomor} sudah terdaftar.", 'NomorPolisi');
             }
 
             throw $galat;

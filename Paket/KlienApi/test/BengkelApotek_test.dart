@@ -112,6 +112,26 @@ void main() {
     expect(pk.baris, isEmpty);
   });
 
+  test('Servis elektronik (D-142): unit Perangkat memakai merek & tipe sebagai pengenal; IMEI boleh kosong', () {
+    final perangkat = PerintahKerjaPos.DariJson({
+      'Uuid': 'A',
+      'Nomor': 'WO/1',
+      'Kendaraan': {'Uuid': 'U1', 'Jenis': 'Perangkat', 'NomorPolisi': null, 'Label': 'Samsung Galaxy A54'},
+    });
+    expect(
+      (perangkat.unitPerangkat, perangkat.jenisUnit, perangkat.pengenalUnit),
+      (true, 'Perangkat', 'Samsung Galaxy A54'),
+    );
+
+    // Server lama tanpa `Jenis` = kendaraan; pengenalnya plat.
+    final kendaraan = PerintahKerjaPos.DariJson({
+      'Uuid': 'B',
+      'Nomor': 'WO/2',
+      'Kendaraan': {'Uuid': 'U2', 'NomorPolisi': 'AD 1234 XY', 'Label': 'Honda Vario 125'},
+    });
+    expect((kendaraan.unitPerangkat, kendaraan.jenisUnit, kendaraan.pengenalUnit), (false, 'Kendaraan', 'AD 1234 XY'));
+  });
+
   test('Apotek: golongan obat, OWA, prekursor, wajib resep dari katalog; server lama = bukan obat', () {
     final keras = ProdukPos.DariJson({
       'Uuid': 'P1',

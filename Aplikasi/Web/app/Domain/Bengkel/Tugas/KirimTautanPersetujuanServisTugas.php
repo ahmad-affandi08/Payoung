@@ -57,12 +57,14 @@ final class KirimTautanPersetujuanServisTugas implements ShouldQueue
             }
 
             $toko = $namaTampil->UntukOutlet($pk->IdOutlet, $this->idTenant);
-            $plat = Kendaraan::query()->whereKey($pk->IdKendaraan)->value('NomorPolisi') ?? '';
+            $unit = Kendaraan::query()->whereKey($pk->IdKendaraan)->first();
+            $plat = $unit?->AmbilPengenal() ?? '';
+            $sebutan = $unit?->AmbilSebutan() ?? 'kendaraan';
             $tautan = TautanPersetujuanServis::Buat($profil->AmbilSlug($this->idTenant), $pk->TokenPersetujuan);
             $templat = $pengirim->CekResmi() ? $whatsapp->AmbilTemplatPersetujuanServis() : null;
             $hasil = $pengirim->Kirim(new PesanWhatsapp(
                 $kontak['NoHp'],
-                "Halo {$kontak['Nama']}, estimasi servis kendaraan {$plat} ({$pk->Nomor}) di {$toko} sudah siap.\nLihat rincian dan setujui pekerjaannya: {$tautan}",
+                "Halo {$kontak['Nama']}, estimasi servis {$sebutan} ({$pk->Nomor}) di {$toko} sudah siap.\nLihat rincian dan setujui pekerjaannya: {$tautan}",
                 $templat,
                 $templat === null ? [] : [$toko, $plat, $pk->Nomor, $tautan],
             ));

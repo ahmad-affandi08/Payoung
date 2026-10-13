@@ -182,6 +182,34 @@ void main() {
       },
     );
 
+    test('servis elektronik (D-142): unit Perangkat jadi judul keranjang (merek & tipe), tersimpan di K-4, dan struk '
+        'mencetak "Perangkat ..." bukan "Kendaraan ..."', () async {
+      final wo = PerintahKerjaUji();
+      wo['Kendaraan'] = {
+        'Uuid': '01K6UNIT0000000000000000P1',
+        'Jenis': 'Perangkat',
+        'NomorPolisi': null,
+        'Label': 'Samsung Galaxy A54',
+      };
+      final keranjang = u.perintahKerja.MuatKeKeranjang(PerintahKerjaPos.DariJson(wo), katalog, k);
+      expect(
+        (keranjang.perintahKerja?.jenisUnit, keranjang.perintahKerja?.pengenalUnit),
+        ('Perangkat', 'Samsung Galaxy A54'),
+      );
+      final tersimpan = Keranjang.DariJson(jsonDecode(jsonEncode(keranjang.KeJson())) as Map<String, Object?>);
+      expect(
+        (tersimpan.perintahKerja?.jenisUnit, tersimpan.perintahKerja?.pengenalUnit),
+        ('Perangkat', 'Samsung Galaxy A54'),
+      );
+
+      final hasil = await BayarTunai(keranjang);
+      final jual = (await u.repositoriPenjualan.CariPenjualan(hasil.uuid))!;
+      expect((jsonDecode(jual.PerintahKerja!) as Map<String, Object?>)['LabelUnit'], 'Samsung Galaxy A54');
+      final struk = await Struk(hasil.uuid);
+      expect(struk, contains('Perangkat Samsung Galaxy A54'));
+      expect(struk.any((baris) => baris.startsWith('Kendaraan')), isFalse);
+    });
+
     test(
       'bagian 3: nomor seri sparepart dari perintah kerja ikut baris & Penjualan.Buat; kosong = kasir mengisi dulu',
       () async {

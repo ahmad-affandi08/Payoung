@@ -7,7 +7,13 @@ import HalamanDetailPerintahKerja from '@/Halaman/Kelola/Bengkel/PerintahKerja/D
 import HalamanFormPerintahKerja from '@/Halaman/Kelola/Bengkel/PerintahKerja/Form';
 import HalamanPersetujuanServis from '@/Halaman/Publik/PersetujuanServis';
 import { BuatHasilTabel } from '@/Komponen/Katalog/DataUjiKatalog';
-import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import {
+    AturHalamanUji,
+    kirimanForm,
+    RenderUji,
+    TambahPropsHalamanUji,
+    tiruanRouter,
+} from '@/Komponen/Katalog/TiruanInertia';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
 import type {
     BarisDaftarPerintahKerja,
@@ -33,7 +39,12 @@ const barisDaftar: BarisDaftarPerintahKerja = {
     DibuatPada: '2026-10-13T02:30:00Z',
     Status: 'Disetujui',
     LabelStatus: 'Disetujui pelanggan',
-    Kendaraan: { Uuid: '01JKENDARAAN00000000000001', NomorPolisi: 'AD 1234 XY', Label: 'Honda Vario 125 | 2021' },
+    Kendaraan: {
+        Uuid: '01JKENDARAAN00000000000001',
+        Jenis: 'Kendaraan',
+        NomorPolisi: 'AD 1234 XY',
+        Label: 'Honda Vario 125 | 2021',
+    },
     Pelanggan: { Uuid: '01JPELANGGAN00000000000001', Nama: 'Budi Santoso Wicaksono' },
     KmMasuk: 18250,
     Keluhan: 'Tarikan berat',
@@ -75,6 +86,7 @@ function BuatPerintahKerja(ubah: Partial<PerintahKerja> = {}): PerintahKerja {
         },
         Kendaraan: {
             Uuid: '01JKENDARAAN00000000000001',
+            Jenis: 'Kendaraan',
             NomorPolisi: 'AD 1234 XY',
             Label: 'Honda Vario 125 | 2021',
             Warna: 'Hitam',
@@ -279,6 +291,7 @@ describe('Bengkel (§9.10)', () => {
                 NamaPelanggan: 'Budi Santoso Wicaksono',
                 Kendaraan: {
                     Uuid: '01JKENDARAAN00000000000001',
+                    Jenis: 'Kendaraan',
                     NomorPolisi: 'AD 1234 XY',
                     Label: 'Honda Vario 125',
                     KmTerakhir: 18250,
@@ -358,7 +371,7 @@ describe('Bengkel (§9.10)', () => {
                 Status: 'MenungguPersetujuan',
                 LabelStatus: 'Menunggu persetujuan',
                 NamaPelanggan: pk.Pelanggan.Nama,
-                Kendaraan: { NomorPolisi: 'AD 1234 XY', Label: 'Honda Vario 125 | 2021' },
+                Kendaraan: { Jenis: 'Kendaraan', NomorPolisi: 'AD 1234 XY', Label: 'Honda Vario 125 | 2021' },
                 KmMasuk: 18250,
                 Keluhan: pk.Keluhan,
                 Diagnosis: pk.Diagnosis,
@@ -416,6 +429,7 @@ describe('Bengkel (§9.10)', () => {
 
     it('kendaraan: tambah kendaraan lewat dialog mengirim ke /kelola/bengkel/kendaraan', () => {
         AturHalamanUji({}, '/kelola/bengkel/kendaraan');
+        TambahPropsHalamanUji({ SektorOutlet: ['SVC-WRK'] });
         RenderUji(<HalamanDaftarKendaraan Kendaraan={BuatHasilTabel([])} />);
         fireEvent.click(screen.getByRole('button', { name: 'Tambah kendaraan' }));
         const dialog = screen.getByRole('dialog');
@@ -429,5 +443,50 @@ describe('Bengkel (§9.10)', () => {
             url: '/kelola/bengkel/kendaraan',
             data: { NomorPolisi: 'ad1234xy', Merek: 'Honda', Aktif: true },
         });
+    });
+
+    it('perangkat (toko elektronik): dialog meminta IMEI opsional tanpa KM/rangka/mesin dan mengirim Jenis Perangkat', () => {
+        AturHalamanUji({}, '/kelola/bengkel/kendaraan');
+        TambahPropsHalamanUji({ SektorOutlet: ['RTL-ELC'] });
+        RenderUji(<HalamanDaftarKendaraan Kendaraan={BuatHasilTabel([])} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah perangkat' }));
+        const dialog = screen.getByRole('dialog');
+
+        expect(within(dialog).getByRole('textbox', { name: /IMEI \/ nomor seri/ })).toBeTruthy();
+        expect(within(dialog).queryByRole('textbox', { name: /Nomor rangka/ })).toBeNull();
+        expect(within(dialog).queryByRole('textbox', { name: /Nomor mesin/ })).toBeNull();
+        expect(within(dialog).queryByText(/KM terakhir/)).toBeNull();
+
+        fireEvent.change(within(dialog).getByRole('textbox', { name: /Merek/ }), { target: { value: 'Samsung' } });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan perangkat' }));
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'post',
+            url: '/kelola/bengkel/kendaraan',
+            data: { Jenis: 'Perangkat', NomorPolisi: '', Merek: 'Samsung', Aktif: true },
+        });
+    });
+
+    it('daftar perintah kerja memakai merek & tipe sebagai judul unit perangkat dan IMEI sebagai keterangan', () => {
+        RenderUji(
+            <HalamanDaftarPerintahKerja
+                PerintahKerja={BuatHasilTabel([
+                    {
+                        ...barisDaftar,
+                        Kendaraan: {
+                            Uuid: '01JKENDARAAN00000000000002',
+                            Jenis: 'Perangkat',
+                            NomorPolisi: '356938035643809',
+                            Label: 'Samsung Galaxy A54',
+                        },
+                    },
+                ])}
+                OpsiStatus={[{ Nilai: 'Disetujui', Label: 'Disetujui pelanggan' }]}
+                OpsiOutlet={[{ Uuid: '01JOUTLET00000000000000001', Nama: 'Bengkel Solo' }]}
+                OpsiMekanik={[]}
+            />,
+        );
+
+        expect(screen.getAllByText('Samsung Galaxy A54').length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/356938035643809/).length).toBeGreaterThan(0);
     });
 });

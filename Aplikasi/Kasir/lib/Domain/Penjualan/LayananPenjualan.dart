@@ -1724,6 +1724,10 @@ class LayananPenjualan {
                   'Uuid': perintahKerja.uuid,
                   'Nomor': perintahKerja.nomor,
                   'NomorPolisi': perintahKerja.nomorPolisi,
+                  if (perintahKerja.unitPerangkat) ...{
+                    'JenisUnit': perintahKerja.jenisUnit,
+                    'LabelUnit': perintahKerja.labelKendaraan,
+                  },
                 }),
         ),
         Resep: Value(resep == null ? null : jsonEncode(resep.KeRingkasanStruk())),

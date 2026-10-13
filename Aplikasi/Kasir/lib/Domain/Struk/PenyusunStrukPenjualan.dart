@@ -94,10 +94,14 @@ abstract final class PenyusunStrukPenjualan {
     if (p.tampilkanPelanggan && pelanggan != null && pelanggan.isNotEmpty) {
       baris.add(BarisTeks('Pelanggan: $pelanggan'));
     }
-    // Bengkel bagian 2: perintah kerja yang ditagih & nomor polisi kendaraannya (tersimpan lokal, ikut cetak ulang).
+    // Bengkel bagian 2: perintah kerja yang ditagih & nomor polisi kendaraannya (atau perangkat yang diservis, D-142) (tersimpan lokal, ikut cetak ulang).
     if (_UraiPeta(jual.PerintahKerja) case final pk?) {
       baris.add(BarisTeks('Perintah kerja ${pk['Nomor'] ?? ''}'));
-      if (pk['NomorPolisi'] case final String polisi when polisi.trim().isNotEmpty) {
+      if (pk['JenisUnit'] == 'Perangkat') {
+        if (pk['LabelUnit'] case final String unit when unit.trim().isNotEmpty) {
+          baris.add(BarisTeks('Perangkat $unit'));
+        }
+      } else if (pk['NomorPolisi'] case final String polisi when polisi.trim().isNotEmpty) {
         baris.add(BarisTeks('Kendaraan $polisi'));
       }
     }

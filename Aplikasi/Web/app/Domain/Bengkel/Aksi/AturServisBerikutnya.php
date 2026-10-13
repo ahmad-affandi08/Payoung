@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Bengkel\Aksi;
 
+use App\Domain\Bengkel\Enum\JenisUnitServis;
 use App\Domain\Bengkel\Enum\StatusPerintahKerja;
 use App\Domain\Bengkel\Model\PerintahKerja;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
@@ -25,6 +26,10 @@ final class AturServisBerikutnya
         return DB::transaction(function () use ($uuidPerintahKerja, $tanggal, $km, $idPengguna, $hariIni): PerintahKerja {
             $pk = PerintahKerja::query()->where('Uuid', $uuidPerintahKerja)->lockForUpdate()->first()
                 ?? throw new PelanggaranAturanBisnis('PerintahKerjaTidakDikenal', 'Perintah kerja tidak ditemukan.', 'Umum', 404);
+
+            if ($km !== null && $pk->Kendaraan->Jenis === JenisUnitServis::Perangkat) {
+                throw new PelanggaranAturanBisnis('KmTidakBerlaku', 'Pengingat berdasarkan kilometer hanya untuk kendaraan.', 'ServisBerikutnyaKm');
+            }
 
             if ($pk->Status === StatusPerintahKerja::Dibatalkan) {
                 throw new PelanggaranAturanBisnis('PerintahKerjaDibatalkan', 'Perintah kerja yang dibatalkan tidak punya jadwal servis berikutnya.', 'Status');

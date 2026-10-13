@@ -4,6 +4,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { JudulUnit, RincianUnit } from '@/Pustaka/UnitServis';
 import { JenisStatusPerintahKerja, type BarisDaftarPerintahKerja } from '@/Tipe/Bengkel';
 
 /** Bengkel (§9.10): alamat halaman & kolom tabel perintah kerja (daftar dan riwayat servis kendaraan). */
@@ -32,14 +33,14 @@ export function BuatKolomPerintahKerja(): KolomTabel<BarisDaftarPerintahKerja>[]
         },
         {
             id: 'Kendaraan',
-            header: 'Kendaraan',
+            header: 'Unit',
             enableSorting: false,
-            meta: { label: 'Kendaraan', prioritas: 'penting' },
+            meta: { label: 'Unit', prioritas: 'penting' },
             cell: ({ row: { original: p } }) => (
                 <span className="flex flex-col gap-0.5 break-words">
-                    <span className="font-mono font-semibold text-teks-utama">{p.Kendaraan?.NomorPolisi ?? '-'}</span>
+                    <span className="font-mono font-semibold text-teks-utama">{JudulUnit(p.Kendaraan)}</span>
                     <span className="text-keterangan text-teks-sekunder">
-                        {p.Kendaraan?.Label ?? ''} | {p.Pelanggan.Nama}
+                        {RincianUnit(p.Kendaraan)} | {p.Pelanggan.Nama}
                     </span>
                 </span>
             ),

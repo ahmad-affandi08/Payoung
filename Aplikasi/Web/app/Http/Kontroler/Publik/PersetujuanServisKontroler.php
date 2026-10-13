@@ -47,7 +47,7 @@ final class PersetujuanServisKontroler extends Kontroler
                     'Status' => $d['Status'],
                     'LabelStatus' => $d['LabelStatus'],
                     'NamaPelanggan' => $d['Pelanggan']['Nama'],
-                    'Kendaraan' => $d['Kendaraan'] === null ? null : ['NomorPolisi' => $d['Kendaraan']['NomorPolisi'], 'Label' => $d['Kendaraan']['Label']],
+                    'Kendaraan' => $d['Kendaraan'] === null ? null : ['Jenis' => $d['Kendaraan']['Jenis'], 'NomorPolisi' => $d['Kendaraan']['NomorPolisi'], 'Label' => $d['Kendaraan']['Label']],
                     'KmMasuk' => $d['KmMasuk'],
                     'Keluhan' => $d['Keluhan'],
                     'Diagnosis' => $d['Diagnosis'],

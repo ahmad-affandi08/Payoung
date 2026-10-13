@@ -106,6 +106,7 @@ final class DetailPerintahKerja
             ],
             'Kendaraan' => $kendaraan === null ? null : [
                 'Uuid' => $kendaraan->Uuid,
+                'Jenis' => $kendaraan->Jenis->value,
                 'NomorPolisi' => $kendaraan->NomorPolisi,
                 'Label' => $kendaraan->AmbilLabel(),
                 'Warna' => $kendaraan->Warna,

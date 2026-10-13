@@ -1,4 +1,5 @@
 import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
+import type { JenisUnit } from '@/Pustaka/UnitServis';
 
 /** Bengkel (§9.10): tipe bersama back-office perintah kerja, kendaraan, dan halaman persetujuan publik. */
 
@@ -19,7 +20,8 @@ export type JenisBarisBengkel = 'Jasa' | 'Sparepart';
 export type Opsi = { Nilai: string; Label: string };
 export type OpsiUuid = { Uuid: string; Nama: string };
 
-export type RingkasKendaraan = { Uuid: string; NomorPolisi: string; Label: string };
+/** Unit servis ringkas (D-142): `NomorPolisi` = plat kendaraan, atau IMEI / nomor seri perangkat (boleh kosong). */
+export type RingkasKendaraan = { Uuid: string; Jenis: JenisUnit; NomorPolisi: string | null; Label: string };
 
 export type Kendaraan = RingkasKendaraan & {
     Merek: string;
@@ -240,7 +242,7 @@ export type PropsPersetujuanServis = {
         Status: StatusPerintahKerja;
         LabelStatus: string;
         NamaPelanggan: string;
-        Kendaraan: RingkasKendaraan | { NomorPolisi: string; Label: string } | null;
+        Kendaraan: Omit<RingkasKendaraan, 'Uuid'> | null;
         KmMasuk: number | null;
         Keluhan: string;
         Diagnosis: string | null;

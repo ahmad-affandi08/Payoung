@@ -21,6 +21,7 @@ import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
+import { JudulUnit, KataUnit, PakaiJenisUnitBawaan, RincianUnit } from '@/Pustaka/UnitServis';
 import type { PropsFormPerintahKerja, RingkasKendaraan } from '@/Tipe/Bengkel';
 
 const MAKSIMAL_BARIS = 100;
@@ -51,6 +52,9 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
     const [kendaraan, AturKendaraan] = useState<(RingkasKendaraan & { KmTerakhir: number | null }) | null>(
         Isian?.Kendaraan ?? Awal?.Kendaraan ?? null,
     );
+    const bawaan = PakaiJenisUnitBawaan();
+    const kata = kendaraan === null ? (bawaan === null ? 'Unit servis' : KataUnit(bawaan)) : KataUnit(kendaraan.Jenis);
+    const tampilKm = kendaraan === null ? bawaan !== 'Perangkat' : kendaraan.Jenis === 'Kendaraan';
     const [kmMasuk, AturKmMasuk] = useState(Isian?.KmMasuk === null || Isian === null ? '' : String(Isian.KmMasuk));
     const [keluhan, AturKeluhan] = useState(Isian?.Keluhan ?? '');
     const [diagnosis, AturDiagnosis] = useState(Isian?.Diagnosis ?? '');
@@ -78,7 +82,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
             UuidOutlet: uuidOutlet,
             UuidPelanggan: pelanggan?.Uuid ?? '',
             UuidKendaraan: kendaraan?.Uuid ?? '',
-            KmMasuk: kmMasuk === '' ? null : Number(kmMasuk),
+            KmMasuk: !tampilKm || kmMasuk === '' ? null : Number(kmMasuk),
             Keluhan: keluhan,
             Diagnosis: diagnosis === '' ? null : diagnosis,
             EstimasiSelesaiPada: estimasi === '' ? null : estimasi,
@@ -118,7 +122,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
             </Pemberitahuan>
 
             <form onSubmit={Kirim} noValidate className="flex flex-col gap-4" aria-label={judul}>
-                <Panel judul="Kendaraan & keluhan">
+                <Panel judul={`${kata} & keluhan`}>
                     <div className="flex flex-col gap-4">
                         <div className="max-w-sm">
                             <BidangOutlet
@@ -155,14 +159,14 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                             <div className="flex flex-col gap-2">
                                 <PemilihCariBengkel<KendaraanPilihan>
                                     sumber="kendaraan"
-                                    label="Kendaraan"
-                                    placeholder="Pilih kendaraan"
+                                    label={kata}
+                                    placeholder={`Pilih ${kata.toLowerCase()}`}
                                     buatUrl={(kata) =>
                                         `/kelola/bengkel/kendaraan/cari?${new URLSearchParams({ kata, ...(pelanggan ? { pelanggan: pelanggan.Uuid } : {}) }).toString()}`
                                     }
                                     ambilId={(k) => k.Uuid}
-                                    ambilJudul={(k) => k.NomorPolisi}
-                                    ambilKeterangan={(k) => `${k.Label} | ${k.Pelanggan.Nama}`}
+                                    ambilJudul={(k) => JudulUnit(k)}
+                                    ambilKeterangan={(k) => `${RincianUnit(k)} | ${k.Pelanggan.Nama}`}
                                     saatPilih={(k) => {
                                         AturKendaraan(k);
 
@@ -171,12 +175,14 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                                         }
                                     }}
                                     nilaiTerpilih={
-                                        kendaraan === null ? undefined : `${kendaraan.NomorPolisi} | ${kendaraan.Label}`
+                                        kendaraan === null
+                                            ? undefined
+                                            : `${JudulUnit(kendaraan)} | ${RincianUnit(kendaraan)}`
                                     }
                                     pesanKosong={
                                         pelanggan === null
-                                            ? 'Belum ada kendaraan terdaftar.'
-                                            : `${pelanggan.Nama} belum punya kendaraan terdaftar. Tambahkan di bawah.`
+                                            ? `Belum ada ${kata.toLowerCase()} terdaftar.`
+                                            : `${pelanggan.Nama} belum punya ${kata.toLowerCase()} terdaftar. Tambahkan di bawah.`
                                     }
                                     galat={galat.UuidKendaraan}
                                     wajib
@@ -188,25 +194,27 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                                     disabled={pelanggan === null}
                                     onClick={() => AturDialogKendaraan(true)}
                                 >
-                                    Tambah kendaraan pelanggan ini
+                                    Tambah {kata.toLowerCase()} pelanggan ini
                                 </Button>
                             </div>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <BidangJumlah
-                                label="KM masuk"
-                                nilai={kmMasuk}
-                                saatBerubah={AturKmMasuk}
-                                galat={galat.KmMasuk}
-                                desimal={0}
-                                digitBulat={7}
-                                akhiran="km"
-                                keterangan={
-                                    kendaraan?.KmTerakhir === null || kendaraan === null
-                                        ? undefined
-                                        : `KM terakhir tercatat ${kendaraan.KmTerakhir.toLocaleString('id-ID')} km`
-                                }
-                            />
+                            {tampilKm ? (
+                                <BidangJumlah
+                                    label="KM masuk"
+                                    nilai={kmMasuk}
+                                    saatBerubah={AturKmMasuk}
+                                    galat={galat.KmMasuk}
+                                    desimal={0}
+                                    digitBulat={7}
+                                    akhiran="km"
+                                    keterangan={
+                                        kendaraan?.KmTerakhir === null || kendaraan === null
+                                            ? undefined
+                                            : `KM terakhir tercatat ${kendaraan.KmTerakhir.toLocaleString('id-ID')} km`
+                                    }
+                                />
+                            ) : null}
                             <PemilihTanggalWaktu
                                 label="Perkiraan selesai"
                                 nilai={estimasi}

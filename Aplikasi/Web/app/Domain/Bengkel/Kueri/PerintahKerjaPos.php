@@ -69,6 +69,7 @@ final class PerintahKerjaPos
             'Pelanggan' => $pos === null ? null : ['Uuid' => $pos['Uuid'], 'Nama' => $pos['Nama'], 'NoHp' => $pos['NoHp'], 'KodeTier' => $pos['KodeTier']],
             'Kendaraan' => $d['Kendaraan'] === null ? null : [
                 'Uuid' => $d['Kendaraan']['Uuid'],
+                'Jenis' => $d['Kendaraan']['Jenis'],
                 'NomorPolisi' => $d['Kendaraan']['NomorPolisi'],
                 'Label' => $d['Kendaraan']['Label'],
             ],

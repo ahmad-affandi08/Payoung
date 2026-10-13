@@ -11,6 +11,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { JudulUnit, RincianUnit } from '@/Pustaka/UnitServis';
 import { JenisStatusPerintahKerja, type PropsPersetujuanServis } from '@/Tipe/Bengkel';
 
 /**
@@ -33,10 +34,10 @@ export default function HalamanPersetujuanServis({ NamaToko, AlamatDasar, Perint
         <KerangkaPelanggan toko={NamaToko}>
             <Head title={`Persetujuan servis ${pk.Nomor}`} />
             <header className="flex flex-col gap-1 border-b border-garis pb-4">
-                <JudulHalaman>Estimasi servis {pk.Kendaraan?.NomorPolisi ?? ''}</JudulHalaman>
+                <JudulHalaman>Estimasi servis {pk.Kendaraan === null ? '' : JudulUnit(pk.Kendaraan)}</JudulHalaman>
                 <p className="text-keterangan text-teks-sekunder">
-                    <span className="font-mono">{pk.Nomor}</span> | {pk.Kendaraan?.Label ?? ''} | a.n.{' '}
-                    {pk.NamaPelanggan}
+                    <span className="font-mono">{pk.Nomor}</span> |{' '}
+                    {pk.Kendaraan === null ? '' : RincianUnit(pk.Kendaraan)} | a.n. {pk.NamaPelanggan}
                 </p>
                 <div>
                     <LabelStatus jenis={JenisStatusPerintahKerja(pk.Status)} teks={pk.LabelStatus} />

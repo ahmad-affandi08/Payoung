@@ -527,18 +527,33 @@ class ReservasiKeranjang {
 /// Perintah kerja bengkel yang sedang ditagih (Bengkel bagian 2, §9.10): `Penjualan.Buat` merujuk [uuid] supaya server
 /// menandainya Ditagih dan menautkannya di transaksi yang sama. [nomorPolisi] & [labelKendaraan] untuk struk & layar.
 class PerintahKerjaKeranjang {
-  const PerintahKerjaKeranjang({required this.uuid, required this.nomor, this.nomorPolisi, this.labelKendaraan});
+  const PerintahKerjaKeranjang({
+    required this.uuid,
+    required this.nomor,
+    this.nomorPolisi,
+    this.labelKendaraan,
+    this.jenisUnit = 'Kendaraan',
+  });
 
   final String uuid;
   final String nomor;
   final String? nomorPolisi;
   final String? labelKendaraan;
 
+  /// `Kendaraan` atau `Perangkat` (servis elektronik, D-142).
+  final String jenisUnit;
+
+  bool get unitPerangkat => jenisUnit == 'Perangkat';
+
+  /// Judul singkat unit untuk layar: plat kendaraan, atau merek & tipe perangkat.
+  String? get pengenalUnit => unitPerangkat ? labelKendaraan : nomorPolisi;
+
   Map<String, Object?> KeJson() => {
     'Uuid': uuid,
     'Nomor': nomor,
     'NomorPolisi': nomorPolisi,
     'LabelKendaraan': labelKendaraan,
+    'JenisUnit': jenisUnit,
   };
 
   static PerintahKerjaKeranjang? DariJson(Object? json) => json is Map<String, Object?> && json['Uuid'] is String
@@ -547,6 +562,7 @@ class PerintahKerjaKeranjang {
           nomor: '${json['Nomor'] ?? ''}',
           nomorPolisi: json['NomorPolisi'] as String?,
           labelKendaraan: json['LabelKendaraan'] as String?,
+          jenisUnit: json['JenisUnit'] as String? ?? 'Kendaraan',
         )
       : null;
 }

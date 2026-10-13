@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Bengkel\Kueri;
 
+use App\Domain\Bengkel\Enum\JenisUnitServis;
 use App\Domain\Bengkel\Enum\StatusPerintahKerja;
 use App\Domain\Bengkel\Model\Kendaraan;
 use App\Domain\Bengkel\Model\PerintahKerja;
@@ -23,7 +24,7 @@ final class DaftarKendaraan
 {
     public const KOLOM_URUT = ['NomorPolisi', 'Merek', 'KmTerakhir', 'DiubahPada'];
 
-    public const KOLOM_SARING = ['Pelanggan', 'Aktif'];
+    public const KOLOM_SARING = ['Pelanggan', 'Aktif', 'Jenis'];
 
     public const URUT_BAWAAN = 'NomorPolisi';
 
@@ -40,6 +41,7 @@ final class DaftarKendaraan
         $kueri = Kendaraan::query()
             ->when($uuidPelanggan !== [], fn (Builder $k) => $k->whereIn('IdPelanggan', $idPelanggan ?: [0]))
             ->when(count($aktif) === 1, fn (Builder $k) => $k->where('Aktif', $aktif[0] === 'Ya'))
+            ->when(($jenis = $p->AmbilDaftar('Jenis', array_column(JenisUnitServis::cases(), 'value'))) !== [], fn (Builder $k) => $k->whereIn('Jenis', $jenis))
             ->when($p->cari !== '', function (Builder $k) use ($p): void {
                 $pola = PenerapKueriTabel::PolaCari($p->cari);
                 $polaPlat = PenerapKueriTabel::PolaCari(mb_strtoupper(str_replace(' ', '', $p->cari)));
@@ -113,6 +115,7 @@ final class DaftarKendaraan
 
             return [
                 'Uuid' => $k->Uuid,
+                'Jenis' => $k->Jenis->value,
                 'NomorPolisi' => $k->NomorPolisi,
                 'Merek' => $k->Merek,
                 'Tipe' => $k->Tipe,

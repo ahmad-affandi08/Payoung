@@ -60,7 +60,7 @@ final class PenyediaTindakanBengkel implements PenyediaTindakan
     {
         $jumlah = (clone $kueri)->count();
         $daftar = $jumlah === 0 ? collect() : $kueri->orderBy($kolomUrut)->orderBy('Id')->limit(DataButirTindakan::BATAS_RINCIAN)->get();
-        $plat = $daftar->isEmpty() ? collect() : Kendaraan::query()->whereIn('Id', $daftar->pluck('IdKendaraan')->all())->pluck('NomorPolisi', 'Id');
+        $plat = $daftar->isEmpty() ? collect() : Kendaraan::query()->whereIn('Id', $daftar->pluck('IdKendaraan')->all())->get()->mapWithKeys(fn (Kendaraan $k): array => [$k->Id => $k->AmbilPengenal()]);
 
         return new DataButirTindakan(
             $kode,

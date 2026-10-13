@@ -8,26 +8,32 @@ import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { JudulUnit, KataUnit, PakaiJenisUnitBawaan } from '@/Pustaka/UnitServis';
 import type { Kendaraan } from '@/Tipe/Bengkel';
 
 const kolom: KolomTabel<Kendaraan>[] = [
     {
         id: 'NomorPolisi',
         accessorKey: 'NomorPolisi',
-        header: 'Nomor polisi',
-        meta: { label: 'Nomor polisi', prioritas: 'utama', wajib: true },
+        header: 'Nomor polisi / IMEI',
+        meta: { label: 'Nomor polisi / IMEI', prioritas: 'utama', wajib: true },
         cell: ({ row: { original: k } }) => (
             <Link href={`${AlamatKendaraan}/${k.Uuid}`} className="font-mono font-semibold text-brand underline">
-                {k.NomorPolisi}
+                {JudulUnit(k)}
             </Link>
         ),
     },
     {
         id: 'Label',
         accessorKey: 'Label',
-        header: 'Kendaraan',
-        meta: { label: 'Kendaraan', prioritas: 'penting' },
-        cell: ({ row: { original: k } }) => (k.Aktif ? k.Label : `${k.Label} (diarsipkan)`),
+        header: 'Unit',
+        meta: { label: 'Unit', prioritas: 'penting' },
+        cell: ({ row: { original: k } }) => {
+            const rincian =
+                k.Jenis === 'Perangkat' ? `${k.Label}${k.NomorPolisi ? ` | ${k.NomorPolisi}` : ''}` : k.Label;
+
+            return k.Aktif ? rincian : `${rincian} (diarsipkan)`;
+        },
     },
     {
         id: 'ServisTerakhirPada',
@@ -52,14 +58,16 @@ export default function PanelKendaraanPelanggan({
 }) {
     const [tambah, AturTambah] = useState(false);
     const pertama = kendaraan.find((k) => k.Aktif);
+    const bawaan = PakaiJenisUnitBawaan();
+    const kata = bawaan === null ? 'Unit servis' : KataUnit(bawaan);
 
     return (
         <Panel
-            judul="Kendaraan"
+            judul={kata}
             aksi={
                 <div className="flex flex-wrap gap-2">
                     <Tombol varian="sekunder" onClick={() => AturTambah(true)}>
-                        Tambah kendaraan
+                        Tambah {kata.toLowerCase()}
                     </Tombol>
                     {pertama ? (
                         <Link
@@ -74,11 +82,11 @@ export default function PanelKendaraanPelanggan({
         >
             <TabelData
                 id="pelanggan-kendaraan"
-                label={`Kendaraan ${pelanggan.Nama}`}
+                label={`${kata} ${pelanggan.Nama}`}
                 kolom={kolom}
                 sumber={{ mode: 'lokal', data: kendaraan }}
                 ambilIdBaris={(k) => k.Uuid}
-                kosong={{ judul: 'Pelanggan ini belum punya kendaraan terdaftar.' }}
+                kosong={{ judul: `Pelanggan ini belum punya ${kata.toLowerCase()} terdaftar.` }}
             />
             {tambah ? (
                 <DialogKendaraan kendaraan={null} pelanggan={pelanggan} saatTutup={() => AturTambah(false)} />

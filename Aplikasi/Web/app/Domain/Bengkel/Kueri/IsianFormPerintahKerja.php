@@ -85,7 +85,7 @@ final class IsianFormPerintahKerja
         return [
             'UuidPelanggan' => $p['Uuid'] ?? null,
             'NamaPelanggan' => $p['Nama'] ?? null,
-            'Kendaraan' => ['Uuid' => $k->Uuid, 'NomorPolisi' => $k->NomorPolisi, 'Label' => $k->AmbilLabel(), 'KmTerakhir' => $k->KmTerakhir, 'Warna' => $k->Warna],
+            'Kendaraan' => ['Uuid' => $k->Uuid, 'Jenis' => $k->Jenis->value, 'NomorPolisi' => $k->NomorPolisi, 'Label' => $k->AmbilLabel(), 'KmTerakhir' => $k->KmTerakhir, 'Warna' => $k->Warna],
         ];
     }
 }

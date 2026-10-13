@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 import PemilihCariBengkel from '@/Komponen/Bengkel/PemilihCariBengkel';
+import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
@@ -9,12 +10,14 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
+import { type JenisUnit, KataUnit, LabelJenisUnit, LabelPengenal, PakaiJenisUnitBawaan } from '@/Pustaka/UnitServis';
 import type { Kendaraan } from '@/Tipe/Bengkel';
 
 type PelangganPilihan = { Uuid: string; Nama: string; NoHp: string | null };
 
 type IsianKendaraan = {
     UuidPelanggan: string;
+    Jenis: JenisUnit;
     NomorPolisi: string;
     Merek: string;
     Tipe: string;
@@ -30,7 +33,7 @@ type IsianKendaraan = {
 export const AlamatKendaraan = '/kelola/bengkel/kendaraan';
 
 /**
- * Tambah/ubah kendaraan pelanggan (§9.10). Nomor polisi dirapikan server ("ad1234xy" → "AD 1234 XY") dan unik di antara
+ * Tambah/ubah unit servis pelanggan (§9.10, D-142): kendaraan atau perangkat elektronik. Nomor polisi dirapikan server ("ad1234xy" → "AD 1234 XY") dan unik di antara
  * kendaraan aktif; kendaraan yang berganti pemilik diarsipkan supaya nomornya bisa didaftarkan ulang tanpa menghapus
  * riwayat servisnya.
  */
@@ -45,8 +48,10 @@ export default function DialogKendaraan({
     saatTutup: () => void;
 }) {
     const [namaPelanggan, AturNamaPelanggan] = useState(kendaraan?.Pelanggan.Nama ?? pelanggan?.Nama ?? '');
+    const jenisBawaan = PakaiJenisUnitBawaan();
     const formulir = useForm<IsianKendaraan>({
         UuidPelanggan: kendaraan?.Pelanggan.Uuid ?? pelanggan?.Uuid ?? '',
+        Jenis: kendaraan?.Jenis ?? jenisBawaan ?? 'Kendaraan',
         NomorPolisi: kendaraan?.NomorPolisi ?? '',
         Merek: kendaraan?.Merek ?? '',
         Tipe: kendaraan?.Tipe ?? '',
@@ -60,7 +65,12 @@ export default function DialogKendaraan({
     });
     const d = formulir.data;
     const galat = formulir.errors as Record<string, string | undefined>;
-    const judul = kendaraan === null ? 'Tambah kendaraan' : `Ubah kendaraan ${kendaraan.NomorPolisi}`;
+    const perangkat = d.Jenis === 'Perangkat';
+    const kata = KataUnit(d.Jenis).toLowerCase();
+    const judul =
+        kendaraan === null
+            ? `Tambah ${jenisBawaan === null ? 'unit servis' : kata}`
+            : `Ubah ${kata} ${kendaraan.NomorPolisi ?? kendaraan.Label}`;
 
     return (
         <DialogFormulir judul={judul} lebar="lebar" saatTutup={saatTutup} galatUmum={galat.Umum}>
@@ -84,6 +94,19 @@ export default function DialogKendaraan({
                 noValidate
                 aria-label={judul}
             >
+                {kendaraan === null && jenisBawaan === null ? (
+                    <div className="sm:col-span-2">
+                        <BidangPilihan
+                            label="Jenis unit"
+                            nilai={d.Jenis}
+                            opsi={(Object.keys(LabelJenisUnit) as JenisUnit[]).map((j) => ({
+                                Nilai: j,
+                                Label: LabelJenisUnit[j],
+                            }))}
+                            saatBerubah={(nilai) => formulir.setData('Jenis', nilai as JenisUnit)}
+                        />
+                    </div>
+                ) : null}
                 <div className="sm:col-span-2">
                     {pelanggan === null ? (
                         <PemilihCariBengkel<PelangganPilihan>
@@ -112,14 +135,18 @@ export default function DialogKendaraan({
                     )}
                 </div>
                 <BidangTeks
-                    label="Nomor polisi"
+                    label={LabelPengenal(d.Jenis)}
                     nilai={d.NomorPolisi}
                     saatBerubah={(nilai) => formulir.setData('NomorPolisi', nilai)}
                     galat={galat.NomorPolisi}
-                    keterangan="Contoh: AD 1234 XY. Huruf & spasi dirapikan otomatis."
+                    keterangan={
+                        perangkat
+                            ? 'Boleh dikosongkan. Tekan *#06# di HP untuk melihat IMEI.'
+                            : 'Contoh: AD 1234 XY. Huruf & spasi dirapikan otomatis.'
+                    }
                     kode
-                    required
-                    maxLength={20}
+                    required={!perangkat}
+                    maxLength={perangkat ? 40 : 20}
                 />
                 <BidangTeks
                     label="Merek"
@@ -151,31 +178,35 @@ export default function DialogKendaraan({
                     galat={galat.Warna}
                     maxLength={30}
                 />
-                <BidangJumlah
-                    label="KM terakhir"
-                    nilai={d.KmTerakhir}
-                    saatBerubah={(nilai) => formulir.setData('KmTerakhir', nilai)}
-                    galat={galat.KmTerakhir}
-                    desimal={0}
-                    digitBulat={7}
-                    akhiran="km"
-                />
-                <BidangTeks
-                    label="Nomor rangka"
-                    nilai={d.NomorRangka}
-                    saatBerubah={(nilai) => formulir.setData('NomorRangka', nilai)}
-                    galat={galat.NomorRangka}
-                    kode
-                    maxLength={40}
-                />
-                <BidangTeks
-                    label="Nomor mesin"
-                    nilai={d.NomorMesin}
-                    saatBerubah={(nilai) => formulir.setData('NomorMesin', nilai)}
-                    galat={galat.NomorMesin}
-                    kode
-                    maxLength={40}
-                />
+                {perangkat ? null : (
+                    <>
+                        <BidangJumlah
+                            label="KM terakhir"
+                            nilai={d.KmTerakhir}
+                            saatBerubah={(nilai) => formulir.setData('KmTerakhir', nilai)}
+                            galat={galat.KmTerakhir}
+                            desimal={0}
+                            digitBulat={7}
+                            akhiran="km"
+                        />
+                        <BidangTeks
+                            label="Nomor rangka"
+                            nilai={d.NomorRangka}
+                            saatBerubah={(nilai) => formulir.setData('NomorRangka', nilai)}
+                            galat={galat.NomorRangka}
+                            kode
+                            maxLength={40}
+                        />
+                        <BidangTeks
+                            label="Nomor mesin"
+                            nilai={d.NomorMesin}
+                            saatBerubah={(nilai) => formulir.setData('NomorMesin', nilai)}
+                            galat={galat.NomorMesin}
+                            kode
+                            maxLength={40}
+                        />
+                    </>
+                )}
                 <div className="sm:col-span-2">
                     <BidangTeksPanjang
                         label="Catatan"
@@ -188,7 +219,7 @@ export default function DialogKendaraan({
                 {kendaraan !== null ? (
                     <div className="sm:col-span-2">
                         <KotakCentang
-                            label="Kendaraan aktif (hapus centang bila sudah dijual atau berganti pemilik)"
+                            label={`${KataUnit(d.Jenis)} aktif (hapus centang bila sudah dijual atau berganti pemilik)`}
                             nilai={d.Aktif}
                             saatBerubah={(nilai) => formulir.setData('Aktif', nilai)}
                         />
@@ -196,7 +227,7 @@ export default function DialogKendaraan({
                 ) : null}
                 <DialogFooter className="sm:col-span-2 sm:justify-start">
                     <Tombol type="submit" memproses={formulir.processing}>
-                        Simpan kendaraan
+                        Simpan {jenisBawaan === null && kendaraan === null ? 'unit' : kata}
                     </Tombol>
                     <Tombol type="button" varian="sekunder" onClick={saatTutup}>
                         Batal
