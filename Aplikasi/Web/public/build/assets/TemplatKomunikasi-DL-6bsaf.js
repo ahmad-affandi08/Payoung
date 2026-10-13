@@ -1,0 +1,1 @@
+var e={MenungguPersetujuan:`Menunggu persetujuan`,Disetujui:`Disetujui`,Ditolak:`Ditolak`};export{e as t};
