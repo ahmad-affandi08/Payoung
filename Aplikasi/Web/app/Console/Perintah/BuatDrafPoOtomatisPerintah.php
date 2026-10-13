@@ -46,12 +46,14 @@ final class BuatDrafPoOtomatisPerintah extends Command
                 $konteks->Atur($idTenant);
                 $idPemilik = $pemilik->AmbilIdPemilik($idTenant);
 
-                if ($idPemilik === null || ! $pengaturan->Ambil()->drafPoOtomatis) {
+                $atur = $pengaturan->Ambil();
+
+                if ($idPemilik === null || ! $atur->drafPoOtomatis) {
                     continue;
                 }
 
                 try {
-                    $jumlahPo += $buat->Jalankan($idPemilik, $tanggalBisnis->Hitung(null))['JumlahPo'];
+                    $jumlahPo += $buat->Jalankan($idPemilik, $tanggalBisnis->Hitung(null), null, $atur->sumberDrafPo, $atur->hariCakupanDrafPo)['JumlahPo'];
                 } catch (Throwable $galat) {
                     $gagal++;
                     report($galat);

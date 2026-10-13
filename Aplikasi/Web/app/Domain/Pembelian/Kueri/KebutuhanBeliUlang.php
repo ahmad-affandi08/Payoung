@@ -6,6 +6,7 @@ namespace App\Domain\Pembelian\Kueri;
 
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Nilai\Kuantitas;
+use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Katalog\Kueri\ProdukUntukLaporan;
 use App\Domain\Katalog\Kueri\SatuanProdukPembelian;
@@ -17,6 +18,7 @@ use App\Domain\Pembelian\Model\PesananPembelianDetail;
 use App\Domain\Persediaan\Kueri\StokUntukLaporan;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonImmutable;
 
 /**
  * D-23 D: barang yang perlu dibeli ulang per (lokasi stok, pemasok). Kritis = saldo ≤ stok minimum. Jumlah dipesan
@@ -27,6 +29,9 @@ use Brick\Math\RoundingMode;
  */
 final class KebutuhanBeliUlang
 {
+    /** F24: panjang periode dasar laju pemakaian untuk draf PO berdasarkan perkiraan. */
+    public const HARI_DASAR_PERKIRAAN = 28;
+
     /** Status PO yang dianggap masih akan mendatangkan barang. */
     private const STATUS_TERBUKA = [
         StatusPesananPembelian::Draf,
@@ -45,9 +50,10 @@ final class KebutuhanBeliUlang
 
     /**
      * @param  list<int>|null  $idOutletBoleh  null = semua lokasi stok
+     * @param  string  $sumber  `Minimum` (bawaan, di bawah stok minimum) atau `Perkiraan` (laju pemakaian 28 hari untuk `$hariCakupan` hari, F24)
      * @return array{Kelompok: list<array{IdGudang: int, UuidPemasok: string, Baris: list<array{UuidProduk: string, UuidProdukSatuan: string|null, Jumlah: string, Harga: string}>}>, TanpaPemasok: list<string>}
      */
-    public function Ambil(?array $idOutletBoleh = null): array
+    public function Ambil(?array $idOutletBoleh = null, string $sumber = 'Minimum', int $hariCakupan = 14, ?CarbonImmutable $hariIni = null): array
     {
         $gudang = [];
 
@@ -55,30 +61,9 @@ final class KebutuhanBeliUlang
             $gudang[$g->id] = $g;
         }
 
-        $batas = $this->produk->AmbilBatasStok(array_keys($gudang));
-        $idProduk = array_values(array_unique(array_column($batas, 'IdProduk')));
-        $saldo = $this->stok->AmbilSaldo(array_keys($gudang), $idProduk);
-        $dipesan = $this->AmbilSisaPoTerbuka(array_keys($gudang), $idProduk);
-        $kebutuhan = [];
-
-        foreach ($batas as $b) {
-            $kunci = "{$b['IdProduk']}|{$b['IdGudang']}";
-            $jumlah = Kuantitas::Dari($saldo[$kunci]['Jumlah'] ?? '0');
-            $minimum = Kuantitas::Dari($b['StokMinimum']);
-
-            if ($jumlah->Bandingkan($minimum) > 0) {
-                continue;
-            }
-
-            $target = $b['StokMaksimum'] !== null && Kuantitas::Dari($b['StokMaksimum'])->Bandingkan($minimum) > 0
-                ? Kuantitas::Dari($b['StokMaksimum'])
-                : $minimum->Kali(2);
-            $kurang = $target->Kurangi($jumlah)->Kurangi($dipesan[$kunci] ?? Kuantitas::Nol());
-
-            if ($kurang->Bandingkan(Kuantitas::Nol()) > 0) {
-                $kebutuhan[] = ['IdProduk' => $b['IdProduk'], 'IdGudang' => $b['IdGudang'], 'Kurang' => $kurang];
-            }
-        }
+        $kebutuhan = $sumber === 'Perkiraan'
+            ? $this->KebutuhanPerkiraan(array_keys($gudang), $hariCakupan, $hariIni ?? CarbonImmutable::now())
+            : $this->KebutuhanMinimum(array_keys($gudang));
 
         if ($kebutuhan === []) {
             return ['Kelompok' => [], 'TanpaPemasok' => []];
@@ -114,6 +99,86 @@ final class KebutuhanBeliUlang
         }
 
         return ['Kelompok' => array_values($kelompok), 'TanpaPemasok' => array_values(array_unique($tanpa))];
+    }
+
+    /**
+     * Barang di bawah stok minimum: sampai stok maksimum (bila kosong: 2 × minimum) dikurangi saldo dan sisa PO terbuka.
+     *
+     * @param  list<int>  $idGudang
+     * @return list<array{IdProduk: int, IdGudang: int, Kurang: Kuantitas}>
+     */
+    private function KebutuhanMinimum(array $idGudang): array
+    {
+        $batas = $this->produk->AmbilBatasStok($idGudang);
+        $idProduk = array_values(array_unique(array_column($batas, 'IdProduk')));
+        $saldo = $this->stok->AmbilSaldo($idGudang, $idProduk);
+        $dipesan = $this->AmbilSisaPoTerbuka($idGudang, $idProduk);
+        $kebutuhan = [];
+
+        foreach ($batas as $b) {
+            $kunci = "{$b['IdProduk']}|{$b['IdGudang']}";
+            $jumlah = Kuantitas::Dari($saldo[$kunci]['Jumlah'] ?? '0');
+            $minimum = Kuantitas::Dari($b['StokMinimum']);
+
+            if ($jumlah->Bandingkan($minimum) > 0) {
+                continue;
+            }
+
+            $target = $b['StokMaksimum'] !== null && Kuantitas::Dari($b['StokMaksimum'])->Bandingkan($minimum) > 0
+                ? Kuantitas::Dari($b['StokMaksimum'])
+                : $minimum->Kali(2);
+            $kurang = $target->Kurangi($jumlah)->Kurangi($dipesan[$kunci] ?? Kuantitas::Nol());
+
+            if ($kurang->Bandingkan(Kuantitas::Nol()) > 0) {
+                $kebutuhan[] = ['IdProduk' => $b['IdProduk'], 'IdGudang' => $b['IdGudang'], 'Kurang' => $kurang];
+            }
+        }
+
+        return $kebutuhan;
+    }
+
+    /**
+     * F24 (INV-13): kebutuhan dari laju pemakaian `HARI_DASAR_PERKIRAAN` hari terakhir (sampai kemarin; penjualan, bahan
+     * resep, produksi, susut, dikurangi retur) × `$hariCakupan` hari, dikurangi saldo dan sisa PO terbuka. Tanpa faktor
+     * musim (saran restock di laporan stok memakainya; draf tetap diperiksa orang sebelum diajukan). Konsinyasi tidak ikut.
+     *
+     * @param  list<int>  $idGudang
+     * @return list<array{IdProduk: int, IdGudang: int, Kurang: Kuantitas}>
+     */
+    private function KebutuhanPerkiraan(array $idGudang, int $hariCakupan, CarbonImmutable $hariIni): array
+    {
+        $sampai = $hariIni->startOfDay()->subDay();
+        $pakai = $this->stok->AmbilPemakaian($idGudang, $sampai->subDays(self::HARI_DASAR_PERKIRAAN - 1), $sampai);
+
+        if ($pakai === []) {
+            return [];
+        }
+
+        $idProduk = array_values(array_unique(array_column($pakai, 'IdProduk')));
+        $saldo = $this->stok->AmbilSaldo($idGudang, $idProduk);
+        $dipesan = $this->AmbilSisaPoTerbuka($idGudang, $idProduk);
+        $info = $this->infoProduk->AmbilBanyak($idProduk);
+        $kebutuhan = [];
+
+        foreach ($pakai as $b) {
+            $produk = $info[$b['IdProduk']] ?? null;
+
+            if ($produk === null || $produk->jenis === JenisProduk::Konsinyasi) {
+                continue;
+            }
+
+            $kunci = "{$b['IdProduk']}|{$b['IdGudang']}";
+            $rata = BigDecimal::of($b['Pakai'])->dividedBy(self::HARI_DASAR_PERKIRAAN, 6, RoundingMode::HalfUp);
+            $kurang = $rata->multipliedBy($hariCakupan)
+                ->minus($saldo[$kunci]['Jumlah'] ?? '0')
+                ->minus(($dipesan[$kunci] ?? Kuantitas::Nol())->KeString());
+
+            if ($kurang->isPositive()) {
+                $kebutuhan[] = ['IdProduk' => $b['IdProduk'], 'IdGudang' => $b['IdGudang'], 'Kurang' => Kuantitas::Dari($kurang->toScale(Kuantitas::SKALA, RoundingMode::Up))];
+            }
+        }
+
+        return $kebutuhan;
     }
 
     /**

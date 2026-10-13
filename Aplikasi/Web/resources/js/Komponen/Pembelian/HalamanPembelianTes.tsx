@@ -629,6 +629,8 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
                     BatasPersetujuanPo: '5000000.00',
                     ToleransiPenerimaanPersen: '0.00',
                     DrafPoOtomatis: true,
+                    SumberDrafPo: 'Minimum',
+                    HariCakupanDrafPo: 14,
                 }}
             />,
         );
@@ -640,7 +642,42 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Simpan pengaturan' }));
         expect(tiruanRouter.put).toHaveBeenCalledWith(
             '/kelola/pembelian/pengaturan',
-            { BatasPersetujuanPo: '5000000', ToleransiPenerimaanPersen: '2.5', DrafPoOtomatis: false },
+            {
+                BatasPersetujuanPo: '5000000',
+                ToleransiPenerimaanPersen: '2.5',
+                DrafPoOtomatis: false,
+                SumberDrafPo: 'Minimum',
+                HariCakupanDrafPo: 14,
+            },
+            expect.anything(),
+        );
+    });
+
+    it('F24: dasar draf PO bisa diganti ke perkiraan pemakaian dan cakupan harinya dikirim', () => {
+        RenderUji(
+            <HalamanPengaturanPembelian
+                Pengaturan={{
+                    BatasPersetujuanPo: '5000000.00',
+                    ToleransiPenerimaanPersen: '0.00',
+                    DrafPoOtomatis: true,
+                    SumberDrafPo: 'Perkiraan',
+                    HariCakupanDrafPo: 7,
+                }}
+            />,
+        );
+
+        expect(screen.getByText(/rata-rata pemakaian 28 hari terakhir/)).toBeTruthy();
+        PilihOpsi(screen.getByRole('combobox', { name: /Cakupan kebutuhan/ }), '30');
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan pengaturan' }));
+        expect(tiruanRouter.put).toHaveBeenCalledWith(
+            '/kelola/pembelian/pengaturan',
+            {
+                BatasPersetujuanPo: '5000000',
+                ToleransiPenerimaanPersen: '0',
+                DrafPoOtomatis: true,
+                SumberDrafPo: 'Perkiraan',
+                HariCakupanDrafPo: 30,
+            },
             expect.anything(),
         );
     });

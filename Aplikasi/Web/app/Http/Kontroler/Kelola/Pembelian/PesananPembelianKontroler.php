@@ -17,6 +17,7 @@ use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
 use App\Domain\Pembelian\Kueri\IsianFormPembelian;
 use App\Domain\Pembelian\Model\PesananPembelian;
+use App\Domain\Tenant\Data\DataPengaturanPembelian;
 use App\Domain\Tenant\Kueri\PengaturanPembelianTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
@@ -60,11 +61,14 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
     }
 
     /** D-23 D: draf PO sekarang juga (tanpa menunggu jadwal pagi) untuk stok di bawah minimum di outlet pelaku. */
-    public function BuatDrafOtomatis(BuatDrafPoOtomatis $buat, TanggalBisnisOutlet $tanggal): RedirectResponse
+    public function BuatDrafOtomatis(BuatDrafPoOtomatis $buat, TanggalBisnisOutlet $tanggal, PengaturanPembelianTenant $pengaturan): RedirectResponse
     {
-        $hasil = $buat->Jalankan($this->Pelaku()->Id, $tanggal->Hitung(null), $this->IdOutletBoleh());
+        $atur = $pengaturan->Ambil();
+        $hasil = $buat->Jalankan($this->Pelaku()->Id, $tanggal->Hitung(null), $this->IdOutletBoleh(), $atur->sumberDrafPo, $atur->hariCakupanDrafPo);
         $pesan = $hasil['JumlahPo'] === 0
-            ? 'Tidak ada draf baru: stok di atas minimum atau sudah ada pesanan yang belum diterima.'
+            ? ($atur->sumberDrafPo === DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN
+                ? 'Tidak ada draf baru: stok cukup untuk perkiraan pemakaian atau sudah ada pesanan yang belum diterima.'
+                : 'Tidak ada draf baru: stok di atas minimum atau sudah ada pesanan yang belum diterima.')
             : "{$hasil['JumlahPo']} draf PO ({$hasil['JumlahBaris']} barang) disiapkan. Periksa lalu ajukan.";
 
         if ($hasil['TanpaPemasok'] !== []) {

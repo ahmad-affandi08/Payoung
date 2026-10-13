@@ -547,7 +547,14 @@ export type PropsDetailRetur = {
 /* Pengaturan */
 export type PropsPengaturanPembelian = {
     /** D-23 D: DrafPoOtomatis = draf PO disiapkan tiap pagi untuk stok di bawah minimum. */
-    Pengaturan: { BatasPersetujuanPo: string; ToleransiPenerimaanPersen: string; DrafPoOtomatis: boolean };
+    Pengaturan: {
+        BatasPersetujuanPo: string;
+        ToleransiPenerimaanPersen: string;
+        DrafPoOtomatis: boolean;
+        /** F24: `Minimum` = di bawah stok minimum; `Perkiraan` = dari laju pemakaian 28 hari untuk `HariCakupanDrafPo` hari. */
+        SumberDrafPo: 'Minimum' | 'Perkiraan';
+        HariCakupanDrafPo: number;
+    };
 };
 
 /* F-05i (v3.40): konsinyasi (barang titipan). */

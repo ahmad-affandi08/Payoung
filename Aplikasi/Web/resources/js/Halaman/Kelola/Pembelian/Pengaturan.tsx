@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
+import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -29,8 +30,15 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
     const [batas, AturBatas] = useState(batasAwal);
     const [toleransi, AturToleransi] = useState(toleransiAwal);
     const [drafOtomatis, AturDrafOtomatis] = useState(Pengaturan.DrafPoOtomatis);
+    const [sumberDraf, AturSumberDraf] = useState<string>(Pengaturan.SumberDrafPo);
+    const [cakupanDraf, AturCakupanDraf] = useState(String(Pengaturan.HariCakupanDrafPo));
     const [memproses, AturMemproses] = useState(false);
-    const berubah = batas !== batasAwal || toleransi !== toleransiAwal || drafOtomatis !== Pengaturan.DrafPoOtomatis;
+    const berubah =
+        batas !== batasAwal ||
+        toleransi !== toleransiAwal ||
+        drafOtomatis !== Pengaturan.DrafPoOtomatis ||
+        sumberDraf !== Pengaturan.SumberDrafPo ||
+        cakupanDraf !== String(Pengaturan.HariCakupanDrafPo);
 
     const Simpan = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -40,6 +48,8 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                 BatasPersetujuanPo: batas === '' ? '0' : batas,
                 ToleransiPenerimaanPersen: toleransi === '' ? '0' : toleransi,
                 DrafPoOtomatis: drafOtomatis,
+                SumberDrafPo: sumberDraf,
+                HariCakupanDrafPo: Number(cakupanDraf),
             },
             {
                 preserveScroll: true,
@@ -92,13 +102,45 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                 <Panel
                     judul="Draf pesanan otomatis"
                     idJudul="judul-draf-otomatis"
-                    keterangan="Setiap pagi sistem menyiapkan draf pesanan pembelian untuk barang yang stoknya di bawah stok minimum, ke pemasok dan harga pembelian terakhir. Draf tetap diperiksa dan diajukan oleh Anda."
+                    keterangan="Setiap pagi sistem menyiapkan draf pesanan pembelian ke pemasok dan harga pembelian terakhir. Draf tetap diperiksa dan diajukan oleh Anda."
                 >
                     <KotakCentang
                         label="Siapkan draf pesanan pembelian otomatis"
                         nilai={drafOtomatis}
                         saatBerubah={AturDrafOtomatis}
                     />
+                    <BidangPilihan
+                        label="Dasar perhitungan jumlah"
+                        nilai={sumberDraf}
+                        opsi={[
+                            { Nilai: 'Minimum', Label: 'Stok di bawah minimum' },
+                            { Nilai: 'Perkiraan', Label: 'Perkiraan pemakaian' },
+                        ]}
+                        saatBerubah={AturSumberDraf}
+                        galat={galat.SumberDrafPo}
+                        disabled={!drafOtomatis}
+                        required
+                    />
+                    <p className="text-keterangan text-teks-sekunder">
+                        {sumberDraf === 'Perkiraan'
+                            ? 'Jumlah dihitung dari rata-rata pemakaian 28 hari terakhir (penjualan, bahan resep, produksi, barang terbuang) dikali cakupan hari di bawah, dikurangi stok sekarang dan pesanan yang belum diterima. Berlaku juga untuk barang tanpa stok minimum.'
+                            : 'Barang dipesan sampai stok maksimum (atau 2 kali stok minimum) bila stoknya sudah sama dengan atau di bawah stok minimum.'}
+                    </p>
+                    {sumberDraf === 'Perkiraan' ? (
+                        <BidangPilihan
+                            label="Cakupan kebutuhan"
+                            nilai={cakupanDraf}
+                            opsi={[
+                                { Nilai: '7', Label: '7 hari ke depan' },
+                                { Nilai: '14', Label: '14 hari ke depan' },
+                                { Nilai: '30', Label: '30 hari ke depan' },
+                            ]}
+                            saatBerubah={AturCakupanDraf}
+                            galat={galat.HariCakupanDrafPo}
+                            disabled={!drafOtomatis}
+                            required
+                        />
+                    ) : null}
                 </Panel>
                 <div>
                     <Tombol type="submit" memproses={memproses} disabled={!berubah}>

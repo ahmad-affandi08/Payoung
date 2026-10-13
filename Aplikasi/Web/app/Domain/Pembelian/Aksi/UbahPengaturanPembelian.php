@@ -28,7 +28,7 @@ final class UbahPengaturanPembelian
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis BatasPersetujuanTidakValid, ToleransiTidakValid
+     * @throws PelanggaranAturanBisnis BatasPersetujuanTidakValid, ToleransiTidakValid, SumberDrafTidakValid, CakupanDrafTidakValid
      */
     public function Jalankan(DataPengaturanPembelian $baru, int $idPengguna): void
     {
@@ -40,10 +40,18 @@ final class UbahPengaturanPembelian
             throw new PelanggaranAturanBisnis('ToleransiTidakValid', 'Toleransi penerimaan harus antara 0% dan 100%.', 'ToleransiPenerimaanPersen');
         }
 
+        if (! in_array($baru->sumberDrafPo, [DataPengaturanPembelian::SUMBER_DRAF_MINIMUM, DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN], true)) {
+            throw new PelanggaranAturanBisnis('SumberDrafTidakValid', 'Sumber draf PO harus stok minimum atau perkiraan pemakaian.', 'SumberDrafPo');
+        }
+
+        if (! in_array($baru->hariCakupanDrafPo, DataPengaturanPembelian::HARI_CAKUPAN_DRAF_OPSI, true)) {
+            throw new PelanggaranAturanBisnis('CakupanDrafTidakValid', 'Cakupan draf PO harus 7, 14, atau 30 hari.', 'HariCakupanDrafPo');
+        }
+
         DB::transaction(function () use ($baru, $idPengguna): void {
             $lama = $this->pengaturan->Ambil();
-            $nilaiLama = ['BatasPersetujuanPo' => $lama->batasPersetujuanPo->KeString(), 'ToleransiPenerimaanPersen' => (string) $lama->toleransiPenerimaanPersen, 'DrafPoOtomatis' => $lama->drafPoOtomatis];
-            $nilaiBaru = ['BatasPersetujuanPo' => $baru->batasPersetujuanPo->KeString(), 'ToleransiPenerimaanPersen' => (string) $baru->toleransiPenerimaanPersen, 'DrafPoOtomatis' => $baru->drafPoOtomatis];
+            $nilaiLama = ['BatasPersetujuanPo' => $lama->batasPersetujuanPo->KeString(), 'ToleransiPenerimaanPersen' => (string) $lama->toleransiPenerimaanPersen, 'DrafPoOtomatis' => $lama->drafPoOtomatis, 'SumberDrafPo' => $lama->sumberDrafPo, 'HariCakupanDrafPo' => $lama->hariCakupanDrafPo];
+            $nilaiBaru = ['BatasPersetujuanPo' => $baru->batasPersetujuanPo->KeString(), 'ToleransiPenerimaanPersen' => (string) $baru->toleransiPenerimaanPersen, 'DrafPoOtomatis' => $baru->drafPoOtomatis, 'SumberDrafPo' => $baru->sumberDrafPo, 'HariCakupanDrafPo' => $baru->hariCakupanDrafPo];
 
             if ($nilaiLama === $nilaiBaru) {
                 return;

@@ -2314,7 +2314,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-CpO0-8i-.js",
+    "file": "assets/Aplikasi-C7o4ft5V.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -5734,7 +5734,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Pembelian/Pengaturan.tsx": {
-    "file": "assets/Pengaturan-DdU4qR38.js",
+    "file": "assets/Pengaturan-DCOGcdB8.js",
     "name": "Pengaturan",
     "src": "resources/js/Halaman/Kelola/Pembelian/Pengaturan.tsx",
     "isDynamicEntry": true,
@@ -5743,6 +5743,7 @@
       "_dist-D4veJNCv.js",
       "_TataLetakAplikasi-Cq6prIwZ.js",
       "_Tombol-DXR0xsyT.js",
+      "_BidangPilihan-ByLtXij8.js",
       "_Panel-mmKd9gvY.js",
       "_KotakCentang-BG03jzWX.js",
       "_BidangUang-CPmMsTXH.js",

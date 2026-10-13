@@ -19,6 +19,8 @@ final class UbahPengaturanPembelianPermintaan extends FormRequest
             'BatasPersetujuanPo' => ['required', 'string', AturanPembelian::UANG],
             'ToleransiPenerimaanPersen' => ['required', 'string', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
             'DrafPoOtomatis' => ['sometimes', 'boolean'],
+            'SumberDrafPo' => ['sometimes', 'string', 'in:'.DataPengaturanPembelian::SUMBER_DRAF_MINIMUM.','.DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN],
+            'HariCakupanDrafPo' => ['sometimes', 'integer', 'in:'.implode(',', DataPengaturanPembelian::HARI_CAKUPAN_DRAF_OPSI)],
         ];
     }
 
@@ -44,6 +46,8 @@ final class UbahPengaturanPembelianPermintaan extends FormRequest
             AturanPembelian::Uang($this->validated('BatasPersetujuanPo')),
             (string) $this->validated('ToleransiPenerimaanPersen'),
             $this->boolean('DrafPoOtomatis', true),
+            $this->has('SumberDrafPo') ? $this->string('SumberDrafPo')->toString() : DataPengaturanPembelian::SUMBER_DRAF_MINIMUM,
+            $this->has('HariCakupanDrafPo') ? $this->integer('HariCakupanDrafPo') : DataPengaturanPembelian::HARI_CAKUPAN_DRAF_BAWAAN,
         );
     }
 }

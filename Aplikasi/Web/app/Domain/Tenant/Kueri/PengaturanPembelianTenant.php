@@ -27,6 +27,8 @@ final class PengaturanPembelianTenant
             self::AmbilUang($pengaturan['BatasPersetujuanPo'] ?? null, DataPengaturanPembelian::BATAS_PERSETUJUAN_PO_BAWAAN),
             self::AmbilPersen($pengaturan['ToleransiPenerimaanPersen'] ?? null),
             ($pengaturan['DrafPoOtomatis'] ?? true) !== false,
+            ($pengaturan['SumberDrafPo'] ?? null) === DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN ? DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN : DataPengaturanPembelian::SUMBER_DRAF_MINIMUM,
+            is_int($pengaturan['HariCakupanDrafPo'] ?? null) && in_array($pengaturan['HariCakupanDrafPo'], DataPengaturanPembelian::HARI_CAKUPAN_DRAF_OPSI, true) ? $pengaturan['HariCakupanDrafPo'] : DataPengaturanPembelian::HARI_CAKUPAN_DRAF_BAWAAN,
         );
     }
 

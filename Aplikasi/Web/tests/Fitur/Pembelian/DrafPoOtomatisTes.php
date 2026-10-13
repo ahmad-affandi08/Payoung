@@ -15,6 +15,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Pembelian\BantuanPembelian;
+use Tests\Pendukung\Persediaan\BantuanStokAwal;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 use Tests\TestCase;
 
@@ -123,4 +124,61 @@ it('jadwal pagi mengikuti pengaturan; pengguna tanpa izin pembelian ditolak', fu
     Artisan::call('pembelian:draf-po-otomatis', ['--tenant' => [$k['Tenant']->Id]]);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(PesananPembelian::query()->where('DibuatOtomatis', true)->where('Status', StatusPesananPembelian::Draf->value)->count())->toBe(2);
+});
+
+it('F24 sumber perkiraan: kebutuhan dari laju pemakaian 28 hari × cakupan hari − saldo − PO terbuka, tanpa perlu stok minimum; catatan menyebut dasarnya', function (): void {
+    $t = BantuanPembelian::SiapkanTenant();
+    $id = $t['Pemilik']->Id;
+    $pemasok = BantuanPembelian::BuatPemasok('PT Beras Delanggu Sejahtera');
+    $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Delanggu Premium Pulen 1 kg']);
+    $gula = BantuanKatalog::BuatProduk(['Nama' => 'Gula Pasir Kristal Putih Lokal 1 kg']);
+    BantuanPembelian::TerimaTanpaPo($pemasok, $t['Gudang'], [[$beras, '400', '12000'], [$gula, '100', '15000']], $id, tanggal: BantuanPembelian::Hari(40));
+
+    // Beras: 4 × 70 = 280 pcs terpakai dalam 28 hari terakhir (10/hari), saldo 120. Gula tidak terpakai sama sekali.
+    foreach ([2, 9, 16, 23] as $mundur) {
+        BantuanStokAwal::Jual($beras, $t['Gudang'], '70', BantuanPembelian::Hari($mundur)->format('Y-m-d'));
+    }
+
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    app(UbahPengaturanPembelianTenant::class)->Jalankan(new DataPengaturanPembelian(Uang::Dari('5000000'), '0', true, DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN, 14));
+    expect(Artisan::call('pembelian:draf-po-otomatis', ['--tenant' => [$t['Tenant']->Id]]))->toBe(0);
+
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    $draf = PesananPembelian::query()->where('DibuatOtomatis', true)->with('Detail')->get();
+
+    // 10/hari × 14 = 140 − saldo 120 = 20. Gula tanpa pemakaian tidak dipesan walau tanpa stok minimum.
+    expect($draf)->toHaveCount(1)
+        ->and($draf->sole()->Detail->sole()->only(['IdProduk', 'Jumlah', 'Harga']))->toBe(['IdProduk' => $beras->Id, 'Jumlah' => '20.0000', 'Harga' => '12000.00'])
+        ->and($draf->sole()->Catatan)->toContain('perkiraan pemakaian 28 hari terakhir untuk kebutuhan 14 hari');
+
+    // Ulang: PO draf 20 sudah menutup kekurangan. Cakupan 30 hari: 300 − 120 − 20 = 160 lagi.
+    Artisan::call('pembelian:draf-po-otomatis', ['--tenant' => [$t['Tenant']->Id]]);
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(PesananPembelian::query()->where('DibuatOtomatis', true)->count())->toBe(1);
+
+    app(UbahPengaturanPembelianTenant::class)->Jalankan(new DataPengaturanPembelian(Uang::Dari('5000000'), '0', true, DataPengaturanPembelian::SUMBER_DRAF_PERKIRAAN, 30));
+    Artisan::call('pembelian:draf-po-otomatis', ['--tenant' => [$t['Tenant']->Id]]);
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    $jumlah = PesananPembelian::query()->where('DibuatOtomatis', true)->with('Detail')->get()->map(fn (PesananPembelian $po): string => $po->Detail->sole()->Jumlah)->sort()->values()->all();
+    expect($jumlah)->toBe(['20.0000', '160.0000']);
+});
+
+it('F24 pengaturan: sumber draf dan cakupan disimpan lewat formulir; nilai di luar pilihan ditolak', function (): void {
+    $t = BantuanPembelian::SiapkanTenant();
+    BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+    $dasar = ['BatasPersetujuanPo' => '5000000', 'ToleransiPenerimaanPersen' => '0', 'DrafPoOtomatis' => true];
+
+    $this->put('/kelola/pembelian/pengaturan', [...$dasar, 'SumberDrafPo' => 'Perkiraan', 'HariCakupanDrafPo' => 7])->assertSessionHasNoErrors();
+    $this->get('/kelola/pembelian/pengaturan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Pengaturan.SumberDrafPo', 'Perkiraan')
+        ->where('Pengaturan.HariCakupanDrafPo', 7));
+
+    $this->put('/kelola/pembelian/pengaturan', [...$dasar, 'SumberDrafPo' => 'Acak'])->assertSessionHasErrors('SumberDrafPo');
+    $this->put('/kelola/pembelian/pengaturan', [...$dasar, 'SumberDrafPo' => 'Perkiraan', 'HariCakupanDrafPo' => 10])->assertSessionHasErrors('HariCakupanDrafPo');
+
+    // Klien lama tanpa kolom baru: kembali ke bawaan, tidak galat.
+    $this->put('/kelola/pembelian/pengaturan', $dasar)->assertSessionHasNoErrors();
+    $this->get('/kelola/pembelian/pengaturan')->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Pengaturan.SumberDrafPo', 'Minimum')
+        ->where('Pengaturan.HariCakupanDrafPo', 14));
 });
