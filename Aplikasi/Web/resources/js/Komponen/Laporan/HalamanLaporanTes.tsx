@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanBerandaKelola from '@/Halaman/Kelola/Beranda';
 import HalamanLaporanPajak from '@/Halaman/Kelola/Laporan/Pajak';
+import HalamanLaporanPembelian from '@/Halaman/Kelola/Laporan/Pembelian';
 import HalamanLaporanPenjualan from '@/Halaman/Kelola/Laporan/Penjualan';
 import HalamanLaporanStok from '@/Halaman/Kelola/Laporan/Stok';
 import { AmbilHrefEkspor } from '@/Pengujian/InteraksiRadix';
@@ -547,5 +548,91 @@ describe('F-14a laporan pajak & stok', () => {
         expect(screen.getByText('Batch UHT-A')).toBeTruthy();
         expect(screen.getByText(/Sudah lewat \(3 hari lalu\)/)).toBeTruthy();
         expect(screen.getByText(/Segera \(5 hari lagi\)/)).toBeTruthy();
+    });
+});
+
+describe('§10.10 laporan pembelian', () => {
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/laporan/pembelian');
+    });
+
+    const dasar = {
+        Peringatan: null,
+        MaksHari: 92,
+        OpsiOutlet: [{ Nilai: 'o1', Label: 'Toko Kelontong Berkah Solo' }],
+    };
+
+    it('per pemasok: nama, pembelian bersih, sisa hutang; ekspor sesuai saring', () => {
+        RenderUji(
+            <HalamanLaporanPembelian
+                {...dasar}
+                Saring={{ Tab: 'pemasok', Dari: '2026-10-01', Sampai: '2026-10-07', Outlet: '' }}
+                Isi={[
+                    {
+                        Kunci: 'p1',
+                        KodePemasok: 'SPN',
+                        NamaPemasok: 'PT Sumber Pangan Nusantara',
+                        JumlahFaktur: 1,
+                        Subtotal: '756000.00',
+                        Ongkir: '0.00',
+                        Pajak: '0.00',
+                        Total: '756000.00',
+                        Retur: '0.00',
+                        Bersih: '756000.00',
+                        Dibayar: '0.00',
+                        SisaHutang: '756000.00',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Pembelian per pemasok' })).toBeTruthy();
+        expect(screen.getByText('PT Sumber Pangan Nusantara')).toBeTruthy();
+        expect(screen.getAllByText('Rp 756.000').length).toBeGreaterThan(1);
+        expect(AmbilHrefEkspor('csv', 'Ekspor')).toContain('/kelola/laporan/pembelian/ekspor?');
+        expect(AmbilHrefEkspor('csv', 'Ekspor')).toContain('tab=pemasok');
+    });
+
+    it('PO outstanding: nilai sisa dan label terlambat berteks', () => {
+        RenderUji(
+            <HalamanLaporanPembelian
+                {...dasar}
+                Saring={{ Tab: 'po', Dari: '2026-10-01', Sampai: '2026-10-07', Outlet: '' }}
+                Isi={[
+                    {
+                        Kunci: 'u1',
+                        Nomor: 'PO/SOLO/2610/0001',
+                        NamaPemasok: 'PT Sumber Pangan Nusantara',
+                        Tanggal: '2026-10-01',
+                        PerkiraanTiba: '2026-10-04',
+                        Status: 'DiterimaSebagian',
+                        LabelStatus: 'Diterima sebagian',
+                        UmurHari: 6,
+                        HariTerlambat: 3,
+                        JumlahBaris: 1,
+                        JumlahBarisSisa: 1,
+                        Total: '280000.00',
+                        NilaiSisa: '210000.00',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Pesanan pembelian outstanding' })).toBeTruthy();
+        expect(screen.getByText('Terlambat 3 hari')).toBeTruthy();
+        expect(screen.getAllByText('Rp 210.000').length).toBeGreaterThan(0);
+        expect(screen.getByText(/periode tidak berlaku/)).toBeTruthy();
+    });
+
+    it('per produk: harga rata-rata dan keadaan kosong', () => {
+        RenderUji(
+            <HalamanLaporanPembelian
+                {...dasar}
+                Saring={{ Tab: 'produk', Dari: '2026-10-01', Sampai: '2026-10-07', Outlet: '' }}
+                Isi={[]}
+            />,
+        );
+
+        expect(screen.getByText('Belum ada pembelian produk pada periode ini.')).toBeTruthy();
     });
 });

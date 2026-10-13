@@ -457,3 +457,59 @@ export type PropsLaporanApotek = {
     Sipnap: { Bulan: string; Outlet: string; Baris: BarisSipnap[] };
     OpsiOutlet: { Nilai: string; Label: string }[];
 };
+
+/** §10.10 laporan pembelian (`/kelola/laporan/pembelian`). */
+export type TabLaporanPembelian = 'pemasok' | 'produk' | 'po';
+
+export type BarisPembelianPemasok = {
+    Kunci: string;
+    KodePemasok: string;
+    NamaPemasok: string;
+    JumlahFaktur: number;
+    Subtotal: string;
+    Ongkir: string;
+    Pajak: string;
+    Total: string;
+    Retur: string;
+    Bersih: string;
+    Dibayar: string;
+    SisaHutang: string;
+};
+
+export type BarisPembelianProduk = {
+    Kunci: string;
+    NamaProduk: string;
+    Qty: string;
+    Nilai: string;
+    NilaiRetur: string;
+    Bersih: string;
+    HargaRata: string;
+    HargaMin: string;
+    HargaMax: string;
+    JumlahFaktur: number;
+    JumlahPemasok: number;
+};
+
+export type BarisPesananOutstanding = {
+    Kunci: string;
+    Nomor: string;
+    NamaPemasok: string;
+    Tanggal: string;
+    PerkiraanTiba: string | null;
+    Status: 'Disetujui' | 'DiterimaSebagian';
+    LabelStatus: string;
+    UmurHari: number;
+    HariTerlambat: number;
+    JumlahBaris: number;
+    JumlahBarisSisa: number;
+    Total: string;
+    NilaiSisa: string;
+};
+
+export type PropsLaporanPembelian = {
+    Saring: { Tab: TabLaporanPembelian; Dari: string; Sampai: string; Outlet: string };
+    Peringatan: string | null;
+    MaksHari: number;
+    OpsiOutlet: OpsiLaporan[];
+    Isi: BarisPembelianPemasok[] | BarisPembelianProduk[] | BarisPesananOutstanding[];
+};

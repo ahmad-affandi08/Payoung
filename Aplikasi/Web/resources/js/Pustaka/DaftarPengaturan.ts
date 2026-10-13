@@ -187,6 +187,14 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.PersediaanKelola,
             },
             {
+                label: 'Laporan apotek',
+                keterangan: 'Penjualan obat wajib resep, psikotropika & narkotika, dan data pendukung SIPNAP.',
+                href: '/kelola/laporan/apotek',
+                izin: IzinTenant.LaporanPenjualanLihat,
+                fitur: 'laporan.lengkap',
+                sektor: ['RTL-PHR'],
+            },
+            {
                 label: 'Pengaturan pembelian',
                 keterangan: 'Persetujuan pesanan pembelian, toleransi penerimaan, dan draf PO otomatis.',
                 href: '/kelola/pembelian/pengaturan',

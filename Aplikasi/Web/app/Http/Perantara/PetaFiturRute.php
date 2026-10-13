@@ -70,6 +70,7 @@ final class PetaFiturRute
         ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'keamanan.anti-fraud', 'Mode' => 'semua', 'Nama' => 'Anti-fraud', 'Query' => ['tab' => 'anti-fraud']],
         ['Pola' => 'kelola.laporan.penjualan.insight-whatsapp', 'Fitur' => 'laporan.insight', 'Mode' => 'tulis', 'Nama' => 'Forecast & insight'],
         ['Pola' => 'kelola.laporan.pajak*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
+        ['Pola' => 'kelola.laporan.pembelian*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.stok*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.apotek*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
 

@@ -342,13 +342,13 @@ const menuLaporan: ItemMenu[] = [
         fitur: 'laporan.lengkap',
     },
     { label: 'Laporan stok', href: '/kelola/laporan/stok', izin: IzinTenant.PersediaanLihat, fitur: 'laporan.lengkap' },
-    // Apotek (§9.5): obat wajib resep & data pendukung SIPNAP.
+    // §10.10: pembelian per pemasok, per produk, dan PO outstanding. Laporan apotek pindah ke Pengaturan (anggaran 7
+    // sub-menu, D-27; jarang dibuka, seperti Pusat Unduhan).
     {
-        label: 'Laporan apotek',
-        href: '/kelola/laporan/apotek',
-        izin: IzinTenant.LaporanPenjualanLihat,
+        label: 'Laporan pembelian',
+        href: '/kelola/laporan/pembelian',
+        izin: IzinTenant.PembelianKelola,
         fitur: 'laporan.lengkap',
-        sektor: ['RTL-PHR'],
     },
     {
         label: 'Laba rugi',

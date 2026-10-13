@@ -127,7 +127,7 @@ final class BuatNotifikasiKedaluwarsa
             }
 
             [$judul, $isi] = $this->Susun($terlihat);
-            $sidik = substr(sha1(implode('|', array_map(fn (array $b): string => $b['Baris']['Kunci'].':'.$b['Tingkat'], $terlihat))), 0, 12);
+            $sidik = substr(hash('sha256', implode('|', array_map(fn (array $b): string => $b['Baris']['Kunci'].':'.$b['Tingkat'], $terlihat))), 0, 12);
             $dibuat += (int) $this->buat->Jalankan(
                 (int) $id,
                 JenisNotifikasiPengguna::StokKedaluwarsa,

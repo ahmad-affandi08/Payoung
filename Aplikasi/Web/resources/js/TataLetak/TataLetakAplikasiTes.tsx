@@ -378,10 +378,10 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(CekMenuAktif('/kelola/persediaan/saldo', '/kelola/persediaan/kartu-stok?produk=01J9')).toBe(true);
         expect(CekMenuAktif('/kelola/persediaan/saldo', '/kelola/produk')).toBe(false);
         expect(CekMenuAktif('/kelola/akuntansi/jurnal', '/kelola/akuntansi/jurnal/01J9')).toBe(true);
-        // F-04: grup Pembelian tampil untuk pembelian.kelola; pengaturan pembelian hanya untuk pembelian.po.setujui.
+        // F-04: grup Pembelian tampil untuk pembelian.kelola (beserta Laporan pembelian, §10.10); pengaturan pembelian hanya untuk pembelian.po.setujui.
         expect(
             SaringMenuTerlihat({ Pemilik: false, Izin: ['pembelian.kelola'] }).map(({ menu }) => menu.label),
-        ).toEqual(['Beranda', 'Kotak tindakan', 'Pembelian', 'Pengaturan']);
+        ).toEqual(['Beranda', 'Kotak tindakan', 'Laporan', 'Pembelian', 'Pengaturan']);
         expect(CekMenuAktif('/kelola/pembelian/pesanan', '/kelola/pembelian/faktur/01J9')).toBe(true);
         // F-07b/F-06: menu "Penjualan & kasir" (termasuk shift & tutup harian) ikut izin laporan.penjualan.lihat.
         expect(
