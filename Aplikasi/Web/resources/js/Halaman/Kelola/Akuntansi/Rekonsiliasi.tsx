@@ -212,7 +212,7 @@ export default function HalamanRekonsiliasiBank({
 
             {Izin.Kelola ? (
                 <Panel judul="Unggah rekening koran">
-                    <form onSubmit={Unggah} className="flex max-w-xl flex-col gap-3" noValidate>
+                    <form onSubmit={Unggah} className="flex flex-col gap-3" noValidate>
                         <BidangBerkas
                             label="Berkas (.csv atau .xlsx)"
                             berkas={unggah.data.Berkas}

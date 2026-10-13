@@ -127,7 +127,7 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
             )}
             {Izin.Kelola ? null : <PesanHanyaLihat izin="pelanggan.kelola" objek="promo" />}
 
-            <Card className="max-w-2xl gap-3 rounded-panel p-4 shadow-none">
+            <Card className="gap-3 rounded-panel p-4 shadow-none lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
                 <BidangPilihan
                     label="Bila beberapa promo berlaku"
                     nilai={mode}
@@ -136,7 +136,7 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
                     disabled={!Izin.Kelola}
                     required
                 />
-                <p className="text-keterangan text-teks-sekunder">
+                <p className="text-keterangan text-teks-sekunder lg:pt-6">
                     {mode === 'Terbaik'
                         ? 'Kasir memilih yang potongannya paling besar: semua promo biasa digabung, atau satu promo eksklusif.'
                         : 'Promo dipakai urut prioritas (angka besar dulu); promo eksklusif hanya dipakai bila belum ada promo lain dan menghentikan promo berikutnya.'}

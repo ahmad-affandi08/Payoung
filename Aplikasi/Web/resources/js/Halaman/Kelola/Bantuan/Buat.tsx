@@ -37,28 +37,30 @@ export default function BuatTiketBantuan({ Kategori, Prioritas, Lampiran }: Prop
 
     return (
         <TataLetakAplikasi judul="Buat tiket bantuan">
-            <Card className="max-w-2xl p-5 rounded-panel shadow-none">
+            <Card className="rounded-panel p-5 shadow-none">
                 <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
-                    <BidangPilihan
-                        label="Kategori"
-                        nilai={formulir.data.Kategori}
-                        opsi={Kategori}
-                        kosong="Pilih kategori masalah"
-                        saatBerubah={(nilai) => formulir.setData('Kategori', nilai)}
-                        galat={formulir.errors.Kategori}
-                        required
-                    />
-                    <BidangPilihan
-                        label="Seberapa mendesak?"
-                        nilai={formulir.data.Prioritas}
-                        opsi={Prioritas.map((pilihan) => ({
-                            Nilai: pilihan.Nilai,
-                            Label: `${pilihan.Label}: ${pilihan.Keterangan}`,
-                        }))}
-                        saatBerubah={(nilai) => formulir.setData('Prioritas', nilai)}
-                        galat={formulir.errors.Prioritas}
-                        required
-                    />
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <BidangPilihan
+                            label="Kategori"
+                            nilai={formulir.data.Kategori}
+                            opsi={Kategori}
+                            kosong="Pilih kategori masalah"
+                            saatBerubah={(nilai) => formulir.setData('Kategori', nilai)}
+                            galat={formulir.errors.Kategori}
+                            required
+                        />
+                        <BidangPilihan
+                            label="Seberapa mendesak?"
+                            nilai={formulir.data.Prioritas}
+                            opsi={Prioritas.map((pilihan) => ({
+                                Nilai: pilihan.Nilai,
+                                Label: `${pilihan.Label}: ${pilihan.Keterangan}`,
+                            }))}
+                            saatBerubah={(nilai) => formulir.setData('Prioritas', nilai)}
+                            galat={formulir.errors.Prioritas}
+                            required
+                        />
+                    </div>
                     <BidangTeks
                         label="Judul"
                         nilai={formulir.data.Judul}

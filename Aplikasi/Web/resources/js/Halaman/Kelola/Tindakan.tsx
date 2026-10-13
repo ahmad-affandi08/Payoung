@@ -144,7 +144,7 @@ function PilihanRingkasanWhatsapp({ ringkasan }: { ringkasan: RingkasanWhatsappT
     const [memproses, AturMemproses] = useState(false);
 
     return (
-        <div className="flex max-w-3xl items-start gap-3 rounded-panel border border-garis bg-permukaan p-4">
+        <div className="flex items-start gap-3 rounded-panel border border-garis bg-permukaan p-4">
             <Switch
                 id="RingkasanWhatsapp"
                 checked={ringkasan.Aktif}

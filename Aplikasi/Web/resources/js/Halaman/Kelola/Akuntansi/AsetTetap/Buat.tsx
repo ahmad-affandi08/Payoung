@@ -95,9 +95,9 @@ export default function HalamanBuatAsetTetap({ OpsiKelompok, OpsiOutlet, OpsiAku
 
     return (
         <TataLetakAplikasi judul="Catat aset tetap" jejak={[{ label: 'Aset tetap', href: alamat }]}>
-            <form onSubmit={Kirim} className="flex max-w-3xl flex-col gap-4" noValidate>
+            <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
                 <Panel>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangOutlet
                             label="Outlet (opsional)"
                             kosong="Semua outlet / kantor pusat"
@@ -115,7 +115,7 @@ export default function HalamanBuatAsetTetap({ OpsiKelompok, OpsiOutlet, OpsiAku
                             maxLength={150}
                             required
                         />
-                        <div className="sm:col-span-2">
+                        <div>
                             <BidangPilihan
                                 label="Kelompok harta"
                                 nilai={d.Kelompok}
@@ -164,7 +164,7 @@ export default function HalamanBuatAsetTetap({ OpsiKelompok, OpsiOutlet, OpsiAku
                 </Panel>
 
                 <Panel judul="Asal aset">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangPilihan
                             label="Asal"
                             nilai={d.SumberDana}
@@ -195,7 +195,7 @@ export default function HalamanBuatAsetTetap({ OpsiKelompok, OpsiOutlet, OpsiAku
                                 required
                             />
                         )}
-                        <div className="sm:col-span-2">
+                        <div className="sm:col-span-2 lg:col-span-3">
                             <BidangTeksPanjang
                                 label="Catatan (opsional)"
                                 nilai={d.Catatan}

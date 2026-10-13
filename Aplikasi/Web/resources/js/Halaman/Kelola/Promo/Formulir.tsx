@@ -225,10 +225,10 @@ export default function HalamanFormulirPromo({
                     Promo tersimpan, tetapi baru diterapkan di kasir setelah paket dinaikkan.
                 </Pemberitahuan>
             )}
-            <form onSubmit={Simpan} className="flex max-w-3xl flex-col gap-4" aria-label="Formulir promo" noValidate>
+            <form onSubmit={Simpan} className="flex flex-col gap-4" aria-label="Formulir promo" noValidate>
                 <Card className="gap-4 rounded-panel p-4 shadow-none">
                     <h2 className="text-subjudul font-semibold text-teks-utama">Promo</h2>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangTeks
                             label="Kode promo"
                             nilai={isian.Kode}
@@ -282,7 +282,7 @@ export default function HalamanFormulirPromo({
                         saatBerubah={(nilai) => Ubah({ JenisAksi: nilai as JenisAksiPromo })}
                         required
                     />
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {pakaiPersen ? (
                             <BidangJumlah
                                 label="Persen diskon"
@@ -460,7 +460,7 @@ export default function HalamanFormulirPromo({
 
                 <Card className="gap-4 rounded-panel p-4 shadow-none">
                     <h2 className="text-subjudul font-semibold text-teks-utama">Syarat & waktu</h2>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangUang
                             label="Minimal belanja"
                             nilai={isian.MinimalSubtotal}

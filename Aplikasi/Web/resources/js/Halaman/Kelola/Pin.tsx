@@ -54,7 +54,7 @@ export default function HalamanPin({ PinSayaDiatur, Anggota }: PropsPin) {
     return (
         // D-27: remah roti halaman dihapus; jalan kembali ke Keamanan akun ikut jejak halaman di tata letak.
         <TataLetakAplikasi judul="PIN kasir" jejak={[{ label: 'Keamanan akun', href: '/kelola/keamanan' }]}>
-            <Card className="max-w-xl gap-4 rounded-panel py-6 shadow-none">
+            <Card className="gap-4 rounded-panel py-6 shadow-none lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start lg:gap-8">
                 <CardHeader className="gap-1 px-6">
                     <CardTitle className="text-subjudul font-bold text-teks-utama">
                         <h2>PIN saya</h2>
@@ -80,7 +80,7 @@ export default function HalamanPin({ PinSayaDiatur, Anggota }: PropsPin) {
                         kepadanya.
                     </p>
                     {sunting ? (
-                        <Card className="max-w-xl gap-3 rounded-panel py-4 shadow-none">
+                        <Card className="gap-3 rounded-panel py-4 shadow-none lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start lg:gap-8">
                             <CardHeader className="px-4">
                                 <CardTitle className="text-label font-semibold text-teks-utama">
                                     <h3>Atur ulang PIN {sunting.Nama}</h3>

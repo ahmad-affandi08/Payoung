@@ -27,7 +27,7 @@ export default function Keamanan({ Perangkat, HariPerangkatTepercaya, MenitKonfi
 
     return (
         <TataLetakPengelola judul="Keamanan akun">
-            <Card className="max-w-2xl gap-3 rounded-panel py-6 shadow-none">
+            <Card className="gap-3 rounded-panel py-6 shadow-none sm:flex-row sm:items-center sm:justify-between">
                 <CardHeader className="gap-1 px-6">
                     <CardTitle className="text-subjudul font-bold text-teks-utama">
                         <h2>Kata sandi</h2>
@@ -47,7 +47,7 @@ export default function Keamanan({ Perangkat, HariPerangkatTepercaya, MenitKonfi
                 </CardContent>
             </Card>
 
-            <Card className="max-w-2xl gap-4 rounded-panel py-6 shadow-none">
+            <Card className="gap-4 rounded-panel py-6 shadow-none">
                 <CardHeader className="gap-1 px-6">
                     <CardTitle className="text-subjudul font-bold text-teks-utama">
                         <h2>Perangkat tepercaya</h2>

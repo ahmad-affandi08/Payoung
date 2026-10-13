@@ -37,7 +37,7 @@ export default function HalamanImporPelanggan({ Hasil, MaksimalBaris }: PropsImp
     return (
         <TataLetakAplikasi judul="Impor pelanggan" jejak={[{ label: 'Pelanggan', href: '/kelola/pelanggan' }]}>
             <Panel>
-                <form onSubmit={Periksa} className="flex max-w-2xl flex-col gap-4" noValidate>
+                <form onSubmit={Periksa} className="grid gap-6 lg:grid-cols-2 lg:items-start" noValidate>
                     <p className="text-isi text-teks-sekunder">
                         Baris pertama berisi judul kolom. Wajib: <strong>Nama</strong> dan <strong>NoHp</strong>.
                         Opsional: Email, TanggalLahir (1990-08-17 atau 17/08/1990), Alamat, Tag (dipisah titik koma),
@@ -48,29 +48,31 @@ export default function HalamanImporPelanggan({ Hasil, MaksimalBaris }: PropsImp
                             Unduh templat
                         </a>
                     </p>
-                    <BidangBerkas
-                        label="Berkas pelanggan (.xlsx atau .csv)"
-                        berkas={formulir.data.Berkas}
-                        ekstensi={['xlsx', 'csv']}
-                        maksimal={1}
-                        ukuranMaksimalKb={5120}
-                        saatBerubah={(daftar) => formulir.setData('Berkas', daftar)}
-                        galat={formulir.errors.Berkas}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                        <Tombol
-                            type="submit"
-                            varian={bolehTerapkan ? 'sekunder' : 'utama'}
-                            memproses={formulir.processing && !formulir.data.Terapkan}
-                            disabled={berkas === undefined}
-                        >
-                            Periksa berkas
-                        </Tombol>
-                        {bolehTerapkan ? (
-                            <Tombol onClick={() => Kirim(true)} memproses={formulir.processing}>
-                                {`Impor ${FormatAngka(Hasil.Baru)} pelanggan baru`}
+                    <div className="flex flex-col gap-4">
+                        <BidangBerkas
+                            label="Berkas pelanggan (.xlsx atau .csv)"
+                            berkas={formulir.data.Berkas}
+                            ekstensi={['xlsx', 'csv']}
+                            maksimal={1}
+                            ukuranMaksimalKb={5120}
+                            saatBerubah={(daftar) => formulir.setData('Berkas', daftar)}
+                            galat={formulir.errors.Berkas}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                            <Tombol
+                                type="submit"
+                                varian={bolehTerapkan ? 'sekunder' : 'utama'}
+                                memproses={formulir.processing && !formulir.data.Terapkan}
+                                disabled={berkas === undefined}
+                            >
+                                Periksa berkas
                             </Tombol>
-                        ) : null}
+                            {bolehTerapkan ? (
+                                <Tombol onClick={() => Kirim(true)} memproses={formulir.processing}>
+                                    {`Impor ${FormatAngka(Hasil.Baru)} pelanggan baru`}
+                                </Tombol>
+                            ) : null}
+                        </div>
                     </div>
                 </form>
             </Panel>

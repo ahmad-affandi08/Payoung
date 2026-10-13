@@ -66,7 +66,7 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                 onSubmit={Simpan}
                 noValidate
                 aria-label="Pengaturan pembelian"
-                className="flex max-w-2xl flex-col gap-4"
+                className="grid gap-4 lg:grid-cols-2 lg:items-start"
             >
                 <Panel
                     judul="Persetujuan pesanan pembelian"
@@ -102,6 +102,7 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                 <Panel
                     judul="Draf pesanan otomatis"
                     idJudul="judul-draf-otomatis"
+                    className="lg:col-span-2"
                     keterangan="Setiap pagi sistem menyiapkan draf pesanan pembelian ke pemasok dan harga pembelian terakhir. Draf tetap diperiksa dan diajukan oleh Anda."
                 >
                     <KotakCentang
@@ -142,7 +143,7 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                         />
                     ) : null}
                 </Panel>
-                <div>
+                <div className="lg:col-span-2">
                     <Tombol type="submit" memproses={memproses} disabled={!berubah}>
                         Simpan pengaturan
                     </Tombol>

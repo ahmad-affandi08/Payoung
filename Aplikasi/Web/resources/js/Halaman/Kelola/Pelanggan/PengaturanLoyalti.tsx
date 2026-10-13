@@ -52,7 +52,7 @@ export default function HalamanPengaturanLoyalti({ Pengaturan, FiturAktif, Izin 
         <TataLetakAplikasi judul="Pengaturan loyalti">
             {FiturAktif ? null : <PesanFiturLoyalti />}
             {Izin.Kelola ? null : <PesanHanyaLihat izin="pelanggan.kelola" objek="pengaturan loyalti" />}
-            <Card className="max-w-2xl gap-4 rounded-panel p-4 shadow-none">
+            <Card className="gap-4 rounded-panel p-4 shadow-none">
                 <form
                     onSubmit={Simpan}
                     className="flex flex-col gap-4"
@@ -68,58 +68,60 @@ export default function HalamanPengaturanLoyalti({ Pengaturan, FiturAktif, Izin 
                             }
                         }}
                     />
-                    <BidangUang
-                        label="Belanja untuk 1 poin"
-                        nilai={isian.BelanjaPerPoin}
-                        saatBerubah={(nilai) => AturIsian({ ...isian, BelanjaPerPoin: nilai })}
-                        galat={galat.BelanjaPerPoin}
-                        required
-                        keterangan="Poin = total belanja ÷ angka ini, dibulatkan ke bawah, dikali pengali tier. Minimal Rp 100."
-                        disabled={nonaktif}
-                    />
-                    <BidangJumlah
-                        label="Masa berlaku poin"
-                        nilai={isian.MasaBerlakuBulan}
-                        saatBerubah={(nilai) => AturIsian({ ...isian, MasaBerlakuBulan: nilai })}
-                        desimal={0}
-                        digitBulat={2}
-                        akhiran="bulan"
-                        keterangan="Poin yang tidak dipakai hangus otomatis, yang paling lama lebih dulu. 1–60 bulan."
-                        galat={galat.MasaBerlakuBulan}
-                        required
-                        disabled={nonaktif}
-                    />
-                    <BidangJumlah
-                        label="Periode evaluasi tier"
-                        nilai={isian.BulanEvaluasiTier}
-                        saatBerubah={(nilai) => AturIsian({ ...isian, BulanEvaluasiTier: nilai })}
-                        desimal={0}
-                        digitBulat={2}
-                        akhiran="bulan"
-                        keterangan="Tier dinilai dari total belanja selama periode ini. 1–24 bulan."
-                        galat={galat.BulanEvaluasiTier}
-                        required
-                        disabled={nonaktif}
-                    />
-                    <BidangUang
-                        label="Nilai 1 poin saat ditukar"
-                        nilai={isian.NilaiTukarPoin}
-                        saatBerubah={(nilai) => AturIsian({ ...isian, NilaiTukarPoin: nilai })}
-                        galat={galat.NilaiTukarPoin}
-                        keterangan="Kasir menukar poin sebagai potongan harga sebelum pajak. Minimal Rp 1, tidak boleh melebihi belanja untuk 1 poin."
-                        disabled={nonaktif}
-                    />
-                    <BidangJumlah
-                        label="Minimal poin sekali tukar"
-                        nilai={isian.MinimalTukarPoin}
-                        saatBerubah={(nilai) => AturIsian({ ...isian, MinimalTukarPoin: nilai })}
-                        desimal={0}
-                        digitBulat={6}
-                        akhiran="poin"
-                        keterangan="Penukaran poin hanya bisa saat kasir online. 1–100.000 poin."
-                        galat={galat.MinimalTukarPoin}
-                        disabled={nonaktif}
-                    />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <BidangUang
+                            label="Belanja untuk 1 poin"
+                            nilai={isian.BelanjaPerPoin}
+                            saatBerubah={(nilai) => AturIsian({ ...isian, BelanjaPerPoin: nilai })}
+                            galat={galat.BelanjaPerPoin}
+                            required
+                            keterangan="Poin = total belanja ÷ angka ini, dibulatkan ke bawah, dikali pengali tier. Minimal Rp 100."
+                            disabled={nonaktif}
+                        />
+                        <BidangJumlah
+                            label="Masa berlaku poin"
+                            nilai={isian.MasaBerlakuBulan}
+                            saatBerubah={(nilai) => AturIsian({ ...isian, MasaBerlakuBulan: nilai })}
+                            desimal={0}
+                            digitBulat={2}
+                            akhiran="bulan"
+                            keterangan="Poin yang tidak dipakai hangus otomatis, yang paling lama lebih dulu. 1–60 bulan."
+                            galat={galat.MasaBerlakuBulan}
+                            required
+                            disabled={nonaktif}
+                        />
+                        <BidangJumlah
+                            label="Periode evaluasi tier"
+                            nilai={isian.BulanEvaluasiTier}
+                            saatBerubah={(nilai) => AturIsian({ ...isian, BulanEvaluasiTier: nilai })}
+                            desimal={0}
+                            digitBulat={2}
+                            akhiran="bulan"
+                            keterangan="Tier dinilai dari total belanja selama periode ini. 1–24 bulan."
+                            galat={galat.BulanEvaluasiTier}
+                            required
+                            disabled={nonaktif}
+                        />
+                        <BidangUang
+                            label="Nilai 1 poin saat ditukar"
+                            nilai={isian.NilaiTukarPoin}
+                            saatBerubah={(nilai) => AturIsian({ ...isian, NilaiTukarPoin: nilai })}
+                            galat={galat.NilaiTukarPoin}
+                            keterangan="Kasir menukar poin sebagai potongan harga sebelum pajak. Minimal Rp 1, tidak boleh melebihi belanja untuk 1 poin."
+                            disabled={nonaktif}
+                        />
+                        <BidangJumlah
+                            label="Minimal poin sekali tukar"
+                            nilai={isian.MinimalTukarPoin}
+                            saatBerubah={(nilai) => AturIsian({ ...isian, MinimalTukarPoin: nilai })}
+                            desimal={0}
+                            digitBulat={6}
+                            akhiran="poin"
+                            keterangan="Penukaran poin hanya bisa saat kasir online. 1–100.000 poin."
+                            galat={galat.MinimalTukarPoin}
+                            disabled={nonaktif}
+                        />
+                    </div>
                     {isian.BelanjaPerPoin !== '' && Number(isian.BelanjaPerPoin) > 0 ? (
                         <Pemberitahuan jenis="info">
                             Contoh: belanja {FormatRupiah('250000')} mendapat{' '}
