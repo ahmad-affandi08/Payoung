@@ -99,6 +99,7 @@ final class TerimaBahanTerbuangPos
                     tanggalBisnis: $tanggal,
                     tinjauan: $tinjauan,
                     abaikanBatasMinus: true,
+                    pakaiLokasiProduksi: true,
                 ));
 
                 return StatusItemSinkron::Diterima;

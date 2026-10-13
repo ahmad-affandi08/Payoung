@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Katalog\Data;
 
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\LokasiProduksi;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Enum\SumberPerubahanKatalog;
 
@@ -51,5 +52,7 @@ final readonly class DataProduk
         public ?DataObatProduk $obat = null,
         // K-16: produk favorit di kasir; null = tidak diubah (klien lama, impor, panduan awal); produk baru = false.
         public ?bool $favorit = null,
+        // BR-05.4: lokasi produksi produk Resep (Dapur/Bar); null = Toko. Hanya form back-office yang mengubahnya.
+        public ?LokasiProduksi $lokasiProduksi = null,
     ) {}
 }

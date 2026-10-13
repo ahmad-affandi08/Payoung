@@ -146,6 +146,10 @@ final class SimpanProduk
             'MasaGaransiBulan' => $pelacakan === PelacakanProduk::Seri
                 ? ($data->sumber === SumberPerubahanKatalog::Manual ? $data->masaGaransiBulan : $produk->MasaGaransiBulan)
                 : null,
+            // BR-05.4: hanya produk Resep; impor & panduan awal tidak menimpa yang sudah diatur.
+            'LokasiProduksi' => $data->jenis === JenisProduk::Resep
+                ? ($data->sumber === SumberPerubahanKatalog::Manual ? $data->lokasiProduksi : $produk->LokasiProduksi)
+                : null,
             'GolonganObat' => $golonganObat,
             'ObatWajibApotek' => $obatWajibApotek,
             'Prekursor' => $prekursor,

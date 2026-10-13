@@ -187,6 +187,9 @@ export default function RingkasanProduk({
                     {aturan?.BolehPelacakan ? (
                         <Baris nama="Pelacakan stok">{labelPelacakan[data.Pelacakan]}</Baris>
                     ) : null}
+                    {data.Jenis === 'Resep' && data.LokasiProduksi ? (
+                        <Baris nama="Lokasi produksi">{data.LokasiProduksi}</Baris>
+                    ) : null}
                     {data.Pelacakan === 'Seri' && data.MasaGaransiBulan ? (
                         <Baris nama="Masa garansi">{data.MasaGaransiBulan} bulan</Baris>
                     ) : null}

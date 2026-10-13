@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Katalog\Enum\LokasiProduksi;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Model\Produk;
 use Tests\Pendukung\Katalog\BantuanKatalog;
@@ -104,4 +105,29 @@ it('K-25: harga terbuka disimpan dari form untuk jenis yang boleh; jenis lain & 
     $masuk()->post('/kelola/produk', [...$varian, 'Jenis' => 'Konsinyasi', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null])->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     expect(Produk::query()->where('Uuid', $varian['Uuid'])->sole()->HargaTerbuka)->toBeFalse();
+});
+
+it('BR-05.4: lokasi produksi disimpan dari form hanya untuk produk Resep (Dapur/Bar), bisa dikosongkan, nilai lain ditolak', function (): void {
+    $t = BantuanKatalog::SiapkanTenantProduk('Kedai Kopi Senja Solo');
+    $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+    $resep = IsiFormGaransi($t, ['Nama' => 'Es Kopi Susu Aren', 'Jenis' => 'Resep', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null, 'LokasiProduksi' => 'Bar']);
+    $masuk()->post('/kelola/produk', $resep)->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Produk::query()->where('Uuid', $resep['Uuid'])->sole()->LokasiProduksi)->toBe(LokasiProduksi::Bar);
+
+    $masuk()->put("/kelola/produk/{$resep['Uuid']}", [...$resep, 'LokasiProduksi' => 'Dapur'])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Produk::query()->where('Uuid', $resep['Uuid'])->sole()->LokasiProduksi)->toBe(LokasiProduksi::Dapur);
+
+    $masuk()->put("/kelola/produk/{$resep['Uuid']}", [...$resep, 'LokasiProduksi' => null])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Produk::query()->where('Uuid', $resep['Uuid'])->sole()->LokasiProduksi)->toBeNull();
+
+    $masuk()->post('/kelola/produk', IsiFormGaransi($t, ['Nama' => 'Es Kopi Lokasi Salah', 'Jenis' => 'Resep', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null, 'LokasiProduksi' => 'Gudang']))->assertSessionHasErrors('LokasiProduksi');
+
+    $barang = IsiFormGaransi($t, ['Nama' => 'Gula Pasir 1 kg', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null, 'LokasiProduksi' => 'Dapur']);
+    $masuk()->post('/kelola/produk', $barang)->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Produk::query()->where('Uuid', $barang['Uuid'])->sole()->LokasiProduksi)->toBeNull();
 });

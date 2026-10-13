@@ -286,6 +286,7 @@ erDiagram
 | `LogPerangkatDiunggah` | IdTenant, Uuid, IdPerangkat, VersiAplikasi, JumlahBaris, Isi (tersaring PII), DiunggahPada. Dihapus setelah 30 hari (v5.76) |
 | `PengingatKedaluwarsaBatch` | IdTenant, KunciBatch, Tingkat (H30/H7/Lewat), TanggalKedaluwarsa, DibuatPada. Unik per batch+tingkat+tanggal (v5.77, F23) |
 | `PesananTerbukaDetail.TerbuangDicatatPada` | Waktu bahan item yang di-void dicatat sebagai bahan terbuang (v5.78); null = tidak dicatat |
+| `Produk.LokasiProduksi` | `Dapur`/`Bar`/null, hanya produk Resep: lokasi stok tempat bahan resep dikurangi saat dijual; null = Toko (v5.79, BR-05.4) |
 | `Perangkat.MintaLogPada` / `LogDiunggahPada` | Permintaan unggah log dari dukungan (berlaku 7 hari) dan waktu dijawab (v5.76) |
 | `Pengumuman` | Judul, Isi, Jenis (Info/Pemeliharaan/CatatanRilis), Segmen JSON, MulaiPada, SelesaiPada |
 | `Insiden` | Judul, Tingkat, Status, Dampak, MulaiPada, SelesaiPada, Kronologi, PascaInsiden |

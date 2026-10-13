@@ -13,6 +13,7 @@ use App\Domain\Katalog\Data\DataProduk;
 use App\Domain\Katalog\Data\DataSatuanProduk;
 use App\Domain\Katalog\Enum\GolonganObat;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\LokasiProduksi;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Harga\Data\DataBarisHarga;
 use App\Domain\Katalog\Layanan\OpsiKelompokPajakKatalog;
@@ -67,6 +68,8 @@ final class SimpanProdukPermintaan extends FormRequest
             'Prekursor' => ['sometimes', 'boolean'],
             'DurasiMenit' => ['nullable', 'integer', 'min:5', 'max:720'],
             'MasaGaransiBulan' => ['nullable', 'integer', 'min:1', 'max:240'],
+            // BR-05.4: lokasi produksi produk Resep.
+            'LokasiProduksi' => ['nullable', Rule::enum(LokasiProduksi::class)],
             // Faktur Pajak Coretax (v3.11): kode barang/jasa 6 digit dan kode unit `UM.00xx` dari daftar DJP.
             'KodeBarangJasaCoretax' => ['nullable', 'string', 'regex:/^\d{6}$/'],
             'KodeUnitCoretax' => ['nullable', 'string', 'regex:/^UM\.\d{4}$/'],
@@ -215,6 +218,7 @@ final class SimpanProdukPermintaan extends FormRequest
             masaGaransiBulan: $this->filled('MasaGaransiBulan') ? $this->integer('MasaGaransiBulan') : null,
             kodeBarangJasaCoretax: $this->filled('KodeBarangJasaCoretax') ? $this->string('KodeBarangJasaCoretax')->toString() : null,
             kodeUnitCoretax: $this->filled('KodeUnitCoretax') ? $this->string('KodeUnitCoretax')->toString() : null,
+            lokasiProduksi: $this->filled('LokasiProduksi') ? LokasiProduksi::from($this->string('LokasiProduksi')->toString()) : null,
             favorit: $this->has('Favorit') ? $this->boolean('Favorit') : null,
             hargaTerbuka: $this->has('HargaTerbuka') ? $this->boolean('HargaTerbuka') : null,
             obat: $this->has('GolonganObat') ? new DataObatProduk(

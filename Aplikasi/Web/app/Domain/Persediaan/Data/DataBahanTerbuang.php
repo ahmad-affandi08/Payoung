@@ -33,5 +33,7 @@ final readonly class DataBahanTerbuang
         public CarbonImmutable $tanggalBisnis,
         public array $tinjauan = [],
         public bool $abaikanBatasMinus = false,
+        // BR-05.4: dari POS, bahan resep diambil dari lokasi produksinya (Dapur/Bar) bila outlet punya; back-office memakai `idGudang`.
+        public bool $pakaiLokasiProduksi = false,
     ) {}
 }

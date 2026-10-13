@@ -33,6 +33,7 @@ final class RingkasanAuditProduk
             'TampilOnline' => $produk->TampilOnline,
             'Favorit' => $produk->Favorit,
             'HargaTerbuka' => $produk->HargaTerbuka,
+            'LokasiProduksi' => $produk->LokasiProduksi?->value,
             'GolonganObat' => $produk->GolonganObat?->value,
             'ObatWajibApotek' => $produk->ObatWajibApotek,
             'Prekursor' => $produk->Prekursor,

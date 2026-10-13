@@ -66,6 +66,7 @@ final class DetailProduk
             'Prekursor' => $produk->Prekursor,
             'DurasiMenit' => $produk->DurasiMenit,
             'MasaGaransiBulan' => $produk->MasaGaransiBulan,
+            'LokasiProduksi' => $produk->LokasiProduksi?->value,
             'KodeBarangJasaCoretax' => $produk->KodeBarangJasaCoretax,
             'KodeUnitCoretax' => $produk->KodeUnitCoretax,
             'UrlGambar' => PenyimpanGambarProduk::BuatUrl($produk, 'besar'),
@@ -183,6 +184,7 @@ final class DetailProduk
             'Prekursor' => $produk->Prekursor,
             'DurasiMenit' => $produk->DurasiMenit,
             'MasaGaransiBulan' => $produk->MasaGaransiBulan,
+            'LokasiProduksi' => $produk->LokasiProduksi?->value,
             'KodeBarangJasaCoretax' => $produk->KodeBarangJasaCoretax,
             'KodeUnitCoretax' => $produk->KodeUnitCoretax,
             'Satuan' => array_values(ProdukSatuan::query()->where('IdProduk', $produk->Id)->orderBy('Id')->get()
@@ -232,6 +234,7 @@ final class DetailProduk
             'Prekursor' => false,
             'DurasiMenit' => null,
             'MasaGaransiBulan' => null,
+            'LokasiProduksi' => null,
             'KodeBarangJasaCoretax' => null,
             'KodeUnitCoretax' => null,
             'Satuan' => [[

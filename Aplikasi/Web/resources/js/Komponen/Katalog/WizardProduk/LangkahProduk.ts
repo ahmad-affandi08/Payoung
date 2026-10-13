@@ -119,6 +119,7 @@ const kunciJenisNama = ['Nama', 'NamaStruk', 'Sku', 'Jenis', 'UuidKategori', 'Me
 const kunciHargaStok = [
     'Pelacakan',
     'MasaGaransiBulan',
+    'LokasiProduksi',
     'GolonganObat',
     'ObatWajibApotek',
     'Prekursor',

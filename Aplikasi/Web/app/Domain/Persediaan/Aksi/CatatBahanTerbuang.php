@@ -15,6 +15,7 @@ use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Katalog\Kueri\KomposisiPenjualan;
 use App\Domain\Organisasi\Kueri\InfoGudang;
+use App\Domain\Organisasi\Kueri\OutletPenjualan;
 use App\Domain\Persediaan\Data\DataBahanTerbuang;
 use App\Domain\Persediaan\Data\DataBarisMutasi;
 use App\Domain\Persediaan\Data\DataDokumenMutasi;
@@ -44,6 +45,7 @@ final class CatatBahanTerbuang
         private readonly KomposisiPenjualan $komposisi,
         private readonly InfoProdukStok $infoProduk,
         private readonly InfoGudang $infoGudang,
+        private readonly OutletPenjualan $outletPenjualan,
         private readonly CatatMutasiStok $catatMutasi,
         private readonly PenyusunJurnalPersediaan $penyusunJurnal,
         private readonly PencatatJurnalPersediaan $pencatatJurnal,
@@ -77,6 +79,7 @@ final class CatatBahanTerbuang
         }
 
         $baris = [];
+        $gudangDipakai = [$data->idGudang];
         $urutan = 0;
 
         foreach ($kebutuhan as $k) {
@@ -95,10 +98,14 @@ final class CatatBahanTerbuang
             }
 
             $urutan++;
+            $idGudang = $data->pakaiLokasiProduksi && $k->lokasiProduksi !== null && $data->idOutlet !== null
+                ? ($this->outletPenjualan->AmbilIdGudangProduksi($data->idOutlet, $k->lokasiProduksi->value) ?? $data->idGudang)
+                : $data->idGudang;
+            $gudangDipakai[] = $idGudang;
             $baris[] = new DataBarisMutasi(
                 kunciBaris: 'T/'.$urutan,
                 idProduk: $k->idProduk,
-                idGudang: $data->idGudang,
+                idGudang: $idGudang,
                 jenisMutasi: JenisMutasi::Susut,
                 jumlah: Kuantitas::Dari($jumlah->negated()),
                 modeNilai: ModeNilaiMutasi::Berjalan,
@@ -172,7 +179,7 @@ final class CatatBahanTerbuang
             $this->penyusunJurnal->Susun(
                 array_values(array_map(fn ($b): array => [$b, PeranAkun::SusutPersediaan], $hasil->baris)),
                 $infoMutasi,
-                $this->infoGudang->AmbilBanyak([$data->idGudang]),
+                $this->infoGudang->AmbilBanyak(array_values(array_unique($gudangDipakai))),
                 $data->idOutlet,
             ),
             $data->idPengguna,

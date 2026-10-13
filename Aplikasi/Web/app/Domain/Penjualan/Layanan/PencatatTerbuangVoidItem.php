@@ -73,6 +73,7 @@ final class PencatatTerbuangVoidItem
                 tanggalBisnis: $tanggal,
                 tinjauan: $tinjauan,
                 abaikanBatasMinus: true,
+                pakaiLokasiProduksi: true,
             )));
         } catch (PelanggaranAturanBisnis $galat) {
             if (in_array($galat->kode, self::DILEWATI, true)) {

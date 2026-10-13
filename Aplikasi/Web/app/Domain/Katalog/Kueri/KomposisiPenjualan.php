@@ -230,6 +230,7 @@ final class KomposisiPenjualan
                 $penyebut->multipliedBy(BigDecimal::of($resep->JumlahHasil)),
                 trim($jalur.' Resep '.$produk->Nama.' v'.$resep->Versi),
                 $p->DihapusPada !== null,
+                $produk->LokasiProduksi,
             );
         }
 

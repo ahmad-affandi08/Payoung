@@ -135,6 +135,8 @@ export type FormProduk = {
     DurasiMenit?: number | null;
     /** F-05h: masa garansi standar (bulan) produk bernomor seri; null = tanpa garansi. */
     MasaGaransiBulan?: number | null;
+    /** BR-05.4: lokasi stok tempat bahan resep dikurangi saat dijual (produk Resep); null = Toko. */
+    LokasiProduksi?: 'Dapur' | 'Bar' | null;
     /** Faktur Pajak Coretax: kode barang/jasa 6 digit dan kode satuan `UM.00xx`; null = kode umum. */
     KodeBarangJasaCoretax?: string | null;
     KodeUnitCoretax?: string | null;

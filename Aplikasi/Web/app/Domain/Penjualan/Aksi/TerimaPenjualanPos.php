@@ -1296,7 +1296,7 @@ final class TerimaPenjualanPos
     }
 
     /**
-     * Mutasi stok `Penjualan` dari lokasi stok Toko outlet (produk berstok, bahan resep, komponen paket, bahan pilihan;
+     * Mutasi stok `Penjualan` dari lokasi stok Toko outlet (produk berstok; bahan resep dari lokasi produksinya, BR-05.4; komponen paket, bahan pilihan;
      * satuan dasar; komponen racikan), lalu HPP per baris dari hasil mutasi.
      *
      * @param  array<string, DataProdukPenjualan>  $produk
@@ -1323,6 +1323,7 @@ final class TerimaPenjualanPos
         $permintaanBatch = [];
         $permintaanSeri = [];
         $nomorDipakai = [];
+        $lokasiPerKunci = [];
 
         foreach ($data->baris as $indeks => $baris) {
             $jumlahDasar = Kuantitas::Dari($detail[$indeks]->JumlahDasar);
@@ -1375,6 +1376,7 @@ final class TerimaPenjualanPos
                 $kunci = $baris->uuid.'/'.$urutan;
                 $infoPerKunci[$kunci] = $k;
                 $indeksPerKunci[$kunci] = $indeks;
+                $lokasiPerKunci[$kunci] = $k->lokasiProduksi?->value;
 
                 if ($k->pelacakan === PelacakanProduk::Seri) {
                     // F-05h: satu unit = satu nomor seri yang dicatat kasir; server memvalidasi ketersediaannya (CatatStokSeri).
@@ -1428,6 +1430,13 @@ final class TerimaPenjualanPos
         }
 
         $idGudang = (int) $outlet->idGudangToko;
+        // BR-05.4: bahan resep dikurangi dari lokasi produksi (Dapur/Bar) bila outlet punya; selain itu lokasi Toko.
+        $gudangPerKunci = [];
+
+        foreach ($lokasiPerKunci as $kunci => $lokasi) {
+            $gudangPerKunci[$kunci] = $lokasi === null ? $idGudang : ($this->outletPenjualan->AmbilIdGudangProduksi($outlet->idOutlet, $lokasi) ?? $idGudang);
+        }
+
         /** @var array<string, HasilBarisMutasi> $hasilBaris */
         $hasilBaris = [];
         $kurang = [];
@@ -1436,7 +1445,7 @@ final class TerimaPenjualanPos
             $hasil = $this->catatMutasi->Jalankan($this->BuatDokumenMutasi($data, $penjualan, $idKasir, array_map(fn (DataBarisMutasi $b): DataBarisMutasi => new DataBarisMutasi(
                 kunciBaris: $b->kunciBaris,
                 idProduk: $b->idProduk,
-                idGudang: $idGudang,
+                idGudang: $gudangPerKunci[$b->kunciBaris] ?? $idGudang,
                 jenisMutasi: $b->jenisMutasi,
                 jumlah: $b->jumlah,
                 modeNilai: $b->modeNilai,
@@ -1452,7 +1461,7 @@ final class TerimaPenjualanPos
         $tambahan = [];
 
         if ($permintaanBatch !== []) {
-            $tambahan[] = $this->CatatStokBatch($data, $penjualan, $idKasir, $idGudang, $permintaanBatch, $infoPerKunci);
+            $tambahan[] = $this->CatatStokBatch($data, $penjualan, $idKasir, $gudangPerKunci, $permintaanBatch, $infoPerKunci);
         }
 
         if ($permintaanSeri !== []) {
@@ -1513,17 +1522,18 @@ final class TerimaPenjualanPos
      * Rencana dibuat dari bacaan tanpa kunci; bila penjualan lain mengambil batch yang sama lebih dulu, mesin buku stok menolak
      * dengan `StokBatchTidakCukup` dan rencana dibuat ulang dari data terkini (savepoint, paling banyak 3 percobaan).
      *
+     * @param  array<string, int>  $gudangPerKunci  kunci → Id lokasi stok (BR-05.4: lokasi produksi bahan resep, selain itu Toko)
      * @param  array<string, array{0: Kuantitas, 1: int}>  $permintaan  kunci → [jumlah dasar positif, Id baris penjualan]
      * @param  array<string, DataKebutuhanStok>  $infoPerKunci
      * @return array{0: array<string, HasilBarisMutasi>, 1: array<string, string>, 2: array<string, string>} [hasil per kunci pecahan, kunci pecahan → kunci asal, tinjauan]
      */
-    private function CatatStokBatch(DataPenjualanPos $data, Penjualan $penjualan, int $idKasir, int $idGudang, array $permintaan, array $infoPerKunci): array
+    private function CatatStokBatch(DataPenjualanPos $data, Penjualan $penjualan, int $idKasir, array $gudangPerKunci, array $permintaan, array $infoPerKunci): array
     {
         $tanggalBisnis = CarbonImmutable::parse($penjualan->TanggalBisnis->toDateString());
         $daftarPermintaan = [];
 
         foreach ($permintaan as $kunci => [$jumlah]) {
-            $daftarPermintaan[] = ['Kunci' => $kunci, 'IdProduk' => $infoPerKunci[$kunci]->idProduk, 'IdGudang' => $idGudang, 'Jumlah' => $jumlah];
+            $daftarPermintaan[] = ['Kunci' => $kunci, 'IdProduk' => $infoPerKunci[$kunci]->idProduk, 'IdGudang' => $gudangPerKunci[$kunci], 'Jumlah' => $jumlah];
         }
 
         for ($percobaan = 1; ; $percobaan++) {
@@ -1538,7 +1548,7 @@ final class TerimaPenjualanPos
                     $barisMutasi[] = new DataBarisMutasi(
                         kunciBaris: $kunciBaru,
                         idProduk: $infoPerKunci[$kunci]->idProduk,
-                        idGudang: $idGudang,
+                        idGudang: $gudangPerKunci[$kunci],
                         jenisMutasi: JenisMutasi::Penjualan,
                         jumlah: $a['Jumlah']->Negasi(),
                         modeNilai: ModeNilaiMutasi::Berjalan,

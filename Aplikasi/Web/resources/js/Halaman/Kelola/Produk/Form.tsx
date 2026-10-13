@@ -69,6 +69,7 @@ const galatPerTab: Record<KunciTab, string[]> = {
         'Pelacakan',
         'DurasiMenit',
         'MasaGaransiBulan',
+        'LokasiProduksi',
         'GolonganObat',
     ],
     Satuan: ['Satuan'],
@@ -493,6 +494,27 @@ export default function HalamanFormProduk({
                 maxLength={3}
             />
         ) : null;
+    // BR-05.4: produk Resep dibuat di Dapur/Bar; bahan resepnya dikurangi dari lokasi stok itu saat terjual.
+    const bagianLokasiProduksi =
+        data.Jenis === 'Resep' ? (
+            <div className="flex flex-col gap-1">
+                <BidangPilihan
+                    label="Lokasi produksi (opsional)"
+                    nilai={data.LokasiProduksi ?? ''}
+                    kosong="Toko (area jual)"
+                    opsi={[
+                        { Nilai: 'Dapur', Label: 'Dapur' },
+                        { Nilai: 'Bar', Label: 'Bar' },
+                    ]}
+                    saatBerubah={(nilai) => Atur('LokasiProduksi', nilai === '' ? null : (nilai as 'Dapur' | 'Bar'))}
+                    galat={galat.LokasiProduksi}
+                />
+                <p className="text-keterangan text-teks-sekunder">
+                    Bahan resep dikurangi dari lokasi stok ini saat terjual. Bila outlet tidak punya lokasi itu, stok
+                    toko yang dikurangi.
+                </p>
+            </div>
+        ) : null;
     // Apotek (§9.5): golongan obat untuk barang ber-batch (obat wajib Batch & kedaluwarsa). Muncul begitu pelacakan
     // Batch dipilih, atau bila produk sudah bergolongan (supaya galat "wajib Batch" tetap terlihat).
     const golonganObat = data.GolonganObat ?? null;
@@ -689,6 +711,7 @@ export default function HalamanFormProduk({
             {bidangSatuanDasar}
             {bagianDurasi}
             {bagianGaransi}
+            {bagianLokasiProduksi}
             {bagianPelacakan}
             {bagianObat}
         </div>
@@ -988,10 +1011,11 @@ export default function HalamanFormProduk({
                     {saklarHargaTerbuka}
                 </>
             ) : null}
-            {bagianPelacakan || bagianGaransi || bagianObat || bagianStokAwal ? (
+            {bagianPelacakan || bagianGaransi || bagianLokasiProduksi || bagianObat || bagianStokAwal ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                     {bagianPelacakan}
                     {bagianGaransi}
+                    {bagianLokasiProduksi}
                     {bagianObat}
                     {bagianStokAwal}
                 </div>

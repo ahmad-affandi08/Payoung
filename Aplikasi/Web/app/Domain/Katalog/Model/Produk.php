@@ -8,6 +8,7 @@ use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
 use App\Domain\Katalog\Enum\GolonganObat;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\LokasiProduksi;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Enum\StatusProduk;
 use App\Domain\Katalog\Layanan\PemberitahuProdukDiubah;
@@ -49,6 +50,7 @@ use Illuminate\Support\Carbon;
  * @property bool $Favorit K-16: ditandai pemilik, tampil di kategori "Favorit" kasir (tingkat tenant)
  * @property bool $HargaTerbuka
  * @property int|null $DurasiMenit F-07 mode service: lama layanan jasa untuk slot reservasi
+ * @property LokasiProduksi|null $LokasiProduksi BR-05.4: lokasi stok tempat bahan resep dikurangi saat dijual; null = Toko
  * @property GolonganObat|null $GolonganObat Apotek (§9.5): golongan obat; null = bukan obat
  * @property bool $ObatWajibApotek Apotek: obat keras yang boleh diserahkan apoteker tanpa resep (OWA)
  * @property bool $Prekursor Apotek: penanda prekursor farmasi (opsional)
@@ -93,6 +95,7 @@ final class Produk extends ModelDasar
         'HargaTerbuka' => false,
         'DurasiMenit' => null,
         'MasaGaransiBulan' => null,
+        'LokasiProduksi' => null,
         'KodeBarangJasaCoretax' => null,
         'KodeUnitCoretax' => null,
         'GolonganObat' => null,
@@ -197,6 +200,7 @@ final class Produk extends ModelDasar
             'HargaTerbuka' => 'boolean',
             'DurasiMenit' => 'integer',
             'MasaGaransiBulan' => 'integer',
+            'LokasiProduksi' => LokasiProduksi::class,
             'GolonganObat' => GolonganObat::class,
             'ObatWajibApotek' => 'boolean',
             'Prekursor' => 'boolean',

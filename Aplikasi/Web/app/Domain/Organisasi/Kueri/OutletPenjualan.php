@@ -59,6 +59,30 @@ final class OutletPenjualan
         return $id === null ? null : (int) $id;
     }
 
+    /**
+     * BR-05.4: lokasi stok produksi (jenis `Dapur`/`Bar`) pertama outlet, aktif saja (Id terkecil); null bila outlet tidak
+     * punya lokasi itu. Pemanggil jatuh ke lokasi Toko (`AmbilIdGudangToko`) bila null, supaya penjualan tetap tercatat.
+     *
+     * @param  string  $lokasi  nilai `Katalog\Enum\LokasiProduksi` (`Dapur`/`Bar`)
+     */
+    public function AmbilIdGudangProduksi(int $idOutlet, string $lokasi): ?int
+    {
+        $jenis = JenisGudang::tryFrom($lokasi);
+
+        if ($jenis !== JenisGudang::Dapur && $jenis !== JenisGudang::Bar) {
+            return null;
+        }
+
+        $id = Gudang::query()
+            ->where('IdOutlet', $idOutlet)
+            ->where('Jenis', $jenis->value)
+            ->where('Status', StatusOrganisasi::Aktif->value)
+            ->orderBy('Id')
+            ->value('Id');
+
+        return is_int($id) ? $id : null;
+    }
+
     /** F-17: sakelar toko online outlet ini (kolom `Outlet.TokoOnlineAktif`). */
     public function CekTokoOnlineAktif(int $idOutlet): bool
     {
