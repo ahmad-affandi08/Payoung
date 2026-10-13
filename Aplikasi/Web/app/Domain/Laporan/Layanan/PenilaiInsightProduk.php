@@ -28,6 +28,9 @@ final class PenilaiInsightProduk
 
     public const FAKTOR_POPULER = '0.70';
 
+    /** Kenaikan harga yang disarankan paling banyak sekian persen dari harga rata-rata. */
+    public const KENAIKAN_MAKS = 10;
+
     /**
      * @param  list<array{IdProduk: int, NamaProduk: string, Qty: string, Bersih: string, Hpp: string}>  $baris
      * @return array{Baris: list<array{IdProduk: int, NamaProduk: string, Qty: string, Bersih: string, Porsi: string, PorsiKumulatif: string, Kelas: string}>, Ringkasan: array<string, array{Jumlah: int, Bersih: string}>}
@@ -88,6 +91,7 @@ final class PenilaiInsightProduk
             $porsi = BigRational::of($b['Qty'])->dividedBy($totalQty);
             $populer = $porsi->compareTo($batasPorsi) >= 0;
             $tinggi = $margin->compareTo($rataMargin) >= 0;
+            $hargaRata = BigRational::of($b['Bersih'])->dividedBy($b['Qty']);
             $hasil[] = [
                 'IdProduk' => $b['IdProduk'],
                 'NamaProduk' => $b['NamaProduk'],
@@ -95,6 +99,8 @@ final class PenilaiInsightProduk
                 'Bersih' => $b['Bersih'],
                 'Hpp' => $b['Hpp'],
                 'MarginPerUnit' => (string) $margin->toScale(2, RoundingMode::HalfUp),
+                'HargaRata' => (string) $hargaRata->toScale(2, RoundingMode::HalfUp),
+                'SaranHarga' => $populer && ! $tinggi ? self::SaranHarga($hargaRata, $rataMargin->minus($margin)) : null,
                 'PorsiQty' => self::Persen($porsi),
                 'Populer' => $populer,
                 'MarginTinggi' => $tinggi,
@@ -105,6 +111,21 @@ final class PenilaiInsightProduk
         usort($hasil, fn (array $a, array $b): int => BigDecimal::of($b['Qty'])->compareTo($a['Qty']) ?: $a['IdProduk'] <=> $b['IdProduk']);
 
         return ['Baris' => $hasil, 'BatasPorsiQty' => self::Persen($batasPorsi), 'RataRataMargin' => (string) $rataMargin->toScale(2, RoundingMode::HalfUp)];
+    }
+
+    /**
+     * Saran harga untuk menu Plowhorse (laris, margin di bawah rata-rata): naikkan sebesar kekurangan margin terhadap
+     * rata-rata, paling banyak `KENAIKAN_MAKS`% dari harga rata-rata, lalu dibulatkan ke atas ke kelipatan Rp 500.
+     * Hanya saran; null bila kenaikannya tidak berarti.
+     */
+    private static function SaranHarga(BigRational $hargaRata, BigRational $kekurangan): ?string
+    {
+        $batas = $hargaRata->multipliedBy(self::KENAIKAN_MAKS)->dividedBy(100);
+        $naik = $kekurangan->compareTo($batas) > 0 ? $batas : $kekurangan;
+        $target = BigDecimal::of((string) $hargaRata->plus($naik)->toScale(2, RoundingMode::HalfUp));
+        $saran = $target->dividedBy(500, 0, RoundingMode::Up)->multipliedBy(500)->toScale(2);
+
+        return $saran->isGreaterThan((string) $hargaRata->toScale(2, RoundingMode::HalfUp)) ? (string) $saran : null;
     }
 
     /** Pecahan → persen 2 desimal ("0.4567" → "45.67"). */

@@ -474,6 +474,39 @@ final class AgregatPenjualan
     }
 
     /**
+     * Keranjang belanja untuk analisis bundling (§10.10): per penjualan (tidak di-void) daftar produk berbeda. Dibaca paling
+     * banyak `$batas` pasangan (penjualan, produk) terlama dulu; `Terpotong` true bila ada yang tidak terbaca.
+     *
+     * @return array{Keranjang: list<list<int>>, Nama: array<int, string>, Terpotong: bool}
+     */
+    public function KeranjangProduk(DataSaringLaporanPenjualan $saring, int $batas = 300000): array
+    {
+        if ($saring->CekTanpaOutlet()) {
+            return ['Keranjang' => [], 'Nama' => [], 'Terpotong' => false];
+        }
+
+        $baris = $this->KueriJual($saring)
+            ->join('PenjualanDetail', fn (JoinClause $j) => $j->on('PenjualanDetail.IdPenjualan', '=', 'Penjualan.Id')->on('PenjualanDetail.IdTenant', '=', 'Penjualan.IdTenant'))
+            ->whereNotNull('PenjualanDetail.IdProduk')
+            ->groupBy('Penjualan.Id', 'PenjualanDetail.IdProduk')
+            ->orderBy('Penjualan.Id')
+            ->limit($batas + 1)
+            ->selectRaw('`Penjualan`.`Id` AS `IdPenjualan`, `PenjualanDetail`.`IdProduk` AS `IdProduk`, MAX(`PenjualanDetail`.`NamaProduk`) AS `NamaProduk`')
+            ->toBase()
+            ->get();
+        $terpotong = $baris->count() > $batas;
+        $keranjang = [];
+        $nama = [];
+
+        foreach ($baris->take($batas) as $b) {
+            $keranjang[(int) $b->IdPenjualan][] = (int) $b->IdProduk;
+            $nama[(int) $b->IdProduk] = self::Teks($b->NamaProduk);
+        }
+
+        return ['Keranjang' => array_values($keranjang), 'Nama' => $nama, 'Terpotong' => $terpotong];
+    }
+
+    /**
      * Penjualan per hari-dalam-minggu × jam lokal outlet (heatmap). `offsetDetik` = selisih zona waktu outlet dari UTC
      * (zona Indonesia tanpa musim panas); outlet yang tidak ada di peta memakai `offsetBawaan`. `Hari` 1 = Senin.
      *

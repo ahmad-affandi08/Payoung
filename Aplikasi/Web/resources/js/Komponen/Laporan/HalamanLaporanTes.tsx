@@ -430,6 +430,101 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByText('1 (33,33%)')).toBeTruthy();
     });
 
+    it('§10.10 tab prediksi dan bundling: tabel, faktor tren, saran harga paket, dan keadaan data belum cukup', () => {
+        const Saring = (tab: 'prediksi' | 'bundling') => ({
+            Tab: tab,
+            Dari: '2026-10-01',
+            Sampai: '2026-10-07',
+            Outlet: '',
+            Kasir: '',
+            Kanal: '',
+        });
+        const { unmount: LepasKurang } = RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('prediksi'),
+                    Isi: { Cukup: false, HariData: 9, FaktorTren: '1.00', Baris: [], TotalPerkiraan: '0.00' },
+                })}
+            />,
+        );
+
+        expect(screen.getByText(/Data penjualan belum cukup/)).toBeTruthy();
+        expect(screen.getByText(/saat ini 9 hari/)).toBeTruthy();
+        LepasKurang();
+
+        const { unmount: LepasRamal } = RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('prediksi'),
+                    Isi: {
+                        Cukup: true,
+                        HariData: 60,
+                        FaktorTren: '1.03',
+                        TotalPerkiraan: '220375.00',
+                        Baris: [
+                            {
+                                Tanggal: '2026-10-14',
+                                Hari: 3,
+                                Perkiraan: '110187.50',
+                                PerkiraanTransaksi: 5,
+                                Terendah: '100000.00',
+                                Tertinggi: '160000.00',
+                                Sampel: 8,
+                            },
+                            {
+                                Tanggal: '2026-10-15',
+                                Hari: 4,
+                                Perkiraan: '110187.50',
+                                PerkiraanTransaksi: 5,
+                                Terendah: '100000.00',
+                                Tertinggi: '100000.00',
+                                Sampel: 8,
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Prediksi penjualan harian' })).toBeTruthy();
+        expect(screen.getByText(/faktor tren 1,03/)).toBeTruthy();
+        expect(screen.getByText('Rp 220.375')).toBeTruthy();
+        expect(screen.getByText(/Rabu, /)).toBeTruthy();
+        LepasRamal();
+
+        RenderUji(
+            <HalamanLaporanPenjualan
+                {...PropsPenjualan({
+                    Saring: Saring('bundling'),
+                    Isi: {
+                        JumlahTransaksi: 120,
+                        Terpotong: true,
+                        Baris: [
+                            {
+                                Kunci: '1-2',
+                                NamaA: 'Kopi Susu',
+                                NamaB: 'Roti Bakar',
+                                Support: 18,
+                                PorsiTransaksi: '15.00',
+                                KeyakinanAB: '40.00',
+                                KeyakinanBA: '60.00',
+                                Lift: '2.10',
+                                HargaNormal: '40000.00',
+                                HargaPaket: '38000.00',
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('table', { name: 'Rekomendasi bundling' })).toBeTruthy();
+        expect(screen.getByText('Kopi Susu + Roti Bakar')).toBeTruthy();
+        expect(screen.getByText('Rp 38.000 (normal Rp 40.000)')).toBeTruthy();
+        expect(screen.getByText('2,10')).toBeTruthy();
+        expect(screen.getByText(/sebagian tidak ikut dianalisis/)).toBeTruthy();
+    });
+
     it('tab anti-fraud: tingkat risiko berteks + alasan, penjelasan skor', () => {
         RenderUji(
             <HalamanLaporanPenjualan

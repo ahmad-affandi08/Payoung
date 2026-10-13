@@ -45,3 +45,22 @@ it('menu engineering: Star, Plowhorse, Puzzle, Dog dari porsi qty dan margin per
         ->and($kelas)->toBe(['Kopi Susu Aren' => 'Star', 'Es Teh Manis' => 'Plowhorse', 'Roti Bakar' => 'Dog', 'Steak Wagyu' => 'Puzzle'])
         ->and((new PenilaiInsightProduk)->Menu([])['Baris'])->toBe([]);
 });
+
+it('menu engineering: saran harga hanya untuk Plowhorse, naik sebesar kekurangan margin tetapi paling banyak 10%, dibulatkan ke atas Rp 500', function (): void {
+    $hasil = (new PenilaiInsightProduk)->Menu([
+        BarisInsight(1, 'Kopi Susu Aren', '100', '2000000.00', '800000.00'),   // Star
+        BarisInsight(2, 'Es Teh Manis', '80', '640000.00', '480000.00'),      // Plowhorse: harga 8.000, margin 2.000
+        BarisInsight(3, 'Steak Wagyu', '5', '750000.00', '300000.00'),        // Puzzle
+        BarisInsight(4, 'Roti Bakar', '15', '150000.00', '120000.00'),        // Dog
+    ]);
+    $baris = array_column($hasil['Baris'], null, 'NamaProduk');
+
+    // Margin rata-rata tertimbang = (1.200.000 + 160.000 + 450.000 + 30.000) ÷ 200 = 9.200; kekurangan Es Teh 7.200,
+    // dibatasi 10% × 8.000 = 800 → 8.800 → dibulatkan ke atas 9.000.
+    expect($baris['Es Teh Manis']['Kelas'])->toBe('Plowhorse')
+        ->and($baris['Es Teh Manis']['HargaRata'])->toBe('8000.00')
+        ->and($baris['Es Teh Manis']['SaranHarga'])->toBe('9000.00')
+        ->and($baris['Kopi Susu Aren']['SaranHarga'])->toBeNull()
+        ->and($baris['Steak Wagyu']['SaranHarga'])->toBeNull()
+        ->and($baris['Roti Bakar']['SaranHarga'])->toBeNull();
+});

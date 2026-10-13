@@ -100,6 +100,8 @@ describe('X6 insight produk di laporan penjualan', () => {
                             Bersih: '240000.00',
                             Hpp: '80000.00',
                             MarginPerUnit: '8000.00',
+                            HargaRata: '12000.00',
+                            SaranHarga: null,
                             PorsiQty: '83.33',
                             Populer: true,
                             MarginTinggi: true,
@@ -112,10 +114,26 @@ describe('X6 insight produk di laporan penjualan', () => {
                             Bersih: '60000.00',
                             Hpp: '40000.00',
                             MarginPerUnit: '5000.00',
+                            HargaRata: '15000.00',
+                            SaranHarga: null,
                             PorsiQty: '16.67',
                             Populer: false,
                             MarginTinggi: false,
                             Kelas: 'Dog',
+                        },
+                        {
+                            IdProduk: 3,
+                            NamaProduk: 'Es Teh Manis',
+                            Qty: '10.0000',
+                            Bersih: '80000.00',
+                            Hpp: '60000.00',
+                            MarginPerUnit: '2000.00',
+                            HargaRata: '8000.00',
+                            SaranHarga: '9000.00',
+                            PorsiQty: '41.67',
+                            Populer: true,
+                            MarginTinggi: false,
+                            Kelas: 'Plowhorse',
                         },
                     ],
                     BatasPorsiQty: '35.00',
@@ -130,6 +148,7 @@ describe('X6 insight produk di laporan penjualan', () => {
         expect(screen.getByText(/minimal 35,00%/)).toBeTruthy();
         expect(screen.getByText(/Rp 7\.500/)).toBeTruthy();
         expect(screen.getByText(/Kandidat dihapus atau dirombak/)).toBeTruthy();
+        expect(screen.getByText('Rp 9.000 (dari Rp 8.000)')).toBeTruthy();
     });
 });
 

@@ -13,8 +13,10 @@ use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Kasir\Kueri\PolaKasKasir;
 use App\Domain\Katalog\Kueri\ProdukUntukLaporan;
 use App\Domain\Laporan\Data\DataPeriodeLaporan;
+use App\Domain\Laporan\Layanan\PencariPasanganProduk;
 use App\Domain\Laporan\Layanan\PenilaiInsightProduk;
 use App\Domain\Laporan\Layanan\PenilaiRisikoKasir;
+use App\Domain\Laporan\Layanan\PeramalPenjualan;
 use App\Domain\Laporan\Model\RingkasanPenjualanHarian;
 use App\Domain\Organisasi\Kueri\AnggotaOutlet;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
@@ -54,7 +56,9 @@ final class LaporanPenjualan
 
     public const BATAS_EKSPOR_PELANGGAN = 5000;
 
-    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet', 'waktu-saji', 'food-cost', 'performa-kasir'];
+    public const BATAS_BUNDLING = 50;
+
+    public const TAB = ['harian', 'detail', 'produk', 'kategori', 'jam', 'kasir', 'kanal', 'metode', 'diskon', 'void-item', 'anti-fraud', 'abc', 'menu', 'pelanggan', 'outlet', 'waktu-saji', 'food-cost', 'performa-kasir', 'prediksi', 'bundling'];
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -68,6 +72,8 @@ final class LaporanPenjualan
         private readonly PenilaiInsightProduk $insight,
         private readonly IdentitasPelanggan $pelanggan,
         private readonly LaporanOperasional $operasional,
+        private readonly PeramalPenjualan $peramal,
+        private readonly PencariPasanganProduk $pasangan,
     ) {}
 
     /**
@@ -112,7 +118,7 @@ final class LaporanPenjualan
             'UuidOutlet' => $uuidOutlet,
             'UuidKasir' => $uuidKasir,
             'Kanal' => $kanal->value ?? '',
-            'Saring' => new DataSaringLaporanPenjualan($periode->dari, $periode->sampai, $idOutlet, $idKasir, $kanal, $target),
+            'Saring' => new DataSaringLaporanPenjualan($periode->dari, $periode->sampai, $idOutlet, $idKasir, $kanal, $target, $hariIni->startOfDay()),
         ];
     }
 
@@ -175,6 +181,8 @@ final class LaporanPenjualan
             'waktu-saji' => $this->operasional->WaktuSaji($saring, $saring->targetSajiMenit),
             'food-cost' => $this->operasional->FoodCost($saring),
             'performa-kasir' => $this->operasional->PerformaKasir($saring),
+            'prediksi' => $this->Prediksi($saring),
+            'bundling' => $this->Bundling($saring),
             default => $this->Harian($saring),
         };
     }
@@ -400,6 +408,65 @@ final class LaporanPenjualan
             'Porsi' => $persen(BigDecimal::of(self::Teks($b['Bersih'])), $total),
             'Margin' => $persen(BigDecimal::of(self::Teks($b['LabaKotor'])), BigDecimal::of(self::Teks($b['Bersih']))),
         ], $baris));
+    }
+
+    /**
+     * Prediksi penjualan 14 hari ke depan (`PeramalPenjualan`) dari penjualan bersih harian 8 minggu terakhir sampai
+     * kemarin pada outlet/kasir/kanal yang sama dengan saring (periode laporan tidak dipakai).
+     *
+     * @return array<string, mixed>
+     */
+    public function Prediksi(DataSaringLaporanPenjualan $saring, int $horizon = 14): array
+    {
+        $hariIni = ($saring->hariIni ?? CarbonImmutable::now())->startOfDay();
+        $jendela = new DataSaringLaporanPenjualan($hariIni->subDays(PeramalPenjualan::MINGGU_DASAR * 7), $hariIni->subDay(), $saring->idOutlet, $saring->idKasir, $saring->kanal);
+        $seri = [];
+
+        foreach ($this->Harian($jendela) as $b) {
+            $seri[(string) $b['Tanggal']] = ['Bersih' => self::Teks($b['Bersih']), 'JumlahTransaksi' => (int) $b['JumlahTransaksi']];
+        }
+
+        return $this->peramal->Ramal($seri, $hariIni, $horizon);
+    }
+
+    /**
+     * Rekomendasi bundling (`PencariPasanganProduk`) dari keranjang penjualan pada periode saring: pasangan teratas dengan
+     * harga normal (jumlah harga rata-rata satu unit masing-masing) dan harga paket saran (95%, dibulatkan ke bawah ke
+     * kelipatan Rp 500).
+     *
+     * @return array{JumlahTransaksi: int, Terpotong: bool, Baris: list<array<string, mixed>>}
+     */
+    public function Bundling(DataSaringLaporanPenjualan $saring): array
+    {
+        $keranjang = $this->agregat->KeranjangProduk($saring);
+        $hasil = $this->pasangan->Cari($keranjang['Keranjang'], self::BATAS_BUNDLING);
+        $harga = [];
+
+        foreach ($this->agregat->PerProduk($saring) as $p) {
+            if (BigDecimal::of(self::Teks($p['Qty']))->isPositive()) {
+                $harga[(int) $p['IdProduk']] = BigDecimal::of(self::Teks($p['Bersih']))->dividedBy(self::Teks($p['Qty']), 2, RoundingMode::HalfUp);
+            }
+        }
+
+        $baris = [];
+
+        foreach ($hasil['Baris'] as $b) {
+            $normal = isset($harga[$b['IdProdukA']], $harga[$b['IdProdukB']]) ? $harga[$b['IdProdukA']]->plus($harga[$b['IdProdukB']]) : null;
+            $baris[] = [
+                'Kunci' => $b['IdProdukA'].'-'.$b['IdProdukB'],
+                'NamaA' => $keranjang['Nama'][$b['IdProdukA']] ?? 'Produk',
+                'NamaB' => $keranjang['Nama'][$b['IdProdukB']] ?? 'Produk',
+                'Support' => $b['Support'],
+                'PorsiTransaksi' => $b['PorsiTransaksi'],
+                'KeyakinanAB' => $b['KeyakinanAB'],
+                'KeyakinanBA' => $b['KeyakinanBA'],
+                'Lift' => $b['Lift'],
+                'HargaNormal' => $normal === null ? null : (string) $normal->toScale(2),
+                'HargaPaket' => $normal === null ? null : (string) $normal->multipliedBy('0.95')->dividedBy(500, 0, RoundingMode::Down)->multipliedBy(500)->toScale(2),
+            ];
+        }
+
+        return ['JumlahTransaksi' => $hasil['JumlahTransaksi'], 'Terpotong' => $keranjang['Terpotong'], 'Baris' => $baris];
     }
 
     /**
@@ -646,10 +713,18 @@ final class LaporanPenjualan
                 [$t('Kasir', 26), $n('Transaksi'), $u('Penjualan bersih'), $u('Rata-rata keranjang', false), new KolomLaporan('Jam kerja', JenisKolom::Kuantitas), $n('Shift ditutup'), new KolomLaporan('Transaksi per jam', JenisKolom::Kuantitas), $u('Omzet per jam', false), $n('Void'), $pr('Void %'), $u('Selisih kas kurang')],
                 $ambil($this->operasional->PerformaKasir($saring), ['NamaKasir', 'JumlahTransaksi', 'Bersih', 'RataRataKeranjang', 'JamKerja', 'ShiftDitutup', 'TransaksiPerJam', 'OmzetPerJam', 'JumlahVoid', 'PersenVoid', 'SelisihKurang']),
             ],
+            'prediksi' => [
+                [new KolomLaporan('Tanggal', JenisKolom::Tanggal), $t('Hari', 10), $u('Perkiraan penjualan bersih'), $n('Perkiraan transaksi', false), $u('Terendah (riwayat)', false), $u('Tertinggi (riwayat)', false), $n('Jumlah sampel', false)],
+                array_values(array_map(fn (array $b): array => [new DateTimeImmutable((string) $b['Tanggal']), self::NamaHari((int) $b['Hari']), $b['Perkiraan'], $b['PerkiraanTransaksi'], $b['Terendah'], $b['Tertinggi'], $b['Sampel']], $this->Prediksi($saring)['Baris'])),
+            ],
+            'bundling' => [
+                [$t('Produk A', 30), $t('Produk B', 30), $n('Transaksi bersama'), $pr('Porsi transaksi %'), $pr('Keyakinan A→B %'), $pr('Keyakinan B→A %'), new KolomLaporan('Lift', JenisKolom::Kuantitas), $u('Harga normal paket', false), $u('Harga paket saran', false)],
+                $ambil($this->Bundling($saring)['Baris'], ['NamaA', 'NamaB', 'Support', 'PorsiTransaksi', 'KeyakinanAB', 'KeyakinanBA', 'Lift', 'HargaNormal', 'HargaPaket']),
+            ],
             'pelanggan' => [[$t('Pelanggan', 30), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Porsi %')], $ambil($this->PerPelanggan($saring, self::BATAS_EKSPOR_PELANGGAN), ['NamaPelanggan', ...$angka, 'RataRataKeranjang', 'Porsi'])],
             'outlet' => [[$t('Outlet', 28), ...$kolomAngka, $u('Rata-rata keranjang', false), $pr('Margin %'), $pr('Porsi %')], $ambil($this->PerOutlet($saring), ['NamaOutlet', ...$angka, 'RataRataKeranjang', 'Margin', 'Porsi'])],
             'abc' => [[$t('Produk', 32), $q('Qty (satuan dasar)'), $u('Bersih'), $pr('Porsi %'), $pr('Kumulatif %'), $t('Kelas', 10)], $ambil($this->insight->Abc($this->agregat->PerProduk($saring))['Baris'], ['NamaProduk', 'Qty', 'Bersih', 'Porsi', 'PorsiKumulatif', 'Kelas'])],
-            'menu' => [[$t('Produk', 32), $q('Qty (satuan dasar)'), $u('Bersih'), $u('HPP'), $u('Margin per unit', false), $pr('Porsi qty %'), $t('Kelas', 14)], $ambil($this->insight->Menu($this->agregat->PerProduk($saring))['Baris'], ['NamaProduk', 'Qty', 'Bersih', 'Hpp', 'MarginPerUnit', 'PorsiQty', 'Kelas'])],
+            'menu' => [[$t('Produk', 32), $q('Qty (satuan dasar)'), $u('Bersih'), $u('HPP'), $u('Margin per unit', false), $pr('Porsi qty %'), $t('Kelas', 14), $u('Harga rata-rata', false), $u('Saran harga', false)], $ambil($this->insight->Menu($this->agregat->PerProduk($saring))['Baris'], ['NamaProduk', 'Qty', 'Bersih', 'Hpp', 'MarginPerUnit', 'PorsiQty', 'Kelas', 'HargaRata', 'SaranHarga'])],
             default => [[new KolomLaporan('Tanggal', JenisKolom::Tanggal), ...$kolomAngka, $u('Rata-rata keranjang', false)], $ambil($this->Harian($saring), ['Tanggal', ...$angka, 'RataRataKeranjang'])],
         };
     }

@@ -25,6 +25,8 @@ final readonly class DataSaringLaporanPenjualan
         public ?KanalPenjualan $kanal = null,
         // Tab waktu saji KDS: tiket yang melewati target ini (menit) dihitung terlambat.
         public int $targetSajiMenit = 15,
+        // Tanggal bisnis hari ini (tab prediksi menghitung dari sini); null = hari ini menurut jam server.
+        public ?CarbonImmutable $hariIni = null,
     ) {}
 
     public function CekTanpaOutlet(): bool

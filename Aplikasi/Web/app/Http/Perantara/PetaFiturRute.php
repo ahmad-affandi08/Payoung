@@ -68,6 +68,8 @@ final class PetaFiturRute
 
         // Laporan
         ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'keamanan.anti-fraud', 'Mode' => 'semua', 'Nama' => 'Anti-fraud', 'Query' => ['tab' => 'anti-fraud']],
+        ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight', 'Query' => ['tab' => 'prediksi']],
+        ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight', 'Query' => ['tab' => 'bundling']],
         ['Pola' => 'kelola.laporan.penjualan.insight-whatsapp', 'Fitur' => 'laporan.insight', 'Mode' => 'tulis', 'Nama' => 'Forecast & insight'],
         ['Pola' => 'kelola.laporan.pajak*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.pembelian*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],

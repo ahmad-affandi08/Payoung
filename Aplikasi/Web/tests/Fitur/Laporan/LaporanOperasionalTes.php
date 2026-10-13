@@ -16,6 +16,7 @@ use Tests\Pendukung\Penjualan\BantuanPesananTerbuka;
 use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\PemeriksaInvarian;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -187,4 +188,103 @@ it('performa kasir tanpa shift tertutup: jam kerja nol dan angka per jam kosong,
         ->where('Isi.0.JamKerja', '0.00')
         ->where('Isi.0.TransaksiPerJam', null)
         ->where('Isi.0.OmzetPerJam', null));
+});
+
+it('prediksi penjualan: rata-rata hari-dalam-minggu dari riwayat harian, 14 hari ke depan; data kurang dari 14 hari tidak diperkirakan; ekspor CSV', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-16 05:00:00', 'UTC'));
+    $k = BantuanPesananTerbuka::SiapkanRestoran($this);
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
+
+    // Tiga minggu penjualan harian: 1 transaksi Rp 25.000 per hari.
+    for ($hari = 0; $hari < 21; $hari++) {
+        $this->travelTo(CarbonImmutable::parse('2026-09-16 05:00:00', 'UTC')->addDays($hari));
+        BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Kopi'], 'Jumlah' => '1', 'Harga' => '25000.00']]]);
+    }
+
+    $this->travelTo(CarbonImmutable::parse('2026-10-07 05:00:00', 'UTC'));
+    BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+    $this->get('/kelola/laporan/penjualan?tab=prediksi')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Saring.Tab', 'prediksi')
+        ->where('Isi.Cukup', true)
+        ->where('Isi.HariData', 21)
+        ->where('Isi.FaktorTren', '1.00')
+        ->has('Isi.Baris', 14)
+        ->where('Isi.Baris.0.Tanggal', '2026-10-07')
+        ->where('Isi.Baris.0.Hari', 3)
+        ->where('Isi.Baris.0.Perkiraan', '25000.00')
+        ->where('Isi.Baris.0.PerkiraanTransaksi', 1)
+        ->where('Isi.Baris.0.Sampel', 3)
+        ->where('Isi.Baris.13.Tanggal', '2026-10-20')
+        ->where('Isi.TotalPerkiraan', '350000.00'));
+
+    $csv = $this->get('/kelola/laporan/penjualan/ekspor?tab=prediksi')->assertOk()->streamedContent();
+    expect($csv)->toContain('Perkiraan penjualan bersih')->toContain('25000.00');
+
+    // Tiga hari kemudian tanpa penjualan baru tetap diperkirakan; mundur ke hari ke-10 riwayat: belum cukup.
+    $this->travelTo(CarbonImmutable::parse('2026-09-26 05:00:00', 'UTC'));
+    $this->get('/kelola/laporan/penjualan?tab=prediksi')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Isi.Cukup', false)
+        ->where('Isi.HariData', 10)
+        ->where('Isi.Baris', []));
+});
+
+it('rekomendasi bundling: pasangan produk yang sering dibeli bersama dengan support, keyakinan, lift, dan saran harga paket; ekspor CSV', function (): void {
+    $k = BantuanPesananTerbuka::SiapkanRestoran($this);
+    BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
+    $jual = fn (array $produk) => BantuanPenjualan::Jual($this, $k, ['Baris' => array_map(fn (array $p): array => ['Produk' => $p[0], 'Jumlah' => '1', 'Harga' => $p[1]], $produk)]);
+
+    for ($i = 0; $i < 4; $i++) {
+        $jual([[$k['Kopi'], '25000.00'], [$k['Nasi'], '35000.00']]);
+    }
+
+    for ($i = 0; $i < 3; $i++) {
+        $jual([[$k['Kopi'], '25000.00']]);
+    }
+
+    $jual([[$k['Nasi'], '35000.00']]);
+    BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+    // Kopi di 7 transaksi, nasi di 5, bersama 4 dari 8 → lift 4 × 8 ÷ (7 × 5) = 0,91.
+    $this->get('/kelola/laporan/penjualan?tab=bundling')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Saring.Tab', 'bundling')
+        ->where('Isi.JumlahTransaksi', 8)
+        ->where('Isi.Terpotong', false)
+        ->has('Isi.Baris', 1)
+        ->where('Isi.Baris.0.Support', 4)
+        ->where('Isi.Baris.0.PorsiTransaksi', '50.00')
+        ->where('Isi.Baris.0.Lift', '0.91')
+        ->where('Isi.Baris.0.HargaNormal', '60000.00')
+        ->where('Isi.Baris.0.HargaPaket', '57000.00'));
+
+    $csv = $this->get('/kelola/laporan/penjualan/ekspor?tab=bundling')->assertOk()->streamedContent();
+    expect($csv)->toContain('Harga paket saran')->toContain('57000.00')->toContain($k['Kopi']->Nama);
+});
+
+it('menu engineering menyertakan saran harga untuk menu laris bermargin rendah', function (): void {
+    $k = BantuanPesananTerbuka::SiapkanRestoran($this);
+    // Kopi laris (banyak) margin 17.000; nasi laris tetapi margin lebih kecil lewat harga murah.
+    BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Kopi'], 'Jumlah' => '10', 'Harga' => '25000.00']]]);
+    BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Nasi'], 'Jumlah' => '8', 'Harga' => '13000.00']]]);
+    BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+    $this->get('/kelola/laporan/penjualan?tab=menu')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Isi.Baris.0.NamaProduk', $k['Kopi']->Nama)
+        ->where('Isi.Baris.0.SaranHarga', null)
+        ->where('Isi.Baris.1.NamaProduk', $k['Nasi']->Nama)
+        ->where('Isi.Baris.1.Kelas', 'Plowhorse')
+        ->where('Isi.Baris.1.HargaRata', '13000.00')
+        ->where('Isi.Baris.1.SaranHarga', '14500.00'));
+
+    $csv = $this->get('/kelola/laporan/penjualan/ekspor?tab=menu')->assertOk()->streamedContent();
+    expect($csv)->toContain('Saran harga')->toContain('14500.00');
+});
+
+it('prediksi dan bundling di luar paket Forecast & insight ditolak, tab lain tetap terbuka', function (): void {
+    $k = BantuanPesananTerbuka::SiapkanRestoran($this);
+    BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+    $this->get('/kelola/laporan/penjualan?tab=prediksi')->assertRedirect();
+    $this->get('/kelola/laporan/penjualan?tab=bundling')->assertRedirect();
+    $this->get('/kelola/laporan/penjualan?tab=menu')->assertOk();
 });

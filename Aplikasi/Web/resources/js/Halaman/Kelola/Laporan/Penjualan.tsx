@@ -24,7 +24,11 @@ import type {
     BarisKanalLaporan,
     BarisOutletLaporan,
     BarisPelangganLaporan,
+    BarisBundling,
     BarisFoodCost,
+    BarisPrediksi,
+    IsiBundling,
+    IsiPrediksi,
     BarisPerformaKasir,
     BarisWaktuSaji,
     IsiFoodCost,
@@ -63,6 +67,8 @@ const daftarTab: { nilai: TabLaporanPenjualan; label: string }[] = [
     { nilai: 'performa-kasir', label: 'Performa kasir' },
     { nilai: 'waktu-saji', label: 'Waktu saji dapur' },
     { nilai: 'food-cost', label: 'Food cost' },
+    { nilai: 'prediksi', label: 'Prediksi penjualan' },
+    { nilai: 'bundling', label: 'Rekomendasi bundling' },
 ];
 
 const kolomHarian: KolomTabel<BarisHarian>[] = [
@@ -352,6 +358,62 @@ const kolomPerformaKasir: KolomTabel<BarisPerformaKasir>[] = [
     KolomUang<BarisPerformaKasir>('SelisihKurang', 'Selisih kas kurang', 'rendah'),
 ];
 
+const NamaHariId = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+const kolomPrediksi: KolomTabel<BarisPrediksi>[] = [
+    {
+        id: 'Tanggal',
+        accessorKey: 'Tanggal',
+        header: 'Tanggal',
+        meta: { label: 'Tanggal', prioritas: 'utama', wajib: true, kelasSel: 'whitespace-nowrap' },
+        cell: ({ row }) => `${NamaHariId[row.original.Hari - 1] ?? ''}, ${FormatTanggal(row.original.Tanggal)}`,
+    },
+    KolomUang<BarisPrediksi>('Perkiraan', 'Perkiraan penjualan bersih', 'utama'),
+    KolomBilangan<BarisPrediksi>('PerkiraanTransaksi', 'Perkiraan transaksi', 'penting'),
+    KolomUang<BarisPrediksi>('Terendah', 'Terendah (riwayat)', 'rendah'),
+    KolomUang<BarisPrediksi>('Tertinggi', 'Tertinggi (riwayat)', 'rendah'),
+    KolomBilangan<BarisPrediksi>('Sampel', 'Sampel hari', 'rendah'),
+];
+
+const kolomBundling: KolomTabel<BarisBundling>[] = [
+    {
+        id: 'Pasangan',
+        accessorFn: (b) => `${b.NamaA} + ${b.NamaB}`,
+        header: 'Pasangan produk',
+        enableSorting: false,
+        meta: { label: 'Pasangan produk', prioritas: 'utama', wajib: true },
+        cell: ({ row: { original: b } }) => `${b.NamaA} + ${b.NamaB}`,
+    },
+    KolomBilangan<BarisBundling>('Support', 'Transaksi bersama', 'utama'),
+    {
+        id: 'Lift',
+        accessorKey: 'Lift',
+        header: 'Lift',
+        sortingFn: (a, b, kolom) => BandingkanDesimal(String(a.getValue(kolom)), String(b.getValue(kolom))),
+        meta: { label: 'Lift', angka: true, prioritas: 'penting' },
+        cell: ({ row }) => row.original.Lift.replace('.', ','),
+    },
+    {
+        id: 'KeyakinanAB',
+        accessorKey: 'KeyakinanAB',
+        header: 'Beli A lalu B',
+        enableSorting: false,
+        meta: { label: 'Yang membeli pertama juga membeli kedua', angka: true, prioritas: 'rendah' },
+        cell: ({ row }) => `${FormatPersen(row.original.KeyakinanAB)} | ${FormatPersen(row.original.KeyakinanBA)}`,
+    },
+    {
+        id: 'HargaPaket',
+        accessorKey: 'HargaPaket',
+        header: 'Saran harga paket',
+        enableSorting: false,
+        meta: { label: 'Saran harga paket', angka: true, prioritas: 'penting' },
+        cell: ({ row: { original: b } }) =>
+            b.HargaPaket === null || b.HargaNormal === null
+                ? '–'
+                : `${FormatRupiah(b.HargaPaket)} (normal ${FormatRupiah(b.HargaNormal)})`,
+    },
+];
+
 const kolomMetode: KolomTabel<BarisMetodeLaporan>[] = [
     {
         id: 'NamaMetode',
@@ -580,6 +642,16 @@ const kolomMenu: KolomTabel<BarisMenuLaporan>[] = [
         cell: ({ row }) => FormatPersen(row.original.PorsiQty),
     },
     KolomUang<BarisMenuLaporan>('MarginPerUnit', 'Margin per unit', 'penting'),
+    {
+        id: 'SaranHarga',
+        accessorKey: 'SaranHarga',
+        header: 'Saran harga',
+        meta: { label: 'Saran harga', angka: true, prioritas: 'penting' },
+        cell: ({ row }) =>
+            row.original.SaranHarga === null
+                ? '–'
+                : `${FormatRupiah(row.original.SaranHarga)} (dari ${FormatRupiah(row.original.HargaRata)})`,
+    },
     KolomUang<BarisMenuLaporan>('Bersih', 'Bersih', 'rendah'),
     KolomUang<BarisMenuLaporan>('Hpp', 'HPP', 'rendah'),
 ];
@@ -758,6 +830,102 @@ function IsiTab({
                     kosong={kosong}
                 />
             );
+        case 'prediksi': {
+            const ramal = isi as IsiPrediksi;
+
+            if (!ramal.Cukup) {
+                return (
+                    <Pemberitahuan jenis="info">
+                        Data penjualan belum cukup untuk memperkirakan. Dibutuhkan riwayat penjualan minimal 14 hari
+                        (saat ini {String(ramal.HariData)} hari).
+                    </Pemberitahuan>
+                );
+            }
+
+            return (
+                <div className="flex flex-col gap-3">
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Perkiraan = rata-rata penjualan bersih pada hari yang sama dalam minggu selama 8 minggu terakhir
+                        (hari tutup dihitung nol) × faktor tren {ramal.FaktorTren.replace('.', ',')} (penjualan 4 minggu
+                        terakhir dibanding 4 minggu sebelumnya, dibatasi 0,80 sampai 1,25). Ini perkiraan statistik
+                        sederhana, bukan jaminan; promo, cuaca, dan hari libur belum diperhitungkan.
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:max-w-xl">
+                        <div>
+                            <dt className="text-label text-teks-sekunder">
+                                Perkiraan {String(ramal.Baris.length)} hari
+                            </dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {FormatRupiah(ramal.TotalPerkiraan)}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-label text-teks-sekunder">Riwayat dipakai</dt>
+                            <dd className="text-subjudul font-semibold tabular-nums text-teks-utama">
+                                {String(Math.min(ramal.HariData, 56))} hari
+                            </dd>
+                        </div>
+                    </dl>
+                    <TabelData
+                        id="laporan-penjualan-prediksi"
+                        label="Prediksi penjualan harian"
+                        kolom={kolomPrediksi}
+                        sumber={{ mode: 'lokal', data: ramal.Baris }}
+                        ambilIdBaris={(b) => b.Tanggal}
+                        urutBawaan="Tanggal"
+                        cari={false}
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={kosong}
+                    />
+                </div>
+            );
+        }
+        case 'bundling': {
+            const bundling = isi as IsiBundling;
+
+            return (
+                <div className="flex flex-col gap-3">
+                    <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                        Pasangan produk yang dibeli dalam satu transaksi (minimal 3 kali) dari{' '}
+                        {String(bundling.JumlahTransaksi)} transaksi pada periode ini. Lift di atas 1 berarti keduanya
+                        dibeli bersama lebih sering daripada kebetulan. Saran harga paket 95% dari harga normal,
+                        dibulatkan ke bawah ke kelipatan Rp 500.
+                    </p>
+                    {bundling.Terpotong ? (
+                        <Pemberitahuan jenis="peringatan">
+                            Transaksi pada periode ini sangat banyak, sebagian tidak ikut dianalisis. Persempit periode
+                            atau pilih satu outlet.
+                        </Pemberitahuan>
+                    ) : null}
+                    <TabelData
+                        id="laporan-penjualan-bundling"
+                        label="Rekomendasi bundling"
+                        kolom={kolomBundling}
+                        sumber={{ mode: 'lokal', data: bundling.Baris }}
+                        ambilIdBaris={(b) => b.Kunci}
+                        urutBawaan="-Lift"
+                        cari="Cari nama produk"
+                        ekspor={{
+                            alamat: `${alamat}/ekspor`,
+                            label: 'Ekspor',
+                            laporan: true,
+                            eksporBesar: true,
+                            query: queryEkspor,
+                        }}
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Belum ada pasangan produk yang sering dibeli bersama pada periode ini.',
+                        }}
+                    />
+                </div>
+            );
+        }
         case 'performa-kasir':
             return (
                 <TabelData
@@ -1076,10 +1244,13 @@ export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     const tabFnb = ['menu', 'waktu-saji', 'food-cost'];
     // D-111: tab Anti-fraud adalah fitur paket (`keamanan.anti-fraud`); server menolaknya di luar paket, jadi tab disembunyikan.
     const antiFraudTerkunci = PakaiFiturTerkunci('keamanan.anti-fraud');
+    // D-111: prediksi & rekomendasi bundling termasuk fitur Forecast & insight (`laporan.insight`).
+    const insightTerkunci = PakaiFiturTerkunci('laporan.insight');
     const tabTerlihat = daftarTab.filter(
         (tab) =>
             (!tabFnb.includes(tab.nilai) || sektorFnb || props.Saring.Tab === tab.nilai) &&
-            (tab.nilai !== 'anti-fraud' || !antiFraudTerkunci),
+            (tab.nilai !== 'anti-fraud' || !antiFraudTerkunci) &&
+            (!['prediksi', 'bundling'].includes(tab.nilai) || !insightTerkunci),
     );
     const { Saring, Total } = props;
     const query = {

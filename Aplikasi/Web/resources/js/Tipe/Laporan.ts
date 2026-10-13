@@ -97,7 +97,9 @@ export type TabLaporanPenjualan =
     | 'outlet'
     | 'waktu-saji'
     | 'food-cost'
-    | 'performa-kasir';
+    | 'performa-kasir'
+    | 'prediksi'
+    | 'bundling';
 
 export type SaringLaporanPenjualan = {
     Tab: TabLaporanPenjualan;
@@ -217,6 +219,37 @@ export type BarisPerformaKasir = {
     PersenVoid: string;
     SelisihKurang: string;
 };
+/** Prediksi penjualan 14 hari ke depan (rata-rata hari-dalam-minggu × faktor tren). */
+export type BarisPrediksi = {
+    Tanggal: string;
+    Hari: number;
+    Perkiraan: string;
+    PerkiraanTransaksi: number;
+    Terendah: string;
+    Tertinggi: string;
+    Sampel: number;
+};
+export type IsiPrediksi = {
+    Cukup: boolean;
+    HariData: number;
+    FaktorTren: string;
+    Baris: BarisPrediksi[];
+    TotalPerkiraan: string;
+};
+/** Pasangan produk yang sering dibeli bersama; `Lift` > 1 = lebih sering bersama daripada kebetulan. */
+export type BarisBundling = {
+    Kunci: string;
+    NamaA: string;
+    NamaB: string;
+    Support: number;
+    PorsiTransaksi: string;
+    KeyakinanAB: string;
+    KeyakinanBA: string;
+    Lift: string;
+    HargaNormal: string | null;
+    HargaPaket: string | null;
+};
+export type IsiBundling = { JumlahTransaksi: number; Terpotong: boolean; Baris: BarisBundling[] };
 /** Penjualan per pelanggan; `Kunci` kosong = transaksi tanpa pelanggan. `Porsi` = % omzet bersih. */
 export type BarisPelangganLaporan = AngkaPenjualan & { Kunci: string; NamaPelanggan: string; Porsi: string };
 /** Perbandingan outlet; `Margin` = % laba kotor terhadap omzet bersih. */
@@ -299,6 +332,9 @@ export type BarisMenuLaporan = {
     Bersih: string;
     Hpp: string;
     MarginPerUnit: string;
+    HargaRata: string;
+    /** Hanya menu Plowhorse (laris, margin rendah): harga baru yang disarankan; selain itu null. */
+    SaranHarga: string | null;
     PorsiQty: string;
     Populer: boolean;
     MarginTinggi: boolean;
@@ -332,6 +368,8 @@ export type PropsLaporanPenjualan = {
         | BarisWaktuSaji[]
         | IsiFoodCost
         | BarisPerformaKasir[]
+        | IsiPrediksi
+        | IsiBundling
         | BarisMetodeLaporan[]
         | BarisDiskonLaporan[]
         | BarisVoidItemLaporan[]
