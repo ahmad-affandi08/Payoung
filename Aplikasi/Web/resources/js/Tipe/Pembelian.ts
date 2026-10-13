@@ -743,3 +743,19 @@ export type PropsDetailBiayaTambahan = {
     Izin: IzinPembelian;
     Tindakan: { Batalkan: boolean };
 };
+
+/** PLT-10 (F31): hasil impor pemasok (periksa atau terapkan). */
+export type MasalahImporPemasok = { Baris: number; Nama: string; Pesan: string };
+
+export type HasilImporPemasok = {
+    Terapkan: boolean;
+    NamaBerkas: string;
+    JumlahBaris: number;
+    Baru: number;
+    SudahAda: number;
+    Bermasalah: number;
+    /** Maksimal 200 baris pertama yang bermasalah. */
+    Masalah: MasalahImporPemasok[];
+};
+
+export type PropsImporPemasok = { Hasil: HasilImporPemasok | null; MaksimalBaris: number };

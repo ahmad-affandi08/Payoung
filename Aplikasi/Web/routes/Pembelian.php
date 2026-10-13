@@ -6,6 +6,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Pembelian\BiayaTambahanKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\FakturPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\HutangKontroler;
+use App\Http\Kontroler\Kelola\Pembelian\ImporPemasokKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\KonsinyasiKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PemasokKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\PenerimaanBarangKontroler;
@@ -34,6 +35,10 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
 
     Route::get('/pemasok', [PemasokKontroler::class, 'Daftar'])->name('kelola.pembelian.pemasok.daftar');
     Route::get('/pemasok/buat', [PemasokKontroler::class, 'Buat'])->name('kelola.pembelian.pemasok.buat');
+    // PLT-10 (F31): impor pemasok dari Excel/CSV (periksa → terapkan).
+    Route::get('/pemasok/impor', [ImporPemasokKontroler::class, 'Halaman'])->name('kelola.pembelian.pemasok.impor');
+    Route::post('/pemasok/impor', [ImporPemasokKontroler::class, 'Kirim'])->middleware('throttle:20,1')->name('kelola.pembelian.pemasok.impor.kirim');
+    Route::get('/pemasok/impor/templat', [ImporPemasokKontroler::class, 'Templat'])->name('kelola.pembelian.pemasok.impor.templat');
     Route::post('/pemasok', [PemasokKontroler::class, 'Simpan'])->name('kelola.pembelian.pemasok.simpan');
     Route::put('/pemasok/{pemasok}', [PemasokKontroler::class, 'Perbarui'])->where('pemasok', $ulid)->name('kelola.pembelian.pemasok.perbarui');
     Route::post('/pemasok/{pemasok}/status', [PemasokKontroler::class, 'UbahStatus'])->where('pemasok', $ulid)->name('kelola.pembelian.pemasok.status');

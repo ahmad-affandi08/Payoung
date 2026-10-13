@@ -87,9 +87,14 @@ export default function HalamanDaftarPemasok({ Pemasok, Izin }: PropsDaftarPemas
     const [hapus, AturHapus] = useState<BarisPemasok | null>(null);
     const [memproses, AturMemproses] = useState(false);
     const tombolTambah = (
-        <Button asChild>
-            <Link href={`${alamat}/buat`}>Tambah pemasok</Link>
-        </Button>
+        <>
+            <Button asChild variant="outline">
+                <Link href={`${alamat}/impor`}>Impor pemasok</Link>
+            </Button>
+            <Button asChild>
+                <Link href={`${alamat}/buat`}>Tambah pemasok</Link>
+            </Button>
+        </>
     );
 
     return (
