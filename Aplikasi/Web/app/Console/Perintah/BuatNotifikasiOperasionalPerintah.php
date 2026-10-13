@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Perintah;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Organisasi\Aksi\BuatNotifikasiKedaluwarsa;
 use App\Domain\Organisasi\Aksi\BuatNotifikasiOperasional;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
@@ -17,7 +18,7 @@ final class BuatNotifikasiOperasionalPerintah extends Command
 
     protected $description = 'Membuat push kondisi operasional penting untuk Aplikasi Owner.';
 
-    public function handle(KeanggotaanPengguna $keanggotaan, KonteksTenant $konteks, TanggalBisnisOutlet $tanggal, BuatNotifikasiOperasional $buat): int
+    public function handle(KeanggotaanPengguna $keanggotaan, KonteksTenant $konteks, TanggalBisnisOutlet $tanggal, BuatNotifikasiOperasional $buat, BuatNotifikasiKedaluwarsa $kedaluwarsa): int
     {
         $diminta = array_values(array_filter(array_map('intval', (array) $this->option('tenant'))));
         $semua = $keanggotaan->AmbilSemuaIdTenant();
@@ -29,7 +30,10 @@ final class BuatNotifikasiOperasionalPerintah extends Command
             foreach ($daftar as $idTenant) {
                 $konteks->Atur($idTenant);
                 try {
-                    $jumlah += $buat->Jalankan($idTenant, $tanggal->Hitung(null));
+                    $hariIni = $tanggal->Hitung(null);
+                    $jumlah += $buat->Jalankan($idTenant, $hariIni);
+                    // F23: peringatan kedaluwarsa batch H-30/H-7/lewat, satu kali per batch per tingkat.
+                    $jumlah += $kedaluwarsa->Jalankan($idTenant, $hariIni);
                 } catch (Throwable $e) {
                     report($e);
                 }

@@ -12,4 +12,5 @@ enum JenisNotifikasiPengguna: string
     case StokKritis = 'StokKritis';
     case PerangkatOffline = 'PerangkatOffline';
     case PiutangJatuhTempo = 'PiutangJatuhTempo';
+    case StokKedaluwarsa = 'StokKedaluwarsa';
 }
