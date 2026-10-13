@@ -8,6 +8,7 @@ use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Pengelola\Katalog\Kueri\DaftarKatalog;
 use App\Domain\Pengelola\Tenant\Aksi\BuatOverrideTenant;
 use App\Domain\Pengelola\Tenant\Aksi\PerpanjangTrial;
+use App\Domain\Pengelola\Tenant\Enum\KategoriKesehatan;
 use App\Domain\Pengelola\Tenant\Enum\KategoriPenangguhan;
 use App\Domain\Pengelola\Tenant\Kueri\DaftarTenant;
 use App\Domain\Pengelola\Tenant\Kueri\TampilanTenant;
@@ -33,6 +34,7 @@ final class TenantKontroler extends Kontroler
 
         return ResponsTabel::Kirim($permintaan, 'Pengelola/Tenant/Daftar', 'Tenant', fn (): array => $kueri->AmbilTabel($tabel), fn (): array => [
             'PilihanStatus' => array_map(fn (StatusLangganan $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], StatusLangganan::cases()),
+            'PilihanKesehatan' => array_map(fn (KategoriKesehatan $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], KategoriKesehatan::cases()),
             'PilihanPenanda' => [
                 ['Nilai' => DaftarTenant::SARING_TANPA_PENANDA, 'Label' => 'Tanpa penanda'],
                 ...array_map(fn (PenandaTenant $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], PenandaTenant::cases()),

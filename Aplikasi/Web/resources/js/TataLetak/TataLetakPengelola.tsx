@@ -76,7 +76,13 @@ export const daftarMenuPengelola: GrupMenu[] = [
         item: [
             { label: 'Beranda', href: '/', izin: null, ikon: 'Beranda' },
             // P-07 Siklus hidup tenant: subjek yang paling sering dibuka, jadi paling atas setelah Beranda.
-            { label: 'Tenant', href: '/tenant', izin: IzinPengelola.TenantLihat, ikon: 'Toko' },
+            {
+                label: 'Tenant',
+                href: '/tenant',
+                izin: IzinPengelola.TenantLihat,
+                ikon: 'Toko',
+                alamatLain: ['/tugas-tenant'],
+            },
             // P-08 Tagihan langganan & verifikasi transfer.
             {
                 label: 'Tagihan',

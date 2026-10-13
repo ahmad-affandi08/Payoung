@@ -10,7 +10,50 @@ export type BarisTenant = {
     StatusLangganan: string | null;
     TrialBerakhirPada: string | null;
     Penanda: string | null;
+    /** Kategori kesehatan pada tanggal hitung terbaru; null bila belum dinilai (P-07 PGL-09). */
+    Kesehatan: { Skor: number; Kategori: KategoriKesehatan; LabelKategori: string } | null;
     DibuatPada: string;
+};
+
+export type KategoriKesehatan = 'Sehat' | 'PerluPerhatian' | 'Berisiko';
+
+/** Skor kesehatan satu tenant untuk tampilan 360° (P-07 PGL-09). */
+export type KesehatanTenant = {
+    Terbaru: {
+        Tanggal: string;
+        Skor: number;
+        Kategori: KategoriKesehatan;
+        LabelKategori: string;
+        Faktor: { Kunci: string; Nilai: number | boolean; Poin: number; Maks: number }[];
+    } | null;
+    Riwayat: { Tanggal: string; Skor: number; Kategori: KategoriKesehatan }[];
+    Tugas: { Uuid: string; Jenis: string; LabelJenis: string; Ringkasan: string; DibuatPada: string }[];
+};
+
+export type BarisTugasTenant = {
+    Uuid: string;
+    UuidTenant: string | null;
+    NamaTenant: string;
+    Slug: string;
+    Jenis: 'OnboardingMacet' | 'Berisiko';
+    LabelJenis: string;
+    Ringkasan: string;
+    Status: 'Terbuka' | 'Selesai';
+    DibuatPada: string;
+    SelesaiPada: string | null;
+    CaraSelesai: 'Otomatis' | 'Manual' | null;
+    CatatanSelesai: string | null;
+    Skor: number | null;
+    Kategori: KategoriKesehatan | null;
+    LabelKategori: string | null;
+};
+
+export type SebaranKesehatan = {
+    Tanggal: string | null;
+    Sehat: number;
+    PerluPerhatian: number;
+    Berisiko: number;
+    TugasTerbuka: number;
 };
 
 export type LanggananTenant = {
@@ -190,6 +233,7 @@ export type Tampilan360 = {
     PersetujuanLegal: { Jenis: string; Versi: number | null; Pengguna: string; DisetujuiPada: string }[];
     Override: OverrideTenant[];
     Catatan: { Uuid: string; Isi: string; Penulis: string; DibuatPada: string }[];
+    Kesehatan: KesehatanTenant;
     PenghapusanData: PermintaanPenghapusanData[];
     Riwayat: RiwayatTindakan[];
 };

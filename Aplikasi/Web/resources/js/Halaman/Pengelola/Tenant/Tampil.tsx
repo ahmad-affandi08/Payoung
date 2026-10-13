@@ -13,6 +13,7 @@ import {
     FormTangguhkan,
 } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import PanelAksesDukungan from '@/Komponen/Pengelola/Tenant/PanelAksesDukungan';
+import PanelKesehatanTenant from '@/Komponen/Pengelola/Tenant/PanelKesehatanTenant';
 import PanelAlatBantuDukungan from '@/Komponen/Pengelola/Tenant/PanelAlatBantuDukungan';
 import PanelPendaftaranMerchant from '@/Komponen/Pengelola/Tenant/PanelPendaftaranMerchant';
 import PanelPenghapusanData from '@/Komponen/Pengelola/Tenant/PanelPenghapusanData';
@@ -328,6 +329,8 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                         />
                     </Panel>
 
+                    <PanelKesehatanTenant kesehatan={Tenant.Kesehatan} />
+
                     <Panel judul="Paket & langganan">
                         {Langganan === null ? (
                             <p className="text-isi text-teks-sekunder">Tenant ini belum punya langganan.</p>
@@ -591,7 +594,6 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                                 judul="Perangkat (platform, versi aplikasi, outbox tertunda)"
                                 modul="aktivasi perangkat POS"
                             />
-                            <ModulMenyusul judul="Skor kesehatan" modul="skor kesehatan tenant (fase berikutnya)" />
                             <ModulMenyusul
                                 judul="Permintaan penghapusan data (UU PDP)"
                                 modul="alur penghapusan data (fase berikutnya)"

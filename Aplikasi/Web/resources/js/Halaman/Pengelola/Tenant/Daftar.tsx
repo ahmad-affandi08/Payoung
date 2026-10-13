@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 
+import LabelKesehatan from '@/Komponen/Pengelola/Tenant/LabelKesehatan';
 import { LabelPenanda, LabelStatusLangganan } from '@/Komponen/Pengelola/Tenant/LabelLangganan';
+import TabTenant from '@/Komponen/Pengelola/Tenant/TabTenant';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { HasilTabel, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -12,6 +14,7 @@ type PropsDaftar = {
     Tenant: HasilTabel<BarisTenant>;
     PilihanStatus: Pilihan[];
     PilihanPenanda: Pilihan[];
+    PilihanKesehatan: Pilihan[];
 };
 
 const kolom: KolomTabel<BarisTenant>[] = [
@@ -50,6 +53,19 @@ const kolom: KolomTabel<BarisTenant>[] = [
         ),
     },
     {
+        id: 'Kesehatan',
+        header: 'Kesehatan',
+        enableSorting: false,
+        meta: { label: 'Kesehatan', prioritas: 'penting' },
+        cell: ({ row: { original: tenant } }) => (
+            <LabelKesehatan
+                kategori={tenant.Kesehatan?.Kategori ?? null}
+                teks={tenant.Kesehatan?.LabelKategori}
+                skor={tenant.Kesehatan?.Skor}
+            />
+        ),
+    },
+    {
         id: 'TrialBerakhirPada',
         header: 'Trial berakhir',
         enableSorting: false,
@@ -67,9 +83,10 @@ const kolom: KolomTabel<BarisTenant>[] = [
 ];
 
 /** Daftar tenant (P-07, TabelData D-16): cari nama, slug, atau email Owner; saring status langganan & penanda. */
-export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda }: PropsDaftar) {
+export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanKesehatan }: PropsDaftar) {
     return (
         <TataLetakPengelola judul="Tenant">
+            <TabTenant />
             <TabelData
                 id="pengelola-tenant"
                 label="Daftar tenant"
@@ -84,6 +101,12 @@ export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda }: PropsD
                         label: 'Status langganan',
                         jenis: 'pilihanBanyak',
                         opsi: PilihanStatus.map((o) => ({ nilai: o.Nilai, label: o.Label })),
+                    },
+                    {
+                        id: 'Kesehatan',
+                        label: 'Kesehatan',
+                        jenis: 'pilihanBanyak',
+                        opsi: PilihanKesehatan.map((o) => ({ nilai: o.Nilai, label: o.Label })),
                     },
                     {
                         id: 'Penanda',

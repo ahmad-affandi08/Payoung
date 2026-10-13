@@ -388,6 +388,7 @@ function BuatTenant(): Tampilan360 {
     return {
         AksesDukungan: { Aktif: null, Izin: [], Sesi: [], Alat: [] },
         MitraPerujuk: null,
+        Kesehatan: { Terbaru: null, Riwayat: [], Tugas: [] },
         PendaftaranMerchant: { Pendaftaran: null, PartnerAktif: false },
         Profil: {
             Uuid: 'T-1',

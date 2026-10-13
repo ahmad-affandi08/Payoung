@@ -39,6 +39,7 @@ use App\Http\Kontroler\Pengelola\SesiKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanManualKontroler;
 use App\Http\Kontroler\Pengelola\TemplateSektor\TemplateSektorKontroler;
+use App\Http\Kontroler\Pengelola\Tenant\KesehatanTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PenghapusanDataTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TenantKontroler;
@@ -444,6 +445,11 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
         // P-07 Siklus hidup tenant (§19.3: izin per tindakan).
         Route::middleware($izin(IzinPengelola::TenantLihat))->group(function () use ($izin): void {
             Route::get('/tenant', [TenantKontroler::class, 'Daftar'])->name('pengelola.tenant.daftar');
+            // PGL-09: tugas otomatis dari skor kesehatan (Uuid tugas; model terikat lewat `Uuid`).
+            Route::get('/tugas-tenant', [KesehatanTenantKontroler::class, 'Daftar'])->name('pengelola.tugas-tenant.daftar');
+            Route::post('/tugas-tenant/{tugas}/selesai', [KesehatanTenantKontroler::class, 'Selesaikan'])
+                ->middleware($izin(IzinPengelola::TenantCatatanTulis))
+                ->name('pengelola.tugas-tenant.selesai');
             Route::get('/tenant/{tenant}', [TenantKontroler::class, 'Tampilkan'])->name('pengelola.tenant.tampil');
             Route::post('/tenant/{tenant}/catatan', [TindakanTenantKontroler::class, 'TulisCatatan'])
                 ->middleware($izin(IzinPengelola::TenantCatatanTulis))

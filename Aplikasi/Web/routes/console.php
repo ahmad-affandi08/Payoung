@@ -65,6 +65,9 @@ $jadwalSaas('pengelola:segarkan-kompatibilitas')->dailyAt('02:30')->timezone('As
 
 $jadwalSaas('tenant:umumkan-dokumen-legal')->dailyAt('09:00')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
 
+// P-07 PGL-09: skor kesehatan tenant harian + tugas otomatis tim (dini hari, setelah tutup harian otomatis).
+$jadwalSaas('tenant:hitung-skor-kesehatan')->dailyAt('03:30')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
+
 // P-11 BR-P11.1: detak scheduler tiap menit + pemeriksaan alert operasional (scheduler, antrean, backup).
 $jadwalSaas('pengelola:detak')->everyMinute()->withoutOverlapping(10);
 
