@@ -259,6 +259,150 @@ class RisikoKasirPemilik {
   );
 }
 
+/// OWN-06: satu baris saldo stok (produk × lokasi stok).
+class SaldoStokPemilik {
+  const SaldoStokPemilik({
+    required this.uuidProduk,
+    required this.uuidGudang,
+    required this.nama,
+    required this.sku,
+    required this.satuan,
+    required this.lokasi,
+    required this.jumlah,
+    required this.nilai,
+    this.minimum,
+  });
+
+  final String uuidProduk;
+  final String uuidGudang;
+  final String nama;
+  final String? sku;
+  final String satuan;
+
+  /// `Outlet | Lokasi stok`.
+  final String lokasi;
+  final String jumlah;
+  final String nilai;
+
+  /// Terisi hanya pada daftar stok kritis.
+  final String? minimum;
+
+  static SaldoStokPemilik DariJson(Map<String, Object?> json) {
+    final outlet = UraiJson.AmbilTeks(json['NamaOutlet']);
+    final gudang = UraiJson.AmbilTeks(json['NamaGudang']);
+    return SaldoStokPemilik(
+      uuidProduk: UraiJson.AmbilTeks(json['UuidProduk']),
+      uuidGudang: UraiJson.AmbilTeks(json['UuidGudang']),
+      nama: UraiJson.AmbilTeks(json['NamaProduk']),
+      sku: UraiJson.AmbilTeksAtauNull(json['Sku']),
+      satuan: UraiJson.AmbilTeks(json['SimbolSatuan']),
+      lokasi: outlet.isEmpty ? gudang : '$outlet | $gudang',
+      jumlah: UraiJson.AmbilDesimal(json['JumlahTersedia'] ?? json['Saldo']),
+      nilai: UraiJson.AmbilDesimal(json['NilaiPersediaan']),
+      minimum: UraiJson.AmbilDesimalAtauNull(json['StokMinimum']),
+    );
+  }
+}
+
+/// OWN-06: ringkasan nilai persediaan, stok kritis teratas, dan halaman pertama saldo (`GET stok`).
+class StokPemilik {
+  const StokPemilik({
+    required this.nilaiPersediaan,
+    required this.jumlahProduk,
+    required this.jumlahKritis,
+    required this.jumlahMinus,
+    required this.kritis,
+    required this.saldo,
+    required this.totalSaldo,
+  });
+
+  final String nilaiPersediaan;
+  final int jumlahProduk;
+  final int jumlahKritis;
+  final int jumlahMinus;
+  final List<SaldoStokPemilik> kritis;
+  final List<SaldoStokPemilik> saldo;
+  final int totalSaldo;
+
+  static StokPemilik DariJson(Map<String, Object?> json) {
+    final ringkasan = UraiJson.AmbilPeta(json['Ringkasan']);
+    final saldo = UraiJson.AmbilPeta(json['Saldo']);
+    return StokPemilik(
+      nilaiPersediaan: UraiJson.AmbilDesimal(ringkasan['NilaiPersediaan']),
+      jumlahProduk: UraiJson.AmbilBulat(ringkasan['JumlahProduk']),
+      jumlahKritis: UraiJson.AmbilBulat(ringkasan['JumlahKritis']),
+      jumlahMinus: UraiJson.AmbilBulat(ringkasan['JumlahMinus']),
+      kritis: [for (final k in UraiJson.AmbilDaftarPeta(json['Kritis'])) SaldoStokPemilik.DariJson(k)],
+      saldo: [for (final b in UraiJson.AmbilDaftarPeta(saldo['Data'])) SaldoStokPemilik.DariJson(b)],
+      totalSaldo: UraiJson.AmbilBulat(UraiJson.AmbilPeta(saldo['Meta'])['Total']),
+    );
+  }
+}
+
+/// OWN-06: satu mutasi di kartu stok.
+class MutasiStokPemilik {
+  const MutasiStokPemilik({
+    required this.tanggal,
+    required this.jenis,
+    required this.referensi,
+    required this.masuk,
+    required this.keluar,
+    required this.saldo,
+  });
+
+  final String tanggal;
+  final String jenis;
+  final String? referensi;
+  final String? masuk;
+  final String? keluar;
+  final String saldo;
+
+  static MutasiStokPemilik DariJson(Map<String, Object?> json) => MutasiStokPemilik(
+    tanggal: UraiJson.AmbilTeks(json['TanggalBisnis']),
+    jenis: UraiJson.AmbilTeks(json['LabelJenisMutasi']),
+    referensi: UraiJson.AmbilTeksAtauNull(json['NomorReferensi']),
+    masuk: UraiJson.AmbilDesimalAtauNull(json['Masuk']),
+    keluar: UraiJson.AmbilDesimalAtauNull(json['Keluar']),
+    saldo: UraiJson.AmbilDesimal(json['SaldoSetelah']),
+  );
+}
+
+/// OWN-06: riwayat kartu stok satu produk di satu lokasi (30 hari terakhir, 50 mutasi pertama).
+class KartuStokPemilik {
+  const KartuStokPemilik({
+    required this.namaProduk,
+    required this.satuan,
+    required this.lokasi,
+    required this.saldoAwal,
+    required this.saldoAkhir,
+    required this.mutasi,
+  });
+
+  final String namaProduk;
+  final String satuan;
+  final String lokasi;
+  final String saldoAwal;
+  final String saldoAkhir;
+  final List<MutasiStokPemilik> mutasi;
+
+  static KartuStokPemilik DariJson(Map<String, Object?> json) {
+    final produk = UraiJson.AmbilPeta(json['Produk']);
+    final gudang = UraiJson.AmbilPeta(json['Gudang']);
+    final outlet = UraiJson.AmbilTeks(gudang['NamaOutlet']);
+    final namaGudang = UraiJson.AmbilTeks(gudang['Nama']);
+    return KartuStokPemilik(
+      namaProduk: UraiJson.AmbilTeks(produk['Nama']),
+      satuan: UraiJson.AmbilTeks(produk['SimbolSatuan']),
+      lokasi: outlet.isEmpty ? namaGudang : '$outlet | $namaGudang',
+      saldoAwal: UraiJson.AmbilDesimal(UraiJson.AmbilPeta(json['SaldoAwal'])['Jumlah']),
+      saldoAkhir: UraiJson.AmbilDesimal(UraiJson.AmbilPeta(json['SaldoAkhir'])['Jumlah']),
+      mutasi: [
+        for (final m in UraiJson.AmbilDaftarPeta(UraiJson.AmbilPeta(json['Mutasi'])['Data'])) MutasiStokPemilik.DariJson(m),
+      ],
+    );
+  }
+}
+
 class ShiftPemilik {
   const ShiftPemilik({
     required this.uuid,
@@ -658,6 +802,17 @@ class KlienPemilik {
     final json = await _Kirim('GET', _Jalur('laporan/anti-fraud', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null);
     return [for (final k in UraiJson.AmbilDaftarPeta(json['Kasir'])) RisikoKasirPemilik.DariJson(k)];
   }
+
+  /// OWN-06: nilai persediaan, stok kritis, dan saldo per produk (izin `persediaan.lihat`); [cari] = nama/SKU/barcode.
+  Future<StokPemilik> AmbilStok({String? outlet, String cari = ''}) async => StokPemilik.DariJson(
+    await _Kirim('GET', _Jalur('stok', {'outlet': ?outlet, if (cari.trim().isNotEmpty) 'cari': cari.trim()}), null),
+  );
+
+  /// OWN-06: kartu stok [uuidProduk] di [uuidGudang] (bawaan 30 hari terakhir menurut tanggal bisnis outlet).
+  Future<KartuStokPemilik> AmbilKartuStok({required String uuidProduk, required String uuidGudang}) async =>
+      KartuStokPemilik.DariJson(
+        await _Kirim('GET', _Jalur('stok/kartu', {'produk': uuidProduk, 'gudang': uuidGudang}), null),
+      );
 
   Future<List<ShiftPemilik>> AmbilShift({required String tanggal, String? outlet}) async {
     final json = await _Kirim('GET', _Jalur('shift', {'tanggal': tanggal, 'outlet': ?outlet}), null);

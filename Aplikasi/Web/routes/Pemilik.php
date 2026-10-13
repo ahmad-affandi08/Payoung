@@ -12,6 +12,7 @@ use App\Http\Kontroler\Pemilik\V1\NotifikasiKontroler;
 use App\Http\Kontroler\Pemilik\V1\PengumumanKontroler;
 use App\Http\Kontroler\Pemilik\V1\PerangkatKontroler;
 use App\Http\Kontroler\Pemilik\V1\PersetujuanKontroler;
+use App\Http\Kontroler\Pemilik\V1\StokKontroler;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\IdentifikasiTenantPemilik;
 use App\Http\Perantara\WajibFiturPaket;
@@ -75,6 +76,9 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
         Route::post('/perangkat/{perangkat}/cabut', [PerangkatKontroler::class, 'Cabut'])
             ->where('perangkat', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
             ->middleware([$izin(IzinTenant::PerangkatKelola), 'throttle:pemilik-30'])->name('pemilik.perangkat.cabut');
+        // OWN-06: cek stok & nilai persediaan per outlet, riwayat kartu stok.
+        Route::get('/stok', [StokKontroler::class, 'Ringkasan'])->middleware($izin(IzinTenant::PersediaanLihat))->name('pemilik.stok');
+        Route::get('/stok/kartu', [StokKontroler::class, 'Kartu'])->middleware($izin(IzinTenant::PersediaanLihat))->name('pemilik.stok.kartu');
         // OWN-10: pantau karyawan (kehadiran hari ini, komisi & target bulan berjalan).
         Route::get('/karyawan', [KaryawanKontroler::class, 'Pantau'])->middleware($izin(IzinTenant::KaryawanLihat))->name('pemilik.karyawan');
     });

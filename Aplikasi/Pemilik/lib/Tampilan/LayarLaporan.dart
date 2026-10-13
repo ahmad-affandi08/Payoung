@@ -1,14 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
+import '../Data/KlienPemilik.dart';
 import 'BilahSaringan.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 
+const List<(ModeLaporan, String)> _modeLaporan = [
+  (ModeLaporan.Penjualan, 'Penjualan'),
+  (ModeLaporan.LabaRugi, 'Laba rugi'),
+  (ModeLaporan.AntiFraud, 'Anti-fraud'),
+  (ModeLaporan.Stok, 'Stok'),
+];
+
 /// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal pada tanggal & outlet terpilih, atau laba rugi
-/// bulan berjalan (dibandingkan bulan sebelumnya), atau skor risiko kasir 7 hari terakhir.
+/// bulan berjalan (dibandingkan bulan sebelumnya), skor risiko kasir 7 hari terakhir, atau cek stok (OWN-06).
 class LayarLaporan extends ConsumerWidget {
   const LayarLaporan({super.key});
 
@@ -21,20 +31,25 @@ class LayarLaporan extends ConsumerWidget {
       children: [
         BilahSaringan(outlet: outlet),
         const SizedBox(height: TokenJarak.jarak12),
-        SegmentedButton<ModeLaporan>(
-          segments: const [
-            ButtonSegment(value: ModeLaporan.Penjualan, label: Text('Penjualan')),
-            ButtonSegment(value: ModeLaporan.LabaRugi, label: Text('Laba rugi')),
-            ButtonSegment(value: ModeLaporan.AntiFraud, label: Text('Anti-fraud')),
+        Wrap(
+          spacing: TokenJarak.jarak8,
+          runSpacing: TokenJarak.jarak8,
+          children: [
+            for (final (nilai, label) in _modeLaporan)
+              ChoiceChip(
+                label: Text(label),
+                selected: mode == nilai,
+                showCheckmark: false,
+                onSelected: (_) => ref.read(penyediaModeLaporan.notifier).Atur(nilai),
+              ),
           ],
-          selected: {mode},
-          onSelectionChanged: (pilih) => ref.read(penyediaModeLaporan.notifier).Atur(pilih.first),
         ),
         const SizedBox(height: TokenJarak.jarak12),
         switch (mode) {
           ModeLaporan.Penjualan => const _Penjualan(),
           ModeLaporan.LabaRugi => const _LabaRugi(),
           ModeLaporan.AntiFraud => const _AntiFraud(),
+          ModeLaporan.Stok => const _Stok(),
         },
       ],
     );
@@ -277,6 +292,202 @@ class _AntiFraud extends ConsumerWidget {
                   ),
               ],
             ),
+    );
+  }
+}
+
+/// Cek stok (OWN-06): nilai persediaan, stok kritis, saldo per produk dengan pencarian, dan kartu stok per baris.
+class _Stok extends ConsumerStatefulWidget {
+  const _Stok();
+
+  @override
+  ConsumerState<_Stok> createState() => _StokState();
+}
+
+class _StokState extends ConsumerState<_Stok> {
+  late final TextEditingController _cari = TextEditingController(text: ref.read(penyediaCariStok));
+
+  @override
+  void dispose() {
+    _cari.dispose();
+    super.dispose();
+  }
+
+  void _BukaKartu(BuildContext context, SaldoStokPemilik baris) {
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (_) => _LembarKartuStok(baris: baris),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _cari,
+          textInputAction: TextInputAction.search,
+          decoration: const InputDecoration(labelText: 'Cari nama, SKU, atau barcode', prefixIcon: Icon(Icons.search)),
+          onSubmitted: (kata) => ref.read(penyediaCariStok.notifier).Atur(kata),
+        ),
+        const SizedBox(height: TokenJarak.jarak12),
+        KeadaanData(
+          nilai: ref.watch(penyediaStok),
+          saatCobaLagi: () => ref.invalidate(penyediaStok),
+          isi: (s) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: warna.brandGelap,
+                  borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+                ),
+                child: ListTile(
+                  title: Text('Nilai persediaan', style: teks.titleSmall?.copyWith(color: warna.permukaan)),
+                  subtitle: Text(
+                    '${s.jumlahProduk} produk | ${s.jumlahKritis} stok kritis',
+                    style: teks.bodySmall?.copyWith(color: warna.permukaan),
+                  ),
+                  trailing: Text(
+                    FormatTampilan.Rupiah(s.nilaiPersediaan),
+                    style: teks.titleMedium?.copyWith(color: warna.permukaan, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              if (s.kritis.isNotEmpty) ...[
+                const SizedBox(height: TokenJarak.jarak12),
+                Text('Perlu dibeli', style: teks.titleSmall),
+                const SizedBox(height: TokenJarak.jarak8),
+                KotakPanel(
+                  rapat: true,
+                  anak: Column(
+                    children: [
+                      for (final (i, k) in s.kritis.indexed) ...[
+                        if (i > 0) Divider(height: 1, color: warna.garis),
+                        ListTile(
+                          leading: Icon(Icons.warning_amber_outlined, color: warna.peringatan),
+                          title: Text(k.nama),
+                          subtitle: Text('${k.lokasi} | minimum ${FormatTampilan.Jumlah(k.minimum ?? '0')} ${k.satuan}'),
+                          trailing: Text('${FormatTampilan.Jumlah(k.jumlah)} ${k.satuan}', style: teks.titleSmall),
+                          onTap: () => _BukaKartu(context, k),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: TokenJarak.jarak12),
+              Text('Saldo stok', style: teks.titleSmall),
+              const SizedBox(height: TokenJarak.jarak8),
+              if (s.saldo.isEmpty)
+                const KotakPanel(
+                  anak: KeadaanKosong(
+                    ilustrasi: IlustrasiKosong.Laporan,
+                    ikon: Icons.inventory_2_outlined,
+                    judul: 'Tidak ada stok yang cocok.',
+                    keterangan: 'Saldo stok per produk dan lokasi muncul di sini. Coba kata cari lain.',
+                  ),
+                )
+              else ...[
+                KotakPanel(
+                  rapat: true,
+                  anak: Column(
+                    children: [
+                      for (final (i, b) in s.saldo.indexed) ...[
+                        if (i > 0) Divider(height: 1, color: warna.garis),
+                        ListTile(
+                          title: Text(b.nama),
+                          subtitle: Text('${b.lokasi} | ${FormatTampilan.Rupiah(b.nilai)}'),
+                          trailing: Text('${FormatTampilan.Jumlah(b.jumlah)} ${b.satuan}', style: teks.titleSmall),
+                          onTap: () => _BukaKartu(context, b),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (s.totalSaldo > s.saldo.length)
+                  Padding(
+                    padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+                    child: Text(
+                      'Menampilkan ${s.saldo.length} dari ${s.totalSaldo}. Cari nama atau SKU untuk mempersempit.',
+                      style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Riwayat kartu stok 30 hari terakhir untuk satu baris saldo.
+class _LembarKartuStok extends ConsumerWidget {
+  const _LembarKartuStok({required this.baris});
+
+  final SaldoStokPemilik baris;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    final kartu = ref.watch(penyediaKartuStok((baris.uuidProduk, baris.uuidGudang)));
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.8),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(TokenJarak.jarak16, 0, TokenJarak.jarak16, TokenJarak.jarak16),
+          children: [
+            Text('Kartu stok | ${baris.nama}', style: teks.titleMedium),
+            Text(baris.lokasi, style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+            const SizedBox(height: TokenJarak.jarak12),
+            KeadaanData(
+              nilai: kartu,
+              saatCobaLagi: () => ref.invalidate(penyediaKartuStok((baris.uuidProduk, baris.uuidGudang))),
+              isi: (k) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Saldo awal ${FormatTampilan.Jumlah(k.saldoAwal)} ${k.satuan} | saldo akhir '
+                    '${FormatTampilan.Jumlah(k.saldoAkhir)} ${k.satuan}',
+                    style: teks.bodyMedium,
+                  ),
+                  const SizedBox(height: TokenJarak.jarak8),
+                  if (k.mutasi.isEmpty)
+                    const KeadaanKosong(
+                      ikon: Icons.history,
+                      judul: 'Belum ada mutasi 30 hari terakhir.',
+                      keterangan: 'Barang masuk dan keluar muncul di sini.',
+                    )
+                  else
+                    for (final m in k.mutasi)
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(m.jenis),
+                        subtitle: Text([m.tanggal, if (m.referensi != null) m.referensi!].join(' | ')),
+                        trailing: Text(
+                          m.masuk != null
+                              ? '+${FormatTampilan.Jumlah(m.masuk!)}'
+                              : '-${FormatTampilan.Jumlah(m.keluar ?? '0')}',
+                          style: teks.titleSmall,
+                        ),
+                      ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

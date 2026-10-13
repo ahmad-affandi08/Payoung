@@ -12,11 +12,14 @@ use App\Domain\Katalog\Model\ProdukGudang;
 use App\Domain\Laporan\Kueri\LaporanPenjualan;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Model\Gudang;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\Perangkat;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
+use App\Domain\Persediaan\Kueri\KartuStok;
+use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
 use Tests\Pendukung\Akuntansi\BantuanJurnal;
@@ -394,6 +397,65 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
             ->assertOk()
             ->assertJsonPath('PerluTindakan.0', ['Jenis' => 'SelisihKas', 'Judul' => 'Selisih kas shift '.$k['Kasir']->Nama, 'Keterangan' => 'Lebih Rp 985.000 di '.$k['Outlet']->Nama]);
         AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/shift?tanggal=2026-10-06')->assertOk()->assertExactJson(['Shift' => []]);
+    });
+});
+
+describe('OWN-06 cek stok & kartu stok', function (): void {
+    it('ringkasan nilai persediaan, stok kritis, saldo berhalaman dengan pencarian, dan kartu stok sama dengan back-office', function (): void {
+        $d = SiapkanPenjualanDasborUji($this);
+        $token = TokenPemilikUji($this, $d['Pemilik']);
+        $respons = AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, '/stok')->assertOk();
+
+        // Stok awal 10 @ 30.000, terjual 4 → saldo 6 (= minimum 6, jadi kritis), nilai 180.000.
+        expect($respons->json('Ringkasan.NilaiPersediaan'))->toBe('180000.00')
+            ->and($respons->json('Ringkasan.JumlahProduk'))->toBe(1)
+            ->and($respons->json('Ringkasan.JumlahKritis'))->toBe(1)
+            ->and($respons->json('Kritis.0.UuidProduk'))->toBe($d['Minyak']->Uuid)
+            ->and(BigDecimal::of($respons->json('Kritis.0.Saldo'))->isEqualTo('6'))->toBeTrue()
+            ->and($respons->json('Saldo.Meta.Total'))->toBe(1)
+            ->and($respons->json('Saldo.Data.0.NamaProduk'))->toBe($d['Minyak']->Nama)
+            ->and($respons->json('Saldo.Data.0.NilaiPersediaan'))->toBe('180000.00');
+
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, '/stok?cari=tidak-ada-barang-ini')->assertOk()->assertJsonPath('Saldo.Meta.Total', 0)->assertJsonPath('Saldo.Data', []);
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, '/stok?cari=minyak')->assertOk()->assertJsonPath('Saldo.Meta.Total', 1);
+
+        $uuidGudang = $respons->json('Saldo.Data.0.UuidGudang');
+        $kartu = AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, "/stok/kartu?produk={$d['Minyak']->Uuid}&gudang={$uuidGudang}&dari=2026-09-01&sampai=2026-10-07")->assertOk();
+        expect($kartu->json('Produk.Uuid'))->toBe($d['Minyak']->Uuid)
+            ->and($kartu->json('SaldoAkhir.Jumlah'))->toBe($respons->json('Saldo.Data.0.JumlahTersedia'))
+            ->and($kartu->json('Mutasi.Data'))->not->toBeEmpty()
+            ->and(array_sum(array_map(fn (array $m): int => $m['Keluar'] === null ? 0 : 1, $kartu->json('Mutasi.Data'))))->toBe(3);
+
+        BantuanOrganisasi::AturKonteks($d['Tenant']->Id);
+        $web = app(KartuStok::class)->Ambil($d['Minyak']->Id, Gudang::query()->where('Uuid', $uuidGudang)->value('Id'), CarbonImmutable::parse('2026-09-01'), CarbonImmutable::parse('2026-10-07'), 1, 50);
+        expect($kartu->json('SaldoAkhir'))->toBe($web['SaldoAkhir'])->and($kartu->json('Mutasi.Meta'))->toBe($web['Mutasi']['Meta']);
+    });
+
+    it('cek stok: izin persediaan.lihat wajib, outlet & lokasi di luar akses 404, rentang kartu maks 92 hari, tenant lain 403', function (): void {
+        $d = SiapkanPenjualanDasborUji($this);
+        $uuidGudang = $d['Gudang']->Uuid;
+        $url = "/stok/kartu?produk={$d['Minyak']->Uuid}&gudang={$uuidGudang}";
+
+        $tokenKasir = TokenPemilikUji($this, $d['Kasir'], 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenKasir, $d['Tenant']->Uuid, '/stok')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+        AmbilPemilikUji($this, $tokenKasir, $d['Tenant']->Uuid, $url)->assertStatus(403);
+
+        $token = TokenPemilikUji($this, $d['Pemilik']);
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, $url)->assertOk();
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, $url.'&dari=2026-07-08&sampai=2026-10-07')->assertOk();
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, $url.'&dari=2026-07-07&sampai=2026-10-07')->assertStatus(422)->assertJsonPath('Galat.Kode', 'RentangTerlaluPanjang');
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, '/stok?outlet=01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertStatus(404);
+        AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, "/stok/kartu?produk={$d['Minyak']->Uuid}&gudang=01ARZ3NDEKTSV4RRFFQ69G5FAV")->assertStatus(404);
+
+        $cabang = BantuanJurnal::BuatOutlet();
+        $manajerCabang = BantuanOrganisasi::TambahAnggota($d['Tenant']->Id, PeranTenantBawaan::ManajerOutlet, semuaOutlet: false);
+        OutletPengguna::query()->create(['IdOutlet' => $cabang->Id, 'IdPengguna' => $manajerCabang->Id, 'IdPeran' => BantuanOrganisasi::Peran($d['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->Id]);
+        $tokenCabang = TokenPemilikUji($this, $manajerCabang, 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenCabang, $d['Tenant']->Uuid, '/stok')->assertOk()->assertJsonPath('Saldo.Meta.Total', 0)->assertJsonPath('Ringkasan.NilaiPersediaan', '0.00');
+        AmbilPemilikUji($this, $tokenCabang, $d['Tenant']->Uuid, $url)->assertStatus(404);
+
+        $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
+        AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $d['Tenant']->Uuid, '/stok')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
     });
 });
 

@@ -315,8 +315,8 @@ final penyediaLaporan = FutureProvider.autoDispose<LaporanPenjualanPemilik>((ref
 });
 
 /// OWN-05/09: layar Laporan menampilkan Penjualan (per kelompok), Laba rugi (bulan dari tanggal terpilih), atau
-/// Anti-fraud (7 hari berakhir di tanggal terpilih).
-enum ModeLaporan { Penjualan, LabaRugi, AntiFraud }
+/// Anti-fraud (7 hari berakhir di tanggal terpilih), atau Stok (OWN-06: nilai persediaan, kritis, saldo, kartu stok).
+enum ModeLaporan { Penjualan, LabaRugi, AntiFraud, Stok }
 
 class PengaturModeLaporan extends Notifier<ModeLaporan> {
   @override
@@ -344,6 +344,27 @@ final penyediaAntiFraud = FutureProvider.autoDispose<List<RisikoKasirPemilik>>((
       '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
   return _Jaga(ref, () => ref.read(penyediaKlien).AmbilAntiFraud(dari: Iso(awal), sampai: s.tanggalIso, outlet: s.outlet));
 });
+
+class PengaturCariStok extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void Atur(String kata) => state = kata;
+}
+
+final penyediaCariStok = NotifierProvider<PengaturCariStok, String>(PengaturCariStok.new);
+
+/// OWN-06: cek stok mengikuti outlet terpilih di bilah saringan dan kata cari.
+final penyediaStok = FutureProvider.autoDispose<StokPemilik>((ref) {
+  final s = ref.watch(penyediaSaringan);
+  final cari = ref.watch(penyediaCariStok);
+  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilStok(outlet: s.outlet, cari: cari));
+});
+
+/// OWN-06: kartu stok satu produk di satu lokasi (kunci `uuidProduk|uuidGudang`).
+final penyediaKartuStok = FutureProvider.autoDispose.family<KartuStokPemilik, (String, String)>(
+  (ref, kunci) => _Jaga(ref, () => ref.read(penyediaKlien).AmbilKartuStok(uuidProduk: kunci.$1, uuidGudang: kunci.$2)),
+);
 
 final penyediaShift = FutureProvider.autoDispose<List<ShiftPemilik>>((ref) {
   final s = ref.watch(penyediaSaringan);

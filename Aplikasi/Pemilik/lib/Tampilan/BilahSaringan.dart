@@ -61,6 +61,7 @@ class BilahSaringan extends ConsumerWidget {
               ..invalidate(penyediaLaporan)
               ..invalidate(penyediaLabaRugi)
               ..invalidate(penyediaAntiFraud)
+              ..invalidate(penyediaStok)
               ..invalidate(penyediaShift);
           },
           icon: const Icon(Icons.refresh),
