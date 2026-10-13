@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Domain\Akuntansi\Data\SaringLaporanKeuangan;
+use App\Domain\Akuntansi\Kueri\LabaRugi;
+use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\Shift;
 use App\Domain\Katalog\Model\Kategori;
-use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Katalog\Model\ProdukGudang;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
@@ -261,6 +263,49 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
         AmbilPemilikUji($this, $token, $d['Tenant']->Uuid, '/laporan/penjualan?dari=2026-10-01&sampai=2026-10-07&kelompok=Metode')
             ->assertStatus(422)
             ->assertJsonPath('Galat.Kode', 'ValidasiGagal');
+    });
+
+    it('OWN-05 laba rugi sederhana: angka sama dengan laporan keuangan web, laba bersih = pendapatan − HPP − beban, pembanding bulan lalu', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+
+        $respons = AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-31')->assertOk();
+        $ringkasan = $respons->json('Ringkasan');
+        expect($respons->json('Periode'))->toBe(['Dari' => '2026-10-01', 'Sampai' => '2026-10-31', 'DariSebelumnya' => '2026-09-01', 'SampaiSebelumnya' => '2026-09-30'])
+            ->and($ringkasan['Pendapatan']['Nilai'])->toBe('77000.00')
+            ->and($ringkasan['Hpp']['Nilai'])->toBe('60000.00')
+            ->and($ringkasan['LabaKotor']['Nilai'])->toBe('17000.00')
+            ->and($ringkasan['LabaBersih']['Nilai'])->toBe('17000.00')
+            ->and($ringkasan['LabaBersih']['NilaiSebelumnya'])->toBe('0.00');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $web = app(LabaRugi::class)->Ambil(new SaringLaporanKeuangan('2026-10-01', '2026-10-31', null, null));
+        expect($respons->json('Baris'))->toBe($web['Baris'])->and($ringkasan)->toBe($web['Ringkasan']);
+    });
+
+    it('OWN-05 laba rugi: izin laporan.keuangan.lihat wajib, rentang maks 366 hari, outlet di luar akses 404, tenant lain 403', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $tokenKasir = TokenPemilikUji($this, $k['Kasir'], 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenKasir, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-07')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2025-10-07&sampai=2026-10-07')->assertOk();
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2025-10-06&sampai=2026-10-07')->assertStatus(422)->assertJsonPath('Galat.Kode', 'RentangTerlaluPanjang');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-07&sampai=2026-10-01')->assertStatus(422)->assertJsonPath('Galat.Kode', 'ValidasiGagal');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-07&outlet=01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertStatus(404);
+
+        $cabang = BantuanJurnal::BuatOutlet();
+        $manajerCabang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Akuntan, semuaOutlet: false);
+        OutletPengguna::query()->create(['IdOutlet' => $cabang->Id, 'IdPengguna' => $manajerCabang->Id, 'IdPeran' => BantuanOrganisasi::Peran($k['Tenant']->Id, PeranTenantBawaan::Akuntan)->Id]);
+        $tokenCabang = TokenPemilikUji($this, $manajerCabang, 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenCabang, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-31')
+            ->assertOk()->assertJsonPath('Ringkasan.Pendapatan.Nilai', '0.00');
+        AmbilPemilikUji($this, $tokenCabang, $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-31&outlet='.$k['Outlet']->Uuid)->assertStatus(404);
+
+        $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
+        AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-07')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
     });
 
     it('daftar shift satu tanggal bisnis: terbuka tanpa selisih, tertutup dengan selisih; tanggal lain kosong', function (): void {

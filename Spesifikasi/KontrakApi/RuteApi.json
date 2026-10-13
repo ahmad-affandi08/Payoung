@@ -488,5 +488,10 @@
         "Metode": "POST",
         "Jalur": "api/pemilik/v1/perangkat/{perangkat}/cabut",
         "Nama": "pemilik.perangkat.cabut"
+    },
+    "GET api/pemilik/v1/laporan/laba-rugi": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/laporan/laba-rugi",
+        "Nama": "pemilik.laporan.laba-rugi"
     }
 }

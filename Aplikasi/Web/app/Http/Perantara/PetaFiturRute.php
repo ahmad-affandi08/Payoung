@@ -84,6 +84,7 @@ final class PetaFiturRute
         ['Pola' => 'pos.gudang.transfer*', 'Fitur' => 'stok.transfer', 'Mode' => 'semua', 'Nama' => 'Transfer stok'],
         ['Pola' => 'pos.gudang.pesanan-pembelian', 'Fitur' => 'pembelian.po', 'Mode' => 'semua', 'Nama' => 'Pesanan pembelian'],
         ['Pola' => 'pos.gudang.penerimaan', 'Fitur' => 'pembelian.po', 'Mode' => 'semua', 'Nama' => 'Pesanan pembelian'],
+        ['Pola' => 'pemilik.laporan.laba-rugi', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'pemilik.insight', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight'],
     ];
 }

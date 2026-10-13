@@ -7,9 +7,38 @@ import 'BilahSaringan.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 
-/// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal pada tanggal & outlet terpilih.
+/// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal pada tanggal & outlet terpilih, atau laba rugi
+/// bulan berjalan (dibandingkan bulan sebelumnya).
 class LayarLaporan extends ConsumerWidget {
   const LayarLaporan({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(penyediaModeLaporan);
+    final outlet = ref.watch(penyediaDasbor).value?.outlet ?? const [];
+    return ListView(
+      padding: const EdgeInsets.all(TokenJarak.jarak16),
+      children: [
+        BilahSaringan(outlet: outlet),
+        const SizedBox(height: TokenJarak.jarak12),
+        SegmentedButton<ModeLaporan>(
+          segments: const [
+            ButtonSegment(value: ModeLaporan.Penjualan, label: Text('Penjualan')),
+            ButtonSegment(value: ModeLaporan.LabaRugi, label: Text('Laba rugi')),
+          ],
+          selected: {mode},
+          onSelectionChanged: (pilih) => ref.read(penyediaModeLaporan.notifier).Atur(pilih.first),
+        ),
+        const SizedBox(height: TokenJarak.jarak12),
+        if (mode == ModeLaporan.LabaRugi) const _LabaRugi() else const _Penjualan(),
+      ],
+    );
+  }
+}
+
+/// Penjualan per kelompok (produk, kategori, kasir, jam, kanal).
+class _Penjualan extends ConsumerWidget {
+  const _Penjualan();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,12 +46,9 @@ class LayarLaporan extends ConsumerWidget {
     final warna = TokenWarna.AmbilDari(context);
     final laporan = ref.watch(penyediaLaporan);
     final kelompok = ref.watch(penyediaKelompokLaporan);
-    final outlet = ref.watch(penyediaDasbor).value?.outlet ?? const [];
-    return ListView(
-      padding: const EdgeInsets.all(TokenJarak.jarak16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BilahSaringan(outlet: outlet),
-        const SizedBox(height: TokenJarak.jarak12),
         Wrap(
           spacing: TokenJarak.jarak8,
           runSpacing: TokenJarak.jarak8,
@@ -87,4 +113,105 @@ class LayarLaporan extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Laba rugi sederhana (OWN-05): ringkasan lima angka dengan perubahan terhadap bulan sebelumnya, lalu rincian akun.
+class _LabaRugi extends ConsumerWidget {
+  const _LabaRugi();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return KeadaanData(
+      nilai: ref.watch(penyediaLabaRugi),
+      saatCobaLagi: () => ref.invalidate(penyediaLabaRugi),
+      isi: (l) {
+        final ringkasan = [
+          ('Pendapatan', l.pendapatan),
+          ('Harga pokok penjualan', l.hpp),
+          ('Laba kotor', l.labaKotor),
+          ('Beban', l.beban),
+        ];
+        final akun = l.baris.where((b) => b.jenis == 'Akun').toList();
+        final perubahan = FormatTampilan.Perubahan(l.labaBersih.nilai, l.labaBersih.nilaiSebelumnya);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Periode ${l.dari} s.d. ${l.sampai}', style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+            const SizedBox(height: TokenJarak.jarak8),
+            KotakPanel(
+              rapat: true,
+              anak: Column(
+                children: [
+                  for (final (i, (label, n)) in ringkasan.indexed) ...[
+                    if (i > 0) Divider(height: 1, color: warna.garis),
+                    ListTile(
+                      title: Text(label),
+                      subtitle: Text('Bulan sebelumnya ${FormatTampilan.Rupiah(n.nilaiSebelumnya)}'),
+                      trailing: Text(FormatTampilan.Rupiah(n.nilai), style: teks.titleSmall),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: TokenJarak.jarak12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: warna.brandGelap,
+                borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+              ),
+              child: ListTile(
+                title: Text('Laba bersih', style: teks.titleSmall?.copyWith(color: warna.permukaan)),
+                subtitle: perubahan == null
+                    ? null
+                    : Text('$perubahan dari bulan sebelumnya', style: teks.bodySmall?.copyWith(color: warna.permukaan)),
+                trailing: Text(
+                  FormatTampilan.Rupiah(l.labaBersih.nilai),
+                  style: teks.titleMedium?.copyWith(color: warna.permukaan, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+            if (akun.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: TokenJarak.jarak12),
+                child: KotakPanel(
+                  anak: KeadaanKosong(
+                    ilustrasi: IlustrasiKosong.Laporan,
+                    ikon: Icons.balance_outlined,
+                    judul: 'Belum ada pembukuan bulan ini.',
+                    keterangan: 'Pendapatan, HPP, dan beban per akun muncul di sini setelah ada transaksi.',
+                  ),
+                ),
+              )
+            else ...[
+              const SizedBox(height: TokenJarak.jarak12),
+              KotakPanel(
+                rapat: true,
+                anak: Column(
+                  children: [
+                    for (final (i, b) in akun.indexed) ...[
+                      if (i > 0) Divider(height: 1, color: warna.garis),
+                      ListTile(
+                        dense: true,
+                        title: Text(b.label),
+                        subtitle: Text('${b.kode ?? ''} | ${_Kelompok(b.kelompok)}'),
+                        trailing: Text(FormatTampilan.Rupiah(b.nilai ?? '0'), style: teks.bodyMedium),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  static String _Kelompok(String kunci) => switch (kunci) {
+    'Pendapatan' => 'Pendapatan',
+    'Hpp' => 'HPP',
+    _ => 'Beban',
+  };
 }

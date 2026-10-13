@@ -314,6 +314,28 @@ final penyediaLaporan = FutureProvider.autoDispose<LaporanPenjualanPemilik>((ref
   );
 });
 
+/// OWN-05: layar Laporan menampilkan Penjualan (per kelompok) atau Laba rugi (bulan dari tanggal terpilih).
+enum ModeLaporan { Penjualan, LabaRugi }
+
+class PengaturModeLaporan extends Notifier<ModeLaporan> {
+  @override
+  ModeLaporan build() => ModeLaporan.Penjualan;
+
+  void Atur(ModeLaporan mode) => state = mode;
+}
+
+final penyediaModeLaporan = NotifierProvider<PengaturModeLaporan, ModeLaporan>(PengaturModeLaporan.new);
+
+/// Laba rugi satu bulan kalender yang memuat tanggal terpilih (pembanding: bulan sebelumnya, dari server).
+final penyediaLabaRugi = FutureProvider.autoDispose<LabaRugiPemilik>((ref) {
+  final s = ref.watch(penyediaSaringan);
+  String Iso(DateTime t) =>
+      '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+  final awal = DateTime(s.tanggal.year, s.tanggal.month);
+  final akhir = DateTime(s.tanggal.year, s.tanggal.month + 1, 0);
+  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilLabaRugi(dari: Iso(awal), sampai: Iso(akhir), outlet: s.outlet));
+});
+
 final penyediaShift = FutureProvider.autoDispose<List<ShiftPemilik>>((ref) {
   final s = ref.watch(penyediaSaringan);
   return _Jaga(ref, () => ref.read(penyediaKlien).AmbilShift(tanggal: s.tanggalIso, outlet: s.outlet));

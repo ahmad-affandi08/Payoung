@@ -149,6 +149,86 @@ class LaporanPenjualanPemilik {
   );
 }
 
+/// OWN-05: satu angka laba rugi untuk periode ini dan periode pembanding sama panjang.
+class NilaiLabaRugi {
+  const NilaiLabaRugi({required this.nilai, required this.nilaiSebelumnya});
+
+  final String nilai;
+  final String nilaiSebelumnya;
+
+  static NilaiLabaRugi DariJson(Map<String, Object?> json) => NilaiLabaRugi(
+    nilai: UraiJson.AmbilDesimal(json['Nilai']),
+    nilaiSebelumnya: UraiJson.AmbilDesimal(json['NilaiSebelumnya']),
+  );
+}
+
+/// Satu baris rincian laba rugi: akun (`Jenis` = Akun), kepala/subtotal kelompok, atau baris laba.
+class BarisLabaRugi {
+  const BarisLabaRugi({
+    required this.jenis,
+    required this.kelompok,
+    required this.label,
+    required this.kode,
+    required this.nilai,
+    required this.nilaiSebelumnya,
+  });
+
+  final String jenis;
+  final String kelompok;
+  final String label;
+  final String? kode;
+  final String? nilai;
+  final String? nilaiSebelumnya;
+
+  static BarisLabaRugi DariJson(Map<String, Object?> json) => BarisLabaRugi(
+    jenis: UraiJson.AmbilTeks(json['Jenis']),
+    kelompok: UraiJson.AmbilTeks(json['Kelompok']),
+    label: UraiJson.AmbilTeks(json['Label']),
+    kode: UraiJson.AmbilTeksAtauNull(json['Kode']),
+    nilai: UraiJson.AmbilDesimalAtauNull(json['Nilai']),
+    nilaiSebelumnya: UraiJson.AmbilDesimalAtauNull(json['NilaiSebelumnya']),
+  );
+}
+
+/// OWN-05: laba rugi sederhana (`GET laporan/laba-rugi`), angkanya sama dengan laporan keuangan di back-office.
+class LabaRugiPemilik {
+  const LabaRugiPemilik({
+    required this.dari,
+    required this.sampai,
+    required this.pendapatan,
+    required this.hpp,
+    required this.labaKotor,
+    required this.beban,
+    required this.labaBersih,
+    required this.baris,
+  });
+
+  final String dari;
+  final String sampai;
+  final NilaiLabaRugi pendapatan;
+  final NilaiLabaRugi hpp;
+  final NilaiLabaRugi labaKotor;
+  final NilaiLabaRugi beban;
+  final NilaiLabaRugi labaBersih;
+  final List<BarisLabaRugi> baris;
+
+  static LabaRugiPemilik DariJson(Map<String, Object?> json) {
+    final ringkasan = UraiJson.AmbilPeta(json['Ringkasan']);
+    final periode = UraiJson.AmbilPeta(json['Periode']);
+    NilaiLabaRugi Ambil(String kunci) => NilaiLabaRugi.DariJson(UraiJson.AmbilPeta(ringkasan[kunci]));
+    return LabaRugiPemilik(
+      dari: UraiJson.AmbilTeks(periode['Dari']),
+      sampai: UraiJson.AmbilTeks(periode['Sampai']),
+      pendapatan: Ambil('Pendapatan'),
+      hpp: Ambil('Hpp'),
+      labaKotor: Ambil('LabaKotor'),
+      beban: Ambil('Beban'),
+      labaBersih: Ambil('LabaBersih'),
+      baris: [for (final b in UraiJson.AmbilDaftarPeta(json['Baris'])) BarisLabaRugi.DariJson(b)],
+    );
+  }
+}
+
 class ShiftPemilik {
   const ShiftPemilik({
     required this.uuid,
@@ -536,6 +616,12 @@ class KlienPemilik {
       null,
     ),
   );
+
+  /// OWN-05: laba rugi periode [dari]–[sampai] (izin `laporan.keuangan.lihat`, paket Laporan lengkap).
+  Future<LabaRugiPemilik> AmbilLabaRugi({required String dari, required String sampai, String? outlet}) async =>
+      LabaRugiPemilik.DariJson(
+        await _Kirim('GET', _Jalur('laporan/laba-rugi', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null),
+      );
 
   Future<List<ShiftPemilik>> AmbilShift({required String tanggal, String? outlet}) async {
     final json = await _Kirim('GET', _Jalur('shift', {'tanggal': tanggal, 'outlet': ?outlet}), null);
