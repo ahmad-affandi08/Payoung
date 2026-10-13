@@ -1075,7 +1075,10 @@ function IsiTab({
                             eksporBesar: true,
                             query: queryEkspor,
                         }}
-                        kosong={{ judul: 'Belum ada tiket dapur yang selesai pada periode dan saring ini.' }}
+                        kosong={{
+                            ilustrasi: true,
+                            judul: 'Belum ada tiket dapur yang selesai pada periode dan saring ini.',
+                        }}
                     />
                 </div>
             );
@@ -1126,7 +1129,7 @@ function IsiTab({
                             eksporBesar: true,
                             query: queryEkspor,
                         }}
-                        kosong={{ judul: 'Belum ada pemakaian bahan pada periode dan saring ini.' }}
+                        kosong={{ ilustrasi: true, judul: 'Belum ada pemakaian bahan pada periode dan saring ini.' }}
                     />
                 </div>
             );

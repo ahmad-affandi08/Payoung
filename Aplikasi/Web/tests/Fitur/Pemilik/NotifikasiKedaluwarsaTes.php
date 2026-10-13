@@ -107,7 +107,7 @@ describe('F23 peringatan kedaluwarsa batch lewat push', function (): void {
         expect($aksi->Jalankan($k['Tenant']->Id, CarbonImmutable::parse('2026-10-24', 'Asia/Jakarta')))->toBe(0);
     });
 
-    it('hanya anggota berizin stok dengan perangkat Owner aktif yang menerima; Kasir dan anggota tanpa perangkat tidak', function (): void {
+    it('semua anggota aktif berizin stok menerima (dengan atau tanpa perangkat Owner, F31); Kasir yang tanpa izin tidak', function (): void {
         $k = SiapkanBatchKedaluwarsa($this);
         $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
         $admin = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Admin);
@@ -116,10 +116,10 @@ describe('F23 peringatan kedaluwarsa batch lewat push', function (): void {
 
         $dibuat = app(BuatNotifikasiKedaluwarsa::class)->Jalankan($k['Tenant']->Id, CarbonImmutable::parse('2026-10-07', 'Asia/Jakarta'));
 
-        expect($dibuat)->toBe(1)
-            ->and(NotifikasiPengguna::query()->pluck('IdPengguna')->all())->toBe([$k['Pemilik']->Id])
-            ->and(NotifikasiPengguna::query()->where('IdPengguna', $admin->Id)->exists())->toBeFalse()
-            ->and(NotifikasiPengguna::query()->where('IdPengguna', $kasir->Id)->exists())->toBeFalse();
+        expect($dibuat)->toBe(2)
+            ->and(NotifikasiPengguna::query()->orderBy('IdPengguna')->pluck('IdPengguna')->all())->toBe([$k['Pemilik']->Id, $admin->Id])
+            ->and(NotifikasiPengguna::query()->where('IdPengguna', $kasir->Id)->exists())->toBeFalse()
+            ->and(NotifikasiPengguna::query()->where('IdPengguna', $admin->Id)->sole()->Data)->toMatchArray(['Href' => '/kelola/laporan/stok?tab=kedaluwarsa']);
     });
 
     it('tanpa batch yang mendekati kedaluwarsa tidak ada notifikasi dan tidak ada penanda', function (): void {

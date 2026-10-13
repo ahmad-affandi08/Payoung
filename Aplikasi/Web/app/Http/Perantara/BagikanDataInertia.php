@@ -12,6 +12,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\PemilikTenant;
+use App\Domain\Organisasi\Kueri\PusatNotifikasiWeb;
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Layanan\PenentuWajibDuaFaktor;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -170,6 +171,12 @@ final class BagikanDataInertia extends Middleware
                 $kodePaket = $this->ringkasanLangganan->Ambil($idTenant)['KodePaket'] ?? null;
 
                 return app(PengumumanBerlaku::class)->AmbilUntuk(PlatformPengumuman::Web, $kodePaket, app(SektorOutletTenant::class)->AmbilKode(), null);
+            },
+            // F31 (PLT-08): jumlah notifikasi belum dibaca untuk lencana lonceng di kepala back-office.
+            'NotifikasiBelumDibaca' => function () use ($pengguna): int {
+                return $pengguna instanceof Pengguna && app(KonteksTenant::class)->Ambil() !== null
+                    ? app(PusatNotifikasiWeb::class)->HitungBelumDibaca($pengguna->Id)
+                    : 0;
             },
             // Audit kemudahan pakai #33 (D-38): menu modul khusus sektor (grosir, laundry, reservasi, apotek, …) hanya
             // tampil bila ada outlet bersektor itu; kosong = sektor belum diketahui, semua menu tampil.

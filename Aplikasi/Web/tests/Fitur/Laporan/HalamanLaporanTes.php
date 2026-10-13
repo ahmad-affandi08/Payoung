@@ -120,7 +120,7 @@ describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void 
 
         $this->get($url)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Laporan/Penjualan')
-            ->where('Saring', ['Tab' => 'harian', 'Dari' => '2026-10-01', 'Sampai' => '2026-10-07', 'Outlet' => '', 'Kasir' => '', 'Kanal' => ''])
+            ->where('Saring', ['Tab' => 'harian', 'Dari' => '2026-10-01', 'Sampai' => '2026-10-07', 'Outlet' => '', 'Kasir' => '', 'Kanal' => '', 'Target' => 15])
             ->where('Peringatan', null)
             ->where('Total.Kotor', '125500.00')
             ->where('Total.Diskon', '3850.00')

@@ -10,7 +10,6 @@ use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
 use App\Domain\Organisasi\Model\PengingatKedaluwarsaBatch;
-use App\Domain\Organisasi\Model\PerangkatPengguna;
 use App\Domain\Organisasi\Model\TenantPengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -18,8 +17,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * F23 (INV-09, OWN-03): push ke Aplikasi Owner saat batch masuk batas kedaluwarsa. Satu batch diumumkan **sekali per tingkat**
  * (`H30` dalam 30 hari, `H7` dalam 7 hari, `Lewat` sudah lewat; penanda di `PengingatKedaluwarsaBatch`), bukan tiap hari.
- * Setiap anggota berizin `persediaan.lihat` yang punya perangkat Owner aktif menerima satu ringkasan dari batch baru yang
- * ada di outlet aksesnya. Dijalankan penjadwal bersama notifikasi operasional (`tindakan:buat-notifikasi-operasional`).
+ * Setiap anggota aktif berizin `persediaan.lihat` menerima satu ringkasan dari batch baru yang ada di outlet aksesnya
+ * (F31: tidak lagi hanya yang punya perangkat Owner; push FCM tetap hanya ke pemasangan aktif). Dijalankan penjadwal bersama notifikasi operasional (`tindakan:buat-notifikasi-operasional`).
  */
 final class BuatNotifikasiKedaluwarsa
 {
@@ -95,11 +94,9 @@ final class BuatNotifikasiKedaluwarsa
      */
     private function Umumkan(int $idTenant, CarbonImmutable $hariIni, array $baru): int
     {
-        $idPengguna = PerangkatPengguna::query()->where('Aktif', true)->distinct()->pluck('IdPengguna');
         $anggota = TenantPengguna::query()
             ->where('IdTenant', $idTenant)
             ->where('Status', StatusKeanggotaan::Aktif->value)
-            ->whereIn('IdPengguna', $idPengguna)
             ->pluck('IdPengguna');
         $dibuat = 0;
 
@@ -128,14 +125,14 @@ final class BuatNotifikasiKedaluwarsa
 
             [$judul, $isi] = $this->Susun($terlihat);
             $sidik = substr(hash('sha256', implode('|', array_map(fn (array $b): string => $b['Baris']['Kunci'].':'.$b['Tingkat'], $terlihat))), 0, 12);
-            $dibuat += (int) $this->buat->Jalankan(
+            $dibuat += (int) ($this->buat->Jalankan(
                 (int) $id,
                 JenisNotifikasiPengguna::StokKedaluwarsa,
                 "Kedaluwarsa:{$hariIni->toDateString()}:{$sidik}",
                 $judul,
                 $isi,
-                ['Tautan' => 'notifikasi'],
-            )->wasRecentlyCreated;
+                ['Tautan' => 'notifikasi', 'Href' => '/kelola/laporan/stok?tab=kedaluwarsa'],
+            )?->wasRecentlyCreated === true);
         }
 
         return $dibuat;

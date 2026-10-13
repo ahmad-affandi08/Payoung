@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Organisasi\Aksi;
 
 use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
+use App\Domain\Organisasi\Model\NotifikasiDibisukan;
 use App\Domain\Organisasi\Model\NotifikasiPengguna;
 use App\Domain\Organisasi\Tugas\KirimNotifikasiPushTugas;
 use Illuminate\Database\UniqueConstraintViolationException;
 
-/** Membuat notifikasi idempoten lalu mengantrekannya ke FCM setelah transaksi selesai. */
+/**
+ * Membuat notifikasi idempoten lalu mengantrekannya ke FCM setelah transaksi selesai. Jenis yang dibisukan penerimanya
+ * (`NotifikasiDibisukan`, kecuali Persetujuan) tidak dibuat dan mengembalikan null.
+ */
 final class BuatNotifikasiPengguna
 {
     /** @param array<string, string> $data */
@@ -20,7 +24,11 @@ final class BuatNotifikasiPengguna
         string $judul,
         string $isi,
         array $data = [],
-    ): NotifikasiPengguna {
+    ): ?NotifikasiPengguna {
+        if ($jenis->BisaDibisukan() && NotifikasiDibisukan::query()->where('IdPengguna', $idPengguna)->where('Jenis', $jenis->value)->exists()) {
+            return null;
+        }
+
         try {
             $notifikasi = NotifikasiPengguna::query()->firstOrCreate(
                 ['IdPengguna' => $idPengguna, 'Kunci' => $kunci],

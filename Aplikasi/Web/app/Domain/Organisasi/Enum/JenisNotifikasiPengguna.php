@@ -13,4 +13,36 @@ enum JenisNotifikasiPengguna: string
     case PerangkatOffline = 'PerangkatOffline';
     case PiutangJatuhTempo = 'PiutangJatuhTempo';
     case StokKedaluwarsa = 'StokKedaluwarsa';
+
+    /** Label untuk pusat notifikasi web dan pengaturannya. */
+    public function AmbilLabel(): string
+    {
+        return match ($this) {
+            self::Persetujuan => 'Permintaan persetujuan',
+            self::SelisihKas => 'Shift dan kas perlu dicek',
+            self::StokKritis => 'Stok menipis',
+            self::PerangkatOffline => 'Perangkat kasir tidak aktif',
+            self::PiutangJatuhTempo => 'Piutang lewat jatuh tempo',
+            self::StokKedaluwarsa => 'Barang mendekati kedaluwarsa',
+        };
+    }
+
+    /** Persetujuan menunggu keputusan orang yang berwenang, jadi tidak boleh dibisukan. */
+    public function BisaDibisukan(): bool
+    {
+        return $this !== self::Persetujuan;
+    }
+
+    /** Halaman web tujuan bila notifikasi lama tidak membawa tautan sendiri; null = tidak ada halaman web. */
+    public function AmbilTautanBawaan(): ?string
+    {
+        return match ($this) {
+            self::Persetujuan => null,
+            self::SelisihKas => '/kelola/kasir/shift?saring[PerluTinjauan]=Ya',
+            self::StokKritis => '/kelola/laporan/stok?tab=kritis',
+            self::PerangkatOffline => '/kelola/perangkat',
+            self::PiutangJatuhTempo => '/kelola/piutang',
+            self::StokKedaluwarsa => '/kelola/laporan/stok?tab=kedaluwarsa',
+        };
+    }
 }

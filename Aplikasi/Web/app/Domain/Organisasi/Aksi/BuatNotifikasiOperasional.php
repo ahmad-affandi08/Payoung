@@ -11,11 +11,14 @@ use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Kueri\DaftarPerangkat;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
-use App\Domain\Organisasi\Model\PerangkatPengguna;
 use App\Domain\Organisasi\Model\TenantPengguna;
 use Carbon\CarbonImmutable;
 
-/** Membuat ringkasan push harian untuk kondisi operasional penting yang masih terbuka. */
+/**
+ * Membuat ringkasan harian untuk kondisi operasional penting yang masih terbuka. Penerimanya semua anggota aktif tenant
+ * yang berizin melihat kondisi itu (F31): pusat notifikasi web membaca baris yang sama; push FCM hanya sampai ke anggota
+ * yang punya pemasangan Aplikasi Owner aktif.
+ */
 final class BuatNotifikasiOperasional
 {
     public function __construct(
@@ -27,11 +30,9 @@ final class BuatNotifikasiOperasional
 
     public function Jalankan(int $idTenant, CarbonImmutable $hariIni): int
     {
-        $idPengguna = PerangkatPengguna::query()->where('Aktif', true)->distinct()->pluck('IdPengguna');
         $anggota = TenantPengguna::query()
             ->where('IdTenant', $idTenant)
             ->where('Status', StatusKeanggotaan::Aktif->value)
-            ->whereIn('IdPengguna', $idPengguna)
             ->pluck('IdPengguna');
         $dibuat = 0;
 
@@ -46,14 +47,14 @@ final class BuatNotifikasiOperasional
                 };
 
                 if ($jenis !== null) {
-                    $dibuat += (int) $this->buat->Jalankan(
+                    $dibuat += (int) ($this->buat->Jalankan(
                         (int) $id,
                         $jenis,
                         'Operasional:'.$jenis->value.':'.$hariIni->toDateString(),
                         $butir->judul,
                         $butir->jumlah.' butir. '.$butir->keterangan,
-                        ['Tautan' => 'notifikasi'],
-                    )->wasRecentlyCreated;
+                        ['Tautan' => 'notifikasi', 'Href' => $butir->tautan],
+                    )?->wasRecentlyCreated === true);
                 }
             }
 
@@ -63,14 +64,14 @@ final class BuatNotifikasiOperasional
                     CarbonImmutable::now()->subMinutes(DasborAplikasiPemilik::MENIT_PERANGKAT_TIDAK_AKTIF),
                 ));
                 if ($jumlah > 0) {
-                    $dibuat += (int) $this->buat->Jalankan(
+                    $dibuat += (int) ($this->buat->Jalankan(
                         (int) $id,
                         JenisNotifikasiPengguna::PerangkatOffline,
                         'Operasional:PerangkatOffline:'.$hariIni->toDateString(),
                         'Perangkat POS tidak aktif',
                         $jumlah.' perangkat tidak terhubung lebih dari 30 menit.',
-                        ['Tautan' => 'perangkat'],
-                    )->wasRecentlyCreated;
+                        ['Tautan' => 'perangkat', 'Href' => '/kelola/perangkat'],
+                    )?->wasRecentlyCreated === true);
                 }
             }
         }

@@ -75,6 +75,8 @@ export type PropsBersamaAplikasi = {
     Akses: { Pemilik: boolean; Izin: string[]; IzinNonaktif?: string[] } | null;
     /** D-23: fitur di luar paket (menu tetap tampil; klik = dialog naik paket / add-on). */
     FiturPaket?: FiturPaket | null;
+    /** F31 (PLT-08): jumlah notifikasi belum dibaca pengguna di tenant aktif (lencana lonceng); 0/absen di luar back-office. */
+    NotifikasiBelumDibaca?: number;
     errors: Record<string, string>;
 };
 

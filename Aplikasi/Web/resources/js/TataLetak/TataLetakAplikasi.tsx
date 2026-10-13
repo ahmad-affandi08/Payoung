@@ -47,6 +47,7 @@ import {
     PemberitahuanMelayang,
 } from './BagianTataLetak';
 import KepalaSidebarMerek from './KepalaSidebarMerek';
+import LonceNotifikasi from './LonceNotifikasi';
 import PencarianCepat, { type HalamanPencarian, type SumberPencarian } from './PencarianCepat';
 
 type PropsTataLetak = {
@@ -1004,6 +1005,7 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                     }
                 >
                     <PencarianCepat halaman={pencarian.halaman} sumber={pencarian.sumber} />
+                    <LonceNotifikasi belumDibaca={props.NotifikasiBelumDibaca ?? 0} />
                     <MenuAkun
                         nama={props.Pengguna?.Nama}
                         email={props.Pengguna?.Email}

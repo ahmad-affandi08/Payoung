@@ -22,6 +22,7 @@ use App\Http\Kontroler\Dukungan\SesiDukunganKontroler;
 use App\Http\Kontroler\Kelola\BantuanKontroler;
 use App\Http\Kontroler\Kelola\BerandaKelolaKontroler;
 use App\Http\Kontroler\Kelola\LanggananKontroler;
+use App\Http\Kontroler\Kelola\NotifikasiKontroler;
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
 use App\Http\Kontroler\Publik\AbsensiWebKontroler;
@@ -209,6 +210,10 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             // D-23 C: Kotak Tindakan (butir disaring izin & outlet; menandai dicek butuh `tindakan.tinjau`).
             Route::get('/tindakan', [TindakanKontroler::class, 'Daftar'])->name('kelola.tindakan.daftar');
             Route::post('/tindakan/tinjau', [TindakanKontroler::class, 'Tandai'])->middleware([SiapkanAuditTenant::class, $izin(IzinTenant::TindakanTinjau)])->name('kelola.tindakan.tinjau');
+            // F31 (PLT-08): pusat notifikasi web (lonceng di kepala), milik pengguna sendiri.
+            Route::get('/notifikasi', [NotifikasiKontroler::class, 'Daftar'])->name('kelola.notifikasi.daftar');
+            Route::post('/notifikasi/dibaca', [NotifikasiKontroler::class, 'TandaiDibaca'])->middleware('throttle:60,1')->name('kelola.notifikasi.dibaca');
+            Route::put('/notifikasi/pengaturan', [NotifikasiKontroler::class, 'UbahPengaturan'])->middleware('throttle:30,1')->name('kelola.notifikasi.pengaturan');
             // D-23 D: berlangganan ringkasan pagi Kotak Tindakan lewat email (pilihan pribadi tiap pengguna).
             Route::put('/tindakan/ringkasan-whatsapp', [TindakanKontroler::class, 'UbahRingkasanWhatsapp'])->middleware(SiapkanAuditTenant::class)->name('kelola.tindakan.ringkasan-whatsapp');
 
