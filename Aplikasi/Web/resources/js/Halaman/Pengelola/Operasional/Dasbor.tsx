@@ -216,6 +216,15 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
 
     return (
         <TataLetakPengelola judul="Operasional">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="max-w-3xl text-isi text-teks-sekunder">
+                    Kondisi scheduler, antrean, backup, dan alert. Gangguan layanan yang perlu diumumkan ke pengguna
+                    dicatat sebagai insiden.
+                </p>
+                <Button asChild variant="outline">
+                    <Link href="/operasional/insiden">Insiden & halaman status</Link>
+                </Button>
+            </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <Ringkasan
                     judul="Scheduler"

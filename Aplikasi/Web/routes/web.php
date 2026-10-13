@@ -39,6 +39,7 @@ use App\Http\Kontroler\Publik\PortalKurirKontroler;
 use App\Http\Kontroler\Publik\ProspekSitusKontroler;
 use App\Http\Kontroler\Publik\ReservasiPublikKontroler;
 use App\Http\Kontroler\Publik\SitusKontroler;
+use App\Http\Kontroler\Publik\StatusPlatformKontroler;
 use App\Http\Kontroler\Publik\StrukDigitalKontroler;
 use App\Http\Kontroler\Publik\TokoOnlineKontroler;
 use App\Http\Perantara\ArahkanDomainAplikasi;
@@ -102,6 +103,9 @@ if ($saas) {
         Route::get('/pengembang', [PengembangKontroler::class, 'Tampilkan'])->name('situs.pengembang');
         // P-06 dokumen legal publik. D-28: ikut shell & bundle situs, jadi ada kepala, kaki, dan jalan kembali.
         Route::get('/legal/{jenis}', [DokumenLegalPublikKontroler::class, 'Tampilkan'])->name('legal.tampil');
+        // P-11 PGL-21 halaman status layanan publik (insiden yang diumumkan) + JSON untuk hosting statis/pemantau.
+        Route::get('/status', [StatusPlatformKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('publik.status');
+        Route::get('/status/data', [StatusPlatformKontroler::class, 'Json'])->middleware('throttle:120,1')->name('publik.status.data');
         // v1.98 Hardware Compatibility List publik (PRD §17.2.5a). D-92: ikut shell & bundle situs (kepala, kaki, pencarian).
         Route::get('/kompatibilitas-perangkat', [KompatibilitasPerangkatPublikKontroler::class, 'Tampilkan'])
             ->middleware('throttle:60,1')

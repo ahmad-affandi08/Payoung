@@ -35,6 +35,8 @@ return [
         'internal', 'api', 'webhook', 'laporan-csp', 'sehat', 's', 'mitra', 'pengelola', 'harga', 'bantuan', 'legal',
         // X7 bagian 3: portal dokumentasi pengembang `/pengembang`.
         'pengembang',
+        // P-11 PGL-21: halaman status layanan publik `/status`.
+        'status',
         // Auth tenant: rute atur ulang kata sandi (BR-00.9).
         'atur-ulang-kata-sandi',
         // F-02: tautan undangan anggota.

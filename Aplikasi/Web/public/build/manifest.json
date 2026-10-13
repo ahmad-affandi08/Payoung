@@ -8145,7 +8145,7 @@
     ]
   },
   "resources/js/Halaman/Pengelola/Operasional/Dasbor.tsx": {
-    "file": "assets/Dasbor-Cdf3W3lO.js",
+    "file": "assets/Dasbor-CBKOF_QO.js",
     "name": "Dasbor",
     "src": "resources/js/Halaman/Pengelola/Operasional/Dasbor.tsx",
     "isDynamicEntry": true,
@@ -8166,6 +8166,31 @@
       "_LabelStatus-BNc1w6KA.js",
       "_FormatUkuran-BMLg6e8v.js",
       "_PemilihTanggalWaktu-BNW-mJ6u.js",
+      "_TataLetakPengelola-Rjbi03bf.js"
+    ]
+  },
+  "resources/js/Halaman/Pengelola/Operasional/Insiden.tsx": {
+    "file": "assets/Insiden-oBLaPzEY.js",
+    "name": "Insiden",
+    "src": "resources/js/Halaman/Pengelola/Operasional/Insiden.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_jsx-runtime-B23tBWN-.js",
+      "_dist-D4veJNCv.js",
+      "_TabelData-DBqrZKbn.js",
+      "_BagianTataLetak-EQXRKElQ.js",
+      "_BidangTeks-1cL0kF_a.js",
+      "_FormatWaktu-bKvj24HB.js",
+      "_button-CdBDerbX.js",
+      "_Tombol-DXR0xsyT.js",
+      "_dialog-CjriV3Su.js",
+      "_BidangPilihan-ByLtXij8.js",
+      "_LabelStatus-BNc1w6KA.js",
+      "_DialogFormulir-fcvosOed.js",
+      "_KotakCentang-BG03jzWX.js",
+      "_AksiHalaman-Cf0yLRyX.js",
+      "_BidangTeksPanjang-B2d2dvhC.js",
+      "_GrupCentang-B3WUC3e0.js",
       "_TataLetakPengelola-Rjbi03bf.js"
     ]
   },
@@ -9200,6 +9225,22 @@
       "_JudulHalaman-DypeVZDV.js"
     ]
   },
+  "resources/js/Halaman/Situs/StatusPlatform.tsx": {
+    "file": "assets/StatusPlatform-DnkWvWk2.js",
+    "name": "StatusPlatform",
+    "src": "resources/js/Halaman/Situs/StatusPlatform.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_jsx-runtime-B23tBWN-.js",
+      "_TataLetakSitus-BuGPBH68.js",
+      "_circle-alert-BHz2jbl9.js",
+      "_circle-check-CRSjwqr-.js",
+      "_triangle-alert-6DmLeY-t.js",
+      "_JudulHalaman-DypeVZDV.js",
+      "_FormatWaktu-bKvj24HB.js",
+      "_LabelStatus-BNc1w6KA.js"
+    ]
+  },
   "resources/js/Halaman/Undangan/Terima.tsx": {
     "file": "assets/Terima-BQSxOfvp.js",
     "name": "Terima",
@@ -9230,7 +9271,7 @@
     ]
   },
   "resources/js/Pengelola.tsx": {
-    "file": "assets/Pengelola-XzYFk_st.js",
+    "file": "assets/Pengelola-76iKN15l.js",
     "name": "Pengelola",
     "src": "resources/js/Pengelola.tsx",
     "isEntry": true,
@@ -9263,6 +9304,7 @@
       "resources/js/Halaman/Pengelola/Mitra/Daftar.tsx",
       "resources/js/Halaman/Pengelola/Mitra/Tampil.tsx",
       "resources/js/Halaman/Pengelola/Operasional/Dasbor.tsx",
+      "resources/js/Halaman/Pengelola/Operasional/Insiden.tsx",
       "resources/js/Halaman/Pengelola/Operasional/TugasGagal.tsx",
       "resources/js/Halaman/Pengelola/Referensi/Bank.tsx",
       "resources/js/Halaman/Pengelola/Referensi/HariLibur.tsx",
@@ -9292,7 +9334,7 @@
     ]
   },
   "resources/js/Situs.tsx": {
-    "file": "assets/Situs-kIy1iRab.js",
+    "file": "assets/Situs-Dr3OuNrb.js",
     "name": "Situs",
     "src": "resources/js/Situs.tsx",
     "isEntry": true,
@@ -9306,10 +9348,11 @@
       "resources/js/Halaman/Situs/DokumenLegal.tsx",
       "resources/js/Halaman/Situs/Halaman.tsx",
       "resources/js/Halaman/Situs/KompatibilitasPerangkat.tsx",
-      "resources/js/Halaman/Situs/Pengembang.tsx"
+      "resources/js/Halaman/Situs/Pengembang.tsx",
+      "resources/js/Halaman/Situs/StatusPlatform.tsx"
     ],
     "css": [
-      "assets/Situs-BqnI5rys.css"
+      "assets/Situs-CusqpAxz.css"
     ],
     "assets": [
       "assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2",

@@ -24,6 +24,7 @@ use App\Http\Kontroler\Pengelola\Konten\ProspekSitusKontroler;
 use App\Http\Kontroler\Pengelola\Konten\SitusKontroler;
 use App\Http\Kontroler\Pengelola\LogAuditKontroler;
 use App\Http\Kontroler\Pengelola\Mitra\MitraKontroler;
+use App\Http\Kontroler\Pengelola\Operasional\InsidenKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\OperasionalKontroler;
 use App\Http\Kontroler\Pengelola\Referensi\HariLiburKontroler;
 use App\Http\Kontroler\Pengelola\Referensi\ReferensiBankKontroler;
@@ -294,12 +295,18 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::get('/operasional', [OperasionalKontroler::class, 'Dasbor'])->name('pengelola.operasional.dasbor');
             Route::get('/operasional/tugas-gagal/{idTugas}', [OperasionalKontroler::class, 'TampilkanTugasGagal'])
                 ->name('pengelola.operasional.tugas-gagal.tampil');
+            // PGL-21: manajemen insiden & halaman status publik.
+            Route::get('/operasional/insiden', [InsidenKontroler::class, 'Daftar'])->name('pengelola.operasional.insiden.daftar');
             Route::middleware($izin(IzinPengelola::OperasionalKelola))->group(function (): void {
                 Route::post('/operasional/tugas-gagal/{idTugas}/coba-ulang', [OperasionalKontroler::class, 'CobaUlangTugasGagal'])
                     ->name('pengelola.operasional.tugas-gagal.coba-ulang');
                 Route::delete('/operasional/tugas-gagal/{idTugas}', [OperasionalKontroler::class, 'BuangTugasGagal'])
                     ->name('pengelola.operasional.tugas-gagal.buang');
                 Route::post('/operasional/backup', [OperasionalKontroler::class, 'CatatBackup'])->name('pengelola.operasional.backup.catat');
+                Route::post('/operasional/insiden', [InsidenKontroler::class, 'Buka'])->name('pengelola.operasional.insiden.buka');
+                Route::post('/operasional/insiden/{insiden}/pembaruan', [InsidenKontroler::class, 'Perbarui'])->name('pengelola.operasional.insiden.perbarui');
+                Route::post('/operasional/insiden/{insiden}/umumkan', [InsidenKontroler::class, 'Umumkan'])->name('pengelola.operasional.insiden.umumkan');
+                Route::post('/operasional/insiden/{insiden}/post-mortem', [InsidenKontroler::class, 'PostMortem'])->name('pengelola.operasional.insiden.post-mortem');
             });
         });
 

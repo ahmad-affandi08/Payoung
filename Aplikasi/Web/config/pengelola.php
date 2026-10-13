@@ -9,6 +9,10 @@ return [
     // Subdomain Platform Pengelola, misal pengelola.{{app}}.id. Rute tenant tidak pernah dilayani di host ini.
     'Domain' => env('PENGELOLA_DOMAIN', 'pengelola.localhost'),
 
+    // P-11 PGL-21: folder tujuan `status:ekspor` (status.json + index.html) untuk halaman status di hosting terpisah.
+    // Kosong = tidak dijadwalkan; perintah tetap bisa dijalankan manual dengan argumen folder.
+    'TujuanEksporStatus' => env('STATUS_TUJUAN_EKSPOR', ''),
+
     // Cookie sesi terpisah dari cookie tenant (BR-P01.4).
     'CookieSesi' => env('PENGELOLA_COOKIE_SESI', 'sesi_pengelola'),
 

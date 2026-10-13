@@ -170,7 +170,7 @@ Status: **TERBUKA** = belum dikerjakan; **MENUNGGU KEPUTUSAN** = ada di `Keputus
 | F2 | Jurnal umum manual (FIN-05) | **SELESAI @ v5.73 (D-131).** `/kelola/akuntansi/jurnal-umum/buat`, tombol di halaman Jurnal; akun kendali ditolak; koreksi lewat dokumen pembalik. Tidak dibuat: persetujuan kedua (four-eyes) dan butir Kotak Tindakan "jurnal umum belum ditinjau" (menunggu keputusan pemilik produk) | SELESAI |
 | F3 | OTP WhatsApp saat daftar (PLT-01, F-00) | | TERBUKA |
 | F4 | Aplikasi Owner: cek stok/kartu stok (OWN-06), aksi cepat: ubah harga, tandai habis, promo, pengeluaran berfoto (OWN-07), anti-fraud (OWN-09) | P1; anti-fraud sudah ada di web | TERBUKA |
-| F5 | Skor kesehatan tenant (PGL-09), insiden + halaman status publik (PGL-21), analitik platform (PGL-24), template komunikasi & help center (PGL-07, PLT-12) | P1 | TERBUKA |
+| F5 | Skor kesehatan tenant (PGL-09), insiden + halaman status publik (PGL-21, SELESAI @ v5.95), analitik platform (PGL-24), template komunikasi & help center (PGL-07, PLT-12) | P1 | TERBUKA |
 | F6 | Gift card / voucher bernilai (CRM-06) | | MENUNGGU KEPUTUSAN (K4) |
 | F7 | Feedback/rating pasca transaksi (CRM-08) | **SELESAI @ v5.87**: bintang 1–5 + komentar di struk digital (satu per transaksi, 30 hari, saklar per outlet), tab Umpan balik di laporan penjualan | SELESAI |
 | F8 | Anggaran vs realisasi (FIN-11) | **SELESAI @ v5.88**: anggaran per akun × bulan × tahun untuk seluruh usaha atau satu outlet, salin dari tahun lalu, laporan selisih/capaian/status + ekspor | SELESAI |

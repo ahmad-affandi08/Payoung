@@ -177,6 +177,45 @@ export type PropsPengumumanPlatform = {
     OpsiPlatform: Pilihan[];
 };
 
+/** P-11 PGL-21: insiden layanan & halaman status. */
+export type TingkatInsiden = 'Kecil' | 'Besar' | 'Kritis';
+export type StatusInsiden = 'Diselidiki' | 'Teridentifikasi' | 'Dipantau' | 'Selesai';
+
+export type PembaruanInsiden = {
+    Status: StatusInsiden;
+    LabelStatus: string;
+    Isi: string;
+    Waktu: string | null;
+    Oleh: string | null;
+};
+
+export type BarisInsiden = {
+    Uuid: string;
+    Judul: string;
+    Tingkat: TingkatInsiden;
+    Status: StatusInsiden;
+    LabelStatus: string;
+    Dampak: string;
+    Komponen: string[];
+    LabelKomponen: string[];
+    PersenTenantTerdampak: number | null;
+    MulaiPada: string;
+    DiumumkanPada: string | null;
+    SelesaiPada: string | null;
+    PostMortem: string | null;
+    PostMortemDiterbitkanPada: string | null;
+    DibuatOleh: string | null;
+    Pembaruan: PembaruanInsiden[];
+};
+
+export type PropsInsiden = {
+    Insiden: BarisInsiden[];
+    OpsiTingkat: Pilihan[];
+    OpsiStatus: Pilihan[];
+    OpsiKomponen: Pilihan[];
+    AmbangWajibUmumPersen: number;
+};
+
 export type PropsFlagFitur = {
     Aturan: AturanFlagFitur[];
     OpsiKunci: Pilihan[];

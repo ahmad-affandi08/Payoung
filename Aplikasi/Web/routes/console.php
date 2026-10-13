@@ -68,6 +68,11 @@ $jadwalSaas('tenant:umumkan-dokumen-legal')->dailyAt('09:00')->timezone('Asia/Ja
 // P-11 BR-P11.1: detak scheduler tiap menit + pemeriksaan alert operasional (scheduler, antrean, backup).
 $jadwalSaas('pengelola:detak')->everyMinute()->withoutOverlapping(10);
 
+// P-11 PGL-21: ekspor status.json + halaman statis ke hosting terpisah, hanya bila STATUS_TUJUAN_EKSPOR diatur.
+if (config('pengelola.TujuanEksporStatus') !== '') {
+    $jadwalSaas('status:ekspor')->everyMinute()->withoutOverlapping(10);
+}
+
 // P-11 (§14.4): worker antrean database dijalankan scheduler tiap menit di Hostinger (tanpa proses daemon).
 Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->withoutOverlapping(10)->runInBackground();
 
