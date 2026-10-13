@@ -44,7 +44,7 @@ final class SimpanOutletPermintaan extends FormRequest
     public function messages(): array
     {
         return [
-            'Kode.regex' => 'Kode 3–5 karakter, diawali huruf, hanya huruf dan angka. Misal: UTAMA atau JKT1.',
+            'Kode.regex' => 'Kode 3–5 karakter, diawali huruf, hanya huruf dan angka. Misal: RSY atau JKT1.',
             'Merek.required' => 'Pilih merek.',
             'Merek.size' => 'Pilih merek yang tersedia.',
             'JamTutupBuku.date_format' => 'Jam tutup buku memakai format JJ:MM, misal 04:00.',

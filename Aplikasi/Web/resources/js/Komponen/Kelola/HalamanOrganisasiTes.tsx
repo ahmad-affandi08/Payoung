@@ -8,7 +8,13 @@ import HalamanBuatUndangan from '@/Halaman/Kelola/Pengguna/Buat';
 import HalamanBuatPeran from '@/Halaman/Kelola/Peran/Buat';
 import HalamanDaftarPeran from '@/Halaman/Kelola/Peran/Daftar';
 import HalamanPin from '@/Halaman/Kelola/Pin';
-import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import {
+    AturHalamanUji,
+    kirimanForm,
+    RenderUji,
+    TambahPropsHalamanUji,
+    tiruanRouter,
+} from '@/Komponen/Katalog/TiruanInertia';
 import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
@@ -80,13 +86,18 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
 
     it('halaman tambah outlet: kirim POST /kelola/outlet dengan merek pertama; Batal kembali ke daftar', () => {
         AturHalamanUji({}, '/kelola/outlet/buat');
+        TambahPropsHalamanUji({ SektorOutlet: ['FNB-CAF'] });
         RenderUji(
             <HalamanBuatOutlet Merek={[{ Nilai: 'M-1', Label: 'Kopi Nusantara' }]} Kota={[]} BatasOutlet={batas} />,
         );
 
         fireEvent.change(screen.getByLabelText('Nama outlet'), { target: { value: 'Kopi Nusantara Solo' } });
         fireEvent.change(screen.getByLabelText('Kode outlet'), { target: { value: 'SLO1' } });
-        fireEvent.submit(screen.getByLabelText('Nama outlet').closest('form') as HTMLFormElement);
+        // Tambah outlet berupa wizard: Nama & kode → Lokasi & jam → Pajak → Tinjau.
+        for (let i = 0; i < 3; i += 1) {
+            fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
+        }
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah outlet' }));
 
         expect(kirimanForm[0]).toEqual({
             metode: 'post',
@@ -107,8 +118,8 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
             },
         });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
-        expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/outlet');
+        // Wizard: Batal berupa tautan kembali ke daftar outlet.
+        expect(screen.getByRole('link', { name: 'Batal' }).getAttribute('href')).toBe('/kelola/outlet');
     });
 
     it('halaman tambah outlet: batas paket penuh menampilkan peringatan', () => {

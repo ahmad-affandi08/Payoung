@@ -3,31 +3,40 @@ import { CheckIcon, LockIcon } from 'lucide-react';
 import { Progress } from '@/Komponen/Ui/progress';
 import { cn } from '@/Komponen/Ui/utils';
 
-import type { KunciLangkah, LangkahProduk } from './LangkahProduk';
+import type { LangkahWizard } from './TipeWizard';
 
-type PropsPenunjukLangkah = {
-    langkah: LangkahProduk[];
-    aktif: KunciLangkah;
+type PropsPenunjukLangkah<K extends string> = {
+    langkah: LangkahWizard<K>[];
+    aktif: K;
+    /** Nama navigasi untuk pembaca layar, misal "Langkah tambah produk". */
+    label: string;
     /** Langkah yang sudah dicapai atau sedang aktif boleh diklik; sisanya terkunci. */
-    cekTerbuka: (kunci: KunciLangkah) => boolean;
+    cekTerbuka: (kunci: K) => boolean;
     /** Langkah yang memuat isian bermasalah; ditandai dengan teks, bukan warna saja. */
-    bergalat: KunciLangkah[];
-    saatPilih: (kunci: KunciLangkah) => void;
+    bergalat: K[];
+    saatPilih: (kunci: K) => void;
 };
 
 /**
- * Penunjuk langkah wizard produk. Di HP ringkas ("Langkah 2 dari 5" + bilah kemajuan); dari 640px daftar semua
+ * Penunjuk langkah wizard. Di HP ringkas ("Langkah 2 dari 5" + bilah kemajuan); dari 640px daftar semua
  * langkah. Langkah di depan yang belum dicapai terkunci: `disabled` + `aria-disabled`, ikon gembok, dan teks
  * tersembunyi "terkunci" untuk pembaca layar.
  */
-export default function PenunjukLangkah({ langkah, aktif, cekTerbuka, bergalat, saatPilih }: PropsPenunjukLangkah) {
+export default function PenunjukLangkah<K extends string>({
+    langkah,
+    aktif,
+    label,
+    cekTerbuka,
+    bergalat,
+    saatPilih,
+}: PropsPenunjukLangkah<K>) {
     const indeksAktif = Math.max(
         0,
         langkah.findIndex((item) => item.Kunci === aktif),
     );
 
     return (
-        <nav aria-label="Langkah tambah produk" className="flex flex-col gap-2">
+        <nav aria-label={label} className="flex flex-col gap-2">
             <p className="text-label font-semibold text-teks-sekunder">
                 Langkah {String(indeksAktif + 1)} dari {String(langkah.length)}
             </p>

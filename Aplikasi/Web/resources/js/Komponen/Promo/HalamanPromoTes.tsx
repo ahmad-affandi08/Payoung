@@ -55,6 +55,13 @@ const opsi = {
     OpsiPemasok: [{ Nilai: '01K5PEMASOK000000000000001', Label: 'PT Kopi Nusantara Distribusi' }],
 };
 
+/** Tambah promo berupa wizard: klik "Lanjut" ke langkah berikutnya. */
+const Lanjut = (kali = 1) => {
+    for (let i = 0; i < kali; i += 1) {
+        fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
+    }
+};
+
 describe('Halaman promo (F-16c)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/promo');
@@ -88,8 +95,11 @@ describe('Halaman promo (F-16c)', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
         fireEvent.change(screen.getByLabelText('Kode promo'), { target: { value: 'gold10' } });
         fireEvent.change(screen.getByLabelText('Nama promo'), { target: { value: 'Member Gold 10% kopi' } });
+        Lanjut();
         fireEvent.change(screen.getByLabelText('Persen diskon'), { target: { value: '10' } });
+        Lanjut(2);
         fireEvent.click(screen.getByLabelText('Gold (GOLD)'));
+        Lanjut(2);
         fireEvent.click(screen.getByRole('button', { name: 'Simpan promo' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             '/kelola/promo',
@@ -309,10 +319,13 @@ describe('Halaman promo (F-16c)', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
         fireEvent.change(screen.getByLabelText('Kode promo'), { target: { value: 'qris-baru' } });
         fireEvent.change(screen.getByLabelText('Nama promo'), { target: { value: 'Pelanggan baru bayar QRIS 10%' } });
+        Lanjut();
         fireEvent.change(screen.getByLabelText('Persen diskon'), { target: { value: '10' } });
+        Lanjut(3);
         fireEvent.click(screen.getByLabelText('QRIS Toko'));
         fireEvent.click(screen.getByLabelText('Hanya transaksi pertama pelanggan'));
         fireEvent.change(screen.getByLabelText('Batas pakai per pelanggan'), { target: { value: '1' } });
+        Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan promo' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             '/kelola/promo',

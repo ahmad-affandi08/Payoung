@@ -6,11 +6,12 @@
 import { PeriksaBarcode, PolaSku } from '@/Komponen/Katalog/BantuanKatalog';
 import { PeriksaBarisHarga } from '@/Komponen/Katalog/TabelHargaBertingkat';
 import { CekDesimalPositif } from '@/Pustaka/MasukanJumlah';
+import { CariLangkahTerdekat as CariTerdekatUmum, type LangkahWizard } from '@/Komponen/Formulir/Wizard/TipeWizard';
 import type { AturanJenisProduk, FormProduk, JenisProduk, OpsiSatuan } from '@/Tipe/Katalog';
 
 export type KunciLangkah = 'JenisNama' | 'Satuan' | 'HargaStok' | 'Varian' | 'Pajak' | 'Tinjau';
 
-export type LangkahProduk = { Kunci: KunciLangkah; Label: string; Keterangan: string };
+export type LangkahProduk = LangkahWizard<KunciLangkah>;
 
 /** Urutan baku semua langkah; daftar langkah sebuah jenis selalu subhimpunan berurutan dari sini. */
 export const urutanLangkahProduk: KunciLangkah[] = ['JenisNama', 'Satuan', 'HargaStok', 'Varian', 'Pajak', 'Tinjau'];
@@ -105,14 +106,7 @@ export function SusunLangkahProduk(
 
 /** Langkah `kunci` bila ada di daftar; kalau sudah hilang (jenis berganti), langkah terdekat sebelumnya. */
 export function CariLangkahTerdekat(langkah: LangkahProduk[], kunci: KunciLangkah): KunciLangkah {
-    if (langkah.some((item) => item.Kunci === kunci)) {
-        return kunci;
-    }
-
-    const indeksAsal = urutanLangkahProduk.indexOf(kunci);
-    const sebelum = langkah.filter((item) => urutanLangkahProduk.indexOf(item.Kunci) < indeksAsal);
-
-    return (sebelum[sebelum.length - 1] ?? langkah[0])?.Kunci ?? 'JenisNama';
+    return CariTerdekatUmum(langkah, kunci, urutanLangkahProduk);
 }
 
 const kunciJenisNama = ['Nama', 'NamaStruk', 'Sku', 'Jenis', 'UuidKategori', 'Merek'];

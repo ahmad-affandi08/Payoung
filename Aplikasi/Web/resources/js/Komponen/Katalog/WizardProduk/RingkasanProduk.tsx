@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
-
-import Tombol from '@/Komponen/Formulir/Tombol';
+import {
+    BagianRingkasan as Bagian,
+    BarisRingkasan as Baris,
+    TampilYaTidak,
+} from '@/Komponen/Formulir/Wizard/RingkasanWizard';
 import { LabelTigaKeadaan } from '@/Komponen/Katalog/BantuanKatalog';
 import { RingkasBarisHarga } from '@/Komponen/Katalog/TabelHargaBertingkat';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -34,42 +36,6 @@ type PropsRingkasanProduk = {
 };
 
 const labelPelacakan = { Tidak: 'Tidak dilacak', Batch: 'Nomor batch', Seri: 'Nomor seri' } as const;
-
-function Baris({ nama, children }: { nama: string; children: ReactNode }) {
-    return (
-        <div className="grid gap-0.5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-3">
-            <dt className="text-label text-teks-sekunder">{nama}</dt>
-            <dd className="min-w-0 text-isi break-words text-teks-utama">{children}</dd>
-        </div>
-    );
-}
-
-function Bagian({
-    langkah,
-    saatUbah,
-    children,
-}: {
-    langkah: LangkahProduk;
-    saatUbah: (kunci: KunciLangkah) => void;
-    children: ReactNode;
-}) {
-    return (
-        <section
-            aria-label={`Ringkasan ${langkah.Label}`}
-            className="flex flex-col gap-2 border-b border-garis pb-4 last:border-b-0 last:pb-0"
-        >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-label font-semibold text-teks-utama">{langkah.Label}</h3>
-                <Tombol varian="sekunder" aria-label={`Ubah ${langkah.Label}`} onClick={() => saatUbah(langkah.Kunci)}>
-                    Ubah
-                </Tombol>
-            </div>
-            <dl className="flex flex-col gap-1.5">{children}</dl>
-        </section>
-    );
-}
-
-const TampilYaTidak = (nilai: boolean) => (nilai ? 'Ya' : 'Tidak');
 
 /**
  * Ringkasan baca-saja langkah "Tinjau & simpan": semua isian penting per langkah, dengan tombol "Ubah" yang kembali

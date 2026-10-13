@@ -1,11 +1,11 @@
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDaftarKampanye from '@/Halaman/Kelola/Pelanggan/Kampanye/Daftar';
 import HalamanDetailKampanye, { UbahKeIsoUtc } from '@/Halaman/Kelola/Pelanggan/Kampanye/Detail';
 import HalamanFormKampanye from '@/Halaman/Kelola/Pelanggan/Kampanye/Form';
 import HalamanBerhentiLangganan from '@/Halaman/Publik/BerhentiLangganan';
-import { AturHalamanUji, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import type { BarisKampanye, PropsFormKampanye } from '@/Tipe/Kampanye';
 
@@ -83,6 +83,9 @@ describe('CRM-07 kampanye pesan', () => {
 
         expect(screen.getByRole('combobox', { name: /Kanal/ }).textContent).toContain('WhatsApp (belum aktif)');
         expect(screen.getByText(/Pengiriman WhatsApp belum aktif/)).toBeTruthy();
+        // Buat kampanye berupa wizard: penerima ada di langkah kedua.
+        fireEvent.change(screen.getByLabelText('Nama kampanye'), { target: { value: 'Promo akhir tahun' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
         await waitFor(() => expect(screen.getByRole('status').textContent).toContain('2 pelanggan'));
         expect(screen.getByRole('status').textContent).toContain(
             '1 lainnya cocok tetapi tidak punya nomor WhatsApp yang sah',
@@ -152,5 +155,90 @@ describe('CRM-07 kampanye pesan', () => {
             <HalamanBerhentiLangganan Ditemukan={false} NamaToko={null} SudahBerhenti={false} AlamatKirim={null} />,
         );
         expect(screen.getByText('Tautan tidak berlaku')).toBeTruthy();
+    });
+});
+
+describe('Wizard buat kampanye (CRM-07)', () => {
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/pelanggan/kampanye/buat');
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue({
+                ok: true,
+                json: () =>
+                    Promise.resolve({ JumlahPenerima: 3, TanpaKontak: 0, PerSegmen: { Baru: 3 }, MaksPenerima: 5000 }),
+            }),
+        );
+    });
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+    });
+
+    const Lanjut = () => fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
+
+    it('empat langkah; nama kosong menahan Lanjut dan isi yang baru sapaan ditolak', () => {
+        RenderUji(<HalamanFormKampanye {...PropsForm} />);
+
+        expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
+        Lanjut();
+        expect(screen.getByText('Isi nama kampanye dulu.')).toBeTruthy();
+        expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
+
+        fireEvent.change(screen.getByLabelText('Nama kampanye'), { target: { value: 'Promo akhir tahun' } });
+        Lanjut();
+        Lanjut();
+        expect(screen.getByText('Langkah 3 dari 4')).toBeTruthy();
+        Lanjut();
+        expect(screen.getByText('Lengkapi pesannya. Baru ada sapaan, belum ada isi untuk pelanggan.')).toBeTruthy();
+        expect(screen.getByText('Langkah 3 dari 4')).toBeTruthy();
+    });
+
+    it('Tinjau memuat contoh pesan dan jumlah penerima; Simpan mengirim draf sebagai POST', async () => {
+        RenderUji(<HalamanFormKampanye {...PropsForm} />);
+        fireEvent.change(screen.getByLabelText('Nama kampanye'), { target: { value: 'Promo akhir tahun' } });
+        Lanjut();
+        fireEvent.click(screen.getByLabelText(/^Baru/));
+        Lanjut();
+        fireEvent.change(screen.getByRole('textbox', { name: /Isi pesan/ }), {
+            target: { value: 'Halo {nama}, diskon 20% kopi sampai Minggu.' },
+        });
+        Lanjut();
+
+        expect(screen.getByText('Langkah 4 dari 4')).toBeTruthy();
+        expect(screen.getByText('Halo Budi, diskon 20% kopi sampai Minggu.')).toBeTruthy();
+        await waitFor(() => expect(screen.getByText('3 pelanggan')).toBeTruthy());
+
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan draf kampanye' }));
+        expect(tiruanRouter.post).toHaveBeenCalledWith(
+            '/kelola/pelanggan/kampanye',
+            {
+                Nama: 'Promo akhir tahun',
+                Kanal: 'Whatsapp',
+                Judul: null,
+                Isi: 'Halo {nama}, diskon 20% kopi sampai Minggu.',
+                Segmen: { Rfm: ['Baru'], UuidTier: [], Tag: [], UlangTahunBulanIni: false },
+            },
+            expect.anything(),
+        );
+    });
+
+    it('ubah draf tetap satu halaman tanpa penunjuk langkah', () => {
+        RenderUji(
+            <HalamanFormKampanye
+                {...PropsForm}
+                Kampanye={{
+                    Uuid: '01J9KMP0000000000000000001',
+                    Nama: 'Promo kopi',
+                    Kanal: 'Whatsapp',
+                    Judul: null,
+                    Isi: 'Halo {nama}, ada diskon kopi.',
+                    Segmen: {},
+                }}
+            />,
+        );
+
+        expect(screen.queryByText(/Langkah \d dari/)).toBeNull();
+        expect(screen.getByRole('button', { name: 'Simpan draf' })).toBeTruthy();
     });
 });
