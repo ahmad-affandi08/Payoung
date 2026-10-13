@@ -39,7 +39,7 @@ function IsianTimUji(int $idTenant, array $isian = []): array
         'Pin' => '482915',
         'Peran' => BantuanOrganisasi::Peran($idTenant, PeranTenantBawaan::Kasir)->Uuid,
         'SemuaOutlet' => false,
-        'Outlet' => [Outlet::query()->where('Kode', 'UTAMA')->value('Uuid')],
+        'Outlet' => [Outlet::query()->orderBy('Id')->value('Uuid')],
         'JugaKaryawan' => true,
         ...$isian,
     ];
@@ -141,7 +141,7 @@ describe('D-101 tambah anggota tim: tiga jenis akses, satu formulir', function (
         $penggunaAwal = TenantPengguna::query()->where('IdTenant', $tenant->Id)->count();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
-            ->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Pelayan', 'Jabatan' => 'Pelayan', 'GajiPokok' => '2000000', 'UuidOutlet' => Outlet::query()->where('Kode', 'UTAMA')->value('Uuid')])
+            ->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Pelayan', 'Jabatan' => 'Pelayan', 'GajiPokok' => '2000000', 'UuidOutlet' => Outlet::query()->orderBy('Id')->value('Uuid')])
             ->assertRedirect(route('kelola.tim.daftar'))
             ->assertSessionHasNoErrors();
 

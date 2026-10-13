@@ -30,7 +30,7 @@ function UndangAnggotaUji(TestCase $tes, Pengguna $pengundang, int $idTenant, st
     $akses = [
         'Peran' => BantuanOrganisasi::Peran($idTenant, PeranTenantBawaan::Kasir)->Uuid,
         'SemuaOutlet' => false,
-        'Outlet' => [Outlet::query()->where('Kode', 'UTAMA')->value('Uuid')],
+        'Outlet' => [Outlet::query()->orderBy('Id')->value('Uuid')],
         ...$akses,
     ];
 

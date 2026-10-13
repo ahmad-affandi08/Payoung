@@ -38,7 +38,7 @@ function IsianTambahPenggunaUji(int $idTenant, array $isian = []): array
         'Nama' => 'Siti Kasir',
         'Peran' => BantuanOrganisasi::Peran($idTenant, PeranTenantBawaan::Kasir)->Uuid,
         'SemuaOutlet' => false,
-        'Outlet' => [Outlet::query()->where('Kode', 'UTAMA')->value('Uuid')],
+        'Outlet' => [Outlet::query()->orderBy('Id')->value('Uuid')],
         'Akses' => isset($isian['Email']) ? 'Dashboard' : 'Kasir',
         ...$isian,
     ];
@@ -56,7 +56,7 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         $kasir = Pengguna::query()->where('Nama', 'Siti Kasir')->sole();
         $karyawan = Karyawan::query()->where('IdPengguna', $kasir->Id)->sole();
         expect($karyawan->Nama)->toBe('Siti Kasir')->and($karyawan->Jabatan)->toBe('Barista')
-            ->and($karyawan->IdOutlet)->toBe(Outlet::query()->where('Kode', 'UTAMA')->value('Id'));
+            ->and($karyawan->IdOutlet)->toBe(Outlet::query()->orderBy('Id')->value('Id'));
     });
 
     it('karyawan kasir tanpa email: cukup nama + PIN, bisa masuk aplikasi kasir dengan PIN, tanpa email terkirim', function (): void {
