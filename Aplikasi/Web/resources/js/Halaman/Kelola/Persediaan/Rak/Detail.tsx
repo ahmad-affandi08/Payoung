@@ -159,7 +159,7 @@ export default function HalamanDetailRakGudang({ Produk, Rak, OpsiKategori, Izin
                     sumber={{ mode: 'server', alamat: `${alamat}/${Rak.Uuid}`, awal: Produk }}
                     ambilIdBaris={(p) => p.Uuid}
                     cari="Cari nama, SKU, atau barcode"
-                    kosong={{ ilustrasi: true, judul: 'Rak ini belum berisi produk.' }}
+                    kosong={{ judul: 'Rak ini belum berisi produk.' }}
                     {...(bolehUbah
                         ? {
                               aksiMassal: (konteks: KonteksAksiMassal<BarisProdukRak>) => (

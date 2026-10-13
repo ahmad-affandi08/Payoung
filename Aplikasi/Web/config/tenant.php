@@ -37,6 +37,8 @@ return [
         'pengembang',
         // P-11 PGL-21: halaman status layanan publik `/status`.
         'status',
+        // PLT-12: Pusat Bantuan publik `/pusat-bantuan`.
+        'pusat-bantuan',
         // Auth tenant: rute atur ulang kata sandi (BR-00.9).
         'atur-ulang-kata-sandi',
         // F-02: tautan undangan anggota.

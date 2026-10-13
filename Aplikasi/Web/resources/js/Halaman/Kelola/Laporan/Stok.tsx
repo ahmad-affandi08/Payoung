@@ -328,7 +328,7 @@ function BuatKolomRencana(tanggal: string, bolehKelola: boolean): KolomTabel<Bar
                         <span className="font-semibold">{FormatJumlahStok(b.Rekomendasi, b.SimbolSatuan)}</span>
                         {bolehKelola ? (
                             <Button asChild size="sm" variant="outline">
-                                <Link href={BuatUrlDrafProduksi(b, tanggal)}>Buat draf produksi</Link>
+                                <Link href={BuatUrlDrafProduksi(b, tanggal)}>Siapkan draf produksi</Link>
                             </Button>
                         ) : null}
                     </span>

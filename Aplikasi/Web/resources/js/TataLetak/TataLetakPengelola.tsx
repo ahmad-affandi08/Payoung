@@ -138,7 +138,13 @@ export const daftarMenuPengelola: GrupMenu[] = [
                 izin: IzinPengelola.ReferensiLihat,
                 ikon: 'Akuntansi',
             },
-            { label: 'Legal', href: '/legal', izin: IzinPengelola.LegalLihat, ikon: 'Keamanan' },
+            {
+                label: 'Legal',
+                href: '/legal',
+                izin: IzinPengelola.LegalLihat,
+                ikon: 'Keamanan',
+                alamatLain: ['/template-komunikasi'],
+            },
         ],
     },
     {

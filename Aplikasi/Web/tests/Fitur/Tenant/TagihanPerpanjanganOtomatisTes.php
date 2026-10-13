@@ -12,6 +12,7 @@ use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Enum\TahapPengingatTagihan;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
+use App\Domain\Tenant\Model\TemplateKomunikasi;
 use App\Domain\Tenant\Surel\PengingatTagihanLangganan;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Support\Carbon;
@@ -159,6 +160,23 @@ describe('P-08 langkah 4: pengingat H-7, H-3, H0, H+3', function (): void {
             && str_contains((string) $s->subject, 'lewat jatuh tempo'));
         Http::assertSentCount(4);
         Http::assertSent(fn (PermintaanHttp $r): bool => $r['target'] === '6281234567890' && str_contains((string) $r['message'], 'INV/2026/09/000001'));
+    });
+
+    it('PGL-07: WhatsApp memakai versi terbit templat komunikasi dari konsol dan email memakai subjeknya', function (): void {
+        config(['integrasi.Whatsapp' => ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'rahasia-uji']]]);
+        Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9001']])]);
+        foreach ([['WhatsApp', null, null, 'Pengingat {NomorTagihan} untuk {NamaPemilik}: {Total}. Bayar di {Tautan}'], ['Email', 'Segera bayar {NomorTagihan}', 'Halo {NamaPemilik}', '{Kalimat}']] as [$kanal, $subjek, $judul, $isi]) {
+            (new TemplateKomunikasi)->forceFill([
+                'KodePeristiwa' => 'tagihan.pengingat.h-7', 'Kanal' => $kanal, 'Bahasa' => 'id', 'Versi' => 1, 'Subjek' => $subjek, 'Judul' => $judul,
+                'Isi' => $isi, 'Status' => 'Terbit', 'DiterbitkanPada' => now(),
+            ])->save();
+        }
+
+        JalankanTagihanOtomatisUji($this, '2026-09-24 08:20', '1 tagihan diingatkan');
+
+        Http::assertSent(fn (PermintaanHttp $r): bool => $r['target'] === '6281234567890'
+            && $r['message'] === 'Pengingat INV/2026/09/000001 untuk Rina Wulandari: Rp 276.390. Bayar di '.rtrim((string) config('app.url'), '/').'/kelola/langganan');
+        Mail::assertSent(PengingatTagihanLangganan::class, fn (PengingatTagihanLangganan $s): bool => $s->subject === 'Segera bayar INV/2026/09/000001');
     });
 
     it('tagihan buatan Owner tidak memicu email "tagihan terbit"; tahap berikutnya tetap diingatkan; lunas berhenti diingatkan', function (): void {

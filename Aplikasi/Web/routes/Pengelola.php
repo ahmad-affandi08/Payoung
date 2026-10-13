@@ -18,10 +18,12 @@ use App\Http\Kontroler\Pengelola\Katalog\KuponKontroler;
 use App\Http\Kontroler\Pengelola\Katalog\PaketKontroler;
 use App\Http\Kontroler\Pengelola\KataSandiKontroler;
 use App\Http\Kontroler\Pengelola\KeamananKontroler;
+use App\Http\Kontroler\Pengelola\Konten\ArtikelBantuanKontroler;
 use App\Http\Kontroler\Pengelola\Konten\ArtikelSitusKontroler;
 use App\Http\Kontroler\Pengelola\Konten\DokumenLegalKontroler;
 use App\Http\Kontroler\Pengelola\Konten\ProspekSitusKontroler;
 use App\Http\Kontroler\Pengelola\Konten\SitusKontroler;
+use App\Http\Kontroler\Pengelola\Konten\TemplateKomunikasiKontroler;
 use App\Http\Kontroler\Pengelola\LogAuditKontroler;
 use App\Http\Kontroler\Pengelola\Mitra\MitraKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\InsidenKontroler;
@@ -192,6 +194,23 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             });
         });
 
+        // PGL-07 Templat komunikasi (dunning tagihan langganan: email & WhatsApp, Indonesia & Inggris).
+        Route::middleware($izin(IzinPengelola::LegalLihat))->prefix('template-komunikasi')->group(function () use ($izin): void {
+            $ulid = '[0-9A-HJKMNP-TV-Z]{26}';
+            Route::get('/', [TemplateKomunikasiKontroler::class, 'Daftar'])->name('pengelola.template-komunikasi.daftar');
+            Route::get('/{kodePeristiwa}/{kanal}/{bahasa}', [TemplateKomunikasiKontroler::class, 'Ubah'])
+                ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp', 'bahasa' => 'id|en'])
+                ->name('pengelola.template-komunikasi.ubah');
+            Route::middleware($izin(IzinPengelola::LegalKelola))->group(function () use ($ulid): void {
+                Route::put('/{kodePeristiwa}/{kanal}/{bahasa}', [TemplateKomunikasiKontroler::class, 'SimpanDraf'])
+                    ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp', 'bahasa' => 'id|en'])
+                    ->name('pengelola.template-komunikasi.simpan-draf');
+                Route::post('/{templatKomunikasi}/terbitkan', [TemplateKomunikasiKontroler::class, 'Terbitkan'])->where('templatKomunikasi', $ulid)->name('pengelola.template-komunikasi.terbitkan');
+                Route::delete('/{templatKomunikasi}', [TemplateKomunikasiKontroler::class, 'HapusDraf'])->where('templatKomunikasi', $ulid)->name('pengelola.template-komunikasi.hapus-draf');
+                Route::put('/{templatKomunikasi}/status-bsp', [TemplateKomunikasiKontroler::class, 'CatatStatusBsp'])->where('templatKomunikasi', $ulid)->name('pengelola.template-komunikasi.status-bsp');
+            });
+        });
+
         // D-21 Situs pemasaran (payoung.id) diatur dari konsol.
         Route::middleware($izin(IzinPengelola::SitusLihat))->prefix('situs')->group(function () use ($izin): void {
             $ulidSitus = '[0-9A-HJKMNP-TV-Z]{26}';
@@ -206,7 +225,15 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::get('/prospek', [ProspekSitusKontroler::class, 'Daftar'])->name('pengelola.situs.prospek.daftar');
             Route::get('/artikel', [ArtikelSitusKontroler::class, 'Daftar'])->name('pengelola.situs.artikel.daftar');
             Route::get('/artikel/{artikelSitus}', [ArtikelSitusKontroler::class, 'Ubah'])->where('artikelSitus', $ulidSitus)->name('pengelola.situs.artikel.ubah');
+            // PLT-12: Pusat Bantuan (artikel bantuan publik + bantuan kontekstual di back-office).
+            Route::get('/bantuan', [ArtikelBantuanKontroler::class, 'Daftar'])->name('pengelola.situs.bantuan.daftar');
+            Route::get('/bantuan/{artikelBantuan}', [ArtikelBantuanKontroler::class, 'Ubah'])->where('artikelBantuan', $ulidSitus)->name('pengelola.situs.bantuan.ubah');
             Route::middleware($izin(IzinPengelola::SitusKelola))->group(function () use ($ulidSitus): void {
+                Route::post('/bantuan', [ArtikelBantuanKontroler::class, 'Buat'])->name('pengelola.situs.bantuan.buat');
+                Route::put('/bantuan/{artikelBantuan}', [ArtikelBantuanKontroler::class, 'Simpan'])->where('artikelBantuan', $ulidSitus)->name('pengelola.situs.bantuan.simpan');
+                Route::post('/bantuan/{artikelBantuan}/terbitkan', [ArtikelBantuanKontroler::class, 'Terbitkan'])->where('artikelBantuan', $ulidSitus)->name('pengelola.situs.bantuan.terbitkan');
+                Route::post('/bantuan/{artikelBantuan}/tarik', [ArtikelBantuanKontroler::class, 'Tarik'])->where('artikelBantuan', $ulidSitus)->name('pengelola.situs.bantuan.tarik');
+                Route::delete('/bantuan/{artikelBantuan}', [ArtikelBantuanKontroler::class, 'Hapus'])->where('artikelBantuan', $ulidSitus)->name('pengelola.situs.bantuan.hapus');
                 Route::put('/pengaturan', [SitusKontroler::class, 'SimpanPengaturan'])->name('pengelola.situs.pengaturan.simpan');
                 Route::post('/halaman', [SitusKontroler::class, 'BuatHalaman'])->name('pengelola.situs.halaman.buat');
                 Route::put('/halaman/{halamanSitus}/draf-otomatis', [SitusKontroler::class, 'SimpanOtomatis'])->where('halamanSitus', $ulidSitus)->middleware('throttle:60,1')->name('pengelola.situs.halaman.simpan-otomatis');

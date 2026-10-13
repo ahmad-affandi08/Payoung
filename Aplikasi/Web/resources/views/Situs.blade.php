@@ -56,6 +56,10 @@
     @endif
     @if ($pratinjau)
         <meta name="robots" content="noindex, nofollow">
+    @elseif (! empty($seo['TanpaIndeks']))
+        {{-- PLT-12: hasil cari/saring Pusat Bantuan tidak diindeks (tautan di dalamnya tetap diikuti). --}}
+        <meta name="robots" content="noindex, follow">
+        <link rel="canonical" href="{{ $seo['Kanonik'] ?? '' }}">
     @elseif (! empty($seo['Kanonik']))
         <link rel="canonical" href="{{ $seo['Kanonik'] }}">
     @endif

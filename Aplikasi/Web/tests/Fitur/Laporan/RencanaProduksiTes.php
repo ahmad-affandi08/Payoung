@@ -19,7 +19,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 /*
  * §9.11 Bakery: rencana produksi harian (tab "Rencana produksi" di laporan stok). Permintaan = rata-rata pemakaian pada
  * hari yang sama dalam 4 minggu terakhir vs pre-order yang diambil pada tanggal itu; rekomendasi = kebutuhan − saldo.
- * Hanya produk jenis Produksi. "Buat draf produksi" membuka formulir order produksi yang sudah terisi.
+ * Hanya produk jenis Produksi. "Siapkan draf produksi" membuka formulir order produksi yang sudah terisi.
  */
 
 beforeEach(function (): void {

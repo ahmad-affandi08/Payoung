@@ -48,6 +48,7 @@ import {
 } from './BagianTataLetak';
 import KepalaSidebarMerek from './KepalaSidebarMerek';
 import LonceNotifikasi from './LonceNotifikasi';
+import TombolBantuan from '@/Komponen/Bantuan/TombolBantuan';
 import PencarianCepat, { type HalamanPencarian, type SumberPencarian } from './PencarianCepat';
 
 type PropsTataLetak = {
@@ -1005,6 +1006,12 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                     }
                 >
                     <PencarianCepat halaman={pencarian.halaman} sumber={pencarian.sumber} />
+                    {/* PLT-12: bantuan kontekstual dari Pusat Bantuan Payoung; edisi Lisensi tidak punya Pusat Bantuan. */}
+                    {props.Edisi === 'Lisensi' ? null : (
+                        <TombolBantuan
+                            bolehHubungiDukungan={PunyaIzinTenant(props.Akses, IzinTenant.BantuanTiketKelola)}
+                        />
+                    )}
                     <LonceNotifikasi belumDibaca={props.NotifikasiBelumDibaca ?? 0} />
                     <MenuAkun
                         nama={props.Pengguna?.Nama}

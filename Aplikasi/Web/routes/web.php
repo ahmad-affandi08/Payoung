@@ -9,6 +9,7 @@ use App\Domain\Pelanggan\Layanan\TautanBerhentiLangganan;
 use App\Domain\Penjualan\Layanan\KodeStrukDigital;
 use App\Domain\Penjualan\Layanan\PenentuKonteksKios;
 use App\Domain\Situs\Layanan\AturanSlugSitus;
+use App\Domain\Situs\Model\ArtikelBantuan;
 use App\Domain\Situs\Model\ArtikelSitus;
 use App\Http\Kontroler\Autentikasi\KataSandiKontroler;
 use App\Http\Kontroler\Autentikasi\KeamananAkunKontroler;
@@ -23,6 +24,7 @@ use App\Http\Kontroler\Kelola\BantuanKontroler;
 use App\Http\Kontroler\Kelola\BerandaKelolaKontroler;
 use App\Http\Kontroler\Kelola\LanggananKontroler;
 use App\Http\Kontroler\Kelola\NotifikasiKontroler;
+use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontroler;
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
 use App\Http\Kontroler\Publik\AbsensiWebKontroler;
@@ -37,6 +39,7 @@ use App\Http\Kontroler\Publik\PersetujuanServisKontroler;
 use App\Http\Kontroler\Publik\PesanSendiriKontroler;
 use App\Http\Kontroler\Publik\PortalKurirKontroler;
 use App\Http\Kontroler\Publik\ProspekSitusKontroler;
+use App\Http\Kontroler\Publik\PusatBantuanKontroler;
 use App\Http\Kontroler\Publik\ReservasiPublikKontroler;
 use App\Http\Kontroler\Publik\SitusKontroler;
 use App\Http\Kontroler\Publik\StatusPlatformKontroler;
@@ -99,6 +102,9 @@ if ($saas) {
         // Bagian B2: blog (artikel terbit dari konsol).
         Route::get('/blog', [SitusKontroler::class, 'Blog'])->name('situs.blog.daftar');
         Route::get('/blog/{slugArtikel}', [SitusKontroler::class, 'Artikel'])->where('slugArtikel', ArtikelSitus::POLA_SLUG)->name('situs.blog.artikel');
+        // PLT-12: Pusat Bantuan publik (artikel terbit dari konsol).
+        Route::get('/pusat-bantuan', [PusatBantuanKontroler::class, 'Daftar'])->name('situs.bantuan.daftar');
+        Route::get('/pusat-bantuan/{slugBantuan}', [PusatBantuanKontroler::class, 'Artikel'])->where('slugBantuan', ArtikelBantuan::POLA_SLUG)->name('situs.bantuan.artikel');
         // X7 bagian 3: portal dokumentasi pengembang (Open API v1 + webhook; spesifikasi di public/pengembang/openapi-v1.json).
         Route::get('/pengembang', [PengembangKontroler::class, 'Tampilkan'])->name('situs.pengembang');
         // P-06 dokumen legal publik. D-28: ikut shell & bundle situs, jadi ada kepala, kaki, dan jalan kembali.
@@ -260,6 +266,8 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
 
                 // D-35: tiket bantuan diterima Platform Pengelola Payoung, yang tidak ada di edisi Lisensi.
                 if ($saas) {
+                    // PLT-12: bantuan kontekstual (artikel Pusat Bantuan untuk halaman yang sedang dibuka); isinya publik.
+                    Route::get('/pusat-bantuan', [BantuanKontekstualKontroler::class, 'Ambil'])->middleware('throttle:120,1')->name('kelola.pusat-bantuan');
                     // P-09 Bantuan (tiket dukungan). Parameter tiket = Uuid, dicari lewat MilikTenant di kueri (bukan route
                     // model binding, yang berjalan sebelum tenant aktif ditetapkan).
                     Route::middleware($izin(IzinTenant::BantuanTiketLihat))->group(function (): void {

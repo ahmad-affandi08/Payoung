@@ -235,6 +235,31 @@ export type PropsArtikelSitus = {
     Situs: DataSitus;
 };
 
+/** PLT-12: Pusat Bantuan publik. */
+export type RingkasanBantuan = {
+    Slug: string;
+    Judul: string;
+    Ringkasan: string | null;
+    UrlVideo?: string | null;
+};
+
+export type PropsPusatBantuan = {
+    Halaman: { Seo: SeoSitus };
+    Kelompok: { Kategori: string; Artikel: RingkasanBantuan[] }[];
+    Kategori: string[];
+    KategoriAktif: string | null;
+    Cari: string;
+    Total: number;
+    Situs: DataSitus;
+};
+
+export type PropsArtikelBantuan = {
+    Halaman: { Seo: SeoSitus };
+    Artikel: RingkasanBantuan & { Kategori: string | null; Isi: string; DiperbaruiPada: string | null };
+    Terkait: RingkasanBantuan[];
+    Situs: DataSitus;
+};
+
 /** X7 bagian 3: portal dokumentasi pengembang (`/pengembang`), disusun server dari spesifikasi OpenAPI. */
 export type EndpointApiPublik = {
     Metode: string;

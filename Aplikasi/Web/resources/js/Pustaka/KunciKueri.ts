@@ -10,6 +10,8 @@ export const KunciKueri = {
     // Pencarian cepat di kepala halaman: hasil per sumber (produk, pelanggan, …) untuk satu kata.
     PencarianCepat: (idSumber: string, kata: string) => ['PencarianCepat', idSumber, kata] as const,
     Laporan: (nama: string, saring: Record<string, string>) => ['Laporan', nama, saring] as const,
+    // PLT-12: bantuan kontekstual di kepala back-office (artikel Pusat Bantuan untuk satu jalur + kata cari).
+    BantuanKontekstual: (jalur: string, kata: string) => ['BantuanKontekstual', jalur, kata] as const,
     // PRD v3.14: pemilih pelanggan di formulir pesanan grosir (dropdown cari-server).
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,

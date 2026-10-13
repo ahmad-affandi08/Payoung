@@ -8,6 +8,7 @@ use App\Domain\Bersama\Web\AlamatDomain;
 use App\Domain\Situs\Kueri\ArtikelSitusPublik;
 use App\Domain\Situs\Kueri\DaftarHalamanSitusPublik;
 use App\Domain\Situs\Kueri\PenyusunHalamanSitus;
+use App\Domain\Situs\Kueri\PusatBantuanPublik;
 use App\Domain\Situs\Model\GambarSitus;
 use App\Domain\Situs\Model\HalamanSitus;
 use App\Http\Kontroler\Kontroler;
@@ -82,7 +83,7 @@ final class SitusKontroler extends Kontroler
         ]);
     }
 
-    public function PetaSitus(DaftarHalamanSitusPublik $daftar, ArtikelSitusPublik $artikel): ResponsHttp
+    public function PetaSitus(DaftarHalamanSitusPublik $daftar, ArtikelSitusPublik $artikel, PusatBantuanPublik $bantuan): ResponsHttp
     {
         $baris = [];
         $daftarArtikel = $artikel->AmbilUntukPetaSitus();
@@ -100,6 +101,18 @@ final class SitusKontroler extends Kontroler
 
         foreach ($daftarArtikel as $a) {
             $baris[] = '  <url><loc>'.htmlspecialchars(AlamatDomain::BuatUrlAbsolutPemasaran('/blog/'.$a['Slug']), ENT_XML1).'</loc>'
+                .($a['DiubahPada'] !== null ? '<lastmod>'.$a['DiubahPada'].'</lastmod>' : '')
+                .'</url>';
+        }
+
+        $daftarBantuan = $bantuan->AmbilUntukPetaSitus();
+
+        if ($daftarBantuan !== []) {
+            $baris[] = '  <url><loc>'.htmlspecialchars(AlamatDomain::BuatUrlAbsolutPemasaran('/pusat-bantuan'), ENT_XML1).'</loc></url>';
+        }
+
+        foreach ($daftarBantuan as $a) {
+            $baris[] = '  <url><loc>'.htmlspecialchars(AlamatDomain::BuatUrlAbsolutPemasaran('/pusat-bantuan/'.$a['Slug']), ENT_XML1).'</loc>'
                 .($a['DiubahPada'] !== null ? '<lastmod>'.$a['DiubahPada'].'</lastmod>' : '')
                 .'</url>';
         }

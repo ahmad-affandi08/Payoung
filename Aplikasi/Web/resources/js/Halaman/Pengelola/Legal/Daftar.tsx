@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 
 import Tombol from '@/Komponen/Formulir/Tombol';
+import TabLegal from '@/Komponen/Pengelola/Legal/TabLegal';
 import { Card } from '@/Komponen/Ui/card';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -34,6 +35,7 @@ export default function HalamanDaftarLegal({ Dokumen }: { Dokumen: KelompokDokum
 
     return (
         <TataLetakPengelola judul="Dokumen legal">
+            <TabLegal />
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
             {props.errors.Jenis ? <Pemberitahuan jenis="bahaya">{props.errors.Jenis}</Pemberitahuan> : null}
             {kurangRegistrasi.length > 0 ? (

@@ -10,9 +10,12 @@ use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Organisasi\Kueri\PemilikTenant;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
+use App\Domain\Tenant\Enum\KanalKomunikasi;
+use App\Domain\Tenant\Enum\PeristiwaKomunikasi;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Enum\TahapPengingatTagihan;
+use App\Domain\Tenant\Layanan\PenyusunPesanKomunikasi;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Surel\PengingatTagihanLangganan;
@@ -41,6 +44,7 @@ final class KirimPengingatTagihanLangganan
         private readonly KonteksTenant $konteks,
         private readonly PemilikTenant $pemilik,
         private readonly PembuatPengirimWhatsapp $whatsapp,
+        private readonly PenyusunPesanKomunikasi $penyusun,
     ) {}
 
     /**
@@ -132,14 +136,16 @@ final class KirimPengingatTagihanLangganan
             return;
         }
 
-        $kalimat = PengingatTagihanLangganan::AmbilTeks($tahap, $tagihan->Nomor, $namaPaket, $jatuhTempo, $tanggalDitangguhkan)[2];
         $tautan = rtrim((string) config('app.url'), '/').'/kelola/langganan';
+        $variabel = PengingatTagihanLangganan::SusunVariabel($tahap, $nama, $tagihan->Nomor, $total, $namaPaket, $jatuhTempo, $tanggalDitangguhkan, $tautan);
+        $kalimat = $variabel['Kalimat'];
+        $isi = $this->penyusun->Susun(PeristiwaKomunikasi::DariTahap($tahap), KanalKomunikasi::WhatsApp, $variabel)->isi;
         $templat = $pengirim->CekResmi() ? $this->whatsapp->AmbilTemplatPengingatTagihan() : null;
 
         try {
             $hasil = $pengirim->Kirim(new PesanWhatsapp(
                 $noHp,
-                "Halo {$nama}, {$kalimat}\nTagihan {$tagihan->Nomor}: {$total}.\nBayar di {$tautan}",
+                $isi,
                 $templat,
                 $templat === null ? [] : [$nama, $kalimat, $total, $tautan],
             ));

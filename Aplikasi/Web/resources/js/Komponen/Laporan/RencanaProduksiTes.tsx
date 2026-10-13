@@ -71,10 +71,10 @@ describe('tab Rencana produksi di laporan stok', () => {
         expect(screen.getByText(/pre-order biasanya sudah ikut di riwayat penjualan/)).toBeTruthy();
     });
 
-    it('tombol Buat draf produksi hanya ada untuk yang perlu produksi dan membawa produk, lokasi, jumlah, tanggal', () => {
+    it('tombol Siapkan draf produksi hanya ada untuk yang perlu produksi dan membawa produk, lokasi, jumlah, tanggal', () => {
         RenderUji(<HalamanLaporanStok {...props} />);
 
-        const tautan = screen.getAllByRole('link', { name: 'Buat draf produksi' });
+        const tautan = screen.getAllByRole('link', { name: 'Siapkan draf produksi' });
         expect(tautan).toHaveLength(1);
         expect(tautan[0]?.getAttribute('href')).toBe(BuatUrlDrafProduksi(roti, '2026-10-16'));
         expect(BuatUrlDrafProduksi(roti, '2026-10-16')).toBe(
@@ -88,7 +88,7 @@ describe('tab Rencana produksi di laporan stok', () => {
 
         TambahPropsHalamanUji({ Akses: { Pemilik: false, Izin: ['persediaan.lihat'] } });
         RenderUji(<HalamanLaporanStok {...props} />);
-        expect(screen.queryByRole('link', { name: 'Buat draf produksi' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Siapkan draf produksi' })).toBeNull();
         expect(screen.getAllByText('8 pcs').length).toBeGreaterThan(0);
     });
 });

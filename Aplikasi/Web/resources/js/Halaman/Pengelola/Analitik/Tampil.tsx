@@ -196,7 +196,7 @@ export default function HalamanAnalitikPlatform({
                         sumber={{ mode: 'lokal', data: Funnel.Tahap }}
                         ambilIdBaris={(b) => b.Kunci}
                         cari={false}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada tenant.' }}
+                        kosong={{ judul: 'Belum ada tenant.' }}
                     />
                     <h2 className="text-subjudul font-semibold text-teks-utama">Funnel per sektor</h2>
                     <TabelData
@@ -207,7 +207,7 @@ export default function HalamanAnalitikPlatform({
                         ambilIdBaris={(b) => b.Kunci}
                         urutBawaan="-Daftar"
                         cari={false}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada tenant pada periode ini.' }}
+                        kosong={{ judul: 'Belum ada tenant pada periode ini.' }}
                     />
                 </TabsContent>
 
@@ -224,7 +224,7 @@ export default function HalamanAnalitikPlatform({
                         sumber={{ mode: 'lokal', data: Adopsi.Baris }}
                         ambilIdBaris={(b) => b.Kunci}
                         cari={false}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada tenant yang menjual dalam 30 hari terakhir.' }}
+                        kosong={{ judul: 'Belum ada tenant yang menjual dalam 30 hari terakhir.' }}
                     />
                 </TabsContent>
 
@@ -240,7 +240,7 @@ export default function HalamanAnalitikPlatform({
                         sumber={{ mode: 'lokal', data: Retensi.Baris }}
                         ambilIdBaris={(b) => b.Kunci}
                         cari={false}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada kohort.' }}
+                        kosong={{ judul: 'Belum ada kohort.' }}
                     />
                 </TabsContent>
             </Tabs>

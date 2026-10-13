@@ -5,6 +5,7 @@ export const daftarTab = [
     { label: 'Pengaturan', href: '/situs/pengaturan' },
     { label: 'Gambar', href: '/situs/gambar' },
     { label: 'Artikel', href: '/situs/artikel' },
+    { label: 'Bantuan', href: '/situs/bantuan' },
     { label: 'Prospek', href: '/situs/prospek' },
 ];
 
