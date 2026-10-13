@@ -177,37 +177,40 @@ export default function TataLetakSitus({ judul, children, pratinjau = false }: P
                                         Navigasi situs {situs.NamaSitus}
                                     </SheetDescription>
                                 </SheetHeader>
-                                <nav
-                                    aria-label="Menu utama"
-                                    className="flex flex-col gap-1 px-4"
-                                    onClick={(p) => {
-                                        // Tutup menu setelah memilih tautan (navigasi Inertia tidak memuat ulang halaman).
-                                        if ((p.target as HTMLElement).closest('a')) {
-                                            AturMenuTerbuka(false);
-                                        }
-                                    }}
-                                >
-                                    {situs.Menu.map((m) =>
-                                        m.Solusi ? (
-                                            <MenuSolusiSeluler
-                                                key={`${m.Label}-${m.Tautan}`}
-                                                butir={m}
-                                                aktif={jalurKini.startsWith('/solusi')}
-                                            />
-                                        ) : (
-                                            <TautanSitus
-                                                key={`${m.Label}-${m.Tautan}`}
-                                                href={m.Tautan}
-                                                className={`flex min-h-12 items-center rounded-kontrol px-3 text-subjudul font-medium hover:bg-permukaan-sorot ${
-                                                    CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
-                                                }`}
-                                            >
-                                                {m.Label}
-                                            </TautanSitus>
-                                        ),
-                                    )}
-                                </nav>
-                                <div className="mt-4 flex flex-col gap-2 border-t border-garis p-4">
+                                {/* Daftar menu bisa panjang (Solusi dibuka): hanya area ini yang digulir, tombol tetap di bawah. */}
+                                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                                    <nav
+                                        aria-label="Menu utama"
+                                        className="flex flex-col gap-1 px-4"
+                                        onClick={(p) => {
+                                            // Tutup menu setelah memilih tautan (navigasi Inertia tidak memuat ulang halaman).
+                                            if ((p.target as HTMLElement).closest('a')) {
+                                                AturMenuTerbuka(false);
+                                            }
+                                        }}
+                                    >
+                                        {situs.Menu.map((m) =>
+                                            m.Solusi ? (
+                                                <MenuSolusiSeluler
+                                                    key={`${m.Label}-${m.Tautan}`}
+                                                    butir={m}
+                                                    aktif={jalurKini.startsWith('/solusi')}
+                                                />
+                                            ) : (
+                                                <TautanSitus
+                                                    key={`${m.Label}-${m.Tautan}`}
+                                                    href={m.Tautan}
+                                                    className={`flex min-h-12 items-center rounded-kontrol px-3 text-subjudul font-medium hover:bg-permukaan-sorot ${
+                                                        CekAktif(m.Tautan, jalurKini) ? 'text-brand' : 'text-teks-utama'
+                                                    }`}
+                                                >
+                                                    {m.Label}
+                                                </TautanSitus>
+                                            ),
+                                        )}
+                                    </nav>
+                                </div>
+                                <div className="flex shrink-0 flex-col gap-2 border-t border-garis p-4 tepi-bawah-aman">
                                     <TombolSitus href={situs.TombolMasuk.Tautan} varian="kedua">
                                         {situs.TombolMasuk.Label}
                                     </TombolSitus>

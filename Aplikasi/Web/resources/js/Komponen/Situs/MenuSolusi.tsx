@@ -139,7 +139,7 @@ export function MenuSolusiDesktop({ butir, aktif, jalurKini }: PropsDesktop) {
             <div
                 id={idPanel}
                 hidden={!terbuka}
-                className="absolute inset-x-0 top-full border-y border-garis bg-permukaan"
+                className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain border-y border-garis bg-permukaan"
             >
                 <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-4">
                     {(butir.Solusi ?? []).map((kelompok) => (

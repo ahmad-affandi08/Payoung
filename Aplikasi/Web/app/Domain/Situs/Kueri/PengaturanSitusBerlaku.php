@@ -59,6 +59,8 @@ final class PengaturanSitusBerlaku
                 // D-91: `@solusi` menjadi dropdown sektor (daftar dari template sektor aktif).
                 ['Label' => 'Solusi', 'Tautan' => '@solusi'],
                 ['Label' => 'Harga', 'Tautan' => '/harga'],
+                ['Label' => 'Blog', 'Tautan' => '/blog'],
+                ['Label' => 'Bantuan', 'Tautan' => '/pusat-bantuan'],
                 ['Label' => 'Kontak', 'Tautan' => '/kontak'],
             ],
             'MenuKaki' => [
@@ -66,6 +68,7 @@ final class PengaturanSitusBerlaku
                     ['Label' => 'Fitur', 'Tautan' => '/fitur'],
                     ['Label' => 'Harga', 'Tautan' => '/harga'],
                     ['Label' => 'Perangkat kompatibel', 'Tautan' => '/kompatibilitas-perangkat'],
+                    ['Label' => 'Dokumentasi API', 'Tautan' => '/pengembang'],
                 ]],
                 ['Judul' => 'Solusi', 'Tautan' => [
                     ['Label' => 'Kafe & Resto', 'Tautan' => '/solusi/kafe-resto'],
@@ -74,6 +77,9 @@ final class PengaturanSitusBerlaku
                 ]],
                 ['Judul' => 'Perusahaan', 'Tautan' => [
                     ['Label' => 'Tentang kami', 'Tautan' => '/tentang'],
+                    ['Label' => 'Blog', 'Tautan' => '/blog'],
+                    ['Label' => 'Pusat bantuan', 'Tautan' => '/pusat-bantuan'],
+                    ['Label' => 'Status layanan', 'Tautan' => '/status'],
                     ['Label' => 'Kontak', 'Tautan' => '/kontak'],
                     ['Label' => 'Syarat & ketentuan', 'Tautan' => '/legal/syarat-ketentuan'],
                     ['Label' => 'Kebijakan privasi', 'Tautan' => '/legal/kebijakan-privasi'],
