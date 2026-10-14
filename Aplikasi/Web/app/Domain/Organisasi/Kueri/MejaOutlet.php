@@ -7,6 +7,7 @@ namespace App\Domain\Organisasi\Kueri;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Model\AreaMeja;
 use App\Domain\Organisasi\Model\Meja;
+use App\Domain\Organisasi\Model\Outlet;
 
 /**
  * Area & meja satu outlet untuk back-office dan (nanti) paket data aplikasi kasir mode meja (F-10a). Urut: status
@@ -69,6 +70,31 @@ final class MejaOutlet
     }
 
     /**
+     * Reservasi meja (D-145): meja aktif outlet beserta kapasitas dan areanya; null bila tidak ada, outlet lain, atau
+     * diarsipkan.
+     *
+     * @return array{Id: int, Nama: string, Kapasitas: int, IdAreaMeja: int|null}|null
+     */
+    public function CariAktifRinci(int $idOutlet, string $uuid): ?array
+    {
+        $meja = Meja::query()->where('IdOutlet', $idOutlet)->where('Uuid', $uuid)->where('Status', StatusOrganisasi::Aktif->value)->first();
+
+        return $meja === null ? null : ['Id' => $meja->Id, 'Nama' => $meja->Nama, 'Kapasitas' => $meja->Kapasitas, 'IdAreaMeja' => $meja->IdAreaMeja];
+    }
+
+    /**
+     * Reservasi meja (D-145): area aktif outlet; null bila tidak ada, outlet lain, atau diarsipkan.
+     *
+     * @return array{Id: int, Nama: string}|null
+     */
+    public function CariAreaAktif(int $idOutlet, string $uuid): ?array
+    {
+        $area = AreaMeja::query()->where('IdOutlet', $idOutlet)->where('Uuid', $uuid)->where('Status', StatusOrganisasi::Aktif->value)->first();
+
+        return $area === null ? null : ['Id' => $area->Id, 'Nama' => $area->Nama];
+    }
+
+    /**
      * FnB minimum charge (D-144): minimum yang berlaku untuk satu meja = minimum meja, atau minimum areanya bila meja
      * tidak mengaturnya; null bila tidak ada minimum (atau meja tidak dikenal).
      */
@@ -119,5 +145,57 @@ final class MejaOutlet
         }
 
         return $hasil;
+    }
+
+    /**
+     * Uuid & nama area per Id (termasuk yang diarsipkan), mis. untuk daftar reservasi meja.
+     *
+     * @param  list<int>  $id
+     * @return array<int, array{Uuid: string, Nama: string}>
+     */
+    public function AmbilAreaPerId(array $id): array
+    {
+        if ($id === []) {
+            return [];
+        }
+
+        $hasil = [];
+
+        foreach (AreaMeja::query()->whereKey($id)->get(['Id', 'Uuid', 'Nama']) as $a) {
+            $hasil[$a->Id] = ['Uuid' => $a->Uuid, 'Nama' => $a->Nama];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Pilihan meja & area aktif untuk formulir reservasi meja (D-145), lintas outlet yang boleh diakses pelaku.
+     *
+     * @param  list<int>|null  $idOutletBoleh
+     * @return array{Meja: list<array{Uuid: string, Nama: string, Kapasitas: int, UuidOutlet: string, NamaArea: string|null}>, Area: list<array{Uuid: string, Nama: string, UuidOutlet: string}>}
+     */
+    public function AmbilPilihanReservasi(?array $idOutletBoleh): array
+    {
+        $uuidOutlet = Outlet::query()->when($idOutletBoleh !== null, fn ($k) => $k->whereIn('Id', $idOutletBoleh === [] ? [0] : $idOutletBoleh))->pluck('Uuid', 'Id');
+        $area = AreaMeja::query()->whereIn('IdOutlet', $uuidOutlet->keys()->all())->where('Status', StatusOrganisasi::Aktif->value)->orderBy('Urutan')->orderBy('Nama')->get();
+        $namaArea = $area->pluck('Nama', 'Id');
+        $meja = Meja::query()->whereIn('IdOutlet', $uuidOutlet->keys()->all())->where('Status', StatusOrganisasi::Aktif->value)->get()
+            ->sort(fn (Meja $a, Meja $b): int => [$a->IdOutlet, $a->Urutan] <=> [$b->IdOutlet, $b->Urutan] ?: strnatcasecmp($a->Nama, $b->Nama))
+            ->values();
+
+        return [
+            'Meja' => array_values($meja->map(fn (Meja $m): array => [
+                'Uuid' => $m->Uuid,
+                'Nama' => $m->Nama,
+                'Kapasitas' => $m->Kapasitas,
+                'UuidOutlet' => (string) $uuidOutlet->get($m->IdOutlet),
+                'NamaArea' => $m->IdAreaMeja === null ? null : $namaArea->get($m->IdAreaMeja),
+            ])->all()),
+            'Area' => array_values($area->map(fn (AreaMeja $a): array => [
+                'Uuid' => $a->Uuid,
+                'Nama' => $a->Nama,
+                'UuidOutlet' => (string) $uuidOutlet->get($a->IdOutlet),
+            ])->all()),
+        ];
     }
 }

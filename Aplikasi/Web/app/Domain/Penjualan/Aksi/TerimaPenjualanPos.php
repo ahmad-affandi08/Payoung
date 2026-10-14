@@ -38,6 +38,7 @@ use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPoinPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatSesiPenjualan;
 use App\Domain\Pemenuhan\Aksi\KirimKeDapur;
+use App\Domain\Pemenuhan\Aksi\PakaiUangMukaReservasiMeja;
 use App\Domain\Pemenuhan\Aksi\SelesaikanReservasiPenjualan;
 use App\Domain\Pemenuhan\Data\DataBarisKirimDapur;
 use App\Domain\Pemenuhan\Data\DataKirimDapur;
@@ -180,6 +181,7 @@ final class TerimaPenjualanPos
         private readonly PenutupUangMukaPesananOnline $penutupUangMukaOnline,
         private readonly PemeriksaTukarBarang $pemeriksaTukar,
         private readonly SelesaikanReservasiPenjualan $reservasi,
+        private readonly PakaiUangMukaReservasiMeja $reservasiMeja,
         private readonly PencatatLaundryPenjualan $laundry,
         private readonly PenagihPerintahKerjaPenjualan $perintahKerja,
         private readonly PenautTagihanQrisPenjualan $penautQris,
@@ -439,6 +441,11 @@ final class TerimaPenjualanPos
             if ($bedaOngkir !== null) {
                 $tinjauan['OngkirBerbeda'] = "OngkirBerbeda: {$bedaOngkir}";
             }
+        }
+
+        // FnB reservasi meja + DP (D-145): uang muka reservasi dipakai & reservasi diselesaikan di transaksi yang sama.
+        if ($data->uuidReservasiMeja !== null) {
+            $masalahUangMuka = [...$masalahUangMuka, ...$this->reservasiMeja->Jalankan($data->uuidReservasiMeja, $penjualan->Id, $outlet->idOutlet, $uangMukaDipakai, $kasir->id)];
         }
 
         if ($masalahUangMuka !== []) {
@@ -1100,13 +1107,13 @@ final class TerimaPenjualanPos
             throw new PelanggaranAturanBisnis('PembayaranTidakValid', 'Satu penjualan hanya boleh memakai uang muka satu kali.', 'Pembayaran');
         }
 
-        if ($jumlahUangMuka === 1 && $data->uuidPesananPenjualan === null && $data->uuidPesananOnline === null) {
-            throw new PelanggaranAturanBisnis('UangMukaTanpaPesanan', 'Pembayaran uang muka wajib merujuk pre-order atau pesanan online yang ditagihkan.', 'UuidPesananPenjualan');
+        if ($jumlahUangMuka === 1 && $data->uuidPesananPenjualan === null && $data->uuidPesananOnline === null && $data->uuidReservasiMeja === null) {
+            throw new PelanggaranAturanBisnis('UangMukaTanpaPesanan', 'Pembayaran uang muka wajib merujuk pre-order, pesanan online, atau reservasi meja yang ditagihkan.', 'UuidPesananPenjualan');
         }
 
         // Dua sumber uang muka dalam satu penjualan tidak bisa dibagi adil: `UangMuka` hanya satu baris.
-        if ($data->uuidPesananPenjualan !== null && $data->uuidPesananOnline !== null) {
-            throw new PelanggaranAturanBisnis('UangMukaDuaSumber', 'Satu penjualan tidak bisa memakai uang muka pre-order dan pesanan online sekaligus.', 'UuidPesananOnline');
+        if (count(array_filter([$data->uuidPesananPenjualan, $data->uuidPesananOnline, $data->uuidReservasiMeja], fn (?string $u): bool => $u !== null)) > 1) {
+            throw new PelanggaranAturanBisnis('UangMukaDuaSumber', 'Satu penjualan tidak bisa memakai uang muka dari pre-order, pesanan online, dan reservasi meja sekaligus.', 'UuidPesananOnline');
         }
 
         if ($jumlahTempo > 1) {

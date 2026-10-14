@@ -60,6 +60,8 @@ final readonly class DataPenjualanPos
         public ?string $uuidPesananOnline = null,
         // F-07 mode service bagian 2: reservasi yang dibayar lewat penjualan ini (diselesaikan & ditautkan).
         public ?string $uuidReservasi = null,
+        // FnB reservasi meja + DP (D-145): reservasi meja yang ditagih lewat penjualan ini (memakai uang muka, diselesaikan).
+        public ?string $uuidReservasiMeja = null,
         // Laundry (§9.9): blok tiket laundry `{JenisLayanan, Berat?, Item?, Parfum?, Catatan?, EstimasiSelesaiPada?,
         // NamaPelanggan?, NoHp?}` yang dibuat bersama penjualan ini.
         /** @var array{JenisLayanan: string, Berat?: string|null, Item?: list<array{Nama: string, Jumlah: int}>|null, Parfum?: string|null, Catatan?: string|null, EstimasiSelesaiPada?: string|null, NamaPelanggan?: string|null, NoHp?: string|null}|null */

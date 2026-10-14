@@ -89,6 +89,9 @@ enum JenisDokumenBernomor: string
     /** F-04 (PR): permintaan pembelian dari outlet `PP/{OUTLET}/{YYMM}/{SEQ4}`, sebelum menjadi pesanan pembelian (PO). */
     case PermintaanPembelian = 'PermintaanPembelian';
 
+    /** FnB reservasi meja + DP (§9.1, D-145): `RM/{YYYY}/{MM}/{SEQ4}` per tenant. */
+    case ReservasiMeja = 'ReservasiMeja';
+
     public function AmbilAwalan(): string
     {
         return match ($this) {
@@ -125,6 +128,7 @@ enum JenisDokumenBernomor: string
             self::JurnalUmum => 'JM',
             self::PesananMeja => 'ME',
             self::PermintaanPembelian => 'PP',
+            self::ReservasiMeja => 'RM',
         };
     }
 
@@ -134,7 +138,7 @@ enum JenisDokumenBernomor: string
             self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok, self::JurnalUmum => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
-            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja, self::PesananMeja, self::PermintaanPembelian, self::NotaDebitPembelian => 4,
+            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja, self::PesananMeja, self::PermintaanPembelian, self::NotaDebitPembelian, self::ReservasiMeja => 4,
             self::AntrianKios => 3,
         };
     }

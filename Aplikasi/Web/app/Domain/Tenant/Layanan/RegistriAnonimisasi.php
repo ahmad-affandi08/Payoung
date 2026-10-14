@@ -79,6 +79,7 @@ final class RegistriAnonimisasi
         'Reservasi' => [
             'NamaPelanggan' => 'teks:Pelanggan Terhapus', 'NoHp' => 'teks:terhapus', 'Catatan' => 'null', 'KodeAkses' => 'unik:terhapus-',
         ],
+        'ReservasiMeja' => ['NamaPemesan' => 'teks:Pelanggan Terhapus', 'NoHp' => 'teks:terhapus', 'Catatan' => 'null', 'AlasanBatal' => 'null'],
         'TiketLaundry' => ['NamaPelanggan' => 'teks:Pelanggan Terhapus', 'NoHp' => 'null', 'Catatan' => 'null'],
         'ResepPenjualan' => [
             'NamaDokter' => 'teks:Dokter Terhapus', 'NoSipDokter' => 'null', 'NamaPasien' => 'enkripsi', 'UmurPasien' => 'null',
@@ -139,7 +140,7 @@ final class RegistriAnonimisasi
      * @var list<string>
      */
     public const JENIS_OBJEK_AUDIT_PRIBADI = [
-        'Pelanggan', 'Pemasok', 'Karyawan', 'Kurir', 'Kendaraan', 'PesananOnline', 'PesananSendiri', 'Reservasi', 'TiketLaundry',
+        'Pelanggan', 'Pemasok', 'Karyawan', 'Kurir', 'Kendaraan', 'PesananOnline', 'PesananSendiri', 'Reservasi', 'ReservasiMeja', 'TiketLaundry',
         'ResepPenjualan', 'WajahKaryawan', 'CutiKaryawan', 'Pengguna', 'TenantPengguna', 'PendaftaranMerchantPembayaran', 'MetodePembayaran',
         'UndanganPengguna', 'Tenant', 'Outlet', 'SuratJalan', 'Giro', 'KunjunganSales', 'Absensi', 'Perangkat',
     ];

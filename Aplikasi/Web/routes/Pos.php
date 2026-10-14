@@ -28,6 +28,7 @@ use App\Http\Kontroler\Pos\V1\PesanKeluarKontroler;
 use App\Http\Kontroler\Pos\V1\PesanSendiriKontroler;
 use App\Http\Kontroler\Pos\V1\PromoKontroler;
 use App\Http\Kontroler\Pos\V1\ReservasiKontroler;
+use App\Http\Kontroler\Pos\V1\ReservasiMejaKontroler;
 use App\Http\Kontroler\Pos\V1\RingkasanHarianKontroler;
 use App\Http\Kontroler\Pos\V1\SalesmanKontroler;
 use App\Http\Kontroler\Pos\V1\ShiftKontroler;
@@ -159,6 +160,10 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
         Route::get('/reservasi', [ReservasiKontroler::class, 'Ambil'])->middleware('throttle:pos-30')->name('pos.reservasi');
         Route::post('/reservasi/{reservasi}/hadir', [ReservasiKontroler::class, 'Hadir'])
             ->middleware('throttle:pos-60')->where('reservasi', $ulid)->name('pos.reservasi.hadir');
+        // FnB reservasi meja + DP (D-145): antrian reservasi meja outlet & tamu sudah datang (online).
+        Route::get('/reservasi-meja', [ReservasiMejaKontroler::class, 'Ambil'])->middleware('throttle:pos-30')->name('pos.reservasi-meja');
+        Route::post('/reservasi-meja/{reservasi}/hadir', [ReservasiMejaKontroler::class, 'Hadir'])
+            ->middleware('throttle:pos-60')->where('reservasi', $ulid)->name('pos.reservasi-meja.hadir');
         // Laundry (§9.9): cari cucian aktif outlet & ubah status proses/diambil (online).
         // X4 persetujuan jarak jauh (online): kasir meminta, Aplikasi Owner memutuskan, kasir menunggu status.
         Route::post('/persetujuan/jarak-jauh', [PersetujuanJarakJauhKontroler::class, 'Ajukan'])->middleware('throttle:pos-30')->name('pos.persetujuan.jarak-jauh');

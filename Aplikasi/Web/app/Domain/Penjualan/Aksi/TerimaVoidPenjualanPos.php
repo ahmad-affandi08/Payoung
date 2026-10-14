@@ -22,6 +22,7 @@ use App\Domain\Pelanggan\Layanan\PencatatDepositPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPoinPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatSesiPenjualan;
+use App\Domain\Pemenuhan\Aksi\BatalkanPemakaianUangMukaReservasiMeja;
 use App\Domain\Pemenuhan\Layanan\PencatatLaundryPenjualan;
 use App\Domain\Penjualan\Data\DataVoidPenjualanPos;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
@@ -95,6 +96,7 @@ final class TerimaVoidPenjualanPos
         private readonly PencatatSesiPenjualan $sesi,
         private readonly PencatatLaundryPenjualan $laundry,
         private readonly PenagihPerintahKerjaPenjualan $perintahKerja,
+        private readonly BatalkanPemakaianUangMukaReservasiMeja $reservasiMeja,
         private readonly InfoBatchStok $infoBatch,
         private readonly InfoNomorSeri $infoSeri,
     ) {}
@@ -265,6 +267,11 @@ final class TerimaVoidPenjualanPos
         // F-17 bagian 2: pesanan online yang ditagihkan lewat penjualan ini bisa ditagihkan ulang, uang mukanya utuh
         // kembali (jurnal pembalik sudah mengkredit Uang Muka Pelanggan).
         $this->penutupUangMukaOnline->Batalkan($penjualan->Id, $kasir->id);
+        // FnB reservasi meja + DP (D-145): uang muka reservasi yang dipakai kembali jadi sisa, reservasi dibuka lagi.
+        $this->reservasiMeja->Jalankan($penjualan->Id, Uang::Dari((string) PenjualanPembayaran::query()
+            ->where('IdPenjualan', $penjualan->Id)
+            ->where('JenisMetode', JenisMetodePembayaran::UangMuka->value)
+            ->sum('Jumlah')), $kasir->id);
         // Laundry (§9.9): tiket laundry penjualan yang di-void dibatalkan (kecuali sudah diambil).
         $this->laundry->Batalkan($penjualan->Id, $kasir->id);
         // Bengkel (§9.10): perintah kerja yang ditagih lewat penjualan ini kembali Selesai dan bisa ditagih ulang.

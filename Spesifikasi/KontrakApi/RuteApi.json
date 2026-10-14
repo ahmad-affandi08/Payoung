@@ -578,5 +578,15 @@
         "Metode": "POST",
         "Jalur": "api/pos/v1/bantuan/tiket/{tiket}/balas",
         "Nama": "pos.bantuan.tiket.balas"
+    },
+    "GET api/pos/v1/reservasi-meja": {
+        "Metode": "GET",
+        "Jalur": "api/pos/v1/reservasi-meja",
+        "Nama": "pos.reservasi-meja"
+    },
+    "POST api/pos/v1/reservasi-meja/{reservasi}/hadir": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/reservasi-meja/{reservasi}/hadir",
+        "Nama": "pos.reservasi-meja.hadir"
     }
 }

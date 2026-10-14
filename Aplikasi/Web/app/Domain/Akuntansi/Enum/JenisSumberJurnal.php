@@ -92,6 +92,9 @@ enum JenisSumberJurnal: string
     // FIN-05 (D-131): jurnal umum manual oleh Akuntan/Pemilik (dan pembaliknya).
     case JurnalUmum = 'JurnalUmum';
 
+    // FnB reservasi meja (D-145): uang muka (DP) diterima, dan penyelesaian sisanya (kembali/hangus).
+    case ReservasiMeja = 'ReservasiMeja';
+
     public function AmbilLabel(): string
     {
         return match ($this) {
@@ -135,6 +138,7 @@ enum JenisSumberJurnal: string
             self::NotaDebitPembelian => 'Nota debit pembelian',
             self::Giro => 'Pencairan giro',
             self::JurnalUmum => 'Jurnal umum',
+            self::ReservasiMeja => 'Uang muka reservasi meja',
         };
     }
 
@@ -185,6 +189,7 @@ enum JenisSumberJurnal: string
             self::NotaDebitPembelian => '/kelola/pembelian/nota-debit/'.$uuid,
             self::Giro => '/kelola/akuntansi/giro?cari='.$uuid,
             self::JurnalUmum => '/kelola/akuntansi/jurnal-umum/'.$uuid,
+            self::ReservasiMeja => '/kelola/reservasi-meja?cari='.$uuid,
         };
     }
 }

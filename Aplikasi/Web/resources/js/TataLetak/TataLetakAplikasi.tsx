@@ -80,6 +80,12 @@ type ItemMenu = {
      * gembok paket): "Toko online & pengiriman" menjadi "Pengiriman" untuk Staf Gudang yang hanya berizin `pengiriman.kelola`.
      */
     gantiBilaHanyaAtau?: { label: string; href: string };
+    /**
+     * D-145: bila usaha bersektor `sektor` tetapi bukan `kecuali` (sektor tidak diketahui = tidak berganti), item ini
+     * berubah menjadi halaman lain. "Reservasi" (layanan jasa) menjadi "Reservasi meja" untuk usaha FnB murni, sehingga
+     * grup Penjualan & kasir tetap dalam anggaran tujuh sub-menu.
+     */
+    gantiBilaSektor?: { sektor: string[]; kecuali: string[]; label: string; href: string };
     ikon?: NamaIkonNavigasi;
     fitur?: string;
     pemisah?: boolean;
@@ -283,7 +289,14 @@ const menuPenjualan: ItemMenu[] = [
     // F-12 bagian 2: pre-order & uang muka.
     { label: 'Pre-order', href: '/kelola/pre-order', izin: IzinTenant.LaporanPenjualanLihat },
     // F-07 mode service: reservasi layanan jasa per staf.
-    { label: 'Reservasi', href: '/kelola/reservasi', izin: IzinTenant.ReservasiKelola, sektor: ['SVC'] },
+    // D-145: usaha FnB murni melihat "Reservasi meja" (halaman lain, izin yang sama).
+    {
+        label: 'Reservasi',
+        href: '/kelola/reservasi',
+        izin: IzinTenant.ReservasiKelola,
+        sektor: ['SVC', 'FNB'],
+        gantiBilaSektor: { sektor: ['FNB'], kecuali: ['SVC'], label: 'Reservasi meja', href: '/kelola/reservasi-meja' },
+    },
     { label: 'Laundry', href: '/kelola/laundry', izin: IzinTenant.LaundryKelola, sektor: ['SVC-LDR'] },
 ];
 
@@ -708,8 +721,19 @@ export { CekSesuaiSektor };
  * Menu utama yang boleh dilihat pemegang akses ini beserta sub-menunya; grup tanpa sub-menu boleh disembunyikan.
  * Audit #33: `sektorOutlet` menyaring menu khusus sektor; `sederhana` menyembunyikan menu `lanjutan`.
  */
-function PilihTampilanItem(akses: PropsBersamaAplikasi['Akses']) {
+function PilihTampilanItem(akses: PropsBersamaAplikasi['Akses'], sektorOutlet: string[]) {
     return (menu: ItemMenu): ItemMenu => {
+        const gantiSektor = menu.gantiBilaSektor;
+
+        if (
+            gantiSektor !== undefined &&
+            sektorOutlet.length > 0 &&
+            CekSesuaiSektor({ sektor: gantiSektor.sektor }, sektorOutlet) &&
+            !CekSesuaiSektor({ sektor: gantiSektor.kecuali }, sektorOutlet)
+        ) {
+            return { ...menu, label: gantiSektor.label, href: gantiSektor.href };
+        }
+
         if (menu.gantiBilaHanyaAtau === undefined || menu.izin === null || PunyaIzinTenant(akses, menu.izin)) {
             return menu;
         }
@@ -741,7 +765,7 @@ export function SaringMenuTerlihat(
             return [{ menu, labelSub: null, sub: [] }];
         }
 
-        const sub = menu.sub.filter(CekBoleh).map(PilihTampilanItem(akses));
+        const sub = menu.sub.filter(CekBoleh).map(PilihTampilanItem(akses, opsi.sektorOutlet ?? []));
         const pertama = sub[0];
 
         return pertama === undefined ? [] : [{ menu: { ...menu, href: pertama.href }, labelSub: menu.labelSub, sub }];

@@ -40,7 +40,7 @@ use Illuminate\Validation\Rule;
  * HargaTermasukPajak|null, KodePajak [..]|null, DiskonManual {Persen|Jumlah}|null, Catatan}], DiskonManualPesanan
  * {Persen|Jumlah}|null, UuidPenyetujuDiskon|null, Pembayaran [{Uuid, UuidMetodePembayaran, Jumlah, Referensi|null}],
  * Ringkasan {Subtotal, TotalPajak, Pembulatan, TotalAkhir, Kembalian}, Catatan, NomorAntrian?, NamaPemesan? (v3.52), UuidPesananTerbuka?, KirimDapur?, UuidPelanggan?,
- * TukarPoin {Poin, Nilai}|null, Promo [{UuidPromo, Kode, DiskonBaris [{UuidBaris, Jumlah}], DiskonPesanan}]?, Voucher?, UuidPesananPenjualan?, UuidPesananOnline?, UuidReservasi?, Laundry?, UuidReturTukar?, UuidPerintahKerja?, Resep?, UuidApoteker?}`. K-11: `UuidReturTukar` = retur tukar
+ * TukarPoin {Poin, Nilai}|null, Promo [{UuidPromo, Kode, DiskonBaris [{UuidBaris, Jumlah}], DiskonPesanan}]?, Voucher?, UuidPesananPenjualan?, UuidPesananOnline?, UuidReservasi?, UuidReservasiMeja?, Laundry?, UuidReturTukar?, UuidPerintahKerja?, Resep?, UuidApoteker?}`. K-11: `UuidReturTukar` = retur tukar
  * barang yang nilainya membayar penjualan ini (wajib bila ada pembayaran metode `Tukar`). Bengkel (§9.10):
  * `UuidPerintahKerja` = perintah kerja yang ditagih lewat penjualan ini (ditandai Ditagih; mekaniknya jadi staf baris).
  * Apotek (§9.5): `Resep {NomorResep, TanggalResep (YYYY-MM-DD), NamaDokter, NoSipDokter?, NamaPasien, UmurPasien?,
@@ -174,6 +174,7 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
             'UuidPesananPenjualan' => ['sometimes', 'nullable', 'string', 'ulid'],
             'UuidPesananOnline' => ['sometimes', 'nullable', 'string', 'ulid'],
             'UuidReservasi' => ['sometimes', 'nullable', 'string', 'ulid'],
+            'UuidReservasiMeja' => ['sometimes', 'nullable', 'string', 'ulid'],
             'UuidReturTukar' => ['sometimes', 'nullable', 'string', 'ulid'],
             'UuidPerintahKerja' => ['sometimes', 'nullable', 'string', 'ulid'],
             'UuidApoteker' => ['sometimes', 'nullable', 'string', 'ulid'],
@@ -259,6 +260,7 @@ final class PenanganSinkronBuatPenjualan implements PenanganItemSinkron
             uuidPesananPenjualan: is_string($valid['UuidPesananPenjualan'] ?? null) ? strtoupper($valid['UuidPesananPenjualan']) : null,
             uuidPesananOnline: is_string($valid['UuidPesananOnline'] ?? null) ? strtoupper($valid['UuidPesananOnline']) : null,
             uuidReservasi: is_string($valid['UuidReservasi'] ?? null) ? strtoupper($valid['UuidReservasi']) : null,
+            uuidReservasiMeja: is_string($valid['UuidReservasiMeja'] ?? null) ? strtoupper($valid['UuidReservasiMeja']) : null,
             laundry: is_array($valid['Laundry'] ?? null) ? self::AmbilLaundry($valid['Laundry']) : null,
             biayaKirim: is_string($valid['BiayaKirim'] ?? null) ? Uang::Dari($valid['BiayaKirim']) : null,
             diskonKirim: is_string($valid['DiskonKirim'] ?? null) ? Uang::Dari($valid['DiskonKirim']) : null,

@@ -227,6 +227,17 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(Label(kafe)).not.toContain('Grosir');
         expect(SubPenjualan(kafe)).not.toContain('Laundry');
         expect(SubPenjualan(kafe)).not.toContain('Reservasi');
+        // D-145: usaha FnB murni melihat Reservasi meja (halaman lain); salon tetap Reservasi; FnB + salon tetap Reservasi.
+        expect(SubPenjualan(kafe)).toContain('Reservasi meja');
+        const HrefReservasi = (menu: ReturnType<typeof SaringMenuTerlihat>) =>
+            menu
+                .find(({ menu: m }) => m.label === 'Penjualan & kasir')
+                ?.sub.find((m) => m.label.startsWith('Reservasi'))?.href;
+        expect(HrefReservasi(kafe)).toBe('/kelola/reservasi-meja');
+        expect(HrefReservasi(SaringMenuTerlihat(akses, { sektorOutlet: ['SVC-SLN'] }))).toBe('/kelola/reservasi');
+        expect(HrefReservasi(SaringMenuTerlihat(akses, { sektorOutlet: ['FNB-CAF', 'SVC-SLN'] }))).toBe(
+            '/kelola/reservasi',
+        );
         // Distributor + laundry: grosir & laundry tampil.
         const campur = SaringMenuTerlihat(akses, { sektorOutlet: ['WHS-DST', 'SVC-LDR'] });
         expect(Label(campur)).toContain('Grosir');
