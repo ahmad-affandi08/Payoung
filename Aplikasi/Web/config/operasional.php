@@ -33,6 +33,9 @@ return [
     // PGL-20: perangkat yang outbox-nya tidak kosong lebih lama dari ini (jam) dianggap macet.
     'BatasOutboxMacetJam' => 2,
 
+    // PGL-20 lanjutan: rute API dengan permintaan di bawah ini (dalam jendela) tidak diperingkat endpoint terlambat.
+    'MinimumPermintaanRute' => 20,
+
     // Jumlah job gagal terbaru yang ditampilkan di dasbor.
     'JumlahTugasGagalDitampilkan' => 50,
 ];

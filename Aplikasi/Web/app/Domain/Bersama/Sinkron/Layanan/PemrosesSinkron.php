@@ -42,6 +42,7 @@ final class PemrosesSinkron
         private readonly Container $container,
         private readonly PenjagaAsalItemSinkron $penjagaAsal,
         private readonly PencatatAudit $audit,
+        private readonly PencatatGalatSinkron $pencatatGalat,
     ) {}
 
     /**
@@ -105,6 +106,9 @@ final class PemrosesSinkron
 
             return new HasilItemSinkron($item['Uuid'], $item['Jenis'], $status);
         } catch (PelanggaranAturanBisnis $galat) {
+            // PGL-20: hitung penolakan per jenis item dan kode galat untuk dasbor operasional (hanya penghitung cache).
+            $this->pencatatGalat->Catat($item['Jenis'], $galat->kode);
+
             return new HasilItemSinkron($item['Uuid'], $item['Jenis'], StatusItemSinkron::Ditolak, [
                 'Kode' => $galat->kode,
                 'Pesan' => $galat->getMessage(),

@@ -341,6 +341,8 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 Route::post('/operasional/backup', [OperasionalKontroler::class, 'CatatBackup'])->name('pengelola.operasional.backup.catat');
                 // PGL-20: nomor WhatsApp penerima alert kritis.
                 Route::post('/operasional/nomor-wa-alert', [OperasionalKontroler::class, 'AturNomorWaAlert'])->name('pengelola.operasional.nomor-wa-alert.atur');
+                // PGL-20 lanjutan: alamat dasar runbook yang ditautkan dari tiap alert.
+                Route::post('/operasional/tautan-runbook', [OperasionalKontroler::class, 'AturTautanRunbook'])->name('pengelola.operasional.tautan-runbook.atur');
                 Route::post('/operasional/insiden', [InsidenKontroler::class, 'Buka'])->name('pengelola.operasional.insiden.buka');
                 Route::post('/operasional/insiden/{insiden}/pembaruan', [InsidenKontroler::class, 'Perbarui'])->name('pengelola.operasional.insiden.perbarui');
                 Route::post('/operasional/insiden/{insiden}/umumkan', [InsidenKontroler::class, 'Umumkan'])->name('pengelola.operasional.insiden.umumkan');

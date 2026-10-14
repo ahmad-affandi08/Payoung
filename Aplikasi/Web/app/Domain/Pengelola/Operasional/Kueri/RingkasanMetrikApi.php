@@ -71,7 +71,7 @@ final class RingkasanMetrikApi
      * @param  array<string, int>  $t
      * @return array{Ms: int|null, Lebih: bool}
      */
-    private static function HitungP95(array $t, int $jumlah): array
+    public static function HitungP95(array $t, int $jumlah): array
     {
         // Permintaan ke-95 persen dari bawah: ceil(0,95 × jumlah) dihitung dengan bilangan bulat.
         $target = intdiv($jumlah * 95 + 99, 100);

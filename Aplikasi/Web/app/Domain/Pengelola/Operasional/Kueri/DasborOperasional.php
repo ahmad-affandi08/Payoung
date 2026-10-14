@@ -14,8 +14,9 @@ use Throwable;
 
 /**
  * Isi dasbor operasional dasar (P-11 Fase 0): detak scheduler, antrean, job gagal, backup & uji restore, alert, dan
- * kesehatan server (status integrasi P-05, ukuran database, ruang disk), serta (PGL-20) error rate & p95 API dan outbox
- * macet. Crash-free sessions per versi menyusul bersama pelaporan crash dari aplikasi.
+ * kesehatan server (status integrasi P-05, ukuran database, ruang disk), serta (PGL-20) error rate & p95 API, outbox
+ * macet, rute terlambat, penolakan sinkron terbanyak, dan webhook gagal per tenant. Crash-free sessions per versi menyusul
+ * bersama pelaporan crash dari aplikasi.
  */
 final class DasborOperasional
 {
@@ -26,6 +27,9 @@ final class DasborOperasional
         private readonly RingkasanMetrikApi $metrik,
         private readonly PerangkatOutboxMacet $outboxMacet,
         private readonly PengaturanAlertOperasional $pengaturanAlert,
+        private readonly RuteApiTerlambat $ruteTerlambat,
+        private readonly GalatSinkronTerbanyak $galatSinkron,
+        private readonly WebhookGagalPerTenant $webhookGagal,
     ) {}
 
     /**
@@ -72,7 +76,16 @@ final class DasborOperasional
                 'BatasJam' => (int) config('operasional.BatasOutboxMacetJam'),
                 'Daftar' => $this->outboxMacet->AmbilDaftar(),
             ],
+            // PGL-20 lanjutan: 24 jam terakhir — rute paling lambat, penolakan sinkron terbanyak, webhook keluar gagal.
+            'Lanjutan' => [
+                'JamJendela' => 24,
+                'MinimumPermintaanRute' => (int) config('operasional.MinimumPermintaanRute'),
+                'RuteTerlambat' => $this->ruteTerlambat->Ambil(24),
+                'GalatSinkron' => $this->galatSinkron->Ambil(24),
+                'WebhookGagal' => $this->webhookGagal->Ambil(24),
+            ],
             'AlertWa' => ['Nomor' => $this->pengaturanAlert->NomorWa(), 'Maks' => PengaturanAlertOperasional::MAKS_NOMOR],
+            'Runbook' => ['Tautan' => $this->pengaturanAlert->TautanRunbook()],
             'Alert' => [
                 'Aktif' => $this->AmbilAlert(true),
                 'Riwayat' => $this->AmbilAlert(false),
@@ -131,6 +144,7 @@ final class DasborOperasional
             ->map(fn (AlertOperasional $alert): array => [
                 'Id' => $alert->Id,
                 'Kunci' => $alert->Kunci->value,
+                'Jangkar' => PengaturanAlertOperasional::JangkarRunbook($alert->Kunci->value),
                 'Label' => $alert->Kunci->AmbilLabel(),
                 'Tingkat' => $alert->Tingkat->value,
                 'Pesan' => $alert->Pesan,

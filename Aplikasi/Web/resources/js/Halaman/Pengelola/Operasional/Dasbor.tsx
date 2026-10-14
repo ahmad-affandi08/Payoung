@@ -24,6 +24,11 @@ import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakPengelola from '@/TataLetak/TataLetakPengelola';
 import { IzinPengelola, PunyaIzin, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
 import PemilihTanggalWaktu from '@/Komponen/Tanggal/PemilihTanggalWaktu';
+import PanelObservabilitasLanjutan, {
+    AlamatRunbookAlert,
+    FormTautanRunbook,
+    type DataLanjutan,
+} from '@/Komponen/Pengelola/PanelObservabilitasLanjutan';
 
 type CatatanBackup = {
     Uuid: string;
@@ -40,6 +45,7 @@ type CatatanBackup = {
 
 type Alert = {
     Id: number;
+    Jangkar: string;
     Label: string;
     Tingkat: 'Kritis' | 'Peringatan';
     Pesan: string;
@@ -102,7 +108,9 @@ type Dasbor = {
         MinimumPermintaan: number;
     };
     OutboxMacet: { BatasJam: number; Daftar: PerangkatMacet[] };
+    Lanjutan: DataLanjutan;
     AlertWa: { Nomor: string[]; Maks: number };
+    Runbook: { Tautan: string | null };
     Alert: { Aktif: Alert[]; Riwayat: Alert[] };
     Kesehatan: {
         PeringatanIntegrasi: string[];
@@ -384,7 +392,19 @@ const kolomBackup: KolomTabel<CatatanBackup>[] = [
 export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
     const { props } = usePage<PropsBersamaPengelola>();
     const bolehKelola = PunyaIzin(props.Pengguna, IzinPengelola.OperasionalKelola);
-    const { Penjadwal, Antrean, TugasGagal, Backup, Alert, Kesehatan, Metrik, OutboxMacet, AlertWa } = Dasbor;
+    const {
+        Penjadwal,
+        Antrean,
+        TugasGagal,
+        Backup,
+        Alert,
+        Kesehatan,
+        Metrik,
+        OutboxMacet,
+        AlertWa,
+        Lanjutan,
+        Runbook,
+    } = Dasbor;
     const kolomMetrik = BuatKolomMetrik(Metrik);
 
     return (
@@ -435,7 +455,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                 {Alert.Aktif.length === 0 ? (
                     <p className="text-isi text-teks-sekunder">Tidak ada alert aktif.</p>
                 ) : (
-                    <DaftarAlertAktif alert={Alert.Aktif} />
+                    <DaftarAlertAktif alert={Alert.Aktif} runbook={Runbook.Tautan} />
                 )}
             </Bagian>
 
@@ -492,6 +512,8 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     kosong={{ ilustrasi: true, judul: 'Tidak ada perangkat dengan outbox macet.' }}
                 />
             </Bagian>
+
+            <PanelObservabilitasLanjutan data={Lanjutan} />
 
             <Bagian judul={`Job gagal (${String(TugasGagal.Total)})`}>
                 <TabelData
@@ -623,11 +645,24 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                 )}
             </Bagian>
 
+            <Bagian judul="Runbook alert">
+                <p className="max-w-3xl text-label text-teks-sekunder">
+                    Alamat dokumen runbook Teknis (https://). Tiap alert menautkan jangkar sesuai namanya, misalnya{' '}
+                    <code>#penjadwal-berhenti</code>. Panduan isi runbook ada di{' '}
+                    <code>Panduan/RunbookOperasional.md</code>. Kosongkan untuk menyembunyikan tautan.
+                </p>
+                {bolehKelola ? (
+                    <FormTautanRunbook tautan={Runbook.Tautan} />
+                ) : (
+                    <p className="text-isi break-all text-teks-utama">{Runbook.Tautan ?? 'Belum diatur.'}</p>
+                )}
+            </Bagian>
+
             <Bagian judul="Riwayat alert">
                 {Alert.Riwayat.length === 0 ? (
                     <p className="text-isi text-teks-sekunder">Belum ada alert yang selesai.</p>
                 ) : (
-                    <DaftarAlert alert={Alert.Riwayat} />
+                    <DaftarAlert alert={Alert.Riwayat} runbook={Runbook.Tautan} />
                 )}
             </Bagian>
         </TataLetakPengelola>
@@ -702,7 +737,19 @@ function TeksEmailAlert({ baris }: { baris: Alert }) {
 }
 
 /** Alert yang masih terbuka: kotak Alert per kejadian, tingkat selalu tertulis (tidak hanya warna). */
-function DaftarAlertAktif({ alert }: { alert: Alert[] }) {
+function TautanRunbookAlert({ runbook, baris }: { runbook: string | null; baris: Alert }) {
+    const alamat = AlamatRunbookAlert(runbook, baris.Jangkar);
+
+    return alamat === null ? null : (
+        <Button asChild variant="link" className="h-auto p-0 text-label font-semibold">
+            <a href={alamat} target="_blank" rel="noreferrer">
+                Runbook
+            </a>
+        </Button>
+    );
+}
+
+function DaftarAlertAktif({ alert, runbook }: { alert: Alert[]; runbook: string | null }) {
     return (
         <ul className="flex flex-col gap-2">
             {alert.map((baris) => (
@@ -726,6 +773,7 @@ function DaftarAlertAktif({ alert }: { alert: Alert[] }) {
                             <p className="text-keterangan text-teks-sekunder">
                                 <TeksEmailAlert baris={baris} />
                             </p>
+                            <TautanRunbookAlert runbook={runbook} baris={baris} />
                         </IsiPeringatan>
                     </KotakPeringatan>
                 </li>
@@ -734,7 +782,7 @@ function DaftarAlertAktif({ alert }: { alert: Alert[] }) {
     );
 }
 
-function DaftarAlert({ alert }: { alert: Alert[] }) {
+function DaftarAlert({ alert, runbook }: { alert: Alert[]; runbook: string | null }) {
     return (
         <ul className="flex flex-col gap-2">
             {alert.map((baris, indeks) => (
@@ -754,6 +802,7 @@ function DaftarAlert({ alert }: { alert: Alert[] }) {
                     <p className="text-keterangan text-teks-sekunder">
                         <TeksEmailAlert baris={baris} />
                     </p>
+                    <TautanRunbookAlert runbook={runbook} baris={baris} />
                 </li>
             ))}
         </ul>

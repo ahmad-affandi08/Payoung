@@ -28,7 +28,7 @@ final class CatatMetrikApi
 
         // Edisi Lisensi tidak punya konsol/dasbor operasional (penyiramnya tidak dijadwalkan), jadi tidak dicatat.
         if ($kelompok !== null && ! EdisiAplikasi::CekLisensi()) {
-            $this->pencatat->Catat($kelompok, $respons->getStatusCode(), intdiv(hrtime(true) - $mulai + 500_000, 1_000_000));
+            $this->pencatat->Catat($kelompok, $respons->getStatusCode(), intdiv(hrtime(true) - $mulai + 500_000, 1_000_000), namaRute: $request->route()?->getName());
         }
 
         return $respons;
