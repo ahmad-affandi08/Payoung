@@ -37,6 +37,7 @@ import 'Jual/PanelKeranjang.dart';
 import 'Jual/PanelLaundry.dart';
 import 'Jual/PanelRacikan.dart';
 import 'Jual/PanelPelanggan.dart';
+import 'Jual/PanelPesananGrosir.dart';
 import 'Jual/PanelPreOrder.dart';
 import 'Jual/PanelTertahan.dart';
 import 'Jual/JalurKameraPindai.dart';
@@ -57,6 +58,8 @@ enum _JenisPanel {
   Pelanggan,
   PreOrder,
   PreOrderSelesai,
+  PesananGrosir,
+  PesananGrosirSelesai,
   Laundry,
   Racikan,
 }
@@ -171,6 +174,8 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     _JenisPanel.Selesai,
     _JenisPanel.PreOrder,
     _JenisPanel.PreOrderSelesai,
+    _JenisPanel.PesananGrosir,
+    _JenisPanel.PesananGrosirSelesai,
   };
 
   _JenisPanel? _panel;
@@ -183,6 +188,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
 
   /// F-12 bagian 2: pre-order yang baru tersimpan.
   PreOrderTersimpan? _preOrderSelesai;
+  PesananGrosirTersimpan? _pesananGrosirSelesai;
   ({String teks, bool galat})? _pesan;
   bool _memperbarui = false;
 
@@ -525,7 +531,10 @@ class _LayarJualState extends ConsumerState<LayarJual> {
   /// Audit kemudahan pakai: memindai atau mengetuk produk saat layar "Pembayaran berhasil" tampil langsung memulai
   /// transaksi baru (tanpa ketukan "Transaksi baru"), kecuali selesai menagih pesanan meja (kembali ke denah meja).
   void _TutupLayarSelesai() {
-    if ((_panel == _JenisPanel.Selesai || _panel == _JenisPanel.PreOrderSelesai) && !_selesaiPesanan) {
+    if ((_panel == _JenisPanel.Selesai ||
+            _panel == _JenisPanel.PreOrderSelesai ||
+            _panel == _JenisPanel.PesananGrosirSelesai) &&
+        !_selesaiPesanan) {
       _TransaksiBaru();
     }
   }
@@ -2050,6 +2059,10 @@ class _LayarJualState extends ConsumerState<LayarJual> {
           key: _kunciBayar,
           kasir: widget.kasir,
           saatPreOrder: _uuidKunciBayar == null ? () => setState(() => _panel = _JenisPanel.PreOrder) : null,
+          // POS-05: SO cepat hanya di outlet bermode kasir Grosir (kasir lain membuat pesanan grosir dari back-office).
+          saatPesananGrosir: _uuidKunciBayar == null && ref.watch(penyediaModeKasir).value == 'Grosir'
+              ? () => setState(() => _panel = _JenisPanel.PesananGrosir)
+              : null,
           saatSelesai: (hasil) {
             final pesanan = _uuidKunciBayar != null;
             _LepasKunciBayar(keServer: false);
@@ -2085,6 +2098,23 @@ class _LayarJualState extends ConsumerState<LayarJual> {
             ? const SizedBox.shrink()
             : TampilanPreOrderSelesai(hasil: _preOrderSelesai!, saatTransaksiBaru: _TransaksiBaru),
       ),
+      _JenisPanel.PesananGrosir => (
+        judul: 'Pesanan grosir',
+        isi: PanelPesananGrosir(
+          kasir: widget.kasir,
+          saatKembali: () => setState(() => _panel = _JenisPanel.Bayar),
+          saatSelesai: (hasil) => setState(() {
+            _pesananGrosirSelesai = hasil;
+            _panel = _JenisPanel.PesananGrosirSelesai;
+          }),
+        ),
+      ),
+      _JenisPanel.PesananGrosirSelesai => (
+        judul: 'Pesanan grosir tersimpan',
+        isi: _pesananGrosirSelesai == null
+            ? const SizedBox.shrink()
+            : TampilanPesananGrosirSelesai(hasil: _pesananGrosirSelesai!, saatTransaksiBaru: _TransaksiBaru),
+      ),
       _JenisPanel.Pelanggan => (judul: 'Pelanggan', isi: PanelPelanggan(kasir: widget.kasir, saatSelesai: _TutupPanel)),
       _JenisPanel.Laundry => (judul: 'Tiket laundry', isi: PanelLaundry(saatSelesai: _TutupPanel)),
       _JenisPanel.Racikan => (judul: 'Racikan obat', isi: PanelRacikan(saatSelesai: _TutupPanel)),
@@ -2096,11 +2126,14 @@ class _LayarJualState extends ConsumerState<LayarJual> {
   Widget _BangunHalamanPembayaran(BuildContext context, ({String judul, Widget isi}) halaman) {
     final warna = TokenWarna.AmbilDari(context);
     final teks = Theme.of(context).textTheme;
-    final selesai = _panel == _JenisPanel.Selesai || _panel == _JenisPanel.PreOrderSelesai;
+    final selesai =
+        _panel == _JenisPanel.Selesai ||
+        _panel == _JenisPanel.PreOrderSelesai ||
+        _panel == _JenisPanel.PesananGrosirSelesai;
     final kembali = switch (_panel) {
-      // Pre-order dicapai dari halaman Bayar, jadi kembalinya ke sana, bukan ke keranjang.
-      _JenisPanel.PreOrder => () => setState(() => _panel = _JenisPanel.Bayar),
-      _JenisPanel.Selesai || _JenisPanel.PreOrderSelesai => _TransaksiBaru,
+      // Pre-order dan pesanan grosir dicapai dari halaman Bayar, jadi kembalinya ke sana, bukan ke keranjang.
+      _JenisPanel.PreOrder || _JenisPanel.PesananGrosir => () => setState(() => _panel = _JenisPanel.Bayar),
+      _JenisPanel.Selesai || _JenisPanel.PreOrderSelesai || _JenisPanel.PesananGrosirSelesai => _TransaksiBaru,
       _ => _TutupPanel,
     };
 

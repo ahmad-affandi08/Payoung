@@ -76,7 +76,13 @@ class BagiTagihan {
 /// ada piutang lewat jatuh tempo (BR-12.1) butuh PIN penyetuju. F-16d: Deposit hanya bila pelanggan dipilih dan paket
 /// berlaku; saldo dibaca online saat dipilih dan jumlah tidak boleh melebihinya. Setelah tersimpan memanggil [saatSelesai].
 class PanelBayar extends ConsumerStatefulWidget {
-  const PanelBayar({super.key, required this.kasir, required this.saatSelesai, this.saatPreOrder});
+  const PanelBayar({
+    super.key,
+    required this.kasir,
+    required this.saatSelesai,
+    this.saatPreOrder,
+    this.saatPesananGrosir,
+  });
 
   /// Lebar area kerja minimal untuk dua kolom (ringkasan & metode | rincian metode & papan angka).
   static const double lebarDuaKolom = 960;
@@ -88,6 +94,9 @@ class PanelBayar extends ConsumerStatefulWidget {
 
   /// F-12 bagian 2: jadikan keranjang ber-pelanggan sebagai pre-order dengan uang muka. Null = tidak ditampilkan.
   final VoidCallback? saatPreOrder;
+
+  /// POS-05: jadikan keranjang ber-pelanggan pesanan grosir (SO cepat, tanpa bayar). Null = tidak ditampilkan.
+  final VoidCallback? saatPesananGrosir;
 
   @override
   ConsumerState<PanelBayar> createState() => PanelBayarState();
@@ -1273,6 +1282,24 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
             onPressed: _sibuk ? null : widget.saatPreOrder,
             icon: const Icon(Icons.event_available_outlined),
             label: const Text('Jadikan pre-order (bayar DP)'),
+          ),
+        ),
+      ],
+      if (widget.saatPesananGrosir != null &&
+          keranjang.pelanggan != null &&
+          keranjang.praPesan == null &&
+          keranjang.reservasi == null &&
+          keranjang.perintahKerja == null &&
+          keranjang.laundry == null &&
+          keranjang.pesananMeja == null &&
+          _entri.isEmpty) ...[
+        const SizedBox(height: TokenJarak.jarak8),
+        SizedBox(
+          height: TokenJarak.targetSentuh,
+          child: OutlinedButton.icon(
+            onPressed: _sibuk ? null : widget.saatPesananGrosir,
+            icon: const Icon(Icons.local_shipping_outlined),
+            label: const Text('Jadikan pesanan grosir (SO)'),
           ),
         ),
       ],

@@ -8,9 +8,11 @@ import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Data/RepositoriPenjualan.dart';
 import 'package:kasir/Domain/GalatKasir.dart';
 import 'package:kasir/Domain/Katalog/KatalogLokal.dart';
+import 'package:kasir/Domain/Penjualan/Keranjang.dart';
 import 'package:kasir/Domain/Perangkat/PenentuLokasi.dart';
 import 'package:kasir/Domain/Salesman/LayananSalesman.dart';
 import 'package:kasir/Domain/Sesi/StafLokal.dart';
+import 'package:kasir/Tampilan/Jual/PanelPesananGrosir.dart';
 import 'package:kasir/Tampilan/RuangKerja/ItemNavigasi.dart';
 import 'package:klien_api/KlienApi.dart';
 
@@ -619,6 +621,134 @@ void main() {
         'Sinkron',
         'Pengaturan',
       ]);
+    });
+  });
+  group('SO cepat dari keranjang kasir (POS-05)', () {
+    const toko = PelangganTerpilih(
+      uuid: UuidSalesmanUji.tokoMakmur,
+      nama: 'Toko Kelontong Makmur Jaya Abadi Sentosa',
+      noHpSamar: '0813****0001',
+      kodeTier: 'Grosir',
+      limitKredit: '25000000.00',
+      sisaPiutang: '24000000.00',
+    );
+
+    ItemKeranjang Baris(String uuidProduk, String uuidSatuan, int jumlah, {Uang? hargaSatuan, bool diskon = false}) {
+      final produk = Produk(uuidProduk);
+      final satuan = Satuan(uuidProduk, uuidSatuan);
+      return ItemKeranjang(
+        uuid: 'B$uuidProduk',
+        uuidProduk: uuidProduk,
+        nama: produk.nama,
+        uuidProdukSatuan: satuan.uuid,
+        namaSatuan: satuan.nama,
+        bolehDesimal: satuan.bolehDesimal,
+        jumlah: Kuantitas.DariBulat(jumlah),
+        hargaSatuan: hargaSatuan ?? Uang.DariBulat(9000),
+        diskon: diskon ? DiskonManual.DariJumlah(Uang.DariBulat(1000)) : null,
+      );
+    }
+
+    Keranjang Isi({PelangganTerpilih? pelanggan = toko, List<ItemKeranjang>? baris}) =>
+        Keranjang(baris: baris ?? [Baris(UuidUji.roti, UuidUji.psRotiLusin, 3)], pelanggan: pelanggan);
+
+    test('izin: kasir berizin jual atau salesman boleh; staf tanpa keduanya tidak', () async {
+      final rina = await u.Staf('Rina Wulandari');
+      const gudang = StafLokal(uuid: 'G', nama: 'Staf Gudang', pemilik: false, izin: ['produk.lihat']);
+
+      expect(LayananSalesman.CekBolehBuatSo(rina), isTrue);
+      expect(LayananSalesman.CekBolehBuatSo(dewi), isTrue);
+      expect(LayananSalesman.CekBolehBuatSo(gudang), isFalse);
+      await expectLater(
+        u.salesman.KirimPesananDariKeranjang(keranjang: Isi(), katalog: katalog, staf: gudang),
+        throwsA(isA<GalatKasir>().having((g) => g.kode, 'kode', 'TanpaIzin')),
+      );
+      expect(await u.repositori.HitungJumlahTertunda(), 0);
+    });
+
+    test('alasan penolakan jelas untuk keranjang yang tidak bisa jadi pesanan grosir', () {
+      String? Alasan(Keranjang k) => LayananSalesman.AlasanKeranjangTidakBisaJadiSo(k, katalog);
+
+      expect(Alasan(Isi()), isNull);
+      expect(Alasan(Keranjang(pelanggan: toko)), contains('Keranjang masih kosong'));
+      expect(Alasan(Isi(pelanggan: null)), contains('Pilih pelanggan dulu'));
+      expect(
+        Alasan(Isi(baris: [Baris(UuidUji.roti, UuidUji.psRotiLusin, 3, diskon: true)])),
+        contains('harga dari server'),
+      );
+      expect(
+        Alasan(Keranjang(baris: Isi().baris, pelanggan: toko, biayaKirim: Uang.DariBulat(10000))),
+        contains('ongkir'),
+      );
+      expect(
+        Alasan(Isi(baris: [Baris(UuidUji.susuUht, Produk(UuidUji.susuUht).satuan.single.uuid, 1)])),
+        contains('hanya produk berstok biasa'),
+      );
+    });
+
+    test(
+      'simpan: outbox PesananGrosir.Buat tanpa harga, tanpa kunjungan, plus baris lokal berperkiraan harga',
+      () async {
+        u.jam = DateTime.utc(2026, 9, 25, 3);
+        final rina = await u.Staf('Rina Wulandari');
+        final keranjang = Isi(
+          baris: [Baris(UuidUji.roti, UuidUji.psRotiLusin, 2), Baris(UuidUji.roti, UuidUji.psRotiPcs, 12)],
+        );
+
+        final uuid = await u.salesman.KirimPesananDariKeranjang(
+          keranjang: keranjang,
+          katalog: katalog,
+          staf: rina,
+          catatan: '  Kirim Kamis pagi  ',
+        );
+
+        final outbox = (await u.db.select(u.db.outbox).get()).single;
+        expect(outbox.Jenis, 'PesananGrosir.Buat');
+        expect(outbox.Uuid, uuid);
+        final data = jsonDecode(outbox.Data) as Map<String, Object?>;
+        expect(data['UuidPelanggan'], UuidSalesmanUji.tokoMakmur);
+        expect(data['UuidPengguna'], rina.uuid);
+        expect(data['Catatan'], 'Kirim Kamis pagi');
+        expect(data.containsKey('UuidKunjungan'), isFalse);
+        expect(polaWaktu.hasMatch(data['DibuatPada']! as String), isTrue);
+        final barisData = (data['Baris']! as List<Object?>).cast<Map<String, Object?>>();
+        expect(
+          [for (final b in barisData) (b['UuidProduk'], b['UuidSatuan'], b['Jumlah'])],
+          [(UuidUji.roti, UuidUji.psRotiLusin, '2.0000'), (UuidUji.roti, UuidUji.psRotiPcs, '12.0000')],
+        );
+        for (final b in barisData) {
+          expect(polaJumlah.hasMatch(b['Jumlah']! as String), isTrue);
+          expect(b.keys.toSet(), {'UuidProduk', 'UuidSatuan', 'Jumlah'}, reason: 'Klien tidak pernah mengirim harga.');
+        }
+
+        final lokal = (await u.db.select(u.db.pesananGrosirLokal).get()).single;
+        expect(lokal.Uuid, uuid);
+        expect(lokal.NamaPelanggan, 'Toko Kelontong Makmur Jaya Abadi Sentosa');
+        expect(lokal.JumlahBaris, 2);
+        // Harga katalog roti: lusin 130.000, pcs bertingkat 11.000 (≥ 10) → 260.000 + 132.000.
+        expect(lokal.PerkiraanTotal, '392000.00');
+      },
+    );
+
+    test('keranjang yang ditolak tidak meninggalkan outbox', () async {
+      final rina = await u.Staf('Rina Wulandari');
+
+      await expectLater(
+        u.salesman.KirimPesananDariKeranjang(keranjang: Isi(pelanggan: null), katalog: katalog, staf: rina),
+        throwsA(isA<GalatKasir>().having((g) => g.kode, 'kode', 'KeranjangBelumDidukung')),
+      );
+      expect(await u.repositori.HitungJumlahTertunda(), 0);
+      expect(await u.db.select(u.db.pesananGrosirLokal).get(), isEmpty);
+    });
+
+    test('selisih limit kredit: perkiraan melebihi sisa limit bernilai negatif (hanya peringatan)', () {
+      // Limit 25 jt − piutang 24 jt = sisa 1 jt.
+      expect(SelisihLimitKredit(toko, Uang.DariBulat(392000)), Uang.DariBulat(608000));
+      expect(SelisihLimitKredit(toko, Uang.DariBulat(1500000))!.BernilaiNegatif(), isTrue);
+      expect(
+        SelisihLimitKredit(const PelangganTerpilih(uuid: 'X', nama: 'Tanpa limit', noHpSamar: ''), Uang.DariBulat(1)),
+        isNull,
+      );
     });
   });
 }

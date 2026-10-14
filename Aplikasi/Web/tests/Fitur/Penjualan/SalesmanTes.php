@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
@@ -148,30 +149,44 @@ describe('Outbox PesananGrosir.Buat dari aplikasi salesman', function (): void {
     it('produk/pelanggan tidak dikenal dan produk di luar cakupan grosir ditolak dengan kodenya', function (): void {
         /** @var TestCase $this */
         $k = SiapkanSalesman($this);
-        $seri = BantuanKatalog::BuatProduk(['Nama' => 'Ponsel Android 128 GB Garansi Resmi', 'Pelacakan' => PelacakanProduk::Seri], '2499000.00');
+        // Sejak v6.18 (D-137) produk ber-batch/seri masuk cakupan grosir (batch FEFO dan nomor seri dipilih saat surat jalan);
+        // yang tetap ditolak adalah produk bukan-stok seperti jasa.
+        $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Bongkar Muat Gudang', 'Jenis' => JenisProduk::Jasa], '150000.00');
 
         $hasil = BantuanKasir::KirimRingkas($this, $k['TokenHp'], [
             ItemPesananSalesman($k, [['UuidProduk' => BantuanKasir::Uuid(), 'Jumlah' => '5']]),
             ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '5']], ['UuidPelanggan' => BantuanKasir::Uuid()]),
-            ItemPesananSalesman($k, [['UuidProduk' => $seri->Uuid, 'Jumlah' => '1']]),
+            ItemPesananSalesman($k, [['UuidProduk' => $jasa->Uuid, 'Jumlah' => '1']]),
             ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '0']]),
         ]);
 
         expect($hasil)->toBe([
             ['Ditolak', 'ProdukTidakDikenal'],
             ['Ditolak', 'PelangganTidakDikenal'],
-            ['Ditolak', 'PelacakanBelumDidukung'],
+            ['Ditolak', 'JenisProdukBelumDidukung'],
             ['Ditolak', 'DataTidakValid'],
         ]);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         expect(PesananGrosir::query()->count())->toBe(0);
     });
 
-    it('salesman yang kehilangan izin setelah offline tetap diterima sebagai draf, alasannya di log audit', function (): void {
+    it('produk bernomor seri diterima sebagai draf: nomor serinya dipilih saat surat jalan (v6.18)', function (): void {
         /** @var TestCase $this */
         $k = SiapkanSalesman($this);
-        // Kasir (tanpa salesman.kunjungan) mencatat pesanan di HP yang sama: kejadian lapangan tidak ditolak.
-        $item = ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '10']], ['UuidPengguna' => $k['Kasir']->Uuid]);
+        $seri = BantuanKatalog::BuatProduk(['Nama' => 'Ponsel Android 128 GB Garansi Resmi', 'Pelacakan' => PelacakanProduk::Seri], '2499000.00');
+
+        expect(BantuanKasir::KirimRingkas($this, $k['TokenHp'], [ItemPesananSalesman($k, [['UuidProduk' => $seri->Uuid, 'Jumlah' => '2']])]))->toBe([['Diterima', null]]);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(PesananGrosir::query()->sole()->Status)->toBe(StatusPesananGrosir::Draf);
+    });
+
+    it('pengguna tanpa izin salesman maupun izin jual tetap diterima sebagai draf, alasannya di log audit', function (): void {
+        /** @var TestCase $this */
+        $k = SiapkanSalesman($this);
+        // Staf gudang (tanpa salesman.kunjungan dan tanpa penjualan.buat) mencatat pesanan di HP yang sama: kejadian
+        // lapangan tidak ditolak, tetapi ditandai agar operator back-office memutuskannya saat konfirmasi.
+        $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
+        $item = ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '10']], ['UuidPengguna' => $gudang->Uuid]);
 
         expect(BantuanKasir::KirimRingkas($this, $k['TokenHp'], [$item]))->toBe([['Diterima', null]]);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -179,6 +194,19 @@ describe('Outbox PesananGrosir.Buat dari aplikasi salesman', function (): void {
 
         expect(PesananGrosir::query()->sole()->Status)->toBe(StatusPesananGrosir::Draf)
             ->and(json_encode($audit->NilaiBaru))->toContain('IzinBerubah');
+    });
+
+    it('POS-05 SO cepat: kasir berizin jual menyusun pesanan grosir dari keranjang tanpa ditandai IzinBerubah', function (): void {
+        /** @var TestCase $this */
+        $k = SiapkanSalesman($this);
+        $item = ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '10']], ['UuidPengguna' => $k['Kasir']->Uuid]);
+
+        expect(BantuanKasir::KirimRingkas($this, $k['TokenHp'], [$item]))->toBe([['Diterima', null]]);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $audit = LogAudit::query()->where('Peristiwa', 'grosir.pesanan-salesman')->sole();
+
+        expect(PesananGrosir::query()->sole()->Status)->toBe(StatusPesananGrosir::Draf)
+            ->and(json_encode($audit->NilaiBaru))->not->toContain('IzinBerubah');
     });
 });
 

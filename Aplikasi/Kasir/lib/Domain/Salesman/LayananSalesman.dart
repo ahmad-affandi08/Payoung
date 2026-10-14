@@ -8,6 +8,7 @@ import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Data/RepositoriSalesman.dart';
 import '../GalatKasir.dart';
 import '../Katalog/KatalogLokal.dart';
+import '../Penjualan/Keranjang.dart';
 import '../Perangkat/PenentuLokasi.dart';
 import '../Sesi/StafLokal.dart';
 
@@ -541,6 +542,120 @@ class LayananSalesman {
     String? catatan,
   }) async {
     _PastikanBoleh(staf);
+    return _SimpanPesanan(
+      uuidPelanggan: pelanggan.uuid,
+      namaPelanggan: pelanggan.nama,
+      baris: baris,
+      staf: staf,
+      perkiraan: perkiraan,
+      catatan: catatan,
+      tautkanKunjungan: true,
+    );
+  }
+
+  // SO cepat di layar Jual (POS-05) ---------------------------------------------------------------------------------
+
+  /// Kasir berizin jual (`penjualan.buat`) atau salesman boleh menjadikan keranjang pesanan grosir (SO).
+  static bool CekBolehBuatSo(StafLokal staf) => CekBoleh(staf) || staf.PunyaIzin(IzinKasir.penjualanBuat);
+
+  /// Alasan [keranjang] belum bisa dijadikan pesanan grosir; null = bisa. Pesanan grosir tidak membawa harga, diskon,
+  /// ongkir, pilihan, maupun nomor seri dari perangkat: server yang menentukan harga (price engine & tier pelanggan)
+  /// dan konfirmasinya di back-office, jadi apa pun yang diubah kasir di keranjang tidak akan sampai ke pesanan.
+  /// Menerimanya diam-diam berarti pembeli dijanjikan harga yang tidak pernah dipakai.
+  static String? AlasanKeranjangTidakBisaJadiSo(Keranjang keranjang, KatalogLokal katalog) {
+    if (keranjang.CekKosong) {
+      return 'Keranjang masih kosong. Tambahkan barang pesanan dulu.';
+    }
+    if (keranjang.pelanggan == null) {
+      return 'Pilih pelanggan dulu. Pesanan grosir wajib atas nama pelanggan.';
+    }
+    if (keranjang.pesananMeja != null ||
+        keranjang.voucher != null ||
+        keranjang.tukarPoin != null ||
+        keranjang.praPesan != null ||
+        keranjang.reservasi != null ||
+        keranjang.perintahKerja != null ||
+        keranjang.laundry != null ||
+        keranjang.tukar != null) {
+      return 'Pesanan grosir tidak bisa dari pesanan meja, pre-order, voucher, tukar poin, reservasi, servis, laundry, '
+          'atau tukar barang. Kosongkan itu dulu, lalu coba lagi.';
+    }
+    if (keranjang.diskonPesanan != null ||
+        keranjang.biayaKirim.Bandingkan(Uang.Nol()) > 0 ||
+        keranjang.baris.any((b) => b.diskon != null || b.hargaAsli != null || b.hargaTerbuka)) {
+      return 'Pesanan grosir memakai harga dari server. Hapus diskon manual, harga manual, dan ongkir di keranjang, '
+          'lalu coba lagi.';
+    }
+    for (final b in keranjang.baris) {
+      final produk = katalog.CariProduk(b.uuidProduk);
+      if (produk == null || !CekBolehDipesan(produk)) {
+        return '"${b.nama}" tidak bisa dipesan lewat pesanan grosir (hanya produk berstok biasa).';
+      }
+      if (b.pilihan.isNotEmpty || b.nomorSeri.isNotEmpty || b.racikan != null) {
+        return '"${b.nama}" memakai pilihan, nomor seri, atau racikan. Hapus dulu dari keranjang atau buat pesanannya di '
+            'back-office.';
+      }
+    }
+    return null;
+  }
+
+  /// Baris pesanan dari [keranjang] (satuan keranjang; bawaan produk bila kosong). Panggil setelah
+  /// [AlasanKeranjangTidakBisaJadiSo] bernilai null.
+  static List<BarisPesananSalesman> BarisDariKeranjang(Keranjang keranjang, KatalogLokal katalog) => [
+    for (final b in keranjang.baris)
+      () {
+        final produk = katalog.CariProduk(b.uuidProduk)!;
+        final satuan = produk.satuan.where((s) => s.uuid == b.uuidProdukSatuan).firstOrNull;
+        return BarisPesananSalesman(produk: produk, satuan: satuan ?? AmbilSatuanBawaan(produk), jumlah: b.jumlah);
+      }(),
+  ];
+
+  /// Jadikan [keranjang] (wajib ber-pelanggan) pesanan grosir: perkiraan harga dari katalog lokal untuk riwayat, lalu
+  /// baris lokal + outbox `PesananGrosir.Buat` dalam satu transaksi (offline). Pesanan masuk **Draf** di server dan
+  /// dikonfirmasi di back-office; stok baru berkurang saat surat jalan. Hasil: Uuid pesanan.
+  Future<String> KirimPesananDariKeranjang({
+    required Keranjang keranjang,
+    required KatalogLokal katalog,
+    required StafLokal staf,
+    String? uuidOutlet,
+    String? catatan,
+  }) async {
+    if (!CekBolehBuatSo(staf)) {
+      throw GalatKasir('TanpaIzin', '${staf.nama} tidak punya izin membuat pesanan grosir.');
+    }
+    final alasan = AlasanKeranjangTidakBisaJadiSo(keranjang, katalog);
+    if (alasan != null) {
+      throw GalatKasir('KeranjangBelumDidukung', alasan);
+    }
+    final pelanggan = keranjang.pelanggan!;
+    final baris = BarisDariKeranjang(keranjang, katalog);
+    final perkiraan = HitungPerkiraan(
+      baris,
+      katalog,
+      tierPelanggan: pelanggan.kodeTier,
+      uuidOutlet: uuidOutlet,
+      waktu: _jam(),
+    );
+    return _SimpanPesanan(
+      uuidPelanggan: pelanggan.uuid,
+      namaPelanggan: pelanggan.nama,
+      baris: baris,
+      staf: staf,
+      perkiraan: perkiraan,
+      catatan: catatan,
+      tautkanKunjungan: false,
+    );
+  }
+
+  Future<String> _SimpanPesanan({
+    required String uuidPelanggan,
+    required String namaPelanggan,
+    required List<BarisPesananSalesman> baris,
+    required StafLokal staf,
+    required bool tautkanKunjungan,
+    PerkiraanPesanan? perkiraan,
+    String? catatan,
+  }) async {
     if (baris.isEmpty) {
       throw const GalatKasir('PesananKosong', 'Tambahkan minimal satu produk.');
     }
@@ -563,12 +678,12 @@ class LayananSalesman {
       throw const GalatKasir('CatatanTerlaluPanjang', 'Catatan pesanan maksimal 500 karakter.');
     }
     final adaCatatan = teks != null && teks.isNotEmpty;
-    final berjalan = await repositori.AmbilKunjunganBerjalan(staf.uuid);
-    final uuidKunjungan = berjalan != null && berjalan.UuidPelanggan == pelanggan.uuid ? berjalan.Uuid : null;
+    final berjalan = tautkanKunjungan ? await repositori.AmbilKunjunganBerjalan(staf.uuid) : null;
+    final uuidKunjungan = berjalan != null && berjalan.UuidPelanggan == uuidPelanggan ? berjalan.Uuid : null;
     final sekarang = _jam().toUtc();
     final uuid = _ulid.Buat();
     final data = SusunDataPesanan(
-      uuidPelanggan: pelanggan.uuid,
+      uuidPelanggan: uuidPelanggan,
       uuidPengguna: staf.uuid,
       dibuatPada: sekarang,
       baris: baris,
@@ -578,8 +693,8 @@ class LayananSalesman {
     await repositori.SimpanPesanan(
       PesananGrosirLokalCompanion.insert(
         Uuid: uuid,
-        UuidPelanggan: pelanggan.uuid,
-        NamaPelanggan: pelanggan.nama,
+        UuidPelanggan: uuidPelanggan,
+        NamaPelanggan: namaPelanggan,
         UuidPengguna: staf.uuid,
         NamaPengguna: staf.nama,
         UuidKunjungan: Value(uuidKunjungan),

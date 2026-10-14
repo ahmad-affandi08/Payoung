@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\DB;
  * - Ditolak hanya bentuk yang tidak mungkin benar: pengguna bukan anggota usaha, pelanggan/produk tidak dikenal, produk
  *   di luar cakupan grosir bagian 1 (resep/paket/jasa, batch/seri — pesan dari `SimpanPesananGrosir`), harga belum diatur.
  * - Pesanan yang sudah terjadi di lapangan tidak ditolak karena alasan lunak: salesman yang kehilangan izin
- *   `salesman.kunjungan` atau akses outlet setelah offline tetap diterima, alasannya dicatat di log audit
+ *   `salesman.kunjungan` (dan tidak punya `penjualan.buat`, izin kasir untuk SO cepat POS-05) atau akses outlet setelah offline tetap diterima, alasannya dicatat di log audit
  *   (`Tinjauan`), dan operator back-office memutuskannya saat konfirmasi.
  * - Tanggal pesanan = tanggal bisnis outlet perangkat pada `DibuatPada`. Nomor `PG/...` diberikan server saat diterima
  *   (draf tidak punya nomor di perangkat; perangkat merujuknya lewat Uuid).
@@ -94,7 +94,9 @@ final class TerimaPesananGrosirPos
 
         $tinjauan = array_values(array_filter([
             $diOutlet ? null : "IzinBerubah: {$salesman->nama} tidak lagi terdaftar di outlet ini",
-            $salesman->CekIzin(IzinTenant::SalesmanKunjungan->value) ? null : "IzinBerubah: {$salesman->nama} tidak punya izin salesman",
+            // POS-05 (SO cepat di layar Jual): kasir berizin jual (`penjualan.buat`) boleh menyusun pesanan grosir dari
+            // keranjangnya, jadi hanya yang tidak punya izin salesman maupun izin jual yang ditandai.
+            $salesman->CekIzin(IzinTenant::SalesmanKunjungan->value) || $salesman->CekIzin(IzinTenant::PenjualanBuat->value) ? null : "IzinBerubah: {$salesman->nama} tidak punya izin salesman",
         ]));
 
         try {
