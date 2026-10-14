@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:klien_api/KlienApi.dart';
 
+import '../Data/KameraNota.dart';
 import '../Data/KlienPemilik.dart';
 import '../Data/NotifikasiPush.dart';
 import '../Data/PenyediaMasukGoogle.dart';
@@ -19,6 +20,7 @@ final penyediaPenyimpanSesi = Provider<PenyimpanSesi>((ref) => PenyimpanSesiAman
 final penyediaJam = Provider<DateTime Function()>((ref) => DateTime.now);
 final penyediaMasukGoogle = Provider<PenyediaMasukGoogle>((ref) => const PenyediaMasukGoogleTidakAda());
 final penyediaNotifikasiPush = Provider<NotifikasiPush>((ref) => const NotifikasiPushTidakAda());
+final penyediaKameraNota = Provider<KameraNota>((ref) => const KameraNotaTidakAda());
 
 /// D-35: alamat server toko sendiri yang tersimpan saat aplikasi dibuka (diisi `Persiapan` dari secure storage).
 final penyediaAlamatServerAwal = Provider<Uri?>((ref) => null);

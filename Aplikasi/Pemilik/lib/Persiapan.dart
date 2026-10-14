@@ -7,6 +7,7 @@ import 'Aplikasi/AplikasiPemilik.dart';
 import 'Aplikasi/KunciAplikasi.dart';
 import 'Aplikasi/Lingkungan.dart';
 import 'Aplikasi/Penyedia.dart';
+import 'Data/KameraNota.dart';
 import 'Data/KunciPerangkat.dart';
 import 'Data/NotifikasiPush.dart';
 import 'Data/PenyediaMasukGoogle.dart';
@@ -27,6 +28,7 @@ Future<void> JalankanAplikasi(Lingkungan lingkungan) async {
         penyediaMasukGoogle.overrideWithValue(PenyediaMasukGooglePlugin()),
         penyediaAlamatServerAwal.overrideWithValue(alamatServer),
         penyediaBiometrik.overrideWithValue(PenyediaBiometrikPerangkat()),
+        penyediaKameraNota.overrideWithValue(KameraNotaPlatform()),
       ],
       child: AplikasiPemilik(lingkungan: lingkungan),
     ),

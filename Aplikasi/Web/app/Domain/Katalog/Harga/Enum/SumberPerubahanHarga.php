@@ -6,7 +6,7 @@ namespace App\Domain\Katalog\Harga\Enum;
 
 /**
  * Asal perubahan harga yang dicatat di `RiwayatHarga.Sumber` (BR-03.3): form back-office, impor, panduan awal F-01
- * (tambah produk cepat), generasi varian, atau sistem (misal satuan produk dihapus).
+ * (tambah produk cepat), generasi varian, aksi cepat Aplikasi Owner (OWN-07), atau sistem (misal satuan produk dihapus).
  */
 enum SumberPerubahanHarga: string
 {
@@ -15,6 +15,7 @@ enum SumberPerubahanHarga: string
     case PanduanAwal = 'PanduanAwal';
     case Varian = 'Varian';
     case Sistem = 'Sistem';
+    case AplikasiOwner = 'AplikasiOwner';
 
     public function AmbilLabel(): string
     {
@@ -24,6 +25,7 @@ enum SumberPerubahanHarga: string
             self::PanduanAwal => 'Panduan awal',
             self::Varian => 'Generasi varian',
             self::Sistem => 'Sistem',
+            self::AplikasiOwner => 'Aplikasi Owner',
         };
     }
 }

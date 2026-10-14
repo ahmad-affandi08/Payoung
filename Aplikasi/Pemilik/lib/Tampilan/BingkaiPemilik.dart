@@ -7,6 +7,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
 import '../Data/NotifikasiPush.dart';
+import 'LayarAksiCepat.dart';
 import 'LayarBantuan.dart';
 import 'LayarKunciAplikasi.dart';
 import 'LayarBeranda.dart';
@@ -155,6 +156,12 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
         surfaceTintColor: warna.brandGelap,
         title: Text(sesi.namaTenant ?? 'Payoung Owner', style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: [
+          IconButton(
+            tooltip: 'Aksi cepat',
+            onPressed: () =>
+                unawaited(Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LayarAksiCepat()))),
+            icon: const Icon(Icons.bolt_outlined),
+          ),
           IconButton(tooltip: 'Bantuan', onPressed: _BukaBantuan, icon: const Icon(Icons.help_outline)),
           IconButton(
             tooltip: belumDibaca > 0 ? 'Notifikasi ($belumDibaca belum dibaca)' : 'Notifikasi',

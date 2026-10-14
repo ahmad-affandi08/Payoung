@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Pemilik\V1\AksiCepatKontroler;
 use App\Http\Kontroler\Pemilik\V1\AutentikasiKontroler;
 use App\Http\Kontroler\Pemilik\V1\BantuanKontroler;
 use App\Http\Kontroler\Pemilik\V1\DasborKontroler;
@@ -104,6 +105,20 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
         // OWN-06: cek stok & nilai persediaan per outlet, riwayat kartu stok.
         Route::get('/stok', [StokKontroler::class, 'Ringkasan'])->middleware($izin(IzinTenant::PersediaanLihat))->name('pemilik.stok');
         Route::get('/stok/kartu', [StokKontroler::class, 'Kartu'])->middleware($izin(IzinTenant::PersediaanLihat))->name('pemilik.stok.kartu');
+        // OWN-07: aksi cepat (ubah harga, tandai habis, promo aktif/nonaktif, pengeluaran + foto nota).
+        Route::get('/aksi-cepat/produk', [AksiCepatKontroler::class, 'Produk'])->middleware($izin(IzinTenant::ProdukLihat))->name('pemilik.aksi-cepat.produk');
+        Route::put('/aksi-cepat/produk/{produk}/harga', [AksiCepatKontroler::class, 'UbahHarga'])
+            ->where('produk', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
+            ->middleware([$izin(IzinTenant::ProdukHargaUbah), 'throttle:pemilik-30'])->name('pemilik.aksi-cepat.harga');
+        Route::put('/aksi-cepat/produk/{produk}/habis', [AksiCepatKontroler::class, 'TandaiHabis'])
+            ->where('produk', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
+            ->middleware([$izin(IzinTenant::ProdukKelola), 'throttle:pemilik-30'])->name('pemilik.aksi-cepat.habis');
+        Route::get('/aksi-cepat/promo', [AksiCepatKontroler::class, 'Promo'])->middleware($izin(IzinTenant::PelangganLihat))->name('pemilik.aksi-cepat.promo');
+        Route::put('/aksi-cepat/promo/{promo}/status', [AksiCepatKontroler::class, 'UbahPromo'])
+            ->where('promo', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
+            ->middleware([$izin(IzinTenant::PelangganKelola), 'throttle:pemilik-30'])->name('pemilik.aksi-cepat.promo.status');
+        Route::get('/aksi-cepat/pengeluaran/opsi', [AksiCepatKontroler::class, 'OpsiPengeluaran'])->middleware($izin(IzinTenant::AkuntansiKelola))->name('pemilik.aksi-cepat.pengeluaran.opsi');
+        Route::post('/aksi-cepat/pengeluaran', [AksiCepatKontroler::class, 'CatatPengeluaran'])->middleware([$izin(IzinTenant::AkuntansiKelola), 'throttle:pemilik-30'])->name('pemilik.aksi-cepat.pengeluaran');
         // OWN-10: pantau karyawan (kehadiran hari ini, komisi & target bulan berjalan).
         Route::get('/karyawan', [KaryawanKontroler::class, 'Pantau'])->middleware($izin(IzinTenant::KaryawanLihat))->name('pemilik.karyawan');
     });

@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:klien_api/KlienApi.dart';
 
+import 'AksiCepat.dart';
+
 /// Tenant yang boleh diakses pengguna di Aplikasi Owner.
 class TenantPemilik {
   const TenantPemilik({required this.uuid, required this.nama, required this.pemilik});
@@ -903,6 +905,72 @@ class KlienPemilik {
     UraiJson.AmbilPeta((await _Kirim('POST', 'perangkat/${Uri.encodeComponent(uuid)}/cabut', null))['Perangkat']),
   );
 
+  /// OWN-07: cari produk untuk aksi cepat (harga dasar dan, bila [outlet] diberikan, status habis di outlet itu).
+  Future<List<ProdukAksiCepat>> CariProdukAksiCepat({String cari = '', String? outlet}) async {
+    final kueri = {'cari': ?(cari.trim().isEmpty ? null : cari.trim()), 'outlet': ?outlet};
+    final json = await _Kirim('GET', _Jalur('aksi-cepat/produk', kueri), null);
+    return [for (final p in UraiJson.AmbilDaftarPeta(json['Produk'])) ProdukAksiCepat.DariJson(p)];
+  }
+
+  /// OWN-07: tetapkan harga dasar satu produk (izin `produk.harga.ubah`). [harga] berupa angka Rupiah, misal `20000`.
+  Future<HasilUbahHarga> UbahHargaProduk(String uuidProduk, String harga) async => HasilUbahHarga.DariJson(
+    await _Kirim('PUT', 'aksi-cepat/produk/${Uri.encodeComponent(uuidProduk)}/harga', {'Harga': harga}),
+  );
+
+  /// OWN-07: tandai produk habis ("86") atau tersedia lagi di satu outlet (izin `produk.kelola`). Mengembalikan keadaan akhir.
+  Future<bool> TandaiProdukHabis({required String uuidProduk, required String outlet, required bool habis}) async =>
+      UraiJson.AmbilBenar(
+        (await _Kirim('PUT', 'aksi-cepat/produk/${Uri.encodeComponent(uuidProduk)}/habis', {
+          'Outlet': outlet,
+          'Habis': habis,
+        }))['Habis'],
+      );
+
+  Future<List<PromoAksiCepat>> AmbilPromoAksiCepat({String cari = ''}) async {
+    final json = await _Kirim(
+      'GET',
+      _Jalur('aksi-cepat/promo', {'cari': ?(cari.trim().isEmpty ? null : cari.trim())}),
+      null,
+    );
+    return [for (final p in UraiJson.AmbilDaftarPeta(json['Promo'])) PromoAksiCepat.DariJson(p)];
+  }
+
+  /// OWN-07: nyalakan (`aktif` true) atau matikan promo (izin `pelanggan.kelola`); mengembalikan keadaan akhir.
+  Future<bool> UbahStatusPromo(String uuidPromo, {required bool aktif}) async => UraiJson.AmbilBenar(
+    UraiJson.AmbilPeta(
+      (await _Kirim('PUT', 'aksi-cepat/promo/${Uri.encodeComponent(uuidPromo)}/status', {'Aktif': aktif}))['Promo'],
+    )['Aktif'],
+  );
+
+  Future<OpsiPengeluaran> AmbilOpsiPengeluaran() async =>
+      OpsiPengeluaran.DariJson(await _Kirim('GET', 'aksi-cepat/pengeluaran/opsi', null));
+
+  /// OWN-07: catat pengeluaran dengan foto nota opsional (JPEG). [kunciIdempotensi] yang sama menghasilkan satu
+  /// pengeluaran saja walau terkirim dua kali (sinyal putus, ketuk ganda).
+  Future<HasilPengeluaran> CatatPengeluaran({
+    required String uuidKategori,
+    required String uuidAkunSumber,
+    required String jumlah,
+    required String kunciIdempotensi,
+    String keterangan = '',
+    String? outlet,
+    List<int>? foto,
+  }) async => HasilPengeluaran.DariJson(
+    await _Kirim(
+      'POST',
+      'aksi-cepat/pengeluaran',
+      {
+        'UuidKategori': uuidKategori,
+        'UuidAkunSumber': uuidAkunSumber,
+        'Jumlah': jumlah,
+        if (keterangan.trim().isNotEmpty) 'Keterangan': keterangan.trim(),
+        'Outlet': ?outlet,
+      },
+      headerTambahan: {'Idempotency-Key': kunciIdempotensi},
+      berkas: foto == null ? null : [http.MultipartFile.fromBytes('Foto', foto, filename: 'nota.jpg')],
+    ),
+  );
+
   /// OWN-11: insight minggu lalu; null bila belum ada penjualan dua minggu terakhir.
   Future<InsightMingguanPemilik?> AmbilInsight() async {
     final isi = UraiJson.AmbilPetaAtauNull((await _Kirim('GET', 'insight', null))['Insight']);
@@ -1021,13 +1089,22 @@ class KlienPemilik {
     String jalur,
     Map<String, Object?>? isi, {
     bool pakaiToken = true,
+    Map<String, String> headerTambahan = const {},
+    List<http.MultipartFile>? berkas,
   }) async {
-    final permintaan = http.Request(metode, alamatDasar.resolve('api/pemilik/v1/$jalur'))
-      ..headers.addAll({
-        'Accept': 'application/json',
-        'X-Versi-Aplikasi': versiAplikasi,
-        'X-Platform-Aplikasi': ?platform,
-      });
+    final alamat = alamatDasar.resolve('api/pemilik/v1/$jalur');
+    // Unggah berkas (foto nota) memakai multipart; selainnya JSON.
+    final http.BaseRequest permintaan = berkas == null
+        ? http.Request(metode, alamat)
+        : (http.MultipartRequest(metode, alamat)
+            ..fields.addAll({for (final e in (isi ?? const <String, Object?>{}).entries) e.key: '${e.value}'})
+            ..files.addAll(berkas));
+    permintaan.headers.addAll({
+      'Accept': 'application/json',
+      'X-Versi-Aplikasi': versiAplikasi,
+      'X-Platform-Aplikasi': ?platform,
+      ...headerTambahan,
+    });
     if (pakaiToken) {
       final token = await ambilToken();
       if (token != null && token.isNotEmpty) {
@@ -1038,7 +1115,7 @@ class KlienPemilik {
         permintaan.headers['X-Tenant'] = tenant;
       }
     }
-    if (isi != null) {
+    if (isi != null && permintaan is http.Request) {
       permintaan.headers['Content-Type'] = 'application/json';
       permintaan.body = jsonEncode(isi);
     }

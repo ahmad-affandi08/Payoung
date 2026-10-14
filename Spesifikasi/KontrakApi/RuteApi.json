@@ -588,5 +588,40 @@
         "Metode": "POST",
         "Jalur": "api/pos/v1/reservasi-meja/{reservasi}/hadir",
         "Nama": "pos.reservasi-meja.hadir"
+    },
+    "GET api/pemilik/v1/aksi-cepat/pengeluaran/opsi": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/aksi-cepat/pengeluaran/opsi",
+        "Nama": "pemilik.aksi-cepat.pengeluaran.opsi"
+    },
+    "GET api/pemilik/v1/aksi-cepat/produk": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/aksi-cepat/produk",
+        "Nama": "pemilik.aksi-cepat.produk"
+    },
+    "GET api/pemilik/v1/aksi-cepat/promo": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/aksi-cepat/promo",
+        "Nama": "pemilik.aksi-cepat.promo"
+    },
+    "POST api/pemilik/v1/aksi-cepat/pengeluaran": {
+        "Metode": "POST",
+        "Jalur": "api/pemilik/v1/aksi-cepat/pengeluaran",
+        "Nama": "pemilik.aksi-cepat.pengeluaran"
+    },
+    "PUT api/pemilik/v1/aksi-cepat/produk/{produk}/habis": {
+        "Metode": "PUT",
+        "Jalur": "api/pemilik/v1/aksi-cepat/produk/{produk}/habis",
+        "Nama": "pemilik.aksi-cepat.habis"
+    },
+    "PUT api/pemilik/v1/aksi-cepat/produk/{produk}/harga": {
+        "Metode": "PUT",
+        "Jalur": "api/pemilik/v1/aksi-cepat/produk/{produk}/harga",
+        "Nama": "pemilik.aksi-cepat.harga"
+    },
+    "PUT api/pemilik/v1/aksi-cepat/promo/{promo}/status": {
+        "Metode": "PUT",
+        "Jalur": "api/pemilik/v1/aksi-cepat/promo/{promo}/status",
+        "Nama": "pemilik.aksi-cepat.promo.status"
     }
 }
