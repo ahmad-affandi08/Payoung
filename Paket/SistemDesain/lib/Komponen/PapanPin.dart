@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sistem_desain/SistemDesain.dart';
 
-/// Papan angka PIN 6 digit (target sentuh ≥ 48dp, PRD §17.2). PIN hanya ada di memori widget sampai dikirim ke
+import '../Token/TokenWarna.dart';
+
+/// Papan angka PIN 6 digit, dipakai aplikasi Kasir (masuk kasir) dan Owner (kunci aplikasi, OWN-01) (target sentuh ≥ 48dp, PRD §17.2). PIN hanya ada di memori widget sampai dikirim ke
 /// `saatSelesai`, tidak pernah disimpan atau dicatat. Keyboard fisik (Windows, tablet berkeyboard) juga bisa dipakai:
 /// angka baris atas & numpad mengisi, Backspace menghapus satu angka (audit kemudahan pakai #9).
 class PapanPin extends StatefulWidget {

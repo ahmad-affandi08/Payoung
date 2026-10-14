@@ -11,6 +11,7 @@ import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 import 'LayarInsight.dart';
 import 'LayarKaryawan.dart';
+import 'LayarKunciAplikasi.dart';
 
 /// Beranda OWN-02 (§17.6 "Hari ini untung berapa, ada masalah apa?"): satu angka besar omzet + perbandingan kemarin &
 /// minggu lalu, transaksi, rata-rata, laba kotor; lalu hal yang butuh tindakan, omzet per outlet, per jam, dan produk
@@ -179,6 +180,8 @@ class _IsiBeranda extends StatelessWidget {
             ),
           ),
         const SizedBox(height: TokenJarak.jarak16),
+        // OWN-01: ajakan pasang PIN di paling bawah supaya tidak menggeser angka yang dicari pemilik.
+        const KartuAjakanKunci(),
       ],
     );
   }

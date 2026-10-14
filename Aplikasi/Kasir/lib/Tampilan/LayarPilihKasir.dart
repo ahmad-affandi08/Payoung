@@ -7,7 +7,6 @@ import '../Domain/GalatKasir.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import 'Komponen/AvatarKasir.dart';
 import 'Komponen/BingkaiLogin.dart';
-import 'Komponen/PapanPin.dart';
 import 'LayarAbsensi.dart';
 
 /// F-06 langkah 1: pilih nama kasir lalu masukkan PIN (bisa tanpa internet).

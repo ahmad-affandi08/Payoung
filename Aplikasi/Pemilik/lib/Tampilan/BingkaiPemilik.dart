@@ -8,6 +8,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 import '../Aplikasi/Penyedia.dart';
 import '../Data/NotifikasiPush.dart';
 import 'LayarBantuan.dart';
+import 'LayarKunciAplikasi.dart';
 import 'LayarBeranda.dart';
 import 'LayarLaporan.dart';
 import 'LayarNotifikasi.dart';
@@ -165,9 +166,16 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
           PopupMenuButton<String>(
             tooltip: 'Akun',
             icon: const Icon(Icons.account_circle_outlined),
-            onSelected: (pilih) => pilih == 'ganti' ? notifier.GantiTenant() : unawaited(notifier.Keluar()),
+            onSelected: (pilih) => switch (pilih) {
+              'ganti' => notifier.GantiTenant(),
+              'kunci' => unawaited(
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LayarKunciAplikasi())),
+              ),
+              _ => unawaited(notifier.Keluar()),
+            },
             itemBuilder: (_) => [
               if (sesi.tenant.length > 1) const PopupMenuItem(value: 'ganti', child: Text('Ganti usaha')),
+              const PopupMenuItem(value: 'kunci', child: Text('Kunci aplikasi')),
               const PopupMenuItem(value: 'keluar', child: Text('Keluar')),
             ],
           ),

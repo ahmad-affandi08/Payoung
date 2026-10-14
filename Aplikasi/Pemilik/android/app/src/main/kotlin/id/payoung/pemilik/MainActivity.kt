@@ -1,5 +1,6 @@
 package id.payoung.pemilik
 
-import io.flutter.embedding.android.FlutterActivity
+// local_auth (OWN-01, biometrik) mensyaratkan FragmentActivity.
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity()

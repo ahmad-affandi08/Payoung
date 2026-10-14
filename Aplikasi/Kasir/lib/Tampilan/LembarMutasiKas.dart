@@ -14,7 +14,6 @@ import '../Domain/Sesi/LayananPersetujuanJarakJauh.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import '../Domain/Shift/LayananShift.dart';
 import 'Komponen/MasukanUang.dart';
-import 'Komponen/PapanPin.dart';
 
 /// F-06 langkah 4: catat kas masuk/keluar/setoran non-penjualan. Kas keluar di atas batas meminta PIN supervisor
 /// (BR-06.4) sebelum disimpan. Kategori dipilih lewat chip (satu-satunya kategori terpilih otomatis) dan isian

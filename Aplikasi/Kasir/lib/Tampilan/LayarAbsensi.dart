@@ -10,7 +10,6 @@ import '../Domain/GalatKasir.dart';
 import '../Domain/Karyawan/LayananAbsensi.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import 'Komponen/FormatWaktu.dart';
-import 'Komponen/PapanPin.dart';
 
 /// Absensi staf (F-18, EMP-03), dibuka dari layar pilih kasir sebelum masuk: pilih nama → PIN → swafoto kamera depan
 /// (bila perangkat berkamera) → absen masuk/keluar tercatat (juga offline). Tidak membuka sesi kasir.

@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- OWN-01: buka kunci aplikasi dengan sidik jari atau wajah. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <application
         android:label="Payoung Owner"
         android:name="${applicationName}"

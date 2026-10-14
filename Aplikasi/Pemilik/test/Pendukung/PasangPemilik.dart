@@ -32,6 +32,7 @@ Future<void> PasangPemilik(
   Size ukuran = const Size(360, 740),
   Lingkungan lingkungan = Lingkungan.Produksi,
   List<Override> tambahan = const [],
+  DateTime Function()? jam,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = ukuran;
@@ -42,7 +43,7 @@ Future<void> PasangPemilik(
         penyediaLingkungan.overrideWithValue(lingkungan),
         penyediaKlienHttp.overrideWithValue(server.BuatKlien()),
         penyediaPenyimpanSesi.overrideWithValue(sesi),
-        penyediaJam.overrideWithValue(() => DateTime(2026, 9, 26, 15)),
+        penyediaJam.overrideWithValue(jam ?? () => DateTime(2026, 9, 26, 15)),
         // Tanpa pemantau berkala di test (timer tidak boleh tertinggal); muat ulang lewat tab/tarik.
         penyediaSelangPantauPersetujuan.overrideWithValue(null),
         penyediaSelangKonfigurasi.overrideWithValue(null),

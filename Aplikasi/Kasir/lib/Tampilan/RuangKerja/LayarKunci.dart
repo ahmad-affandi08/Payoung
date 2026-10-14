@@ -5,7 +5,6 @@ import 'package:sistem_desain/SistemDesain.dart';
 import '../../Aplikasi/Penyedia.dart';
 import '../../Domain/GalatKasir.dart';
 import '../../Domain/Sesi/StafLokal.dart';
-import '../Komponen/PapanPin.dart';
 import 'JamRuangKerja.dart';
 
 /// Layar kunci ruang kerja (PRD §17.2.7): nama outlet & jam, buka dengan PIN kasir yang sama atau ganti kasir. Juga

@@ -4,8 +4,10 @@ import 'package:klien_api/KlienApi.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import 'Aplikasi/AplikasiPemilik.dart';
+import 'Aplikasi/KunciAplikasi.dart';
 import 'Aplikasi/Lingkungan.dart';
 import 'Aplikasi/Penyedia.dart';
+import 'Data/KunciPerangkat.dart';
 import 'Data/NotifikasiPush.dart';
 import 'Data/PenyediaMasukGoogle.dart';
 import 'Data/PenyimpanSesi.dart';
@@ -24,6 +26,7 @@ Future<void> JalankanAplikasi(Lingkungan lingkungan) async {
         penyediaNotifikasiPush.overrideWithValue(push),
         penyediaMasukGoogle.overrideWithValue(PenyediaMasukGooglePlugin()),
         penyediaAlamatServerAwal.overrideWithValue(alamatServer),
+        penyediaBiometrik.overrideWithValue(PenyediaBiometrikPerangkat()),
       ],
       child: AplikasiPemilik(lingkungan: lingkungan),
     ),
