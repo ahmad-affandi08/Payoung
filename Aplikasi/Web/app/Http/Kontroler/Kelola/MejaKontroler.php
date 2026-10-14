@@ -7,6 +7,7 @@ namespace App\Http\Kontroler\Kelola;
 use App\Domain\Organisasi\Aksi\AturPesanSendiriOutlet;
 use App\Domain\Organisasi\Aksi\BuatUlangTokenPesanSendiri;
 use App\Domain\Organisasi\Aksi\SimpanAreaMeja;
+use App\Domain\Organisasi\Aksi\SimpanDenahMeja;
 use App\Domain\Organisasi\Aksi\SimpanMeja;
 use App\Domain\Organisasi\Aksi\SimpanMejaMassal;
 use App\Domain\Organisasi\Aksi\UbahStatusMeja;
@@ -22,6 +23,7 @@ use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Http\Permintaan\Kelola\AturPesanSendiriOutletPermintaan;
 use App\Http\Permintaan\Kelola\SimpanAreaMejaPermintaan;
+use App\Http\Permintaan\Kelola\SimpanDenahMejaPermintaan;
 use App\Http\Permintaan\Kelola\SimpanMejaMassalPermintaan;
 use App\Http\Permintaan\Kelola\SimpanMejaPermintaan;
 use Illuminate\Http\JsonResponse;
@@ -99,6 +101,14 @@ final class MejaKontroler extends DasarKelolaKontroler
         $baris = $simpan->Jalankan($barisOutlet, $this->CariMeja($barisOutlet, $meja), $permintaan->AmbilData());
 
         return back()->with('Kilat', "Meja {$baris->Nama} disimpan.");
+    }
+
+    /** POS-03: simpan letak meja pada denah outlet (seret-lepas). */
+    public function SimpanDenah(string $outlet, SimpanDenahMejaPermintaan $permintaan, SimpanDenahMeja $simpan): RedirectResponse
+    {
+        $berubah = $simpan->Jalankan($this->CariOutlet($outlet), $permintaan->AmbilPosisi());
+
+        return back()->with('Kilat', $berubah === 0 ? 'Denah meja tidak berubah.' : 'Denah meja disimpan.');
     }
 
     public function Arsipkan(string $outlet, string $meja, UbahStatusMeja $ubah): RedirectResponse

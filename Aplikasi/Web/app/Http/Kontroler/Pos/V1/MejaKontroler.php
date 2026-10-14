@@ -39,7 +39,7 @@ final class MejaKontroler extends Kontroler
                 array_filter($data['Area'], fn (array $a): bool => $a['Status'] === StatusOrganisasi::Aktif->value),
             )),
             'Meja' => array_values(array_map(
-                fn (array $m): array => ['Uuid' => $m['Uuid'], 'Nama' => $m['Nama'], 'UuidArea' => $m['UuidArea'], 'Kapasitas' => $m['Kapasitas'], 'Bentuk' => $m['Bentuk'], 'Urutan' => $m['Urutan'], 'MinimumCharge' => $m['MinimumChargeEfektif']],
+                fn (array $m): array => ['Uuid' => $m['Uuid'], 'Nama' => $m['Nama'], 'UuidArea' => $m['UuidArea'], 'Kapasitas' => $m['Kapasitas'], 'Bentuk' => $m['Bentuk'], 'Urutan' => $m['Urutan'], 'PosisiX' => $m['PosisiX'], 'PosisiY' => $m['PosisiY'], 'MinimumCharge' => $m['MinimumChargeEfektif']],
                 array_filter($data['Meja'], fn (array $m): bool => $m['Status'] === StatusOrganisasi::Aktif->value),
             )),
             'StasiunDapur' => array_map(fn (array $s): array => ['Uuid' => $s['Uuid'], 'Nama' => $s['Nama']], $aktif),

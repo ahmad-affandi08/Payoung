@@ -276,6 +276,11 @@ void main() {
     expect(meja.meja.single.minimumCharge, '150000.00');
     expect(meja.uuidProdukMinimumCharge, 'PR-MIN');
     expect(MejaPos.DariJson({'Uuid': 'M8', 'Nama': '8'}).minimumCharge, isNull);
+    // POS-03: letak di denah; server lama atau meja belum ditata = null.
+    final lama = MejaPos.DariJson({'Uuid': 'M8', 'Nama': '8'});
+    expect((lama.posisiX, lama.posisiY), (null, null));
+    final tertata = MejaPos.DariJson({'Uuid': 'M9', 'Nama': '9', 'PosisiX': 250, 'PosisiY': 700});
+    expect((tertata.posisiX, tertata.posisiY), (250, 700));
 
     final snapshot = await klien.AmbilPesananTerbuka();
     expect(snapshot!.etag, '"abc"');

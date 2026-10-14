@@ -35,6 +35,8 @@ class RepositoriPesananMeja {
             Kapasitas: Value(m.kapasitas),
             Bentuk: Value(m.bentuk),
             Urutan: Value(m.urutan),
+            PosisiX: Value(m.posisiX),
+            PosisiY: Value(m.posisiY),
           ),
       ]);
     });

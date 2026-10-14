@@ -14542,8 +14542,26 @@ class $MejaTable extends Meja with TableInfo<$MejaTable, BarisMeja> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _PosisiXMeta = const VerificationMeta('PosisiX');
   @override
-  List<GeneratedColumn> get $columns => [Uuid, Nama, UuidArea, Kapasitas, Bentuk, Urutan];
+  late final GeneratedColumn<int> PosisiX = GeneratedColumn<int>(
+    'PosisiX',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _PosisiYMeta = const VerificationMeta('PosisiY');
+  @override
+  late final GeneratedColumn<int> PosisiY = GeneratedColumn<int>(
+    'PosisiY',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [Uuid, Nama, UuidArea, Kapasitas, Bentuk, Urutan, PosisiX, PosisiY];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -14575,6 +14593,12 @@ class $MejaTable extends Meja with TableInfo<$MejaTable, BarisMeja> {
     if (data.containsKey('Urutan')) {
       context.handle(_UrutanMeta, Urutan.isAcceptableOrUnknown(data['Urutan']!, _UrutanMeta));
     }
+    if (data.containsKey('PosisiX')) {
+      context.handle(_PosisiXMeta, PosisiX.isAcceptableOrUnknown(data['PosisiX']!, _PosisiXMeta));
+    }
+    if (data.containsKey('PosisiY')) {
+      context.handle(_PosisiYMeta, PosisiY.isAcceptableOrUnknown(data['PosisiY']!, _PosisiYMeta));
+    }
     return context;
   }
 
@@ -14590,6 +14614,8 @@ class $MejaTable extends Meja with TableInfo<$MejaTable, BarisMeja> {
       Kapasitas: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}Kapasitas'])!,
       Bentuk: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}Bentuk'])!,
       Urutan: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}Urutan'])!,
+      PosisiX: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}PosisiX']),
+      PosisiY: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}PosisiY']),
     );
   }
 
@@ -14606,6 +14632,10 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
   final int Kapasitas;
   final String Bentuk;
   final int Urutan;
+
+  /// Skema 31 (POS-03): titik tengah meja pada kanvas denah relatif 0–1000; null = belum ditata di denah.
+  final int? PosisiX;
+  final int? PosisiY;
   const BarisMeja({
     required this.Uuid,
     required this.Nama,
@@ -14613,6 +14643,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
     required this.Kapasitas,
     required this.Bentuk,
     required this.Urutan,
+    this.PosisiX,
+    this.PosisiY,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -14625,6 +14657,12 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
     map['Kapasitas'] = Variable<int>(Kapasitas);
     map['Bentuk'] = Variable<String>(Bentuk);
     map['Urutan'] = Variable<int>(Urutan);
+    if (!nullToAbsent || PosisiX != null) {
+      map['PosisiX'] = Variable<int>(PosisiX);
+    }
+    if (!nullToAbsent || PosisiY != null) {
+      map['PosisiY'] = Variable<int>(PosisiY);
+    }
     return map;
   }
 
@@ -14636,6 +14674,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
       Kapasitas: Value(Kapasitas),
       Bentuk: Value(Bentuk),
       Urutan: Value(Urutan),
+      PosisiX: PosisiX == null && nullToAbsent ? const Value.absent() : Value(PosisiX),
+      PosisiY: PosisiY == null && nullToAbsent ? const Value.absent() : Value(PosisiY),
     );
   }
 
@@ -14648,6 +14688,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
       Kapasitas: serializer.fromJson<int>(json['Kapasitas']),
       Bentuk: serializer.fromJson<String>(json['Bentuk']),
       Urutan: serializer.fromJson<int>(json['Urutan']),
+      PosisiX: serializer.fromJson<int?>(json['PosisiX']),
+      PosisiY: serializer.fromJson<int?>(json['PosisiY']),
     );
   }
   @override
@@ -14660,6 +14702,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
       'Kapasitas': serializer.toJson<int>(Kapasitas),
       'Bentuk': serializer.toJson<String>(Bentuk),
       'Urutan': serializer.toJson<int>(Urutan),
+      'PosisiX': serializer.toJson<int?>(PosisiX),
+      'PosisiY': serializer.toJson<int?>(PosisiY),
     };
   }
 
@@ -14670,6 +14714,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
     int? Kapasitas,
     String? Bentuk,
     int? Urutan,
+    Value<int?> PosisiX = const Value.absent(),
+    Value<int?> PosisiY = const Value.absent(),
   }) => BarisMeja(
     Uuid: Uuid ?? this.Uuid,
     Nama: Nama ?? this.Nama,
@@ -14677,6 +14723,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
     Kapasitas: Kapasitas ?? this.Kapasitas,
     Bentuk: Bentuk ?? this.Bentuk,
     Urutan: Urutan ?? this.Urutan,
+    PosisiX: PosisiX.present ? PosisiX.value : this.PosisiX,
+    PosisiY: PosisiY.present ? PosisiY.value : this.PosisiY,
   );
   BarisMeja copyWithCompanion(MejaCompanion data) {
     return BarisMeja(
@@ -14686,6 +14734,8 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
       Kapasitas: data.Kapasitas.present ? data.Kapasitas.value : this.Kapasitas,
       Bentuk: data.Bentuk.present ? data.Bentuk.value : this.Bentuk,
       Urutan: data.Urutan.present ? data.Urutan.value : this.Urutan,
+      PosisiX: data.PosisiX.present ? data.PosisiX.value : this.PosisiX,
+      PosisiY: data.PosisiY.present ? data.PosisiY.value : this.PosisiY,
     );
   }
 
@@ -14697,13 +14747,15 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
           ..write('UuidArea: $UuidArea, ')
           ..write('Kapasitas: $Kapasitas, ')
           ..write('Bentuk: $Bentuk, ')
-          ..write('Urutan: $Urutan')
+          ..write('Urutan: $Urutan, ')
+          ..write('PosisiX: $PosisiX, ')
+          ..write('PosisiY: $PosisiY')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(Uuid, Nama, UuidArea, Kapasitas, Bentuk, Urutan);
+  int get hashCode => Object.hash(Uuid, Nama, UuidArea, Kapasitas, Bentuk, Urutan, PosisiX, PosisiY);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -14713,7 +14765,9 @@ class BarisMeja extends DataClass implements Insertable<BarisMeja> {
           other.UuidArea == this.UuidArea &&
           other.Kapasitas == this.Kapasitas &&
           other.Bentuk == this.Bentuk &&
-          other.Urutan == this.Urutan);
+          other.Urutan == this.Urutan &&
+          other.PosisiX == this.PosisiX &&
+          other.PosisiY == this.PosisiY);
 }
 
 class MejaCompanion extends UpdateCompanion<BarisMeja> {
@@ -14723,6 +14777,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
   final Value<int> Kapasitas;
   final Value<String> Bentuk;
   final Value<int> Urutan;
+  final Value<int?> PosisiX;
+  final Value<int?> PosisiY;
   final Value<int> rowid;
   const MejaCompanion({
     this.Uuid = const Value.absent(),
@@ -14731,6 +14787,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
     this.Kapasitas = const Value.absent(),
     this.Bentuk = const Value.absent(),
     this.Urutan = const Value.absent(),
+    this.PosisiX = const Value.absent(),
+    this.PosisiY = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MejaCompanion.insert({
@@ -14740,6 +14798,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
     this.Kapasitas = const Value.absent(),
     this.Bentuk = const Value.absent(),
     this.Urutan = const Value.absent(),
+    this.PosisiX = const Value.absent(),
+    this.PosisiY = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : Uuid = Value(Uuid),
        Nama = Value(Nama);
@@ -14750,6 +14810,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
     Expression<int>? Kapasitas,
     Expression<String>? Bentuk,
     Expression<int>? Urutan,
+    Expression<int>? PosisiX,
+    Expression<int>? PosisiY,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -14759,6 +14821,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
       if (Kapasitas != null) 'Kapasitas': Kapasitas,
       if (Bentuk != null) 'Bentuk': Bentuk,
       if (Urutan != null) 'Urutan': Urutan,
+      if (PosisiX != null) 'PosisiX': PosisiX,
+      if (PosisiY != null) 'PosisiY': PosisiY,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -14770,6 +14834,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
     Value<int>? Kapasitas,
     Value<String>? Bentuk,
     Value<int>? Urutan,
+    Value<int?>? PosisiX,
+    Value<int?>? PosisiY,
     Value<int>? rowid,
   }) {
     return MejaCompanion(
@@ -14779,6 +14845,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
       Kapasitas: Kapasitas ?? this.Kapasitas,
       Bentuk: Bentuk ?? this.Bentuk,
       Urutan: Urutan ?? this.Urutan,
+      PosisiX: PosisiX ?? this.PosisiX,
+      PosisiY: PosisiY ?? this.PosisiY,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -14804,6 +14872,12 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
     if (Urutan.present) {
       map['Urutan'] = Variable<int>(Urutan.value);
     }
+    if (PosisiX.present) {
+      map['PosisiX'] = Variable<int>(PosisiX.value);
+    }
+    if (PosisiY.present) {
+      map['PosisiY'] = Variable<int>(PosisiY.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -14819,6 +14893,8 @@ class MejaCompanion extends UpdateCompanion<BarisMeja> {
           ..write('Kapasitas: $Kapasitas, ')
           ..write('Bentuk: $Bentuk, ')
           ..write('Urutan: $Urutan, ')
+          ..write('PosisiX: $PosisiX, ')
+          ..write('PosisiY: $PosisiY, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -28694,6 +28770,8 @@ typedef $$MejaTableCreateCompanionBuilder = MejaCompanion Function({
   Value<int> Kapasitas,
   Value<String> Bentuk,
   Value<int> Urutan,
+  Value<int?> PosisiX,
+  Value<int?> PosisiY,
   Value<int> rowid,
 });
 typedef $$MejaTableUpdateCompanionBuilder = MejaCompanion Function({
@@ -28703,6 +28781,8 @@ typedef $$MejaTableUpdateCompanionBuilder = MejaCompanion Function({
   Value<int> Kapasitas,
   Value<String> Bentuk,
   Value<int> Urutan,
+  Value<int?> PosisiX,
+  Value<int?> PosisiY,
   Value<int> rowid,
 });
 
@@ -28729,6 +28809,12 @@ class $$MejaTableFilterComposer extends Composer<_$BasisDataKasir, $MejaTable> {
 
   ColumnFilters<int> get Urutan =>
       $composableBuilder(column: $table.Urutan, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get PosisiX =>
+      $composableBuilder(column: $table.PosisiX, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get PosisiY =>
+      $composableBuilder(column: $table.PosisiY, builder: (column) => ColumnFilters(column));
 }
 
 class $$MejaTableOrderingComposer extends Composer<_$BasisDataKasir, $MejaTable> {
@@ -28756,6 +28842,12 @@ class $$MejaTableOrderingComposer extends Composer<_$BasisDataKasir, $MejaTable>
 
   ColumnOrderings<int> get Urutan =>
       $composableBuilder(column: $table.Urutan, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get PosisiX =>
+      $composableBuilder(column: $table.PosisiX, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get PosisiY =>
+      $composableBuilder(column: $table.PosisiY, builder: (column) => ColumnOrderings(column));
 }
 
 class $$MejaTableAnnotationComposer extends Composer<_$BasisDataKasir, $MejaTable> {
@@ -28777,6 +28869,10 @@ class $$MejaTableAnnotationComposer extends Composer<_$BasisDataKasir, $MejaTabl
   GeneratedColumn<String> get Bentuk => $composableBuilder(column: $table.Bentuk, builder: (column) => column);
 
   GeneratedColumn<int> get Urutan => $composableBuilder(column: $table.Urutan, builder: (column) => column);
+
+  GeneratedColumn<int> get PosisiX => $composableBuilder(column: $table.PosisiX, builder: (column) => column);
+
+  GeneratedColumn<int> get PosisiY => $composableBuilder(column: $table.PosisiY, builder: (column) => column);
 }
 
 class $$MejaTableTableManager
@@ -28810,6 +28906,8 @@ class $$MejaTableTableManager
                 Value<int> Kapasitas = const Value.absent(),
                 Value<String> Bentuk = const Value.absent(),
                 Value<int> Urutan = const Value.absent(),
+                Value<int?> PosisiX = const Value.absent(),
+                Value<int?> PosisiY = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MejaCompanion(
                 Uuid: Uuid,
@@ -28818,6 +28916,8 @@ class $$MejaTableTableManager
                 Kapasitas: Kapasitas,
                 Bentuk: Bentuk,
                 Urutan: Urutan,
+                PosisiX: PosisiX,
+                PosisiY: PosisiY,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -28828,6 +28928,8 @@ class $$MejaTableTableManager
                 Value<int> Kapasitas = const Value.absent(),
                 Value<String> Bentuk = const Value.absent(),
                 Value<int> Urutan = const Value.absent(),
+                Value<int?> PosisiX = const Value.absent(),
+                Value<int?> PosisiY = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MejaCompanion.insert(
                 Uuid: Uuid,
@@ -28836,6 +28938,8 @@ class $$MejaTableTableManager
                 Kapasitas: Kapasitas,
                 Bentuk: Bentuk,
                 Urutan: Urutan,
+                PosisiX: PosisiX,
+                PosisiY: PosisiY,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -22,6 +22,10 @@ class Meja extends Table {
   TextColumn get Bentuk => text().withDefault(const Constant('Persegi'))();
   IntColumn get Urutan => integer().withDefault(const Constant(0))();
 
+  /// Skema 31 (POS-03): titik tengah meja pada kanvas denah relatif 0–1000; null = belum ditata di denah.
+  IntColumn get PosisiX => integer().nullable()();
+  IntColumn get PosisiY => integer().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {Uuid};
 }

@@ -14,6 +14,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import type { Pilihan, StatusOrganisasi } from '@/Tipe/Organisasi';
 
+import DenahMeja from './DenahMeja';
 import { DialogQrMeja, SakelarPesanSendiri, type PesanSendiriOutlet } from './PesanSendiriMeja';
 
 export type AreaMeja = {
@@ -34,6 +35,9 @@ export type Meja = {
     Kapasitas: number;
     Bentuk: string;
     Urutan: number;
+    /** POS-03: titik tengah meja pada kanvas denah relatif 0–1000; null = belum ditata. */
+    PosisiX?: number | null;
+    PosisiY?: number | null;
     Status: StatusOrganisasi;
     /** Minimum charge khusus meja ini; null = ikut area. */
     MinimumCharge?: string | null;
@@ -277,6 +281,7 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
                     : {})}
                 kosong={{ judul: 'Belum ada area. Area opsional; meja tanpa area tetap bisa dipakai.' }}
             />
+            <DenahMeja alamatOutlet={alamatOutlet} meja={modeMeja.Meja} bolehKelola={bolehKelola} />
             <TabelData
                 id="organisasi-meja"
                 label="Meja"

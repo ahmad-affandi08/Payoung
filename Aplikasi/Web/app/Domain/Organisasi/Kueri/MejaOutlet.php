@@ -16,7 +16,7 @@ use App\Domain\Organisasi\Model\Outlet;
 final class MejaOutlet
 {
     /**
-     * @return array{Area: list<array{Uuid: string, Nama: string, Urutan: int, Status: string, JumlahMeja: int, MinimumCharge: string|null}>, Meja: list<array{Uuid: string, Nama: string, UuidArea: string|null, NamaArea: string|null, Kapasitas: int, Bentuk: string, Urutan: int, Status: string, MinimumCharge: string|null, MinimumChargeEfektif: string|null}>}
+     * @return array{Area: list<array{Uuid: string, Nama: string, Urutan: int, Status: string, JumlahMeja: int, MinimumCharge: string|null}>, Meja: list<array{Uuid: string, Nama: string, UuidArea: string|null, NamaArea: string|null, Kapasitas: int, Bentuk: string, Urutan: int, PosisiX: int|null, PosisiY: int|null, Status: string, MinimumCharge: string|null, MinimumChargeEfektif: string|null}>}
      */
     public function Ambil(int $idOutlet): array
     {
@@ -48,6 +48,8 @@ final class MejaOutlet
                     'Kapasitas' => $m->Kapasitas,
                     'Bentuk' => $m->Bentuk->value,
                     'Urutan' => $m->Urutan,
+                    'PosisiX' => $m->PosisiX,
+                    'PosisiY' => $m->PosisiY,
                     'Status' => $m->Status->value,
                     'MinimumCharge' => $m->MinimumCharge,
                     // D-144: minimum yang berlaku = minimum meja, atau minimum areanya bila meja tidak mengaturnya.

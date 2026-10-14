@@ -42,6 +42,9 @@ class _LayarMejaState extends ConsumerState<LayarMeja> {
   bool _sibuk = false;
   Timer? _pewaktuJam;
 
+  /// POS-03: true = tampilan denah (bila ada meja yang sudah ditata di back-office), false = daftar per area.
+  bool _tampilDenah = true;
+
   @override
   void initState() {
     super.initState();
@@ -587,6 +590,133 @@ class _LayarMejaState extends ConsumerState<LayarMeja> {
     },
   );
 
+  /// Sisi kanvas denah dalam dp; di bawah ini kanvas digulir ke samping supaya meja tidak saling menimpa di HP.
+  static const double _lebarKanvasMinimum = 640;
+  static const double _lebarKanvasMaksimum = 880;
+  static const double _rasioKanvas = 0.625;
+
+  /// POS-03: satu meja di denah. Ukuran tetap per bentuk; letak = titik tengah pada kanvas relatif 0–1000. Status
+  /// (terisi, minta bill, perlu dibersihkan) selalu disertai ikon & teks, bukan warna saja.
+  Widget _BangunMejaDenah(
+    BuildContext context, {
+    required BarisMeja meja,
+    required PesananMeja? pesanan,
+    required bool perluDibersihkan,
+    required double lebarKanvas,
+    required double tinggiKanvas,
+    required VoidCallback saatDiketuk,
+    VoidCallback? saatMenu,
+  }) {
+    final warna = TokenWarna.AmbilDari(context);
+    final teks = Theme.of(context).textTheme;
+    final sekarang = ref.read(penyediaJam)();
+    final terisi = pesanan != null;
+    final mintaBill = pesanan?.mintaBillPada != null;
+    final lebar = meja.Bentuk == 'Panjang' ? 120.0 : 80.0;
+    final tinggi = meja.Bentuk == 'Panjang' ? 68.0 : 80.0;
+    final status = mintaBill
+        ? (ikon: Icons.receipt_long_outlined, teks: 'Minta bill')
+        : terisi
+        ? (ikon: Icons.restaurant, teks: '${pesanan.jumlahTamu} tamu')
+        : perluDibersihkan
+        ? (ikon: Icons.cleaning_services_outlined, teks: 'Kotor')
+        : (ikon: Icons.event_seat_outlined, teks: '${meja.Kapasitas} kursi');
+    final keterangan = pesanan == null
+        ? 'Kosong | ${meja.Kapasitas} kursi${perluDibersihkan ? ' | perlu dibersihkan' : ''}'
+        : '${pesanan.jumlahTamu} tamu | ${pesanan.AmbilBarisAktif().length} item | ${_FormatLama(sekarang.toUtc().difference(pesanan.dibukaPada.toUtc()))}${mintaBill ? ' | minta bill' : ''}';
+    final sisi = BorderSide(
+      color: mintaBill || perluDibersihkan
+          ? warna.peringatan
+          : terisi
+          ? warna.brand
+          : warna.garis,
+      width: TokenJarak.tebalGaris,
+    );
+    final bentuk = meja.Bentuk == 'Bundar'
+        ? CircleBorder(side: sisi)
+        : RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusPanel), side: sisi);
+    return Positioned(
+      left: (meja.PosisiX! / 1000 * lebarKanvas - lebar / 2).clamp(0.0, lebarKanvas - lebar),
+      top: (meja.PosisiY! / 1000 * tinggiKanvas - tinggi / 2).clamp(0.0, tinggiKanvas - tinggi),
+      width: lebar,
+      height: tinggi,
+      child: Semantics(
+        button: true,
+        label: '${meja.Nama}, $keterangan',
+        excludeSemantics: true,
+        child: Material(
+          key: ValueKey('MejaDenah-${meja.Nama}'),
+          color: terisi ? warna.brand.withValues(alpha: 0.08) : warna.permukaan,
+          shape: bentuk,
+          child: InkWell(
+            customBorder: bentuk,
+            onTap: _sibuk ? null : saatDiketuk,
+            onLongPress: saatMenu,
+            child: Padding(
+              padding: const EdgeInsets.all(TokenJarak.jarak4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    meja.Nama,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: teks.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        status.ikon,
+                        size: TokenJarak.ikonKecil,
+                        color: mintaBill || perluDibersihkan ? warna.peringatan : warna.teksSekunder,
+                      ),
+                      const SizedBox(width: TokenJarak.jarak4),
+                      Flexible(
+                        child: Text(
+                          status.teks,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: teks.labelSmall?.copyWith(color: warna.teksSekunder),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// POS-03: kanvas denah berasio tetap (letak relatif sama di semua layar); lebarnya dibatasi [_lebarKanvasMaksimum] dan
+  /// digulir ke samping bila layar lebih sempit dari [_lebarKanvasMinimum].
+  Widget _BangunDenah(BuildContext context, List<BarisMeja> ditata, Widget Function(BarisMeja, double, double) bangun) {
+    final warna = TokenWarna.AmbilDari(context);
+    return LayoutBuilder(
+      builder: (context, batas) {
+        final lebar = batas.maxWidth.clamp(_lebarKanvasMinimum, _lebarKanvasMaksimum);
+        final tinggi = lebar * _rasioKanvas;
+        final kanvas = Container(
+          key: const ValueKey('KanvasDenahMeja'),
+          width: lebar,
+          height: tinggi,
+          decoration: BoxDecoration(
+            color: warna.latar,
+            borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+            border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+          ),
+          child: Stack(children: [for (final m in ditata) bangun(m, lebar, tinggi)]),
+        );
+        return batas.maxWidth < _lebarKanvasMinimum
+            ? SingleChildScrollView(scrollDirection: Axis.horizontal, child: kanvas)
+            : Align(alignment: Alignment.topCenter, child: kanvas);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final teks = Theme.of(context).textTheme;
@@ -616,27 +746,43 @@ class _LayarMejaState extends ConsumerState<LayarMeja> {
       ),
     ].where((k) => k.meja.isNotEmpty).toList();
 
-    Widget BangunUbinMeja(BarisMeja m) {
+    VoidCallback SaatKetukMeja(BarisMeja m) {
       final p = perMeja[m.Uuid];
       final perluDibersihkan = p == null && kotor.containsKey(m.Uuid);
+      return () => p != null
+          ? _Lanjutkan(p)
+          : perluDibersihkan
+          ? unawaited(_BukaMenuMejaKotor(m))
+          : unawaited(_BukaBaru(m));
+    }
+
+    VoidCallback? SaatMenuMeja(BarisMeja m) {
+      final p = perMeja[m.Uuid];
+      final perluDibersihkan = p == null && kotor.containsKey(m.Uuid);
+      return p != null
+          ? () => unawaited(_BukaMenu(p, meja, terisi, pesanan))
+          : perluDibersihkan
+          ? () => unawaited(_BukaMenuMejaKotor(m))
+          : null;
+    }
+
+    Widget BangunUbinMeja(BarisMeja m) {
+      final p = perMeja[m.Uuid];
       return _BangunUbin(
         context,
         judul: m.Nama,
         pesanan: p,
         kapasitas: m.Kapasitas,
-        perluDibersihkan: perluDibersihkan,
-        saatDiketuk: () => p != null
-            ? _Lanjutkan(p)
-            : perluDibersihkan
-            ? unawaited(_BukaMenuMejaKotor(m))
-            : unawaited(_BukaBaru(m)),
-        saatMenu: p != null
-            ? () => unawaited(_BukaMenu(p, meja, terisi, pesanan))
-            : perluDibersihkan
-            ? () => unawaited(_BukaMenuMejaKotor(m))
-            : null,
+        perluDibersihkan: p == null && kotor.containsKey(m.Uuid),
+        saatDiketuk: SaatKetukMeja(m),
+        saatMenu: SaatMenuMeja(m),
       );
     }
+
+    // POS-03: meja yang sudah ditata di denah back-office. Tanpa satu pun, tampilan daftar per area seperti biasa.
+    final ditata = meja.where((m) => m.PosisiX != null && m.PosisiY != null).toList();
+    final denahAktif = ditata.isNotEmpty && _tampilDenah;
+    final belumDitata = denahAktif ? meja.where((m) => m.PosisiX == null || m.PosisiY == null).toList() : <BarisMeja>[];
 
     return ListView(
       padding: EdgeInsets.all(tepi),
@@ -685,6 +831,20 @@ class _LayarMejaState extends ConsumerState<LayarMeja> {
           ),
         ],
         if (_sibuk) const LinearProgressIndicator(),
+        if (ditata.isNotEmpty) ...[
+          const SizedBox(height: TokenJarak.jarak8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: true, icon: Icon(Icons.map_outlined), label: Text('Denah')),
+                ButtonSegment(value: false, icon: Icon(Icons.view_list_outlined), label: Text('Daftar')),
+              ],
+              selected: {_tampilDenah},
+              onSelectionChanged: (pilih) => setState(() => _tampilDenah = pilih.first),
+            ),
+          ),
+        ],
         BagianPesanSendiri(kasir: widget.kasir, saatPesan: (pesan) => setState(() => _pesan = pesan)),
         if (mejaAsync.isLoading && meja.isEmpty)
           const Padding(
@@ -700,12 +860,35 @@ class _LayarMejaState extends ConsumerState<LayarMeja> {
                 'Atur meja di back-office menu Meja, lalu sambungkan perangkat ke internet. '
                 'Pesanan tanpa meja tetap bisa dibuat.',
           ),
-        for (final k in kelompok) ...[
+        if (denahAktif) ...[
           const SizedBox(height: TokenJarak.jarak16),
-          Text(k.judul, style: teks.titleMedium),
-          const SizedBox(height: TokenJarak.jarak8),
-          _BangunKisi([for (final m in k.meja) BangunUbinMeja(m)]),
-        ],
+          _BangunDenah(
+            context,
+            ditata,
+            (m, lebar, tinggi) => _BangunMejaDenah(
+              context,
+              meja: m,
+              pesanan: perMeja[m.Uuid],
+              perluDibersihkan: perMeja[m.Uuid] == null && kotor.containsKey(m.Uuid),
+              lebarKanvas: lebar,
+              tinggiKanvas: tinggi,
+              saatDiketuk: SaatKetukMeja(m),
+              saatMenu: SaatMenuMeja(m),
+            ),
+          ),
+          if (belumDitata.isNotEmpty) ...[
+            const SizedBox(height: TokenJarak.jarak16),
+            Text('Belum ditata di denah', style: teks.titleMedium),
+            const SizedBox(height: TokenJarak.jarak8),
+            _BangunKisi([for (final m in belumDitata) BangunUbinMeja(m)]),
+          ],
+        ] else
+          for (final k in kelompok) ...[
+            const SizedBox(height: TokenJarak.jarak16),
+            Text(k.judul, style: teks.titleMedium),
+            const SizedBox(height: TokenJarak.jarak8),
+            _BangunKisi([for (final m in k.meja) BangunUbinMeja(m)]),
+          ],
         if (tanpaMeja.isNotEmpty) ...[
           const SizedBox(height: TokenJarak.jarak16),
           Text('Pesanan tanpa meja', style: teks.titleMedium),

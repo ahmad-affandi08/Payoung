@@ -25,6 +25,8 @@ class MejaPos {
     required this.bentuk,
     required this.urutan,
     this.minimumCharge,
+    this.posisiX,
+    this.posisiY,
   });
 
   final String uuid;
@@ -33,6 +35,10 @@ class MejaPos {
   final int kapasitas;
   final String bentuk;
   final int urutan;
+
+  /// POS-03: titik tengah meja pada kanvas denah relatif 0–1000; null = belum ditata (juga server lama).
+  final int? posisiX;
+  final int? posisiY;
 
   /// FnB minimum charge (D-144): minimum belanja yang berlaku untuk meja ini (minimum meja, atau areanya), string
   /// desimal ("150000.00"); null = tanpa minimum (juga server lama).
@@ -46,6 +52,8 @@ class MejaPos {
     bentuk: UraiJson.AmbilTeks(json['Bentuk'], 'Persegi'),
     urutan: UraiJson.AmbilBulat(json['Urutan']),
     minimumCharge: UraiJson.AmbilTeksAtauNull(json['MinimumCharge']),
+    posisiX: json['PosisiX'] == null ? null : UraiJson.AmbilBulat(json['PosisiX']),
+    posisiY: json['PosisiY'] == null ? null : UraiJson.AmbilBulat(json['PosisiY']),
   );
 }
 

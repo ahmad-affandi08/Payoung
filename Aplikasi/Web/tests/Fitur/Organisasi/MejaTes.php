@@ -52,7 +52,7 @@ describe('F-10a meja & area', function (): void {
         $this->get($alamat)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Outlet/Detail')
             ->where('ModeMeja.Aktif', true)
-            ->where('ModeMeja.Area.0', ['Uuid' => $area->Uuid, 'Nama' => 'Teras Belakang', 'Urutan' => 1, 'Status' => 'Aktif', 'JumlahMeja' => 1])
+            ->where('ModeMeja.Area.0', ['Uuid' => $area->Uuid, 'Nama' => 'Teras Belakang', 'Urutan' => 1, 'Status' => 'Aktif', 'JumlahMeja' => 1, 'MinimumCharge' => null])
             // Urutan alami: "7" sebelum "10".
             ->where('ModeMeja.Meja.0.Nama', '7')
             ->where('ModeMeja.Meja.0.NamaArea', 'Teras Belakang')

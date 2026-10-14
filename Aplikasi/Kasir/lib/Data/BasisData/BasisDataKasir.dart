@@ -212,9 +212,9 @@ class BasisDataKasir extends _$BasisDataKasir {
   /// outbox); 17 = F-05f bagian 2 (bahan terbuang lokal); 18 = X8 (kanal metode pembayaran platform ojol);
   /// 19 = F-17 bagian 3 (ongkir ikut DPP pajak); 24 = K-12 (minta bill & meja perlu dibersihkan); 25 = K-25 (harga
   /// terbuka); 26 = Modul Salesman bagian 2 (pelanggan salesman, kunjungan, pesanan grosir lokal); 27 = Bengkel & Apotek
-  /// bagian 2 (golongan obat produk, perintah kerja & ringkasan resep penjualan).
+  /// bagian 2 (golongan obat produk, perintah kerja & ringkasan resep penjualan); 31 = POS-03 (letak meja di denah).
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -518,6 +518,17 @@ class BasisDataKasir extends _$BasisDataKasir {
           await m.addColumn(produk, produk.Favorit);
         }
         await (delete(pengaturan)..where((p) => p.Kunci.equals('KursorKatalog'))).go();
+      }
+      // Skema 31 (POS-03): letak meja di denah. Tabel meja dari skema < 6 dibuat berkolom lengkap; daftar meja diganti
+      // utuh pada tarik berikutnya, jadi cukup menambah kolom.
+      if (dari >= 6 && dari < 31) {
+        final ada = await customSelect(
+          "SELECT COUNT(*) AS Jumlah FROM pragma_table_info('Meja') WHERE name = 'PosisiX'",
+        ).map((r) => r.read<int>('Jumlah')).getSingle();
+        if (ada == 0) {
+          await m.addColumn(meja, meja.PosisiX);
+          await m.addColumn(meja, meja.PosisiY);
+        }
       }
     },
     beforeOpen: (detail) async {
