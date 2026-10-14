@@ -157,6 +157,26 @@ export type ReturRingkasPenjualan = {
     TotalRefund: string;
 };
 
+/** TAX-07: Faktur Pajak per transaksi kasir (yang aktif, atau yang terakhir dibatalkan). */
+export type FakturPajakPenjualan = {
+    Uuid: string;
+    Status: 'Diposting' | 'Dibatalkan';
+    NomorFakturPajak: string | null;
+    Catatan: string | null;
+    NamaPembeli: string;
+    DibuatPada: string | null;
+    DibatalkanPada: string | null;
+    AlasanBatal: string | null;
+};
+
+/** TAX-07: pembeli yang bisa dipilih untuk Faktur Pajak; `JenisIdentitas` null = belum punya NPWP/NIK sah. */
+export type PembeliFakturPajak = {
+    Uuid: string;
+    Nama: string;
+    JenisIdentitas: 'NPWP' | 'NIK' | null;
+    IdentitasTersamar: string | null;
+};
+
 export type PropsDetailPenjualan = {
     Penjualan: RingkasanPenjualan;
     Baris: BarisDetailPenjualan[];
@@ -166,6 +186,8 @@ export type PropsDetailPenjualan = {
     Jurnal: { Uuid: string; Nomor: string }[];
     Void: VoidPenjualan | null;
     Retur: ReturRingkasPenjualan[];
+    FakturPajak: FakturPajakPenjualan | null;
+    Izin: { KelolaFakturPajak: boolean };
 };
 
 /** F-09: baris daftar Void & Retur (dasar laporan anti-fraud BR-09.3). */

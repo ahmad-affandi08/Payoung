@@ -39,7 +39,7 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
     return (
         <Panel
             judul="Faktur Pajak Keluaran (Coretax)"
-            keterangan="Dari faktur penjualan grosir pada periode ini. Unduh XML lalu impor di Coretax; nomor Faktur Pajak diisi Coretax, bukan Payoung."
+            keterangan="Dari faktur penjualan grosir dan Faktur Pajak per transaksi kasir pada periode ini. Unduh XML lalu impor di Coretax; nomor Faktur Pajak diisi Coretax, bukan Payoung."
             aksi={
                 data?.BisaDiekspor ? (
                     <TautanUnduh
@@ -70,7 +70,7 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
 
                     <p className="text-isi text-teks-utama">
                         {data.JumlahDiperiksa === 0
-                            ? 'Tidak ada faktur penjualan grosir pada periode ini.'
+                            ? 'Tidak ada faktur penjualan grosir atau Faktur Pajak kasir pada periode ini.'
                             : `${String(data.JumlahSiap)} dari ${String(data.JumlahDiperiksa)} faktur siap diekspor. DPP ${FormatRupiah(data.TotalDpp)}, PPN ${FormatRupiah(data.TotalPpn)}.`}
                     </p>
 

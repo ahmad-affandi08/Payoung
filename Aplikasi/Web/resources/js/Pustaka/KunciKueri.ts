@@ -16,6 +16,10 @@ export const KunciKueri = {
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,
     },
+    // TAX-07: pemilih pembeli Faktur Pajak per transaksi kasir.
+    Penjualan: {
+        CariPembeliFakturPajak: (kata: string) => ['Penjualan', 'CariPembeliFakturPajak', kata] as const,
+    },
     // PRD v3.12: kesiapan ekspor Faktur Pajak Keluaran Coretax per periode & outlet.
     FakturPajakCoretax: (saring: Record<string, string>) => ['FakturPajakCoretax', saring] as const,
     NotaReturPajak: (saring: Record<string, string>) => ['NotaReturPajak', saring] as const,

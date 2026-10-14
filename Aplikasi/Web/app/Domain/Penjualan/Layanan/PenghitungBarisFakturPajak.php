@@ -14,6 +14,7 @@ use App\Domain\Penjualan\Kalkulasi\DataKalkulasi;
 use App\Domain\Penjualan\Kalkulasi\DataPajakKalkulasi;
 use App\Domain\Penjualan\Kalkulasi\DataPotongan;
 use App\Domain\Penjualan\Kalkulasi\MesinKalkulasi;
+use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\ReturGrosirDetail;
 use App\Domain\Penjualan\Model\SuratJalanDetail;
 use Brick\Math\BigDecimal;
@@ -137,7 +138,7 @@ final class PenghitungBarisFakturPajak
      * @param  list<string>  $masalah
      * @param  list<string>  $peringatan
      */
-    public function SusunBaris(SuratJalanDetail|ReturGrosirDetail $d, ?array $hitung, BigDecimal $tarif, ?array $kode, array &$masalah, array &$peringatan): DataBarisFakturPajak
+    public function SusunBaris(SuratJalanDetail|ReturGrosirDetail|PenjualanDetail $d, ?array $hitung, BigDecimal $tarif, ?array $kode, array &$masalah, array &$peringatan): DataBarisFakturPajak
     {
         if ($hitung === null) {
             $masalah[] = "Baris \"{$d->NamaProduk}\" bukan objek PPN (kelompok pajaknya tidak memuat PPN). Coretax tidak menerima baris tanpa PPN dalam satu faktur; pisahkan penyerahannya.";

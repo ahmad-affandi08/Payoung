@@ -18,6 +18,7 @@ use App\Domain\Penjualan\Data\DataSudahDiretur;
 use App\Domain\Penjualan\Enum\KodeAlasanTinjauan;
 use App\Domain\Penjualan\Layanan\PenghitungNilaiRetur;
 use App\Domain\Penjualan\Layanan\PetaMutasiPenjualan;
+use App\Domain\Penjualan\Model\FakturPajakPenjualan;
 use App\Domain\Penjualan\Model\Penjualan;
 use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\PenjualanPajak;
@@ -184,8 +185,36 @@ final class DetailPenjualan
                 'LabelMetodeRefund' => $r->MetodeRefund->AmbilLabel(),
                 'TotalRefund' => $r->TotalRefund,
             ])->all()),
+            'FakturPajak' => $this->AmbilFakturPajak($p->Id),
             'MutasiStok' => $this->AmbilMutasi($p->Id),
             'Jurnal' => array_map(fn (array $j): array => ['Uuid' => $j['Uuid'], 'Nomor' => $j['Nomor']], $jurnal),
+        ];
+    }
+
+    /**
+     * Faktur Pajak per transaksi kasir (TAX-07): yang aktif (satu per penjualan) beserta pembelinya, atau yang terakhir
+     * dibatalkan bila tidak ada yang aktif; null bila belum pernah diminta.
+     *
+     * @return array{Uuid: string, Status: string, NomorFakturPajak: string|null, Catatan: string|null, NamaPembeli: string, DibuatPada: string|null, DibatalkanPada: string|null, AlasanBatal: string|null}|null
+     */
+    private function AmbilFakturPajak(int $idPenjualan): ?array
+    {
+        $faktur = FakturPajakPenjualan::query()->where('IdPenjualan', $idPenjualan)
+            ->orderByRaw("CASE WHEN `Status` = 'Diposting' THEN 0 ELSE 1 END")->orderByDesc('Id')->first();
+
+        if ($faktur === null) {
+            return null;
+        }
+
+        return [
+            'Uuid' => $faktur->Uuid,
+            'Status' => $faktur->Status->value,
+            'NomorFakturPajak' => $faktur->NomorFakturPajak,
+            'Catatan' => $faktur->Catatan,
+            'NamaPembeli' => $this->pelanggan->AmbilRingkas($faktur->IdPelanggan)['Nama'] ?? '',
+            'DibuatPada' => $faktur->DibuatPada?->toIso8601String(),
+            'DibatalkanPada' => $faktur->DibatalkanPada?->toIso8601String(),
+            'AlasanBatal' => $faktur->AlasanBatal,
         ];
     }
 

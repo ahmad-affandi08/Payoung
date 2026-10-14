@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Http\Kontroler\Kelola\Penjualan\FakturPajakPenjualanKontroler;
 use App\Http\Kontroler\Kelola\Penjualan\PenjualanKontroler;
 use App\Http\Kontroler\Kelola\Penjualan\PesananPenjualanKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
@@ -33,4 +34,12 @@ Route::middleware([SiapkanAuditTenant::class, $lihat])->group(function () use ($
         ->middleware(WajibIzinTenant::class.':'.IzinTenant::PenjualanBuat->value)->where('pesananPenjualan', $ulid)->name('kelola.pre-order.siap');
     Route::post('/pre-order/{pesananPenjualan}/selesaikan-uang-muka', [PesananPenjualanKontroler::class, 'Selesaikan'])
         ->middleware(WajibIzinTenant::class.':'.IzinTenant::AkuntansiKelola->value)->where('pesananPenjualan', $ulid)->name('kelola.pre-order.selesaikan-uang-muka');
+});
+
+// TAX-07: Faktur Pajak per transaksi kasir atas permintaan pembeli ber-NPWP/NIK (izin akuntansi.kelola, termasuk pajak).
+Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTenant::AkuntansiKelola->value])->group(function () use ($ulid): void {
+    Route::get('/penjualan/faktur-pajak/pelanggan', [FakturPajakPenjualanKontroler::class, 'CariPelanggan'])->name('kelola.penjualan.faktur-pajak.pelanggan');
+    Route::post('/penjualan/{penjualan}/faktur-pajak', [FakturPajakPenjualanKontroler::class, 'Terbitkan'])->where('penjualan', $ulid)->middleware('throttle:60,1')->name('kelola.penjualan.faktur-pajak.terbitkan');
+    Route::put('/penjualan/{penjualan}/faktur-pajak/{faktur}/nomor', [FakturPajakPenjualanKontroler::class, 'UbahNomor'])->where(['penjualan' => $ulid, 'faktur' => $ulid])->name('kelola.penjualan.faktur-pajak.nomor');
+    Route::post('/penjualan/{penjualan}/faktur-pajak/{faktur}/batalkan', [FakturPajakPenjualanKontroler::class, 'Batalkan'])->where(['penjualan' => $ulid, 'faktur' => $ulid])->name('kelola.penjualan.faktur-pajak.batalkan');
 });

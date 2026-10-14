@@ -152,6 +152,8 @@ const propsDetail: PropsDetailPenjualan = {
     Jurnal: [{ Uuid: '01K5JURNAL0000000000000009', Nomor: 'JU/2026/09/000009' }],
     Void: null,
     Retur: [],
+    FakturPajak: null,
+    Izin: { KelolaFakturPajak: true },
 };
 
 describe('F-07b halaman penjualan back-office', () => {

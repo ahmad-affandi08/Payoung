@@ -13,6 +13,7 @@ use App\Domain\Pajak\Kueri\DaftarKelompokPajak;
 use App\Domain\Pelanggan\Kueri\IdentitasPajakPelanggan;
 use App\Domain\Penjualan\Data\DataFakturPajak;
 use App\Domain\Penjualan\Data\HasilFakturPajakCoretax;
+use App\Domain\Penjualan\Model\FakturPajakPenjualan;
 use App\Domain\Penjualan\Model\FakturPenjualan;
 use App\Domain\Penjualan\Model\SuratJalan;
 use App\Domain\Penjualan\Model\SuratJalanDetail;
@@ -23,9 +24,9 @@ use Carbon\CarbonImmutable;
 /**
  * Menyusun data Faktur Pajak Keluaran untuk impor massal Coretax dari faktur penjualan grosir (PRD v3.12, F-12).
  *
- * **Sumbernya faktur grosir, bukan penjualan kasir.** Faktur Pajak hanya diterbitkan untuk penyerahan kepada pembeli
- * ber-identitas pajak; kasir ritel menerbitkan struk (PMK tentang dokumen tertentu yang kedudukannya sama dengan Faktur
- * Pajak) dan tidak diekspor di sini.
+ * **Sumbernya faktur grosir dan, sejak v6.27 (TAX-07), Faktur Pajak per transaksi kasir** (`FakturPajakPenjualan`, atas
+ * permintaan pembeli ber-NPWP/NIK). Penjualan kasir lain tidak diekspor: struknya sudah menjadi dokumen tertentu yang
+ * kedudukannya sama dengan Faktur Pajak (PMK) bagi pembeli tanpa identitas pajak.
  *
  * **Angka dihitung ulang dengan mesin kalkulasi yang sama dengan dokumen** (`MesinKalkulasi` + snapshot tarif & pengali
  * DPP dari surat jalan) sehingga DPP baris identik dengan DPP dokumen. Coretax menghitung `OtherTaxBase` dan `VAT` per
@@ -45,6 +46,7 @@ final class PenyusunFakturPajakCoretax
         private readonly IdentitasPajakPelanggan $identitasPelanggan,
         private readonly KodeCoretaxProduk $kodeProduk,
         private readonly PenghitungBarisFakturPajak $penghitung,
+        private readonly PenyusunFakturPajakPenjualan $penyusunPenjualan,
     ) {}
 
     /**
@@ -109,14 +111,52 @@ final class PenyusunFakturPajakCoretax
             }
         }
 
+        $daftarKasir = $this->SusunDariKasir($dari, $sampai, $idOutlet, $hasilFaktur, $masalahFaktur, $peringatan);
+
         return new HasilFakturPajakCoretax(
             tinPenjual: $tin ?? '',
             faktur: $hasilFaktur,
             masalahUmum: $masalahUmum,
             masalahFaktur: $masalahFaktur,
             peringatan: array_values(array_unique($peringatan)),
-            jumlahDiperiksa: $daftarFaktur->count(),
+            jumlahDiperiksa: $daftarFaktur->count() + $daftarKasir,
         );
+    }
+
+    /**
+     * Faktur Pajak per transaksi kasir yang aktif pada periode & outlet saringan (TAX-07). Yang lolos ditambahkan ke
+     * `$hasilFaktur`, yang tidak ke `$masalahFaktur` (kuncinya nomor penjualan).
+     *
+     * @param  list<int>|null  $idOutlet
+     * @param  list<DataFakturPajak>  $hasilFaktur
+     * @param  array<string, list<string>>  $masalahFaktur
+     * @param  list<string>  $peringatan
+     * @return int jumlah Faktur Pajak kasir yang diperiksa
+     */
+    private function SusunDariKasir(CarbonImmutable $dari, CarbonImmutable $sampai, ?array $idOutlet, array &$hasilFaktur, array &$masalahFaktur, array &$peringatan): int
+    {
+        $daftar = FakturPajakPenjualan::query()
+            ->with('Penjualan')
+            ->where('Status', StatusDokumenTerposting::Diposting->value)
+            ->whereBetween('Tanggal', [$dari->toDateString(), $sampai->toDateString()])
+            ->when($idOutlet !== null, fn ($k) => $k->whereIn('IdOutlet', $idOutlet ?? []))
+            ->orderBy('Tanggal')->orderBy('Id')->get();
+        $pembeli = $this->identitasPelanggan->AmbilBanyak(array_values(array_unique($daftar->pluck('IdPelanggan')->all())));
+
+        foreach ($daftar as $fp) {
+            $hasil = $this->penyusunPenjualan->Susun($fp->Penjualan, $pembeli[$fp->IdPelanggan] ?? null);
+            $peringatan = [...$peringatan, ...$hasil['Peringatan']];
+
+            if ($hasil['Faktur'] === null) {
+                $masalahFaktur[$fp->Penjualan->Nomor] = $hasil['Masalah'];
+
+                continue;
+            }
+
+            $hasilFaktur[] = $hasil['Faktur'];
+        }
+
+        return $daftar->count();
     }
 
     /**

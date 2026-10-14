@@ -7,6 +7,8 @@ namespace App\Http\Kontroler\Kelola\Penjualan;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
 use App\Domain\Penjualan\Enum\StatusPenjualan;
@@ -78,6 +80,9 @@ final class PenjualanKontroler extends DasarKelolaKontroler
     {
         $props = $detail->Ambil($penjualan, $this->IdOutletBoleh());
         abort_if($props === null, 404);
+
+        // TAX-07: menerbitkan/membatalkan Faktur Pajak butuh izin akuntansi (termasuk pajak); halaman hanya menampilkan tombolnya.
+        $props['Izin'] = ['KelolaFakturPajak' => app(AksesPengguna::class)->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::AkuntansiKelola)];
 
         return Inertia::render('Kelola/Penjualan/Detail', $props);
     }

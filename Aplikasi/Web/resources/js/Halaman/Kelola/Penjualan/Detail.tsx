@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import DaftarAlasanTinjauan from '@/Komponen/Penjualan/DaftarAlasanTinjauan';
 import LencanaPenjualan from '@/Komponen/Penjualan/LencanaPenjualan';
+import PanelFakturPajak from '@/Komponen/Penjualan/PanelFakturPajak';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
@@ -285,6 +286,8 @@ export default function HalamanDetailPenjualan({
     Jurnal,
     Void,
     Retur,
+    FakturPajak,
+    Izin,
 }: PropsDetailPenjualan) {
     return (
         <TataLetakAplikasi judul={`Penjualan ${p.Nomor}`}>
@@ -468,6 +471,15 @@ export default function HalamanDetailPenjualan({
                         kosong={{ judul: 'Tanpa pajak.' }}
                     />
                 </>
+            ) : null}
+
+            {Pajak.length > 0 || FakturPajak !== null ? (
+                <PanelFakturPajak
+                    uuidPenjualan={p.Uuid}
+                    faktur={FakturPajak}
+                    bolehBuat={p.Status === 'Lunas' && Pajak.length > 0}
+                    bolehKelola={Izin.KelolaFakturPajak}
+                />
             ) : null}
 
             <h2 className="text-subjudul font-semibold text-teks-utama">Mutasi stok</h2>
