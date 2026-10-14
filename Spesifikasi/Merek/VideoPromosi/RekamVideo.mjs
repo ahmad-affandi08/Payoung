@@ -1,21 +1,27 @@
-// Merekam VideoPromosi30Detik.html menjadi MP4 1920x1080 lengkap dengan audio, bingkai demi bingkai (deterministik).
-// Butuh: Playwright (Chromium) dan ffmpeg. Jalankan dari akar repo:
-//   NODE_PATH=$(npm root -g) node Spesifikasi/Merek/VideoPromosi/RekamVideo.mjs [keluaran.mp4] [fps]
+// Merekam satu motion promosi (HTML) menjadi MP4 1920x1080 lengkap dengan audio, bingkai demi bingkai (deterministik).
+// Butuh: Playwright (Chromium) dan ffmpeg penuh (libx264 + aac). Jalankan dari akar repo:
+//   NODE_PATH=$(npm root -g) node Spesifikasi/Merek/VideoPromosi/RekamVideo.mjs [berkas.html] [keluaran.mp4] [fps]
+// Bawaan: VideoPromosi30Detik.html. Argumen pertama boleh langsung .mp4 (pemakaian lama tetap jalan).
 // Path ffmpeg bisa diatur lewat variabel lingkungan FFMPEG.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 
 const folderIni = dirname(fileURLToPath(import.meta.url));
-const pathKeluaran = resolve(process.argv[2] ?? resolve(folderIni, 'VideoPromosi30Detik.mp4'));
-const fps = Number(process.argv[3] ?? 30);
-const alamatHalaman = pathToFileURL(resolve(folderIni, 'VideoPromosi30Detik.html')).href + '?rekam=1';
+// Argumen pertama: berkas .html yang direkam. Bentuk lama (langsung .mp4) tetap diterima.
+const argumenPertama = process.argv[2];
+const berkasHalaman = argumenPertama?.toLowerCase().endsWith('.html') ? argumenPertama : 'VideoPromosi30Detik.html';
+const argumenKeluaran = argumenPertama?.toLowerCase().endsWith('.html') ? process.argv[3] : argumenPertama;
+const pathHalaman = resolve(folderIni, berkasHalaman);
+const pathKeluaran = resolve(argumenKeluaran ?? pathHalaman.replace(/\.html$/i, '.mp4'));
+const fps = Number((argumenPertama?.toLowerCase().endsWith('.html') ? process.argv[4] : process.argv[3]) ?? 30);
+const alamatHalaman = pathToFileURL(pathHalaman).href + '?rekam=1';
 
 async function RekamVideo() {
   const peramban = await chromium.launch();
@@ -48,7 +54,7 @@ async function RekamVideo() {
     await halaman.evaluate((detik) => window.AturWaktu(detik), urutan / fps);
     const gambar = await halaman.screenshot({ type: 'png' });
     if (!ffmpeg.stdin.write(gambar)) await new Promise((lanjut) => ffmpeg.stdin.once('drain', lanjut));
-    if (urutan % fps === 0) process.stdout.write(`\rMerekam ${Math.round(urutan / fps)}/${durasiDetik} detik`);
+    if (urutan % fps === 0) process.stdout.write(`\rMerekam ${basename(pathHalaman)} ${Math.round(urutan / fps)}/${durasiDetik} detik`);
   }
   ffmpeg.stdin.end();
   await selesai;
