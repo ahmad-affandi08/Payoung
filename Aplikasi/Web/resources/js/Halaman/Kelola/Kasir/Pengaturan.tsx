@@ -55,6 +55,7 @@ export default function HalamanPengaturanKasir({
     BatasHariLewatJatuhTempo,
     BukaLaciPerluPin,
     BatasReturTanpaStrukHarian,
+    BatasNotifikasiTransaksi,
     BarcodeTimbangan,
 }: PropsPengaturanKasir) {
     const { props } = usePage<PropsBersamaAplikasi>();
@@ -73,6 +74,7 @@ export default function HalamanPengaturanKasir({
         hariLewat: String(BatasHariLewatJatuhTempo),
         laciPin: BukaLaciPerluPin,
         tanpaStruk: UbahKeMasukanUang(BatasReturTanpaStrukHarian),
+        notifikasiTransaksi: UbahKeMasukanUang(BatasNotifikasiTransaksi),
     };
     const [batas, AturBatas] = useState(awal.batas);
     const [bersama, AturBersama] = useState(awal.bersama);
@@ -87,6 +89,7 @@ export default function HalamanPengaturanKasir({
     const [hariLewat, AturHariLewat] = useState(awal.hariLewat);
     const [laciPin, AturLaciPin] = useState(awal.laciPin);
     const [tanpaStruk, AturTanpaStruk] = useState(awal.tanpaStruk);
+    const [notifikasiTransaksi, AturNotifikasiTransaksi] = useState(awal.notifikasiTransaksi);
     const [memproses, AturMemproses] = useState(false);
     const berubah =
         batas !== awal.batas ||
@@ -100,6 +103,7 @@ export default function HalamanPengaturanKasir({
         hariLewat !== awal.hariLewat ||
         laciPin !== awal.laciPin ||
         tanpaStruk !== awal.tanpaStruk ||
+        notifikasiTransaksi !== awal.notifikasiTransaksi ||
         (bulatkan && (kelipatan !== awal.kelipatan || arah !== awal.arah));
     const opsiKelipatan = (kelipatanUmum.includes(kelipatan) ? kelipatanUmum : [...kelipatanUmum, kelipatan]).map(
         (nilai) => ({ Nilai: nilai, Label: FormatRupiah(nilai) }),
@@ -123,6 +127,7 @@ export default function HalamanPengaturanKasir({
                 BatasHariLewatJatuhTempo: hariLewat === '' ? null : Number.parseInt(hariLewat, 10),
                 BukaLaciPerluPin: laciPin,
                 BatasReturTanpaStrukHarian: tanpaStruk,
+                BatasNotifikasiTransaksi: notifikasiTransaksi,
             },
             { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) },
         );
@@ -145,6 +150,7 @@ export default function HalamanPengaturanKasir({
                     'BatasHariLewatJatuhTempo',
                     'BukaLaciPerluPin',
                     'BatasReturTanpaStrukHarian',
+                    'BatasNotifikasiTransaksi',
                 ]}
             />
             <form onSubmit={Simpan} aria-label="Pengaturan kasir" className="flex flex-col gap-4" noValidate>
@@ -280,6 +286,19 @@ export default function HalamanPengaturanKasir({
                         returnya tetap tercatat dan masuk Kotak Tindakan untuk dicek. Isi 0 agar setiap retur tanpa
                         struk dicek.
                     </p>
+                </Panel>
+                <Panel
+                    judul="Kabar transaksi besar"
+                    idJudul="judul-kabar-transaksi"
+                    keterangan="Void, retur, dan penjualan berdiskon dengan nilai sama atau di atas batas ini dikabarkan lewat notifikasi ke pengguna yang boleh melihat laporan penjualan di outlet itu. Tiap pengguna bisa membisukan jenis notifikasinya sendiri. Isi 0 agar setiap kejadian dikabarkan."
+                >
+                    <BidangUang
+                        label="Batas nilai transaksi yang dikabarkan"
+                        nilai={notifikasiTransaksi}
+                        saatBerubah={AturNotifikasiTransaksi}
+                        galat={galat.BatasNotifikasiTransaksi}
+                        required
+                    />
                 </Panel>
                 <Panel
                     judul="Penjualan tempo"

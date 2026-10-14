@@ -200,6 +200,8 @@ export type PropsPengaturanKasir = {
     BukaLaciPerluPin: boolean;
     /** K28: string desimal; Σ retur tanpa struk outlet per hari di atasnya menjadi tinjauan (bawaan Rp 1.000.000). */
     BatasReturTanpaStrukHarian: string;
+    /** OWN-03: string desimal; void/retur/diskon bernilai sama atau di atasnya dikabarkan ke pengguna berizin (bawaan Rp 500.000). */
+    BatasNotifikasiTransaksi: string;
     /** v3.55 (§9.3): barcode timbangan EAN-13 berawalan 21–29, nilai berat (gram) atau harga (Rupiah). */
     BarcodeTimbangan: BarcodeTimbangan;
 };

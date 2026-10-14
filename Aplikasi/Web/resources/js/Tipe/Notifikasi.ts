@@ -1,6 +1,13 @@
 /** F31 (PLT-08): pusat notifikasi back-office web. */
 export type JenisNotifikasi =
-    'Persetujuan' | 'SelisihKas' | 'StokKritis' | 'PerangkatOffline' | 'PiutangJatuhTempo' | 'StokKedaluwarsa';
+    | 'Persetujuan'
+    | 'SelisihKas'
+    | 'StokKritis'
+    | 'PerangkatOffline'
+    | 'PiutangJatuhTempo'
+    | 'StokKedaluwarsa'
+    | 'TransaksiBesar'
+    | 'PesananOnline';
 
 export type BarisNotifikasi = {
     Uuid: string;

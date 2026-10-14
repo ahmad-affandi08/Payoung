@@ -22,6 +22,7 @@ use App\Domain\Penjualan\Layanan\PenghitungTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\PesananOnlineDetail;
+use App\Domain\Penjualan\Tugas\BeritahuPesananOnlineMasukTugas;
 use App\Domain\Persediaan\Layanan\PencadangStok;
 use App\Domain\Promo\Aksi\PesanVoucherPos;
 use Carbon\CarbonImmutable;
@@ -164,6 +165,11 @@ final class BuatPesananOnline
                 // batal/kedaluwarsa (dilepas). Gagal memesan (habis direbut) = checkout gagal utuh.
                 if ($pesanan->KodeVoucher !== null) {
                     $this->pesanVoucher->Jalankan($pesanan->KodeVoucher, $pesanan->Uuid, null, PesanVoucherPos::MENIT_PESAN_ONLINE);
+                }
+
+                // OWN-03: pesanan bayar-saat-ambil langsung menunggu konfirmasi toko; yang bayar di muka dikabarkan saat lunas.
+                if ($pesanan->Status === StatusPesananOnline::MenungguKonfirmasi) {
+                    BeritahuPesananOnlineMasukTugas::dispatch($pesanan->IdTenant, $pesanan->Id)->afterCommit();
                 }
 
                 return [$pesanan, true];

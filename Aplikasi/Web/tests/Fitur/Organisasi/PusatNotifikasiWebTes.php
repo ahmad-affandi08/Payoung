@@ -134,7 +134,7 @@ it('bisukan jenis: notifikasi baru jenis itu tidak dibuat (Persetujuan tetap); p
 
     $masuk->get('/kelola/notifikasi')->assertInertia(fn (AssertableInertia $h) => $h
         ->where('Dibisukan', fn ($daftar): bool => collect($daftar)->sort()->values()->all() === ['PerangkatOffline', 'StokKritis'])
-        ->where('Jenis', fn ($jenis): bool => count($jenis) === 6 && collect($jenis)->firstWhere('Nilai', 'Persetujuan')['BisaDibisukan'] === false));
+        ->where('Jenis', fn ($jenis): bool => count($jenis) === count(JenisNotifikasiPengguna::cases()) && collect($jenis)->firstWhere('Nilai', 'Persetujuan')['BisaDibisukan'] === false));
 
     $masuk->put('/kelola/notifikasi/pengaturan', ['Dibisukan' => ['PiutangJatuhTempo']])->assertRedirect();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

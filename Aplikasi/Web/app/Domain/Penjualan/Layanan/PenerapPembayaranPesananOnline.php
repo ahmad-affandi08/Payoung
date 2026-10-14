@@ -22,6 +22,7 @@ use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use App\Domain\Penjualan\Model\MetodePembayaran;
 use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\TagihanQris;
+use App\Domain\Penjualan\Tugas\BeritahuPesananOnlineMasukTugas;
 use Carbon\CarbonImmutable;
 
 /**
@@ -92,6 +93,8 @@ final class PenerapPembayaranPesananOnline
 
         if ($asal === StatusPesananOnline::MenungguPembayaran) {
             $pesanan->UbahStatus(StatusPesananOnline::MenungguKonfirmasi);
+            // OWN-03: pesanan berbayar di muka kini menunggu konfirmasi toko.
+            BeritahuPesananOnlineMasukTugas::dispatch($pesanan->IdTenant, $pesanan->Id)->afterCommit();
         }
 
         $pesanan->save();

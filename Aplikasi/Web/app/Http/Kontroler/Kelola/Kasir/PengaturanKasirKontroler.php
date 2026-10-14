@@ -39,6 +39,7 @@ final class PengaturanKasirKontroler extends DasarKelolaKontroler
             'BatasHariLewatJatuhTempo' => $data->batasHariLewatJatuhTempo,
             'BukaLaciPerluPin' => $data->bukaLaciPerluPin,
             'BatasReturTanpaStrukHarian' => $data->batasReturTanpaStrukHarian->KeString(),
+            'BatasNotifikasiTransaksi' => $data->batasNotifikasiTransaksi->KeString(),
             // v3.55 (§9.3): barcode timbangan berawalan 21–29 (berat/harga di EAN-13).
             'BarcodeTimbangan' => $timbangan->Ambil(),
             'OpsiArahPembulatan' => array_map(fn (ArahPembulatan $arah): array => ['Nilai' => $arah->value, 'Label' => $arah->AmbilLabel()], ArahPembulatan::cases()),

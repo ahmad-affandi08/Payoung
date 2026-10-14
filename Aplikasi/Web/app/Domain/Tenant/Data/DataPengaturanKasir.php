@@ -22,6 +22,8 @@ use Brick\Math\BigDecimal;
  *   (BR-12.1, bawaan 0 = lewat jatuh tempo sehari pun butuh penyetuju).
  * - Cetak struk bagian 4 (PRD v1.87, §19.2): buka laci manual tanpa transaksi selalu dicatat; PIN penyetuju
  *   `kas.keluar.setujui` opsional (bawaan mati).
+ * - OWN-03 (PRD v6.27): void, retur, atau diskon penjualan dengan nilai sama atau di atas batas ini dikabarkan ke
+ *   pengguna berizin lewat notifikasi (bawaan Rp 500.000; 0 = setiap kejadian).
  * - K28 (PRD v4.01): batas nilai retur tanpa struk per outlet per hari (bawaan Rp 1.000.000); di atasnya retur tetap
  *   diterima tetapi menjadi tinjauan.
  */
@@ -44,6 +46,8 @@ final readonly class DataPengaturanKasir
 
     public const BATAS_RETUR_TANPA_STRUK_HARIAN_BAWAAN = '1000000.00';
 
+    public const BATAS_NOTIFIKASI_TRANSAKSI_BAWAAN = '500000.00';
+
     public BigDecimal $batasDiskonManual;
 
     public BigDecimal $batasDiskonPenyetuju;
@@ -53,6 +57,9 @@ final readonly class DataPengaturanKasir
 
     /** K28: Σ retur tanpa struk outlet per tanggal bisnis di atas nilai ini menjadi tinjauan. */
     public Uang $batasReturTanpaStrukHarian;
+
+    /** OWN-03: nilai void/retur/diskon yang memicu notifikasi ke pengguna berizin. */
+    public Uang $batasNotifikasiTransaksi;
 
     /**
      * @param  array{Kelipatan: int, Arah: ArahPembulatan}|null  $pembulatanTunai
@@ -69,11 +76,13 @@ final readonly class DataPengaturanKasir
         public int $batasHariLewatJatuhTempo = self::BATAS_HARI_LEWAT_JATUH_TEMPO_BAWAAN,
         public bool $bukaLaciPerluPin = false,
         ?Uang $batasReturTanpaStrukHarian = null,
+        ?Uang $batasNotifikasiTransaksi = null,
     ) {
         $this->batasDiskonManual = BigDecimal::of($batasDiskonManual ?? self::BATAS_DISKON_MANUAL_BAWAAN)->toScale(2);
         $this->batasDiskonPenyetuju = BigDecimal::of($batasDiskonPenyetuju ?? self::BATAS_DISKON_PENYETUJU_BAWAAN)->toScale(2);
         $this->toleransiSelisihKas = $toleransiSelisihKas ?? Uang::Dari(self::TOLERANSI_SELISIH_KAS_BAWAAN);
         $this->batasReturTanpaStrukHarian = $batasReturTanpaStrukHarian ?? Uang::Dari(self::BATAS_RETUR_TANPA_STRUK_HARIAN_BAWAAN);
+        $this->batasNotifikasiTransaksi = $batasNotifikasiTransaksi ?? Uang::Dari(self::BATAS_NOTIFIKASI_TRANSAKSI_BAWAAN);
     }
 
     /**

@@ -47,6 +47,7 @@ final class PengaturanKasirTenant
             batasHariLewatJatuhTempo: self::AmbilBatasHariLewat($pengaturan['BatasHariLewatJatuhTempo'] ?? null),
             bukaLaciPerluPin: ($pengaturan['BukaLaciPerluPin'] ?? false) === true,
             batasReturTanpaStrukHarian: self::AmbilUang($pengaturan['BatasReturTanpaStrukHarian'] ?? null, DataPengaturanKasir::BATAS_RETUR_TANPA_STRUK_HARIAN_BAWAAN),
+            batasNotifikasiTransaksi: self::AmbilUang($pengaturan['BatasNotifikasiTransaksi'] ?? null, DataPengaturanKasir::BATAS_NOTIFIKASI_TRANSAKSI_BAWAAN),
         );
     }
 

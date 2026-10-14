@@ -13,6 +13,8 @@ enum JenisNotifikasiPengguna: string
     case PerangkatOffline = 'PerangkatOffline';
     case PiutangJatuhTempo = 'PiutangJatuhTempo';
     case StokKedaluwarsa = 'StokKedaluwarsa';
+    case TransaksiBesar = 'TransaksiBesar';
+    case PesananOnline = 'PesananOnline';
 
     /** Label untuk pusat notifikasi web dan pengaturannya. */
     public function AmbilLabel(): string
@@ -24,6 +26,8 @@ enum JenisNotifikasiPengguna: string
             self::PerangkatOffline => 'Perangkat kasir tidak aktif',
             self::PiutangJatuhTempo => 'Piutang lewat jatuh tempo',
             self::StokKedaluwarsa => 'Barang mendekati kedaluwarsa',
+            self::TransaksiBesar => 'Void, retur, atau diskon besar',
+            self::PesananOnline => 'Pesanan online masuk',
         };
     }
 
@@ -43,6 +47,8 @@ enum JenisNotifikasiPengguna: string
             self::PerangkatOffline => '/kelola/perangkat',
             self::PiutangJatuhTempo => '/kelola/piutang',
             self::StokKedaluwarsa => '/kelola/laporan/stok?tab=kedaluwarsa',
+            self::TransaksiBesar => '/kelola/laporan/penjualan?tab=anti-fraud',
+            self::PesananOnline => '/kelola/toko-online',
         };
     }
 }

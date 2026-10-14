@@ -38,6 +38,7 @@ final class UbahPengaturanKasirTenant
             $pengaturan['BatasHariLewatJatuhTempo'] = $data->batasHariLewatJatuhTempo;
             $pengaturan['BukaLaciPerluPin'] = $data->bukaLaciPerluPin;
             $pengaturan['BatasReturTanpaStrukHarian'] = $data->batasReturTanpaStrukHarian->KeString();
+            $pengaturan['BatasNotifikasiTransaksi'] = $data->batasNotifikasiTransaksi->KeString();
             $tenant->Pengaturan = $pengaturan;
 
             if ($tenant->isDirty('Pengaturan')) {

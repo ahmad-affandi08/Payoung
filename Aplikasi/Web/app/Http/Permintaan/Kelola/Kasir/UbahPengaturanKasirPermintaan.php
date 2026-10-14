@@ -37,6 +37,7 @@ final class UbahPengaturanKasirPermintaan extends FormRequest
             'BatasHariLewatJatuhTempo' => ['sometimes', 'required', 'integer', 'min:0', 'max:'.DataPengaturanKasir::BATAS_HARI_RETUR_MAKSIMAL],
             'BukaLaciPerluPin' => ['sometimes', 'boolean'],
             'BatasReturTanpaStrukHarian' => ['sometimes', 'required', 'string', 'regex:/^\d{1,13}(\.\d{1,2})?$/'],
+            'BatasNotifikasiTransaksi' => ['sometimes', 'required', 'string', 'regex:/^\d{1,13}(\.\d{1,2})?$/'],
         ];
     }
 
@@ -58,6 +59,7 @@ final class UbahPengaturanKasirPermintaan extends FormRequest
             'ToleransiSelisihKas.regex' => 'Toleransi selisih kas harus berupa nominal rupiah, misal 10000.',
             'BatasHariLewatJatuhTempo.*' => 'Batas hari lewat jatuh tempo berupa bilangan bulat 0 sampai '.DataPengaturanKasir::BATAS_HARI_RETUR_MAKSIMAL.', misal 0.',
             'BatasReturTanpaStrukHarian.*' => 'Batas retur tanpa struk harus berupa nominal rupiah, misal 1000000. Isi 0 agar setiap retur tanpa struk ditinjau.',
+            'BatasNotifikasiTransaksi.*' => 'Batas notifikasi transaksi harus berupa nominal rupiah, misal 500000. Isi 0 agar setiap void, retur, dan diskon diberitahukan.',
             'BatasHariRetur.*' => 'Batas hari retur berupa bilangan bulat 0 sampai '.DataPengaturanKasir::BATAS_HARI_RETUR_MAKSIMAL.', misal 7.',
         ];
     }
@@ -85,6 +87,7 @@ final class UbahPengaturanKasirPermintaan extends FormRequest
             batasHariLewatJatuhTempo: $this->has('BatasHariLewatJatuhTempo') ? $this->integer('BatasHariLewatJatuhTempo') : $lama->batasHariLewatJatuhTempo,
             bukaLaciPerluPin: $this->has('BukaLaciPerluPin') ? $this->boolean('BukaLaciPerluPin') : $lama->bukaLaciPerluPin,
             batasReturTanpaStrukHarian: $this->has('BatasReturTanpaStrukHarian') ? Uang::Dari($this->string('BatasReturTanpaStrukHarian')->toString()) : $lama->batasReturTanpaStrukHarian,
+            batasNotifikasiTransaksi: $this->has('BatasNotifikasiTransaksi') ? Uang::Dari($this->string('BatasNotifikasiTransaksi')->toString()) : $lama->batasNotifikasiTransaksi,
         );
     }
 }

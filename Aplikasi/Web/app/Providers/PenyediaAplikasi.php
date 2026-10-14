@@ -33,6 +33,7 @@ use App\Domain\Pengelola\Operasional\Penangan\PeriksaOperasionalSaatCekSehat;
 use App\Domain\Pengelola\Tagihan\Penangan\KirimSurelPelunasanGerbang;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
+use App\Domain\Penjualan\Penangan\BeritahuTransaksiBesar;
 use App\Domain\Penjualan\Peristiwa\PenjualanDiterima;
 use App\Domain\Penjualan\Peristiwa\PenjualanDivoid;
 use App\Domain\Penjualan\Peristiwa\ReturPenjualanDiterima;
@@ -249,6 +250,8 @@ final class PenyediaAplikasi extends ServiceProvider
         // X7 bagian 2: webhook keluar tenant untuk penjualan selesai, void, dan retur (antrean, setelah commit).
         foreach ([PenjualanDiterima::class, PenjualanDivoid::class, ReturPenjualanDiterima::class] as $peristiwa) {
             Event::listen($peristiwa, AntrekanWebhookPenjualan::class);
+            // OWN-03: kabar void, retur, dan diskon besar ke pengguna berizin.
+            Event::listen($peristiwa, BeritahuTransaksiBesar::class);
         }
 
         Event::listen(PeristiwaIntegrasi::class, AntrekanWebhookIntegrasi::class);
