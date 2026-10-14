@@ -1219,7 +1219,7 @@ class LayananPenjualan {
     if (praPesan == null || dp.length > 1) {
       throw const GalatKasir(
         'UangMukaTanpaPesanan',
-        'Uang muka hanya dipakai sekali saat menagih pre-order atau pesanan online.',
+        'Uang muka hanya dipakai sekali saat menagih pre-order, pesanan online, atau reservasi meja.',
       );
     }
     if (dp.single.jumlah.Bandingkan(praPesan.sisaUangMuka) > 0) {

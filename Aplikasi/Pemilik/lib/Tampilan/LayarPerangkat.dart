@@ -4,6 +4,7 @@ import 'package:klien_api/KlienApi.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
+import '../Data/KlienPemilik.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 

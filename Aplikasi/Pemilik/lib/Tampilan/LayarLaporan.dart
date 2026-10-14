@@ -273,9 +273,17 @@ class _AntiFraud extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(child: Text(k.nama, style: teks.titleSmall)),
-                              Text('Risiko ${k.tingkat.toLowerCase()} | skor ${k.skor}', style: teks.titleSmall),
+                              const SizedBox(width: TokenJarak.jarak8),
+                              Flexible(
+                                child: Text(
+                                  'Risiko ${k.tingkat.toLowerCase()} | skor ${k.skor}',
+                                  style: teks.titleSmall,
+                                  textAlign: TextAlign.end,
+                                ),
+                              ),
                             ],
                           ),
                           Text(

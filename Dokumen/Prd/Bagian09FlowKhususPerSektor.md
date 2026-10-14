@@ -27,8 +27,8 @@ Fitur khusus:
 - Pindah meja, gabung meja, gabung bill, pisah bill.
 - **Cetak tagihan sementara (pre-bill)** dari menu pesanan meja, dihitung sama dengan layar Bayar (v3.53).
 - Kursus/course (appetizer, main, dessert) dengan "tahan & kirim" (hold & fire).
-- Reservasi meja dengan DP (fase 3).
-- Minimum charge per meja/area (VIP).
+- **Reservasi meja dengan DP** (v6.26, D-145): halaman Reservasi meja di back-office, antrian & "Tagih di keranjang" di Riwayat kasir; DP dibukukan sebagai kewajiban dan dipotong dari tagihan. Reservasi online publik menyusul.
+- **Minimum charge per meja/area (VIP)** (v6.25, D-144): selisih ke minimum ditagih sebagai satu baris produk sistem.
 - **Menu engineering:** klasifikasi Star/Plowhorse/Puzzle/Dog berdasarkan popularitas × margin.
 - **Food cost %** harian: HPP teoretis (resep) vs HPP aktual (opname), sehingga selisih pemakaian bahan terlihat.
 
@@ -53,7 +53,7 @@ Fitur khusus:
 
 ### 9.4 Fashion
 
-- Matrix varian ukuran × warna (input stok & harga dalam grid).
+- Matrix varian ukuran × warna (input stok & harga dalam grid; selesai v6.24, D-143).
 - Tukar barang (ukuran) dalam satu layar.
 - Koleksi/musim, markdown (diskon cuci gudang) terjadwal.
 
@@ -70,7 +70,7 @@ Fitur khusus:
 
 - Serial wajib saat GRN dan saat jual. Pencarian riwayat serial.
 - Kartu garansi (tanggal jual + masa garansi) tercetak di struk.
-- Modul servis sederhana (terima unit, estimasi, status, ambil) memakai Work Order (§9.10).
+- Modul servis sederhana (terima unit, estimasi, status, ambil) memakai Work Order (§9.10); unit berjenis Perangkat dengan IMEI/nomor seri opsional sejak v6.23 (D-142).
 
 ### 9.7 Grosir & Distributor (Mode `wholesale`)
 
@@ -175,7 +175,7 @@ Booking online/WA → Konfirmasi → Reminder H-1 (WA) → Check-in
 
 ### 9.10 Bengkel
 
-- Data kendaraan (plat, merk, tipe, tahun, km) terhubung ke pelanggan.
+- Data kendaraan (plat, merk, tipe, tahun, km) terhubung ke pelanggan. Sejak v6.23 "unit servis" juga bisa berjenis Perangkat (IMEI/nomor seri opsional) untuk servis elektronik (D-142).
 - Work Order: keluhan → diagnosis → estimasi (jasa + part) → persetujuan pelanggan (via WA link) → pengerjaan → QC → invoice.
 - Mekanik ditugaskan per jasa (komisi).
 - Riwayat servis per kendaraan, pengingat servis berkala (km/waktu).

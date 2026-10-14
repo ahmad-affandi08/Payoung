@@ -27,6 +27,7 @@ import '../Penjualan/LembarPesananOnline.dart';
 import '../Penjualan/LembarCucian.dart';
 import '../Penjualan/LembarPerintahKerja.dart';
 import '../Penjualan/LembarReservasi.dart';
+import '../Penjualan/LembarReservasiMeja.dart';
 import '../Penjualan/LembarRetur.dart';
 import '../Penjualan/LembarVoid.dart';
 import '../Persediaan/LayarStok.dart';
@@ -330,6 +331,12 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
   /// D-48: fitur khusus sektor tampil bila sektor outlet berawalan [awalan] (atau sektor belum diketahui).
   bool _SektorCocok(List<String> awalan) => ref.watch(penyediaKonteksPenjualan).value?.CekSesuaiSektor(awalan) ?? true;
 
+  /// Sektor outlet sudah diketahui dan memuat FnB (D-145).
+  bool _SektorFnbDiketahui() {
+    final k = ref.watch(penyediaKonteksPenjualan).value;
+    return k != null && k.kodeSektor.isNotEmpty && k.CekSesuaiSektor(const ['FNB']);
+  }
+
   void _BukaPanelPenjualan(_PanelPenjualan panel) => setState(() {
     _TutupSemuaPanel();
     _panelPenjualan = panel;
@@ -395,6 +402,12 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       // D-48: reservasi hanya untuk usaha jasa (SVC), servis hanya untuk bengkel (SVC-WRK).
       saatReservasi: _SektorCocok(const ['SVC'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(reservasi: true))
+          : null,
+      // D-145: reservasi meja + uang muka hanya untuk usaha FnB.
+      // Hanya bila sektor outlet sudah diketahui FnB (sektor kosong tidak menampilkan tombol ini, supaya kepala Riwayat tidak
+      // penuh oleh fitur yang mungkin tidak dipakai).
+      saatReservasiMeja: _SektorFnbDiketahui()
+          ? () => _BukaPanelPenjualan(const _PanelPenjualan(reservasiMeja: true))
           : null,
       saatServis: _SektorCocok(const ['SVC-WRK'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(servis: true))
@@ -546,6 +559,17 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
         LembarReservasi.judul,
         LembarReservasi(
           key: const ValueKey('Reservasi'),
+          kasir: widget.kasir,
+          saatDimuat: () {
+            _TutupPanel();
+            _Buka(TujuanRuangKerja.Jual);
+          },
+        ) as Widget,
+      ),
+      (_, _, _PanelPenjualan(reservasiMeja: true)) => (
+        LembarReservasiMeja.judul,
+        LembarReservasiMeja(
+          key: const ValueKey('ReservasiMeja'),
           kasir: widget.kasir,
           saatDimuat: () {
             _TutupPanel();
@@ -788,6 +812,7 @@ class _PanelPenjualan {
     this.ambilPreOrder = false,
     this.pesananOnline = false,
     this.reservasi = false,
+    this.reservasiMeja = false,
     this.servis = false,
     this.cucian = false,
   });
@@ -805,6 +830,9 @@ class _PanelPenjualan {
 
   /// F-07 mode service: antrian reservasi hari ini.
   final bool reservasi;
+
+  /// FnB reservasi meja + uang muka (D-145): antrian reservasi meja hari ini.
+  final bool reservasiMeja;
 
   /// Bengkel bagian 2: perintah kerja siap tagih.
   final bool servis;

@@ -436,10 +436,7 @@ class DokumenMenunggu {
     uuid: UraiJson.AmbilTeks(json['Uuid']),
     nomor: UraiJson.AmbilTeksAtauNull(json['Nomor']),
     judul: 'PO ${UraiJson.AmbilTeks(json['NamaPemasok'])}',
-    rincian: [
-      '${UraiJson.AmbilBulat(json['JumlahBaris'])} barang',
-      if (UraiJson.AmbilTeksAtauNull(json['Catatan']) case final catatan?) catatan,
-    ],
+    rincian: ['${UraiJson.AmbilBulat(json['JumlahBaris'])} barang', ?UraiJson.AmbilTeksAtauNull(json['Catatan'])],
     nilai: UraiJson.AmbilDesimal(json['Total']),
     diajukanOleh: UraiJson.AmbilTeksAtauNull(json['DiajukanOleh']),
     diajukanPada: DateTime.tryParse(UraiJson.AmbilTeks(json['DiajukanPada']))?.toLocal(),
@@ -457,7 +454,7 @@ class DokumenMenunggu {
       rincian: [
         outlet.isEmpty ? gudang : '$outlet | $gudang',
         '${UraiJson.AmbilBulat(json['JumlahBaris'])} barang',
-        if (UraiJson.AmbilTeksAtauNull(json['Keterangan']) case final keterangan?) keterangan,
+        ?UraiJson.AmbilTeksAtauNull(json['Keterangan']),
       ],
       nilai: UraiJson.AmbilDesimal(json['NilaiPerkiraan']),
       diajukanOleh: UraiJson.AmbilTeksAtauNull(json['DiajukanOleh']),

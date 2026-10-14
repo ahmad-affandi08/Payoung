@@ -21,6 +21,7 @@ import 'Model/ModelPos.dart';
 import 'Model/ModelPreOrder.dart';
 import 'Model/ModelPromo.dart';
 import 'Model/ModelReservasi.dart';
+import 'Model/ModelReservasiMeja.dart';
 import 'Model/ModelRetur.dart';
 import 'Model/ModelSalesman.dart';
 import 'Model/ModelStok.dart';
@@ -278,6 +279,29 @@ class KlienPos {
         'UuidPengguna': uuidPengguna,
       }))['Reservasi'],
     ),
+  );
+
+  /// FnB reservasi meja + DP (D-145): reservasi meja outlet perangkat pada [tanggal] (`YYYY-MM-DD`, bawaan hari ini),
+  /// urut jam, beserta metode sistem Uang muka (DP) bila ada reservasi yang memegang uang muka.
+  Future<AntrianReservasiMejaPos> AmbilReservasiMeja({String? tanggal}) async => AntrianReservasiMejaPos.DariJson(
+    await _Kirim(
+      'GET',
+      tanggal == null ? 'reservasi-meja' : 'reservasi-meja?tanggal=${Uri.encodeQueryComponent(tanggal)}',
+      null,
+    ),
+  );
+
+  /// Tandai tamu reservasi meja sudah datang (idempoten). [uuidMeja] menempatkan tamu bila reservasi belum bermeja
+  /// (kapasitas kurang atau meja bentrok → `GalatApi` 422).
+  Future<HasilHadirReservasiMejaPos> HadirReservasiMeja(
+    String uuid, {
+    required String uuidPengguna,
+    String? uuidMeja,
+  }) async => HasilHadirReservasiMejaPos.DariJson(
+    await _Kirim('POST', 'reservasi-meja/${Uri.encodeComponent(uuid)}/hadir', {
+      'UuidPengguna': uuidPengguna,
+      'UuidMeja': ?uuidMeja,
+    }),
   );
 
   /// K-20: kalender booking [tanggal] (`YYYY-MM-DD`, bawaan hari ini): layanan, staf berjadwal, reservasi.

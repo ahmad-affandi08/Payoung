@@ -59,6 +59,7 @@ import '../Domain/Penjualan/LayananPesananOnline.dart';
 import '../Domain/Penjualan/LayananPreOrder.dart';
 import '../Domain/Penjualan/LayananPerintahKerja.dart';
 import '../Domain/Penjualan/LayananReservasi.dart';
+import '../Domain/Penjualan/LayananReservasiMeja.dart';
 import '../Domain/Penjualan/LayananQrisDinamis.dart';
 import '../Domain/Struk/LayananKirimStruk.dart';
 import '../Domain/Penjualan/LayananVoucher.dart';
@@ -542,6 +543,11 @@ final penyediaLayananLaundry = Provider<LayananLaundry>(
 
 final penyediaLayananReservasi = Provider<LayananReservasi>(
   (ref) => LayananReservasi(klien: ref.watch(penyediaKlienPos), penjualan: ref.watch(penyediaLayananPenjualan)),
+);
+
+/// FnB reservasi meja + DP (D-145): antrian reservasi meja, tamu datang, dan pasang uang muka ke keranjang.
+final penyediaLayananReservasiMeja = Provider<LayananReservasiMeja>(
+  (ref) => LayananReservasiMeja(klien: ref.watch(penyediaKlienPos)),
 );
 
 /// Bengkel bagian 2: perintah kerja siap tagih (online) → keranjang.

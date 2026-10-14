@@ -16,8 +16,12 @@ void main() {
     });
 
     expect(daftar, hasLength(2));
-    expect((daftar[0].struk, daftar[0].stasiun), (true, {'bar'}));
-    expect((daftar[1].struk, daftar[1].stasiun, daftar[1].profil.alamat), (false, {'dapur', 'kue'}, 'AA:BB'));
+    // Himpunan di dalam record dibandingkan lewat identitas, jadi tiap komponen dibandingkan terpisah.
+    expect(daftar[0].struk, isTrue);
+    expect(daftar[0].stasiun, {'bar'});
+    expect(daftar[1].struk, isFalse);
+    expect(daftar[1].stasiun, {'dapur', 'kue'});
+    expect(daftar[1].profil.alamat, 'AA:BB');
   });
 
   test('Gabung: tanpa printer struk, stasiun "pakai printer struk" diabaikan', () {

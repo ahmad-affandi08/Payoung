@@ -388,19 +388,29 @@ class VoucherKeranjang {
       : null;
 }
 
-/// Asal uang muka keranjang: pre-order F-12 atau pesanan toko online F-17. Server menolak dua sumber sekaligus
-/// (`UangMukaDuaSumber`), karena `Penjualan.Buat` hanya punya satu baris bayar Uang Muka.
+/// Asal uang muka keranjang: pre-order F-12, pesanan toko online F-17, atau reservasi meja FnB (D-145). Server menolak
+/// dua sumber sekaligus (`UangMukaDuaSumber`), karena `Penjualan.Buat` hanya punya satu baris bayar Uang Muka.
 enum SumberUangMuka {
   praPesan,
-  pesananOnline;
+  pesananOnline,
+  reservasiMeja;
 
   /// Kunci `Penjualan.Buat` yang merujuk dokumen asalnya.
-  String get KunciOutbox => this == SumberUangMuka.praPesan ? 'UuidPesananPenjualan' : 'UuidPesananOnline';
+  String get KunciOutbox => switch (this) {
+    SumberUangMuka.praPesan => 'UuidPesananPenjualan',
+    SumberUangMuka.pesananOnline => 'UuidPesananOnline',
+    SumberUangMuka.reservasiMeja => 'UuidReservasiMeja',
+  };
 
-  String get Sebutan => this == SumberUangMuka.praPesan ? 'pre-order' : 'pesanan online';
+  String get Sebutan => switch (this) {
+    SumberUangMuka.praPesan => 'pre-order',
+    SumberUangMuka.pesananOnline => 'pesanan online',
+    SumberUangMuka.reservasiMeja => 'reservasi meja',
+  };
 }
 
-/// Dokumen yang sedang ditagihkan dan menyumbang uang muka (F-12 bagian 2 pre-order, F-17 bagian 2 pesanan online):
+/// Dokumen yang sedang ditagihkan dan menyumbang uang muka (F-12 bagian 2 pre-order, F-17 bagian 2 pesanan online,
+/// D-145 reservasi meja):
 /// uang mukanya dipakai lewat metode sistem "Uang muka (DP)" ([uuidMetode]) dan `Penjualan.Buat` merujuk [uuid].
 /// [sisaUangMuka] bisa nol — pesanan online bayar saat ambil/COD ditagih lewat jalur yang sama tanpa baris DP.
 class PraPesananKeranjang {
@@ -438,9 +448,11 @@ class PraPesananKeranjang {
           uuidMetode: '${json['UuidMetode'] ?? ''}',
           namaMetode: '${json['NamaMetode'] ?? 'Uang muka (DP)'}',
           // Draf keranjang yang disimpan sebelum F-17 bagian 2 tidak punya kunci ini: selalu pre-order.
-          sumber: json['Sumber'] == SumberUangMuka.pesananOnline.name
-              ? SumberUangMuka.pesananOnline
-              : SumberUangMuka.praPesan,
+          sumber: switch (json['Sumber']) {
+            final String nama when nama == SumberUangMuka.pesananOnline.name => SumberUangMuka.pesananOnline,
+            final String nama when nama == SumberUangMuka.reservasiMeja.name => SumberUangMuka.reservasiMeja,
+            _ => SumberUangMuka.praPesan,
+          },
         )
       : null;
 }

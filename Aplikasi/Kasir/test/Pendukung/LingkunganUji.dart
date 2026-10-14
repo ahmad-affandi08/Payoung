@@ -32,6 +32,7 @@ import 'package:kasir/Domain/Penjualan/LayananPesananOnline.dart';
 import 'package:kasir/Domain/Penjualan/LayananPreOrder.dart';
 import 'package:kasir/Domain/Penjualan/LayananPerintahKerja.dart';
 import 'package:kasir/Domain/Penjualan/LayananReservasi.dart';
+import 'package:kasir/Domain/Penjualan/LayananReservasiMeja.dart';
 import 'package:kasir/Domain/Persediaan/LayananBahanTerbuang.dart';
 import 'package:kasir/Domain/Persediaan/LayananGudang.dart';
 import 'package:kasir/Domain/Perangkat/PenentuLokasi.dart';
@@ -385,6 +386,7 @@ class LingkunganUji {
   );
   late final LayananPesananOnline pesananOnline = LayananPesananOnline(klien: klien, penjualan: penjualan);
   late final LayananReservasi reservasi = LayananReservasi(klien: klien, penjualan: penjualan);
+  late final LayananReservasiMeja reservasiMeja = LayananReservasiMeja(klien: klien);
   late final LayananPerintahKerja perintahKerja = LayananPerintahKerja(klien: klien, penjualan: penjualan);
   late final LayananLaundry laundry = LayananLaundry(klien: klien, jam: () => jam);
   late final LayananSinkron sinkron = LayananSinkron(

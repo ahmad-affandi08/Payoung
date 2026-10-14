@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:pemilik/Data/PenyimpanSesi.dart';
+
 import '../Pendukung/PasangPemilik.dart';
 
 /// OWN-04 persetujuan PO & penyesuaian stok jarak jauh: kartu dokumen di tab Persetujuan (lencana ikut menghitung),
@@ -104,6 +106,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('PO PT Sumber Pangan Nusantara'), findsOneWidget);
       expect(find.text('Rp 6.300.000'), findsOneWidget);
+      await tester.dragUntilVisible(
+        find.text('Penyesuaian stok | Hilang'),
+        find.byType(ListView).first,
+        const Offset(0, -150),
+      );
       expect(find.text('Penyesuaian stok | Hilang'), findsOneWidget);
       expect(find.text('Dokumen ini Anda buat sendiri, jadi harus disetujui orang lain.'), findsOneWidget);
 

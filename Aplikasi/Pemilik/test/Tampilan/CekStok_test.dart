@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:pemilik/Data/PenyimpanSesi.dart';
+
 import '../Pendukung/PasangPemilik.dart';
 
 /// OWN-06 cek stok di Aplikasi Owner: mode Stok di Laporan menampilkan nilai persediaan, stok kritis, saldo per produk,
@@ -110,12 +112,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(server.permintaan.where((p) => p.url.path.endsWith('/stok')).last.url.queryParameters['cari'], 'minyak');
 
+      await tester.ensureVisible(find.text('Gula Pasir 1 Kg'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Gula Pasir 1 Kg'));
       await tester.pumpAndSettle();
-      expect(server.permintaan.last.url.path, endsWith('/stok/kartu'));
+      expect(server.permintaan.any((p) => p.url.path.endsWith('/stok/kartu')), isTrue);
       expect(find.textContaining('Kartu stok | Gula Pasir 1 Kg'), findsOneWidget);
-      expect(find.text('Penjualan'), findsOneWidget);
-      expect(find.text('-4'), findsOneWidget);
+      final lembar = find.byType(BottomSheet);
+      expect(find.descendant(of: lembar, matching: find.text('Penjualan')), findsOneWidget);
+      expect(find.descendant(of: lembar, matching: find.text('-4')), findsOneWidget);
       expect(find.textContaining('Saldo awal 10 pcs | saldo akhir 6 pcs'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

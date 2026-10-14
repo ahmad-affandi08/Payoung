@@ -18,6 +18,7 @@ export 'Model/ModelPreOrder.dart';
 export 'Model/ModelPos.dart';
 export 'Model/ModelPromo.dart';
 export 'Model/ModelReservasi.dart';
+export 'Model/ModelReservasiMeja.dart';
 export 'Model/ModelRetur.dart';
 export 'Model/ModelSalesman.dart';
 export 'Model/ModelStok.dart';

@@ -19,9 +19,9 @@ class LayarPersetujuan extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
-      onRefresh: () async {
+      onRefresh: () {
         ref.invalidate(penyediaDokumenPersetujuan);
-        await ref.refresh(penyediaPersetujuan.future);
+        return ref.refresh(penyediaPersetujuan.future);
       },
       child: KeadaanData(
         nilai: ref.watch(penyediaPersetujuan),

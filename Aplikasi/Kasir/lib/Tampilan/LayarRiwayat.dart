@@ -45,6 +45,7 @@ class LayarRiwayat extends ConsumerStatefulWidget {
     this.saatAmbilPreOrder,
     this.saatPesananOnline,
     this.saatReservasi,
+    this.saatReservasiMeja,
     this.saatServis,
     this.saatCucian,
   });
@@ -66,6 +67,9 @@ class LayarRiwayat extends ConsumerStatefulWidget {
 
   /// F-07 mode service: buka lembar antrian reservasi hari ini.
   final VoidCallback? saatReservasi;
+
+  /// FnB reservasi meja + uang muka (D-145): buka lembar antrian reservasi meja hari ini.
+  final VoidCallback? saatReservasiMeja;
 
   /// Bengkel bagian 2: buka lembar perintah kerja siap tagih.
   final VoidCallback? saatServis;
@@ -207,6 +211,7 @@ class _LayarRiwayatState extends ConsumerState<LayarRiwayat> {
     final saatAmbilPreOrder = widget.saatAmbilPreOrder;
     final saatPesananOnline = widget.saatPesananOnline;
     final saatReservasi = widget.saatReservasi;
+    final saatReservasiMeja = widget.saatReservasiMeja;
     final saatServis = widget.saatServis;
     final saatCucian = widget.saatCucian;
     final teks = Theme.of(context).textTheme;
@@ -237,6 +242,12 @@ class _LayarRiwayatState extends ConsumerState<LayarRiwayat> {
             onPressed: saatReservasi,
             icon: const Icon(Icons.event_note_outlined),
             label: const Text('Reservasi hari ini'),
+          ),
+        if (saatReservasiMeja != null)
+          OutlinedButton.icon(
+            onPressed: saatReservasiMeja,
+            icon: const Icon(Icons.table_restaurant_outlined),
+            label: const Text('Reservasi meja'),
           ),
         if (saatServis != null)
           OutlinedButton.icon(

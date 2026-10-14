@@ -1034,12 +1034,11 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       if (keranjang.praPesan case final praPesan?)
         Padding(
           padding: const EdgeInsets.only(bottom: TokenJarak.jarak8),
-          child: Text(
-            praPesan.sumber == SumberUangMuka.pesananOnline
-                ? 'Menagih pesanan online ${praPesan.nomor}'
-                : 'Mengambil pre-order ${praPesan.nomor}',
-            style: teks.bodySmall,
-          ),
+          child: Text(switch (praPesan.sumber) {
+            SumberUangMuka.pesananOnline => 'Menagih pesanan online ${praPesan.nomor}',
+            SumberUangMuka.reservasiMeja => 'Menagih reservasi meja ${praPesan.nomor}',
+            SumberUangMuka.praPesan => 'Mengambil pre-order ${praPesan.nomor}',
+          }, style: teks.bodySmall),
         ),
       if (keranjang.laundry case final laundry?)
         Padding(
