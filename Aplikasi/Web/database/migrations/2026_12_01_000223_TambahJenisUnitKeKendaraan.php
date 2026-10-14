@@ -16,21 +16,55 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration
 {
+    /**
+     * Idempoten dan tanpa sintaks khusus MySQL: versi pertama memakai `GENERATED ALWAYS AS (...) STORED NULL` lewat SQL
+     * mentah, yang **ditolak MariaDB** (kesalahan 1064 di produksi) setelah tiga langkah pertama sudah terlanjur
+     * berjalan (DDL tidak bisa di-rollback). Migrasi itu tidak pernah selesai di mana pun, jadi isinya diperbaiki di
+     * tempat: tiap langkah memeriksa keadaan sekarang supaya aman dijalankan ulang dari keadaan setengah jadi, dan kolom
+     * turunan dibuat lewat Blueprint (`storedAs`) seperti migrasi 000149 yang terbukti jalan di MariaDB.
+     */
     public function up(): void
     {
-        Schema::table('Kendaraan', function (Blueprint $tabel): void {
-            $tabel->dropUnique('UniqKendaraanIdTenantNomorPolisiAktif');
-        });
+        if ($this->AdaIndeks('UniqKendaraanIdTenantNomorPolisiAktif')) {
+            Schema::table('Kendaraan', function (Blueprint $tabel): void {
+                $tabel->dropUnique('UniqKendaraanIdTenantNomorPolisiAktif');
+            });
+        }
 
-        DB::statement('ALTER TABLE `Kendaraan` DROP COLUMN `KunciNomorPolisiAktif`');
+        if (Schema::hasColumn('Kendaraan', 'KunciNomorPolisiAktif')) {
+            Schema::table('Kendaraan', function (Blueprint $tabel): void {
+                $tabel->dropColumn('KunciNomorPolisiAktif');
+            });
+        }
+
         DB::statement('ALTER TABLE `Kendaraan` MODIFY `NomorPolisi` VARCHAR(40) NULL');
-        DB::statement("ALTER TABLE `Kendaraan` ADD `Jenis` VARCHAR(12) NOT NULL DEFAULT 'Kendaraan' AFTER `IdPelanggan`");
-        DB::statement('ALTER TABLE `Kendaraan` ADD `KunciNomorPolisiAktif` VARCHAR(40) GENERATED ALWAYS AS (IF(`Aktif`, `NomorPolisi`, NULL)) STORED NULL');
+
+        if (! Schema::hasColumn('Kendaraan', 'Jenis')) {
+            DB::statement("ALTER TABLE `Kendaraan` ADD `Jenis` VARCHAR(12) NOT NULL DEFAULT 'Kendaraan' AFTER `IdPelanggan`");
+        }
+
+        Schema::table('Kendaraan', function (Blueprint $tabel): void {
+            $tabel->string('KunciNomorPolisiAktif', 40)->nullable()->storedAs('IF(`Aktif`, `NomorPolisi`, NULL)');
+        });
 
         Schema::table('Kendaraan', function (Blueprint $tabel): void {
             $tabel->unique(['IdTenant', 'KunciNomorPolisiAktif'], 'UniqKendaraanIdTenantNomorPolisiAktif');
-            $tabel->index(['IdTenant', 'Jenis'], 'IdxKendaraanIdTenantJenis');
+
+            if (! $this->AdaIndeks('IdxKendaraanIdTenantJenis')) {
+                $tabel->index(['IdTenant', 'Jenis'], 'IdxKendaraanIdTenantJenis');
+            }
         });
+    }
+
+    private function AdaIndeks(string $nama): bool
+    {
+        foreach (Schema::getIndexes('Kendaraan') as $indeks) {
+            if (strcasecmp((string) $indeks['name'], $nama) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function down(): void
@@ -44,7 +78,10 @@ return new class extends Migration
         DB::statement('ALTER TABLE `Kendaraan` DROP COLUMN `Jenis`');
         DB::statement("UPDATE `Kendaraan` SET `NomorPolisi` = CONCAT('TANPA-', `Id`) WHERE `NomorPolisi` IS NULL");
         DB::statement('ALTER TABLE `Kendaraan` MODIFY `NomorPolisi` VARCHAR(20) NOT NULL');
-        DB::statement('ALTER TABLE `Kendaraan` ADD `KunciNomorPolisiAktif` VARCHAR(20) GENERATED ALWAYS AS (IF(`Aktif`, `NomorPolisi`, NULL)) STORED NULL');
+
+        Schema::table('Kendaraan', function (Blueprint $tabel): void {
+            $tabel->string('KunciNomorPolisiAktif', 20)->nullable()->storedAs('IF(`Aktif`, `NomorPolisi`, NULL)');
+        });
 
         Schema::table('Kendaraan', function (Blueprint $tabel): void {
             $tabel->unique(['IdTenant', 'KunciNomorPolisiAktif'], 'UniqKendaraanIdTenantNomorPolisiAktif');
