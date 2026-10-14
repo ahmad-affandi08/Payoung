@@ -247,6 +247,10 @@ export type PropsDetailProduk = {
     Kepala: KepalaProduk;
     Produk: DetailProduk;
     Varian: BarisVarian[];
+    /** Stok sekarang tiap varian (kunci Uuid varian; jumlah semua lokasi). Kosong bila tanpa izin lihat persediaan. */
+    StokVarian: Record<string, string>;
+    /** Lokasi stok untuk grid stok awal varian; null = pelaku tanpa izin mencatat stok awal. */
+    StokAwalVarian: { Lokasi: { Uuid: string; Nama: string; NamaOutlet: string | null }[] } | null;
     /** null = bukan jenis yang punya stok. */
     BatasStok: BarisBatasStok[] | null;
     /** null = produk induk varian (ditandai per varian). */

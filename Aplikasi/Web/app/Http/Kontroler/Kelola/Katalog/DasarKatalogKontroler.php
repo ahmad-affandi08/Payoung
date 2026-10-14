@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Katalog;
 
 use App\Domain\Katalog\Model\Produk;
+use App\Domain\Organisasi\Data\DataInfoGudang;
 use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
+use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 
 /**
@@ -37,5 +40,25 @@ abstract class DasarKatalogKontroler extends DasarKelolaKontroler
             'KelolaPersediaan' => $this->CekIzin(IzinTenant::PersediaanKelola),
             'KelolaPajak' => $this->CekIzin(IzinTenant::AkuntansiKelola),
         ];
+    }
+
+    /**
+     * Audit kemudahan pakai #11: lokasi stok untuk isian "Stok sekarang" produk baru dan grid stok awal varian; `null` bila pelaku tidak boleh
+     * mencatat & memposting stok awal (isian disembunyikan).
+     *
+     * @return array{Lokasi: list<array{Uuid: string, Nama: string, NamaOutlet: string|null}>}|null
+     */
+    protected function AmbilOpsiStokAwal(): ?array
+    {
+        if (! $this->CekIzin(IzinTenant::PersediaanKelola) || ! $this->CekIzin(IzinTenant::PersediaanStokAwalPosting)) {
+            return null;
+        }
+
+        $lokasi = array_values(array_filter(
+            app(InfoGudang::class)->AmbilBoleh($this->IdOutletBoleh()),
+            fn (DataInfoGudang $g): bool => $g->jenis !== JenisGudang::DalamPerjalanan,
+        ));
+
+        return ['Lokasi' => array_map(fn (DataInfoGudang $g): array => ['Uuid' => $g->uuid, 'Nama' => $g->nama, 'NamaOutlet' => $g->namaOutlet], $lokasi)];
     }
 }

@@ -679,6 +679,8 @@ function PropsDetail(perubahan: Partial<PropsDetailProduk> = {}): PropsDetailPro
             DiarsipkanPada: null,
         },
         Varian: [],
+        StokVarian: {},
+        StokAwalVarian: null,
         BatasStok: [
             { UuidGudang: 'G-1', NamaGudang: 'Gudang utama', NamaOutlet: 'Solo', StokMinimum: '10', StokMaksimum: '' },
         ],
@@ -843,6 +845,94 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
 
         RenderUji(<HalamanDetailProduk {...PropsDetail({ Izin: { ...IzinPenuh, KelolaPersediaan: false } })} />);
         expect(screen.queryByRole('button', { name: 'Simpan batas stok' })).toBeNull();
+    });
+
+    it('induk varian 2 atribut: grid ukuran × warna menyimpan harga yang berubah dan mencatat stok awal sekaligus', () => {
+        const BuatVarian = (uuid: string, ukuran: string, warna: string, harga: string) => ({
+            Uuid: uuid,
+            Nama: `Kaos ${ukuran} ${warna}`,
+            Sku: null,
+            Atribut: [
+                { Nama: 'Ukuran', Nilai: ukuran },
+                { Nama: 'Warna', Nilai: warna },
+            ],
+            HargaDasar: harga,
+            Status: 'Aktif' as const,
+        });
+        const props = PropsDetail({
+            Kepala: BuatKepala({ Jenis: 'IndukVarian' }),
+            Produk: {
+                ...PropsDetail().Produk,
+                Jenis: 'IndukVarian',
+                AtributVarian: [
+                    { Nama: 'Ukuran', Nilai: ['S', 'M'] },
+                    { Nama: 'Warna', Nilai: ['Hitam', 'Putih'] },
+                ],
+            },
+            Varian: [
+                BuatVarian('V-S-H', 'S', 'Hitam', '75000.00'),
+                BuatVarian('V-S-P', 'S', 'Putih', '75000.00'),
+                BuatVarian('V-M-H', 'M', 'Hitam', '75000.00'),
+            ],
+            StokVarian: { 'V-M-H': '6.0000' },
+            StokAwalVarian: { Lokasi: [{ Uuid: 'G-1', Nama: 'Gudang utama', NamaOutlet: 'Solo' }] },
+            BatasStok: null,
+        });
+        RenderUji(<HalamanDetailProduk {...props} />);
+
+        expect(screen.getByRole('heading', { name: /Grid ukuran × warna/ })).toBeTruthy();
+        // Kombinasi M/Putih belum dibuat → tanda hubung, bukan kolom isian.
+        expect(screen.getAllByLabelText('Belum dibuat').length).toBeGreaterThan(0);
+
+        fireEvent.change(
+            within(screen.getByRole('region', { name: 'Grid harga jual varian' })).getByRole('textbox', {
+                name: 'Harga Kaos S Hitam',
+            }),
+            { target: { value: '80000' } },
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan harga 1 varian' }));
+        expect(tiruanRouter.put).toHaveBeenCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/varian',
+            { Baris: [{ Uuid: 'V-S-H', Harga: '80000', Barcode: null }] },
+            expect.anything(),
+        );
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Stok awal' }));
+        // Varian yang sudah punya stok hanya ditampilkan; tombol catat nonaktif sampai ada isian.
+        expect(screen.getByText('Stok 6')).toBeTruthy();
+        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Catat stok awal varian' }).disabled).toBe(true);
+        fireEvent.change(screen.getByRole('textbox', { name: 'Stok awal Kaos S Putih' }), { target: { value: '12' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Catat stok awal 1 varian' }));
+        expect(tiruanRouter.post).toHaveBeenCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/varian/stok-awal',
+            { UuidGudang: 'G-1', Baris: [{ Uuid: 'V-S-P', Jumlah: '12', HargaBeli: '' }] },
+            expect.anything(),
+        );
+    });
+
+    it('induk varian 1 atribut: tidak ada grid (tetap tabel daftar)', () => {
+        const props = PropsDetail({
+            Kepala: BuatKepala({ Jenis: 'IndukVarian' }),
+            Produk: {
+                ...PropsDetail().Produk,
+                Jenis: 'IndukVarian',
+                AtributVarian: [{ Nama: 'Ukuran', Nilai: ['M'] }],
+            },
+            Varian: [
+                {
+                    Uuid: 'V-M',
+                    Nama: 'Kaos M',
+                    Sku: null,
+                    Atribut: [{ Nama: 'Ukuran', Nilai: 'M' }],
+                    HargaDasar: null,
+                    Status: 'Aktif',
+                },
+            ],
+            BatasStok: null,
+        });
+        RenderUji(<HalamanDetailProduk {...props} />);
+
+        expect(screen.queryByRole('heading', { name: /Grid ukuran/ })).toBeNull();
     });
 
     it('induk varian: pratinjau kombinasi baru dan kuota paket semua-atau-tidak', () => {

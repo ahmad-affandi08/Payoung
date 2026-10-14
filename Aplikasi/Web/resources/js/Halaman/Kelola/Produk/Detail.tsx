@@ -6,6 +6,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import { LabelTigaKeadaan } from '@/Komponen/Katalog/BantuanKatalog';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import FormBatasStok from '@/Komponen/Katalog/FormBatasStok';
+import GridVarian from '@/Komponen/Katalog/GridVarian';
 import PembuatVarian from '@/Komponen/Katalog/PembuatVarian';
 import TabelUbahVarian from '@/Komponen/Katalog/TabelUbahVarian';
 import KepalaProduk from '@/Komponen/Katalog/KepalaProduk';
@@ -27,6 +28,7 @@ import {
     AlertDialogTrigger,
 } from '@/Komponen/Ui/alert-dialog';
 import { Button } from '@/Komponen/Ui/button';
+import { SusunGridVarian } from '@/Pustaka/GridVarian';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { FormatMasukanJumlah } from '@/Pustaka/MasukanJumlah';
@@ -100,6 +102,8 @@ export default function HalamanDetailProduk({
     Kepala,
     Produk,
     Varian,
+    StokVarian,
+    StokAwalVarian,
     BatasStok,
     Ketersediaan,
     Riwayat,
@@ -112,6 +116,7 @@ export default function HalamanDetailProduk({
     const [mengunggah, AturMengunggah] = useState(false);
     const dasar = Produk.SatuanDasar;
     const induk = Produk.Jenis === 'IndukVarian';
+    const grid = induk ? SusunGridVarian(Varian, Produk.AtributVarian) : null;
     const opsiKirim = { preserveScroll: true };
 
     const kolomSatuan: KolomTabel<Satuan>[] = [
@@ -392,6 +397,17 @@ export default function HalamanDetailProduk({
                         </div>
                     ) : null}
                 </Panel>
+            ) : null}
+
+            {induk && Izin.Kelola && grid !== null ? (
+                <GridVarian
+                    uuidProduk={Produk.Uuid}
+                    grid={grid}
+                    stok={StokVarian}
+                    lokasiStok={StokAwalVarian?.Lokasi ?? null}
+                    bolehUbahHarga={Izin.UbahHarga}
+                    galat={props.errors}
+                />
             ) : null}
 
             {induk && Izin.Kelola ? (

@@ -66,6 +66,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::delete('/produk/{produk}/gambar', [GambarProdukKontroler::class, 'Hapus'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.gambar.hapus');
     Route::post('/produk/{produk}/varian', [VarianProdukKontroler::class, 'Generasikan'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.varian.generasi');
     Route::put('/produk/{produk}/varian', [VarianProdukKontroler::class, 'SimpanMassal'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.varian.simpan');
+    Route::post('/produk/{produk}/varian/stok-awal', [VarianProdukKontroler::class, 'CatatStokAwal'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.varian.stok-awal');
     Route::post('/produk/{produk}/satuan/{produkSatuan}/barcode-internal', [ProdukKontroler::class, 'BuatBarcodeInternal'])
         ->middleware($kelola)->where(['produk' => $ulid, 'produkSatuan' => $ulid])->name('kelola.produk.barcode-internal.buat');
     Route::put('/produk/{produk}/batas-stok', [BatasStokProdukKontroler::class, 'Simpan'])

@@ -29,15 +29,15 @@ use App\Domain\Katalog\Kueri\PemakaianSku;
 use App\Domain\Katalog\Kueri\PohonKategori;
 use App\Domain\Katalog\Layanan\OpsiKelompokPajakKatalog;
 use App\Domain\Katalog\Model\Kategori;
+use App\Domain\Katalog\Model\Produk;
 use App\Domain\Katalog\Model\ProdukSatuan;
-use App\Domain\Organisasi\Data\DataInfoGudang;
 use App\Domain\Organisasi\Enum\IzinTenant;
-use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Organisasi\Kueri\OutletUtama;
 use App\Domain\Organisasi\Kueri\ProfilPajakOutlet;
 use App\Domain\Pelanggan\Kueri\PengaturanSesiTenant;
 use App\Domain\Persediaan\Aksi\CatatStokAwalProdukBaru;
+use App\Domain\Persediaan\Kueri\StokTersediaGudang;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use App\Http\Permintaan\Kelola\Katalog\SimpanProdukPermintaan;
@@ -164,11 +164,14 @@ final class ProdukKontroler extends DasarKatalogKontroler
     public function Detail(string $produk, DetailProduk $detail, KepalaProduk $kepala, KetersediaanProdukPerOutlet $ketersediaan): Response
     {
         $baris = $this->CariProduk($produk);
+        $varian = $detail->AmbilVarian($baris);
 
         return Inertia::render('Kelola/Produk/Detail', [
             'Kepala' => $kepala->Ambil($baris),
             'Produk' => $detail->Ambil($baris),
-            'Varian' => $detail->AmbilVarian($baris),
+            'Varian' => $varian,
+            'StokVarian' => $this->AmbilStokVarian($varian),
+            'StokAwalVarian' => $varian === [] ? null : $this->AmbilOpsiStokAwal(),
             'BatasStok' => $detail->AmbilBatasStok($baris),
             'Ketersediaan' => $ketersediaan->Ambil($baris, $this->IdOutletBoleh()),
             'Riwayat' => $detail->AmbilRiwayat($baris),
@@ -294,23 +297,27 @@ final class ProdukKontroler extends DasarKatalogKontroler
     }
 
     /**
-     * Audit kemudahan pakai #11: lokasi stok untuk isian "Stok sekarang" produk baru; `null` bila pelaku tidak boleh
-     * mencatat & memposting stok awal (isian disembunyikan).
+     * Grid ukuran × warna: stok sekarang tiap varian (jumlah dijumlah di semua lokasi stok), kunci Uuid varian. Kosong
+     * bila pelaku tidak boleh melihat persediaan.
      *
-     * @return array{Lokasi: list<array{Uuid: string, Nama: string, NamaOutlet: string|null}>}|null
+     * @param  list<array<string, mixed>>  $varian
+     * @return array<string, string>
      */
-    private function AmbilOpsiStokAwal(): ?array
+    private function AmbilStokVarian(array $varian): array
     {
-        if (! $this->CekIzin(IzinTenant::PersediaanKelola) || ! $this->CekIzin(IzinTenant::PersediaanStokAwalPosting)) {
-            return null;
+        if ($varian === [] || ! $this->CekIzin(IzinTenant::PersediaanLihat)) {
+            return [];
         }
 
-        $lokasi = array_values(array_filter(
-            app(InfoGudang::class)->AmbilBoleh($this->IdOutletBoleh()),
-            fn (DataInfoGudang $g): bool => $g->jenis !== JenisGudang::DalamPerjalanan,
-        ));
+        $id = Produk::query()->whereIn('Uuid', array_column($varian, 'Uuid'))->pluck('Id', 'Uuid')->all();
+        $total = app(StokTersediaGudang::class)->AmbilTotalProduk(array_values($id));
+        $hasil = [];
 
-        return ['Lokasi' => array_map(fn (DataInfoGudang $g): array => ['Uuid' => $g->uuid, 'Nama' => $g->nama, 'NamaOutlet' => $g->namaOutlet], $lokasi)];
+        foreach ($id as $uuid => $idProduk) {
+            $hasil[(string) $uuid] = $total[$idProduk] ?? '0';
+        }
+
+        return $hasil;
     }
 
     /**

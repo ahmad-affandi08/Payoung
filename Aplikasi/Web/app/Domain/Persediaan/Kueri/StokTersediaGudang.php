@@ -49,4 +49,27 @@ final class StokTersediaGudang
 
         return $hasil;
     }
+
+    /**
+     * Fashion (§9.4): jumlah tersedia sebuah produk dijumlahkan di semua lokasi stok tenant, untuk grid ukuran × warna.
+     *
+     * @param  list<int>  $idProduk
+     * @return array<int, string> Id produk → total JumlahTersedia (string desimal); produk tanpa saldo tidak muncul
+     */
+    public function AmbilTotalProduk(array $idProduk): array
+    {
+        $idProduk = array_values(array_unique($idProduk));
+
+        if ($idProduk === []) {
+            return [];
+        }
+
+        $hasil = [];
+
+        foreach (SaldoStok::query()->whereIn('IdProduk', $idProduk)->selectRaw('`IdProduk`, SUM(`JumlahTersedia`) as `Total`')->groupBy('IdProduk')->get() as $s) {
+            $hasil[$s->IdProduk] = (string) $s->getAttribute('Total');
+        }
+
+        return $hasil;
+    }
 }
