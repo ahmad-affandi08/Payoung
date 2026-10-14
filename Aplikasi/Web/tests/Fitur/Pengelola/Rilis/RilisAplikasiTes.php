@@ -103,6 +103,35 @@ describe('P-10 rilis aplikasi', function (): void {
             ->assertSessionHasErrors('Umum');
     });
 
+    it('POS-23 checksum unduhan: wajib untuk Windows bertautan, disimpan huruf kecil, dikirim ke aplikasi kasir hanya bersama tautan rilisnya', function (): void {
+        ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
+        ['Perangkat' => $perangkat, 'Kode' => $kode] = BantuanPerangkat::BuatPerangkat($tenant->Id);
+        $tokenWindows = BantuanPerangkat::Aktifkan($this, $kode, 'Windows');
+        MasukSebagaiTeknisRilis($this);
+        $windows = ['Aplikasi' => 'Pos', 'Platform' => 'Windows', 'Kanal' => 'Stabil', 'Versi' => '1.6.0', 'UrlUnduh' => 'https://unduh.payoung.id/Payoung-Kasir-Pemasang-1.6.0.exe'];
+
+        $this->post(BantuanPengelola::Url('/rilis'), $windows)->assertSessionHasErrors('Sha256Unduhan');
+        $this->post(BantuanPengelola::Url('/rilis'), [...$windows, 'Sha256Unduhan' => 'bukan-hex'])->assertSessionHasErrors('Sha256Unduhan');
+        $this->post(BantuanPengelola::Url('/rilis'), [...$windows, 'Sha256Unduhan' => str_repeat('AB', 31)])->assertSessionHasErrors('Sha256Unduhan');
+        // Android boleh tanpa checksum (lewat toko aplikasi); tanpa tautan pun tidak wajib.
+        $this->post(BantuanPengelola::Url('/rilis'), ['Aplikasi' => 'Pos', 'Platform' => 'Android', 'Kanal' => 'Stabil', 'Versi' => '1.6.0', 'UrlUnduh' => 'https://unduh.payoung.id/a.apk'])->assertSessionHasNoErrors();
+
+        $this->post(BantuanPengelola::Url('/rilis'), [...$windows, 'Sha256Unduhan' => str_repeat('AB', 32)])->assertSessionHasNoErrors();
+        $rilis = RilisAplikasi::query()->where('Platform', 'Windows')->sole();
+        expect($rilis->Sha256Unduhan)->toBe(str_repeat('ab', 32));
+
+        $this->post(BantuanPengelola::Url("/rilis/{$rilis->Uuid}/terbitkan"), ['PersenRollout' => 100])->assertSessionHasNoErrors();
+        $this->withToken($tokenWindows)->withHeader('X-Versi-Aplikasi', '1.0.0')->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()
+            ->assertJsonPath('Aplikasi.VersiTerbaru', '1.6.0')
+            ->assertJsonPath('Aplikasi.TautanUnduh', 'https://unduh.payoung.id/Payoung-Kasir-Pemasang-1.6.0.exe')
+            ->assertJsonPath('Aplikasi.Sha256Unduhan', str_repeat('ab', 32));
+
+        // Perangkat Android: rilis Android belum terbit, tautan cadangan config tidak punya checksum.
+        ['Token' => $tokenAndroid] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id, nama: 'Kasir Belakang');
+        $this->withToken($tokenAndroid)->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()->assertJsonPath('Aplikasi.Sha256Unduhan', null);
+        unset($perangkat);
+    });
+
     it('kanal Beta hanya untuk tenant Uji/Internal; hentikan rollout wajib alasan dan berhenti ditawarkan', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);

@@ -16,6 +16,7 @@ import 'Komponen/PilihanAlasan.dart';
 import 'LembarMutasiKas.dart';
 import 'RuangKerja/BagianKerja.dart';
 import 'RuangKerja/IsiAreaKerja.dart';
+import 'RuangKerja/KartuPembaruanAplikasi.dart';
 
 /// Status sinkron (PRD §18): jumlah data belum terkirim dan daftar "Perlu Tindakan" (ditolak server) beserta
 /// alasannya. K-17 (§18.3 butir 7 & 10): waktu sinkron terakhir, peringatan data tertunda > 2 jam, peringatan jam
@@ -242,6 +243,12 @@ class _LayarStatusSinkronState extends ConsumerState<LayarStatusSinkron> {
           Padding(
             padding: const EdgeInsets.only(top: TokenJarak.jarak8),
             child: Text(_pesan!),
+          ),
+        // POS-23: pembaruan aplikasi yang tersedia (Windows memasang sendiri; platform lain tautan/toko).
+        if (ref.watch(penyediaKonfigurasiAplikasi) case final konfigurasi? when konfigurasi.adaPembaruan)
+          Padding(
+            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+            child: KartuPembaruanAplikasi(konfigurasi: konfigurasi),
           ),
         const SizedBox(height: TokenJarak.jarak12),
         DeretKartuAngka(

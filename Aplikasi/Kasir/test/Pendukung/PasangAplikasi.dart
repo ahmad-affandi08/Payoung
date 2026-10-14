@@ -12,6 +12,7 @@ import 'package:kasir/Aplikasi/Penyedia.dart';
 import 'package:kasir/Aplikasi/PenyediaSalesman.dart';
 import 'package:kasir/Domain/Diagnostik/LogLokal.dart';
 import 'package:kasir/Domain/Perangkat/KameraBukti.dart';
+import 'package:kasir/Domain/Pembaruan/PemasangPembaruan.dart';
 import 'package:kasir/Domain/Perangkat/KameraSwafoto.dart';
 import 'package:kasir/Domain/Perangkat/LayananLayarPelanggan.dart';
 import 'package:kasir/Domain/Perangkat/PemindaiKamera.dart';
@@ -38,6 +39,8 @@ Future<void> PasangAplikasi(
   UmpanBalikPindai? umpanBalikPindai,
   LogLokal? logLokal,
   PenentuLokasi penentuLokasi = const PenentuLokasiTidakAda(),
+  // POS-23: pemasang pembaruan tiruan (bawaan: tanpa pemasang sendiri, seperti Android/iOS).
+  PemasangPembaruan pemasangPembaruan = const PemasangPembaruanTidakAda(),
   // D-66: bawaan aplikasi = rel tertutup; test layar memakai rel terbuka agar label menu bisa diketuk.
   bool relAwalDiciutkan = false,
 }) async {
@@ -67,6 +70,7 @@ Future<void> PasangAplikasi(
         penyediaLogLokal.overrideWithValue(logLokal),
         // Modul Salesman bagian 2: lokasi tidak pernah memanggil plugin platform di test.
         penyediaPenentuLokasi.overrideWithValue(penentuLokasi),
+        penyediaPemasangPembaruan.overrideWithValue(pemasangPembaruan),
         penyediaPembuatLayarPelanggan.overrideWithValue(
           (p) => p.aktif ? u.layarPelanggan : const LayarPelangganTidakAda(),
         ),

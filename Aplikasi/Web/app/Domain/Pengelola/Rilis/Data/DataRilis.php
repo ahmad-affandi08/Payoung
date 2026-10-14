@@ -18,5 +18,6 @@ final readonly class DataRilis
         public ?int $build,
         public ?string $urlUnduh,
         public ?string $catatanRilis,
+        public ?string $sha256Unduhan = null,
     ) {}
 }

@@ -1,0 +1,185 @@
+name: Bangun Aplikasi
+
+# POS-20/POS-21 (D-154): membuktikan aplikasi Flutter benar-benar terbangun di Windows, iOS, dan Android, dan menghasilkan
+# berkas yang bisa dicoba tanpa akun toko/sertifikat:
+#   - Windows: folder Release (zip) + pemasang Inno Setup (.exe) — tidak ditandatangani kecuali ada secret sertifikat.
+#   - iOS: Runner.app TANPA tanda tangan (`--no-codesign`); bukan IPA, tidak bisa dipasang di perangkat. IPA bertanda
+#     tangan untuk TestFlight butuh akun Apple Developer (Panduan/RilisAplikasi.md).
+#   - Android: APK debug untuk uji sideload; AAB rilis hanya bila secret kunci unggah tersedia.
+# Berat dan berbayar (runner macOS/Windows), jadi tidak berjalan di setiap push: manual, tag rilis, atau perubahan pada
+# folder platform / berkas ini.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["kasir-v*", "pemilik-v*"]
+  pull_request:
+    paths:
+      - ".github/workflows/BangunAplikasi.yml"
+      - "Aplikasi/Kasir/windows/**"
+      - "Aplikasi/Kasir/ios/**"
+      - "Aplikasi/Pemilik/ios/**"
+      - "Aplikasi/Kasir/android/**"
+      - "Aplikasi/Pemilik/android/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bangun-aplikasi-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.5"
+
+jobs:
+  windows-kasir:
+    name: Kasir untuk Windows (zip + pemasang)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Pasang dependensi ruang kerja (sesuai pubspec.lock)
+        run: dart pub get --enforce-lockfile
+      - name: Bangun Windows (rilis)
+        working-directory: Aplikasi/Kasir
+        run: flutter build windows --release
+      - name: Versi aplikasi dari pubspec
+        id: versi
+        working-directory: Aplikasi/Kasir
+        run: |
+          VERSI="$(grep -E '^version:' pubspec.yaml | head -1 | sed -E 's/version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
+          echo "versi=${VERSI}" >> "$GITHUB_OUTPUT"
+      - name: Zip folder Release
+        run: |
+          mkdir -p keluaran
+          cd Aplikasi/Kasir/build/windows/x64/runner/Release
+          7z a -tzip "$GITHUB_WORKSPACE/keluaran/Payoung-Kasir-Windows-${{ steps.versi.outputs.versi }}.zip" ./*
+      - name: Pemasang Inno Setup
+        run: |
+          if ! command -v iscc >/dev/null 2>&1 && [ ! -f "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
+            choco install innosetup -y --no-progress
+          fi
+          ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+          "$ISCC" "/DVersiAplikasi=${{ steps.versi.outputs.versi }}" \
+            "/DSumber=$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/build/windows/x64/runner/Release")" \
+            "/DKeluar=$(cygpath -w "$GITHUB_WORKSPACE/keluaran")" \
+            "$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/windows/Pemasang/Payoung.iss")"
+      - name: Tanda tangan pemasang (hanya bila sertifikat tersedia)
+        env:
+          PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          PFX_SANDI: ${{ secrets.WINDOWS_PFX_SANDI }}
+        run: |
+          if [ -z "${PFX_BASE64}" ]; then
+            echo "Tanpa sertifikat penandatangan: pemasang TIDAK ditandatangani (SmartScreen akan memperingatkan)."
+            exit 0
+          fi
+          echo "${PFX_BASE64}" | base64 -d > "$RUNNER_TEMP/sertifikat.pfx"
+          SIGNTOOL="$(find "/c/Program Files (x86)/Windows Kits/10/bin" -name signtool.exe -path '*x64*' | sort | tail -1)"
+          "$SIGNTOOL" sign /f "$(cygpath -w "$RUNNER_TEMP/sertifikat.pfx")" /p "${PFX_SANDI}" /fd SHA256 \
+            /tr http://timestamp.digicert.com /td SHA256 keluaran/Payoung-Kasir-Pemasang-*.exe
+          rm -f "$RUNNER_TEMP/sertifikat.pfx"
+      - name: Checksum SHA-256 (dipakai pembaruan otomatis)
+        run: |
+          cd keluaran
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payoung-kasir-windows-${{ github.sha }}
+          path: keluaran/*
+          retention-days: 30
+
+  ios:
+    name: ${{ matrix.aplikasi.nama }} untuk iOS (tanpa tanda tangan)
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        aplikasi:
+          - { nama: Kasir, folder: Kasir }
+          - { nama: Owner, folder: Pemilik }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Pasang dependensi ruang kerja (sesuai pubspec.lock)
+        run: dart pub get --enforce-lockfile
+      - name: Bangun iOS tanpa tanda tangan
+        working-directory: Aplikasi/${{ matrix.aplikasi.folder }}
+        run: flutter build ios --release --no-codesign
+      - name: Kemas Runner.app
+        run: |
+          mkdir -p keluaran
+          ditto -c -k --keepParent "Aplikasi/${{ matrix.aplikasi.folder }}/build/ios/iphoneos/Runner.app" \
+            "keluaran/Payoung-${{ matrix.aplikasi.nama }}-iOS-tanpa-tanda-tangan.zip"
+          shasum -a 256 keluaran/*.zip > keluaran/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payoung-${{ matrix.aplikasi.folder }}-ios-${{ github.sha }}
+          path: keluaran/*
+          retention-days: 14
+
+  android:
+    name: ${{ matrix.aplikasi.nama }} untuk Android
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        aplikasi:
+          - { nama: Kasir, folder: Kasir }
+          - { nama: Owner, folder: Pemilik }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Pasang dependensi ruang kerja (sesuai pubspec.lock)
+        run: dart pub get --enforce-lockfile
+      - name: Bangun APK debug (uji sideload)
+        working-directory: Aplikasi/${{ matrix.aplikasi.folder }}
+        run: flutter build apk --debug
+      - name: AAB rilis (hanya bila kunci unggah tersedia)
+        env:
+          KUNCI_BASE64: ${{ secrets.PAYOUNG_KEYSTORE_BASE64 }}
+          PAYOUNG_KEYSTORE_PASSWORD: ${{ secrets.PAYOUNG_KEYSTORE_PASSWORD }}
+          PAYOUNG_KEY_ALIAS: ${{ secrets.PAYOUNG_KEY_ALIAS }}
+          PAYOUNG_KEY_PASSWORD: ${{ secrets.PAYOUNG_KEY_PASSWORD }}
+        working-directory: Aplikasi/${{ matrix.aplikasi.folder }}
+        run: |
+          if [ -z "${KUNCI_BASE64}" ]; then
+            echo "Tanpa kunci unggah produksi: AAB rilis dilewati (build rilis memang menolak kunci debug)."
+            exit 0
+          fi
+          echo "${KUNCI_BASE64}" | base64 -d > "${RUNNER_TEMP}/unggah.jks"
+          export PAYOUNG_KEYSTORE_FILE="${RUNNER_TEMP}/unggah.jks"
+          flutter build appbundle --release
+          rm -f "${RUNNER_TEMP}/unggah.jks"
+      - name: Kumpulkan keluaran
+        run: |
+          mkdir -p keluaran
+          cp Aplikasi/${{ matrix.aplikasi.folder }}/build/app/outputs/flutter-apk/app-debug.apk "keluaran/Payoung-${{ matrix.aplikasi.nama }}-debug.apk"
+          if [ -d "Aplikasi/${{ matrix.aplikasi.folder }}/build/app/outputs/bundle/release" ]; then
+            cp Aplikasi/${{ matrix.aplikasi.folder }}/build/app/outputs/bundle/release/*.aab keluaran/
+          fi
+          sha256sum keluaran/* > keluaran/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payoung-${{ matrix.aplikasi.folder }}-android-${{ github.sha }}
+          path: keluaran/*
+          retention-days: 14

@@ -44,6 +44,7 @@ final class SimpanDrafRilis
                     'Versi' => $data->versi,
                     'Build' => $data->build,
                     'UrlUnduh' => $data->urlUnduh,
+                    'Sha256Unduhan' => $data->urlUnduh === null ? null : $data->sha256Unduhan,
                     'CatatanRilis' => $data->catatanRilis,
                 ])->save();
 

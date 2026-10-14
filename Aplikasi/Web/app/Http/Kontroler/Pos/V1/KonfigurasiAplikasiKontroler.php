@@ -54,6 +54,8 @@ final class KonfigurasiAplikasiKontroler extends Kontroler
                 'VersiTerbaru' => $versiPlatform['VersiTerbaru'] ?? null,
                 'VersiMinimal' => $versiPlatform['VersiMinimal'] ?? null,
                 'TautanUnduh' => $versiPlatform['TautanUnduh'] ?? null,
+                // POS-23 (aditif): SHA-256 berkas di TautanUnduh; syarat pembaruan otomatis Windows di aplikasi kasir.
+                'Sha256Unduhan' => $versiPlatform['Sha256Unduhan'] ?? null,
                 'CatatanRilis' => $versiPlatform['CatatanRilis'] ?? null,
                 'AdaPembaruan' => $versiPlatform !== null && $versiSaatIni !== null && RilisAplikasi::BandingkanVersi($versiSaatIni, $versiPlatform['VersiTerbaru']) < 0,
                 'WajibPembaruan' => $versiPlatform !== null && $versiSaatIni !== null && RilisAplikasi::BandingkanVersi($versiSaatIni, $versiPlatform['VersiMinimal']) < 0,

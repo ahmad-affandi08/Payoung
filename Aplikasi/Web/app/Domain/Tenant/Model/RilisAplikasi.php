@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Cache;
  * @property StatusRilis $Status
  * @property int $PersenRollout
  * @property string|null $UrlUnduh
+ * @property string|null $Sha256Unduhan SHA-256 (hex 64) berkas di UrlUnduh; syarat pembaruan otomatis Windows (POS-23)
  * @property string|null $CatatanRilis
  * @property string|null $VersiMinimum
  * @property Carbon|null $VersiMinimumBerlakuPada
@@ -73,6 +74,7 @@ final class RilisAplikasi extends ModelDasar
         'Build' => null,
         'PersenRollout' => 0,
         'UrlUnduh' => null,
+        'Sha256Unduhan' => null,
         'CatatanRilis' => null,
         'VersiMinimum' => null,
         'VersiMinimumBerlakuPada' => null,

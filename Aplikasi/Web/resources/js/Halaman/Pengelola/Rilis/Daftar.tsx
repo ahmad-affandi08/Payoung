@@ -234,6 +234,7 @@ function FormDraf({ rilis, saatSelesai }: { rilis: RilisAplikasi | null; saatSel
         Versi: rilis?.Versi ?? '',
         Build: rilis?.Build === null || rilis === null ? '' : String(rilis.Build),
         UrlUnduh: rilis?.UrlUnduh ?? '',
+        Sha256Unduhan: rilis?.Sha256Unduhan ?? '',
         CatatanRilis: rilis?.CatatanRilis ?? '',
     });
 
@@ -299,6 +300,14 @@ function FormDraf({ rilis, saatSelesai }: { rilis: RilisAplikasi | null; saatSel
                     nilai={formulir.data.UrlUnduh}
                     saatBerubah={(nilai) => formulir.setData('UrlUnduh', nilai)}
                     galat={formulir.errors.UrlUnduh}
+                />
+                <BidangTeks
+                    label="Checksum SHA-256 (wajib untuk Windows)"
+                    kode
+                    keterangan="64 karakter heksadesimal dari SHA256SUMS.txt hasil build. Aplikasi kasir Windows hanya memasang pembaruan otomatis bila unduhannya cocok; Android dan iOS tidak memerlukannya."
+                    nilai={formulir.data.Sha256Unduhan}
+                    saatBerubah={(nilai) => formulir.setData('Sha256Unduhan', nilai.trim())}
+                    galat={formulir.errors.Sha256Unduhan}
                 />
                 <div className="sm:col-span-2">
                     <BidangTeksPanjang

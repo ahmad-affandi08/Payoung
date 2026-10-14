@@ -38,12 +38,17 @@ class KonfigurasiAplikasi {
     this.pengumuman = const [],
     this.persetujuanJarakJauh,
     this.logDiminta = false,
+    this.sha256Unduhan,
   });
 
   final String? versiSaatIni;
   final String? versiTerbaru;
   final String? versiMinimal;
   final String? tautanUnduh;
+
+  /// POS-23: SHA-256 (hex 64) berkas di [tautanUnduh], dipakai pembaruan otomatis Windows untuk memeriksa unduhan sebelum
+  /// dijalankan. Null = server lama / rilis tanpa checksum → pembaruan manual dari tautan.
+  final String? sha256Unduhan;
   final String? catatanRilis;
   final bool adaPembaruan;
 
@@ -82,6 +87,7 @@ class KonfigurasiAplikasi {
       versiTerbaru: UraiJson.AmbilTeksAtauNull(aplikasi['VersiTerbaru']),
       versiMinimal: UraiJson.AmbilTeksAtauNull(aplikasi['VersiMinimal']),
       tautanUnduh: UraiJson.AmbilTeksAtauNull(aplikasi['TautanUnduh']),
+      sha256Unduhan: UraiJson.AmbilTeksAtauNull(aplikasi['Sha256Unduhan']),
       catatanRilis: UraiJson.AmbilTeksAtauNull(aplikasi['CatatanRilis']),
       adaPembaruan: UraiJson.AmbilBenar(aplikasi['AdaPembaruan']),
       wajibPembaruan: UraiJson.AmbilBenar(aplikasi['WajibPembaruan']),

@@ -116,6 +116,8 @@ export type RilisAplikasi = {
     Status: 'Draf' | 'Aktif' | 'Dihentikan';
     PersenRollout: number;
     UrlUnduh: string | null;
+    /** POS-23: SHA-256 (hex 64) berkas di tautan unduh; syarat pembaruan otomatis Windows. */
+    Sha256Unduhan: string | null;
     CatatanRilis: string | null;
     VersiMinimum: string | null;
     VersiMinimumBerlakuPada: string | null;

@@ -29,6 +29,7 @@ final class DaftarRilis
                 'Status' => $r->Status->value,
                 'PersenRollout' => $r->PersenRollout,
                 'UrlUnduh' => $r->UrlUnduh,
+                'Sha256Unduhan' => $r->Sha256Unduhan,
                 'CatatanRilis' => $r->CatatanRilis,
                 'VersiMinimum' => $r->VersiMinimum,
                 'VersiMinimumBerlakuPada' => $r->VersiMinimumBerlakuPada?->toIso8601String(),

@@ -630,6 +630,7 @@ describe('Rilis aplikasi (P-10)', () => {
         Status: 'Draf',
         PersenRollout: 0,
         UrlUnduh: null,
+        Sha256Unduhan: null,
         CatatanRilis: null,
         VersiMinimum: null,
         VersiMinimumBerlakuPada: null,

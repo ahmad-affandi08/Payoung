@@ -28,7 +28,7 @@ final class VersiAplikasiPerangkat
     private array $tenantBeta = [];
 
     /**
-     * @return array{VersiTerbaru: string, VersiMinimal: string, TautanUnduh: string|null, CatatanRilis: string|null}
+     * @return array{VersiTerbaru: string, VersiMinimal: string, TautanUnduh: string|null, Sha256Unduhan: string|null, CatatanRilis: string|null}
      */
     public function Tentukan(AplikasiRilis $aplikasi, string $platform, int $idTenant, string $uuidPerangkat): array
     {
@@ -75,6 +75,8 @@ final class VersiAplikasiPerangkat
             'VersiTerbaru' => $terbaru->Versi ?? $cadangan['VersiTerbaru'],
             'VersiMinimal' => $minimal,
             'TautanUnduh' => $terbaru->UrlUnduh ?? $cadangan['TautanUnduh'],
+            // POS-23: checksum hanya berlaku untuk tautan dari rilis yang sama (tautan cadangan config tidak punya checksum).
+            'Sha256Unduhan' => $terbaru?->UrlUnduh === null ? null : $terbaru->Sha256Unduhan,
             'CatatanRilis' => $terbaru?->CatatanRilis,
         ];
     }
