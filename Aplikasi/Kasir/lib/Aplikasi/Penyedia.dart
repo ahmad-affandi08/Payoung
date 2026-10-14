@@ -1028,7 +1028,12 @@ final penyediaKeranjangEfektif = Provider<Keranjang>((ref) {
   }
   final pesanan = ref.watch(penyediaPesananMeja(uuid)).value;
   final katalog = ref.watch(penyediaKatalog).value ?? KatalogLokal.kosong;
-  return LayananPesananMeja.SusunKeranjangEfektif(draf, pesanan, katalog);
+  final efektif = LayananPesananMeja.SusunKeranjangEfektif(draf, pesanan, katalog);
+  // FnB minimum charge (D-144): selisih ke minimum meja/area ikut sebagai baris, sehingga tampil & dibayar utuh.
+  final konteks = ref.watch(penyediaKonteksPenjualan).value;
+  return konteks == null
+      ? efektif
+      : ref.watch(penyediaLayananPenjualan).TerapkanMinimumCharge(efektif, katalog, konteks);
 });
 
 final penyediaShiftAktif = StreamProvider<BarisShift?>((ref) => ref.watch(penyediaRepositori).PantauShiftAktif());

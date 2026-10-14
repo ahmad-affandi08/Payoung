@@ -15,7 +15,7 @@ use App\Domain\Organisasi\Model\Meja;
 final class MejaOutlet
 {
     /**
-     * @return array{Area: list<array{Uuid: string, Nama: string, Urutan: int, Status: string, JumlahMeja: int}>, Meja: list<array{Uuid: string, Nama: string, UuidArea: string|null, NamaArea: string|null, Kapasitas: int, Bentuk: string, Urutan: int, Status: string}>}
+     * @return array{Area: list<array{Uuid: string, Nama: string, Urutan: int, Status: string, JumlahMeja: int, MinimumCharge: string|null}>, Meja: list<array{Uuid: string, Nama: string, UuidArea: string|null, NamaArea: string|null, Kapasitas: int, Bentuk: string, Urutan: int, Status: string, MinimumCharge: string|null, MinimumChargeEfektif: string|null}>}
      */
     public function Ambil(int $idOutlet): array
     {
@@ -34,6 +34,7 @@ final class MejaOutlet
                 'Urutan' => $a->Urutan,
                 'Status' => $a->Status->value,
                 'JumlahMeja' => (int) ($jumlah->get($a->Id) ?? 0),
+                'MinimumCharge' => $a->MinimumCharge,
             ])->all()),
             'Meja' => array_values($meja->map(function (Meja $m) use ($perArea): array {
                 $area = $m->IdAreaMeja === null ? null : $perArea->get($m->IdAreaMeja);
@@ -47,6 +48,9 @@ final class MejaOutlet
                     'Bentuk' => $m->Bentuk->value,
                     'Urutan' => $m->Urutan,
                     'Status' => $m->Status->value,
+                    'MinimumCharge' => $m->MinimumCharge,
+                    // D-144: minimum yang berlaku = minimum meja, atau minimum areanya bila meja tidak mengaturnya.
+                    'MinimumChargeEfektif' => $m->MinimumCharge ?? $area?->MinimumCharge,
                 ];
             })->all()),
         ];
@@ -62,6 +66,21 @@ final class MejaOutlet
         $meja = Meja::query()->where('IdOutlet', $idOutlet)->where('Uuid', $uuid)->where('Status', StatusOrganisasi::Aktif->value)->first();
 
         return $meja === null ? null : ['Id' => $meja->Id, 'Nama' => $meja->Nama];
+    }
+
+    /**
+     * FnB minimum charge (D-144): minimum yang berlaku untuk satu meja = minimum meja, atau minimum areanya bila meja
+     * tidak mengaturnya; null bila tidak ada minimum (atau meja tidak dikenal).
+     */
+    public function AmbilMinimumCharge(int $idMeja): ?string
+    {
+        $meja = Meja::query()->whereKey($idMeja)->first();
+
+        if ($meja === null) {
+            return null;
+        }
+
+        return $meja->MinimumCharge ?? ($meja->IdAreaMeja === null ? null : AreaMeja::query()->whereKey($meja->IdAreaMeja)->value('MinimumCharge'));
     }
 
     /**

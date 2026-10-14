@@ -8,6 +8,7 @@ import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Data/RepositoriKasir.dart';
 import '../../Data/RepositoriKatalog.dart';
 import '../Dapur/LayananTiketDapur.dart';
+import '../Meja/MinimumChargePos.dart';
 
 /// Jenis metode pembayaran fase 1 (sama dengan server, Rincian F-07b langkah 9).
 abstract final class JenisMetodeBayar {
@@ -139,6 +140,7 @@ class KonteksPenjualan {
     this.barcodeTimbangan = const BarcodeTimbanganPos(),
     this.jenisPesananBawaan,
     this.metodeTukar,
+    this.minimumCharge = const MinimumChargePos(),
   });
 
   final String? uuidOutlet;
@@ -184,6 +186,9 @@ class KonteksPenjualan {
 
   /// D-48: kode sektor outlet (template + jenis usaha tambahan). Kosong = belum diketahui, semua fitur sektor tampil.
   final List<String> kodeSektor;
+
+  /// FnB minimum charge (D-144): minimum belanja per meja dan produk penampung selisihnya.
+  final MinimumChargePos minimumCharge;
 
   /// D-48: fitur khusus sektor tampil bila salah satu sektor outlet berawalan [awalan] (`SVC` mencakup `SVC-WRK`);
   /// sektor outlet kosong (server lama / belum diterapkan) = tampil.
@@ -284,6 +289,9 @@ class KonteksPenjualan {
       laundry: await MuatLaundry(repositori),
       tokoOnlineAktif: await repositori.AmbilPengaturan(KunciPengaturan.tokoOnlineAktif) == '1',
       kodeSektor: await MuatKodeSektor(repositori),
+      minimumCharge: MinimumChargePos.DariJson(
+        jsonDecode(await repositori.AmbilPengaturan(KunciPengaturan.minimumChargeMeja) ?? 'null'),
+      ),
       jenisPesanan: [
         for (final nama in (jsonDecode(
           await repositori.AmbilPengaturan(KunciPengaturan.jenisPesanan) ?? '[]',

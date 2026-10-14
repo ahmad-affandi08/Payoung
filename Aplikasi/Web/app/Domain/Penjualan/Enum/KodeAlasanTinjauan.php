@@ -52,6 +52,8 @@ enum KodeAlasanTinjauan: string
     case SerialBermasalah = 'SerialBermasalah';
     case BatasReturTanpaStruk = 'BatasReturTanpaStruk';
     case HppTidakDiketahui = 'HppTidakDiketahui';
+    // FnB minimum charge (§9.1, D-144): belanja meja kurang dari minimum meja/areanya dan selisihnya tidak ditagih.
+    case MinimumChargeTidakTerpenuhi = 'MinimumChargeTidakTerpenuhi';
 
     public function AmbilLabel(): string
     {
@@ -93,6 +95,7 @@ enum KodeAlasanTinjauan: string
             self::SerialBermasalah => 'Nomor seri tidak tersedia di stok',
             self::BatasReturTanpaStruk => 'Retur tanpa struk melewati batas harian',
             self::HppTidakDiketahui => 'Harga pokok barang retur tidak diketahui',
+            self::MinimumChargeTidakTerpenuhi => 'Belanja meja kurang dari minimum charge',
         };
     }
 

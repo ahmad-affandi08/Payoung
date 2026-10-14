@@ -79,7 +79,7 @@ final class SimpanProduk
                 return $ada;
             }
 
-            if ($data->jenis->CekDihitungBatasSku()) {
+            if ($data->jenis->CekDihitungBatasSku() && $data->sumber !== SumberPerubahanKatalog::Sistem) {
                 $this->batasPaket->Pastikan($idTenant, 'BatasSku', fn (): int => $this->pemakaianSku->Hitung(), 1);
             }
         } else {

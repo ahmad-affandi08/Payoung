@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Pos\V1;
 
+use App\Domain\Katalog\Kueri\ProdukMinimumCharge;
 use App\Domain\Katalog\Kueri\StasiunDapurProduk;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\DaftarStasiunDapur;
@@ -38,11 +39,13 @@ final class MejaKontroler extends Kontroler
                 array_filter($data['Area'], fn (array $a): bool => $a['Status'] === StatusOrganisasi::Aktif->value),
             )),
             'Meja' => array_values(array_map(
-                fn (array $m): array => ['Uuid' => $m['Uuid'], 'Nama' => $m['Nama'], 'UuidArea' => $m['UuidArea'], 'Kapasitas' => $m['Kapasitas'], 'Bentuk' => $m['Bentuk'], 'Urutan' => $m['Urutan']],
+                fn (array $m): array => ['Uuid' => $m['Uuid'], 'Nama' => $m['Nama'], 'UuidArea' => $m['UuidArea'], 'Kapasitas' => $m['Kapasitas'], 'Bentuk' => $m['Bentuk'], 'Urutan' => $m['Urutan'], 'MinimumCharge' => $m['MinimumChargeEfektif']],
                 array_filter($data['Meja'], fn (array $m): bool => $m['Status'] === StatusOrganisasi::Aktif->value),
             )),
             'StasiunDapur' => array_map(fn (array $s): array => ['Uuid' => $s['Uuid'], 'Nama' => $s['Nama']], $aktif),
             'UuidStasiunBawaan' => $aktif[0]['Uuid'] ?? null,
+            // D-144: produk penampung selisih minimum charge (null bila belum ada meja/area ber-minimum).
+            'UuidProdukMinimumCharge' => app(ProdukMinimumCharge::class)->Ambil()['Uuid'] ?? null,
             'KategoriStasiun' => $this->SusunKategoriStasiun($stasiun, $stasiunProduk),
         ]);
     }

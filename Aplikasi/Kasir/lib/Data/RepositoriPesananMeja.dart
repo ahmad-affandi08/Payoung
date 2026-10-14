@@ -39,6 +39,17 @@ class RepositoriPesananMeja {
       ]);
     });
     await repositoriKasir.SimpanPengaturan(KunciPengaturan.modeMejaAktif, data.modeMejaAktif ? '1' : '0');
+    // D-144: minimum charge per meja (disimpan sebagai pengaturan, tanpa mengubah skema meja lokal).
+    await repositoriKasir.SimpanPengaturan(
+      KunciPengaturan.minimumChargeMeja,
+      jsonEncode({
+        'UuidProduk': data.uuidProdukMinimumCharge,
+        'Meja': {
+          for (final m in data.meja)
+            if (m.minimumCharge != null) m.uuid: m.minimumCharge,
+        },
+      }),
+    );
     await repositoriKasir.SimpanPengaturan(
       KunciPengaturan.ruteDapur,
       jsonEncode({

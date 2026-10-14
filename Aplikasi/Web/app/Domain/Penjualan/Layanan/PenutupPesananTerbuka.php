@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Penjualan\Layanan;
 
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Aksi\AturKebersihanMeja;
+use App\Domain\Organisasi\Kueri\MejaOutlet;
 use App\Domain\Penjualan\Enum\KodeAlasanTinjauan;
 use App\Domain\Penjualan\Enum\StatusPesananTerbuka;
 use App\Domain\Penjualan\Model\Penjualan;
@@ -19,7 +21,10 @@ use Carbon\CarbonImmutable;
  */
 final class PenutupPesananTerbuka
 {
-    public function __construct(private readonly AturKebersihanMeja $kebersihan) {}
+    public function __construct(
+        private readonly AturKebersihanMeja $kebersihan,
+        private readonly MejaOutlet $meja,
+    ) {}
 
     /**
      * @return array{0: PesananTerbuka|null, 1: array<string, string>} pesanan (dikunci) dan alasan tinjauan
@@ -41,6 +46,30 @@ final class PenutupPesananTerbuka
         }
 
         return [$pesanan, []];
+    }
+
+    /**
+     * FnB minimum charge (D-144): nilai belanja (subtotal setelah diskon, sebelum biaya layanan dan pajak) pesanan meja
+     * dibandingkan dengan minimum meja/areanya. Kurang = penjualan tetap diterima + tinjauan (uang sudah diterima,
+     * §18.3); kasir yang benar menagih selisihnya lewat baris produk minimum charge sehingga nilainya cukup.
+     *
+     * @return array<string, string> alasan tinjauan
+     */
+    public function PeriksaMinimumCharge(?PesananTerbuka $pesanan, Uang $nilaiBelanja): array
+    {
+        if ($pesanan === null || $pesanan->IdMeja === null) {
+            return [];
+        }
+
+        $minimum = $this->meja->AmbilMinimumCharge($pesanan->IdMeja);
+
+        if ($minimum === null || $nilaiBelanja->Bandingkan(Uang::Dari($minimum)) >= 0) {
+            return [];
+        }
+
+        $kode = KodeAlasanTinjauan::MinimumChargeTidakTerpenuhi->value;
+
+        return [$kode => "{$kode}: belanja {$nilaiBelanja->FormatRupiah()} kurang dari minimum charge ".Uang::Dari($minimum)->FormatRupiah().' dan selisihnya tidak ditagih'];
     }
 
     public function Tutup(?PesananTerbuka $pesanan, Penjualan $penjualan): void

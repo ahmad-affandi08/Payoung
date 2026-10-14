@@ -343,6 +343,8 @@ final class TerimaPenjualanPos
         // F-07 mode meja: pesanan terbuka yang dibayar (dikunci sebelum penjualan dibuat agar IdPesananTerbuka tersimpan).
         [$pesanan, $tinjauanPesanan] = $this->penutupPesanan->Cari($data->uuidPesananTerbuka, $outlet->idOutlet);
         $tinjauan += $tinjauanPesanan;
+        // FnB minimum charge (D-144): belanja meja di bawah minimum dan selisih tidak ditagih = tinjauan.
+        $tinjauan += $this->penutupPesanan->PeriksaMinimumCharge($pesanan, $hasil->subtotal->Kurangi($hasil->totalDiskon));
 
         // F-12 bagian 2: pre-order yang diambil (dikunci sebelum penjualan dibuat). Masalah = diterima + tinjauan.
         [$praPesan, $masalahUangMuka] = $this->penutupPraPesan->Cari($data->uuidPesananPenjualan, $outlet->idOutlet);

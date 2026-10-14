@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Organisasi\Data;
 
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Enum\BentukMeja;
 
 /**
@@ -17,5 +18,6 @@ final readonly class DataMeja
         public int $kapasitas,
         public BentukMeja $bentuk,
         public int $urutan,
+        public ?Uang $minimumCharge = null,
     ) {}
 }

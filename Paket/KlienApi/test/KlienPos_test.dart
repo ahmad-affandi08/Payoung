@@ -198,8 +198,17 @@ void main() {
             {'Uuid': 'A1', 'Nama': 'Teras', 'Urutan': 1},
           ],
           'Meja': [
-            {'Uuid': 'M7', 'Nama': '7', 'UuidArea': 'A1', 'Kapasitas': 4, 'Bentuk': 'Bundar', 'Urutan': 0},
+            {
+              'Uuid': 'M7',
+              'Nama': '7',
+              'UuidArea': 'A1',
+              'Kapasitas': 4,
+              'Bentuk': 'Bundar',
+              'Urutan': 0,
+              'MinimumCharge': '150000.00',
+            },
           ],
+          'UuidProdukMinimumCharge': 'PR-MIN',
           'StasiunDapur': [
             {'Uuid': 'S1', 'Nama': 'Bar'},
           ],
@@ -263,6 +272,10 @@ void main() {
     expect(meja.meja.single.uuidArea, 'A1');
     expect(meja.uuidStasiunBawaan, 'S1');
     expect(meja.kategoriStasiun, {'K1': 'S1'});
+    // D-144: minimum charge yang berlaku per meja + produk penampung selisihnya (server lama = null).
+    expect(meja.meja.single.minimumCharge, '150000.00');
+    expect(meja.uuidProdukMinimumCharge, 'PR-MIN');
+    expect(MejaPos.DariJson({'Uuid': 'M8', 'Nama': '8'}).minimumCharge, isNull);
 
     final snapshot = await klien.AmbilPesananTerbuka();
     expect(snapshot!.etag, '"abc"');

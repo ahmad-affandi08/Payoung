@@ -24,6 +24,7 @@ class MejaPos {
     required this.kapasitas,
     required this.bentuk,
     required this.urutan,
+    this.minimumCharge,
   });
 
   final String uuid;
@@ -33,6 +34,10 @@ class MejaPos {
   final String bentuk;
   final int urutan;
 
+  /// FnB minimum charge (D-144): minimum belanja yang berlaku untuk meja ini (minimum meja, atau areanya), string
+  /// desimal ("150000.00"); null = tanpa minimum (juga server lama).
+  final String? minimumCharge;
+
   static MejaPos DariJson(Map<String, Object?> json) => MejaPos(
     uuid: UraiJson.AmbilTeks(json['Uuid']),
     nama: UraiJson.AmbilTeks(json['Nama']),
@@ -40,6 +45,7 @@ class MejaPos {
     kapasitas: UraiJson.AmbilBulat(json['Kapasitas'], 4),
     bentuk: UraiJson.AmbilTeks(json['Bentuk'], 'Persegi'),
     urutan: UraiJson.AmbilBulat(json['Urutan']),
+    minimumCharge: UraiJson.AmbilTeksAtauNull(json['MinimumCharge']),
   );
 }
 
@@ -62,6 +68,7 @@ class DataMejaPos {
     required this.stasiunDapur,
     required this.uuidStasiunBawaan,
     this.kategoriStasiun = const {},
+    this.uuidProdukMinimumCharge,
   });
 
   final bool modeMejaAktif;
@@ -73,6 +80,10 @@ class DataMejaPos {
   /// Cetak struk bagian 4c: Uuid stasiun aktif per Uuid kategori yang diatur langsung (server lama = kosong).
   final Map<String, String> kategoriStasiun;
 
+  /// D-144: Uuid produk "Selisih minimum charge" (harga terbuka) yang ditagihkan kasir saat belanja meja kurang dari
+  /// minimum; null = belum ada meja/area ber-minimum.
+  final String? uuidProdukMinimumCharge;
+
   static DataMejaPos DariJson(Map<String, Object?> json) => DataMejaPos(
     modeMejaAktif: UraiJson.AmbilBenar(json['ModeMejaAktif']),
     area: UraiJson.AmbilDaftarPeta(json['Area']).map(AreaMejaPos.DariJson).toList(),
@@ -83,6 +94,7 @@ class DataMejaPos {
       for (final k in UraiJson.AmbilDaftarPeta(json['KategoriStasiun']))
         UraiJson.AmbilTeks(k['UuidKategori']): UraiJson.AmbilTeks(k['UuidStasiun']),
     },
+    uuidProdukMinimumCharge: UraiJson.AmbilTeksAtauNull(json['UuidProdukMinimumCharge']),
   );
 }
 

@@ -234,7 +234,16 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
         };
         const modeMeja = {
             Aktif: true,
-            Area: [{ Uuid: 'A-1', Nama: 'Teras Belakang', Urutan: 0, Status: 'Aktif' as const, JumlahMeja: 1 }],
+            Area: [
+                {
+                    Uuid: 'A-1',
+                    Nama: 'Teras Belakang',
+                    Urutan: 0,
+                    Status: 'Aktif' as const,
+                    JumlahMeja: 1,
+                    MinimumCharge: '300000.00',
+                },
+            ],
             Meja: [
                 {
                     Uuid: 'M-7',
@@ -245,6 +254,8 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
                     Bentuk: 'Bundar',
                     Urutan: 0,
                     Status: 'Aktif' as const,
+                    MinimumCharge: null,
+                    MinimumChargeEfektif: '300000.00',
                 },
             ],
         };
@@ -274,9 +285,14 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
         fireEvent.click(screen.getByRole('menuitem', { name: 'Arsipkan' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith('/kelola/outlet/O-1/meja/M-7/arsipkan', {}, expect.anything());
 
+        // D-144: minimum charge area tampil di tabel area, minimum yang berlaku (dari area) di tabel meja.
+        expect(screen.getAllByText(/Rp\s?300\.000/).length).toBeGreaterThanOrEqual(2);
+        expect(screen.getByText('dari area')).toBeTruthy();
+
         fireEvent.click(screen.getByRole('button', { name: 'Tambah meja' }));
         expect(screen.getByRole('heading', { name: 'Tambah meja' })).toBeTruthy();
         expect(screen.getByLabelText('Nama atau nomor meja')).toBeTruthy();
+        expect(screen.getByLabelText(/Minimum charge meja/)).toBeTruthy();
         Lepas();
 
         RenderUji(

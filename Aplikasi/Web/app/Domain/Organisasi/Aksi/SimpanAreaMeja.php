@@ -6,6 +6,7 @@ namespace App\Domain\Organisasi\Aksi;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
+use App\Domain\Katalog\Aksi\SiapkanProdukMinimumCharge;
 use App\Domain\Organisasi\Data\DataAreaMeja;
 use App\Domain\Organisasi\Layanan\PenjagaModeMeja;
 use App\Domain\Organisasi\Model\AreaMeja;
@@ -18,11 +19,12 @@ use Illuminate\Support\Facades\DB;
  */
 final class SimpanAreaMeja
 {
-    private const KOLOM_AUDIT = ['IdOutlet', 'Nama', 'Urutan'];
+    private const KOLOM_AUDIT = ['IdOutlet', 'Nama', 'Urutan', 'MinimumCharge'];
 
     public function __construct(
         private readonly PenjagaModeMeja $penjaga,
         private readonly PencatatAudit $audit,
+        private readonly SiapkanProdukMinimumCharge $produkMinimum,
     ) {}
 
     public function Jalankan(Outlet $outlet, ?AreaMeja $area, DataAreaMeja $data): AreaMeja
@@ -36,7 +38,12 @@ final class SimpanAreaMeja
                 throw new PelanggaranAturanBisnis('NamaAreaDipakai', "Area {$nama} sudah ada di outlet ini.", 'Nama');
             }
 
-            $isian = ['Nama' => $nama, 'Urutan' => $data->urutan];
+            $isian = ['Nama' => $nama, 'Urutan' => $data->urutan, 'MinimumCharge' => $data->minimumCharge?->KeString()];
+
+            if ($data->minimumCharge !== null) {
+                // D-144: produk penampung selisih minimum charge disiapkan sekali saat minimum pertama kali dipakai.
+                $this->produkMinimum->Jalankan();
+            }
 
             if ($area === null) {
                 $this->penjaga->PastikanBisaMenambah($outlet);

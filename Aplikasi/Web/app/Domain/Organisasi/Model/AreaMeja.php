@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property int $IdOutlet
  * @property string $Nama
  * @property int $Urutan
+ * @property string|null $MinimumCharge batas belanja minimum area (D-144); kosong = tanpa minimum
  * @property StatusOrganisasi $Status
  * @property Carbon|null $DiarsipkanPada
  */
@@ -28,7 +29,7 @@ final class AreaMeja extends ModelDasar
     protected $table = 'AreaMeja';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Urutan' => 0];
+    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Urutan' => 0, 'MinimumCharge' => null];
 
     /**
      * @return array<string, string>

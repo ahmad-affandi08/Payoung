@@ -6,6 +6,7 @@ namespace App\Domain\Organisasi\Aksi;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
+use App\Domain\Katalog\Aksi\SiapkanProdukMinimumCharge;
 use App\Domain\Organisasi\Data\DataMeja;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Layanan\PenjagaModeMeja;
@@ -17,14 +18,16 @@ use Illuminate\Support\Facades\DB;
 /**
  * F-10a: tambah atau ubah meja di satu outlet. Nama unik per outlet ("7", "VIP 2"), kapasitas 1–99, area opsional
  * dan harus area aktif di outlet yang sama. Menambah meja butuh `pos.mode-meja` aktif di outlet (PenjagaModeMeja).
+ * `MinimumCharge` (D-144) opsional; mengisinya menyiapkan produk selisih minimum charge bila belum ada.
  */
 final class SimpanMeja
 {
-    private const KOLOM_AUDIT = ['IdOutlet', 'IdAreaMeja', 'Nama', 'Kapasitas', 'Bentuk', 'Urutan'];
+    private const KOLOM_AUDIT = ['IdOutlet', 'IdAreaMeja', 'Nama', 'Kapasitas', 'Bentuk', 'Urutan', 'MinimumCharge'];
 
     public function __construct(
         private readonly PenjagaModeMeja $penjaga,
         private readonly PencatatAudit $audit,
+        private readonly SiapkanProdukMinimumCharge $produkMinimum,
     ) {}
 
     public function Jalankan(Outlet $outlet, ?Meja $meja, DataMeja $data): Meja
@@ -50,7 +53,12 @@ final class SimpanMeja
                 $idArea = $area->Id;
             }
 
-            $isian = ['IdAreaMeja' => $idArea, 'Nama' => $nama, 'Kapasitas' => $data->kapasitas, 'Bentuk' => $data->bentuk, 'Urutan' => $data->urutan];
+            $isian = ['IdAreaMeja' => $idArea, 'Nama' => $nama, 'Kapasitas' => $data->kapasitas, 'Bentuk' => $data->bentuk, 'Urutan' => $data->urutan, 'MinimumCharge' => $data->minimumCharge?->KeString()];
+
+            if ($data->minimumCharge !== null) {
+                // D-144: produk penampung selisih minimum charge disiapkan sekali saat minimum pertama kali dipakai.
+                $this->produkMinimum->Jalankan();
+            }
 
             if ($meja === null) {
                 $this->penjaga->PastikanBisaMenambah($outlet);

@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $PosisiX
  * @property int|null $PosisiY
  * @property int $Urutan
+ * @property string|null $MinimumCharge batas belanja minimum meja (D-144); menimpa minimum areanya, kosong = ikut area
  * @property string|null $TokenPesanSendiri token QR pesan sendiri (F-17), null sampai QR pertama kali ditampilkan
  * @property Carbon|null $PerluDibersihkanSejak pesanan terakhir dibayar, meja belum ditandai bersih (K-12)
  * @property StatusOrganisasi $Status
@@ -39,7 +40,7 @@ final class Meja extends ModelDasar
     protected $table = 'Meja';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Bentuk' => 'Persegi', 'Kapasitas' => 4, 'Urutan' => 0, 'TokenPesanSendiri' => null];
+    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Bentuk' => 'Persegi', 'Kapasitas' => 4, 'Urutan' => 0, 'TokenPesanSendiri' => null, 'MinimumCharge' => null];
 
     /**
      * @return BelongsTo<AreaMeja, $this>

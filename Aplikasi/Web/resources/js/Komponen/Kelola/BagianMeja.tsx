@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -10,11 +11,20 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { ItemAksiBaris, type AksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import { FormatRupiah } from '@/Pustaka/Format';
 import type { Pilihan, StatusOrganisasi } from '@/Tipe/Organisasi';
 
 import { DialogQrMeja, SakelarPesanSendiri, type PesanSendiriOutlet } from './PesanSendiriMeja';
 
-export type AreaMeja = { Uuid: string; Nama: string; Urutan: number; Status: StatusOrganisasi; JumlahMeja: number };
+export type AreaMeja = {
+    Uuid: string;
+    Nama: string;
+    Urutan: number;
+    Status: StatusOrganisasi;
+    JumlahMeja: number;
+    /** Minimum charge area (D-144), string desimal server; null = tanpa minimum. */
+    MinimumCharge?: string | null;
+};
 
 export type Meja = {
     Uuid: string;
@@ -25,6 +35,10 @@ export type Meja = {
     Bentuk: string;
     Urutan: number;
     Status: StatusOrganisasi;
+    /** Minimum charge khusus meja ini; null = ikut area. */
+    MinimumCharge?: string | null;
+    /** Minimum yang berlaku (meja, atau area bila meja tidak mengaturnya). */
+    MinimumChargeEfektif?: string | null;
 };
 
 export type ModeMejaOutlet = { Aktif: boolean; Area: AreaMeja[]; Meja: Meja[] };
@@ -84,6 +98,18 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
             meta: { label: 'Meja aktif', prioritas: 'penting', angka: true },
         },
         {
+            id: 'MinimumCharge',
+            accessorFn: (a) => a.MinimumCharge ?? null,
+            header: 'Minimum charge',
+            meta: { label: 'Minimum charge', prioritas: 'penting', angka: true },
+            cell: ({ row }) =>
+                row.original.MinimumCharge ? (
+                    FormatRupiah(row.original.MinimumCharge)
+                ) : (
+                    <span className="text-teks-sekunder">Tanpa minimum</span>
+                ),
+        },
+        {
             id: 'Status',
             accessorKey: 'Status',
             header: 'Status',
@@ -111,6 +137,23 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
             header: 'Kapasitas',
             meta: { label: 'Kapasitas', prioritas: 'penting', angka: true },
             cell: ({ row }) => `${String(row.original.Kapasitas)} orang`,
+        },
+        {
+            id: 'MinimumCharge',
+            accessorFn: (m) => m.MinimumChargeEfektif ?? null,
+            header: 'Minimum charge',
+            meta: { label: 'Minimum charge', prioritas: 'penting', angka: true },
+            cell: ({ row }) =>
+                row.original.MinimumChargeEfektif ? (
+                    <>
+                        {FormatRupiah(row.original.MinimumChargeEfektif)}
+                        {row.original.MinimumCharge ? null : (
+                            <span className="block text-keterangan text-teks-sekunder">dari area</span>
+                        )}
+                    </>
+                ) : (
+                    <span className="text-teks-sekunder">Tanpa minimum</span>
+                ),
         },
         {
             id: 'Bentuk',
@@ -264,10 +307,26 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
     );
 }
 
+/** Minimum charge server ("150000.00") ke isian uang polos ("150000"); kosong tetap kosong. */
+function KeIsianUang(nilai: string | null | undefined): string {
+    if (nilai === null || nilai === undefined || nilai === '') {
+        return '';
+    }
+
+    const [bulat = '0', pecahan = ''] = nilai.split('.');
+    const dua = pecahan.slice(0, 2).replace(/0+$/, '');
+
+    return dua === '' ? bulat : `${bulat}.${dua}`;
+}
+
 type PropsFormArea = { alamatOutlet: string; area: AreaMeja | null; saatSelesai: () => void };
 
 function FormArea({ alamatOutlet, area, saatSelesai }: PropsFormArea) {
-    const formulir = useForm({ Nama: area?.Nama ?? '', Urutan: String(area?.Urutan ?? 0) });
+    const formulir = useForm({
+        Nama: area?.Nama ?? '',
+        Urutan: String(area?.Urutan ?? 0),
+        MinimumCharge: KeIsianUang(area?.MinimumCharge),
+    });
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -301,6 +360,13 @@ function FormArea({ alamatOutlet, area, saatSelesai }: PropsFormArea) {
                 inputMode="numeric"
                 maxLength={3}
             />
+            <BidangUang
+                label="Minimum charge area"
+                nilai={formulir.data.MinimumCharge}
+                saatBerubah={(nilai) => formulir.setData('MinimumCharge', nilai)}
+                galat={formulir.errors.MinimumCharge}
+                keterangan="Kosongkan bila tanpa minimum. Berlaku untuk semua meja di area ini kecuali meja yang mengatur sendiri."
+            />
             <div className="flex flex-wrap gap-2">
                 <Tombol type="submit" memproses={formulir.processing}>
                     Simpan area
@@ -328,6 +394,7 @@ function FormMeja({ alamatOutlet, meja, opsiArea, bentuk, saatSelesai }: PropsFo
         Kapasitas: String(meja?.Kapasitas ?? 4),
         Bentuk: meja?.Bentuk ?? 'Persegi',
         Urutan: String(meja?.Urutan ?? 0),
+        MinimumCharge: KeIsianUang(meja?.MinimumCharge),
     });
     // Area meja yang diarsipkan tetap bisa dipertahankan saat mengubah meja lama.
     const opsi =
@@ -391,6 +458,13 @@ function FormMeja({ alamatOutlet, meja, opsiArea, bentuk, saatSelesai }: PropsFo
                 galat={formulir.errors.Urutan}
                 inputMode="numeric"
                 maxLength={3}
+            />
+            <BidangUang
+                label="Minimum charge meja"
+                nilai={formulir.data.MinimumCharge}
+                saatBerubah={(nilai) => formulir.setData('MinimumCharge', nilai)}
+                galat={formulir.errors.MinimumCharge}
+                keterangan="Kosongkan untuk mengikuti minimum areanya. Bila belanja meja kurang dari ini, kasir menagih selisihnya."
             />
             <div className="flex flex-wrap gap-2">
                 <Tombol type="submit" memproses={formulir.processing}>

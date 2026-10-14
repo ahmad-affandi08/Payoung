@@ -97,6 +97,9 @@ abstract final class KunciPengaturan {
   /// `ETag` snapshot pesanan terbuka terakhir.
   static const String jenisPerangkat = 'JenisPerangkat';
   static const String modeMejaAktif = 'ModeMejaAktif';
+
+  /// D-144: JSON `{UuidProduk, Meja: {UuidMeja: "150000.00"}}` minimum charge per meja untuk kerja offline.
+  static const String minimumChargeMeja = 'MinimumChargeMeja';
   static const String etagPesananTerbuka = 'EtagPesananTerbuka';
 
   /// F-10b: stasiun dapur yang ditampilkan perangkat KDS (Uuid dipisah koma; kosong = semua).

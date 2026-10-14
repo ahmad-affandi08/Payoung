@@ -494,6 +494,45 @@ class LayananPenjualan {
     return BuatBaris(katalog, k, jasa, hargaDokumen: harga).Salin(racikan: racikan);
   }
 
+  /// FnB minimum charge (§9.1, D-144): pada pesanan meja yang punya minimum, selisih antara minimum dan nilai belanja
+  /// (subtotal setelah diskon, sebelum biaya layanan & pajak, persis pemeriksaan server) ditagih sebagai SATU baris produk
+  /// "Selisih minimum charge" (harga terbuka). Baris itu dibuang lalu dihitung ulang setiap kali, jadi idempoten: belanja
+  /// bertambah = selisih mengecil atau baris hilang. Uuid baris dipertahankan supaya tampilan tidak berkedip. Tanpa
+  /// minimum, tanpa produk penampung di katalog, atau keranjang kosong = keranjang apa adanya.
+  Keranjang TerapkanMinimumCharge(Keranjang keranjang, KatalogLokal katalog, KonteksPenjualan k) {
+    final minimum = k.minimumCharge.Ambil(keranjang.pesananMeja?.uuidMeja);
+    final uuidProduk = k.minimumCharge.uuidProduk;
+    final produk = uuidProduk == null ? null : katalog.CariProduk(uuidProduk);
+    if (minimum == null || uuidProduk == null || produk == null) {
+      return keranjang;
+    }
+    final lama = keranjang.baris.where((b) => b.uuidProduk == uuidProduk).firstOrNull;
+    final tanpa = keranjang.Salin(
+      baris: [
+        for (final b in keranjang.baris)
+          if (b.uuidProduk != uuidProduk) b,
+      ],
+    );
+    if (tanpa.baris.isEmpty) {
+      return tanpa;
+    }
+    try {
+      final hasil = Hitung(tanpa, k).hasil;
+      final belanja = hasil.subtotal.Kurangi(hasil.totalDiskon);
+      if (belanja.Bandingkan(minimum) >= 0) {
+        return tanpa;
+      }
+      final selisih = minimum.Kurangi(belanja);
+      final baris = lama != null
+          ? lama.Salin(hargaSatuan: selisih, jumlah: Kuantitas.DariBulat(1))
+          : BuatBaris(katalog, k, produk, hargaManual: selisih);
+      return tanpa.Salin(baris: [...tanpa.baris, baris]);
+    } on GalatKasir {
+      // Keranjang yang tidak bisa dihitung ditampilkan apa adanya; kesalahannya muncul di tempat asalnya.
+      return keranjang;
+    }
+  }
+
   Keranjang TambahBaris(Keranjang keranjang, ItemKeranjang baru, KatalogLokal katalog, KonteksPenjualan k) {
     final indeks = keranjang.baris.indexWhere((b) => b.CekBisaDigabung(baru));
     if (indeks < 0) {
