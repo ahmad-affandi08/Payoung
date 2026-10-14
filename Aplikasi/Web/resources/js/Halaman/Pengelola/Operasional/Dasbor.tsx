@@ -463,7 +463,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     kolom={kolomMetrik}
                     sumber={{ mode: 'lokal', data: Metrik.Terkini }}
                     ambilIdBaris={(baris) => baris.Kelompok}
-                    kosong={{ judul: 'Belum ada metrik API.' }}
+                    kosong={{ ilustrasi: true, judul: 'Belum ada metrik API.' }}
                 />
                 <p className="text-label font-semibold text-teks-utama">Satu jam terakhir</p>
                 <TabelData
@@ -472,7 +472,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     kolom={kolomMetrik}
                     sumber={{ mode: 'lokal', data: Metrik.SatuJam }}
                     ambilIdBaris={(baris) => baris.Kelompok}
-                    kosong={{ judul: 'Belum ada metrik API.' }}
+                    kosong={{ ilustrasi: true, judul: 'Belum ada metrik API.' }}
                 />
             </Bagian>
 
