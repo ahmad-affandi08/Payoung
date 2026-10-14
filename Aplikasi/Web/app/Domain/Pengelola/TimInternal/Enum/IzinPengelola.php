@@ -15,6 +15,8 @@ enum IzinPengelola: string
     case TimAnggotaNonaktifkan = 'tim.anggota.nonaktifkan';
     case TimPeranTetapkan = 'tim.peran.tetapkan';
     case AuditLihat = 'audit.lihat';
+    // PGL-01 (D-146): pembatasan alamat IP konsol; hanya Super Admin.
+    case TimBatasanIpKelola = 'tim.batasan-ip.kelola';
 
     // P-02 Master regulasi & referensi.
     case ReferensiLihat = 'referensi.lihat';
@@ -105,6 +107,7 @@ enum IzinPengelola: string
             self::TimAnggotaNonaktifkan => 'Menonaktifkan anggota tim internal',
             self::TimPeranTetapkan => 'Menetapkan peran anggota tim internal',
             self::AuditLihat => 'Melihat log audit pengelola',
+            self::TimBatasanIpKelola => 'Mengatur pembatasan alamat IP konsol',
             self::ReferensiLihat => 'Melihat data referensi & regulasi',
             self::ReferensiWilayahKelola => 'Mengelola data wilayah',
             self::ReferensiBankKelola => 'Mengelola referensi pembayaran',

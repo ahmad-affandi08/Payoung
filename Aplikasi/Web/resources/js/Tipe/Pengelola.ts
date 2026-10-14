@@ -27,6 +27,7 @@ export const IzinPengelola = {
     TimAnggotaUndang: 'tim.anggota.undang',
     TimAnggotaNonaktifkan: 'tim.anggota.nonaktifkan',
     TimPeranTetapkan: 'tim.peran.tetapkan',
+    TimBatasanIpKelola: 'tim.batasan-ip.kelola',
     AuditLihat: 'audit.lihat',
     ReferensiLihat: 'referensi.lihat',
     ReferensiWilayahKelola: 'referensi.wilayah.kelola',

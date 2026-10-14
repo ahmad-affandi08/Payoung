@@ -7,7 +7,10 @@ namespace App\Http\Kontroler\Pengelola;
 use App\Domain\Pengelola\TimInternal\Aksi\NonaktifkanAnggotaTim;
 use App\Domain\Pengelola\TimInternal\Aksi\TambahAnggotaTim;
 use App\Domain\Pengelola\TimInternal\Aksi\TetapkanPeran;
+use App\Domain\Pengelola\TimInternal\Aksi\UbahAllowlistIpPengelola;
 use App\Domain\Pengelola\TimInternal\Aksi\UndangAnggotaTim;
+use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
+use App\Domain\Pengelola\TimInternal\Layanan\AllowlistIpPengelola;
 use App\Domain\Pengelola\TimInternal\Layanan\PenjagaPerangkatTepercaya;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PeranPengelola;
@@ -19,6 +22,7 @@ use App\Http\Permintaan\Pengelola\TambahAnggotaTimPermintaan;
 use App\Http\Permintaan\Pengelola\TetapkanPeranPermintaan;
 use App\Http\Permintaan\Pengelola\UndangAnggotaTimPermintaan;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +32,7 @@ use Inertia\Response;
  */
 final class TimInternalKontroler extends Kontroler
 {
-    public function Daftar(): Response
+    public function Daftar(Request $permintaan, AllowlistIpPengelola $allowlist): Response
     {
         $anggota = PenggunaPengelola::query()
             ->with('Peran')
@@ -73,7 +77,23 @@ final class TimInternalKontroler extends Kontroler
             'Anggota' => $anggota,
             'Undangan' => $undangan,
             'Peran' => $peran,
+            // PGL-01 (D-146): hanya dikirim ke pemegang izin pengaturan IP.
+            'BatasanIp' => $this->Pelaku()->PunyaIzin(IzinPengelola::TimBatasanIpKelola)
+                ? ['Daftar' => $allowlist->Ambil(), 'IpAnda' => (string) $permintaan->ip()]
+                : null,
         ]);
+    }
+
+    /** PGL-01 (D-146): ubah daftar IP yang boleh membuka konsol; alamat pelaku sendiri wajib termasuk. */
+    public function UbahBatasanIp(Request $permintaan, UbahAllowlistIpPengelola $ubah): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            'Daftar' => ['nullable', 'string', 'max:5000'],
+            'Alasan' => ['required', 'string', 'min:5', 'max:255'],
+        ], [], ['Daftar' => 'daftar IP', 'Alasan' => 'alasan']);
+        $simpan = $ubah->Jalankan($this->Pelaku(), (string) ($valid['Daftar'] ?? ''), (string) $permintaan->ip(), (string) $valid['Alasan']);
+
+        return back()->with('Kilat', $simpan === [] ? 'Pembatasan IP dimatikan.' : 'Pembatasan IP disimpan: '.count($simpan).' entri.');
     }
 
     /** D-22: tambah anggota langsung dengan kata sandi awal (tanpa email), wajib diganti saat pertama masuk. */

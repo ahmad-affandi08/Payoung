@@ -53,6 +53,7 @@ use App\Http\Perantara\IdentifikasiTenantSesi;
 use App\Http\Perantara\PasangAksesDukungan;
 use App\Http\Perantara\PasangBingkaiPratinjau;
 use App\Http\Perantara\Pengelola\BagikanDataInertiaPengelola;
+use App\Http\Perantara\Pengelola\BatasiIpPengelola;
 use App\Http\Perantara\Pengelola\CatatAuditPengelola;
 use App\Http\Perantara\Pengelola\TolakDomainPengelola;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -74,7 +75,7 @@ $saas = ! EdisiAplikasi::CekLisensi();
 // Platform Pengelola di subdomain sendiri (PRD §13.8). Didaftarkan lebih dulu agar menang atas rute tenant.
 if ($saas) {
     Route::domain(config('pengelola.Domain'))
-        ->middleware([BagikanDataInertiaPengelola::class, CatatAuditPengelola::class])
+        ->middleware([BatasiIpPengelola::class, BagikanDataInertiaPengelola::class, CatatAuditPengelola::class])
         ->group(base_path('routes/Pengelola.php'));
 }
 

@@ -125,6 +125,11 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             ->middleware([$izin(IzinPengelola::TimAnggotaNonaktifkan), WajibDuaFaktorBaru::class])
             ->name('pengelola.tim-internal.cabut-perangkat');
 
+        // PGL-01 (D-146): pembatasan alamat IP konsol, hanya Super Admin.
+        Route::put('/tim-internal/batasan-ip', [TimInternalKontroler::class, 'UbahBatasanIp'])
+            ->middleware([$izin(IzinPengelola::TimBatasanIpKelola), WajibDuaFaktorBaru::class])
+            ->name('pengelola.tim-internal.batasan-ip.ubah');
+
         Route::get('/log-audit', [LogAuditKontroler::class, 'Daftar'])
             ->middleware($izin(IzinPengelola::AuditLihat))
             ->name('pengelola.log-audit.daftar');

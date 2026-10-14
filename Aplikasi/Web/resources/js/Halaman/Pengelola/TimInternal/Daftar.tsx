@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
@@ -33,7 +34,9 @@ type Undangan = { Uuid: string; Email: string; KodePeran: string[]; BerlakuSampa
 
 type Peran = { Kode: string; Nama: string };
 
-type PropsDaftar = { Anggota: Anggota[]; Undangan: Undangan[]; Peran: Peran[] };
+type BatasanIp = { Daftar: string[]; IpAnda: string };
+
+type PropsDaftar = { Anggota: Anggota[]; Undangan: Undangan[]; Peran: Peran[]; BatasanIp?: BatasanIp | null };
 
 type Pilihan = { jenis: 'peran' | 'nonaktifkan'; anggota: Anggota } | null;
 
@@ -100,10 +103,10 @@ function BuatKolom(namaPeran: Map<string, string>): KolomTabel<Anggota>[] {
 }
 
 /** Manajemen tim internal (P-01 langkah 3, 5, 6), TabelData D-16. */
-export default function Daftar({ Anggota, Undangan, Peran }: PropsDaftar) {
+export default function Daftar({ Anggota, Undangan, Peran, BatasanIp = null }: PropsDaftar) {
     const { props } = usePage<PropsBersamaPengelola>();
     const pengguna = props.Pengguna;
-    const [formTerbuka, AturFormTerbuka] = useState<'tambah' | 'undang' | null>(null);
+    const [formTerbuka, AturFormTerbuka] = useState<'tambah' | 'undang' | 'ip' | null>(null);
     const [pilihan, AturPilihan] = useState<Pilihan>(null);
     const namaPeran = new Map(Peran.map((peran) => [peran.Kode, peran.Nama]));
     const opsiPeran = Peran.map((peran) => ({ nilai: peran.Kode, label: peran.Nama }));
@@ -120,6 +123,9 @@ export default function Daftar({ Anggota, Undangan, Peran }: PropsDaftar) {
             ) : null}
             {formTerbuka === 'undang' ? (
                 <FormUndangan opsiPeran={opsiPeran} saatSelesai={() => AturFormTerbuka(null)} />
+            ) : null}
+            {formTerbuka === 'ip' && BatasanIp !== null ? (
+                <FormBatasanIp batasan={BatasanIp} saatSelesai={() => AturFormTerbuka(null)} />
             ) : null}
 
             {pilihan?.jenis === 'peran' ? (
@@ -138,13 +144,30 @@ export default function Daftar({ Anggota, Undangan, Peran }: PropsDaftar) {
                 />
             ) : null}
 
+            {BatasanIp !== null ? (
+                <p className="max-w-3xl text-isi text-teks-sekunder">
+                    {BatasanIp.Daftar.length === 0
+                        ? 'Konsol bisa dibuka dari alamat IP mana pun.'
+                        : `Konsol hanya bisa dibuka dari ${String(BatasanIp.Daftar.length)} alamat/rentang IP terdaftar.`}{' '}
+                    Alamat IP Anda saat ini <span className="font-mono">{BatasanIp.IpAnda}</span>.
+                </p>
+            ) : null}
             <AksiHalaman>
-                {PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang) ? (
+                {PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang) || BatasanIp !== null ? (
                     <div className="flex flex-wrap gap-2">
-                        <Tombol varian="sekunder" onClick={() => AturFormTerbuka('undang')}>
-                            Undang lewat email
-                        </Tombol>
-                        <Tombol onClick={() => AturFormTerbuka('tambah')}>Tambah anggota</Tombol>
+                        {BatasanIp !== null ? (
+                            <Tombol varian="sekunder" onClick={() => AturFormTerbuka('ip')}>
+                                Pembatasan IP
+                            </Tombol>
+                        ) : null}
+                        {PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang) ? (
+                            <>
+                                <Tombol varian="sekunder" onClick={() => AturFormTerbuka('undang')}>
+                                    Undang lewat email
+                                </Tombol>
+                                <Tombol onClick={() => AturFormTerbuka('tambah')}>Tambah anggota</Tombol>
+                            </>
+                        ) : null}
                     </div>
                 ) : null}
             </AksiHalaman>
@@ -446,6 +469,59 @@ function FormNonaktifkan({ anggota, saatSelesai }: { anggota: Anggota; saatSeles
                 <div className="flex flex-wrap gap-2">
                     <Tombol type="submit" varian="bahaya" memproses={formulir.processing}>
                         Nonaktifkan akun
+                    </Tombol>
+                    <Tombol varian="sekunder" onClick={saatSelesai}>
+                        Batal
+                    </Tombol>
+                </div>
+            </form>
+        </DialogFormulir>
+    );
+}
+
+/** PGL-01 (D-146): daftar IP yang boleh membuka konsol. Kosong = tanpa pembatasan; IP sendiri wajib termasuk. */
+function FormBatasanIp({ batasan, saatSelesai }: { batasan: BatasanIp; saatSelesai: () => void }) {
+    const { props } = usePage<PropsBersamaPengelola>();
+    const formulir = useForm({ Daftar: batasan.Daftar.join('\n'), Alasan: '' });
+
+    const Kirim = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+        formulir.put('/tim-internal/batasan-ip', { preserveScroll: true, onSuccess: saatSelesai });
+    };
+
+    return (
+        <DialogFormulir
+            judul="Pembatasan alamat IP konsol"
+            keterangan={
+                <p>
+                    Satu alamat IP atau rentang CIDR (misal 203.0.113.0/24) per baris. Kosongkan untuk mematikan
+                    pembatasan. Alamat Anda saat ini <span className="font-mono">{batasan.IpAnda}</span> wajib ada di
+                    daftar. Bila seluruh tim terkunci, jalankan{' '}
+                    <span className="font-mono">php artisan pengelola:kosongkan-allowlist-ip</span> di server.
+                </p>
+            }
+            saatTutup={saatSelesai}
+        >
+            <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
+                {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
+                <BidangTeksPanjang
+                    label="Alamat IP yang diizinkan"
+                    nilai={formulir.data.Daftar}
+                    saatBerubah={(nilai) => formulir.setData('Daftar', nilai)}
+                    galat={formulir.errors.Daftar}
+                    maksimal={5000}
+                />
+                <BidangTeks
+                    label="Alasan perubahan"
+                    nilai={formulir.data.Alasan}
+                    saatBerubah={(nilai) => formulir.setData('Alasan', nilai)}
+                    galat={formulir.errors.Alasan}
+                    maxLength={255}
+                    required
+                />
+                <div className="flex flex-wrap gap-2">
+                    <Tombol type="submit" memproses={formulir.processing}>
+                        Simpan pembatasan
                     </Tombol>
                     <Tombol varian="sekunder" onClick={saatSelesai}>
                         Batal
