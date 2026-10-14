@@ -6,8 +6,10 @@ use App\Domain\Integrasi\Layanan\PencariGerbangWebhook;
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Http\Kontroler\Publik\LaporanCspKontroler;
 use App\Http\Kontroler\Publik\WebhookBillingKontroler;
+use App\Http\Kontroler\Publik\WebhookDukunganMasukKontroler;
 use App\Http\Kontroler\Publik\WebhookGerbangPembayaranKontroler;
 use App\Http\Kontroler\Publik\WebhookPendaftaranMerchantKontroler;
+use App\Http\Perantara\VerifikasiTandaTanganDukunganMasuk;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,6 +34,12 @@ if (! EdisiAplikasi::CekLisensi()) {
     Route::post('/webhook/pembayaran/doku-partner', [WebhookPendaftaranMerchantKontroler::class, 'Terima'])
         ->middleware('throttle:webhook')
         ->name('webhook.pembayaran.doku-partner');
+
+    // PGL-15: pesan email/WhatsApp masuk menjadi tiket/balasan dukungan. Tanda tangan HMAC (rahasia `DUKUNGAN_MASUK_RAHASIA`
+    // kosong = 404); dua segmen `dukungan/masuk` tidak bentrok dengan pola gerbang tenant (penyedia dibatasi `doku`).
+    Route::post('/webhook/dukungan/masuk', [WebhookDukunganMasukKontroler::class, 'Terima'])
+        ->middleware(['throttle:webhook-dukungan', VerifikasiTandaTanganDukunganMasuk::class])
+        ->name('webhook.dukungan.masuk');
 }
 
 // F-08 BR-08.5, v2.06: notifikasi gerbang pembayaran QRIS dinamis milik tenant (kode adaptor huruf kecil + token

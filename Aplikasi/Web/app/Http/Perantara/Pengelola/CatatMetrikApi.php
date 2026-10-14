@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Perantara;
+namespace App\Http\Perantara\Pengelola;
 
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Pengelola\Operasional\Layanan\PencatatMetrikApi;

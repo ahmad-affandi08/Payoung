@@ -45,4 +45,12 @@ return [
     'MaksimalLampiranPerPesan' => 3,
     'UkuranMaksimalLampiranKb' => 5120,
     'EkstensiLampiran' => ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'txt', 'csv'],
+
+    // PGL-15: tiket masuk dari email/WhatsApp lewat `POST /webhook/dukungan/masuk`. Rahasia HMAC bersama dengan adaptor
+    // penyedia; kosong = pintu masuk mati (404). Pesan ber-tanda-waktu lebih tua/lebih baru dari toleransi ditolak.
+    'MasukRahasia' => env('DUKUNGAN_MASUK_RAHASIA', ''),
+    'MasukToleransiDetik' => 300,
+
+    // PGL-15: pesan masuk yang diterima per pengirim per hari (mencegah banjir tiket).
+    'MasukBatasPerPengirimHarian' => 20,
 ];

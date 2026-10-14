@@ -233,6 +233,9 @@ final class PenyediaAplikasi extends ServiceProvider
         RateLimiter::for('webhook', static fn (Request $permintaan): Limit => Limit::perMinute(300)
             ->by((string) $permintaan->route('penyedia').'|'.$permintaan->ip()));
 
+        // PGL-15: pesan masuk dukungan dari penyedia email/WhatsApp, per IP.
+        RateLimiter::for('webhook-dukungan', static fn (Request $permintaan): Limit => Limit::perMinute(120)->by((string) $permintaan->ip()));
+
         // Audit PAY-P1-04: laporan CSP Report-Only dari peramban; batas per IP supaya tidak jadi pengisi log.
         RateLimiter::for('laporan-csp', static fn (Request $permintaan): Limit => Limit::perMinute(30)->by((string) $permintaan->ip()));
 

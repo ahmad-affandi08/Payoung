@@ -7,7 +7,7 @@ use App\Http\Kontroler\Pengelola\GalatKontroler;
 use App\Http\Perantara\ArahkanDomainAplikasi;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
-use App\Http\Perantara\CatatMetrikApi;
+use App\Http\Perantara\Pengelola\CatatMetrikApi;
 use App\Http\Perantara\PasangHeaderKeamanan;
 use App\Http\Perantara\Pengelola\SiapkanSesiPengelola;
 use App\Http\Perantara\WajibLisensiSah;
