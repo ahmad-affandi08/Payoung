@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cara Daftar Payoung 30 Detik</title>
+<!--
+  Motion tutorial ringkas "Cara daftar akun Payoung" (T-MUL-01, flow F-00), 30 detik, 1920x1080 (16:9).
+  Potongan pendek dari rencana tutorial 90 detik di RencanaVideoTutorial.md (katalog 7.1 Memulai).
+
+  Akurat terhadap aplikasi (Autentikasi/Daftar.tsx) dan aturan bisnis F-00:
+  - Urutan & label bidang persis seperti form: Nama Anda, Nama toko/usaha, Email, Nomor WhatsApp,
+    Kata sandi, Ulangi kata sandi, Paket yang dicoba, centang persetujuan, CAPTCHA (BR-00.4).
+  - BR-00.5: tombol Daftar LANGSUNG membentuk tenant dan masuk sebagai Owner; email verifikasi
+    (tautan bertanda tangan, berlaku 24 jam) dikirim bersamaan dan banner pengingat tampil.
+  - F-00 langkah 3-4 + AC: Tenant, Pengguna (Owner), Outlet Utama, gudang default, Langganan Trial
+    terbentuk, lalu diarahkan ke Panduan Awal (F-01, D-24).
+  - BR-00.3: trial tanpa kartu kredit; setelah trial habis turun ke paket Gratis, bukan dihapus.
+  - D-20: payoung.id = situs pemasaran, dashboard.payoung.id = aplikasi (masuk/daftar).
+
+  Palet merek D-15 (Spesifikasi/Merek/README.md), font Atkinson Hyperlegible (§17.5, lokal, SIL OFL).
+  Semua suara disintesis di halaman ini (Web Audio), tanpa file audio eksternal.
+  Kontrol: Spasi = putar/jeda, R = ulang, M = bisu, H = sembunyikan kontrol, panah = geser 1 detik.
+  Mode rekam: ?rekam=1 (kontrol disembunyikan, waktu dikendalikan window.AturWaktu(detik),
+  audio diekspor lewat window.EksporWav()).
+-->
+<style>
+  /* Font dipakai bersama dengan video promosi (Huruf/, lisensi SIL OFL). */
+  @font-face { font-family: 'Atkinson Hyperlegible Next'; font-weight: 400 800; font-display: block; src: url(../VideoPromosi/Huruf/AtkinsonHyperlegibleNext.woff2) format('woff2'); }
+  @font-face { font-family: 'Atkinson Hyperlegible Mono'; font-weight: 500 700; font-display: block; src: url(../VideoPromosi/Huruf/AtkinsonHyperlegibleMono.woff2) format('woff2'); }
+  :root {
+    --indigo: #4f7376;
+    --brand: #3b5b5d;
+    --navy: #1f3335;
+    --navy-tua: #162526;
+    --kuning: #f4a261;
+    --latar: #f7f9f6;
+    --garis: #e8ece9;
+    --permukaan: #ffffff;
+    --teks-sekunder: #4f6567;
+    --sukses: #2e7d32;
+    --peringatan: #9a5b00;
+    --bahaya: #e5484d;
+    --huruf: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --huruf-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; }
+  body { font-family: var(--huruf); color: var(--navy); -webkit-font-smoothing: antialiased; }
+
+  #panggung {
+    position: absolute; left: 50%; top: 50%;
+    width: 1920px; height: 1080px;
+    transform-origin: 0 0;
+    overflow: hidden; background: var(--navy);
+  }
+  .adegan { position: absolute; inset: 0; visibility: hidden; }
+  .lapis { position: absolute; }
+
+  /* ---------- Logo tanpa slogan bawaan + tagline terpisah ---------- */
+  .logo-potong { position: absolute; aspect-ratio: 1352 / 432; container-type: inline-size; }
+  .logo-potong .gambar-logo {
+    position: absolute; inset: 0; overflow: hidden;
+    /* Tagline bawaan PNG dibuang agar bisa dianimasikan terpisah; gagang payung (kiri 21%) tetap utuh.
+       Di kotak krop ini tagline bawaan menempati 76,9%-85,5% dan logotype berakhir di 67,6%,
+       jadi potongan 76% membuang tagline tanpa menyentuh huruf. */
+    clip-path: polygon(0 0, 100% 0, 100% 76%, 21% 76%, 21% 100%, 0 100%);
+  }
+  .logo-potong img { position: absolute; width: 107.1%; left: -3.55%; top: -75.9%; }
+  .tagline {
+    position: absolute; left: 23.2%; top: 78%; white-space: nowrap;
+    font-size: 3.75cqw; line-height: 1; letter-spacing: .12em; font-weight: 500; color: var(--navy);
+  }
+  .logo-putih .tagline { color: rgba(255,255,255,.82); }
+
+  /* ---------- Chip langkah (menempel di pojok, §3 rencana tutorial) ---------- */
+  /* Chip melayang di atas tangkapan layar (z-index) supaya tidak tertutup bingkai peramban. */
+  .chip-langkah {
+    position: absolute; left: 62px; top: 40px; z-index: 60; display: flex; align-items: center; gap: 18px;
+    padding: 18px 34px; border-radius: 999px; background: var(--brand); color: #fff;
+    font-size: 34px; font-weight: 800; letter-spacing: .5px;
+    box-shadow: 0 14px 34px rgba(31,51,53,.28), 0 0 0 6px rgba(247,249,246,.9);
+  }
+  .chip-langkah .nomor {
+    display: grid; place-items: center; min-width: 54px; height: 54px; padding: 0 14px; border-radius: 999px;
+    background: var(--kuning); color: var(--navy); font-size: 28px; font-weight: 800;
+  }
+  /* Di adegan formulir peramban dimulai di y=72, jadi chip digeser ke bawah bilah alamat. */
+  .chip-langkah.chip-bawah { left: 150px; top: 176px; }
+  .judul-langkah {
+    position: absolute; left: 96px; top: 168px; color: var(--navy);
+    font-size: 58px; font-weight: 800; letter-spacing: -1px;
+  }
+  .adegan-gelap .judul-langkah { color: #fff; }
+
+  /* ---------- Pembuka ---------- */
+  #adegan-pembuka { background: radial-gradient(ellipse at 50% 38%, #2b4345 0%, var(--navy) 58%, var(--navy-tua) 100%); }
+  .kisi {
+    position: absolute; inset: -60px;
+    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .kicker {
+    position: absolute; left: 0; right: 0; text-align: center;
+    font-size: 36px; font-weight: 700; color: var(--kuning); letter-spacing: 7px; text-transform: uppercase;
+  }
+  .judul-besar {
+    position: absolute; left: 0; right: 0; text-align: center; color: #fff;
+    font-weight: 800; font-size: 112px; letter-spacing: -2.5px; line-height: 1.06;
+  }
+  .judul-besar .sorot { color: var(--kuning); }
+  .baris-meta {
+    position: absolute; left: 0; right: 0; top: 742px; display: flex; justify-content: center; gap: 22px;
+  }
+  .meta {
+    display: flex; align-items: center; gap: 14px; padding: 18px 32px; border-radius: 999px;
+    background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.16); backdrop-filter: blur(6px);
+    color: #fff; font-size: 30px; font-weight: 700;
+  }
+  .meta .titik { width: 14px; height: 14px; border-radius: 50%; background: var(--kuning); }
+
+  /* ---------- Bingkai peramban ---------- */
+  .peramban {
+    position: absolute; border-radius: 28px; overflow: hidden; background: var(--permukaan);
+    box-shadow: 0 48px 110px rgba(22,37,38,.42), 0 0 0 2px rgba(255,255,255,.06);
+  }
+  .bilah-peramban {
+    height: 86px; background: #eef2ef; border-bottom: 2px solid var(--garis);
+    display: flex; align-items: center; gap: 22px; padding: 0 30px;
+  }
+  .lampu { display: flex; gap: 12px; }
+  .lampu i { width: 18px; height: 18px; border-radius: 50%; background: #cfd8d2; }
+  .alamat {
+    flex: 1; height: 52px; border-radius: 999px; background: #fff; border: 2px solid var(--garis);
+    display: flex; align-items: center; gap: 14px; padding: 0 24px;
+    font-family: var(--huruf-mono); font-size: 27px; font-weight: 500; color: var(--teks-sekunder);
+  }
+  .alamat .gembok { color: var(--sukses); font-size: 24px; }
+  .alamat .inti { color: var(--navy); font-weight: 700; }
+  .isi-peramban { position: absolute; inset: 86px 0 0 0; background: var(--latar); overflow: hidden; }
+
+  /* ---------- Situs pemasaran payoung.id ---------- */
+  .hero-situs { position: absolute; inset: 0; background: linear-gradient(160deg, #fdfefc 0%, var(--latar) 60%, #eef3ee 100%); }
+  .nav-situs {
+    position: absolute; left: 0; right: 0; top: 0; height: 104px; display: flex; align-items: center;
+    padding: 0 56px; gap: 40px; border-bottom: 2px solid var(--garis); background: rgba(255,255,255,.72);
+  }
+  .nav-situs .menu { display: flex; gap: 34px; margin-left: auto; color: var(--teks-sekunder); font-size: 25px; font-weight: 700; }
+  .tombol {
+    display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+    border-radius: 16px; font-weight: 800; white-space: nowrap;
+  }
+  .tombol-utama { background: var(--brand); color: #fff; }
+  .tombol-garis { background: #fff; color: var(--brand); border: 3px solid var(--brand); }
+  .nav-situs .tombol { height: 62px; padding: 0 32px; font-size: 25px; }
+  .hero-teks { position: absolute; left: 76px; top: 198px; width: 700px; }
+  .hero-teks h2 { font-size: 66px; font-weight: 800; letter-spacing: -1.6px; line-height: 1.1; color: var(--navy); }
+  .hero-teks h2 em { font-style: normal; color: var(--brand); }
+  .hero-teks p { margin-top: 28px; font-size: 32px; line-height: 1.45; color: var(--teks-sekunder); font-weight: 500; }
+  .hero-aksi { margin-top: 34px; display: flex; gap: 22px; align-items: center; }
+  .hero-aksi .tombol { height: 88px; padding: 0 44px; font-size: 32px; }
+  .hero-catatan { margin-top: 20px; font-size: 25px; color: var(--teks-sekunder); font-weight: 600; }
+  .hero-gambar {
+    position: absolute; right: 58px; top: 206px; width: 548px; height: 404px; border-radius: 26px;
+    background: linear-gradient(145deg, var(--brand), #2b4749); box-shadow: 0 32px 70px rgba(31,51,53,.28);
+    overflow: hidden;
+  }
+  .hero-gambar .baris-maya { position: absolute; height: 18px; border-radius: 999px; background: rgba(255,255,255,.17); }
+  .hero-gambar .kartu-maya {
+    position: absolute; border-radius: 16px; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.14);
+  }
+
+  /* ---------- Kartu formulir daftar ---------- */
+  .kartu-daftar {
+    position: absolute; border-radius: 28px; background: #fff; border: 2px solid var(--garis);
+    box-shadow: 0 34px 80px rgba(31,51,53,.14); padding: 34px 48px 38px;
+    transform: scale(.75); transform-origin: top center;
+  }
+  .kartu-daftar h3 { font-size: 46px; font-weight: 800; letter-spacing: -1px; color: var(--navy); }
+  .kartu-daftar .sub { margin-top: 10px; font-size: 27px; color: var(--teks-sekunder); font-weight: 600; }
+  .tombol-google {
+    margin-top: 24px; height: 74px; width: 100%; border-radius: 16px; background: #fff; border: 3px solid var(--garis);
+    display: flex; align-items: center; justify-content: center; gap: 18px; font-size: 29px; font-weight: 800; color: var(--navy);
+  }
+  .tombol-google .g {
+    width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+    background: conic-gradient(#ea4335 0 25%, #fbbc05 0 50%, #34a853 0 75%, #4285f4 0);
+    color: #fff; font-size: 24px; font-weight: 800;
+  }
+  .tombol-google .g span { width: 22px; height: 22px; border-radius: 50%; background: #fff; }
+  .pemisah { margin: 20px 0 2px; display: flex; align-items: center; gap: 22px; color: var(--teks-sekunder); font-size: 25px; font-weight: 700; }
+  .pemisah i { flex: 1; height: 2px; background: var(--garis); }
+
+  .kisi-bidang { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 30px; margin-top: 20px; }
+  .bidang { position: relative; }
+  .bidang.lebar { grid-column: span 2; }
+  .bidang label { display: block; font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .kotak {
+    position: relative; height: 70px; border-radius: 16px; border: 3px solid var(--garis); background: #fff;
+    display: flex; align-items: center; padding: 0 22px; overflow: hidden;
+  }
+  .kotak .nilai {
+    font-size: 29px; font-weight: 600; color: var(--navy); white-space: nowrap;
+    clip-path: inset(0 100% 0 0);
+  }
+  .kotak .nilai.mono { font-family: var(--huruf-mono); letter-spacing: 1px; }
+  .kotak .petunjuk { position: absolute; left: 22px; font-size: 29px; font-weight: 500; color: #9bacaa; }
+  .kotak .karet { position: absolute; width: 3px; height: 38px; background: var(--brand); opacity: 0; }
+  .kotak.pilihan::after {
+    content: '▾'; position: absolute; right: 22px; font-size: 30px; color: var(--teks-sekunder);
+  }
+  .cincin-fokus {
+    position: absolute; inset: -6px; border-radius: 22px; border: 4px solid var(--brand); opacity: 0;
+    box-shadow: 0 0 0 6px rgba(59,91,93,.12);
+  }
+
+  .baris-setuju { grid-column: span 2; display: flex; align-items: flex-start; gap: 18px; margin-top: 4px; }
+  .kotak-centang {
+    position: relative; width: 44px; height: 44px; border-radius: 10px; border: 3px solid var(--garis);
+    background: #fff; flex: none; margin-top: 2px;
+  }
+  .kotak-centang .isi { position: absolute; inset: -3px; border-radius: 10px; background: var(--brand); opacity: 0; }
+  .kotak-centang svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .kotak-centang path { fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+  .teks-setuju { font-size: 25px; line-height: 1.5; font-weight: 500; color: var(--navy); }
+  .teks-setuju u { color: var(--brand); font-weight: 800; text-underline-offset: 4px; }
+
+  .captcha {
+    grid-column: span 2; margin-top: 2px; height: 80px; border-radius: 14px; border: 3px solid var(--garis);
+    background: #fbfdfa; display: flex; align-items: center; gap: 20px; padding: 0 26px;
+  }
+  .captcha .kotak-c { position: relative; width: 44px; height: 44px; border-radius: 8px; border: 3px solid #c7d2cd; background: #fff; }
+  .captcha .kotak-c .isi { position: absolute; inset: -3px; border-radius: 8px; background: var(--sukses); opacity: 0; }
+  .captcha .kotak-c svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .captcha .kotak-c path { fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+  .captcha .teks { font-size: 26px; font-weight: 700; color: var(--navy); }
+  .captcha .merek-c { margin-left: auto; font-size: 21px; font-weight: 700; color: var(--teks-sekunder); text-align: right; line-height: 1.3; }
+
+  .tombol-daftar {
+    grid-column: span 2; margin-top: 6px; height: 86px; width: 100%; border-radius: 18px;
+    background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 33px; font-weight: 800; letter-spacing: .3px; position: relative; overflow: hidden;
+  }
+  .tombol-daftar .kilat {
+    position: absolute; top: -40%; bottom: -40%; width: 160px; background: rgba(255,255,255,.26);
+    filter: blur(14px); transform: skewX(-14deg) translateX(-300%);
+  }
+  .pemuat {
+    position: absolute; width: 40px; height: 40px; border-radius: 50%;
+    border: 5px solid rgba(255,255,255,.35); border-top-color: #fff; opacity: 0;
+  }
+
+  /* ---------- Penanda & kursor ---------- */
+  .kursor {
+    position: absolute; width: 56px; height: 56px; z-index: 40; filter: drop-shadow(0 6px 12px rgba(22,37,38,.4));
+  }
+  .kursor svg { width: 100%; height: 100%; display: block; }
+  .riak {
+    position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+    border: 5px solid var(--kuning); opacity: 0; z-index: 39;
+  }
+  .sorot-kotak {
+    position: absolute; border-radius: 18px; border: 5px solid var(--kuning); opacity: 0; z-index: 38;
+    box-shadow: 0 0 0 9999px rgba(22,37,38,.2);
+  }
+
+  /* ---------- Adegan berhasil ---------- */
+  #adegan-berhasil { background: var(--latar); }
+  #adegan-berhasil::before {
+    content: ''; position: absolute; right: -360px; top: -360px; width: 1060px; height: 1060px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,91,93,.14), rgba(59,91,93,0) 70%);
+  }
+  .banner-verifikasi {
+    position: absolute; left: 96px; right: 96px; top: 268px; height: 104px; border-radius: 18px;
+    background: #fff6e8; border: 3px solid #f0cf9f; display: flex; align-items: center; gap: 22px; padding: 0 34px;
+  }
+  .banner-verifikasi .ikon {
+    width: 58px; height: 58px; border-radius: 14px; background: var(--kuning); color: var(--navy);
+    display: grid; place-items: center; font-size: 30px; font-weight: 800; flex: none;
+  }
+  .banner-verifikasi .teks { font-size: 29px; font-weight: 700; color: #6b4a14; }
+  .banner-verifikasi .teks small { display: block; font-size: 23px; font-weight: 600; opacity: .8; margin-top: 3px; }
+
+  .kisi-hasil {
+    position: absolute; left: 96px; right: 96px; top: 438px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px;
+  }
+  .kartu-hasil {
+    border-radius: 22px; background: #fff; border: 2px solid var(--garis); padding: 30px 28px;
+    box-shadow: 0 16px 38px rgba(31,51,53,.08);
+  }
+  .kartu-hasil .tanda {
+    width: 62px; height: 62px; border-radius: 16px; background: #e7f0e8; display: grid; place-items: center;
+  }
+  .kartu-hasil .tanda svg { width: 36px; height: 36px; }
+  .kartu-hasil .tanda path { fill: none; stroke: var(--sukses); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+  .kartu-hasil h4 { margin-top: 22px; font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -.5px; }
+  .kartu-hasil p { margin-top: 10px; font-size: 24px; font-weight: 600; color: var(--teks-sekunder); line-height: 1.4; }
+
+  .pita-lanjut {
+    position: absolute; left: 96px; right: 96px; top: 812px; height: 118px; border-radius: 22px;
+    background: var(--brand); color: #fff; display: flex; align-items: center; gap: 26px; padding: 0 40px;
+  }
+  .pita-lanjut .nomor-l {
+    width: 66px; height: 66px; border-radius: 16px; background: var(--kuning); color: var(--navy);
+    display: grid; place-items: center; font-size: 32px; font-weight: 800; flex: none;
+  }
+  .pita-lanjut .utama { font-size: 34px; font-weight: 800; }
+  .pita-lanjut .utama small { display: block; font-size: 25px; font-weight: 600; opacity: .82; margin-top: 4px; }
+  .pita-lanjut .panah { margin-left: auto; font-size: 44px; }
+
+  /* ---------- Penutup ---------- */
+  #adegan-penutup { background: radial-gradient(ellipse at 50% 42%, #2b4345 0%, var(--navy) 58%, var(--navy-tua) 100%); }
+  .alamat-besar {
+    position: absolute; left: 0; right: 0; top: 648px; text-align: center; color: #fff;
+    font-size: 72px; font-weight: 800; letter-spacing: -1px;
+  }
+  .alamat-besar .sorot { color: var(--kuning); }
+  .baris-penutup {
+    position: absolute; left: 0; right: 0; top: 784px; display: flex; justify-content: center; gap: 20px;
+  }
+  .pil {
+    padding: 16px 32px; border-radius: 999px; background: rgba(255,255,255,.09);
+    border: 2px solid rgba(255,255,255,.18); color: #fff; font-size: 28px; font-weight: 700;
+  }
+  .bintang { position: absolute; width: 80px; height: 80px; }
+  .bintang svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+  /* ---------- Animasi ---------- */
+  @keyframes muncul { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes hilang { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes naik { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: none; } }
+  @keyframes naik-kecil { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  @keyframes turun { from { opacity: 0; transform: translateY(-60px); } to { opacity: 1; transform: none; } }
+  @keyframes dari-kanan { from { opacity: 0; transform: translateX(120px); } to { opacity: 1; transform: none; } }
+  @keyframes dari-kiri { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: none; } }
+  @keyframes letup { 0% { opacity: 0; transform: scale(.4); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes letup-keluar { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.6); } }
+  @keyframes melayang { 0%, 100% { translate: 0 0; } 50% { translate: 0 -14px; } }
+  @keyframes sapu-kanan { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes renggang { from { opacity: 0; letter-spacing: .4em; filter: blur(6px); } to { opacity: 1; letter-spacing: .12em; filter: blur(0); } }
+  @keyframes kilau { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.35) rotate(45deg); } }
+  @keyframes kedip { 0%, 100% { opacity: 0; transform: scale(.2) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(90deg); } }
+  @keyframes rentang { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes tekan { 0%, 100% { transform: scale(1); } 45% { transform: scale(.955); } }
+  @keyframes sentuhan { 0% { opacity: 0; transform: scale(1.8); } 40% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.8); } }
+  @keyframes gambar-garis { from { stroke-dashoffset: 40; } to { stroke-dashoffset: 0; } }
+  @keyframes tirai-lewat { from { transform: skewX(-14deg) translateX(-300%); } to { transform: skewX(-14deg) translateX(300%); } }
+  @keyframes zoom-pelan { from { transform: scale(1); } to { transform: scale(1.05); } }
+  @keyframes karet-kedip { 0%, 45% { opacity: 1; } 46%, 100% { opacity: 0; } }
+  @keyframes putar { to { rotate: 360deg; } }
+  @keyframes cincin-denyut { 0% { opacity: .9; width: 0; height: 0; margin: 0; } 100% { opacity: 0; width: 1200px; height: 1200px; margin: -600px 0 0 -600px; } }
+  /* Kursor: tiap perpindahan punya keyframe sendiri agar jalurnya terbaca jelas. */
+  @keyframes kursor-ke-daftar-gratis { from { transform: translate(-220px, 260px); } to { transform: translate(0, 0); } }
+  @keyframes kursor-ke-centang { from { transform: translate(40px, -300px); } to { transform: translate(0, 0); } }
+  @keyframes kursor-ke-tombol { from { transform: translate(-30px, -210px); } to { transform: translate(0, 0); } }
+
+  /* ---------- Kontrol pemutar ---------- */
+  #tirai-mulai {
+    position: absolute; inset: 0; display: grid; place-items: center; z-index: 90;
+    background: rgba(22,37,38,.9); backdrop-filter: blur(10px);
+  }
+  #tombol-mulai {
+    padding: 26px 54px; border-radius: 999px; border: 0; cursor: pointer;
+    background: var(--kuning); color: var(--navy); font-family: var(--huruf); font-size: 26px; font-weight: 800;
+  }
+  body.sudah-mulai #tirai-mulai { display: none; }
+  #kontrol {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 95;
+    display: flex; align-items: center; gap: 14px; padding: 12px 20px; border-radius: 999px;
+    background: rgba(22,37,38,.82); backdrop-filter: blur(10px); color: #fff; font-size: 15px;
+  }
+  #kontrol button {
+    width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255,255,255,.14); color: #fff; font-size: 16px;
+  }
+  #kontrol input { width: 320px; accent-color: var(--kuning); }
+  #penunjuk-waktu { font-family: var(--huruf-mono); min-width: 110px; text-align: right; }
+  body.rekam #kontrol, body.rekam #tirai-mulai, body.tanpa-kontrol #kontrol { display: none; }
+</style>
+</head>
+<body>
+
+<div id="panggung">
+
+  <!-- ============ 0,0–3,4 · Pembuka ============ -->
+  <section class="adegan adegan-gelap" id="adegan-pembuka" data-mulai="0" data-selesai="3.4">
+    <div class="kisi lapis" data-anim="muncul@0/0.5"></div>
+    <div class="logo-potong lapis logo-putih" data-logo="tagline-terpisah" data-tagline-anim="renggang@0.85/0.9"
+         style="left: 710px; top: 268px; width: 500px;" data-anim="letup@0.15/0.8/pegas"></div>
+    <div class="kicker" style="top: 470px;" data-anim="naik-kecil@0.7/0.6">Tutorial · Memulai</div>
+    <h1 class="judul-besar" style="top: 532px;" data-anim="naik@0.95/0.8/pegas">Cara daftar akun <span class="sorot">Payoung</span></h1>
+    <div class="baris-meta">
+      <div class="meta" data-anim="naik-kecil@1.5/0.5"><i class="titik"></i>Gratis, tanpa kartu kredit</div>
+      <div class="meta" data-anim="naik-kecil@1.65/0.5"><i class="titik"></i>± 1 menit</div>
+      <div class="meta" data-anim="naik-kecil@1.8/0.5"><i class="titik"></i>payoung.id</div>
+    </div>
+  </section>
+
+  <!-- ============ 3,4–7,8 · Langkah 1: buka payoung.id ============ -->
+  <section class="adegan adegan-gelap" id="adegan-situs" data-mulai="3.4" data-selesai="7.85"
+           style="background: linear-gradient(160deg, #2b4345, var(--navy) 62%, var(--navy-tua));">
+    <div class="kisi lapis" data-anim="muncul@3.4/0.3"></div>
+    <div class="chip-langkah" data-anim="dari-kiri@3.5/0.5/pegas"><span class="nomor">1</span>Buka payoung.id</div>
+
+    <div class="peramban" style="left: 210px; top: 212px; width: 1500px; height: 760px;"
+         data-anim="naik@3.5/0.7/pegas, zoom-pelan@4.2/3.2/halus-sedang">
+      <div class="bilah-peramban">
+        <div class="lampu"><i></i><i></i><i></i></div>
+        <div class="alamat"><span class="gembok">🔒</span><span class="inti">payoung.id</span></div>
+      </div>
+      <div class="isi-peramban">
+        <div class="hero-situs">
+          <div class="nav-situs">
+            <div class="logo-potong" data-logo="tanpa-tagline" style="left: 56px; top: 26px; width: 190px;"></div>
+            <div class="menu"><span>Fitur</span><span>Harga</span><span>Blog</span></div>
+            <div class="tombol tombol-utama" id="tombol-daftar-gratis" data-anim="tekan@4.92/0.34/pegas">Daftar Gratis</div>
+          </div>
+          <div class="hero-teks">
+            <h2 data-anim="naik@3.75/0.6">Kasir, stok, dan<br>pembukuan <em>jadi satu</em></h2>
+            <p data-anim="naik-kecil@3.95/0.55">Tetap jalan walau internet mati. Semua tersinkron begitu online.</p>
+            <div class="hero-aksi" data-anim="naik-kecil@4.15/0.5">
+              <div class="tombol tombol-utama">Daftar Gratis</div>
+              <div class="tombol tombol-garis">Lihat Harga</div>
+            </div>
+            <p class="hero-catatan" data-anim="muncul@4.4/0.5">Trial tanpa kartu kredit · Batal kapan saja</p>
+          </div>
+          <div class="hero-gambar" data-anim="dari-kanan@4.0/0.75/pegas">
+            <div class="kartu-maya" style="left: 36px; top: 40px; width: 226px; height: 140px;"></div>
+            <div class="kartu-maya" style="left: 286px; top: 40px; width: 226px; height: 140px;"></div>
+            <div class="baris-maya" style="left: 36px; top: 212px; width: 356px;"></div>
+            <div class="baris-maya" style="left: 36px; top: 250px; width: 266px;"></div>
+            <div class="baris-maya" style="left: 36px; top: 288px; width: 420px;"></div>
+            <div class="kartu-maya" style="left: 36px; top: 328px; width: 476px; height: 52px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kursor menuju tombol "Daftar Gratis" di navigasi.
+         Koordinat panggung: peramban di 210,212 + bilah 86 + nav (tinggi 104) → tombol di 1415,319. -->
+    <div class="kursor" style="left: 1524px; top: 356px;" data-anim="muncul@4.35/0.25, kursor-ke-daftar-gratis@4.35/0.6/halus-sedang, hilang@5.35/0.3">
+      <svg viewBox="0 0 24 24"><path d="M5 2.5 L19 12.5 L12.4 13.3 L16 20.4 L13.2 21.6 L9.8 14.5 L5 18.8 Z" fill="#fff" stroke="#1f3335" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="riak" style="left: 1530px; top: 362px;" data-anim="sentuhan@4.92/0.6"></div>
+    <div class="sorot-kotak" style="left: 1405px; top: 309px; width: 259px; height: 82px;"
+         data-anim="muncul@4.6/0.3, hilang@5.3/0.35"></div>
+  </section>
+
+  <!-- ============ 7,85–23,6 · Langkah 2–4: formulir pendaftaran ============ -->
+  <section class="adegan" id="adegan-formulir" data-mulai="7.85" data-selesai="23.62"
+           style="background: linear-gradient(160deg, #fdfefc, var(--latar) 58%, #eaf0ea);">
+
+    <!-- Chip langkah berganti di detik 14,6 dan 19,4 -->
+    <div class="chip-langkah chip-bawah" data-anim="dari-kiri@7.95/0.45/pegas, hilang@14.5/0.2"><span class="nomor">2</span>Isi data Anda</div>
+    <div class="chip-langkah chip-bawah" data-anim="letup@14.62/0.4/pegas, hilang@19.3/0.2"><span class="nomor">3</span>Kata sandi &amp; paket</div>
+    <div class="chip-langkah chip-bawah" data-anim="letup@19.42/0.4/pegas"><span class="nomor">4</span>Setujui &amp; daftar</div>
+
+    <div class="peramban" style="left: 150px; top: 72px; width: 1620px; height: 984px;" data-anim="naik@7.9/0.6/pegas">
+      <div class="bilah-peramban">
+        <div class="lampu"><i></i><i></i><i></i></div>
+        <div class="alamat"><span class="gembok">🔒</span><span class="inti">dashboard.payoung.id</span>/daftar</div>
+      </div>
+      <div class="isi-peramban">
+        <div class="kartu-daftar" style="left: 260px; top: 14px; width: 1100px;">
+          <h3 data-anim="naik-kecil@8.05/0.45">Daftar gratis</h3>
+          <p class="sub" data-anim="naik-kecil@8.15/0.45">Mulai masa trial tanpa kartu kredit.</p>
+
+          <div class="tombol-google" data-anim="naik-kecil@8.3/0.45"><i class="g"><span></span></i>Daftar dengan Google</div>
+          <div class="pemisah" data-anim="muncul@8.45/0.4"><i></i>atau<i></i></div>
+
+          <div class="kisi-bidang">
+            <!-- Nama Anda -->
+            <div class="bidang" data-anim="naik-kecil@8.6/0.4">
+              <label>Nama Anda</label>
+              <div class="kotak">
+                <span class="petunjuk" data-anim="hilang@8.95/0.15"></span>
+                <span class="nilai" data-anim="sapu-kanan@8.95/0.62/halus-sedang">Siti Rahmawati</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@8.9/0.1, karet-kedip@8.9/0.5, hilang@9.62/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@8.85/0.15, hilang@9.65/0.2"></div>
+            </div>
+
+            <!-- Nama toko/usaha -->
+            <div class="bidang" data-anim="naik-kecil@8.7/0.4">
+              <label>Nama toko/usaha</label>
+              <div class="kotak">
+                <span class="nilai" data-anim="sapu-kanan@9.78/0.66/halus-sedang">Toko Berkah Jaya</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@9.73/0.1, karet-kedip@9.73/0.5, hilang@10.5/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@9.7/0.15, hilang@10.52/0.2"></div>
+            </div>
+
+            <!-- Email -->
+            <div class="bidang" data-anim="naik-kecil@8.8/0.4">
+              <label>Email</label>
+              <div class="kotak">
+                <span class="nilai" data-anim="sapu-kanan@10.66/0.78/halus-sedang">siti@berkahjaya.id</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@10.61/0.1, karet-kedip@10.61/0.5, hilang@11.5/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@10.58/0.15, hilang@11.52/0.2"></div>
+            </div>
+
+            <!-- Nomor WhatsApp -->
+            <div class="bidang" data-anim="naik-kecil@8.9/0.4">
+              <label>Nomor WhatsApp</label>
+              <div class="kotak">
+                <span class="nilai mono" data-anim="sapu-kanan@11.66/0.74/halus-sedang">0812-3456-7890</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@11.61/0.1, karet-kedip@11.61/0.5, hilang@12.46/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@11.58/0.15, hilang@12.48/0.2"></div>
+            </div>
+
+            <!-- Kata sandi -->
+            <div class="bidang" data-anim="naik-kecil@9.0/0.4">
+              <label>Kata sandi</label>
+              <div class="kotak">
+                <span class="nilai mono" data-anim="sapu-kanan@14.85/0.6/halus-sedang">••••••••••••</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@14.8/0.1, karet-kedip@14.8/0.5, hilang@15.5/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@14.78/0.15, hilang@15.52/0.2"></div>
+            </div>
+
+            <!-- Ulangi kata sandi -->
+            <div class="bidang" data-anim="naik-kecil@9.1/0.4">
+              <label>Ulangi kata sandi</label>
+              <div class="kotak">
+                <span class="nilai mono" data-anim="sapu-kanan@15.72/0.6/halus-sedang">••••••••••••</span>
+                <span class="karet" style="left: 24px;" data-anim="muncul@15.67/0.1, karet-kedip@15.67/0.5, hilang@16.38/0.12"></span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@15.65/0.15, hilang@16.4/0.2"></div>
+            </div>
+
+            <!-- Paket yang dicoba -->
+            <div class="bidang lebar" data-anim="naik-kecil@9.2/0.4">
+              <label>Paket yang dicoba</label>
+              <div class="kotak pilihan">
+                <span class="nilai" style="clip-path: none;" data-anim="hilang@17.05/0.18">Pilih paket</span>
+                <span class="nilai" style="position: absolute; left: 22px; clip-path: none; opacity: 0;"
+                      data-anim="letup@17.2/0.4/pegas">Pro (trial 14 hari)</span>
+              </div>
+              <div class="cincin-fokus" data-anim="muncul@16.95/0.15, hilang@17.75/0.25"></div>
+            </div>
+
+            <!-- Persetujuan legal (BR-P06.2: S&K, Kebijakan Privasi, Perjanjian Pemrosesan Data) -->
+            <div class="baris-setuju" data-anim="naik-kecil@9.3/0.4">
+              <div class="kotak-centang">
+                <div class="isi" data-anim="letup@20.08/0.28/pegas"></div>
+                <svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@20.2/0.33/halus-sedang"/></svg>
+              </div>
+              <p class="teks-setuju">Saya menyetujui <u>Syarat &amp; Ketentuan</u>, <u>Kebijakan Privasi</u>, serta <u>Perjanjian Pemrosesan Data</u>.</p>
+            </div>
+
+            <!-- CAPTCHA (BR-00.4, Cloudflare Turnstile) -->
+            <div class="captcha" data-anim="naik-kecil@9.4/0.4">
+              <div class="kotak-c">
+                <div class="isi" data-anim="letup@20.92/0.28/pegas"></div>
+                <svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@21.02/0.3/halus-sedang"/></svg>
+              </div>
+              <span class="teks" data-anim="hilang@20.9/0.2">Saya bukan robot</span>
+              <span class="teks" style="position: absolute; left: 90px; opacity: 0; color: var(--sukses);"
+                    data-anim="muncul@21.08/0.3">Terverifikasi</span>
+              <span class="merek-c">Cloudflare<br>Turnstile</span>
+            </div>
+
+            <!-- Tombol kirim -->
+            <div class="tombol-daftar" data-anim="naik-kecil@9.5/0.4, tekan@22.3/0.36/pegas">
+              <span data-anim="hilang@22.55/0.2">Daftar</span>
+              <i class="pemuat" data-anim="muncul@22.6/0.2, putar@22.6/0.9, hilang@23.4/0.2"></i>
+              <i class="kilat" data-anim="tirai-lewat@10.0/0.9/halus-sedang"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kursor: ke kotak centang, lalu ke tombol Daftar -->
+    <div class="kursor" style="left: 589px; top: 811px;"
+         data-anim="muncul@19.6/0.25, kursor-ke-centang@19.6/0.5/halus-sedang, hilang@20.5/0.25">
+      <svg viewBox="0 0 24 24"><path d="M5 2.5 L19 12.5 L12.4 13.3 L16 20.4 L13.2 21.6 L9.8 14.5 L5 18.8 Z" fill="#fff" stroke="#1f3335" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="riak" style="left: 601px; top: 817px;" data-anim="sentuhan@20.08/0.55"></div>
+
+    <div class="kursor" style="left: 948px; top: 978px;"
+         data-anim="muncul@21.75/0.25, kursor-ke-tombol@21.75/0.5/halus-sedang, hilang@22.75/0.25">
+      <svg viewBox="0 0 24 24"><path d="M5 2.5 L19 12.5 L12.4 13.3 L16 20.4 L13.2 21.6 L9.8 14.5 L5 18.8 Z" fill="#fff" stroke="#1f3335" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="riak" style="left: 960px; top: 984px;" data-anim="sentuhan@22.3/0.55"></div>
+  </section>
+
+  <!-- ============ 23,62–27,6 · Langkah 5: cek berhasil ============ -->
+  <section class="adegan" id="adegan-berhasil" data-mulai="23.62" data-selesai="27.62">
+    <div class="chip-langkah" data-anim="dari-kiri@23.72/0.45/pegas"><span class="nomor">5</span>Cek berhasil</div>
+    <h2 class="judul-langkah" data-anim="naik@23.8/0.5">Akun jadi — langsung masuk sebagai Owner</h2>
+
+    <!-- BR-00.5: banner pengingat verifikasi email, tautan berlaku 24 jam -->
+    <div class="banner-verifikasi" data-anim="naik-kecil@24.0/0.45">
+      <span class="ikon">✉</span>
+      <span class="teks">Cek email untuk memverifikasi alamat Anda.
+        <small>Tautan verifikasi berlaku 24 jam. Akun tetap bisa dipakai sambil menunggu.</small></span>
+    </div>
+
+    <!-- F-00 langkah 3 + AC: yang terbentuk otomatis -->
+    <div class="kisi-hasil">
+      <div class="kartu-hasil" data-anim="naik@24.35/0.5/pegas">
+        <div class="tanda"><svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@24.5/0.3"/></svg></div>
+        <h4>Toko Berkah Jaya</h4><p>Usaha Anda dibuat</p>
+      </div>
+      <div class="kartu-hasil" data-anim="naik@24.55/0.5/pegas">
+        <div class="tanda"><svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@24.7/0.3"/></svg></div>
+        <h4>Outlet Utama</h4><p>Beserta gudang bawaan</p>
+      </div>
+      <div class="kartu-hasil" data-anim="naik@24.75/0.5/pegas">
+        <div class="tanda"><svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@24.9/0.3"/></svg></div>
+        <h4>Peran Owner</h4><p>Akses penuh back-office</p>
+      </div>
+      <div class="kartu-hasil" data-anim="naik@24.95/0.5/pegas">
+        <div class="tanda"><svg viewBox="0 0 44 44"><path d="M11 22.5 L18.5 30 L33 15" data-anim="gambar-garis@25.1/0.3"/></svg></div>
+        <h4>Trial 14 hari</h4><p>Habis trial turun ke Gratis</p>
+      </div>
+    </div>
+
+    <!-- F-00 langkah 4 / D-24: diarahkan ke Panduan Awal -->
+    <div class="pita-lanjut" data-anim="naik@25.45/0.55/pegas">
+      <span class="nomor-l">→</span>
+      <span class="utama">Lanjut: Panduan Awal
+        <small>Isi produk pertama dan siapkan kasir — bisa diselesaikan bertahap.</small></span>
+      <span class="panah" data-anim="melayang@25.9/1.2">›</span>
+    </div>
+  </section>
+
+  <!-- ============ 27,62–30,0 · Penutup ============ -->
+  <section class="adegan adegan-gelap" id="adegan-penutup" data-mulai="27.62" data-selesai="30">
+    <div class="kisi lapis" data-anim="muncul@27.62/0.3"></div>
+    <div class="logo-potong lapis logo-putih" data-logo="tagline-terpisah" data-tagline-anim="renggang@28.15/0.9"
+         style="left: 660px; top: 300px; width: 600px;" data-anim="letup@27.72/0.7/pegas"></div>
+    <div class="bintang" style="left: 1232px; top: 318px;" data-anim="kedip@28.05/0.9">
+      <svg viewBox="0 0 24 24"><path d="M12 1.6 L14.1 9.1 L21.6 11.2 L14.1 13.3 L12 20.8 L9.9 13.3 L2.4 11.2 L9.9 9.1 Z" fill="#f4a261"/></svg>
+    </div>
+    <div class="alamat-besar" data-anim="naik@28.35/0.6/pegas">daftar di <span class="sorot">payoung.id</span></div>
+    <div class="baris-penutup">
+      <span class="pil" data-anim="naik-kecil@28.75/0.45">Gratis</span>
+      <span class="pil" data-anim="naik-kecil@28.88/0.45">Tanpa kartu kredit</span>
+      <span class="pil" data-anim="naik-kecil@29.01/0.45">± 1 menit</span>
+    </div>
+  </section>
+
+</div>
+
+<div id="tirai-mulai"><button type="button" id="tombol-mulai">▶ Putar dengan suara</button></div>
+
+<div id="kontrol" role="group" aria-label="Kontrol video">
+  <button type="button" id="tombol-putar" aria-label="Putar">▶</button>
+  <button type="button" id="tombol-ulang" aria-label="Ulang dari awal">↺</button>
+  <button type="button" id="tombol-suara" aria-label="Bisukan">🔊</button>
+  <input type="range" id="penggeser" min="0" max="30000" step="10" value="0" aria-label="Posisi waktu">
+  <output id="penunjuk-waktu">0,0 / 30,0 d</output>
+</div>
+
+<script>
+(() => {
+  const durasiMs = 30000;
+  const durasiDetik = durasiMs / 1000;
+  const panggung = document.getElementById('panggung');
+  const semuaAdegan = [...document.querySelectorAll('.adegan')];
+  const penggeser = document.getElementById('penggeser');
+  const penunjukWaktu = document.getElementById('penunjuk-waktu');
+  const tombolPutar = document.getElementById('tombol-putar');
+  const tombolSuara = document.getElementById('tombol-suara');
+  const parameter = new URLSearchParams(location.search);
+  const modeRekam = parameter.has('rekam');
+  if (modeRekam) document.body.classList.add('rekam');
+
+  const kurvaNyata = {
+    halus: 'cubic-bezier(.22, 1, .36, 1)',
+    'halus-sedang': 'cubic-bezier(.65, 0, .35, 1)',
+    pegas: 'cubic-bezier(.34, 1.4, .64, 1)',
+    tajam: 'cubic-bezier(.7, 0, .84, 0)',
+  };
+
+  // ===================== Visual =====================
+
+  function IsiLogo() {
+    document.querySelectorAll('[data-logo]').forEach((wadah) => {
+      const putih = wadah.classList.contains('logo-putih');
+      const berkas = putih ? 'LogoHorizontalPutih.png' : 'LogoHorizontal.png';
+      wadah.innerHTML = '<div class="gambar-logo"><img src="../Sumber/' + berkas + '" alt="Payoung"></div>';
+      if (wadah.dataset.logo === 'tanpa-tagline') return;
+      const tagline = document.createElement('span');
+      tagline.className = 'tagline';
+      tagline.textContent = 'Smart Choice Your Business Partner';
+      if (wadah.dataset.logo === 'tagline-terpisah') tagline.dataset.anim = wadah.dataset.taglineAnim ?? 'renggang@0.9/1.1';
+      wadah.appendChild(tagline);
+    });
+  }
+
+  // "nama@mulai/durasi/kurva, ..." → animation CSS yang dijeda, lalu diseek dari jam induk.
+  function PasangAnimasi() {
+    document.querySelectorAll('[data-anim]').forEach((elemen) => {
+      // Animasi pertama mengisi mundur (both); berikutnya hanya maju agar tidak menimpa yang sebelumnya.
+      const bagian = elemen.dataset.anim.split(',').map((teks, urutan) => {
+        const [nama, sisa] = teks.trim().split('@');
+        const [mulai, durasi, namaKurva = 'halus'] = sisa.split('/');
+        const kurvaCss = kurvaNyata[namaKurva] ?? namaKurva;
+        return `${nama} ${durasi}s ${kurvaCss} ${mulai}s 1 normal ${urutan === 0 ? 'both' : 'forwards'} paused`;
+      });
+      elemen.style.animation = bagian.join(', ');
+    });
+  }
+
+  // ===================== Audio (disintesis, deterministik) =====================
+
+  function BuatAcak(benih) {
+    return () => {
+      benih = (benih + 0x6D2B79F5) | 0;
+      let t = Math.imul(benih ^ (benih >>> 15), 1 | benih);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function SusunAudio() {
+    const laju = 44100;
+    const konteks = new OfflineAudioContext(2, Math.ceil(laju * durasiDetik), laju);
+    const acak = BuatAcak(2026);
+
+    const kompresor = konteks.createDynamicsCompressor();
+    kompresor.threshold.value = -16; kompresor.ratio.value = 3.5; kompresor.attack.value = 0.005; kompresor.release.value = 0.2;
+    const utama = konteks.createGain(); utama.gain.value = 0.9;
+    utama.connect(kompresor).connect(konteks.destination);
+    const busMusik = konteks.createGain(); busMusik.gain.value = 0.5; busMusik.connect(utama);
+    const busEfek = konteks.createGain(); busEfek.gain.value = 1; busEfek.connect(utama);
+
+    const gema = konteks.createConvolver();
+    const panjangGema = Math.floor(laju * 1.8);
+    const impuls = konteks.createBuffer(2, panjangGema, laju);
+    for (let kanal = 0; kanal < 2; kanal += 1) {
+      const data = impuls.getChannelData(kanal);
+      for (let i = 0; i < panjangGema; i += 1) data[i] = (acak() * 2 - 1) * Math.pow(1 - i / panjangGema, 3.2);
+    }
+    gema.buffer = impuls;
+    const kembaliGema = konteks.createGain(); kembaliGema.gain.value = 0.26;
+    gema.connect(kembaliGema).connect(utama);
+
+    const bufferDerau = konteks.createBuffer(1, laju * 2, laju);
+    const dataDerau = bufferDerau.getChannelData(0);
+    for (let i = 0; i < dataDerau.length; i += 1) dataDerau[i] = acak() * 2 - 1;
+
+    function Sambung(sumber, { t, vol, serang, tahan = 0, lepas, pan = 0, tujuan = busEfek, kirimGema = 0 }) {
+      const penguat = konteks.createGain();
+      penguat.gain.setValueAtTime(0, t);
+      penguat.gain.linearRampToValueAtTime(vol, t + serang);
+      penguat.gain.setValueAtTime(vol, t + serang + tahan);
+      penguat.gain.setTargetAtTime(0, t + serang + tahan, lepas / 4);
+      const pemindah = konteks.createStereoPanner(); pemindah.pan.value = pan;
+      sumber.connect(penguat).connect(pemindah).connect(tujuan);
+      if (kirimGema > 0) {
+        const kirim = konteks.createGain(); kirim.gain.value = kirimGema;
+        pemindah.connect(kirim).connect(gema);
+      }
+      return t + serang + tahan + lepas * 1.5;
+    }
+
+    function Nada({ t, frek, frekAkhir, dur = 0.2, tipe = 'sine', vol = 0.2, serang = 0.005, lepas, pan, tujuan, kirimGema, saring, detune = 0 }) {
+      const osc = konteks.createOscillator();
+      osc.type = tipe; osc.detune.value = detune;
+      osc.frequency.setValueAtTime(frek, t);
+      if (frekAkhir) osc.frequency.exponentialRampToValueAtTime(frekAkhir, t + dur);
+      let keluaran = osc;
+      if (saring) {
+        const filter = konteks.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = saring;
+        osc.connect(filter); keluaran = filter;
+      }
+      const akhir = Sambung(keluaran, { t, vol, serang, tahan: Math.max(0, dur - serang), lepas: lepas ?? dur * 0.6, pan, tujuan, kirimGema });
+      osc.start(t); osc.stop(akhir + 0.1);
+    }
+
+    function Derau({ t, dur, vol = 0.2, jenis = 'bandpass', frek = 1000, frekAkhir, q = 1, serang = 0.005, lepas, pan, tujuan, kirimGema }) {
+      const sumber = konteks.createBufferSource();
+      sumber.buffer = bufferDerau; sumber.loop = true;
+      const filter = konteks.createBiquadFilter(); filter.type = jenis; filter.Q.value = q;
+      filter.frequency.setValueAtTime(frek, t);
+      if (frekAkhir) filter.frequency.exponentialRampToValueAtTime(frekAkhir, t + dur);
+      sumber.connect(filter);
+      const akhir = Sambung(filter, { t, vol, serang, tahan: Math.max(0, dur - serang), lepas: lepas ?? 0.05, pan, tujuan, kirimGema });
+      sumber.start(t, acak() * 1.5); sumber.stop(akhir + 0.1);
+    }
+
+    // ---- Kamus efek (sama dengan video promosi agar satu keluarga bunyi) ----
+    const Whoosh = (t, dur = 0.7, vol = 0.2, naik = true) => Derau({
+      t, dur: dur * 0.55, vol, frek: naik ? 350 : 2800, frekAkhir: naik ? 2800 : 350, q: 0.9,
+      serang: dur * 0.5, lepas: dur * 0.45, kirimGema: 0.25,
+    });
+    const Pop = (t, vol = 0.2, frek = 820) => {
+      Nada({ t, frek, frekAkhir: frek * 0.35, dur: 0.09, vol, lepas: 0.08 });
+      Nada({ t, frek: frek * 2, frekAkhir: frek * 0.9, dur: 0.04, vol: vol * 0.25, lepas: 0.04 });
+    };
+    const Klik = (t, vol = 0.2) => {
+      Derau({ t, dur: 0.02, vol, jenis: 'highpass', frek: 3000, lepas: 0.03 });
+      Nada({ t, frek: 1300, frekAkhir: 700, dur: 0.03, vol: vol * 0.6, lepas: 0.03 });
+    };
+    const Lonceng = (t, frek, vol = 0.12, pan = 0) => {
+      [[1, 1], [2.0, 0.45], [3.01, 0.22], [4.2, 0.1]].forEach(([kali, bobot]) =>
+        Nada({ t, frek: frek * kali, dur: 0.02, vol: vol * bobot, serang: 0.003, lepas: 1.4 / kali, pan, kirimGema: 0.45 }));
+    };
+    const Arpeggio = (t, daftarFrek, jarak = 0.07, vol = 0.1) =>
+      daftarFrek.forEach((frek, i) => Lonceng(t + i * jarak, frek, vol, (i - (daftarFrek.length - 1) / 2) * 0.25));
+    const Kilau = (t, vol = 0.05, jumlah = 7) => {
+      const tangga = [2093, 2349, 2637, 3136, 3520, 4186];
+      for (let i = 0; i < jumlah; i += 1) {
+        Nada({ t: t + i * 0.055, frek: tangga[Math.floor(acak() * tangga.length)], dur: 0.01, vol, lepas: 0.5, pan: acak() * 1.4 - 0.7, kirimGema: 0.6 });
+      }
+    };
+    const Dentum = (t, vol = 0.45) => {
+      Nada({ t, frek: 130, frekAkhir: 38, dur: 0.55, vol, lepas: 0.6 });
+      Derau({ t, dur: 0.25, vol: vol * 0.3, jenis: 'lowpass', frek: 1600, frekAkhir: 200, lepas: 0.3, kirimGema: 0.4 });
+    };
+    const Riser = (t0, t1) => {
+      Derau({ t: t0, dur: t1 - t0, vol: 0.17, frek: 400, frekAkhir: 6000, q: 1.2, serang: t1 - t0, lepas: 0.05, kirimGema: 0.3 });
+      Nada({ t: t0, frek: 180, frekAkhir: 720, dur: t1 - t0, vol: 0.035, tipe: 'sawtooth', saring: 2400, serang: t1 - t0, lepas: 0.05 });
+    };
+    // Ketikan papan tombol: tidak rata agar terdengar seperti orang mengetik, bukan mesin.
+    const Ketikan = (t0, t1, vol = 0.05) => {
+      for (let t = t0; t < t1; t += 0.052 + acak() * 0.034) {
+        Derau({ t, dur: 0.008, vol: vol * (0.75 + acak() * 0.5), jenis: 'highpass', frek: 3600, lepas: 0.018 });
+        Nada({ t, frek: 900 + acak() * 500, dur: 0.012, vol: vol * 0.32, lepas: 0.016 });
+      }
+    };
+
+    // ---- Musik latar (C – G – Am – F, 100 bpm; tenang, tutorial bukan iklan) ----
+    const ketukan = 0.6;
+    const akor = {
+      C: { pad: [261.63, 329.63, 392.0, 587.33], bas: 65.41 },
+      G: { pad: [246.94, 293.66, 392.0, 587.33], bas: 98.0 },
+      Am: { pad: [261.63, 329.63, 440.0, 493.88], bas: 110.0 },
+      F: { pad: [261.63, 349.23, 440.0, 523.25], bas: 87.31 },
+    };
+    function Pad(t, dur, nama, vol = 0.032) {
+      akor[nama].pad.forEach((frek, i) => {
+        [-6, 6].forEach((geser) => Nada({
+          t, frek, dur, vol, tipe: 'triangle', serang: 0.45, lepas: 0.9, saring: 1500, detune: geser,
+          pan: (i - 1.5) * 0.3, tujuan: busMusik, kirimGema: 0.35,
+        }));
+      });
+    }
+    function Bas(t, dur, nama, vol = 0.17) {
+      Nada({ t, frek: akor[nama].bas, dur, vol, serang: 0.01, lepas: 0.15, tujuan: busMusik });
+    }
+    function Kick(t, vol = 0.26) { Nada({ t, frek: 150, frekAkhir: 45, dur: 0.14, vol, lepas: 0.2, tujuan: busMusik }); }
+    function Tepuk(t, vol = 0.055) { Derau({ t, dur: 0.02, vol, frek: 1800, q: 0.8, lepas: 0.14, tujuan: busMusik, kirimGema: 0.3 }); }
+    function Hat(t, vol = 0.025) { Derau({ t, dur: 0.01, vol, jenis: 'highpass', frek: 8000, lepas: 0.04, tujuan: busMusik, pan: 0.25 }); }
+
+    const urutanAkor = ['C', 'G', 'Am', 'F'];
+    const awalMusik = 0.2;
+    const panjangBirama = ketukan * 4;
+    for (let birama = 0; ; birama += 1) {
+      const t = awalMusik + birama * panjangBirama;
+      if (t >= 27.6) break;
+      const nama = urutanAkor[birama % 4];
+      Pad(t, Math.min(panjangBirama, 27.62 - t), nama);
+      // Ketukan masuk saat mulai mengisi formulir, berhenti sebelum penutup.
+      if (t >= 7.85 && t < 23.6) {
+        Bas(t, ketukan * 1.6, nama); Bas(t + ketukan * 2, ketukan * 1.6, nama, 0.14);
+        for (let k = 0; k < 4; k += 1) {
+          const tk = t + k * ketukan;
+          if (tk >= 23.4) break;
+          if (k % 2 === 0) Kick(tk); else Tepuk(tk);
+          Hat(tk + ketukan / 2);
+        }
+      }
+    }
+    // Akor penutup, memudar sampai detik 30.
+    Pad(27.62, 2.3, 'C', 0.038); Bas(27.62, 2.2, 'C', 0.18);
+    Nada({ t: 27.62, frek: 1046.5, dur: 2.0, vol: 0.02, tipe: 'sine', serang: 0.6, lepas: 1.1, tujuan: busMusik, kirimGema: 0.5 });
+
+    // ---- Pembuka: tanda bunyi Payoung versi pendek (§3 rencana tutorial) ----
+    Arpeggio(0.15, [523.25, 659.25, 783.99], 0.085, 0.085);
+    Kilau(0.3, 0.035, 5);
+    Pop(0.95, 0.12, 700);
+    Pop(1.55, 0.1, 640); Pop(1.7, 0.1, 700); Pop(1.85, 0.1, 760);
+
+    // ---- Langkah 1: buka payoung.id ----
+    Whoosh(3.3, 0.8, 0.18);
+    Klik(4.92, 0.2);                       // klik "Daftar Gratis"
+    Whoosh(5.35, 0.75, 0.16, false);       // halaman berpindah ke dashboard.payoung.id
+
+    // ---- Langkah 2: isi data diri (empat bidang) ----
+    Whoosh(7.75, 0.7, 0.17);
+    Pop(7.95, 0.13, 780);
+    Ketikan(8.95, 9.57);                   // Nama Anda
+    Ketikan(9.78, 10.44);                  // Nama toko/usaha
+    Ketikan(10.66, 11.44);                 // Email
+    Ketikan(11.66, 12.4);                  // Nomor WhatsApp
+    [9.6, 10.47, 11.47, 12.43].forEach((t) => Lonceng(t, 1174.7, 0.05, 0.15));
+
+    // ---- Langkah 3: kata sandi & paket ----
+    Pop(14.62, 0.13, 820);
+    Ketikan(14.85, 15.45);                 // Kata sandi
+    Ketikan(15.72, 16.32);                 // Ulangi kata sandi
+    [15.48, 16.35].forEach((t) => Lonceng(t, 1174.7, 0.05, 0.15));
+    Klik(17.05, 0.17);                     // buka daftar paket
+    Pop(17.25, 0.16, 880);                 // pilih "Pro (trial 14 hari)"
+    Lonceng(17.35, 1318.5, 0.07);
+
+    // ---- Langkah 4: setujui & daftar ----
+    Pop(19.42, 0.13, 860);
+    Klik(20.08, 0.2); Lonceng(20.22, 1396.9, 0.08);   // centang persetujuan
+    Lonceng(20.95, 1567.98, 0.07);                     // CAPTCHA terverifikasi
+    Klik(22.3, 0.24);                                  // tekan "Daftar"
+    Riser(22.6, 23.6);
+
+    // ---- Langkah 5: cek berhasil ----
+    Dentum(23.62, 0.42);
+    Arpeggio(23.72, [523.25, 659.25, 783.99, 1046.5], 0.085, 0.085);
+    Kilau(23.95, 0.035, 6);
+    [24.52, 24.72, 24.92, 25.12].forEach((t, i) => Lonceng(t, [1046.5, 1174.7, 1318.5, 1567.98][i], 0.065, (i - 1.5) * 0.3));
+    Pop(25.5, 0.14, 720);
+
+    // ---- Penutup ----
+    Whoosh(27.15, 0.95, 0.19);
+    Dentum(27.62, 0.5);
+    Kilau(27.85, 0.045, 7);
+    Arpeggio(28.3, [523.25, 659.25, 783.99, 1046.5, 1318.5], 0.09, 0.075);
+    Pop(28.8, 0.13, 760);
+
+    return konteks.startRendering();
+  }
+
+  function UbahKeWav(buffer) {
+    const jumlahKanal = buffer.numberOfChannels;
+    const panjang = buffer.length;
+    const besarData = panjang * jumlahKanal * 2;
+    const hasil = new DataView(new ArrayBuffer(44 + besarData));
+    const TulisTeks = (posisi, teks) => [...teks].forEach((huruf, i) => hasil.setUint8(posisi + i, huruf.charCodeAt(0)));
+    TulisTeks(0, 'RIFF'); hasil.setUint32(4, 36 + besarData, true); TulisTeks(8, 'WAVE');
+    TulisTeks(12, 'fmt '); hasil.setUint32(16, 16, true); hasil.setUint16(20, 1, true); hasil.setUint16(22, jumlahKanal, true);
+    hasil.setUint32(24, buffer.sampleRate, true); hasil.setUint32(28, buffer.sampleRate * jumlahKanal * 2, true);
+    hasil.setUint16(32, jumlahKanal * 2, true); hasil.setUint16(34, 16, true);
+    TulisTeks(36, 'data'); hasil.setUint32(40, besarData, true);
+    const daftarKanal = [...Array(jumlahKanal)].map((_, kanal) => buffer.getChannelData(kanal));
+    let posisi = 44;
+    for (let i = 0; i < panjang; i += 1) {
+      for (let kanal = 0; kanal < jumlahKanal; kanal += 1) {
+        const sampel = Math.max(-1, Math.min(1, daftarKanal[kanal][i]));
+        hasil.setInt16(posisi, sampel < 0 ? sampel * 0x8000 : sampel * 0x7fff, true);
+        posisi += 2;
+      }
+    }
+    return new Uint8Array(hasil.buffer);
+  }
+
+  async function EksporWav() {
+    const bita = UbahKeWav(await janjiAudio);
+    let biner = '';
+    for (let i = 0; i < bita.length; i += 0x8000) biner += String.fromCharCode.apply(null, bita.subarray(i, i + 0x8000));
+    return btoa(biner);
+  }
+
+  // ===================== Jam induk & pemutaran =====================
+
+  let daftarAnimasi = [];
+  let waktuMs = 0;
+  let sedangPutar = false;
+  let jamTerakhir = null;
+  let bisu = parameter.has('bisu');
+  let konteksAudio = null;
+  let sumberAudio = null;
+  let bufferAudio = null;
+  const janjiAudio = SusunAudio().then((buffer) => { bufferAudio = buffer; return buffer; });
+
+  function HentikanSuara() {
+    if (!sumberAudio) return;
+    try { sumberAudio.stop(); } catch (galat) { /* sudah berhenti */ }
+    sumberAudio.disconnect();
+    sumberAudio = null;
+  }
+
+  function MulaiSuara() {
+    HentikanSuara();
+    if (modeRekam || bisu || !sedangPutar || !bufferAudio) return;
+    konteksAudio ??= new AudioContext();
+    if (konteksAudio.state === 'suspended') konteksAudio.resume();
+    sumberAudio = konteksAudio.createBufferSource();
+    sumberAudio.buffer = bufferAudio;
+    sumberAudio.connect(konteksAudio.destination);
+    sumberAudio.start(0, waktuMs / 1000);
+  }
+
+  function GambarBingkai(ms) {
+    const detik = ms / 1000;
+    semuaAdegan.forEach((adegan) => {
+      const tampil = detik >= Number(adegan.dataset.mulai) && detik < Number(adegan.dataset.selesai);
+      adegan.style.visibility = tampil ? 'visible' : 'hidden';
+    });
+    daftarAnimasi.forEach((animasi) => { animasi.currentTime = ms; });
+    penggeser.value = Math.round(ms);
+    penunjukWaktu.textContent = `${detik.toFixed(1).replace('.', ',')} / 30,0 d`;
+  }
+
+  function AturWaktu(detik) {
+    waktuMs = Math.min(durasiMs, Math.max(0, detik * 1000));
+    GambarBingkai(waktuMs);
+    if (sedangPutar) MulaiSuara();
+  }
+
+  function Detak(jam) {
+    if (sedangPutar) {
+      if (jamTerakhir !== null) {
+        waktuMs += jam - jamTerakhir;
+        if (waktuMs >= durasiMs) {
+          if (parameter.has('sekali')) { waktuMs = durasiMs; AturPutar(false); }
+          else { waktuMs %= durasiMs; MulaiSuara(); }
+        }
+      }
+      jamTerakhir = jam;
+      GambarBingkai(waktuMs);
+    } else {
+      jamTerakhir = null;
+    }
+    requestAnimationFrame(Detak);
+  }
+
+  function AturPutar(putar) {
+    sedangPutar = putar;
+    tombolPutar.textContent = putar ? '❚❚' : '▶';
+    tombolPutar.setAttribute('aria-label', putar ? 'Jeda' : 'Putar');
+    if (putar) MulaiSuara(); else HentikanSuara();
+  }
+
+  function AturBisu(nilai) {
+    bisu = nilai;
+    tombolSuara.textContent = bisu ? '🔇' : '🔊';
+    tombolSuara.setAttribute('aria-label', bisu ? 'Nyalakan suara' : 'Bisukan');
+    MulaiSuara();
+  }
+
+  function SesuaikanSkala() {
+    const skala = Math.min(innerWidth / 1920, innerHeight / 1080);
+    panggung.style.transform = `scale(${skala}) translate(-50%, -50%)`;
+  }
+
+  IsiLogo();
+  PasangAnimasi();
+  daftarAnimasi = document.getAnimations();
+  SesuaikanSkala();
+  addEventListener('resize', SesuaikanSkala);
+  AturBisu(bisu);
+
+  document.getElementById('tombol-mulai').addEventListener('click', async () => {
+    document.body.classList.add('sudah-mulai');
+    await janjiAudio;
+    AturWaktu(0);
+    AturPutar(true);
+  });
+  tombolPutar.addEventListener('click', () => { document.body.classList.add('sudah-mulai'); AturPutar(!sedangPutar); });
+  tombolSuara.addEventListener('click', () => AturBisu(!bisu));
+  document.getElementById('tombol-ulang').addEventListener('click', () => { AturWaktu(0); AturPutar(true); });
+  penggeser.addEventListener('input', () => { AturPutar(false); AturWaktu(Number(penggeser.value) / 1000); });
+  addEventListener('keydown', (peristiwa) => {
+    if (peristiwa.target === penggeser && peristiwa.key.startsWith('Arrow')) return;
+    if (peristiwa.code === 'Space') { peristiwa.preventDefault(); document.body.classList.add('sudah-mulai'); AturPutar(!sedangPutar); }
+    else if (peristiwa.key === 'r' || peristiwa.key === 'R') { AturWaktu(0); AturPutar(true); }
+    else if (peristiwa.key === 'm' || peristiwa.key === 'M') AturBisu(!bisu);
+    else if (peristiwa.key === 'h' || peristiwa.key === 'H') document.body.classList.toggle('tanpa-kontrol');
+    else if (peristiwa.key === 'ArrowRight') AturWaktu(waktuMs / 1000 + 1);
+    else if (peristiwa.key === 'ArrowLeft') AturWaktu(waktuMs / 1000 - 1);
+  });
+
+  window.AturWaktu = AturWaktu;
+  window.DurasiDetik = durasiDetik;
+  window.EksporWav = EksporWav;
+  GambarBingkai(0);
+  Promise.all([document.fonts.load('800 40px "Atkinson Hyperlegible Next"'), document.fonts.load('500 40px "Atkinson Hyperlegible Next"'), document.fonts.load('700 40px "Atkinson Hyperlegible Mono"'), janjiAudio]).then(() => { document.body.dataset.siap = '1'; });
+  requestAnimationFrame(Detak);
+})();
+</script>
+</body>
+</html>

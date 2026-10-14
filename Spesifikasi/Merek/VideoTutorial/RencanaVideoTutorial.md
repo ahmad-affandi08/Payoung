@@ -130,6 +130,8 @@ Layar dengan nama `Kelola/...` ada di `Aplikasi/Web/resources/js/Halaman/`; `Lay
 
 ### 7.1 Memulai (Web)
 
+> **Sudah dibuat:** potongan pendek 30 detik T-MUL-01 ada di `CaraDaftar30Detik.html` (lihat `README.md`), untuk media sosial dan halaman harga. Versi penuh 90 detik di bawah belum dibuat.
+
 | ID | Judul | Layar asli | Langkah inti | Aturan/keadaan yang ditunjukkan | Durasi | Paket | Tayang |
 |---|---|---|---|---|---|---|---|
 | T-MUL-01 | Cara daftar akun Payoung | `Autentikasi/Daftar`, `PersetujuanLegal` | Isi nama, email, WA, kata sandi, nama usaha → centang S&K → Daftar → cek email verifikasi | Trial tanpa kartu kredit, lalu turun ke Gratis (BR-00.3); tautan verifikasi berlaku 24 jam (BR-00.5); pesan umum bila email/WA sudah dipakai (BR-00.10) | 90 dtk | Semua | G1 |
