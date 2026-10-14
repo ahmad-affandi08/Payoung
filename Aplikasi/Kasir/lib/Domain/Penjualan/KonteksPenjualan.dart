@@ -27,6 +27,9 @@ abstract final class JenisMetodeBayar {
   /// F-16d bagian 1: saldo deposit pelanggan; hanya tampil bila pelanggan dipilih dan paket berlaku, saldo dicek online.
   static const String deposit = 'Deposit';
 
+  /// CRM-06 (D-153): gift card berkode; kode dicek online, satu kartu per transaksi, kode dikirim sebagai `Referensi`.
+  static const String giftCard = 'GiftCard';
+
   /// X8 (v2.36): pesanan platform ojol/marketplace yang dibayar platform (dana lewat pencairan). Hanya tampil untuk
   /// penjualan kanal yang sama dengan `MetodePembayaran.Kanal`.
   static const String marketplace = 'Marketplace';
@@ -40,6 +43,7 @@ abstract final class JenisMetodeBayar {
     ewallet,
     tempo,
     deposit,
+    giftCard,
     marketplace,
   ];
 

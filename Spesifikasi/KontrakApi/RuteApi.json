@@ -623,5 +623,10 @@
         "Metode": "PUT",
         "Jalur": "api/pemilik/v1/aksi-cepat/promo/{promo}/status",
         "Nama": "pemilik.aksi-cepat.promo.status"
+    },
+    "POST api/pos/v1/gift-card/cek": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/gift-card/cek",
+        "Nama": "pos.gift-card.cek"
     }
 }

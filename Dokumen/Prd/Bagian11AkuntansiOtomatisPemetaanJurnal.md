@@ -33,7 +33,8 @@
 | 2-1300 | PPN Keluaran | Kewajiban |
 | 2-1310 | Hutang PB1/PBJT | Kewajiban |
 | 2-1400 | Uang Muka Pelanggan (DP) | Kewajiban |
-| 2-1500 | Saldo Deposit Pelanggan / Gift Card | Kewajiban |
+| 2-1500 | Saldo Deposit Pelanggan | Kewajiban |
+| 2-1550 | Saldo Gift Card (v6.33, D-153) | Kewajiban |
 | 2-1600 | Pendapatan Diterima Dimuka (paket sesi) | Kewajiban |
 | 2-1700 | Hutang Service Charge (jika dibagikan ke karyawan) | Kewajiban |
 | 3-1000 | Modal Pemilik | Ekuitas |
@@ -93,7 +94,7 @@ Ekstensi sektor, contoh: F&B menambah `4-1010 Penjualan Makanan`, `4-1020 Penjua
 | J-05.5 | Opname/penyesuaian lebih | Persediaan | Selisih HPP |
 | J-05.6 | Produksi (F-05e v2.29: persediaan hasil per jenis produk; overhead ke `OverheadProduksiDibebankan`) | Persediaan Barang Jadi | Persediaan Bahan Baku (+ Overhead Dibebankan) |
 | J-05.7 | Konsinyasi terjual | HPP | Hutang Konsinyasi |
-| J-16.1 | Top-up deposit / beli gift card | Kas | Saldo Deposit Pelanggan |
+| J-16.1 | Top-up deposit | Kas | Saldo Deposit Pelanggan |
 | J-16.2 | Beli paket sesi (v2.12: sebesar nilai bersih baris; pajak & pembayaran seperti J-07.1) | Kas | Pendapatan Diterima Dimuka |
 | J-16.3 | Pemakaian sesi (v2.12: NilaiTersisa × n ÷ SisaSesi, sesi terakhir = sisa) | Pendapatan Diterima Dimuka | Pendapatan Jasa |
 | J-16.4 | Penukaran poin (sebagai diskon) | Diskon Penjualan | (bagian dari J-07.1) |
@@ -102,6 +103,7 @@ Ekstensi sektor, contoh: F&B menambah `4-1010 Penjualan Makanan`, `4-1020 Penjua
 | J-16.7 | Klaim promo dipotong dari hutang pemasok (v1.94) | Hutang Usaha | Piutang Klaim Promosi Pemasok (klaim sebelum v1.93: HPP) |
 | J-16.8 | Sisa paket sesi dikembalikan ke pelanggan (v2.12) | Pendapatan Diterima Dimuka | Kas/Bank |
 | J-16.9 | Sisa paket sesi hangus (masa berlaku lewat / dihanguskan, v2.12) | Pendapatan Diterima Dimuka | Pendapatan Lain-lain |
+| J-16.10 | Jual gift card (v6.33, D-153); dipakai membayar mendebit Saldo Gift Card, kedaluwarsa ke Pendapatan Lain | Kas | Saldo Gift Card |
 | J-17.1 | Uang muka pesanan toko online diterima lewat QRIS web (v2.87) | akun kliring metode gerbang / Piutang Pencairan | Uang Muka Pelanggan |
 | J-17.2 | Uang muka pesanan toko online dikembalikan ke pelanggan (v2.87) | Uang Muka Pelanggan | Kas/Bank |
 | J-18.1 | Kasbon karyawan | Piutang Karyawan | Kas |

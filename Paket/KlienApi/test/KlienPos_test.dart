@@ -453,6 +453,43 @@ void main() {
     expect(saldo.berlaku, isTrue);
   });
 
+  test(
+    'CRM-06 gift card: cek kode lewat badan POST (bukan URL), saldo, masa berlaku, dan alasan tak bisa dipakai',
+    () async {
+      final dikirim = <http.Request>[];
+      final klien = BuatKlien((permintaan) async {
+        dikirim.add(permintaan);
+        return Json({
+          'Kode': 'AB23-CD45-EF67',
+          'Saldo': '70000.00',
+          'Status': 'Aktif',
+          'BerlakuSampai': '2026-12-31',
+          'BisaDipakai': true,
+          'Alasan': null,
+        }, 200);
+      });
+
+      final kartu = await klien.CekGiftCard('ab23 cd45 ef67');
+      expect(dikirim.single.method, 'POST');
+      expect(dikirim.single.url.path, endsWith('/api/pos/v1/gift-card/cek'));
+      expect(dikirim.single.url.query, isEmpty, reason: 'Kode rahasia tidak boleh masuk URL/log akses.');
+      expect(jsonDecode(dikirim.single.body), {'Kode': 'ab23 cd45 ef67'});
+      expect(
+        (kartu.kode, kartu.saldo, kartu.berlakuSampai, kartu.bisaDipakai, kartu.alasan),
+        ('AB23-CD45-EF67', '70000.00', '2026-12-31', true, null),
+      );
+
+      final habis = GiftCardPos.DariJson({
+        'Kode': 'X',
+        'Saldo': '0',
+        'Status': 'Habis',
+        'BisaDipakai': false,
+        'Alasan': 'Saldo kartu ini sudah habis.',
+      });
+      expect((habis.bisaDipakai, habis.alasan, habis.berlakuSampai), (false, 'Saldo kartu ini sudah habis.', null));
+    },
+  );
+
   test('F-16d paket sesi: jalur per pelanggan, paket aktif & layanan yang boleh ditukar', () async {
     final dikirim = <http.Request>[];
     final klien = BuatKlien((permintaan) async {

@@ -5,10 +5,12 @@ import 'dart:typed_data';
 
 import 'package:adaptor_perangkat/AdaptorPerangkat.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:klien_api/KlienApi.dart';
 import 'package:mesin_kasir/MesinKasir.dart' show KanalPenjualan, Uang;
+import 'package:path_provider/path_provider.dart';
 import 'package:sistem_desain/SistemDesain.dart' show TokenWarna;
 
 import '../Data/Printer/InfoPerangkatPlatform.dart';
@@ -21,6 +23,7 @@ import '../Data/LayarPelanggan/PabrikLayarPelanggan.dart';
 import '../Data/RepositoriAbsensi.dart';
 import '../Domain/Diagnostik/LogLokal.dart';
 import '../Domain/Karyawan/LayananAbsensi.dart';
+import '../Domain/Pembaruan/PemasangPembaruan.dart';
 import '../Domain/Perangkat/KameraBukti.dart';
 import '../Domain/Perangkat/KameraSwafoto.dart';
 import '../Domain/Perangkat/PemindaiKamera.dart';
@@ -48,6 +51,7 @@ import '../Domain/Katalog/LayananStokTersedia.dart';
 import '../Domain/Meja/LayananPesanSendiri.dart';
 import '../Domain/Meja/LayananPesananMeja.dart';
 import '../Domain/Pelanggan/LayananDeposit.dart';
+import '../Domain/Pelanggan/LayananGiftCard.dart';
 import '../Domain/Pelanggan/LayananSesi.dart';
 import '../Domain/Pelanggan/LayananPelanggan.dart';
 import '../Domain/Penjualan/LayananRingkasanHarian.dart';
@@ -481,6 +485,23 @@ final penyediaLayananDeposit = Provider<LayananDeposit>(
     jam: ref.watch(penyediaJam),
   ),
 );
+
+/// POS-23: pemasang pembaruan. Windows memasang sendiri; platform lain memakai toko aplikasi / tautan unduh.
+final penyediaPemasangPembaruan = Provider<PemasangPembaruan>((ref) {
+  if (kIsWeb || !Platform.isWindows) {
+    return const PemasangPembaruanTidakAda();
+  }
+  final klien = http.Client();
+  ref.onDispose(klien.close);
+  return PemasangPembaruanWindows(
+    klien: klien,
+    folderUnduhan: () async =>
+        Directory('${(await getTemporaryDirectory()).path}${Platform.pathSeparator}payoung-pembaruan'),
+  );
+});
+
+/// CRM-06: cek gift card online sebelum dipakai membayar.
+final penyediaLayananGiftCard = Provider<LayananGiftCard>((ref) => LayananGiftCard(klien: ref.watch(penyediaKlienPos)));
 
 final penyediaRepositoriPersediaan = Provider<RepositoriPersediaan>(
   (ref) => RepositoriPersediaan(ref.watch(penyediaBasisData), ref.watch(penyediaRepositori)),

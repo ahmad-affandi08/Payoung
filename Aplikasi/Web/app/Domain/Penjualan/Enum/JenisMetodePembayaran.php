@@ -20,6 +20,8 @@ enum JenisMetodePembayaran: string
     case Ewallet = 'Ewallet';
     case Tempo = 'Tempo';
     case Deposit = 'Deposit';
+    // CRM-06 (D-153): gift card berkode dari tenant yang sama; saldo dibaca online saat dipakai, satu kartu per penjualan.
+    case GiftCard = 'GiftCard';
     case Poin = 'Poin';
     case Voucher = 'Voucher';
     case Marketplace = 'Marketplace';
@@ -39,6 +41,7 @@ enum JenisMetodePembayaran: string
             self::Ewallet => 'Dompet digital',
             self::Tempo => 'Tempo (piutang)',
             self::Deposit => 'Deposit pelanggan',
+            self::GiftCard => 'Gift card',
             self::Poin => 'Poin',
             self::Voucher => 'Voucher',
             self::Marketplace => 'Platform ojol / marketplace',
@@ -55,7 +58,7 @@ enum JenisMetodePembayaran: string
         // F-16d bagian 1: deposit pelanggan (wajib online saat dipakai; aplikasi lama melewati jenis yang tidak dikenalnya).
         // X8 (v2.36): Marketplace = pesanan ojol/marketplace yang dibayar platform (dana lewat pencairan).
         // K-11: Tukar = nilai retur tukar barang yang membayar barang pengganti (wajib `UuidReturTukar`).
-        return in_array($this, [self::Tunai, self::QrisStatis, self::QrisDinamis, self::Edc, self::Transfer, self::Ewallet, self::Tempo, self::UangMuka, self::Deposit, self::Marketplace, self::Tukar], true);
+        return in_array($this, [self::Tunai, self::QrisStatis, self::QrisDinamis, self::Edc, self::Transfer, self::Ewallet, self::Tempo, self::UangMuka, self::Deposit, self::GiftCard, self::Marketplace, self::Tukar], true);
     }
 
     /** F-16d bagian 1: jenis yang boleh dipakai mengisi saldo deposit di POS (bukan tempo, deposit, atau uang muka). */
@@ -77,7 +80,7 @@ enum JenisMetodePembayaran: string
      */
     public function CekBisaDibuatPanduan(): bool
     {
-        return in_array($this, [self::QrisStatis, self::QrisDinamis, self::Edc, self::Transfer, self::Deposit, self::Marketplace], true);
+        return in_array($this, [self::QrisStatis, self::QrisDinamis, self::Edc, self::Transfer, self::Deposit, self::GiftCard, self::Marketplace], true);
     }
 
     /**

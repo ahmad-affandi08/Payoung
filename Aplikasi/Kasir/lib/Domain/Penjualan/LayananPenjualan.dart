@@ -1208,6 +1208,21 @@ class LayananPenjualan {
     }
   }
 
+  /// CRM-06: gift card paling banyak satu per transaksi dan wajib membawa kode kartu (`Referensi`). Saldo dicek kasir
+  /// online di panel Bayar; server memotong saldo dan menandai tinjauan bila kartu bermasalah.
+  static void ValidasiGiftCard(List<PembayaranMasukan> pembayaran) {
+    final kartu = pembayaran.where((p) => p.metode.Jenis == JenisMetodeBayar.giftCard).toList();
+    if (kartu.isEmpty) {
+      return;
+    }
+    if (kartu.length > 1) {
+      throw const GalatKasir('GiftCardGanda', 'Gift card hanya boleh satu kartu per transaksi.');
+    }
+    if ((kartu.single.referensi ?? '').trim().isEmpty) {
+      throw const GalatKasir('GiftCardTanpaKode', 'Cek kode gift card dulu sebelum dipakai membayar.');
+    }
+  }
+
   /// F-12 bagian 2 & F-17 bagian 2: uang muka hanya dipakai saat menagih dokumen yang punya DP, sekali, dan tidak
   /// melebihi sisanya.
   static void ValidasiUangMuka(Keranjang keranjang, List<PembayaranMasukan> pembayaran) {
@@ -1376,6 +1391,7 @@ class LayananPenjualan {
     ValidasiTempo(keranjang, pembayaran, kasir, k, uuidPenyetujuTempo);
     ValidasiUangMuka(keranjang, pembayaran);
     ValidasiDeposit(keranjang, pembayaran, saldoDeposit);
+    ValidasiGiftCard(pembayaran);
     ValidasiPaketSesi(keranjang, katalog);
     ValidasiNomorSeri(keranjang, katalog);
     ValidasiApotek(

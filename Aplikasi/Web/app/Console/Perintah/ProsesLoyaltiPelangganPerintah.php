@@ -8,20 +8,21 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Aksi\EvaluasiTierPelanggan;
+use App\Domain\Pelanggan\Aksi\HanguskanGiftCardKedaluwarsa;
 use App\Domain\Pelanggan\Aksi\HanguskanPoinKedaluwarsa;
 use App\Domain\Pelanggan\Aksi\HanguskanSesiKedaluwarsa;
 use Illuminate\Console\Command;
 
 /**
  * F-16b: tiap malam menghanguskan poin kedaluwarsa (FIFO) lalu mengevaluasi tier pelanggan; F-16d bagian 2: paket
- * sesi yang lewat masa berlaku dihanguskan. Per tenant dengan
+ * sesi yang lewat masa berlaku dihanguskan; CRM-06: gift card yang lewat masa berlaku dihanguskan. Per tenant dengan
  * `KonteksTenant` diatur sehingga semua kueri tetap lewat scope `MilikTenant`. `--tenant` membatasi tenant.
  */
 final class ProsesLoyaltiPelangganPerintah extends Command
 {
     protected $signature = 'pelanggan:proses-loyalti {--tenant=* : Id tenant (kosong = semua)}';
 
-    protected $description = 'Menghanguskan poin & paket sesi kedaluwarsa dan mengevaluasi tier pelanggan (F-16b, F-16d).';
+    protected $description = 'Menghanguskan poin, paket sesi, dan gift card kedaluwarsa dan mengevaluasi tier pelanggan (F-16b, F-16d, CRM-06).';
 
     public function handle(
         KeanggotaanPengguna $keanggotaan,
@@ -30,6 +31,7 @@ final class ProsesLoyaltiPelangganPerintah extends Command
         HanguskanPoinKedaluwarsa $hanguskan,
         EvaluasiTierPelanggan $evaluasi,
         HanguskanSesiKedaluwarsa $hanguskanSesi,
+        HanguskanGiftCardKedaluwarsa $hanguskanGiftCard,
     ): int {
         $diminta = [];
 
@@ -51,6 +53,7 @@ final class ProsesLoyaltiPelangganPerintah extends Command
         $poin = 0;
         $tier = 0;
         $sesi = 0;
+        $giftCard = 0;
 
         try {
             foreach ($daftar as $idTenant) {
@@ -59,12 +62,13 @@ final class ProsesLoyaltiPelangganPerintah extends Command
                 $poin += $hanguskan->Jalankan($hariIni);
                 $tier += $evaluasi->Jalankan($hariIni);
                 $sesi += $hanguskanSesi->Jalankan($hariIni);
+                $giftCard += $hanguskanGiftCard->Jalankan($hariIni);
             }
         } finally {
             $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
         }
 
-        $this->line(count($daftar)." tenant diproses, {$poin} poin dihanguskan, {$tier} tier pelanggan berubah, {$sesi} paket sesi hangus.");
+        $this->line(count($daftar)." tenant diproses, {$poin} poin dihanguskan, {$tier} tier pelanggan berubah, {$sesi} paket sesi hangus, {$giftCard} gift card hangus.");
 
         return self::SUCCESS;
     }

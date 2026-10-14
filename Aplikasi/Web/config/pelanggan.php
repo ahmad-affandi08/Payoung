@@ -12,4 +12,10 @@ return [
         'MaksimalIsi' => '10000000',
         'MaksimalPenyesuaian' => '10000000',
     ],
+    // CRM-06 gift card (D-153): nilai per kartu (Rupiah bulat) dan masa berlaku bawaan dialog jual (hari).
+    'GiftCard' => [
+        'MinimalNilai' => '10000',
+        'MaksimalNilai' => '5000000',
+        'MasaBerlakuBawaanHari' => 365,
+    ],
 ];

@@ -10,6 +10,7 @@ import '../Komponen/MasukanUang.dart';
 import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Domain/GalatKasir.dart';
+import '../../Domain/Pelanggan/LayananGiftCard.dart';
 import '../../Domain/Penjualan/AturanApotek.dart';
 import '../../Domain/Penjualan/BagianTagihan.dart';
 import '../../Domain/Penjualan/Keranjang.dart';
@@ -36,6 +37,7 @@ String AmbilLabelJenisMetode(String jenis) => switch (jenis) {
   JenisMetodeBayar.ewallet => 'E-wallet',
   JenisMetodeBayar.tempo => 'Tempo (piutang)',
   JenisMetodeBayar.deposit => 'Deposit pelanggan',
+  JenisMetodeBayar.giftCard => 'Gift card',
   JenisMetodeBayar.marketplace => 'Platform ojol / marketplace',
   _ => jenis,
 };
@@ -124,6 +126,11 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
   Uang? _saldoDeposit;
   bool _memuatSaldoDeposit = false;
   String? _pesanSaldoDeposit;
+
+  /// CRM-06: gift card hasil cek online terakhir (null = belum dicek atau kode diubah setelah dicek).
+  KartuGiftCard? _kartuGiftCard;
+  bool _memuatGiftCard = false;
+  String? _pesanGiftCard;
   String? _galat;
 
   /// K-14: rencana bagi tagihan (null = tidak dibagi) dan tamu yang sedang membayar (mulai 1).
@@ -252,6 +259,8 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       _qrisDikonfirmasi = false;
       _referensi.clear();
       _bank.clear();
+      _kartuGiftCard = null;
+      _pesanGiftCard = null;
       final sisa = _HitungSisa(k, metode);
       final porsiRata = _bagi?.porsi != null && !_tamuTerakhir;
       MasukanUang.Isi(
@@ -306,6 +315,46 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     }
   }
 
+  /// CRM-06: cek kode gift card online; jumlah bawaan = sisa tagihan atau saldo kartu bila lebih kecil.
+  Future<void> _CekGiftCard(KonteksPenjualan k) async {
+    if (_entri.any((p) => p.metode.Jenis == JenisMetodeBayar.giftCard)) {
+      setState(() => _pesanGiftCard = 'Gift card hanya boleh satu kartu per transaksi.');
+      return;
+    }
+    setState(() {
+      _memuatGiftCard = true;
+      _pesanGiftCard = null;
+      _kartuGiftCard = null;
+      _galat = null;
+    });
+    try {
+      final kartu = await ref.read(penyediaLayananGiftCard).Cek(_referensi.text);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _kartuGiftCard = kartu;
+        _referensi.text = kartu.kode;
+        if (kartu.bisaDipakai && _metode?.Jenis == JenisMetodeBayar.giftCard) {
+          final sisa = _HitungSisa(k, _metode);
+          final pakai = kartu.saldo.Bandingkan(sisa) < 0 ? kartu.saldo : sisa;
+          MasukanUang.Isi(
+            _nominal,
+            pakai.Bandingkan(Uang.Nol()) <= 0 ? null : Uang.Dari(pakai.KeDesimal().floor().toString()),
+          );
+        }
+      });
+    } on GalatKasir catch (galat) {
+      if (mounted) {
+        setState(() => _pesanGiftCard = galat.pesan);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _memuatGiftCard = false);
+      }
+    }
+  }
+
   Uang? _AmbilNominal() {
     return MasukanUang.AmbilNilai(_nominal);
   }
@@ -313,6 +362,9 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
   String? _SusunReferensi(BarisMetodePembayaran metode) {
     if (metode.Jenis == JenisMetodeBayar.edc) {
       return LayananPenjualan.SusunReferensiEdc(_bank.text, _referensi.text);
+    }
+    if (metode.Jenis == JenisMetodeBayar.giftCard) {
+      return _kartuGiftCard?.kode;
     }
     final teks = _referensi.text.trim();
     return teks.isEmpty ? null : teks;
@@ -348,6 +400,23 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       }
       if (nominal.Bandingkan(saldo) > 0) {
         setState(() => _galat = 'Saldo deposit tinggal ${saldo.FormatRupiah()}. Bayar sisanya dengan metode lain.');
+        return;
+      }
+    }
+    if (metode.Jenis == JenisMetodeBayar.giftCard) {
+      final kartu = _kartuGiftCard;
+      if (kartu == null) {
+        setState(() => _galat = _pesanGiftCard ?? 'Cek kode gift card dulu dengan tombol Cek saldo.');
+        return;
+      }
+      if (!kartu.bisaDipakai) {
+        setState(() => _galat = kartu.alasan);
+        return;
+      }
+      if (nominal.Bandingkan(kartu.saldo) > 0) {
+        setState(
+          () => _galat = 'Saldo gift card tinggal ${kartu.saldo.FormatRupiah()}. Bayar sisanya dengan metode lain.',
+        );
         return;
       }
     }
@@ -835,7 +904,13 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           _BangunInfoDeposit(context),
           const SizedBox(height: TokenJarak.jarak8),
         ],
-        if (metode.Jenis != JenisMetodeBayar.tempo && metode.Jenis != JenisMetodeBayar.deposit)
+        if (metode.Jenis == JenisMetodeBayar.giftCard) ...[
+          _BangunKodeGiftCard(context, k),
+          const SizedBox(height: TokenJarak.jarak8),
+        ],
+        if (metode.Jenis != JenisMetodeBayar.tempo &&
+            metode.Jenis != JenisMetodeBayar.deposit &&
+            metode.Jenis != JenisMetodeBayar.giftCard)
           TextField(
             controller: _referensi,
             maxLength: metode.Jenis == JenisMetodeBayar.edc ? LayananPenjualan.panjangMaksApprovalEdc : 60,
@@ -947,6 +1022,73 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     );
   }
 
+  /// CRM-06: isian kode gift card + tombol Cek saldo, lalu saldo/masa berlaku atau alasan kartu tak bisa dipakai. Mengubah
+  /// kode setelah dicek membatalkan hasil cek (kode yang dibayar harus kode yang dicek).
+  Widget _BangunKodeGiftCard(BuildContext context, KonteksPenjualan k) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    final kartu = _kartuGiftCard;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _referensi,
+                maxLength: 20,
+                textCapitalization: TextCapitalization.characters,
+                autocorrect: false,
+                enableSuggestions: false,
+                onChanged: (_) => setState(() {
+                  _galat = null;
+                  _kartuGiftCard = null;
+                  _pesanGiftCard = null;
+                }),
+                onSubmitted: (_) => unawaited(_CekGiftCard(k)),
+                decoration: const InputDecoration(labelText: 'Kode gift card', border: OutlineInputBorder()),
+              ),
+            ),
+            const SizedBox(width: TokenJarak.jarak8),
+            SizedBox(
+              height: TokenJarak.targetSentuh,
+              child: OutlinedButton(
+                onPressed: _memuatGiftCard || _sibuk ? null : () => unawaited(_CekGiftCard(k)),
+                child: const Text('Cek saldo'),
+              ),
+            ),
+          ],
+        ),
+        if (_memuatGiftCard)
+          const LinearProgressIndicator()
+        else if (_pesanGiftCard != null)
+          Semantics(
+            liveRegion: true,
+            child: Text(_pesanGiftCard!, style: teks.bodyMedium?.copyWith(color: warna.bahaya)),
+          )
+        else if (kartu != null) ...[
+          Row(
+            children: [
+              Expanded(child: Text('Saldo ${kartu.samaran}', style: teks.bodyMedium)),
+              TeksUang(kartu.saldo, gaya: teks.titleMedium),
+            ],
+          ),
+          if (kartu.alasan != null)
+            Row(
+              children: [
+                Icon(Icons.error_outline, size: TokenJarak.ikonKecil, color: warna.peringatan),
+                const SizedBox(width: TokenJarak.jarak4),
+                Expanded(child: Text(kartu.alasan!, style: teks.bodyMedium)),
+              ],
+            )
+          else if (kartu.berlakuSampai != null)
+            Text('Berlaku sampai ${kartu.berlakuSampai}', style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+        ],
+      ],
+    );
+  }
+
   /// F-16d: saldo deposit pelanggan (online) atau alasan belum bisa dipakai.
   Widget _BangunInfoDeposit(BuildContext context) {
     final teks = Theme.of(context).textTheme;
@@ -1029,6 +1171,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     final tunaiDipakai = _entri.any((p) => p.CekTunai());
     final tempoDipakai = _entri.any((p) => p.metode.Jenis == JenisMetodeBayar.tempo);
     final depositDipakai = _entri.any((p) => p.metode.Jenis == JenisMetodeBayar.deposit);
+    final giftCardDipakai = _entri.any((p) => p.metode.Jenis == JenisMetodeBayar.giftCard);
     final nominal = _AmbilNominal();
     final melunasi = nominal != null && nominal.Bandingkan(sisa) >= 0;
     // Semua tagihan sudah tertutup (misal QRIS dinamis lunas tetapi penyimpanan gagal): cukup selesaikan lagi.
@@ -1178,7 +1321,8 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
               if (!(tunaiDipakai && _bagi == null && m.Jenis == JenisMetodeBayar.tunai) &&
                   !(m.Jenis == JenisMetodeBayar.tempo && (keranjang.pelanggan == null || tempoDipakai)) &&
                   !(m.Jenis == JenisMetodeBayar.deposit &&
-                      (keranjang.pelanggan == null || depositDipakai || !k.deposit.berlaku)))
+                      (keranjang.pelanggan == null || depositDipakai || !k.deposit.berlaku)) &&
+                  !(m.Jenis == JenisMetodeBayar.giftCard && giftCardDipakai))
                 ChoiceChip(
                   label: Text(m.Nama),
                   tooltip: AmbilLabelJenisMetode(m.Jenis),

@@ -55,6 +55,7 @@ final class PetaFiturRute
         ['Pola' => 'kelola.pelanggan.arsipkan', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
         ['Pola' => 'kelola.pelanggan.pulihkan', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
         ['Pola' => 'kelola.pelanggan.massal', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
+        ['Pola' => 'kelola.pelanggan.gift-card.*', 'Fitur' => 'pelanggan.deposit', 'Mode' => 'tulis', 'Nama' => 'Deposit & gift card'],
         ['Pola' => 'kelola.pelanggan.impor.*', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
 
         // Akuntansi penuh (laba rugi masuk laporan lengkap, bukan akuntansi penuh)

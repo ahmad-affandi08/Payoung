@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Pelanggan\DepositPelangganKontroler;
+use App\Http\Kontroler\Kelola\Pelanggan\GiftCardKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\ImporPelangganKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\KampanyePesanKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\LoyaltiKontroler;
@@ -31,6 +32,10 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
     Route::get('/isi-deposit', [DepositPelangganKontroler::class, 'DaftarIsi'])->name('kelola.pelanggan.isi-deposit.daftar');
     Route::get('/isi-deposit/{isiDeposit}', [DepositPelangganKontroler::class, 'TampilkanIsi'])->where('isiDeposit', $ulid)->name('kelola.pelanggan.isi-deposit.tampil');
     Route::get('/mutasi-deposit/{mutasiDeposit}', [DepositPelangganKontroler::class, 'TampilkanMutasi'])->where('mutasiDeposit', $ulid)->name('kelola.pelanggan.mutasi-deposit.tampil');
+    // CRM-06 (D-153): gift card & tautan sumber jurnalnya (sebelum rute {pelanggan}).
+    Route::get('/gift-card', [GiftCardKontroler::class, 'Daftar'])->name('kelola.pelanggan.gift-card.daftar');
+    Route::get('/gift-card/{giftCard}', [GiftCardKontroler::class, 'Rincian'])->where('giftCard', $ulid)->name('kelola.pelanggan.gift-card.rincian');
+    Route::get('/mutasi-gift-card/{mutasiGiftCard}', [GiftCardKontroler::class, 'TampilkanMutasi'])->where('mutasiGiftCard', $ulid)->name('kelola.pelanggan.mutasi-gift-card.tampil');
     // F-16d bagian 2: saldo paket sesi & tautan sumber jurnal sesi (sebelum rute {pelanggan}).
     Route::get('/saldo-sesi', [SesiPelangganKontroler::class, 'Daftar'])->name('kelola.pelanggan.saldo-sesi.daftar');
     Route::get('/saldo-sesi/{saldoSesi}', [SesiPelangganKontroler::class, 'Tampilkan'])->where('saldoSesi', $ulid)->name('kelola.pelanggan.saldo-sesi.tampil');
@@ -42,6 +47,10 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
         Route::post('/{pelanggan}/deposit/tarik', [DepositPelangganKontroler::class, 'Tarik'])->where('pelanggan', $ulid)->name('kelola.pelanggan.deposit.tarik');
         Route::post('/{pelanggan}/deposit/sesuaikan', [DepositPelangganKontroler::class, 'Sesuaikan'])->where('pelanggan', $ulid)->name('kelola.pelanggan.deposit.sesuaikan');
         Route::post('/isi-deposit/{isiDeposit}/batal', [DepositPelangganKontroler::class, 'BatalIsi'])->where('isiDeposit', $ulid)->name('kelola.pelanggan.isi-deposit.batal');
+        Route::post('/gift-card', [GiftCardKontroler::class, 'Jual'])->middleware('throttle:30,1')->name('kelola.pelanggan.gift-card.jual');
+        Route::post('/gift-card/{giftCard}/perpanjang', [GiftCardKontroler::class, 'Perpanjang'])->where('giftCard', $ulid)->name('kelola.pelanggan.gift-card.perpanjang');
+        Route::post('/gift-card/{giftCard}/hanguskan', [GiftCardKontroler::class, 'Hanguskan'])->where('giftCard', $ulid)->name('kelola.pelanggan.gift-card.hanguskan');
+        Route::post('/gift-card/{giftCard}/kembalikan', [GiftCardKontroler::class, 'Kembalikan'])->where('giftCard', $ulid)->name('kelola.pelanggan.gift-card.kembalikan');
     });
 
     Route::middleware($izin(IzinTenant::PelangganSesiKelola))->group(function () use ($ulid): void {

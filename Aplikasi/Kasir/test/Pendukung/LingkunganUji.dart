@@ -102,6 +102,7 @@ Map<String, Object?> DataAwalUji({
   Map<String, Object?>? barcodeTimbangan,
   String? modeKasir,
   bool tukar = false,
+  bool giftCard = false,
 }) => {
   'Karyawan': ?karyawan,
   // F-16d: deposit pelanggan (fitur paket) hanya bila diminta test.
@@ -217,6 +218,15 @@ Map<String, Object?> DataAwalUji({
         'Nama': 'Deposit pelanggan',
         'AdaGambarQris': false,
         'Urutan': 9,
+      },
+    // CRM-06: metode Gift card hanya bila diminta test.
+    if (giftCard)
+      {
+        'Uuid': '01K5MTD0000000000000GIFT01',
+        'Jenis': 'GiftCard',
+        'Nama': 'Gift card',
+        'AdaGambarQris': false,
+        'Urutan': 12,
       },
     // X8: metode platform ojol (GoFood & GrabFood) hanya bila diminta test.
     if (ojol) ...[

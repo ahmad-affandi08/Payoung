@@ -596,7 +596,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
 
         fireEvent.click(screen.getByRole('button', { name: 'Pelanggan' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi deposit (perlu naik paket)' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit & gift card (perlu naik paket)' }));
         const dialog = screen.getByRole('dialog');
         expect(within(dialog).getByText('Minta Pemilik usaha untuk naik paket atau menambah add-on.')).toBeTruthy();
         expect(within(dialog).queryByRole('link', { name: /Lihat paket/ })).toBeNull();

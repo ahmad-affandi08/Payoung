@@ -29,6 +29,8 @@ enum PeranAkun: string
     case HutangPbjt = 'HutangPbjt';
     case UangMukaPelanggan = 'UangMukaPelanggan';
     case DepositPelanggan = 'DepositPelanggan';
+    // CRM-06 (D-153): saldo gift card yang beredar (kewajiban); dikredit saat kartu dijual, didebit saat dipakai membayar.
+    case SaldoGiftCard = 'SaldoGiftCard';
     case PendapatanDiterimaDimuka = 'PendapatanDiterimaDimuka';
     // K-11: nilai barang retur yang dipakai membayar barang pengganti (tukar barang). Dikredit saat retur, didebit
     // saat penjualan pengganti; saldo bersih nol bila keduanya sudah diterima server.
@@ -115,7 +117,7 @@ enum PeranAkun: string
             self::PersediaanBarangDagang, self::PersediaanBahanBaku,
             self::PersediaanDalamPerjalanan, self::PpnMasukan, self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima => TipeAkun::Aset,
             self::HutangUsaha, self::HutangBelumDifakturkan, self::HutangKonsinyasi, self::PpnKeluaran,
-            self::HutangPbjt, self::UangMukaPelanggan, self::DepositPelanggan,
+            self::HutangPbjt, self::UangMukaPelanggan, self::DepositPelanggan, self::SaldoGiftCard,
             self::PendapatanDiterimaDimuka, self::HutangGiro, self::KliringTukarBarang => TipeAkun::Kewajiban,
             self::EkuitasSaldoAwal, self::LabaDitahan => TipeAkun::Ekuitas,
             self::Penjualan, self::DiskonPenjualan, self::ReturPenjualan, self::PendapatanJasa,
@@ -143,7 +145,7 @@ enum PeranAkun: string
             self::PersediaanBarangDagang, self::PersediaanBahanBaku, self::PersediaanDalamPerjalanan,
             self::PiutangUsaha, self::PiutangBelumDifakturkan, self::PiutangPencairan, self::PiutangKaryawan, self::PiutangKlaimPemasok,
             self::HutangUsaha, self::HutangBelumDifakturkan, self::HutangKonsinyasi,
-            self::UangMukaPelanggan, self::DepositPelanggan, self::PendapatanDiterimaDimuka, self::KliringTukarBarang,
+            self::UangMukaPelanggan, self::DepositPelanggan, self::SaldoGiftCard, self::PendapatanDiterimaDimuka, self::KliringTukarBarang,
             self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima, self::HutangGiro => true,
             default => false,
         };
@@ -199,7 +201,8 @@ enum PeranAkun: string
             self::PpnKeluaran => 'PPN keluaran',
             self::HutangPbjt => 'Hutang PB1/PBJT',
             self::UangMukaPelanggan => 'Uang muka pelanggan (DP)',
-            self::DepositPelanggan => 'Deposit pelanggan / gift card',
+            self::DepositPelanggan => 'Deposit pelanggan',
+            self::SaldoGiftCard => 'Saldo gift card beredar',
             self::PendapatanDiterimaDimuka => 'Pendapatan diterima dimuka',
             self::KliringTukarBarang => 'Kliring tukar barang (nilai retur untuk barang pengganti)',
             self::EkuitasSaldoAwal => 'Ekuitas saldo awal',

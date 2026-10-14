@@ -8,6 +8,7 @@ use App\Http\Kontroler\Pos\V1\DapurKontroler;
 use App\Http\Kontroler\Pos\V1\DataAwalKontroler;
 use App\Http\Kontroler\Pos\V1\GambarProdukKontroler;
 use App\Http\Kontroler\Pos\V1\GambarQrisKontroler;
+use App\Http\Kontroler\Pos\V1\GiftCardKontroler;
 use App\Http\Kontroler\Pos\V1\GudangKontroler;
 use App\Http\Kontroler\Pos\V1\KasirKontroler;
 use App\Http\Kontroler\Pos\V1\KatalogKontroler;
@@ -132,6 +133,8 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
         // F-16d bagian 1: saldo deposit pelanggan (wajib online saat membayar dengan deposit).
         Route::get('/pelanggan/{uuidPelanggan}/deposit', [PelangganKontroler::class, 'Deposit'])
             ->middleware('throttle:pos-60')->where('uuidPelanggan', $ulid)->name('pos.pelanggan.deposit');
+        // CRM-06 (D-153): cek saldo gift card (wajib online saat membayar dengan kartu); 10/menit per perangkat menahan tebakan kode.
+        Route::post('/gift-card/cek', [GiftCardKontroler::class, 'Cek'])->middleware('throttle:pos-10')->name('pos.gift-card.cek');
         // F-16d bagian 2: paket sesi aktif pelanggan (wajib online saat memakai sesi).
         Route::get('/pelanggan/{uuidPelanggan}/sesi', [PelangganKontroler::class, 'Sesi'])
             ->middleware('throttle:pos-60')->where('uuidPelanggan', $ulid)->name('pos.pelanggan.sesi');

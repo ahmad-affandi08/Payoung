@@ -27,6 +27,7 @@ use Throwable;
  * - EDC wajib bank/jaringan EDC aktif; transfer wajib bank/dompet digital aktif + nomor & nama pemilik rekening.
  * - Biaya (MDR) 0–10 persen, string desimal (tidak pernah float).
  * - F-16d: deposit pelanggan (satu per tenant, tanpa biaya; akun Saldo Deposit Pelanggan dari pemetaan akun).
+ * - CRM-06 (D-153): gift card (satu per tenant, tanpa biaya; akun Saldo Gift Card dari pemetaan akun).
  * - X8: platform ojol/marketplace wajib satu kanal platform (GoFood/GrabFood/ShopeeFood/Marketplace), satu metode per
  *   kanal; komisi platform 0–40 persen; dana masuk lewat pencairan platform (Piutang Pencairan).
  * - Tunai dipastikan ada lebih dulu (idempoten). Nama unik per tenant (tanpa beda huruf besar/kecil): kirim ganda ditolak.
@@ -67,6 +68,11 @@ final class SimpanMetodePembayaran
                     throw new PelanggaranAturanBisnis('MetodeDepositSudahAda', 'Metode deposit pelanggan sudah ada. Aktifkan metode yang ada bila dinonaktifkan.', 'Jenis');
                 }
 
+                // CRM-06: satu metode gift card per tenant (kartu dipilih lewat kodenya, bukan lewat metode).
+                if ($data->jenis === JenisMetodePembayaran::GiftCard && MetodePembayaran::query()->where('Jenis', JenisMetodePembayaran::GiftCard->value)->exists()) {
+                    throw new PelanggaranAturanBisnis('MetodeGiftCardSudahAda', 'Metode gift card sudah ada. Aktifkan metode yang ada bila dinonaktifkan.', 'Jenis');
+                }
+
                 // X8: kasir memilih metode platform menurut kanal penjualan, jadi satu metode per kanal.
                 if ($isian['Kanal'] instanceof KanalPenjualan && MetodePembayaran::query()->where('Kanal', $isian['Kanal']->value)->exists()) {
                     throw new PelanggaranAturanBisnis('MetodeKanalSudahAda', "Metode pembayaran untuk {$isian['Kanal']->AmbilLabel()} sudah ada. Aktifkan metode yang ada bila dinonaktifkan.", 'Kanal');
@@ -101,7 +107,7 @@ final class SimpanMetodePembayaran
         $jenis = $data->jenis;
 
         if (! $jenis->CekBisaDibuatPanduan()) {
-            throw new PelanggaranAturanBisnis('JenisTidakDidukung', 'Pilih QRIS statis, QRIS dinamis, kartu (EDC), transfer bank, deposit pelanggan, atau platform ojol/marketplace.', 'Jenis');
+            throw new PelanggaranAturanBisnis('JenisTidakDidukung', 'Pilih QRIS statis, QRIS dinamis, kartu (EDC), transfer bank, deposit pelanggan, gift card, atau platform ojol/marketplace.', 'Jenis');
         }
 
         $kanal = $jenis === JenisMetodePembayaran::Marketplace ? $data->kanal : null;
@@ -146,7 +152,7 @@ final class SimpanMetodePembayaran
             'NamaPemilikRekening' => $jenis === JenisMetodePembayaran::Transfer ? $namaPemilik : null,
             'Kanal' => $kanal,
             // F-16d: deposit bukan layanan penyedia pembayaran, jadi tanpa biaya MDR.
-            'PersenBiaya' => $jenis === JenisMetodePembayaran::Deposit ? '0' : $this->AmbilPersenBiaya($data->persenBiaya, self::AmbilPersenMaksimal($jenis)),
+            'PersenBiaya' => in_array($jenis, [JenisMetodePembayaran::Deposit, JenisMetodePembayaran::GiftCard], true) ? '0' : $this->AmbilPersenBiaya($data->persenBiaya, self::AmbilPersenMaksimal($jenis)),
         ];
     }
 

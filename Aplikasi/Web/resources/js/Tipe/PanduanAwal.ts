@@ -111,6 +111,7 @@ export type JenisMetodePembayaran =
     | 'Ewallet'
     | 'Tempo'
     | 'Deposit'
+    | 'GiftCard'
     | 'Poin'
     | 'Voucher'
     | 'Marketplace'

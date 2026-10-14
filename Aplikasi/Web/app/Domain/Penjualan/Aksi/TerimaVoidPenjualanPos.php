@@ -19,6 +19,7 @@ use App\Domain\Karyawan\Layanan\PencatatKomisiPenjualan;
 use App\Domain\Kasir\Kueri\InfoShift;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Layanan\PencatatDepositPenjualan;
+use App\Domain\Pelanggan\Layanan\PencatatGiftCardPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPoinPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatSesiPenjualan;
@@ -93,6 +94,7 @@ final class TerimaVoidPenjualanPos
         private readonly PenutupPesananPenjualan $penutupPraPesan,
         private readonly PenutupUangMukaPesananOnline $penutupUangMukaOnline,
         private readonly PencatatDepositPenjualan $deposit,
+        private readonly PencatatGiftCardPenjualan $giftCard,
         private readonly PencatatSesiPenjualan $sesi,
         private readonly PencatatLaundryPenjualan $laundry,
         private readonly PenagihPerintahKerjaPenjualan $perintahKerja,
@@ -249,6 +251,8 @@ final class TerimaVoidPenjualanPos
         // F-16d bagian 1: deposit yang dipakai membayar dikembalikan ke saldo pelanggan (jurnal pembalik sudah mengkredit
         // Saldo Deposit Pelanggan).
         $this->deposit->BatalkanPemakaian($penjualan->Id, $penjualan->Nomor, $tanggalBisnis, $kasir->id);
+        // CRM-06: gift card yang dipakai membayar dikembalikan ke saldo kartu (jurnal pembalik sudah mengkredit Saldo Gift Card).
+        $this->giftCard->BatalkanPemakaian($penjualan->Id, $penjualan->Nomor, $tanggalBisnis, $kasir->id);
         // F-16d bagian 2: sisa sesi paket dibatalkan; nilai sesi yang sudah dipakai diakui balik (J-16.3 dibalik).
         $this->sesi->BatalkanPenjualan($penjualan->Id, $penjualan->Uuid, $penjualan->Nomor, $penjualan->IdOutlet, $tanggalBisnis, $kasir->id);
         // F-18: komisi penjualan yang di-void dibatalkan penuh.
@@ -319,6 +323,7 @@ final class TerimaVoidPenjualanPos
     private const BUKAN_REFUND = [
         JenisMetodePembayaran::Tempo,
         JenisMetodePembayaran::Deposit,
+        JenisMetodePembayaran::GiftCard,
         JenisMetodePembayaran::UangMuka,
         JenisMetodePembayaran::Tukar,
         JenisMetodePembayaran::Poin,

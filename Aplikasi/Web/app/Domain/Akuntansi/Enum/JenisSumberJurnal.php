@@ -44,6 +44,9 @@ enum JenisSumberJurnal: string
     // back-office (sumber = baris `MutasiDeposit`).
     case IsiDeposit = 'IsiDeposit';
     case MutasiDeposit = 'MutasiDeposit';
+    // CRM-06 gift card (D-153): penjualan kartu dari back-office (J-16.10), hangus, dan pengembalian uang (sumber = baris
+    // `MutasiGiftCard`).
+    case MutasiGiftCard = 'MutasiGiftCard';
     // F-16d bagian 2: pemakaian sesi paket dari POS (J-16.3) dan pengembalian/penghangusan sisa sesi (sumber = baris
     // `MutasiSesi`).
     case PemakaianSesi = 'PemakaianSesi';
@@ -120,6 +123,7 @@ enum JenisSumberJurnal: string
             self::PenerimaanKlaimPemasok => 'Penerimaan klaim promo pemasok',
             self::IsiDeposit => 'Isi deposit pelanggan',
             self::MutasiDeposit => 'Penarikan/penyesuaian deposit',
+            self::MutasiGiftCard => 'Penjualan/hangus/pengembalian gift card',
             self::PemakaianSesi => 'Pemakaian paket sesi',
             self::MutasiSesi => 'Pengembalian/hangus paket sesi',
             self::OrderProduksi => 'Order produksi',
@@ -171,6 +175,7 @@ enum JenisSumberJurnal: string
             self::PenerimaanKlaimPemasok => '/kelola/promo/klaim-pemasok',
             self::IsiDeposit => '/kelola/pelanggan/isi-deposit/'.$uuid,
             self::MutasiDeposit => '/kelola/pelanggan/mutasi-deposit/'.$uuid,
+            self::MutasiGiftCard => '/kelola/pelanggan/mutasi-gift-card/'.$uuid,
             self::OrderProduksi => '/kelola/persediaan/produksi/'.$uuid,
             self::BahanTerbuang => '/kelola/persediaan/bahan-terbuang?cari='.$uuid,
             self::PemakaianSesi => '/kelola/pelanggan/pemakaian-sesi/'.$uuid,

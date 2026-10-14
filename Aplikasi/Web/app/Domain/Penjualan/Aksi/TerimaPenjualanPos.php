@@ -33,7 +33,9 @@ use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pajak\Kueri\TarifPajakBerlaku;
 use App\Domain\Pelanggan\Kueri\IdentitasPelanggan;
 use App\Domain\Pelanggan\Kueri\KreditPelanggan;
+use App\Domain\Pelanggan\Layanan\KodeGiftCard;
 use App\Domain\Pelanggan\Layanan\PencatatDepositPenjualan;
+use App\Domain\Pelanggan\Layanan\PencatatGiftCardPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatPoinPenjualan;
 use App\Domain\Pelanggan\Layanan\PencatatSesiPenjualan;
@@ -186,6 +188,7 @@ final class TerimaPenjualanPos
         private readonly PenagihPerintahKerjaPenjualan $perintahKerja,
         private readonly PenautTagihanQrisPenjualan $penautQris,
         private readonly PencatatDepositPenjualan $deposit,
+        private readonly PencatatGiftCardPenjualan $giftCard,
         private readonly PencatatSesiPenjualan $sesi,
         private readonly PenyediaAkunPeran $penyediaAkun,
         private readonly AlokatorBatchFefo $alokatorBatch,
@@ -472,6 +475,27 @@ final class TerimaPenjualanPos
             }
         }
 
+        // CRM-06 (D-153): pembayaran gift card memotong saldo kartu di transaksi yang sama (idempoten per penjualan). Kartu
+        // tidak dikenal / hangus / lewat masa berlaku / saldo kurang = tetap diterima (uang sudah dibayarkan di kasir),
+        // kartu tetap dipotong bila dikenal, ditandai tinjauan `GiftCardBermasalah`.
+        $bayarGiftCard = self::JumlahkanMetode($data, $metode, JenisMetodePembayaran::GiftCard);
+
+        if (! $bayarGiftCard->BernilaiNol()) {
+            $kodeGiftCard = null;
+
+            foreach ($data->pembayaran as $bayar) {
+                if ($metode[$bayar->uuidMetodePembayaran]->Jenis === JenisMetodePembayaran::GiftCard) {
+                    $kodeGiftCard = $bayar->referensi;
+                }
+            }
+
+            $masalahGiftCard = $this->giftCard->CatatPemakaian($kodeGiftCard, $penjualan->Id, $penjualan->Nomor, $bayarGiftCard, $tanggalBisnis, $kasir->id);
+
+            if ($masalahGiftCard !== []) {
+                $tinjauan['GiftCardBermasalah'] = 'GiftCardBermasalah: '.implode('; ', $masalahGiftCard);
+            }
+        }
+
         // F-16d bagian 2: baris paket sesi membuat saldo sesi pelanggan di transaksi yang sama (J-16.2).
         $masalahSesi = [];
 
@@ -697,6 +721,12 @@ final class TerimaPenjualanPos
         // tidak menyentuh tabel akun sama sekali.
         if (! Uang::Dari($penjualan->BiayaKirim)->BernilaiNol()) {
             $this->penyediaAkun->Pastikan(PeranAkun::PendapatanPengiriman, '4-3100', 'Pendapatan Pengiriman');
+        }
+
+        // CRM-06: Saldo Gift Card (2-1550) ditambahkan setelah banyak tenant menerapkan template sektornya, jadi akunnya
+        // dipastikan ada sebelum didebit — hanya bila ada pembayaran gift card.
+        if (! self::JumlahkanMetode($data, $metode, JenisMetodePembayaran::GiftCard)->BernilaiNol()) {
+            $this->penyediaAkun->Pastikan(PeranAkun::SaldoGiftCard, '2-1550', 'Saldo Gift Card');
         }
 
         $jurnal = $this->penyusunJurnal->Susun($penjualan, $pendapatan, $pajak, $bersih, $perubahanPersediaan);
@@ -1131,6 +1161,17 @@ final class TerimaPenjualanPos
             throw new PelanggaranAturanBisnis('DepositTanpaPelanggan', 'Pembayaran deposit wajib memilih pelanggan.', 'UuidPelanggan');
         }
 
+        // CRM-06: gift card sekali per penjualan dan wajib menyebut kodenya (`Referensi`), tidak harus atas nama pelanggan.
+        $pembayaranGiftCard = array_values(array_filter($data->pembayaran, fn ($b): bool => $metode[$b->uuidMetodePembayaran]->Jenis === JenisMetodePembayaran::GiftCard));
+
+        if (count($pembayaranGiftCard) > 1) {
+            throw new PelanggaranAturanBisnis('PembayaranTidakValid', 'Satu penjualan hanya boleh punya satu pembayaran gift card.', 'Pembayaran');
+        }
+
+        if (count($pembayaranGiftCard) === 1 && KodeGiftCard::Normalisasi((string) $pembayaranGiftCard[0]->referensi) === '') {
+            throw new PelanggaranAturanBisnis('GiftCardTanpaKode', 'Pembayaran gift card wajib menyebut kode kartu yang valid.', 'Pembayaran');
+        }
+
         if ($jumlahTempo === 1 && $data->uuidPelanggan === null) {
             throw new PelanggaranAturanBisnis('TempoTanpaPelanggan', 'Pembayaran tempo wajib memilih pelanggan.', 'UuidPelanggan');
         }
@@ -1335,7 +1376,8 @@ final class TerimaPenjualanPos
                 'NamaMetode' => mb_substr($m->Nama, 0, 100),
                 'Jumlah' => $bayar->jumlah->KeString(),
                 'Status' => PenjualanPembayaran::STATUS_DITERIMA,
-                'Referensi' => $bayar->referensi,
+                // CRM-06: kode gift card adalah rahasia pemegang kartu; yang disimpan di penjualan hanya samarannya.
+                'Referensi' => $m->Jenis === JenisMetodePembayaran::GiftCard ? KodeGiftCard::Samarkan(KodeGiftCard::Normalisasi((string) $bayar->referensi)) : $bayar->referensi,
                 'RefEksternal' => $refEksternal[$bayar->uuid] ?? null,
                 'DibayarPada' => $data->dibuatPada,
             ]);

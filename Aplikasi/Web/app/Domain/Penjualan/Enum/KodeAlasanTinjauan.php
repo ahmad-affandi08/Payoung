@@ -33,6 +33,7 @@ enum KodeAlasanTinjauan: string
     case QrisDinamisJumlahBerbeda = 'QrisDinamisJumlahBerbeda';
     // F-16d bagian 1: saldo deposit kurang saat penjualan dibayar deposit diterima; isi deposit untuk pelanggan arsip.
     case DepositKurang = 'DepositKurang';
+    case GiftCardBermasalah = 'GiftCardBermasalah';
     case PelangganDiarsipkan = 'PelangganDiarsipkan';
     // Apotek (§9.5): obat wajib resep tanpa resep lengkap; obat keras/OWA/psikotropika/narkotika tanpa apoteker berizin.
     case ResepTidakLengkap = 'ResepTidakLengkap';
@@ -79,6 +80,7 @@ enum KodeAlasanTinjauan: string
             self::QrisDinamisBelumLunas => 'Tagihan QRIS dinamis belum lunas saat penjualan diterima',
             self::QrisDinamisJumlahBerbeda => 'Jumlah tagihan QRIS dinamis berbeda dengan pembayaran',
             self::DepositKurang => 'Saldo deposit pelanggan kurang',
+            self::GiftCardBermasalah => 'Gift card tidak sah atau saldo kurang',
             self::PelangganDiarsipkan => 'Pelanggan sudah diarsipkan',
             self::ResepTidakLengkap => 'Obat wajib resep tanpa resep lengkap',
             self::ApotekerTidakBerwenang => 'Obat keras diserahkan tanpa apoteker berizin',

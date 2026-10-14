@@ -94,6 +94,11 @@ type ItemMenu = {
     sektor?: string[];
     /** Audit #33: disembunyikan di "Mode sederhana" (tetap bisa dibuka lewat Ctrl+K). */
     lanjutan?: boolean;
+    /**
+     * Awalan jalur halaman saudara yang memakai butir menu ini sebagai rumahnya (tab di halaman lain): "Deposit &
+     * gift card" menyala juga di `/kelola/pelanggan/gift-card`, tanpa menambah butir sub-menu (anggaran D-27).
+     */
+    awalanLain?: string[];
 };
 
 /** Menu utama bersub-menu: tampil bila ada sub-menu yang boleh dibuka; tautannya = sub-menu pertama yang boleh. */
@@ -224,12 +229,13 @@ const menuPelanggan: ItemMenu[] = [
     // F-12: piutang pelanggan (penjualan tempo) & pelunasan.
     { label: 'Piutang pelanggan', href: '/kelola/piutang', izin: IzinTenant.PelangganLihat },
     { label: 'Pelunasan piutang', href: '/kelola/piutang/pelunasan', izin: IzinTenant.PelangganLihat },
-    // F-16d bagian 1: isi deposit pelanggan dari kasir.
+    // F-16d bagian 1: isi deposit pelanggan dari kasir; CRM-06: gift card satu rumah dengannya (tab di halaman).
     {
-        label: 'Isi deposit',
+        label: 'Deposit & gift card',
         href: '/kelola/pelanggan/isi-deposit',
         izin: IzinTenant.PelangganLihat,
         fitur: 'pelanggan.deposit',
+        awalanLain: ['/kelola/pelanggan/gift-card'],
     },
     // F-16d bagian 2: saldo paket sesi pelanggan.
     {
@@ -390,7 +396,12 @@ const menuLaporan: ItemMenu[] = [
 export function CariSubMenuAktif(daftar: ItemMenu[], url: string): string | null {
     const jalur = url.split('?')[0] ?? url;
     const cocok = daftar
-        .filter((menu) => jalur === menu.href || jalur.startsWith(`${menu.href}/`))
+        .filter(
+            (menu) =>
+                jalur === menu.href ||
+                jalur.startsWith(`${menu.href}/`) ||
+                (menu.awalanLain ?? []).some((awalan) => jalur === awalan || jalur.startsWith(`${awalan}/`)),
+        )
         .sort((a, b) => b.href.length - a.href.length);
 
     return cocok[0]?.href ?? null;

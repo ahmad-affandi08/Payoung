@@ -170,3 +170,35 @@ class PaketSesiPelangganPos {
     ],
   );
 }
+
+/// Gift card hasil cek online di kasir (`POST /gift-card/cek`, CRM-06, D-153). [kode] sudah dinormalkan server
+/// (`XXXX-XXXX-XXXX`); [bisaDipakai] false disertai [alasan] (hangus, dibatalkan, lewat masa berlaku, atau saldo habis).
+/// Saldo bisa minus bila kartu dipakai dua perangkat bersamaan.
+class GiftCardPos {
+  const GiftCardPos({
+    required this.kode,
+    required this.saldo,
+    required this.status,
+    required this.berlakuSampai,
+    required this.bisaDipakai,
+    required this.alasan,
+  });
+
+  final String kode;
+  final String saldo;
+  final String status;
+
+  /// `YYYY-MM-DD`; null = tanpa batas masa berlaku.
+  final String? berlakuSampai;
+  final bool bisaDipakai;
+  final String? alasan;
+
+  static GiftCardPos DariJson(Map<String, Object?> json) => GiftCardPos(
+    kode: UraiJson.AmbilTeks(json['Kode']),
+    saldo: UraiJson.AmbilDesimal(json['Saldo']),
+    status: UraiJson.AmbilTeks(json['Status']),
+    berlakuSampai: UraiJson.AmbilTeksAtauNull(json['BerlakuSampai']),
+    bisaDipakai: UraiJson.AmbilBenar(json['BisaDipakai']),
+    alasan: UraiJson.AmbilTeksAtauNull(json['Alasan']),
+  );
+}

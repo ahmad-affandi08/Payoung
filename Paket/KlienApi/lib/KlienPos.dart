@@ -196,6 +196,11 @@ class KlienPos {
   Future<SaldoDepositPos> AmbilSaldoDeposit(String uuidPelanggan) async =>
       SaldoDepositPos.DariJson(await _Kirim('GET', 'pelanggan/${Uri.encodeComponent(uuidPelanggan)}/deposit', null));
 
+  /// Cek gift card sebelum dipakai membayar (CRM-06, wajib online). Kode dikirim di badan, bukan URL. Kode salah atau
+  /// tidak ada → `GalatApi` `GiftCardTidakDitemukan` (404); paket tanpa fitur → `FiturTidakAktif` (403).
+  Future<GiftCardPos> CekGiftCard(String kode) async =>
+      GiftCardPos.DariJson(await _Kirim('POST', 'gift-card/cek', {'Kode': kode}));
+
   /// Paket sesi aktif pelanggan (F-16d bagian 2, wajib online sebelum mencatat pemakaian sesi).
   Future<SaldoSesiPos> AmbilSaldoSesi(String uuidPelanggan) async =>
       SaldoSesiPos.DariJson(await _Kirim('GET', 'pelanggan/${Uri.encodeComponent(uuidPelanggan)}/sesi', null));

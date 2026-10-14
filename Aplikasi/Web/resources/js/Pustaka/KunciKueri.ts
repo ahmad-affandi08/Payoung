@@ -42,6 +42,10 @@ export const KunciKueri = {
         // K37: sebaran kemiripan wajah absensi web (kalibrasi ambang).
         KalibrasiWajah: () => ['Karyawan', 'KalibrasiWajah'] as const,
     },
+    // CRM-06: riwayat buku satu gift card di dialog rincian.
+    GiftCard: {
+        Rincian: (uuid: string) => ['GiftCard', 'Rincian', uuid] as const,
+    },
     // PGL-16: jejak permintaan satu sesi akses dukungan (Pengaturan › Akses dukungan).
     Dukungan: {
         AktivitasSesi: (uuid: string) => ['Dukungan', 'AktivitasSesi', uuid] as const,

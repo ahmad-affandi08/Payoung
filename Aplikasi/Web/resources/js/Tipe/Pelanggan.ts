@@ -258,3 +258,43 @@ export type PropsNotaTagihan = {
     Pelanggan: { Nama: string; NoHp: string; Alamat: string | null };
     Usaha: { Nama: string | null; Npwp: string | null };
 };
+
+export type StatusGiftCard = 'Aktif' | 'Habis' | 'Hangus' | 'Dibatalkan';
+
+/** CRM-06: satu baris daftar gift card (kode hanya samarannya; kode lengkap tampil sekali saat kartu dijual). */
+export type BarisGiftCard = {
+    Uuid: string;
+    KodeSamar: string;
+    NamaPemegang: string | null;
+    NilaiAwal: string;
+    Saldo: string;
+    Status: StatusGiftCard;
+    LabelStatus: string;
+    BerlakuSampai: string | null;
+    DiterbitkanPada: string;
+};
+
+export type RiwayatGiftCard = {
+    Jenis: string;
+    LabelJenis: string;
+    Jumlah: string;
+    SaldoSetelah: string;
+    NomorSumber: string | null;
+    Keterangan: string | null;
+    Tanggal: string;
+};
+
+export type RincianGiftCard = {
+    Kartu: BarisGiftCard & { Catatan: string | null };
+    Riwayat: RiwayatGiftCard[];
+};
+
+export type PropsGiftCard = {
+    GiftCard: HasilTabel<BarisGiftCard>;
+    Izin: { Kelola: boolean };
+    Ringkasan: { KartuAktif: number; SaldoBeredar: string };
+    Pengaturan: { Berlaku: boolean; MinimalNilai: string; MaksimalNilai: string; MasaBerlakuBawaanHari: number };
+    AkunKasBank: { Uuid: string; Kode: string; Nama: string }[];
+    /** Kartu yang baru dijual: kode lengkap hanya dikirim sekali (flash sesi). */
+    KartuBaru?: { Uuid: string; Kode: string; Nilai: string; BerlakuSampai: string | null } | null;
+};

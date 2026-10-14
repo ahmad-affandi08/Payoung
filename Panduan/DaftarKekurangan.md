@@ -431,3 +431,21 @@ Dikerjakan atas permintaan pemilik produk ("kerjakan tur produknya aja"). Bagian
 | Langkah opsional dibuang bila targetnya tidak ada (edisi Lisensi, halaman selain Beranda); petugas dukungan tidak mencatat atas nama pemilik | **Live chat**: butuh vendor obrolan dan staf dukungan waktu nyata (keputusan pemilik produk) |
 
 **Verifikasi:** Pest `TurProdukTes` (6 kasus: catat/idempoten, ulangi, kode tak dikenal 404, status ngawur, isolasi pengguna dan tenant, wajib masuk), Vitest `TurProdukTes.tsx` (16 kasus) plus seluruh suite Vitest (229 berkas, 1463 tes) karena tata letak bersama berubah, Larastan, Pint, tsc, ESLint, tes arsitektur, `RegistriAnonimisasiTes`. Tampilan dilihat di Chromium sungguhan pada 360, 768, dan 1280 px lewat halaman uji terpisah yang memakai komponen `BalonTur` dan CSS back-office asli (12 tangkapan: tanpa luapan, tanpa gulir horizontal, tanpa galat konsol); **belum** dilihat di dalam aplikasi penuh dengan data nyata, jadi sorotan pada menu samping sungguhan dan lembar Bantuan di HP sebaiknya diperiksa sekali sesudah rilis.
+
+## M. P0/P1 yang tersisa — 14 Oktober 2026 (PRD v6.32–v6.36, D-153…D-157)
+
+Dikerjakan atas permintaan pemilik produk ("OTP WhatsApp nanti aja, sisanya P0 dan P1 kerjakan"). Semua kode diuji lewat tes otomatis; tidak satu pun yang sudah dijalankan di perangkat, runner CI, atau toko aplikasi sungguhan.
+
+| ID | Yang kini ada | Yang masih belum / catatan jujur |
+|---|---|---|
+| OWN-01 (v6.32) | Kunci PIN 6 angka + biometrik perangkat di Aplikasi Owner, kunci otomatis setelah 1 menit, ajakan di Beranda | OTP WhatsApp (PLT-01) **sengaja ditunda** atas permintaan pemilik produk. Biometrik belum diuji di ponsel sungguhan |
+| OWN-07 (v6.32) | Layar Aksi cepat: ubah harga, tandai habis, promo aktif/nonaktif, pengeluaran + foto nota | Belum diuji di ponsel; foto nota memakai kamera/galeri bawaan |
+| POS-03 (v6.32) | Letak meja seret-lepas di back-office, denah kanvas di layar Meja kasir (skema lokal 31) | Hanya letak meja; tidak ada dinding/dekorasi/lantai |
+| CRM-06 (v6.33, D-153…D-155) | Gift card: jual dari back-office (J-16.10), kode tampil sekali, bayar di kasir saat online, void mengembalikan, kedaluwarsa otomatis, perpanjang/hanguskan/kembalikan | **Tidak ada:** jual gift card sebagai baris di kasir, refund retur ke kartu (ditolak), pakai offline, kartu fisik/QR cetak |
+| POS-20 / POS-21 (v6.34, D-156) | Alur CI `Bangun Aplikasi` (Android AAB/APK, Windows + Inno Setup, iOS tanpa tanda tangan) | **Belum pernah berjalan di runner.** Android butuh keystore rilis; iOS butuh Apple Developer Program; Windows butuh sertifikat tanda tangan kode |
+| POS-23 (v6.35, D-157) | Pembaruan otomatis Windows (unduh https + cocokkan SHA-256 + pasang senyap), checksum di konsol rilis dan API | Android/iOS tetap lewat toko aplikasi. Belum diuji dengan pemasang sungguhan |
+| POS-22 | — | Butuh keputusan vendor perangkat (SDK Sunmi/iMin/dll.) dan perangkat uji |
+| PLT-12 live chat | — | Butuh vendor obrolan dan staf dukungan waktu nyata |
+| PLT-01 OTP WhatsApp | — | Ditunda atas permintaan pemilik produk |
+
+**Pra-ada, tidak diubah (menunggu keputusan pemilik produk):** empat golden pixel test Kasir dan satu test `KeadaanKosong` di `Paket/SistemDesain` gagal sebelum pekerjaan ini; tidak dilemahkan.

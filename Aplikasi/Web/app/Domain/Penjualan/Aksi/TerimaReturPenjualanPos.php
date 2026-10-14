@@ -43,6 +43,7 @@ use App\Domain\Penjualan\Model\MetodePembayaran;
 use App\Domain\Penjualan\Model\Penjualan;
 use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Penjualan\Model\PenjualanPajak;
+use App\Domain\Penjualan\Model\PenjualanPembayaran;
 use App\Domain\Penjualan\Model\ReturPenjualan;
 use App\Domain\Penjualan\Model\ReturPenjualanDetail;
 use App\Domain\Penjualan\Model\ReturPenjualanPembayaran;
@@ -209,6 +210,7 @@ final class TerimaReturPenjualanPos
         }
 
         $metode = $this->AmbilMetode($data, $total, $this->piutang->AmbilSisa($penjualan->Id), $penjualan->IdPelanggan !== null);
+        $this->PastikanGiftCardTidakDiuangkan($data, $penjualan, $metode);
 
         // Simpan dokumen, stok, jurnal.
         $tinjauan = $shift->aktif ? [] : ['ShiftSudahDitutup: retur diterima setelah shift ditutup, belum masuk hitungan kas tutup shift'];
@@ -408,6 +410,49 @@ final class TerimaReturPenjualanPos
         }
 
         return [$detail, $sudah, $nilai];
+    }
+
+    /**
+     * CRM-06 (D-153): gift card tidak bisa diuangkan. Penjualan yang sebagian dibayar gift card hanya boleh direfund
+     * tunai/transfer sebesar yang benar-benar dibayar dengan uang (total − bagian gift card), dihitung kumulatif dengan
+     * retur sebelumnya; bagian gift card dikembalikan lewat void atau tukar barang.
+     *
+     * @param  array<string, MetodePembayaran>  $metode
+     */
+    private function PastikanGiftCardTidakDiuangkan(DataReturPenjualanPos $data, Penjualan $penjualan, array $metode): void
+    {
+        $bayarGiftCard = Uang::Dari((string) PenjualanPembayaran::query()->where('IdPenjualan', $penjualan->Id)->where('JenisMetode', JenisMetodePembayaran::GiftCard->value)->sum('Jumlah'));
+
+        if ($bayarGiftCard->BernilaiNol()) {
+            return;
+        }
+
+        $uangKeluar = Uang::Nol();
+
+        foreach ($data->refund as $r) {
+            if (in_array($metode[$r->uuidMetodePembayaran]->Jenis, [JenisMetodePembayaran::Tunai, JenisMetodePembayaran::Transfer], true)) {
+                $uangKeluar = $uangKeluar->Tambah($r->jumlah);
+            }
+        }
+
+        if ($uangKeluar->BernilaiNol()) {
+            return;
+        }
+
+        $sudahKeluar = Uang::Dari((string) ReturPenjualanPembayaran::query()
+            ->whereIn('IdReturPenjualan', ReturPenjualan::query()->where('IdPenjualanAsal', $penjualan->Id)->select('Id'))
+            ->whereIn('JenisMetode', [JenisMetodePembayaran::Tunai->value, JenisMetodePembayaran::Transfer->value])
+            ->sum('Jumlah'));
+        $batas = Uang::Dari($penjualan->TotalAkhir)->Kurangi($bayarGiftCard);
+        $batas = $batas->BernilaiNegatif() ? Uang::Nol() : $batas;
+
+        if ($sudahKeluar->Tambah($uangKeluar)->Bandingkan($batas) > 0) {
+            throw new PelanggaranAturanBisnis(
+                'GiftCardTidakBisaDiuangkan',
+                "Penjualan ini sebagian dibayar gift card ({$bayarGiftCard->FormatRupiah()}). Refund tunai/transfer paling banyak {$batas->FormatRupiah()}; bagian gift card dikembalikan lewat void atau tukar barang.",
+                'Refund',
+            );
+        }
     }
 
     /**

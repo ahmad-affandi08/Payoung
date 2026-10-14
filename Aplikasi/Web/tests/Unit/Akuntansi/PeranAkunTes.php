@@ -36,7 +36,10 @@ describe('PeranAkun: istilah kamus & alias kunci lama (P-03, BR-P03.4, DesainF01
             // E8: hapus-buku piutang (Dr beban piutang tak tertagih).
             ->and(PeranAkun::BebanPiutangTakTertagih->AmbilTipeAkun())->toBe(TipeAkun::Beban)
             ->and(PeranAkun::BebanPiutangTakTertagih->CekWajibKontra())->toBeFalse()
-            ->and(PeranAkun::cases())->toHaveCount(42);
+            // CRM-06 (D-153): gift card beredar = kewajiban terpisah dari deposit pelanggan.
+            ->and(PeranAkun::SaldoGiftCard->AmbilTipeAkun())->toBe(TipeAkun::Kewajiban)
+            ->and(PeranAkun::SaldoGiftCard->CekAkunKendali())->toBeTrue()
+            ->and(PeranAkun::cases())->toHaveCount(43);
     });
 
     it('DariKunci membaca kunci baru, kunci lama dari versi terbit, dan menolak kunci asing', function (): void {

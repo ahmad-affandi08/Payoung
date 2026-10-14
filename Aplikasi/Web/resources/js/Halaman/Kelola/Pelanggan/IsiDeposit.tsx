@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import TabDeposit from '@/Komponen/Pelanggan/TabDeposit';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
@@ -128,7 +129,8 @@ export default function HalamanIsiDeposit({ IsiDeposit, Izin }: PropsIsiDeposit)
     };
 
     return (
-        <TataLetakAplikasi judul="Isi deposit">
+        <TataLetakAplikasi judul="Deposit & gift card">
+            <TabDeposit aktif="isi-deposit" />
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Saldo deposit yang diisi pelanggan di kasir. Uangnya masuk kas shift. Batalkan isi deposit hanya bila
                 uangnya dikembalikan dan saldo pelanggan masih cukup.
