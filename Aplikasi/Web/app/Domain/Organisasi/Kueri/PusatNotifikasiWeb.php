@@ -6,7 +6,10 @@ namespace App\Domain\Organisasi\Kueri;
 
 use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
 use App\Domain\Organisasi\Model\NotifikasiDibisukan;
+use App\Domain\Organisasi\Model\NotifikasiOutletDibisukan;
 use App\Domain\Organisasi\Model\NotifikasiPengguna;
+use App\Domain\Organisasi\Model\NotifikasiPushDimatikan;
+use App\Domain\Organisasi\Model\Outlet;
 
 /**
  * Pusat notifikasi back-office web (F31, PLT-08): membaca baris `NotifikasiPengguna` yang sama dengan Aplikasi Owner,
@@ -17,10 +20,12 @@ final class PusatNotifikasiWeb
 {
     public const BATAS = 100;
 
+    public function __construct(private readonly AksesPengguna $akses) {}
+
     /**
-     * @return array{Notifikasi: list<array<string, mixed>>, BelumDibaca: int, Dibisukan: list<string>, Jenis: list<array{Nilai: string, Label: string, BisaDibisukan: bool}>}
+     * @return array{Notifikasi: list<array<string, mixed>>, BelumDibaca: int, Dibisukan: list<string>, TanpaPush: list<string>, OutletDibisukan: list<string>, Outlet: list<array{Uuid: string, Nama: string}>, Jenis: list<array{Nilai: string, Label: string, BisaDibisukan: bool}>}
      */
-    public function Ambil(int $idPengguna, bool $hanyaBelumDibaca): array
+    public function Ambil(int $idPengguna, bool $hanyaBelumDibaca, ?int $idTenant = null): array
     {
         $dasar = NotifikasiPengguna::query()->where('IdPengguna', $idPengguna);
         $daftar = (clone $dasar)
@@ -43,8 +48,26 @@ final class PusatNotifikasiWeb
             ])->all()),
             'BelumDibaca' => $this->HitungBelumDibaca($idPengguna),
             'Dibisukan' => array_values(NotifikasiDibisukan::query()->where('IdPengguna', $idPengguna)->get()->map(fn (NotifikasiDibisukan $b): string => $b->Jenis->value)->all()),
+            'TanpaPush' => array_values(NotifikasiPushDimatikan::query()->where('IdPengguna', $idPengguna)->get()->map(fn (NotifikasiPushDimatikan $b): string => $b->Jenis->value)->all()),
+            'OutletDibisukan' => array_values(NotifikasiOutletDibisukan::query()->where('IdPengguna', $idPengguna)->pluck('IdOutlet')->map(fn (mixed $id): string => (string) Outlet::query()->whereKey((int) $id)->value('Uuid'))->all()),
+            'Outlet' => $this->AmbilOutletBisaDipilih($idPengguna, $idTenant),
             'Jenis' => array_map(fn (JenisNotifikasiPengguna $j): array => ['Nilai' => $j->value, 'Label' => $j->AmbilLabel(), 'BisaDibisukan' => $j->BisaDibisukan()], JenisNotifikasiPengguna::cases()),
         ];
+    }
+
+    /**
+     * Outlet aktif yang boleh diakses pengguna; hanya berguna bila lebih dari satu.
+     *
+     * @return list<array{Uuid: string, Nama: string}>
+     */
+    private function AmbilOutletBisaDipilih(int $idPengguna, ?int $idTenant): array
+    {
+        $boleh = $idTenant === null ? null : $this->akses->AmbilIdOutlet($idTenant, $idPengguna);
+
+        return array_values(Outlet::query()
+            ->when($boleh !== null, fn ($kueri) => $kueri->whereIn('Id', $boleh === [] ? [0] : $boleh))
+            ->orderBy('Nama')->get(['Uuid', 'Nama'])
+            ->map(fn (Outlet $o): array => ['Uuid' => $o->Uuid, 'Nama' => $o->Nama])->all());
     }
 
     public function HitungBelumDibaca(int $idPengguna): int

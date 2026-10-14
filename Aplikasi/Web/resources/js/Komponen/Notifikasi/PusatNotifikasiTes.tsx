@@ -33,6 +33,9 @@ function Props(ubah: Partial<PropsNotifikasi> = {}): PropsNotifikasi {
         Notifikasi: [Notifikasi()],
         BelumDibaca: 1,
         Dibisukan: [],
+        TanpaPush: [],
+        OutletDibisukan: [],
+        Outlet: [],
         Jenis: jenis,
         Saring: { Tampil: 'semua' },
         ...ubah,
@@ -147,8 +150,46 @@ describe('F31 halaman pusat notifikasi', () => {
 
         expect(tiruanRouter.put).toHaveBeenCalledWith(
             '/kelola/notifikasi/pengaturan',
-            { Dibisukan: ['SelisihKas', 'StokKritis'] },
+            { Dibisukan: ['SelisihKas', 'StokKritis'], TanpaPush: [], OutletDibisukan: [] },
             expect.objectContaining({ preserveScroll: true }),
+        );
+    });
+
+    it('PLT-08: push per jenis (mati bila jenisnya dibisukan) dan outlet yang dikabari (hanya bila lebih dari satu)', () => {
+        RenderUji(
+            <HalamanNotifikasi
+                {...Props({
+                    Dibisukan: ['StokKritis'],
+                    TanpaPush: ['SelisihKas'],
+                    OutletDibisukan: ['01JOUTLETB0000000000000002'],
+                    Outlet: [
+                        { Uuid: '01JOUTLETA0000000000000001', Nama: 'Solo Baru' },
+                        { Uuid: '01JOUTLETB0000000000000002', Nama: 'Klaten' },
+                    ],
+                })}
+            />,
+        );
+
+        const pushStok = screen.getByRole('checkbox', { name: /push.*stok menipis/i });
+        expect(pushStok.hasAttribute('disabled') || pushStok.getAttribute('data-disabled') !== null).toBe(true);
+        expect(screen.getByRole('checkbox', { name: /push.*shift dan kas/i }).getAttribute('aria-checked')).toBe(
+            'false',
+        );
+        expect(screen.getByRole('checkbox', { name: 'Solo Baru' }).getAttribute('aria-checked')).toBe('true');
+        expect(screen.getByRole('checkbox', { name: 'Klaten' }).getAttribute('aria-checked')).toBe('false');
+
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Klaten' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: /push.*shift dan kas/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan pengaturan' }));
+
+        expect(tiruanRouter.put).toHaveBeenCalledWith(
+            '/kelola/notifikasi/pengaturan',
+            {
+                Dibisukan: ['StokKritis'],
+                TanpaPush: [],
+                OutletDibisukan: [],
+            },
+            expect.anything(),
         );
     });
 });

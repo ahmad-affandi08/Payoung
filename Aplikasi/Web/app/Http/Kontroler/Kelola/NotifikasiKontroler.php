@@ -25,7 +25,7 @@ final class NotifikasiKontroler extends DasarKelolaKontroler
         $hanyaBelum = $permintaan->query('tampil') === 'belum-dibaca';
 
         return Inertia::render('Kelola/Notifikasi', [
-            ...$pusat->Ambil($this->Pelaku()->Id, $hanyaBelum),
+            ...$pusat->Ambil($this->Pelaku()->Id, $hanyaBelum, $this->IdTenant()),
             'Saring' => ['Tampil' => $hanyaBelum ? 'belum-dibaca' : 'semua'],
         ]);
     }
@@ -54,8 +54,17 @@ final class NotifikasiKontroler extends DasarKelolaKontroler
         $data = $permintaan->validate([
             'Dibisukan' => ['present', 'array', 'max:'.count(JenisNotifikasiPengguna::cases())],
             'Dibisukan.*' => ['string', Rule::enum(JenisNotifikasiPengguna::class)],
-        ], attributes: ['Dibisukan' => 'jenis notifikasi']);
-        $ubah->Jalankan($this->Pelaku()->Id, array_values(array_map('strval', (array) $data['Dibisukan'])));
+            'TanpaPush' => ['sometimes', 'array', 'max:'.count(JenisNotifikasiPengguna::cases())],
+            'TanpaPush.*' => ['string', Rule::enum(JenisNotifikasiPengguna::class)],
+            'OutletDibisukan' => ['sometimes', 'array', 'max:200'],
+            'OutletDibisukan.*' => ['string', 'ulid'],
+        ], attributes: ['Dibisukan' => 'jenis notifikasi', 'TanpaPush' => 'jenis push', 'OutletDibisukan' => 'outlet']);
+        $ubah->Jalankan(
+            $this->Pelaku()->Id,
+            array_values(array_map('strval', (array) $data['Dibisukan'])),
+            array_key_exists('TanpaPush', $data) ? array_values(array_map('strval', (array) $data['TanpaPush'])) : null,
+            array_key_exists('OutletDibisukan', $data) ? array_values(array_map('strval', (array) $data['OutletDibisukan'])) : null,
+        );
 
         return back()->with('Kilat', 'Pengaturan notifikasi disimpan.');
     }

@@ -6,11 +6,13 @@ namespace App\Domain\Organisasi\Kueri;
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
+use App\Domain\Organisasi\Model\NotifikasiOutletDibisukan;
 use App\Domain\Organisasi\Model\TenantPengguna;
 
 /**
  * Anggota aktif tenant yang boleh menerima notifikasi tentang kejadian di satu outlet (OWN-03, F31): memegang izin yang
- * relevan (pemilik selalu) dan outlet kejadian ada di cakupan aksesnya. Dipanggil dengan tenant aktif sudah ditetapkan.
+ * relevan (pemilik selalu), outlet kejadian ada di cakupan aksesnya, dan outlet itu tidak ia bisukan (PLT-08). Dipanggil
+ * dengan tenant aktif sudah ditetapkan.
  */
 final class PenerimaNotifikasi
 {
@@ -22,9 +24,16 @@ final class PenerimaNotifikasi
     public function AmbilIdPengguna(int $idTenant, IzinTenant $izin, ?int $idOutlet): array
     {
         $hasil = [];
+        $dibisukan = $idOutlet === null
+            ? []
+            : NotifikasiOutletDibisukan::query()->where('IdOutlet', $idOutlet)->pluck('IdPengguna')->map(fn (mixed $id): int => (int) $id)->all();
 
         foreach (TenantPengguna::query()->where('IdTenant', $idTenant)->where('Status', StatusKeanggotaan::Aktif->value)->pluck('IdPengguna') as $id) {
             $idPengguna = (int) $id;
+
+            if (in_array($idPengguna, $dibisukan, true)) {
+                continue;
+            }
 
             if (! $this->akses->CekIzin($idTenant, $idPengguna, $izin)) {
                 continue;

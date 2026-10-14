@@ -26,6 +26,12 @@ export type PropsNotifikasi = {
     BelumDibaca: number;
     /** Jenis yang dibisukan pengguna ini. */
     Dibisukan: JenisNotifikasi[];
+    /** PLT-08: jenis yang tetap tampil di web tetapi tidak dikirim sebagai push. */
+    TanpaPush: JenisNotifikasi[];
+    /** PLT-08: Uuid outlet yang kejadiannya tidak dikabarkan kepada pengguna ini. */
+    OutletDibisukan: string[];
+    /** Outlet yang boleh diakses pengguna (pengaturan outlet tampil bila lebih dari satu). */
+    Outlet: { Uuid: string; Nama: string }[];
     Jenis: { Nilai: JenisNotifikasi; Label: string; BisaDibisukan: boolean }[];
     Saring: { Tampil: 'semua' | 'belum-dibaca' };
 };

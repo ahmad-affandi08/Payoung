@@ -7,12 +7,14 @@ namespace App\Domain\Organisasi\Aksi;
 use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
 use App\Domain\Organisasi\Model\NotifikasiDibisukan;
 use App\Domain\Organisasi\Model\NotifikasiPengguna;
+use App\Domain\Organisasi\Model\NotifikasiPushDimatikan;
 use App\Domain\Organisasi\Tugas\KirimNotifikasiPushTugas;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
  * Membuat notifikasi idempoten lalu mengantrekannya ke FCM setelah transaksi selesai. Jenis yang dibisukan penerimanya
- * (`NotifikasiDibisukan`, kecuali Persetujuan) tidak dibuat dan mengembalikan null.
+ * (`NotifikasiDibisukan`, kecuali Persetujuan) tidak dibuat dan mengembalikan null. Jenis yang push-nya dimatikan
+ * (`NotifikasiPushDimatikan`, PLT-08) tetap dibuat untuk pusat notifikasi web tetapi tidak diantrekan ke FCM.
  */
 final class BuatNotifikasiPengguna
 {
@@ -38,7 +40,7 @@ final class BuatNotifikasiPengguna
             $notifikasi = NotifikasiPengguna::query()->where('IdPengguna', $idPengguna)->where('Kunci', $kunci)->firstOrFail();
         }
 
-        if ($notifikasi->wasRecentlyCreated) {
+        if ($notifikasi->wasRecentlyCreated && ! ($jenis->BisaDibisukan() && NotifikasiPushDimatikan::query()->where('IdPengguna', $idPengguna)->where('Jenis', $jenis->value)->exists())) {
             KirimNotifikasiPushTugas::dispatch($notifikasi->IdTenant, $notifikasi->Id)->afterCommit();
         }
 
