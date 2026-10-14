@@ -127,6 +127,7 @@ export function KepalaTataLetak({
         >
             <SidebarTrigger
                 aria-label="Buka atau tutup menu samping"
+                data-tur="tombol-menu"
                 title="Buka atau tutup menu samping (Ctrl+B)"
                 className={cn('-ml-1 size-9 shrink-0', gelap && 'hover:bg-permukaan/15 hover:text-permukaan')}
             />

@@ -49,6 +49,7 @@ import {
 import KepalaSidebarMerek from './KepalaSidebarMerek';
 import LonceNotifikasi from './LonceNotifikasi';
 import TombolBantuan from '@/Komponen/Bantuan/TombolBantuan';
+import PenyediaTur from '@/Komponen/Tur/PenyediaTur';
 import PencarianCepat, { type HalamanPencarian, type SumberPencarian } from './PencarianCepat';
 
 type PropsTataLetak = {
@@ -923,9 +924,18 @@ function BacaModeSederhana(): boolean {
 /**
  * Tata letak back-office tenant (/kelola): bilah menu samping shadcn/ui berbasis izin (bisa diciutkan menjadi ikon,
  * menjadi Sheet di layar sempit), bilah atas dengan remah roti & menu akun, lalu banner status dan isi halaman.
- * Menu modul ditambahkan per flow (F-01 dst.).
+ * Menu modul ditambahkan per flow (F-01 dst.). `PenyediaTur` (PLT-12) membungkus semuanya agar tombol Bantuan dan
+ * pemicu otomatis di Beranda bisa menjalankan tur produk.
  */
-export default function TataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
+export default function TataLetakAplikasi(props: PropsTataLetak) {
+    return (
+        <PenyediaTur>
+            <IsiTataLetakAplikasi {...props} />
+        </PenyediaTur>
+    );
+}
+
+function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
     const { props, url } = usePage<PropsBersamaAplikasi>();
     const tenantAktif = props.TenantAktif;
     const sektorOutlet = props.SektorOutlet ?? [];
@@ -975,7 +985,7 @@ export default function TataLetakAplikasi({ judul, jejak = [], children }: Props
                 <KepalaSidebarMerek nama={props.NamaAplikasi} />
                 <SidebarContent>
                     {tenantAktif && props.Akses ? (
-                        <nav aria-label="Menu utama">
+                        <nav aria-label="Menu utama" data-tur="menu-samping">
                             <SidebarGroup className="px-3 py-3">
                                 <SidebarGroupContent>
                                     <SidebarMenu>

@@ -13,6 +13,7 @@ export default function LonceNotifikasi({ belumDibaca }: { belumDibaca: number }
     return (
         <Button
             asChild
+            data-tur="notifikasi"
             variant="outline"
             className="relative mr-1 size-8 min-w-0 rounded-lg border-garis bg-permukaan px-0 text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 lg:after:hidden lg:pointer-coarse:size-11"
         >

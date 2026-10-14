@@ -23,6 +23,7 @@ export default function RingkasTindakan({ butir }: { butir: ButirTindakan[] }) {
 
     return (
         <Card
+            data-tur="kotak-tindakan"
             role="region"
             aria-labelledby={idJudul}
             className="gap-3 rounded-panel px-4 py-4 shadow-none sm:px-6 sm:py-6"

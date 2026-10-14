@@ -27,6 +27,7 @@ use App\Http\Kontroler\Kelola\NotifikasiKontroler;
 use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontroler;
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
+use App\Http\Kontroler\Kelola\TurProdukKontroler;
 use App\Http\Kontroler\Publik\AbsensiWebKontroler;
 use App\Http\Kontroler\Publik\AkunTokoOnlineKontroler;
 use App\Http\Kontroler\Publik\BerhentiLanggananKontroler;
@@ -225,6 +226,9 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::get('/notifikasi', [NotifikasiKontroler::class, 'Daftar'])->name('kelola.notifikasi.daftar');
             Route::post('/notifikasi/dibaca', [NotifikasiKontroler::class, 'TandaiDibaca'])->middleware('throttle:60,1')->name('kelola.notifikasi.dibaca');
             Route::put('/notifikasi/pengaturan', [NotifikasiKontroler::class, 'UbahPengaturan'])->middleware('throttle:30,1')->name('kelola.notifikasi.pengaturan');
+            // PLT-12: tur produk interaktif, hasilnya milik pengguna sendiri (dilihat/dilewati, bisa diulang).
+            Route::post('/tur/{kodeTur}', [TurProdukKontroler::class, 'Catat'])->where('kodeTur', '[a-z0-9.]+')->middleware('throttle:30,1')->name('kelola.tur.catat');
+            Route::delete('/tur/{kodeTur}', [TurProdukKontroler::class, 'Ulangi'])->where('kodeTur', '[a-z0-9.]+')->middleware('throttle:30,1')->name('kelola.tur.ulangi');
             // D-23 D: berlangganan ringkasan pagi Kotak Tindakan lewat email (pilihan pribadi tiap pengguna).
             Route::put('/tindakan/ringkasan-whatsapp', [TindakanKontroler::class, 'UbahRingkasanWhatsapp'])->middleware(SiapkanAuditTenant::class)->name('kelola.tindakan.ringkasan-whatsapp');
 

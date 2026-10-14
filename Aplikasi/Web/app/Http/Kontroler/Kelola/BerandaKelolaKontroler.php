@@ -11,6 +11,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
+use App\Domain\Organisasi\Kueri\TurProdukPengguna;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,12 +24,14 @@ use Inertia\Response;
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks): Response
+    public function Beranda(AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur): Response
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
 
         return Inertia::render('Kelola/Beranda', [
+            // PLT-12: tur yang sudah dilihat pengguna ini (Beranda menawarkan tur keliling dashboard sekali).
+            'TurDilihat' => $tur->KodeSudahDilihat($idPengguna),
             // D-23 C: ringkasan Kotak Tindakan (D-24: termasuk checklist persiapan toko yang dulu di Beranda) (tanpa rincian; rincian & tandai di /kelola/tindakan).
             // Audit kinerja skala besar: Kotak Tindakan menjalankan puluhan COUNT, dan Beranda dibuka paling sering. Ringkasan
             // disimpan 60 detik per tenant & pengguna (izin dan cakupan outlet berbeda per pengguna); halaman

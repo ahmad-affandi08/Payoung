@@ -4,9 +4,12 @@ import { CircleHelpIcon, ExternalLink, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
 
 import { AmbilHasilCari, useNilaiTertunda } from '@/Komponen/Katalog/PemilihProduk';
+import Tombol from '@/Komponen/Formulir/Tombol';
+import { useTur } from '@/Komponen/Tur/PenyediaTur';
 import { Button } from '@/Komponen/Ui/button';
 import { Input } from '@/Komponen/Ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/Komponen/Ui/sheet';
+import { TurDashboard } from '@/Pustaka/DefinisiTur';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
 
 export type ArtikelBantuanKontekstual = {
@@ -72,7 +75,13 @@ function DaftarArtikel({ judul, artikel }: { judul: string; artikel: ArtikelBant
  * Isi lembar Bantuan. Komponen ini baru dipasang saat lembar dibuka (Radix tidak merender isi `SheetContent` yang
  * tertutup), jadi kueri artikel hanya berjalan sesudah pengguna menekan tombol Bantuan.
  */
-function IsiBantuan({ bolehHubungiDukungan }: { bolehHubungiDukungan: boolean }) {
+function IsiBantuan({
+    bolehHubungiDukungan,
+    saatMulaiTur,
+}: {
+    bolehHubungiDukungan: boolean;
+    saatMulaiTur: () => void;
+}) {
     const { url } = usePage();
     const [kata, AturKata] = useState('');
     const jalur = AmbilJalurHalaman(url);
@@ -125,6 +134,20 @@ function IsiBantuan({ bolehHubungiDukungan }: { bolehHubungiDukungan: boolean })
                                 : 'Tidak ada artikel yang cocok. Coba kata lain atau hubungi tim dukungan.'}
                         </p>
                     ) : null}
+                    <section
+                        aria-label="Tur singkat"
+                        className="flex flex-col gap-2 rounded-panel border border-garis bg-permukaan p-3"
+                    >
+                        <h3 className="text-label font-semibold text-teks-sekunder">Tur singkat</h3>
+                        <p className="text-keterangan text-teks-sekunder">
+                            Lihat lagi bagian-bagian utama dashboard, mulai dari menu sampai Kotak Tindakan.
+                        </p>
+                        <div>
+                            <Tombol varian="sekunder" onClick={saatMulaiTur}>
+                                Mulai tur keliling dashboard
+                            </Tombol>
+                        </div>
+                    </section>
                     <div className="flex flex-col gap-2 border-t border-garis pt-4">
                         <a
                             href={data.UrlPusatBantuan}
@@ -151,12 +174,21 @@ function IsiBantuan({ bolehHubungiDukungan }: { bolehHubungiDukungan: boolean })
  * yang sedang dibuka, kotak cari untuk artikel lain, tautan ke Pusat Bantuan, dan jalan ke tiket dukungan.
  */
 export default function TombolBantuan({ bolehHubungiDukungan }: { bolehHubungiDukungan: boolean }) {
+    const [terbuka, AturTerbuka] = useState(false);
+    const { Mulai } = useTur();
+    // Lembar ditutup dulu supaya sorotan tur tidak tertutup; jeda singkat menunggu animasi tutup selesai.
+    const MulaiTur = () => {
+        AturTerbuka(false);
+        window.setTimeout(() => Mulai(TurDashboard), 300);
+    };
+
     return (
-        <Sheet>
+        <Sheet open={terbuka} onOpenChange={AturTerbuka}>
             <SheetTrigger asChild>
                 <Button
                     variant="outline"
                     aria-label="Bantuan"
+                    data-tur="bantuan"
                     className="relative mr-1 size-8 min-w-0 rounded-lg border-garis bg-permukaan px-0 text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 lg:after:hidden lg:pointer-coarse:size-11"
                 >
                     <CircleHelpIcon aria-hidden />
@@ -167,7 +199,7 @@ export default function TombolBantuan({ bolehHubungiDukungan }: { bolehHubungiDu
                     <SheetTitle className="text-subjudul text-teks-utama">Bantuan</SheetTitle>
                     <SheetDescription>Panduan untuk halaman ini, atau cari topik lain.</SheetDescription>
                 </SheetHeader>
-                <IsiBantuan bolehHubungiDukungan={bolehHubungiDukungan} />
+                <IsiBantuan bolehHubungiDukungan={bolehHubungiDukungan} saatMulaiTur={MulaiTur} />
             </SheetContent>
         </Sheet>
     );

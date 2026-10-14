@@ -119,6 +119,7 @@ export default function PencarianCepat({ halaman, sumber }: PropsPencarianCepat)
                 size="sm"
                 onClick={() => AturTerbuka(true)}
                 aria-label="Pencarian cepat"
+                data-tur="pencarian-cepat"
                 aria-keyshortcuts="Control+K Meta+K"
                 className="relative mr-1 size-8 min-w-0 gap-2 rounded-lg border-garis bg-permukaan px-0 text-label font-normal text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 lg:w-72 lg:justify-start lg:rounded-md lg:border-garis-input lg:px-3 lg:after:hidden lg:has-[>svg]:px-3 lg:pointer-coarse:h-11"
             >
