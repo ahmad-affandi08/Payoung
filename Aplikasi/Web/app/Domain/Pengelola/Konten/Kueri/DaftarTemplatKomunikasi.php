@@ -80,8 +80,12 @@ final class DaftarTemplatKomunikasi
             'Riwayat' => $versi->filter(fn (TemplateKomunikasi $t): bool => $t->Status === StatusTemplateKomunikasi::Terbit)->map(fn (TemplateKomunikasi $t): array => $this->Petakan($t))->values()->all(),
             'Batas' => [
                 'Subjek' => SimpanDrafTemplatKomunikasi::BATAS_SUBJEK,
-                'Judul' => SimpanDrafTemplatKomunikasi::BATAS_JUDUL,
-                'Isi' => $kanal === KanalKomunikasi::WhatsApp ? SimpanDrafTemplatKomunikasi::BATAS_ISI_WHATSAPP : SimpanDrafTemplatKomunikasi::BATAS_ISI_EMAIL,
+                'Judul' => $kanal === KanalKomunikasi::Notifikasi ? SimpanDrafTemplatKomunikasi::BATAS_JUDUL_NOTIFIKASI : SimpanDrafTemplatKomunikasi::BATAS_JUDUL,
+                'Isi' => match ($kanal) {
+                    KanalKomunikasi::Email => SimpanDrafTemplatKomunikasi::BATAS_ISI_EMAIL,
+                    KanalKomunikasi::WhatsApp => SimpanDrafTemplatKomunikasi::BATAS_ISI_WHATSAPP,
+                    KanalKomunikasi::Notifikasi => SimpanDrafTemplatKomunikasi::BATAS_ISI_NOTIFIKASI,
+                },
             ],
         ];
     }

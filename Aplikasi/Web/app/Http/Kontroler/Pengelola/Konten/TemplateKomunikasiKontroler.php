@@ -99,6 +99,7 @@ final class TemplateKomunikasiKontroler extends Kontroler
         $kanalEnum = match ($kanal) {
             'email' => KanalKomunikasi::Email,
             'whatsapp' => KanalKomunikasi::WhatsApp,
+            'notifikasi' => KanalKomunikasi::Notifikasi,
             default => abort(404),
         };
         $bahasaEnum = BahasaKomunikasi::tryFrom($bahasa) ?? abort(404);

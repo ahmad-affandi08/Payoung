@@ -204,11 +204,11 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             $ulid = '[0-9A-HJKMNP-TV-Z]{26}';
             Route::get('/', [TemplateKomunikasiKontroler::class, 'Daftar'])->name('pengelola.template-komunikasi.daftar');
             Route::get('/{kodePeristiwa}/{kanal}/{bahasa}', [TemplateKomunikasiKontroler::class, 'Ubah'])
-                ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp', 'bahasa' => 'id|en'])
+                ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp|notifikasi', 'bahasa' => 'id|en'])
                 ->name('pengelola.template-komunikasi.ubah');
             Route::middleware($izin(IzinPengelola::LegalKelola))->group(function () use ($ulid): void {
                 Route::put('/{kodePeristiwa}/{kanal}/{bahasa}', [TemplateKomunikasiKontroler::class, 'SimpanDraf'])
-                    ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp', 'bahasa' => 'id|en'])
+                    ->where(['kodePeristiwa' => '[a-z0-9.\-]+', 'kanal' => 'email|whatsapp|notifikasi', 'bahasa' => 'id|en'])
                     ->name('pengelola.template-komunikasi.simpan-draf');
                 Route::post('/{templatKomunikasi}/terbitkan', [TemplateKomunikasiKontroler::class, 'Terbitkan'])->where('templatKomunikasi', $ulid)->name('pengelola.template-komunikasi.terbitkan');
                 Route::delete('/{templatKomunikasi}', [TemplateKomunikasiKontroler::class, 'HapusDraf'])->where('templatKomunikasi', $ulid)->name('pengelola.template-komunikasi.hapus-draf');

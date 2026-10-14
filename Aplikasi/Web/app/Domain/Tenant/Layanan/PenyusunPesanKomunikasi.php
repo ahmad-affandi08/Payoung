@@ -30,7 +30,7 @@ final class PenyusunPesanKomunikasi
         if ($templat !== null) {
             return new PesanKomunikasi(
                 $kanal === KanalKomunikasi::Email ? self::Render((string) $templat->Subjek, $variabel) : null,
-                $kanal === KanalKomunikasi::Email ? self::Render((string) $templat->Judul, $variabel) : null,
+                $kanal !== KanalKomunikasi::WhatsApp ? self::Render((string) $templat->Judul, $variabel) : null,
                 self::Render($templat->Isi, $variabel),
                 'Templat',
                 $templat->Versi,

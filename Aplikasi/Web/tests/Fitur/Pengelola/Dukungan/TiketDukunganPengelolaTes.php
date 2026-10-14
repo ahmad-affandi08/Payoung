@@ -6,6 +6,9 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
 use App\Domain\Dukungan\Model\TiketDukungan;
+use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
+use App\Domain\Organisasi\Model\NotifikasiPengguna;
+use App\Domain\Organisasi\Tugas\KirimNotifikasiPushTugas;
 use App\Domain\Pengelola\Dukungan\Surel\BalasanTiketDukungan;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
@@ -16,6 +19,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Dukungan\BantuanDukungan;
@@ -195,6 +199,34 @@ describe('Menangani tiket', function (): void {
         BantuanDukungan::MasukSebagaiTenant($this, $pengguna, $tenant)
             ->get(rtrim((string) config('app.url'), '/')."/kelola/bantuan/{$tiket->Uuid}/lampiran/{$lampiran['Uuid']}")
             ->assertDownload('panduan-printer.pdf');
+    });
+
+    it('PGL-07: balasan ke tenant membuat notifikasi aplikasi untuk pelapor tanpa isi balasan; catatan internal tidak', function (): void {
+        Queue::fake();
+        $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
+        ['Tenant' => $tenant, 'Pengguna' => $pengguna] = BantuanDukungan::BuatTenant();
+        $tiket = BantuanDukungan::BuatTiket($tenant, $pengguna);
+        $url = BantuanPengelola::Url("/dukungan/tiket/{$tiket->Uuid}/balasan");
+
+        MasukSebagaiPetugas($this, $petugas)->post($url, ['Isi' => 'Catatan untuk tim saja.', 'CatatanInternal' => true])->assertSessionHasNoErrors();
+        app(KonteksTenant::class)->Atur($tenant->Id);
+        expect(NotifikasiPengguna::query()->count())->toBe(0);
+
+        $this->post($url, ['Isi' => 'Sandi akun Anda sudah kami setel ulang: rahasia123.', 'CatatanInternal' => false])->assertSessionHasNoErrors();
+        app(KonteksTenant::class)->Atur($tenant->Id);
+        $notifikasi = NotifikasiPengguna::query()->sole();
+
+        expect($notifikasi->IdPengguna)->toBe($pengguna->Id)
+            ->and($notifikasi->Jenis)->toBe(JenisNotifikasiPengguna::PesanPlatform)
+            ->and($notifikasi->Judul)->toBe('Dukungan membalas tiket Anda')
+            ->and($notifikasi->Isi)->toContain($tiket->Nomor)->toContain($petugas->Nama)->not->toContain('rahasia123')
+            ->and($notifikasi->Data['Href'])->toBe("/kelola/bantuan/{$tiket->Uuid}");
+        Queue::assertPushed(KirimNotifikasiPushTugas::class, 1);
+
+        // Balasan kedua adalah kejadian lain: notifikasi baru, bukan menimpa yang pertama.
+        $this->post($url, ['Isi' => 'Ada tambahan: coba masuk lagi.', 'CatatanInternal' => false])->assertSessionHasNoErrors();
+        app(KonteksTenant::class)->Atur($tenant->Id);
+        expect(NotifikasiPengguna::query()->count())->toBe(2);
     });
 
     it('catatan internal tidak boleh sekaligus mengubah status, dan tiket selesai harus dibuka dulu sebelum dibalas', function (): void {

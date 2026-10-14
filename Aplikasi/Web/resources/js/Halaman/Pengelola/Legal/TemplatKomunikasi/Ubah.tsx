@@ -37,6 +37,8 @@ export default function HalamanUbahTemplatKomunikasi({
     Izin: { Kelola: boolean };
 }) {
     const email = Editor.Kanal.Nilai === 'Email';
+    const notifikasi = Editor.Kanal.Nilai === 'Notifikasi';
+    const adaJudul = email || notifikasi;
     const sumber = Editor.Draf ?? Editor.Terbit ?? { ...Editor.Bawaan, Uuid: '', Versi: 0 };
     const formulir = useForm({ Subjek: sumber.Subjek ?? '', Judul: sumber.Judul ?? '', Isi: sumber.Isi });
     const d = formulir.data;
@@ -130,27 +132,27 @@ export default function HalamanUbahTemplatKomunikasi({
                         className="flex flex-col gap-4"
                     >
                         {email ? (
-                            <>
-                                <BidangTeks
-                                    label="Subjek email"
-                                    nilai={d.Subjek}
-                                    saatBerubah={(v) => formulir.setData('Subjek', v)}
-                                    galat={galat.Subjek}
-                                    maxLength={Editor.Batas.Subjek}
-                                    required
-                                />
-                                <BidangTeks
-                                    label="Judul di badan email"
-                                    nilai={d.Judul}
-                                    saatBerubah={(v) => formulir.setData('Judul', v)}
-                                    galat={galat.Judul}
-                                    maxLength={Editor.Batas.Judul}
-                                    required
-                                />
-                            </>
+                            <BidangTeks
+                                label="Subjek email"
+                                nilai={d.Subjek}
+                                saatBerubah={(v) => formulir.setData('Subjek', v)}
+                                galat={galat.Subjek}
+                                maxLength={Editor.Batas.Subjek}
+                                required
+                            />
+                        ) : null}
+                        {adaJudul ? (
+                            <BidangTeks
+                                label={notifikasi ? 'Judul notifikasi' : 'Judul di badan email'}
+                                nilai={d.Judul}
+                                saatBerubah={(v) => formulir.setData('Judul', v)}
+                                galat={galat.Judul}
+                                maxLength={Editor.Batas.Judul}
+                                required
+                            />
                         ) : null}
                         <BidangTeksPanjang
-                            label={email ? 'Isi email' : 'Isi pesan WhatsApp'}
+                            label={email ? 'Isi email' : notifikasi ? 'Isi notifikasi' : 'Isi pesan WhatsApp'}
                             keterangan={`${d.Isi.length}/${Editor.Batas.Isi}. Tulis variabel dengan kurung kurawal, misalnya {NamaPemilik}.`}
                             nilai={d.Isi}
                             saatBerubah={(v) => formulir.setData('Isi', v)}
@@ -191,7 +193,7 @@ export default function HalamanUbahTemplatKomunikasi({
                                 {IsiPratinjau(d.Subjek, Editor.Variabel)}
                             </p>
                         ) : null}
-                        {email ? (
+                        {adaJudul ? (
                             <p className="text-subjudul font-semibold text-teks-utama">
                                 {IsiPratinjau(d.Judul, Editor.Variabel)}
                             </p>

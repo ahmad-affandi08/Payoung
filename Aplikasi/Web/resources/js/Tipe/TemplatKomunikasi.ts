@@ -1,5 +1,5 @@
 export type SelTemplat = {
-    Kanal: 'Email' | 'WhatsApp';
+    Kanal: 'Email' | 'WhatsApp' | 'Notifikasi';
     KanalLabel: string;
     Bahasa: 'id' | 'en';
     BahasaLabel: string;
@@ -28,7 +28,7 @@ export type VersiTemplat = {
 
 export type EditorTemplat = {
     Peristiwa: { Kode: string; Label: string; Keterangan: string };
-    Kanal: { Nilai: 'Email' | 'WhatsApp'; Label: string };
+    Kanal: { Nilai: 'Email' | 'WhatsApp' | 'Notifikasi'; Label: string };
     Bahasa: { Nilai: 'id' | 'en'; Label: string };
     Variabel: VariabelTemplat[];
     Bawaan: { Subjek: string | null; Judul: string | null; Isi: string };

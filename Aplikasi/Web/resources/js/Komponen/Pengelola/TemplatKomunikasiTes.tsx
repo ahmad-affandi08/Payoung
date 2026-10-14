@@ -264,6 +264,34 @@ describe('editor templat komunikasi', () => {
         ).toBeTruthy();
     });
 
+    it('kanal Notifikasi aplikasi: judul dengan batas 65 tanpa subjek email, isi pendek, tanpa status BSP, pratinjau judul dan isi', () => {
+        RenderHalaman(
+            <HalamanUbahTemplatKomunikasi
+                Editor={BuatEditor({
+                    Kanal: { Nilai: 'Notifikasi', Label: 'Notifikasi aplikasi' },
+                    Bawaan: { Subjek: null, Judul: 'Tagihan {NomorTagihan} sudah terbit', Isi: 'Halo {NamaPemilik}.' },
+                    Batas: { Subjek: 150, Judul: 65, Isi: 200 },
+                })}
+                Izin={{ Kelola: true }}
+            />,
+        );
+
+        expect(screen.queryByLabelText(/Subjek email/)).toBeNull();
+        expect((screen.getByLabelText(/Judul notifikasi/) as HTMLInputElement).maxLength).toBe(65);
+        expect(screen.getByLabelText(/Isi notifikasi/)).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Catat status BSP' })).toBeNull();
+        expect(screen.getByText('Tagihan INV/2610/0042 sudah terbit')).toBeTruthy();
+        expect(screen.getByText('Halo Rina Wulandari.')).toBeTruthy();
+
+        fireEvent.change(screen.getByLabelText(/Judul notifikasi/), { target: { value: 'Balasan {NomorTagihan}' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan draf' }));
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'put',
+            url: '/template-komunikasi/tagihan.pengingat.h-7/notifikasi/id',
+            data: { Judul: 'Balasan {NomorTagihan}' },
+        });
+    });
+
     it('hanya baca: tidak ada tombol simpan, terbitkan, atau catat BSP', () => {
         RenderHalaman(
             <HalamanUbahTemplatKomunikasi

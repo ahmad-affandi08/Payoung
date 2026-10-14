@@ -41,7 +41,7 @@ final class PemilikTenant
      * Kontak Owner aktif satu tenant untuk pemberitahuan tagihan langganan (P-08); email bisa null hanya pada data
      * lama, nomor HP opsional.
      *
-     * @return list<array{Nama: string, Email: string|null, NoHp: string|null}>
+     * @return list<array{IdPengguna: int, Nama: string, Email: string|null, NoHp: string|null}>
      */
     public function AmbilKontak(int $idTenant): array
     {
@@ -51,8 +51,8 @@ final class PemilikTenant
             ->where('Status', StatusKeanggotaan::Aktif->value)
             ->pluck('IdPengguna');
 
-        return array_values(Pengguna::query()->whereIn('Id', $idPemilik)->orderBy('Id')->get(['Nama', 'Email', 'NoHp'])
-            ->map(fn (Pengguna $p): array => ['Nama' => $p->Nama, 'Email' => $p->Email, 'NoHp' => $p->NoHp])
+        return array_values(Pengguna::query()->whereIn('Id', $idPemilik)->orderBy('Id')->get(['Id', 'Nama', 'Email', 'NoHp'])
+            ->map(fn (Pengguna $p): array => ['IdPengguna' => $p->Id, 'Nama' => $p->Nama, 'Email' => $p->Email, 'NoHp' => $p->NoHp])
             ->all());
     }
 

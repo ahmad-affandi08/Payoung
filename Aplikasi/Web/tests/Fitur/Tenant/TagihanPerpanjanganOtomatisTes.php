@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
+use App\Domain\Organisasi\Model\NotifikasiDibisukan;
+use App\Domain\Organisasi\Model\NotifikasiPengguna;
+use App\Domain\Organisasi\Tugas\KirimNotifikasiPushTugas;
 use App\Domain\Tenant\Enum\JenisKupon;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\PenandaTenant;
@@ -19,7 +23,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Tenant\BantuanTagihan;
 
 /*
@@ -177,6 +183,48 @@ describe('P-08 langkah 4: pengingat H-7, H-3, H0, H+3', function (): void {
         Http::assertSent(fn (PermintaanHttp $r): bool => $r['target'] === '6281234567890'
             && $r['message'] === 'Pengingat INV/2026/09/000001 untuk Rina Wulandari: Rp 276.390. Bayar di '.rtrim((string) config('app.url'), '/').'/kelola/langganan');
         Mail::assertSent(PengingatTagihanLangganan::class, fn (PengingatTagihanLangganan $s): bool => $s->subject === 'Segera bayar INV/2026/09/000001');
+    });
+
+    it('PGL-07: Owner juga menerima notifikasi aplikasi bertemplat per tahap, sekali per tahap; dibisukan = tidak dibuat', function (): void {
+        $idPemilik = $this->pemilik->Id;
+        Queue::fake();
+
+        JalankanTagihanOtomatisUji($this, '2026-09-24 08:20', '1 tagihan diingatkan');
+        BantuanOrganisasi::AturKonteks($this->tenant->Id);
+        $notifikasi = NotifikasiPengguna::query()->where('IdPengguna', $idPemilik)->sole();
+
+        expect($notifikasi->Jenis)->toBe(JenisNotifikasiPengguna::PesanPlatform)
+            ->and($notifikasi->Judul)->toBe('Tagihan INV/2026/09/000001 sudah terbit')
+            ->and($notifikasi->Isi)->toContain('Pro')->toContain('Rp 276.390')->toContain('1 Oktober 2026')
+            ->and($notifikasi->Data['Href'])->toBe('/kelola/langganan')
+            ->and($notifikasi->Data['Peristiwa'])->toBe('tagihan.pengingat.h-7');
+        Queue::assertPushed(KirimNotifikasiPushTugas::class, 1);
+
+        // Hari yang sama: tahap tidak diulang, jadi tidak ada notifikasi kedua.
+        JalankanTagihanOtomatisUji($this, '2026-09-24 15:00', '0 tagihan diingatkan');
+        BantuanOrganisasi::AturKonteks($this->tenant->Id);
+        expect(NotifikasiPengguna::query()->count())->toBe(1);
+
+        // Tahap H-3: notifikasi baru dengan teks tahapnya; Owner yang membisukan jenis ini tidak menerimanya.
+        NotifikasiDibisukan::query()->create(['IdPengguna' => $idPemilik, 'Jenis' => JenisNotifikasiPengguna::PesanPlatform->value]);
+        JalankanTagihanOtomatisUji($this, '2026-09-29 08:20', '1 tagihan diingatkan');
+        BantuanOrganisasi::AturKonteks($this->tenant->Id);
+        expect(NotifikasiPengguna::query()->count())->toBe(1);
+        Mail::assertSent(PengingatTagihanLangganan::class, fn (PengingatTagihanLangganan $s): bool => $s->tahap === TahapPengingatTagihan::HMinus3);
+    });
+
+    it('PGL-07: notifikasi aplikasi memakai versi terbit templat kanal Notifikasi', function (): void {
+        Queue::fake();
+        (new TemplateKomunikasi)->forceFill([
+            'KodePeristiwa' => 'tagihan.pengingat.h-7', 'Kanal' => 'Notifikasi', 'Bahasa' => 'id', 'Versi' => 1, 'Subjek' => null,
+            'Judul' => 'Ada tagihan {NomorTagihan}', 'Isi' => 'Halo {NamaPemilik}, bayar {Total} ya.', 'Status' => 'Terbit', 'DiterbitkanPada' => now(),
+        ])->save();
+
+        JalankanTagihanOtomatisUji($this, '2026-09-24 08:20', '1 tagihan diingatkan');
+        BantuanOrganisasi::AturKonteks($this->tenant->Id);
+        $notifikasi = NotifikasiPengguna::query()->sole();
+
+        expect($notifikasi->Judul)->toBe('Ada tagihan INV/2026/09/000001')->and($notifikasi->Isi)->toBe('Halo Rina Wulandari, bayar Rp 276.390 ya.');
     });
 
     it('tagihan buatan Owner tidak memicu email "tagihan terbit"; tahap berikutnya tetap diingatkan; lunas berhenti diingatkan', function (): void {

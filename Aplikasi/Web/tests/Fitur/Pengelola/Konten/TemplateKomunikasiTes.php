@@ -59,9 +59,12 @@ describe('konsol templat komunikasi', function (): void {
 
         $this->get(BantuanPengelola::Url('/template-komunikasi'))->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Pengelola/Legal/TemplatKomunikasi/Daftar')
-            ->has('Peristiwa', 4)
+            ->has('Peristiwa', 5)
             ->where('Peristiwa.0.Kode', 'tagihan.pengingat.h-7')
-            ->has('Peristiwa.0.Sel', 4)
+            // Email, WhatsApp, dan Notifikasi aplikasi × Indonesia/Inggris.
+            ->has('Peristiwa.0.Sel', 6)
+            ->where('Peristiwa.4.Kode', 'tiket.balasan-tim')
+            ->has('Peristiwa.4.Sel', 2)
             ->where('Peristiwa.0.Sel.0.Sumber', 'Bawaan')
             ->where('Izin.Kelola', true));
     });
@@ -246,5 +249,72 @@ describe('sambungan ke email pengingat tagihan', function (): void {
         expect($dengan->subject)->toBe('Tagihan INV/1 menunggu');
         $html = $dengan->render();
         expect($html)->toContain('Halo Rina')->and($html)->toContain('Tagihan paket Pro sebesar Rp 249.000 jatuh tempo 1 Oktober 2026.');
+    });
+});
+
+describe('PGL-07: kanal Notifikasi aplikasi dan peristiwa tiket', function (): void {
+    it('draf notifikasi: judul satu baris maks. 65, isi maks. 200, variabel dikenal; diterbitkan lalu dipakai penyusun', function (): void {
+        MasukTemplatKomunikasi();
+        $alamat = AlamatTemplatUji('notifikasi');
+
+        $this->put($alamat, ['Isi' => 'Tagihan {NomorTagihan} jatuh tempo {JatuhTempo}.'])->assertSessionHasErrors('Judul');
+        $this->put($alamat, ['Judul' => str_repeat('a', 66), 'Isi' => 'Halo'])->assertSessionHasErrors('Judul');
+        $this->put($alamat, ['Judul' => "Dua\nbaris", 'Isi' => 'Halo'])->assertSessionHasErrors('Judul');
+        $this->put($alamat, ['Judul' => 'Tagihan {NomorTagihan}', 'Isi' => str_repeat('a', 201)])->assertSessionHasErrors('Isi');
+        $this->put($alamat, ['Judul' => 'Tagihan {Asing}', 'Isi' => 'Halo'])->assertSessionHasErrors('Judul');
+        expect(TemplateKomunikasi::query()->where('Kanal', 'Notifikasi')->count())->toBe(0);
+
+        TerbitkanTemplatUji('notifikasi', 'id', ['Judul' => 'Tagihan {NomorTagihan} segera jatuh tempo', 'Isi' => 'Bayar {Total} paling lambat {JatuhTempo} untuk paket {NamaPaket}.']);
+
+        $pesan = app(PenyusunPesanKomunikasi::class)->Susun(PeristiwaKomunikasi::TagihanHMinus7, KanalKomunikasi::Notifikasi, [
+            'NomorTagihan' => 'INV/1', 'Total' => 'Rp 149.000', 'JatuhTempo' => '1 Oktober 2026', 'NamaPaket' => 'Pro',
+        ]);
+        expect($pesan->sumber)->toBe('Templat')
+            ->and($pesan->subjek)->toBeNull()
+            ->and($pesan->judul)->toBe('Tagihan INV/1 segera jatuh tempo')
+            ->and($pesan->isi)->toBe('Bayar Rp 149.000 paling lambat 1 Oktober 2026 untuk paket Pro.');
+    });
+
+    it('tanpa versi terbit memakai teks bawaan notifikasi (Indonesia dan Inggris) yang muat di batas push', function (): void {
+        $penyusun = app(PenyusunPesanKomunikasi::class);
+
+        foreach (PeristiwaKomunikasi::cases() as $peristiwa) {
+            foreach (BahasaKomunikasi::cases() as $bahasa) {
+                $bawaan = $peristiwa->AmbilBawaan(KanalKomunikasi::Notifikasi, $bahasa);
+
+                expect($bawaan['Subjek'])->toBeNull()
+                    ->and(mb_strlen((string) $bawaan['Judul']))->toBeLessThanOrEqual(65)
+                    ->and(mb_strlen($bawaan['Isi']))->toBeLessThanOrEqual(200 + 40, 'Bawaan memuat variabel; teks terisi harus tetap pendek.');
+                $dikenal = array_column($peristiwa->AmbilVariabel(), 'Nama');
+                expect(array_diff(PenyusunPesanKomunikasi::AmbilVariabelDipakai($bawaan['Judul'].' '.$bawaan['Isi']), $dikenal))->toBe([]);
+            }
+        }
+
+        $pesan = $penyusun->Susun(PeristiwaKomunikasi::TiketBalasanTim, KanalKomunikasi::Notifikasi, ['NamaPetugas' => 'Dewi', 'NomorTiket' => 'TKT-2026-000123', 'JudulTiket' => 'Printer rusak']);
+        expect($pesan->sumber)->toBe('Bawaan')
+            ->and($pesan->judul)->toBe('Dukungan membalas tiket Anda')
+            ->and($pesan->isi)->toBe('Dewi membalas tiket TKT-2026-000123: Printer rusak.');
+    });
+
+    it('peristiwa tiket hanya punya kanal Notifikasi: email dan WhatsApp 404 dan ditolak aksi', function (): void {
+        MasukTemplatKomunikasi();
+
+        $this->get(AlamatTemplatUji('notifikasi', 'id', 'tiket.balasan-tim'))->assertOk();
+        $this->get(AlamatTemplatUji('email', 'id', 'tiket.balasan-tim'))->assertNotFound();
+        $this->put(AlamatTemplatUji('whatsapp', 'id', 'tiket.balasan-tim'), ['Isi' => 'x {Tautan}'])->assertNotFound();
+        $this->put(AlamatTemplatUji('notifikasi', 'id', 'tiket.balasan-tim'), ['Judul' => 'Balasan {NomorTiket}', 'Isi' => 'Dari {NamaPetugas}.'])->assertSessionHasNoErrors();
+        $this->put(AlamatTemplatUji('notifikasi', 'id', 'tiket.balasan-tim'), ['Judul' => 'Total {Total}', 'Isi' => 'Dari {NamaPetugas}.'])->assertSessionHasErrors('Judul');
+    });
+
+    it('editor memuat batas notifikasi dan variabel peristiwa', function (): void {
+        MasukTemplatKomunikasi();
+
+        $this->get(AlamatTemplatUji('notifikasi', 'en'))->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Pengelola/Legal/TemplatKomunikasi/Ubah')
+            ->where('Editor.Kanal.Nilai', 'Notifikasi')
+            ->where('Editor.Batas.Judul', 65)
+            ->where('Editor.Batas.Isi', 200)
+            ->where('Editor.Bawaan.Subjek', null)
+            ->where('Editor.Bawaan.Judul', 'Invoice {NomorTagihan} has been issued'));
     });
 });

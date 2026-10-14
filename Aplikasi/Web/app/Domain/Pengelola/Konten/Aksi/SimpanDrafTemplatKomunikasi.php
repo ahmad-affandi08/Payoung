@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\DB;
  * PGL-07 / P-06: membuat atau mengubah draf templat komunikasi untuk satu peristiwa + kanal + bahasa. Satu draf per
  * kombinasi (BR-P06.4); versi terbit tidak pernah diubah (BR-P06.1) sehingga perubahan selalu menghasilkan versi baru.
  *
- * Validasi isi: email wajib `Subjek`, `Judul`, dan `Isi`, WhatsApp hanya `Isi`; subjek satu baris (tanpa pemisah baris yang
+ * Validasi isi: email wajib `Subjek`, `Judul`, dan `Isi`, WhatsApp hanya `Isi`, notifikasi aplikasi `Judul` (satu baris,
+ * maks. 65) dan `Isi` (maks. 200); subjek satu baris (tanpa pemisah baris yang
  * bisa menyisipkan header email); hanya variabel yang dikenal peristiwa itu; variabel wajib kanal itu (WhatsApp: `Tautan`)
  * harus ada; panjang dibatasi.
  */
@@ -34,6 +35,11 @@ final class SimpanDrafTemplatKomunikasi
 
     public const BATAS_ISI_WHATSAPP = 1500;
 
+    /** Notifikasi aplikasi: judul push ringkas dan isi pendek (terpotong di layar kunci bila lebih panjang). */
+    public const BATAS_JUDUL_NOTIFIKASI = 65;
+
+    public const BATAS_ISI_NOTIFIKASI = 200;
+
     public function __construct(private readonly PencatatAuditPengelola $audit) {}
 
     public function Jalankan(PenggunaPengelola $pelaku, PeristiwaKomunikasi $peristiwa, KanalKomunikasi $kanal, BahasaKomunikasi $bahasa, ?string $subjek, ?string $judul, string $isi): TemplateKomunikasi
@@ -44,7 +50,7 @@ final class SimpanDrafTemplatKomunikasi
 
         $email = $kanal === KanalKomunikasi::Email;
         $subjek = $email ? self::Rapikan($subjek) : null;
-        $judul = $email ? self::Rapikan($judul) : null;
+        $judul = $kanal === KanalKomunikasi::WhatsApp ? null : self::Rapikan($judul);
         $isi = trim(str_replace("\r\n", "\n", $isi));
 
         $this->Periksa($peristiwa, $kanal, $subjek, $judul, $isi);
@@ -113,11 +119,25 @@ final class SimpanDrafTemplatKomunikasi
             }
         }
 
+        if ($kanal === KanalKomunikasi::Notifikasi) {
+            if ($judul === null) {
+                throw new PelanggaranAturanBisnis('JudulWajib', 'Isi judul notifikasi.', 'Judul');
+            }
+
+            if (str_contains($judul, "\n") || str_contains($judul, "\r") || mb_strlen($judul) > self::BATAS_JUDUL_NOTIFIKASI) {
+                throw new PelanggaranAturanBisnis('TeksTerlaluPanjang', 'Judul notifikasi satu baris dan paling panjang '.self::BATAS_JUDUL_NOTIFIKASI.' karakter.', 'Judul');
+            }
+        }
+
         if ($isi === '') {
             throw new PelanggaranAturanBisnis('IsiWajib', 'Isi pesan tidak boleh kosong.', 'Isi');
         }
 
-        $batas = $kanal === KanalKomunikasi::Email ? self::BATAS_ISI_EMAIL : self::BATAS_ISI_WHATSAPP;
+        $batas = match ($kanal) {
+            KanalKomunikasi::Email => self::BATAS_ISI_EMAIL,
+            KanalKomunikasi::WhatsApp => self::BATAS_ISI_WHATSAPP,
+            KanalKomunikasi::Notifikasi => self::BATAS_ISI_NOTIFIKASI,
+        };
 
         if (mb_strlen($isi) > $batas) {
             throw new PelanggaranAturanBisnis('TeksTerlaluPanjang', "Isi paling panjang {$batas} karakter untuk {$kanal->AmbilLabel()}.", 'Isi');

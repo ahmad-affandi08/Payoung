@@ -15,6 +15,8 @@ use App\Domain\Pengelola\Dukungan\Surel\BalasanTiketDukungan;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
+use App\Domain\Tenant\Aksi\KirimNotifikasiKomunikasi;
+use App\Domain\Tenant\Enum\PeristiwaKomunikasi;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -35,6 +37,7 @@ final class BalasTiketDukunganPengelola
         private readonly PenulisPesanTiket $penulisPesan,
         private readonly PenyimpanLampiran $penyimpanLampiran,
         private readonly PencatatAuditPengelola $audit,
+        private readonly KirimNotifikasiKomunikasi $notifikasi,
     ) {}
 
     /**
@@ -97,7 +100,9 @@ final class BalasTiketDukunganPengelola
                             idTenant: $tiket->IdTenant,
                         );
 
-                        return ['Tiket' => $tiket, 'Email' => $catatanInternal ? null : Pengguna::query()->whereKey($tiket->IdPelapor)->value('Email')];
+                        $pelapor = $catatanInternal ? null : Pengguna::query()->whereKey($tiket->IdPelapor)->first(['Nama', 'Email']);
+
+                        return ['Tiket' => $tiket, 'Email' => $pelapor?->Email, 'NamaPelapor' => $pelapor?->Nama, 'IdPesan' => $pesan->Id];
                     });
                 } catch (Throwable $galat) {
                     $this->penyimpanLampiran->Hapus($lampiran);
@@ -112,6 +117,19 @@ final class BalasTiketDukunganPengelola
 
         if (is_string($hasil['Email'])) {
             Mail::to($hasil['Email'])->queue(new BalasanTiketDukungan($tiket->Nomor, $tiket->Judul, $tiket->Uuid, $pelaku->Nama, $isi, $tiket->Status->AmbilLabel()));
+        }
+
+        // PGL-07: notifikasi aplikasi ke pelapor (tanpa isi balasan; pelapor membukanya di halaman tiket).
+        if (is_string($hasil['NamaPelapor'])) {
+            $tautan = "/kelola/bantuan/{$tiket->Uuid}";
+            $this->notifikasi->Jalankan(
+                $tiket->IdTenant,
+                [$tiket->IdPelapor],
+                PeristiwaKomunikasi::TiketBalasanTim,
+                ['NamaPelapor' => $hasil['NamaPelapor'], 'NomorTiket' => $tiket->Nomor, 'JudulTiket' => $tiket->Judul, 'NamaPetugas' => $pelaku->Nama, 'Tautan' => rtrim((string) config('app.url'), '/').$tautan],
+                "{$tiket->Nomor}:{$hasil['IdPesan']}",
+                $tautan,
+            );
         }
 
         return $tiket;

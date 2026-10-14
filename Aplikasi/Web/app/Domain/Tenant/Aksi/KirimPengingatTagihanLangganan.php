@@ -26,8 +26,8 @@ use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 /**
- * P-08 langkah 2 & 4 / F-19 dunning (PRD v4.04): pengingat tagihan langganan terbuka ke Owner lewat email dan
- * WhatsApp (bila penyedia WhatsApp platform aktif dan Owner punya nomor HP) pada H-7, H-3, H0, dan H+3 terhadap
+ * P-08 langkah 2 & 4 / F-19 dunning (PRD v4.04): pengingat tagihan langganan terbuka ke Owner lewat email,
+ * WhatsApp (bila penyedia WhatsApp platform aktif dan Owner punya nomor HP), dan notifikasi aplikasi (PGL-07) pada H-7, H-3, H0, dan H+3 terhadap
  * jatuh tempo (tanggal WIB).
  *
  * - Satu tahap paling banyak sekali per tagihan: `PengingatTerakhir` diklaim atomik (hanya naik) **sebelum** dikirim.
@@ -45,6 +45,7 @@ final class KirimPengingatTagihanLangganan
         private readonly PemilikTenant $pemilik,
         private readonly PembuatPengirimWhatsapp $whatsapp,
         private readonly PenyusunPesanKomunikasi $penyusun,
+        private readonly KirimNotifikasiKomunikasi $notifikasi,
     ) {}
 
     /**
@@ -123,6 +124,17 @@ final class KirimPengingatTagihanLangganan
             if ($kontak['NoHp'] !== null && $kontak['NoHp'] !== '') {
                 $this->KirimWhatsapp($tahap, $kontak['Nama'], $kontak['NoHp'], $tagihan, $total, $namaPaket, $jatuhTempo, $tanggalDitangguhkan);
             }
+
+            // PGL-07: notifikasi aplikasi (pusat notifikasi web + push Aplikasi Owner) dengan templat kanal `Notifikasi`.
+            $tautan = rtrim((string) config('app.url'), '/').'/kelola/langganan';
+            $this->notifikasi->Jalankan(
+                $tagihan->IdTenant,
+                [$kontak['IdPengguna']],
+                PeristiwaKomunikasi::DariTahap($tahap),
+                PengingatTagihanLangganan::SusunVariabel($tahap, $kontak['Nama'], $tagihan->Nomor, $total, $namaPaket, $jatuhTempo, $tanggalDitangguhkan, $tautan),
+                $tagihan->Nomor,
+                '/kelola/langganan',
+            );
         }
 
         return true;

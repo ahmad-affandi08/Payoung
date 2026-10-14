@@ -15,6 +15,7 @@ enum JenisNotifikasiPengguna: string
     case StokKedaluwarsa = 'StokKedaluwarsa';
     case TransaksiBesar = 'TransaksiBesar';
     case PesananOnline = 'PesananOnline';
+    case PesanPlatform = 'PesanPlatform';
 
     /** Label untuk pusat notifikasi web dan pengaturannya. */
     public function AmbilLabel(): string
@@ -28,6 +29,7 @@ enum JenisNotifikasiPengguna: string
             self::StokKedaluwarsa => 'Barang mendekati kedaluwarsa',
             self::TransaksiBesar => 'Void, retur, atau diskon besar',
             self::PesananOnline => 'Pesanan online masuk',
+            self::PesanPlatform => 'Pesan dari Payoung (tagihan dan tiket dukungan)',
         };
     }
 
@@ -49,6 +51,7 @@ enum JenisNotifikasiPengguna: string
             self::StokKedaluwarsa => '/kelola/laporan/stok?tab=kedaluwarsa',
             self::TransaksiBesar => '/kelola/laporan/penjualan?tab=anti-fraud',
             self::PesananOnline => '/kelola/toko-online',
+            self::PesanPlatform => null,
         };
     }
 }
