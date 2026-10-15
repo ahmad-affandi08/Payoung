@@ -721,9 +721,14 @@ function TeksWaktuAlert({ baris }: { baris: Alert }) {
 }
 
 function TeksEmailAlert({ baris }: { baris: Alert }) {
-    const email = baris.EmailTerkirimPada
-        ? `Email ke Teknis terkirim ${FormatTanggalWaktu(baris.EmailTerkirimPada)}`
-        : 'Email belum terkirim (dicoba lagi pada pemeriksaan berikutnya)';
+    // "Dicoba lagi" hanya jujur untuk alert yang masih terbuka; yang sudah tertutup dicoba lagi paling lama 24 jam (PeriksaKondisiOperasional).
+    let email = 'Email belum terkirim (dicoba lagi pada pemeriksaan berikutnya)';
+
+    if (baris.EmailTerkirimPada) {
+        email = `Email ke Teknis terkirim ${FormatTanggalWaktu(baris.EmailTerkirimPada)}`;
+    } else if (baris.SelesaiPada) {
+        email = 'Email tidak terkirim (alert sudah tertutup)';
+    }
 
     if (baris.Tingkat !== 'Kritis') {
         return email;

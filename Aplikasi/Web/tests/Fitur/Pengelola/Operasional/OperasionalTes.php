@@ -149,6 +149,73 @@ describe('BR-P11.1: alert kritis scheduler & antrean, sekali per insiden', funct
         Mail::assertSent(AlertOperasionalTerbuka::class, 2);
     });
 
+    it('email alert terbuka tidak ditandai sudah pulih', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        CatatBackupBerhasil(now()->subHour());
+        $this->artisan('pengelola:detak')->assertSuccessful();
+        $this->travel(4)->minutes();
+
+        app(PeriksaKondisiOperasional::class)->Jalankan();
+
+        Mail::assertSent(AlertOperasionalTerbuka::class, function (AlertOperasionalTerbuka $surel): bool {
+            $surel->assertSeeInHtml('ada insiden operasional yang terbuka');
+            $surel->assertDontSeeInHtml('sudah pulih');
+            $surel->assertSeeInText('Alert tertutup otomatis saat kondisi pulih.');
+            $surel->assertDontSeeInText('Selesai:');
+
+            return $surel->selesaiPada === null;
+        });
+    });
+
+    it('email yang gagal terkirim saat insiden singkat tetap dicoba lagi setelah alert tertutup, dengan isi sudah pulih', function (): void {
+        CatatBackupBerhasil(now()->subHour());
+        $this->artisan('pengelola:detak')->assertSuccessful();
+        $this->travel(4)->minutes();
+
+        // Tanpa penerima (Teknis maupun Super Admin) pengiriman dianggap gagal, seperti SMTP yang galat.
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe(['PenjadwalBerhenti']);
+        Mail::assertNothingSent();
+
+        $this->artisan('pengelola:detak')->assertSuccessful();
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([]);
+        $alert = AlertOperasional::query()->sole();
+        expect($alert->SelesaiPada)->not->toBeNull()->and($alert->EmailTerkirimPada)->toBeNull();
+
+        $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        $this->travel(1)->minutes();
+        app(PeriksaKondisiOperasional::class)->Jalankan();
+
+        Mail::assertSent(AlertOperasionalTerbuka::class, 1);
+        Mail::assertSent(AlertOperasionalTerbuka::class, function (AlertOperasionalTerbuka $surel) use ($teknis): bool {
+            $surel->assertSeeInText('Selesai:');
+            $surel->assertSeeInText('Alert sudah tertutup karena kondisi pulih.');
+            $surel->assertSeeInHtml('sudah pulih');
+            $surel->assertDontSeeInHtml('insiden operasional yang terbuka');
+
+            return $surel->hasTo($teknis->Email) && $surel->selesaiPada !== null;
+        });
+        expect($alert->refresh()->EmailTerkirimPada)->not->toBeNull();
+
+        // Sudah terkirim: tidak diulang di pemeriksaan berikutnya.
+        $this->travel(1)->minutes();
+        app(PeriksaKondisiOperasional::class)->Jalankan();
+        Mail::assertSent(AlertOperasionalTerbuka::class, 1);
+    });
+
+    it('insiden tertutup lebih dari 24 jam yang emailnya tidak pernah terkirim tidak dikirim lagi', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        CatatBackupBerhasil(now()->subHour());
+        $this->artisan('pengelola:detak')->assertSuccessful();
+        AlertOperasional::query()->create([
+            'Kunci' => 'ErrorRateTinggi', 'Tingkat' => 'Kritis', 'Pesan' => 'Pos 11.76% (4 dari 34).',
+            'MulaiPada' => now()->subHours(26), 'SelesaiPada' => now()->subHours(25),
+        ]);
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([]);
+
+        Mail::assertNothingSent();
+    });
+
     it('/sehat ikut memeriksa alert tanpa menggagalkan cek kesehatan', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         CatatBackupBerhasil(now()->subHour());

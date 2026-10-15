@@ -24,6 +24,9 @@ use Throwable;
 /**
  * Pemeriksa alert operasional (P-11, BR-P11.1). Setiap masalah membuka satu insiden `AlertOperasional` dan email ke
  * Teknis aktif (bila tidak ada, ke Super Admin) dikirim **sekali per insiden**; insiden ditutup saat kondisi pulih.
+ * Email yang gagal terkirim dicoba lagi tiap pemeriksaan, juga setelah insiden tertutup (sampai
+ * `JAM_COBA_ULANG_EMAIL`), dengan isi yang menyebut insiden sudah pulih. WhatsApp tidak diulang setelah insiden
+ * tertutup: memanggil Teknis untuk kejadian yang sudah selesai hanya menjadi gangguan.
  *
  * Dijalankan oleh detak scheduler tiap menit dan oleh `/sehat` (uptime monitor eksternal §20.3), sehingga scheduler
  * yang mati tetap terdeteksi. Email dikirim langsung (bukan antrean), karena antrean ikut berhenti bila scheduler mati.
@@ -31,6 +34,9 @@ use Throwable;
 final class PeriksaKondisiOperasional
 {
     private const KUNCI_KUNCI = 'operasional:periksa-kondisi';
+
+    /** Email insiden yang sudah tertutup tetap dicoba lagi selama ini; lewat itu insiden dianggap basi. */
+    private const JAM_COBA_ULANG_EMAIL = 24;
 
     public function __construct(
         private readonly KondisiOperasional $kondisi,
@@ -83,7 +89,30 @@ final class PeriksaKondisiOperasional
             }
         }
 
+        $this->CobaUlangEmailInsidenTertutup();
+
         return array_keys($masalah);
+    }
+
+    /**
+     * Insiden yang pulih sebelum emailnya sempat terkirim (misalnya SMTP sedang galat tepat saat insiden singkat)
+     * tidak boleh lenyap tanpa pernah sampai ke Teknis: pengulangan di dalam loop alert aktif tidak menjangkaunya
+     * lagi begitu `SelesaiPada` terisi.
+     */
+    private function CobaUlangEmailInsidenTertutup(): void
+    {
+        $belumTerkirim = AlertOperasional::query()
+            ->whereNotNull('SelesaiPada')
+            ->whereNull('EmailTerkirimPada')
+            ->where('SelesaiPada', '>=', now()->subHours(self::JAM_COBA_ULANG_EMAIL))
+            ->orderBy('Id')
+            ->get();
+
+        foreach ($belumTerkirim as $alert) {
+            if ($this->KirimEmail($alert)) {
+                $alert->update(['EmailTerkirimPada' => now()]);
+            }
+        }
     }
 
     /**
@@ -130,6 +159,11 @@ final class PeriksaKondisiOperasional
             return false;
         }
 
+        // Tanpa ini `?->` hanya memotong rantai pemanggilan, sehingga `. ' WIB'` tetap menghasilkan teks untuk alert terbuka.
+        $selesaiPada = $alert->SelesaiPada === null
+            ? null
+            : $alert->SelesaiPada->copy()->setTimezone('Asia/Jakarta')->format('d-m-Y H:i').' WIB';
+
         try {
             foreach ($penerima as $email) {
                 Mail::to($email)->send(new AlertOperasionalTerbuka(
@@ -138,6 +172,7 @@ final class PeriksaKondisiOperasional
                     $alert->Pesan,
                     $alert->MulaiPada->copy()->setTimezone('Asia/Jakarta')->format('d-m-Y H:i').' WIB',
                     route('pengelola.operasional.dasbor'),
+                    $selesaiPada,
                 ));
             }
 
