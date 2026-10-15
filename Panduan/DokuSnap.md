@@ -82,6 +82,14 @@ Dokumen DOKU tidak menjawab ini dengan pasti; kode memakai dugaan paling aman da
    desain pemicu di atas. Jawaban kita memakai `responseCode` bentuk `200` + kode layanan + `00` (VA 25, QRIS 52, e-wallet 56).
 5. **Status e-wallet** memakai `/orders/v1.0/debit/status` dengan `serviceCode` `55`.
 
+## Logo cara bayar (D-160)
+
+Halaman bayar menampilkan logo QRIS, DANA, ShopeePay, dan tiap bank, tetapi **repo tidak membawa berkas logo** (set gratis
+berlisensi CC BY-NC dan merek dagang pihak ketiga). Pasang logo resmi (dari akun manajer DOKU atau pedoman merek bank) ke
+`Aplikasi/Web/resources/js/Aset/Bayar/` dengan nama `qris`, `dana`, `shopeepay`, `bni`, `bri`, `mandiri`, `bsi`, `permata`,
+`cimb`, `bca`, `danamon`, `maybank`, `btn`, `bjb`, `bank` (berkas `.svg`/`.png`/`.webp`; SVG wajib memuat `xmlns`), lalu bangun
+ulang aset (`npm run build`). Tanpa berkas, tampil lencana teks netral; fungsi bayar tidak berubah. Daftar lengkap ada di `Aset/Bayar/README.md`.
+
 ## Mematikan SNAP
 
 Kosongkan isian cara bayar di konsol (Merchant ID QRIS, bank VA, set DANA/ShopeePay ke Mati). Tenant otomatis hanya

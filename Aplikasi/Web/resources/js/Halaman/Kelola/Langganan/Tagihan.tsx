@@ -79,6 +79,8 @@ export default function HalamanTagihanLangganan({
             {BolehBayarOnline && PilihanBayar.length > 0 ? (
                 <PanelBayarSnap
                     uuidTagihan={Tagihan.Uuid}
+                    nomorTagihan={Tagihan.Nomor}
+                    total={Tagihan.Total}
                     pilihan={PilihanBayar}
                     awal={Pembayaran.find((baris) => baris.TampilanBayar)?.TampilanBayar ?? null}
                 />
