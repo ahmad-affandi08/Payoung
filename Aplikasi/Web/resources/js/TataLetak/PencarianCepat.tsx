@@ -112,7 +112,7 @@ export default function PencarianCepat({ halaman, sumber }: PropsPencarianCepat)
 
     return (
         <>
-            {/* Di HP hanya ikon, seukuran kotak logo usaha di kiri (size-8); area sentuh tetap 44px lewat `after:`. */}
+            {/* Di HP hanya ikon, seukuran kotak logo usaha di kiri (size-10, sama dengan tombol menu & bantuan); area sentuh 44px lewat `after:`. */}
             <Button
                 type="button"
                 variant="outline"
@@ -121,7 +121,7 @@ export default function PencarianCepat({ halaman, sumber }: PropsPencarianCepat)
                 aria-label="Pencarian cepat"
                 data-tur="pencarian-cepat"
                 aria-keyshortcuts="Control+K Meta+K"
-                className="relative mr-1 size-8 min-w-0 gap-2 rounded-lg border-garis bg-permukaan px-0 text-label font-normal text-teks-sekunder after:absolute after:-inset-1.5 has-[>svg]:px-0 lg:w-72 lg:justify-start lg:rounded-md lg:border-garis-input lg:px-3 lg:after:hidden lg:has-[>svg]:px-3 lg:pointer-coarse:h-11"
+                className="relative size-10 min-w-0 gap-2 rounded-lg border-garis bg-permukaan px-0 text-label font-normal text-teks-sekunder after:absolute after:-inset-0.5 has-[>svg]:px-0 pointer-coarse:size-10 lg:mr-1 lg:size-8 lg:w-72 lg:justify-start lg:rounded-md lg:border-garis-input lg:px-3 lg:after:hidden lg:has-[>svg]:px-3 lg:pointer-coarse:h-11"
             >
                 <SearchIcon aria-hidden="true" className="shrink-0" />
                 <span className="hidden min-w-0 flex-1 truncate text-left lg:inline">Cari halaman atau data…</span>

@@ -120,7 +120,7 @@ export function KepalaTataLetak({
     return (
         <header
             className={cn(
-                'flex min-h-14 items-center gap-2 border-b px-3 sm:px-4 py-2',
+                'flex min-h-14 items-center gap-1.5 border-b px-3 py-2 sm:gap-2 sm:px-4',
                 lengket && 'sticky top-0 z-10',
                 gelap ? 'border-teks-utama bg-teks-utama text-permukaan' : 'border-garis bg-permukaan',
             )}
@@ -129,7 +129,10 @@ export function KepalaTataLetak({
                 aria-label="Buka atau tutup menu samping"
                 data-tur="tombol-menu"
                 title="Buka atau tutup menu samping (Ctrl+B)"
-                className={cn('-ml-1 size-9 shrink-0', gelap && 'hover:bg-permukaan/15 hover:text-permukaan')}
+                className={cn(
+                    '-ml-1 size-10 shrink-0 pointer-coarse:size-10 lg:size-9 lg:pointer-coarse:size-11',
+                    gelap && 'hover:bg-permukaan/15 hover:text-permukaan',
+                )}
             />
             <Separator
                 orientation="vertical"
@@ -139,10 +142,10 @@ export function KepalaTataLetak({
             {identitasUsaha ? (
                 <Link
                     href="/kelola"
-                    className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand rounded-md p-1 -ml-1 shrink-0 max-w-[45%] sm:max-w-xs"
+                    className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-lg transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand max-w-[45%] sm:max-w-xs"
                     title={identitasUsaha.nama}
                 >
-                    <span className="size-8 shrink-0 rounded-lg border border-garis bg-permukaan overflow-hidden flex items-center justify-center">
+                    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-garis bg-permukaan sm:size-8">
                         {identitasUsaha.tautanLogo ? (
                             <img
                                 src={identitasUsaha.tautanLogo}
@@ -301,7 +304,7 @@ export function MenuAkun({
                     variant="ghost"
                     aria-label={`Menu akun ${nama ?? ''}`.trim()}
                     className={cn(
-                        'h-9 pointer-coarse:h-11 gap-2 px-2 text-label font-semibold',
+                        'h-10 gap-1.5 px-1.5 pointer-coarse:h-10 text-label font-semibold sm:gap-2 sm:px-2 lg:h-9 lg:pointer-coarse:h-11',
                         gelap && 'text-permukaan hover:bg-permukaan/15 hover:text-permukaan',
                     )}
                 >
