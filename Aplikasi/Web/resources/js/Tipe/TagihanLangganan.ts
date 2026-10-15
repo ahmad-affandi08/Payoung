@@ -59,6 +59,24 @@ export type StatusPembayaranLangganan = 'Menunggu' | 'Diterima' | 'Ditolak';
 
 export type MetodePembayaranLangganan = 'TransferManual' | 'Gateway' | 'Kupon';
 
+export type MetodeBayarSnap = 'Qris' | 'VirtualAccount' | 'Dana' | 'ShopeePay';
+
+/** D-159: satu cara bayar SNAP yang ditawarkan (bank untuk virtual account lewat `Kanal`). */
+export type PilihanBayar = { Metode: MetodeBayarSnap; Label: string; Kanal: string | null };
+
+/** D-159: isi halaman bayar Payoung untuk pembayaran SNAP yang masih menunggu. */
+export type TampilanBayar = {
+    Metode: MetodeBayarSnap;
+    Tampilan: 'Qr' | 'NomorVa' | 'Alihkan';
+    Label: string;
+    QrSvg: string | null;
+    NomorVa: string | null;
+    NamaBank: string | null;
+    UrlAlih: string | null;
+    Jumlah: string;
+    KedaluwarsaPada: string | null;
+};
+
 export type PembayaranLangganan = {
     Uuid: string;
     Metode: MetodePembayaranLangganan;
@@ -76,6 +94,8 @@ export type PembayaranLangganan = {
     DiunggahPada: string | null;
     DiverifikasiPada: string | null;
     AlasanTolak: string | null;
+    /** D-159: ada hanya untuk pembayaran SNAP yang masih menunggu. */
+    TampilanBayar?: TampilanBayar | null;
 };
 
 /** Jenis label status tagihan: warna hanya penguat teks (PRD §17.6.3). */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Pengelola\Integrasi;
 
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
+use App\Domain\Pengelola\Integrasi\Aksi\BuatKunciSnapIntegrasi;
 use App\Domain\Pengelola\Integrasi\Aksi\SimpanKonfigurasiIntegrasi;
 use App\Domain\Pengelola\Integrasi\Aksi\UbahIzinPenyediaGerbang;
 use App\Domain\Pengelola\Integrasi\Aksi\UbahStatusIntegrasi;
@@ -59,6 +60,14 @@ final class IntegrasiKontroler extends Kontroler
         return $hasil->berhasil
             ? back()->with('Kilat', "Koneksi berhasil. {$hasil->pesan}")
             : back()->withErrors(['Umum' => "Koneksi gagal. {$hasil->pesan}"]);
+    }
+
+    /** D-159: buat/ganti pasangan kunci RSA SNAP; kunci publiknya tampil di kartu untuk didaftarkan di dasbor DOKU. */
+    public function BuatKunciSnap(KonfigurasiIntegrasi $konfigurasiIntegrasi, BuatKunciSnapIntegrasi $buat): RedirectResponse
+    {
+        $buat->Jalankan($this->AmbilPelaku(), $konfigurasiIntegrasi);
+
+        return back()->with('Kilat', 'Kunci SNAP dibuat. Salin kunci publiknya ke dasbor DOKU › API Keys › Merchant Public Key, lalu uji koneksi.');
     }
 
     public function Aktifkan(KonfigurasiIntegrasi $konfigurasiIntegrasi, UbahStatusIntegrasiPermintaan $permintaan, UbahStatusIntegrasi $ubah): RedirectResponse

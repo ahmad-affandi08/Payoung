@@ -6,6 +6,7 @@ use App\Domain\Integrasi\Layanan\PencariGerbangWebhook;
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Http\Kontroler\Publik\LaporanCspKontroler;
 use App\Http\Kontroler\Publik\WebhookBillingKontroler;
+use App\Http\Kontroler\Publik\WebhookBillingSnapKontroler;
 use App\Http\Kontroler\Publik\WebhookDukunganMasukKontroler;
 use App\Http\Kontroler\Publik\WebhookGerbangPembayaranKontroler;
 use App\Http\Kontroler\Publik\WebhookPendaftaranMerchantKontroler;
@@ -28,6 +29,13 @@ if (! EdisiAplikasi::CekLisensi()) {
     Route::post('/webhook/billing/doku', [WebhookBillingKontroler::class, 'Terima'])
         ->middleware('throttle:webhook')
         ->name('webhook.billing.doku');
+
+    // D-159: tujuan DOKU SNAP akun platform (token B2B + notifikasi QRIS/VA/e-wallet). Satu awalan, jalur sisanya ditampung
+    // (DOKU menambahkan jalur tetap ke URL notifikasi). Notifikasi hanya memicu pertanyaan status, tidak melunasi sendiri.
+    Route::post('/webhook/billing/snap/{jalur}', [WebhookBillingSnapKontroler::class, 'Terima'])
+        ->where('jalur', '.*')
+        ->middleware('throttle:webhook')
+        ->name('webhook.billing.snap');
 
     // Callback KYB DOKU Partner API (pendaftaran merchant tenant). `callback_url` dikirim otomatis saat registrasi; dua
     // segmen `pembayaran/doku-partner` tidak bentrok dengan pola gerbang tenant (penyedia dibatasi `doku`).

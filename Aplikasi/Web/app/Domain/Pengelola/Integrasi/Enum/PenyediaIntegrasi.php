@@ -83,7 +83,7 @@ enum PenyediaIntegrasi: string
     }
 
     /**
-     * @return list<array{Kunci: string, Label: string, Jenis: string, Wajib: bool, Opsi?: list<string>, Bawaan?: string|int, Keterangan?: string}>
+     * @return list<array{Kunci: string, Label: string, Jenis: string, Wajib: bool, Opsi?: list<string>, Bawaan?: string|int, Keterangan?: string, Maks?: int}>
      */
     public function AmbilBidangPengaturan(): array
     {
@@ -129,6 +129,13 @@ enum PenyediaIntegrasi: string
                 self::MODE,
                 // Client ID DOKU bukan rahasia (ikut terkirim di setiap header permintaan); yang rahasia hanya secret key.
                 ['Kunci' => 'IdKlien', 'Label' => 'Client ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Client ID akun DOKU induk milik Payoung (dasbor DOKU › Integration › API Keys), dipakai untuk menagih langganan tenant.'],
+                // D-159: pembayaran SNAP (halaman bayar Payoung). Cara bayar yang pengaturannya belum lengkap tidak ditawarkan ke tenant.
+                ['Kunci' => 'IdPedagangQris', 'Label' => 'Merchant ID QRIS (SNAP)', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Merchant ID QRIS dari DOKU setelah QRIS disetujui. Kosong = QRIS tidak ditawarkan.'],
+                ['Kunci' => 'IdTerminalQris', 'Label' => 'Terminal ID QRIS (SNAP)', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => '3 s.d. 16 huruf atau angka.'],
+                ['Kunci' => 'KodePosQris', 'Label' => 'Kode pos QRIS (SNAP)', 'Jenis' => 'Teks', 'Wajib' => false, 'Keterangan' => 'Kode pos 5 angka yang didaftarkan untuk QRIS.'],
+                ['Kunci' => 'KanalVa', 'Label' => 'Bank virtual account (SNAP)', 'Jenis' => 'Teks', 'Wajib' => false, 'Maks' => 1000, 'Keterangan' => 'Satu bank: Label|KODE_CHANNEL|PartnerServiceId|Prefiks, banyak bank dipisah titik koma. Contoh: BNI|VIRTUAL_ACCOUNT_BNI|98829172|3. Nilainya dari dasbor/dokumen DOKU. Kosong = virtual account tidak ditawarkan.'],
+                ['Kunci' => 'DompetDana', 'Label' => 'Bayar dengan DANA (SNAP)', 'Jenis' => 'Pilihan', 'Wajib' => false, 'Opsi' => ['Mati', 'Aktif'], 'Bawaan' => 'Mati', 'Keterangan' => 'Aktifkan hanya bila layanan DANA sudah aktif di akun DOKU.'],
+                ['Kunci' => 'DompetShopeePay', 'Label' => 'Bayar dengan ShopeePay (SNAP)', 'Jenis' => 'Pilihan', 'Wajib' => false, 'Opsi' => ['Mati', 'Aktif'], 'Bawaan' => 'Mati', 'Keterangan' => 'Aktifkan hanya bila layanan ShopeePay sudah aktif di akun DOKU.'],
             ],
             self::DokuPartner => [
                 self::MODE,
@@ -172,6 +179,17 @@ enum PenyediaIntegrasi: string
             self::DokuBilling, self::DokuPartner => [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]],
             default => [],
         };
+    }
+
+    /**
+     * Kunci kredensial yang dibuat server sendiri (bukan diketik operator): dipertahankan saat konfigurasi disimpan ulang
+     * dan tidak tampil sebagai isian. D-159: pasangan kunci RSA untuk token B2B DOKU SNAP.
+     *
+     * @return list<string>
+     */
+    public function AmbilKunciKredensialOtomatis(): array
+    {
+        return $this === self::DokuBilling ? ['KunciPribadiSnap', 'KunciPublikSnap'] : [];
     }
 
     /**
@@ -241,7 +259,7 @@ enum PenyediaIntegrasi: string
             self::Hostinger => '',
             self::Doku => $this->AmbilPenyediaGerbang()?->AmbilKeterangan() ?? '',
             self::MetaCloud, self::Fonnte, self::Wablas, self::StarSender, self::Watzap => $this->AmbilPenyediaWhatsapp()?->AmbilKeterangan() ?? '',
-            self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. Setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku.',
+            self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. DOKU Checkout: setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku. DOKU SNAP (QRIS, virtual account, DANA, ShopeePay; halaman bayar Payoung): buat kunci SNAP di kartu ini, daftarkan kunci publiknya di dasbor DOKU › API Keys › Merchant Public Key, lalu setel URL notifikasi SNAP dan Token URL ke https://<domain-aplikasi>/webhook/billing/snap (panduan: Panduan/DokuSnap.md).',
             self::DokuPartner => 'Akun Partner Payoung di DOKU (Brand ID partner + secret key) untuk mendaftarkan merchant tenant lewat KYB: tenant cukup mengunggah foto KTP, selfie, foto tempat usaha, dan rekening. Payoung harus berstatus Partner di DOKU. URL callback KYB tidak perlu disetel manual: alamatnya dikirim otomatis saat pendaftaran (https://<domain-aplikasi>/webhook/pembayaran/doku-partner). Aktivasi QRIS per Brand masih dilakukan di DOKU Dashboard.',
             self::Google => 'Pemilik toko daftar dan masuk dengan akun Google. Masuk dengan Google menggantikan verifikasi dua langkah (2FA). Panduan lengkap: Panduan/LoginGoogle.md.',
             self::Fcm => 'Satu proyek Firebase melayani Android & iOS sekaligus; sertifikat APNs diunggah di Firebase, bukan di sini. Isi berkas akun layanan dari Setelan proyek → Akun layanan → Buat kunci baru.',

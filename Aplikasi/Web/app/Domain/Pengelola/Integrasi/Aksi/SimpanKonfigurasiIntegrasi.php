@@ -101,6 +101,13 @@ final class SimpanKonfigurasiIntegrasi
             }
         }
 
+        // D-159: kunci yang dibuat server (pasangan RSA SNAP) bukan isian formulir; tanpa ini setiap simpan menghapusnya.
+        foreach ($penyedia->AmbilKunciKredensialOtomatis() as $kunciOtomatis) {
+            if (isset($kredensialLama[$kunciOtomatis])) {
+                $kredensialBaru[$kunciOtomatis] = $kredensialLama[$kunciOtomatis];
+            }
+        }
+
         $pengaturanLama = $konfigurasi?->Pengaturan;
         $pengaturanBerubah = $pengaturanLama !== $data->pengaturan;
         $isiBerubah = $konfigurasi === null || $gantiPenyedia || $pengaturanBerubah || $kredensialBerubah !== [];
@@ -115,7 +122,7 @@ final class SimpanKonfigurasiIntegrasi
             'Penyedia' => $penyedia,
             'Pengaturan' => $data->pengaturan,
             'Kredensial' => $kredensialBaru,
-            'PetunjukKredensial' => self::BuatSemuaPetunjuk($kredensialBaru),
+            'PetunjukKredensial' => self::BuatSemuaPetunjuk(array_diff_key($kredensialBaru, array_flip($penyedia->AmbilKunciKredensialOtomatis()))),
             'RotasiSetiapHari' => $data->rotasiSetiapHari,
         ]);
 

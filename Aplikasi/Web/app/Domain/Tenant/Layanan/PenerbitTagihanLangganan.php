@@ -7,7 +7,7 @@ namespace App\Domain\Tenant\Layanan;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
 use App\Domain\Pajak\Kueri\TarifPajakBerlaku;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
@@ -41,7 +41,7 @@ final class PenerbitTagihanLangganan
     public function __construct(
         private readonly HargaPaketBerlaku $hargaBerlaku,
         private readonly TarifPajakBerlaku $tarifBerlaku,
-        private readonly GerbangBillingPlatform $gerbang,
+        private readonly PenanyaStatusBilling $gerbang,
         private readonly KalkulatorTagihanLangganan $kalkulator,
         private readonly PenomorTagihanLangganan $penomor,
         private readonly TagihanLanggananTenant $tagihanTenant,
@@ -104,7 +104,7 @@ final class PenerbitTagihanLangganan
         // D-112: tagihan Rp 0 (kupon 100%) tidak butuh gerbang; ia terbit lalu langsung lunas (lihat akhir metode ini).
         $gratis = $rincian->total->BernilaiNol();
 
-        if (! $gratis && ! $this->gerbang->CekAktif()) {
+        if (! $gratis && ! $this->gerbang->CekAdaGerbangAktif()) {
             throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
         }
 
@@ -275,7 +275,7 @@ final class PenerbitTagihanLangganan
             throw new PelanggaranAturanBisnis('AddonTidakBisaDibeli', $alasan ?? 'Add-on belum bisa dibeli.');
         }
 
-        if (! $this->gerbang->CekAktif()) {
+        if (! $this->gerbang->CekAdaGerbangAktif()) {
             throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
         }
 
@@ -371,7 +371,7 @@ final class PenerbitTagihanLangganan
             throw new PelanggaranAturanBisnis('NaikPaketTidakBisa', 'Naik paket hanya bisa saat langganan berbayar masih aktif. Perpanjang atau aktifkan langganan Anda dulu.', 'KodePaket');
         }
 
-        if (! $this->gerbang->CekAktif()) {
+        if (! $this->gerbang->CekAdaGerbangAktif()) {
             throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'Pembayaran tagihan belum dibuka karena gerbang pembayaran online belum diaktifkan. Hubungi tim kami.');
         }
 

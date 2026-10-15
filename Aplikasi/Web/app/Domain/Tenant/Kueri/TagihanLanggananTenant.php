@@ -7,9 +7,11 @@ namespace App\Domain\Tenant\Kueri;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Snap\PembuatQrSnap;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
+use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Layanan\PenghitungNaikPaket;
 use App\Domain\Tenant\Model\Langganan;
@@ -238,7 +240,7 @@ final class TagihanLanggananTenant
         return [
             'Uuid' => $pembayaran->Uuid,
             'Metode' => $pembayaran->Metode->value,
-            'LabelMetode' => $pembayaran->Metode->AmbilLabel(),
+            'LabelMetode' => self::AmbilLabelCaraBayar($pembayaran),
             'Status' => $pembayaran->Status->value,
             'LabelStatus' => $pembayaran->Status->AmbilLabel(),
             'Jumlah' => $pembayaran->Jumlah,
@@ -252,6 +254,49 @@ final class TagihanLanggananTenant
             'DiunggahPada' => $pembayaran->DibuatPada?->toIso8601ZuluString(),
             'DiverifikasiPada' => $pembayaran->DiverifikasiPada?->toIso8601ZuluString(),
             'AlasanTolak' => $pembayaran->AlasanTolak,
+            'TampilanBayar' => self::PetakanTampilanBayar($pembayaran),
+        ];
+    }
+
+    /** "QRIS", "Virtual account BNI", "DANA"; selain SNAP memakai label metode biasa. */
+    private static function AmbilLabelCaraBayar(PembayaranLangganan $pembayaran): string
+    {
+        $snap = $pembayaran->AmbilMetodeSnap();
+
+        if ($snap === null) {
+            return $pembayaran->Metode->AmbilLabel();
+        }
+
+        $bank = $pembayaran->RincianBayar['NamaBank'] ?? null;
+
+        return $snap->AmbilLabel().($bank !== null && $bank !== '' ? ' '.$bank : '');
+    }
+
+    /**
+     * D-159: isi halaman bayar Payoung untuk pembayaran SNAP yang masih menunggu (gambar QR, nomor VA, atau tautan
+     * e-wallet). null untuk pembayaran lain atau yang sudah selesai: kode bayar yang sudah tidak berlaku tidak ditampilkan.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function PetakanTampilanBayar(PembayaranLangganan $pembayaran): ?array
+    {
+        $snap = $pembayaran->AmbilMetodeSnap();
+        $rincian = $pembayaran->RincianBayar;
+
+        if ($snap === null || $rincian === null || $pembayaran->Status !== StatusPembayaranLangganan::Menunggu) {
+            return null;
+        }
+
+        return [
+            'Metode' => $snap->value,
+            'Tampilan' => $snap->AmbilTampilan(),
+            'Label' => self::AmbilLabelCaraBayar($pembayaran),
+            'QrSvg' => isset($rincian['IsiQr']) ? app(PembuatQrSnap::class)->BuatSvg($rincian['IsiQr']) : null,
+            'NomorVa' => $rincian['NomorVa'] ?? null,
+            'NamaBank' => $rincian['NamaBank'] ?? null,
+            'UrlAlih' => $rincian['UrlAlih'] ?? null,
+            'Jumlah' => $pembayaran->Jumlah,
+            'KedaluwarsaPada' => $pembayaran->KedaluwarsaPada?->toIso8601ZuluString(),
         ];
     }
 }

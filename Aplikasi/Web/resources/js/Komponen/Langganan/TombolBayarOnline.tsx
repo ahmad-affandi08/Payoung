@@ -6,6 +6,9 @@ import { KirimJson } from '@/Pustaka/PermintaanJson';
 
 export type PropsTombolBayarOnline = {
     uuidTagihan: string;
+    /** D-159: bila halaman bayar Payoung (SNAP) tersedia, Checkout ditawarkan untuk kartu dan metode lain. */
+    label?: string;
+    keterangan?: string;
 };
 
 /**
@@ -16,7 +19,7 @@ export type PropsTombolBayarOnline = {
  * halaman dan bisa dipalsukan. Pelunasan datang dari notifikasi webhook bertanda tangan (atau rekonsiliasi status),
  * jadi halaman tagihan hanya menampilkan keadaan menurut server saat dibuka kembali.
  */
-export default function TombolBayarOnline({ uuidTagihan }: PropsTombolBayarOnline) {
+export default function TombolBayarOnline({ uuidTagihan, label = 'Bayar online', keterangan }: PropsTombolBayarOnline) {
     const [memproses, AturMemproses] = useState(false);
     const [galat, AturGalat] = useState<string | null>(null);
 
@@ -53,12 +56,12 @@ export default function TombolBayarOnline({ uuidTagihan }: PropsTombolBayarOnlin
         <div className="flex flex-col gap-2">
             <div>
                 <Tombol onClick={() => void Bayar()} memproses={memproses}>
-                    Bayar online
+                    {label}
                 </Tombol>
             </div>
             <p className="text-keterangan text-teks-sekunder">
-                Anda akan diarahkan ke halaman pembayaran DOKU (QRIS, virtual account, e-wallet, dan kartu). Tagihan
-                otomatis lunas setelah pembayaran dikonfirmasi.
+                {keterangan ??
+                    'Anda akan diarahkan ke halaman pembayaran DOKU (QRIS, virtual account, e-wallet, dan kartu). Tagihan otomatis lunas setelah pembayaran dikonfirmasi.'}
             </p>
             {galat ? (
                 <Pemberitahuan jenis="bahaya" judul="Pembayaran online gagal dimulai">

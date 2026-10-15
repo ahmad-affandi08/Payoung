@@ -246,8 +246,10 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
                         // D-23: minta add-on lewat tiket dukungan (jalur cadangan).
                         Route::post('/langganan/addon', [LanggananKontroler::class, 'MintaAddon'])->middleware('throttle:10,1')->name('kelola.langganan.addon.minta');
                         Route::get('/langganan/tagihan/{tagihan}', [LanggananKontroler::class, 'TampilkanTagihan'])->name('kelola.langganan.tagihan.tampil');
-                        // BR-P08.11: buat transaksi DOKU Checkout untuk tagihan ini. Dibatasi laju karena setiap klik
-                        // membuat satu transaksi di DOKU.
+                        // D-159: status pembayaran untuk halaman bayar Payoung (polling).
+                        Route::get('/langganan/tagihan/{tagihan}/status-bayar', [LanggananKontroler::class, 'StatusBayar'])->middleware('throttle:60,1')->name('kelola.langganan.tagihan.status-bayar');
+                        // BR-P08.11: buat transaksi DOKU Checkout atau pembayaran SNAP (D-159) untuk tagihan ini. Dibatasi laju karena
+                        // setiap klik membuat satu transaksi di DOKU.
                         Route::post('/langganan/tagihan/{tagihan}/bayar-online', [LanggananKontroler::class, 'BayarOnline'])->middleware('throttle:10,1')->name('kelola.langganan.tagihan.bayar-online');
                         // D-112: bukti transfer hanya untuk tagihan manual (paket harga negosiasi).
                         Route::post('/langganan/tagihan/{tagihan}/bukti', [LanggananKontroler::class, 'UnggahBukti'])->middleware('throttle:10,1')->name('kelola.langganan.tagihan.bukti');

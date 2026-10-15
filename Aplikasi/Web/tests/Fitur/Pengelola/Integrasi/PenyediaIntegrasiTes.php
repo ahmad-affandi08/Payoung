@@ -130,7 +130,7 @@ describe('v2.04 katalog penyedia', function (): void {
             // Penyedia Midtrans untuk tagihan langganan sudah dihapus.
             ->and(PenyediaIntegrasi::tryFrom('MidtransBilling'))->toBeNull()
             // Bidang: Client ID (pengaturan, tidak rahasia) + Mode; Secret key (kredensial, terenkripsi).
-            ->and(array_column(PenyediaIntegrasi::DokuBilling->AmbilBidangPengaturan(), 'Kunci'))->toBe(['Mode', 'IdKlien'])
+            ->and(array_column(PenyediaIntegrasi::DokuBilling->AmbilBidangPengaturan(), 'Kunci'))->toBe(['Mode', 'IdKlien', 'IdPedagangQris', 'IdTerminalQris', 'KodePosQris', 'KanalVa', 'DompetDana', 'DompetShopeePay'])
             ->and(array_column(PenyediaIntegrasi::DokuBilling->AmbilBidangKredensial(), 'Kunci'))->toBe(['KunciRahasia'])
             // Bukan penyedia gerbang toko: tidak muncul di katalog `PenyediaGerbang` (webhook per tenant).
             ->and(PenyediaIntegrasi::DokuBilling->AmbilPenyediaGerbang())->toBeNull();

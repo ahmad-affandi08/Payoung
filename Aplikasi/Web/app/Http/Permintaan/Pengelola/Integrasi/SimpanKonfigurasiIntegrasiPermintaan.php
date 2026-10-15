@@ -38,7 +38,7 @@ final class SimpanKonfigurasiIntegrasiPermintaan extends FormRequest
         }
 
         foreach ($penyedia->AmbilBidangPengaturan() as $bidang) {
-            $aturan["Pengaturan.{$bidang['Kunci']}"] = ! $bidang['Wajib'] ? ['nullable', 'string', 'max:255'] : match ($bidang['Jenis']) {
+            $aturan["Pengaturan.{$bidang['Kunci']}"] = ! $bidang['Wajib'] ? ['nullable', 'string', 'max:'.($bidang['Maks'] ?? 255)] : match ($bidang['Jenis']) {
                 'Angka' => ['required', 'integer', 'min:1', 'max:65535'],
                 'Email' => ['required', 'email', 'max:150'],
                 'Url' => ['required', 'url:https', 'max:255'],

@@ -4,6 +4,18 @@ import { useId, useState, type FormEvent } from 'react';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Komponen/Ui/alert-dialog';
+import { Button } from '@/Komponen/Ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Komponen/Ui/card';
 import { Label } from '@/Komponen/Ui/label';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
@@ -58,6 +70,8 @@ type SlotIntegrasi = {
         KredensialDiubahPada: string;
         RotasiSetiapHari: number;
         PerluRotasi: boolean;
+        /** D-159: kunci publik RSA SNAP (bukan rahasia); kunci pribadinya tidak pernah dikirim ke peramban. */
+        KunciPublikSnap?: string | null;
     } | null;
 };
 
@@ -325,6 +339,26 @@ function KartuIntegrasi({ slot, bolehKelola }: { slot: SlotIntegrasi; bolehKelol
                                 </dd>
                             </div>
                         ))}
+                        {slot.Jenis === 'GerbangBilling' ? (
+                            <div className="flex flex-col gap-1 sm:col-span-2">
+                                <dt className="text-teks-sekunder">
+                                    Kunci publik SNAP (daftarkan di DOKU › API Keys › Merchant Public Key)
+                                </dt>
+                                <dd>
+                                    {konfigurasi.KunciPublikSnap ? (
+                                        <pre
+                                            tabIndex={0}
+                                            aria-label="Kunci publik SNAP"
+                                            className="max-h-40 overflow-auto rounded-panel border border-garis bg-permukaan p-2 font-mono text-keterangan break-all whitespace-pre-wrap text-teks-utama"
+                                        >
+                                            {konfigurasi.KunciPublikSnap}
+                                        </pre>
+                                    ) : (
+                                        <span className="text-teks-utama">Belum dibuat</span>
+                                    )}
+                                </dd>
+                            </div>
+                        ) : null}
                         <div className="flex flex-col sm:col-span-2">
                             <dt className="text-teks-sekunder">Tes koneksi terakhir</dt>
                             <dd className="text-teks-utama">
@@ -372,6 +406,14 @@ function KartuIntegrasi({ slot, bolehKelola }: { slot: SlotIntegrasi; bolehKelol
                                     Uji koneksi
                                 </Tombol>
                             ) : null}
+                            {konfigurasi && slot.Jenis === 'GerbangBilling' ? (
+                                <KunciSnap
+                                    uuid={konfigurasi.Uuid}
+                                    kunciPublik={konfigurasi.KunciPublikSnap ?? null}
+                                    memproses={memproses}
+                                    opsiKirim={opsiKirim}
+                                />
+                            ) : null}
                         </div>
                         {konfigurasi ? (
                             <div className="flex items-center gap-2">
@@ -392,6 +434,71 @@ function KartuIntegrasi({ slot, bolehKelola }: { slot: SlotIntegrasi; bolehKelol
             </CardContent>
             {sunting ? <FormIntegrasi slot={slot} saatSelesai={() => AturSunting(false)} /> : null}
         </Card>
+    );
+}
+
+/**
+ * D-159: pasangan kunci RSA untuk token B2B DOKU SNAP. Kunci pribadi dibuat dan disimpan server (terenkripsi); yang
+ * tampil dan bisa disalin hanya kunci publiknya. Mengganti kunci memutus SNAP sampai kunci publik baru didaftarkan ulang.
+ */
+function KunciSnap({
+    uuid,
+    kunciPublik,
+    memproses,
+    opsiKirim,
+}: {
+    uuid: string;
+    kunciPublik: string | null;
+    memproses: boolean;
+    opsiKirim: Record<string, unknown>;
+}) {
+    const [tersalin, AturTersalin] = useState(false);
+    const Buat = () => router.post(`/integrasi/${uuid}/kunci-snap`, {}, opsiKirim);
+    const Salin = async () => {
+        try {
+            await navigator.clipboard.writeText(kunciPublik ?? '');
+            AturTersalin(true);
+        } catch {
+            AturTersalin(false);
+        }
+    };
+
+    return (
+        <>
+            {kunciPublik === null ? (
+                <Tombol varian="sekunder" memproses={memproses} onClick={Buat}>
+                    Buat kunci SNAP
+                </Tombol>
+            ) : (
+                <>
+                    <Tombol varian="sekunder" onClick={() => void Salin()}>
+                        {tersalin ? 'Kunci publik tersalin' : 'Salin kunci publik'}
+                    </Tombol>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button type="button" variant="outline" disabled={memproses}>
+                                Buat ulang kunci SNAP
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Buat ulang kunci SNAP?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Pembayaran SNAP (QRIS, virtual account, e-wallet) berhenti sampai kunci publik yang
+                                    baru didaftarkan di dasbor DOKU. DOKU Checkout tidak terpengaruh.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Jangan ganti</AlertDialogCancel>
+                                <AlertDialogAction variant="destructive" onClick={Buat}>
+                                    Buat ulang kunci
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
+            )}
+        </>
     );
 }
 

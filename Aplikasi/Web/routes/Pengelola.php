@@ -267,6 +267,7 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::middleware([$izin(IzinPengelola::IntegrasiKelola), WajibDuaFaktorBaru::class])->group(function (): void {
                 Route::post('/integrasi', [IntegrasiKontroler::class, 'Simpan'])->name('pengelola.integrasi.simpan');
                 Route::post('/integrasi/{konfigurasiIntegrasi}/uji', [IntegrasiKontroler::class, 'Uji'])->name('pengelola.integrasi.uji');
+                Route::post('/integrasi/{konfigurasiIntegrasi}/kunci-snap', [IntegrasiKontroler::class, 'BuatKunciSnap'])->middleware('throttle:5,1')->name('pengelola.integrasi.kunci-snap');
                 Route::post('/integrasi/{konfigurasiIntegrasi}/aktifkan', [IntegrasiKontroler::class, 'Aktifkan'])->name('pengelola.integrasi.aktifkan');
                 Route::post('/integrasi/{konfigurasiIntegrasi}/nonaktifkan', [IntegrasiKontroler::class, 'Nonaktifkan'])->name('pengelola.integrasi.nonaktifkan');
                 // v2.06: katalog penyedia gerbang pembayaran yang boleh dipilih tenant.

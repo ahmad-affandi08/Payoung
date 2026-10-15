@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pengelola\Tagihan\Aksi;
 
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Tenant\Aksi\TerimaNotifikasiBillingLangganan;
@@ -40,7 +40,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     public const HARI_ARSIP = 90;
 
     public function __construct(
-        private readonly GerbangBillingPlatform $gerbang,
+        private readonly PenanyaStatusBilling $penanya,
         private readonly TerimaNotifikasiBillingLangganan $terima,
     ) {}
 
@@ -51,7 +51,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     {
         $hasil = ['Diperiksa' => 0, 'Selesai' => 0, 'Menunggu' => 0, 'Gagal' => 0];
 
-        if (! $this->gerbang->CekAktif()) {
+        if (! $this->penanya->CekAdaGerbangAktif()) {
             return $hasil;
         }
 
@@ -63,11 +63,13 @@ final class RekonsiliasiPembayaranGerbangLangganan
             ->where('DibuatPada', '>=', CarbonImmutable::now()->subDays(self::HARI_JENDELA))
             ->orderBy('DibuatPada')
             ->limit(self::BATAS_PER_PUTARAN)
-            ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada']);
+            ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada', 'Jumlah', 'MetodeBayar', 'RincianBayar', 'KedaluwarsaPada']);
 
         foreach ($daftar as $pembayaran) {
             $hasil['Diperiksa']++;
-            $notifikasi = $this->gerbang->CekStatus((string) $pembayaran->RefGateway, $pembayaran->DibuatPada ?? CarbonImmutable::now());
+            $notifikasi = $this->penanya->CekAktif($pembayaran->MetodeBayar)
+                ? $this->penanya->Tanya((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
+                : null;
 
             if ($notifikasi === null) {
                 $hasil['Gagal']++;
@@ -105,7 +107,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     {
         $hasil = ['Diperiksa' => 0, 'Selesai' => 0, 'Menunggu' => 0, 'Gagal' => 0];
 
-        if (! $this->gerbang->CekAktif()) {
+        if (! $this->penanya->CekAdaGerbangAktif()) {
             return $hasil;
         }
 
@@ -117,11 +119,13 @@ final class RekonsiliasiPembayaranGerbangLangganan
             ->where('DibuatPada', '>=', CarbonImmutable::now()->subDays(self::HARI_ARSIP))
             ->orderBy('DibuatPada')
             ->limit(self::BATAS_PER_PUTARAN)
-            ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada']);
+            ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada', 'Jumlah', 'MetodeBayar', 'RincianBayar', 'KedaluwarsaPada']);
 
         foreach ($daftar as $pembayaran) {
             $hasil['Diperiksa']++;
-            $notifikasi = $this->gerbang->CekStatus((string) $pembayaran->RefGateway, $pembayaran->DibuatPada ?? CarbonImmutable::now());
+            $notifikasi = $this->penanya->CekAktif($pembayaran->MetodeBayar)
+                ? $this->penanya->Tanya((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
+                : null;
 
             if ($notifikasi === null) {
                 $hasil['Gagal']++;

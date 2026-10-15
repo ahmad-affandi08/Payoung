@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Integrasi\Penguji;
 
 use App\Domain\Integrasi\GerbangPembayaran\ProtokolDoku;
+use App\Domain\Integrasi\Snap\KlienSnap;
 use App\Domain\Pengelola\Integrasi\Data\HasilUjiKoneksi;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -57,6 +58,13 @@ final class PengujiDokuBilling implements PengujiKoneksi
             return HasilUjiKoneksi::Gagal("DOKU menjawab status {$respons->status()}. Coba lagi sebentar lagi.");
         }
 
-        return HasilUjiKoneksi::Berhasil("Client ID & secret key diterima DOKU (lingkungan {$label}).");
+        // D-159: bila kunci SNAP sudah dibuat, tokennya ikut diuji. Hasilnya hanya keterangan: Checkout tidak boleh jadi
+        // tak bisa diaktifkan hanya karena kunci publik SNAP belum sempat didaftarkan di DOKU.
+        $kunciSnap = trim((string) ($kredensial['KunciPribadiSnap'] ?? ''));
+        $keteranganSnap = $kunciSnap === ''
+            ? ' SNAP: kunci belum dibuat.'
+            : (($snap = KlienSnap::UjiTokenB2b($idKlien, $kunciSnap, ! $produksi))['Berhasil'] ? ' SNAP: '.$snap['Pesan'] : ' SNAP belum siap: '.$snap['Pesan']);
+
+        return HasilUjiKoneksi::Berhasil("Client ID & secret key diterima DOKU (lingkungan {$label}).".$keteranganSnap);
     }
 }

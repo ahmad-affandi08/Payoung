@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Aksi;
 
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
- * P-08 (v5.34): saat pemilik kembali dari halaman bayar DOKU ke halaman tagihan, pembayaran gerbang yang masih
+ * P-08 (v5.34, D-159): saat pemilik kembali dari halaman bayar DOKU (atau membuka halaman bayar Payoung) ke halaman tagihan, pembayaran gerbang yang masih
  * `Menunggu` langsung ditanyakan statusnya ke API status DOKU, tanpa menunggu webhook atau rekonsiliasi 15 menit.
  * Tagihan tetap tidak pernah lunas karena peramban (bisa dipalsukan): hasilnya sumber API status DOKU dan diproses
  * jalur yang sama dengan webhook (`TerimaNotifikasiBillingLangganan`, idempoten). Dibatasi satu pertanyaan per
@@ -25,7 +25,7 @@ final class SegarkanPembayaranGerbangLangganan
     public const JEDA_DETIK = 15;
 
     public function __construct(
-        private readonly GerbangBillingPlatform $gerbang,
+        private readonly PenanyaStatusBilling $penanya,
         private readonly TerimaNotifikasiBillingLangganan $terima,
     ) {}
 
@@ -36,14 +36,21 @@ final class SegarkanPembayaranGerbangLangganan
             $pembayaran->Metode !== MetodePembayaranLangganan::Gateway
             || $pembayaran->Status !== StatusPembayaranLangganan::Menunggu
             || $pembayaran->RefGateway === null
-            || ! $this->gerbang->CekAktif()
+            || ! $this->penanya->CekAktif($pembayaran->MetodeBayar)
             || ! Cache::add("langganan.segarkan.{$pembayaran->Uuid}", 1, self::JEDA_DETIK)
         ) {
             return false;
         }
 
         try {
-            $notifikasi = $this->gerbang->CekStatus($pembayaran->RefGateway, $pembayaran->DibuatPada ?? now());
+            $notifikasi = $this->penanya->Tanya(
+                $pembayaran->RefGateway,
+                $pembayaran->MetodeBayar,
+                $pembayaran->RincianBayar,
+                $pembayaran->KedaluwarsaPada,
+                $pembayaran->DibuatPada ?? now(),
+                $pembayaran->Jumlah,
+            );
 
             if ($notifikasi === null || $notifikasi->status === StatusPembayaranGerbang::Menunggu) {
                 return false;

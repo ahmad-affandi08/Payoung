@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import PanelBayarSnap from '@/Komponen/Langganan/PanelBayarSnap';
 import PanelTransferManual, { type RekeningTujuan } from '@/Komponen/Langganan/PanelTransferManual';
 import RincianTagihan from '@/Komponen/Langganan/RincianTagihan';
 import TombolBayarOnline from '@/Komponen/Langganan/TombolBayarOnline';
@@ -23,22 +24,32 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
-import { JenisLabelPembayaran, type PembayaranLangganan, type TagihanLangganan } from '@/Tipe/TagihanLangganan';
+import {
+    JenisLabelPembayaran,
+    type PembayaranLangganan,
+    type PilihanBayar,
+    type TagihanLangganan,
+} from '@/Tipe/TagihanLangganan';
 
 type PropsTagihan = {
     Tagihan: TagihanLangganan;
     Pembayaran: PembayaranLangganan[];
     BolehBayarOnline: boolean;
+    /** D-159: cara bayar SNAP (halaman bayar Payoung) dan apakah DOKU Checkout juga tersedia. */
+    PilihanBayar?: PilihanBayar[];
+    BolehCheckout?: boolean;
     BolehBatalkan: boolean;
     BolehUnggahBukti?: boolean;
     RekeningTujuan?: RekeningTujuan[];
 };
 
-/** Detail tagihan dan pembayaran online lewat DOKU Checkout (gerbang billing platform). */
+/** Detail tagihan dan pembayaran online: halaman bayar Payoung (DOKU SNAP) serta DOKU Checkout untuk kartu. */
 export default function HalamanTagihanLangganan({
     Tagihan,
     Pembayaran,
     BolehBayarOnline,
+    PilihanBayar = [],
+    BolehCheckout = BolehBayarOnline,
     BolehBatalkan,
     BolehUnggahBukti = false,
     RekeningTujuan = [],
@@ -65,7 +76,25 @@ export default function HalamanTagihanLangganan({
                 </Pemberitahuan>
             ) : null}
             <RincianTagihan tagihan={Tagihan} />
-            {BolehBayarOnline ? <TombolBayarOnline uuidTagihan={Tagihan.Uuid} /> : null}
+            {BolehBayarOnline && PilihanBayar.length > 0 ? (
+                <PanelBayarSnap
+                    uuidTagihan={Tagihan.Uuid}
+                    pilihan={PilihanBayar}
+                    awal={Pembayaran.find((baris) => baris.TampilanBayar)?.TampilanBayar ?? null}
+                />
+            ) : null}
+            {BolehBayarOnline && BolehCheckout ? (
+                <TombolBayarOnline
+                    uuidTagihan={Tagihan.Uuid}
+                    {...(PilihanBayar.length > 0
+                        ? {
+                              label: 'Bayar dengan kartu atau cara lain',
+                              keterangan:
+                                  'Anda akan diarahkan ke halaman pembayaran DOKU untuk kartu kredit dan metode lain. Tagihan otomatis lunas setelah pembayaran dikonfirmasi.',
+                          }
+                        : {})}
+                />
+            ) : null}
             {Tagihan.Manual &&
             RekeningTujuan.length > 0 &&
             (Tagihan.Status === 'Terbit' || Tagihan.Status === 'JatuhTempo') ? (

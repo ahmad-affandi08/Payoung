@@ -7,6 +7,7 @@ namespace App\Domain\Tenant\Model;
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +36,10 @@ use LogicException;
  * @property string|null $MimeBukti
  * @property int|null $UkuranBukti
  * @property string|null $RefGateway
+ * @property string|null $MetodeBayar
+ * @property string|null $KanalBayar
+ * @property array<string, string>|null $RincianBayar
+ * @property Carbon|null $KedaluwarsaPada
  * @property int|null $IdPenggunaPengunggah
  * @property string|null $EmailPemberitahuan
  * @property string|null $NamaPemberitahuan
@@ -69,6 +74,10 @@ final class PembayaranLangganan extends ModelDasar
         'MimeBukti' => null,
         'UkuranBukti' => null,
         'RefGateway' => null,
+        'MetodeBayar' => null,
+        'KanalBayar' => null,
+        'RincianBayar' => null,
+        'KedaluwarsaPada' => null,
         'IdPenggunaPengunggah' => null,
         'EmailPemberitahuan' => null,
         'NamaPemberitahuan' => null,
@@ -110,6 +119,12 @@ final class PembayaranLangganan extends ModelDasar
         return Uang::Dari($this->Jumlah);
     }
 
+    /** D-159: cara bayar SNAP yang dipilih tenant; null untuk DOKU Checkout, transfer manual, dan kupon. */
+    public function AmbilMetodeSnap(): ?MetodeBayarSnap
+    {
+        return $this->MetodeBayar === null ? null : MetodeBayarSnap::tryFrom($this->MetodeBayar);
+    }
+
     /**
      * @return array<string, string>
      */
@@ -123,6 +138,8 @@ final class PembayaranLangganan extends ModelDasar
             'UkuranBukti' => 'integer',
             'DiverifikasiPada' => 'datetime',
             'JumlahDiterima' => 'decimal:2',
+            'RincianBayar' => 'array',
+            'KedaluwarsaPada' => 'datetime',
         ];
     }
 }

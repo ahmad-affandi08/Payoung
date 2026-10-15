@@ -64,6 +64,8 @@ final class DaftarIntegrasi
                         'KredensialDiubahPada' => $konfigurasi->KredensialDiubahPada->toIso8601String(),
                         'RotasiSetiapHari' => $konfigurasi->RotasiSetiapHari,
                         'PerluRotasi' => $konfigurasi->CekPerluRotasi(),
+                        // D-159: kunci publik RSA SNAP (bukan rahasia) untuk didaftarkan di dasbor DOKU; kunci pribadinya tidak pernah keluar.
+                        'KunciPublikSnap' => $konfigurasi->Kredensial['KunciPublikSnap'] ?? null,
                     ] : null,
                 ];
             }

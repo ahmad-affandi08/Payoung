@@ -12,6 +12,8 @@ use App\Domain\Dukungan\Data\DataTiketBaru;
 use App\Domain\Dukungan\Enum\KategoriTiketDukungan;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
+use App\Domain\Integrasi\Snap\GerbangBillingSnap;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Tenant\Aksi\AjukanTurunPaket;
 use App\Domain\Tenant\Aksi\BatalkanTagihanLangganan;
@@ -80,7 +82,7 @@ final class LanggananKontroler extends Kontroler
         return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan->Uuid])->with('Kilat', $pesan);
     }
 
-    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, SegarkanPembayaranGerbangLangganan $segarkan, RekeningTujuanPlatform $rekening): Response
+    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, GerbangBillingSnap $gerbangSnap, SegarkanPembayaranGerbangLangganan $segarkan, RekeningTujuanPlatform $rekening): Response
     {
         $data = $this->kueri->CariTagihan($tagihan);
         abort_if($data === null, 404);
@@ -107,7 +109,10 @@ final class LanggananKontroler extends Kontroler
             'Tagihan' => TagihanLanggananTenant::PetakanTagihan($data),
             'Pembayaran' => array_values($pembayaran->map(fn (PembayaranLangganan $baris): array => TagihanLanggananTenant::PetakanPembayaran($baris))->all()),
             // D-112: tagihan manual (paket harga negosiasi) dibayar dengan transfer; tagihan biasa hanya lewat gerbang (D-82).
-            'BolehBayarOnline' => $terbuka && ! $data->Manual && $gerbang->CekAktif(),
+            'BolehBayarOnline' => $terbuka && ! $data->Manual && ($gerbang->CekAktif() || $gerbangSnap->CekAktif()),
+            // D-159: cara bayar SNAP (halaman bayar Payoung) dan apakah DOKU Checkout (kartu & lainnya) juga tersedia.
+            'PilihanBayar' => $terbuka && ! $data->Manual ? $gerbangSnap->AmbilPilihan() : [],
+            'BolehCheckout' => $gerbang->CekAktif(),
             'BolehUnggahBukti' => $terbuka && $data->Manual && ! $adaPembayaranMenunggu && $rekening->Ambil() !== [],
             'RekeningTujuan' => $data->Manual ? $rekening->Ambil() : [],
             'BolehBatalkan' => $terbuka && ! $adaPembayaranMenunggu,
@@ -119,18 +124,59 @@ final class LanggananKontroler extends Kontroler
      * mengarahkan peramban ke sana. Tagihan tidak pernah lunas dari sini: pelunasan hanya dari notifikasi webhook
      * bertanda tangan (atau rekonsiliasi status).
      */
-    public function BayarOnline(string $tagihan, MulaiPembayaranGerbangLangganan $mulai): JsonResponse
+    public function BayarOnline(string $tagihan, Request $permintaan, MulaiPembayaranGerbangLangganan $mulai): JsonResponse
     {
         $pengguna = $this->PenggunaMasuk();
-        $hasil = $mulai->Jalankan(
-            $tagihan,
-            $pengguna->Id,
-            $pengguna->Nama,
-            (string) $pengguna->Email,
-            route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan]),
+        $urlKembali = route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan]);
+        $valid = $permintaan->validate(
+            ['Metode' => ['nullable', 'string', 'in:'.implode(',', array_column(MetodeBayarSnap::cases(), 'value'))], 'Kanal' => ['nullable', 'string', 'max:40']],
+            attributes: ['Metode' => 'cara bayar', 'Kanal' => 'bank'],
         );
 
+        // D-159: dengan `Metode` = halaman bayar Payoung (SNAP); tanpa itu tetap DOKU Checkout (kartu & metode lain).
+        if (isset($valid['Metode']) && $valid['Metode'] !== '') {
+            $pembayaran = $mulai->JalankanSnap(
+                $tagihan,
+                $pengguna->Id,
+                $pengguna->Nama,
+                (string) $pengguna->Email,
+                $urlKembali,
+                MetodeBayarSnap::from((string) $valid['Metode']),
+                isset($valid['Kanal']) && $valid['Kanal'] !== '' ? (string) $valid['Kanal'] : null,
+                $permintaan->ip(),
+            );
+
+            return response()->json(['Pembayaran' => TagihanLanggananTenant::PetakanPembayaran($pembayaran)]);
+        }
+
+        $hasil = $mulai->Jalankan($tagihan, $pengguna->Id, $pengguna->Nama, (string) $pengguna->Email, $urlKembali);
+
         return response()->json(['UrlBayar' => $hasil->urlBayar]);
+    }
+
+    /**
+     * D-159: ditanyakan berkala oleh halaman bayar Payoung selagi QR/nomor VA ditampilkan. Setiap pembayaran yang masih
+     * menunggu ditanyakan ke DOKU (dibatasi `SegarkanPembayaranGerbangLangganan::JEDA_DETIK`); jawabannya hanya status
+     * menurut server, tidak pernah dipercayakan ke peramban.
+     */
+    public function StatusBayar(string $tagihan, SegarkanPembayaranGerbangLangganan $segarkan): JsonResponse
+    {
+        $data = $this->kueri->CariTagihan($tagihan);
+        abort_if($data === null, 404);
+
+        foreach ($data->Pembayaran as $baris) {
+            if ($segarkan->Jalankan($baris)) {
+                $data = $this->kueri->CariTagihan($tagihan) ?? $data;
+            }
+        }
+
+        $menunggu = $data->Pembayaran->contains(fn (PembayaranLangganan $baris): bool => $baris->Status === StatusPembayaranLangganan::Menunggu);
+
+        return response()->json([
+            'StatusTagihan' => $data->Status->value,
+            'Lunas' => $data->Status === StatusTagihanLangganan::Lunas,
+            'MasihMenunggu' => $menunggu,
+        ]);
     }
 
     /** D-112: Owner mengunggah bukti transfer untuk tagihan manual; diverifikasi Keuangan di antrean P-08. */
