@@ -191,6 +191,7 @@
 | D-155 | Keputusan agen (D-12): cakupan gift card v6.33 sengaja dibatasi: **jual hanya dari back-office**, bukan baris di kasir (menghindari struk dan pajak ganda sebelum pemilik produk memutuskan perlakuan penjualan kartu di kasir), dan refund retur ke kartu menunggu keputusan. Ini dicatat di bagian "Belum" PRD dan Daftar Kekurangan. |
 | D-156 | Keputusan agen (D-12): alur CI rilis aplikasi **menolak rilis Android tanpa keystore rilis** dan membangun iOS **tanpa tanda tangan**; tidak ada rahasia di repo. Tanda tangan iOS/Windows dan unggah ke toko menunggu akun pemilik produk. |
 | D-157 | Keputusan agen (D-12): pembaruan otomatis hanya untuk **Windows** (pemasang Inno Setup senyap), karena Android/iOS wajib lewat toko. Berkas unduhan **wajib https + SHA-256** yang dicocokkan sebelum dijalankan; tanpa checksum atau tidak cocok = ditolak dan berkas dihapus. Penandatanganan kode ditambahkan begitu sertifikat tersedia. |
+| D-158 | Keputusan agen (D-12): rute situs publik non-halaman-berblok (Pusat Bantuan, portal pengembang, status) **wajib didaftarkan di `RUTE_PEMASARAN`** begitu ditambahkan, karena rute yang tidak terdaftar dialihkan ke domain tenant yang `noindex`. Domain tenant tetap `noindex` untuk semuanya (D-21). Pengalihan `/masuk` dan `/daftar` dari `payoung.id` ke `dashboard.payoung.id` dipertahankan: itu perilaku D-20, bukan galat. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

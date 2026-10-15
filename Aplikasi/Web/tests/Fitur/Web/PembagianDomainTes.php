@@ -30,6 +30,14 @@ describe('D-20 pembagian domain', function (): void {
         $this->get('https://payoung.test/kompatibilitas-perangkat')->assertOk();
     });
 
+    it('domain pemasaran: Pusat Bantuan, portal pengembang, dan status dilayani langsung tanpa pengalihan atau noindex (Search Console)', function (): void {
+        foreach (['/pusat-bantuan', '/pengembang', '/status'] as $jalur) {
+            $respons = $this->get('https://payoung.test'.$jalur);
+            $respons->assertOk();
+            expect($respons->headers->get('X-Robots-Tag'))->toBeNull();
+        }
+    });
+
     it('domain pemasaran: rute tenant dialihkan ke domain tenant dengan jalur & query sama (GET 302, POST 307)', function (): void {
         $this->get('https://payoung.test/masuk')->assertRedirect('https://dashboard.payoung.test/masuk');
         $this->get('https://payoung.test/kelola/penjualan?halaman=2')->assertRedirect('https://dashboard.payoung.test/kelola/penjualan?halaman=2');

@@ -18,8 +18,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class ArahkanDomainAplikasi
 {
-    /** Rute yang tetap dilayani di domain pemasaran. Dokumen legal & kompatibilitas juga dilayani di domain tenant. */
-    public const RUTE_PEMASARAN = ['beranda', 'legal.tampil', 'publik.kompatibilitas-perangkat', 'situs.halaman', 'situs.pratinjau', 'situs.peta', 'situs.prospek.kirim', 'situs.blog.daftar', 'situs.blog.artikel'];
+    /**
+     * Rute yang tetap dilayani di domain pemasaran. Dokumen legal & kompatibilitas juga dilayani di domain tenant.
+     * Pusat Bantuan, portal pengembang, dan halaman status ikut di sini (D-158): tanpa itu `/pusat-bantuan` di domain
+     * pemasaran dialihkan ke domain tenant yang `noindex`, padahal peta situs mendaftarkannya.
+     */
+    public const RUTE_PEMASARAN = ['beranda', 'legal.tampil', 'publik.kompatibilitas-perangkat', 'situs.halaman', 'situs.pratinjau', 'situs.peta', 'situs.prospek.kirim', 'situs.blog.daftar', 'situs.blog.artikel', 'situs.bantuan.daftar', 'situs.bantuan.artikel', 'situs.pengembang', 'publik.status', 'publik.status.data'];
 
     /** D-21: rute situs pemasaran yang di domain tenant dialihkan ke domain pemasaran. */
     public const RUTE_KHUSUS_PEMASARAN = ['situs.halaman', 'situs.pratinjau', 'situs.peta', 'situs.blog.daftar', 'situs.blog.artikel'];
