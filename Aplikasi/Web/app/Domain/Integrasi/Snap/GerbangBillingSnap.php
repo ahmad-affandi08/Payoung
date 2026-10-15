@@ -202,7 +202,9 @@ final class GerbangBillingSnap
     {
         $kanal = collect($this->AmbilKanalVa())->first(static fn (KanalVaSnap $baris): bool => $baris->kode === $kodeKanal)
             ?? throw new GalatGerbang('Bank virtual account ini belum tersedia. Pilih bank lain.');
-        $partner = str_pad($kanal->partnerServiceId, 8, '0', STR_PAD_LEFT);
+        // Contoh DOKU (VA Mandiri, BIN 5 digit) menulis nomor VA = partnerServiceId berspasi 8 karakter + customerNo,
+        // sama persis dengan awalan `partnerServiceId`; BIN 8 digit (BNI) tidak terpengaruh.
+        $partner = $kanal->AmbilPartnerServiceIdBerisi();
         $badan = [
             'partnerServiceId' => $kanal->AmbilPartnerServiceIdBerisi(),
             'customerNo' => $kanal->prefiksPelanggan,

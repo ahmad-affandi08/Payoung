@@ -43,7 +43,7 @@ function AturSnapUji(array $pengaturan = []): array
             'IdPedagangQris' => 'MID-UJI-1',
             'IdTerminalQris' => 'TERM01',
             'KodePosQris' => '12345',
-            'KanalVa' => 'BNI|VIRTUAL_ACCOUNT_BNI|98829172|3',
+            'KanalVa' => 'BNI|VIRTUAL_ACCOUNT_BNI|98829172|3; Mandiri|VIRTUAL_ACCOUNT_BANK_MANDIRI|86188|0',
             'DompetDana' => 'Aktif',
             'DompetShopeePay' => 'Aktif',
             ...$pengaturan,
@@ -234,6 +234,20 @@ describe('D-159 membuat pembayaran SNAP', function (): void {
             ->and($kirim['totalAmount']['currency'])->toBe('IDR')
             ->and($kirim['additionalInfo']['channel'])->toBe('VIRTUAL_ACCOUNT_BNI')
             ->and($kirim['expiredDate'])->toBe('2026-09-27T11:00:00+07:00');
+    });
+
+    it('virtual account Mandiri: BIN 5 digit dikirim berspasi 8 karakter dan nomor VA memakai awalan yang sama', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'VirtualAccount', 'Kanal' => 'VIRTUAL_ACCOUNT_BANK_MANDIRI'])->assertOk();
+
+        $kirim = PermintaanSnapKe('/virtual-accounts/bi-snap-va/v1.1/transfer-va/create-va')[0];
+
+        expect($kirim['partnerServiceId'])->toBe('   86188')
+            ->and($kirim['customerNo'])->toBe('0')
+            ->and($kirim['virtualAccountNo'])->toBe('   861880')
+            ->and($kirim['additionalInfo']['channel'])->toBe('VIRTUAL_ACCOUNT_BANK_MANDIRI');
     });
 
     it('DANA dan ShopeePay: tautan aplikasi dompet tampil; DANA memakai urlParam, ShopeePay urlParams', function (): void {
@@ -443,7 +457,7 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
         $halaman = BantuanTagihan::Masuk($this, $pemilik, $tenant)->get(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}"))->assertOk();
         $props = $halaman->viewData('page')['props'];
 
-        expect(collect($props['PilihanBayar'])->pluck('Label')->all())->toBe(['QRIS', 'Virtual account BNI', 'DANA', 'ShopeePay'])
+        expect(collect($props['PilihanBayar'])->pluck('Label')->all())->toBe(['QRIS', 'Virtual account BNI', 'Virtual account Mandiri', 'DANA', 'ShopeePay'])
             ->and($props['BolehBayarOnline'])->toBeTrue()
             ->and($props['Pembayaran'][0]['TampilanBayar']['Tampilan'])->toBe('Qr')
             ->and($props['Pembayaran'][0]['LabelMetode'])->toBe('QRIS');

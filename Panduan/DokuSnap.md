@@ -33,6 +33,22 @@ lalu aktifkan lagi.
 
 Membuat ulang kunci memutus SNAP sampai kunci publik yang baru didaftarkan ulang; Checkout tidak terganggu.
 
+### Mencari nilai virtual account di dasbor DOKU (akun Aggregator, DGPC)
+
+Dasbor DOKU › daftar kanal virtual account › klik satu bank. Kolom yang dipakai (contoh Mandiri):
+
+| Kolom DOKU | Contoh Mandiri | Dipakai sebagai |
+|---|---|---|
+| Feature | DGPC | DOKU yang membuat nomornya (BIN Doku General) |
+| Merchant BIN | 861880 | Hanya rujukan: Partner Service ID + Prefix Customer No |
+| Partner Service ID | 86188 | `PartnerServiceId` |
+| Prefix Customer No | 0 | `Prefiks` |
+
+Baris di konsol: `Mandiri|VIRTUAL_ACCOUNT_BANK_MANDIRI|86188|0`. Kode channel `VIRTUAL_ACCOUNT_BANK_MANDIRI`
+dibaca dari skema SNAP Mandiri DOKU. Kode kanal bank lain harus dicek ke halaman SNAP bank itu (BNI `VIRTUAL_ACCOUNT_BNI`,
+BCA `VIRTUAL_ACCOUNT_BCA`, BJB `VIRTUAL_ACCOUNT_BANK_BJB`); daftar kode di halaman Checkout belum tentu sama.
+Nomor VA dikirim sebagai Partner Service ID berspasi 8 karakter + Prefix (contoh DOKU Mandiri `"   700024"`).
+
 ## 3. Setel alamat di dasbor DOKU
 
 Ganti `dashboard.payoung.id` dengan domain tenant Anda.
@@ -75,7 +91,7 @@ Dokumen DOKU tidak menjawab ini dengan pasti; kode memakai dugaan paling aman da
    bila kolom itu tidak ada, `paymentFlagReason` berisi kata sukses/lunas). Contoh di dokumen DOKU menampilkan "Pending"
    dengan `paidAmount` terisi, sehingga kolom penandanya perlu dikonfirmasi. Bila VA yang sudah dibayar tidak lunas,
    periksa jawaban `/orders/v1.0/transfer-va/status` dan sesuaikan `PenguraiStatusSnap::UraiVirtualAccount`.
-2. **Nilai `customerNo` untuk VA yang dibuat DOKU (DGPC).** Kode mengirim awalan dari pengaturan bank; DOKU yang menambahkan sisanya.
+2. **Bentuk `virtualAccountNo` pada BIN kurang dari 8 digit.** Deskripsi skema DOKU menyebut "padding 0", contoh Mandiri memakai spasi; kode mengikuti contoh (spasi, sama dengan `partnerServiceId`). Bila VA Mandiri ditolak, ubah ke padding nol di `GerbangBillingSnap::BuatVa`.
 3. **Path ShopeePay.** Dokumen menyebut `/direct-debit/core/v1/debit/payment-host-to-host` dan `.../v2/...` dalam satu halaman;
    kode memakai v1. Bila ditolak, ubah konstanta di `GerbangBillingSnap`.
 4. **Format notifikasi.** Path, tanda tangan, dan badan notifikasi QRIS tidak ada di dokumen yang dibaca; ditangani dengan
