@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Domain\PanduanAwal\Model\TemplateSektor;
-use App\Domain\PanduanAwal\Model\TemplateSektorVersi;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
 use App\Http\Kontroler\Pengelola\BerandaKontroler;
 use App\Http\Kontroler\Pengelola\DuaFaktorKontroler;
@@ -55,7 +53,6 @@ use App\Http\Perantara\Pengelola\WajibDuaFaktor;
 use App\Http\Perantara\Pengelola\WajibDuaFaktorBaru;
 use App\Http\Perantara\Pengelola\WajibGantiKataSandi;
 use App\Http\Perantara\Pengelola\WajibIzinPengelola;
-use Illuminate\Routing\Route as RouteLaravel;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -64,17 +61,6 @@ use Illuminate\Support\Facades\Route;
  */
 
 $izin = static fn (IzinPengelola $izin): string => WajibIzinPengelola::class.':'.$izin->value;
-
-// Versi template dicari per nomor versi di dalam template pada URL, misal /template-sektor/FNB-CAF/versi/2 (P-03).
-Route::bind('templateSektorVersi', static function (string $nilai, RouteLaravel $rute): TemplateSektorVersi {
-    $template = $rute->parameter('templateSektor');
-    $kode = $template instanceof TemplateSektor ? $template->Kode : (is_string($template) ? $template : '');
-
-    return TemplateSektorVersi::query()
-        ->whereHas('TemplateSektor', fn ($kueri) => $kueri->where('Kode', $kode))
-        ->where('Versi', ctype_digit($nilai) ? (int) $nilai : 0)
-        ->firstOrFail();
-});
 
 Route::middleware('guest:pengelola')->group(function (): void {
     Route::get('/masuk', [SesiKontroler::class, 'TampilkanMasuk'])->name('pengelola.masuk');

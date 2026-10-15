@@ -23,6 +23,8 @@ use App\Domain\Lisensi\Kontrak\PenyiapDataBawaan;
 use App\Domain\Organisasi\Layanan\PenjagaAsalSinkronPerangkat;
 use App\Domain\Organisasi\Model\Perangkat;
 use App\Domain\Organisasi\Model\TokenAksesPengguna;
+use App\Domain\PanduanAwal\Model\TemplateSektor;
+use App\Domain\PanduanAwal\Model\TemplateSektorVersi;
 use App\Domain\Pengelola\DataBawaan\Aksi\SiapkanDataBawaanLisensi;
 use App\Domain\Pengelola\Dukungan\Layanan\GerbangPengelolaDukungan;
 use App\Domain\Pengelola\Dukungan\Penangan\BeritahuPenanggungJawabBalasanPelapor;
@@ -130,6 +132,19 @@ final class PenyediaAplikasi extends ServiceProvider
         if (collect($validator)->doesntContain(fn (object $v): bool => $v instanceof ValidatorHalamanSitus)) {
             Route::$validators = [...$validator, new ValidatorHalamanSitus];
         }
+
+        // Versi template dicari per nomor versi di dalam template pada URL, misal /template-sektor/FNB-CAF/versi/2 (P-03).
+        // Didaftarkan di provider, bukan di berkas rute: `route:cache` (php artisan optimize) tidak memuat ulang
+        // `routes/`, sehingga binder di sana hilang dan setiap halaman versi menjadi 404.
+        $this->app->make(Router::class)->bind('templateSektorVersi', static function (string $nilai, Route $rute): TemplateSektorVersi {
+            $template = $rute->parameter('templateSektor');
+            $kode = $template instanceof TemplateSektor ? $template->Kode : (is_string($template) ? $template : '');
+
+            return TemplateSektorVersi::query()
+                ->whereHas('TemplateSektor', fn ($kueri) => $kueri->where('Kode', $kode))
+                ->where('Versi', ctype_digit($nilai) ? (int) $nilai : 0)
+                ->firstOrFail();
+        });
 
         // Pabrik model berada di Database\Pabrik dengan akhiran "Pabrik" (PRD §13.7).
         Factory::guessFactoryNamesUsing(static function (string $model): string {
