@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Bersama\Audit\Kueri;
 
+use App\Domain\Bersama\Audit\Layanan\KamusPeristiwaAudit;
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
@@ -12,7 +13,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Log audit tenant aktif untuk `TabelData` (D-16), bawaan terbaru di atas. Cari sebagian nama peristiwa (misal
- * `outlet` atau `sesi.masuk`), saring rentang tanggal. Scope `MilikTenant` memastikan hanya log tenant aktif yang
+ * `outlet` atau `sesi.masuk`) atau kata dari kalimatnya (misal "outlet diubah"), saring rentang tanggal. Scope `MilikTenant` memastikan hanya log tenant aktif yang
  * terbaca. Nama pelaku dipetakan pemanggil (milik domain Organisasi).
  */
 final class DaftarLogAudit
@@ -29,7 +30,9 @@ final class DaftarLogAudit
     {
         $tanggal = $permintaan->AmbilRentangTanggal('Tanggal');
         $kueri = LogAudit::query()
-            ->when($permintaan->cari !== '', fn ($kueri) => $kueri->where('Peristiwa', 'like', PenerapKueriTabel::PolaCari($permintaan->cari)))
+            ->when($permintaan->cari !== '', fn ($kueri) => $kueri->where(fn ($bagian) => $bagian
+                ->where('Peristiwa', 'like', PenerapKueriTabel::PolaCari($permintaan->cari))
+                ->orWhereIn('Peristiwa', KamusPeristiwaAudit::CariKunci($permintaan->cari))))
             ->when($tanggal['Dari'] !== null, fn ($kueri) => $kueri->where('DibuatPada', '>=', $tanggal['Dari'].' 00:00:00'))
             ->when($tanggal['Sampai'] !== null, fn ($kueri) => $kueri->where('DibuatPada', '<=', $tanggal['Sampai'].' 23:59:59'));
 

@@ -1,3 +1,4 @@
+import RincianPerubahanAudit, { type PerubahanAudit } from '@/Komponen/Audit/RincianPerubahanAudit';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { HasilTabel, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -6,9 +7,12 @@ import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 type Log = {
     Id: number;
     Peristiwa: string;
+    Kalimat: string;
     Pelaku: string;
     JenisObjek: string | null;
     IdObjek: number | null;
+    Objek: string | null;
+    Perubahan: PerubahanAudit[];
     NilaiLama: Record<string, unknown> | null;
     NilaiBaru: Record<string, unknown> | null;
     Ip: string | null;
@@ -29,8 +33,15 @@ const kolom: KolomTabel<Log>[] = [
         id: 'Peristiwa',
         accessorKey: 'Peristiwa',
         header: 'Peristiwa',
-        meta: { label: 'Peristiwa', prioritas: 'utama', wajib: true, kelasSel: 'font-mono text-label' },
-        cell: ({ row }) => row.original.Peristiwa,
+        meta: { label: 'Peristiwa', prioritas: 'utama', wajib: true, kelasSel: 'text-label' },
+        cell: ({ row }) => (
+            <>
+                <span className="block">{row.original.Kalimat}</span>
+                <span className="block font-mono text-keterangan font-normal text-teks-sekunder">
+                    {row.original.Peristiwa}
+                </span>
+            </>
+        ),
     },
     {
         id: 'Pelaku',
@@ -44,8 +55,7 @@ const kolom: KolomTabel<Log>[] = [
         header: 'Objek',
         enableSorting: false,
         meta: { label: 'Objek', prioritas: 'rendah', kelasSel: 'text-teks-sekunder' },
-        cell: ({ row: { original: log } }) =>
-            log.JenisObjek ? `${log.JenisObjek} #${String(log.IdObjek ?? '')}` : '—',
+        cell: ({ row }) => row.original.Objek ?? '—',
     },
     {
         id: 'Perubahan',
@@ -53,18 +63,7 @@ const kolom: KolomTabel<Log>[] = [
         enableSorting: false,
         meta: { label: 'Perubahan', prioritas: 'rendah', kelasSel: 'text-keterangan text-teks-sekunder' },
         cell: ({ row: { original: log } }) => (
-            <>
-                {log.NilaiLama ? (
-                    <p>
-                        Lama: <code className="font-mono break-all">{JSON.stringify(log.NilaiLama)}</code>
-                    </p>
-                ) : null}
-                {log.NilaiBaru ? (
-                    <p>
-                        Baru: <code className="font-mono break-all">{JSON.stringify(log.NilaiBaru)}</code>
-                    </p>
-                ) : null}
-            </>
+            <RincianPerubahanAudit Perubahan={log.Perubahan} NilaiLama={log.NilaiLama} NilaiBaru={log.NilaiBaru} />
         ),
     },
     {
@@ -87,7 +86,7 @@ export default function HalamanLogAudit({ Log }: PropsDaftar) {
                 sumber={{ mode: 'server', alamat: '/kelola/log-audit', awal: Log }}
                 ambilIdBaris={(log) => String(log.Id)}
                 urutBawaan="-DibuatPada"
-                cari="Cari peristiwa, misal outlet atau sesi.masuk"
+                cari="Cari kejadian, misal masuk, produk, atau harga"
                 saring={[{ id: 'Tanggal', label: 'Tanggal', jenis: 'rentangTanggal' }]}
                 kosong={{ ilustrasi: true, judul: 'Belum ada aktivitas yang tercatat.' }}
             />

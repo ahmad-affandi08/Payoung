@@ -94,12 +94,34 @@ describe('LogAudit tenant (§13.2, §25 no. 17)', function (): void {
                 ->component('Kelola/LogAudit/Daftar')
                 ->has('Log.Data', 1)
                 ->where('Log.Data.0.Peristiwa', 'merek.buat')
+                ->where('Log.Data.0.Kalimat', 'Merek dibuat')
+                ->where('Log.Data.0.Perubahan', [['Bidang' => 'Nama', 'Lama' => null, 'Baru' => 'Roti Nusantara']])
                 ->where('Log.Data.0.Pelaku', $pemilik->Nama)
                 ->where('Log.Data.0.NilaiBaru', ['Nama' => 'Roti Nusantara'])
                 ->where('Log.Meta.Total', 1));
 
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         BantuanOrganisasi::Masuk($this, $kasir, $tenant->Id)->get('/kelola/log-audit')->assertForbidden();
+    });
+
+    it('cari log audit memakai kalimat sehari-hari, bukan hanya kunci peristiwa', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/merek', ['Nama' => 'Roti Nusantara'])->assertSessionHasNoErrors();
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/log-audit?cari='.urlencode('Merek dibuat'))
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->has('Log.Data', 1)
+                ->where('Log.Data.0.Peristiwa', 'merek.buat'));
+    });
+
+    it('pelaku tanpa akun tenant ditulis apa adanya: tim dukungan, perangkat, atau sistem', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $log = LogAudit::query()->where('Peristiwa', 'tenant.daftar')->sole();
+        $log->getConnection()->table('LogAudit')->where('Id', $log->Id)->update(['IdPengguna' => null]);
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/log-audit?cari=tenant.daftar')
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('Log.Data.0.Pelaku', 'Sistem'));
     });
 
     it('keluar tanpa tenant aktif di sesi tidak mencatat apa pun dan tetap berhasil', function (): void {
