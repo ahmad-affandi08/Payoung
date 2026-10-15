@@ -15,6 +15,8 @@ use App\Domain\Tenant\Model\TagihanLangganan;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
@@ -53,7 +55,7 @@ final class KonteksPengelola
      * @param  Closure(self): THasil  $fungsi
      * @return THasil
      */
-    public function JalankanLintasTenant(string $alasan, Closure $fungsi, ?int $idTenant = null): mixed
+    public function JalankanLintasTenant(string $alasan, Closure $fungsi, ?int $idTenant = null, int $auditSekaliPerMenit = 0): mixed
     {
         $alasan = trim($alasan);
 
@@ -61,12 +63,14 @@ final class KonteksPengelola
             throw new InvalidArgumentException('Akses data tenant oleh pengelola wajib menyebut alasan.');
         }
 
-        $this->audit->Catat(
-            self::AKSI_AUDIT,
-            nilaiBaru: ['Cakupan' => $idTenant === null ? 'SemuaTenant' : 'SatuTenant'],
-            alasan: $alasan,
-            idTenant: $idTenant,
-        );
+        if ($this->CekPerluAudit($alasan, $idTenant, $auditSekaliPerMenit)) {
+            $this->audit->Catat(
+                self::AKSI_AUDIT,
+                nilaiBaru: ['Cakupan' => $idTenant === null ? 'SemuaTenant' : 'SatuTenant'],
+                alasan: $alasan,
+                idTenant: $idTenant,
+            );
+        }
 
         if ($idTenant === null) {
             $this->kedalamanLintas++;
@@ -86,6 +90,21 @@ final class KonteksPengelola
         } finally {
             $konteksSebelumnya === null ? $this->konteksTenant->Kosongkan() : $this->konteksTenant->Atur($konteksSebelumnya);
         }
+    }
+
+    /**
+     * Akses yang diulang berkala oleh layar waktu nyata (inbox obrolan dukungan, PLT-12) dicatat satu kali per
+     * `$auditSekaliPerMenit` untuk pelaku, alasan, dan tenant yang sama, bukan tiap polling; akses lain selalu dicatat.
+     */
+    private function CekPerluAudit(string $alasan, ?int $idTenant, int $auditSekaliPerMenit): bool
+    {
+        if ($auditSekaliPerMenit <= 0) {
+            return true;
+        }
+
+        $pelaku = (int) (Auth::guard('pengelola')->id() ?? 0);
+
+        return Cache::add('konteks-pengelola.audit.'.hash('sha256', "{$pelaku}|{$idTenant}|{$alasan}"), true, $auditSekaliPerMenit * 60);
     }
 
     /**

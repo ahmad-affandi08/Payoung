@@ -49,6 +49,16 @@ final class PenghitungSlaTiket
         return $kalender ? $dibuatPada->copy()->addHours($jam) : $this->TambahJamKerja($dibuatPada, $jam);
     }
 
+    /** PLT-12: apakah [waktu] jatuh di jam kerja tim dukungan (hari kerja, di dalam jam buka, bukan hari libur P-02). */
+    public function CekDalamJamKerja(Carbon $waktu): bool
+    {
+        $t = $waktu->copy()->setTimezone((string) config('dukungan.JamKerja.ZonaWaktu'));
+
+        return $this->CekHariKerja($t)
+            && $t->hour >= (int) config('dukungan.JamKerja.Mulai')
+            && $t->hour < (int) config('dukungan.JamKerja.Selesai');
+    }
+
     /** Menambah [jam] jam kerja (hari kerja, di dalam jam buka, bukan hari libur) ke [mulai]. */
     public function TambahJamKerja(Carbon $mulai, int $jam): Carbon
     {

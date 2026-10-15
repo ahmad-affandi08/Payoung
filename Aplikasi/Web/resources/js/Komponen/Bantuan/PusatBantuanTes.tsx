@@ -217,10 +217,38 @@ describe('lembar Bantuan kontekstual', () => {
     };
     let ambil: ReturnType<typeof vi.fn>;
 
+    /**
+     * Lembar Bantuan juga memuat panel obrolan langsung (PLT-12) lewat `/kelola/obrolan`; jawaban obrolan dipisah dari
+     * artikel supaya tes ini tetap hanya menghitung dan memeriksa permintaan artikel.
+     */
+    const JawabObrolanKosong = () =>
+        Promise.resolve({
+            ok: true,
+            json: () =>
+                Promise.resolve({
+                    Layanan: {
+                        Buka: false,
+                        PetugasOnline: 0,
+                        DalamJamKerja: true,
+                        Pesan: 'Tim belum online.',
+                        SegarkanDetik: 4,
+                        MaksPanjangPesan: 2000,
+                    },
+                    Obrolan: null,
+                }),
+        });
+    const PasangJawaban = (artikel: () => Promise<unknown>) =>
+        ambil.mockImplementation((alamat: unknown) =>
+            String(alamat).startsWith('/kelola/obrolan') ? JawabObrolanKosong() : artikel(),
+        );
+    const PanggilanArtikel = () =>
+        ambil.mock.calls.filter((panggilan) => String(panggilan[0]).includes('/kelola/pusat-bantuan'));
+
     beforeEach(() => {
         uji.url = '/kelola/produk/label?a=1';
         uji.props = {};
-        ambil = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(hasil) }));
+        ambil = vi.fn();
+        PasangJawaban(() => Promise.resolve({ ok: true, json: () => Promise.resolve(hasil) }));
         vi.stubGlobal('fetch', ambil);
     });
 
@@ -232,8 +260,8 @@ describe('lembar Bantuan kontekstual', () => {
         const lembar = await screen.findByRole('dialog');
         await within(lembar).findByText('Mengelola produk');
 
-        expect(ambil).toHaveBeenCalledTimes(1);
-        expect(String(ambil.mock.calls[0]?.[0])).toBe('/kelola/pusat-bantuan?jalur=%2Fkelola%2Fproduk%2Flabel&cari=');
+        expect(PanggilanArtikel()).toHaveLength(1);
+        expect(String(PanggilanArtikel()[0]?.[0])).toBe('/kelola/pusat-bantuan?jalur=%2Fkelola%2Fproduk%2Flabel&cari=');
         expect(within(lembar).getByRole('region', { name: 'Untuk halaman ini' })).toBeTruthy();
         expect(within(lembar).getByRole('region', { name: 'Artikel lain' })).toBeTruthy();
         const artikel = within(lembar).getByRole('link', { name: /Mengelola produk/ });
@@ -258,18 +286,18 @@ describe('lembar Bantuan kontekstual', () => {
         expect(within(lembar).queryByRole('link', { name: 'Hubungi tim dukungan' })).toBeNull();
 
         fireEvent.change(within(lembar).getByLabelText('Cari bantuan'), { target: { value: ' stok ' } });
-        await waitFor(() => expect(ambil).toHaveBeenCalledTimes(2));
-        expect(String(ambil.mock.calls[1]?.[0])).toContain('cari=stok');
+        await waitFor(() => expect(PanggilanArtikel()).toHaveLength(2));
+        expect(String(PanggilanArtikel()[1]?.[0])).toContain('cari=stok');
     });
 
     it('galat jaringan memberi pesan yang bisa dipahami; hasil kosong menyarankan dukungan', async () => {
-        ambil.mockImplementation(() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }));
+        PasangJawaban(() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }));
         Render(<TombolBantuan bolehHubungiDukungan />);
         fireEvent.click(screen.getByRole('button', { name: 'Bantuan' }));
         expect((await screen.findByRole('alert')).textContent).toContain('Bantuan belum bisa dimuat');
         cleanup();
 
-        ambil.mockImplementation(() =>
+        PasangJawaban(() =>
             Promise.resolve({
                 ok: true,
                 json: () =>

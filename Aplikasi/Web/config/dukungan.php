@@ -51,6 +51,18 @@ return [
     'MasukRahasia' => env('DUKUNGAN_MASUK_RAHASIA', ''),
     'MasukToleransiDetik' => 300,
 
+    // PLT-12 (D-163): obrolan langsung di lembar Bantuan. Obrolan adalah tiket berkanal `Obrolan`; petugas "siap" bila
+    // menekan tombol siap di inbox obrolan dan masih berdetak dalam `PetugasAktifDetik`. `SegarkanDetik` = jarak polling
+    // (lembar terbuka); `MaksPanjangPesan` = batas karakter satu pesan; `DilihatDetik` = berapa lama pelapor dianggap
+    // sedang membaca setelah polling terakhir (balasan petugas saat itu tidak dikirimi email/notifikasi lagi).
+    'Obrolan' => [
+        'PetugasAktifDetik' => 60,
+        'SegarkanDetik' => 4,
+        'MaksPanjangPesan' => 2000,
+        'DilihatDetik' => 45,
+        'MaksObrolanKonsol' => 60,
+    ],
+
     // PGL-15: pesan masuk yang diterima per pengirim per hari (mencegah banjir tiket).
     'MasukBatasPerPengirimHarian' => 20,
 ];

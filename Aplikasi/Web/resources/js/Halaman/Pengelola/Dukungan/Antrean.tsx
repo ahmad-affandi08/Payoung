@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import { jenisLabelStatusTiket, type StatusTiket } from '@/Komponen/Dukungan/StatusTiket';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import AksiMassalTiket from '@/Komponen/Pengelola/AksiMassalTiket';
 import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { HasilTabel, KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -120,6 +121,11 @@ const kolom: KolomTabel<BarisAntrean>[] = [
 export default function AntreanTiket({ Tiket, PilihanStatus, PilihanPrioritas, BolehTangani = false }: PropsAntrean) {
     return (
         <TataLetakPengelola judul="Tiket dukungan">
+            <AksiHalaman keterangan="Obrolan langsung dari tenant dijawab di inbox obrolan; yang tidak terjawab tetap masuk antrean ini.">
+                <Link href="/dukungan/obrolan" className="text-label font-semibold text-brand underline">
+                    Buka obrolan langsung
+                </Link>
+            </AksiHalaman>
             <TabelData
                 id="pengelola-antrean-tiket"
                 label="Antrean tiket dukungan"

@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { CircleHelpIcon, ExternalLink, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
 
+import PanelObrolan from '@/Komponen/Bantuan/PanelObrolan';
 import { AmbilHasilCari, useNilaiTertunda } from '@/Komponen/Katalog/PemilihProduk';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { useTur } from '@/Komponen/Tur/PenyediaTur';
@@ -165,6 +166,7 @@ function IsiBantuan({
                     </div>
                 </>
             ) : null}
+            {bolehHubungiDukungan ? <PanelObrolan halamanAsal={jalur} /> : null}
         </div>
     );
 }

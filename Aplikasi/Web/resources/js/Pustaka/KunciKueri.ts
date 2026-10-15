@@ -12,6 +12,10 @@ export const KunciKueri = {
     Laporan: (nama: string, saring: Record<string, string>) => ['Laporan', nama, saring] as const,
     // PLT-12: bantuan kontekstual di kepala back-office (artikel Pusat Bantuan untuk satu jalur + kata cari).
     BantuanKontekstual: (jalur: string, kata: string) => ['BantuanKontekstual', jalur, kata] as const,
+    // PLT-12 (D-163): obrolan langsung dengan tim dukungan (keadaan layanan + percakapan pelapor) dan inbox petugas.
+    Obrolan: ['Obrolan'] as const,
+    ObrolanInbox: ['ObrolanInbox'] as const,
+    ObrolanPesan: (uuid: string) => ['ObrolanPesan', uuid] as const,
     // PRD v3.14: pemilih pelanggan di formulir pesanan grosir (dropdown cari-server).
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,

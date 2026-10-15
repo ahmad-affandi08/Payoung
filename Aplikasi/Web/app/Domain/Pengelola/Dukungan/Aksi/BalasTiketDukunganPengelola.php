@@ -6,7 +6,9 @@ namespace App\Domain\Pengelola\Dukungan\Aksi;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Dukungan\Enum\JenisPengirimPesan;
+use App\Domain\Dukungan\Enum\KanalTiketDukungan;
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
+use App\Domain\Dukungan\Kueri\ObrolanTenant;
 use App\Domain\Dukungan\Layanan\PenulisPesanTiket;
 use App\Domain\Dukungan\Layanan\PenyimpanLampiran;
 use App\Domain\Dukungan\Model\TiketDukungan;
@@ -18,6 +20,7 @@ use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Aksi\KirimNotifikasiKomunikasi;
 use App\Domain\Tenant\Enum\PeristiwaKomunikasi;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -114,6 +117,12 @@ final class BalasTiketDukunganPengelola
 
         /** @var TiketDukungan $tiket */
         $tiket = $hasil['Tiket'];
+
+        // PLT-12 (D-163): pelapor yang sedang membaca obrolannya melihat balasan langsung; email dan notifikasi hanya
+        // untuk balasan yang datang saat ia tidak membuka obrolan.
+        if ($tiket->Kanal === KanalTiketDukungan::Obrolan && ! $catatanInternal && Cache::has(ObrolanTenant::KunciDilihat($tiket->Uuid))) {
+            return $tiket;
+        }
 
         if (is_string($hasil['Email'])) {
             Mail::to($hasil['Email'])->queue(new BalasanTiketDukungan($tiket->Nomor, $tiket->Judul, $tiket->Uuid, $pelaku->Nama, $isi, $tiket->Status->AmbilLabel()));

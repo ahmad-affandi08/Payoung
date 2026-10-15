@@ -12,6 +12,8 @@ use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Integrasi\Snap\Data\KanalVaSnap;
 use App\Domain\Integrasi\Snap\Data\PembayaranSnapDibuat;
 use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Http\Client\Response;
@@ -112,7 +114,7 @@ final class GerbangBillingSnap
 
         // Disimpan dalam UTC (zona basis data); format +07:00 hanya saat dikirim ke DOKU.
         $kedaluwarsa = CarbonImmutable::now()->addMinutes(self::MENIT_KEDALUWARSA);
-        $nilai = number_format((int) $total->KeString(), 2, '.', '');
+        $nilai = self::FormatNominal($total->KeString());
         $jumlah = ['value' => $nilai, 'currency' => 'IDR'];
         $nama = self::BersihkanNama($namaPembayar);
 
@@ -295,7 +297,7 @@ final class GerbangBillingSnap
         $badan = [
             'serviceCode' => '55',
             'originalPartnerReferenceNo' => $nomorPesanan,
-            'amount' => ['value' => number_format((int) $jumlah, 2, '.', ''), 'currency' => 'IDR'],
+            'amount' => ['value' => self::FormatNominal($jumlah), 'currency' => 'IDR'],
         ];
 
         if (($rincian['ReferensiGerbang'] ?? '') !== '') {
@@ -340,5 +342,11 @@ final class GerbangBillingSnap
         $bersih = trim((string) preg_replace('/[^\p{L}\p{N} .,\'-]/u', '', $nama));
 
         return mb_substr($bersih !== '' ? $bersih : 'Pelanggan Payoung', 0, 100);
+    }
+
+    /** Nominal DOKU SNAP: string desimal dua digit ("165390.00"), dihitung dengan BigDecimal (bukan float, aturan #7). */
+    private static function FormatNominal(string $jumlah): string
+    {
+        return (string) BigDecimal::of($jumlah)->toScale(2, RoundingMode::HalfUp);
     }
 }

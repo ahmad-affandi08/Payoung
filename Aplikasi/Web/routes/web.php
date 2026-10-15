@@ -24,6 +24,7 @@ use App\Http\Kontroler\Kelola\BantuanKontroler;
 use App\Http\Kontroler\Kelola\BerandaKelolaKontroler;
 use App\Http\Kontroler\Kelola\LanggananKontroler;
 use App\Http\Kontroler\Kelola\NotifikasiKontroler;
+use App\Http\Kontroler\Kelola\ObrolanKontroler;
 use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontroler;
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
@@ -286,6 +287,13 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
                         Route::post('/bantuan', [BantuanKontroler::class, 'Simpan'])->middleware('throttle:10,1')->name('kelola.bantuan.simpan');
                         Route::post('/bantuan/{tiketDukungan}/balasan', [BantuanKontroler::class, 'Balas'])->middleware('throttle:30,1')->name('kelola.bantuan.balas');
                         Route::post('/bantuan/{tiketDukungan}/selesaikan', [BantuanKontroler::class, 'Selesaikan'])->name('kelola.bantuan.selesaikan');
+                    });
+                    // PLT-12 (D-163): obrolan langsung di lembar Bantuan (JSON, polling). Awalan `/obrolan` sengaja terpisah
+                    // dari `/bantuan/{tiketDukungan}` supaya tidak tertangkap parameter tiket.
+                    Route::get('/obrolan', [ObrolanKontroler::class, 'Keadaan'])->middleware([$izin(IzinTenant::BantuanTiketLihat), 'throttle:60,1'])->name('kelola.obrolan.keadaan');
+                    Route::middleware($izin(IzinTenant::BantuanTiketKelola))->group(function (): void {
+                        Route::post('/obrolan', [ObrolanKontroler::class, 'Kirim'])->middleware('throttle:30,1')->name('kelola.obrolan.kirim');
+                        Route::post('/obrolan/akhiri', [ObrolanKontroler::class, 'Akhiri'])->middleware('throttle:10,1')->name('kelola.obrolan.akhiri');
                     });
                     Route::get('/bantuan/{tiketDukungan}', [BantuanKontroler::class, 'Tampilkan'])->middleware($izin(IzinTenant::BantuanTiketLihat))->name('kelola.bantuan.tampil');
                 }

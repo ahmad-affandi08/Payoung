@@ -30,6 +30,7 @@ final class BatasiTenantDitangguhkan
         'kelola.keamanan',
         'kelola.keamanan.*',
         'kelola.bantuan.*',
+        'kelola.obrolan.*',
         'kelola.persetujuan-legal',
         'kelola.persetujuan-legal.*',
     ];

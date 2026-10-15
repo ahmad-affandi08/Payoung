@@ -24,5 +24,6 @@ final class TiketDukunganDibuat implements ShouldDispatchAfterCommit
         public readonly string $kategori,
         public readonly string $prioritas,
         public readonly string $batasSlaPada,
+        public readonly bool $obrolan = false,
     ) {}
 }

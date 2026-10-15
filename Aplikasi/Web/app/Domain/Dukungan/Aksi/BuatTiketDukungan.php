@@ -7,6 +7,7 @@ namespace App\Domain\Dukungan\Aksi;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Dukungan\Data\DataTiketBaru;
 use App\Domain\Dukungan\Enum\JenisPengirimPesan;
+use App\Domain\Dukungan\Enum\KanalTiketDukungan;
 use App\Domain\Dukungan\Enum\StatusTiketDukungan;
 use App\Domain\Dukungan\Layanan\PembuatNomorTiket;
 use App\Domain\Dukungan\Layanan\PenghitungSlaTiket;
@@ -73,6 +74,7 @@ final class BuatTiketDukungan
                     $tiket->Kategori->AmbilLabel(),
                     $tiket->Prioritas->AmbilLabel(),
                     $tiket->BatasSlaPada->toIso8601String(),
+                    $tiket->Kanal === KanalTiketDukungan::Obrolan,
                 );
 
                 return $tiket;

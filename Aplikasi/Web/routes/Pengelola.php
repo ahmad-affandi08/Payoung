@@ -9,6 +9,7 @@ use App\Http\Kontroler\Pengelola\BerandaKontroler;
 use App\Http\Kontroler\Pengelola\DuaFaktorKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\AksesDukunganTenantKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\AlatDukunganKontroler;
+use App\Http\Kontroler\Pengelola\Dukungan\ObrolanDukunganKontroler;
 use App\Http\Kontroler\Pengelola\Dukungan\TiketDukunganKontroler;
 use App\Http\Kontroler\Pengelola\Integrasi\IntegrasiKontroler;
 use App\Http\Kontroler\Pengelola\Katalog\AddonKontroler;
@@ -280,11 +281,19 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
         // P-09 Tiket dukungan (§19.3: Dukungan & Super Admin). Parameter tiket = Uuid; tiket dicari lintas tenant
         // di dalam KonteksPengelola, bukan lewat route model binding.
         Route::middleware($izin(IzinPengelola::DukunganTiketLihat))->group(function () use ($izin): void {
+            // PLT-12 (D-163): inbox obrolan langsung. Awalan `/dukungan/obrolan` terpisah dari `/dukungan/tiket/{tiket}`.
+            Route::get('/dukungan/obrolan', [ObrolanDukunganKontroler::class, 'Tampilkan'])->name('pengelola.dukungan.obrolan');
+            Route::get('/dukungan/obrolan/daftar', [ObrolanDukunganKontroler::class, 'Daftar'])->middleware('throttle:60,1')->name('pengelola.dukungan.obrolan.daftar');
+            Route::get('/dukungan/obrolan/{tiketDukungan}/pesan', [ObrolanDukunganKontroler::class, 'Pesan'])->middleware('throttle:120,1')->name('pengelola.dukungan.obrolan.pesan');
             Route::get('/dukungan/tiket', [TiketDukunganKontroler::class, 'Daftar'])->name('pengelola.dukungan.tiket.daftar');
             Route::get('/dukungan/tiket/{tiketDukungan}', [TiketDukunganKontroler::class, 'Tampilkan'])->name('pengelola.dukungan.tiket.tampil');
             Route::get('/dukungan/tiket/{tiketDukungan}/lampiran/{lampiran}', [TiketDukunganKontroler::class, 'UnduhLampiran'])
                 ->name('pengelola.dukungan.tiket.lampiran');
             Route::middleware($izin(IzinPengelola::DukunganTiketTangani))->group(function (): void {
+                Route::post('/dukungan/obrolan/kehadiran', [ObrolanDukunganKontroler::class, 'Kehadiran'])->middleware('throttle:60,1')->name('pengelola.dukungan.obrolan.kehadiran');
+                Route::post('/dukungan/obrolan/{tiketDukungan}/pesan', [ObrolanDukunganKontroler::class, 'Kirim'])->middleware('throttle:60,1')->name('pengelola.dukungan.obrolan.kirim');
+                Route::post('/dukungan/obrolan/{tiketDukungan}/ambil', [ObrolanDukunganKontroler::class, 'Ambil'])->name('pengelola.dukungan.obrolan.ambil');
+                Route::post('/dukungan/obrolan/{tiketDukungan}/selesai', [ObrolanDukunganKontroler::class, 'Selesaikan'])->name('pengelola.dukungan.obrolan.selesai');
                 Route::post('/dukungan/tiket/{tiketDukungan}/ambil', [TiketDukunganKontroler::class, 'Ambil'])->name('pengelola.dukungan.tiket.ambil');
                 Route::post('/dukungan/tiket/{tiketDukungan}/tugaskan', [TiketDukunganKontroler::class, 'Tugaskan'])->name('pengelola.dukungan.tiket.tugaskan');
                 Route::post('/dukungan/tiket/{tiketDukungan}/balasan', [TiketDukunganKontroler::class, 'Balas'])->name('pengelola.dukungan.tiket.balas');

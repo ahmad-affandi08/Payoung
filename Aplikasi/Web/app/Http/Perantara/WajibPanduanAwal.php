@@ -30,6 +30,7 @@ final class WajibPanduanAwal
         'kelola.panduan-awal', 'kelola.panduan-awal.*',
         'kelola.langganan.*',
         'kelola.bantuan.*',
+        'kelola.obrolan.*',
         'kelola.keamanan', 'kelola.keamanan.*',
         'kelola.persetujuan-legal', 'kelola.persetujuan-legal.*',
     ];
