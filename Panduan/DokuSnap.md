@@ -82,13 +82,16 @@ Dokumen DOKU tidak menjawab ini dengan pasti; kode memakai dugaan paling aman da
    desain pemicu di atas. Jawaban kita memakai `responseCode` bentuk `200` + kode layanan + `00` (VA 25, QRIS 52, e-wallet 56).
 5. **Status e-wallet** memakai `/orders/v1.0/debit/status` dengan `serviceCode` `55`.
 
-## Logo cara bayar (D-160)
+## Logo cara bayar (D-160, D-161)
 
-Halaman bayar menampilkan logo QRIS, DANA, ShopeePay, dan tiap bank, tetapi **repo tidak membawa berkas logo** (set gratis
-berlisensi CC BY-NC dan merek dagang pihak ketiga). Pasang logo resmi (dari akun manajer DOKU atau pedoman merek bank) ke
-`Aplikasi/Web/resources/js/Aset/Bayar/` dengan nama `qris`, `dana`, `shopeepay`, `bni`, `bri`, `mandiri`, `bsi`, `permata`,
-`cimb`, `bca`, `danamon`, `maybank`, `btn`, `bjb`, `bank` (berkas `.svg`/`.png`/`.webp`; SVG wajib memuat `xmlns`), lalu bangun
-ulang aset (`npm run build`). Tanpa berkas, tampil lencana teks netral; fungsi bayar tidak berubah. Daftar lengkap ada di `Aset/Bayar/README.md`.
+Halaman bayar menampilkan logo QRIS, DANA, ShopeePay, dan tiap bank dari `Aplikasi/Web/resources/js/Aset/Bayar/` (nama berkas PascalCase seperti `Bni.svg`; kode:
+`qris`, `dana`, `shopeepay`, `bni`, `bri`, `mandiri`, `bsi`, `permata`, `cimb`, `bca`, `danamon`, `maybank`, `btn`, `bjb`,
+`sinarmas`, `bank`; `.svg`/`.png`/`.webp`; SVG wajib memuat `xmlns`). Bank yang berkasnya belum ada tampil sebagai lencana teks netral.
+
+**Asal & atribusi:** berkas yang ada sekarang berasal dari paket komunitas `idn-finlogos` oleh Hafidz Noor Fauzi
+(https://github.com/hafidznoor/idn-finlogos), lisensi CC BY-NC 4.0. Merek dagangnya milik masing-masing pemegang. Lisensi
+non-komersial itu **tidak mengizinkan** pemakaian pada layanan berbayar tanpa izin pemegang merek, jadi sebelum peluncuran
+komersial timpa semua berkas dengan logo resmi (minta ke account manager DOKU atau pedoman merek bank), lalu `npm run build`.
 
 ## Mematikan SNAP
 

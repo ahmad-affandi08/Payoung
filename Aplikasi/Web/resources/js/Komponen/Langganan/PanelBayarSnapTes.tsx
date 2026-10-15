@@ -83,12 +83,21 @@ describe('PanelBayarSnap (D-159)', () => {
         expect(screen.getByRole('button', { name: 'Virtual account BRI' })).toBeTruthy();
     });
 
-    it('logo yang berkasnya belum dipasang tampil sebagai lencana teks, bukan gambar rusak', () => {
-        const { container } = Panel();
+    it('logo yang berkasnya terpasang tampil sebagai gambar, yang belum ada tampil sebagai lencana teks', () => {
+        const { container } = Panel({
+            pilihan: [
+                ...pilihan,
+                {
+                    Metode: 'VirtualAccount',
+                    Label: 'Virtual account Bank Antah Berantah',
+                    Kanal: 'VIRTUAL_ACCOUNT_ANTAH',
+                },
+            ],
+        });
 
-        // Repo sengaja tanpa logo berlisensi tak jelas (lihat Aset/Bayar/README.md): semuanya lencana cadangan.
-        expect(container.querySelectorAll('[data-logo="cadangan"]').length).toBeGreaterThanOrEqual(4);
-        expect(container.querySelector('img')).toBeNull();
+        // QRIS, DANA, BNI, dan BRI punya berkas di Aset/Bayar; bank tak dikenal jatuh ke lencana, bukan gambar rusak.
+        expect(container.querySelectorAll('[data-logo] img').length).toBeGreaterThanOrEqual(4);
+        expect(container.querySelectorAll('[data-logo="cadangan"]').length).toBe(1);
     });
 
     it('memilih QRIS meminta server lalu menampilkan QR, hitung mundur, dan petunjuk', async () => {

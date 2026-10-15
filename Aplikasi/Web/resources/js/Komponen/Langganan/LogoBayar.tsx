@@ -2,7 +2,7 @@ import { AmbilKodeLogo, AmbilSingkatan } from '@/Pustaka/LogoBayar';
 import type { MetodeBayarSnap } from '@/Tipe/TagihanLangganan';
 import { cn } from '@/Komponen/Ui/utils';
 
-/** Semua berkas di `Aset/Bayar` dipetakan lewat nama berkas tanpa ekstensi (`bni.svg` -> `bni`). */
+/** Semua berkas di `Aset/Bayar` dipetakan lewat nama berkas tanpa ekstensi, huruf kecil (`Bni.svg` -> `bni`; nama berkas PascalCase sesuai konvensi). */
 const berkas = import.meta.glob<string>('../../Aset/Bayar/*.{svg,png,webp}', {
     eager: true,
     query: '?url',
@@ -10,7 +10,10 @@ const berkas = import.meta.glob<string>('../../Aset/Bayar/*.{svg,png,webp}', {
 });
 
 const logoPerKode: Record<string, string> = Object.fromEntries(
-    Object.entries(berkas).map(([jalur, url]) => [(jalur.split('/').pop() ?? '').replace(/\.\w+$/, ''), url]),
+    Object.entries(berkas).map(([jalur, url]) => [
+        (jalur.split('/').pop() ?? '').replace(/\.\w+$/, '').toLowerCase(),
+        url,
+    ]),
 );
 
 type PropsLogoBayar = {
