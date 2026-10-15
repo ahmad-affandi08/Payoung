@@ -160,6 +160,8 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Gerbang QRIS milik toko untuk pembayaran dinamis di kasir.',
                 href: '/kelola/pembayaran/gerbang',
                 izin: IzinTenant.PembayaranGerbangAtur,
+                // D-162: tenant SaaS memakai Aktivasi QRIS (foto KTP), bukan akun DOKU sendiri.
+                edisi: 'Lisensi',
             },
             {
                 label: 'Aktivasi QRIS',

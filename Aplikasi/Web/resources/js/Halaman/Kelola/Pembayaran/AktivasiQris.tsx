@@ -1,4 +1,4 @@
-import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
@@ -267,10 +267,7 @@ export default function AktivasiQris({
                 <Pemberitahuan jenis="info" judul="Aktifkan QRIS toko dengan KTP dan rekening">
                     Siapkan foto KTP, foto selfie sambil memegang KTP, foto tempat usaha, dan nomor rekening toko.
                     Setelah disetujui DOKU, uang pembayaran QRIS masuk ke rekening toko Anda. Foto hanya dipakai untuk
-                    mendaftar ke DOKU dan dihapus dari server Payoung begitu terkirim.{' '}
-                    <Link href="/kelola/pembayaran/gerbang" className="font-semibold underline">
-                        Sudah punya akun merchant DOKU sendiri?
-                    </Link>
+                    mendaftar ke DOKU dan dihapus dari server Payoung begitu terkirim.
                 </Pemberitahuan>
 
                 {galatUmum ? <Pemberitahuan jenis="bahaya">{galatUmum}</Pemberitahuan> : null}

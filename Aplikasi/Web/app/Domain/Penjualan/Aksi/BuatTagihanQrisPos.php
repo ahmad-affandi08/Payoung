@@ -69,7 +69,7 @@ final class BuatTagihanQrisPos
         }
 
         $gerbangTenant = $this->pembuatGerbang->AmbilAktifTenant()
-            ?? throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'QRIS dinamis belum bisa dipakai karena gerbang pembayaran toko belum diaktifkan. Pakai metode lain.', 'UuidMetode', 409);
+            ?? throw new PelanggaranAturanBisnis('GerbangBelumAktif', 'QRIS dinamis belum bisa dipakai karena QRIS toko belum diaktifkan. Pakai metode lain.', 'UuidMetode', 409);
         $gerbang = $gerbangTenant->gerbang;
 
         $metode = MetodePembayaran::query()->where('Uuid', strtoupper($data->uuidMetode))->first();

@@ -127,8 +127,8 @@ export default function KiosOutlet({ alamatOutlet, data, bolehKelola }: Props) {
                     </p>
                 ) : (
                     <Pemberitahuan jenis="info" judul="QRIS di kios belum tersedia">
-                        Pelanggan hanya bisa memilih bayar di kasir. Hidupkan QRIS di pengaturan Toko online (butuh
-                        gerbang pembayaran aktif) agar kios juga menerima QRIS.
+                        Pelanggan hanya bisa memilih bayar di kasir. Hidupkan QRIS di pengaturan Toko online (butuh QRIS
+                        toko aktif) agar kios juga menerima QRIS.
                     </Pemberitahuan>
                 )
             ) : null}

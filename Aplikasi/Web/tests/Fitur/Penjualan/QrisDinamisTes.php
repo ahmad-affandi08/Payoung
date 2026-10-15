@@ -528,7 +528,10 @@ describe('F-08 QRIS dinamis: back-office & data awal POS', function (): void {
 
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/metode-pembayaran')
             ->assertInertia(fn (AssertableInertia $h) => $h
-                ->where('GerbangPembayaran', ['Aktif' => true, 'Penyedia' => 'DOKU', 'Tautan' => '/kelola/pembayaran/gerbang'])
+                ->where('GerbangPembayaran.Aktif', true)
+                ->where('GerbangPembayaran.Penyedia', 'DOKU')
+                ->where('GerbangPembayaran.Tautan', '/kelola/pembayaran/aktivasi-qris')
+                ->where('GerbangPembayaran.NamaMenu', 'Aktivasi QRIS')
                 ->where('JenisTersedia', fn ($jenis) => collect($jenis)->pluck('Nilai')->contains('QrisDinamis')));
         expect(BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/metode-pembayaran')->getContent())
             ->not->toContain(BantuanGerbangTenant::KUNCI_RAHASIA_UJI);
@@ -543,7 +546,10 @@ describe('F-08 QRIS dinamis: back-office & data awal POS', function (): void {
 
         BantuanGerbangTenant::Nonaktifkan($tenant->Id);
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/metode-pembayaran')
-            ->assertInertia(fn (AssertableInertia $h) => $h->where('GerbangPembayaran', ['Aktif' => false, 'Penyedia' => null, 'Tautan' => '/kelola/pembayaran/gerbang']));
+            ->assertInertia(fn (AssertableInertia $h) => $h
+                ->where('GerbangPembayaran.Aktif', false)
+                ->where('GerbangPembayaran.Penyedia', null)
+                ->where('GerbangPembayaran.Tautan', '/kelola/pembayaran/aktivasi-qris'));
     });
 
     it('data-awal POS memuat metode QRIS dinamis aktif', function (): void {

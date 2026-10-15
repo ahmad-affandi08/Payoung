@@ -150,7 +150,14 @@ export type PropsMetodePembayaranPanduan = {
     BatasGambarQris: { UkuranMaksimalKb: number; Ekstensi: string[] };
     /** F-08: gerbang pembayaran aktif dari konsol platform (QRIS dinamis). Tanpa kredensial. */
     /** v2.06: gerbang milik toko; `Tautan` = halaman pengaturan gerbang (opsional untuk data lama). */
-    GerbangPembayaran: { Aktif: boolean; Penyedia: string | null; Tautan?: string };
+    GerbangPembayaran: {
+        Aktif: boolean;
+        Penyedia: string | null;
+        Tautan?: string;
+        /** D-162: nama menu & kalimat petunjuk mengikuti edisi (SaaS = Aktivasi QRIS, Lisensi = gerbang sendiri). */
+        NamaMenu?: string;
+        Petunjuk?: string;
+    };
 };
 
 export type KodeAktivasiBaru = {

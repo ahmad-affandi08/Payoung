@@ -7,6 +7,7 @@ namespace App\Domain\Penjualan\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
+use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
@@ -31,7 +32,7 @@ final class SimpanPengaturanTokoOnline
         if ((bool) $data['QrisAktif'] && $this->gerbang->AmbilAktifTenant() === null) {
             throw new PelanggaranAturanBisnis(
                 'GerbangBelumAktif',
-                'Gerbang pembayaran toko belum aktif, jadi QRIS online belum bisa dinyalakan. Atur dulu di Integrasi.',
+                'QRIS toko belum aktif, jadi QRIS online belum bisa dinyalakan. Aktifkan dulu lewat Pengaturan › '.InfoGerbangPembayaran::AmbilNamaMenu().'.',
                 'QrisAktif',
             );
         }

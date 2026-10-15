@@ -19,6 +19,10 @@ return [
     // Disk `Objek` (S3-compatible) tersedia bila konfigurasi penyimpanan aktif.
     'PenyimpananObjekAktif' => false,
 
+    // D-162: halaman & aksi kredensial gerbang pembayaran milik toko (tenant menempel Client ID/Secret DOKU sendiri).
+    // Kosong (null) = ikut edisi: hanya edisi Lisensi. Isi `true` untuk membukanya kembali di SaaS.
+    'GerbangTokoTampil' => null,
+
     // BR-P05.3: uji berkala integrasi aktif.
     'MenitUjiBerkala' => 60,
 ];

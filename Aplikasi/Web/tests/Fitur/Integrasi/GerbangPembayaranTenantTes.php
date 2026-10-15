@@ -32,7 +32,12 @@ const KUNCI_DOKU_TOKO = 'SK-doku-TokoBerkahSolo-7788';
 
 const ID_KLIEN_DOKU_TOKO = 'BRN-0012-7788';
 
+/*
+ * D-162: halaman & aksi kredensial gerbang milik toko hanya hidup di edisi Lisensi (tenant SaaS memakai Aktivasi QRIS);
+ * berkas ini membukanya lewat sakelar `integrasi.GerbangTokoTampil`. `GerbangPembayaranDisembunyikanTes` menguji sisi SaaS.
+ */
 beforeEach(function (): void {
+    config(['integrasi.GerbangTokoTampil' => true]);
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 

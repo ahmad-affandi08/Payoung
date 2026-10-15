@@ -11,6 +11,7 @@ use App\Http\Kontroler\Kelola\Kasir\ShiftKontroler;
 use App\Http\Kontroler\Kelola\Kasir\TutupHarianKontroler;
 use App\Http\Kontroler\Kelola\Pembayaran\AktivasiQrisKontroler;
 use App\Http\Kontroler\Kelola\Pembayaran\GerbangPembayaranKontroler;
+use App\Http\Perantara\GerbangTokoHanyaEdisiLisensi;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -53,8 +54,10 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::get('/kasir/struk/logo', [PengaturanStrukKontroler::class, 'UnduhLogo'])->middleware($outlet)->name('kelola.kasir.struk.logo');
     Route::put('/kasir/struk', [PengaturanStrukKontroler::class, 'Simpan'])->middleware($outlet)->name('kelola.kasir.struk.simpan');
 
-    // F-08 / P-05 v2.06: gerbang pembayaran QRIS dinamis milik tenant (akun merchant sendiri).
-    Route::middleware($izin(IzinTenant::PembayaranGerbangAtur))->prefix('/pembayaran/gerbang')->group(function (): void {
+    // F-08 / P-05 v2.06: gerbang pembayaran QRIS dinamis milik tenant (akun merchant sendiri). D-162: tenant SaaS tidak
+    // lagi diminta mendaftar di dasbor DOKU; mereka memakai Aktivasi QRIS (foto KTP) di bawah, jadi halaman & aksi ini
+    // hanya hidup di edisi Lisensi (di SaaS GET dialihkan ke Aktivasi QRIS, aksi tulis 404).
+    Route::middleware([$izin(IzinTenant::PembayaranGerbangAtur), GerbangTokoHanyaEdisiLisensi::class])->prefix('/pembayaran/gerbang')->group(function (): void {
         Route::get('/', [GerbangPembayaranKontroler::class, 'Tampilkan'])->name('kelola.pembayaran.gerbang');
         Route::post('/', [GerbangPembayaranKontroler::class, 'Simpan'])->name('kelola.pembayaran.gerbang.simpan');
         Route::post('/uji', [GerbangPembayaranKontroler::class, 'Uji'])->name('kelola.pembayaran.gerbang.uji');
