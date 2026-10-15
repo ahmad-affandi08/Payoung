@@ -12,6 +12,7 @@ use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Perantara\Pengelola\SesiPengelola;
 use App\Http\Permintaan\Pengelola\KodeDuaFaktorPermintaan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -146,7 +147,7 @@ final class DuaFaktorKontroler extends Kontroler
         ]);
     }
 
-    public function Konfirmasi(KodeDuaFaktorPermintaan $permintaan, VerifikasiDuaFaktor $verifikasi): RedirectResponse
+    public function Konfirmasi(KodeDuaFaktorPermintaan $permintaan, VerifikasiDuaFaktor $verifikasi): RedirectResponse|JsonResponse
     {
         $pengguna = $this->PenggunaMasuk();
         $kunciBatas = 'pengelola-2fa-verifikasi:'.$pengguna->Id;
@@ -158,6 +159,12 @@ final class DuaFaktorKontroler extends Kontroler
         $sesi = $permintaan->session();
         $sesi->put(SesiPengelola::KODE_DUA_FAKTOR_PADA, now()->getTimestamp());
         $kembali = $sesi->pull(SesiPengelola::KEMBALI_SETELAH_KONFIRMASI);
+
+        // Dialog konfirmasi di tempat (fetch JSON): cukup kabar berhasil, halaman asal tidak ditinggalkan.
+        if ($permintaan->expectsJson() && $permintaan->header('X-Inertia') === null) {
+            return response()->json(['Berhasil' => true]);
+        }
+
         // Alamat kembali bisa berasal dari Referer: hanya host konsol ini yang diikuti (tanpa open redirect).
         $aman = is_string($kembali) && parse_url($kembali, PHP_URL_HOST) === $permintaan->getHost();
 

@@ -1,4 +1,5 @@
 import './Gaya/Dasbor.css';
+import DialogKonfirmasiDuaFaktor from '@/Komponen/Pengelola/DialogKonfirmasiDuaFaktor';
 import { PasangPenandaNavigasi } from '@/Pustaka/PenandaNavigasi';
 import { TutupLayarMuat } from '@/Pustaka/LayarMuat';
 
@@ -36,6 +37,8 @@ void createInertiaApp({
             <StrictMode>
                 <QueryClientProvider client={klienKueri}>
                     <App {...props} />
+                    {/* Dipasang di akar (bukan di tata letak) supaya hidup di semua halaman konsol dan selama pindah halaman. */}
+                    <DialogKonfirmasiDuaFaktor />
                 </QueryClientProvider>
             </StrictMode>,
         );

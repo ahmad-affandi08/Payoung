@@ -173,6 +173,30 @@ describe('Konfirmasi kode untuk aksi berbahaya (D-42)', function (): void {
             ->assertRedirect(route('pengelola.dua-faktor.konfirmasi'));
     });
 
+    it('simpan dari halaman Inertia atau JSON dijawab 423 tanpa mengalihkan halaman, lalu lolos setelah kode dikonfirmasi lewat JSON', function (): void {
+        $pengguna = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
+        $this->actingAs($pengguna, 'pengelola')->withSession(BantuanPengelola::SesiPerangkatTepercaya());
+        $isi = ['Email' => 'baru@contoh.id', 'KodePeran' => ['Analis']];
+
+        // Permintaan Inertia (form halaman): dialog kode muncul di tempat, isian tidak hilang.
+        $this->post(BantuanPengelola::Url('/tim-internal/undangan'), $isi, ['X-Inertia' => 'true'])
+            ->assertStatus(423)
+            ->assertJsonPath('Galat.Kode', 'PerluKonfirmasiDuaFaktor');
+        $this->postJson(BantuanPengelola::Url('/tim-internal/undangan'), $isi)
+            ->assertStatus(423)
+            ->assertJsonPath('Galat.Kode', 'PerluKonfirmasiDuaFaktor');
+        $this->assertDatabaseCount('UndanganPengelola', 0);
+
+        $this->postJson(BantuanPengelola::Url('/dua-faktor/konfirmasi'), ['Kode' => '000000'])->assertUnprocessable();
+        $this->postJson(BantuanPengelola::Url('/dua-faktor/konfirmasi'), ['Kode' => 'AAAAA-BBBBB'])
+            ->assertOk()
+            ->assertJsonPath('Berhasil', true);
+
+        $this->post(BantuanPengelola::Url('/tim-internal/undangan'), $isi, ['X-Inertia' => 'true'])
+            ->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('UndanganPengelola', 1);
+    });
+
     it('alamat kembali di luar host konsol tidak diikuti', function (): void {
         $pengguna = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $this->actingAs($pengguna, 'pengelola')->withSession(BantuanPengelola::SesiPerangkatTepercaya() + [
