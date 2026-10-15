@@ -88,6 +88,7 @@ export default function HalamanTagihanLangganan({
                     uuidTagihan={Tagihan.Uuid}
                     {...(PilihanBayar.length > 0
                         ? {
+                              varian: 'sekunder' as const,
                               label: 'Bayar dengan kartu atau cara lain',
                               keterangan:
                                   'Anda akan diarahkan ke halaman pembayaran DOKU untuk kartu kredit dan metode lain. Tagihan otomatis lunas setelah pembayaran dikonfirmasi.',

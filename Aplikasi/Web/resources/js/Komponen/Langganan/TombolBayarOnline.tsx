@@ -9,6 +9,8 @@ export type PropsTombolBayarOnline = {
     /** D-159: bila halaman bayar Payoung (SNAP) tersedia, Checkout ditawarkan untuk kartu dan metode lain. */
     label?: string;
     keterangan?: string;
+    /** `sekunder` saat ada cara bayar SNAP yang menjadi aksi utama halaman. */
+    varian?: 'utama' | 'sekunder';
 };
 
 /**
@@ -19,7 +21,12 @@ export type PropsTombolBayarOnline = {
  * halaman dan bisa dipalsukan. Pelunasan datang dari notifikasi webhook bertanda tangan (atau rekonsiliasi status),
  * jadi halaman tagihan hanya menampilkan keadaan menurut server saat dibuka kembali.
  */
-export default function TombolBayarOnline({ uuidTagihan, label = 'Bayar online', keterangan }: PropsTombolBayarOnline) {
+export default function TombolBayarOnline({
+    uuidTagihan,
+    label = 'Bayar online',
+    keterangan,
+    varian = 'utama',
+}: PropsTombolBayarOnline) {
     const [memproses, AturMemproses] = useState(false);
     const [galat, AturGalat] = useState<string | null>(null);
 
@@ -55,7 +62,7 @@ export default function TombolBayarOnline({ uuidTagihan, label = 'Bayar online',
     return (
         <div className="flex flex-col gap-2">
             <div>
-                <Tombol onClick={() => void Bayar()} memproses={memproses}>
+                <Tombol varian={varian} onClick={() => void Bayar()} memproses={memproses}>
                     {label}
                 </Tombol>
             </div>
