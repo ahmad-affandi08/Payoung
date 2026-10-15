@@ -448,4 +448,19 @@ Dikerjakan atas permintaan pemilik produk ("OTP WhatsApp nanti aja, sisanya P0 d
 | PLT-12 live chat | — | Butuh vendor obrolan dan staf dukungan waktu nyata |
 | PLT-01 OTP WhatsApp | — | Ditunda atas permintaan pemilik produk |
 
+**Hasil per kelompok ID (145 ID), setelah v6.32–v6.37** — OWN-01, OWN-07, POS-03, dan CRM-06 pindah ke ADA. POS-20, POS-21, dan POS-23 sengaja tetap SEBAGIAN sampai alur `Bangun Aplikasi` terbukti berjalan di runner dan pembaruan Windows dicoba di perangkat sungguhan.
+
+| Kelompok | ID | ADA | SEBAGIAN | BELUM |
+|---|---|---|---|---|
+| PLT, CRM, EMP | 27 | 24 | 2 | 1 |
+| FIN, TAX, INV | 34 | 33 | 0 | 1 |
+| OWN, POS | 38 | 30 | 4 | 4 |
+| PGL, SLS, PRD | 46 | 42 | 3 | 1 |
+| **Jumlah** | **145** | **129** | **9** | **7** |
+
+- **9 SEBAGIAN:** PLT-01 (OTP WhatsApp, ditunda), PLT-12 (live chat), POS-20, POS-21, POS-23 (kode & tes ada, belum terbukti di runner/perangkat), POS-22 (SDK vendor), PGL-14 (faktur pajak & nota kredit tagihan langganan), PGL-20 (crash-free sessions, Telegram, ukuran database per tenant), SLS-10 (integrasi API ojol).
+- **7 BELUM:** EMP-07 (PPh 21 & BPJS, K9), INV-15 (portal pemasok), OWN-12 (widget layar utama, ditunda), OWN-13 (langganan di Owner, ditunda), POS-19 (multibahasa), POS-24 (mode LAN, ditunda), PGL-23 (portal mitra eksternal).
+- **CRM-06 dihitung ADA dengan catatan:** jual gift card sebagai baris di kasir, refund retur ke kartu, dan pakai offline belum ada (lihat tabel di atas).
+- Angka di bagian G dan seterusnya (125 / 12 / 8) adalah keadaan sebelum bagian M dan tidak diubah sebagai catatan sejarah.
+
 **Pra-ada, tidak diubah (menunggu keputusan pemilik produk):** empat golden pixel test Kasir dan satu test `KeadaanKosong` di `Paket/SistemDesain` gagal sebelum pekerjaan ini; tidak dilemahkan.
