@@ -15,7 +15,8 @@ use Carbon\CarbonImmutable;
  * D-23 D bagian 4b: putaran harian pengingat piutang otomatis tenant aktif (bila diaktifkan). Piutang terbuka
  * berpelanggan yang jatuh tempo dalam `HariSebelum` hari ke depan (termasuk hari ini) diingatkan sekali "akan jatuh
  * tempo"; yang lewat jatuh tempo 1–`JENDELA_LEWAT` hari diingatkan sekali "sudah lewat" (bila `IngatkanSaatLewat`).
- * Pelanggan tanpa kontak dilewati diam-diam (masih bisa ditagih manual).
+ * Pelanggan tanpa kontak dilewati diam-diam (masih bisa ditagih manual). Piutang bersumber invoice (F-21) tidak ikut:
+ * pengingatnya dikirim terpisah oleh `invoice:kirim-pengingat` dengan pengaturan yang sama.
  */
 final class KirimPengingatPiutangOtomatis
 {
@@ -39,6 +40,8 @@ final class KirimPengingatPiutangOtomatis
         $terbuka = fn () => Piutang::query()
             ->whereIn('Status', [StatusPiutang::BelumLunas->value, StatusPiutang::DibayarSebagian->value])
             ->whereNotNull('IdPelanggan')
+            // Piutang bersumber invoice diingatkan `KirimPengingatInvoiceOtomatis` (pesan dengan tautan invoice).
+            ->whereNull('IdInvoice')
             ->orderBy('Id');
         $antre = 0;
         $kelompok = [[JenisPengingatPiutang::SebelumJatuhTempo, $terbuka()->whereBetween('JatuhTempo', [$hari, $hariIni->addDays($atur['HariSebelum'])->toDateString()])]];

@@ -16,6 +16,7 @@ use App\Domain\Pelanggan\Kueri\DaftarPilihanPelanggan;
 use App\Domain\Penjualan\Aksi\AntrekanPengirimanInvoice;
 use App\Domain\Penjualan\Aksi\BatalkanInvoice;
 use App\Domain\Penjualan\Aksi\CatatPembayaranInvoice;
+use App\Domain\Penjualan\Aksi\ProsesInvoiceMassal;
 use App\Domain\Penjualan\Aksi\SimpanInvoice;
 use App\Domain\Penjualan\Aksi\TerbitkanInvoice;
 use App\Domain\Penjualan\Enum\JenisInvoice;
@@ -160,6 +161,30 @@ final class InvoiceKontroler extends DasarKelolaKontroler
 
         return to_route('kelola.invoice.detail', ['invoice' => $dokumen->Uuid])
             ->with('Kilat', $jenis === JenisPengirimanInvoice::Pengingat ? 'Pengingat dikirim ke WhatsApp pelanggan.' : 'Invoice dikirim ke WhatsApp pelanggan.');
+    }
+
+    /** Aksi massal daftar: terbitkan draf, kirim WhatsApp, atau kirim pengingat; yang tidak bisa diproses dilewati dengan alasannya. */
+    public function ProsesMassal(Request $permintaan, string $aksi, ProsesInvoiceMassal $proses): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            'Uuid' => ['required', 'array', 'min:1', 'max:'.ProsesInvoiceMassal::MAKS],
+            'Uuid.*' => ['required', 'ulid'],
+        ], attributes: ['Uuid' => 'invoice terpilih']);
+        /** @var list<string> $uuid */
+        $uuid = array_values($valid['Uuid']);
+        $hasil = $proses->Jalankan($aksi, $this->IdTenant(), $uuid, $this->Pelaku()->Id, $this->IdOutletBoleh());
+        $rincian = trim(implode(' ', array_map(fn (string $alasan, int $jumlah): string => "{$jumlah} dilewati: {$alasan}", array_keys($hasil['Dilewati']), array_values($hasil['Dilewati']))));
+        $kata = match ($aksi) {
+            ProsesInvoiceMassal::AKSI_TERBITKAN => 'invoice diterbitkan',
+            ProsesInvoiceMassal::AKSI_KIRIM => 'invoice sedang dikirim lewat WhatsApp',
+            default => 'pengingat sedang dikirim lewat WhatsApp',
+        };
+
+        if ($hasil['Berhasil'] === 0) {
+            return back()->withErrors(['Umum' => trim("Tidak ada invoice yang diproses. {$rincian}")]);
+        }
+
+        return back()->with('Kilat', trim("{$hasil['Berhasil']} {$kata}. {$rincian}"));
     }
 
     /** Cetak A4: satu keluaran dengan halaman publik, jadi yang dicetak sama dengan yang dilihat pelanggan. */

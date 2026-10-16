@@ -5,23 +5,34 @@ declare(strict_types=1);
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Pelanggan\Aksi\KirimPengingatPiutangOtomatis;
+use App\Domain\Pelanggan\Aksi\SimpanPengaturanPengingatPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Penjualan\Aksi\AntrekanPengirimanInvoice;
 use App\Domain\Penjualan\Aksi\BatalkanInvoice;
 use App\Domain\Penjualan\Aksi\CatatPembayaranInvoice;
+use App\Domain\Penjualan\Aksi\KirimPengingatInvoiceOtomatis;
 use App\Domain\Penjualan\Aksi\SimpanInvoice;
+use App\Domain\Penjualan\Aksi\SimpanInvoiceBerulang;
 use App\Domain\Penjualan\Aksi\TerbitkanInvoice;
 use App\Domain\Penjualan\Data\DataBarisInvoice;
 use App\Domain\Penjualan\Data\DataInvoice;
+use App\Domain\Penjualan\Data\DataInvoiceBerulang;
+use App\Domain\Penjualan\Enum\FrekuensiInvoiceBerulang;
 use App\Domain\Penjualan\Enum\JenisBarisInvoice;
 use App\Domain\Penjualan\Enum\JenisInvoice;
 use App\Domain\Penjualan\Enum\JenisPengirimanInvoice;
+use App\Domain\Penjualan\Enum\ModeInvoiceBerulang;
 use App\Domain\Penjualan\Enum\StatusPengirimanInvoice;
 use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Layanan\PengirimInvoice;
+use App\Domain\Penjualan\Layanan\PenyediaTindakanInvoice;
 use App\Domain\Penjualan\Model\Invoice;
+use App\Domain\Penjualan\Model\InvoiceBerulang;
 use App\Domain\Penjualan\Model\PengirimanInvoice;
 use App\Domain\Tenant\Enum\JenisOverride;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
@@ -202,4 +213,95 @@ it('nada pesan pengingat mengikuti selisih hari ke jatuh tempo', function (): vo
         ->and(PengirimInvoice::SusunRingkas(JenisPengirimanInvoice::Pengingat, $sisa, '2026-10-11', '2026-10-11'))->toBe('sisa tagihan Rp 2.500.000 jatuh tempo hari ini (11 Oktober 2026)')
         ->and(PengirimInvoice::SusunRingkas(JenisPengirimanInvoice::Pengingat, $sisa, '2026-10-11', '2026-10-14'))->toBe('sisa tagihan Rp 2.500.000 sudah lewat jatuh tempo 3 hari (11 Oktober 2026)')
         ->and(PengirimInvoice::SusunRingkas(JenisPengirimanInvoice::Invoice, $sisa, '2026-10-11', '2026-10-14'))->toBe('tagihan Rp 2.500.000, jatuh tempo 11 Oktober 2026');
+});
+
+it('pengingat otomatis: memakai pengaturan pengingat piutang, sekali per tahap, dan piutang bersumber invoice tidak diingatkan dua kali', function (): void {
+    $invoice = InvoiceTerbitKirimUji($this); // jatuh tempo 11 Okt 2026
+    $antre = app(KirimPengingatInvoiceOtomatis::class);
+    $generik = app(KirimPengingatPiutangOtomatis::class);
+    $idTenant = $this->k['Tenant']->Id;
+
+    // Mati (bawaan): tidak ada yang dikirim.
+    expect($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-09')))->toBe(0);
+
+    app(SimpanPengaturanPengingatPiutang::class)->Jalankan(true, 3, true, $this->k['Pemilik']->Id);
+
+    // 5 hari sebelum jatuh tempo: di luar jendela 3 hari.
+    expect($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-06')))->toBe(0);
+
+    // 2 hari sebelum: masuk jendela, terkirim sekali; hari berikutnya tidak diulang.
+    expect($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-09')))->toBe(1)
+        ->and($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-10')))->toBe(0);
+    $sebelum = PengirimanInvoice::query()->sole();
+    expect($sebelum->Jenis)->toBe(JenisPengirimanInvoice::Pengingat)
+        ->and($sebelum->Tahap)->toBe('Sebelum')
+        ->and($sebelum->DikirimOleh)->toBeNull()
+        ->and($sebelum->Status)->toBe(StatusPengirimanInvoice::Terkirim);
+    $teks = (string) collect(Http::recorded())->map(fn (array $p) => $p[0])->last()->data()['message'];
+    expect($teks)->toContain('ini pengingat dari')->and($teks)->toContain($invoice->Nomor)->and($teks)->toContain('/i/');
+
+    // Lewat jatuh tempo 2 hari: tahap kedua, sekali saja.
+    expect($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-13')))->toBe(1)
+        ->and($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-14')))->toBe(0)
+        ->and(PengirimanInvoice::query()->count())->toBe(2);
+
+    // Lewat dari jendela 7 hari: tidak lagi.
+    $lama = InvoiceTerbitKirimUji($this);
+    Invoice::query()->whereKey($lama->Id)->toBase()->update(['JatuhTempo' => '2026-09-01']);
+    Piutang::query()->where('IdInvoice', $lama->Id)->toBase()->update(['JatuhTempo' => '2026-09-01']);
+    expect($antre->Jalankan($idTenant, CarbonImmutable::parse('2026-10-14')))->toBe(0);
+
+    // Putaran pengingat piutang umum melewatkan piutang bersumber invoice, jadi tidak ada pesan kedua.
+    expect($generik->Jalankan($idTenant, CarbonImmutable::parse('2026-10-09')))->toBe(0);
+});
+
+it('perintah invoice:kirim-pengingat berjalan per tenant tanpa galat', function (): void {
+    InvoiceTerbitKirimUji($this);
+    app(SimpanPengaturanPengingatPiutang::class)->Jalankan(true, 14, true, $this->k['Pemilik']->Id);
+
+    $this->artisan('invoice:kirim-pengingat', ['--tenant' => [$this->k['Tenant']->Id]])->assertSuccessful();
+    expect(PengirimanInvoice::query()->where('Tahap', 'Sebelum')->count())->toBe(1);
+});
+
+it('Kotak Tindakan invoice: lewat tempo, templat berulang gagal, draf lama, dan belum dikirim', function (): void {
+    $penyedia = app(PenyediaTindakanInvoice::class);
+    $konteks = fn (CarbonImmutable $hari, bool $izin = true) => new DataKonteksTindakan($this->k['Tenant']->Id, $this->k['Pemilik']->Id, false, $izin ? ['invoice.kelola'] : [], null, $hari);
+    $butir = fn (CarbonImmutable $hari) => collect($penyedia->Kumpulkan($konteks($hari)))->filter(fn ($b) => $b->jumlah > 0)->keyBy('kunci');
+
+    expect($butir(CarbonImmutable::parse('2026-09-27'))->all())->toBe([]);
+
+    $terbit = InvoiceTerbitKirimUji($this); // jatuh tempo 11 Okt 2026
+    $draf = InvoiceTerbitKirimUji($this, false);
+    Carbon::setTestNow('2026-10-20 03:00:00');
+    $hari = CarbonImmutable::parse('2026-10-20');
+    $kumpul = $butir($hari);
+
+    expect($kumpul->keys()->sort()->values()->all())->toBe(['invoice.belum-dikirim', 'invoice.draf-lama', 'invoice.lewat-tempo'])
+        ->and($kumpul['invoice.lewat-tempo']->jumlah)->toBe(1)
+        ->and($kumpul['invoice.lewat-tempo']->tingkat->name)->toBe('Penting')
+        ->and($kumpul['invoice.lewat-tempo']->rincian[0]->judul)->toBe($terbit->Nomor)
+        ->and($kumpul['invoice.draf-lama']->rincian[0]->tautan)->toBe('/kelola/invoice/'.$draf->Uuid)
+        ->and($kumpul['invoice.belum-dikirim']->jumlah)->toBe(1);
+
+    // Dikirim: butir "belum dikirim" hilang. Dibayar lunas: butir lewat tempo hilang.
+    Invoice::query()->whereKey($terbit->Id)->toBase()->update(['TerkirimPada' => now()]);
+    app(CatatPembayaranInvoice::class)->Jalankan($terbit->Uuid, BantuanPembelian::AkunKas('1-1200')->Uuid, CarbonImmutable::parse('2026-10-20'), null, Uang::Nol(), null, null, $this->k['Pemilik']->Id);
+    expect($butir($hari)->keys()->all())->toBe(['invoice.draf-lama']);
+
+    // Templat berulang yang gagal terbit muncul sebagai butir Penting.
+    $templat = app(SimpanInvoiceBerulang::class)->Jalankan(new DataInvoiceBerulang(
+        'Retainer',
+        FrekuensiInvoiceBerulang::Bulanan,
+        1,
+        CarbonImmutable::parse('2026-10-20'),
+        null,
+        null,
+        ModeInvoiceBerulang::Terbitkan,
+        new DataInvoice(JenisInvoice::Penjualan, $this->klien->Uuid, $this->k['Outlet']->Id, CarbonImmutable::parse('2026-10-20'), null, [new DataBarisInvoice(null, 'Retainer', null, JenisBarisInvoice::Jasa, null, Kuantitas::Dari('1'), Uang::Dari('1000000'), Uang::Nol(), null)]),
+    ), $this->k['Pemilik']->Id);
+    InvoiceBerulang::query()->whereKey($templat->Id)->toBase()->update(['GalatTerakhir' => 'Pelanggan PT Sumber Makmur Sentosa sudah diarsipkan.', 'GalatPada' => now()]);
+    expect($butir($hari)['invoice-berulang.gagal']->rincian[0]->judul)->toBe('Retainer');
+
+    // Tanpa izin: tidak ada butir sama sekali.
+    expect($penyedia->Kumpulkan($konteks($hari, false)))->toBe([]);
 });

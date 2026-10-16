@@ -59,12 +59,16 @@ use LogicException;
  * @property string|null $Syarat
  * @property string|null $InfoPembayaran
  * @property int|null $IdInvoiceAkhir
+ * @property int|null $IdInvoiceBerulang templat berulang yang menerbitkannya (null = dibuat manual)
+ * @property Carbon|null $TanggalSiklus tanggal siklus templat; unik per templat sehingga satu siklus tidak terbit dua kali
  * @property Carbon|null $DiterbitkanPada
  * @property Carbon|null $TerkirimPada
  * @property Carbon|null $DilihatPada
  * @property int $JumlahDilihat
  * @property int|null $IdJurnal
  * @property int|null $IdJurnalPembatalan
+ * @property Carbon|null $DibuatPada
+ * @property Carbon|null $DiubahPada
  * @property int|null $DibuatOleh
  * @property int|null $DiubahOleh
  * @property int|null $DibatalkanOleh
@@ -187,6 +191,7 @@ final class Invoice extends ModelDasar
             'Status' => StatusInvoice::class,
             'Tanggal' => 'date',
             'JatuhTempo' => 'date',
+            'TanggalSiklus' => 'date',
             'TerminHari' => 'integer',
             'HargaTermasukPajak' => 'boolean',
             'TarifPpn' => 'decimal:6',

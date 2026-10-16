@@ -274,3 +274,121 @@ export type DokumenInvoice = {
 export type PropsCetakInvoice = DokumenInvoice & { Uuid: string };
 
 export type PropsInvoiceDigital = { Dokumen: DokumenInvoice | null };
+
+/* Invoice berulang (F-21): templat yang menerbitkan invoice biasa tiap periode. */
+
+export type FrekuensiInvoiceBerulang = 'Mingguan' | 'Bulanan' | 'Tahunan';
+
+export type ModeInvoiceBerulang = 'BuatDraf' | 'Terbitkan' | 'TerbitkanDanKirim';
+
+export type StatusInvoiceBerulang = 'Aktif' | 'Dijeda' | 'Selesai';
+
+export type BarisDaftarInvoiceBerulang = {
+    Uuid: string;
+    Nama: string;
+    NamaPelanggan: string;
+    KodeOutlet: string;
+    Jadwal: string;
+    TanggalMulai: string;
+    BerikutnyaPada: string | null;
+    JumlahTerbit: number;
+    BatasKali: number | null;
+    Status: StatusInvoiceBerulang;
+    LabelStatus: string;
+    Mode: ModeInvoiceBerulang;
+    LabelMode: string;
+    GalatTerakhir: string | null;
+};
+
+export type PropsDaftarInvoiceBerulang = {
+    Templat: Tabel<BarisDaftarInvoiceBerulang>;
+    OpsiStatus: Opsi[];
+    Izin: { Kelola: boolean };
+};
+
+export type IsianInvoiceBerulang = {
+    Uuid: string;
+    Nama: string;
+    Frekuensi: FrekuensiInvoiceBerulang;
+    Interval: number;
+    TanggalMulai: string;
+    TanggalBerakhir: string;
+    BatasKali: string;
+    Mode: ModeInvoiceBerulang;
+    JadwalTerkunci: boolean;
+    UuidPelanggan: string;
+    NamaPelanggan: string;
+    UuidOutlet: string;
+    TerminHari: string;
+    Perihal: string;
+    NomorReferensi: string;
+    HargaTermasukPajak: boolean;
+    KodePph: string;
+    TarifPph: string;
+    Catatan: string;
+    Syarat: string;
+    InfoPembayaran: string;
+    Baris: BarisIsianInvoice[];
+};
+
+export type PropsFormInvoiceBerulang = {
+    Isian: IsianInvoiceBerulang | null;
+    Kebiasaan: { Syarat: string; InfoPembayaran: string } | null;
+    OpsiOutlet: OpsiOutletInvoice[];
+    OpsiKelompokPajak: OpsiKelompokPajakInvoice[];
+    OpsiFrekuensi: Opsi[];
+    OpsiMode: Opsi[];
+    HariIni: string;
+};
+
+export type PropsDetailInvoiceBerulang = {
+    Templat: {
+        Uuid: string;
+        Nama: string;
+        Status: StatusInvoiceBerulang;
+        LabelStatus: string;
+        NamaPelanggan: string;
+        UuidPelanggan: string;
+        KodeOutlet: string;
+        Jadwal: string;
+        TanggalMulai: string;
+        TanggalBerakhir: string | null;
+        BatasKali: number | null;
+        JumlahTerbit: number;
+        BerikutnyaPada: string | null;
+        Mode: ModeInvoiceBerulang;
+        LabelMode: string;
+        TerminHari: number | null;
+        HargaTermasukPajak: boolean;
+        Perihal: string | null;
+        NomorReferensi: string | null;
+        KodePph: string | null;
+        TarifPph: string | null;
+        Catatan: string | null;
+        Syarat: string | null;
+        InfoPembayaran: string | null;
+        TerakhirTerbitPada: string | null;
+        GalatTerakhir: string | null;
+        GalatPada: string | null;
+    };
+    Baris: {
+        Kunci: string;
+        Nama: string;
+        Keterangan: string | null;
+        JenisBaris: JenisBarisInvoice;
+        SimbolSatuan: string | null;
+        Jumlah: string;
+        Harga: string;
+        Diskon: string;
+    }[];
+    InvoiceTerbit: {
+        Uuid: string;
+        Nomor: string | null;
+        Tanggal: string;
+        Status: StatusInvoice;
+        LabelStatus: string;
+        Total: string;
+    }[];
+    Izin: { Kelola: boolean };
+    Tindakan: { Ubah: boolean; Jeda: boolean; Lanjut: boolean; Hentikan: boolean };
+};

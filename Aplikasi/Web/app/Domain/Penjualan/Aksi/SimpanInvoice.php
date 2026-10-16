@@ -55,15 +55,7 @@ final class SimpanInvoice
      */
     public function Jalankan(DataInvoice $data, int $idPengguna, ?string $uuidInvoice = null): Invoice
     {
-        if ($data->baris === []) {
-            throw new PelanggaranAturanBisnis('InvoiceTanpaBaris', 'Invoice harus punya minimal satu baris.', 'Baris');
-        }
-
-        if (count($data->baris) > self::MAKS_BARIS) {
-            throw new PelanggaranAturanBisnis('TerlaluBanyakBaris', 'Satu invoice paling banyak '.self::MAKS_BARIS.' baris.', 'Baris');
-        }
-
-        $tarifPph = $this->PeriksaPph($data);
+        $tarifPph = $this->PeriksaBentuk($data);
 
         return DB::transaction(function () use ($data, $idPengguna, $uuidInvoice, $tarifPph): Invoice {
             $pelanggan = Pelanggan::query()->where('Uuid', $data->uuidPelanggan)->first()
@@ -145,6 +137,33 @@ final class SimpanInvoice
 
             return $invoice->refresh()->load('Detail');
         }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
+    }
+
+    /**
+     * Memeriksa isian tanpa menyimpan apa pun: baris (jumlah, harga, diskon, produk jasa/tanpa stok, kelompok pajak), PPh,
+     * dan batas jumlah. Dipakai template invoice berulang supaya template yang pasti gagal ditolak saat disimpan, bukan
+     * baru saat jadwal pertamanya berjalan. Pelanggan, outlet, dan termin diperiksa di tempat lain (butuh transaksi).
+     *
+     * @throws PelanggaranAturanBisnis
+     */
+    public function Periksa(DataInvoice $data): void
+    {
+        $this->PeriksaBentuk($data);
+        $this->SusunBaris($data);
+    }
+
+    /** Pemeriksaan bentuk yang tidak membaca data lain; mengembalikan tarif PPh yang dinormalkan. */
+    private function PeriksaBentuk(DataInvoice $data): ?string
+    {
+        if ($data->baris === []) {
+            throw new PelanggaranAturanBisnis('InvoiceTanpaBaris', 'Invoice harus punya minimal satu baris.', 'Baris');
+        }
+
+        if (count($data->baris) > self::MAKS_BARIS) {
+            throw new PelanggaranAturanBisnis('TerlaluBanyakBaris', 'Satu invoice paling banyak '.self::MAKS_BARIS.' baris.', 'Baris');
+        }
+
+        return $this->PeriksaPph($data);
     }
 
     /**

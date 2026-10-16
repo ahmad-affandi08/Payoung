@@ -19,6 +19,7 @@ use App\Domain\Pelanggan\Layanan\PenyediaTindakanPelanggan;
 use App\Domain\Pembelian\Layanan\PenyediaTindakanPembelian;
 use App\Domain\Pemenuhan\Layanan\PenyediaTindakanLaundry;
 use App\Domain\Pemenuhan\Layanan\PenyediaTindakanReservasi;
+use App\Domain\Penjualan\Layanan\PenyediaTindakanInvoice;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanPenjualan;
 use App\Domain\Promo\Layanan\PenyediaTindakanPromo;
 use App\Domain\Tenant\Layanan\PenyediaTindakanPenyimpanan;
@@ -34,6 +35,7 @@ final class PenyediaTindakan extends ServiceProvider
     {
         $this->app->tag([
             PenyediaTindakanPenjualan::class,
+            PenyediaTindakanInvoice::class,
             PenyediaTindakanKasir::class,
             PenyediaTindakanPelanggan::class,
             PenyediaTindakanStok::class,

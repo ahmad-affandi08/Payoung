@@ -149,6 +149,12 @@ final class KamusPeristiwaAudit
         'integrasi.webhook.hapus' => 'Webhook dihapus',
         'integrasi.webhook.ubah-status' => 'Webhook diaktifkan atau dinonaktifkan',
 
+        'invoice-berulang.buat' => 'Templat invoice berulang dibuat',
+        'invoice-berulang.hentikan' => 'Templat invoice berulang dihentikan',
+        'invoice-berulang.jeda' => 'Templat invoice berulang dijeda',
+        'invoice-berulang.lanjut' => 'Templat invoice berulang dilanjutkan',
+        'invoice-berulang.terbit' => 'Invoice diterbitkan dari templat berulang',
+        'invoice-berulang.ubah' => 'Templat invoice berulang diubah',
         'invoice.batal' => 'Invoice dibatalkan',
         'invoice.buat' => 'Draf invoice dibuat',
         'invoice.kirim' => 'Invoice dikirim ke pelanggan',

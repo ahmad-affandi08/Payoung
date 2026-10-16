@@ -607,6 +607,15 @@ const sumberPencarian: SumberPencarian[] = [
  * punya entri menu, tetapi Ctrl+K harus tetap menemukannya; hanya muncul bila halaman induknya terlihat (izin sama).
  */
 const halamanTurunan: (HalamanPencarian & { induk: string; izin?: KunciIzinTenant; sektor?: string[] })[] = [
+    // F-21: templat invoice berulang dibuka dari tombol di daftar Invoice; grup Pelanggan sudah di batas sub-menu (D-27).
+    {
+        induk: '/kelola/invoice',
+        label: 'Invoice berulang',
+        href: '/kelola/invoice/berulang',
+        grup: 'Pelanggan',
+        ikon: 'Pelanggan',
+        izin: IzinTenant.InvoiceKelola,
+    },
     {
         induk: '/kelola/persediaan/kartu-stok',
         label: 'Riwayat nomor seri / IMEI',

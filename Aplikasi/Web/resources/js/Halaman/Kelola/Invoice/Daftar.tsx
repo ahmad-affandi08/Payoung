@@ -1,10 +1,12 @@
 import { Link } from '@inertiajs/react';
 
+import AksiMassalInvoice from '@/Komponen/Invoice/AksiMassalInvoice';
 import { AlamatInvoice, LabelStatusBayarInvoice } from '@/Komponen/Invoice/BagianInvoice';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
+import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -138,11 +140,15 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
         <TataLetakAplikasi judul="Invoice">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Tagihan untuk jasa dan barang tanpa stok. Kirim ke pelanggan lewat WhatsApp atau tautan, lalu catat
-                pembayarannya. Barang berstok ditagih lewat pesanan grosir dan surat jalan.
+                pembayarannya. Pengingat otomatis mengikuti pengaturan di Piutang pelanggan. Barang berstok ditagih
+                lewat pesanan grosir dan surat jalan.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice" /> : null}
             <DaftarGalatServer galat={props.errors} />
             <AksiHalaman>
+                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                    <Link href={`${AlamatInvoice}/berulang`}>Invoice berulang</Link>
+                </Button>
                 {Izin.Kelola ? (
                     <>
                         <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
@@ -164,6 +170,14 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
                 cari="Cari nomor, perihal, atau nomor PO"
                 saring={saring}
                 alamatDetail={(d) => `${AlamatInvoice}/${d.Uuid}`}
+                labelBaris={(d) => `invoice ${d.Nomor ?? 'draf'}`}
+                {...(Izin.Kelola
+                    ? {
+                          aksiMassal: (konteks: KonteksAksiMassal<BarisDaftarInvoice>) => (
+                              <AksiMassalInvoice konteks={konteks} />
+                          ),
+                      }
+                    : {})}
                 kosong={{ ilustrasi: true, judul: 'Belum ada invoice.' }}
             />
         </TataLetakAplikasi>

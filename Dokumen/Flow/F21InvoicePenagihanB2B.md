@@ -15,4 +15,6 @@
 - **BR-21.7** Halaman publik `/i/{kode}`: kode rahasia tidak dapat ditebak dari nomor/Uuid; draf = 404; dibatalkan tetap terbuka bertanda Dibatalkan; hanya data yang pantas dibaca pembeli.
 - **BR-21.8** Kirim lewat WhatsApp saja (D-33). Pengingat hanya untuk invoice yang masih bersisa; satu kali per tahap.
 - **Back-office**: `/kelola/invoice` (daftar `TabelData`, form draf, detail, cetak A4/PDF, catat pembayaran, kirim/ingatkan, salin tautan). Izin `invoice.kelola` (Manajer Outlet, Akuntan, Pemilik, Admin); fitur paket `invoice.penagihan`.
-- **Bagian berikutnya**: tautan bayar QRIS & lunas otomatis, pengingat otomatis H-3/H0/H+3, invoice berulang & bulk, penawaran → invoice, kuitansi, e-Meterai, laporan PPh 23, sektor "Perusahaan".
+- **BR-21.9** Invoice berulang: templat (boleh diubah/dijeda/dihentikan) menerbitkan invoice biasa tiap siklus; satu siklus tidak pernah terbit dua kali (`IdInvoiceBerulang` + `TanggalSiklus` unik); galat tidak memajukan jadwal dan muncul di Kotak Tindakan; jadwal terkunci setelah siklus pertama.
+- **BR-21.10** Pengingat otomatis memakai pengaturan pengingat piutang; sekali per tahap per invoice; pesan memuat tautan publik. Aksi massal memproses tiap invoice sendiri-sendiri.
+- **Bagian berikutnya**: tautan bayar QRIS & lunas otomatis, konfirmasi pembayaran dari pelanggan, penawaran → invoice, kuitansi, e-Meterai, laporan PPh 23, sektor "Perusahaan".

@@ -126,6 +126,12 @@ Schedule::command('tindakan:buat-notifikasi-operasional')->hourlyAt(10)->without
 // D-23 D: pengingat piutang jatuh tempo ke pelanggan (jam wajar, bila tenant mengaktifkannya).
 Schedule::command('pelanggan:kirim-pengingat-piutang')->dailyAt('09:00')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
 
+// F-21: pengingat invoice (nomor + tautan publik) ke pelanggan, memakai pengaturan pengingat piutang yang sama.
+// F-21: invoice berulang jatuh tempo diterbitkan pagi hari, sebelum pengingat dan sebelum jam kerja.
+Schedule::command('invoice:jalankan-berulang')->dailyAt('05:40')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
+
+Schedule::command('invoice:kirim-pengingat')->dailyAt('09:10')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
+
 // F-18 bagian 5 (D-44): pengingat shift & peringatan terlambat/belum masuk lewat WhatsApp (bila aturan kehadiran aktif).
 Schedule::command('karyawan:kirim-notifikasi-kehadiran')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
 
