@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Invoice\InvoiceBerulangKontroler;
 use App\Http\Kontroler\Kelola\Invoice\InvoiceKontroler;
+use App\Http\Kontroler\Kelola\Invoice\PenawaranKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
@@ -48,4 +49,21 @@ Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTen
     Route::post('/{invoice}/batalkan', [InvoiceKontroler::class, 'Batalkan'])->where('invoice', $ulid)->name('kelola.invoice.batalkan');
     Route::post('/{invoice}/pembayaran', [InvoiceKontroler::class, 'CatatPembayaran'])->where('invoice', $ulid)->name('kelola.invoice.pembayaran');
     Route::post('/{invoice}/kirim', [InvoiceKontroler::class, 'Kirim'])->where('invoice', $ulid)->name('kelola.invoice.kirim');
+});
+
+// Penawaran harga (F-21 bagian 3, D-168): dokumen sebelum invoice, dikelola dengan izin yang sama (`invoice.kelola`).
+Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTenant::InvoiceKelola->value])->prefix('penawaran')->group(function () use ($ulid): void {
+    Route::get('/', [PenawaranKontroler::class, 'Daftar'])->name('kelola.penawaran.daftar');
+    Route::get('/ekspor', [PenawaranKontroler::class, 'Ekspor'])->middleware(EksporDiLatarBelakang::class)->name('kelola.penawaran.ekspor');
+    Route::get('/buat', [PenawaranKontroler::class, 'Buat'])->name('kelola.penawaran.buat');
+    Route::post('/', [PenawaranKontroler::class, 'Simpan'])->name('kelola.penawaran.simpan');
+    Route::get('/{penawaran}', [PenawaranKontroler::class, 'Detail'])->where('penawaran', $ulid)->name('kelola.penawaran.detail');
+    Route::get('/{penawaran}/ubah', [PenawaranKontroler::class, 'Ubah'])->where('penawaran', $ulid)->name('kelola.penawaran.ubah');
+    Route::put('/{penawaran}', [PenawaranKontroler::class, 'Perbarui'])->where('penawaran', $ulid)->name('kelola.penawaran.perbarui');
+    Route::get('/{penawaran}/cetak', [PenawaranKontroler::class, 'Cetak'])->where('penawaran', $ulid)->name('kelola.penawaran.cetak');
+    Route::post('/{penawaran}/terbitkan', [PenawaranKontroler::class, 'TerbitkanDraf'])->where('penawaran', $ulid)->name('kelola.penawaran.terbitkan');
+    Route::post('/{penawaran}/batalkan', [PenawaranKontroler::class, 'Batalkan'])->where('penawaran', $ulid)->name('kelola.penawaran.batalkan');
+    Route::post('/{penawaran}/kirim', [PenawaranKontroler::class, 'Kirim'])->where('penawaran', $ulid)->name('kelola.penawaran.kirim');
+    Route::post('/{penawaran}/putuskan', [PenawaranKontroler::class, 'Putuskan'])->where('penawaran', $ulid)->name('kelola.penawaran.putuskan');
+    Route::post('/{penawaran}/jadikan-invoice', [PenawaranKontroler::class, 'JadikanInvoice'])->where('penawaran', $ulid)->name('kelola.penawaran.jadikan-invoice');
 });

@@ -251,6 +251,7 @@ Endpoint `/internal/*` memakai **autentikasi sesi** (cookie + CSRF, Sanctum SPA 
 /sehat                          Health check (dikonfigurasi di bootstrap/app.php, pengganti /up)
 /s/{kodeStruk}                  Struk digital
 /i/{kodeInvoice}                Invoice digital (F-21, D-166)
+/p/{kodePenawaran}              Penawaran digital: lihat, terima, tolak (F-21 bagian 3, D-168)
 /{slugTenant}                   Toko online publik
 /{slugTenant}/meja/{tokenMeja}  Self-order meja
 /{slugTenant}/reservasi         Booking layanan

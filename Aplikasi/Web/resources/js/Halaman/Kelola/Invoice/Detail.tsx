@@ -183,6 +183,16 @@ export default function HalamanDetailInvoice({
                             : `Dilihat ${FormatTanggalWaktu(invoice.DilihatPada)} (${String(invoice.JumlahDilihat)}x)`}
                     </KeteranganGrosir>
                 ) : null}
+                {invoice.Penawaran !== null ? (
+                    <KeteranganGrosir label="Dari penawaran">
+                        <Link
+                            href={`/kelola/penawaran/${invoice.Penawaran.Uuid}`}
+                            className="font-mono font-semibold text-brand underline"
+                        >
+                            {invoice.Penawaran.Nomor ?? 'Penawaran'}
+                        </Link>
+                    </KeteranganGrosir>
+                ) : null}
                 {invoice.DipakaiDiInvoiceAkhir ? (
                     <KeteranganGrosir label="Uang muka">Sudah dipotong di invoice akhir</KeteranganGrosir>
                 ) : null}

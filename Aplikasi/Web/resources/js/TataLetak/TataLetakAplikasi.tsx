@@ -590,6 +590,17 @@ const sumberPencarian: SumberPencarian[] = [
         }),
     },
     {
+        id: 'penawaran',
+        label: 'Penawaran',
+        alamat: '/kelola/penawaran',
+        ikon: 'Struk',
+        AmbilHasil: (b) => ({
+            judul: typeof b.Nomor === 'string' ? b.Nomor : 'Draf penawaran',
+            keterangan: typeof b.NamaPelanggan === 'string' ? b.NamaPelanggan : null,
+            href: `/kelola/penawaran/${String(b.Uuid)}`,
+        }),
+    },
+    {
         id: 'pemasok',
         label: 'Pemasok',
         alamat: '/kelola/pembelian/pemasok',
@@ -637,6 +648,15 @@ const halamanTurunan: (HalamanPencarian & { induk: string; izin?: KunciIzinTenan
         induk: '/kelola/invoice',
         label: 'Invoice berulang',
         href: '/kelola/invoice/berulang',
+        grup: 'Pelanggan',
+        ikon: 'Pelanggan',
+        izin: IzinTenant.InvoiceKelola,
+    },
+    // F-21 bagian 3: penawaran harga dibuka dari tombol di daftar Invoice (grup Pelanggan sudah di batas sub-menu).
+    {
+        induk: '/kelola/invoice',
+        label: 'Penawaran',
+        href: '/kelola/penawaran',
         grup: 'Pelanggan',
         ikon: 'Pelanggan',
         izin: IzinTenant.InvoiceKelola,

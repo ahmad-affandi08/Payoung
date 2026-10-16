@@ -149,6 +149,9 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
             {Ringkasan !== null ? <RingkasanPenagihanKartu ringkasan={Ringkasan} /> : null}
             <AksiHalaman>
                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                    <Link href="/kelola/penawaran">Penawaran</Link>
+                </Button>
+                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                     <Link href={`${AlamatInvoice}/berulang`}>Invoice berulang</Link>
                 </Button>
                 {Izin.Kelola ? (

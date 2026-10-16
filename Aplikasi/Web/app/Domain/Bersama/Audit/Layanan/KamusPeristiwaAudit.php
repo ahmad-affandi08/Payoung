@@ -364,6 +364,14 @@ final class KamusPeristiwaAudit
         'penerimaan-barang.batalkan' => 'Penerimaan barang dibatalkan',
         'penerimaan-barang.posting' => 'Penerimaan barang diposting',
 
+        'penawaran.batal' => 'Penawaran dibatalkan',
+        'penawaran.buat' => 'Draf penawaran dibuat',
+        'penawaran.diinvoicekan' => 'Penawaran dijadikan invoice',
+        'penawaran.diputuskan' => 'Keputusan penawaran dicatat',
+        'penawaran.kirim' => 'Penawaran dikirim ke pelanggan',
+        'penawaran.terbit' => 'Penawaran diterbitkan',
+        'penawaran.ubah' => 'Draf penawaran diubah',
+
         'pengguna.ganti-kata-sandi' => 'Kata sandi pengguna diganti',
         'pengguna.pin.atur' => 'PIN kasir pengguna diatur',
         'pengguna.pin.atur-ulang' => 'PIN kasir pengguna diatur ulang',

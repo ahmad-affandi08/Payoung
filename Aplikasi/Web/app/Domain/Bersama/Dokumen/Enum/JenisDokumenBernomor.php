@@ -95,6 +95,9 @@ enum JenisDokumenBernomor: string
     /** F-21 (D-166): invoice penjualan `INV/{OUTLET}/{YYMM}/{SEQ4}` disusun `PenomorGrosir`. */
     case Invoice = 'Invoice';
 
+    /** F-21 bagian 3 (D-168): penawaran harga `PNW/{OUTLET}/{YYMM}/{SEQ4}` disusun `PenomorGrosir`. */
+    case Penawaran = 'Penawaran';
+
     public function AmbilAwalan(): string
     {
         return match ($this) {
@@ -133,6 +136,7 @@ enum JenisDokumenBernomor: string
             self::PermintaanPembelian => 'PP',
             self::ReservasiMeja => 'RM',
             self::Invoice => 'INV',
+            self::Penawaran => 'PNW',
         };
     }
 
@@ -142,7 +146,7 @@ enum JenisDokumenBernomor: string
             self::StokAwal, self::TransaksiKasBank, self::TransferStok, self::PenyesuaianStok, self::OrderProduksi, self::PermintaanStok, self::JurnalUmum => 4,
             self::StokOpname => 3,
             self::Jurnal => 6,
-            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja, self::PesananMeja, self::PermintaanPembelian, self::NotaDebitPembelian, self::ReservasiMeja, self::Invoice => 4,
+            self::PesananPembelian, self::PenerimaanBarang, self::FakturPembelian, self::PembayaranHutang, self::ReturPembelian, self::PembayaranPiutang, self::PesananSendiri, self::PesananOnline, self::Reservasi, self::PesananGrosir, self::SuratJalan, self::FakturPenjualan, self::ReturGrosir, self::Pencairan, self::HapusBukuPiutang, self::AsetTetap, self::DokumenKonsinyasi, self::PembayaranKonsinyasi, self::BiayaTambahanPembelian, self::PerintahKerja, self::PesananMeja, self::PermintaanPembelian, self::NotaDebitPembelian, self::ReservasiMeja, self::Invoice, self::Penawaran => 4,
             self::AntrianKios => 3,
         };
     }

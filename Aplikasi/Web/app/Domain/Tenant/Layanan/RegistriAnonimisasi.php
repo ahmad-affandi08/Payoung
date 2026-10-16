@@ -31,7 +31,7 @@ final class RegistriAnonimisasi
         'KirimanWebhook', 'WebhookTenant', 'TokenApiTenant', 'GerbangPembayaranTenant', 'WhatsappTenant',
         'KodeAktivasi', 'KodeMasukPelanggan', 'SesiPelangganOnline', 'UndanganPengguna', 'KunciIdempotensi',
         'WajahKaryawan', 'PendaftaranMerchantPembayaran', 'EksporDataTenant', 'BerkasUnduhan', 'CatatanTenant', 'NotifikasiPengguna',
-        'PesanKeluar', 'PengingatPiutang', 'PengirimanPesananPembelian', 'NotifikasiPesananOnline', 'PenerimaKampanye', 'KampanyePesan',
+        'PesanKeluar', 'PengingatPiutang', 'PengirimanPesananPembelian', 'PengirimanInvoice', 'PengirimanPenawaran', 'NotifikasiPesananOnline', 'PenerimaKampanye', 'KampanyePesan',
         'OutletPengguna', 'TenantPengguna',
     ];
 
@@ -59,6 +59,8 @@ final class RegistriAnonimisasi
             'Nama' => 'unik:Pemasok Terhapus #', 'NamaKontak' => 'null', 'NoHp' => 'null', 'Email' => 'null', 'Alamat' => 'null',
             'Npwp' => 'null', 'NamaBank' => 'null', 'NomorRekening' => 'null', 'AtasNamaRekening' => 'null', 'Catatan' => 'null',
         ],
+        // F-21 bagian 3: nama penyetuju & catatan yang diketik pelanggan di halaman publik penawaran.
+        'Penawaran' => ['NamaPemutus' => 'null', 'CatatanKeputusan' => 'null'],
         'Kendaraan' => [
             'NomorPolisi' => 'unik:TERHAPUS-', 'Warna' => 'null', 'NomorRangka' => 'null', 'NomorMesin' => 'null',
             'Catatan' => 'null',

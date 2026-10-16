@@ -21,6 +21,7 @@ use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\InvoiceDetail;
+use App\Domain\Penjualan\Model\Penawaran;
 use App\Domain\Penjualan\Model\PengirimanInvoice;
 
 /**
@@ -95,6 +96,8 @@ final class DetailInvoice
                 'DilihatPada' => $invoice->DilihatPada?->toIso8601String(),
                 'JumlahDilihat' => $invoice->JumlahDilihat,
                 'DiterbitkanPada' => $invoice->DiterbitkanPada?->toIso8601String(),
+                // Penawaran asal (F-21 bagian 3): penawaran yang menunjuk invoice ini lewat `IdInvoice`.
+                'Penawaran' => $this->PenawaranAsal($invoice->Id),
                 'DipakaiDiInvoiceAkhir' => $invoice->Jenis === JenisInvoice::UangMuka && $invoice->IdInvoiceAkhir !== null,
                 // Sisa tagihan & uang yang sudah diterima dibaca dari `Piutang`, bukan disalin ke invoice.
                 'Sisa' => $infoPiutang['Sisa'] ?? null,
@@ -148,6 +151,16 @@ final class DetailInvoice
             'PesanGalat' => $k->PesanGalat,
             'Pada' => ($k->TerkirimPada ?? $k->DibuatPada)?->toIso8601String() ?? '',
         ])->all());
+    }
+
+    /**
+     * @return array{Uuid: string, Nomor: string|null}|null
+     */
+    private function PenawaranAsal(int $idInvoice): ?array
+    {
+        $penawaran = Penawaran::query()->where('IdInvoice', $idInvoice)->first(['Uuid', 'Nomor']);
+
+        return $penawaran === null ? null : ['Uuid' => $penawaran->Uuid, 'Nomor' => $penawaran->Nomor];
     }
 
     private function IdPiutang(int $idInvoice): int

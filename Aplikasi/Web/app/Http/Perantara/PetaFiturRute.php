@@ -50,6 +50,7 @@ final class PetaFiturRute
 
         // Invoice & penagihan B2B (F-21, D-166)
         ['Pola' => 'kelola.invoice.*', 'Fitur' => 'invoice.penagihan', 'Mode' => 'tulis', 'Nama' => 'Invoice & penagihan'],
+        ['Pola' => 'kelola.penawaran.*', 'Fitur' => 'invoice.penagihan', 'Mode' => 'tulis', 'Nama' => 'Invoice & penagihan'],
 
         // Pelanggan
         ['Pola' => 'kelola.pelanggan.buat', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],

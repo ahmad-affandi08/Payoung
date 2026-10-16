@@ -201,9 +201,24 @@ final class SimpanInvoice
      */
     private function SusunBaris(DataInvoice $data): array
     {
+        return $this->SusunBarisDokumen($data->baris, $data->jenis);
+    }
+
+    /**
+     * Memeriksa dan menyusun baris dokumen tagih (invoice, atau penawaran yang akan menjadi invoice): aturan jumlah,
+     * harga, diskon, produk jasa/tanpa stok, dan kelompok pajak satu tempat supaya penawaran tidak menerima baris yang
+     * kelak ditolak invoice.
+     *
+     * @param  list<DataBarisInvoice>  $baris
+     * @return list<array<string, mixed>>
+     *
+     * @throws PelanggaranAturanBisnis
+     */
+    public function SusunBarisDokumen(array $baris, JenisInvoice $jenis): array
+    {
         $hasil = [];
 
-        foreach ($data->baris as $indeks => $b) {
+        foreach ($baris as $indeks => $b) {
             $kunci = 'Baris.'.$indeks;
             $nama = trim($b->nama);
 
@@ -225,7 +240,7 @@ final class SimpanInvoice
                 throw new PelanggaranAturanBisnis('BarisTidakValid', "Diskon baris \"{$nama}\" melebihi nilai barisnya.", $kunci.'.Diskon');
             }
 
-            if ($data->jenis === JenisInvoice::UangMuka && ! $b->diskon->BernilaiNol()) {
+            if ($jenis === JenisInvoice::UangMuka && ! $b->diskon->BernilaiNol()) {
                 throw new PelanggaranAturanBisnis('BarisTidakValid', 'Invoice uang muka tidak memakai diskon.', $kunci.'.Diskon');
             }
 

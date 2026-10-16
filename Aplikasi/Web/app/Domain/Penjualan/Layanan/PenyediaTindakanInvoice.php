@@ -14,8 +14,10 @@ use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Enum\StatusInvoiceBerulang;
+use App\Domain\Penjualan\Enum\StatusPenawaran;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\InvoiceBerulang;
+use App\Domain\Penjualan\Model\Penawaran;
 
 /**
  * Kotak Tindakan domain Invoice (F-21, D-23 C, izin `invoice.kelola`, dibatasi outlet akses). Butir pengingat yang selesai
@@ -24,11 +26,16 @@ use App\Domain\Penjualan\Model\InvoiceBerulang;
  * - templat invoice berulang yang siklus terakhirnya gagal terbit (Penting): tagihan otomatis yang diam-diam berhenti
  *   adalah pendapatan yang tidak tertagih;
  * - draf invoice yang menggantung lebih dari `HARI_DRAF_LAMA` hari (Perhatian);
- * - invoice terbit lebih dari sehari yang belum pernah dikirim ke pelanggan (Perhatian).
+ * - invoice terbit lebih dari sehari yang belum pernah dikirim ke pelanggan (Perhatian);
+ * - penawaran diterima yang belum dijadikan invoice aktif (Perhatian): pekerjaan sudah disetujui tetapi belum ditagih;
+ * - penawaran terbit yang masih berlaku tetapi lebih dari `HARI_TANPA_TANGGAPAN` hari belum ditanggapi (Perhatian): saatnya
+ *   menghubungi pelanggan sebelum masa berlakunya habis.
  */
 final class PenyediaTindakanInvoice implements PenyediaTindakan
 {
     public const HARI_DRAF_LAMA = 7;
+
+    public const HARI_TANPA_TANGGAPAN = 7;
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
@@ -54,6 +61,12 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
         $gagal = $batasOutlet(InvoiceBerulang::query())->where('Status', StatusInvoiceBerulang::Aktif->value)->whereNotNull('GalatTerakhir')->orderBy('GalatPada')->get();
         $draf = $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Draf->value)->where('DibuatPada', '<', $konteks->hariIni->subDays(self::HARI_DRAF_LAMA)->startOfDay())->orderBy('Id')->get();
         $belumKirim = $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Terbit->value)->whereNull('TerkirimPada')->where('Tanggal', '<', $hari)->orderBy('Tanggal')->get();
+
+        $invoiceAktif = Invoice::query()->where('Status', '!=', StatusInvoice::Dibatalkan->value)->select('Id');
+        $diterima = $batasOutlet(Penawaran::query())->where('Status', StatusPenawaran::Diterima->value)
+            ->where(fn ($k) => $k->whereNull('IdInvoice')->orWhereNotIn('IdInvoice', $invoiceAktif))->orderBy('DiputuskanPada')->get();
+        $tanpaTanggapan = $batasOutlet(Penawaran::query())->where('Status', StatusPenawaran::Terbit->value)->where('BerlakuSampai', '>=', $hari)
+            ->where('DiterbitkanPada', '<', $konteks->hariIni->subDays(self::HARI_TANPA_TANGGAPAN)->startOfDay())->orderBy('BerlakuSampai')->get();
 
         return [
             new DataButirTindakan(
@@ -122,6 +135,40 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
                     'Terbit '.$i->Tanggal->toDateString(),
                     $i->Tanggal->toDateString(),
                     '/kelola/invoice/'.$i->Uuid,
+                ))->all()),
+            ),
+            new DataButirTindakan(
+                'penawaran.diterima-belum-invoice',
+                'Invoice',
+                TingkatTindakan::Perhatian,
+                'Penawaran diterima belum ditagih',
+                'Pelanggan sudah menyetujui penawaran berikut, tetapi belum dijadikan invoice. Jadikan invoice agar tagihannya tidak terlewat.',
+                $diterima->count(),
+                '/kelola/penawaran?saring[Status]=Diterima',
+                'Jadikan invoice',
+                array_values($diterima->take(DataButirTindakan::BATAS_RINCIAN)->map(fn (Penawaran $p): DataRincianTindakan => new DataRincianTindakan(
+                    $p->Uuid,
+                    (string) $p->Nomor,
+                    'Diterima '.($p->DiputuskanPada?->toDateString() ?? ''),
+                    $p->DiputuskanPada?->toDateString(),
+                    '/kelola/penawaran/'.$p->Uuid,
+                ))->all()),
+            ),
+            new DataButirTindakan(
+                'penawaran.belum-ditanggapi',
+                'Invoice',
+                TingkatTindakan::Perhatian,
+                'Penawaran belum ditanggapi',
+                'Sudah lebih dari '.self::HARI_TANPA_TANGGAPAN.' hari sejak terbit dan masih berlaku. Hubungi pelanggan sebelum masa berlakunya habis.',
+                $tanpaTanggapan->count(),
+                '/kelola/penawaran?saring[Status]=MenungguKeputusan',
+                'Tindak lanjuti',
+                array_values($tanpaTanggapan->take(DataButirTindakan::BATAS_RINCIAN)->map(fn (Penawaran $p): DataRincianTindakan => new DataRincianTindakan(
+                    $p->Uuid,
+                    (string) $p->Nomor,
+                    'Berlaku sampai '.$p->BerlakuSampai->toDateString(),
+                    $p->BerlakuSampai->toDateString(),
+                    '/kelola/penawaran/'.$p->Uuid,
                 ))->all()),
             ),
         ];

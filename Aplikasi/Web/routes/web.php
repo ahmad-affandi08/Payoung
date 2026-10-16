@@ -38,6 +38,7 @@ use App\Http\Kontroler\Publik\InvoicePublikKontroler;
 use App\Http\Kontroler\Publik\KiosKontroler;
 use App\Http\Kontroler\Publik\KompatibilitasPerangkatKontroler as KompatibilitasPerangkatPublikKontroler;
 use App\Http\Kontroler\Publik\LayarAbsensiKontroler;
+use App\Http\Kontroler\Publik\PenawaranPublikKontroler;
 use App\Http\Kontroler\Publik\PengembangKontroler;
 use App\Http\Kontroler\Publik\PersetujuanServisKontroler;
 use App\Http\Kontroler\Publik\PesanSendiriKontroler;
@@ -148,6 +149,15 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kodeInvoice', KodeInvoicePublik::POLA)
         ->middleware('throttle:60,1')
         ->name('publik.invoice');
+    // F-21 bagian 3 penawaran publik (kode seperti invoice); keputusan pelanggan dibatasi lebih ketat.
+    Route::get('/p/{kodePenawaran}', [PenawaranPublikKontroler::class, 'Tampilkan'])
+        ->where('kodePenawaran', KodeInvoicePublik::POLA)
+        ->middleware('throttle:60,1')
+        ->name('publik.penawaran');
+    Route::post('/p/{kodePenawaran}/putuskan', [PenawaranPublikKontroler::class, 'Putuskan'])
+        ->where('kodePenawaran', KodeInvoicePublik::POLA)
+        ->middleware('throttle:10,1')
+        ->name('publik.penawaran.putuskan');
     // F7 (CRM-08): penilaian pelanggan atas transaksi dari struk digital.
     Route::post('/s/{kodeStruk}/umpan-balik', [StrukDigitalKontroler::class, 'KirimUmpanBalik'])
         ->where('kodeStruk', KodeStrukDigital::POLA)

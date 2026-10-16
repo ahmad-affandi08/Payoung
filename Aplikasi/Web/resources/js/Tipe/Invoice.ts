@@ -195,6 +195,8 @@ export type KepalaDetailInvoice = {
     JumlahDilihat: number;
     DiterbitkanPada: string | null;
     DipakaiDiInvoiceAkhir: boolean;
+    /** Penawaran asal invoice ini (F-21 bagian 3), bila ada. */
+    Penawaran: { Uuid: string; Nomor: string | null } | null;
     Sisa: string | null;
     Dibayar: string | null;
     TautanPublik: string | null;
