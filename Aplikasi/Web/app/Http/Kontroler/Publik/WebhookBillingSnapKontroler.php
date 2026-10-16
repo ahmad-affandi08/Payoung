@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
  * - **Notifikasi pembayaran** (jalur lain, misal `v1.0/transfer-va/payment`, `v1.0/qr/qr-mpm-notify`, `v1.0/debit/notify`):
  *   DOKU menambahkan jalur tetap ke URL notifikasi yang disetel di dasbor, jadi semua jalur ditampung di sini.
  *
+ * QRIS (SNAP maupun bukan) memakai notifikasi berformat Non-SNAP (jawaban dukungan DOKU), yang diposting ke URL dasar
+ * tanpa jalur tambahan; karena itu `{jalur?}` opsional dan nomor pesanan dicari di seluruh badan.
+ *
  * Notifikasi tidak melunasi apa pun; ia hanya memicu pertanyaan status ke DOKU (`ProsesPemicuSnapLangganan`). Karena itu
  * jawabannya selalu 200 untuk badan yang masuk akal (supaya DOKU berhenti mengulang), termasuk untuk nomor pesanan yang
  * tidak dikenal.
@@ -25,9 +28,9 @@ use Illuminate\Http\Request;
 final class WebhookBillingSnapKontroler extends Kontroler
 {
     /** Kunci badan yang bisa memuat nomor pesanan kita, urut dari yang paling spesifik. */
-    private const KUNCI_NOMOR = ['originalPartnerReferenceNo', 'partnerReferenceNo', 'trxId', 'virtualAccountData.trxId', 'additionalInfo.trxId'];
+    private const KUNCI_NOMOR = ['originalPartnerReferenceNo', 'partnerReferenceNo', 'trxId', 'virtualAccountData.trxId', 'additionalInfo.trxId', 'order.invoice_number'];
 
-    public function Terima(Request $permintaan, string $jalur, PenerbitTokenSnap $token, ProsesPemicuSnapLangganan $proses): JsonResponse
+    public function Terima(Request $permintaan, PenerbitTokenSnap $token, ProsesPemicuSnapLangganan $proses, string $jalur = ''): JsonResponse
     {
         if (str_ends_with(rtrim($jalur, '/'), 'access-token/b2b')) {
             return response()->json($token->Terbitkan());
@@ -53,7 +56,16 @@ final class WebhookBillingSnapKontroler extends Kontroler
             }
         }
 
-        return null;
+        // Notifikasi QRIS DOKU masih berformat Non-SNAP (jawaban dukungan DOKU), yang menaruh nomor pesanan di bidang
+        // berbeda. Karena isi notifikasi hanya pemicu, cukup cari nilai teks mana pun yang berbentuk nomor pesanan Payoung.
+        $ditemukan = null;
+        array_walk_recursive($badan, function (mixed $nilai) use (&$ditemukan): void {
+            if ($ditemukan === null && is_string($nilai) && NomorPesananBilling::Urai($nilai) !== null) {
+                $ditemukan = $nilai;
+            }
+        });
+
+        return $ditemukan;
     }
 
     /**

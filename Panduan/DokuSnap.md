@@ -94,8 +94,10 @@ Dokumen DOKU tidak menjawab ini dengan pasti; kode memakai dugaan paling aman da
 2. **Bentuk `virtualAccountNo` pada BIN kurang dari 8 digit.** Deskripsi skema DOKU menyebut "padding 0", contoh Mandiri memakai spasi; kode mengikuti contoh (spasi, sama dengan `partnerServiceId`). Bila VA Mandiri ditolak, ubah ke padding nol di `GerbangBillingSnap::BuatVa`.
 3. **Path ShopeePay.** Dokumen menyebut `/direct-debit/core/v1/debit/payment-host-to-host` dan `.../v2/...` dalam satu halaman;
    kode memakai v1. Bila ditolak, ubah konstanta di `GerbangBillingSnap`.
-4. **Format notifikasi.** Path, tanda tangan, dan badan notifikasi QRIS tidak ada di dokumen yang dibaca; ditangani dengan
-   desain pemicu di atas. Jawaban kita memakai `responseCode` bentuk `200` + kode layanan + `00` (VA 25, QRIS 52, e-wallet 56).
+4. **Format notifikasi.** Dukungan DOKU menjawab (Oktober 2026): untuk QRIS, baik SNAP maupun Non-SNAP, notifikasi saat ini
+   masih berformat **Non-SNAP** (contoh di `developers.doku.com/get-started-with-doku-api/notification/http-notification-sample-non-snap#qris`),
+   diposting ke URL dasar tanpa jalur tambahan. Webhook kita menerima itu (`{jalur?}` opsional, nomor pesanan dicari di
+   `order.invoice_number` dan seluruh badan); sisanya ditangani dengan desain pemicu di atas. Jawaban kita memakai `responseCode` bentuk `200` + kode layanan + `00` (VA 25, QRIS 52, e-wallet 56).
 5. **Status e-wallet** memakai `/orders/v1.0/debit/status` dengan `serviceCode` `55`.
 
 ## Logo cara bayar (D-160, D-161)

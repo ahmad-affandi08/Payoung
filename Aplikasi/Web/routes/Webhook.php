@@ -32,7 +32,7 @@ if (! EdisiAplikasi::CekLisensi()) {
 
     // D-159: tujuan DOKU SNAP akun platform (token B2B + notifikasi QRIS/VA/e-wallet). Satu awalan, jalur sisanya ditampung
     // (DOKU menambahkan jalur tetap ke URL notifikasi). Notifikasi hanya memicu pertanyaan status, tidak melunasi sendiri.
-    Route::post('/webhook/billing/snap/{jalur}', [WebhookBillingSnapKontroler::class, 'Terima'])
+    Route::post('/webhook/billing/snap/{jalur?}', [WebhookBillingSnapKontroler::class, 'Terima'])
         ->where('jalur', '.*')
         ->middleware('throttle:webhook')
         ->name('webhook.billing.snap');

@@ -337,6 +337,23 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
             ->and($tanya['merchantId'])->toBe('MID-UJI-1');
     });
 
+    it('notifikasi QRIS berformat Non-SNAP ke URL dasar tanpa jalur tetap memicu pertanyaan status dan melunasi (jawaban dukungan DOKU)', function (): void {
+        [, , $tagihan, $pembayaran] = SiapkanQrisMenunggu($this);
+        AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-query', ['responseCode' => '2005100', 'latestTransactionStatus' => '00', 'amount' => ['value' => number_format((int) $tagihan->Total, 2, '.', ''), 'currency' => 'IDR']]);
+
+        $badan = [
+            'service' => ['id' => 'QRIS'],
+            'acquirer' => ['id' => 'GUDANG_VOUCHER'],
+            'transaction' => ['type' => 'SALE', 'status' => 'SUCCESS', 'original_request_id' => 'bukan-nomor-kita'],
+            'order' => ['invoice_number' => $pembayaran->RefGateway, 'amount' => (int) $tagihan->Total],
+        ];
+
+        KirimNotifikasiSnap($this, '', $badan)->assertOk();
+
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas);
+    });
+
     it('notifikasi yang mengaku lunas padahal DOKU menjawab pending TIDAK melunasi apa pun', function (): void {
         [, , $tagihan, $pembayaran] = SiapkanQrisMenunggu($this);
         AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-query', ['responseCode' => '2005100', 'latestTransactionStatus' => '03']);
