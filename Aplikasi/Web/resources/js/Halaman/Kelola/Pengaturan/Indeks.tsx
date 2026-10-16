@@ -5,7 +5,13 @@ import { useState } from 'react';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import DialogNaikPaket from '@/Komponen/Langganan/DialogNaikPaket';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
-import { CekButirSesuaiEdisi, SaringPengaturan, type ButirPengaturan } from '@/Pustaka/DaftarPengaturan';
+import {
+    CekButirSesuaiEdisi,
+    daftarPengaturan,
+    pintasanPengaturan,
+    SaringPengaturan,
+    type ButirPengaturan,
+} from '@/Pustaka/DaftarPengaturan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import { IzinTenant, PunyaIzinTenant } from '@/Tipe/Organisasi';
@@ -37,6 +43,11 @@ export default function HalamanPengaturan() {
     const cari = kata.trim();
     const grup = SaringPengaturan(kata, CekBoleh);
     const jumlah = grup.reduce((total, baris) => total + baris.butir.length, 0);
+    // "Paling sering dipakai": pintasan ke butir yang boleh dibuka pengguna ini; hilang saat mencari.
+    const semuaButir = daftarPengaturan.flatMap(({ butir }) => butir);
+    const pintasan = pintasanPengaturan
+        .map((href) => semuaButir.find((butir) => butir.href === href))
+        .filter((butir): butir is ButirPengaturan => butir !== undefined && CekBoleh(butir) && !CekTerkunci(butir));
 
     return (
         <TataLetakAplikasi judul="Pengaturan">
@@ -62,6 +73,26 @@ export default function HalamanPengaturan() {
                     keterangan="Ketik nama pengaturan, misal struk, pajak, atau perangkat."
                 />
             </div>
+
+            {cari === '' && pintasan.length > 0 ? (
+                <section aria-labelledby="judul-pintasan" className="flex flex-col gap-2">
+                    <h2 id="judul-pintasan" className="text-label font-semibold text-teks-utama">
+                        Paling sering dipakai
+                    </h2>
+                    <ul className="flex flex-wrap gap-2">
+                        {pintasan.map((butir) => (
+                            <li key={butir.href}>
+                                <Link
+                                    href={butir.href}
+                                    className="inline-flex min-h-11 items-center rounded-panel border border-garis bg-permukaan px-4 text-label font-semibold text-teks-utama hover:bg-permukaan-redup focus-visible:bg-permukaan-redup"
+                                >
+                                    {butir.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ) : null}
 
             {/* Keadaan hasil cari kosong (§17.6.6): tanpa ilustrasi, karena ini hasil saring, bukan data kosong. */}
             <p aria-live="polite" className="sr-only">

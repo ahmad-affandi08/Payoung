@@ -24,11 +24,11 @@ export default function RincianPerubahanAudit({ Perubahan, NilaiLama, NilaiBaru,
                 <ul className="space-y-0.5">
                     {Perubahan.map((p) => (
                         <li key={p.Bidang}>
-                            <span className="font-medium text-teks">{p.Bidang}:</span>{' '}
+                            <span className="font-medium text-teks-utama">{p.Bidang}:</span>{' '}
                             {p.Lama !== null && p.Lama !== '—' ? (
                                 <span className="text-teks-sekunder">{p.Lama} → </span>
                             ) : null}
-                            <span className="text-teks">{p.Baru ?? '—'}</span>
+                            <span className="text-teks-utama">{p.Baru ?? '—'}</span>
                         </li>
                     ))}
                 </ul>

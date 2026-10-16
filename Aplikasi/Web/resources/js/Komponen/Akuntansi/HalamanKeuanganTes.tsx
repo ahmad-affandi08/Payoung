@@ -117,6 +117,8 @@ describe('F-13a menu Akuntansi', () => {
             'Laba rugi',
             'Neraca',
             'Arus kas',
+            // v6.49: Pusat Unduhan pindah dari Pengaturan ke menu Laporan.
+            'Pusat Unduhan',
         ]);
         expect(CekMenuAktif('/kelola/akuntansi/jurnal', '/kelola/akuntansi/laporan/buku-besar?akun=01J9')).toBe(true);
         expect(CekMenuAktif('/kelola/akuntansi/jurnal', '/kelola/akuntansi/kas-bank/01J9ZC5V7Q8R2T4W6Y8A0B2C4D')).toBe(

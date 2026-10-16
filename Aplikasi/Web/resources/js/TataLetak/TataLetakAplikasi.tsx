@@ -7,7 +7,7 @@ import IkonNavigasi, { type NamaIkonNavigasi } from '@/Komponen/Navigasi/IkonNav
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { Button } from '@/Komponen/Ui/button';
 import DialogNaikPaket from '@/Komponen/Langganan/DialogNaikPaket';
-import { CekButirSesuaiEdisi, daftarPengaturan, type GrupPengaturan } from '@/Pustaka/DaftarPengaturan';
+import { butirAkun, CekButirSesuaiEdisi, daftarPengaturan, type GrupPengaturan } from '@/Pustaka/DaftarPengaturan';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Komponen/Ui/collapsible';
 import {
@@ -105,12 +105,15 @@ type ItemMenu = {
 type GrupMenu = ItemMenu & { labelSub: string; sub: ItemMenu[] };
 
 // F-03: grup menu "Produk". Tampil sebagai sub-menu saat salah satu halamannya dibuka.
-// D-27: master yang diatur sekali (Satuan, Pilihan, Kelompok pajak, Daftar harga, Stasiun dapur) dan alat impor
-// massal pindah ke Pengaturan. Impor tetap punya tombol "Impor dari Excel" di halaman Produk, sama seperti
-// Impor stok awal di halaman Stok awal.
+// D-27 (disesuaikan v6.49): master yang dipakai tiap kali mengurus katalog (Daftar harga, Satuan, Pilihan, impor massal)
+// kembali ke sini dari Pengaturan; yang diatur sekali (Kelompok pajak, Stasiun dapur) tetap di Pengaturan.
 const menuProduk: ItemMenu[] = [
     { label: 'Produk', href: '/kelola/produk', izin: IzinTenant.ProdukLihat },
     { label: 'Kategori', href: '/kelola/kategori', izin: IzinTenant.ProdukLihat },
+    // Harga per tier pelanggan dan per kanal (GoFood/GrabFood).
+    { label: 'Daftar harga', href: '/kelola/daftar-harga', izin: IzinTenant.ProdukLihat, fitur: 'harga.daftar-harga' },
+    { label: 'Satuan', href: '/kelola/satuan', izin: IzinTenant.ProdukLihat },
+    { label: 'Pilihan (modifier)', href: '/kelola/kelompok-pilihan', izin: IzinTenant.ProdukLihat },
     // F-16d bagian 2: paket sesi (produk Jasa yang dijual sebagai N sesi).
     {
         label: 'Paket sesi',
@@ -119,6 +122,7 @@ const menuProduk: ItemMenu[] = [
         fitur: 'pelanggan.paket-sesi',
         sektor: ['SVC'],
     },
+    { label: 'Impor produk', href: '/kelola/produk/impor', izin: IzinTenant.ProdukKelola, lanjutan: true },
 ];
 
 // F-05a: grup menu "Persediaan" (DesainF05a E). D-27: stok awal, impornya, dan pengaturan persediaan pindah ke
@@ -264,6 +268,8 @@ const menuKaryawan: ItemMenu[] = [
     { label: 'Target penjualan', href: '/kelola/karyawan/target', izin: IzinTenant.KaryawanLihat, lanjutan: true },
     // F-18 bagian 3: rekap gaji bulanan (memuat gaji).
     { label: 'Rekap gaji', href: '/kelola/karyawan/gaji', izin: IzinTenant.KaryawanKelola },
+    // D-27 (disesuaikan v6.49): log audit menjawab "siapa melakukan apa", jadi bertetangga dengan daftar tim.
+    { label: 'Log audit', href: '/kelola/log-audit', izin: IzinTenant.AuditLihat },
 ];
 
 /*
@@ -305,6 +311,8 @@ const menuPenjualan: ItemMenu[] = [
         gantiBilaSektor: { sektor: ['FNB'], kecuali: ['SVC'], label: 'Reservasi meja', href: '/kelola/reservasi-meja' },
     },
     { label: 'Laundry', href: '/kelola/laundry', izin: IzinTenant.LaundryKelola, sektor: ['SVC-LDR'] },
+    // D-27 (disesuaikan v6.49): perangkat kasir dipakai tiap menambah kasir, mengganti HP, atau mencabut perangkat hilang.
+    { label: 'Perangkat kasir', href: '/kelola/perangkat', izin: IzinTenant.PerangkatLihat },
 ];
 
 // F-05a: grup menu "Akuntansi"; jurnal (baca saja) memakai laporan.keuangan.lihat (DesainF05a H-13).
@@ -389,6 +397,13 @@ const menuLaporan: ItemMenu[] = [
         href: '/kelola/akuntansi/laporan/arus-kas',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+    },
+    // D-124: ekspor besar disiapkan di latar belakang; D-27 (disesuaikan v6.49): tempat mengambilnya ada di grup Laporan.
+    {
+        label: 'Pusat Unduhan',
+        href: '/kelola/unduhan',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        atau: IzinTenant.LaporanKeuanganLihat,
     },
 ];
 
@@ -654,8 +669,17 @@ export function SusunPencarian(
             ? [halamanTurunanItem]
             : [],
     );
+    // Halaman akun (menu avatar: langganan, keamanan akun) tidak ada di menu samping maupun Pengaturan, tetapi tetap dicari.
+    const akunSaya = butirAkun
+        .filter((item) => CekButirSesuaiEdisi(item, edisi) && (item.izin === null || PunyaIzinTenant(akses, item.izin)))
+        .map((item): HalamanPencarian => ({ label: item.label, href: item.href, grup: 'Akun', ikon: 'Pengaturan' }));
     // Menu samping menang bila alamatnya sama, supaya satu halaman tidak muncul dua kali di hasil pencarian.
-    const halaman = [...menu, ...turunan, ...pengaturan.filter((item) => !menu.some((ada) => ada.href === item.href))];
+    const halaman = [
+        ...menu,
+        ...turunan,
+        ...akunSaya,
+        ...pengaturan.filter((item) => !menu.some((ada) => ada.href === item.href)),
+    ];
     const alamatTerlihat = new Set(halaman.map((h) => h.href));
 
     return { halaman, sumber: sumberPencarian.filter((s) => alamatTerlihat.has(s.alamat)) };

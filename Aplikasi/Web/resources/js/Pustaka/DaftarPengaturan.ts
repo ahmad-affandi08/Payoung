@@ -26,6 +26,39 @@ export type ButirPengaturan = {
 
 export type GrupPengaturan = { judul: string; butir: ButirPengaturan[] };
 
+/**
+ * Halaman milik akun pengguna yang rumahnya menu akun (avatar di kanan atas), bukan Pengaturan dan bukan menu samping
+ * (D-27, penyesuaian v6.49). Tidak ditampilkan di halaman Pengaturan; hanya ikut pencarian cepat (Ctrl+K).
+ */
+export const butirAkun: ButirPengaturan[] = [
+    {
+        label: 'Langganan & tagihan',
+        keterangan: 'Paket yang aktif, batas pemakaian, tagihan, dan bukti pembayaran.',
+        href: '/kelola/langganan',
+        izin: IzinTenant.LanggananKelola,
+        // D-35: edisi Lisensi tidak berlangganan, jadi rutenya tidak ada di sana.
+        edisi: 'Saas',
+    },
+    {
+        label: 'Keamanan akun saya',
+        keterangan: 'Kata sandi, verifikasi dua langkah, dan PIN kasir milik Anda sendiri.',
+        href: '/kelola/keamanan',
+        izin: null,
+    },
+];
+
+/**
+ * Pintasan "Paling sering dipakai" di atas halaman Pengaturan (butir yang paling sering dibuka pemilik setelah
+ * usaha berjalan). Hanya pintasan: rumah butirnya tetap grup masing-masing, jadi tidak melanggar "satu rumah".
+ */
+export const pintasanPengaturan: string[] = [
+    '/kelola/kasir/pengaturan',
+    '/kelola/kasir/struk',
+    '/kelola/panduan-awal/metode-pembayaran',
+    '/kelola/outlet',
+    '/kelola/peran',
+];
+
 export const daftarPengaturan: GrupPengaturan[] = [
     {
         judul: 'Usaha',
@@ -57,14 +90,6 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.OutletLihat,
             },
             {
-                label: 'Langganan & tagihan',
-                keterangan: 'Paket yang aktif, batas pemakaian, tagihan, dan bukti pembayaran.',
-                href: '/kelola/langganan',
-                izin: IzinTenant.LanggananKelola,
-                // D-35: edisi Lisensi tidak berlangganan, jadi rutenya tidak ada di sana.
-                edisi: 'Saas',
-            },
-            {
                 label: 'Data saya',
                 keterangan: 'Unduh salinan lengkap data usaha Anda (UU PDP) dan, nanti, tutup akun usaha.',
                 href: '/kelola/pengaturan/data-saya',
@@ -79,45 +104,16 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 // PGL-16: tidak ada di edisi Lisensi (tanpa konsol Payoung).
                 edisi: 'Saas',
             },
-            {
-                label: 'Pusat Unduhan',
-                keterangan:
-                    'Berkas laporan besar yang disiapkan di latar belakang. Tersedia 7 hari, lalu dihapus otomatis.',
-                href: '/kelola/unduhan',
-                // D-124: halaman ini sendiri tanpa izin khusus (baris yang tampil milik pengguna itu); butirnya hanya
-                // ditawarkan kepada yang bisa mengekspor laporan.
-                izin: IzinTenant.LaporanPenjualanLihat,
-                atau: IzinTenant.LaporanKeuanganLihat,
-            },
         ],
     },
     {
         judul: 'Katalog & harga',
         butir: [
             {
-                label: 'Satuan',
-                keterangan: 'Satuan jual & beli beserta konversinya, misal dus ke pcs.',
-                href: '/kelola/satuan',
-                izin: IzinTenant.ProdukLihat,
-            },
-            {
-                label: 'Pilihan (modifier)',
-                keterangan: 'Kelompok pilihan seperti tingkat gula atau ukuran, beserta tambahan harganya.',
-                href: '/kelola/kelompok-pilihan',
-                izin: IzinTenant.ProdukLihat,
-            },
-            {
                 label: 'Kelompok pajak',
                 keterangan: 'Kelompok tarif pajak yang dipasang ke produk.',
                 href: '/kelola/kelompok-pajak',
                 izin: IzinTenant.ProdukLihat,
-            },
-            {
-                label: 'Daftar harga',
-                keterangan: 'Harga per tier pelanggan dan per kanal, misal harga GoFood atau GrabFood.',
-                href: '/kelola/daftar-harga',
-                izin: IzinTenant.ProdukLihat,
-                fitur: 'harga.daftar-harga',
             },
             {
                 label: 'Stasiun dapur',
@@ -126,12 +122,6 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.ProdukLihat,
                 fitur: 'pos.kds',
                 sektor: ['FNB'],
-            },
-            {
-                label: 'Impor produk',
-                keterangan: 'Unggah banyak produk sekaligus dari Excel/CSV, beserta riwayat imporannya.',
-                href: '/kelola/produk/impor',
-                izin: IzinTenant.ProdukKelola,
             },
         ],
     },
@@ -302,24 +292,6 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Izin tiap peran. Anggota tim, akses masuk, dan PIN kasir ada di menu Tim.',
                 href: '/kelola/peran',
                 izin: IzinTenant.PenggunaLihat,
-            },
-            {
-                label: 'Perangkat kasir',
-                keterangan: 'Perangkat terdaftar, kode aktivasi, pencabutan, dan profil hardware.',
-                href: '/kelola/perangkat',
-                izin: IzinTenant.PerangkatLihat,
-            },
-            {
-                label: 'Keamanan akun saya',
-                keterangan: 'Kata sandi, verifikasi dua langkah, dan PIN kasir milik Anda sendiri.',
-                href: '/kelola/keamanan',
-                izin: null,
-            },
-            {
-                label: 'Log audit',
-                keterangan: 'Riwayat perubahan penting: siapa, apa, kapan, dari perangkat mana.',
-                href: '/kelola/log-audit',
-                izin: IzinTenant.AuditLihat,
             },
             {
                 label: 'Token API',

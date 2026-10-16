@@ -28,7 +28,15 @@ import { daftarMenu } from './TataLetakAplikasi';
  * Angka ini tetap penjaga: menaikkannya lagi butuh alasan setingkat ini, bukan sekadar ada flow baru.
  */
 const BATAS_LEVEL_SATU = 13;
-const BATAS_SUB_MENU = 7;
+/*
+ * 8 sub-menu per grup sejak v6.49 (penyesuaian D-27 atas permintaan pemilik produk: "pengaturannya terlalu banyak").
+ * Tiga halaman yang dibuka berkala pindah dari Pengaturan ke grup yang menjawab pertanyaannya: Perangkat kasir ke
+ * Penjualan & kasir, Pusat Unduhan ke Laporan, Log audit ke Tim. Alternatif yang ditolak: menggabungkan entri mirip di
+ * grup yang penuh, karena tanpa data pemakaian tidak ada yang aman digabung. Langganan & tagihan dan Keamanan akun
+ * pindah ke menu akun (avatar), yang tidak memakai kuota ini. Grup lain tetap di 7; yang melewatinya harus
+ * menjelaskan alasannya di sini, bukan sekadar menaikkan angkanya lagi.
+ */
+const BATAS_SUB_MENU = 8;
 
 type Butir = { label: string; href: string; sub?: { label: string; href: string }[] };
 
@@ -104,7 +112,8 @@ describe('Anggaran navigasi back-office (D-27)', () => {
         const hanyaTanpaIzin = SaringPengaturan('', (butir) => butir.izin === null);
         const label = hanyaTanpaIzin.flatMap(({ butir }) => butir.map((b) => b.label));
 
-        expect(label).toEqual(['Keamanan akun saya']);
+        // Keamanan akun saya pindah ke menu akun (v6.49), jadi tidak ada lagi butir tanpa izin di Pengaturan.
+        expect(label).toEqual([]);
         expect(SaringPengaturan('outlet', (butir) => butir.izin === null)).toEqual([]);
     });
 
