@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanBerandaKelola from '@/Halaman/Kelola/Beranda';
@@ -9,6 +9,7 @@ import HalamanLaporanStok from '@/Halaman/Kelola/Laporan/Stok';
 import { AmbilHrefEkspor } from '@/Pengujian/InteraksiRadix';
 import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { AmbilMaksimum, HitungPerubahanPersen, HitungTingkatPanas } from '@/Pustaka/Laporan';
+import { TulisTanggal } from '@/Pustaka/Tanggal';
 import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
 import type {
     AngkaPenjualan,
@@ -39,9 +40,19 @@ function Angka(bersih: string, transaksi: number, laba: string): AngkaPenjualan 
 
 const dasbor: DasborPemilik = {
     Tanggal: '2026-10-07',
-    HariIni: Angka('12500000.00', 125, '3750000.00'),
-    Kemarin: Angka('10000000.00', 100, '3000000.00'),
-    MingguLalu: Angka('0.00', 0, '0.00'),
+    Periode: {
+        Dari: '2026-10-07',
+        Sampai: '2026-10-07',
+        Hari: 1,
+        SatuHari: true,
+        HariIni: '2026-10-07',
+        JumlahHariTerlaris: 7,
+    },
+    Angka: Angka('12500000.00', 125, '3750000.00'),
+    Pembanding: [
+        { Nama: 'kemarin', Angka: Angka('10000000.00', 100, '3000000.00') },
+        { Nama: 'mingguLalu', Angka: Angka('0.00', 0, '0.00') },
+    ],
     Grafik: Array.from({ length: 14 }, (_, i) => ({
         Tanggal: i < 7 ? `2026-09-${String(24 + i)}` : `2026-10-0${String(i - 6)}`,
         Bersih: i === 13 ? '12500000.00' : '0.00',
@@ -163,6 +174,58 @@ describe('F-14a dasbor pemilik di beranda', () => {
         // Tabel alternatif grafik untuk pembaca layar.
         // T1 (v3.30): grafik dimuat belakangan (React.lazy), jadi ditunggu sampai tampil.
         expect(await screen.findByText(/7 Okt 2026: Rp 12.500.000, 125 transaksi/)).toBeTruthy();
+    });
+
+    it('rentang beberapa hari: judul rentang, pembanding periode sebelumnya, grafik & terlaris menyebut jumlah hari', async () => {
+        const rentang: DasborPemilik = {
+            ...dasbor,
+            Tanggal: '2026-10-07',
+            Periode: {
+                Dari: '2026-10-01',
+                Sampai: '2026-10-07',
+                Hari: 7,
+                SatuHari: false,
+                HariIni: '2026-10-07',
+                JumlahHariTerlaris: 7,
+            },
+            Pembanding: [{ Nama: 'periodeSebelumnya', Angka: Angka('10000000.00', 100, '3000000.00') }],
+        };
+
+        RenderUji(<HalamanBerandaKelola Dasbor={rentang} />);
+
+        expect(screen.getByRole('heading', { name: /Ringkasan 1 Okt 2026 – 7 Okt 2026/ })).toBeTruthy();
+        expect(screen.getAllByText(/\+25% dari periode sebelumnya/).length).toBe(4);
+        expect(screen.queryByText(/dari kemarin/)).toBeNull();
+        expect(screen.getAllByText('Penjualan bersih 7 hari').length).toBeGreaterThan(0);
+        expect(screen.getByText('Produk terlaris 7 hari')).toBeTruthy();
+        expect(screen.getByText('Penjualan per outlet pada periode')).toBeTruthy();
+    });
+
+    it('memilih rentang memuat ulang hanya Dasbor lewat ?dari&sampai; tanpa pilihan, bawaan hari ini', () => {
+        const hariIni = TulisTanggal(new Date());
+        RenderUji(
+            <HalamanBerandaKelola
+                Dasbor={{
+                    ...dasbor,
+                    Tanggal: hariIni,
+                    Periode: { ...dasbor.Periode, Dari: hariIni, Sampai: hariIni, HariIni: hariIni },
+                }}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /Periode/ }));
+        fireEvent.click(screen.getByRole('button', { name: '7 hari terakhir' }));
+
+        expect(tiruanRouter.get).toHaveBeenCalledTimes(1);
+        const [alamat, params, opsi] = tiruanRouter.get.mock.calls[0] as [
+            string,
+            { dari: string; sampai: string },
+            Record<string, unknown>,
+        ];
+        expect(alamat).toBe('/kelola');
+        expect(params.sampai).toBe(hariIni);
+        expect((Date.parse(params.sampai) - Date.parse(params.dari)) / 86_400_000).toBe(6);
+        expect(opsi).toMatchObject({ only: ['Dasbor'], preserveState: true, preserveScroll: true, replace: true });
     });
 
     it('tanpa izin laporan: tanpa angka', () => {

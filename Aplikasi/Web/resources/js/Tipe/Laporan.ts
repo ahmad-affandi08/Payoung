@@ -56,11 +56,28 @@ export type BarisBatchKedaluwarsa = {
 
 export type BatchKedaluwarsa = { Jumlah: number; JumlahLewat: number; Baris: BarisBatchKedaluwarsa[] };
 
+/** Pembanding periode dasbor: `kemarin`/`mingguLalu` untuk satu hari, `periodeSebelumnya` untuk beberapa hari. */
+export type PembandingDasbor = {
+    Nama: 'kemarin' | 'mingguLalu' | 'periodeSebelumnya';
+    Angka: AngkaPenjualan;
+};
+
+export type PeriodeDasbor = {
+    Dari: string;
+    Sampai: string;
+    Hari: number;
+    SatuHari: boolean;
+    /** Tanggal bisnis berjalan: batas atas rentang yang boleh dipilih. */
+    HariIni: string;
+    JumlahHariTerlaris: number;
+};
+
 export type DasborPemilik = {
+    /** Tanggal akhir periode. */
     Tanggal: string;
-    HariIni: AngkaPenjualan;
-    Kemarin: AngkaPenjualan;
-    MingguLalu: AngkaPenjualan;
+    Periode: PeriodeDasbor;
+    Angka: AngkaPenjualan;
+    Pembanding: PembandingDasbor[];
     Grafik: TitikGrafik[];
     ProdukTerlaris: { Kunci: string; NamaProduk: string; Qty: string; Bersih: string }[];
     PerOutlet: { Kunci: string; NamaOutlet: string; Bersih: string; JumlahTransaksi: number }[];

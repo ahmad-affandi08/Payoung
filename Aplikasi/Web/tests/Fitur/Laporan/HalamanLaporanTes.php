@@ -51,14 +51,14 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
         $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Beranda')
             ->where('Dasbor.Tanggal', '2026-10-07')
-            ->where('Dasbor.HariIni.Bersih', '38500.00')
-            ->where('Dasbor.HariIni.LabaKotor', '8500.00')
-            ->where('Dasbor.HariIni.JumlahTransaksi', 1)
-            ->where('Dasbor.HariIni.RataRataKeranjang', '38500.00')
-            ->where('Dasbor.Kemarin.Bersih', '77000.00')
-            ->where('Dasbor.Kemarin.LabaKotor', '17000.00')
-            ->where('Dasbor.Kemarin.JumlahTransaksi', 1)
-            ->where('Dasbor.MingguLalu.Bersih', '38500.00')
+            ->where('Dasbor.Angka.Bersih', '38500.00')
+            ->where('Dasbor.Angka.LabaKotor', '8500.00')
+            ->where('Dasbor.Angka.JumlahTransaksi', 1)
+            ->where('Dasbor.Angka.RataRataKeranjang', '38500.00')
+            ->where('Dasbor.Pembanding.0.Angka.Bersih', '77000.00')
+            ->where('Dasbor.Pembanding.0.Angka.LabaKotor', '17000.00')
+            ->where('Dasbor.Pembanding.0.Angka.JumlahTransaksi', 1)
+            ->where('Dasbor.Pembanding.1.Angka.Bersih', '38500.00')
             ->has('Dasbor.Grafik', 14)
             ->where('Dasbor.Grafik.0.Tanggal', '2026-09-24')
             ->where('Dasbor.Grafik.6', ['Tanggal' => '2026-09-30', 'Bersih' => '38500.00', 'LabaKotor' => '8500.00', 'JumlahTransaksi' => 1])
@@ -74,6 +74,62 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->where('Dasbor.JumlahPerluTinjauan', $perluTinjauan));
     });
 
+    it('rentang tanggal: bawaan hari ini; beberapa hari dibanding periode sebelumnya; akhir tidak melewati hari ini; salah format & rentang terlalu panjang dinormalkan', function (): void {
+        $this->travelTo(CarbonImmutable::parse('2026-09-30 05:00:00', 'UTC'));
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $jual = fn (string $jumlah) => BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => $jumlah, 'Harga' => '38500.00']]]);
+        $jual('1');
+        $this->travelTo(CarbonImmutable::parse('2026-10-06 05:00:00', 'UTC'));
+        $jual('2');
+        $this->travelTo(CarbonImmutable::parse('2026-10-07 05:00:00', 'UTC'));
+        $jual('1');
+        BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
+
+        // Tanpa query: hari ini saja.
+        $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode', ['Dari' => '2026-10-07', 'Sampai' => '2026-10-07', 'Hari' => 1, 'SatuHari' => true, 'HariIni' => '2026-10-07', 'JumlahHariTerlaris' => 7])
+            ->where('Dasbor.Angka.Bersih', '38500.00'));
+
+        // Delapan hari (30 Sep - 7 Okt): jumlah seluruh periode, pembanding = 8 hari sebelumnya (kosong), grafik = rentang.
+        $this->get('/kelola?dari=2026-09-30&sampai=2026-10-07')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode.Hari', 8)
+            ->where('Dasbor.Periode.SatuHari', false)
+            ->where('Dasbor.Angka.Bersih', '154000.00')
+            ->where('Dasbor.Angka.JumlahTransaksi', 3)
+            ->has('Dasbor.Pembanding', 1)
+            ->where('Dasbor.Pembanding.0.Nama', 'periodeSebelumnya')
+            ->where('Dasbor.Pembanding.0.Angka.Bersih', '0.00')
+            ->has('Dasbor.Grafik', 8)
+            ->where('Dasbor.Grafik.0.Tanggal', '2026-09-30')
+            ->where('Dasbor.Grafik.7.Tanggal', '2026-10-07')
+            ->where('Dasbor.ProdukTerlaris.0.Qty', '4.0000')
+            ->where('Dasbor.PerOutlet.0.Bersih', '154000.00'));
+
+        // Satu hari lampau: pembanding kemarin & minggu lalu, grafik 14 hari berakhir di hari itu.
+        $this->get('/kelola?dari=2026-10-06&sampai=2026-10-06')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Angka.Bersih', '77000.00')
+            ->where('Dasbor.Pembanding.0.Nama', 'kemarin')
+            ->where('Dasbor.Pembanding.1.Nama', 'mingguLalu')
+            ->has('Dasbor.Grafik', 14)
+            ->where('Dasbor.Grafik.13.Tanggal', '2026-10-06'));
+
+        // Akhir di masa depan dipotong ke hari ini; format salah diabaikan (bawaan hari ini); rentang terlalu panjang dipotong 92 hari.
+        $this->get('/kelola?dari=2026-10-07&sampai=2027-01-01')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode.Sampai', '2026-10-07')
+            ->where('Dasbor.Periode.Hari', 1));
+        $this->get('/kelola?dari=bukan-tanggal&sampai=2026-13-45')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode.Dari', '2026-10-07')
+            ->where('Dasbor.Periode.Hari', 1));
+        $this->get('/kelola?dari=2025-01-01&sampai=2026-10-07')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode.Hari', 92)
+            ->has('Dasbor.Grafik', 92));
+        // Dari setelah sampai: dirapatkan ke satu hari (akhir).
+        $this->get('/kelola?dari=2026-10-07&sampai=2026-10-01')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Periode.Dari', '2026-10-01')
+            ->where('Dasbor.Periode.Sampai', '2026-10-01'));
+    });
+
     it('tanpa izin laporan.penjualan.lihat beranda tanpa angka; dibatasi outlet akses; tenant lain tidak melihat angka tenant ini', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
 
@@ -86,8 +142,8 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
         // Manajer outlet ber-izin laporan tetapi tanpa izin persediaan tidak melihat stok kritis.
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
         $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->where('Dasbor.HariIni.Bersih', '83150.00')
-            ->where('Dasbor.HariIni.LabaKotor', '23150.00'));
+            ->where('Dasbor.Angka.Bersih', '83150.00')
+            ->where('Dasbor.Angka.LabaKotor', '23150.00'));
 
         BantuanOrganisasi::AturKonteks($d['Tenant']->Id);
         $cabang = BantuanJurnal::BuatOutlet();
@@ -95,8 +151,8 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
         OutletPengguna::query()->create(['IdOutlet' => $cabang->Id, 'IdPengguna' => $manajerCabang->Id, 'IdPeran' => BantuanOrganisasi::Peran($d['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->Id]);
         BantuanOrganisasi::Masuk($this, $manajerCabang, $d['Tenant']->Id);
         $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->where('Dasbor.HariIni.Bersih', '0.00')
-            ->where('Dasbor.HariIni.JumlahTransaksi', 0)
+            ->where('Dasbor.Angka.Bersih', '0.00')
+            ->where('Dasbor.Angka.JumlahTransaksi', 0)
             ->where('Dasbor.PerOutlet', [['Kunci' => $cabang->Uuid, 'NamaOutlet' => $cabang->Nama, 'Bersih' => '0.00', 'JumlahTransaksi' => 0]])
             ->where('Dasbor.ProdukTerlaris', [])
             ->where('Dasbor.JumlahPerluTinjauan', 0));
@@ -104,7 +160,7 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
         $b = BantuanPenjualan::Siapkan($this, 'Warung Bakso Pak Kumis');
         BantuanPersediaan::MasukSebagai($this, $b['Tenant']->Id);
         $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-            ->where('Dasbor.HariIni.Bersih', '0.00')
+            ->where('Dasbor.Angka.Bersih', '0.00')
             ->where('Dasbor.Grafik.13.Bersih', '0.00')
             ->where('Dasbor.ProdukTerlaris', []));
     });
