@@ -44,6 +44,13 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.OutletKelola,
             },
             {
+                label: 'Ganti jenis usaha',
+                keterangan:
+                    'Salah memilih jenis usaha saat mendaftar? Ganti di sini; data bawaan lama yang belum dipakai dibersihkan, transaksi tidak berubah.',
+                href: '/kelola/pengaturan/ganti-sektor',
+                izin: IzinTenant.DataKelola,
+            },
+            {
                 label: 'Outlet & gudang',
                 keterangan: 'Cabang, gudang, area & meja, zona waktu, jam tutup buku, dan profil pajak per outlet.',
                 href: '/kelola/outlet',

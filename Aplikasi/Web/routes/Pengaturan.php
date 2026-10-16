@@ -7,6 +7,7 @@ use App\Domain\Lisensi\Kontrak\PengaturIntegrasiServer;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\AksesDukunganKontroler;
 use App\Http\Kontroler\Kelola\DataSayaKontroler;
+use App\Http\Kontroler\Kelola\GantiSektorKontroler;
 use App\Http\Kontroler\Kelola\IntegrasiServerKontroler;
 use App\Http\Kontroler\Kelola\PembaruanTemplateKontroler;
 use App\Http\Kontroler\Kelola\PengaturanKontroler;
@@ -48,6 +49,9 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
             Route::post('/data-saya/penghapusan', [DataSayaKontroler::class, 'Ajukan'])->middleware('throttle:5,1')->name('kelola.pengaturan.data-saya.penghapusan');
             Route::delete('/data-saya/penghapusan', [DataSayaKontroler::class, 'Batalkan'])->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.penghapusan.batal');
         }
+        // D-165: Pemilik mengganti jenis usaha outlet (salah pilih sektor saat daftar); pratinjau lalu terapkan.
+        Route::get('/ganti-sektor', [GantiSektorKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('kelola.pengaturan.ganti-sektor');
+        Route::post('/ganti-sektor', [GantiSektorKontroler::class, 'Terapkan'])->middleware('throttle:10,1')->name('kelola.pengaturan.ganti-sektor.terapkan');
         Route::get('/data-saya/ekspor/{uuidEkspor}/unduh', [DataSayaKontroler::class, 'Unduh'])->where('uuidEkspor', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:10,1')->name('kelola.pengaturan.data-saya.unduh');
     });
 

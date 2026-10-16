@@ -292,6 +292,7 @@ final class KamusPeristiwaAudit
 
         'outlet.buat' => 'Outlet dibuat',
         'outlet.fitur.konfigurasi-template' => 'Konfigurasi fitur outlet dari template diterapkan',
+        'outlet.fitur.lepas-template' => 'Fitur sisa jenis usaha lama dilepas dari outlet',
         'outlet.fitur.tambah-template' => 'Fitur outlet ditambahkan dari template',
         'outlet.jam-operasional.ubah' => 'Jam operasional outlet diubah',
         'outlet.jenis-pesanan.ubah' => 'Jenis pesanan outlet diubah',
@@ -504,6 +505,8 @@ final class KamusPeristiwaAudit
         'satuan.hapus' => 'Satuan dihapus',
         'satuan.tambah-template' => 'Satuan ditambahkan dari template',
 
+        'sektor.ganti' => 'Jenis usaha outlet diganti',
+
         'sesi.dua-faktor.aktifkan' => 'Masuk dengan verifikasi dua langkah',
         'sesi.keluar' => 'Pengguna keluar',
         'sesi.masuk' => 'Pengguna masuk',
@@ -599,6 +602,7 @@ final class KamusPeristiwaAudit
         'tenant.override.buat' => 'Override tenant dibuat',
         'tenant.override.cabut' => 'Override tenant dicabut',
         'tenant.penanda.ubah' => 'Penanda tenant diubah',
+        'tenant.sektor.ganti' => 'Daftar jenis usaha tenant diperbarui',
         'tenant.pengaturan.lengkapi' => 'Pengaturan tenant dilengkapi',
         'tenant.penghapusan-data-laksana' => 'Penghapusan data tenant dilaksanakan',
         'tenant.penghapusan-data-tolak' => 'Penghapusan data tenant ditolak',
