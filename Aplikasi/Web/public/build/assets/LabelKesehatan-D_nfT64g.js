@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./LabelStatus-BNjWuZG6.js";var n=e(),r={Sehat:`sukses`,PerluPerhatian:`peringatan`,Berisiko:`bahaya`};function i({kategori:e,teks:i,skor:a}){return e===null?(0,n.jsx)(t,{jenis:`netral`,teks:`Belum dinilai`}):(0,n.jsx)(t,{jenis:r[e],teks:`${i??e}${a==null?``:` | ${String(a)}`}`})}export{i as t};

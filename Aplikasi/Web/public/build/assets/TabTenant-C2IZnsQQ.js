@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./NavigasiTab-CD-Nqae7.js";var n=e(),r=[{label:`Daftar tenant`,href:`/tenant`},{label:`Tugas & kesehatan`,href:`/tugas-tenant`}];function i(){return(0,n.jsx)(t,{label:`Tenant`,daftarTab:r})}export{i as t};

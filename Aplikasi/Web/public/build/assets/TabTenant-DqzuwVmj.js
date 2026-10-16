@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./NavigasiTab-C_df0OwN.js";var n=e(),r=[{label:`Daftar tenant`,href:`/tenant`},{label:`Tugas & kesehatan`,href:`/tugas-tenant`}];function i(){return(0,n.jsx)(t,{label:`Tenant`,daftarTab:r})}export{i as t};
