@@ -2569,7 +2569,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-D-dHT8uq.js",
+    "file": "assets/Aplikasi-8JyLiQ-T.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -4603,7 +4603,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Invoice/Detail.tsx": {
-    "file": "assets/Detail-CHf7tq7C.js",
+    "file": "assets/Detail-D_OUMZBk.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Invoice/Detail.tsx",
     "isDynamicEntry": true,
@@ -9944,15 +9944,24 @@
     ]
   },
   "resources/js/Halaman/Publik/InvoiceDigital.tsx": {
-    "file": "assets/InvoiceDigital-B67vFHwo.js",
+    "file": "assets/InvoiceDigital-D6OP5NNr.js",
     "name": "InvoiceDigital",
     "src": "resources/js/Halaman/Publik/InvoiceDigital.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
+      "_PemilihTanggal-DQWgl9Gv.js",
+      "_BidangTeks-wK61vZkG.js",
+      "_Pemberitahuan-DCiScAx2.js",
       "_button-5eUioe5T.js",
+      "_Tombol-CjJ9fhrT.js",
+      "_Format-D1Z2MPC0.js",
+      "_FormatWaktu-bKvj24HB.js",
       "_JudulHalaman-DcRj0rLI.js",
+      "_HitungDesimal-CM8lGat2.js",
+      "_BidangUang-BuqhKdEh.js",
+      "_BidangTeksPanjang-BIQPqW0n.js",
       "_TampilanDokumenInvoice-Dy2tBrzh.js"
     ]
   },

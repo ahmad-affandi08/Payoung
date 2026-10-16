@@ -27,7 +27,7 @@ import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { JumlahkanDesimal, KurangiDesimal, AmbilTandaDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
-import type { PropsDetailInvoice } from '@/Tipe/Invoice';
+import type { KonfirmasiInvoice, PropsDetailInvoice } from '@/Tipe/Invoice';
 
 const kelasKepala = 'px-2 text-label text-teks-sekunder';
 const kelasSel = 'px-2 py-2 align-top whitespace-normal';
@@ -44,6 +44,7 @@ export default function HalamanDetailInvoice({
     Jurnal,
     Riwayat,
     Pengiriman,
+    Konfirmasi,
     Izin,
     HariIni,
     OpsiAkun,
@@ -51,6 +52,9 @@ export default function HalamanDetailInvoice({
 }: PropsDetailInvoice) {
     const [batalkan, AturBatalkan] = useState(false);
     const [bayar, AturBayar] = useState(false);
+    // Klaim pelanggan yang sedang diterima (membuka dialog pembayaran terisi) atau ditolak (dialog alasan).
+    const [terimaKonfirmasi, AturTerimaKonfirmasi] = useState<KonfirmasiInvoice | null>(null);
+    const [tolakKonfirmasi, AturTolakKonfirmasi] = useState<KonfirmasiInvoice | null>(null);
     const [memproses, AturMemproses] = useState<string | null>(null);
     const [tersalin, AturTersalin] = useState(false);
     const judul = invoice.Nomor === null ? 'Draf invoice' : `Invoice ${invoice.Nomor}`;
@@ -310,6 +314,42 @@ export default function HalamanDetailInvoice({
                 </Panel>
             ) : null}
 
+            {Konfirmasi.length > 0 ? (
+                <Panel
+                    judul="Konfirmasi pembayaran dari pelanggan"
+                    keterangan="Klaim sudah bayar dari halaman invoice. Cocokkan dengan mutasi bank, lalu terima (mencatat pembayaran) atau tolak."
+                >
+                    <ul className="flex flex-col gap-3 text-isi">
+                        {Konfirmasi.map((k) => (
+                            <li key={k.Uuid} className="flex flex-col gap-1 break-words text-teks-sekunder">
+                                <span>
+                                    <span className="font-semibold text-teks-utama">{k.NamaPengirim}</span> |{' '}
+                                    <span className="tabular-nums">{FormatRupiah(k.Jumlah)}</span> | bayar{' '}
+                                    {FormatTanggal(k.TanggalBayar)} | dikirim {FormatTanggalWaktu(k.Pada)} |{' '}
+                                    {k.TidakDiperlukan
+                                        ? 'Tidak diperlukan lagi (invoice sudah lunas atau dibatalkan)'
+                                        : k.LabelStatus}
+                                </span>
+                                {k.Catatan ? <span>Catatan pelanggan: {k.Catatan}</span> : null}
+                                {k.AlasanTolak ? <span>Alasan ditolak: {k.AlasanTolak}</span> : null}
+                                {k.BisaDiputuskan && Izin.Kelola ? (
+                                    <span className="flex flex-wrap gap-2">
+                                        {Tindakan.CatatPembayaran ? (
+                                            <Tombol onClick={() => AturTerimaKonfirmasi(k)}>
+                                                Terima & catat pembayaran
+                                            </Tombol>
+                                        ) : null}
+                                        <Tombol varian="sekunder" onClick={() => AturTolakKonfirmasi(k)}>
+                                            Tolak
+                                        </Tombol>
+                                    </span>
+                                ) : null}
+                            </li>
+                        ))}
+                    </ul>
+                </Panel>
+            ) : null}
+
             {Pengiriman.length > 0 ? (
                 <Panel judul="Pengiriman WhatsApp">
                     <ul className="flex flex-col gap-1 text-isi">
@@ -357,6 +397,28 @@ export default function HalamanDetailInvoice({
                     labelAksi="Batalkan"
                     alamat={`${AlamatInvoice}/${invoice.Uuid}/batalkan`}
                     saatTutup={() => AturBatalkan(false)}
+                />
+            ) : null}
+            {tolakKonfirmasi !== null ? (
+                <DialogAlasanGrosir
+                    judul="Tolak konfirmasi pembayaran"
+                    keterangan="Beri alasan, misalnya uangnya tidak ditemukan di mutasi bank atau jumlahnya tidak cocok. Pelanggan tidak diberi tahu otomatis; hubungi mereka bila perlu."
+                    labelAksi="Tolak konfirmasi"
+                    alamat={`${AlamatInvoice}/${invoice.Uuid}/konfirmasi/${tolakKonfirmasi.Uuid}/tolak`}
+                    saatTutup={() => AturTolakKonfirmasi(null)}
+                />
+            ) : null}
+            {terimaKonfirmasi !== null && invoice.Sisa !== null ? (
+                <DialogPembayaranInvoice
+                    uuidInvoice={invoice.Uuid}
+                    nomor={invoice.Nomor ?? ''}
+                    sisa={invoice.Sisa}
+                    kodePph={invoice.KodePph}
+                    saranPph={AmbilTandaDesimal(sisaPph) > 0 ? sisaPph : ''}
+                    opsiAkun={OpsiAkun}
+                    hariIni={HariIni}
+                    konfirmasi={terimaKonfirmasi}
+                    saatTutup={() => AturTerimaKonfirmasi(null)}
                 />
             ) : null}
             {bayar && invoice.Sisa !== null ? (

@@ -14,9 +14,11 @@ use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Enum\StatusInvoiceBerulang;
+use App\Domain\Penjualan\Enum\StatusKonfirmasiPembayaran;
 use App\Domain\Penjualan\Enum\StatusPenawaran;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\InvoiceBerulang;
+use App\Domain\Penjualan\Model\KonfirmasiPembayaranInvoice;
 use App\Domain\Penjualan\Model\Penawaran;
 
 /**
@@ -27,6 +29,8 @@ use App\Domain\Penjualan\Model\Penawaran;
  *   adalah pendapatan yang tidak tertagih;
  * - draf invoice yang menggantung lebih dari `HARI_DRAF_LAMA` hari (Perhatian);
  * - invoice terbit lebih dari sehari yang belum pernah dikirim ke pelanggan (Perhatian);
+ * - klaim "sudah bayar" dari pelanggan yang menunggu verifikasi pada invoice yang masih bersisa (Penting): uang mungkin
+ *   sudah masuk tetapi belum dicatat, dan pelanggan menunggu kepastian;
  * - penawaran diterima yang belum dijadikan invoice aktif (Perhatian): pekerjaan sudah disetujui tetapi belum ditagih;
  * - penawaran terbit yang masih berlaku tetapi lebih dari `HARI_TANPA_TANGGAPAN` hari belum ditanggapi (Perhatian): saatnya
  *   menghubungi pelanggan sebelum masa berlakunya habis.
@@ -48,6 +52,7 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
         $batasOutlet = fn ($kueri) => $kueri->when($idOutlet !== null, fn ($k) => $k->whereIn('IdOutlet', $idOutlet ?? []));
 
         $terbuka = [StatusPiutang::BelumLunas->value, StatusPiutang::DibayarSebagian->value];
+        $piutangTerbuka = Piutang::query()->whereNotNull('IdInvoice')->whereIn('Status', $terbuka)->get();
         $piutangLewat = Piutang::query()->whereNotNull('IdInvoice')->whereIn('Status', $terbuka)->where('JatuhTempo', '<', $hari)->get();
         $lewat = $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Terbit->value)->whereIn('Id', $piutangLewat->pluck('IdInvoice')->all())->orderBy('JatuhTempo')->get();
         $sisaTotal = Uang::Nol();
@@ -62,6 +67,10 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
         $draf = $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Draf->value)->where('DibuatPada', '<', $konteks->hariIni->subDays(self::HARI_DRAF_LAMA)->startOfDay())->orderBy('Id')->get();
         $belumKirim = $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Terbit->value)->whereNull('TerkirimPada')->where('Tanggal', '<', $hari)->orderBy('Tanggal')->get();
 
+        $konfirmasi = KonfirmasiPembayaranInvoice::query()->where('Status', StatusKonfirmasiPembayaran::Menunggu->value)
+            ->whereIn('IdInvoice', $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Terbit->value)->whereIn('Id', $piutangTerbuka->pluck('IdInvoice')->all())->select('Id'))
+            ->orderBy('Id')->get();
+        $uuidInvoiceKonfirmasi = $konfirmasi->isEmpty() ? [] : Invoice::query()->whereIn('Id', $konfirmasi->pluck('IdInvoice')->all())->pluck('Uuid', 'Id')->all();
         $invoiceAktif = Invoice::query()->where('Status', '!=', StatusInvoice::Dibatalkan->value)->select('Id');
         $diterima = $batasOutlet(Penawaran::query())->where('Status', StatusPenawaran::Diterima->value)
             ->where(fn ($k) => $k->whereNull('IdInvoice')->orWhereNotIn('IdInvoice', $invoiceAktif))->orderBy('DiputuskanPada')->get();
@@ -84,6 +93,23 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
                     'Jatuh tempo '.$i->JatuhTempo->toDateString(),
                     $i->JatuhTempo->toDateString(),
                     '/kelola/invoice/'.$i->Uuid,
+                ))->all()),
+            ),
+            new DataButirTindakan(
+                'invoice.konfirmasi-bayar',
+                'Invoice',
+                TingkatTindakan::Penting,
+                'Pelanggan mengaku sudah membayar',
+                'Cocokkan dengan mutasi bank, lalu catat pembayarannya (diterima) atau tolak bila uangnya tidak ditemukan.',
+                $konfirmasi->count(),
+                '/kelola/invoice?saring[Pembayaran]=Terbuka',
+                'Verifikasi',
+                array_values($konfirmasi->take(DataButirTindakan::BATAS_RINCIAN)->map(fn (KonfirmasiPembayaranInvoice $k): DataRincianTindakan => new DataRincianTindakan(
+                    $k->Uuid,
+                    $k->NamaPengirim,
+                    Uang::Dari($k->Jumlah)->FormatRupiah().' pada '.$k->TanggalBayar->toDateString(),
+                    $k->TanggalBayar->toDateString(),
+                    '/kelola/invoice/'.($uuidInvoiceKonfirmasi[$k->IdInvoice] ?? ''),
                 ))->all()),
             ),
             new DataButirTindakan(

@@ -210,6 +210,7 @@ export type PropsDetailInvoice = {
     Jurnal: JurnalGrosir[];
     Riwayat: RiwayatGrosir[];
     Pengiriman: KirimanInvoice[];
+    Konfirmasi: KonfirmasiInvoice[];
     Izin: IzinInvoice;
     HariIni: string;
     OpsiAkun: OpsiAkunInvoice[];
@@ -225,6 +226,7 @@ export type PropsDetailInvoice = {
 
 /** Muatan dokumen yang dibaca pelanggan: cetak A4 di back-office dan halaman publik `/i/{kode}`. */
 export type DokumenInvoice = {
+    Konfirmasi?: KonfirmasiPublikInvoice;
     Invoice: {
         Nomor: string | null;
         Jenis: JenisInvoice;
@@ -276,7 +278,31 @@ export type DokumenInvoice = {
 
 export type PropsCetakInvoice = DokumenInvoice & { Uuid: string };
 
-export type PropsInvoiceDigital = { Dokumen: DokumenInvoice | null };
+export type PropsInvoiceDigital = { Dokumen: DokumenInvoice | null; KodeInvoice: string | null };
+
+/** Klaim "sudah bayar" dari pelanggan (F-21 bagian 4) yang dilihat penagih di detail invoice. */
+export type KonfirmasiInvoice = {
+    Uuid: string;
+    Status: 'Menunggu' | 'Diterima' | 'Ditolak';
+    LabelStatus: string;
+    NamaPengirim: string;
+    TanggalBayar: string;
+    Jumlah: string;
+    Catatan: string | null;
+    AlasanTolak: string | null;
+    Pada: string;
+    BisaDiputuskan: boolean;
+    TidakDiperlukan: boolean;
+};
+
+/** Formulir "sudah bayar" di halaman publik; hanya ada di halaman publik, tidak di cetak A4. */
+export type KonfirmasiPublikInvoice = {
+    Bisa: boolean;
+    Sisa: string | null;
+    /** Tanggal hari ini menurut zona waktu usaha (batas atas tanggal bayar). */
+    HariIni: string;
+    Menunggu: { TanggalBayar: string; Jumlah: string }[];
+};
 
 /* Invoice berulang (F-21): templat yang menerbitkan invoice biasa tiap periode. */
 

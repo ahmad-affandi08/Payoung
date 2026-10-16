@@ -61,6 +61,8 @@ final class RegistriAnonimisasi
         ],
         // F-21 bagian 3: nama penyetuju & catatan yang diketik pelanggan di halaman publik penawaran.
         'Penawaran' => ['NamaPemutus' => 'null', 'CatatanKeputusan' => 'null'],
+        // F-21 bagian 4: nama pengirim & catatan yang diketik pelanggan di halaman publik invoice.
+        'KonfirmasiPembayaranInvoice' => ['NamaPengirim' => 'teks:Pelanggan Terhapus', 'Catatan' => 'null'],
         'Kendaraan' => [
             'NomorPolisi' => 'unik:TERHAPUS-', 'Warna' => 'null', 'NomorRangka' => 'null', 'NomorMesin' => 'null',
             'Catatan' => 'null',

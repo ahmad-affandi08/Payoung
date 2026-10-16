@@ -149,6 +149,11 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kodeInvoice', KodeInvoicePublik::POLA)
         ->middleware('throttle:60,1')
         ->name('publik.invoice');
+    // F-21 bagian 4: pelanggan menyatakan sudah membayar (klaim, bukan pembayaran).
+    Route::post('/i/{kodeInvoice}/konfirmasi-bayar', [InvoicePublikKontroler::class, 'KonfirmasiBayar'])
+        ->where('kodeInvoice', KodeInvoicePublik::POLA)
+        ->middleware('throttle:5,1')
+        ->name('publik.invoice.konfirmasi-bayar');
     // F-21 bagian 3 penawaran publik (kode seperti invoice); keputusan pelanggan dibatasi lebih ketat.
     Route::get('/p/{kodePenawaran}', [PenawaranPublikKontroler::class, 'Tampilkan'])
         ->where('kodePenawaran', KodeInvoicePublik::POLA)

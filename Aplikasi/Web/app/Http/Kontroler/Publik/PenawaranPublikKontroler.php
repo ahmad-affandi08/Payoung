@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Publik;
 
+use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Penjualan\Aksi\CatatPenawaranDilihat;
@@ -56,8 +57,10 @@ final class PenawaranPublikKontroler extends Kontroler
             ->setStatusCode($dokumen === null ? 404 : 200);
     }
 
-    public function Putuskan(string $kodePenawaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, PenawaranPublik $kueri, PutuskanPenawaran $putuskan): RedirectResponse
+    public function Putuskan(string $kodePenawaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, PenawaranPublik $kueri, PutuskanPenawaran $putuskan, PencatatAudit $audit): RedirectResponse
     {
+        // Pelaku publik tidak punya akun: audit mencatat pelaku kosong beserta IP/agen untuk menelusuri penyalahgunaan.
+        $audit->AturKonteks(null, $permintaan->ip(), $permintaan->userAgent());
         $valid = $permintaan->validate([
             'Keputusan' => ['required', 'string', Rule::in(array_map(fn (KeputusanPenawaran $k): string => $k->value, KeputusanPenawaran::cases()))],
             'Nama' => ['required', 'string', 'min:2', 'max:100'],

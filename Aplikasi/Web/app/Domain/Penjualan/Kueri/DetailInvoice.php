@@ -18,9 +18,11 @@ use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Enum\JenisInvoice;
 use App\Domain\Penjualan\Enum\StatusBayarInvoice;
 use App\Domain\Penjualan\Enum\StatusInvoice;
+use App\Domain\Penjualan\Enum\StatusKonfirmasiPembayaran;
 use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\InvoiceDetail;
+use App\Domain\Penjualan\Model\KonfirmasiPembayaranInvoice;
 use App\Domain\Penjualan\Model\Penawaran;
 use App\Domain\Penjualan\Model\PengirimanInvoice;
 
@@ -132,6 +134,7 @@ final class DetailInvoice
             'Jurnal' => $this->jurnal->Ambil(JenisSumberJurnal::Invoice, $invoice->Id),
             'Riwayat' => $this->Riwayat($invoice->Id),
             'Pengiriman' => $this->Pengiriman($invoice->Id),
+            'Konfirmasi' => $this->Konfirmasi($invoice->Id, $invoice->Status === StatusInvoice::Terbit && ($infoPiutang['Terbuka'] ?? false)),
         ];
     }
 
@@ -151,6 +154,34 @@ final class DetailInvoice
             'PesanGalat' => $k->PesanGalat,
             'Pada' => ($k->TerkirimPada ?? $k->DibuatPada)?->toIso8601String() ?? '',
         ])->all());
+    }
+
+    /**
+     * Klaim "sudah bayar" dari pelanggan (F-21 bagian 4), terbaru dulu. `BisaDiputuskan` hanya untuk klaim yang masih
+     * menunggu pada invoice yang masih punya sisa tagihan; klaim menunggu pada invoice yang sudah lunas atau dibatalkan
+     * ditandai `TidakDiperlukan` (diturunkan, bukan disimpan).
+     *
+     * @return list<array{Uuid: string, Status: string, LabelStatus: string, NamaPengirim: string, TanggalBayar: string, Jumlah: string, Catatan: string|null, AlasanTolak: string|null, Pada: string, BisaDiputuskan: bool, TidakDiperlukan: bool}>
+     */
+    private function Konfirmasi(int $idInvoice, bool $invoiceTerbuka): array
+    {
+        return array_values(KonfirmasiPembayaranInvoice::query()->where('IdInvoice', $idInvoice)->orderByDesc('Id')->limit(20)->get()->map(function (KonfirmasiPembayaranInvoice $k) use ($invoiceTerbuka): array {
+            $menunggu = $k->Status === StatusKonfirmasiPembayaran::Menunggu;
+
+            return [
+                'Uuid' => $k->Uuid,
+                'Status' => $k->Status->value,
+                'LabelStatus' => $k->Status->AmbilLabel(),
+                'NamaPengirim' => $k->NamaPengirim,
+                'TanggalBayar' => $k->TanggalBayar->format('Y-m-d'),
+                'Jumlah' => $k->Jumlah,
+                'Catatan' => $k->Catatan,
+                'AlasanTolak' => $k->AlasanTolak,
+                'Pada' => $k->DibuatPada?->toIso8601String() ?? '',
+                'BisaDiputuskan' => $menunggu && $invoiceTerbuka,
+                'TidakDiperlukan' => $menunggu && ! $invoiceTerbuka,
+            ];
+        })->all());
     }
 
     /**

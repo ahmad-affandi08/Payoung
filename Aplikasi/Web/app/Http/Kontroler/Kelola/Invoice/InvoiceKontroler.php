@@ -21,6 +21,7 @@ use App\Domain\Penjualan\Aksi\CatatPembayaranInvoice;
 use App\Domain\Penjualan\Aksi\ProsesInvoiceMassal;
 use App\Domain\Penjualan\Aksi\SimpanInvoice;
 use App\Domain\Penjualan\Aksi\TerbitkanInvoice;
+use App\Domain\Penjualan\Aksi\TolakKonfirmasiPembayaranInvoice;
 use App\Domain\Penjualan\Enum\JenisInvoice;
 use App\Domain\Penjualan\Enum\JenisPengirimanInvoice;
 use App\Domain\Penjualan\Enum\StatusInvoice;
@@ -174,9 +175,19 @@ final class InvoiceKontroler extends DasarKelolaKontroler
             is_string($permintaan->validated('NomorBuktiPotong')) && trim((string) $permintaan->validated('NomorBuktiPotong')) !== '' ? trim((string) $permintaan->validated('NomorBuktiPotong')) : null,
             is_string($permintaan->validated('Catatan')) && trim((string) $permintaan->validated('Catatan')) !== '' ? trim((string) $permintaan->validated('Catatan')) : null,
             $this->Pelaku()->Id,
+            is_string($permintaan->validated('UuidKonfirmasi')) && $permintaan->validated('UuidKonfirmasi') !== '' ? (string) $permintaan->validated('UuidKonfirmasi') : null,
         );
 
         return to_route('kelola.invoice.detail', ['invoice' => $dokumen->Uuid])->with('Kilat', "Pembayaran {$pembayaran->Nomor} dicatat.");
+    }
+
+    /** Menolak klaim "sudah bayar" dari pelanggan (uangnya tidak ditemukan, jumlah tidak cocok, dan sebagainya). */
+    public function TolakKonfirmasi(AlasanInvoicePermintaan $permintaan, string $invoice, string $konfirmasi, TolakKonfirmasiPembayaranInvoice $tolak): RedirectResponse
+    {
+        $dokumen = $this->CariInvoice($invoice);
+        $tolak->Jalankan($dokumen->Uuid, $konfirmasi, $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
+
+        return to_route('kelola.invoice.detail', ['invoice' => $dokumen->Uuid])->with('Kilat', 'Konfirmasi pembayaran ditolak.');
     }
 
     /** Kirim invoice (atau pengingatnya, `?jenis=pengingat`) ke WhatsApp pelanggan; kiriman berjalan di antrean. */

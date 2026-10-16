@@ -27,6 +27,8 @@ final class CatatPembayaranInvoicePermintaan extends FormRequest
             'PotonganPph' => ['nullable', 'string', AturanGrosir::UANG],
             'NomorBuktiPotong' => ['nullable', 'string', 'max:40'],
             'Catatan' => ['nullable', 'string', 'max:500'],
+            // Klaim "sudah bayar" pelanggan yang diterima oleh pembayaran ini (F-21 bagian 4).
+            'UuidKonfirmasi' => ['nullable', 'string', 'ulid'],
         ];
     }
 

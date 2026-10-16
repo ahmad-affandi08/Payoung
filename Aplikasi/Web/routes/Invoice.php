@@ -49,6 +49,7 @@ Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTen
     Route::post('/{invoice}/batalkan', [InvoiceKontroler::class, 'Batalkan'])->where('invoice', $ulid)->name('kelola.invoice.batalkan');
     Route::post('/{invoice}/pembayaran', [InvoiceKontroler::class, 'CatatPembayaran'])->where('invoice', $ulid)->name('kelola.invoice.pembayaran');
     Route::post('/{invoice}/kirim', [InvoiceKontroler::class, 'Kirim'])->where('invoice', $ulid)->name('kelola.invoice.kirim');
+    Route::post('/{invoice}/konfirmasi/{konfirmasi}/tolak', [InvoiceKontroler::class, 'TolakKonfirmasi'])->where('invoice', $ulid)->where('konfirmasi', $ulid)->name('kelola.invoice.konfirmasi.tolak');
 });
 
 // Penawaran harga (F-21 bagian 3, D-168): dokumen sebelum invoice, dikelola dengan izin yang sama (`invoice.kelola`).

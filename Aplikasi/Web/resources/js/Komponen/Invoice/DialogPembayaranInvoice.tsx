@@ -27,6 +27,7 @@ export default function DialogPembayaranInvoice({
     saranPph,
     opsiAkun,
     hariIni,
+    konfirmasi,
     saatTutup,
 }: {
     uuidInvoice: string;
@@ -37,13 +38,17 @@ export default function DialogPembayaranInvoice({
     saranPph: string;
     opsiAkun: OpsiAkunInvoice[];
     hariIni: string;
+    /** Klaim "sudah bayar" pelanggan yang diterima oleh pembayaran ini: mengisi tanggal & jumlah awal (F-21 bagian 4). */
+    konfirmasi?: { Uuid: string; NamaPengirim: string; TanggalBayar: string; Jumlah: string } | undefined;
     saatTutup: () => void;
 }) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors as Record<string, string | undefined>;
     const [uuidAkun, AturAkun] = useState(opsiAkun.length === 1 ? (opsiAkun[0]?.Uuid ?? '') : '');
-    const [tanggal, AturTanggal] = useState(hariIni);
-    const [jumlah, AturJumlah] = useState('');
+    const [tanggal, AturTanggal] = useState(
+        konfirmasi === undefined || konfirmasi.TanggalBayar > hariIni ? hariIni : konfirmasi.TanggalBayar,
+    );
+    const [jumlah, AturJumlah] = useState(konfirmasi?.Jumlah.replace(/\.00$/, '') ?? '');
     const [pph, AturPph] = useState(AmbilTandaDesimal(saranPph) > 0 ? saranPph : '');
     const [bukti, AturBukti] = useState('');
     const [memproses, AturMemproses] = useState(false);
@@ -64,6 +69,7 @@ export default function DialogPembayaranInvoice({
                 Jumlah: jumlah === '' ? null : jumlah,
                 PotonganPph: pph === '' ? null : pph,
                 NomorBuktiPotong: bukti.trim() === '' ? null : bukti.trim(),
+                UuidKonfirmasi: konfirmasi?.Uuid ?? null,
             },
             {
                 preserveScroll: true,
@@ -77,7 +83,11 @@ export default function DialogPembayaranInvoice({
     return (
         <DialogFormulir
             judul={`Catat pembayaran ${nomor}`}
-            keterangan={`Sisa tagihan ${FormatRupiah(sisa)}. Kosongkan jumlah bila pelanggan melunasi seluruh sisa.`}
+            keterangan={
+                konfirmasi === undefined
+                    ? `Sisa tagihan ${FormatRupiah(sisa)}. Kosongkan jumlah bila pelanggan melunasi seluruh sisa.`
+                    : `Menerima konfirmasi dari ${konfirmasi.NamaPengirim}. Pastikan uangnya sudah masuk ke rekening. Sisa tagihan ${FormatRupiah(sisa)}.`
+            }
             galatUmum={galat.Umum}
             saatTutup={saatTutup}
         >

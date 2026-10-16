@@ -1,8 +1,10 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
+import KonfirmasiBayarInvoicePublik from '@/Komponen/Invoice/KonfirmasiBayarInvoicePublik';
 import TampilanDokumenInvoice from '@/Komponen/Invoice/TampilanDokumenInvoice';
 import { Button } from '@/Komponen/Ui/button';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import type { PropsInvoiceDigital } from '@/Tipe/Invoice';
 
 /**
@@ -10,8 +12,10 @@ import type { PropsInvoiceDigital } from '@/Tipe/Invoice';
  * Kode yang salah, draf, atau usaha yang sudah ditutup menampilkan keadaan "tidak ditemukan" (404). Halaman ini hanya
  * membaca; harga dan angka datang dari server.
  */
-export default function HalamanInvoiceDigital({ Dokumen }: PropsInvoiceDigital) {
-    if (Dokumen === null) {
+export default function HalamanInvoiceDigital({ Dokumen, KodeInvoice }: PropsInvoiceDigital) {
+    const { props } = usePage<{ Kilat?: string | null }>();
+
+    if (Dokumen === null || KodeInvoice === null) {
         return (
             <>
                 <Head title="Invoice tidak ditemukan" />
@@ -30,6 +34,11 @@ export default function HalamanInvoiceDigital({ Dokumen }: PropsInvoiceDigital) 
         <>
             <Head title={`Invoice ${Dokumen.Invoice.Nomor ?? ''}`.trim()} />
             <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 print:p-0">
+                {props.Kilat ? (
+                    <Pemberitahuan jenis="sukses" judul="Konfirmasi terkirim">
+                        {props.Kilat}
+                    </Pemberitahuan>
+                ) : null}
                 <div className="flex justify-end print:hidden">
                     <Button variant="outline" onClick={() => window.print()}>
                         Cetak atau simpan PDF
@@ -38,6 +47,9 @@ export default function HalamanInvoiceDigital({ Dokumen }: PropsInvoiceDigital) 
                 <div className="rounded-panel border border-garis bg-permukaan p-4 sm:p-6 print:border-0 print:p-0">
                     <TampilanDokumenInvoice dokumen={Dokumen} />
                 </div>
+                {Dokumen.Konfirmasi?.Bisa ? (
+                    <KonfirmasiBayarInvoicePublik kode={KodeInvoice} konfirmasi={Dokumen.Konfirmasi} />
+                ) : null}
             </main>
         </>
     );

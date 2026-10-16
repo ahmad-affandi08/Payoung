@@ -158,6 +158,9 @@ final class KamusPeristiwaAudit
         'invoice.batal' => 'Invoice dibatalkan',
         'invoice.buat' => 'Draf invoice dibuat',
         'invoice.kirim' => 'Invoice dikirim ke pelanggan',
+        'invoice.konfirmasi-bayar' => 'Pelanggan mengonfirmasi sudah membayar invoice',
+        'invoice.konfirmasi-terima' => 'Konfirmasi pembayaran pelanggan diterima',
+        'invoice.konfirmasi-tolak' => 'Konfirmasi pembayaran pelanggan ditolak',
         'invoice.terbit' => 'Invoice diterbitkan',
         'invoice.ubah' => 'Draf invoice diubah',
 
