@@ -35,6 +35,18 @@ final class SektorOutletTenant
     }
 
     /**
+     * D-167: usaha Perusahaan = semua sektor yang dipakai tenant berawalan `BIZ-` (jasa profesional, kontraktor,
+     * manufaktur). Mereka menagih lewat invoice dan penjualan grosir, bukan kasir, jadi Beranda, panduan, dan menu tidak
+     * menawarkan kasir. Tenant tanpa sektor, atau campuran dengan sektor lain (mis. konsultan yang juga punya toko), bukan.
+     */
+    public function CekHanyaPerusahaan(): bool
+    {
+        $kode = $this->AmbilKode();
+
+        return $kode !== [] && array_filter($kode, fn (string $k): bool => ! str_starts_with($k, 'BIZ-')) === [];
+    }
+
+    /**
      * Sektor satu outlet (aplikasi kasir, D-48): template outlet itu ditambah jenis usaha tambahan tenant. Kosong bila
      * outlet belum menerapkan template (aplikasi menampilkan semua fitur).
      *

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Invoice;
 
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
+use App\Domain\Bersama\Laporan\JenisKolom;
+use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Katalog\Kueri\CariProdukInvoice;
 use App\Domain\Organisasi\Enum\IzinTenant;
@@ -26,17 +28,20 @@ use App\Domain\Penjualan\Kueri\DaftarInvoice;
 use App\Domain\Penjualan\Kueri\DetailInvoice;
 use App\Domain\Penjualan\Kueri\DokumenInvoice;
 use App\Domain\Penjualan\Kueri\IsianFormInvoice;
+use App\Domain\Penjualan\Kueri\RingkasanInvoice;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Invoice\AlasanInvoicePermintaan;
 use App\Http\Permintaan\Kelola\Invoice\CatatPembayaranInvoicePermintaan;
 use App\Http\Permintaan\Kelola\Invoice\SimpanInvoicePermintaan;
 use App\Http\Respons\ResponsTabel;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Invoice (F-21, D-166, `/kelola/invoice`): daftar, form draf (jasa & barang tanpa stok), detail, terbit, batal,
@@ -46,7 +51,7 @@ use Inertia\Response;
  */
 final class InvoiceKontroler extends DasarKelolaKontroler
 {
-    public function Daftar(Request $permintaan, DaftarInvoice $daftar): Response|JsonResponse
+    public function Daftar(Request $permintaan, DaftarInvoice $daftar, RingkasanInvoice $ringkasan): Response|JsonResponse
     {
         $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarInvoice::KOLOM_URUT, DaftarInvoice::URUT_BAWAAN, DaftarInvoice::KOLOM_SARING);
         $hariIni = $this->HariIni();
@@ -56,7 +61,29 @@ final class InvoiceKontroler extends DasarKelolaKontroler
             'OpsiJenis' => array_map(fn (JenisInvoice $j): array => ['Nilai' => $j->value, 'Label' => $j->AmbilLabel()], JenisInvoice::cases()),
             'Izin' => $this->AmbilIzinInvoice(),
             'HariIni' => $hariIni,
+            'Ringkasan' => $ringkasan->Ambil(CarbonImmutable::parse($hariIni), $this->IdOutletBoleh()),
         ]);
+    }
+
+    /** Ekspor daftar invoice sesuai saringan & cari yang aktif di tabel (Excel, CSV, atau cetak; maks. 5.000 baris). */
+    public function Ekspor(Request $permintaan, DaftarInvoice $daftar): SymfonyResponse
+    {
+        $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarInvoice::KOLOM_URUT, DaftarInvoice::URUT_BAWAAN, DaftarInvoice::KOLOM_SARING);
+        $hariIni = $this->HariIni();
+        $idOutlet = $this->IdOutletBoleh();
+        $baris = $this->AmbilSemuaBarisTabel($tabel, fn (DataPermintaanTabel $t): array => $daftar->Ambil($t, $idOutlet, $hariIni));
+        $kolom = [
+            new KolomLaporan('Nomor', JenisKolom::Teks, 24), new KolomLaporan('Jenis', JenisKolom::Teks, 16),
+            new KolomLaporan('Pelanggan', JenisKolom::Teks, 30), new KolomLaporan('Perihal', JenisKolom::Teks, 30),
+            new KolomLaporan('Tanggal', JenisKolom::Tanggal), new KolomLaporan('Jatuh tempo', JenisKolom::Tanggal),
+            new KolomLaporan('Status', JenisKolom::Teks, 18), new KolomLaporan('Total', JenisKolom::Uang, jumlahkan: true),
+            new KolomLaporan('Tagihan', JenisKolom::Uang, jumlahkan: true), new KolomLaporan('Sisa', JenisKolom::Uang, jumlahkan: true),
+        ];
+        $isi = array_map(fn (array $b): array => [
+            $b['Nomor'] ?? 'Draf', $b['LabelJenis'], $b['NamaPelanggan'], $b['Perihal'] ?? '', $b['Tanggal'], $b['JatuhTempo'], $b['LabelStatusBayar'], $b['Total'], $b['Tagihan'], $b['Sisa'] ?? '0.00',
+        ], $baris);
+
+        return $this->SajikanLaporan($permintaan, 'Daftar Invoice', 'daftar-invoice', $kolom, $isi, [['Per tanggal', CarbonImmutable::parse($hariIni)->format('d/m/Y')]]);
     }
 
     public function Buat(Request $permintaan, IsianFormInvoice $isian): Response

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Invoice\InvoiceBerulangKontroler;
 use App\Http\Kontroler\Kelola\Invoice\InvoiceKontroler;
+use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTenant::InvoiceKelola->value])->prefix('invoice')->group(function () use ($ulid): void {
     Route::get('/produk/cari', [InvoiceKontroler::class, 'CariProduk'])->name('kelola.invoice.produk.cari');
     Route::get('/pelanggan/cari', [InvoiceKontroler::class, 'CariPelanggan'])->name('kelola.invoice.pelanggan.cari');
+    Route::get('/ekspor', [InvoiceKontroler::class, 'Ekspor'])->middleware(EksporDiLatarBelakang::class)->name('kelola.invoice.ekspor');
     Route::get('/uang-muka', [InvoiceKontroler::class, 'UangMukaTersedia'])->name('kelola.invoice.uang-muka');
 
     // Invoice berulang: templat yang menerbitkan invoice biasa tiap periode.

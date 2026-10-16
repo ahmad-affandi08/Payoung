@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * dipakai tenant (BR-P03.1, BR-P03.4).
  */
 
-const JUMLAH_TEMPLATE_RILIS = 19;
+const JUMLAH_TEMPLATE_RILIS = 22; // D-167: + BIZ-JSA, BIZ-KTR, BIZ-MFG
 
 function TerbitkanPpnUjiRilis(): void
 {

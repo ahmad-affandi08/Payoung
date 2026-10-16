@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 
 import AksiMassalInvoice from '@/Komponen/Invoice/AksiMassalInvoice';
 import { AlamatInvoice, LabelStatusBayarInvoice } from '@/Komponen/Invoice/BagianInvoice';
+import RingkasanPenagihanKartu from '@/Komponen/Invoice/RingkasanPenagihanKartu';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -108,7 +109,7 @@ const kolom: KolomTabel<BarisDaftarInvoice>[] = [
  * Daftar invoice (F-21, D-166). Status penagihan tiap baris dibaca dari piutang dan tanggal oleh server, jadi daftar,
  * detail, dan halaman pelanggan memakai satu tafsir yang sama.
  */
-export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, Izin }: PropsDaftarInvoice) {
+export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, Izin, Ringkasan }: PropsDaftarInvoice) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const saring: DefinisiSaring[] = [
         {
@@ -145,6 +146,7 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice" /> : null}
             <DaftarGalatServer galat={props.errors} />
+            {Ringkasan !== null ? <RingkasanPenagihanKartu ringkasan={Ringkasan} /> : null}
             <AksiHalaman>
                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                     <Link href={`${AlamatInvoice}/berulang`}>Invoice berulang</Link>
@@ -169,6 +171,7 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
                 urutBawaan="-Tanggal"
                 cari="Cari nomor, perihal, atau nomor PO"
                 saring={saring}
+                ekspor={{ alamat: `${AlamatInvoice}/ekspor`, label: 'Ekspor', laporan: true, eksporBesar: true }}
                 alamatDetail={(d) => `${AlamatInvoice}/${d.Uuid}`}
                 labelBaris={(d) => `invoice ${d.Nomor ?? 'draf'}`}
                 {...(Izin.Kelola

@@ -219,6 +219,22 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(SubPenjualan(pemilik)).not.toContain('Pengiriman');
     });
 
+    it('D-167: usaha Perusahaan tidak melihat menu kasir (Promo, Grosir untuk jasa/kontraktor), usaha campuran tetap', () => {
+        const akses = { Pemilik: true, Izin: [] };
+        const Label = (menu: ReturnType<typeof SaringMenuTerlihat>) => menu.map(({ menu: m }) => m.label);
+        const SubPenjualan = (menu: ReturnType<typeof SaringMenuTerlihat>) =>
+            (menu.find(({ menu: m }) => m.label === 'Penjualan & kasir')?.sub ?? []).map((m) => m.label);
+
+        const jasa = SaringMenuTerlihat(akses, { sektorOutlet: ['BIZ-JSA'] });
+        expect(Label(jasa)).not.toContain('Grosir');
+        expect(SubPenjualan(jasa)).not.toContain('Perangkat kasir');
+        // Manufaktur menjual B2B lewat Grosir, jadi menu itu tetap ada.
+        expect(Label(SaringMenuTerlihat(akses, { sektorOutlet: ['BIZ-MFG'] }))).toContain('Grosir');
+        // Konsultan yang juga punya toko tetap melihat menu kasir.
+        const campur = SaringMenuTerlihat(akses, { sektorOutlet: ['BIZ-JSA', 'RTL-GEN'] });
+        expect(SubPenjualan(campur)).toContain('Perangkat kasir');
+    });
+
     it('audit #33: menu khusus sektor disaring sektor outlet; mode sederhana menyembunyikan menu lanjutan', () => {
         const akses = { Pemilik: true, Izin: [] };
         const Label = (menu: ReturnType<typeof SaringMenuTerlihat>) => menu.map(({ menu: m }) => m.label);

@@ -92,6 +92,8 @@ type ItemMenu = {
     pemisah?: boolean;
     /** Audit #33: awalan kode sektor outlet yang memakai menu ini (mis. `WHS`, `SVC-LDR`); tanpa = semua sektor. */
     sektor?: string[];
+    /** D-167: disembunyikan bila SEMUA sektor usaha ada di daftar ini (usaha tanpa kasir tidak butuh menu kasir). */
+    kecualiSektor?: string[];
     /** Audit #33: disembunyikan di "Mode sederhana" (tetap bisa dibuka lewat Ctrl+K). */
     lanjutan?: boolean;
     /**
@@ -224,13 +226,20 @@ const menuPelanggan: ItemMenu[] = [
     { label: 'Daftar pelanggan', href: '/kelola/pelanggan', izin: IzinTenant.PelangganLihat },
     // F-21 (D-166): invoice & penagihan B2B untuk jasa dan barang tanpa stok; rumahnya di grup yang sudah memuat piutang.
     { label: 'Invoice', href: '/kelola/invoice', izin: IzinTenant.InvoiceKelola, fitur: 'invoice.penagihan' },
-    { label: 'Promo', href: '/kelola/promo', izin: IzinTenant.PelangganLihat, fitur: 'promo.mesin' },
+    {
+        label: 'Promo',
+        href: '/kelola/promo',
+        izin: IzinTenant.PelangganLihat,
+        fitur: 'promo.mesin',
+        kecualiSektor: ['BIZ'],
+    },
     // F-16c bagian 4b: klaim promo yang ditanggung pemasok.
     {
         label: 'Klaim promo pemasok',
         href: '/kelola/promo/klaim-pemasok',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
+        kecualiSektor: ['BIZ'],
     },
     // F-12: piutang pelanggan (penjualan tempo) & pelunasan.
     { label: 'Piutang pelanggan', href: '/kelola/piutang', izin: IzinTenant.PelangganLihat },
@@ -242,6 +251,7 @@ const menuPelanggan: ItemMenu[] = [
         izin: IzinTenant.PelangganLihat,
         fitur: 'pelanggan.deposit',
         awalanLain: ['/kelola/pelanggan/gift-card'],
+        kecualiSektor: ['BIZ'],
     },
     // F-16d bagian 2: saldo paket sesi pelanggan.
     {
@@ -366,14 +376,25 @@ const menuAkuntansi: ItemMenu[] = [
  * (jurnal, kas & bank, buku besar, neraca saldo, tutup buku). Bagan & pemetaan akun pindah ke Pengaturan.
  */
 const menuLaporan: ItemMenu[] = [
-    { label: 'Laporan penjualan', href: '/kelola/laporan/penjualan', izin: IzinTenant.LaporanPenjualanLihat },
+    {
+        label: 'Laporan penjualan',
+        href: '/kelola/laporan/penjualan',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+    },
     {
         label: 'Laporan pajak',
         href: '/kelola/laporan/pajak',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'laporan.lengkap',
     },
-    { label: 'Laporan stok', href: '/kelola/laporan/stok', izin: IzinTenant.PersediaanLihat, fitur: 'laporan.lengkap' },
+    {
+        label: 'Laporan stok',
+        href: '/kelola/laporan/stok',
+        izin: IzinTenant.PersediaanLihat,
+        fitur: 'laporan.lengkap',
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+    },
     // §10.10: pembelian per pemasok, per produk, dan PO outstanding. Laporan apotek pindah ke Pengaturan (anggaran 7
     // sub-menu, D-27; jarang dibuka, seperti Pusat Unduhan).
     {
@@ -447,6 +468,8 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         label: 'Penjualan & kasir',
         href: '/kelola/penjualan',
         izin: null,
+        // D-167: usaha tanpa kasir (sektor Perusahaan) menagih lewat Invoice, bukan lewat kasir.
+        kecualiSektor: ['BIZ'],
         ikon: 'Struk',
         labelSub: 'Menu penjualan & kasir',
         sub: menuPenjualan,
@@ -464,6 +487,8 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         label: 'Persediaan',
         href: '/kelola/persediaan/saldo',
         izin: null,
+        // D-167: jasa profesional dan kontraktor tidak mengelola stok; manufaktur (BIZ-MFG) tetap.
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
         ikon: 'Gudang',
         labelSub: 'Menu persediaan',
         sub: menuPersediaan,
@@ -490,7 +515,7 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         label: 'Grosir',
         href: '/kelola/grosir/pesanan',
         izin: IzinTenant.GrosirKelola,
-        sektor: ['WHS', 'RTL-BLD'],
+        sektor: ['WHS', 'RTL-BLD', 'BIZ-MFG'],
         lanjutan: true,
         ikon: 'Pengiriman',
         labelSub: 'Menu grosir',

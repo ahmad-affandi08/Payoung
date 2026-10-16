@@ -102,7 +102,7 @@ describe('F-01 langkah 5: metode pembayaran', function (): void {
                 ->where('MetodePembayaran.1.PersenBiaya', '0.000000')
                 ->missing('MetodePembayaran.1.PathGambarQris')
                 // F-08: QRIS dinamis bisa ditambahkan dari back-office (butuh gerbang aktif platform); X8: platform ojol.
-                ->where('JenisTersedia', [['Nilai' => 'QrisStatis', 'Label' => 'QRIS statis'], ['Nilai' => 'QrisDinamis', 'Label' => 'QRIS dinamis'], ['Nilai' => 'Edc', 'Label' => 'Kartu (EDC)'], ['Nilai' => 'Transfer', 'Label' => 'Transfer bank'], ['Nilai' => 'Deposit', 'Label' => 'Deposit pelanggan'], ['Nilai' => 'Marketplace', 'Label' => 'Platform ojol / marketplace']])
+                ->where('JenisTersedia', [['Nilai' => 'QrisStatis', 'Label' => 'QRIS statis'], ['Nilai' => 'QrisDinamis', 'Label' => 'QRIS dinamis'], ['Nilai' => 'Edc', 'Label' => 'Kartu (EDC)'], ['Nilai' => 'Transfer', 'Label' => 'Transfer bank'], ['Nilai' => 'Deposit', 'Label' => 'Deposit pelanggan'], ['Nilai' => 'GiftCard', 'Label' => 'Gift card'], ['Nilai' => 'Marketplace', 'Label' => 'Platform ojol / marketplace']])
                 ->where('Bank', [['Kode' => 'BCA', 'Nama' => 'Bank Central Asia', 'Jenis' => 'Bank'], ['Kode' => 'GOPAY', 'Nama' => 'GoPay', 'Jenis' => 'Ewallet']])
                 ->where('BatasGambarQris', ['UkuranMaksimalKb' => 2048, 'Ekstensi' => ['png', 'jpg', 'jpeg', 'webp']]));
     });

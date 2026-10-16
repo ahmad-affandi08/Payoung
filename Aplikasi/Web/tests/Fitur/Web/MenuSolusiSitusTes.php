@@ -93,7 +93,7 @@ describe('D-91 menu Solusi', function (): void {
         TemplateSektor::query()->update(['DinonaktifkanPada' => now()]);
         $menu = AmbilMenuSitusUji($this);
 
-        expect(array_column($menu, 'Label'))->toBe(['Fitur', 'Harga', 'Kontak']);
+        expect(array_column($menu, 'Label'))->toBe(['Fitur', 'Harga', 'Blog', 'Bantuan', 'Kontak']);
     });
 
     it('halaman sektor yang dimatikan di konsol tidak muncul di menu', function (): void {

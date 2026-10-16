@@ -39,6 +39,12 @@ final class SiapkanSatuanStandarBawaan
         ['TANGKAI', 'Tangkai', 'tkai', false],
         ['SESI', 'Sesi', 'sesi', false],
         ['BULAN', 'Bulan', 'bln', false],
+        // Sektor Perusahaan tanpa kasir (D-167, BIZ-JSA/BIZ-KTR/BIZ-MFG): satuan jasa & proyek.
+        ['HARI', 'Hari', 'hari', false],
+        ['PAKET', 'Paket', 'paket', false],
+        ['PROYEK', 'Proyek', 'proyek', false],
+        ['UNIT', 'Unit', 'unit', false],
+        ['M2', 'Meter persegi', 'm2', true],
     ];
 
     public function Jalankan(): void

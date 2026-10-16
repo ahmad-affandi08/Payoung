@@ -81,7 +81,7 @@ describe('BR-01.3: modul template per outlet (OutletFitur) dibatasi paket', func
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
                 ->component('Kelola/PanduanAwal/Sektor')
                 ->where('Template.0.Kode', 'FNB-CAF')
-                ->where('Template.0.JumlahAkun', 51) // E8: + Beban Piutang Tak Tertagih; v3.61: + Kliring Tukar Barang; v3.42: + Giro Mundur Diterima ->where('Template.0.JumlahAkun', 47) Hutang Giro
+                ->where('Template.0.JumlahAkun', 53) // F-21: + PPh Dibayar Dimuka 1-1750; CRM-06: + Saldo Gift Card; E8: + Beban Piutang Tak Tertagih; v3.61: + Kliring Tukar Barang; v3.42: + Giro Mundur Diterima ->where('Template.0.JumlahAkun', 47) Hutang Giro
                 ->where('Template.0.ModeKasir.0', ['Nilai' => 'Cepat', 'Label' => 'Cepat (tombol produk besar)'])
                 ->where('Template.0.Fitur', fn ($fitur) => collect($fitur)->firstWhere('Kunci', 'pos.kds')['TersediaDiPaket'] === false
                     && collect($fitur)->firstWhere('Kunci', 'pos.retail')['TersediaDiPaket'] === true)

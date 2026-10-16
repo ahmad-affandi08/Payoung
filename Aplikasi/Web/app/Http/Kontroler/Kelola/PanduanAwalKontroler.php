@@ -127,6 +127,11 @@ final class PanduanAwalKontroler extends DasarPanduanAwalKontroler
         if ($kurang === []) {
             $selesaikan->Jalankan($this->Pelaku()->Id, $this->OutletPanduan()->Id);
 
+            // D-167: usaha Perusahaan tanpa kasir langsung diarahkan ke invoice pertamanya, bukan ke perangkat kasir.
+            if (str_starts_with($permintaan->string('KodeTemplate')->toString(), 'BIZ-')) {
+                return redirect()->route('kelola.invoice.buat')->with('Kilat', implode(' ', [...$pesan, 'Siap menagih. Buat invoice pertama Anda di sini.']));
+            }
+
             return redirect()->route('kelola.panduan-awal.perangkat')->with('Kilat', implode(' ', [...$pesan, 'Toko siap berjualan. Tambahkan perangkat kasir sekarang, atau nanti dari Pengaturan › Perangkat kasir.']));
         }
 

@@ -11,8 +11,11 @@ use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\DaftarPinAnggota;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
 use App\Domain\Organisasi\Kueri\PemakaianPerangkat;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Penjualan\Kueri\DaftarMetodePembayaran;
+use App\Domain\Penjualan\Kueri\RingkasanInvoice;
 use App\Domain\Persediaan\Kueri\RingkasanStokAwal;
+use Carbon\CarbonImmutable;
 
 /**
  * Checklist "Langkah Berikutnya" di beranda back-office (F-01 langkah 7). Item hanya tampil bila anggota punya izin
@@ -32,6 +35,8 @@ final class LangkahBerikutnya
         private readonly DaftarPinAnggota $pinAnggota,
         private readonly InfoProdukStok $infoProdukStok,
         private readonly RingkasanStokAwal $ringkasanStokAwal,
+        private readonly SektorOutletTenant $sektor,
+        private readonly RingkasanInvoice $invoice,
     ) {}
 
     /**
@@ -41,28 +46,44 @@ final class LangkahBerikutnya
     {
         $boleh = fn (IzinTenant $izin): bool => $this->akses->CekIzin($idTenant, $idPengguna, $izin);
         $item = [];
+        // D-167: usaha Perusahaan (semua sektor BIZ-*) menagih lewat invoice, jadi tidak ditawari kasir, PIN kasir, dan
+        // metode pembayaran kasir; yang ditawarkan adalah membuat invoice pertama.
+        $tanpaKasir = $this->sektor->CekHanyaPerusahaan();
 
         if ($boleh(IzinTenant::PanduanAwalKelola)) {
             $item[] = [
                 'Kunci' => 'PanduanAwal',
                 'Judul' => 'Selesaikan panduan awal',
-                'Keterangan' => 'Profil usaha, jenis usaha, pajak, produk, pembayaran, dan perangkat kasir.',
+                'Keterangan' => $tanpaKasir ? 'Profil usaha, jenis usaha, pajak, dan jasa atau produk Anda.' : 'Profil usaha, jenis usaha, pajak, produk, pembayaran, dan perangkat kasir.',
                 'Tautan' => route('kelola.panduan-awal'),
                 'Selesai' => $this->progres->AmbilBaris()?->SelesaiPada !== null,
             ];
             $item[] = [
                 'Kunci' => 'TambahProduk',
                 'Judul' => 'Tambah produk',
-                'Keterangan' => 'Produk yang dijual muncul di aplikasi kasir.',
+                'Keterangan' => $tanpaKasir ? 'Jasa dan produk yang bisa dipilih saat membuat invoice.' : 'Produk yang dijual muncul di aplikasi kasir.',
                 'Tautan' => route('kelola.panduan-awal.produk'),
                 'Selesai' => $this->pemakaianSku->Hitung() > 0,
             ];
+
+            if (! $tanpaKasir) {
+                $item[] = [
+                    'Kunci' => 'AturMetodePembayaran',
+                    'Judul' => 'Atur metode pembayaran',
+                    'Keterangan' => 'Tambahkan QRIS, kartu (EDC), atau transfer selain tunai.',
+                    'Tautan' => route('kelola.panduan-awal.metode-pembayaran'),
+                    'Selesai' => $this->metodePembayaran->HitungAktifSelainTunai() > 0,
+                ];
+            }
+        }
+
+        if ($tanpaKasir && $boleh(IzinTenant::InvoiceKelola)) {
             $item[] = [
-                'Kunci' => 'AturMetodePembayaran',
-                'Judul' => 'Atur metode pembayaran',
-                'Keterangan' => 'Tambahkan QRIS, kartu (EDC), atau transfer selain tunai.',
-                'Tautan' => route('kelola.panduan-awal.metode-pembayaran'),
-                'Selesai' => $this->metodePembayaran->HitungAktifSelainTunai() > 0,
+                'Kunci' => 'BuatInvoice',
+                'Judul' => 'Buat invoice pertama',
+                'Keterangan' => 'Tagih pelanggan lewat invoice, kirim lewat WhatsApp, dan pantau pembayarannya.',
+                'Tautan' => route('kelola.invoice.buat'),
+                'Selesai' => $this->invoice->Ambil(CarbonImmutable::today(), null) !== null,
             ];
         }
 
@@ -76,7 +97,7 @@ final class LangkahBerikutnya
             ];
         }
 
-        if ($boleh(IzinTenant::PerangkatKelola)) {
+        if (! $tanpaKasir && $boleh(IzinTenant::PerangkatKelola)) {
             $item[] = [
                 'Kunci' => 'AktifkanPerangkat',
                 'Judul' => 'Aktifkan perangkat kasir',
@@ -96,13 +117,15 @@ final class LangkahBerikutnya
             ];
         }
 
-        $item[] = [
-            'Kunci' => 'AturPin',
-            'Judul' => 'Atur PIN kasir Anda',
-            'Keterangan' => 'PIN dipakai untuk masuk dan menyetujui di aplikasi kasir.',
-            'Tautan' => route('kelola.keamanan.pin'),
-            'Selesai' => $this->pinAnggota->CekPinDiatur($idTenant, $idPengguna),
-        ];
+        if (! $tanpaKasir) {
+            $item[] = [
+                'Kunci' => 'AturPin',
+                'Judul' => 'Atur PIN kasir Anda',
+                'Keterangan' => 'PIN dipakai untuk masuk dan menyetujui di aplikasi kasir.',
+                'Tautan' => route('kelola.keamanan.pin'),
+                'Selesai' => $this->pinAnggota->CekPinDiatur($idTenant, $idPengguna),
+            ];
+        }
 
         if (array_filter($item, fn (array $baris) => ! $baris['Selesai']) === []) {
             return [];

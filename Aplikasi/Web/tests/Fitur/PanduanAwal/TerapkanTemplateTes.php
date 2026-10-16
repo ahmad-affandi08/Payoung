@@ -67,8 +67,8 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
             // 46 sejak v2.74 (PiutangBelumDifakturkan 1-1470, BR-12.2), 47 sejak v2.97 (PendapatanPengiriman 4-3100, F-17 bagian 3),
             // 49 sejak v3.42 (Giro Mundur Diterima 1-1480 & Hutang Giro 2-1180, F-12 giro), 50 sejak v3.61 (Kliring Tukar
             // Barang 2-1800, K-11), 58 sejak D-106 (delapan akun beban biaya umum 6-2100…6-2800), 59 sejak E8 (Beban Piutang Tak
-            // Tertagih 6-5100), 60 sejak CRM-06 (Saldo Gift Card 2-1550).
-            ->and($akun->count())->toBe(60)
+            // Tertagih 6-5100), 60 sejak CRM-06 (Saldo Gift Card 2-1550), 61 sejak F-21 (PPh Dibayar Dimuka 1-1750, D-166).
+            ->and($akun->count())->toBe(61)
             ->and($akun->has('4-1010'))->toBeTrue()
             ->and($akun->has('4-1020'))->toBeTrue();
 
@@ -114,7 +114,7 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
             ->and($pengaturan['Sektor'])->toBe(['FNB-CAF']);
 
         expect(MetodePembayaran::query()->where('Jenis', 'Tunai')->count())->toBe(1)
-            ->and($hasil->jumlahAkun)->toBe(52)
+            ->and($hasil->jumlahAkun)->toBe(53) // F-21: + PPh Dibayar Dimuka 1-1750
             ->and($hasil->namaTemplate)->toBe('Kafe / kedai kopi');
     });
 
@@ -232,7 +232,7 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->post('/kelola/panduan-awal/sektor', ['KodeTemplate' => 'FNB-CAF', 'SektorLain' => ['RTL-GEN']])
             ->assertRedirect('/kelola/panduan-awal/pajak')
             ->assertSessionHasNoErrors()
-            ->assertSessionHas('Kilat', 'Template Kafe / kedai kopi versi 1 diterapkan: 52 akun, 5 kategori, 7 satuan, 1 kelompok pajak ditambahkan.');
+            ->assertSessionHas('Kilat', 'Template Kafe / kedai kopi versi 1 diterapkan: 53 akun, 5 kategori, 7 satuan, 1 kelompok pajak ditambahkan.');
 
         expect(($tenant->fresh()?->Pengaturan ?? [])['Sektor'])->toBe(['FNB-CAF', 'RTL-GEN']);
 

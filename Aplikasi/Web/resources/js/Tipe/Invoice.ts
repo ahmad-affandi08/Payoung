@@ -50,6 +50,7 @@ export type PropsDaftarInvoice = {
     OpsiJenis: Opsi[];
     Izin: IzinInvoice;
     HariIni: string;
+    Ringkasan: RingkasanPenagihan | null;
 };
 
 export type BarisIsianInvoice = {
@@ -391,4 +392,15 @@ export type PropsDetailInvoiceBerulang = {
     }[];
     Izin: { Kelola: boolean };
     Tindakan: { Ubah: boolean; Jeda: boolean; Lanjut: boolean; Hentikan: boolean };
+};
+
+/** Ringkasan penagihan invoice satu bulan (kartu di Beranda dan daftar Invoice); null = belum pernah ada invoice. */
+export type RingkasanPenagihan = {
+    Dari: string;
+    Sampai: string;
+    Ditagih: string;
+    Diterima: string;
+    Beredar: { Jumlah: number; Sisa: string };
+    LewatTempo: { Jumlah: number; Sisa: string };
+    Draf: number;
 };

@@ -283,6 +283,54 @@ describe('HTTP aksi massal invoice', function (): void {
     });
 });
 
+describe('HTTP ringkasan penagihan dan ekspor', function (): void {
+    it('Beranda dan daftar menampilkan ditagih, diterima, beredar, dan lewat jatuh tempo; kosong bila belum ada invoice', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        $this->get('/kelola/invoice')->assertInertia(fn (AssertableInertia $h) => $h->where('Ringkasan', null));
+        $this->get('/kelola')->assertInertia(fn (AssertableInertia $h) => $h->where('Penagihan', null));
+
+        // Dua invoice terbit: satu dibayar penuh dengan PPh, satu lewat jatuh tempo (termin 0 dan tanggal lampau).
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true, 'KodePph' => 'PPh 23', 'TarifPph' => '2']))->assertSessionHasNoErrors();
+        $dibayar = Invoice::query()->sole();
+        $this->post("/kelola/invoice/{$dibayar->Uuid}/pembayaran", [
+            'UuidAkun' => BantuanPembelian::AkunKas('1-1200')->Uuid,
+            'Tanggal' => '2026-09-27',
+            'PotonganPph' => '200000',
+        ])->assertSessionHasNoErrors();
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true, 'Tanggal' => '2026-09-01', 'TerminHari' => 7, 'Baris' => [['Nama' => 'Retainer', 'JenisBaris' => 'Jasa', 'Jumlah' => '1', 'Harga' => '3000000']]]))->assertSessionHasNoErrors();
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Perihal' => 'Draf baru']))->assertSessionHasNoErrors();
+
+        $this->get('/kelola/invoice')->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Ringkasan.Dari', '2026-09-01')
+            ->where('Ringkasan.Sampai', '2026-09-30')
+            ->where('Ringkasan.Ditagih', '13000000.00')
+            ->where('Ringkasan.Diterima', '10000000.00')
+            ->where('Ringkasan.Beredar.Jumlah', 1)
+            ->where('Ringkasan.Beredar.Sisa', '3000000.00')
+            ->where('Ringkasan.LewatTempo.Jumlah', 1)
+            ->where('Ringkasan.LewatTempo.Sisa', '3000000.00')
+            ->where('Ringkasan.Draf', 1));
+        $this->get('/kelola')->assertInertia(fn (AssertableInertia $h) => $h->where('Penagihan.Ditagih', '13000000.00'));
+    });
+
+    it('ekspor CSV mengikuti saringan tabel dan memuat angka yang sama dengan layar', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Perihal' => 'Draf rahasia']))->assertSessionHasNoErrors();
+        $nomor = Invoice::query()->where('Status', 'Terbit')->sole()->Nomor;
+
+        $csv = $this->get('/kelola/invoice/ekspor?format=csv')->assertOk()->streamedContent();
+        expect($csv)->toContain('Nomor')->toContain((string) $nomor)->toContain('PT Sumber Makmur Sentosa')->toContain('10000000');
+
+        $terbit = $this->get('/kelola/invoice/ekspor?format=csv&saring[Status]=Terbit')->assertOk()->streamedContent();
+        expect($terbit)->toContain((string) $nomor)->not->toContain('Draf rahasia');
+
+        BantuanKatalog::MasukSebagai($this, $this->k['Tenant']->Id, PeranTenantBawaan::Kasir);
+        $this->get('/kelola/invoice/ekspor?format=csv')->assertForbidden();
+    });
+});
+
 describe('HTTP invoice berulang', function (): void {
     /** @return array<string, mixed> */
     function IsianBerulangHttp($tes, array $ubah = []): array

@@ -6,6 +6,7 @@ namespace App\Domain\Pelanggan\Layanan;
 
 use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Pelanggan\Enum\StatusPembayaranPiutang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\PembayaranPiutang;
@@ -374,6 +375,59 @@ final class PencatatPiutangPenjualan
                 'LabelStatus' => $p->Status->AmbilLabel(),
             ];
         })->all());
+    }
+
+    /**
+     * Angka piutang bersumber invoice untuk ringkasan penagihan (F-21): piutang beredar (terbuka), yang sudah lewat jatuh
+     * tempo per `$hariIni`, dan uang yang diterima (alokasi pelunasan berstatus diposting) dalam rentang `$dari`–`$sampai`
+     * (inklusif, `YYYY-MM-DD`). Nilai uang string desimal; `$idOutlet` null = semua outlet.
+     *
+     * @param  list<int>|null  $idOutlet
+     * @return array{Beredar: array{Jumlah: int, Sisa: string}, LewatTempo: array{Jumlah: int, Sisa: string}, Diterima: string}
+     */
+    public function RingkasanInvoice(?array $idOutlet, string $dari, string $sampai, string $hariIni): array
+    {
+        $terbuka = Piutang::query()
+            ->whereNotNull('IdInvoice')
+            ->whereIn('Status', [StatusPiutang::BelumLunas->value, StatusPiutang::DibayarSebagian->value])
+            ->when($idOutlet !== null, fn ($q) => $q->whereIn('IdOutlet', $idOutlet ?? []))
+            ->get();
+        $beredar = Uang::Nol();
+        $lewat = Uang::Nol();
+        $jumlahLewat = 0;
+
+        foreach ($terbuka as $p) {
+            $sisa = $p->AmbilSisa();
+            $beredar = $beredar->Tambah($sisa);
+
+            if ($p->JatuhTempo->toDateString() < $hariIni) {
+                $lewat = $lewat->Tambah($sisa);
+                $jumlahLewat++;
+            }
+        }
+
+        $diterima = Uang::Nol();
+        $idPiutangInvoice = Piutang::query()
+            ->whereNotNull('IdInvoice')
+            ->when($idOutlet !== null, fn ($q) => $q->whereIn('IdOutlet', $idOutlet ?? []))
+            ->pluck('Id');
+
+        if ($idPiutangInvoice->isNotEmpty()) {
+            $idPembayaran = PembayaranPiutang::query()
+                ->where('Status', StatusPembayaranPiutang::Diposting->value)
+                ->whereBetween('Tanggal', [$dari, $sampai])
+                ->pluck('Id');
+
+            foreach (PembayaranPiutangAlokasi::query()->whereIn('IdPembayaranPiutang', $idPembayaran->all())->whereIn('IdPiutang', $idPiutangInvoice->all())->pluck('Jumlah') as $jumlah) {
+                $diterima = $diterima->Tambah(Uang::Dari((string) $jumlah));
+            }
+        }
+
+        return [
+            'Beredar' => ['Jumlah' => $terbuka->count(), 'Sisa' => $beredar->KeString()],
+            'LewatTempo' => ['Jumlah' => $jumlahLewat, 'Sisa' => $lewat->KeString()],
+            'Diterima' => $diterima->KeString(),
+        ];
     }
 
     /** Sisa piutang penjualan (null = bukan penjualan tempo). */

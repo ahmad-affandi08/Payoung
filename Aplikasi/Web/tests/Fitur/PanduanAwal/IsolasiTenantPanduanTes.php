@@ -38,7 +38,7 @@ describe('Isolasi tenant panduan awal (F-01, CLAUDE.md #11)', function (): void 
             ->and(KategoriKas::query()->count())->toBe(0)
             ->and(OutletFitur::query()->count())->toBe(0);
         BantuanOrganisasi::AturKonteks($a->Id);
-        expect(Akun::query()->count())->toBe(60); // CRM-06: + Saldo Gift Card 2-1550; v3.42: + dua akun giro; v3.61: + kliring tukar barang; D-106: + delapan akun biaya umum; E8: + beban piutang tak tertagih
+        expect(Akun::query()->count())->toBe(61); // F-21: + PPh Dibayar Dimuka 1-1750; CRM-06: + Saldo Gift Card 2-1550; v3.42: + dua akun giro; v3.61: + kliring tukar barang; D-106: + delapan akun biaya umum; E8: + beban piutang tak tertagih
     });
 
     it('tenant B tidak bisa melihat/mengubah metode pembayaran & gambar QRIS A, memakai kategori A, atau membuat kode aktivasi perangkat A', function (): void {

@@ -27,10 +27,18 @@ final class SektorSitus
         'kafe-resto' => ['Judul' => 'Kafe & Resto', 'Ikon' => 'Coffee', 'Prefiks' => ['FNB']],
         'toko-retail' => ['Judul' => 'Toko & Retail', 'Ikon' => 'Store', 'Prefiks' => ['RTL', 'WHS']],
         'jasa' => ['Judul' => 'Salon, Laundry & Jasa', 'Ikon' => 'Scissors', 'Prefiks' => ['SVC']],
+        // D-167: perusahaan yang menagih tanpa kasir (invoice, kontrak, proyek, produksi).
+        'perusahaan' => ['Judul' => 'Perusahaan & Jasa Profesional', 'Ikon' => 'Building', 'Prefiks' => ['BIZ']],
     ];
 
     /**
-     * Kunci kelompok untuk kode template sektor (awalan kode: FNB, RTL, WHS, SVC).
+     * Tiga kelompok datar yang dulu tersimpan di menu situs lama (sebelum dropdown Solusi, D-91). Kelompok yang ditambah
+     * sesudahnya (D-167) tidak ikut: pengaturan lama tidak pernah memuatnya, jadi tidak boleh dijadikan syarat pelipatan.
+     */
+    public const KELOMPOK_MENU_LAMA = ['kafe-resto', 'toko-retail', 'jasa'];
+
+    /**
+     * Kunci kelompok untuk kode template sektor (awalan kode: FNB, RTL, WHS, SVC, BIZ).
      */
     public static function AmbilKelompokUntukKode(string $kode): ?string
     {
@@ -74,7 +82,7 @@ final class SektorSitus
 
             $hasil['solusi/'.$s['Slug']] = [
                 'Judul' => $s['Nama'],
-                'JudulSeo' => 'Aplikasi Kasir '.($s['NamaSeo'] ?? $s['Nama']).' | Payoung',
+                'JudulSeo' => ($s['JudulSeo'] ?? 'Aplikasi Kasir '.($s['NamaSeo'] ?? $s['Nama'])).' | Payoung',
                 'DeskripsiSeo' => $s['Seo'],
                 'Bagian' => [
                     [
@@ -103,7 +111,7 @@ final class SektorSitus
                     [
                         'Jenis' => 'Cta',
                         'Judul' => 'Coba dulu dengan data usaha Anda sendiri',
-                        'Teks' => 'Daftar gratis, pilih sektor "'.$s['Nama'].'" di panduan awal, lalu produk, pajak, dan perangkat kasir disiapkan langkah demi langkah.',
+                        'Teks' => $s['Cta'] ?? 'Daftar gratis, pilih sektor "'.$s['Nama'].'" di panduan awal, lalu produk, pajak, dan perangkat kasir disiapkan langkah demi langkah.',
                         'TombolUtama' => ['Label' => 'Coba gratis sekarang', 'Tautan' => '@daftar'],
                         'TombolKedua' => ['Label' => 'Tanya lewat WhatsApp', 'Tautan' => '@whatsapp'],
                     ],
@@ -115,7 +123,7 @@ final class SektorSitus
     }
 
     /**
-     * @return list<array{Kode: string, Slug: string, Nama: string, NamaSeo?: string, Ringkas: string, Ikon: string, Spesimen: string, Judul: string, Sub: string, Poin: list<string>, JudulFitur: string, Item: list<array{0: string, 1: string, 2: string}>, Faq: list<array{0: string, 1: string}>, Seo: string}>
+     * @return list<array{Kode: string, Slug: string, Nama: string, NamaSeo?: string, JudulSeo?: string, Cta?: string, Ringkas: string, Ikon: string, Spesimen: string, Judul: string, Sub: string, Poin: list<string>, JudulFitur: string, Item: list<array{0: string, 1: string, 2: string}>, Faq: list<array{0: string, 1: string}>, Seo: string}>
      */
     private static function Definisi(): array
     {
@@ -463,6 +471,63 @@ final class SektorSitus
                 ],
                 'Faq' => [['Apakah cocok untuk usaha sangat kecil?', 'Cocok. Paket Gratis cukup untuk satu kasir, dan Anda bisa naik paket kapan saja dari back-office.'], $offline],
                 'Seo' => 'Aplikasi kasir fotokopi, percetakan, rental, dan jasa umum: harga terbuka, pesanan dengan uang muka, tagihan tempo, stok bahan, laporan harian.',
+            ],
+            [
+                'Kode' => 'BIZ-JSA', 'Slug' => 'jasa-profesional-agensi', 'Nama' => 'Jasa profesional & agensi', 'JudulSeo' => 'Aplikasi Invoice & Penagihan untuk Konsultan, Agensi, dan Jasa Profesional',
+                'Ringkas' => 'Invoice, retainer berulang, PPh dipotong', 'Ikon' => 'FileText', 'Spesimen' => 'Jurnal',
+                'Judul' => 'Tagihan terkirim hari ini, pembayarannya terlihat besok',
+                'Sub' => 'Buat invoice profesional, kirim lewat WhatsApp dengan tautan yang bisa dibuka pelanggan, dan lihat siapa yang sudah membuka, membayar, atau terlambat. Tanpa aplikasi kasir.',
+                'Poin' => ['Invoice, uang muka, dan retainer berulang', 'Tautan invoice & kirim WhatsApp', 'PPh 23 dipotong pelanggan tercatat'],
+                'JudulFitur' => 'Untuk konsultan, agensi, software house, dan event organizer',
+                'Item' => [
+                    ['FileText', 'Invoice yang rapi', 'Nomor otomatis, PPN dihitung dari tarif yang berlaku, terbilang rupiah, dan PDF siap cetak atau kirim.'],
+                    ['MessageCircle', 'Kirim dan lacak', 'Kirim invoice lewat WhatsApp dan lihat kapan pelanggan membukanya, tanpa mengejar lewat chat satu per satu.'],
+                    ['RefreshCw', 'Retainer berulang', 'Tagihan bulanan terbit sendiri pada tanggalnya, dengan perihal yang mengikuti bulan berjalan.'],
+                    ['Wallet', 'Uang muka (DP)', 'Minta DP sebelum pekerjaan dimulai, lalu potong otomatis dari invoice akhir tanpa PPN terhitung dua kali.'],
+                    ['Percent', 'PPh dipotong pelanggan', 'Catat PPh 23 yang dipotong beserta nomor bukti potongnya saat pembayaran diterima.'],
+                    ['ChartLine', 'Piutang dan arus kas', 'Umur piutang, invoice lewat tempo, dan pengingat otomatis yang sopan sebelum dan sesudah jatuh tempo.'],
+                ],
+                'Faq' => [['Apakah perlu aplikasi kasir atau printer struk?', 'Tidak. Sektor ini dibuat untuk menagih lewat invoice; menu kasir tidak ditampilkan, dan Anda bisa menambahnya kemudian bila membuka toko.'], ['Apakah pelanggan perlu punya akun?', 'Tidak. Pelanggan membuka invoice dari tautan, tanpa mendaftar. Tautannya rahasia dan tidak bisa ditebak dari nomor invoice.']],
+                'Seo' => 'Aplikasi invoice dan penagihan untuk konsultan, agensi, dan jasa profesional: invoice PPN, uang muka, retainer berulang, kirim WhatsApp, PPh 23 dipotong, piutang dan pengingat.',
+                'Cta' => 'Daftar gratis, pilih sektor "Jasa profesional & agensi" di panduan awal, lalu pelanggan, pajak, dan invoice pertama disiapkan langkah demi langkah.',
+            ],
+            [
+                'Kode' => 'BIZ-KTR', 'Slug' => 'kontraktor-proyek', 'Nama' => 'Kontraktor & proyek', 'JudulSeo' => 'Aplikasi Invoice Proyek untuk Kontraktor, Interior, dan Arsitek',
+                'Ringkas' => 'Invoice bertermin, uang muka, PO material', 'Ikon' => 'Building', 'Spesimen' => 'Jurnal',
+                'Judul' => 'Termin proyek tertagih tepat waktu, uang muka tidak terlupa',
+                'Sub' => 'Tagih proyek dalam beberapa termin: uang muka dulu, lalu pelunasan dengan potongan DP. PPN dan PPh yang dipotong pemberi kerja tercatat rapi.',
+                'Poin' => ['Uang muka dan invoice akhir', 'PPN dan PPh dipotong tercatat', 'Pesanan pembelian material'],
+                'JudulFitur' => 'Untuk kontraktor, interior, arsitek, dan vendor proyek',
+                'Item' => [
+                    ['Wallet', 'Termin bertahap', 'Terbitkan invoice DP, lalu invoice akhir yang otomatis memotong DP yang sudah dibayar.'],
+                    ['FileText', 'Invoice per proyek', 'Cantumkan nomor kontrak atau PO pemberi kerja, perihal proyek, dan cara pembayaran di tiap invoice.'],
+                    ['Percent', 'PPN dan PPh jasa konstruksi', 'PPN dari tarif yang berlaku; tarif PPh yang dipotong diisi sesuai bukti potong, bukan ditebak sistem.'],
+                    ['ClipboardList', 'Pesanan pembelian material', 'Beli material dari pemasok dengan pesanan pembelian, penerimaan, dan hutang jatuh tempo.'],
+                    ['HandCoins', 'Piutang proyek terpantau', 'Lihat termin mana yang belum dibayar, yang lewat tempo, dan kirim pengingat lewat WhatsApp.'],
+                    ['Calculator', 'Pembukuan otomatis', 'Pendapatan, PPN, uang muka, dan piutang masuk ke jurnal tanpa input ganda.'],
+                ],
+                'Faq' => [['Apakah bisa menagih proyek dengan beberapa termin?', 'Bisa. Buat invoice uang muka untuk tiap termin awal, lalu invoice akhir yang memotongnya; keduanya terkait dan tidak menghitung PPN dua kali.'], ['Bagaimana dengan retensi proyek?', 'Retensi belum punya fitur khusus; sementara dapat dicatat sebagai invoice terpisah yang diterbitkan setelah masa pemeliharaan.']],
+                'Seo' => 'Aplikasi invoice proyek untuk kontraktor, interior, dan arsitek: uang muka dan termin, PPN, PPh dipotong pemberi kerja, pesanan pembelian material, piutang proyek.',
+                'Cta' => 'Daftar gratis, pilih sektor "Kontraktor & proyek" di panduan awal, lalu pemberi kerja, pajak, dan invoice termin pertama disiapkan langkah demi langkah.',
+            ],
+            [
+                'Kode' => 'BIZ-MFG', 'Slug' => 'manufaktur-produksi', 'Nama' => 'Manufaktur & produksi', 'JudulSeo' => 'Aplikasi Stok, Produksi, dan Invoice untuk Pabrik dan Konveksi',
+                'Ringkas' => 'Bahan baku, produksi, pesanan & invoice', 'Ikon' => 'Warehouse', 'Spesimen' => 'Jurnal',
+                'Judul' => 'Dari bahan baku sampai invoice distributor dalam satu catatan',
+                'Sub' => 'Catat bahan baku, produksi barang jadi dengan HPP yang benar, lalu jual ke distributor lewat pesanan, surat jalan, dan invoice. Tanpa kasir.',
+                'Poin' => ['Bahan baku dan produksi dengan HPP', 'Pesanan, surat jalan, dan invoice', 'Piutang distributor terpantau'],
+                'JudulFitur' => 'Untuk pabrik kecil-menengah, konveksi, maklon, dan makanan kemasan',
+                'Item' => [
+                    ['Boxes', 'Produksi memotong bahan', 'Order produksi mengurangi bahan baku sesuai resep dan menambah barang jadi dengan HPP dari bahan ditambah overhead.'],
+                    ['Warehouse', 'Beberapa gudang', 'Bahan baku, barang setengah jadi, dan barang jadi di gudang berbeda, dengan transfer dan opname.'],
+                    ['Truck', 'Pesanan, surat jalan, invoice', 'Pesanan distributor dikirim bertahap; pendapatan dan HPP diakui saat surat jalan, lalu difakturkan.'],
+                    ['Tag', 'Harga per level pelanggan', 'Harga distributor, agen, dan eceran mengikuti daftar harga tanpa menghitung manual.'],
+                    ['ClipboardList', 'Pesanan pembelian bahan', 'Beli bahan baku dengan pesanan pembelian, penerimaan barang, dan hutang pemasok.'],
+                    ['FileText', 'Invoice jasa maklon', 'Jasa seperti maklon atau desain ditagih langsung lewat invoice, tanpa melewati stok.'],
+                ],
+                'Faq' => [['Apakah perlu aplikasi kasir?', 'Tidak. Penjualan ke distributor dicatat dari back-office lewat pesanan dan surat jalan; menu kasir tidak ditampilkan.'], ['Apakah resep produksi dan HPP dihitung otomatis?', 'Ya. HPP barang jadi dihitung dari biaya bahan yang dipakai ditambah overhead yang Anda isi di order produksi.']],
+                'Seo' => 'Aplikasi stok, produksi, dan invoice untuk pabrik, konveksi, dan maklon: bahan baku, order produksi dengan HPP, pesanan dan surat jalan, invoice distributor, piutang.',
+                'Cta' => 'Daftar gratis, pilih sektor "Manufaktur & produksi" di panduan awal, lalu bahan baku, gudang, dan pelanggan distributor disiapkan langkah demi langkah.',
             ],
         ];
     }

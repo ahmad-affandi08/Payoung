@@ -10,8 +10,10 @@ use App\Domain\Laporan\Kueri\DasborPemilik;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Organisasi\Kueri\TurProdukPengguna;
+use App\Domain\Penjualan\Kueri\RingkasanInvoice;
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Http\Request;
@@ -27,7 +29,7 @@ use Inertia\Response;
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur): Response
+    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor): Response
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
@@ -47,7 +49,12 @@ final class BerandaKelolaKontroler extends DasarKelolaKontroler
                     $kotak->Ambil($konteks->Buat($idTenant, $idPengguna, $tanggal->Hitung(null))),
                 ),
             ),
-            'Dasbor' => $akses->CekIzin($idTenant, $idPengguna, IzinTenant::LaporanPenjualanLihat)
+            // F-21: usaha yang menagih lewat invoice melihat ringkasan penagihannya di Beranda (null bila belum pernah ada invoice).
+            'Penagihan' => $akses->CekIzin($idTenant, $idPengguna, IzinTenant::InvoiceKelola)
+                ? $penagihan->Ambil($tanggal->Hitung(null), $this->IdOutletBoleh())
+                : null,
+            // D-167: usaha Perusahaan tidak punya penjualan kasir; Beranda-nya menampilkan penagihan, bukan omzet kasir kosong.
+            'Dasbor' => $akses->CekIzin($idTenant, $idPengguna, IzinTenant::LaporanPenjualanLihat) && ! $sektor->CekHanyaPerusahaan()
                 ? $dasbor->Ambil(
                     $tanggal->Hitung(null),
                     $this->IdOutletBoleh(),

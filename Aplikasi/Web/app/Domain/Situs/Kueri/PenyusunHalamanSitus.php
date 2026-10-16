@@ -138,7 +138,7 @@ final class PenyusunHalamanSitus
      */
     private function SusunMenu(array $menu, callable $tautan): array
     {
-        $kelompokDatar = array_map(static fn (string $k): string => '/solusi/'.$k, array_keys(SektorSitus::KELOMPOK));
+        $kelompokDatar = array_map(static fn (string $k): string => '/solusi/'.$k, SektorSitus::KELOMPOK_MENU_LAMA);
         $tautanMenu = array_map(static fn (array $m): string => (string) $m['Tautan'], $menu);
         $lama = ! in_array('@solusi', $tautanMenu, true) && array_diff($kelompokDatar, $tautanMenu) === [];
         $solusi = null;
