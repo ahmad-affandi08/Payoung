@@ -78,6 +78,7 @@
             "Fitur": [
                 "akuntansi.penuh",
                 "integrasi.whatsapp",
+                "invoice.penagihan",
                 "kanal.self-order",
                 "kanal.toko-online",
                 "karyawan.komisi",
@@ -126,6 +127,7 @@
                 "api.publik",
                 "harga.daftar-harga",
                 "integrasi.whatsapp",
+                "invoice.penagihan",
                 "kanal.self-order",
                 "kanal.toko-online",
                 "karyawan.komisi",
@@ -177,6 +179,7 @@
                 "api.publik",
                 "harga.daftar-harga",
                 "integrasi.whatsapp",
+                "invoice.penagihan",
                 "kanal.self-order",
                 "kanal.toko-online",
                 "karyawan.komisi",

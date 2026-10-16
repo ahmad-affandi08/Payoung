@@ -100,6 +100,9 @@ enum IzinTenant: string
     case PersediaanTerbuangCatat = 'persediaan.terbuang.catat';
     // Grosir (F-12, §9.7): sales order, surat jalan, dan faktur penjualan grosir.
     case GrosirKelola = 'grosir.kelola';
+    // Invoice & penagihan B2B (F-21, D-166): membuat, menerbitkan, mengirim, membatalkan invoice dan penawaran, serta
+    // mencatat pembayarannya (termasuk PPh yang dipotong pelanggan).
+    case InvoiceKelola = 'invoice.kelola';
     // BR-12.6: mengonfirmasi SO grosir yang melampaui limit kredit atau pelanggannya punya piutang lewat jatuh tempo.
     case GrosirSetujuiKredit = 'grosir.setujui-kredit';
     // Modul Salesman (§9.7, SLS-11): aplikasi mode Salesman — kunjungan pelanggan, lihat stok & piutang pelanggan,
@@ -173,6 +176,7 @@ enum IzinTenant: string
             self::PersediaanTerbuangCatat => 'Mencatat bahan/menu terbuang (waste) dari kasir, dapur, atau back-office',
             self::GrosirKelola => 'Mengelola pesanan grosir, surat jalan, dan faktur penjualan',
             self::GrosirSetujuiKredit => 'Menyetujui pesanan grosir yang melampaui limit kredit',
+            self::InvoiceKelola => 'Mengelola invoice, penawaran, dan pembayaran invoice pelanggan',
             self::SalesmanKunjungan => 'Mencatat kunjungan pelanggan & mengambil pesanan grosir dari aplikasi (Salesman)',
             self::TokoOnlineKelola => 'Mengelola toko online, zona ongkir, dan pesanan online',
             self::PengirimanKelola => 'Mengelola kurir dan status pengiriman pesanan',
@@ -194,7 +198,7 @@ enum IzinTenant: string
             self::PembelianKelola, self::PembelianPoSetujui => 'Persediaan & pembelian',
             self::PenjualanBuat, self::PenjualanVoid, self::PenjualanRetur, self::PenjualanReturTanpaStruk, self::PenjualanDiskonManual, self::PosHargaTimpa, self::KasKeluarSetujui,
             self::PenjualanDiskonSetujui, self::PenjualanTempoSetujui, self::ShiftSelisihSetujui, self::PesananMejaCatat,
-            self::ReservasiKelola, self::LaundryKelola, self::BengkelKelola, self::GrosirKelola, self::GrosirSetujuiKredit, self::SalesmanKunjungan,
+            self::ReservasiKelola, self::LaundryKelola, self::BengkelKelola, self::GrosirKelola, self::GrosirSetujuiKredit, self::InvoiceKelola, self::SalesmanKunjungan,
             self::TokoOnlineKelola, self::PengirimanKelola => 'Penjualan',
             self::LaporanPenjualanLihat, self::LaporanKeuanganLihat, self::AkuntansiKelola, self::TindakanTinjau => 'Keuangan & laporan',
             self::LanggananKelola, self::DataKelola => 'Langganan',

@@ -69,6 +69,9 @@ enum PeranAkun: string
 
     case HutangGiro = 'HutangGiro';
 
+    // F-21 (D-166): PPh yang dipotong pelanggan saat membayar invoice (mis. PPh 23); kredit pajak di sisi kita.
+    case PphDibayarDimuka = 'PphDibayarDimuka';
+
     /**
      * Kunci lama sebelum istilah kamus §13.7.1 ditetapkan (DesainF01 H1). Versi template yang sudah terbit tidak boleh
      * diubah (BR-P03.4), jadi kunci lama di dalamnya tetap dibaca lewat alias ini, bukan ditulis ulang.
@@ -115,7 +118,7 @@ enum PeranAkun: string
             self::KasOutlet, self::KasBrankas, self::Bank, self::PiutangPencairan, self::PiutangUsaha,
             self::PiutangKaryawan, self::PiutangKlaimPemasok, self::PiutangBelumDifakturkan,
             self::PersediaanBarangDagang, self::PersediaanBahanBaku,
-            self::PersediaanDalamPerjalanan, self::PpnMasukan, self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima => TipeAkun::Aset,
+            self::PersediaanDalamPerjalanan, self::PpnMasukan, self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima, self::PphDibayarDimuka => TipeAkun::Aset,
             self::HutangUsaha, self::HutangBelumDifakturkan, self::HutangKonsinyasi, self::PpnKeluaran,
             self::HutangPbjt, self::UangMukaPelanggan, self::DepositPelanggan, self::SaldoGiftCard,
             self::PendapatanDiterimaDimuka, self::HutangGiro, self::KliringTukarBarang => TipeAkun::Kewajiban,
@@ -226,6 +229,7 @@ enum PeranAkun: string
             self::GiroDiterima => 'Giro/cek mundur diterima (belum cair)',
             self::HutangGiro => 'Hutang giro (giro keluar belum cair)',
             self::BebanPiutangTakTertagih => 'Beban piutang tak tertagih (hapus-buku piutang)',
+            self::PphDibayarDimuka => 'PPh dibayar dimuka (dipotong pelanggan)',
         };
     }
 }

@@ -133,6 +133,30 @@ final class IdentitasPelanggan
     }
 
     /**
+     * F-21: identitas penagihan untuk invoice yang dicetak atau dibuka lewat tautan publik. Berbeda dari `AmbilUntukCetak`,
+     * memuat email dan NPWP (terenkripsi di tabel, didekripsi model) karena invoice B2B dipakai bagian pajak pembeli.
+     * Nama & alamat memakai versi sesuai DJP bila diisi, sehingga cocok dengan Faktur Pajak.
+     *
+     * @return array{Nama: string, Alamat: string|null, NoHp: string, Email: string|null, Npwp: string|null}|null
+     */
+    public function AmbilUntukInvoice(int $id): ?array
+    {
+        $p = Pelanggan::query()->whereKey($id)->first();
+
+        if ($p === null) {
+            return null;
+        }
+
+        return [
+            'Nama' => $p->NamaNpwp !== null && $p->NamaNpwp !== '' ? $p->NamaNpwp : $p->Nama,
+            'Alamat' => $p->AlamatNpwp !== null && $p->AlamatNpwp !== '' ? $p->AlamatNpwp : $p->Alamat,
+            'NoHp' => $p->NoHp,
+            'Email' => $p->Email,
+            'Npwp' => $p->Npwp,
+        ];
+    }
+
+    /**
      * F-12 bagian 2: identitas pelanggan pre-order untuk POS (nomor HP tersamar, tier untuk harga) per Id.
      *
      * @param  list<int>  $id

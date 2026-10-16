@@ -28,6 +28,7 @@
         { "Kunci": "kanal.self-order", "Nama": "Self-order QR", "Modul": "Kanal" },
         { "Kunci": "kanal.toko-online", "Nama": "Toko online", "Modul": "Kanal" },
         { "Kunci": "integrasi.whatsapp", "Nama": "Pesan WhatsApp", "Modul": "Integrasi" },
-        { "Kunci": "laporan.insight", "Nama": "Forecast & insight", "Modul": "Laporan" }
+        { "Kunci": "laporan.insight", "Nama": "Forecast & insight", "Modul": "Laporan" },
+        { "Kunci": "invoice.penagihan", "Nama": "Invoice & penagihan", "Modul": "Piutang" }
     ]
 }

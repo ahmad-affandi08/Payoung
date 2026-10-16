@@ -21,8 +21,8 @@ export type HasilPelangganGrosir = {
 
 const alamatCari = '/kelola/grosir/pelanggan/cari';
 
-export function BuatUrlCariPelanggan(kata: string): string {
-    return `${alamatCari}?${new URLSearchParams({ kata }).toString()}`;
+export function BuatUrlCariPelanggan(kata: string, alamat = alamatCari): string {
+    return `${alamat}?${new URLSearchParams({ kata }).toString()}`;
 }
 
 /** "Limit Rp 50.000.000 | sisa piutang Rp 2.000.000" atau "tanpa limit kredit". */
@@ -50,20 +50,26 @@ export default function PemilihPelangganGrosir({
     namaTerpilih,
     saatPilih,
     galat,
+    alamat = alamatCari,
 }: {
     uuidTerpilih: string;
     namaTerpilih: string;
     saatPilih: (uuid: string, nama: string) => void;
     galat?: string | undefined;
+    /** Titik akhir pencarian; bawaan pencarian pelanggan grosir, invoice memakai rutenya sendiri (F-21). */
+    alamat?: string;
 }) {
     const [kata, AturKata] = useState('');
     const [terbuka, AturTerbuka] = useState(false);
     const [sorot, AturSorot] = useState('');
     const kataCari = useNilaiTertunda(kata.trim(), 300);
     const kueri = useQuery({
-        queryKey: KunciKueri.Grosir.CariPelanggan(kataCari),
+        queryKey:
+            alamat === alamatCari
+                ? KunciKueri.Grosir.CariPelanggan(kataCari)
+                : [...KunciKueri.Grosir.CariPelanggan(kataCari), alamat],
         queryFn: ({ signal }) =>
-            AmbilHasilCari<{ Data: HasilPelangganGrosir[] }>(BuatUrlCariPelanggan(kataCari), signal),
+            AmbilHasilCari<{ Data: HasilPelangganGrosir[] }>(BuatUrlCariPelanggan(kataCari, alamat), signal),
         enabled: terbuka,
         staleTime: 0,
         // Hasil lama tetap tampil selama hasil baru dimuat, jadi daftar tidak berkedip saat mengetik.

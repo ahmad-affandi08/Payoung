@@ -250,6 +250,7 @@ Endpoint `/internal/*` memakai **autentikasi sesi** (cookie + CSRF, Sanctum SPA 
 /webhook/{penyedia}             Webhook masuk (signature diverifikasi)
 /sehat                          Health check (dikonfigurasi di bootstrap/app.php, pengganti /up)
 /s/{kodeStruk}                  Struk digital
+/i/{kodeInvoice}                Invoice digital (F-21, D-166)
 /{slugTenant}                   Toko online publik
 /{slugTenant}/meja/{tokenMeja}  Self-order meja
 /{slugTenant}/reservasi         Booking layanan
@@ -329,6 +330,7 @@ dashboard.{{app}}.id           Semua rute di atas selain pemasaran (D-20, DOMAIN
 | sales channel | `KanalPenjualan` | product tax category | `KategoriPajakProduk` |
 | variant key / attributes | `KunciVarian` / `AtributVarian` | import preset | `Preset` (serapan; `PresetImporProduk`) |
 | variant generator / editor (UI) | `PembuatVarian` / `Penyunting…` | modifier (UI) | "Pilihan (modifier)" |
+| service/business invoice (v6.52, F-21) | `Invoice` / `InvoiceDetail` | tax withheld by customer, prepaid | `PphDibayarDimuka` |
 
 Pola penamaan class per jenis (**{Objek}{Jenis}**, agar file satu domain berdekatan saat diurutkan):
 `PenjualanKontroler`, `PenjualanKebijakan`, `SimpanProdukPermintaan`, `ProdukRespons`, `KirimStrukWaTugas`. Pengecualian: class **Aksi** dan **Peristiwa** memakai kalimat langsung, misal Aksi `SelesaikanPenjualan`, Peristiwa `PenjualanSelesai`, Penangan `KurangiStokPenjualan`.

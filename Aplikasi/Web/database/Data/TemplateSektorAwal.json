@@ -119,6 +119,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -414,7 +421,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Sembako",
@@ -682,6 +690,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -991,7 +1006,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Kopi",
@@ -1258,6 +1274,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -1567,7 +1590,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Makanan",
@@ -1832,6 +1856,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -2141,7 +2172,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Makanan utama",
@@ -2396,6 +2428,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -2705,7 +2744,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Roti manis",
@@ -2957,6 +2997,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -3252,7 +3299,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Atasan",
@@ -3498,6 +3546,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -3793,7 +3848,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Ponsel",
@@ -4041,6 +4097,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -4336,7 +4399,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Semen & pasir",
@@ -4594,6 +4658,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -4889,7 +4960,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Sembako",
@@ -5139,6 +5211,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -5434,7 +5513,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Potong rambut",
@@ -5678,6 +5758,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -5973,7 +6060,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Kiloan",
@@ -6216,6 +6304,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -6511,7 +6606,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Fotokopi & cetak",
@@ -6756,6 +6852,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -7051,7 +7154,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Obat bebas",
@@ -7321,6 +7425,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -7616,7 +7727,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Jasa Servis",
@@ -7860,6 +7972,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -8155,7 +8274,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Sayur",
@@ -8417,6 +8537,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -8712,7 +8839,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Membership",
@@ -8974,6 +9102,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -9269,7 +9404,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Cuci motor",
@@ -9523,6 +9659,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -9818,7 +9961,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Makanan kucing",
@@ -10084,6 +10228,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1750",
+                        "Nama": "PPh Dibayar Dimuka (Dipotong Pelanggan)",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-2000",
                         "Nama": "Aset Tetap",
                         "Tipe": "Aset",
@@ -10379,7 +10530,8 @@
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
                     "HutangGiro": "2-1180",
-                    "BebanPiutangTakTertagih": "6-5100"
+                    "BebanPiutangTakTertagih": "6-5100",
+                    "PphDibayarDimuka": "1-1750"
                 },
                 "Kategori": [
                     "Buket",

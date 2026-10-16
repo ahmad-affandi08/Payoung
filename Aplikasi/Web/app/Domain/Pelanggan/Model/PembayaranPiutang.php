@@ -20,6 +20,8 @@ use Illuminate\Support\Carbon;
  * @property int $IdAkun
  * @property Carbon $Tanggal
  * @property string $Jumlah
+ * @property string $PotonganPph bagian Jumlah yang dipotong pelanggan sebagai PPh (F-21), bukan uang masuk
+ * @property string|null $NomorBuktiPotong
  * @property StatusPembayaranPiutang $Status
  * @property string|null $Catatan
  * @property int|null $IdJurnal
@@ -43,6 +45,6 @@ final class PembayaranPiutang extends ModelDasar
      */
     protected function casts(): array
     {
-        return ['Tanggal' => 'date', 'Jumlah' => 'decimal:2', 'Status' => StatusPembayaranPiutang::class, 'DibatalkanPada' => 'datetime'];
+        return ['Tanggal' => 'date', 'Jumlah' => 'decimal:2', 'PotonganPph' => 'decimal:2', 'Status' => StatusPembayaranPiutang::class, 'DibatalkanPada' => 'datetime'];
     }
 }

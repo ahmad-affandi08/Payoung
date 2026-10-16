@@ -20,6 +20,12 @@ export const KunciKueri = {
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,
     },
+    // F-21: pemilih jasa/produk tanpa stok di baris invoice.
+    Invoice: {
+        CariJasa: (kata: string) => ['Invoice', 'CariJasa', kata] as const,
+        UangMukaTersedia: (uuidPelanggan: string, untuk: string) =>
+            ['Invoice', 'UangMuka', uuidPelanggan, untuk] as const,
+    },
     // TAX-07: pemilih pembeli Faktur Pajak per transaksi kasir.
     Penjualan: {
         CariPembeliFakturPajak: (kata: string) => ['Penjualan', 'CariPembeliFakturPajak', kata] as const,

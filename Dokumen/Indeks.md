@@ -67,3 +67,4 @@ Potongan PRD.md untuk dibaca sesuai kebutuhan. Sumber kebenaran tetap `PRD.md`.
 - [F-18 · Karyawan: Jadwal, Absensi, Komisi](Flow/F18KaryawanJadwalAbsensiKomisi.md)
 - [F-19 · Billing Langganan SaaS](Flow/F19BillingLanggananSaaS.md)
 - [F-20 · Integrasi & API](Flow/F20IntegrasiAPI.md)
+- [F-21 · Invoice & Penagihan B2B](Flow/F21InvoicePenagihanB2B.md)

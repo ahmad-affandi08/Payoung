@@ -1,0 +1,281 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
+use App\Domain\Penjualan\Enum\StatusPengirimanInvoice;
+use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
+use App\Domain\Penjualan\Model\Invoice;
+use App\Domain\Penjualan\Model\PengirimanInvoice;
+use App\Domain\Tenant\Enum\JenisOverride;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
+use App\Domain\Tenant\Model\OverrideTenant;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
+use Tests\Pendukung\Katalog\BantuanKatalog;
+use Tests\Pendukung\Pembelian\BantuanPembelian;
+use Tests\Pendukung\Pengelola\BantuanPengelola;
+use Tests\Pendukung\Persediaan\BantuanPersediaan;
+use Tests\Pendukung\Tenant\BantuanFitur;
+use Tests\Pendukung\Tenant\BantuanPendaftaran;
+
+/*
+ * Back-office invoice lewat rute (routes/Invoice.php, F-21 D-166): alur lengkap draf → terbit → bayar (dengan PPh) → cetak,
+ * halaman publik `/i/{kode}` (kode rahasia, hitung dilihat, 404 untuk draf/salah), kirim WhatsApp, izin `invoice.kelola`,
+ * dan isolasi tenant. Angka tidak datang dari klien: total & pajak dihitung server dari baris.
+ */
+
+beforeEach(function (): void {
+    Carbon::setTestNow('2026-09-27 03:00:00');
+    BantuanPendaftaran::SiapkanPrasyarat();
+    config(['integrasi.Whatsapp' => ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'rahasia-uji']]]);
+    Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9201']])]);
+    $this->k = BantuanPersediaan::SiapkanTenant('Konsultan Maju Bersama');
+    BantuanFitur::Beri($this->k['Tenant']->Id, 'invoice.penagihan');
+    OverrideTenant::query()->create([
+        'IdTenant' => $this->k['Tenant']->Id,
+        'Jenis' => JenisOverride::Fitur,
+        'Kunci' => PemeriksaFiturTenant::KUNCI_WHATSAPP,
+        'BerakhirPada' => now()->addDays(90),
+        'Alasan' => 'Uji kirim invoice lewat WhatsApp',
+        'DibuatOleh' => BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin)->Id,
+    ]);
+    $this->klien = Pelanggan::query()->create(['Nama' => 'PT Sumber Makmur Sentosa', 'NoHp' => '6281355550101', 'TerminHari' => 14, 'Alamat' => 'Jl. Merdeka No. 10, Surakarta']);
+    $this->jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa konsultasi manajemen per bulan', 'Jenis' => JenisProduk::Jasa], '5000000.00');
+});
+
+afterEach(function (): void {
+    Carbon::setTestNow();
+});
+
+/** @return array<string, mixed> */
+function IsianInvoiceHttp($tes, array $ubah = []): array
+{
+    return array_replace([
+        'Jenis' => 'Penjualan',
+        'UuidPelanggan' => $tes->klien->Uuid,
+        'UuidOutlet' => $tes->k['Outlet']->Uuid,
+        'Tanggal' => '2026-09-27',
+        'TerminHari' => null,
+        'Perihal' => 'Jasa konsultasi September 2026',
+        'HargaTermasukPajak' => false,
+        'Baris' => [[
+            'UuidProduk' => $tes->jasa->Uuid,
+            'Nama' => 'Konsultasi manajemen',
+            'JenisBaris' => 'Jasa',
+            'SimbolSatuan' => 'bln',
+            'Jumlah' => '1',
+            'Harga' => '10000000',
+        ]],
+    ], $ubah);
+}
+
+describe('HTTP back-office invoice', function (): void {
+    it('alur lengkap lewat rute: form, draf, terbit, daftar, cetak, bayar dengan PPh, dan pengiriman WhatsApp', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        $this->get('/kelola/invoice/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Invoice/Form')
+            ->where('Jenis', 'Penjualan')
+            ->where('Isian', null)
+            ->has('OpsiOutlet')
+            ->has('OpsiKelompokPajak'));
+
+        // Angka tidak dikirim klien; hanya baris. Simpan & terbitkan memakai `Lanjutkan`.
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['KodePph' => 'PPh 23', 'TarifPph' => '2', 'Lanjutkan' => true]))->assertSessionHasNoErrors();
+        $invoice = Invoice::query()->sole();
+        expect($invoice->Status->value)->toBe('Terbit')
+            ->and($invoice->Nomor)->toStartWith('INV/')
+            ->and($invoice->Total)->toBe('10000000.00')
+            ->and($invoice->NilaiPph)->toBe('200000.00')
+            ->and($invoice->JatuhTempo->toDateString())->toBe('2026-10-11');
+
+        $this->get("/kelola/invoice/{$invoice->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Invoice/Detail')
+            ->where('Invoice.Nomor', $invoice->Nomor)
+            ->where('Invoice.StatusBayar', 'BelumDibayar')
+            ->where('Invoice.Sisa', '10000000.00')
+            ->where('Tindakan.CatatPembayaran', true)
+            ->where('Tindakan.Kirim', true)
+            ->where('Tindakan.Ubah', false)
+            ->has('OpsiAkun'));
+
+        $this->getJson('/kelola/invoice')->assertOk()
+            ->assertJsonPath('Data.0.Uuid', $invoice->Uuid)
+            ->assertJsonPath('Data.0.StatusBayar', 'BelumDibayar')
+            ->assertJsonPath('Data.0.NamaPelanggan', 'PT Sumber Makmur Sentosa');
+        $this->getJson('/kelola/invoice?saring[Pembayaran]=Lunas')->assertOk()->assertJsonCount(0, 'Data');
+        $this->getJson('/kelola/invoice?saring[Pembayaran]=Terbuka')->assertOk()->assertJsonCount(1, 'Data');
+        $this->getJson('/kelola/invoice?cari=konsultasi')->assertOk()->assertJsonCount(1, 'Data');
+
+        $this->get("/kelola/invoice/{$invoice->Uuid}/cetak")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Invoice/Cetak')
+            ->where('Invoice.PphDipotongPembeli', '200000.00')
+            ->where('Pembeli.Nama', 'PT Sumber Makmur Sentosa')
+            ->where('Baris.0.Nama', 'Konsultasi manajemen')
+            ->missing('Jurnal'));
+
+        // Bayar penuh: uang masuk = tagihan − PPh yang dipotong pelanggan.
+        $this->post("/kelola/invoice/{$invoice->Uuid}/pembayaran", [
+            'UuidAkun' => BantuanPembelian::AkunKas('1-1200')->Uuid,
+            'Tanggal' => '2026-09-27',
+            'PotonganPph' => '200000',
+            'NomorBuktiPotong' => '0001-BP23-2026',
+        ])->assertSessionHasNoErrors();
+        $this->getJson('/kelola/invoice')->assertJsonPath('Data.0.StatusBayar', 'Lunas');
+        $this->get("/kelola/invoice/{$invoice->Uuid}")->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Invoice.StatusBayar', 'Lunas')
+            ->where('Pelunasan.0.PotonganPph', '200000.00')
+            ->where('Tindakan.CatatPembayaran', false));
+
+        $this->post("/kelola/invoice/{$invoice->Uuid}/kirim", ['Jenis' => 'Invoice'])->assertSessionHasNoErrors();
+        $pengiriman = PengirimanInvoice::query()->sole();
+        expect($pengiriman->Status)->toBe(StatusPengirimanInvoice::Terkirim)
+            ->and($pengiriman->Tujuan)->toBe('6281355550101');
+        $teks = (string) collect(Http::recorded())->map(fn ($p) => $p[0])->filter(fn ($r) => str_contains($r->url(), 'api.fonnte.com/send'))->sole()->data()['message'];
+        expect($teks)->toContain('Halo PT Sumber Makmur Sentosa')
+            ->and($teks)->toContain($invoice->Nomor)
+            ->and($teks)->toContain('/i/'.KodeInvoicePublik::Buat($invoice->IdTenant, $invoice->KodePublik));
+        expect(json_encode(LogAudit::query()->where('Peristiwa', 'invoice.kirim')->sole()->NilaiBaru))->not->toContain('6281355550101');
+        expect($invoice->refresh()->TerkirimPada)->not->toBeNull();
+    });
+
+    it('draf bisa diubah lalu diterbitkan dari detail; angka tidak bisa dikarang klien; setelah terbit tidak bisa diubah', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Total' => '1.00', 'Tagihan' => '1.00']))->assertSessionHasNoErrors();
+        $invoice = Invoice::query()->sole();
+        expect($invoice->Total)->toBe('10000000.00')->and($invoice->Nomor)->toBeNull();
+
+        $this->get("/kelola/invoice/{$invoice->Uuid}/ubah")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Invoice/Form')
+            ->where('Isian.Uuid', $invoice->Uuid)
+            ->where('Isian.Perihal', 'Jasa konsultasi September 2026')
+            ->where('Isian.Baris.0.Nama', 'Konsultasi manajemen'));
+
+        $this->put("/kelola/invoice/{$invoice->Uuid}", IsianInvoiceHttp($this, ['Perihal' => 'Revisi', 'Baris' => [[
+            'Nama' => 'Retainer bulanan', 'JenisBaris' => 'Jasa', 'Jumlah' => '2', 'Harga' => '1500000',
+        ]]]))->assertSessionHasNoErrors();
+        expect($invoice->refresh()->Total)->toBe('3000000.00')->and($invoice->Perihal)->toBe('Revisi');
+
+        $this->post("/kelola/invoice/{$invoice->Uuid}/terbitkan")->assertSessionHasNoErrors();
+        expect($invoice->refresh()->Status->value)->toBe('Terbit');
+
+        $this->put("/kelola/invoice/{$invoice->Uuid}", IsianInvoiceHttp($this))->assertSessionHasErrors('Umum');
+        $this->get("/kelola/invoice/{$invoice->Uuid}/ubah")->assertRedirect("/kelola/invoice/{$invoice->Uuid}");
+        expect($invoice->refresh()->Total)->toBe('3000000.00');
+    });
+
+    it('pembatalan lewat rute meminta alasan; invoice tidak dikenal 404', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
+        $invoice = Invoice::query()->sole();
+
+        $this->post("/kelola/invoice/{$invoice->Uuid}/batalkan", ['Alasan' => 'x'])->assertSessionHasErrors('Alasan');
+        $this->post("/kelola/invoice/{$invoice->Uuid}/batalkan", ['Alasan' => 'Salah pelanggan'])->assertSessionHasNoErrors();
+        expect($invoice->refresh()->Status->value)->toBe('Dibatalkan');
+
+        $this->get('/kelola/invoice/'.strtoupper((string) Str::ulid()))->assertNotFound();
+    });
+
+    it('pencarian jasa hanya mengembalikan jasa/tanpa stok beserta harga katalog; pelanggan dicari lewat dropdown', function (): void {
+        BantuanKatalog::BuatProduk(['Nama' => 'Beras Pulen 5 kg'], '70000.00');
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        $this->getJson('/kelola/invoice/produk/cari?kata=')->assertOk()
+            ->assertJsonCount(1, 'Data')
+            ->assertJsonPath('Data.0.Nama', 'Jasa konsultasi manajemen per bulan')
+            ->assertJsonPath('Data.0.Harga', '5000000.00');
+        $this->getJson('/kelola/invoice/produk/cari?kata=beras')->assertOk()->assertJsonCount(0, 'Data');
+        $this->getJson('/kelola/invoice/pelanggan/cari?kata=sumber')->assertOk()->assertJsonCount(1, 'Data')->assertJsonPath('Data.0.Uuid', $this->klien->Uuid);
+    });
+
+    it('uang muka tersedia untuk pelanggan: hanya DP terbit yang belum dipotong', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Jenis' => 'UangMuka', 'Lanjutkan' => true, 'Baris' => [['Nama' => 'DP proyek', 'JenisBaris' => 'Jasa', 'Jumlah' => '1', 'Harga' => '2000000']]]))->assertSessionHasNoErrors();
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Jenis' => 'UangMuka', 'Baris' => [['Nama' => 'DP draf', 'JenisBaris' => 'Jasa', 'Jumlah' => '1', 'Harga' => '1000000']]]))->assertSessionHasNoErrors();
+
+        $this->getJson("/kelola/invoice/uang-muka?pelanggan={$this->klien->Uuid}")->assertOk()
+            ->assertJsonCount(1, 'Data')
+            ->assertJsonPath('Data.0.Total', '2000000.00');
+        $this->getJson('/kelola/invoice/uang-muka?pelanggan=tidak-ada')->assertOk()->assertJsonCount(0, 'Data');
+    });
+
+    it('tanpa izin invoice.kelola ditolak; fitur invoice.penagihan harus ada di paket untuk aksi tulis', function (): void {
+        BantuanKatalog::MasukSebagai($this, $this->k['Tenant']->Id, PeranTenantBawaan::Kasir);
+        $this->get('/kelola/invoice')->assertForbidden();
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this))->assertForbidden();
+        expect(Invoice::query()->count())->toBe(0);
+    });
+
+    it('dokumen tenant lain tidak terlihat (404) dan tidak bisa dibuka lewat halaman publik tenant lain', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
+        $invoice = Invoice::query()->sole();
+        $kode = KodeInvoicePublik::Buat($invoice->IdTenant, $invoice->KodePublik);
+
+        $lain = BantuanPersediaan::SiapkanTenant('Konsultan Lain Jaya');
+        BantuanFitur::Beri($lain['Tenant']->Id, 'invoice.penagihan');
+        BantuanPersediaan::MasukSebagai($this, $lain['Tenant']->Id);
+        $this->get("/kelola/invoice/{$invoice->Uuid}")->assertNotFound();
+        $this->getJson('/kelola/invoice')->assertOk()->assertJsonCount(0, 'Data');
+
+        // Kode yang menyebut tenant lain dengan rahasia yang sama tidak membuka apa pun.
+        Auth::logout();
+        $salah = KodeInvoicePublik::Buat($lain['Tenant']->Id, $invoice->KodePublik);
+        $this->get('/i/'.$salah)->assertNotFound();
+        expect($kode)->not->toBe($salah);
+    });
+});
+
+describe('HTTP halaman invoice publik', function (): void {
+    it('menampilkan invoice terbit tanpa login, menghitung dilihat hanya dari pengunjung, dan tidak membuka draf', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this))->assertSessionHasNoErrors();
+        $draf = Invoice::query()->sole();
+        $this->get('/i/'.KodeInvoicePublik::Buat($draf->IdTenant, $draf->KodePublik))->assertNotFound();
+
+        $this->post("/kelola/invoice/{$draf->Uuid}/terbitkan")->assertSessionHasNoErrors();
+        $invoice = $draf->refresh();
+        $kode = KodeInvoicePublik::Buat($invoice->IdTenant, $invoice->KodePublik);
+
+        // Staf yang sedang masuk membuka pratinjau: tidak dihitung sebagai dilihat pelanggan.
+        $this->get("/i/{$kode}")->assertOk();
+        expect($invoice->refresh()->JumlahDilihat)->toBe(0)->and($invoice->DilihatPada)->toBeNull();
+
+        Auth::logout();
+        $this->get("/i/{$kode}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Publik/InvoiceDigital')
+            ->where('Dokumen.Invoice.Nomor', $invoice->Nomor)
+            ->where('Dokumen.Pembeli.Nama', 'PT Sumber Makmur Sentosa')
+            ->where('Dokumen.Pembeli.NoHp', '')
+            ->where('Dokumen.Pembeli.Email', null)
+            ->where('Dokumen.Penjual.Nama', fn ($nama) => is_string($nama) && $nama !== '')
+            ->missing('Dokumen.Jurnal')
+            ->missing('Dokumen.Riwayat'));
+        $this->get("/i/{$kode}")->assertOk();
+        expect($invoice->refresh()->JumlahDilihat)->toBe(2)->and($invoice->DilihatPada)->not->toBeNull();
+
+        $this->get('/i/tidak-valid')->assertNotFound();
+        $this->get('/i/'.KodeInvoicePublik::Buat($invoice->IdTenant, Str::random(32)))->assertNotFound();
+    });
+
+    it('invoice yang dibatalkan tetap dibuka dengan tanda dibatalkan', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
+        $invoice = Invoice::query()->sole();
+        $this->post("/kelola/invoice/{$invoice->Uuid}/batalkan", ['Alasan' => 'Salah pelanggan'])->assertSessionHasNoErrors();
+
+        Auth::logout();
+        $this->get('/i/'.KodeInvoicePublik::Buat($invoice->IdTenant, $invoice->KodePublik))->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dokumen.Invoice.Status', 'Dibatalkan')
+            ->where('Dokumen.Invoice.AlasanBatal', 'Salah pelanggan'));
+    });
+});

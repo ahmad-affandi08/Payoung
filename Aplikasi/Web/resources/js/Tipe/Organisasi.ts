@@ -61,6 +61,7 @@ export const IzinTenant = {
     // Grosir (F-12, §9.7, D-32): kelola pesanan/surat jalan/faktur, dan menembus limit kredit saat konfirmasi SO.
     GrosirKelola: 'grosir.kelola',
     GrosirSetujuiKredit: 'grosir.setujui-kredit',
+    InvoiceKelola: 'invoice.kelola',
     TokoOnlineKelola: 'toko-online.kelola',
     PengirimanKelola: 'pengiriman.kelola',
     // Apotek (§9.5): menyerahkan obat wajib resep/OWA (Apoteker) & melihat data pasien di laporan apotek.

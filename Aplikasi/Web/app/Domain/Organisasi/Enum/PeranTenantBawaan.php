@@ -121,6 +121,8 @@ enum PeranTenantBawaan: string
                 // sejajar dengan PenjualanTempoSetujui untuk penjualan tempo di kasir.
                 IzinTenant::GrosirKelola,
                 IzinTenant::GrosirSetujuiKredit,
+                // F-21: invoice & penawaran outletnya.
+                IzinTenant::InvoiceKelola,
                 IzinTenant::TokoOnlineKelola,
                 IzinTenant::PengirimanKelola,
             ],
@@ -178,6 +180,8 @@ enum PeranTenantBawaan: string
                 IzinTenant::LaporanPenjualanLihat,
                 IzinTenant::LaporanKeuanganLihat,
                 IzinTenant::AkuntansiKelola,
+                // F-21: Akuntan menerbitkan dan menagih invoice (pembukuan penjualan jasa).
+                IzinTenant::InvoiceKelola,
                 IzinTenant::PelangganLihat,
                 IzinTenant::KaryawanLihat,
                 IzinTenant::TindakanTinjau,

@@ -222,6 +222,8 @@ const menuGrosir: ItemMenu[] = [
 // F-16a/F-16b: data pelanggan, tier, pengaturan loyalti.
 const menuPelanggan: ItemMenu[] = [
     { label: 'Daftar pelanggan', href: '/kelola/pelanggan', izin: IzinTenant.PelangganLihat },
+    // F-21 (D-166): invoice & penagihan B2B untuk jasa dan barang tanpa stok; rumahnya di grup yang sudah memuat piutang.
+    { label: 'Invoice', href: '/kelola/invoice', izin: IzinTenant.InvoiceKelola, fitur: 'invoice.penagihan' },
     { label: 'Promo', href: '/kelola/promo', izin: IzinTenant.PelangganLihat, fitur: 'promo.mesin' },
     // F-16c bagian 4b: klaim promo yang ditanggung pemasok.
     {
@@ -549,6 +551,17 @@ const sumberPencarian: SumberPencarian[] = [
             judul: String(b.Nama),
             keterangan: typeof b.NoHp === 'string' ? b.NoHp : null,
             href: `/kelola/pelanggan/${String(b.Uuid)}`,
+        }),
+    },
+    {
+        id: 'invoice',
+        label: 'Invoice',
+        alamat: '/kelola/invoice',
+        ikon: 'Struk',
+        AmbilHasil: (b) => ({
+            judul: typeof b.Nomor === 'string' ? b.Nomor : 'Draf invoice',
+            keterangan: typeof b.NamaPelanggan === 'string' ? b.NamaPelanggan : null,
+            href: `/kelola/invoice/${String(b.Uuid)}`,
         }),
     },
     {

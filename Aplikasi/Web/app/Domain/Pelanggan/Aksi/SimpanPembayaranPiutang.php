@@ -14,6 +14,7 @@ use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Akuntansi\Enum\PeranAkun;
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Akuntansi\Layanan\PenjagaKunciPeriode;
+use App\Domain\Akuntansi\Layanan\PenyediaAkunPeran;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Dokumen\Enum\JenisDokumenBernomor;
 use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
@@ -35,7 +36,9 @@ use Illuminate\Support\Facades\DB;
  * pelanggan, boleh sebagian: tiap alokasi > 0 dan ≤ sisa. Tanggal tidak boleh setelah hari ini atau di periode terkunci.
  * Jurnal: Dr akun kas/bank, Cr `PiutangUsaha` per outlet piutang. Status piutang ikut sisa. Nomor `BP/{YYMM}/{SEQ4}`.
  * v3.42: dengan giro/cek mundur debitnya Giro Mundur Diterima dan baris `Giro` dicatat (cair/tolak dari halaman giro).
- * Audit `pelunasan-piutang.posting`. Urutan kunci: piutang (urut Id) → pelunasan baru → penomor.
+ * F-21 (D-166): PPh yang dipotong pelanggan (`potonganPph` per piutang, ≤ alokasinya): piutang tetap lunas sebesar alokasi,
+ * tetapi yang masuk ke kas/bank hanya alokasi dikurangi PPh; selisihnya didebit ke `PphDibayarDimuka` (kredit pajak) di
+ * outlet piutangnya, lengkap dengan nomor bukti potong. Audit `pelunasan-piutang.posting`. Urutan kunci: piutang (urut Id) → pelunasan baru → penomor.
  */
 final class SimpanPembayaranPiutang
 {
@@ -50,6 +53,7 @@ final class SimpanPembayaranPiutang
         private readonly PencatatRiwayatStatus $riwayat,
         private readonly PencatatAudit $audit,
         private readonly CatatGiro $catatGiro,
+        private readonly PenyediaAkunPeran $penyediaAkun,
     ) {}
 
     public function Jalankan(DataPembayaranPiutang $data): PembayaranPiutang
@@ -104,23 +108,35 @@ final class SimpanPembayaranPiutang
             $total = $total->Tambah($jumlah);
         }
 
+        $pph = $this->PeriksaPotonganPph($data);
+        $uang = $total->Kurangi($pph);
+
         $pembayaran = PembayaranPiutang::query()->create([
             'Nomor' => $this->penomor->AmbilNomorBerikutnya(JenisDokumenBernomor::PembayaranPiutang, $data->tanggal->format('Y-m')),
             'IdPelanggan' => $pelanggan->Id,
             'IdAkun' => $idAkun,
             'Tanggal' => $data->tanggal->toDateString(),
             'Jumlah' => $total->KeString(),
+            'PotonganPph' => $pph->KeString(),
+            'NomorBuktiPotong' => $pph->BernilaiNol() ? null : $this->Bersihkan($data->nomorBuktiPotong, 40),
             'Status' => StatusPembayaranPiutang::Diposting,
             'Catatan' => $data->catatan === null || trim($data->catatan) === '' ? null : mb_substr(trim($data->catatan), 0, 500),
             'DibuatOleh' => $data->idPengguna,
         ]);
 
-        $baris = [new DataBarisJurnal(null, $idAkun, null, $total, Uang::Nol(), "Pelunasan {$pembayaran->Nomor}")];
+        // Yang didebit ke kas/bank/giro hanya uang yang benar-benar diterima; PPh yang dipotong didebit terpisah di bawah.
+        $baris = $uang->BernilaiNol() ? [] : [new DataBarisJurnal(null, $idAkun, null, $uang, Uang::Nol(), "Pelunasan {$pembayaran->Nomor}")];
+
+        if (! $pph->BernilaiNol()) {
+            // Akun & pemetaannya baru ada di template terbaru; tenant lama dilengkapi saat pertama kali dipakai.
+            $this->penyediaAkun->Pastikan(PeranAkun::PphDibayarDimuka, '1-1750', 'PPh Dibayar Dimuka (Dipotong Pelanggan)');
+        }
 
         foreach ($data->alokasi as $uuid => $jumlah) {
             /** @var Piutang $p */
             $p = $piutang->get((string) $uuid);
-            PembayaranPiutangAlokasi::query()->create(['IdPembayaranPiutang' => $pembayaran->Id, 'IdPiutang' => $p->Id, 'Jumlah' => $jumlah->KeString()]);
+            $pphAlokasi = $data->potonganPph[(string) $uuid] ?? Uang::Nol();
+            PembayaranPiutangAlokasi::query()->create(['IdPembayaranPiutang' => $pembayaran->Id, 'IdPiutang' => $p->Id, 'Jumlah' => $jumlah->KeString(), 'PotonganPph' => $pphAlokasi->KeString()]);
             $asal = $p->Status;
             $p->JumlahDibayar = Uang::Dari($p->JumlahDibayar)->Tambah($jumlah)->KeString();
             $p->SelaraskanStatus();
@@ -131,6 +147,10 @@ final class SimpanPembayaranPiutang
             }
 
             $baris[] = DataBarisJurnal::Kredit(PeranAkun::PiutangUsaha, $jumlah, $p->IdOutlet, $p->Nomor);
+
+            if (! $pphAlokasi->BernilaiNol()) {
+                $baris[] = DataBarisJurnal::Debit(PeranAkun::PphDibayarDimuka, $pphAlokasi, $p->IdOutlet, "PPh dipotong atas {$p->Nomor}");
+            }
         }
 
         $jurnal = $this->postingJurnal->Jalankan(new DataJurnal(
@@ -148,7 +168,7 @@ final class SimpanPembayaranPiutang
         $pembayaran->save();
 
         if ($data->giro !== null) {
-            $this->catatGiro->Jalankan(ArahGiro::Masuk, JenisSumberGiro::PembayaranPiutang, $pembayaran->Id, $pembayaran->Nomor, $pelanggan->Nama, $data->giro, $data->tanggal, $total, $data->idPengguna);
+            $this->catatGiro->Jalankan(ArahGiro::Masuk, JenisSumberGiro::PembayaranPiutang, $pembayaran->Id, $pembayaran->Nomor, $pelanggan->Nama, $data->giro, $data->tanggal, $uang, $data->idPengguna);
         }
 
         $this->riwayat->Catat(PembayaranPiutang::JENIS_DOKUMEN, $pembayaran->Id, null, StatusPembayaranPiutang::Diposting->value, $data->idPengguna);
@@ -156,6 +176,8 @@ final class SimpanPembayaranPiutang
             'Nomor' => $pembayaran->Nomor,
             'Pelanggan' => $pelanggan->Nama,
             'Jumlah' => $pembayaran->Jumlah,
+            'PotonganPph' => $pembayaran->PotonganPph,
+            'NomorBuktiPotong' => $pembayaran->NomorBuktiPotong,
             'Piutang' => $piutang->map(fn (Piutang $p): string => $p->Nomor)->values()->all(),
             'NomorJurnal' => $jurnal->nomor,
         ], idPengguna: $data->idPengguna);
@@ -174,11 +196,45 @@ final class SimpanPembayaranPiutang
             'UuidPelanggan' => $pelanggan->Uuid,
             'Tanggal' => $data->tanggal->toDateString(),
             'Jumlah' => $total->KeString(),
+            'PotonganPph' => $pph->KeString(),
             'Metode' => null,
             'Giro' => $data->giro !== null,
             'Alokasi' => $alokasi,
         ]);
 
         return $pembayaran;
+    }
+
+    /**
+     * Potongan PPh per piutang: kuncinya harus piutang yang dilunasi, nilainya tidak negatif dan tidak melebihi alokasinya.
+     *
+     * @throws PelanggaranAturanBisnis PphTidakValid
+     */
+    private function PeriksaPotonganPph(DataPembayaranPiutang $data): Uang
+    {
+        $total = Uang::Nol();
+
+        foreach ($data->potonganPph as $uuid => $nilai) {
+            $alokasi = $data->alokasi[(string) $uuid] ?? null;
+
+            if ($alokasi === null) {
+                throw new PelanggaranAturanBisnis('PphTidakValid', 'Potongan PPh hanya untuk piutang yang sedang dilunasi.', "PotonganPph.{$uuid}");
+            }
+
+            if ($nilai->BernilaiNegatif() || $nilai->Bandingkan($alokasi) > 0) {
+                throw new PelanggaranAturanBisnis('PphTidakValid', "Potongan PPh harus antara Rp 0 dan nilai pelunasannya ({$alokasi->FormatRupiah()}).", "PotonganPph.{$uuid}");
+            }
+
+            $total = $total->Tambah($nilai);
+        }
+
+        return $total;
+    }
+
+    private function Bersihkan(?string $nilai, int $panjang): ?string
+    {
+        $bersih = $nilai === null ? '' : trim($nilai);
+
+        return $bersih === '' ? null : mb_substr($bersih, 0, $panjang);
     }
 }

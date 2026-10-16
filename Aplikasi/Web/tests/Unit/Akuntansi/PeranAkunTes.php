@@ -39,7 +39,10 @@ describe('PeranAkun: istilah kamus & alias kunci lama (P-03, BR-P03.4, DesainF01
             // CRM-06 (D-153): gift card beredar = kewajiban terpisah dari deposit pelanggan.
             ->and(PeranAkun::SaldoGiftCard->AmbilTipeAkun())->toBe(TipeAkun::Kewajiban)
             ->and(PeranAkun::SaldoGiftCard->CekAkunKendali())->toBeTrue()
-            ->and(PeranAkun::cases())->toHaveCount(43);
+            // F-21 (D-166): PPh yang dipotong pelanggan = kredit pajak (aset), bukan kontra.
+            ->and(PeranAkun::PphDibayarDimuka->AmbilTipeAkun())->toBe(TipeAkun::Aset)
+            ->and(PeranAkun::PphDibayarDimuka->CekWajibKontra())->toBeFalse()
+            ->and(PeranAkun::cases())->toHaveCount(44);
     });
 
     it('DariKunci membaca kunci baru, kunci lama dari versi terbit, dan menolak kunci asing', function (): void {

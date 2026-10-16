@@ -98,6 +98,9 @@ enum JenisSumberJurnal: string
     // FnB reservasi meja (D-145): uang muka (DP) diterima, dan penyelesaian sisanya (kembali/hangus).
     case ReservasiMeja = 'ReservasiMeja';
 
+    // F-21 (D-166): invoice penjualan jasa/barang tanpa stok dan invoice uang muka, dan pembatalannya (jurnal pembalik).
+    case Invoice = 'Invoice';
+
     public function AmbilLabel(): string
     {
         return match ($this) {
@@ -143,6 +146,7 @@ enum JenisSumberJurnal: string
             self::Giro => 'Pencairan giro',
             self::JurnalUmum => 'Jurnal umum',
             self::ReservasiMeja => 'Uang muka reservasi meja',
+            self::Invoice => 'Invoice penjualan',
         };
     }
 
@@ -195,6 +199,7 @@ enum JenisSumberJurnal: string
             self::Giro => '/kelola/akuntansi/giro?cari='.$uuid,
             self::JurnalUmum => '/kelola/akuntansi/jurnal-umum/'.$uuid,
             self::ReservasiMeja => '/kelola/reservasi-meja?cari='.$uuid,
+            self::Invoice => '/kelola/invoice/'.$uuid,
         };
     }
 }

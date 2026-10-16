@@ -6,6 +6,7 @@ use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\MejaPesanSendiri;
 use App\Domain\Pelanggan\Layanan\TautanBerhentiLangganan;
+use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Layanan\KodeStrukDigital;
 use App\Domain\Penjualan\Layanan\PenentuKonteksKios;
 use App\Domain\Situs\Layanan\AturanSlugSitus;
@@ -33,6 +34,7 @@ use App\Http\Kontroler\Publik\AbsensiWebKontroler;
 use App\Http\Kontroler\Publik\AkunTokoOnlineKontroler;
 use App\Http\Kontroler\Publik\BerhentiLanggananKontroler;
 use App\Http\Kontroler\Publik\DokumenLegalPublikKontroler;
+use App\Http\Kontroler\Publik\InvoicePublikKontroler;
 use App\Http\Kontroler\Publik\KiosKontroler;
 use App\Http\Kontroler\Publik\KompatibilitasPerangkatKontroler as KompatibilitasPerangkatPublikKontroler;
 use App\Http\Kontroler\Publik\LayarAbsensiKontroler;
@@ -141,6 +143,11 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kodeStruk', KodeStrukDigital::POLA)
         ->middleware('throttle:60,1')
         ->name('publik.struk-digital');
+    // F-21 invoice publik (kode = tenant basis-36 . rahasia 32 karakter).
+    Route::get('/i/{kodeInvoice}', [InvoicePublikKontroler::class, 'Tampilkan'])
+        ->where('kodeInvoice', KodeInvoicePublik::POLA)
+        ->middleware('throttle:60,1')
+        ->name('publik.invoice');
     // F7 (CRM-08): penilaian pelanggan atas transaksi dari struk digital.
     Route::post('/s/{kodeStruk}/umpan-balik', [StrukDigitalKontroler::class, 'KirimUmpanBalik'])
         ->where('kodeStruk', KodeStrukDigital::POLA)
@@ -335,6 +342,8 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::group([], base_path('routes/Piutang.php'));
             // Grosir (F-12, §9.7, D-32): pesanan grosir, surat jalan, faktur penjualan.
             Route::group([], base_path('routes/Grosir.php'));
+            // F-21 Invoice & penagihan (D-166).
+            Route::group([], base_path('routes/Invoice.php'));
             // F-18 Karyawan, jadwal kerja, absensi.
             Route::group([], base_path('routes/Karyawan.php'));
             // F-07 mode service: reservasi layanan.

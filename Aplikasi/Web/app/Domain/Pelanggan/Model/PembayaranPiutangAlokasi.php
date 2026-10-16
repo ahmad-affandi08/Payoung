@@ -15,6 +15,7 @@ use App\Domain\Bersama\Tenant\MilikTenant;
  * @property int $IdPembayaranPiutang
  * @property int $IdPiutang
  * @property string $Jumlah
+ * @property string $PotonganPph
  */
 final class PembayaranPiutangAlokasi extends ModelDasar
 {
@@ -29,6 +30,6 @@ final class PembayaranPiutangAlokasi extends ModelDasar
      */
     protected function casts(): array
     {
-        return ['Jumlah' => 'decimal:2'];
+        return ['Jumlah' => 'decimal:2', 'PotonganPph' => 'decimal:2'];
     }
 }

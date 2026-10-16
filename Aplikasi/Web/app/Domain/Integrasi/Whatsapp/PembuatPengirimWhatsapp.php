@@ -216,6 +216,12 @@ final class PembuatPengirimWhatsapp
         return $this->AmbilNamaTemplat('NamaTemplatPesananPembelian');
     }
 
+    /** Nama templat utilitas invoice & pengingat tagihan ke pelanggan (F-21, hanya WhatsApp Cloud API); null = kirim teks. */
+    public function AmbilTemplatInvoice(): ?string
+    {
+        return $this->AmbilNamaTemplat('NamaTemplatInvoice');
+    }
+
     /** Nama templat autentikasi untuk kode masuk pembeli toko online (F-17 bagian 3); null = kirim teks. */
     public function AmbilTemplatKodeMasuk(): ?string
     {

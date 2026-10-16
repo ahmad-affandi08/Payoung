@@ -8,8 +8,11 @@ use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Pelanggan\Model\PembayaranPiutang;
+use App\Domain\Pelanggan\Model\PembayaranPiutangAlokasi;
 use App\Domain\Pelanggan\Model\Piutang;
 use Carbon\CarbonImmutable;
+use LogicException;
 
 /**
  * Layanan publik domain Pelanggan untuk domain Penjualan (F-12): piutang dicatat, dibatalkan (void), dan dikurangi
@@ -250,6 +253,127 @@ final class PencatatPiutangPenjualan
         if ($asal !== $piutang->Status) {
             $this->riwayat->Catat(Piutang::JENIS_DOKUMEN, $piutang->Id, $asal->value, $piutang->Status->value, $idPengguna, $alasan);
         }
+    }
+
+    /**
+     * Piutang dari invoice (F-21, D-166): jumlahnya `Invoice.Tagihan` (total dikurangi potongan uang muka), jatuh tempo
+     * = tanggal invoice + termin yang di-snapshot invoice. Idempoten per invoice.
+     */
+    public function CatatInvoice(int $idPelanggan, int $idInvoice, int $idOutlet, string $nomor, CarbonImmutable $tanggal, Uang $jumlah, int $terminHari): Piutang
+    {
+        $ada = Piutang::query()->where('IdInvoice', $idInvoice)->first();
+
+        if ($ada !== null) {
+            return $ada;
+        }
+
+        $piutang = Piutang::query()->create([
+            'IdPelanggan' => $idPelanggan,
+            'IdInvoice' => $idInvoice,
+            'IdOutlet' => $idOutlet,
+            'Nomor' => $nomor,
+            'TanggalBisnis' => $tanggal->toDateString(),
+            'JatuhTempo' => $tanggal->addDays(max(0, $terminHari))->toDateString(),
+            'Jumlah' => $jumlah->KeString(),
+            'Status' => StatusPiutang::BelumLunas,
+        ]);
+        $this->riwayat->Catat(Piutang::JENIS_DOKUMEN, $piutang->Id, null, StatusPiutang::BelumLunas->value, null);
+
+        return $piutang;
+    }
+
+    /** Pembatalan invoice hanya boleh bila piutangnya belum dibayar sedikit pun (null = boleh). */
+    public function PeriksaBisaBatalInvoice(int $idInvoice): ?string
+    {
+        $piutang = Piutang::query()->where('IdInvoice', $idInvoice)->first();
+
+        if ($piutang?->Status === StatusPiutang::DihapusBuku) {
+            return self::PesanDihapusBuku($piutang);
+        }
+
+        return $piutang !== null && ! Uang::Dari($piutang->JumlahDibayar)->BernilaiNol()
+            ? "Piutang {$piutang->Nomor} sudah dibayar sebagian. Batalkan pelunasannya dulu."
+            : null;
+    }
+
+    /** Pembatalan invoice: sisa piutangnya dikurangi habis dan statusnya Dibatalkan. */
+    public function BatalkanInvoice(int $idInvoice, int $idPengguna): void
+    {
+        $piutang = Piutang::query()->where('IdInvoice', $idInvoice)->lockForUpdate()->first();
+
+        if ($piutang === null || $piutang->Status === StatusPiutang::Dibatalkan) {
+            return;
+        }
+
+        $asal = $piutang->Status;
+        $piutang->JumlahDikurangi = Uang::Dari($piutang->JumlahDikurangi)->Tambah($piutang->AmbilSisa())->KeString();
+        $piutang->Status = StatusPiutang::Dibatalkan;
+        $piutang->save();
+        $this->riwayat->Catat(Piutang::JENIS_DOKUMEN, $piutang->Id, $asal->value, StatusPiutang::Dibatalkan->value, $idPengguna, 'Invoice dibatalkan');
+    }
+
+    /**
+     * Piutang beberapa invoice sekaligus (uuid piutang, sisa, status, jatuh tempo, PPh yang sudah dipotong), untuk daftar
+     * dan detail invoice di back-office. Dibaca dari `Piutang`, tidak disalin ke invoice (satu sumber kebenaran).
+     *
+     * @param  array<mixed>  $idInvoice  nilai bukan int diabaikan
+     * @return array<int, array{UuidPiutang: string, Sisa: string, Dibayar: string, Status: string, LabelStatus: string, JatuhTempo: string, Terbuka: bool}>
+     */
+    public function AmbilPiutangBanyakInvoice(array $idInvoice): array
+    {
+        $id = array_values(array_unique(array_filter($idInvoice, 'is_int')));
+
+        if ($id === []) {
+            return [];
+        }
+
+        $hasil = [];
+
+        foreach (Piutang::query()->whereIn('IdInvoice', $id)->get() as $piutang) {
+            $hasil[(int) $piutang->IdInvoice] = [
+                'UuidPiutang' => $piutang->Uuid,
+                'Sisa' => $piutang->AmbilSisa()->KeString(),
+                'Dibayar' => $piutang->JumlahDibayar,
+                'Status' => $piutang->Status->value,
+                'LabelStatus' => $piutang->Status->AmbilLabel(),
+                'JatuhTempo' => $piutang->JatuhTempo->toDateString(),
+                'Terbuka' => $piutang->Status->CekTerbuka(),
+            ];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Pelunasan atas satu piutang (alokasinya, bukan total pelunasan yang boleh mencakup piutang lain), terbaru dulu.
+     * Untuk detail & kuitansi invoice (F-21).
+     *
+     * @return list<array{Uuid: string, Nomor: string, Tanggal: string, Jumlah: string, PotonganPph: string, NomorBuktiPotong: string|null, Status: string, LabelStatus: string}>
+     */
+    public function AmbilPelunasan(int $idPiutang): array
+    {
+        $alokasi = PembayaranPiutangAlokasi::query()->where('IdPiutang', $idPiutang)->get();
+
+        if ($alokasi->isEmpty()) {
+            return [];
+        }
+
+        $pembayaran = PembayaranPiutang::query()->whereIn('Id', $alokasi->pluck('IdPembayaranPiutang')->all())->orderByDesc('Tanggal')->orderByDesc('Id')->get();
+
+        return array_values($pembayaran->map(function (PembayaranPiutang $p) use ($alokasi): array {
+            $bagian = $alokasi->firstWhere('IdPembayaranPiutang', $p->Id) ?? throw new LogicException('Alokasi pelunasan piutang tidak ditemukan.');
+
+            return [
+                'Uuid' => $p->Uuid,
+                'Nomor' => $p->Nomor,
+                'Tanggal' => $p->Tanggal->toDateString(),
+                'Jumlah' => (string) $bagian->Jumlah,
+                'PotonganPph' => (string) $bagian->PotonganPph,
+                'NomorBuktiPotong' => $p->NomorBuktiPotong,
+                'Status' => $p->Status->value,
+                'LabelStatus' => $p->Status->AmbilLabel(),
+            ];
+        })->all());
     }
 
     /** Sisa piutang penjualan (null = bukan penjualan tempo). */
