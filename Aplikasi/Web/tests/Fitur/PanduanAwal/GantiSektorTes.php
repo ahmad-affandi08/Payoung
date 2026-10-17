@@ -74,6 +74,7 @@ describe('ganti jenis usaha (D-165)', function (): void {
         BantuanPanduanAwal::Masuk($this, $konteks['Pemilik'], $konteks['Tenant'])
             ->post('/kelola/pengaturan/ganti-sektor', ['UuidOutlet' => $outlet->Uuid, 'KodeTemplate' => 'RTL-GEN', 'Bersihkan' => true])
             ->assertSessionHasNoErrors()
+            ->assertSessionHas('Kilat', fn (string $pesan): bool => str_contains($pesan, 'kini Retail') && str_contains($pesan, 'Menu yang bergantung jenis usaha ikut menyesuaikan'))
             ->assertRedirect('/kelola/pengaturan/ganti-sektor');
 
         BantuanOrganisasi::AturKonteks($konteks['Tenant']->Id);

@@ -22,6 +22,8 @@ export type ButirPengaturan = {
     edisi?: 'Saas' | 'Lisensi';
     /** D-48: awalan kode sektor outlet yang memakai butir ini (mis. `FNB`); tanpa = semua sektor. */
     sektor?: string[];
+    /** Pintasan di Beranda untuk usaha bersektor itu: fitur khusus sektor yang rumahnya Pengaturan (mis. Laporan apotek). */
+    pintasanBeranda?: boolean;
 };
 
 export type GrupPengaturan = { judul: string; butir: ButirPengaturan[] };
@@ -211,6 +213,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 izin: IzinTenant.LaporanPenjualanLihat,
                 fitur: 'laporan.lengkap',
                 sektor: ['RTL-PHR'],
+                pintasanBeranda: true,
             },
             {
                 label: 'Pengaturan pembelian',

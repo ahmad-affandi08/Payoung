@@ -45,7 +45,7 @@ final class GantiSektorKontroler extends DasarKelolaKontroler
 
         return redirect()->route('kelola.pengaturan.ganti-sektor')->with(
             'Kilat',
-            "Jenis usaha {$hasil['NamaOutlet']} kini {$hasil['Baru']['Nama']}. ".($bersih === [] ? 'Tidak ada sisa jenis usaha lama yang dibersihkan.' : 'Dibersihkan karena belum dipakai: '.implode(', ', $bersih).'.'),
+            "Jenis usaha {$hasil['NamaOutlet']} kini {$hasil['Baru']['Nama']}. ".($bersih === [] ? 'Tidak ada sisa jenis usaha lama yang dibersihkan.' : 'Dibersihkan karena belum dipakai: '.implode(', ', $bersih).'.').' Menu yang bergantung jenis usaha ikut menyesuaikan; ringkasannya ada di halaman ini.',
         );
     }
 }

@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanGantiSektor, { type PratinjauGantiSektor } from '@/Halaman/Kelola/Pengaturan/GantiSektor';
-import { AturHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -108,5 +108,59 @@ describe('Pengaturan › Ganti jenis usaha (D-165)', () => {
         );
 
         expect(screen.getByText('Tidak ada sisa jenis usaha lama yang perlu dibersihkan.')).toBeTruthy();
+    });
+
+    it('panel menu: jenis usaha belum diketahui menjelaskan bahwa semua menu tampil', () => {
+        render(<HalamanGantiSektor Outlet={outlet} Template={template} Pratinjau={null} />);
+
+        expect(screen.getByText('Menu menurut jenis usaha')).toBeTruthy();
+        expect(screen.getByText(/Jenis usaha belum dipilih, jadi semua menu ditampilkan/)).toBeTruthy();
+    });
+
+    it('panel menu: menyebut butir yang tampil dan yang disembunyikan menurut sektor saat ini', () => {
+        TambahPropsHalamanUji({ SektorOutlet: ['FNB-CAF'] });
+        render(<HalamanGantiSektor Outlet={outlet} Template={template} Pratinjau={null} />);
+
+        const tampil = screen.getByText(/^Tampil untuk usaha Anda/).nextElementSibling?.textContent ?? '';
+        const sembunyi = screen.getByText(/^Disembunyikan \(/).nextElementSibling?.textContent ?? '';
+
+        expect(tampil).toContain('Produksi');
+        expect(tampil).toContain('Stasiun dapur (di Pengaturan)');
+        expect(sembunyi).toContain('Paket sesi');
+        expect(sembunyi).toContain('Laporan apotek (di Pengaturan)');
+        expect(screen.queryByText('Menu sudah menyesuaikan jenis usaha baru')).toBeNull();
+    });
+
+    it('sesudah berhasil mengganti FnB ke Apotek: menyebut menu yang muncul dan yang disembunyikan', () => {
+        TambahPropsHalamanUji({ SektorOutlet: ['FNB-CAF'] });
+        tiruanRouter.post.mockImplementationOnce((_url: string, _data: unknown, opsi: { onSuccess?: () => void }) => {
+            // Server berhasil mengganti sektor; prop bersama berikutnya memuat sektor baru.
+            TambahPropsHalamanUji({ SektorOutlet: ['RTL-PHR'] });
+            opsi.onSuccess?.();
+        });
+        render(<HalamanGantiSektor Outlet={outlet} Template={template} Pratinjau={BuatPratinjau()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ganti jenis usaha' }));
+        fireEvent.click(screen.getAllByRole('button', { name: 'Ganti jenis usaha' }).at(-1) as HTMLElement);
+
+        const ringkasan = screen.getByText('Menu sudah menyesuaikan jenis usaha baru').parentElement?.textContent ?? '';
+
+        expect(ringkasan).toContain('Kini tersedia: Laporan apotek (di Pengaturan)');
+        expect(ringkasan).toContain('Produksi');
+        expect(ringkasan).toContain('Stasiun dapur (di Pengaturan)');
+    });
+
+    it('sesudah mengganti ke jenis usaha bermenu sama: menjelaskan bahwa tidak ada butir menu yang berubah', () => {
+        TambahPropsHalamanUji({ SektorOutlet: ['RTL-GEN'] });
+        tiruanRouter.post.mockImplementationOnce((_url: string, _data: unknown, opsi: { onSuccess?: () => void }) => {
+            TambahPropsHalamanUji({ SektorOutlet: ['RTL-FRS'] });
+            opsi.onSuccess?.();
+        });
+        render(<HalamanGantiSektor Outlet={outlet} Template={template} Pratinjau={BuatPratinjau()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ganti jenis usaha' }));
+        fireEvent.click(screen.getAllByRole('button', { name: 'Ganti jenis usaha' }).at(-1) as HTMLElement);
+
+        expect(screen.getByText(/Tidak ada butir menu yang berubah/)).toBeTruthy();
     });
 });

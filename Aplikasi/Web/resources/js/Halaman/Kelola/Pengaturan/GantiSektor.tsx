@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
@@ -6,9 +6,11 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import Panel from '@/Komponen/Kelola/Panel';
+import PanelMenuSektor from '@/Komponen/Kelola/PanelMenuSektor';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 
 type OutletSektor = { Uuid: string; Nama: string; KodeTemplate: string | null; NamaTemplate: string | null };
 type TemplateSektor = { Kode: string; Nama: string; Keterangan: string | null };
@@ -64,6 +66,9 @@ export default function HalamanGantiSektor({ Outlet, Template, Pratinjau }: Prop
     const [bersihkan, AturBersihkan] = useState(true);
     const [konfirmasi, AturKonfirmasi] = useState(false);
     const [memproses, AturMemproses] = useState(false);
+    // Daftar sektor tepat sebelum penggantian terakhir: dipakai panel menu untuk menunjukkan apa yang berubah.
+    const [sektorSebelum, AturSektorSebelum] = useState<string[] | null>(null);
+    const { props } = usePage<PropsBersamaAplikasi>();
 
     const MuatPratinjau = (outlet: string, kode: string) => {
         if (outlet === '' || kode === '') {
@@ -77,20 +82,25 @@ export default function HalamanGantiSektor({ Outlet, Template, Pratinjau }: Prop
         );
     };
     const PilihOutlet = (nilai: string) => {
+        AturSektorSebelum(null);
         AturUuidOutlet(nilai);
         MuatPratinjau(nilai, kodeTemplate);
     };
     const PilihTemplate = (nilai: string) => {
+        AturSektorSebelum(null);
         AturKodeTemplate(nilai);
         MuatPratinjau(uuidOutlet, nilai);
     };
     const Terapkan = () => {
+        const sektorSaatKirim = props.SektorOutlet ?? [];
+
         router.post(
             alamat,
             { UuidOutlet: uuidOutlet, KodeTemplate: kodeTemplate, Bersihkan: bersihkan },
             {
                 preserveScroll: true,
                 onStart: () => AturMemproses(true),
+                onSuccess: () => AturSektorSebelum(sektorSaatKirim),
                 onFinish: () => {
                     AturMemproses(false);
                     AturKonfirmasi(false);
@@ -211,6 +221,7 @@ export default function HalamanGantiSektor({ Outlet, Template, Pratinjau }: Prop
                         </div>
                     </Panel>
                 ) : null}
+                <PanelMenuSektor sebelum={sektorSebelum} />
             </div>
             {konfirmasi && pratinjau ? (
                 <DialogKonfirmasi

@@ -1,6 +1,7 @@
 import { ChartNoAxesColumnIcon } from 'lucide-react';
 
 import RingkasanPenagihanKartu from '@/Komponen/Invoice/RingkasanPenagihanKartu';
+import PintasanSektor from '@/Komponen/Kelola/PintasanSektor';
 import RingkasTindakan from '@/Komponen/Kelola/RingkasTindakan';
 import DasborPemilik from '@/Komponen/Laporan/DasborPemilik';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from '@/Komponen/Ui/empty';
@@ -19,6 +20,7 @@ export default function HalamanBerandaKelola({ Dasbor = null, Tindakan = [], Pen
     return (
         <TataLetakAplikasi judul="Beranda">
             <RingkasTindakan butir={Tindakan} />
+            <PintasanSektor />
             {Penagihan ? <RingkasanPenagihanKartu ringkasan={Penagihan} /> : null}
             {Dasbor ? <DasborPemilik data={Dasbor} /> : null}
             {!Dasbor && !Penagihan && Tindakan.length === 0 ? (
