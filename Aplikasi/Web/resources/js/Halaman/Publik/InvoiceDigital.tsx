@@ -45,7 +45,10 @@ export default function HalamanInvoiceDigital({ Dokumen, KodeInvoice }: PropsInv
                     </Button>
                 </div>
                 <div className="rounded-panel border border-garis bg-permukaan p-4 sm:p-6 print:border-0 print:p-0">
-                    <TampilanDokumenInvoice dokumen={Dokumen} />
+                    <TampilanDokumenInvoice
+                        dokumen={Dokumen}
+                        alamatKuitansi={(uuid) => `/i/${KodeInvoice}/kuitansi/${uuid}`}
+                    />
                 </div>
                 {Dokumen.Konfirmasi?.Bisa ? (
                     <KonfirmasiBayarInvoicePublik kode={KodeInvoice} konfirmasi={Dokumen.Konfirmasi} />

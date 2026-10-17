@@ -28,9 +28,12 @@ use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Kueri\DaftarInvoice;
 use App\Domain\Penjualan\Kueri\DetailInvoice;
 use App\Domain\Penjualan\Kueri\DokumenInvoice;
+use App\Domain\Penjualan\Kueri\DokumenKuitansiInvoice;
 use App\Domain\Penjualan\Kueri\IsianFormInvoice;
 use App\Domain\Penjualan\Kueri\RingkasanInvoice;
+use App\Domain\Penjualan\Layanan\PenyimpanBuktiBayarInvoice;
 use App\Domain\Penjualan\Model\Invoice;
+use App\Domain\Penjualan\Model\KonfirmasiPembayaranInvoice;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Invoice\AlasanInvoicePermintaan;
 use App\Http\Permintaan\Kelola\Invoice\CatatPembayaranInvoicePermintaan;
@@ -181,6 +184,15 @@ final class InvoiceKontroler extends DasarKelolaKontroler
         return to_route('kelola.invoice.detail', ['invoice' => $dokumen->Uuid])->with('Kilat', "Pembayaran {$pembayaran->Nomor} dicatat.");
     }
 
+    /** Foto bukti transfer yang dilampirkan pelanggan pada klaimnya; hanya untuk pemegang izin dan invoice di outlet yang boleh diakses. */
+    public function BuktiKonfirmasi(string $invoice, string $konfirmasi, PenyimpanBuktiBayarInvoice $penyimpan): SymfonyResponse
+    {
+        $dokumen = $this->CariInvoice($invoice);
+        $klaim = KonfirmasiPembayaranInvoice::query()->where('Uuid', $konfirmasi)->where('IdInvoice', $dokumen->Id)->firstOrFail();
+
+        return $penyimpan->Unduh($klaim->PathBukti);
+    }
+
     /** Menolak klaim "sudah bayar" dari pelanggan (uangnya tidak ditemukan, jumlah tidak cocok, dan sebagainya). */
     public function TolakKonfirmasi(AlasanInvoicePermintaan $permintaan, string $invoice, string $konfirmasi, TolakKonfirmasiPembayaranInvoice $tolak): RedirectResponse
     {
@@ -232,6 +244,15 @@ final class InvoiceKontroler extends DasarKelolaKontroler
         abort_if($model->Status === StatusInvoice::Draf && ! $this->CekIzinInvoice(IzinTenant::InvoiceKelola), 404);
 
         return Inertia::render('Kelola/Invoice/Cetak', [...$dokumen->Ambil($model, $this->HariIni()), 'Uuid' => $model->Uuid]);
+    }
+
+    /** Kuitansi A4 satu pembayaran invoice: satu keluaran dengan halaman publik `/i/{kode}/kuitansi/{pembayaran}`. */
+    public function Kuitansi(string $invoice, string $pembayaran, DokumenKuitansiInvoice $dokumen): Response
+    {
+        $isi = $dokumen->Ambil($this->CariInvoice($invoice), $pembayaran);
+        abort_if($isi === null, 404);
+
+        return Inertia::render('Kelola/Invoice/Kuitansi', $isi);
     }
 
     public function CariProduk(Request $permintaan, CariProdukInvoice $cari): JsonResponse

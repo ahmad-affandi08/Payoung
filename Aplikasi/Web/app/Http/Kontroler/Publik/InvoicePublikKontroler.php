@@ -8,6 +8,7 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Penjualan\Aksi\CatatInvoiceDilihat;
 use App\Domain\Penjualan\Aksi\KirimKonfirmasiPembayaranInvoice;
+use App\Domain\Penjualan\Kueri\DokumenKuitansiInvoice;
 use App\Domain\Penjualan\Kueri\InvoicePublik;
 use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Tenant\Kueri\ProfilTenant;
@@ -55,6 +56,31 @@ final class InvoicePublikKontroler extends Kontroler
     }
 
     /**
+     * Kuitansi satu pembayaran invoice (F-21 bagian 5), tanpa login. Kuncinya kode rahasia invoice; Uuid pembayaran hanya
+     * memilih pembayaran mana. Kode salah, draf, dan pembayaran yang bukan milik invoice ini dijawab 404 yang sama.
+     */
+    public function Kuitansi(string $kodeInvoice, string $pembayaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, InvoicePublik $kueri, DokumenKuitansiInvoice $dokumenKuitansi): SymfonyResponse
+    {
+        $kode = KodeInvoicePublik::Urai($kodeInvoice);
+        $dokumen = null;
+
+        if ($kode !== null && $profil->CekAda($kode['IdTenant'])) {
+            $konteks->Atur($kode['IdTenant']);
+
+            try {
+                $invoice = $kueri->Cari($kode['KodePublik']);
+                $dokumen = $invoice === null ? null : $dokumenKuitansi->Ambil($invoice, $pembayaran, untukPublik: true);
+            } finally {
+                $konteks->Kosongkan();
+            }
+        }
+
+        return Inertia::render('Publik/KuitansiInvoice', ['Dokumen' => $dokumen, 'KodeInvoice' => $kodeInvoice])
+            ->toResponse($permintaan)
+            ->setStatusCode($dokumen === null ? 404 : 200);
+    }
+
+    /**
      * Pelanggan menyatakan sudah membayar (F-21 bagian 4, D-169): hanya klaim yang menunggu verifikasi penagih, tidak
      * membukukan apa pun. Kode salah, draf, dan usaha yang ditutup dijawab 404 yang sama; pelanggaran aturan bisnis
      * (sisa, tanggal, batas klaim) kembali sebagai galat bidang lewat penangan galat umum.
@@ -70,7 +96,7 @@ final class InvoicePublikKontroler extends Kontroler
         try {
             $invoice = $kueri->Cari($kode['KodePublik']);
             abort_if($invoice === null, 404);
-            $kirim->Jalankan($invoice->Id, (string) $permintaan->validated('Nama'), $permintaan->AmbilTanggal(), $permintaan->AmbilJumlah(), $permintaan->validated('Catatan'));
+            $kirim->Jalankan($invoice->Id, (string) $permintaan->validated('Nama'), $permintaan->AmbilTanggal(), $permintaan->AmbilJumlah(), $permintaan->validated('Catatan'), $permintaan->AmbilBukti());
         } finally {
             $konteks->Kosongkan();
         }

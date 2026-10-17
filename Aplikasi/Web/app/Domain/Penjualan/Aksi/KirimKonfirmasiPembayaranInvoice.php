@@ -11,10 +11,13 @@ use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Enum\StatusKonfirmasiPembayaran;
+use App\Domain\Penjualan\Layanan\PenyimpanBuktiBayarInvoice;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\KonfirmasiPembayaranInvoice;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Pelanggan menyatakan "sudah bayar" dari halaman publik invoice (F-21 bagian 4, D-169). Hanya **klaim** yang menunggu
@@ -24,6 +27,9 @@ use Illuminate\Support\Facades\DB;
  * depan dan tidak lebih dari `MAKS_HARI_LALU` hari ke belakang; nama 2–100 karakter. Dibatasi `MAKS_MENUNGGU` klaim
  * menunggu per invoice supaya halaman publik tidak bisa dipakai membanjiri penagih; klaim identik (tanggal, jumlah, nama)
  * yang masih menunggu dikembalikan apa adanya (klik ganda tidak menggandakan).
+ *
+ * `bukti` (F-21 bagian 5): foto bukti transfer opsional. Berkas hanya disimpan setelah semua pemeriksaan lolos, dan dihapus lagi
+ * bila penyimpanan baris gagal, supaya tidak ada berkas yatim.
  */
 final class KirimKonfirmasiPembayaranInvoice
 {
@@ -34,12 +40,14 @@ final class KirimKonfirmasiPembayaranInvoice
     public function __construct(
         private readonly TanggalBisnisOutlet $tanggalBisnis,
         private readonly PencatatAudit $audit,
+        private readonly PenyimpanBuktiBayarInvoice $penyimpanBukti,
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis NamaWajib, InvoiceTidakBisaDikonfirmasi, JumlahTidakValid, TanggalTidakValid, TerlaluBanyakKonfirmasi
+     * @throws PelanggaranAturanBisnis NamaWajib, InvoiceTidakBisaDikonfirmasi, JumlahTidakValid, TanggalTidakValid, TerlaluBanyakKonfirmasi,
+     *                                 BuktiTerlaluBesar, BuktiTidakValid, BuktiTidakBisaDisimpan
      */
-    public function Jalankan(int $idInvoice, string $nama, CarbonImmutable $tanggalBayar, Uang $jumlah, ?string $catatan): KonfirmasiPembayaranInvoice
+    public function Jalankan(int $idInvoice, string $nama, CarbonImmutable $tanggalBayar, Uang $jumlah, ?string $catatan, ?UploadedFile $bukti = null): KonfirmasiPembayaranInvoice
     {
         $nama = trim($nama);
         $catatan = $catatan === null ? null : trim($catatan);
@@ -52,56 +60,71 @@ final class KirimKonfirmasiPembayaranInvoice
             throw new PelanggaranAturanBisnis('CatatanTerlaluPanjang', 'Catatan paling banyak 300 karakter.', 'Catatan');
         }
 
-        return DB::transaction(function () use ($idInvoice, $nama, $tanggalBayar, $jumlah, $catatan): KonfirmasiPembayaranInvoice {
-            $invoice = Invoice::query()->whereKey($idInvoice)->lockForUpdate()->first()
-                ?? throw new PelanggaranAturanBisnis('InvoiceTidakBisaDikonfirmasi', 'Invoice tidak ditemukan.', 'Umum', 404);
-            $piutang = $invoice->Status === StatusInvoice::Terbit ? Piutang::query()->where('IdInvoice', $invoice->Id)->first() : null;
+        $pathBukti = null;
 
-            if ($piutang === null || ! $piutang->Status->CekTerbuka()) {
-                throw new PelanggaranAturanBisnis('InvoiceTidakBisaDikonfirmasi', 'Invoice ini tidak punya sisa tagihan yang perlu dikonfirmasi.', 'Umum', 409);
-            }
+        try {
+            return DB::transaction(function () use ($idInvoice, $nama, $tanggalBayar, $jumlah, $catatan, $bukti, &$pathBukti): KonfirmasiPembayaranInvoice {
+                // Percobaan ulang transaksi (deadlock) tidak boleh meninggalkan berkas dari percobaan sebelumnya.
+                $this->penyimpanBukti->Hapus($pathBukti);
+                $pathBukti = null;
 
-            $sisa = $piutang->AmbilSisa();
+                $invoice = Invoice::query()->whereKey($idInvoice)->lockForUpdate()->first()
+                    ?? throw new PelanggaranAturanBisnis('InvoiceTidakBisaDikonfirmasi', 'Invoice tidak ditemukan.', 'Umum', 404);
+                $piutang = $invoice->Status === StatusInvoice::Terbit ? Piutang::query()->where('IdInvoice', $invoice->Id)->first() : null;
 
-            if ($jumlah->BernilaiNol() || $jumlah->BernilaiNegatif() || $jumlah->Bandingkan($sisa) > 0) {
-                throw new PelanggaranAturanBisnis('JumlahTidakValid', 'Jumlah harus lebih dari 0 dan paling banyak sisa tagihan ('.$sisa->FormatRupiah().').', 'Jumlah');
-            }
+                if ($piutang === null || ! $piutang->Status->CekTerbuka()) {
+                    throw new PelanggaranAturanBisnis('InvoiceTidakBisaDikonfirmasi', 'Invoice ini tidak punya sisa tagihan yang perlu dikonfirmasi.', 'Umum', 409);
+                }
 
-            $hariIni = $this->tanggalBisnis->Hitung($invoice->IdOutlet);
+                $sisa = $piutang->AmbilSisa();
 
-            // Dibandingkan sebagai tanggal kalender (string `YYYY-MM-DD`), bukan instan waktu: tanggal bayar dari formulir tidak
-            // membawa zona, sedangkan hari bisnis outlet jatuh pada zona usaha.
-            if ($tanggalBayar->toDateString() > $hariIni->toDateString() || $tanggalBayar->toDateString() < $hariIni->subDays(self::MAKS_HARI_LALU)->toDateString()) {
-                throw new PelanggaranAturanBisnis('TanggalTidakValid', 'Tanggal bayar tidak boleh di masa depan dan paling lama '.self::MAKS_HARI_LALU.' hari ke belakang.', 'TanggalBayar');
-            }
+                if ($jumlah->BernilaiNol() || $jumlah->BernilaiNegatif() || $jumlah->Bandingkan($sisa) > 0) {
+                    throw new PelanggaranAturanBisnis('JumlahTidakValid', 'Jumlah harus lebih dari 0 dan paling banyak sisa tagihan ('.$sisa->FormatRupiah().').', 'Jumlah');
+                }
 
-            $menunggu = KonfirmasiPembayaranInvoice::query()->where('IdInvoice', $invoice->Id)->where('Status', StatusKonfirmasiPembayaran::Menunggu->value)->orderBy('Id')->get();
-            $sama = $menunggu->first(fn (KonfirmasiPembayaranInvoice $k): bool => $k->TanggalBayar->toDateString() === $tanggalBayar->toDateString()
-                && $k->Jumlah === $jumlah->KeString() && $k->NamaPengirim === $nama);
+                $hariIni = $this->tanggalBisnis->Hitung($invoice->IdOutlet);
 
-            if ($sama !== null) {
-                return $sama;
-            }
+                // Dibandingkan sebagai tanggal kalender (string `YYYY-MM-DD`), bukan instan waktu: tanggal bayar dari formulir tidak
+                // membawa zona, sedangkan hari bisnis outlet jatuh pada zona usaha.
+                if ($tanggalBayar->toDateString() > $hariIni->toDateString() || $tanggalBayar->toDateString() < $hariIni->subDays(self::MAKS_HARI_LALU)->toDateString()) {
+                    throw new PelanggaranAturanBisnis('TanggalTidakValid', 'Tanggal bayar tidak boleh di masa depan dan paling lama '.self::MAKS_HARI_LALU.' hari ke belakang.', 'TanggalBayar');
+                }
 
-            if ($menunggu->count() >= self::MAKS_MENUNGGU) {
-                throw new PelanggaranAturanBisnis('TerlaluBanyakKonfirmasi', 'Sudah ada '.self::MAKS_MENUNGGU.' konfirmasi yang menunggu verifikasi penjual. Mohon tunggu sampai diperiksa.', 'Umum', 429);
-            }
+                $menunggu = KonfirmasiPembayaranInvoice::query()->where('IdInvoice', $invoice->Id)->where('Status', StatusKonfirmasiPembayaran::Menunggu->value)->orderBy('Id')->get();
+                $sama = $menunggu->first(fn (KonfirmasiPembayaranInvoice $k): bool => $k->TanggalBayar->toDateString() === $tanggalBayar->toDateString()
+                    && $k->Jumlah === $jumlah->KeString() && $k->NamaPengirim === $nama);
 
-            $konfirmasi = KonfirmasiPembayaranInvoice::query()->create([
-                'IdInvoice' => $invoice->Id,
-                'Status' => StatusKonfirmasiPembayaran::Menunggu,
-                'NamaPengirim' => $nama,
-                'TanggalBayar' => $tanggalBayar->toDateString(),
-                'Jumlah' => $jumlah->KeString(),
-                'Catatan' => $catatan === '' ? null : $catatan,
-            ]);
-            $this->audit->Catat('invoice.konfirmasi-bayar', $invoice, nilaiBaru: [
-                'Nomor' => $invoice->Nomor,
-                'Jumlah' => $konfirmasi->Jumlah,
-                'TanggalBayar' => $tanggalBayar->toDateString(),
-            ], idPengguna: null);
+                if ($sama !== null) {
+                    return $sama;
+                }
 
-            return $konfirmasi;
-        }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
+                if ($menunggu->count() >= self::MAKS_MENUNGGU) {
+                    throw new PelanggaranAturanBisnis('TerlaluBanyakKonfirmasi', 'Sudah ada '.self::MAKS_MENUNGGU.' konfirmasi yang menunggu verifikasi penjual. Mohon tunggu sampai diperiksa.', 'Umum', 429);
+                }
+
+                $pathBukti = $bukti === null ? null : $this->penyimpanBukti->Simpan($invoice->IdTenant, $bukti);
+                $konfirmasi = KonfirmasiPembayaranInvoice::query()->create([
+                    'IdInvoice' => $invoice->Id,
+                    'Status' => StatusKonfirmasiPembayaran::Menunggu,
+                    'NamaPengirim' => $nama,
+                    'TanggalBayar' => $tanggalBayar->toDateString(),
+                    'Jumlah' => $jumlah->KeString(),
+                    'Catatan' => $catatan === '' ? null : $catatan,
+                    'PathBukti' => $pathBukti,
+                ]);
+                $this->audit->Catat('invoice.konfirmasi-bayar', $invoice, nilaiBaru: [
+                    'Nomor' => $invoice->Nomor,
+                    'Jumlah' => $konfirmasi->Jumlah,
+                    'TanggalBayar' => $tanggalBayar->toDateString(),
+                    'AdaBukti' => $pathBukti !== null,
+                ], idPengguna: null);
+
+                return $konfirmasi;
+            }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));
+        } catch (Throwable $galat) {
+            $this->penyimpanBukti->Hapus($pathBukti);
+
+            throw $galat;
+        }
     }
 }

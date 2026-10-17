@@ -10,10 +10,12 @@ import {
     Keterangan,
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import { AlamatPiutang, LabelStatusPiutang } from '@/Komponen/Piutang/BagianPiutang';
+import DialogBuktiPotong from '@/Komponen/Piutang/DialogBuktiPotong';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { AmbilTandaDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsDetailPelunasan } from '@/Tipe/Piutang';
 
@@ -29,6 +31,8 @@ export default function HalamanDetailPelunasan({
     Tindakan,
 }: PropsDetailPelunasan) {
     const [batalkan, AturBatalkan] = useState(false);
+    const [buktiPotong, AturBuktiPotong] = useState(false);
+    const adaPph = AmbilTandaDesimal(p.PotonganPph) > 0;
 
     return (
         <TataLetakAplikasi judul={`Pelunasan ${p.Nomor}`}>
@@ -40,11 +44,18 @@ export default function HalamanDetailPelunasan({
                     {p.AlasanBatal}. Sisa piutang sudah dikembalikan.
                 </Pemberitahuan>
             ) : null}
-            {Tindakan.Batalkan ? (
-                <div>
-                    <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                        Batalkan pelunasan
-                    </Button>
+            {Tindakan.Batalkan || Tindakan.CatatBuktiPotong ? (
+                <div className="flex flex-wrap gap-2">
+                    {Tindakan.CatatBuktiPotong ? (
+                        <Button variant="outline" onClick={() => AturBuktiPotong(true)}>
+                            {p.NomorBuktiPotong ? 'Ubah nomor bukti potong' : 'Catat bukti potong'}
+                        </Button>
+                    ) : null}
+                    {Tindakan.Batalkan ? (
+                        <Button variant="destructive" onClick={() => AturBatalkan(true)}>
+                            Batalkan pelunasan
+                        </Button>
+                    ) : null}
                 </div>
             ) : null}
 
@@ -67,6 +78,20 @@ export default function HalamanDetailPelunasan({
                     <span className="font-semibold tabular-nums">{FormatRupiah(p.Jumlah)}</span>
                 </Keterangan>
                 <Keterangan label="Dicatat oleh">{p.DibuatOleh ?? '—'}</Keterangan>
+                {adaPph ? (
+                    <Keterangan label="PPh dipotong pelanggan">
+                        <span className="tabular-nums">{FormatRupiah(p.PotonganPph)}</span>
+                    </Keterangan>
+                ) : null}
+                {adaPph ? (
+                    <Keterangan label="Nomor bukti potong">
+                        {p.NomorBuktiPotong ? (
+                            <span className="font-mono break-all">{p.NomorBuktiPotong}</span>
+                        ) : (
+                            'Belum diterima dari pelanggan'
+                        )}
+                    </Keterangan>
+                ) : null}
                 {p.Catatan ? <Keterangan label="Catatan">{p.Catatan}</Keterangan> : null}
             </KartuKeterangan>
 
@@ -93,6 +118,14 @@ export default function HalamanDetailPelunasan({
             <DaftarJurnalDokumen jurnal={Jurnal} bolehLihat={Izin.LihatJurnal} />
             <DaftarRiwayatDokumen riwayat={Riwayat} />
 
+            {buktiPotong ? (
+                <DialogBuktiPotong
+                    nomorPelunasan={p.Nomor}
+                    alamat={`${alamat}/${p.Uuid}/bukti-potong`}
+                    nomorAwal={p.NomorBuktiPotong}
+                    saatTutup={() => AturBuktiPotong(false)}
+                />
+            ) : null}
             {batalkan ? (
                 <DialogAlasan
                     judul={`Batalkan pelunasan ${p.Nomor}?`}

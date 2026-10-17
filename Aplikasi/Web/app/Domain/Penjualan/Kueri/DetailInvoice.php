@@ -161,7 +161,7 @@ final class DetailInvoice
      * menunggu pada invoice yang masih punya sisa tagihan; klaim menunggu pada invoice yang sudah lunas atau dibatalkan
      * ditandai `TidakDiperlukan` (diturunkan, bukan disimpan).
      *
-     * @return list<array{Uuid: string, Status: string, LabelStatus: string, NamaPengirim: string, TanggalBayar: string, Jumlah: string, Catatan: string|null, AlasanTolak: string|null, Pada: string, BisaDiputuskan: bool, TidakDiperlukan: bool}>
+     * @return list<array{Uuid: string, Status: string, LabelStatus: string, NamaPengirim: string, TanggalBayar: string, Jumlah: string, Catatan: string|null, AdaBukti: bool, AlasanTolak: string|null, Pada: string, BisaDiputuskan: bool, TidakDiperlukan: bool}>
      */
     private function Konfirmasi(int $idInvoice, bool $invoiceTerbuka): array
     {
@@ -176,6 +176,7 @@ final class DetailInvoice
                 'TanggalBayar' => $k->TanggalBayar->format('Y-m-d'),
                 'Jumlah' => $k->Jumlah,
                 'Catatan' => $k->Catatan,
+                'AdaBukti' => $k->PathBukti !== null,
                 'AlasanTolak' => $k->AlasanTolak,
                 'Pada' => $k->DibuatPada?->toIso8601String() ?? '',
                 'BisaDiputuskan' => $menunggu && $invoiceTerbuka,

@@ -176,6 +176,8 @@ describe('Halaman piutang pelanggan (F-12)', () => {
                 Pelanggan: Toko,
                 Akun: '1-1200 Bank BCA',
                 Jumlah: '107000.50',
+                PotonganPph: '0.00',
+                NomorBuktiPotong: null,
                 Catatan: null,
                 AlasanBatal: null,
                 DibuatOleh: 'Rina Kusuma',
@@ -185,7 +187,7 @@ describe('Halaman piutang pelanggan (F-12)', () => {
             Riwayat: [],
             Izin: IzinPenuh,
         };
-        RenderUji(<HalamanDetailPelunasan {...props} Tindakan={{ Batalkan: true }} />);
+        RenderUji(<HalamanDetailPelunasan {...props} Tindakan={{ Batalkan: true, CatatBuktiPotong: false }} />);
         expect(screen.getByRole('button', { name: 'Batalkan pelunasan' })).toBeTruthy();
         expect(screen.getByText('Rp 107.000,50')).toBeTruthy();
         cleanup();
@@ -199,11 +201,41 @@ describe('Halaman piutang pelanggan (F-12)', () => {
                     LabelStatus: 'Dibatalkan',
                     AlasanBatal: 'Salah pilih pelanggan',
                 }}
-                Tindakan={{ Batalkan: false }}
+                Tindakan={{ Batalkan: false, CatatBuktiPotong: false }}
             />,
         );
         expect(screen.queryByRole('button', { name: 'Batalkan pelunasan' })).toBeNull();
         expect(screen.getByText(/Salah pilih pelanggan/)).toBeTruthy();
+    });
+
+    it('detail pelunasan ber-PPh: menampilkan PPh dan status bukti, tombol catat bukti potong membuka dialog', () => {
+        RenderUji(
+            <HalamanDetailPelunasan
+                Pelunasan={{
+                    Uuid: '01J9BYR0000000000000000002',
+                    Nomor: 'BP/2610/0002',
+                    Tanggal: '2026-10-02',
+                    Status: 'Diposting',
+                    LabelStatus: 'Diposting',
+                    Pelanggan: Toko,
+                    Akun: '1-1200 Bank BCA',
+                    Jumlah: '5000000.00',
+                    PotonganPph: '100000.00',
+                    NomorBuktiPotong: null,
+                    Catatan: null,
+                    AlasanBatal: null,
+                    DibuatOleh: 'Rina Kusuma',
+                }}
+                Alokasi={[]}
+                Jurnal={[]}
+                Riwayat={[]}
+                Izin={IzinPenuh}
+                Tindakan={{ Batalkan: true, CatatBuktiPotong: true }}
+            />,
+        );
+        expect(screen.getByText('Belum diterima dari pelanggan')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Catat bukti potong' }));
+        expect(screen.getByRole('button', { name: 'Simpan nomor' })).toBeTruthy();
     });
 
     it('E8 hapus-buku: dialog mengirim tanggal & alasan; daftar menampilkan dokumen dan tombol "Riwayat hapus-buku"', () => {

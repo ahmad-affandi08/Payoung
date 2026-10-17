@@ -11,7 +11,14 @@ import type { DokumenInvoice } from '@/Tipe/Invoice';
  * jadi yang tercetak sama persis dengan yang dilihat pelanggan. Tanpa kerangka aplikasi, hanya dokumennya. Halaman
  * cetak adalah pengecualian `TabelData` (§25.2 no. 17): rincian dokumen, bukan tabel kerja.
  */
-export default function TampilanDokumenInvoice({ dokumen }: { dokumen: DokumenInvoice }) {
+export default function TampilanDokumenInvoice({
+    dokumen,
+    alamatKuitansi,
+}: {
+    dokumen: DokumenInvoice;
+    /** Alamat kuitansi satu pembayaran (null = tanpa tautan); berbeda untuk halaman publik dan cetak back-office. */
+    alamatKuitansi?: ((uuidPembayaran: string) => string) | undefined;
+}) {
     const { Invoice: i, Penjual, Pembeli, Baris, UangMuka, Pelunasan } = dokumen;
     const batal = i.Status === 'Dibatalkan';
     const lunas = i.StatusBayar === 'Lunas';
@@ -183,6 +190,17 @@ export default function TampilanDokumenInvoice({ dokumen }: { dokumen: DokumenIn
                                 {AmbilTandaDesimal(p.PotonganPph) > 0
                                     ? ` (termasuk PPh ${FormatRupiah(p.PotonganPph)})`
                                     : ''}
+                                {alamatKuitansi ? (
+                                    <>
+                                        {' | '}
+                                        <a
+                                            href={alamatKuitansi(p.Uuid)}
+                                            className="font-semibold text-brand underline print:hidden"
+                                        >
+                                            Kuitansi
+                                        </a>
+                                    </>
+                                ) : null}
                             </li>
                         ))}
                     </ul>

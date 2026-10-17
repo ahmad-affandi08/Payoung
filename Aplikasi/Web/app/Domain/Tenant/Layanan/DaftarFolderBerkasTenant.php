@@ -43,6 +43,7 @@ final class DaftarFolderBerkasTenant
         ['akuntansi.DiskLampiran', 'akuntansi/kas-bank/{id}'],
         ['akuntansi.DiskLampiran', 'akuntansi/jurnal-umum/{id}'],
         ['akuntansi.DiskLampiran', 'pembelian/*/{id}'],
+        ['invoice.DiskBukti', 'invoice/bukti-bayar/{id}'],
     ];
 
     /**

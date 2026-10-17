@@ -1,9 +1,12 @@
+import { Link } from '@inertiajs/react';
+
 import { KolomBilangan, KolomUang } from '@/Komponen/Laporan/KolomLaporan';
 import { TautanEkspor } from '@/Komponen/Laporan/NavigasiTab';
 import PanelFakturPajakCoretax from '@/Komponen/Laporan/PanelFakturPajakCoretax';
 import PanelNotaReturPajak from '@/Komponen/Laporan/PanelNotaReturPajak';
 import SaringLaporan from '@/Komponen/Laporan/SaringLaporan';
 import TabelData from '@/Komponen/TabelData/TabelData';
+import { Button } from '@/Komponen/Ui/button';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen } from '@/Pustaka/Format';
@@ -223,6 +226,24 @@ export default function HalamanLaporanPajak({
                     cari={false}
                     kosong={{ ilustrasi: true, judul: 'Tidak ada PPN masukan pada periode ini.' }}
                 />
+            </section>
+
+            <section aria-labelledby="judul-pph-dipotong" className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 id="judul-pph-dipotong" className="text-subjudul font-semibold text-teks-utama">
+                        PPh yang dipotong pelanggan
+                    </h2>
+                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                        <Link href={`${alamat}/pph-dipotong?saring[Tanggal]=${Saring.Dari}..${Saring.Sampai}`}>
+                            Lihat rincian & bukti potong
+                        </Link>
+                    </Button>
+                </div>
+                <p className="max-w-3xl text-keterangan text-teks-sekunder">
+                    PPh 23 dan sejenisnya yang dipotong pelanggan saat membayar invoice jasa. Uangnya tidak masuk kas,
+                    sehingga nomor bukti potong perlu ditagih dari pelanggan. Rincian per pelunasan, pelanggan, dan
+                    status bukti potongnya ada di halaman rincian.
+                </p>
             </section>
 
             <PanelFakturPajakCoretax query={query} />

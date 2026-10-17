@@ -50,6 +50,8 @@ final class DetailPembayaranPiutang
                 'Pelanggan' => $pelanggan === null ? null : ['Uuid' => $pelanggan->Uuid, 'Nama' => $pelanggan->Nama],
                 'Akun' => $akun === null ? null : "{$akun['Kode']} {$akun['Nama']}",
                 'Jumlah' => (string) $p->Jumlah,
+                'PotonganPph' => (string) $p->PotonganPph,
+                'NomorBuktiPotong' => $p->NomorBuktiPotong,
                 'Catatan' => $p->Catatan,
                 'AlasanBatal' => $p->AlasanBatal,
                 'DibuatOleh' => $p->DibuatOleh === null ? null : ($nama[$p->DibuatOleh] ?? null),

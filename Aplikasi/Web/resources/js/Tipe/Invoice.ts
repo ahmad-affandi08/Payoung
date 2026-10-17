@@ -273,7 +273,7 @@ export type DokumenInvoice = {
         Subtotal: string;
     }[];
     UangMuka: { Nomor: string | null; Tanggal: string; Total: string }[];
-    Pelunasan: { Nomor: string; Tanggal: string; Jumlah: string; PotonganPph: string }[];
+    Pelunasan: { Uuid: string; Nomor: string; Tanggal: string; Jumlah: string; PotonganPph: string }[];
 };
 
 export type PropsCetakInvoice = DokumenInvoice & { Uuid: string };
@@ -289,6 +289,7 @@ export type KonfirmasiInvoice = {
     TanggalBayar: string;
     Jumlah: string;
     Catatan: string | null;
+    AdaBukti: boolean;
     AlasanTolak: string | null;
     Pada: string;
     BisaDiputuskan: boolean;
@@ -432,3 +433,29 @@ export type RingkasanPenagihan = {
     LewatTempo: { Jumlah: number; Sisa: string };
     Draf: number;
 };
+
+/** Muatan kuitansi satu pembayaran invoice (F-21 bagian 5): cetak A4 di back-office dan halaman publik `/i/{kode}/kuitansi/{id}`. */
+export type DokumenKuitansiInvoice = {
+    Kuitansi: {
+        Uuid: string;
+        Nomor: string;
+        Tanggal: string;
+        Status: 'Diposting' | 'Dibatalkan';
+        LabelStatus: string;
+        /** Bagian tagihan yang dilunasi (termasuk PPh yang dipotong pembeli). */
+        Jumlah: string;
+        PotonganPph: string;
+        /** Uang yang benar-benar diterima = Jumlah − PotonganPph. */
+        UangDiterima: string;
+        NomorBuktiPotong: string | null;
+        SisaSetelah: string;
+        AlasanBatal: string | null;
+        KodePph: string | null;
+        TarifPph: string | null;
+    };
+    Invoice: { Nomor: string | null; Tanggal: string; Perihal: string | null; Tagihan: string; Status: StatusInvoice };
+    Penjual: { Nama: string; Alamat: string | null; KodeOutlet: string; Npwp: string | null; Pkp: boolean };
+    Pembeli: { Nama: string; Alamat: string | null; NoHp: string; Email: string | null; Npwp: string | null };
+};
+
+export type PropsKuitansiInvoiceDigital = { Dokumen: DokumenKuitansiInvoice | null; KodeInvoice: string };

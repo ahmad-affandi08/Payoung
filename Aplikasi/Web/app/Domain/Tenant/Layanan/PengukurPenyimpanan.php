@@ -27,6 +27,7 @@ final class PengukurPenyimpanan
         ['akuntansi.DiskLampiran', 'akuntansi/kas-bank/{id}'],
         ['akuntansi.DiskLampiran', 'akuntansi/jurnal-umum/{id}'],
         ['akuntansi.DiskLampiran', 'pembelian/*/{id}'],
+        ['invoice.DiskBukti', 'invoice/bukti-bayar/{id}'],
         ['karyawan.DiskSwafoto', 'karyawan/swafoto/{id}'],
         ['pemenuhan.DiskBukti', 'pemenuhan/bukti/{id}'],
         ['tenant.DiskLogo', 'tenant/{id}'],

@@ -49,9 +49,39 @@ describe('Konfirmasi pembayaran invoice oleh pelanggan (halaman publik)', () => 
 
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             `/i/${kode}/konfirmasi-bayar`,
-            { Nama: 'Budi Santoso', TanggalBayar: '2026-09-27', Jumlah: '4000000', Catatan: 'Transfer BCA' },
-            expect.anything(),
+            {
+                Nama: 'Budi Santoso',
+                TanggalBayar: '2026-09-27',
+                Jumlah: '4000000',
+                Catatan: 'Transfer BCA',
+                Bukti: null,
+            },
+            expect.objectContaining({ forceFormData: true }),
         );
+    });
+
+    it('foto bukti yang dipilih ikut terkirim sebagai berkas (multipart) dan bisa dihapus lagi', () => {
+        const { container } = RenderUji(
+            <KonfirmasiBayarInvoicePublik kode={kode} konfirmasi={Konfirmasi({ Sisa: '4000000.00' })} />,
+        );
+        const foto = new File(['x'], 'bukti.png', { type: 'image/png' });
+
+        fireEvent.change(screen.getByLabelText(/Nama pengirim/), { target: { value: 'Budi Santoso' } });
+        fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, {
+            target: { files: [foto] },
+        });
+        expect(screen.getByText(/bukti\.png/)).toBeTruthy();
+        expect(screen.getByText(/Maksimal 1 berkas/)).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Saya sudah bayar' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            `/i/${kode}/konfirmasi-bayar`,
+            expect.objectContaining({ Bukti: foto }),
+            expect.objectContaining({ forceFormData: true }),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hapus' }));
+        expect(screen.queryByText(/bukti\.png/)).toBeNull();
     });
 
     it('klaim yang menunggu diperiksa tampil sebagai info tanpa nama pengirim; galat server tampil terbaca', () => {

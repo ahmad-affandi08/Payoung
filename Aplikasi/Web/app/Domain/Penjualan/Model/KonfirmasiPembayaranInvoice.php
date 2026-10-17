@@ -25,6 +25,7 @@ use LogicException;
  * @property Carbon $TanggalBayar
  * @property string $Jumlah
  * @property string|null $Catatan
+ * @property string|null $PathBukti jalur foto bukti transfer di disk privat (F-21 bagian 5), null bila tidak dilampirkan
  * @property int|null $DiputuskanOleh
  * @property Carbon|null $DiputuskanPada
  * @property string|null $AlasanTolak

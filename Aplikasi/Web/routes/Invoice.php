@@ -49,6 +49,8 @@ Route::middleware([SiapkanAuditTenant::class, WajibIzinTenant::class.':'.IzinTen
     Route::post('/{invoice}/batalkan', [InvoiceKontroler::class, 'Batalkan'])->where('invoice', $ulid)->name('kelola.invoice.batalkan');
     Route::post('/{invoice}/pembayaran', [InvoiceKontroler::class, 'CatatPembayaran'])->where('invoice', $ulid)->name('kelola.invoice.pembayaran');
     Route::post('/{invoice}/kirim', [InvoiceKontroler::class, 'Kirim'])->where('invoice', $ulid)->name('kelola.invoice.kirim');
+    Route::get('/{invoice}/kuitansi/{pembayaran}', [InvoiceKontroler::class, 'Kuitansi'])->where('invoice', $ulid)->where('pembayaran', $ulid)->name('kelola.invoice.kuitansi');
+    Route::get('/{invoice}/konfirmasi/{konfirmasi}/bukti', [InvoiceKontroler::class, 'BuktiKonfirmasi'])->where('invoice', $ulid)->where('konfirmasi', $ulid)->name('kelola.invoice.konfirmasi.bukti');
     Route::post('/{invoice}/konfirmasi/{konfirmasi}/tolak', [InvoiceKontroler::class, 'TolakKonfirmasi'])->where('invoice', $ulid)->where('konfirmasi', $ulid)->name('kelola.invoice.konfirmasi.tolak');
 });
 

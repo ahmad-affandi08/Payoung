@@ -14,10 +14,14 @@ use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanInvoice;
 use App\Domain\Penjualan\Model\Invoice;
 use App\Domain\Penjualan\Model\KonfirmasiPembayaranInvoice;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
+use App\Domain\Tenant\Model\PemakaianPenyimpanan;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanKatalog;
@@ -317,5 +321,95 @@ describe('Konfirmasi pembayaran: verifikasi penagih', function (): void {
         $konfirmasi->Jumlah = '1.00';
         expect(fn () => $konfirmasi->save())->toThrow(LogicException::class);
         expect(fn () => $konfirmasi->delete())->toThrow(LogicException::class);
+    });
+});
+
+describe('Konfirmasi pembayaran: bukti transfer', function (): void {
+    beforeEach(function (): void {
+        Storage::fake('local');
+    });
+
+    /** PNG yang headernya menyatakan ukuran raksasa tanpa data piksel: ditolak sebelum didekode. */
+    function PngKlaimRaksasa(): UploadedFile
+    {
+        $ihdr = pack('N', 20000).pack('N', 20000)."\x08\x06\x00\x00\x00";
+        $isi = "\x89PNG\r\n\x1a\n".pack('N', 13).'IHDR'.$ihdr.pack('N', crc32('IHDR'.$ihdr)).pack('N', 0).'IEND'.pack('N', crc32('IEND'));
+
+        return UploadedFile::fake()->createWithContent('bukti.png', $isi);
+    }
+
+    it('foto bukti diolah ulang menjadi JPEG di disk privat folder tenant; penagih mengunduhnya, tenant lain tidak', function (): void {
+        $invoice = InvoiceTerbitKonfirmasiUji($this);
+        $kode = KodeKonfirmasiUji($invoice);
+        Auth::logout();
+
+        $this->post('/i/'.$kode.'/konfirmasi-bayar', IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->image('bukti.png', 2400, 1800)]))->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($this->k['Tenant']->Id);
+        $konfirmasi = KonfirmasiPembayaranInvoice::query()->sole();
+        $path = (string) $konfirmasi->PathBukti;
+        expect($path)->toStartWith('invoice/bukti-bayar/'.$this->k['Tenant']->Id.'/')->and($path)->toEndWith('.jpg');
+        Storage::disk('local')->assertExists($path);
+        $info = getimagesizefromstring(Storage::disk('local')->get($path));
+        expect($info[2])->toBe(IMAGETYPE_JPEG)->and(max($info[0], $info[1]))->toBe(1600);
+        expect(LogAudit::query()->where('Peristiwa', 'invoice.konfirmasi-bayar')->sole()->NilaiBaru['AdaBukti'])->toBeTrue()
+            ->and(PemakaianPenyimpanan::query()->where('IdTenant', $this->k['Tenant']->Id)->value('Byte'))->toBeGreaterThan(0);
+
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->get("/kelola/invoice/{$invoice->Uuid}")->assertInertia(fn (AssertableInertia $h) => $h->where('Konfirmasi.0.AdaBukti', true));
+        $unduh = $this->get("/kelola/invoice/{$invoice->Uuid}/konfirmasi/{$konfirmasi->Uuid}/bukti")->assertOk();
+        expect($unduh->headers->get('Content-Type'))->toContain('image/jpeg')->and($unduh->headers->get('X-Content-Type-Options'))->toBe('nosniff');
+
+        $lain = BantuanPersediaan::SiapkanTenant('Konsultan Lain Bukti');
+        BantuanFitur::Beri($lain['Tenant']->Id, 'invoice.penagihan');
+        BantuanPersediaan::MasukSebagai($this, $lain['Tenant']->Id);
+        $this->get("/kelola/invoice/{$invoice->Uuid}/konfirmasi/{$konfirmasi->Uuid}/bukti")->assertNotFound();
+
+        BantuanKatalog::MasukSebagai($this, $this->k['Tenant']->Id, PeranTenantBawaan::Kasir);
+        $this->get("/kelola/invoice/{$invoice->Uuid}/konfirmasi/{$konfirmasi->Uuid}/bukti")->assertForbidden();
+    });
+
+    it('bukti opsional: tanpa bukti tautan unduh 404; klaim identik tidak menyimpan berkas kedua', function (): void {
+        $invoice = InvoiceTerbitKonfirmasiUji($this);
+        $kode = KodeKonfirmasiUji($invoice);
+        Auth::logout();
+
+        $this->post('/i/'.$kode.'/konfirmasi-bayar', IsianKonfirmasiUji())->assertSessionHasNoErrors();
+        $this->post('/i/'.$kode.'/konfirmasi-bayar', IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->image('bukti.jpg', 300, 300)]))->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($this->k['Tenant']->Id);
+        $konfirmasi = KonfirmasiPembayaranInvoice::query()->sole();
+        expect($konfirmasi->PathBukti)->toBeNull()->and(Storage::disk('local')->allFiles())->toBe([]);
+
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->get("/kelola/invoice/{$invoice->Uuid}/konfirmasi/{$konfirmasi->Uuid}/bukti")->assertNotFound();
+    });
+
+    it('berkas bukan gambar, gambar rusak, terlalu besar, atau piksel raksasa ditolak tanpa meninggalkan klaim atau berkas', function (): void {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $invoice = InvoiceTerbitKonfirmasiUji($this);
+        $kode = KodeKonfirmasiUji($invoice);
+        Auth::logout();
+        $url = '/i/'.$kode.'/konfirmasi-bayar';
+
+        $this->post($url, IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->createWithContent('bukti.png', '<?php echo 1;')]))->assertSessionHasErrors('Bukti');
+        $this->post($url, IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->create('bukti.pdf', 100, 'application/pdf')]))->assertSessionHasErrors('Bukti');
+        $this->post($url, IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->create('besar.jpg', 5000, 'image/jpeg')]))->assertSessionHasErrors('Bukti');
+        $this->post($url, IsianKonfirmasiUji(['Bukti' => PngKlaimRaksasa()]))->assertSessionHasErrors('Bukti');
+        BantuanOrganisasi::AturKonteks($this->k['Tenant']->Id);
+        expect(KonfirmasiPembayaranInvoice::query()->count())->toBe(0)->and(Storage::disk('local')->allFiles())->toBe([]);
+    });
+
+    it('penyimpanan paket penuh: bukti ditolak dengan pesan ramah tetapi klaim tanpa bukti tetap bisa dikirim', function (): void {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $invoice = InvoiceTerbitKonfirmasiUji($this);
+        $kode = KodeKonfirmasiUji($invoice);
+        $batasMb = app(PemeriksaFiturTenant::class)->AmbilBatasEfektif($this->k['Tenant']->Id, 'BatasPenyimpananMb');
+        expect($batasMb)->not->toBeNull();
+        PemakaianPenyimpanan::query()->updateOrCreate(['IdTenant' => $this->k['Tenant']->Id], ['Byte' => $batasMb * 1048576 - 10]);
+        Auth::logout();
+
+        $this->post('/i/'.$kode.'/konfirmasi-bayar', IsianKonfirmasiUji(['Bukti' => UploadedFile::fake()->image('bukti.png', 600, 600)]))->assertSessionHasErrors('Bukti');
+        $this->post('/i/'.$kode.'/konfirmasi-bayar', IsianKonfirmasiUji())->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($this->k['Tenant']->Id);
+        expect(KonfirmasiPembayaranInvoice::query()->count())->toBe(1)->and(Storage::disk('local')->allFiles())->toBe([]);
     });
 });

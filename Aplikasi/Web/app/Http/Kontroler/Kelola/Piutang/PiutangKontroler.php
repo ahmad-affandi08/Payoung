@@ -8,6 +8,7 @@ use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
@@ -16,6 +17,7 @@ use App\Domain\Pelanggan\Aksi\AntrekanPengingatPiutang;
 use App\Domain\Pelanggan\Aksi\AntrekanPengingatPiutangMassal;
 use App\Domain\Pelanggan\Aksi\BatalkanHapusBukuPiutang;
 use App\Domain\Pelanggan\Aksi\BatalkanPembayaranPiutang;
+use App\Domain\Pelanggan\Aksi\CatatBuktiPotongPelunasan;
 use App\Domain\Pelanggan\Aksi\CatatHapusBukuPiutang;
 use App\Domain\Pelanggan\Aksi\SimpanPembayaranPiutang;
 use App\Domain\Pelanggan\Aksi\SimpanPengaturanPengingatPiutang;
@@ -32,6 +34,7 @@ use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
+use App\Http\Permintaan\Kelola\Piutang\BuktiPotongPelunasanPermintaan;
 use App\Http\Permintaan\Kelola\Piutang\HapusBukuPiutangPermintaan;
 use App\Http\Permintaan\Kelola\Piutang\SimpanPembayaranPiutangPermintaan;
 use App\Http\Respons\ResponsTabel;
@@ -219,8 +222,18 @@ final class PiutangKontroler extends DasarKelolaKontroler
         return Inertia::render('Kelola/Piutang/Pelunasan/Detail', [
             ...$detail->Ambil($p),
             'Izin' => $izin,
-            'Tindakan' => ['Batalkan' => $izin['Kelola'] && $p->Status === StatusPembayaranPiutang::Diposting],
+            'Tindakan' => [
+                'Batalkan' => $izin['Kelola'] && $p->Status === StatusPembayaranPiutang::Diposting,
+                'CatatBuktiPotong' => $izin['Kelola'] && $p->Status === StatusPembayaranPiutang::Diposting && ! Uang::Dari((string) $p->PotonganPph)->BernilaiNol(),
+            ],
         ]);
+    }
+
+    public function CatatBuktiPotong(BuktiPotongPelunasanPermintaan $permintaan, string $pelunasan, CatatBuktiPotongPelunasan $catat): RedirectResponse
+    {
+        $p = $catat->Jalankan(PembayaranPiutang::query()->where('Uuid', $pelunasan)->firstOrFail(), $permintaan->AmbilNomor(), $this->Pelaku()->Id);
+
+        return to_route('kelola.piutang.pelunasan.detail', ['pelunasan' => $p->Uuid])->with('Kilat', "Nomor bukti potong {$p->Nomor} dicatat.");
     }
 
     public function Batalkan(AlasanPembelianPermintaan $permintaan, string $pelunasan, BatalkanPembayaranPiutang $batalkan): RedirectResponse

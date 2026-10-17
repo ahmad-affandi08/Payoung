@@ -149,6 +149,12 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kodeInvoice', KodeInvoicePublik::POLA)
         ->middleware('throttle:60,1')
         ->name('publik.invoice');
+    // F-21 bagian 5: kuitansi satu pembayaran invoice (kunci = kode rahasia invoice).
+    Route::get('/i/{kodeInvoice}/kuitansi/{pembayaran}', [InvoicePublikKontroler::class, 'Kuitansi'])
+        ->where('kodeInvoice', KodeInvoicePublik::POLA)
+        ->where('pembayaran', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')
+        ->middleware('throttle:60,1')
+        ->name('publik.invoice.kuitansi');
     // F-21 bagian 4: pelanggan menyatakan sudah membayar (klaim, bukan pembayaran).
     Route::post('/i/{kodeInvoice}/konfirmasi-bayar', [InvoicePublikKontroler::class, 'KonfirmasiBayar'])
         ->where('kodeInvoice', KodeInvoicePublik::POLA)

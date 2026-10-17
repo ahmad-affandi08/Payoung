@@ -661,6 +661,15 @@ const halamanTurunan: (HalamanPencarian & { induk: string; izin?: KunciIzinTenan
         ikon: 'Pelanggan',
         izin: IzinTenant.InvoiceKelola,
     },
+    // F-21 bagian 5: PPh dipotong pelanggan dibuka dari bagian di Laporan pajak (menu Laporan sudah di batas sub-menu).
+    {
+        induk: '/kelola/laporan/pajak',
+        label: 'PPh dipotong pelanggan',
+        href: '/kelola/laporan/pajak/pph-dipotong',
+        grup: 'Laporan',
+        ikon: 'Laporan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+    },
     {
         induk: '/kelola/persediaan/kartu-stok',
         label: 'Riwayat nomor seri / IMEI',

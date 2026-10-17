@@ -698,3 +698,35 @@ export type PropsLaporanPembelian = {
     OpsiOutlet: OpsiLaporan[];
     Isi: BarisPembelianPemasok[] | BarisPembelianProduk[] | BarisPesananOutstanding[];
 };
+
+/* Laporan PPh yang dipotong pelanggan (F-21 bagian 5): satu baris per pelunasan yang memotong PPh. */
+
+export type DokumenPphDipotong = {
+    Nomor: string;
+    UuidInvoice: string | null;
+    JenisPph: string;
+    Tarif: string | null;
+    DasarPph: string | null;
+    PotonganPph: string;
+};
+
+export type BarisPphDipotong = {
+    Uuid: string;
+    Nomor: string;
+    Tanggal: string;
+    UuidPelanggan: string | null;
+    NamaPelanggan: string;
+    Npwp: string | null;
+    Dokumen: DokumenPphDipotong[];
+    JenisPph: string;
+    PotonganPph: string;
+    NomorBuktiPotong: string | null;
+    BuktiLengkap: boolean;
+};
+
+export type RingkasanPphDipotong = {
+    Total: string;
+    JumlahPelunasan: number;
+    SudahBukti: { Jumlah: number; Nilai: string };
+    BelumBukti: { Jumlah: number; Nilai: string };
+};

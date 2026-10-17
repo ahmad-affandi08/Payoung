@@ -120,6 +120,8 @@ export type PropsDetailPelunasan = {
         Pelanggan: OpsiPelangganPiutang | null;
         Akun: string | null;
         Jumlah: string;
+        PotonganPph: string;
+        NomorBuktiPotong: string | null;
         Catatan: string | null;
         AlasanBatal: string | null;
         DibuatOleh: string | null;
@@ -128,5 +130,5 @@ export type PropsDetailPelunasan = {
     Jurnal: JurnalDokumen[];
     Riwayat: RiwayatDokumen[];
     Izin: IzinPiutang;
-    Tindakan: { Batalkan: boolean };
+    Tindakan: { Batalkan: boolean; CatatBuktiPotong: boolean };
 };

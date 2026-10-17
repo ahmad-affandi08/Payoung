@@ -119,6 +119,7 @@ final class DokumenInvoice
                 'Total' => $dp->Total,
             ])->all()),
             'Pelunasan' => array_map(fn (array $p): array => [
+                'Uuid' => $p['Uuid'],
                 'Nomor' => $p['Nomor'],
                 'Tanggal' => $p['Tanggal'],
                 'Jumlah' => $p['Jumlah'],

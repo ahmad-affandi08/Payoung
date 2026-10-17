@@ -28,6 +28,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
         Route::get('/pelunasan/buat', [PiutangKontroler::class, 'Buat'])->name('kelola.piutang.pelunasan.buat');
         Route::post('/pelunasan', [PiutangKontroler::class, 'Simpan'])->name('kelola.piutang.pelunasan.simpan');
         Route::post('/pelunasan/{pelunasan}/batalkan', [PiutangKontroler::class, 'Batalkan'])->where('pelunasan', $ulid)->name('kelola.piutang.pelunasan.batalkan');
+        // F-21 bagian 5: nomor bukti potong PPh yang diterima belakangan dari pelanggan.
+        Route::post('/pelunasan/{pelunasan}/bukti-potong', [PiutangKontroler::class, 'CatatBuktiPotong'])->where('pelunasan', $ulid)->name('kelola.piutang.pelunasan.bukti-potong');
         Route::post('/{piutang}/hapus-buku', [PiutangKontroler::class, 'HapusBuku'])->where('piutang', $ulid)->name('kelola.piutang.hapus-buku.simpan');
         Route::post('/hapus-buku/{hapusBuku}/batalkan', [PiutangKontroler::class, 'BatalkanHapusBuku'])->where('hapusBuku', $ulid)->name('kelola.piutang.hapus-buku.batalkan');
     });

@@ -10,7 +10,10 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Pelanggan\Enum\StatusPembayaranPiutang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
+use App\Domain\Pelanggan\Model\PembayaranPiutang;
+use App\Domain\Pelanggan\Model\PembayaranPiutangAlokasi;
 use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Penjualan\Enum\StatusInvoice;
 use App\Domain\Penjualan\Enum\StatusInvoiceBerulang;
@@ -31,6 +34,8 @@ use App\Domain\Penjualan\Model\Penawaran;
  * - invoice terbit lebih dari sehari yang belum pernah dikirim ke pelanggan (Perhatian);
  * - klaim "sudah bayar" dari pelanggan yang menunggu verifikasi pada invoice yang masih bersisa (Penting): uang mungkin
  *   sudah masuk tetapi belum dicatat, dan pelanggan menunggu kepastian;
+ * - PPh dipotong pelanggan yang bukti potongnya belum diterima lebih dari `HARI_BUKTI_POTONG` hari (Perhatian): PPh itu
+ *   kredit pajak yang hanya bisa diklaim bila bukti potongnya ada;
  * - penawaran diterima yang belum dijadikan invoice aktif (Perhatian): pekerjaan sudah disetujui tetapi belum ditagih;
  * - penawaran terbit yang masih berlaku tetapi lebih dari `HARI_TANPA_TANGGAPAN` hari belum ditanggapi (Perhatian): saatnya
  *   menghubungi pelanggan sebelum masa berlakunya habis.
@@ -40,6 +45,9 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
     public const HARI_DRAF_LAMA = 7;
 
     public const HARI_TANPA_TANGGAPAN = 7;
+
+    /** Hari sejak pelunasan ber-PPh sampai bukti potong yang belum diterima layak ditagih (F-21 bagian 5). */
+    public const HARI_BUKTI_POTONG = 30;
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
@@ -71,6 +79,30 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
             ->whereIn('IdInvoice', $batasOutlet(Invoice::query())->where('Status', StatusInvoice::Terbit->value)->whereIn('Id', $piutangTerbuka->pluck('IdInvoice')->all())->select('Id'))
             ->orderBy('Id')->get();
         $uuidInvoiceKonfirmasi = $konfirmasi->isEmpty() ? [] : Invoice::query()->whereIn('Id', $konfirmasi->pluck('IdInvoice')->all())->pluck('Uuid', 'Id')->all();
+        $tanpaBukti = PembayaranPiutang::query()
+            ->where('Status', StatusPembayaranPiutang::Diposting->value)
+            ->where('PotonganPph', '>', 0)
+            ->where(fn ($k) => $k->whereNull('NomorBuktiPotong')->orWhere('NomorBuktiPotong', ''))
+            ->where('Tanggal', '<', $konteks->hariIni->subDays(self::HARI_BUKTI_POTONG)->toDateString())
+            ->when($idOutlet !== null, fn ($k) => $k->whereIn('Id', PembayaranPiutangAlokasi::query()
+                ->whereIn('IdPiutang', Piutang::query()->whereIn('IdOutlet', $idOutlet ?? [])->select('Id'))->select('IdPembayaranPiutang')))
+            ->orderBy('Tanggal')->get();
+        $uuidInvoiceBukti = [];
+
+        if ($tanpaBukti->isNotEmpty()) {
+            $piutangBukti = PembayaranPiutangAlokasi::query()->whereIn('IdPembayaranPiutang', $tanpaBukti->pluck('Id')->all())->where('PotonganPph', '>', 0)->pluck('IdPiutang', 'IdPembayaranPiutang');
+            $idInvoiceBukti = Piutang::query()->whereIn('Id', $piutangBukti->values()->all())->pluck('IdInvoice', 'Id');
+            $uuidInvoice = Invoice::query()->whereIn('Id', $idInvoiceBukti->filter()->values()->all())->pluck('Uuid', 'Id');
+
+            foreach ($piutangBukti as $idPembayaran => $idPiutang) {
+                $idInv = $idInvoiceBukti->get($idPiutang);
+                $uuidInvoiceBukti[$idPembayaran] = $idInv === null ? null : $uuidInvoice->get($idInv);
+            }
+        }
+
+        // Nomor bukti potong dicatat di halaman pelunasan (izin lihat pelanggan; mengubahnya perlu akuntansi.kelola).
+        $bisaCatatBukti = $konteks->CekIzin('pelanggan.lihat');
+        $tautanBukti = $konteks->CekIzin('laporan.keuangan.lihat') ? '/kelola/laporan/pajak/pph-dipotong?saring[Bukti]=Belum' : '/kelola/invoice';
         $invoiceAktif = Invoice::query()->where('Status', '!=', StatusInvoice::Dibatalkan->value)->select('Id');
         $diterima = $batasOutlet(Penawaran::query())->where('Status', StatusPenawaran::Diterima->value)
             ->where(fn ($k) => $k->whereNull('IdInvoice')->orWhereNotIn('IdInvoice', $invoiceAktif))->orderBy('DiputuskanPada')->get();
@@ -161,6 +193,23 @@ final class PenyediaTindakanInvoice implements PenyediaTindakan
                     'Terbit '.$i->Tanggal->toDateString(),
                     $i->Tanggal->toDateString(),
                     '/kelola/invoice/'.$i->Uuid,
+                ))->all()),
+            ),
+            new DataButirTindakan(
+                'invoice.bukti-potong-belum',
+                'Invoice',
+                TingkatTindakan::Perhatian,
+                'Bukti potong PPh belum diterima',
+                'Pelanggan memotong PPh lebih dari '.self::HARI_BUKTI_POTONG.' hari lalu tetapi nomor bukti potongnya belum dicatat. Tagih ke pelanggan agar PPh itu bisa dikreditkan.',
+                $tanpaBukti->count(),
+                $tautanBukti,
+                'Tagih bukti potong',
+                array_values($tanpaBukti->take(DataButirTindakan::BATAS_RINCIAN)->map(fn (PembayaranPiutang $p): DataRincianTindakan => new DataRincianTindakan(
+                    $p->Uuid,
+                    $p->Nomor,
+                    'PPh '.Uang::Dari((string) $p->PotonganPph)->FormatRupiah().' dipotong '.$p->Tanggal->toDateString(),
+                    $p->Tanggal->toDateString(),
+                    $bisaCatatBukti || ! isset($uuidInvoiceBukti[$p->Id]) ? '/kelola/piutang/pelunasan/'.$p->Uuid : '/kelola/invoice/'.$uuidInvoiceBukti[$p->Id],
                 ))->all()),
             ),
             new DataButirTindakan(

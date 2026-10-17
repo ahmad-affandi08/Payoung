@@ -308,6 +308,19 @@ export default function HalamanDetailInvoice({
                                     ? ` (PPh ${FormatRupiah(p.PotonganPph)}${p.NomorBuktiPotong ? `, bukti potong ${p.NomorBuktiPotong}` : ''})`
                                     : ''}{' '}
                                 | {p.LabelStatus}
+                                {p.Status === 'Diposting' ? (
+                                    <>
+                                        {' | '}
+                                        <a
+                                            href={`${AlamatInvoice}/${invoice.Uuid}/kuitansi/${p.Uuid}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="font-semibold text-brand underline"
+                                        >
+                                            Kuitansi
+                                        </a>
+                                    </>
+                                ) : null}
                             </li>
                         ))}
                     </ul>
@@ -331,6 +344,16 @@ export default function HalamanDetailInvoice({
                                         : k.LabelStatus}
                                 </span>
                                 {k.Catatan ? <span>Catatan pelanggan: {k.Catatan}</span> : null}
+                                {k.AdaBukti ? (
+                                    <a
+                                        href={`${AlamatInvoice}/${invoice.Uuid}/konfirmasi/${k.Uuid}/bukti`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="font-semibold text-brand underline"
+                                    >
+                                        Lihat foto bukti transfer
+                                    </a>
+                                ) : null}
                                 {k.AlasanTolak ? <span>Alasan ditolak: {k.AlasanTolak}</span> : null}
                                 {k.BisaDiputuskan && Izin.Kelola ? (
                                     <span className="flex flex-wrap gap-2">

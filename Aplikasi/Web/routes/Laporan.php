@@ -6,6 +6,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Laporan\LaporanApotekKontroler;
 use App\Http\Kontroler\Kelola\Laporan\LaporanKontroler;
 use App\Http\Kontroler\Kelola\Laporan\LaporanPembelianKontroler;
+use App\Http\Kontroler\Kelola\Laporan\LaporanPphDipotongKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
@@ -36,6 +37,9 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): voi
         Route::get('/laporan/pajak/faktur-keluaran/ekspor', [LaporanKontroler::class, 'EksporFakturKeluaran'])->name('kelola.laporan.pajak.faktur-keluaran.ekspor');
         Route::get('/laporan/pajak/nota-retur', [LaporanKontroler::class, 'RingkasNotaRetur'])->name('kelola.laporan.pajak.nota-retur');
         Route::get('/laporan/pajak/nota-retur/ekspor', [LaporanKontroler::class, 'EksporNotaRetur'])->name('kelola.laporan.pajak.nota-retur.ekspor');
+        // F-21 bagian 5: PPh yang dipotong pelanggan beserta bukti potongnya (satu baris per pelunasan).
+        Route::get('/laporan/pajak/pph-dipotong', [LaporanPphDipotongKontroler::class, 'Halaman'])->name('kelola.laporan.pajak.pph-dipotong');
+        Route::get('/laporan/pajak/pph-dipotong/ekspor', [LaporanPphDipotongKontroler::class, 'Ekspor'])->middleware(EksporDiLatarBelakang::class)->name('kelola.laporan.pajak.pph-dipotong.ekspor');
     });
     // §10.10: pembelian per pemasok, per produk, dan PO outstanding (izin yang sama dengan menu Pembelian).
     Route::middleware($izin(IzinTenant::PembelianKelola))->group(function (): void {

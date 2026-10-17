@@ -378,6 +378,53 @@ final class PencatatPiutangPenjualan
     }
 
     /**
+     * Satu pelunasan atas piutang invoice untuk **kuitansi** (F-21 bagian 5): bagian yang dialokasikan ke piutang itu
+     * (pelunasan boleh mencakup beberapa piutang), uang yang benar-benar masuk (dilunasi dikurangi PPh yang dipotong
+     * pelanggan), dan sisa tagihan **sesudah** pembayaran ini (urut tanggal lalu Id; pelunasan dibatalkan tidak dihitung).
+     * Null bila pelunasan itu tidak mengalokasikan apa pun ke piutang ini.
+     *
+     * @return array{Uuid: string, Nomor: string, Tanggal: string, Status: string, LabelStatus: string, Jumlah: string, PotonganPph: string, UangDiterima: string, NomorBuktiPotong: string|null, SisaSetelah: string, AlasanBatal: string|null}|null
+     */
+    public function AmbilPelunasanKuitansi(int $idPiutang, string $uuidPembayaran): ?array
+    {
+        $piutang = Piutang::query()->whereKey($idPiutang)->first();
+        $pembayaran = PembayaranPiutang::query()->where('Uuid', $uuidPembayaran)->first();
+        $bagian = $pembayaran === null ? null : PembayaranPiutangAlokasi::query()->where('IdPembayaranPiutang', $pembayaran->Id)->where('IdPiutang', $idPiutang)->first();
+
+        if ($piutang === null || $pembayaran === null || $bagian === null) {
+            return null;
+        }
+
+        $dibayarSampai = Uang::Nol();
+        $diposting = PembayaranPiutang::query()
+            ->where('Status', StatusPembayaranPiutang::Diposting->value)
+            ->where(fn ($q) => $q->where('Tanggal', '<', $pembayaran->Tanggal->toDateString())
+                ->orWhere(fn ($sama) => $sama->where('Tanggal', $pembayaran->Tanggal->toDateString())->where('Id', '<=', $pembayaran->Id)))
+            ->pluck('Id');
+
+        foreach (PembayaranPiutangAlokasi::query()->where('IdPiutang', $idPiutang)->whereIn('IdPembayaranPiutang', $diposting->all())->get() as $a) {
+            $dibayarSampai = $dibayarSampai->Tambah(Uang::Dari((string) $a->Jumlah));
+        }
+
+        $dilunasi = Uang::Dari((string) $bagian->Jumlah);
+        $pph = Uang::Dari((string) $bagian->PotonganPph);
+
+        return [
+            'Uuid' => $pembayaran->Uuid,
+            'Nomor' => $pembayaran->Nomor,
+            'Tanggal' => $pembayaran->Tanggal->toDateString(),
+            'Status' => $pembayaran->Status->value,
+            'LabelStatus' => $pembayaran->Status->AmbilLabel(),
+            'Jumlah' => $dilunasi->KeString(),
+            'PotonganPph' => $pph->KeString(),
+            'UangDiterima' => $dilunasi->Kurangi($pph)->KeString(),
+            'NomorBuktiPotong' => $pembayaran->NomorBuktiPotong,
+            'SisaSetelah' => Uang::Dari((string) $piutang->Jumlah)->Kurangi($dibayarSampai)->KeString(),
+            'AlasanBatal' => $pembayaran->Status === StatusPembayaranPiutang::Dibatalkan ? $pembayaran->AlasanBatal : null,
+        ];
+    }
+
+    /**
      * Angka piutang bersumber invoice untuk ringkasan penagihan (F-21): piutang beredar (terbuka), yang sudah lewat jatuh
      * tempo per `$hariIni`, dan uang yang diterima (alokasi pelunasan berstatus diposting) dalam rentang `$dari`–`$sampai`
      * (inklusif, `YYYY-MM-DD`). Nilai uang string desimal; `$idOutlet` null = semua outlet.

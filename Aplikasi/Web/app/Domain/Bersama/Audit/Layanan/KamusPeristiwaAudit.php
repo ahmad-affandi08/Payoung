@@ -345,6 +345,7 @@ final class KamusPeristiwaAudit
         'pelanggan.ubah-online' => 'Data pelanggan diubah lewat toko online',
 
         'pelunasan-piutang.batalkan' => 'Pelunasan piutang dibatalkan',
+        'pelunasan-piutang.bukti-potong' => 'Nomor bukti potong PPh pelunasan dicatat',
         'pelunasan-piutang.posting' => 'Pelunasan piutang diposting',
 
         'pemasok.hapus' => 'Pemasok dihapus',

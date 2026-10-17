@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { type FormEvent, useState } from 'react';
 
+import BidangBerkas from '@/Komponen/Formulir/BidangBerkas';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
@@ -32,6 +33,7 @@ export default function KonfirmasiBayarInvoicePublik({
     const [tanggal, AturTanggal] = useState(hariIni);
     const [jumlah, AturJumlah] = useState(sisa.replace(/\.00$/, ''));
     const [catatan, AturCatatan] = useState('');
+    const [bukti, AturBukti] = useState<File[]>([]);
     const [memproses, AturMemproses] = useState(false);
     const melebihi = CekDesimalValid(jumlah) && BandingkanDesimal(jumlah, sisa) > 0;
     const siap =
@@ -50,12 +52,18 @@ export default function KonfirmasiBayarInvoicePublik({
                 TanggalBayar: tanggal,
                 Jumlah: jumlah,
                 Catatan: catatan.trim() === '' ? null : catatan.trim(),
+                Bukti: bukti[0] ?? null,
             },
             {
                 preserveScroll: true,
+                // Foto bukti ikut sebagai berkas, jadi dikirim sebagai multipart.
+                forceFormData: true,
                 onStart: () => AturMemproses(true),
                 onFinish: () => AturMemproses(false),
-                onSuccess: () => AturCatatan(''),
+                onSuccess: () => {
+                    AturCatatan('');
+                    AturBukti([]);
+                },
             },
         );
     };
@@ -118,6 +126,15 @@ export default function KonfirmasiBayarInvoicePublik({
                     saatBerubah={AturCatatan}
                     maksimal={300}
                     galat={galat.Catatan}
+                />
+                <BidangBerkas
+                    label="Foto bukti transfer"
+                    berkas={bukti}
+                    saatBerubah={AturBukti}
+                    ekstensi={['jpg', 'jpeg', 'png', 'webp']}
+                    maksimal={1}
+                    ukuranMaksimalKb={4096}
+                    galat={galat.Bukti}
                 />
                 <div>
                     <Tombol type="submit" memproses={memproses} disabled={!siap}>

@@ -15,7 +15,10 @@ export default function HalamanCetakInvoice(props: PropsCetakInvoice) {
             <div className="flex justify-end print:hidden">
                 <Button onClick={() => window.print()}>Cetak atau simpan PDF</Button>
             </div>
-            <TampilanDokumenInvoice dokumen={props} />
+            <TampilanDokumenInvoice
+                dokumen={props}
+                alamatKuitansi={(uuid) => `/kelola/invoice/${props.Uuid}/kuitansi/${uuid}`}
+            />
         </main>
     );
 }

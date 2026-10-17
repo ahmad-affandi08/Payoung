@@ -160,6 +160,7 @@ final class RegistriAnonimisasi
         'PenerimaanBarang.PathLampiran' => 'Bukti pembukuan: berkas dipertahankan selama masa retensi pajak.',
         'MutasiKas.PathLampiran' => 'Bukti pembukuan: berkas dipertahankan selama masa retensi pajak.',
         'TransaksiKasBank.PathLampiran' => 'Bukti pembukuan: berkas dipertahankan selama masa retensi pajak.',
+        'KonfirmasiPembayaranInvoice.PathBukti' => 'Bukti pembukuan: foto bukti transfer pelanggan dipertahankan selama masa retensi pajak.',
         'JurnalUmum.PathLampiran' => 'Bukti pembukuan: berkas dipertahankan selama masa retensi pajak.',
         'MutasiBank.SidikBaris' => 'Sidik (hash) baris rekening koran untuk mencegah impor ganda; bukan data pribadi. Keterangan mutasi adalah bukti pembukuan.',
         'PembayaranLangganan.PathBukti' => 'Bukti penerimaan pembayaran langganan milik platform (pendapatan platform), bukan milik tenant.',
