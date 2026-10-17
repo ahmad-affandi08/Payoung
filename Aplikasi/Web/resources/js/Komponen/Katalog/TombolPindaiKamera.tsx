@@ -17,6 +17,8 @@ type PropsTombolPindaiKamera = {
     label?: string;
     /** Tombol ikon kecil (tanpa teks) untuk dipasang di samping kotak cari; `label` tetap menjadi nama aksesibelnya. */
     ikonSaja?: boolean;
+    /** Kelas tambahan untuk tombol ikon, agar gayanya sama dengan isian di sebelahnya (mis. bilah alat tabel). */
+    kelasIkon?: string;
     /**
      * Kamera tetap terbuka dan setiap barcode yang terbaca diteruskan (hitung stok, banyak barang). Barcode yang sama
      * yang masih berada di depan kamera dihitung sekali; baru terhitung lagi setelah menjauh sejenak.
@@ -58,6 +60,7 @@ export default function TombolPindaiKamera({
     disabled = false,
     label = 'Pindai kamera',
     ikonSaja = false,
+    kelasIkon,
     berkelanjutan = false,
     umpanBalik = null,
     jenisKode = 'Produk',
@@ -184,7 +187,7 @@ export default function TombolPindaiKamera({
                     disabled={disabled}
                     aria-label={label}
                     title={label}
-                    className="shrink-0"
+                    className={`shrink-0${kelasIkon === undefined ? '' : ` ${kelasIkon}`}`}
                 >
                     <ScanBarcode className="size-4" aria-hidden />
                 </Button>

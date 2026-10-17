@@ -283,7 +283,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
 
     const kotakCari =
         props.cari === false ? null : (
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-sm">
+            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:basis-full sm:max-w-sm">
                 <div className="relative min-w-0 flex-1">
                     <SearchIcon
                         aria-hidden="true"
@@ -301,6 +301,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                 {props.pindaiKamera === true ? (
                     <TombolPindaiKamera
                         ikonSaja
+                        kelasIkon="border-garis-input bg-permukaan"
                         label={`Pindai barcode untuk mencari di ${props.label}`}
                         saatTerbaca={(barcode) => props.AturCari(barcode)}
                     />
@@ -308,6 +309,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                 {props.pindaiKamera === 'Seri' ? (
                     <TombolPindaiKamera
                         ikonSaja
+                        kelasIkon="border-garis-input bg-permukaan"
                         jenisKode="Seri"
                         label={`Pindai nomor seri atau IMEI untuk mencari di ${props.label}`}
                         saatTerbaca={(kode) => props.AturCari(kode)}
