@@ -5,6 +5,7 @@ import { Input } from '@/Komponen/Ui/input';
 import { Label } from '@/Komponen/Ui/label';
 
 import { PeriksaBarcode, PERISTIWA_BARCODE_TERTUNDA } from './BantuanKatalog';
+import TombolPindaiKamera from './TombolPindaiKamera';
 
 type PropsBidangBarcode = {
     label: string;
@@ -50,9 +51,7 @@ export default function BidangBarcode({
         return () => elemen?.removeEventListener(PERISTIWA_BARCODE_TERTUNDA, Beritahu);
     }, []);
 
-    const Tambah = () => {
-        const barcode = ketikan.trim();
-
+    const TambahNilai = (barcode: string) => {
         if (barcode === '') {
             return;
         }
@@ -65,6 +64,7 @@ export default function BidangBarcode({
             AturKetikan('');
         }
     };
+    const Tambah = () => TambahNilai(ketikan.trim());
 
     const TekanTombol = (peristiwa: KeyboardEvent<HTMLInputElement>) => {
         if (peristiwa.key === 'Enter') {
@@ -105,7 +105,7 @@ export default function BidangBarcode({
                     ))}
                 </ul>
             ) : null}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
                 <Input
                     id={id}
                     type="text"
@@ -122,7 +122,7 @@ export default function BidangBarcode({
                     placeholder="Pindai atau ketik barcode"
                     aria-invalid={pesanGalat ? true : undefined}
                     aria-describedby={`${id}-keterangan${pesanGalat ? ` ${id}-galat` : ''}`}
-                    className="h-8 pointer-coarse:h-11 flex-1 font-mono tracking-wide"
+                    className="h-8 pointer-coarse:h-11 min-w-48 flex-1 font-mono tracking-wide"
                 />
                 <Button
                     type="button"
@@ -133,9 +133,14 @@ export default function BidangBarcode({
                 >
                     Tambah barcode
                 </Button>
+                <TombolPindaiKamera
+                    saatTerbaca={TambahNilai}
+                    disabled={disabled}
+                    label={`Pindai kamera ${label.replace(/^Barcode /, '')}`}
+                />
             </div>
             <p id={`${id}-keterangan`} className="text-keterangan text-teks-sekunder">
-                Boleh lebih dari satu. Tekan Enter setelah memindai.
+                Boleh lebih dari satu. Tekan Enter setelah memindai, atau pakai kamera.
             </p>
             <div aria-live="polite">
                 {pesanGalat ? (

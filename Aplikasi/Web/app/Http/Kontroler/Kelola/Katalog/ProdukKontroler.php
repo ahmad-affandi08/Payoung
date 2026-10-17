@@ -9,10 +9,12 @@ use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Katalog\Aksi\ArsipkanProduk;
 use App\Domain\Katalog\Aksi\BuatBarcodeInternal;
+use App\Domain\Katalog\Aksi\HapusBarcodeProduk;
 use App\Domain\Katalog\Aksi\HapusProduk;
 use App\Domain\Katalog\Aksi\PulihkanProduk;
 use App\Domain\Katalog\Aksi\SimpanProduk;
 use App\Domain\Katalog\Aksi\SimpanProdukDenganPaketSesi;
+use App\Domain\Katalog\Aksi\TambahBarcodeProduk;
 use App\Domain\Katalog\Aksi\UbahProdukMassal;
 use App\Domain\Katalog\Data\DataProduk;
 use App\Domain\Katalog\Data\DataSaringProduk;
@@ -30,6 +32,7 @@ use App\Domain\Katalog\Kueri\PohonKategori;
 use App\Domain\Katalog\Layanan\OpsiKelompokPajakKatalog;
 use App\Domain\Katalog\Model\Kategori;
 use App\Domain\Katalog\Model\Produk;
+use App\Domain\Katalog\Model\ProdukBarcode;
 use App\Domain\Katalog\Model\ProdukSatuan;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\InfoGudang;
@@ -271,6 +274,27 @@ final class ProdukKontroler extends DasarKatalogKontroler
         $barcode = $buat->Jalankan($satuan);
 
         return back()->with('Kilat', "Barcode {$barcode->Barcode} dibuat.");
+    }
+
+    /** Barcode yang diketik atau dipindai dari halaman detail; barcode milik produk lain ditolak BR-03.1. */
+    public function TambahBarcode(Request $permintaan, string $produk, string $produkSatuan, TambahBarcodeProduk $tambah): RedirectResponse
+    {
+        $baris = $this->CariProduk($produk);
+        $satuan = ProdukSatuan::query()->where('IdProduk', $baris->Id)->where('Uuid', $produkSatuan)->firstOrFail();
+        $barcode = $tambah->Jalankan($satuan, $permintaan->string('Barcode')->toString());
+
+        return back()->with('Kilat', $barcode->wasRecentlyCreated
+            ? "Barcode {$barcode->Barcode} ditambahkan."
+            : "Barcode {$barcode->Barcode} sudah terdaftar di produk ini.");
+    }
+
+    public function HapusBarcode(string $produk, string $produkBarcode, HapusBarcodeProduk $hapus): RedirectResponse
+    {
+        $baris = $this->CariProduk($produk);
+        $barcode = ProdukBarcode::query()->where('IdProduk', $baris->Id)->where('Uuid', $produkBarcode)->firstOrFail();
+        $hapus->Jalankan($barcode);
+
+        return back()->with('Kilat', "Barcode {$barcode->Barcode} dihapus.");
     }
 
     /**

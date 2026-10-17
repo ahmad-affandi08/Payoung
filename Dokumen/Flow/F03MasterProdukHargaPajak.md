@@ -38,7 +38,7 @@ Harga final ditentukan berlapis (prioritas tinggi ke rendah):
 5. Harga dasar produk per satuan
 
 **Aturan Bisnis:**
-- BR-03.1 SKU unik per tenant. Barcode unik per tenant (boleh sama lintas tenant).
+- BR-03.1 SKU unik per tenant. Barcode unik per tenant (boleh sama lintas tenant). Barcode boleh diisi dengan mengetik, pemindai USB (Enter), atau kamera perangkat, baik di Ubah produk maupun langsung di halaman detail (v6.58, D-171).
 - BR-03.2 Produk yang sudah punya transaksi tidak bisa dihapus, hanya diarsipkan.
 - BR-03.3 Perubahan harga dicatat di tabel `RiwayatHarga` (kapan, siapa, lama/baru).
 - BR-03.4 Perubahan resep **tidak** mengubah transaksi lampau (resep di-snapshot saat penjualan untuk kalkulasi HPP).

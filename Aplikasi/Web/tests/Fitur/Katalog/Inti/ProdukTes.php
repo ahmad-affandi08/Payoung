@@ -200,6 +200,42 @@ describe('F-03 SimpanProduk lewat form', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'produk.barcode.buat')->count())->toBe(2);
     });
 
+    it('BR-03.1 barcode diketik/dipindai dari detail produk: idempoten, ditolak bila milik produk lain, format dijaga, bisa dihapus dengan jejak', function (): void {
+        $t = BantuanKatalog::SiapkanTenantProduk();
+        $produk = BantuanKatalog::BuatProduk(['Nama' => 'Teh Botol'], null, $t['Pcs']);
+        $lain = BantuanKatalog::BuatProduk(['Nama' => 'Air Mineral', 'Sku' => 'AIR-1'], null, $t['Pcs']);
+        $satuan = ProdukSatuan::query()->where('IdProduk', $produk->Id)->sole();
+        $satuanLain = ProdukSatuan::query()->where('IdProduk', $lain->Id)->sole();
+        $url = "/kelola/produk/{$produk->Uuid}/satuan/{$satuan->Uuid}/barcode";
+        $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+        $masuk()->post($url, ['Barcode' => ' 8991234500017 '])->assertSessionHasNoErrors()->assertSessionHas('Kilat', 'Barcode 8991234500017 ditambahkan.');
+        $masuk()->post($url, ['Barcode' => '8991234500017'])->assertSessionHasNoErrors()->assertSessionHas('Kilat', 'Barcode 8991234500017 sudah terdaftar di produk ini.');
+        $masuk()->post($url, ['Barcode' => 'a b'])->assertSessionHasErrors('Barcode');
+        $masuk()->post($url, ['Barcode' => ''])->assertSessionHasErrors('Barcode');
+        $masuk()->post("/kelola/produk/{$lain->Uuid}/satuan/{$satuanLain->Uuid}/barcode", ['Barcode' => '8991234500017'])->assertSessionHasErrors('Barcode');
+        // Satuan milik produk lain tidak bisa dipakai lewat URL produk ini.
+        $masuk()->post("/kelola/produk/{$produk->Uuid}/satuan/{$satuanLain->Uuid}/barcode", ['Barcode' => '8991234500024'])->assertNotFound();
+
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        $barcode = ProdukBarcode::query()->where('IdProduk', $produk->Id)->sole();
+        expect($barcode->Barcode)->toBe('8991234500017')
+            ->and(ProdukBarcode::query()->where('IdProduk', $lain->Id)->count())->toBe(0)
+            ->and(LogAudit::query()->where('Peristiwa', 'produk.barcode.tambah')->count())->toBe(1);
+
+        // Barcode produk lain tidak bisa dihapus lewat URL produk ini.
+        $masuk()->delete("/kelola/produk/{$lain->Uuid}/barcode/{$barcode->Uuid}")->assertNotFound();
+        $masuk()->delete("/kelola/produk/{$produk->Uuid}/barcode/{$barcode->Uuid}")->assertSessionHasNoErrors()->assertSessionHas('Kilat', 'Barcode 8991234500017 dihapus.');
+
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(ProdukBarcode::query()->count())->toBe(0)
+            ->and(LogAudit::query()->where('Peristiwa', 'produk.barcode.hapus')->count())->toBe(1)
+            ->and(PenghapusanKatalog::query()->where('Entitas', EntitasKatalog::ProdukBarcode->value)->where('UuidEntitas', $barcode->Uuid)->count())->toBe(1);
+
+        // Setelah dihapus, produk lain boleh memakai barcode yang sama.
+        $masuk()->post("/kelola/produk/{$lain->Uuid}/satuan/{$satuanLain->Uuid}/barcode", ['Barcode' => '8991234500017'])->assertSessionHasNoErrors();
+    });
+
     it('satuan: tepat satu satuan dasar, konversi > 0, satuan unik; satuan dibuang ikut menghapus barcode & harga dengan jejak', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $dus = BantuanKatalog::BuatSatuan('Dus', 'dus');

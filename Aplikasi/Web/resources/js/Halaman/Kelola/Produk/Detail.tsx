@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react';
 
 import BidangGambar from '@/Komponen/Formulir/BidangGambar';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import BarcodeSatuanDetail from '@/Komponen/Katalog/BarcodeSatuanDetail';
 import { LabelTigaKeadaan } from '@/Komponen/Katalog/BantuanKatalog';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import FormBatasStok from '@/Komponen/Katalog/FormBatasStok';
@@ -118,6 +119,7 @@ export default function HalamanDetailProduk({
     const induk = Produk.Jenis === 'IndukVarian';
     const grid = induk ? SusunGridVarian(Varian, Produk.AtributVarian) : null;
     const opsiKirim = { preserveScroll: true };
+    const barcodeProduk = Produk.Satuan.flatMap((satuan) => satuan.Barcode.map((barcode) => barcode.Barcode));
 
     const kolomSatuan: KolomTabel<Satuan>[] = [
         {
@@ -158,36 +160,14 @@ export default function HalamanDetailProduk({
             enableSorting: false,
             meta: { label: 'Barcode', prioritas: 'penting' },
             cell: ({ row: { original: satuan } }) => (
-                <>
-                    {satuan.Barcode.length === 0 ? (
-                        <span className="text-teks-sekunder">Belum ada</span>
-                    ) : (
-                        <ul className="flex flex-col gap-0.5">
-                            {satuan.Barcode.map((barcode) => (
-                                <li key={barcode.Uuid} className="font-mono text-label break-all">
-                                    {barcode.Barcode}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    {Izin.Kelola ? (
-                        <Button
-                            type="button"
-                            variant="link"
-                            size="sm"
-                            onClick={() =>
-                                router.post(
-                                    `/kelola/produk/${Produk.Uuid}/satuan/${satuan.Uuid}/barcode-internal`,
-                                    {},
-                                    opsiKirim,
-                                )
-                            }
-                            className="mt-1 h-auto px-0"
-                        >
-                            Buat barcode internal {satuan.Simbol}
-                        </Button>
-                    ) : null}
-                </>
+                <BarcodeSatuanDetail
+                    uuidProduk={Produk.Uuid}
+                    uuidSatuan={satuan.Uuid}
+                    simbolSatuan={satuan.Simbol}
+                    barcode={satuan.Barcode}
+                    barcodeProduk={barcodeProduk}
+                    bolehKelola={Izin.Kelola}
+                />
             ),
         },
     ];
@@ -366,7 +346,7 @@ export default function HalamanDetailProduk({
             <Panel
                 judul="Satuan & barcode"
                 idJudul="judul-satuan"
-                keterangan="Barcode internal (EAN-13 berawalan 20) untuk barang tanpa barcode pabrik."
+                keterangan="Ketik, pindai, atau hapus barcode di sini. Barang tanpa barcode pabrik bisa memakai barcode internal (EAN-13 berawalan 20)."
             >
                 <TabelData
                     id="katalog-produk-satuan"

@@ -69,6 +69,11 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::post('/produk/{produk}/varian/stok-awal', [VarianProdukKontroler::class, 'CatatStokAwal'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.varian.stok-awal');
     Route::post('/produk/{produk}/satuan/{produkSatuan}/barcode-internal', [ProdukKontroler::class, 'BuatBarcodeInternal'])
         ->middleware($kelola)->where(['produk' => $ulid, 'produkSatuan' => $ulid])->name('kelola.produk.barcode-internal.buat');
+    // Ketik/pindai barcode langsung dari halaman detail produk (tanpa membuka form ubah).
+    Route::post('/produk/{produk}/satuan/{produkSatuan}/barcode', [ProdukKontroler::class, 'TambahBarcode'])
+        ->middleware($kelola)->where(['produk' => $ulid, 'produkSatuan' => $ulid])->name('kelola.produk.barcode.tambah');
+    Route::delete('/produk/{produk}/barcode/{produkBarcode}', [ProdukKontroler::class, 'HapusBarcode'])
+        ->middleware($kelola)->where(['produk' => $ulid, 'produkBarcode' => $ulid])->name('kelola.produk.barcode.hapus');
     Route::put('/produk/{produk}/batas-stok', [BatasStokProdukKontroler::class, 'Simpan'])
         ->middleware($izin(IzinTenant::PersediaanKelola))->where('produk', $ulid)->name('kelola.produk.batas-stok.simpan');
 

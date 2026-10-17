@@ -459,6 +459,7 @@ final class KamusPeristiwaAudit
 
         'produk.arsipkan' => 'Produk diarsipkan',
         'produk.barcode.buat' => 'Barcode internal produk dibuat',
+        'produk.barcode.hapus' => 'Barcode produk dihapus',
         'produk.barcode.tambah' => 'Barcode produk ditambahkan',
         'produk.batas-stok.ubah' => 'Batas stok produk diubah',
         'produk.ekspor' => 'Produk diekspor',

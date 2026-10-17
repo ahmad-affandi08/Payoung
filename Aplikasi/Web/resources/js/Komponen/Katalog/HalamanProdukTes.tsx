@@ -748,6 +748,58 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         );
     });
 
+    it('BR-03.1: barcode diketik di detail (Enter atau tombol), format & duplikat ditolak sebelum dikirim, galat server tampil', () => {
+        RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
+        const isian = screen.getByLabelText('Barcode baru dus');
+        const tombolTambah = within(isian.parentElement as HTMLElement).getByRole('button', { name: 'Tambah barcode' });
+
+        expect((tombolTambah as HTMLButtonElement).disabled).toBe(true);
+
+        fireEvent.change(isian, { target: { value: 'a b' } });
+        fireEvent.keyDown(isian, { key: 'Enter' });
+        expect(screen.getByText('Barcode 3–64 karakter: huruf, angka, titik, atau strip.')).toBeTruthy();
+
+        // Duplikat dicek terhadap semua satuan produk, tanpa beda huruf besar/kecil.
+        fireEvent.change(isian, { target: { value: '8991234567890' } });
+        fireEvent.keyDown(isian, { key: 'Enter' });
+        expect(screen.getByText('Barcode 8991234567890 sudah dipakai di produk ini.')).toBeTruthy();
+        expect(tiruanRouter.post).not.toHaveBeenCalled();
+
+        fireEvent.change(isian, { target: { value: ' 8991234500017 ' } });
+        fireEvent.keyDown(isian, { key: 'Enter' });
+        expect(tiruanRouter.post).toHaveBeenCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/satuan/PS-2/barcode',
+            { Barcode: '8991234500017' },
+            expect.objectContaining({ preserveScroll: true }),
+        );
+
+        tiruanRouter.post.mockImplementationOnce(
+            (_url: string, _data: unknown, opsi: { onError?: (g: Record<string, string>) => void }) =>
+                opsi.onError?.({ Barcode: 'Barcode 8991234500017 sudah dipakai produk Teh Botol.' }),
+        );
+        fireEvent.click(tombolTambah);
+        expect(screen.getByText('Barcode 8991234500017 sudah dipakai produk Teh Botol.')).toBeTruthy();
+    });
+
+    it('BR-03.1: barcode di detail bisa dihapus setelah konfirmasi; tanpa izin kelola tidak ada isian maupun tombol hapus', () => {
+        RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hapus barcode 8991234567890' }));
+        expect(tiruanRouter.delete).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Ya, hapus barcode' }));
+        expect(tiruanRouter.delete).toHaveBeenCalledWith(
+            '/kelola/produk/01J9PRODUK00000000000000001/barcode/B-1',
+            expect.objectContaining({ preserveScroll: true }),
+        );
+        cleanup();
+
+        RenderUji(<HalamanDetailProduk {...PropsDetail({ Izin: { ...IzinPenuh, Kelola: false } })} />);
+        expect(screen.getByText('8991234567890')).toBeTruthy();
+        expect(screen.queryByLabelText('Barcode baru dus')).toBeNull();
+        expect(screen.queryByRole('button', { name: /Hapus barcode/ })).toBeNull();
+        expect(screen.queryByRole('button', { name: /Pindai kamera/ })).toBeNull();
+    });
+
     it('F-17 BR-17.2: tandai habis & tersedia lagi per outlet lewat POST; tanpa izin hanya baca; induk varian tanpa panel', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
 
