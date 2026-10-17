@@ -24,6 +24,15 @@ enum JenisAlertOperasional: string
         };
     }
 
+    /**
+     * Alert yang dinilai dari persentase/latensi lalu lintas API: sampelnya bisa kecil dan kondisinya naik-turun,
+     * jadi dibuka dan ditutup dengan penundaan (`operasional.KonfirmasiMetrikMenit`, `PulihMetrikMenit`).
+     */
+    public function CekDariLaluLintasApi(): bool
+    {
+        return $this === self::ErrorRateTinggi || $this === self::LatensiPosTinggi;
+    }
+
     public function AmbilLabel(): string
     {
         return match ($this) {

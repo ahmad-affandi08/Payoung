@@ -14,6 +14,7 @@ use App\Domain\Pengelola\Operasional\Layanan\PengaturanAlertOperasional;
 use App\Domain\Pengelola\Operasional\Model\AlertOperasional;
 use App\Domain\Pengelola\Operasional\Surel\AlertOperasionalTerbuka;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -55,6 +56,7 @@ final class PeriksaKondisiOperasional
     {
         $masalah = $this->kondisi->AmbilMasalah() + $this->kondisi->AmbilMasalahMetrik();
         $aktif = AlertOperasional::query()->whereNull('SelesaiPada')->orderBy('Id')->get()->keyBy(fn (AlertOperasional $alert) => $alert->Kunci->value);
+        $masalah = $this->TundaAlertLaluLintas($masalah, $aktif);
 
         foreach ($aktif as $kunci => $alert) {
             if (! array_key_exists($kunci, $masalah)) {
@@ -84,6 +86,71 @@ final class PeriksaKondisiOperasional
         }
 
         return array_keys($masalah);
+    }
+
+    /**
+     * Alert dari lalu lintas API (error rate, latensi POS) ditunda: baru dianggap ada setelah kondisi buruk teramati
+     * terus-menerus selama `KonfirmasiMetrikMenit`, dan insiden yang sudah terbuka baru dianggap pulih setelah sehat
+     * terus-menerus selama `PulihMetrikMenit`. Persentase dari sampel kecil naik-turun di sekitar ambang; tanpa ini
+     * satu insiden terbuka-tutup berkali-kali dan tiap bukaan mengirim email kritis sendiri.
+     *
+     * Penanda "sejak kapan" disimpan di cache dengan masa hidup pendek yang diperbarui tiap pemeriksaan, jadi celah
+     * pemeriksaan (scheduler mati) mengulang hitungan, bukan menganggap kondisi buruk berlangsung sepanjang celah itu.
+     *
+     * @param  array<string, string>  $masalah
+     * @param  Collection<string, AlertOperasional>  $aktif
+     * @return array<string, string>
+     */
+    private function TundaAlertLaluLintas(array $masalah, Collection $aktif): array
+    {
+        $konfirmasi = (int) config('operasional.KonfirmasiMetrikMenit');
+        $pulih = (int) config('operasional.PulihMetrikMenit');
+        $sekarang = now();
+
+        foreach (JenisAlertOperasional::cases() as $jenis) {
+            if (! $jenis->CekDariLaluLintasApi()) {
+                continue;
+            }
+
+            $kunci = $jenis->value;
+            $kunciBuruk = "operasional:buruk-sejak:{$kunci}";
+            $kunciSehat = "operasional:sehat-sejak:{$kunci}";
+            $terbuka = $aktif->get($kunci);
+
+            if (array_key_exists($kunci, $masalah)) {
+                Cache::forget($kunciSehat);
+                $sejak = Cache::get($kunciBuruk);
+                $sejak = is_int($sejak) ? $sejak : $sekarang->getTimestamp();
+                Cache::put($kunciBuruk, $sejak, 180);
+
+                // Insiden yang sudah terbuka tetap berjalan; yang baru menunggu kondisi buruk bertahan.
+                if ($terbuka === null && $sekarang->getTimestamp() - $sejak < $konfirmasi * 60) {
+                    unset($masalah[$kunci]);
+                }
+
+                continue;
+            }
+
+            Cache::forget($kunciBuruk);
+
+            if ($terbuka === null) {
+                Cache::forget($kunciSehat);
+
+                continue;
+            }
+
+            $sejak = Cache::get($kunciSehat);
+            $sejak = is_int($sejak) ? $sejak : $sekarang->getTimestamp();
+            Cache::put($kunciSehat, $sejak, 180);
+
+            if ($sekarang->getTimestamp() - $sejak < $pulih * 60) {
+                $masalah[$kunci] = $terbuka->Pesan;
+            } else {
+                Cache::forget($kunciSehat);
+            }
+        }
+
+        return $masalah;
     }
 
     /**

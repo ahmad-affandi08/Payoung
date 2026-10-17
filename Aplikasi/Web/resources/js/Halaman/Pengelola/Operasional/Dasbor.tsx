@@ -106,6 +106,8 @@ type Dasbor = {
         BatasErrorRatePersen: string;
         BatasP95PosMs: number;
         MinimumPermintaan: number;
+        KonfirmasiMenit: number;
+        PulihMenit: number;
     };
     OutboxMacet: { BatasJam: number; Daftar: PerangkatMacet[] };
     Lanjutan: DataLanjutan;
@@ -474,8 +476,10 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                 <p className="max-w-3xl text-label text-teks-sekunder">
                     Alert kritis bila galat server (5xx) mencapai {String(Metrik.BatasErrorRatePersen)}% dengan paling
                     sedikit {String(Metrik.MinimumPermintaan)} permintaan; peringatan bila p95 API POS melewati{' '}
-                    {String(Metrik.BatasP95PosMs)} ms. p95 dibaca dari kelompok latensi, jadi angkanya batas atas
-                    kelompok tempat persentil ke-95 jatuh. Data terlambat sampai satu menit.
+                    {String(Metrik.BatasP95PosMs)} ms. Insiden baru terbuka setelah kondisi buruk bertahan{' '}
+                    {String(Metrik.KonfirmasiMenit)} menit dan baru tertutup setelah sehat {String(Metrik.PulihMenit)}{' '}
+                    menit, supaya gangguan sesaat tidak mengirim email berulang. p95 dibaca dari kelompok latensi, jadi
+                    angkanya batas atas kelompok tempat persentil ke-95 jatuh. Data terlambat sampai satu menit.
                 </p>
                 <TabelData
                     id="pengelola-operasional-metrik-terkini"

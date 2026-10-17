@@ -21,7 +21,15 @@ return [
     // PGL-20: jendela pemeriksaan alert error rate & latensi (menit terakhir) dan jumlah permintaan minimum supaya
     // sedikit permintaan tidak membuat persentase menyesatkan.
     'JendelaMetrikMenit' => 5,
-    'MinimumPermintaanMetrik' => 30,
+    // v6.60: 30 terlalu rendah untuk lalu lintas kecil (2 galat dari 33 permintaan sudah memicu alert kritis).
+    'MinimumPermintaanMetrik' => 100,
+
+    // v6.60: alert dari metrik lalu lintas API (error rate, latensi POS) baru terbuka setelah kondisi buruk terus
+    // teramati selama ini (menit), dan baru tertutup setelah terus sehat selama ini. Mencegah insiden yang membuka-menutup
+    // (satu email "Kritis" per bukaan) saat persentase naik-turun di sekitar ambang. Alert scheduler/antrean/backup/outbox
+    // tidak memakai ini.
+    'KonfirmasiMetrikMenit' => 2,
+    'PulihMetrikMenit' => 5,
 
     // PGL-20: error rate (galat server 5xx ÷ permintaan) di atas ini = alert kritis.
     'BatasErrorRatePersen' => '5',

@@ -71,6 +71,8 @@ final class DasborOperasional
                 'BatasErrorRatePersen' => (string) config('operasional.BatasErrorRatePersen'),
                 'BatasP95PosMs' => (int) config('operasional.BatasP95PosMs'),
                 'MinimumPermintaan' => (int) config('operasional.MinimumPermintaanMetrik'),
+                'KonfirmasiMenit' => (int) config('operasional.KonfirmasiMetrikMenit'),
+                'PulihMenit' => (int) config('operasional.PulihMetrikMenit'),
             ],
             'OutboxMacet' => [
                 'BatasJam' => (int) config('operasional.BatasOutboxMacetJam'),

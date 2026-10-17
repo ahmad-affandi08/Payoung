@@ -38,6 +38,9 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
     Mail::fake();
     Cache::flush();
+    // Aturan dasar alert (ambang 5%, minimum permintaan, pembukaan/penutupan insiden) diuji dengan penundaan v6.60
+    // dimatikan dan minimum 30; perilaku penundaan & minimum baru diuji di blok "Penundaan alert lalu lintas API".
+    config(['operasional.MinimumPermintaanMetrik' => 30, 'operasional.KonfirmasiMetrikMenit' => 0, 'operasional.PulihMetrikMenit' => 0]);
     config(['integrasi.Whatsapp' => ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'rahasia-uji']]]);
     Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['6001']])]);
     // Backup sehat supaya alert backup tidak ikut membuka insiden.
@@ -346,5 +349,130 @@ describe('Dasbor operasional memuat metrik, outbox macet, dan nomor alert', func
             ->where('Dasbor.OutboxMacet.Daftar', [])
             ->where('Dasbor.AlertWa.Nomor', ['6281234567890'])
             ->where('Dasbor.AlertWa.Maks', 5));
+    });
+});
+
+describe('Penundaan alert lalu lintas API (P-11 PGL-20, v6.60)', function (): void {
+    beforeEach(function (): void {
+        // Nilai bawaan produksi dari berkas konfigurasi, bukan nilai uji.
+        config(['operasional' => require config_path('operasional.php')]);
+    });
+
+    /** Satu menit berlalu lalu pemeriksa berjalan, seperti detak scheduler tiap menit. */
+    function PeriksaSatuMenitLagi(): array
+    {
+        test()->travel(1)->minutes();
+        // Detak scheduler tiap menit (seperti produksi), supaya alert "Scheduler berhenti" tidak ikut muncul.
+        test()->artisan('pengelola:detak')->assertSuccessful();
+
+        return app(PeriksaKondisiOperasional::class)->Jalankan();
+    }
+
+    function MetrikPosBuruk(int $menitLalu = 1): void
+    {
+        TambahMetrikMenit('Pos', $menitLalu, ['JumlahPermintaan' => 120, 'JumlahGalatServer' => 12, 'TotalDurasiMs' => 6000, 'Hingga100Ms' => 120]);
+    }
+
+    it('sampel kecil (2 galat dari 33 permintaan) tidak lagi membuka alert kritis', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 33, 'JumlahGalatServer' => 2, 'TotalDurasiMs' => 1650, 'Hingga100Ms' => 33]);
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe([])
+            ->and(AlertOperasional::query()->count())->toBe(0);
+        Mail::assertNothingSent();
+    });
+
+    it('error rate tinggi baru membuka insiden setelah bertahan 2 menit; email sekali', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        MetrikPosBuruk();
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe([])
+            ->and(AlertOperasional::query()->count())->toBe(0)
+            ->and(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi'])
+            ->and(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi']);
+
+        expect(AlertOperasional::query()->count())->toBe(1);
+        Mail::assertSent(AlertOperasionalTerbuka::class, 1);
+    });
+
+    it('gangguan sesaat (sehat sebelum 2 menit) tidak pernah membuka insiden', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        MetrikPosBuruk();
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([]);
+        MetrikApi::query()->delete();
+
+        expect(PeriksaSatuMenitLagi())->toBe([]);
+        MetrikPosBuruk();
+
+        // Hitungan mulai ulang karena kondisi sempat sehat: satu menit buruk lagi belum cukup.
+        expect(PeriksaSatuMenitLagi())->toBe([])
+            ->and(AlertOperasional::query()->count())->toBe(0);
+        Mail::assertNothingSent();
+    });
+
+    it('insiden yang sudah terbuka tidak membuka-menutup saat sempat sehat sebentar; baru tertutup setelah sehat 5 menit', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        MetrikPosBuruk();
+        app(PeriksaKondisiOperasional::class)->Jalankan();
+        PeriksaSatuMenitLagi();
+        expect(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi']);
+
+        // Sehat 3 menit lalu buruk lagi: tetap insiden yang sama, tanpa email kedua.
+        MetrikApi::query()->delete();
+        expect(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi'])
+            ->and(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi'])
+            ->and(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi']);
+        MetrikPosBuruk();
+        expect(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi'])
+            ->and(AlertOperasional::query()->count())->toBe(1)
+            ->and(AlertOperasional::query()->sole()->SelesaiPada)->toBeNull();
+        Mail::assertSent(AlertOperasionalTerbuka::class, 1);
+
+        // Sehat terus 5 menit: insiden tertutup.
+        MetrikApi::query()->delete();
+        $hasil = [];
+
+        for ($menit = 0; $menit < 6; $menit++) {
+            $hasil[] = PeriksaSatuMenitLagi();
+        }
+
+        expect($hasil[0])->toBe(['ErrorRateTinggi'])
+            ->and($hasil[5])->toBe([])
+            ->and(AlertOperasional::query()->sole()->SelesaiPada)->not->toBeNull();
+
+        // Kondisi buruk berikutnya adalah insiden baru, juga setelah ditunda 2 menit.
+        MetrikPosBuruk();
+        expect(PeriksaSatuMenitLagi())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe(['ErrorRateTinggi'])
+            ->and(AlertOperasional::query()->count())->toBe(2);
+    });
+
+    it('celah pemeriksaan (scheduler sempat mati) mengulang hitungan, bukan dianggap buruk sepanjang celah', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        MetrikPosBuruk();
+        app(PeriksaKondisiOperasional::class)->Jalankan();
+        PeriksaSatuMenitLagi();
+
+        // Tidak ada pemeriksaan selama 4 menit; metrik buruk masih ada di jendela 5 menit.
+        $this->travel(4)->minutes();
+        MetrikPosBuruk(0);
+        $this->artisan('pengelola:detak')->assertSuccessful();
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->not->toContain('ErrorRateTinggi')
+            ->and(AlertOperasional::query()->where('Kunci', 'ErrorRateTinggi')->count())->toBe(0);
+    });
+
+    it('alert latensi POS ikut ditunda, sedangkan alert non-lalu-lintas (outbox macet) tidak', function (): void {
+        BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
+        TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 150, 'JumlahGalatServer' => 0, 'TotalDurasiMs' => 75000, 'Hingga250Ms' => 70, 'Hingga800Ms' => 80]);
+
+        expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe([])
+            ->and(PeriksaSatuMenitLagi())->toBe(['LatensiPosTinggi']);
     });
 });
