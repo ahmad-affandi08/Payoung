@@ -62,11 +62,12 @@ export function SusunPratinjauStruk(
     if (profil.NamaOutlet && profil.NamaOutlet !== judul) {
         baris.push(...Tengah(profil.NamaOutlet));
     }
-    if (pengaturan.TampilkanAlamat) {
-        baris.push(...Tengah('Jl. Slamet Riyadi No. 12, Solo'));
+    // D-177: alamat & telepon asli outlet (sama dengan yang dicetak kasir); belum diisi = tidak tercetak.
+    if (pengaturan.TampilkanAlamat && profil.AlamatOutlet) {
+        baris.push(...Tengah(profil.AlamatOutlet));
     }
-    if (pengaturan.TampilkanTelepon) {
-        baris.push(...Tengah('Telp. 0812-3456-7890'));
+    if (pengaturan.TampilkanTelepon && profil.TeleponOutlet) {
+        baris.push(...Tengah(`Telp. ${profil.TeleponOutlet}`));
     }
     if (pengaturan.TampilkanNpwp && profil.Npwp) {
         baris.push(...Tengah(`NPWP ${profil.Npwp}`));

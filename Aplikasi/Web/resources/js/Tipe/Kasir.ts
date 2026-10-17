@@ -232,6 +232,11 @@ export type ProfilPratinjauStruk = {
     NamaUsaha: string;
     Npwp: string | null;
     NamaOutlet: string | null;
+    /** D-177: alamat & telepon asli outlet yang sedang diatur (null = belum diisi, jadi tidak tercetak). */
+    AlamatOutlet: string | null;
+    TeleponOutlet: string | null;
+    /** Uuid outlet yang sedang diatur, untuk tautan ke data outletnya. */
+    UuidOutletProfil: string | null;
     TautanLogo: string | null;
     /** Paket tanpa fitur `struk.tanpa-watermark`: struk diberi baris "Dibuat dengan Payoung". */
     TandaAir: boolean;

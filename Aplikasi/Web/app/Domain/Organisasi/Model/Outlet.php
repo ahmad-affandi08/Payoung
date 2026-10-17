@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string $Kode
  * @property string $Nama
  * @property string|null $Alamat
+ * @property string|null $Telepon dicetak di kepala struk bila saklar Telepon outlet menyala
  * @property string|null $KodeKota
  * @property string $ZonaWaktu
  * @property string|null $TemplateSektor
@@ -67,6 +68,7 @@ final class Outlet extends ModelDasar
     /** @var array<string, mixed> */
     protected $attributes = [
         'Alamat' => null,
+        'Telepon' => null,
         'KodeKota' => null,
         'ZonaWaktu' => 'Asia/Jakarta',
         'TemplateSektor' => null,

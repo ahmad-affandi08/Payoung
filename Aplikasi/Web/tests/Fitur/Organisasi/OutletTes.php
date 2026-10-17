@@ -90,6 +90,46 @@ describe('Outlet (F-02 langkah 1)', function (): void {
         expect($outlet->ZonaWaktu)->toBe('Asia/Jayapura')->and($outlet->ProfilPajak)->toBe(['Pkp' => false, 'Nitku' => null, 'PungutPbjt' => true]);
     });
 
+    it('D-177: telepon outlet tersimpan rapi, kunci Telepon kosong mengosongkan, tanpa kunci tidak mengubah, format salah ditolak', function (): void {
+        ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
+
+        $tes->post('/kelola/outlet', IsianOutletUji($tenant->Id, ['Telepon' => '  0271-123456 ']))->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $outlet = Outlet::query()->where('Kode', 'SLO1')->sole();
+        expect($outlet->Telepon)->toBe('0271-123456');
+
+        // Klien lama / panduan awal tanpa kunci Telepon: nilai lama dipertahankan.
+        $isian = IsianOutletUji($tenant->Id, ['Alamat' => 'Jl. Baru No. 1']);
+        $tes->put("/kelola/outlet/{$outlet->Uuid}", $isian)->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        expect($outlet->refresh()->Telepon)->toBe('0271-123456')->and($outlet->Alamat)->toBe('Jl. Baru No. 1');
+
+        $tes->get("/kelola/outlet/{$outlet->Uuid}")->assertInertia(fn (AssertableInertia $halaman) => $halaman
+            ->where('Outlet.Telepon', '0271-123456'));
+
+        $tes->put("/kelola/outlet/{$outlet->Uuid}", [...$isian, 'Telepon' => 'telp 0812 abc'])->assertSessionHasErrors('Telepon');
+        $tes->put("/kelola/outlet/{$outlet->Uuid}", [...$isian, 'Telepon' => '12'])->assertSessionHasErrors('Telepon');
+
+        // Kunci ada tetapi kosong: dikosongkan.
+        $tes->put("/kelola/outlet/{$outlet->Uuid}", [...$isian, 'Telepon' => ''])->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        expect($outlet->refresh()->Telepon)->toBeNull();
+    });
+
+    it('D-177: pratinjau pengaturan struk memakai alamat & telepon outlet yang sedang diatur', function (): void {
+        ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $utama = Outlet::query()->sole();
+        $utama->update(['Alamat' => 'Jl. Solo Purwodadi KM 32', 'Telepon' => '08213883816']);
+
+        $tes->get('/kelola/kasir/struk')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Kasir/Struk')
+            ->where('Profil.NamaOutlet', $utama->Nama)
+            ->where('Profil.AlamatOutlet', 'Jl. Solo Purwodadi KM 32')
+            ->where('Profil.TeleponOutlet', '08213883816')
+            ->where('Profil.UuidOutletProfil', $utama->Uuid));
+    });
+
     it('memvalidasi isian: kode 3–5 karakter, kota harus dari referensi, jam tutup buku JJ:MM, NITKU 22 angka', function (array $ubah, string $bidang): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
 

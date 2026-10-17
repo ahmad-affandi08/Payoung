@@ -30,6 +30,8 @@ export type IsianOutlet = {
     Kode: string;
     Merek: string;
     Alamat: string;
+    /** D-177: dicetak di kepala struk bila saklar Telepon outlet menyala. */
+    Telepon: string;
     KodeKota: string;
     ZonaWaktu: string;
     JamTutupBuku: string;
@@ -183,6 +185,15 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
                 saatBerubah={(nilai) => formulir.setData('Alamat', nilai)}
                 galat={galat.Alamat}
                 maxLength={500}
+            />
+            <BidangTeks
+                label="Telepon (opsional)"
+                nilai={formulir.data.Telepon}
+                saatBerubah={(nilai) => formulir.setData('Telepon', nilai)}
+                galat={galat.Telepon}
+                keterangan="Dicetak di kepala struk bersama alamat. Misal 0271-123456 atau 0812-3456-7890."
+                inputMode="tel"
+                maxLength={30}
             />
             <BidangPilihan
                 label="Kabupaten/kota"

@@ -33,7 +33,7 @@ final class OutletPenjualan
             kodeOutlet: $outlet->Kode,
             namaOutlet: $outlet->Nama,
             alamat: $outlet->Alamat,
-            telepon: null,
+            telepon: $outlet->Telepon,
             kodeKota: $outlet->KodeKota,
             zonaWaktu: $outlet->ZonaWaktu,
             jamTutupBuku: substr($outlet->JamTutupBuku, 0, 5),

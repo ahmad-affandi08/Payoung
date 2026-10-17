@@ -243,6 +243,7 @@ function IsiPengaturanStruk({
                             />
                         ))}
                         <DaftarSaklar bagian="kepala" isian={isian} saatBerubah={Ubah} />
+                        <CatatanDataOutlet profil={Profil} isian={isian} />
                     </Panel>
                     <Panel judul="Isi struk" idJudul="judul-isi-struk">
                         <DaftarSaklar bagian="isi" isian={isian} saatBerubah={Ubah} />
@@ -299,11 +300,41 @@ function IsiPengaturanStruk({
                     </div>
                     <PratinjauStruk pengaturan={pengaturan} profil={Profil} lebar={lebar} />
                     <p className="max-w-xs text-keterangan text-teks-sekunder">
-                        Transaksi contoh. Alamat dan telepon diambil dari data masing-masing outlet saat dicetak.
+                        Transaksi contoh. Alamat dan telepon di atas diambil dari data outlet, sama dengan yang
+                        tercetak.
                     </p>
                 </section>
             </div>
         </TataLetakAplikasi>
+    );
+}
+
+/**
+ * D-177: alamat & telepon struk tidak diketik di sini, melainkan dari data outlet. Catatan ini menunjukkan jalannya,
+ * dan memperingatkan bila saklarnya menyala tetapi datanya belum diisi (jadi tidak ada yang tercetak).
+ */
+function CatatanDataOutlet({ profil, isian }: { profil: PropsPengaturanStruk['Profil']; isian: IsianStruk }) {
+    const tautan = profil.UuidOutletProfil === null ? '/kelola/outlet' : `/kelola/outlet/${profil.UuidOutletProfil}`;
+    const kosong = [
+        isian.TampilkanAlamat && !profil.AlamatOutlet ? 'alamat' : null,
+        isian.TampilkanTelepon && !profil.TeleponOutlet ? 'telepon' : null,
+    ].filter((nama): nama is string => nama !== null);
+
+    return (
+        <p className="text-keterangan text-teks-sekunder">
+            {kosong.length > 0 ? (
+                <>
+                    <span className="font-semibold text-teks-utama">
+                        Belum tercetak: {kosong.join(' dan ')} outlet belum diisi.{' '}
+                    </span>
+                </>
+            ) : null}
+            Alamat dan telepon diambil dari data outlet, bukan diketik di sini.{' '}
+            <Link href={tautan} className="font-semibold text-brand underline">
+                Ubah di data outlet
+            </Link>
+            .
+        </p>
     );
 }
 

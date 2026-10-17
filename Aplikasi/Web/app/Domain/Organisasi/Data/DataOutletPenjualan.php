@@ -7,7 +7,7 @@ namespace App\Domain\Organisasi\Data;
 /**
  * Outlet & perangkat pengirim penjualan POS untuk domain lain (F-07b): kode untuk validasi nomor BR-07.1, kota untuk
  * tarif pajak daerah, zona waktu & jam tutup buku (tanggal bisnis), identitas untuk `data-awal`, dan lokasi stok Toko pertama outlet (null bila tidak
- * ada) sebagai sumber mutasi stok penjualan. `telepon` belum ada di skema Outlet (selalu null sampai kolomnya dibuat).
+ * ada) sebagai sumber mutasi stok penjualan.
  */
 final readonly class DataOutletPenjualan
 {

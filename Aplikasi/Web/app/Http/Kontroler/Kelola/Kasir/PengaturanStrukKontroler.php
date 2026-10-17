@@ -31,6 +31,8 @@ final class PengaturanStrukKontroler extends DasarKelolaKontroler
         $semuaOutlet = $daftarOutlet->Ambil();
         // D-76: pilihan outlet hanya muncul bila tenant punya lebih dari satu outlet aktif.
         $outletTerpilih = count($semuaOutlet) > 1 ? self::CariOutletStruk($semuaOutlet, $permintaan->query('Outlet')) ?? $semuaOutlet[0] : null;
+        // Pratinjau memakai outlet yang sedang diatur (D-76), bukan selalu outlet utama; alamat & telepon asli (D-177).
+        $outletProfil = $outletUtama->CariAktifRingkas($outletTerpilih['Id'] ?? $outletUtama->AmbilId());
         $pathLogoOutlet = $outletTerpilih === null ? null : $pengaturan->AmbilPathLogoOutlet($this->IdTenant(), $outletTerpilih['Id']);
         $pathLogo = $pathLogoOutlet ?? $profil['PathLogo'];
 
@@ -42,7 +44,10 @@ final class PengaturanStrukKontroler extends DasarKelolaKontroler
             'Profil' => [
                 'NamaUsaha' => $profil['Nama'],
                 'Npwp' => $profil['Npwp'],
-                'NamaOutlet' => $outletUtama->CariAktifRingkas($outletUtama->AmbilId())?->nama,
+                'NamaOutlet' => $outletProfil?->nama,
+                'AlamatOutlet' => $outletProfil?->alamat,
+                'TeleponOutlet' => $outletProfil?->telepon,
+                'UuidOutletProfil' => $outletProfil?->uuid,
                 'TautanLogo' => $pathLogo === null ? null : route('kelola.kasir.struk.logo', ['v' => substr(hash('sha256', $pathLogo), 0, 12), 'Outlet' => $outletTerpilih['Uuid'] ?? null]),
                 'TandaAir' => ! $fitur->CekAktif($this->IdTenant(), 'struk.tanpa-watermark'),
             ],

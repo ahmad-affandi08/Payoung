@@ -18,6 +18,7 @@ export default function HalamanBuatOutlet({ Merek, Kota, BatasOutlet }: PropsBua
         Kode: '',
         Merek: Merek[0]?.Nilai ?? '',
         Alamat: '',
+        Telepon: '',
         KodeKota: '',
         ZonaWaktu: 'WIB',
         JamTutupBuku: '04:00',

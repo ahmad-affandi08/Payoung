@@ -107,7 +107,7 @@ final class RegistriAnonimisasi
         ],
         'Produk' => ['PathGambar' => 'null'],
         'Outlet' => [
-            'Nama' => 'unik:Outlet Terhapus #', 'Alamat' => 'null', 'Lintang' => 'null', 'Bujur' => 'null', 'NomorKendaraan' => 'null',
+            'Nama' => 'unik:Outlet Terhapus #', 'Alamat' => 'null', 'Telepon' => 'null', 'Lintang' => 'null', 'Bujur' => 'null', 'NomorKendaraan' => 'null',
             'TokenKios' => 'null', 'TokenLayarAbsen' => 'null', 'HashTokenLayarAbsen' => 'null', 'ProfilPajak' => 'null',
             'PengaturanKasir' => 'null', 'PesanSendiriAktif' => 'nol', 'TokoOnlineAktif' => 'nol', 'KiosAktif' => 'nol',
             'AmbilSendiriAktif' => 'nol', 'KirimAktif' => 'nol',

@@ -158,6 +158,7 @@ final class OutletKontroler extends DasarKelolaKontroler
                 'Nama' => $baris->Nama,
                 'UuidMerek' => Merek::query()->whereKey($baris->IdMerek)->value('Uuid'),
                 'Alamat' => $baris->Alamat,
+                'Telepon' => $baris->Telepon,
                 'KodeKota' => $baris->KodeKota,
                 'ZonaWaktu' => self::LabelZonaWaktu($baris->ZonaWaktu),
                 'JamTutupBuku' => $baris->JamTutupBuku,

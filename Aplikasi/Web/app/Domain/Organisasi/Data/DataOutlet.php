@@ -9,6 +9,7 @@ namespace App\Domain\Organisasi\Data;
  * hanya dipakai bila kota kosong. Profil pajak disimpan apa adanya, dihitung di F-03.
  * `kanvas` (Modul Salesman bagian 3): null = tanda kanvas & nomor kendaraan tidak diubah (pemanggil yang tidak
  * mengenal kanvas, misal panduan awal); `nomorKendaraan` hanya disimpan bila outlet kanvas.
+ * `telepon` (D-177): null = tidak diubah (panduan awal & pemanggil lama); teks kosong = dikosongkan.
  */
 final readonly class DataOutlet
 {
@@ -25,5 +26,6 @@ final readonly class DataOutlet
         public bool $pungutPbjt,
         public ?bool $kanvas = null,
         public ?string $nomorKendaraan = null,
+        public ?string $telepon = null,
     ) {}
 }

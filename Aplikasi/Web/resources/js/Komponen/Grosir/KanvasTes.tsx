@@ -222,6 +222,7 @@ describe('Grosir › Kanvas (Modul Salesman bagian 3)', () => {
                     Kode: 'JKT1',
                     Merek: 'M-1',
                     Alamat: '',
+                    Telepon: '',
                     KodeKota: '',
                     ZonaWaktu: 'WIB',
                     JamTutupBuku: '04:00',

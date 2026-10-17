@@ -28,6 +28,9 @@ const profil: ProfilPratinjauStruk = {
     NamaUsaha: 'Kopi Senja Solo',
     Npwp: '0123456789012345',
     NamaOutlet: 'Outlet Utama',
+    AlamatOutlet: 'Jl. Solo Purwodadi KM 32',
+    TeleponOutlet: '0271-123456',
+    UuidOutletProfil: 'uuid-outlet-utama',
     TautanLogo: null,
     TandaAir: true,
 };
@@ -56,6 +59,43 @@ describe('Pengaturan struk (PRD v1.79)', () => {
         const baris = SusunPratinjauStruk({ ...bawaan, NamaDicetak: 'Lil Escape' }, profil, '58').map((b) => b.teks);
         expect(baris[0]).toBe('Lil Escape');
         expect(baris[1]).toBe('Outlet Utama');
+    });
+
+    it('alamat & telepon pratinjau = data outlet asli, bukan contoh; belum diisi = tidak tercetak (D-177)', () => {
+        const baris = SusunPratinjauStruk(bawaan, profil, '58').map((b) => b.teks);
+        expect(baris).toContain('Jl. Solo Purwodadi KM 32');
+        expect(baris).toContain('Telp. 0271-123456');
+        expect(baris.join('|')).not.toContain('Slamet Riyadi');
+
+        const kosong = SusunPratinjauStruk(bawaan, { ...profil, AlamatOutlet: null, TeleponOutlet: null }, '58').map(
+            (b) => b.teks,
+        );
+        expect(kosong.some((b) => b.startsWith('Telp.'))).toBe(false);
+        expect(kosong).not.toContain('Jl. Solo Purwodadi KM 32');
+
+        const dimatikan = SusunPratinjauStruk(
+            { ...bawaan, TampilkanAlamat: false, TampilkanTelepon: false },
+            profil,
+            '58',
+        ).map((b) => b.teks);
+        expect(dimatikan).not.toContain('Jl. Solo Purwodadi KM 32');
+    });
+
+    it('halaman: saklar menyala tetapi data outlet kosong memberi peringatan dan tautan ke data outlet (D-177)', () => {
+        RenderUji(
+            <HalamanPengaturanStruk
+                Pengaturan={bawaan}
+                Profil={{ ...profil, AlamatOutlet: null, TeleponOutlet: null }}
+            />,
+        );
+        expect(screen.getByText(/Belum tercetak: alamat dan telepon outlet belum diisi/)).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Ubah di data outlet' }).getAttribute('href')).toBe(
+            '/kelola/outlet/uuid-outlet-utama',
+        );
+        cleanup();
+
+        RenderUji(<HalamanPengaturanStruk Pengaturan={bawaan} Profil={profil} />);
+        expect(screen.queryByText(/Belum tercetak/)).toBeNull();
     });
 
     it('isian ↔ pengaturan: teks kosong menjadi null dan baris kepala kosong dibuang', () => {

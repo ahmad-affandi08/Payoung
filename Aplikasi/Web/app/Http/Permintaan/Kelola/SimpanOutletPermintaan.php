@@ -14,6 +14,9 @@ final class SimpanOutletPermintaan extends FormRequest
     /** F-02 langkah 1: kode 3–5 karakter untuk penomoran dokumen, diawali huruf (misal UTAMA, JKT1). */
     public const POLA_KODE = '/^[A-Za-z][A-Za-z0-9]{2,4}$/';
 
+    /** D-177: telepon outlet di kepala struk; angka, spasi, +, tanda kurung, strip, dan titik. */
+    public const POLA_TELEPON = '/^[0-9+()\-\s.]{6,30}$/';
+
     /** Modul Salesman bagian 3: plat nomor kendaraan kanvas, huruf/angka/spasi/strip, misal "AD 1234 XY". */
     public const POLA_NOMOR_KENDARAAN = '/^[A-Za-z0-9][A-Za-z0-9 \-]*$/';
 
@@ -27,6 +30,7 @@ final class SimpanOutletPermintaan extends FormRequest
             'Kode' => ['required', 'string', 'regex:'.self::POLA_KODE],
             'Merek' => ['required', 'string', 'size:26'],
             'Alamat' => ['nullable', 'string', 'max:500'],
+            'Telepon' => ['nullable', 'string', 'max:30', 'regex:'.self::POLA_TELEPON],
             'KodeKota' => ['nullable', 'string', 'max:20'],
             'ZonaWaktu' => ['required', Rule::enum(ZonaWaktu::class)],
             'JamTutupBuku' => ['required', 'date_format:H:i'],
@@ -45,6 +49,7 @@ final class SimpanOutletPermintaan extends FormRequest
     {
         return [
             'Kode.regex' => 'Kode 3–5 karakter, diawali huruf, hanya huruf dan angka. Misal: RSY atau JKT1.',
+            'Telepon.regex' => 'Telepon hanya angka, spasi, +, tanda kurung, strip, dan titik (6–30 karakter). Misal: 0271-123456 atau 0812-3456-7890.',
             'Merek.required' => 'Pilih merek.',
             'Merek.size' => 'Pilih merek yang tersedia.',
             'JamTutupBuku.date_format' => 'Jam tutup buku memakai format JJ:MM, misal 04:00.',
@@ -70,6 +75,8 @@ final class SimpanOutletPermintaan extends FormRequest
             // Tanpa kunci `Kanvas` (klien lama) = tanda kanvas tidak diubah.
             kanvas: $this->has('Kanvas') ? $this->boolean('Kanvas') : null,
             nomorKendaraan: $this->filled('NomorKendaraan') ? $this->string('NomorKendaraan')->toString() : null,
+            // Tanpa kunci `Telepon` (klien lama) = tidak diubah; kunci ada tapi kosong = dikosongkan.
+            telepon: $this->has('Telepon') ? ($this->filled('Telepon') ? trim($this->string('Telepon')->toString()) : '') : null,
         );
     }
 }

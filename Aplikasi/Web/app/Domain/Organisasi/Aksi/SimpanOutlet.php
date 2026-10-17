@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 final class SimpanOutlet
 {
     /** Kolom yang dicatat di log audit. */
-    private const KOLOM_AUDIT = ['Nama', 'Kode', 'IdMerek', 'Alamat', 'KodeKota', 'ZonaWaktu', 'JamTutupBuku', 'ProfilPajak', 'Kanvas', 'NomorKendaraan'];
+    private const KOLOM_AUDIT = ['Nama', 'Kode', 'IdMerek', 'Alamat', 'Telepon', 'KodeKota', 'ZonaWaktu', 'JamTutupBuku', 'ProfilPajak', 'Kanvas', 'NomorKendaraan'];
 
     public function __construct(
         private readonly KonteksTenant $konteks,
@@ -58,6 +58,10 @@ final class SimpanOutlet
                     'PungutPbjt' => $data->pungutPbjt,
                 ],
             ];
+
+            if ($data->telepon !== null) {
+                $isian['Telepon'] = trim($data->telepon) === '' ? null : trim($data->telepon);
+            }
 
             if ($data->kanvas !== null) {
                 $isian['Kanvas'] = $data->kanvas;

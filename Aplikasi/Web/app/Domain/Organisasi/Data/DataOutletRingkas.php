@@ -24,6 +24,8 @@ final readonly class DataOutletRingkas
         public ?string $templateSektor,
         public ?int $idTemplateSektorVersi,
         public ?CarbonInterface $templateSektorDiterapkanPada,
+        public ?string $alamat = null,
+        public ?string $telepon = null,
     ) {}
 
     public static function DariModel(Outlet $outlet): self
@@ -39,6 +41,8 @@ final readonly class DataOutletRingkas
             templateSektor: $outlet->TemplateSektor,
             idTemplateSektorVersi: $outlet->IdTemplateSektorVersi,
             templateSektorDiterapkanPada: $outlet->TemplateSektorDiterapkanPada?->toImmutable(),
+            alamat: $outlet->Alamat,
+            telepon: $outlet->Telepon,
         );
     }
 }

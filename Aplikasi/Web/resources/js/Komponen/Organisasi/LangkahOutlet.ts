@@ -18,7 +18,7 @@ const keteranganLangkah: Record<KunciLangkahOutlet, { Label: string; Keterangan:
     },
     Lokasi: {
         Label: 'Lokasi & jam',
-        Keterangan: 'Alamat, kota, zona waktu, dan jam pergantian hari buku untuk laporan.',
+        Keterangan: 'Alamat, telepon, kota, zona waktu, dan jam pergantian hari buku untuk laporan.',
     },
     Pajak: {
         Label: 'Pajak',
@@ -42,7 +42,7 @@ export function SusunLangkahOutlet(tampilKanvas: boolean): LangkahOutlet[] {
 }
 
 const kunciIdentitas = ['Nama', 'Kode', 'Merek'];
-const kunciLokasi = ['Alamat', 'KodeKota', 'ZonaWaktu', 'JamTutupBuku'];
+const kunciLokasi = ['Alamat', 'Telepon', 'KodeKota', 'ZonaWaktu', 'JamTutupBuku'];
 const kunciPajak = ['Pkp', 'Nitku', 'PungutPbjt'];
 const kunciKanvas = ['Kanvas', 'NomorKendaraan'];
 

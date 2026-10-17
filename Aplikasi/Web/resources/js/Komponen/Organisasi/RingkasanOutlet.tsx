@@ -4,7 +4,7 @@ import type { Kota, Pilihan } from '@/Tipe/Organisasi';
 
 import type { IsianPeriksaOutlet, KunciLangkahOutlet, LangkahOutlet } from './LangkahOutlet';
 
-type IsianRingkasan = IsianPeriksaOutlet & { Alamat: string; KodeKota: string; PungutPbjt: boolean };
+type IsianRingkasan = IsianPeriksaOutlet & { Alamat: string; Telepon: string; KodeKota: string; PungutPbjt: boolean };
 
 type PropsRingkasanOutlet = {
     isian: IsianRingkasan;
@@ -49,6 +49,9 @@ export default function RingkasanOutlet({ isian, langkah, merek, kota, saatUbah 
                 <BagianRingkasan langkah={langkahLokasi} saatUbah={saatUbah}>
                     <BarisRingkasan nama="Alamat">
                         {isian.Alamat.trim() === '' ? 'Tidak diisi' : isian.Alamat}
+                    </BarisRingkasan>
+                    <BarisRingkasan nama="Telepon">
+                        {isian.Telepon.trim() === '' ? 'Tidak diisi' : isian.Telepon}
                     </BarisRingkasan>
                     <BarisRingkasan nama="Kabupaten/kota">
                         {kotaTerpilih ? kotaTerpilih.Nama : 'Tidak dipilih'}

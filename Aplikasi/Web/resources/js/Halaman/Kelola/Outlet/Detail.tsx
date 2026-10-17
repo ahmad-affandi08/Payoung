@@ -28,6 +28,7 @@ type Outlet = {
     Nama: string;
     UuidMerek: string | null;
     Alamat: string | null;
+    Telepon: string | null;
     KodeKota: string | null;
     ZonaWaktu: string;
     JamTutupBuku: string;
@@ -116,6 +117,7 @@ export default function HalamanDetailOutlet({
                         Kode: Outlet.Kode,
                         Merek: Outlet.UuidMerek ?? '',
                         Alamat: Outlet.Alamat ?? '',
+                        Telepon: Outlet.Telepon ?? '',
                         KodeKota: Outlet.KodeKota ?? '',
                         ZonaWaktu: Outlet.ZonaWaktu,
                         JamTutupBuku: Outlet.JamTutupBuku,
@@ -133,6 +135,7 @@ export default function HalamanDetailOutlet({
                     <CardContent>
                         <dl className="grid grid-cols-1 gap-3 text-isi md:grid-cols-2">
                             <Rincian label="Alamat" nilai={Outlet.Alamat ?? 'Belum diisi'} />
+                            <Rincian label="Telepon" nilai={Outlet.Telepon ?? 'Belum diisi'} />
                             <Rincian label="Kabupaten/kota" nilai={`${namaKota} | ${Outlet.ZonaWaktu}`} />
                             <Rincian label="Jam tutup buku" nilai={Outlet.JamTutupBuku} />
                             <Rincian label="PKP" nilai={Outlet.Pkp ? 'Ya' : 'Tidak'} />
