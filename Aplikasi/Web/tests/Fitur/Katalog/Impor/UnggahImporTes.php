@@ -138,8 +138,9 @@ describe('F-03 BR-03.6 unggah berkas impor', function (): void {
         $csv = BantuanImpor::BacaUnduhan($masuk->get('/kelola/produk/impor/templat?format=csv')->assertOk(), 'csv');
 
         expect($xlsx)->toHaveCount(1)
-            ->and($xlsx[0][0])->toBe('Nama Produk')
+            ->and($xlsx[0][0])->toBe('Nama Produk *')
             ->and($xlsx[0])->toContain('Harga Jual', 'Satuan Alternatif 3', 'Min. Qty Grosir 1', 'Status')
+            ->and(array_filter($xlsx[0], fn (string $judul): bool => str_ends_with($judul, ' *')))->toHaveCount(1)
             ->and($xlsx[0])->not->toContain('Harga Modal', 'Stok')
             ->and($csv[0])->toBe($xlsx[0]);
     });

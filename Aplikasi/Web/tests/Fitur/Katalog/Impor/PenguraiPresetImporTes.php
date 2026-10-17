@@ -122,6 +122,14 @@ describe('F-03 preset impor (data JSON, H.10)', function (): void {
         expect($majoo)->toMatchArray(['Nama' => 0, 'HargaJual' => 1]);
     });
 
+    it('judul templat berpenanda wajib ("Nama Produk *") tetap dikenali pemetaan otomatis', function (): void {
+        $kolom = [['Indeks' => 0, 'Judul' => 'Nama Produk *', 'Contoh' => []], ['Indeks' => 1, 'Judul' => 'Harga Jual', 'Contoh' => []]];
+
+        $pemetaan = app(PemetaKolomOtomatis::class)->Petakan($kolom, app(PembacaPresetImpor::class)->Ambil('Umum'));
+
+        expect($pemetaan['Nama'])->toBe(0)->and($pemetaan['HargaJual'])->toBe(1);
+    });
+
     it('jenis dikenali dari nilai, label, atau kata preset', function (): void {
         $umum = app(PembacaPresetImpor::class)->Ambil('Umum');
 

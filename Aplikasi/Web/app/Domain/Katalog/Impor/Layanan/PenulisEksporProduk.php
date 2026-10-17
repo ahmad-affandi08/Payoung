@@ -7,13 +7,14 @@ namespace App\Domain\Katalog\Impor\Layanan;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Katalog\Data\DataSaringProduk;
+use App\Domain\Katalog\Impor\Enum\BidangImpor;
 use App\Domain\Katalog\Impor\Kueri\DataEksporProduk;
 use Generator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Ekspor daftar produk (F-03) ke xlsx/csv dengan saringan aktif, dialirkan per 500 produk; kolom = templat impor
- * (bisa diimpor kembali). Audit `produk.ekspor` (format & saringan). Juga templat impor kosong (judul kolom saja).
+ * (bisa diimpor kembali). Audit `produk.ekspor` (format & saringan). Juga templat impor kosong (judul kolom saja; kolom wajib berakhiran ` *`, merah di xlsx).
  */
 final class PenulisEksporProduk
 {
@@ -51,6 +52,14 @@ final class PenulisEksporProduk
 
     public function AlirkanTemplat(string $format): StreamedResponse
     {
-        return PenulisTabel::Alirkan($format, 'templat-impor-produk', DataEksporProduk::AmbilJudul(), fn (): array => []);
+        $kolomWajib = [];
+
+        foreach (BidangImpor::AmbilDiekspor() as $indeks => $bidang) {
+            if ($bidang->CekWajib()) {
+                $kolomWajib[] = $indeks;
+            }
+        }
+
+        return PenulisTabel::Alirkan($format, 'templat-impor-produk', DataEksporProduk::AmbilJudul(), fn (): array => [], $kolomWajib);
     }
 }

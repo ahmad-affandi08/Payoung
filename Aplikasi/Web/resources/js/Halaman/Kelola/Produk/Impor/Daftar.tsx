@@ -214,6 +214,10 @@ export default function HalamanDaftarImpor({
                             terhitung paket saat ini:{' '}
                             <span className="tabular-nums">{FormatBatas(BatasSku, 'produk')}</span>.
                         </p>
+                        <p className="text-keterangan text-teks-sekunder">
+                            Di templat, judul kolom bertanda <span className="font-semibold text-bahaya">*</span> wajib
+                            diisi (hanya Nama Produk). Kolom lain boleh kosong atau dihapus.
+                        </p>
                         <div className="flex flex-wrap items-center gap-3">
                             <Tombol type="submit" memproses={mengunggah}>
                                 Unggah & lanjut ke pemetaan

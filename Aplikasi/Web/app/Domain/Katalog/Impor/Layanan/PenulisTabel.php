@@ -6,6 +6,7 @@ namespace App\Domain\Katalog\Impor\Layanan;
 
 use OpenSpout\Common\Entity\Cell\StringCell;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\CSV\Options as OpsiCsv;
 use OpenSpout\Writer\CSV\Writer as PenulisCsv;
@@ -30,15 +31,16 @@ final class PenulisTabel
     /**
      * @param  list<string>  $judul
      * @param  callable(): iterable<list<string|null>>  $baris  dipanggil saat respons dialirkan
+     * @param  list<int>  $kolomWajib  indeks judul yang wajib diisi: ditulis berakhiran ` *` (xlsx: huruf merah)
      */
-    public static function Alirkan(string $format, string $namaBerkas, array $judul, callable $baris): StreamedResponse
+    public static function Alirkan(string $format, string $namaBerkas, array $judul, callable $baris, array $kolomWajib = []): StreamedResponse
     {
         $format = $format === PembacaBerkasTabel::FORMAT_CSV ? PembacaBerkasTabel::FORMAT_CSV : PembacaBerkasTabel::FORMAT_XLSX;
 
-        return new StreamedResponse(function () use ($format, $judul, $baris): void {
+        return new StreamedResponse(function () use ($format, $judul, $baris, $kolomWajib): void {
             $penulis = self::BuatPenulis($format);
             $penulis->openToFile('php://output');
-            $penulis->addRow(self::BuatBaris($judul, (new Style)->setFontBold()));
+            $penulis->addRow(self::BuatBarisJudul($judul, $kolomWajib));
 
             foreach ($baris() as $isi) {
                 $penulis->addRow(self::BuatBaris($isi));
@@ -69,6 +71,26 @@ final class PenulisTabel
         }
 
         return new PenulisXlsx;
+    }
+
+    /**
+     * Judul kolom tebal; kolom wajib diberi ` *` dan huruf merah (mengikuti penanda wajib di formulir sistem).
+     *
+     * @param  list<string>  $judul
+     * @param  list<int>  $kolomWajib
+     */
+    private static function BuatBarisJudul(array $judul, array $kolomWajib): Row
+    {
+        $biasa = (new Style)->setFontBold();
+        $wajib = (new Style)->setFontBold()->setFontColor(Color::RED);
+
+        return new Row(array_map(
+            fn (string $nilai, int $indeks): StringCell => in_array($indeks, $kolomWajib, true)
+                ? new StringCell($nilai.' *', $wajib)
+                : new StringCell(self::NetralkanRumus($nilai), $biasa),
+            $judul,
+            array_keys($judul),
+        ));
     }
 
     /**
