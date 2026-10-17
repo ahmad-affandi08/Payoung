@@ -5,6 +5,7 @@ import {
     AmbilHasilCari,
     KerangkaPemilihProduk,
     useNilaiTertunda,
+    usePilihSetelahPindai,
     useSorotPertama,
 } from '@/Komponen/Katalog/PemilihProduk';
 import { CommandItem } from '@/Komponen/Ui/command';
@@ -47,6 +48,19 @@ export default function PencarianBarisLabel({ saatPilih }: { saatPilih: (baris: 
         }
     };
 
+    const Pilih = (baris: BarisLabelServer) => {
+        saatPilih(baris);
+        Buka(false);
+    };
+    const SaatPindai = usePilihSetelahPindai({
+        kataCari,
+        hasil,
+        siap: !kueri.isFetching && !kueri.isPlaceholderData,
+        Pilih,
+        AturKata,
+        AturTerbuka,
+    });
+
     let status: string | null = null;
 
     if (terbuka && kueri.isPending) {
@@ -70,6 +84,7 @@ export default function PencarianBarisLabel({ saatPilih }: { saatPilih: (baris: 
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
+            saatPindai={SaatPindai}
         >
             {hasil.map((baris) => (
                 <CommandItem

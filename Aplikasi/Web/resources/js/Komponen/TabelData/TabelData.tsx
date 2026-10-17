@@ -62,6 +62,8 @@ export type PropsTabelData<T> = {
     urutBawaan?: string;
     /** Placeholder kotak cari; `false` = tanpa pencarian. */
     cari?: string | false;
+    /** Tombol pindai kamera di samping kotak cari (isi barcode ke kotak cari); untuk daftar yang bisa dicari lewat barcode. */
+    pindaiKamera?: boolean;
     saring?: DefinisiSaring[];
     alamatDetail?: (baris: T) => string;
     /** Isi menu aksi baris (`DropdownMenuItem`); `null` bila baris ini tidak punya aksi yang boleh. */
@@ -534,6 +536,7 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
             keadaan={keadaan}
             teksCari={keadaanTabel.teksCari}
             cari={cari}
+            pindaiKamera={props.pindaiKamera === true}
             saring={saring}
             {...(props.ekspor
                 ? {

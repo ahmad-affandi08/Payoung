@@ -195,6 +195,7 @@ export default function HalamanDaftarProduk({ Produk, Kategori, Jenis, BatasSku,
                 ambilIdBaris={(produk) => produk.Uuid}
                 urutBawaan="Nama"
                 cari="Cari nama, SKU, atau barcode lengkap"
+                pindaiKamera
                 saring={saring}
                 alamatDetail={(produk) => `${alamat}/${produk.Uuid}`}
                 ekspor={{ alamat: `${alamat}/ekspor`, label: 'Ekspor ke Excel' }}

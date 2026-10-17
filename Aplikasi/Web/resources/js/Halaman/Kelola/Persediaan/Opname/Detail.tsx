@@ -5,6 +5,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     DialogAlasan,
@@ -218,13 +219,9 @@ export default function HalamanDetailStokOpname({
         ]);
     };
 
-    const Pindai = async (peristiwa: KeyboardEvent<HTMLInputElement>) => {
-        if (peristiwa.key !== 'Enter') {
-            return;
-        }
-
-        peristiwa.preventDefault();
-        const kode = pindai.trim();
+    /** Satu barcode/SKU dari kotak pindai (Enter) atau dari kamera: tambah 1 ke barisnya, atau buat baris baru. */
+    const ProsesKode = async (masukan: string) => {
+        const kode = masukan.trim();
 
         if (kode === '') {
             return;
@@ -264,6 +261,15 @@ export default function HalamanDetailStokOpname({
                 ? `${produk.Nama}: +1 (baris baru)`
                 : `${produk.Nama}: isi nomor ${produk.Pelacakan === 'Batch' ? 'batch' : 'seri'} di baris baru.`,
         );
+    };
+
+    const Pindai = async (peristiwa: KeyboardEvent<HTMLInputElement>) => {
+        if (peristiwa.key !== 'Enter') {
+            return;
+        }
+
+        peristiwa.preventDefault();
+        await ProsesKode(pindai);
     };
 
     const Simpan = (peristiwa: FormEvent) => {
@@ -420,15 +426,24 @@ export default function HalamanDetailStokOpname({
                                 <Label htmlFor="pindai-opname" className="text-label font-semibold text-teks-utama">
                                     Pindai barcode
                                 </Label>
-                                <Input
-                                    id="pindai-opname"
-                                    value={pindai}
-                                    onChange={(e) => AturPindai(e.target.value)}
-                                    onKeyDown={(e) => void Pindai(e)}
-                                    placeholder="Pindai atau ketik barcode/SKU lalu Enter"
-                                    className="h-8 pointer-coarse:h-11 font-mono"
-                                    autoComplete="off"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="pindai-opname"
+                                        value={pindai}
+                                        onChange={(e) => AturPindai(e.target.value)}
+                                        onKeyDown={(e) => void Pindai(e)}
+                                        placeholder="Pindai atau ketik barcode/SKU lalu Enter"
+                                        className="h-8 min-w-0 flex-1 pointer-coarse:h-11 font-mono"
+                                        autoComplete="off"
+                                    />
+                                    <TombolPindaiKamera
+                                        ikonSaja
+                                        berkelanjutan
+                                        label="Pindai barcode dengan kamera"
+                                        saatTerbaca={(kode) => void ProsesKode(kode)}
+                                        umpanBalik={pesanPindai}
+                                    />
+                                </div>
                                 {pesanPindai ? (
                                     <p className="text-keterangan text-teks-sekunder" aria-live="polite">
                                         {pesanPindai}

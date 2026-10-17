@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import TombolEkspor from '@/Komponen/Laporan/TombolEkspor';
 import { Button } from '@/Komponen/Ui/button';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -44,6 +45,7 @@ type PropsBilahAlat<T> = {
     keadaan: KeadaanTabel;
     teksCari: string;
     cari: string | false;
+    pindaiKamera?: boolean;
     saring: DefinisiSaring[];
     ekspor?: { alamat: string; label?: string; query: string; laporan?: boolean; eksporBesar?: boolean };
     aksiAlat?: ReactNode;
@@ -281,19 +283,28 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
 
     const kotakCari =
         props.cari === false ? null : (
-            <div className="relative min-w-0 flex-1 sm:max-w-sm">
-                <SearchIcon
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-teks-sekunder"
-                />
-                <Input
-                    type="search"
-                    value={props.teksCari}
-                    onChange={(e) => props.AturCari(e.target.value)}
-                    placeholder={props.cari}
-                    aria-label={`Cari di ${props.label}`}
-                    className="h-11 border-garis-input bg-permukaan pl-9 text-isi sm:h-8"
-                />
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-sm">
+                <div className="relative min-w-0 flex-1">
+                    <SearchIcon
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-teks-sekunder"
+                    />
+                    <Input
+                        type="search"
+                        value={props.teksCari}
+                        onChange={(e) => props.AturCari(e.target.value)}
+                        placeholder={props.cari}
+                        aria-label={`Cari di ${props.label}`}
+                        className="h-11 border-garis-input bg-permukaan pl-9 text-isi sm:h-8"
+                    />
+                </div>
+                {props.pindaiKamera === true ? (
+                    <TombolPindaiKamera
+                        ikonSaja
+                        label={`Pindai barcode untuk mencari di ${props.label}`}
+                        saatTerbaca={(barcode) => props.AturCari(barcode)}
+                    />
+                ) : null}
             </div>
         );
 

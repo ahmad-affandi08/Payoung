@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ChevronsUpDownIcon, SearchIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import { Command, CommandItem, CommandList } from '@/Komponen/Ui/command';
 import { Label } from '@/Komponen/Ui/label';
 import { GayaTinggiPopoverCari, usePerilakuPopoverCari } from '@/Komponen/Formulir/PerilakuPopoverCari';
@@ -72,6 +73,11 @@ type PropsKerangka = {
     sorot: string;
     saatSorot: (nilai: string) => void;
     status: string | null;
+    /**
+     * Bila diisi, tombol kamera kecil muncul di samping pemicu; barcode yang terbaca diteruskan ke fungsi ini
+     * (biasanya dari {@link usePilihSetelahPindai}). Hanya untuk pemilih produk; pemilih pelanggan/jasa tidak memakainya.
+     */
+    saatPindai?: ((barcode: string) => void) | undefined;
     children: ReactNode;
 };
 
@@ -101,6 +107,7 @@ export function KerangkaPemilihProduk({
     sorot,
     saatSorot,
     status,
+    saatPindai,
     children,
 }: PropsKerangka) {
     const id = useId();
@@ -138,94 +145,108 @@ export function KerangkaPemilihProduk({
             <Label htmlFor={id} className="text-label font-semibold text-teks-utama">
                 {label}
             </Label>
-            <Popover modal={modal} open={terbuka} onOpenChange={AturBuka}>
-                <PopoverTrigger asChild>
-                    <button
-                        ref={pemicu}
-                        id={id}
-                        type="button"
-                        role="combobox"
-                        aria-expanded={terbuka}
-                        aria-controls={idDaftar}
-                        aria-haspopup="listbox"
-                        aria-invalid={galat ? true : undefined}
-                        aria-required={wajib || undefined}
-                        data-wajib={wajib || undefined}
-                        aria-describedby={
-                            [keterangan ? `${id}-keterangan` : null, galat ? `${id}-galat` : null]
-                                .filter(Boolean)
-                                .join(' ') || undefined
-                        }
-                        disabled={disabled}
-                        onKeyDown={SaatTombol}
-                        className={cn(
-                            'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi shadow-xs outline-none pointer-coarse:h-11',
-                            'focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40',
-                            'disabled:cursor-not-allowed disabled:bg-latar disabled:text-teks-sekunder',
-                            galat ? 'border-bahaya' : 'border-garis-input',
-                            terbuka && 'border-brand ring-2 ring-brand/40',
-                        )}
-                    >
-                        <span className={cn('truncate', nilaiTerpilih ? 'text-teks-utama' : 'text-teks-sekunder')}>
-                            {nilaiTerpilih ?? placeholder}
-                        </span>
-                        <ChevronsUpDownIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
-                    </button>
-                </PopoverTrigger>
-                <PopoverContent
-                    ref={isi}
-                    style={GayaTinggiPopoverCari}
-                    align="start"
-                    side="bottom"
-                    sideOffset={4}
-                    collisionPadding={8}
-                    className="flex max-h-(--radix-popover-content-available-height) w-(--radix-popover-trigger-width) min-w-56 flex-col overflow-hidden border-garis bg-permukaan p-0"
-                    onOpenAutoFocus={SaatBukaFokus}
-                    onCloseAutoFocus={(peristiwa) => {
-                        peristiwa.preventDefault();
-                        if (pemicu.current?.isConnected) {
-                            pemicu.current.focus();
-                        }
-                    }}
-                >
-                    <Command
-                        id={idDaftar}
-                        shouldFilter={false}
-                        loop
-                        value={sorot}
-                        onValueChange={saatSorot}
-                        className="flex min-h-0 flex-col bg-permukaan"
-                        label={label}
-                    >
-                        <div className="flex shrink-0 items-center gap-2 border-b border-garis px-3">
-                            <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
-                            <input
-                                value={kata}
-                                onChange={(peristiwa) => saatKata(peristiwa.target.value)}
-                                placeholder={placeholder}
-                                aria-label={`Cari ${label}`}
-                                autoComplete="off"
-                                className="h-8 w-full bg-transparent text-isi text-teks-utama outline-none pointer-coarse:h-11 placeholder:text-teks-sekunder"
-                            />
-                        </div>
-                        <CommandList className="max-h-72 min-h-0 flex-1 touch-pan-y overscroll-contain">
-                            {children}
-                        </CommandList>
-                        <p
-                            id={`${id}-status`}
-                            aria-live="polite"
-                            // Saat tidak ada status, elemennya tetap ada sebagai area live tetapi tanpa kotak:
-                            // sebelumnya padding-nya menyisakan pita putih kosong di bawah daftar.
-                            className={cn(
-                                'shrink-0 text-keterangan text-teks-sekunder',
-                                status !== null ? 'border-t border-garis px-3 py-2' : 'sr-only',
-                            )}
+            <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                    <Popover modal={modal} open={terbuka} onOpenChange={AturBuka}>
+                        <PopoverTrigger asChild>
+                            <button
+                                ref={pemicu}
+                                id={id}
+                                type="button"
+                                role="combobox"
+                                aria-expanded={terbuka}
+                                aria-controls={idDaftar}
+                                aria-haspopup="listbox"
+                                aria-invalid={galat ? true : undefined}
+                                aria-required={wajib || undefined}
+                                data-wajib={wajib || undefined}
+                                aria-describedby={
+                                    [keterangan ? `${id}-keterangan` : null, galat ? `${id}-galat` : null]
+                                        .filter(Boolean)
+                                        .join(' ') || undefined
+                                }
+                                disabled={disabled}
+                                onKeyDown={SaatTombol}
+                                className={cn(
+                                    'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi shadow-xs outline-none pointer-coarse:h-11',
+                                    'focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40',
+                                    'disabled:cursor-not-allowed disabled:bg-latar disabled:text-teks-sekunder',
+                                    galat ? 'border-bahaya' : 'border-garis-input',
+                                    terbuka && 'border-brand ring-2 ring-brand/40',
+                                )}
+                            >
+                                <span
+                                    className={cn('truncate', nilaiTerpilih ? 'text-teks-utama' : 'text-teks-sekunder')}
+                                >
+                                    {nilaiTerpilih ?? placeholder}
+                                </span>
+                                <ChevronsUpDownIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            ref={isi}
+                            style={GayaTinggiPopoverCari}
+                            align="start"
+                            side="bottom"
+                            sideOffset={4}
+                            collisionPadding={8}
+                            className="flex max-h-(--radix-popover-content-available-height) w-(--radix-popover-trigger-width) min-w-56 flex-col overflow-hidden border-garis bg-permukaan p-0"
+                            onOpenAutoFocus={SaatBukaFokus}
+                            onCloseAutoFocus={(peristiwa) => {
+                                peristiwa.preventDefault();
+                                if (pemicu.current?.isConnected) {
+                                    pemicu.current.focus();
+                                }
+                            }}
                         >
-                            {status ?? ''}
-                        </p>
-                    </Command>
-                </PopoverContent>
-            </Popover>
+                            <Command
+                                id={idDaftar}
+                                shouldFilter={false}
+                                loop
+                                value={sorot}
+                                onValueChange={saatSorot}
+                                className="flex min-h-0 flex-col bg-permukaan"
+                                label={label}
+                            >
+                                <div className="flex shrink-0 items-center gap-2 border-b border-garis px-3">
+                                    <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
+                                    <input
+                                        value={kata}
+                                        onChange={(peristiwa) => saatKata(peristiwa.target.value)}
+                                        placeholder={placeholder}
+                                        aria-label={`Cari ${label}`}
+                                        autoComplete="off"
+                                        className="h-8 w-full bg-transparent text-isi text-teks-utama outline-none pointer-coarse:h-11 placeholder:text-teks-sekunder"
+                                    />
+                                </div>
+                                <CommandList className="max-h-72 min-h-0 flex-1 touch-pan-y overscroll-contain">
+                                    {children}
+                                </CommandList>
+                                <p
+                                    id={`${id}-status`}
+                                    aria-live="polite"
+                                    // Saat tidak ada status, elemennya tetap ada sebagai area live tetapi tanpa kotak:
+                                    // sebelumnya padding-nya menyisakan pita putih kosong di bawah daftar.
+                                    className={cn(
+                                        'shrink-0 text-keterangan text-teks-sekunder',
+                                        status !== null ? 'border-t border-garis px-3 py-2' : 'sr-only',
+                                    )}
+                                >
+                                    {status ?? ''}
+                                </p>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                {saatPindai ? (
+                    <TombolPindaiKamera
+                        ikonSaja
+                        label={`Pindai barcode ${label}`}
+                        saatTerbaca={saatPindai}
+                        disabled={disabled === true}
+                    />
+                ) : null}
+            </div>
             {keterangan ? (
                 <p id={`${id}-keterangan`} className="text-keterangan text-teks-sekunder">
                     {keterangan}
@@ -247,6 +268,55 @@ export function useSorotPertama(kunci: string[], AturSorot: (nilai: string) => v
     useEffect(() => {
         AturSorot(gabungan.split('|')[0] ?? '');
     }, [gabungan, AturSorot]);
+}
+
+/**
+ * Pindai kamera untuk pemilih produk: barcode yang terbaca mengisi kotak cari dan membuka daftar; bila hasil
+ * pencarian persis satu barang, barang itu langsung dipilih (sama dengan pemindai USB + Enter), selain itu daftar
+ * dibiarkan terbuka supaya pengguna memilih. `siap` = hasil untuk kata itu sudah selesai dimuat.
+ */
+export function usePilihSetelahPindai<T>({
+    kataCari,
+    hasil,
+    siap,
+    Pilih,
+    AturKata,
+    AturTerbuka,
+}: {
+    kataCari: string;
+    hasil: T[];
+    siap: boolean;
+    Pilih: (baris: T) => void;
+    AturKata: (kata: string) => void;
+    AturTerbuka: (terbuka: boolean) => void;
+}): (barcode: string) => void {
+    // Ref, bukan state: kode yang menunggu hasil tidak memengaruhi tampilan, dan dibersihkan di dalam efek.
+    const menunggu = useRef<string | null>(null);
+    const [, AturDenyut] = useState(0);
+
+    useEffect(() => {
+        if (menunggu.current === null || !siap || kataCari !== menunggu.current) {
+            return;
+        }
+
+        menunggu.current = null;
+
+        const satu = hasil.length === 1 ? hasil[0] : undefined;
+
+        if (satu !== undefined) {
+            Pilih(satu);
+        }
+    }, [siap, kataCari, hasil, Pilih]);
+
+    return (barcode: string) => {
+        const kode = barcode.trim();
+
+        menunggu.current = kode;
+        AturKata(kode);
+        AturTerbuka(true);
+        // Pastikan render ulang walau kata dan status buka tidak berubah (barcode yang sama dipindai dua kali).
+        AturDenyut((n) => n + 1);
+    };
 }
 
 type PropsPemilihProduk = {
@@ -305,6 +375,14 @@ export default function PemilihProduk({
         saatPilih(produk);
         Buka(false);
     };
+    const SaatPindai = usePilihSetelahPindai({
+        kataCari,
+        hasil,
+        siap: !kueri.isFetching && !kueri.isPlaceholderData,
+        Pilih,
+        AturKata,
+        AturTerbuka,
+    });
 
     let status: string | null = null;
 
@@ -336,6 +414,7 @@ export default function PemilihProduk({
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
+            saatPindai={SaatPindai}
         >
             {hasil.map((produk) => (
                 <CommandItem

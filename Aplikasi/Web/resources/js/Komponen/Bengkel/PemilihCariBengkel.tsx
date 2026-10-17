@@ -5,6 +5,7 @@ import {
     AmbilHasilCari,
     KerangkaPemilihProduk,
     useNilaiTertunda,
+    usePilihSetelahPindai,
     useSorotPertama,
 } from '@/Komponen/Katalog/PemilihProduk';
 import { CommandItem } from '@/Komponen/Ui/command';
@@ -26,6 +27,8 @@ type PropsPemilihCariBengkel<T> = {
     keterangan?: string | undefined;
     wajib?: boolean;
     disabled?: boolean;
+    /** Tombol pindai kamera di samping pemicu: untuk pemilih produk (sparepart), bukan pelanggan/kendaraan/jasa. */
+    pindaiKamera?: boolean;
 };
 
 /**
@@ -48,6 +51,7 @@ export default function PemilihCariBengkel<T>({
     keterangan,
     wajib,
     disabled,
+    pindaiKamera = false,
 }: PropsPemilihCariBengkel<T>) {
     const [kata, AturKata] = useState('');
     const [terbuka, AturTerbuka] = useState(false);
@@ -72,6 +76,19 @@ export default function PemilihCariBengkel<T>({
             AturKata('');
         }
     };
+
+    const Pilih = (item: T) => {
+        saatPilih(item);
+        Buka(false);
+    };
+    const SaatPindai = usePilihSetelahPindai({
+        kataCari,
+        hasil,
+        siap: !kueri.isFetching && !kueri.isPlaceholderData,
+        Pilih,
+        AturKata,
+        AturTerbuka,
+    });
 
     let status: string | null = null;
 
@@ -99,6 +116,7 @@ export default function PemilihCariBengkel<T>({
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
+            saatPindai={pindaiKamera ? SaatPindai : undefined}
         >
             {hasil.map((item) => {
                 const keteranganItem = ambilKeterangan?.(item) ?? null;

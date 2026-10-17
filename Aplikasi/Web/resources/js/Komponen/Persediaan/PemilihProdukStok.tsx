@@ -6,6 +6,7 @@ import {
     BATAS_CARI_PRODUK,
     KerangkaPemilihProduk,
     useNilaiTertunda,
+    usePilihSetelahPindai,
     useSorotPertama,
 } from '@/Komponen/Katalog/PemilihProduk';
 import { CommandItem } from '@/Komponen/Ui/command';
@@ -99,6 +100,14 @@ export default function PemilihProdukStok({
         saatPilih(produk);
         Buka(false);
     };
+    const SaatPindai = usePilihSetelahPindai({
+        kataCari,
+        hasil,
+        siap: !kueri.isFetching && !kueri.isPlaceholderData,
+        Pilih,
+        AturKata,
+        AturTerbuka,
+    });
 
     let status: string | null = null;
 
@@ -130,6 +139,7 @@ export default function PemilihProdukStok({
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
+            saatPindai={SaatPindai}
         >
             {hasil.map((produk) => {
                 const tertolak = CekTertolak(produk);

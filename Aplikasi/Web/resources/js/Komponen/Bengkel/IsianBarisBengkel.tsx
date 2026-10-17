@@ -117,6 +117,7 @@ export default function IsianBarisBengkel({
                     : 'Belum ada produk berstok. Tambahkan dulu di Produk.'
             }
             disabled={penuh}
+            pindaiKamera={jenis !== 'Jasa'}
         />
     );
 

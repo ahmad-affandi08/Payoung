@@ -2,6 +2,7 @@ import { ScanBarcode } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import Tombol from '@/Komponen/Formulir/Tombol';
+import { Button } from '@/Komponen/Ui/button';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { Spinner } from '@/Komponen/Ui/spinner';
@@ -14,7 +15,19 @@ type PropsTombolPindaiKamera = {
     disabled?: boolean | undefined;
     /** Nama tombol; tambahkan konteks bila ada beberapa tombol di satu halaman (mis. "Pindai kamera PCS"). */
     label?: string;
+    /** Tombol ikon kecil (tanpa teks) untuk dipasang di samping kotak cari; `label` tetap menjadi nama aksesibelnya. */
+    ikonSaja?: boolean;
+    /**
+     * Kamera tetap terbuka dan setiap barcode yang terbaca diteruskan (hitung stok, banyak barang). Barcode yang sama
+     * yang masih berada di depan kamera dihitung sekali; baru terhitung lagi setelah menjauh sejenak.
+     */
+    berkelanjutan?: boolean;
+    /** Hasil proses barcode terakhir dari pemanggil (mode berkelanjutan), ditampilkan di dalam dialog. */
+    umpanBalik?: string | null;
 };
+
+/** Mode berkelanjutan: barcode yang sama tanpa jeda sebesar ini dianggap barang yang masih di depan kamera. */
+const JEDA_BARCODE_SAMA_MS = 2000;
 
 /**
  * F-03 (BR-03.1): tombol "Pindai kamera" + dialog pratinjau kamera. Hasilnya diperlakukan sama dengan barcode yang
@@ -24,6 +37,9 @@ export default function TombolPindaiKamera({
     saatTerbaca,
     disabled = false,
     label = 'Pindai kamera',
+    ikonSaja = false,
+    berkelanjutan = false,
+    umpanBalik = null,
 }: PropsTombolPindaiKamera) {
     const [buka, AturBuka] = useState(false);
     const [video, AturVideo] = useState<HTMLVideoElement | null>(null);
@@ -33,6 +49,9 @@ export default function TombolPindaiKamera({
     const [idKamera, AturIdKamera] = useState<string | null>(null);
     const [idAktif, AturIdAktif] = useState<string | null>(null);
     const saatTerbacaTerbaru = useRef(saatTerbaca);
+    const terakhirDilihat = useRef<{ barcode: string; waktu: number } | null>(null);
+    const [jumlahTerbaca, AturJumlahTerbaca] = useState(0);
+    const [terakhirTerbaca, AturTerakhirTerbaca] = useState<string | null>(null);
 
     useEffect(() => {
         saatTerbacaTerbaru.current = saatTerbaca;
@@ -51,6 +70,24 @@ export default function TombolPindaiKamera({
             idPerangkat: idKamera,
             saatTerbaca: (barcode) => {
                 if (selesai) {
+                    return;
+                }
+
+                if (berkelanjutan) {
+                    const sekarang = Date.now();
+                    const lihat = terakhirDilihat.current;
+
+                    terakhirDilihat.current = { barcode, waktu: sekarang };
+
+                    if (lihat !== null && lihat.barcode === barcode && sekarang - lihat.waktu < JEDA_BARCODE_SAMA_MS) {
+                        return;
+                    }
+
+                    navigator.vibrate?.(60);
+                    AturJumlahTerbaca((jumlah) => jumlah + 1);
+                    AturTerakhirTerbaca(barcode);
+                    saatTerbacaTerbaru.current(barcode);
+
                     return;
                 }
 
@@ -84,11 +121,14 @@ export default function TombolPindaiKamera({
             selesai = true;
             pemindai?.Berhenti();
         };
-    }, [buka, video, idKamera]);
+    }, [buka, video, idKamera, berkelanjutan]);
 
     const Buka = () => {
         AturMemuat(true);
         AturPesan(null);
+        AturJumlahTerbaca(0);
+        AturTerakhirTerbaca(null);
+        terakhirDilihat.current = null;
         AturBuka(true);
     };
 
@@ -112,14 +152,33 @@ export default function TombolPindaiKamera({
 
     return (
         <>
-            <Tombol varian="sekunder" onClick={Buka} disabled={disabled}>
-                <ScanBarcode className="size-4" aria-hidden />
-                {label}
-            </Tombol>
+            {ikonSaja ? (
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={Buka}
+                    disabled={disabled}
+                    aria-label={label}
+                    title={label}
+                    className="shrink-0"
+                >
+                    <ScanBarcode className="size-4" aria-hidden />
+                </Button>
+            ) : (
+                <Tombol varian="sekunder" onClick={Buka} disabled={disabled}>
+                    <ScanBarcode className="size-4" aria-hidden />
+                    {label}
+                </Tombol>
+            )}
             {buka ? (
                 <DialogFormulir
                     judul="Pindai barcode dengan kamera"
-                    keterangan="Arahkan kamera ke barcode barang sampai terbaca sendiri. Jaga barcode tetap datar dan terang."
+                    keterangan={
+                        berkelanjutan
+                            ? 'Arahkan kamera ke barcode barang satu per satu. Kamera tetap terbuka; tekan Selesai bila sudah.'
+                            : 'Arahkan kamera ke barcode barang sampai terbaca sendiri. Jaga barcode tetap datar dan terang.'
+                    }
                     saatTutup={Tutup}
                 >
                     <div className="flex flex-col gap-3">
@@ -148,6 +207,15 @@ export default function TombolPindaiKamera({
                                 />
                             ) : null}
                         </div>
+                        {berkelanjutan && jumlahTerbaca > 0 ? (
+                            <div aria-live="polite" className="flex flex-col gap-1 text-isi text-teks-utama">
+                                <span className="font-semibold">
+                                    Terbaca {String(jumlahTerbaca)} kali | terakhir{' '}
+                                    <span className="font-mono">{terakhirTerbaca}</span>
+                                </span>
+                                {umpanBalik ? <span className="text-teks-sekunder">{umpanBalik}</span> : null}
+                            </div>
+                        ) : null}
                         <DialogFooter className="sm:justify-start">
                             {kamera.length > 1 ? (
                                 <Tombol varian="sekunder" onClick={GantiKamera}>
@@ -155,7 +223,7 @@ export default function TombolPindaiKamera({
                                 </Tombol>
                             ) : null}
                             <Tombol varian="sekunder" onClick={Tutup}>
-                                Batal pindai
+                                {berkelanjutan ? 'Selesai' : 'Batal pindai'}
                             </Tombol>
                         </DialogFooter>
                     </div>

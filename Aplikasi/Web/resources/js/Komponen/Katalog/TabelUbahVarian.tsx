@@ -4,6 +4,7 @@ import { useState } from 'react';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import type { BarisVarian } from '@/Tipe/Katalog';
@@ -95,7 +96,7 @@ export default function TabelUbahVarian({
                         <TableHead scope="col" className="w-44">
                             Harga jual
                         </TableHead>
-                        <TableHead scope="col" className="w-52">
+                        <TableHead scope="col" className="w-64">
                             Barcode
                         </TableHead>
                     </TableRow>
@@ -114,15 +115,26 @@ export default function TabelUbahVarian({
                                 />
                             </TableCell>
                             <TableCell className="align-top">
-                                <BidangTeks
-                                    label={`Barcode ${v.Nama}`}
-                                    labelTersembunyi
-                                    nilai={(isian[v.Uuid] as Isian).Barcode}
-                                    saatBerubah={(barcode) => Ubah(v.Uuid, { Barcode: barcode })}
-                                    disabled={(awal[v.Uuid] as Isian).Barcode !== ''}
-                                    maxLength={50}
-                                    kode
-                                />
+                                <div className="flex items-start gap-2">
+                                    <div className="min-w-0 flex-1">
+                                        <BidangTeks
+                                            label={`Barcode ${v.Nama}`}
+                                            labelTersembunyi
+                                            nilai={(isian[v.Uuid] as Isian).Barcode}
+                                            saatBerubah={(barcode) => Ubah(v.Uuid, { Barcode: barcode })}
+                                            disabled={(awal[v.Uuid] as Isian).Barcode !== ''}
+                                            maxLength={50}
+                                            kode
+                                        />
+                                    </div>
+                                    {(awal[v.Uuid] as Isian).Barcode === '' ? (
+                                        <TombolPindaiKamera
+                                            ikonSaja
+                                            label={`Pindai barcode ${v.Nama}`}
+                                            saatTerbaca={(barcode) => Ubah(v.Uuid, { Barcode: barcode.slice(0, 50) })}
+                                        />
+                                    ) : null}
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}

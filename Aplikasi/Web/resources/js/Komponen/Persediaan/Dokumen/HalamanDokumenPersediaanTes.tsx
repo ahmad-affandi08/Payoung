@@ -16,6 +16,7 @@ import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/Tiru
 import { AmbilJenisLabelDokumen, PeriksaAlasan } from '@/Komponen/Persediaan/Dokumen/KomponenDokumen';
 import { BuatHasilTabel, GudangKedua, GudangUtama, NamaPanjang } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { PilihOpsi, UbahNilai } from '@/Pengujian/InteraksiPilihan';
+import { SiapkanKameraTiruan } from '@/Pengujian/KameraTiruan';
 import type {
     BarisDetailTransferStok,
     BarisStokOpname,
@@ -27,6 +28,17 @@ import type {
 } from '@/Tipe/DokumenPersediaan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
+
+const kamera = vi.hoisted(() => ({
+    mulai: vi.fn(),
+    daftar: vi.fn(),
+}));
+
+vi.mock('@/Pustaka/PemindaiKamera', async (impor) => ({
+    ...(await impor<typeof import('@/Pustaka/PemindaiKamera')>()),
+    MulaiPemindaian: kamera.mulai,
+    DaftarKamera: kamera.daftar,
+}));
 
 const Uuid = '01J9ZC5V7Q8R2T4W6Y8A0B2C4D';
 const IzinPenuh: IzinDokumenPersediaan = { Lihat: true, Kelola: true, Setujui: true, LihatJurnal: true };
@@ -476,6 +488,50 @@ describe('Kelola/Persediaan/Opname (F-05b, BR-05.3)', () => {
             expect((screen.getByLabelText('Fisik Minyak Goreng Sawit 2 L') as HTMLInputElement).value).toBe('5'),
         );
         expect(screen.getByText('Minyak Goreng Sawit 2 L: +1')).toBeTruthy();
+    });
+
+    it('pindai kamera berkelanjutan: kamera tetap terbuka, tiap barcode menambah 1 ke baris produknya', async () => {
+        const tiruan = SiapkanKameraTiruan(kamera);
+
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() =>
+                Promise.resolve({
+                    ok: true,
+                    status: 200,
+                    json: () =>
+                        Promise.resolve({
+                            Data: [
+                                {
+                                    Uuid: '01J9PRD0000000000000000001',
+                                    Nama: 'Minyak Goreng Sawit 2 L',
+                                    Sku: 'MYK-2L',
+                                    Jenis: 'Stok',
+                                    Pelacakan: 'Tidak',
+                                    SimbolSatuan: 'pcs',
+                                    BolehDesimal: false,
+                                    SaldoDiGudang: null,
+                                    HppRataRata: null,
+                                    StokAwalSudahAda: false,
+                                },
+                            ],
+                        }),
+                }),
+            ),
+        );
+        RenderUji(<HalamanDetailStokOpname {...PropsOpname({ Baris: [BarisOpname({ JumlahFisik: '4.0000' })] })} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Pindai barcode dengan kamera' }));
+        await waitFor(() => expect(screen.queryByText('Membuka kamera…')).toBeNull());
+        tiruan.terbaca('8991234567890');
+
+        await waitFor(() =>
+            expect((screen.getByLabelText('Fisik Minyak Goreng Sawit 2 L') as HTMLInputElement).value).toBe('5'),
+        );
+        // Dialog kamera tetap terbuka untuk barang berikutnya dan menampilkan hasil proses terakhir.
+        expect(screen.getByRole('dialog', { name: 'Pindai barcode dengan kamera' })).toBeTruthy();
+        expect(await screen.findAllByText('Minyak Goreng Sawit 2 L: +1')).not.toHaveLength(0);
+        expect(tiruan.Berhenti).not.toHaveBeenCalled();
     });
 
     it('ditinjau: selisih tampil, tombol setujui untuk pemegang izin', () => {
