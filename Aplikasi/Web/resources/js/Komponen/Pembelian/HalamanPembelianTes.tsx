@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanFormFaktur, { TambahHari } from '@/Halaman/Kelola/Pembelian/Faktur/Form';
@@ -16,6 +16,7 @@ import HalamanFormRetur, { PeriksaBarisRetur } from '@/Halaman/Kelola/Pembelian/
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel, GudangUtama, NamaPanjang } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { PilihOpsi, UbahNilai } from '@/Pengujian/InteraksiPilihan';
+import { SiapkanKameraTiruan } from '@/Pengujian/KameraTiruan';
 import type {
     BarisDetailPenerimaan,
     BarisPesananUntukPenerimaan,
@@ -26,6 +27,17 @@ import type {
 } from '@/Tipe/Pembelian';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
+
+const kamera = vi.hoisted(() => ({
+    mulai: vi.fn(),
+    daftar: vi.fn(),
+}));
+
+vi.mock('@/Pustaka/PemindaiKamera', async (impor) => ({
+    ...(await impor<typeof import('@/Pustaka/PemindaiKamera')>()),
+    MulaiPemindaian: kamera.mulai,
+    DaftarKamera: kamera.daftar,
+}));
 
 const Uuid = '01J9ZC5V7Q8R2T4W6Y8A0B2C4D';
 const UuidFaktur = '01J9ZC5V7Q8R2T4W6Y8A0B2C4E';
@@ -160,6 +172,42 @@ function BarisPenerimaanRetur(perubahan: Partial<BarisDetailPenerimaan> = {}): B
         UuidSatuanLabel: '01JBMYKSATUAN0000000000001',
         JumlahLabel: 24,
         ...perubahan,
+    };
+}
+
+function PropsRetur(baris: BarisDetailPenerimaan[] = [BarisPenerimaanRetur()]): PropsFormRetur {
+    return {
+        Penerimaan: {
+            Uuid,
+            Nomor: 'GR/UTAMA/2609/0001',
+            Tanggal: '2026-09-22',
+            Status: 'Diposting',
+            LabelStatus: 'Diposting',
+            Pemasok: { Uuid: Pemasok.Uuid, Kode: 'SUP-001', Nama: Pemasok.Nama },
+            Pesanan: null,
+            Faktur: null,
+            NamaGudang: 'Toko Utama',
+            NamaOutlet: 'Outlet Utama',
+            NomorSuratJalan: null,
+            Catatan: null,
+            TarifPpn: null,
+            PpnDikreditkan: false,
+            Subtotal: '924000.00',
+            Ongkir: '0.00',
+            Pajak: '0.00',
+            TotalNilai: '924000.00',
+            BelanjaStok: false,
+            Lampiran: null,
+            AlasanBatal: null,
+            DibuatOleh: 'Sari',
+            DibatalkanOleh: null,
+        },
+        Baris: baris,
+        Retur: [],
+        Jurnal: [],
+        Riwayat: [],
+        HariIni: '2026-09-24',
+        OpsiAkunRefund: [{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1200', Nama: 'Bank BCA' }],
     };
 }
 
@@ -588,39 +636,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
     });
 
     it('retur: alasan minimal 5 karakter dan jumlah ≤ sisa bisa diretur', () => {
-        const props: PropsFormRetur = {
-            Penerimaan: {
-                Uuid,
-                Nomor: 'GR/UTAMA/2609/0001',
-                Tanggal: '2026-09-22',
-                Status: 'Diposting',
-                LabelStatus: 'Diposting',
-                Pemasok: { Uuid: Pemasok.Uuid, Kode: 'SUP-001', Nama: Pemasok.Nama },
-                Pesanan: null,
-                Faktur: null,
-                NamaGudang: 'Toko Utama',
-                NamaOutlet: 'Outlet Utama',
-                NomorSuratJalan: null,
-                Catatan: null,
-                TarifPpn: null,
-                PpnDikreditkan: false,
-                Subtotal: '924000.00',
-                Ongkir: '0.00',
-                Pajak: '0.00',
-                TotalNilai: '924000.00',
-                BelanjaStok: false,
-                Lampiran: null,
-                AlasanBatal: null,
-                DibuatOleh: 'Sari',
-                DibatalkanOleh: null,
-            },
-            Baris: [BarisPenerimaanRetur()],
-            Retur: [],
-            Jurnal: [],
-            Riwayat: [],
-            HariIni: '2026-09-24',
-            OpsiAkunRefund: [{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1200', Nama: 'Bank BCA' }],
-        };
+        const props = PropsRetur();
         RenderUji(<HalamanFormRetur {...props} />);
         UbahNilai(screen.getByLabelText('Jumlah retur Minyak Goreng Sawit 2 L'), '21');
         fireEvent.click(screen.getByRole('button', { name: 'Simpan retur' }));
@@ -642,6 +658,32 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
             },
             expect.anything(),
         );
+    });
+
+    it('retur bernomor seri: label yang dipindai mencentang nomor seri yang bisa diretur, nomor lain ditolak', async () => {
+        const tiruan = SiapkanKameraTiruan(kamera);
+
+        RenderUji(
+            <HalamanFormRetur
+                {...PropsRetur([
+                    BarisPenerimaanRetur({
+                        NomorSeri: ['SN-1', 'SN-2', 'SN-3'],
+                        NomorSeriBisaDiretur: ['SN-1', 'SN-2'],
+                    }),
+                ])}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Pindai nomor seri retur Minyak Goreng Sawit 2 L' }));
+        await waitFor(() => expect(screen.queryByText('Membuka kamera…')).toBeNull());
+        tiruan.terbaca('sn-2');
+        expect(await screen.findByText('SN-2 dicentang (1 nomor).')).toBeTruthy();
+
+        // Kamera berkelanjutan: selagi terbuka, halaman di belakangnya tidak terbaca; tutup lalu periksa centangnya.
+        fireEvent.click(screen.getByRole('button', { name: 'Selesai' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+        expect(screen.getByRole('checkbox', { name: 'SN-2' }).getAttribute('aria-checked')).toBe('true');
+        expect(screen.getByRole('checkbox', { name: 'SN-1' }).getAttribute('aria-checked')).toBe('false');
+        expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
     });
 
     it('hutang: ringkasan umur tampil; pengaturan hanya bisa disimpan bila berubah', () => {

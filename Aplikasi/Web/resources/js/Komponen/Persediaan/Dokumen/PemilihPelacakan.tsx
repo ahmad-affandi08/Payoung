@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import { GalatBidang } from '@/Komponen/Formulir/BagianBidang';
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
@@ -53,6 +55,7 @@ export default function PemilihPelacakan({
     galat,
     disabled,
 }: PropsPemilihPelacakan) {
+    const [pesanPindai, AturPesanPindai] = useState<string | null>(null);
     const kueri = useQuery({
         queryKey: KunciKueri.Persediaan.Pelacakan(uuidProduk, uuidGudang),
         queryFn: ({ signal }) => AmbilPelacakan(BuatUrlPelacakan(uuidProduk, uuidGudang), signal),
@@ -69,19 +72,50 @@ export default function PemilihPelacakan({
               }))
             : (kueri.data?.Seri ?? []).map((s) => ({ Nilai: s.Uuid, Label: s.Nomor }));
 
+    // Nomor seri bisa dipilih dengan memindai labelnya: dicocokkan ke nomor yang tersedia di lokasi ini.
+    const PilihDariPindai = (terbaca: string) => {
+        const kode = terbaca.trim().toLowerCase();
+        const cocok = opsi.find((o) => o.Label.toLowerCase() === kode);
+
+        if (cocok === undefined) {
+            AturPesanPindai(`${terbaca.trim()} tidak tersedia di lokasi ini.`);
+
+            return;
+        }
+
+        saatBerubah(cocok.Nilai, cocok.Label);
+        AturPesanPindai(null);
+    };
+
     return (
         <div className="flex flex-col gap-1">
-            <PilihanCari
-                label={label}
-                aria-label={label}
-                nilai={nilai ?? ''}
-                opsi={opsi}
-                placeholder={kueri.isPending ? 'Memuat…' : pelacakan === 'Batch' ? 'Pilih batch' : 'Pilih nomor seri'}
-                disabled={disabled === true || kueri.isPending}
-                galat={galat}
-                required
-                saatBerubah={(uuid) => saatBerubah(uuid, opsi.find((o) => o.Nilai === uuid)?.Label ?? '')}
-            />
+            <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                    <PilihanCari
+                        label={label}
+                        aria-label={label}
+                        nilai={nilai ?? ''}
+                        opsi={opsi}
+                        placeholder={
+                            kueri.isPending ? 'Memuat…' : pelacakan === 'Batch' ? 'Pilih batch' : 'Pilih nomor seri'
+                        }
+                        disabled={disabled === true || kueri.isPending}
+                        galat={galat}
+                        required
+                        saatBerubah={(uuid) => saatBerubah(uuid, opsi.find((o) => o.Nilai === uuid)?.Label ?? '')}
+                    />
+                </div>
+                {pelacakan === 'Seri' ? (
+                    <TombolPindaiKamera
+                        ikonSaja
+                        jenisKode="Seri"
+                        label={`Pindai nomor seri ${nama}`}
+                        disabled={disabled === true || kueri.isPending}
+                        saatTerbaca={PilihDariPindai}
+                    />
+                ) : null}
+            </div>
+            {pesanPindai ? <GalatBidang>{pesanPindai}</GalatBidang> : null}
             {kueri.isError ? <GalatBidang>Batch/nomor seri gagal dimuat. Muat ulang halaman.</GalatBidang> : null}
             {kueri.isSuccess && opsi.length === 0 ? (
                 <p className="text-keterangan text-teks-sekunder">

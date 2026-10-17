@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 
 import { Label } from '@/Komponen/Ui/label';
+import TombolPindaiNomorSeri from './TombolPindaiNomorSeri';
 import { Textarea } from '@/Komponen/Ui/textarea';
 import { cn } from '@/Komponen/Ui/utils';
 
@@ -100,6 +101,18 @@ export default function BidangNomorSeri({
                     galat ? 'border-bahaya' : 'border-garis-input',
                 )}
             />
+            <div>
+                <TombolPindaiNomorSeri
+                    label={`Pindai nomor seri dengan kamera ${label}`}
+                    daftar={nilai}
+                    maksimal={maksimal}
+                    disabled={disabled === true}
+                    saatBerubah={(daftar) => {
+                        AturTeks(daftar.join('\n'));
+                        saatBerubah(daftar);
+                    }}
+                />
+            </div>
             <p id={`${id}-jumlah`} aria-live="polite" className="text-keterangan text-teks-sekunder tabular-nums">
                 {jumlah.toLocaleString('id-ID')} nomor seri (maksimal {maksimal.toLocaleString('id-ID')}). Satu nomor
                 per baris; bisa ditempel dari Excel atau dipindai.

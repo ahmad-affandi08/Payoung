@@ -27,8 +27,11 @@ type PropsPemilihCariBengkel<T> = {
     keterangan?: string | undefined;
     wajib?: boolean;
     disabled?: boolean;
-    /** Tombol pindai kamera di samping pemicu: untuk pemilih produk (sparepart), bukan pelanggan/kendaraan/jasa. */
-    pindaiKamera?: boolean;
+    /**
+     * Tombol pindai kamera di samping pemicu: `true` untuk pemilih produk (sparepart), `'Seri'` untuk kendaraan/perangkat
+     * (dicari lewat nomor polisi atau IMEI); pelanggan dan jasa tidak memakainya.
+     */
+    pindaiKamera?: boolean | 'Seri';
 };
 
 /**
@@ -116,7 +119,8 @@ export default function PemilihCariBengkel<T>({
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
-            saatPindai={pindaiKamera ? SaatPindai : undefined}
+            saatPindai={pindaiKamera !== false ? SaatPindai : undefined}
+            jenisKodePindai={pindaiKamera === 'Seri' ? 'Seri' : 'Produk'}
         >
             {hasil.map((item) => {
                 const keteranganItem = ambilKeterangan?.(item) ?? null;

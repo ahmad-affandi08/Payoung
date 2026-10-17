@@ -32,7 +32,7 @@ const kolom: KolomTabel<Baris>[] = [
     { accessorKey: 'Barcode', header: 'Barcode', meta: { label: 'Barcode', prioritas: 'penting' } },
 ];
 
-function Tampilkan(pindaiKamera: boolean) {
+function Tampilkan(pindaiKamera: boolean | 'Seri') {
     const klien = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
     return render(
@@ -44,7 +44,7 @@ function Tampilkan(pindaiKamera: boolean) {
                 sumber={{ mode: 'lokal', data }}
                 ambilIdBaris={(baris) => baris.Uuid}
                 cari="Cari nama atau barcode"
-                {...(pindaiKamera ? { pindaiKamera: true } : {})}
+                {...(pindaiKamera ? { pindaiKamera } : {})}
                 kosong={{ judul: 'Tidak ada.' }}
             />
         </QueryClientProvider>,
@@ -81,5 +81,24 @@ describe('TabelData: pindai kamera di kotak cari', () => {
         Tampilkan(false);
 
         expect(screen.queryByRole('button', { name: /Pindai barcode/ })).toBeNull();
+    });
+
+    it("pindaiKamera 'Seri': tombol untuk nomor seri/IMEI memakai jenis kode Seri dan mengisi kotak cari", async () => {
+        const tiruan = SiapkanKameraTiruan(kamera);
+
+        Tampilkan('Seri');
+        expect(screen.queryByRole('button', { name: /Pindai barcode untuk mencari/ })).toBeNull();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Pindai nomor seri atau IMEI untuk mencari di Daftar produk' }),
+        );
+        await waitFor(() => expect(screen.queryByText('Membuka kamera…')).toBeNull());
+        tiruan.terbaca('356938035643809');
+
+        await waitFor(() =>
+            expect((screen.getByRole('searchbox', { name: 'Cari di Daftar produk' }) as HTMLInputElement).value).toBe(
+                '356938035643809',
+            ),
+        );
+        expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
     });
 });

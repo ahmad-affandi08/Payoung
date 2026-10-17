@@ -5,14 +5,30 @@ import { KameraTersedia, MulaiPemindaian, PesanGalatKamera } from './PemindaiKam
 const zxing = vi.hoisted(() => ({
     reset: vi.fn(),
     decodeFromStream: vi.fn(),
+    petunjuk: null as Map<string, number[]> | null,
 }));
 
 vi.mock('@zxing/library', () => ({
-    BarcodeFormat: { EAN_13: 1, EAN_8: 2, UPC_A: 3, UPC_E: 4, CODE_128: 5, CODE_39: 6, ITF: 7 },
+    BarcodeFormat: {
+        EAN_13: 1,
+        EAN_8: 2,
+        UPC_A: 3,
+        UPC_E: 4,
+        CODE_128: 5,
+        CODE_39: 6,
+        ITF: 7,
+        CODABAR: 8,
+        QR_CODE: 9,
+        DATA_MATRIX: 10,
+    },
     DecodeHintType: { POSSIBLE_FORMATS: 'F', TRY_HARDER: 'T' },
     BrowserMultiFormatReader: class {
         reset = zxing.reset;
         decodeFromStream = zxing.decodeFromStream;
+
+        constructor(petunjuk: Map<string, number[]>) {
+            zxing.petunjuk = petunjuk;
+        }
     },
 }));
 
@@ -31,10 +47,16 @@ function SiapkanKamera(): { jalur: TiruanJalur; GetUserMedia: ReturnType<typeof 
     return { jalur, GetUserMedia, video };
 }
 
+const formatDiminta: { daftar: string[] } = { daftar: [] };
+
 function PasangPendeteksi(formatDidukung: string[], hasil: () => { rawValue: string }[]): void {
     class Pendeteksi {
         static getSupportedFormats = () => Promise.resolve(formatDidukung);
         detect = () => Promise.resolve(hasil());
+
+        constructor(opsi: { formats: string[] }) {
+            formatDiminta.daftar = opsi.formats;
+        }
     }
 
     (globalThis as { BarcodeDetector?: unknown }).BarcodeDetector = Pendeteksi;
@@ -151,5 +173,37 @@ describe('Pustaka/PemindaiKamera (F-03 BR-03.1: pindai barcode dengan kamera)', 
         (await MulaiPemindaian({ video, saatTerbaca: vi.fn() })).Berhenti();
 
         expect(zxing.decodeFromStream).toHaveBeenCalledTimes(1);
+    });
+
+    it('jenis Seri: BarcodeDetector diminta membaca QR, DataMatrix, dan Codabar selain barcode barang', async () => {
+        const { video } = SiapkanKamera();
+
+        PasangPendeteksi(['code_128', 'ean_13', 'qr_code', 'data_matrix', 'codabar', 'aztec'], () => []);
+        (await MulaiPemindaian({ video, jenisKode: 'Seri', saatTerbaca: vi.fn() })).Berhenti();
+
+        expect(formatDiminta.daftar).toEqual(expect.arrayContaining(['code_128', 'qr_code', 'data_matrix', 'codabar']));
+        expect(formatDiminta.daftar).not.toContain('aztec');
+        expect(zxing.decodeFromStream).not.toHaveBeenCalled();
+    });
+
+    it('jenis Produk: QR tidak diminta (hanya barcode 1D barang)', async () => {
+        const { video } = SiapkanKamera();
+
+        PasangPendeteksi(['ean_13', 'code_128', 'qr_code'], () => []);
+        (await MulaiPemindaian({ video, saatTerbaca: vi.fn() })).Berhenti();
+
+        expect(formatDiminta.daftar).not.toContain('qr_code');
+    });
+
+    it('jenis Seri: mesin tanpa Code 128 (hanya QR) jatuh ke ZXing, yang diberi petunjuk format nomor seri', async () => {
+        const { video } = SiapkanKamera();
+
+        PasangPendeteksi(['qr_code'], () => []);
+        zxing.decodeFromStream.mockResolvedValue(undefined);
+        (await MulaiPemindaian({ video, jenisKode: 'Seri', saatTerbaca: vi.fn() })).Berhenti();
+
+        // BarcodeFormat tiruan: CODE_128 = 5, CODABAR = 8, QR_CODE = 9, DATA_MATRIX = 10.
+        expect(zxing.decodeFromStream).toHaveBeenCalledTimes(1);
+        expect(zxing.petunjuk?.get('F')).toEqual(expect.arrayContaining([5, 8, 9, 10]));
     });
 });

@@ -123,6 +123,7 @@ export default function HalamanDaftarKendaraan({ Kendaraan: data }: PropsDaftarK
                 ambilIdBaris={(k) => k.Uuid}
                 urutBawaan="NomorPolisi"
                 cari="Cari nomor polisi, IMEI, merek, atau tipe"
+                pindaiKamera="Seri"
                 saring={saring}
                 alamatDetail={(k) => `${AlamatKendaraan}/${k.Uuid}`}
                 aksiBaris={(k: Kendaraan) => (

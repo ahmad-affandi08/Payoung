@@ -6,6 +6,7 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TombolPindaiNomorSeri from '@/Komponen/Persediaan/TombolPindaiNomorSeri';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
 import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
@@ -187,6 +188,17 @@ export default function IsianBarisBengkel({
                                                     keterangan="Satu nomor per baris, sebanyak jumlah unit. Boleh dikosongkan dan diisi kasir saat menagih."
                                                     galat={AmbilGalat('NomorSeri')}
                                                 />
+                                            ) : null}
+                                            {b.Pelacakan === 'Seri' ? (
+                                                <div>
+                                                    <TombolPindaiNomorSeri
+                                                        label={`Pindai nomor seri dengan kamera ${b.NamaProduk}`}
+                                                        daftar={PecahNomorSeri(b.TeksNomorSeri)}
+                                                        saatBerubah={(daftar) =>
+                                                            Ubah(b.Kunci, { TeksNomorSeri: daftar.join('\n') })
+                                                        }
+                                                    />
+                                                </div>
                                             ) : null}
                                         </span>
                                     </TableCell>

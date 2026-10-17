@@ -1,3 +1,4 @@
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import { Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
@@ -220,14 +221,32 @@ export default function HalamanNomorSeri({
                     <Label htmlFor="cari-nomor-seri" className="text-label font-semibold text-teks-utama">
                         Nomor seri / IMEI atau nama produk
                     </Label>
-                    <Input
-                        id="cari-nomor-seri"
-                        value={cari}
-                        onChange={(e) => AturCari(e.target.value)}
-                        placeholder="Pindai atau ketik sebagian nomor, atau nama produk"
-                        autoFocus
-                        autoComplete="off"
-                    />
+                    <div className="flex items-center gap-2">
+                        <Input
+                            id="cari-nomor-seri"
+                            value={cari}
+                            onChange={(e) => AturCari(e.target.value)}
+                            placeholder="Pindai atau ketik sebagian nomor, atau nama produk"
+                            autoFocus
+                            autoComplete="off"
+                            className="min-w-0 flex-1"
+                        />
+                        <TombolPindaiKamera
+                            ikonSaja
+                            jenisKode="Seri"
+                            label="Pindai nomor seri atau IMEI dengan kamera"
+                            saatTerbaca={(kode) => {
+                                AturCari(kode);
+                                router.get(
+                                    alamat,
+                                    BuatQueryNomorSeri({ Cari: kode, Status: status, Produk: Saring.Produk }),
+                                    {
+                                        preserveScroll: true,
+                                    },
+                                );
+                            }}
+                        />
+                    </div>
                 </div>
                 <div className="w-full sm:w-52">
                     <BidangPilihan

@@ -160,6 +160,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                                 <PemilihCariBengkel<KendaraanPilihan>
                                     sumber="kendaraan"
                                     label={kata}
+                                    pindaiKamera="Seri"
                                     placeholder={`Pilih ${kata.toLowerCase()}`}
                                     buatUrl={(kata) =>
                                         `/kelola/bengkel/kendaraan/cari?${new URLSearchParams({ kata, ...(pelanggan ? { pelanggan: pelanggan.Uuid } : {}) }).toString()}`

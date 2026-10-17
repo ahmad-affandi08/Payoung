@@ -10,6 +10,7 @@ import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
+import TombolPindaiNomorSeri from '@/Komponen/Persediaan/TombolPindaiNomorSeri';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import { FormatHppSatuan, FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -168,17 +169,30 @@ export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni, OpsiAk
                                             </span>
                                         </span>
                                         {b.NomorSeri.length > 0 ? (
-                                            <GrupCentang
-                                                legenda={`Nomor seri ${b.NamaProduk} yang diretur`}
-                                                opsi={b.NomorSeriBisaDiretur.map((n) => ({ nilai: n, label: n }))}
-                                                terpilih={i.NomorSeri}
-                                                saatBerubah={(nomor) =>
-                                                    AturIsian((lama) => ({
-                                                        ...lama,
-                                                        [b.Id]: { ...i, NomorSeri: nomor },
-                                                    }))
-                                                }
-                                            />
+                                            <div className="flex flex-col gap-2">
+                                                <GrupCentang
+                                                    legenda={`Nomor seri ${b.NamaProduk} yang diretur`}
+                                                    opsi={b.NomorSeriBisaDiretur.map((n) => ({ nilai: n, label: n }))}
+                                                    terpilih={i.NomorSeri}
+                                                    saatBerubah={(nomor) =>
+                                                        AturIsian((lama) => ({
+                                                            ...lama,
+                                                            [b.Id]: { ...i, NomorSeri: nomor },
+                                                        }))
+                                                    }
+                                                />
+                                                <TombolPindaiNomorSeri
+                                                    label={`Pindai nomor seri retur ${b.NamaProduk}`}
+                                                    daftar={i.NomorSeri}
+                                                    tersedia={b.NomorSeriBisaDiretur}
+                                                    saatBerubah={(nomor) =>
+                                                        AturIsian((lama) => ({
+                                                            ...lama,
+                                                            [b.Id]: { ...i, NomorSeri: nomor },
+                                                        }))
+                                                    }
+                                                />
+                                            </div>
                                         ) : (
                                             <div className="max-w-xs">
                                                 <BidangJumlah

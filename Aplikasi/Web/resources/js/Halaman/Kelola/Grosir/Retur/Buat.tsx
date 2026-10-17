@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
+import TombolPindaiNomorSeri from '@/Komponen/Persediaan/TombolPindaiNomorSeri';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -167,12 +168,20 @@ export default function HalamanBuatReturGrosir({
                                         </TableCell>
                                         <TableCell className={kelasSel}>
                                             {AdalahSeri(b) ? (
-                                                <GrupCentang
-                                                    legenda={`Nomor seri ${b.NamaProduk} yang dikembalikan`}
-                                                    opsi={b.SeriBisaDiretur.map((n) => ({ nilai: n, label: n }))}
-                                                    terpilih={nilai.NomorSeri}
-                                                    saatBerubah={(daftar) => Ubah(b.Urutan, { NomorSeri: daftar })}
-                                                />
+                                                <div className="flex flex-col gap-2">
+                                                    <GrupCentang
+                                                        legenda={`Nomor seri ${b.NamaProduk} yang dikembalikan`}
+                                                        opsi={b.SeriBisaDiretur.map((n) => ({ nilai: n, label: n }))}
+                                                        terpilih={nilai.NomorSeri}
+                                                        saatBerubah={(daftar) => Ubah(b.Urutan, { NomorSeri: daftar })}
+                                                    />
+                                                    <TombolPindaiNomorSeri
+                                                        label={`Pindai nomor seri retur ${b.NamaProduk}`}
+                                                        daftar={nilai.NomorSeri}
+                                                        tersedia={b.SeriBisaDiretur}
+                                                        saatBerubah={(daftar) => Ubah(b.Urutan, { NomorSeri: daftar })}
+                                                    />
+                                                </div>
                                             ) : (
                                                 <>
                                                     <BidangJumlah

@@ -7,7 +7,7 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { Spinner } from '@/Komponen/Ui/spinner';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
-import { DaftarKamera, MulaiPemindaian, PesanGalatKamera } from '@/Pustaka/PemindaiKamera';
+import { DaftarKamera, MulaiPemindaian, PesanGalatKamera, type JenisKode } from '@/Pustaka/PemindaiKamera';
 
 type PropsTombolPindaiKamera = {
     /** Dipanggil sekali dengan isi barcode yang terbaca; dialog menutup sendiri sesudahnya. */
@@ -24,7 +24,27 @@ type PropsTombolPindaiKamera = {
     berkelanjutan?: boolean;
     /** Hasil proses barcode terakhir dari pemanggil (mode berkelanjutan), ditampilkan di dalam dialog. */
     umpanBalik?: string | null;
+    /** `Seri` = label nomor seri/IMEI (menambah QR, DataMatrix, Codabar); bawaan barcode barang. */
+    jenisKode?: JenisKode;
+    /** Menimpa judul dan petunjuk bawaan dialog (mis. opname yang menerima barcode barang sekaligus nomor seri). */
+    teksDialog?: { judul: string; petunjuk: string };
 };
+
+function JudulDialog(jenisKode: JenisKode): string {
+    return jenisKode === 'Seri' ? 'Pindai nomor seri atau IMEI dengan kamera' : 'Pindai barcode dengan kamera';
+}
+
+function PetunjukDialog(jenisKode: JenisKode, berkelanjutan: boolean): string {
+    if (jenisKode === 'Seri') {
+        return berkelanjutan
+            ? 'Arahkan kamera ke label nomor seri atau IMEI satu per satu (barcode atau QR di kemasan atau perangkat). Kamera tetap terbuka; tekan Selesai bila sudah.'
+            : 'Arahkan kamera ke label nomor seri atau IMEI (barcode atau QR di kemasan atau perangkat) sampai terbaca sendiri.';
+    }
+
+    return berkelanjutan
+        ? 'Arahkan kamera ke barcode barang satu per satu. Kamera tetap terbuka; tekan Selesai bila sudah.'
+        : 'Arahkan kamera ke barcode barang sampai terbaca sendiri. Jaga barcode tetap datar dan terang.';
+}
 
 /** Mode berkelanjutan: barcode yang sama tanpa jeda sebesar ini dianggap barang yang masih di depan kamera. */
 const JEDA_BARCODE_SAMA_MS = 2000;
@@ -40,6 +60,8 @@ export default function TombolPindaiKamera({
     ikonSaja = false,
     berkelanjutan = false,
     umpanBalik = null,
+    jenisKode = 'Produk',
+    teksDialog,
 }: PropsTombolPindaiKamera) {
     const [buka, AturBuka] = useState(false);
     const [video, AturVideo] = useState<HTMLVideoElement | null>(null);
@@ -68,6 +90,7 @@ export default function TombolPindaiKamera({
         MulaiPemindaian({
             video,
             idPerangkat: idKamera,
+            jenisKode,
             saatTerbaca: (barcode) => {
                 if (selesai) {
                     return;
@@ -121,7 +144,7 @@ export default function TombolPindaiKamera({
             selesai = true;
             pemindai?.Berhenti();
         };
-    }, [buka, video, idKamera, berkelanjutan]);
+    }, [buka, video, idKamera, berkelanjutan, jenisKode]);
 
     const Buka = () => {
         AturMemuat(true);
@@ -173,12 +196,8 @@ export default function TombolPindaiKamera({
             )}
             {buka ? (
                 <DialogFormulir
-                    judul="Pindai barcode dengan kamera"
-                    keterangan={
-                        berkelanjutan
-                            ? 'Arahkan kamera ke barcode barang satu per satu. Kamera tetap terbuka; tekan Selesai bila sudah.'
-                            : 'Arahkan kamera ke barcode barang sampai terbaca sendiri. Jaga barcode tetap datar dan terang.'
-                    }
+                    judul={teksDialog?.judul ?? JudulDialog(jenisKode)}
+                    keterangan={teksDialog?.petunjuk ?? PetunjukDialog(jenisKode, berkelanjutan)}
                     saatTutup={Tutup}
                 >
                     <div className="flex flex-col gap-3">

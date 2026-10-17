@@ -45,7 +45,7 @@ type PropsBilahAlat<T> = {
     keadaan: KeadaanTabel;
     teksCari: string;
     cari: string | false;
-    pindaiKamera?: boolean;
+    pindaiKamera?: boolean | 'Seri';
     saring: DefinisiSaring[];
     ekspor?: { alamat: string; label?: string; query: string; laporan?: boolean; eksporBesar?: boolean };
     aksiAlat?: ReactNode;
@@ -303,6 +303,14 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                         ikonSaja
                         label={`Pindai barcode untuk mencari di ${props.label}`}
                         saatTerbaca={(barcode) => props.AturCari(barcode)}
+                    />
+                ) : null}
+                {props.pindaiKamera === 'Seri' ? (
+                    <TombolPindaiKamera
+                        ikonSaja
+                        jenisKode="Seri"
+                        label={`Pindai nomor seri atau IMEI untuk mencari di ${props.label}`}
+                        saatTerbaca={(kode) => props.AturCari(kode)}
                     />
                 ) : null}
             </div>

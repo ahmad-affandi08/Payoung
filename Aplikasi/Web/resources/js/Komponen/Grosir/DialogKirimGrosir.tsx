@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
 import BidangDaftarTeks from '@/Komponen/Formulir/BidangDaftarTeks';
+import TombolPindaiNomorSeri from '@/Komponen/Persediaan/TombolPindaiNomorSeri';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -139,6 +140,17 @@ export default function DialogKirimGrosir({
                                         }
                                         keterangan={`Satu nomor seri per baris; isi ${KalikanDesimal(jumlah[b.Urutan] ?? '0', b.Konversi, 0)} nomor sesuai jumlah yang diserahkan.`}
                                     />
+                                ) : null}
+                                {b.Pelacakan === 'Seri' ? (
+                                    <div>
+                                        <TombolPindaiNomorSeri
+                                            label={`Pindai nomor seri dengan kamera ${b.NamaProduk}`}
+                                            daftar={nomorSeri[b.Urutan] ?? []}
+                                            saatBerubah={(daftar) =>
+                                                AturNomorSeri((lama) => ({ ...lama, [b.Urutan]: daftar }))
+                                            }
+                                        />
+                                    </div>
                                 ) : null}
                             </div>
                         ))

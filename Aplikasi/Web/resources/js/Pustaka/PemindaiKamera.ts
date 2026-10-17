@@ -9,6 +9,26 @@
 /** Jenis barcode 1D yang dipakai barang eceran dan buatan sendiri (EAN/UPC, Code 128/39, ITF). QR tidak dipakai produk. */
 export const FORMAT_BARCODE_PRODUK = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'] as const;
 
+/**
+ * Label nomor seri/IMEI: kebanyakan Code 128 atau Code 39 (IMEI selalu 1D), sebagian perangkat memakai QR atau DataMatrix.
+ * Daftarnya melebihi barcode produk, jadi dipilih lewat `jenisKode`.
+ */
+export const FORMAT_NOMOR_SERI = [
+    'code_128',
+    'code_39',
+    'ean_13',
+    'ean_8',
+    'upc_a',
+    'upc_e',
+    'itf',
+    'codabar',
+    'qr_code',
+    'data_matrix',
+] as const;
+
+/** `Produk` = barcode barang; `Seri` = nomor seri/IMEI (menambah QR, DataMatrix, Codabar). */
+export type JenisKode = 'Produk' | 'Seri';
+
 type PendeteksiBarcode = { detect: (sumber: CanvasImageSource) => Promise<{ rawValue: string }[]> };
 type KelasPendeteksiBarcode = new (opsi: { formats: string[] }) => PendeteksiBarcode;
 
@@ -20,6 +40,8 @@ export type PemindaiAktif = {
 };
 
 export type OpsiPemindaian = {
+    /** Bawaan `Produk`. */
+    jenisKode?: JenisKode;
     video: HTMLVideoElement;
     /** Kosong = kamera belakang bila ada. */
     idPerangkat?: string | null;
@@ -70,8 +92,8 @@ function AmbilKelasPendeteksi(): KelasPendeteksiBarcode | null {
     return (globalThis as { BarcodeDetector?: KelasPendeteksiBarcode }).BarcodeDetector ?? null;
 }
 
-/** Buat `BarcodeDetector` yang mendukung jenis barcode produk; null bila peramban/mesinnya tidak mendukung. */
-async function BuatPendeteksiBawaan(): Promise<PendeteksiBarcode | null> {
+/** Buat `BarcodeDetector` yang mendukung jenis kode ini; null bila peramban/mesinnya tidak mendukung. */
+async function BuatPendeteksiBawaan(jenisKode: JenisKode): Promise<PendeteksiBarcode | null> {
     const kelas = AmbilKelasPendeteksi();
 
     if (kelas === null) {
@@ -82,10 +104,12 @@ async function BuatPendeteksiBawaan(): Promise<PendeteksiBarcode | null> {
         const didukung = await (
             kelas as unknown as { getSupportedFormats?: () => Promise<string[]> }
         ).getSupportedFormats?.();
-        const format = didukung ? FORMAT_BARCODE_PRODUK.filter((item) => didukung.includes(item)) : [];
+        const daftar: readonly string[] = jenisKode === 'Seri' ? FORMAT_NOMOR_SERI : FORMAT_BARCODE_PRODUK;
+        const format = didukung ? daftar.filter((item) => didukung.includes(item)) : [];
 
-        // Mesin tanpa EAN-13 (mis. sebagian Chrome desktop Linux) tidak berguna untuk barang eceran: pakai ZXing.
-        return format.includes('ean_13') ? new kelas({ formats: format }) : null;
+        // Mesin tanpa format utama (mis. sebagian Chrome desktop Linux hanya QR) tidak berguna: pakai ZXing.
+        // Barang eceran butuh EAN-13; label nomor seri/IMEI butuh Code 128.
+        return format.includes(jenisKode === 'Seri' ? 'code_128' : 'ean_13') ? new kelas({ formats: format }) : null;
     } catch {
         return null;
     }
@@ -95,7 +119,12 @@ async function BuatPendeteksiBawaan(): Promise<PendeteksiBarcode | null> {
  * Nyalakan kamera pada [video] dan panggil `saatTerbaca` untuk setiap barcode yang terbaca (pemanggil yang
  * memutuskan berhenti). Melempar galat kamera (`PesanGalatKamera`) bila kamera tidak bisa dibuka.
  */
-export async function MulaiPemindaian({ video, idPerangkat, saatTerbaca }: OpsiPemindaian): Promise<PemindaiAktif> {
+export async function MulaiPemindaian({
+    video,
+    idPerangkat,
+    saatTerbaca,
+    jenisKode = 'Produk',
+}: OpsiPemindaian): Promise<PemindaiAktif> {
     if (!KameraTersedia()) {
         throw new DOMException('Kamera tidak tersedia di halaman ini', 'NotSupportedError');
     }
@@ -126,7 +155,7 @@ export async function MulaiPemindaian({ video, idPerangkat, saatTerbaca }: OpsiP
         video.muted = true;
         await video.play();
 
-        const pendeteksi = await BuatPendeteksiBawaan();
+        const pendeteksi = await BuatPendeteksiBawaan(jenisKode);
 
         if (pendeteksi !== null) {
             let jadwal = 0;
@@ -162,6 +191,9 @@ export async function MulaiPemindaian({ video, idPerangkat, saatTerbaca }: OpsiP
                         BarcodeFormat.CODE_128,
                         BarcodeFormat.CODE_39,
                         BarcodeFormat.ITF,
+                        ...(jenisKode === 'Seri'
+                            ? [BarcodeFormat.CODABAR, BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX]
+                            : []),
                     ],
                 ],
                 [DecodeHintType.TRY_HARDER, true],

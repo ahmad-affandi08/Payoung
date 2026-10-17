@@ -534,6 +534,39 @@ describe('Kelola/Persediaan/Opname (F-05b, BR-05.3)', () => {
         expect(tiruan.Berhenti).not.toHaveBeenCalled();
     });
 
+    it('pindai kamera: label nomor seri yang sudah ada di lembar langsung ditandai ada (1), tanpa mencari produk', async () => {
+        const tiruan = SiapkanKameraTiruan(kamera);
+        const Ambil = vi.fn();
+
+        vi.stubGlobal('fetch', Ambil);
+        RenderUji(
+            <HalamanDetailStokOpname
+                {...PropsOpname({
+                    Baris: [
+                        BarisOpname({
+                            Urutan: 1,
+                            NamaProduk: 'Ponsel Android 8/256 GB',
+                            Pelacakan: 'Seri',
+                            NomorSeri: 'IMEI-356938035643809',
+                            JumlahFisik: null,
+                        }),
+                    ],
+                })}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Pindai barcode dengan kamera' }));
+        await waitFor(() => expect(screen.queryByText('Membuka kamera…')).toBeNull());
+        tiruan.terbaca('imei-356938035643809');
+
+        await waitFor(() =>
+            expect((screen.getByLabelText(/Fisik Ponsel Android 8\/256 GB/) as HTMLInputElement).value).toBe('1'),
+        );
+        expect(await screen.findAllByText('Ponsel Android 8/256 GB | IMEI-356938035643809: ada')).not.toHaveLength(0);
+        expect(Ambil).not.toHaveBeenCalled();
+        expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
+    });
+
     it('ditinjau: selisih tampil, tombol setujui untuk pemegang izin', () => {
         RenderUji(
             <HalamanDetailStokOpname

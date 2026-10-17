@@ -227,12 +227,25 @@ export default function HalamanDetailStokOpname({
             return;
         }
 
+        // Label nomor seri/IMEI: unit yang sudah ada di lembar langsung ditandai ada (1), tanpa mencari produk.
+        const unitSeri = Baris.find(
+            (b) => b.Pelacakan === 'Seri' && (b.NomorSeri ?? '').toLowerCase() === kode.toLowerCase(),
+        );
+
+        if (unitSeri !== undefined) {
+            AturHitung((lama) => ({ ...lama, [unitSeri.Urutan]: '1' }));
+            AturPindai('');
+            AturPesanPindai(`${unitSeri.NamaProduk} | ${unitSeri.NomorSeri}: ada`);
+
+            return;
+        }
+
         const hasil = await CariBarcode(kode, Opname.UuidGudang);
         const produk = hasil.length === 1 ? hasil[0] : hasil.find((p) => p.Sku === kode);
         AturPindai('');
 
         if (produk === undefined) {
-            AturPesanPindai(`Produk dengan kode ${kode} tidak ditemukan.`);
+            AturPesanPindai(`Produk dengan kode ${kode} tidak ditemukan, dan bukan nomor seri di lembar ini.`);
 
             return;
         }
@@ -439,6 +452,12 @@ export default function HalamanDetailStokOpname({
                                     <TombolPindaiKamera
                                         ikonSaja
                                         berkelanjutan
+                                        jenisKode="Seri"
+                                        teksDialog={{
+                                            judul: 'Pindai barcode dengan kamera',
+                                            petunjuk:
+                                                'Arahkan kamera ke barcode barang atau label nomor seri/IMEI satu per satu. Kamera tetap terbuka; tekan Selesai bila sudah.',
+                                        }}
                                         label="Pindai barcode dengan kamera"
                                         saatTerbaca={(kode) => void ProsesKode(kode)}
                                         umpanBalik={pesanPindai}
@@ -550,18 +569,40 @@ export default function HalamanDetailStokOpname({
                                             </>
                                         ) : null}
                                         {b.Produk.Pelacakan === 'Seri' ? (
-                                            <BidangTeks
-                                                label={`Nomor seri ${b.Produk.Nama}`}
-                                                nilai={b.NomorSeri}
-                                                kode
-                                                saatBerubah={(nilai) =>
-                                                    AturBaru((lama) =>
-                                                        lama.map((x) =>
-                                                            x.Kunci === b.Kunci ? { ...x, NomorSeri: nilai } : x,
-                                                        ),
-                                                    )
-                                                }
-                                            />
+                                            <div className="flex items-start gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <BidangTeks
+                                                        label={`Nomor seri ${b.Produk.Nama}`}
+                                                        nilai={b.NomorSeri}
+                                                        kode
+                                                        saatBerubah={(nilai) =>
+                                                            AturBaru((lama) =>
+                                                                lama.map((x) =>
+                                                                    x.Kunci === b.Kunci
+                                                                        ? { ...x, NomorSeri: nilai }
+                                                                        : x,
+                                                                ),
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="pt-6">
+                                                    <TombolPindaiKamera
+                                                        ikonSaja
+                                                        jenisKode="Seri"
+                                                        label={`Pindai nomor seri ${b.Produk.Nama}`}
+                                                        saatTerbaca={(nomor) =>
+                                                            AturBaru((lama) =>
+                                                                lama.map((x) =>
+                                                                    x.Kunci === b.Kunci
+                                                                        ? { ...x, NomorSeri: nomor }
+                                                                        : x,
+                                                                ),
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
                                         ) : (
                                             <BidangJumlah
                                                 label={`Fisik ${b.Produk.Nama}`}

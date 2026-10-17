@@ -78,6 +78,8 @@ type PropsKerangka = {
      * (biasanya dari {@link usePilihSetelahPindai}). Hanya untuk pemilih produk; pemilih pelanggan/jasa tidak memakainya.
      */
     saatPindai?: ((barcode: string) => void) | undefined;
+    /** `Seri` = pemilih yang dicari lewat nomor seri/IMEI (kendaraan/perangkat): QR, DataMatrix, Codabar ikut terbaca. */
+    jenisKodePindai?: 'Produk' | 'Seri' | undefined;
     children: ReactNode;
 };
 
@@ -108,6 +110,7 @@ export function KerangkaPemilihProduk({
     saatSorot,
     status,
     saatPindai,
+    jenisKodePindai = 'Produk',
     children,
 }: PropsKerangka) {
     const id = useId();
@@ -241,7 +244,8 @@ export function KerangkaPemilihProduk({
                 {saatPindai ? (
                     <TombolPindaiKamera
                         ikonSaja
-                        label={`Pindai barcode ${label}`}
+                        jenisKode={jenisKodePindai}
+                        label={jenisKodePindai === 'Seri' ? `Pindai nomor seri ${label}` : `Pindai barcode ${label}`}
                         saatTerbaca={saatPindai}
                         disabled={disabled === true}
                     />

@@ -1,12 +1,24 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanNomorSeri, { BuatQueryNomorSeri } from '@/Halaman/Kelola/Persediaan/NomorSeri';
 import { AmbilHrefEkspor } from '@/Pengujian/InteraksiRadix';
+import { SiapkanKameraTiruan } from '@/Pengujian/KameraTiruan';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import type { PropsNomorSeri, UnitNomorSeri } from '@/Tipe/Persediaan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
+
+const kamera = vi.hoisted(() => ({
+    mulai: vi.fn(),
+    daftar: vi.fn(),
+}));
+
+vi.mock('@/Pustaka/PemindaiKamera', async (impor) => ({
+    ...(await impor<typeof import('@/Pustaka/PemindaiKamera')>()),
+    MulaiPemindaian: kamera.mulai,
+    DaftarKamera: kamera.daftar,
+}));
 
 const unitTerjual: UnitNomorSeri = {
     Uuid: '01K5SERI00000000000000TERJUAL',
@@ -103,6 +115,27 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
             { cari: '3569380' },
             expect.anything(),
         );
+    });
+
+    it('pindai kamera: nomor seri/IMEI yang terbaca langsung dicari (kotak terisi dan pencarian dikirim)', async () => {
+        const tiruan = SiapkanKameraTiruan(kamera);
+
+        RenderUji(<HalamanNomorSeri {...Props()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Pindai nomor seri atau IMEI dengan kamera' }));
+        await waitFor(() => expect(screen.queryByText('Membuka kamera…')).toBeNull());
+        tiruan.terbaca('356938035643809');
+
+        await waitFor(() =>
+            expect(tiruanRouter.get).toHaveBeenCalledWith(
+                '/kelola/persediaan/kartu-stok/nomor-seri',
+                { cari: '356938035643809' },
+                expect.anything(),
+            ),
+        );
+        expect((screen.getByLabelText('Nomor seri / IMEI atau nama produk') as HTMLInputElement).value).toBe(
+            '356938035643809',
+        );
+        expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
     });
 
     it('hasil: status, keterangan jual & garansi; total melebihi batas diberi catatan dan tautan ekspor', () => {

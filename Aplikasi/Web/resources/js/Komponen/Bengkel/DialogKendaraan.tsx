@@ -8,6 +8,7 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { type JenisUnit, KataUnit, LabelJenisUnit, LabelPengenal, PakaiJenisUnitBawaan } from '@/Pustaka/UnitServis';
@@ -134,20 +135,34 @@ export default function DialogKendaraan({
                         </p>
                     )}
                 </div>
-                <BidangTeks
-                    label={LabelPengenal(d.Jenis)}
-                    nilai={d.NomorPolisi}
-                    saatBerubah={(nilai) => formulir.setData('NomorPolisi', nilai)}
-                    galat={galat.NomorPolisi}
-                    keterangan={
-                        perangkat
-                            ? 'Boleh dikosongkan. Tekan *#06# di HP untuk melihat IMEI.'
-                            : 'Contoh: AD 1234 XY. Huruf & spasi dirapikan otomatis.'
-                    }
-                    kode
-                    required={!perangkat}
-                    maxLength={perangkat ? 40 : 20}
-                />
+                <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                        <BidangTeks
+                            label={LabelPengenal(d.Jenis)}
+                            nilai={d.NomorPolisi}
+                            saatBerubah={(nilai) => formulir.setData('NomorPolisi', nilai)}
+                            galat={galat.NomorPolisi}
+                            keterangan={
+                                perangkat
+                                    ? 'Boleh dikosongkan. Tekan *#06# di HP untuk melihat IMEI, atau pindai kodenya di kemasan.'
+                                    : 'Contoh: AD 1234 XY. Huruf & spasi dirapikan otomatis.'
+                            }
+                            kode
+                            required={!perangkat}
+                            maxLength={perangkat ? 40 : 20}
+                        />
+                    </div>
+                    {perangkat ? (
+                        <div className="pt-6">
+                            <TombolPindaiKamera
+                                ikonSaja
+                                jenisKode="Seri"
+                                label="Pindai IMEI atau nomor seri perangkat"
+                                saatTerbaca={(kode) => formulir.setData('NomorPolisi', kode.slice(0, 40))}
+                            />
+                        </div>
+                    ) : null}
+                </div>
                 <BidangTeks
                     label="Merek"
                     nilai={d.Merek}

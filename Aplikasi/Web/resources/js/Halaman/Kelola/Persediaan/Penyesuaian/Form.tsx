@@ -10,6 +10,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
@@ -397,13 +398,25 @@ export default function HalamanFormPenyesuaianStok({
                                             </>
                                         ) : null}
                                         {b.Pelacakan === 'Seri' && b.Arah === 'Masuk' ? (
-                                            <BidangTeks
-                                                label={`Nomor seri ${b.NamaProduk}`}
-                                                nilai={b.NomorSeri ?? ''}
-                                                kode
-                                                saatBerubah={(nilai) => Ubah(b.Kunci, { NomorSeri: nilai })}
-                                                required
-                                            />
+                                            <div className="flex items-start gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <BidangTeks
+                                                        label={`Nomor seri ${b.NamaProduk}`}
+                                                        nilai={b.NomorSeri ?? ''}
+                                                        kode
+                                                        saatBerubah={(nilai) => Ubah(b.Kunci, { NomorSeri: nilai })}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="pt-6">
+                                                    <TombolPindaiKamera
+                                                        ikonSaja
+                                                        jenisKode="Seri"
+                                                        label={`Pindai nomor seri ${b.NamaProduk}`}
+                                                        saatTerbaca={(nomor) => Ubah(b.Kunci, { NomorSeri: nomor })}
+                                                    />
+                                                </div>
+                                            </div>
                                         ) : null}
                                     </div>
                                     {b.Pelacakan === 'Seri' && galat ? <GalatBidang>{galat}</GalatBidang> : null}
