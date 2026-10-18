@@ -28,7 +28,7 @@ final class AturPenampungQrisMerchantTenant
     public function Jalankan(PenggunaPengelola $pelaku, Tenant $tenant, ?string $idPedagang, ?string $idTerminal): PendaftaranMerchantPembayaran
     {
         return $this->konteks->JalankanLintasTenant('Mengisi penampung merchantId/terminalId QRIS DOKU', function () use ($pelaku, $tenant, $idPedagang, $idTerminal): PendaftaranMerchantPembayaran {
-            $pendaftaran = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->first();
+            $pendaftaran = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->first();
 
             if ($pendaftaran === null) {
                 throw new PelanggaranAturanBisnis('BelumTerdaftar', 'Tenant ini belum punya pendaftaran merchant.', statusHttp: 409);

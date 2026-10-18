@@ -11,9 +11,8 @@ use App\Domain\Dukungan\Aksi\BuatTiketDukungan;
 use App\Domain\Dukungan\Data\DataTiketBaru;
 use App\Domain\Dukungan\Enum\KategoriTiketDukungan;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
-use App\Domain\Integrasi\Snap\GerbangBillingSnap;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Tenant\Aksi\AjukanTurunPaket;
 use App\Domain\Tenant\Aksi\BatalkanTagihanLangganan;
@@ -82,7 +81,7 @@ final class LanggananKontroler extends Kontroler
         return redirect()->route('kelola.langganan.tagihan.tampil', ['tagihan' => $tagihan->Uuid])->with('Kilat', $pesan);
     }
 
-    public function TampilkanTagihan(string $tagihan, GerbangBillingPlatform $gerbang, GerbangBillingSnap $gerbangSnap, SegarkanPembayaranGerbangLangganan $segarkan, RekeningTujuanPlatform $rekening): Response
+    public function TampilkanTagihan(string $tagihan, PenyediaTagihanPlatform $penyedia, SegarkanPembayaranGerbangLangganan $segarkan, RekeningTujuanPlatform $rekening): Response
     {
         $data = $this->kueri->CariTagihan($tagihan);
         abort_if($data === null, 404);
@@ -109,10 +108,10 @@ final class LanggananKontroler extends Kontroler
             'Tagihan' => TagihanLanggananTenant::PetakanTagihan($data),
             'Pembayaran' => array_values($pembayaran->map(fn (PembayaranLangganan $baris): array => TagihanLanggananTenant::PetakanPembayaran($baris))->all()),
             // D-112: tagihan manual (paket harga negosiasi) dibayar dengan transfer; tagihan biasa hanya lewat gerbang (D-82).
-            'BolehBayarOnline' => $terbuka && ! $data->Manual && ($gerbang->CekAktif() || $gerbangSnap->CekAktif()),
+            'BolehBayarOnline' => $terbuka && ! $data->Manual && $penyedia->CekAktif(),
             // D-159: cara bayar SNAP (halaman bayar Payoung) dan apakah DOKU Checkout (kartu & lainnya) juga tersedia.
-            'PilihanBayar' => $terbuka && ! $data->Manual ? $gerbangSnap->AmbilPilihan() : [],
-            'BolehCheckout' => $gerbang->CekAktif(),
+            'PilihanBayar' => $terbuka && ! $data->Manual ? $penyedia->AmbilPilihanHalamanBayar() : [],
+            'BolehCheckout' => $penyedia->CekCheckoutAktif(),
             'BolehUnggahBukti' => $terbuka && $data->Manual && ! $adaPembayaranMenunggu && $rekening->Ambil() !== [],
             'RekeningTujuan' => $data->Manual ? $rekening->Ambil() : [],
             'BolehBatalkan' => $terbuka && ! $adaPembayaranMenunggu,

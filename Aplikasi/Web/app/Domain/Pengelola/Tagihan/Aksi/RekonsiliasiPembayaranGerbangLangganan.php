@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pengelola\Tagihan\Aksi;
 
-use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Tenant\Aksi\TerimaNotifikasiBillingLangganan;
@@ -40,7 +40,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     public const HARI_ARSIP = 90;
 
     public function __construct(
-        private readonly PenanyaStatusBilling $penanya,
+        private readonly PenyediaTagihanPlatform $penyedia,
         private readonly TerimaNotifikasiBillingLangganan $terima,
     ) {}
 
@@ -51,7 +51,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     {
         $hasil = ['Diperiksa' => 0, 'Selesai' => 0, 'Menunggu' => 0, 'Gagal' => 0];
 
-        if (! $this->penanya->CekAdaGerbangAktif()) {
+        if (! $this->penyedia->CekAktif()) {
             return $hasil;
         }
 
@@ -67,8 +67,8 @@ final class RekonsiliasiPembayaranGerbangLangganan
 
         foreach ($daftar as $pembayaran) {
             $hasil['Diperiksa']++;
-            $notifikasi = $this->penanya->CekAktif($pembayaran->MetodeBayar)
-                ? $this->penanya->Tanya((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
+            $notifikasi = $this->penyedia->CekAktifUntuk($pembayaran->MetodeBayar)
+                ? $this->penyedia->TanyaStatus((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
                 : null;
 
             if ($notifikasi === null) {
@@ -107,7 +107,7 @@ final class RekonsiliasiPembayaranGerbangLangganan
     {
         $hasil = ['Diperiksa' => 0, 'Selesai' => 0, 'Menunggu' => 0, 'Gagal' => 0];
 
-        if (! $this->penanya->CekAdaGerbangAktif()) {
+        if (! $this->penyedia->CekAktif()) {
             return $hasil;
         }
 
@@ -123,8 +123,8 @@ final class RekonsiliasiPembayaranGerbangLangganan
 
         foreach ($daftar as $pembayaran) {
             $hasil['Diperiksa']++;
-            $notifikasi = $this->penanya->CekAktif($pembayaran->MetodeBayar)
-                ? $this->penanya->Tanya((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
+            $notifikasi = $this->penyedia->CekAktifUntuk($pembayaran->MetodeBayar)
+                ? $this->penyedia->TanyaStatus((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
                 : null;
 
             if ($notifikasi === null) {

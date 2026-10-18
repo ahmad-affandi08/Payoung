@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Penjualan\Aksi;
 
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
+use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
@@ -61,7 +62,7 @@ final class RekonsiliasiTagihanQris
     {
         $gerbang = $this->pembuatGerbang->AmbilUntukTagihan($tagihan->Penyedia);
 
-        if ($gerbang === null || ($tagihan->IdReferensi === null && ! $gerbang->CekDapatCekDariNomorPesanan())) {
+        if ($gerbang === null || ($tagihan->IdReferensi === null && ! $gerbang->CekMendukung(KemampuanGerbang::CekStatusDariNomorPesanan))) {
             return null;
         }
 

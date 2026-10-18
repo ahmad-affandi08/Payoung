@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Aksi;
 
-use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
@@ -25,7 +25,7 @@ final class SegarkanPembayaranGerbangLangganan
     public const JEDA_DETIK = 15;
 
     public function __construct(
-        private readonly PenanyaStatusBilling $penanya,
+        private readonly PenyediaTagihanPlatform $penyedia,
         private readonly TerimaNotifikasiBillingLangganan $terima,
     ) {}
 
@@ -36,14 +36,14 @@ final class SegarkanPembayaranGerbangLangganan
             $pembayaran->Metode !== MetodePembayaranLangganan::Gateway
             || $pembayaran->Status !== StatusPembayaranLangganan::Menunggu
             || $pembayaran->RefGateway === null
-            || ! $this->penanya->CekAktif($pembayaran->MetodeBayar)
+            || ! $this->penyedia->CekAktifUntuk($pembayaran->MetodeBayar)
             || ! Cache::add("langganan.segarkan.{$pembayaran->Uuid}", 1, self::JEDA_DETIK)
         ) {
             return false;
         }
 
         try {
-            $notifikasi = $this->penanya->Tanya(
+            $notifikasi = $this->penyedia->TanyaStatus(
                 $pembayaran->RefGateway,
                 $pembayaran->MetodeBayar,
                 $pembayaran->RincianBayar,

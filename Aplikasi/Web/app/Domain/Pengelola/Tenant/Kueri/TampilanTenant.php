@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Tenant\Kueri;
 
 use App\Domain\Dukungan\Kueri\RiwayatAksesDukungan;
-use App\Domain\Integrasi\Merchant\KlienPartnerDoku;
+use App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran;
 use App\Domain\Integrasi\Model\PendaftaranMerchantPembayaran;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
 use App\Domain\Organisasi\Model\Gudang;
@@ -50,7 +50,7 @@ final class TampilanTenant
         private readonly SumberFiturTenant $sumberFitur,
         private readonly EvaluatorFitur $evaluator,
         private readonly PemakaianBatasOrganisasi $pemakaian,
-        private readonly KlienPartnerDoku $klienPartner,
+        private readonly PendaftarMerchantPembayaran $pendaftarMerchant,
         private readonly PenjagaPenyimpanan $penyimpanan,
         private readonly PenghapusanDataTenant $penghapusanData,
         private readonly RiwayatAksesDukungan $aksesDukungan,
@@ -128,7 +128,7 @@ final class TampilanTenant
             // NIK & rekening tersamar, foto sudah dihapus, shared key tidak pernah keluar.
             'PendaftaranMerchant' => [
                 'Pendaftaran' => $organisasi['PendaftaranMerchant'],
-                'PartnerAktif' => $this->klienPartner->CekAktif(),
+                'PartnerAktif' => $this->pendaftarMerchant->CekAktif(),
             ],
             'Pemakaian' => [
                 ['Label' => 'Outlet', 'Pakai' => $organisasi['PakaiOutlet'], 'Batas' => $batas['BatasOutlet'] ?? null],
@@ -261,7 +261,7 @@ final class TampilanTenant
      */
     private static function AmbilPendaftaranMerchant(): ?array
     {
-        $p = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->first();
+        $p = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->first();
 
         return $p === null ? null : [
             'Uuid' => $p->Uuid,

@@ -6,7 +6,7 @@ namespace App\Domain\Integrasi\Tugas;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Aksi\SegarkanStatusPendaftaranMerchant;
-use App\Domain\Integrasi\Merchant\GalatPartnerDoku;
+use App\Domain\Integrasi\Merchant\GalatPendaftaranMerchant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -32,7 +32,7 @@ final class SegarkanPendaftaranMerchantTugas implements ShouldQueue
 
         try {
             $segarkan->Jalankan();
-        } catch (GalatPartnerDoku $galat) {
+        } catch (GalatPendaftaranMerchant $galat) {
             if (! $galat->tidakPasti) {
                 // Penolakan pasti tidak membaik dengan diulang; penyapu 30 menit tetap mencoba lagi.
                 return;

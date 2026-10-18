@@ -6,6 +6,9 @@ namespace App\Domain\Integrasi\GerbangPembayaran\Adaptor;
 
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\GerbangPembayaran;
+use App\Domain\Integrasi\GerbangPembayaran\HasilRefund;
+use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
+use App\Domain\Integrasi\GerbangPembayaran\PermintaanRefund;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -78,6 +81,25 @@ abstract class AdaptorDasar implements GerbangPembayaran
     public function CekDapatCekDariNomorPesanan(): bool
     {
         return false;
+    }
+
+    /** Bawaan: QRIS dinamis, ditambah cek dari nomor pesanan bila adaptor menyatakannya. Adaptor yang bisa lebih menimpa ini. */
+    public function AmbilKemampuan(): array
+    {
+        return $this->CekDapatCekDariNomorPesanan()
+            ? [KemampuanGerbang::QrisDinamis, KemampuanGerbang::CekStatusDariNomorPesanan]
+            : [KemampuanGerbang::QrisDinamis];
+    }
+
+    public function CekMendukung(KemampuanGerbang $kemampuan): bool
+    {
+        return in_array($kemampuan, $this->AmbilKemampuan(), true);
+    }
+
+    /** Bawaan: tidak didukung. Adaptor yang menyatakan `KemampuanGerbang::Refund` wajib menimpa ini. */
+    public function Refund(PermintaanRefund $permintaan): HasilRefund
+    {
+        throw new GalatGerbang('Pengembalian dana lewat gerbang ini belum didukung. Kembalikan dana secara manual.');
     }
 
     /** Hanya 4xx yang jelas menolak (bukan 408/409/425/429) yang pasti tidak membuat apa pun di gerbang. */

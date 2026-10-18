@@ -6,7 +6,7 @@ use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Integrasi\Aksi\AjukanPendaftaranMerchant;
 use App\Domain\Integrasi\Aksi\BersihkanBerkasPendaftaranMerchant;
-use App\Domain\Integrasi\Aksi\KirimPendaftaranMerchantKeDoku;
+use App\Domain\Integrasi\Aksi\KirimPendaftaranMerchant;
 use App\Domain\Integrasi\Aksi\SegarkanStatusPendaftaranMerchant;
 use App\Domain\Integrasi\Enum\StatusPendaftaranMerchant;
 use App\Domain\Integrasi\GerbangPembayaran\ProtokolDoku;
@@ -327,7 +327,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         PendaftaranToko($toko)->update(['Status' => StatusPendaftaranMerchant::Dikirim]);
         Http::assertSentCount(5);
 
-        $perluUlang = app(KirimPendaftaranMerchantKeDoku::class)->Jalankan();
+        $perluUlang = app(KirimPendaftaranMerchant::class)->Jalankan();
 
         expect($perluUlang)->toBeFalse();
         Http::assertSentCount(5);
@@ -380,7 +380,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         // Percobaan ulang: hanya registrasi yang dikirim lagi (tanpa token/unggahan baru).
         SetelUlangHttp();
         Http::fake(['api-uat.doku.com'.AWALAN_PARTNER.'/business' => Http::response(JawabanBisnis(), 200)]);
-        $perluUlang = app(KirimPendaftaranMerchantKeDoku::class)->Jalankan();
+        $perluUlang = app(KirimPendaftaranMerchant::class)->Jalankan();
 
         expect($perluUlang)->toBeFalse();
         Http::assertSentCount(1);
@@ -404,7 +404,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
             ->and($p->IdFileSwafoto)->toBeNull()->and($p->PathSwafoto)->not->toBeNull()
             ->and(BerkasTersimpan())->toBe(2);
 
-        app(KirimPendaftaranMerchantKeDoku::class)->Menyerah();
+        app(KirimPendaftaranMerchant::class)->Menyerah();
         $p = PendaftaranToko($toko);
         expect($p->Status)->toBe(StatusPendaftaranMerchant::Draf)->and($p->PesanGalat)->toContain('Coba kirim lagi');
     });

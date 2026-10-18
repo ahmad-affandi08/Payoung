@@ -27,7 +27,7 @@ final class BatalkanPendaftaranMerchant
     public function Jalankan(): void
     {
         $paths = DB::transaction(function (): array {
-            $pendaftaran = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->lockForUpdate()->first();
+            $pendaftaran = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->lockForUpdate()->first();
 
             if ($pendaftaran === null) {
                 return [];

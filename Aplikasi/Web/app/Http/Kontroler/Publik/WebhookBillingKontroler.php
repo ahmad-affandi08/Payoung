@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Publik;
 
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Tenant\Aksi\TerimaNotifikasiBillingLangganan;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Respons\GalatApi;
@@ -31,22 +31,22 @@ use Illuminate\Http\Request;
  */
 final class WebhookBillingKontroler extends Kontroler
 {
-    public function Terima(Request $permintaan, GerbangBillingPlatform $gerbang, TerimaNotifikasiBillingLangganan $terima): JsonResponse
+    public function Terima(Request $permintaan, PenyediaTagihanPlatform $penyedia, TerimaNotifikasiBillingLangganan $terima): JsonResponse
     {
-        if (! $gerbang->CekTandaTanganSah($permintaan)) {
+        if (! $penyedia->CekTandaTanganSah($permintaan)) {
             return GalatApi::Buat('TandaTanganTidakSah', 'Tanda tangan notifikasi tidak sah.', 401);
         }
 
-        $notifikasi = $gerbang->UraiNotifikasi($permintaan);
+        $notifikasi = $penyedia->UraiNotifikasi($permintaan);
 
         if ($notifikasi === null) {
             return response()->json(['Diterima' => false]);
         }
 
-        $terkonfirmasi = $gerbang->Konfirmasi($notifikasi);
+        $terkonfirmasi = $penyedia->Konfirmasi($notifikasi);
 
         if ($terkonfirmasi === null) {
-            return GalatApi::Buat('StatusBelumTerkonfirmasi', 'Status pembayaran belum bisa dikonfirmasi ke DOKU. Coba kirim ulang.', 503);
+            return GalatApi::Buat('StatusBelumTerkonfirmasi', 'Status pembayaran belum bisa dikonfirmasi ke penyedia pembayaran. Coba kirim ulang.', 503);
         }
 
         return response()->json(['Diterima' => $terima->Jalankan($terkonfirmasi)]);

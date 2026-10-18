@@ -7,6 +7,8 @@ namespace App\Domain\Integrasi\Model;
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
 use App\Domain\Integrasi\Enum\StatusPendaftaranMerchant;
+use App\Domain\Integrasi\Merchant\PembuatPendaftarMerchant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -69,6 +71,17 @@ final class PendaftaranMerchantPembayaran extends ModelDasar
         'Penyedia' => self::PENYEDIA_DOKU,
         'Status' => 'Draf',
     ];
+
+    /**
+     * Pendaftaran milik penyedia yang sedang dipakai platform (`integrasi.PenyediaPendaftaranMerchant`, D-179). Satu
+     * tenant punya satu baris per penyedia, jadi mengganti penyedia berarti tenant mendaftar baru di penyedia itu.
+     *
+     * @return Builder<PendaftaranMerchantPembayaran>
+     */
+    public static function UntukPenyediaAktif(): Builder
+    {
+        return self::query()->where('Penyedia', PembuatPendaftarMerchant::AmbilKodeAktif());
+    }
 
     /** Ketiga berkas sementara masih ada di disk (siap diunggah). */
     public function CekBerkasLengkap(): bool

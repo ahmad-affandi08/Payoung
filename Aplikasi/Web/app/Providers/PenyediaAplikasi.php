@@ -17,6 +17,10 @@ use App\Domain\Dukungan\Peristiwa\TiketDukunganDibalasPelapor;
 use App\Domain\Dukungan\Peristiwa\TiketDukunganDibuat;
 use App\Domain\Integrasi\ApiPublik\Penangan\AntrekanWebhookIntegrasi;
 use App\Domain\Integrasi\ApiPublik\Penangan\AntrekanWebhookPenjualan;
+use App\Domain\Integrasi\Billing\PembuatPenyediaTagihan;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
+use App\Domain\Integrasi\Merchant\PembuatPendaftarMerchant;
+use App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran;
 use App\Domain\Katalog\Layanan\PemberitahuProdukDiubah;
 use App\Domain\Lisensi\Kontrak\PengaturIntegrasiServer;
 use App\Domain\Lisensi\Kontrak\PenyiapDataBawaan;
@@ -44,6 +48,7 @@ use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
 use App\Http\Rute\ValidatorHalamanSitus;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -96,6 +101,10 @@ final class PenyediaAplikasi extends ServiceProvider
         $this->app->bind(GerbangPengelola::class, GerbangPengelolaDukungan::class);
         // PGL-16: sesi akses dukungan yang sah hanya hidup selama satu permintaan/job.
         $this->app->scoped(KonteksAksesDukungan::class);
+        // D-179: tagihan langganan memakai port penyedia; adaptor dipilih dari `integrasi.PenyediaTagihan`.
+        // D-179: pendaftaran merchant (KYB) lewat port yang sama polanya.
+        $this->app->bind(PendaftarMerchantPembayaran::class, static fn (Application $aplikasi): PendaftarMerchantPembayaran => $aplikasi->make(PembuatPendaftarMerchant::class)->Buat());
+        $this->app->bind(PenyediaTagihanPlatform::class, static fn (Application $aplikasi): PenyediaTagihanPlatform => $aplikasi->make(PembuatPenyediaTagihan::class)->Buat());
     }
 
     /**

@@ -36,14 +36,19 @@ enum PenyediaGerbang: string
         return null;
     }
 
+    /** Nama untuk pengguna. Memakai `match` tanpa `default` supaya menambah penyedia baru memaksa label dilengkapi (D-179). */
     public function AmbilLabel(): string
     {
-        return 'DOKU';
+        return match ($this) {
+            self::Doku => 'DOKU',
+        };
     }
 
     public function AmbilKeterangan(): string
     {
-        return 'DOKU Checkout (halaman bayar QRIS). Salin URL webhook ke pengaturan notifikasi di dasbor DOKU.';
+        return match ($this) {
+            self::Doku => 'DOKU Checkout (halaman bayar QRIS). Salin URL webhook ke pengaturan notifikasi di dasbor DOKU.',
+        };
     }
 
     /**
@@ -51,9 +56,11 @@ enum PenyediaGerbang: string
      */
     public function AmbilBidangPengaturan(): array
     {
-        return [
-            ['Kunci' => 'IdKlien', 'Label' => 'Client ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'DOKU Checkout menampilkan halaman bayar QRIS (QR berisi tautan halaman bayar).'],
-        ];
+        return match ($this) {
+            self::Doku => [
+                ['Kunci' => 'IdKlien', 'Label' => 'Client ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'DOKU Checkout menampilkan halaman bayar QRIS (QR berisi tautan halaman bayar).'],
+            ],
+        };
     }
 
     /**
@@ -61,6 +68,8 @@ enum PenyediaGerbang: string
      */
     public function AmbilBidangKredensial(): array
     {
-        return [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]];
+        return match ($this) {
+            self::Doku => [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]],
+        };
     }
 }

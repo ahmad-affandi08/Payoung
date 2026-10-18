@@ -9,6 +9,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Data\DataPendaftaranMerchant;
 use App\Domain\Integrasi\Enum\StatusPendaftaranMerchant;
+use App\Domain\Integrasi\Merchant\PembuatPendaftarMerchant;
 use App\Domain\Integrasi\Merchant\PenyimpanBerkasKyc;
 use App\Domain\Integrasi\Model\PendaftaranMerchantPembayaran;
 use App\Domain\Referensi\Enum\JenisReferensiBank;
@@ -73,14 +74,14 @@ final class SimpanDraftPendaftaranMerchant
     {
         $usang = [];
 
-        $pendaftaran = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->lockForUpdate()->first();
+        $pendaftaran = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->lockForUpdate()->first();
 
         if ($pendaftaran !== null && ! $pendaftaran->Status->CekBisaDiubah()) {
             throw new PelanggaranAturanBisnis('PendaftaranTidakBisaDiubah', 'Pendaftaran sedang diproses atau sudah disetujui, jadi datanya tidak bisa diubah.', statusHttp: 409);
         }
 
         $statusLama = $pendaftaran?->Status->value;
-        $pendaftaran ??= new PendaftaranMerchantPembayaran(['Penyedia' => PendaftaranMerchantPembayaran::PENYEDIA_DOKU, 'TokenCallback' => self::BuatToken($idTenant)]);
+        $pendaftaran ??= new PendaftaranMerchantPembayaran(['Penyedia' => PembuatPendaftarMerchant::AmbilKodeAktif(), 'TokenCallback' => self::BuatToken($idTenant)]);
 
         if (in_array($pendaftaran->Status, [StatusPendaftaranMerchant::Gagal, StatusPendaftaranMerchant::Ditolak], true)) {
             // Mulai lagi: pendaftaran lama di DOKU dilepas, foto lama sudah dihapus jadi semuanya diunggah ulang.

@@ -6,12 +6,11 @@ namespace App\Domain\Tenant\Aksi;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
-use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
 use App\Domain\Integrasi\Billing\HasilPembayaranBilling;
 use App\Domain\Integrasi\Billing\NomorPesananBilling;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
-use App\Domain\Integrasi\Snap\GerbangBillingSnap;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Model\Langganan;
@@ -39,8 +38,7 @@ final class MulaiPembayaranGerbangLangganan
     private const MENIT_TUNGGU_YATIM = 5;
 
     public function __construct(
-        private readonly GerbangBillingPlatform $gerbang,
-        private readonly GerbangBillingSnap $gerbangSnap,
+        private readonly PenyediaTagihanPlatform $penyedia,
         private readonly PencatatAudit $audit,
     ) {}
 
@@ -49,7 +47,7 @@ final class MulaiPembayaranGerbangLangganan
      */
     public function Jalankan(string $uuidTagihan, int $idPengguna, string $namaPengguna, string $emailPengguna, string $urlKembali): HasilPembayaranBilling
     {
-        if (! $this->gerbang->CekAktif()) {
+        if (! $this->penyedia->CekCheckoutAktif()) {
             throw new PelanggaranAturanBisnis('GerbangBillingTidakAktif', 'Pembayaran online belum tersedia. Silakan transfer manual dan unggah buktinya.');
         }
 
@@ -74,7 +72,7 @@ final class MulaiPembayaranGerbangLangganan
         ?string $kanal,
         ?string $ipPelanggan,
     ): PembayaranLangganan {
-        if (! $this->gerbangSnap->CekAktif()) {
+        if (! $this->penyedia->CekHalamanBayarAktif()) {
             throw new PelanggaranAturanBisnis('GerbangBillingTidakAktif', 'Pembayaran online belum tersedia. Silakan transfer manual dan unggah buktinya.');
         }
 
@@ -85,7 +83,7 @@ final class MulaiPembayaranGerbangLangganan
         }
 
         try {
-            $hasil = $this->gerbangSnap->Buat($metode, $kanal, (string) $pembayaran->RefGateway, $pembayaran->AmbilJumlah(), $namaPengguna, $emailPengguna, $urlKembali, $ipPelanggan);
+            $hasil = $this->penyedia->BuatPembayaranHalamanBayar($metode, $kanal, (string) $pembayaran->RefGateway, $pembayaran->AmbilJumlah(), $namaPengguna, $emailPengguna, $urlKembali, $ipPelanggan);
         } catch (GalatGerbang $galat) {
             // Sama dengan Checkout: hanya galat yang pasti tidak membuat apa pun yang boleh menutup pembayaran.
             if (! $galat->tidakPasti) {
@@ -140,7 +138,7 @@ final class MulaiPembayaranGerbangLangganan
                 ->first();
 
             if ($berjalan !== null && ($metodeBayar !== null || $berjalan->MetodeBayar !== null)) {
-                if (self::CekMasihBerlaku($berjalan)) {
+                if ($this->CekMasihBerlaku($berjalan)) {
                     // Pembayaran SNAP yang masih berlaku ditampilkan lagi, bukan dibuatkan yang baru: dua kode bayar
                     // untuk satu tagihan berisiko dibayar dua kali. Checkout yang masih berjalan menahan SNAP baru.
                     if ($berjalan->MetodeBayar !== null && $berjalan->RincianBayar !== null) {
@@ -185,9 +183,9 @@ final class MulaiPembayaranGerbangLangganan
         });
     }
 
-    private static function CekMasihBerlaku(PembayaranLangganan $pembayaran): bool
+    private function CekMasihBerlaku(PembayaranLangganan $pembayaran): bool
     {
-        $batas = $pembayaran->KedaluwarsaPada ?? $pembayaran->DibuatPada?->copy()->addMinutes(GerbangBillingSnap::MENIT_KEDALUWARSA);
+        $batas = $pembayaran->KedaluwarsaPada ?? $pembayaran->DibuatPada?->copy()->addMinutes($this->penyedia->AmbilMenitKedaluwarsaHalamanBayar());
 
         return $batas !== null && $batas->isFuture();
     }
@@ -198,7 +196,7 @@ final class MulaiPembayaranGerbangLangganan
     private function BuatDiGerbang(PembayaranLangganan $pembayaran, string $namaPengguna, string $emailPengguna, string $urlKembali): HasilPembayaranBilling
     {
         try {
-            return $this->gerbang->BuatTransaksi(
+            return $this->penyedia->BuatCheckout(
                 (string) $pembayaran->RefGateway,
                 $pembayaran->AmbilJumlah(),
                 $namaPengguna,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Integrasi\Tugas;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
-use App\Domain\Integrasi\Aksi\KirimPendaftaranMerchantKeDoku;
+use App\Domain\Integrasi\Aksi\KirimPendaftaranMerchant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -24,7 +24,7 @@ final class KirimPendaftaranMerchantTugas implements ShouldQueue
         public readonly int $idPendaftaran,
     ) {}
 
-    public function handle(KonteksTenant $konteks, KirimPendaftaranMerchantKeDoku $kirim): void
+    public function handle(KonteksTenant $konteks, KirimPendaftaranMerchant $kirim): void
     {
         $sebelumnya = $konteks->Ambil();
         $konteks->Atur($this->idTenant);

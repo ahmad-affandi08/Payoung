@@ -6,7 +6,7 @@ namespace App\Domain\Tenant\Aksi;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Billing\NomorPesananBilling;
-use App\Domain\Integrasi\Billing\PenanyaStatusBilling;
+use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
@@ -32,7 +32,7 @@ final class ProsesPemicuSnapLangganan
 
     public function __construct(
         private readonly KonteksTenant $konteks,
-        private readonly PenanyaStatusBilling $penanya,
+        private readonly PenyediaTagihanPlatform $penyedia,
         private readonly TerimaNotifikasiBillingLangganan $terima,
     ) {}
 
@@ -63,7 +63,7 @@ final class ProsesPemicuSnapLangganan
         }
 
         try {
-            $notifikasi = $this->penanya->Tanya(
+            $notifikasi = $this->penyedia->TanyaStatus(
                 $nomorPesanan,
                 $pembayaran->MetodeBayar,
                 $pembayaran->RincianBayar,

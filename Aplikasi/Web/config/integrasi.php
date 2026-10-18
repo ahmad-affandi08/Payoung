@@ -23,6 +23,13 @@ return [
     // Kosong (null) = ikut edisi: hanya edisi Lisensi. Isi `true` untuk membukanya kembali di SaaS.
     'GerbangTokoTampil' => null,
 
+    // D-179: penyedia pembayaran tagihan langganan Payoung sendiri (`PembuatPenyediaTagihan::PENYEDIA`). Mengganti
+    // penyedia = tulis adaptornya, daftarkan, lalu ubah nilai ini (`Panduan/PenyediaPembayaran.md`).
+    'PenyediaTagihan' => 'Doku',
+
+    // D-179: penyedia pendaftaran merchant (KYB) untuk aktivasi QRIS tenant (`PembuatPendaftarMerchant::PENYEDIA`).
+    'PenyediaPendaftaranMerchant' => 'Doku',
+
     // BR-P05.3: uji berkala integrasi aktif.
     'MenitUjiBerkala' => 60,
 ];

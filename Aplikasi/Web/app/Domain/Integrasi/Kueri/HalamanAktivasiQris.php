@@ -6,7 +6,7 @@ namespace App\Domain\Integrasi\Kueri;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Enum\StatusPendaftaranMerchant;
-use App\Domain\Integrasi\Merchant\KlienPartnerDoku;
+use App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran;
 use App\Domain\Integrasi\Model\PendaftaranMerchantPembayaran;
 use App\Domain\Referensi\Enum\JenisReferensiBank;
 use App\Domain\Referensi\Kueri\ReferensiBankAktif;
@@ -21,7 +21,7 @@ final class HalamanAktivasiQris
 {
     public function __construct(
         private readonly KonteksTenant $konteks,
-        private readonly KlienPartnerDoku $klien,
+        private readonly PendaftarMerchantPembayaran $penyedia,
         private readonly ReferensiBankAktif $bank,
         private readonly ProfilTenant $profil,
     ) {}
@@ -31,14 +31,14 @@ final class HalamanAktivasiQris
      */
     public function Ambil(?string $namaPengguna, ?string $emailPengguna): array
     {
-        $pendaftaran = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->first();
+        $pendaftaran = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->first();
         $daftarBank = $this->bank->Ambil([JenisReferensiBank::Bank]);
         $namaBank = array_column($daftarBank, 'Nama', 'Id');
         // Gagal/Ditolak = mulai lagi: foto lama sudah dihapus dan wajib diambil ulang.
         $fotoMasihAda = $pendaftaran !== null && ! in_array($pendaftaran->Status, [StatusPendaftaranMerchant::Gagal, StatusPendaftaranMerchant::Ditolak], true);
 
         return [
-            'LayananTersedia' => $this->klien->CekAktif(),
+            'LayananTersedia' => $this->penyedia->CekAktif(),
             'BatasFotoMb' => (int) config('merchant.UkuranMaksimalFotoKb') / 1024,
             'DaftarBank' => array_map(fn (array $b): array => ['Id' => $b['Id'], 'Nama' => $b['Nama']], $daftarBank),
             'Awal' => [

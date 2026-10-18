@@ -7,18 +7,18 @@ namespace App\Domain\Integrasi\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Integrasi\Enum\StatusPendaftaranMerchant;
-use App\Domain\Integrasi\Merchant\KlienPartnerDoku;
+use App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran;
 use App\Domain\Integrasi\Model\PendaftaranMerchantPembayaran;
 use App\Domain\Integrasi\Tugas\KirimPendaftaranMerchantTugas;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Tenant mengajukan pendaftaran merchant yang sudah lengkap: status jadi `Dikirim`, lalu unggah berkas dan registrasi
- * ke DOKU dikerjakan oleh `KirimPendaftaranMerchantTugas` (antrean).
+ * ke penyedia pembayaran dikerjakan oleh `KirimPendaftaranMerchantTugas` (antrean).
  *
  * Kenapa antrean, bukan sinkron: satu pengiriman = 5 panggilan HTTP berurutan (token, 3 unggahan, registrasi) yang
  * bisa memakan puluhan detik dan gagal di tengah jalan. Tugas antrean dapat diulang otomatis dengan aman karena
- * `KirimPendaftaranMerchantKeDoku` mencatat kemajuan (id berkas, id bisnis) sehingga langkah yang sudah berhasil tidak
+ * `KirimPendaftaranMerchant` mencatat kemajuan (id berkas, id bisnis) sehingga langkah yang sudah berhasil tidak
  * diulang. Tenant langsung melihat status `Dikirim` dan halaman menyegarkan diri.
  */
 final class AjukanPendaftaranMerchant
@@ -26,18 +26,18 @@ final class AjukanPendaftaranMerchant
     public const AKSI_AUDIT = 'merchant-pembayaran.ajukan';
 
     public function __construct(
-        private readonly KlienPartnerDoku $klien,
+        private readonly PendaftarMerchantPembayaran $penyedia,
         private readonly PencatatAudit $audit,
     ) {}
 
     public function Jalankan(): PendaftaranMerchantPembayaran
     {
-        if (! $this->klien->CekAktif()) {
+        if (! $this->penyedia->CekAktif()) {
             throw new PelanggaranAturanBisnis('LayananBelumTersedia', 'Aktivasi QRIS otomatis belum tersedia. Hubungi dukungan Payoung.', statusHttp: 409);
         }
 
         $pendaftaran = DB::transaction(function (): PendaftaranMerchantPembayaran {
-            $pendaftaran = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->lockForUpdate()->first();
+            $pendaftaran = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->lockForUpdate()->first();
 
             if ($pendaftaran === null) {
                 throw new PelanggaranAturanBisnis('PendaftaranBelumDiisi', 'Isi data pendaftaran dulu sebelum mengirim.', statusHttp: 409);

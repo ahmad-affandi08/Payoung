@@ -30,7 +30,7 @@ final class SimpanPendaftaranMerchantPermintaan extends FormRequest
      */
     public function rules(): array
     {
-        $ada = PendaftaranMerchantPembayaran::query()->where('Penyedia', PendaftaranMerchantPembayaran::PENYEDIA_DOKU)->first();
+        $ada = PendaftaranMerchantPembayaran::UntukPenyediaAktif()->first();
         $foto = ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:'.(int) config('merchant.UkuranMaksimalFotoKb')];
 
         return [
