@@ -39,7 +39,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -90,7 +90,7 @@ jobs:
           cd keluaran
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: payoung-kasir-windows-${{ github.sha }}
           path: keluaran/*
@@ -106,7 +106,7 @@ jobs:
           - { nama: Kasir, folder: Kasir }
           - { nama: Owner, folder: Pemilik }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -123,7 +123,7 @@ jobs:
           ditto -c -k --keepParent "Aplikasi/${{ matrix.aplikasi.folder }}/build/ios/iphoneos/Runner.app" \
             "keluaran/Payoung-${{ matrix.aplikasi.nama }}-iOS-tanpa-tanda-tangan.zip"
           shasum -a 256 keluaran/*.zip > keluaran/SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: payoung-${{ matrix.aplikasi.folder }}-ios-${{ github.sha }}
           path: keluaran/*
@@ -139,8 +139,8 @@ jobs:
           - { nama: Kasir, folder: Kasir }
           - { nama: Owner, folder: Pemilik }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
@@ -178,7 +178,7 @@ jobs:
             cp Aplikasi/${{ matrix.aplikasi.folder }}/build/app/outputs/bundle/release/*.aab keluaran/
           fi
           sha256sum keluaran/* > keluaran/SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: payoung-${{ matrix.aplikasi.folder }}-android-${{ github.sha }}
           path: keluaran/*
