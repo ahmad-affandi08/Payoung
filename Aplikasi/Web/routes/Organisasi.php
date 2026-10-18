@@ -38,9 +38,6 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $izi
     // F-17 bagian 4: kios pesan sendiri outlet (sakelar + tautan rahasia).
     Route::post('/outlet/{outlet}/kios', [OutletKontroler::class, 'AturKios'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.kios');
     Route::post('/outlet/{outlet}/kios/buat-ulang', [OutletKontroler::class, 'BuatUlangKios'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.kios.buat-ulang');
-    Route::post('/outlet/{outlet}/layar-absensi', [OutletKontroler::class, 'BuatLayarAbsensi'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.layar-absensi.buat');
-    Route::delete('/outlet/{outlet}/layar-absensi', [OutletKontroler::class, 'CabutLayarAbsensi'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.layar-absensi.cabut');
-    Route::post('/outlet/{outlet}/wajib-qr-absensi', [OutletKontroler::class, 'AturWajibQrAbsensi'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.wajib-qr-absensi');
     Route::post('/outlet/{outlet}/pulihkan', [OutletKontroler::class, 'Pulihkan'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.outlet.pulihkan');
 
     Route::post('/outlet/{outlet}/gudang', [GudangKontroler::class, 'Simpan'])->middleware($izin(IzinTenant::OutletKelola))->name('kelola.gudang.simpan');

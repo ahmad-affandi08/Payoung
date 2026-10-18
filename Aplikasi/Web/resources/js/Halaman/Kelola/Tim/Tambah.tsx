@@ -44,6 +44,7 @@ type Isian = {
     Outlet: string[];
     UuidOutlet: string;
     JugaKaryawan: boolean;
+    IkutAbsensi: boolean;
     LevelStaf: string;
     GajiPokok: string;
     TarifLemburPerJam: string;
@@ -52,16 +53,22 @@ type Isian = {
 };
 
 const JENIS_AKSES: { nilai: Akses; judul: string; keterangan: string }[] = [
-    { nilai: 'Kasir', judul: 'Kasir (cukup PIN)', keterangan: 'Tanpa email. Masuk aplikasi kasir dengan PIN 6 angka.' },
+    {
+        nilai: 'Kasir',
+        judul: 'Kasir (cukup PIN)',
+        keterangan:
+            'Tanpa email. Masuk aplikasi kasir dengan PIN 6 angka. Tidak bisa absen dari HP (absen butuh email).',
+    },
     {
         nilai: 'Dashboard',
         judul: 'Dashboard (pakai email)',
-        keterangan: 'Membuka dashboard sesuai peran. Kata sandi awal wajib diganti saat pertama masuk.',
+        keterangan:
+            'Membuka dashboard sesuai peran dan bisa absen dari HP. Kata sandi awal wajib diganti saat pertama masuk.',
     },
     {
         nilai: 'Tanpa',
         judul: 'Tanpa akun masuk',
-        keterangan: 'Hanya dijadwalkan, absen lewat HP, dan digaji. Tidak memakai kursi akun.',
+        keterangan: 'Hanya dijadwalkan dan digaji. Tidak memakai kursi akun dan tidak bisa absen.',
     },
 ];
 
@@ -72,6 +79,7 @@ const PeranRingkas: Record<string, string> = {
     'Manajer Outlet': 'Mengelola outlet: produk, stok, laporan.',
     'Staf Gudang': 'Terima & kirim barang antar-outlet, opname stok.',
     Admin: 'Semua menu kecuali kepemilikan & langganan.',
+    Karyawan: 'Hanya absen masuk/pulang dari HP, tanpa akses kasir atau menu lain.',
 };
 
 /**
@@ -106,6 +114,7 @@ export default function HalamanTambahTim({
         Outlet: [],
         UuidOutlet: '',
         JugaKaryawan: true,
+        IkutAbsensi: true,
         LevelStaf: '',
         GajiPokok: '',
         TarifLemburPerJam: '',
@@ -154,7 +163,13 @@ export default function HalamanTambahTim({
 
     const PilihPeran = (uuid: string) => {
         const baris = peranTerlihat.find((item) => item.Uuid === uuid);
-        formulir.setData({ ...d, Peran: uuid, ...TerapkanCakupanPeran(baris, Outlet, d) });
+        // D-180: isian awal "Ikut absensi" mengikuti peran (manajemen tidak, staf lapangan ya); masih bisa diubah.
+        formulir.setData({
+            ...d,
+            Peran: uuid,
+            IkutAbsensi: baris?.IkutAbsensi ?? true,
+            ...TerapkanCakupanPeran(baris, Outlet, d),
+        });
     };
 
     /** Semua langkah diperiksa ulang, lalu kirim. Galat server membuka langkah pertama yang memuatnya. */
@@ -182,6 +197,7 @@ export default function HalamanTambahTim({
                       SemuaOutlet: data.SemuaOutlet,
                       Outlet: data.Outlet,
                       JugaKaryawan: BolehKaryawan && KaryawanTertaut === null && data.JugaKaryawan,
+                      ...(data.Akses === 'Dashboard' && punyaKaryawan ? { IkutAbsensi: data.IkutAbsensi } : {}),
                       UuidKaryawan: KaryawanTertaut?.Uuid ?? '',
                   }),
             ...(aturGaji
@@ -376,6 +392,22 @@ export default function HalamanTambahTim({
                     nilai={!d.JugaKaryawan}
                     saatBerubah={(nilai) => formulir.setData('JugaKaryawan', !nilai)}
                 />
+            ) : null}
+            {d.Akses === 'Dashboard' && punyaKaryawan && KaryawanTertaut === null ? (
+                <div className="flex flex-col gap-1">
+                    <KotakCentang
+                        label="Ikut absensi (absen masuk/pulang dari HP setelah login)"
+                        nilai={d.IkutAbsensi}
+                        saatBerubah={(nilai) => formulir.setData('IkutAbsensi', nilai)}
+                    />
+                    <p className="text-keterangan text-teks-sekunder">
+                        Matikan untuk manajer, supervisor, atau pemilik yang tidak perlu absen. Yang tidak ikut absensi
+                        tidak dianggap terlambat atau tidak masuk dan tidak kena potongan gaji.
+                    </p>
+                    {galat.IkutAbsensi ? (
+                        <p className="text-keterangan font-semibold text-bahaya">{galat.IkutAbsensi}</p>
+                    ) : null}
+                </div>
             ) : null}
             {kotakGaji}
         </>

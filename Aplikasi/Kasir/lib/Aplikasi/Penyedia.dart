@@ -16,16 +16,12 @@ import 'package:sistem_desain/SistemDesain.dart' show TokenWarna;
 import '../Data/Printer/InfoPerangkatPlatform.dart';
 import '../Data/CacheGambarProduk.dart';
 import '../Data/KameraBuktiPlatform.dart';
-import '../Data/KameraSwafotoPlatform.dart';
 import '../Data/PemindaiKameraPlatform.dart';
 import '../Data/PemindaiQrPlatform.dart';
 import '../Data/LayarPelanggan/PabrikLayarPelanggan.dart';
-import '../Data/RepositoriAbsensi.dart';
 import '../Domain/Diagnostik/LogLokal.dart';
-import '../Domain/Karyawan/LayananAbsensi.dart';
 import '../Domain/Pembaruan/PemasangPembaruan.dart';
 import '../Domain/Perangkat/KameraBukti.dart';
-import '../Domain/Perangkat/KameraSwafoto.dart';
 import '../Domain/Perangkat/PemindaiKamera.dart';
 import '../Domain/Perangkat/PemindaiQr.dart';
 import '../Data/BasisData/BasisDataKasir.dart';
@@ -107,25 +103,6 @@ class ModeLatihan extends Notifier<bool> {
 }
 
 final penyediaModeLatihan = NotifierProvider<ModeLatihan, bool>(ModeLatihan.new);
-
-/// F-18: staf yang menjawab "Nanti" pada tawaran absen pulang (saat kunci / ganti kasir) tidak ditawari lagi pada
-/// tanggal yang sama, supaya kunci layar saat istirahat tidak terus-menerus bertanya. Hanya di memori; kembali kosong
-/// saat aplikasi dibuka ulang, dan tidak berlaku lagi esok harinya.
-class TundaAbsenPulang extends Notifier<Map<String, String>> {
-  @override
-  Map<String, String> build() => const {};
-
-  bool CekDitunda(String uuidStaf, DateTime sekarang) => state[uuidStaf] == _Hari(sekarang);
-
-  void Tunda(String uuidStaf, DateTime sekarang) => state = {...state, uuidStaf: _Hari(sekarang)};
-
-  static String _Hari(DateTime waktu) {
-    final lokal = waktu.toLocal();
-    return '${lokal.year}-${lokal.month}-${lokal.day}';
-  }
-}
-
-final penyediaTundaAbsenPulang = NotifierProvider<TundaAbsenPulang, Map<String, String>>(TundaAbsenPulang.new);
 
 /// D-66: rel navigasi Ruang Kerja mulai tertutup (ikon saja). Test lain meng-override ke `false` supaya label menu
 /// tetap terlihat tanpa mengetuk tombol lebarkan dulu; test khusus rel memeriksa bawaan ini.
@@ -1000,9 +977,6 @@ final penyediaPesananMeja = StreamProvider.family<PesananMeja?, String>(
 
 // Pelanggan (F-16a) ----------------------------------------------------------------------------------------------------
 
-/// F-18: kamera swafoto absensi (tiruan di test).
-final penyediaKameraSwafoto = Provider<KameraSwafoto>((ref) => KameraSwafotoPlatform());
-
 /// K-18: kamera belakang untuk foto bukti kas masuk/keluar (tiruan di test).
 final penyediaKameraBukti = Provider<KameraBukti>((ref) => KameraBuktiPlatform());
 
@@ -1012,19 +986,6 @@ final penyediaPemindaiQr = Provider<PemindaiQr>((ref) => PemindaiQrPlatform());
 /// Pemindai barcode lewat kamera yang terus terbuka di layar Jual, dengan ganti kamera depan/belakang (tiruan di test).
 /// Tidak tersedia di Windows.
 final penyediaPemindaiKamera = Provider<PabrikPemindaiKamera>((ref) => PemindaiKameraPlatform());
-
-final penyediaRepositoriAbsensi = Provider<RepositoriAbsensi>(
-  (ref) => RepositoriAbsensi(ref.watch(penyediaBasisData), ref.watch(penyediaRepositori)),
-);
-
-/// F-18: absen masuk/keluar staf dengan PIN + swafoto.
-final penyediaLayananAbsensi = Provider<LayananAbsensi>(
-  (ref) => LayananAbsensi(
-    repositori: ref.watch(penyediaRepositoriAbsensi),
-    kamera: ref.watch(penyediaKameraSwafoto),
-    jam: ref.watch(penyediaJam),
-  ),
-);
 
 final penyediaRepositoriPelanggan = Provider<RepositoriPelanggan>(
   (ref) => RepositoriPelanggan(ref.watch(penyediaBasisData), ref.watch(penyediaRepositori)),

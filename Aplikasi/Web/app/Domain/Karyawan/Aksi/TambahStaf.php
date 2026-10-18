@@ -61,6 +61,7 @@ final class TambahStaf
                     tarifLemburPerJam: $rinciKaryawan?->tarifLemburPerJam,
                     potonganTerlambatPerMenit: $rinciKaryawan?->potonganTerlambatPerMenit,
                     potonganTidakMasukPerHari: $rinciKaryawan?->potonganTidakMasukPerHari,
+                    ikutAbsensi: $rinciKaryawan?->ikutAbsensi,
                 ));
             }
 

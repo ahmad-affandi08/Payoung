@@ -22,6 +22,8 @@ use App\Domain\Bersama\Tenant\MilikTenant;
  * @property int $PengingatShiftMenitSebelum
  * @property bool $PeringatanPengelolaAktif
  * @property int $PeringatanPengelolaSetelahMenit
+ * @property bool $SimpanFotoBukti D-180: foto swafoto tiap absen disimpan sebagai bukti (wajah tetap selalu dicocokkan)
+ * @property bool $TolakDiLuarRadius D-180: absen di luar radius outlet ditolak (bawaan: hanya ditandai perlu dicek)
  */
 final class AturanKehadiran extends ModelDasar
 {
@@ -42,6 +44,8 @@ final class AturanKehadiran extends ModelDasar
         'PengingatShiftMenitSebelum' => 30,
         'PeringatanPengelolaAktif' => false,
         'PeringatanPengelolaSetelahMenit' => 15,
+        'SimpanFotoBukti' => true,
+        'TolakDiLuarRadius' => false,
     ];
 
     /**
@@ -59,6 +63,8 @@ final class AturanKehadiran extends ModelDasar
             'PengingatShiftMenitSebelum' => 'integer',
             'PeringatanPengelolaAktif' => 'boolean',
             'PeringatanPengelolaSetelahMenit' => 'integer',
+            'SimpanFotoBukti' => 'boolean',
+            'TolakDiLuarRadius' => 'boolean',
         ];
     }
 }

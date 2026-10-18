@@ -16,7 +16,7 @@ final class AturanSlugSitus
         'masuk', 'daftar', 'kelola', 'legal', 's', 'api', 'webhook', 'sehat', 'undangan', 'verifikasi-email', 'ganti-email',
         'lupa-kata-sandi', 'atur-ulang-kata-sandi', 'keluar', 'pilih-tenant', 'kompatibilitas-perangkat', 'gambar-situs',
         'pratinjau-situs', 'peta-situs', 'ganti-kata-sandi', 'build', 'storage', 'meja', 'up', 'unduh-berkas', 'berhenti-langganan',
-        'prospek', 'blog', 'laporan-csp', 'pengembang', 'dukungan', 'status', 'pusat-bantuan',
+        'prospek', 'blog', 'laporan-csp', 'pengembang', 'dukungan', 'status', 'pusat-bantuan', 'i', 'p',
     ];
 
     /** Pesan galat, atau null bila slug boleh dipakai. */
@@ -31,8 +31,8 @@ final class AturanSlugSitus
         }
 
         // F-07 mode service: `/{slugToko}/reservasi` adalah halaman reservasi online toko; bengkel (§9.10):
-        // `/{slugToko}/servis/{token}` adalah halaman persetujuan estimasi servis; F-18 bagian 4: `/{slugToko}/absen/{token}`
-        // adalah halaman absensi web karyawan, `/{slugToko}/layar-absen/{token}` layar QR absensi outlet; F-17 bagian 4: `/{slugToko}/kios/{token}` kios pesan sendiri.
+        // `/{slugToko}/servis/{token}` adalah halaman persetujuan estimasi servis; F-18 bagian 4: `absen` dan `layar-absen`
+        // bekas jalur tautan absensi (dihapus D-180) tetap dipesan supaya tautan lama tidak jatuh ke halaman situs; F-17 bagian 4: `/{slugToko}/kios/{token}` kios pesan sendiri.
         if (in_array(explode('/', $slug)[1] ?? null, ['reservasi', 'servis', 'absen', 'layar-absen', 'kios'], true)) {
             return 'Slug ini dipakai sistem. Pilih slug lain.';
         }

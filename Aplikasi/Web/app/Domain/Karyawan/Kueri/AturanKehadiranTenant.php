@@ -10,7 +10,7 @@ use App\Domain\Karyawan\Model\AturanKehadiran;
 final class AturanKehadiranTenant
 {
     /**
-     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int}
+     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}
      */
     public function Ambil(): array
     {
@@ -18,7 +18,7 @@ final class AturanKehadiranTenant
     }
 
     /**
-     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int}
+     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}
      */
     public static function Petakan(AturanKehadiran $a): array
     {
@@ -32,6 +32,8 @@ final class AturanKehadiranTenant
             'PengingatShiftMenitSebelum' => $a->PengingatShiftMenitSebelum,
             'PeringatanPengelolaAktif' => $a->PeringatanPengelolaAktif,
             'PeringatanPengelolaSetelahMenit' => $a->PeringatanPengelolaSetelahMenit,
+            'SimpanFotoBukti' => $a->SimpanFotoBukti,
+            'TolakDiLuarRadius' => $a->TolakDiLuarRadius,
         ];
     }
 }

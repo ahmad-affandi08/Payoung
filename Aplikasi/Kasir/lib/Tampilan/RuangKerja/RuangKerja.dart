@@ -11,7 +11,6 @@ import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Domain/Perangkat/PenjagaLayarMenyala.dart';
 import '../../Domain/Persediaan/LayananGudang.dart';
 import '../../Domain/Sesi/StafLokal.dart';
-import '../Komponen/AbsensiSaya.dart';
 import '../Komponen/FormatWaktu.dart';
 import '../LayarJual.dart';
 import '../LayarKas.dart';
@@ -295,15 +294,6 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       }
       ref.read(penyediaSesi.notifier).Kunci();
     });
-  }
-
-  /// F-18: kunci / ganti kasir yang diketuk staf lebih dulu menawarkan absen pulang bila masih tercatat bekerja
-  /// (opsional, sekali sehari bila ditolak). Penguncian otomatis karena diam tidak lewat sini.
-  Future<void> _KunciDenganTawaran({bool gantiKasir = false}) async {
-    await TawarkanAbsenPulang(context, ref);
-    if (mounted) {
-      ref.read(penyediaSesi.notifier).Kunci(gantiKasir: gantiKasir);
-    }
   }
 
   void _CatatAktivitas(PointerEvent _) => _MulaiHitungDiam();
@@ -718,8 +708,8 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
           children: [
             BilahAtasRuangKerja(
               kasir: widget.kasir,
-              saatGantiKasir: () => _KunciDenganTawaran(gantiKasir: true),
-              saatKunci: _KunciDenganTawaran,
+              saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
+              saatKunci: ref.read(penyediaSesi.notifier).Kunci,
             ),
             // P-10 PGL-19: pengumuman & jadwal pemeliharaan dari pengelola platform.
             if (_konfigurasi case final k? when k.pengumuman.isNotEmpty) BannerPengumuman(pengumuman: k.pengumuman),

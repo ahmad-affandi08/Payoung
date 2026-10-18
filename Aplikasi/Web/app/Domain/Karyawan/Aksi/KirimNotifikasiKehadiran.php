@@ -8,7 +8,6 @@ use App\Domain\Bersama\Web\AlamatDomain;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
-use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
 use App\Domain\Karyawan\Kueri\CutiAktifKaryawan;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
@@ -82,7 +81,7 @@ final class KirimNotifikasiKehadiran
             return $hasil;
         }
 
-        $karyawan = Karyawan::query()->whereKey($jadwal->pluck('IdKaryawan')->unique()->all())->where('Status', StatusKaryawan::Aktif->value)->get()->keyBy('Id');
+        $karyawan = Karyawan::query()->whereKey($jadwal->pluck('IdKaryawan')->unique()->all())->wajibAbsen()->get()->keyBy('Id');
         $idOutlet = array_values(array_unique(array_map('intval', $jadwal->pluck('IdOutlet')->all())));
         $selisih = $this->zona->AmbilSelisihDetik($idOutlet);
         $namaOutlet = [];
@@ -174,10 +173,8 @@ final class KirimNotifikasiKehadiran
         $menit = max(0, intdiv($mulai->getTimestamp() - $sekarang->getTimestamp(), 60));
         $teks = "Halo {$k->Nama}, shift Anda di {$namaUsaha} ({$namaOutlet}) mulai pukul {$j->JamMulai}, sekitar {$menit} menit lagi. Jangan lupa absen masuk.";
 
-        if ($k->TokenAbsen !== null) {
-            $slug = $this->profil->AmbilSlug($k->IdTenant);
-            $teks .= "\nAbsen dari HP: ".AlamatDomain::BuatUrlAbsolutPemasaran("/{$slug}/absen/{$k->TokenAbsen}");
-        }
+        // D-180: absen lewat login; tautan masuk ke halaman Absen di dashboard (sesi biasanya masih tersimpan di HP).
+        $teks .= "\nAbsen dari HP: ".AlamatDomain::BuatUrlAbsolutTenant('/kelola/absen');
 
         return $this->Kirim($pengirim, new PesanWhatsapp($nomor, $teks));
     }

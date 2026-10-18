@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
@@ -8,6 +8,7 @@ import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import PanelKalibrasiWajah from '@/Komponen/Karyawan/PanelKalibrasiWajah';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
+import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihJam from '@/Komponen/Tanggal/PemilihJam';
@@ -16,10 +17,16 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
-import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { TulisTanggal } from '@/Pustaka/Tanggal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
-import type { BarisAbsensi, OpsiUuidNama, PropsAbsensi, StatusKehadiran } from '@/Tipe/Karyawan';
+import type {
+    BarisAbsensi,
+    OpsiUuidNama,
+    PermintaanKoreksiAbsensi,
+    PropsAbsensi,
+    StatusKehadiran,
+} from '@/Tipe/Karyawan';
 
 const alamat = '/kelola/karyawan/absensi';
 
@@ -145,6 +152,14 @@ const kolom: KolomTabel<BarisAbsensi>[] = [
         cell: ({ row: { original: a } }) => (
             <span className="flex flex-col items-start gap-1">
                 <LabelStatus jenis={JenisStatus(a.Status)} teks={a.LabelStatus} />
+                {a.PerluDicek ? (
+                    <span className="flex flex-col items-start gap-1">
+                        <LabelStatus jenis="peringatan" teks="Perlu dicek" />
+                        {a.CatatanPeriksa ? (
+                            <span className="text-keterangan text-teks-sekunder">{a.CatatanPeriksa}</span>
+                        ) : null}
+                    </span>
+                ) : null}
                 {a.Sumber === 'Web' ? (
                     <span className="text-keterangan text-teks-sekunder">
                         Dari HP | {a.JarakMasukMeter ?? '—'} m dari outlet
@@ -170,13 +185,19 @@ export function RapikanJamKetik(teks: string): string {
     return /^\d{4}$/.test(bersih) ? `${bersih.slice(0, 2)}:${bersih.slice(2)}` : bersih;
 }
 
-type Dialog = { jenis: 'tambah' } | { jenis: 'koreksi'; absensi: BarisAbsensi };
+type Dialog = { jenis: 'tambah'; permintaan?: PermintaanKoreksiAbsensi } | { jenis: 'koreksi'; absensi: BarisAbsensi };
 
 /**
  * F-18 EMP-03: rekap absensi dari aplikasi kasir: jam masuk/keluar waktu outlet, durasi, keterlambatan, swafoto.
  * v3.34: pengelola (`karyawan.kelola`) mencatat absensi yang terlewat dan mengoreksi jam, dengan alasan yang tercatat.
  */
-export default function HalamanAbsensi({ Absensi, OpsiKaryawan, OpsiOutlet, BolehKoreksi }: PropsAbsensi) {
+export default function HalamanAbsensi({
+    Absensi,
+    OpsiKaryawan,
+    OpsiOutlet,
+    BolehKoreksi,
+    PermintaanKoreksi = [],
+}: PropsAbsensi) {
     const [dialog, AturDialog] = useState<Dialog | null>(null);
     const Tutup = () => AturDialog(null);
     const saring: DefinisiSaring[] = [
@@ -205,18 +226,31 @@ export default function HalamanAbsensi({ Absensi, OpsiKaryawan, OpsiOutlet, Bole
             jenis: 'pilihan',
             opsi: [{ nilai: '1', label: 'Ya' }],
         },
+        {
+            id: 'PerluDicek',
+            label: 'Perlu dicek',
+            jenis: 'pilihan',
+            opsi: [{ nilai: '1', label: 'Ya' }],
+        },
     ];
 
     return (
         <TataLetakAplikasi judul="Absensi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Absen masuk & keluar dari aplikasi kasir dengan PIN dan swafoto (bila perangkat berkamera). Jam memakai
-                zona waktu outlet; terlambat dihitung dari jadwal kerja.
+                Absen masuk & pulang karyawan dari HP (login, lokasi, dan pencocokan wajah). Jam memakai zona waktu
+                outlet; terlambat dihitung dari jadwal kerja. Absen yang lokasinya janggal tetap tercatat dan ditandai
+                Perlu dicek.
             </p>
             {BolehKoreksi ? (
                 <AksiHalaman>
                     <Tombol onClick={() => AturDialog({ jenis: 'tambah' })}>Catat absensi terlewat</Tombol>
                 </AksiHalaman>
+            ) : null}
+            {BolehKoreksi && PermintaanKoreksi.length > 0 ? (
+                <PanelPermintaanKoreksi
+                    daftar={PermintaanKoreksi}
+                    saatCatat={(permintaan) => AturDialog({ jenis: 'tambah', permintaan })}
+                />
             ) : null}
             <TabelData
                 id="karyawan-absensi"
@@ -230,9 +264,20 @@ export default function HalamanAbsensi({ Absensi, OpsiKaryawan, OpsiOutlet, Bole
                 {...(BolehKoreksi
                     ? {
                           aksiBaris: (a: BarisAbsensi) => (
-                              <DropdownMenuItem onSelect={() => AturDialog({ jenis: 'koreksi', absensi: a })}>
-                                  Koreksi jam
-                              </DropdownMenuItem>
+                              <>
+                                  <DropdownMenuItem onSelect={() => AturDialog({ jenis: 'koreksi', absensi: a })}>
+                                      Koreksi jam
+                                  </DropdownMenuItem>
+                                  {a.PerluDicek ? (
+                                      <DropdownMenuItem
+                                          onSelect={() =>
+                                              router.post(`${alamat}/${a.Uuid}/dicek`, {}, { preserveScroll: true })
+                                          }
+                                      >
+                                          Tandai sudah dicek
+                                      </DropdownMenuItem>
+                                  ) : null}
+                              </>
                           ),
                       }
                     : {})}
@@ -243,6 +288,7 @@ export default function HalamanAbsensi({ Absensi, OpsiKaryawan, OpsiOutlet, Bole
             {dialog !== null ? (
                 <FormAbsensi
                     absensi={dialog.jenis === 'koreksi' ? dialog.absensi : null}
+                    permintaan={dialog.jenis === 'tambah' ? (dialog.permintaan ?? null) : null}
                     opsiKaryawan={OpsiKaryawan}
                     opsiOutlet={OpsiOutlet}
                     saatSelesai={Tutup}
@@ -259,19 +305,23 @@ function KeOpsi(daftar: OpsiUuidNama[]) {
 /** Satu formulir untuk tambah (absensi null) dan koreksi; tanggal = tanggal bisnis, jam = jam dinding outlet. */
 function FormAbsensi({
     absensi,
+    permintaan,
     opsiKaryawan,
     opsiOutlet,
     saatSelesai,
 }: {
     absensi: BarisAbsensi | null;
+    /** D-180: absensi ini menjawab permintaan koreksi karyawan; permintaannya ikut ditutup. */
+    permintaan: PermintaanKoreksiAbsensi | null;
     opsiKaryawan: OpsiUuidNama[];
     opsiOutlet: OpsiUuidNama[];
     saatSelesai: () => void;
 }) {
     const hariIni = TulisTanggal(new Date());
     const formulir = useForm({
-        Outlet: '',
-        Karyawan: '',
+        Outlet: permintaan?.UuidOutlet ?? '',
+        Karyawan: permintaan?.UuidKaryawan ?? '',
+        UuidPermintaan: permintaan?.Uuid ?? '',
         Tanggal: absensi?.TanggalBisnis ?? hariIni,
         JamMasuk: absensi?.JamMasuk ?? '',
         JamKeluar: absensi?.JamKeluar ?? '',
@@ -281,7 +331,11 @@ function FormAbsensi({
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
-        formulir.transform((d) => ({ ...d, JamKeluar: d.JamKeluar === '' ? null : d.JamKeluar }));
+        formulir.transform((d) => ({
+            ...d,
+            JamKeluar: d.JamKeluar === '' ? null : d.JamKeluar,
+            UuidPermintaan: d.UuidPermintaan === '' ? null : d.UuidPermintaan,
+        }));
 
         if (absensi === null) {
             formulir.post(alamat, { preserveScroll: true, onSuccess: saatSelesai });
@@ -369,5 +423,53 @@ function FormAbsensi({
                 </DialogFooter>
             </form>
         </DialogFormulir>
+    );
+}
+
+/** D-180: karyawan yang gagal absen meminta manajer mencatat jamnya; manajer mencatat absensinya atau menutup permintaan. */
+function PanelPermintaanKoreksi({
+    daftar,
+    saatCatat,
+}: {
+    daftar: PermintaanKoreksiAbsensi[];
+    saatCatat: (permintaan: PermintaanKoreksiAbsensi) => void;
+}) {
+    const Tutup = (uuid: string, status: 'Selesai' | 'Ditolak') =>
+        router.post(`${alamat}/permintaan-koreksi/${uuid}/tutup`, { Status: status }, { preserveScroll: true });
+
+    return (
+        <Panel
+            judul="Permintaan koreksi absensi"
+            keterangan="Karyawan ini gagal absen dan meminta Anda mencatat jamnya. Periksa alasannya, catat absensinya, atau tutup permintaan."
+        >
+            <ul className="flex flex-col gap-3" aria-label="Permintaan koreksi absensi">
+                {daftar.map((p) => (
+                    <li
+                        key={p.Uuid}
+                        className="flex flex-wrap items-start justify-between gap-3 rounded-panel border border-garis p-3"
+                    >
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="text-isi font-semibold break-words text-teks-utama">
+                                {p.NamaKaryawan} | absen {p.Jenis === 'Masuk' ? 'masuk' : 'pulang'}
+                            </span>
+                            <span className="text-keterangan break-words text-teks-sekunder">{p.Alasan}</span>
+                            <span className="text-keterangan text-teks-sekunder">
+                                {FormatTanggalWaktu(p.DiajukanPada)}
+                                {p.NamaOutlet ? ` | ${p.NamaOutlet}` : ''}
+                            </span>
+                        </span>
+                        <span className="flex flex-wrap gap-2">
+                            <Tombol onClick={() => saatCatat(p)}>Catat absensi</Tombol>
+                            <Tombol varian="sekunder" onClick={() => Tutup(p.Uuid, 'Selesai')}>
+                                Tutup
+                            </Tombol>
+                            <Tombol varian="sekunder" onClick={() => Tutup(p.Uuid, 'Ditolak')}>
+                                Tolak
+                            </Tombol>
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </Panel>
     );
 }

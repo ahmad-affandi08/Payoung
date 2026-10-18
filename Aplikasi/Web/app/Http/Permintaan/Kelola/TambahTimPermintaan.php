@@ -37,6 +37,8 @@ final class TambahTimPermintaan extends TambahPenggunaPermintaan
             'TarifLemburPerJam' => self::ANGKA,
             'PotonganTerlambatPerMenit' => self::ANGKA,
             'PotonganTidakMasukPerHari' => self::ANGKA,
+            // D-180: kosong = bawaan menurut peran; hanya berlaku untuk akses Dashboard (butuh email).
+            'IkutAbsensi' => ['nullable', 'boolean'],
         ];
         $akses = ['Akses' => ['required', 'string', 'in:Kasir,Dashboard,Tanpa']];
 
@@ -73,6 +75,16 @@ final class TambahTimPermintaan extends TambahPenggunaPermintaan
         ];
     }
 
+    /** D-180: null = bawaan menurut peran. Selain akses Dashboard (beremail) tidak ada yang bisa absen, jadi selalu tidak ikut. */
+    public function AmbilIkutAbsensi(): ?bool
+    {
+        if ($this->input('Akses') !== 'Dashboard') {
+            return false;
+        }
+
+        return $this->filled('IkutAbsensi') ? $this->boolean('IkutAbsensi') : null;
+    }
+
     public function AmbilJenisAkses(): string
     {
         return (string) $this->input('Akses');
@@ -102,6 +114,7 @@ final class TambahTimPermintaan extends TambahPenggunaPermintaan
             tarifLemburPerJam: $uang('TarifLemburPerJam'),
             potonganTerlambatPerMenit: $uang('PotonganTerlambatPerMenit'),
             potonganTidakMasukPerHari: $uang('PotonganTidakMasukPerHari'),
+            ikutAbsensi: $this->AmbilIkutAbsensi(),
         );
     }
 }

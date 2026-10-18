@@ -84,7 +84,7 @@ final class DaftarKaryawan
             'NamaOutlet' => $k->IdOutlet === null ? null : ($outlet[$k->IdOutlet]['Nama'] ?? null),
             'Status' => $k->Status->value,
             'LabelStatus' => $k->Status->AmbilLabel(),
-            'TautanAbsen' => $k->HashTokenAbsen !== null,
+            'IkutAbsensi' => $k->IkutAbsensi,
             'StatusWajah' => $wajah->get($k->Id)?->Status->value,
         ])->all());
     }

@@ -122,7 +122,7 @@ final class PenyediaTagihanPalsu implements PenyediaTagihanPlatform
         return NomorPesananBilling::Urai($nomor) === null ? null : $this->Bentuk($nomor, (string) $permintaan->input('Jumlah'));
     }
 
-    public function Konfirmasi(NotifikasiBilling $notifikasi): ?NotifikasiBilling
+    public function Konfirmasi(NotifikasiBilling $notifikasi): NotifikasiBilling
     {
         return $notifikasi;
     }

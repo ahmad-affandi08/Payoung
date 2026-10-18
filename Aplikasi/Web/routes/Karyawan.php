@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Karyawan\AbsenHpKaryawanKontroler;
+use App\Http\Kontroler\Kelola\Karyawan\AbsenSayaKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\AbsensiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\AturanKehadiranKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\CutiKaryawanKontroler;
@@ -26,6 +27,16 @@ use Illuminate\Support\Facades\Route;
 
 $izin = static fn (IzinTenant $izin): string => WajibIzinTenant::class.':'.$izin->value;
 $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
+
+// D-180: halaman Absen berlogin. Tanpa izin back-office: syaratnya karyawan aktif yang ikut absensi dan tertaut ke akun
+// ini (dicek kontroler; selain itu 404). Dibatasi per akun supaya tebakan massal tidak menekan server wajah.
+Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function (): void {
+    Route::get('/', [AbsenSayaKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('kelola.absen');
+    Route::post('/wajah', [AbsenSayaKontroler::class, 'DaftarWajah'])->middleware('throttle:absensi-web')->name('kelola.absen.wajah');
+    Route::post('/masuk', [AbsenSayaKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('kelola.absen.masuk');
+    Route::post('/keluar', [AbsenSayaKontroler::class, 'Keluar'])->middleware('throttle:absensi-web')->name('kelola.absen.keluar');
+    Route::post('/minta-koreksi', [AbsenSayaKontroler::class, 'MintaKoreksi'])->middleware('throttle:10,1')->name('kelola.absen.minta-koreksi');
+});
 
 Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])->prefix('karyawan')->group(function () use ($izin, $ulid): void {
     Route::get('/jadwal', [JadwalKerjaKontroler::class, 'Tampil'])->name('kelola.karyawan.jadwal');
@@ -51,11 +62,12 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         // F-18 bagian 4 (D-37, K37): kalibrasi ambang kemiripan wajah absensi web.
         Route::get('/absensi/kalibrasi-wajah', [AbsensiKontroler::class, 'KalibrasiWajah'])->name('kelola.karyawan.absensi.kalibrasi-wajah');
         Route::put('/absensi/{absensi}', [AbsensiKontroler::class, 'Koreksi'])->where('absensi', $ulid)->name('kelola.karyawan.absensi.koreksi');
+        // D-180: absensi yang lokasinya janggal ditandai sudah dicek; permintaan koreksi dari karyawan ditutup.
+        Route::post('/absensi/{absensi}/dicek', [AbsensiKontroler::class, 'TandaiDicek'])->where('absensi', $ulid)->name('kelola.karyawan.absensi.dicek');
+        Route::post('/absensi/permintaan-koreksi/{koreksi}/tutup', [AbsensiKontroler::class, 'TutupPermintaan'])->where('koreksi', $ulid)->name('kelola.karyawan.absensi.permintaan-koreksi.tutup');
         Route::put('/{karyawan}', [KaryawanKontroler::class, 'Perbarui'])->where('karyawan', $ulid)->name('kelola.karyawan.perbarui');
-        // F-18 bagian 4 (D-37): absen HP pribadi lewat web — tautan pribadi & wajah terdaftar.
+        // F-18 bagian 4 (D-37, D-180): wajah terdaftar karyawan (absen lewat login di /kelola/absen).
         Route::get('/{karyawan}/absen-hp', [AbsenHpKaryawanKontroler::class, 'Tampilkan'])->where('karyawan', $ulid)->name('kelola.karyawan.absen-hp');
-        Route::post('/{karyawan}/tautan-absen', [AbsenHpKaryawanKontroler::class, 'BuatTautan'])->where('karyawan', $ulid)->name('kelola.karyawan.tautan-absen.buat');
-        Route::delete('/{karyawan}/tautan-absen', [AbsenHpKaryawanKontroler::class, 'CabutTautan'])->where('karyawan', $ulid)->name('kelola.karyawan.tautan-absen.cabut');
         Route::post('/{karyawan}/wajah/tinjau', [AbsenHpKaryawanKontroler::class, 'Tinjau'])->where('karyawan', $ulid)->name('kelola.karyawan.wajah.tinjau');
         Route::delete('/{karyawan}/wajah', [AbsenHpKaryawanKontroler::class, 'HapusWajah'])->where('karyawan', $ulid)->name('kelola.karyawan.wajah.hapus');
         Route::get('/{karyawan}/wajah/foto/{indeks}', [AbsenHpKaryawanKontroler::class, 'Foto'])->where(['karyawan' => $ulid, 'indeks' => '[0-9]'])->name('kelola.karyawan.wajah.foto');

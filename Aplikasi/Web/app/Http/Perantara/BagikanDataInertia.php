@@ -8,6 +8,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Dukungan\Enum\JenisAksesDukungan;
 use App\Domain\Dukungan\Layanan\KonteksAksesDukungan;
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
+use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
@@ -153,6 +154,11 @@ final class BagikanDataInertia extends Middleware
                     : [];
 
                 return $akses === null ? null : ['Pemilik' => $akses['Pemilik'], 'Izin' => array_values(array_diff($akses['Izin'], $nonaktif)), 'IzinNonaktif' => $nonaktif];
+            },
+            // D-180: menu "Absen" tampil bagi karyawan aktif yang ikut absensi dan tertaut ke akun ini.
+            'AbsenSaya' => function () use ($pengguna): bool {
+                return $pengguna instanceof Pengguna && app(KonteksTenant::class)->Ambil() !== null
+                    && app(AbsenSaya::class)->CekTersedia($pengguna->Id);
             },
             // D-23: fitur di luar paket tetap tampil di menu; klik = dialog naik paket / add-on (hanya UX).
             'FiturPaket' => function () use ($pengguna): ?array {

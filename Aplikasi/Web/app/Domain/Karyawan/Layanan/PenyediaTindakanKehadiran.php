@@ -9,18 +9,23 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Karyawan\Kueri\DaftarPermintaanKoreksi;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\Karyawan;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Kotak Tindakan kehadiran (F-18 bagian 5, D-44, izin `karyawan.lihat`, dibatasi outlet akses): **absen di luar jadwal**
- * (Perhatian), yaitu absen dari aplikasi kasir 7 hari terakhir yang diterima walau tidak sesuai jadwal saat aturan
- * wajib-jadwal aktif (kasir bisa offline, jadi tidak ditolak). Pengelola memeriksa lalu menjadwalkan atau mengoreksinya.
+ * Kotak Tindakan kehadiran (F-18 bagian 5, D-44, D-180, izin `karyawan.lihat`, dibatasi outlet akses):
+ * - **absen di luar jadwal** (Perhatian): absen dari aplikasi kasir 7 hari terakhir yang diterima walau tidak sesuai jadwal;
+ * - **absen perlu dicek** (Perhatian): absen dari HP 7 hari terakhir yang lokasinya janggal (di luar radius, GPS lemah, titik
+ *   outlet belum diatur) tetapi tetap dicatat;
+ * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya.
  */
 final class PenyediaTindakanKehadiran implements PenyediaTindakan
 {
     private const HARI = 7;
+
+    public function __construct(private readonly DaftarPermintaanKoreksi $koreksi) {}
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
@@ -29,36 +34,75 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
         }
 
         $dari = $konteks->hariIni->subDays(self::HARI)->toDateString();
+        $sampai = $konteks->hariIni->toDateString();
+
+        return array_values(array_filter([
+            $this->ButirAbsen($konteks, $dari, $sampai, 'DiluarJadwal', 'karyawan.absen-diluar-jadwal', 'Absen di luar jadwal', 'Karyawan absen di kasir padahal tidak sesuai jadwal kerjanya. Periksa, lalu jadwalkan atau koreksi absensinya.', 'Absen masuk tidak sesuai jadwal'),
+            $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat; periksa lalu tandai sudah dicek.', null),
+            $this->ButirKoreksi($konteks),
+        ]));
+    }
+
+    private function ButirAbsen(DataKonteksTindakan $konteks, string $dari, string $sampai, string $kolom, string $kunci, string $judul, string $keterangan, ?string $teksTetap): ?DataButirTindakan
+    {
         $kueri = fn (): Builder => Absensi::query()
-            ->where('DiluarJadwal', true)
+            ->where($kolom, true)
             ->where('TanggalBisnis', '>=', $dari)
             ->when($konteks->idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $konteks->idOutletBoleh ?: [0]));
         $jumlah = $kueri()->count();
 
         if ($jumlah === 0) {
-            return [];
+            return null;
         }
 
         $daftar = $kueri()->orderByDesc('MasukPada')->limit(DataButirTindakan::BATAS_RINCIAN)->get();
         $nama = Karyawan::query()->whereKey($daftar->pluck('IdKaryawan')->all())->pluck('Nama', 'Id');
+        $tautan = "/kelola/karyawan/absensi?saring[{$kolom}]=1&saring[TanggalBisnis]={$dari}..{$sampai}";
 
-        return [new DataButirTindakan(
-            'karyawan.absen-diluar-jadwal',
+        return new DataButirTindakan(
+            $kunci,
             'Karyawan',
             TingkatTindakan::Perhatian,
-            'Absen di luar jadwal',
-            'Karyawan absen di kasir padahal tidak sesuai jadwal kerjanya. Periksa, lalu jadwalkan atau koreksi absensinya.',
+            $judul,
+            $keterangan,
             $jumlah,
-            "/kelola/karyawan/absensi?saring[DiluarJadwal]=1&saring[TanggalBisnis]={$dari}..{$konteks->hariIni->toDateString()}",
+            $tautan,
             'Lihat absensi',
             array_values($daftar->map(fn (Absensi $a): DataRincianTindakan => new DataRincianTindakan(
                 $a->Uuid,
                 (string) ($nama->get($a->IdKaryawan) ?? 'Karyawan'),
-                'Absen masuk tidak sesuai jadwal',
+                $teksTetap ?? ($a->CatatanPeriksa ?? 'Lokasi perlu dicek'),
                 $a->TanggalBisnis->toDateString(),
-                '/kelola/karyawan/absensi?saring[DiluarJadwal]=1',
+                "/kelola/karyawan/absensi?saring[{$kolom}]=1",
             ))->all()),
-        )];
+        );
+    }
+
+    private function ButirKoreksi(DataKonteksTindakan $konteks): ?DataButirTindakan
+    {
+        $jumlah = $this->koreksi->Hitung($konteks->idOutletBoleh);
+
+        if ($jumlah === 0) {
+            return null;
+        }
+
+        return new DataButirTindakan(
+            'karyawan.permintaan-koreksi',
+            'Karyawan',
+            TingkatTindakan::Perhatian,
+            'Permintaan koreksi absensi',
+            'Karyawan gagal absen dan meminta Anda mencatat jam masuk atau pulangnya. Periksa alasannya, catat absensinya, lalu tutup permintaan.',
+            $jumlah,
+            '/kelola/karyawan/absensi',
+            'Lihat permintaan',
+            array_values(array_map(fn (array $p): DataRincianTindakan => new DataRincianTindakan(
+                $p['Uuid'],
+                $p['NamaKaryawan'],
+                "Absen {$p['Jenis']} | {$p['Alasan']}",
+                substr($p['DiajukanPada'], 0, 10),
+                '/kelola/karyawan/absensi',
+            ), array_slice($this->koreksi->Ambil($konteks->idOutletBoleh, DataButirTindakan::BATAS_RINCIAN), 0, DataButirTindakan::BATAS_RINCIAN))),
+        );
     }
 
     public function AmbilJenisDokumen(): array

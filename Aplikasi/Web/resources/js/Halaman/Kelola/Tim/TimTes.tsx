@@ -40,7 +40,7 @@ const BuatKaryawan = (
     NamaOutlet: null,
     Status: status,
     LabelStatus: status,
-    TautanAbsen: false,
+    IkutAbsensi: true,
     StatusWajah: null,
 });
 const siti: BarisTim = {

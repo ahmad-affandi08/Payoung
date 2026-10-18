@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * F-18 bagian 4 (D-37): karyawan mendaftarkan wajah dari tautan absennya. Wajib persetujuan pemrosesan data biometrik
+ * F-18 bagian 4 (D-37): karyawan mendaftarkan wajah dari halaman Absen setelah login. Wajib persetujuan pemrosesan data biometrik
  * (UU PDP Pasal 4 & 20), sejumlah `config('karyawan.JumlahFotoDaftarWajah')` foto + sidik wajah berpanjang sama. Sejak D-45
  * wajah yang didaftarkan **langsung Disetujui** (tanpa menunggu pengelola): karyawan bisa absen seketika. Pengelola tetap
  * melihat foto dan boleh menolak/mengatur ulang bila fotonya tidak layak. Daftar ulang hanya bila belum ada wajah

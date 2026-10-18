@@ -264,7 +264,6 @@ describe('Kelola/Tim: aksi baris & konfirmasi nonaktifkan (F-02 BR-02.1, D-101)'
             NamaOutlet: null,
             Status: 'Aktif' as const,
             LabelStatus: 'Aktif',
-            TautanAbsen: false,
             StatusWajah: null,
         };
         const dengan = [...tim, BuatAkun({ Kunci: 'U-3', Nama: 'Sari Dewi', UuidPengguna: 'U-3', Karyawan: karyawan })];

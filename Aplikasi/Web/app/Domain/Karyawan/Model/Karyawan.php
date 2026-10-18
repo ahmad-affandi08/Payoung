@@ -7,6 +7,7 @@ namespace App\Domain\Karyawan\Model;
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -26,9 +27,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $PotonganTerlambatPerMenit
  * @property string|null $PotonganTidakMasukPerHari
  * @property StatusKaryawan $Status
- * @property string|null $TokenAbsen F-18 bagian 4: tautan absen HP pribadi (terenkripsi; ditampilkan ulang ke pengelola)
- * @property string|null $HashTokenAbsen
- * @property Carbon|null $TokenAbsenDibuatPada
+ * @property bool $IkutAbsensi D-180: ikut absensi (Kasir, Pelayan, dst. ya; Manajer, Supervisor, Pemilik bawaannya tidak)
  * @property int|null $DibuatOleh
  * @property Carbon|null $DibuatPada
  */
@@ -39,10 +38,7 @@ final class Karyawan extends ModelDasar
     protected $table = 'Karyawan';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Aktif', 'TokenAbsen' => null, 'HashTokenAbsen' => null, 'TokenAbsenDibuatPada' => null];
-
-    /** @var list<string> */
-    protected $hidden = ['TokenAbsen', 'HashTokenAbsen'];
+    protected $attributes = ['Status' => 'Aktif', 'IkutAbsensi' => true];
 
     /**
      * @return array<string, string>
@@ -55,8 +51,18 @@ final class Karyawan extends ModelDasar
             'PotonganTerlambatPerMenit' => 'decimal:2',
             'PotonganTidakMasukPerHari' => 'decimal:2',
             'Status' => StatusKaryawan::class,
-            'TokenAbsen' => 'encrypted',
-            'TokenAbsenDibuatPada' => 'datetime',
+            'IkutAbsensi' => 'boolean',
         ];
+    }
+
+    /**
+     * Karyawan aktif yang wajib absen (D-180). Dipakai notifikasi "belum masuk/terlambat", Kotak Tindakan, pantau
+     * Pemilik, dan potongan tidak masuk di rekap gaji: yang tidak ikut absensi tidak pernah dianggap alpa.
+     *
+     * @param  Builder<Karyawan>  $kueri
+     */
+    public function scopeWajibAbsen(Builder $kueri): void
+    {
+        $kueri->where('Status', StatusKaryawan::Aktif->value)->where('IkutAbsensi', true);
     }
 }

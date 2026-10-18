@@ -6,12 +6,10 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { AlamatKaryawan } from '@/Komponen/Karyawan/FormulirKaryawan';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
 import { Skeleton } from '@/Komponen/Ui/skeleton';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
-import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
 import type { AbsenHpKaryawan, BarisKaryawan, StatusWajahKaryawan } from '@/Tipe/Karyawan';
 
@@ -39,20 +37,10 @@ export function JenisLabelWajah(status: StatusWajahKaryawan | null): 'sukses' | 
             : 'netral';
 }
 
-type AksiBerisiko = 'buat-ulang' | 'cabut' | 'hapus';
+type AksiBerisiko = 'hapus';
 
-/** Judul, akibat, label tombol, dan permintaan tiap aksi yang perlu dikonfirmasi. */
+/** Judul, akibat, dan label tombol aksi yang perlu dikonfirmasi. */
 const isiKonfirmasi: Record<AksiBerisiko, { judul: string; akibat: string; label: string }> = {
-    'buat-ulang': {
-        judul: 'Buat ulang tautan absen?',
-        akibat: 'Tautan lama langsung tidak berlaku. Kirim tautan baru ke karyawan supaya bisa absen lagi.',
-        label: 'Buat ulang tautan',
-    },
-    cabut: {
-        judul: 'Cabut tautan absen?',
-        akibat: 'Karyawan tidak bisa absen dari HP sampai Anda membuat tautan baru.',
-        label: 'Cabut tautan',
-    },
     hapus: {
         judul: 'Atur ulang wajah?',
         akibat: 'Wajah terdaftar dan fotonya dihapus. Karyawan harus mendaftarkan wajah lagi sebelum bisa absen.',
@@ -61,9 +49,9 @@ const isiKonfirmasi: Record<AksiBerisiko, { judul: string; akibat: string; label
 };
 
 /**
- * F-18 bagian 4 (D-37): panel "Absen dari HP" satu karyawan (`karyawan.kelola`). Tautan absen pribadi (buat ulang,
- * salin, kirim lewat WhatsApp, cabut) dan wajah terdaftar: lihat 3 foto pendaftaran lalu setujui atau tolak dengan
- * alasan; atur ulang menghapus wajah supaya karyawan mendaftar lagi.
+ * F-18 bagian 4 (D-37, D-180): panel wajah satu karyawan (`karyawan.kelola`). Karyawan absen setelah login dan
+ * mendaftarkan wajahnya sendiri di halaman Absen; di sini pengelola melihat 3 foto pendaftaran, bisa menolaknya dengan
+ * alasan, dan mengatur ulang wajah supaya karyawan mendaftar lagi.
  */
 export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisKaryawan; saatTutup: () => void }) {
     const klien = useQueryClient();
@@ -72,7 +60,6 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
     const [memproses, AturMemproses] = useState<string | null>(null);
     const [tolak, AturTolak] = useState(false);
     const [alasan, AturAlasan] = useState('');
-    const [tersalin, AturTersalin] = useState(false);
     const [konfirmasi, AturKonfirmasi] = useState<AksiBerisiko | null>(null);
     const alamat = `${AlamatKaryawan}/${karyawan.Uuid}`;
     const data = kueri.data;
@@ -102,23 +89,14 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
         }
     };
 
-    const Salin = async (teks: string) => {
-        try {
-            await navigator.clipboard.writeText(teks);
-            AturTersalin(true);
-        } catch {
-            AturTersalin(false);
-        }
-    };
-
     return (
         <Sheet open onOpenChange={(terbuka) => (terbuka ? undefined : saatTutup())}>
             <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
                 <SheetHeader>
-                    <SheetTitle className="text-subjudul text-teks-utama">Absen dari HP | {karyawan.Nama}</SheetTitle>
+                    <SheetTitle className="text-subjudul text-teks-utama">Wajah | {karyawan.Nama}</SheetTitle>
                     <SheetDescription>
-                        Karyawan membuka tautan pribadinya di HP, mendaftarkan wajah sekali, lalu absen di dalam radius
-                        outlet dengan pencocokan wajah. Tanpa PIN.
+                        Karyawan masuk dengan akunnya, mendaftarkan wajah sekali di halaman Absen, lalu absen dengan
+                        pencocokan wajah. Wajah yang tidak cocok ditolak.
                     </SheetDescription>
                 </SheetHeader>
 
@@ -141,68 +119,6 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
 
                     {data ? (
                         <>
-                            <section className="flex flex-col gap-3" aria-labelledby="judul-tautan-absen">
-                                <h3 id="judul-tautan-absen" className="text-label font-semibold text-teks-utama">
-                                    Tautan absen
-                                </h3>
-                                {data.Tautan ? (
-                                    <>
-                                        <p className="break-all rounded-panel border border-garis bg-permukaan-redup px-3 py-2 font-mono text-keterangan text-teks-utama">
-                                            {data.Tautan}
-                                        </p>
-                                        <p className="text-keterangan text-teks-sekunder">
-                                            Dibuat {FormatTanggalWaktu(data.TautanDibuatPada)}. Rahasiakan: siapa pun
-                                            yang memegang tautan ini bisa mencoba absen atas nama {karyawan.Nama}.
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            <Tombol varian="sekunder" onClick={() => void Salin(data.Tautan ?? '')}>
-                                                {tersalin ? 'Tersalin' : 'Salin tautan'}
-                                            </Tombol>
-                                            <Button
-                                                asChild
-                                                variant="outline"
-                                                className="h-8 px-4 text-label font-semibold pointer-coarse:h-11"
-                                            >
-                                                <a
-                                                    href={`https://wa.me/?text=${encodeURIComponent(`Tautan absen ${karyawan.Nama}: ${data.Tautan} (simpan ke layar utama HP, jangan dibagikan)`)}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    Kirim lewat WhatsApp
-                                                </a>
-                                            </Button>
-                                            <Tombol
-                                                varian="sekunder"
-                                                disabled={memproses !== null}
-                                                onClick={() => AturKonfirmasi('buat-ulang')}
-                                            >
-                                                Buat ulang tautan
-                                            </Tombol>
-                                            <Tombol
-                                                varian="bahaya"
-                                                disabled={memproses !== null}
-                                                onClick={() => AturKonfirmasi('cabut')}
-                                            >
-                                                Cabut tautan
-                                            </Tombol>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="text-isi text-teks-sekunder">Belum ada tautan absen.</p>
-                                        <div>
-                                            <Tombol
-                                                memproses={memproses === 'buat'}
-                                                disabled={karyawan.Status !== 'Aktif'}
-                                                onClick={() => Kirim('buat', 'post', `${alamat}/tautan-absen`)}
-                                            >
-                                                Buat tautan absen
-                                            </Tombol>
-                                        </div>
-                                    </>
-                                )}
-                            </section>
-
                             <section className="flex flex-col gap-3" aria-labelledby="judul-wajah">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <h3 id="judul-wajah" className="text-label font-semibold text-teks-utama">
@@ -215,7 +131,7 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
                                 </div>
                                 {data.Wajah === null ? (
                                     <p className="text-isi text-teks-sekunder">
-                                        Karyawan mendaftarkan wajahnya sendiri dari tautan absen.
+                                        Karyawan mendaftarkan wajahnya sendiri saat pertama membuka halaman Absen.
                                     </p>
                                 ) : null}
                                 {data.Wajah?.AlasanTolak ? (
@@ -312,13 +228,7 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
                         labelAksi={isiKonfirmasi[konfirmasi].label}
                         memproses={memproses === konfirmasi}
                         saatBatal={() => AturKonfirmasi(null)}
-                        saatKonfirmasi={() =>
-                            konfirmasi === 'buat-ulang'
-                                ? Kirim('buat-ulang', 'post', `${alamat}/tautan-absen`)
-                                : konfirmasi === 'cabut'
-                                  ? Kirim('cabut', 'delete', `${alamat}/tautan-absen`)
-                                  : Kirim('hapus', 'delete', `${alamat}/wajah`)
-                        }
+                        saatKonfirmasi={() => Kirim('hapus', 'delete', `${alamat}/wajah`)}
                     >
                         <p>{isiKonfirmasi[konfirmasi].akibat}</p>
                     </DialogKonfirmasi>

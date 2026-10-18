@@ -125,7 +125,7 @@ describe('Halaman karyawan (F-18)', () => {
             NamaOutlet: null,
             Status: 'Aktif',
             LabelStatus: 'Aktif',
-            TautanAbsen: false,
+            IkutAbsensi: true,
             StatusWajah: null,
         };
         window.history.replaceState({}, '', '/kelola/karyawan/absensi');
@@ -144,6 +144,8 @@ describe('Halaman karyawan (F-18)', () => {
             PulangCepatMenit: 0,
             LemburMenit: 0,
             DiluarJadwal: false,
+            PerluDicek: false,
+            CatatanPeriksa: null,
             Status: 'Terlambat',
             LabelStatus: 'Terlambat',
             AdaSwafotoMasuk: true,

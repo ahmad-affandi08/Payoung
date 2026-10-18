@@ -47,8 +47,8 @@ final class RegistriAnonimisasi
             'AlamatNpwp' => 'null', 'Tag' => 'null', 'Catatan' => 'null', 'SetujuPemasaran' => 'nol',
         ],
         'Karyawan' => [
-            'Nama' => 'unik:Karyawan Terhapus #', 'GajiPokok' => 'null', 'TokenAbsen' => 'null', 'HashTokenAbsen' => 'null',
-            'TokenAbsenDibuatPada' => 'null', 'TarifLemburPerJam' => 'nol', 'PotonganTerlambatPerMenit' => 'nol',
+            'Nama' => 'unik:Karyawan Terhapus #', 'GajiPokok' => 'null',
+            'TarifLemburPerJam' => 'nol', 'PotonganTerlambatPerMenit' => 'nol',
             'PotonganTidakMasukPerHari' => 'nol',
         ],
         'Kurir' => [
@@ -108,7 +108,7 @@ final class RegistriAnonimisasi
         'Produk' => ['PathGambar' => 'null'],
         'Outlet' => [
             'Nama' => 'unik:Outlet Terhapus #', 'Alamat' => 'null', 'Telepon' => 'null', 'Lintang' => 'null', 'Bujur' => 'null', 'NomorKendaraan' => 'null',
-            'TokenKios' => 'null', 'TokenLayarAbsen' => 'null', 'HashTokenLayarAbsen' => 'null', 'ProfilPajak' => 'null',
+            'TokenKios' => 'null', 'ProfilPajak' => 'null',
             'PengaturanKasir' => 'null', 'PesanSendiriAktif' => 'nol', 'TokoOnlineAktif' => 'nol', 'KiosAktif' => 'nol',
             'AmbilSendiriAktif' => 'nol', 'KirimAktif' => 'nol',
         ],

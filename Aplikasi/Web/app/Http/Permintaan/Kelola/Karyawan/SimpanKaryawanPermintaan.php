@@ -26,6 +26,8 @@ final class SimpanKaryawanPermintaan extends FormRequest
             'PotonganTidakMasukPerHari' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
             'UuidPengguna' => ['nullable', 'string', 'ulid'],
             'UuidOutlet' => ['nullable', 'string', 'ulid'],
+            // D-180: kosong = tidak diubah (karyawan baru: bawaan menurut peran).
+            'IkutAbsensi' => ['nullable', 'boolean'],
         ];
     }
 
@@ -69,6 +71,7 @@ final class SimpanKaryawanPermintaan extends FormRequest
             tarifLemburPerJam: $uang('TarifLemburPerJam'),
             potonganTerlambatPerMenit: $uang('PotonganTerlambatPerMenit'),
             potonganTidakMasukPerHari: $uang('PotonganTidakMasukPerHari'),
+            ikutAbsensi: $this->filled('IkutAbsensi') ? $this->boolean('IkutAbsensi') : null,
         );
     }
 }

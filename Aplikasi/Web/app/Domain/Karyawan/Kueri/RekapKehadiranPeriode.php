@@ -7,6 +7,7 @@ namespace App\Domain\Karyawan\Kueri;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
+use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\ZonaWaktuOutlet;
 use Carbon\CarbonImmutable;
 
@@ -35,7 +36,10 @@ final class RekapKehadiranPeriode
     public function Hitung(string $dari, string $sampai, CarbonImmutable $hariIni): array
     {
         $aturan = $this->aturan->Ambil();
-        $jadwal = JadwalKerja::query()->whereBetween('Tanggal', [$dari, $sampai])->get();
+        // D-180: karyawan yang tidak ikut absensi (manajer, supervisor, pemilik) tidak pernah dianggap terlambat atau alpa.
+        $jadwal = JadwalKerja::query()->whereBetween('Tanggal', [$dari, $sampai])
+            ->whereIn('IdKaryawan', Karyawan::query()->where('IkutAbsensi', true)->select('Id'))
+            ->get();
         $absensi = Absensi::query()->whereBetween('TanggalBisnis', [$dari, $sampai])->orderBy('MasukPada')->get();
         $pertama = [];
 

@@ -35,6 +35,7 @@ final class SimpanKaryawan
         }
 
         $idPengguna = null;
+        $profilAbsensi = null;
 
         if ($data->uuidPengguna !== null) {
             $cocok = array_values(array_filter($this->anggota->AmbilPilihanAktif($this->konteks->Wajib()), fn (array $a): bool => $a['Uuid'] === $data->uuidPengguna));
@@ -44,6 +45,7 @@ final class SimpanKaryawan
             }
 
             $idPengguna = $cocok[0]['Id'];
+            $profilAbsensi = $this->anggota->AmbilProfilAbsensi($this->konteks->Wajib(), $idPengguna);
             // D-46: karyawan yang punya akun memakai nama akun (satu sumber nama, tidak diisi dua kali).
             $nama = mb_substr($cocok[0]['Nama'], 0, 150);
         }
@@ -69,6 +71,20 @@ final class SimpanKaryawan
             'IdPengguna' => $idPengguna,
             'IdOutlet' => $idOutlet,
         ];
+
+        // D-180: absen lewat login, jadi ikut absensi butuh akun beremail. Karyawan baru: bawaan menurut peran (tanpa akun
+        // beremail = tidak ikut). Ubah data lewat jalur yang tidak menyebutnya tidak diam-diam menyalakan/mematikannya.
+        $bisaAbsen = $profilAbsensi !== null && $profilAbsensi['PunyaEmail'];
+
+        if ($data->ikutAbsensi === true && ! $bisaAbsen && ($karyawan === null || ! $karyawan->IkutAbsensi)) {
+            throw new PelanggaranAturanBisnis('AbsensiButuhAkunEmail', 'Ikut absensi butuh akun masuk dengan email (Gmail), karena karyawan absen setelah login. Buat akun dashboard untuknya dulu.', 'IkutAbsensi');
+        }
+
+        if ($data->ikutAbsensi !== null) {
+            $isian['IkutAbsensi'] = $data->ikutAbsensi;
+        } elseif ($karyawan === null) {
+            $isian['IkutAbsensi'] = $bisaAbsen && $profilAbsensi['IkutAbsensiBawaan'];
+        }
 
         $idSendiri = $karyawan?->Id;
 

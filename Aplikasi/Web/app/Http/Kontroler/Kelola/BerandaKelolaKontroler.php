@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Kelola;
 
 use App\Domain\Bersama\Tindakan\Data\DataButirTindakan;
 use App\Domain\Bersama\Tindakan\Kueri\KotakTindakan;
+use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Laporan\Kueri\DasborPemilik;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
@@ -16,6 +17,7 @@ use App\Domain\Organisasi\Kueri\TurProdukPengguna;
 use App\Domain\Penjualan\Kueri\RingkasanInvoice;
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -29,10 +31,16 @@ use Inertia\Response;
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor): Response
+    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
+        $hakAkses = $akses->Ambil($idTenant, $idPengguna);
+
+        // D-180: staf yang akunnya hanya untuk absen (tanpa izin back-office apa pun) langsung ke halaman Absen.
+        if ($hakAkses !== null && ! $hakAkses['Pemilik'] && $hakAkses['Izin'] === [] && $absen->CekTersedia($idPengguna)) {
+            return redirect()->route('kelola.absen');
+        }
 
         return Inertia::render('Kelola/Beranda', [
             // PLT-12: tur yang sudah dilihat pengguna ini (Beranda menawarkan tur keliling dashboard sekali).

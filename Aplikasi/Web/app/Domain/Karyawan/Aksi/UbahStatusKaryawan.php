@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
  * Nonaktifkan/aktifkan karyawan (F-18, izin `karyawan.kelola`). Nonaktif = tidak bisa absen di POS dan tidak muncul
  * di jadwal baru; absensi & jadwal lama tetap. Idempoten. Audit `karyawan.nonaktifkan|aktifkan`.
  *
- * F-18 bagian 4 (D-37): nonaktif juga mencabut tautan absen dan menghapus wajah terdaftar (data biometrik tidak
- * disimpan lebih lama dari keperluannya).
+ * F-18 bagian 4 (D-37): nonaktif juga menghapus wajah terdaftar (data biometrik tidak disimpan lebih lama dari
+ * keperluannya).
  */
 final class UbahStatusKaryawan
 {
@@ -35,7 +35,6 @@ final class UbahStatusKaryawan
             $karyawan->Status = $status;
 
             if ($status === StatusKaryawan::Nonaktif) {
-                $karyawan->forceFill(['TokenAbsen' => null, 'HashTokenAbsen' => null, 'TokenAbsenDibuatPada' => null]);
                 $this->hapusWajah->HapusSemua($karyawan);
             }
 

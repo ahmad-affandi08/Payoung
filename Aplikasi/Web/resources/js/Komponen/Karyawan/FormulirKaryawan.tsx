@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
+import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
@@ -21,6 +22,7 @@ type IsianKaryawan = {
     PotonganTidakMasukPerHari: string;
     UuidPengguna: string;
     UuidOutlet: string;
+    IkutAbsensi: boolean;
 };
 
 function BuatIsian(k: BarisKaryawan): IsianKaryawan {
@@ -34,12 +36,15 @@ function BuatIsian(k: BarisKaryawan): IsianKaryawan {
         PotonganTidakMasukPerHari: (k.PotonganTidakMasukPerHari ?? '').replace(/\.00$/, ''),
         UuidPengguna: k.UuidPengguna ?? '',
         UuidOutlet: k.UuidOutlet ?? '',
+        IkutAbsensi: k.IkutAbsensi,
     };
 }
 
 /** Isian kosong dikirim sebagai null. */
-function SusunDataKaryawan(isian: IsianKaryawan): Record<string, string | null> {
-    return Object.fromEntries(Object.entries(isian).map(([k, v]) => [k, v.trim() === '' ? null : v.trim()]));
+function SusunDataKaryawan(isian: IsianKaryawan): Record<string, string | boolean | null> {
+    return Object.fromEntries(
+        Object.entries(isian).map(([k, v]) => [k, typeof v === 'boolean' ? v : v.trim() === '' ? null : v.trim()]),
+    );
 }
 
 type PropsIsiFormulirKaryawan = {
@@ -144,6 +149,20 @@ function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, 
                 saatBerubah={(nilai) => Ubah({ UuidOutlet: nilai })}
                 galat={galat.UuidOutlet}
             />
+            <div className="flex flex-col gap-1">
+                <KotakCentang
+                    label="Ikut absensi (absen masuk/pulang dari HP setelah login)"
+                    nilai={isian.IkutAbsensi}
+                    saatBerubah={(nilai) => Ubah({ IkutAbsensi: nilai })}
+                />
+                <p className="text-keterangan text-teks-sekunder">
+                    Butuh akun masuk dengan email (Gmail). Yang tidak ikut absensi tidak dianggap terlambat atau tidak
+                    masuk dan tidak kena potongan gaji.
+                </p>
+                {galat.IkutAbsensi ? (
+                    <p className="text-keterangan font-semibold text-bahaya">{galat.IkutAbsensi}</p>
+                ) : null}
+            </div>
             <div className="flex flex-wrap justify-end gap-2">
                 <Tombol type="button" varian="sekunder" onClick={saatBatal}>
                     Batal

@@ -22,17 +22,16 @@ export type BarisKaryawan = {
     NamaOutlet: string | null;
     Status: StatusKaryawan;
     LabelStatus: string;
-    /** F-18 bagian 4 (D-37): sudah punya tautan absen HP; status wajah terdaftar terakhir. */
-    TautanAbsen: boolean;
+    /** D-180: ikut absensi (absen lewat login di halaman Absen). */
+    IkutAbsensi: boolean;
+    /** F-18 bagian 4 (D-37): status wajah terdaftar terakhir. */
     StatusWajah: StatusWajahKaryawan | null;
 };
 
 export type StatusWajahKaryawan = 'Menunggu' | 'Disetujui' | 'Ditolak';
 
-/** Isi panel "Absen dari HP" (`GET /kelola/karyawan/{uuid}/absen-hp`). */
+/** Isi panel wajah karyawan (`GET /kelola/karyawan/{uuid}/absen-hp`). */
 export type AbsenHpKaryawan = {
-    Tautan: string | null;
-    TautanDibuatPada: string | null;
     Wajah: {
         Status: StatusWajahKaryawan;
         Label: string;
@@ -83,6 +82,9 @@ export type BarisAbsensi = {
     LemburMenit: number;
     /** D-44: absen POS (offline) yang masuk saat aturan wajib-jadwal aktif tetapi tidak sesuai jadwal. */
     DiluarJadwal: boolean;
+    /** D-180: lokasi janggal (di luar radius, GPS lemah, titik outlet belum diatur); absen tetap tercatat. */
+    PerluDicek: boolean;
+    CatatanPeriksa: string | null;
     Status: StatusKehadiran;
     LabelStatus: string;
     AdaSwafotoMasuk: boolean;
@@ -98,8 +100,22 @@ export type BarisAbsensi = {
     KemiripanWajahKeluar: string | null;
 };
 
+/** D-180: karyawan yang gagal absen meminta manajer mencatat jamnya ("Minta koreksi ke manajer"). */
+export type PermintaanKoreksiAbsensi = {
+    Uuid: string;
+    UuidKaryawan: string | null;
+    NamaKaryawan: string;
+    UuidOutlet: string | null;
+    NamaOutlet: string | null;
+    Jenis: 'Masuk' | 'Keluar';
+    Alasan: string;
+    DiajukanPada: string;
+};
+
 export type PropsAbsensi = {
     Absensi: HasilTabel<BarisAbsensi>;
+    /** Permintaan koreksi yang menunggu (hanya untuk `karyawan.kelola`). */
+    PermintaanKoreksi?: PermintaanKoreksiAbsensi[];
     OpsiKaryawan: OpsiUuidNama[];
     OpsiOutlet: OpsiUuidNama[];
     /** v3.34: `karyawan.kelola` boleh menambah absensi terlewat & mengoreksi jam. */
@@ -314,6 +330,10 @@ export type AturanKehadiran = {
     PengingatShiftMenitSebelum: number;
     PeringatanPengelolaAktif: boolean;
     PeringatanPengelolaSetelahMenit: number;
+    /** D-180: simpan swafoto tiap absen sebagai bukti (wajah tetap selalu dicocokkan). */
+    SimpanFotoBukti: boolean;
+    /** D-180: tolak absen di luar radius outlet (bawaan: absen tetap tercatat dan ditandai perlu dicek). */
+    TolakDiLuarRadius: boolean;
 };
 
 export type PropsAturanKehadiran = {
@@ -321,4 +341,27 @@ export type PropsAturanKehadiran = {
     /** Pengiriman WhatsApp aktif untuk usaha ini (integrasi P-05 + fitur paket); tanpa itu notifikasi tidak terkirim. */
     WhatsappAktif: boolean;
     Izin: { Kelola: boolean };
+};
+
+/** Satu absen terakhir di halaman Absen (D-180). `PerluDicek` = lokasinya janggal dan sedang menunggu pemeriksaan pengelola. */
+export type RiwayatAbsenSaya = {
+    MasukPada: string;
+    KeluarPada: string | null;
+    NamaOutlet: string | null;
+    PerluDicek: boolean;
+};
+
+/** Props halaman Absen berlogin `/kelola/absen` (D-180). */
+export type PropsAbsenSaya = {
+    NamaToko: string;
+    NamaKaryawan: string;
+    AlamatModelWajah: string;
+    /** Akun ini juga punya akses dashboard: tampilkan jalan ke sana. */
+    BisaDashboard: boolean;
+    Wajah: { Status: 'Menunggu' | 'Disetujui' | 'Ditolak'; Label: string; AlasanTolak: string | null } | null;
+    AbsensiTerbuka: { Uuid: string; MasukPada: string; NamaOutlet: string | null } | null;
+    Riwayat: RiwayatAbsenSaya[];
+    JumlahFotoDaftar: number;
+    /** Aturan "simpan foto bukti": foto hanya dikirim bila menyala (wajah tetap dicocokkan lewat sidik). */
+    SimpanFoto: boolean;
 };

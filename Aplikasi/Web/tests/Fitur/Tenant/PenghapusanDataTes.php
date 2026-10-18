@@ -81,8 +81,8 @@ function SiapkanTenantUntukDihapusUji(string $nama = 'Toko Sumber Rejeki Sragen'
     $idOutlet = (int) DB::table('Outlet')->where('IdTenant', $idTenant)->value('Id');
     $idPelanggan = (int) DB::table('Pelanggan')->where('IdTenant', $idTenant)->value('Id');
     $idKaryawan = DB::table('Karyawan')->insertGetId([
-        'Uuid' => (string) Str::ulid(), 'IdTenant' => $idTenant, 'Nama' => 'Agus Prasetyo', 'Status' => 'Aktif', 'GajiPokok' => '3500000', 'TokenAbsen' => 'token-rahasia-absen',
-        'HashTokenAbsen' => hash('sha256', (string) Str::ulid()), 'TokenAbsenDibuatPada' => now(), 'DibuatPada' => now(), 'DiubahPada' => now(),
+        'Uuid' => (string) Str::ulid(), 'IdTenant' => $idTenant, 'Nama' => 'Agus Prasetyo', 'Status' => 'Aktif', 'GajiPokok' => '3500000',
+        'DibuatPada' => now(), 'DiubahPada' => now(),
     ]);
     DB::table('WajahKaryawan')->insert([
         'Uuid' => (string) Str::ulid(), 'IdTenant' => $idTenant, 'IdKaryawan' => $idKaryawan, 'SidikWajah' => '[1,2,3]', 'PathFoto' => json_encode(["karyawan/swafoto/{$idTenant}/wajah.jpg"]),
@@ -272,7 +272,7 @@ describe('P-07 Super Admin melaksanakan penghapusan data', function (): void {
 
         // Karyawan, wajah, kurir, kendaraan, perangkat, pesan, token, dan lokasi outlet.
         $karyawan = DB::table('Karyawan')->where('IdTenant', $id)->first();
-        expect($karyawan->Nama)->toStartWith('Karyawan Terhapus #')->and($karyawan->GajiPokok)->toBeNull()->and($karyawan->TokenAbsen)->toBeNull()->and($karyawan->HashTokenAbsen)->toBeNull();
+        expect($karyawan->Nama)->toStartWith('Karyawan Terhapus #')->and($karyawan->GajiPokok)->toBeNull();
         expect(DB::table('WajahKaryawan')->where('IdTenant', $id)->count())->toBe(0)
             ->and(DB::table('PesanKeluar')->where('IdTenant', $id)->count())->toBe(0)
             ->and(DB::table('TokenApiTenant')->where('IdTenant', $id)->count())->toBe(0);

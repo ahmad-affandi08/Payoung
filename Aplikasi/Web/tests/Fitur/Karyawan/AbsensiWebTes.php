@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
-use App\Domain\Karyawan\Aksi\AturTautanAbsen;
 use App\Domain\Karyawan\Aksi\TinjauWajahKaryawan;
 use App\Domain\Karyawan\Aksi\UbahStatusKaryawan;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
@@ -13,12 +12,10 @@ use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\AturanKehadiran;
 use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
+use App\Domain\Karyawan\Model\PermintaanKoreksiAbsensi;
 use App\Domain\Karyawan\Model\WajahKaryawan;
-use App\Domain\Organisasi\Aksi\AturLayarAbsensiOutlet;
-use App\Domain\Organisasi\Aksi\AturWajibQrAbsensi;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
-use App\Domain\Organisasi\Layanan\KodeLayarAbsensi;
-use App\Domain\Tenant\Kueri\ProfilTenant;
+use App\Domain\Organisasi\Model\Pengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -30,9 +27,9 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 use Tests\TestCase;
 
 /*
- * F-18 bagian 4 (D-37): absensi web dari HP pribadi. Tautan rahasia per karyawan, daftar wajah (persetujuan PDP +
- * persetujuan pengelola), absen masuk/keluar hanya di dalam radius outlet dan dengan wajah yang cocok; yang tidak
- * lolos ditolak tanpa baris tercatat.
+ * F-18 bagian 4 (D-37, D-180): absensi web dari HP pribadi setelah login. Daftar wajah sekali (persetujuan PDP), absen
+ * masuk/keluar dengan wajah yang cocok (selalu ditolak bila tidak cocok); lokasi yang janggal tetap tercatat dan
+ * ditandai "perlu dicek", kecuali aturan tolak-di-luar-radius menyala.
  */
 
 beforeEach(function (): void {
@@ -52,22 +49,34 @@ function SwafotoAbsenWebUji(): string
     return base64_encode("\xFF\xD8\xFF\xE0".str_repeat('a', 200));
 }
 
-/** @return array{0: array<string, mixed>, 1: Karyawan, 2: string} [konteks, karyawan, alamat absen] */
+/**
+ * Karyawan yang sudah login (peran Karyawan, tanpa izin back-office) di tenant uji dengan satu outlet ber-lokasi.
+ *
+ * @return array{0: array<string, mixed>, 1: Karyawan, 2: string, 3: Pengguna} [konteks, karyawan, alamat absen, akun]
+ */
 function SiapkanAbsensiWeb(TestCase $tes, bool $wajahDisetujui = true): array
 {
     $k = BantuanPenjualan::Siapkan($tes, 'Kedai Absen Web');
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $k['Outlet']->forceFill(['Lintang' => '-7.5560000', 'Bujur' => '110.8310000', 'RadiusAbsensiMeter' => 100])->save();
-    $karyawan = Karyawan::query()->create(['Nama' => 'Rina Wulandari', 'IdOutlet' => $k['Outlet']->Id]);
-    $token = app(AturTautanAbsen::class)->Jalankan($karyawan, true, $k['Pemilik']->Id);
-    $alamat = '/'.app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id)."/absen/{$token}";
+    $akun = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Karyawan);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan = Karyawan::query()->create(['Nama' => 'Rina Wulandari', 'IdOutlet' => $k['Outlet']->Id, 'IdPengguna' => $akun->Id]);
+    $alamat = '/kelola/absen';
+    BantuanOrganisasi::Masuk($tes, $akun, $k['Tenant']->Id);
 
     if ($wajahDisetujui) {
         $tes->postJson("{$alamat}/wajah", ['SidikWajah' => [SidikWajahUji(), SidikWajahUji(), SidikWajahUji()], 'Foto' => [SwafotoAbsenWebUji(), SwafotoAbsenWebUji(), SwafotoAbsenWebUji()], 'Persetujuan' => true])->assertCreated();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     }
 
-    return [$k, $karyawan->refresh(), $alamat];
+    return [$k, $karyawan->refresh(), $alamat, $akun];
+}
+
+/** Masuk lagi sebagai karyawan setelah sempat bertindak sebagai pemilik toko. */
+function MasukSebagaiKaryawanAbsen(TestCase $tes, array $k, Pengguna $akun): void
+{
+    BantuanOrganisasi::Masuk($tes, $akun, $k['Tenant']->Id);
 }
 
 /** @return array<string, mixed> */
@@ -76,15 +85,47 @@ function KirimanAbsenWebUji(array $ubah = []): array
     return ['Uuid' => (string) Str::ulid(), 'Lintang' => '-7.5560000', 'Bujur' => '110.8315000', 'AkurasiMeter' => 15, 'SidikWajah' => SidikWajahUji(), 'Swafoto' => SwafotoAbsenWebUji(), ...$ubah];
 }
 
-it('halaman absen hanya dengan tautan sah; tanpa sidik wajah, foto, atau koordinat', function (): void {
-    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+it('halaman Absen hanya untuk karyawan yang ikut absensi dan tertaut ke akunnya; tanpa sidik wajah, foto, atau koordinat', function (): void {
+    [$k, $karyawan, $alamat, $akun] = SiapkanAbsensiWeb($this);
 
-    $this->get($alamat)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Publik/Absensi')
+    $this->get($alamat)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Absen/Saya')
         ->where('NamaKaryawan', 'Rina Wulandari')
         ->where('Wajah.Status', 'Disetujui')
         ->where('AbsensiTerbuka', null)
+        ->where('SimpanFoto', true)
+        ->where('BisaDashboard', false)
+        ->where('AbsenSaya', true)
         ->missing('SidikWajah'));
-    $this->get(substr($alamat, 0, -40).str_repeat('A', 40))->assertNotFound();
+
+    // Pemilik toko tanpa data karyawan: tidak ada yang bisa diabsen, halaman dianggap tidak ada.
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->get($alamat)->assertNotFound();
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertNotFound();
+
+    // Karyawan yang tidak ikut absensi (mis. dicopot pemilik toko): sama, 404.
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan->forceFill(['IkutAbsensi' => false])->save();
+    MasukSebagaiKaryawanAbsen($this, $k, $akun);
+    $this->get($alamat)->assertNotFound();
+});
+
+it('staf yang akunnya hanya untuk absen (tanpa izin back-office) dialihkan dari Beranda ke halaman Absen; pemilik tidak', function (): void {
+    [$k, , , $akun] = SiapkanAbsensiWeb($this);
+
+    $this->get('/kelola')->assertRedirect(route('kelola.absen'));
+
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Beranda')->where('AbsenSaya', false));
+
+    // Karyawan yang juga punya izin lain (Supervisor) tetap ke Beranda, dengan kartu pintasan Absen.
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $spv = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Supervisor);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    Karyawan::query()->create(['Nama' => 'Susi Supervisor', 'IdOutlet' => $k['Outlet']->Id, 'IdPengguna' => $spv->Id, 'IkutAbsensi' => true]);
+    BantuanOrganisasi::Masuk($this, $spv, $k['Tenant']->Id);
+    $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Beranda')->where('AbsenSaya', true));
+    $this->get('/kelola/absen')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('BisaDashboard', true));
+    expect($akun->Id)->not->toBe($spv->Id);
 });
 
 it('daftar wajah: persetujuan pemrosesan wajib, jumlah foto pas, tidak bisa daftar ganda; absen ditolak sebelum mendaftar dan langsung bisa sesudahnya (D-45)', function (): void {
@@ -129,33 +170,90 @@ it('masuk & keluar di dalam radius dengan wajah cocok: Sumber Web, jarak & kemir
         ->and($a->KeluarPada)->not->toBeNull()
         ->and($a->PathSwafotoMasuk)->not->toBeNull()
         ->and($a->PathSwafotoKeluar)->not->toBeNull()
-        ->and($a->LintangMasuk)->toBe('-7.5560000');
+        ->and($a->LintangMasuk)->toBe('-7.5560000')
+        ->and($a->PerluDicek)->toBeFalse()
+        ->and($a->CatatanPeriksa)->toBeNull();
 });
 
-it('di luar radius, akurasi GPS buruk, wajah lain, atau outlet tanpa lokasi = ditolak tanpa baris & tanpa swafoto', function (): void {
+it('wajah lain ditolak tanpa baris & tanpa swafoto; jejaknya di audit tanpa sidik wajah', function (): void {
     [$k, , $alamat] = SiapkanAbsensiWeb($this);
 
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['Bujur' => '110.8330000']))->assertStatus(422)->assertJsonPath('Galat.Kode', 'DiLuarRadius');
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['AkurasiMeter' => 500]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'AkurasiLokasiRendah');
     $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['SidikWajah' => SidikWajahUji(5)]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'WajahTidakCocok');
 
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(Absensi::query()->count())->toBe(0)
-        ->and(LogAudit::query()->where('Peristiwa', 'absensi.web.di-luar-radius')->count())->toBe(1)
         ->and(LogAudit::query()->where('Peristiwa', 'absensi.web.wajah-tidak-cocok')->sole()->NilaiBaru)->not->toHaveKey('SidikWajah')
         // Hanya 3 foto pendaftaran wajah yang tersimpan; swafoto absen yang ditolak tidak pernah ditulis.
         ->and(Storage::disk('local')->allFiles())->toHaveCount(3);
+});
+
+it('bawaan: di luar radius, GPS lemah, atau outlet tanpa lokasi tetap tercatat dan ditandai perlu dicek dengan catatan', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+
+    // 195 m dari outlet (radius 100 m).
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['Bujur' => '110.8330000']))->assertOk()->assertJsonPath('PerluDicek', true);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $a = Absensi::query()->sole();
+    expect($a->PerluDicek)->toBeTrue()
+        ->and($a->CatatanPeriksa)->toContain('Di luar radius')->toContain($k['Outlet']->Nama)
+        ->and($a->JarakMasukMeter)->toBeGreaterThan(100)
+        ->and(LogAudit::query()->where('Peristiwa', 'absensi.web.di-luar-radius')->count())->toBe(1);
+
+    // Keluar dengan sinyal GPS lemah: tanda masuk dipertahankan, catatan keluar ditambahkan.
+    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji(['Uuid' => $a->Uuid, 'AkurasiMeter' => 500]))->assertOk()->assertJsonPath('PerluDicek', true);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($a->refresh()->CatatanPeriksa)->toContain('Di luar radius')->toContain('Keluar: Sinyal GPS lemah');
+
+    // Hari berikutnya, outlet tanpa titik lokasi: tercatat di outlet karyawan, catatan menyebut titik belum diatur.
+    $this->travel(1)->day();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $k['Outlet']->forceFill(['Lintang' => null, 'Bujur' => null])->save();
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk()->assertJsonPath('PerluDicek', true);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $kedua = Absensi::query()->latest('Id')->firstOrFail();
+    expect($kedua->IdOutlet)->toBe($k['Outlet']->Id)->and($kedua->JarakMasukMeter)->toBeNull()->and($kedua->CatatanPeriksa)->toContain('belum diatur');
+});
+
+it('aturan tolak-di-luar-radius: di luar radius, akurasi buruk, atau outlet tanpa lokasi ditolak tanpa baris', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    AturanKehadiran::query()->create(['TolakDiLuarRadius' => true]);
+
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['Bujur' => '110.8330000']))->assertStatus(422)->assertJsonPath('Galat.Kode', 'DiLuarRadius');
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['AkurasiMeter' => 500]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'AkurasiLokasiRendah');
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->count())->toBe(0);
 
     $k['Outlet']->forceFill(['Lintang' => null, 'Bujur' => null])->save();
     $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertStatus(422)->assertJsonPath('Galat.Kode', 'OutletTanpaLokasi');
 });
 
-it('karyawan dinonaktifkan: tautan mati (404) dan wajah beserta fotonya dihapus; tautan tenant lain tidak berlaku', function (): void {
-    [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this);
-    $lain = BantuanPenjualan::Siapkan($this, 'Toko Lain Absen');
-    $slugLain = app(ProfilTenant::class)->AmbilSlug($lain['Tenant']->Id);
+it('aturan simpan foto bukti: dimatikan = swafoto tidak disimpan dan tidak diminta, wajah tetap dicocokkan; dinyalakan = swafoto wajib', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
 
-    $this->get('/'.$slugLain.'/absen/'.substr($alamat, -40))->assertNotFound();
+    // Bawaan: foto wajib dikirim.
+    $this->postJson("{$alamat}/masuk", [...KirimanAbsenWebUji(), 'Swafoto' => null])->assertStatus(422)->assertJsonPath('Galat.Kode', 'SwafotoWajib');
+
+    AturanKehadiran::query()->create(['SimpanFotoBukti' => false]);
+    $tanpaFoto = fn (array $ubah = []): array => [...KirimanAbsenWebUji($ubah), 'Swafoto' => null];
+    // Wajah lain tetap ditolak walau foto tidak disimpan.
+    $this->postJson("{$alamat}/masuk", $tanpaFoto(['SidikWajah' => SidikWajahUji(5)]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'WajahTidakCocok');
+    $masuk = $tanpaFoto();
+    $this->postJson("{$alamat}/masuk", $masuk)->assertOk();
+    $this->get($alamat)->assertInertia(fn (AssertableInertia $h) => $h->where('SimpanFoto', false));
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $a = Absensi::query()->sole();
+    expect($a->PathSwafotoMasuk)->toBeNull()
+        ->and($a->KemiripanWajahMasuk)->toBe('1.0000')
+        // Hanya 3 foto pendaftaran wajah di disk.
+        ->and(Storage::disk('local')->allFiles())->toHaveCount(3);
+});
+
+it('karyawan dinonaktifkan: halaman Absen tidak ada lagi dan wajah beserta fotonya dihapus', function (): void {
+    [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this);
 
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     app(UbahStatusKaryawan::class)->Jalankan($karyawan, StatusKaryawan::Nonaktif, $k['Pemilik']->Id);
@@ -163,8 +261,7 @@ it('karyawan dinonaktifkan: tautan mati (404) dan wajah beserta fotonya dihapus;
     $this->get($alamat)->assertNotFound();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(WajahKaryawan::query()->count())->toBe(0)
-        ->and(Storage::disk('local')->allFiles())->toBe([])
-        ->and($karyawan->refresh()->HashTokenAbsen)->toBeNull();
+        ->and(Storage::disk('local')->allFiles())->toBe([]);
 });
 
 it('tinjau wajah: tolak wajib beralasan dan menghapus sidik & foto; sesudahnya karyawan bisa daftar ulang', function (): void {
@@ -188,36 +285,20 @@ it('tinjau wajah: tolak wajib beralasan dan menghapus sidik & foto; sesudahnya k
     expect(WajahKaryawan::query()->sole()->Status)->toBe(StatusWajahKaryawan::Disetujui);
 });
 
-it('PWA: manifest per tautan (cakupan hanya halaman absen ini) dan service worker dengan Service-Worker-Allowed', function (): void {
-    [, , $alamat] = SiapkanAbsensiWeb($this, wajahDisetujui: false);
-    $jalur = parse_url($alamat, PHP_URL_PATH);
-
-    $this->get("{$alamat}/manifest")->assertOk()
-        ->assertHeader('Content-Type', 'application/manifest+json')
-        ->assertJsonPath('start_url', $jalur)
-        ->assertJsonPath('scope', $jalur)
-        ->assertJsonPath('display', 'standalone')
-        ->assertJsonPath('icons.1.sizes', '512x512');
-
-    $sw = $this->get("{$alamat}/pekerja-layanan")->assertOk()->assertHeader('Service-Worker-Allowed', $jalur);
-    expect($sw->headers->get('Content-Type'))->toStartWith('application/javascript')
-        ->and($sw->getContent())->toContain('/model-wajah/')->not->toContain('@verbatim');
-
-    $this->get(substr($alamat, 0, -40).str_repeat('B', 40).'/manifest')->assertNotFound();
-});
-
-it('back-office absen HP: tautan dibuat ulang & dicabut, panel tanpa sidik wajah, tinjau lewat HTTP, foto hanya karyawan.kelola', function (): void {
-    [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this, wajahDisetujui: false);
+it('back-office panel wajah: panel tanpa sidik wajah, tinjau lewat HTTP, foto hanya karyawan.kelola', function (): void {
+    [$k, $karyawan, $alamat, $akun] = SiapkanAbsensiWeb($this, wajahDisetujui: false);
     $this->postJson("{$alamat}/wajah", ['SidikWajah' => [SidikWajahUji(), SidikWajahUji(), SidikWajahUji()], 'Foto' => [SwafotoAbsenWebUji(), SwafotoAbsenWebUji(), SwafotoAbsenWebUji()], 'Persetujuan' => true])->assertCreated();
     $panel = "/kelola/karyawan/{$karyawan->Uuid}";
 
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
-    $isi = $this->getJson("{$panel}/absen-hp")->assertOk()
+    $this->getJson("{$panel}/absen-hp")->assertOk()
         ->assertJsonPath('Wajah.Status', 'Disetujui')
         ->assertJsonPath('Wajah.JumlahFoto', 3)
-        ->assertJsonMissingPath('Wajah.SidikWajah');
-    expect($isi->json('Tautan'))->toEndWith(substr($alamat, -40));
+        ->assertJsonMissingPath('Wajah.SidikWajah')
+        // D-180: tidak ada lagi tautan absen pribadi.
+        ->assertJsonMissingPath('Tautan');
     $this->get("{$panel}/wajah/foto/0")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+    $this->post("{$panel}/tautan-absen")->assertNotFound();
 
     $this->post("{$panel}/wajah/tinjau", ['Setujui' => false, 'Alasan' => ''])->assertSessionHasErrors('Alasan');
     // D-45: wajah yang sudah aktif tidak perlu disetujui lagi, tetapi pengelola masih boleh menolak fotonya.
@@ -226,12 +307,11 @@ it('back-office absen HP: tautan dibuat ulang & dicabut, panel tanpa sidik wajah
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(WajahKaryawan::query()->sole()->Status)->toBe(StatusWajahKaryawan::Ditolak);
 
-    $this->post("{$panel}/tautan-absen")->assertSessionHasNoErrors();
-    $this->get($alamat)->assertNotFound();
-    $this->delete("{$panel}/tautan-absen")->assertSessionHasNoErrors();
-    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    expect($karyawan->refresh()->HashTokenAbsen)->toBeNull();
+    // Karyawan melihat alasannya di halaman Absen dan boleh mendaftar ulang.
+    MasukSebagaiKaryawanAbsen($this, $k, $akun);
+    $this->get($alamat)->assertInertia(fn (AssertableInertia $h) => $h->where('Wajah.Status', 'Ditolak')->where('Wajah.AlasanTolak', 'Foto gelap'));
 
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
     $this->delete("{$panel}/wajah")->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(WajahKaryawan::query()->count())->toBe(0);
@@ -249,7 +329,7 @@ it('back-office absen HP: tautan dibuat ulang & dicabut, panel tanpa sidik wajah
 });
 
 it('lokasi absensi outlet: simpan titik & radius (dinormalkan 7 desimal), validasi, hapus titik; rekap absensi memuat jarak', function (): void {
-    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+    [$k, , $alamat, $akun] = SiapkanAbsensiWeb($this);
     $outlet = "/kelola/outlet/{$k['Outlet']->Uuid}";
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 
@@ -264,6 +344,7 @@ it('lokasi absensi outlet: simpan titik & radius (dinormalkan 7 desimal), valida
     $this->get($outlet)->assertInertia(fn (AssertableInertia $h) => $h->where('LokasiAbsensi.RadiusMeter', 150));
 
     $this->post("{$outlet}/lokasi-absensi", ['Lintang' => '-7.5560000', 'Bujur' => '110.8310000', 'RadiusAbsensiMeter' => 100])->assertSessionHasNoErrors();
+    MasukSebagaiKaryawanAbsen($this, $k, $akun);
     $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk();
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
     $this->getJson('/kelola/karyawan/absensi')->assertOk()
@@ -276,26 +357,27 @@ it('lokasi absensi outlet: simpan titik & radius (dinormalkan 7 desimal), valida
     expect($k['Outlet']->refresh()->Lintang)->toBeNull();
 });
 
-it('batas percobaan per tautan: satu karyawan yang kena batas tidak menghabiskan jatah rekan satu wifi; isi dinilai setelah tautan sah', function (): void {
+it('batas percobaan per akun: satu karyawan yang kena batas tidak menghabiskan jatah rekan satu wifi', function (): void {
     [$k, , $alamat] = SiapkanAbsensiWeb($this, wajahDisetujui: false);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    $rekan = Karyawan::query()->create(['Nama' => 'Dewi Lestari', 'IdOutlet' => $k['Outlet']->Id]);
-    $alamatRekan = substr($alamat, 0, -40).app(AturTautanAbsen::class)->Jalankan($rekan, true, $k['Pemilik']->Id);
-
-    // Tautan palsu dengan isi kosong = 404 (bukan 422 yang membocorkan bentuk isian).
-    $this->postJson(substr($alamat, 0, -40).str_repeat('C', 40).'/masuk', [])->assertNotFound();
+    $akunRekan = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Karyawan);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    Karyawan::query()->create(['Nama' => 'Dewi Lestari', 'IdOutlet' => $k['Outlet']->Id, 'IdPengguna' => $akunRekan->Id]);
 
     foreach (range(1, 10) as $_) {
         $this->postJson("{$alamat}/masuk", [])->assertStatus(422);
     }
 
     $this->postJson("{$alamat}/masuk", [])->assertStatus(429);
-    $this->postJson("{$alamatRekan}/masuk", [])->assertStatus(422);
+    BantuanOrganisasi::Masuk($this, $akunRekan, $k['Tenant']->Id);
+    $this->postJson("{$alamat}/masuk", [])->assertStatus(422);
 });
 
 it('masuk memilih outlet terdekat yang radiusnya memuat posisi; jadwal dinilai per tanggal bisnis (kemarin boleh, besok tidak)', function (): void {
     [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    // Aturan tolak-di-luar-radius menyala supaya pemilihan outlet terlihat dari penolakan.
+    AturanKehadiran::query()->create(['TolakDiLuarRadius' => true]);
     // Outlet A: radius 20 m, posisi ±30 m darinya. Outlet B: radius 100 m, posisi ±58 m darinya.
     $k['Outlet']->forceFill(['RadiusAbsensiMeter' => 20])->save();
     $b = BantuanJurnal::BuatOutlet('ABS-B', 'Outlet Sebelah');
@@ -320,82 +402,24 @@ it('masuk memilih outlet terdekat yang radiusnya memuat posisi; jadwal dinilai p
         ->and(LogAudit::query()->where('Peristiwa', 'absensi.web.di-luar-radius')->latest('Id')->first()?->Ip)->not->toBeNull();
 });
 
-it('keluar setelah titik lokasi outlet dihapus: ditolak dengan arahan koreksi absensi oleh pengelola', function (): void {
+it('keluar setelah titik lokasi outlet dihapus: bawaan tetap tercatat dan ditandai; dengan aturan tolak diarahkan ke koreksi absensi pengelola', function (): void {
     [$k, , $alamat] = SiapkanAbsensiWeb($this);
     $masuk = KirimanAbsenWebUji();
     $this->postJson("{$alamat}/masuk", $masuk)->assertOk();
 
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $k['Outlet']->forceFill(['Lintang' => null, 'Bujur' => null])->save();
+    AturanKehadiran::query()->create(['TolakDiLuarRadius' => true]);
     $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji(['Uuid' => $masuk['Uuid']]))
         ->assertStatus(422)
         ->assertJsonPath('Galat.Kode', 'OutletTanpaLokasi')
         ->assertJsonPath('Galat.Pesan', fn (string $pesan): bool => str_contains($pesan, 'koreksi absensi'));
-});
-
-it('layar QR absensi: buat tautan, wajib QR butuh layar, layar & kode publik, cabut mematikan layar dan kewajiban', function (): void {
-    [$k] = SiapkanAbsensiWeb($this, wajahDisetujui: false);
-    $outlet = "/kelola/outlet/{$k['Outlet']->Uuid}";
-    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
-
-    $this->post("{$outlet}/wajib-qr-absensi", ['Wajib' => true])->assertSessionHasErrors('WajibQrAbsensi');
-    $this->post("{$outlet}/layar-absensi")->assertSessionHasNoErrors();
-    $tautan = null;
-    $this->get($outlet)->assertInertia(function (AssertableInertia $h) use (&$tautan): void {
-        $h->where('LokasiAbsensi.WajibQr', false)->etc();
-        $tautan = $h->toArray()['props']['LokasiAbsensi']['TautanLayar'];
-    });
-    expect($tautan)->toContain('/layar-absen/');
-    $jalur = (string) parse_url((string) $tautan, PHP_URL_PATH);
-
-    $this->post("{$outlet}/wajib-qr-absensi", ['Wajib' => true])->assertSessionHasNoErrors();
-    $this->get($jalur)->assertOk()->assertHeader('Cache-Control', 'no-store, private')
-        ->assertInertia(fn (AssertableInertia $h) => $h->component('Publik/LayarAbsensi')
-            ->where('NamaOutlet', $k['Outlet']->Nama)->where('WajibQr', true)->missing('IdTenant')
-            ->where('Kode', fn (string $kode): bool => preg_match('/^\d{6}$/', $kode) === 1));
-    $this->getJson("{$jalur}/kode")->assertOk()->assertJsonStructure(['NamaOutlet', 'Kode', 'BerlakuSampai', 'Qr'])->assertJsonMissingPath('IdTenant');
-
-    $this->delete("{$outlet}/layar-absensi")->assertSessionHasNoErrors();
-    $this->get($jalur)->assertNotFound();
-    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    expect($k['Outlet']->refresh()->WajibQrAbsensi)->toBeFalse()
-        ->and(LogAudit::query()->where('Peristiwa', 'like', 'outlet.layar-absensi.%')->count())->toBe(2);
-});
-
-it('outlet wajib QR: tanpa kode ditolak, kode salah ditolak & diaudit, kode berlaku (atau jendela sebelumnya) diterima', function (): void {
-    [$k, , $alamat] = SiapkanAbsensiWeb($this);
-    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    $token = app(AturLayarAbsensiOutlet::class)->Jalankan($k['Outlet'], true);
-    app(AturWajibQrAbsensi::class)->Jalankan($k['Outlet'], true);
-    $kodePada = fn (CarbonImmutable $waktu): string => app(KodeLayarAbsensi::class)->AmbilUntukLayar((string) $token, $waktu)['Kode'];
-
-    $this->get($alamat)->assertInertia(fn (AssertableInertia $h) => $h->where('WajibQr', true));
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertStatus(422)->assertJsonPath('Galat.Kode', 'KodeQrWajib');
-    $salah = $kodePada(CarbonImmutable::now()) === '000000' ? '000001' : '000000';
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['KodeQr' => $salah]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'KodeQrSalah');
-    // Kode dua jendela lalu (≥ 60 detik) sudah tidak berlaku.
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['KodeQr' => $kodePada(CarbonImmutable::now()->subSeconds(65))]))->assertStatus(422)->assertJsonPath('Galat.Kode', 'KodeQrSalah');
-
-    // Kode jendela sebelumnya (dipindai tepat sebelum berganti) masih diterima.
-    $masuk = KirimanAbsenWebUji(['KodeQr' => $kodePada(CarbonImmutable::now()->subSeconds(30))]);
-    $this->postJson("{$alamat}/masuk", $masuk)->assertOk();
-
-    $this->travel(8)->hours();
-    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji(['Uuid' => $masuk['Uuid'], 'KodeQr' => $kodePada(CarbonImmutable::now())]))->assertOk();
 
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    $a = Absensi::query()->sole();
-    expect($a->QrMasukTerverifikasi)->toBeTrue()
-        ->and($a->QrKeluarTerverifikasi)->toBeTrue()
-        ->and(LogAudit::query()->where('Peristiwa', 'absensi.web.qr-salah')->count())->toBe(2);
-});
-
-it('outlet tanpa kewajiban QR: absen tanpa kode, kolom bukti QR tetap kosong', function (): void {
-    [$k, , $alamat] = SiapkanAbsensiWeb($this);
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk();
-
+    AturanKehadiran::query()->update(['TolakDiLuarRadius' => false]);
+    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji(['Uuid' => $masuk['Uuid']]))->assertOk()->assertJsonPath('PerluDicek', true);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    expect(Absensi::query()->sole()->QrMasukTerverifikasi)->toBeNull();
+    expect(Absensi::query()->sole()->KeluarPada)->not->toBeNull();
 });
 
 it('kalibrasi wajah: sebaran diterima & ditolak per kelompok 0,05, ringkasan, hanya karyawan.kelola', function (): void {
@@ -420,6 +444,97 @@ it('kalibrasi wajah: sebaran diterima & ditolak per kelompok 0,05, ringkasan, ha
     $supervisor = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Supervisor);
     BantuanOrganisasi::Masuk($this, $supervisor, $k['Tenant']->Id);
     $this->getJson('/kelola/karyawan/absensi/kalibrasi-wajah')->assertForbidden();
+});
+
+it('minta koreksi: karyawan mengirim alasan, kirim ulang tidak menumpuk, alasan divalidasi, hanya yang wajib absen', function (): void {
+    [$k, $karyawan, $alamat, $akun] = SiapkanAbsensiWeb($this);
+
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'abc'])->assertStatus(422);
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Lembur', 'Alasan' => 'Kamera depan rusak'])->assertStatus(422);
+    $uuid = $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'Kamera depan rusak'])->assertCreated()->assertJsonPath('Status', 'Menunggu')->json('Uuid');
+    // Kirim ulang untuk jenis yang sama mengembalikan permintaan yang sama.
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'Kamera depan rusak lagi'])->assertCreated()->assertJsonPath('Uuid', $uuid);
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Keluar', 'Alasan' => 'Wajah tidak dikenali'])->assertCreated();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(PermintaanKoreksiAbsensi::query()->count())->toBe(2)
+        ->and(LogAudit::query()->where('Peristiwa', 'absensi.koreksi.diminta')->count())->toBe(2);
+
+    // Karyawan yang tidak ikut absensi tidak punya halaman maupun jalur permintaan.
+    $karyawan->forceFill(['IkutAbsensi' => false])->save();
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'Kamera depan rusak'])->assertNotFound();
+});
+
+it('pengelola: permintaan koreksi tampil di rekap & Kotak Tindakan, absensi manual menutupnya, tutup/tolak idempoten dan tidak bisa dibalik', function (): void {
+    [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this);
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'Kamera depan rusak'])->assertCreated();
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Keluar', 'Alasan' => 'Wajah tidak dikenali'])->assertCreated();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $masuk = PermintaanKoreksiAbsensi::query()->where('Jenis', 'Masuk')->sole();
+    $keluar = PermintaanKoreksiAbsensi::query()->where('Jenis', 'Keluar')->sole();
+
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->get('/kelola/karyawan/absensi')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('PermintaanKoreksi', 2)
+        ->where('PermintaanKoreksi.0.NamaKaryawan', 'Rina Wulandari'));
+    $this->get('/kelola/tindakan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Butir', fn ($butir) => collect($butir)->contains(fn ($b) => $b['Kunci'] === 'karyawan.permintaan-koreksi' && $b['Jumlah'] === 2)));
+
+    // Mencatat absensi manual dari permintaan menutupnya sebagai Selesai.
+    $this->post('/kelola/karyawan/absensi', ['Karyawan' => $karyawan->Uuid, 'Outlet' => $k['Outlet']->Uuid, 'Tanggal' => '2026-10-05', 'JamMasuk' => '08:00', 'Alasan' => 'Kamera rusak, dicek manual', 'UuidPermintaan' => $masuk->Uuid])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($masuk->refresh()->Status->value)->toBe('Selesai')->and($masuk->DiprosesOleh)->toBe($k['Pemilik']->Id);
+
+    // Ditolak dengan sekali ketuk; mengulang status yang sama aman, membaliknya ditolak.
+    $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Ditolak'])->assertSessionHasNoErrors();
+    $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Ditolak'])->assertSessionHasNoErrors();
+    $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Selesai'])->assertSessionHasErrors();
+    $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Menunggu'])->assertSessionHasErrors('Status');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($keluar->refresh()->Status->value)->toBe('Ditolak')
+        ->and(LogAudit::query()->where('Peristiwa', 'absensi.koreksi.ditutup')->count())->toBe(2);
+
+    $this->get('/kelola/karyawan/absensi')->assertInertia(fn (AssertableInertia $h) => $h->has('PermintaanKoreksi', 0));
+
+    // Pemegang karyawan.lihat saja (Supervisor) tidak melihat daftar permintaan.
+    $supervisor = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Supervisor);
+    BantuanOrganisasi::Masuk($this, $supervisor, $k['Tenant']->Id);
+    $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Selesai'])->assertForbidden();
+});
+
+it('absen yang perlu dicek: terlihat di rekap & Kotak Tindakan, bisa disaring, ditandai sudah dicek (idempoten, teraudit)', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+    // Di luar radius: tercatat tetapi ditandai.
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['Bujur' => '110.8330000']))->assertOk()->assertJsonPath('PerluDicek', true);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $a = Absensi::query()->sole();
+
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->get('/kelola/tindakan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Butir', fn ($butir) => collect($butir)->contains(fn ($b) => $b['Kunci'] === 'karyawan.absen-perlu-dicek' && $b['Jumlah'] === 1)));
+    $this->getJson('/kelola/karyawan/absensi?saring[PerluDicek]=1')->assertOk()->assertJsonPath('Meta.Total', 1)->assertJsonPath('Data.0.PerluDicek', true);
+
+    $this->post("/kelola/karyawan/absensi/{$a->Uuid}/dicek")->assertSessionHasNoErrors();
+    $this->post("/kelola/karyawan/absensi/{$a->Uuid}/dicek")->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($a->refresh()->PerluDicek)->toBeFalse()->and($a->CatatanPeriksa)->toContain('Di luar radius')
+        ->and(LogAudit::query()->where('Peristiwa', 'absensi.dicek')->count())->toBe(1);
+    $this->getJson('/kelola/karyawan/absensi?saring[PerluDicek]=1')->assertJsonPath('Meta.Total', 0);
+});
+
+it('aturan kehadiran: sakelar simpan foto bukti dan tolak-di-luar-radius tersimpan dan terbaca kembali', function (): void {
+    [$k] = SiapkanAbsensiWeb($this);
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+
+    $this->get('/kelola/karyawan/aturan-kehadiran')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Aturan.SimpanFotoBukti', true)->where('Aturan.TolakDiLuarRadius', false));
+    $this->put('/kelola/karyawan/aturan-kehadiran', ['WajibJadwal' => false, 'MasukPalingAwalMenit' => 60, 'ToleransiTerlambatMenit' => 10, 'ToleransiPulangCepatMenit' => 10, 'LemburSetelahMenit' => 30, 'PengingatShiftAktif' => false, 'PengingatShiftMenitSebelum' => 60, 'PeringatanPengelolaAktif' => false, 'PeringatanPengelolaSetelahMenit' => 30, 'SimpanFotoBukti' => false, 'TolakDiLuarRadius' => true])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $aturan = AturanKehadiran::query()->sole();
+    expect($aturan->SimpanFotoBukti)->toBeFalse()->and($aturan->TolakDiLuarRadius)->toBeTrue();
+
+    // Tidak dikirim = nilai tersimpan tidak berubah.
+    $this->put('/kelola/karyawan/aturan-kehadiran', ['WajibJadwal' => false, 'MasukPalingAwalMenit' => 60, 'ToleransiTerlambatMenit' => 15, 'ToleransiPulangCepatMenit' => 10, 'LemburSetelahMenit' => 30, 'PengingatShiftAktif' => false, 'PengingatShiftMenitSebelum' => 60, 'PeringatanPengelolaAktif' => false, 'PeringatanPengelolaSetelahMenit' => 30])->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($aturan->refresh()->SimpanFotoBukti)->toBeFalse()->and($aturan->TolakDiLuarRadius)->toBeTrue()->and($aturan->ToleransiTerlambatMenit)->toBe(15);
 });
 
 describe('D-44 jadwal kerja ↔ absensi web', function (): void {

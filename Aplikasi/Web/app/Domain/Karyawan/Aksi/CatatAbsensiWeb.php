@@ -9,6 +9,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Karyawan\Data\DataAbsensiWeb;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Enum\StatusWajahKaryawan;
+use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
 use App\Domain\Karyawan\Layanan\PencocokWajah;
 use App\Domain\Karyawan\Layanan\PenegakJadwalAbsen;
 use App\Domain\Karyawan\Layanan\PengukurJarak;
@@ -25,20 +26,18 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * F-18 bagian 4 (D-37): absen masuk/keluar dari HP pribadi lewat tautan absen. Semua syarat dinilai di server dan
- * yang tidak lolos **ditolak** (tidak ada baris tercatat):
+ * F-18 bagian 4 (D-37, D-180): absen masuk/keluar dari HP pribadi setelah login. Syarat dinilai di server:
  *
- * 1. Karyawan aktif dengan wajah **Disetujui** pengelola.
- * 2. Lokasi: akurasi GPS tidak lebih buruk dari max(radius outlet, `BatasAkurasiMinimalMeter`), dan jarak ke outlet
- *    ≤ radius. Masuk: outlet terdekat yang radiusnya memuat posisi karyawan, di antara outlet utama karyawan & outlet
- *    jadwalnya pada tanggal bisnis hari ini atau kemarin (shift malam lewat tengah malam); tanpa outlet utama = semua
- *    outlet. Keluar: outlet absensi masuknya.
- * 3. Outlet yang mewajibkan QR: kode 6 digit dari layar QR outlet (berganti tiap 30 detik) harus berlaku; bukti bahwa
- *    karyawan melihat layar di outlet, bukan hanya mengirim koordinat.
- * 4. Jadwal (D-44): bila aturan tenant `WajibJadwal` aktif, masuk hanya sah dalam jendela jadwal di outlet yang sama
+ * 1. Karyawan aktif yang ikut absensi, dengan wajah terdaftar. **Ditolak** (tidak ada baris tercatat) bila tidak.
+ * 2. Wajah: kemiripan sidik wajah saat ini dengan sidik terdaftar ≥ `AmbilKemiripanWajah`. Selalu diperiksa dan
+ *    **menolak** bila tidak cocok (jejak percobaan di log audit tanpa sidiknya). Swafoto disimpan sebagai bukti hanya
+ *    bila aturan `SimpanFotoBukti` menyala.
+ * 3. Jadwal (D-44): bila aturan `WajibJadwal` aktif, masuk hanya sah dalam jendela jadwal di outlet yang sama
  *    (`PenegakJadwalAbsen`); ditolak dengan `TidakAdaJadwal`/`TerlaluAwal`/`ShiftSudahBerakhir`/`JadwalDiOutletLain`.
- * 5. Wajah: kemiripan sidik wajah saat ini dengan sidik terdaftar ≥ `AmbangKemiripanWajah`. Swafoto disimpan sebagai
- *    bukti. Wajah tidak cocok dicatat di log audit (tanpa sidiknya) sebagai jejak percobaan.
+ * 4. Lokasi: outlet terdekat yang radiusnya memuat posisi karyawan, di antara outlet utama karyawan & outlet jadwalnya
+ *    pada tanggal bisnis hari ini atau kemarin (shift malam). Di luar radius, sinyal GPS lemah, atau titik lokasi outlet
+ *    belum diatur **tidak menolak** (GPS di dalam ruko sering meleset): absen tetap tercatat dan ditandai `PerluDicek`
+ *    dengan catatan untuk pengelola. Hanya bila aturan `TolakDiLuarRadius` menyala, lokasi yang janggal ditolak.
  *
  * Idempoten per Uuid: masuk dengan Uuid yang sudah tercatat atau keluar untuk absensi yang sudah ditutup mengembalikan
  * absensi itu tanpa mengubah apa pun.
@@ -53,6 +52,7 @@ final class CatatAbsensiWeb
         private readonly TanggalBisnisOutlet $tanggalBisnis,
         private readonly PencatatAudit $audit,
         private readonly PenegakJadwalAbsen $jadwal,
+        private readonly AturanKehadiranTenant $aturan,
     ) {}
 
     public function Masuk(Karyawan $karyawan, DataAbsensiWeb $data): Absensi
@@ -69,7 +69,8 @@ final class CatatAbsensiWeb
         $this->PastikanBelumMasuk($karyawan);
 
         $sekarang = CarbonImmutable::now();
-        [$outlet, $jarak] = $this->PilihOutlet($karyawan, $data, $this->AmbilIdOutletBoleh($karyawan, $sekarang));
+        $aturan = $this->aturan->Ambil();
+        ['Outlet' => $outlet, 'Jarak' => $jarak, 'Catatan' => $catatan] = $this->NilaiLokasi($karyawan, $data, $this->AmbilIdOutletBoleh($karyawan, $sekarang), $aturan['TolakDiLuarRadius']);
         // D-44: jadwal diperiksa sebelum wajah/swafoto diproses, supaya absen yang pasti ditolak tidak membuang kerja.
         $langgar = $this->jadwal->Periksa($karyawan->Id, $outlet['Id'], $sekarang);
 
@@ -79,12 +80,11 @@ final class CatatAbsensiWeb
             throw new PelanggaranAturanBisnis($langgar['Kode'], $langgar['Pesan'], 'Jadwal');
         }
 
-        $qr = $this->PeriksaQr($karyawan, $outlet, $data, $sekarang);
         $kemiripan = $this->CocokkanWajah($karyawan, $data);
-        $path = $this->swafoto->Simpan($karyawan->IdTenant, $data->swafoto);
+        $path = $this->SimpanFoto($karyawan, $data, $aturan['SimpanFotoBukti']);
 
         try {
-            return DB::transaction(function () use ($karyawan, $data, $outlet, $jarak, $kemiripan, $path, $sekarang, $qr): Absensi {
+            return DB::transaction(function () use ($karyawan, $data, $outlet, $jarak, $kemiripan, $path, $sekarang, $catatan): Absensi {
                 // Dua kiriman bersamaan (dua tab, ketukan ganda dengan Uuid berbeda) diserialkan lewat kunci baris
                 // karyawan, lalu syarat "belum masuk" diperiksa ulang di dalam kunci.
                 Karyawan::query()->whereKey($karyawan->Id)->lockForUpdate()->first();
@@ -112,7 +112,8 @@ final class CatatAbsensiWeb
                     'AkurasiMasukMeter' => $data->akurasiMeter,
                     'JarakMasukMeter' => $jarak,
                     'KemiripanWajahMasuk' => (string) $kemiripan,
-                    'QrMasukTerverifikasi' => $qr,
+                    'PerluDicek' => $catatan !== [],
+                    'CatatanPeriksa' => $this->GabungCatatan($catatan),
                 ]);
             }, 3);
         } catch (Throwable $galat) {
@@ -135,13 +136,13 @@ final class CatatAbsensiWeb
         }
 
         $this->PastikanBolehAbsen($karyawan);
-        [$outlet, $jarak] = $this->PilihOutlet($karyawan, $data, [$absensi->IdOutlet], true);
-        $qr = $this->PeriksaQr($karyawan, $outlet, $data, CarbonImmutable::now());
+        $aturan = $this->aturan->Ambil();
+        ['Jarak' => $jarak, 'Catatan' => $catatan] = $this->NilaiLokasi($karyawan, $data, [$absensi->IdOutlet], $aturan['TolakDiLuarRadius'], true, $absensi->IdOutlet);
         $kemiripan = $this->CocokkanWajah($karyawan, $data);
-        $path = $this->swafoto->Simpan($karyawan->IdTenant, $data->swafoto);
+        $path = $this->SimpanFoto($karyawan, $data, $aturan['SimpanFotoBukti']);
 
         try {
-            return DB::transaction(function () use ($absensi, $data, $jarak, $kemiripan, $path, $qr): Absensi {
+            return DB::transaction(function () use ($absensi, $data, $jarak, $kemiripan, $path, $catatan): Absensi {
                 $terkini = Absensi::query()->lockForUpdate()->findOrFail($absensi->Id);
 
                 if ($terkini->KeluarPada !== null) {
@@ -158,7 +159,9 @@ final class CatatAbsensiWeb
                     'AkurasiKeluarMeter' => $data->akurasiMeter,
                     'JarakKeluarMeter' => $jarak,
                     'KemiripanWajahKeluar' => (string) $kemiripan,
-                    'QrKeluarTerverifikasi' => $qr,
+                    // Tanda masuk dipertahankan; catatan keluar ditambahkan di belakangnya.
+                    'PerluDicek' => $terkini->PerluDicek || $catatan !== [],
+                    'CatatanPeriksa' => $this->GabungCatatan([...($terkini->CatatanPeriksa === null ? [] : [$terkini->CatatanPeriksa]), ...array_map(fn (string $c): string => "Keluar: {$c}", $catatan)]),
                 ])->save();
 
                 return $terkini;
@@ -174,6 +177,10 @@ final class CatatAbsensiWeb
     {
         if ($karyawan->Status !== StatusKaryawan::Aktif) {
             throw new PelanggaranAturanBisnis('KaryawanNonaktif', "{$karyawan->Nama} sudah nonaktif sebagai karyawan.", 'Karyawan');
+        }
+
+        if (! $karyawan->IkutAbsensi) {
+            throw new PelanggaranAturanBisnis('TidakIkutAbsensi', "{$karyawan->Nama} tidak diwajibkan absen. Pengelola bisa mengubahnya di menu Tim.", 'Karyawan');
         }
     }
 
@@ -207,20 +214,36 @@ final class CatatAbsensiWeb
     }
 
     /**
-     * Pilih outlet terdekat yang radiusnya memuat posisi karyawan (outlet bisa berdekatan dengan radius berbeda, jadi
-     * outlet terdekat belum tentu yang memuatnya). Bila tidak ada, tolak dengan jarak ke outlet terdekat.
+     * Nilai lokasi absen. Pilih outlet terdekat yang radiusnya memuat posisi karyawan (outlet bisa berdekatan dengan
+     * radius berbeda, jadi outlet terdekat belum tentu yang memuatnya). Yang janggal menjadi catatan "perlu dicek",
+     * kecuali aturan `TolakDiLuarRadius` menyala: maka ditolak dengan kode galat yang jelas.
      *
      * @param  list<int>|null  $idOutlet
-     * @return array{0: array{Id: int, Nama: string, Lintang: string, Bujur: string, RadiusMeter: int, WajibQr: bool}, 1: int}
+     * @return array{Outlet: array{Id: int, Nama: string}, Jarak: int|null, Catatan: list<string>}
      */
-    private function PilihOutlet(Karyawan $karyawan, DataAbsensiWeb $data, ?array $idOutlet, bool $keluar = false): array
+    private function NilaiLokasi(Karyawan $karyawan, DataAbsensiWeb $data, ?array $idOutlet, bool $tolak, bool $keluar = false, ?int $idOutletAsal = null): array
     {
         $daftar = $this->lokasi->Ambil($idOutlet);
 
         if ($daftar === []) {
-            throw new PelanggaranAturanBisnis('OutletTanpaLokasi', $keluar
-                ? 'Lokasi outlet tempat Anda absen masuk sudah dihapus. Minta pengelola mencatat jam keluar Anda di koreksi absensi.'
-                : 'Lokasi outlet Anda belum diatur. Minta pengelola mengisi titik lokasi outlet.', 'Lokasi');
+            // Titik lokasi outlet belum diatur: tidak ada yang bisa dibuktikan. Absen tetap tercatat di outlet karyawan.
+            if ($tolak) {
+                throw new PelanggaranAturanBisnis('OutletTanpaLokasi', $keluar
+                    ? 'Lokasi outlet tempat Anda absen masuk sudah dihapus. Minta pengelola mencatat jam keluar Anda di koreksi absensi.'
+                    : 'Lokasi outlet Anda belum diatur. Minta pengelola mengisi titik lokasi outlet.', 'Lokasi');
+            }
+
+            $idPakai = $idOutletAsal ?? $karyawan->IdOutlet ?? ($idOutlet[0] ?? null);
+
+            if ($idPakai === null) {
+                throw new PelanggaranAturanBisnis('OutletTidakDiketahui', 'Anda belum ditugaskan ke outlet mana pun. Minta pengelola mengisi outlet utama atau jadwal Anda.', 'Lokasi');
+            }
+
+            return [
+                'Outlet' => ['Id' => $idPakai, 'Nama' => $this->lokasi->AmbilNama($idPakai) ?? 'Outlet'],
+                'Jarak' => null,
+                'Catatan' => ['Titik lokasi outlet belum diatur, jarak tidak bisa dinilai'],
+            ];
         }
 
         $terdekat = null;
@@ -246,43 +269,52 @@ final class CatatAbsensiWeb
             throw new PelanggaranAturanBisnis('OutletTanpaLokasi', 'Lokasi outlet Anda belum diatur. Minta pengelola mengisi titik lokasi outlet.', 'Lokasi');
         }
 
+        $catatan = [];
         $batasAkurasi = max($acuan['RadiusMeter'], (int) config('karyawan.BatasAkurasiMinimalMeter'));
 
         if ($data->akurasiMeter > $batasAkurasi) {
-            throw new PelanggaranAturanBisnis('AkurasiLokasiRendah', "Sinyal lokasi lemah (±{$data->akurasiMeter} m). Nyalakan GPS, dekati pintu atau jendela, lalu coba lagi.", 'Lokasi');
+            if ($tolak) {
+                throw new PelanggaranAturanBisnis('AkurasiLokasiRendah', "Sinyal lokasi lemah (±{$data->akurasiMeter} m). Nyalakan GPS, dekati pintu atau jendela, lalu coba lagi.", 'Lokasi');
+            }
+
+            $catatan[] = "Sinyal GPS lemah (±{$data->akurasiMeter} m)";
         }
 
         if ($terpilih === null) {
             $this->audit->Catat('absensi.web.di-luar-radius', $karyawan, null, ['Outlet' => $acuan['Nama'], 'JarakMeter' => $jarakTerdekat, 'RadiusMeter' => $acuan['RadiusMeter']]);
 
-            throw new PelanggaranAturanBisnis('DiLuarRadius', "Anda berada ±{$jarakTerdekat} m dari {$acuan['Nama']}. Absen hanya bisa dalam radius {$acuan['RadiusMeter']} m dari outlet.", 'Lokasi');
+            if ($tolak) {
+                throw new PelanggaranAturanBisnis('DiLuarRadius', "Anda berada ±{$jarakTerdekat} m dari {$acuan['Nama']}. Absen hanya bisa dalam radius {$acuan['RadiusMeter']} m dari outlet.", 'Lokasi');
+            }
+
+            $catatan[] = "Di luar radius: ±{$jarakTerdekat} m dari {$acuan['Nama']} (batas {$acuan['RadiusMeter']} m)";
+
+            return ['Outlet' => ['Id' => $acuan['Id'], 'Nama' => $acuan['Nama']], 'Jarak' => $jarakTerdekat, 'Catatan' => $catatan];
         }
 
-        return [$terpilih, $jarakTerpilih];
+        return ['Outlet' => ['Id' => $terpilih['Id'], 'Nama' => $terpilih['Nama']], 'Jarak' => $jarakTerpilih, 'Catatan' => $catatan];
     }
 
-    /**
-     * Outlet yang mewajibkan QR: kode layar harus berlaku (true dicatat). Outlet lain: kode tidak diminta (null).
-     *
-     * @param  array{Id: int, Nama: string, WajibQr: bool}  $outlet
-     */
-    private function PeriksaQr(Karyawan $karyawan, array $outlet, DataAbsensiWeb $data, CarbonImmutable $sekarang): ?bool
+    /** Foto bukti hanya disimpan bila aturan menyala; bila menyala, foto wajib ada. */
+    private function SimpanFoto(Karyawan $karyawan, DataAbsensiWeb $data, bool $simpan): ?string
     {
-        if (! $outlet['WajibQr']) {
+        if (! $simpan) {
             return null;
         }
 
-        if ($data->kodeQr === null) {
-            throw new PelanggaranAturanBisnis('KodeQrWajib', "Absen di {$outlet['Nama']} wajib memindai QR di layar outlet. Pindai QR atau ketik 6 angkanya.", 'KodeQr');
+        if ($data->swafoto === null || $data->swafoto === '') {
+            throw new PelanggaranAturanBisnis('SwafotoWajib', 'Foto wajah wajib dikirim bersama absen. Coba lagi.', 'Swafoto');
         }
 
-        if (! $this->lokasi->CekKodeQr($outlet['Id'], $data->kodeQr, $sekarang)) {
-            $this->audit->Catat('absensi.web.qr-salah', $karyawan, null, ['Outlet' => $outlet['Nama']]);
+        return $this->swafoto->Simpan($karyawan->IdTenant, $data->swafoto);
+    }
 
-            throw new PelanggaranAturanBisnis('KodeQrSalah', 'Kode QR salah atau sudah berganti. Pindai lagi QR yang sedang tampil di layar outlet.', 'KodeQr');
-        }
-
-        return true;
+    /**
+     * @param  list<string>  $catatan
+     */
+    private function GabungCatatan(array $catatan): ?string
+    {
+        return $catatan === [] ? null : mb_substr(implode('; ', $catatan), 0, 200);
     }
 
     private function CocokkanWajah(Karyawan $karyawan, DataAbsensiWeb $data): BigDecimal

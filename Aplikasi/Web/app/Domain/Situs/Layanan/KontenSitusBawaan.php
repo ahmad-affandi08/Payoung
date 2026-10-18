@@ -353,7 +353,7 @@ final class KontenSitusBawaan
                             ['Ikon' => 'Gift', 'Judul' => 'Loyalti & promo', 'Teks' => 'Tier member, poin, voucher, kode promo, promo ulang tahun, dan promo per metode bayar.'],
                             ['Ikon' => 'Wallet', 'Judul' => 'Deposit & paket sesi', 'Teks' => 'Pelanggan mengisi saldo atau membeli paket sesi, lalu memakainya di kunjungan berikutnya.'],
                             ['Ikon' => 'HandCoins', 'Judul' => 'Tempo & piutang', 'Teks' => 'Limit kredit per pelanggan, umur piutang, dan pengingat otomatis lewat WhatsApp.'],
-                            ['Ikon' => 'Clock', 'Judul' => 'Jadwal & absensi', 'Teks' => 'Absen dengan PIN dan swafoto di perangkat kasir, langsung terhubung ke jadwal kerja.'],
+                            ['Ikon' => 'Clock', 'Judul' => 'Jadwal & absensi', 'Teks' => 'Karyawan absen dari HP-nya sendiri setelah login, dengan pengecekan wajah dan lokasi, langsung terhubung ke jadwal kerja.'],
                             ['Ikon' => 'Users', 'Judul' => 'Komisi per staf', 'Teks' => 'Aturan komisi per produk atau kategori, boleh dibagi ke beberapa staf dalam satu transaksi.'],
                             ['Ikon' => 'ClipboardList', 'Judul' => 'Kasbon & rekap gaji', 'Teks' => 'Kasbon dipotong sendiri di rekap gaji bulanan, tanpa hitung ulang.'],
                         ],

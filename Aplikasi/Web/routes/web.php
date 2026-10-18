@@ -30,14 +30,12 @@ use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontrol
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
 use App\Http\Kontroler\Kelola\TurProdukKontroler;
-use App\Http\Kontroler\Publik\AbsensiWebKontroler;
 use App\Http\Kontroler\Publik\AkunTokoOnlineKontroler;
 use App\Http\Kontroler\Publik\BerhentiLanggananKontroler;
 use App\Http\Kontroler\Publik\DokumenLegalPublikKontroler;
 use App\Http\Kontroler\Publik\InvoicePublikKontroler;
 use App\Http\Kontroler\Publik\KiosKontroler;
 use App\Http\Kontroler\Publik\KompatibilitasPerangkatKontroler as KompatibilitasPerangkatPublikKontroler;
-use App\Http\Kontroler\Publik\LayarAbsensiKontroler;
 use App\Http\Kontroler\Publik\PenawaranPublikKontroler;
 use App\Http\Kontroler\Publik\PengembangKontroler;
 use App\Http\Kontroler\Publik\PersetujuanServisKontroler;
@@ -459,26 +457,6 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::get('/', [PersetujuanServisKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('publik.persetujuan-servis');
             Route::post('/setujui', [PersetujuanServisKontroler::class, 'Setujui'])->middleware('throttle:10,1')->name('publik.persetujuan-servis.setujui');
             Route::post('/tolak', [PersetujuanServisKontroler::class, 'Tolak'])->middleware('throttle:10,1')->name('publik.persetujuan-servis.tolak');
-        });
-
-    // F-18 bagian 4 (D-37): absensi web karyawan dari HP pribadi lewat tautan rahasia (geofence + wajah, PWA).
-    Route::prefix('/{slugTenant}/absen/{tokenAbsen}')
-        ->where(['slugTenant' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'tokenAbsen' => '[A-Za-z0-9]{40}'])
-        ->group(function (): void {
-            Route::get('/', [AbsensiWebKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('publik.absensi-web');
-            Route::get('/manifest', [AbsensiWebKontroler::class, 'Manifest'])->middleware('throttle:60,1')->name('publik.absensi-web.manifest');
-            Route::get('/pekerja-layanan', [AbsensiWebKontroler::class, 'PekerjaLayanan'])->middleware('throttle:60,1')->name('publik.absensi-web.pekerja-layanan');
-            Route::post('/wajah', [AbsensiWebKontroler::class, 'DaftarWajah'])->middleware('throttle:absensi-web')->name('publik.absensi-web.wajah');
-            Route::post('/masuk', [AbsensiWebKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('publik.absensi-web.masuk');
-            Route::post('/keluar', [AbsensiWebKontroler::class, 'Keluar'])->middleware('throttle:absensi-web')->name('publik.absensi-web.keluar');
-        });
-
-    // F-18 bagian 4 (D-37): layar QR absensi outlet (tablet/monitor di outlet, tanpa akun).
-    Route::prefix('/{slugTenant}/layar-absen/{tokenLayar}')
-        ->where(['slugTenant' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'tokenLayar' => '[A-Za-z0-9]{40}'])
-        ->group(function (): void {
-            Route::get('/', [LayarAbsensiKontroler::class, 'Tampilkan'])->middleware('throttle:30,1')->name('publik.layar-absensi');
-            Route::get('/kode', [LayarAbsensiKontroler::class, 'Kode'])->middleware('throttle:30,1')->name('publik.layar-absensi.kode');
         });
 
     // F-10 (v3.49): portal kurir tanpa akun lewat tautan rahasia dari toko.

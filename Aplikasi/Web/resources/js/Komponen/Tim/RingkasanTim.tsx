@@ -5,7 +5,8 @@ import type { OpsiOutletPengguna, OpsiPeranPengguna } from '@/Tipe/Organisasi';
 import type { IsianTim, KunciLangkahTim, LangkahTim } from './LangkahTim';
 
 type PropsRingkasanTim = {
-    isian: IsianTim;
+    /** `IkutAbsensi` (D-180) hanya bermakna untuk akses Dashboard, yang beremail. */
+    isian: IsianTim & { IkutAbsensi?: boolean };
     langkah: LangkahTim[];
     labelAkses: string;
     peran: OpsiPeranPengguna | undefined;
@@ -84,6 +85,9 @@ export default function RingkasanTim({
                               : namaOutlet}
                     </BarisRingkasan>
                     <BarisRingkasan nama="Dicatat sebagai karyawan">{TampilYaTidak(dicatatKaryawan)}</BarisRingkasan>
+                    {dicatatKaryawan && isian.Akses === 'Dashboard' ? (
+                        <BarisRingkasan nama="Ikut absensi">{TampilYaTidak(isian.IkutAbsensi ?? true)}</BarisRingkasan>
+                    ) : null}
                 </BagianRingkasan>
             ) : null}
             {langkahOutlet ? (

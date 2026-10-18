@@ -26,7 +26,7 @@ final class DaftarAbsensi
 {
     public const KOLOM_URUT = ['TanggalBisnis', 'MasukPada'];
 
-    public const KOLOM_SARING = ['TanggalBisnis', 'Karyawan', 'Outlet', 'BelumKeluar', 'DiluarJadwal'];
+    public const KOLOM_SARING = ['TanggalBisnis', 'Karyawan', 'Outlet', 'BelumKeluar', 'DiluarJadwal', 'PerluDicek'];
 
     public const URUT_BAWAAN = '-MasukPada';
 
@@ -55,6 +55,7 @@ final class DaftarAbsensi
             ->when($tanggal['Sampai'] !== null, fn (Builder $k) => $k->where('TanggalBisnis', '<=', $tanggal['Sampai']))
             ->when($p->AmbilBoolean('BelumKeluar') === true, fn (Builder $k) => $k->whereNull('KeluarPada'))
             ->when($p->AmbilBoolean('DiluarJadwal') === true, fn (Builder $k) => $k->where('DiluarJadwal', true))
+            ->when($p->AmbilBoolean('PerluDicek') === true, fn (Builder $k) => $k->where('PerluDicek', true))
             ->when($p->cari !== '', fn (Builder $k) => $k->whereIn('IdKaryawan', Karyawan::query()->where('Nama', 'like', PenerapKueriTabel::PolaCari($p->cari))->select('Id')));
 
         return PenerapKueriTabel::Terapkan($kueri, $p, ['TanggalBisnis' => 'TanggalBisnis', 'MasukPada' => 'MasukPada'], fn (Collection $baris): array => $this->Petakan($baris));
@@ -118,6 +119,9 @@ final class DaftarAbsensi
                 'PulangCepatMenit' => $nilai['PulangCepatMenit'],
                 'LemburMenit' => $nilai['LemburMenit'],
                 'DiluarJadwal' => $a->DiluarJadwal,
+                // D-180: lokasi janggal (di luar radius, GPS lemah, titik outlet belum diatur); absen tetap tercatat.
+                'PerluDicek' => $a->PerluDicek,
+                'CatatanPeriksa' => $a->CatatanPeriksa,
                 'Status' => $status->value,
                 'LabelStatus' => $status->AmbilLabel(),
                 'AdaSwafotoMasuk' => $a->PathSwafotoMasuk !== null,

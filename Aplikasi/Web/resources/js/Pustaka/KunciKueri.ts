@@ -44,11 +44,9 @@ export const KunciKueri = {
     Impor: {
         Status: (uuid: string) => ['Impor', 'Status', uuid] as const,
     },
-    // F-18 bagian 4 (D-37): panel absen dari HP (tautan pribadi & wajah terdaftar) satu karyawan.
+    // F-18 bagian 4 (D-37): panel absen dari HP (wajah terdaftar) satu karyawan.
     Karyawan: {
         AbsenHp: (uuid: string) => ['Karyawan', 'AbsenHp', uuid] as const,
-        // Layar QR absensi outlet: kode 6 digit yang berganti tiap 30 detik.
-        KodeLayar: (alamat: string) => ['Karyawan', 'KodeLayar', alamat] as const,
         // K37: sebaran kemiripan wajah absensi web (kalibrasi ambang).
         KalibrasiWajah: () => ['Karyawan', 'KalibrasiWajah'] as const,
     },

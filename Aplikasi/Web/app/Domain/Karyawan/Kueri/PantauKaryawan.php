@@ -6,7 +6,6 @@ namespace App\Domain\Karyawan\Kueri;
 
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
-use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
@@ -54,7 +53,7 @@ final class PantauKaryawan
         $belum = JadwalKerja::query()
             ->where('Tanggal', $hariIni)
             ->whereNotIn('IdKaryawan', $sudahAbsen)
-            ->whereIn('IdKaryawan', Karyawan::query()->where('Status', StatusKaryawan::Aktif->value)->select('Id'))
+            ->whereIn('IdKaryawan', Karyawan::query()->wajibAbsen()->select('Id'))
             ->when($idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $idOutletBoleh ?? []))
             ->orderBy('JamMulai')
             ->get();

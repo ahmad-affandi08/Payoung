@@ -31,8 +31,9 @@ final class AturanKehadiranKontroler extends DasarKelolaKontroler
         ]);
     }
 
-    public function Simpan(Request $permintaan, SimpanAturanKehadiran $simpan): RedirectResponse
+    public function Simpan(Request $permintaan, SimpanAturanKehadiran $simpan, AturanKehadiranTenant $aturan): RedirectResponse
     {
+        $saatIni = $aturan->Ambil();
         $data = $permintaan->validate([
             'WajibJadwal' => ['required', 'boolean'],
             'MasukPalingAwalMenit' => ['required', 'integer'],
@@ -43,6 +44,9 @@ final class AturanKehadiranKontroler extends DasarKelolaKontroler
             'PengingatShiftMenitSebelum' => ['required', 'integer'],
             'PeringatanPengelolaAktif' => ['required', 'boolean'],
             'PeringatanPengelolaSetelahMenit' => ['required', 'integer'],
+            // D-180: tidak dikirim = nilai tersimpan tidak berubah.
+            'SimpanFotoBukti' => ['sometimes', 'boolean'],
+            'TolakDiLuarRadius' => ['sometimes', 'boolean'],
         ], [
             '*.required' => 'Lengkapi isian ini.',
             '*.integer' => 'Isi dengan bilangan bulat (menit).',
@@ -57,6 +61,8 @@ final class AturanKehadiranKontroler extends DasarKelolaKontroler
             'PengingatShiftMenitSebelum' => (int) $data['PengingatShiftMenitSebelum'],
             'PeringatanPengelolaAktif' => (bool) $data['PeringatanPengelolaAktif'],
             'PeringatanPengelolaSetelahMenit' => (int) $data['PeringatanPengelolaSetelahMenit'],
+            'SimpanFotoBukti' => (bool) ($data['SimpanFotoBukti'] ?? $saatIni['SimpanFotoBukti']),
+            'TolakDiLuarRadius' => (bool) ($data['TolakDiLuarRadius'] ?? $saatIni['TolakDiLuarRadius']),
         ], $this->Pelaku()->Id);
 
         return back()->with('Kilat', 'Aturan kehadiran disimpan.');

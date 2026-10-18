@@ -10,7 +10,6 @@ import '../Domain/Perangkat/PengaturanPerangkat.dart';
 import '../Domain/Sesi/StafLokal.dart';
 import 'BagianBantuan.dart';
 import 'BagianLogPerangkat.dart';
-import 'Komponen/AbsensiSaya.dart';
 import 'LembarMutasiKas.dart';
 import 'RuangKerja/IsiAreaKerja.dart';
 import 'Struk/BagianLayarPelanggan.dart';
@@ -102,21 +101,11 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
       ),
     );
 
-    // F-18: bagian Absensi hanya untuk toko yang memakai data karyawan (sama dengan tawaran absen masuk setelah PIN).
-    final pakaiAbsensi = ref.watch(penyediaKaryawanPos).value?.isNotEmpty ?? false;
-
     return IsiAreaKerja(
       judul: 'Pengaturan',
       // Belasan bagian berdiri sendiri: di layar lebar dibagi dua kolom, bukan satu gulungan panjang.
       kolomGanda: true,
       anak: [
-        if (pakaiAbsensi)
-          Bagian(
-            'Absensi',
-            'Catat jam masuk dan pulang Anda dari sini. PIN tidak diminta lagi; swafoto diminta bila perangkat berkamera. '
-                'Tetap tercatat saat offline.',
-            const PanelAbsensiSaya(),
-          ),
         Bagian(
           'Printer',
           'Semua printer perangkat ini ada di satu daftar. Centang kegunaan tiap printer: struk kasir, tiket '

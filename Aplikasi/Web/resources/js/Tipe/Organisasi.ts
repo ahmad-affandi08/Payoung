@@ -106,7 +106,14 @@ export type IzinPeran = { Kunci: string; Label: string; Kelompok: string; Khusus
 /** Opsi peran & outlet untuk formulir undangan / ubah akses pengguna. */
 /** Cakupan outlet yang dibawa peran (D-104): Semua (Admin/Akuntan/Pemilik), Terpilih (peran operasional), Bebas (peran kustom). */
 export type CakupanOutlet = 'Semua' | 'Terpilih' | 'Bebas';
-export type OpsiPeranPengguna = { Uuid: string; Nama: string; Pemilik: boolean; Cakupan: CakupanOutlet };
+/** `IkutAbsensi` = bawaan peran ini ikut absensi (D-180); dipakai formulir Tim sebagai isian awal. */
+export type OpsiPeranPengguna = {
+    Uuid: string;
+    Nama: string;
+    Pemilik: boolean;
+    Cakupan: CakupanOutlet;
+    IkutAbsensi?: boolean;
+};
 export type OpsiOutletPengguna = { Uuid: string; Kode: string; Nama: string };
 
 /** Props halaman penuh "Tambah outlet". */

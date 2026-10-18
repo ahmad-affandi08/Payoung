@@ -51,9 +51,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $Lintang F-18 bagian 4 (D-37): titik lokasi absensi web (derajat desimal, 7 angka)
  * @property string|null $Bujur
  * @property int $RadiusAbsensiMeter radius geofence absensi web, bawaan 100 m
- * @property string|null $TokenLayarAbsen rahasia layar QR absensi outlet (terenkripsi): tautan layar & sumber kode berganti
- * @property string|null $HashTokenLayarAbsen
- * @property bool $WajibQrAbsensi absen web di outlet ini wajib menyertakan kode dari layar QR
  * @property Carbon|null $KodeDikunciPada
  * @property Carbon|null $DiarsipkanPada
  * @property-read Merek $Merek
@@ -92,13 +89,10 @@ final class Outlet extends ModelDasar
         'Lintang' => null,
         'Bujur' => null,
         'RadiusAbsensiMeter' => 100,
-        'TokenLayarAbsen' => null,
-        'HashTokenLayarAbsen' => null,
-        'WajibQrAbsensi' => false,
     ];
 
     /** @var list<string> */
-    protected $hidden = ['TokenLayarAbsen', 'HashTokenLayarAbsen', 'TokenKios'];
+    protected $hidden = ['TokenKios'];
 
     /**
      * @return BelongsTo<Merek, $this>
@@ -138,8 +132,6 @@ final class Outlet extends ModelDasar
             'Lintang' => 'decimal:7',
             'Bujur' => 'decimal:7',
             'RadiusAbsensiMeter' => 'integer',
-            'TokenLayarAbsen' => 'encrypted',
-            'WajibQrAbsensi' => 'boolean',
         ];
     }
 }

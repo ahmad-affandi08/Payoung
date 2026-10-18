@@ -14,14 +14,15 @@ use Illuminate\Support\Facades\DB;
  * Simpan aturan kehadiran tenant (F-18 bagian 5, D-44; izin `karyawan.kelola`). Semua menit bulat: masuk paling awal
  * 0–480, toleransi terlambat & pulang cepat 0–120, ambang lembur 0–240, pengingat shift 5–240 menit sebelum mulai,
  * peringatan pengelola 5–240 menit setelah jam mulai dan tidak lebih awal dari toleransi terlambat (peringatan
- * "belum masuk" yang datang sebelum batas terlambat akan keliru). Audit `aturan-kehadiran.simpan`.
+ * "belum masuk" yang datang sebelum batas terlambat akan keliru). D-180: saklar simpan foto bukti dan tolak absen di luar
+ * radius. Audit `aturan-kehadiran.simpan`.
  */
 final class SimpanAturanKehadiran
 {
     public function __construct(private readonly PencatatAudit $audit) {}
 
     /**
-     * @param  array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int}  $nilai
+     * @param  array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}  $nilai
      */
     public function Jalankan(array $nilai, int $idPengguna): AturanKehadiran
     {

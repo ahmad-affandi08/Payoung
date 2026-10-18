@@ -17,7 +17,10 @@ final class KamusPeristiwaAudit
 {
     /** @var array<string, string> */
     public const LABEL = [
+        'absensi.dicek' => 'Absensi yang perlu dicek ditandai sudah diperiksa',
         'absensi.koreksi' => 'Absensi dikoreksi',
+        'absensi.koreksi.diminta' => 'Karyawan meminta koreksi absensi ke manajer',
+        'absensi.koreksi.ditutup' => 'Permintaan koreksi absensi ditutup',
         'absensi.tambah-manual' => 'Absensi dicatat manual',
         'absensi.web.di-luar-radius' => 'Absen dari HP ditolak: di luar radius outlet',
         'absensi.web.ditolak-jadwal' => 'Absen dari HP ditolak: di luar jadwal kerja',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Organisasi\Kueri;
 
 use App\Domain\Dukungan\Model\PenggunaDukungan;
+use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -87,6 +88,28 @@ final class DaftarAnggota
             ->sortBy(fn (array $a): string => mb_strtolower($a['Nama']))
             ->values()
             ->all());
+    }
+
+    /**
+     * D-180: apakah anggota ini bisa absen lewat login (punya email) dan apakah perannya bawaannya ikut absensi
+     * (peran kustom: ya). Null bila bukan anggota tenant ini.
+     *
+     * @return array{PunyaEmail: bool, IkutAbsensiBawaan: bool}|null
+     */
+    public function AmbilProfilAbsensi(int $idTenant, int $idPengguna): ?array
+    {
+        $baris = TenantPengguna::query()->where('IdTenant', $idTenant)->where('IdPengguna', $idPengguna)->with('Pengguna')->first();
+
+        if ($baris === null) {
+            return null;
+        }
+
+        $kode = $baris->IdPeran === null ? null : Peran::query()->whereKey($baris->IdPeran)->value('Kode');
+
+        return [
+            'PunyaEmail' => ! $baris->Pengguna->CekHanyaKasir(),
+            'IkutAbsensiBawaan' => (PeranTenantBawaan::tryFrom((string) $kode)?->AmbilIkutAbsensiBawaan() ?? true) && ! $baris->Pemilik,
+        ];
     }
 
     /**

@@ -11,15 +11,18 @@ use App\Domain\Karyawan\Model\WajahKaryawan;
 use App\Domain\Organisasi\Kueri\LokasiAbsensiOutlet;
 
 /**
- * Isi halaman absensi web karyawan (F-18 bagian 4, D-37): status wajah, absensi yang masih terbuka, dan beberapa
- * absensi terakhir. Tanpa sidik wajah, foto, maupun koordinat.
+ * Isi halaman Absen berlogin (F-18 bagian 4, D-37, D-180): status wajah, absensi yang masih terbuka, aturan foto bukti,
+ * dan beberapa absensi terakhir. Tanpa sidik wajah, foto, maupun koordinat.
  */
 final class StatusAbsensiWeb
 {
-    public function __construct(private readonly LokasiAbsensiOutlet $lokasi) {}
+    public function __construct(
+        private readonly LokasiAbsensiOutlet $lokasi,
+        private readonly AturanKehadiranTenant $aturan,
+    ) {}
 
     /**
-     * @return array{Wajah: array{Status: string, Label: string, AlasanTolak: string|null}|null, AbsensiTerbuka: array{Uuid: string, MasukPada: string, NamaOutlet: string|null}|null, Riwayat: list<array{MasukPada: string, KeluarPada: string|null, NamaOutlet: string|null}>, JumlahFotoDaftar: int, WajibQr: bool}
+     * @return array{Wajah: array{Status: string, Label: string, AlasanTolak: string|null}|null, AbsensiTerbuka: array{Uuid: string, MasukPada: string, NamaOutlet: string|null}|null, Riwayat: list<array{MasukPada: string, KeluarPada: string|null, NamaOutlet: string|null, PerluDicek: bool}>, JumlahFotoDaftar: int, SimpanFoto: bool}
      */
     public function Ambil(Karyawan $karyawan): array
     {
@@ -42,11 +45,11 @@ final class StatusAbsensiWeb
                 'MasukPada' => $a->MasukPada->toIso8601String(),
                 'KeluarPada' => $a->KeluarPada?->toIso8601String(),
                 'NamaOutlet' => $this->lokasi->AmbilNama($a->IdOutlet),
+                'PerluDicek' => $a->PerluDicek,
             ])->all()),
             'JumlahFotoDaftar' => (int) config('karyawan.JumlahFotoDaftarWajah'),
-            // Outlet utama karyawan (atau outlet mana pun bila tanpa outlet utama) mewajibkan kode layar QR. Outlet
-            // jadwal lain yang mewajibkannya ditangani lewat galat `KodeQrWajib` di halaman.
-            'WajibQr' => $this->lokasi->CekAdaWajibQr($karyawan->IdOutlet === null ? null : [$karyawan->IdOutlet]),
+            // Foto hanya dikirim dari halaman bila aturan menyimpannya (wajah tetap dicocokkan lewat sidik di perangkat).
+            'SimpanFoto' => $this->aturan->Ambil()['SimpanFotoBukti'],
         ];
     }
 }

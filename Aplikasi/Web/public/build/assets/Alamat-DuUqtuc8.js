@@ -1,0 +1,1 @@
+var e=`/kelola/absen`;export{e as t};

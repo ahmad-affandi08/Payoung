@@ -473,7 +473,7 @@ final class SektorSitus
                 'Seo' => 'Aplikasi kasir fotokopi, percetakan, rental, dan jasa umum: harga terbuka, pesanan dengan uang muka, tagihan tempo, stok bahan, laporan harian.',
             ],
             [
-                'Kode' => 'BIZ-JSA', 'Slug' => 'jasa-profesional-agensi', 'Nama' => 'Jasa profesional & agensi', 'JudulSeo' => 'Aplikasi Invoice & Penagihan untuk Konsultan, Agensi, dan Jasa Profesional',
+                'Kode' => 'BIZ-JSA', 'Slug' => 'jasa-profesional-agensi', 'Nama' => 'Jasa profesional & agensi', 'JudulSeo' => 'Aplikasi Invoice & Penagihan untuk Jasa Profesional',
                 'Ringkas' => 'Invoice, retainer berulang, PPh dipotong', 'Ikon' => 'FileText', 'Spesimen' => 'Jurnal',
                 'Judul' => 'Tagihan terkirim hari ini, pembayarannya terlihat besok',
                 'Sub' => 'Buat invoice profesional, kirim lewat WhatsApp dengan tautan yang bisa dibuka pelanggan, dan lihat siapa yang sudah membuka, membayar, atau terlambat. Tanpa aplikasi kasir.',
@@ -488,11 +488,11 @@ final class SektorSitus
                     ['ChartLine', 'Piutang dan arus kas', 'Umur piutang, invoice lewat tempo, dan pengingat otomatis yang sopan sebelum dan sesudah jatuh tempo.'],
                 ],
                 'Faq' => [['Apakah perlu aplikasi kasir atau printer struk?', 'Tidak. Sektor ini dibuat untuk menagih lewat invoice; menu kasir tidak ditampilkan, dan Anda bisa menambahnya kemudian bila membuka toko.'], ['Apakah pelanggan perlu punya akun?', 'Tidak. Pelanggan membuka invoice dari tautan, tanpa mendaftar. Tautannya rahasia dan tidak bisa ditebak dari nomor invoice.']],
-                'Seo' => 'Aplikasi invoice dan penagihan untuk konsultan, agensi, dan jasa profesional: invoice PPN, uang muka, retainer berulang, kirim WhatsApp, PPh 23 dipotong, piutang dan pengingat.',
+                'Seo' => 'Aplikasi invoice dan penagihan untuk konsultan, agensi, dan jasa profesional: invoice PPN, uang muka, retainer berulang, kirim WhatsApp, PPh 23, dan pengingat piutang.',
                 'Cta' => 'Daftar gratis, pilih sektor "Jasa profesional & agensi" di panduan awal, lalu pelanggan, pajak, dan invoice pertama disiapkan langkah demi langkah.',
             ],
             [
-                'Kode' => 'BIZ-KTR', 'Slug' => 'kontraktor-proyek', 'Nama' => 'Kontraktor & proyek', 'JudulSeo' => 'Aplikasi Invoice Proyek untuk Kontraktor, Interior, dan Arsitek',
+                'Kode' => 'BIZ-KTR', 'Slug' => 'kontraktor-proyek', 'Nama' => 'Kontraktor & proyek', 'JudulSeo' => 'Aplikasi Invoice Proyek untuk Kontraktor dan Arsitek',
                 'Ringkas' => 'Invoice bertermin, uang muka, PO material', 'Ikon' => 'Building', 'Spesimen' => 'Jurnal',
                 'Judul' => 'Termin proyek tertagih tepat waktu, uang muka tidak terlupa',
                 'Sub' => 'Tagih proyek dalam beberapa termin: uang muka dulu, lalu pelunasan dengan potongan DP. PPN dan PPh yang dipotong pemberi kerja tercatat rapi.',
@@ -511,7 +511,7 @@ final class SektorSitus
                 'Cta' => 'Daftar gratis, pilih sektor "Kontraktor & proyek" di panduan awal, lalu pemberi kerja, pajak, dan invoice termin pertama disiapkan langkah demi langkah.',
             ],
             [
-                'Kode' => 'BIZ-MFG', 'Slug' => 'manufaktur-produksi', 'Nama' => 'Manufaktur & produksi', 'JudulSeo' => 'Aplikasi Stok, Produksi, dan Invoice untuk Pabrik dan Konveksi',
+                'Kode' => 'BIZ-MFG', 'Slug' => 'manufaktur-produksi', 'Nama' => 'Manufaktur & produksi', 'JudulSeo' => 'Aplikasi Stok, Produksi, dan Invoice untuk Pabrik',
                 'Ringkas' => 'Bahan baku, produksi, pesanan & invoice', 'Ikon' => 'Warehouse', 'Spesimen' => 'Jurnal',
                 'Judul' => 'Dari bahan baku sampai invoice distributor dalam satu catatan',
                 'Sub' => 'Catat bahan baku, produksi barang jadi dengan HPP yang benar, lalu jual ke distributor lewat pesanan, surat jalan, dan invoice. Tanpa kasir.',

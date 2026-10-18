@@ -28,6 +28,8 @@ function BuatIsian(a: AturanKehadiran): Isian {
         PengingatShiftMenitSebelum: String(a.PengingatShiftMenitSebelum),
         PeringatanPengelolaAktif: a.PeringatanPengelolaAktif,
         PeringatanPengelolaSetelahMenit: String(a.PeringatanPengelolaSetelahMenit),
+        SimpanFotoBukti: a.SimpanFotoBukti,
+        TolakDiLuarRadius: a.TolakDiLuarRadius,
     };
 }
 
@@ -65,6 +67,38 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="aturan kehadiran" /> : null}
 
             <form onSubmit={Kirim} className="flex flex-col gap-4" aria-label="Aturan kehadiran" noValidate>
+                <Panel
+                    judul="Bukti kehadiran"
+                    keterangan="Karyawan absen dari HP setelah login. Wajahnya selalu dicocokkan dengan wajah terdaftar; di sini Anda mengatur foto dan lokasinya."
+                >
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <KotakCentang
+                                label="Simpan foto bukti tiap absen"
+                                nilai={formulir.data.SimpanFotoBukti}
+                                saatBerubah={(nilai) => formulir.setData('SimpanFotoBukti', nilai)}
+                                disabled={!Izin.Kelola}
+                            />
+                            <p className="text-keterangan text-teks-sekunder">
+                                Foto bisa dilihat di rekap absensi. Jika dimatikan, wajah tetap dicocokkan tetapi
+                                fotonya tidak disimpan, hanya skor kemiripannya.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <KotakCentang
+                                label="Tolak absen di luar radius outlet"
+                                nilai={formulir.data.TolakDiLuarRadius}
+                                saatBerubah={(nilai) => formulir.setData('TolakDiLuarRadius', nilai)}
+                                disabled={!Izin.Kelola}
+                            />
+                            <p className="text-keterangan text-teks-sekunder">
+                                Dimatikan (bawaan): absen tetap tercatat dan ditandai &ldquo;perlu dicek&rdquo; bila
+                                lokasinya jauh dari outlet atau sinyal GPS lemah, supaya karyawan tidak tertolak hanya
+                                karena GPS meleset. Dinyalakan: absen di luar radius ditolak.
+                            </p>
+                        </div>
+                    </div>
+                </Panel>
                 <Panel
                     judul="Absen mengikuti jadwal"
                     keterangan="Berlaku untuk absen dari HP pribadi (ditolak langsung). Absen di aplikasi kasir tetap diterima karena bisa dilakukan offline, tetapi ditandai Di luar jadwal untuk ditinjau."

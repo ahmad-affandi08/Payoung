@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Karyawan;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
-use App\Domain\Karyawan\Aksi\AturTautanAbsen;
 use App\Domain\Karyawan\Aksi\HapusWajahKaryawan;
 use App\Domain\Karyawan\Aksi\TinjauWajahKaryawan;
 use App\Domain\Karyawan\Enum\StatusWajahKaryawan;
@@ -20,31 +19,14 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * F-18 bagian 4 (D-37) panel "Absen HP" karyawan (`/kelola/karyawan/{uuid}/absen-hp`, izin `karyawan.kelola`): buat
- * ulang / cabut tautan absen pribadi, lihat foto pendaftaran wajah, setujui / tolak (beralasan) / atur ulang wajah.
- * Karyawan tenant lain = 404 (`MilikTenant`).
+ * F-18 bagian 4 (D-37, D-180) panel wajah karyawan (`/kelola/karyawan/{uuid}/absen-hp`, izin `karyawan.kelola`): lihat foto
+ * pendaftaran wajah, setujui / tolak (beralasan) / atur ulang wajah. Karyawan tenant lain = 404 (`MilikTenant`).
  */
 final class AbsenHpKaryawanKontroler extends DasarKelolaKontroler
 {
     public function Tampilkan(string $karyawan, AbsenHpKaryawan $kueri): JsonResponse
     {
         return response()->json($kueri->Ambil($this->CariKaryawan($karyawan)));
-    }
-
-    public function BuatTautan(string $karyawan, AturTautanAbsen $atur): RedirectResponse
-    {
-        $baris = $this->CariKaryawan($karyawan);
-        $atur->Jalankan($baris, true, $this->Pelaku()->Id);
-
-        return back()->with('Kilat', "Tautan absen {$baris->Nama} dibuat. Tautan lama tidak berlaku lagi.");
-    }
-
-    public function CabutTautan(string $karyawan, AturTautanAbsen $atur): RedirectResponse
-    {
-        $baris = $this->CariKaryawan($karyawan);
-        $atur->Jalankan($baris, false, $this->Pelaku()->Id);
-
-        return back()->with('Kilat', "Tautan absen {$baris->Nama} dicabut.");
     }
 
     public function Tinjau(Request $permintaan, string $karyawan, TinjauWajahKaryawan $tinjau): RedirectResponse
@@ -61,7 +43,7 @@ final class AbsenHpKaryawanKontroler extends DasarKelolaKontroler
 
         return back()->with('Kilat', $setujui
             ? "Wajah {$baris->Nama} disetujui. Ia sudah bisa absen dari HP."
-            : "Wajah {$baris->Nama} ditolak. Ia bisa mendaftar ulang dari tautan absennya.");
+            : "Wajah {$baris->Nama} ditolak. Ia bisa mendaftar ulang dari halaman Absen.");
     }
 
     public function HapusWajah(string $karyawan, HapusWajahKaryawan $hapus): RedirectResponse

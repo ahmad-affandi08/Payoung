@@ -56,7 +56,7 @@ export function SusunLangkahTim({ akses, punyaKaryawan, aturGaji }: KonteksLangk
 
 const kunciSiapa = ['Akses', 'Nama', 'Jabatan'];
 const kunciAkun = ['Email', 'KataSandi', 'Pin', 'NoHp'];
-const kunciPeran = ['Peran', 'SemuaOutlet', 'Outlet', 'JugaKaryawan', 'UuidKaryawan'];
+const kunciPeran = ['Peran', 'SemuaOutlet', 'Outlet', 'JugaKaryawan', 'UuidKaryawan', 'IkutAbsensi'];
 const kunciGaji = [
     'LevelStaf',
     'GajiPokok',

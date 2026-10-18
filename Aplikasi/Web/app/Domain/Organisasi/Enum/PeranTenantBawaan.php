@@ -25,6 +25,7 @@ enum PeranTenantBawaan: string
     case Pelayan = 'Pelayan';
     case Salesman = 'Salesman';
     case Apoteker = 'Apoteker';
+    case Karyawan = 'Karyawan';
 
     public function AmbilNama(): string
     {
@@ -40,6 +41,7 @@ enum PeranTenantBawaan: string
             self::Pelayan => 'Pelayan',
             self::Salesman => 'Salesman',
             self::Apoteker => 'Apoteker',
+            self::Karyawan => 'Karyawan',
         };
     }
 
@@ -56,8 +58,18 @@ enum PeranTenantBawaan: string
             self::Akuntan => 'Keuangan, jurnal, pajak, tutup buku; membaca semua laporan.',
             self::Pelayan => 'Aplikasi POS mode Pelayan: ambil pesanan meja & kirim ke dapur, tanpa pembayaran.',
             self::Salesman => 'Aplikasi mode Salesman: kunjungan pelanggan, lihat stok & piutang pelanggan, ambil pesanan grosir (dikonfirmasi back-office).',
+            self::Karyawan => 'Hanya absen masuk/pulang dari HP (D-180). Tanpa akses dashboard lain; cocok untuk staf yang tidak memakai kasir.',
             self::Apoteker => 'POS apotek: jual seperti Kasir, ditambah menyerahkan obat keras/psikotropika/narkotika dengan resep dan Obat Wajib Apotek; laporan apotek dengan data pasien.',
         };
+    }
+
+    /**
+     * D-180: apakah orang berperan ini bawaannya ikut absensi. Manajemen (Pemilik, Admin, Akuntan, Manajer Outlet,
+     * Supervisor) tidak; staf lapangan ya. Pemilik toko bisa mengubahnya per orang di formulir Tim.
+     */
+    public function AmbilIkutAbsensiBawaan(): bool
+    {
+        return ! in_array($this, [self::Pemilik, self::Admin, self::Akuntan, self::ManajerOutlet, self::Supervisor], true);
     }
 
     /** Cakupan outlet peran bawaan (D-104): peran tingkat usaha selalu semua outlet, peran operasional memilih outlet. */
@@ -155,6 +167,8 @@ enum PeranTenantBawaan: string
                 IzinTenant::PengirimanKelola,
             ],
             self::Kasir => [IzinTenant::ProdukLihat, IzinTenant::PenjualanBuat],
+            // D-180: tidak ada izin back-office; halaman Absen terbuka bagi siapa pun yang ikut absensi (bukan izin).
+            self::Karyawan => [],
             self::Pelayan => [IzinTenant::ProdukLihat, IzinTenant::PesananMejaCatat],
             // Salesman hanya mengambil pesanan (draf) dan mencatat kunjungan; konfirmasi SO & BR-12.6 tetap di tangan
             // pemegang `grosir.kelola`/`grosir.setujui-kredit` di back-office.

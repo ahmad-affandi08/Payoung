@@ -6,7 +6,7 @@ namespace App\Domain\Karyawan\Data;
 
 use App\Domain\Bersama\Nilai\Uang;
 
-/** Masukan `SimpanKaryawan` (F-18). Teks opsional kosong = null. */
+/** Masukan `SimpanKaryawan` (F-18). Teks opsional kosong = null. `ikutAbsensi` null = tidak diubah (karyawan baru: ikut). */
 final readonly class DataKaryawan
 {
     public function __construct(
@@ -20,5 +20,6 @@ final readonly class DataKaryawan
         public ?Uang $tarifLemburPerJam = null,
         public ?Uang $potonganTerlambatPerMenit = null,
         public ?Uang $potonganTidakMasukPerHari = null,
+        public ?bool $ikutAbsensi = null,
     ) {}
 }
