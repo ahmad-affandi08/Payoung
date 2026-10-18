@@ -868,7 +868,7 @@ Wajib lolos sebelum layar masuk implementasi:
 
 - [ ] Layar tetap bisa dipahami jika semua warna dihapus
 - [ ] Warna hanya muncul untuk aksi utama dan status, status selalu disertai teks/ikon
-- [ ] Tidak ada gradien selain kepala sidebar merek `BrandGelap` → `Brand` (D-15), efek kaca, bayangan dekoratif, emoji, atau ilustrasi dekoratif (ilustrasi merek penjelas keadaan kosong diizinkan, D-68)
+- [ ] Tidak ada gradien selain kepala sidebar merek `BrandGelap` → `Brand` (D-15), efek kaca, bayangan dekoratif, emoji, atau ilustrasi dekoratif (ilustrasi merek penjelas keadaan kosong diizinkan, D-68; ilustrasi jenis usaha di pemilih sektor diizinkan, D-178)
 - [ ] Tidak ada kartu yang lebih jelas bila dijadikan baris tabel
 - [ ] Tabel web memakai `TabelData` (TanStack Table + Query) dengan fitur §17.4.3
 - [ ] Rapi di lebar 360 / 768 / 1280px tanpa gulir horizontal halaman (web, §17.4.4); layar POS berada di bingkai Ruang Kerja Kasir dan rapi di 360 / 800 / 1280dp (§17.2.7)

@@ -4,36 +4,22 @@ import { useId, useRef, type FormEvent } from 'react';
 import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
 import GrupCentang from '@/Komponen/Formulir/GrupCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import KartuSektor from '@/Komponen/PanduanAwal/KartuSektor';
 import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwal/RingkasanGalatFormulir';
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
 import { Card } from '@/Komponen/Ui/card';
 import { Empty, EmptyDescription, EmptyHeader } from '@/Komponen/Ui/empty';
 import { FieldDescription, FieldError, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
-import { RadioGroup, RadioGroupItem } from '@/Komponen/Ui/radio-group';
-import { cn } from '@/Komponen/Ui/utils';
-import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import { RadioGroup } from '@/Komponen/Ui/radio-group';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
-import { AlamatPanduan, type PropsSektor, type TemplatePilihan } from '@/Tipe/PanduanAwal';
+import { KelompokkanSektor } from '@/Pustaka/TampilanSektor';
+import { AlamatPanduan, type PropsSektor } from '@/Tipe/PanduanAwal';
 
 type IsianSektor = { KodeTemplate: string; SektorLain: string[] };
 
-const batasKategoriTampil = 6;
-
 const pesanGantiTemplate =
     'Kategori dan akun dari template sebelumnya tetap ada. Template baru hanya menambah yang belum ada.';
-
-/** Ringkasan daftar kategori: 6 pertama lalu "dan N lainnya". */
-function RingkasKategori(kategori: string[]): string {
-    if (kategori.length === 0) {
-        return 'Belum ada';
-    }
-
-    const tampil = kategori.slice(0, batasKategoriTampil).join(', ');
-    const sisa = kategori.length - batasKategoriTampil;
-
-    return sisa > 0 ? `${tampil}, dan ${String(sisa)} lainnya` : tampil;
-}
 
 /** Langkah 2 F-01: pilih template sektor yang sudah terbit, lalu terapkan (aditif & idempoten, BR-01.1–01.3). */
 export default function HalamanSektor({ Progres, Template, TemplateTerpilih, SektorLain, NamaPaket }: PropsSektor) {
@@ -51,6 +37,9 @@ export default function HalamanSektor({ Progres, Template, TemplateTerpilih, Sek
     const galat = formulir.errors as Record<string, string | undefined>;
     const galatSektorLain =
         galat.SektorLain ?? Object.entries(galat).find(([kunci]) => kunci.startsWith('SektorLain.'))?.[1];
+
+    const kelompok = KelompokkanSektor(Template);
+    const kodePertama = kelompok[0]?.Item[0]?.Kode;
 
     const PilihTemplate = (kode: string) =>
         formulir.setData({
@@ -129,16 +118,34 @@ export default function HalamanSektor({ Progres, Template, TemplateTerpilih, Sek
                             value={formulir.data.KodeTemplate}
                             onValueChange={PilihTemplate}
                             aria-labelledby={idLegenda}
-                            className="grid-cols-1 lg:grid-cols-2"
+                            className="gap-6"
                         >
-                            {Template.map((template, indeks) => (
-                                <PilihanTemplate
-                                    key={template.Kode}
-                                    template={template}
-                                    terpilih={formulir.data.KodeTemplate === template.Kode}
-                                    diterapkan={TemplateTerpilih?.Kode === template.Kode}
-                                    tandaiTidakValid={indeks === 0 && Boolean(formulir.errors.KodeTemplate)}
-                                />
+                            {kelompok.map((grup) => (
+                                <div key={grup.Kelompok} className="flex flex-col gap-3">
+                                    {kelompok.length > 1 ? (
+                                        <div className="flex items-center gap-2.5">
+                                            <span
+                                                aria-hidden="true"
+                                                className={`size-2.5 rounded-full ${grup.KelasTitik}`}
+                                            />
+                                            <h3 className="text-subjudul font-semibold text-teks-utama">
+                                                {grup.Label}
+                                            </h3>
+                                            <span className="text-isi text-teks-sekunder">{grup.Item.length}</span>
+                                        </div>
+                                    ) : null}
+                                    {grup.Item.map((template) => (
+                                        <KartuSektor
+                                            key={template.Kode}
+                                            template={template}
+                                            terpilih={formulir.data.KodeTemplate === template.Kode}
+                                            diterapkan={TemplateTerpilih?.Kode === template.Kode}
+                                            tandaiTidakValid={
+                                                template.Kode === kodePertama && Boolean(formulir.errors.KodeTemplate)
+                                            }
+                                        />
+                                    ))}
+                                </div>
                             ))}
                         </RadioGroup>
                         {formulir.errors.KodeTemplate ? (
@@ -193,81 +200,5 @@ export default function HalamanSektor({ Progres, Template, TemplateTerpilih, Sek
                 </form>
             )}
         </TataLetakPanduan>
-    );
-}
-
-type PropsPilihanTemplate = {
-    template: TemplatePilihan;
-    terpilih: boolean;
-    diterapkan: boolean;
-    tandaiTidakValid: boolean;
-};
-
-function PilihanTemplate({ template, terpilih, diterapkan, tandaiTidakValid }: PropsPilihanTemplate) {
-    const idPilihan = useId();
-    const idKeterangan = useId();
-    const fiturTerkunci = template.Fitur.filter((fitur) => !fitur.TersediaDiPaket);
-
-    return (
-        <Card
-            className={cn('gap-2 p-4 shadow-none rounded-panel', terpilih ? 'border-2 border-primary' : 'border-garis')}
-        >
-            <div className="flex items-start gap-3">
-                <RadioGroupItem
-                    id={idPilihan}
-                    value={template.Kode}
-                    aria-describedby={idKeterangan}
-                    aria-invalid={tandaiTidakValid || undefined}
-                    className="mt-1"
-                />
-                <label htmlFor={idPilihan} className="flex min-w-0 cursor-pointer flex-col gap-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-subjudul font-semibold break-words text-teks-utama">{template.Nama}</span>
-                        <span className="text-keterangan text-teks-sekunder">versi {template.Versi}</span>
-                        {diterapkan ? <LabelStatus jenis="sukses" teks="Sedang dipakai" /> : null}
-                    </span>
-                    {template.Keterangan ? (
-                        <span className="text-isi text-teks-sekunder">{template.Keterangan}</span>
-                    ) : null}
-                </label>
-            </div>
-            <dl id={idKeterangan} className="grid grid-cols-1 gap-x-4 gap-y-1 pl-7 text-label sm:grid-cols-[auto_1fr]">
-                <dt className="text-teks-sekunder">Mode kasir</dt>
-                <dd className="text-teks-utama">
-                    {template.ModeKasir.length > 0 ? template.ModeKasir.map((mode) => mode.Label).join(', ') : '—'}
-                </dd>
-                <dt className="text-teks-sekunder">Kategori awal</dt>
-                <dd className="text-teks-utama">{RingkasKategori(template.Kategori)}</dd>
-                <dt className="text-teks-sekunder">Bagan akun</dt>
-                <dd className="text-teks-utama">{template.JumlahAkun} akun</dd>
-                <dt className="text-teks-sekunder">Produk contoh</dt>
-                <dd className="text-teks-utama">
-                    {template.JumlahProdukContoh > 0 ? `${String(template.JumlahProdukContoh)} produk` : 'Belum ada'}
-                </dd>
-            </dl>
-            {template.Fitur.length > 0 ? (
-                <details className="pl-7">
-                    <summary className="cursor-pointer rounded-sm text-label font-semibold text-brand outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-                        {template.Fitur.length} fitur kasir
-                        {fiturTerkunci.length > 0 ? `, ${String(fiturTerkunci.length)} butuh paket lebih tinggi` : ''}
-                    </summary>
-                    <ul className="mt-2 flex flex-col gap-1">
-                        {template.Fitur.map((fitur) => (
-                            <li
-                                key={fitur.Kunci}
-                                className="flex flex-wrap items-center gap-2 text-label text-teks-utama"
-                            >
-                                <span className="break-words">{fitur.Nama}</span>
-                                {fitur.TersediaDiPaket ? (
-                                    <span className="text-keterangan text-teks-sekunder">Tersedia di paket Anda</span>
-                                ) : (
-                                    <LabelStatus jenis="peringatan" teks="Butuh paket lebih tinggi" />
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </details>
-            ) : null}
-        </Card>
     );
 }

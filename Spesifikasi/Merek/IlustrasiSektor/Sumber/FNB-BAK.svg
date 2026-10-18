@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#528688"/><stop offset="1" stop-color="#365759"/></linearGradient>
+  <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3C6264"/><stop offset="1" stop-color="#26403F"/></linearGradient>
+  <filter id="k" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<ellipse cx="512" cy="835" rx="300" ry="22" fill="#1F3335" opacity=".10" filter="url(#k)"/>
+<path d="M170 430 C165 330 260 235 380 232 C450 230 480 250 520 248 C600 244 650 215 735 240 C830 268 880 360 850 470 C825 575 745 690 600 750 C470 802 300 790 215 690 C175 640 172 520 170 430 Z" fill="#DCEBE8"/>
+<circle cx="200" cy="320" r="12" fill="#F4A261"/><circle cx="850" cy="430" r="9" fill="#4F8184"/>
+<ellipse cx="512" cy="752" rx="300" ry="34" fill="#D9EBE7" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><rect x="290" y="560" width="444" height="170" rx="36" fill="url(#b)" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><rect x="340" y="430" width="344" height="140" rx="32" fill="#D9EBE7" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M290 585 Q290 548 330 548 H694 Q734 548 734 585 Q700 640 664 590 Q630 650 590 592 Q548 640 512 592 Q470 650 430 592 Q392 640 360 590 Q320 640 290 585 Z" fill="#fff" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M340 452 Q340 414 380 414 H644 Q684 414 684 452 Q650 500 616 456 Q580 506 540 458 Q500 500 466 456 Q430 500 396 458 Q364 492 340 452 Z" fill="#fff" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><circle cx="512" cy="384" r="38" fill="#F4A261" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M512 346 Q520 306 556 296" fill="none" stroke="#1F3335" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/><path d="M366 666 H398 M470 690 H502 M580 664 H612 M656 692 H688" fill="none" stroke="#F4A261" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

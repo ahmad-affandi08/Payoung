@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#528688"/><stop offset="1" stop-color="#365759"/></linearGradient>
+  <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3C6264"/><stop offset="1" stop-color="#26403F"/></linearGradient>
+  <filter id="k" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<ellipse cx="512" cy="835" rx="300" ry="22" fill="#1F3335" opacity=".10" filter="url(#k)"/>
+<path d="M170 430 C165 330 260 235 380 232 C450 230 480 250 520 248 C600 244 650 215 735 240 C830 268 880 360 850 470 C825 575 745 690 600 750 C470 802 300 790 215 690 C175 640 172 520 170 430 Z" fill="#DCEBE8"/>
+<circle cx="200" cy="320" r="12" fill="#F4A261"/><circle cx="850" cy="430" r="9" fill="#4F8184"/>
+<path d="M420 470 Q404 420 372 372 M512 470 V340 M604 470 Q620 420 652 372" fill="none" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M430 560 Q380 500 326 540 Q380 592 430 560 Z M594 560 Q644 500 698 540 Q644 592 594 560 Z" fill="url(#a)" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M332 330 L350 286 L370 318 L390 286 L408 330 Q408 388 370 388 Q332 388 332 330 Z" fill="#F4A261" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M474 290 L492 246 L512 278 L532 246 L550 290 Q550 348 512 348 Q474 348 474 290 Z" fill="#fff" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M616 330 L634 286 L654 318 L674 286 L692 330 Q692 388 654 388 Q616 388 616 330 Z" fill="#F4A261" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M390 470 H634 L604 740 Q600 764 576 764 H448 Q424 764 420 740 Z" fill="url(#b)" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M400 540 H624" fill="none" stroke="#7FA9A9" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="512" cy="630" r="26" fill="#D9EBE7" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

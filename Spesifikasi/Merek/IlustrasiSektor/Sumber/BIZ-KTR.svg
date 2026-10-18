@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#528688"/><stop offset="1" stop-color="#365759"/></linearGradient>
+  <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3C6264"/><stop offset="1" stop-color="#26403F"/></linearGradient>
+  <filter id="k" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<ellipse cx="512" cy="835" rx="300" ry="22" fill="#1F3335" opacity=".10" filter="url(#k)"/>
+<path d="M170 430 C165 330 260 235 380 232 C450 230 480 250 520 248 C600 244 650 215 735 240 C830 268 880 360 850 470 C825 575 745 690 600 750 C470 802 300 790 215 690 C175 640 172 520 170 430 Z" fill="#DCEBE8"/>
+<circle cx="200" cy="320" r="12" fill="#F4A261"/><circle cx="850" cy="430" r="9" fill="#4F8184"/>
+<rect x="230" y="330" width="400" height="430" rx="16" fill="#fff" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M270 400 H590 M270 460 H590 M270 520 H590 M270 580 H590 M270 640 H590 M270 700 H590" fill="none" stroke="#DCEBE8" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/><path d="M320 720 V470 L430 410 L540 470 V720 Z M320 580 H540" fill="none" stroke="#4F8184" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/><path d="M560 700 Q560 560 690 560 Q820 560 820 700 Z" fill="#F4A261" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M690 572 V690" fill="none" stroke="#1F3335" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/><rect x="534" y="688" width="312" height="50" rx="22" fill="url(#b)" stroke="#1F3335" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/><path d="M610 600 Q640 575 690 575" fill="none" stroke="#fff" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
