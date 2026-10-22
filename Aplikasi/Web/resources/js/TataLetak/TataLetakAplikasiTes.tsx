@@ -319,9 +319,9 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(Array.from(sub.querySelectorAll('a')).map((a) => a.textContent)).toEqual([
             'Saldo stok',
             'Kartu stok',
+            'Penyesuaian stok',
             'Transfer stok',
             'Stok opname',
-            'Penyesuaian stok',
             'Produksi',
             'Bahan terbuang',
         ]);
@@ -388,8 +388,6 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             'Beranda',
             'Kotak tindakan',
             'Penjualan & kasir',
-            // F-14a: laporan yang dibaca pemilik, termasuk laporan keuangan.
-            'Laporan',
             'Persediaan',
             'Produk',
             // F-04: pembelian & hutang pemasok.
@@ -398,6 +396,8 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             'Grosir',
             // F-16a: data pelanggan.
             'Pelanggan',
+            // F-14a: laporan yang dibaca pemilik; kerja berkala, jadi di bawah menu operasional harian (D-27).
+            'Laporan',
             'Tim',
             'Akuntansi',
             'Pengaturan',
@@ -415,7 +415,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         // F-04: grup Pembelian tampil untuk pembelian.kelola (beserta Laporan pembelian, §10.10); pengaturan pembelian hanya untuk pembelian.po.setujui.
         expect(
             SaringMenuTerlihat({ Pemilik: false, Izin: ['pembelian.kelola'] }).map(({ menu }) => menu.label),
-        ).toEqual(['Beranda', 'Kotak tindakan', 'Laporan', 'Pembelian', 'Pengaturan']);
+        ).toEqual(['Beranda', 'Kotak tindakan', 'Pembelian', 'Laporan', 'Pengaturan']);
         expect(CekMenuAktif('/kelola/pembelian/pesanan', '/kelola/pembelian/faktur/01J9')).toBe(true);
         // F-07b/F-06: menu "Penjualan & kasir" (termasuk shift & tutup harian) ikut izin laporan.penjualan.lihat.
         expect(

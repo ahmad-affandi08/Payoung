@@ -132,7 +132,9 @@ const menuProduk: ItemMenu[] = [
 const menuPersediaan: ItemMenu[] = [
     { label: 'Saldo stok', href: '/kelola/persediaan/saldo', izin: IzinTenant.PersediaanLihat },
     { label: 'Kartu stok', href: '/kelola/persediaan/kartu-stok', izin: IzinTenant.PersediaanLihat },
-    // F-05b: transfer, stok opname, penyesuaian (lihat: persediaan.lihat; tindakan dijaga di rute).
+    // Penyesuaian (barang rusak/hilang/salah catat) lebih sering dipakai daripada transfer & opname.
+    { label: 'Penyesuaian stok', href: '/kelola/persediaan/penyesuaian', izin: IzinTenant.PersediaanLihat },
+    // F-05b: transfer dan stok opname (lihat: persediaan.lihat; tindakan dijaga di rute).
     {
         label: 'Transfer stok',
         href: '/kelola/persediaan/transfer',
@@ -147,7 +149,6 @@ const menuPersediaan: ItemMenu[] = [
         fitur: 'stok.opname',
         lanjutan: true,
     },
-    { label: 'Penyesuaian stok', href: '/kelola/persediaan/penyesuaian', izin: IzinTenant.PersediaanLihat },
     // F-05e: order produksi (resep → bahan keluar, hasil masuk).
     {
         label: 'Produksi',
@@ -180,8 +181,9 @@ const menuPembelian: ItemMenu[] = [
         lanjutan: true,
     },
     { label: 'Penerimaan barang', href: '/kelola/pembelian/penerimaan', izin: IzinTenant.PembelianKelola },
-    { label: 'Faktur pembelian', href: '/kelola/pembelian/faktur', izin: IzinTenant.PembelianKelola, lanjutan: true },
+    // Membayar hutang lebih sering daripada membuka daftar faktur.
     { label: 'Hutang pemasok', href: '/kelola/pembelian/hutang', izin: IzinTenant.PembelianKelola },
+    { label: 'Faktur pembelian', href: '/kelola/pembelian/faktur', izin: IzinTenant.PembelianKelola, lanjutan: true },
     { label: 'Retur pembelian', href: '/kelola/pembelian/retur', izin: IzinTenant.PembelianKelola, lanjutan: true },
     { label: 'Pemasok', href: '/kelola/pembelian/pemasok', izin: IzinTenant.PembelianKelola },
 ];
@@ -224,6 +226,9 @@ const menuGrosir: ItemMenu[] = [
 // F-16a/F-16b: data pelanggan, tier, pengaturan loyalti.
 const menuPelanggan: ItemMenu[] = [
     { label: 'Daftar pelanggan', href: '/kelola/pelanggan', izin: IzinTenant.PelangganLihat },
+    // F-12: piutang pelanggan (penjualan tempo) & pelunasan — ditagih terus, jadi di atas promo yang disiapkan sekali.
+    { label: 'Piutang pelanggan', href: '/kelola/piutang', izin: IzinTenant.PelangganLihat },
+    { label: 'Pelunasan piutang', href: '/kelola/piutang/pelunasan', izin: IzinTenant.PelangganLihat },
     // F-21 (D-166): invoice & penagihan B2B untuk jasa dan barang tanpa stok; rumahnya di grup yang sudah memuat piutang.
     { label: 'Invoice', href: '/kelola/invoice', izin: IzinTenant.InvoiceKelola, fitur: 'invoice.penagihan' },
     {
@@ -241,9 +246,6 @@ const menuPelanggan: ItemMenu[] = [
         fitur: 'promo.mesin',
         kecualiSektor: ['BIZ'],
     },
-    // F-12: piutang pelanggan (penjualan tempo) & pelunasan.
-    { label: 'Piutang pelanggan', href: '/kelola/piutang', izin: IzinTenant.PelangganLihat },
-    { label: 'Pelunasan piutang', href: '/kelola/piutang/pelunasan', izin: IzinTenant.PelangganLihat },
     // F-16d bagian 1: isi deposit pelanggan dari kasir; CRM-06: gift card satu rumah dengannya (tab di halaman).
     {
         label: 'Deposit & gift card',
@@ -474,15 +476,6 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         labelSub: 'Menu penjualan & kasir',
         sub: menuPenjualan,
     },
-    // F-14a: laporan yang dibaca pemilik, termasuk laporan keuangan.
-    {
-        label: 'Laporan',
-        href: '/kelola/laporan/penjualan',
-        izin: null,
-        ikon: 'Laporan',
-        labelSub: 'Menu laporan',
-        sub: menuLaporan,
-    },
     {
         label: 'Persediaan',
         href: '/kelola/persediaan/saldo',
@@ -528,6 +521,15 @@ export const daftarMenu: (ItemMenu | GrupMenu)[] = [
         ikon: 'Pelanggan',
         labelSub: 'Menu pelanggan',
         sub: menuPelanggan,
+    },
+    // F-14a: laporan yang dibaca pemilik, termasuk laporan keuangan. D-27: kerja berkala, jadi di bawah menu operasional harian.
+    {
+        label: 'Laporan',
+        href: '/kelola/laporan/penjualan',
+        izin: null,
+        ikon: 'Laporan',
+        labelSub: 'Menu laporan',
+        sub: menuLaporan,
     },
     {
         label: 'Tim',
