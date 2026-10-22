@@ -33,6 +33,19 @@ describe('UkuranLabel: media bawaan', () => {
         expect(tata.AtasMm).toBe(10.7);
     });
 
+    it('lembar 211 × 166 mm: 40 stiker 38 × 18 mm, 5 × 8 dengan jarak 4 × 2 mm', () => {
+        const media = MediaBawaan.find((m) => m.Kode === 'LEMBAR-40-38x18') as (typeof MediaBawaan)[number];
+        const tata = HitungTataHalaman(media, tanpaGeser);
+
+        expect(CekMediaSah(media)).toBeNull();
+        expect(tata.PerHalaman).toBe(40);
+        expect(tata.LebarHalamanMm).toBe(211);
+        expect(tata.TinggiHalamanMm).toBe(166);
+        // (211 − (5 × 38 + 4 × 4)) / 2 = 2,5; (166 − (8 × 18 + 7 × 2)) / 2 = 4.
+        expect(tata.KiriMm).toBe(2.5);
+        expect(tata.AtasMm).toBe(4);
+    });
+
     it('geseran kalibrasi menggeser blok', () => {
         const media = MediaBawaan[0] as (typeof MediaBawaan)[number];
         const tata = HitungTataHalaman(media, { XMm: 1.5, YMm: -2 });

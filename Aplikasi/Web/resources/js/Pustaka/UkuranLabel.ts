@@ -1,6 +1,7 @@
 /**
  * PRD-10 (F-03): hitung tata letak label cetak. Dua jenis media:
- * - **A4**: lembar stiker berkolom × berbaris; stiker pertama bisa dilewati (lembar bekas pakai).
+ * - **A4**: lembar stiker berkolom × berbaris (kertas A4 atau ukuran lembar sendiri); stiker pertama bisa dilewati
+ *   (lembar bekas pakai).
  * - **Gulung**: satu halaman per baris stiker (1–3 stiker berdampingan), halaman seukuran stiker. Dicetak lewat
  *   driver printer label/thermal pada ukuran kertas yang sama.
  *
@@ -21,6 +22,9 @@ export type MediaLabel = {
     TinggiMm: number;
     JarakXMm: number;
     JarakYMm: number;
+    /** Ukuran kertas lembar (mm). Kosong = A4 210 × 297. */
+    LebarKertasMm?: number;
+    TinggiKertasMm?: number;
 };
 
 export type IsiLabel = {
@@ -78,6 +82,19 @@ export const MediaBawaan: MediaLabel[] = [
         TinggiMm: 37,
         JarakXMm: 0,
         JarakYMm: 0,
+    },
+    {
+        Kode: 'LEMBAR-40-38x18',
+        Nama: 'Stiker 38 × 18 mm | 40 per lembar (5 × 8), kertas 211 × 166 mm',
+        Jenis: 'A4',
+        Kolom: 5,
+        Baris: 8,
+        LebarMm: 38,
+        TinggiMm: 18,
+        JarakXMm: 4,
+        JarakYMm: 2,
+        LebarKertasMm: 211,
+        TinggiKertasMm: 166,
     },
     {
         Kode: 'GULUNG-58x40',
@@ -176,6 +193,19 @@ export function HitungTinggiBlokMm(media: MediaLabel): number {
     return media.Baris * media.TinggiMm + (media.Baris - 1) * media.JarakYMm;
 }
 
+/** Ukuran kertas lembar; media tanpa ukuran sendiri memakai A4. */
+export function UkuranKertasMm(media: MediaLabel): { LebarMm: number; TinggiMm: number } {
+    return { LebarMm: media.LebarKertasMm ?? LebarA4Mm, TinggiMm: media.TinggiKertasMm ?? TinggiA4Mm };
+}
+
+/** Sebutan kertas untuk pesan galat: "A4" atau "211 × 166 mm". */
+function SebutanKertas(media: MediaLabel): string {
+    const kertas = UkuranKertasMm(media);
+    return kertas.LebarMm === LebarA4Mm && kertas.TinggiMm === TinggiA4Mm
+        ? 'A4'
+        : `${String(Bulatkan(kertas.LebarMm))} × ${String(Bulatkan(kertas.TinggiMm))} mm`;
+}
+
 /** Pesan galat bila ukuran media tidak masuk akal atau tidak muat di halaman; null bila sah. */
 export function CekMediaSah(media: MediaLabel): string | null {
     const angka = [media.Kolom, media.Baris, media.LebarMm, media.TinggiMm, media.JarakXMm, media.JarakYMm];
@@ -210,16 +240,18 @@ export function CekMediaSah(media: MediaLabel): string | null {
         return `Lembar A4 maksimal ${String(MaksKolomA4)} kolom dan ${String(MaksBarisA4)} baris.`;
     }
 
-    if (HitungLebarBlokMm(media) > LebarA4Mm || HitungTinggiBlokMm(media) > TinggiA4Mm) {
-        return `Susunan stiker (${String(Bulatkan(HitungLebarBlokMm(media)))} × ${String(Bulatkan(HitungTinggiBlokMm(media)))} mm) lebih besar dari kertas A4. Kurangi kolom/baris atau kecilkan stiker.`;
+    const kertas = UkuranKertasMm(media);
+
+    if (HitungLebarBlokMm(media) > kertas.LebarMm || HitungTinggiBlokMm(media) > kertas.TinggiMm) {
+        return `Susunan stiker (${String(Bulatkan(HitungLebarBlokMm(media)))} × ${String(Bulatkan(HitungTinggiBlokMm(media)))} mm) lebih besar dari kertas ${SebutanKertas(media)}. Kurangi kolom/baris atau kecilkan stiker.`;
     }
 
     return null;
 }
 
 /**
- * Tata halaman. A4: blok stiker dipusatkan di kertas lalu digeser `geser` (kalibrasi printer). Gulung: halaman seukuran
- * blok stiker dan hanya digeser `geser`.
+ * Tata halaman. Lembar (A4 atau ukuran sendiri): blok stiker dipusatkan di kertas lalu digeser `geser` (kalibrasi
+ * printer). Gulung: halaman seukuran blok stiker dan hanya digeser `geser`.
  */
 export function HitungTataHalaman(media: MediaLabel, geser: { XMm: number; YMm: number }): TataHalaman {
     const lebarBlok = HitungLebarBlokMm(media);
@@ -235,11 +267,13 @@ export function HitungTataHalaman(media: MediaLabel, geser: { XMm: number; YMm: 
         };
     }
 
+    const kertas = UkuranKertasMm(media);
+
     return {
-        LebarHalamanMm: LebarA4Mm,
-        TinggiHalamanMm: TinggiA4Mm,
-        KiriMm: Bulatkan((LebarA4Mm - lebarBlok) / 2 + geser.XMm),
-        AtasMm: Bulatkan((TinggiA4Mm - tinggiBlok) / 2 + geser.YMm),
+        LebarHalamanMm: kertas.LebarMm,
+        TinggiHalamanMm: kertas.TinggiMm,
+        KiriMm: Bulatkan((kertas.LebarMm - lebarBlok) / 2 + geser.XMm),
+        AtasMm: Bulatkan((kertas.TinggiMm - tinggiBlok) / 2 + geser.YMm),
         PerHalaman: media.Kolom * media.Baris,
     };
 }
