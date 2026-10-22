@@ -4,6 +4,7 @@ import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
 import AksiMassalProduk from '@/Komponen/Katalog/AksiMassalProduk';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import GambarProduk from '@/Komponen/Katalog/GambarProduk';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -28,16 +29,11 @@ const kolom: KolomTabel<BarisProduk>[] = [
         meta: { label: 'Produk', prioritas: 'utama', wajib: true },
         cell: ({ row: { original: produk } }) => (
             <div className="flex items-start gap-2">
-                <div className="hidden size-10 shrink-0 items-center justify-center overflow-hidden rounded-kontrol border border-garis bg-permukaan-redup sm:flex">
-                    {produk.UrlGambarKecil ? (
-                        <img
-                            src={produk.UrlGambarKecil}
-                            alt=""
-                            loading="lazy"
-                            className="max-h-full max-w-full object-cover"
-                        />
-                    ) : null}
-                </div>
+                <GambarProduk
+                    nama={produk.Nama}
+                    url={produk.UrlGambarKecil}
+                    className="hidden size-10 shrink-0 rounded-kontrol border border-garis bg-permukaan-redup sm:flex"
+                />
                 <div className="min-w-0">
                     <Link href={`${alamat}/${produk.Uuid}`} className="font-semibold break-words text-brand underline">
                         {produk.Nama}

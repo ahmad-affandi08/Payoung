@@ -7,6 +7,7 @@ import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import GambarProduk from '@/Komponen/Katalog/GambarProduk';
 import KeadaanKosong from '@/Komponen/Katalog/KeadaanKosong';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
 import { Skeleton } from '@/Komponen/Ui/skeleton';
@@ -451,14 +452,11 @@ function PemesananAktif({ alamat, token, menuAwal, daring, qris }: PropsPemesana
                     >
                         {produkTampil.map((produk) => (
                             <li key={produk.Uuid} className="flex items-center gap-3 p-3">
-                                {produk.UrlGambar ? (
-                                    <img
-                                        src={produk.UrlGambar}
-                                        alt=""
-                                        loading="lazy"
-                                        className="size-16 shrink-0 rounded-kontrol object-cover"
-                                    />
-                                ) : null}
+                                <GambarProduk
+                                    nama={produk.Nama}
+                                    url={produk.UrlGambar}
+                                    className="flex size-16 shrink-0 rounded-kontrol border border-garis bg-permukaan-redup"
+                                />
                                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                                     <p className="font-semibold break-words">{produk.Nama}</p>
                                     <p className="text-teks-sekunder tabular-nums">

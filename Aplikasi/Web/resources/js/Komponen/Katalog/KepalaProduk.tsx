@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import type { KepalaProduk as DataKepalaProduk, TabProduk as DataTabProduk } from '@/Tipe/Katalog';
 
+import GambarProduk from './GambarProduk';
 import TabProduk from './TabProduk';
 
 type PropsKepalaProduk = { kepala: DataKepalaProduk; tabAktif: DataTabProduk['Kunci'] };
@@ -17,15 +18,12 @@ export default function KepalaProduk({ kepala, tabAktif }: PropsKepalaProduk) {
                 </Link>
             </p>
             <div className="flex items-start gap-3">
-                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-kontrol border border-garis bg-latar">
-                    {kepala.UrlGambarKecil ? (
-                        <img src={kepala.UrlGambarKecil} alt="" className="max-h-full max-w-full object-cover" />
-                    ) : (
-                        <span aria-hidden="true" className="px-1 text-center text-keterangan text-teks-sekunder">
-                            Tanpa gambar
-                        </span>
-                    )}
-                </div>
+                <GambarProduk
+                    nama={kepala.Nama}
+                    url={kepala.UrlGambarKecil}
+                    ukuran="sedang"
+                    className="flex size-14 shrink-0 rounded-kontrol border border-garis bg-latar"
+                />
                 <div className="flex min-w-0 flex-col gap-1">
                     <p className="text-subjudul font-semibold break-words text-teks-utama">{kepala.Nama}</p>
                     <p className="flex flex-wrap items-center gap-2 text-label text-teks-sekunder">

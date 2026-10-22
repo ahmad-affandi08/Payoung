@@ -179,6 +179,8 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
 
         expect(screen.getByRole('heading', { name: 'Meja 7' })).toBeTruthy();
         expect(screen.getByText('Rp 25.000')).toBeTruthy();
+        // Produk tanpa foto tetap punya penanda: inisial dua kata pertama (`Es Kopi …` → `EK`).
+        expect(screen.getByText('EK')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Makanan' }));
         expect(screen.queryByText('Es Kopi Susu Gula Aren Ukuran Besar')).toBeNull();
         expect(screen.getByText('Nasi Goreng Kampung Spesial Telur Mata Sapi')).toBeTruthy();

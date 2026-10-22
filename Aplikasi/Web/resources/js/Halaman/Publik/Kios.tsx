@@ -12,6 +12,7 @@ import {
     UbahJumlah,
     type BarisKeranjang,
 } from '@/Fitur/PesanSendiri/Keranjang';
+import GambarProduk from '@/Komponen/Katalog/GambarProduk';
 import KeadaanKosong from '@/Komponen/Katalog/KeadaanKosong';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
@@ -442,16 +443,12 @@ function Memesan(p: PropsMemesan) {
                                     aria-label={`Tambah ${produk.Nama}`}
                                     className="flex h-full w-full flex-col overflow-hidden rounded-panel border-2 border-garis bg-permukaan text-left focus-visible:ring-4 focus-visible:ring-brand focus-visible:outline-none active:border-brand"
                                 >
-                                    {produk.UrlGambar ? (
-                                        <img
-                                            src={produk.UrlGambar}
-                                            alt=""
-                                            loading="lazy"
-                                            className="aspect-[4/3] w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div aria-hidden="true" className="aspect-[4/3] w-full bg-permukaan-sorot" />
-                                    )}
+                                    <GambarProduk
+                                        nama={produk.Nama}
+                                        url={produk.UrlGambar}
+                                        ukuran="besar"
+                                        className="flex aspect-[4/3] w-full bg-permukaan-sorot"
+                                    />
                                     <span className="flex flex-1 flex-col gap-1 p-3">
                                         <span className="text-subjudul font-semibold break-words">{produk.Nama}</span>
                                         <span className="text-subjudul text-teks-sekunder tabular-nums">

@@ -121,6 +121,8 @@ describe('Kios pesan sendiri di layar sentuh (F-17 bagian 4)', () => {
         fireEvent.click(screen.getByRole('button', { name: /Bawa pulang/ }));
         expect(screen.getByRole('heading', { name: 'Bawa pulang' })).toBeTruthy();
         expect(screen.getByText('Rp 35.000')).toBeTruthy();
+        // Produk tanpa foto tetap punya penanda: inisial dua kata pertama (`Nasi Goreng …` → `NG`).
+        expect(screen.getByText('NG')).toBeTruthy();
     });
 
     it('memesan bayar di kasir: total dari server, kiriman memuat jenis santap & Uuid ULID, lalu nomor antrian', async () => {
