@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "335397648736",
+    "project_id": "payoung-id",
+    "storage_bucket": "payoung-id.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335397648736:android:544349cd6bc3f7dec64605",
+        "android_client_info": {
+          "package_name": "id.payoung.owner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4maCpAsbR0mF7u340k54kmsWy9m_myGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
