@@ -8,15 +8,22 @@ import '../../Domain/Sesi/StafLokal.dart';
 import '../Komponen/AvatarKasir.dart';
 import 'JamRuangKerja.dart';
 
-/// Bilah atas ruang kerja (PRD §17.2.7): logo Payoung di tengah, outlet | perangkat di kiri, lalu identitas kasir,
-/// jam, dan tombol Kunci di kanan.
+/// Bilah atas ruang kerja (PRD §17.2.7, D-16): logo merek outlet di kiri dengan nama outlet **dan** baris status
+/// (koneksi, tertunda, printer, shift) di bawahnya, logo Payoung di tengah, lalu identitas kasir, jam, dan tombol
+/// Kunci di kanan.
 ///
 /// Latarnya memakai warna merek gelap, bukan permukaan putih: bingkai ruang kerja adalah satu-satunya bagian layar
 /// yang tidak berganti sepanjang shift, jadi ia yang memberi aplikasi ini identitas. Yang dipakai `brandGelap`
 /// (#22383a), bukan `brand` (#3b5b5d), karena teks putih di atasnya berkontras ±10:1 dibanding ±4,9:1 — nama outlet
 /// dan jam harus terbaca dari jarak berdiri kasir, bukan hanya dari dekat.
 class BilahAtasRuangKerja extends ConsumerWidget {
-  const BilahAtasRuangKerja({super.key, required this.kasir, required this.saatGantiKasir, required this.saatKunci});
+  const BilahAtasRuangKerja({
+    super.key,
+    required this.kasir,
+    required this.saatGantiKasir,
+    required this.saatKunci,
+    required this.status,
+  });
 
   static const double tinggi = 60;
 
@@ -25,12 +32,22 @@ class BilahAtasRuangKerja extends ConsumerWidget {
   /// untuk menaruh logo di tengah tanpa memotong nama outlet.
   static const double lebarLega = 600;
 
+  /// Di bawah lebar ini baris status belum muat utuh di bawah nama outlet; `RuangKerja` menaruhnya di bilah status
+  /// tersendiri seperti sebelumnya.
+  static const double lebarStatus = 960;
+
   /// Batas lebar tombol kasir di layar lega; lebih dari ini nama dipendekkan dengan elipsis.
   static const double lebarMaksKasir = 240;
+
+  /// Tinggi logo merek di kiri bilah; sama dengan tinggi logo Payoung di tengah.
+  static const double tinggiLogo = 30;
 
   final StafLokal kasir;
   final VoidCallback saatGantiKasir;
   final VoidCallback saatKunci;
+
+  /// Status ruang kerja (koneksi, tertunda sinkron, printer, shift). Di layar lega tampil di bawah nama outlet.
+  final List<ItemBilahStatus> status;
 
   /// Pil tonal di atas latar merek gelap (D-66): putih 12% dengan sudut membulat penuh.
   static ButtonStyle _GayaPil(TokenWarna warna) => TextButton.styleFrom(
@@ -40,6 +57,41 @@ class BilahAtasRuangKerja extends ConsumerWidget {
     padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak12),
     minimumSize: const Size(0, 40),
   );
+
+  /// Logo merek outlet di kiri bilah: bait gambar asli dari data awal (D-16), setinggi logo Payoung. Latar putih
+  /// tipis di belakangnya supaya logo berwarna gelap tetap terbaca di atas bilah merek gelap; tanpa logo (atau
+  /// gambarnya rusak) yang tampil ikon toko.
+  static Widget _LogoOutlet(TokenWarna warna, Uint8List? logo) {
+    if (logo == null) {
+      return Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: warna.permukaan.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+        ),
+        child: Icon(Icons.storefront_outlined, size: TokenJarak.ikonSedang, color: warna.permukaan),
+      );
+    }
+
+    return Container(
+      height: tinggiLogo + 4,
+      constraints: const BoxConstraints(maxWidth: 132),
+      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak4, vertical: 2),
+      decoration: BoxDecoration(color: warna.permukaan, borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol)),
+      child: Image.memory(
+        logo,
+        height: tinggiLogo,
+        fit: BoxFit.contain,
+        cacheHeight: 60,
+        gaplessPlayback: true,
+        filterQuality: FilterQuality.medium,
+        semanticLabel: 'Logo outlet',
+        errorBuilder: (_, _, _) =>
+            Icon(Icons.storefront_outlined, size: TokenJarak.ikonKecil, color: warna.teksSekunder),
+      ),
+    );
+  }
 
   /// Avatar inisial kasir: apricot dengan huruf merek gelap, terbaca di atas bilah gelap.
   static Widget _Avatar(TokenWarna warna, String nama, double ukuran) => ExcludeSemantics(
@@ -66,7 +118,9 @@ class BilahAtasRuangKerja extends ConsumerWidget {
     final warna = TokenWarna.AmbilDari(context);
     final teks = Theme.of(context).textTheme;
     final identitas = ref.watch(penyediaIdentitas).value;
-    final lega = MediaQuery.sizeOf(context).width >= lebarLega;
+    final logo = ref.watch(penyediaLogoOutlet).value;
+    final lebar = MediaQuery.sizeOf(context).width;
+    final lega = lebar >= lebarLega;
     final lokasi = identitas == null
         ? ''
         : [identitas.outlet, identitas.perangkat].where((b) => b.isNotEmpty).join(' | ');
@@ -99,31 +153,28 @@ class BilahAtasRuangKerja extends ConsumerWidget {
                       child: Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (lega) ...[
-                              Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: warna.permukaan.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
-                                ),
-                                child: Icon(
-                                  Icons.storefront_outlined,
-                                  size: TokenJarak.ikonSedang,
-                                  color: warna.permukaan,
-                                ),
-                              ),
-                              const SizedBox(width: TokenJarak.jarak12),
-                            ],
-                            Flexible(
-                              child: Text(
-                                lokasi,
-                                style: gayaBilah,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: false,
+                            _LogoOutlet(warna, logo),
+                            const SizedBox(width: TokenJarak.jarak12),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    lokasi,
+                                    style: gayaBilah,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
+                                  ),
+                                  // D-16: isi bilah status pindah ke bawah nama outlet di layar lebar, sehingga
+                                  // tidak perlu pita status tersendiri di bawah bilah.
+                                  if (lebar >= lebarStatus) ...[
+                                    const SizedBox(height: 2),
+                                    BilahStatus(item: status, gelap: true, tanpaLatar: true),
+                                  ],
+                                ],
                               ),
                             ),
                           ],

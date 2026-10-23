@@ -259,6 +259,47 @@ describe('Pengaturan struk per outlet (D-76)', function (): void {
     });
 });
 
+describe('Logo merek outlet untuk bilah atas (D-16)', function (): void {
+    it('Outlet.AdaLogo & /logo-outlet memberi logo usaha walau saklar tampil struk dimatikan; struk tetap 404', function (): void {
+        $k = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        Storage::fake((string) config('tenant.DiskLogo'));
+
+        expect($this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->json('Outlet.AdaLogo'))->toBeFalse();
+        $this->withToken($k['Token'])->get('/api/pos/v1/logo-outlet')->assertNotFound();
+
+        Storage::disk((string) config('tenant.DiskLogo'))->put("logo/{$k['Tenant']->Id}/logo.png", 'png-palsu');
+        $tenant = Tenant::query()->findOrFail($k['Tenant']->Id);
+        $tenant->Pengaturan = [
+            ...($tenant->Pengaturan ?? []),
+            'PathLogo' => "logo/{$k['Tenant']->Id}/logo.png",
+            'Struk' => ['TampilkanLogo' => false],
+        ];
+        $tenant->save();
+
+        expect($this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal'))
+            ->json('Outlet.AdaLogo')->toBeTrue()
+            ->json('Struk.AdaLogo')->toBeFalse();
+        $this->withToken($k['Token'])->get('/api/pos/v1/logo-outlet')->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->withToken($k['Token'])->get('/api/pos/v1/logo-struk')->assertNotFound();
+    });
+
+    it('isolasi tenant: logo outlet tenant A tidak diberikan ke perangkat tenant B', function (): void {
+        $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
+        $b = BantuanKasir::Siapkan($this, 'Warung Bakso Pak Kumis');
+        Storage::fake((string) config('tenant.DiskLogo'));
+        Storage::disk((string) config('tenant.DiskLogo'))->put("logo/{$a['Tenant']->Id}/logo.png", 'png-palsu');
+        BantuanOrganisasi::AturKonteks($a['Tenant']->Id);
+        $tenantA = Tenant::query()->findOrFail($a['Tenant']->Id);
+        $tenantA->Pengaturan = [...($tenantA->Pengaturan ?? []), 'PathLogo' => "logo/{$a['Tenant']->Id}/logo.png"];
+        $tenantA->save();
+
+        $this->withToken($a['Token'])->get('/api/pos/v1/logo-outlet')->assertOk();
+        $this->withToken($b['Token'])->get('/api/pos/v1/logo-outlet')->assertNotFound();
+        expect($this->withToken($b['Token'])->getJson('/api/pos/v1/data-awal')->json('Outlet.AdaLogo'))->toBeFalse();
+    });
+});
+
 describe('Pengaturan struk: isolasi tenant', function (): void {
     it('pengaturan, identitas, dan logo struk tenant A tidak terlihat oleh perangkat tenant B; simpan A tidak mengubah B', function (): void {
         $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');

@@ -134,6 +134,19 @@ class KlienPos {
     return respons.bodyBytes;
   }
 
+  /// Logo merek outlet untuk bilah atas Ruang Kerja Kasir (D-16). Berbeda dari [AmbilLogoStruk]: saklar tampil logo
+  /// di pengaturan struk tidak berlaku di sini. Tanpa logo → null (404).
+  Future<Uint8List?> AmbilLogoOutlet() async {
+    final respons = await _KirimMentah('GET', 'logo-outlet', null, terima: 'image/*');
+    if (respons.statusCode == 404) {
+      return null;
+    }
+    if (respons.statusCode >= 400) {
+      throw _Galat(respons.statusCode, _UraiJson(respons.body), bertoken: true);
+    }
+    return respons.bodyBytes;
+  }
+
   /// Struk asal untuk retur (F-09 fase 1): penjualan outlet perangkat dengan [nomor] persis, beserta jumlah & nilai yang
   /// masih bisa diretur. Tidak ada → `GalatApi` ber-kode `PenjualanTidakDitemukan` (404); offline → `GalatJaringan`.
   Future<HasilCariPenjualan> CariPenjualan(String nomor) async => HasilCariPenjualan.DariJson(

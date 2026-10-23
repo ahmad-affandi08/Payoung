@@ -45,6 +45,8 @@ use stdClass;
  * `AwalanLacak` = awalan tautan `/s/{kode}` untuk QR label cucian, selalu terisi). v3.51: `Outlet.JenisPesanan` (daftar
  * `MakanDiTempat`/`BawaPulang`/`Antar` yang dipilih kasir) & `Outlet.JenisPesananBawaan` (bawaan transaksi baru).
  * K-8: `Outlet.ModeKasir` (mode kasir template sektor, enum `ModeKasir`) & `Outlet.ModeKasirBawaan`.
+ * D-16: `Outlet.AdaLogo` = logo merek outlet tersedia untuk bilah atas (diunduh lewat `/logo-outlet`, terpisah dari
+ * `/logo-struk` yang tunduk pada saklar tampil struk).
  */
 final class DataAwalKasir
 {
@@ -113,6 +115,8 @@ final class DataAwalKasir
                 'Nama' => $outlet->namaOutlet,
                 'Alamat' => $outlet->alamat,
                 'Telepon' => $outlet->telepon,
+                // D-16: logo merek outlet tersedia untuk bilah atas Ruang Kerja (diunduh lewat `/logo-outlet`).
+                'AdaLogo' => $this->pengaturanStruk->AmbilPathLogoUsaha($perangkat->IdTenant, $outlet->idOutlet) !== null,
                 // Tambahan di luar PRD (aditif): perangkat menghitung tanggal bisnis & nomor BR-07.1 offline.
                 'ZonaWaktu' => $outlet->zonaWaktu,
                 'JamTutupBuku' => $outlet->jamTutupBuku,

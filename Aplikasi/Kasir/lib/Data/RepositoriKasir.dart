@@ -138,6 +138,10 @@ abstract final class KunciPengaturan {
   static const String alamatOutlet = 'AlamatOutlet';
   static const String teleponOutlet = 'TeleponOutlet';
   static const String logoStruk = 'LogoStruk';
+
+  /// D-16: logo merek outlet untuk bilah atas Ruang Kerja, apa adanya (base64 PNG/JPEG/WebP) — bukan diubah 1 bit
+  /// seperti [logoStruk]. Server tidak mengirim logo = nilai kosong.
+  static const String logoOutlet = 'LogoOutlet';
   static const String profilPrinter = 'ProfilPrinter';
 
   /// Cetak struk bagian 4c: stasiun dapur aktif, stasiun bawaan, dan peta kategori → stasiun dari data meja (JSON).

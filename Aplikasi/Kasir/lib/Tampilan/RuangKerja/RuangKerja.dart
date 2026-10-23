@@ -689,6 +689,9 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     final warna = TokenWarna.AmbilDari(context);
     final lebar = MediaQuery.sizeOf(context).width;
     final pakaiRel = lebar >= RuangKerja.lebarRel;
+    final statusDiBilah = lebar >= BilahAtasRuangKerja.lebarStatus;
+    // Dihitung sekali: di layar lebar isinya tampil di bawah nama outlet (bilah atas), selain itu di bilah status.
+    final itemStatus = _AmbilItemStatus();
     final item = _salesman
         ? ItemNavigasi.Saring(widget.kasir, daftar: ItemNavigasi.salesman)
         : _pelayan
@@ -711,10 +714,13 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
               kasir: widget.kasir,
               saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
               saatKunci: ref.read(penyediaSesi.notifier).Kunci,
+              status: itemStatus,
             ),
-            // Status menempel di bawah bilah atas (varian gelap 28dp), bukan pita putih di kaki layar: kaki layar
-            // dipakai untuk aksi, dan pita putih di sana terbaca sebagai footer yang memakan ruang kerja.
-            BilahStatus(item: _AmbilItemStatus(), gelap: true),
+            // D-16: di layar lebar status sudah berada di bawah nama outlet pada bilah atas. Di layar yang belum
+            // cukup lebar, status menempel sebagai bilah gelap 28dp di bawah bilah atas — bukan pita putih di kaki
+            // layar: kaki layar dipakai untuk aksi, dan pita putih di sana terbaca sebagai footer yang memakan ruang
+            // kerja.
+            if (!statusDiBilah) BilahStatus(item: itemStatus, gelap: true),
             // P-10 PGL-19: pengumuman & jadwal pemeliharaan dari pengelola platform.
             if (_konfigurasi case final k? when k.pengumuman.isNotEmpty) BannerPengumuman(pengumuman: k.pengumuman),
             // K-23: mode latihan selalu terlihat.

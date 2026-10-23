@@ -589,6 +589,31 @@ void main() {
     await Lepas(tester, u);
   });
 
+  testWidgets('D-40: halaman Bayar tunai muat tanpa gulir di 1280×800 (layar 12,4 inci)', (tester) async {
+    // Font merek sungguhan: lebar teks di perangkat, bukan font uji persegi yang selalu lebih lebar.
+    await MuatFontMerek();
+    final u = await MasukJual(tester, ukuran: const Size(1280, 800));
+    await Ketuk(tester, Ubin('Americano Panas'));
+    await Ketuk(tester, find.widgetWithText(FilledButton, 'Bayar'));
+    await Ketuk(tester, find.widgetWithText(ChoiceChip, 'Tunai'));
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Rp 100.000'));
+
+    // Papan angka, uang diterima, dan kembalian semuanya terlihat tanpa menggulir panel pembayaran.
+    expect(find.text('Tagihan tunai'), findsOneWidget);
+    expect(find.text('Uang diterima'), findsOneWidget);
+    expect(find.text('Kembalian'), findsOneWidget);
+    final gulir = tester.state<ScrollableState>(
+      find.descendant(of: find.byKey(const ValueKey('GulirPembayaranBayar')), matching: find.byType(Scrollable)).first,
+    );
+    expect(
+      gulir.position.maxScrollExtent,
+      0,
+      reason: 'Isi pembayaran harus muat di satu layar 1280×800: ${gulir.position.maxScrollExtent}',
+    );
+    expect(tester.takeException(), isNull);
+    await Lepas(tester, u);
+  });
+
   testWidgets('golden: layar Jual berisi keranjang & halaman Bayar tunai (1280dp)', (tester) async {
     await MuatFontMerek();
     final u = await MasukJual(tester);

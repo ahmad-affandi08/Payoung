@@ -62,13 +62,18 @@ void main() {
       final penjagaLayar = PenjagaLayarTiruan();
       final u = await MasukRuangKerja(tester, ukuran: ukuran, penjagaLayar: penjagaLayar);
 
-      // Bilah atas: logo Payoung di tengah, outlet | perangkat di kiri, kasir & tombol kunci di kanan.
-      // Di HP (< 600dp) bilahnya diringkas: nama kasir pindah ke petunjuk tombol (dan tetap ada di layar Shift),
-      // jam mengikuti jam sistem yang persis di atasnya — supaya logo bisa berada di tengah tanpa memotong
-      // nama outlet.
+      // Bilah atas: logo outlet di kiri, outlet | perangkat di sebelahnya, logo Payoung di tengah, kasir & tombol
+      // kunci di kanan. Di HP (< 600dp) bilahnya diringkas: nama kasir pindah ke petunjuk tombol (dan tetap ada di
+      // layar Shift), jam mengikuti jam sistem yang persis di atasnya — supaya logo bisa berada di tengah tanpa
+      // memotong nama outlet.
       final lega = ukuran.width >= 600;
       expect(find.byType(LogoMerek), findsOneWidget, reason: 'Logo Payoung ada di bilah atas di setiap lebar.');
       expect(find.text('Kopi Senja Solo Baru | POS-001'), findsOneWidget);
+      // D-16: tanpa logo outlet yang tampil ikon toko di kiri bilah.
+      expect(
+        find.descendant(of: find.byType(BilahAtasRuangKerja), matching: find.byIcon(Icons.storefront_outlined)),
+        findsOneWidget,
+      );
       expect(find.byTooltip('Ganti kasir'), findsOneWidget);
       expect(find.text('Rina Wulandari'), lega ? findsOneWidget : findsNothing);
       expect(lega ? find.text('Kunci') : find.byTooltip('Kunci'), findsOneWidget);
@@ -81,11 +86,20 @@ void main() {
         expect(find.text(label), findsOneWidget, reason: 'Item navigasi $label');
       }
 
-      // Bilah status selalu terlihat: koneksi, tertunda, printer, jam buka shift.
+      // Bilah status selalu terlihat: koneksi, tertunda, printer, jam buka shift. D-16: di layar lebar isinya
+      // berada di bawah nama outlet pada bilah atas; di layar yang lebih sempit di bilah status tersendiri.
       expect(find.text('Offline'), findsOneWidget);
       expect(find.text('1 belum terkirim'), findsOneWidget);
       expect(find.text('Printer belum diatur'), findsOneWidget);
       expect(find.textContaining(RegExp(r'^Shift \d{2}\.\d{2}$')), findsOneWidget);
+      final statusDiBilah = ukuran.width >= BilahAtasRuangKerja.lebarStatus;
+      for (final teks in ['Offline', '1 belum terkirim', 'Printer belum diatur']) {
+        expect(
+          find.descendant(of: find.byType(BilahAtasRuangKerja), matching: find.text(teks)),
+          statusDiBilah ? findsOneWidget : findsNothing,
+          reason: 'Status "$teks" di bawah nama outlet pada bilah atas di lebar $nama dp.',
+        );
+      }
 
       // Layar tetap menyala selama shift terbuka.
       expect(penjagaLayar.menyala, isTrue);
@@ -161,6 +175,40 @@ void main() {
       await Lepas(tester, u);
     }
   });
+
+  for (final (nama, ukuran) in [('1280', ukuranDesktop), ('360', ukuranHp)]) {
+    testWidgets('logo outlet tampil di kiri bilah atas, setinggi logo Payoung (D-16) di lebar $nama dp', (
+      tester,
+    ) async {
+      // PNG 1×1 sungguhan: bait gambar asli dari data awal (bukan diubah 1 bit seperti logo struk).
+      const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+      final u = await MasukRuangKerja(tester, ukuran: ukuran);
+      // Data awal uji tidak membawa logo outlet (dan menyegarkan data awal mengosongkannya), jadi logo ditulis
+      // sesudah masuk — sama seperti hasil unduhan `LayananPerangkat`.
+      await tester.runAsync(() => u.repositori.SimpanPengaturan(KunciPengaturan.logoOutlet, png));
+      // Logo dibaca dari basis data lokal lewat stream, jadi tunggu satu putaran.
+      await Tunggu(tester);
+      expect(await tester.runAsync(() => u.repositori.AmbilPengaturan(KunciPengaturan.logoOutlet)), png);
+      final bilah = find.byType(BilahAtasRuangKerja);
+      expect(bilah, findsOneWidget);
+      expect(find.descendant(of: bilah, matching: find.byType(Image)), findsNWidgets(2));
+      // Logo Payoung juga `Image`, jadi yang dicari khusus gambar outlet hasil unduhan (label semantiknya sendiri).
+      final gambar = find.descendant(
+        of: bilah,
+        matching: find.byWidgetPredicate((w) => w is Image && w.semanticLabel == 'Logo outlet'),
+      );
+      expect(gambar, findsOneWidget);
+      expect(find.descendant(of: bilah, matching: find.byIcon(Icons.storefront_outlined)), findsNothing);
+      expect(tester.getCenter(gambar).dx, lessThan(ukuran.width / 2));
+      expect(
+        tester.getSize(gambar).height,
+        moreOrLessEquals(tester.getSize(find.byType(LogoMerek)).height, epsilon: 0.5),
+        reason: 'Logo outlet setinggi logo Payoung (30dp).',
+      );
+
+      await Lepas(tester, u);
+    });
+  }
 
   for (final (nama, ukuran) in [('1280', ukuranDesktop), ('360', ukuranHp)]) {
     testWidgets('golden bingkai ruang kerja di lebar $nama dp', (tester) async {

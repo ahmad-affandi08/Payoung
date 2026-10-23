@@ -15,6 +15,7 @@ use App\Http\Kontroler\Pos\V1\KatalogKontroler;
 use App\Http\Kontroler\Pos\V1\KetersediaanProdukKontroler;
 use App\Http\Kontroler\Pos\V1\KonfigurasiAplikasiKontroler;
 use App\Http\Kontroler\Pos\V1\LaundryKontroler;
+use App\Http\Kontroler\Pos\V1\LogoOutletKontroler;
 use App\Http\Kontroler\Pos\V1\LogoStrukKontroler;
 use App\Http\Kontroler\Pos\V1\MejaKontroler;
 use App\Http\Kontroler\Pos\V1\PelangganKontroler;
@@ -113,6 +114,8 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
 
         // PRD v1.79: logo usaha untuk kepala struk (disimpan offline, dicetak sebagai gambar raster).
         Route::get('/logo-struk', [LogoStrukKontroler::class, 'Unduh'])->middleware('throttle:pos-60')->name('pos.logo-struk');
+        // D-16: logo merek outlet untuk bilah atas Ruang Kerja (tidak ikut saklar tampil struk).
+        Route::get('/logo-outlet', [LogoOutletKontroler::class, 'Unduh'])->middleware('throttle:pos-60')->name('pos.logo-outlet');
 
         // F-09: cari struk asal untuk retur (perlu online); hanya penjualan outlet perangkat.
         Route::get('/penjualan/cari', [PenjualanKontroler::class, 'Cari'])->middleware('throttle:pos-60')->name('pos.penjualan.cari');

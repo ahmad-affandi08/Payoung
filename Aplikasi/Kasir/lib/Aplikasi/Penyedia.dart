@@ -1087,6 +1087,23 @@ final penyediaIdentitas = FutureProvider<({String outlet, String perangkat})>((r
   );
 });
 
+/// D-16: logo merek outlet untuk bilah atas Ruang Kerja (bait gambar asli dari `Pengaturan.LogoOutlet`, base64);
+/// null = tanpa logo (ikon toko dipakai). Dipantau dari basis data lokal agar langsung berubah setelah data awal
+/// disegarkan, dan tetap tampil saat offline.
+final penyediaLogoOutlet = StreamProvider<Uint8List?>((ref) {
+  final repo = ref.watch(penyediaRepositori);
+  return repo.PantauPengaturan(KunciPengaturan.logoOutlet).map((nilai) {
+    if (nilai == null || nilai.isEmpty) {
+      return null;
+    }
+    try {
+      return base64Decode(nilai);
+    } on FormatException {
+      return null;
+    }
+  });
+});
+
 /// Pengaturan lokal perangkat (ukuran tampilan, posisi keranjang, kunci otomatis). Dimuat dari tabel `Pengaturan`;
 /// sebelum selesai dimuat memakai nilai bawaan.
 class PengaturPengaturanPerangkat extends Notifier<PengaturanPerangkat> {

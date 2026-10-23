@@ -304,6 +304,45 @@ void main() {
     },
   );
 
+  test('logo outlet bilah atas (D-16): diunduh apa adanya (base64) saat data awal; tanpa logo → kosong; gagal unduh → '
+      'logo lama tetap', () async {
+    var adaLogo = true;
+    var logoTersedia = true;
+    u.server.penangan = (p) async {
+      if (p.url.path.endsWith('/data-awal')) {
+        return JsonUji({
+          ...DataAwalUji(),
+          'Outlet': {'Uuid': '01JOUTLETUJI0000000000000', 'Kode': 'POS-001', 'Nama': 'Kopi Senja', 'AdaLogo': adaLogo},
+        });
+      }
+      if (p.url.path.endsWith('/logo-outlet')) {
+        if (!logoTersedia) {
+          throw http.ClientException('offline');
+        }
+        return BytesUji([137, 80, 78, 71]);
+      }
+      throw http.ClientException('offline');
+    };
+    final perangkat = LayananPerangkat(
+      klien: u.klien,
+      repositori: u.repositori,
+      rahasia: u.rahasia,
+      platform: 'Android',
+    );
+    u.rahasia.isi[PenyimpanRahasia.kunciToken] = '12|rahasia';
+
+    await perangkat.SegarkanDataAwal();
+    expect(base64Decode((await u.repositori.AmbilPengaturan(KunciPengaturan.logoOutlet))!), [137, 80, 78, 71]);
+
+    logoTersedia = false;
+    await perangkat.SegarkanDataAwal();
+    expect(base64Decode((await u.repositori.AmbilPengaturan(KunciPengaturan.logoOutlet))!), [137, 80, 78, 71]);
+
+    adaLogo = false;
+    await perangkat.SegarkanDataAwal();
+    expect(await u.repositori.AmbilPengaturan(KunciPengaturan.logoOutlet), '');
+  });
+
   test('profil printer: simpan/muat/hapus, data rusak = belum diatur, validasi alamat & port', () async {
     await Siapkan();
     expect(await ProfilPrinter.Muat(u.repositori), isNull);

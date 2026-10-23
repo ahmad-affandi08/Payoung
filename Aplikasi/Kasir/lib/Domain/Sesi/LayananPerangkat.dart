@@ -106,6 +106,7 @@ class LayananPerangkat {
       final data = await klien.AmbilDataAwal();
       await repositori.SimpanDataAwal(data, _jam());
       await _SegarkanLogo(data.struk);
+      await _SegarkanLogoOutlet(data.outlet?.adaLogo ?? false);
       return true;
     } on GalatJaringan {
       return false;
@@ -134,6 +135,23 @@ class LayananPerangkat {
       if (byte == null || gambar != null) {
         await repositori.SimpanPengaturan(KunciPengaturan.logoStruk, gambar == null ? '' : jsonEncode(gambar.KeJson()));
       }
+    } on GalatJaringan {
+      return;
+    } on GalatApi {
+      return;
+    }
+  }
+
+  /// D-16: logo merek outlet disimpan apa adanya (base64) untuk bilah atas Ruang Kerja, supaya tetap tampil offline.
+  /// Gagal unduh = logo lama dipakai; server tidak mengirim logo = logo lokal dikosongkan.
+  Future<void> _SegarkanLogoOutlet(bool adaLogo) async {
+    if (!adaLogo) {
+      await repositori.SimpanPengaturan(KunciPengaturan.logoOutlet, '');
+      return;
+    }
+    try {
+      final byte = await klien.AmbilLogoOutlet();
+      await repositori.SimpanPengaturan(KunciPengaturan.logoOutlet, byte == null ? '' : base64Encode(byte));
     } on GalatJaringan {
       return;
     } on GalatApi {

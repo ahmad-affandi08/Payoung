@@ -766,80 +766,105 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
         child: Text(label),
       ),
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                _bagi?.porsi != null && !_tamuTerakhir ? 'Porsi tamu $_tamuKe' : 'Tagihan tunai',
-                style: teks.bodyMedium,
-              ),
-            ),
-            TeksUang(tagihan, gaya: teks.titleMedium),
-          ],
-        ),
-        const SizedBox(height: TokenJarak.jarak8),
-        Wrap(
-          spacing: TokenJarak.jarak8,
-          runSpacing: TokenJarak.jarak8,
-          children: [
-            // Audit kemudahan pakai: "Uang pas" langsung menyelesaikan pembayaran (Bayar → Uang pas = 2 ketukan),
-            // kecuali sedang membagi tagihan per orang (porsi tamu diisi dulu).
-            if (_bagi?.porsi == null || _tamuTerakhir)
-              SizedBox(
-                height: TokenJarak.targetSentuh,
-                child: FilledButton(
-                  onPressed: _sibuk
-                      ? null
-                      : () {
-                          // Uang diterima = tagihan dibulatkan ke rupiah utuh, lalu langsung diterapkan.
-                          MasukanUang.Isi(_nominal, Uang.Dari(tagihan.KeDesimal().ceil().toString()));
-                          _galat = null;
-                          unawaited(_Terapkan(k));
-                        },
-                  child: const Text('Uang pas'),
-                ),
-              )
-            else
-              Tombol('Uang pas', tagihan),
-            for (final p in HitungPecahanCepat(tagihan)) Tombol(p.FormatRupiah(), p),
-          ],
-        ),
-        const SizedBox(height: TokenJarak.jarak12),
-        TextField(
-          controller: _nominal,
-          keyboardType: TextInputType.number,
-          inputFormatters: [MasukanUang.pemformat],
-          textAlign: TextAlign.right,
-          style: teks.titleMedium?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
-          onChanged: (_) => setState(() => _galat = null),
-          onSubmitted: (_) => _Terapkan(k),
-          decoration: const InputDecoration(
-            labelText: 'Uang diterima',
-            prefixText: 'Rp ',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: TokenJarak.jarak8),
-        PapanAngka(
-          saatTekan: (tombol) => setState(() {
-            final digit = PapanAngka.Terapkan(_nominal.text.replaceAll('.', ''), tombol);
-            MasukanUang.Isi(_nominal, digit.isEmpty ? null : Uang.Dari(digit));
-            _galat = null;
-          }),
-        ),
-        if (kembalian != null && !kembalian.BernilaiNegatif()) ...[
-          const SizedBox(height: TokenJarak.jarak8),
-          Row(
+    final papanAngka = PapanAngka(
+      saatTekan: (tombol) => setState(() {
+        final digit = PapanAngka.Terapkan(_nominal.text.replaceAll('.', ''), tombol);
+        MasukanUang.Isi(_nominal, digit.isEmpty ? null : Uang.Dari(digit));
+        _galat = null;
+      }),
+    );
+    final kembalianBaris = kembalian != null && !kembalian.BernilaiNegatif()
+        ? Row(
             children: [
               Expanded(child: Text('Kembalian', style: teks.titleMedium)),
               TeksUang(kembalian, gaya: teks.titleMedium),
             ],
+          )
+        : null;
+    final ringkasan = <Widget>[
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              _bagi?.porsi != null && !_tamuTerakhir ? 'Porsi tamu $_tamuKe' : 'Tagihan tunai',
+              style: teks.bodyMedium,
+            ),
           ),
+          TeksUang(tagihan, gaya: teks.titleMedium),
         ],
-      ],
+      ),
+      const SizedBox(height: TokenJarak.jarak8),
+      Wrap(
+        spacing: TokenJarak.jarak8,
+        runSpacing: TokenJarak.jarak8,
+        children: [
+          // Audit kemudahan pakai: "Uang pas" langsung menyelesaikan pembayaran (Bayar → Uang pas = 2 ketukan),
+          // kecuali sedang membagi tagihan per orang (porsi tamu diisi dulu).
+          if (_bagi?.porsi == null || _tamuTerakhir)
+            SizedBox(
+              height: TokenJarak.targetSentuh,
+              child: FilledButton(
+                onPressed: _sibuk
+                    ? null
+                    : () {
+                        // Uang diterima = tagihan dibulatkan ke rupiah utuh, lalu langsung diterapkan.
+                        MasukanUang.Isi(_nominal, Uang.Dari(tagihan.KeDesimal().ceil().toString()));
+                        _galat = null;
+                        unawaited(_Terapkan(k));
+                      },
+                child: const Text('Uang pas'),
+              ),
+            )
+          else
+            Tombol('Uang pas', tagihan),
+          for (final p in HitungPecahanCepat(tagihan)) Tombol(p.FormatRupiah(), p),
+        ],
+      ),
+      const SizedBox(height: TokenJarak.jarak12),
+      TextField(
+        controller: _nominal,
+        keyboardType: TextInputType.number,
+        inputFormatters: [MasukanUang.pemformat],
+        textAlign: TextAlign.right,
+        style: teks.titleMedium?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+        onChanged: (_) => setState(() => _galat = null),
+        onSubmitted: (_) => _Terapkan(k),
+        decoration: const InputDecoration(labelText: 'Uang diterima', prefixText: 'Rp ', border: OutlineInputBorder()),
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, batas) {
+        // Panel lebar (D-40): papan angka berdiri di samping ringkasan supaya alur tunai muat tanpa gulir,
+        // bukan menumpuk di bawahnya sementara sisi kanan panel menganggur.
+        if (batas.maxWidth >= 560) {
+          final lebarPapan = (batas.maxWidth * 0.5).clamp(300.0, 400.0).toDouble();
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ...ringkasan,
+                    if (kembalianBaris != null) ...[const SizedBox(height: TokenJarak.jarak8), kembalianBaris],
+                  ],
+                ),
+              ),
+              const SizedBox(width: TokenJarak.jarak16),
+              SizedBox(width: lebarPapan, child: papanAngka),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ...ringkasan,
+            const SizedBox(height: TokenJarak.jarak8),
+            papanAngka,
+            if (kembalianBaris != null) ...[const SizedBox(height: TokenJarak.jarak8), kembalianBaris],
+          ],
+        );
+      },
     );
   }
 
@@ -1910,7 +1935,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 540),
+                        constraints: const BoxConstraints(maxWidth: 760),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: isiPembayaran),
                       ),
                     ),

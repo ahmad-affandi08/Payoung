@@ -64,6 +64,15 @@ final class PengaturanStrukTenant
             return null;
         }
 
+        return $this->AmbilPathLogoUsaha($idTenant, $idOutlet);
+    }
+
+    /**
+     * Path identitas merek usaha (logo outlet bila ada, selain itu logo usaha) **tanpa** melihat saklar tampil struk.
+     * Dipakai bilah atas aplikasi Kasir: logo outlet harus tetap tampil walau logonya dimatikan di struk.
+     */
+    public function AmbilPathLogoUsaha(int $idTenant, ?int $idOutlet = null): ?string
+    {
         $pengaturan = Tenant::query()->whereKey($idTenant)->firstOrFail()->Pengaturan ?? [];
         $logoOutlet = self::AmbilTimpaanOutlet($pengaturan, $idOutlet)['PathLogo'] ?? null;
 

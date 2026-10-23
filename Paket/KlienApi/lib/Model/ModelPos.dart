@@ -188,6 +188,7 @@ class OutletPos {
     required this.nama,
     required this.alamat,
     required this.telepon,
+    this.adaLogo = false,
     this.jamTutupBuku,
     this.zonaWaktu,
     this.jenisPesanan = const [],
@@ -201,6 +202,10 @@ class OutletPos {
   final String nama;
   final String? alamat;
   final String? telepon;
+
+  /// D-16: logo merek outlet tersedia untuk bilah atas aplikasi Kasir (`GET /api/pos/v1/logo-outlet`). Beda dari
+  /// `StrukPos.adaLogo`: saklar tampil logo di struk tidak memengaruhinya. Server lama tidak mengirimnya = `false`.
+  final bool adaLogo;
 
   /// `HH:mm` bila server mengirimnya (tanggal bisnis sebelum jam ini = hari sebelumnya); null = 00:00.
   final String? jamTutupBuku;
@@ -232,6 +237,7 @@ class OutletPos {
             nama: UraiJson.AmbilTeks(peta['Nama']),
             alamat: UraiJson.AmbilTeksAtauNull(peta['Alamat']),
             telepon: UraiJson.AmbilTeksAtauNull(peta['Telepon']),
+            adaLogo: UraiJson.AmbilBenar(peta['AdaLogo']),
             jamTutupBuku: UraiJson.AmbilTeksAtauNull(peta['JamTutupBuku']),
             zonaWaktu: UraiJson.AmbilTeksAtauNull(peta['ZonaWaktu']),
             jenisPesanan: UraiJson.AmbilDaftarTeks(peta['JenisPesanan']),
