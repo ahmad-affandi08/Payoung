@@ -48,7 +48,7 @@ final class SimpanKonfigurasiIntegrasiPermintaan extends FormRequest
         }
 
         foreach ($penyedia->AmbilBidangKredensial() as $bidang) {
-            $aturan["Kredensial.{$bidang['Kunci']}"] = ['nullable', 'string', 'max:2000'];
+            $aturan["Kredensial.{$bidang['Kunci']}"] = ['nullable', 'string', 'max:'.($bidang['Maks'] ?? 2000)];
         }
 
         return $aturan;

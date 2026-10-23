@@ -71,7 +71,7 @@ final class PengaturIntegrasiServerLisensi implements PengaturIntegrasiServer
 
         foreach ($penyediaIntegrasi->AmbilBidangKredensial() as $bidang) {
             $nama["Kredensial.{$bidang['Kunci']}"] = $bidang['Label'];
-            $aturan["Kredensial.{$bidang['Kunci']}"] = ['nullable', 'string', 'max:2000'];
+            $aturan["Kredensial.{$bidang['Kunci']}"] = ['nullable', 'string', 'max:'.($bidang['Maks'] ?? 2000)];
         }
 
         Validator::make(['Pengaturan' => $pengaturan, 'Kredensial' => $kredensial], $aturan, [], $nama)->validate();

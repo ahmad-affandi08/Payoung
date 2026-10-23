@@ -175,7 +175,8 @@ enum PenyediaIntegrasi: string
                 ['Kunci' => 'KunciAksesRahasia', 'Label' => 'Kunci akses rahasia (secret access key)', 'Wajib' => true],
             ],
             // Satu berkas JSON berisi client_email, private_key, dan project_id; tidak ada yang perlu diketik terpisah.
-            self::Fcm => [['Kunci' => 'AkunLayanan', 'Label' => 'Akun layanan Firebase (isi berkas JSON)', 'Wajib' => true]],
+            // Berkas akun layanan Firebase ±2.400 karakter sehingga batas 2.000 bawaan menolak berkas yang utuh.
+            self::Fcm => [['Kunci' => 'AkunLayanan', 'Label' => 'Akun layanan Firebase (isi berkas JSON)', 'Wajib' => true, 'Maks' => 8192]],
             self::DokuBilling, self::DokuPartner => [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]],
             default => [],
         };

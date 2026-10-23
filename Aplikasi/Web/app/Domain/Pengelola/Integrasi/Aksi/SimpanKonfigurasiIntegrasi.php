@@ -154,7 +154,8 @@ final class SimpanKonfigurasiIntegrasi
 
     /** BR-P05.1: hanya 4 karakter terakhir; nilai pendek tidak ditampilkan sama sekali. */
     /** Kredensial yang petunjuknya disembunyikan penuh: kata sandi tidak pernah ditampilkan, bahkan 4 karakter terakhir. */
-    public const KUNCI_TERSEMBUNYI_PENUH = ['KataSandi'];
+    // AkunLayanan FCM memuat kunci privat berkas JSON; 4 karakter terakhirnya pun tidak ditampilkan.
+    public const KUNCI_TERSEMBUNYI_PENUH = ['KataSandi', 'AkunLayanan'];
 
     public static function BuatPetunjuk(string $nilai, string $kunci = ''): string
     {

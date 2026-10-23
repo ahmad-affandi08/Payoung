@@ -50,6 +50,38 @@ function DataEmailUji(array $ubah = []): array
     ], $ubah);
 }
 
+/**
+ * Berkas akun layanan Firebase yang utuh ±2.400 karakter, di atas batas bawaan 2.000.
+ *
+ * @param  array<string, mixed>  $ubah
+ * @return array<string, mixed>
+ */
+function DataPushUji(array $ubah = []): array
+{
+    $akun = (string) json_encode([
+        'type' => 'service_account',
+        'project_id' => 'payoung-id',
+        'private_key_id' => str_repeat('a1b2c3d4e5f6', 8),
+        'private_key' => "-----BEGIN PRIVATE KEY-----\n".str_repeat('MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQ', 30)."\n-----END PRIVATE KEY-----\n",
+        'client_email' => 'firebase-adminsdk-fbsvc@payoung-id.iam.gserviceaccount.com',
+        'client_id' => '123456789012345678901',
+        'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
+        'token_uri' => 'https://oauth2.googleapis.com/token',
+        'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
+        'client_x509_cert_url' => 'https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40payoung-id.iam.gserviceaccount.com',
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+    return array_replace_recursive([
+        'Jenis' => 'Push',
+        'Lingkungan' => 'Staging',
+        'Penyedia' => 'Fcm',
+        'Pengaturan' => [],
+        'Kredensial' => ['AkunLayanan' => $akun],
+        'RotasiSetiapHari' => 90,
+        'Alasan' => null,
+    ], $ubah);
+}
+
 function PalsukanPengujiSmtp(bool $berhasil): void
 {
     app()->instance(PengujiSmtp::class, new class($berhasil) implements PengujiKoneksi
@@ -159,6 +191,20 @@ describe('Kerahasiaan kredensial (BR-P05.1, BR-P05.6)', function (): void {
 
         $this->post(BantuanPengelola::Url('/integrasi'), DataEmailUji(['Kredensial' => ['KataSandi' => '']]))
             ->assertSessionHasErrors('Kredensial.KataSandi');
+    });
+
+    it('menerima berkas akun layanan Firebase yang lebih dari 2.000 karakter', function (): void {
+        MasukSebagaiIntegrasi($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
+        $data = DataPushUji();
+
+        expect(mb_strlen($data['Kredensial']['AkunLayanan']))->toBeGreaterThan(2000);
+
+        $this->post(BantuanPengelola::Url('/integrasi'), $data)->assertSessionHasNoErrors();
+
+        $konfigurasi = KonfigurasiIntegrasi::query()->where('Jenis', 'Push')->where('Lingkungan', 'Staging')->sole();
+        expect($konfigurasi->Kredensial['AkunLayanan'])->toBe($data['Kredensial']['AkunLayanan'])
+            // Kunci privat tidak pernah diberi petunjuk 4 karakter terakhir.
+            ->and($konfigurasi->PetunjukKredensial)->toBe(['AkunLayanan' => '••••']);
     });
 
     it('serialisasi model tidak memuat kredensial', function (): void {

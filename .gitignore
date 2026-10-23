@@ -32,3 +32,6 @@ Aplikasi/Web/bootstrap/TanggalRilis.php
 # Penghasil foto situs (AlatSitus): PNG sementara, hasil akhirnya WebP di Aplikasi/Web/public/situs/produk
 Aplikasi/Kasir/AlatSitus/Hasil/
 Aplikasi/Pemilik/AlatSitus/Hasil/
+
+# Kunci privat akun layanan Firebase (FCM) tidak pernah masuk repo; berkas klien `google-services.json` tetap boleh.
+*firebase-adminsdk*.json
