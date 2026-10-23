@@ -12,7 +12,7 @@ Fitur tidak aktif sampai Client ID Google diisi. Tanpa itu tombol "Masuk dengan 
      (cloud: `https://dashboard.payoung.id/masuk/google/panggilan-balik`; edisi Lisensi: domain server pembeli).
    - Catat **Client ID** dan **Client Secret**.
 3. Untuk **Aplikasi Owner** buat dua Client ID lagi di proyek yang sama:
-   - **Android:** package name `id.payoung.pemilik` dan sidik jari SHA-1 keystore rilis (dan SHA-1 Play App Signing setelah rilis ke Play Store).
+   - **Android:** package name `id.payoung.owner` dan sidik jari SHA-1 keystore rilis (dan SHA-1 Play App Signing setelah rilis ke Play Store).
    - **iOS:** bundle ID aplikasi Owner. Tambahkan *reversed client ID* sebagai URL scheme di `Info.plist` (`CFBundleURLTypes`) dan `GIDClientID`.
    Client ID tersebut dimasukkan ke bidang **Client ID tambahan** (poin 2) agar `aud` token dari aplikasi diterima server.
 
