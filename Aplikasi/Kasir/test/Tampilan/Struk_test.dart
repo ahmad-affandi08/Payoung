@@ -9,6 +9,7 @@ import 'package:kasir/Domain/Struk/PemindaiPrinter.dart';
 import 'package:kasir/Domain/Struk/ProfilPrinter.dart';
 import 'package:kasir/Tampilan/LayarPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
+import 'package:kasir/Tampilan/Struk/BagianPrinter.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Pendukung/KatalogUji.dart';
@@ -176,9 +177,21 @@ void main() {
   testWidgets('printer belum diatur: layar selesai menjelaskan cara mengatur, tidak ada tombol cetak', (tester) async {
     final u = await Masuk(tester, const Size(1280, 900));
     await BayarUangPas(tester, const Size(1280, 900));
-    expect(find.text('Printer struk belum diatur. Atur di menu Pengaturan agar struk tercetak.'), findsOneWidget);
+    // D-66: layar selesai punya tombol Atur printer langsung, jadi peringatannya memandu ke tombol itu.
+    expect(
+      find.text('Printer belum diatur | struk belum tercetak. Ketuk Atur printer untuk mencetak.'),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(OutlinedButton, 'Cetak struk'), findsNothing);
     expect(u.printer.kiriman, isEmpty);
+
+    // D-66: tombol Atur printer di layar selesai membuka pengaturan printer tanpa meninggalkan transaksi.
+    await Ketuk(tester, find.byKey(const ValueKey('AturPrinterSelesai')));
+    expect(find.byType(BagianPrinter), findsOneWidget);
+    expect(find.descendant(of: find.byType(Dialog), matching: find.text('Atur printer')), findsWidgets);
+    await Ketuk(tester, find.byTooltip('Tutup'));
+    expect(find.byType(BagianPrinter), findsNothing);
+    expect(find.text('Pembayaran berhasil'), findsOneWidget);
     await Lepas(tester, u);
   });
 

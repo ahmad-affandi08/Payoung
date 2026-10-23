@@ -11,22 +11,37 @@ import '../../Domain/GalatKasir.dart';
 /// Tombol "Kirim struk" (v2.05) di layar selesai bayar dan riwayat: membuka dialog kirim struk digital lewat WhatsApp
 /// (D-33: tanpa email).
 class TombolKirimStruk extends StatelessWidget {
-  const TombolKirimStruk({super.key, required this.uuidPenjualan});
+  const TombolKirimStruk({super.key, required this.uuidPenjualan, this.diAtasMerek = false});
 
   final String uuidPenjualan;
 
+  /// D-66: layar selesai berlatar warna merek, jadi tombol memakai apricot pekat.
+  final bool diAtasMerek;
+
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: TokenJarak.targetSentuh,
-    child: OutlinedButton.icon(
-      onPressed: () => showDialog<void>(
-        context: context,
-        builder: (_) => DialogKirimStruk(uuidPenjualan: uuidPenjualan),
+  Widget build(BuildContext context) {
+    final warna = TokenWarna.AmbilDari(context);
+    return SizedBox(
+      height: TokenJarak.targetSentuh,
+      child: OutlinedButton.icon(
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (_) => DialogKirimStruk(uuidPenjualan: uuidPenjualan),
+        ),
+        style: diAtasMerek
+            ? OutlinedButton.styleFrom(
+                backgroundColor: warna.aksen,
+                foregroundColor: warna.brandGelap,
+                disabledBackgroundColor: warna.aksen.withValues(alpha: 0.55),
+                disabledForegroundColor: warna.brandGelap.withValues(alpha: 0.7),
+                side: BorderSide(color: warna.aksen, width: 2),
+              )
+            : null,
+        icon: const Icon(Icons.send_outlined),
+        label: const Text('Kirim struk'),
       ),
-      icon: const Icon(Icons.send_outlined),
-      label: const Text('Kirim struk'),
-    ),
-  );
+    );
+  }
 }
 
 /// Dialog kirim struk: isi nomor WhatsApp pelanggan, kirim, lalu pantau status antrean (tiap [jedaCek],

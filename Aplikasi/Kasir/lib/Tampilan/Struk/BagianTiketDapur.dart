@@ -10,10 +10,13 @@ import '../../Domain/Katalog/KatalogLokal.dart';
 /// dapur dan perangkat ini punya printer dapur, tiket dicetak otomatis sekali per penjualan; tombol cetak ulang
 /// (bertanda "CETAK ULANG"). Tanpa printer dapur bagian ini tidak tampil (tiket tetap masuk layar dapur lewat sinkron).
 class BagianTiketDapur extends ConsumerStatefulWidget {
-  const BagianTiketDapur({super.key, required this.uuidPenjualan, this.namaPelanggan});
+  const BagianTiketDapur({super.key, required this.uuidPenjualan, this.namaPelanggan, this.diAtasMerek = false});
 
   final String uuidPenjualan;
   final String? namaPelanggan;
+
+  /// D-66: layar selesai berlatar warna merek, jadi pesan & tombolnya memakai warna terang.
+  final bool diAtasMerek;
 
   /// Penjualan yang tiketnya sudah dicetak otomatis (layar selesai bisa dibangun ulang).
   static final Set<String> _sudahOtomatis = {};
@@ -95,12 +98,38 @@ class _BagianTiketDapurState extends ConsumerState<BagianTiketDapur> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(pesan, style: teks.bodySmall?.copyWith(color: _galat != null ? warna.bahaya : null)),
+          if (widget.diAtasMerek && _galat != null)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.error_outline, size: TokenJarak.ikonKecil, color: warna.aksen),
+                const SizedBox(width: TokenJarak.jarak8),
+                Expanded(
+                  child: Text(pesan, style: teks.bodySmall?.copyWith(color: warna.permukaan)),
+                ),
+              ],
+            )
+          else
+            Text(
+              pesan,
+              style: teks.bodySmall?.copyWith(
+                color: _galat != null
+                    ? warna.bahaya
+                    : (widget.diAtasMerek ? warna.permukaan.withValues(alpha: 0.8) : null),
+              ),
+            ),
           const SizedBox(height: TokenJarak.jarak8),
           SizedBox(
             height: TokenJarak.targetSentuh,
             child: OutlinedButton.icon(
               onPressed: _mencetak ? null : _Cetak,
+              style: widget.diAtasMerek
+                  ? OutlinedButton.styleFrom(
+                      foregroundColor: warna.permukaan,
+                      disabledForegroundColor: warna.permukaan.withValues(alpha: 0.5),
+                      side: BorderSide(color: warna.aksen, width: 2),
+                    )
+                  : null,
               icon: const Icon(Icons.soup_kitchen_outlined),
               label: Text(_jumlahCetak > 0 ? 'Cetak ulang tiket dapur' : 'Cetak tiket dapur'),
             ),

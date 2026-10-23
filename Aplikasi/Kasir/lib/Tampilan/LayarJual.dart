@@ -2137,6 +2137,12 @@ class _LayarJualState extends ConsumerState<LayarJual> {
       _ => _TutupPanel,
     };
 
+    // D-66: layar selesai adalah halaman merek penuh dengan kepalanya sendiri (logo Payoung), bukan halaman kerja
+    // berlatar terang. Isinya mengatur gulir, lebar, dan tinggi sendiri.
+    if (_panel == _JenisPanel.Selesai) {
+      return halaman.isi;
+    }
+
     // `Material`, bukan `ColoredBox`: isi halaman bisa memuat `ListTile`/`SwitchListTile`, yang melukis latar &
     // riak sentuhnya di `Material` terdekat.
     return Material(

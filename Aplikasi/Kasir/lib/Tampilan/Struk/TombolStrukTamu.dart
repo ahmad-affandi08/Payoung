@@ -12,12 +12,15 @@ import '../../Domain/Penjualan/BagianTagihan.dart';
 /// ini dibagi ke dua tamu atau lebih. Memilih satu tamu atau semua tamu; tiap tamu mendapat struk sendiri berisi
 /// bagiannya. Data dari perangkat ini, jadi tetap bisa dicetak ulang kapan saja dan saat offline.
 class TombolStrukTamu extends ConsumerStatefulWidget {
-  const TombolStrukTamu({super.key, required this.uuidPenjualan, this.cetakUlang = false});
+  const TombolStrukTamu({super.key, required this.uuidPenjualan, this.cetakUlang = false, this.diAtasMerek = false});
 
   final String uuidPenjualan;
 
   /// true di riwayat (struk bertanda "CETAK ULANG").
   final bool cetakUlang;
+
+  /// D-66: layar selesai berlatar warna merek, jadi tombol memakai garis apricot terang.
+  final bool diAtasMerek;
 
   @override
   ConsumerState<TombolStrukTamu> createState() => _TombolStrukTamuState();
@@ -93,11 +96,19 @@ class _TombolStrukTamuState extends ConsumerState<TombolStrukTamu> {
     if (bagian == null) {
       return const SizedBox.shrink();
     }
+    final warna = TokenWarna.AmbilDari(context);
     return SizedBox(
       height: TokenJarak.targetSentuh,
       child: OutlinedButton.icon(
         key: const ValueKey('TombolStrukTamu'),
         onPressed: _mencetak ? null : () => _Pilih(bagian),
+        style: widget.diAtasMerek
+            ? OutlinedButton.styleFrom(
+                foregroundColor: warna.permukaan,
+                disabledForegroundColor: warna.permukaan.withValues(alpha: 0.5),
+                side: BorderSide(color: warna.aksen, width: 2),
+              )
+            : null,
         icon: const Icon(Icons.receipt_long_outlined),
         label: Text(_mencetak ? 'Mencetak…' : 'Struk per tamu'),
       ),

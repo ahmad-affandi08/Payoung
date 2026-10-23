@@ -6,6 +6,7 @@ import 'package:klien_api/KlienApi.dart';
 import 'package:mesin_kasir/MesinKasir.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
+import '../Komponen/FormatAngka.dart';
 import '../Komponen/MasukanUang.dart';
 import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
@@ -20,12 +21,14 @@ import '../../Domain/Penjualan/LayananPreOrder.dart';
 import '../../Domain/Sesi/StafLokal.dart';
 import '../LembarMutasiKas.dart';
 import '../Struk/BagianCetakStruk.dart';
+import '../Struk/BagianPrinter.dart';
 import '../Struk/BagianTiketDapur.dart';
 import '../Struk/TombolKirimStruk.dart';
 import '../Struk/TombolStrukTamu.dart';
 import 'DialogQrisDinamis.dart';
 import 'DialogResep.dart';
 import 'PanelKeranjang.dart';
+import 'PanelPelanggan.dart';
 
 /// Label jenis metode pembayaran untuk kasir.
 String AmbilLabelJenisMetode(String jenis) => switch (jenis) {
@@ -867,15 +870,18 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           else
             Text('Minta pelanggan memindai QRIS yang tercetak di meja kasir.', style: teks.bodySmall),
           const SizedBox(height: TokenJarak.jarak8),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: _qrisDikonfirmasi,
-            onChanged: (v) => setState(() {
-              _qrisDikonfirmasi = v ?? false;
-              _galat = null;
-            }),
-            title: const Text('Dana sudah masuk (cek notifikasi atau aplikasi bank)'),
+          Material(
+            type: MaterialType.transparency,
+            child: CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: _qrisDikonfirmasi,
+              onChanged: (v) => setState(() {
+                _qrisDikonfirmasi = v ?? false;
+                _galat = null;
+              }),
+              title: const Text('Dana sudah masuk (cek notifikasi atau aplikasi bank)'),
+            ),
           ),
         ],
         if (metode.Jenis == JenisMetodeBayar.transfer && metode.NomorRekening != null) ...[
@@ -1144,6 +1150,201 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     );
   }
 
+  /// Konteks pesanan (pelanggan, jenis pesanan, catatan) masih bisa diubah selama belum ada pembayaran tercatat dan
+  /// tagihan belum dibagi: mengubahnya setelah itu dapat mengubah tempo, deposit, atau pembagian yang sudah dihitung.
+  bool get _KonteksTerkunci => _sibuk || _entri.isNotEmpty || _bagi != null;
+
+  Future<void> _BukaPelanggan() async {
+    if (_KonteksTerkunci) {
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (konteks) {
+        final tinggi = MediaQuery.sizeOf(konteks).height * 0.86;
+        return Dialog(
+          insetPadding: const EdgeInsets.all(TokenJarak.jarak16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 560, maxHeight: tinggi > 760 ? 760 : tinggi),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(TokenJarak.jarak16, TokenJarak.jarak8, TokenJarak.jarak8, 0),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text('Pelanggan', style: Theme.of(konteks).textTheme.titleMedium)),
+                      IconButton(
+                        tooltip: 'Tutup',
+                        onPressed: () => Navigator.of(konteks).pop(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: PanelPelanggan(kasir: widget.kasir, saatSelesai: () => Navigator.of(konteks).pop()),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// X8: ganti kanal sekaligus harga baris. Sama dengan pemilih kanal di keranjang, tetapi bisa dikoreksi dari layar
+  /// Bayar sebelum uang diterima.
+  Future<void> _PilihKanal(KonteksPenjualan k) async {
+    if (_KonteksTerkunci) {
+      return;
+    }
+    final katalog = ref.read(penyediaKatalog).value;
+    if (katalog == null) {
+      return;
+    }
+    final pilihan = LayananPenjualan.AmbilPilihanKanal(k, katalog);
+    final keranjang = ref.read(penyediaKeranjang);
+    final sekarang = LayananPenjualan.AmbilKanal(keranjang);
+    final kanal = await showDialog<KanalPenjualan>(
+      context: context,
+      builder: (konteks) => SimpleDialog(
+        title: const Text('Jenis pesanan'),
+        children: [
+          for (final p in pilihan)
+            ListTile(
+              key: ValueKey('KanalBayar-${p.name}'),
+              leading: Icon(
+                LayananPenjualan.kanalPlatform.contains(p) ? Icons.delivery_dining : Icons.storefront_outlined,
+              ),
+              title: Text(LayananPenjualan.AmbilLabelKanal(p)),
+              trailing: p == sekarang ? const Icon(Icons.check) : null,
+              onTap: () => Navigator.of(konteks).pop(p),
+            ),
+        ],
+      ),
+    );
+    if (kanal == null || kanal == sekarang || !mounted) {
+      return;
+    }
+    ref
+        .read(penyediaKeranjang.notifier)
+        .Ganti(ref.read(penyediaLayananPenjualan).GantiKanal(keranjang, kanal, katalog, k));
+  }
+
+  Future<void> _UbahCatatan() async {
+    if (_KonteksTerkunci) {
+      return;
+    }
+    final keranjang = ref.read(penyediaKeranjang);
+    final hasil = await showDialog<String>(
+      context: context,
+      builder: (_) => _DialogCatatan(awal: keranjang.catatan ?? ''),
+    );
+    if (hasil == null || !mounted) {
+      return;
+    }
+    final rapi = hasil.trim();
+    ref.read(penyediaKeranjang.notifier).Ganti(keranjang.Salin(catatan: () => rapi.isEmpty ? null : rapi));
+  }
+
+  /// Satu baris konteks yang bisa diketuk (pelanggan, jenis pesanan, catatan). Tanpa aksi = tampil sebagai keterangan.
+  Widget _BangunBarisKonteks(
+    BuildContext context, {
+    required IconData ikon,
+    required String label,
+    required String nilai,
+    String? keterangan,
+    VoidCallback? saatKetuk,
+    String? kunci,
+  }) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return Semantics(
+      button: saatKetuk != null,
+      label: '$label: $nilai',
+      excludeSemantics: true,
+      // Material transparan agar riak sentuh InkWell terlihat di atas latar panel yang opak.
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          key: kunci == null ? null : ValueKey(kunci),
+          onTap: saatKetuk,
+          borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak12, vertical: TokenJarak.jarak8),
+              child: Row(
+                children: [
+                  Icon(ikon, size: TokenJarak.ikonKecil, color: warna.teksSekunder),
+                  const SizedBox(width: TokenJarak.jarak12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label, style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+                        Text(nilai, style: teks.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                        if (keterangan != null)
+                          Text(keterangan, style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+                      ],
+                    ),
+                  ),
+                  if (saatKetuk != null)
+                    Icon(Icons.chevron_right, size: TokenJarak.ikonKecil, color: warna.teksSekunder),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _BangunBarisPesanan(BuildContext context, ItemKeranjang item, Uang nilai) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    // Jumlah sudah tampil sebagai lencana di kiri, jadi rincian hanya memuat satuan, pilihan, dan catatan.
+    final rincian = [
+      if (item.namaSatuan != null) item.namaSatuan!,
+      ...item.pilihan.map((p) => p.nama),
+      if (item.catatan != null) item.catatan!,
+    ].join(' | ');
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            constraints: const BoxConstraints(minWidth: 28),
+            padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak4, vertical: 2),
+            decoration: BoxDecoration(
+              color: warna.latar,
+              borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+            ),
+            child: Text(
+              FormatAngka.FormatJumlah(item.jumlah),
+              textAlign: TextAlign.center,
+              style: teks.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: TokenJarak.jarak8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.nama, style: teks.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                if (rincian.isNotEmpty) Text(rincian, style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+              ],
+            ),
+          ),
+          const SizedBox(width: TokenJarak.jarak8),
+          TeksUang(nilai, gaya: teks.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final teks = Theme.of(context).textTheme;
@@ -1182,7 +1383,84 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
         (syaratApotek.CekWajibResep && _resep == null) ||
         (syaratApotek.CekWajibApoteker && _apoteker == null && !_kasirApoteker);
 
-    final kiri = <Widget>[
+    final katalog = ref.watch(penyediaKatalog).value;
+    final pilihanKanal = katalog == null ? const <KanalPenjualan>[] : LayananPenjualan.AmbilPilihanKanal(k, katalog);
+    final kanal = LayananPenjualan.AmbilKanal(keranjang);
+    final bisaPilihPelanggan = !_KonteksTerkunci;
+    // Tukar barang & laundry ikut dihitung ulang harganya saat kanal berganti, jadi kanalnya tidak boleh diubah di sini.
+    final kanalTerikat =
+        keranjang.pesananMeja != null ||
+        keranjang.praPesan != null ||
+        keranjang.reservasi != null ||
+        keranjang.perintahKerja != null ||
+        keranjang.tukar != null ||
+        keranjang.laundry != null;
+    final bisaGantiJenis = !_KonteksTerkunci && !kanalTerikat && pilihanKanal.length > 1;
+    // Alasan kanal tidak bisa diubah mengikuti dokumen yang sedang ditagih, bukan selalu soal pembayaran tercatat.
+    final alasanJenisTerkunci = keranjang.pesananMeja != null
+        ? 'Mengikuti pesanan meja'
+        : keranjang.praPesan != null
+        ? 'Mengikuti ${keranjang.praPesan!.sumber.Sebutan} ${keranjang.praPesan!.nomor}'
+        : keranjang.reservasi != null
+        ? 'Mengikuti reservasi ${keranjang.reservasi!.nomor}'
+        : keranjang.perintahKerja != null
+        ? 'Mengikuti perintah kerja ${keranjang.perintahKerja!.nomor}'
+        : keranjang.tukar != null
+        ? 'Tukar barang memakai kanal penjualan asal'
+        : keranjang.laundry != null
+        ? 'Mengikuti tiket laundry'
+        : 'Tidak bisa diubah setelah pembayaran tercatat';
+    final pelanggan = keranjang.pelanggan;
+
+    // Konteks pesanan yang bisa dikoreksi dari layar Bayar (pelanggan, jenis pesanan, catatan).
+    final konteksPesanan = <Widget>[
+      _BangunBarisKonteks(
+        context,
+        ikon: Icons.person_outline,
+        label: 'Pelanggan',
+        nilai: pelanggan?.nama ?? 'Pelanggan umum',
+        keterangan: pelanggan == null ? 'Belum dipilih | ketuk untuk memilih' : pelanggan.noHpSamar,
+        saatKetuk: bisaPilihPelanggan ? () => unawaited(_BukaPelanggan()) : null,
+        kunci: 'PelangganBayar',
+      ),
+      if (pilihanKanal.length > 1)
+        _BangunBarisKonteks(
+          context,
+          ikon: switch (kanal) {
+            KanalPenjualan.MakanDiTempat => Icons.restaurant_outlined,
+            KanalPenjualan.Antar => Icons.delivery_dining_outlined,
+            _ => Icons.shopping_bag_outlined,
+          },
+          label: 'Jenis pesanan',
+          nilai: LayananPenjualan.AmbilLabelKanal(kanal),
+          keterangan: bisaGantiJenis ? null : alasanJenisTerkunci,
+          saatKetuk: bisaGantiJenis ? () => unawaited(_PilihKanal(k)) : null,
+          kunci: 'JenisPesananBayar',
+        ),
+      _BangunBarisKonteks(
+        context,
+        ikon: Icons.edit_note,
+        label: 'Catatan',
+        nilai: keranjang.catatan ?? 'Tambah catatan',
+        keterangan: keranjang.catatan != null
+            ? null
+            : _KonteksTerkunci
+            ? 'Terkunci setelah tagihan dibagi atau pembayaran dicatat'
+            : 'Untuk dapur & struk',
+        saatKetuk: _KonteksTerkunci ? null : () => unawaited(_UbahCatatan()),
+        kunci: 'CatatanPesananBayar',
+      ),
+      if (keranjang.pesananMeja case final meja?)
+        _BangunBarisKonteks(
+          context,
+          ikon: Icons.table_restaurant_outlined,
+          label: 'Meja',
+          nilai: meja.AmbilJudul(),
+          keterangan: 'Pesanan meja dibayar di meja ini',
+        ),
+    ];
+
+    final infoDokumen = <Widget>[
       if (keranjang.praPesan case final praPesan?)
         Padding(
           padding: const EdgeInsets.only(bottom: TokenJarak.jarak8),
@@ -1220,7 +1498,24 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
             style: teks.bodySmall,
           ),
         ),
-      ...RingkasanTotal.BangunBaris(context, hitungan, keranjang, tampilPembulatan: true),
+    ];
+
+    final ringkasan = RingkasanTotal.BangunBaris(context, hitungan, keranjang, tampilPembulatan: true);
+
+    // Baris pesanan di panel kiri: jumlah, nama, satuan/pilihan/catatan, lalu nilai bruto baris. Total yang sudah
+    // dipotong diskon & pajak tetap di ringkasan bawah agar kasir bisa mencocokkan keduanya.
+    final barisPesanan = <Widget>[
+      for (var i = 0; i < keranjang.baris.length; i++)
+        _BangunBarisPesanan(
+          context,
+          keranjang.baris[i],
+          i < hitungan.hasil.baris.length
+              ? hitungan.hasil.baris[i].bruto
+              : keranjang.baris[i].hargaSatuan.Kali(keranjang.baris[i].jumlah.KeDesimal()),
+        ),
+    ];
+
+    final bagiEntri = <Widget>[
       if (_bagi case final bagi?) ...[
         const SizedBox(height: TokenJarak.jarak8),
         Container(
@@ -1293,10 +1588,18 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
             TeksUang(sisa, gaya: teks.titleMedium),
           ],
         ),
+    ];
+
+    final bagianApotek = <Widget>[
       if (!syaratApotek.CekKosong) ...[
         const SizedBox(height: TokenJarak.jarak12),
         _BangunApotek(context, k, syaratApotek),
       ],
+    ];
+
+    // Metode pembayaran: chip yang sama dengan sebelumnya supaya jalur bayar (termasuk QRIS, EDC, transfer, tempo,
+    // deposit, gift card, dan kanal ojol) tidak berubah; hanya tempatnya pindah ke panel kanan.
+    final metodePembayaran = <Widget>[
       const SizedBox(height: TokenJarak.jarak16),
       if (gerbangApotek)
         Text(
@@ -1314,10 +1617,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           spacing: TokenJarak.jarak8,
           runSpacing: TokenJarak.jarak8,
           children: [
-            for (final m in LayananPenjualan.SaringMetodeKanal(
-              k.metodePembayaran,
-              LayananPenjualan.AmbilKanal(keranjang),
-            ))
+            for (final m in LayananPenjualan.SaringMetodeKanal(k.metodePembayaran, kanal))
               if (!(tunaiDipakai && _bagi == null && m.Jenis == JenisMetodeBayar.tunai) &&
                   !(m.Jenis == JenisMetodeBayar.tempo && (keranjang.pelanggan == null || tempoDipakai)) &&
                   !(m.Jenis == JenisMetodeBayar.deposit &&
@@ -1332,13 +1632,15 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           ],
         ),
     ];
+
+    // Layar sempit memakai satu kolom dengan panel yang sama, tetap dari atas ke bawah.
     // Rincian metode terpilih (tagihan, tombol uang cepat, isian, papan angka / QR / referensi).
     final rincian = <Widget>[
       if (metode != null && !gerbangApotek)
         if (metode.Jenis == JenisMetodeBayar.tunai) _BangunTunai(context, k) else _BangunNonTunai(context, k, metode),
     ];
-    // Bilah aksi menempel di bawah: tombol selesaikan/tambah pembayaran & aksi sekunder selalu terlihat tanpa digulir.
-    final aksi = <Widget>[
+    // Peringatan & galat selalu terlihat tepat di atas tombol bayar.
+    final peringatanAksi = <Widget>[
       // Audit kemudahan pakai #32: peringatan tepat di atas tombol bayar supaya penjualan sungguhan tidak hilang.
       if (ref.watch(penyediaModeLatihan))
         Padding(
@@ -1362,55 +1664,58 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           padding: const EdgeInsets.only(bottom: TokenJarak.jarak8),
           child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
         ),
-      SizedBox(
-        height: 56,
-        child: FilledButton(
-          onPressed: _sibuk || gerbangApotek
-              ? null
-              : metode != null
-              ? () => _Terapkan(k)
-              : lunasTanpaMetode
-              ? () => _Selesaikan(k, List.of(_entri))
-              : null,
-          child: Text(
-            _sibuk
-                ? 'Menyimpan…'
-                : _bagi?.porsi != null && !_tamuTerakhir && metode != null
-                ? 'Bayar porsi tamu $_tamuKe'
-                : melunasi || metode == null
-                ? 'Selesaikan pembayaran'
-                : 'Tambah pembayaran ${metode.Nama}',
-          ),
+    ];
+
+    final tombolUtama = SizedBox(
+      height: 56,
+      child: FilledButton(
+        onPressed: _sibuk || gerbangApotek
+            ? null
+            : metode != null
+            ? () => _Terapkan(k)
+            : lunasTanpaMetode
+            ? () => _Selesaikan(k, List.of(_entri))
+            : null,
+        child: Text(
+          _sibuk
+              ? 'Menyimpan…'
+              : _bagi?.porsi != null && !_tamuTerakhir && metode != null
+              ? 'Bayar porsi tamu $_tamuKe'
+              : melunasi || metode == null
+              ? 'Selesaikan pembayaran'
+              : 'Tambah pembayaran ${metode.Nama}',
         ),
       ),
-    ];
-    // Aksi sekunder: ikut menempel di layar lebar; di layar sempit di akhir isi yang digulir agar area kerja tetap luas.
-    final aksiSekunder = <Widget>[
-      if (_bagi == null &&
+    );
+
+    final tombolBagi = switch ((
+      _bagi == null &&
           _entri.isEmpty &&
           keranjang.tukar == null &&
           keranjang.praPesan == null &&
-          hitungan.hasil.totalAkhir.Bandingkan(Uang.DariBulat(1)) > 0) ...[
-        const SizedBox(height: TokenJarak.jarak8),
-        SizedBox(
-          height: TokenJarak.targetSentuh,
-          child: OutlinedButton.icon(
-            onPressed: _sibuk ? null : () => unawaited(_MulaiBagi(hitungan.hasil.totalAkhir)),
-            icon: const Icon(Icons.call_split),
-            label: const Text('Bagi tagihan'),
-          ),
+          hitungan.hasil.totalAkhir.Bandingkan(Uang.DariBulat(1)) > 0,
+      _bagi != null && _entri.isEmpty,
+    )) {
+      (true, _) => SizedBox(
+        height: TokenJarak.targetSentuh,
+        child: OutlinedButton.icon(
+          onPressed: _sibuk ? null : () => unawaited(_MulaiBagi(hitungan.hasil.totalAkhir)),
+          icon: const Icon(Icons.call_split),
+          label: const Text('Bagi tagihan'),
         ),
-      ],
-      if (_bagi != null && _entri.isEmpty) ...[
-        const SizedBox(height: TokenJarak.jarak8),
-        SizedBox(
-          height: TokenJarak.targetSentuh,
-          child: TextButton(
-            onPressed: _sibuk ? null : () => setState(() => _bagi = null),
-            child: const Text('Batal bagi tagihan'),
-          ),
+      ),
+      (_, true) => SizedBox(
+        height: TokenJarak.targetSentuh,
+        child: TextButton(
+          onPressed: _sibuk ? null : () => setState(() => _bagi = null),
+          child: const Text('Batal bagi tagihan'),
         ),
-      ],
+      ),
+      _ => null,
+    };
+
+    // Aksi dokumen (pre-order & pesanan grosir) hanya masuk akal sebelum ada pembayaran tercatat.
+    final aksiDokumen = <Widget>[
       if (widget.saatPreOrder != null &&
           keranjang.pelanggan != null &&
           keranjang.praPesan == null &&
@@ -1449,43 +1754,30 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       ],
     ];
 
+    final isiPembayaran = <Widget>[
+      ...bagianApotek,
+      ...bagiEntri,
+      ...metodePembayaran,
+      if (rincian.isNotEmpty)
+        ...rincian
+      else if (!gerbangApotek)
+        Padding(
+          padding: const EdgeInsets.only(top: TokenJarak.jarak16),
+          child: Text(
+            'Pilih metode pembayaran untuk melihat rinciannya.',
+            style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
+          ),
+        ),
+      ...aksiDokumen,
+    ];
+
     return LayoutBuilder(
       builder: (context, batas) {
         final duaKolom = batas.maxWidth >= PanelBayar.lebarDuaKolom;
         final lebarIsi = duaKolom ? PanelBayar.lebarMaksDuaKolom : PanelBayar.lebarMaksSatuKolom;
-        final aksiMenempel = [...aksi, if (duaKolom) ...aksiSekunder];
-        final isi = duaKolom
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: kiri),
-                  ),
-                  const SizedBox(width: TokenJarak.jarak24),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (rincian.isNotEmpty)
-                          ...rincian
-                        else if (!gerbangApotek)
-                          Text(
-                            'Pilih metode pembayaran di sebelah kiri.',
-                            style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ...kiri,
-                  if (rincian.isNotEmpty) ...[const SizedBox(height: TokenJarak.jarak16), ...rincian],
-                  ...aksiSekunder,
-                ],
-              );
+        final lebarPesanan = batas.maxWidth >= 1200 ? 400.0 : 340.0;
+        final lebarTombolUtama = batas.maxWidth >= 1120 ? 380.0 : 300.0;
+
         Widget Batasi(Widget anak) => Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
@@ -1493,11 +1785,174 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
             child: anak,
           ),
         );
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
+
+        final panelPesanan = Container(
+          key: const ValueKey('PanelPesananBayar'),
+          decoration: BoxDecoration(
+            color: warna.permukaan,
+            border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+            borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+          ),
+          child: Column(
+            mainAxisSize: duaKolom ? MainAxisSize.max : MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  TokenJarak.jarak16,
+                  TokenJarak.jarak12,
+                  TokenJarak.jarak16,
+                  TokenJarak.jarak8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Pesanan | ${FormatAngka.FormatJumlah(keranjang.HitungJumlahItem())} item',
+                        style: teks.titleMedium,
+                      ),
+                    ),
+                    if (keranjang.pesananMeja case final meja?)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak8, vertical: TokenJarak.jarak4),
+                        decoration: BoxDecoration(
+                          color: warna.latar,
+                          borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+                        ),
+                        child: Text(meja.AmbilJudul(), style: teks.labelMedium),
+                      ),
+                  ],
+                ),
+              ),
+              Divider(height: TokenJarak.tebalGaris, thickness: TokenJarak.tebalGaris, color: warna.garis),
+              if (duaKolom)
+                Expanded(
+                  child: ListView(
+                    key: const ValueKey('DaftarPesananBayar'),
+                    padding: const EdgeInsets.symmetric(vertical: TokenJarak.jarak8),
+                    children: [
+                      ...konteksPesanan,
+                      if (infoDokumen.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            TokenJarak.jarak16,
+                            TokenJarak.jarak4,
+                            TokenJarak.jarak16,
+                            0,
+                          ),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: infoDokumen),
+                        ),
+                      ...barisPesanan,
+                    ],
+                  ),
+                )
+              else ...[
+                ...konteksPesanan,
+                if (infoDokumen.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(TokenJarak.jarak16, TokenJarak.jarak4, TokenJarak.jarak16, 0),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: infoDokumen),
+                  ),
+                ...barisPesanan,
+              ],
+              Divider(height: TokenJarak.tebalGaris, thickness: TokenJarak.tebalGaris, color: warna.garis),
+              Padding(
+                padding: const EdgeInsets.all(TokenJarak.jarak16),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: ringkasan),
+              ),
+            ],
+          ),
+        );
+
+        final panelPembayaran = Container(
+          key: const ValueKey('PanelPembayaranBayar'),
+          decoration: BoxDecoration(
+            color: warna.permukaan,
+            border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+            borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+          ),
+          child: Column(
+            mainAxisSize: duaKolom ? MainAxisSize.max : MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  TokenJarak.jarak24,
+                  TokenJarak.jarak12,
+                  TokenJarak.jarak24,
+                  TokenJarak.jarak8,
+                ),
+                child: Text(
+                  'METODE PEMBAYARAN',
+                  style: teks.labelSmall?.copyWith(
+                    color: warna.teksSekunder,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+              Divider(height: TokenJarak.tebalGaris, thickness: TokenJarak.tebalGaris, color: warna.garis),
+              if (duaKolom)
+                Expanded(
+                  child: SingleChildScrollView(
+                    key: const ValueKey('GulirPembayaranBayar'),
+                    padding: const EdgeInsets.fromLTRB(
+                      TokenJarak.jarak24,
+                      TokenJarak.jarak4,
+                      TokenJarak.jarak24,
+                      TokenJarak.jarak24,
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 540),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: isiPembayaran),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    TokenJarak.jarak24,
+                    TokenJarak.jarak4,
+                    TokenJarak.jarak24,
+                    TokenJarak.jarak24,
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: isiPembayaran),
+                ),
+            ],
+          ),
+        );
+
+        final isi = duaKolom
+            ? Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  TokenJarak.jarak24,
+                  TokenJarak.jarak24,
+                  TokenJarak.jarak24,
+                  TokenJarak.jarak16,
+                ),
+                child: LayoutBuilder(
+                  builder: (context, dalam) => Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: lebarIsi),
+                      child: SizedBox(
+                        height: dalam.maxHeight,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(width: lebarPesanan, child: panelPesanan),
+                            const SizedBox(width: TokenJarak.jarak24),
+                            Expanded(child: panelPembayaran),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : SingleChildScrollView(
                 key: const ValueKey('GulirBayar'),
                 padding: const EdgeInsets.fromLTRB(
                   TokenJarak.jarak24,
@@ -1505,9 +1960,22 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
                   TokenJarak.jarak24,
                   TokenJarak.jarak16,
                 ),
-                child: Batasi(isi),
-              ),
-            ),
+                child: Batasi(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      panelPesanan,
+                      const SizedBox(height: TokenJarak.jarak16),
+                      panelPembayaran,
+                    ],
+                  ),
+                ),
+              );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: isi),
             DecoratedBox(
               key: const ValueKey('BilahAksiBayar'),
               decoration: BoxDecoration(
@@ -1520,7 +1988,46 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak24, vertical: TokenJarak.jarak12),
-                  child: Batasi(Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: aksiMenempel)),
+                  child: Batasi(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ...peringatanAksi,
+                        if (duaKolom)
+                          Row(
+                            children: [
+                              if (tombolBagi != null) ...[tombolBagi, const SizedBox(width: TokenJarak.jarak16)],
+                              if (batas.maxWidth >= 960)
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.cloud_done_outlined,
+                                        size: TokenJarak.ikonKecil,
+                                        color: warna.teksSekunder,
+                                      ),
+                                      const SizedBox(width: TokenJarak.jarak8),
+                                      Flexible(
+                                        child: Text(
+                                          'Keranjang tersimpan di perangkat',
+                                          style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else
+                                const Spacer(),
+                              SizedBox(width: lebarTombolUtama, child: tombolUtama),
+                            ],
+                          )
+                        else ...[
+                          tombolUtama,
+                          if (tombolBagi != null) ...[const SizedBox(height: TokenJarak.jarak8), tombolBagi],
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1531,203 +2038,448 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
   }
 }
 
-/// Layar selesai setelah pembayaran tersimpan (D-66): latar warna primer merek dengan tanda centang besar, nomor,
-/// kembalian, rincian bayar, dan aksi struk di kartu putih. Dibuat besar & kontras supaya terbaca dari jarak berdiri.
-class TampilanSelesai extends StatelessWidget {
+/// Dialog catatan pesanan: pengendali teks dimiliki dialog supaya tidak dipakai setelah dibuang saat animasi tutup.
+class _DialogCatatan extends StatefulWidget {
+  const _DialogCatatan({required this.awal});
+
+  final String awal;
+
+  @override
+  State<_DialogCatatan> createState() => _DialogCatatanState();
+}
+
+class _DialogCatatanState extends State<_DialogCatatan> {
+  late final TextEditingController _pengendali = TextEditingController(text: widget.awal);
+
+  @override
+  void dispose() {
+    _pengendali.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Catatan pesanan'),
+    content: TextField(
+      key: const ValueKey('CatatanBayar'),
+      controller: _pengendali,
+      autofocus: true,
+      minLines: 2,
+      maxLines: 4,
+      maxLength: 500,
+      textCapitalization: TextCapitalization.sentences,
+      decoration: const InputDecoration(hintText: 'Mis. tanpa es, saus terpisah', counterText: ''),
+    ),
+    actions: [
+      TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Batal')),
+      FilledButton(onPressed: () => Navigator.of(context).pop(_pengendali.text), child: const Text('Simpan')),
+    ],
+  );
+}
+
+/// Layar selesai setelah pembayaran tersimpan (D-66): satu halaman berlatar warna merek, tanda centang besar,
+/// nomor, kembalian, rincian bayar, dan aksi struk. Kasir harus bisa membacanya dari jarak berdiri.
+class TampilanSelesai extends ConsumerWidget {
   const TampilanSelesai({super.key, required this.hasil, required this.saatTransaksiBaru});
 
   final PenjualanTersimpan hasil;
   final VoidCallback saatTransaksiBaru;
 
+  Future<void> _BukaAturPrinter(BuildContext context) => showDialog<void>(
+    context: context,
+    builder: (konteks) => Dialog(
+      insetPadding: const EdgeInsets.all(TokenJarak.jarak16),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 720, maxHeight: MediaQuery.sizeOf(konteks).height * 0.86),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                TokenJarak.jarak16,
+                TokenJarak.jarak8,
+                TokenJarak.jarak8,
+                TokenJarak.jarak8,
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: Text('Atur printer', style: Theme.of(konteks).textTheme.titleMedium)),
+                  IconButton(
+                    tooltip: 'Tutup',
+                    onPressed: () => Navigator.of(konteks).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: TokenJarak.tebalGaris),
+            const Flexible(
+              child: SingleChildScrollView(padding: EdgeInsets.all(TokenJarak.jarak16), child: BagianPrinter()),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final putih = warna.permukaan;
     final putihRedup = putih.withValues(alpha: 0.78);
-    final gayaPutih = teks.bodyMedium?.copyWith(color: putih);
-    return Padding(
-      padding: const EdgeInsets.all(TokenJarak.jarak16),
-      child: DecoratedBox(
-        key: const ValueKey('LayarBerhasilBayar'),
-        decoration: BoxDecoration(color: warna.brand, borderRadius: BorderRadius.circular(TokenJarak.radiusPanel)),
-        child: Padding(
-          padding: const EdgeInsets.all(TokenJarak.jarak24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    final printer = ref.watch(penyediaPrinter);
+    final belumDiaturPrinter = printer.profil == null;
+
+    final ringkasan = <Widget>[
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Total',
+              style: teks.titleSmall?.copyWith(color: putih, fontWeight: FontWeight.w700),
+            ),
+          ),
+          TeksUang(
+            hasil.totalAkhir,
+            gaya: teks.titleSmall?.copyWith(color: putih, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+      for (final p in hasil.pembayaran)
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Row(
             children: [
-              // Tanda berhasil: lingkaran putih berhalo, centang warna primer.
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: putih.withValues(alpha: 0.16)),
-                  child: Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: putih),
-                    child: Icon(
-                      hasil.latihan ? Icons.school_outlined : Icons.check_rounded,
-                      color: hasil.latihan ? warna.peringatan : warna.brand,
-                      size: 44,
-                    ),
-                  ),
-                ),
+              Expanded(
+                child: Text(p.metode.Nama, style: teks.bodySmall?.copyWith(color: putihRedup)),
               ),
-              const SizedBox(height: TokenJarak.jarak16),
-              Text(
-                hasil.latihan ? 'Latihan selesai' : 'Pembayaran berhasil',
-                style: teks.headlineSmall?.copyWith(color: putih, fontWeight: FontWeight.w700),
-                textAlign: TextAlign.center,
-              ),
-              if (hasil.latihan)
-                Padding(
-                  padding: const EdgeInsets.only(top: TokenJarak.jarak4),
-                  child: Text(
-                    'Mode latihan: transaksi ini tidak disimpan, tidak dikirim, dan tidak dicetak.',
-                    style: teks.bodyMedium?.copyWith(color: warna.aksen),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              const SizedBox(height: TokenJarak.jarak8),
-              Center(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: putih.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak12, vertical: 4),
-                    child: TeksKode(hasil.nomor, gaya: teks.bodyMedium?.copyWith(color: putih)),
-                  ),
-                ),
-              ),
-              // v3.52 (§9.2): nomor panggil besar supaya kasir bisa menyebutkannya ke pembeli.
-              if (hasil.nomorAntrian case final antrian?) ...[
-                const SizedBox(height: TokenJarak.jarak16),
-                Semantics(
-                  label: 'Nomor antrian $antrian${hasil.namaPemesan == null ? '' : ', ${hasil.namaPemesan}'}',
-                  excludeSemantics: true,
-                  child: Column(
-                    children: [
-                      Text(
-                        'Nomor antrian',
-                        style: teks.titleMedium?.copyWith(color: putihRedup),
-                        textAlign: TextAlign.center,
-                      ),
-                      TeksKode(antrian, gaya: teks.displaySmall?.copyWith(color: warna.aksen)),
-                      if (hasil.namaPemesan case final nama?)
-                        Text(nama, style: teks.titleMedium?.copyWith(color: putih)),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: TokenJarak.jarak24),
-              Text(
-                'Kembalian',
-                style: teks.titleMedium?.copyWith(color: putihRedup),
-                textAlign: TextAlign.center,
-              ),
-              Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: TeksUang(
-                    hasil.kembalian,
-                    rataKanan: false,
-                    gaya: teks.displaySmall?.copyWith(color: putih, fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ),
-              // K-11: selisih tukar barang (barang pengganti lebih murah) dikembalikan tunai lewat refund retur.
-              if (hasil.kembalianTukar case final selisih? when !selisih.BernilaiNol()) ...[
-                const SizedBox(height: TokenJarak.jarak8),
-                Text(
-                  'Kembalikan selisih tukar',
-                  style: teks.titleMedium?.copyWith(color: putihRedup),
+              TeksUang(p.jumlah, gaya: teks.bodySmall?.copyWith(color: putihRedup)),
+            ],
+          ),
+        ),
+    ];
+
+    final aksiStruk = <Widget>[
+      if (belumDiaturPrinter)
+        Padding(
+          padding: const EdgeInsets.only(top: TokenJarak.jarak16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.print_outlined, size: TokenJarak.ikonKecil, color: warna.aksen),
+              const SizedBox(width: TokenJarak.jarak8),
+              Flexible(
+                child: Text(
+                  'Printer belum diatur | struk belum tercetak. Ketuk Atur printer untuk mencetak.',
+                  style: teks.bodySmall?.copyWith(color: putih.withValues(alpha: 0.86)),
                   textAlign: TextAlign.center,
-                ),
-                Center(
-                  child: TeksUang(selisih, rataKanan: false, gaya: teks.headlineSmall?.copyWith(color: putih)),
-                ),
-              ],
-              if (hasil.nomorReturTukar case final nomorRetur?)
-                Text(
-                  'Retur tukar barang $nomorRetur',
-                  style: teks.bodySmall?.copyWith(color: putihRedup),
-                  textAlign: TextAlign.center,
-                ),
-              const SizedBox(height: TokenJarak.jarak16),
-              Divider(color: putih.withValues(alpha: 0.2), height: 1),
-              const SizedBox(height: TokenJarak.jarak12),
-              Row(
-                children: [
-                  Expanded(child: Text('Total', style: gayaPutih)),
-                  TeksUang(
-                    hasil.totalAkhir,
-                    gaya: teks.bodyMedium?.copyWith(color: putih, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              for (final p in hasil.pembayaran)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(p.metode.Nama, style: teks.bodyMedium?.copyWith(color: putihRedup)),
-                      ),
-                      TeksUang(p.jumlah, gaya: teks.bodyMedium?.copyWith(color: putihRedup)),
-                    ],
-                  ),
-                ),
-              if (!hasil.latihan) ...[
-                const SizedBox(height: TokenJarak.jarak16),
-                // Aksi struk memakai gaya terang bawaan, jadi ditaruh di kartu putih di atas latar primer.
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: putih,
-                    borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(TokenJarak.jarak12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        BagianCetakStruk(
-                          uuidPenjualan: hasil.uuid,
-                          namaPelanggan: hasil.namaPelanggan,
-                          labelPoin: hasil.labelPoin,
-                        ),
-                        // Selebar tombol cetak di atasnya (kolom meregangkan anak), dengan jarak yang sama.
-                        const SizedBox(height: TokenJarak.jarak8),
-                        TombolKirimStruk(uuidPenjualan: hasil.uuid),
-                        if (hasil.bagianTagihan != null) ...[
-                          const SizedBox(height: TokenJarak.jarak8),
-                          TombolStrukTamu(uuidPenjualan: hasil.uuid),
-                        ],
-                        BagianTiketDapur(uuidPenjualan: hasil.uuid, namaPelanggan: hasil.namaPelanggan),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: TokenJarak.jarak24),
-              SizedBox(
-                height: 56,
-                child: FilledButton(
-                  autofocus: true,
-                  onPressed: saatTransaksiBaru,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: putih,
-                    foregroundColor: warna.brand,
-                    shape: const StadiumBorder(),
-                    textStyle: teks.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  child: const Text('Transaksi baru'),
                 ),
               ),
             ],
           ),
+        ),
+      Padding(
+        padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+        child: LayoutBuilder(
+          builder: (context, batas) {
+            final atur = SizedBox(
+              height: TokenJarak.targetSentuh,
+              child: OutlinedButton.icon(
+                key: const ValueKey('AturPrinterSelesai'),
+                onPressed: () => unawaited(_BukaAturPrinter(context)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: putih,
+                  side: BorderSide(color: warna.aksen, width: 2),
+                ),
+                icon: Icon(Icons.print_outlined, color: warna.aksen),
+                label: const Text('Atur printer'),
+              ),
+            );
+            final kirim = TombolKirimStruk(uuidPenjualan: hasil.uuid, diAtasMerek: true);
+            // HP: dua tombol bertumpuk supaya label tidak berdesakan dalam satu baris sempit.
+            if (batas.maxWidth < 420) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  atur,
+                  const SizedBox(height: TokenJarak.jarak8),
+                  kirim,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: atur),
+                const SizedBox(width: TokenJarak.jarak8),
+                Expanded(child: kirim),
+              ],
+            );
+          },
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+        child: BagianCetakStruk(
+          uuidPenjualan: hasil.uuid,
+          namaPelanggan: hasil.namaPelanggan,
+          labelPoin: hasil.labelPoin,
+          diAtasMerek: true,
+        ),
+      ),
+      if (hasil.bagianTagihan != null) ...[
+        const SizedBox(height: TokenJarak.jarak8),
+        TombolStrukTamu(uuidPenjualan: hasil.uuid, diAtasMerek: true),
+      ],
+      BagianTiketDapur(uuidPenjualan: hasil.uuid, namaPelanggan: hasil.namaPelanggan, diAtasMerek: true),
+    ];
+
+    return DecoratedBox(
+      key: const ValueKey('LayarBerhasilBayar'),
+      decoration: BoxDecoration(color: warna.brand),
+      child: Material(
+        color: warna.brand,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Kepala halaman senada dengan merek: logo, nama halaman, dan tombol mulai transaksi baru.
+            Container(
+              height: 56,
+              padding: const EdgeInsets.only(left: TokenJarak.jarak16, right: TokenJarak.jarak4),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: putih.withValues(alpha: 0.14), width: TokenJarak.tebalGaris),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // D-61: wordmark memakai aset merek, bukan huruf yang dirakit ulang.
+                  const LogoMerek.lengkapPutih(tinggi: 32),
+                  Container(
+                    width: TokenJarak.tebalGaris,
+                    height: 18,
+                    margin: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak12),
+                    color: putih.withValues(alpha: 0.25),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Transaksi selesai',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: teks.bodySmall?.copyWith(color: putih.withValues(alpha: 0.75)),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Transaksi baru',
+                    onPressed: saatTransaksiBaru,
+                    color: putih,
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, batas) => SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    TokenJarak.jarak24,
+                    TokenJarak.jarak12,
+                    TokenJarak.jarak24,
+                    TokenJarak.jarak24,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: batas.maxHeight - TokenJarak.jarak12 - TokenJarak.jarak24),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Center(
+                              child: Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(shape: BoxShape.circle, color: putih),
+                                child: Icon(
+                                  hasil.latihan ? Icons.school_outlined : Icons.check_rounded,
+                                  color: hasil.latihan ? warna.peringatan : warna.brand,
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: TokenJarak.jarak16),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                hasil.latihan ? 'Latihan selesai' : 'Pembayaran berhasil',
+                                style: teks.displaySmall?.copyWith(color: putih, fontWeight: FontWeight.w700),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            if (hasil.latihan)
+                              Padding(
+                                padding: const EdgeInsets.only(top: TokenJarak.jarak4),
+                                child: Text(
+                                  'Mode latihan: transaksi ini tidak disimpan, tidak dikirim, dan tidak dicetak.',
+                                  style: teks.bodyMedium?.copyWith(color: putih),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            const SizedBox(height: TokenJarak.jarak8),
+                            Center(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: putih.withValues(alpha: 0.13),
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak12, vertical: 3),
+                                  child: TeksKode(hasil.nomor, gaya: teks.bodySmall?.copyWith(color: putih)),
+                                ),
+                              ),
+                            ),
+                            // v3.52 (§9.2): nomor panggil besar supaya kasir bisa menyebutkannya ke pembeli.
+                            if (hasil.nomorAntrian case final antrian?) ...[
+                              const SizedBox(height: TokenJarak.jarak16),
+                              Semantics(
+                                label:
+                                    'Nomor antrian $antrian${hasil.namaPemesan == null ? '' : ', ${hasil.namaPemesan}'}',
+                                excludeSemantics: true,
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'Nomor antrian',
+                                      style: teks.titleSmall?.copyWith(color: putihRedup),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    TeksKode(antrian, gaya: teks.displaySmall?.copyWith(color: warna.aksen)),
+                                    if (hasil.namaPemesan case final nama?)
+                                      Text(
+                                        nama,
+                                        style: teks.titleSmall?.copyWith(color: putih),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: TokenJarak.jarak24),
+                            Text(
+                              'Kembalian',
+                              style: teks.titleSmall?.copyWith(color: putihRedup, fontWeight: FontWeight.w600),
+                              textAlign: TextAlign.center,
+                            ),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: TeksUang(
+                                hasil.kembalian,
+                                rataKanan: false,
+                                gaya: teks.displaySmall?.copyWith(color: putih, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            Text(
+                              hasil.kembalian.Bandingkan(Uang.Nol()) > 0
+                                  ? 'Serahkan kembalian ke pelanggan'
+                                  : 'Uang pas diterima',
+                              style: teks.bodySmall?.copyWith(color: putihRedup),
+                              textAlign: TextAlign.center,
+                            ),
+                            // K-11: selisih tukar barang (barang pengganti lebih murah) dikembalikan tunai lewat refund retur.
+                            if (hasil.kembalianTukar case final selisih? when !selisih.BernilaiNol()) ...[
+                              const SizedBox(height: TokenJarak.jarak8),
+                              Text(
+                                'Kembalikan selisih tukar',
+                                style: teks.titleSmall?.copyWith(color: putihRedup),
+                                textAlign: TextAlign.center,
+                              ),
+                              Center(
+                                child: TeksUang(
+                                  selisih,
+                                  rataKanan: false,
+                                  gaya: teks.headlineMedium?.copyWith(color: putih),
+                                ),
+                              ),
+                            ],
+                            if (hasil.nomorReturTukar case final nomorRetur?)
+                              Text(
+                                'Retur tukar barang $nomorRetur',
+                                style: teks.bodySmall?.copyWith(color: putihRedup),
+                                textAlign: TextAlign.center,
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: TokenJarak.jarak24),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: putih.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: TokenJarak.jarak16,
+                                    vertical: TokenJarak.jarak12,
+                                  ),
+                                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: ringkasan),
+                                ),
+                              ),
+                            ),
+                            if (!hasil.latihan) ...aksiStruk,
+                            const SizedBox(height: TokenJarak.jarak12),
+                            SizedBox(
+                              height: 54,
+                              child: FilledButton(
+                                autofocus: true,
+                                onPressed: saatTransaksiBaru,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: putih,
+                                  foregroundColor: warna.brand,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+                                  ),
+                                  textStyle: teks.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Transaksi baru'),
+                                      const SizedBox(width: TokenJarak.jarak8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: warna.brand.withValues(alpha: 0.35)),
+                                          borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+                                        ),
+                                        child: Text(
+                                          'Enter',
+                                          style: teks.bodySmall?.copyWith(
+                                            color: warna.brand.withValues(alpha: 0.7),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: TokenJarak.jarak8),
+                            Text(
+                              'Atau pindai barang berikutnya untuk mulai transaksi baru',
+                              style: teks.bodySmall?.copyWith(color: putihRedup),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

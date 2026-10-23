@@ -57,9 +57,11 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
   final Color bahaya;
   final Color info;
 
-  /// Aksen Apricot (D-61) sebagai token sejak D-25. **Hanya untuk situs pemasaran `payoung.id`**,
-  /// bukan penanda status, dan tidak dipakai di aplikasi Flutter mana pun; ada di sini hanya agar
-  /// palet web dan Flutter tetap satu sumber (dijaga `SumberWarna_test.dart`).
+  /// Aksen Apricot (D-61) sebagai token sejak D-25. Dipakai untuk sorotan merek: situs pemasaran,
+  /// penanda navigasi (D-62), pil Rel Ruang Kerja (D-66), tombol sekunder di atas permukaan merek
+  /// (layar berhasil bayar), ikon/garis status, dan avatar kasir. **Bukan warna teks status** — teks
+  /// status memakai [sukses]/[peringatan]/[bahaya] atau teks putih penuh di atas [brand] agar kontras
+  /// WCAG AA terpenuhi. Dijaga `SumberWarna_test.dart` agar palet web dan Flutter tetap satu sumber.
   final Color aksen;
 
   /// Token warna dari tema terdekat. Gagal keras bila tema belum memasang [TokenWarna].
