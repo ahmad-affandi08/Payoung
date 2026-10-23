@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:adaptor_perangkat/AdaptorPerangkat.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kasir/Tampilan/Jual/SuaraPembayaranBerhasil.dart';
 import 'package:kasir/Tampilan/Jual/UmpanBalikPindai.dart';
 import 'package:kasir/Aplikasi/AplikasiKasir.dart';
 import 'package:kasir/Aplikasi/Lingkungan.dart';
@@ -35,6 +36,7 @@ Future<void> PasangAplikasi(
   PemindaiQr? pemindaiQr,
   PemindaiKameraTiruan? pemindaiKamera,
   UmpanBalikPindai? umpanBalikPindai,
+  SuaraPembayaranBerhasil? suaraPembayaran,
   LogLokal? logLokal,
   PenentuLokasi penentuLokasi = const PenentuLokasiTidakAda(),
   // POS-23: pemasang pembaruan tiruan (bawaan: tanpa pemasang sendiri, seperti Android/iOS).
@@ -64,6 +66,8 @@ Future<void> PasangAplikasi(
         penyediaPemindaiKamera.overrideWithValue(pemindaiKamera ?? PemindaiKameraTiruan(tersedia: false)),
         penyediaPemindaiPrinter.overrideWithValue(u.pemindai),
         penyediaUmpanBalikPindai.overrideWithValue(umpanBalikPindai ?? const UmpanBalikPindai()),
+        // Bunyi pembayaran tidak pernah menyentuh plugin pemutar di test (bawaan: tiruan yang mencatat panggilan).
+        penyediaSuaraPembayaran.overrideWithValue(suaraPembayaran ?? SuaraPembayaranTiruan()),
         penyediaLogLokal.overrideWithValue(logLokal),
         // Modul Salesman bagian 2: lokasi tidak pernah memanggil plugin platform di test.
         penyediaPenentuLokasi.overrideWithValue(penentuLokasi),
@@ -141,6 +145,14 @@ class PemverifikasiPinTiruan extends PemverifikasiPinOffline {
     }
     return false;
   }
+}
+
+/// Suara pembayaran tiruan: mencatat berapa kali bunyi tanda berhasil diminta tanpa memutar apa pun.
+class SuaraPembayaranTiruan implements SuaraPembayaranBerhasil {
+  int jumlahMainkan = 0;
+
+  @override
+  Future<void> Mainkan() async => jumlahMainkan++;
 }
 
 /// Penjaga layar tiruan: mencatat apakah layar sedang diminta tetap menyala.

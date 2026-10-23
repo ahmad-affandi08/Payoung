@@ -29,6 +29,7 @@ import 'DialogQrisDinamis.dart';
 import 'DialogResep.dart';
 import 'PanelKeranjang.dart';
 import 'PanelPelanggan.dart';
+import 'SuaraPembayaranBerhasil.dart';
 
 /// Label jenis metode pembayaran untuk kasir.
 String AmbilLabelJenisMetode(String jenis) => switch (jenis) {
@@ -731,8 +732,12 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
           );
       ref.read(penyediaKeranjang.notifier).Kosongkan();
       final sesi = ref.read(penyediaSesi.notifier);
+      // Dibaca sebelum [widget.saatSelesai]: panel ini bisa dilepas dari pohon widget sesudahnya.
+      final suara = ref.read(penyediaSuaraPembayaran);
       widget.saatSelesai(hasil);
       if (!hasil.latihan) {
+        // Bunyi tanda berhasil, tidak ditunggu supaya layar selesai tidak tertunda oleh pemutaran.
+        unawaited(suara.Mainkan());
         await sesi.Sinkronkan();
       }
     } on GalatKasir catch (galat) {
