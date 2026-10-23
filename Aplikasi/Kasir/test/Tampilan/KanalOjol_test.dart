@@ -64,6 +64,7 @@ void main() {
         final u = await MasukJual(tester, ukuran);
         await Ketuk(tester, Ubin('Americano Panas'));
         await BukaKeranjangHp(tester, ukuran);
+        await BukaOpsiKeranjang(tester);
 
         expect(find.text('Kanal: Bawa pulang | ketuk untuk mengganti'), findsOneWidget);
         // Americano 15.000 + PBJT 10% = 16.500.
@@ -120,6 +121,7 @@ void main() {
   ) async {
     final u = await MasukJual(tester, const Size(1280, 900), ojol: false);
     await Ketuk(tester, Ubin('Americano Panas'));
+    await BukaOpsiKeranjang(tester);
     expect(find.byKey(const ValueKey('PilihKanal')), findsNothing);
     expect(find.textContaining('Kanal:'), findsNothing);
     await Lepas(tester, u);

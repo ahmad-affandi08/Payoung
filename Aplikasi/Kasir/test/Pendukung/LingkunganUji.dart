@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
-import 'package:flutter/widgets.dart' show Text;
+import 'package:flutter/widgets.dart' show Text, ValueKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -494,3 +494,24 @@ class _LokasiDelegasi implements PenentuLokasi {
   @override
   Future<LokasiPerangkat?> Ambil() => u.lokasi.Ambil();
 }
+
+/// Ringkasan opsi keranjang (kanal, pelanggan, pemesan, ongkir) tertutup secara bawaan; kontrolnya baru ada setelah
+/// baris "Ubah" diketuk. Tes yang mengetuk kontrol opsi memakai helper ini.
+Future<void> BukaOpsiKeranjang(WidgetTester tester) async {
+  final ubah = find.byKey(const ValueKey('UbahOpsiKeranjang'));
+  if (ubah.evaluate().isNotEmpty && find.descendant(of: ubah, matching: find.text('Ubah')).evaluate().isNotEmpty) {
+    await tester.tap(ubah);
+    await tester.pumpAndSettle();
+  }
+}
+
+/// Mengetuk kontrol di ringkasan opsi keranjang: buka ringkasannya dulu bila kontrol belum tampil.
+Future<void> KetukOpsiKeranjang(WidgetTester tester, Finder sasaran) async {
+  if (sasaran.evaluate().isEmpty) await BukaOpsiKeranjang(tester);
+  await tester.tap(sasaran);
+  await tester.pumpAndSettle();
+}
+
+/// Teks ringkasan opsi keranjang (baris "Ubah" yang selalu tampil).
+String RingkasanOpsiKeranjang(WidgetTester tester) =>
+    tester.widget<Text>(find.byKey(const ValueKey('RingkasanOpsi'))).data ?? '';

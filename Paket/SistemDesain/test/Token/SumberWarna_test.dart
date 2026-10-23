@@ -79,6 +79,8 @@ void main() {
       'bahaya': t.bahaya.toARGB32(),
       'info': t.info.toARGB32(),
       'aksen': t.aksen.toARGB32(),
+      'brand-tint': t.brandTint.toARGB32(),
+      'ubin': t.ubin.toARGB32(),
     };
     expect(warnaWeb.keys.toSet(), warnaFlutter.keys.toSet(), reason: 'Nama token web dan Flutter harus sama.');
     for (final entri in warnaFlutter.entries) {

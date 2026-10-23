@@ -87,6 +87,7 @@ void main() {
       final u = await MasukJual(tester, ukuran);
       await Ketuk(tester, Ubin('Americano Panas'));
       await BukaKeranjangHp(tester, ukuran);
+      await BukaOpsiKeranjang(tester);
 
       expect(find.byKey(const ValueKey('JenisPesanan')), findsOneWidget);
       expect(Segmen(tester).selected, {KanalPenjualan.MakanDiTempat}, reason: 'Transaksi baru ikut bawaan outlet.');
@@ -102,6 +103,7 @@ void main() {
       await Ketuk(tester, find.text('Transaksi baru'));
       await Ketuk(tester, Ubin('Americano Panas'));
       await BukaKeranjangHp(tester, ukuran);
+      await BukaOpsiKeranjang(tester);
       expect(Segmen(tester).selected, {KanalPenjualan.MakanDiTempat});
       await Ketuk(tester, find.text('Bawa pulang'));
       expect(Segmen(tester).selected, {KanalPenjualan.BawaPulang});
@@ -117,6 +119,7 @@ void main() {
   ) async {
     final u = await MasukJual(tester, const Size(1280, 900), fnb: false);
     await Ketuk(tester, Ubin('Americano Panas'));
+    await BukaOpsiKeranjang(tester);
     expect(find.byKey(const ValueKey('JenisPesanan')), findsNothing);
     expect(find.byKey(const ValueKey('IsiNamaPemesan')), findsNothing);
     await Bayar(tester);
@@ -135,6 +138,7 @@ void main() {
       final u = await MasukJual(tester, ukuran);
       await Ketuk(tester, Ubin('Americano Panas'));
       await BukaKeranjangHp(tester, ukuran);
+      await BukaOpsiKeranjang(tester);
       await Ketuk(tester, find.byKey(const ValueKey('IsiNamaPemesan')));
       await tester.enterText(find.byKey(const ValueKey('NamaPemesan')), '  Budi Santoso ');
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Simpan'));
@@ -153,6 +157,7 @@ void main() {
       await Ketuk(tester, find.text('Transaksi baru'));
       await Ketuk(tester, Ubin('Americano Panas'));
       await BukaKeranjangHp(tester, ukuran);
+      await BukaOpsiKeranjang(tester);
       expect(find.text('Nama pemesan | ketuk untuk mengisi'), findsOneWidget);
       await Bayar(tester);
       expect(find.text('002'), findsOneWidget);

@@ -20,6 +20,7 @@ class BarisKeranjang extends StatelessWidget {
     this.rincian = const [],
     this.disorot = false,
     this.lencana,
+    this.catatan,
   });
 
   /// Lama transisi sorot (§17.2.7 prinsip 4: sorot baris keranjang 150 ms).
@@ -41,24 +42,51 @@ class BarisKeranjang extends StatelessWidget {
   /// Tanda singkat sebelum nama (misal golongan obat "K"); null = tanpa lencana.
   final LencanaTeks? lencana;
 
+  /// Catatan dapur untuk baris ini. Null/kosong = tampilkan ajakan "+ Catatan" supaya kasir tahu baris bisa
+  /// diketuk untuk menambah catatan.
+  final String? catatan;
+
   @override
   Widget build(BuildContext context) {
     final warna = TokenWarna.AmbilDari(context);
     final teks = Theme.of(context).textTheme;
+    final adaCatatan = catatan != null && catatan!.trim().isNotEmpty;
+
+    Widget TombolJumlah({
+      required IconData ikon,
+      required String tooltip,
+      required VoidCallback aksi,
+      bool utama = false,
+    }) => IconButton(
+      tooltip: tooltip,
+      onPressed: aksi,
+      icon: Icon(ikon, size: TokenJarak.ikonSedang),
+      style: IconButton.styleFrom(
+        backgroundColor: utama ? warna.brand : warna.permukaan,
+        foregroundColor: utama ? warna.permukaan : warna.brand,
+        side: BorderSide(color: utama ? warna.brand : warna.garis),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol)),
+        padding: EdgeInsets.zero,
+      ),
+      constraints: const BoxConstraints.tightFor(width: TokenJarak.targetSentuh, height: TokenJarak.targetSentuh),
+    );
+
     return AnimatedContainer(
       duration: durasiSorot,
-      color: disorot ? warna.brand.withValues(alpha: 0.12) : warna.permukaan,
+      decoration: BoxDecoration(
+        // Sorot pindai memakai apricot 18% + garis tepi kiri 3dp: brand 12% hanya 1,20:1 di atas putih.
+        color: disorot ? warna.aksen.withValues(alpha: 0.18) : warna.permukaan,
+        border: Border(
+          left: BorderSide(color: disorot ? warna.aksen : Colors.transparent, width: 3),
+          bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+        ),
+      ),
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
           onTap: saatDiketuk,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.fromLTRB(TokenJarak.jarak16, TokenJarak.jarak8, TokenJarak.jarak8, 0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-              ),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -72,10 +100,50 @@ class BarisKeranjang extends StatelessWidget {
                     const SizedBox(width: TokenJarak.jarak8),
                     Padding(
                       padding: const EdgeInsets.only(right: TokenJarak.jarak8),
-                      child: TeksUang(total, gaya: teks.labelLarge),
+                      child: TeksUang(total, gaya: teks.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
+                const SizedBox(height: 3),
+                if (adaCatatan)
+                  Row(
+                    children: [
+                      Icon(Icons.edit_note, size: TokenJarak.ikonKecil, color: warna.teksSekunder),
+                      const SizedBox(width: TokenJarak.jarak4),
+                      Expanded(
+                        child: Text(
+                          'Catatan: $catatan',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: teks.bodySmall,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  // Ajakan berteks, bukan warna saja: kasir baru tahu baris bisa diketuk untuk menulis catatan.
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      key: const ValueKey('AjakanCatatan'),
+                      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak8, vertical: 2),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: warna.garis),
+                        borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.note_add_outlined, size: TokenJarak.ikonKecil, color: warna.brand),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Catatan',
+                            style: teks.bodySmall?.copyWith(color: warna.brand, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 Row(
                   children: [
                     Expanded(
@@ -88,15 +156,7 @@ class BarisKeranjang extends StatelessWidget {
                               style: teks.bodySmall,
                             ),
                     ),
-                    IconButton(
-                      tooltip: 'Kurangi $nama',
-                      onPressed: saatKurang,
-                      icon: const Icon(Icons.remove),
-                      constraints: const BoxConstraints.tightFor(
-                        width: TokenJarak.targetSentuh,
-                        height: TokenJarak.targetSentuh,
-                      ),
-                    ),
+                    TombolJumlah(ikon: Icons.remove, tooltip: 'Kurangi $nama', aksi: saatKurang),
                     ConstrainedBox(
                       constraints: const BoxConstraints(minWidth: 32),
                       child: Text(
@@ -105,15 +165,7 @@ class BarisKeranjang extends StatelessWidget {
                         style: teks.labelLarge?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
                       ),
                     ),
-                    IconButton(
-                      tooltip: 'Tambah $nama',
-                      onPressed: saatTambah,
-                      icon: const Icon(Icons.add),
-                      constraints: const BoxConstraints.tightFor(
-                        width: TokenJarak.targetSentuh,
-                        height: TokenJarak.targetSentuh,
-                      ),
-                    ),
+                    TombolJumlah(ikon: Icons.add, tooltip: 'Tambah $nama', aksi: saatTambah, utama: true),
                   ],
                 ),
               ],

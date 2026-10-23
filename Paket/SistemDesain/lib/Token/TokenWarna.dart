@@ -26,12 +26,14 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
     required this.bahaya,
     required this.info,
     required this.aksen,
+    required this.brandTint,
+    required this.ubin,
   });
 
   static const TokenWarna bawaan = TokenWarna(
-    latar: Color(0xFFF7F9F6),
+    latar: Color(0xFFEBF0EC),
     permukaan: Color(0xFFFFFFFF),
-    garis: Color(0xFFE8ECE9),
+    garis: Color(0xFFD2DCD6),
     garisInput: Color(0xFF7A8F90),
     teksUtama: Color(0xFF1F3335),
     teksSekunder: Color(0xFF4F6567),
@@ -42,6 +44,8 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
     bahaya: Color(0xFFB3261E),
     info: Color(0xFF1F5FAD),
     aksen: Color(0xFFF4A261),
+    brandTint: Color(0xFFE4ECE8),
+    ubin: Color(0xFFDFE8E2),
   );
 
   final Color latar;
@@ -64,6 +68,14 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
   /// WCAG AA terpenuhi. Dijaga `SumberWarna_test.dart` agar palet web dan Flutter tetap satu sumber.
   final Color aksen;
 
+  /// Nada brand lembut untuk penanda aktif, lencana jumlah, dan latar pilihan. Nilai tetap (bukan opasitas
+  /// `brand` 12%) supaya batas kontrol tetap terbaca di atas kanvas.
+  final Color brandTint;
+
+  /// Latar area gambar produk di ubin katalog. Berbeda dari [latar] supaya ubin tidak menyatu dengan halaman
+  /// ketika foto produk belum ada.
+  final Color ubin;
+
   /// Token warna dari tema terdekat. Gagal keras bila tema belum memasang [TokenWarna].
   static TokenWarna AmbilDari(BuildContext context) =>
       Theme.of(context).extension<TokenWarna>() ??
@@ -84,6 +96,8 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
     Color? bahaya,
     Color? info,
     Color? aksen,
+    Color? brandTint,
+    Color? ubin,
   }) => TokenWarna(
     latar: latar ?? this.latar,
     permukaan: permukaan ?? this.permukaan,
@@ -98,6 +112,8 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
     bahaya: bahaya ?? this.bahaya,
     info: info ?? this.info,
     aksen: aksen ?? this.aksen,
+    brandTint: brandTint ?? this.brandTint,
+    ubin: ubin ?? this.ubin,
   );
 
   @override
@@ -119,6 +135,8 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
       bahaya: Color.lerp(bahaya, other.bahaya, t)!,
       info: Color.lerp(info, other.info, t)!,
       aksen: Color.lerp(aksen, other.aksen, t)!,
+      brandTint: Color.lerp(brandTint, other.brandTint, t)!,
+      ubin: Color.lerp(ubin, other.ubin, t)!,
     );
   }
 }

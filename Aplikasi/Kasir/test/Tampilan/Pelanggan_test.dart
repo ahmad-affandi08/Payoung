@@ -73,7 +73,7 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.f2);
         await Tunggu(tester);
       } else {
-        await Ketuk(tester, find.textContaining('Pelanggan umum'));
+        await KetukOpsiKeranjang(tester, find.byKey(const ValueKey('PilihPelanggan')));
       }
       expect(find.byType(PanelPelanggan), findsOneWidget);
 
@@ -92,6 +92,7 @@ void main() {
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Simpan & pakai'));
 
       expect(find.byType(PanelPelanggan), findsNothing);
+      await BukaOpsiKeranjang(tester);
       expect(find.text('Budi Santoso | 0813****2222'), findsOneWidget);
       expect(tester.takeException(), isNull);
 
@@ -109,7 +110,7 @@ void main() {
 
       // Transaksi baru kembali ke pelanggan umum.
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Transaksi baru'));
-      expect(find.textContaining('Pelanggan umum'), findsOneWidget);
+      expect(RingkasanOpsiKeranjang(tester), contains('Pelanggan umum'));
       expect(tester.takeException(), isNull);
       await Lepas(tester, u);
     });
@@ -157,12 +158,13 @@ void main() {
     // 25.000 + PBJT 10% = 27.500.
     expect(find.text('Rp 27.500'), findsWidgets);
 
-    await Ketuk(tester, find.textContaining('Pelanggan umum'));
+    await KetukOpsiKeranjang(tester, find.byKey(const ValueKey('PilihPelanggan')));
     await tester.enterText(find.widgetWithText(TextField, 'Cari nama atau nomor HP (min. 3 huruf)'), 'ani');
     await Tunggu(tester, const Duration(milliseconds: 600));
     expect(find.text('0812****7890 | Gold | 120 poin'), findsOneWidget);
     await Ketuk(tester, find.text('Ani Rahmawati'));
 
+    await BukaOpsiKeranjang(tester);
     expect(find.text('Ani Rahmawati | 0812****7890 | Gold'), findsOneWidget);
     // Harga Gold 22.000 + PBJT 10% = 24.200.
     expect(find.text('Rp 24.200'), findsWidgets);
@@ -188,12 +190,12 @@ void main() {
       },
     );
     await Ketuk(tester, find.byWidgetPredicate((w) => w is UbinProduk && w.nama.startsWith('Croissant')));
-    await Ketuk(tester, find.textContaining('Pelanggan umum'));
+    await KetukOpsiKeranjang(tester, find.byKey(const ValueKey('PilihPelanggan')));
     await tester.enterText(find.widgetWithText(TextField, 'Cari nama atau nomor HP (min. 3 huruf)'), 'ani');
     await Tunggu(tester, const Duration(milliseconds: 600));
     await Ketuk(tester, find.text('Ani Rahmawati'));
 
-    await Ketuk(tester, find.textContaining('Ani Rahmawati | 0812****7890'));
+    await KetukOpsiKeranjang(tester, find.textContaining('Ani Rahmawati | 0812****7890'));
     await Ketuk(tester, find.text('Tukar poin'));
     expect(find.text('Saldo 120 poin | 1 poin = Rp 100 | minimal 10 poin'), findsOneWidget);
     // Sisa belanja 25.000 → maksimal min(120, 250) = 120 poin.
@@ -212,7 +214,7 @@ void main() {
     expect(find.text('Rp 22.000'), findsWidgets);
 
     u.server.penangan = (p) async => throw http.ClientException('offline');
-    await Ketuk(tester, find.textContaining('Ani Rahmawati | 0812****7890'));
+    await KetukOpsiKeranjang(tester, find.textContaining('Ani Rahmawati | 0812****7890'));
     await Ketuk(tester, find.text('Tukar poin'));
     expect(find.text('Tukar poin perlu koneksi internet. Coba lagi saat perangkat online.'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -245,7 +247,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await Tunggu(tester);
 
-    await Ketuk(tester, find.textContaining('Pelanggan umum'));
+    await KetukOpsiKeranjang(tester, find.byKey(const ValueKey('PilihPelanggan')));
     await tester.enterText(find.widgetWithText(TextField, 'Cari nama atau nomor HP (min. 3 huruf)'), 'makmur');
     await Tunggu(tester, const Duration(milliseconds: 600));
     await Ketuk(tester, find.text('Toko Makmur Jaya'));

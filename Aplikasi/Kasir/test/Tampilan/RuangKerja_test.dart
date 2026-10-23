@@ -104,8 +104,8 @@ void main() {
       await Tunggu(tester);
       expect(find.byType(PanelTugas), findsNothing);
 
-      // Ketuk bilah status → Status sinkron.
-      await tester.tap(find.text('Printer belum diatur'));
+      // Bilah status menempel di bilah atas (bukan kaki layar); detail dibuka dari menu Sinkron.
+      await tester.tap(find.text('Sinkron'));
       await Tunggu(tester);
       expect(find.text('Status sinkron'), findsOneWidget);
       expect(find.text('1 data belum terkirim.'), findsOneWidget);

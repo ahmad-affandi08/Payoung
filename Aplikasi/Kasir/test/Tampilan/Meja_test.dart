@@ -275,6 +275,7 @@ void main() {
       await Ketuk(tester, find.text('Meja'));
       await Ketuk(tester, find.text('T-01'));
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Buka pesanan'));
+      await BukaOpsiKeranjang(tester);
 
       await Ketuk(
         tester,

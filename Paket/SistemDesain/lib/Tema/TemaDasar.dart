@@ -29,8 +29,9 @@ ThemeData BuatTema({KepadatanTipografi kepadatan = KepadatanTipografi.Nyaman}) {
   // Radius 6 untuk kontrol, 8 untuk panel/dialog; tanpa bayangan dekoratif (PRD §17.6.4).
   final bentukKontrol = RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol));
   final bentukPanel = RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusPanel));
-  // Penanda posisi aktif navigasi: brand lembut di belakang ikon brand (PRD §17.6.3).
-  final penandaAktif = warna.brand.withValues(alpha: 0.12);
+  // Penanda posisi aktif navigasi: nada brand tetap di belakang ikon brand (PRD §17.6.3). Opasitas 12% terlalu
+  // pucat di atas permukaan putih sehingga posisi aktif sulit ditemukan.
+  final penandaAktif = warna.brandTint;
   final gayaLabel = skala.label.KeGaya();
   TextStyle GayaLabelNavigasi(bool aktif) => gayaLabel.copyWith(color: aktif ? warna.brand : warna.teksSekunder);
   return ThemeData(

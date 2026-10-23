@@ -84,6 +84,7 @@ void main() {
       if (ukuran.width < 600) {
         await Ketuk(tester, find.textContaining('Keranjang |').first);
       }
+      await BukaOpsiKeranjang(tester);
       expect(find.byKey(const ValueKey('IsiOngkir')), findsNothing, reason: 'Belum kanal Antar.');
 
       await Ketuk(tester, find.byKey(const ValueKey('PilihKanal')));

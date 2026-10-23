@@ -46,8 +46,9 @@ import 'PanelWajibPembaruan.dart';
 import 'SidebarRuangKerja.dart';
 import 'TemaNavigasiRuangKerja.dart';
 
-/// Bingkai Ruang Kerja Kasir (PRD §17.2.7, D-16): bilah atas, rel navigasi (bilah bawah di HP), area kerja, dan bilah
-/// status. Membungkus semua layar setelah shift terbuka; layar fitur hanya mengisi area kerja. Tugas rutin (kas
+/// Bingkai Ruang Kerja Kasir (PRD §17.2.7, D-16): bilah atas dengan bilah status ringkas menempel di bawahnya, rel
+/// navigasi (bilah bawah di HP), dan area kerja. Membungkus semua layar setelah shift terbuka; layar fitur hanya
+/// mengisi area kerja. Tugas rutin (kas
 /// masuk/keluar/setoran) dibuka sebagai panel samping (≥ 1024dp) atau lembar bawah di atas area kerja.
 ///
 /// Selama bingkai ini tampil (shift terbuka): layar dijaga tetap menyala, outbox dikirim tiap 30 detik, dan layar
@@ -711,6 +712,9 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
               saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
               saatKunci: ref.read(penyediaSesi.notifier).Kunci,
             ),
+            // Status menempel di bawah bilah atas (varian gelap 28dp), bukan pita putih di kaki layar: kaki layar
+            // dipakai untuk aksi, dan pita putih di sana terbaca sebagai footer yang memakan ruang kerja.
+            BilahStatus(item: _AmbilItemStatus(), gelap: true),
             // P-10 PGL-19: pengumuman & jadwal pemeliharaan dari pengelola platform.
             if (_konfigurasi case final k? when k.pengumuman.isNotEmpty) BannerPengumuman(pengumuman: k.pengumuman),
             // K-23: mode latihan selalu terlihat.
@@ -727,11 +731,6 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
                   Expanded(child: RepaintBoundary(child: _BangunAreaKerja(item, indeks, lebar))),
                 ],
               ),
-            ),
-            BilahStatus(
-              item: _AmbilItemStatus(),
-              petunjuk: 'Buka status sinkron',
-              saatDiketuk: () => _Buka(TujuanRuangKerja.StatusSinkron),
             ),
           ],
         ),

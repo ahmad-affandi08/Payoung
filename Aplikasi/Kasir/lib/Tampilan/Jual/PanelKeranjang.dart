@@ -116,7 +116,6 @@ class PanelKeranjang extends StatelessWidget {
       b.diskon!.persen != null ? b.diskon!.AmbilLabel() : 'Diskon ${b.diskon!.jumlah!.FormatRupiah()}',
     if (b.nomorSeri.isNotEmpty) 'No. seri: ${b.nomorSeri.join(', ')}',
     if (b.racikan case final r?) 'Racikan ${r.nama} | ${r.Ringkasan}',
-    if (b.catatan != null) 'Catatan: ${b.catatan}',
   ];
 
   @override
@@ -128,6 +127,29 @@ class PanelKeranjang extends StatelessWidget {
     final gayaTombolKecil = OutlinedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak8),
     );
+    final kanalKeranjang = LayananPenjualan.AmbilKanal(keranjang);
+    final adaJenisPesanan = jenisPesanan.length >= 2 && saatJenisPesanan != null;
+    // Ringkasan satu baris supaya lima baris opsi tidak mendorong daftar item keluar layar 800dp (mockup 03).
+    final bagianRingkasan = <String>[
+      if (adaJenisPesanan) LayananPenjualan.AmbilLabelKanal(kanalKeranjang),
+      if (saatKanal != null && !(adaJenisPesanan && LayananPenjualan.kanalPlatform.contains(kanalKeranjang)))
+        'Kanal: ${LayananPenjualan.AmbilLabelKanal(kanalKeranjang)}',
+      if (saatPelanggan != null) keranjang.pelanggan?.nama ?? 'Pelanggan umum',
+      if (saatNamaPemesan != null && keranjang.namaPemesan != null) 'Pemesan: ${keranjang.namaPemesan}',
+      if (saatOngkir != null && !keranjang.biayaKirim.BernilaiNol()) 'Ongkir ${keranjang.biayaKirim.FormatRupiah()}',
+      if (saatLaundry != null && keranjang.laundry != null) 'Laundry ${keranjang.laundry!.jenisLayanan}',
+      if (saatRacikan != null) 'Racikan obat',
+      if (kursus.isNotEmpty && kursusDipilih != null) 'Kursus: $kursusDipilih',
+    ];
+    final adaOpsi =
+        adaJenisPesanan ||
+        (kursus.isNotEmpty && saatKursus != null) ||
+        saatNamaPemesan != null ||
+        saatKanal != null ||
+        saatOngkir != null ||
+        saatPelanggan != null ||
+        saatRacikan != null ||
+        saatLaundry != null;
 
     return ColoredBox(
       color: warna.permukaan,
@@ -170,309 +192,345 @@ class PanelKeranjang extends StatelessWidget {
                 ],
               ),
             ),
-          if (jenisPesanan.length >= 2 && saatJenisPesanan != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-                ),
-              ),
-              child: Semantics(
-                label: 'Jenis pesanan',
-                container: true,
-                child: SegmentedButton<KanalPenjualan>(
-                  key: const ValueKey('JenisPesanan'),
-                  showSelectedIcon: false,
-                  emptySelectionAllowed: true,
-                  segments: [
-                    for (final j in jenisPesanan)
-                      ButtonSegment(
-                        value: j,
-                        label: Text(LayananPenjualan.AmbilLabelKanal(j), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        icon: Icon(switch (j) {
-                          KanalPenjualan.MakanDiTempat => Icons.restaurant_outlined,
-                          KanalPenjualan.Antar => Icons.delivery_dining_outlined,
-                          _ => Icons.shopping_bag_outlined,
-                        }),
+          if (adaOpsi)
+            _PanelOpsi(
+              ringkasan: bagianRingkasan.isEmpty ? 'Atur pesanan' : bagianRingkasan.join(' | '),
+              ikon: adaJenisPesanan ? Icons.restaurant_outlined : Icons.tune,
+              children: [
+                if (jenisPesanan.length >= 2 && saatJenisPesanan != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                       ),
-                  ],
-                  selected: {
-                    if (jenisPesanan.contains(LayananPenjualan.AmbilKanal(keranjang)))
-                      LayananPenjualan.AmbilKanal(keranjang),
-                  },
-                  onSelectionChanged: (pilih) {
-                    if (pilih.isNotEmpty) {
-                      saatJenisPesanan!(pilih.first);
-                    }
-                  },
-                ),
-              ),
-            ),
-          if (kursus.isNotEmpty && saatKursus != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Semantics(
-                    label: 'Kursus item baru',
-                    container: true,
-                    child: SegmentedButton<String>(
-                      key: const ValueKey('KursusPesanan'),
-                      showSelectedIcon: false,
-                      emptySelectionAllowed: true,
-                      segments: [
-                        for (final k in kursus)
-                          ButtonSegment(
-                            value: k,
-                            label: Text(k, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                    child: Semantics(
+                      label: 'Jenis pesanan',
+                      container: true,
+                      child: SegmentedButton<KanalPenjualan>(
+                        key: const ValueKey('JenisPesanan'),
+                        showSelectedIcon: false,
+                        emptySelectionAllowed: true,
+                        segments: [
+                          for (final j in jenisPesanan)
+                            ButtonSegment(
+                              value: j,
+                              label: Text(
+                                LayananPenjualan.AmbilLabelKanal(j),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              icon: Icon(switch (j) {
+                                KanalPenjualan.MakanDiTempat => Icons.restaurant_outlined,
+                                KanalPenjualan.Antar => Icons.delivery_dining_outlined,
+                                _ => Icons.shopping_bag_outlined,
+                              }),
+                            ),
+                        ],
+                        selected: {
+                          if (jenisPesanan.contains(LayananPenjualan.AmbilKanal(keranjang)))
+                            LayananPenjualan.AmbilKanal(keranjang),
+                        },
+                        onSelectionChanged: (pilih) {
+                          if (pilih.isNotEmpty) {
+                            saatJenisPesanan!(pilih.first);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                if (kursus.isNotEmpty && saatKursus != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Semantics(
+                          label: 'Kursus item baru',
+                          container: true,
+                          child: SegmentedButton<String>(
+                            key: const ValueKey('KursusPesanan'),
+                            showSelectedIcon: false,
+                            emptySelectionAllowed: true,
+                            segments: [
+                              for (final k in kursus)
+                                ButtonSegment(
+                                  value: k,
+                                  label: Text(k, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ),
+                            ],
+                            selected: {?kursusDipilih},
+                            onSelectionChanged: (pilih) => saatKursus!(pilih.isEmpty ? null : pilih.first),
                           ),
+                        ),
                       ],
-                      selected: {?kursusDipilih},
-                      onSelectionChanged: (pilih) => saatKursus!(pilih.isEmpty ? null : pilih.first),
                     ),
                   ),
-                  for (final d in kursusDitahan) ...[
-                    const SizedBox(height: TokenJarak.jarak8),
-                    SizedBox(
-                      height: TokenJarak.targetSentuh,
-                      child: OutlinedButton.icon(
-                        key: ValueKey('KirimKursus-${d.kursus}'),
-                        onPressed: saatKirimKursus == null ? null : () => saatKirimKursus!(d.kursus),
-                        icon: const Icon(Icons.soup_kitchen_outlined),
-                        label: Text('Kirim ${d.kursus} | ${d.jumlah} item'),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          if (saatNamaPemesan != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                key: const ValueKey('IsiNamaPemesan'),
-                onTap: saatNamaPemesan,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.campaign_outlined,
-                        size: TokenJarak.ikonSedang,
-                        color: keranjang.namaPemesan == null ? warna.teksSekunder : warna.brand,
-                      ),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          keranjang.namaPemesan == null
-                              ? 'Nama pemesan | ketuk untuk mengisi'
-                              : 'Pemesan: ${keranjang.namaPemesan} | ketuk untuk mengubah',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatNamaPemesan != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      key: const ValueKey('IsiNamaPemesan'),
+                      onTap: saatNamaPemesan,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.campaign_outlined,
+                              size: TokenJarak.ikonSedang,
+                              color: keranjang.namaPemesan == null ? warna.teksSekunder : warna.brand,
+                            ),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                keranjang.namaPemesan == null
+                                    ? 'Nama pemesan | ketuk untuk mengisi'
+                                    : 'Pemesan: ${keranjang.namaPemesan} | ketuk untuk mengubah',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (saatKanal != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                key: const ValueKey('PilihKanal'),
-                onTap: saatKanal,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        LayananPenjualan.kanalPlatform.contains(LayananPenjualan.AmbilKanal(keranjang))
-                            ? Icons.delivery_dining
-                            : Icons.storefront_outlined,
-                        size: TokenJarak.ikonSedang,
-                        color: keranjang.kanal == null ? warna.teksSekunder : warna.brand,
-                      ),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          'Kanal: ${LayananPenjualan.AmbilLabelKanal(LayananPenjualan.AmbilKanal(keranjang))} | ketuk untuk mengganti',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatKanal != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      key: const ValueKey('PilihKanal'),
+                      onTap: saatKanal,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              LayananPenjualan.kanalPlatform.contains(LayananPenjualan.AmbilKanal(keranjang))
+                                  ? Icons.delivery_dining
+                                  : Icons.storefront_outlined,
+                              size: TokenJarak.ikonSedang,
+                              color: keranjang.kanal == null ? warna.teksSekunder : warna.brand,
+                            ),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                'Kanal: ${LayananPenjualan.AmbilLabelKanal(LayananPenjualan.AmbilKanal(keranjang))} | ketuk untuk mengganti',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (saatOngkir != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                key: const ValueKey('IsiOngkir'),
-                onTap: saatOngkir,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.local_shipping_outlined,
-                        size: TokenJarak.ikonSedang,
-                        color: keranjang.biayaKirim.BernilaiNol() ? warna.teksSekunder : warna.brand,
-                      ),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          keranjang.biayaKirim.BernilaiNol()
-                              ? 'Tanpa ongkir | ketuk untuk mengisi'
-                              : 'Ongkir ${keranjang.biayaKirim.FormatRupiah()} | ketuk untuk mengubah',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatOngkir != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      key: const ValueKey('IsiOngkir'),
+                      onTap: saatOngkir,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.local_shipping_outlined,
+                              size: TokenJarak.ikonSedang,
+                              color: keranjang.biayaKirim.BernilaiNol() ? warna.teksSekunder : warna.brand,
+                            ),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                keranjang.biayaKirim.BernilaiNol()
+                                    ? 'Tanpa ongkir | ketuk untuk mengisi'
+                                    : 'Ongkir ${keranjang.biayaKirim.FormatRupiah()} | ketuk untuk mengubah',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (saatPelanggan != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                onTap: saatPelanggan,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        keranjang.pelanggan == null ? Icons.person_outline : Icons.person,
-                        size: TokenJarak.ikonSedang,
-                        color: keranjang.pelanggan == null ? warna.teksSekunder : warna.brand,
-                      ),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          keranjang.pelanggan == null
-                              ? 'Pelanggan umum | ketuk untuk memilih (F2)'
-                              : [
-                                  keranjang.pelanggan!.nama,
-                                  keranjang.pelanggan!.noHpSamar,
-                                  if (keranjang.pelanggan!.namaTier != null) keranjang.pelanggan!.namaTier!,
-                                ].join(' | '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatPelanggan != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      key: const ValueKey('PilihPelanggan'),
+                      onTap: saatPelanggan,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              keranjang.pelanggan == null ? Icons.person_outline : Icons.person,
+                              size: TokenJarak.ikonSedang,
+                              color: keranjang.pelanggan == null ? warna.teksSekunder : warna.brand,
+                            ),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                keranjang.pelanggan == null
+                                    ? 'Pelanggan umum | ketuk untuk memilih (F2)'
+                                    : [
+                                        keranjang.pelanggan!.nama,
+                                        keranjang.pelanggan!.noHpSamar,
+                                        if (keranjang.pelanggan!.namaTier != null) keranjang.pelanggan!.namaTier!,
+                                      ].join(' | '),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (saatRacikan != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                onTap: saatRacikan,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.medication_outlined, size: TokenJarak.ikonSedang, color: warna.teksSekunder),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          'Buat racikan obat | ketuk untuk menyusun',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatRacikan != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      onTap: saatRacikan,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.medication_outlined, size: TokenJarak.ikonSedang, color: warna.teksSekunder),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                'Buat racikan obat | ketuk untuk menyusun',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (saatLaundry != null)
-            Material(
-              color: warna.permukaan,
-              child: InkWell(
-                onTap: saatLaundry,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
-                  padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.local_laundry_service_outlined,
-                        size: TokenJarak.ikonSedang,
-                        color: keranjang.laundry == null ? warna.teksSekunder : warna.brand,
-                      ),
-                      const SizedBox(width: TokenJarak.jarak8),
-                      Expanded(
-                        child: Text(
-                          keranjang.laundry == null
-                              ? 'Tanpa tiket laundry | ketuk untuk mengisi'
-                              : 'Laundry ${keranjang.laundry!.jenisLayanan} | ${keranjang.laundry!.RingkasIsi()}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodyMedium,
+                if (saatLaundry != null)
+                  Material(
+                    color: warna.permukaan,
+                    child: InkWell(
+                      onTap: saatLaundry,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TokenJarak.jarak16,
+                          vertical: TokenJarak.jarak8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.local_laundry_service_outlined,
+                              size: TokenJarak.ikonSedang,
+                              color: keranjang.laundry == null ? warna.teksSekunder : warna.brand,
+                            ),
+                            const SizedBox(width: TokenJarak.jarak8),
+                            Expanded(
+                              child: Text(
+                                keranjang.laundry == null
+                                    ? 'Tanpa tiket laundry | ketuk untuk mengisi'
+                                    : 'Laundry ${keranjang.laundry!.jenisLayanan} | ${keranjang.laundry!.RingkasIsi()}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: teks.bodyMedium,
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: warna.teksSekunder),
+                          ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: warna.teksSekunder),
-                    ],
+                    ),
                   ),
+              ],
+            ),
+          for (final d in kursusDitahan)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                TokenJarak.jarak16,
+                TokenJarak.jarak8,
+                TokenJarak.jarak16,
+                TokenJarak.jarak8,
+              ),
+              child: SizedBox(
+                height: TokenJarak.targetSentuh,
+                child: OutlinedButton.icon(
+                  key: ValueKey('KirimKursus-${d.kursus}'),
+                  onPressed: saatKirimKursus == null ? null : () => saatKirimKursus!(d.kursus),
+                  icon: const Icon(Icons.soup_kitchen_outlined),
+                  label: Text('Kirim ${d.kursus} | ${d.jumlah} item'),
                 ),
               ),
             ),
@@ -512,6 +570,7 @@ class PanelKeranjang extends StatelessWidget {
                               if (p.diskonBaris[i] case final diskon?)
                                 'Promo ${hitungan!.AmbilNamaPromo(p)} −${diskon.FormatRupiah()}',
                           ],
+                          catatan: keranjang.baris[i].catatan,
                           saatDiketuk: () => saatUbahBaris(keranjang.baris[i].uuid),
                           saatTambah: () => saatTambah(keranjang.baris[i].uuid),
                           saatKurang: () => saatKurang(keranjang.baris[i].uuid),
@@ -695,5 +754,95 @@ abstract final class RingkasanTotal {
         ),
       ),
     ];
+  }
+}
+
+/// Opsi pesanan (kanal, pelanggan, pemesan, ongkir, laundry, racikan) diringkas satu baris; rinciannya dibuka lewat
+/// "Ubah". Lima baris opsi 48 dp mendorong item keempat ke luar layar 800 dp (mockup desain 03).
+class _PanelOpsi extends StatefulWidget {
+  const _PanelOpsi({required this.ringkasan, required this.ikon, required this.children});
+
+  final String ringkasan;
+  final IconData ikon;
+  final List<Widget> children;
+
+  @override
+  State<_PanelOpsi> createState() => _PanelOpsiState();
+}
+
+class _PanelOpsiState extends State<_PanelOpsi> {
+  bool _terbuka = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final warna = TokenWarna.AmbilDari(context);
+    final teks = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          button: true,
+          expanded: _terbuka,
+          label: _terbuka ? 'Tutup pengaturan pesanan' : 'Atur pesanan: ${widget.ringkasan}',
+          excludeSemantics: true,
+          child: Material(
+            color: warna.brandTint,
+            child: InkWell(
+              key: const ValueKey('UbahOpsiKeranjang'),
+              onTap: () => setState(() => _terbuka = !_terbuka),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: TokenJarak.targetSentuh),
+                padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(widget.ikon, size: TokenJarak.ikonSedang, color: warna.brand),
+                    const SizedBox(width: TokenJarak.jarak8),
+                    Expanded(
+                      child: Text(
+                        widget.ringkasan,
+                        key: const ValueKey('RingkasanOpsi'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: teks.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(width: TokenJarak.jarak8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak8, vertical: TokenJarak.jarak4),
+                      decoration: BoxDecoration(
+                        color: warna.permukaan,
+                        border: Border.all(color: warna.garisInput, width: TokenJarak.tebalGaris),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _terbuka ? 'Tutup' : 'Ubah',
+                            style: teks.labelMedium?.copyWith(color: warna.brand, fontWeight: FontWeight.w700),
+                          ),
+                          Icon(
+                            _terbuka ? Icons.expand_less : Icons.chevron_right,
+                            size: TokenJarak.ikonKecil,
+                            color: warna.brand,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_terbuka) ...widget.children,
+      ],
+    );
   }
 }

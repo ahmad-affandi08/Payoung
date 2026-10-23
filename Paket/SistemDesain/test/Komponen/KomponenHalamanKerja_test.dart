@@ -34,7 +34,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('KeadaanKosong: ikon + judul + keterangan + aksi, tidak meluap di 360dp', (tester) async {
+  testWidgets('KeadaanKosong: ilustrasi + judul + keterangan + aksi, tidak meluap di 360dp', (tester) async {
     var ditekan = 0;
     await Pasang(
       tester,
@@ -45,7 +45,8 @@ void main() {
         aksi: FilledButton(onPressed: () => ditekan++, child: const Text('Mulai jual')),
       ),
     );
-    expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
+    // Bentuk penuh menampilkan ilustrasi merek (D-68, D-85); ikon hanya cadangan bila aset gagal dimuat.
+    expect(find.byKey(const ValueKey('IlustrasiKosong')), findsOneWidget);
     await tester.tap(find.text('Mulai jual'));
     expect(ditekan, 1);
     expect(tester.takeException(), isNull);

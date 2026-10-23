@@ -77,6 +77,7 @@ void main() {
     testWidgets('isi tiket laundry dari keranjang lalu bayar (${ukuran.width.toInt()} dp)', (tester) async {
       final u = await Masuk(tester, ukuran);
       await Ketuk(tester, find.byWidgetPredicate((w) => w is UbinProduk && w.nama.startsWith('Americano')));
+      await BukaOpsiKeranjang(tester);
       await Ketuk(tester, find.text('Tanpa tiket laundry | ketuk untuk mengisi'));
 
       await Ketuk(tester, find.widgetWithText(ChoiceChip, 'Express | 24 jam'));
@@ -97,6 +98,7 @@ void main() {
 
       final wadah = ProviderScope.containerOf(tester.element(find.byType(RuangKerja)));
       expect(wadah.read(penyediaKeranjang).laundry?.RingkasIsi(), '3,5 kg | Bed cover ×1');
+      await BukaOpsiKeranjang(tester);
       expect(find.text('Laundry Express | 3,5 kg | Bed cover ×1'), findsOneWidget);
 
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Bayar').first);

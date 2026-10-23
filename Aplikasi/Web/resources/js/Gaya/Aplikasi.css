@@ -25,7 +25,7 @@
 
 /* ============================================================================================
  * 1. UBAH WARNA DI SINI
- *    Palet dasar merek Payoung (D-61, §17.6.3; sumber Spesifikasi/Merek; Muted Teal & Apricot). Ke-12 nilai ini juga ada di Flutter
+ *    Palet dasar merek Payoung (D-61, §17.6.3; sumber Spesifikasi/Merek; Muted Teal & Apricot). Ke-15 nilai ini juga ada di Flutter
  *    (Paket/SistemDesain/lib/Token/TokenWarna.dart, nama sama dalam camelCase) dan dicek sama oleh
  *    Paket/SistemDesain/test/Token/SumberWarna_test.dart: ubah keduanya bersamaan.
  *    Setiap token menjadi utilitas Tailwind: bg-latar, text-teks-sekunder, border-garis, dst.
@@ -35,9 +35,9 @@
     /* Matikan palet bawaan Tailwind: hanya token di file ini yang boleh dipakai. */
     --color-*: initial;
 
-    --color-latar: #f7f9f6; /* latar halaman (Dasar Cream) */
+    --color-latar: #ebf0ec; /* kanvas halaman: lebih gelap dari permukaan supaya panel putih terbaca */
     --color-permukaan: #ffffff; /* panel, tabel, dialog, input; juga teks di atas brand/bahaya */
-    --color-garis: #e8ece9; /* pemisah (Pendukung Sage) */
+    --color-garis: #d2dcd6; /* pemisah & tepi panel (kontras 1,37:1 di atas permukaan) */
     --color-garis-input: #7a8f90; /* tepi input & kontrol (kontras >= 3:1) */
     --color-teks-utama: #1f3335; /* Teal Tinta (teal sangat gelap; 12,5:1 di atas latar) */
     --color-teks-sekunder: #4f6567;
@@ -52,6 +52,10 @@
      * (6,4:1), putih dilarang (2,1:1). Sebagai teks hanya sah di atas brand-gelap (5,1:1), tidak pernah di atas
      * permukaan/latar. */
     --color-aksen: #f4a261;
+    /* Nada brand lembut (penanda aktif, lencana jumlah) dan latar area gambar produk. Nilai tetap, bukan
+     * color-mix, karena keduanya juga dipakai Flutter lewat TokenWarna.brandTint & TokenWarna.ubin. */
+    --color-brand-tint: #e4ece8;
+    --color-ubin: #dfe8e2;
 }
 
 /* ============================================================================================

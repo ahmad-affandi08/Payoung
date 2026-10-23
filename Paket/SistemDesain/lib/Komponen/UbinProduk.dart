@@ -110,8 +110,10 @@ class UbinProduk extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
+                    // Area gambar memakai nada sendiri (`ubin`), bukan `latar`: dulu keduanya sama sehingga ubin
+                    // produk tanpa foto menyatu dengan kanvas dan batasnya hilang.
                     ColoredBox(
-                      color: warna.latar,
+                      color: warna.ubin,
                       child:
                           gambar ??
                           Center(
@@ -162,7 +164,9 @@ class UbinProduk extends StatelessWidget {
                           child: TeksUang(
                             hargaTeks,
                             rataKanan: false,
-                            gaya: teks.labelLarge?.copyWith(color: warnaTeks, fontWeight: FontWeight.w700),
+                            // Harga adalah angka kedua terpenting di layar Jual: 16/700, bukan 14/600 yang tenggelam
+                            // di bawah nama produk.
+                            gaya: teks.bodyLarge?.copyWith(color: warnaTeks, fontWeight: FontWeight.w700),
                           ),
                         ),
                     ],

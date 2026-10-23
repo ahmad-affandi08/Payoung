@@ -71,6 +71,7 @@ void main() {
       if (ukuran.width < 600) {
         await Ketuk(tester, find.textContaining('Keranjang |').first);
       }
+      await BukaOpsiKeranjang(tester);
       await Ketuk(tester, find.text('Buat racikan obat | ketuk untuk menyusun'));
       expect(find.byType(PanelRacikan), findsOneWidget);
 
