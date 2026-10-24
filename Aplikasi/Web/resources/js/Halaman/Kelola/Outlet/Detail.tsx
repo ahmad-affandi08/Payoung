@@ -81,6 +81,9 @@ export default function HalamanDetailOutlet({
     const bolehKelola = PunyaIzinTenant(props.Akses, IzinTenant.OutletKelola);
     // D-183: meja, kios, dan jenis pesanan adalah fitur F&B; sektor lain tidak melihatnya kecuali outlet ini sudah memakainya.
     const sektorFnb = PakaiSektor(['FNB']);
+    // Jam operasional hanya berdampak ke toko online (pesanan di luar jam ditolak); sektor yang tidak menerima pesanan online
+    // (salon, bengkel, gym, cuci kendaraan, jasa profesional) tidak memerlukannya.
+    const sektorTokoOnline = PakaiSektor(['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN']);
     const alamat = `/kelola/outlet/${Outlet.Uuid}`;
     const namaKota = Kota.find((baris) => baris.Kode === Outlet.KodeKota)?.Nama ?? 'Belum diisi';
 
@@ -162,7 +165,7 @@ export default function HalamanDetailOutlet({
                 />
             ) : null}
 
-            {JamOperasional ? (
+            {JamOperasional && (sektorTokoOnline || JamOperasional.Diatur) ? (
                 <JamOperasionalOutlet
                     alamatOutlet={alamat}
                     data={JamOperasional}

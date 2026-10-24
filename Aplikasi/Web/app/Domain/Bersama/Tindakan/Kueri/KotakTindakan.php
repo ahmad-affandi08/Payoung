@@ -7,6 +7,7 @@ namespace App\Domain\Bersama\Tindakan\Kueri;
 use App\Domain\Bersama\Tindakan\Data\DataButirTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -25,6 +26,11 @@ final class KotakTindakan
         $butir = [];
 
         foreach ($this->AmbilPenyedia() as $penyedia) {
+            // D-183: penyedia khusus sektor dilewati untuk tenant yang tidak memakai sektornya.
+            if ($penyedia instanceof TerbatasSektor && ! $konteks->CekSesuaiSektor($penyedia->AmbilSektor(), $penyedia->AmbilKecualiSektor())) {
+                continue;
+            }
+
             foreach ($penyedia->Kumpulkan($konteks) as $b) {
                 if ($b->jumlah > 0) {
                     $butir[] = $b;

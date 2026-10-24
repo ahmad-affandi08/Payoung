@@ -266,6 +266,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 href: '/kelola/karyawan/komisi',
                 izin: IzinTenant.KaryawanLihat,
                 fitur: 'karyawan.komisi',
+                sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
             },
             {
                 label: 'Aturan kehadiran',

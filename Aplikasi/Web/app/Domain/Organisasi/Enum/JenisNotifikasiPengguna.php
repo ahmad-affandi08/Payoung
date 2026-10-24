@@ -27,6 +27,7 @@ enum JenisNotifikasiPengguna: string
     {
         return match ($this) {
             self::StokKedaluwarsa => ['RTL-PHR', 'FNB', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR'],
+            self::PesananOnline => ['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN'],
             default => null,
         };
     }

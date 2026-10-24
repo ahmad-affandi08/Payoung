@@ -395,7 +395,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(pesananOnline: true))
           : null,
       // D-48: reservasi hanya untuk usaha jasa (SVC), servis hanya untuk bengkel (SVC-WRK).
-      saatReservasi: _SektorCocok(const ['SVC-SLN', 'SVC-FIT', 'SVC-GEN', 'SVC-WRK', 'SVC-CWS'])
+      saatReservasi: _SektorCocok(const ['SVC-SLN', 'SVC-FIT', 'SVC-GEN', 'SVC-WRK', 'SVC-CWS', 'RTL-PET'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(reservasi: true))
           : null,
       // D-145: reservasi meja + uang muka hanya untuk usaha FnB.
@@ -404,7 +404,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       saatReservasiMeja: _SektorFnbDiketahui()
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(reservasiMeja: true))
           : null,
-      saatServis: _SektorCocok(const ['SVC-WRK'])
+      saatServis: _SektorCocok(const ['SVC-WRK', 'RTL-ELC'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(servis: true))
           : null,
       saatCucian: ref.watch(penyediaKonteksPenjualan).value?.laundry.aktif == true && _SektorCocok(const ['SVC-LDR'])

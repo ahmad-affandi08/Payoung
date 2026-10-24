@@ -73,6 +73,20 @@ describe('Pengaturan menurut sektor (D-183)', () => {
         expect(Ada('Stasiun dapur')).toBe(false);
     });
 
+    it('komisi staf lazim di salon, restoran, butik, toko HP, toko bangunan, dan grosir, bukan di sayur/buah atau apotek', () => {
+        for (const sektor of ['SVC-SLN', 'FNB-RST', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS-DST']) {
+            Muat([sektor]);
+            expect(Ada('Aturan komisi'), sektor).toBe(true);
+            cleanup();
+        }
+
+        for (const sektor of ['RTL-FRS', 'RTL-PHR']) {
+            Muat([sektor]);
+            expect(Ada('Aturan komisi'), sektor).toBe(false);
+            cleanup();
+        }
+    });
+
     it('sektor belum diketahui menampilkan semuanya (tidak ada yang hilang diam-diam)', () => {
         Muat([]);
 

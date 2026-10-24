@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use App\Domain\Bersama\Tindakan\Layanan\PembuatButirTinjauan;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\MutasiKas;
@@ -22,9 +23,19 @@ use Illuminate\Database\Eloquent\Builder;
  * - shift & kas masuk/keluar dari kasir yang diterima dengan `PerluTinjauan` dan belum ditandai dicek;
  * - shift yang masih terbuka lebih dari [JAM_SHIFT_LAMA] jam (lupa ditutup: kas & laporan harian belum final).
  */
-final class PenyediaTindakanKasir implements PenyediaTindakan
+final class PenyediaTindakanKasir implements PenyediaTindakan, TerbatasSektor
 {
     public const JAM_SHIFT_LAMA = 24;
+
+    public function AmbilSektor(): ?array
+    {
+        return null;
+    }
+
+    public function AmbilKecualiSektor(): array
+    {
+        return ['BIZ'];
+    }
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {

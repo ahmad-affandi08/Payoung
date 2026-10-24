@@ -276,6 +276,9 @@ const menuKaryawan: ItemMenu[] = [
         href: '/kelola/karyawan/komisi/laporan',
         izin: IzinTenant.KaryawanLihat,
         fitur: 'karyawan.komisi',
+        // D-183: komisi lazim di Indonesia untuk capster/terapis/mekanik/crew (jasa), pelayan, SPG butik & toko HP,
+        // sales toko bangunan, dan salesman grosir; tidak untuk kelontong, apotek, atau usaha jasa profesional.
+        sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
     },
     // F-18 bagian 3: kasbon, target penjualan.
     { label: 'Kasbon', href: '/kelola/karyawan/kasbon', izin: IzinTenant.KaryawanLihat, lanjutan: true },
@@ -304,6 +307,9 @@ const menuPenjualan: ItemMenu[] = [
         atau: IzinTenant.PengirimanKelola,
         gantiBilaHanyaAtau: { label: 'Pengiriman', href: '/kelola/pengiriman' },
         fitur: 'kanal.toko-online',
+        // D-183: pesan lewat WhatsApp/tautan toko lazim untuk F&B, retail, grosir, laundry antar-jemput, dan percetakan;
+        // bukan untuk salon, bengkel, gym, cuci kendaraan, atau usaha jasa profesional (mereka memakai reservasi/invoice).
+        sektor: ['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN'],
     },
     { label: 'Shift kasir', href: '/kelola/kasir/shift', izin: IzinTenant.LaporanPenjualanLihat },
     // F-15: tutup harian (End of Day) per outlet.
@@ -314,14 +320,22 @@ const menuPenjualan: ItemMenu[] = [
         lanjutan: true,
     },
     // F-12 bagian 2: pre-order & uang muka.
-    { label: 'Pre-order', href: '/kelola/pre-order', izin: IzinTenant.LaporanPenjualanLihat },
+    // D-183: pre-order/PO + uang muka lazim di Indonesia untuk kue & katering (F&B), pre-order fashion, inden HP/elektronik,
+    // buket florist, dan pesanan kustom (percetakan, konveksi).
+    {
+        label: 'Pre-order',
+        href: '/kelola/pre-order',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        sektor: ['FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-FLR', 'SVC-GEN'],
+    },
     // F-07 mode service: reservasi layanan jasa per staf.
     // D-145: usaha FnB murni melihat "Reservasi meja" (halaman lain, izin yang sama).
     {
         label: 'Reservasi',
         href: '/kelola/reservasi',
         izin: IzinTenant.ReservasiKelola,
-        sektor: ['SVC', 'FNB'],
+        // Pet shop: janji grooming/penitipan hewan.
+        sektor: ['SVC', 'FNB', 'RTL-PET'],
         gantiBilaSektor: { sektor: ['FNB'], kecuali: ['SVC'], label: 'Reservasi meja', href: '/kelola/reservasi-meja' },
     },
     { label: 'Laundry', href: '/kelola/laundry', izin: IzinTenant.LaundryKelola, sektor: ['SVC-LDR'] },

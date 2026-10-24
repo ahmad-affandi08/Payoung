@@ -65,7 +65,8 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
     // D-48: pengaturan kanvas (kendaraan salesman) hanya untuk usaha grosir/distribusi atau outlet yang sudah kanvas.
     const tampilKanvas = PakaiSektor(['WHS', 'RTL-BLD']) || awal.Kanvas;
     // D-183: PBJT makanan & minuman hanya bermakna bagi usaha F&B (atau outlet yang sudah memungutnya).
-    const tampilPbjt = PakaiSektor(['FNB']) || awal.PungutPbjt;
+    // PBJT (UU HKPD) atas makanan/minuman dan jasa kesenian & hiburan (spa, pusat kebugaran).
+    const tampilPbjt = PakaiSektor(['FNB', 'SVC-SLN', 'SVC-FIT']) || awal.PungutPbjt;
     const idKanvas = useId();
     const pilihanKota = kota.map((baris) => ({
         Nilai: baris.Kode,

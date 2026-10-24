@@ -6,6 +6,7 @@ import 'package:mesin_kasir/MesinKasir.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../../Aplikasi/Penyedia.dart';
+import '../../Domain/Penjualan/KonteksPenjualan.dart';
 import '../../Domain/GalatKasir.dart';
 import '../../Domain/Katalog/KatalogLokal.dart';
 import '../../Domain/Penjualan/Keranjang.dart';
@@ -427,7 +428,8 @@ class _PanelItemState extends ConsumerState<PanelItem> {
   List<Widget> _BangunStaf(BuildContext context) {
     final karyawan = ref.watch(penyediaKaryawanPos).value ?? const <KaryawanPos>[];
     // D-183: komisi staf pelayan untuk jasa dan F&B; retail dan grosir tidak memilih staf per item.
-    final sektorCocok = ref.watch(penyediaKonteksPenjualan).value?.CekSesuaiSektor(const ['SVC', 'FNB']) ?? true;
+    final sektorCocok =
+        ref.watch(penyediaKonteksPenjualan).value?.CekSesuaiSektor(KonteksPenjualan.sektorKomisiStaf) ?? true;
     if (karyawan.isEmpty || !sektorCocok) {
       return const [];
     }

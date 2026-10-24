@@ -12,6 +12,7 @@ import Panel from '@/Komponen/Kelola/Panel';
 import { FormatRupiah } from '@/Pustaka/Format';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
+import { PakaiSektor } from '@/Pustaka/Sektor';
 import type { BarcodeTimbangan, PropsPengaturanKasir } from '@/Tipe/Kasir';
 
 const alamat = '/kelola/kasir/pengaturan';
@@ -60,6 +61,7 @@ export default function HalamanPengaturanKasir({
 }: PropsPengaturanKasir) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
+    const sektorTimbangan = PakaiSektor(['RTL-FRS', 'RTL-GEN', 'RTL-BLD', 'RTL-PET', 'WHS', 'FNB-BAK']);
     const awal = {
         batas: UbahKeMasukanUang(BatasKasKeluar),
         bersama: ShiftBersama,
@@ -321,7 +323,10 @@ export default function HalamanPengaturanKasir({
                     {!berubah ? <span className="text-keterangan text-teks-sekunder">Belum ada perubahan.</span> : null}
                 </div>
             </form>
-            <BagianBarcodeTimbangan awal={BarcodeTimbangan} galat={galat} />
+            {/* D-183: timbangan digital berbarcode lazim di toko buah/sayur/sembako, kelontong, toko bangunan, grosir, dan toko kue. */}
+            {sektorTimbangan || BarcodeTimbangan.Aktif ? (
+                <BagianBarcodeTimbangan awal={BarcodeTimbangan} galat={galat} />
+            ) : null}
         </TataLetakAplikasi>
     );
 }

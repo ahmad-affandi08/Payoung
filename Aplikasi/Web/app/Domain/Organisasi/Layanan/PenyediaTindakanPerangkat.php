@@ -7,6 +7,7 @@ namespace App\Domain\Organisasi\Layanan;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use App\Domain\Bersama\Tindakan\Layanan\PembuatButirTinjauan;
 use App\Domain\Organisasi\Model\ItemSinkronPemulihan;
 use App\Domain\Organisasi\Model\Perangkat;
@@ -17,9 +18,19 @@ use Illuminate\Database\Eloquent\Builder;
  * lewat jalur pemulihan (dikirim setelah perangkat dicabut, atau oleh perangkat lain atas nama perangkat asal). Data
  * tetap tercatat; pemilik mengecek bahwa transaksinya wajar lalu menandainya sudah dicek.
  */
-final class PenyediaTindakanPerangkat implements PenyediaTindakan
+final class PenyediaTindakanPerangkat implements PenyediaTindakan, TerbatasSektor
 {
     public const JENIS_DOKUMEN = 'ItemSinkronPemulihan';
+
+    public function AmbilSektor(): ?array
+    {
+        return null;
+    }
+
+    public function AmbilKecualiSektor(): array
+    {
+        return ['BIZ'];
+    }
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {

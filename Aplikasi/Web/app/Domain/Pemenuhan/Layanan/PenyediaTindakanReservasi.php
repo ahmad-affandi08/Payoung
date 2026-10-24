@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use App\Domain\Pemenuhan\Enum\StatusReservasi;
 use App\Domain\Pemenuhan\Enum\StatusReservasiMeja;
 use App\Domain\Pemenuhan\Model\Reservasi;
@@ -21,8 +22,18 @@ use App\Domain\Pemenuhan\Model\ReservasiMeja;
  * FnB reservasi meja (D-145): reservasi yang sudah berakhir tetapi masih memegang sisa uang muka (tagihan lebih kecil
  * dari DP) — kewajiban menggantung sampai dikembalikan atau dihanguskan.
  */
-final class PenyediaTindakanReservasi implements PenyediaTindakan
+final class PenyediaTindakanReservasi implements PenyediaTindakan, TerbatasSektor
 {
+    public function AmbilSektor(): ?array
+    {
+        return ['SVC', 'FNB', 'RTL-PET'];
+    }
+
+    public function AmbilKecualiSektor(): array
+    {
+        return [];
+    }
+
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
         if (! $konteks->CekIzin('reservasi.kelola')) {

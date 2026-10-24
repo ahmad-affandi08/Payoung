@@ -73,7 +73,8 @@ export default function HalamanPajak({
     const idLegendaHarga = useId();
     const formulir = useForm<IsianPajak>({ ...Nilai });
     // D-183: PBJT makanan & minuman dan biaya layanan hanya untuk usaha F&B (atau yang sudah mengaturnya).
-    const tampilFnb = PakaiSektor(['FNB']) || formulir.data.PungutPbjt || formulir.data.BiayaLayananAktif;
+    const tampilPbjt = PakaiSektor(['FNB', 'SVC-SLN', 'SVC-FIT']) || formulir.data.PungutPbjt;
+    const tampilBiayaLayanan = PakaiSektor(['FNB', 'SVC-SLN']) || formulir.data.BiayaLayananAktif;
     const tautanProfil =
         Progres.Langkah.find((item) => item.Kunci === 'ProfilUsaha')?.Tautan ?? AlamatPanduan.ProfilUsaha;
 
@@ -136,71 +137,69 @@ export default function HalamanPajak({
                         ) : null}
                     </section>
 
-                    {tampilFnb ? (
-                        <>
-                            <section aria-labelledby="judul-pbjt" className="flex flex-col gap-2">
-                                <h2 id="judul-pbjt" className="text-subjudul font-semibold text-teks-utama">
-                                    PBJT makanan & minuman (pajak daerah)
-                                </h2>
-                                <KotakCentang
-                                    label="Pungut PBJT di outlet ini"
-                                    nilai={formulir.data.PungutPbjt}
-                                    saatBerubah={(nilai) => formulir.setData('PungutPbjt', nilai)}
-                                />
-                                {formulir.errors.PungutPbjt ? (
-                                    <FieldError id={idGalatPbjt} className="text-keterangan font-semibold">
-                                        {formulir.errors.PungutPbjt}
-                                    </FieldError>
-                                ) : null}
-                                {Kota === null ? (
-                                    <Pemberitahuan jenis="peringatan" judul="Kota outlet belum diisi">
-                                        Isi kota di langkah{' '}
-                                        <Link href={tautanProfil} className="font-semibold text-brand underline">
-                                            Profil usaha
-                                        </Link>
-                                        . Tarif PBJT mengikuti kota.
-                                    </Pemberitahuan>
-                                ) : TarifPbjt ? (
-                                    <p className="text-isi text-teks-utama">
-                                        Tarif PBJT {Kota.Nama}: {JelaskanTarif(TarifPbjt)}. Biaya layanan{' '}
-                                        {TarifPbjt.BiayaLayananMasukDpp ? 'ikut' : 'tidak ikut'} dikenai PBJT di kota
-                                        ini.
-                                    </p>
-                                ) : formulir.data.PungutPbjt ? (
-                                    <Pemberitahuan jenis="peringatan" judul="Tarif PBJT belum tersedia">
-                                        Tarif PBJT {Kota.Nama} belum tersedia. Anda tetap bisa menyimpan; PBJT belum
-                                        dihitung sampai tarifnya tersedia.
-                                    </Pemberitahuan>
-                                ) : null}
-                            </section>
-
-                            <section aria-labelledby="judul-layanan" className="flex flex-col gap-2">
-                                <h2 id="judul-layanan" className="text-subjudul font-semibold text-teks-utama">
-                                    Biaya layanan
-                                </h2>
-                                <KotakCentang
-                                    label="Kenakan biaya layanan"
-                                    nilai={formulir.data.BiayaLayananAktif}
-                                    saatBerubah={(nilai) => formulir.setData('BiayaLayananAktif', nilai)}
-                                />
-                                {formulir.data.BiayaLayananAktif ? (
-                                    <div className="max-w-xs">
-                                        <BidangTeks
-                                            label="Persentase biaya layanan"
-                                            nilai={FormatMasukanPersen(formulir.data.PersenBiayaLayanan)}
-                                            saatBerubah={(nilai) =>
-                                                formulir.setData('PersenBiayaLayanan', NormalisasiMasukanPersen(nilai))
-                                            }
-                                            galat={formulir.errors.PersenBiayaLayanan}
-                                            required
-                                            keterangan="0 sampai 10 persen, misal 5 atau 7,5."
-                                            inputMode="decimal"
-                                            maxLength={5}
-                                        />
-                                    </div>
-                                ) : null}
-                            </section>
-                        </>
+                    {tampilPbjt ? (
+                        <section aria-labelledby="judul-pbjt" className="flex flex-col gap-2">
+                            <h2 id="judul-pbjt" className="text-subjudul font-semibold text-teks-utama">
+                                PBJT makanan & minuman (pajak daerah)
+                            </h2>
+                            <KotakCentang
+                                label="Pungut PBJT di outlet ini"
+                                nilai={formulir.data.PungutPbjt}
+                                saatBerubah={(nilai) => formulir.setData('PungutPbjt', nilai)}
+                            />
+                            {formulir.errors.PungutPbjt ? (
+                                <FieldError id={idGalatPbjt} className="text-keterangan font-semibold">
+                                    {formulir.errors.PungutPbjt}
+                                </FieldError>
+                            ) : null}
+                            {Kota === null ? (
+                                <Pemberitahuan jenis="peringatan" judul="Kota outlet belum diisi">
+                                    Isi kota di langkah{' '}
+                                    <Link href={tautanProfil} className="font-semibold text-brand underline">
+                                        Profil usaha
+                                    </Link>
+                                    . Tarif PBJT mengikuti kota.
+                                </Pemberitahuan>
+                            ) : TarifPbjt ? (
+                                <p className="text-isi text-teks-utama">
+                                    Tarif PBJT {Kota.Nama}: {JelaskanTarif(TarifPbjt)}. Biaya layanan{' '}
+                                    {TarifPbjt.BiayaLayananMasukDpp ? 'ikut' : 'tidak ikut'} dikenai PBJT di kota ini.
+                                </p>
+                            ) : formulir.data.PungutPbjt ? (
+                                <Pemberitahuan jenis="peringatan" judul="Tarif PBJT belum tersedia">
+                                    Tarif PBJT {Kota.Nama} belum tersedia. Anda tetap bisa menyimpan; PBJT belum
+                                    dihitung sampai tarifnya tersedia.
+                                </Pemberitahuan>
+                            ) : null}
+                        </section>
+                    ) : null}
+                    {tampilBiayaLayanan ? (
+                        <section aria-labelledby="judul-layanan" className="flex flex-col gap-2">
+                            <h2 id="judul-layanan" className="text-subjudul font-semibold text-teks-utama">
+                                Biaya layanan
+                            </h2>
+                            <KotakCentang
+                                label="Kenakan biaya layanan"
+                                nilai={formulir.data.BiayaLayananAktif}
+                                saatBerubah={(nilai) => formulir.setData('BiayaLayananAktif', nilai)}
+                            />
+                            {formulir.data.BiayaLayananAktif ? (
+                                <div className="max-w-xs">
+                                    <BidangTeks
+                                        label="Persentase biaya layanan"
+                                        nilai={FormatMasukanPersen(formulir.data.PersenBiayaLayanan)}
+                                        saatBerubah={(nilai) =>
+                                            formulir.setData('PersenBiayaLayanan', NormalisasiMasukanPersen(nilai))
+                                        }
+                                        galat={formulir.errors.PersenBiayaLayanan}
+                                        required
+                                        keterangan="0 sampai 10 persen, misal 5 atau 7,5."
+                                        inputMode="decimal"
+                                        maxLength={5}
+                                    />
+                                </div>
+                            ) : null}
+                        </section>
                     ) : null}
 
                     <FieldSet className="gap-2">

@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use App\Domain\Pemenuhan\Kueri\DaftarLaundry;
 use App\Domain\Pemenuhan\Kueri\PengaturanLaundryTenant;
 use App\Domain\Pemenuhan\Model\TiketLaundry;
@@ -19,9 +20,19 @@ use Illuminate\Database\Eloquent\Builder;
  * (Penting: pelanggan bisa datang dan kecewa) dan cucian siap yang belum diambil lebih dari N hari pengaturan
  * (Perhatian: hubungi pelanggan). Selesai sendiri saat statusnya berubah.
  */
-final class PenyediaTindakanLaundry implements PenyediaTindakan
+final class PenyediaTindakanLaundry implements PenyediaTindakan, TerbatasSektor
 {
     public function __construct(private readonly PengaturanLaundryTenant $pengaturan) {}
+
+    public function AmbilSektor(): ?array
+    {
+        return ['SVC-LDR'];
+    }
+
+    public function AmbilKecualiSektor(): array
+    {
+        return [];
+    }
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {

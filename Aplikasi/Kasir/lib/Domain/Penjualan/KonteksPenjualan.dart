@@ -188,8 +188,13 @@ class KonteksPenjualan {
   /// F-17: toko online melayani outlet ini, jadi menu Pesanan toko online ditampilkan.
   final bool tokoOnlineAktif;
 
-  /// D-183: sektor yang memakai pre-order + uang muka (PRD §5.1: bakery, florist, jasa umum).
-  static const List<String> sektorPreOrder = ['FNB-BAK', 'RTL-FLR', 'SVC-GEN'];
+  /// D-183: sektor yang memakai pre-order + uang muka. Di Indonesia lazim untuk kue & katering (F&B), pre-order fashion,
+  /// inden HP/elektronik, buket florist, dan pesanan kustom (percetakan, konveksi).
+  static const List<String> sektorPreOrder = ['FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-FLR', 'SVC-GEN'];
+
+  /// D-183: sektor yang mencatat komisi per staf pada baris penjualan: capster/terapis/mekanik/crew (jasa), pelayan, SPG
+  /// butik & toko HP, sales toko bangunan, dan salesman grosir.
+  static const List<String> sektorKomisiStaf = ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'];
 
   /// D-48: kode sektor outlet (template + jenis usaha tambahan). Kosong = belum diketahui, semua fitur sektor tampil.
   final List<String> kodeSektor;

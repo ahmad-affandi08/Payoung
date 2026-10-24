@@ -127,7 +127,8 @@ enum IzinTenant: string
     {
         return match ($this) {
             self::PesananMejaCatat => ['FNB'],
-            self::ReservasiKelola => ['SVC', 'FNB'],
+            self::ReservasiKelola => ['SVC', 'FNB', 'RTL-PET'],
+            self::TokoOnlineKelola, self::PengirimanKelola => ['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN'],
             self::LaundryKelola => ['SVC-LDR'],
             self::BengkelKelola => ['SVC-WRK', 'RTL-ELC'],
             self::PelangganSesiKelola => ['SVC'],

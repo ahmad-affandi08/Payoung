@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
 /** Konteks Kotak Tindakan (D-23 C) untuk pengguna di tenant: status pemilik, kunci izin peran, dan outlet akses. */
 final class KonteksTindakanPengguna
 {
-    public function __construct(private readonly AksesPengguna $akses) {}
+    public function __construct(private readonly AksesPengguna $akses, private readonly SektorOutletTenant $sektor) {}
 
     public function Buat(int $idTenant, int $idPengguna, CarbonImmutable $hariIni): DataKonteksTindakan
     {
@@ -23,6 +23,7 @@ final class KonteksTindakanPengguna
             $data['Izin'] ?? [],
             $this->akses->AmbilIdOutlet($idTenant, $idPengguna),
             $hariIni,
+            $this->sektor->AmbilKode(),
         );
     }
 }

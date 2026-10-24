@@ -230,6 +230,8 @@ export default function HalamanFormProduk({
     const sektorSeri = PakaiSektor(['RTL-ELC', 'SVC-WRK', 'WHS']);
     const sektorResep = PakaiSektor(['FNB', 'RTL-FLR']);
     const sektorProduksi = PakaiSektor(['FNB', 'RTL-FLR', 'WHS', 'RTL-BLD', 'BIZ-MFG']);
+    // Barang titipan (konsinyasi) lazim di warung/kelontong, toko kue & kafe (titip jajanan), butik, dan distributor.
+    const sektorKonsinyasi = PakaiSektor(['FNB', 'RTL', 'WHS']);
     const induk = data.Jenis === 'IndukVarian';
     const bisaDijual = aturan?.BisaDijual ?? false;
     const satuanDasar = Satuan.find((item) => item.Uuid === data.UuidSatuanDasar);
@@ -980,7 +982,13 @@ export default function HalamanFormProduk({
     // Tambah produk (wizard).
     const CekJenisTersedia = (nilai: JenisProduk) =>
         nilai === data.Jenis ||
-        (nilai === 'Resep' ? sektorResep : ['Produksi', 'BahanBaku'].includes(nilai) ? sektorProduksi : true);
+        (nilai === 'Resep'
+            ? sektorResep
+            : ['Produksi', 'BahanBaku'].includes(nilai)
+              ? sektorProduksi
+              : nilai === 'Konsinyasi'
+                ? sektorKonsinyasi
+                : true);
     const pilihanJenis = UrutkanJenisProduk(Jenis, sektorMakanan)
         .filter((item) => CekJenisTersedia(item.Nilai))
         .map((item) => ({

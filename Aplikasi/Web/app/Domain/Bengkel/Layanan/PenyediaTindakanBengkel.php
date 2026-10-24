@@ -12,6 +12,7 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Bersama\Tindakan\Kontrak\TerbatasSektor;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -21,8 +22,18 @@ use Illuminate\Database\Eloquent\Builder;
  *   baru atau tanggalnya diubah.
  * - **Estimasi menunggu persetujuan > 24 jam** (Perhatian): kendaraan tertahan di bengkel; telepon pelanggan.
  */
-final class PenyediaTindakanBengkel implements PenyediaTindakan
+final class PenyediaTindakanBengkel implements PenyediaTindakan, TerbatasSektor
 {
+    public function AmbilSektor(): ?array
+    {
+        return ['SVC-WRK', 'RTL-ELC'];
+    }
+
+    public function AmbilKecualiSektor(): array
+    {
+        return [];
+    }
+
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
         if (! $konteks->CekIzin('bengkel.kelola')) {
