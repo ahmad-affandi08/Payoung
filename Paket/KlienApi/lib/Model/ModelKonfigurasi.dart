@@ -41,6 +41,7 @@ class KonfigurasiAplikasi {
     this.sha256Unduhan,
     this.hanyaPerusahaan = false,
     this.sektor = const [],
+    this.kuotaTransaksi,
   });
 
   final String? versiSaatIni;
@@ -105,6 +106,10 @@ class KonfigurasiAplikasi {
   /// Usaha ini mengelola stok barang (sektor berstok), atau sektornya belum diketahui.
   bool get mengelolaStok => CekSesuaiSektor(sektorBerstok);
 
+  /// P-04: kuota transaksi penjualan bulan ini menurut server (`Kuota.Transaksi`). Null = server lama yang belum
+  /// mengirimnya; aplikasi tidak menguncinya.
+  final KuotaTransaksiAplikasi? kuotaTransaksi;
+
   /// Flag dengan kunci [kunci]; tanpa aturan = [bawaan].
   bool CekFlag(String kunci, {bool bawaan = true}) => flagFitur[kunci] ?? bawaan;
 
@@ -135,8 +140,46 @@ class KonfigurasiAplikasi {
       persetujuanJarakJauh: jarakJauh is bool ? jarakJauh : null,
       logDiminta: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['PermintaanLog'])['Diminta']),
       hanyaPerusahaan: UraiJson.AmbilBenar(json['HanyaPerusahaan']),
-      sektor: List.unmodifiable(
-        (json['Sektor'] is List ? json['Sektor']! as List : const []).whereType<String>().where((k) => k.isNotEmpty),
+      sektor: List.unmodifiable(UraiJson.AmbilDaftarTeks(json['Sektor']).where((k) => k.isNotEmpty)),
+      kuotaTransaksi: KuotaTransaksiAplikasi.DariJsonAtauNull(UraiJson.AmbilPeta(json['Kuota'])['Transaksi']),
+    );
+  }
+}
+
+/// Keadaan kuota transaksi penjualan (P-04). Nilai tak dikenal dari server yang lebih baru diperlakukan sebagai
+/// [Normal].
+enum StatusKuotaTransaksi { TanpaBatas, Normal, HampirHabis, Habis }
+
+/// Kuota transaksi penjualan satu bulan kalender (WIB) menurut server: [terpakai] dari [batas] (null = tak terbatas),
+/// dihitung dari penjualan yang sudah tersimpan di server. Penjualan yang belum terkirim dari perangkat ini
+/// ditambahkan aplikasi sendiri (`KuotaTransaksiEfektif`).
+class KuotaTransaksiAplikasi {
+  const KuotaTransaksiAplikasi({
+    required this.periode,
+    required this.terpakai,
+    required this.batas,
+    required this.status,
+  });
+
+  /// Bulan kalender `TTTT-BB`.
+  final String periode;
+  final int terpakai;
+  final int? batas;
+  final StatusKuotaTransaksi status;
+
+  static KuotaTransaksiAplikasi? DariJsonAtauNull(Object? nilai) {
+    final json = UraiJson.AmbilPetaAtauNull(nilai);
+    final periode = UraiJson.AmbilTeks(json?['Periode']);
+    if (json == null || periode.isEmpty) {
+      return null;
+    }
+    return KuotaTransaksiAplikasi(
+      periode: periode,
+      terpakai: UraiJson.AmbilBulat(json['Terpakai']),
+      batas: UraiJson.AmbilBulatAtauNull(json['Batas']),
+      status: StatusKuotaTransaksi.values.firstWhere(
+        (s) => s.name == UraiJson.AmbilTeks(json['Status']),
+        orElse: () => StatusKuotaTransaksi.Normal,
       ),
     );
   }

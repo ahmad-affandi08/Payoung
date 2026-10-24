@@ -9,6 +9,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
 import '../../Domain/Penjualan/KonteksPenjualan.dart';
+import '../../Domain/Penjualan/KuotaTransaksiEfektif.dart';
 import '../../Domain/Perangkat/PenjagaLayarMenyala.dart';
 import '../../Domain/Persediaan/LayananGudang.dart';
 import '../../Domain/Sesi/StafLokal.dart';
@@ -43,6 +44,7 @@ import 'ItemNavigasi.dart';
 import 'LayarKunci.dart';
 import 'BannerModeLatihan.dart';
 import 'BannerPengumuman.dart';
+import 'PanelKuotaTransaksiHabis.dart';
 import 'PanelWajibPembaruan.dart';
 import 'SidebarRuangKerja.dart';
 import 'TemaNavigasiRuangKerja.dart';
@@ -164,6 +166,9 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
   bool get _terkunci => widget.kunci != KeadaanKunci.Bebas;
 
   KonfigurasiAplikasi? get _konfigurasi => ref.watch(penyediaKonfigurasiAplikasi);
+
+  /// P-04: kuota transaksi bulan ini menurut perangkat ini; null = tidak ada yang ditegakkan.
+  KuotaTransaksiEfektif? get _kuotaTransaksi => ref.watch(penyediaKuotaTransaksi).value;
 
   @override
   void initState() {
@@ -376,6 +381,9 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     // P-10: di bawah versi minimal, layar jual & meja dikunci sampai aplikasi diperbarui (outbox tetap terkirim).
     TujuanRuangKerja.Jual ||
     TujuanRuangKerja.Meja when _konfigurasi?.wajibPembaruan == true => PanelWajibPembaruan(konfigurasi: _konfigurasi!),
+    // P-04: kuota transaksi bulan ini habis. Hanya transaksi baru yang dikunci; layar lain tetap bisa dipakai.
+    TujuanRuangKerja.Jual ||
+    TujuanRuangKerja.Meja when _kuotaTransaksi?.habis == true => PanelKuotaTransaksiHabis(kuota: _kuotaTransaksi!),
     TujuanRuangKerja.Jual => LayarJual(
       kasir: widget.kasir,
       aktif: _tujuan == TujuanRuangKerja.Jual && !_terkunci && !_adaPanel,
@@ -477,6 +485,14 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
         )
       else if (_ringkasOnline case final r? when r.perluDitagih > 0)
         ItemBilahStatus(ikon: Icons.shopping_bag_outlined, teks: '${r.perluDitagih} pesanan online siap ditagih'),
+      if (_kuotaTransaksi case final q? when q.habis)
+        const ItemBilahStatus(ikon: Icons.block, teks: 'Kuota transaksi habis', nada: NadaStatus.Bahaya)
+      else if (_kuotaTransaksi case final q? when q.hampirHabis)
+        ItemBilahStatus(
+          ikon: Icons.speed_outlined,
+          teks: 'Sisa ${q.sisa} transaksi bulan ini',
+          nada: NadaStatus.Peringatan,
+        ),
       if (_konfigurasi case final k? when k.wajibPembaruan)
         const ItemBilahStatus(ikon: Icons.system_update, teks: 'Wajib perbarui aplikasi', nada: NadaStatus.Bahaya)
       else if (_konfigurasi case final k? when k.adaPembaruan)

@@ -35,4 +35,49 @@ void main() {
     expect(Muat(null).mengelolaStok, isTrue);
     expect(Muat([]).CekSesuaiSektor(['FNB']), isTrue);
   });
+
+  test('Kuota transaksi dibaca dari Kuota.Transaksi; server lama tanpa kunci = null', () {
+    final dengan = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Kuota': {
+        'Transaksi': {
+          'Periode': '2026-12',
+          'Terpakai': 420,
+          'Batas': 500,
+          'Sisa': 80,
+          'Persen': 84,
+          'Status': 'HampirHabis',
+        },
+      },
+    });
+    expect(dengan.kuotaTransaksi?.periode, '2026-12');
+    expect(dengan.kuotaTransaksi?.terpakai, 420);
+    expect(dengan.kuotaTransaksi?.batas, 500);
+    expect(dengan.kuotaTransaksi?.status, StatusKuotaTransaksi.HampirHabis);
+
+    final tanpaBatas = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Kuota': {
+        'Transaksi': {'Periode': '2026-12', 'Terpakai': 9, 'Batas': null, 'Status': 'TanpaBatas'},
+      },
+    });
+    expect(tanpaBatas.kuotaTransaksi?.batas, isNull);
+
+    final tidakDikenal = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Kuota': {
+        'Transaksi': {'Periode': '2026-12', 'Terpakai': 1, 'Batas': 5, 'Status': 'StatusBaruDariServer'},
+      },
+    });
+    expect(tidakDikenal.kuotaTransaksi?.status, StatusKuotaTransaksi.Normal);
+
+    final serverLama = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+    });
+    expect(serverLama.kuotaTransaksi, isNull);
+  });
 }

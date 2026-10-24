@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $BatasSku
  * @property int|null $KuotaPesanWaBulanan
  * @property int|null $BatasPenyimpananMb
+ * @property int|null $KuotaTransaksiBulanan
  * @property int $Urutan
  * @property Carbon|null $DiarsipkanPada
  */
@@ -40,6 +41,7 @@ final class Paket extends ModelDasar
         'BatasSku',
         'KuotaPesanWaBulanan',
         'BatasPenyimpananMb',
+        'KuotaTransaksiBulanan',
     ];
 
     protected $table = 'Paket';
@@ -56,6 +58,7 @@ final class Paket extends ModelDasar
         'BatasSku' => null,
         'KuotaPesanWaBulanan' => null,
         'BatasPenyimpananMb' => null,
+        'KuotaTransaksiBulanan' => null,
         'Urutan' => 0,
         'DiarsipkanPada' => null,
     ];
@@ -114,6 +117,7 @@ final class Paket extends ModelDasar
             'BatasSku' => 'integer',
             'KuotaPesanWaBulanan' => 'integer',
             'BatasPenyimpananMb' => 'integer',
+            'KuotaTransaksiBulanan' => 'integer',
             'Urutan' => 'integer',
             'DiarsipkanPada' => 'datetime',
         ];

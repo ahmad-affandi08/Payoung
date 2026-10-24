@@ -20,6 +20,7 @@ final class PenentuKonteksTokoOnline
         private readonly KonteksTenant $konteks,
         private readonly PemeriksaFiturTenant $fitur,
         private readonly StatusLanggananTenant $langganan,
+        private readonly KuotaTransaksiTenant $kuota,
     ) {}
 
     public function Cari(?string $uuidOutlet = null): ?DataKonteksPesanSendiri
@@ -45,6 +46,7 @@ final class PenentuKonteksTokoOnline
         $aktif = $pengaturan?->Aktif === true
             && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_TOKO_ONLINE)
             && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant))
+            && $this->kuota->CekBolehMulai($idTenant)
             && JamOperasionalOutlet::CekBuka($outlet->JamOperasional, now($outlet->ZonaWaktu));
 
         return new DataKonteksPesanSendiri(

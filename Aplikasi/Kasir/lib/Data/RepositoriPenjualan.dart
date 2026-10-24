@@ -180,6 +180,27 @@ class RepositoriPenjualan {
     ];
   }
 
+  /// P-04: jumlah penjualan lokal yang **belum tercakup hitungan kuota transaksi server**, yaitu dibuat pada/setelah
+  /// [sejak] (jam perangkat), masih di outbox sekarang, atau termasuk [uuidTertundaSaatAmbil] (masih di outbox ketika
+  /// konfigurasi dibaca). Semua status ikut dihitung, termasuk `Void`, sama dengan server: membatalkan transaksi tidak
+  /// mengembalikan kuota.
+  Future<int> HitungPenjualanBelumTercakupKuota({
+    required DateTime sejak,
+    Set<String> uuidTertundaSaatAmbil = const {},
+  }) async {
+    final belumTercakup = <Expression<bool>>[
+      db.penjualan.DibuatPada.isBiggerOrEqualValue(sejak.toUtc()),
+      db.outbox.Uuid.isNotNull(),
+      if (uuidTertundaSaatAmbil.isNotEmpty) db.penjualan.Uuid.isIn(uuidTertundaSaatAmbil),
+    ];
+    final jumlah = db.penjualan.Uuid.count();
+    final kueri =
+        db.selectOnly(db.penjualan).join([leftOuterJoin(db.outbox, db.outbox.Uuid.equalsExp(db.penjualan.Uuid))])
+          ..addColumns([jumlah])
+          ..where(belumTercakup.reduce((a, b) => a | b));
+    return (await kueri.map((r) => r.read(jumlah) ?? 0).getSingle());
+  }
+
   Future<BarisPenjualan?> CariPenjualan(String uuid) =>
       (db.select(db.penjualan)..where((p) => p.Uuid.equals(uuid))).getSingleOrNull();
 

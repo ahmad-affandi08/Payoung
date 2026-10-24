@@ -53,6 +53,7 @@ import '../Domain/Pelanggan/LayananPelanggan.dart';
 import '../Domain/Penjualan/LayananRingkasanHarian.dart';
 import '../Domain/Penjualan/Keranjang.dart';
 import '../Domain/Penjualan/KonteksPenjualan.dart';
+import '../Domain/Penjualan/KuotaTransaksiEfektif.dart';
 import '../Domain/Penjualan/LayananPenjualan.dart';
 import '../Domain/Penjualan/LayananLaundry.dart';
 import '../Domain/Penjualan/LayananPesananOnline.dart';
@@ -1249,7 +1250,13 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
     }
     _terakhir = sekarang;
     try {
+      // P-04: penjualan yang masih di outbox saat konfigurasi diminta belum tercakup hitungan kuota server; dicatat
+      // sebagai patokan supaya kuota efektif perangkat ini = hitungan server + penjualan yang belum tercakup.
+      final tertundaSaatAmbil = await ref.read(penyediaRepositoriPenjualan).AmbilUuidPenjualanTertunda();
       final konfigurasi = await ref.read(penyediaKlienPos).AmbilKonfigurasiAplikasi();
+      ref
+          .read(penyediaPatokanKuota.notifier)
+          .Atur(PatokanKuota(sejak: sekarang, uuidTertundaSaatAmbil: tertundaSaatAmbil));
       state = konfigurasi;
       // Fitur paket yang diubah di konsol ikut sampai ke perangkat tanpa menunggu "Perbarui data kasir".
       await ref.read(penyediaLayananPersetujuanJarakJauh).SimpanKeadaan(konfigurasi.persetujuanJarakJauh);
@@ -1267,6 +1274,53 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
 final penyediaKonfigurasiAplikasi = NotifierProvider<PengaturKonfigurasiAplikasi, KonfigurasiAplikasi?>(
   PengaturKonfigurasiAplikasi.new,
 );
+
+/// P-04: patokan penghitungan penjualan yang belum tercakup hitungan kuota server (saat konfigurasi dibaca).
+class PatokanKuota {
+  const PatokanKuota({required this.sejak, required this.uuidTertundaSaatAmbil});
+
+  final DateTime sejak;
+  final Set<String> uuidTertundaSaatAmbil;
+}
+
+class PengaturPatokanKuota extends Notifier<PatokanKuota?> {
+  @override
+  PatokanKuota? build() => null;
+
+  void Atur(PatokanKuota patokan) => state = patokan;
+}
+
+final penyediaPatokanKuota = NotifierProvider<PengaturPatokanKuota, PatokanKuota?>(PengaturPatokanKuota.new);
+
+/// P-04: kuota transaksi penjualan bulan ini menurut perangkat ini (hitungan server + penjualan yang belum tercakup),
+/// dihitung ulang setiap ada perubahan penjualan lokal. Null = tidak ada yang ditegakkan: konfigurasi belum terbaca
+/// (mis. offline sejak aplikasi dibuka), server lama, paket tanpa batas, atau data milik bulan lain.
+final penyediaKuotaTransaksi = StreamProvider<KuotaTransaksiEfektif?>((ref) async* {
+  final kuota = ref.watch(penyediaKonfigurasiAplikasi)?.kuotaTransaksi;
+  final patokan = ref.watch(penyediaPatokanKuota);
+  final jam = ref.watch(penyediaJam);
+
+  if (kuota == null || kuota.batas == null || patokan == null) {
+    yield null;
+    return;
+  }
+
+  final repositori = ref.watch(penyediaRepositoriPenjualan);
+
+  Future<KuotaTransaksiEfektif?> Hitung() async => KuotaTransaksiEfektif.Hitung(
+    kuota: kuota,
+    penjualanBelumTercakup: await repositori.HitungPenjualanBelumTercakupKuota(
+      sejak: patokan.sejak,
+      uuidTertundaSaatAmbil: patokan.uuidTertundaSaatAmbil,
+    ),
+    sekarang: jam(),
+  );
+
+  yield await Hitung();
+  await for (final _ in repositori.PantauPerubahanPenjualan()) {
+    yield await Hitung();
+  }
+});
 
 /// P-10 PGL-18: flag fitur [kunci] (lihat `KunciFlagFitur`) menurut konfigurasi terakhir yang dibaca perangkat
 /// (±15 menit sekali saat tersambung). Belum pernah terbaca, offline, atau kunci tanpa aturan = hidup: kill switch hanya

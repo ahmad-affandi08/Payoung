@@ -17,6 +17,7 @@ enum JenisNotifikasiPengguna: string
     case PesananOnline = 'PesananOnline';
     case PesanPlatform = 'PesanPlatform';
     case TransferStokMasuk = 'TransferStokMasuk';
+    case KuotaTransaksi = 'KuotaTransaksi';
 
     /**
      * D-183: awalan kode sektor yang punya jenis notifikasi ini; null = umum. Pengaturan notifikasi tidak menawarkan
@@ -47,6 +48,7 @@ enum JenisNotifikasiPengguna: string
             self::PesananOnline => 'Pesanan online masuk',
             self::PesanPlatform => 'Pesan dari Payoung (tagihan dan tiket dukungan)',
             self::TransferStokMasuk => 'Kiriman stok masuk',
+            self::KuotaTransaksi => 'Kuota transaksi bulan ini',
         };
     }
 
@@ -70,6 +72,7 @@ enum JenisNotifikasiPengguna: string
             self::PesananOnline => '/kelola/toko-online',
             self::PesanPlatform => null,
             self::TransferStokMasuk => '/kelola/persediaan/transfer',
+            self::KuotaTransaksi => '/kelola/langganan',
         };
     }
 }

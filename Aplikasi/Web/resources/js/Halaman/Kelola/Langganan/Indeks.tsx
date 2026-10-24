@@ -5,6 +5,7 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BagianAddon, { type DataAddonLangganan } from '@/Komponen/Langganan/BagianAddon';
+import PanelKuotaTransaksi, { type DataKuotaTransaksi } from '@/Komponen/Langganan/PanelKuotaTransaksi';
 import PanelTurunPaket, { type DataTurunPaket } from '@/Komponen/Langganan/PanelTurunPaket';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -50,6 +51,7 @@ type PropsLangganan = {
     Tagihan: TagihanLangganan[];
     HariMasaTenggang: number;
     TurunPaket?: DataTurunPaket;
+    KuotaTransaksi?: DataKuotaTransaksi | null;
 };
 
 const jenisStatusLangganan = {
@@ -69,6 +71,7 @@ export default function HalamanLangganan({
     Tagihan,
     HariMasaTenggang,
     TurunPaket,
+    KuotaTransaksi,
 }: PropsLangganan) {
     const tagihanTerbuka = Tagihan.find((tagihan) => tagihan.Status === 'Terbit' || tagihan.Status === 'JatuhTempo');
 
@@ -84,6 +87,7 @@ export default function HalamanLangganan({
                     <RingkasanStatus langganan={Langganan} />
                 </>
             )}
+            <PanelKuotaTransaksi kuota={KuotaTransaksi} />
             {tagihanTerbuka ? (
                 <Pemberitahuan jenis="peringatan" judul={`Tagihan ${tagihanTerbuka.Nomor} menunggu pembayaran`}>
                     <p>

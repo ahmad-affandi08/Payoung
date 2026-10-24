@@ -26,6 +26,7 @@ final class PaketPublik
         'BatasPengguna' => ['pengguna', 'Pengguna tanpa batas'],
         'BatasSku' => ['produk (SKU)', 'Produk tanpa batas'],
         'KuotaPesanWaBulanan' => ['pesan WhatsApp/bulan', null],
+        'KuotaTransaksiBulanan' => ['transaksi penjualan/bulan', null],
     ];
 
     public function __construct(private readonly HargaPaketBerlaku $harga) {}

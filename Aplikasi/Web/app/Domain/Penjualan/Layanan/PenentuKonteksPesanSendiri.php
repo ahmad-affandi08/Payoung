@@ -23,6 +23,7 @@ final class PenentuKonteksPesanSendiri
         private readonly MejaPesanSendiri $meja,
         private readonly PemeriksaFiturTenant $fitur,
         private readonly StatusLanggananTenant $langganan,
+        private readonly KuotaTransaksiTenant $kuota,
     ) {}
 
     public function Cari(string $token): ?DataKonteksPesanSendiri
@@ -36,7 +37,8 @@ final class PenentuKonteksPesanSendiri
 
         $aktif = $meja->bisaDipesan
             && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
-            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
+            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant))
+            && $this->kuota->CekBolehMulai($idTenant);
 
         return new DataKonteksPesanSendiri($idTenant, $meja->idOutlet, $meja->kodeOutlet, $meja->namaOutlet, $meja->zonaWaktu, $meja->idMeja, $meja->uuidMeja, $meja->namaMeja, $aktif, $meja->uuidOutlet, $meja->kodeKota);
     }

@@ -43,6 +43,7 @@ const labelBatas: Record<string, string> = {
     BatasSku: 'SKU',
     KuotaPesanWaBulanan: 'Pesan WA per bulan',
     BatasPenyimpananMb: 'Penyimpanan berkas (MB)',
+    KuotaTransaksiBulanan: 'Transaksi penjualan per bulan',
 };
 
 const labelStatus = {

@@ -7,6 +7,7 @@ namespace App\Http\Kontroler\Pos\V1;
 use App\Domain\Organisasi\Aksi\AjukanPersetujuanJarakJauh;
 use App\Domain\Organisasi\Enum\PlatformPerangkat;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Penjualan\Layanan\KuotaTransaksiTenant;
 use App\Domain\Tenant\Enum\AplikasiRilis;
 use App\Domain\Tenant\Enum\PlatformPengumuman;
 use App\Domain\Tenant\Kueri\FlagFiturTenant;
@@ -26,12 +27,12 @@ use Illuminate\Http\Request;
  * `GET /api/pos/v1/konfigurasi-aplikasi` (§14.6, §16.3): versi terbaru & minimal per platform (P-10 `RilisAplikasi`
  * per perangkat: kanal & rollout bertahap; cadangan config/aplikasi.php), catatan rilis, flag fitur tenant (P-10,
  * kunci → hidup/mati), pengumuman platform (v3.45 PGL-19), status langganan (boleh berjualan?), dan konfigurasi dasar
- * outlet & perangkat, dan `FiturPaket` (aditif: fitur paket yang mempengaruhi tampilan kasir). Tetap bisa
+ * outlet & perangkat, `FiturPaket` (aditif: fitur paket yang mempengaruhi tampilan kasir), dan `Kuota.Transaksi` (P-04). Tetap bisa
  * dibuka saat langganan ditangguhkan agar aplikasi bisa menampilkan alasannya.
  */
 final class KonfigurasiAplikasiKontroler extends Kontroler
 {
-    public function Tampilkan(Request $permintaan, StatusLanggananTenant $statusLangganan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, PengumumanBerlaku $pengumuman, RingkasanLanggananTenant $ringkasanLangganan, PemeriksaFiturTenant $fiturTenant): JsonResponse
+    public function Tampilkan(Request $permintaan, StatusLanggananTenant $statusLangganan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, PengumumanBerlaku $pengumuman, RingkasanLanggananTenant $ringkasanLangganan, PemeriksaFiturTenant $fiturTenant, KuotaTransaksiTenant $kuotaTransaksi): JsonResponse
     {
         $perangkat = AutentikasiPerangkat::AmbilPerangkat($permintaan);
         $outlet = Outlet::query()->findOrFail($perangkat->IdOutlet);
@@ -67,6 +68,10 @@ final class KonfigurasiAplikasiKontroler extends Kontroler
             'FiturPaket' => [
                 'PersetujuanJarakJauh' => $fiturTenant->CekAktif($perangkat->IdTenant, AjukanPersetujuanJarakJauh::KUNCI_FITUR),
             ],
+            // P-04 (aditif): kuota transaksi penjualan bulan ini. Aplikasi Kasir menampilkan peringatan pada HampirHabis
+            // dan mengunci layar jual pada Habis (transaksi yang sudah terjadi tetap diterima saat sinkron). Server lama
+            // tidak mengirimnya, dan aplikasi lama mengabaikannya.
+            'Kuota' => ['Transaksi' => $kuotaTransaksi->Ambil($perangkat->IdTenant)->KeLarik()],
             // v3.45 PGL-19 (aditif): banner pengumuman/pemeliharaan untuk platform, versi, paket & sektor outlet perangkat.
             'Pengumuman' => $perangkat->Platform === null ? [] : $pengumuman->AmbilUntuk(
                 PlatformPengumuman::from($perangkat->Platform->value),

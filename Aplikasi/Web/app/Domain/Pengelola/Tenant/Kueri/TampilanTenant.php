@@ -19,6 +19,7 @@ use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Pengelola\Tenant\Model\CatatanTenant;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
+use App\Domain\Penjualan\Kueri\PemakaianTransaksiBulanan;
 use App\Domain\Tenant\Enum\JenisOverride;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Kueri\SumberFiturTenant;
@@ -52,6 +53,7 @@ final class TampilanTenant
         private readonly PemakaianBatasOrganisasi $pemakaian,
         private readonly PendaftarMerchantPembayaran $pendaftarMerchant,
         private readonly PenjagaPenyimpanan $penyimpanan,
+        private readonly PemakaianTransaksiBulanan $pemakaianTransaksi,
         private readonly PenghapusanDataTenant $penghapusanData,
         private readonly RiwayatAksesDukungan $aksesDukungan,
         private readonly RingkasanKesehatanTenant $kesehatan,
@@ -86,6 +88,8 @@ final class TampilanTenant
                 'PakaiOutlet' => $this->pemakaian->HitungOutlet(),
                 'PakaiPengguna' => $this->pemakaian->HitungPengguna($tenant->Id),
                 'PakaiPenyimpananMb' => (int) ceil($this->penyimpanan->AmbilByte($tenant->Id) / 1048576),
+                // P-04: transaksi penjualan bulan berjalan (kueri yang sama dengan penegak kuota).
+                'PakaiTransaksiBulan' => $this->pemakaianTransaksi->Hitung($this->pemakaianTransaksi->AmbilPeriode()),
                 'PendaftaranMerchant' => self::AmbilPendaftaranMerchant(),
                 // PGL-16: izin akses dukungan dan sesi petugas (nama, waktu, jumlah; tanpa data pribadi).
                 'AksesDukungan' => $this->aksesDukungan->Ambil(10),
@@ -134,6 +138,7 @@ final class TampilanTenant
                 ['Label' => 'Outlet', 'Pakai' => $organisasi['PakaiOutlet'], 'Batas' => $batas['BatasOutlet'] ?? null],
                 ['Label' => 'Pengguna', 'Pakai' => $organisasi['PakaiPengguna'], 'Batas' => $batas['BatasPengguna'] ?? null],
                 ['Label' => 'Penyimpanan (MB)', 'Pakai' => $organisasi['PakaiPenyimpananMb'], 'Batas' => $batas['BatasPenyimpananMb'] ?? null],
+                ['Label' => 'Transaksi bulan ini', 'Pakai' => $organisasi['PakaiTransaksiBulan'], 'Batas' => $batas['KuotaTransaksiBulanan'] ?? null],
             ],
             'Organisasi' => [
                 'Outlet' => $organisasi['Outlet'],

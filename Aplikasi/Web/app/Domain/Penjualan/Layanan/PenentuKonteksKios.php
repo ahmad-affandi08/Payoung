@@ -25,6 +25,7 @@ final class PenentuKonteksKios
         private readonly KonteksTenant $konteks,
         private readonly PemeriksaFiturTenant $fitur,
         private readonly StatusLanggananTenant $langganan,
+        private readonly KuotaTransaksiTenant $kuota,
     ) {}
 
     public function Cari(string $token): ?DataKonteksPesanSendiri
@@ -43,7 +44,8 @@ final class PenentuKonteksKios
         $aktif = $outlet->KiosAktif
             && $outlet->Status === StatusOrganisasi::Aktif
             && $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI)
-            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant));
+            && $this->langganan->CekBolehBertransaksiPos($this->langganan->Ambil($idTenant))
+            && $this->kuota->CekBolehMulai($idTenant);
 
         return new DataKonteksPesanSendiri(
             $idTenant, $outlet->Id, $outlet->Kode, $outlet->Nama, $outlet->ZonaWaktu,

@@ -9,7 +9,8 @@ export type JenisNotifikasi =
     | 'TransaksiBesar'
     | 'PesananOnline'
     | 'PesanPlatform'
-    | 'TransferStokMasuk';
+    | 'TransferStokMasuk'
+    | 'KuotaTransaksi';
 
 export type BarisNotifikasi = {
     Uuid: string;

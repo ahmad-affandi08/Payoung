@@ -43,6 +43,8 @@ final class BuatNotifikasiOperasional
                     'shift.tinjauan' => JenisNotifikasiPengguna::SelisihKas,
                     'stok.kritis' => JenisNotifikasiPengguna::StokKritis,
                     'piutang.lewat-jatuh-tempo' => JenisNotifikasiPengguna::PiutangJatuhTempo,
+                    // P-04: kuota transaksi per bulan hampir atau sudah habis (pengingat harian selama masih berlaku).
+                    'kuota.transaksi' => JenisNotifikasiPengguna::KuotaTransaksi,
                     default => null,
                 };
 
