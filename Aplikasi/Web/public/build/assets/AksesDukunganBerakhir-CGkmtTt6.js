@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./TataLetakAutentikasi-BqOGkXDH.js";var n=e();function r({Pesan:e}){return(0,n.jsx)(t,{judul:`Akses dukungan berakhir`,keterangan:e,children:(0,n.jsx)(`p`,{className:`text-keterangan text-teks-sekunder`,children:`Anda bisa menutup tab ini.`})})}export{r as default};
