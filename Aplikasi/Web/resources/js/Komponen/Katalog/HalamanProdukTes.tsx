@@ -57,7 +57,7 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
 
         expect(screen.getByText('Belum ada produk. Impor dari Excel atau Tambah produk')).toBeTruthy();
         expect(screen.getAllByRole('link', { name: 'Impor dari Excel' }).length).toBeGreaterThan(0);
-        expect(screen.getByText('12 dari 100 produk')).toBeTruthy();
+        expect(screen.getByText('12 / 100')).toBeTruthy();
     });
 
     it('kosong karena pencarian: menawarkan hapus pencarian & filter', () => {
@@ -110,7 +110,11 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
         RenderUji(<HalamanDaftarProduk {...PropsDaftar({ BatasSku: { Batas: 100, Terpakai: 100 } })} />);
 
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Tambah produk' }).disabled).toBe(true);
-        expect(screen.getByText('Batas produk paket sudah tercapai')).toBeTruthy();
+        expect(screen.getByText('Penuh')).toBeTruthy();
+        expect(screen.getByRole('progressbar', { name: 'Pemakaian kuota produk' }).getAttribute('aria-valuenow')).toBe(
+            '100',
+        );
+        expect(screen.getByRole('link', { name: 'tingkatkan paket' })).toBeTruthy();
     });
 
     it('filter status bawaan Aktif, ekspor mengikuti pencarian & filter aktif di URL', () => {

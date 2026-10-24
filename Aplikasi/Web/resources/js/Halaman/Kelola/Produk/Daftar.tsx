@@ -1,23 +1,22 @@
 import { Link, router, usePage } from '@inertiajs/react';
 
-import AjakanTambahBatas from '@/Komponen/Kelola/AjakanTambahBatas';
 import AksiMassalProduk from '@/Komponen/Katalog/AksiMassalProduk';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import GambarProduk from '@/Komponen/Katalog/GambarProduk';
+import KuotaProduk from '@/Komponen/Katalog/KuotaProduk';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
-import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisProduk, PropsDaftarProduk } from '@/Tipe/Katalog';
-import { CekBatasPenuh, FormatBatas } from '@/Tipe/Organisasi';
+import { CekBatasPenuh } from '@/Tipe/Organisasi';
 
 const alamat = '/kelola/produk';
 
@@ -151,23 +150,7 @@ export default function HalamanDaftarProduk({ Produk, Kategori, Jenis, BatasSku,
 
     return (
         <TataLetakAplikasi judul="Produk">
-            <p className="text-isi text-teks-sekunder">
-                Produk terhitung paket:{' '}
-                <span className="font-semibold text-teks-utama tabular-nums">{FormatBatas(BatasSku, 'produk')}</span>
-            </p>
-
-            {Izin.Kelola && penuh ? (
-                <Pemberitahuan jenis="info" judul="Batas produk paket sudah tercapai">
-                    Arsipkan produk yang tidak dijual lagi, atau{' '}
-                    <AjakanTambahBatas>
-                        tingkatkan paket di{' '}
-                        <Link href="/kelola/langganan" className="font-semibold text-brand underline">
-                            menu Langganan
-                        </Link>
-                    </AjakanTambahBatas>
-                    . Produk diarsipkan dan induk varian tidak dihitung.
-                </Pemberitahuan>
-            ) : null}
+            <KuotaProduk batas={BatasSku} bolehKelola={Izin.Kelola} />
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="produk" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
