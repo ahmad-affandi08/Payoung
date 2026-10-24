@@ -426,7 +426,9 @@ class _PanelItemState extends ConsumerState<PanelItem> {
   /// F-18: pilih staf yang melayani (maks. 5, komisi dibagi rata). Tanpa data karyawan = tidak ditampilkan.
   List<Widget> _BangunStaf(BuildContext context) {
     final karyawan = ref.watch(penyediaKaryawanPos).value ?? const <KaryawanPos>[];
-    if (karyawan.isEmpty) {
+    // D-183: komisi staf pelayan untuk jasa dan F&B; retail dan grosir tidak memilih staf per item.
+    final sektorCocok = ref.watch(penyediaKonteksPenjualan).value?.CekSesuaiSektor(const ['SVC', 'FNB']) ?? true;
+    if (karyawan.isEmpty || !sektorCocok) {
       return const [];
     }
     final teks = Theme.of(context).textTheme;

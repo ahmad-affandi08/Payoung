@@ -224,6 +224,12 @@ export default function HalamanFormProduk({
     const sektorApotek = PakaiSektor(['RTL-PHR']);
     const sektorLayanan = PakaiSektor(['SVC']);
     const sektorMakanan = PakaiSektor(['FNB']);
+    // D-183: nomor batch untuk barang bertanggal kedaluwarsa, nomor seri untuk perangkat; resep dan produksi untuk usaha
+    // yang meracik atau memproduksi. Pilihan yang sudah dipakai produk ini tetap tampil supaya tidak hilang diam-diam.
+    const sektorBatch = PakaiSektor(['RTL-PHR', 'FNB', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR']);
+    const sektorSeri = PakaiSektor(['RTL-ELC', 'SVC-WRK', 'WHS']);
+    const sektorResep = PakaiSektor(['FNB', 'RTL-FLR']);
+    const sektorProduksi = PakaiSektor(['FNB', 'RTL-FLR', 'WHS', 'RTL-BLD', 'BIZ-MFG']);
     const induk = data.Jenis === 'IndukVarian';
     const bisaDijual = aturan?.BisaDijual ?? false;
     const satuanDasar = Satuan.find((item) => item.Uuid === data.UuidSatuanDasar);
@@ -562,17 +568,24 @@ export default function HalamanFormProduk({
                 </p>
             </div>
         ) : null;
-    const bagianPelacakan = aturan?.BolehPelacakan ? (
-        <div className="sm:col-span-2">
-            <GrupRadio
-                legenda="Pelacakan stok"
-                nilai={data.Pelacakan}
-                opsi={opsiPelacakan}
-                saatBerubah={(nilai) => Atur('Pelacakan', nilai)}
-                galat={galat.Pelacakan}
-            />
-        </div>
-    ) : null;
+    const opsiPelacakanTersedia = opsiPelacakan.filter(
+        (opsi) =>
+            opsi.Nilai === 'Tidak' ||
+            opsi.Nilai === data.Pelacakan ||
+            (opsi.Nilai === 'Batch' ? sektorBatch : sektorSeri),
+    );
+    const bagianPelacakan =
+        aturan?.BolehPelacakan && (opsiPelacakanTersedia.length > 1 || data.Pelacakan !== 'Tidak') ? (
+            <div className="sm:col-span-2">
+                <GrupRadio
+                    legenda="Pelacakan stok"
+                    nilai={data.Pelacakan}
+                    opsi={opsiPelacakanTersedia}
+                    saatBerubah={(nilai) => Atur('Pelacakan', nilai)}
+                    galat={galat.Pelacakan}
+                />
+            </div>
+        ) : null;
     const bagianPaketSesi = bolehPaketSesi ? (
         <div className="flex flex-col gap-2 rounded-kontrol border border-garis p-3 sm:col-span-2">
             <KotakCentang
@@ -965,11 +978,16 @@ export default function HalamanFormProduk({
     );
 
     // Tambah produk (wizard).
-    const pilihanJenis = UrutkanJenisProduk(Jenis, sektorMakanan).map((item) => ({
-        Nilai: item.Nilai,
-        Label: item.Label,
-        Keterangan: penjelasanJenis[item.Nilai],
-    }));
+    const CekJenisTersedia = (nilai: JenisProduk) =>
+        nilai === data.Jenis ||
+        (nilai === 'Resep' ? sektorResep : ['Produksi', 'BahanBaku'].includes(nilai) ? sektorProduksi : true);
+    const pilihanJenis = UrutkanJenisProduk(Jenis, sektorMakanan)
+        .filter((item) => CekJenisTersedia(item.Nilai))
+        .map((item) => ({
+            Nilai: item.Nilai,
+            Label: item.Label,
+            Keterangan: penjelasanJenis[item.Nilai],
+        }));
     const panelJenisNama = (
         <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">{bidangNama}</div>

@@ -72,9 +72,11 @@ void main() {
 
         await Ketuk(tester, find.byKey(const ValueKey('PilihKanal')));
         expect(find.text('Kanal penjualan'), findsOneWidget);
-        for (final kanal in ['BawaPulang', 'MakanDiTempat', 'Antar', 'GoFood', 'GrabFood']) {
+        for (final kanal in ['BawaPulang', 'Antar', 'GoFood', 'GrabFood']) {
           expect(find.byKey(ValueKey('Kanal-$kanal')), findsOneWidget, reason: kanal);
         }
+        // D-183: toko ini bukan F&B, jadi "Makan di tempat" tidak ditawarkan.
+        expect(find.byKey(const ValueKey('Kanal-MakanDiTempat')), findsNothing);
         expect(
           find.byKey(const ValueKey('Kanal-ShopeeFood')),
           findsNothing,

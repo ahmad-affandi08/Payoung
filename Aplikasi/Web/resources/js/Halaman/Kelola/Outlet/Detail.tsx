@@ -21,6 +21,7 @@ import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
+import { PakaiSektor } from '@/Pustaka/Sektor';
 import { IzinTenant, PunyaIzinTenant, type Kota, type Pilihan, type StatusOrganisasi } from '@/Tipe/Organisasi';
 
 type Outlet = {
@@ -78,6 +79,8 @@ export default function HalamanDetailOutlet({
 }: PropsDetail) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const bolehKelola = PunyaIzinTenant(props.Akses, IzinTenant.OutletKelola);
+    // D-183: meja, kios, dan jenis pesanan adalah fitur F&B; sektor lain tidak melihatnya kecuali outlet ini sudah memakainya.
+    const sektorFnb = PakaiSektor(['FNB']);
     const alamat = `/kelola/outlet/${Outlet.Uuid}`;
     const namaKota = Kota.find((baris) => baris.Kode === Outlet.KodeKota)?.Nama ?? 'Belum diisi';
 
@@ -151,11 +154,13 @@ export default function HalamanDetailOutlet({
                 </Card>
             )}
 
-            <JenisPesananOutlet
-                alamatOutlet={alamat}
-                data={JenisPesanan}
-                bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
-            />
+            {sektorFnb || JenisPesanan.JenisPesanan.length > 0 ? (
+                <JenisPesananOutlet
+                    alamatOutlet={alamat}
+                    data={JenisPesanan}
+                    bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
+                />
+            ) : null}
 
             {JamOperasional ? (
                 <JamOperasionalOutlet
@@ -178,15 +183,17 @@ export default function HalamanDetailOutlet({
                 bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
             />
 
-            <BagianMeja
-                alamatOutlet={alamat}
-                modeMeja={ModeMeja}
-                bentuk={BentukMeja}
-                bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
-                pesanSendiri={PesanSendiri}
-            />
+            {sektorFnb || ModeMeja.Aktif || ModeMeja.Meja.length > 0 ? (
+                <BagianMeja
+                    alamatOutlet={alamat}
+                    modeMeja={ModeMeja}
+                    bentuk={BentukMeja}
+                    bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
+                    pesanSendiri={PesanSendiri}
+                />
+            ) : null}
 
-            {Kios ? (
+            {Kios && (sektorFnb || Kios.Aktif) ? (
                 <KiosOutlet alamatOutlet={alamat} data={Kios} bolehKelola={bolehKelola && Outlet.Status === 'Aktif'} />
             ) : null}
         </TataLetakAplikasi>

@@ -22,6 +22,8 @@ export type ButirPengaturan = {
     edisi?: 'Saas' | 'Lisensi';
     /** D-48: awalan kode sektor outlet yang memakai butir ini (mis. `FNB`); tanpa = semua sektor. */
     sektor?: string[];
+    /** D-167, D-183: disembunyikan bila SEMUA sektor usaha ada di daftar ini (mis. `BIZ`: usaha tanpa kasir). */
+    kecualiSektor?: string[];
     /** Pintasan di Beranda untuk usaha bersektor itu: fitur khusus sektor yang rumahnya Pengaturan (mis. Laporan apotek). */
     pintasanBeranda?: boolean;
 };
@@ -135,30 +137,35 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Mode kasir, kembalian, pembulatan, diskon, dan perilaku layar jual.',
                 href: '/kelola/kasir/pengaturan',
                 izin: IzinTenant.OutletKelola,
+                kecualiSektor: ['BIZ'],
             },
             {
                 label: 'Pengaturan struk',
                 keterangan: 'Isi struk, catatan kaki, logo, dan cetak otomatis. Satu pengaturan untuk semua outlet.',
                 href: '/kelola/kasir/struk',
                 izin: IzinTenant.OutletKelola,
+                kecualiSektor: ['BIZ'],
             },
             {
                 label: 'Kategori kas',
                 keterangan: 'Kategori kas masuk & keluar yang bisa dipilih kasir saat shift berjalan.',
                 href: '/kelola/kasir/kategori-kas',
                 izin: IzinTenant.AkuntansiKelola,
+                kecualiSektor: ['BIZ'],
             },
             {
                 label: 'Metode pembayaran',
                 keterangan: 'Tunai, QRIS, EDC, transfer, dan ojol yang tampil sebagai tombol di layar bayar kasir.',
                 href: '/kelola/panduan-awal/metode-pembayaran',
                 izin: IzinTenant.PanduanAwalKelola,
+                kecualiSektor: ['BIZ'],
             },
             {
                 label: 'Gerbang pembayaran',
                 keterangan: 'Gerbang QRIS milik toko untuk pembayaran dinamis di kasir.',
                 href: '/kelola/pembayaran/gerbang',
                 izin: IzinTenant.PembayaranGerbangAtur,
+                kecualiSektor: ['BIZ'],
                 // D-162: tenant SaaS memakai Aktivasi QRIS (foto KTP), bukan akun DOKU sendiri.
                 edisi: 'Lisensi',
             },
@@ -168,6 +175,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
                     'Daftarkan QRIS toko cukup dengan foto KTP, foto selfie, foto tempat usaha, dan nomor rekening.',
                 href: '/kelola/pembayaran/aktivasi-qris',
                 izin: IzinTenant.PembayaranGerbangAtur,
+                kecualiSektor: ['BIZ'],
                 // Butuh akun Partner DOKU milik Payoung, jadi rutenya tidak ada di edisi Lisensi.
                 edisi: 'Saas',
             },
@@ -181,30 +189,35 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Metode harga pokok, stok minus, dan perilaku opname & penyesuaian.',
                 href: '/kelola/persediaan/pengaturan',
                 izin: IzinTenant.AkuntansiKelola,
+                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
             },
             {
                 label: 'Armada pengiriman',
                 keterangan: 'Kendaraan dan pengemudi yang membawa surat jalan grosir, dipilih saat barang berangkat.',
                 href: '/kelola/grosir/armada',
                 izin: IzinTenant.GrosirKelola,
+                sektor: ['WHS', 'RTL-BLD', 'BIZ-MFG'],
             },
             {
                 label: 'Rak gudang',
                 keterangan: 'Bagi lokasi stok menjadi rak atau zona dan tempatkan produknya, untuk opname per rak.',
                 href: '/kelola/persediaan/rak',
                 izin: IzinTenant.PersediaanLihat,
+                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
             },
             {
                 label: 'Stok awal',
                 keterangan: 'Saldo stok pembuka per produk & lokasi, diposting sekali saat mulai memakai Payoung.',
                 href: '/kelola/persediaan/stok-awal',
                 izin: IzinTenant.PersediaanLihat,
+                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
             },
             {
                 label: 'Impor stok awal',
                 keterangan: 'Unggah stok awal banyak produk sekaligus dari Excel/CSV.',
                 href: '/kelola/persediaan/stok-awal/impor',
                 izin: IzinTenant.PersediaanKelola,
+                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
             },
             {
                 label: 'Laporan apotek',
@@ -231,6 +244,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Tingkatan pelanggan dan harga khusus per tier.',
                 href: '/kelola/pelanggan/tier',
                 izin: IzinTenant.PelangganLihat,
+                kecualiSektor: ['BIZ'],
                 fitur: 'pelanggan.loyalti',
             },
             {
@@ -238,6 +252,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 keterangan: 'Perolehan poin, masa berlaku, dan penukaran poin sebagai diskon.',
                 href: '/kelola/pelanggan/loyalti',
                 izin: IzinTenant.PelangganLihat,
+                kecualiSektor: ['BIZ'],
                 fitur: 'pelanggan.loyalti',
             },
         ],

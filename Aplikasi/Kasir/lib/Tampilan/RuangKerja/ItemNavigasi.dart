@@ -19,6 +19,7 @@ class ItemNavigasi {
     required this.ikonAktif,
     this.izin = const [],
     this.modul,
+    this.sektor,
     this.bolehDilepas = false,
     this.labelRingkas,
   });
@@ -29,6 +30,10 @@ class ItemNavigasi {
   final IconData ikonAktif;
   final List<String> izin;
   final String? modul;
+
+  /// D-183: awalan kode sektor outlet yang memakai item ini (`WHS` mencakup `WHS-DST`); null = semua sektor. Sektor
+  /// outlet yang belum diketahui (server lama) tetap menampilkan item, mengikuti `KonteksPenjualan.CekSesuaiSektor`.
+  final List<String>? sektor;
 
   /// Item tambahan yang dilepas dulu saat rel melebihi [batasItem] (mis. Salesman bagi pemilik restoran bermode meja).
   final bool bolehDilepas;
@@ -44,6 +49,22 @@ class ItemNavigasi {
     IzinKasir.persediaanKelola,
     IzinKasir.pembelianKelola,
   ];
+
+  /// D-183: sektor yang mengelola stok barang (menu Stok). Jasa umum dan usaha jasa profesional/kontraktor tidak.
+  static const List<String> sektorBerstok = [
+    'FNB',
+    'RTL',
+    'WHS',
+    'SVC-SLN',
+    'SVC-LDR',
+    'SVC-WRK',
+    'SVC-FIT',
+    'SVC-CWS',
+    'BIZ-MFG',
+  ];
+
+  /// D-183: sektor yang punya salesman keliling dan kanvas (grosir, distribusi, bahan bangunan, manufaktur).
+  static const List<String> sektorSalesman = ['WHS', 'RTL-BLD', 'BIZ-MFG'];
 
   /// Kode modul Meja: aktif bila mode meja outlet aktif (F-07 mode meja fase 1).
   static const String modulMeja = 'Meja';
@@ -77,6 +98,7 @@ class ItemNavigasi {
       ikon: Icons.inventory_2_outlined,
       ikonAktif: Icons.inventory_2,
       izin: izinStok,
+      sektor: sektorBerstok,
     ),
     // Modul Salesman bagian 2: kasir yang juga salesman (toko kecil memakai satu HP) membukanya dari rel kasir.
     ItemNavigasi(
@@ -85,6 +107,7 @@ class ItemNavigasi {
       ikon: Icons.storefront_outlined,
       ikonAktif: Icons.storefront,
       izin: [IzinSalesman.kunjungan],
+      sektor: sektorSalesman,
       bolehDilepas: true,
     ),
     ItemNavigasi(tujuan: TujuanRuangKerja.Kas, label: 'Kas', ikon: Icons.payments_outlined, ikonAktif: Icons.payments),
@@ -183,10 +206,14 @@ class ItemNavigasi {
     StafLokal kasir, {
     Set<String> modulAktif = const {},
     List<ItemNavigasi> daftar = semua,
+    bool Function(List<String> awalan)? cekSektor,
   }) {
     final hasil = daftar
         .where(
-          (i) => (i.modul == null || modulAktif.contains(i.modul)) && (i.izin.isEmpty || i.izin.any(kasir.PunyaIzin)),
+          (i) =>
+              (i.modul == null || modulAktif.contains(i.modul)) &&
+              (i.izin.isEmpty || i.izin.any(kasir.PunyaIzin)) &&
+              (i.sektor == null || cekSektor == null || cekSektor(i.sektor!)),
         )
         .toList();
     while (hasil.length > batasItem) {

@@ -117,6 +117,26 @@ enum IzinTenant: string
     // Apotek: melihat resep penjualan lengkap dengan data pasien (nama & alamat tidak disamarkan) di laporan apotek.
     case ApotekResepLihat = 'apotek.resep.lihat';
 
+    /**
+     * D-183: awalan kode sektor yang memakai izin ini; null = izin umum. Editor peran menyembunyikan izin sektor yang
+     * tidak dipakai tenant (kecuali sudah dipegang suatu peran).
+     *
+     * @return list<string>|null
+     */
+    public function AmbilSektor(): ?array
+    {
+        return match ($this) {
+            self::PesananMejaCatat => ['FNB'],
+            self::ReservasiKelola => ['SVC', 'FNB'],
+            self::LaundryKelola => ['SVC-LDR'],
+            self::BengkelKelola => ['SVC-WRK', 'RTL-ELC'],
+            self::PelangganSesiKelola => ['SVC'],
+            self::GrosirKelola, self::GrosirSetujuiKredit, self::SalesmanKunjungan => ['WHS', 'RTL-BLD', 'BIZ-MFG'],
+            self::ApotekObatKerasJual, self::ApotekResepLihat => ['RTL-PHR'],
+            default => null,
+        };
+    }
+
     public function AmbilLabel(): string
     {
         return match ($this) {

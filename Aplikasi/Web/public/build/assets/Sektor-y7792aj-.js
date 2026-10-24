@@ -1,0 +1,1 @@
+import{a as e}from"./dist-D4veJNCv.js";function t(e,t){if(t.length===0)return!0;let n=(e,t)=>t===e||t.startsWith(`${e}-`);return e.kecualiSektor!==void 0&&t.every(t=>e.kecualiSektor?.some(e=>n(e,t)))?!1:e.sektor===void 0||e.sektor.some(e=>t.some(t=>n(e,t)))}function n(n){let{props:r}=e();return t({sektor:n},r.SektorOutlet??[])}export{n,t};

@@ -10,6 +10,7 @@ use App\Domain\Organisasi\Aksi\BuatPerangkat;
 use App\Domain\Organisasi\Aksi\CabutPerangkat;
 use App\Domain\Organisasi\Aksi\UbahNamaPerangkat;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
+use App\Domain\Organisasi\Kueri\PenyaringSektor;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\DaftarPerangkat;
 use App\Domain\Organisasi\Kueri\PemakaianPerangkat;
@@ -33,7 +34,7 @@ final class PerangkatKontroler extends DasarKelolaKontroler
 {
     private const KUNCI_KODE_BARU = 'KodeAktivasiBaru';
 
-    public function Daftar(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr): Response
+    public function Daftar(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr, PenyaringSektor $sektor): Response
     {
         $boleh = $this->IdOutletBoleh();
         $idTenant = $this->IdTenant();
@@ -53,7 +54,8 @@ final class PerangkatKontroler extends DasarKelolaKontroler
                     'BatasPerangkat' => $batasPaket->AmbilRingkasan($idTenant, 'BatasPerangkatPerOutlet', $pemakaian->HitungAktifDiOutlet($outlet->Id)),
                 ])
                 ->values(),
-            'JenisPerangkat' => array_map(fn (JenisPerangkat $jenis): array => ['Nilai' => $jenis->value, 'Label' => $jenis->AmbilLabel()], JenisPerangkat::cases()),
+            // D-183: layar dapur & pelayan hanya untuk F&B, salesman hanya untuk grosir/distribusi.
+            'JenisPerangkat' => array_values(array_map(fn (JenisPerangkat $jenis): array => ['Nilai' => $jenis->value, 'Label' => $jenis->AmbilLabel()], array_filter(JenisPerangkat::cases(), fn (JenisPerangkat $jenis): bool => $sektor->CekJenisPerangkatTampil($jenis)))),
             'KodeAktivasiBaru' => is_array($kodeBaru) && is_string($kodeBaru['Kode'] ?? null) ? [
                 ...$kodeBaru,
                 'QrSvg' => $qr->BuatSvg($kodeBaru['Kode']),

@@ -17,6 +17,20 @@ enum JenisPerangkat: string
     case Pelayan = 'Pelayan';
     case Salesman = 'Salesman';
 
+    /**
+     * D-183: awalan kode sektor yang memakai jenis perangkat ini; null = umum.
+     *
+     * @return list<string>|null
+     */
+    public function AmbilSektor(): ?array
+    {
+        return match ($this) {
+            self::Kds, self::Pelayan => ['FNB'],
+            self::Salesman => ['WHS', 'RTL-BLD', 'BIZ-MFG'],
+            default => null,
+        };
+    }
+
     public function AmbilLabel(): string
     {
         return match ($this) {

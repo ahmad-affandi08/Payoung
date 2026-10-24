@@ -2058,7 +2058,12 @@ class _LayarJualState extends ConsumerState<LayarJual> {
         isi: PanelBayar(
           key: _kunciBayar,
           kasir: widget.kasir,
-          saatPreOrder: _uuidKunciBayar == null ? () => setState(() => _panel = _JenisPanel.PreOrder) : null,
+          // D-183: pre-order + uang muka hanya untuk bakery, florist, dan jasa umum.
+          saatPreOrder:
+              _uuidKunciBayar == null &&
+                  (ref.watch(penyediaKonteksPenjualan).value?.CekSesuaiSektor(KonteksPenjualan.sektorPreOrder) ?? true)
+              ? () => setState(() => _panel = _JenisPanel.PreOrder)
+              : null,
           // POS-05: SO cepat hanya di outlet bermode kasir Grosir (kasir lain membuat pesanan grosir dari back-office).
           saatPesananGrosir: _uuidKunciBayar == null && ref.watch(penyediaModeKasir).value == 'Grosir'
               ? () => setState(() => _panel = _JenisPanel.PesananGrosir)

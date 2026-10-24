@@ -111,10 +111,12 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
       _BukaNotifikasi();
       return;
     }
+    // D-183: usaha tanpa kasir tidak punya tab Perangkat; tautan itu dibiarkan di tab sekarang.
+    final tanpaKasir = ref.read(penyediaKonfigurasiAplikasi).value?.hanyaPerusahaan ?? false;
     setState(() {
       _indeks = switch (pesan.data['Tautan']) {
         'persetujuan' => _indeksPersetujuan,
-        'perangkat' => _indeksPerangkat,
+        'perangkat' when !tanpaKasir => _indeksPerangkat,
         _ => _indeks,
       };
     });
@@ -136,7 +138,11 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
   /// P-09: tombol Bantuan; nama tab aktif ikut sebagai layar asal tiket.
   void _BukaBantuan() {
     unawaited(
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LayarBantuan(layarAsal: _tujuan[_indeks].$3))),
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LayarBantuan(layarAsal: _tujuan[_indeks.clamp(0, _tujuan.length - 1)].$3),
+        ),
+      ),
     );
   }
 
@@ -149,6 +155,10 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
         (ref.watch(penyediaDokumenPersetujuan).value?.where((d) => d.bisaDisetujui).length ?? 0);
     final belumDibaca = ref.watch(penyediaNotifikasi).value?.belumDibaca ?? 0;
     final warna = TokenWarna.AmbilDari(context);
+    // D-183: usaha tanpa kasir (sektor Perusahaan) tidak punya shift dan perangkat kasir, jadi dua tab itu tidak tampil.
+    final tanpaKasir = ref.watch(penyediaKonfigurasiAplikasi).value?.hanyaPerusahaan ?? false;
+    final tujuan = tanpaKasir ? _tujuan.take(_indeksPerangkat - 1).toList() : _tujuan;
+    final indeks = _indeks.clamp(0, tujuan.length - 1);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: warna.brandGelap,
@@ -189,11 +199,16 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
         ],
       ),
       body: IndexedStack(
-        index: _indeks,
-        children: const [LayarBeranda(), LayarLaporan(), LayarPersetujuan(), LayarShift(), LayarPerangkat()],
+        index: indeks,
+        children: [
+          const LayarBeranda(),
+          const LayarLaporan(),
+          const LayarPersetujuan(),
+          if (!tanpaKasir) ...const [LayarShift(), LayarPerangkat()],
+        ],
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _indeks,
+        selectedIndex: indeks,
         onDestinationSelected: (i) {
           if (i == _indeksPersetujuan) {
             ref
@@ -203,7 +218,7 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
           setState(() => _indeks = i);
         },
         destinations: [
-          for (final (i, (ikon, ikonAktif, label)) in _tujuan.indexed)
+          for (final (i, (ikon, ikonAktif, label)) in tujuan.indexed)
             NavigationDestination(
               icon: i == _indeksPersetujuan && menunggu > 0
                   ? Badge(label: Text('$menunggu'), child: Icon(ikon))

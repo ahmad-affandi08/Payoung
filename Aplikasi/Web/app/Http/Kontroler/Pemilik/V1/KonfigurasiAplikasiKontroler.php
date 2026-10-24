@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Pemilik\V1;
 
 use App\Domain\Organisasi\Enum\PlatformPerangkat;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Tenant\Enum\AplikasiRilis;
 use App\Domain\Tenant\Kueri\FlagFiturTenant;
 use App\Domain\Tenant\Kueri\VersiAplikasiPerangkat;
@@ -14,7 +15,7 @@ use Illuminate\Http\Request;
 
 /**
  * `GET /api/pemilik/v1/konfigurasi-aplikasi` (P-10, PGL-18): versi terbaru & minimal Aplikasi Owner, catatan rilis, dan
- * flag fitur tenant aktif (kunci → hidup/mati; Global mati = kill switch). Bentuknya sama dengan `konfigurasi-aplikasi`
+ * flag fitur tenant aktif (kunci → hidup/mati; Global mati = kill switch), serta sektor usaha (`Sektor`, `HanyaPerusahaan`). Bentuknya sama dengan `konfigurasi-aplikasi`
  * aplikasi POS supaya model Dart bersama (`KonfigurasiAplikasi`) membacanya tanpa cabang.
  *
  * Platform dari header `X-Platform-Aplikasi` (`Android`/`Ios`; kosong atau tak dikenal = Android). Versi saat ini dari
@@ -23,7 +24,7 @@ use Illuminate\Http\Request;
  */
 final class KonfigurasiAplikasiKontroler extends DasarPemilikKontroler
 {
-    public function Tampilkan(Request $permintaan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag): JsonResponse
+    public function Tampilkan(Request $permintaan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, SektorOutletTenant $sektor): JsonResponse
     {
         $pengguna = $this->Pengguna($permintaan);
         $idTenant = $this->IdTenant();
@@ -53,6 +54,9 @@ final class KonfigurasiAplikasiKontroler extends DasarPemilikKontroler
                 'PerPlatform' => array_map(fn (array $v): array => ['VersiTerbaru' => $v['VersiTerbaru'], 'VersiMinimal' => $v['VersiMinimal'], 'TautanUnduh' => $v['TautanUnduh']], $perPlatform),
             ],
             'FlagFitur' => (object) $flag->AmbilUntukTenant($idTenant),
+            // D-183: sinyal sektor untuk menyaring tab; `HanyaPerusahaan` = usaha tanpa kasir (tab Shift & Perangkat tidak berguna).
+            'Sektor' => $sektor->AmbilKode(),
+            'HanyaPerusahaan' => $sektor->CekHanyaPerusahaan(),
             'WaktuServer' => now()->utc()->toIso8601ZuluString(),
         ]);
     }

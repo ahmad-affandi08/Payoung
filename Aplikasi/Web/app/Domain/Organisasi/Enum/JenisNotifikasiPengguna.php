@@ -17,6 +17,20 @@ enum JenisNotifikasiPengguna: string
     case PesananOnline = 'PesananOnline';
     case PesanPlatform = 'PesanPlatform';
 
+    /**
+     * D-183: awalan kode sektor yang punya jenis notifikasi ini; null = umum. Pengaturan notifikasi tidak menawarkan
+     * "barang mendekati kedaluwarsa" kepada usaha yang tidak menyimpan barang bertanggal kedaluwarsa.
+     *
+     * @return list<string>|null
+     */
+    public function AmbilSektor(): ?array
+    {
+        return match ($this) {
+            self::StokKedaluwarsa => ['RTL-PHR', 'FNB', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR'],
+            default => null,
+        };
+    }
+
     /** Label untuk pusat notifikasi web dan pengaturannya. */
     public function AmbilLabel(): string
     {

@@ -20,7 +20,7 @@ final class PusatNotifikasiWeb
 {
     public const BATAS = 100;
 
-    public function __construct(private readonly AksesPengguna $akses) {}
+    public function __construct(private readonly AksesPengguna $akses, private readonly PenyaringSektor $sektor) {}
 
     /**
      * @return array{Notifikasi: list<array<string, mixed>>, BelumDibaca: int, Dibisukan: list<string>, TanpaPush: list<string>, OutletDibisukan: list<string>, Outlet: list<array{Uuid: string, Nama: string}>, Jenis: list<array{Nilai: string, Label: string, BisaDibisukan: bool}>}
@@ -51,7 +51,7 @@ final class PusatNotifikasiWeb
             'TanpaPush' => array_values(NotifikasiPushDimatikan::query()->where('IdPengguna', $idPengguna)->get()->map(fn (NotifikasiPushDimatikan $b): string => $b->Jenis->value)->all()),
             'OutletDibisukan' => array_values(NotifikasiOutletDibisukan::query()->where('IdPengguna', $idPengguna)->pluck('IdOutlet')->map(fn (mixed $id): string => (string) Outlet::query()->whereKey((int) $id)->value('Uuid'))->all()),
             'Outlet' => $this->AmbilOutletBisaDipilih($idPengguna, $idTenant),
-            'Jenis' => array_map(fn (JenisNotifikasiPengguna $j): array => ['Nilai' => $j->value, 'Label' => $j->AmbilLabel(), 'BisaDibisukan' => $j->BisaDibisukan()], JenisNotifikasiPengguna::cases()),
+            'Jenis' => array_values(array_map(fn (JenisNotifikasiPengguna $j): array => ['Nilai' => $j->value, 'Label' => $j->AmbilLabel(), 'BisaDibisukan' => $j->BisaDibisukan()], array_filter(JenisNotifikasiPengguna::cases(), fn (JenisNotifikasiPengguna $j): bool => $this->sektor->CekSesuai($j->AmbilSektor())))),
         ];
     }
 

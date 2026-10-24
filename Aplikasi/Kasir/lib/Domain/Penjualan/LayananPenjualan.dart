@@ -267,7 +267,11 @@ class LayananPenjualan {
     if (platform.isEmpty && !adaGratisOngkir && !berharga.any(kanalToko.contains)) {
       return const [];
     }
-    return [...kanalToko, ...platform];
+    // D-183: "Makan di tempat" milik F&B (jenis pesanan outlet); toko lain hanya menawarkannya bila punya harga berkanal itu.
+    return [
+      ...kanalToko.where((kanal) => kanal != KanalPenjualan.MakanDiTempat || berharga.contains(kanal)),
+      ...platform,
+    ];
   }
 
   /// X8: ganti kanal keranjang lalu harga ulang semua baris menurut daftar harga kanal baru. Baris tanpa harga di kanal

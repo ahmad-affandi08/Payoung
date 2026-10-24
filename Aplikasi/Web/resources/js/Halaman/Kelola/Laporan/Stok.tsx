@@ -11,6 +11,7 @@ import { Label } from '@/Komponen/Ui/label';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { BuatUrlKartuStok, FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { PakaiSektor } from '@/Pustaka/Sektor';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import { IzinTenant, PunyaIzinTenant } from '@/Tipe/Organisasi';
@@ -388,6 +389,22 @@ export default function HalamanLaporanStok({
 }: PropsLaporanStok) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const bolehKelola = PunyaIzinTenant(props.Akses, IzinTenant.PersediaanKelola);
+    // D-183: tab kedaluwarsa hanya untuk usaha yang menyimpan barang bertanggal kedaluwarsa, rencana produksi hanya untuk
+    // usaha yang memproduksi/merakit; tab yang sedang dibuka (tautan lama, hasil pencarian) tetap tampil.
+    const sektorBatch = PakaiSektor(['RTL-PHR', 'FNB', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR']);
+    const sektorProduksi = PakaiSektor(['FNB', 'WHS', 'RTL-BLD', 'BIZ-MFG']);
+    const tabStok = [
+        { nilai: 'nilai', label: 'Nilai persediaan' },
+        { nilai: 'kritis', label: 'Stok kritis' },
+        { nilai: 'kedaluwarsa', label: 'Kedaluwarsa' },
+        { nilai: 'restock', label: 'Saran restock' },
+        { nilai: 'perputaran', label: 'Slow & fast moving' },
+        { nilai: 'rencana', label: 'Rencana produksi' },
+    ].filter(
+        (tab) =>
+            (tab.nilai !== 'kedaluwarsa' || sektorBatch || Saring.Tab === 'kedaluwarsa') &&
+            (tab.nilai !== 'rencana' || sektorProduksi || Saring.Tab === 'rencana'),
+    );
     const query = {
         tanggal: Saring.Tanggal,
         gudang: Saring.Gudang,
@@ -470,14 +487,7 @@ export default function HalamanLaporanStok({
                     alamat={alamat}
                     query={query}
                     tabAktif={Saring.Tab}
-                    tab={[
-                        { nilai: 'nilai', label: 'Nilai persediaan' },
-                        { nilai: 'kritis', label: 'Stok kritis' },
-                        { nilai: 'kedaluwarsa', label: 'Kedaluwarsa' },
-                        { nilai: 'restock', label: 'Saran restock' },
-                        { nilai: 'perputaran', label: 'Slow & fast moving' },
-                        { nilai: 'rencana', label: 'Rencana produksi' },
-                    ]}
+                    tab={tabStok}
                 />
                 <TautanEkspor alamat={`${alamat}/ekspor`} query={{ ...query, tab: Saring.Tab }} eksporBesar />
             </div>

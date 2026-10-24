@@ -8,9 +8,11 @@ use App\Domain\Organisasi\Aksi\HapusPeran;
 use App\Domain\Organisasi\Aksi\SimpanPeran;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
+use App\Domain\Organisasi\Kueri\PenyaringSektor;
 use App\Domain\Organisasi\Model\Peran;
 use App\Domain\Organisasi\Model\TenantPengguna;
 use App\Http\Permintaan\Kelola\SimpanPeranPermintaan;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,7 +22,7 @@ use Inertia\Response;
  */
 final class PeranKontroler extends DasarKelolaKontroler
 {
-    public function Daftar(): Response
+    public function Daftar(PenyaringSektor $sektor): Response
     {
         $jumlahAnggota = TenantPengguna::query()
             ->where('IdTenant', $this->IdTenant())
@@ -29,8 +31,11 @@ final class PeranKontroler extends DasarKelolaKontroler
             ->groupBy('IdPeran')
             ->pluck('Jumlah', 'IdPeran');
 
+        $semuaPeran = Peran::query()->with('Izin')->orderByDesc('Bawaan')->orderBy('Id')->get();
+
         return Inertia::render('Kelola/Peran/Daftar', [
-            'Peran' => Peran::query()->with('Izin')->orderByDesc('Bawaan')->orderBy('Id')->get()->map(fn (Peran $peran): array => [
+            // D-183: peran bawaan sektor lain (Pelayan, Salesman, Apoteker) disembunyikan selama belum beranggota.
+            'Peran' => $semuaPeran->filter(fn (Peran $peran): bool => $sektor->CekPeranTampil($peran->Kode, (bool) $peran->Bawaan, (int) ($jumlahAnggota->get($peran->Id) ?? 0)))->map(fn (Peran $peran): array => [
                 'Uuid' => $peran->Uuid,
                 'Nama' => $peran->Nama,
                 'Keterangan' => $peran->Keterangan,
@@ -39,15 +44,15 @@ final class PeranKontroler extends DasarKelolaKontroler
                 'Izin' => $peran->CekPemilik() ? IzinTenant::AmbilSemuaKunci() : $peran->AmbilKunciIzin(),
                 'JumlahAnggota' => (int) ($jumlahAnggota->get($peran->Id) ?? 0),
             ])->values(),
-            'DaftarIzin' => self::AmbilDaftarIzin(),
+            'DaftarIzin' => self::AmbilDaftarIzin($sektor, $semuaPeran),
         ]);
     }
 
     /** Halaman penuh "Buat peran" (pola sama dengan Tambah produk). */
-    public function Buat(): Response
+    public function Buat(PenyaringSektor $sektor): Response
     {
         return Inertia::render('Kelola/Peran/Buat', [
-            'DaftarIzin' => self::AmbilDaftarIzin(),
+            'DaftarIzin' => self::AmbilDaftarIzin($sektor, Peran::query()->with('Izin')->get()),
         ]);
     }
 
@@ -74,16 +79,24 @@ final class PeranKontroler extends DasarKelolaKontroler
     }
 
     /**
+     * D-183: izin khusus sektor yang tidak dipakai tenant disembunyikan, kecuali sudah dipegang suatu peran.
+     *
+     * @param  Collection<int, Peran>  $semuaPeran
      * @return list<array{Kunci: string, Label: string, Kelompok: string, KhususPemilik: bool}>
      */
-    private static function AmbilDaftarIzin(): array
+    private static function AmbilDaftarIzin(PenyaringSektor $sektor, Collection $semuaPeran): array
     {
-        return array_map(fn (IzinTenant $izin): array => [
+        // Hanya peran kustom yang dihitung: peran bawaan (Pemilik, Admin) memegang hampir semua izin, sehingga tidak ada
+        // izin sektor yang akan pernah tersembunyi.
+        /** @var list<string> $terpakai */
+        $terpakai = array_values(array_unique($semuaPeran->filter(fn (Peran $peran): bool => ! $peran->Bawaan)->flatMap(fn (Peran $peran): array => $peran->AmbilKunciIzin())->all()));
+
+        return array_values(array_map(fn (IzinTenant $izin): array => [
             'Kunci' => $izin->value,
             'Label' => $izin->AmbilLabel(),
             'Kelompok' => $izin->AmbilKelompok(),
             'KhususPemilik' => $izin->CekKhususPemilik(),
-        ], IzinTenant::cases());
+        ], array_filter(IzinTenant::cases(), fn (IzinTenant $izin): bool => $sektor->CekIzinTampil($izin, $terpakai))));
     }
 
     private function CariPeran(string $uuid): Peran

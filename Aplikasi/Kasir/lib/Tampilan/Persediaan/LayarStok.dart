@@ -16,7 +16,13 @@ import '../RuangKerja/IsiAreaKerja.dart';
 /// membuka panel tugas lewat [saatGudang]. **Bahan terbuang** (F-05f bagian 2, offline): catatan hari ini dengan status
 /// kirim berteks dan tombol "Catat bahan terbuang" ([saatCatatTerbuang]).
 class LayarStok extends ConsumerWidget {
-  const LayarStok({super.key, this.saatCatatTerbuang, this.jenisGudang = const [], this.saatGudang});
+  const LayarStok({
+    super.key,
+    this.saatCatatTerbuang,
+    this.jenisGudang = const [],
+    this.saatGudang,
+    this.tampilBahanTerbuang = true,
+  });
 
   /// Buka lembar catat bahan terbuang (null = kasir tidak punya izin).
   final VoidCallback? saatCatatTerbuang;
@@ -24,6 +30,9 @@ class LayarStok extends ConsumerWidget {
   /// Pekerjaan gudang yang boleh dibuka staf ini (kosong = bagian Gudang tidak tampil).
   final List<JenisGudang> jenisGudang;
   final ValueChanged<JenisGudang>? saatGudang;
+
+  /// D-183: bagian bahan terbuang hanya untuk usaha yang membuang barang (F&B, toko segar, apotek, pet shop, florist).
+  final bool tampilBahanTerbuang;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,58 +73,60 @@ class LayarStok extends ConsumerWidget {
           ),
           const SizedBox(height: TokenJarak.jarak24),
         ],
-        Wrap(
-          spacing: TokenJarak.jarak12,
-          runSpacing: TokenJarak.jarak8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text('Bahan terbuang hari ini', style: teks.titleMedium),
-            if (saatCatatTerbuang != null)
-              SizedBox(
-                height: TokenJarak.targetSentuh,
-                child: FilledButton.icon(
-                  onPressed: saatCatatTerbuang,
-                  icon: const Icon(Icons.delete_sweep_outlined),
-                  label: const Text('Catat bahan terbuang'),
+        if (tampilBahanTerbuang) ...[
+          Wrap(
+            spacing: TokenJarak.jarak12,
+            runSpacing: TokenJarak.jarak8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text('Bahan terbuang hari ini', style: teks.titleMedium),
+              if (saatCatatTerbuang != null)
+                SizedBox(
+                  height: TokenJarak.targetSentuh,
+                  child: FilledButton.icon(
+                    onPressed: saatCatatTerbuang,
+                    icon: const Icon(Icons.delete_sweep_outlined),
+                    label: const Text('Catat bahan terbuang'),
+                  ),
                 ),
+            ],
+          ),
+          const SizedBox(height: TokenJarak.jarak8),
+          Text(
+            'Catat bahan atau menu yang basi, rusak, salah buat, atau tumpah. Stok berkurang dan nilainya masuk '
+            'laporan food cost. Bisa dicatat saat offline; terkirim otomatis saat online.',
+            style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+          ),
+          const SizedBox(height: TokenJarak.jarak12),
+          if (terbuang.isLoading && terbuang.value == null) const LinearProgressIndicator(),
+          if (terbuang.hasError)
+            Text('Catatan bahan terbuang tidak bisa dimuat. Coba lagi.', style: TextStyle(color: warna.bahaya)),
+          if (!terbuang.isLoading && !terbuang.hasError && daftar.isEmpty)
+            const KeadaanKosong(
+              ikon: Icons.delete_outline,
+              ilustrasi: IlustrasiKosong.Stok,
+              ringkas: true,
+              judul: 'Belum ada bahan terbuang yang dicatat hari ini',
+              keterangan: 'Catatan bahan terbuang di perangkat ini akan muncul di sini.',
+            ),
+          if (daftar.isNotEmpty)
+            Material(
+              color: warna.permukaan,
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
               ),
-          ],
-        ),
-        const SizedBox(height: TokenJarak.jarak8),
-        Text(
-          'Catat bahan atau menu yang basi, rusak, salah buat, atau tumpah. Stok berkurang dan nilainya masuk '
-          'laporan food cost. Bisa dicatat saat offline; terkirim otomatis saat online.',
-          style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
-        ),
-        const SizedBox(height: TokenJarak.jarak12),
-        if (terbuang.isLoading && terbuang.value == null) const LinearProgressIndicator(),
-        if (terbuang.hasError)
-          Text('Catatan bahan terbuang tidak bisa dimuat. Coba lagi.', style: TextStyle(color: warna.bahaya)),
-        if (!terbuang.isLoading && !terbuang.hasError && daftar.isEmpty)
-          const KeadaanKosong(
-            ikon: Icons.delete_outline,
-            ilustrasi: IlustrasiKosong.Stok,
-            ringkas: true,
-            judul: 'Belum ada bahan terbuang yang dicatat hari ini',
-            keterangan: 'Catatan bahan terbuang di perangkat ini akan muncul di sini.',
-          ),
-        if (daftar.isNotEmpty)
-          Material(
-            color: warna.permukaan,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-              borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                for (var i = 0; i < daftar.length; i++) ...[
-                  if (i > 0) Divider(height: TokenJarak.tebalGaris, color: warna.garis),
-                  _BarisBahanTerbuang(riwayat: daftar[i]),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (var i = 0; i < daftar.length; i++) ...[
+                    if (i > 0) Divider(height: TokenJarak.tebalGaris, color: warna.garis),
+                    _BarisBahanTerbuang(riwayat: daftar[i]),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
+        ],
       ],
     );
   }

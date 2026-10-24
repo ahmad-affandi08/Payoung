@@ -41,7 +41,7 @@ use Inertia\Response;
  */
 final class TimKontroler extends DasarKelolaKontroler
 {
-    public function Daftar(DaftarTim $tim, DaftarAnggota $anggota, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket, PetaUuidOutlet $outlet, AksesPengguna $akses): Response
+    public function Daftar(DaftarTim $tim, DaftarAnggota $anggota, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket, PetaUuidOutlet $outlet, AksesPengguna $akses, PenyaringSektor $sektor): Response
     {
         $idTenant = $this->IdTenant();
         $boleh = fn (IzinTenant $izin): bool => $akses->CekIzin($idTenant, $this->Pelaku()->Id, $izin);
@@ -52,7 +52,7 @@ final class TimKontroler extends DasarKelolaKontroler
         return Inertia::render('Kelola/Tim/Daftar', [
             'Tim' => $tim->Ambil($idTenant, $kelolaKaryawan, $lihatAkun, $lihatKaryawan),
             'Undangan' => $lihatAkun ? $anggota->AmbilUndanganMenunggu($idTenant) : [],
-            'Peran' => self::AmbilOpsiPeran(),
+            'Peran' => self::AmbilOpsiPeran($sektor),
             'Outlet' => self::AmbilOpsiOutlet(),
             'OpsiOutlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas($this->IdOutletBoleh(), true)),
             'OpsiPengguna' => $kelolaKaryawan ? array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Nama' => $a['Nama']], $anggota->AmbilPilihanAktif($idTenant)) : [],
@@ -70,7 +70,7 @@ final class TimKontroler extends DasarKelolaKontroler
     }
 
     /** Formulir "Tambah anggota tim"; `?karyawan=` memberi akses masuk untuk karyawan yang sudah ada (tanpa mencatat dua kali). */
-    public function Buat(Request $permintaan, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket, PetaUuidOutlet $outlet, AksesPengguna $akses): Response
+    public function Buat(Request $permintaan, PemakaianBatasOrganisasi $pemakaian, PastikanBatasPaket $batasPaket, PetaUuidOutlet $outlet, AksesPengguna $akses, PenyaringSektor $sektor): Response
     {
         $idTenant = $this->IdTenant();
         $boleh = fn (IzinTenant $izin): bool => $akses->CekIzin($idTenant, $this->Pelaku()->Id, $izin);
@@ -83,7 +83,7 @@ final class TimKontroler extends DasarKelolaKontroler
             'KaryawanTertaut' => $tertaut === null ? null : ['Uuid' => $tertaut->Uuid, 'Nama' => $tertaut->Nama, 'Jabatan' => $tertaut->Jabatan],
             'BolehAkun' => $bolehAkun,
             'BolehKaryawan' => $bolehKaryawan,
-            'Peran' => self::AmbilOpsiPeran(),
+            'Peran' => self::AmbilOpsiPeran($sektor),
             'Outlet' => self::AmbilOpsiOutlet(),
             'OpsiOutlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas($this->IdOutletBoleh(), true)),
             'BatasPengguna' => $batasPaket->AmbilRingkasan($idTenant, 'BatasPengguna', $pemakaian->HitungPengguna($idTenant)),
@@ -168,9 +168,14 @@ final class TimKontroler extends DasarKelolaKontroler
     /**
      * @return array<int, array{Uuid: string, Nama: string, Pemilik: bool, Cakupan: string, IkutAbsensi: bool}>
      */
-    private static function AmbilOpsiPeran(): array
+    private static function AmbilOpsiPeran(PenyaringSektor $sektor): array
     {
-        return Peran::query()->orderByDesc('Bawaan')->orderBy('Id')->get()->map(fn (Peran $peran): array => [
+        // D-183: peran bawaan sektor lain (Pelayan, Salesman, Apoteker) tidak ditawarkan selama belum beranggota.
+        $jumlahAnggota = TenantPengguna::query()->selectRaw('IdPeran, count(*) as Jumlah')->groupBy('IdPeran')->pluck('Jumlah', 'IdPeran');
+
+        return Peran::query()->orderByDesc('Bawaan')->orderBy('Id')->get()
+            ->filter(fn (Peran $peran): bool => $sektor->CekPeranTampil($peran->Kode, (bool) $peran->Bawaan, (int) ($jumlahAnggota->get($peran->Id) ?? 0)))
+            ->map(fn (Peran $peran): array => [
             'Uuid' => $peran->Uuid,
             'Nama' => $peran->Nama,
             'Pemilik' => $peran->CekPemilik(),

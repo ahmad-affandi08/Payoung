@@ -64,6 +64,8 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
     const formulir = useForm<IsianOutlet>(awal);
     // D-48: pengaturan kanvas (kendaraan salesman) hanya untuk usaha grosir/distribusi atau outlet yang sudah kanvas.
     const tampilKanvas = PakaiSektor(['WHS', 'RTL-BLD']) || awal.Kanvas;
+    // D-183: PBJT makanan & minuman hanya bermakna bagi usaha F&B (atau outlet yang sudah memungutnya).
+    const tampilPbjt = PakaiSektor(['FNB']) || awal.PungutPbjt;
     const idKanvas = useId();
     const pilihanKota = kota.map((baris) => ({
         Nilai: baris.Kode,
@@ -247,11 +249,13 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
                     />
                 </div>
             ) : null}
-            <KotakCentang
-                label="Memungut PBJT makanan & minuman (pajak daerah)"
-                nilai={formulir.data.PungutPbjt}
-                saatBerubah={(nilai) => formulir.setData('PungutPbjt', nilai)}
-            />
+            {tampilPbjt ? (
+                <KotakCentang
+                    label="Memungut PBJT makanan & minuman (pajak daerah)"
+                    nilai={formulir.data.PungutPbjt}
+                    saatBerubah={(nilai) => formulir.setData('PungutPbjt', nilai)}
+                />
+            ) : null}
         </>
     );
     const isiKanvas = (

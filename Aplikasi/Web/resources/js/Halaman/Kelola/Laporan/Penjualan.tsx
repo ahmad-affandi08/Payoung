@@ -1350,7 +1350,7 @@ function IsiTab({
 export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     // D-48: Menu engineering hanya bermakna untuk usaha makanan & minuman (atau bila tab itu sedang dibuka).
     const sektorFnb = PakaiSektor(['FNB']);
-    const tabFnb = ['menu', 'waktu-saji', 'food-cost'];
+    const tabFnb = ['menu', 'waktu-saji', 'food-cost', 'void-item'];
     // D-111: tab Anti-fraud adalah fitur paket (`keamanan.anti-fraud`); server menolaknya di luar paket, jadi tab disembunyikan.
     const antiFraudTerkunci = PakaiFiturTerkunci('keamanan.anti-fraud');
     // D-111: prediksi & rekomendasi bundling termasuk fitur Forecast & insight (`laporan.insight`).

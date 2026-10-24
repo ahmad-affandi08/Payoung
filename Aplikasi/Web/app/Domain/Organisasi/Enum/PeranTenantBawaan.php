@@ -27,6 +27,22 @@ enum PeranTenantBawaan: string
     case Apoteker = 'Apoteker';
     case Karyawan = 'Karyawan';
 
+    /**
+     * D-183: awalan kode sektor yang memakai peran ini; null = peran umum. Dipakai `PenyaringSektor` untuk tidak
+     * menawarkan Pelayan di toko kelontong, Apoteker di bengkel, dan seterusnya.
+     *
+     * @return list<string>|null
+     */
+    public function AmbilSektor(): ?array
+    {
+        return match ($this) {
+            self::Pelayan => ['FNB'],
+            self::Salesman => ['WHS', 'RTL-BLD', 'BIZ-MFG'],
+            self::Apoteker => ['RTL-PHR'],
+            default => null,
+        };
+    }
+
     public function AmbilNama(): string
     {
         return match ($this) {

@@ -8,6 +8,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 
 import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
+import '../../Domain/Penjualan/KonteksPenjualan.dart';
 import '../../Domain/Perangkat/PenjagaLayarMenyala.dart';
 import '../../Domain/Persediaan/LayananGudang.dart';
 import '../../Domain/Sesi/StafLokal.dart';
@@ -386,12 +387,15 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       saatVoid: (uuid) => _BukaPanelPenjualan(_PanelPenjualan(uuidPenjualanVoid: uuid)),
       saatRetur: () => _BukaPanelPenjualan(const _PanelPenjualan()),
       saatReturStruk: (nomor) => _BukaPanelPenjualan(_PanelPenjualan(nomorRetur: nomor)),
-      saatAmbilPreOrder: () => _BukaPanelPenjualan(const _PanelPenjualan(ambilPreOrder: true)),
+      // D-183: pre-order + uang muka untuk bakery, florist, dan jasa umum (pesanan kustom), bukan semua sektor.
+      saatAmbilPreOrder: _SektorCocok(KonteksPenjualan.sektorPreOrder)
+          ? () => _BukaPanelPenjualan(const _PanelPenjualan(ambilPreOrder: true))
+          : null,
       saatPesananOnline: ref.watch(penyediaKonteksPenjualan).value?.tokoOnlineAktif == true
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(pesananOnline: true))
           : null,
       // D-48: reservasi hanya untuk usaha jasa (SVC), servis hanya untuk bengkel (SVC-WRK).
-      saatReservasi: _SektorCocok(const ['SVC'])
+      saatReservasi: _SektorCocok(const ['SVC-SLN', 'SVC-FIT', 'SVC-GEN', 'SVC-WRK', 'SVC-CWS'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(reservasi: true))
           : null,
       // D-145: reservasi meja + uang muka hanya untuk usaha FnB.
@@ -403,7 +407,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       saatServis: _SektorCocok(const ['SVC-WRK'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(servis: true))
           : null,
-      saatCucian: ref.watch(penyediaKonteksPenjualan).value?.laundry.aktif == true
+      saatCucian: ref.watch(penyediaKonteksPenjualan).value?.laundry.aktif == true && _SektorCocok(const ['SVC-LDR'])
           ? () => _BukaPanelPenjualan(const _PanelPenjualan(cucian: true))
           : null,
     ),
@@ -414,6 +418,15 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
           if (LayananGudang.CekBoleh(widget.kasir, j)) j,
       ],
       saatGudang: _BukaPanelGudang,
+      tampilBahanTerbuang: _SektorCocok(const [
+        'FNB',
+        'RTL-BLD',
+        'RTL-GEN',
+        'RTL-FRS',
+        'RTL-PET',
+        'RTL-FLR',
+        'RTL-PHR',
+      ]),
     ),
     TujuanRuangKerja.Salesman => LayarSalesman(
       staf: widget.kasir,
@@ -699,6 +712,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
         : ItemNavigasi.Saring(
             widget.kasir,
             modulAktif: {if (ref.watch(penyediaModeMeja).value == true) ItemNavigasi.modulMeja},
+            cekSektor: _SektorCocok,
           );
     final indeks = item.indexWhere((i) => i.tujuan == _tujuan).clamp(0, item.length - 1);
 

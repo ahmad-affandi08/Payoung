@@ -34,11 +34,11 @@ void main() {
     expect(LayananPenjualan.AmbilPilihanKanal(await u.MuatKonteks(), await u.MuatKatalog()), isEmpty);
   });
 
-  test('pilihan kanal: kanal toko + platform yang punya metode atau daftar harga', () async {
+  // D-183: "Makan di tempat" milik F&B (jenis pesanan outlet); toko biasa dengan kanal platform tidak ditawari.
+  test('pilihan kanal: kanal toko (tanpa Makan di tempat) + platform yang punya metode atau daftar harga', () async {
     await Siapkan();
     expect(LayananPenjualan.AmbilPilihanKanal(await u.MuatKonteks(), await u.MuatKatalog()), [
       KanalPenjualan.BawaPulang,
-      KanalPenjualan.MakanDiTempat,
       KanalPenjualan.Antar,
       KanalPenjualan.GoFood,
       KanalPenjualan.GrabFood,

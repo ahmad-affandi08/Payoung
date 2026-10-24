@@ -39,6 +39,7 @@ class KonfigurasiAplikasi {
     this.persetujuanJarakJauh,
     this.logDiminta = false,
     this.sha256Unduhan,
+    this.hanyaPerusahaan = false,
   });
 
   final String? versiSaatIni;
@@ -70,6 +71,10 @@ class KonfigurasiAplikasi {
   /// tanpa kunci = false.
   final bool logDiminta;
 
+  /// D-183: usaha tanpa kasir (semua sektor `BIZ-`): Aplikasi Owner menyembunyikan tab Shift dan Perangkat. Server lama
+  /// tanpa kunci = false (semua tab tampil).
+  final bool hanyaPerusahaan;
+
   /// Flag dengan kunci [kunci]; tanpa aturan = [bawaan].
   bool CekFlag(String kunci, {bool bawaan = true}) => flagFitur[kunci] ?? bawaan;
 
@@ -99,6 +104,7 @@ class KonfigurasiAplikasi {
       ),
       persetujuanJarakJauh: jarakJauh is bool ? jarakJauh : null,
       logDiminta: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['PermintaanLog'])['Diminta']),
+      hanyaPerusahaan: UraiJson.AmbilBenar(json['HanyaPerusahaan']),
     );
   }
 }
