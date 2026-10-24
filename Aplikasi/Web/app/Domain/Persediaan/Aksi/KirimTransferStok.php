@@ -31,6 +31,7 @@ use App\Domain\Persediaan\Layanan\PenomorDokumenPersediaan;
 use App\Domain\Persediaan\Layanan\PenyusunJurnalPersediaan;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Persediaan\Model\TransferStokDetail;
+use App\Domain\Persediaan\Tugas\BeritahuTransferStokMasukTugas;
 use App\Domain\Tenant\Kueri\PengaturanPersediaanTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -197,6 +198,8 @@ final class KirimTransferStok
         ], idPengguna: $idPengguna);
 
         $this->pemenuhanPermintaan->Jalankan($transfer, $idPengguna);
+        // Kabar non-kritis (aturan #10): antrean, setelah commit.
+        BeritahuTransferStokMasukTugas::dispatch($transfer->IdTenant, $transfer->Id)->afterCommit();
 
         return $transfer;
     }
