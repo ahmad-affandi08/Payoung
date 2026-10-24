@@ -1292,29 +1292,49 @@ class PengaturPatokanKuota extends Notifier<PatokanKuota?> {
 
 final penyediaPatokanKuota = NotifierProvider<PengaturPatokanKuota, PatokanKuota?>(PengaturPatokanKuota.new);
 
-/// P-04: kuota transaksi penjualan bulan ini menurut perangkat ini (hitungan server + penjualan yang belum tercakup),
-/// dihitung ulang setiap ada perubahan penjualan lokal. Null = tidak ada yang ditegakkan: konfigurasi belum terbaca
-/// (mis. offline sejak aplikasi dibuka), server lama, paket tanpa batas, atau data milik bulan lain.
+/// P-04: kuota transaksi penjualan menurut perangkat ini (hitungan server + penjualan yang belum tercakup) untuk jangka
+/// bulan dan hari, dihitung ulang setiap ada perubahan penjualan lokal. Yang diberikan adalah kuota **paling
+/// mengikat** dari keduanya. Null = tidak ada yang ditegakkan: konfigurasi belum terbaca (mis. offline sejak aplikasi
+/// dibuka), server lama, paket tanpa batas, atau data milik bulan/hari lain.
 final penyediaKuotaTransaksi = StreamProvider<KuotaTransaksiEfektif?>((ref) async* {
-  final kuota = ref.watch(penyediaKonfigurasiAplikasi)?.kuotaTransaksi;
+  final konfigurasi = ref.watch(penyediaKonfigurasiAplikasi);
   final patokan = ref.watch(penyediaPatokanKuota);
   final jam = ref.watch(penyediaJam);
+  final daftar = [
+    konfigurasi?.kuotaTransaksi,
+    konfigurasi?.kuotaTransaksiHarian,
+  ].whereType<KuotaTransaksiAplikasi>().where((k) => k.batas != null).toList();
 
-  if (kuota == null || kuota.batas == null || patokan == null) {
+  if (daftar.isEmpty || patokan == null) {
     yield null;
     return;
   }
 
   final repositori = ref.watch(penyediaRepositoriPenjualan);
 
-  Future<KuotaTransaksiEfektif?> Hitung() async => KuotaTransaksiEfektif.Hitung(
-    kuota: kuota,
-    penjualanBelumTercakup: await repositori.HitungPenjualanBelumTercakupKuota(
-      sejak: patokan.sejak,
-      uuidTertundaSaatAmbil: patokan.uuidTertundaSaatAmbil,
-    ),
-    sekarang: jam(),
-  );
+  Future<KuotaTransaksiEfektif?> Hitung() async {
+    final sekarang = jam();
+    final hasil = <KuotaTransaksiEfektif?>[];
+    for (final kuota in daftar) {
+      if (!KuotaTransaksiEfektif.MasihBerlaku(kuota, sekarang)) {
+        continue;
+      }
+      final (awal, akhir) = KuotaTransaksiEfektif.RentangTanggalBisnis(kuota);
+      hasil.add(
+        KuotaTransaksiEfektif.Hitung(
+          kuota: kuota,
+          penjualanBelumTercakup: await repositori.HitungPenjualanBelumTercakupKuota(
+            sejak: patokan.sejak,
+            uuidTertundaSaatAmbil: patokan.uuidTertundaSaatAmbil,
+            tanggalBisnisAwal: awal,
+            tanggalBisnisAkhir: akhir,
+          ),
+          sekarang: sekarang,
+        ),
+      );
+    }
+    return KuotaTransaksiEfektif.PilihPalingMengikat(hasil);
+  }
 
   yield await Hitung();
   await for (final _ in repositori.PantauPerubahanPenjualan()) {

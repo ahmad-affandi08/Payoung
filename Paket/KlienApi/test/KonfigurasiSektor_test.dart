@@ -80,4 +80,41 @@ void main() {
     });
     expect(serverLama.kuotaTransaksi, isNull);
   });
+
+  test('Kuota harian dibaca dari Kuota.TransaksiHarian beserta jangka dan saat hari berakhir', () {
+    final konfigurasi = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Kuota': {
+        'Transaksi': {'Jangka': 'Bulan', 'Periode': '2026-12', 'Terpakai': 10, 'Batas': 500, 'Status': 'Normal'},
+        'TransaksiHarian': {
+          'Jangka': 'Hari',
+          'Periode': '2026-12-13',
+          'Terpakai': 40,
+          'Batas': 50,
+          'Status': 'HampirHabis',
+          'BerakhirPada': '2026-12-13T16:59:59Z',
+        },
+      },
+    });
+    final harian = konfigurasi.kuotaTransaksiHarian!;
+    expect(harian.jangka, JangkaKuotaTransaksi.Hari);
+    expect(harian.periode, '2026-12-13');
+    expect(harian.batas, 50);
+    expect(harian.berakhirPada, DateTime.utc(2026, 12, 13, 16, 59, 59));
+    expect(konfigurasi.kuotaTransaksi?.jangka, JangkaKuotaTransaksi.Bulan);
+    expect(konfigurasi.kuotaTransaksi?.berakhirPada, isNull);
+
+    // Server tanpa Jangka: bawaan mengikuti kuncinya.
+    final tanpaJangka = KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Kuota': {
+        'TransaksiHarian': {'Periode': '2026-12-13', 'Terpakai': 1, 'Batas': 5, 'Status': 'Normal'},
+      },
+    });
+    expect(tanpaJangka.kuotaTransaksiHarian?.jangka, JangkaKuotaTransaksi.Hari);
+    expect(tanpaJangka.kuotaTransaksiHarian?.berakhirPada, isNull);
+    expect(tanpaJangka.kuotaTransaksi, isNull);
+  });
 }

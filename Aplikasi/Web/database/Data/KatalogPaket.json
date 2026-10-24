@@ -14,7 +14,8 @@
                 "BatasSku": 100,
                 "KuotaPesanWaBulanan": 0,
                 "BatasPenyimpananMb": 100,
-                "KuotaTransaksiBulanan": null
+                "KuotaTransaksiBulanan": null,
+                "KuotaTransaksiHarian": null
             },
             "Harga": {
                 "HargaBulanan": "0",
@@ -38,7 +39,8 @@
                 "BatasSku": null,
                 "KuotaPesanWaBulanan": 0,
                 "BatasPenyimpananMb": 1024,
-                "KuotaTransaksiBulanan": null
+                "KuotaTransaksiBulanan": null,
+                "KuotaTransaksiHarian": null
             },
             "Harga": {
                 "HargaBulanan": "99000",
@@ -72,7 +74,8 @@
                 "BatasSku": null,
                 "KuotaPesanWaBulanan": 100,
                 "BatasPenyimpananMb": 5120,
-                "KuotaTransaksiBulanan": null
+                "KuotaTransaksiBulanan": null,
+                "KuotaTransaksiHarian": null
             },
             "Harga": {
                 "HargaBulanan": "249000",
@@ -120,7 +123,8 @@
                 "BatasSku": null,
                 "KuotaPesanWaBulanan": 500,
                 "BatasPenyimpananMb": 20480,
-                "KuotaTransaksiBulanan": null
+                "KuotaTransaksiBulanan": null,
+                "KuotaTransaksiHarian": null
             },
             "Harga": {
                 "HargaBulanan": "449000",
@@ -176,7 +180,8 @@
                 "BatasSku": null,
                 "KuotaPesanWaBulanan": null,
                 "BatasPenyimpananMb": null,
-                "KuotaTransaksiBulanan": null
+                "KuotaTransaksiBulanan": null,
+                "KuotaTransaksiHarian": null
             },
             "Harga": null,
             "Fitur": [

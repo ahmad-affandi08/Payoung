@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Domain\Penjualan\Data;
 
+use App\Domain\Penjualan\Enum\JangkaKuotaTransaksi;
 use App\Domain\Penjualan\Enum\StatusKuotaTransaksi;
+use Carbon\CarbonImmutable;
 
 /**
- * Ringkasan kuota transaksi penjualan satu tenant pada satu bulan kalender (`Periode` = `Y-m`, WIB). `Batas` dan
- * `Sisa` null = tak terbatas.
+ * Ringkasan kuota transaksi penjualan satu tenant pada satu jangka. `Periode` = `Y-m` (bulan kalender WIB) untuk
+ * jangka Bulan, atau `Y-m-d` (tanggal bisnis outlet acuan) untuk jangka Hari. `Batas` dan `Sisa` null = tak terbatas.
+ * `BerakhirPada` (hanya jangka Hari dengan outlet acuan) = saat hari bisnis itu berakhir: aplikasi Kasir tidak
+ * menegakkan data kuota sesudahnya sampai konfigurasi dibaca ulang.
  */
 final readonly class DataKuotaTransaksi
 {
     public function __construct(
+        public JangkaKuotaTransaksi $jangka,
         public string $periode,
         public int $terpakai,
         public ?int $batas,
         public StatusKuotaTransaksi $status,
+        public ?CarbonImmutable $berakhirPada = null,
     ) {}
 
     public function AmbilSisa(): ?int
@@ -42,11 +48,12 @@ final readonly class DataKuotaTransaksi
     /**
      * Bentuk kontrak API/Inertia (key = PascalCase).
      *
-     * @return array{Periode: string, Terpakai: int, Batas: int|null, Sisa: int|null, Persen: int|null, Status: string, LabelStatus: string}
+     * @return array{Jangka: string, Periode: string, Terpakai: int, Batas: int|null, Sisa: int|null, Persen: int|null, Status: string, LabelStatus: string, BerakhirPada: string|null}
      */
     public function KeLarik(): array
     {
         return [
+            'Jangka' => $this->jangka->value,
             'Periode' => $this->periode,
             'Terpakai' => $this->terpakai,
             'Batas' => $this->batas,
@@ -54,6 +61,7 @@ final readonly class DataKuotaTransaksi
             'Persen' => $this->AmbilPersen(),
             'Status' => $this->status->value,
             'LabelStatus' => $this->status->AmbilLabel(),
+            'BerakhirPada' => $this->berakhirPada?->utc()->toIso8601ZuluString(),
         ];
     }
 }

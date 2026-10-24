@@ -260,6 +260,7 @@ export const labelBatas: Record<string, string> = {
     KuotaPesanWaBulanan: 'Kuota pesan WA per bulan',
     BatasPenyimpananMb: 'Penyimpanan berkas (MB)',
     KuotaTransaksiBulanan: 'Transaksi penjualan per bulan',
+    KuotaTransaksiHarian: 'Transaksi penjualan per hari',
 };
 
 /** P-07 tab Tagihan di tampilan 360° (hanya pemegang `tagihan.lihat`; null = tab disembunyikan). */

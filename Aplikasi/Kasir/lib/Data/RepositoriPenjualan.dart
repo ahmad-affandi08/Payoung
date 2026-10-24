@@ -183,10 +183,13 @@ class RepositoriPenjualan {
   /// P-04: jumlah penjualan lokal yang **belum tercakup hitungan kuota transaksi server**, yaitu dibuat pada/setelah
   /// [sejak] (jam perangkat), masih di outbox sekarang, atau termasuk [uuidTertundaSaatAmbil] (masih di outbox ketika
   /// konfigurasi dibaca). Semua status ikut dihitung, termasuk `Void`, sama dengan server: membatalkan transaksi tidak
-  /// mengembalikan kuota.
+  /// mengembalikan kuota. [tanggalBisnisAwal]/[tanggalBisnisAkhir] (`YYYY-MM-DD`, inklusif) membatasi pada bulan atau hari
+  /// yang kuotanya dihitung, supaya penjualan tertunda milik hari/bulan lain tidak ikut.
   Future<int> HitungPenjualanBelumTercakupKuota({
     required DateTime sejak,
     Set<String> uuidTertundaSaatAmbil = const {},
+    String? tanggalBisnisAwal,
+    String? tanggalBisnisAkhir,
   }) async {
     final belumTercakup = <Expression<bool>>[
       db.penjualan.DibuatPada.isBiggerOrEqualValue(sejak.toUtc()),
@@ -197,7 +200,13 @@ class RepositoriPenjualan {
     final kueri =
         db.selectOnly(db.penjualan).join([leftOuterJoin(db.outbox, db.outbox.Uuid.equalsExp(db.penjualan.Uuid))])
           ..addColumns([jumlah])
-          ..where(belumTercakup.reduce((a, b) => a | b));
+          ..where(
+            [
+              belumTercakup.reduce((a, b) => a | b),
+              if (tanggalBisnisAwal != null) db.penjualan.TanggalBisnis.isBiggerOrEqualValue(tanggalBisnisAwal),
+              if (tanggalBisnisAkhir != null) db.penjualan.TanggalBisnis.isSmallerOrEqualValue(tanggalBisnisAkhir),
+            ].reduce((a, b) => a & b),
+          );
     return (await kueri.map((r) => r.read(jumlah) ?? 0).getSingle());
   }
 

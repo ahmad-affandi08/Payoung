@@ -8,6 +8,7 @@ use App\Domain\Organisasi\Aksi\BuatNotifikasiOperasional;
 use App\Domain\Organisasi\Enum\JenisNotifikasiPengguna;
 use App\Domain\Organisasi\Model\NotifikasiPengguna;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
+use App\Domain\Penjualan\Enum\JangkaKuotaTransaksi;
 use App\Domain\Penjualan\Layanan\KuotaTransaksiTenant;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanKuotaTransaksi;
@@ -36,27 +37,28 @@ beforeEach(function (): void {
 });
 
 /** @return array<string, mixed> */
-function SiapkanTokoKuota(object $tes, ?int $kuota, string $nama = 'Toko Elektronik Maju Jaya Solo'): array
+function SiapkanTokoKuota(object $tes, ?int $kuota, string $nama = 'Toko Elektronik Maju Jaya Solo', ?int $kuotaHarian = null): array
 {
     $k = BantuanPenjualan::Siapkan($tes, $nama);
     $k['Tv'] = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Televisi LED 32 Inci Full HD', '50', '1200000', '1500000.00');
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     AturKuotaTransaksi($k, $kuota);
+    AturKuotaTransaksi($k, $kuotaHarian, 'KuotaTransaksiHarian');
 
     return $k;
 }
 
 /** @param array<string, mixed> $k */
-function AturKuotaTransaksi(array $k, ?int $kuota): void
+function AturKuotaTransaksi(array $k, ?int $kuota, string $kunci = 'KuotaTransaksiBulanan'): void
 {
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-    OverrideTenant::query()->where('Kunci', 'KuotaTransaksiBulanan')->delete();
+    OverrideTenant::query()->where('Kunci', $kunci)->delete();
 
     if ($kuota !== null) {
         OverrideTenant::query()->create([
             'IdTenant' => $k['Tenant']->Id,
             'Jenis' => JenisOverride::Batas,
-            'Kunci' => 'KuotaTransaksiBulanan',
+            'Kunci' => $kunci,
             'Nilai' => $kuota,
             'BerakhirPada' => now()->addDays(60),
             'Alasan' => 'Uji kuota transaksi',
@@ -74,11 +76,11 @@ function JualKuota(object $tes, array $k, int $kali = 1): void
 }
 
 /** @param array<string, mixed> $k */
-function KuotaPos(object $tes, array $k): array
+function KuotaPos(object $tes, array $k, string $kunci = 'Transaksi'): array
 {
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
 
-    return $tes->withToken($k['Token'])->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()->json('Kuota.Transaksi');
+    return $tes->withToken($k['Token'])->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()->json('Kuota.'.$kunci);
 }
 
 it('paket tanpa kuota = tanpa batas: payload tetap membawa pemakaian bulan ini', function (): void {
@@ -223,5 +225,99 @@ it('toko online berhenti menerima pesanan baru saat kuota habis, dan pulih begit
 
     AturKuotaTransaksi($k, 100);
     expect(app(PenentuKonteksTokoOnline::class)->Cari()?->aktif)->toBeTrue();
+    $this->postJson('/'.$k['Slug'].'/pesan', $kiriman)->assertCreated();
+});
+
+/*
+ * Kuota harian (`KuotaTransaksiHarian`): batas kedua yang berdiri sendiri; hari = tanggal bisnis outlet.
+ */
+
+it('kuota harian: payload TransaksiHarian membawa jangka Hari, tanggal bisnis, dan saat hari berakhir', function (): void {
+    $k = SiapkanTokoKuota($this, null, 'Toko Elektronik Maju Jaya Solo', 4);
+    JualKuota($this, $k, 3);
+
+    $harian = KuotaPos($this, $k, 'TransaksiHarian');
+
+    expect($harian)->toMatchArray(['Jangka' => 'Hari', 'Terpakai' => 3, 'Batas' => 4, 'Sisa' => 1, 'Persen' => 75, 'Status' => 'Normal'])
+        ->and($harian['Periode'])->toBe(CarbonImmutable::now('Asia/Jakarta')->toDateString())
+        ->and(CarbonImmutable::parse($harian['BerakhirPada'])->isFuture())->toBeTrue()
+        ->and(KuotaPos($this, $k)['Status'])->toBe('TanpaBatas');
+});
+
+it('kuota harian: penjualan kemarin tidak dihitung, bulan tetap menghitungnya', function (): void {
+    $k = SiapkanTokoKuota($this, 50, 'Toko Elektronik Maju Jaya Solo', 5);
+    JualKuota($this, $k, 3);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $kemarin = CarbonImmutable::now('Asia/Jakarta')->toDateString();
+    // Dua penjualan dipindah ke "kemarin" (tetap di bulan yang sama bila hari ini bukan tanggal 1; uji menjaga rentang).
+    DB::table('Penjualan')->where('IdTenant', $k['Tenant']->Id)->orderBy('Id')->limit(2)
+        ->update(['TanggalBisnis' => CarbonImmutable::parse($kemarin)->subDay()->toDateString()]);
+
+    expect(KuotaPos($this, $k, 'TransaksiHarian')['Terpakai'])->toBe(1);
+});
+
+it('kuota harian: batas harian tercapai lebih dulu mengunci walau kuota bulanan masih longgar', function (): void {
+    $k = SiapkanTokoKuota($this, 100, 'Toko Elektronik Maju Jaya Solo', 2);
+    $layanan = app(KuotaTransaksiTenant::class);
+    expect($layanan->CekBolehMulai($k['Tenant']->Id))->toBeTrue();
+
+    JualKuota($this, $k, 2);
+
+    expect($layanan->CekBolehMulai($k['Tenant']->Id))->toBeFalse()
+        ->and($layanan->Ambil($k['Tenant']->Id)->status->value)->toBe('Normal')
+        ->and($layanan->Ambil($k['Tenant']->Id, JangkaKuotaTransaksi::Hari, $k['Outlet']->Id)->CekHabis())->toBeTrue();
+});
+
+it('kuota harian: penjualan melewati batas harian tetap diterima saat sinkron', function (): void {
+    $k = SiapkanTokoKuota($this, null, 'Toko Elektronik Maju Jaya Solo', 1);
+    JualKuota($this, $k, 3);
+
+    expect(KuotaPos($this, $k, 'TransaksiHarian'))->toMatchArray(['Terpakai' => 3, 'Batas' => 1, 'Status' => 'Habis']);
+});
+
+it('kuota harian: isolasi tenant', function (): void {
+    $a = SiapkanTokoKuota($this, null, 'Toko Elektronik Maju Jaya Solo', 5);
+    JualKuota($this, $a, 2);
+    $b = SiapkanTokoKuota($this, null, 'Warung Bakso Pak Kumis Sragen', 5);
+
+    expect(KuotaPos($this, $b, 'TransaksiHarian')['Terpakai'])->toBe(0)
+        ->and(KuotaPos($this, $a, 'TransaksiHarian')['Terpakai'])->toBe(2);
+});
+
+it('kuota harian: Kotak Tindakan memakai kode terpisah dari butir bulanan', function (): void {
+    $k = SiapkanTokoKuota($this, 100, 'Toko Elektronik Maju Jaya Solo', 3);
+    $penyedia = app(PenyediaTindakanKuotaTransaksi::class);
+    $konteks = new DataKonteksTindakan($k['Tenant']->Id, $k['Pemilik']->Id, true, [], null, CarbonImmutable::now('Asia/Jakarta'));
+
+    JualKuota($this, $k, 3);
+    $butir = $penyedia->Kumpulkan($konteks);
+
+    expect($butir)->toHaveCount(1)
+        ->and($butir[0]->kunci)->toBe('kuota.transaksi-harian')
+        ->and($butir[0]->tingkat)->toBe(TingkatTindakan::Penting)
+        ->and($butir[0]->keterangan)->toContain('hari ini');
+});
+
+it('kuota harian: halaman Langganan membawa KuotaTransaksiHarian', function (): void {
+    $k = SiapkanTokoKuota($this, null, 'Toko Elektronik Maju Jaya Solo', 10);
+    JualKuota($this, $k, 5);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+
+    BantuanKatalog::MasukSebagai($this, $k['Tenant']->Id)->get('/kelola/langganan')->assertOk()
+        ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+            ->where('KuotaTransaksiHarian.Jangka', 'Hari')
+            ->where('KuotaTransaksiHarian.Terpakai', 5)
+            ->where('KuotaTransaksiHarian.Batas', 10));
+});
+
+it('kuota harian: toko online berhenti menerima pesanan baru saat batas harian habis', function (): void {
+    $k = BantuanTokoOnline::Siapkan($this);
+    $kiriman = BantuanTokoOnline::Kiriman($k, 'AmbilSendiri');
+    AturKuotaTransaksi($k, 0, 'KuotaTransaksiHarian');
+
+    expect(app(PenentuKonteksTokoOnline::class)->Cari()?->aktif)->toBeFalse();
+    $this->postJson('/'.$k['Slug'].'/pesan', $kiriman)->assertStatus(409);
+
+    AturKuotaTransaksi($k, null, 'KuotaTransaksiHarian');
     $this->postJson('/'.$k['Slug'].'/pesan', $kiriman)->assertCreated();
 });

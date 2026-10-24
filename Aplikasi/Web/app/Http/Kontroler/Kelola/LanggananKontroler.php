@@ -14,6 +14,7 @@ use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Penjualan\Enum\JangkaKuotaTransaksi;
 use App\Domain\Penjualan\Layanan\KuotaTransaksiTenant;
 use App\Domain\Tenant\Aksi\AjukanTurunPaket;
 use App\Domain\Tenant\Aksi\BatalkanTagihanLangganan;
@@ -59,6 +60,7 @@ final class LanggananKontroler extends Kontroler
             'Langganan' => $this->kueri->AmbilLangganan(),
             // P-04: kuota transaksi penjualan bulan ini (panel hanya tampil bila paket punya batas).
             'KuotaTransaksi' => $kuotaTransaksi->Ambil(app(KonteksTenant::class)->Wajib())->KeLarik(),
+            'KuotaTransaksiHarian' => $kuotaTransaksi->Ambil(app(KonteksTenant::class)->Wajib(), JangkaKuotaTransaksi::Hari)->KeLarik(),
             'Addon' => $addon->Ambil(app(KonteksTenant::class)->Wajib()),
             'PilihanPaket' => $this->kueri->AmbilPilihanPaket(),
             'Tagihan' => $this->kueri->DaftarTagihan(),

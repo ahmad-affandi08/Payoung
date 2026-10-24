@@ -42,6 +42,7 @@ class KonfigurasiAplikasi {
     this.hanyaPerusahaan = false,
     this.sektor = const [],
     this.kuotaTransaksi,
+    this.kuotaTransaksiHarian,
   });
 
   final String? versiSaatIni;
@@ -110,6 +111,9 @@ class KonfigurasiAplikasi {
   /// mengirimnya; aplikasi tidak menguncinya.
   final KuotaTransaksiAplikasi? kuotaTransaksi;
 
+  /// P-04: kuota transaksi per hari bisnis outlet perangkat (`Kuota.TransaksiHarian`). Null = server lama.
+  final KuotaTransaksiAplikasi? kuotaTransaksiHarian;
+
   /// Flag dengan kunci [kunci]; tanpa aturan = [bawaan].
   bool CekFlag(String kunci, {bool bawaan = true}) => flagFitur[kunci] ?? bawaan;
 
@@ -142,6 +146,10 @@ class KonfigurasiAplikasi {
       hanyaPerusahaan: UraiJson.AmbilBenar(json['HanyaPerusahaan']),
       sektor: List.unmodifiable(UraiJson.AmbilDaftarTeks(json['Sektor']).where((k) => k.isNotEmpty)),
       kuotaTransaksi: KuotaTransaksiAplikasi.DariJsonAtauNull(UraiJson.AmbilPeta(json['Kuota'])['Transaksi']),
+      kuotaTransaksiHarian: KuotaTransaksiAplikasi.DariJsonAtauNull(
+        UraiJson.AmbilPeta(json['Kuota'])['TransaksiHarian'],
+        jangkaBawaan: JangkaKuotaTransaksi.Hari,
+      ),
     );
   }
 }
@@ -150,7 +158,10 @@ class KonfigurasiAplikasi {
 /// [Normal].
 enum StatusKuotaTransaksi { TanpaBatas, Normal, HampirHabis, Habis }
 
-/// Kuota transaksi penjualan satu bulan kalender (WIB) menurut server: [terpakai] dari [batas] (null = tak terbatas),
+/// Jangka kuota transaksi: per bulan kalender (WIB) atau per hari bisnis outlet. Nilai tak dikenal = [jangkaBawaan].
+enum JangkaKuotaTransaksi { Bulan, Hari }
+
+/// Kuota transaksi penjualan satu [jangka] menurut server: [terpakai] dari [batas] (null = tak terbatas),
 /// dihitung dari penjualan yang sudah tersimpan di server. Penjualan yang belum terkirim dari perangkat ini
 /// ditambahkan aplikasi sendiri (`KuotaTransaksiEfektif`).
 class KuotaTransaksiAplikasi {
@@ -159,21 +170,38 @@ class KuotaTransaksiAplikasi {
     required this.terpakai,
     required this.batas,
     required this.status,
+    this.jangka = JangkaKuotaTransaksi.Bulan,
+    this.berakhirPada,
   });
 
-  /// Bulan kalender `TTTT-BB`.
+  final JangkaKuotaTransaksi jangka;
+
+  /// Jangka Bulan: `TTTT-BB`. Jangka Hari: tanggal bisnis `TTTT-BB-HH`.
   final String periode;
+
+  /// Jangka Hari: saat hari bisnis itu berakhir (UTC). Sesudahnya angka server tidak berlaku lagi (hari baru) sampai
+  /// konfigurasi dibaca ulang. Null untuk jangka Bulan atau server tanpa outlet acuan.
+  final DateTime? berakhirPada;
   final int terpakai;
   final int? batas;
   final StatusKuotaTransaksi status;
 
-  static KuotaTransaksiAplikasi? DariJsonAtauNull(Object? nilai) {
+  static KuotaTransaksiAplikasi? DariJsonAtauNull(
+    Object? nilai, {
+    JangkaKuotaTransaksi jangkaBawaan = JangkaKuotaTransaksi.Bulan,
+  }) {
     final json = UraiJson.AmbilPetaAtauNull(nilai);
     final periode = UraiJson.AmbilTeks(json?['Periode']);
     if (json == null || periode.isEmpty) {
       return null;
     }
+    final berakhir = UraiJson.AmbilTeks(json['BerakhirPada']);
     return KuotaTransaksiAplikasi(
+      jangka: JangkaKuotaTransaksi.values.firstWhere(
+        (j) => j.name == UraiJson.AmbilTeks(json['Jangka']),
+        orElse: () => jangkaBawaan,
+      ),
+      berakhirPada: berakhir.isEmpty ? null : DateTime.tryParse(berakhir)?.toUtc(),
       periode: periode,
       terpakai: UraiJson.AmbilBulat(json['Terpakai']),
       batas: UraiJson.AmbilBulatAtauNull(json['Batas']),

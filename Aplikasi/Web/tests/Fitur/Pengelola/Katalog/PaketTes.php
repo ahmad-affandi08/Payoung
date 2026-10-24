@@ -61,7 +61,7 @@ describe('Katalog paket (P-04)', function (): void {
             ->and(Paket::query()->where('Kode', 'BISNIS')->sole()->AmbilKunciFitur())->toContain('api.publik')
             ->and(Paket::query()->where('Kode', 'PRO')->sole()->AmbilBatas())->toBe([
                 'BatasOutlet' => 3, 'BatasPerangkatPerOutlet' => 5, 'BatasPengguna' => 20,
-                'BatasSku' => null, 'KuotaPesanWaBulanan' => 100, 'BatasPenyimpananMb' => 5120, 'KuotaTransaksiBulanan' => null,
+                'BatasSku' => null, 'KuotaPesanWaBulanan' => 100, 'BatasPenyimpananMb' => 5120, 'KuotaTransaksiBulanan' => null, 'KuotaTransaksiHarian' => null,
             ])
             ->and(Addon::query()->count())->toBe(6)
             ->and(Addon::query()->where('Status', '!=', StatusPaket::Diarsipkan->value)->count())->toBe(0)
@@ -77,7 +77,7 @@ describe('Katalog paket (P-04)', function (): void {
         expect($paket->Status)->toBe(StatusPaket::Draf)
             ->and($paket->AmbilBatas())->toBe([
                 'BatasOutlet' => 2, 'BatasPerangkatPerOutlet' => 3, 'BatasPengguna' => null,
-                'BatasSku' => null, 'KuotaPesanWaBulanan' => 0, 'BatasPenyimpananMb' => null, 'KuotaTransaksiBulanan' => null,
+                'BatasSku' => null, 'KuotaPesanWaBulanan' => 0, 'BatasPenyimpananMb' => null, 'KuotaTransaksiBulanan' => null, 'KuotaTransaksiHarian' => null,
             ])
             ->and($paket->AmbilKunciFitur())->toBe(['laporan.dasar', 'pos.retail']);
         $this->assertDatabaseHas('LogAuditPengelola', ['Aksi' => 'katalog.paket.buat', 'IdPenggunaPengelola' => $keuangan->Id]);
@@ -87,14 +87,15 @@ describe('Katalog paket (P-04)', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $batas = ['BatasOutlet' => 1, 'BatasPerangkatPerOutlet' => 1, 'BatasPengguna' => 2, 'BatasSku' => 100, 'KuotaPesanWaBulanan' => 0, 'BatasPenyimpananMb' => 100];
 
-        SebagaiAnggotaKatalog($this, $keuangan)->post(BantuanPengelola::Url('/katalog/paket'), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiBulanan' => 500]]))->assertSessionHasNoErrors();
-        expect(Paket::query()->where('Kode', 'UJI')->sole()->AmbilBatas()['KuotaTransaksiBulanan'])->toBe(500);
+        SebagaiAnggotaKatalog($this, $keuangan)->post(BantuanPengelola::Url('/katalog/paket'), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiBulanan' => 500, 'KuotaTransaksiHarian' => 50]]))->assertSessionHasNoErrors();
+        expect(Paket::query()->where('Kode', 'UJI')->sole()->AmbilBatas())->toMatchArray(['KuotaTransaksiBulanan' => 500, 'KuotaTransaksiHarian' => 50]);
 
         $uuid = Paket::query()->where('Kode', 'UJI')->sole()->Uuid;
-        SebagaiAnggotaKatalog($this, $keuangan)->put(BantuanPengelola::Url("/katalog/paket/{$uuid}"), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiBulanan' => '']]))->assertSessionHasNoErrors();
-        expect(Paket::query()->where('Kode', 'UJI')->sole()->AmbilBatas()['KuotaTransaksiBulanan'])->toBeNull();
+        SebagaiAnggotaKatalog($this, $keuangan)->put(BantuanPengelola::Url("/katalog/paket/{$uuid}"), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiBulanan' => '', 'KuotaTransaksiHarian' => '']]))->assertSessionHasNoErrors();
+        expect(Paket::query()->where('Kode', 'UJI')->sole()->AmbilBatas())->toMatchArray(['KuotaTransaksiBulanan' => null, 'KuotaTransaksiHarian' => null]);
 
         SebagaiAnggotaKatalog($this, $keuangan)->put(BantuanPengelola::Url("/katalog/paket/{$uuid}"), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiBulanan' => -5]]))->assertSessionHasErrors('Batas.KuotaTransaksiBulanan');
+        SebagaiAnggotaKatalog($this, $keuangan)->put(BantuanPengelola::Url("/katalog/paket/{$uuid}"), DataPaketUji(['Batas' => [...$batas, 'KuotaTransaksiHarian' => -1]]))->assertSessionHasErrors('Batas.KuotaTransaksiHarian');
     });
 
     it('menolak fitur tidak dikenal, batas negatif, dan kode ganda', function (array $ubah, string $bidang): void {

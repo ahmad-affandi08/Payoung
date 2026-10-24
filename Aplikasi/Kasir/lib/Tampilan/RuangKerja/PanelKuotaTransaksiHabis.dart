@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:klien_api/KlienApi.dart' show JangkaKuotaTransaksi;
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../../Aplikasi/Penyedia.dart';
 import '../../Domain/Penjualan/KuotaTransaksiEfektif.dart';
 import 'IsiAreaKerja.dart';
 
-/// P-04: kuota transaksi penjualan bulan ini habis. Layar jual & meja diganti panel ini; yang sudah terjadi tetap
+/// P-04: kuota transaksi penjualan (bulan atau hari) habis. Layar jual & meja diganti panel ini; yang sudah terjadi tetap
 /// tersimpan dan terkirim, dan layar lain (shift, kas, riwayat, stok, sinkron) tetap bisa dipakai. "Cek ulang" membaca
 /// kuota dari server supaya kasir bisa lanjut begitu pemilik menaikkan paket, tanpa menunggu pemeriksaan berkala.
 class PanelKuotaTransaksiHabis extends ConsumerStatefulWidget {
@@ -41,11 +42,11 @@ class _PanelKuotaTransaksiHabisState extends ConsumerState<PanelKuotaTransaksiHa
     final tertunda = ref.watch(penyediaJumlahTertunda).value ?? 0;
 
     return IsiAreaKerja(
-      judul: 'Kuota transaksi bulan ini habis',
+      judul: 'Kuota transaksi ${widget.kuota.sebutan} habis',
       anak: [
         Text(
-          'Paket usaha ini mencakup ${widget.kuota.batas} transaksi per bulan dan semuanya sudah terpakai. '
-          'Transaksi baru tidak bisa dibuat sampai kuota bertambah atau bulan depan.',
+          'Paket usaha ini mencakup ${widget.kuota.batas} transaksi ${widget.kuota.satuan} dan semuanya sudah terpakai. '
+          'Transaksi baru tidak bisa dibuat sampai kuota bertambah atau ${widget.kuota.jangka == JangkaKuotaTransaksi.Hari ? 'hari bisnis berganti' : 'bulan depan'}.',
           style: teks.titleMedium,
         ),
         const SizedBox(height: TokenJarak.jarak8),

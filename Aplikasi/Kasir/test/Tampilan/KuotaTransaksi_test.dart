@@ -16,7 +16,11 @@ import '../Pendukung/PasangAplikasi.dart';
 /// jual diganti panel, tetapi layar lain tetap bisa dipakai. Data kuota bulan lain atau paket tanpa batas tidak
 /// mengunci apa pun.
 void main() {
-  Future<LingkunganUji> MasukDenganKuota(WidgetTester tester, Map<String, Object?>? transaksi) async {
+  Future<LingkunganUji> MasukDenganKuota(
+    WidgetTester tester,
+    Map<String, Object?>? transaksi, {
+    Map<String, Object?>? harian,
+  }) async {
     final u = LingkunganUji.Buat();
     await tester.runAsync(() async {
       await u.SiapkanAktif();
@@ -38,7 +42,7 @@ void main() {
         return JsonUji({
           'Aplikasi': {'VersiSaatIni': '0.2.0', 'VersiTerbaru': '0.2.0', 'VersiMinimal': '0.1.0'},
           'FlagFitur': {'pos.mode-meja': false},
-          'Kuota': {'Transaksi': ?transaksi},
+          'Kuota': {'Transaksi': ?transaksi, 'TransaksiHarian': ?harian},
         });
       }
       throw http.ClientException('offline');
@@ -105,6 +109,56 @@ void main() {
       expect(find.textContaining('transaksi bulan ini'), findsNothing, reason: '$data');
       await Lepas(tester, lingkungan);
     }
+  });
+
+  Map<String, Object?> KuotaHarian(
+    LingkunganUji u, {
+    required int terpakai,
+    int? batas = 50,
+    Duration berakhirDalam = const Duration(hours: 5),
+  }) => {
+    'Jangka': 'Hari',
+    'Periode': KuotaTransaksiEfektif.TanggalWib(u.jam),
+    'Terpakai': terpakai,
+    'Batas': batas,
+    'Status': 'Normal',
+    'BerakhirPada': u.jam.toUtc().add(berakhirDalam).toIso8601String(),
+  };
+
+  testWidgets('kuota harian habis walau kuota bulan longgar: layar jual terkunci dengan teks hari ini', (tester) async {
+    final u = LingkunganUji.Buat();
+    await u.Tutup();
+    final lingkungan = await MasukDenganKuota(tester, Kuota(u, terpakai: 10), harian: KuotaHarian(u, terpakai: 50));
+
+    expect(find.byType(PanelKuotaTransaksiHabis), findsOneWidget);
+    expect(find.byType(LayarJual), findsNothing);
+    expect(find.text('Kuota transaksi hari ini habis'), findsAtLeastNWidgets(1));
+    expect(find.textContaining('mencakup 50 transaksi per hari'), findsOneWidget);
+    await Lepas(tester, lingkungan);
+  });
+
+  testWidgets('kuota harian hampir habis: bilah status menyebut sisa hari ini', (tester) async {
+    final u = LingkunganUji.Buat();
+    await u.Tutup();
+    final lingkungan = await MasukDenganKuota(tester, Kuota(u, terpakai: 10), harian: KuotaHarian(u, terpakai: 45));
+
+    expect(find.byType(LayarJual), findsOneWidget);
+    expect(find.text('Sisa 5 transaksi hari ini'), findsOneWidget);
+    await Lepas(tester, lingkungan);
+  });
+
+  testWidgets('kuota harian yang hari bisnisnya sudah berakhir tidak mengunci (angka basi)', (tester) async {
+    final u = LingkunganUji.Buat();
+    await u.Tutup();
+    final lingkungan = await MasukDenganKuota(
+      tester,
+      null,
+      harian: KuotaHarian(u, terpakai: 50, berakhirDalam: const Duration(minutes: -1)),
+    );
+
+    expect(find.byType(LayarJual), findsOneWidget);
+    expect(find.byType(PanelKuotaTransaksiHabis), findsNothing);
+    await Lepas(tester, lingkungan);
   });
 
   testWidgets('server lama tanpa Kuota: tidak terkunci', (tester) async {

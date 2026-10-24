@@ -8,6 +8,7 @@ import PanelKuotaTransaksi, {
 
 /* P-04: panel kuota transaksi penjualan per bulan di halaman Langganan. */
 const dasar: DataKuotaTransaksi = {
+    Jangka: 'Bulan',
     Periode: '2026-12',
     Terpakai: 120,
     Batas: 500,
@@ -66,8 +67,33 @@ describe('PanelKuotaTransaksi', () => {
         expect(screen.getByText(/tetap tersimpan/)).toBeTruthy();
     });
 
+    it('jangka Hari memakai judul hari ini, tanggal bisnis, dan penjelasan hari bisnis', () => {
+        render(
+            <PanelKuotaTransaksi
+                kuota={{
+                    ...dasar,
+                    Jangka: 'Hari',
+                    Periode: '2026-12-13',
+                    Terpakai: 100,
+                    Batas: 100,
+                    Sisa: 0,
+                    Persen: 100,
+                    Status: 'Habis',
+                    LabelStatus: 'Habis',
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Kuota transaksi hari ini')).toBeTruthy();
+        expect(screen.getByText('Hari bisnis 13 Desember 2026')).toBeTruthy();
+        expect(screen.getByText('Kuota transaksi hari ini habis')).toBeTruthy();
+        expect(screen.getByText(/hari bisnis berganti/)).toBeTruthy();
+        expect(screen.getByText(/per hari bisnis outlet/)).toBeTruthy();
+    });
+
     it('FormatPeriodeKuota memberi nama bulan Indonesia dan menolak periode tak dikenal dengan apa adanya', () => {
         expect(FormatPeriodeKuota('2026-01')).toBe('Januari 2026');
+        expect(FormatPeriodeKuota('2026-12-05')).toBe('5 Desember 2026');
         expect(FormatPeriodeKuota('xx')).toBe('xx');
     });
 });

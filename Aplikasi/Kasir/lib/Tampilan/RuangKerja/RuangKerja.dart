@@ -167,7 +167,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
 
   KonfigurasiAplikasi? get _konfigurasi => ref.watch(penyediaKonfigurasiAplikasi);
 
-  /// P-04: kuota transaksi bulan ini menurut perangkat ini; null = tidak ada yang ditegakkan.
+  /// P-04: kuota transaksi (bulan/hari, yang paling mengikat) menurut perangkat ini; null = tidak ada yang ditegakkan.
   KuotaTransaksiEfektif? get _kuotaTransaksi => ref.watch(penyediaKuotaTransaksi).value;
 
   @override
@@ -381,7 +381,7 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     // P-10: di bawah versi minimal, layar jual & meja dikunci sampai aplikasi diperbarui (outbox tetap terkirim).
     TujuanRuangKerja.Jual ||
     TujuanRuangKerja.Meja when _konfigurasi?.wajibPembaruan == true => PanelWajibPembaruan(konfigurasi: _konfigurasi!),
-    // P-04: kuota transaksi bulan ini habis. Hanya transaksi baru yang dikunci; layar lain tetap bisa dipakai.
+    // P-04: kuota transaksi (bulan atau hari) habis. Hanya transaksi baru yang dikunci; layar lain tetap bisa dipakai.
     TujuanRuangKerja.Jual ||
     TujuanRuangKerja.Meja when _kuotaTransaksi?.habis == true => PanelKuotaTransaksiHabis(kuota: _kuotaTransaksi!),
     TujuanRuangKerja.Jual => LayarJual(
@@ -486,11 +486,15 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
       else if (_ringkasOnline case final r? when r.perluDitagih > 0)
         ItemBilahStatus(ikon: Icons.shopping_bag_outlined, teks: '${r.perluDitagih} pesanan online siap ditagih'),
       if (_kuotaTransaksi case final q? when q.habis)
-        const ItemBilahStatus(ikon: Icons.block, teks: 'Kuota transaksi habis', nada: NadaStatus.Bahaya)
+        ItemBilahStatus(
+          ikon: Icons.block,
+          teks: q.jangka == JangkaKuotaTransaksi.Hari ? 'Kuota transaksi hari ini habis' : 'Kuota transaksi habis',
+          nada: NadaStatus.Bahaya,
+        )
       else if (_kuotaTransaksi case final q? when q.hampirHabis)
         ItemBilahStatus(
           ikon: Icons.speed_outlined,
-          teks: 'Sisa ${q.sisa} transaksi bulan ini',
+          teks: 'Sisa ${q.sisa} transaksi ${q.sebutan}',
           nada: NadaStatus.Peringatan,
         ),
       if (_konfigurasi case final k? when k.wajibPembaruan)

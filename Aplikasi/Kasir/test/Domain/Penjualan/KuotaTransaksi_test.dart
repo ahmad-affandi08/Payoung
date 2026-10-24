@@ -71,6 +71,58 @@ void main() {
       );
     });
 
+    test('kuota harian: berlaku selama hari bisnis belum berakhir, lalu basi', () {
+      final harian = KuotaTransaksiAplikasi(
+        jangka: JangkaKuotaTransaksi.Hari,
+        periode: '2026-12-15',
+        terpakai: 40,
+        batas: 50,
+        status: StatusKuotaTransaksi.Normal,
+        berakhirPada: DateTime.utc(2026, 12, 15, 16, 59, 59),
+      );
+
+      final hitung = KuotaTransaksiEfektif.Hitung(kuota: harian, penjualanBelumTercakup: 10, sekarang: desember)!;
+      expect(
+        (hitung.jangka, hitung.terpakai, hitung.habis, hitung.sebutan),
+        (JangkaKuotaTransaksi.Hari, 50, true, 'hari ini'),
+      );
+      expect(
+        KuotaTransaksiEfektif.Hitung(
+          kuota: harian,
+          penjualanBelumTercakup: 0,
+          sekarang: DateTime.utc(2026, 12, 15, 17),
+        ),
+        isNull,
+      );
+    });
+
+    test('kuota harian tanpa saat berakhir memakai tanggal WIB; rentang tanggal bisnis sesuai jangka', () {
+      const tanpaAkhir = KuotaTransaksiAplikasi(
+        jangka: JangkaKuotaTransaksi.Hari,
+        periode: '2026-12-15',
+        terpakai: 1,
+        batas: 5,
+        status: StatusKuotaTransaksi.Normal,
+      );
+      expect(KuotaTransaksiEfektif.MasihBerlaku(tanpaAkhir, DateTime.utc(2026, 12, 15, 3)), isTrue);
+      expect(KuotaTransaksiEfektif.MasihBerlaku(tanpaAkhir, DateTime.utc(2026, 12, 15, 18)), isFalse);
+      expect(KuotaTransaksiEfektif.RentangTanggalBisnis(tanpaAkhir), ('2026-12-15', '2026-12-15'));
+      expect(KuotaTransaksiEfektif.RentangTanggalBisnis(Kuota()), ('2026-12-01', '2026-12-31'));
+    });
+
+    test('yang paling mengikat: habis dulu, lalu hampir habis, lalu sisa paling sedikit', () {
+      const longgarBulan = KuotaTransaksiEfektif(batas: 500, terpakai: 10);
+      const hampirHari = KuotaTransaksiEfektif(batas: 50, terpakai: 45, jangka: JangkaKuotaTransaksi.Hari);
+      const habisHari = KuotaTransaksiEfektif(batas: 50, terpakai: 50, jangka: JangkaKuotaTransaksi.Hari);
+      const hampirBulan = KuotaTransaksiEfektif(batas: 500, terpakai: 490);
+
+      expect(KuotaTransaksiEfektif.PilihPalingMengikat([null, null]), isNull);
+      expect(KuotaTransaksiEfektif.PilihPalingMengikat([longgarBulan, hampirHari]), same(hampirHari));
+      expect(KuotaTransaksiEfektif.PilihPalingMengikat([hampirBulan, habisHari]), same(habisHari));
+      expect(KuotaTransaksiEfektif.PilihPalingMengikat([hampirBulan, hampirHari]), same(hampirHari));
+      expect(KuotaTransaksiEfektif.PilihPalingMengikat([longgarBulan, null]), same(longgarBulan));
+    });
+
     test('bulan kuota mengikuti tanggal WIB, bukan UTC', () {
       // 30 Nov 2026 18:00 UTC = 1 Des 2026 01:00 WIB.
       expect(KuotaTransaksiEfektif.Periode(DateTime.utc(2026, 11, 30, 18)), '2026-12');
@@ -132,6 +184,30 @@ void main() {
 
       // Yang masih di outbox saat konfigurasi dibaca belum tercakup, walau sekarang sudah terkirim.
       expect(await Hitung(sejak: u.jam.add(const Duration(minutes: 1)), tertunda: {satu.uuid}), 1);
+    });
+
+    test('rentang TanggalBisnis membatasi penjualan tertunda milik hari atau bulan lain', () async {
+      final penjualan = await JualTunai();
+      final tanggal = (await u.repositoriPenjualan.CariPenjualan(penjualan.uuid))!.TanggalBisnis;
+      final masaDepan = u.jam.add(const Duration(days: 1));
+
+      expect(await Hitung(sejak: masaDepan), 1);
+      expect(
+        await u.repositoriPenjualan.HitungPenjualanBelumTercakupKuota(
+          sejak: masaDepan,
+          tanggalBisnisAwal: tanggal,
+          tanggalBisnisAkhir: tanggal,
+        ),
+        1,
+      );
+      expect(
+        await u.repositoriPenjualan.HitungPenjualanBelumTercakupKuota(
+          sejak: masaDepan,
+          tanggalBisnisAwal: '2020-01-01',
+          tanggalBisnisAkhir: '2020-01-31',
+        ),
+        0,
+      );
     });
 
     test('penjualan yang masih di outbox selalu dihitung, dan void tetap dihitung (kuota tidak kembali)', () async {

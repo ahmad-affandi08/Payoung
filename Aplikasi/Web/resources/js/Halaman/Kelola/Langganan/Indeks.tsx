@@ -52,6 +52,7 @@ type PropsLangganan = {
     HariMasaTenggang: number;
     TurunPaket?: DataTurunPaket;
     KuotaTransaksi?: DataKuotaTransaksi | null;
+    KuotaTransaksiHarian?: DataKuotaTransaksi | null;
 };
 
 const jenisStatusLangganan = {
@@ -72,6 +73,7 @@ export default function HalamanLangganan({
     HariMasaTenggang,
     TurunPaket,
     KuotaTransaksi,
+    KuotaTransaksiHarian,
 }: PropsLangganan) {
     const tagihanTerbuka = Tagihan.find((tagihan) => tagihan.Status === 'Terbit' || tagihan.Status === 'JatuhTempo');
 
@@ -87,6 +89,7 @@ export default function HalamanLangganan({
                     <RingkasanStatus langganan={Langganan} />
                 </>
             )}
+            <PanelKuotaTransaksi kuota={KuotaTransaksiHarian} />
             <PanelKuotaTransaksi kuota={KuotaTransaksi} />
             {tagihanTerbuka ? (
                 <Pemberitahuan jenis="peringatan" judul={`Tagihan ${tagihanTerbuka.Nomor} menunggu pembayaran`}>
