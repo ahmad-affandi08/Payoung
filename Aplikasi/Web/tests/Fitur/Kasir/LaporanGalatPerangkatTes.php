@@ -18,7 +18,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('galat ditulis ke kanal galat-perangkat dengan konteks perangkat & tanpa data pribadi; validasi & token wajib', function (): void {
+it('masalah ditulis ke kanal galat-perangkat dengan konteks perangkat & tanpa data pribadi; validasi & token wajib', function (): void {
     $k = BantuanKasir::Siapkan($this);
     $dicatat = [];
     $logger = Mockery::mock(LoggerInterface::class);

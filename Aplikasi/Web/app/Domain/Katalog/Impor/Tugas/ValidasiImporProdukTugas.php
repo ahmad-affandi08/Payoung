@@ -60,7 +60,7 @@ final class ValidasiImporProdukTugas implements ShouldBeUniqueUntilProcessing, S
     public function failed(?Throwable $galat): void
     {
         app(KonteksTugasImpor::class)->Jalankan($this->idTenant, $this->idPengguna, function (): void {
-            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Pemeriksaan berkas terhenti karena galat sistem. Unggah ulang berkas, atau hubungi dukungan bila berulang.');
+            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Pemeriksaan berkas terhenti karena masalah sistem. Unggah ulang berkas, atau hubungi dukungan bila berulang.');
         });
     }
 }

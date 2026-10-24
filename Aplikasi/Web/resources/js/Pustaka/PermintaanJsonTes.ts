@@ -25,7 +25,7 @@ describe('AmbilTokenXsrf', () => {
 });
 
 describe('AmbilPesanGalat', () => {
-    it('mengambil pesan dari format galat API', () => {
+    it('mengambil pesan dari format masalah API', () => {
         expect(AmbilPesanGalat({ Galat: { Kode: 'GerbangMenolak', Pesan: 'Gerbang menolak.' } })).toBe(
             'Gerbang menolak.',
         );

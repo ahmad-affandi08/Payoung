@@ -58,7 +58,7 @@ describe('BacaQrDariBerkas', () => {
         expect(Deteksi).toHaveBeenCalledTimes(2);
     });
 
-    it('berkas yang bukan gambar = null tanpa melempar galat', async () => {
+    it('berkas yang bukan gambar = null tanpa melempar masalah', async () => {
         vi.stubGlobal(
             'createImageBitmap',
             vi.fn(() => Promise.reject(new Error('bukan gambar'))),

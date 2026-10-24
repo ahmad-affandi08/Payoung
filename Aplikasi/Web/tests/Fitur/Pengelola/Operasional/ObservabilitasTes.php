@@ -103,7 +103,7 @@ describe('Pencatat metrik API', function (): void {
         expect($pencatat->Vaskan())->toBe(2);
         $pos = MetrikApi::query()->where('Kelompok', 'Pos')->sole();
         expect($pos->JumlahPermintaan)->toBe(3)
-            ->and($pos->JumlahGalatServer)->toBe(1, '401 bukan galat server')
+            ->and($pos->JumlahGalatServer)->toBe(1, '401 bukan masalah server')
             ->and($pos->TotalDurasiMs)->toBe(1010)
             ->and([$pos->Hingga100Ms, $pos->Hingga250Ms, $pos->Hingga800Ms, $pos->Hingga1600Ms])->toBe([2, 0, 0, 1])
             ->and(MetrikApi::query()->where('Kelompok', 'Pemilik')->sole()->Hingga400Ms)->toBe(1);
@@ -144,7 +144,7 @@ describe('Pencatat metrik API', function (): void {
 });
 
 describe('Ringkasan error rate & p95', function (): void {
-    it('p95 dari histogram, error rate dari galat server, dan jendela menit', function (): void {
+    it('p95 dari histogram, error rate dari masalah server, dan jendela menit', function (): void {
         MetrikPosSehat(2);
         TambahMetrikMenit('Pos', 30, ['JumlahPermintaan' => 100, 'JumlahGalatServer' => 50, 'TotalDurasiMs' => 100000, 'Hingga1600Ms' => 100]);
         TambahMetrikMenit('Pemilik', 1, ['JumlahPermintaan' => 40, 'JumlahGalatServer' => 0, 'TotalDurasiMs' => 4000, 'Hingga100Ms' => 40]);
@@ -181,7 +181,7 @@ describe('Alert error rate dan latensi (BR-P11.1 lanjutan)', function (): void {
         expect(AlertOperasional::query()->sole()->SelesaiPada)->not->toBeNull();
     });
 
-    it('permintaan terlalu sedikit tidak membuka alert walau semuanya galat', function (): void {
+    it('permintaan terlalu sedikit tidak membuka alert walau semuanya masalah', function (): void {
         TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 10, 'JumlahGalatServer' => 10, 'TotalDurasiMs' => 90000, 'Lebih1600Ms' => 10]);
 
         expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([]);
@@ -373,7 +373,7 @@ describe('Penundaan alert lalu lintas API (P-11 PGL-20, v6.60)', function (): vo
         TambahMetrikMenit('Pos', $menitLalu, ['JumlahPermintaan' => 120, 'JumlahGalatServer' => 12, 'TotalDurasiMs' => 6000, 'Hingga100Ms' => 120]);
     }
 
-    it('sampel kecil (2 galat dari 33 permintaan) tidak lagi membuka alert kritis', function (): void {
+    it('sampel kecil (2 masalah dari 33 permintaan) tidak lagi membuka alert kritis', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 33, 'JumlahGalatServer' => 2, 'TotalDurasiMs' => 1650, 'Hingga100Ms' => 33]);
 

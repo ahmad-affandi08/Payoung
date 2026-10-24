@@ -58,7 +58,9 @@ export default function TugasGagal({ Tugas }: { Tugas: Tugas }) {
                     <pre className="overflow-x-auto rounded-kontrol border border-garis bg-latar p-3 font-mono text-keterangan text-teks-utama">
                         {JSON.stringify(Tugas.Payload, null, 2)}
                     </pre>
-                    <h2 className="text-subjudul font-semibold text-teks-utama">Galat (difilter, 20 baris pertama)</h2>
+                    <h2 className="text-subjudul font-semibold text-teks-utama">
+                        Masalah (difilter, 20 baris pertama)
+                    </h2>
                     <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-kontrol border border-garis bg-latar p-3 font-mono text-keterangan text-teks-utama">
                         {Tugas.Galat}
                     </pre>

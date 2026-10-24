@@ -362,7 +362,7 @@ describe('PemilihProduk (TanStack Query, KunciKueri.Produk.Cari)', () => {
         expect(daftar?.className).toContain('flex-1');
     });
 
-    it('galat jaringan dan hasil kosong ditulis di area aria-live', async () => {
+    it('masalah jaringan dan hasil kosong ditulis di area aria-live', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve({}) }));
         RenderUji(<PemilihProduk label="Cari komponen" jenis={['Stok']} saatPilih={vi.fn()} />);
         BukaPilihan(screen.getByRole('combobox', { name: 'Cari komponen' }));
@@ -383,7 +383,7 @@ describe('PemilihProduk (TanStack Query, KunciKueri.Produk.Cari)', () => {
 });
 
 describe('BantuanKatalog', () => {
-    it('memetakan galat server bersarang ke kunci relatif', () => {
+    it('memetakan masalah server bersarang ke kunci relatif', () => {
         expect(
             AmbilGalatBerawalan(
                 { 'Satuan.0.Barcode.1': 'Barcode sudah dipakai', 'Satuan.1.Harga': 'x', Sku: 'SKU sudah dipakai' },

@@ -69,7 +69,7 @@ describe('komponen Formulir di atas shadcn/ui (API lama tetap)', () => {
         expect(kotak.getAttribute('aria-checked')).toBe('true');
     });
 
-    it('GrupCentang: menambah/menghapus nilai terpilih; galat terhubung ke fieldset', () => {
+    it('GrupCentang: menambah/menghapus nilai terpilih; masalah terhubung ke fieldset', () => {
         const SaatBerubah = vi.fn();
         render(
             <GrupCentang
@@ -94,7 +94,7 @@ describe('komponen Formulir di atas shadcn/ui (API lama tetap)', () => {
         expect(SaatBerubah).toHaveBeenLastCalledWith([]);
     });
 
-    it('BidangPilihan: PilihanCari dengan kotak cari, opsi kosong, nilai, dan galat', () => {
+    it('BidangPilihan: PilihanCari dengan kotak cari, opsi kosong, nilai, dan masalah', () => {
         const SaatBerubah = vi.fn();
         render(
             <BidangPilihan
@@ -132,7 +132,7 @@ describe('komponen Formulir di atas shadcn/ui (API lama tetap)', () => {
         expect(SaatBerubah).toHaveBeenCalledWith('WITA');
     });
 
-    it('BidangTeksPanjang: Textarea dengan baris, batas, keterangan & galat terhubung', () => {
+    it('BidangTeksPanjang: Textarea dengan baris, batas, keterangan & masalah terhubung', () => {
         render(
             <BidangTeksPanjang
                 label="Pesan"

@@ -61,7 +61,7 @@ it('menolak bom ZIP xlsx yang membohongi ukuran terdeklarasi (isi nyata melewati
     expect(ImporProduk::query()->count())->toBe(1);
 });
 
-it('CSV UTF-16LE ber-BOM dibaca benar; sel 100.000 karakter menjadi galat baris, bukan galat sistem', function (): void {
+it('CSV UTF-16LE ber-BOM dibaca benar; sel 100.000 karakter menjadi masalah baris, bukan masalah sistem', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk();
     $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -76,7 +76,7 @@ it('CSV UTF-16LE ber-BOM dibaca benar; sel 100.000 karakter menjadi galat baris,
     expect($impor->JumlahValid)->toBe(1)->and($impor->JumlahGalat)->toBe(1);
 });
 
-it('laporan galat menetralkan rumus dari sel asli berkas (=, +, -, @)', function (): void {
+it('laporan masalah menetralkan rumus dari sel asli berkas (=, +, -, @)', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk();
     $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

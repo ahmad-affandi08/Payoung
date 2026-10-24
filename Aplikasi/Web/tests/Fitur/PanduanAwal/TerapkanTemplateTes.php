@@ -205,7 +205,7 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
             ->and(LogAudit::query()->where('IdTenant', $tenant->Id)->where('Peristiwa', 'outlet.template.ubah')->count())->toBe(2);
     });
 
-    it('hanya versi Terbit yang bisa diterapkan: Draf, Usang, atau kode tidak dikenal ditolak dengan galat KodeTemplate', function (): void {
+    it('hanya versi Terbit yang bisa diterapkan: Draf, Usang, atau kode tidak dikenal ditolak dengan masalah KodeTemplate', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
         $draf = TemplateSektor::query()->create(['Kode' => 'FNB-QSR', 'Nama' => 'Restoran cepat saji']);
         TemplateSektorVersi::query()->create(['IdTemplateSektor' => $draf->Id, 'Versi' => 1, 'Status' => StatusTemplateSektor::Draf, 'Isi' => BantuanPanduanAwal::IsiTemplateAwal('FNB-QSR')]);

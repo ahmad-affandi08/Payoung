@@ -18,7 +18,7 @@ const titikJenis = {
     bahaya: 'bg-bahaya-lembut',
 } as const;
 
-const labelJenis = { info: 'Info', sukses: 'Berhasil', peringatan: 'Perhatian', bahaya: 'Galat' } as const;
+const labelJenis = { info: 'Info', sukses: 'Berhasil', peringatan: 'Perhatian', bahaya: 'Ada masalah' } as const;
 
 /**
  * Bilah status tipis gelap (D-193): satu blok teks ringkas di atas `brand-gelap`, penanda nada berupa titik kecil

@@ -84,7 +84,7 @@ describe('Konfirmasi pembayaran invoice oleh pelanggan (halaman publik)', () => 
         expect(screen.queryByText(/bukti\.png/)).toBeNull();
     });
 
-    it('klaim yang menunggu diperiksa tampil sebagai info tanpa nama pengirim; galat server tampil terbaca', () => {
+    it('klaim yang menunggu diperiksa tampil sebagai info tanpa nama pengirim; masalah server tampil terbaca', () => {
         AturHalamanUji({ Umum: 'Sudah ada 3 konfirmasi yang menunggu verifikasi penjual.' });
         RenderUji(
             <KonfirmasiBayarInvoicePublik

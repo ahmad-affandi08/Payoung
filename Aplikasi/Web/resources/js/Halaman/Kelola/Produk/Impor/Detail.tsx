@@ -43,10 +43,10 @@ function TautanLaporan({ impor }: { impor: RingkasanImpor }) {
             {impor.JumlahGalat > 0 || impor.JumlahGagal > 0 ? (
                 <>
                     <Button asChild variant="link" className="h-auto px-0">
-                        <a href={BuatUrlLaporanImpor(impor.Uuid, 'galat')}>Unduh laporan galat (Excel)</a>
+                        <a href={BuatUrlLaporanImpor(impor.Uuid, 'galat')}>Unduh laporan masalah (Excel)</a>
                     </Button>
                     <Button asChild variant="link" className="h-auto px-0">
-                        <a href={BuatUrlLaporanImpor(impor.Uuid, 'galat', 'csv')}>Unduh laporan galat (CSV)</a>
+                        <a href={BuatUrlLaporanImpor(impor.Uuid, 'galat', 'csv')}>Unduh laporan masalah (CSV)</a>
                     </Button>
                 </>
             ) : null}
@@ -223,7 +223,7 @@ export default function HalamanDetailImpor({
 
             {Impor.Status === 'Gagal' ? (
                 <Pemberitahuan jenis="bahaya" judul="Impor berhenti">
-                    <p>{Impor.PesanGalat ?? 'Terjadi galat saat memproses berkas.'}</p>
+                    <p>{Impor.PesanGalat ?? 'Terjadi masalah saat memproses berkas.'}</p>
                     {Impor.JumlahDiterapkan > 0 ? (
                         <p className="tabular-nums">
                             {Impor.JumlahDiterapkan.toLocaleString('id-ID')} baris sudah diterapkan dan tidak akan

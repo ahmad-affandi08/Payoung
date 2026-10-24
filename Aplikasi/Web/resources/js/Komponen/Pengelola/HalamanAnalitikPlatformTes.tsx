@@ -212,7 +212,7 @@ describe('halaman analitik platform (PGL-24)', () => {
         expect(within(baris[2] as HTMLElement).queryByText('0,0%')).toBeNull();
     });
 
-    it('tanpa data: funnel nol dan keadaan kosong tampil, tidak ada galat', () => {
+    it('tanpa data: funnel nol dan keadaan kosong tampil, tidak ada masalah', () => {
         AturHalaman();
         Render(
             <HalamanAnalitikPlatform

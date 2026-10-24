@@ -222,7 +222,7 @@ describe('halaman Aktivasi QRIS', () => {
         expect(screen.getByRole('button', { name: 'Lanjut' })).toBeTruthy();
     });
 
-    it('Lanjut dengan isian kurang menampilkan galat dan tetap di langkah 1', () => {
+    it('Lanjut dengan isian kurang menampilkan masalah dan tetap di langkah 1', () => {
         render(<AktivasiQris {...Props()} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
@@ -344,7 +344,7 @@ describe('halaman Aktivasi QRIS', () => {
         expect(screen.getByText('Langkah 1 dari 3: Data pemilik dan usaha')).toBeTruthy();
     });
 
-    it('Gagal: pesan galat terfilter tampil dan pendaftaran bisa dikirim ulang', () => {
+    it('Gagal: pesan masalah terfilter tampil dan pendaftaran bisa dikirim ulang', () => {
         render(
             <AktivasiQris
                 {...Props({

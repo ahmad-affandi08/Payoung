@@ -70,7 +70,7 @@ describe('BidangHpp (DesainF05a E: HPP per satuan 6 desimal, tanpa float)', () =
         expect(SaatBerubah).not.toHaveBeenCalled();
     });
 
-    it('galat terhubung lewat aria-describedby', () => {
+    it('masalah terhubung lewat aria-describedby', () => {
         render(<BidangHpp label="Harga modal" nilai="" saatBerubah={vi.fn()} galat="Isi harga modal." />);
         const input = screen.getByRole('textbox', { name: 'Harga modal' });
 
@@ -270,7 +270,7 @@ describe('PemilihProdukStok (KunciKueri.Persediaan.CariProduk)', () => {
         expect(SaatPilih).toHaveBeenCalledWith(expect.objectContaining({ Nama: 'Biji Kopi Arabika Gayo' }));
     });
 
-    it('galat jaringan ditulis di area aria-live', async () => {
+    it('masalah jaringan ditulis di area aria-live', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve({}) }));
         RenderUji(<PemilihProdukStok label="Produk" uuidGudang={null} saatPilih={vi.fn()} />);
         BukaPilihan(screen.getByRole('combobox', { name: 'Produk' }));

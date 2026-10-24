@@ -38,10 +38,10 @@ describe('KonteksPengelola::JalankanLintasTenant (CLAUDE.md #11, §13.8)', funct
             ->and($log->NilaiBaru)->toBe(['Cakupan' => 'SatuTenant']);
     });
 
-    it('konteks dipulihkan walau closure melempar galat', function (): void {
+    it('konteks dipulihkan walau closure melempar masalah', function (): void {
         $a = BantuanTenantPengelola::BuatTenant();
 
-        expect(fn () => app(KonteksPengelola::class)->JalankanLintasTenant('Uji galat', fn () => throw new RuntimeException('gagal'), $a->Id))
+        expect(fn () => app(KonteksPengelola::class)->JalankanLintasTenant('Uji masalah', fn () => throw new RuntimeException('gagal'), $a->Id))
             ->toThrow(RuntimeException::class)
             ->and(app(KonteksTenant::class)->Ambil())->toBeNull()
             ->and(fn () => Outlet::query()->count())->toThrow(TenantBelumDitetapkan::class);

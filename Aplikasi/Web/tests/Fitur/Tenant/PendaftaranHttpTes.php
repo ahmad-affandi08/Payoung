@@ -240,7 +240,7 @@ describe('Verifikasi email (BR-00.5)', function (): void {
         Mail::assertNothingSent();
     });
 
-    it('kirim ulang yang gagal dilaporkan sebagai galat, bukan sukses', function (): void {
+    it('kirim ulang yang gagal dilaporkan sebagai masalah, bukan sukses', function (): void {
         $this->post('/daftar', IsianDaftarUji())->assertSessionHasNoErrors();
         Mail::shouldReceive('to')->andThrow(new RuntimeException('SMTP ditolak'));
 

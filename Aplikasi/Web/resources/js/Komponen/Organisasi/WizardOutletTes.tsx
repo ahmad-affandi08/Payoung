@@ -84,7 +84,7 @@ describe('Aturan wizard outlet (LangkahOutlet)', () => {
         expect(PeriksaLangkahOutlet('Tinjau', { ...isian, Nama: '' }, false)).toEqual({});
     });
 
-    it('kunci galat server menuju langkahnya', () => {
+    it('kunci masalah server menuju langkahnya', () => {
         expect(PetakanGalatOutletKeLangkah('Kode')).toBe('Identitas');
         expect(PetakanGalatOutletKeLangkah('JamTutupBuku')).toBe('Lokasi');
         expect(PetakanGalatOutletKeLangkah('Nitku')).toBe('Pajak');

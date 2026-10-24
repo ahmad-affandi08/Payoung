@@ -191,7 +191,7 @@ describe('Kelola/Produk/Label (PRD-10 cetak label)', () => {
         expect(screen.getByRole('checkbox', { name: 'SKU' }).getAttribute('data-state')).toBe('checked');
     });
 
-    it('penyimpanan rusak diabaikan: kembali ke pilihan bawaan tanpa galat', () => {
+    it('penyimpanan rusak diabaikan: kembali ke pilihan bawaan tanpa masalah', () => {
         window.localStorage.setItem('payoung.cetak-label.v1', '{"KodeMedia":"hacker"');
         RenderUji(<HalamanLabelProduk {...PropsLabel()} />);
 

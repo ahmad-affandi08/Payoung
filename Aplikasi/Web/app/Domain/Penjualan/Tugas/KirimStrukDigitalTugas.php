@@ -45,7 +45,7 @@ final class KirimStrukDigitalTugas implements ShouldQueue
             $pesan = PesanKeluar::query()->find($this->idPesanKeluar);
 
             if ($pesan !== null) {
-                app(PengirimStrukDigital::class)->TandaiGagal($pesan, 'Struk gagal dikirim karena galat sistem.');
+                app(PengirimStrukDigital::class)->TandaiGagal($pesan, 'Struk gagal dikirim karena masalah sistem.');
             }
         });
     }

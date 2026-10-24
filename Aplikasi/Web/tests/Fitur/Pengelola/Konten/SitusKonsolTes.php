@@ -124,7 +124,7 @@ describe('D-21 halaman berblok', function (): void {
         $this->get((string) $lokasi)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Halaman.Pratinjau', true));
     });
 
-    it('menolak blok & slug tidak valid dengan galat per bidang', function (): void {
+    it('menolak blok & slug tidak valid dengan masalah per bidang', function (): void {
         MasukSebagaiKontenSitus($this);
         $this->post(BantuanPengelola::Url('/situs/halaman'), ['Slug' => 'masuk', 'Judul' => 'X'])->assertSessionHasErrors('Slug');
         $this->post(BantuanPengelola::Url('/situs/halaman'), ['Slug' => 'Harga Spesial', 'Judul' => 'X'])->assertSessionHasErrors('Slug');
@@ -187,7 +187,7 @@ describe('D-63 penyunting visual halaman situs', function (): void {
             ->has('Situs'));
     });
 
-    it('pratinjau langsung menerima blok belum lengkap sebagai penanda, bukan galat', function (): void {
+    it('pratinjau langsung menerima blok belum lengkap sebagai penanda, bukan masalah', function (): void {
         MasukSebagaiKontenSitus($this);
         [, $url] = BuatHalamanEditor($this);
 

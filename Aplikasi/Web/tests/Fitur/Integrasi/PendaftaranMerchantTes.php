@@ -335,7 +335,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         Http::assertSentCount(5);
     });
 
-    it('galat 4xx pasti: Gagal dengan pesan terfilter (tanpa secret, token, NIK, rekening); foto lokal dihapus; boleh dikirim ulang', function (): void {
+    it('masalah 4xx pasti: Gagal dengan pesan terfilter (tanpa secret, token, NIK, rekening); foto lokal dihapus; boleh dikirim ulang', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT.header.payload-rahasia'], 200),
@@ -361,7 +361,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         expect($p->Status)->toBe(StatusPendaftaranMerchant::Ditinjau)->and($p->IdBisnisDoku)->toBe('BSN-0001-AAAA')->and($p->PesanGalat)->toBeNull();
     });
 
-    it('galat 5xx saat registrasi: tetap Dikirim dan dapat diulang; id berkas tersimpan jadi unggahan tidak diulang', function (): void {
+    it('masalah 5xx saat registrasi: tetap Dikirim dan dapat diulang; id berkas tersimpan jadi unggahan tidak diulang', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT-X'], 200),
@@ -565,7 +565,7 @@ describe('status dari DOKU (Get Business Data)', function (): void {
         expect($p->Status)->toBe(StatusPendaftaranMerchant::Draf)->and($p->IdBisnisDoku)->toBeNull()->and($p->AlasanPenolakan)->toBeNull()->and($p->CekBerkasLengkap())->toBeTrue();
     });
 
-    it('galat DOKU saat membaca status tidak mengubah status tersimpan', function (): void {
+    it('masalah DOKU saat membaca status tidak mengubah status tersimpan', function (): void {
         $toko = TokoMerchant();
         SiapkanDitinjau($this, $toko);
         BantuanOrganisasi::AturKonteks($toko['Tenant']->Id);

@@ -213,7 +213,7 @@ describe('Validasi otomatis template (BR-P03.3)', function (): void {
             ->toBe(['Kelompok Barang kena PPN: PPN belum punya tarif terbit yang masih berlaku.']);
     });
 
-    it('melaporkan isi yang rusak sebagai galat, bukan exception', function (): void {
+    it('melaporkan isi yang rusak sebagai masalah, bukan exception', function (): void {
         $hasil = app(ValidatorTemplate::class)->Validasi(['Akun' => 'bukan daftar', 'Pengaturan' => null, 'ModeKasir' => [1]]);
 
         expect($hasil['Lolos'])->toBeFalse()

@@ -61,7 +61,7 @@ describe('RapikanTeksJam', () => {
 });
 
 describe('PemilihJam', () => {
-    it('ketik 4 angka langsung jadi JJ:MM; ketikan pendek dirapikan saat ditinggalkan; ketikan salah diberi galat', () => {
+    it('ketik 4 angka langsung jadi JJ:MM; ketikan pendek dirapikan saat ditinggalkan; ketikan salah diberi masalah', () => {
         const SaatBerubah = vi.fn();
         render(<Terkendali awal="" saatBerubah={SaatBerubah} />);
         const isian = screen.getByLabelText<HTMLInputElement>('Jam masuk');

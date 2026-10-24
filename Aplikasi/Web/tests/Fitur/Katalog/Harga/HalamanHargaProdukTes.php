@@ -72,7 +72,7 @@ describe('F-03 halaman harga produk (E.6)', function (): void {
                 ->where('Riwayat.Data.0.LabelSumber', 'Diubah manual'));
     });
 
-    it('galat aturan bisnis kembali ke bidang satuan yang sama dengan body (Satuan.{i}.Harga…)', function (): void {
+    it('masalah aturan bisnis kembali ke bidang satuan yang sama dengan body (Satuan.{i}.Harga…)', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id)->put($this->url, ['Satuan' => [
             ['UuidProdukSatuan' => $this->pcs->Uuid, 'Harga' => [['JumlahMinimum' => '1', 'Harga' => '5000']]],
             ['UuidProdukSatuan' => $this->pak->Uuid, 'Harga' => [['JumlahMinimum' => '5', 'Harga' => '42000']]],
@@ -87,7 +87,7 @@ describe('F-03 halaman harga produk (E.6)', function (): void {
         ]])->assertSessionHasErrors(['Satuan.0.Harga.0.Harga']);
     });
 
-    it('menyimpan harga produk di daftar harga dari halaman produk; galat baris rata dipetakan ke Harga.{k}', function (): void {
+    it('menyimpan harga produk di daftar harga dari halaman produk; masalah baris rata dipetakan ke Harga.{k}', function (): void {
         $urlDaftar = "{$this->url}/daftar-harga/{$this->daftar->Uuid}";
         $tes = BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id);
 

@@ -67,7 +67,7 @@ final class JalankanInvoiceBerulang
 
                 return $dibuat;
             } catch (Throwable $galat) {
-                $this->CatatGalat($uuidTemplat, 'Galat sistem saat menerbitkan invoice berulang.');
+                $this->CatatGalat($uuidTemplat, 'Masalah sistem saat menerbitkan invoice berulang.');
                 report($galat);
 
                 return $dibuat;

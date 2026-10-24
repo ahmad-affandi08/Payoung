@@ -162,7 +162,7 @@ final class KondisiOperasional
         }
 
         if ($galat !== []) {
-            $masalah[JenisAlertOperasional::ErrorRateTinggi->value] = "Galat server (5xx) dalam {$jendela} menit terakhir mencapai {$batasGalat}% atau lebih: ".implode('; ', $galat).'.';
+            $masalah[JenisAlertOperasional::ErrorRateTinggi->value] = "Masalah server (5xx) dalam {$jendela} menit terakhir mencapai {$batasGalat}% atau lebih: ".implode('; ', $galat).'.';
         }
 
         $tenantMacet = $this->outboxMacet->HitungTenant();

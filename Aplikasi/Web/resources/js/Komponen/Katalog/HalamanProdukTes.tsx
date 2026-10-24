@@ -258,7 +258,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(screen.getByText('Barang yang dihitung stoknya, misal sabun atau minuman botol.')).toBeTruthy();
     });
 
-    it('harga bertingkat tidak valid ditahan di peramban: tetap di langkah harga dengan galat di barisnya', () => {
+    it('harga bertingkat tidak valid ditahan di peramban: tetap di langkah harga dengan masalah di barisnya', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         IsiNama('Sabun');
         Lanjut();
@@ -286,7 +286,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(LangkahAktif()).toBe('Pajak & tampilan');
     });
 
-    it('galat server bersarang (Satuan.0.Barcode.1) tampil di isiannya dan langkahnya ditandai', () => {
+    it('masalah server bersarang (Satuan.0.Barcode.1) tampil di isiannya dan langkahnya ditandai', () => {
         AturHalamanUji({
             Sku: 'SKU sudah dipakai produk lain.',
             'Satuan.0.Barcode.1': 'Barcode 899 sudah dipakai Teh Botol.',
@@ -439,7 +439,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(screen.queryByText('Jual sebagai paket sesi')).toBeNull();
     });
 
-    it('galat server membuka langkah pertama yang memuatnya dan menampilkan galatnya', () => {
+    it('masalah server membuka langkah pertama yang memuatnya dan menampilkan galatnya', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         IsiNama('Sabun');
         Lanjut();
@@ -557,7 +557,7 @@ describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
         expect(screen.getByRole('tab', { name: 'Harga' }).getAttribute('aria-selected')).toBe('true');
     });
 
-    it('galat server bersarang (Satuan.0.Barcode.1) tampil di isian dan tab ditandai', () => {
+    it('masalah server bersarang (Satuan.0.Barcode.1) tampil di isian dan tab ditandai', () => {
         AturHalamanUji({
             Sku: 'SKU sudah dipakai produk lain.',
             'Satuan.0.Barcode.1': 'Barcode 899 sudah dipakai Teh Botol.',
@@ -752,7 +752,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         );
     });
 
-    it('BR-03.1: barcode diketik di detail (Enter atau tombol), format & duplikat ditolak sebelum dikirim, galat server tampil', () => {
+    it('BR-03.1: barcode diketik di detail (Enter atau tombol), format & duplikat ditolak sebelum dikirim, masalah server tampil', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
         const isian = screen.getByLabelText('Barcode baru dus');
         const tombolTambah = within(isian.parentElement as HTMLElement).getByRole('button', { name: 'Tambah barcode' });

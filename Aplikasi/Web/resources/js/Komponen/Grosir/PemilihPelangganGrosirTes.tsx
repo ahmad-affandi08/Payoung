@@ -76,7 +76,7 @@ describe('PemilihPelangganGrosir (dropdown, PRD v3.14)', () => {
         );
     });
 
-    it('galat server tampil di bawah dropdown', () => {
+    it('masalah server tampil di bawah dropdown', () => {
         SiapkanFetch();
         RenderUji(
             <PemilihPelangganGrosir uuidTerpilih="" namaTerpilih="" saatPilih={vi.fn()} galat="Pilih pelanggan." />,

@@ -127,7 +127,7 @@ describe('F-05e produksi: halaman', () => {
         );
     });
 
-    it('form kosong: simpan tanpa lokasi/produk/bahan menampilkan galat dan tidak mengirim', () => {
+    it('form kosong: simpan tanpa lokasi/produk/bahan menampilkan masalah dan tidak mengirim', () => {
         RenderUji(
             <HalamanFormOrderProduksi
                 Mode="Buat"

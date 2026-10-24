@@ -90,7 +90,7 @@ describe('K-16 impor kolom Favorit', function (): void {
             ->and($mgj->Favorit)->toBeTrue();
     });
 
-    it('nilai Favorit yang tidak dikenali menjadi galat baris, bukan mengubah apa pun', function (): void {
+    it('nilai Favorit yang tidak dikenali menjadi masalah baris, bukan mengubah apa pun', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

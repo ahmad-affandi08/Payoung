@@ -198,7 +198,7 @@ describe('F-05a impor stok awal: validasi di antrean (berkas besar)', function (
             ->and(ImporStokAwalBaris::query()->where('IdImporStokAwal', $impor->Id)->distinct()->count('NomorBaris'))->toBe(620);
     });
 
-    it('galat sistem di tugas antrean menandai impor Gagal dengan pesan (failed)', function (): void {
+    it('masalah sistem di tugas antrean menandai impor Gagal dengan pesan (failed)', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImporStokAwal::Unggah($masuk, BantuanImporStokAwal::BuatCsv([BantuanImporStokAwal::JUDUL, ['X-1', '', '', '', '1', '1']]));

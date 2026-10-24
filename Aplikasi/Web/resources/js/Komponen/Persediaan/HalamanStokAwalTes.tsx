@@ -218,7 +218,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(screen.queryByText('Pilih lokasi stok.')).toBeNull();
     });
 
-    it('buat: kirim kosong menampilkan galat lokal dan tidak mengirim', () => {
+    it('buat: kirim kosong menampilkan masalah lokal dan tidak mengirim', () => {
         RenderUji(<HalamanFormStokAwal {...PropsForm({ OpsiGudang: [GudangUtama, GudangKedua] })} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Simpan draf' }));
@@ -324,7 +324,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(screen.queryByRole('textbox', { name: 'Nomor batch Susu UHT Full Cream 1 L' })).toBeNull();
     });
 
-    it('galat lokal: tanggal masa depan, batch tanpa kedaluwarsa, satuan bulat', () => {
+    it('masalah lokal: tanggal masa depan, batch tanpa kedaluwarsa, satuan bulat', () => {
         const props = PropsUbah();
         const baris = props.StokAwal?.Baris ?? [];
         RenderUji(
@@ -358,7 +358,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(tiruanRouter.put).not.toHaveBeenCalled();
     });
 
-    it('galat server per baris tampil di bawah isian; galat lain di ringkasan', () => {
+    it('masalah server per baris tampil di bawah isian; masalah lain di ringkasan', () => {
         AturHalamanUji({
             'Baris.0.HppSatuan': 'Harga modal tidak valid.',
             'Baris.2.NomorSeri': 'Nomor seri SN-002 sudah ada.',
@@ -533,7 +533,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         );
     });
 
-    it('galat pembatalan dari server (stok sudah terpakai) tampil di dalam dialog', () => {
+    it('masalah pembatalan dari server (stok sudah terpakai) tampil di dalam dialog', () => {
         AturHalamanUji({ Umum: 'Stok Biji Kopi Arabika Gayo sudah berkurang. Koreksi lewat penyesuaian stok.' });
         const props = BuatPropsDetail({ Tindakan: { Ubah: false, Buang: false, Posting: false, Batalkan: true } });
         RenderUji(
@@ -590,7 +590,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         expect(screen.queryByRole('button', { name: /Posting|Batalkan|Buang/ })).toBeNull();
     });
 
-    it('memproses: memantau status posting; posting gagal menampilkan pesan galat', async () => {
+    it('memproses: memantau status posting; posting gagal menampilkan pesan masalah', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({

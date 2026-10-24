@@ -57,7 +57,7 @@ function HitungVoucherOnline(TestCase $tes, array $k, ?string $kode): TestRespon
     ]);
 }
 
-it('perkiraan: voucher sah memotong total tanpa dipesan; kode salah = galat bidang KodeVoucher', function (): void {
+it('perkiraan: voucher sah memotong total tanpa dipesan; kode salah = masalah bidang KodeVoucher', function (): void {
     $k = SiapkanVoucherOnline($this);
 
     $tanpa = HitungVoucherOnline($this, $k, null)->assertOk()->assertJsonPath('Voucher', null)->json();

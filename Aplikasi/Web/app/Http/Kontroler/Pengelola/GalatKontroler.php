@@ -19,7 +19,7 @@ final class GalatKontroler extends Kontroler
         403 => ['Tidak punya akses', 'Peran Anda belum mencakup halaman ini. Hubungi Super Admin bila Anda membutuhkannya.'],
         404 => ['Halaman tidak ditemukan', 'Alamat ini tidak ada di Platform Pengelola. Periksa lagi tautannya.'],
         429 => ['Terlalu banyak permintaan', 'Tunggu sebentar, lalu coba lagi.'],
-        500 => ['Terjadi galat di server', 'Tim teknis sudah bisa melihat galat ini di log. Coba lagi beberapa saat lagi.'],
+        500 => ['Terjadi galat di server', 'Tim teknis sudah bisa melihat masalah ini di log. Coba lagi beberapa saat lagi.'],
         503 => ['Sedang dalam pemeliharaan', 'Platform Pengelola sedang diperbarui. Coba lagi beberapa menit lagi.'],
     ];
 

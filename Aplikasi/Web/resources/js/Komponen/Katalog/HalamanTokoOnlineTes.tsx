@@ -54,12 +54,12 @@ afterEach(cleanup);
 describe('Toko online › Pengaturan toko', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
 
-    it('tanpa galat tidak menampilkan peringatan', () => {
+    it('tanpa masalah tidak menampilkan peringatan', () => {
         RenderUji(<HalamanTokoOnline {...propsSiap} />);
         expect(screen.queryByRole('alert')).toBeNull();
     });
 
-    it('galat dari server (misal fitur belum di paket) tampil di dekat tombol simpan, tidak diam-diam', () => {
+    it('masalah dari server (misal fitur belum di paket) tampil di dekat tombol simpan, tidak diam-diam', () => {
         AturHalamanUji({ Aktif: 'Toko online belum aktif di paket usaha ini.' }, '/kelola/toko-online');
         RenderUji(<HalamanTokoOnline {...propsSiap} />);
 

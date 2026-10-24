@@ -187,7 +187,7 @@ describe('BR-P11.1: alert kritis scheduler & antrean, sekali per insiden', funct
 });
 
 describe('Job gagal & backup', function (): void {
-    it('detail job gagal menyembunyikan payload & rahasia di pesan galat', function (): void {
+    it('detail job gagal menyembunyikan payload & rahasia di pesan masalah', function (): void {
         MasukSebagaiOperasional($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $uuid = TambahJobGagal();
 
@@ -225,7 +225,7 @@ describe('Job gagal & backup', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'operasional.job-gagal.buang')->sole()->Alasan)->toBe('Email ke alamat yang sudah tidak aktif');
     });
 
-    it('job yang payload-nya tidak bisa dibaca ulang ditolak dengan pesan jelas, bukan galat server', function (): void {
+    it('job yang payload-nya tidak bisa dibaca ulang ditolak dengan pesan jelas, bukan masalah server', function (): void {
         MasukSebagaiOperasional($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $uuid = TambahJobGagal();
         DB::table('failed_jobs')->where('uuid', $uuid)->update(['payload' => json_encode([

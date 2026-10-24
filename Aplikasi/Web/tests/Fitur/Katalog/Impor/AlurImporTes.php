@@ -131,7 +131,7 @@ describe('F-03 BR-03.6 alur impor produk (sinkron)', function (): void {
             ->and($peristiwa)->not->toContain('produk.buat', 'produk.harga.ubah');
     });
 
-    it('laporan galat bisa diunduh sebagai xlsx dan csv: kolom asli + Nomor Baris, Status Impor, Galat', function (): void {
+    it('laporan masalah bisa diunduh sebagai xlsx dan csv: kolom asli + Nomor Baris, Status Impor, Masalah', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImpor::Unggah($masuk, BantuanImpor::BuatXlsx(BarisAlurImpor()));

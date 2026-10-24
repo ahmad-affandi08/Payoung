@@ -132,7 +132,7 @@ describe('F-05a QA: IDOR rute stok awal', function (): void {
 });
 
 describe('F-05a QA: batch ganda menurut kolasi database', function (): void {
-    it('nomor batch yang hanya beda aksen (É/E) di satu dokumen ditolak BarisGanda 422, bukan galat SQL 500', function (): void {
+    it('nomor batch yang hanya beda aksen (É/E) di satu dokumen ditolak BarisGanda 422, bukan masalah SQL 500', function (): void {
         [$t, $p] = SiapkanKeamananStokAwal();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 

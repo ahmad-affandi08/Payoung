@@ -80,9 +80,9 @@ const kolomRute: KolomTabel<RuteTerlambat>[] = [
     },
     {
         id: 'GalatServer',
-        header: 'Galat server',
+        header: 'Masalah server',
         enableSorting: false,
-        meta: { label: 'Galat server', angka: true, prioritas: 'rendah' },
+        meta: { label: 'Masalah server', angka: true, prioritas: 'rendah' },
         cell: ({ row }) => row.original.GalatServer.toLocaleString('id-ID'),
     },
 ];
@@ -98,9 +98,9 @@ const kolomGalat: KolomTabel<GalatSinkron>[] = [
     {
         id: 'KodeGalat',
         accessorKey: 'KodeGalat',
-        header: 'Kode galat',
+        header: 'Kode masalah',
         enableSorting: false,
-        meta: { label: 'Kode galat', prioritas: 'utama', kelasSel: 'font-mono text-label' },
+        meta: { label: 'Kode masalah', prioritas: 'utama', kelasSel: 'font-mono text-label' },
     },
     {
         id: 'Jumlah',
@@ -174,7 +174,7 @@ export default function PanelObservabilitasLanjutan({ data }: { data: DataLanjut
 
             <Bagian judul={`Penolakan sinkron terbanyak (${String(data.JamJendela)} jam terakhir)`}>
                 <p className="max-w-3xl text-label text-teks-sekunder">
-                    Berapa kali server menolak data dari kasir, per jenis data dan kode galat. Lonjakan satu kode
+                    Berapa kali server menolak data dari kasir, per jenis data dan kode masalah. Lonjakan satu kode
                     biasanya berarti aturan bisnis yang membingungkan kasir atau versi aplikasi yang bermasalah.
                 </p>
                 <TabelData

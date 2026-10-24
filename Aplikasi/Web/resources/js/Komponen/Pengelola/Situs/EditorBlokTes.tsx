@@ -28,7 +28,7 @@ describe('Editor blok situs D-21', () => {
         });
     });
 
-    it('mengubah judul, menambah item sampai batas, dan menampilkan galat per bidang', () => {
+    it('mengubah judul, menambah item sampai batas, dan menampilkan masalah per bidang', () => {
         let blok: NilaiBlok = { Jenis: 'Keunggulan', ...BuatNilaiKosong(skemaKeunggulan) };
         const TiruanBerubah = vi.fn((b: NilaiBlok) => {
             blok = b;

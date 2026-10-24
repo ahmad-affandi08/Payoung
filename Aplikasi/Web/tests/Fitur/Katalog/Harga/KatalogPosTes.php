@@ -112,7 +112,7 @@ describe('F-03 katalog POS GET /api/pos/v1/katalog (D.3)', function (): void {
             ->and(collect($respons->json('ProdukHarga'))->pluck('UuidProduk')->unique()->all())->toBe([$produkB->Uuid]);
     });
 
-    it('tanpa token 401; langganan ditangguhkan → galat kunci POS yang sudah ada', function (): void {
+    it('tanpa token 401; langganan ditangguhkan → masalah kunci POS yang sudah ada', function (): void {
         $this->getJson('/api/pos/v1/katalog')->assertUnauthorized()->assertJsonPath('Galat.Kode', 'TokenPerangkatTidakValid');
 
         BantuanPerangkat::AturStatusLangganan($this->t['Tenant']->Id, StatusLangganan::Ditangguhkan);

@@ -819,7 +819,7 @@ Setiap layar/komponen wajib punya desain untuk keadaan berikut sebelum dianggap 
 |---|---|
 | Memuat | Kerangka (skeleton) sesuai bentuk isi, bukan pemutar di tengah layar kosong |
 | Kosong | "Belum ada produk. **Import dari Excel** atau **Tambah produk**" |
-| Galat | Apa yang terjadi + apa yang bisa dilakukan: "Printer dapur tidak tersambung. Cek kabel/Wi-Fi, lalu **Coba lagi**" |
+| Ada masalah (galat) | Apa yang terjadi + apa yang bisa dilakukan: "Printer dapur tidak tersambung. Cek kabel/Wi-Fi, lalu **Coba lagi**" |
 | Offline | Banner tenang (bukan merah menyala) + fitur yang tetap bisa dipakai. Tombol yang butuh online dinonaktifkan dengan penjelasan |
 | Tertunda sinkron | Jumlah item tertunda + waktu sinkron terakhir, bisa diketuk untuk detail |
 | Butuh persetujuan | Dialog PIN atau status "Menunggu persetujuan Supervisor" |

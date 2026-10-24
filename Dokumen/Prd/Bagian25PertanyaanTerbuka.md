@@ -227,6 +227,7 @@
 | D-191 | Dari pemilik produk (24/10/2026): tab dibuat lebih besar dan modern mengikuti Majoo, dan tidak boleh tergulir atas-bawah. Bentuk pil yang diusulkan agen ditolak; yang dipakai teks besar + batang bawah membulat + panah geser (rujukan tangkapan layar Majoo). Berlaku untuk semua tab web sekaligus. Dicatat agen (D-12, D-17). |
 | D-192 | Dari pemilik produk (24/10/2026): "ubah semua bahasa saring menjadi filter". Istilah UI "Filter" menggantikan "Saring" di seluruh antarmuka; nama teknis (`saring[...]`, `Saring`, class/komponen) tidak diubah agar kontrak API dan tes arsitektur tetap utuh (§13.7.1 baris parameter query). Dicatat agen (D-12, D-17). |
 | D-193 | Dari pemilik produk (24/10/2026): kotak pemberitahuan lama "AI slop", dan percobaan kotak berwarna "semakin slop"; dari tiga rancangan (teks polos, garis tipis netral, bilah tipis gelap) dipilih **C bilah tipis gelap**. Berlaku untuk semua pemakai `Pemberitahuan` sekaligus. Dicatat agen (D-12, D-17). |
+| D-194 | Dari pemilik produk (24/10/2026): "galat itu apa sih" lalu "ganti galat jadi 'Ada masalah'". Istilah UI "Galat" diganti "Ada masalah" (label) dan "masalah" (dalam kalimat); nama teknis (key `Galat`, kode, class) tetap. Dicatat agen (D-12, D-17); kamus §13.7.1 diperbarui. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

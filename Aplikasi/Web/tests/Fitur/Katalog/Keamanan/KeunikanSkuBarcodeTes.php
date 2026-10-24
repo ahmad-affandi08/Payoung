@@ -57,7 +57,7 @@ it('BR-03.1: SKU otomatis melewati SKU manual PRD-000001; SKU & barcode produk t
         ->and(Produk::query()->withTrashed()->whereKey($gula->Id)->value('Sku'))->toBeNull();
 });
 
-it('BR-03.1: SKU anak varian dari SKU induk 64 karakter tetap ≤ 64 karakter, unik, tanpa galat sistem', function (): void {
+it('BR-03.1: SKU anak varian dari SKU induk 64 karakter tetap ≤ 64 karakter, unik, tanpa masalah sistem', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk();
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     $skuInduk = 'KAOS-'.str_repeat('X', 59);

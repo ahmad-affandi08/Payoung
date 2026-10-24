@@ -217,7 +217,7 @@ describe('Kerahasiaan kredensial (BR-P05.1, BR-P05.6)', function (): void {
             ->and(array_key_exists('Kredensial', $konfigurasi->toArray()))->toBeFalse();
     });
 
-    it('pesan galat penyedia tidak memuat kredensial', function (): void {
+    it('pesan masalah penyedia tidak memuat kredensial', function (): void {
         expect(PenyaringPesan::Saring('auth failed for '.RAHASIA_SMTP_UJI, ['KataSandi' => RAHASIA_SMTP_UJI]))
             ->toBe('auth failed for [disembunyikan]');
     });

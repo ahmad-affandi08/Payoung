@@ -85,7 +85,7 @@ it('transfer & penyesuaian: Lanjutkan langsung mengirim / memposting; penyesuaia
         ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
 });
 
-it('stok awal: Lanjutkan memposting; galat posting menyimpan draf dan membuka detail dengan pesannya; tanpa izin posting tetap draf', function (): void {
+it('stok awal: Lanjutkan memposting; masalah posting menyimpan draf dan membuka detail dengan pesannya; tanpa izin posting tetap draf', function (): void {
     $t = SiapkanLanjutkan();
     $baru = Produk::query()->whereKey($t['Produk']['Batch']->Id)->sole();
     BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

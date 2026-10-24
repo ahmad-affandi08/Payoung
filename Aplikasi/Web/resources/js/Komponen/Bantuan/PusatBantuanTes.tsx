@@ -290,7 +290,7 @@ describe('lembar Bantuan kontekstual', () => {
         expect(String(PanggilanArtikel()[1]?.[0])).toContain('cari=stok');
     });
 
-    it('galat jaringan memberi pesan yang bisa dipahami; hasil kosong menyarankan dukungan', async () => {
+    it('masalah jaringan memberi pesan yang bisa dipahami; hasil kosong menyarankan dukungan', async () => {
         PasangJawaban(() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }));
         Render(<TombolBantuan bolehHubungiDukungan />);
         fireEvent.click(screen.getByRole('button', { name: 'Bantuan' }));

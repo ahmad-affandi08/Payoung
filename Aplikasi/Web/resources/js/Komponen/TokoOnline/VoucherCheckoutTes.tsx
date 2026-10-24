@@ -96,7 +96,7 @@ describe('voucher di checkout toko online', () => {
         expect((screen.getByLabelText(/Kode voucher/) as HTMLInputElement).value).toBe('');
     });
 
-    it('kode ditolak server: pesan galat di bidang voucher dan keranjang dihitung ulang tanpa voucher', async () => {
+    it('kode ditolak server: pesan masalah di bidang voucher dan keranjang dihitung ulang tanpa voucher', async () => {
         const TiruanFetch = vi.fn((_url: string, init: { body: string }) => {
             const kode = (JSON.parse(init.body) as { KodeVoucher: string | null }).KodeVoucher;
             return Promise.resolve(

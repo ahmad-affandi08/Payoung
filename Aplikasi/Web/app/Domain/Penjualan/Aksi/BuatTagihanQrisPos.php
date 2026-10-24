@@ -124,7 +124,7 @@ final class BuatTagihanQrisPos
 
             throw self::GalatTidakPasti('GerbangTidakPasti', 502);
         } catch (Throwable $galat) {
-            $this->TandaiTidakPasti($tagihan, 'Galat tak terduga saat menghubungi gerbang.');
+            $this->TandaiTidakPasti($tagihan, 'Masalah tak terduga saat menghubungi gerbang.');
 
             throw $galat;
         }

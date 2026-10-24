@@ -69,7 +69,7 @@ describe('F-05a HTTP stok awal: draf', function (): void {
         expect(StokAwal::query()->count())->toBe(0);
     });
 
-    it('pelanggaran aturan baris tampil sebagai galat bidang baris (Konsinyasi ditolak)', function (): void {
+    it('pelanggaran aturan baris tampil sebagai masalah bidang baris (Konsinyasi ditolak)', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 

@@ -114,7 +114,7 @@ export default function Pengembang() {
                         </li>
                         <li>Batas 120 permintaan per menit per token; lewat batas dijawab 429 dengan Retry-After.</li>
                         <li>
-                            Galat berbentuk{' '}
+                            Masalah berbentuk{' '}
                             <span className="font-mono">{'{"Galat": {"Kode": "...", "Pesan": "..."}}'}</span>: 401 token
                             tidak valid, 403 fitur/akses kurang, 404 tidak ditemukan, 422 parameter salah.
                         </li>

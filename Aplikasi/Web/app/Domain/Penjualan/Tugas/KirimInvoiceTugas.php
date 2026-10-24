@@ -45,7 +45,7 @@ final class KirimInvoiceTugas implements ShouldQueue
             $pengiriman = PengirimanInvoice::query()->find($this->idPengiriman);
 
             if ($pengiriman !== null) {
-                app(PengirimInvoice::class)->Akhiri($pengiriman, StatusPengirimanInvoice::Gagal, 'Pengiriman gagal karena galat sistem.');
+                app(PengirimInvoice::class)->Akhiri($pengiriman, StatusPengirimanInvoice::Gagal, 'Pengiriman gagal karena masalah sistem.');
             }
         });
     }

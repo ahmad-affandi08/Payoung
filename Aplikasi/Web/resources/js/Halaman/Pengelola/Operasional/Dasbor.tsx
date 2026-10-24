@@ -207,9 +207,9 @@ function BuatKolomMetrik(metrik: Dasbor['Metrik']): KolomTabel<MetrikKelompok>[]
         },
         {
             id: 'ErrorRate',
-            header: 'Galat server (5xx)',
+            header: 'Masalah server (5xx)',
             enableSorting: false,
-            meta: { label: 'Galat server (5xx)', angka: true, prioritas: 'penting' },
+            meta: { label: 'Masalah server (5xx)', angka: true, prioritas: 'penting' },
             cell: ({ row: { original: baris } }) =>
                 `${baris.ErrorRatePersen.replace('.', ',')}% (${baris.GalatServer.toLocaleString('id-ID')})`,
         },
@@ -328,9 +328,9 @@ const kolomTugasGagal: KolomTabel<TugasGagal>[] = [
     {
         id: 'RingkasanGalat',
         accessorKey: 'RingkasanGalat',
-        header: 'Galat',
+        header: 'Masalah',
         enableSorting: false,
-        meta: { label: 'Galat', prioritas: 'rendah', kelasSel: 'text-keterangan break-all text-teks-sekunder' },
+        meta: { label: 'Masalah', prioritas: 'rendah', kelasSel: 'text-keterangan break-all text-teks-sekunder' },
     },
 ];
 
@@ -474,7 +474,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
 
             <Bagian judul={`Error rate & p95 API (${String(Metrik.Jendela)} menit terakhir)`}>
                 <p className="max-w-3xl text-label text-teks-sekunder">
-                    Alert kritis bila galat server (5xx) mencapai {String(Metrik.BatasErrorRatePersen)}% dengan paling
+                    Alert kritis bila masalah server (5xx) mencapai {String(Metrik.BatasErrorRatePersen)}% dengan paling
                     sedikit {String(Metrik.MinimumPermintaan)} permintaan; peringatan bila p95 API POS melewati{' '}
                     {String(Metrik.BatasP95PosMs)} ms. Insiden baru terbuka setelah kondisi buruk bertahan{' '}
                     {String(Metrik.KonfirmasiMenit)} menit dan baru tertutup setelah sehat {String(Metrik.PulihMenit)}{' '}
@@ -526,7 +526,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     kolom={kolomTugasGagal}
                     sumber={{ mode: 'lokal', data: TugasGagal.Data }}
                     ambilIdBaris={(tugas) => tugas.Uuid}
-                    cari="Cari nama job, antrean, atau galat"
+                    cari="Cari nama job, antrean, atau masalah"
                     saring={[
                         {
                             id: 'Antrean',

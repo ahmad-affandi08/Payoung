@@ -203,7 +203,7 @@ describe('Kelola/Persediaan/KartuStok (F-05a)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/persediaan/kartu-stok'));
     afterEach(() => cleanup());
 
-    it('belum memilih: ajakan memilih produk & lokasi; kirim kosong memberi galat lokal', () => {
+    it('belum memilih: ajakan memilih produk & lokasi; kirim kosong memberi masalah lokal', () => {
         RenderUji(<HalamanKartuStok {...PropsKartu()} />);
 
         expect(screen.getByText('Pilih produk dan lokasi stok, lalu tekan Tampilkan kartu stok.')).toBeTruthy();
@@ -340,7 +340,7 @@ describe('Kelola/Persediaan/Pengaturan (F-05a)', () => {
         expect(screen.getAllByRole('radio').every((radio) => radio.hasAttribute('disabled'))).toBe(true);
     });
 
-    it('galat server tampil di bawah bidangnya', () => {
+    it('masalah server tampil di bawah bidangnya', () => {
         AturHalamanUji({ MetodeHpp: 'Metode HPP tidak bisa diubah karena sudah ada mutasi stok.' });
         RenderUji(<HalamanPengaturanPersediaan {...PropsPengaturan()} />);
 

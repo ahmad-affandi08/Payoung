@@ -11,7 +11,7 @@ export default function Galat({ Status, Judul, Keterangan }: PropsGalat) {
         <TataLetakAutentikasiPengelola judul={Judul}>
             <div className="flex flex-col gap-4">
                 <p className="text-isi text-teks-utama">{Keterangan}</p>
-                <p className="font-mono text-keterangan text-teks-sekunder">Kode galat: {Status}</p>
+                <p className="font-mono text-keterangan text-teks-sekunder">Kode masalah: {Status}</p>
                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11 w-fit text-label font-semibold">
                     <Link href="/">Kembali ke beranda</Link>
                 </Button>

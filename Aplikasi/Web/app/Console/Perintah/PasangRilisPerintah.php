@@ -90,7 +90,7 @@ final class PasangRilisPerintah extends Command
         }
 
         if ($gagal !== []) {
-            $this->error('Selesai dengan galat pada: '.implode(', ', $gagal).'.');
+            $this->error('Selesai dengan masalah pada: '.implode(', ', $gagal).'.');
 
             return self::FAILURE;
         }

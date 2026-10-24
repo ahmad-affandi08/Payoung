@@ -158,7 +158,7 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'tagihan-qris.buat')->count())->toBe(1);
     });
 
-    it('galat: 409 GerbangBelumAktif; 422 MetodeBukanQrisDinamis (QRIS statis, nonaktif, tidak dikenal); 422 JumlahTidakBulat/JumlahTidakValid; tanpa panggilan gerbang', function (): void {
+    it('masalah: 409 GerbangBelumAktif; 422 MetodeBukanQrisDinamis (QRIS statis, nonaktif, tidak dikenal); 422 JumlahTidakBulat/JumlahTidakValid; tanpa panggilan gerbang', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);

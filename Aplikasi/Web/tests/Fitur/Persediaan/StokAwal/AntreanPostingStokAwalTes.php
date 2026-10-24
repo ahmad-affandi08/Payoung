@@ -124,7 +124,7 @@ describe('F-05a posting stok awal lewat antrean', function (): void {
             ->and(Jurnal::query()->count())->toBe(0);
     });
 
-    it('galat sistem terakhir (failed): dokumen kembali ke Draf dengan pesan umum', function (): void {
+    it('masalah sistem terakhir (failed): dokumen kembali ke Draf dengan pesan umum', function (): void {
         Queue::fake();
         [$t, , $draf] = SiapkanDrafStokAwalBesar();
         app(AjukanPostingStokAwal::class)->Jalankan($draf, $t['Pemilik']->Id);

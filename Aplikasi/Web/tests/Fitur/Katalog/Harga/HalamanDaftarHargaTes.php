@@ -156,7 +156,7 @@ describe('F-03 daftar harga (E.7)', function (): void {
         $masuk()->getJson("/kelola/daftar-harga/{$daftar->Uuid}?cari=sabun")->assertOk()->assertJsonPath('Meta.Total', 1)->assertJsonPath('Data.0.UuidProduk', $sabun->Uuid);
     });
 
-    it('BR-03.3 menyimpan harga di daftar (tingkat tanpa harga dasar boleh), riwayat ber-IdDaftarHarga, galat Baris.{i}', function (): void {
+    it('BR-03.3 menyimpan harga di daftar (tingkat tanpa harga dasar boleh), riwayat ber-IdDaftarHarga, masalah Baris.{i}', function (): void {
         $daftar = BantuanHarga::BuatDaftarHarga('Harga Grosir');
         $sabun = BantuanHarga::SatuanDasar(BantuanKatalog::BuatProduk(['Nama' => 'Sabun Mandi Cair 450 ml'], '5000.00', $this->t['Pcs']));
         $teh = BantuanHarga::SatuanDasar(BantuanKatalog::BuatProduk(['Nama' => 'Teh Melati Celup 25'], '7500.00', $this->t['Pcs']));

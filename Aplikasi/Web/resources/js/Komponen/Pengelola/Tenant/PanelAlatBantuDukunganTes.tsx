@@ -190,7 +190,7 @@ describe('PGL-16 bagian 2: panel alat bantu dukungan', () => {
         );
     });
 
-    it('galat server (misal izin dicabut) tampil sebagai pesan, bukan layar kosong', async () => {
+    it('masalah server (misal izin dicabut) tampil sebagai pesan, bukan layar kosong', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn(() =>

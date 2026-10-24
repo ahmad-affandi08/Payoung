@@ -121,7 +121,7 @@ describe('PGL-16 panel akses dukungan (konsol)', () => {
         );
     });
 
-    it('galat dari server ditampilkan dan tab kosong ditutup', async () => {
+    it('masalah dari server ditampilkan dan tab kosong ditutup', async () => {
         const jendela = { location: { href: '' }, close: vi.fn() };
         vi.stubGlobal(
             'open',

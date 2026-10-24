@@ -46,7 +46,7 @@ describe('Keputusan penawaran oleh pelanggan (halaman publik)', () => {
         );
     });
 
-    it('galat dari server tampil sebagai pesan yang terbaca', () => {
+    it('masalah dari server tampil sebagai pesan yang terbaca', () => {
         AturHalamanUji({ Umum: 'Masa berlaku penawaran ini sudah lewat.' });
         RenderUji(<KeputusanPenawaranPublik kode="1.abcdefghijklmnopqrstuvwxyz012345" />);
 

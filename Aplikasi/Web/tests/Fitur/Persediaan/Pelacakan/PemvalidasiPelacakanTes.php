@@ -25,7 +25,7 @@ function PeriksaBarisPelacakanUji(string $kunciProduk, string $jumlah, ?string $
 }
 
 describe('F-05a PemvalidasiPelacakan (DesainF05a C.4, H-3)', function (): void {
-    it('baris valid tidak menghasilkan galat', function (string $kunciProduk, string $jumlah, ?string $nomorBatch, ?string $kedaluwarsa, array $nomorSeri): void {
+    it('baris valid tidak menghasilkan masalah', function (string $kunciProduk, string $jumlah, ?string $nomorBatch, ?string $kedaluwarsa, array $nomorSeri): void {
         expect(PeriksaBarisPelacakanUji($kunciProduk, $jumlah, $nomorBatch, $kedaluwarsa, $nomorSeri))->toBe([]);
     })->with([
         'tanpa pelacakan' => ['Stok', '125.5', null, null, []],

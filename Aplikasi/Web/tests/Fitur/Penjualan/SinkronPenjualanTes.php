@@ -1036,7 +1036,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
         ]))->toBe([['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang']]);
     });
 
-    it('(saran 1) bentrok indeks unik (1062) saat dua kiriman bersamaan: penjualan dibaca ulang; Nomor & TotalAkhir sama = Duplikat, selain itu UuidSudahDipakai/NomorSudahDipakai; galat database lain diteruskan', function (): void {
+    it('(saran 1) bentrok indeks unik (1062) saat dua kiriman bersamaan: penjualan dibaca ulang; Nomor & TotalAkhir sama = Duplikat, selain itu UuidSudahDipakai/NomorSudahDipakai; masalah database lain diteruskan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -1067,7 +1067,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
             ->and(fn () => $selesaikan->invoke($aksi, $galat(1213, 'PRIMARY'), $p->Uuid, $p->Nomor, Uang::Dari($p->TotalAkhir)))->toThrow(QueryException::class);
     });
 
-    it('(saran 2) CLAUDE.md #8: HPP & jurnal penjualan hanya boleh diisi di dalam penerimaan; di luar penerimaan penjualan Rp 0 tanpa jurnal (IdJurnal null) dan baris ber-HPP 0 tetap tidak bisa diubah; penanda pulih setelah galat', function (): void {
+    it('(saran 2) CLAUDE.md #8: HPP & jurnal penjualan hanya boleh diisi di dalam penerimaan; di luar penerimaan penjualan Rp 0 tanpa jurnal (IdJurnal null) dan baris ber-HPP 0 tetap tidak bisa diubah; penanda pulih setelah masalah', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Bungkus Kado Gratis', 'Jenis' => JenisProduk::Jasa], '0.00');
         $gratis = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $jasa, 'Jumlah' => '1', 'Harga' => '0.00']]]);

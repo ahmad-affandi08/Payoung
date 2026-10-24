@@ -255,8 +255,8 @@ describe('menerbitkan siklus', function (): void {
     });
 });
 
-describe('galat dan jeda', function (): void {
-    it('galat dicatat, jadwal tidak maju, templat lain tetap jalan, dan pulih setelah masalahnya beres', function (): void {
+describe('masalah dan jeda', function (): void {
+    it('masalah dicatat, jadwal tidak maju, templat lain tetap jalan, dan pulih setelah masalahnya beres', function (): void {
         $a = BuatBerulangUji($this, ['nama' => 'Templat A']);
         $b = BuatBerulangUji($this, ['nama' => 'Templat B']);
         $this->klien->forceFill(['Status' => StatusPelanggan::Diarsipkan->value])->save();

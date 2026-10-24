@@ -47,7 +47,7 @@ it('QRIS statis dari vektor lolos dan memberi nama merchant; hasil QRIS bernomin
     expect($info)->toBe(['NamaMerchant' => 'TOKO SEMBAKO MAJU JAYA', 'Kota' => 'SURAKARTA']);
 });
 
-it('QRIS tidak sah ditolak dengan kode galat yang sama dengan Dart dan TypeScript', function (): void {
+it('QRIS tidak sah ditolak dengan kode masalah yang sama dengan Dart dan TypeScript', function (): void {
     foreach (VektorQris()['TidakSah'] as $kasus) {
         expect(KodeGalatQris($kasus['Teks']))->toBe($kasus['Galat'], $kasus['Nama']);
     }

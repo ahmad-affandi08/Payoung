@@ -41,7 +41,7 @@ function Terkendali<T extends 'tunggal' | 'waktu' | 'rentang'>({
 }
 
 describe('PemilihTanggal (§17.6.7 tampilan 22/09/2026)', () => {
-    it('menampilkan HH/BB/TTTT, mengirim TTTT-BB-HH, dan memberi galat ketikan saat keluar', () => {
+    it('menampilkan HH/BB/TTTT, mengirim TTTT-BB-HH, dan memberi masalah ketikan saat keluar', () => {
         const SaatBerubah = vi.fn();
         render(<Terkendali jenis="tunggal" awal="2026-09-04" saatBerubah={SaatBerubah} />);
         const isian = screen.getByLabelText<HTMLInputElement>('Tanggal transfer');

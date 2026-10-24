@@ -178,7 +178,7 @@ describe('PemindaiWajah', () => {
         ]);
     });
 
-    it('kamera ditolak: melapor galat dan tidak menampilkan tombol aktif', async () => {
+    it('kamera ditolak: melapor masalah dan tidak menampilkan tombol aktif', async () => {
         Object.defineProperty(navigator, 'mediaDevices', {
             configurable: true,
             value: { getUserMedia: vi.fn(() => Promise.reject(new Error('ditolak'))) },

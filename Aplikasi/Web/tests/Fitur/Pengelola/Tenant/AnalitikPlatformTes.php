@@ -302,7 +302,7 @@ describe('halaman /analitik', function (): void {
         expect((string) $respons->getContent())->not->toContain('Rahasia Kedai Pribadi');
     });
 
-    it('sektor tak dikenal dan tanggal rusak diabaikan, bukan galat', function (): void {
+    it('sektor tak dikenal dan tanggal rusak diabaikan, bukan masalah', function (): void {
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Analis);
 
         $this->get(BantuanPengelola::Url('/analitik?sektor=%27%3B--&dari=bukan&sampai=2026-13-45'))

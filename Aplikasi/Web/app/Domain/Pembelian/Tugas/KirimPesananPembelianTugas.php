@@ -45,7 +45,7 @@ final class KirimPesananPembelianTugas implements ShouldQueue
             $pengiriman = PengirimanPesananPembelian::query()->find($this->idPengiriman);
 
             if ($pengiriman !== null) {
-                app(PengirimPesananPembelian::class)->Akhiri($pengiriman, StatusPengirimanPesananPembelian::Gagal, 'Pengiriman gagal karena galat sistem.');
+                app(PengirimPesananPembelian::class)->Akhiri($pengiriman, StatusPengirimanPesananPembelian::Gagal, 'Pengiriman gagal karena masalah sistem.');
             }
         });
     }

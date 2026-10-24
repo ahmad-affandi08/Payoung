@@ -186,7 +186,7 @@ describe('CatatPengirimanSuratJalan', function (): void {
 });
 
 describe('HTTP pengiriman & armada grosir', function (): void {
-    it('armada lewat rute, kabar pengiriman lewat rute dengan galat per bidang, halaman detail & daftar membawa status; tenant lain 404', function (): void {
+    it('armada lewat rute, kabar pengiriman lewat rute dengan masalah per bidang, halaman detail & daftar membawa status; tenant lain 404', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
         $this->post('/kelola/grosir/armada', ['Nama' => 'Truk Engkel 1', 'NomorKendaraan' => 'ad 1234 xy', 'NamaPengemudi' => 'Pak Slamet'])->assertSessionHasNoErrors();

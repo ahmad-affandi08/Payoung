@@ -209,7 +209,7 @@ describe('PanelObrolan (PLT-12)', () => {
         expect(screen.getByText(/dengan Dewi/)).toBeTruthy();
     });
 
-    it('galat dari server tampil sebagai pesan jelas dan ketikan tidak hilang', async () => {
+    it('masalah dari server tampil sebagai pesan jelas dan ketikan tidak hilang', async () => {
         PasangFetch((p) =>
             p.metode === 'POST'
                 ? [

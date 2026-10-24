@@ -60,7 +60,7 @@ describe('DialogHasil', () => {
         expect(screen.getByRole('alertdialog')).toBeTruthy();
     });
 
-    it('galat tetap tampil walau ada dialog terbuka yang tidak menampilkan galat sendiri (tidak boleh senyap)', () => {
+    it('masalah tetap tampil walau ada dialog terbuka yang tidak menampilkan masalah sendiri (tidak boleh senyap)', () => {
         render(
             <div>
                 <div role="dialog" data-state="open">
@@ -75,7 +75,7 @@ describe('DialogHasil', () => {
         );
     });
 
-    it('galat tidak ditumpuk bila dialog terbuka sudah menampilkannya sendiri (data-galat-umum)', () => {
+    it('masalah tidak ditumpuk bila dialog terbuka sudah menampilkannya sendiri (data-galat-umum)', () => {
         // Dialog sudah terpasang lebih dulu, seperti di aplikasi: pengguna membuka formulir lalu mengirimnya.
         const { rerender: RenderUlang } = render(
             <div>
@@ -98,7 +98,7 @@ describe('DialogHasil', () => {
         expect(screen.queryByRole('alertdialog')).toBeNull();
     });
 
-    it('galat bidang yang tidak terlihat di halaman tampil di dialog', async () => {
+    it('masalah bidang yang tidak terlihat di halaman tampil di dialog', async () => {
         vi.useRealTimers();
         render(
             <DialogHasil
@@ -112,7 +112,7 @@ describe('DialogHasil', () => {
         expect((await screen.findByRole('alertdialog')).textContent).toContain('Jenis lokasi tidak dikenal.');
     });
 
-    it('galat bidang yang sudah terlihat di halaman tidak ditumpuk dialog', async () => {
+    it('masalah bidang yang sudah terlihat di halaman tidak ditumpuk dialog', async () => {
         vi.useRealTimers();
         render(
             <div>

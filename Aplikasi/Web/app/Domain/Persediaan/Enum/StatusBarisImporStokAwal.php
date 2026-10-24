@@ -18,7 +18,7 @@ enum StatusBarisImporStokAwal: string
     {
         return match ($this) {
             self::Valid => 'Valid',
-            self::Galat => 'Ada galat',
+            self::Galat => 'Ada masalah',
             self::Diterapkan => 'Masuk draf',
         };
     }

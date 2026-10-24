@@ -117,7 +117,7 @@ describe('PeriksaLangkahTim', () => {
 });
 
 describe('PetakanGalatTimKeLangkah', () => {
-    it('kunci galat server menuju langkahnya; Outlet bergantung cara masuk', () => {
+    it('kunci masalah server menuju langkahnya; Outlet bergantung cara masuk', () => {
         expect(PetakanGalatTimKeLangkah('Nama', 'Kasir')).toBe('Siapa');
         expect(PetakanGalatTimKeLangkah('Pin', 'Kasir')).toBe('Akun');
         expect(PetakanGalatTimKeLangkah('Email', 'Dashboard')).toBe('Akun');

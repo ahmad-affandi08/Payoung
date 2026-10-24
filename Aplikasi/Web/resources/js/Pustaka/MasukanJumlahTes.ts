@@ -69,7 +69,7 @@ describe('Aritmetika desimal BigInt', () => {
         expect(CekDesimalBulat('12.5')).toBe(false);
     });
 
-    it('menjumlahkan alokasi persen tepat 100 tanpa galat pembulatan float', () => {
+    it('menjumlahkan alokasi persen tepat 100 tanpa masalah pembulatan float', () => {
         expect(JumlahkanDesimal(['33.333333', '33.333333', '33.333334'])).toBe('100.000000');
         expect(JumlahkanDesimal(['0.1', '0.2'])).toBe('0.3');
         expect(JumlahkanDesimal([])).toBe('0');

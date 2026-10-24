@@ -58,7 +58,7 @@ describe('F-05a impor stok awal: pengurai baris & pemetaan otomatis', function (
         ]);
     });
 
-    it('mengurai stok, harga modal, tanggal kedaluwarsa, dan nomor seri; galat per kolom berlabel judul', function (): void {
+    it('mengurai stok, harga modal, tanggal kedaluwarsa, dan nomor seri; masalah per kolom berlabel judul', function (): void {
         $pemetaan = ['Sku' => 0, 'Barcode' => null, 'NamaProduk' => 1, 'Lokasi' => 2, 'Jumlah' => 3, 'HargaModal' => 4, 'NomorBatch' => 5, 'TanggalKedaluwarsa' => 6, 'NomorSeri' => 7];
         $pengurai = app(PenguraiBarisImporStokAwal::class);
 

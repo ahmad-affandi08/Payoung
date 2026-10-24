@@ -45,7 +45,7 @@ final class KirimPengingatPiutangTugas implements ShouldQueue
             $pengingat = PengingatPiutang::query()->find($this->idPengingat);
 
             if ($pengingat !== null) {
-                app(PengirimPengingatPiutang::class)->Akhiri($pengingat, StatusPengingatPiutang::Gagal, 'Pengingat gagal dikirim karena galat sistem.');
+                app(PengirimPengingatPiutang::class)->Akhiri($pengingat, StatusPengingatPiutang::Gagal, 'Pengingat gagal dikirim karena masalah sistem.');
             }
         });
     }

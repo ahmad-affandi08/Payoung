@@ -99,7 +99,7 @@ it('DOKU: status order dipetakan (SUCCESS lunas, EXPIRED kedaluwarsa, FAILED gag
         ->and($gerbang->CekStatus('QR-TUNGGU', ''))->toBe(StatusPembayaranGerbang::Menunggu);
 });
 
-it('DOKU: galat gerbang dilempar sebagai GalatGerbang tanpa membocorkan secret key; uji koneksi menolak tanda tangan tidak sah', function (): void {
+it('DOKU: masalah gerbang dilempar sebagai GalatGerbang tanpa membocorkan secret key; uji koneksi menolak tanda tangan tidak sah', function (): void {
     Http::fake(['*' => Http::response(['message' => ['Invalid signature for SK-doku']], 401)]);
     $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
 

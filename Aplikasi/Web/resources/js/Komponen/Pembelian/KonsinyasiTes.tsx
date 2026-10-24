@@ -102,7 +102,7 @@ describe('Konsinyasi (F-05i, v3.40)', () => {
         expect(screen.queryByRole('link', { name: 'Catat titipan masuk' })).toBeNull();
     });
 
-    it('form titipan: lokasi terisi otomatis bila satu, galat penitip & barang sebelum kirim', () => {
+    it('form titipan: lokasi terisi otomatis bila satu, masalah penitip & barang sebelum kirim', () => {
         RenderUji(
             <HalamanFormKonsinyasi
                 Jenis="Masuk"

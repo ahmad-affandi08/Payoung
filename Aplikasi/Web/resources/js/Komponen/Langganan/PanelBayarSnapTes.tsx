@@ -190,7 +190,7 @@ describe('PanelBayarSnap (D-159)', () => {
         expect(Alihkan).toHaveBeenCalledWith('https://link.dana.id/pay/uji');
     });
 
-    it('galat server ditampilkan dan pilihan bayar tetap bisa dicoba lagi', async () => {
+    it('masalah server ditampilkan dan pilihan bayar tetap bisa dicoba lagi', async () => {
         vi.stubGlobal(
             'fetch',
             vi

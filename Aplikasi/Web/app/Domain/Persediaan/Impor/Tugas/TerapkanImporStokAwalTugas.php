@@ -26,7 +26,7 @@ final class TerapkanImporStokAwalTugas implements ShouldBeUniqueUntilProcessing,
 {
     use Queueable;
 
-    public const PESAN_GAGAL = 'Pembuatan draf terhenti karena galat sistem. Draf yang sudah dibuat tidak diulang; klik Lanjutkan impor untuk meneruskan.';
+    public const PESAN_GAGAL = 'Pembuatan draf terhenti karena masalah sistem. Draf yang sudah dibuat tidak diulang; klik Lanjutkan impor untuk meneruskan.';
 
     public int $tries = 3;
 

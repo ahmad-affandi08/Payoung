@@ -60,7 +60,7 @@ describe('DialogKonfirmasiDuaFaktor (D-42)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('jawaban 423 membuka dialog kode di tempat dan mencegah dialog galat bawaan Inertia', () => {
+    it('jawaban 423 membuka dialog kode di tempat dan mencegah dialog masalah bawaan Inertia', () => {
         render(<DialogKonfirmasiDuaFaktor />);
 
         const Pencegah = KirimPeristiwaGalat(423, galatPerluKode);
@@ -69,7 +69,7 @@ describe('DialogKonfirmasiDuaFaktor (D-42)', () => {
         expect(screen.getByText('Konfirmasi dengan kode')).toBeTruthy();
     });
 
-    it('jawaban galat lain tidak disentuh', () => {
+    it('jawaban masalah lain tidak disentuh', () => {
         render(<DialogKonfirmasiDuaFaktor />);
 
         const Pencegah = KirimPeristiwaGalat(500, { Galat: { Kode: 'ServerBermasalah' } });

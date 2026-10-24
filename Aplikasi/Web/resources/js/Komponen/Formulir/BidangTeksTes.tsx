@@ -15,7 +15,7 @@ describe('BidangTeks (PRD §17.6 aksesibilitas)', () => {
         expect(SaatBerubah).toHaveBeenCalledWith('rina@contoh.id');
     });
 
-    it('menandai input tidak valid dan mengaitkan pesan galat', () => {
+    it('menandai input tidak valid dan mengaitkan pesan masalah', () => {
         render(<BidangTeks label="Kode" nilai="1" saatBerubah={() => undefined} galat="Kode tidak cocok." />);
 
         const input = screen.getByLabelText('Kode');

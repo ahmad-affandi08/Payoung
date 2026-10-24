@@ -26,7 +26,7 @@ const labelKunci: Record<string, string> = {
     TotalBersih: 'Total bersih',
     TotalTransaksi: 'Total transaksi',
     Percobaan: 'Percobaan kirim',
-    PesanGalat: 'Pesan galat',
+    PesanGalat: 'Pesan masalah',
     UuidPesanBaru: 'Pesan baru',
     EmailTerverifikasi: 'Email terverifikasi',
     Dikirim: 'Email dikirim',

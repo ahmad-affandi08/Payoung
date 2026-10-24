@@ -147,7 +147,7 @@ describe('Struk digital publik (POS-11)', () => {
         ]);
     });
 
-    it('F7: galat umum dari server (batas waktu lewat) ditampilkan', () => {
+    it('F7: masalah umum dari server (batas waktu lewat) ditampilkan', () => {
         AturHalamanUji({}, '/s/KODE123');
         AturGalatBalasanUji({ Umum: 'Batas waktu memberi penilaian untuk transaksi ini sudah lewat.' });
         RenderUji(

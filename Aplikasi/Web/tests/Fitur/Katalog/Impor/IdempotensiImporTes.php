@@ -117,7 +117,7 @@ describe('F-03 BR-03.6 impor idempoten & bisa dilanjutkan', function (): void {
             ->and(Queue::pushed(TerapkanImporProdukTugas::class)->filter(fn (TerapkanImporProdukTugas $tugas): bool => $tugas->connection === null))->toHaveCount(3);
     });
 
-    it('galat sistem di tengah potongan → potongan itu dibatalkan utuh, impor Gagal; "Lanjutkan" menerapkan tiap baris tepat sekali', function (): void {
+    it('masalah sistem di tengah potongan → potongan itu dibatalkan utuh, impor Gagal; "Lanjutkan" menerapkan tiap baris tepat sekali', function (): void {
         config(['katalog.Impor.UkuranPotongan' => 2]);
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
@@ -218,7 +218,7 @@ describe('F-03 BR-03.6 impor idempoten & bisa dilanjutkan', function (): void {
             ->and(RiwayatHarga::query()->where('IdProduk', $idm1->Id)->latest('Id')->first()?->HargaLama)->toBe('11000.00');
     });
 
-    it('barcode dipakai produk lain setelah validasi → baris itu GagalDiterapkan, baris lain tetap diimpor, laporan galat memuatnya', function (): void {
+    it('barcode dipakai produk lain setelah validasi → baris itu GagalDiterapkan, baris lain tetap diimpor, laporan masalah memuatnya', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImpor::Unggah($masuk, BantuanImpor::BuatCsv(BarisIdempotensi(3)));

@@ -129,7 +129,7 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
         expect(screen.queryByLabelText(/Debit baris 3/)).toBeNull();
     });
 
-    it('buat: galat per baris dari server tampil di barisnya; galat umum "Baris" tampil di bawah tabel', () => {
+    it('buat: masalah per baris dari server tampil di barisnya; masalah umum "Baris" tampil di bawah tabel', () => {
         AturHalamanUji(
             {
                 'Baris.0.UuidAkun': 'Akun 1-1400 Persediaan adalah akun kendali.',

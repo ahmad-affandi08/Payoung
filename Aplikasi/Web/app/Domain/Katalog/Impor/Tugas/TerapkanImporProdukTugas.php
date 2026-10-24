@@ -60,7 +60,7 @@ final class TerapkanImporProdukTugas implements ShouldBeUniqueUntilProcessing, S
     public function failed(?Throwable $galat): void
     {
         app(KonteksTugasImpor::class)->Jalankan($this->idTenant, $this->idPengguna, function (): void {
-            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor terhenti karena galat sistem. Baris yang sudah diimpor tidak diulang; klik Lanjutkan impor untuk meneruskan.');
+            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor terhenti karena masalah sistem. Baris yang sudah diimpor tidak diulang; klik Lanjutkan impor untuk meneruskan.');
         });
     }
 }

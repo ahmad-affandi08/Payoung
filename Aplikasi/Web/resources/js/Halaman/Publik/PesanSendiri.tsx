@@ -206,7 +206,7 @@ async function KirimJson<T>(url: string, badan: unknown, sinyal?: AbortSignal): 
     if (!respons.ok) {
         throw new GalatPesanSendiri(
             isi?.Galat?.Kode ?? 'GalatServer',
-            isi?.Galat?.Pesan ?? 'Terjadi galat. Coba lagi sebentar lagi.',
+            isi?.Galat?.Pesan ?? 'Terjadi masalah. Coba lagi sebentar lagi.',
             respons.status,
         );
     }

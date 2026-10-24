@@ -108,7 +108,7 @@ final class PemeriksaStokAwal
 
             throw new PelanggaranAturanBisnis(
                 $pertama['Kode'],
-                "Baris {$pertama['Urutan']}: {$pertama['Pesan']}".(count($galat) > 1 ? ' (dan '.(count($galat) - 1).' galat lain)' : ''),
+                "Baris {$pertama['Urutan']}: {$pertama['Pesan']}".(count($galat) > 1 ? ' (dan '.(count($galat) - 1).' masalah lain)' : ''),
                 "Baris.{$pertama['Indeks']}.{$pertama['Bidang']}",
                 detail: ['Baris' => array_map(fn (array $g): array => ['Urutan' => $g['Urutan'], 'Bidang' => $g['Bidang'], 'Kode' => $g['Kode'], 'Pesan' => $g['Pesan']], $galat)],
             );

@@ -65,7 +65,7 @@ describe('F-03 BR-03.3 riwayat harga dari Aksi Tim 1 (lewat SimpanHargaProduk/Ha
             ->and(ProdukHarga::query()->where('IdProduk', $produk->Id)->pluck('Harga')->all())->toBe(['3500.00']);
     });
 
-    it('galat harga Tim 2 dipetakan ke bidang form Satuan.{i}.HargaAwal.{j}', function (): void {
+    it('masalah harga Tim 2 dipetakan ke bidang form Satuan.{i}.HargaAwal.{j}', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $dus = BantuanKatalog::BuatSatuan('Dus', 'dus');
 

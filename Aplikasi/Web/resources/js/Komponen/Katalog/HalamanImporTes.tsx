@@ -184,7 +184,7 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
         );
     });
 
-    it('pratinjau: ringkasan, baris galat, laporan galat, dan blokir batas SKU', () => {
+    it('pratinjau: ringkasan, baris masalah, laporan masalah, dan blokir batas SKU', () => {
         const props = PropsDetail({
             Impor: BuatImpor({ Status: 'Pratinjau', LabelStatus: 'Siap diimpor', JumlahValid: 1180, JumlahGalat: 20 }),
             Pratinjau: {
@@ -204,7 +204,7 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
 
         expect(screen.getByText('1.000')).toBeTruthy();
         expect(screen.getByText('Harga tidak boleh negatif.')).toBeTruthy();
-        expect(screen.getByRole('link', { name: 'Unduh laporan galat (Excel)' }).getAttribute('href')).toBe(
+        expect(screen.getByRole('link', { name: 'Unduh laporan masalah (Excel)' }).getAttribute('href')).toBe(
             '/kelola/produk/impor/01J9IMPOR0000000000000000001/laporan?jenis=galat&format=xlsx',
         );
         expect(screen.getByText('Impor melebihi batas produk paket')).toBeTruthy();
@@ -245,7 +245,7 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
         await waitFor(() => expect(tiruanRouter.reload).toHaveBeenCalled());
     });
 
-    it('gagal: pesan galat dan tombol lanjutkan; selesai: ringkasan hasil', () => {
+    it('gagal: pesan masalah dan tombol lanjutkan; selesai: ringkasan hasil', () => {
         render(
             <HalamanDetailImpor
                 {...PropsDetail({
@@ -283,6 +283,6 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
             />,
         );
         expect(screen.getByText('Impor selesai')).toBeTruthy();
-        expect(screen.getByRole('link', { name: 'Unduh laporan galat (Excel)' })).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Unduh laporan masalah (Excel)' })).toBeTruthy();
     });
 });

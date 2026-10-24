@@ -109,7 +109,7 @@ describe('panel email akun', () => {
         );
     });
 
-    it('galat dari server tampil di bidangnya', () => {
+    it('masalah dari server tampil di bidangnya', () => {
         AturHalamanUji(
             { Email: 'Maksud Anda ...@gmail.com? Periksa penulisan email Anda.', KataSandi: 'Kata sandi salah.' },
             '/kelola/keamanan',

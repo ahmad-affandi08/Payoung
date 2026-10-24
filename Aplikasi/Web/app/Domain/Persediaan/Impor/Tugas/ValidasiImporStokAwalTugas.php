@@ -25,7 +25,7 @@ final class ValidasiImporStokAwalTugas implements ShouldBeUniqueUntilProcessing,
 {
     use Queueable;
 
-    public const PESAN_GAGAL = 'Pemeriksaan berkas terhenti karena galat sistem. Unggah ulang berkas, atau hubungi dukungan bila berulang.';
+    public const PESAN_GAGAL = 'Pemeriksaan berkas terhenti karena masalah sistem. Unggah ulang berkas, atau hubungi dukungan bila berulang.';
 
     public int $tries = 3;
 

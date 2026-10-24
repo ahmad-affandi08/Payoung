@@ -104,7 +104,7 @@ it('ditolak dan kedaluwarsa dikabarkan; satu pesan per peristiwa walau dipicu ul
         ->and($pesan[1])->toContain('dibatalkan otomatis');
 });
 
-it('toko mematikan notifikasi: tidak ada pesan; WhatsApp gagal: tercatat dengan galat, status tetap berubah', function (): void {
+it('toko mematikan notifikasi: tidak ada pesan; WhatsApp gagal: tercatat dengan masalah, status tetap berubah', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     PengaturanTokoOnline::query()->sole()->forceFill(['NotifikasiWhatsappAktif' => false])->save();

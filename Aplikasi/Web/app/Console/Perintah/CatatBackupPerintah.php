@@ -28,7 +28,7 @@ final class CatatBackupPerintah extends Command
         {--selesai= : Waktu selesai ISO-8601 (bawaan: sekarang)}
         {--ukuran= : Ukuran berkas dalam byte}
         {--lokasi= : Path/nama objek hasil backup, tanpa kredensial}
-        {--keterangan= : Catatan singkat, misal pesan galat}';
+        {--keterangan= : Catatan singkat, misal pesan masalah}';
 
     protected $description = 'Mencatat hasil backup atau uji restore ke dasbor operasional (P-11).';
 

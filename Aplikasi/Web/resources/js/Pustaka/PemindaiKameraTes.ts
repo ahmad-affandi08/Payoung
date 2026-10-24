@@ -81,13 +81,13 @@ describe('Pustaka/PemindaiKamera (F-03 BR-03.1: pindai barcode dengan kamera)', 
         expect(KameraTersedia()).toBe(true);
     });
 
-    it('galat kamera diterjemahkan ke bahasa sehari-hari dengan langkah yang bisa dilakukan', () => {
+    it('masalah kamera diterjemahkan ke bahasa sehari-hari dengan langkah yang bisa dilakukan', () => {
         expect(PesanGalatKamera(new DOMException('x', 'NotAllowedError'))).toContain('Izin kamera ditolak');
         expect(PesanGalatKamera(new DOMException('x', 'NotFoundError'))).toContain('Kamera tidak ditemukan');
         expect(PesanGalatKamera(new DOMException('x', 'NotReadableError'))).toContain('dipakai aplikasi lain');
         expect(PesanGalatKamera(new DOMException('x', 'NotSupportedError'))).toContain('https');
         expect(PesanGalatKamera(new Error('lain'))).toContain('Kamera tidak bisa dibuka');
-        expect(PesanGalatKamera('bukan galat')).toContain('Kamera tidak bisa dibuka');
+        expect(PesanGalatKamera('bukan masalah')).toContain('Kamera tidak bisa dibuka');
     });
 
     it('tanpa kamera/halaman aman: melempar NotSupportedError sebelum menyentuh perangkat', async () => {
@@ -100,7 +100,7 @@ describe('Pustaka/PemindaiKamera (F-03 BR-03.1: pindai barcode dengan kamera)', 
         });
     });
 
-    it('izin kamera ditolak: galat diteruskan dan tidak ada kamera yang tertinggal menyala', async () => {
+    it('izin kamera ditolak: masalah diteruskan dan tidak ada kamera yang tertinggal menyala', async () => {
         const { GetUserMedia, video } = SiapkanKamera();
 
         GetUserMedia.mockRejectedValueOnce(new DOMException('ditolak', 'NotAllowedError'));

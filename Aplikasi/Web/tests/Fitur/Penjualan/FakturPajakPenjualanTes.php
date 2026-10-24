@@ -219,7 +219,7 @@ it('lewat web: terbitkan, isi nomor, batalkan; Kasir tanpa izin akuntansi ditola
     $this->post("/kelola/penjualan/{$p->Uuid}/faktur-pajak", ['UuidPelanggan' => $this->pembeli->Uuid])->assertForbidden();
 });
 
-it('galat bisnis lewat web kembali ke halaman dengan pesan, bukan 500', function (): void {
+it('masalah bisnis lewat web kembali ke halaman dengan pesan, bukan 500', function (): void {
     $p = JualKenaPpn($this);
     $biasa = Pelanggan::query()->create(['Nama' => 'Bu Wati', 'NoHp' => '6281355550022']);
     BantuanOrganisasi::Masuk($this, $this->k['Pemilik'], $this->k['Tenant']->Id);

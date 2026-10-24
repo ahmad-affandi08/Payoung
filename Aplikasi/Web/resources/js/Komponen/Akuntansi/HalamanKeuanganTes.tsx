@@ -424,7 +424,7 @@ describe('F-13a kas & bank', () => {
         expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/akuntansi/kas-bank');
     });
 
-    it('transaksi berulang (D-23 D): status & galat tampil, hentikan/aktifkan lewat menu baris', async () => {
+    it('transaksi berulang (D-23 D): status & masalah tampil, hentikan/aktifkan lewat menu baris', async () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/kas-bank/berulang');
         const baris: BarisJadwalKasBank = {
             Uuid: 'J1',

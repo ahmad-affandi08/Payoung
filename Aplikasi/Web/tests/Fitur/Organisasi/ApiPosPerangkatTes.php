@@ -57,7 +57,7 @@ describe('POST /api/pos/v1/perangkat/aktivasi (F-02 langkah 5)', function (): vo
             ->and(json_encode($log->NilaiBaru))->not->toContain($rahasia);
     });
 
-    it('kode sekali pakai: penukaran kedua ditolak dengan galat seragam', function (): void {
+    it('kode sekali pakai: penukaran kedua ditolak dengan masalah seragam', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         $kode = BantuanPerangkat::BuatPerangkat($tenant->Id)['Kode'];
         BantuanPerangkat::Aktifkan($this, $kode);
@@ -71,7 +71,7 @@ describe('POST /api/pos/v1/perangkat/aktivasi (F-02 langkah 5)', function (): vo
             ]]);
     });
 
-    it('kode kedaluwarsa setelah 15 menit dan kode yang salah ditolak dengan galat yang sama', function (): void {
+    it('kode kedaluwarsa setelah 15 menit dan kode yang salah ditolak dengan masalah yang sama', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         $kode = BantuanPerangkat::BuatPerangkat($tenant->Id)['Kode'];
 
@@ -96,7 +96,7 @@ describe('POST /api/pos/v1/perangkat/aktivasi (F-02 langkah 5)', function (): vo
         $this->withToken($tokenBaru)->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()->assertJsonPath('Perangkat.Platform', 'Windows');
     });
 
-    it('validasi & rate limit memakai format galat seragam', function (): void {
+    it('validasi & rate limit memakai format masalah seragam', function (): void {
         $this->postJson('/api/pos/v1/perangkat/aktivasi', ['Kode' => 'ABCD2345', 'Platform' => 'Symbian'])
             ->assertStatus(422)
             ->assertJsonPath('Galat.Kode', 'ValidasiGagal')

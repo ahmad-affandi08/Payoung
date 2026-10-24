@@ -107,7 +107,7 @@ describe('CariLangkahTerdekat', () => {
     });
 });
 
-describe('PetakanGalatKeLangkah (kunci galat server -> langkah)', () => {
+describe('PetakanGalatKeLangkah (kunci masalah server -> langkah)', () => {
     it.each([
         ['Nama', 'JenisNama'],
         ['NamaStruk', 'JenisNama'],
@@ -437,7 +437,7 @@ describe('Wizard tambah produk (D-128)', () => {
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
 
-    it('langkah 1 tidak bisa dilanjutkan tanpa nama: galat tampil, tetap di langkah 1, isian bermasalah difokuskan', () => {
+    it('langkah 1 tidak bisa dilanjutkan tanpa nama: masalah tampil, tetap di langkah 1, isian bermasalah difokuskan', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         Lanjut();
 
@@ -674,7 +674,7 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(body.Satuan[0]?.HargaAwal).toEqual([{ JumlahMinimum: '1', Harga: '45000' }]);
     });
 
-    it('galat server di langkah yang biasanya dilewati membuka langkah itu; galat harga membuka langkah harga', () => {
+    it('masalah server di langkah yang biasanya dilewati membuka langkah itu; masalah harga membuka langkah harga', () => {
         render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkKosong, Satuan: [], Jenis: 'Jasa' } })} />);
         IsiNama('Potong rambut');
         Lanjut();

@@ -151,7 +151,7 @@ describe('Aturan wizard promo (LangkahPromo)', () => {
         expect(PeriksaLangkahPromo('Tinjau', { ...isianDasar, Kode: '' })).toEqual({});
     });
 
-    it('kunci galat server dipetakan ke langkahnya; JumlahMinimal bergantung jenis potongan', () => {
+    it('kunci masalah server dipetakan ke langkahnya; JumlahMinimal bergantung jenis potongan', () => {
         expect(PetakanGalatPromoKeLangkah('Kode', 'DiskonPersenItem')).toBe('JenisNama');
         expect(PetakanGalatPromoKeLangkah('Persen', 'DiskonPersenItem')).toBe('Potongan');
         expect(PetakanGalatPromoKeLangkah('JumlahMinimal', 'BundelHargaTetap')).toBe('Potongan');
@@ -302,7 +302,7 @@ describe('Wizard tambah promo (halaman)', () => {
         expect(screen.getByLabelText('Ditanggung pemasok')).not.toBeNull();
     });
 
-    it('server menolak: kembali ke langkah yang memuat galat dan pesannya tampil', () => {
+    it('server menolak: kembali ke langkah yang memuat masalah dan pesannya tampil', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
         fireEvent.change(screen.getByLabelText('Kode promo'), { target: { value: 'kopi10' } });
         fireEvent.change(screen.getByLabelText('Nama promo'), { target: { value: 'Kopi 10 persen' } });

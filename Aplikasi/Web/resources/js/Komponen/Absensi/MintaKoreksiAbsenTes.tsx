@@ -50,7 +50,7 @@ describe('Form minta koreksi absen', () => {
         });
     });
 
-    it('galat server tampil dan formulir tetap terbuka', async () => {
+    it('masalah server tampil dan formulir tetap terbuka', async () => {
         KirimJsonTiruan.mockRejectedValue(new Error('Anda sudah mengirim 3 permintaan hari ini.'));
         const Selesai = vi.fn();
         RenderUji(<FormMintaKoreksi jenis="Masuk" saatSelesai={Selesai} saatBatal={vi.fn()} />);

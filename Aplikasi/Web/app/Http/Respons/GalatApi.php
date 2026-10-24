@@ -43,7 +43,7 @@ final class GalatApi
             404 => ['TidakDitemukan', 'Data tidak ditemukan.'],
             405 => ['MetodeTidakDidukung', 'Metode permintaan tidak didukung.'],
             429 => ['TerlaluBanyakPermintaan', 'Terlalu banyak permintaan. Coba lagi sebentar lagi.'],
-            default => [$status >= 500 ? 'GalatServer' : 'PermintaanTidakValid', $status >= 500 ? 'Terjadi galat di server.' : 'Permintaan tidak valid.'],
+            default => [$status >= 500 ? 'GalatServer' : 'PermintaanTidakValid', $status >= 500 ? 'Terjadi masalah di server.' : 'Permintaan tidak valid.'],
         };
 
         $respons = self::Buat($kode, $pesan, $status);

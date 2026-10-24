@@ -255,7 +255,7 @@ it('pengingat otomatis: memakai pengaturan pengingat piutang, sekali per tahap, 
     expect($generik->Jalankan($idTenant, CarbonImmutable::parse('2026-10-09')))->toBe(0);
 });
 
-it('perintah invoice:kirim-pengingat berjalan per tenant tanpa galat', function (): void {
+it('perintah invoice:kirim-pengingat berjalan per tenant tanpa masalah', function (): void {
     InvoiceTerbitKirimUji($this);
     app(SimpanPengaturanPengingatPiutang::class)->Jalankan(true, 14, true, $this->k['Pemilik']->Id);
 

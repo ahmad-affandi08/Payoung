@@ -34,7 +34,7 @@ export async function KirimJsonKios<T>(url: string, badan?: unknown, sinyal?: Ab
     if (!respons.ok) {
         throw new GalatKios(
             isi?.Galat?.Kode ?? 'GalatServer',
-            isi?.Galat?.Pesan ?? 'Terjadi galat. Coba lagi sebentar lagi.',
+            isi?.Galat?.Pesan ?? 'Terjadi masalah. Coba lagi sebentar lagi.',
             respons.status,
         );
     }

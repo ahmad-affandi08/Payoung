@@ -140,7 +140,7 @@ describe('segarkan status dari konsol', function (): void {
             ->and(json_encode($log))->not->toContain(NIK_KONSOL)->not->toContain(KUNCI_PARTNER_KONSOL)->not->toContain('SHARED-KEY');
     });
 
-    it('galat DOKU: pesan jelas tanpa secret, status tersimpan tidak berubah', function (): void {
+    it('masalah DOKU: pesan jelas tanpa secret, status tersimpan tidak berubah', function (): void {
         Http::fake(['api-uat.doku.com/*' => Http::response(['message' => ['Layanan down '.KUNCI_PARTNER_KONSOL]], 503)]);
         $tenant = BantuanTenantPengelola::BuatTenant();
         BuatPendaftaranKonsol($tenant);

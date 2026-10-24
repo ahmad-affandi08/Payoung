@@ -184,7 +184,7 @@ describe('DialogFormulir', () => {
 });
 
 describe('DialogTinjauan', () => {
-    it('menampilkan dua keputusan, catatan peninjau & galat umum; Batal memanggil saatTutup', () => {
+    it('menampilkan dua keputusan, catatan peninjau & masalah umum; Batal memanggil saatTutup', () => {
         const Tutup = vi.fn();
         const Setujui = vi.fn();
         const Tolak = vi.fn();
@@ -228,7 +228,7 @@ describe('DialogTinjauan', () => {
     });
 });
 
-describe('Penanda galat umum pada dialog (agar DialogHasil tidak menelan galat)', () => {
+describe('Penanda masalah umum pada dialog (agar DialogHasil tidak menelan masalah)', () => {
     it('DialogFormulir yang menyambungkan galatUmum menampilkannya dan menandai dirinya; tanpa prop tidak ditandai', () => {
         render(
             <DialogFormulir

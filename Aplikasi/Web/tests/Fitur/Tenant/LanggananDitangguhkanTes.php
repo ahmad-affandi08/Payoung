@@ -68,7 +68,7 @@ describe('Banner status langganan (F-00, BR-00.7)', function (): void {
 });
 
 describe('Pembatasan saat Ditangguhkan (F-00: hanya masuk, lihat, export, bayar)', function (): void {
-    it('menolak perubahan data di back-office dengan galat Umum, tetapi halaman tetap bisa dibuka', function (): void {
+    it('menolak perubahan data di back-office dengan masalah Umum, tetapi halaman tetap bisa dibuka', function (): void {
         AturStatusLanggananUji($this->tenant, StatusLangganan::Ditangguhkan);
 
         $tes = BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant);
@@ -81,7 +81,7 @@ describe('Pembatasan saat Ditangguhkan (F-00: hanya masuk, lihat, export, bayar)
         expect(Merek::query()->where('Nama', 'Kopi Senja')->exists())->toBeFalse();
     });
 
-    it('permintaan JSON ditolak 423 dengan format galat seragam', function (): void {
+    it('permintaan JSON ditolak 423 dengan format masalah seragam', function (): void {
         AturStatusLanggananUji($this->tenant, StatusLangganan::Ditangguhkan);
 
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)

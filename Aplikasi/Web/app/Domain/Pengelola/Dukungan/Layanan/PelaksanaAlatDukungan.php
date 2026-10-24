@@ -73,7 +73,7 @@ final class PelaksanaAlatDukungan
                 throw $galat;
             } catch (Throwable $galat) {
                 if ($alat->Mengubah()) {
-                    $this->Catat($petugas, $idTenant, $akses, $alat, $parameter, new HasilKerjaAlat(StatusHasilAlatDukungan::Gagal, 'Alat berhenti karena galat sistem. Tim teknis perlu memeriksa log.'));
+                    $this->Catat($petugas, $idTenant, $akses, $alat, $parameter, new HasilKerjaAlat(StatusHasilAlatDukungan::Gagal, 'Alat berhenti karena masalah sistem. Tim teknis perlu memeriksa log.'));
                 }
 
                 throw $galat;

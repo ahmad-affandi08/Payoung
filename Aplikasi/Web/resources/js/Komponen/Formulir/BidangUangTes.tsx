@@ -62,7 +62,7 @@ describe('BidangUang (F-01: tampil Rp 15.000, dikirim "15000")', () => {
         expect(input.value).toBe('12');
     });
 
-    it('galat terhubung ke input lewat aria-describedby', () => {
+    it('masalah terhubung ke input lewat aria-describedby', () => {
         render(<BidangUang label="Harga" nilai="" saatBerubah={() => undefined} galat="Harga wajib diisi." />);
 
         const input = screen.getByLabelText('Harga');

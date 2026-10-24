@@ -172,7 +172,7 @@ final class PenerapImporStokAwal
 
         return new PelanggaranAturanBisnis(
             $galat->kode,
-            ucfirst(implode('; ', $pesan)).($sisa > 0 ? " (dan {$sisa} galat lain)." : '.'),
+            ucfirst(implode('; ', $pesan)).($sisa > 0 ? " (dan {$sisa} masalah lain)." : '.'),
             $galat->bidang,
             $galat->statusHttp,
             $galat->detail,

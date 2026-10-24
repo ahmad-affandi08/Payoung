@@ -86,7 +86,7 @@ describe('F-01 langkah 3: usulan & konfirmasi pajak (tarif dari TarifPajak, CLAU
             ->assertRedirect('/kelola/panduan-awal/produk');
     });
 
-    it('PBJT tanpa kota outlet ditolak dengan galat PungutPbjt', function (): void {
+    it('PBJT tanpa kota outlet ditolak dengan masalah PungutPbjt', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = SiapkanKafeSoloUji(denganKota: false);
 
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)

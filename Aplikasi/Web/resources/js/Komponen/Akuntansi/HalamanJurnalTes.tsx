@@ -168,7 +168,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
     });
 
-    it('galat server ditampilkan; paginasi server tampil bila lebih dari satu halaman', () => {
+    it('masalah server ditampilkan; paginasi server tampil bila lebih dari satu halaman', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
         AturHalamanUji({ Tanggal: 'Periode Agustus 2026 sudah dikunci.' }, '/kelola/akuntansi/jurnal');
         RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([barisJurnal], 3)} />);

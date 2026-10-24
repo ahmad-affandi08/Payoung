@@ -228,7 +228,7 @@ describe('BR-P09.2: baca saja menolak ubah; baca & ubah mengizinkan', function (
             ->and(AktivitasAksesDukungan::query()->where('Ditolak', true)->count())->toBe(1);
     });
 
-    it('Baca saja: permintaan JSON ditolak dengan galat 403 berformat seragam', function (): void {
+    it('Baca saja: permintaan JSON ditolak dengan masalah 403 berformat seragam', function (): void {
         SiapkanSesiDukunganUji($this);
 
         $this->postJson('/kelola/kategori', ['Nama' => 'Minuman'])

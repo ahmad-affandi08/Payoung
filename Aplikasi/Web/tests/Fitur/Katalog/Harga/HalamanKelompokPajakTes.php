@@ -49,7 +49,7 @@ describe('F-03 halaman kelompok pajak (E.8, §12.2)', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->get('/kelola/kelompok-pajak/buat')->assertForbidden();
     });
 
-    it('Akuntan membuat dan mengubah kelompok pajak; galat konsistensi kategori di bidang Pajak', function (): void {
+    it('Akuntan membuat dan mengubah kelompok pajak; masalah konsistensi kategori di bidang Pajak', function (): void {
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Akuntan);
 
         $masuk()->from('/kelola/kelompok-pajak/buat')->post('/kelola/kelompok-pajak', ['Nama' => 'Makan & minum', 'Kategori' => 'KenaPbjt', 'Pajak' => [

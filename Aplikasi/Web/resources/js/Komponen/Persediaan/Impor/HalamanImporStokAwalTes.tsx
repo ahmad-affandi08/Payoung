@@ -203,7 +203,7 @@ describe('Impor stok awal langkah 2–5 (DesainF05a E)', () => {
         );
     });
 
-    it('pemetaan: galat ditampilkan, lalu PUT { Pemetaan, UuidGudangBawaan, Tanggal }', () => {
+    it('pemetaan: masalah ditampilkan, lalu PUT { Pemetaan, UuidGudangBawaan, Tanggal }', () => {
         RenderUji(<HalamanDetailImporStokAwal {...PropsDetail()} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Periksa data' }));
@@ -226,7 +226,7 @@ describe('Impor stok awal langkah 2–5 (DesainF05a E)', () => {
         );
     });
 
-    it('pratinjau: draf per lokasi dengan total Rupiah, baris galat, laporan galat, dan tombol buat draf', () => {
+    it('pratinjau: draf per lokasi dengan total Rupiah, baris masalah, laporan masalah, dan tombol buat draf', () => {
         RenderUji(
             <HalamanDetailImporStokAwal
                 {...PropsDetail({
@@ -256,7 +256,7 @@ describe('Impor stok awal langkah 2–5 (DesainF05a E)', () => {
 
         expect(screen.getByText('Rp 1.250.000.000')).toBeTruthy();
         expect(screen.getByText('Produk "KOPI-X" tidak ditemukan.')).toBeTruthy();
-        expect(screen.getByRole('link', { name: 'Unduh laporan galat (Excel)' }).getAttribute('href')).toBe(
+        expect(screen.getByRole('link', { name: 'Unduh laporan masalah (Excel)' }).getAttribute('href')).toBe(
             `/kelola/persediaan/stok-awal/impor/${uuidImpor}/laporan?jenis=galat&format=xlsx`,
         );
         fireEvent.click(screen.getByRole('button', { name: 'Buat draf dari 2.400 baris valid' }));

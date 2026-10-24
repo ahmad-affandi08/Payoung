@@ -252,7 +252,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         await waitFor(() => expect(panggilanFetch.at(-1)).toBe('/kelola/produk?perHalaman=50'));
     });
 
-    it('keadaan kosong membedakan "belum ada data" dan "tidak ada hasil filter"; galat menawarkan coba lagi', async () => {
+    it('keadaan kosong membedakan "belum ada data" dan "tidak ada hasil filter"; masalah menawarkan coba lagi', async () => {
         PasangFetch(() => 500);
         const { unmount: Lepas } = Render(
             <TabelData

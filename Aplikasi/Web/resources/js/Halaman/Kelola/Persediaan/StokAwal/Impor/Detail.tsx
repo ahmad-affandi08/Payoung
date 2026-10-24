@@ -126,10 +126,12 @@ function TautanLaporan({ impor }: { impor: RingkasanImporStokAwal }) {
             {impor.JumlahGalat > 0 ? (
                 <>
                     <Button asChild variant="link" className="h-auto px-0">
-                        <a href={BuatUrlLaporanImporStokAwal(impor.Uuid, 'galat')}>Unduh laporan galat (Excel)</a>
+                        <a href={BuatUrlLaporanImporStokAwal(impor.Uuid, 'galat')}>Unduh laporan masalah (Excel)</a>
                     </Button>
                     <Button asChild variant="link" className="h-auto px-0">
-                        <a href={BuatUrlLaporanImporStokAwal(impor.Uuid, 'galat', 'csv')}>Unduh laporan galat (CSV)</a>
+                        <a href={BuatUrlLaporanImporStokAwal(impor.Uuid, 'galat', 'csv')}>
+                            Unduh laporan masalah (CSV)
+                        </a>
                     </Button>
                 </>
             ) : null}
@@ -307,7 +309,7 @@ export default function HalamanDetailImporStokAwal({
 
             {Impor.Status === 'Gagal' ? (
                 <Pemberitahuan jenis="bahaya" judul="Impor berhenti">
-                    <p>{Impor.PesanGalat ?? 'Terjadi galat saat memproses berkas.'}</p>
+                    <p>{Impor.PesanGalat ?? 'Terjadi masalah saat memproses berkas.'}</p>
                     {Impor.JumlahDokumen > 0 ? (
                         <p className="tabular-nums">
                             {Impor.JumlahDokumen.toLocaleString('id-ID')} draf sudah dibuat dan tidak akan diulang.

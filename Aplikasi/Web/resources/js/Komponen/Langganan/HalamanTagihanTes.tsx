@@ -142,7 +142,7 @@ describe('Langganan/Tagihan (P-08): bayar online & konfirmasi batal', () => {
         vi.unstubAllGlobals();
     });
 
-    it('BR-P08.11: gerbang menolak = pesan galat tampil dan tombol bisa dicoba lagi (tanpa pengalihan)', async () => {
+    it('BR-P08.11: gerbang menolak = pesan masalah tampil dan tombol bisa dicoba lagi (tanpa pengalihan)', async () => {
         const Alihkan = vi.fn();
         vi.stubGlobal('location', { ...window.location, assign: Alihkan });
         vi.stubGlobal(

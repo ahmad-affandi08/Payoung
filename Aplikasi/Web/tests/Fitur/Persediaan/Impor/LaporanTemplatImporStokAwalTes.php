@@ -66,7 +66,7 @@ describe('F-05a impor stok awal: templat & laporan (anti formula injection)', fu
         $masuk->get("/kelola/persediaan/stok-awal/impor/templat?format=xlsx&isi=produk&gudang={$lain['Gudang']->Uuid}")->assertNotFound();
     });
 
-    it('laporan galat & semua baris: kolom asli + Nomor Baris, Status Impor, Galat; sel berumus (=, +, -, @) dinetralkan', function (): void {
+    it('laporan masalah & semua baris: kolom asli + Nomor Baris, Status Impor, Masalah; sel berumus (=, +, -, @) dinetralkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -84,7 +84,7 @@ describe('F-05a impor stok awal: templat & laporan (anti formula injection)', fu
                 ->and($semua)->toHaveCount(4)
                 ->and($semua[1][0])->toBe('\'=HYPERLINK("http://jahat.test","klik")')
                 ->and($semua[1][9])->toBe('2')
-                ->and($semua[1][10])->toBe('Ada galat')
+                ->and($semua[1][10])->toBe('Ada masalah')
                 ->and($semua[1][11])->toContain('Produk: Produk "=HYPERLINK');
 
             foreach (array_merge(...array_slice($semua, 1)) as $sel) {

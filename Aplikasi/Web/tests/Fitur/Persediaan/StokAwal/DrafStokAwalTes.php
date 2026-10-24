@@ -143,7 +143,7 @@ describe('F-05a stok awal draf: pemeriksaan isi (C.6.1)', function (): void {
             ->and(AmbilKodeGalatDraf($buat([BantuanStokAwal::Baris($p['BahanBaku'], '12.3456', '14750')])))->toBeNull();
     });
 
-    it('baris ganda (produk + batch sama) ditolak BarisGanda dengan semua galat baris di detail', function (): void {
+    it('baris ganda (produk + batch sama) ditolak BarisGanda dengan semua masalah baris di detail', function (): void {
         [$t, $p] = SiapkanDrafStokAwalUji();
 
         try {
