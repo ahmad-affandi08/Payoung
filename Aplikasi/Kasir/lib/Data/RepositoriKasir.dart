@@ -228,6 +228,7 @@ class RepositoriKasir {
             AdaGambarQris: m.adaGambarQris,
             Urutan: m.urutan,
             Kanal: Value(m.kanal),
+            TeksQris: Value(m.teksQris),
           ),
       ]);
       b.insertAll(db.staf, [

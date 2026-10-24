@@ -246,6 +246,8 @@ void main() {
             'NamaPemilikRekening': null,
             'AdaGambarQris': true,
             'Urutan': 2,
+            // D-189: teks QRIS statis untuk nominal otomatis di kasir.
+            'TeksQris': '000201010211',
           },
           // X8: metode platform ojol membawa kanalnya.
           {
@@ -271,6 +273,8 @@ void main() {
       expect(data.tarifPajak.single.berlakuSampai, isNull);
       expect(data.metodePembayaran.first.adaGambarQris, isTrue);
       expect(data.metodePembayaran.first.kanal, isNull);
+      expect(data.metodePembayaran.first.teksQris, '000201010211');
+      expect(data.metodePembayaran.last.teksQris, isNull, reason: 'Server lama / metode lain tanpa TeksQris.');
       expect(data.metodePembayaran.last.kanal, 'GoFood');
       // Server lama: tanpa ZonaWaktu & NomorUrutPenjualan.
       expect(data.outlet!.zonaWaktu, isNull);

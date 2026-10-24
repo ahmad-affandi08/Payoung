@@ -133,6 +133,8 @@ export type MetodePembayaranRingkas = {
     /** F-08: batas buatan tenant; null = memakai bawaan jenis metode. */
     BatasHariKustom?: number | null;
     TautanGambarQris: string | null;
+    /** D-189: QRIS statis yang teksnya tersimpan; kasir menampilkan QRIS dengan nominal terisi. */
+    NominalOtomatis?: boolean;
     Aktif: boolean;
     /** True untuk Tunai: selalu tersedia, tidak bisa dinonaktifkan. */
     Wajib: boolean;

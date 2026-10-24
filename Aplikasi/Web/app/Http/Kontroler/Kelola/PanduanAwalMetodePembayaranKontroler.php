@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola;
 
 use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
+use App\Domain\Penjualan\Aksi\AturTeksQrisMetode;
 use App\Domain\Penjualan\Aksi\SimpanMetodePembayaran;
 use App\Domain\Penjualan\Aksi\UbahBatasHariMenungguMetode;
 use App\Domain\Penjualan\Aksi\UbahStatusMetodePembayaran;
@@ -92,6 +93,15 @@ final class PanduanAwalMetodePembayaranKontroler extends DasarPanduanAwalKontrol
         $metode = $ubah->Jalankan($this->CariMetode($daftar, $metodePembayaran), isset($valid['BatasHariMenunggu']) ? (int) $valid['BatasHariMenunggu'] : null);
 
         return back()->with('Kilat', "Batas hari menunggu pencairan {$metode->Nama} disimpan.");
+    }
+
+    /** D-189: aktifkan (teks hasil baca gambar) atau matikan (kosong) nominal otomatis metode QRIS statis. */
+    public function AturTeksQris(Request $permintaan, string $metodePembayaran, DaftarMetodePembayaran $daftar, AturTeksQrisMetode $atur): RedirectResponse
+    {
+        $valid = $permintaan->validate(['TeksQris' => ['nullable', 'string', 'max:600']]);
+        $metode = $atur->Jalankan($this->CariMetode($daftar, $metodePembayaran), $valid['TeksQris'] ?? null);
+
+        return back()->with('Kilat', $metode->TeksQris === null ? "Nominal otomatis {$metode->Nama} dimatikan. Kasir menampilkan gambar QRIS." : "Nominal otomatis {$metode->Nama} aktif. Kasir menampilkan QRIS dengan nominal terisi.");
     }
 
     public function UnduhGambarQris(string $metodePembayaran, DaftarMetodePembayaran $daftar, PenyimpanGambarQris $penyimpan): StreamedResponse

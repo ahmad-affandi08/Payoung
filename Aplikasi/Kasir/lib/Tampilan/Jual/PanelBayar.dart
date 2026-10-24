@@ -27,6 +27,7 @@ import '../Struk/TombolKirimStruk.dart';
 import '../Struk/TombolStrukTamu.dart';
 import 'DialogQrisDinamis.dart';
 import 'DialogResep.dart';
+import 'GambarQr.dart';
 import 'PanelKeranjang.dart';
 import 'PanelPelanggan.dart';
 import 'SuaraPembayaranBerhasil.dart';
@@ -206,8 +207,25 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     }
   }
 
+  /// QRIS statis bernominal juga tampil di layar pelanggan (sama seperti QRIS dinamis gerbang). Dikirim hanya saat isinya
+  /// berubah, dan dikosongkan saat panel ditutup atau metode diganti.
+  String? _qrLayarPelanggan;
+  PengaturQrisLayarPelanggan? _pengaturQrLayar;
+
+  void _AturQrLayarPelanggan(String? isiQr) {
+    if (isiQr == _qrLayarPelanggan) {
+      return;
+    }
+    _qrLayarPelanggan = isiQr;
+    final PengaturQrisLayarPelanggan pengatur = _pengaturQrLayar ?? ref.read(penyediaQrisLayarPelanggan.notifier);
+    _pengaturQrLayar = pengatur;
+    // Ditunda satu frame: Notifier tidak boleh diubah saat pohon widget sedang dibangun/dibongkar.
+    WidgetsBinding.instance.addPostFrameCallback((_) => pengatur.Atur(isiQr));
+  }
+
   @override
   void dispose() {
+    _AturQrLayarPelanggan(null);
     _nominal.dispose();
     _referensi.dispose();
     _bank.dispose();
@@ -868,6 +886,21 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     );
   }
 
+  /// QRIS statis toko yang diberi nominal pembayaran ini (dihitung di perangkat, tanpa gerbang). Null bila toko belum
+  /// mengaktifkan nominal otomatis, nominal belum diisi, atau teks QRIS tidak sah: kasir tetap memakai gambar QRIS statis.
+  String? _BuatQrisBernominal(BarisMetodePembayaran metode) {
+    final teksQris = metode.TeksQris;
+    final nominal = _AmbilNominal();
+    if (teksQris == null || nominal == null || nominal.Bandingkan(Uang.Nol()) <= 0) {
+      return null;
+    }
+    try {
+      return Qris.BuatDinamis(teksQris, nominal.KeString());
+    } on GalatQris {
+      return null;
+    }
+  }
+
   Widget _BangunNonTunai(BuildContext context, KonteksPenjualan k, BarisMetodePembayaran metode) {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
@@ -875,7 +908,21 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (metode.Jenis == JenisMetodeBayar.qrisStatis) ...[
-          if (metode.AdaGambarQris)
+          if (_BuatQrisBernominal(metode) case final qrisDinamis?) ...[
+            Center(
+              child: GambarQr(
+                key: const ValueKey('QrisNominalOtomatis'),
+                data: qrisDinamis,
+                label: 'Kode QRIS ${metode.Nama} ${(_AmbilNominal() ?? Uang.Nol()).FormatRupiah()}',
+              ),
+            ),
+            const SizedBox(height: TokenJarak.jarak4),
+            Text(
+              'Nominal ${(_AmbilNominal() ?? Uang.Nol()).FormatRupiah()} sudah terisi di QRIS. Pelanggan tinggal memindai dan membayar.',
+              textAlign: TextAlign.center,
+              style: teks.bodySmall,
+            ),
+          ] else if (metode.AdaGambarQris)
             ref
                 .watch(penyediaGambarQris(metode.Uuid))
                 .when(
@@ -1387,6 +1434,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
     }
     final layanan = ref.read(penyediaLayananPenjualan);
     final metode = _metode;
+    _AturQrLayarPelanggan(metode?.Jenis == JenisMetodeBayar.qrisStatis ? _BuatQrisBernominal(metode!) : null);
     final pembayaranHitung = [
       for (final p in _entri) p.KeKalkulasi(),
       if (metode?.Jenis == JenisMetodeBayar.tunai) const DataPembayaranKalkulasi(metode: 'Tunai'),

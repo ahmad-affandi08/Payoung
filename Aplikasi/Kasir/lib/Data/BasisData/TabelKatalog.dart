@@ -217,6 +217,10 @@ class MetodePembayaran extends Table {
   /// X8 (skema 18): kanal platform metode `Marketplace` (GoFood, GrabFood, …); null untuk jenis lain.
   TextColumn get Kanal => text().nullable()();
 
+  /// D-189 (skema 32): payload QRIS statis toko. Bila ada, kasir menyusun QRIS bernominal di perangkat (offline) dan
+  /// menampilkannya sebagai ganti gambar; null = gambar saja (metode lama atau gambar yang tidak terbaca).
+  TextColumn get TeksQris => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {Uuid};
 }

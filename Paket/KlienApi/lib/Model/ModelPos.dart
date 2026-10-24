@@ -380,6 +380,7 @@ class MetodePembayaranPos {
     required this.adaGambarQris,
     required this.urutan,
     this.kanal,
+    this.teksQris,
   });
 
   final String uuid;
@@ -389,6 +390,10 @@ class MetodePembayaranPos {
   final String? namaPemilikRekening;
   final bool adaGambarQris;
   final int urutan;
+
+  /// D-189: payload QRIS statis (publik di gambar QR-nya) untuk menyusun QRIS bernominal di kasir; null = gambar saja
+  /// atau server lama.
+  final String? teksQris;
 
   /// X8: kanal platform metode `Marketplace` (`GoFood`, `GrabFood`, …); null untuk jenis lain dan server lama.
   final String? kanal;
@@ -402,6 +407,7 @@ class MetodePembayaranPos {
     adaGambarQris: UraiJson.AmbilBenar(json['AdaGambarQris']),
     urutan: UraiJson.AmbilBulat(json['Urutan']),
     kanal: UraiJson.AmbilTeksAtauNull(json['Kanal']),
+    teksQris: UraiJson.AmbilTeksAtauNull(json['TeksQris']),
   );
 }
 

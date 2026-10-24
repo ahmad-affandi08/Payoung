@@ -212,9 +212,9 @@ class BasisDataKasir extends _$BasisDataKasir {
   /// outbox); 17 = F-05f bagian 2 (bahan terbuang lokal); 18 = X8 (kanal metode pembayaran platform ojol);
   /// 19 = F-17 bagian 3 (ongkir ikut DPP pajak); 24 = K-12 (minta bill & meja perlu dibersihkan); 25 = K-25 (harga
   /// terbuka); 26 = Modul Salesman bagian 2 (pelanggan salesman, kunjungan, pesanan grosir lokal); 27 = Bengkel & Apotek
-  /// bagian 2 (golongan obat produk, perintah kerja & ringkasan resep penjualan); 31 = POS-03 (letak meja di denah).
+  /// bagian 2 (golongan obat produk, perintah kerja & ringkasan resep penjualan); 31 = POS-03 (letak meja di denah); 32 = D-189 (teks QRIS statis di metode pembayaran).
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -528,6 +528,14 @@ class BasisDataKasir extends _$BasisDataKasir {
         if (ada == 0) {
           await m.addColumn(meja, meja.PosisiX);
           await m.addColumn(meja, meja.PosisiY);
+        }
+      }
+      if (dari >= 2 && dari < 32) {
+        final ada = await customSelect(
+          "SELECT COUNT(*) AS Jumlah FROM pragma_table_info('MetodePembayaran') WHERE name = 'TeksQris'",
+        ).map((r) => r.read<int>('Jumlah')).getSingle();
+        if (ada == 0) {
+          await m.addColumn(metodePembayaran, metodePembayaran.TeksQris);
         }
       }
     },

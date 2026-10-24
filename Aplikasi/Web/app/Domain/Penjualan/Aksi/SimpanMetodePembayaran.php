@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Penjualan\Data\DataMetodePembayaran;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
+use App\Domain\Penjualan\Layanan\PemeriksaQris;
 use App\Domain\Penjualan\Layanan\PenyimpanGambarQris;
 use App\Domain\Penjualan\Model\MetodePembayaran;
 use App\Domain\Referensi\Kueri\ReferensiBankAktif;
@@ -23,7 +24,8 @@ use Throwable;
 /**
  * F-01 langkah 5: menambah QRIS statis (unggah gambar QR dari penerbit), QRIS dinamis (F-08: tagihan dibuat lewat
  * gerbang pembayaran yang diaktifkan platform; tanpa gambar/bank), EDC per bank, atau transfer bank.
- * - QRIS statis wajib gambar; disimpan di disk privat dan dihapus lagi bila transaksi gagal.
+ * - QRIS statis wajib gambar; disimpan di disk privat dan dihapus lagi bila transaksi gagal. D-189: teks payload QRIS
+ *   (hasil baca gambar di peramban) opsional; bila ada, diperiksa (`PemeriksaQris`) dan kasir menyusun QRIS bernominal.
  * - EDC wajib bank/jaringan EDC aktif; transfer wajib bank/dompet digital aktif + nomor & nama pemilik rekening.
  * - Biaya (MDR) 0–10 persen, string desimal (tidak pernah float).
  * - F-16d: deposit pelanggan (satu per tenant, tanpa biaya; akun Saldo Deposit Pelanggan dari pemetaan akun).
@@ -40,6 +42,7 @@ final class SimpanMetodePembayaran
         private readonly SiapkanMetodePembayaranBawaan $siapkanBawaan,
         private readonly ReferensiBankAktif $referensiBank,
         private readonly PenyimpanGambarQris $penyimpanGambar,
+        private readonly PemeriksaQris $pemeriksaQris,
         private readonly PencatatAudit $audit,
     ) {}
 
@@ -47,6 +50,13 @@ final class SimpanMetodePembayaran
     {
         $idTenant = $this->konteks->Wajib();
         $isian = $this->SusunIsian($data, $gambarQris);
+        // D-189: teks QRIS (opsional) diperiksa sebelum berkas apa pun disimpan; yang cacat ditolak dengan alasan jelas.
+        $teksQris = $data->jenis === JenisMetodePembayaran::QrisStatis && $data->teksQris !== null && trim($data->teksQris) !== '' ? trim($data->teksQris) : null;
+
+        if ($teksQris !== null) {
+            $this->pemeriksaQris->Periksa($teksQris);
+        }
+
         $path = $data->jenis === JenisMetodePembayaran::QrisStatis && $gambarQris !== null ? $this->penyimpanGambar->Simpan($idTenant, $gambarQris) : null;
 
         try {
@@ -80,7 +90,7 @@ final class SimpanMetodePembayaran
 
                 $urutan = (int) MetodePembayaran::query()->max('Urutan');
 
-                $metode = MetodePembayaran::query()->create([...$isian, 'PathGambarQris' => $path, 'Urutan' => $urutan + 1, 'Aktif' => true]);
+                $metode = MetodePembayaran::query()->create([...$isian, 'PathGambarQris' => $path, 'TeksQris' => $teksQris, 'Urutan' => $urutan + 1, 'Aktif' => true]);
                 $this->audit->Catat('metode-pembayaran.buat', $metode, nilaiBaru: [
                     'Jenis' => $metode->Jenis->value,
                     'Nama' => $metode->Nama,
@@ -88,6 +98,7 @@ final class SimpanMetodePembayaran
                     'NomorRekening' => $metode->NomorRekening,
                     'Kanal' => $metode->Kanal?->value,
                     'PersenBiaya' => $metode->PersenBiaya,
+                    'NominalOtomatis' => $teksQris !== null,
                 ]);
 
                 return $metode;

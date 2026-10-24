@@ -7,3 +7,4 @@ export 'Identitas/PembuatUlid.dart';
 export 'Nilai/Kuantitas.dart';
 export 'Nilai/ModePembulatan.dart';
 export 'Nilai/Uang.dart';
+export 'Qris/Qris.dart';

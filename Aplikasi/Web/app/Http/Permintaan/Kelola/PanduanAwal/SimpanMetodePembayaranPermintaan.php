@@ -36,6 +36,8 @@ final class SimpanMetodePembayaranPermintaan extends FormRequest
             'Nama' => ['required', 'string', 'max:60'],
             'KodeBank' => ['nullable', 'required_if:Jenis,Edc,Transfer', 'string', 'max:30'],
             'GambarQris' => ['nullable', 'required_if:Jenis,QrisStatis', 'file', 'mimes:'.implode(',', (array) config('pembayaran.EkstensiGambarQris')), 'max:'.config('pembayaran.UkuranMaksimalGambarQrisKb')],
+            // D-189: payload QRIS hasil baca gambar di peramban; keabsahannya diperiksa Aksi (kode galat jelas).
+            'TeksQris' => ['nullable', 'string', 'max:600'],
             'NomorRekening' => ['nullable', 'required_if:Jenis,Transfer', 'string', 'regex:/^\d{5,30}$/'],
             'NamaPemilikRekening' => ['nullable', 'required_if:Jenis,Transfer', 'string', 'max:100'],
             'Kanal' => ['nullable', 'required_if:Jenis,Marketplace', 'in:'.$kanal],
@@ -85,6 +87,7 @@ final class SimpanMetodePembayaranPermintaan extends FormRequest
             namaPemilikRekening: $this->filled('NamaPemilikRekening') ? $this->string('NamaPemilikRekening')->trim()->toString() : null,
             persenBiaya: $this->filled('PersenBiaya') ? $this->string('PersenBiaya')->toString() : null,
             kanal: $this->filled('Kanal') ? KanalPenjualan::tryFrom($this->string('Kanal')->toString()) : null,
+            teksQris: $this->filled('TeksQris') ? $this->string('TeksQris')->toString() : null,
         );
     }
 

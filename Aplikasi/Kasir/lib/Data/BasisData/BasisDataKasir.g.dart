@@ -8200,6 +8200,15 @@ class $MetodePembayaranTable extends MetodePembayaran with TableInfo<$MetodePemb
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _TeksQrisMeta = const VerificationMeta('TeksQris');
+  @override
+  late final GeneratedColumn<String> TeksQris = GeneratedColumn<String>(
+    'TeksQris',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     Uuid,
@@ -8210,6 +8219,7 @@ class $MetodePembayaranTable extends MetodePembayaran with TableInfo<$MetodePemb
     AdaGambarQris,
     Urutan,
     Kanal,
+    TeksQris,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8263,6 +8273,9 @@ class $MetodePembayaranTable extends MetodePembayaran with TableInfo<$MetodePemb
     if (data.containsKey('Kanal')) {
       context.handle(_KanalMeta, Kanal.isAcceptableOrUnknown(data['Kanal']!, _KanalMeta));
     }
+    if (data.containsKey('TeksQris')) {
+      context.handle(_TeksQrisMeta, TeksQris.isAcceptableOrUnknown(data['TeksQris']!, _TeksQrisMeta));
+    }
     return context;
   }
 
@@ -8283,6 +8296,7 @@ class $MetodePembayaranTable extends MetodePembayaran with TableInfo<$MetodePemb
       AdaGambarQris: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}AdaGambarQris'])!,
       Urutan: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}Urutan'])!,
       Kanal: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}Kanal']),
+      TeksQris: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}TeksQris']),
     );
   }
 
@@ -8303,6 +8317,10 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
 
   /// X8 (skema 18): kanal platform metode `Marketplace` (GoFood, GrabFood, …); null untuk jenis lain.
   final String? Kanal;
+
+  /// D-189 (skema 32): payload QRIS statis toko. Bila ada, kasir menyusun QRIS bernominal di perangkat (offline) dan
+  /// menampilkannya sebagai ganti gambar; null = gambar saja (metode lama atau gambar yang tidak terbaca).
+  final String? TeksQris;
   const BarisMetodePembayaran({
     required this.Uuid,
     required this.Jenis,
@@ -8312,6 +8330,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
     required this.AdaGambarQris,
     required this.Urutan,
     this.Kanal,
+    this.TeksQris,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8330,6 +8349,9 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
     if (!nullToAbsent || Kanal != null) {
       map['Kanal'] = Variable<String>(Kanal);
     }
+    if (!nullToAbsent || TeksQris != null) {
+      map['TeksQris'] = Variable<String>(TeksQris);
+    }
     return map;
   }
 
@@ -8345,6 +8367,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
       AdaGambarQris: Value(AdaGambarQris),
       Urutan: Value(Urutan),
       Kanal: Kanal == null && nullToAbsent ? const Value.absent() : Value(Kanal),
+      TeksQris: TeksQris == null && nullToAbsent ? const Value.absent() : Value(TeksQris),
     );
   }
 
@@ -8359,6 +8382,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
       AdaGambarQris: serializer.fromJson<bool>(json['AdaGambarQris']),
       Urutan: serializer.fromJson<int>(json['Urutan']),
       Kanal: serializer.fromJson<String?>(json['Kanal']),
+      TeksQris: serializer.fromJson<String?>(json['TeksQris']),
     );
   }
   @override
@@ -8373,6 +8397,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
       'AdaGambarQris': serializer.toJson<bool>(AdaGambarQris),
       'Urutan': serializer.toJson<int>(Urutan),
       'Kanal': serializer.toJson<String?>(Kanal),
+      'TeksQris': serializer.toJson<String?>(TeksQris),
     };
   }
 
@@ -8385,6 +8410,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
     bool? AdaGambarQris,
     int? Urutan,
     Value<String?> Kanal = const Value.absent(),
+    Value<String?> TeksQris = const Value.absent(),
   }) => BarisMetodePembayaran(
     Uuid: Uuid ?? this.Uuid,
     Jenis: Jenis ?? this.Jenis,
@@ -8394,6 +8420,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
     AdaGambarQris: AdaGambarQris ?? this.AdaGambarQris,
     Urutan: Urutan ?? this.Urutan,
     Kanal: Kanal.present ? Kanal.value : this.Kanal,
+    TeksQris: TeksQris.present ? TeksQris.value : this.TeksQris,
   );
   BarisMetodePembayaran copyWithCompanion(MetodePembayaranCompanion data) {
     return BarisMetodePembayaran(
@@ -8405,6 +8432,7 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
       AdaGambarQris: data.AdaGambarQris.present ? data.AdaGambarQris.value : this.AdaGambarQris,
       Urutan: data.Urutan.present ? data.Urutan.value : this.Urutan,
       Kanal: data.Kanal.present ? data.Kanal.value : this.Kanal,
+      TeksQris: data.TeksQris.present ? data.TeksQris.value : this.TeksQris,
     );
   }
 
@@ -8418,13 +8446,15 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
           ..write('NamaPemilikRekening: $NamaPemilikRekening, ')
           ..write('AdaGambarQris: $AdaGambarQris, ')
           ..write('Urutan: $Urutan, ')
-          ..write('Kanal: $Kanal')
+          ..write('Kanal: $Kanal, ')
+          ..write('TeksQris: $TeksQris')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(Uuid, Jenis, Nama, NomorRekening, NamaPemilikRekening, AdaGambarQris, Urutan, Kanal);
+  int get hashCode =>
+      Object.hash(Uuid, Jenis, Nama, NomorRekening, NamaPemilikRekening, AdaGambarQris, Urutan, Kanal, TeksQris);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8436,7 +8466,8 @@ class BarisMetodePembayaran extends DataClass implements Insertable<BarisMetodeP
           other.NamaPemilikRekening == this.NamaPemilikRekening &&
           other.AdaGambarQris == this.AdaGambarQris &&
           other.Urutan == this.Urutan &&
-          other.Kanal == this.Kanal);
+          other.Kanal == this.Kanal &&
+          other.TeksQris == this.TeksQris);
 }
 
 class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
@@ -8448,6 +8479,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
   final Value<bool> AdaGambarQris;
   final Value<int> Urutan;
   final Value<String?> Kanal;
+  final Value<String?> TeksQris;
   final Value<int> rowid;
   const MetodePembayaranCompanion({
     this.Uuid = const Value.absent(),
@@ -8458,6 +8490,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
     this.AdaGambarQris = const Value.absent(),
     this.Urutan = const Value.absent(),
     this.Kanal = const Value.absent(),
+    this.TeksQris = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MetodePembayaranCompanion.insert({
@@ -8469,6 +8502,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
     required bool AdaGambarQris,
     required int Urutan,
     this.Kanal = const Value.absent(),
+    this.TeksQris = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : Uuid = Value(Uuid),
        Jenis = Value(Jenis),
@@ -8484,6 +8518,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
     Expression<bool>? AdaGambarQris,
     Expression<int>? Urutan,
     Expression<String>? Kanal,
+    Expression<String>? TeksQris,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8495,6 +8530,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
       if (AdaGambarQris != null) 'AdaGambarQris': AdaGambarQris,
       if (Urutan != null) 'Urutan': Urutan,
       if (Kanal != null) 'Kanal': Kanal,
+      if (TeksQris != null) 'TeksQris': TeksQris,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8508,6 +8544,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
     Value<bool>? AdaGambarQris,
     Value<int>? Urutan,
     Value<String?>? Kanal,
+    Value<String?>? TeksQris,
     Value<int>? rowid,
   }) {
     return MetodePembayaranCompanion(
@@ -8519,6 +8556,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
       AdaGambarQris: AdaGambarQris ?? this.AdaGambarQris,
       Urutan: Urutan ?? this.Urutan,
       Kanal: Kanal ?? this.Kanal,
+      TeksQris: TeksQris ?? this.TeksQris,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8550,6 +8588,9 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
     if (Kanal.present) {
       map['Kanal'] = Variable<String>(Kanal.value);
     }
+    if (TeksQris.present) {
+      map['TeksQris'] = Variable<String>(TeksQris.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8567,6 +8608,7 @@ class MetodePembayaranCompanion extends UpdateCompanion<BarisMetodePembayaran> {
           ..write('AdaGambarQris: $AdaGambarQris, ')
           ..write('Urutan: $Urutan, ')
           ..write('Kanal: $Kanal, ')
+          ..write('TeksQris: $TeksQris, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -25216,6 +25258,7 @@ typedef $$MetodePembayaranTableCreateCompanionBuilder = MetodePembayaranCompanio
   required bool AdaGambarQris,
   required int Urutan,
   Value<String?> Kanal,
+  Value<String?> TeksQris,
   Value<int> rowid,
 });
 typedef $$MetodePembayaranTableUpdateCompanionBuilder = MetodePembayaranCompanion Function({
@@ -25227,6 +25270,7 @@ typedef $$MetodePembayaranTableUpdateCompanionBuilder = MetodePembayaranCompanio
   Value<bool> AdaGambarQris,
   Value<int> Urutan,
   Value<String?> Kanal,
+  Value<String?> TeksQris,
   Value<int> rowid,
 });
 
@@ -25259,6 +25303,9 @@ class $$MetodePembayaranTableFilterComposer extends Composer<_$BasisDataKasir, $
 
   ColumnFilters<String> get Kanal =>
       $composableBuilder(column: $table.Kanal, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get TeksQris =>
+      $composableBuilder(column: $table.TeksQris, builder: (column) => ColumnFilters(column));
 }
 
 class $$MetodePembayaranTableOrderingComposer extends Composer<_$BasisDataKasir, $MetodePembayaranTable> {
@@ -25292,6 +25339,9 @@ class $$MetodePembayaranTableOrderingComposer extends Composer<_$BasisDataKasir,
 
   ColumnOrderings<String> get Kanal =>
       $composableBuilder(column: $table.Kanal, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get TeksQris =>
+      $composableBuilder(column: $table.TeksQris, builder: (column) => ColumnOrderings(column));
 }
 
 class $$MetodePembayaranTableAnnotationComposer extends Composer<_$BasisDataKasir, $MetodePembayaranTable> {
@@ -25320,6 +25370,8 @@ class $$MetodePembayaranTableAnnotationComposer extends Composer<_$BasisDataKasi
   GeneratedColumn<int> get Urutan => $composableBuilder(column: $table.Urutan, builder: (column) => column);
 
   GeneratedColumn<String> get Kanal => $composableBuilder(column: $table.Kanal, builder: (column) => column);
+
+  GeneratedColumn<String> get TeksQris => $composableBuilder(column: $table.TeksQris, builder: (column) => column);
 }
 
 class $$MetodePembayaranTableTableManager
@@ -25355,6 +25407,7 @@ class $$MetodePembayaranTableTableManager
                 Value<bool> AdaGambarQris = const Value.absent(),
                 Value<int> Urutan = const Value.absent(),
                 Value<String?> Kanal = const Value.absent(),
+                Value<String?> TeksQris = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MetodePembayaranCompanion(
                 Uuid: Uuid,
@@ -25365,6 +25418,7 @@ class $$MetodePembayaranTableTableManager
                 AdaGambarQris: AdaGambarQris,
                 Urutan: Urutan,
                 Kanal: Kanal,
+                TeksQris: TeksQris,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -25377,6 +25431,7 @@ class $$MetodePembayaranTableTableManager
                 required bool AdaGambarQris,
                 required int Urutan,
                 Value<String?> Kanal = const Value.absent(),
+                Value<String?> TeksQris = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MetodePembayaranCompanion.insert(
                 Uuid: Uuid,
@@ -25387,6 +25442,7 @@ class $$MetodePembayaranTableTableManager
                 AdaGambarQris: AdaGambarQris,
                 Urutan: Urutan,
                 Kanal: Kanal,
+                TeksQris: TeksQris,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -100,7 +100,7 @@ final class RegistriAnonimisasi
             'JarakKeluarMeter' => 'null', 'KemiripanWajahKeluar' => 'null',
         ],
         'CutiKaryawan' => ['Alasan' => 'null', 'AlasanBatal' => 'null'],
-        'MetodePembayaran' => ['NomorRekening' => 'null', 'NamaPemilikRekening' => 'null', 'PathGambarQris' => 'null'],
+        'MetodePembayaran' => ['NomorRekening' => 'null', 'NamaPemilikRekening' => 'null', 'PathGambarQris' => 'null', 'TeksQris' => 'null'],
         'Perangkat' => [
             'Nama' => 'unik:Perangkat Terhapus #', 'TokenPush' => 'null', 'HashToken' => 'null', 'KunciPinOffline' => 'null',
             'DicabutPada' => 'sekarang',

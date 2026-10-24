@@ -284,6 +284,7 @@ final class KamusPeristiwaAudit
 
         'metode-pembayaran.batas-hari-menunggu' => 'Batas hari menunggu pencairan metode pembayaran diubah',
         'metode-pembayaran.buat' => 'Metode pembayaran dibuat',
+        'metode-pembayaran.teks-qris' => 'Nominal otomatis QRIS statis diubah',
 
         'mitra.komisi.batal' => 'Komisi mitra dibatalkan',
         'mitra.pencairan' => 'Komisi mitra dicairkan',

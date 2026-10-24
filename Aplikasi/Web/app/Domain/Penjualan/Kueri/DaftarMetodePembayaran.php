@@ -17,7 +17,7 @@ final class DaftarMetodePembayaran
     public function __construct(private readonly ReferensiBankAktif $referensiBank) {}
 
     /**
-     * @return list<array{Uuid: string, Jenis: string, LabelJenis: string, Nama: string, NamaBank: string|null, NomorRekening: string|null, NamaPemilikRekening: string|null, Kanal: string|null, LabelKanal: string|null, PersenBiaya: string, BatasHariMenunggu: int|null, BatasHariKustom: int|null, AdaGambarQris: bool, Aktif: bool, Wajib: bool}>
+     * @return list<array{Uuid: string, Jenis: string, LabelJenis: string, Nama: string, NamaBank: string|null, NomorRekening: string|null, NamaPemilikRekening: string|null, Kanal: string|null, LabelKanal: string|null, PersenBiaya: string, BatasHariMenunggu: int|null, BatasHariKustom: int|null, AdaGambarQris: bool, NominalOtomatis: bool, Aktif: bool, Wajib: bool}>
      */
     public function Ambil(): array
     {
@@ -39,6 +39,8 @@ final class DaftarMetodePembayaran
             'BatasHariMenunggu' => PembayaranBelumDicairkan::AmbilBatasHari($metode),
             'BatasHariKustom' => $metode->BatasHariMenunggu,
             'AdaGambarQris' => $metode->PathGambarQris !== null,
+            // D-189: QRIS statis yang teksnya tersimpan = kasir menyusun QRIS bernominal.
+            'NominalOtomatis' => $metode->TeksQris !== null,
             'Aktif' => $metode->Aktif,
             'Wajib' => $metode->Jenis === JenisMetodePembayaran::Tunai,
         ])->all());
@@ -48,7 +50,7 @@ final class DaftarMetodePembayaran
      * Metode aktif berjenis fase 1 untuk `data-awal` POS (F-07b). Path gambar QRIS tidak dikirim; perangkat mengunduh
      * lewat `GET /api/pos/v1/metode-pembayaran/{uuid}/gambar-qris`.
      *
-     * @return list<array{Uuid: string, Jenis: string, Nama: string, NomorRekening: string|null, NamaPemilikRekening: string|null, AdaGambarQris: bool, Urutan: int, Kanal: string|null}>
+     * @return list<array{Uuid: string, Jenis: string, Nama: string, NomorRekening: string|null, NamaPemilikRekening: string|null, AdaGambarQris: bool, TeksQris: string|null, Urutan: int, Kanal: string|null}>
      */
     public function AmbilUntukPos(): array
     {
@@ -65,6 +67,8 @@ final class DaftarMetodePembayaran
                 'NomorRekening' => $metode->NomorRekening,
                 'NamaPemilikRekening' => $metode->NamaPemilikRekening,
                 'AdaGambarQris' => $metode->PathGambarQris !== null,
+                // D-189: payload QRIS statis (publik di gambar QR-nya); kasir menyusun QRIS bernominal secara lokal.
+                'TeksQris' => $metode->Jenis === JenisMetodePembayaran::QrisStatis ? $metode->TeksQris : null,
                 'Urutan' => $metode->Urutan,
                 // X8: kanal platform metode Marketplace (kasir memakainya hanya untuk penjualan kanal itu).
                 'Kanal' => $metode->Kanal?->value,

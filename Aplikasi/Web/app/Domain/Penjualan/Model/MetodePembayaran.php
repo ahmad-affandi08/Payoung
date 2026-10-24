@@ -24,6 +24,7 @@ use App\Domain\Penjualan\Enum\KanalPenjualan;
  * @property string|null $NamaPemilikRekening
  * @property KanalPenjualan|null $Kanal X8: kanal platform metode `Marketplace` (ojol/marketplace); null untuk jenis lain
  * @property string|null $PathGambarQris
+ * @property string|null $TeksQris D-189: payload QRIS statis (publik di gambar QR-nya) untuk menyusun QRIS bernominal di kasir
  * @property int|null $IdAkun
  * @property int|null $IdAkunKliring
  * @property string $PersenBiaya
@@ -45,6 +46,7 @@ final class MetodePembayaran extends ModelDasar
         'NamaPemilikRekening' => null,
         'Kanal' => null,
         'PathGambarQris' => null,
+        'TeksQris' => null,
         'IdAkun' => null,
         'IdAkunKliring' => null,
         'PersenBiaya' => '0',

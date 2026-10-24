@@ -5,6 +5,8 @@ import BidangGambar from '@/Komponen/Formulir/BidangGambar';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import HasilBacaQris from '@/Komponen/PanduanAwal/HasilBacaQris';
+import { useBacaQris } from '@/Komponen/PanduanAwal/useBacaQris';
 import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwal/RingkasanGalatFormulir';
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
@@ -43,6 +45,8 @@ type IsianMetodePembayaran = {
     Nama: string;
     KodeBank: string;
     GambarQris: File | null;
+    /** Hanya penampung galat server; teks yang dikirim berasal dari hasil baca gambar (`useBacaQris`). */
+    TeksQris: string;
     NomorRekening: string;
     NamaPemilikRekening: string;
     Kanal: string;
@@ -93,7 +97,7 @@ export default function HalamanMetodePembayaran({
                 </p>
             )}
 
-            <TabelMetodePembayaran metodePembayaran={MetodePembayaran} />
+            <TabelMetodePembayaran metodePembayaran={MetodePembayaran} batasGambarQris={BatasGambarQris} />
 
             <FormTambahMetode
                 jenisTersedia={JenisTersedia}
@@ -178,7 +182,116 @@ function AturBatasHariMenunggu({ metode }: { metode: MetodePembayaranRingkas }) 
     );
 }
 
-function TabelMetodePembayaran({ metodePembayaran }: { metodePembayaran: MetodePembayaranRingkas[] }) {
+/**
+ * D-189: QRIS statis yang teksnya tersimpan = kasir menampilkan QRIS dengan nominal terisi. Metode lama (hanya gambar)
+ * bisa diaktifkan dengan mengunggah ulang gambar QRIS yang sama; gambarnya dibaca di peramban dan tidak diganti.
+ */
+function AturNominalOtomatis({
+    metode,
+    batasGambarQris,
+}: {
+    metode: MetodePembayaranRingkas;
+    batasGambarQris: PropsMetodePembayaranPanduan['BatasGambarQris'];
+}) {
+    const [terbuka, AturTerbuka] = useState(false);
+    const [berkas, AturBerkas] = useState<File | null>(null);
+    const bacaQris = useBacaQris();
+    const formulir = useForm<{ TeksQris: string | null }>({ TeksQris: null });
+    const alamat = `${AlamatPanduan.MetodePembayaran}/${metode.Uuid}/teks-qris`;
+
+    const Tutup = (buka: boolean) => {
+        AturTerbuka(buka);
+
+        if (!buka) {
+            AturBerkas(null);
+            bacaQris.Ulang();
+        }
+    };
+
+    const Aktifkan = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+
+        if (bacaQris.keadaan.Tahap !== 'berhasil') {
+            return;
+        }
+
+        formulir.transform(() => ({ TeksQris: bacaQris.keadaan.Tahap === 'berhasil' ? bacaQris.keadaan.Teks : null }));
+        formulir.post(alamat, { preserveScroll: true, onSuccess: () => Tutup(false) });
+    };
+
+    const Matikan = () => {
+        formulir.transform(() => ({ TeksQris: null }));
+        formulir.post(alamat, { preserveScroll: true });
+    };
+
+    return (
+        <Dialog open={terbuka} onOpenChange={Tutup}>
+            <span className="block text-keterangan">
+                {metode.NominalOtomatis ? (
+                    <>
+                        Nominal terisi otomatis di kasir |{' '}
+                        <button type="button" className="font-semibold text-brand underline" onClick={Matikan}>
+                            Matikan
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        Pelanggan mengetik nominal sendiri |{' '}
+                        <DialogTrigger asChild>
+                            <button type="button" className="font-semibold text-brand underline">
+                                Isi nominal otomatis
+                            </button>
+                        </DialogTrigger>
+                    </>
+                )}
+            </span>
+            <DialogContent>
+                <form onSubmit={Aktifkan} noValidate className="flex flex-col gap-4">
+                    <DialogHeader>
+                        <DialogTitle>Nominal otomatis untuk {metode.Nama}</DialogTitle>
+                        <DialogDescription>
+                            Unggah gambar QRIS toko Anda yang sama. Kode QR dibaca di peramban ini, lalu kasir
+                            menampilkan QRIS dengan nominal transaksi yang sudah terisi. Gambar yang tersimpan tidak
+                            berubah.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <BidangGambar
+                        label="Gambar QRIS"
+                        berkas={berkas}
+                        saatBerubah={(baru) => {
+                            AturBerkas(baru);
+                            void bacaQris.Baca(baru);
+                        }}
+                        ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
+                        ekstensi={batasGambarQris.Ekstensi}
+                        keterangan="Pastikan kode QR terlihat utuh dan tidak terpotong."
+                    />
+                    <HasilBacaQris keadaan={bacaQris.keadaan} />
+                    {formulir.errors.TeksQris ? (
+                        <Pemberitahuan jenis="bahaya">{formulir.errors.TeksQris}</Pemberitahuan>
+                    ) : null}
+                    <DialogFooter>
+                        <Tombol
+                            type="submit"
+                            memproses={formulir.processing}
+                            disabled={bacaQris.keadaan.Tahap !== 'berhasil'}
+                        >
+                            Aktifkan nominal otomatis
+                        </Tombol>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function TabelMetodePembayaran({
+    metodePembayaran,
+    batasGambarQris,
+}: {
+    metodePembayaran: MetodePembayaranRingkas[];
+    batasGambarQris: PropsMetodePembayaranPanduan['BatasGambarQris'];
+}) {
     const [memproses, AturMemproses] = useState<string | null>(null);
 
     const UbahStatus = (metode: MetodePembayaranRingkas) =>
@@ -232,6 +345,9 @@ function TabelMetodePembayaran({ metodePembayaran }: { metodePembayaran: MetodeP
                     {!metode.TautanGambarQris && !metode.NamaBank && !metode.NomorRekening && !metode.LabelKanal
                         ? '—'
                         : null}
+                    {metode.Jenis === 'QrisStatis' ? (
+                        <AturNominalOtomatis metode={metode} batasGambarQris={batasGambarQris} />
+                    ) : null}
                     {metode.BatasHariMenunggu ? <AturBatasHariMenunggu metode={metode} /> : null}
                 </>
             ),
@@ -342,18 +458,22 @@ function FormTambahMetode({
         Nama: '',
         KodeBank: '',
         GambarQris: null,
+        TeksQris: '',
         NomorRekening: '',
         NamaPemilikRekening: '',
         Kanal: '',
         PersenBiaya: '',
     });
     const { Jenis } = formulir.data;
+    const bacaQris = useBacaQris();
     const opsiBank = bank
         .filter((baris) => jenisBankPerMetode[Jenis]?.includes(baris.Jenis))
         .map((baris) => ({ Nilai: baris.Kode, Label: baris.Nama }));
 
-    const GantiJenis = (jenis: string) =>
+    const GantiJenis = (jenis: string) => {
+        bacaQris.Ulang();
         formulir.setData({ ...formulir.data, Jenis: jenis, KodeBank: '', GambarQris: null, Kanal: '' });
+    };
     const platform = Jenis === 'Marketplace';
 
     const Kirim = (peristiwa: FormEvent) => {
@@ -363,6 +483,9 @@ function FormTambahMetode({
             ...data,
             KodeBank: data.Jenis === 'Edc' || data.Jenis === 'Transfer' ? data.KodeBank || null : null,
             GambarQris: data.Jenis === 'QrisStatis' ? data.GambarQris : null,
+            // D-189: hanya teks yang lolos pemeriksaan di peramban yang dikirim; server memeriksa ulang.
+            TeksQris:
+                data.Jenis === 'QrisStatis' && bacaQris.keadaan.Tahap === 'berhasil' ? bacaQris.keadaan.Teks : null,
             NomorRekening: data.Jenis === 'Transfer' ? data.NomorRekening || null : null,
             NamaPemilikRekening: data.Jenis === 'Transfer' ? data.NamaPemilikRekening || null : null,
             Kanal: data.Jenis === 'Marketplace' ? data.Kanal || null : null,
@@ -370,7 +493,10 @@ function FormTambahMetode({
         }));
         formulir.post(AlamatPanduan.MetodePembayaran, {
             preserveScroll: true,
-            onSuccess: () => formulir.reset(),
+            onSuccess: () => {
+                formulir.reset();
+                bacaQris.Ulang();
+            },
             onError: () => FokusGalatPertama(elemenFormulir.current),
         });
     };
@@ -479,15 +605,24 @@ function FormTambahMetode({
                         </Pemberitahuan>
                     ) : null}
                     {Jenis === 'QrisStatis' ? (
-                        <BidangGambar
-                            label="Gambar QRIS"
-                            berkas={formulir.data.GambarQris}
-                            saatBerubah={(berkas) => formulir.setData('GambarQris', berkas)}
-                            ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
-                            ekstensi={batasGambarQris.Ekstensi}
-                            keterangan="Foto atau unduh QRIS dari aplikasi bank/penyedia Anda. Pastikan kode QR terlihat utuh."
-                            galat={formulir.errors.GambarQris}
-                        />
+                        <>
+                            <BidangGambar
+                                label="Gambar QRIS"
+                                berkas={formulir.data.GambarQris}
+                                saatBerubah={(berkas) => {
+                                    formulir.setData('GambarQris', berkas);
+                                    void bacaQris.Baca(berkas);
+                                }}
+                                ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
+                                ekstensi={batasGambarQris.Ekstensi}
+                                keterangan="Foto atau unduh QRIS dari aplikasi bank/penyedia Anda. Pastikan kode QR terlihat utuh. Kode QR dibaca di peramban Anda, supaya kasir bisa menampilkan QRIS dengan nominal yang sudah terisi."
+                                galat={formulir.errors.GambarQris}
+                            />
+                            <HasilBacaQris keadaan={bacaQris.keadaan} />
+                            {formulir.errors.TeksQris ? (
+                                <Pemberitahuan jenis="bahaya">{formulir.errors.TeksQris}</Pemberitahuan>
+                            ) : null}
+                        </>
                     ) : null}
                     <div>
                         <Tombol type="submit" memproses={formulir.processing}>

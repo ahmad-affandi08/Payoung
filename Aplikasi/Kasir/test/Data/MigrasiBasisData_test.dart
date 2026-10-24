@@ -135,7 +135,7 @@ void main() {
     expect((await db.select(db.shift).get()).single.KasAwal, '500000.00');
 
     // Migrasi berantai sampai skema terbaru (5, void & retur F-09).
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final tabel = await db
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
         .map((r) => r.read<String>('name'))
@@ -183,7 +183,7 @@ void main() {
     addTearDown(db.close);
     expect(await db.select(db.penjualan).get(), isEmpty);
     expect(await db.select(db.returPenjualan).get(), isEmpty);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
   });
 
   test('F-11 migrasi 2 → 3 hanya menambah kolom tutup shift; outbox tertunda, shift, & penjualan tetap utuh', () async {
@@ -221,7 +221,7 @@ void main() {
     expect(outbox.map((o) => o.Uuid), ['SHIFT1', 'JUAL1'], reason: 'Outbox belum terkirim tidak boleh hilang.');
     expect(outbox.first.Percobaan, 2);
     expect(outbox.last.Status, 'PerluTindakan');
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
 
     final shift = (await db.select(db.shift).get()).single;
     expect(shift.KasAwal, '500000.00');
@@ -265,7 +265,7 @@ void main() {
       'JUAL1',
       reason: 'Outbox belum terkirim tidak boleh hilang.',
     );
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final detail = (await db.select(db.kelompokPajakDetail).get()).single;
     expect(detail.KodeJenisPajak, 'Ppn');
     expect(detail.Kategori, isNull, reason: 'Baris lama tanpa kategori → fallback ke kode sampai katalog diperbarui.');
@@ -308,7 +308,7 @@ void main() {
     expect(outbox.first.Percobaan, 4);
     expect(outbox.first.Data, '{"Nomor":"INV/SLB/260924/POS-001-0001"}');
     expect(outbox.last.Status, 'PerluTindakan');
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.penjualan).get()).single.TotalAkhir, '67100.00');
 
     // Tabel baru langsung bisa ditulis.
@@ -366,7 +366,7 @@ void main() {
       final outbox = await db.select(db.outbox).get();
       expect(outbox.single.Uuid, 'RETUR1', reason: 'Outbox belum terkirim tidak boleh hilang.');
       expect(outbox.single.Percobaan, 2);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       expect((await db.select(db.nomorUrutReturPenjualan).get()).single.Terakhir, 3);
 
       // Tabel baru langsung bisa ditulis.
@@ -419,7 +419,7 @@ void main() {
     addTearDown(db.close);
     expect((await db.select(db.outbox).get()).single.Jenis, 'PesananTerbuka.Buka');
     expect((await db.select(db.pesananTerbuka).get()).single.Nomor, 'OB/SLB/260925/POS-001-0001');
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     await db
         .into(db.pelangganLokal)
         .insert(
@@ -461,7 +461,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'Pelanggan.Buat');
     final pelanggan = (await db.select(db.pelangganLokal).get()).single;
     expect(pelanggan.Nama, 'Ani Rahmawati');
@@ -497,7 +497,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'Penjualan.Buat');
     final pelanggan = (await db.select(db.pelangganLokal).get()).single;
     expect(pelanggan.KodeTier, 'GOLD');
@@ -527,7 +527,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'Penjualan.Buat');
     await db
         .into(db.absensiLokal)
@@ -565,7 +565,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'Penjualan.Buat');
     expect((await db.select(db.absensiLokal).get()).single.NamaStaf, 'Rina Wulandari');
     await db
@@ -596,7 +596,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'Penjualan.Buat');
     final pelanggan = (await db.select(db.pelangganLokal).get()).single;
     expect(pelanggan.KodeTier, 'GOLD');
@@ -625,7 +625,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Jenis, 'PesananPenjualan.Buat');
     await db
         .into(db.isiDepositLokal)
@@ -672,7 +672,7 @@ void main() {
 
       final db = BasisDataKasir(NativeDatabase(berkas));
       addTearDown(db.close);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       expect((await db.select(db.outbox).get()).single.Jenis, 'Deposit.Isi');
       expect((await db.select(db.pengaturan).get()).map((p) => p.Kunci), ['UuidOutlet']);
       final produk = (await db.select(db.produk).get()).single;
@@ -701,7 +701,7 @@ void main() {
 
       final db = BasisDataKasir(NativeDatabase(berkas));
       addTearDown(db.close);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       expect((await db.select(db.outbox).get()).single.Jenis, 'Penjualan.Buat');
       final kolom = await db
           .customSelect("SELECT COUNT(*) AS Jumlah FROM pragma_table_info('Penjualan') WHERE name = 'Laundry'")
@@ -729,7 +729,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final outbox = await (db.select(db.outbox)..orderBy([(o) => OrderingTerm.asc(o.Id)])).get();
     expect(outbox.map((o) => o.Uuid), ['PJ1', 'PJ2']);
     expect(outbox.map((o) => o.UuidPerangkat), ['PRG1', 'PRG1']);
@@ -753,7 +753,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final outbox = (await db.select(db.outbox).get()).single;
     expect((outbox.Uuid, outbox.Percobaan, outbox.UuidPerangkat), ('PJ1', 1, 'PRG1'));
     await db
@@ -796,7 +796,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     final tunai = (await db.select(db.metodePembayaran).get()).single;
     expect((tunai.Nama, tunai.Kanal), ('Tunai', null));
@@ -842,7 +842,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     // Detail lama tetap ada dan berbendera false; kursor katalog hilang, identitas perangkat tidak ikut terhapus.
     final detail = (await db.select(db.kelompokPajakDetail).get()).single;
@@ -888,7 +888,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     final jual = (await db.select(db.penjualan).get()).single;
     expect((jual.Nomor, jual.BiayaKirim, jual.DiskonKirim), ('INV/1', '0.00', '0.00'));
@@ -919,7 +919,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     for (final tabel in ['Produk', 'PenjualanDetail']) {
       final kolom = await db
@@ -956,7 +956,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     final jual = (await db.select(db.penjualan).get()).single;
     expect((jual.Nomor, jual.NomorAntrian, jual.NamaPemesan), ('INV/1', null, null));
@@ -985,7 +985,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     final produk = (await db.select(db.produk).get()).single;
     expect((produk.Uuid, produk.AtributVarian), ('KAOS', null));
@@ -1016,7 +1016,7 @@ void main() {
 
       final db = BasisDataKasir(NativeDatabase(berkas));
       addTearDown(db.close);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       expect((await db.select(db.outbox).get()).single.Uuid, 'OB1');
       final pesanan = (await db.select(db.pesananTerbuka).get()).single;
       expect((pesanan.Uuid, pesanan.MintaBillPada), ('OB1', null));
@@ -1047,7 +1047,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect((await db.select(db.outbox).get()).single.Uuid, 'PJ1');
     final produk = (await db.select(db.produk).get()).single;
     expect((produk.Uuid, produk.HargaTerbuka), ('LAIN', false));
@@ -1084,7 +1084,7 @@ void main() {
 
       final db = BasisDataKasir(NativeDatabase(berkas));
       addTearDown(db.close);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       final outbox = await (db.select(db.outbox)..orderBy([(o) => OrderingTerm.asc(o.Id)])).get();
       expect(outbox.map((o) => (o.Uuid, o.Status, o.Percobaan, o.UuidPerangkat)), [
         ('PJ1', 'Tertunda', 2, 'PRG1'),
@@ -1184,7 +1184,7 @@ void main() {
 
       final db = BasisDataKasir(NativeDatabase(berkas));
       addTearDown(db.close);
-      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+      expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
       final outbox = await (db.select(db.outbox)..orderBy([(o) => OrderingTerm.asc(o.Id)])).get();
       expect(outbox.map((o) => (o.Uuid, o.Status, o.Percobaan, o.UuidPerangkat)), [
         ('PJ1', 'Tertunda', 3, 'PRG1'),
@@ -1241,7 +1241,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect(
       await db
           .customSelect("SELECT COUNT(*) AS Jumlah FROM pragma_table_info('PenjualanDetail') WHERE name = 'Racikan'")
@@ -1270,7 +1270,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     expect(
       await db
           .customSelect("SELECT COUNT(*) AS Jumlah FROM pragma_table_info('Penjualan') WHERE name = 'BagianTagihan'")
@@ -1304,7 +1304,7 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final produk = (await db.select(db.produk).get()).single;
     expect((produk.Uuid, produk.Favorit), ('KOPI', false));
     expect(
@@ -1338,10 +1338,38 @@ void main() {
 
     final db = BasisDataKasir(NativeDatabase(berkas));
     addTearDown(db.close);
-    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 31);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
     final meja = (await db.select(db.meja).get()).single;
     expect((meja.Uuid, meja.Nama, meja.PosisiX, meja.PosisiY), ('M7', '7', null, null));
     final outbox = (await db.select(db.outbox).get()).single;
     expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ1', 'Tertunda', 2));
+  });
+
+  test('D-189 migrasi 31 → 32 menambah teks QRIS statis metode bayar (lama null); metode & outbox utuh', () async {
+    final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
+    addTearDown(() => folder.deleteSync(recursive: true));
+    final berkas = File('${folder.path}/kasir.sqlite');
+
+    final lama = BasisDataKasir(NativeDatabase(berkas));
+    await lama.customSelect('SELECT 1').get();
+    await lama.customStatement('ALTER TABLE MetodePembayaran DROP COLUMN TeksQris');
+    await lama.customStatement(
+      'INSERT INTO MetodePembayaran (Uuid, Jenis, Nama, AdaGambarQris, Urutan) VALUES '
+      "('MTD9', 'QrisStatis', 'QRIS Toko', 1, 2)",
+    );
+    await lama.customStatement(
+      'INSERT INTO Outbox (Uuid, Jenis, Data, Status, Percobaan, DibuatPada, BerikutnyaPada, UuidPerangkat) VALUES '
+      "('PJ2', 'Penjualan.Buat', '{}', 'Tertunda', 1, '2026-12-13T03:00:00.000Z', '2026-12-13T03:00:00.000Z', 'PRG1')",
+    );
+    await lama.customStatement('PRAGMA user_version = 31');
+    await lama.close();
+
+    final db = BasisDataKasir(NativeDatabase(berkas));
+    addTearDown(db.close);
+    expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
+    final metode = (await db.select(db.metodePembayaran).get()).single;
+    expect((metode.Uuid, metode.Nama, metode.AdaGambarQris, metode.TeksQris), ('MTD9', 'QRIS Toko', true, null));
+    final outbox = (await db.select(db.outbox).get()).single;
+    expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ2', 'Tertunda', 1));
   });
 }
