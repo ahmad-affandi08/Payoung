@@ -4,7 +4,7 @@ import { useId, useState, type FormEvent } from 'react';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import { Alert, AlertTitle } from '@/Komponen/Ui/alert';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Card } from '@/Komponen/Ui/card';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import type { BidangImporStokAwal, OpsiGudang, PropsDetailImporStokAwal } from '@/Tipe/Persediaan';
@@ -120,11 +120,7 @@ export default function PemetaanImporStokAwal({
                 </h2>
                 <div aria-live="polite">
                     {jumlahGalat > 0 ? (
-                        <Alert variant="destructive" className="rounded-kontrol border-l-4 border-bahaya">
-                            <AlertTitle className="text-isi font-semibold text-bahaya">
-                                Ada {jumlahGalat} isian yang perlu diperbaiki.
-                            </AlertTitle>
-                        </Alert>
+                        <Pemberitahuan jenis="bahaya">Ada {jumlahGalat} isian yang perlu diperbaiki.</Pemberitahuan>
                     ) : null}
                 </div>
 

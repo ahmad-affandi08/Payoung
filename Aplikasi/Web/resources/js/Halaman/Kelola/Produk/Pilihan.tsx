@@ -8,7 +8,7 @@ import KeadaanKosong from '@/Komponen/Katalog/KeadaanKosong';
 import KepalaProduk from '@/Komponen/Katalog/KepalaProduk';
 import Panel from '@/Komponen/Kelola/Panel';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
-import { Alert, AlertDescription } from '@/Komponen/Ui/alert';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Button } from '@/Komponen/Ui/button';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
@@ -38,19 +38,14 @@ export default function HalamanPilihanProduk({ Kepala, Terpasang, Tersedia, Dari
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="pilihan produk ini" /> : null}
             <DaftarGalatServer galat={props.errors} />
             {DariInduk ? (
-                <Alert role="status" className="rounded-panel">
-                    <AlertDescription className="block text-isi text-teks-sekunder">
-                        Varian memakai pilihan dari produk induknya.{' '}
-                        {Kepala.UuidInduk ? (
-                            <Link
-                                href={`/kelola/produk/${Kepala.UuidInduk}/pilihan`}
-                                className="font-semibold text-brand underline"
-                            >
-                                Ubah pilihan di {Kepala.NamaInduk ?? 'produk induk'}
-                            </Link>
-                        ) : null}
-                    </AlertDescription>
-                </Alert>
+                <Pemberitahuan jenis="info">
+                    Varian memakai pilihan dari produk induknya.{' '}
+                    {Kepala.UuidInduk ? (
+                        <Link href={`/kelola/produk/${Kepala.UuidInduk}/pilihan`}>
+                            Ubah pilihan di {Kepala.NamaInduk ?? 'produk induk'}
+                        </Link>
+                    ) : null}
+                </Pemberitahuan>
             ) : null}
 
             {semua.length === 0 ? (

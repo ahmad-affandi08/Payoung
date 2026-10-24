@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { Alert, AlertDescription } from '@/Komponen/Ui/alert';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Progress } from '@/Komponen/Ui/progress';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
 import type { RingkasanImpor, StatusImpor, StatusImporProduk } from '@/Tipe/Katalog';
@@ -76,11 +76,9 @@ export default function KemajuanImpor({ impor }: { impor: RingkasanImpor }) {
                     : ''}
             </p>
             {kueri.isError ? (
-                <Alert className="rounded-panel border-l-4 border-peringatan">
-                    <AlertDescription className="font-semibold text-peringatan">
-                        Status belum bisa dibaca. Proses tetap berjalan di server; kami coba lagi otomatis.
-                    </AlertDescription>
-                </Alert>
+                <Pemberitahuan jenis="peringatan">
+                    Status belum bisa dibaca. Proses tetap berjalan di server; kami coba lagi otomatis.
+                </Pemberitahuan>
             ) : null}
             <p className="text-keterangan text-teks-sekunder">
                 Anda boleh meninggalkan halaman ini. Proses tetap berjalan dan hasilnya tersimpan di riwayat impor.

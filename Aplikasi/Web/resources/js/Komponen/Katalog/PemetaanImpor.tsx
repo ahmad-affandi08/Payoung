@@ -5,7 +5,7 @@ import TabelForm from '@/Komponen/TabelData/TabelForm';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import { Alert, AlertTitle } from '@/Komponen/Ui/alert';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { Card } from '@/Komponen/Ui/card';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import type {
@@ -120,11 +120,7 @@ export default function PemetaanImpor({
                 ) : null}
                 <div aria-live="polite">
                     {jumlahGalat > 0 ? (
-                        <Alert variant="destructive" className="rounded-kontrol border-l-4 border-bahaya">
-                            <AlertTitle className="text-isi font-semibold text-bahaya">
-                                Ada {jumlahGalat} pemetaan yang perlu diperbaiki.
-                            </AlertTitle>
-                        </Alert>
+                        <Pemberitahuan jenis="bahaya">Ada {jumlahGalat} pemetaan yang perlu diperbaiki.</Pemberitahuan>
                     ) : null}
                 </div>
                 <TabelForm label="Pemetaan kolom impor" lebar="sedang">

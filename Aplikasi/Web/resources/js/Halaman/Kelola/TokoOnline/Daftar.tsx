@@ -314,13 +314,11 @@ function FormPengaturan({ props }: { props: Props }) {
             </div>
             <div className="flex flex-col gap-2 sm:col-span-2">
                 {Object.values(form.errors).length > 0 ? (
-                    <div role="alert" className="rounded-kontrol border-l-4 border-bahaya bg-permukaan px-3 py-2">
+                    <Pemberitahuan jenis="bahaya">
                         {Object.entries(form.errors).map(([kunci, pesan]) => (
-                            <p key={kunci} className="text-isi text-bahaya">
-                                {pesan}
-                            </p>
+                            <p key={kunci}>{pesan}</p>
                         ))}
-                    </div>
+                    </Pemberitahuan>
                 ) : null}
                 <div>
                     <Tombol type="submit" memproses={form.processing}>

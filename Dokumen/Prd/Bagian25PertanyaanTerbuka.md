@@ -226,6 +226,7 @@
 | D-190 | Dari pemilik produk (24/10/2026): "sembunyikan halaman qris lewat doku". Aktivasi QRIS (KYB DOKU, D-83) disembunyikan lewat sakelar `integrasi.AktivasiQrisTampil` (bawaan mati), bukan dihapus, agar data pendaftaran lama dan kode tetap utuh dan bisa dibuka lagi. Dicatat agen (D-12, D-17). |
 | D-191 | Dari pemilik produk (24/10/2026): tab dibuat lebih besar dan modern mengikuti Majoo, dan tidak boleh tergulir atas-bawah. Bentuk pil yang diusulkan agen ditolak; yang dipakai teks besar + batang bawah membulat + panah geser (rujukan tangkapan layar Majoo). Berlaku untuk semua tab web sekaligus. Dicatat agen (D-12, D-17). |
 | D-192 | Dari pemilik produk (24/10/2026): "ubah semua bahasa saring menjadi filter". Istilah UI "Filter" menggantikan "Saring" di seluruh antarmuka; nama teknis (`saring[...]`, `Saring`, class/komponen) tidak diubah agar kontrak API dan tes arsitektur tetap utuh (§13.7.1 baris parameter query). Dicatat agen (D-12, D-17). |
+| D-193 | Dari pemilik produk (24/10/2026): kotak pemberitahuan lama "AI slop", dan percobaan kotak berwarna "semakin slop"; dari tiga rancangan (teks polos, garis tipis netral, bilah tipis gelap) dipilih **C bilah tipis gelap**. Berlaku untuk semua pemakai `Pemberitahuan` sekaligus. Dicatat agen (D-12, D-17). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

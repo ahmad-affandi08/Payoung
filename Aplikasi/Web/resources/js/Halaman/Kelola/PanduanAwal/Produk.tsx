@@ -12,7 +12,6 @@ import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwa
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Alert, AlertDescription } from '@/Komponen/Ui/alert';
 import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import { Checkbox } from '@/Komponen/Ui/checkbox';
@@ -251,12 +250,10 @@ function BagianProdukContoh({ adaTemplate, produkContoh, batasSku, kuotaPenuh }:
                             {String(terpilih.length)} dari {String(bisaDipilih.length)} produk contoh dipilih.
                         </p>
                         {melebihiKuota ? (
-                            <Alert className="border-peringatan text-peringatan">
-                                <AlertDescription className="text-label font-semibold text-peringatan">
-                                    Sisa kuota paket {String(sisaSku)} SKU. Kurangi pilihan menjadi paling banyak{' '}
-                                    {String(sisaSku)} produk.
-                                </AlertDescription>
-                            </Alert>
+                            <Pemberitahuan jenis="peringatan">
+                                Sisa kuota paket {String(sisaSku)} SKU. Kurangi pilihan menjadi paling banyak{' '}
+                                {String(sisaSku)} produk.
+                            </Pemberitahuan>
                         ) : null}
                     </div>
                     <div>

@@ -1,42 +1,66 @@
-import { CircleCheckIcon, InfoIcon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { Alert, AlertDescription, AlertTitle } from '@/Komponen/Ui/alert';
+import { cn } from '@/Komponen/Ui/utils';
+
+export type JenisPemberitahuan = 'info' | 'sukses' | 'peringatan' | 'bahaya';
 
 type PropsPemberitahuan = {
-    jenis: 'info' | 'sukses' | 'peringatan' | 'bahaya';
+    jenis: JenisPemberitahuan;
     judul?: string;
     children: ReactNode;
 };
 
-const kelasJenis = {
-    info: 'border-l-info [&>svg]:text-info',
-    sukses: 'border-l-sukses [&>svg]:text-sukses',
-    peringatan: 'border-l-peringatan [&>svg]:text-peringatan',
-    bahaya: 'border-l-bahaya [&>svg]:text-bahaya',
+/** Titik penanda nada: warna terang agar terbaca di atas bilah gelap; artinya tetap dibawa teks (judul/label). */
+const titikJenis = {
+    info: 'bg-info-lembut',
+    sukses: 'bg-sukses-lembut',
+    peringatan: 'bg-aksen',
+    bahaya: 'bg-bahaya-lembut',
 } as const;
-
-const ikonJenis = { info: InfoIcon, sukses: CircleCheckIcon, peringatan: TriangleAlertIcon, bahaya: OctagonXIcon };
 
 const labelJenis = { info: 'Info', sukses: 'Berhasil', peringatan: 'Perhatian', bahaya: 'Galat' } as const;
 
-/** Pesan status. Warna selalu disertai teks label (dan ikon) agar tetap terbaca tanpa warna (PRD §17.6.11). */
-export default function Pemberitahuan({ jenis, judul, children }: PropsPemberitahuan) {
-    const Ikon = ikonJenis[jenis];
+/**
+ * Bilah status tipis gelap (D-193): satu blok teks ringkas di atas `brand-gelap`, penanda nada berupa titik kecil
+ * (bukan kotak berwarna, ikon, atau garis tebal di sisi), tautan di dalamnya berwarna aksen. Dipakai `Pemberitahuan`
+ * dan bilah status lain (ringkasan galat formulir) supaya seluruh web tampil sama.
+ */
+export function KelasBilahStatus(): string {
+    return 'flex items-start gap-2.5 rounded-kontrol bg-brand-gelap px-3 py-2.5 text-isi text-brand-teks [&_a]:font-semibold [&_a]:text-aksen [&_a]:underline [&_a]:underline-offset-2';
+}
 
+export function TitikBilahStatus({ jenis }: { jenis: JenisPemberitahuan }) {
+    return <span aria-hidden="true" className={cn('mt-2 size-2 shrink-0 rounded-full', titikJenis[jenis])} />;
+}
+
+/** Tanda baca penyambung judul ke kalimat berikutnya; ditaruh di luar `<strong>` agar teks judul tetap utuh. */
+function PenutupJudul(teks: string): string {
+    return /[.!?:]$/.test(teks) ? '' : '.';
+}
+
+/** Pesan status. Nada selalu dibawa teks (judul, atau label untuk pembaca layar), tidak hanya warna (PRD §17.6.11). */
+export default function Pemberitahuan({ jenis, judul, children }: PropsPemberitahuan) {
     return (
-        <Alert
+        <div
             role={jenis === 'bahaya' || jenis === 'peringatan' ? 'alert' : 'status'}
+            data-slot="alert"
             data-jenis={jenis}
-            className={`rounded-panel border-l-4 border-garis bg-permukaan px-4 py-3 ${kelasJenis[jenis]}`}
+            className={KelasBilahStatus()}
         >
-            <Ikon aria-hidden="true" />
-            <AlertTitle className="line-clamp-none min-w-0 text-label wrap-anywhere font-semibold tracking-normal text-teks-utama">
-                {judul ?? labelJenis[jenis]}
-            </AlertTitle>
-            <AlertDescription className="block min-w-0 text-isi text-teks-sekunder wrap-anywhere">
-                {children}
-            </AlertDescription>
-        </Alert>
+            <TitikBilahStatus jenis={jenis} />
+            <div className="min-w-0 flex-1 wrap-anywhere">
+                {judul ? (
+                    <>
+                        <strong data-slot="alert-title" className="font-semibold">
+                            {judul}
+                        </strong>
+                        {PenutupJudul(judul)}{' '}
+                    </>
+                ) : (
+                    <span className="sr-only">{labelJenis[jenis]}: </span>
+                )}
+                <span>{children}</span>
+            </div>
+        </div>
     );
 }

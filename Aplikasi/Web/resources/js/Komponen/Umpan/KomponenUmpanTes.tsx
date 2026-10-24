@@ -21,10 +21,10 @@ describe('komponen Umpan di atas shadcn/ui (API lama tetap)', () => {
 
         const peringatan = screen.getAllByRole('alert');
         expect(peringatan).toHaveLength(2);
-        expect(peringatan[0]?.textContent).toBe('GalatGagal menyimpan.');
+        expect(peringatan[0]?.textContent).toBe('Galat: Gagal menyimpan.');
         expect(peringatan[1]?.textContent).toContain('Tagihan belum dibayar');
         const status = screen.getAllByRole('status');
-        expect(status.map((elemen) => elemen.textContent)).toEqual(['BerhasilProduk disimpan.', 'InfoInfo saja.']);
+        expect(status.map((elemen) => elemen.textContent)).toEqual(['Berhasil: Produk disimpan.', 'Info: Info saja.']);
         expect(peringatan[0]?.getAttribute('data-slot')).toBe('alert');
     });
 

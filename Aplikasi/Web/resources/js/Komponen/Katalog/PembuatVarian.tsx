@@ -4,7 +4,7 @@ import { useState } from 'react';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
-import { Alert, AlertDescription } from '@/Komponen/Ui/alert';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import type { AturanJenisProduk, BarisVarian, JenisProduk } from '@/Tipe/Katalog';
 import type { Batas } from '@/Tipe/Organisasi';
 
@@ -128,19 +128,15 @@ export default function PembuatVarian({
                               .join(', ')}${baru.length > 5 ? ', …' : ''}.`}
                 </p>
                 {terlaluBanyak ? (
-                    <Alert variant="destructive" className="rounded-panel">
-                        <AlertDescription className="font-semibold text-bahaya">
-                            Maksimal {MaksimalKombinasi} varian baru sekali buat. Kurangi nilai atribut.
-                        </AlertDescription>
-                    </Alert>
+                    <Pemberitahuan jenis="bahaya">
+                        Maksimal {MaksimalKombinasi} varian baru sekali buat. Kurangi nilai atribut.
+                    </Pemberitahuan>
                 ) : null}
                 {melebihiKuota ? (
-                    <Alert variant="destructive" className="rounded-panel">
-                        <AlertDescription className="font-semibold text-bahaya">
-                            Sisa kuota paket {sisaKuota} produk, kurang untuk {baru.length} varian. Tidak ada varian
-                            yang dibuat sampai kuota cukup.
-                        </AlertDescription>
-                    </Alert>
+                    <Pemberitahuan jenis="bahaya">
+                        Sisa kuota paket {sisaKuota} produk, kurang untuk {baru.length} varian. Tidak ada varian yang
+                        dibuat sampai kuota cukup.
+                    </Pemberitahuan>
                 ) : null}
             </div>
             <div>
