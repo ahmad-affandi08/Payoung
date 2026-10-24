@@ -187,6 +187,31 @@ it('wajah lain ditolak tanpa baris & tanpa swafoto; jejaknya di audit tanpa sidi
         ->and(Storage::disk('local')->allFiles())->toHaveCount(3);
 });
 
+it('cek wajah langsung (D-186): hanya jawaban Cocok ya/tidak, tidak mencatat absen atau audit, tanpa skor atau sidik terdaftar', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+
+    $cocok = $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertOk();
+    $beda = $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji(1)])->assertOk();
+
+    expect($cocok->json())->toBe(['Cocok' => true])
+        ->and($beda->json())->toBe(['Cocok' => false]);
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->count())->toBe(0)
+        ->and(LogAudit::query()->where('Peristiwa', 'like', 'absensi.web.%')->count())->toBe(0);
+});
+
+it('cek wajah langsung: sidik cacat ditolak 422, wajah belum disetujui selalu tidak cocok, dan pemilik tanpa data karyawan 404', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this, false);
+
+    $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertOk()->assertExactJson(['Cocok' => false]);
+    $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => [1, 2, 3]])->assertStatus(422);
+    $this->postJson("{$alamat}/cek-wajah", [])->assertStatus(422);
+
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertNotFound();
+});
+
 it('bawaan: di luar radius, GPS lemah, atau outlet tanpa lokasi tetap tercatat dan ditandai perlu dicek dengan catatan', function (): void {
     [$k, , $alamat] = SiapkanAbsensiWeb($this);
 

@@ -33,6 +33,7 @@ $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function (): void {
     Route::get('/', [AbsenSayaKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('kelola.absen');
     Route::post('/wajah', [AbsenSayaKontroler::class, 'DaftarWajah'])->middleware('throttle:absensi-web')->name('kelola.absen.wajah');
+    Route::post('/cek-wajah', [AbsenSayaKontroler::class, 'CekWajah'])->middleware('throttle:cek-wajah')->name('kelola.absen.cek-wajah');
     Route::post('/masuk', [AbsenSayaKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('kelola.absen.masuk');
     Route::post('/keluar', [AbsenSayaKontroler::class, 'Keluar'])->middleware('throttle:absensi-web')->name('kelola.absen.keluar');
     Route::post('/minta-koreksi', [AbsenSayaKontroler::class, 'MintaKoreksi'])->middleware('throttle:10,1')->name('kelola.absen.minta-koreksi');

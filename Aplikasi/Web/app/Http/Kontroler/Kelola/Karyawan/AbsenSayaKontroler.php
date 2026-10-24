@@ -9,6 +9,7 @@ use App\Domain\Karyawan\Aksi\CatatAbsensiWeb;
 use App\Domain\Karyawan\Aksi\DaftarkanWajahKaryawan;
 use App\Domain\Karyawan\Data\DataAbsensiWeb;
 use App\Domain\Karyawan\Kueri\AbsenSaya;
+use App\Domain\Karyawan\Kueri\CekKecocokanWajah;
 use App\Domain\Karyawan\Kueri\StatusAbsensiWeb;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
@@ -62,6 +63,20 @@ final class AbsenSayaKontroler extends DasarKelolaKontroler
         $wajah = $daftar->Jalankan($karyawan, array_values((array) $valid['SidikWajah']), array_values((array) $valid['Foto']), (bool) $valid['Persetujuan']);
 
         return response()->json(['Status' => $wajah->Status->value, 'Pesan' => 'Wajah terdaftar. Anda sudah bisa absen.'], 201);
+    }
+
+    /**
+     * Umpan balik langsung saat kamera menyala (D-186): cocok atau tidak dengan wajah terdaftar. Hanya ya/tidak.
+     * Bukan keputusan absen; itu tetap diambil di Masuk/Keluar.
+     */
+    public function CekWajah(Request $permintaan, AbsenSaya $saya, CekKecocokanWajah $cek): JsonResponse
+    {
+        $valid = $permintaan->validate([
+            'SidikWajah' => ['required', 'array', 'max:1024'],
+            'SidikWajah.*' => ['integer'],
+        ]);
+
+        return response()->json(['Cocok' => $cek->Jalankan($this->CariKaryawan($saya), array_values((array) $valid['SidikWajah']))]);
     }
 
     public function Masuk(Request $permintaan, AbsenSaya $saya, CatatAbsensiWeb $catat): JsonResponse

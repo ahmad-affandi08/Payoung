@@ -243,6 +243,17 @@ final class PenyediaAplikasi extends ServiceProvider
             ];
         });
 
+        // D-186: cek kecocokan wajah langsung di layar absen dipanggil sekitar sekali per detik selama kamera menyala,
+        // jadi jatahnya jauh di atas absen sungguhan tetapi tetap dibatasi per akun dan per IP.
+        RateLimiter::for('cek-wajah', static function (Request $permintaan): array {
+            $idPengguna = $permintaan->user()?->getAuthIdentifier();
+
+            return [
+                Limit::perMinute(90)->by('cek-wajah:'.(is_scalar($idPengguna) ? (string) $idPengguna : 'tamu')),
+                Limit::perMinute(600)->by('cek-wajah-ip:'.$permintaan->ip()),
+            ];
+        });
+
         // X7: Open API v1, 120 permintaan/menit per token (throttle berjalan sebelum autentikasi, jadi kunci dari hash
         // token Bearer) dan 600/menit per IP, supaya token acak yang berganti-ganti tidak lolos dari batas.
         RateLimiter::for('api-publik', static function (Request $permintaan): array {

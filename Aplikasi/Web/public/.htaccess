@@ -35,4 +35,10 @@
         SetEnvIf Request_URI "^/build/assets/" aset_build
         Header set Cache-Control "public, max-age=31536000, immutable" env=aset_build
     </FilesMatch>
+    # D-186: model wajah absensi (±10 MB) tidak bernama ber-hash, jadi disimpan 30 hari (bukan immutable). Human juga
+    # menyimpannya di IndexedDB peramban, jadi unduhan ulang hanya terjadi bila penyimpanan itu dibersihkan.
+    <FilesMatch "\.(bin|json)$">
+        SetEnvIf Request_URI "^/model-wajah/" model_wajah
+        Header set Cache-Control "public, max-age=2592000" env=model_wajah
+    </FilesMatch>
 </IfModule>

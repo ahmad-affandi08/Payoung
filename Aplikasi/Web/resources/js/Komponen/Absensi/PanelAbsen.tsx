@@ -6,6 +6,7 @@ import {
     MapPinIcon,
     ScanFaceIcon,
     SunIcon,
+    TriangleAlertIcon,
     WifiIcon,
     WifiOffIcon,
 } from 'lucide-react';
@@ -20,6 +21,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { ALAMAT_ABSEN } from '@/Fitur/Absensi/Alamat';
 import { FormatJam, SelisihDetik } from '@/Fitur/Absensi/FormatAbsensi';
 import { AmbilLokasi, type Lokasi } from '@/Fitur/Absensi/Lokasi';
+import type { StatusMesin } from '@/Fitur/Absensi/MesinWajah';
 import { FormatDurasi } from '@/Pustaka/FormatWaktu';
 import { KirimJson } from '@/Pustaka/PermintaanJson';
 import { BuatUlid } from '@/Pustaka/Ulid';
@@ -28,7 +30,23 @@ import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 type PropsPanelAbsen = Pick<PropsAbsenSaya, 'AbsensiTerbuka' | 'AlamatModelWajah' | 'SimpanFoto'> & {
     daring: boolean;
     sekarang: Date;
+    /** Kemajuan menyiapkan model wajah di latar belakang (dimulai saat halaman dibuka). */
+    mesin: StatusMesin;
 };
+
+/** Teks penanda kesiapan pemindai wajah untuk karyawan. */
+function TeksMesin(mesin: StatusMesin): string {
+    switch (mesin.Tahap) {
+        case 'siap':
+            return 'Pemindai wajah siap';
+        case 'galat':
+            return 'Pemindai gagal dimuat';
+        case 'belum':
+            return 'Pemindai wajah dicek';
+        default:
+            return `Menyiapkan pemindai ${String(mesin.Persen)}%`;
+    }
+}
 
 /**
  * Satu tombol besar Masuk/Pulang (D-180). Tiap absen: lokasi GPS dicari bersamaan dengan pindai wajah; server menolak
@@ -41,6 +59,7 @@ export default function PanelAbsen({
     SimpanFoto,
     daring,
     sekarang,
+    mesin,
 }: PropsPanelAbsen) {
     const [pindai, AturPindai] = useState(false);
     const [langkah, AturLangkah] = useState<string | null>(null);
@@ -101,6 +120,9 @@ export default function PanelAbsen({
             AturLangkah(null);
         }
     };
+
+    const CekKecocokan = async (sidik: number[]): Promise<boolean> =>
+        (await KirimJson<{ Cocok: boolean }>(`${ALAMAT_ABSEN}/cek-wajah`, { SidikWajah: sidik })).Cocok;
 
     const sibuk = langkah !== null;
 
@@ -168,6 +190,9 @@ export default function PanelAbsen({
             {pindai ? (
                 <PemindaiWajah
                     alamatModel={AlamatModelWajah}
+                    mode="absen"
+                    judul={keluar ? 'Absen pulang' : 'Absen masuk'}
+                    cekKecocokan={CekKecocokan}
                     jumlah={1}
                     saatSelesai={(hasil) => void Kirim(hasil)}
                     saatBatal={() => AturPindai(false)}
@@ -212,15 +237,34 @@ export default function PanelAbsen({
                             <MapPinIcon aria-hidden="true" className="size-5 text-brand" />
                             Lokasi dicatat
                         </li>
-                        <li className="flex flex-col items-center gap-1 rounded-panel bg-permukaan-redup px-2 py-2.5">
-                            <ScanFaceIcon aria-hidden="true" className="size-5 text-brand" />
-                            Wajah dicek
+                        <li
+                            className="flex flex-col items-center gap-1 rounded-panel bg-permukaan-redup px-2 py-2.5"
+                            role="status"
+                        >
+                            {mesin.Tahap === 'siap' ? (
+                                <ScanFaceIcon aria-hidden="true" className="size-5 text-sukses" />
+                            ) : mesin.Tahap === 'galat' ? (
+                                <TriangleAlertIcon aria-hidden="true" className="size-5 text-bahaya" />
+                            ) : (
+                                <ScanFaceIcon aria-hidden="true" className="size-5 text-brand" />
+                            )}
+                            {TeksMesin(mesin)}
                         </li>
                     </ul>
-                    <p className="text-center text-keterangan text-teks-sekunder">
-                        Izinkan lokasi dan kamera saat diminta. Wajah harus cocok dengan wajah terdaftar; lokasi dicatat
-                        sebagai bukti.
-                    </p>
+                    <ol className="flex flex-col gap-2 rounded-panel bg-permukaan-redup p-3 text-keterangan text-teks-sekunder">
+                        {[
+                            'Ketuk tombol Absen, lalu izinkan kamera dan lokasi bila diminta.',
+                            'Hadapkan wajah ke lingkaran. Hijau berarti wajah cocok, merah berarti tidak cocok.',
+                            'Saat lingkaran hijau, ketuk Ambil foto. Absen langsung tercatat.',
+                        ].map((teks, indeks) => (
+                            <li key={teks} className="flex items-start gap-2">
+                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-lembut text-keterangan font-semibold text-brand">
+                                    {indeks + 1}
+                                </span>
+                                {teks}
+                            </li>
+                        ))}
+                    </ol>
                 </>
             )}
         </section>

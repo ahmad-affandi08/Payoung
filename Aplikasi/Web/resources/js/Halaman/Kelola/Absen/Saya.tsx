@@ -9,13 +9,14 @@ import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { formatHariPanjang, formatJamDetik, SalamWaktu } from '@/Fitur/Absensi/FormatAbsensi';
 import { useSekarang, useStatusDaring } from '@/Fitur/Absensi/useKondisiPerangkat';
+import { useMesinWajah } from '@/Fitur/Absensi/useMesinWajah';
 import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 
 /**
  * Halaman Absen berlogin (F-18 bagian 4, D-37, D-180): karyawan masuk dengan akunnya, mendaftarkan wajah sekali, lalu
  * absen masuk/pulang dengan satu tombol. Mobile-first, satu tugas per layar, tanpa menu dashboard. Wajah didaftarkan
- * sekali (persetujuan UU PDP, langsung aktif); tiap absen: lokasi GPS + pindai wajah dengan kedip → server mencocokkan
- * wajah dan mencatat lokasi.
+ * sekali (persetujuan UU PDP, langsung aktif); tiap absen: lokasi GPS + pindai wajah. Lingkaran kamera hijau bila wajah cocok
+ * (merah bila tidak) dan baru saat itu tombol Ambil foto aktif (D-186); server mengambil keputusan akhir dan mencatat lokasi.
  *
  * Tampilan: kepala merek dengan jam hidup & salam, kartu aksi tumpang-tindih di bawahnya (tombol absen bulat besar,
  * lama bekerja berjalan), lalu riwayat sebagai garis waktu berdurasi.
@@ -24,6 +25,8 @@ export default function HalamanAbsenSaya(props: PropsAbsenSaya) {
     const { NamaToko, NamaKaryawan, BisaDashboard, Wajah, Riwayat } = props;
     const daring = useStatusDaring();
     const sekarang = useSekarang();
+    // Model wajah disiapkan di latar belakang begitu halaman terbuka, jadi pemindai langsung siap saat tombol diketuk.
+    const mesin = useMesinWajah(props.AlamatModelWajah, daring && Wajah?.Status !== 'Menunggu');
 
     return (
         <div className="min-h-dvh bg-latar">
@@ -80,6 +83,7 @@ export default function HalamanAbsenSaya(props: PropsAbsenSaya) {
                         SimpanFoto={props.SimpanFoto}
                         daring={daring}
                         sekarang={sekarang}
+                        mesin={mesin}
                     />
                 ) : Wajah?.Status === 'Menunggu' ? (
                     <section className="flex flex-col items-center gap-3 rounded-panel border border-garis bg-permukaan p-6 text-center">

@@ -7,6 +7,16 @@ import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
+// Model wajah tidak dimuat di jsdom; status mesin diatur per tes lewat `statusMesin`.
+const statusMesin = vi.hoisted(() => ({ nilai: { Tahap: 'memuat', Persen: 40 } as { Tahap: string; Persen: number } }));
+vi.mock('@/Fitur/Absensi/MesinWajah', () => ({
+    MuatMesinWajah: vi.fn(() => new Promise(() => undefined)),
+    PindaiWajah: vi.fn(),
+    AmbilSwafoto: vi.fn(() => ''),
+    AmbilStatusMesin: () => statusMesin.nilai,
+    LanggananStatusMesin: () => () => undefined,
+}));
+
 /*
  * F-18 bagian 4 (D-37, D-180): halaman Absen berlogin. Belum ada wajah → daftar wajah (tombol aktif setelah persetujuan
  * PDP); menunggu persetujuan → info tanpa tombol absen; disetujui → satu tombol besar Absen masuk/pulang; offline →
@@ -25,6 +35,7 @@ const dasar: PropsAbsenSaya = {
 };
 
 beforeEach(() => {
+    statusMesin.nilai = { Tahap: 'memuat', Persen: 40 };
     AturHalamanUji({}, '/kelola/absen');
     window.innerWidth = 360;
 });
@@ -136,13 +147,33 @@ describe('Halaman Absen berlogin', () => {
         vi.useRealTimers();
     });
 
-    it('belum absen: status netral dan tiga penanda absen tampil', () => {
+    it('belum absen: status netral, penanda kesiapan (pemindai disiapkan sejak halaman terbuka), dan tiga langkah', () => {
         RenderUji(<HalamanAbsensi {...dasar} Wajah={{ Status: 'Disetujui', Label: 'Disetujui', AlasanTolak: null }} />);
 
         expect(screen.getByText('Belum absen masuk')).not.toBeNull();
         expect(screen.getByText('Internet siap')).not.toBeNull();
         expect(screen.getByText('Lokasi dicatat')).not.toBeNull();
-        expect(screen.getByText('Wajah dicek')).not.toBeNull();
+        expect(screen.getByText('Menyiapkan pemindai 40%')).not.toBeNull();
+        expect(screen.getByText(/Hijau berarti wajah cocok, merah berarti tidak cocok/)).not.toBeNull();
+        cleanup();
+
+        statusMesin.nilai = { Tahap: 'siap', Persen: 100 };
+        RenderUji(<HalamanAbsensi {...dasar} Wajah={{ Status: 'Disetujui', Label: 'Disetujui', AlasanTolak: null }} />);
+        expect(screen.getByText('Pemindai wajah siap')).not.toBeNull();
+    });
+
+    it('mesin wajah mulai disiapkan begitu halaman terbuka, bukan saat tombol diketuk; tidak saat offline', async () => {
+        const { MuatMesinWajah } = await import('@/Fitur/Absensi/MesinWajah');
+        vi.mocked(MuatMesinWajah).mockClear();
+
+        RenderUji(<HalamanAbsensi {...dasar} Wajah={{ Status: 'Disetujui', Label: 'Disetujui', AlasanTolak: null }} />);
+        expect(MuatMesinWajah).toHaveBeenCalledWith('https://dashboard.payoung.id/model-wajah');
+        cleanup();
+
+        vi.mocked(MuatMesinWajah).mockClear();
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+        RenderUji(<HalamanAbsensi {...dasar} Wajah={{ Status: 'Disetujui', Label: 'Disetujui', AlasanTolak: null }} />);
+        expect(MuatMesinWajah).not.toHaveBeenCalled();
     });
 
     it('daftar wajah: langkah pendaftaran maju ke "Rekam wajah" setelah persetujuan', () => {

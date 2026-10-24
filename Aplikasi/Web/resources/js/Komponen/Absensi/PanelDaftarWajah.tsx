@@ -64,8 +64,9 @@ export default function PanelDaftarWajah({
                 <Pemberitahuan jenis="peringatan">Alasan pengelola: {Wajah.AlasanTolak}</Pemberitahuan>
             ) : null}
             <p className="text-isi text-teks-sekunder">
-                Sekali saja sebelum absen pertama. Kamera depan akan mengambil {JumlahFotoDaftar} foto wajah Anda
-                berturut-turut. Setelah itu Anda langsung bisa absen.
+                Sekali saja sebelum absen pertama. Anda mengambil {JumlahFotoDaftar} foto wajah dengan kamera depan:
+                ketuk Ambil foto saat lingkaran berwarna hijau, ubah sedikit posisi kepala di tiap foto. Setelah itu
+                Anda langsung bisa absen.
             </p>
 
             <ol className="grid grid-cols-2 gap-2 text-keterangan" aria-label="Langkah pendaftaran">
@@ -108,7 +109,7 @@ export default function PanelDaftarWajah({
                 </li>
                 <li className="flex items-start gap-2">
                     <ScanFaceIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand" />
-                    Lepas masker dan kacamata gelap, lalu kedip saat diminta.
+                    Lepas masker dan kacamata gelap, hadapkan wajah lurus ke kamera.
                 </li>
                 <li className="flex items-start gap-2">
                     <ShieldCheckIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand" />
@@ -139,6 +140,8 @@ export default function PanelDaftarWajah({
             {pindai ? (
                 <PemindaiWajah
                     alamatModel={AlamatModelWajah}
+                    mode="daftar"
+                    judul="Daftarkan wajah"
                     jumlah={JumlahFotoDaftar}
                     saatSelesai={(hasil) => void Kirim(hasil)}
                     saatBatal={() => AturPindai(false)}
