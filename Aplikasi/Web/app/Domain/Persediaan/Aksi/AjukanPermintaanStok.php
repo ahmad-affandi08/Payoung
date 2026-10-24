@@ -17,13 +17,14 @@ use App\Domain\Persediaan\Layanan\PemeriksaLokasiDokumen;
 use App\Domain\Persediaan\Layanan\PenomorDokumenPersediaan;
 use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\PermintaanStokDetail;
+use App\Domain\Persediaan\Tugas\BeritahuPermintaanStokTugas;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Mengajukan permintaan stok (F-05b, D-105): lokasi tujuan (yang meminta dan akan menerima) meminta barang dari lokasi
  * asal (yang diminta mengirim). Lokasi harus berbeda, aktif, dan bukan lokasi dalam perjalanan; produk berstok milik
  * tenant, satu baris per produk, jumlah > 0 dalam satuan dasar. Idempoten per Uuid klien. Tidak mengubah stok atau
- * jurnal. Audit `permintaan-stok.ajukan`.
+ * jurnal. Audit `permintaan-stok.ajukan`. Mengabari manajer outlet asal (D-187).
  */
 final class AjukanPermintaanStok
 {
@@ -100,6 +101,9 @@ final class AjukanPermintaanStok
                 'NamaGudangTujuan' => $tujuan->nama,
                 'JumlahBaris' => $permintaan->JumlahBaris,
             ]);
+
+            // Kabar non-kritis (aturan #10): antrean, setelah commit.
+            BeritahuPermintaanStokTugas::dispatch($permintaan->IdTenant, $permintaan->Id, StatusPermintaanStok::Diajukan)->afterCommit();
 
             return $permintaan;
         }, max(1, (int) config('persediaan.PercobaanTransaksi', 3)));

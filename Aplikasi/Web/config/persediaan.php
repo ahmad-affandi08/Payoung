@@ -32,6 +32,13 @@ return [
         'MaksimalBarisOpname' => 5000,
     ],
 
+    // D-187: kiriman stok yang belum diterima: kabar ke manajer outlet tujuan setelah HariPeringatan hari, ke pengirim dan
+    // manajer outlet asal setelah HariLanjut hari.
+    'TransferMacet' => [
+        'HariPeringatan' => 3,
+        'HariLanjut' => 7,
+    ],
+
     // Jumlah percobaan `DB::transaction` saat deadlock (Aksi terluar mutasi stok).
     'PercobaanTransaksi' => 3,
 ];

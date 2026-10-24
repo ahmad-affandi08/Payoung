@@ -10,7 +10,10 @@ export type JenisNotifikasi =
     | 'PesananOnline'
     | 'PesanPlatform'
     | 'TransferStokMasuk'
-    | 'KuotaTransaksi';
+    | 'KuotaTransaksi'
+    | 'PermintaanStok'
+    | 'TransferStokDiterima'
+    | 'TransferStokMacet';
 
 export type BarisNotifikasi = {
     Uuid: string;

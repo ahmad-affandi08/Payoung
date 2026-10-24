@@ -30,6 +30,7 @@ use App\Domain\Persediaan\Layanan\PengunciSaldoStok;
 use App\Domain\Persediaan\Layanan\PenyusunJurnalPersediaan;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Persediaan\Model\TransferStokDetail;
+use App\Domain\Persediaan\Tugas\BeritahuTransferStokDiterimaTugas;
 use App\Domain\Tenant\Kueri\PengaturanPersediaanTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -299,6 +300,9 @@ final class TerimaTransferStok
             ], array_keys($rencana)),
             'NomorJurnal' => array_values(array_filter($nomorJurnal)),
         ], idPengguna: $idPengguna);
+
+        // Kabar non-kritis (aturan #10): antrean, setelah commit (D-187).
+        BeritahuTransferStokDiterimaTugas::dispatch($transfer->IdTenant, $transfer->Id, $n, $idPengguna)->afterCommit();
 
         return $transfer;
     }

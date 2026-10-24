@@ -9,6 +9,8 @@ use App\Domain\Organisasi\Aksi\BuatNotifikasiKedaluwarsa;
 use App\Domain\Organisasi\Aksi\BuatNotifikasiOperasional;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
+use App\Domain\Persediaan\Aksi\BeritahuTransferStokMacet;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -18,7 +20,7 @@ final class BuatNotifikasiOperasionalPerintah extends Command
 
     protected $description = 'Membuat push kondisi operasional penting untuk Aplikasi Owner.';
 
-    public function handle(KeanggotaanPengguna $keanggotaan, KonteksTenant $konteks, TanggalBisnisOutlet $tanggal, BuatNotifikasiOperasional $buat, BuatNotifikasiKedaluwarsa $kedaluwarsa): int
+    public function handle(KeanggotaanPengguna $keanggotaan, KonteksTenant $konteks, TanggalBisnisOutlet $tanggal, BuatNotifikasiOperasional $buat, BuatNotifikasiKedaluwarsa $kedaluwarsa, BeritahuTransferStokMacet $transferMacet): int
     {
         $diminta = array_values(array_filter(array_map('intval', (array) $this->option('tenant'))));
         $semua = $keanggotaan->AmbilSemuaIdTenant();
@@ -34,6 +36,8 @@ final class BuatNotifikasiOperasionalPerintah extends Command
                     $jumlah += $buat->Jalankan($idTenant, $hariIni);
                     // F23: peringatan kedaluwarsa batch H-30/H-7/lewat, satu kali per batch per tingkat.
                     $jumlah += $kedaluwarsa->Jalankan($idTenant, $hariIni);
+                    // D-187: kiriman stok yang tak kunjung diterima, satu kabar per transfer per tingkat.
+                    $jumlah += $transferMacet->Jalankan($idTenant, CarbonImmutable::now());
                 } catch (Throwable $e) {
                     report($e);
                 }

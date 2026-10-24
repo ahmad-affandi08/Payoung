@@ -9,6 +9,7 @@ use App\Domain\Bersama\Dokumen\Layanan\PencatatRiwayatStatus;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Persediaan\Enum\StatusPermintaanStok;
 use App\Domain\Persediaan\Model\PermintaanStok;
+use App\Domain\Persediaan\Tugas\BeritahuPermintaanStokTugas;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -48,6 +49,9 @@ final class PengakhirPermintaanStok
 
             $this->riwayat->Catat(PermintaanStok::JENIS_DOKUMEN, $terkunci->Id, $dari->value, $ke->value, $idPengguna, mb_substr($alasan, 0, 255));
             $this->audit->Catat($kodeAudit, $terkunci, ['Status' => $dari->value], ['Status' => $ke->value, 'Alasan' => $terkunci->Alasan], idPengguna: $idPengguna);
+
+            // Kabar non-kritis (aturan #10): antrean, setelah commit (D-187).
+            BeritahuPermintaanStokTugas::dispatch($terkunci->IdTenant, $terkunci->Id, $ke)->afterCommit();
 
             return $terkunci;
         });
