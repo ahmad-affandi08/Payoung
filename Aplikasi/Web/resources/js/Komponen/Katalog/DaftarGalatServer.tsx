@@ -17,7 +17,9 @@ export default function DaftarGalatServer({
         .map(([kunci, isi]) => ({ kunci, isi: isi ?? '' }));
 
     return (
-        <div aria-live="polite" aria-atomic="true">
+        // Area live harus selalu ada di DOM supaya galat baru diumumkan; saat kosong ia `absolute` agar tidak menjadi
+        // anak aliran yang menambah satu celah `gap` kosong di antara blok halaman.
+        <div aria-live="polite" aria-atomic="true" className={pesan.length > 0 ? undefined : 'absolute'}>
             {pesan.length > 0 ? (
                 <Alert variant="destructive" className="rounded-panel border-l-4 border-bahaya">
                     <AlertTitle className="text-label font-semibold text-teks-utama">

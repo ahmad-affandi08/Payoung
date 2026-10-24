@@ -278,7 +278,7 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
                         <MenuAkun nama={pengguna?.Nama} email={pengguna?.Email} gelap tautanKeamanan="/keamanan" />
                     </KepalaTataLetak>
                 </div>
-                <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6">
+                <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
                     <JejakHalaman jejak={jejak} />
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <JudulHalaman>{judul}</JudulHalaman>

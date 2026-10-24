@@ -281,9 +281,17 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
         saring.length > 0 ||
         props.tabel.getAllLeafColumns().some((k) => k.getCanSort() && AmbilMeta(k.columnDef.meta)?.label);
 
+    // Di HP kotak cari berbagi baris dengan tombol Filter (kotak cari mengisi sisa lebar, tidak kurang dari 10rem; bila
+    // tak muat, tombol di kanan turun ke baris berikutnya). Tanpa tombol Filter ia tetap satu baris penuh.
+    const cariBerdampingan = lebar === 'hp' && adaSaringAtauUrut;
     const kotakCari =
         props.cari === false ? null : (
-            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:basis-full sm:max-w-sm">
+            <div
+                className={cn(
+                    'flex min-w-0 flex-1 items-center gap-2 sm:max-w-sm',
+                    cariBerdampingan ? 'max-sm:min-w-40' : 'max-sm:basis-full',
+                )}
+            >
                 <div className="relative min-w-0 flex-1">
                     <SearchIcon
                         aria-hidden="true"

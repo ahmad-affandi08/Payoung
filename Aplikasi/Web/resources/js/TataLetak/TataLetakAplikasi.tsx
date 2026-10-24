@@ -1181,7 +1181,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                         bolehKelolaLangganan={PunyaIzinTenant(props.Akses, IzinTenant.LanggananKelola)}
                     />
                 </KepalaTataLetak>
-                <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6">
+                <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
                     <JejakHalaman jejak={[...SusunJejak(url, namaInduk, menuTerlihat), ...jejak]} />
                     <JudulHalaman>{judul}</JudulHalaman>
                     {/* PGL-16: petugas dukungan tidak mengurus akun Owner, jadi banner milik Owner tidak ditampilkan. */}
