@@ -25,7 +25,7 @@ function UbahBatasanIp(string $daftar, string $alasan = 'Hanya dari jaringan kan
     return test()->put(BantuanPengelola::Url('/tim-internal/batasan-ip'), ['Daftar' => $daftar, 'Alasan' => $alasan]);
 }
 
-describe('Penyaring alamat', function (): void {
+describe('Filter alamat', function (): void {
     it('mengurai alamat tunggal, CIDR IPv4/IPv6, memisah entri tidak sah, dan membuang duplikat', function (): void {
         $hasil = AllowlistIpPengelola::Urai("203.0.113.5, 10.0.0.0/8\n2001:db8::/32 203.0.113.5 \n999.1.1.1 10.0.0.0/33 abc");
 

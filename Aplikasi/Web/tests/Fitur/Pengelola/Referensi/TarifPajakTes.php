@@ -267,7 +267,7 @@ describe('Tarif pajak bertanggal (P-02, BR-P02.1, BR-P02.2)', function (): void 
             ->and(TarifPajak::query()->where('Status', 'Terbit')->count())->toBe(2);
     });
 
-    it('menerima tarif dengan 6 desimal dan menyaring daftar dengan saring[Status]', function (): void {
+    it('menerima tarif dengan 6 desimal dan memfilter daftar dengan saring[Status]', function (): void {
         $pengaju = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         AjukanTarifBaru($this, $pengaju, ['Tarif' => '11.123456']);
         SebagaiPengelola($this, $pengaju)->post(BantuanPengelola::Url('/referensi/tarif-pajak'), DataTarif(['BerlakuMulai' => '2028-01-01']));
@@ -277,7 +277,7 @@ describe('Tarif pajak bertanggal (P-02, BR-P02.1, BR-P02.2)', function (): void 
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Tarif.Data', 1)->where('Tarif.Data.0.Status', 'Draf'));
     });
 
-    it('TabelData (D-16): JSON di URL yang sama dengan cari, saring status Berakhir & jenis pajak, urut, dan Meta', function (): void {
+    it('TabelData (D-16): JSON di URL yang sama dengan cari, filter status Berakhir & jenis pajak, urut, dan Meta', function (): void {
         $pengaju = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $daerah = ['KodeJenisPajak' => 'PbjtMakananMinuman', 'PengaliDppPembilang' => 1, 'PengaliDppPenyebut' => 1, 'KodeWilayah' => '33.74'];

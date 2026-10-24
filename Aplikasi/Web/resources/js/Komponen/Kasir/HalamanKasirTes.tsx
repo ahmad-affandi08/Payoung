@@ -113,7 +113,7 @@ describe('F-06 halaman kasir back-office', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/kasir/shift'));
     afterEach(() => cleanup());
 
-    it('daftar shift (TabelData D-16): Rupiah terformat, penanda perlu ditinjau, tautan ke detail, saring; keadaan kosong', () => {
+    it('daftar shift (TabelData D-16): Rupiah terformat, penanda perlu ditinjau, tautan ke detail, filter; keadaan kosong', () => {
         window.history.replaceState({}, '', '/kelola/kasir/shift');
         RenderUji(<HalamanDaftarShift {...PropsDaftar([barisShift])} />);
         const tabel = screen.getByRole('table', { name: 'Daftar shift' });

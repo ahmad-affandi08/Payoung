@@ -173,7 +173,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
         $masuk->get('/kelola/akuntansi/laporan/buku-besar?akun=01J9ZC5V7Q8R2T4W6Y8A0B2C4D')->assertNotFound();
     });
 
-    it('ekspor CSV memakai saringan yang sama; angka desimal tidak dinetralkan, teks berbahaya dinetralkan', function (): void {
+    it('ekspor CSV memakai filter yang sama; angka desimal tidak dinetralkan, teks berbahaya dinetralkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         CatatKasBank('Pengeluaran', '2026-09-05', '1-1100', '6-9000', '15000.00', null, '=HYPERLINK("http://jahat")');
         $kas = Akun::query()->where('Kode', '1-1100')->sole();
@@ -195,7 +195,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
         $masuk->get('/kelola/akuntansi/laporan/buku-besar/ekspor')->assertNotFound();
     });
 
-    it('izin, isolasi tenant, dan saringan/batas outlet', function (): void {
+    it('izin, isolasi tenant, dan filter/batas outlet', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Toko Sembako Berkah Jaya');
         $solo = BantuanJurnal::BuatOutlet();
         CatatKasBank('Pengeluaran', '2026-09-05', '1-1100', '6-9000', '15000.00', $a['Outlet']->Id);
@@ -234,7 +234,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
         $this->get("/kelola/akuntansi/laporan/laba-rugi?{$periode}&outlet={$solo->Uuid}")->assertNotFound();
     });
 
-    it('saringan tanggal tidak sah jatuh ke bulan berjalan; rentang terbalik ditukar', function (): void {
+    it('filter tanggal tidak sah jatuh ke bulan berjalan; rentang terbalik ditukar', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $hariIni = CarbonImmutable::today();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);

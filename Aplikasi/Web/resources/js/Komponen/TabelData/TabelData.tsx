@@ -573,9 +573,9 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
     let isi: ReactNode;
     // Tanpa bingkai: sudah berada di dalam panel tabel (hindari kotak di dalam kotak).
     const keadaanKosong = adaSaring ? (
-        <KeadaanKosong judul="Tidak ada hasil untuk pencarian atau saring ini." bingkai={false}>
+        <KeadaanKosong judul="Tidak ada hasil untuk pencarian atau filter ini." bingkai={false}>
             <Button type="button" variant="link" className="h-auto px-0" onClick={keadaanTabel.HapusSemua}>
-                Hapus pencarian & saring
+                Hapus pencarian & filter
             </Button>
         </KeadaanKosong>
     ) : (

@@ -361,7 +361,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
         ))->times(3);
     });
 
-    it('galat email (kiriman lama sebelum D-33): pesan disaring dari alamat pelanggan; kegagalan sistem (failed) menandai Gagal', function (): void {
+    it('galat email (kiriman lama sebelum D-33): pesan difilter dari alamat pelanggan; kegagalan sistem (failed) menandai Gagal', function (): void {
         Queue::fake();
         Mail::shouldReceive('to')->andThrow(new RuntimeException('550 mailbox pelanggan@contoh.id unavailable'));
         [$k, $p] = SiapkanJualStruk($this, whatsapp: false);

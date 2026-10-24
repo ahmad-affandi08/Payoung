@@ -289,7 +289,7 @@ export default function HalamanFormKampanye({
                     <Panel
                         judul="Penerima"
                         idJudul="judul-penerima-kampanye"
-                        keterangan="Hanya pelanggan aktif yang menyetujui kabar promosi. Saringan yang dikosongkan berarti semua."
+                        keterangan="Hanya pelanggan aktif yang menyetujui kabar promosi. Filter yang dikosongkan berarti semua."
                     >
                         {bidangPenerima}
                     </Panel>

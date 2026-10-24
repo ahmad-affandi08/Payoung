@@ -282,7 +282,7 @@ export default function HalamanLaporanApotek({
                     <div
                         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
                         role="group"
-                        aria-label="Saring data SIPNAP"
+                        aria-label="Filter data SIPNAP"
                     >
                         <div className="flex flex-col gap-1">
                             <Label htmlFor="saring-sipnap-bulan" className="text-label font-semibold text-teks-utama">

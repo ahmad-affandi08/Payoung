@@ -117,7 +117,7 @@ void main() {
       });
       expect(LayananSalesman.CariProduk(katalog, 'rtg').single.uuid, UuidUji.roti);
       expect(LayananSalesman.CariProduk(katalog, UuidUji.barcodeRotiLusin).first.uuid, UuidUji.roti);
-      expect(LayananSalesman.CariProduk(katalog, 'UHT'), isEmpty, reason: 'Susu UHT ber-batch disaring.');
+      expect(LayananSalesman.CariProduk(katalog, 'UHT'), isEmpty, reason: 'Susu UHT ber-batch difilter.');
       final barcode = katalog.CariKode(UuidUji.barcodeRotiLusin)!;
       expect(LayananSalesman.AmbilSatuanBawaan(barcode.produk, dariBarcode: barcode.satuan).uuid, UuidUji.psRotiLusin);
       expect(LayananSalesman.AmbilSatuanBawaan(Produk(UuidUji.roti)).uuid, UuidUji.psRotiPcs);

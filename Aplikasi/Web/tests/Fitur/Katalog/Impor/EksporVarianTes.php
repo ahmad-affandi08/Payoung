@@ -108,7 +108,7 @@ describe('F-03 impor varian', function (): void {
 });
 
 describe('F-03 ekspor produk', function (): void {
-    it('xlsx/csv sesuai saringan aktif, kolom templat Umum, anak varian di bawah induk, formula injection dinetralkan, audit', function (): void {
+    it('xlsx/csv sesuai filter aktif, kolom templat Umum, anak varian di bawah induk, formula injection dinetralkan, audit', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImpor::Unggah($masuk, BantuanImpor::BuatXlsx(BarisKatalogEkspor()));

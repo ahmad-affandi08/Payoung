@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe('Pencarian cepat di kepala halaman', () => {
-    it('Ctrl+K membuka palet; halaman disaring per kata (label atau grup)', () => {
+    it('Ctrl+K membuka palet; halaman difilter per kata (label atau grup)', () => {
         RenderDenganKueri(<PencarianCepat halaman={halaman} sumber={sumber} />);
 
         fireEvent.keyDown(window, { key: 'k', ctrlKey: true });

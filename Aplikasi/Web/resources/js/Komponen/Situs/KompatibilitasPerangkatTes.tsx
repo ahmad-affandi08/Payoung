@@ -100,7 +100,7 @@ describe('Halaman publik kompatibilitas perangkat (v1.98, D-92)', () => {
         expect(screen.getByText('Terbatas (1)')).toBeTruthy();
     });
 
-    it('pencarian dan saringan status menyaring kartu; hasil nihil menampilkan keadaan kosong bertulisan', () => {
+    it('pencarian dan filter status memfilter kartu; hasil nihil menampilkan keadaan kosong bertulisan', () => {
         render(<HalamanKompatibilitasPerangkatPublik Baris={DATA} />);
 
         fireEvent.change(screen.getByPlaceholderText('Cari merek atau model'), { target: { value: 'sunmi' } });

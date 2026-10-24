@@ -106,7 +106,7 @@ function AturLebar(lebar: 'hp' | 'tablet' | 'desktop') {
 const MatchMediaAsli = window.matchMedia;
 
 describe('KeadaanUrl (D-16 kontrak parameter TabelData)', () => {
-    it('membaca & menulis cari, urut bertingkat, halaman, ukuran halaman, dan saring; bawaan tidak ditulis', () => {
+    it('membaca & menulis cari, urut bertingkat, halaman, ukuran halaman, dan filter; bawaan tidak ditulis', () => {
         const bawaan = BacaUrut('-DibuatPada');
         const keadaan = BacaKeadaanDariUrl(
             '?cari=kopi&urut=Nama,-Harga&halaman=3&perHalaman=50&saring%5BStatus%5D=Aktif,Nonaktif&tab=stok',
@@ -199,7 +199,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(panggilanFetch).toEqual(['/kelola/produk?urut=Harga']);
     });
 
-    it('cari ditahan 300 ms lalu kembali ke halaman 1; saring ya memunculkan chip yang bisa dihapus', async () => {
+    it('cari ditahan 300 ms lalu kembali ke halaman 1; filter ya memunculkan chip yang bisa dihapus', async () => {
         window.history.replaceState({}, '', '/kelola/produk?halaman=2');
         PasangFetch(() => Hasil(BuatProduk(1)));
         Render(
@@ -223,7 +223,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Sedang diskon' }));
 
         await waitFor(() => expect(window.location.search).toBe('?cari=aren&saring%5BDiskon%5D=1'));
-        const chip = screen.getByRole('button', { name: 'Hapus saring Sedang diskon' });
+        const chip = screen.getByRole('button', { name: 'Hapus filter Sedang diskon' });
         fireEvent.click(chip);
         await waitFor(() => expect(window.location.search).toBe('?cari=aren'));
     });
@@ -252,7 +252,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         await waitFor(() => expect(panggilanFetch.at(-1)).toBe('/kelola/produk?perHalaman=50'));
     });
 
-    it('keadaan kosong membedakan "belum ada data" dan "tidak ada hasil saring"; galat menawarkan coba lagi', async () => {
+    it('keadaan kosong membedakan "belum ada data" dan "tidak ada hasil filter"; galat menawarkan coba lagi', async () => {
         PasangFetch(() => 500);
         const { unmount: Lepas } = Render(
             <TabelData
@@ -284,11 +284,11 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
                 kosong={{ judul: 'Belum ada produk.', ilustrasi: true }}
             />,
         );
-        expect(screen.getByText('Tidak ada hasil untuk pencarian atau saring ini.')).toBeTruthy();
+        expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
         // D-18: hasil cari/saring kosong tetap ringkas, tanpa ilustrasi.
         expect(document.querySelector('img[src*="Kosong.webp"]')).toBeNull();
 
-        fireEvent.click(screen.getAllByRole('button', { name: 'Hapus pencarian & saring' })[0] as HTMLElement);
+        fireEvent.click(screen.getAllByRole('button', { name: 'Hapus pencarian & filter' })[0] as HTMLElement);
         // Galat 5xx dicoba ulang 2 kali (jeda bawaan TanStack) sebelum ditampilkan.
         await waitFor(() => expect(screen.getByText('Data belum bisa dimuat')).toBeTruthy(), { timeout: 6000 });
         expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeTruthy();
@@ -314,10 +314,10 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(within(pertama).getByText('Kopi Susu Gula Aren Ukuran Besar 1')).toBeTruthy();
         expect(within(pertama).getByText('Harga')).toBeTruthy();
         expect(within(pertama).queryByText('Minuman')).toBeNull();
-        expect(screen.getByRole('button', { name: 'Saring' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Filter' })).toBeTruthy();
     });
 
-    it('HP: sembunyiBilaKosong melewati label nilai null (baris judul laporan); tanpa saring & urut tidak ada tombol Saring', () => {
+    it('HP: sembunyiBilaKosong melewati label nilai null (baris judul laporan); tanpa filter & urut tidak ada tombol Filter', () => {
         AturLebar('hp');
         type BarisLaporan = { Id: string; Label: string; Nilai: string | null };
         const kolomLaporan: KolomTabel<BarisLaporan>[] = [
@@ -359,7 +359,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(within(judul).queryByText('Periode ini')).toBeNull();
         expect(within(akun).getByText('Periode ini')).toBeTruthy();
         expect(within(akun).getByText('115500.00')).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'Saring' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Filter' })).toBeNull();
     });
 
     it('tablet menyembunyikan kolom prioritas rendah; pilihan kolom pengguna disimpan per tabel', () => {
@@ -397,7 +397,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(screen.queryByRole('columnheader', { name: /Harga/ })).toBeNull();
     });
 
-    it('mode lokal: urut, cari, dan saring di peramban tanpa URL maupun server', async () => {
+    it('mode lokal: urut, cari, dan filter di peramban tanpa URL maupun server', async () => {
         PasangFetch(() => Hasil([]));
         Render(
             <TabelData
@@ -424,7 +424,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(screen.getByText('1 baris')).toBeTruthy();
     });
 
-    it('pilih baris: bilah aksi massal, pilih semua hasil saring, dan aksi baris per baris', async () => {
+    it('pilih baris: bilah aksi massal, pilih semua hasil filter, dan aksi baris per baris', async () => {
         const AksiMassal = vi.fn();
         Render(
             <TabelData

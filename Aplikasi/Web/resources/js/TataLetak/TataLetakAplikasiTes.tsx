@@ -235,7 +235,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(SubPenjualan(campur)).toContain('Perangkat kasir');
     });
 
-    it('audit #33: menu khusus sektor disaring sektor outlet; mode sederhana menyembunyikan menu lanjutan', () => {
+    it('audit #33: menu khusus sektor difilter sektor outlet; mode sederhana menyembunyikan menu lanjutan', () => {
         const akses = { Pemilik: true, Izin: [] };
         const Label = (menu: ReturnType<typeof SaringMenuTerlihat>) => menu.map(({ menu: m }) => m.label);
         const SubPenjualan = (menu: ReturnType<typeof SaringMenuTerlihat>) =>

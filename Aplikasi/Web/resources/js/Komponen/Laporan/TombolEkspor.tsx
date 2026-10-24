@@ -38,7 +38,7 @@ type PropsTombolEkspor = {
 const DAFTAR_FORMAT: Record<FormatEkspor, { judul: string; keterangan: string; ikon: typeof DownloadIcon }> = {
     xlsx: {
         judul: 'Excel (.xlsx)',
-        keterangan: 'Lengkap dengan kop, saringan, dan ringkasan',
+        keterangan: 'Lengkap dengan kop, filter, dan ringkasan',
         ikon: FileSpreadsheetIcon,
     },
     csv: { judul: 'CSV (data mentah)', keterangan: 'Tabel saja, untuk diolah sistem lain', ikon: FileTextIcon },

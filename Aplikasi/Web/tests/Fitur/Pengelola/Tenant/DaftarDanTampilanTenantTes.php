@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('P-07 daftar tenant', function (): void {
-    it('mencari nama, slug, atau email Owner dan menyaring status langganan & penanda', function (): void {
+    it('mencari nama, slug, atau email Owner dan memfilter status langganan & penanda', function (): void {
         $kopi = BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
         $toko = BantuanTenantPengelola::BuatTenant('Toko Bangunan Sinar Jaya Abadi Sentosa', 'budi@sinarjaya.co.id');
         $salon = BantuanTenantPengelola::BuatTenant('Salon Cantik', 'sari@saloncantik.id');
@@ -58,7 +58,7 @@ describe('P-07 daftar tenant', function (): void {
         $cari(['cari' => '%'])->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('Tenant.Meta.Total', 0));
     });
 
-    it('menyaring menurut paket langganan dan menyediakan pilihannya', function (): void {
+    it('memfilter menurut paket langganan dan menyediakan pilihannya', function (): void {
         $kopi = BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
         BantuanTenantPengelola::BuatTenant('Toko Bangunan Sinar Jaya', 'budi@sinarjaya.co.id');
         $kodePaket = (string) Langganan::query()->where('IdTenant', $kopi->Id)->sole()->Paket->Kode;

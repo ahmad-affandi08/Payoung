@@ -82,7 +82,7 @@ describe('F-07b halaman back-office penjualan', function (): void {
             ->where('Penjualan.Daftar.0.Uuid', $item['Uuid']));
     });
 
-    it('D-16 TabelData: JSON {Data, Meta} di URL yang sama; cari nomor, saring tinjauan/status/tanggal, urut total', function (): void {
+    it('D-16 TabelData: JSON {Data, Meta} di URL yang sama; cari nomor, filter tinjauan/status/tanggal, urut total', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '3');
         $kecil = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -238,7 +238,7 @@ describe('F-07b izin penjualan.diskon.setujui', function (): void {
 });
 
 describe('F-07b ekspor daftar penjualan', function (): void {
-    it('ekspor sesuai saringan dan ekspor terpilih (uuid) memuat nomor, metode, dan total; Uuid tak sah diabaikan; Kasir tanpa izin laporan ditolak', function (): void {
+    it('ekspor sesuai filter dan ekspor terpilih (uuid) memuat nomor, metode, dan total; Uuid tak sah diabaikan; Kasir tanpa izin laporan ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $item = fn (string $harga) => BantuanPenjualan::Item($k, [

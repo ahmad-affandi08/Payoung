@@ -314,7 +314,7 @@ describe('HTTP ringkasan penagihan dan ekspor', function (): void {
         $this->get('/kelola')->assertInertia(fn (AssertableInertia $h) => $h->where('Penagihan.Ditagih', '13000000.00'));
     });
 
-    it('ekspor CSV mengikuti saringan tabel dan memuat angka yang sama dengan layar', function (): void {
+    it('ekspor CSV mengikuti filter tabel dan memuat angka yang sama dengan layar', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
         $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Perihal' => 'Draf rahasia']))->assertSessionHasNoErrors();

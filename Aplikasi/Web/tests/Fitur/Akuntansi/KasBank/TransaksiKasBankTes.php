@@ -208,7 +208,7 @@ describe('F-13a transaksi kas & bank (FIN-03, PRD "Rincian F-13a")', function ()
             ->and(fn () => $t->delete())->toThrow(LogicException::class);
     });
 
-    it('daftar & saldo kas/bank: TabelData server (cari, saring jenis/tanggal), saldo per akun kas/bank dari jurnal', function (): void {
+    it('daftar & saldo kas/bank: TabelData server (cari, filter jenis/tanggal), saldo per akun kas/bank dari jurnal', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
         $this->post('/kelola/akuntansi/kas-bank', IsianKasBank(['Jenis' => 'Penerimaan', 'UuidAkunSumber' => UuidAkunKode('3-1000'), 'UuidAkunTujuan' => UuidAkunKode('1-1100'), 'Jumlah' => '5000000', 'Keterangan' => 'Modal awal laci']))->assertRedirect();

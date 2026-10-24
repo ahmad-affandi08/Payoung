@@ -22,7 +22,7 @@ export const langkahKampanye: LangkahKampanye[] = [
         Kunci: 'Penerima',
         Label: 'Penerima',
         Keterangan:
-            'Pilih siapa yang menerima. Hanya pelanggan aktif yang menyetujui kabar promosi. Saringan yang dikosongkan berarti semua.',
+            'Pilih siapa yang menerima. Hanya pelanggan aktif yang menyetujui kabar promosi. Filter yang dikosongkan berarti semua.',
     },
     {
         Kunci: 'Pesan',

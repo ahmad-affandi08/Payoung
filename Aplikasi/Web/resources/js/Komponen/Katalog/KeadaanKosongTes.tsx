@@ -26,7 +26,7 @@ describe('KeadaanKosong (D-18)', () => {
         expect(container.firstElementChild?.className).toContain('text-center');
     });
 
-    it('tanpa ilustrasi (hasil cari/saring kosong): tanpa gambar, rata kiri', () => {
+    it('tanpa ilustrasi (hasil cari/filter kosong): tanpa gambar, rata kiri', () => {
         const { container } = render(<KeadaanKosong judul="Tidak ada hasil." />);
 
         expect(container.querySelector('img')).toBeNull();

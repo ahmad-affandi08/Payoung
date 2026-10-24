@@ -7,7 +7,7 @@ import { AmbilHrefEkspor, BukaMenu } from '@/Pengujian/InteraksiRadix';
 afterEach(cleanup);
 
 describe('TombolEkspor (D-43)', () => {
-    it('menawarkan Excel, CSV, dan cetak dengan saringan halaman terbawa dan format ditambahkan', () => {
+    it('menawarkan Excel, CSV, dan cetak dengan filter halaman terbawa dan format ditambahkan', () => {
         render(<TombolEkspor alamat="/kelola/laporan/penjualan/ekspor" query="dari=2026-10-01&tab=produk" />);
 
         expect(AmbilHrefEkspor('xlsx')).toBe('/kelola/laporan/penjualan/ekspor?dari=2026-10-01&tab=produk&format=xlsx');

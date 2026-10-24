@@ -52,7 +52,7 @@ describe('Pusat Unduhan (D-124)', () => {
             LabelStatus: 'Gagal',
             BisaDiunduh: false,
             UkuranByte: 0,
-            Galat: 'Berkas gagal disiapkan. Coba lagi dengan rentang tanggal atau saringan yang lebih sempit.',
+            Galat: 'Berkas gagal disiapkan. Coba lagi dengan rentang tanggal atau filter yang lebih sempit.',
         };
         RenderUji(<HalamanDaftarUnduhan {...props} Unduhan={BuatHasilTabel([Siap, gagal])} />);
 

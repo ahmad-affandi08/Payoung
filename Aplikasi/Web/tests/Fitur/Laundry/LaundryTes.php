@@ -160,7 +160,7 @@ it('lacak publik /s/{kode} menampilkan status cucian walau struk digital mati; v
     $this->get('/s/'.$kode)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Struk.Laundry.Status', 'Dibatalkan'));
 });
 
-it('back-office: daftar & saring terlambat, ubah status, pengaturan diaudit & divalidasi, Kotak Tindakan; Kasir 403; tenant lain 404', function (): void {
+it('back-office: daftar & filter terlambat, ubah status, pengaturan diaudit & divalidasi, Kotak Tindakan; Kasir 403; tenant lain 404', function (): void {
     [$k, $item] = SiapkanCucian($this);
     BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

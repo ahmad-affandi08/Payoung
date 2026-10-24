@@ -147,7 +147,7 @@ export function ChipSaring({ definisi, nilai, saatHapus }: PropsChip) {
             <button
                 type="button"
                 onClick={saatHapus}
-                aria-label={`Hapus saring ${teks}`}
+                aria-label={`Hapus filter ${teks}`}
                 className="inline-flex size-7 shrink-0 items-center justify-center rounded-kontrol text-teks-sekunder hover:bg-brand-lembut-sorot hover:text-teks-utama focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
             >
                 <XIcon aria-hidden="true" className="size-4" />

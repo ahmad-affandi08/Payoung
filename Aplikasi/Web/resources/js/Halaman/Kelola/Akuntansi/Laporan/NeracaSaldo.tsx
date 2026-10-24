@@ -82,8 +82,8 @@ export default function HalamanNeracaSaldo({ Saring, Laporan, OpsiOutlet }: Prop
                 </Pemberitahuan>
             ) : (
                 <Pemberitahuan jenis="peringatan" judul="Tidak seimbang">
-                    Total debit dan kredit berbeda untuk saringan ini, biasanya karena satu jurnal memuat baris beberapa
-                    outlet. Lihat tanpa saringan outlet untuk memeriksa keseimbangan penuh.
+                    Total debit dan kredit berbeda untuk filter ini, biasanya karena satu jurnal memuat baris beberapa
+                    outlet. Lihat tanpa filter outlet untuk memeriksa keseimbangan penuh.
                 </Pemberitahuan>
             )}
             <RingkasanAngka

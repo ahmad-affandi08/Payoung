@@ -177,7 +177,7 @@ export default function PanelAlatBantuDukungan({ uuidTenant, data }: PropsPanelA
                                                             AturTindakan({
                                                                 judul: `Minta log ${p.Kode}`,
                                                                 keterangan:
-                                                                    'Perangkat mengunggah log lokalnya (sudah tersaring dari data pribadi) saat terhubung ke server. Log disimpan 30 hari.',
+                                                                    'Perangkat mengunggah log lokalnya (sudah terfilter dari data pribadi) saat terhubung ke server. Log disimpan 30 hari.',
                                                                 labelKirim: 'Minta log',
                                                                 url: `${dasar}/perangkat/${p.Uuid}/minta-log`,
                                                             })

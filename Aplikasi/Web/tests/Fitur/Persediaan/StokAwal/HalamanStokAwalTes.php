@@ -21,7 +21,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a halaman stok awal', function (): void {
-    it('daftar: hanya dokumen di outlet yang boleh diakses, dengan saringan status, izin, dan kesiapan akun', function (): void {
+    it('daftar: hanya dokumen di outlet yang boleh diakses, dengan filter status, izin, dan kesiapan akun', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $cabang = BantuanHarga::BuatOutlet('SLO-02', 'Cabang Solo Baru');

@@ -470,7 +470,7 @@ export default function HalamanDetailStokOpname({
                                 ) : null}
                             </div>
                             <BidangTeks
-                                label="Saring baris"
+                                label="Filter baris"
                                 nilai={saring}
                                 saatBerubah={AturSaring}
                                 keterangan="Nama, SKU, batch, atau nomor seri."

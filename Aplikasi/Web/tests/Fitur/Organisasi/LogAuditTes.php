@@ -85,7 +85,7 @@ describe('LogAudit tenant (§13.2, §25 no. 17)', function (): void {
         expect($log->refresh()->Peristiwa)->toBe('tenant.daftar');
     });
 
-    it('halaman log audit untuk yang berizin: pelaku ditampilkan dengan nama dan bisa disaring', function (): void {
+    it('halaman log audit untuk yang berizin: pelaku ditampilkan dengan nama dan bisa difilter', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/merek', ['Nama' => 'Roti Nusantara'])->assertSessionHasNoErrors();
 

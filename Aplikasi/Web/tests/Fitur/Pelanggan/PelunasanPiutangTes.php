@@ -163,7 +163,7 @@ describe('F-12 pelunasan piutang', function (): void {
             ->where('Tindakan.Batalkan', false)->where('Pelunasan.AlasanBatal', 'Salah pilih pelanggan'));
     });
 
-    it('umur piutang dikelompokkan per tanggal laporan dan bisa disaring', function (): void {
+    it('umur piutang dikelompokkan per tanggal laporan dan bisa difilter', function (): void {
         $k = SiapkanPiutangDuaFaktur($this);
         // Umur piutang tingkat usaha dihitung dari tanggal kalender zona tenant (tanpa jam tutup buku outlet), jadi
         // jatuh tempo diatur dari tanggal kalender WIB agar test juga benar antara 00.00–04.00 WIB.

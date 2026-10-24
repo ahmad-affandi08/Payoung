@@ -703,7 +703,7 @@ const kolomMenu: KolomTabel<BarisMenuLaporan>[] = [
     KolomUang<BarisMenuLaporan>('Hpp', 'HPP', 'rendah'),
 ];
 
-const kosong = { judul: 'Belum ada penjualan pada periode dan saring ini.' };
+const kosong = { judul: 'Belum ada penjualan pada periode dan filter ini.' };
 
 function IsiTab({
     tab,
@@ -1026,7 +1026,7 @@ function IsiTab({
                         }}
                         kosong={{
                             ilustrasi: true,
-                            judul: 'Belum ada penilaian pelanggan pada periode dan saring ini.',
+                            judul: 'Belum ada penilaian pelanggan pada periode dan filter ini.',
                         }}
                     />
                 </div>
@@ -1077,7 +1077,7 @@ function IsiTab({
                         }}
                         kosong={{
                             ilustrasi: true,
-                            judul: 'Belum ada tiket dapur yang selesai pada periode dan saring ini.',
+                            judul: 'Belum ada tiket dapur yang selesai pada periode dan filter ini.',
                         }}
                     />
                 </div>
@@ -1129,7 +1129,7 @@ function IsiTab({
                             eksporBesar: true,
                             query: queryEkspor,
                         }}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada pemakaian bahan pada periode dan saring ini.' }}
+                        kosong={{ ilustrasi: true, judul: 'Belum ada pemakaian bahan pada periode dan filter ini.' }}
                     />
                 </div>
             );
@@ -1173,7 +1173,7 @@ function IsiTab({
                     }}
                     kosong={{
                         ilustrasi: true,
-                        judul: 'Belum ada penjualan berdiskon pada periode dan saring ini.',
+                        judul: 'Belum ada penjualan berdiskon pada periode dan filter ini.',
                     }}
                 />
             );
@@ -1203,7 +1203,7 @@ function IsiTab({
                         }}
                         kosong={{
                             ilustrasi: true,
-                            judul: 'Tidak ada void item pada periode dan saring ini.',
+                            judul: 'Tidak ada void item pada periode dan filter ini.',
                         }}
                     />
                 </>
@@ -1233,7 +1233,7 @@ function IsiTab({
                         }}
                         kosong={{
                             ilustrasi: true,
-                            judul: 'Belum ada transaksi kasir pada periode dan saring ini.',
+                            judul: 'Belum ada transaksi kasir pada periode dan filter ini.',
                         }}
                     />
                 </>
@@ -1274,7 +1274,7 @@ function IsiTab({
                             eksporBesar: true,
                             query: queryEkspor,
                         }}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan saring ini.' }}
+                        kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan filter ini.' }}
                     />
                 </div>
             );
@@ -1314,7 +1314,7 @@ function IsiTab({
                             eksporBesar: true,
                             query: queryEkspor,
                         }}
-                        kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan saring ini.' }}
+                        kosong={{ ilustrasi: true, judul: 'Belum ada penjualan bersih pada periode dan filter ini.' }}
                     />
                 </div>
             );

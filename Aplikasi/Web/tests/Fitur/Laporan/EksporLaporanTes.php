@@ -36,7 +36,7 @@ function BacaUnduhanXlsx(string $isi): array
 }
 
 describe('Kop laporan seragam (D-43): laporan penjualan', function (): void {
-    it('Excel tab detail: kop usaha, saringan, ringkasan, header, dan baris per item dengan nilai asli', function (): void {
+    it('Excel tab detail: kop usaha, filter, ringkasan, header, dan baris per item dengan nilai asli', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
 

@@ -55,7 +55,7 @@ it('galat ditulis ke kanal galat-perangkat dengan konteks perangkat & tanpa data
     $this->withoutToken()->postJson('/api/pos/v1/perangkat/galat', ['Galat' => []])->assertUnauthorized();
 });
 
-it('penyaring menyamarkan NIK 16 digit, nomor kartu berspasi, dan +62, tetapi tidak angka pendek', function (): void {
+it('filter menyamarkan NIK 16 digit, nomor kartu berspasi, dan +62, tetapi tidak angka pendek', function (): void {
     expect(CatatLaporanGalatPerangkat::Saring('NIK 3372011234567890 kartu 4111 1111 1111 1111 hp +62 812 3456 7890 baris 42 kode 500'))
         ->toBe('NIK [disamarkan] kartu [disamarkan] hp [disamarkan] baris 42 kode 500');
 });

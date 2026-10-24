@@ -48,7 +48,7 @@ function IsianTiketAplikasi(array $ubah = []): array
     ];
 }
 
-describe('Penyaring log tiket', function (): void {
+describe('Filter log tiket', function (): void {
     it('membuang karakter kendali, menyamarkan rahasia/email/angka panjang, membatasi baris dan panjang', function (): void {
         $hasil = PenyaringLogTiket::Saring([
             "baris\x00 dengan\x07 kendali",
@@ -73,7 +73,7 @@ describe('Penyaring log tiket', function (): void {
 });
 
 describe('Aplikasi Kasir', function (): void {
-    it('staf outlet membuat tiket: konteks perangkat otomatis, log disaring, SLA paket, tim Dukungan diberi tahu, staf hanya melihat tiketnya', function (): void {
+    it('staf outlet membuat tiket: konteks perangkat otomatis, log difilter, SLA paket, tim Dukungan diberi tahu, staf hanya melihat tiketnya', function (): void {
         $dukungan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanDukungan::BuatTenant('Toko Bantuan Kasir', 'pemilik@bantuankasir.id');
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);

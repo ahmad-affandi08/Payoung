@@ -124,7 +124,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         expect(screen.queryByRole('link', { name: 'Catat jurnal umum' })).toBeNull();
     });
 
-    it('saring (TabelData D-16): sumber & tanggal tersimpan di URL, cari ditahan lalu dikirim ke server', async () => {
+    it('filter (TabelData D-16): sumber & tanggal tersimpan di URL, cari ditahan lalu dikirim ke server', async () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
         const permintaan: string[] = [];
         vi.stubGlobal(
@@ -154,7 +154,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('kosong tanpa saringan mengarahkan ke stok awal; kosong dengan saringan menawarkan hapus saringan', () => {
+    it('kosong tanpa filter mengarahkan ke stok awal; kosong dengan filter menawarkan hapus filter', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
         const tampilan = RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([])} />);
         expect(screen.getByText('Belum ada jurnal. Jurnal terbentuk otomatis saat stok awal diposting.')).toBeTruthy();
@@ -165,7 +165,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
 
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal?cari=tidak+ada');
         RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([])} />);
-        expect(screen.getByText('Tidak ada hasil untuk pencarian atau saring ini.')).toBeTruthy();
+        expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
     });
 
     it('galat server ditampilkan; paginasi server tampil bila lebih dari satu halaman', () => {

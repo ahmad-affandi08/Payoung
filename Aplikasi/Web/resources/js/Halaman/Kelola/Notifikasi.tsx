@@ -100,7 +100,7 @@ export default function HalamanNotifikasi({
             </p>
             <AksiHalaman
                 keterangan={
-                    <nav aria-label="Saringan notifikasi" className="flex flex-wrap gap-2">
+                    <nav aria-label="Filter notifikasi" className="flex flex-wrap gap-2">
                         {(
                             [
                                 ['semua', 'Semua'],

@@ -128,7 +128,7 @@ describe('konsol artikel bantuan', function (): void {
 describe('Pusat Bantuan publik', function (): void {
     beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
-    it('hanya artikel terbit; draf 404; dikelompokkan per kategori; cari dan saring kategori', function (): void {
+    it('hanya artikel terbit; draf 404; dikelompokkan per kategori; cari dan filter kategori', function (): void {
         BuatArtikelBantuanUji();
         BuatArtikelBantuanUji(['Slug' => 'cara-buka-shift', 'Judul' => 'Cara buka shift', 'Kategori' => 'Kasir', 'Isi' => 'Hitung kas awal laci.', 'Ringkasan' => null, 'Urutan' => 1]);
         BuatArtikelBantuanUji(['Slug' => 'draf-rahasia', 'Judul' => 'Draf rahasia', 'Status' => StatusArtikel::Draf, 'DiterbitkanPada' => null]);

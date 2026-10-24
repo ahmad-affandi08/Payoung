@@ -59,7 +59,7 @@ describe('TabelData: pindai kamera di kotak cari', () => {
     });
     afterEach(() => cleanup());
 
-    it('barcode yang terbaca mengisi kotak cari dan menyaring baris', async () => {
+    it('barcode yang terbaca mengisi kotak cari dan memfilter baris', async () => {
         const tiruan = SiapkanKameraTiruan(kamera);
 
         Tampilkan(true);

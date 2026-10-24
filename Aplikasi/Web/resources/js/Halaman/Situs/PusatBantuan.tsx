@@ -78,7 +78,7 @@ export default function PusatBantuan() {
                             ? 'Tidak ada artikel yang cocok.'
                             : `${String(Total)} artikel ditemukan${Cari !== '' ? ` untuk "${Cari}"` : ''}.`}{' '}
                         <TautanSitus href="/pusat-bantuan" className="text-brand underline">
-                            Hapus saringan
+                            Hapus filter
                         </TautanSitus>
                     </p>
                 ) : null}

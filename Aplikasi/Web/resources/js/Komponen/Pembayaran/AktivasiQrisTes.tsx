@@ -344,7 +344,7 @@ describe('halaman Aktivasi QRIS', () => {
         expect(screen.getByText('Langkah 1 dari 3: Data pemilik dan usaha')).toBeTruthy();
     });
 
-    it('Gagal: pesan galat tersaring tampil dan pendaftaran bisa dikirim ulang', () => {
+    it('Gagal: pesan galat terfilter tampil dan pendaftaran bisa dikirim ulang', () => {
         render(
             <AktivasiQris
                 {...Props({

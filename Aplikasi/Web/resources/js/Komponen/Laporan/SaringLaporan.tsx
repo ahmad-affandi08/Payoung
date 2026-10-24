@@ -41,7 +41,7 @@ export default function SaringLaporan({ alamat, query, maksHari, pilihan }: Prop
     };
 
     return (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Saring laporan">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Filter laporan">
             <PemilihRentangTanggal
                 label="Periode"
                 nilai={GabungRentang(query.dari ?? '', query.sampai ?? '')}

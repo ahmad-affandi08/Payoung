@@ -240,7 +240,7 @@ describe('F-14a dasbor pemilik di beranda', () => {
 describe('F-14a laporan penjualan', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/laporan/penjualan'));
 
-    it('ringkasan periode, tab sebagai tautan yang membawa saring, ekspor CSV sesuai saring, peringatan periode', () => {
+    it('ringkasan periode, tab sebagai tautan yang membawa filter, ekspor CSV sesuai filter, peringatan periode', () => {
         RenderUji(
             <HalamanLaporanPenjualan {...PropsPenjualan({ Peringatan: 'Periode laporan paling panjang 92 hari.' })} />,
         );
@@ -274,7 +274,7 @@ describe('F-14a laporan penjualan', () => {
         );
     });
 
-    it('saring kanal lewat PilihanCari memuat ulang laporan dengan saring di URL', () => {
+    it('filter kanal lewat PilihanCari memuat ulang laporan dengan filter di URL', () => {
         RenderUji(<HalamanLaporanPenjualan {...PropsPenjualan()} />);
 
         PilihOpsi(screen.getByRole('combobox', { name: /Kanal/ }), 'MakanDiTempat');
@@ -316,7 +316,7 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('table', { name: 'Penjualan per jam' })).toBeTruthy();
     });
 
-    it('§10.10 tab per pelanggan & perbandingan outlet: nama, porsi, margin, dan ekspor sesuai saring', () => {
+    it('§10.10 tab per pelanggan & perbandingan outlet: nama, porsi, margin, dan ekspor sesuai filter', () => {
         const { unmount: Lepas } = RenderUji(
             <HalamanLaporanPenjualan
                 {...PropsPenjualan({
@@ -703,7 +703,7 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('link', { name: 'Ringkasan harian' })).toBeTruthy();
     });
 
-    it('tab per produk: TabelData mode server dengan ekspor sesuai saring; keadaan kosong', () => {
+    it('tab per produk: TabelData mode server dengan ekspor sesuai filter; keadaan kosong', () => {
         RenderUji(
             <HalamanLaporanPenjualan
                 {...PropsPenjualan({
@@ -915,7 +915,7 @@ describe('§10.10 laporan pembelian', () => {
         OpsiOutlet: [{ Nilai: 'o1', Label: 'Toko Kelontong Berkah Solo' }],
     };
 
-    it('per pemasok: nama, pembelian bersih, sisa hutang; ekspor sesuai saring', () => {
+    it('per pemasok: nama, pembelian bersih, sisa hutang; ekspor sesuai filter', () => {
         RenderUji(
             <HalamanLaporanPembelian
                 {...dasar}

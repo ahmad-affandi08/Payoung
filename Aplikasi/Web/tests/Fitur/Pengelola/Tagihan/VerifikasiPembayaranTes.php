@@ -117,7 +117,7 @@ describe('Antrean verifikasi (P-08 langkah 3)', function (): void {
                 ->where('Pembayaran.0.Status', 'Menunggu'));
     });
 
-    it('TabelData (D-16): JSON di URL yang sama dengan cari, saring status, dan Meta', function (): void {
+    it('TabelData (D-16): JSON di URL yang sama dengan cari, filter status, dan Meta', function (): void {
         BayarTagihanUji($this, $this->pemilik, $this->tenant);
         $tagihan = TagihanLangganan::query()->withoutGlobalScopes()->sole();
         MasukTagihanPengelola($this, $this->keuangan);

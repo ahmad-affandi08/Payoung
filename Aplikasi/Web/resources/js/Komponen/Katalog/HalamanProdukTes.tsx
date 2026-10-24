@@ -60,12 +60,12 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
         expect(screen.getByText('12 dari 100 produk')).toBeTruthy();
     });
 
-    it('kosong karena pencarian: menawarkan hapus pencarian & saring', () => {
+    it('kosong karena pencarian: menawarkan hapus pencarian & filter', () => {
         window.history.replaceState({}, '', '/kelola/produk?cari=teh');
         RenderUji(<HalamanDaftarProduk {...PropsDaftar()} />);
 
-        expect(screen.getByText('Tidak ada hasil untuk pencarian atau saring ini.')).toBeTruthy();
-        expect(screen.getAllByRole('button', { name: 'Hapus pencarian & saring' }).length).toBeGreaterThan(0);
+        expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
+        expect(screen.getAllByRole('button', { name: 'Hapus pencarian & filter' }).length).toBeGreaterThan(0);
     });
 
     it('data ekstrem: 2.000 baris, nama 60 karakter, Rp 1.250.000.000 rata kanan tabular; SKU Mono', () => {
@@ -113,7 +113,7 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
         expect(screen.getByText('Batas produk paket sudah tercapai')).toBeTruthy();
     });
 
-    it('saring status bawaan Aktif, ekspor mengikuti pencarian & saring aktif di URL', () => {
+    it('filter status bawaan Aktif, ekspor mengikuti pencarian & filter aktif di URL', () => {
         window.history.replaceState(
             {},
             '',
@@ -124,7 +124,7 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
         expect(screen.getByRole('link', { name: 'Ekspor ke Excel' }).getAttribute('href')).toBe(
             '/kelola/produk/ekspor?cari=kopi&urut=-DiubahPada&saring%5BJenis%5D=Resep&saring%5BStatus%5D=Semua',
         );
-        const chip = screen.getByLabelText('Saring aktif');
+        const chip = screen.getByLabelText('Filter aktif');
         expect(within(chip).getByText('Status: Semua status')).toBeTruthy();
         expect(within(chip).getByText('Jenis: Menu resep')).toBeTruthy();
     });

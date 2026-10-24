@@ -160,7 +160,7 @@ describe('F-07b halaman penjualan back-office', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/penjualan'));
     afterEach(() => cleanup());
 
-    it('daftar (TabelData D-16): nomor bertautan detail, Rupiah jutaan terformat, metode, penanda perlu ditinjau, saring outlet hanya bila > 1; keadaan kosong', () => {
+    it('daftar (TabelData D-16): nomor bertautan detail, Rupiah jutaan terformat, metode, penanda perlu ditinjau, filter outlet hanya bila > 1; keadaan kosong', () => {
         window.history.replaceState({}, '', '/kelola/penjualan');
         RenderUji(<HalamanDaftarPenjualan {...PropsDaftar([barisPenjualan])} />);
         const tabel = screen.getByRole('table', { name: 'Daftar penjualan' });
@@ -387,7 +387,7 @@ describe('F-09 halaman void & retur back-office', () => {
         expect(FormatDurasi(-3)).toBe('0 detik');
     });
 
-    it('daftar (TabelData D-16): jenis, nomor bertautan, penjualan asal retur, nominal jutaan, penanda segera setelah bayar, saring jenis; keadaan kosong', () => {
+    it('daftar (TabelData D-16): jenis, nomor bertautan, penjualan asal retur, nominal jutaan, penanda segera setelah bayar, filter jenis; keadaan kosong', () => {
         window.history.replaceState({}, '', '/kelola/penjualan/void-retur');
         RenderUji(
             <HalamanDaftarVoidRetur

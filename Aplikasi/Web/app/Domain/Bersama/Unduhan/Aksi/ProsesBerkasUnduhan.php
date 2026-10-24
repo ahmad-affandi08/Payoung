@@ -23,7 +23,7 @@ use Throwable;
  */
 final class ProsesBerkasUnduhan
 {
-    private const GALAT_UMUM = 'Berkas gagal disiapkan. Coba lagi dengan rentang tanggal atau saringan yang lebih sempit.';
+    private const GALAT_UMUM = 'Berkas gagal disiapkan. Coba lagi dengan rentang tanggal atau filter yang lebih sempit.';
 
     public function __construct(private readonly BatasEksporLaporan $batas) {}
 

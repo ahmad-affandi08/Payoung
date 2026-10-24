@@ -49,7 +49,7 @@ export default function RingkasanKampanye({
         <div className="flex flex-col gap-4">
             {jumlah === 0 ? (
                 <Pemberitahuan jenis="peringatan" judul="Belum ada pelanggan yang cocok">
-                    Draf tetap bisa disimpan, tetapi belum ada yang akan menerimanya. Longgarkan saringan di langkah
+                    Draf tetap bisa disimpan, tetapi belum ada yang akan menerimanya. Longgarkan filter di langkah
                     Penerima.
                 </Pemberitahuan>
             ) : null}

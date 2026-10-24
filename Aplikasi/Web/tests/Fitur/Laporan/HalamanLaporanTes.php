@@ -248,7 +248,7 @@ describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void 
             ->where('Isi.0.TotalDiskon', '3850.00'));
     });
 
-    it('saring kanal, kasir, outlet; periode lebih dari 92 hari dipotong dengan peringatan; ekspor CSV mengikuti saring', function (): void {
+    it('filter kanal, kasir, outlet; periode lebih dari 92 hari dipotong dengan peringatan; ekspor CSV mengikuti filter', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
 

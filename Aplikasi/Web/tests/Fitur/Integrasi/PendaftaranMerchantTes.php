@@ -335,7 +335,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         Http::assertSentCount(5);
     });
 
-    it('galat 4xx pasti: Gagal dengan pesan tersaring (tanpa secret, token, NIK, rekening); foto lokal dihapus; boleh dikirim ulang', function (): void {
+    it('galat 4xx pasti: Gagal dengan pesan terfilter (tanpa secret, token, NIK, rekening); foto lokal dihapus; boleh dikirim ulang', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT.header.payload-rahasia'], 200),

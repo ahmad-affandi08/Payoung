@@ -190,7 +190,7 @@ describe('tugas otomatis', function (): void {
 });
 
 describe('halaman konsol', function (): void {
-    it('daftar tenant menampilkan kategori terbaru dan bisa disaring; tampilan 360° memuat rincian faktor dan tugas terbuka', function (): void {
+    it('daftar tenant menampilkan kategori terbaru dan bisa difilter; tampilan 360° memuat rincian faktor dan tugas terbuka', function (): void {
         ['Tenant' => $berisiko] = BantuanOrganisasi::BuatTenant('Kedai Berisiko Tampil');
         ['Tenant' => $baru] = BantuanOrganisasi::BuatTenant('Kedai Baru Tampil');
         UmurkanTenant($berisiko, '2026-08-01 03:00:00');
@@ -214,7 +214,7 @@ describe('halaman konsol', function (): void {
         $this->get(BantuanPengelola::Url("/tenant/{$baru->Uuid}"))->assertInertia(fn (AssertableInertia $h) => $h->has('Tenant.Kesehatan.Terbaru'));
     });
 
-    it('halaman tugas: sebaran kategori, daftar terbuka lebih dulu, saring jenis; izin menangani hanya untuk yang boleh menulis catatan', function (): void {
+    it('halaman tugas: sebaran kategori, daftar terbuka lebih dulu, filter jenis; izin menangani hanya untuk yang boleh menulis catatan', function (): void {
         ['Tenant' => $a] = BantuanOrganisasi::BuatTenant('Kedai Tugas A');
         UmurkanTenant($a, '2026-10-10 03:00:00');
         HitungSkorUji();

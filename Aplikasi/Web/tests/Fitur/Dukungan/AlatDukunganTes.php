@@ -223,7 +223,7 @@ describe('BR-P09.3: cabut perangkat', function (): void {
 });
 
 describe('Minta dan baca log perangkat', function (): void {
-    it('permintaan ditandai, muncul di konfigurasi-aplikasi, log yang diunggah disaring dan bisa dibaca dukungan', function (): void {
+    it('permintaan ditandai, muncul di konfigurasi-aplikasi, log yang diunggah difilter dan bisa dibaca dukungan', function (): void {
         [$tenant, $petugas] = SiapkanAlatUji($this);
         ['Perangkat' => $perangkat, 'Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant['Tenant']->Id);
 

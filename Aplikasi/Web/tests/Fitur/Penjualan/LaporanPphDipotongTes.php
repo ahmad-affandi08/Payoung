@@ -107,7 +107,7 @@ describe('Laporan PPh dipotong pelanggan', function (): void {
             ->assertJsonPath('Ringkasan.BelumBukti.Nilai', '100000.00');
     });
 
-    it('halaman Inertia memuat tabel awal; ringkasan dan baris mengikuti saringan bukti, tanggal, pelanggan, dan cari', function (): void {
+    it('halaman Inertia memuat tabel awal; ringkasan dan baris mengikuti filter bukti, tanggal, pelanggan, dan cari', function (): void {
         [, , , $denganBukti, $tanpaBukti] = SkenarioPphUji($this);
 
         $this->get('/kelola/laporan/pajak/pph-dipotong')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -136,7 +136,7 @@ describe('Laporan PPh dipotong pelanggan', function (): void {
         $this->getJson('/kelola/laporan/pajak/pph-dipotong')->assertJsonCount(1, 'Data')->assertJsonPath('Ringkasan.Total', '100000.00');
     });
 
-    it('ekspor CSV mengikuti saringan dan memuat ringkasan; kasir tanpa izin laporan keuangan ditolak', function (): void {
+    it('ekspor CSV mengikuti filter dan memuat ringkasan; kasir tanpa izin laporan keuangan ditolak', function (): void {
         [, , , $denganBukti, $tanpaBukti] = SkenarioPphUji($this);
 
         $csv = $this->get('/kelola/laporan/pajak/pph-dipotong/ekspor?format=csv&saring[Bukti]=Belum')->assertOk()->streamedContent();

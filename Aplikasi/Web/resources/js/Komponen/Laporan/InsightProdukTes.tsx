@@ -206,7 +206,7 @@ describe('X6 saran restock di laporan stok', () => {
         },
     };
 
-    it('menampilkan perkiraan habis & saran beli, pilihan cakupan hari memuat ulang dengan saring', () => {
+    it('menampilkan perkiraan habis & saran beli, pilihan cakupan hari memuat ulang dengan filter', () => {
         RenderUji(<HalamanLaporanStok {...props} />);
 
         expect(screen.getByRole('heading', { name: 'Saran restock (2)' })).toBeTruthy();
@@ -243,7 +243,7 @@ describe('X6 saran restock di laporan stok', () => {
         expect(screen.getByText('Belum ada pemakaian stok dalam 28 hari terakhir.')).toBeTruthy();
     });
 
-    it('slow & fast moving: ringkasan kelas, nilai tertahan, kolom kelas; pilihan rentang memuat ulang dengan saring', () => {
+    it('slow & fast moving: ringkasan kelas, nilai tertahan, kolom kelas; pilihan rentang memuat ulang dengan filter', () => {
         RenderUji(
             <HalamanLaporanStok
                 {...props}

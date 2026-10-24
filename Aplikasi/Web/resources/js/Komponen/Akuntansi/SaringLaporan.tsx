@@ -71,7 +71,7 @@ export default function SaringLaporan({
 
     return (
         <section
-            aria-label="Saringan laporan"
+            aria-label="Filter laporan"
             className="grid gap-3 rounded-panel border border-garis bg-permukaan p-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
         >
             {opsiAkun ? (

@@ -242,7 +242,7 @@ describe('F-05h garansi: snapshot penjualan & struk digital', function (): void 
     });
 });
 
-describe('F-05h riwayat nomor seri (v3.13): buka otomatis, saring, pembeli & garansi, izin, ekspor', function (): void {
+describe('F-05h riwayat nomor seri (v3.13): buka otomatis, filter, pembeli & garansi, izin, ekspor', function (): void {
     it('alamat lama dialihkan ke alamat baru (tautan tersimpan tetap bekerja) dengan query utuh', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::StafGudang);
@@ -269,7 +269,7 @@ describe('F-05h riwayat nomor seri (v3.13): buka otomatis, saring, pembeli & gar
             ->has('Hasil', 2)->where('Detail', null));
     });
 
-    it('mencari lewat nama produk, menyaring status dan produk, dan membatasi hasil dengan total yang jujur', function (): void {
+    it('mencari lewat nama produk, memfilter status dan produk, dan membatasi hasil dengan total yang jujur', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002']);
@@ -358,7 +358,7 @@ describe('F-05h riwayat nomor seri (v3.13): buka otomatis, saring, pembeli & gar
         $this->getJson('/kelola/persediaan/kartu-stok/nomor-seri?cari=Ponsel')->assertOk()->assertJsonCount(0, 'Data');
     });
 
-    it('ekspor CSV memuat hasil sesuai saring, tanpa pembeli bagi yang tidak berizin, dan diawali BOM', function (): void {
+    it('ekspor CSV memuat hasil sesuai filter, tanpa pembeli bagi yang tidak berizin, dan diawali BOM', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002']);

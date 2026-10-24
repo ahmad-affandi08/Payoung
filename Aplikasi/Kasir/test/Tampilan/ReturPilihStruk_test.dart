@@ -104,7 +104,7 @@ void main() {
 
     expect(kandidat.last.queryParameters['kata'], '0007');
     expect(find.text('Pilih struk'), findsOneWidget);
-    expect(cari, isEmpty, reason: 'Sebagian nomor hanya menyaring pilihan, belum membuka struk.');
+    expect(cari, isEmpty, reason: 'Sebagian nomor hanya memfilter pilihan, belum membuka struk.');
     await Lepas(tester, u);
   });
 

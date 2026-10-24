@@ -61,7 +61,7 @@ function BacaIsiXlsx(string $path): array
 }
 
 describe('Penulis Excel laporan (D-43)', function (): void {
-    it('menulis kop, saringan, ringkasan, header beku, filter otomatis, dan jumlah sesuai tata letak Majoo', function (): void {
+    it('menulis kop, filter, ringkasan, header beku, filter otomatis, dan jumlah sesuai tata letak Majoo', function (): void {
         $path = PenulisXlsxLaporan::Tulis(BuatDefinisiUji());
         $berkas = BacaIsiXlsx($path);
         PenulisXlsxLaporan::Bersihkan($path);

@@ -31,7 +31,7 @@ export default function AksiMassalEkspor<T>({
             {terlaluBanyak ? (
                 <p className="text-keterangan text-bahaya">
                     Maksimal {MaksEksporTerpilih} baris untuk ekspor terpilih. Kurangi pilihan, atau pakai Ekspor di
-                    atas tabel untuk semua hasil saringan.
+                    atas tabel untuk semua hasil filter.
                 </p>
             ) : null}
         </div>

@@ -125,11 +125,11 @@ describe('F31 halaman pusat notifikasi', () => {
         expect(tiruanRouter.post).toHaveBeenCalledWith('/kelola/notifikasi/dibaca', { Semua: true }, expect.anything());
     });
 
-    it('saringan belum dibaca: tautan dan keadaan kosong khusus', () => {
+    it('filter belum dibaca: tautan dan keadaan kosong khusus', () => {
         RenderUji(
             <HalamanNotifikasi {...Props({ Notifikasi: [], BelumDibaca: 0, Saring: { Tampil: 'belum-dibaca' } })} />,
         );
-        const nav = screen.getByRole('navigation', { name: 'Saringan notifikasi' });
+        const nav = screen.getByRole('navigation', { name: 'Filter notifikasi' });
         expect(within(nav).getByRole('link', { name: 'Semua' }).getAttribute('href')).toBe('/kelola/notifikasi');
         const belum = within(nav).getByRole('link', { name: 'Belum dibaca (0)' });
         expect(belum.getAttribute('href')).toBe('/kelola/notifikasi?tampil=belum-dibaca');

@@ -141,7 +141,7 @@ describe('F8 laporan anggaran vs realisasi', () => {
         expect(screen.queryByRole('link', { name: 'Susun anggaran' })).toBeNull();
     });
 
-    it('mengganti saringan memuat ulang laporan dengan saring di URL; ekspor membawa saringan', () => {
+    it('mengganti filter memuat ulang laporan dengan filter di URL; ekspor membawa filter', () => {
         RenderUji(<HalamanLaporanAnggaran {...PropsLaporan()} />);
 
         PilihOpsi(screen.getByRole('combobox', { name: /Sampai bulan/ }), '12');

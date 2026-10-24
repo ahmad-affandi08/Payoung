@@ -18,7 +18,7 @@ void main() {
   });
   tearDown(() => folder.deleteSync(recursive: true));
 
-  test('penyaring menyamarkan HP, email, NIK, kartu, token; angka pendek tetap', () {
+  test('filter menyamarkan HP, email, NIK, kartu, token; angka pendek tetap', () {
     expect(
       LogLokal.SaringPii('WA 0812-3456-7890 ke rina@contoh.id NIK 3372011234567890 Bearer abc.def kode 500 baris 42'),
       'WA [disamarkan] ke [disamarkan] NIK [disamarkan] Bearer [disamarkan] kode 500 baris 42',
@@ -69,7 +69,7 @@ void main() {
   });
 
   test(
-    'PGL-16 bagian 2: unggah atas permintaan mengirim semua tingkat, terlama dulu, tersaring dari data pribadi',
+    'PGL-16 bagian 2: unggah atas permintaan mengirim semua tingkat, terlama dulu, terfilter dari data pribadi',
     () async {
       final u = LingkunganUji.Buat();
       addTearDown(u.Tutup);

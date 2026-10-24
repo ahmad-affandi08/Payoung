@@ -84,7 +84,7 @@ describe('Pusat Bantuan publik', () => {
         uji.url = '/pusat-bantuan';
     });
 
-    it('daftar: artikel dikelompokkan per kategori, formulir cari membawa kata dan kategori, hapus saringan muncul bila difilter', () => {
+    it('daftar: artikel dikelompokkan per kategori, formulir cari membawa kata dan kategori, hapus filter muncul bila difilter', () => {
         uji.props = {
             Situs: situs,
             Halaman: { Seo: { Judul: 'Pusat Bantuan | Payoung', Deskripsi: 'Panduan memakai Payoung.' } },
@@ -118,7 +118,7 @@ describe('Pusat Bantuan publik', () => {
         );
         expect(within(kasir).getByText('Ada video penjelasan')).toBeTruthy();
         expect(screen.getByRole('status').textContent).toContain('2 artikel ditemukan untuk "shift"');
-        expect(screen.getByRole('link', { name: 'Hapus saringan' }).getAttribute('href')).toBe('/pusat-bantuan');
+        expect(screen.getByRole('link', { name: 'Hapus filter' }).getAttribute('href')).toBe('/pusat-bantuan');
 
         const form = screen.getByRole('search');
         expect(form.getAttribute('action')).toBe('/pusat-bantuan');

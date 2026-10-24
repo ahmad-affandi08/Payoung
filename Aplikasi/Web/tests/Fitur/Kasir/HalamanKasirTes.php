@@ -56,7 +56,7 @@ describe('F-06 halaman back-office shift', function (): void {
         $this->get("/kelola/kasir/mutasi-kas/{$keluar['Uuid']}")->assertRedirect("/kelola/kasir/shift/{$shift['Uuid']}");
     });
 
-    it('D-16 TabelData: URL yang sama melayani JSON {Data, Meta}; cari nama kasir, saring status/tanggal/tinjauan, urut & paginasi', function (): void {
+    it('D-16 TabelData: URL yang sama melayani JSON {Data, Meta}; cari nama kasir, filter status/tanggal/tinjauan, urut & paginasi', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $perangkat2 = BantuanPerangkat::BuatDanAktifkan($this, $k['Tenant']->Id, $k['Outlet'], 'Kasir Belakang');
         $pertama = BantuanKasir::ItemBukaShift($k['Kasir'], '500000.00', ['DibukaPada' => '2026-09-20T01:00:00Z']);

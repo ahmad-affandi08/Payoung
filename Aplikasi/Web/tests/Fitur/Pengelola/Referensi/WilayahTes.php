@@ -86,7 +86,7 @@ describe('Data wilayah (P-02)', function (): void {
         [PeranPengelolaBawaan::Analis, false],
     ]);
 
-    it('menyaring tingkat dengan saring[Tingkat] dan meng-escape karakter wildcard pada pencarian kode', function (): void {
+    it('memfilter tingkat dengan saring[Tingkat] dan meng-escape karakter wildcard pada pencarian kode', function (): void {
         BuatProvinsiJateng();
         Wilayah::query()->create(['Kode' => '33.74', 'Nama' => 'Kota Semarang', 'Tingkat' => TingkatWilayah::KabupatenKota, 'KodeInduk' => '33', 'ZonaWaktu' => ZonaWaktu::Wib]);
         $this->actingAs(BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Analis), 'pengelola')->withSession(BantuanPengelola::SesiTerverifikasi());
@@ -97,7 +97,7 @@ describe('Data wilayah (P-02)', function (): void {
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('Wilayah.Data', 0)->where('Wilayah.Meta.Total', 0));
     });
 
-    it('TabelData (D-16): JSON di URL yang sama dengan cari nama/awalan kode, saring tingkat, urut, dan Meta', function (): void {
+    it('TabelData (D-16): JSON di URL yang sama dengan cari nama/awalan kode, filter tingkat, urut, dan Meta', function (): void {
         BuatProvinsiJateng();
         Wilayah::query()->create(['Kode' => '33.74', 'Nama' => 'Kota Semarang', 'Tingkat' => TingkatWilayah::KabupatenKota, 'KodeInduk' => '33', 'ZonaWaktu' => ZonaWaktu::Wib]);
         Wilayah::query()->create(['Kode' => '33.22', 'Nama' => 'Kabupaten Semarang', 'Tingkat' => TingkatWilayah::KabupatenKota, 'KodeInduk' => '33', 'ZonaWaktu' => ZonaWaktu::Wib]);

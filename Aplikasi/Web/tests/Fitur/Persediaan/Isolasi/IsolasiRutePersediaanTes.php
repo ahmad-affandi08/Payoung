@@ -202,7 +202,7 @@ describe('F-05a isolasi tenant: setiap rute persediaan & jurnal × dokumen tenan
             ->and(AmbilJejakDokumenIsolasi($a['Tenant']->Id)[0])->toBe([]);
     });
 
-    it('UUID lokasi stok, produk, dan saringan tenant B tidak bisa dipakai dan tidak membocorkan data', function (): void {
+    it('UUID lokasi stok, produk, dan filter tenant B tidak bisa dipakai dan tidak membocorkan data', function (): void {
         $b = BantuanPersediaan::SiapkanTenant('Warung Bu Tini Jaya');
         $rahasiaB = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Luwak Premium Rahasia Tenant B 250 gram'], '350000.00', $b['Pcs']);
         BantuanPersediaan::TulisMutasiLangsung($rahasiaB->Id, $b['Gudang']->Id, '15', '4500000.00');
@@ -251,7 +251,7 @@ describe('F-05a isolasi tenant: setiap rute persediaan & jurnal × dokumen tenan
 });
 
 describe('F-05a isolasi outlet: pengguna per outlet × lokasi stok outlet lain (DesainF05a D)', function (): void {
-    it('dokumen di lokasi stok outlet lain = 404 di semua rute berdokumen; simpan & saringan lokasi outlet lain ditolak', function (): void {
+    it('dokumen di lokasi stok outlet lain = 404 di semua rute berdokumen; simpan & filter lokasi outlet lain ditolak', function (): void {
         $t = BantuanPersediaan::SiapkanTenant('Toko Bangunan Sinar Abadi');
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['Stok'];
         $cabang = Outlet::query()->create(['IdMerek' => Merek::query()->value('Id'), 'Kode' => 'SOLO', 'Nama' => 'Cabang Solo Baru']);

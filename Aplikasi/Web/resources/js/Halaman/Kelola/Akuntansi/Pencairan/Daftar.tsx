@@ -112,7 +112,7 @@ function RekapPotongan({ rekap }: { rekap: RekapPotonganPencairan[] }) {
     return (
         <div className="flex flex-col gap-2 rounded-panel border border-garis p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-label font-semibold text-teks-sekunder">Potongan platform pada saringan ini</h3>
+                <h3 className="text-label font-semibold text-teks-sekunder">Potongan platform pada filter ini</h3>
                 <TautanEkspor
                     alamat={`${alamat}/rekap-potongan/ekspor`}
                     query={Object.fromEntries(

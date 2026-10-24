@@ -543,7 +543,7 @@ describe('Penawaran: izin dan isolasi tenant', function (): void {
         expect($penawaran->refresh()->Status->value)->toBe('Terbit');
     });
 
-    it('ekspor CSV mengikuti saringan dan ditolak untuk kasir', function (): void {
+    it('ekspor CSV mengikuti filter dan ditolak untuk kasir', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this, ['Perihal' => 'Draf rahasia']))->assertSessionHasNoErrors();

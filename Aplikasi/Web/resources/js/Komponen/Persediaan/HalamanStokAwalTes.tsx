@@ -127,12 +127,12 @@ describe('Kelola/Persediaan/StokAwal/Daftar (F-05a, TabelData D-16)', () => {
         expect(screen.getByText('Minta pengelola persediaan mengisi stok awal.')).toBeTruthy();
     });
 
-    it('kosong karena saringan: menawarkan hapus pencarian & saring', () => {
+    it('kosong karena filter: menawarkan hapus pencarian & filter', () => {
         window.history.replaceState({}, '', '/kelola/persediaan/stok-awal?saring%5BStatus%5D=Draf');
         RenderUji(<HalamanDaftarStokAwal {...PropsDaftar()} />);
 
-        expect(screen.getByText('Tidak ada hasil untuk pencarian atau saring ini.')).toBeTruthy();
-        expect(within(screen.getByLabelText('Saring aktif')).getByText('Status: Draf')).toBeTruthy();
+        expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
+        expect(within(screen.getByLabelText('Filter aktif')).getByText('Status: Draf')).toBeTruthy();
     });
 
     it('peringatan akun jurnal hanya untuk pemegang izin posting', () => {
@@ -173,7 +173,7 @@ describe('Kelola/Persediaan/StokAwal/Daftar (F-05a, TabelData D-16)', () => {
         expect(barisTabel[1]?.textContent).toContain('Dari impor Excel');
     }, 30_000);
 
-    it('saring status tersimpan di URL dan data diambil dari server (TanStack Query)', async () => {
+    it('filter status tersimpan di URL dan data diambil dari server (TanStack Query)', async () => {
         const permintaan: string[] = [];
         vi.stubGlobal(
             'fetch',

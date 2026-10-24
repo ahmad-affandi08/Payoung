@@ -506,7 +506,7 @@ void main() {
       expect(LayananReturPenjualan.CekBolehDesimal(Baris('2.0000'), katalog), isFalse);
     });
 
-    test('baris obat racikan tidak bisa diretur: disaring dari pilihan, ditolak sebelum outbox', () async {
+    test('baris obat racikan tidak bisa diretur: difilter dari pilihan, ditolak sebelum outbox', () async {
       ServerStruk(
         StrukUji(
           baris: [

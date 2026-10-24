@@ -89,7 +89,7 @@ it('impor ditolak: kolom wajib tidak ada, bukan berkas tabel', function (): void
     $this->post('/kelola/pelanggan/impor', [])->assertSessionHasErrors('Berkas');
 });
 
-it('ekspor: ikut saringan, kolom bisa diimpor ulang (semua sudah ada), tercatat di audit; izin pelanggan.kelola', function (): void {
+it('ekspor: ikut filter, kolom bisa diimpor ulang (semua sudah ada), tercatat di audit; izin pelanggan.kelola', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Kue Bu Sri');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);

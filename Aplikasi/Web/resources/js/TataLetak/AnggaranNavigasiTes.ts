@@ -83,7 +83,7 @@ describe('Anggaran navigasi back-office (D-27)', () => {
         expect(kembar).toEqual([]);
     });
 
-    it('kotak cari Pengaturan menyaring nama grup, label, dan keterangan', () => {
+    it('kotak cari Pengaturan memfilter nama grup, label, dan keterangan', () => {
         const BolehSemua = () => true;
 
         // Kata kosong = seluruh butir yang boleh dilihat.
@@ -107,7 +107,7 @@ describe('Anggaran navigasi back-office (D-27)', () => {
         expect(SaringPengaturan('zzz tidak ada', BolehSemua)).toEqual([]);
     });
 
-    it('kotak cari tidak pernah menembus penyaringan izin', () => {
+    it('kotak cari tidak pernah menembus pemfilteran izin', () => {
         // Regresi: pencarian tidak boleh memunculkan halaman yang pengguna tidak berhak melihatnya.
         const hanyaTanpaIzin = SaringPengaturan('', (butir) => butir.izin === null);
         const label = hanyaTanpaIzin.flatMap(({ butir }) => butir.map((b) => b.label));

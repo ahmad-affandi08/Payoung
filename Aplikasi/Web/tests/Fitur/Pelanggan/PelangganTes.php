@@ -80,7 +80,7 @@ describe('nomor HP', function (): void {
 });
 
 describe('F-16a back-office pelanggan', function (): void {
-    it('tambah, nomor HP unik per tenant, ubah, daftar & cari, saring tag, arsip & pulihkan, audit tersamar', function (): void {
+    it('tambah, nomor HP unik per tenant, ubah, daftar & cari, filter tag, arsip & pulihkan, audit tersamar', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

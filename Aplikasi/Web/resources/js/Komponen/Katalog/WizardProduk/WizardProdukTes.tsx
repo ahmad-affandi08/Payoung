@@ -146,7 +146,7 @@ describe('PetakanGalatKeLangkah (kunci galat server -> langkah)', () => {
         expect(PetakanGalatKeLangkah('Uuid')).toBeNull();
     });
 
-    it('HitungLangkahBergalat berurutan baku, mengabaikan pesan kosong; AmbilGalatLangkah menyaring per langkah', () => {
+    it('HitungLangkahBergalat berurutan baku, mengabaikan pesan kosong; AmbilGalatLangkah memfilter per langkah', () => {
         const galat = {
             KodeUnitCoretax: 'x',
             'Satuan.0.Barcode.0': 'y',

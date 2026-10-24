@@ -92,8 +92,8 @@ export default function HalamanNeraca({ Saring, Laporan, OpsiOutlet }: PropsNera
                 </Pemberitahuan>
             ) : (
                 <Pemberitahuan jenis="peringatan" judul="Tidak seimbang">
-                    Total aset berbeda dengan total kewajiban dan ekuitas untuk saringan ini, biasanya karena satu
-                    jurnal memuat baris beberapa outlet. Lihat tanpa saringan outlet untuk memeriksa keseimbangan penuh.
+                    Total aset berbeda dengan total kewajiban dan ekuitas untuk filter ini, biasanya karena satu jurnal
+                    memuat baris beberapa outlet. Lihat tanpa filter outlet untuk memeriksa keseimbangan penuh.
                 </Pemberitahuan>
             )}
             <RingkasanAngka

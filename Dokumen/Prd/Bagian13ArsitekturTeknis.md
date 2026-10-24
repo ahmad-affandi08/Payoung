@@ -285,6 +285,7 @@ dashboard.{{app}}.id           Semua rute di atas selain pemasaran (D-20, DOMAIN
 | Variabel lokal & parameter | camelCase Bahasa Indonesia | `$totalBayar`, `jumlahItem` |
 | **URL / endpoint** (D-06) | Bahasa Indonesia, **huruf kecil kebab-case**, kata benda tunggal, aksi sebagai sub-segmen kata kerja | `/kelola/produk`, `/api/pos/v1/sinkron/kirim`, `/api/pemilik/v1/persetujuan/{id}/setujui` |
 | Parameter route & query | Parameter route camelCase (`{idOutlet}`, `{slugTenant}`), query huruf kecil (`?sejak=`, `?kata=`, `saring[...]`, `urut=`) | `/internal/outlet/{idOutlet}/perangkat?sejak=…` |
+| Istilah UI untuk menyaring data (D-192) | Antarmuka memakai kata **Filter** (bukan "Saring"); nama teknis tetap `saring[...]`/`Saring` | tombol "Filter", chip "Hapus filter" |
 | Nama route Laravel | Titik + kebab-case Indonesia | `kelola.produk.daftar`, `pos.sinkron.kirim` |
 | Scope token API | `{objek}:{aksi}` | `produk:baca`, `stok:tulis` |
 | Nama permission | `{modul}.{objek}.{aksi}` huruf kecil kebab-case | `penjualan.void`, `produk.harga.ubah`, `laporan.keuangan.lihat` |

@@ -118,7 +118,7 @@ it('perintah kerja perangkat: KM diabaikan, rincian membawa Jenis, pesan WhatsAp
         ->assertSessionHasErrors('ServisBerikutnyaKm');
 });
 
-it('daftar unit dapat disaring menurut jenis', function (): void {
+it('daftar unit dapat difilter menurut jenis', function (): void {
     $k = SiapkanServisElektronik($this);
     SimpanUnitUji($this, $k, ['NomorPolisi' => 'SN-AAA-111'])->assertSessionHasNoErrors();
     SimpanUnitUji($this, $k, ['Jenis' => 'Kendaraan', 'NomorPolisi' => 'AD 77 ZZ', 'Merek' => 'Yamaha'])->assertSessionHasNoErrors();

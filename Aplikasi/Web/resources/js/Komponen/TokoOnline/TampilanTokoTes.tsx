@@ -74,7 +74,7 @@ describe('tampilan toko online', () => {
         expect(screen.getByText(/Jl\. Slamet Riyadi 10/)).toBeTruthy();
     });
 
-    it('kategori dan pencarian menyaring menu; hasil kosong memberi petunjuk', () => {
+    it('kategori dan pencarian memfilter menu; hasil kosong memberi petunjuk', () => {
         RenderUji(<HalamanTokoOnline {...props} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Roti' }));

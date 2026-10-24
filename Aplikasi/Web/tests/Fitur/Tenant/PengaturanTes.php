@@ -24,7 +24,7 @@ beforeEach(function (): void {
 });
 
 describe('Indeks pengaturan', function (): void {
-    it('terbuka untuk semua anggota, karena butirnya disaring per izin di halaman', function (): void {
+    it('terbuka untuk semua anggota, karena butirnya difilter per izin di halaman', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)

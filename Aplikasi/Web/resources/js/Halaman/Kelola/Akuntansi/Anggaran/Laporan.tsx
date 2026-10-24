@@ -150,7 +150,7 @@ export default function HalamanLaporanAnggaran({
                 ) : null}
             </AksiHalaman>
             <section
-                aria-label="Saringan laporan"
+                aria-label="Filter laporan"
                 className="grid gap-3 rounded-panel border border-garis bg-permukaan p-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
             >
                 <BidangPilihan

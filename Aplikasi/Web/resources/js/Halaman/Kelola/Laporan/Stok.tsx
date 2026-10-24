@@ -419,7 +419,7 @@ export default function HalamanLaporanStok({
 
     return (
         <TataLetakAplikasi judul="Laporan stok">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Saring laporan stok">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Filter laporan stok">
                 {Saring.Tab === 'nilai' ? (
                     <PemilihTanggal
                         label="Posisi pada tanggal"

@@ -230,7 +230,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         expect(screen.getByText('Nomor seri tidak ditemukan.')).toBeTruthy();
     });
 
-    it('saring produk: penanda produk dan tautan melepas saringan; tab membawa produk', () => {
+    it('filter produk: penanda produk dan tautan melepas filter; tab membawa produk', () => {
         RenderUji(
             <HalamanNomorSeri
                 {...Props({
@@ -251,7 +251,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         ).not.toBeNull();
     });
 
-    it('BuatQueryNomorSeri hanya memuat saringan yang terisi', () => {
+    it('BuatQueryNomorSeri hanya memuat filter yang terisi', () => {
         expect(BuatQueryNomorSeri({ Cari: '', Status: '', Produk: '', Unit: '' })).toEqual({});
         expect(BuatQueryNomorSeri({ Cari: 'IMEI', Status: 'Tersedia', Produk: 'P', Unit: 'U' })).toEqual({
             cari: 'IMEI',

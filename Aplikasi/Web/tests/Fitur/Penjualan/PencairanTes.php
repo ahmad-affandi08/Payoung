@@ -425,7 +425,7 @@ describe('BR-08.4 pengingat & rekap potongan', function (): void {
         expect($qris->fresh()->BatasHariMenunggu)->toBeNull();
     });
 
-    it('rekap potongan per metode ikut saringan tabel dan hanya menghitung yang diposting', function (): void {
+    it('rekap potongan per metode ikut filter tabel dan hanya menghitung yang diposting', function (): void {
         ['K' => $k, 'Metode' => $qris, 'Bank' => $bank] = SiapkanPencairanUji($this);
         $uuid = UuidPembayaranUji($qris);
         $pemilik = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);

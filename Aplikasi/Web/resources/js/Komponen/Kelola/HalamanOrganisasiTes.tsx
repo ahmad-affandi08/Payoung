@@ -61,7 +61,7 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
         },
     ];
 
-    it('daftar outlet: tautan detail, status bertulis, dan cari menyaring baris', async () => {
+    it('daftar outlet: tautan detail, status bertulis, dan cari memfilter baris', async () => {
         RenderUji(<HalamanDaftarOutlet Outlet={outlet} Merek={[]} Kota={[]} BatasOutlet={batas} />);
 
         expect(screen.getByRole('link', { name: 'Kopi Nusantara Sudirman' }).getAttribute('href')).toBe(

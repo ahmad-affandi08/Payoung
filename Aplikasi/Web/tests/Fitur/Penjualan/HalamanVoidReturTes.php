@@ -39,7 +39,7 @@ function SiapkanVoidRetur(mixed $tes, string $namaUsaha = 'Toko Kelontong Berkah
 }
 
 describe('F-09 halaman back-office void & retur', function (): void {
-    it('daftar Void & Retur (TabelData): jenis, nomor, kasir, penyetuju, nominal, alasan, jeda sejak bayar; cari, saring jenis/tanggal, urut nominal; JSON {Data, Meta}', function (): void {
+    it('daftar Void & Retur (TabelData): jenis, nomor, kasir, penyetuju, nominal, alasan, jeda sejak bayar; cari, filter jenis/tanggal, urut nominal; JSON {Data, Meta}', function (): void {
         [$k, $void, $retur, $uuidDivoid, $uuidAsal] = SiapkanVoidRetur($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
 

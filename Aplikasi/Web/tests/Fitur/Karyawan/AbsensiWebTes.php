@@ -525,7 +525,7 @@ it('pengelola: permintaan koreksi tampil di rekap & Kotak Tindakan, absensi manu
     $this->post("/kelola/karyawan/absensi/permintaan-koreksi/{$keluar->Uuid}/tutup", ['Status' => 'Selesai'])->assertForbidden();
 });
 
-it('absen yang perlu dicek: terlihat di rekap & Kotak Tindakan, bisa disaring, ditandai sudah dicek (idempoten, teraudit)', function (): void {
+it('absen yang perlu dicek: terlihat di rekap & Kotak Tindakan, bisa difilter, ditandai sudah dicek (idempoten, teraudit)', function (): void {
     [$k, , $alamat] = SiapkanAbsensiWeb($this);
     // Di luar radius: tercatat tetapi ditandai.
     $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['Bujur' => '110.8330000']))->assertOk()->assertJsonPath('PerluDicek', true);

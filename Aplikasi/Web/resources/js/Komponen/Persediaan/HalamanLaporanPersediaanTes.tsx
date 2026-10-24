@@ -63,12 +63,12 @@ describe('Kelola/Persediaan/Saldo (F-05a, TabelData D-16)', () => {
         expect(screen.getByText('Minta pengelola persediaan mengisi stok awal.')).toBeTruthy();
     });
 
-    it('kosong karena saringan: menawarkan hapus pencarian & saring', () => {
+    it('kosong karena filter: menawarkan hapus pencarian & filter', () => {
         window.history.replaceState({}, '', '/kelola/persediaan/saldo?saring%5BKeadaan%5D=Minus');
         RenderUji(<HalamanSaldoStok {...PropsSaldo()} />);
 
-        expect(screen.getByText('Tidak ada hasil untuk pencarian atau saring ini.')).toBeTruthy();
-        expect(within(screen.getByLabelText('Saring aktif')).getByText('Keadaan stok: Stok minus')).toBeTruthy();
+        expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
+        expect(within(screen.getByLabelText('Filter aktif')).getByText('Keadaan stok: Stok minus')).toBeTruthy();
     });
 
     it('ringkasan, stok minus, HPP belum diketahui, batch diringkas, lokasi diarsipkan, tautan kartu stok', () => {
@@ -270,7 +270,7 @@ describe('Kelola/Persediaan/KartuStok (F-05a)', () => {
         expect(screen.getByRole('combobox', { name: 'Produk' })).toBeTruthy();
     });
 
-    it('query & pemeriksaan saringan', () => {
+    it('query & pemeriksaan filter', () => {
         expect(BuatQueryKartuStok({ UuidProduk: null, UuidGudang: null, Dari: '', Sampai: '' })).toEqual({});
         expect(PeriksaSaringKartu({ ...saringKartu, UuidProduk: 'P', UuidGudang: 'G' })).toEqual({});
     });

@@ -61,7 +61,7 @@ function AmbilTautanGantiEmail(string $alamat): string
     return $tautan;
 }
 
-describe('Penyaring email asal-asalan', function (): void {
+describe('Filter email asal-asalan', function (): void {
     it('mengenali salah ketik penyedia populer, domain contoh, dan email sekali pakai', function (): void {
         config(['tenant.PeriksaDnsEmail' => false]);
         $pemeriksa = app(PemeriksaAlamatEmail::class);

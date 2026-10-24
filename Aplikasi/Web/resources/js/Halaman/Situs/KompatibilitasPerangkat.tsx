@@ -189,7 +189,7 @@ export default function HalamanKompatibilitasPerangkatPublik({ Baris }: { Baris:
                                     className="min-h-11 w-full rounded-kontrol border border-garis-input bg-permukaan pr-3 pl-9 text-isi text-teks-utama focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                                 />
                             </label>
-                            <div role="group" aria-label="Saring status" className="flex flex-wrap gap-2">
+                            <div role="group" aria-label="Filter status" className="flex flex-wrap gap-2">
                                 {(['Semua', 'Tersertifikasi', 'Kompatibel', 'Terbatas'] as const).map((p) => (
                                     <button
                                         key={p}

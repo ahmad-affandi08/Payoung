@@ -233,7 +233,7 @@ describe('PenyusunFakturPajakCoretax & PenulisXmlCoretax (v3.12)', function (): 
 });
 
 describe('HTTP ekspor Faktur Pajak Coretax', function (): void {
-    it('ringkasan JSON dan unduhan XML untuk periode saring', function (): void {
+    it('ringkasan JSON dan unduhan XML untuk periode filter', function (): void {
         FakturCoretaxUji($this, $this->toko);
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 

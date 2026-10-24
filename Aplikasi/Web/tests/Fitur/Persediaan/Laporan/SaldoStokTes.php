@@ -128,7 +128,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
         ])->and($minyakToko['NamaOutlet'])->not->toBeNull();
     });
 
-    it('saring Keadaan Ada/Nol/Minus, lokasi, dan kata (bagian nama, SKU tanpa beda huruf, barcode persis)', function (): void {
+    it('filter Keadaan Ada/Nol/Minus, lokasi, dan kata (bagian nama, SKU tanpa beda huruf, barcode persis)', function (): void {
         $d = SiapkanSaldoStokUji();
 
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Keadaan' => 'Ada'])))->toBe([
@@ -152,7 +152,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => '8991234500017'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya']);
     });
 
-    it('urut -Nilai (terbesar dulu) dan Jumlah (terkecil dulu); kolom urut/saring & nilai tak dikenal diabaikan', function (): void {
+    it('urut -Nilai (terbesar dulu) dan Jumlah (terkecil dulu); kolom urut/filter & nilai tak dikenal diabaikan', function (): void {
         SiapkanSaldoStokUji();
 
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Urut' => '-Nilai'])))->toBe([
@@ -185,7 +185,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->and($h2['Ringkasan']['JumlahBaris'])->toBe(4);
     });
 
-    it('saring, urut, dan halaman di SQL: jumlah kueri tetap dan tidak ada kueri yang memuat semua baris/produk; karakter wildcard kata diperlakukan harfiah', function (): void {
+    it('filter, urut, dan halaman di SQL: jumlah kueri tetap dan tidak ada kueri yang memuat semua baris/produk; karakter wildcard kata diperlakukan harfiah', function (): void {
         $d = SiapkanSaldoStokUji();
         $toko = $d['Toko'];
 
@@ -277,7 +277,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->and(AmbilSaldoStokUji()['Ringkasan'])->toBe(['TotalNilai' => '0.00', 'JumlahBaris' => 0, 'JumlahMinus' => 0]);
     });
 
-    it('HTTP: halaman saldo merender props PropsSaldoStok (saringan dari query, OpsiGudang termasuk diarsipkan, MetodeHpp)', function (): void {
+    it('HTTP: halaman saldo merender props PropsSaldoStok (filter dari query, OpsiGudang termasuk diarsipkan, MetodeHpp)', function (): void {
         $d = SiapkanSaldoStokUji();
         BantuanPersediaan::AturMetodeHpp($d['Tenant'], MetodeHpp::Fifo);
 

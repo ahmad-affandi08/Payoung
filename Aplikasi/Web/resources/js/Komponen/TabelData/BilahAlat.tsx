@@ -116,7 +116,7 @@ function TombolSaring({
                         className="mt-2 h-auto px-0 text-label"
                         onClick={() => AturSaring(definisi.id, '')}
                     >
-                        Hapus saring {definisi.label.toLowerCase()}
+                        Hapus filter {definisi.label.toLowerCase()}
                     </Button>
                 ) : null}
             </PopoverContent>
@@ -345,12 +345,12 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                         <SheetTrigger asChild>
                             <Button type="button" variant="outline" className={`${kelasTombolAlat} h-11`}>
                                 <FilterIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
-                                Saring{jumlahSaring > 0 ? ` (${String(jumlahSaring)})` : ''}
+                                Filter{jumlahSaring > 0 ? ` (${String(jumlahSaring)})` : ''}
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto bg-permukaan">
                             <SheetHeader>
-                                <SheetTitle className="text-subjudul text-teks-utama">Saring & urutkan</SheetTitle>
+                                <SheetTitle className="text-subjudul text-teks-utama">Filter & urutkan</SheetTitle>
                                 <SheetDescription className="text-isi text-teks-sekunder">
                                     Perubahan langsung diterapkan ke {props.label.toLowerCase()}.
                                 </SheetDescription>
@@ -374,7 +374,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                             </div>
                             <SheetFooter>
                                 <Tombol varian="sekunder" onClick={props.HapusSemua}>
-                                    Hapus semua saring
+                                    Hapus semua filter
                                 </Tombol>
                             </SheetFooter>
                         </SheetContent>
@@ -403,7 +403,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                 </div>
             </div>
             {chip.length > 0 || adaPencarian ? (
-                <div className="flex flex-wrap items-center gap-2" aria-label="Saring aktif">
+                <div className="flex flex-wrap items-center gap-2" aria-label="Filter aktif">
                     {chip.map((definisi) => (
                         <ChipSaring
                             key={definisi.id}
@@ -413,7 +413,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                         />
                     ))}
                     <Button type="button" variant="link" className="h-9 px-1 text-label" onClick={props.HapusSemua}>
-                        Hapus pencarian & saring
+                        Hapus pencarian & filter
                     </Button>
                 </div>
             ) : null}

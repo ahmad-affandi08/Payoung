@@ -102,7 +102,7 @@ export default function Cetak(props: PropsCetak) {
                                     colSpan={Math.max(1, props.Kolom.length)}
                                     className="px-2 py-4 text-center text-teks-sekunder"
                                 >
-                                    Tidak ada data pada saringan ini.
+                                    Tidak ada data pada filter ini.
                                 </td>
                             </tr>
                         ) : (

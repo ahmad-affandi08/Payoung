@@ -18,7 +18,7 @@ beforeEach(function (): void {
 });
 
 describe('F-03 halaman katalog Tim 1 (prop kontrak E)', function (): void {
-    it('Kelola/Produk/Daftar: saringan, anak varian tersembunyi, harga dasar string, BatasSku, Izin', function (): void {
+    it('Kelola/Produk/Daftar: filter, anak varian tersembunyi, harga dasar string, BatasSku, Izin', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $minuman = BantuanKatalog::BuatKategori('Minuman');
         $kopi = BantuanKatalog::BuatKategori('Kopi', $minuman);
@@ -117,7 +117,7 @@ describe('F-03 halaman katalog Tim 1 (prop kontrak E)', function (): void {
 });
 
 describe('F-03 pemilih produk (D.2)', function (): void {
-    it('GET /kelola/produk/cari: nama/SKU/barcode, saring jenis, satuan dengan konversi string, tanpa produk arsip', function (): void {
+    it('GET /kelola/produk/cari: nama/SKU/barcode, filter jenis, satuan dengan konversi string, tanpa produk arsip', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $dus = BantuanKatalog::BuatSatuan('Dus', 'dus');
         $susu = BantuanKatalog::BuatProduk(['Nama' => 'Susu UHT Full Cream 1 L', 'Sku' => 'SUSU-1L', 'Jenis' => JenisProduk::BahanBaku], null, $t['Pcs']);

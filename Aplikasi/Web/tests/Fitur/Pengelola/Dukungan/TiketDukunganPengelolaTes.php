@@ -62,7 +62,7 @@ describe('Izin tiket dukungan (§19.3)', function (): void {
 });
 
 describe('Antrean lintas tenant lewat KonteksPengelola (§13.8)', function (): void {
-    it('menampilkan tiket semua tenant, tersaring status/prioritas/lewat SLA/milik, dan mencatat audit akses', function (): void {
+    it('menampilkan tiket semua tenant, terfilter status/prioritas/lewat SLA/milik, dan mencatat audit akses', function (): void {
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $a, 'Pengguna' => $pa] = BantuanDukungan::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
         ['Tenant' => $b, 'Pengguna' => $pb] = BantuanDukungan::BuatTenant('Laundry Bersih', 'budi@laundry.id');

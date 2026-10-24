@@ -20,7 +20,7 @@ void main() {
     expect(serverLama.hanyaPerusahaan, isFalse);
   });
 
-  test('Sektor dibaca dan menyaring fitur: usaha jasa profesional tanpa stok, kosong = semua tampil', () {
+  test('Sektor dibaca dan memfilter fitur: usaha jasa profesional tanpa stok, kosong = semua tampil', () {
     KonfigurasiAplikasi Muat(List<String>? sektor) => KonfigurasiAplikasi.DariJson({
       'Aplikasi': <String, Object?>{},
       'FlagFitur': <String, Object?>{},

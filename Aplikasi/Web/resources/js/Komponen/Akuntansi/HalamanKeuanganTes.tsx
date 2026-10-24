@@ -358,7 +358,7 @@ describe('F-13a kas & bank', () => {
         window.localStorage.removeItem('Akuntansi.TampilKodeAkun');
     });
 
-    it('halaman catat: akun disaring per jenis (kas/bank vs lawan), outlet wajib, dikirim sebagai string desimal; Batal kembali ke daftar', () => {
+    it('halaman catat: akun difilter per jenis (kas/bank vs lawan), outlet wajib, dikirim sebagai string desimal; Batal kembali ke daftar', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/kas-bank/buat');
         RenderUji(<HalamanBuatTransaksiKasBank {...propsBuatKasBank} />);
         const formulir = screen.getByRole('form', { name: 'Formulir transaksi kas & bank' });
@@ -520,7 +520,7 @@ describe('F-13a laporan keuangan', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/akuntansi/laporan/buku-besar'));
     afterEach(() => cleanup());
 
-    it('buku besar: tanpa akun = ajakan memilih & ekspor nonaktif; dengan akun = ringkasan, saldo berjalan, ekspor bersaringan', () => {
+    it('buku besar: tanpa akun = ajakan memilih & ekspor nonaktif; dengan akun = ringkasan, saldo berjalan, ekspor berfilter', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/buku-besar');
         const kosong: PropsBukuBesar = {
             Saring: { ...saring, Akun: '' },
@@ -641,7 +641,7 @@ describe('F-13a laporan keuangan', () => {
         );
     });
 
-    it('laba rugi: kelompok, laba kotor & bersih, kolom pembanding; ganti outlet memuat ulang dengan saringan di URL', () => {
+    it('laba rugi: kelompok, laba kotor & bersih, kolom pembanding; ganti outlet memuat ulang dengan filter di URL', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/laba-rugi');
         const BuatNilai = (n: string, s: string) => ({ Nilai: n, NilaiSebelumnya: s });
         const props: PropsLabaRugi = {

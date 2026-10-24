@@ -404,7 +404,7 @@ describe('API /api/pos/v1/salesman', function (): void {
 });
 
 describe('Back-office Grosir › Kunjungan', function (): void {
-    it('menampilkan kunjungan dengan saring salesman, hasil, tanggal; ekspor CSV; detail pesanan menyebut salesman', function (): void {
+    it('menampilkan kunjungan dengan filter salesman, hasil, tanggal; ekspor CSV; detail pesanan menyebut salesman', function (): void {
         /** @var TestCase $this */
         $k = SiapkanSalesman($this);
         $pesanan = ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '50']]);
