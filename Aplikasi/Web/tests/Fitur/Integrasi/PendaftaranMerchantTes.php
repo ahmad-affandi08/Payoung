@@ -57,6 +57,8 @@ const AWALAN_PARTNER = '/adv-core-api/partner/v1.0';
 beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
     Storage::fake('local');
+    // D-190: halaman Aktivasi QRIS disembunyikan secara bawaan; berkas ini menguji kodenya yang tetap ada.
+    config()->set('integrasi.AktivasiQrisTampil', true);
     IsiKredensialPartner();
     ReferensiBank::query()->create(['Kode' => 'BCA', 'Nama' => 'Bank Central Asia', 'Jenis' => JenisReferensiBank::Bank]);
 });

@@ -32,7 +32,9 @@ final class SimpanPengaturanTokoOnline
         if ((bool) $data['QrisAktif'] && $this->gerbang->AmbilAktifTenant() === null) {
             throw new PelanggaranAturanBisnis(
                 'GerbangBelumAktif',
-                'QRIS toko belum aktif, jadi QRIS online belum bisa dinyalakan. Aktifkan dulu lewat Pengaturan › '.InfoGerbangPembayaran::AmbilNamaMenu().'.',
+                InfoGerbangPembayaran::CekGerbangTokoTampil() || InfoGerbangPembayaran::CekAktivasiQrisTampil()
+                    ? 'QRIS toko belum aktif, jadi QRIS online belum bisa dinyalakan. Aktifkan dulu lewat Pengaturan › '.InfoGerbangPembayaran::AmbilNamaMenu().'.'
+                    : 'QRIS online (bayar lewat toko online) belum tersedia karena belum ada gerbang pembayaran aktif. Pelanggan bisa memilih bayar di kasir atau saat ambil.',
                 'QrisAktif',
             );
         }

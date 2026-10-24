@@ -18,7 +18,15 @@ beforeEach(function (): void {
 });
 
 describe('D-162 gerbang pembayaran milik toko disembunyikan di edisi SaaS', function (): void {
-    it('alamat lama dialihkan ke Aktivasi QRIS', function (): void {
+    it('alamat lama dialihkan ke Metode pembayaran (Aktivasi QRIS juga disembunyikan, D-190)', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
+
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/pembayaran/gerbang')
+            ->assertRedirect('/kelola/panduan-awal/metode-pembayaran');
+    });
+
+    it('alamat gerbang dialihkan ke Aktivasi QRIS bila halaman itu dibuka kembali lewat sakelar', function (): void {
+        config(['integrasi.AktivasiQrisTampil' => true]);
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
 
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/pembayaran/gerbang')
@@ -35,15 +43,15 @@ describe('D-162 gerbang pembayaran milik toko disembunyikan di edisi SaaS', func
 
     });
 
-    it('panduan awal mengarahkan ke Aktivasi QRIS, bukan ke gerbang', function (): void {
+    it('panduan awal mengarahkan ke Metode pembayaran (QRIS statis bernominal otomatis), bukan ke gerbang atau DOKU', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
 
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/metode-pembayaran')
             ->assertInertia(fn ($h) => $h
                 ->where('GerbangPembayaran.Aktif', false)
-                ->where('GerbangPembayaran.Tautan', '/kelola/pembayaran/aktivasi-qris')
-                ->where('GerbangPembayaran.NamaMenu', 'Aktivasi QRIS')
-                ->where('GerbangPembayaran.Petunjuk', fn (string $teks) => str_contains($teks, 'foto KTP')));
+                ->where('GerbangPembayaran.Tautan', '/kelola/panduan-awal/metode-pembayaran')
+                ->where('GerbangPembayaran.NamaMenu', 'Metode pembayaran')
+                ->where('GerbangPembayaran.Petunjuk', fn (string $teks) => str_contains($teks, 'QRIS statis') && ! str_contains($teks, 'foto KTP')));
     });
 
     it('gerbang yang sudah aktif sebelumnya tetap dipakai kasir', function (): void {
@@ -55,5 +63,27 @@ describe('D-162 gerbang pembayaran milik toko disembunyikan di edisi SaaS', func
 
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect(GerbangPembayaranTenant::query()->where('Aktif', true)->count())->toBe(1);
+    });
+});
+
+describe('D-190 halaman Aktivasi QRIS (DOKU) disembunyikan', function (): void {
+    it('alamat Aktivasi QRIS dialihkan ke Metode pembayaran dan aksi tulisnya 404', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
+
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/pembayaran/aktivasi-qris')
+            ->assertRedirect('/kelola/panduan-awal/metode-pembayaran');
+
+        foreach (['/draf', '/kirim', '/batal'] as $akhiran) {
+            BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->post('/kelola/pembayaran/aktivasi-qris'.$akhiran, [])
+                ->assertNotFound();
+        }
+    });
+
+    it('dibuka kembali lewat sakelar integrasi.AktivasiQrisTampil', function (): void {
+        config(['integrasi.AktivasiQrisTampil' => true]);
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
+
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/pembayaran/aktivasi-qris')
+            ->assertOk();
     });
 });

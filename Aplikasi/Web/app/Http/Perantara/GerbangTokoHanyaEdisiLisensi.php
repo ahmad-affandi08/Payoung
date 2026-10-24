@@ -24,7 +24,7 @@ final class GerbangTokoHanyaEdisiLisensi
         }
 
         if ($permintaan->isMethod('GET') || $permintaan->isMethod('HEAD')) {
-            return to_route('kelola.pembayaran.aktivasi-qris');
+            return redirect(InfoGerbangPembayaran::AmbilTautan());
         }
 
         abort(404);

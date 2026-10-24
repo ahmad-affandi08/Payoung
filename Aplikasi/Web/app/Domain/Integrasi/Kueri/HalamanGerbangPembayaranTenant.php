@@ -9,7 +9,7 @@ use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
-use App\Domain\Lisensi\Enum\EdisiAplikasi;
+use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 
 /**
  * Data halaman gerbang pembayaran tenant (v2.06): penyedia yang diizinkan platform beserta bidangnya, dan gerbang
@@ -29,7 +29,7 @@ final class HalamanGerbangPembayaranTenant
 
         return [
             // Aktivasi QRIS otomatis (DOKU Partner) hanya ada di edisi SaaS.
-            'AktivasiQrisTersedia' => ! EdisiAplikasi::CekLisensi(),
+            'AktivasiQrisTersedia' => InfoGerbangPembayaran::CekAktivasiQrisTampil(),
             'Gerbang' => $gerbang === null ? null : [
                 'Uuid' => $gerbang->Uuid,
                 'Penyedia' => $gerbang->Penyedia->value,

@@ -23,6 +23,11 @@ return [
     // Kosong (null) = ikut edisi: hanya edisi Lisensi. Isi `true` untuk membukanya kembali di SaaS.
     'GerbangTokoTampil' => null,
 
+    // D-190: halaman Aktivasi QRIS lewat DOKU (KYB merchant, D-83) disembunyikan di SaaS karena DOKU hanya dipakai
+    // untuk tagihan langganan; QRIS toko = QRIS statis milik toko yang diberi nominal di kasir (D-189). Isi `true`
+    // untuk membukanya kembali (kode, rute, dan data pendaftaran tetap ada). Tidak berlaku di edisi Lisensi.
+    'AktivasiQrisTampil' => false,
+
     // D-179: penyedia pembayaran tagihan langganan Payoung sendiri (`PembuatPenyediaTagihan::PENYEDIA`). Mengganti
     // penyedia = tulis adaptornya, daftarkan, lalu ubah nilai ini (`Panduan/PenyediaPembayaran.md`).
     'PenyediaTagihan' => 'Doku',

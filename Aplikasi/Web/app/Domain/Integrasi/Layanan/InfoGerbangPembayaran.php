@@ -19,6 +19,9 @@ final class InfoGerbangPembayaran
     /** D-162: tenant SaaS mengaktifkan QRIS lewat Aktivasi QRIS (foto KTP); edisi Lisensi lewat akun merchant sendiri. */
     public const TAUTAN_AKTIVASI = '/kelola/pembayaran/aktivasi-qris';
 
+    /** D-190: tanpa gerbang dan tanpa Aktivasi QRIS, QRIS toko = QRIS statis yang diunggah di Metode pembayaran. */
+    public const TAUTAN_METODE = '/kelola/panduan-awal/metode-pembayaran';
+
     /** D-162: halaman kredensial gerbang milik toko dibuka hanya di edisi Lisensi, kecuali `integrasi.GerbangTokoTampil` diisi. */
     public static function CekGerbangTokoTampil(): bool
     {
@@ -27,22 +30,39 @@ final class InfoGerbangPembayaran
         return is_bool($sakelar) ? $sakelar : EdisiAplikasi::CekLisensi();
     }
 
+    /** D-190: Aktivasi QRIS (DOKU) hanya di SaaS dan hanya bila `integrasi.AktivasiQrisTampil` dinyalakan. */
+    public static function CekAktivasiQrisTampil(): bool
+    {
+        return ! EdisiAplikasi::CekLisensi() && config('integrasi.AktivasiQrisTampil') === true;
+    }
+
+    /** Tautan tempat tenant mengurus QRIS toko: gerbang (Lisensi), Aktivasi QRIS (bila dibuka), atau Metode pembayaran (QRIS statis bernominal otomatis, D-189). */
     public static function AmbilTautan(): string
     {
-        return self::CekGerbangTokoTampil() ? self::TAUTAN : self::TAUTAN_AKTIVASI;
+        return match (true) {
+            self::CekGerbangTokoTampil() => self::TAUTAN,
+            self::CekAktivasiQrisTampil() => self::TAUTAN_AKTIVASI,
+            default => self::TAUTAN_METODE,
+        };
     }
 
     /** Kalimat pembuka di panduan awal saat QRIS dinamis belum aktif. */
     public static function AmbilPetunjuk(): string
     {
-        return self::CekGerbangTokoTampil()
-            ? 'QRIS dinamis butuh akun merchant toko di salah satu penyedia gerbang pembayaran (dana langsung ke rekening toko).'
-            : 'QRIS dinamis diaktifkan lewat pendaftaran di Payoung: cukup foto KTP, selfie, foto tempat usaha, dan nomor rekening. Uang pembayaran langsung masuk ke rekening toko.';
+        return match (true) {
+            self::CekGerbangTokoTampil() => 'QRIS dinamis butuh akun merchant toko di salah satu penyedia gerbang pembayaran (dana langsung ke rekening toko).',
+            self::CekAktivasiQrisTampil() => 'QRIS dinamis diaktifkan lewat pendaftaran di Payoung: cukup foto KTP, selfie, foto tempat usaha, dan nomor rekening. Uang pembayaran langsung masuk ke rekening toko.',
+            default => 'Pembayaran QRIS otomatis lewat gerbang belum tersedia. Pakai metode QRIS statis: unggah gambar QRIS toko Anda, lalu nominal terisi otomatis di kasir (kasir tetap memeriksa dana masuk).',
+        };
     }
 
     public static function AmbilNamaMenu(): string
     {
-        return self::CekGerbangTokoTampil() ? 'Gerbang pembayaran' : 'Aktivasi QRIS';
+        return match (true) {
+            self::CekGerbangTokoTampil() => 'Gerbang pembayaran',
+            self::CekAktivasiQrisTampil() => 'Aktivasi QRIS',
+            default => 'Metode pembayaran',
+        };
     }
 
     public function __construct(private readonly KatalogPenyediaGerbang $katalog) {}

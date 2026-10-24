@@ -649,15 +649,22 @@ function InfoQrisDinamis({
     ) : (
         <Pemberitahuan jenis="peringatan" judul="Gerbang pembayaran belum aktif">
             {gerbangPembayaran.Petunjuk ??
-                'QRIS dinamis butuh akun merchant toko di salah satu penyedia gerbang pembayaran (dana langsung ke rekening toko).'}{' '}
-            Metode ini tetap bisa ditambahkan, tetapi kasir baru bisa memakainya setelah diaktifkan di{' '}
-            <a
-                href={gerbangPembayaran.Tautan ?? '/kelola/pembayaran/gerbang'}
-                className="font-semibold text-brand underline underline-offset-2"
-            >
-                {gerbangPembayaran.NamaMenu ?? 'Gerbang pembayaran'}
-            </a>
-            .
+                'QRIS dinamis butuh akun merchant toko di salah satu penyedia gerbang pembayaran (dana langsung ke rekening toko).'}
+            {gerbangPembayaran.Tautan === undefined ||
+            gerbangPembayaran.Tautan === null ||
+            gerbangPembayaran.Tautan.startsWith('/kelola/pembayaran') ? (
+                <>
+                    {' '}
+                    Metode ini tetap bisa ditambahkan, tetapi kasir baru bisa memakainya setelah diaktifkan di{' '}
+                    <a
+                        href={gerbangPembayaran.Tautan ?? '/kelola/pembayaran/gerbang'}
+                        className="font-semibold text-brand underline underline-offset-2"
+                    >
+                        {gerbangPembayaran.NamaMenu ?? 'Gerbang pembayaran'}
+                    </a>
+                    .
+                </>
+            ) : null}
         </Pemberitahuan>
     );
 }

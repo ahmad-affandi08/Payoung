@@ -166,18 +166,9 @@ export const daftarPengaturan: GrupPengaturan[] = [
                 href: '/kelola/pembayaran/gerbang',
                 izin: IzinTenant.PembayaranGerbangAtur,
                 kecualiSektor: ['BIZ'],
-                // D-162: tenant SaaS memakai Aktivasi QRIS (foto KTP), bukan akun DOKU sendiri.
+                // D-162: tenant SaaS tidak menempel akun DOKU sendiri. D-190: Aktivasi QRIS (DOKU) juga disembunyikan;
+                // QRIS toko = QRIS statis bernominal otomatis di Metode pembayaran (D-189).
                 edisi: 'Lisensi',
-            },
-            {
-                label: 'Aktivasi QRIS',
-                keterangan:
-                    'Daftarkan QRIS toko cukup dengan foto KTP, foto selfie, foto tempat usaha, dan nomor rekening.',
-                href: '/kelola/pembayaran/aktivasi-qris',
-                izin: IzinTenant.PembayaranGerbangAtur,
-                kecualiSektor: ['BIZ'],
-                // Butuh akun Partner DOKU milik Payoung, jadi rutenya tidak ada di edisi Lisensi.
-                edisi: 'Saas',
             },
         ],
     },
