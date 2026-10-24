@@ -312,7 +312,7 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
                     {children}
                 </main>
             </div>
-            <DialogHasil berhasil={props.Kilat} gagal={props.errors.Umum} penanda={props} />
+            <DialogHasil berhasil={props.Kilat} gagal={props.errors.Umum} penanda={props} galatBidang={props.errors} />
             <PemberitahuanMelayang />
         </SidebarProvider>
     );

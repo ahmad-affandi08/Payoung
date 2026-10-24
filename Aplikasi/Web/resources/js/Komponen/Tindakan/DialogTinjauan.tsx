@@ -48,7 +48,7 @@ export default function DialogTinjauan({
                 }
             }}
         >
-            <AlertDialogContent>
+            <AlertDialogContent data-galat-umum="">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-subjudul text-teks-utama">{judul}</AlertDialogTitle>
                     <AlertDialogDescription>{deskripsi}</AlertDialogDescription>

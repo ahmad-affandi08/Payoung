@@ -227,3 +227,51 @@ describe('DialogTinjauan', () => {
         expect(Tutup).toHaveBeenCalledOnce();
     });
 });
+
+describe('Penanda galat umum pada dialog (agar DialogHasil tidak menelan galat)', () => {
+    it('DialogFormulir yang menyambungkan galatUmum menampilkannya dan menandai dirinya; tanpa prop tidak ditandai', () => {
+        render(
+            <DialogFormulir
+                judul="Tambah lokasi stok"
+                galatUmum="Multi-gudang belum termasuk di paket."
+                saatTutup={vi.fn()}
+            >
+                <p>isi</p>
+            </DialogFormulir>,
+        );
+        expect(screen.getByRole('dialog').hasAttribute('data-galat-umum')).toBe(true);
+        expect(screen.getByText('Multi-gudang belum termasuk di paket.')).toBeTruthy();
+        cleanup();
+
+        render(
+            <DialogFormulir judul="Tambah lokasi stok" saatTutup={vi.fn()}>
+                <p>isi</p>
+            </DialogFormulir>,
+        );
+        expect(screen.getByRole('dialog').hasAttribute('data-galat-umum')).toBe(false);
+    });
+
+    it('DialogKonfirmasi menampilkan galatUmum dan menandai dirinya hanya bila prop disambungkan', () => {
+        render(
+            <DialogKonfirmasi
+                judul="Posting penyesuaian?"
+                labelAksi="Posting"
+                galatUmum="Stok tidak cukup."
+                saatKonfirmasi={vi.fn()}
+                saatBatal={vi.fn()}
+            >
+                <p>akibat</p>
+            </DialogKonfirmasi>,
+        );
+        expect(screen.getByRole('alertdialog').hasAttribute('data-galat-umum')).toBe(true);
+        expect(screen.getByText('Stok tidak cukup.')).toBeTruthy();
+        cleanup();
+
+        render(
+            <DialogKonfirmasi judul="Posting?" labelAksi="Posting" saatKonfirmasi={vi.fn()} saatBatal={vi.fn()}>
+                <p>akibat</p>
+            </DialogKonfirmasi>,
+        );
+        expect(screen.getByRole('alertdialog').hasAttribute('data-galat-umum')).toBe(false);
+    });
+});

@@ -208,6 +208,7 @@ export default function HalamanDetailOrderProduksi({
 
             {dialog === 'Posting' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Posting produksi?"
                     labelAksi="Posting produksi"
                     varian="utama"
@@ -220,7 +221,6 @@ export default function HalamanDetailOrderProduksi({
                         {FormatJumlahStok(Order.JumlahHasil, Order.SimbolSatuan)} {Order.NamaProduk} bertambah, dan
                         jurnal dicatat. Order tidak bisa diubah lagi.
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Batalkan' && Tindakan.WajibAlasanBatal ? (

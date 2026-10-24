@@ -25,17 +25,22 @@ type PropsDialogHasil = {
      * tetap membuka dialog lagi karena penandanya berbeda.
      */
     penanda: unknown;
+    /**
+     * Semua galat validasi/aturan dari server (`errors`). Galat selain `Umum` biasanya tampil di bawah bidangnya; bila
+     * setelah halaman dirender pesannya tidak terlihat di mana pun (bidang tidak ada di formulir, langkah wizard
+     * tersembunyi), pesannya tampil di dialog ini supaya aksi yang gagal tidak senyap.
+     */
+    galatBidang?: Record<string, string> | undefined;
 };
 
 /**
- * Galat yang datang saat dialog lain masih terbuka (konfirmasi batal/void/hapus) sudah ditampilkan dialog itu di
- * tempatnya; dialog hasil kedua di atasnya hanya membingungkan.
+ * Dialog yang terbuka dan memang menampilkan `errors.Umum` di badannya (`DialogFormulir`/`DialogKonfirmasi`/
+ * `DialogTinjauan` yang diberi `galatUmum`, ditandai `data-galat-umum`) sudah memberi tahu penggunanya di tempat;
+ * dialog hasil kedua di atasnya hanya membingungkan. Dialog lain yang terbuka TIDAK menampilkan galat itu, jadi
+ * galatnya tetap harus tampil lewat dialog hasil; kalau tidak, aksi gagal tanpa satu pesan pun.
  */
-function AdaDialogTerbuka(): boolean {
-    return (
-        typeof document !== 'undefined' &&
-        document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]') !== null
-    );
+function AdaDialogPenampilGalat(): boolean {
+    return typeof document !== 'undefined' && document.querySelector('[data-galat-umum][data-state="open"]') !== null;
 }
 
 type IsiDialog = { jenis: 'berhasil' | 'gagal'; pesan: string };
@@ -45,7 +50,7 @@ type IsiDialog = { jenis: 'berhasil' | 'gagal'; pesan: string };
  * yang ikut tergulir dan sering terlewat di HP. Berhasil menutup sendiri setelah beberapa detik; gagal menunggu
  * tombol "Tutup". Status permanen (langganan, verifikasi email, 2FA) tetap banner `Pemberitahuan`.
  */
-export default function DialogHasil({ berhasil, gagal, penanda }: PropsDialogHasil) {
+export default function DialogHasil({ berhasil, gagal, penanda, galatBidang }: PropsDialogHasil) {
     const [isi, AturIsi] = useState<IsiDialog | null>(null);
 
     // Respons baru (penanda berganti) membuka dialog; menutupnya tidak boleh membukanya lagi. Disetel saat render
@@ -55,12 +60,35 @@ export default function DialogHasil({ berhasil, gagal, penanda }: PropsDialogHas
     if (penandaDilihat !== penanda) {
         AturPenandaDilihat(penanda);
 
-        if (gagal && !AdaDialogTerbuka()) {
+        if (gagal && !AdaDialogPenampilGalat()) {
             AturIsi({ jenis: 'gagal', pesan: gagal });
         } else if (!gagal && berhasil) {
             AturIsi({ jenis: 'berhasil', pesan: berhasil });
         }
     }
+
+    // Jaring pengaman: galat bidang yang tidak terlihat di halaman. Diperiksa setelah render selesai (DOM sudah memuat
+    // semua pesan bidang), dan ditunda satu putaran supaya tidak menyetel state di badan efek.
+    useEffect(() => {
+        if (gagal || !galatBidang) {
+            return;
+        }
+
+        const pewaktu = window.setTimeout(() => {
+            const terlihat = (document.body.textContent ?? '').replace(/\s+/g, ' ');
+            const hilang = Object.entries(galatBidang)
+                .filter(([kunci, pesan]) => kunci !== 'Umum' && pesan !== '' && !terlihat.includes(pesan))
+                .map(([, pesan]) => pesan);
+
+            if (hilang.length > 0 && !AdaDialogPenampilGalat()) {
+                AturIsi({ jenis: 'gagal', pesan: [...new Set(hilang)].join(' ') });
+            }
+        }, 0);
+
+        return () => window.clearTimeout(pewaktu);
+        // Hanya saat respons baru (penanda berganti); `galatBidang` ikut berganti bersamanya.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [penanda]);
 
     const jenis = isi?.jenis;
 

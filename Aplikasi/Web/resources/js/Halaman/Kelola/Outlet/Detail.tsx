@@ -18,6 +18,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import { Card, CardContent } from '@/Komponen/Ui/card';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import { IzinTenant, PunyaIzinTenant, type Kota, type Pilihan, type StatusOrganisasi } from '@/Tipe/Organisasi';
@@ -205,6 +206,9 @@ type PropsBagianGudang = { alamatOutlet: string; gudang: Gudang[]; jenis: Piliha
 
 function BagianGudang({ alamatOutlet, gudang, jenis, bolehKelola }: PropsBagianGudang) {
     const [sunting, AturSunting] = useState<Gudang | 'baru' | null>(null);
+    // Lokasi stok tambahan butuh fitur Multi-gudang; server menolak penyimpanannya bila paket belum memuatnya, jadi
+    // tombolnya diganti penjelasan di muka daripada menunggu penolakan.
+    const penawaran = usePage<PropsBersamaAplikasi>().props.FiturPaket?.Terkunci['stok.multi-gudang'];
     const kolom = useMemo<KolomTabel<Gudang>[]>(() => {
         const labelJenis = new Map(jenis.map((baris) => [baris.Nilai, baris.Label]));
 
@@ -245,12 +249,23 @@ function BagianGudang({ alamatOutlet, gudang, jenis, bolehKelola }: PropsBagianG
     return (
         <section className="flex flex-col gap-2">
             <AksiHalaman keterangan={<h2 className="text-subjudul font-semibold text-teks-utama">Lokasi stok</h2>}>
-                {bolehKelola ? (
+                {bolehKelola && penawaran === undefined ? (
                     <Tombol varian="sekunder" onClick={() => AturSunting('baru')}>
                         Tambah lokasi stok
                     </Tombol>
                 ) : null}
             </AksiHalaman>
+            {bolehKelola && penawaran !== undefined ? (
+                <Pemberitahuan jenis="info" judul="Lokasi stok tambahan belum termasuk di paket Anda">
+                    <p>
+                        Tiap outlet tetap punya lokasi stok bawaannya. Menambah lokasi lain (Dapur, Bar, Gudang
+                        Belakang) butuh Multi-gudang
+                        {penawaran.Paket !== null ? `, tersedia di paket ${penawaran.Paket.Nama}` : ''}
+                        {penawaran.Addon !== null ? ` atau lewat add-on ${penawaran.Addon.Nama}` : ''}. Buka menu
+                        Langganan untuk memilihnya.
+                    </p>
+                </Pemberitahuan>
+            ) : null}
             <p className="text-keterangan text-teks-sekunder">
                 Setiap outlet wajib punya minimal satu lokasi stok untuk barang jual. Tambah Dapur, Bar, atau Gudang
                 Belakang bila stoknya dipisah.

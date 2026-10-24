@@ -200,6 +200,7 @@ export default function HalamanDetailPenyesuaianStok({
 
             {dialog === 'Ajukan' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Ajukan penyesuaian?"
                     labelAksi="Ajukan penyesuaian"
                     varian="utama"
@@ -216,11 +217,11 @@ export default function HalamanDetailPenyesuaianStok({
                             ? 'Nilainya di atas batas, jadi penyesuaian menunggu persetujuan pengguna lain.'
                             : 'Di bawah batas, penyesuaian langsung diposting: stok dan jurnal tercatat dan dokumen tidak bisa diubah.'}
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Setujui' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Setujui penyesuaian?"
                     labelAksi="Setujui & posting"
                     varian="utama"
@@ -232,7 +233,6 @@ export default function HalamanDetailPenyesuaianStok({
                         Stok dan jurnal dicatat sekarang. Penyesuaian yang sudah diposting hanya bisa dikoreksi dengan
                         penyesuaian baru.
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Tolak' ? (

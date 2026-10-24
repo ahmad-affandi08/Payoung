@@ -366,6 +366,7 @@ export default function HalamanDetailTransferStok({
 
             {dialog === 'Kirim' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Kirim transfer?"
                     labelAksi="Kirim transfer"
                     varian="utama"
@@ -381,7 +382,6 @@ export default function HalamanDetailTransferStok({
                         Nilai dihitung dari HPP lokasi asal saat dikirim. Setelah dikirim, transfer tidak bisa diubah
                         atau dibatalkan.
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
 

@@ -40,18 +40,14 @@ const kelasLebar = { sedang: 'sm:max-w-xl', lebar: 'sm:max-w-3xl' } as const;
  * Wadah formulir tindakan & data master. Dirender (terbuka) selama induknya memasangnya; menutup lewat Esc,
  * tombol "Tutup" (X), atau Batal memanggil `saatTutup`. Tombol kirim & batal tetap milik formulir di dalamnya.
  */
-export default function DialogFormulir({
-    judul,
-    keterangan,
-    jenis = 'dialog',
-    lebar = 'sedang',
-    galatUmum,
-    saatTutup,
-    children,
-}: PropsDialogFormulir) {
+export default function DialogFormulir(props: PropsDialogFormulir) {
+    const { judul, keterangan, jenis = 'dialog', lebar = 'sedang', galatUmum, children } = props;
+    // Dialog yang menyambungkan `galatUmum` menampilkan galat server sendiri, jadi `DialogHasil` tidak menumpuknya.
+    // Yang tidak menyambungkannya dibiarkan, dan galatnya tampil lewat `DialogHasil` di atasnya.
+    const penandaGalat = 'galatUmum' in props ? { 'data-galat-umum': '' } : {};
     const UbahTerbuka = (terbuka: boolean) => {
         if (!terbuka) {
-            saatTutup();
+            props.saatTutup();
         }
     };
     const denganKeterangan = keterangan !== undefined && keterangan !== null;
@@ -61,6 +57,7 @@ export default function DialogFormulir({
         return (
             <AlertDialog open onOpenChange={UbahTerbuka}>
                 <AlertDialogContent
+                    {...penandaGalat}
                     className="max-h-[90vh] overflow-y-auto"
                     {...(denganKeterangan ? {} : { 'aria-describedby': undefined })}
                 >
@@ -83,6 +80,7 @@ export default function DialogFormulir({
         return (
             <Sheet open onOpenChange={UbahTerbuka}>
                 <SheetContent
+                    {...penandaGalat}
                     side="right"
                     className={cn('w-full overflow-y-auto', kelasLebar[lebar])}
                     {...(denganKeterangan ? {} : { 'aria-describedby': undefined })}
@@ -105,6 +103,7 @@ export default function DialogFormulir({
     return (
         <Dialog open onOpenChange={UbahTerbuka}>
             <DialogContent
+                {...penandaGalat}
                 className={cn('max-h-[90vh] overflow-y-auto', kelasLebar[lebar])}
                 {...(denganKeterangan ? {} : { 'aria-describedby': undefined })}
             >

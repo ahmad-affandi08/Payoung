@@ -390,6 +390,7 @@ export default function HalamanDetailStokAwal({
 
             {dialog === 'Posting' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Posting stok awal?"
                     labelAksi="Posting stok awal"
                     varian="utama"
@@ -421,7 +422,6 @@ export default function HalamanDetailStokAwal({
                         </p>
                     ) : null}
                     <p>Setelah diposting, dokumen tidak bisa diubah. Koreksi dilakukan dengan membatalkannya.</p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
 

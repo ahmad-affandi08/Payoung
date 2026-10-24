@@ -668,6 +668,7 @@ export default function HalamanDetailStokOpname({
 
             {dialog === 'Ajukan' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Selesai menghitung?"
                     labelAksi="Ajukan untuk ditinjau"
                     varian="utama"
@@ -684,11 +685,11 @@ export default function HalamanDetailStokOpname({
                         Simpan dulu hasil hitung yang belum tersimpan. Setelah diajukan, lembar hitung terkunci sampai
                         dikembalikan.
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Setujui' ? (
                 <DialogKonfirmasi
+                    galatUmum={galat.Umum}
                     judul="Setujui stok opname?"
                     labelAksi="Setujui opname"
                     varian="utama"
@@ -700,7 +701,6 @@ export default function HalamanDetailStokOpname({
                         Selisih dicatat ke stok dengan tanggal hari ini dan jurnal selisih dibuat otomatis. Tindakan ini
                         tidak bisa dibatalkan.
                     </p>
-                    {galat.Umum ? <span className="font-semibold text-bahaya">{galat.Umum}</span> : null}
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Kembalikan' ? (
