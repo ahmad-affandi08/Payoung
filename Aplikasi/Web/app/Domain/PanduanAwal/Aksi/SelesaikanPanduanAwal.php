@@ -7,6 +7,7 @@ namespace App\Domain\PanduanAwal\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\PanduanAwal\Enum\LangkahPanduan;
 use App\Domain\PanduanAwal\Model\ProgresPanduanAwal;
 use App\Domain\Tenant\Layanan\PenguncianTenant;
@@ -22,6 +23,7 @@ final class SelesaikanPanduanAwal
         private readonly KonteksTenant $konteks,
         private readonly PenguncianTenant $penguncian,
         private readonly PencatatAudit $audit,
+        private readonly SektorOutletTenant $sektor,
     ) {}
 
     public function Jalankan(int $idPengguna, ?int $idOutlet = null): void
@@ -36,7 +38,7 @@ final class SelesaikanPanduanAwal
                 return;
             }
 
-            $kurang = $progres->Wajib ? $progres->AmbilLangkahWajibBelumSelesai() : [];
+            $kurang = $progres->Wajib ? $progres->AmbilLangkahWajibBelumSelesai($this->sektor->CekHanyaPerusahaan()) : [];
 
             if ($kurang !== []) {
                 $daftar = implode(', ', array_map(fn (LangkahPanduan $l): string => $l->AmbilJudul(), $kurang));

@@ -46,11 +46,12 @@ abstract class DasarPanduanAwalKontroler extends DasarKelolaKontroler
     /** Halaman langkah berikutnya; setelah langkah terakhir kembali ke ringkasan panduan. */
     protected function KeLangkahBerikutnya(LangkahPanduan $langkah, string $pesan): RedirectResponse
     {
-        $berikutnya = $langkah->AmbilBerikutnya();
-        $baris = app(ProgresPanduan::class)->AmbilBaris();
+        $progres = app(ProgresPanduan::class);
+        $berikutnya = $progres->AmbilBerikutnya($langkah);
+        $baris = $progres->AmbilBaris();
 
         // D-24: tenant baru yang semua langkah wajibnya selesai langsung menuntaskan panduan dan masuk ke Beranda.
-        if ($berikutnya === null && $baris !== null && $baris->Wajib && $baris->SelesaiPada === null && $baris->AmbilLangkahWajibBelumSelesai() === []) {
+        if ($berikutnya === null && $baris !== null && $baris->Wajib && $baris->SelesaiPada === null && $progres->AmbilLangkahWajibBelumSelesai() === []) {
             app(SelesaikanPanduanAwal::class)->Jalankan($this->Pelaku()->Id, $this->OutletPanduan()->Id);
 
             return redirect()->route('kelola.beranda')->with('Kilat', 'Panduan awal selesai. Toko Anda siap berjualan.');

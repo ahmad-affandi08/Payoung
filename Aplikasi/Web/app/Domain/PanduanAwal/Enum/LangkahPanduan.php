@@ -72,12 +72,27 @@ enum LangkahPanduan: string
         };
     }
 
-    public function AmbilBerikutnya(): ?self
+    /**
+     * D-183: usaha Perusahaan tanpa kasir (semua sektor `BIZ-`) menagih lewat invoice, jadi langkah Metode pembayaran
+     * kasir dan Perangkat kasir tidak berlaku baginya.
+     */
+    public function CekBerlaku(bool $tanpaKasir): bool
     {
-        $semua = self::cases();
-        $posisi = array_search($this, $semua, true);
+        return ! $tanpaKasir || ! in_array($this, [self::MetodePembayaran, self::Perangkat], true);
+    }
 
-        return is_int($posisi) ? ($semua[$posisi + 1] ?? null) : null;
+    /** Langkah yang berlaku bagi tenant ini, urut tampil. @return list<self> */
+    public static function AmbilBerlaku(bool $tanpaKasir): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $l): bool => $l->CekBerlaku($tanpaKasir)));
+    }
+
+    public function AmbilBerikutnya(bool $tanpaKasir = false): ?self
+    {
+        $berlaku = self::AmbilBerlaku($tanpaKasir);
+        $posisi = array_search($this, $berlaku, true);
+
+        return is_int($posisi) ? ($berlaku[$posisi + 1] ?? null) : null;
     }
 
     /** Nama rute halaman langkah, misal `kelola.panduan-awal.pajak`. */

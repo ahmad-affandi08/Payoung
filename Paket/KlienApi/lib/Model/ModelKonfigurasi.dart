@@ -40,6 +40,7 @@ class KonfigurasiAplikasi {
     this.logDiminta = false,
     this.sha256Unduhan,
     this.hanyaPerusahaan = false,
+    this.sektor = const [],
   });
 
   final String? versiSaatIni;
@@ -75,6 +76,35 @@ class KonfigurasiAplikasi {
   /// tanpa kunci = false (semua tab tampil).
   final bool hanyaPerusahaan;
 
+  /// D-183: kode sektor usaha tenant (gabungan semua outlet). Kosong = belum diketahui atau server lama (semua fitur
+  /// tampil).
+  final List<String> sektor;
+
+  /// D-183: sektor yang mengelola stok barang (menu Stok di Kasir, mode Stok di Owner). Jasa umum dan usaha jasa
+  /// profesional/kontraktor tidak.
+  static const List<String> sektorBerstok = [
+    'FNB',
+    'RTL',
+    'WHS',
+    'SVC-SLN',
+    'SVC-LDR',
+    'SVC-WRK',
+    'SVC-FIT',
+    'SVC-CWS',
+    'BIZ-MFG',
+  ];
+
+  /// Awalan [awalan] cocok per segmen (`SVC` mencakup `SVC-WRK`); sektor belum diketahui = cocok (fail-open).
+  bool CekSesuaiSektor(List<String> awalan) {
+    if (sektor.isEmpty) {
+      return true;
+    }
+    return awalan.any((a) => sektor.any((kode) => kode == a || kode.startsWith('$a-')));
+  }
+
+  /// Usaha ini mengelola stok barang (sektor berstok), atau sektornya belum diketahui.
+  bool get mengelolaStok => CekSesuaiSektor(sektorBerstok);
+
   /// Flag dengan kunci [kunci]; tanpa aturan = [bawaan].
   bool CekFlag(String kunci, {bool bawaan = true}) => flagFitur[kunci] ?? bawaan;
 
@@ -105,6 +135,9 @@ class KonfigurasiAplikasi {
       persetujuanJarakJauh: jarakJauh is bool ? jarakJauh : null,
       logDiminta: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['PermintaanLog'])['Diminta']),
       hanyaPerusahaan: UraiJson.AmbilBenar(json['HanyaPerusahaan']),
+      sektor: List.unmodifiable(
+        (json['Sektor'] is List ? json['Sektor']! as List : const []).whereType<String>().where((k) => k.isNotEmpty),
+      ),
     );
   }
 }

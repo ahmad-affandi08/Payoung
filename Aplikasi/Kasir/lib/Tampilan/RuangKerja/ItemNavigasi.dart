@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:klien_api/KlienApi.dart' show KonfigurasiAplikasi;
 
 import '../../Domain/Salesman/LayananSalesman.dart';
 import '../../Domain/Sesi/StafLokal.dart';
@@ -51,17 +52,7 @@ class ItemNavigasi {
   ];
 
   /// D-183: sektor yang mengelola stok barang (menu Stok). Jasa umum dan usaha jasa profesional/kontraktor tidak.
-  static const List<String> sektorBerstok = [
-    'FNB',
-    'RTL',
-    'WHS',
-    'SVC-SLN',
-    'SVC-LDR',
-    'SVC-WRK',
-    'SVC-FIT',
-    'SVC-CWS',
-    'BIZ-MFG',
-  ];
+  static const List<String> sektorBerstok = KonfigurasiAplikasi.sektorBerstok;
 
   /// D-183: sektor yang punya salesman keliling dan kanvas (grosir, distribusi, bahan bangunan, manufaktur).
   static const List<String> sektorSalesman = ['WHS', 'RTL-BLD', 'BIZ-MFG'];

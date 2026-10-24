@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\PanduanAwal\Enum\LangkahPanduan;
 use App\Domain\PanduanAwal\Kueri\LangkahBerikutnya;
+use App\Domain\PanduanAwal\Kueri\ProgresPanduan;
 use App\Domain\PanduanAwal\Layanan\PembacaIsiTemplate;
 use App\Domain\PanduanAwal\Model\ProgresPanduanAwal;
 use Illuminate\Support\Facades\Mail;
@@ -91,4 +93,23 @@ it('Beranda usaha Perusahaan tanpa omzet kasir: Dasbor kosong; Penagihan null se
 
     BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola')->assertOk()
         ->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Beranda')->where('Dasbor', null)->where('Penagihan', null));
+});
+
+it('panduan awal usaha Perusahaan tidak memuat langkah Metode pembayaran dan Perangkat kasir; tenant biasa tetap memuatnya', function (): void {
+    BantuanPanduanAwal::TerbitkanTemplate('BIZ-JSA');
+    BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
+    ['Outlet' => $outlet, 'Tenant' => $tenant] = BantuanPanduanAwal::BuatTenant('Konsultan Langkah Panduan', panduanWajib: true);
+    BantuanOrganisasi::AturKonteks($tenant->Id);
+
+    $kunci = fn (): array => array_column(app(ProgresPanduan::class)->Ambil()['Langkah'], 'Kunci');
+    expect($kunci())->toContain('MetodePembayaran', 'Perangkat');
+
+    BantuanPanduanAwal::Terapkan($outlet, 'BIZ-JSA');
+    BantuanOrganisasi::AturKonteks($tenant->Id);
+
+    expect($kunci())->toBe(['ProfilUsaha', 'Sektor', 'Pajak', 'Produk'])
+        ->and(app(ProgresPanduan::class)->AmbilBerikutnya(LangkahPanduan::Produk))->toBeNull()
+        ->and(app(ProgresPanduan::class)->AmbilLangkahWajibBelumSelesai())->not->toContain(LangkahPanduan::MetodePembayaran)
+        ->and(LangkahPanduan::Pajak->AmbilBerikutnya(tanpaKasir: true))->toBe(LangkahPanduan::Produk)
+        ->and(LangkahPanduan::Produk->AmbilBerikutnya())->toBe(LangkahPanduan::MetodePembayaran);
 });

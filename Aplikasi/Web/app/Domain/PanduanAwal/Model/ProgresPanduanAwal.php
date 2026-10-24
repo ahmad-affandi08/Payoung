@@ -45,10 +45,10 @@ final class ProgresPanduanAwal extends ModelDasar
      *
      * @return list<LangkahPanduan>
      */
-    public function AmbilLangkahWajibBelumSelesai(): array
+    public function AmbilLangkahWajibBelumSelesai(bool $tanpaKasir = false): array
     {
         return array_values(array_filter(
-            LangkahPanduan::cases(),
+            LangkahPanduan::AmbilBerlaku($tanpaKasir),
             fn (LangkahPanduan $langkah): bool => $langkah->CekWajib() && $this->AmbilStatus($langkah) !== StatusLangkahPanduan::Selesai,
         ));
     }

@@ -26,6 +26,15 @@ class LayarLaporan extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(penyediaModeLaporan);
     final outlet = ref.watch(penyediaDasbor).value?.outlet ?? const [];
+    // D-183: Anti-fraud kasir butuh kasir (bukan usaha tanpa kasir) dan Stok butuh usaha yang mengelola stok.
+    final konfigurasi = ref.watch(penyediaKonfigurasiAplikasi).value;
+    final tanpaKasir = konfigurasi?.hanyaPerusahaan ?? false;
+    final tanpaStok = !(konfigurasi?.mengelolaStok ?? true);
+    final daftarMode = [
+      for (final m in _modeLaporan)
+        if (!(m.$1 == ModeLaporan.AntiFraud && tanpaKasir) && !(m.$1 == ModeLaporan.Stok && tanpaStok)) m,
+    ];
+    final modeAktif = daftarMode.any((m) => m.$1 == mode) ? mode : ModeLaporan.Penjualan;
     return ListView(
       padding: const EdgeInsets.all(TokenJarak.jarak16),
       children: [
@@ -35,17 +44,17 @@ class LayarLaporan extends ConsumerWidget {
           spacing: TokenJarak.jarak8,
           runSpacing: TokenJarak.jarak8,
           children: [
-            for (final (nilai, label) in _modeLaporan)
+            for (final (nilai, label) in daftarMode)
               ChoiceChip(
                 label: Text(label),
-                selected: mode == nilai,
+                selected: modeAktif == nilai,
                 showCheckmark: false,
                 onSelected: (_) => ref.read(penyediaModeLaporan.notifier).Atur(nilai),
               ),
           ],
         ),
         const SizedBox(height: TokenJarak.jarak12),
-        switch (mode) {
+        switch (modeAktif) {
           ModeLaporan.Penjualan => const _Penjualan(),
           ModeLaporan.LabaRugi => const _LabaRugi(),
           ModeLaporan.AntiFraud => const _AntiFraud(),

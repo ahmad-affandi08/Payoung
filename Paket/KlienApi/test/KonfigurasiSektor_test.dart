@@ -19,4 +19,20 @@ void main() {
     });
     expect(serverLama.hanyaPerusahaan, isFalse);
   });
+
+  test('Sektor dibaca dan menyaring fitur: usaha jasa profesional tanpa stok, kosong = semua tampil', () {
+    KonfigurasiAplikasi Muat(List<String>? sektor) => KonfigurasiAplikasi.DariJson({
+      'Aplikasi': <String, Object?>{},
+      'FlagFitur': <String, Object?>{},
+      'Sektor': ?sektor,
+    });
+
+    expect(Muat(['BIZ-JSA']).sektor, ['BIZ-JSA']);
+    expect(Muat(['BIZ-JSA']).mengelolaStok, isFalse);
+    expect(Muat(['BIZ-JSA', 'RTL-GEN']).mengelolaStok, isTrue);
+    expect(Muat(['SVC-WRK']).CekSesuaiSektor(['SVC']), isTrue);
+    expect(Muat(['SVC-GEN']).mengelolaStok, isFalse);
+    expect(Muat(null).mengelolaStok, isTrue);
+    expect(Muat([]).CekSesuaiSektor(['FNB']), isTrue);
+  });
 }

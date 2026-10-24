@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
@@ -23,6 +24,8 @@ void main() {
     String terbaru = '1.0.0',
     String minimal = '1.0.0',
     Map<String, bool> flag = const {},
+    List<String>? sektor,
+    bool hanyaPerusahaan = false,
   }) => {
     'Aplikasi': {
       'Platform': 'Android',
@@ -35,6 +38,8 @@ void main() {
       'WajibPembaruan': saatIni != minimal && minimal.compareTo(saatIni) > 0,
     },
     'FlagFitur': flag,
+    'Sektor': ?sektor,
+    'HanyaPerusahaan': hanyaPerusahaan,
   };
 
   Future<http.Response> Penangan(http.Request p, {Map<String, Object?>? konfigurasi}) async {
@@ -48,6 +53,11 @@ void main() {
       }),
       'dasbor' => JsonUji(DasborUji()),
       'konfigurasi-aplikasi' when konfigurasi != null => JsonUji(konfigurasi),
+      'laporan/penjualan' => JsonUji({
+        'Kelompok': 'Produk',
+        'Baris': <Object?>[],
+        'Total': {'Jumlah': '0', 'Omzet': '0.00'},
+      }),
       'karyawan' => JsonUji({
         'Tanggal': '2026-09-26',
         'Periode': '2026-09',
@@ -121,5 +131,37 @@ void main() {
     expect(find.text('Perbarui aplikasi'), findsNothing);
     expect(find.text('Karyawan hari ini'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('D-183: usaha jasa profesional tanpa kasir & stok: Laporan tanpa mode Anti-fraud dan Stok', (
+    tester,
+  ) async {
+    server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(sektor: ['BIZ-JSA'], hanyaPerusahaan: true));
+    await PasangPemilik(tester, server: server, sesi: sesi);
+
+    await tester.tap(find.text('Laporan'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ChoiceChip, 'Penjualan'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Laba rugi'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsNothing);
+    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsNothing);
+  });
+
+  testWidgets('D-183: jasa umum berkasir tanpa stok: Anti-fraud tampil, Stok tidak', (tester) async {
+    server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(sektor: ['SVC-GEN']));
+    await PasangPemilik(tester, server: server, sesi: sesi);
+    await tester.tap(find.text('Laporan'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsNothing);
+  });
+
+  testWidgets('D-183: restoran melihat mode Anti-fraud dan Stok', (tester) async {
+    server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(sektor: ['FNB-RST']));
+    await PasangPemilik(tester, server: server, sesi: sesi);
+    await tester.tap(find.text('Laporan'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsOneWidget);
   });
 }

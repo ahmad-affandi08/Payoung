@@ -15,6 +15,7 @@ use App\Domain\PanduanAwal\Data\HasilPenerapanTemplate;
 use App\Domain\PanduanAwal\Enum\LangkahPanduan;
 use App\Domain\PanduanAwal\Enum\StatusLangkahPanduan;
 use App\Domain\PanduanAwal\Kueri\PilihanTemplate;
+use App\Domain\PanduanAwal\Kueri\ProgresPanduan;
 use App\Domain\PanduanAwal\Kueri\TemplateTerbit;
 use App\Domain\PanduanAwal\Kueri\UsulanPajak;
 use App\Domain\PanduanAwal\Model\ProgresPanduanAwal;
@@ -113,7 +114,7 @@ final class PanduanAwalKontroler extends DasarPanduanAwalKontroler
     {
         $hasil = $siapkan->Jalankan($this->OutletPanduan(), $permintaan->string('KodeTemplate')->toString(), $permintaan->AmbilSektorLain());
         $progres = ProgresPanduanAwal::query()->first();
-        $kurang = $progres?->Wajib === true ? $progres->AmbilLangkahWajibBelumSelesai() : [];
+        $kurang = $progres?->Wajib === true ? app(ProgresPanduan::class)->AmbilLangkahWajibBelumSelesai() : [];
         $pesan = array_filter([
             "Template {$hasil['Template']} diterapkan.",
             $hasil['PajakDikonfirmasi'] ? 'Pajak diatur sesuai usulan.' : 'Periksa pengaturan pajak di langkah Pajak.',

@@ -6,6 +6,7 @@ namespace App\Domain\PanduanAwal\Kueri;
 
 use App\Domain\Organisasi\Data\DataOutletRingkas;
 use App\Domain\Organisasi\Kueri\OutletUtama;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\PanduanAwal\Enum\LangkahPanduan;
 use App\Domain\PanduanAwal\Enum\StatusLangkahPanduan;
 use App\Domain\PanduanAwal\Model\ProgresPanduanAwal;
@@ -16,7 +17,28 @@ use App\Domain\PanduanAwal\Model\ProgresPanduanAwal;
  */
 final class ProgresPanduan
 {
-    public function __construct(private readonly OutletUtama $outletUtama) {}
+    public function __construct(
+        private readonly OutletUtama $outletUtama,
+        private readonly SektorOutletTenant $sektor,
+    ) {}
+
+    /** D-183: usaha tanpa kasir (semua sektor `BIZ-`) tidak melewati langkah Metode pembayaran & Perangkat kasir. */
+    public function CekTanpaKasir(): bool
+    {
+        return $this->sektor->CekHanyaPerusahaan();
+    }
+
+    /** @return list<LangkahPanduan> Langkah wajib yang belum selesai menurut sektor tenant ini. */
+    public function AmbilLangkahWajibBelumSelesai(): array
+    {
+        return $this->AmbilBaris()?->AmbilLangkahWajibBelumSelesai($this->CekTanpaKasir()) ?? [];
+    }
+
+    /** Langkah sesudah [langkah] yang berlaku bagi tenant ini; null = langkah terakhir. */
+    public function AmbilBerikutnya(LangkahPanduan $langkah): ?LangkahPanduan
+    {
+        return $langkah->AmbilBerikutnya($this->CekTanpaKasir());
+    }
 
     public function AmbilBaris(): ?ProgresPanduanAwal
     {
@@ -59,11 +81,11 @@ final class ProgresPanduan
                 'Judul' => $langkah->AmbilJudul(),
                 'Status' => ($baris?->AmbilStatus($langkah) ?? StatusLangkahPanduan::Belum)->value,
                 'Tautan' => route($langkah->AmbilNamaRute()),
-            ], LangkahPanduan::cases()),
+            ], LangkahPanduan::AmbilBerlaku($this->CekTanpaKasir())),
             'SelesaiPada' => $baris?->SelesaiPada?->toIso8601ZuluString(),
             'Outlet' => $outlet === null ? null : ['Uuid' => $outlet->uuid, 'Kode' => $outlet->kode, 'Nama' => $outlet->nama],
             'Wajib' => $baris !== null && $baris->Wajib && $baris->SelesaiPada === null,
-            'WajibBelumSelesai' => array_map(fn (LangkahPanduan $l): string => $l->value, $baris?->AmbilLangkahWajibBelumSelesai() ?? []),
+            'WajibBelumSelesai' => array_map(fn (LangkahPanduan $l): string => $l->value, $this->AmbilLangkahWajibBelumSelesai()),
         ];
     }
 }
