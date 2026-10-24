@@ -19,6 +19,7 @@ use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\DaftarAnggota;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
+use App\Domain\Organisasi\Kueri\PenyaringSektor;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -176,12 +177,12 @@ final class TimKontroler extends DasarKelolaKontroler
         return Peran::query()->orderByDesc('Bawaan')->orderBy('Id')->get()
             ->filter(fn (Peran $peran): bool => $sektor->CekPeranTampil($peran->Kode, (bool) $peran->Bawaan, (int) ($jumlahAnggota->get($peran->Id) ?? 0)))
             ->map(fn (Peran $peran): array => [
-            'Uuid' => $peran->Uuid,
-            'Nama' => $peran->Nama,
-            'Pemilik' => $peran->CekPemilik(),
-            'Cakupan' => $peran->AmbilCakupanOutlet()->value,
-            'IkutAbsensi' => ! $peran->CekPemilik() && (PeranTenantBawaan::tryFrom((string) $peran->Kode)?->AmbilIkutAbsensiBawaan() ?? true),
-        ])->values()->all();
+                'Uuid' => $peran->Uuid,
+                'Nama' => $peran->Nama,
+                'Pemilik' => $peran->CekPemilik(),
+                'Cakupan' => $peran->AmbilCakupanOutlet()->value,
+                'IkutAbsensi' => ! $peran->CekPemilik() && (PeranTenantBawaan::tryFrom((string) $peran->Kode)?->AmbilIkutAbsensiBawaan() ?? true),
+            ])->values()->all();
     }
 
     /**
