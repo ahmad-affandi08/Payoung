@@ -191,7 +191,7 @@ it('cek wajah langsung (D-186): hanya jawaban Cocok ya/tidak, tidak mencatat abs
     [$k, , $alamat] = SiapkanAbsensiWeb($this);
 
     $cocok = $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertOk();
-    $beda = $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji(1)])->assertOk();
+    $beda = $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji(5)])->assertOk();
 
     expect($cocok->json())->toBe(['Cocok' => true])
         ->and($beda->json())->toBe(['Cocok' => false]);
@@ -454,7 +454,7 @@ it('kalibrasi wajah: sebaran diterima & ditolak per kelompok 0,05, ringkasan, ha
 
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
     $hasil = $this->getJson('/kelola/karyawan/absensi/kalibrasi-wajah')->assertOk()
-        ->assertJsonPath('Ambang', '0.60')
+        ->assertJsonPath('Ambang', '0.70')
         ->assertJsonPath('JumlahDiterima', 1)
         ->assertJsonPath('JumlahDitolak', 1)
         ->assertJsonPath('PersenDitolak', '50.0')

@@ -12,8 +12,8 @@ use Brick\Math\RoundingMode;
 /**
  * Pencocokan wajah absensi web (F-18 bagian 4, D-37). Model wajah berjalan di browser karyawan dan mengirim sidik
  * wajah = deskriptor × 10.000 dibulatkan (bilangan bulat). Keputusan cocok-tidaknya dibuat di sini, di server:
- * kemiripan kosinus terhadap tiap sidik terdaftar, diambil yang tertinggi, lalu dibandingkan dengan
- * `config('karyawan.AmbangKemiripanWajah')`. Hitungan bilangan bulat & desimal, tanpa pecahan biner.
+ * kemiripan kosinus terhadap rata-rata sidik terdaftar, lalu dibandingkan dengan
+ * `config('karyawan.AmbangKemiripanWajah')` (bawaan 0,70 berdasarkan pengukuran, lihat `Panduan/KalibrasiWajah.md`). Hitungan bilangan bulat & desimal, tanpa pecahan biner.
  */
 final class PencocokWajah
 {
@@ -54,29 +54,27 @@ final class PencocokWajah
     }
 
     /**
-     * Kemiripan tertinggi (0–1, 4 desimal) antara sidik saat absen dan sidik-sidik terdaftar. Sidik berpanjang lain
-     * (model wajah berganti) tidak dibandingkan.
+     * Kemiripan kosinus (0–1, 4 desimal) antara sidik saat absen dan **rata-rata** sidik-sidik terdaftar (D-188). Rata-rata
+     * (jumlah vektor; panjangnya tak memengaruhi kosinus) lebih stabil daripada mengambil yang tertinggi dari tiap foto
+     * pendaftaran: satu foto pendaftaran yang kebetulan mirip orang lain tidak lagi cukup untuk lolos. Sidik berpanjang
+     * lain (model wajah berganti) tidak diikutkan; tanpa sidik yang sepadan hasilnya 0, jadi harus daftar ulang.
      *
      * @param  list<int>  $sidik
      * @param  list<list<int>>  $terdaftar
      */
     public function HitungKemiripan(array $sidik, array $terdaftar): BigDecimal
     {
-        $terbaik = BigDecimal::zero();
+        $acuan = null;
 
-        foreach ($terdaftar as $acuan) {
-            if (count($acuan) !== count($sidik)) {
+        foreach ($terdaftar as $sidikTerdaftar) {
+            if (count($sidikTerdaftar) !== count($sidik)) {
                 continue;
             }
 
-            $kemiripan = self::HitungKosinus($sidik, $acuan);
-
-            if ($kemiripan->isGreaterThan($terbaik)) {
-                $terbaik = $kemiripan;
-            }
+            $acuan = $acuan === null ? $sidikTerdaftar : array_map(fn (int $a, int $b): int => $a + $b, $acuan, $sidikTerdaftar);
         }
 
-        return $terbaik;
+        return $acuan === null ? BigDecimal::zero() : self::HitungKosinus($sidik, $acuan);
     }
 
     public function CekCocok(BigDecimal $kemiripan): bool

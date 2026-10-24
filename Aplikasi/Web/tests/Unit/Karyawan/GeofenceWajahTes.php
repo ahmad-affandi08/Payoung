@@ -19,7 +19,7 @@ it('jarak GPS dalam meter sama dengan haversine untuk jarak outlet (±1 m)', fun
         ->and($pengukur->HitungMeter('-7.5560000', '110.8310000', '-7.5560000', '110.8310000'))->toBe(0);
 });
 
-it('kemiripan wajah: identik = 1, berlawanan = 0, terbaik dari beberapa sidik terdaftar; panjang lain diabaikan', function (): void {
+it('kemiripan wajah: identik = 1, berlawanan = 0, dihitung terhadap rata-rata sidik terdaftar; panjang lain diabaikan', function (): void {
     $pencocok = new PencocokWajah;
     $a = array_map(fn (int $i): int => ($i % 7) * 100 - 300, range(0, 127));
     $b = array_map(fn (int $n): int => -$n, $a);
@@ -27,7 +27,10 @@ it('kemiripan wajah: identik = 1, berlawanan = 0, terbaik dari beberapa sidik te
 
     expect((string) $pencocok->HitungKemiripan($a, [$a]))->toBe('1.0000')
         ->and((string) $pencocok->HitungKemiripan($a, [$b]))->toBe('0')
-        ->and($pencocok->HitungKemiripan($a, [$b, $mirip])->isGreaterThan('0.99'))->toBeTrue()
+        ->and($pencocok->HitungKemiripan($a, [$a, $mirip])->isGreaterThan('0.99'))->toBeTrue()
+        // Rata-rata menggantikan "yang tertinggi" (D-188): satu sidik terdaftar yang berlawanan menetralkan yang lain.
+        ->and((string) $pencocok->HitungKemiripan($a, [$a, $b]))->toBe('0')
+        ->and((string) $pencocok->HitungKemiripan($a, [array_slice($a, 0, 64), $a]))->toBe('1.0000')
         ->and((string) $pencocok->HitungKemiripan($a, [array_slice($a, 0, 64)]))->toBe('0');
 });
 
@@ -39,4 +42,15 @@ it('sidik wajah tidak sah ditolak: terlalu pendek, bukan bilangan bulat, nilai d
     }
 
     expect($pencocok->Validasi(array_fill(0, 128, 5)))->toHaveCount(128);
+});
+
+it('sidik wajah orang lain yang agak mirip tidak lolos ambang 0,70; sidik yang sama dengan sedikit selisih tetap lolos', function (): void {
+    $pencocok = new PencocokWajah;
+    $acuan = array_map(fn (int $i): int => (int) round(3000 * sin($i * 0.37) + 800), range(0, 1023));
+    // Orang lain: sebagian besar komponen berbeda, tetapi ada komponen bersama (rata-rata deskriptor yang positif).
+    $lain = array_map(fn (int $n, int $i): int => (int) round(0.45 * $n + 3000 * sin($i * 1.31 + 2)), $acuan, range(0, 1023));
+    $sama = array_map(fn (int $n, int $i): int => $n + (($i * 37) % 301) - 150, $acuan, range(0, 1023));
+
+    expect($pencocok->CekCocok($pencocok->HitungKemiripan($lain, [$acuan, $acuan, $acuan])))->toBeFalse()
+        ->and($pencocok->CekCocok($pencocok->HitungKemiripan($sama, [$acuan, $acuan, $acuan])))->toBeTrue();
 });
