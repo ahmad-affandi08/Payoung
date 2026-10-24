@@ -1,6 +1,6 @@
 import { KolomBilangan } from '@/Komponen/Laporan/KolomLaporan';
 import SaringLaporan from '@/Komponen/Laporan/SaringLaporan';
-import { kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
+import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
@@ -154,17 +154,19 @@ export default function HalamanAnalitikPlatform({
 
             <Tabs defaultValue="funnel" className="gap-4">
                 <div className="overflow-x-auto">
-                    <TabsList aria-label="Bagian analitik platform" className={kelasDaftarTabPanel}>
-                        <TabsTrigger value="funnel" className={kelasItemTabPanel}>
-                            Funnel pendaftaran
-                        </TabsTrigger>
-                        <TabsTrigger value="adopsi" className={kelasItemTabPanel}>
-                            Adopsi fitur
-                        </TabsTrigger>
-                        <TabsTrigger value="retensi" className={kelasItemTabPanel}>
-                            Retensi kohort
-                        </TabsTrigger>
-                    </TabsList>
+                    <JalurGulirTab>
+                        <TabsList aria-label="Bagian analitik platform" className={kelasDaftarTabPanel}>
+                            <TabsTrigger value="funnel" className={kelasItemTabPanel}>
+                                Funnel pendaftaran
+                            </TabsTrigger>
+                            <TabsTrigger value="adopsi" className={kelasItemTabPanel}>
+                                Adopsi fitur
+                            </TabsTrigger>
+                            <TabsTrigger value="retensi" className={kelasItemTabPanel}>
+                                Retensi kohort
+                            </TabsTrigger>
+                        </TabsList>
+                    </JalurGulirTab>
                 </div>
 
                 <TabsContent value="funnel" className="flex flex-col gap-4">

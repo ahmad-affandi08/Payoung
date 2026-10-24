@@ -22,7 +22,7 @@ import { LabelPenanda, LabelStatusLangganan } from '@/Komponen/Pengelola/Tenant/
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import Panel from '@/Komponen/Kelola/Panel';
-import { kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
+import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Komponen/Ui/tabs';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -277,30 +277,32 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
 
             <Tabs defaultValue="ringkasan" className="gap-4">
                 <div className="overflow-x-auto">
-                    <TabsList aria-label="Bagian tampilan tenant" className={kelasDaftarTabPanel}>
-                        <TabsTrigger value="ringkasan" className={kelasItemTabPanel}>
-                            Ringkasan
-                        </TabsTrigger>
-                        <TabsTrigger value="override" className={kelasItemTabPanel}>
-                            Override & trial ({Tenant.Override.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="catatan" className={kelasItemTabPanel}>
-                            Catatan & riwayat
-                        </TabsTrigger>
-                        {Tagihan !== null ? (
-                            <TabsTrigger value="tagihan" className={kelasItemTabPanel}>
-                                Tagihan ({Tagihan.JumlahTerbuka})
+                    <JalurGulirTab>
+                        <TabsList aria-label="Bagian tampilan tenant" className={kelasDaftarTabPanel}>
+                            <TabsTrigger value="ringkasan" className={kelasItemTabPanel}>
+                                Ringkasan
                             </TabsTrigger>
-                        ) : null}
-                        {Tiket !== null ? (
-                            <TabsTrigger value="tiket" className={kelasItemTabPanel}>
-                                Tiket ({Tiket.JumlahTerbuka})
+                            <TabsTrigger value="override" className={kelasItemTabPanel}>
+                                Override & trial ({Tenant.Override.length})
                             </TabsTrigger>
-                        ) : null}
-                        <TabsTrigger value="perangkat" className={kelasItemTabPanel}>
-                            Perangkat ({Perangkat.JumlahAktif})
-                        </TabsTrigger>
-                    </TabsList>
+                            <TabsTrigger value="catatan" className={kelasItemTabPanel}>
+                                Catatan & riwayat
+                            </TabsTrigger>
+                            {Tagihan !== null ? (
+                                <TabsTrigger value="tagihan" className={kelasItemTabPanel}>
+                                    Tagihan ({Tagihan.JumlahTerbuka})
+                                </TabsTrigger>
+                            ) : null}
+                            {Tiket !== null ? (
+                                <TabsTrigger value="tiket" className={kelasItemTabPanel}>
+                                    Tiket ({Tiket.JumlahTerbuka})
+                                </TabsTrigger>
+                            ) : null}
+                            <TabsTrigger value="perangkat" className={kelasItemTabPanel}>
+                                Perangkat ({Perangkat.JumlahAktif})
+                            </TabsTrigger>
+                        </TabsList>
+                    </JalurGulirTab>
                 </div>
 
                 <TabsContent value="ringkasan" className="grid gap-4 lg:grid-cols-2">

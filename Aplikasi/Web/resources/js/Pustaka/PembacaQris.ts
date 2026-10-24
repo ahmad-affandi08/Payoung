@@ -31,8 +31,9 @@ function GambarKeKanvas(gambar: ImageBitmap, sisiMaksimal: number): HTMLCanvasEl
     const konteks = kanvas.getContext('2d', { willReadFrequently: true });
 
     if (konteks) {
-        // Latar putih: PNG transparan dengan QR hitam akan terbaca hitam-di-hitam tanpa ini.
-        konteks.fillStyle = '#ffffff';
+        // Latar terang (warna permukaan dari token): PNG transparan dengan QR hitam akan terbaca hitam-di-hitam tanpa ini.
+        konteks.fillStyle =
+            getComputedStyle(document.documentElement).getPropertyValue('--color-permukaan').trim() || 'white';
         konteks.fillRect(0, 0, kanvas.width, kanvas.height);
         konteks.drawImage(gambar, 0, 0, kanvas.width, kanvas.height);
     }

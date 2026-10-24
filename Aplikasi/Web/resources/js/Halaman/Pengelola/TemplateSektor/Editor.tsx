@@ -6,7 +6,7 @@ import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import FormAkun from '@/Komponen/Pengelola/TemplateSektor/FormAkun';
 import FormIsiBisnis from '@/Komponen/Pengelola/TemplateSektor/FormIsiBisnis';
 import { Button } from '@/Komponen/Ui/button';
-import { kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
+import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Komponen/Ui/tabs';
 import { cn } from '@/Komponen/Ui/utils';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
@@ -206,14 +206,16 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
             )}
             {/* Kedua panel tetap terpasang (forceMount) agar isian yang belum disimpan tidak hilang saat pindah tab. */}
             <Tabs defaultValue="isi-bisnis">
-                <TabsList aria-label="Bagian template" className={kelasDaftarTabPanel}>
-                    <TabsTrigger value="isi-bisnis" className={kelasItemTabPanel}>
-                        Isi bisnis
-                    </TabsTrigger>
-                    <TabsTrigger value="akun" className={kelasItemTabPanel}>
-                        Akun & pajak
-                    </TabsTrigger>
-                </TabsList>
+                <JalurGulirTab>
+                    <TabsList aria-label="Bagian template" className={kelasDaftarTabPanel}>
+                        <TabsTrigger value="isi-bisnis" className={kelasItemTabPanel}>
+                            Isi bisnis
+                        </TabsTrigger>
+                        <TabsTrigger value="akun" className={kelasItemTabPanel}>
+                            Akun & pajak
+                        </TabsTrigger>
+                    </TabsList>
+                </JalurGulirTab>
                 <TabsContent value="isi-bisnis" forceMount className="data-[state=inactive]:hidden">
                     <FormIsiBisnis
                         key={`bisnis-${Versi.Versi}`}

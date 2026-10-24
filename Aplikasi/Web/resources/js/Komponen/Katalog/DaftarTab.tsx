@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
+import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Komponen/Ui/tabs';
 
 export type ItemTab<K extends string> = { Kunci: K; Label: string; AdaGalat?: boolean };
@@ -30,20 +30,22 @@ export default function DaftarTab<K extends string>({ label, tab, aktif, saatPil
 
     return (
         <Tabs value={aktif} onValueChange={Pilih} className="gap-4">
-            <TabsList aria-label={label} className={kelasDaftarTabPanel}>
-                {tab.map((item) => (
-                    <TabsTrigger
-                        key={item.Kunci}
-                        value={item.Kunci}
-                        // Klik tanpa mousedown (pembaca layar, test) tetap memilih tab.
-                        onClick={() => saatPilih(item.Kunci)}
-                        className={kelasItemTabPanel}
-                    >
-                        {item.Label}
-                        {item.AdaGalat ? <span className="ml-1 text-bahaya">(perlu diperbaiki)</span> : null}
-                    </TabsTrigger>
-                ))}
-            </TabsList>
+            <JalurGulirTab>
+                <TabsList aria-label={label} className={kelasDaftarTabPanel}>
+                    {tab.map((item) => (
+                        <TabsTrigger
+                            key={item.Kunci}
+                            value={item.Kunci}
+                            // Klik tanpa mousedown (pembaca layar, test) tetap memilih tab.
+                            onClick={() => saatPilih(item.Kunci)}
+                            className={kelasItemTabPanel}
+                        >
+                            {item.Label}
+                            {item.AdaGalat ? <span className="ml-1 text-bahaya">(perlu diperbaiki)</span> : null}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+            </JalurGulirTab>
             {tab.map((item) => (
                 <TabsContent
                     key={item.Kunci}
