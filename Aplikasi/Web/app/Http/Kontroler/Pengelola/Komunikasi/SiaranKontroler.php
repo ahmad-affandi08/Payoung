@@ -80,7 +80,15 @@ final class SiaranKontroler extends Kontroler
             'Isi' => ['required', 'string', 'min:10', 'max:1000'],
             'Kanal' => ['required', Rule::enum(KanalSiaran::class)],
             'Segmen' => ['nullable', 'array'],
+            // Hanya kunci yang punya aturan yang lolos `validate()`, jadi tiap bagian segmen perlu aturannya sendiri.
+            'Segmen.Status' => ['nullable', 'array'],
+            'Segmen.Status.*' => ['string'],
+            'Segmen.Paket' => ['nullable', 'array'],
+            'Segmen.Paket.*' => ['string'],
+            'Segmen.Kesehatan' => ['nullable', 'array'],
+            'Segmen.Kesehatan.*' => ['string'],
             'Segmen.Tenant' => ['nullable', 'array', 'max:'.self::MAKS_TENANT_PILIHAN],
+            'Segmen.Tenant.*' => ['string', 'size:26'],
             'JadwalKirimPada' => ['nullable', 'date'],
         ], [
             'Judul.*' => 'Isi judul siaran, 3 sampai 120 huruf.',

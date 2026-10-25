@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Operasional\Kueri;
 
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Domain\Tenant\Layanan\PenjagaPenyimpanan;
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
 use App\Domain\Tenant\Model\Tenant;
@@ -19,7 +20,7 @@ final class PenyimpananTenantTerbesar
 
     public function __construct(
         private readonly KonteksPengelola $konteks,
-        private readonly PenjagaPenyimpanan $penjaga,
+        private readonly PemeriksaFiturTenant $fitur,
     ) {}
 
     /**
@@ -38,7 +39,7 @@ final class PenyimpananTenantTerbesar
             'JumlahTenant' => $jumlah,
             'Terbesar' => array_values($baris->map(function (PemakaianPenyimpanan $pemakaian) use ($tenant): array {
                 $profil = $tenant->get($pemakaian->IdTenant);
-                $batasMb = $this->penjaga->AmbilRingkasanMb($pemakaian->IdTenant)['Batas'];
+                $batasMb = $this->fitur->AmbilBatasEfektif($pemakaian->IdTenant, PenjagaPenyimpanan::KOLOM_BATAS);
 
                 return [
                     'Uuid' => $profil?->Uuid,

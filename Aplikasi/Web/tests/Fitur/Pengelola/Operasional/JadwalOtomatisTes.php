@@ -12,7 +12,8 @@ use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Console\Scheduling\Event;
-use Illuminate\Console\Scheduling\EventMutex;
+use Illuminate\Console\Scheduling\CacheEventMutex;
+use Illuminate\Contracts\Cache\Factory as FabrikCache;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
@@ -24,7 +25,7 @@ const PERINTAH_JADWAL_UJI = 'tenant:periksa-silang';
 
 function AcaraUji(string $perintah): Event
 {
-    return new Event(app(EventMutex::class), "'php' 'artisan' {$perintah}");
+    return new Event(new CacheEventMutex(app(FabrikCache::class)), "'php' 'artisan' {$perintah}");
 }
 
 beforeEach(function (): void {
@@ -117,7 +118,7 @@ describe('D-209 halaman Jadwal & penyimpanan', function (): void {
     });
 
     it('tugas menjalankan perintah dan menutup riwayat dengan hasilnya', function (): void {
-        $baris = RiwayatJadwal::query()->create(['Perintah' => 'inspire', 'Sumber' => 'Manual', 'MulaiPada' => now()]);
+        $baris = RiwayatJadwal::query()->create(['Perintah' => 'list --raw', 'Sumber' => 'Manual', 'MulaiPada' => now()]);
 
         app()->call([new JalankanPerintahJadwalTugas($baris->Id), 'handle']);
 
