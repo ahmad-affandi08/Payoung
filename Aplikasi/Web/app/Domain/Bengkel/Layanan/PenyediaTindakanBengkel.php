@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class PenyediaTindakanBengkel implements PenyediaTindakan, TerbatasSektor
 {
-    public function AmbilSektor(): ?array
+    public function AmbilSektor(): array
     {
         return ['SVC-WRK', 'RTL-ELC'];
     }

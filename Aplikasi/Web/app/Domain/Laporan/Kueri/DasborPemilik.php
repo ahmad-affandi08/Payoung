@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
  * pembandingnya (satu hari: kemarin & hari yang sama minggu lalu; beberapa hari: periode sebelumnya yang sama panjang);
  * grafik (14 hari berakhir di tanggal akhir, atau seluruh rentang bila lebih dari satu hari); 5 produk terlaris
  * (7 hari berakhir di tanggal akhir, atau rentang bila lebih dari satu hari); penjualan per outlet pada periode;
+ * widget Ringkasan cepat (`WidgetBeranda`, D-203: metode bayar, jenis pesanan, kategori, kasir, anti-fraud, komisi);
  * stok kritis (bila berizin `persediaan.lihat`); shift terbuka & selisih kas terbaru; jumlah penjualan `PerluTinjauan`
  * (keadaan saat ini, tidak mengikuti rentang).
  */
@@ -37,6 +38,7 @@ final class DasborPemilik
         private readonly AnggotaOutlet $anggota,
         private readonly RingkasanShiftDasbor $shift,
         private readonly LaporanStok $laporanStok,
+        private readonly WidgetBeranda $widget,
     ) {}
 
     /**
@@ -44,9 +46,10 @@ final class DasborPemilik
      * @param  CarbonImmutable|null  $dari  awal periode; null = hari ini
      * @param  CarbonImmutable|null  $sampai  akhir periode; null = hari ini
      * @param  list<int>|null  $idOutletBoleh
+     * @param  bool  $bolehKomisi  widget komisi staf hanya untuk pemegang `karyawan.lihat`
      * @return array<string, mixed>
      */
-    public function Ambil(CarbonImmutable $hariIni, ?array $idOutletBoleh, bool $bolehStok, ?CarbonImmutable $dari = null, ?CarbonImmutable $sampai = null): array
+    public function Ambil(CarbonImmutable $hariIni, ?array $idOutletBoleh, bool $bolehStok, ?CarbonImmutable $dari = null, ?CarbonImmutable $sampai = null, bool $bolehKomisi = false): array
     {
         // Semua tanggal disamakan ke tengah malam zona bawaan aplikasi: zona `$hariIni` (tanggal bisnis outlet) bisa berbeda
         // dari zona tanggal query, dan selisih hari antar-zona akan meleset sehari.
@@ -114,6 +117,7 @@ final class DasborPemilik
                 'Bersih' => ($perOutlet[(string) $o['Id']]['Agregat'] ?? DataAgregatPenjualan::Nol())->Bersih()->KeString(),
                 'JumlahTransaksi' => ($perOutlet[(string) $o['Id']]['Agregat'] ?? DataAgregatPenjualan::Nol())->jumlahTransaksi,
             ], $outlet),
+            'Widget' => $this->widget->Ambil($saringPeriode, $idOutletBoleh, $bolehKomisi),
             'StokKritis' => $bolehStok ? $this->laporanStok->StokKritis($idOutletBoleh, batas: 5) : null,
             'Shift' => [
                 'JumlahTerbuka' => $shift['JumlahTerbuka'],

@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { lazy, Suspense, useState, type ReactNode } from 'react';
 
+import RingkasanCepat from '@/Komponen/Laporan/RingkasanCepat';
 import PemilihRentangTanggal from '@/Komponen/Tanggal/PemilihRentangTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import Panel from '@/Komponen/Kelola/Panel';
@@ -154,9 +155,6 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
             : periode.SatuHari
               ? `Produk terlaris 7 hari sampai ${FormatTanggal(periode.Sampai)}`
               : `Produk terlaris ${String(periode.JumlahHariTerlaris)} hari`;
-    const teksKosongTerlaris = periode.SatuHari
-        ? 'Belum ada penjualan dalam 7 hari itu.'
-        : 'Belum ada penjualan pada periode ini.';
 
     const Pilih = (nilai: string) => {
         const [dari, sampai] = PecahRentang(nilai);
@@ -235,28 +233,9 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
                 </Suspense>
             </Panel>
 
-            <div className="grid gap-3 lg:grid-cols-2">
-                <Panel
-                    tingkat="h3"
-                    judul={judulTerlaris}
-                    aksi={<TautanPanel href="/kelola/laporan/penjualan?tab=produk">Semua produk</TautanPanel>}
-                >
-                    {data.ProdukTerlaris.length === 0 ? (
-                        <p className="text-isi text-teks-sekunder">{teksKosongTerlaris}</p>
-                    ) : (
-                        <ol>
-                            {data.ProdukTerlaris.map((p) => (
-                                <BarisDaftar
-                                    key={p.Kunci}
-                                    kiri={p.NamaProduk}
-                                    keterangan={`${FormatJumlahStok(p.Qty)} terjual`}
-                                    kanan={FormatRupiah(p.Bersih)}
-                                />
-                            ))}
-                        </ol>
-                    )}
-                </Panel>
+            <RingkasanCepat data={data} judulTerlaris={judulTerlaris} />
 
+            <div className="grid gap-3 lg:grid-cols-2">
                 <Panel
                     tingkat="h3"
                     judul={

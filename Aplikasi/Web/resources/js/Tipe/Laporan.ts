@@ -72,6 +72,34 @@ export type PeriodeDasbor = {
     JumlahHariTerlaris: number;
 };
 
+/** Satu baris peringkat widget Ringkasan cepat (D-203). `Nilai` = uang atau jumlah, string desimal dari server. */
+export type BarisWidget = { Kunci: string; Nama: string; Nilai: string; Keterangan: string };
+
+/** Daftar peringkat teratas; `Total` = jumlah seluruh baris (bukan hanya yang tampil), `Jumlah` = baris berisi. */
+export type PeringkatWidget = { Total: string; Jumlah: number; Baris: BarisWidget[] };
+
+export type RingkasanAntiFraud = {
+    Tingkat: 'Rendah' | 'Sedang' | 'Tinggi';
+    SkorTertinggi: number;
+    NamaKasirTertinggi: string;
+    JumlahKasirPerluDicek: number;
+    VoidCepatTunai: number;
+    JumlahVoid: number;
+    JumlahBerdiskon: number;
+    BukaLaciManual: number;
+    ShiftSelisihKurang: number;
+};
+
+export type WidgetBeranda = {
+    MetodeBayar: PeringkatWidget;
+    JenisPesanan: PeringkatWidget;
+    Kategori: PeringkatWidget;
+    Kasir: PeringkatWidget;
+    AntiFraud: RingkasanAntiFraud;
+    /** null = pengguna tanpa izin `karyawan.lihat`: widget tidak ditampilkan. */
+    Komisi: PeringkatWidget | null;
+};
+
 export type DasborPemilik = {
     /** Tanggal akhir periode. */
     Tanggal: string;
@@ -79,6 +107,7 @@ export type DasborPemilik = {
     Angka: AngkaPenjualan;
     Pembanding: PembandingDasbor[];
     Grafik: TitikGrafik[];
+    Widget: WidgetBeranda;
     ProdukTerlaris: { Kunci: string; NamaProduk: string; Qty: string; Bersih: string }[];
     PerOutlet: { Kunci: string; NamaOutlet: string; Bersih: string; JumlahTransaksi: number }[];
     StokKritis: StokKritis | null;

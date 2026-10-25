@@ -164,6 +164,21 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->where('Dasbor.Grafik.13.Bersih', '0.00')
             ->where('Dasbor.ProdukTerlaris', []));
     });
+
+    it('D-203 widget Ringkasan cepat: peringkat kasir, kategori, jenis pesanan, metode bayar mengikuti periode; anti-fraud diringkas; komisi tanpa data = nol', function (): void {
+        $d = BantuanLaporan::SiapkanDataPenjualan($this);
+
+        BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
+        $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Widget.Kasir.Total', '83150.00')
+            ->where('Dasbor.Widget.Kategori.Total', '83150.00')
+            ->where('Dasbor.Widget.JenisPesanan.Total', '83150.00')
+            ->where('Dasbor.Widget.Kasir.Baris.0.Nilai', '83150.00')
+            ->has('Dasbor.Widget.MetodeBayar.Baris')
+            ->whereType('Dasbor.Widget.AntiFraud.Tingkat', 'string')
+            ->whereType('Dasbor.Widget.AntiFraud.SkorTertinggi', 'integer')
+            ->where('Dasbor.Widget.Komisi', ['Total' => '0.00', 'Jumlah' => 0, 'Baris' => []]));
+    });
 });
 
 describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void {

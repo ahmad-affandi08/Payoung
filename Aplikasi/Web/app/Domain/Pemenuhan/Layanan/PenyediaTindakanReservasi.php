@@ -24,7 +24,7 @@ use App\Domain\Pemenuhan\Model\ReservasiMeja;
  */
 final class PenyediaTindakanReservasi implements PenyediaTindakan, TerbatasSektor
 {
-    public function AmbilSektor(): ?array
+    public function AmbilSektor(): array
     {
         return ['SVC', 'FNB', 'RTL-PET'];
     }

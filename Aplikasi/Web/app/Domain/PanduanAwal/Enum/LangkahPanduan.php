@@ -81,7 +81,11 @@ enum LangkahPanduan: string
         return ! $tanpaKasir || ! in_array($this, [self::MetodePembayaran, self::Perangkat], true);
     }
 
-    /** Langkah yang berlaku bagi tenant ini, urut tampil. @return list<self> */
+    /**
+     * Langkah yang berlaku bagi tenant ini, urut tampil.
+     *
+     * @return list<self>
+     */
     public static function AmbilBerlaku(bool $tanpaKasir): array
     {
         return array_values(array_filter(self::cases(), fn (self $l): bool => $l->CekBerlaku($tanpaKasir)));

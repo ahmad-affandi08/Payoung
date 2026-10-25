@@ -17,6 +17,6 @@ final class DaftarIdOutletKanvas
      */
     public function Ambil(): array
     {
-        return Outlet::query()->where('Kanvas', true)->pluck('Id')->map(fn (mixed $id): int => (int) $id)->values()->all();
+        return array_values(Outlet::query()->where('Kanvas', true)->pluck('Id')->map(fn (mixed $id): int => (int) $id)->all());
     }
 }

@@ -69,6 +69,7 @@ final class BerandaKelolaKontroler extends DasarKelolaKontroler
                     $akses->CekIzin($idTenant, $idPengguna, IzinTenant::PersediaanLihat),
                     $this->UraiTanggal($permintaan->query('dari')),
                     $this->UraiTanggal($permintaan->query('sampai')),
+                    $akses->CekIzin($idTenant, $idPengguna, IzinTenant::KaryawanLihat),
                 )
                 : null,
         ]);

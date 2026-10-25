@@ -74,7 +74,13 @@ final class PemeriksaQris
         }
 
         $bagian = $this->Urai($isi);
-        $terakhir = $bagian[array_key_last($bagian)];
+        $kunciTerakhir = array_key_last($bagian);
+
+        if ($kunciTerakhir === null) {
+            throw new PelanggaranAturanBisnis('BukanQris', 'Ini bukan kode QRIS. Pastikan gambar berisi QRIS dari bank atau penyedia Anda.', self::BIDANG);
+        }
+
+        $terakhir = $bagian[$kunciTerakhir];
 
         if ($terakhir[0] !== '63' || strlen($terakhir[1]) !== 4) {
             throw new PelanggaranAturanBisnis('BukanQris', 'Kode QRIS tidak lengkap. Gunakan gambar QRIS yang utuh.', self::BIDANG);
@@ -90,15 +96,19 @@ final class PemeriksaQris
             $nilai[$tag] ??= $isiTag;
         }
 
-        if (($nilai['01'] ?? null) === '12') {
+        $jenisInisiasi = $nilai['01'] ?? null;
+        $mataUang = $nilai['53'] ?? null;
+        $negara = $nilai['58'] ?? null;
+
+        if ($jenisInisiasi === '12') {
             throw new PelanggaranAturanBisnis('BukanStatis', 'QRIS ini sudah berisi nominal (dinamis). Unggah QRIS statis toko Anda.', self::BIDANG);
         }
 
-        if (($nilai['01'] ?? null) !== '11') {
+        if ($jenisInisiasi !== '11') {
             throw new PelanggaranAturanBisnis('BukanQris', 'Jenis QRIS tidak dikenali. Unggah QRIS statis toko Anda.', self::BIDANG);
         }
 
-        if (($nilai['53'] ?? null) !== '360' || ($nilai['58'] ?? null) !== 'ID') {
+        if ($mataUang !== '360' || $negara !== 'ID') {
             throw new PelanggaranAturanBisnis('BukanRupiahIndonesia', 'QRIS ini bukan QRIS rupiah Indonesia.', self::BIDANG);
         }
 

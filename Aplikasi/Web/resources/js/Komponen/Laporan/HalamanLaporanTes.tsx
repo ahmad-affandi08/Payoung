@@ -67,6 +67,46 @@ const dasbor: DasborPemilik = {
             Bersih: '1617000.00',
         },
     ],
+    Widget: {
+        MetodeBayar: {
+            Total: '12500000.00',
+            Jumlah: 2,
+            Baris: [
+                { Kunci: '1', Nama: 'Tunai', Nilai: '9000000.00', Keterangan: '90 transaksi' },
+                { Kunci: '2', Nama: 'QRIS Toko', Nilai: '3500000.00', Keterangan: '35 transaksi' },
+            ],
+        },
+        JenisPesanan: {
+            Total: '12500000.00',
+            Jumlah: 2,
+            Baris: [
+                { Kunci: 'MakanDiTempat', Nama: 'Makan di tempat', Nilai: '11000000.00', Keterangan: '110 transaksi' },
+                { Kunci: 'BawaPulang', Nama: 'Bawa pulang', Nilai: '1500000.00', Keterangan: '15 transaksi' },
+            ],
+        },
+        Kategori: {
+            Total: '12500000.00',
+            Jumlah: 1,
+            Baris: [{ Kunci: '7', Nama: 'Sembako', Nilai: '12500000.00', Keterangan: '8 produk' }],
+        },
+        Kasir: {
+            Total: '12500000.00',
+            Jumlah: 1,
+            Baris: [{ Kunci: 'k1', Nama: 'Rina Wulandari', Nilai: '12500000.00', Keterangan: '125 transaksi' }],
+        },
+        AntiFraud: {
+            Tingkat: 'Sedang',
+            SkorTertinggi: 35,
+            NamaKasirTertinggi: 'Rina Wulandari',
+            JumlahKasirPerluDicek: 1,
+            VoidCepatTunai: 2,
+            JumlahVoid: 3,
+            JumlahBerdiskon: 4,
+            BukaLaciManual: 0,
+            ShiftSelisihKurang: 1,
+        },
+        Komisi: { Total: '0.00', Jumlah: 0, Baris: [] },
+    },
     PerOutlet: [
         { Kunci: '01K5OUTLET', NamaOutlet: 'Toko Kelontong Berkah Solo', Bersih: '12500000.00', JumlahTransaksi: 125 },
     ],
@@ -226,6 +266,66 @@ describe('F-14a dasbor pemilik di beranda', () => {
         expect(params.sampai).toBe(hariIni);
         expect((Date.parse(params.sampai) - Date.parse(params.dari)) / 86_400_000).toBe(6);
         expect(opsi).toMatchObject({ only: ['Dasbor'], preserveState: true, preserveScroll: true, replace: true });
+    });
+
+    it('D-203 Ringkasan cepat: delapan widget berperingkat tanpa ikon, tautan membawa periode, status anti-fraud berteks', () => {
+        window.localStorage.clear();
+        RenderUji(<HalamanBerandaKelola Dasbor={dasbor} />);
+
+        const wadah = screen.getByRole('region', { name: 'Ringkasan cepat' });
+        const bagian = within(wadah);
+        for (const judul of [
+            'Metode pembayaran',
+            'Jenis pesanan',
+            'Penjualan per kategori',
+            'Kontrol anti-fraud',
+            'Produk terlaris 7 hari',
+            'Komisi staf',
+            'Penjualan per kasir',
+            'Stok kritis',
+        ]) {
+            expect(bagian.getByRole('region', { name: judul })).toBeTruthy();
+        }
+        expect(bagian.getByText('Makan di tempat')).toBeTruthy();
+        expect(bagian.getByText('Waspada')).toBeTruthy();
+        expect(bagian.getByText('Skor risiko tertinggi 35 dari 100 (Rina Wulandari).')).toBeTruthy();
+        expect(bagian.getByText('Belum ada komisi pada periode ini.')).toBeTruthy();
+        expect(bagian.getByRole('link', { name: 'Buka laporan metode' }).getAttribute('href')).toBe(
+            '/kelola/laporan/penjualan?dari=2026-10-07&sampai=2026-10-07&tab=metode',
+        );
+        expect(bagian.getByText('72%')).toBeTruthy();
+        expect(bagian.getByText('28%')).toBeTruthy();
+        expect(bagian.getByText('Menipis')).toBeTruthy();
+        expect(wadah.querySelector('svg')).toBeNull();
+    });
+
+    it('D-203 widget tanpa izin (komisi, stok) tidak dirender; widget bisa disembunyikan lewat Atur widget dan diingat', () => {
+        window.localStorage.clear();
+        const terbatas: DasborPemilik = { ...dasbor, StokKritis: null, Widget: { ...dasbor.Widget, Komisi: null } };
+        const { unmount: Lepas } = RenderUji(<HalamanBerandaKelola Dasbor={terbatas} />);
+
+        expect(screen.queryByRole('region', { name: 'Komisi staf' })).toBeNull();
+        expect(screen.queryByRole('region', { name: 'Stok kritis' })).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Atur widget' }));
+        const dialog = within(screen.getByRole('dialog'));
+        expect(dialog.queryByRole('checkbox', { name: 'Komisi staf' })).toBeNull();
+        fireEvent.click(dialog.getByRole('checkbox', { name: 'Metode pembayaran' }));
+        fireEvent.click(dialog.getByRole('button', { name: 'Selesai' }));
+
+        expect(screen.queryByRole('region', { name: 'Metode pembayaran' })).toBeNull();
+        expect(screen.getByRole('region', { name: 'Jenis pesanan' })).toBeTruthy();
+
+        // Dimuat ulang: pilihan diingat di peramban ini.
+        Lepas();
+        RenderUji(<HalamanBerandaKelola Dasbor={terbatas} />);
+        expect(screen.queryByRole('region', { name: 'Metode pembayaran' })).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Atur widget' }));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Tampilkan semua' }));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Selesai' }));
+        expect(screen.getByRole('region', { name: 'Metode pembayaran' })).toBeTruthy();
+        window.localStorage.clear();
     });
 
     it('tanpa izin laporan: tanpa angka', () => {

@@ -11194,6 +11194,13 @@
                         "Harga": "1500000",
                         "KodeSatuan": "HARI",
                         "Jenis": "NonStok"
+                    },
+                    {
+                        "Nama": "Pelatihan dan workshop karyawan per sesi",
+                        "Kategori": "Konsultasi",
+                        "Harga": "6000000",
+                        "KodeSatuan": "SESI",
+                        "Jenis": "Jasa"
                     }
                 ]
             }
@@ -11716,6 +11723,13 @@
                         "Harga": "10000000",
                         "KodeSatuan": "PAKET",
                         "Jenis": "NonStok"
+                    },
+                    {
+                        "Nama": "Pembongkaran dan pembersihan lahan per meter persegi",
+                        "Kategori": "Pekerjaan sipil",
+                        "Harga": "45000",
+                        "KodeSatuan": "M2",
+                        "Jenis": "Jasa"
                     }
                 ]
             }
@@ -12242,6 +12256,20 @@
                         "Harga": "2500000",
                         "KodeSatuan": "PCS",
                         "Jenis": "Jasa"
+                    },
+                    {
+                        "Nama": "Bahan baku benang jahit polyester kerucut",
+                        "Kategori": "Bahan baku",
+                        "Harga": "18000",
+                        "KodeSatuan": "PCS",
+                        "Jenis": "Stok"
+                    },
+                    {
+                        "Nama": "Label dan hangtag merek sablon",
+                        "Kategori": "Kemasan",
+                        "Harga": "1500",
+                        "KodeSatuan": "PCS",
+                        "Jenis": "Stok"
                     }
                 ]
             }

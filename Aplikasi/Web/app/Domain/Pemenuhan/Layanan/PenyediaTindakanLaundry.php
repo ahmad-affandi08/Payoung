@@ -24,7 +24,7 @@ final class PenyediaTindakanLaundry implements PenyediaTindakan, TerbatasSektor
 {
     public function __construct(private readonly PengaturanLaundryTenant $pengaturan) {}
 
-    public function AmbilSektor(): ?array
+    public function AmbilSektor(): array
     {
         return ['SVC-LDR'];
     }

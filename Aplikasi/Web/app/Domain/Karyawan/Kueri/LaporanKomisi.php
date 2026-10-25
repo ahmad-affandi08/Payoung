@@ -69,6 +69,45 @@ final class LaporanKomisi
     }
 
     /**
+     * Ringkasan untuk widget Beranda: komisi bersih per karyawan pada rentang tanggal bisnis (outlet dibatasi akses),
+     * urut terbesar, dan total seluruh karyawan (bukan hanya `$batas` teratas).
+     *
+     * @param  list<int>|null  $idOutletBoleh
+     * @return array{Total: string, Baris: list<array{Uuid: string, Nama: string, Bersih: string}>}
+     */
+    public function AmbilRingkasanPeriode(string $dari, string $sampai, ?array $idOutletBoleh, int $batas = 5): array
+    {
+        if ($idOutletBoleh === []) {
+            return ['Total' => Uang::Nol()->KeString(), 'Baris' => []];
+        }
+
+        $dasar = fn (): Builder => Komisi::query()
+            ->whereBetween('TanggalBisnis', [$dari, $sampai])
+            ->when($idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $idOutletBoleh ?? []));
+        $total = (string) $dasar()->selectRaw('CAST(COALESCE(SUM(`Jumlah` - `JumlahDibatalkan`), 0) AS DECIMAL(18,2)) AS Total')->value('Total');
+        $teratas = $dasar()
+            ->groupBy('IdKaryawan')
+            ->selectRaw('`IdKaryawan`, CAST(COALESCE(SUM(`Jumlah` - `JumlahDibatalkan`), 0) AS DECIMAL(18,2)) AS `Bersih`')
+            ->orderByDesc('Bersih')
+            ->orderBy('IdKaryawan')
+            ->limit($batas)
+            ->toBase()
+            ->get();
+        $karyawan = Karyawan::query()->whereIn('Id', $teratas->pluck('IdKaryawan')->all())->get()->keyBy('Id');
+        $baris = [];
+
+        foreach ($teratas as $b) {
+            $k = $karyawan->get((int) $b->IdKaryawan);
+
+            if ($k !== null) {
+                $baris[] = ['Uuid' => $k->Uuid, 'Nama' => $k->Nama, 'Bersih' => self::Uang($b->Bersih)];
+            }
+        }
+
+        return ['Total' => self::Uang($total), 'Baris' => $baris];
+    }
+
+    /**
      * F-18 bagian 3 rekap gaji: komisi bersih (komisi − dibatalkan) per karyawan untuk tanggal bisnis dalam rentang.
      *
      * @return array<int, string> Id karyawan → komisi bersih
