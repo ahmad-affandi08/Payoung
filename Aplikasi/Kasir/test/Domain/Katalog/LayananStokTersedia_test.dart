@@ -308,20 +308,34 @@ void main() {
   });
 
   group('server tak terjangkau dan penyimpanan', () {
-    test('BR-05.2: offline atau galat tidak melempar dan salinan terakhir tetap dipakai', () async {
+    test('BR-05.2: offline atau galat server sementara tidak melempar dan salinan terakhir tetap dipakai', () async {
       jawaban = {UuidUji.roti: '10.0000'};
       expect(await stok.Segarkan(), isTrue);
 
       u.server.penangan = (_) async => throw http.ClientException('offline');
       expect(await stok.Segarkan(), isFalse);
+      u.server.penangan = (_) async => http.Response('gangguan', 503);
+      expect(await stok.Segarkan(), isFalse);
+      u.server.penangan = (_) async => JsonUji({
+        'Galat': {'Kode': 'TerlaluBanyakPermintaan', 'Pesan': 'Coba lagi nanti.'},
+      }, 429);
+      expect(await stok.Segarkan(), isFalse);
+
+      expect(Efektif(Keranjang.kosong), Jml(10));
+    });
+
+    test('BR-05.2: rute stok tersedia tidak ada lagi (404, server dikembalikan ke versi lama): salinan dibuang, penjualan tidak ditahan data usang', () async {
+      jawaban = {UuidUji.roti: '10.0000'};
+      expect(await stok.Segarkan(), isTrue);
+      expect(Efektif(Keranjang.kosong), Jml(10));
+
       u.server.penangan = (_) async => JsonUji({
         'Galat': {'Kode': 'FiturTidakTersedia', 'Pesan': 'Belum ada.'},
       }, 404);
       expect(await stok.Segarkan(), isFalse);
-      u.server.penangan = (_) async => http.Response('gangguan', 503);
-      expect(await stok.Segarkan(), isFalse);
 
-      expect(Efektif(Keranjang.kosong), Jml(10));
+      expect(stok.CekAdaSalinan, isFalse);
+      expect(Efektif(KeranjangRoti(99)), isNull);
     });
 
     test('BR-05.2: jawaban bukan daftar stok ({} dari server lama) diabaikan, bukan dianggap tanpa batas', () async {
