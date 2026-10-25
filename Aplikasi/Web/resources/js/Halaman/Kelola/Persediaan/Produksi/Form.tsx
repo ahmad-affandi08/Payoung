@@ -51,8 +51,7 @@ async function AmbilBahanResep(
         },
     );
     const isi = (await respons.json()) as
-        | { VersiResep: number | null; Bahan: BahanOrderProduksi[] }
-        | { Galat?: { Pesan?: string } };
+        { VersiResep: number | null; Bahan: BahanOrderProduksi[] } | { Galat?: { Pesan?: string } };
 
     if (!respons.ok || !('Bahan' in isi)) {
         return { Galat: ('Galat' in isi ? isi.Galat?.Pesan : undefined) ?? 'Resep tidak bisa dimuat. Coba lagi.' };
