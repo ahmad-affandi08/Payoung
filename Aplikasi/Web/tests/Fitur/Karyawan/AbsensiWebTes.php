@@ -764,3 +764,21 @@ it('D-198 tautan karyawan tenant lain tidak membuka karyawan ini: token hanya be
 
     $this->get("/{$slugLain}/absen/{$token}")->assertNotFound();
 });
+
+it('D-198 karyawan yang punya akun login juga bisa absen lewat tautan, dan catatannya sama dengan absen berlogin', function (): void {
+    [$k, $karyawan, $alamatLogin, $akun] = SiapkanAbsensiWeb($this);
+    $token = app(AturTautanAbsen::class)->Jalankan($karyawan, true, $k['Pemilik']->Id);
+    $alamatTautan = '/'.app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id)."/absen/{$token}";
+
+    // Rute tautan tidak memakai perantara autentikasi (dibuktikan juga oleh tes staf tanpa akun di atas): siapa pun yang
+    // memegang tautan, berakun atau tidak, dikenali dari tokennya.
+    $this->get($alamatTautan)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Publik/Absensi')
+        ->where('NamaKaryawan', 'Rina Wulandari')
+        ->where('Berlogin', false)
+        ->where('Wajah.Status', 'Disetujui'));
+    $this->postJson("{$alamatTautan}/masuk", KirimanAbsenWebUji())->assertOk();
+
+    // Sesudah login, halaman berlogin melihat absen yang sama (satu karyawan, satu riwayat).
+    BantuanOrganisasi::Masuk($this, $akun, $k['Tenant']->Id);
+    $this->get($alamatLogin)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('AbsensiTerbuka', fn ($terbuka) => $terbuka !== null));
+});
