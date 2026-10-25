@@ -11196,10 +11196,10 @@
                         "Jenis": "NonStok"
                     },
                     {
-                        "Nama": "Pelatihan dan workshop karyawan per sesi",
+                        "Nama": "Pelatihan dan workshop karyawan per hari",
                         "Kategori": "Konsultasi",
                         "Harga": "6000000",
-                        "KodeSatuan": "SESI",
+                        "KodeSatuan": "HARI",
                         "Jenis": "Jasa"
                     }
                 ]
