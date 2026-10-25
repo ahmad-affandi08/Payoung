@@ -10,6 +10,7 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Daftar perintah terjadwal beserta jalan terakhirnya (D-209). Sumber daftar adalah jadwal yang benar-benar terdaftar di
@@ -42,7 +43,7 @@ final class DaftarJadwalOtomatis
         $data = [];
 
         foreach ($acara as $perintah => $satu) {
-            /** @var \Illuminate\Support\Collection<int, RiwayatJadwal> $baris */
+            /** @var Collection<int, RiwayatJadwal> $baris */
             $baris = $riwayat->get($perintah, collect());
             $terakhir = $baris->first();
 
