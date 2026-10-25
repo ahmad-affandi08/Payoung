@@ -674,15 +674,13 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     };
 
     if (lebar >= RuangKerja.lebarPanelSamping) {
-      return Stack(
+      // Panel samping berdampingan dengan area kerja (area menyempit), bukan menimpa: tombol aksi dan daftar di area
+      // kerja tetap terlihat utuh, dan panel setinggi area kerja.
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Positioned.fill(child: area),
-          Positioned(
-            top: 0,
-            right: 0,
-            bottom: 0,
-            child: PanelTugas(judul: judul, saatTutup: _TutupPanel, anak: formulir),
-          ),
+          Expanded(child: area),
+          PanelTugas(judul: judul, saatTutup: _TutupPanel, anak: formulir),
         ],
       );
     }

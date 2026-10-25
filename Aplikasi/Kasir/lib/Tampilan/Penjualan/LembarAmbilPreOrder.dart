@@ -87,85 +87,88 @@ class _LembarAmbilPreOrderState extends ConsumerState<LembarAmbilPreOrder> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final pesanan = _hasil?.pesanan ?? const <PesananPenjualanPos>[];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Cari dengan nomor pre-order, nama, atau nomor HP pelanggan. Perlu koneksi internet.',
-          style: teks.bodySmall,
-        ),
-        const SizedBox(height: TokenJarak.jarak12),
-        TextField(
-          controller: _kata,
-          textInputAction: TextInputAction.search,
-          onSubmitted: (_) => unawaited(_Cari()),
-          decoration: const InputDecoration(labelText: 'Cari pre-order', border: OutlineInputBorder()),
-        ),
-        const SizedBox(height: TokenJarak.jarak8),
-        SizedBox(
-          height: TokenJarak.targetSentuh,
-          child: FilledButton(
-            onPressed: _sibuk ? null : () => unawaited(_Cari()),
-            child: Text(_sibuk ? 'Mencari…' : 'Cari'),
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Cari dengan nomor pre-order, nama, atau nomor HP pelanggan. Perlu koneksi internet.',
+            style: teks.bodySmall,
           ),
-        ),
-        if (_galat != null)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
-            child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
+          const SizedBox(height: TokenJarak.jarak12),
+          TextField(
+            controller: _kata,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => unawaited(_Cari()),
+            decoration: const InputDecoration(labelText: 'Cari pre-order', border: OutlineInputBorder()),
           ),
-        if (_hasil != null && pesanan.isEmpty)
-          KeadaanKosong(
-            ikon: Icons.search_off,
-            ilustrasi: IlustrasiKosong.Cari,
-            ringkas: true,
-            judul: 'Tidak ada pre-order yang siap diambil',
-            keterangan: 'Tidak ada hasil untuk "${_kata.text.trim()}".',
+          const SizedBox(height: TokenJarak.jarak8),
+          SizedBox(
+            height: TokenJarak.targetSentuh,
+            child: FilledButton(
+              onPressed: _sibuk ? null : () => unawaited(_Cari()),
+              child: Text(_sibuk ? 'Mencari…' : 'Cari'),
+            ),
           ),
-        for (final p in pesanan)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
-                borderRadius: BorderRadius.circular(TokenJarak.jarak8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(TokenJarak.jarak12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TeksKode(p.nomor, gaya: teks.titleSmall),
-                    Text(
-                      [
-                        '${p.pelanggan?['Nama'] ?? '-'}',
-                        'ambil ${p.tanggalAmbil.substring(8, 10)}/${p.tanggalAmbil.substring(5, 7)}',
-                        if (p.status == 'Siap') 'siap diambil' else 'masih dibuat',
-                      ].join(' | '),
-                      style: teks.bodySmall,
-                    ),
-                    Text(
-                      '${p.baris.length} barang | DP ${Uang.Dari(p.sisaUangMuka).FormatRupiah()}',
-                      style: teks.bodyMedium,
-                    ),
-                    const SizedBox(height: TokenJarak.jarak8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SizedBox(
-                        height: TokenJarak.targetSentuh,
-                        child: OutlinedButton(
-                          onPressed: () => unawaited(_Ambil(p)),
-                          child: Text('Ambil ${p.nomor.split('-').last}'),
+          if (_galat != null)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+              child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
+            ),
+          if (_hasil != null && pesanan.isEmpty)
+            KeadaanKosong(
+              ikon: Icons.search_off,
+              ilustrasi: IlustrasiKosong.Cari,
+              ringkas: true,
+              judul: 'Tidak ada pre-order yang siap diambil',
+              keterangan: 'Tidak ada hasil untuk "${_kata.text.trim()}".',
+            ),
+          for (final p in pesanan)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+                  borderRadius: BorderRadius.circular(TokenJarak.jarak8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(TokenJarak.jarak12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TeksKode(p.nomor, gaya: teks.titleSmall),
+                      Text(
+                        [
+                          '${p.pelanggan?['Nama'] ?? '-'}',
+                          'ambil ${p.tanggalAmbil.substring(8, 10)}/${p.tanggalAmbil.substring(5, 7)}',
+                          if (p.status == 'Siap') 'siap diambil' else 'masih dibuat',
+                        ].join(' | '),
+                        style: teks.bodySmall,
+                      ),
+                      Text(
+                        '${p.baris.length} barang | DP ${Uang.Dari(p.sisaUangMuka).FormatRupiah()}',
+                        style: teks.bodyMedium,
+                      ),
+                      const SizedBox(height: TokenJarak.jarak8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: SizedBox(
+                          height: TokenJarak.targetSentuh,
+                          child: OutlinedButton(
+                            onPressed: () => unawaited(_Ambil(p)),
+                            child: Text('Ambil ${p.nomor.split('-').last}'),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

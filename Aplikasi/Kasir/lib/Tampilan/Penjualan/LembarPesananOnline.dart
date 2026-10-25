@@ -120,47 +120,50 @@ class _LembarPesananOnlineState extends ConsumerState<LembarPesananOnline> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final pesanan = _hasil?.pesanan ?? const <PesananOnlinePos>[];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Pesanan toko online outlet ini: terima, siapkan, lalu tagih. Perlu koneksi internet.',
-                style: teks.bodySmall,
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Pesanan toko online outlet ini: terima, siapkan, lalu tagih. Perlu koneksi internet.',
+                  style: teks.bodySmall,
+                ),
               ),
-            ),
-            SizedBox(
-              height: TokenJarak.targetSentuh,
-              child: OutlinedButton.icon(
-                onPressed: _sibuk ? null : () => unawaited(_Muat()),
-                icon: const Icon(Icons.refresh),
-                label: Text(_sibuk ? 'Memuat…' : 'Muat ulang'),
+              SizedBox(
+                height: TokenJarak.targetSentuh,
+                child: OutlinedButton.icon(
+                  onPressed: _sibuk ? null : () => unawaited(_Muat()),
+                  icon: const Icon(Icons.refresh),
+                  label: Text(_sibuk ? 'Memuat…' : 'Muat ulang'),
+                ),
               ),
+            ],
+          ),
+          if (_galat != null)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+              child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
             ),
-          ],
-        ),
-        if (_galat != null)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
-            child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
-          ),
-        if (!_sibuk && _galat == null && pesanan.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: Text('Belum ada pesanan toko online yang menunggu ditagihkan.', style: teks.bodyMedium),
-          ),
-        for (final p in pesanan)
-          _KartuPesanan(
-            pesanan: p,
-            saatTagih: () => unawaited(_Tagih(p)),
-            saatUbahStatus: LayananPesananOnline.CekBolehUbahStatus(widget.kasir) && !_sibuk
-                ? (status) => unawaited(_UbahStatus(p, status))
-                : null,
-          ),
-      ],
+          if (!_sibuk && _galat == null && pesanan.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: Text('Belum ada pesanan toko online yang menunggu ditagihkan.', style: teks.bodyMedium),
+            ),
+          for (final p in pesanan)
+            _KartuPesanan(
+              pesanan: p,
+              saatTagih: () => unawaited(_Tagih(p)),
+              saatUbahStatus: LayananPesananOnline.CekBolehUbahStatus(widget.kasir) && !_sibuk
+                  ? (status) => unawaited(_UbahStatus(p, status))
+                  : null,
+            ),
+        ],
+      ),
     );
   }
 }

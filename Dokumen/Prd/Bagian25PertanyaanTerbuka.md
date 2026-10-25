@@ -229,6 +229,7 @@
 | D-193 | Dari pemilik produk (24/10/2026): kotak pemberitahuan lama "AI slop", dan percobaan kotak berwarna "semakin slop"; dari tiga rancangan (teks polos, garis tipis netral, bilah tipis gelap) dipilih **C bilah tipis gelap**. Berlaku untuk semua pemakai `Pemberitahuan` sekaligus. Dicatat agen (D-12, D-17). |
 | D-194 | Dari pemilik produk (24/10/2026): "galat itu apa sih" lalu "ganti galat jadi 'Ada masalah'". Istilah UI "Galat" diganti "Ada masalah" (label) dan "masalah" (dalam kalimat); nama teknis (key `Galat`, kode, class) tetap. Dicatat agen (D-12, D-17); kamus §13.7.1 diperbarui. |
 | D-195 | Dari pemilik produk (25/10/2026): tombol plus/minus di keranjang kasir terlalu besar. Kotak terlihat 36dp, area ketuk 44dp (bukan 48dp) khusus pengatur jumlah di keranjang; layar lain tetap 48dp. Dicatat agen (D-12, D-17). |
+| D-196 | Dari pemilik produk (25/10/2026): panel kanan di Riwayat kasir tidak rapi dan terlalu panjang, harusnya selaras dengan panel di belakangnya. Panel samping berdampingan (bukan menimpa) dengan area kerja di layar lebar, dan lembar yang belum berbantalan diberi bantalan 24dp. Dicatat agen (D-12, D-17). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

@@ -115,85 +115,90 @@ class _LembarPerintahKerjaState extends ConsumerState<LembarPerintahKerja> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final daftar = _daftar ?? const <PerintahKerjaPos>[];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SegmentedButton<bool>(
-          key: const ValueKey('TabPerintahKerja'),
-          segments: const [
-            ButtonSegment(value: false, label: Text('Siap tagih')),
-            ButtonSegment(value: true, label: Text('Semua yang berjalan')),
-          ],
-          selected: {_semuaAktif},
-          onSelectionChanged: _sibuk
-              ? null
-              : (nilai) {
-                  setState(() => _semuaAktif = nilai.first);
-                  unawaited(_Muat());
-                },
-        ),
-        const SizedBox(height: TokenJarak.jarak12),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Perintah kerja outlet ini yang sudah disetujui pelanggan. Perlu koneksi internet; pembayaran tetap '
-                'bisa offline.',
-                style: teks.bodySmall,
-              ),
-            ),
-            const SizedBox(width: TokenJarak.jarak8),
-            SizedBox(
-              height: TokenJarak.targetSentuh,
-              child: OutlinedButton.icon(
-                onPressed: _sibuk ? null : () => unawaited(_Muat()),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Muat ulang'),
-              ),
-            ),
-          ],
-        ),
-        if (_sibuk)
-          const Padding(
-            padding: EdgeInsets.only(top: TokenJarak.jarak8),
-            child: LinearProgressIndicator(),
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SegmentedButton<bool>(
+            key: const ValueKey('TabPerintahKerja'),
+            segments: const [
+              ButtonSegment(value: false, label: Text('Siap tagih')),
+              ButtonSegment(value: true, label: Text('Semua yang berjalan')),
+            ],
+            selected: {_semuaAktif},
+            onSelectionChanged: _sibuk
+                ? null
+                : (nilai) {
+                    setState(() => _semuaAktif = nilai.first);
+                    unawaited(_Muat());
+                  },
           ),
-        if (_galat != null) _BangunGalat(context),
-        if (_daftar != null && daftar.isEmpty)
-          KeadaanKosong(
-            ikon: Icons.build_outlined,
-            ilustrasi: IlustrasiKosong.Servis,
-            ringkas: true,
-            judul: _semuaAktif ? 'Tidak ada perintah kerja yang sedang berjalan' : 'Belum ada servis yang siap ditagih',
-          ),
-        if (daftar.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: Material(
-              color: warna.permukaan,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
-                borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+          const SizedBox(height: TokenJarak.jarak12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Perintah kerja outlet ini yang sudah disetujui pelanggan. Perlu koneksi internet; pembayaran tetap '
+                  'bisa offline.',
+                  style: teks.bodySmall,
+                ),
               ),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                children: [
-                  for (var i = 0; i < daftar.length; i++) ...[
-                    if (i > 0) Divider(height: TokenJarak.tebalGaris, color: warna.garis),
-                    _BarisPerintahKerja(
-                      pk: daftar[i],
-                      saatDiketuk: () => setState(() {
-                        _dipilih = daftar[i];
-                        _galat = null;
-                      }),
-                    ),
+              const SizedBox(width: TokenJarak.jarak8),
+              SizedBox(
+                height: TokenJarak.targetSentuh,
+                child: OutlinedButton.icon(
+                  onPressed: _sibuk ? null : () => unawaited(_Muat()),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Muat ulang'),
+                ),
+              ),
+            ],
+          ),
+          if (_sibuk)
+            const Padding(
+              padding: EdgeInsets.only(top: TokenJarak.jarak8),
+              child: LinearProgressIndicator(),
+            ),
+          if (_galat != null) _BangunGalat(context),
+          if (_daftar != null && daftar.isEmpty)
+            KeadaanKosong(
+              ikon: Icons.build_outlined,
+              ilustrasi: IlustrasiKosong.Servis,
+              ringkas: true,
+              judul: _semuaAktif
+                  ? 'Tidak ada perintah kerja yang sedang berjalan'
+                  : 'Belum ada servis yang siap ditagih',
+            ),
+          if (daftar.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: Material(
+                color: warna.permukaan,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: warna.garis, width: TokenJarak.tebalGaris),
+                  borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < daftar.length; i++) ...[
+                      if (i > 0) Divider(height: TokenJarak.tebalGaris, color: warna.garis),
+                      _BarisPerintahKerja(
+                        pk: daftar[i],
+                        saatDiketuk: () => setState(() {
+                          _dipilih = daftar[i];
+                          _galat = null;
+                        }),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -245,84 +250,87 @@ class _LembarPerintahKerjaState extends ConsumerState<LembarPerintahKerja> {
       ],
     );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: SizedBox(
-            height: TokenJarak.targetSentuh,
-            child: TextButton.icon(
-              onPressed: _menagih ? null : () => setState(() => _dipilih = null),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Kembali ke daftar'),
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              height: TokenJarak.targetSentuh,
+              child: TextButton.icon(
+                onPressed: _menagih ? null : () => setState(() => _dipilih = null),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Kembali ke daftar'),
+              ),
             ),
           ),
-        ),
-        Wrap(
-          spacing: TokenJarak.jarak8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(pk.pengenalUnit ?? 'Tanpa unit', style: teks.titleMedium),
-            TeksKode(pk.nomor, gaya: teks.bodySmall),
-            Text(pk.labelStatus, style: teks.labelMedium),
-          ],
-        ),
-        Text(
-          [
-            if (!pk.unitPerangkat) ?pk.labelKendaraan,
-            if (pk.unitPerangkat) ?pk.nomorPolisi,
-            pk.namaPelanggan ?? 'Pelanggan umum',
-            if (!pk.unitPerangkat && pk.kmMasuk != null) 'KM ${pk.kmMasuk}',
-          ].join(' | '),
-          style: teks.bodyMedium,
-        ),
-        if (pk.keluhan case final String keluhan when keluhan.isNotEmpty)
-          Text('Keluhan: $keluhan', style: teks.bodySmall),
-        if (pk.catatanQc case final String qc when qc.isNotEmpty) Text('Catatan QC: $qc', style: teks.bodySmall),
-        if (jasa.isNotEmpty) Bagian('Jasa', jasa),
-        if (sparepart.isNotEmpty) Bagian('Sparepart', sparepart),
-        if (pk.baris.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: Text('Belum ada baris yang disetujui pelanggan.', style: teks.bodyMedium),
+          Wrap(
+            spacing: TokenJarak.jarak8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(pk.pengenalUnit ?? 'Tanpa unit', style: teks.titleMedium),
+              TeksKode(pk.nomor, gaya: teks.bodySmall),
+              Text(pk.labelStatus, style: teks.labelMedium),
+            ],
           ),
-        Divider(height: TokenJarak.jarak16, color: warna.garis),
-        Row(
-          children: [
-            Expanded(child: Text('Total disetujui', style: teks.titleSmall)),
-            TeksUang(Uang.Dari(pk.totalDisetujui), gaya: teks.titleMedium),
-          ],
-        ),
-        Text('Total di kasir dihitung ulang dengan pajak & promo yang berlaku saat dibayar.', style: teks.bodySmall),
-        if (_galat != null) _BangunGalat(context),
-        if (!pk.siapTagih)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, size: TokenJarak.ikonKecil, color: warna.peringatan),
-                const SizedBox(width: TokenJarak.jarak8),
-                Expanded(
-                  child: Text(
-                    'Belum bisa ditagih: perintah kerja ${pk.labelStatus.toLowerCase()}.',
-                    style: teks.bodySmall,
+          Text(
+            [
+              if (!pk.unitPerangkat) ?pk.labelKendaraan,
+              if (pk.unitPerangkat) ?pk.nomorPolisi,
+              pk.namaPelanggan ?? 'Pelanggan umum',
+              if (!pk.unitPerangkat && pk.kmMasuk != null) 'KM ${pk.kmMasuk}',
+            ].join(' | '),
+            style: teks.bodyMedium,
+          ),
+          if (pk.keluhan case final String keluhan when keluhan.isNotEmpty)
+            Text('Keluhan: $keluhan', style: teks.bodySmall),
+          if (pk.catatanQc case final String qc when qc.isNotEmpty) Text('Catatan QC: $qc', style: teks.bodySmall),
+          if (jasa.isNotEmpty) Bagian('Jasa', jasa),
+          if (sparepart.isNotEmpty) Bagian('Sparepart', sparepart),
+          if (pk.baris.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: Text('Belum ada baris yang disetujui pelanggan.', style: teks.bodyMedium),
+            ),
+          Divider(height: TokenJarak.jarak16, color: warna.garis),
+          Row(
+            children: [
+              Expanded(child: Text('Total disetujui', style: teks.titleSmall)),
+              TeksUang(Uang.Dari(pk.totalDisetujui), gaya: teks.titleMedium),
+            ],
+          ),
+          Text('Total di kasir dihitung ulang dengan pajak & promo yang berlaku saat dibayar.', style: teks.bodySmall),
+          if (_galat != null) _BangunGalat(context),
+          if (!pk.siapTagih)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: TokenJarak.ikonKecil, color: warna.peringatan),
+                  const SizedBox(width: TokenJarak.jarak8),
+                  Expanded(
+                    child: Text(
+                      'Belum bisa ditagih: perintah kerja ${pk.labelStatus.toLowerCase()}.',
+                      style: teks.bodySmall,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          const SizedBox(height: TokenJarak.jarak12),
+          SizedBox(
+            height: TokenJarak.targetSentuh,
+            child: FilledButton.icon(
+              onPressed: _menagih || !pk.siapTagih || pk.baris.isEmpty ? null : () => unawaited(_Tagih(pk)),
+              icon: const Icon(Icons.shopping_cart_checkout),
+              label: Text(_menagih ? 'Memuat…' : 'Tagih ke keranjang'),
             ),
           ),
-        const SizedBox(height: TokenJarak.jarak12),
-        SizedBox(
-          height: TokenJarak.targetSentuh,
-          child: FilledButton.icon(
-            onPressed: _menagih || !pk.siapTagih || pk.baris.isEmpty ? null : () => unawaited(_Tagih(pk)),
-            icon: const Icon(Icons.shopping_cart_checkout),
-            label: Text(_menagih ? 'Memuat…' : 'Tagih ke keranjang'),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

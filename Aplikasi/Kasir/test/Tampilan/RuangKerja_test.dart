@@ -8,6 +8,7 @@ import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Domain/Penjualan/Keranjang.dart';
 import 'package:kasir/Domain/Perangkat/PengaturanPerangkat.dart';
 import 'package:kasir/Tampilan/RuangKerja/BilahAtasRuangKerja.dart';
+import 'package:kasir/Tampilan/RuangKerja/IsiAreaKerja.dart';
 import 'package:kasir/Tampilan/RuangKerja/LayarKunci.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:kasir/Tampilan/RuangKerja/SidebarRuangKerja.dart';
@@ -114,6 +115,14 @@ void main() {
       expect(panel.tataLetak, ukuran.width >= 1024 ? TataLetakPanel.Samping : TataLetakPanel.Lembar);
       expect(find.widgetWithText(TextField, 'Jumlah'), findsOneWidget);
       expect(find.text('Kas awal'), findsOneWidget, reason: 'Layar Kas tetap ada di bawah panel.');
+      if (ukuran.width >= 1024) {
+        // Panel samping berdampingan dengan area kerja: tidak saling menimpa dan setinggi area kerja.
+        final kotakPanel = tester.getRect(find.byType(PanelTugas));
+        final kotakArea = tester.getRect(find.byType(IsiAreaKerja));
+        expect(kotakArea.right, lessThanOrEqualTo(kotakPanel.left + 0.5), reason: 'Area kerja berhenti di tepi panel.');
+        expect(kotakPanel.top, kotakArea.top, reason: 'Panel mulai sejajar atas area kerja.');
+        expect(kotakPanel.bottom, closeTo(kotakArea.bottom, 1), reason: 'Panel setinggi area kerja.');
+      }
       await tester.tap(find.byTooltip('Tutup'));
       await Tunggu(tester);
       expect(find.byType(PanelTugas), findsNothing);

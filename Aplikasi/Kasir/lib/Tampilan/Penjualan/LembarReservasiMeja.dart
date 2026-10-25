@@ -135,126 +135,130 @@ class _LembarReservasiMejaState extends ConsumerState<LembarReservasiMeja> {
     final warna = TokenWarna.AmbilDari(context);
     final zona = ref.watch(penyediaKonteksPenjualan).value?.zonaWaktu ?? ZonaWaktuOutlet.bawaan;
     final daftar = _antrian?.reservasi ?? const <ReservasiMejaPos>[];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Reservasi meja outlet ini hari ini, urut jam. Isi keranjang (atau buka pesanan mejanya) lebih dulu, lalu '
-                'pilih "Tagih di keranjang" supaya uang muka tamu otomatis dipotong. Perlu koneksi internet; pembayaran tetap bisa offline.',
-                style: teks.bodySmall,
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Reservasi meja outlet ini hari ini, urut jam. Isi keranjang (atau buka pesanan mejanya) lebih dulu, lalu '
+                  'pilih "Tagih di keranjang" supaya uang muka tamu otomatis dipotong. Perlu koneksi internet; pembayaran tetap bisa offline.',
+                  style: teks.bodySmall,
+                ),
               ),
+              const SizedBox(width: TokenJarak.jarak8),
+              SizedBox(
+                height: TokenJarak.targetSentuh,
+                child: OutlinedButton.icon(
+                  onPressed: _sibuk ? null : () => unawaited(_Muat()),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Muat ulang'),
+                ),
+              ),
+            ],
+          ),
+          if (_sibuk)
+            const Padding(
+              padding: EdgeInsets.only(top: TokenJarak.jarak8),
+              child: LinearProgressIndicator(),
             ),
-            const SizedBox(width: TokenJarak.jarak8),
-            SizedBox(
-              height: TokenJarak.targetSentuh,
-              child: OutlinedButton.icon(
-                onPressed: _sibuk ? null : () => unawaited(_Muat()),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Muat ulang'),
-              ),
+          if (_galat != null)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+              child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
             ),
-          ],
-        ),
-        if (_sibuk)
-          const Padding(
-            padding: EdgeInsets.only(top: TokenJarak.jarak8),
-            child: LinearProgressIndicator(),
-          ),
-        if (_galat != null)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
-            child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
-          ),
-        if (_antrian != null && daftar.isEmpty)
-          const KeadaanKosong(
-            ikon: Icons.event_busy_outlined,
-            ilustrasi: IlustrasiKosong.Kalender,
-            ringkas: true,
-            judul: 'Belum ada reservasi meja hari ini',
-            keterangan: 'Reservasi meja untuk hari ini akan muncul di sini.',
-          ),
-        for (final r in daftar)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
-                borderRadius: BorderRadius.circular(TokenJarak.jarak8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(TokenJarak.jarak12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Wrap(
-                      spacing: TokenJarak.jarak8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          '${LembarReservasi.FormatJam(r.mulaiPada, zona)}–${LembarReservasi.FormatJam(r.selesaiPada, zona)}',
-                          style: teks.titleSmall,
-                        ),
-                        TeksKode(r.nomor, gaya: teks.bodySmall),
-                        Text(r.labelStatus, style: teks.labelMedium),
-                      ],
-                    ),
-                    Text(r.namaPemesan, style: teks.bodyLarge),
-                    Text(
-                      [
-                        r.namaMeja == null ? 'Meja belum ditentukan' : 'Meja ${r.namaMeja}',
-                        '${r.jumlahTamu} tamu',
-                        if (r.noHp.isNotEmpty) r.noHp,
-                      ].join(' | '),
-                      style: teks.bodyMedium,
-                    ),
-                    if (r.catatan != null && r.catatan!.isNotEmpty)
-                      Text('Catatan: ${r.catatan}', style: teks.bodySmall),
-                    if (Uang.Dari(r.uangMuka.dicatat).Bandingkan(Uang.Nol()) > 0)
-                      Text(
-                        'Uang muka ${Uang.Dari(r.uangMuka.dicatat).FormatRupiah()} | sisa ${Uang.Dari(r.uangMuka.sisa).FormatRupiah()}',
-                        style: teks.bodyMedium,
-                      ),
-                    if (r.BisaDilayani) ...[
-                      if (r.BelumDatang && r.uuidMeja == null) ...[
-                        const SizedBox(height: TokenJarak.jarak8),
-                        _PilihMeja(r),
-                      ],
-                      const SizedBox(height: TokenJarak.jarak8),
+          if (_antrian != null && daftar.isEmpty)
+            const KeadaanKosong(
+              ikon: Icons.event_busy_outlined,
+              ilustrasi: IlustrasiKosong.Kalender,
+              ringkas: true,
+              judul: 'Belum ada reservasi meja hari ini',
+              keterangan: 'Reservasi meja untuk hari ini akan muncul di sini.',
+            ),
+          for (final r in daftar)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+                  borderRadius: BorderRadius.circular(TokenJarak.jarak8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(TokenJarak.jarak12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Wrap(
-                        alignment: WrapAlignment.end,
                         spacing: TokenJarak.jarak8,
-                        runSpacing: TokenJarak.jarak8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          if (r.BelumDatang)
-                            SizedBox(
-                              height: TokenJarak.targetSentuh,
-                              child: OutlinedButton(
-                                onPressed: _uuidDiproses != null || (r.uuidMeja == null && _mejaPilihan[r.uuid] == null)
-                                    ? null
-                                    : () => unawaited(_Hadir(r)),
-                                child: Text(_uuidDiproses == r.uuid ? 'Memproses…' : 'Tamu datang'),
-                              ),
-                            ),
-                          SizedBox(
-                            height: TokenJarak.targetSentuh,
-                            child: FilledButton(
-                              onPressed: _uuidDiproses != null ? null : () => _Tagih(r),
-                              child: const Text('Tagih di keranjang'),
-                            ),
+                          Text(
+                            '${LembarReservasi.FormatJam(r.mulaiPada, zona)}–${LembarReservasi.FormatJam(r.selesaiPada, zona)}',
+                            style: teks.titleSmall,
                           ),
+                          TeksKode(r.nomor, gaya: teks.bodySmall),
+                          Text(r.labelStatus, style: teks.labelMedium),
                         ],
                       ),
+                      Text(r.namaPemesan, style: teks.bodyLarge),
+                      Text(
+                        [
+                          r.namaMeja == null ? 'Meja belum ditentukan' : 'Meja ${r.namaMeja}',
+                          '${r.jumlahTamu} tamu',
+                          if (r.noHp.isNotEmpty) r.noHp,
+                        ].join(' | '),
+                        style: teks.bodyMedium,
+                      ),
+                      if (r.catatan != null && r.catatan!.isNotEmpty)
+                        Text('Catatan: ${r.catatan}', style: teks.bodySmall),
+                      if (Uang.Dari(r.uangMuka.dicatat).Bandingkan(Uang.Nol()) > 0)
+                        Text(
+                          'Uang muka ${Uang.Dari(r.uangMuka.dicatat).FormatRupiah()} | sisa ${Uang.Dari(r.uangMuka.sisa).FormatRupiah()}',
+                          style: teks.bodyMedium,
+                        ),
+                      if (r.BisaDilayani) ...[
+                        if (r.BelumDatang && r.uuidMeja == null) ...[
+                          const SizedBox(height: TokenJarak.jarak8),
+                          _PilihMeja(r),
+                        ],
+                        const SizedBox(height: TokenJarak.jarak8),
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          spacing: TokenJarak.jarak8,
+                          runSpacing: TokenJarak.jarak8,
+                          children: [
+                            if (r.BelumDatang)
+                              SizedBox(
+                                height: TokenJarak.targetSentuh,
+                                child: OutlinedButton(
+                                  onPressed:
+                                      _uuidDiproses != null || (r.uuidMeja == null && _mejaPilihan[r.uuid] == null)
+                                      ? null
+                                      : () => unawaited(_Hadir(r)),
+                                  child: Text(_uuidDiproses == r.uuid ? 'Memproses…' : 'Tamu datang'),
+                                ),
+                              ),
+                            SizedBox(
+                              height: TokenJarak.targetSentuh,
+                              child: FilledButton(
+                                onPressed: _uuidDiproses != null ? null : () => _Tagih(r),
+                                child: const Text('Tagih di keranjang'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

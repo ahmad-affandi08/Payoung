@@ -118,112 +118,118 @@ class _LembarReservasiState extends ConsumerState<LembarReservasi> {
       },
     );
     if (_kalender) {
-      return Column(
+      return Padding(
+        padding: const EdgeInsets.all(TokenJarak.jarak24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            pilihan,
+            const SizedBox(height: TokenJarak.jarak12),
+            PanelKalenderBooking(kasir: widget.kasir),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(TokenJarak.jarak24),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           pilihan,
           const SizedBox(height: TokenJarak.jarak12),
-          PanelKalenderBooking(kasir: widget.kasir),
-        ],
-      );
-    }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        pilihan,
-        const SizedBox(height: TokenJarak.jarak12),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Reservasi outlet ini hari ini, urut jam. Perlu koneksi internet; pembayaran tetap bisa offline.',
-                style: teks.bodySmall,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Reservasi outlet ini hari ini, urut jam. Perlu koneksi internet; pembayaran tetap bisa offline.',
+                  style: teks.bodySmall,
+                ),
               ),
+              const SizedBox(width: TokenJarak.jarak8),
+              SizedBox(
+                height: TokenJarak.targetSentuh,
+                child: OutlinedButton.icon(
+                  onPressed: _sibuk ? null : () => unawaited(_Muat()),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Muat ulang'),
+                ),
+              ),
+            ],
+          ),
+          if (_sibuk)
+            const Padding(
+              padding: EdgeInsets.only(top: TokenJarak.jarak8),
+              child: LinearProgressIndicator(),
             ),
-            const SizedBox(width: TokenJarak.jarak8),
-            SizedBox(
-              height: TokenJarak.targetSentuh,
-              child: OutlinedButton.icon(
-                onPressed: _sibuk ? null : () => unawaited(_Muat()),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Muat ulang'),
-              ),
+          if (_galat != null)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak8),
+              child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
             ),
-          ],
-        ),
-        if (_sibuk)
-          const Padding(
-            padding: EdgeInsets.only(top: TokenJarak.jarak8),
-            child: LinearProgressIndicator(),
-          ),
-        if (_galat != null)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak8),
-            child: Text(_galat!, style: TextStyle(color: warna.bahaya)),
-          ),
-        if (_daftar != null && daftar.isEmpty)
-          const KeadaanKosong(
-            ikon: Icons.event_busy_outlined,
-            ilustrasi: IlustrasiKosong.Kalender,
-            ringkas: true,
-            judul: 'Belum ada reservasi hari ini',
-            keterangan: 'Reservasi pelanggan untuk hari ini akan muncul di sini.',
-          ),
-        for (final r in daftar)
-          Padding(
-            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
-                borderRadius: BorderRadius.circular(TokenJarak.jarak8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(TokenJarak.jarak12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Wrap(
-                      spacing: TokenJarak.jarak8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          '${LembarReservasi.FormatJam(r.mulaiPada, zona)}–${LembarReservasi.FormatJam(r.selesaiPada, zona)}',
-                          style: teks.titleSmall,
-                        ),
-                        TeksKode(r.nomor, gaya: teks.bodySmall),
-                        Text(r.labelStatus, style: teks.labelMedium),
-                      ],
-                    ),
-                    Text(r.namaPelanggan, style: teks.bodyLarge),
-                    Text(
-                      [r.namaLayanan, if (r.namaStaf != null) 'oleh ${r.namaStaf}'].join(' | '),
-                      style: teks.bodyMedium,
-                    ),
-                    if (r.catatan != null && r.catatan!.isNotEmpty)
-                      Text('Catatan: ${r.catatan}', style: teks.bodySmall),
-                    if (r.BisaDilayani) ...[
-                      const SizedBox(height: TokenJarak.jarak8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: SizedBox(
-                          height: TokenJarak.targetSentuh,
-                          child: FilledButton(
-                            onPressed: _uuidDiproses != null ? null : () => unawaited(_Layani(r)),
-                            child: Text(
-                              _uuidDiproses == r.uuid ? 'Memproses…' : 'Layani ${r.namaPelanggan.split(' ').first}',
+          if (_daftar != null && daftar.isEmpty)
+            const KeadaanKosong(
+              ikon: Icons.event_busy_outlined,
+              ilustrasi: IlustrasiKosong.Kalender,
+              ringkas: true,
+              judul: 'Belum ada reservasi hari ini',
+              keterangan: 'Reservasi pelanggan untuk hari ini akan muncul di sini.',
+            ),
+          for (final r in daftar)
+            Padding(
+              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
+                  borderRadius: BorderRadius.circular(TokenJarak.jarak8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(TokenJarak.jarak12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Wrap(
+                        spacing: TokenJarak.jarak8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '${LembarReservasi.FormatJam(r.mulaiPada, zona)}–${LembarReservasi.FormatJam(r.selesaiPada, zona)}',
+                            style: teks.titleSmall,
+                          ),
+                          TeksKode(r.nomor, gaya: teks.bodySmall),
+                          Text(r.labelStatus, style: teks.labelMedium),
+                        ],
+                      ),
+                      Text(r.namaPelanggan, style: teks.bodyLarge),
+                      Text(
+                        [r.namaLayanan, if (r.namaStaf != null) 'oleh ${r.namaStaf}'].join(' | '),
+                        style: teks.bodyMedium,
+                      ),
+                      if (r.catatan != null && r.catatan!.isNotEmpty)
+                        Text('Catatan: ${r.catatan}', style: teks.bodySmall),
+                      if (r.BisaDilayani) ...[
+                        const SizedBox(height: TokenJarak.jarak8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            height: TokenJarak.targetSentuh,
+                            child: FilledButton(
+                              onPressed: _uuidDiproses != null ? null : () => unawaited(_Layani(r)),
+                              child: Text(
+                                _uuidDiproses == r.uuid ? 'Memproses…' : 'Layani ${r.namaPelanggan.split(' ').first}',
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
