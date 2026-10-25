@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/Komponen/Ui/button';
+import { cn } from '@/Komponen/Ui/utils';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,6 +16,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Komponen/Ui/dropdown-menu';
+
+/** Ukuran sama dengan `Tombol` (h-8, 44px di layar sentuh) supaya sejajar dengan tombol aksi di sebelahnya. */
+const kelasTombol = 'h-8 pointer-coarse:h-11 px-4 text-label font-semibold';
 
 export type FormatEkspor = 'xlsx' | 'csv' | 'cetak';
 
@@ -77,7 +81,7 @@ export default function TombolEkspor({
 }: PropsTombolEkspor) {
     if (nonaktif) {
         return (
-            <Button type="button" variant="outline" size="sm" disabled className={className}>
+            <Button type="button" variant="outline" disabled className={cn(kelasTombol, className)}>
                 <DownloadIcon aria-hidden="true" />
                 {label}
             </Button>
@@ -87,7 +91,7 @@ export default function TombolEkspor({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" size="sm" className={className}>
+                <Button type="button" variant="outline" className={cn(kelasTombol, className)}>
                     <DownloadIcon aria-hidden="true" />
                     {label}
                     <ChevronDownIcon aria-hidden="true" className="size-3.5 text-teks-sekunder" />

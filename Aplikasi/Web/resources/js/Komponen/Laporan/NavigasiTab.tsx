@@ -71,7 +71,7 @@ export function TautanUnduh({
     const teksQuery = BuatQueryLaporan(query);
 
     return (
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11 px-4 text-label font-semibold">
             <a href={teksQuery === '' ? alamat : `${alamat}?${teksQuery}`}>
                 <DownloadIcon aria-hidden="true" />
                 {label}

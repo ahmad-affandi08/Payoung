@@ -154,9 +154,13 @@ export default function HalamanDetailRekapGaji({ Rekap, Baris, OpsiAkunKasBank, 
                     <Link href={alamatDaftar}>Kembali ke rekap gaji</Link>
                 </Button>
                 <div className="flex flex-wrap gap-2">
-                    <TombolEkspor alamat={`${alamat}/ekspor`} className="h-9" />
+                    <TombolEkspor alamat={`${alamat}/ekspor`} />
                     {Baris.length > 0 ? (
-                        <Button asChild variant="outline">
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="h-8 pointer-coarse:h-11 px-4 text-label font-semibold"
+                        >
                             <a href={`${alamat}/slip`} target="_blank" rel="noreferrer">
                                 Cetak semua slip
                             </a>

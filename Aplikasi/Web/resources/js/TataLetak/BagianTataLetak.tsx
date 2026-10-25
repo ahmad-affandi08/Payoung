@@ -432,7 +432,7 @@ export function MenuAkun({
                                     asChild
                                     size="sm"
                                     variant="destructive"
-                                    className="h-7 px-2.5 text-keterangan font-semibold shrink-0"
+                                    className="h-8 pointer-coarse:h-11 px-3 text-label font-semibold shrink-0"
                                 >
                                     <Link href={`/kelola/langganan/tagihan/${tenant.TagihanTertunda.Uuid}`}>Bayar</Link>
                                 </Button>
