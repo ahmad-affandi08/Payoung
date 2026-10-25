@@ -27,7 +27,7 @@ import type { DasborPemilik } from '@/Tipe/Laporan';
 type BarisPeringkat = { kunci: string; nama: string; kanan: string; nilai: string };
 
 /** Warna segmen batang proporsi metode bayar; tiap segmen juga punya nama & persen di legenda (warna bukan satu-satunya penanda). */
-const WARNA_SEGMEN = ['bg-brand', 'bg-aksen', 'bg-grafik-2', 'bg-grafik-3', 'bg-grafik-4'] as const;
+const WARNA_SEGMEN = ['bg-brand', 'bg-grafik-2', 'bg-grafik-3', 'bg-grafik-4', 'bg-garis-input'] as const;
 
 /** Judul widget lewat `Panel` (satu-satunya permukaan panel, D-28); isi dibuat memanjang supaya tautan sejajar di dasar kartu. */
 function KartuWidget({

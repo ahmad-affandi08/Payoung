@@ -34,6 +34,9 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
+    // Jam dibekukan siang hari WIB pada tanggal UTC yang sama: tes memakai tanggal Asia/Jakarta, sedangkan runner CI
+    // berjalan kapan saja. Tanpa ini tes gagal antara 17.00 dan 24.00 UTC (sudah "besok" di WIB).
+    $this->travelTo(CarbonImmutable::now('UTC')->setTime(5, 0));
 });
 
 /** @return array<string, mixed> */
