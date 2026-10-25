@@ -16,6 +16,8 @@ export const KunciKueri = {
     Obrolan: ['Obrolan'] as const,
     ObrolanInbox: ['ObrolanInbox'] as const,
     ObrolanPesan: (uuid: string) => ['ObrolanPesan', uuid] as const,
+    // D-210: estimasi penerima siaran platform menurut kanal dan segmen.
+    SiaranEstimasi: (kanal: string, segmen: string) => ['SiaranEstimasi', kanal, segmen] as const,
     // PRD v3.14: pemilih pelanggan di formulir pesanan grosir (dropdown cari-server).
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,

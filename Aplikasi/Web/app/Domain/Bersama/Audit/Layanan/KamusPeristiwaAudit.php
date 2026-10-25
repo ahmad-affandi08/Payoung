@@ -297,6 +297,9 @@ final class KamusPeristiwaAudit
         'mutasi-bank.cocok-otomatis' => 'Mutasi bank dicocokkan otomatis',
         'mutasi-bank.impor' => 'Mutasi bank diimpor',
 
+        'komunikasi.siaran.batal' => 'Siaran dibatalkan',
+        'komunikasi.siaran.buat' => 'Siaran dijadwalkan',
+
         'nota-debit.batalkan' => 'Nota debit dibatalkan',
         'nota-debit.posting' => 'Nota debit diposting',
 
@@ -628,6 +631,7 @@ final class KamusPeristiwaAudit
         'tenant.aktifkan' => 'Tenant diaktifkan',
         'tenant.catatan.tulis' => 'Catatan tenant ditulis',
         'tenant.daftar' => 'Tenant didaftarkan',
+        'tenant.daftar.ekspor' => 'Daftar tenant diekspor',
         'tenant.data.akses' => 'Data tenant diakses petugas Payoung',
         'tenant.merchant.penampung-qris' => 'Penampung dana QRIS tenant diatur',
         'tenant.merchant.segarkan' => 'Status merchant tenant disegarkan',

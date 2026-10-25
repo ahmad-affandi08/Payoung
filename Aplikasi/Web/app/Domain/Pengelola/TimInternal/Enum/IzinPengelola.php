@@ -98,6 +98,8 @@ enum IzinPengelola: string
 
     // P-07 PGL-24 analitik platform: angka agregat tanpa data pribadi (§19.3: Analis, Keuangan, Mitra & Penjualan).
     case AnalitikLihat = 'analitik.lihat';
+    // D-210: siaran pesan Payoung ke pemilik tenant terpilih (hanya Super Admin).
+    case KomunikasiKelola = 'komunikasi.kelola';
 
     public function AmbilLabel(): string
     {
@@ -167,6 +169,7 @@ enum IzinPengelola: string
             self::MitraKelola => 'Menambah & mengubah mitra (kode, komisi, rekening) dan membatalkan komisi tertunda',
             self::MitraPencairan => 'Mencatat pencairan komisi bulanan mitra',
             self::AnalitikLihat => 'Melihat analitik platform (funnel pendaftaran, adopsi fitur, retensi kohort)',
+            self::KomunikasiKelola => 'Membuat, menjadwalkan, dan membatalkan siaran WhatsApp atau email ke pemilik tenant terpilih',
         };
     }
 }

@@ -128,6 +128,15 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                     Perpanjang uji coba…
                 </Tombol>
             ) : null}
+            {PunyaIzin(pengguna, IzinPengelola.KomunikasiKelola) ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={terlaluBanyak}
+                    onClick={() => router.get('/komunikasi/buat', { tenant: uuid })}
+                >
+                    Kirim pesan…
+                </Tombol>
+            ) : null}
             {PunyaIzin(pengguna, IzinPengelola.TenantCatatanTulis) ? (
                 <Tombol varian="sekunder" disabled={terlaluBanyak} onClick={() => Buka('catatan')}>
                     Beri catatan…

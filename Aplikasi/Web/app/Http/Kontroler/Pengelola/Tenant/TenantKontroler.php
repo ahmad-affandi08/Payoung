@@ -13,6 +13,7 @@ use App\Domain\Pengelola\Tenant\Enum\KategoriPenangguhan;
 use App\Domain\Pengelola\Tenant\Kueri\DaftarTenant;
 use App\Domain\Pengelola\Tenant\Kueri\TampilanTenant;
 use App\Domain\Pengelola\TimInternal\Enum\IzinPengelola;
+use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Tenant\Enum\PenandaTenant;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Model\Paket;
@@ -24,6 +25,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Daftar tenant & tampilan 360° dasar (P-07). Tindakan pada tenant ada di TindakanTenantKontroler.
@@ -31,6 +33,8 @@ use Inertia\Response;
 final class TenantKontroler extends Kontroler
 {
     use PelakuPengelola;
+
+    private const BATAS_EKSPOR = 5000;
 
     public function Daftar(Request $permintaan, DaftarTenant $kueri): Response|JsonResponse
     {
@@ -46,6 +50,55 @@ final class TenantKontroler extends Kontroler
                 ...array_map(fn (PenandaTenant $item) => ['Nilai' => $item->value, 'Label' => $item->AmbilLabel()], PenandaTenant::cases()),
             ],
         ]);
+    }
+
+    /**
+     * Ekspor CSV daftar tenant sesuai cari & saringan di tabel (D-210). Memuat identitas dan langganan, tanpa data
+     * usaha. Dibatasi `BATAS_EKSPOR` baris; setiap ekspor tercatat di log audit.
+     */
+    public function Ekspor(Request $permintaan, DaftarTenant $kueri, PencatatAuditPengelola $audit): StreamedResponse
+    {
+        $query = $permintaan->query();
+        $audit->Catat('tenant.daftar.ekspor', nilaiBaru: ['Saringan' => $query], idPelaku: $this->AmbilPelaku()->Id);
+
+        return response()->streamDownload(function () use ($query, $kueri): void {
+            $keluaran = fopen('php://output', 'w');
+
+            if ($keluaran === false) {
+                return;
+            }
+
+            fwrite($keluaran, "\xEF\xBB\xBF");
+            fputcsv($keluaran, ['Tenant', 'Slug', 'Email Owner', 'Paket', 'Status langganan', 'Trial berakhir', 'Kesehatan', 'Skor kesehatan', 'Penanda', 'Terdaftar'], ',', '"', '');
+            $tertulis = 0;
+
+            for ($halaman = 1; $tertulis < self::BATAS_EKSPOR; $halaman++) {
+                $tabel = DataPermintaanTabel::Dari([...$query, 'halaman' => $halaman, 'perHalaman' => 100], DaftarTenant::KOLOM_URUT, '-DibuatPada', DaftarTenant::KOLOM_SARING);
+                $hasil = $kueri->AmbilTabel($tabel);
+
+                foreach ($hasil['Data'] as $baris) {
+                    fputcsv($keluaran, array_map(self::AmankanSel(...), [
+                        $baris['Nama'], $baris['Slug'], $baris['EmailPemilik'] ?? '', $baris['KodePaket'] ?? '', $baris['StatusLangganan'] ?? '',
+                        $baris['TrialBerakhirPada'] ?? '', $baris['Kesehatan']['LabelKategori'] ?? '', $baris['Kesehatan']['Skor'] ?? '', $baris['Penanda'] ?? '', $baris['DibuatPada'],
+                    ]), ',', '"', '');
+                    $tertulis++;
+                }
+
+                if ($halaman >= $hasil['Meta']['JumlahHalaman']) {
+                    break;
+                }
+            }
+
+            fclose($keluaran);
+        }, 'tenant-'.now()->format('Ymd-His').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** Sel yang diawali rumus ( = + - @ ) diberi apostrof agar tidak dijalankan Excel (CSV injection). */
+    private static function AmankanSel(mixed $nilai): string
+    {
+        $teks = (string) $nilai;
+
+        return $teks !== '' && str_contains('=+-@', $teks[0]) ? "'".$teks : $teks;
     }
 
     public function Tampilkan(Tenant $tenant, TampilanTenant $kueri, DaftarKatalog $katalog): Response

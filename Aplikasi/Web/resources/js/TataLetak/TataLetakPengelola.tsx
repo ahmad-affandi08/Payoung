@@ -83,7 +83,7 @@ export const daftarMenuPengelola: GrupMenu[] = [
                 href: '/tenant',
                 izin: IzinPengelola.TenantLihat,
                 ikon: 'Toko',
-                alamatLain: ['/tugas-tenant'],
+                alamatLain: ['/tugas-tenant', '/komunikasi'],
             },
             // P-08 Tagihan langganan & verifikasi transfer.
             {

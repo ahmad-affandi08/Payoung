@@ -1,11 +1,24 @@
+import { usePage } from '@inertiajs/react';
+
 import NavigasiTab from '@/Komponen/Pengelola/NavigasiTab';
+import { IzinPengelola, PunyaIzin, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
 
 export const daftarTabTenant = [
     { label: 'Daftar tenant', href: '/tenant' },
     { label: 'Tugas & kesehatan', href: '/tugas-tenant' },
 ];
 
-/** Navigasi antar halaman tenant (P-07): daftar dan tugas otomatis dari skor kesehatan (PGL-09). */
+/** Navigasi antar halaman tenant (P-07): daftar, tugas otomatis dari skor kesehatan (PGL-09), dan siaran (D-210, Super Admin). */
 export default function TabTenant() {
-    return <NavigasiTab label="Tenant" daftarTab={daftarTabTenant} />;
+    const { Pengguna: pengguna } = usePage<PropsBersamaPengelola>().props;
+    const bolehKomunikasi = PunyaIzin(pengguna, IzinPengelola.KomunikasiKelola);
+
+    return (
+        <NavigasiTab
+            label="Tenant"
+            daftarTab={
+                bolehKomunikasi ? [...daftarTabTenant, { label: 'Komunikasi', href: '/komunikasi' }] : daftarTabTenant
+            }
+        />
+    );
 }

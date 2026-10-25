@@ -25,6 +25,7 @@ use App\Http\Kontroler\Pengelola\Konten\SitusKontroler;
 use App\Http\Kontroler\Pengelola\Konten\TemplateKomunikasiKontroler;
 use App\Http\Kontroler\Pengelola\LogAuditKontroler;
 use App\Http\Kontroler\Pengelola\Mitra\MitraKontroler;
+use App\Http\Kontroler\Pengelola\Komunikasi\SiaranKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\InsidenKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\JadwalOtomatisKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\OperasionalKontroler;
@@ -351,6 +352,16 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             });
         });
 
+        // D-210 Komunikasi: siaran Payoung ke pemilik tenant terpilih (hanya Super Admin).
+        Route::middleware($izin(IzinPengelola::KomunikasiKelola))->group(function (): void {
+            Route::get('/komunikasi', [SiaranKontroler::class, 'Daftar'])->name('pengelola.komunikasi.daftar');
+            Route::get('/komunikasi/buat', [SiaranKontroler::class, 'Buat'])->name('pengelola.komunikasi.buat');
+            Route::get('/komunikasi/estimasi', [SiaranKontroler::class, 'Estimasi'])->name('pengelola.komunikasi.estimasi');
+            Route::post('/komunikasi', [SiaranKontroler::class, 'Simpan'])->name('pengelola.komunikasi.simpan');
+            Route::get('/komunikasi/{siaran}', [SiaranKontroler::class, 'Tampil'])->name('pengelola.komunikasi.tampil');
+            Route::put('/komunikasi/{siaran}/batal', [SiaranKontroler::class, 'Batalkan'])->name('pengelola.komunikasi.batal');
+        });
+
         // P-03 Template sektor (BR-P03.5: isi bisnis, akun, dan terbitkan dipisah per izin).
         Route::middleware($izin(IzinPengelola::TemplateLihat))->group(function () use ($izin): void {
             Route::get('/template-sektor', [TemplateSektorKontroler::class, 'Daftar'])->name('pengelola.template-sektor.daftar');
@@ -491,6 +502,7 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
         // P-07 Siklus hidup tenant (§19.3: izin per tindakan).
         Route::middleware($izin(IzinPengelola::TenantLihat))->group(function () use ($izin): void {
             Route::get('/tenant', [TenantKontroler::class, 'Daftar'])->name('pengelola.tenant.daftar');
+            Route::get('/tenant/ekspor', [TenantKontroler::class, 'Ekspor'])->name('pengelola.tenant.ekspor');
             // PGL-09: tugas otomatis dari skor kesehatan (Uuid tugas; model terikat lewat `Uuid`).
             Route::get('/tugas-tenant', [KesehatanTenantKontroler::class, 'Daftar'])->name('pengelola.tugas-tenant.daftar');
             Route::post('/tugas-tenant/{tugas}/selesai', [KesehatanTenantKontroler::class, 'Selesaikan'])

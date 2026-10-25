@@ -155,3 +155,6 @@ Schedule::command('penjualan:rekonsiliasi-qris')->everyTenMinutes()->withoutOver
 
 // F-17 toko online: pesanan yang tidak pernah dikonfirmasi staf dihanguskan sesuai batas waktu toko.
 Schedule::command('pesanan-online:kedaluwarsa')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
+
+// D-210: siaran platform ke pemilik tenant dikirim bertahap (WhatsApp hanya jam 08.00–21.00 WIB).
+$jadwalSaas('komunikasi:kirim-siaran')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();

@@ -106,6 +106,7 @@ export default function Daftar({
                 aksiMassal={(konteks: KonteksAksiMassal<BarisTenant>) => (
                     <AksiMassalTenant konteks={konteks} pilihanKategori={PilihanKategoriPenangguhan} />
                 )}
+                ekspor={{ alamat: '/tenant/ekspor', label: 'Ekspor CSV' }}
                 urutBawaan="-DibuatPada"
                 cari="Cari nama usaha, slug, atau email Owner"
                 saring={[

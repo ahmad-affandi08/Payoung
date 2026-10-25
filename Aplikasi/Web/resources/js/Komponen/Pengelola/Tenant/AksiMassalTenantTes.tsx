@@ -87,6 +87,16 @@ describe('Aksi massal tenant (D-208)', () => {
         );
     });
 
+    it('Kirim pesan membuka formulir siaran dengan tenant terpilih (hanya bagi yang berizin komunikasi)', () => {
+        Masuk(['komunikasi.kelola']);
+        const terpilih = Terpilih(2);
+        RenderUji(<AksiMassalTenant konteks={Konteks(terpilih)} pilihanKategori={KATEGORI} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Kirim pesan…' }));
+
+        expect(tiruanRouter.get).toHaveBeenCalledWith('/komunikasi/buat', { tenant: terpilih.map((t) => t.Uuid) });
+    });
+
     it('melebihi batas menonaktifkan semua aksi dan menampilkan peringatan', () => {
         Masuk(['tenant.catatan.tulis', 'tenant.tangguhkan']);
         RenderUji(<AksiMassalTenant konteks={Konteks(Terpilih(MaksTenantMassal + 1))} pilihanKategori={KATEGORI} />);
