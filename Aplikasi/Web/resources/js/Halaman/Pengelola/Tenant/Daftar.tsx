@@ -1,9 +1,10 @@
 import { Link } from '@inertiajs/react';
 
+import AksiMassalTenant from '@/Komponen/Pengelola/Tenant/AksiMassalTenant';
 import LabelKesehatan from '@/Komponen/Pengelola/Tenant/LabelKesehatan';
 import { LabelPenanda, LabelStatusLangganan } from '@/Komponen/Pengelola/Tenant/LabelLangganan';
 import TabTenant from '@/Komponen/Pengelola/Tenant/TabTenant';
-import TabelData from '@/Komponen/TabelData/TabelData';
+import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { HasilTabel, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakPengelola from '@/TataLetak/TataLetakPengelola';
@@ -16,6 +17,7 @@ type PropsDaftar = {
     PilihanPenanda: Pilihan[];
     PilihanKesehatan: Pilihan[];
     PilihanPaket: Pilihan[];
+    PilihanKategoriPenangguhan: Pilihan[];
 };
 
 const kolom: KolomTabel<BarisTenant>[] = [
@@ -84,7 +86,14 @@ const kolom: KolomTabel<BarisTenant>[] = [
 ];
 
 /** Daftar tenant (P-07, TabelData D-16): cari nama, slug, atau email Owner; saring status langganan & penanda. */
-export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanKesehatan, PilihanPaket }: PropsDaftar) {
+export default function Daftar({
+    Tenant,
+    PilihanStatus,
+    PilihanPenanda,
+    PilihanKesehatan,
+    PilihanPaket,
+    PilihanKategoriPenangguhan,
+}: PropsDaftar) {
     return (
         <TataLetakPengelola judul="Tenant">
             <TabTenant />
@@ -94,6 +103,9 @@ export default function Daftar({ Tenant, PilihanStatus, PilihanPenanda, PilihanK
                 kolom={kolom}
                 sumber={{ mode: 'server', alamat: '/tenant', awal: Tenant }}
                 ambilIdBaris={(tenant) => tenant.Uuid}
+                aksiMassal={(konteks: KonteksAksiMassal<BarisTenant>) => (
+                    <AksiMassalTenant konteks={konteks} pilihanKategori={PilihanKategoriPenangguhan} />
+                )}
                 urutBawaan="-DibuatPada"
                 cari="Cari nama usaha, slug, atau email Owner"
                 saring={[

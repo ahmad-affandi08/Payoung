@@ -45,6 +45,7 @@ use App\Http\Kontroler\Pengelola\Tenant\KesehatanTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PenghapusanDataTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TenantKontroler;
+use App\Http\Kontroler\Pengelola\Tenant\TenantMassalKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\TindakanTenantKontroler;
 use App\Http\Kontroler\Pengelola\TimInternalKontroler;
 use App\Http\Kontroler\Pengelola\UndanganKontroler;
@@ -492,6 +493,19 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 ->middleware($izin(IzinPengelola::TenantCatatanTulis))
                 ->name('pengelola.tugas-tenant.selesai');
             Route::get('/tenant/{tenant}', [TenantKontroler::class, 'Tampilkan'])->name('pengelola.tenant.tampil');
+            // D-208: aksi massal dari daftar tenant (izin & 2FA baru sama dengan aksi satuan).
+            Route::post('/tenant/massal/catatan', [TenantMassalKontroler::class, 'TulisCatatan'])
+                ->middleware($izin(IzinPengelola::TenantCatatanTulis))
+                ->name('pengelola.tenant.massal.catatan');
+            Route::put('/tenant/massal/trial', [TenantMassalKontroler::class, 'PerpanjangTrial'])
+                ->middleware($izin(IzinPengelola::TenantTrialPerpanjang))
+                ->name('pengelola.tenant.massal.trial');
+            Route::put('/tenant/massal/tangguhkan', [TenantMassalKontroler::class, 'Tangguhkan'])
+                ->middleware([$izin(IzinPengelola::TenantTangguhkan), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.massal.tangguhkan');
+            Route::put('/tenant/massal/aktifkan', [TenantMassalKontroler::class, 'Aktifkan'])
+                ->middleware([$izin(IzinPengelola::TenantAktifkan), WajibDuaFaktorBaru::class])
+                ->name('pengelola.tenant.massal.aktifkan');
             Route::post('/tenant/{tenant}/catatan', [TindakanTenantKontroler::class, 'TulisCatatan'])
                 ->middleware($izin(IzinPengelola::TenantCatatanTulis))
                 ->name('pengelola.tenant.catatan.tulis');

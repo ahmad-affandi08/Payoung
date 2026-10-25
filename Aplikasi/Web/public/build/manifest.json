@@ -10059,7 +10059,7 @@
     ]
   },
   "resources/js/Halaman/Pengelola/Tenant/Daftar.tsx": {
-    "file": "assets/Daftar-Du7SDXuV.js",
+    "file": "assets/Daftar-D9ICcynD.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Pengelola/Tenant/Daftar.tsx",
     "isDynamicEntry": true,
@@ -10067,7 +10067,13 @@
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
       "_TabelData-BoJtAIFV.js",
+      "_BidangTeks-wK61vZkG.js",
+      "_DialogFormulir-DA7MmLG3.js",
+      "_Tombol-CjJ9fhrT.js",
+      "_dialog-DCrFUQRO.js",
       "_FormatWaktu-bKvj24HB.js",
+      "_BidangPilihan-BMT6A0FZ.js",
+      "_BidangTeksPanjang-BIQPqW0n.js",
       "_TataLetakPengelola-DC7Gq91s.js",
       "_LabelKesehatan-D_nfT64g.js",
       "_LabelLangganan-B4g-FGAk.js",
@@ -10682,7 +10688,7 @@
     ]
   },
   "resources/js/Pengelola.tsx": {
-    "file": "assets/Pengelola-DV2oiZMs.js",
+    "file": "assets/Pengelola-DgUUNLhS.js",
     "name": "Pengelola",
     "src": "resources/js/Pengelola.tsx",
     "isEntry": true,
