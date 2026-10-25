@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Penjualan\Model\PenjualanDetail;
+use Carbon\CarbonImmutable;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
@@ -14,6 +15,8 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
  */
 
 beforeEach(function (): void {
+    // Tanggal bisnis outlet = WIB; CI berjalan di UTC sehingga di malam hari UTC "hari ini" sudah berganti. Waktu dibekukan.
+    $this->travelTo(CarbonImmutable::parse('2026-10-13 09:30', 'Asia/Jakarta'));
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
