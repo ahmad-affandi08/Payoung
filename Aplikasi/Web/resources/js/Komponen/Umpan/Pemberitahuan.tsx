@@ -22,11 +22,11 @@ const labelJenis = { info: 'Info', sukses: 'Berhasil', peringatan: 'Perhatian', 
 
 /**
  * Bilah status tipis gelap (D-193): satu blok teks ringkas di atas `brand-gelap`, penanda nada berupa titik kecil
- * (bukan kotak berwarna, ikon, atau garis tebal di sisi), tautan di dalamnya berwarna aksen. Dipakai `Pemberitahuan`
+ * (bukan kotak berwarna, ikon, atau garis tebal di sisi), tautan di dalamnya berwarna aksen, tombol `outline` di dalamnya tetap bertulisan gelap (latarnya putih; tanpa itu teksnya putih-di-atas-putih dan tombol tampak kosong). Dipakai `Pemberitahuan`
  * dan bilah status lain (ringkasan galat formulir) supaya seluruh web tampil sama.
  */
 export function KelasBilahStatus(): string {
-    return 'flex items-start gap-2.5 rounded-kontrol bg-brand-gelap px-3 py-2.5 text-isi text-brand-teks [&_a]:font-semibold [&_a]:text-aksen [&_a]:underline [&_a]:underline-offset-2';
+    return 'flex items-start gap-2.5 rounded-kontrol bg-brand-gelap px-3 py-2.5 text-isi text-brand-teks [&_a]:font-semibold [&_a]:text-aksen [&_a]:underline [&_a]:underline-offset-2 [&_button[data-variant=outline]]:text-teks-utama';
 }
 
 export function TitikBilahStatus({ jenis }: { jenis: JenisPemberitahuan }) {

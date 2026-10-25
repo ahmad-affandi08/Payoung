@@ -203,6 +203,7 @@
 | D-199 | Dicatat agen (D-12, D-17), 25/10/2026: zona waktu pengujian Flutter dikunci WIB (`TZ=Asia/Jakarta` di skrip melos), bukan golden dibuat ulang di UTC, karena aplikasi memang menampilkan waktu lokal perangkat dan pengguna aplikasinya ada di Indonesia; golden ber-WIB tetap sah. Tidak ada tes yang dilemahkan, di-skip, atau dihapus. |
 | D-200 | Dicatat agen (D-12, D-17), 25/10/2026: perbaikan CI `main` setelah log CI dibaca. Tes yang ekspektasinya basi akibat fitur sah diperbarui mengikuti kenyataan; tidak ada tes yang di-skip, dihapus, atau dilonggarkan. Penjaga desain D-25 hanya ditambah daftar pengecualian bernalar (warna merek/pilihan bukan penanda status), titik status peringatan dipindah ke token status. Satu bug fungsional ($teksQris) diperbaiki di kodenya. |
 | D-201 | Dicatat agen (D-12, D-17), 25/10/2026: tinggi tombol hanya dari ukuran baku (`h-8`, 44px di layar sentuh); menimpa tinggi lewat `className` dilarang dan dijaga `AturanTinggiTombolTes` (file penjaga baru, bukan pelemahan). Audit 27 pemakaian `size="sm"` menunjukkan hanya satu tombol lain yang menyimpang (Bayar tagihan di menu akun, `h-7`), sudah disamakan. |
+| D-202 | Dicatat agen (D-12, D-17), 25/10/2026: perbaikan di tingkat komponen bersama (bukan per halaman) supaya tombol `Tombol varian="sekunder"` di dalam bilah status gelap selalu terbaca; tidak ada token baru. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)
