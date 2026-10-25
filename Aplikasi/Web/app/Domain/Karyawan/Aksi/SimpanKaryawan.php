@@ -72,12 +72,14 @@ final class SimpanKaryawan
             'IdOutlet' => $idOutlet,
         ];
 
-        // D-180: absen lewat login, jadi ikut absensi butuh akun beremail. Karyawan baru: bawaan menurut peran (tanpa akun
-        // beremail = tidak ikut). Ubah data lewat jalur yang tidak menyebutnya tidak diam-diam menyalakan/mematikannya.
+        // D-180/D-198: karyawan absen lewat login (akun beremail) atau tautan absen pribadi, jadi ikut absensi butuh salah
+        // satunya. Karyawan baru: bawaan menurut peran (tanpa akun beremail = tidak ikut). Ubah data lewat jalur yang
+        // tidak menyebutnya tidak diam-diam menyalakan/mematikannya.
         $bisaAbsen = $profilAbsensi !== null && $profilAbsensi['PunyaEmail'];
+        $punyaTautan = $karyawan !== null && $karyawan->HashTokenAbsen !== null;
 
-        if ($data->ikutAbsensi === true && ! $bisaAbsen && ($karyawan === null || ! $karyawan->IkutAbsensi)) {
-            throw new PelanggaranAturanBisnis('AbsensiButuhAkunEmail', 'Ikut absensi butuh akun masuk dengan email (Gmail), karena karyawan absen setelah login. Buat akun dashboard untuknya dulu.', 'IkutAbsensi');
+        if ($data->ikutAbsensi === true && ! $bisaAbsen && ! $punyaTautan && ($karyawan === null || ! $karyawan->IkutAbsensi)) {
+            throw new PelanggaranAturanBisnis('AbsensiButuhAkunEmail', 'Ikut absensi butuh akun masuk dengan email (Gmail) atau tautan absen pribadi. Buat akun dashboard atau tautan absen untuknya dulu.', 'IkutAbsensi');
         }
 
         if ($data->ikutAbsensi !== null) {

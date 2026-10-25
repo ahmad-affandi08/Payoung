@@ -47,8 +47,8 @@ final class RegistriAnonimisasi
             'AlamatNpwp' => 'null', 'Tag' => 'null', 'Catatan' => 'null', 'SetujuPemasaran' => 'nol',
         ],
         'Karyawan' => [
-            'Nama' => 'unik:Karyawan Terhapus #', 'GajiPokok' => 'null',
-            'TarifLemburPerJam' => 'nol', 'PotonganTerlambatPerMenit' => 'nol',
+            'Nama' => 'unik:Karyawan Terhapus #', 'GajiPokok' => 'null', 'TokenAbsen' => 'null', 'HashTokenAbsen' => 'null',
+            'TokenAbsenDibuatPada' => 'null', 'TarifLemburPerJam' => 'nol', 'PotonganTerlambatPerMenit' => 'nol',
             'PotonganTidakMasukPerHari' => 'nol',
         ],
         'Kurir' => [

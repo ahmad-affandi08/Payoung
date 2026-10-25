@@ -16,7 +16,11 @@ export default function PanelDaftarWajah({
     AlamatModelWajah,
     JumlahFotoDaftar,
     daring,
-}: Pick<PropsAbsenSaya, 'Wajah' | 'AlamatModelWajah' | 'JumlahFotoDaftar'> & { daring: boolean }) {
+    alamatDasar = ALAMAT_ABSEN,
+}: Pick<PropsAbsenSaya, 'Wajah' | 'AlamatModelWajah' | 'JumlahFotoDaftar'> & {
+    daring: boolean;
+    alamatDasar?: string;
+}) {
     const [setuju, AturSetuju] = useState(false);
     const [pindai, AturPindai] = useState(false);
     const [mengirim, AturMengirim] = useState(false);
@@ -29,7 +33,7 @@ export default function PanelDaftarWajah({
         AturGalat(null);
 
         try {
-            await KirimJson(`${ALAMAT_ABSEN}/wajah`, {
+            await KirimJson(`${alamatDasar}/wajah`, {
                 SidikWajah: foto.map((f) => f.Sidik),
                 Foto: foto.map((f) => f.Swafoto),
                 Persetujuan: setuju,

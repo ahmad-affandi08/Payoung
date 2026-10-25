@@ -30,6 +30,7 @@ use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontrol
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
 use App\Http\Kontroler\Kelola\TurProdukKontroler;
+use App\Http\Kontroler\Publik\AbsenTautanKontroler;
 use App\Http\Kontroler\Publik\AkunTokoOnlineKontroler;
 use App\Http\Kontroler\Publik\BerhentiLanggananKontroler;
 use App\Http\Kontroler\Publik\DokumenLegalPublikKontroler;
@@ -457,6 +458,18 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::get('/', [PersetujuanServisKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('publik.persetujuan-servis');
             Route::post('/setujui', [PersetujuanServisKontroler::class, 'Setujui'])->middleware('throttle:10,1')->name('publik.persetujuan-servis.setujui');
             Route::post('/tolak', [PersetujuanServisKontroler::class, 'Tolak'])->middleware('throttle:10,1')->name('publik.persetujuan-servis.tolak');
+        });
+
+    // F-18 bagian 4 (D-37, D-198): absen lewat tautan pribadi karyawan (jalan masuk kedua di samping login, D-180).
+    Route::prefix('/{slugTenant}/absen/{tokenAbsen}')
+        ->where(['slugTenant' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'tokenAbsen' => '[A-Za-z0-9]{40}'])
+        ->group(function (): void {
+            Route::get('/', [AbsenTautanKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('publik.absen-tautan');
+            Route::post('/wajah', [AbsenTautanKontroler::class, 'DaftarWajah'])->middleware('throttle:absensi-web')->name('publik.absen-tautan.wajah');
+            Route::post('/cek-wajah', [AbsenTautanKontroler::class, 'CekWajah'])->middleware('throttle:cek-wajah')->name('publik.absen-tautan.cek-wajah');
+            Route::post('/masuk', [AbsenTautanKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('publik.absen-tautan.masuk');
+            Route::post('/keluar', [AbsenTautanKontroler::class, 'Keluar'])->middleware('throttle:absensi-web')->name('publik.absen-tautan.keluar');
+            Route::post('/minta-koreksi', [AbsenTautanKontroler::class, 'MintaKoreksi'])->middleware('throttle:10,1')->name('publik.absen-tautan.minta-koreksi');
         });
 
     // F-10 (v3.49): portal kurir tanpa akun lewat tautan rahasia dari toko.

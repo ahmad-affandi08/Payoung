@@ -69,7 +69,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
             <form onSubmit={Kirim} className="flex flex-col gap-4" aria-label="Aturan kehadiran" noValidate>
                 <Panel
                     judul="Bukti kehadiran"
-                    keterangan="Karyawan absen dari HP setelah login. Wajahnya selalu dicocokkan dengan wajah terdaftar; di sini Anda mengatur foto dan lokasinya."
+                    keterangan="Karyawan absen dari HP setelah login atau lewat tautan absen pribadinya. Wajahnya selalu dicocokkan dengan wajah terdaftar; di sini Anda mengatur foto dan lokasinya."
                 >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">

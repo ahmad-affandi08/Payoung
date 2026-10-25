@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
+use App\Domain\Karyawan\Aksi\AturTautanAbsen;
 use App\Domain\Karyawan\Aksi\TinjauWajahKaryawan;
 use App\Domain\Karyawan\Aksi\UbahStatusKaryawan;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
@@ -16,6 +17,7 @@ use App\Domain\Karyawan\Model\PermintaanKoreksiAbsensi;
 use App\Domain\Karyawan\Model\WajahKaryawan;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Tenant\Kueri\ProfilTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -94,6 +96,8 @@ it('halaman Absen hanya untuk karyawan yang ikut absensi dan tertaut ke akunnya;
         ->where('AbsensiTerbuka', null)
         ->where('SimpanFoto', true)
         ->where('BisaDashboard', false)
+        ->where('Berlogin', true)
+        ->where('AlamatDasar', '/kelola/absen')
         ->where('AbsenSaya', true)
         ->missing('SidikWajah'));
 
@@ -620,4 +624,143 @@ describe('D-44 jadwal kerja ↔ absensi web', function (): void {
         JadwalKerja::query()->create(['IdKaryawan' => $karyawan->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-10-04', 'JamMulai' => '22:00', 'JamSelesai' => '09:00']);
         $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk();
     });
+});
+
+/*
+ * D-198: tautan absen pribadi yang bisa dibagikan, jalan masuk kedua di samping login. Aksi dan aturannya sama
+ * (wajah dicocokkan, lokasi menandai perlu-dicek); bedanya hanya cara karyawan dikenali.
+ */
+
+/**
+ * Karyawan tanpa akun dashboard (staf yang hanya diberi tautan) di tenant uji dengan satu outlet ber-lokasi.
+ *
+ * @return array{0: array<string, mixed>, 1: Karyawan, 2: string, 3: string} [konteks, karyawan, alamat tautan, token]
+ */
+function SiapkanAbsenTautan(TestCase $tes): array
+{
+    $k = BantuanPenjualan::Siapkan($tes, 'Kedai Absen Tautan');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $k['Outlet']->forceFill(['Lintang' => '-7.5560000', 'Bujur' => '110.8310000', 'RadiusAbsensiMeter' => 100])->save();
+    $karyawan = Karyawan::query()->create(['Nama' => 'Budi Tanpa Akun', 'IdOutlet' => $k['Outlet']->Id, 'IkutAbsensi' => false]);
+    $token = app(AturTautanAbsen::class)->Jalankan($karyawan, true, $k['Pemilik']->Id);
+    $slug = app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id);
+
+    return [$k, $karyawan->refresh(), "/{$slug}/absen/{$token}", (string) $token];
+}
+
+it('D-198 pengelola membuat tautan: karyawan ikut absensi otomatis, tautan tampil di panel, buat ulang mematikan yang lama, cabut menghapusnya', function (): void {
+    $k = BantuanPenjualan::Siapkan($this, 'Kedai Tautan Pengelola');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan = Karyawan::query()->create(['Nama' => 'Budi Tanpa Akun', 'IdOutlet' => $k['Outlet']->Id, 'IkutAbsensi' => false]);
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+
+    $this->post("/kelola/karyawan/{$karyawan->Uuid}/tautan-absen")->assertRedirect();
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan->refresh();
+    $lama = $this->getJson("/kelola/karyawan/{$karyawan->Uuid}/absen-hp")->assertOk()->json('Tautan');
+    expect($karyawan->IkutAbsensi)->toBeTrue()
+        ->and($karyawan->HashTokenAbsen)->toBe(AturTautanAbsen::Hash((string) $karyawan->TokenAbsen))
+        ->and($lama)->toBe(url('/'.app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id).'/absen/'.$karyawan->TokenAbsen))
+        ->and(LogAudit::query()->where('Peristiwa', 'karyawan.tautan-absen.buat')->exists())->toBeTrue();
+    // Token mentah tidak pernah ikut ke log audit.
+    expect(json_encode(LogAudit::query()->where('Peristiwa', 'karyawan.tautan-absen.buat')->first()?->NilaiBaru))->not->toContain((string) $karyawan->TokenAbsen);
+
+    $this->post("/kelola/karyawan/{$karyawan->Uuid}/tautan-absen")->assertRedirect();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $baru = $this->getJson("/kelola/karyawan/{$karyawan->Uuid}/absen-hp")->json('Tautan');
+    expect($baru)->not->toBe($lama);
+
+    $this->delete("/kelola/karyawan/{$karyawan->Uuid}/tautan-absen")->assertRedirect();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($this->getJson("/kelola/karyawan/{$karyawan->Uuid}/absen-hp")->json('Tautan'))->toBeNull()
+        ->and($karyawan->refresh()->HashTokenAbsen)->toBeNull();
+});
+
+it('D-198 karyawan nonaktif tidak bisa diberi tautan; tanpa izin karyawan.kelola ditolak', function (): void {
+    $k = BantuanPenjualan::Siapkan($this, 'Kedai Tautan Nonaktif');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan = Karyawan::query()->create(['Nama' => 'Budi Tanpa Akun', 'IdOutlet' => $k['Outlet']->Id, 'Status' => StatusKaryawan::Nonaktif->value]);
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+
+    $this->post("/kelola/karyawan/{$karyawan->Uuid}/tautan-absen")->assertSessionHasErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($karyawan->refresh()->HashTokenAbsen)->toBeNull();
+
+    $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
+    BantuanOrganisasi::Masuk($this, $kasir, $k['Tenant']->Id);
+    $this->post("/kelola/karyawan/{$karyawan->Uuid}/tautan-absen")->assertForbidden();
+});
+
+it('D-198 staf tanpa akun absen lewat tautan: halaman, daftar wajah, masuk, lalu keluar', function (): void {
+    [$k, $karyawan, $alamat] = SiapkanAbsenTautan($this);
+
+    $this->get($alamat)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Publik/Absensi')
+        ->where('NamaKaryawan', 'Budi Tanpa Akun')
+        ->where('Berlogin', false)
+        ->where('BisaDashboard', false)
+        ->where('AlamatDasar', url($alamat))
+        ->where('Wajah', null)
+        ->missing('SidikWajah'));
+
+    $this->postJson("{$alamat}/wajah", ['SidikWajah' => [SidikWajahUji(), SidikWajahUji(), SidikWajahUji()], 'Foto' => [SwafotoAbsenWebUji(), SwafotoAbsenWebUji(), SwafotoAbsenWebUji()], 'Persetujuan' => true])->assertCreated();
+    $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertOk()->assertJsonPath('Cocok', true);
+    $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji(5)])->assertOk()->assertJsonPath('Cocok', false);
+
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk()->assertJsonPath('PerluDicek', false);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->where('IdKaryawan', $karyawan->Id)->whereNull('KeluarPada')->count())->toBe(1);
+
+    $this->travel(8)->hours();
+    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji())->assertOk();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->where('IdKaryawan', $karyawan->Id)->whereNotNull('KeluarPada')->count())->toBe(1);
+});
+
+it('D-198 wajah yang tidak cocok tetap ditolak lewat tautan, dan permintaan koreksi ke manajer berjalan', function (): void {
+    [$k, $karyawan, $alamat] = SiapkanAbsenTautan($this);
+    $this->postJson("{$alamat}/wajah", ['SidikWajah' => [SidikWajahUji(), SidikWajahUji(), SidikWajahUji()], 'Foto' => [SwafotoAbsenWebUji(), SwafotoAbsenWebUji(), SwafotoAbsenWebUji()], 'Persetujuan' => true])->assertCreated();
+
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji(['SidikWajah' => SidikWajahUji(5)]))->assertStatus(422);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->where('IdKaryawan', $karyawan->Id)->count())->toBe(0);
+
+    $this->postJson("{$alamat}/minta-koreksi", ['Jenis' => 'Masuk', 'Alasan' => 'Kamera depan rusak'])->assertCreated();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(PermintaanKoreksiAbsensi::query()->where('IdKaryawan', $karyawan->Id)->count())->toBe(1);
+});
+
+it('D-198 tautan salah, dicabut, dibuat ulang, karyawan nonaktif, tidak ikut absensi, atau slug salah = 404 yang sama', function (): void {
+    [$k, $karyawan, $alamat, $token] = SiapkanAbsenTautan($this);
+    $slug = app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id);
+
+    $this->get("/{$slug}/absen/".str_repeat('a', 40))->assertNotFound();
+    $this->get("/slug-lain-tidak-ada/absen/{$token}")->assertNotFound();
+    $this->postJson("/{$slug}/absen/".str_repeat('a', 40).'/masuk', KirimanAbsenWebUji())->assertNotFound();
+    $this->get($alamat)->assertOk();
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan->forceFill(['IkutAbsensi' => false])->save();
+    $this->get($alamat)->assertNotFound();
+    $karyawan->forceFill(['IkutAbsensi' => true])->save();
+    $this->get($alamat)->assertOk();
+
+    app(UbahStatusKaryawan::class)->Jalankan($karyawan, StatusKaryawan::Nonaktif, $k['Pemilik']->Id);
+    $this->get($alamat)->assertNotFound();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $karyawan->forceFill(['Status' => StatusKaryawan::Aktif->value])->save();
+
+    app(AturTautanAbsen::class)->Jalankan($karyawan->refresh(), true, $k['Pemilik']->Id);
+    $this->get($alamat)->assertNotFound();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    app(AturTautanAbsen::class)->Jalankan($karyawan->refresh(), false, $k['Pemilik']->Id);
+    expect($karyawan->refresh()->TokenAbsen)->toBeNull();
+});
+
+it('D-198 tautan karyawan tenant lain tidak membuka karyawan ini: token hanya berlaku di slug tenantnya', function (): void {
+    [, , , $token] = SiapkanAbsenTautan($this);
+    $lain = BantuanPenjualan::Siapkan($this, 'Kedai Tetangga');
+    $slugLain = app(ProfilTenant::class)->AmbilSlug($lain['Tenant']->Id);
+
+    $this->get("/{$slugLain}/absen/{$token}")->assertNotFound();
 });

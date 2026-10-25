@@ -69,6 +69,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::put('/{karyawan}', [KaryawanKontroler::class, 'Perbarui'])->where('karyawan', $ulid)->name('kelola.karyawan.perbarui');
         // F-18 bagian 4 (D-37, D-180): wajah terdaftar karyawan (absen lewat login di /kelola/absen).
         Route::get('/{karyawan}/absen-hp', [AbsenHpKaryawanKontroler::class, 'Tampilkan'])->where('karyawan', $ulid)->name('kelola.karyawan.absen-hp');
+        Route::post('/{karyawan}/tautan-absen', [AbsenHpKaryawanKontroler::class, 'BuatTautan'])->where('karyawan', $ulid)->name('kelola.karyawan.tautan-absen.buat');
+        Route::delete('/{karyawan}/tautan-absen', [AbsenHpKaryawanKontroler::class, 'CabutTautan'])->where('karyawan', $ulid)->name('kelola.karyawan.tautan-absen.cabut');
         Route::post('/{karyawan}/wajah/tinjau', [AbsenHpKaryawanKontroler::class, 'Tinjau'])->where('karyawan', $ulid)->name('kelola.karyawan.wajah.tinjau');
         Route::delete('/{karyawan}/wajah', [AbsenHpKaryawanKontroler::class, 'HapusWajah'])->where('karyawan', $ulid)->name('kelola.karyawan.wajah.hapus');
         Route::get('/{karyawan}/wajah/foto/{indeks}', [AbsenHpKaryawanKontroler::class, 'Foto'])->where(['karyawan' => $ulid, 'indeks' => '[0-9]'])->name('kelola.karyawan.wajah.foto');

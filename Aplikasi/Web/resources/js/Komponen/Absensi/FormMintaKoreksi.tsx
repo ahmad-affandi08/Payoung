@@ -10,13 +10,19 @@ type PropsFormMintaKoreksi = {
     jenis: 'Masuk' | 'Keluar';
     saatSelesai: () => void;
     saatBatal: () => void;
+    alamatDasar?: string;
 };
 
 /**
  * Jalan keluar bila absen terus gagal (wajah tidak dikenali di tempat gelap, kamera rusak): karyawan menulis alasannya
  * dan pengelola mencatat jamnya sendiri. Tidak menggantikan absen; hanya permintaan yang muncul di Kotak Tindakan.
  */
-export default function FormMintaKoreksi({ jenis, saatSelesai, saatBatal }: PropsFormMintaKoreksi) {
+export default function FormMintaKoreksi({
+    jenis,
+    saatSelesai,
+    saatBatal,
+    alamatDasar = ALAMAT_ABSEN,
+}: PropsFormMintaKoreksi) {
     const [alasan, AturAlasan] = useState('');
     const [mengirim, AturMengirim] = useState(false);
     const [galat, AturGalat] = useState<string | null>(null);
@@ -34,7 +40,7 @@ export default function FormMintaKoreksi({ jenis, saatSelesai, saatBatal }: Prop
         AturGalat(null);
 
         try {
-            await KirimJson(`${ALAMAT_ABSEN}/minta-koreksi`, { Jenis: jenis, Alasan: alasan.trim() });
+            await KirimJson(`${alamatDasar}/minta-koreksi`, { Jenis: jenis, Alasan: alasan.trim() });
             saatSelesai();
         } catch (kesalahan) {
             AturGalat(kesalahan instanceof Error ? kesalahan.message : 'Permintaan gagal dikirim. Coba lagi.');

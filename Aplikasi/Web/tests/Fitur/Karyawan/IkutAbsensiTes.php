@@ -121,12 +121,27 @@ describe('D-180 ikut absensi butuh akun beremail', function (): void {
         $akunSusi = Pengguna::query()->whereKey($susi->IdPengguna)->sole();
 
         $masuk->put("/kelola/karyawan/{$tanpa->Uuid}", ['Nama' => 'Tanpa Akun', 'IkutAbsensi' => true])
-            ->assertSessionHasErrors(['IkutAbsensi' => 'Ikut absensi butuh akun masuk dengan email (Gmail), karena karyawan absen setelah login. Buat akun dashboard untuknya dulu.']);
+            ->assertSessionHasErrors(['IkutAbsensi' => 'Ikut absensi butuh akun masuk dengan email (Gmail) atau tautan absen pribadi. Buat akun dashboard atau tautan absen untuknya dulu.']);
         $masuk->put("/kelola/karyawan/{$susi->Uuid}", ['Nama' => $akunSusi->Nama, 'UuidPengguna' => $akunSusi->Uuid, 'IkutAbsensi' => true])
             ->assertSessionHasNoErrors();
 
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect($tanpa->refresh()->IkutAbsensi)->toBeFalse()->and($susi->refresh()->IkutAbsensi)->toBeTrue();
+    });
+
+    it('D-198 karyawan tanpa akun yang punya tautan absen boleh diikutkan lagi setelah sempat dimatikan', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
+        $masuk->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Tanpa Akun'])->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        $tanpa = KaryawanTim('Tanpa Akun');
+
+        $masuk->post("/kelola/karyawan/{$tanpa->Uuid}/tautan-absen")->assertSessionHasNoErrors();
+        $masuk->put("/kelola/karyawan/{$tanpa->Uuid}", ['Nama' => 'Tanpa Akun', 'IkutAbsensi' => false])->assertSessionHasNoErrors();
+        $masuk->put("/kelola/karyawan/{$tanpa->Uuid}", ['Nama' => 'Tanpa Akun', 'IkutAbsensi' => true])->assertSessionHasNoErrors();
+
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        expect($tanpa->refresh()->IkutAbsensi)->toBeTrue();
     });
 
     it('ubah data karyawan tanpa menyebut IkutAbsensi tidak mengubah nilainya', function (): void {

@@ -181,6 +181,8 @@ final class KamusPeristiwaAudit
         'kampanye-pesan.simpan' => 'Kampanye pesan disimpan',
 
         'karyawan.tambah' => 'Karyawan ditambahkan',
+        'karyawan.tautan-absen.buat' => 'Tautan absen karyawan dibuat',
+        'karyawan.tautan-absen.cabut' => 'Tautan absen karyawan dicabut',
         'karyawan.ubah' => 'Karyawan diubah',
         'karyawan.wajah.daftar' => 'Wajah karyawan didaftarkan',
         'karyawan.wajah.hapus' => 'Wajah karyawan dihapus',

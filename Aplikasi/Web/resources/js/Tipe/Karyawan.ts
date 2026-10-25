@@ -32,6 +32,9 @@ export type StatusWajahKaryawan = 'Menunggu' | 'Disetujui' | 'Ditolak';
 
 /** Isi panel wajah karyawan (`GET /kelola/karyawan/{uuid}/absen-hp`). */
 export type AbsenHpKaryawan = {
+    /** D-198: tautan absen pribadi yang bisa dibagikan; null bila belum dibuat atau sudah dicabut. */
+    Tautan: string | null;
+    TautanDibuatPada: string | null;
     Wajah: {
         Status: StatusWajahKaryawan;
         Label: string;
@@ -351,11 +354,15 @@ export type RiwayatAbsenSaya = {
     PerluDicek: boolean;
 };
 
-/** Props halaman Absen berlogin `/kelola/absen` (D-180). */
+/** Props halaman Absen (berlogin `/kelola/absen` maupun tautan pribadi `/{slug}/absen/{token}`, D-198). */
 export type PropsAbsenSaya = {
     NamaToko: string;
     NamaKaryawan: string;
     AlamatModelWajah: string;
+    /** Alamat dasar titik kirim: `/kelola/absen` (berlogin) atau `/{slug}/absen/{token}` (tautan pribadi, D-198). */
+    AlamatDasar: string;
+    /** Berlogin: tampilkan Keluar. Lewat tautan pribadi tidak ada sesi untuk diakhiri. */
+    Berlogin: boolean;
     /** Akun ini juga punya akses dashboard: tampilkan jalan ke sana. */
     BisaDashboard: boolean;
     Wajah: { Status: 'Menunggu' | 'Disetujui' | 'Ditolak'; Label: string; AlasanTolak: string | null } | null;

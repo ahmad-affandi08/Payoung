@@ -2,6 +2,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanAbsensi from '@/Halaman/Kelola/Absen/Saya';
+import HalamanAbsenTautan from '@/Halaman/Publik/Absensi';
 import { AturHalamanUji, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
 import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 
@@ -26,6 +27,8 @@ const dasar: PropsAbsenSaya = {
     NamaToko: 'Kedai Kopi Senja',
     NamaKaryawan: 'Rina Wulandari',
     AlamatModelWajah: 'https://dashboard.payoung.id/model-wajah',
+    AlamatDasar: '/kelola/absen',
+    Berlogin: true,
     BisaDashboard: false,
     Wajah: null,
     AbsensiTerbuka: null,
@@ -212,5 +215,22 @@ describe('Halaman Absen berlogin', () => {
         RenderUji(<HalamanAbsensi {...dasar} />);
         expect(screen.queryByRole('link', { name: 'Buka dashboard' })).toBeNull();
         expect(screen.getByRole('button', { name: 'Keluar' })).not.toBeNull();
+    });
+});
+
+describe('Halaman Absen lewat tautan pribadi (D-198)', () => {
+    const tautan: PropsAbsenSaya = {
+        ...dasar,
+        AlamatDasar: 'https://payoung.id/kedai-senja/absen/aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789AbCd',
+        Berlogin: false,
+    };
+
+    it('tampilannya sama dengan halaman berlogin, tetapi tanpa tombol Keluar dan tanpa jalan ke dashboard', () => {
+        RenderUji(<HalamanAbsenTautan {...tautan} />);
+
+        expect(screen.getByText('Rina Wulandari')).not.toBeNull();
+        expect(screen.getByRole('button', { name: /Mulai rekam wajah/ })).not.toBeNull();
+        expect(screen.queryByRole('button', { name: 'Keluar' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Buka dashboard' })).toBeNull();
     });
 });

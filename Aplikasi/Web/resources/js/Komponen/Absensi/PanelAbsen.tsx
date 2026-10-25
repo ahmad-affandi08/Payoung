@@ -28,6 +28,8 @@ import { BuatUlid } from '@/Pustaka/Ulid';
 import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 
 type PropsPanelAbsen = Pick<PropsAbsenSaya, 'AbsensiTerbuka' | 'AlamatModelWajah' | 'SimpanFoto'> & {
+    /** Tautan pribadi (D-198) memakai alamatnya sendiri; bawaannya halaman berlogin. */
+    alamatDasar?: string;
     daring: boolean;
     sekarang: Date;
     /** Kemajuan menyiapkan model wajah di latar belakang (dimulai saat halaman dibuka). */
@@ -57,6 +59,7 @@ export default function PanelAbsen({
     AbsensiTerbuka,
     AlamatModelWajah,
     SimpanFoto,
+    alamatDasar = ALAMAT_ABSEN,
     daring,
     sekarang,
     mesin,
@@ -94,16 +97,13 @@ export default function PanelAbsen({
             AturLangkah('Mencari lokasi…');
             const posisi = await lokasi.current;
             AturLangkah('Mengirim absen…');
-            const jawaban = await KirimJson<{ PerluDicek?: boolean }>(
-                `${ALAMAT_ABSEN}/${keluar ? 'keluar' : 'masuk'}`,
-                {
-                    Uuid: keluar ? AbsensiTerbuka.Uuid : (uuidMasuk.current ??= BuatUlid()),
-                    ...posisi,
-                    SidikWajah: foto.Sidik,
-                    // Foto hanya bila aturan menyimpannya; wajah tetap dicocokkan lewat sidik.
-                    ...(SimpanFoto ? { Swafoto: foto.Swafoto } : {}),
-                },
-            );
+            const jawaban = await KirimJson<{ PerluDicek?: boolean }>(`${alamatDasar}/${keluar ? 'keluar' : 'masuk'}`, {
+                Uuid: keluar ? AbsensiTerbuka.Uuid : (uuidMasuk.current ??= BuatUlid()),
+                ...posisi,
+                SidikWajah: foto.Sidik,
+                // Foto hanya bila aturan menyimpannya; wajah tetap dicocokkan lewat sidik.
+                ...(SimpanFoto ? { Swafoto: foto.Swafoto } : {}),
+            });
             uuidMasuk.current = null;
             AturMintaKoreksi(false);
             AturBerhasil(
@@ -122,7 +122,7 @@ export default function PanelAbsen({
     };
 
     const CekKecocokan = async (sidik: number[]): Promise<boolean> =>
-        (await KirimJson<{ Cocok: boolean }>(`${ALAMAT_ABSEN}/cek-wajah`, { SidikWajah: sidik })).Cocok;
+        (await KirimJson<{ Cocok: boolean }>(`${alamatDasar}/cek-wajah`, { SidikWajah: sidik })).Cocok;
 
     const sibuk = langkah !== null;
 
@@ -184,6 +184,7 @@ export default function PanelAbsen({
                         AturKoreksiTerkirim(true);
                     }}
                     saatBatal={() => AturMintaKoreksi(false)}
+                    alamatDasar={alamatDasar}
                 />
             ) : null}
 

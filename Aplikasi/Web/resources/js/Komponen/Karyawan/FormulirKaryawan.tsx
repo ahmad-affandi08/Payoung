@@ -151,13 +151,13 @@ function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, 
             />
             <div className="flex flex-col gap-1">
                 <KotakCentang
-                    label="Ikut absensi (absen masuk/pulang dari HP setelah login)"
+                    label="Ikut absensi (absen masuk/pulang dari HP)"
                     nilai={isian.IkutAbsensi}
                     saatBerubah={(nilai) => Ubah({ IkutAbsensi: nilai })}
                 />
                 <p className="text-keterangan text-teks-sekunder">
-                    Butuh akun masuk dengan email (Gmail). Yang tidak ikut absensi tidak dianggap terlambat atau tidak
-                    masuk dan tidak kena potongan gaji.
+                    Butuh akun masuk dengan email (Gmail) atau tautan absen pribadi. Yang tidak ikut absensi tidak
+                    dianggap terlambat atau tidak masuk dan tidak kena potongan gaji.
                 </p>
                 {galat.IkutAbsensi ? (
                     <p className="text-keterangan font-semibold text-bahaya">{galat.IkutAbsensi}</p>

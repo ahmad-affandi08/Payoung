@@ -50,6 +50,28 @@ describe('Form minta koreksi absen', () => {
         });
     });
 
+    it('lewat tautan pribadi, permintaan dikirim ke alamat tautan itu (D-198)', async () => {
+        KirimJsonTiruan.mockResolvedValue({});
+        const Selesai = vi.fn();
+        RenderUji(
+            <FormMintaKoreksi
+                jenis="Masuk"
+                saatSelesai={Selesai}
+                saatBatal={vi.fn()}
+                alamatDasar="https://payoung.id/kedai-senja/absen/token"
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText(/Alasan/), { target: { value: 'Kamera depan rusak' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Kirim permintaan' }));
+
+        await waitFor(() => expect(Selesai).toHaveBeenCalled());
+        expect(KirimJsonTiruan).toHaveBeenCalledWith('https://payoung.id/kedai-senja/absen/token/minta-koreksi', {
+            Jenis: 'Masuk',
+            Alasan: 'Kamera depan rusak',
+        });
+    });
+
     it('masalah server tampil dan formulir tetap terbuka', async () => {
         KirimJsonTiruan.mockRejectedValue(new Error('Anda sudah mengirim 3 permintaan hari ini.'));
         const Selesai = vi.fn();

@@ -9,8 +9,8 @@ import type { AbsenHpKaryawan, BarisKaryawan } from '@/Tipe/Karyawan';
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
 /*
- * F-18 bagian 4 (D-37, D-180) back-office: panel wajah karyawan (foto, tolak beralasan, atur ulang) dan lokasi absensi
- * outlet (titik + radius, hapus titik).
+ * F-18 bagian 4 (D-37, D-180, D-198) back-office: panel absen karyawan (tautan pribadi, foto wajah, tolak beralasan,
+ * atur ulang) dan lokasi absensi outlet (titik + radius, hapus titik).
  */
 const karyawan: BarisKaryawan = {
     Uuid: '01J9KRY0000000000000000001',
@@ -49,8 +49,10 @@ afterEach(() => {
 });
 
 describe('Panel wajah karyawan', () => {
-    it('menampilkan 3 foto wajah menunggu; setujui mengirim Setujui=true; tolak wajib beralasan; tanpa tautan absen', async () => {
+    it('menampilkan 3 foto wajah menunggu; setujui mengirim Setujui=true; tolak wajib beralasan', async () => {
         TiruFetch({
+            Tautan: null,
+            TautanDibuatPada: null,
             Wajah: {
                 Status: 'Menunggu',
                 Label: 'Menunggu persetujuan',
@@ -63,10 +65,6 @@ describe('Panel wajah karyawan', () => {
         RenderUji(<PanelAbsenHp karyawan={karyawan} saatTutup={() => undefined} />);
 
         await waitFor(() => expect(screen.getAllByRole('img')).toHaveLength(3));
-        // D-180: absen lewat login, jadi tidak ada lagi tautan pribadi untuk disalin, dikirim, atau dicabut.
-        expect(screen.queryByText(/Tautan absen/)).toBeNull();
-        expect(screen.queryByRole('button', { name: /tautan/i })).toBeNull();
-
         // Tiruan router tidak memanggil onFinish (tombol tetap "memproses"), jadi tolak diuji lebih dulu, setujui di
         // render berikutnya.
         fireEvent.click(screen.getByRole('button', { name: 'Tolak' }));
@@ -92,6 +90,8 @@ describe('Panel wajah karyawan', () => {
 
     it('wajah disetujui bisa diatur ulang, lewat konfirmasi dulu', async () => {
         TiruFetch({
+            Tautan: null,
+            TautanDibuatPada: null,
             Wajah: {
                 Status: 'Disetujui',
                 Label: 'Disetujui',
@@ -108,6 +108,50 @@ describe('Panel wajah karyawan', () => {
         expect(tiruanRouter.delete).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole('button', { name: 'Hapus wajah' }));
         expect(tiruanRouter.delete).toHaveBeenCalledWith(`/kelola/karyawan/${karyawan.Uuid}/wajah`, expect.anything());
+    });
+});
+
+describe('Tautan absen pribadi (D-198)', () => {
+    const wajahKosong = null;
+
+    it('belum ada tautan: tombol Buat tautan absen mengirim POST ke karyawan itu', async () => {
+        TiruFetch({ Tautan: null, TautanDibuatPada: null, Wajah: wajahKosong });
+        RenderUji(<PanelAbsenHp karyawan={karyawan} saatTutup={() => undefined} />);
+
+        expect(await screen.findByText(/Belum ada tautan absen/)).not.toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Buat tautan absen' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            `/kelola/karyawan/${karyawan.Uuid}/tautan-absen`,
+            {},
+            expect.anything(),
+        );
+    });
+
+    it('karyawan nonaktif tidak bisa diberi tautan', async () => {
+        TiruFetch({ Tautan: null, TautanDibuatPada: null, Wajah: wajahKosong });
+        RenderUji(<PanelAbsenHp karyawan={{ ...karyawan, Status: 'Nonaktif' }} saatTutup={() => undefined} />);
+
+        const tombol = (await screen.findByRole('button', { name: 'Buat tautan absen' })) as HTMLButtonElement;
+        expect(tombol.disabled).toBe(true);
+    });
+
+    it('sudah ada tautan: tampil, bisa dikirim lewat WhatsApp; buat ulang dan cabut lewat konfirmasi dulu', async () => {
+        const alamat = 'https://payoung.id/kedai-senja/absen/aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789AbCd';
+        TiruFetch({ Tautan: alamat, TautanDibuatPada: '2026-10-25T03:00:00+00:00', Wajah: wajahKosong });
+        RenderUji(<PanelAbsenHp karyawan={karyawan} saatTutup={() => undefined} />);
+
+        expect(await screen.findByText(alamat)).not.toBeNull();
+        const wa = screen.getByRole('link', { name: 'Kirim lewat WhatsApp' }).getAttribute('href') ?? '';
+        expect(wa.startsWith('https://wa.me/?text=')).toBe(true);
+        expect(decodeURIComponent(wa)).toContain(alamat);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Cabut tautan' }));
+        expect(tiruanRouter.delete).not.toHaveBeenCalled();
+        fireEvent.click(screen.getAllByRole('button', { name: 'Cabut tautan' }).at(-1) as HTMLElement);
+        expect(tiruanRouter.delete).toHaveBeenCalledWith(
+            `/kelola/karyawan/${karyawan.Uuid}/tautan-absen`,
+            expect.anything(),
+        );
     });
 });
 

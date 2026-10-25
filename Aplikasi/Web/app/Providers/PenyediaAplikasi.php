@@ -234,11 +234,12 @@ final class PenyediaAplikasi extends ServiceProvider
         // F-18 absensi web (D-37): karyawan satu toko biasanya di balik satu IP wifi, jadi batas ketat dikunci per tautan
         // (hash token) dan batas IP dibuat longgar supaya karyawan-karyawan satu outlet tidak saling menghabiskan jatah.
         RateLimiter::for('absensi-web', static function (Request $permintaan): array {
-            // D-180: absen sekarang berlogin, jadi dibatasi per akun (bukan per tautan) dan per IP.
+            // D-180/D-198: absen berlogin dibatasi per akun; lewat tautan pribadi (tanpa login) per tautan (hash token),
+            // dan keduanya per IP.
             $idPengguna = $permintaan->user()?->getAuthIdentifier();
 
             return [
-                Limit::perMinute(10)->by('absen:'.(is_scalar($idPengguna) ? (string) $idPengguna : 'tamu')),
+                Limit::perMinute(10)->by('absen:'.self::KunciPemakaiAbsen($permintaan, $idPengguna)),
                 Limit::perMinute(120)->by('absen-ip:'.$permintaan->ip()),
             ];
         });
@@ -249,7 +250,7 @@ final class PenyediaAplikasi extends ServiceProvider
             $idPengguna = $permintaan->user()?->getAuthIdentifier();
 
             return [
-                Limit::perMinute(90)->by('cek-wajah:'.(is_scalar($idPengguna) ? (string) $idPengguna : 'tamu')),
+                Limit::perMinute(90)->by('cek-wajah:'.self::KunciPemakaiAbsen($permintaan, $idPengguna)),
                 Limit::perMinute(600)->by('cek-wajah-ip:'.$permintaan->ip()),
             ];
         });
@@ -309,6 +310,18 @@ final class PenyediaAplikasi extends ServiceProvider
      * kritis (sekali sehari, lewat cache), bukan menghentikan aplikasi: menjatuhkan situs yang sedang berjalan lebih
      * buruk daripada peringatannya.
      */
+    /** Kunci pembatas absen: id akun bila berlogin, hash token tautan bila lewat tautan pribadi, selain itu "tamu". */
+    private static function KunciPemakaiAbsen(Request $permintaan, mixed $idPengguna): string
+    {
+        if (is_scalar($idPengguna)) {
+            return (string) $idPengguna;
+        }
+
+        $token = $permintaan->route('tokenAbsen');
+
+        return is_string($token) ? 'tautan:'.hash('sha256', $token) : 'tamu';
+    }
+
     private function PeringatiKonfigurasiProduksiBerbahaya(): void
     {
         if (! $this->app->isProduction() || $this->app->runningInConsole()) {

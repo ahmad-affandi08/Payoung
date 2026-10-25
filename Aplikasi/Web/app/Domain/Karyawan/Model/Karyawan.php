@@ -28,6 +28,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $PotonganTidakMasukPerHari
  * @property StatusKaryawan $Status
  * @property bool $IkutAbsensi D-180: ikut absensi (Kasir, Pelayan, dst. ya; Manajer, Supervisor, Pemilik bawaannya tidak)
+ * @property string|null $TokenAbsen D-198: tautan absen pribadi yang bisa dibagikan (terenkripsi; ditampilkan ulang ke pengelola)
+ * @property string|null $HashTokenAbsen
+ * @property Carbon|null $TokenAbsenDibuatPada
  * @property int|null $DibuatOleh
  * @property Carbon|null $DibuatPada
  */
@@ -38,7 +41,10 @@ final class Karyawan extends ModelDasar
     protected $table = 'Karyawan';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Aktif', 'IkutAbsensi' => true];
+    protected $attributes = ['Status' => 'Aktif', 'IkutAbsensi' => true, 'TokenAbsen' => null, 'HashTokenAbsen' => null, 'TokenAbsenDibuatPada' => null];
+
+    /** @var list<string> */
+    protected $hidden = ['TokenAbsen', 'HashTokenAbsen'];
 
     /**
      * @return array<string, string>
@@ -52,6 +58,8 @@ final class Karyawan extends ModelDasar
             'PotonganTidakMasukPerHari' => 'decimal:2',
             'Status' => StatusKaryawan::class,
             'IkutAbsensi' => 'boolean',
+            'TokenAbsen' => 'encrypted',
+            'TokenAbsenDibuatPada' => 'datetime',
         ];
     }
 
