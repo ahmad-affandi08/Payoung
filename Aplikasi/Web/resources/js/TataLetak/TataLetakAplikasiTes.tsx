@@ -83,6 +83,27 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(screen.getByRole('link', { name: 'Pengaturan' })).toBeTruthy();
     });
 
+    it('D-204: Kotak tindakan berlencana merah berisi jumlah yang perlu ditindak; tanpa butir tidak ada lencana; hanya di menu itu', () => {
+        propsHalaman = { ...BuatProps({}, [], true), TindakanPerluDicek: 7 };
+        const { rerender: RenderUlang } = render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+
+        const utama = screen.getByRole('navigation', { name: 'Menu utama' });
+        const tautan = within(utama).getByRole('link', { name: /Kotak tindakan/ });
+        expect(tautan.textContent).toContain('7 perlu ditindak');
+        expect(utama.querySelector('[data-slot="sidebar-menu-badge"]')?.textContent).toBe('7');
+        expect(utama.querySelectorAll('[data-slot="sidebar-menu-badge"]').length).toBe(1);
+        expect(within(utama).getByRole('link', { name: 'Beranda' })).toBeTruthy();
+
+        propsHalaman = { ...BuatProps({}, [], true), TindakanPerluDicek: 120 };
+        RenderUlang(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+        expect(utama.querySelector('[data-slot="sidebar-menu-badge"]')?.textContent).toBe('99+');
+
+        propsHalaman = { ...BuatProps({}, [], true), TindakanPerluDicek: 0 };
+        RenderUlang(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+        expect(utama.querySelector('[data-slot="sidebar-menu-badge"]')).toBeNull();
+        expect(within(utama).getByRole('link', { name: 'Kotak tindakan' })).toBeTruthy();
+    });
+
     it('Keamanan akun ada di menu akun kanan atas, bukan di menu samping (D-27)', () => {
         propsHalaman = BuatProps({}, [], true);
         render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);

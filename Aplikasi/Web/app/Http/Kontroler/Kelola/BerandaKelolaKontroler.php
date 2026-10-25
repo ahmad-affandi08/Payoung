@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola;
 
-use App\Domain\Bersama\Tindakan\Data\DataButirTindakan;
-use App\Domain\Bersama\Tindakan\Kueri\KotakTindakan;
 use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Laporan\Kueri\DasborPemilik;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
-use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
+use App\Domain\Organisasi\Kueri\RingkasanTindakanPengguna;
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Organisasi\Kueri\TurProdukPengguna;
@@ -19,7 +17,6 @@ use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,7 +28,7 @@ use Inertia\Response;
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
+    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, RingkasanTindakanPengguna $ringkasan, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
@@ -47,16 +44,8 @@ final class BerandaKelolaKontroler extends DasarKelolaKontroler
             'TurDilihat' => $tur->KodeSudahDilihat($idPengguna),
             // D-23 C: ringkasan Kotak Tindakan (D-24: termasuk checklist persiapan toko yang dulu di Beranda) (tanpa rincian; rincian & tandai di /kelola/tindakan).
             // Audit kinerja skala besar: Kotak Tindakan menjalankan puluhan COUNT, dan Beranda dibuka paling sering. Ringkasan
-            // disimpan 60 detik per tenant & pengguna (izin dan cakupan outlet berbeda per pengguna); halaman
-            // `/kelola/tindakan` tetap membaca langsung supaya "tandai sudah dicek" terlihat seketika.
-            'Tindakan' => Cache::remember(
-                "tindakan:beranda:{$idTenant}:{$idPengguna}",
-                60,
-                fn (): array => array_map(
-                    fn (DataButirTindakan $b): array => [...$b->KeLarik(false), 'Rincian' => []],
-                    $kotak->Ambil($konteks->Buat($idTenant, $idPengguna, $tanggal->Hitung(null))),
-                ),
-            ),
+            // disimpan 60 detik per tenant & pengguna oleh `RingkasanTindakanPengguna` (juga dipakai lencana menu samping).
+            'Tindakan' => $ringkasan->Ambil($idTenant, $idPengguna),
             // F-21: usaha yang menagih lewat invoice melihat ringkasan penagihannya di Beranda (null bila belum pernah ada invoice).
             'Penagihan' => $akses->CekIzin($idTenant, $idPengguna, IzinTenant::InvoiceKelola)
                 ? $penagihan->Ambil($tanggal->Hitung(null), $this->IdOutletBoleh())

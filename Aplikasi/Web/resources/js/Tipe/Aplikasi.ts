@@ -79,6 +79,8 @@ export type PropsBersamaAplikasi = {
     FiturPaket?: FiturPaket | null;
     /** F31 (PLT-08): jumlah notifikasi belum dibaca pengguna di tenant aktif (lencana lonceng); 0/absen di luar back-office. */
     NotifikasiBelumDibaca?: number;
+    /** D-204: jumlah butir Kotak Tindakan yang perlu ditindak pengguna ini (lencana merah di menu samping); 0/absen di luar back-office. */
+    TindakanPerluDicek?: number;
     /** PLT-12: kode tur produk yang sudah dilihat pengguna; hanya dibawa Beranda (penanda boleh menawarkan tur). */
     TurDilihat?: string[];
     errors: Record<string, string>;

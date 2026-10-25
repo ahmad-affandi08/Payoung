@@ -14,6 +14,7 @@ use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KeanggotaanPengguna;
 use App\Domain\Organisasi\Kueri\PemilikTenant;
 use App\Domain\Organisasi\Kueri\PusatNotifikasiWeb;
+use App\Domain\Organisasi\Kueri\RingkasanTindakanPengguna;
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Layanan\PenentuWajibDuaFaktor;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -28,6 +29,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Middleware;
+use Throwable;
 
 /**
  * Perantara Inertia: menentukan view root dan data yang dibagikan ke semua halaman (PRD §13.5).
@@ -183,6 +185,23 @@ final class BagikanDataInertia extends Middleware
                 return $pengguna instanceof Pengguna && app(KonteksTenant::class)->Ambil() !== null
                     ? app(PusatNotifikasiWeb::class)->HitungBelumDibaca($pengguna->Id)
                     : 0;
+            },
+            // D-204: jumlah butir Kotak Tindakan untuk lencana merah di menu samping. Dipakai di setiap halaman, jadi
+            // dibaca dari simpanan 60 detik; galat penyedia tidak boleh menjatuhkan halaman mana pun.
+            'TindakanPerluDicek' => function () use ($pengguna): int {
+                $idTenant = app(KonteksTenant::class)->Ambil();
+
+                if (! $pengguna instanceof Pengguna || $idTenant === null) {
+                    return 0;
+                }
+
+                try {
+                    return app(RingkasanTindakanPengguna::class)->Hitung($idTenant, $pengguna->Id);
+                } catch (Throwable $e) {
+                    report($e);
+
+                    return 0;
+                }
             },
             // Audit kemudahan pakai #33 (D-38): menu modul khusus sektor (grosir, laundry, reservasi, apotek, …) hanya
             // tampil bila ada outlet bersektor itu; kosong = sektor belum diketahui, semua menu tampil.

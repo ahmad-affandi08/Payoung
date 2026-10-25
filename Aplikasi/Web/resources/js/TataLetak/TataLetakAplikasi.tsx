@@ -16,6 +16,7 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
@@ -912,7 +913,14 @@ function ItemMenuSidebar({
     url,
     terkunci,
     saatTerkunci,
-}: MenuTerlihat & { url: string; terkunci: FiturPaket['Terkunci']; saatTerkunci: (kunci: string) => void }) {
+    lencana = 0,
+}: MenuTerlihat & {
+    url: string;
+    terkunci: FiturPaket['Terkunci'];
+    saatTerkunci: (kunci: string) => void;
+    /** D-204: jumlah yang perlu ditindak (lencana merah di kanan label; titik merah di sidebar yang diciutkan). */
+    lencana?: number;
+}) {
     const { state, isMobile } = useSidebar();
     const subAktif = labelSub === null ? null : CariSubMenuAktif(sub, url);
     const aktif = labelSub === null ? CekMenuAktif(menu.href, url) : subAktif !== null;
@@ -927,8 +935,23 @@ function ItemMenuSidebar({
                     <Link href={menu.href} aria-current={aktif ? 'page' : undefined}>
                         {ikon}
                         <span>{menu.label}</span>
+                        {lencana > 0 ? <span className="sr-only">, {String(lencana)} perlu ditindak</span> : null}
                     </Link>
                 </SidebarMenuButton>
+                {lencana > 0 ? (
+                    <>
+                        <SidebarMenuBadge
+                            aria-hidden="true"
+                            className="right-2 bg-bahaya px-1.5 text-keterangan font-semibold text-bahaya-teks peer-data-[active=true]/menu-button:text-bahaya-teks peer-hover/menu-button:text-bahaya-teks"
+                        >
+                            {lencana > 99 ? '99+' : String(lencana)}
+                        </SidebarMenuBadge>
+                        <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute top-1 right-1 hidden size-2.5 rounded-full bg-bahaya group-data-[collapsible=icon]:block"
+                        />
+                    </>
+                ) : null}
             </SidebarMenuItem>
         );
     }
@@ -1123,6 +1146,11 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                                                 url={url}
                                                 terkunci={terkunci}
                                                 saatTerkunci={AturKunciPenawaran}
+                                                lencana={
+                                                    terlihat.menu.href === '/kelola/tindakan'
+                                                        ? (props.TindakanPerluDicek ?? 0)
+                                                        : 0
+                                                }
                                             />
                                         ))}
                                     </SidebarMenu>

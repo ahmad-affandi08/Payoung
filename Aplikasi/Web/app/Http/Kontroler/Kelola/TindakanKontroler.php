@@ -13,6 +13,7 @@ use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\KonteksTindakanPengguna;
+use App\Domain\Organisasi\Kueri\RingkasanTindakanPengguna;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,14 +27,18 @@ use Inertia\Response;
  */
 final class TindakanKontroler extends DasarKelolaKontroler
 {
-    public function Daftar(KotakTindakan $kotak, AksesPengguna $akses, KonteksTindakanPengguna $konteks, TanggalBisnisOutlet $tanggal, LanggananRingkasan $langganan): Response
+    public function Daftar(KotakTindakan $kotak, AksesPengguna $akses, KonteksTindakanPengguna $konteks, TanggalBisnisOutlet $tanggal, LanggananRingkasan $langganan, RingkasanTindakanPengguna $ringkasan): Response
     {
         $pelaku = $this->Pelaku();
         $bolehTandai = $akses->CekIzin($this->IdTenant(), $pelaku->Id, IzinTenant::TindakanTinjau);
         $pemilik = ($akses->Ambil($this->IdTenant(), $pelaku->Id)['Pemilik'] ?? false) === true;
 
+        $butir = $kotak->Ambil($konteks->Buat($this->IdTenant(), $pelaku->Id, $tanggal->Hitung(null)));
+        // Bacaan langsung ini juga memperbarui simpanan lencana menu samping supaya angkanya sama dengan halaman ini.
+        $ringkasan->Simpan($this->IdTenant(), $pelaku->Id, $butir);
+
         return Inertia::render('Kelola/Tindakan', [
-            'Butir' => array_map(fn (DataButirTindakan $b): array => $b->KeLarik($bolehTandai), $kotak->Ambil($konteks->Buat($this->IdTenant(), $pelaku->Id, $tanggal->Hitung(null)))),
+            'Butir' => array_map(fn (DataButirTindakan $b): array => $b->KeLarik($bolehTandai), $butir),
             'Izin' => ['Tandai' => $bolehTandai],
             // D-33: ringkasan pagi dikirim lewat WhatsApp ke nomor HP akun.
             'RingkasanWhatsapp' => [
@@ -56,7 +61,7 @@ final class TindakanKontroler extends DasarKelolaKontroler
         return back()->with('Kilat', $aktif ? 'Ringkasan dikirim ke WhatsApp Anda setiap pagi.' : 'Ringkasan pagi lewat WhatsApp dimatikan.');
     }
 
-    public function Tandai(Request $permintaan, TandaiDokumenDitinjau $tandai, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TanggalBisnisOutlet $tanggal): RedirectResponse
+    public function Tandai(Request $permintaan, TandaiDokumenDitinjau $tandai, KotakTindakan $kotak, KonteksTindakanPengguna $konteks, TanggalBisnisOutlet $tanggal, RingkasanTindakanPengguna $ringkasan): RedirectResponse
     {
         $valid = $permintaan->validate([
             'Jenis' => ['required', 'string', 'max:40'],
@@ -86,6 +91,9 @@ final class TindakanKontroler extends DasarKelolaKontroler
         }
 
         $jumlah = $tandai->Jalankan($jenis, $uuid, $this->Pelaku()->Id, isset($valid['Catatan']) ? (string) $valid['Catatan'] : null);
+
+        // Lencana menu samping dihitung ulang (simpanan 60 detik pengguna ini dibuang; pengguna lain menyusul sendiri).
+        $ringkasan->Lupakan($this->IdTenant(), $this->Pelaku()->Id);
 
         return back()->with('Kilat', $jumlah === 0 ? 'Semua dokumen yang dipilih sudah ditandai sebelumnya.' : "{$jumlah} dokumen ditandai sudah dicek.");
     }

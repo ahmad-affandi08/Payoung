@@ -65,8 +65,10 @@ it('penjualan perlu dicek tampil di Kotak Tindakan & beranda; ditandai sudah dic
         $h->component('Kelola/Tindakan')->where('Izin.Tandai', true);
         $butir = $h->toArray()['props']['Butir'];
 
-        return $h;
+        // D-204: lencana merah menu samping = jumlah butir halaman ini.
+        return $h->where('TindakanPerluDicek', count($butir));
     });
+    expect(count($butir))->toBeGreaterThan(0);
     $penjualan = CariButir($butir, 'penjualan.tinjauan');
     expect($penjualan)->not->toBeNull()
         ->and($penjualan['Jumlah'])->toBe(1)
@@ -87,10 +89,13 @@ it('penjualan perlu dicek tampil di Kotak Tindakan & beranda; ditandai sudah dic
     expect(TinjauanDokumen::query()->where('JenisDokumen', 'Penjualan')->count())->toBe(1)
         ->and(Penjualan::query()->whereKey($jual->Id)->value('PerluTinjauan'))->toBeTrue()
         ->and(DB::table('LogAudit')->where('IdTenant', $k['Tenant']->Id)->where('Peristiwa', 'tindakan.tinjau')->count())->toBe(1);
-    $this->get('/kelola/tindakan')->assertOk()->assertInertia(function (AssertableInertia $h) {
-        expect(CariButir($h->toArray()['props']['Butir'], 'penjualan.tinjauan'))->toBeNull();
+    $this->get('/kelola/tindakan')->assertOk()->assertInertia(function (AssertableInertia $h) use ($butir) {
+        $sekarang = $h->toArray()['props']['Butir'];
+        expect(CariButir($sekarang, 'penjualan.tinjauan'))->toBeNull()
+            ->and(count($sekarang))->toBe(count($butir) - 1);
 
-        return $h;
+        // Lencana ikut turun segera setelah ditandai (simpanan 60 detik dibuang), tidak menunggu kedaluwarsa.
+        return $h->where('TindakanPerluDicek', count($sekarang));
     });
 
     // Jenis/Uuid yang tidak dikenal ditolak.
