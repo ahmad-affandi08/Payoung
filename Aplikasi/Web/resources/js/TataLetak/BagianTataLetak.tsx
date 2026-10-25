@@ -4,6 +4,7 @@ import {
     Building2Icon,
     CheckIcon,
     ChevronDownIcon,
+    ClockIcon,
     CopyIcon,
     CreditCardIcon,
     LogOutIcon,
@@ -267,6 +268,8 @@ type PropsMenuAkun = {
     bolehKelolaLangganan?: boolean;
     /** Konsol pengelola memakai `/keamanan`; back-office tenant `/kelola/keamanan`. */
     tautanKeamanan?: string;
+    /** Akun ini wajib absen (D-180): tampilkan pintasan ke halaman Absen dari halaman mana pun. */
+    bisaAbsen?: boolean;
 };
 
 /**
@@ -280,6 +283,7 @@ export function MenuAkun({
     tenant,
     bolehKelolaLangganan = true,
     tautanKeamanan = '/kelola/keamanan',
+    bisaAbsen = false,
 }: PropsMenuAkun) {
     const [sudahSalin, AturSudahSalin] = useState(false);
 
@@ -444,6 +448,14 @@ export function MenuAkun({
                         <Link href="/kelola/langganan">
                             <CreditCardIcon aria-hidden="true" />
                             Langganan & tagihan
+                        </Link>
+                    </DropdownMenuItem>
+                ) : null}
+                {bisaAbsen ? (
+                    <DropdownMenuItem asChild className="text-label cursor-pointer">
+                        <Link href="/kelola/absen">
+                            <ClockIcon aria-hidden="true" />
+                            Absen
                         </Link>
                     </DropdownMenuItem>
                 ) : null}

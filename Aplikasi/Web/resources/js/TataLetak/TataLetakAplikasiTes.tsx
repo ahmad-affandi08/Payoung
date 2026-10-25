@@ -98,6 +98,21 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         );
     });
 
+    it('menu akun menautkan ke halaman Absen hanya bagi akun yang wajib absen (D-180)', () => {
+        propsHalaman = { ...BuatProps({}, [], true), AbsenSaya: true };
+        const { unmount: Lepas } = render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+        fireEvent.keyDown(screen.getByRole('button', { name: /Menu akun/ }), { key: 'Enter' });
+        expect(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Absen' }).getAttribute('href')).toBe(
+            '/kelola/absen',
+        );
+        Lepas();
+
+        propsHalaman = { ...BuatProps({}, [], true), AbsenSaya: false };
+        render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+        fireEvent.keyDown(screen.getByRole('button', { name: /Menu akun/ }), { key: 'Enter' });
+        expect(within(screen.getByRole('menu')).queryByRole('menuitem', { name: 'Absen' })).toBeNull();
+    });
+
     it('tanpa tenant aktif, menu tenant disembunyikan', () => {
         propsHalaman = BuatProps(null, []);
         render(<TataLetakAplikasi judul="Keamanan akun">isi</TataLetakAplikasi>);

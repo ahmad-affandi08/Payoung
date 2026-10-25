@@ -1179,6 +1179,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                         email={props.Pengguna?.Email}
                         tenant={tenantAktif}
                         bolehKelolaLangganan={PunyaIzinTenant(props.Akses, IzinTenant.LanggananKelola)}
+                        bisaAbsen={props.AbsenSaya === true}
                     />
                 </KepalaTataLetak>
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
