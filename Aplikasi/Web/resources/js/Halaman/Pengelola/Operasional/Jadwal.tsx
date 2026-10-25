@@ -179,7 +179,7 @@ export default function Jadwal({ Jadwal: jadwal, Penyimpanan, BolehKelola }: Pro
                         opsi: Object.entries(TEKS_STATUS).map(([nilai, { teks }]) => ({ nilai, label: teks })),
                     },
                 ]}
-                kosong={{ judul: 'Belum ada perintah terjadwal.' }}
+                kosong={{ ilustrasi: true, judul: 'Belum ada perintah terjadwal.' }}
             />
             <Panel tingkat="h3" judul="Tenant dengan penyimpanan terbesar">
                 {Penyimpanan.Terbesar.length === 0 ? (
