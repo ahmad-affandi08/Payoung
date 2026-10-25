@@ -488,7 +488,8 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
 
         $log = LogAuditPengelola::query()->where('Aksi', 'tagihan.rekening-tujuan.ubah')->sole();
         expect($log->NilaiLama)->toBe(['Rekening' => []])
-            ->and($log->NilaiBaru['Rekening'][0])->toBe(['Kode' => 'UTAMA', 'NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234 567 890', 'AtasNama' => 'PT Kasir Nusantara Digital'])
+            // MySQL menormalkan urutan kunci JSON (kunci pendek dulu), jadi urutan tidak ikut dibandingkan.
+            ->and($log->NilaiBaru['Rekening'][0])->toEqual(['Kode' => 'UTAMA', 'NamaBank' => 'Bank Central Asia', 'NomorRekening' => '1234 567 890', 'AtasNama' => 'PT Kasir Nusantara Digital'])
             ->and($log->NilaiBaru['Rekening'][1]['Kode'])->toBe('REK2')
             ->and($log->Alasan)->toBe('Rekening operasional resmi perusahaan');
 

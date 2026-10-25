@@ -164,55 +164,56 @@ void main() {
     },
   );
 
-  testWidgets('POS-23: Windows dengan checksum dari server menawarkan Unduh dan pasang (tanpa pemasang sendiri tetap tautan, test pertama)', (
-    tester,
-  ) async {
-    final dipasang = <(String, String)>[];
-    final u = LingkunganUji.Buat();
-    await tester.runAsync(() async {
-      await u.SiapkanAktif();
-      await u.repositori.SimpanPengaturan(KunciPengaturan.namaOutlet, 'Kopi Senja Solo Baru');
-      await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
-    });
-    u.server.penangan = (permintaan) async {
-      final jalur = permintaan.url.path;
-      if (jalur.endsWith('/sinkron/kirim')) {
-        final item = (jsonDecode(permintaan.body) as Map<String, Object?>)['Item']! as List<Object?>;
-        return JsonUji({
-          'Hasil': [
-            for (final i in item.cast<Map<String, Object?>>())
-              {'Uuid': i['Uuid'], 'Jenis': i['Jenis'], 'Status': 'Diterima', 'Galat': null},
-          ],
-        });
-      }
-      if (jalur.endsWith('/konfigurasi-aplikasi')) {
-        return JsonUji({
-          'Aplikasi': {
-            'VersiSaatIni': '0.1.0',
-            'VersiTerbaru': '0.2.0',
-            'VersiMinimal': '0.2.0',
-            'TautanUnduh': 'https://unduh.payoung.id/Payoung-Kasir-Pemasang-0.2.0.exe',
-            'Sha256Unduhan': 'a' * 64,
-            'AdaPembaruan': true,
-            'WajibPembaruan': true,
-          },
-          'FlagFitur': {'pos.mode-meja': false},
-          'Pengumuman': <Object?>[],
-        });
-      }
-      throw http.ClientException('offline');
-    };
-    await PasangAplikasi(tester, u, pemasangPembaruan: PemasangTiruan(dipasang));
-    await PilihKasir(tester, 'Rina Wulandari');
-    await tester.pump();
-    await KetikPin(tester, KasusPin(0)['Pin']! as String);
-    await Tunggu(tester, const Duration(milliseconds: 600));
+  testWidgets(
+    'POS-23: Windows dengan checksum dari server menawarkan Unduh dan pasang (tanpa pemasang sendiri tetap tautan, test pertama)',
+    (tester) async {
+      final dipasang = <(String, String)>[];
+      final u = LingkunganUji.Buat();
+      await tester.runAsync(() async {
+        await u.SiapkanAktif();
+        await u.repositori.SimpanPengaturan(KunciPengaturan.namaOutlet, 'Kopi Senja Solo Baru');
+        await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
+      });
+      u.server.penangan = (permintaan) async {
+        final jalur = permintaan.url.path;
+        if (jalur.endsWith('/sinkron/kirim')) {
+          final item = (jsonDecode(permintaan.body) as Map<String, Object?>)['Item']! as List<Object?>;
+          return JsonUji({
+            'Hasil': [
+              for (final i in item.cast<Map<String, Object?>>())
+                {'Uuid': i['Uuid'], 'Jenis': i['Jenis'], 'Status': 'Diterima', 'Galat': null},
+            ],
+          });
+        }
+        if (jalur.endsWith('/konfigurasi-aplikasi')) {
+          return JsonUji({
+            'Aplikasi': {
+              'VersiSaatIni': '0.1.0',
+              'VersiTerbaru': '0.2.0',
+              'VersiMinimal': '0.2.0',
+              'TautanUnduh': 'https://unduh.payoung.id/Payoung-Kasir-Pemasang-0.2.0.exe',
+              'Sha256Unduhan': 'a' * 64,
+              'AdaPembaruan': true,
+              'WajibPembaruan': true,
+            },
+            'FlagFitur': {'pos.mode-meja': false},
+            'Pengumuman': <Object?>[],
+          });
+        }
+        throw http.ClientException('offline');
+      };
+      await PasangAplikasi(tester, u, pemasangPembaruan: PemasangTiruan(dipasang));
+      await PilihKasir(tester, 'Rina Wulandari');
+      await tester.pump();
+      await KetikPin(tester, KasusPin(0)['Pin']! as String);
+      await Tunggu(tester, const Duration(milliseconds: 600));
 
-    expect(find.byType(PanelWajibPembaruan), findsOneWidget);
-    expect(find.text('Salin tautan'), findsNothing, reason: 'Windows dengan checksum memasang sendiri.');
-    await tester.tap(find.text('Unduh dan pasang'));
-    await Tunggu(tester);
-    expect(dipasang, [('https://unduh.payoung.id/Payoung-Kasir-Pemasang-0.2.0.exe', 'a' * 64)]);
-    await Lepas(tester, u);
-  });
+      expect(find.byType(PanelWajibPembaruan), findsOneWidget);
+      expect(find.text('Salin tautan'), findsNothing, reason: 'Windows dengan checksum memasang sendiri.');
+      await tester.tap(find.text('Unduh dan pasang'));
+      await Tunggu(tester);
+      expect(dipasang, [('https://unduh.payoung.id/Payoung-Kasir-Pemasang-0.2.0.exe', 'a' * 64)]);
+      await Lepas(tester, u);
+    },
+  );
 }

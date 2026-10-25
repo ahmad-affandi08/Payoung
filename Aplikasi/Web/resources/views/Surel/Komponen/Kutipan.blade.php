@@ -9,6 +9,6 @@
 --}}
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; margin:0 0 20px 0;">
     <tr>
-        <td style="padding:4px 0 4px 16px; border-left:3px solid #e8ece9; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#4f6567;">{!! nl2br(e($Teks)) !!}</td>
+        <td style="padding:4px 0 4px 16px; border-left:3px solid #d2dcd6; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#4f6567;">{!! nl2br(e($Teks)) !!}</td>
     </tr>
 </table>

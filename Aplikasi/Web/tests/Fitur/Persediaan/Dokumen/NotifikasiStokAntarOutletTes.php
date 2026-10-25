@@ -21,6 +21,8 @@ use App\Domain\Persediaan\Data\DataBarisPermintaanStok;
 use App\Domain\Persediaan\Data\DataPermintaanStok;
 use App\Domain\Persediaan\Data\DataTerimaTransfer;
 use App\Domain\Persediaan\Enum\MetodeHpp;
+use App\Domain\Persediaan\Model\PermintaanStok;
+use App\Domain\Persediaan\Model\TransferStok;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -72,7 +74,7 @@ function PenerimaKabarStok(JenisNotifikasiPengguna $jenis): array
     return NotifikasiPengguna::query()->where('Jenis', $jenis->value)->orderBy('Id')->pluck('IdPengguna')->map(fn (mixed $id): int => (int) $id)->all();
 }
 
-function AjukanPermintaanKabar(array $t): App\Domain\Persediaan\Model\PermintaanStok
+function AjukanPermintaanKabar(array $t): PermintaanStok
 {
     return app(AjukanPermintaanStok::class)->Jalankan(new DataPermintaanStok(
         (string) Str::ulid(),
@@ -84,7 +86,7 @@ function AjukanPermintaanKabar(array $t): App\Domain\Persediaan\Model\Permintaan
     ));
 }
 
-function KirimTransferKabar(array $t): App\Domain\Persediaan\Model\TransferStok
+function KirimTransferKabar(array $t): TransferStok
 {
     return app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '30')]), $t['Pemilik']->Id);
 }

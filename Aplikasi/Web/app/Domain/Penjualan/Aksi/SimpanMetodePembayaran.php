@@ -60,7 +60,7 @@ final class SimpanMetodePembayaran
         $path = $data->jenis === JenisMetodePembayaran::QrisStatis && $gambarQris !== null ? $this->penyimpanGambar->Simpan($idTenant, $gambarQris) : null;
 
         try {
-            return DB::transaction(function () use ($idTenant, $isian, $path, $data): MetodePembayaran {
+            return DB::transaction(function () use ($idTenant, $isian, $path, $data, $teksQris): MetodePembayaran {
                 $this->penguncian->Kunci($idTenant);
                 $this->siapkanBawaan->Jalankan($idTenant);
 

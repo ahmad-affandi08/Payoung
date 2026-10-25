@@ -51,6 +51,7 @@ function DaftarRutePanduanAwalUji(): array
         ['POST', '/kelola/panduan-awal/metode-pembayaran'],
         ['POST', "/kelola/panduan-awal/metode-pembayaran/{$uuid}/nonaktifkan"],
         ['POST', "/kelola/panduan-awal/metode-pembayaran/{$uuid}/batas-hari-menunggu"],
+        ['POST', "/kelola/panduan-awal/metode-pembayaran/{$uuid}/teks-qris"],
         ['POST', "/kelola/panduan-awal/metode-pembayaran/{$uuid}/aktifkan"],
         ['GET', "/kelola/panduan-awal/metode-pembayaran/{$uuid}/gambar-qris"],
         ['GET', '/kelola/panduan-awal/perangkat'],

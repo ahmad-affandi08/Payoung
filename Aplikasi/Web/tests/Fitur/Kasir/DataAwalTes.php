@@ -277,9 +277,9 @@ describe('Logo merek outlet untuk bilah atas (D-16)', function (): void {
         ];
         $tenant->save();
 
-        expect($this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal'))
-            ->json('Outlet.AdaLogo')->toBeTrue()
-            ->json('Struk.AdaLogo')->toBeFalse();
+        $dataAwal = $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal');
+        expect($dataAwal->json('Outlet.AdaLogo'))->toBeTrue()
+            ->and($dataAwal->json('Struk.AdaLogo'))->toBeFalse();
         $this->withToken($k['Token'])->get('/api/pos/v1/logo-outlet')->assertOk()->assertHeader('Content-Type', 'image/png');
         $this->withToken($k['Token'])->get('/api/pos/v1/logo-struk')->assertNotFound();
     });

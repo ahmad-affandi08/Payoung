@@ -20,6 +20,8 @@ function KunciPribadiDikecualikan(): array
         'AlamatIp' => 'Alamat jaringan perangkat/pengakses, bukan alamat tempat tinggal.',
         'AlamatApi' => 'URL layanan API, bukan alamat orang.',
         'AlamatSitus' => 'URL situs.',
+        'AlamatOutlet' => 'Alamat usaha (outlet) pada pratinjau struk, bukan alamat pelanggan.',
+        'TeleponOutlet' => 'Telepon usaha (outlet) pada pratinjau struk, bukan nomor pelanggan.',
         'AlamatModelWajah' => 'URL berkas model pengenalan wajah, bukan data orang.',
         'AlamatKode' => 'URL/penampung kode, bukan alamat orang.',
         'NikTersamar' => 'Sudah tersamar dari sumbernya.',

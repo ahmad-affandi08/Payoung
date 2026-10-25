@@ -59,17 +59,17 @@ beforeEach(function (): void {
     app(SiapkanTemplateSektorBawaan::class)->Jalankan();
 });
 
-const KODE_TEMPLATE_AWAL = ['FNB-BAK', 'FNB-CAF', 'FNB-QSR', 'FNB-RST', 'RTL-BLD', 'RTL-ELC', 'RTL-FLR', 'RTL-FRS', 'RTL-FSH', 'RTL-GEN', 'RTL-PET', 'RTL-PHR', 'SVC-CWS', 'SVC-FIT', 'SVC-GEN', 'SVC-LDR', 'SVC-SLN', 'SVC-WRK', 'WHS-DST'];
+const KODE_TEMPLATE_AWAL = ['BIZ-JSA', 'BIZ-KTR', 'BIZ-MFG', 'FNB-BAK', 'FNB-CAF', 'FNB-QSR', 'FNB-RST', 'RTL-BLD', 'RTL-ELC', 'RTL-FLR', 'RTL-FRS', 'RTL-FSH', 'RTL-GEN', 'RTL-PET', 'RTL-PHR', 'SVC-CWS', 'SVC-FIT', 'SVC-GEN', 'SVC-LDR', 'SVC-SLN', 'SVC-WRK', 'WHS-DST'];
 
 describe('Data awal template sektor (P-03)', function (): void {
     // v3.80: 3 template MVP + 9 sektor lain; K25 (keputusan pemilik produk "bangun sekarang"): + Bengkel SVC-WRK
     // dan Apotek RTL-PHR; D-88: + sayur/buah & sembako, gym & kursus, cuci kendaraan, pet shop, florist.
-    it('memuat 19 template sektor sebagai draf versi 1 secara idempoten (termasuk Bengkel, Apotek, dan 5 sektor D-88)', function (): void {
+    it('memuat 22 template sektor sebagai draf versi 1 secara idempoten (termasuk Bengkel, Apotek, 5 sektor D-88, dan 3 sektor Perusahaan D-167)', function (): void {
         app(SiapkanTemplateSektorBawaan::class)->Jalankan();
 
         expect(TemplateSektor::query()->orderBy('Kode')->pluck('Kode')->all())->toBe(KODE_TEMPLATE_AWAL)
-            ->and(TemplateSektorVersi::query()->count())->toBe(19)
-            ->and(TemplateSektorVersi::query()->where('Status', StatusTemplateSektor::Draf->value)->where('Versi', 1)->count())->toBe(19);
+            ->and(TemplateSektorVersi::query()->count())->toBe(22)
+            ->and(TemplateSektorVersi::query()->where('Status', StatusTemplateSektor::Draf->value)->where('Versi', 1)->count())->toBe(22);
     });
 
     it('semua template awal lolos validasi setelah tarif PPN terbit (BR-P03.3)', function (): void {

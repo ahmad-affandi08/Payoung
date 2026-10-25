@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Outlet;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
-use Tests\Pendukung\Pemilik\BantuanAutentikasi;
+use Tests\Pendukung\Tenant\BantuanAutentikasi;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
+use Tests\TestCase;
 
 /*
  * D-183: fitur khusus sektor (peran bawaan, izin, jenis perangkat, jenis notifikasi) hanya ditawarkan ke tenant yang
@@ -21,7 +23,7 @@ beforeEach(function (): void {
     Cache::flush();
 });
 
-/** @return array{0: \Tests\TestCase, 1: object} */
+/** @return array{0: TestCase, 1: object} */
 function TenantBersektor(object $uji, ?string $kodeSektor): array
 {
     ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Usaha '.($kodeSektor ?? 'Tanpa Template'));
@@ -105,7 +107,7 @@ it('pengaturan notifikasi tidak menawarkan "barang mendekati kedaluwarsa" ke usa
 
 it('konfigurasi-aplikasi Owner membawa sinyal usaha tanpa kasir (HanyaPerusahaan)', function (): void {
     $data = BantuanOrganisasi::BuatTenant('Konsultan Digital');
-    $data['Pemilik']->forceFill(['EmailDiverifikasiPada' => now()])->save();
+    $data['Pemilik']->forceFill(['EmailDiverifikasiPada' => now(), 'KataSandi' => Hash::make(BantuanAutentikasi::KATA_SANDI)])->save();
     BantuanOrganisasi::AturKonteks($data['Tenant']->Id);
     Outlet::query()->update(['TemplateSektor' => 'BIZ-JSA']);
     $token = (string) $this->withHeader('X-Versi-Aplikasi', '1.0.0')->postJson('/api/pemilik/v1/masuk', [

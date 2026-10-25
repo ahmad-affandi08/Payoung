@@ -68,6 +68,15 @@ function JalurBolehD25(): array
         // di panel merek gelap; Aksen Apricot di situ penanda merek (lencana, penunjuk slide), bukan penanda status.
         'Komponen/Autentikasi/PanelIklanAuth.tsx',
         'TataLetak/TataLetakAutentikasi.tsx',
+        // D-180/D-198: komponen halaman Absen HP (jam besar, durasi bekerja) pindah dari `Halaman/Publik/Absensi.tsx` ke
+        // `Komponen/Absensi/` supaya dipakai bersama halaman berlogin dan tautan pribadi; ruangnya tetap yang sama.
+        'Komponen/Absensi/',
+        // D-193: bilah status gelap memakai Aksen hanya sebagai warna tautan di atas `brand-gelap` (penanda nada
+        // dipegang token status). D-178: kartu pilih jenis usaha memakai Aksen untuk tanda pilihan dan titik kelompok;
+        // keduanya penanda merek/pilihan, bukan status.
+        'Komponen/Umpan/Pemberitahuan.tsx',
+        'Komponen/PanduanAwal/KartuSektor.tsx',
+        'Pustaka/TampilanSektor.ts',
     ];
 }
 

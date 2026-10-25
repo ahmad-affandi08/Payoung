@@ -20,8 +20,8 @@
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; margin:0 0 20px 0;">
         @foreach ($Baris as $b)
             <tr>
-                <td style="padding:8px 8px 8px 0; border-bottom:1px solid #e8ece9; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:20px; color:#1f3335;">{{ $b['Nama'] }}<br /><span style="color:#4f6567;">{{ $b['Jumlah'] }} &times;</span></td>
-                <td align="right" style="padding:8px 0 8px 8px; border-bottom:1px solid #e8ece9; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:20px; color:#1f3335; white-space:nowrap; vertical-align:top;">{{ $b['Total'] }}</td>
+                <td style="padding:8px 8px 8px 0; border-bottom:1px solid #d2dcd6; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:20px; color:#1f3335;">{{ $b['Nama'] }}<br /><span style="color:#4f6567;">{{ $b['Jumlah'] }} &times;</span></td>
+                <td align="right" style="padding:8px 0 8px 8px; border-bottom:1px solid #d2dcd6; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:20px; color:#1f3335; white-space:nowrap; vertical-align:top;">{{ $b['Total'] }}</td>
             </tr>
         @endforeach
         <tr>

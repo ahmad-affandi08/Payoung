@@ -14,7 +14,7 @@ type PropsPemberitahuan = {
 const titikJenis = {
     info: 'bg-info-lembut',
     sukses: 'bg-sukses-lembut',
-    peringatan: 'bg-aksen',
+    peringatan: 'bg-peringatan-lembut',
     bahaya: 'bg-bahaya-lembut',
 } as const;
 

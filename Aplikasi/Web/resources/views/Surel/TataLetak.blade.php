@@ -42,14 +42,14 @@
         }
     </style>
 </head>
-<body style="margin:0; padding:0; background-color:#f7f9f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<body style="margin:0; padding:0; background-color:#ebf0ec; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
 {{-- Cuplikan kotak masuk. Deretan &#8199; mendorong isi email keluar dari cuplikan supaya tidak ikut terbaca. --}}
-<div style="display:none; font-size:1px; color:#f7f9f6; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+<div style="display:none; font-size:1px; color:#ebf0ec; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
     @yield('Pratinjau')
     &#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;
 </div>
 
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f7f9f6;">
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#ebf0ec;">
     <tr>
         <td align="center" style="padding:32px 12px 48px 12px;">
 
@@ -57,7 +57,7 @@
 
                 {{-- Satu panel putih berbingkai tipis: logo, judul, isi, lalu kaki. Tanpa pita warna dan tanpa garis aksen. --}}
                 <tr>
-                    <td class="Kartu" style="background-color:#ffffff; border:1px solid #e8ece9; border-radius:12px;">
+                    <td class="Kartu" style="background-color:#ffffff; border:1px solid #d2dcd6; border-radius:12px;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                                 <td class="Sisi" style="padding:36px 40px 0 40px;">
@@ -66,7 +66,7 @@
                             </tr>
                             <tr>
                                 <td class="Sisi" style="padding:28px 40px 0 40px;">
-                                    <div style="border-top:1px solid #e8ece9; line-height:1px; font-size:1px;">&nbsp;</div>
+                                    <div style="border-top:1px solid #d2dcd6; line-height:1px; font-size:1px;">&nbsp;</div>
                                 </td>
                             </tr>
                             <tr>
@@ -78,7 +78,7 @@
                             @hasSection('CatatanKaki')
                                 <tr>
                                     <td class="Sisi" style="padding:0 40px 32px 40px;">
-                                        <div style="border-top:1px solid #e8ece9; line-height:1px; font-size:1px;">&nbsp;</div>
+                                        <div style="border-top:1px solid #d2dcd6; line-height:1px; font-size:1px;">&nbsp;</div>
                                         <p style="margin:16px 0 0 0; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#4f6567;">@yield('CatatanKaki')</p>
                                     </td>
                                 </tr>

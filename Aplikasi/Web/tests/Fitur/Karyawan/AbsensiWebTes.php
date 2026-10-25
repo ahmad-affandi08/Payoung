@@ -324,10 +324,12 @@ it('back-office panel wajah: panel tanpa sidik wajah, tinjau lewat HTTP, foto ha
         ->assertJsonPath('Wajah.Status', 'Disetujui')
         ->assertJsonPath('Wajah.JumlahFoto', 3)
         ->assertJsonMissingPath('Wajah.SidikWajah')
-        // D-180: tidak ada lagi tautan absen pribadi.
-        ->assertJsonMissingPath('Tautan');
+        // D-198: tautan absen pribadi ada lagi, tetapi belum dibuat sampai pengelola membuatnya.
+        ->assertJsonPath('Tautan', null);
     $this->get("{$panel}/wajah/foto/0")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
-    $this->post("{$panel}/tautan-absen")->assertNotFound();
+    $this->post("{$panel}/tautan-absen")->assertRedirect();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($this->getJson("{$panel}/absen-hp")->json('Tautan'))->toStartWith('http');
 
     $this->post("{$panel}/wajah/tinjau", ['Setujui' => false, 'Alasan' => ''])->assertSessionHasErrors('Alasan');
     // D-45: wajah yang sudah aktif tidak perlu disetujui lagi, tetapi pengelola masih boleh menolak fotonya.
@@ -707,12 +709,12 @@ it('D-198 staf tanpa akun absen lewat tautan: halaman, daftar wajah, masuk, lalu
     $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji()])->assertOk()->assertJsonPath('Cocok', true);
     $this->postJson("{$alamat}/cek-wajah", ['SidikWajah' => SidikWajahUji(5)])->assertOk()->assertJsonPath('Cocok', false);
 
-    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk()->assertJsonPath('PerluDicek', false);
+    $masuk = $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk()->assertJsonPath('PerluDicek', false)->json();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(Absensi::query()->where('IdKaryawan', $karyawan->Id)->whereNull('KeluarPada')->count())->toBe(1);
 
     $this->travel(8)->hours();
-    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji())->assertOk();
+    $this->postJson("{$alamat}/keluar", KirimanAbsenWebUji(['Uuid' => $masuk['Uuid']]))->assertOk();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(Absensi::query()->where('IdKaryawan', $karyawan->Id)->whereNotNull('KeluarPada')->count())->toBe(1);
 });
@@ -739,12 +741,15 @@ it('D-198 tautan salah, dicabut, dibuat ulang, karyawan nonaktif, tidak ikut abs
     $this->postJson("/{$slug}/absen/".str_repeat('a', 40).'/masuk', KirimanAbsenWebUji())->assertNotFound();
     $this->get($alamat)->assertOk();
 
+    // Tiap permintaan publik mengosongkan konteks tenant, jadi ditetapkan lagi sebelum menyentuh data.
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $karyawan->forceFill(['IkutAbsensi' => false])->save();
     $this->get($alamat)->assertNotFound();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $karyawan->forceFill(['IkutAbsensi' => true])->save();
     $this->get($alamat)->assertOk();
 
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     app(UbahStatusKaryawan::class)->Jalankan($karyawan, StatusKaryawan::Nonaktif, $k['Pemilik']->Id);
     $this->get($alamat)->assertNotFound();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

@@ -50,7 +50,7 @@ arch('PenentuHarga murni: tanpa facade, database, atau model')
 it('nilai enum kanal, sumber harga, sumber perubahan, dan kategori pajak sesuai kontrak', function (): void {
     expect(array_column(KanalPenjualan::cases(), 'value'))->toBe(['MakanDiTempat', 'BawaPulang', 'Antar', 'Online', 'PesanSendiri', 'Marketplace', 'GoFood', 'GrabFood', 'ShopeeFood'])
         ->and(array_column(SumberHarga::cases(), 'value'))->toBe(['DaftarHarga', 'Bertingkat', 'Dasar'])
-        ->and(array_column(SumberPerubahanHarga::cases(), 'value'))->toBe(['Manual', 'Impor', 'PanduanAwal', 'Varian', 'Sistem'])
+        ->and(array_column(SumberPerubahanHarga::cases(), 'value'))->toBe(['Manual', 'Impor', 'PanduanAwal', 'Varian', 'Sistem', 'AplikasiOwner'])
         ->and(array_column(KategoriPajakProduk::cases(), 'value'))->toBe(['KenaPpn', 'BebasPpn', 'KenaPbjt', 'NonPajak', 'Lainnya'])
         ->and(KanalPenjualan::MakanDiTempat->AmbilLabel())->toBe('Makan di tempat')
         ->and(KategoriPajakProduk::NonPajak->CekTanpaPajak())->toBeTrue()

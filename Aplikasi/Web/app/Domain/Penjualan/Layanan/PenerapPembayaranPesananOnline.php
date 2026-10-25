@@ -121,6 +121,7 @@ final class PenerapPembayaranPesananOnline
             'UuidPelanggan' => $this->identitasPelanggan->AmbilUuid($pesanan->IdPelanggan),
             'Tanggal' => $tanggal->toDateString(),
             'Jumlah' => $diterima->KeString(),
+            'PotonganPph' => '0.00',
             'Metode' => $metode->Nama,
             'Giro' => false,
             'Alokasi' => [],

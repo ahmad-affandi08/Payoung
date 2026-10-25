@@ -2099,6 +2099,10 @@
             "type": "string",
             "description": "String desimal Rupiah"
           },
+          "PotonganPph": {
+            "type": "string",
+            "description": "String desimal Rupiah: PPh yang dipotong pelanggan saat melunasi (bukti potong); 0.00 bila tidak ada atau untuk pesanan online"
+          },
           "Metode": {
             "type": [
               "string",
@@ -2140,6 +2144,7 @@
           "UuidPelanggan",
           "Tanggal",
           "Jumlah",
+          "PotonganPph",
           "Metode",
           "Giro",
           "Alokasi"

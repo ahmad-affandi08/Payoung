@@ -108,7 +108,7 @@ describe('uji coba sandbox template sektor', function (): void {
         expect($periksa['ProdukContoh']['Lolos'])->toBeFalse()->and($periksa['ProdukContoh']['Keterangan'])->toContain('1 dari');
     });
 
-    it('semua 19 template bawaan lolos uji coba', function (): void {
+    it('semua 22 template bawaan lolos uji coba', function (): void {
         MasukUjiCoba();
         $jumlah = 0;
 
@@ -121,7 +121,7 @@ describe('uji coba sandbox template sektor', function (): void {
             $jumlah++;
         }
 
-        expect($jumlah)->toBe(19);
+        expect($jumlah)->toBe(22);
     });
 
     it('izin: Konten & Legal dan Teknis boleh; Analis dan Dukungan ditolak; tamu dialihkan', function (): void {

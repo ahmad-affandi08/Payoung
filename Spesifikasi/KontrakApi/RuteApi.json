@@ -59,6 +59,11 @@
         "Jalur": "api/pos/v1/laundry",
         "Nama": "pos.laundry"
     },
+    "GET api/pos/v1/logo-outlet": {
+        "Metode": "GET",
+        "Jalur": "api/pos/v1/logo-outlet",
+        "Nama": "pos.logo-outlet"
+    },
     "GET api/pos/v1/logo-struk": {
         "Metode": "GET",
         "Jalur": "api/pos/v1/logo-struk",

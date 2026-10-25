@@ -98,8 +98,9 @@ it('Beranda usaha Perusahaan tanpa omzet kasir: Dasbor kosong; Penagihan null se
 it('panduan awal usaha Perusahaan tidak memuat langkah Metode pembayaran dan Perangkat kasir; tenant biasa tetap memuatnya', function (): void {
     BantuanPanduanAwal::TerbitkanTemplate('BIZ-JSA');
     BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
-    ['Outlet' => $outlet, 'Tenant' => $tenant] = BantuanPanduanAwal::BuatTenant('Konsultan Langkah Panduan', panduanWajib: true);
+    ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Konsultan Langkah Panduan', panduanWajib: true);
     BantuanOrganisasi::AturKonteks($tenant->Id);
+    $outlet = Outlet::query()->orderBy('Id')->firstOrFail();
 
     $kunci = fn (): array => array_column(app(ProgresPanduan::class)->Ambil()['Langkah'], 'Kunci');
     expect($kunci())->toContain('MetodePembayaran', 'Perangkat');

@@ -7,9 +7,9 @@ namespace App\Domain\Integrasi\Kueri;
 use App\Domain\Integrasi\Enum\LingkunganGerbang;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
+use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
-use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 
 /**
  * Data halaman gerbang pembayaran tenant (v2.06): penyedia yang diizinkan platform beserta bidangnya, dan gerbang
