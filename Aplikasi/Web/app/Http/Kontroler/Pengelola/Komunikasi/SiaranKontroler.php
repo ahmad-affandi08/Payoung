@@ -96,7 +96,8 @@ final class SiaranKontroler extends Kontroler
             'Kanal.*' => 'Pilih kanal pengiriman.',
         ]);
 
-        $jadwal = isset($valid['JadwalKirimPada']) && $valid['JadwalKirimPada'] !== null ? Carbon::parse((string) $valid['JadwalKirimPada']) : null;
+        $jadwalMentah = $valid['JadwalKirimPada'] ?? null;
+        $jadwal = is_string($jadwalMentah) && $jadwalMentah !== '' ? Carbon::parse($jadwalMentah) : null;
         $siaran = $buat->Jalankan($this->AmbilPelaku(), (string) $valid['Judul'], (string) $valid['Isi'], KanalSiaran::from((string) $valid['Kanal']), (array) ($valid['Segmen'] ?? []), $jadwal);
 
         return redirect()->route('pengelola.komunikasi.tampil', $siaran->Uuid)->with('Kilat', 'Siaran dijadwalkan. Pengiriman berjalan bertahap tiap lima menit.');
