@@ -35,6 +35,7 @@ use App\Domain\Pengelola\Dukungan\Penangan\BeritahuPenanggungJawabBalasanPelapor
 use App\Domain\Pengelola\Dukungan\Penangan\BeritahuTimTiketDukunganBaru;
 use App\Domain\Pengelola\Integrasi\Layanan\PenerapKonfigurasiIntegrasi;
 use App\Domain\Pengelola\Integrasi\Layanan\PengaturIntegrasiServerLisensi;
+use App\Domain\Pengelola\Operasional\Layanan\PencatatRiwayatJadwal;
 use App\Domain\Pengelola\Operasional\Penangan\PeriksaOperasionalSaatCekSehat;
 use App\Domain\Pengelola\Tagihan\Penangan\KirimSurelPelunasanGerbang;
 use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
@@ -48,6 +49,10 @@ use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
 use App\Http\Rute\ValidatorHalamanSitus;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\ScheduledBackgroundTaskFinished;
+use Illuminate\Console\Events\ScheduledTaskFailed;
+use Illuminate\Console\Events\ScheduledTaskFinished;
+use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -295,6 +300,11 @@ final class PenyediaAplikasi extends ServiceProvider
         }
 
         Event::listen(PeristiwaIntegrasi::class, AntrekanWebhookIntegrasi::class);
+
+        // D-209: riwayat jalannya perintah terjadwal untuk halaman Jadwal di Operasional.
+        Event::listen(ScheduledTaskStarting::class, [PencatatRiwayatJadwal::class, 'SaatMulai']);
+        Event::listen([ScheduledTaskFinished::class, ScheduledBackgroundTaskFinished::class], [PencatatRiwayatJadwal::class, 'SaatSelesai']);
+        Event::listen(ScheduledTaskFailed::class, [PencatatRiwayatJadwal::class, 'SaatGagal']);
 
         // P-11 BR-P11.1: /sehat (uptime monitor eksternal) ikut memeriksa alert, agar scheduler mati tetap terdeteksi.
         Event::listen(DiagnosingHealth::class, PeriksaOperasionalSaatCekSehat::class);

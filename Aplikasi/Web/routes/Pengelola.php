@@ -26,6 +26,7 @@ use App\Http\Kontroler\Pengelola\Konten\TemplateKomunikasiKontroler;
 use App\Http\Kontroler\Pengelola\LogAuditKontroler;
 use App\Http\Kontroler\Pengelola\Mitra\MitraKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\InsidenKontroler;
+use App\Http\Kontroler\Pengelola\Operasional\JadwalOtomatisKontroler;
 use App\Http\Kontroler\Pengelola\Operasional\OperasionalKontroler;
 use App\Http\Kontroler\Pengelola\Referensi\HariLiburKontroler;
 use App\Http\Kontroler\Pengelola\Referensi\ReferensiBankKontroler;
@@ -330,7 +331,10 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 ->name('pengelola.operasional.tugas-gagal.tampil');
             // PGL-21: manajemen insiden & halaman status publik.
             Route::get('/operasional/insiden', [InsidenKontroler::class, 'Daftar'])->name('pengelola.operasional.insiden.daftar');
+            // D-209: riwayat jadwal otomatis & penyimpanan per tenant.
+            Route::get('/operasional/jadwal', [JadwalOtomatisKontroler::class, 'Daftar'])->name('pengelola.operasional.jadwal.daftar');
             Route::middleware($izin(IzinPengelola::OperasionalKelola))->group(function (): void {
+                Route::post('/operasional/jadwal/jalankan', [JadwalOtomatisKontroler::class, 'Jalankan'])->name('pengelola.operasional.jadwal.jalankan');
                 Route::post('/operasional/tugas-gagal/{idTugas}/coba-ulang', [OperasionalKontroler::class, 'CobaUlangTugasGagal'])
                     ->name('pengelola.operasional.tugas-gagal.coba-ulang');
                 Route::delete('/operasional/tugas-gagal/{idTugas}', [OperasionalKontroler::class, 'BuangTugasGagal'])

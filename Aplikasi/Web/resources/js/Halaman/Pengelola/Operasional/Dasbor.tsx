@@ -416,9 +416,14 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
                     Kondisi scheduler, antrean, backup, dan alert. Gangguan layanan yang perlu diumumkan ke pengguna
                     dicatat sebagai insiden.
                 </p>
-                <Button asChild variant="outline">
-                    <Link href="/operasional/insiden">Insiden & halaman status</Link>
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="outline">
+                        <Link href="/operasional/jadwal">Jadwal & penyimpanan</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/operasional/insiden">Insiden & halaman status</Link>
+                    </Button>
+                </div>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <Ringkasan

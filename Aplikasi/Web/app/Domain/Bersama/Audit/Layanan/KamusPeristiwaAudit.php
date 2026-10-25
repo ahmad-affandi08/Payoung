@@ -302,6 +302,7 @@ final class KamusPeristiwaAudit
 
         'operasional.alert.nomor-wa.atur' => 'Nomor WhatsApp alert operasional diatur',
         'operasional.backup.catat' => 'Pencadangan basis data dicatat',
+        'operasional.jadwal.jalankan' => 'Jadwal otomatis dijalankan manual',
         'operasional.job-gagal.buang' => 'Tugas gagal dibuang',
         'operasional.job-gagal.coba-ulang' => 'Tugas gagal dicoba ulang',
         'operasional.runbook.atur' => 'Tautan panduan penanganan alert diatur',
