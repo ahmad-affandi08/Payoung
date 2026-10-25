@@ -67,3 +67,31 @@ it('butir perhatian muncul dari data nyata dan menautkan ke halaman yang tepat',
     expect($perhatian[0]['Judul'])->toBe('Kondisi sistem bermasalah')->and($perhatian[0]['Tautan'])->toBe('/operasional')->and($perhatian[0]['Tingkat'])->toBe('bahaya');
     expect($tenant->Id)->toBeInt();
 });
+
+it('D-207 pusat komando: Bisnis memuat MRR, tren 12 bulan, sebaran sektor, konversi, dan aktivitas tenant baru', function (): void {
+    BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
+    BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
+
+    $this->get(BantuanPengelola::Url('/'))->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Bisnis.Bisnis.Mrr', '0.00')
+        ->has('Bisnis.Bisnis.Tren', 12)
+        ->where('Bisnis.Bisnis.Tren.11.Bulan', '2026-10')
+        ->has('Bisnis.Bisnis.Churn.PersenChurn')
+        ->has('Bisnis.Bisnis.LewatTempo.Jumlah')
+        ->has('Bisnis.TenantPerSektor')
+        ->where('Bisnis.TenantRisiko', [])
+        ->where('Bisnis.Konversi.Kohort', 0)
+        ->where('Bisnis.Aktivitas.0.Teks', 'Tenant baru: Kopi Nusantara'));
+});
+
+it('D-207 Bisnis mengikuti izin: konten legal tidak menerima data bisnis, tenant tanpa izin tagihan tidak menerima MRR', function (): void {
+    BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
+    BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::KontenLegal);
+
+    $this->get(BantuanPengelola::Url('/'))->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Bisnis.Bisnis', null)
+        ->where('Bisnis.TenantPerSektor', null)
+        ->where('Bisnis.TenantRisiko', null)
+        ->where('Bisnis.Konversi', null)
+        ->where('Bisnis.Aktivitas', null));
+});

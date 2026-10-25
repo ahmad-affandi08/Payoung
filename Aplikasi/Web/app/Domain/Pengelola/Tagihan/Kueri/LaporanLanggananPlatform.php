@@ -53,13 +53,7 @@ final class LaporanLanggananPlatform
         $tenant = Tenant::query()->whereNull('Penanda')->get(['Id', 'Pengaturan'])->keyBy('Id');
         $idTenant = array_values(array_map('intval', $tenant->keys()->all()));
         $paket = Paket::query()->get(['Id', 'Kode', 'Nama'])->keyBy('Id');
-        $lunas = array_values(DaftarTagihanPlatform::KueriTagihan()
-            ->whereIn('IdTenant', $idTenant)
-            ->where('Status', StatusTagihanLangganan::Lunas->value)
-            ->whereNotNull('PeriodeMulai')
-            ->whereNotNull('PeriodeSelesai')
-            ->get(['Id', 'IdTenant', 'IdPaket', 'Jenis', 'JumlahBulan', 'Subtotal', 'Diskon', 'PeriodeMulai', 'PeriodeSelesai', 'DibayarPada'])
-            ->all());
+        $lunas = $this->MuatTagihanLunas($idTenant);
 
         // D-49/D-98: MRR/ARR/churn dihitung dari tagihan paket (aktivasi, perpanjangan); tagihan add-on hanya masuk ke
         // pendapatan (grup "Add-on"), tagihan naik paket (selisih prorata) masuk pendapatan paket barunya. MRR paket baru
@@ -82,6 +76,47 @@ final class LaporanLanggananPlatform
             }),
             'Piutang' => $this->SusunPiutang($idTenant, $sekarang),
         ];
+    }
+
+    /**
+     * Tren MRR akhir bulan untuk `$bulan` bulan terakhir (bulan berjalan dihitung sampai saat ini), tanpa PPN dan tanpa
+     * tenant berpenanda Uji/Demo/Internal. Satu kali muat tagihan untuk seluruh titik (D-207).
+     *
+     * @return list<array{Bulan: string, Mrr: string, Pelanggan: int}>
+     */
+    public function TrenMrr(int $bulan = 12): array
+    {
+        $sekarang = CarbonImmutable::now();
+        $idTenant = array_values(array_map('intval', Tenant::query()->whereNull('Penanda')->pluck('Id')->all()));
+        $lunasPaket = array_values(array_filter(
+            $this->MuatTagihanLunas($idTenant),
+            fn (TagihanLangganan $t): bool => ! $t->Jenis->CekTengahPeriode(),
+        ));
+        $hasil = [];
+
+        for ($mundur = $bulan - 1; $mundur >= 0; $mundur--) {
+            $awalBulan = $sekarang->startOfMonth()->subMonthsNoOverflow($mundur);
+            $pada = $awalBulan->endOfMonth()->greaterThan($sekarang) ? $sekarang : $awalBulan->endOfMonth();
+            $mrr = $this->HitungMrrPerTenant($lunasPaket, $pada);
+            $hasil[] = ['Bulan' => $awalBulan->format('Y-m'), 'Mrr' => self::Jumlahkan($mrr)->KeString(), 'Pelanggan' => count($mrr)];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * @param  list<int>  $idTenant
+     * @return list<TagihanLangganan>
+     */
+    private function MuatTagihanLunas(array $idTenant): array
+    {
+        return array_values(DaftarTagihanPlatform::KueriTagihan()
+            ->whereIn('IdTenant', $idTenant)
+            ->where('Status', StatusTagihanLangganan::Lunas->value)
+            ->whereNotNull('PeriodeMulai')
+            ->whereNotNull('PeriodeSelesai')
+            ->get(['Id', 'IdTenant', 'IdPaket', 'Jenis', 'JumlahBulan', 'Subtotal', 'Diskon', 'PeriodeMulai', 'PeriodeSelesai', 'DibayarPada'])
+            ->all());
     }
 
     /**

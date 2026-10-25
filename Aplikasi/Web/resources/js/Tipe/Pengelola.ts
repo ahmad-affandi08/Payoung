@@ -229,7 +229,37 @@ export type PropsFlagFitur = {
 };
 
 /** Ringkasan Beranda konsol; bagian `null` = pelaku tidak berizin melihatnya. */
+/** D-207: bahan bisnis pusat komando Beranda konsol; tiap bagian null bila pelaku tidak berizin melihat sumbernya. */
+export type TitikTrenMrr = { Bulan: string; Mrr: string; Pelanggan: number };
+
+export type BisnisBeranda = {
+    Mrr: string;
+    Arr: string;
+    PelangganBerbayar: number;
+    PerubahanMrrPersen: string | null;
+    Churn: {
+        PersenChurn: string;
+        PelangganBerhenti: number;
+        PelangganBaru: number;
+        MrrBaru: string;
+        MrrBerhenti: string;
+    };
+    MrrPerPaket: { Kunci: string; Nama: string; Pelanggan: number; Mrr: string }[];
+    Tren: TitikTrenMrr[];
+    LewatTempo: { Jumlah: number; Total: string };
+};
+
+export type DasborBisnisPengelola = {
+    Bisnis: BisnisBeranda | null;
+    TenantPerSektor: { Nama: string; Jumlah: number }[] | null;
+    TenantRisiko:
+        { Uuid: string; Nama: string; Paket: string | null; StatusLangganan: string | null; Skor: number }[] | null;
+    Konversi: { Kohort: number; Berbayar: number; Persen: string; UjiCobaBerjalan: number } | null;
+    Aktivitas: { Waktu: string; Teks: string; Tautan: string | null }[] | null;
+};
+
 export type PropsBerandaPengelola = {
+    Bisnis?: DasborBisnisPengelola;
     Ringkasan: {
         Tenant: {
             Total: number;

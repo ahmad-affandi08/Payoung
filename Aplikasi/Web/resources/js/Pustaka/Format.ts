@@ -36,3 +36,33 @@ export function FormatRupiah(nilai: string): string {
 
     return `${negatif ? '−' : ''}Rp ${denganTitik}${bagianSen}`;
 }
+
+/**
+ * Rupiah ringkas untuk angka besar di kartu: "Rp 249.000", "Rp 48,2 jt", "Rp 1,3 M". Hanya bilangan bulat
+ * (BigInt, tanpa pecahan biner); satu desimal dibulatkan ke terdekat. Nilai di bawah satu juta ditulis utuh.
+ */
+export function FormatRupiahRingkas(nilai: string): string {
+    const cocok = /^(-?)(\d+)(?:\.\d{1,2})?$/.exec(nilai.trim());
+
+    if (!cocok) {
+        throw new Error(`Nilai uang tidak valid: "${nilai}"`);
+    }
+
+    const negatif = cocok[1] === '-';
+    const bulat = BigInt(cocok[2] ?? '0');
+    const Ringkas = (pembagi: bigint, satuan: string): string => {
+        const persepuluh = (bulat * 10n + pembagi / 2n) / pembagi;
+        const utuh = persepuluh / 10n;
+        const desimal = persepuluh % 10n;
+
+        return `Rp ${utuh.toString()}${desimal === 0n ? '' : `,${desimal.toString()}`} ${satuan}`;
+    };
+    const hasil =
+        bulat >= 1_000_000_000n
+            ? Ringkas(1_000_000_000n, 'M')
+            : bulat >= 1_000_000n
+              ? Ringkas(1_000_000n, 'jt')
+              : FormatRupiah(bulat.toString());
+
+    return negatif && bulat !== 0n ? `−${hasil}` : hasil;
+}

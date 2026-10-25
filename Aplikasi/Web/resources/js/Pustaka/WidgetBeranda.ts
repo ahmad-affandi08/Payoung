@@ -1,4 +1,8 @@
 import { AmbilTandaDesimal } from '@/Pustaka/HitungDesimal';
+import {
+    BacaWidgetTersembunyi as BacaTersembunyi,
+    SimpanWidgetTersembunyi as SimpanTersembunyi,
+} from '@/Pustaka/PreferensiWidget';
 import type { RingkasanAntiFraud } from '@/Tipe/Laporan';
 
 /** Kode widget Ringkasan cepat di Beranda (D-203), urut tampil. */
@@ -17,27 +21,15 @@ export const DAFTAR_WIDGET: readonly { Kode: KodeWidget; Judul: string }[] = [
 
 const KUNCI_PENYIMPANAN = 'payoung.beranda.widget-tersembunyi';
 
-/**
- * Widget yang disembunyikan pengguna di peramban ini. Hanya kemudahan per perangkat: bila penyimpanan tidak bisa
- * dibaca (jendela pribadi, data situs diblokir) semua widget tampil.
- */
-export function BacaWidgetTersembunyi(): KodeWidget[] {
-    try {
-        const mentah = window.localStorage.getItem(KUNCI_PENYIMPANAN);
-        const nilai: unknown = mentah === null ? [] : JSON.parse(mentah);
+const SEMUA_KODE = DAFTAR_WIDGET.map((w) => w.Kode);
 
-        return Array.isArray(nilai) ? DAFTAR_WIDGET.map((w) => w.Kode).filter((kode) => nilai.includes(kode)) : [];
-    } catch {
-        return [];
-    }
+/** Widget yang disembunyikan pengguna di peramban ini (lihat `PreferensiWidget`). */
+export function BacaWidgetTersembunyi(): KodeWidget[] {
+    return BacaTersembunyi(KUNCI_PENYIMPANAN, SEMUA_KODE);
 }
 
 export function SimpanWidgetTersembunyi(tersembunyi: readonly KodeWidget[]): void {
-    try {
-        window.localStorage.setItem(KUNCI_PENYIMPANAN, JSON.stringify(tersembunyi));
-    } catch {
-        // Penyimpanan tak tersedia: pilihan hanya berlaku selama halaman terbuka.
-    }
+    SimpanTersembunyi(KUNCI_PENYIMPANAN, tersembunyi);
 }
 
 /** String desimal server ("1234.50", "-3.0000") ke bilangan bulat berskala 4 (BigInt; tanpa float). Tak sah = 0. */
