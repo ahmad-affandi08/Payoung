@@ -105,7 +105,9 @@ void main() {
     }
   });
 
-  testWidgets('BarisKeranjang: rincian, jumlah, total; tombol tambah/kurang 48dp', (tester) async {
+  testWidgets('BarisKeranjang: rincian, jumlah, total; tombol tambah/kurang: kotak 36dp, area ketuk ≥ 44dp', (
+    tester,
+  ) async {
     var tambah = 0;
     var kurang = 0;
     var ubah = 0;
@@ -131,7 +133,12 @@ void main() {
     expect(find.text('12'), findsOneWidget);
     expect(find.text('Cangkir | Kurang manis | Extra shot | Catatan: tanpa es'), findsOneWidget);
     final tombolTambah = find.byTooltip('Tambah Es Kopi Susu Aren Gula Semut Ukuran Besar Sekali');
-    expect(tester.getSize(tombolTambah).height, greaterThanOrEqualTo(TokenJarak.targetSentuh));
+    expect(tester.getSize(tombolTambah).height, greaterThanOrEqualTo(BarisKeranjang.tinggiTekan));
+    expect(
+      tester.getSize(find.descendant(of: tombolTambah, matching: find.byType(Container))).height,
+      BarisKeranjang.ukuranTombol,
+      reason: 'Kotak yang terlihat lebih kecil dari area ketuk.',
+    );
 
     await tester.tap(tombolTambah);
     await tester.tap(find.byTooltip('Kurangi Es Kopi Susu Aren Gula Semut Ukuran Besar Sekali'));

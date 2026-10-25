@@ -7,7 +7,7 @@ import 'LencanaTeks.dart';
 import 'TeksUang.dart';
 
 /// Satu baris keranjang (PRD §17.2.7): nama & total di baris atas, rincian (satuan, pilihan, catatan, diskon) dan
-/// tombol kurang/tambah di baris bawah. Target sentuh 48dp. Ketuk area nama untuk mengubah item.
+/// tombol kurang/tambah di baris bawah (kotak 36dp, area ketuk 44dp). Ketuk area nama untuk mengubah item.
 class BarisKeranjang extends StatelessWidget {
   const BarisKeranjang({
     super.key,
@@ -22,6 +22,10 @@ class BarisKeranjang extends StatelessWidget {
     this.lencana,
     this.catatan,
   });
+
+  /// Ukuran kotak tombol kurang/tambah yang terlihat, dan tinggi/lebar area ketuknya (dp).
+  static const double ukuranTombol = 36;
+  static const double tinggiTekan = 44;
 
   /// Lama transisi sorot (§17.2.7 prinsip 4: sorot baris keranjang 150 ms).
   static const Duration durasiSorot = Duration(milliseconds: 150);
@@ -52,6 +56,7 @@ class BarisKeranjang extends StatelessWidget {
     final teks = Theme.of(context).textTheme;
     final adaCatatan = catatan != null && catatan!.trim().isNotEmpty;
 
+    // Kotak yang terlihat 36dp (tidak "gede"), tetapi area ketuknya 44dp agar tetap nyaman dipakai kasir.
     Widget TombolJumlah({
       required IconData ikon,
       required String tooltip,
@@ -60,15 +65,18 @@ class BarisKeranjang extends StatelessWidget {
     }) => IconButton(
       tooltip: tooltip,
       onPressed: aksi,
-      icon: Icon(ikon, size: TokenJarak.ikonSedang),
-      style: IconButton.styleFrom(
-        backgroundColor: utama ? warna.brand : warna.permukaan,
-        foregroundColor: utama ? warna.permukaan : warna.brand,
-        side: BorderSide(color: utama ? warna.brand : warna.garis),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol)),
-        padding: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: tinggiTekan, height: tinggiTekan),
+      icon: Container(
+        width: ukuranTombol,
+        height: ukuranTombol,
+        decoration: BoxDecoration(
+          color: utama ? warna.brand : warna.permukaan,
+          border: Border.all(color: utama ? warna.brand : warna.garis),
+          borderRadius: BorderRadius.circular(TokenJarak.radiusKontrol),
+        ),
+        child: Icon(ikon, size: TokenJarak.ikonSedang, color: utama ? warna.permukaan : warna.brand),
       ),
-      constraints: const BoxConstraints.tightFor(width: TokenJarak.targetSentuh, height: TokenJarak.targetSentuh),
     );
 
     return AnimatedContainer(
@@ -158,7 +166,7 @@ class BarisKeranjang extends StatelessWidget {
                     ),
                     TombolJumlah(ikon: Icons.remove, tooltip: 'Kurangi $nama', aksi: saatKurang),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 32),
+                      constraints: const BoxConstraints(minWidth: 28),
                       child: Text(
                         jumlah,
                         textAlign: TextAlign.center,
