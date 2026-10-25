@@ -40,8 +40,10 @@ melos:
         dirExists: test
         flutter: false
     tes:flutter:
-      description: Test paket & aplikasi Flutter.
+      description: Test paket & aplikasi Flutter. Zona waktu dikunci WIB karena golden dan teks jam di layar memakai waktu lokal.
       exec: flutter test
+      env:
+        TZ: Asia/Jakarta
       packageFilters:
         dirExists: test
         flutter: true

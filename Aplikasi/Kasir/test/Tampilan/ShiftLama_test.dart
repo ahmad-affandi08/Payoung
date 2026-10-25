@@ -97,7 +97,7 @@ void main() {
         await Tunggu(tester);
         expect(find.byType(RuangKerja), findsOneWidget);
 
-        await tester.tap(find.text('Printer belum diatur'));
+        await tester.tap(find.text('Sinkron'));
         await Tunggu(tester);
         expect(find.text('Status sinkron'), findsOneWidget);
         serverSinkronSiap = true;

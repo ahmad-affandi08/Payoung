@@ -61,8 +61,8 @@ void main() {
         await Tunggu(tester);
         expect(find.byType(RuangKerja), findsOneWidget);
 
-        // Ketuk bilah status → Status sinkron.
-        await tester.tap(find.text('Printer belum diatur'));
+        // Menu Sinkron → Status sinkron (bilah status ringkas tidak lagi bisa diketuk, D-66).
+        await tester.tap(find.text('Sinkron'));
         await Tunggu(tester);
         expect(find.text('Status sinkron'), findsOneWidget);
         expect(tester.widget<Text>(find.byKey(const ValueKey('SinkronTerakhir'))).data, 'Belum pernah');
@@ -117,7 +117,7 @@ void main() {
       await KetikPin(tester, KasusPin(0)['Pin']! as String);
       await Tunggu(tester);
 
-      await tester.tap(find.text('Printer belum diatur'));
+      await tester.tap(find.text('Sinkron'));
       await Tunggu(tester);
       expect(find.text('Status sinkron'), findsOneWidget);
       expect(find.textContaining('terakhir diperbarui'), findsOneWidget);
