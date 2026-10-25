@@ -29,6 +29,7 @@ import {
     PemberitahuanMelayang,
     type ButirJejak,
 } from './BagianTataLetak';
+import gambarIkon from '@/Aset/Merek/IkonMerek.webp';
 import KepalaSidebarMerek from './KepalaSidebarMerek';
 import PencarianCepat, { type HalamanPencarian, type SumberPencarian } from './PencarianCepat';
 
@@ -208,7 +209,7 @@ export function CekMenuPengelolaAktif(href: string, url: string, alamatLain: str
 }
 
 /**
- * Tata letak Platform Pengelola (PRD §13.8): kepala gelap yang berbeda dari back-office tenant, penanda lingkungan
+ * Tata letak Platform Pengelola (PRD §13.8): kepala sama dengan back-office tenant (D-205), penanda lingkungan
  * selalu terlihat, menu samping shadcn/ui sesuai izin.
  */
 export default function TataLetakPengelola({ judul, jejak = [], aksi, children }: PropsTataLetak) {
@@ -273,9 +274,17 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
             <div data-slot="sidebar-inset" className="relative flex w-full min-w-0 flex-1 flex-col bg-latar">
                 <div className="sticky top-0 z-20">
                     <PenandaLingkungan lingkungan={props.Lingkungan} />
-                    <KepalaTataLetak induk={namaPlatform} judul={judul} gelap lengket={false}>
+                    {/* Kepala sama dengan dashboard tenant: terang, identitas di kiri, jejak di atas judul (bukan di kepala). */}
+                    <KepalaTataLetak
+                        induk={namaPlatform}
+                        judul={judul}
+                        remah={false}
+                        lengket={false}
+                        tautanBeranda="/"
+                        identitasUsaha={{ nama: namaPlatform, tautanLogo: gambarIkon }}
+                    >
                         <PencarianCepat halaman={halamanPencarian} sumber={sumberTerlihat} />
-                        <MenuAkun nama={pengguna?.Nama} email={pengguna?.Email} gelap tautanKeamanan="/keamanan" />
+                        <MenuAkun nama={pengguna?.Nama} email={pengguna?.Email} tautanKeamanan="/keamanan" />
                     </KepalaTataLetak>
                 </div>
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">

@@ -100,6 +100,8 @@ type PropsKepala = {
     gelap?: boolean;
     /** false bila pembungkusnya sudah sticky (misal bersama penanda lingkungan Pengelola). */
     lengket?: boolean;
+    /** Tujuan tautan identitas di bilah atas: beranda back-office tenant (bawaan) atau beranda konsol Pengelola. */
+    tautanBeranda?: string;
     /** Identitas usaha: logo dan nama usaha di bilah atas (di HP hanya logo). */
     identitasUsaha?: {
         nama: string;
@@ -115,6 +117,7 @@ export function KepalaTataLetak({
     gelap = false,
     lengket = true,
     remah = true,
+    tautanBeranda = '/kelola',
     identitasUsaha,
     children,
 }: PropsKepala) {
@@ -142,7 +145,7 @@ export function KepalaTataLetak({
 
             {identitasUsaha ? (
                 <Link
-                    href="/kelola"
+                    href={tautanBeranda}
                     className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-lg transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand max-w-[45%] sm:max-w-xs"
                     title={identitasUsaha.nama}
                 >
