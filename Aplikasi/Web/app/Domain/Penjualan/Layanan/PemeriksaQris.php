@@ -93,12 +93,13 @@ final class PemeriksaQris
         $nilai = [];
 
         foreach ($bagian as [$tag, $isiTag]) {
-            $nilai[$tag] ??= $isiTag;
+            // Kunci diawali 'T': PHP mengubah kunci string numerik ("53") menjadi int, sehingga analisis statis salah paham.
+            $nilai['T'.$tag] ??= $isiTag;
         }
 
-        $jenisInisiasi = $nilai['01'] ?? null;
-        $mataUang = $nilai['53'] ?? null;
-        $negara = $nilai['58'] ?? null;
+        $jenisInisiasi = $nilai['T01'] ?? null;
+        $mataUang = $nilai['T53'] ?? null;
+        $negara = $nilai['T58'] ?? null;
 
         if ($jenisInisiasi === '12') {
             throw new PelanggaranAturanBisnis('BukanStatis', 'QRIS ini sudah berisi nominal (dinamis). Unggah QRIS statis toko Anda.', self::BIDANG);
@@ -122,6 +123,6 @@ final class PemeriksaQris
             throw new PelanggaranAturanBisnis('TanpaMerchant', 'QRIS ini tidak memuat data merchant. Unggah QRIS dari bank atau penyedia Anda.', self::BIDANG);
         }
 
-        return ['NamaMerchant' => $nilai['59'] ?? '', 'Kota' => $nilai['60'] ?? ''];
+        return ['NamaMerchant' => $nilai['T59'] ?? '', 'Kota' => $nilai['T60'] ?? ''];
     }
 }
