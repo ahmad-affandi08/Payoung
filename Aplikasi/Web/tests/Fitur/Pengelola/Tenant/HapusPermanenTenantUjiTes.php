@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\TenantPengguna;
+use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pengelola\Tenant\Aksi\HapusPermanenTenantUji;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
@@ -51,9 +52,7 @@ function SiapkanTenantHapusUji(string $nama, ?PenandaTenant $penanda = PenandaTe
     BantuanKatalog::BuatKategori('Minuman Uji');
     BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Uji']);
 
-    DB::table('Pelanggan')->insert([
-        'Uuid' => (string) Str::ulid(), 'IdTenant' => $id, 'Nama' => 'Siti Uji', 'NoHp' => '6281355559999', 'DibuatPada' => now(), 'DiubahPada' => now(),
-    ]);
+    Pelanggan::query()->create(['Nama' => 'Siti Uji', 'NoHp' => '6281355559999']);
     Storage::disk('local')->put("produk/{$id}/a.webp", 'isi');
     Storage::disk('local')->put("akuntansi/kas-bank/{$id}/bukti.pdf", 'isi');
     Tenant::query()->whereKey($id)->update(['Penanda' => $penanda?->value]);
