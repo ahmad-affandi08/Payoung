@@ -44,7 +44,6 @@ export default function TampilanAbsen(props: PropsAbsenSaya) {
                     href={`${jalur}/manifest`}
                     crossOrigin={Berlogin ? 'use-credentials' : undefined}
                 />
-                <meta name="theme-color" content="#22383a" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-title" content="Absen" />
             </Head>
