@@ -451,6 +451,39 @@ void main() {
     await Lepas(tester, u);
   });
 
+  testWidgets(
+    'BR-03.2: produk diarsipkan tidak masuk keranjang lewat pindai barcode (barcode timbangan memakai penjaga yang sama)',
+    (tester) async {
+      final katalog = KatalogUji();
+      final daftar = katalog['Produk']! as List<Object?>;
+      final indeks = daftar.indexWhere((p) => (p! as Map<String, Object?>)['Uuid'] == UuidUji.americano);
+      daftar[indeks] = ProdukUji(UuidUji.americano, 'Americano Panas', jenis: 'Resep', sku: 'AMR-01', aktif: false);
+      final u = await MasukJual(tester, katalog: katalog);
+
+      Future<void> Pindai(String kode) async {
+        for (final karakter in kode.split('')) {
+          await tester.sendKeyEvent(LogicalKeyboardKey(karakter.codeUnitAt(0)));
+        }
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await Tunggu(tester);
+      }
+
+      const pesan =
+          '"Americano Panas" sudah diarsipkan dan tidak dijual lagi. Pulihkan di back-office menu Produk bila masih dijual.';
+
+      // Tidak tampil di grid, dan pindai barcode ditolak dengan pesan jelas; keranjang tetap kosong.
+      expect(find.text('Americano Panas'), findsNothing);
+      await Pindai(UuidUji.barcodeAmericano);
+      expect(find.text(pesan), findsOneWidget);
+      expect(find.textContaining('Keranjang | 1 item'), findsNothing);
+
+      // Produk lain tetap bisa dipindai.
+      await Pindai(UuidUji.barcodeRotiLusin);
+      expect(find.text('Keranjang | 1 item'), findsOneWidget);
+      await Lepas(tester, u);
+    },
+  );
+
   testWidgets('pemindai barcode tanpa fokus & pintasan §17.2.3 F1 / F8 / F9 / Esc (desktop)', (tester) async {
     final u = await MasukJual(tester);
 

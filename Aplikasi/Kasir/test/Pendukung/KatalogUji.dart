@@ -47,6 +47,7 @@ Map<String, Object?> ProdukUji(
   String? kelompokPajak = UuidUji.kelompokPbjt,
   String pelacakan = 'Tidak',
   bool tampil = true,
+  bool aktif = true,
   String? urlGambarKecil,
 }) => {
   'Uuid': uuid,
@@ -67,7 +68,7 @@ Map<String, Object?> ProdukUji(
   'AtributVarian': null,
   'UrlGambar': null,
   'UrlGambarKecil': urlGambarKecil,
-  'Aktif': true,
+  'Aktif': aktif,
   'Dihapus': false,
   'DiubahPada': '2026-09-20T01:00:00.000000Z',
 };

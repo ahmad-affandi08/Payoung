@@ -539,8 +539,23 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     }
   }
 
+  /// BR-03.2: produk diarsipkan tidak dijual lagi. Katalog lokal tetap menyimpannya (pesanan lama, retur, gudang), jadi
+  /// jalur tambah ke keranjang (ubin, pindai, SKU, timbangan) menolaknya di sini; true bila ditolak.
+  bool _TolakProdukDiarsipkan(ProdukJual produk) {
+    if (produk.aktif) {
+      return false;
+    }
+    _TampilPesan(
+      '"${produk.nama}" sudah diarsipkan dan tidak dijual lagi. Pulihkan di back-office menu Produk bila masih dijual.',
+    );
+    return true;
+  }
+
   void _TambahProduk(ProdukJual produk, {SatuanJual? satuan, Kuantitas? jumlah}) {
     _TutupLayarSelesai();
+    if (_TolakProdukDiarsipkan(produk)) {
+      return;
+    }
     // K-9: induk varian membuka pemilih varian (ukuran × warna); induk tanpa varian aktif tetap ditolak dengan pesan.
     if (produk.indukVarian && (ref.read(penyediaKatalog).value?.AmbilVarian(produk.uuid).isNotEmpty ?? false)) {
       setState(() {
@@ -670,6 +685,9 @@ class _LayarJualState extends ConsumerState<LayarJual> {
       return true;
     }
     final produk = cocok.produk;
+    if (_TolakProdukDiarsipkan(produk)) {
+      return true;
+    }
     final satuan = cocok.satuan ?? produk.AmbilSatuanBawaan();
     if (satuan == null || !satuan.bolehDesimal) {
       _TampilPesan('Satuan ${produk.nama} tidak boleh desimal, jadi tidak bisa dijual per berat timbangan.');
