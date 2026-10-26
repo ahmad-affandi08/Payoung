@@ -20,8 +20,8 @@ import { GambarBagian } from './KepalaBagian';
 
 type Props = { bagian: Extract<BagianSitus, { Jenis: 'HeroGeser' }>; utama: boolean };
 
-/** Selang pergantian otomatis (permintaan pemilik produk: sekitar 6 detik). */
-export const SELANG_OTOMATIS_MS = 6000;
+/** Selang pergantian otomatis (permintaan pemilik produk: 5 detik). */
+export const SELANG_OTOMATIS_MS = 5000;
 
 /** Jarak geser jari minimum (px) supaya dianggap menggeser, bukan menyentuh. */
 const AMBANG_GESER_PX = 48;

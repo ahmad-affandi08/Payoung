@@ -111,11 +111,11 @@ describe('Pembuka geser (carousel hero beranda)', () => {
         expect(SlideAktif()[0]?.getAttribute('aria-label')).toBe('1 dari 3');
     });
 
-    it('berganti otomatis tiap ~6 detik, berhenti setelah satu putaran, dan tombol Putar menyambungkannya lagi', () => {
+    it('berganti otomatis tiap 5 detik, berhenti setelah satu putaran, dan tombol Putar menyambungkannya lagi', () => {
         render(<RenderBagian bagian={[BuatHero(3)]} />);
         const Aktif = () => SlideAktif()[0]?.getAttribute('aria-label');
 
-        expect(SELANG_OTOMATIS_MS).toBe(6000);
+        expect(SELANG_OTOMATIS_MS).toBe(5000);
         expect(Aktif()).toBe('1 dari 3');
 
         act(() => void vi.advanceTimersByTime(SELANG_OTOMATIS_MS));
