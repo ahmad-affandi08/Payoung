@@ -68,7 +68,7 @@ final class KontenSitusBawaan
                             [
                                 'Label' => 'Salon & jasa',
                                 'Judul' => 'Layanan, staf, dan komisi tercatat sekali ketuk',
-                                'Teks' => 'Pilih layanan dari daftar bergambar, tentukan staf yang mengerjakan, dan komisinya terhitung sendiri. Paket sesi dan saldo pelanggan ikut tercatat.',
+                                'Teks' => 'Pilih layanan dari daftar berfoto, tentukan staf yang mengerjakan, dan komisinya terhitung sendiri. Paket sesi dan saldo pelanggan ikut tercatat.',
                                 'TombolUtama' => ['Label' => 'Coba gratis', 'Tautan' => '@daftar'],
                                 'TombolKedua' => ['Label' => 'Lihat solusi salon', 'Tautan' => '/solusi/salon-barbershop-spa'],
                                 'Spesimen' => 'KasirSektorSalon',

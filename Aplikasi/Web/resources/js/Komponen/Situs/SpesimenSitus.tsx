@@ -197,27 +197,27 @@ export const FOTO = {
     KasirSektorToko: {
         src: gambarKasirSektorToko,
         ...TABLET,
-        alt: 'Aplikasi Kasir Payoung untuk toko dan retail: katalog sembako, minuman, dan kebutuhan harian dengan foto produk, keranjang beras, minyak goreng, telur, dan mi instan, total Rp 142.000.',
+        alt: 'Aplikasi Kasir Payoung untuk toko dan retail: katalog sembako, minuman, makanan, dan kebutuhan harian dengan foto produk, keranjang beras, minyak goreng, telur, dan roti tawar, total Rp 168.000.',
     },
     KasirSektorSalon: {
         src: gambarKasirSektorSalon,
         ...TABLET,
-        alt: 'Aplikasi Kasir Payoung untuk salon dan jasa: daftar layanan rambut, kuku, dan perawatan dengan gambar, keranjang potong rambut, creambath, dan manicure, total Rp 200.000.',
+        alt: 'Aplikasi Kasir Payoung untuk salon dan jasa: daftar layanan rambut, kuku, perawatan, dan rias dengan foto, keranjang potong rambut, hair spa, dan manicure, total Rp 205.000.',
     },
     KasirSektorLaundry: {
         src: gambarKasirSektorLaundry,
         ...TABLET,
-        alt: 'Aplikasi Kasir Payoung untuk laundry: layanan kiloan, satuan, sepatu, dan boneka dengan gambar, keranjang cuci setrika, bedcover, kemeja, dan cuci sepatu, total Rp 96.000.',
+        alt: 'Aplikasi Kasir Payoung untuk laundry: layanan kiloan, satuan, sepatu, dan boneka dengan foto, keranjang cuci setrika, bedcover, kemeja, dan cuci sepatu, total Rp 96.000.',
     },
     KasirSektorApotek: {
         src: gambarKasirSektorApotek,
         ...TABLET,
-        alt: 'Aplikasi Kasir Payoung untuk apotek: katalog obat bebas, vitamin, alat kesehatan, dan perawatan dengan gambar, keranjang paracetamol, vitamin C, dan masker medis, total Rp 96.000.',
+        alt: 'Aplikasi Kasir Payoung untuk apotek: katalog obat bebas, vitamin dan herbal, serta alat kesehatan dengan foto, keranjang paracetamol, vitamin C, dan masker medis, total Rp 96.000.',
     },
     KasirSektorBengkel: {
         src: gambarKasirSektorBengkel,
         ...TABLET,
-        alt: 'Aplikasi Kasir Payoung untuk bengkel: jasa servis, oli, dan sparepart dengan gambar, keranjang servis rutin, oli mesin, busi, dan filter oli, total Rp 184.000.',
+        alt: 'Aplikasi Kasir Payoung untuk bengkel: jasa servis, oli, sparepart, dan perkakas dengan foto, keranjang servis rutin, oli mesin, pelumas semprot, dan lampu depan, total Rp 220.000.',
     },
     KasirHp: {
         src: gambarKasirHpJual,

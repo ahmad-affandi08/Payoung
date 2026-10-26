@@ -18,7 +18,7 @@ import 'DataDemoSektor.dart';
 
 /// Penghasil foto kasir per sektor usaha untuk hero situs pemasaran `payoung.id` (D-212; bukan test regresi, sengaja di
 /// luar `test/` agar tidak ikut CI). Layar Jual asli dirender dengan katalog contoh tiap sektor lengkap dengan gambar
-/// produk (`GambarProduk/`, dibuat `Spesifikasi/Merek/BuatGambarProdukDemo.py`), lalu dipotret dari layer:
+/// produk (foto produk asli berlisensi CC0 di `GambarProduk/`, disusun `Spesifikasi/Merek/SusunFotoProdukDemo.py`), lalu dipotret dari layer:
 ///
 /// ```
 /// cd Aplikasi/Kasir && flutter test AlatSitus/FotoSitusSektor_test.dart
@@ -50,7 +50,7 @@ void main() {
       final u = LingkunganUji.Buat();
       await tester.runAsync(() async {
         for (final nama in sektor.gambarDipakai) {
-          gambar[nama] = await File('AlatSitus/GambarProduk/$nama.png').readAsBytes();
+          gambar[nama] = await File('AlatSitus/GambarProduk/$nama.jpg').readAsBytes();
         }
         await u.SiapkanAktif();
         await u.repositori.SimpanPengaturan(KunciPengaturan.namaOutlet, sektor.namaOutlet);
@@ -83,8 +83,8 @@ void main() {
           return JsonUji({'Produk': <String>[]});
         }
         if (jalur.contains('/gambar-demo/')) {
-          final nama = jalur.split('/').last.replaceAll('.png', '');
-          return http.Response.bytes(gambar[nama]!, 200, headers: {'content-type': 'image/png'});
+          final nama = jalur.split('/').last.replaceAll('.jpg', '');
+          return http.Response.bytes(gambar[nama]!, 200, headers: {'content-type': 'image/jpeg'});
         }
         return http.Response(jsonEncode({}), 200, headers: {'content-type': 'application/json'});
       };
