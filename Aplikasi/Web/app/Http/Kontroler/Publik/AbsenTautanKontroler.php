@@ -17,6 +17,7 @@ use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Absensi\PembacaKirimanAbsensi;
+use App\Http\Respons\ResponsPwaAbsensi;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,6 +51,22 @@ final class AbsenTautanKontroler extends Kontroler
             'BisaDashboard' => false,
             ...$status->Ambil($karyawan),
         ])->toResponse(request()));
+    }
+
+    /** PWA (D-211): manifest per tautan pribadi, supaya halaman Absen bisa dipasang ke layar utama HP. */
+    public function Manifest(string $slugTenant, string $tokenAbsen): SymfonyResponse
+    {
+        return $this->DenganKaryawan($slugTenant, $tokenAbsen, fn (Karyawan $karyawan, int $idTenant): SymfonyResponse => ResponsPwaAbsensi::Manifest(
+            "/{$slugTenant}/absen/{$tokenAbsen}",
+            app(NamaTampilUsaha::class)->UntukTenant($idTenant),
+            $karyawan->Nama,
+        ));
+    }
+
+    /** Service worker di jalur tautan sendiri, jadi cakupannya hanya halaman Absen ini. */
+    public function PekerjaLayanan(string $slugTenant, string $tokenAbsen): SymfonyResponse
+    {
+        return $this->DenganKaryawan($slugTenant, $tokenAbsen, fn (): SymfonyResponse => ResponsPwaAbsensi::PekerjaLayanan("/{$slugTenant}/absen/{$tokenAbsen}"));
     }
 
     public function DaftarWajah(Request $permintaan, string $slugTenant, string $tokenAbsen, DaftarkanWajahKaryawan $daftar): SymfonyResponse

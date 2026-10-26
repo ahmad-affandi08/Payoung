@@ -787,3 +787,53 @@ it('D-198 karyawan yang punya akun login juga bisa absen lewat tautan, dan catat
     BantuanOrganisasi::Masuk($this, $akun, $k['Tenant']->Id);
     $this->get($alamatLogin)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('AbsensiTerbuka', fn ($terbuka) => $terbuka !== null));
 });
+
+it('D-211 PWA absen berlogin: manifest dan service worker terbatas ke /kelola/absen, hanya untuk karyawan yang ikut absensi', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+
+    $manifest = $this->get("{$alamat}/manifest")->assertOk();
+    expect($manifest->headers->get('Content-Type'))->toStartWith('application/manifest+json');
+    $manifest->assertJsonPath('start_url', '/kelola/absen')
+        ->assertJsonPath('scope', '/kelola/absen')
+        ->assertJsonPath('display', 'standalone')
+        ->assertJsonPath('short_name', 'Absen')
+        ->assertJsonPath('icons.0.src', '/ikon-pwa-192.png');
+    expect($manifest->json('name'))->toContain('Absen');
+
+    $pekerja = $this->get("{$alamat}/pekerja-layanan")->assertOk();
+    expect($pekerja->headers->get('Content-Type'))->toStartWith('application/javascript')
+        ->and($pekerja->headers->get('Service-Worker-Allowed'))->toBe('/kelola/absen')
+        ->and($pekerja->getContent())->toContain('/model-wajah/');
+
+    // Pemilik tanpa data karyawan: sama seperti halamannya, 404.
+    BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+    $this->get("{$alamat}/manifest")->assertNotFound();
+    $this->get("{$alamat}/pekerja-layanan")->assertOk();
+
+    // Tanpa masuk sama sekali, manifest tidak terbuka.
+    $this->flushSession();
+    $this->get("{$alamat}/manifest")->assertRedirect();
+});
+
+it('D-211 PWA absen lewat tautan: manifest per tautan, service worker di jalur tautan, tautan salah 404', function (): void {
+    [$k, $karyawan, $alamat, $token] = SiapkanAbsenTautan($this);
+    $slug = app(ProfilTenant::class)->AmbilSlug($k['Tenant']->Id);
+
+    $manifest = $this->get("{$alamat}/manifest")->assertOk();
+    $manifest->assertJsonPath('start_url', $alamat)->assertJsonPath('scope', $alamat)->assertJsonPath('id', $alamat);
+    expect($manifest->headers->get('Content-Type'))->toStartWith('application/manifest+json')
+        ->and($manifest->json('description'))->toContain('Budi Tanpa Akun');
+
+    $pekerja = $this->get("{$alamat}/pekerja-layanan")->assertOk();
+    expect($pekerja->headers->get('Service-Worker-Allowed'))->toBe($alamat);
+
+    $this->get("/{$slug}/absen/".str_repeat('a', 40).'/manifest')->assertNotFound();
+    $this->get("/{$slug}/absen/".str_repeat('a', 40).'/pekerja-layanan')->assertNotFound();
+
+    // Tautan dicabut = manifest dan service worker ikut hilang.
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    app(AturTautanAbsen::class)->Jalankan($karyawan->refresh(), false, $k['Pemilik']->Id);
+    $this->get("{$alamat}/manifest")->assertNotFound();
+    $this->get("{$alamat}/pekerja-layanan")->assertNotFound();
+    expect($token)->not->toBe('');
+});

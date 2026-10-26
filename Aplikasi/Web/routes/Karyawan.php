@@ -32,6 +32,9 @@ $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 // ini (dicek kontroler; selain itu 404). Dibatasi per akun supaya tebakan massal tidak menekan server wajah.
 Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function (): void {
     Route::get('/', [AbsenSayaKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('kelola.absen');
+    // D-211: PWA, halaman Absen bisa dipasang ke layar utama HP.
+    Route::get('/manifest', [AbsenSayaKontroler::class, 'Manifest'])->middleware('throttle:60,1')->name('kelola.absen.manifest');
+    Route::get('/pekerja-layanan', [AbsenSayaKontroler::class, 'PekerjaLayanan'])->middleware('throttle:60,1')->name('kelola.absen.pekerja-layanan');
     Route::post('/wajah', [AbsenSayaKontroler::class, 'DaftarWajah'])->middleware('throttle:absensi-web')->name('kelola.absen.wajah');
     Route::post('/cek-wajah', [AbsenSayaKontroler::class, 'CekWajah'])->middleware('throttle:cek-wajah')->name('kelola.absen.cek-wajah');
     Route::post('/masuk', [AbsenSayaKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('kelola.absen.masuk');

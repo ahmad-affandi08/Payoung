@@ -1,4 +1,4 @@
-import{t as e}from"./jsx-runtime-B23tBWN-.js";import{a as t}from"./dist-D4veJNCv.js";import{t as n}from"./TataLetakSitus-DDnD3gBV.js";import{t as r}from"./JudulHalaman-DcRj0rLI.js";var i=e(),a=`$badan = file_get_contents('php://input');
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{a as t}from"./dist-D4veJNCv.js";import{t as n}from"./TataLetakSitus-Tl1hielN.js";import{t as r}from"./JudulHalaman-DcRj0rLI.js";var i=e(),a=`$badan = file_get_contents('php://input');
 $waktu = $_SERVER['HTTP_X_WAKTU_KIRIM'] ?? '';
 $tanda = $_SERVER['HTTP_X_TANDA_TANGAN'] ?? '';
 $hitung = 'sha256=' . hash_hmac('sha256', $waktu . '.' . $badan, getenv('RAHASIA_WEBHOOK_Payoung'));

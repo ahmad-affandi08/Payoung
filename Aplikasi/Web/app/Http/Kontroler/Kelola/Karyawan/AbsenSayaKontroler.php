@@ -15,10 +15,12 @@ use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Absensi\PembacaKirimanAbsensi;
+use App\Http\Respons\ResponsPwaAbsensi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Halaman Absen berlogin (F-18 bagian 4, D-37, D-180) `/kelola/absen`: karyawan masuk dengan akunnya (email + kata sandi
@@ -44,6 +46,17 @@ final class AbsenSayaKontroler extends DasarKelolaKontroler
             'BisaDashboard' => $izin !== null && ($izin['Pemilik'] || $izin['Izin'] !== []),
             ...$status->Ambil($karyawan),
         ]);
+    }
+
+    /** PWA (D-211): manifest halaman Absen berlogin, supaya bisa dipasang ke layar utama HP. */
+    public function Manifest(AbsenSaya $saya, NamaTampilUsaha $nama): JsonResponse
+    {
+        return ResponsPwaAbsensi::Manifest('/kelola/absen', $nama->UntukTenant($this->IdTenant()), $this->CariKaryawan($saya)->Nama);
+    }
+
+    public function PekerjaLayanan(): SymfonyResponse
+    {
+        return ResponsPwaAbsensi::PekerjaLayanan('/kelola/absen');
     }
 
     public function DaftarWajah(Request $permintaan, AbsenSaya $saya, DaftarkanWajahKaryawan $daftar, PembacaKirimanAbsensi $pembaca): JsonResponse

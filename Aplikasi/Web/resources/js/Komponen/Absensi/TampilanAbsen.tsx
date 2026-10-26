@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ClockIcon, WifiIcon, WifiOffIcon } from 'lucide-react';
 
 import GarisWaktuRiwayat from '@/Komponen/Absensi/GarisWaktuRiwayat';
+import KartuPasangDiHp from '@/Komponen/Absensi/KartuPasangDiHp';
 import PanelAbsen from '@/Komponen/Absensi/PanelAbsen';
 import PanelDaftarWajah from '@/Komponen/Absensi/PanelDaftarWajah';
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -10,6 +11,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { formatHariPanjang, formatJamDetik, SalamWaktu } from '@/Fitur/Absensi/FormatAbsensi';
 import { useSekarang, useStatusDaring } from '@/Fitur/Absensi/useKondisiPerangkat';
 import { useMesinWajah } from '@/Fitur/Absensi/useMesinWajah';
+import { JalurHalamanAbsen, usePasangPwa } from '@/Fitur/Absensi/usePasangPwa';
 import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
 
 /**
@@ -18,6 +20,8 @@ import type { PropsAbsenSaya } from '@/Tipe/Karyawan';
  * absen masuk/pulang dengan satu tombol. Mobile-first, satu tugas per layar, tanpa menu dashboard. Wajah didaftarkan
  * sekali (persetujuan UU PDP, langsung aktif); tiap absen: lokasi GPS + pindai wajah. Lingkaran kamera hijau bila wajah cocok
  * (merah bila tidak) dan baru saat itu tombol Ambil foto aktif (D-186); server mengambil keputusan akhir dan mencatat lokasi.
+ *
+ * Bisa dipasang ke layar utama HP sebagai PWA (D-211): manifest + service worker per halaman, kartu "Pasang di HP".
  *
  * Tampilan: kepala merek dengan jam hidup & salam, kartu aksi tumpang-tindih di bawahnya (tombol absen bulat besar,
  * lama bekerja berjalan), lalu riwayat sebagai garis waktu berdurasi.
@@ -28,10 +32,22 @@ export default function TampilanAbsen(props: PropsAbsenSaya) {
     const sekarang = useSekarang();
     // Model wajah disiapkan di latar belakang begitu halaman terbuka, jadi pemindai langsung siap saat tombol diketuk.
     const mesin = useMesinWajah(props.AlamatModelWajah, daring && Wajah?.Status !== 'Menunggu');
+    // PWA (D-211): bisa dipasang ke layar utama HP; manifest versi berlogin butuh cookie sesi.
+    const pasang = usePasangPwa(AlamatDasar);
+    const jalur = JalurHalamanAbsen(AlamatDasar);
 
     return (
         <div className="min-h-dvh bg-latar">
-            <Head title={`Absen | ${NamaToko}`} />
+            <Head title={`Absen | ${NamaToko}`}>
+                <link
+                    rel="manifest"
+                    href={`${jalur}/manifest`}
+                    crossOrigin={Berlogin ? 'use-credentials' : undefined}
+                />
+                <meta name="theme-color" content="#22383a" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-title" content="Absen" />
+            </Head>
 
             <header className="bg-brand-gelap px-4 pt-6 pb-20 text-permukaan">
                 <div className="mx-auto flex w-full max-w-md flex-col gap-5">
@@ -106,6 +122,8 @@ export default function TampilanAbsen(props: PropsAbsenSaya) {
                         daring={daring}
                     />
                 )}
+
+                <KartuPasangDiHp keadaan={pasang} />
 
                 {Riwayat.length > 0 ? <GarisWaktuRiwayat riwayat={Riwayat} sekarang={sekarang} /> : null}
 
