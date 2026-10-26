@@ -273,7 +273,7 @@ export default function HalamanBuatReturGrosir({
                     <Link href={`${AlamatGrosir}/surat-jalan/${SuratJalan.Uuid}`}>Batal</Link>
                 </Button>
                 <Tombol type="button" onClick={Kirim} memproses={memproses} disabled={!siap}>
-                    Posting retur
+                    Catat retur
                 </Tombol>
             </BilahAksiForm>
         </HalamanGrosir>

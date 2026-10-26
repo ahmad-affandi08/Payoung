@@ -74,7 +74,7 @@ final class KamusPeristiwaAudit
         'bengkel.servis-berikutnya' => 'Jadwal servis berikutnya diatur',
 
         'biaya-tambahan.batalkan' => 'Biaya tambahan dibatalkan',
-        'biaya-tambahan.posting' => 'Biaya tambahan diposting',
+        'biaya-tambahan.posting' => 'Biaya tambahan dicatat',
 
         'cuti-karyawan.batal' => 'Cuti karyawan dibatalkan',
         'cuti-karyawan.catat' => 'Cuti karyawan dicatat',
@@ -112,7 +112,7 @@ final class KamusPeristiwaAudit
         'dukungan.tiket.ubah-status' => 'Status tiket dukungan diubah',
 
         'faktur-pembelian.batalkan' => 'Faktur pembelian dibatalkan',
-        'faktur-pembelian.posting' => 'Faktur pembelian diposting',
+        'faktur-pembelian.posting' => 'Faktur pembelian dicatat',
 
         'flag-fitur.hapus' => 'Flag fitur dihapus',
         'flag-fitur.simpan' => 'Flag fitur disimpan',
@@ -170,7 +170,7 @@ final class KamusPeristiwaAudit
         'jadwal-kerja.salin' => 'Jadwal kerja disalin',
         'jadwal-kerja.simpan' => 'Jadwal kerja disimpan',
 
-        'jurnal.posting' => 'Jurnal diposting',
+        'jurnal.posting' => 'Jurnal dicatat',
 
         'jurnal-umum.balik' => 'Jurnal umum dibalik',
         'jurnal-umum.simpan' => 'Jurnal umum disimpan',
@@ -301,7 +301,7 @@ final class KamusPeristiwaAudit
         'komunikasi.siaran.buat' => 'Siaran dijadwalkan',
 
         'nota-debit.batalkan' => 'Nota debit dibatalkan',
-        'nota-debit.posting' => 'Nota debit diposting',
+        'nota-debit.posting' => 'Nota debit dicatat',
 
         'operasional.alert.nomor-wa.atur' => 'Nomor WhatsApp alert operasional diatur',
         'operasional.backup.catat' => 'Pencadangan basis data dicatat',
@@ -312,7 +312,7 @@ final class KamusPeristiwaAudit
 
         'order-produksi.batalkan' => 'Order produksi dibatalkan',
         'order-produksi.buat' => 'Order produksi dibuat',
-        'order-produksi.posting' => 'Order produksi diposting',
+        'order-produksi.posting' => 'Order produksi dicatat',
         'order-produksi.ubah' => 'Order produksi diubah',
 
         'outlet.buat' => 'Outlet dibuat',
@@ -356,7 +356,7 @@ final class KamusPeristiwaAudit
 
         'pelunasan-piutang.batalkan' => 'Pelunasan piutang dibatalkan',
         'pelunasan-piutang.bukti-potong' => 'Nomor bukti potong PPh pelunasan dicatat',
-        'pelunasan-piutang.posting' => 'Pelunasan piutang diposting',
+        'pelunasan-piutang.posting' => 'Pelunasan piutang dicatat',
 
         'pemasok.hapus' => 'Pemasok dihapus',
         'pemasok.impor' => 'Pemasok diimpor',
@@ -365,7 +365,7 @@ final class KamusPeristiwaAudit
 
         'pembayaran-hutang.batalkan' => 'Pembayaran hutang dibatalkan',
         'pembayaran-hutang.kompensasi' => 'Pembayaran hutang dikompensasi',
-        'pembayaran-hutang.posting' => 'Pembayaran hutang diposting',
+        'pembayaran-hutang.posting' => 'Pembayaran hutang dicatat',
 
         'pembelian.pengaturan.ubah' => 'Pengaturan pembelian diubah',
 
@@ -376,7 +376,7 @@ final class KamusPeristiwaAudit
         'pencairan.buat' => 'Pencairan dana non-tunai dicatat',
 
         'penerimaan-barang.batalkan' => 'Penerimaan barang dibatalkan',
-        'penerimaan-barang.posting' => 'Penerimaan barang diposting',
+        'penerimaan-barang.posting' => 'Penerimaan barang dicatat',
 
         'penawaran.batal' => 'Penawaran dibatalkan',
         'penawaran.buat' => 'Draf penawaran dibuat',
@@ -412,7 +412,7 @@ final class KamusPeristiwaAudit
         'penyesuaian-stok.ajukan' => 'Penyesuaian stok diajukan',
         'penyesuaian-stok.batal' => 'Penyesuaian stok dibatalkan',
         'penyesuaian-stok.buat' => 'Penyesuaian stok dibuat',
-        'penyesuaian-stok.posting' => 'Penyesuaian stok diposting',
+        'penyesuaian-stok.posting' => 'Penyesuaian stok dicatat',
         'penyesuaian-stok.setujui' => 'Penyesuaian stok disetujui',
         'penyesuaian-stok.tolak' => 'Penyesuaian stok ditolak',
         'penyesuaian-stok.ubah' => 'Penyesuaian stok diubah',
@@ -535,7 +535,7 @@ final class KamusPeristiwaAudit
         'reservasi-meja.ubah' => 'Reservasi meja diubah',
 
         'retur-pembelian.batalkan' => 'Retur pembelian dibatalkan',
-        'retur-pembelian.posting' => 'Retur pembelian diposting',
+        'retur-pembelian.posting' => 'Retur pembelian dicatat',
 
         'rilis.draf.simpan' => 'Draf rilis disimpan',
         'rilis.hentikan' => 'Rilis dihentikan',
@@ -584,9 +584,9 @@ final class KamusPeristiwaAudit
         'stok-awal.impor.pemetaan' => 'Pemetaan kolom impor stok awal disimpan',
         'stok-awal.impor.terapkan' => 'Impor stok awal diterapkan',
         'stok-awal.impor.unggah' => 'Impor stok awal diunggah',
-        'stok-awal.posting' => 'Stok awal diposting',
-        'stok-awal.posting-diajukan' => 'Posting stok awal diajukan untuk persetujuan',
-        'stok-awal.posting-gagal' => 'Posting stok awal gagal',
+        'stok-awal.posting' => 'Stok awal dicatat',
+        'stok-awal.posting-diajukan' => 'Catat stok awal diajukan untuk persetujuan',
+        'stok-awal.posting-gagal' => 'Catat stok awal gagal',
         'stok-awal.ubah' => 'Stok awal diubah',
 
         'stok-opname.ajukan' => 'Stok opname diajukan',

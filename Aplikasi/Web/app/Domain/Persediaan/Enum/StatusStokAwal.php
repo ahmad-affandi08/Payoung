@@ -32,8 +32,8 @@ enum StatusStokAwal: string
     {
         return match ($this) {
             self::Draf => 'Draf',
-            self::Memproses => 'Sedang diposting',
-            self::Diposting => 'Diposting',
+            self::Memproses => 'Sedang dicatat',
+            self::Diposting => 'Tercatat',
             self::Dibatalkan => 'Dibatalkan',
             self::Dibuang => 'Dibuang',
         };

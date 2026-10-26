@@ -63,7 +63,7 @@ abstract class DasarKelolaKontroler extends Kontroler
     }
 
     /**
-     * Audit kemudahan pakai #13 ("Simpan & posting"): setelah draf tersimpan, bila formulir mengirim `Lanjutkan`,
+     * Audit kemudahan pakai #13 ("Simpan & catat"): setelah draf tersimpan, bila formulir mengirim `Lanjutkan`,
      * langkah berikutnya (posting/kirim/ajukan) langsung dijalankan lewat aksi kontroler yang sama dengan tombol di
      * halaman detail. Galat bisnis langkah itu tidak membatalkan draf: pengguna dibawa ke detail draf dengan pesannya.
      *

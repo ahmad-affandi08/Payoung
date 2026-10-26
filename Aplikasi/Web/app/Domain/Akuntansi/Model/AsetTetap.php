@@ -12,7 +12,7 @@ use App\Domain\Bersama\Tenant\MilikTenant;
 use Illuminate\Support\Carbon;
 
 /**
- * Aset tetap (FIN-10). Data perolehan tidak diubah setelah dicatat (dokumen terposting, aturan #8): salah catat
+ * Aset tetap (FIN-10). Data perolehan tidak diubah setelah dicatat (dokumen tercatat, aturan #8): salah catat
  * dibatalkan selama belum disusutkan, lalu dicatat ulang. Akumulasi penyusutan = `AkumulasiAwal` + Σ `PenyusutanAset`.
  *
  * @property int $Id

@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Baris bahan order produksi (F-05e): `JumlahStandar` = kebutuhan resep untuk jumlah hasil (0 untuk bahan tambahan),
- * `Jumlah` = pemakaian aktual dalam satuan dasar; `Nilai` = HPP bahan yang keluar saat diposting.
+ * `Jumlah` = pemakaian aktual dalam satuan dasar; `Nilai` = HPP bahan yang keluar saat dicatat.
  *
  * @property int $Id
  * @property int $IdTenant

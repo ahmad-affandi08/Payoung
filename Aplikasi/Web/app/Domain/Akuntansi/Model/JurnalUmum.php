@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 use LogicException;
 
 /**
- * Dokumen jurnal umum manual `JM/{YYYY}/{MM}/{SEQ4}` (FIN-05, D-131). Jurnalnya diposting saat disimpan
+ * Dokumen jurnal umum manual `JM/{YYYY}/{MM}/{SEQ4}` (FIN-05, D-131). Jurnalnya dicatat saat disimpan
  * (`JenisSumberJurnal::JurnalUmum`, baris ada di `JurnalDetail`). Append-only (aturan #8): tidak pernah diubah atau
  * dihapus; koreksi = dokumen pembalik (`IdJurnalUmumDibalik`). `PathLampiran` tidak pernah dikirim ke browser.
  *

@@ -73,7 +73,7 @@ describe('F-05a impor stok awal: pratinjau & pembuatan draf per lokasi (tidak me
             ->and($impor->JumlahGalat)->toBe(5)
             ->and(array_keys($galat))->toBe([6, 7, 8, 9, 10])
             ->and($galat[6][0]['Pesan'])->toBe('Produk, lokasi stok, dan batch yang sama ada di beberapa baris (baris 6, 7). Gabungkan menjadi satu baris.')
-            ->and($galat[8][0]['Pesan'])->toBe("Stok awal {$kecap->Nama} di {$t['Gudang']->Nama} sudah diposting. Koreksi lewat penyesuaian stok.");
+            ->and($galat[8][0]['Pesan'])->toBe("Stok awal {$kecap->Nama} di {$t['Gudang']->Nama} sudah dicatat. Koreksi lewat penyesuaian stok.");
 
         $bahan = ImporStokAwalBaris::query()->where('IdImporStokAwal', $impor->Id)->where('NomorBaris', 3)->sole();
         expect($bahan->Data)->toMatchArray(['IdProduk' => $produk['BahanBaku']->Id, 'IdGudang' => $gudangBelakang->Id, 'Jumlah' => '12.5000', 'HargaModal' => '14250.125000', 'Nilai' => '178126.56']);

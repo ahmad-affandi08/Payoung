@@ -11,7 +11,7 @@ import type { PropsCetakAmbilBarang } from '@/Tipe/Grosir';
 
 /**
  * Daftar ambil barang (*picking list*) dari satu pesanan grosir (F-12, §9.7). Dokumen tersendiri, bukan status draf
- * surat jalan: §9.7 sudah memutuskan surat jalan selalu terposting, karena draf yang stoknya belum berkurang membuat
+ * surat jalan: §9.7 sudah memutuskan surat jalan selalu tercatat, karena draf yang stoknya belum berkurang membuat
  * kartu stok berbohong. Yang dicetak di sini **sisa yang belum dikirim**, supaya pesanan bertahap tidak membuat petugas
  * mengambil ulang barang yang sudah keluar minggu lalu.
  *
@@ -97,7 +97,7 @@ export default function HalamanCetakAmbilBarang({ Pesanan, Baris, Usaha }: Props
             )}
 
             <p className="text-keterangan text-teks-sekunder">
-                Daftar ini belum memotong stok. Stok baru berkurang saat surat jalannya diposting, jadi barang yang
+                Daftar ini belum memotong stok. Stok baru berkurang saat surat jalannya dicatat, jadi barang yang
                 diambil tetap harus dicatat di surat jalan sebelum meninggalkan gudang.
             </p>
 

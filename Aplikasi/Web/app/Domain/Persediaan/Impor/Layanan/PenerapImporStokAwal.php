@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
  * Penerap impor stok awal (DesainF05a C.7), dijalankan `TerapkanImporStokAwalTugas`. Baris Valid yang belum masuk
  * draf dikelompokkan per lokasi stok (urut IdGudang, lalu NomorBaris) menjadi potongan ≤
  * `persediaan.StokAwal.MaksimalBaris` baris. Setiap potongan = **satu transaksi**: kunci impor, `SimpanStokAwal`
- * (Sumber Impor, Draf, tidak diposting), lalu baris ditandai Diterapkan + `IdStokAwal`. Karena penandaan ada di
+ * (Sumber Impor, Draf, tidak dicatat), lalu baris ditandai Diterapkan + `IdStokAwal`. Karena penandaan ada di
  * transaksi yang sama, menjalankan ulang (lanjutkan, worker ganda) tidak pernah membuat draf ganda.
  * Pelanggaran aturan bisnis saat membuat draf (misal produk diarsipkan setelah pratinjau) → impor Gagal dengan
  * pesannya; draf yang sudah dibuat tetap, dan impor bisa dilanjutkan setelah diperbaiki.

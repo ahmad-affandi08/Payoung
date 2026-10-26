@@ -57,7 +57,7 @@ final class StokAwalKontroler extends DasarPersediaanKontroler
         $gudang = $this->CariGudangBoleh((string) $permintaan->validated('UuidGudang'));
         $stokAwal = $simpan->Jalankan($permintaan->AmbilData($gudang->id), null);
         $hasil = redirect()->route('kelola.persediaan.stok-awal.detail', ['stokAwal' => $stokAwal->Uuid])
-            ->with('Kilat', 'Draf stok awal disimpan. Periksa lagi, lalu posting supaya stok dan jurnal tercatat.');
+            ->with('Kilat', 'Draf stok awal disimpan. Periksa lagi, lalu catat supaya stok dan jurnal tercatat.');
 
         return $this->LanjutkanPosting($permintaan, $hasil, $stokAwal->Uuid);
     }
@@ -114,11 +114,11 @@ final class StokAwalKontroler extends DasarPersediaanKontroler
             ->with('Kilat', 'Draf stok awal dibuang. Stok dan jurnal tidak berubah.');
     }
 
-    /** Audit kemudahan pakai #13: "Simpan & posting" hanya bagi pemegang izin posting stok awal (sama dengan rutenya). */
+    /** Audit kemudahan pakai #13: "Simpan & catat" hanya bagi pemegang izin posting stok awal (sama dengan rutenya). */
     private function LanjutkanPosting(Request $permintaan, RedirectResponse $hasil, string $uuid): RedirectResponse
     {
         if ($permintaan->boolean('Lanjutkan') && ! $this->CekIzin(IzinTenant::PersediaanStokAwalPosting)) {
-            return $hasil->withErrors(['Umum' => 'Draf disimpan. Anda belum punya izin memposting stok awal; minta pemegang izin memostingnya.']);
+            return $hasil->withErrors(['Umum' => 'Draf disimpan. Anda belum punya izin mencatat stok awal; minta pemegang izin mencatatnya.']);
         }
 
         return $this->LanjutkanSetelahSimpan($permintaan, $hasil, fn () => $this->Posting($uuid, app(AjukanPostingStokAwal::class)), 'kelola.persediaan.stok-awal.detail', ['stokAwal' => $uuid]);
@@ -131,8 +131,8 @@ final class StokAwalKontroler extends DasarPersediaanKontroler
         $dokumen->refresh();
 
         $pesan = $status === StatusStokAwal::Diposting
-            ? "Stok awal {$dokumen->Nomor} diposting. Stok dan jurnal saldo awal sudah tercatat."
-            : 'Stok awal sedang diposting di latar belakang. Halaman ini diperbarui otomatis saat selesai.';
+            ? "Stok awal {$dokumen->Nomor} dicatat. Stok dan jurnal saldo awal sudah tercatat."
+            : 'Stok awal sedang dicatat di latar belakang. Halaman ini diperbarui otomatis saat selesai.';
 
         return redirect()->route('kelola.persediaan.stok-awal.detail', ['stokAwal' => $dokumen->Uuid])->with('Kilat', $pesan);
     }

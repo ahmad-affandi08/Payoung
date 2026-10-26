@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\DB;
  * F-05e: membatalkan order produksi. Draf → Dibatalkan tanpa efek stok. Diposting → Dibatalkan dengan mutasi pembalik
  * (hasil keluar & bahan kembali masuk pada nilai asal) dan jurnal pembalik (`KunciSumber` Pembatalan), di tanggal
  * bisnis hari ini; ditolak `StokSudahTerpakai` bila hasil produksi sudah terjual/berpindah (saldo, batch, atau
- * lapisan FIFO-nya tidak utuh lagi). Alasan wajib 5–255 karakter untuk order terposting. Audit
+ * lapisan FIFO-nya tidak utuh lagi). Alasan wajib 5–255 karakter untuk order tercatat. Audit
  * `order-produksi.batalkan`.
  */
 final class BatalkanOrderProduksi

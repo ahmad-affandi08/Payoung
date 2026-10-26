@@ -16,7 +16,7 @@ use LogicException;
 /**
  * Dokumen penyesuaian stok per lokasi stok (F-05b). Tanpa hapus; isi hanya berubah selama Draf; Diposting &
  * Dibatalkan final. `NilaiPerkiraan` = Σ |nilai| baris (keluar dinilai HPP rata-rata saat diajukan) untuk batas
- * persetujuan `BatasPersetujuanPenyesuaian`; `TotalNilaiMasuk`/`TotalNilaiKeluar` = nilai sebenarnya saat diposting.
+ * persetujuan `BatasPersetujuanPenyesuaian`; `TotalNilaiMasuk`/`TotalNilaiKeluar` = nilai sebenarnya saat dicatat.
  *
  * @property int $Id
  * @property string $Uuid

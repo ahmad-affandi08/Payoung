@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Baris sales order grosir. Nama produk, SKU, simbol satuan, konversi, dan harga di-**snapshot** saat baris dibuat,
  * sehingga dokumen tetap terbaca apa adanya walau produk, satuan, atau daftar harganya berubah kemudian.
  *
- * `JumlahTerkirim` diisi bertahap oleh surat jalan terposting; SO `Selesai` saat setiap baris terkirim penuh.
+ * `JumlahTerkirim` diisi bertahap oleh surat jalan tercatat; SO `Selesai` saat setiap baris terkirim penuh.
  *
  * @property int $Id
  * @property int $IdTenant

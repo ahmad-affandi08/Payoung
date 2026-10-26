@@ -86,7 +86,7 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
 
         $grn = $terima->Jalankan($permintaan->AmbilData($idGudang, $this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', "{$grn->Nomor} diposting. Stok bertambah dan hutang belum difakturkan tercatat.");
+        return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', "{$grn->Nomor} dicatat. Stok bertambah dan hutang belum difakturkan tercatat.");
     }
 
     public function BuatBelanja(DaftarPemasok $pemasok, DaftarAkunPilihan $akun): Response

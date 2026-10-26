@@ -219,7 +219,7 @@ export default function HalamanDetailStokAwal({
                     ) : null}
                     {Tindakan.Posting ? (
                         <Tombol onClick={() => AturDialog('Posting')} disabled={!KesiapanAkun.Siap}>
-                            Posting stok awal
+                            Catat stok awal
                         </Tombol>
                     ) : null}
                 </div>
@@ -227,8 +227,8 @@ export default function HalamanDetailStokAwal({
 
             <PemantauPosting uuid={StokAwal.Uuid} status={StokAwal.Status} />
             {StokAwal.Status === 'Draf' && StokAwal.PesanGalat ? (
-                <Pemberitahuan jenis="bahaya" judul="Posting terakhir gagal">
-                    {StokAwal.PesanGalat} Perbaiki draf lalu posting ulang.
+                <Pemberitahuan jenis="bahaya" judul="Pencatatan terakhir gagal">
+                    {StokAwal.PesanGalat} Perbaiki draf lalu catat ulang.
                 </Pemberitahuan>
             ) : null}
             {StokAwal.Status === 'Dibatalkan' ? (
@@ -244,9 +244,9 @@ export default function HalamanDetailStokAwal({
             ) : null}
             {Tindakan.Posting ? <PanelKesiapanAkun kesiapan={KesiapanAkun} /> : null}
             {StokAwal.Status === 'Draf' && Izin.Kelola && !Izin.PostingStokAwal ? (
-                <Pemberitahuan jenis="info" judul="Menunggu posting">
-                    Anda bisa mengubah draf ini, tetapi tidak boleh memostingnya. Minta Manajer Outlet, Akuntan, atau
-                    Pemilik toko memostingnya.
+                <Pemberitahuan jenis="info" judul="Menunggu dicatat">
+                    Anda bisa mengubah draf ini, tetapi tidak boleh mencatatnya. Minta Manajer Outlet, Akuntan, atau
+                    Pemilik toko mencatatnya.
                 </Pemberitahuan>
             ) : null}
             {dialog === null ? <DaftarGalatServer galat={galat} /> : null}
@@ -285,7 +285,7 @@ export default function HalamanDetailStokAwal({
                         {StokAwal.DibuatOleh ? ` oleh ${StokAwal.DibuatOleh}` : ''}
                     </Keterangan>
                     {StokAwal.DipostingPada ? (
-                        <Keterangan label="Diposting">
+                        <Keterangan label="Tercatat">
                             {FormatTanggalWaktu(StokAwal.DipostingPada)}
                             {StokAwal.DipostingOleh ? ` oleh ${StokAwal.DipostingOleh}` : ''}
                         </Keterangan>
@@ -358,7 +358,7 @@ export default function HalamanDetailStokAwal({
                         judul:
                             StokAwal.Status === 'Diposting' || StokAwal.Status === 'Dibatalkan'
                                 ? 'Tidak ada jurnal karena total nilai stok awal Rp 0.'
-                                : 'Jurnal dibuat saat stok awal diposting.',
+                                : 'Jurnal dibuat saat stok awal dicatat.',
                     }}
                 />
             </Panel>
@@ -390,8 +390,8 @@ export default function HalamanDetailStokAwal({
             {dialog === 'Posting' ? (
                 <DialogKonfirmasi
                     galatUmum={galat.Umum}
-                    judul="Posting stok awal?"
-                    labelAksi="Posting stok awal"
+                    judul="Catat stok awal?"
+                    labelAksi="Catat stok awal"
                     varian="utama"
                     memproses={memproses}
                     saatKonfirmasi={() => Kirim('posting')}
@@ -419,7 +419,7 @@ export default function HalamanDetailStokAwal({
                             latar belakang. Halaman diperbarui otomatis setelah selesai.
                         </p>
                     ) : null}
-                    <p>Setelah diposting, dokumen tidak bisa diubah. Koreksi dilakukan dengan membatalkannya.</p>
+                    <p>Setelah dicatat, dokumen tidak bisa diubah. Koreksi dilakukan dengan membatalkannya.</p>
                 </DialogKonfirmasi>
             ) : null}
 

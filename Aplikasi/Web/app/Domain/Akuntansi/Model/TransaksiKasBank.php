@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 use LogicException;
 
 /**
- * Dokumen transaksi kas & bank back-office (F-13a, FIN-03), nomor `KB/{YYYY}/{MM}/{SEQ4}`. Jurnal diposting saat
+ * Dokumen transaksi kas & bank back-office (F-13a, FIN-03), nomor `KB/{YYYY}/{MM}/{SEQ4}`. Jurnal dicatat saat
  * simpan (`JenisSumberJurnal::TransaksiKasBank`). Append-only (aturan #8): tidak pernah diubah atau dihapus; koreksi =
  * dokumen pembalik (`IdTransaksiDibalik`). `PathLampiran` tidak pernah dikirim ke browser.
  *

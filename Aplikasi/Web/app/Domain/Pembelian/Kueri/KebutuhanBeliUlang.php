@@ -24,7 +24,7 @@ use Carbon\CarbonImmutable;
  * D-23 D: barang yang perlu dibeli ulang per (lokasi stok, pemasok). Kritis = saldo ≤ stok minimum. Jumlah dipesan
  * sampai stok maksimum (bila kosong: 2 × minimum), dikurangi saldo dan sisa PO terbuka (Draf s.d. Diterima sebagian)
  * sehingga menjalankan ulang tidak menggandakan pesanan. Pemasok, satuan, dan harga dari pembelian terakhir produk itu
- * (penerimaan barang yang diposting, lalu PO yang tidak dibatalkan). Produk tanpa riwayat pembelian atau pemasoknya
+ * (penerimaan barang yang dicatat, lalu PO yang tidak dibatalkan). Produk tanpa riwayat pembelian atau pemasoknya
  * nonaktif dilaporkan terpisah (tidak bisa dibuatkan draf).
  */
 final class KebutuhanBeliUlang
@@ -257,7 +257,7 @@ final class KebutuhanBeliUlang
     }
 
     /**
-     * Pembelian terakhir per produk: penerimaan barang diposting (berpemasok), lalu PO yang tidak dibatalkan.
+     * Pembelian terakhir per produk: penerimaan barang dicatat (berpemasok), lalu PO yang tidak dibatalkan.
      *
      * @param  list<int>  $idProduk
      * @return array<int, array{IdPemasok: int, IdProdukSatuan: int|null, Konversi: string, Harga: string}>

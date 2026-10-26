@@ -39,7 +39,7 @@ use Throwable;
  * - Masuk/Keluar wajib kategori aktif yang jenisnya sama; Setoran tanpa kategori.
  * - BR-06.4: kas keluar di atas batas (`PengaturanKasirTenant`, bawaan Rp 200.000) wajib `UuidPenyetuju` yang punya
  *   izin `kas.keluar.setujui` di outlet itu. PIN diperiksa di perangkat; server memeriksa kewenangannya.
- * - Jurnal (J-06.1 / kas masuk / J-11.3) diposting sinkron di transaksi yang sama (aturan #10).
+ * - Jurnal (J-06.1 / kas masuk / J-11.3) dicatat sinkron di transaksi yang sama (aturan #10).
  * - K-18: foto bukti opsional (bukan untuk setoran) disimpan sebelum transaksi; dihapus lagi bila item ditolak atau
  *   ternyata duplikat.
  */

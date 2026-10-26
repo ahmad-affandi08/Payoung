@@ -12,7 +12,7 @@ use LogicException;
 
 /**
  * Resep dokter yang menyertai satu penjualan obat wajib resep (Sektor Apotek bagian 1, PRD §9.5, PMK 73/2016). Dibuat
- * bersama penjualan di transaksi penerimaan, append-only (bagian dokumen yang sudah diposting), tidak pernah dihapus.
+ * bersama penjualan di transaksi penerimaan, append-only (bagian dokumen yang sudah dicatat), tidak pernah dihapus.
  *
  * Data pasien = data kesehatan pribadi: `NamaPasien` & `AlamatPasien` terenkripsi saat disimpan dan tidak boleh ditulis
  * ke log; tampil utuh hanya untuk pemegang izin `apotek.resep.lihat`.

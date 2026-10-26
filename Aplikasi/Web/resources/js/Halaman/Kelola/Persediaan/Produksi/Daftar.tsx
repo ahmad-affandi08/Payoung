@@ -85,7 +85,7 @@ const kolom: KolomTabel<BarisDaftarOrderProduksi>[] = [
                     </span>
                 </>
             ) : (
-                'Saat diposting'
+                'Saat dicatat'
             ),
     },
 ];

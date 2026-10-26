@@ -127,7 +127,7 @@ final class PesananGrosirKontroler extends DasarGrosirKontroler
         $suratJalan = $kirim->Jalankan($permintaan->AmbilData($dokumen->Uuid, $gudang->id), $this->Pelaku()->Id);
 
         return to_route('kelola.grosir.surat-jalan.detail', ['suratJalan' => $suratJalan->Uuid])
-            ->with('Kilat', "Surat jalan {$suratJalan->Nomor} diposting: stok keluar dan penjualannya diakui.");
+            ->with('Kilat', "Surat jalan {$suratJalan->Nomor} dicatat: stok keluar dan penjualannya diakui.");
     }
 
     /**

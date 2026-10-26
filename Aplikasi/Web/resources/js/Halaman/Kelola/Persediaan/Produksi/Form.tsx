@@ -274,7 +274,7 @@ export default function HalamanFormOrderProduksi({
                 <Panel
                     judul="Hasil produksi"
                     idJudul="judul-hasil-produksi"
-                    keterangan="Stok berubah setelah order diposting dari halaman detail, bukan saat draf disimpan."
+                    keterangan="Stok berubah setelah order dicatat dari halaman detail, bukan saat draf disimpan."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangOutlet

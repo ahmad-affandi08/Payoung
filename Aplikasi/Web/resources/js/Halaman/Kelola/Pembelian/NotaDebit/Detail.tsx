@@ -43,7 +43,7 @@ export default function HalamanDetailNotaDebit({ Nota, Baris, Jurnal, Izin, Tind
                 <Keterangan label="Status">
                     <LabelStatusPembelian
                         status={Nota.Status}
-                        label={Nota.Status === 'Diposting' ? 'Diposting' : 'Dibatalkan'}
+                        label={Nota.Status === 'Diposting' ? 'Tercatat' : 'Dibatalkan'}
                     />
                 </Keterangan>
                 <Keterangan label="Tanggal">{FormatTanggal(Nota.Tanggal)}</Keterangan>

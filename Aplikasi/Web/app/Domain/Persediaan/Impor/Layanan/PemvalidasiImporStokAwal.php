@@ -244,7 +244,7 @@ final class PemvalidasiImporStokAwal
             }
 
             if ($infoProduk !== null && $infoGudang !== null && isset($sudahAda[$infoProduk->id.'|'.$infoGudang->id])) {
-                $galat[] = self::Galat('Produk', "Stok awal {$infoProduk->nama} di {$infoGudang->nama} sudah diposting. Koreksi lewat penyesuaian stok.");
+                $galat[] = self::Galat('Produk', "Stok awal {$infoProduk->nama} di {$infoGudang->nama} sudah dicatat. Koreksi lewat penyesuaian stok.");
             }
 
             $perubahan = ['Status' => StatusBarisImporStokAwal::Valid->value, 'Galat' => null];

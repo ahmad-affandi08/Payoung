@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
  * - **Notifikasi pembayaran** (jalur lain, misal `v1.0/transfer-va/payment`, `v1.0/qr/qr-mpm-notify`, `v1.0/debit/notify`):
  *   DOKU menambahkan jalur tetap ke URL notifikasi yang disetel di dasbor, jadi semua jalur ditampung di sini.
  *
- * QRIS (SNAP maupun bukan) memakai notifikasi berformat Non-SNAP (jawaban dukungan DOKU), yang diposting ke URL dasar
+ * QRIS (SNAP maupun bukan) memakai notifikasi berformat Non-SNAP (jawaban dukungan DOKU), yang dicatat ke URL dasar
  * tanpa jalur tambahan; karena itu `{jalur?}` opsional dan nomor pesanan dicari di seluruh badan.
  *
  * Notifikasi tidak melunasi apa pun; ia hanya memicu pertanyaan status ke DOKU (`ProsesPemicuSnapLangganan`). Karena itu

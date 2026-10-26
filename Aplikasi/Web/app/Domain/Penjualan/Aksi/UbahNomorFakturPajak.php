@@ -11,7 +11,7 @@ use App\Domain\Penjualan\Model\FakturPenjualan;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Nomor Faktur Pajak (NSFP dari Coretax) di faktur grosir terposting. Satu-satunya kolom faktur yang boleh berubah
+ * Nomor Faktur Pajak (NSFP dari Coretax) di faktur grosir tercatat. Satu-satunya kolom faktur yang boleh berubah
  * setelah posting (`FakturPenjualan::AmbilKolomBolehBerubah`); dikunci barisnya dan dicatat nilai lama/baru di audit
  * karena nomor ini masuk ekspor XML Faktur Pajak Keluaran.
  */

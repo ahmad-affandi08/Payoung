@@ -27,7 +27,7 @@ use Inertia\Response;
 
 /**
  * Halaman & aksi order produksi F-05e (routes/PersediaanDokumen.php): daftar, form draf (bahan dari resep), detail,
- * posting (stok + jurnal J-05.6), batalkan (draf, atau terposting dengan pembalik). Lokasi di luar outlet pelaku = 404.
+ * posting (stok + jurnal J-05.6), batalkan (draf, atau tercatat dengan pembalik). Lokasi di luar outlet pelaku = 404.
  */
 final class OrderProduksiKontroler extends DasarDokumenPersediaanKontroler
 {
@@ -84,7 +84,7 @@ final class OrderProduksiKontroler extends DasarDokumenPersediaanKontroler
         $order = $simpan->Jalankan($permintaan->AmbilData($gudang->id), null);
 
         return redirect()->route(self::ALAMAT, ['orderProduksi' => $order->Uuid])
-            ->with('Kilat', 'Draf order produksi disimpan. Periksa bahan, lalu posting supaya stok dan jurnal tercatat.');
+            ->with('Kilat', 'Draf order produksi disimpan. Periksa bahan, lalu catat supaya stok dan jurnal tercatat.');
     }
 
     public function Detail(string $orderProduksi, DetailOrderProduksi $detail): Response
@@ -129,7 +129,7 @@ final class OrderProduksiKontroler extends DasarDokumenPersediaanKontroler
     {
         $o = $posting->Jalankan($this->CariOrder($orderProduksi), $this->Pelaku()->Id);
 
-        return redirect()->route(self::ALAMAT, ['orderProduksi' => $o->Uuid])->with('Kilat', "Produksi {$o->Nomor} diposting. Bahan berkurang, hasil bertambah, dan jurnal sudah dicatat.");
+        return redirect()->route(self::ALAMAT, ['orderProduksi' => $o->Uuid])->with('Kilat', "Produksi {$o->Nomor} dicatat. Bahan berkurang, hasil bertambah, dan jurnal sudah dicatat.");
     }
 
     public function Batalkan(Request $permintaan, string $orderProduksi, BatalkanOrderProduksi $batalkan): RedirectResponse

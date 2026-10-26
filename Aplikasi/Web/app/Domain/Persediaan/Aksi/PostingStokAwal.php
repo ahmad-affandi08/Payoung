@@ -92,11 +92,11 @@ final class PostingStokAwal
         }
 
         if ($dokumen->Status === StatusStokAwal::Memproses && ! $dariAntrean) {
-            throw new PelanggaranAturanBisnis('SedangDiproses', 'Stok awal ini sedang diposting di latar belakang. Tunggu sampai selesai.');
+            throw new PelanggaranAturanBisnis('SedangDiproses', 'Stok awal ini sedang dicatat di latar belakang. Tunggu sampai selesai.');
         }
 
         if ($dokumen->Status !== StatusStokAwal::Draf && $dokumen->Status !== StatusStokAwal::Memproses) {
-            throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa diposting.");
+            throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa dicatat.");
         }
 
         $statusAwal = $dokumen->Status;

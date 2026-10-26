@@ -51,7 +51,7 @@ final class JurnalUmumKontroler extends DasarAkuntansiKontroler
         );
         $dokumen = $catat->Jalankan($data);
         $pesan = $dokumen->wasRecentlyCreated
-            ? "{$dokumen->Jenis->AmbilLabel()} {$dokumen->Nomor} disimpan dan diposting."
+            ? "{$dokumen->Jenis->AmbilLabel()} {$dokumen->Nomor} disimpan dan dicatat."
             : "{$dokumen->Nomor} sudah tercatat dari kiriman sebelumnya; tidak dibuat dua kali.";
 
         return to_route('kelola.akuntansi.jurnal-umum.detail', ['jurnalUmum' => $dokumen->Uuid])->with('Kilat', $pesan);

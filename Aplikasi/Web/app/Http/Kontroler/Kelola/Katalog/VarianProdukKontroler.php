@@ -45,7 +45,7 @@ final class VarianProdukKontroler extends DasarKatalogKontroler
 
     /**
      * Grid ukuran × warna (§9.4, D-143): stok awal banyak varian sekaligus, satu dokumen stok awal yang langsung
-     * diposting. Hanya varian induk ini yang berjenis berstok tanpa pelacakan batch/seri; selain itu ditolak dengan
+     * dicatat. Hanya varian induk ini yang berjenis berstok tanpa pelacakan batch/seri; selain itu ditolak dengan
      * pesan yang menyebut variannya. Izin: kelola & posting stok awal, lokasi dalam outlet akses pelaku.
      */
     public function CatatStokAwal(string $produk, CatatStokAwalVarianPermintaan $permintaan, CatatStokAwalBanyakProduk $catat): RedirectResponse

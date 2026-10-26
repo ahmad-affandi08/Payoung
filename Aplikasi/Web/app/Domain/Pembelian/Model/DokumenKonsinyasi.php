@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
 /**
  * Dokumen konsinyasi `KS/{OUTLET}/{YYMM}/{SEQ4}` (F-05i): titipan **Masuk** dari penitip (dinilai harga titip) atau
  * **Retur** sisa titipan ke penitip (dinilai HPP berjalan). Hanya mutasi stok, tanpa jurnal: barang titipan bukan aset
- * toko. Langsung diposting saat disimpan dan tidak pernah diubah; koreksi = dokumen berlawanan.
+ * toko. Langsung dicatat saat disimpan dan tidak pernah diubah; koreksi = dokumen berlawanan.
  *
  * @property int $Id
  * @property string $Uuid

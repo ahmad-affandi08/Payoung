@@ -59,7 +59,7 @@ final class ReturPembelianKontroler extends DasarPembelianKontroler
         $this->CariDokumen(PenerimaanBarang::class, (string) $permintaan->validated('UuidPenerimaan'));
         $retur = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.retur.detail', ['retur' => $retur->Uuid])->with('Kilat', "{$retur->Nomor} diposting. Stok berkurang, hutang pemasok dikurangi, dan uang yang dikembalikan pemasok dicatat ke akun kas/bank.");
+        return to_route('kelola.pembelian.retur.detail', ['retur' => $retur->Uuid])->with('Kilat', "{$retur->Nomor} dicatat. Stok berkurang, hutang pemasok dikurangi, dan uang yang dikembalikan pemasok dicatat ke akun kas/bank.");
     }
 
     public function Detail(string $retur, DetailPembelian $detail): Response

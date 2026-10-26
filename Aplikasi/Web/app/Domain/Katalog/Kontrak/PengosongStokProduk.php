@@ -21,10 +21,10 @@ interface PengosongStokProduk
     public function Pratinjau(array $idProduk): array;
 
     /**
-     * Menghabiskan stok semua lokasi, diposting langsung atas nama [$idPengguna].
+     * Menghabiskan stok semua lokasi, dicatat langsung atas nama [$idPengguna].
      *
      * @param  list<int>  $idProduk
-     * @return int jumlah dokumen penyesuaian yang diposting
+     * @return int jumlah dokumen penyesuaian yang dicatat
      */
     public function Jalankan(array $idProduk, int $idPengguna, string $namaProduk): int;
 }

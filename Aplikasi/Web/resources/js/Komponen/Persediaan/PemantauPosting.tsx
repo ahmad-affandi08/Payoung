@@ -23,7 +23,7 @@ async function AmbilStatusPosting(uuid: string, sinyal: AbortSignal): Promise<St
     });
 
     if (!respons.ok) {
-        throw new Error(`Status posting gagal dibaca (${String(respons.status)})`);
+        throw new Error(`Status pencatatan gagal dibaca (${String(respons.status)})`);
     }
 
     return (await respons.json()) as StatusPostingStokAwal;
@@ -56,7 +56,7 @@ export default function PemantauPosting({ uuid, status }: { uuid: string; status
     }
 
     return (
-        <Pemberitahuan jenis="info" judul="Stok awal sedang diposting">
+        <Pemberitahuan jenis="info" judul="Stok awal sedang dicatat">
             <p className="flex items-center gap-2" aria-live="polite">
                 <Spinner role={undefined} aria-label={undefined} aria-hidden="true" />
                 {terbaru?.LabelStatus ?? 'Memproses'}: stok, HPP, dan jurnal sedang dicatat.

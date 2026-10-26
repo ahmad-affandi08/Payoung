@@ -193,7 +193,7 @@ export default function HalamanFormPenyesuaianStok({
                 <Panel
                     judul="Dokumen"
                     idJudul="judul-dokumen-penyesuaian"
-                    keterangan="Stok berubah setelah penyesuaian diajukan dan diposting, bukan saat draf disimpan."
+                    keterangan="Stok berubah setelah penyesuaian diajukan dan dicatat, bukan saat draf disimpan."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangOutlet
@@ -272,7 +272,7 @@ export default function HalamanFormPenyesuaianStok({
                         keterangan={
                             gudang === ''
                                 ? 'Pilih lokasi stok dulu.'
-                                : 'Stok keluar dinilai HPP saat diposting. Stok masuk hanya untuk alasan Lainnya.'
+                                : 'Stok keluar dinilai HPP saat dicatat. Stok masuk hanya untuk alasan Lainnya.'
                         }
                     />
                     {galatServer.Baris ? (

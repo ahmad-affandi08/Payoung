@@ -129,7 +129,7 @@ export default function HalamanDaftarStokAwal({
     return (
         <TataLetakAplikasi judul="Stok awal">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Catat jumlah dan harga modal barang yang sudah ada saat mulai memakai aplikasi. Setelah diposting, stok
+                Catat jumlah dan harga modal barang yang sudah ada saat mulai memakai aplikasi. Setelah dicatat, stok
                 dan HPP tercatat serta jurnal saldo awal dibuat otomatis.
             </p>
 

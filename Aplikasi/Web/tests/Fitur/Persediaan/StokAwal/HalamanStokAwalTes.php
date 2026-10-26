@@ -43,7 +43,7 @@ describe('F-05a halaman stok awal', function (): void {
             ->where('StokAwal.Meta.Total', 1)
             ->where('StokAwal.Data.0.Uuid', $utama->Uuid)
             ->where('StokAwal.Data.0.Nomor', $utama->Nomor)
-            ->where('StokAwal.Data.0.LabelStatus', 'Diposting')
+            ->where('StokAwal.Data.0.LabelStatus', 'Tercatat')
             ->where('StokAwal.Data.0.TotalNilai', '380000.00')
             ->where('StokAwal.Data.0.NamaGudang', $t['Gudang']->Nama));
 

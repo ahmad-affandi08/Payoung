@@ -39,7 +39,7 @@ const alamat = '/kelola/akuntansi/pencairan';
  * metode/outlet memuat ulang halamannya alih-alih menyaring di peramban.
  *
  * Yang diisi operator cuma **jumlah yang masuk rekening**; potongan platformnya dihitung sebagai selisih, dan perkiraan
- * dari pengaturan metode ditampilkan di sebelahnya supaya selisih yang tidak wajar langsung terlihat sebelum diposting.
+ * dari pengaturan metode ditampilkan di sebelahnya supaya selisih yang tidak wajar langsung terlihat sebelum dicatat.
  */
 export default function HalamanBuatPencairan({
     OpsiMetode,

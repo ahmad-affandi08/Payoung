@@ -51,7 +51,7 @@ use Illuminate\Support\Facades\DB;
  *
  * 1. stok keluar lewat `MutasiStok` (`JenisMutasi::Penjualan`, nilai HPP berjalan) — stok kurang ditolak BR-05.2;
  * 2. angka dokumen dihitung `PenghitungGrosir` dengan tarif pada **tanggal penyerahan**, bukan tanggal SO;
- * 3. jurnal J-12.1 diposting: Dr HPP + Dr Piutang Belum Difakturkan / Cr persediaan + Cr Penjualan + Cr PPN Keluaran;
+ * 3. jurnal J-12.1 dicatat: Dr HPP + Dr Piutang Belum Difakturkan / Cr persediaan + Cr Penjualan + Cr PPN Keluaran;
  * 4. `JumlahTerkirim` baris SO bertambah dan status SO menjadi SebagianDikirim atau Selesai.
  *
  * Harga & diskon **tidak pernah datang dari klien**: disalin dari snapshot baris SO yang sudah dikonfirmasi. Diskon

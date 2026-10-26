@@ -27,7 +27,7 @@ enum StatusOrderProduksi: string
     {
         return match ($this) {
             self::Draf => 'Draf',
-            self::Diposting => 'Diposting',
+            self::Diposting => 'Tercatat',
             self::Dibatalkan => 'Dibatalkan',
         };
     }

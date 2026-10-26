@@ -47,7 +47,7 @@ use LogicException;
  * @property string|null $NomorKendaraan
  * @property string|null $NamaPenerima
  * @property string|null $Catatan
- * @property StatusPengirimanGrosir $StatusPengiriman kabar lapangan (bukan status akuntansi), boleh berubah setelah diposting
+ * @property StatusPengirimanGrosir $StatusPengiriman kabar lapangan (bukan status akuntansi), boleh berubah setelah dicatat
  * @property int|null $IdArmada
  * @property Carbon|null $BerangkatPada
  * @property Carbon|null $DiterimaPada
@@ -79,7 +79,7 @@ final class SuratJalan extends ModelDasar
         // Diisi saat surat jalan masuk faktur penjualan (J-12.2); bukan perubahan isi dokumen.
         'IdFakturPenjualan',
         // Hasil posting dokumen ini sendiri, di transaksi yang sama: HPP baru diketahui setelah mutasi stok dicatat
-        // (nilai HPP berjalan) dan nomor jurnal setelah jurnalnya diposting. Cermin `PenerimaanBarang`.
+        // (nilai HPP berjalan) dan nomor jurnal setelah jurnalnya dicatat. Cermin `PenerimaanBarang`.
         'IdJurnal', 'TotalHpp',
         // Pelacakan pengiriman (kabar lapangan): berubah-ubah tanpa menyentuh angka dokumen. `NamaPengirim`, `NomorKendaraan`
         // dan `NamaPenerima` ikut diperbarui karena itulah yang tercetak.

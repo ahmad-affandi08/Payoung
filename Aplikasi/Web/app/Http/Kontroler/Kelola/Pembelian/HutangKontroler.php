@@ -119,7 +119,7 @@ final class HutangKontroler extends DasarPembelianKontroler
 
         $p = $simpan->Jalankan($data);
 
-        return to_route('kelola.pembelian.pembayaran.detail', ['pembayaran' => $p->Uuid])->with('Kilat', "{$p->Nomor} diposting. Sisa hutang faktur sudah berkurang.");
+        return to_route('kelola.pembelian.pembayaran.detail', ['pembayaran' => $p->Uuid])->with('Kilat', "{$p->Nomor} dicatat. Sisa hutang faktur sudah berkurang.");
     }
 
     public function Detail(string $pembayaran, DetailPembelian $detail): Response

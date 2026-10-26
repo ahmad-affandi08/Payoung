@@ -24,7 +24,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Menerbitkan faktur penjualan grosir atas surat jalan terposting (F-12, §9.7, **BR-12.4** & **BR-12.5**, J-12.2).
+ * Menerbitkan faktur penjualan grosir atas surat jalan tercatat (F-12, §9.7, **BR-12.4** & **BR-12.5**, J-12.2).
  *
  * **Faktur gabungan dibatasi satu bulan kalender** karena begitulah bunyi UU PPN Pasal 13 ayat (2)/(2a): satu Faktur
  * Pajak gabungan boleh memuat seluruh penyerahan kepada pembeli yang sama dalam satu bulan kalender, dibuat paling lama

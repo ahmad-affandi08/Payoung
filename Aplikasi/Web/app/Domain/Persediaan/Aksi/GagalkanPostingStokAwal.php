@@ -11,7 +11,7 @@ use App\Domain\Persediaan\Model\StokAwal;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Posting stok awal di antrean gagal (DesainF05a C.6.3): di transaksi baru, dokumen yang masih Memproses kembali ke
+ * Catat stok awal di antrean gagal (DesainF05a C.6.3): di transaksi baru, dokumen yang masih Memproses kembali ke
  * Draf dengan `PesanGalat` (ditampilkan di detail), riwayat status, dan audit `stok-awal.posting-gagal`. Dokumen
  * yang sudah tidak Memproses dibiarkan (idempoten).
  */

@@ -7,7 +7,7 @@ namespace App\Domain\Persediaan\Enum;
 /**
  * Status penyesuaian stok (F-05b). Perubahan hanya lewat `BisaBerubahKe()` dan dicatat di `RiwayatStatusDokumen`:
  * Draf → MenungguPersetujuan | Diposting | Dibatalkan; MenungguPersetujuan → Diposting (disetujui) | Draf (ditolak).
- * Diposting & Dibatalkan final; koreksi dokumen terposting = penyesuaian baru.
+ * Diposting & Dibatalkan final; koreksi dokumen tercatat = penyesuaian baru.
  */
 enum StatusPenyesuaianStok: string
 {
@@ -30,7 +30,7 @@ enum StatusPenyesuaianStok: string
         return match ($this) {
             self::Draf => 'Draf',
             self::MenungguPersetujuan => 'Menunggu persetujuan',
-            self::Diposting => 'Diposting',
+            self::Diposting => 'Tercatat',
             self::Dibatalkan => 'Dibatalkan',
         };
     }

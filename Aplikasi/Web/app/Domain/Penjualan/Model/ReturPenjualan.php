@@ -16,7 +16,7 @@ use LogicException;
 /**
  * Retur penjualan (PRD §15 `ReturPenjualan`, F-09 fase 1): dokumen retur terpisah dari penjualan asal, dibuat di
  * aplikasi POS dan diterima lewat sinkron `ReturPenjualan.Buat`. Snapshot nilai hasil hitung server. Append-only;
- * hanya `IdJurnal` diisi sekali di transaksi penerimaan (setelah jurnal J-09.2 diposting).
+ * hanya `IdJurnal` diisi sekali di transaksi penerimaan (setelah jurnal J-09.2 dicatat).
  *
  * @property int $Id
  * @property string $Uuid

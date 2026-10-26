@@ -68,7 +68,7 @@ final class ReturGrosirKontroler extends DasarGrosirKontroler
         $retur = $buat->Jalankan($permintaan->AmbilData(), $this->Pelaku()->Id);
 
         return to_route('kelola.grosir.retur.detail', ['retur' => $retur->Uuid])
-            ->with('Kilat', "Retur {$retur->Nomor} diposting: stok kembali dan pengakuan penjualannya dibalik.");
+            ->with('Kilat', "Retur {$retur->Nomor} dicatat: stok kembali dan pengakuan penjualannya dibalik.");
     }
 
     public function Detail(string $retur, DetailGrosir $detail): Response

@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 
 /**
  * Audit kemudahan pakai #11: "Stok sekarang" + "Harga beli" di formulir produk baru menjadi dokumen stok awal satu
- * baris yang langsung diposting (J-05.1: Dr Persediaan / Cr Ekuitas Saldo Awal, mutasi `StokAwal`), memakai
+ * baris yang langsung dicatat (J-05.1: Dr Persediaan / Cr Ekuitas Saldo Awal, mutasi `StokAwal`), memakai
  * `SimpanStokAwal` + `PostingStokAwal` yang sama dengan halaman Stok awal sehingga semua pemeriksaannya berlaku
  * (lokasi aktif, pemetaan akun, stok awal ganda). Tanggal = tanggal bisnis outlet lokasi stok hari ini. Hanya untuk
  * produk tanpa pelacakan batch/seri (pemanggil memastikannya). Dipanggil di transaksi DB yang sama dengan pembuatan

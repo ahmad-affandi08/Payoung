@@ -36,7 +36,7 @@ type PropsPemilihProdukStok = {
     saatPilih: (produk: ProdukStokTerpilih) => void;
     /** Uuid produk yang tidak ditawarkan lagi (sudah ada di dokumen). */
     kecuali?: string[];
-    /** Form stok awal: produk yang stok awalnya sudah diposting di lokasi ini tidak bisa dipilih (StokAwalSudahAda). */
+    /** Form stok awal: produk yang stok awalnya sudah dicatat di lokasi ini tidak bisa dipilih (StokAwalSudahAda). */
     tolakStokAwalAda?: boolean;
     keterangan?: string;
     galat?: string | undefined;
@@ -166,7 +166,7 @@ export default function PemilihProdukStok({
                         </span>
                         {tertolak ? (
                             <span className="text-keterangan font-semibold text-teks-sekunder">
-                                Stok awal sudah diposting di lokasi ini
+                                Stok awal sudah dicatat di lokasi ini
                             </span>
                         ) : null}
                     </CommandItem>

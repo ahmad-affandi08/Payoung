@@ -9,7 +9,7 @@ namespace App\Domain\Penjualan\Enum;
  * `RiwayatStatusDokumen`:
  *
  * - `Draf` → `Dikonfirmasi` | `Dibatalkan`
- * - `Dikonfirmasi` → `SebagianDikirim` | `Selesai` | `Dibatalkan` (batal hanya selama belum ada surat jalan terposting)
+ * - `Dikonfirmasi` → `SebagianDikirim` | `Selesai` | `Dibatalkan` (batal hanya selama belum ada surat jalan tercatat)
  * - `SebagianDikirim` → `Selesai` | `Dikonfirmasi` (semua surat jalannya dibatalkan)
  * - `Selesai` → `SebagianDikirim` | `Dikonfirmasi` (surat jalan dibatalkan sehingga tidak lagi terkirim penuh)
  * - `Dibatalkan` final

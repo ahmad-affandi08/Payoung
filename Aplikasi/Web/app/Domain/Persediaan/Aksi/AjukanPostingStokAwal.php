@@ -42,7 +42,7 @@ final class AjukanPostingStokAwal
             }
 
             if ($dokumen->Status !== StatusStokAwal::Draf) {
-                throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa diposting.");
+                throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa dicatat.");
             }
 
             $dokumen->UbahStatus(StatusStokAwal::Memproses);

@@ -99,7 +99,7 @@ export default function HalamanPengaturanPersediaan({
                         {...(MetodeHppTerkunci
                             ? {}
                             : {
-                                  keterangan: 'Pilih sebelum stok awal pertama diposting. Setelah itu metode terkunci.',
+                                  keterangan: 'Pilih sebelum stok awal pertama dicatat. Setelah itu metode terkunci.',
                               })}
                     />
                 </Panel>
@@ -153,7 +153,7 @@ export default function HalamanPengaturanPersediaan({
                 >
                     <p>Semua barang yang keluar akan dinilai dengan metode ini.</p>
                     <p>
-                        Setelah mutasi stok pertama tercatat (misalnya stok awal diposting), metode tidak bisa diubah
+                        Setelah mutasi stok pertama tercatat (misalnya stok awal dicatat), metode tidak bisa diubah
                         lagi.
                     </p>
                     {galat.MetodeHpp ? <span className="font-semibold text-bahaya">{galat.MetodeHpp}</span> : null}

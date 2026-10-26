@@ -325,7 +325,7 @@ export default function HalamanFormStokAwal({
                                                     </span>
                                                     {CekSaldoMinus(baris.SaldoDiGudang) ? (
                                                         <span className="block text-keterangan font-semibold text-peringatan">
-                                                            Stok minus. Selisih HPP dicatat saat posting.
+                                                            Stok minus. Selisih HPP dicatat saat stok awal dicatat.
                                                         </span>
                                                     ) : null}
                                                 </th>
@@ -463,7 +463,7 @@ export default function HalamanFormStokAwal({
 
                 <BilahAksiForm>
                     <Tombol type="submit" memproses={memproses} onClick={() => (lanjutkan.current = true)}>
-                        Simpan & posting
+                        Simpan & catat
                     </Tombol>
                     <Tombol
                         type="submit"
@@ -478,7 +478,7 @@ export default function HalamanFormStokAwal({
                     </Button>
                 </BilahAksiForm>
                 <p className="text-keterangan text-teks-sekunder">
-                    Draf belum mengubah stok. Stok dan jurnal tercatat setelah draf diposting dari halaman detail.
+                    Draf belum mengubah stok. Stok dan jurnal tercatat setelah draf dicatat dari halaman detail.
                 </p>
             </form>
         </TataLetakAplikasi>

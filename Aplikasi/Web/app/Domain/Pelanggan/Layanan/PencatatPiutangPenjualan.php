@@ -426,7 +426,7 @@ final class PencatatPiutangPenjualan
 
     /**
      * Angka piutang bersumber invoice untuk ringkasan penagihan (F-21): piutang beredar (terbuka), yang sudah lewat jatuh
-     * tempo per `$hariIni`, dan uang yang diterima (alokasi pelunasan berstatus diposting) dalam rentang `$dari`–`$sampai`
+     * tempo per `$hariIni`, dan uang yang diterima (alokasi pelunasan berstatus dicatat) dalam rentang `$dari`–`$sampai`
      * (inklusif, `YYYY-MM-DD`). Nilai uang string desimal; `$idOutlet` null = semua outlet.
      *
      * @param  list<int>|null  $idOutlet

@@ -18,7 +18,7 @@ use LogicException;
 /**
  * Biaya tambahan pembelian `BY/{YYMM}/{SEQ4}` (v3.41, INV-14): biaya pihak ketiga atas satu penerimaan barang,
  * dibayar dari kas/bank. `KePersediaan` menaikkan nilai stok yang masih ada, `KeHpp` untuk barang yang sudah terjual.
- * Langsung diposting; pembatalan = mutasi & jurnal pembalik, hanya selama stoknya belum bergerak lagi.
+ * Langsung dicatat; pembatalan = mutasi & jurnal pembalik, hanya selama stoknya belum bergerak lagi.
  *
  * @property int $Id
  * @property string $Uuid

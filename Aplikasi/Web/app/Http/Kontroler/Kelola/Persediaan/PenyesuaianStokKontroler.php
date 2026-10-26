@@ -108,7 +108,7 @@ final class PenyesuaianStokKontroler extends DasarDokumenPersediaanKontroler
     {
         $p = $ajukan->Jalankan($this->CariPenyesuaian($penyesuaianStok), $this->Pelaku()->Id);
         $pesan = $p->Status === StatusPenyesuaianStok::Diposting
-            ? "Penyesuaian {$p->Nomor} diposting. Stok dan jurnal sudah dicatat."
+            ? "Penyesuaian {$p->Nomor} dicatat. Stok dan jurnal sudah dicatat."
             : 'Nilai penyesuaian di atas batas. Penyesuaian menunggu persetujuan pengguna lain yang berwenang.';
 
         return redirect()->route(self::ALAMAT, ['penyesuaianStok' => $p->Uuid])->with('Kilat', $pesan);
@@ -118,7 +118,7 @@ final class PenyesuaianStokKontroler extends DasarDokumenPersediaanKontroler
     {
         $p = $setujui->Jalankan($this->CariPenyesuaian($penyesuaianStok), $this->Pelaku()->Id);
 
-        return redirect()->route(self::ALAMAT, ['penyesuaianStok' => $p->Uuid])->with('Kilat', "Penyesuaian {$p->Nomor} disetujui dan diposting.");
+        return redirect()->route(self::ALAMAT, ['penyesuaianStok' => $p->Uuid])->with('Kilat', "Penyesuaian {$p->Nomor} disetujui dan dicatat.");
     }
 
     public function Tolak(AlasanDokumenPersediaanPermintaan $permintaan, string $penyesuaianStok, TolakPenyesuaianStok $tolak): RedirectResponse

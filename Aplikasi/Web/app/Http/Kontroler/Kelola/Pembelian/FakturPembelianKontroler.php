@@ -74,7 +74,7 @@ final class FakturPembelianKontroler extends DasarPembelianKontroler
 
         $faktur = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.faktur.detail', ['faktur' => $faktur->Uuid])->with('Kilat', "{$faktur->Nomor} diposting. Hutang usaha tercatat, jatuh tempo {$faktur->JatuhTempo->format('d/m/Y')}.");
+        return to_route('kelola.pembelian.faktur.detail', ['faktur' => $faktur->Uuid])->with('Kilat', "{$faktur->Nomor} dicatat. Hutang usaha tercatat, jatuh tempo {$faktur->JatuhTempo->format('d/m/Y')}.");
     }
 
     public function Detail(string $faktur, DetailPembelian $detail, DaftarNotaDebit $notaDebit): Response

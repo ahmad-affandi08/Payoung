@@ -14,7 +14,7 @@ use LogicException;
 /**
  * Baris penyesuaian stok (F-05b). `Jumlah` bertanda dalam satuan dasar: + masuk (wajib `HppSatuan`), − keluar
  * (dinilai HPP berjalan). Batch: keluar menyebut `IdBatchStok`, masuk `NomorBatch` + kedaluwarsa; seri: satu baris
- * per nomor seri. `Nilai` (bertanda) diisi saat diposting. Isi hanya berubah selama dokumennya Draf.
+ * per nomor seri. `Nilai` (bertanda) diisi saat dicatat. Isi hanya berubah selama dokumennya Draf.
  *
  * @property int $Id
  * @property int $IdTenant
@@ -49,7 +49,7 @@ final class PenyesuaianStokDetail extends ModelDasar
         $jaga = function (self $baris): void {
             $nilai = PenyesuaianStok::query()->whereKey($baris->IdPenyesuaianStok)->sharedLock()->value('Status');
             $status = $nilai instanceof StatusPenyesuaianStok ? $nilai : StatusPenyesuaianStok::tryFrom((string) $nilai);
-            // Nilai sebenarnya diisi saat diposting, juga dari MenungguPersetujuan (disetujui).
+            // Nilai sebenarnya diisi saat dicatat, juga dari MenungguPersetujuan (disetujui).
             $hanyaNilai = array_diff(array_keys($baris->getDirty()), ['Nilai', 'DiubahPada']) === [];
 
             if ($status !== StatusPenyesuaianStok::Draf && ! ($hanyaNilai && $status === StatusPenyesuaianStok::MenungguPersetujuan)) {

@@ -76,11 +76,11 @@ const kolom: KolomTabel<BahanDetailOrderProduksi>[] = [
         header: 'Nilai',
         enableSorting: false,
         meta: { label: 'Nilai bahan (HPP)', angka: true, prioritas: 'penting' },
-        cell: ({ row }) => (row.original.Nilai === null ? 'Saat diposting' : FormatNilai(row.original.Nilai)),
+        cell: ({ row }) => (row.original.Nilai === null ? 'Saat dicatat' : FormatNilai(row.original.Nilai)),
     },
 ];
 
-/** F-05e: detail order produksi: posting (stok & jurnal J-05.6), batalkan (draf, atau terposting dengan pembalik). */
+/** F-05e: detail order produksi: posting (stok & jurnal J-05.6), batalkan (draf, atau tercatat dengan pembalik). */
 export default function HalamanDetailOrderProduksi({
     Order,
     Bahan,
@@ -124,7 +124,7 @@ export default function HalamanDetailOrderProduksi({
                             {Tindakan.WajibAlasanBatal ? 'Batalkan produksi' : 'Batalkan draf'}
                         </Tombol>
                     ) : null}
-                    {Tindakan.Posting ? <Tombol onClick={() => AturDialog('Posting')}>Posting produksi</Tombol> : null}
+                    {Tindakan.Posting ? <Tombol onClick={() => AturDialog('Posting')}>Catat produksi</Tombol> : null}
                 </div>
             </div>
 
@@ -173,7 +173,7 @@ export default function HalamanDetailOrderProduksi({
                     </Keterangan>
                     {Order.Keterangan ? <Keterangan label="Catatan">{Order.Keterangan}</Keterangan> : null}
                     {Order.DipostingPada ? (
-                        <Keterangan label="Diposting">
+                        <Keterangan label="Tercatat">
                             {FormatTanggalWaktu(Order.DipostingPada)}
                             {Order.DipostingOleh ? ` oleh ${Order.DipostingOleh}` : ''}
                         </Keterangan>
@@ -200,7 +200,7 @@ export default function HalamanDetailOrderProduksi({
                 keterangan="Nilai barang hasil produksi bertambah, nilai bahan berkurang, dan biaya overhead produksi ikut dicatat."
                 kosong={
                     Order.Status === 'Draf'
-                        ? 'Jurnal dibuat saat produksi diposting.'
+                        ? 'Jurnal dibuat saat produksi dicatat.'
                         : 'Tidak ada jurnal karena nilai Rp 0.'
                 }
             />
@@ -209,8 +209,8 @@ export default function HalamanDetailOrderProduksi({
             {dialog === 'Posting' ? (
                 <DialogKonfirmasi
                     galatUmum={galat.Umum}
-                    judul="Posting produksi?"
-                    labelAksi="Posting produksi"
+                    judul="Catat produksi?"
+                    labelAksi="Catat produksi"
                     varian="utama"
                     memproses={memproses}
                     saatKonfirmasi={() => Kirim('posting')}

@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Biaya tambahan pembelian (v3.41, INV-14 landed cost; izin `pembelian.kelola`): biaya pihak ketiga atas satu penerimaan
- * barang yang diposting, dibayar dari kas/bank.
+ * barang yang dicatat, dibayar dari kas/bank.
  *
  * 1. Dialokasikan ke baris GRN yang masih punya sisa (jumlah dasar − diretur) sebanding nilai atau jumlah
  *    (`PengalokasiNilai`, Σ tepat sama dengan biaya).

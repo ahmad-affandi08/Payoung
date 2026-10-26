@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  *
  * - Hanya shift aktif (`Terbuka`/`DibukaUlang`) yang bisa ditutup paksa (`ShiftTidakAktif`).
  * - Kas aktual = hitungan supervisor bila diisi; bila tidak, sama dengan kas seharusnya (selisih nol, tanpa jurnal).
- *   Kas seharusnya dihitung server dari datanya (`LaporanShift`). Selisih yang diisi diposting J-11.1/J-11.2 seperti
+ *   Kas seharusnya dihitung server dari datanya (`LaporanShift`). Selisih yang diisi dicatat J-11.1/J-11.2 seperti
  *   tutup shift biasa; periode terkunci → `PeriodeTerkunci`.
  * - Shift ditandai `PerluTinjauan` (`DitutupPaksa`) dan dicatat di riwayat status & audit. Penjualan/kas dari
  *   perangkat yang tiba terlambat tetap diterima dengan tinjauan `ShiftSudahDitutup`, sedangkan `Shift.Tutup` dari

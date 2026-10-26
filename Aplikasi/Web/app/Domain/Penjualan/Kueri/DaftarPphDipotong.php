@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
- * Laporan PPh yang dipotong pelanggan (F-21 bagian 5, D-170): satu baris per **pelunasan** berstatus diposting yang memotong
+ * Laporan PPh yang dipotong pelanggan (F-21 bagian 5, D-170): satu baris per **pelunasan** berstatus dicatat yang memotong
  * PPh (mis. PPh 23 atas jasa), lengkap dengan pelanggan (nama, NPWP), invoice yang dilunasi, jenis dan tarif PPh, serta nomor
  * bukti potongnya. PPh itu kredit pajak penjual: uangnya tidak masuk kas, jadi bukti potong harus ditagih dari pelanggan.
  * Karena itu laporan ini membedakan potongan yang **sudah** dan **belum** punya nomor bukti potong.

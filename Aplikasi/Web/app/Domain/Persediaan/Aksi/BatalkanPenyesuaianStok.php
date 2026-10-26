@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Membatalkan draf penyesuaian stok (F-05b): tanpa mutasi atau jurnal; dokumen tetap tersimpan berstatus Dibatalkan.
- * Penyesuaian yang sudah diposting tidak bisa dibatalkan (koreksi = penyesuaian baru). Audit `penyesuaian-stok.batal`.
+ * Penyesuaian yang sudah dicatat tidak bisa dibatalkan (koreksi = penyesuaian baru). Audit `penyesuaian-stok.batal`.
  */
 final class BatalkanPenyesuaianStok
 {
@@ -32,7 +32,7 @@ final class BatalkanPenyesuaianStok
             }
 
             if ($dokumen->Status !== StatusPenyesuaianStok::Draf) {
-                throw new PelanggaranAturanBisnis('StatusTidakSesuai', 'Hanya draf penyesuaian yang bisa dibatalkan. Penyesuaian terposting dikoreksi dengan penyesuaian baru.');
+                throw new PelanggaranAturanBisnis('StatusTidakSesuai', 'Hanya draf penyesuaian yang bisa dibatalkan. Penyesuaian tercatat dikoreksi dengan penyesuaian baru.');
             }
 
             $dokumen->UbahStatus(StatusPenyesuaianStok::Dibatalkan);

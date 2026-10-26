@@ -68,7 +68,7 @@ final class FakturPenjualan extends ModelDasar
         'Status', 'IdJurnalPembatalan', 'DibatalkanOleh', 'DibatalkanPada', 'AlasanBatal', 'DiubahOleh',
         // Nomor Faktur Pajak datang dari e-Faktur/Coretax setelah faktur diterbitkan, jadi boleh diisi kemudian.
         'NomorFakturPajak',
-        // Hasil posting dokumen ini sendiri, di transaksi yang sama: nomor jurnal baru ada setelah jurnalnya diposting.
+        // Hasil posting dokumen ini sendiri, di transaksi yang sama: nomor jurnal baru ada setelah jurnalnya dicatat.
         'IdJurnal',
     ];
 

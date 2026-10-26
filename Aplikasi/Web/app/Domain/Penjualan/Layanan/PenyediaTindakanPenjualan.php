@@ -124,7 +124,7 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
     }
 
     /**
-     * BR-12.4: surat jalan terposting yang **belum difakturkan** dan bulan penyerahannya berjalan atau sudah lewat.
+     * BR-12.4: surat jalan tercatat yang **belum difakturkan** dan bulan penyerahannya berjalan atau sudah lewat.
      *
      * Ini **peringatan kepatuhan, bukan syarat pembukuan**: pendapatan dan PPN-nya sudah dibukukan saat penyerahan
      * (BR-12.2), jadi tutup bulan tidak diblokir olehnya. Yang terancam adalah batas waktu Faktur Pajak — UU PPN Pasal

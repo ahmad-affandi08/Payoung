@@ -93,7 +93,7 @@ final class BatalkanStokAwal
         }
 
         if ($dokumen->Status !== StatusStokAwal::Diposting) {
-            throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa dibatalkan. Hanya stok awal Diposting yang bisa dibatalkan.");
+            throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Stok awal berstatus {$dokumen->Status->AmbilLabel()} tidak bisa dibatalkan. Hanya stok awal Tercatat yang bisa dibatalkan.");
         }
 
         $asal = $this->mutasiDokumen->Ambil(JenisReferensiMutasi::StokAwal, $dokumen->Id, 'P/');

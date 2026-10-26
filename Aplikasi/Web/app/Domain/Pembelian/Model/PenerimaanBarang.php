@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 use LogicException;
 
 /**
- * Penerimaan barang (GRN) `GR/{OUTLET}/{YYMM}/{SEQ4}` (F-04 fase 1), langsung diposting saat disimpan: mutasi stok
+ * Penerimaan barang (GRN) `GR/{OUTLET}/{YYMM}/{SEQ4}` (F-04 fase 1), langsung dicatat saat disimpan: mutasi stok
  * `PenerimaanPembelian` + jurnal J-04.1 (atau J-04.3 untuk belanja stok). Tidak pernah diubah; hanya pembatalan
  * (pembalik) dan penautan ke faktur (`IdFakturPembelian`) yang mengubah baris ini. `PathLampiran` tidak pernah dikirim
  * ke browser.

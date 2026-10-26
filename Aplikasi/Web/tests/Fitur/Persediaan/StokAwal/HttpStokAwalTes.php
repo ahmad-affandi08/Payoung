@@ -127,7 +127,7 @@ describe('F-05a HTTP stok awal: posting, batalkan, status', function (): void {
             ->and(Jurnal::query()->count())->toBe(1);
         $this->getJson("/kelola/persediaan/stok-awal/{$draf->Uuid}/status")
             ->assertOk()
-            ->assertExactJson(['Status' => 'Diposting', 'LabelStatus' => 'Diposting', 'Nomor' => $nomor, 'PesanGalat' => null]);
+            ->assertExactJson(['Status' => 'Diposting', 'LabelStatus' => 'Tercatat', 'Nomor' => $nomor, 'PesanGalat' => null]);
         expect(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 

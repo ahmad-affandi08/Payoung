@@ -206,7 +206,7 @@ final class SimpanPesananGrosir
     /**
      * Cakupan grosir (§25 no. 27d): produk berstok biasa, ber-batch (FEFO saat surat jalan), atau bernomor seri (nomor
      * dicatat saat surat jalan). Penolakannya sengaja eksplisit per sebab: menghitung resep atau paket di sini
-     * berarti HPP dan pemotongan stoknya salah saat surat jalan diposting, dan itu jenis kesalahan yang baru terlihat
+     * berarti HPP dan pemotongan stoknya salah saat surat jalan dicatat, dan itu jenis kesalahan yang baru terlihat
      * di laporan keuangan.
      */
     private function PastikanProdukDidukung(Produk $produk): void

@@ -14,7 +14,7 @@ use InvalidArgumentException;
  * Pelaksana teknis penghapusan data satu tenant (UU PDP, P-07), mengikuti `RegistriAnonimisasi`: kolom data pribadi
  * dikosongkan atau diganti, baris kredensial/token/pesan dihapus, pengguna yang hanya milik tenant ini dianonimkan, dan
  * jejak audit dibersihkan dari alamat IP serta nilai data pribadi. Dokumen transaksi dan pembukuan tidak disentuh.
- * Memakai kueri tabel langsung (bukan model) karena dokumen terposting memang tidak boleh diubah lewat model; yang
+ * Memakai kueri tabel langsung (bukan model) karena dokumen tercatat memang tidak boleh diubah lewat model; yang
  * diubah hanya kolom identitas yang terdaftar. Idempoten: dijalankan ulang menghasilkan keadaan yang sama.
  * Pemanggil membungkusnya dalam satu transaksi.
  */

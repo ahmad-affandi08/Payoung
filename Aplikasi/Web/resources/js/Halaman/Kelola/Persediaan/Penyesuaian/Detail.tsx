@@ -63,7 +63,7 @@ const kolom: KolomTabel<BarisDetailPenyesuaianStok>[] = [
         header: 'Nilai',
         enableSorting: false,
         meta: { label: 'Nilai tercatat', angka: true, prioritas: 'penting' },
-        cell: ({ row }) => (row.original.Nilai === null ? 'Saat diposting' : FormatNilai(row.original.Nilai)),
+        cell: ({ row }) => (row.original.Nilai === null ? 'Saat dicatat' : FormatNilai(row.original.Nilai)),
     },
 ];
 
@@ -119,7 +119,7 @@ export default function HalamanDetailPenyesuaianStok({
                         </Tombol>
                     ) : null}
                     {Tindakan.Ajukan ? <Tombol onClick={() => AturDialog('Ajukan')}>Ajukan penyesuaian</Tombol> : null}
-                    {Tindakan.Setujui ? <Tombol onClick={() => AturDialog('Setujui')}>Setujui & posting</Tombol> : null}
+                    {Tindakan.Setujui ? <Tombol onClick={() => AturDialog('Setujui')}>Setujui & catat</Tombol> : null}
                 </div>
             </div>
 
@@ -193,7 +193,7 @@ export default function HalamanDetailPenyesuaianStok({
                 kosong={
                     Penyesuaian.Status === 'Diposting'
                         ? 'Tidak ada jurnal karena nilai penyesuaian Rp 0.'
-                        : 'Jurnal dibuat saat penyesuaian diposting.'
+                        : 'Jurnal dibuat saat penyesuaian dicatat.'
                 }
             />
             <PanelRiwayatDokumen riwayat={Riwayat} id="judul-riwayat-penyesuaian" />
@@ -215,7 +215,7 @@ export default function HalamanDetailPenyesuaianStok({
                     <p>
                         {diAtasBatas
                             ? 'Nilainya di atas batas, jadi penyesuaian menunggu persetujuan pengguna lain.'
-                            : 'Di bawah batas, penyesuaian langsung diposting: stok dan jurnal tercatat dan dokumen tidak bisa diubah.'}
+                            : 'Di bawah batas, penyesuaian langsung dicatat: stok dan jurnal tercatat dan dokumen tidak bisa diubah.'}
                     </p>
                 </DialogKonfirmasi>
             ) : null}
@@ -223,14 +223,14 @@ export default function HalamanDetailPenyesuaianStok({
                 <DialogKonfirmasi
                     galatUmum={galat.Umum}
                     judul="Setujui penyesuaian?"
-                    labelAksi="Setujui & posting"
+                    labelAksi="Setujui & catat"
                     varian="utama"
                     memproses={memproses}
                     saatKonfirmasi={() => Kirim('setujui')}
                     saatBatal={() => AturDialog(null)}
                 >
                     <p>
-                        Stok dan jurnal dicatat sekarang. Penyesuaian yang sudah diposting hanya bisa dikoreksi dengan
+                        Stok dan jurnal dicatat sekarang. Penyesuaian yang sudah dicatat hanya bisa dikoreksi dengan
                         penyesuaian baru.
                     </p>
                 </DialogKonfirmasi>

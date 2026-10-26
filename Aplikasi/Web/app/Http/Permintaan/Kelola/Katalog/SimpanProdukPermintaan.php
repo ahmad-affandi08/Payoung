@@ -92,7 +92,7 @@ final class SimpanProdukPermintaan extends FormRequest
             'PaketSesi' => ['nullable', 'array'],
             'PaketSesi.JumlahSesi' => ['required_with:PaketSesi', 'integer', 'min:1', 'max:'.SimpanPaketSesi::MAKS_SESI],
             'PaketSesi.MasaBerlakuHari' => ['nullable', 'integer', 'min:1', 'max:'.SimpanPaketSesi::MAKS_HARI],
-            // Audit kemudahan pakai #11: stok sekarang + harga beli produk baru (opsional), diposting sebagai stok awal.
+            // Audit kemudahan pakai #11: stok sekarang + harga beli produk baru (opsional), dicatat sebagai stok awal.
             'StokAwal' => ['nullable', 'array'],
             'StokAwal.Jumlah' => ['required_with:StokAwal', SimpanStokAwalPermintaan::POLA_JUMLAH],
             'StokAwal.HargaBeli' => ['nullable', SimpanStokAwalPermintaan::POLA_HPP],

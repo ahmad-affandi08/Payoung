@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 
 /**
  * Grid ukuran × warna (§9.4, D-143): stok awal banyak varian sekaligus sebagai **satu** dokumen stok awal yang langsung
- * diposting (J-05.1: Dr Persediaan / Cr Ekuitas Saldo Awal, mutasi `StokAwal`), lewat `SimpanStokAwal` +
+ * dicatat (J-05.1: Dr Persediaan / Cr Ekuitas Saldo Awal, mutasi `StokAwal`), lewat `SimpanStokAwal` +
  * `PostingStokAwal` yang sama dengan halaman Stok awal sehingga semua pemeriksaannya berlaku (lokasi aktif, pemetaan akun,
  * stok awal ganda, jumlah bulat). Satu transaksi DB: satu baris ditolak = tidak ada yang tercatat. Hanya untuk produk
  * tanpa pelacakan batch/seri (pemanggil memastikannya). Tanggal = tanggal bisnis outlet lokasi stok hari ini.

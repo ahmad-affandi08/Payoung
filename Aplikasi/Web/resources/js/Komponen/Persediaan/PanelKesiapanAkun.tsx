@@ -8,7 +8,7 @@ import { IzinTenant, PunyaIzinTenant } from '@/Tipe/Organisasi';
 import type { KesiapanAkun } from '@/Tipe/Persediaan';
 
 /**
- * Peringatan akun jurnal persediaan yang belum dipetakan (DesainF05a C.5 `KesiapanPeranAkun`, E). Posting stok awal
+ * Peringatan akun jurnal persediaan yang belum dipetakan (DesainF05a C.5 `KesiapanPeranAkun`, E). Catat stok awal
  * akan ditolak server (`PemetaanAkunBelumAda`) selama daftar ini belum kosong. Tidak dirender bila akun siap.
  * Audit kemudahan pakai #12: pemegang `akuntansi.kelola` bisa melengkapinya sekali klik dari template sektor
  * ("Perbaiki otomatis", aditif: pemetaan yang sudah diatur tidak berubah).

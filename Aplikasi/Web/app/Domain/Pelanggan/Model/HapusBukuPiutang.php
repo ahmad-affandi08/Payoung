@@ -14,7 +14,7 @@ use LogicException;
 
 /**
  * Hapus-buku piutang `HB/{YYYY}/{MM}/{SEQ4}` (E8): sisa piutang yang tidak akan tertagih dibukukan sebagai beban.
- * Dokumen langsung diposting; koreksi hanya lewat pembatalan (jurnal pembalik).
+ * Dokumen langsung dicatat; koreksi hanya lewat pembatalan (jurnal pembalik).
  *
  * @property int $Id
  * @property string $Uuid
@@ -45,7 +45,7 @@ final class HapusBukuPiutang extends ModelDasar
 
     public const JENIS_DOKUMEN = 'HapusBukuPiutang';
 
-    /** Kolom yang boleh berubah setelah diposting: pembatalan, pelepasan klaim piutang, dan hasil posting sendiri. */
+    /** Kolom yang boleh berubah setelah dicatat: pembatalan, pelepasan klaim piutang, dan hasil posting sendiri. */
     private const KOLOM_STATUS = [
         'Status', 'IdPiutangAktif', 'IdJurnalPembatalan', 'DibatalkanOleh', 'DibatalkanPada', 'AlasanBatal', 'DiubahOleh', 'IdJurnal',
     ];

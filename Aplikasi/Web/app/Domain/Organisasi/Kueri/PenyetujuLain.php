@@ -13,7 +13,7 @@ use App\Domain\Organisasi\Model\TenantPengguna;
 /**
  * D-38 (four-eyes adaptif): apakah ada anggota aktif **selain** pelaku yang bisa menyetujui dokumen — Pemilik, atau
  * peran ber-[izin] yang menjangkau outlet dokumen (semua outlet, atau `OutletPengguna` untuk outlet itu). Aturan izin
- * dan outlet sama dengan `AksesPengguna`. Dipakai aksi pengajuan: tanpa penyetuju lain, dokumen di atas batas diposting
+ * dan outlet sama dengan `AksesPengguna`. Dipakai aksi pengajuan: tanpa penyetuju lain, dokumen di atas batas dicatat
  * langsung dengan jejak audit alih-alih menunggu persetujuan yang tidak mungkin datang.
  */
 final class PenyetujuLain

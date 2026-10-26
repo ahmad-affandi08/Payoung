@@ -18,7 +18,7 @@ use Brick\Math\BigDecimal;
 
 /**
  * Pemeriksaan baris dokumen persediaan F-05b (transfer, penyesuaian) sebelum draf disimpan dan diulang saat
- * diposting. `transfer` = jumlah selalu positif dan berarti keluar dari lokasi asal; selain itu jumlah bertanda
+ * dicatat. `transfer` = jumlah selalu positif dan berarti keluar dari lokasi asal; selain itu jumlah bertanda
  * (+ masuk hanya bila `bolehMasuk`, − keluar). Diperiksa: produk berstok milik tenant (bukan konsinyasi, belum diarsipkan), jumlah ≠ 0 dengan arah yang diizinkan,
  * satuan bulat/desimal, kelengkapan batch/nomor seri sesuai pelacakan produk (batch/seri keluar harus ada di lokasi
  * stok itu), dan baris ganda. Galat pertama dilempar sebagai `PelanggaranAturanBisnis` bernomor baris; daftar semua

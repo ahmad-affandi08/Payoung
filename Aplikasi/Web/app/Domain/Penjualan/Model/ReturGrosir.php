@@ -21,7 +21,7 @@ use LogicException;
  * Retur grosir & nota kredit `RG/{OUTLET}/{YYMM}/{SEQ4}` (F-12, §9.7, BR-12.7, J-12.4): barang kembali dari pembeli
  * grosir atas satu surat jalan, dengan pendapatan, PPN, dan HPP dibalik sebanding jumlah yang dikembalikan.
  *
- * `MengurangiPiutang` di-snapshot saat retur diposting: true = tagihannya sudah terbit sehingga yang berkurang
+ * `MengurangiPiutang` di-snapshot saat retur dicatat: true = tagihannya sudah terbit sehingga yang berkurang
  * `PiutangUsaha` beserta baris `Piutang` fakturnya; false = surat jalannya belum difakturkan sehingga yang berkurang
  * `PiutangBelumDifakturkan`. Disimpan supaya pembatalannya membalik ke akun yang sama walau fakturnya berubah kemudian.
  *

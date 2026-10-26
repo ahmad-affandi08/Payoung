@@ -12,7 +12,7 @@ import type { PropsDetailDokumenKonsinyasi } from '@/Tipe/Pembelian';
 
 import { AlamatKonsinyasi } from '../Daftar';
 
-/** F-05i: rincian dokumen titipan masuk / retur ke penitip. Dokumen langsung diposting; koreksi = dokumen berlawanan. */
+/** F-05i: rincian dokumen titipan masuk / retur ke penitip. Dokumen langsung dicatat; koreksi = dokumen berlawanan. */
 export default function HalamanDetailDokumenKonsinyasi({ Dokumen, Baris }: PropsDetailDokumenKonsinyasi) {
     return (
         <TataLetakAplikasi

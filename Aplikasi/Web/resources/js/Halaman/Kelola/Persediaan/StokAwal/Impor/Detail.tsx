@@ -32,8 +32,8 @@ export function BuatUrlLaporanImporStokAwal(
 
 const labelStatusDraf: Record<StatusStokAwal, string> = {
     Draf: 'Draf',
-    Memproses: 'Sedang diposting',
-    Diposting: 'Diposting',
+    Memproses: 'Sedang dicatat',
+    Diposting: 'Tercatat',
     Dibatalkan: 'Dibatalkan',
     Dibuang: 'Dibuang',
 };
@@ -144,7 +144,7 @@ function TautanLaporan({ impor }: { impor: RingkasanImporStokAwal }) {
 
 /**
  * F-05a impor stok awal langkah 2–5 (DesainF05a C.7): pemetaan kolom → pratinjau draf per lokasi → pembuatan draf
- * (polling) → daftar draf yang harus diperiksa & diposting satu per satu. Impor tidak pernah memposting.
+ * (polling) → daftar draf yang harus diperiksa & dicatat satu per satu. Impor tidak pernah memposting.
  */
 export default function HalamanDetailImporStokAwal({
     Impor,
@@ -257,7 +257,7 @@ export default function HalamanDetailImporStokAwal({
                     ) : null}
                     <TautanLaporan impor={Impor} />
                     <p className="text-keterangan text-teks-sekunder">
-                        Impor hanya membuat draf. Stok dan jurnal baru berubah setelah setiap draf diposting.
+                        Impor hanya membuat draf. Stok dan jurnal baru berubah setelah setiap draf dicatat.
                     </p>
                     <div className="flex flex-wrap gap-2">
                         <Tombol
@@ -279,7 +279,7 @@ export default function HalamanDetailImporStokAwal({
             {Impor.Status === 'Selesai' ? (
                 <Panel judul="Draf stok awal dibuat" idJudul="judul-hasil-impor-stok-awal">
                     <p className="text-isi text-teks-utama">
-                        Periksa setiap draf, lalu posting agar stok dan jurnal saldo awal tercatat.
+                        Periksa setiap draf, lalu catat agar stok dan jurnal saldo awal tercatat.
                     </p>
                     {Impor.SelesaiPada ? (
                         <p className="text-keterangan text-teks-sekunder">

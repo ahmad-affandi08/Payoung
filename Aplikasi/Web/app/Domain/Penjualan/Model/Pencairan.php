@@ -61,7 +61,7 @@ final class Pencairan extends ModelDasar
     public const JENIS_DOKUMEN = 'Pencairan';
 
     /**
-     * Kolom yang masih boleh berubah setelah dokumen diposting: pembatalan, dan hasil posting dokumen ini sendiri di
+     * Kolom yang masih boleh berubah setelah dokumen dicatat: pembatalan, dan hasil posting dokumen ini sendiri di
      * transaksi yang sama (nomor jurnalnya baru ada setelah jurnalnya dibuat).
      */
     private const KOLOM_STATUS = [

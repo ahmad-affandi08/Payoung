@@ -21,11 +21,11 @@ use Illuminate\Support\Facades\DB;
 /**
  * Mengajukan draf penyesuaian stok (F-05b, §19.2). Isi diperiksa ulang dan SaldoStok dikunci, lalu nilainya
  * ditaksir (`PenaksirNilaiPenyesuaian`): di atas `BatasPersetujuanPenyesuaian` → MenungguPersetujuan (disetujui orang
- * lain yang ber-izin `persediaan.penyesuaian.setujui`); selain itu langsung diposting (mutasi + jurnal). Idempoten:
+ * lain yang ber-izin `persediaan.penyesuaian.setujui`); selain itu langsung dicatat (mutasi + jurnal). Idempoten:
  * dokumen yang sudah diajukan/diposting dikembalikan apa adanya. Audit `penyesuaian-stok.ajukan`/`.posting`.
  *
  * D-38 four-eyes adaptif: di atas batas tetapi pelaku Pemilik, atau tidak ada penyetuju lain yang menjangkau outlet
- * dokumen (`PenyetujuLain`) → langsung diposting dengan pelaku tercatat sebagai penyetuju dan alasan di audit
+ * dokumen (`PenyetujuLain`) → langsung dicatat dengan pelaku tercatat sebagai penyetuju dan alasan di audit
  * (`DisetujuiLangsung` = Pemilik/PenyetujuTunggal). Begitu ada penyetuju kedua, persetujuan orang lain berlaku lagi.
  */
 final class AjukanPenyesuaianStok

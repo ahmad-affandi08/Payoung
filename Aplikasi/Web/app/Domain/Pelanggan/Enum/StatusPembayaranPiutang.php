@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pelanggan\Enum;
 
-/** Status pelunasan piutang (F-12): diposting berjurnal; dibatalkan dengan jurnal pembalik. */
+/** Status pelunasan piutang (F-12): dicatat berjurnal; dibatalkan dengan jurnal pembalik. */
 enum StatusPembayaranPiutang: string
 {
     case Diposting = 'Diposting';
@@ -13,7 +13,7 @@ enum StatusPembayaranPiutang: string
     public function AmbilLabel(): string
     {
         return match ($this) {
-            self::Diposting => 'Diposting',
+            self::Diposting => 'Tercatat',
             self::Dibatalkan => 'Dibatalkan',
         };
     }

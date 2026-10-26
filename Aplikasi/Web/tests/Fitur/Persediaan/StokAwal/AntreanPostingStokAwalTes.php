@@ -132,6 +132,6 @@ describe('F-05a posting stok awal lewat antrean', function (): void {
         (new PostingStokAwalTugas($t['Tenant']->Id, $t['Pemilik']->Id, $draf->Id))->failed(new RuntimeException('Deadlock berulang'));
 
         expect($draf->fresh()?->Status)->toBe(StatusStokAwal::Draf)
-            ->and($draf->fresh()?->PesanGalat)->toContain('coba posting lagi');
+            ->and($draf->fresh()?->PesanGalat)->toContain('coba catat lagi');
     });
 });

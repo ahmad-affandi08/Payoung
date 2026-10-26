@@ -53,7 +53,7 @@ use LogicException;
  *
  * Semua akibatnya sinkron di satu transaksi (CLAUDE.md #10):
  * 1. stok masuk kembali pada **HPP saat keluar** (`JenisMutasi::ReturPenjualan`), ke lokasi asal bila `LayakJual` atau
- *    ke lokasi Rusak outlet bila `Rusak` (tidak ada lokasi Rusak → tetap diposting ke lokasi asal + `PerluTinjauan`,
+ *    ke lokasi Rusak outlet bila `Rusak` (tidak ada lokasi Rusak → tetap dicatat ke lokasi asal + `PerluTinjauan`,
  *    karena barangnya memang sudah kembali dan menolak dokumennya hanya akan membuat stok tidak pernah cocok);
  * 2. jurnal J-12.4: Dr Retur Penjualan + Dr PPN Keluaran (kontra) + Dr Persediaan / Cr piutang + Cr HPP;
  * 3. **nota kredit**: bila surat jalannya sudah difakturkan, sisa tagihan `Piutang` fakturnya dikurangi;

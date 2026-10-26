@@ -40,7 +40,7 @@ function KeIsianHarga(harga: string | null): string {
 /**
  * Grid ukuran × warna (§9.4, D-143): harga jual dan stok awal semua varian dalam satu matriks. Tab Harga memakai
  * `PUT /kelola/produk/{induk}/varian` (hanya sel yang berubah); tab Stok awal membuat SATU dokumen stok awal yang
- * langsung diposting lewat `POST …/varian/stok-awal` (varian yang sudah punya stok hanya ditampilkan).
+ * langsung dicatat lewat `POST …/varian/stok-awal` (varian yang sudah punya stok hanya ditampilkan).
  */
 export default function GridVarian({ uuidProduk, grid, stok, lokasiStok, bolehUbahHarga, galat }: PropsGridVarian) {
     const semua = Object.values(grid.Sel);

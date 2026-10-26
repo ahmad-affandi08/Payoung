@@ -231,7 +231,7 @@ final class SimpanFakturPembelian
 
         foreach ($grn as $g) {
             if ($g->Status !== StatusDokumenTerposting::Diposting || $g->BelanjaStok || $g->IdFakturPembelian !== null || $g->IdPemasok !== $pemasok->Id) {
-                throw new PelanggaranAturanBisnis('PenerimaanTidakValid', "Penerimaan {$g->Nomor} tidak bisa difakturkan: harus Diposting, dari {$pemasok->Nama}, dan belum difakturkan.", 'UuidPenerimaan');
+                throw new PelanggaranAturanBisnis('PenerimaanTidakValid', "Penerimaan {$g->Nomor} tidak bisa difakturkan: harus Tercatat, dari {$pemasok->Nama}, dan belum difakturkan.", 'UuidPenerimaan');
             }
 
             if ($g->IdOutlet !== $grn[0]->IdOutlet) {

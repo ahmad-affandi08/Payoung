@@ -16,7 +16,7 @@ use Illuminate\Database\Query\JoinClause;
 
 /**
  * PPN masukan dari pembelian (TAX-05): PPN pada faktur pembelian yang tidak dibatalkan, per bulan tanggal faktur × tarif ×
- * dapat/tidaknya dikreditkan (`FakturPembelian.PpnDikreditkan`), dikurangi PPN retur pembelian terposting pada bulan
+ * dapat/tidaknya dikreditkan (`FakturPembelian.PpnDikreditkan`), dikurangi PPN retur pembelian tercatat pada bulan
  * returnya (retur mengikuti tarif & status kredit faktur asalnya; retur tanpa faktur dianggap dikreditkan tanpa tarif).
  * Dibatasi outlet yang boleh diakses (`null` = semua; dokumen tanpa outlet hanya untuk pelaku semua outlet).
  */

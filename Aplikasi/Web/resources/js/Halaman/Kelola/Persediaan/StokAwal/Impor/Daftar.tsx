@@ -231,7 +231,7 @@ export default function HalamanDaftarImporStokAwal({
                         <p className="text-keterangan text-teks-sekunder">
                             Isi Stok dalam satuan dasar dan Harga Modal per satuan dasar (maksimal 6 angka di belakang
                             koma). Impor hanya membuat <strong>draf</strong> stok awal per lokasi stok; periksa lalu
-                            posting setiap draf di menu Stok awal.
+                            catat setiap draf di menu Stok awal.
                         </p>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                             <Tombol type="submit" memproses={mengunggah}>

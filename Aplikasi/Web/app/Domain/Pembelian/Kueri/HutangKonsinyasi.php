@@ -12,7 +12,7 @@ use App\Domain\Persediaan\Kueri\RingkasanMutasiKonsinyasi;
 
 /**
  * F-05i: hutang konsinyasi per penitip = nilai titipan yang sudah terjual (Σ HPP penjualan bersih produk titipannya,
- * sama dengan kredit Hutang Konsinyasi di J-05.7) − setoran yang diposting. Dipakai daftar penitip dan pembatas
+ * sama dengan kredit Hutang Konsinyasi di J-05.7) − setoran yang dicatat. Dipakai daftar penitip dan pembatas
  * setoran.
  */
 final class HutangKonsinyasi

@@ -39,7 +39,7 @@ export default function HalamanDetailBiayaTambahan({ Biaya, Baris, Jurnal, Tinda
                     <Nilai label="Status">
                         <LabelStatusPembelian
                             status={Biaya.Status}
-                            label={Biaya.Status === 'Diposting' ? 'Diposting' : 'Dibatalkan'}
+                            label={Biaya.Status === 'Diposting' ? 'Tercatat' : 'Dibatalkan'}
                         />
                     </Nilai>
                     <Nilai label="Tanggal">{FormatTanggal(Biaya.Tanggal)}</Nilai>

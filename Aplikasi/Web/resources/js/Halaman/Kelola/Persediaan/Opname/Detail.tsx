@@ -403,7 +403,7 @@ export default function HalamanDetailStokOpname({
                             </span>
                             {Opname.TanggalPosting ? (
                                 <span className="block text-keterangan text-teks-sekunder">
-                                    Diposting {FormatTanggal(Opname.TanggalPosting)}
+                                    Tercatat {FormatTanggal(Opname.TanggalPosting)}
                                 </span>
                             ) : null}
                         </Keterangan>

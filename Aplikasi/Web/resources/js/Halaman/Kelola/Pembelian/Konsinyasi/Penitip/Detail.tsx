@@ -106,7 +106,7 @@ const kolomSetoran: KolomTabel<BarisSetoranKonsinyasi>[] = [
             <span className="flex flex-col">
                 <LabelStatus
                     jenis={s.Status === 'Diposting' ? 'sukses' : 'bahaya'}
-                    teks={s.Status === 'Diposting' ? 'Diposting' : 'Dibatalkan'}
+                    teks={s.Status === 'Diposting' ? 'Tercatat' : 'Dibatalkan'}
                 />
                 {s.AlasanBatal ? <span className="text-keterangan text-teks-sekunder">{s.AlasanBatal}</span> : null}
             </span>

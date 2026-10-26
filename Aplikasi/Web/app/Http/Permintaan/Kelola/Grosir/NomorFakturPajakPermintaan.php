@@ -7,7 +7,7 @@ namespace App\Http\Permintaan\Kelola\Grosir;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Nomor Faktur Pajak dari e-Faktur/Coretax (BR-12.4). Boleh diisi setelah faktur diposting, karena nomornya memang
+ * Nomor Faktur Pajak dari e-Faktur/Coretax (BR-12.4). Boleh diisi setelah faktur dicatat, karena nomornya memang
  * baru didapat setelah faktur diterbitkan; boleh dikosongkan kembali bila salah ketik.
  */
 final class NomorFakturPajakPermintaan extends FormRequest

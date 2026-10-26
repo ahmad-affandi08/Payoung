@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\DB;
  * Tanpa dokumen ini, akun kliring hanya bertambah selamanya dan MDR/komisi ojol tidak pernah dibebankan, sehingga laba
  * terlihat lebih besar daripada kenyataan dan tidak ada yang bisa membuktikan bila platform kurang bayar.
  *
- * Semuanya dalam satu transaksi DB (aturan #10): baris pembayaran dikunci, dokumen dibuat, dan J-08.1 diposting.
+ * Semuanya dalam satu transaksi DB (aturan #10): baris pembayaran dikunci, dokumen dibuat, dan J-08.1 dicatat.
  *
  * **Yang ditolak, dan alasannya:**
  * - pembayaran tunai/tempo/deposit/uang muka (`PembayaranBukanKliring`) — uangnya tidak pernah lewat akun kliring, jadi

@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Menghabiskan sisa stok beberapa produk lewat penyesuaian stok biasa (alasan `Hilang`, jurnal J-05.4: Dr Beban Susut,
- * Cr Persediaan), satu dokumen per lokasi stok, diposting langsung oleh Pemilik (D-38). Dipakai hapus permanen produk
+ * Cr Persediaan), satu dokumen per lokasi stok, dicatat langsung oleh Pemilik (D-38). Dipakai hapus permanen produk
  * (D-218) supaya nilai persediaan di pembukuan turun lebih dulu, bukan menggantung setelah ledger stok produk dihapus.
  *
  * Yang belum didukung dan ditolak dengan petunjuk: stok minus (perbaiki lewat penyesuaian/opname dulu) dan produk ber-batch
@@ -52,7 +52,7 @@ final class KosongkanStokProduk implements PengosongStokProduk
 
     /**
      * @param  list<int>  $idProduk
-     * @return int jumlah dokumen penyesuaian yang diposting
+     * @return int jumlah dokumen penyesuaian yang dicatat
      */
     public function Jalankan(array $idProduk, int $idPengguna, string $namaProduk): int
     {
@@ -83,7 +83,7 @@ final class KosongkanStokProduk implements PengosongStokProduk
             $posting = $this->ajukan->Jalankan($draf, $idPengguna);
 
             if ($posting->Status !== StatusPenyesuaianStok::Diposting) {
-                throw new PelanggaranAturanBisnis('StokTidakBisaDikosongkan', 'Penyesuaian untuk menghabiskan stok produk ini belum bisa diposting. Kosongkan stok lewat Penyesuaian stok, lalu coba lagi.');
+                throw new PelanggaranAturanBisnis('StokTidakBisaDikosongkan', 'Penyesuaian untuk menghabiskan stok produk ini belum bisa dicatat. Kosongkan stok lewat Penyesuaian stok, lalu coba lagi.');
             }
 
             $dokumen++;

@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\DB;
  * F-05e: memposting order produksi dalam satu transaksi (aturan #10): bahan keluar `ProduksiPakai` dinilai HPP berjalan,
  * hasil masuk `ProduksiHasil` bernilai Σ nilai bahan + overhead (HPP hasil = nilai ÷ jumlah), lalu jurnal J-05.6.
  * Isi diperiksa ulang (produk, bahan, lokasi, tanggal). Stok bahan kurang ditolak sesuai BR-05.2 (`StokTidakCukup`).
- * Akun overhead dibuat bila tenant belum punya (`PenyediaAkunPeran`). Idempoten: order yang sudah diposting
+ * Akun overhead dibuat bila tenant belum punya (`PenyediaAkunPeran`). Idempoten: order yang sudah dicatat
  * dikembalikan apa adanya. Audit `order-produksi.posting`.
  */
 final class PostingOrderProduksi
@@ -69,7 +69,7 @@ final class PostingOrderProduksi
             }
 
             if ($order->Status !== StatusOrderProduksi::Draf) {
-                throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Order produksi berstatus {$order->Status->AmbilLabel()} tidak bisa diposting.");
+                throw new PelanggaranAturanBisnis('StatusTidakSesuai', "Order produksi berstatus {$order->Status->AmbilLabel()} tidak bisa dicatat.");
             }
 
             $gudang = $this->pemeriksaLokasi->AmbilLokasi($order->IdGudang);

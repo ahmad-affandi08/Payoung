@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Bersama\Dokumen\Enum;
 
 /**
- * Status dokumen yang **langsung diposting** saat disimpan dan hanya bisa dikoreksi lewat dokumen pembalik (aturan #8):
+ * Status dokumen yang **langsung dicatat** saat disimpan dan hanya bisa dikoreksi lewat dokumen pembalik (aturan #8):
  * `Diposting → Dibatalkan`, dan `Dibatalkan` final.
  *
  * Dipakai oleh **seluruh** dokumen langsung-posting di repo ini:
@@ -35,7 +35,7 @@ enum StatusDokumenTerposting: string
     public function AmbilLabel(): string
     {
         return match ($this) {
-            self::Diposting => 'Diposting',
+            self::Diposting => 'Tercatat',
             self::Dibatalkan => 'Dibatalkan',
         };
     }

@@ -82,7 +82,7 @@ const kolom: KolomTabel<BarisDetailRetur>[] = [
 ];
 
 /**
- * Detail retur grosir (F-12, §9.7, BR-12.7, J-12.4). Seperti dokumen terposting lainnya, retur tidak bisa diedit:
+ * Detail retur grosir (F-12, §9.7, BR-12.7, J-12.4). Seperti dokumen tercatat lainnya, retur tidak bisa diedit:
  * koreksinya lewat pembatalan yang mengeluarkan barangnya kembali dan mencabut nota kreditnya.
  */
 export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat, Izin, Tindakan }: PropsDetailRetur) {

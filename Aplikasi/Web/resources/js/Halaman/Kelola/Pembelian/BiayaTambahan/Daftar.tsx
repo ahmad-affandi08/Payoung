@@ -63,7 +63,7 @@ const kolom: KolomTabel<BarisBiayaTambahan>[] = [
         cell: ({ row }) => (
             <LabelStatusPembelian
                 status={row.original.Status}
-                label={row.original.Status === 'Diposting' ? 'Diposting' : 'Dibatalkan'}
+                label={row.original.Status === 'Diposting' ? 'Tercatat' : 'Dibatalkan'}
             />
         ),
     },

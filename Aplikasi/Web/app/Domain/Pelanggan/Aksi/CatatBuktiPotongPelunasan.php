@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Catat atau perbarui nomor bukti potong PPh pada pelunasan piutang yang memotong PPh (F-21 bagian 5, izin
  * `akuntansi.kelola`). Bukti potong biasanya datang belakangan dari pelanggan, jadi nomornya boleh dilengkapi setelah
- * pelunasan diposting. Ini keterangan administratif: jumlah, jurnal, dan alokasi dokumen tidak berubah (aturan #8).
- * Hanya pelunasan berstatus diposting yang benar-benar memotong PPh; nomor tidak boleh dikosongkan. Audit
+ * pelunasan dicatat. Ini keterangan administratif: jumlah, jurnal, dan alokasi dokumen tidak berubah (aturan #8).
+ * Hanya pelunasan berstatus dicatat yang benar-benar memotong PPh; nomor tidak boleh dikosongkan. Audit
  * `pelunasan-piutang.bukti-potong` dengan nilai lama dan baru.
  */
 final class CatatBuktiPotongPelunasan

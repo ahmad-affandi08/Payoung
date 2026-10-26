@@ -15,9 +15,9 @@ use App\Domain\Tenant\Kueri\PengaturanPersediaanTenant;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Menyetujui penyesuaian stok yang menunggu persetujuan (F-05b, §19.2) lalu memostingnya (mutasi + jurnal) dalam satu
+ * Menyetujui penyesuaian stok yang menunggu persetujuan (F-05b, §19.2) lalu mencatatnya (mutasi + jurnal) dalam satu
  * transaksi. Penyetuju ber-izin `persediaan.penyesuaian.setujui` (rute) dan bukan pembuat atau pengaju dokumen
- * (`PenyetujuTidakBoleh`). Idempoten: dokumen yang sudah diposting dikembalikan apa adanya. Audit
+ * (`PenyetujuTidakBoleh`). Idempoten: dokumen yang sudah dicatat dikembalikan apa adanya. Audit
  * `penyesuaian-stok.setujui`.
  */
 final class SetujuiPenyesuaianStok

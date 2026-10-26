@@ -56,7 +56,7 @@ export function PeriksaBarisKonsinyasi(b: BarisForm, masuk: boolean): string | n
 }
 
 /**
- * F-05i: catat titipan masuk dari penitip (dinilai harga titip) atau retur sisa titipan ke penitip. Langsung diposting
+ * F-05i: catat titipan masuk dari penitip (dinilai harga titip) atau retur sisa titipan ke penitip. Langsung dicatat
  * ke stok, tanpa jurnal. Produk wajib berjenis Konsinyasi; satu produk hanya untuk satu penitip.
  */
 export default function HalamanFormKonsinyasi({

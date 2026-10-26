@@ -39,7 +39,7 @@ use Illuminate\Http\Request;
  *
  * - `GET gudang/pesanan-pembelian?kata=` PO siap diterima; `POST gudang/penerimaan` GRN dari PO yang sudah disetujui
  *   (izin `pembelian.kelola` atau `persediaan.kelola`: staf gudang hanya mengisi jumlah, harga & pemasok dari PO; F-04
- *   langkah 5: stok bertambah saat diposting, batch/kedaluwarsa & nomor seri per baris).
+ *   langkah 5: stok bertambah saat dicatat, batch/kedaluwarsa & nomor seri per baris).
  * - `GET gudang/transfer` transfer masuk; `POST gudang/transfer/{uuid}/terima` terima (boleh sebagian; per barang `Jumlah`
  *   diterima, `Rusak` susut, `Ditolak` kembali ke asal, D-105) (izin `persediaan.kelola`, F-05b).
  * - `GET gudang/opname` opname berlangsung; `POST gudang/opname/{uuid}/hitung` simpan lembar hitung (izin

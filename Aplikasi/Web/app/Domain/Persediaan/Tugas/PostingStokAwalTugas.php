@@ -18,8 +18,8 @@ use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
 
 /**
- * Posting stok awal besar di antrean (DesainF05a C.6.3). Membawa `IdTenant` dan menetapkan `KonteksTenant` lebih
- * dulu (CLAUDE.md #11); konteks sebelumnya dipulihkan. Hanya dokumen yang masih Memproses yang diposting
+ * Catat stok awal besar di antrean (DesainF05a C.6.3). Membawa `IdTenant` dan menetapkan `KonteksTenant` lebih
+ * dulu (CLAUDE.md #11); konteks sebelumnya dipulihkan. Hanya dokumen yang masih Memproses yang dicatat
  * (`PostingStokAwal` dengan `dariAntrean`). Pelanggaran aturan bisnis = dokumen kembali ke Draf dengan pesan galat
  * (tidak diulang); galat sistem diulang sampai `tries`, lalu `failed()` mengembalikan dokumen ke Draf.
  */
@@ -50,7 +50,7 @@ final class PostingStokAwalTugas implements ShouldQueue
             $alasan = app(PenjagaOtorisasiTugas::class)->AmbilAlasanDitolak($this->idTenant, $this->idPengguna, IzinTenant::PersediaanStokAwalPosting);
 
             if ($alasan !== null) {
-                $gagalkan->Jalankan($dokumen->Id, 'Posting dihentikan karena '.$alasan.'. Stok dan jurnal tidak berubah.', $this->idPengguna);
+                $gagalkan->Jalankan($dokumen->Id, 'Pencatatan dihentikan karena '.$alasan.'. Stok dan jurnal tidak berubah.', $this->idPengguna);
 
                 return;
             }
@@ -66,7 +66,7 @@ final class PostingStokAwalTugas implements ShouldQueue
     public function failed(?Throwable $galat): void
     {
         $this->JalankanDalamTenant(function (): void {
-            app(GagalkanPostingStokAwal::class)->Jalankan($this->idStokAwal, 'Posting terhenti karena masalah sistem. Stok dan jurnal tidak berubah; coba posting lagi.', $this->idPengguna);
+            app(GagalkanPostingStokAwal::class)->Jalankan($this->idStokAwal, 'Pencatatan terhenti karena masalah sistem. Stok dan jurnal tidak berubah; coba catat lagi.', $this->idPengguna);
         });
     }
 

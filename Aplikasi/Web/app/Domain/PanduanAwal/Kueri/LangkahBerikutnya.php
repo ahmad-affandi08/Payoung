@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
  * Checklist "Langkah Berikutnya" di beranda back-office (F-01 langkah 7). Item hanya tampil bila anggota punya izin
  * membuka tautannya; status Selesai dihitung dari data (bukan dicentang manual). Semua selesai = daftar kosong
  * (bagian disembunyikan). "Isi stok awal" (F-05a) hanya tampil bila tenant punya produk berstok dan anggota boleh
- * mengelola persediaan; selesai begitu ada stok awal yang diposting.
+ * mengelola persediaan; selesai begitu ada stok awal yang dicatat.
  */
 final class LangkahBerikutnya
 {

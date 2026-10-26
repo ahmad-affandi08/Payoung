@@ -18,7 +18,7 @@ use LogicException;
  * Nota debit pembelian `ND/{YYMM}/{SEQ4}` (v6.07, F-04 BR-04.10): pengurang hutang atas satu faktur pembelian karena
  * selisih harga atau klaim pemasok tanpa barang kembali. `NilaiKlaim` + `Pajak` (PPN masukan kontra) = `Total` =
  * `PotongHutang` + `NilaiRefund`. `KePersediaan` menurunkan nilai stok yang masih ada, `KeHpp` mengurangi HPP barang
- * yang sudah terjual. Langsung diposting; pembatalan = jurnal & mutasi pembalik.
+ * yang sudah terjual. Langsung dicatat; pembatalan = jurnal & mutasi pembalik.
  *
  * @property int $Id
  * @property string $Uuid

@@ -161,7 +161,7 @@ final class PiutangKontroler extends DasarKelolaKontroler
         abort_if(($idOutlet = $this->IdOutletBoleh()) !== null && ! in_array($model->IdOutlet, $idOutlet, true), 404);
         $dokumen = $catat->Jalankan($model->Uuid, $permintaan->AmbilTanggal(), $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
 
-        return to_route('kelola.piutang.hapus-buku.daftar', ['cari' => $dokumen->Uuid])->with('Kilat', "{$dokumen->Nomor} diposting. Piutang {$model->Nomor} dihapus-buku sebagai beban.");
+        return to_route('kelola.piutang.hapus-buku.daftar', ['cari' => $dokumen->Uuid])->with('Kilat', "{$dokumen->Nomor} dicatat. Piutang {$model->Nomor} dihapus-buku sebagai beban.");
     }
 
     public function DaftarHapusBuku(Request $permintaan, DaftarPiutang $daftar): Response|JsonResponse
@@ -211,7 +211,7 @@ final class PiutangKontroler extends DasarKelolaKontroler
     {
         $p = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
-        return to_route('kelola.piutang.pelunasan.detail', ['pelunasan' => $p->Uuid])->with('Kilat', "{$p->Nomor} diposting. Sisa piutang sudah berkurang.");
+        return to_route('kelola.piutang.pelunasan.detail', ['pelunasan' => $p->Uuid])->with('Kilat', "{$p->Nomor} dicatat. Sisa piutang sudah berkurang.");
     }
 
     public function Detail(string $pelunasan, DetailPembayaranPiutang $detail): Response
