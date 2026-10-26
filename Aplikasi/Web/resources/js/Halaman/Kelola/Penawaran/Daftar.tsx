@@ -111,16 +111,18 @@ export default function HalamanDaftarPenawaran({ Penawaran, OpsiStatus, Izin }: 
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="penawaran" /> : null}
             <DaftarGalatServer galat={props.errors} />
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href="/kelola/invoice">Invoice</Link>
-                </Button>
-                {Izin.Kelola ? (
-                    <Button asChild className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPenawaran}/buat`}>Buat penawaran</Link>
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatPenawaran}/buat`}>Buat penawaran</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[{ label: 'Invoice', href: '/kelola/invoice' }]}
+            />
             <TabelData
                 id="penawaran"
                 label="Daftar penawaran"

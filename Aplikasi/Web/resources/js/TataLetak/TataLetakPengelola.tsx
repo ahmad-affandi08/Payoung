@@ -1,3 +1,4 @@
+import { PenyediaAksiHalaman } from '@/Komponen/Kelola/KonteksAksiHalaman';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
@@ -318,7 +319,7 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
                             </ul>
                         </Pemberitahuan>
                     ) : null}
-                    {children}
+                    <PenyediaAksiHalaman>{children}</PenyediaAksiHalaman>
                 </main>
             </div>
             <DialogHasil berhasil={props.Kilat} gagal={props.errors.Umum} penanda={props} galatBidang={props.errors} />

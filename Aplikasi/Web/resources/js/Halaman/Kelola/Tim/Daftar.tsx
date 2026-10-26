@@ -263,16 +263,17 @@ export default function HalamanDaftarTim({
                         Karyawan tanpa akun tidak dihitung.
                     </p>
                 }
-            >
-                <Button variant="outline" asChild>
-                    <Link href="/kelola/peran">Peran & izin</Link>
-                </Button>
-                {Izin.Tambah ? (
-                    <Button asChild>
-                        <Link href="/kelola/tim/buat">Tambah anggota tim</Link>
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+                {...(Izin.Tambah
+                    ? {
+                          utama: (
+                              <Button asChild>
+                                  <Link href="/kelola/tim/buat">Tambah anggota tim</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[{ label: 'Peran & izin', href: '/kelola/peran' }]}
+            />
 
             {Izin.Undang && penuh ? (
                 <Pemberitahuan jenis="info" judul="Batas akun masuk paket sudah tercapai">

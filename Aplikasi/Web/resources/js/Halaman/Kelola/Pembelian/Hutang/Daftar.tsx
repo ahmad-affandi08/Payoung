@@ -104,16 +104,14 @@ export default function HalamanDaftarHutang({ Hutang, OpsiUmur, OpsiPemasok, Izi
             izin={Izin}
             objek="hutang"
         >
-            <AksiHalaman>
-                {/* F-05i: hutang barang titipan dikelola terpisah (dasarnya penjualan, bukan faktur). */}
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatPembelian}/pembayaran`}>Riwayat pembayaran</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatPembelian}/konsinyasi`}>Konsinyasi (titipan)</Link>
-                </Button>
-                {tombol}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(tombol ? { utama: tombol } : {})}
+                lainnya={[
+                    { label: 'Riwayat pembayaran', href: `${AlamatPembelian}/pembayaran` },
+                    // F-05i: hutang barang titipan dikelola terpisah (dasarnya penjualan, bukan faktur).
+                    { label: 'Konsinyasi (titipan)', href: `${AlamatPembelian}/konsinyasi` },
+                ]}
+            />
             <TabelData
                 id="pembelian-hutang"
                 label="Daftar hutang pemasok"

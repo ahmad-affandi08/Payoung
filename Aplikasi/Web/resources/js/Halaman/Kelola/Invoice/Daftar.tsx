@@ -147,24 +147,24 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice" /> : null}
             <DaftarGalatServer galat={props.errors} />
             {Ringkasan !== null ? <RingkasanPenagihanKartu ringkasan={Ringkasan} /> : null}
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href="/kelola/penawaran">Penawaran</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatInvoice}/berulang`}>Invoice berulang</Link>
-                </Button>
-                {Izin.Kelola ? (
-                    <>
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`${AlamatInvoice}/buat?jenis=UangMuka`}>Buat invoice uang muka</Link>
-                        </Button>
-                        <Button asChild className="h-8 pointer-coarse:h-11">
-                            <Link href={`${AlamatInvoice}/buat`}>Buat invoice</Link>
-                        </Button>
-                    </>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatInvoice}/buat`}>Buat invoice</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[
+                    { label: 'Penawaran', href: '/kelola/penawaran' },
+                    { label: 'Invoice berulang', href: `${AlamatInvoice}/berulang` },
+                    ...(Izin.Kelola
+                        ? [{ label: 'Buat invoice uang muka', href: `${AlamatInvoice}/buat?jenis=UangMuka` }]
+                        : []),
+                ]}
+            />
             <TabelData
                 id="invoice"
                 label="Daftar invoice"

@@ -30,6 +30,9 @@ import {
     SheetTrigger,
 } from '@/Komponen/Ui/sheet';
 
+import { SlotAksiUtama, useAksiHalaman, type ItemAksiHalaman } from '@/Komponen/Kelola/KonteksAksiHalaman';
+import MenuLainnya from '@/Komponen/Kelola/MenuLainnya';
+
 import { HitungSaringAktif, TulisUrut } from './KeadaanUrl';
 import { ChipSaring, PenyuntingSaring, RingkasSaring } from './Saring';
 import type { DefinisiSaring, KeadaanTabel, UrutKolom } from './Tipe';
@@ -281,17 +284,12 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
         saring.length > 0 ||
         props.tabel.getAllLeafColumns().some((k) => k.getCanSort() && AmbilMeta(k.columnDef.meta)?.label);
 
-    // Di HP kotak cari berbagi baris dengan tombol Filter (kotak cari mengisi sisa lebar, tidak kurang dari 10rem; bila
-    // tak muat, tombol di kanan turun ke baris berikutnya). Tanpa tombol Filter ia tetap satu baris penuh.
-    const cariBerdampingan = lebar === 'hp' && adaSaringAtauUrut;
+    const hp = lebar === 'hp';
+    const aksiHalaman = useAksiHalaman();
+
     const kotakCari =
         props.cari === false ? null : (
-            <div
-                className={cn(
-                    'flex min-w-0 flex-1 items-center gap-2 sm:max-w-sm',
-                    cariBerdampingan ? 'max-sm:min-w-40' : 'max-sm:basis-full',
-                )}
-            >
+            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:basis-full sm:max-w-sm">
                 <div className="relative min-w-0 flex-1">
                     <SearchIcon
                         aria-hidden="true"
@@ -326,6 +324,45 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
             </div>
         );
 
+    const sheetFilter = (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button type="button" variant="outline" className={`${kelasTombolAlat} h-11`}>
+                    <FilterIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                    Filter{jumlahSaring > 0 ? ` (${String(jumlahSaring)})` : ''}
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto bg-permukaan">
+                <SheetHeader>
+                    <SheetTitle className="text-subjudul text-teks-utama">Filter & urutkan</SheetTitle>
+                    <SheetDescription className="text-isi text-teks-sekunder">
+                        Perubahan langsung diterapkan ke {props.label.toLowerCase()}.
+                    </SheetDescription>
+                </SheetHeader>
+                <div className="flex flex-col gap-5 px-4">
+                    <PilihUrutHp tabel={props.tabel} keadaan={keadaan} AturUrut={props.AturUrut} />
+                    {saring.map((definisi) => (
+                        <section key={definisi.id} className="flex flex-col gap-2">
+                            {definisi.jenis === 'ya' ? null : (
+                                <h3 className="text-label font-semibold text-teks-utama">{definisi.label}</h3>
+                            )}
+                            <PenyuntingSaring
+                                definisi={definisi}
+                                nilai={keadaan.saring[definisi.id] ?? ''}
+                                saatBerubah={(baru) => AturSaring(definisi.id, baru)}
+                            />
+                        </section>
+                    ))}
+                </div>
+                <SheetFooter>
+                    <Tombol varian="sekunder" onClick={props.HapusSemua}>
+                        Hapus semua filter
+                    </Tombol>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
+    );
+
     // Laporan (D-43): satu tombol dengan pilihan Excel, CSV, dan cetak/PDF; ekspor data lain tetap satu tautan.
     const ekspor = props.ekspor?.laporan ? (
         <TombolEkspor
@@ -344,72 +381,68 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
         </Button>
     ) : null;
 
+    // HP (D-228): ekspor biasa jadi butir menu "Lainnya" bersama aksi sekunder halaman; ekspor laporan punya menu
+    // pilihan format sendiri, jadi tetap tombol berlabel.
+    const butirMenu: ItemAksiHalaman[] = [
+        ...(props.ekspor && !props.ekspor.laporan
+            ? [
+                  {
+                      label: props.ekspor.label ?? 'Ekspor',
+                      href:
+                          props.ekspor.query === ''
+                              ? props.ekspor.alamat
+                              : `${props.ekspor.alamat}?${props.ekspor.query}`,
+                      unduh: true,
+                  },
+              ]
+            : []),
+        ...(aksiHalaman?.lainnya ?? []),
+    ];
+
+    const rantingDesktop = (
+        <div className="flex flex-wrap items-center gap-2">
+            {kotakCari}
+            {saring.map((definisi) => (
+                <TombolSaring
+                    key={definisi.id}
+                    definisi={definisi}
+                    nilai={keadaan.saring[definisi.id] ?? ''}
+                    AturSaring={AturSaring}
+                />
+            ))}
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+                {lebar === 'hp' ? null : (
+                    <AturKolom
+                        tabel={props.tabel}
+                        AturTampilKolom={props.AturTampilKolom}
+                        AturUrutanKolom={props.AturUrutanKolom}
+                        KembalikanKolom={props.KembalikanKolom}
+                    />
+                )}
+                {ekspor}
+                {props.aksiAlat}
+            </div>
+        </div>
+    );
+
+    // HP (D-228): dua baris. Baris 1 kotak cari. Baris 2 Filter, menu "Lainnya", ekspor laporan, dan di ujung kanan
+    // aksi utama halaman (dipindahkan `AksiHalaman` ke `slot`), jadi hanya satu tombol berwarna di bilah.
+    const barisHp = (
+        <div className="flex flex-col gap-2">
+            {kotakCari}
+            <div className="flex items-center gap-2">
+                {adaSaringAtauUrut ? sheetFilter : null}
+                <MenuLainnya butir={butirMenu} />
+                {props.ekspor?.laporan ? ekspor : null}
+                {props.aksiAlat}
+                <SlotAksiUtama />
+            </div>
+        </div>
+    );
+
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-                {kotakCari}
-                {lebar === 'hp' && adaSaringAtauUrut ? (
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button type="button" variant="outline" className={`${kelasTombolAlat} h-11`}>
-                                <FilterIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
-                                Filter{jumlahSaring > 0 ? ` (${String(jumlahSaring)})` : ''}
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto bg-permukaan">
-                            <SheetHeader>
-                                <SheetTitle className="text-subjudul text-teks-utama">Filter & urutkan</SheetTitle>
-                                <SheetDescription className="text-isi text-teks-sekunder">
-                                    Perubahan langsung diterapkan ke {props.label.toLowerCase()}.
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div className="flex flex-col gap-5 px-4">
-                                <PilihUrutHp tabel={props.tabel} keadaan={keadaan} AturUrut={props.AturUrut} />
-                                {saring.map((definisi) => (
-                                    <section key={definisi.id} className="flex flex-col gap-2">
-                                        {definisi.jenis === 'ya' ? null : (
-                                            <h3 className="text-label font-semibold text-teks-utama">
-                                                {definisi.label}
-                                            </h3>
-                                        )}
-                                        <PenyuntingSaring
-                                            definisi={definisi}
-                                            nilai={keadaan.saring[definisi.id] ?? ''}
-                                            saatBerubah={(baru) => AturSaring(definisi.id, baru)}
-                                        />
-                                    </section>
-                                ))}
-                            </div>
-                            <SheetFooter>
-                                <Tombol varian="sekunder" onClick={props.HapusSemua}>
-                                    Hapus semua filter
-                                </Tombol>
-                            </SheetFooter>
-                        </SheetContent>
-                    </Sheet>
-                ) : (
-                    saring.map((definisi) => (
-                        <TombolSaring
-                            key={definisi.id}
-                            definisi={definisi}
-                            nilai={keadaan.saring[definisi.id] ?? ''}
-                            AturSaring={AturSaring}
-                        />
-                    ))
-                )}
-                <div className="ml-auto flex flex-wrap items-center gap-2">
-                    {lebar === 'hp' ? null : (
-                        <AturKolom
-                            tabel={props.tabel}
-                            AturTampilKolom={props.AturTampilKolom}
-                            AturUrutanKolom={props.AturUrutanKolom}
-                            KembalikanKolom={props.KembalikanKolom}
-                        />
-                    )}
-                    {ekspor}
-                    {props.aksiAlat}
-                </div>
-            </div>
+            {hp ? barisHp : rantingDesktop}
             {chip.length > 0 || adaPencarian ? (
                 <div className="flex flex-wrap items-center gap-2" aria-label="Filter aktif">
                     {chip.map((definisi) => (

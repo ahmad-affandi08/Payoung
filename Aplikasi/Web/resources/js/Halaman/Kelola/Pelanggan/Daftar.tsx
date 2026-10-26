@@ -113,17 +113,17 @@ export default function HalamanDaftarPelanggan({ Pelanggan, Izin, OpsiTag, OpsiT
                 memilih atau menambah pelanggan langsung dari aplikasi POS, juga saat offline.
             </p>
             {Izin.Kelola ? (
-                <AksiHalaman>
-                    <Button asChild variant="outline">
-                        <Link href={`${AlamatPelanggan}/kampanye`}>Kampanye pesan</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                        <Link href={`${AlamatPelanggan}/impor`}>Impor pelanggan</Link>
-                    </Button>
-                    <Button asChild>
-                        <Link href={`${AlamatPelanggan}/buat`}>Tambah pelanggan</Link>
-                    </Button>
-                </AksiHalaman>
+                <AksiHalaman
+                    utama={
+                        <Button asChild>
+                            <Link href={`${AlamatPelanggan}/buat`}>Tambah pelanggan</Link>
+                        </Button>
+                    }
+                    lainnya={[
+                        { label: 'Kampanye pesan', href: `${AlamatPelanggan}/kampanye` },
+                        { label: 'Impor pelanggan', href: `${AlamatPelanggan}/impor` },
+                    ]}
+                />
             ) : (
                 <PesanHanyaLihat izin="pelanggan.kelola" objek="pelanggan" />
             )}

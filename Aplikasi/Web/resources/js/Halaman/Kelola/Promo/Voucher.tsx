@@ -177,15 +177,16 @@ export default function HalamanVoucherPromo({ Promo, Voucher, Ringkasan, JumlahM
             {Izin.Kelola ? null : <PesanHanyaLihat izin="pelanggan.kelola" objek="voucher" />}
 
             {bisaTambah ? (
-                <AksiHalaman>
-                    <Button
-                        variant="outline"
-                        onClick={() => router.post(`${alamat}/nonaktifkan-kedaluwarsa`, {}, { preserveScroll: true })}
-                    >
-                        Nonaktifkan yang kedaluwarsa
-                    </Button>
-                    <Button onClick={() => AturIsian(isianAwal)}>Tambah voucher</Button>
-                </AksiHalaman>
+                <AksiHalaman
+                    utama={<Button onClick={() => AturIsian(isianAwal)}>Tambah voucher</Button>}
+                    lainnya={[
+                        {
+                            label: 'Nonaktifkan yang kedaluwarsa',
+                            saatKlik: () =>
+                                router.post(`${alamat}/nonaktifkan-kedaluwarsa`, {}, { preserveScroll: true }),
+                        },
+                    ]}
+                />
             ) : null}
 
             <TabelData

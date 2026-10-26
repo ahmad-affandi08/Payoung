@@ -211,8 +211,12 @@ export function JejakHalaman({ jejak }: { jejak: ButirJejak[] }) {
         return null;
     }
 
+    // D-228: jejak tanpa satu pun tautan (mis. "Nama usaha › Produk") tidak memberi jalan ke mana-mana dan hanya
+    // memakan satu baris di HP. Jejak yang punya jalan kembali tetap tampil.
+    const adaTautan = jejak.some((butir) => butir.href !== undefined);
+
     return (
-        <Breadcrumb aria-label="Jejak halaman" className="-mb-1">
+        <Breadcrumb aria-label="Jejak halaman" className={cn('-mb-1', !adaTautan && 'max-sm:hidden')}>
             <BreadcrumbList className="text-keterangan text-teks-sekunder">
                 {jejak.map((butir, urutan) => (
                     <Fragment key={`${butir.label}-${String(urutan)}`}>

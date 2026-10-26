@@ -1,3 +1,4 @@
+import { PenyediaAksiHalaman } from '@/Komponen/Kelola/KonteksAksiHalaman';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronRightIcon, LockIcon } from 'lucide-react';
 import { useState, type MouseEvent, type ReactNode } from 'react';
@@ -1273,7 +1274,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                             bolehBayar={PunyaIzinTenant(props.Akses, IzinTenant.LanggananKelola)}
                         />
                     ) : null}
-                    {children}
+                    <PenyediaAksiHalaman>{children}</PenyediaAksiHalaman>
                 </main>
             </div>
             <DialogHasil berhasil={props.Kilat} gagal={props.errors.Umum} penanda={props} galatBidang={props.errors} />

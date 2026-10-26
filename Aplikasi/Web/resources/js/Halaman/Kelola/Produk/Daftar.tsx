@@ -154,17 +154,11 @@ export default function HalamanDaftarProduk({ Produk, Kategori, Jenis, BatasSku,
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="produk" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
-            <AksiHalaman>
-                {Izin.Kelola ? (
-                    <>
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`${alamat}/impor`}>Impor dari Excel</Link>
-                        </Button>
-
-                        {tombolTambah}
-                    </>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? { utama: tombolTambah, lainnya: [{ label: 'Impor dari Excel', href: `${alamat}/impor` }] }
+                    : {})}
+            />
 
             <TabelData
                 id="katalog-produk"

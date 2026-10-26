@@ -244,7 +244,10 @@ function TanganiKlikBaris(peristiwa: MouseEvent<HTMLElement>, alamat: string | u
     router.visit(alamat);
 }
 
-/** Baris HP: kolom utama sebagai judul, kolom penting sebagai pasangan label–nilai (§17.4.4). */
+/**
+ * Baris HP: kolom utama sebagai judul, kolom penting sebagai pasangan label–nilai yang mengalir sebaris (§17.4.4,
+ * D-228). Dulu tiap pasangan satu baris, jadi satu produk memakan hampir satu layar.
+ */
 function BarisBertumpuk<T>({ row, alamatDetail }: { row: Row<T>; alamatDetail: ((baris: T) => string) | undefined }) {
     const sel = row.getVisibleCells();
     const utama =
@@ -278,14 +281,14 @@ function BarisBertumpuk<T>({ row, alamatDetail }: { row: Row<T>; alamatDetail: (
                     {utama ? TampilkanIsi(utama.column.columnDef.cell, utama.getContext()) : null}
                 </div>
                 {penting.length > 0 ? (
-                    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-label">
+                    <dl className="flex flex-wrap gap-x-3 gap-y-0.5 text-label">
                         {penting.map((c) => (
-                            <div key={c.id} className="contents">
+                            <div key={c.id} className="flex min-w-0 gap-1">
                                 <dt className="text-teks-sekunder">{AmbilMeta(c.column.columnDef.meta)?.label}</dt>
                                 <dd
                                     className={cn(
                                         'min-w-0 text-teks-utama',
-                                        AmbilMeta(c.column.columnDef.meta)?.angka && 'text-right tabular-nums',
+                                        AmbilMeta(c.column.columnDef.meta)?.angka && 'tabular-nums',
                                     )}
                                 >
                                     {TampilkanIsi(c.column.columnDef.cell, c.getContext())}

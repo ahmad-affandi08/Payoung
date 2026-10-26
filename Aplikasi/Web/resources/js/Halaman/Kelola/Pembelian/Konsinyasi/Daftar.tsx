@@ -50,21 +50,24 @@ export default function HalamanDaftarKonsinyasi({ Penitip, TotalSisa, Izin }: Pr
             izin={Izin}
             objek="konsinyasi"
         >
-            <AksiHalaman keterangan={`Total hutang ke penitip ${FormatRupiah(TotalSisa)}`}>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatKonsinyasi}/dokumen`}>Riwayat titipan</Link>
-                </Button>
-                {Izin.Kelola ? (
-                    <>
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`${AlamatKonsinyasi}/buat?jenis=Retur`}>Retur ke penitip</Link>
-                        </Button>
-                        <Button asChild className="h-8 pointer-coarse:h-11">
-                            <Link href={`${AlamatKonsinyasi}/buat?jenis=Masuk`}>Catat titipan masuk</Link>
-                        </Button>
-                    </>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                keterangan={`Total hutang ke penitip ${FormatRupiah(TotalSisa)}`}
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatKonsinyasi}/buat?jenis=Masuk`}>Catat titipan masuk</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[
+                    { label: 'Riwayat titipan', href: `${AlamatKonsinyasi}/dokumen` },
+                    ...(Izin.Kelola
+                        ? [{ label: 'Retur ke penitip', href: `${AlamatKonsinyasi}/buat?jenis=Retur` }]
+                        : []),
+                ]}
+            />
             <TabelData
                 id="pembelian-konsinyasi-penitip"
                 label="Daftar penitip"
