@@ -48,9 +48,16 @@ jobs:
             exit 1
           fi
 
+  # Pest dibagi empat potongan (`--shard`, sama banyak berkas per potongan) yang berjalan bersamaan: seluruh suite tetap
+  # dijalankan, hanya waktunya turun dari ±25 menit ke ±7 menit. Analisis statis (Pint + Larastan) cukup sekali, di
+  # potongan 1.
   backend:
-    name: "Aplikasi Web: PHP (8.3, MySQL 8)"
+    name: "Aplikasi Web: PHP (8.3, MySQL 8) potongan ${{ matrix.potongan }}/4"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        potongan: [1, 2, 3, 4]
     services:
       mysql:
         image: mysql:8.0
@@ -76,21 +83,29 @@ jobs:
       - name: Pasang dependensi (sesuai composer.lock)
         run: composer install --no-interaction --no-progress --prefer-dist
       - name: Audit keamanan dependensi PHP (audit F-11)
+        if: matrix.potongan == 1
         run: composer audit --no-dev --locked
       - name: Pint + Larastan level 8
+        if: matrix.potongan == 1
         run: composer analisis
       # Audit PAY-P2-01: Pest tetap berjalan walau analisis statis gagal, supaya satu error PHPStan tidak
       # menyembunyikan regresi perilaku (job tetap merah bila salah satunya gagal).
-      - name: Pest (Unit, Fitur di MySQL, Arsitektur)
+      - name: Pest potongan ${{ matrix.potongan }}/4 (Unit, Fitur di MySQL, Arsitektur)
         if: ${{ !cancelled() }}
-        run: composer tes:cepat
+        run: |
+          php artisan config:clear --ansi
+          vendor/bin/pest --compact --shard=${{ matrix.potongan }}/4
 
   backend-mariadb:
-    name: "Aplikasi Web: PHP (8.3, MariaDB 11.8) — informasi, tidak memblokir"
+    name: "Aplikasi Web: PHP (8.3, MariaDB 11.8) potongan ${{ matrix.potongan }}/4 — informasi, tidak memblokir"
     # Audit PAY-P1-06: produksi berjalan di MariaDB 11.8 sedangkan kontraknya MySQL 8. Job ini membuktikan (atau
     # membantah) bahwa seluruh Pest juga lulus di MariaDB; setelah hijau konsisten, hapus `continue-on-error`.
     continue-on-error: true
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        potongan: [1, 2, 3, 4]
     services:
       mariadb:
         image: mariadb:11.8
@@ -115,8 +130,10 @@ jobs:
           coverage: none
       - name: Pasang dependensi (sesuai composer.lock)
         run: composer install --no-interaction --no-progress --prefer-dist
-      - name: Pest (Unit, Fitur, Arsitektur di MariaDB)
-        run: composer tes:cepat
+      - name: Pest potongan ${{ matrix.potongan }}/4 (Unit, Fitur, Arsitektur di MariaDB)
+        run: |
+          php artisan config:clear --ansi
+          vendor/bin/pest --compact --shard=${{ matrix.potongan }}/4
 
   web:
     name: "Aplikasi Web: frontend (TypeScript, ESLint, Prettier, Vitest, build)"
