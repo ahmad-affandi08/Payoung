@@ -73,7 +73,18 @@ function AmbilPilihanAwal(url: string): string[] {
  */
 export default function HalamanBuatFakturGrosir({ SuratJalan, HariIni, Izin }: PropsBuatFaktur) {
     const { props, url } = usePage<PropsBersamaAplikasi>();
-    const [dipilih, AturDipilih] = useState<string[]>(() => AmbilPilihanAwal(url));
+    const [dipilih, AturDipilih] = useState<string[]>(() => {
+        const awal = AmbilPilihanAwal(url);
+
+        if (awal.length > 0) {
+            return awal;
+        }
+
+        // Bila hanya ada satu kelompok (satu pelanggan, outlet, dan bulan), semuanya langsung tercentang.
+        const kelompokAwal = KelompokkanSuratJalan(SuratJalan.Data);
+
+        return kelompokAwal.length === 1 ? (kelompokAwal[0]?.Baris.map((sj) => sj.Uuid) ?? []) : [];
+    });
     const [tanggal, AturTanggal] = useState(HariIni);
     const [nomorPajak, AturNomorPajak] = useState('');
     const [memproses, AturMemproses] = useState(false);

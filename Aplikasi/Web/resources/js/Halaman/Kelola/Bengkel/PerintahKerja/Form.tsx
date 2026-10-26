@@ -9,6 +9,7 @@ import IsianBarisBengkel, {
 } from '@/Komponen/Bengkel/IsianBarisBengkel';
 import { AlamatPerintahKerja } from '@/Komponen/Bengkel/KolomPerintahKerja';
 import PemilihCariBengkel from '@/Komponen/Bengkel/PemilihCariBengkel';
+import { AmbilHasilCari } from '@/Komponen/Katalog/PemilihProduk';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
@@ -49,6 +50,21 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
 
         return uuid === null ? null : { Uuid: uuid, Nama: Isian?.NamaPelanggan ?? Awal?.NamaPelanggan ?? '' };
     });
+    /** Pelanggan yang hanya punya satu unit: unit itu langsung terpilih, tanpa membuka pencarian lagi. */
+    const PilihKendaraanTunggal = async (uuidPelanggan: string) => {
+        try {
+            const url = `/kelola/bengkel/kendaraan/cari?${new URLSearchParams({ kata: '', pelanggan: uuidPelanggan }).toString()}`;
+            const hasil = await AmbilHasilCari<{ Data: KendaraanPilihan[] }>(url, new AbortController().signal);
+            const satu = hasil.Data.length === 1 ? hasil.Data[0] : undefined;
+
+            if (satu !== undefined) {
+                AturKendaraan(satu);
+            }
+        } catch {
+            // Pencarian gagal tidak mengganggu: unit tetap bisa dipilih manual.
+        }
+    };
+
     const [kendaraan, AturKendaraan] = useState<(RingkasKendaraan & { KmTerakhir: number | null }) | null>(
         Isian?.Kendaraan ?? Awal?.Kendaraan ?? null,
     );
@@ -149,6 +165,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
 
                                     if (pelanggan?.Uuid !== p.Uuid) {
                                         AturKendaraan(null);
+                                        void PilihKendaraanTunggal(p.Uuid);
                                     }
                                 }}
                                 nilaiTerpilih={pelanggan?.Nama}

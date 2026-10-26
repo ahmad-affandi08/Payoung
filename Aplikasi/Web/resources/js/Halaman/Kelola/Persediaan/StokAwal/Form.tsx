@@ -113,7 +113,8 @@ export default function HalamanFormStokAwal({
                 SaldoDiGudang: produk.SaldoDiGudang,
                 HppRataRata: produk.HppRataRata,
                 Jumlah: '',
-                HppSatuan: '',
+                // Modal per satuan terisi dari HPP rata-rata produk bila ada (bisa diubah).
+                HppSatuan: produk.HppRataRata ?? '',
                 NomorBatch: null,
                 TanggalKedaluwarsa: null,
                 NomorSeri: [],

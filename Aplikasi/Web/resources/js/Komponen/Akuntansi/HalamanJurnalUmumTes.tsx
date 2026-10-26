@@ -116,6 +116,17 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
         );
     });
 
+    it('buat: memilih akun pada baris kosong mengisi sisi lawan dengan selisih sehingga jurnal langsung seimbang', () => {
+        AturHalamanUji();
+        RenderUji(<HalamanBuatJurnalUmum {...propsBuat} />);
+
+        IsiBaris(1, akunBeban, 'Debit', '1500000');
+        PilihOpsi(screen.getByRole('combobox', { name: /Akun baris 2/ }), akunAkrual);
+
+        expect((screen.getByLabelText(/Kredit baris 2/) as HTMLInputElement).value).toMatch(/1\.500\.000/);
+        expect((screen.getByLabelText(/Debit baris 2/) as HTMLInputElement).value).toBe('');
+    });
+
     it('buat: mengisi debit mengosongkan kredit baris yang sama; baris bisa ditambah & dihapus (minimal dua)', () => {
         RenderUji(<HalamanBuatJurnalUmum {...propsBuat} />);
         fireEvent.change(screen.getByLabelText(/Kredit baris 1/), { target: { value: '500' } });

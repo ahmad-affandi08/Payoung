@@ -79,4 +79,13 @@ describe('Buat faktur grosir', () => {
             expect.anything(),
         );
     });
+
+    it('bila hanya ada satu kelompok, semua surat jalannya langsung tercentang', () => {
+        AturHalamanUji();
+        const props = Props();
+        props.SuratJalan = { ...props.SuratJalan, Data: data.slice(0, 2) } as PropsBuatFaktur['SuratJalan'];
+        RenderUji(<HalamanBuatFakturGrosir {...props} />);
+
+        expect(screen.getByText(/2 surat jalan dipilih/)).toBeTruthy();
+    });
 });

@@ -19,6 +19,7 @@ import { TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader
 import { cn } from '@/Komponen/Ui/utils';
 import { FormatRupiah } from '@/Pustaka/Format';
 import {
+    AmbilTandaDesimal,
     BandingkanDesimal,
     CekDesimalValid,
     JumlahkanDesimal,
@@ -97,6 +98,24 @@ export default function HalamanBuatJurnalUmum({
 
     const UbahBaris = (kunci: number, ubah: Partial<BarisIsian>) =>
         AturBaris(baris.map((b) => (b.Kunci === kunci ? { ...b, ...ubah } : b)));
+
+    /** Memilih akun pada baris yang belum bernominal mengisi sisi lawan dengan selisih, supaya jurnal langsung seimbang. */
+    const PilihAkun = (baris: BarisIsian, uuidAkun: string) => {
+        const tandaSelisih = AmbilTandaDesimal(selisih);
+
+        if (baris.Debit !== '' || baris.Kredit !== '' || tandaSelisih === 0) {
+            UbahBaris(baris.Kunci, { UuidAkun: uuidAkun });
+
+            return;
+        }
+
+        UbahBaris(
+            baris.Kunci,
+            tandaSelisih > 0
+                ? { UuidAkun: uuidAkun, Kredit: MutlakDesimal(selisih) }
+                : { UuidAkun: uuidAkun, Debit: MutlakDesimal(selisih) },
+        );
+    };
 
     const TambahBaris = () => {
         AturBaris([
@@ -248,7 +267,7 @@ export default function HalamanBuatJurnalUmum({
                                                     nilai={b.UuidAkun}
                                                     kosong="Pilih akun"
                                                     opsi={opsiAkun}
-                                                    saatBerubah={(nilai) => UbahBaris(b.Kunci, { UuidAkun: nilai })}
+                                                    saatBerubah={(nilai) => PilihAkun(b, nilai)}
                                                     galat={GalatBaris(indeks, 'UuidAkun')}
                                                 />
                                             </TableCell>

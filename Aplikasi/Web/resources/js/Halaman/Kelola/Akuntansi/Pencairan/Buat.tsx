@@ -52,7 +52,7 @@ export default function HalamanBuatPencairan({
 }: PropsBuatPencairan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [dipilih, AturDipilih] = useState<string[]>([]);
-    const [uuidAkun, AturUuidAkun] = useState('');
+    const [uuidAkun, AturUuidAkun] = useState(OpsiAkun.length === 1 ? (OpsiAkun[0]?.Uuid ?? '') : '');
     const [tanggal, AturTanggal] = useState(HariIni);
     const [jumlahBersih, AturJumlahBersih] = useState('');
     const [referensi, AturReferensi] = useState('');

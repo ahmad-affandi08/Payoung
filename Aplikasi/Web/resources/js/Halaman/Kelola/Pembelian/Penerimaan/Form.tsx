@@ -32,6 +32,7 @@ import {
     CekDesimalValid,
     JumlahkanDesimal,
     KalikanDesimal,
+    KurangiDesimal,
     SkalaJumlah,
 } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
@@ -105,7 +106,16 @@ export default function HalamanFormPenerimaan({
     const [termin, AturTermin] = useState('30');
     const [tanggal, AturTanggal] = useState(Pesanan?.TanggalPenerimaan ?? HariIni);
     const [nomor, AturNomor] = useState('');
-    const [ongkir, AturOngkir] = useState('');
+    // Ongkir pesanan yang belum terpakai terisi otomatis (bisa diubah).
+    const [ongkir, AturOngkir] = useState(() => {
+        if (!Pesanan) {
+            return '';
+        }
+
+        const sisa = KurangiDesimal(Pesanan.Ongkir, Pesanan.OngkirTerpakai);
+
+        return BandingkanDesimal(sisa, '0') > 0 ? sisa.replace(/\.0+$/, '') : '';
+    });
     const [catatan, AturCatatan] = useState('');
     const [berkas, AturBerkas] = useState<File[]>([]);
     const [baris, AturBaris] = useState<BarisIsianBebas[]>([]);

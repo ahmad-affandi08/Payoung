@@ -204,7 +204,12 @@ export default function HalamanDetailPelanggan({
         Tetap: p.TierTetap,
     });
     const [penyesuaian, AturPenyesuaian] = useState({ Poin: '', Alasan: '' });
-    const [tarik, AturTarik] = useState({ Jumlah: '', UuidAkun: Deposit.AkunKasBank[0]?.Uuid ?? '', Alasan: '' });
+    const [tarik, AturTarik] = useState({
+        // Tarik semua saldo adalah kasus tersering; jumlah bisa diubah.
+        Jumlah: BandingkanDesimal(Deposit.Saldo, '0') > 0 ? Deposit.Saldo.replace(/\.0+$/, '') : '',
+        UuidAkun: Deposit.AkunKasBank[0]?.Uuid ?? '',
+        Alasan: '',
+    });
     const [sesuai, AturSesuai] = useState({ Arah: 'Tambah', Jumlah: '', Alasan: '' });
     const saldoDepositPositif = BandingkanDesimal(Deposit.Saldo, '0') > 0;
     const [memproses, AturMemproses] = useState(false);

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import { GalatBidang } from '@/Komponen/Formulir/BagianBidang';
@@ -71,6 +71,21 @@ export default function PemilihPelacakan({
                   Keterangan: `Sisa ${FormatJumlahStok(b.JumlahSisa, simbolSatuan)}${b.TanggalKedaluwarsa ? ` | kedaluwarsa ${FormatTanggal(b.TanggalKedaluwarsa)}` : ''}`,
               }))
             : (kueri.data?.Seri ?? []).map((s) => ({ Nilai: s.Uuid, Label: s.Nomor }));
+
+    // Batch yang tersedia dipilih otomatis (daftar sudah terurut kedaluwarsa terdekat lebih dulu, aturan FEFO); tetap bisa diganti.
+    const sudahOtomatis = useRef('');
+    const batchPertama = pelacakan === 'Batch' ? opsi[0] : undefined;
+    const kunciOtomatis = `${uuidProduk}|${uuidGudang}`;
+
+    useEffect(() => {
+        if (batchPertama === undefined || (nilai ?? '') !== '' || sudahOtomatis.current === kunciOtomatis) {
+            return;
+        }
+
+        sudahOtomatis.current = kunciOtomatis;
+        saatBerubah(batchPertama.Nilai, batchPertama.Label);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [batchPertama?.Nilai, kunciOtomatis, nilai]);
 
     // Nomor seri bisa dipilih dengan memindai labelnya: dicocokkan ke nomor yang tersedia di lokasi ini.
     const PilihDariPindai = (terbaca: string) => {
