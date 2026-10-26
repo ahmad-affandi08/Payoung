@@ -123,7 +123,7 @@ final class HapusPermanenProduk
     {
         $anak = Produk::query()->withTrashed()->where('IdInduk', $produk->Id)->pluck('Id')->map(static fn (mixed $id): int => (int) $id)->all();
 
-        return [$produk->Id, ...$anak];
+        return array_values([$produk->Id, ...$anak]);
     }
 
     /**

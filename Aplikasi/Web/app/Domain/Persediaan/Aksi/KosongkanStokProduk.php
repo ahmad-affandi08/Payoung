@@ -108,11 +108,11 @@ final class KosongkanStokProduk implements PengosongStokProduk
             return null;
         }
 
-        $info = $this->infoProduk->AmbilBanyak($saldo->pluck('IdProduk')->unique()->values()->all());
+        $info = $this->infoProduk->AmbilBanyak(array_values(array_unique(array_map(static fn (SaldoStok $s): int => $s->IdProduk, $saldo->all()))));
 
         foreach ($saldo as $baris) {
             $produk = $info[$baris->IdProduk] ?? null;
-            $nama = $produk?->nama ?? 'Produk ini';
+            $nama = $produk->nama ?? 'Produk ini';
 
             if (BigDecimal::of($baris->JumlahTersedia)->isNegative()) {
                 return "Stok {$nama} minus di sebagian lokasi. Perbaiki dulu lewat Penyesuaian stok atau Stok opname, lalu hapus permanen.";

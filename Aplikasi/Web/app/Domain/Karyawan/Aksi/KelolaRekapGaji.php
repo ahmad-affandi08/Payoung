@@ -382,9 +382,9 @@ final class KelolaRekapGaji
             return [$awal, $awal->endOfMonth()->startOfDay()];
         }
 
-        $awal = preg_match('/^\d{4}-\d{2}-\d{2}$/', $periode) === 1 ? CarbonImmutable::createFromFormat('!Y-m-d', $periode) : false;
+        $awal = preg_match('/^\d{4}-\d{2}-\d{2}$/', $periode) === 1 ? CarbonImmutable::createFromFormat('!Y-m-d', $periode) : null;
 
-        if ($awal === false || $awal->format('Y-m-d') !== $periode) {
+        if (! $awal instanceof CarbonImmutable || $awal->format('Y-m-d') !== $periode) {
             throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Tanggal mulai minggu harus berformat tahun-bulan-tanggal, misal 2026-10-19.', 'Periode');
         }
 
