@@ -190,8 +190,8 @@ export default function HalamanDetailKampanye({
                     saatKonfirmasi={() => router.post(`${AlamatKampanye}/${k.Uuid}/jalankan`, {}, opsi)}
                     saatBatal={() => AturKonfirmasi(null)}
                 >
-                    Penerima dipotret sekarang dan pesan mulai dikirim bertahap. Pesan yang sudah terkirim tidak bisa
-                    ditarik.
+                    Daftar penerima dikunci sekarang (pelanggan yang bergabung sesudahnya tidak ikut) dan pesan mulai
+                    dikirim bertahap. Pesan yang sudah terkirim tidak bisa ditarik.
                 </DialogKonfirmasi>
             ) : null}
             {konfirmasi === 'jadwal' ? (

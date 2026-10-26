@@ -126,9 +126,9 @@ export default function HalamanTutupHarian({ Hari, Izin }: PropsTutupHarian) {
         <TataLetakAplikasi judul="Tutup harian">
             <DaftarGalatServer galat={props.errors} />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Tutup hari setelah semua shift ditutup dan semua kasir tersambung ke server. Ringkasan penjualan hari
-                itu dihitung ulang dari transaksi dan disimpan. Penjualan offline yang baru terkirim setelahnya tetap
-                diterima dan ringkasannya ikut diperbarui.
+                Tutup hari setelah semua shift ditutup dan semua kasir sudah tersambung internet dan mengirim datanya.
+                Ringkasan penjualan hari itu dihitung ulang dari transaksi dan disimpan. Penjualan offline yang baru
+                terkirim setelahnya tetap diterima dan ringkasannya ikut diperbarui.
             </p>
             <TabelData
                 id="kelola-kasir-tutup-harian"

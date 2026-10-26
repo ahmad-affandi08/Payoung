@@ -20,7 +20,7 @@ export default function HalamanBuatPeran({ DaftarIzin }: PropsBuatPeran) {
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((k) => isianForm.some((i) => k.startsWith(i)))}
             />
-            <KartuFormulir keterangan="Peran kustom menggabungkan izin granular sesuai kebutuhan tim. Izin khusus Pemilik (langganan) tidak bisa diberikan ke peran kustom.">
+            <KartuFormulir keterangan="Peran kustom menggabungkan izin yang bisa dipilih satu per satu sesuai kebutuhan tim. Izin khusus Pemilik (langganan) tidak bisa diberikan ke peran kustom.">
                 <FormPeran
                     uuid={null}
                     awal={peranKosong}

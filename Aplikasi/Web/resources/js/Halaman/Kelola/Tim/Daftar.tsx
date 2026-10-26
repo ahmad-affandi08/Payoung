@@ -258,9 +258,9 @@ export default function HalamanDaftarTim({
             <AksiHalaman
                 keterangan={
                     <p className="text-isi text-teks-sekunder">
-                        Kursi akun masuk (anggota aktif + undangan menunggu):{' '}
+                        Jumlah akun masuk yang terpakai (anggota aktif + undangan menunggu):{' '}
                         <span className="font-semibold text-teks-utama">{FormatBatas(BatasPengguna, 'pengguna')}</span>.
-                        Karyawan tanpa akun tidak memakai kursi.
+                        Karyawan tanpa akun tidak dihitung.
                     </p>
                 }
             >
@@ -315,7 +315,7 @@ export default function HalamanDaftarTim({
             {pilihan?.jenis === 'pin' && pilihan.orang.UuidPengguna !== null ? (
                 <DialogFormulir
                     judul={`Atur ulang PIN ${pilihan.orang.Nama}`}
-                    keterangan="PIN lama tidak bisa dilihat. Isi PIN baru 6 angka, lalu beritahukan langsung kepada yang bersangkutan. PIN baru berlaku di perangkat kasir setelah perangkat tersinkron."
+                    keterangan="PIN lama tidak bisa dilihat. Isi PIN baru 6 angka, lalu beritahukan langsung kepada yang bersangkutan. PIN baru berlaku di perangkat kasir setelah perangkat kasir tersambung internet."
                     saatTutup={() => AturPilihan(null)}
                 >
                     <FormPin

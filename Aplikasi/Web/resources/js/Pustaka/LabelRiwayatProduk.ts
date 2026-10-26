@@ -5,10 +5,10 @@
 const label: Record<string, string> = {
     PenjualanDetail: 'baris penjualan',
     ReturPenjualanDetail: 'baris retur penjualan',
-    MutasiStok: 'mutasi stok',
+    MutasiStok: 'catatan keluar masuk stok',
     SaldoStok: 'saldo stok',
-    LapisanFifo: 'lapisan stok FIFO',
-    BatchStok: 'batch stok',
+    LapisanFifo: 'riwayat harga beli',
+    BatchStok: 'tanggal kedaluwarsa & nomor batch',
     NomorSeri: 'nomor seri',
     StokAwalDetail: 'baris stok awal',
     PenyesuaianStokDetail: 'baris penyesuaian stok',

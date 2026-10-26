@@ -455,7 +455,7 @@ export default function HalamanFormStokAwal({
                             {FormatNilai(totalPerkiraan)}
                         </span>
                         <span className="w-full text-right text-keterangan text-teks-sekunder">
-                            Nilai akhir dihitung server saat draf disimpan.
+                            Nilai akhir dihitung otomatis saat draf disimpan.
                         </span>
                     </div>
                 </Panel>

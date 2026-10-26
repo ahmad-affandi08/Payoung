@@ -253,7 +253,7 @@ describe('Kelola/DaftarHarga (E.7)', () => {
         RenderUji(<HalamanDetailDaftarHarga {...props} />);
         expect(screen.getByText('Semua outlet | Semua kanal | Pelanggan GROSIR | Prioritas 10')).toBeTruthy();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga' }));
+        expect(screen.queryByRole('button', { name: 'Isi harga' })).toBeNull();
         const [hargaSabun] = screen.getAllByLabelText('Harga baris 1');
         UbahNilai(hargaSabun ?? document.body, '4.800');
         fireEvent.click(screen.getByRole('button', { name: 'Simpan harga' }));
@@ -312,7 +312,7 @@ describe('Kelola/KelompokPajak (E.8)', () => {
         );
     });
 
-    it('memakai istilah "biaya layanan"; ubah hanya dengan izin akuntansi.kelola', () => {
+    it('memakai istilah "biaya layanan"; ubah hanya oleh yang boleh mengelola pembukuan', () => {
         RenderUji(<HalamanDaftarKelompokPajak {...props} />);
         expect(screen.getByText('PBJT makanan & minuman | Subtotal + biaya layanan')).toBeTruthy();
         expect(document.body.textContent).not.toMatch(/service charge/i);
@@ -331,7 +331,7 @@ describe('Kelola/KelompokPajak (E.8)', () => {
         RenderUji(<HalamanDaftarKelompokPajak {...props} Izin={{ ...IzinPenuh, KelolaPajak: false }} />);
         expect(screen.queryByRole('button', { name: 'Aksi Makan & minum' })).toBeNull();
         expect(screen.queryByRole('link', { name: 'Tambah kelompok pajak' })).toBeNull();
-        expect(screen.getByText('akuntansi.kelola')).toBeTruthy();
+        expect(screen.getByText(/akses untuk mengelola pembukuan/)).toBeTruthy();
     });
 
     it('daftar: tombol tambah membuka halaman penuh /kelola/kelompok-pajak/buat', () => {
@@ -339,6 +339,25 @@ describe('Kelola/KelompokPajak (E.8)', () => {
         expect(screen.getByRole('link', { name: 'Tambah kelompok pajak' }).getAttribute('href')).toBe(
             '/kelola/kelompok-pajak/buat',
         );
+    });
+
+    it('halaman buat: baris pajak pertama langsung tampil tanpa menekan Tambah pajak', () => {
+        window.history.replaceState({}, '', '/kelola/kelompok-pajak/buat');
+        RenderUji(
+            <HalamanBuatKelompokPajak
+                JenisPajak={props.JenisPajak}
+                Kategori={props.Kategori}
+                DasarPengenaan={props.DasarPengenaan}
+            />,
+        );
+
+        expect(screen.getByLabelText(/Jenis pajak 1/)).toBeTruthy();
+        expect(screen.getAllByLabelText(/Jenis pajak \d/)).toHaveLength(1);
+
+        UbahNilai(screen.getByLabelText('Kategori pajak'), 'NonPajak');
+        expect(screen.queryByLabelText(/Jenis pajak 1/)).toBeNull();
+        UbahNilai(screen.getByLabelText('Kategori pajak'), 'KenaPpn');
+        expect(screen.getByLabelText(/Jenis pajak 1/)).toBeTruthy();
     });
 
     it('halaman buat: kirim POST kelompok pajak baru; Batal kembali ke daftar', () => {

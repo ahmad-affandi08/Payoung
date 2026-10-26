@@ -525,7 +525,7 @@ export default function HalamanTambahTim({
                 </Pemberitahuan>
             ) : null}
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                {`Kursi akun masuk terpakai: ${FormatBatas(BatasPengguna, 'pengguna')}.`}
+                {`Jumlah akun masuk terpakai: ${FormatBatas(BatasPengguna, 'pengguna')}.`}
             </p>
             <CangkangWizard
                 kontrol={kontrol}

@@ -58,17 +58,21 @@ type PropsFormKelompokPajak = {
     saatBatal: () => void;
 };
 
+function BarisPajakKosong(props: PropsBuatKelompokPajak): IsianKelompokPajak['Pajak'][number] {
+    return { KodeJenisPajak: '', DasarPengenaan: props.DasarPengenaan[0]?.Nilai ?? '', KenaBiayaKirim: false };
+}
+
 /** Formulir kelompok pajak (E.8): dipakai halaman penuh Tambah dan panel samping Ubah di halaman daftar. */
 export default function FormKelompokPajak({ kelompok, props, saatSelesai, saatBatal }: PropsFormKelompokPajak) {
     const formulir = useForm<IsianKelompokPajak>({
         Nama: kelompok?.Nama ?? '',
         Kategori: kelompok?.Kategori ?? 'KenaPbjt',
-        Pajak:
-            kelompok?.Pajak.map((item) => ({
-                KodeJenisPajak: item.KodeJenisPajak,
-                DasarPengenaan: item.DasarPengenaan,
-                KenaBiayaKirim: item.KenaBiayaKirim,
-            })) ?? [],
+        // Kelompok baru langsung punya satu baris pajak untuk diisi (kategori bawaan wajib memuat pajak).
+        Pajak: kelompok?.Pajak.map((item) => ({
+            KodeJenisPajak: item.KodeJenisPajak,
+            DasarPengenaan: item.DasarPengenaan,
+            KenaBiayaKirim: item.KenaBiayaKirim,
+        })) ?? [BarisPajakKosong(props)],
     });
     const data = formulir.data;
     const galat = formulir.errors as Record<string, string | undefined>;
@@ -131,7 +135,11 @@ export default function FormKelompokPajak({ kelompok, props, saatSelesai, saatBa
                         formulir.setData((lama) => ({
                             ...lama,
                             Kategori: nilai as KategoriPajakProduk,
-                            Pajak: CekKategoriTanpaPajak(nilai as KategoriPajakProduk) ? [] : lama.Pajak,
+                            Pajak: CekKategoriTanpaPajak(nilai as KategoriPajakProduk)
+                                ? []
+                                : lama.Pajak.length === 0
+                                  ? [BarisPajakKosong(props)]
+                                  : lama.Pajak,
                         }))
                     }
                     galat={galat.Kategori}
@@ -146,8 +154,7 @@ export default function FormKelompokPajak({ kelompok, props, saatSelesai, saatBa
                         Pajak yang dikenakan (berurutan)
                     </FieldLegend>
                     <FieldDescription className="text-keterangan">
-                        Tarif tidak disimpan di sini; tarif diambil dari tabel tarif yang berlaku pada tanggal
-                        transaksi.
+                        Tarif pajak mengikuti ketentuan resmi dan berganti sendiri bila aturannya berubah.
                     </FieldDescription>
                     {data.Pajak.map((pajak, indeks) => (
                         <div key={indeks} className="border-t border-garis pt-3">
@@ -212,16 +219,7 @@ export default function FormKelompokPajak({ kelompok, props, saatSelesai, saatBa
                         <Tombol
                             type="button"
                             varian="sekunder"
-                            onClick={() =>
-                                AturPajak([
-                                    ...data.Pajak,
-                                    {
-                                        KodeJenisPajak: '',
-                                        DasarPengenaan: props.DasarPengenaan[0]?.Nilai ?? '',
-                                        KenaBiayaKirim: false,
-                                    },
-                                ])
-                            }
+                            onClick={() => AturPajak([...data.Pajak, BarisPajakKosong(props)])}
                         >
                             Tambah pajak
                         </Tombol>

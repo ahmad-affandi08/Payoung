@@ -92,9 +92,9 @@ export default function HalamanFormPesananGrosir({ Isian, OpsiOutlet, OpsiGudang
     return (
         <TataLetakAplikasi judul={judul}>
             <DaftarGalatServer galat={galat} />
-            <Pemberitahuan jenis="info" judul="Harga diambil server">
-                Harga grosir mengikuti daftar harga bertingkat & tier pelanggan. Simpan drafnya, lalu periksa harga dan
-                totalnya di halaman pesanan sebelum dikonfirmasi.
+            <Pemberitahuan jenis="info" judul="Harga mengikuti daftar harga">
+                Harga grosir mengikuti daftar harga bertingkat & tier pelanggan. Harga dan total tampil setelah draf
+                disimpan; periksa di halaman pesanan sebelum dikonfirmasi.
             </Pemberitahuan>
 
             <form onSubmit={Kirim} noValidate className="flex flex-col gap-4" aria-label={judul}>

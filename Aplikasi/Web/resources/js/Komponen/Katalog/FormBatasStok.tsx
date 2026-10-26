@@ -145,7 +145,7 @@ export default function FormBatasStok({
             ) : null}
             {!bolehUbah ? (
                 <p className="text-keterangan text-teks-sekunder">
-                    Perlu izin <span className="font-mono">persediaan.kelola</span> untuk mengubah batas stok.
+                    Hanya pengguna yang boleh mengelola stok yang bisa mengubah batas stok.
                 </p>
             ) : null}
         </Panel>

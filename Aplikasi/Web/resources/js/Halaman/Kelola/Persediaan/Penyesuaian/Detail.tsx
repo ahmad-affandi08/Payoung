@@ -126,7 +126,7 @@ export default function HalamanDetailPenyesuaianStok({
             {Penyesuaian.Status === 'MenungguPersetujuan' ? (
                 <Pemberitahuan jenis="peringatan" judul="Butuh persetujuan">
                     Nilai {FormatNilai(Penyesuaian.NilaiPerkiraan)} di atas batas {FormatNilai(BatasPersetujuan)}. Harus
-                    disetujui pengguna lain dengan izin persediaan.penyesuaian.setujui, bukan pembuat atau pengajunya.
+                    disetujui pengguna lain yang berwenang menyetujui penyesuaian stok, bukan pembuat atau pengajunya.
                 </Pemberitahuan>
             ) : null}
             {Penyesuaian.Status === 'Draf' && Penyesuaian.AlasanTolak ? (

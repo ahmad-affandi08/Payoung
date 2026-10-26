@@ -368,7 +368,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         Lanjut();
         Lanjut();
 
-        expect(screen.getByText(/produk\.harga\.ubah/)).toBeTruthy();
+        expect(screen.getByText(/akses untuk mengelola harga produk/)).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Isi harga jual' })).toBeNull();
         Lanjut();
         expect(LangkahAktif()).toBe('Pajak & tampilan');
@@ -641,7 +641,7 @@ describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
         );
         fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
 
-        expect(screen.getByText(/produk\.harga\.ubah/)).toBeTruthy();
+        expect(screen.getByText(/akses untuk mengelola harga produk/)).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Isi harga jual' })).toBeNull();
     });
 
@@ -1314,7 +1314,7 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail({ BolehHapusPermanen: true })} />);
         fireEvent.click(screen.getByRole('button', { name: tombol }));
         expect(await screen.findByRole('alertdialog', { name: 'Hapus permanen Susu UHT 1 L?' })).toBeTruthy();
-        expect(await screen.findByText('3 mutasi stok')).toBeTruthy();
+        expect(await screen.findByText('3 catatan keluar masuk stok')).toBeTruthy();
         vi.unstubAllGlobals();
     });
 

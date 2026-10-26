@@ -184,7 +184,7 @@ export default function HalamanFormPesanan({
                             label="Ongkos kirim (opsional)"
                             nilai={ongkir}
                             saatBerubah={AturOngkir}
-                            keterangan="Dibagi ke barang sebanding nilainya saat diterima (landed cost)."
+                            keterangan="Dibagi ke barang sebanding nilainya saat barang diterima (ongkos kirim dan biaya impor ikut menambah modal barang)."
                             galat={galat.Ongkir}
                         />
                     </div>

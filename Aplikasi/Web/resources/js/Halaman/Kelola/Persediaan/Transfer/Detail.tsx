@@ -279,8 +279,8 @@ export default function HalamanDetailTransferStok({
             ) : null}
             {(Transfer.Status === 'Dikirim' || Transfer.Status === 'DiterimaSebagian') && !Tindakan.Terima ? (
                 <Pemberitahuan jenis="info" judul="Menunggu diterima">
-                    Barang sedang dalam perjalanan. Penerimaan dicatat oleh pengguna di outlet tujuan dengan izin
-                    persediaan.kelola.
+                    Barang sedang dalam perjalanan. Penerimaan dicatat oleh pengguna di outlet tujuan yang boleh
+                    mengelola stok.
                 </Pemberitahuan>
             ) : null}
             {dialog === null ? <DaftarGalatServer galat={galat} /> : null}

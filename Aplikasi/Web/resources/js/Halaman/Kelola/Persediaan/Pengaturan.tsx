@@ -123,7 +123,7 @@ export default function HalamanPengaturanPersediaan({
                 <Panel
                     judul="Persetujuan penyesuaian stok"
                     idJudul="judul-batas-penyesuaian"
-                    keterangan="Penyesuaian stok bernilai di atas batas ini harus disetujui pengguna lain dengan izin persediaan.penyesuaian.setujui."
+                    keterangan="Penyesuaian stok bernilai di atas batas ini harus disetujui pengguna lain yang berwenang menyetujui penyesuaian stok."
                 >
                     <BidangUang
                         label="Batas nilai tanpa persetujuan"

@@ -121,7 +121,7 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
                 sebelum pajak.
             </p>
             {FiturAktif ? null : (
-                <Pemberitahuan jenis="peringatan" judul="Mesin promo tersedia di paket Pro ke atas">
+                <Pemberitahuan jenis="peringatan" judul="Fitur promo tersedia di paket Pro ke atas">
                     Promo bisa disiapkan sekarang, tetapi baru diterapkan di kasir setelah paket dinaikkan.
                 </Pemberitahuan>
             )}

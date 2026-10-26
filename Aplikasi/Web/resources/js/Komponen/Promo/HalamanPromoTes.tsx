@@ -78,7 +78,7 @@ describe('Halaman promo (F-16c)', () => {
                 Izin={{ Kelola: true }}
             />,
         );
-        expect(screen.getByText('Mesin promo tersedia di paket Pro ke atas')).toBeTruthy();
+        expect(screen.getByText('Fitur promo tersedia di paket Pro ke atas')).toBeTruthy();
         expect(screen.getAllByText('125 / 1.000').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Rp 1.250.000').length).toBeGreaterThan(0);
         expect(screen.getAllByRole('link', { name: 'Tambah promo' })[0]?.getAttribute('href')).toBe(

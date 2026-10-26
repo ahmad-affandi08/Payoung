@@ -871,8 +871,8 @@ export default function HalamanFormProduk({
                     required={bisaDijual || induk}
                 />
                 <p className="text-keterangan text-teks-sekunder">
-                    Tarif diambil dari tabel tarif yang berlaku saat transaksi. Kelompok baru dibuat di menu Kelompok
-                    pajak.
+                    Tarif pajak mengikuti ketentuan resmi dan berganti sendiri bila aturannya berubah. Kelompok baru
+                    dibuat di menu Kelompok pajak.
                 </p>
             </div>
             <GrupRadio<TigaKeadaan>

@@ -245,9 +245,8 @@ export default function HalamanDetailStokAwal({
             {Tindakan.Posting ? <PanelKesiapanAkun kesiapan={KesiapanAkun} /> : null}
             {StokAwal.Status === 'Draf' && Izin.Kelola && !Izin.PostingStokAwal ? (
                 <Pemberitahuan jenis="info" judul="Menunggu posting">
-                    Anda bisa mengubah draf ini, tetapi posting perlu izin{' '}
-                    <span className="font-mono">persediaan.stok-awal.posting</span>. Minta Manajer Outlet, Akuntan, atau
-                    Owner memostingnya.
+                    Anda bisa mengubah draf ini, tetapi tidak boleh memostingnya. Minta Manajer Outlet, Akuntan, atau
+                    Pemilik toko memostingnya.
                 </Pemberitahuan>
             ) : null}
             {dialog === null ? <DaftarGalatServer galat={galat} /> : null}

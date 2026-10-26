@@ -38,7 +38,7 @@ export default function HalamanBuatUndangan({ Peran, Outlet, BatasPengguna }: Pr
                 </Pemberitahuan>
             ) : null}
             <KartuFormulir
-                keterangan={`Undangan dikirim ke email, berlaku 72 jam, dan hanya bisa dipakai sekali. Bila email itu sudah punya akun (misal di usaha lain), akunnya ditautkan. Kursi pengguna terpakai: ${FormatBatas(BatasPengguna, 'pengguna')}.`}
+                keterangan={`Undangan dikirim ke email, berlaku 72 jam, dan hanya bisa dipakai sekali. Bila email itu sudah punya akun (misal di usaha lain), akunnya ditautkan. Jumlah akun terpakai: ${FormatBatas(BatasPengguna, 'pengguna')}.`}
             >
                 <FormAksesPengguna
                     alamat="/kelola/pengguna/undangan"

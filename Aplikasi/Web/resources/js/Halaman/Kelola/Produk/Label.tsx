@@ -412,8 +412,8 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
                     }}
                 >
                     <p>
-                        {String(antreanBarcode.length)} barang akan diberi nomor barcode internal (EAN-13 berawalan 20)
-                        yang tersimpan di produk dan dipakai kasir saat memindai.
+                        {String(antreanBarcode.length)} barang akan diberi nomor barcode buatan toko yang tersimpan di
+                        produk dan dipakai kasir saat memindai.
                     </p>
                     <p>
                         Buat hanya untuk barang yang memang tidak punya barcode dari pabrik. Barang yang sudah punya

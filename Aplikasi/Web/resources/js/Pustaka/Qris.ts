@@ -13,8 +13,8 @@ export type HasilPeriksaQris =
 const PESAN: Record<KodeGalatQris, string> = {
     Kosong: 'Kode QRIS kosong.',
     BukanQris: 'Ini bukan kode QRIS. Pastikan gambar berisi QRIS dari bank atau penyedia Anda.',
-    CrcTidakValid: 'Kode QRIS rusak atau sudah diubah (checksum tidak cocok). Unggah ulang gambar QRIS asli.',
-    BukanStatis: 'QRIS ini sudah berisi nominal (dinamis). Unggah QRIS statis toko Anda.',
+    CrcTidakValid: 'Kode QRIS rusak atau sudah diubah (isinya tidak utuh). Unggah ulang gambar QRIS asli.',
+    BukanStatis: 'QRIS ini sudah berisi nominal. Unggah QRIS toko Anda yang tanpa nominal.',
     BukanRupiahIndonesia: 'QRIS ini bukan QRIS rupiah Indonesia.',
     TanpaMerchant: 'QRIS ini tidak memuat data merchant. Unggah QRIS dari bank atau penyedia Anda.',
 };

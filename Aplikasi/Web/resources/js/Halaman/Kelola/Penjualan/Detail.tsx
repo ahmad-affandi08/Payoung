@@ -343,7 +343,7 @@ export default function HalamanDetailPenjualan({
                                 'Umum (tanpa pelanggan)'
                             )}
                         </Nilai>
-                        <Nilai label="Diterima server">{FormatTanggalWaktu(p.DiterimaPada)}</Nilai>
+                        <Nilai label="Masuk dari kasir">{FormatTanggalWaktu(p.DiterimaPada)}</Nilai>
                         {p.NamaPenyetujuDiskon ? <Nilai label="Diskon disetujui">{p.NamaPenyetujuDiskon}</Nilai> : null}
                         <Nilai label="Shift">
                             {p.UuidShift ? (

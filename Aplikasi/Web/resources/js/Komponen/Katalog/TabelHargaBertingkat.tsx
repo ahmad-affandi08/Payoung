@@ -116,12 +116,11 @@ export default function TabelHargaBertingkat({
     const umum = tampilkanGalat ? hasilPeriksa.umum : null;
     // Harga dasar langsung tampil sebagai isian kosong (tanpa tombol "Isi harga jual"): kosong = satuan tidak dijual di
     // kasir, jadi baris baru benar-benar dibuat begitu harga diketik dan dibuang lagi bila harga dikosongkan.
-    const barisKosong = wajibDasar && !disabled && baris.length === 0;
+    const barisKosong = !disabled && baris.length === 0;
     const tampil: BarisHarga[] = barisKosong ? [{ JumlahMinimum: '1', Harga: '' }] : baris;
     const Ubah = (indeks: number, perubahan: Partial<BarisHarga>) => {
         const berubah = tampil.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item));
-        const hanyaDasarKosong =
-            wajibDasar && berubah.length === 1 && berubah[0]?.Harga === '' && berubah[0].JumlahMinimum === '1';
+        const hanyaDasarKosong = berubah.length === 1 && berubah[0]?.Harga === '' && berubah[0].JumlahMinimum === '1';
 
         saatBerubah(hanyaDasarKosong ? [] : berubah);
     };
@@ -213,7 +212,9 @@ export default function TabelHargaBertingkat({
             )}
             {barisKosong ? (
                 <p className="text-keterangan text-teks-sekunder">
-                    Kosongkan bila {simbolSatuan} tidak dijual di kasir (masih bisa dipakai saat belanja stok).
+                    {wajibDasar
+                        ? `Kosongkan bila ${simbolSatuan} tidak dijual di kasir (masih bisa dipakai saat belanja stok).`
+                        : 'Kosongkan bila memakai harga jual biasa.'}
                 </p>
             ) : null}
             <div aria-live="polite">
@@ -229,7 +230,7 @@ export default function TabelHargaBertingkat({
                         }
                         className="h-8 pointer-coarse:h-11"
                     >
-                        {baris.length === 0 ? (wajibDasar ? 'Isi harga jual' : 'Isi harga') : 'Tambah harga bertingkat'}
+                        Tambah harga bertingkat
                     </Button>
                 ) : null}
                 {!disabled && baris.length > 1 ? (

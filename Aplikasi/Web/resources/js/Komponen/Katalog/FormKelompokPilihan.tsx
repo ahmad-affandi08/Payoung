@@ -214,7 +214,7 @@ export default function FormKelompokPilihan({
                                 keterangan={
                                     bolehUbahHarga
                                         ? 'Isi 0 bila gratis.'
-                                        : 'Perlu izin produk.harga.ubah untuk harga selain 0.'
+                                        : 'Hanya pengguna yang boleh mengubah harga produk yang bisa mengisi harga selain 0.'
                                 }
                                 disabled={!bolehUbahHarga}
                             />

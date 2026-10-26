@@ -364,7 +364,8 @@ export default function HalamanDetailStokOpname({
             ) : null}
             {Opname.Status === 'Ditinjau' && !Tindakan.Setujui ? (
                 <Pemberitahuan jenis="info" judul="Menunggu persetujuan">
-                    Persetujuan opname perlu izin persediaan.penyesuaian.setujui.
+                    Opname ini perlu disetujui pengguna yang berwenang menyetujui penyesuaian stok. Minta Pemilik toko
+                    atau Manajer.
                 </Pemberitahuan>
             ) : null}
             {Opname.Status === 'Dibatalkan' ? (

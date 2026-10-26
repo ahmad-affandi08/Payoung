@@ -325,8 +325,8 @@ function KonfirmasiCabut({ perangkat, saatSelesai }: { perangkat: Perangkat; saa
         >
             <p>
                 Aplikasi di perangkat ini langsung tidak bisa dipakai. Transaksi offline yang sudah dibuat sebelumnya
-                tetap diterima saat sinkron untuk ditinjau. Pencabutan tidak bisa dibatalkan; kode {perangkat.Kode}{' '}
-                tidak akan dipakai lagi.
+                tetap diterima begitu tersambung internet, lalu ditandai untuk diperiksa. Pencabutan tidak bisa
+                dibatalkan; kode {perangkat.Kode} tidak akan dipakai lagi.
             </p>
         </DialogKonfirmasi>
     );

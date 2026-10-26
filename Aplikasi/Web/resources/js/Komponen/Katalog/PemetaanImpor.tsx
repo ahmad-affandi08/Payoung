@@ -39,7 +39,8 @@ export function PeriksaPemetaan(
         }
 
         if (kolom !== null && item.Harga && !bolehUbahHarga) {
-            galat[item.Kunci] = 'Kolom harga perlu izin produk.harga.ubah. Pilih "Tidak diimpor".';
+            galat[item.Kunci] =
+                'Anda tidak boleh mengubah harga produk, jadi kolom harga tidak bisa diimpor. Pilih "Tidak diimpor".';
         }
 
         if (kolom !== null) {

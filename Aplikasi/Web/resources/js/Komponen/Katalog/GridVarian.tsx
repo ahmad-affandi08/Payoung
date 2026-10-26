@@ -164,7 +164,7 @@ function GridHarga({
                 </div>
             ) : (
                 <p className="text-keterangan text-teks-sekunder">
-                    Harga diubah oleh pengguna dengan izin produk.harga.ubah.
+                    Harga diubah oleh pengguna yang boleh mengubah harga produk.
                 </p>
             )}
             <TabelForm label="Grid harga jual varian" lebar="lebar">

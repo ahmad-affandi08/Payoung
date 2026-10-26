@@ -48,7 +48,7 @@ export default function DialogPembayaranInvoice({
     const [tanggal, AturTanggal] = useState(
         konfirmasi === undefined || konfirmasi.TanggalBayar > hariIni ? hariIni : konfirmasi.TanggalBayar,
     );
-    const [jumlah, AturJumlah] = useState(konfirmasi?.Jumlah.replace(/\.00$/, '') ?? '');
+    const [jumlah, AturJumlah] = useState((konfirmasi?.Jumlah ?? sisa).replace(/\.00$/, ''));
     const [pph, AturPph] = useState(AmbilTandaDesimal(saranPph) > 0 ? saranPph : '');
     const [bukti, AturBukti] = useState('');
     const [memproses, AturMemproses] = useState(false);
@@ -85,7 +85,7 @@ export default function DialogPembayaranInvoice({
             judul={`Catat pembayaran ${nomor}`}
             keterangan={
                 konfirmasi === undefined
-                    ? `Sisa tagihan ${FormatRupiah(sisa)}. Kosongkan jumlah bila pelanggan melunasi seluruh sisa.`
+                    ? `Sisa tagihan ${FormatRupiah(sisa)}. Jumlah sudah terisi sisa tagihan; ubah bila pelanggan membayar sebagian.`
                     : `Menerima konfirmasi dari ${konfirmasi.NamaPengirim}. Pastikan uangnya sudah masuk ke rekening. Sisa tagihan ${FormatRupiah(sisa)}.`
             }
             galatUmum={galat.Umum}

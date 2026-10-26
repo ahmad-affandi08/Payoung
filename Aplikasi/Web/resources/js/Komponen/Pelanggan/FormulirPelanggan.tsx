@@ -112,7 +112,7 @@ export function IsiFormulirPelanggan({
                 nilai={isian.NoHp}
                 saatBerubah={(nilai) => Ubah({ NoHp: nilai })}
                 galat={galat.NoHp}
-                keterangan="Kunci pelanggan: satu nomor untuk satu pelanggan. Contoh 0812-3456-7890."
+                keterangan="Satu nomor HP untuk satu pelanggan. Contoh 0812-3456-7890."
                 inputMode="tel"
                 maxLength={30}
                 required

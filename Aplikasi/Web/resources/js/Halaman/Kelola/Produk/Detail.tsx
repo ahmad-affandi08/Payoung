@@ -367,7 +367,7 @@ export default function HalamanDetailProduk({
             <Panel
                 judul="Satuan & barcode"
                 idJudul="judul-satuan"
-                keterangan="Ketik, pindai, atau hapus barcode di sini. Barang tanpa barcode pabrik bisa memakai barcode internal (EAN-13 berawalan 20)."
+                keterangan="Ketik, pindai, atau hapus barcode di sini. Barang tanpa barcode pabrik bisa memakai barcode buatan toko."
             >
                 <TabelData
                     id="katalog-produk-satuan"

@@ -218,7 +218,7 @@ export default function HalamanBuatReturGrosir({
                 <p className="mt-3 text-isi text-teks-utama">
                     {terisi.length} baris diisi | perkiraan nilai barang{' '}
                     <span className="font-semibold tabular-nums">{FormatRupiah(perkiraan)}</span>
-                    <span className="text-teks-sekunder"> (sebelum alokasi diskon & pajak; dihitung server)</span>
+                    <span className="text-teks-sekunder"> (sebelum alokasi diskon & pajak; dihitung otomatis)</span>
                 </p>
             </Panel>
 

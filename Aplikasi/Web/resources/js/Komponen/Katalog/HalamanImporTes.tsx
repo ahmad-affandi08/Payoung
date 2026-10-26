@@ -155,7 +155,8 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
             Nama: 'Nama produk wajib dipetakan ke satu kolom.',
         });
         expect(PeriksaPemetaan(pemetaan.Bidang, { Nama: 0, HargaJual: 1, Sku: null }, false)).toEqual({
-            HargaJual: 'Kolom harga perlu izin produk.harga.ubah. Pilih "Tidak diimpor".',
+            HargaJual:
+                'Anda tidak boleh mengubah harga produk, jadi kolom harga tidak bisa diimpor. Pilih "Tidak diimpor".',
         });
         expect(PeriksaPemetaan(pemetaan.Bidang, { Nama: 0, HargaJual: 1, Sku: 0 }, true)).toEqual({
             Sku: 'Kolom ini sudah dipakai untuk Nama produk.',

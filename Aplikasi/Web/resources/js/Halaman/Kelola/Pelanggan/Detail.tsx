@@ -557,7 +557,7 @@ export default function HalamanDetailPelanggan({
                             galat={galat.UuidTier}
                         />
                         <KotakCentang
-                            label="Kunci tier (tidak diubah evaluasi otomatis, misal reseller)"
+                            label="Tier tetap (jangan diubah otomatis, misal reseller)"
                             nilai={tier.Tetap}
                             saatBerubah={(nilai) => AturTier({ ...tier, Tetap: nilai })}
                         />

@@ -491,7 +491,7 @@ export default function HalamanDetailShift({
                         <span className="font-mono">{Shift.Perangkat}</span>
                     </Nilai>
                     <Nilai label="Hari bisnis">{FormatTanggal(Shift.TanggalBisnis)}</Nilai>
-                    <Nilai label="Diterima server">{FormatTanggalWaktu(Shift.DiterimaPada)}</Nilai>
+                    <Nilai label="Masuk dari kasir">{FormatTanggalWaktu(Shift.DiterimaPada)}</Nilai>
                     <Nilai label="Kas awal">
                         <span className="tabular-nums">{FormatRupiah(Shift.KasAwal)}</span>
                     </Nilai>

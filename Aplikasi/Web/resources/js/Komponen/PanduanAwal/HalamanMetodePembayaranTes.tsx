@@ -84,7 +84,7 @@ describe('QRIS statis dengan nominal otomatis', () => {
 
         vi.mocked(BacaQrDariBerkas).mockResolvedValueOnce(vektor.TidakSah[3]?.Teks ?? '');
         PilihGambar();
-        await waitFor(() => expect(screen.getByText(/checksum tidak cocok/)).not.toBeNull());
+        await waitFor(() => expect(screen.getByText(/isinya tidak utuh/)).not.toBeNull());
     });
 
     it('daftar metode: QRIS statis lama menawarkan "Isi nominal otomatis"; yang sudah aktif menawarkan "Matikan"', () => {

@@ -114,7 +114,7 @@ export default function PembuatVarian({
                     />
                 ) : (
                     <p className="text-keterangan text-teks-sekunder">
-                        Varian dibuat tanpa harga. Harga diisi oleh pengguna dengan izin produk.harga.ubah.
+                        Varian dibuat tanpa harga. Harga diisi oleh pengguna yang boleh mengubah harga produk.
                     </p>
                 )}
             </div>

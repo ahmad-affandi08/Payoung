@@ -56,7 +56,7 @@ describe('D-218 dialog hapus permanen produk', () => {
 
         expect(await screen.findByText('1.248 baris riwayat di 9 tabel akan dihapus:')).toBeTruthy();
         expect(screen.getByText('900 baris penjualan')).toBeTruthy();
-        expect(screen.getByText('300 mutasi stok')).toBeTruthy();
+        expect(screen.getByText('300 catatan keluar masuk stok')).toBeTruthy();
         expect(screen.getByText(/beserta seluruh riwayatnya/)).toBeTruthy();
         expect(screen.queryByText('4 TabelAsingBaru')).toBeNull();
 

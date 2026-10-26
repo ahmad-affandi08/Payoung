@@ -666,7 +666,7 @@ export default function HalamanFormulirPromo({
     return (
         <TataLetakAplikasi judul={Promo === null ? 'Tambah promo' : `Ubah promo ${Promo.Nama}`}>
             {FiturAktif ? null : (
-                <Pemberitahuan jenis="peringatan" judul="Mesin promo tersedia di paket Pro ke atas">
+                <Pemberitahuan jenis="peringatan" judul="Fitur promo tersedia di paket Pro ke atas">
                     Promo tersimpan, tetapi baru diterapkan di kasir setelah paket dinaikkan.
                 </Pemberitahuan>
             )}
