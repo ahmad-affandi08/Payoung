@@ -82,7 +82,7 @@ export default function HalamanPengaturanPersediaan({
                     {MetodeHppTerkunci ? (
                         <Pemberitahuan jenis="info" judul="Metode HPP sudah terkunci">
                             {AlasanTerkunci ??
-                                'Sudah ada mutasi stok, jadi metode HPP tidak bisa diubah lagi agar nilai persediaan tetap konsisten.'}
+                                'Stok sudah mulai bergerak, jadi metode HPP tidak bisa diubah lagi agar nilai persediaan tetap konsisten.'}
                         </Pemberitahuan>
                     ) : null}
                     <GrupRadio

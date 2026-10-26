@@ -839,8 +839,8 @@ export default function HalamanFormProduk({
     const panelVarian = (
         <div className="flex flex-col gap-3">
             <p className="text-isi text-teks-sekunder">
-                Tentukan atribut dan nilainya di sini. Setelah produk disimpan, buat varian dari halaman produk: satu
-                varian untuk setiap kombinasi.
+                Isi atribut (misal Ukuran) dan nilainya (S, M, L). Setelah produk disimpan, tombol Buat varian di
+                halaman produk membuat satu varian untuk setiap kombinasi.
             </p>
             <PenyuntingAtributVarian
                 nilai={data.AtributVarian}

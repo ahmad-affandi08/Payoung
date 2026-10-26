@@ -93,12 +93,14 @@ export default function PenyuntingAtributVarian({
     disabled = false,
 }: PropsPenyuntingAtributVarian) {
     const kombinasi = HitungKombinasiVarian(nilai);
+    // Atribut pertama langsung tampil sebagai isian kosong (tanpa tombol "Tambah atribut"); baru tersimpan begitu diisi.
+    const tampil: Atribut[] = nilai.length === 0 && !disabled ? [{ Nama: '', Nilai: [] }] : nilai;
     const Ubah = (indeks: number, perubahan: Partial<Atribut>) =>
-        saatBerubah(nilai.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item)));
+        saatBerubah(tampil.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item)));
 
     return (
         <div className="flex flex-col gap-3">
-            {nilai.map((atribut, indeks) => (
+            {tampil.map((atribut, indeks) => (
                 <fieldset key={indeks} className="flex flex-col gap-2 rounded-panel border border-garis bg-card p-3">
                     <legend className="px-1 text-label font-semibold text-teks-utama">Atribut {indeks + 1}</legend>
                     <BidangTeks
@@ -152,7 +154,7 @@ export default function PenyuntingAtributVarian({
                             <Button
                                 type="button"
                                 variant="link"
-                                onClick={() => saatBerubah(nilai.filter((_, i) => i !== indeks))}
+                                onClick={() => saatBerubah(tampil.filter((_, i) => i !== indeks))}
                                 className="h-auto px-0 text-destructive"
                             >
                                 Hapus atribut {atribut.Nama || String(indeks + 1)}
@@ -162,7 +164,7 @@ export default function PenyuntingAtributVarian({
                 </fieldset>
             ))}
             <div className="flex flex-wrap items-center gap-3">
-                {!disabled && nilai.length < MaksimalAtribut ? (
+                {!disabled && nilai.length > 0 && nilai.length < MaksimalAtribut ? (
                     <Button
                         type="button"
                         variant="outline"

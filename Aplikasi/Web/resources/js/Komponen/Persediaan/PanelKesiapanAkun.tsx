@@ -30,8 +30,8 @@ export default function PanelKesiapanAkun({ kesiapan }: { kesiapan: KesiapanAkun
         );
 
     return (
-        <Pemberitahuan jenis="peringatan" judul="Akun jurnal persediaan belum lengkap">
-            <p>Stok awal belum bisa diposting karena akun berikut belum dipetakan. Draf tetap bisa disimpan.</p>
+        <Pemberitahuan jenis="peringatan" judul="Pengaturan pembukuan toko belum lengkap">
+            <p>Stok awal belum bisa dicatat karena akun pembukuan berikut belum diatur. Draf tetap bisa disimpan.</p>
             {kesiapan.PeranBelumDipetakan.length > 0 ? (
                 <ul className="mt-1 list-disc pl-5">
                     {kesiapan.PeranBelumDipetakan.map((peran) => (
@@ -47,8 +47,8 @@ export default function PanelKesiapanAkun({ kesiapan }: { kesiapan: KesiapanAkun
                         </Tombol>
                     </div>
                     <p className="text-keterangan">
-                        Akun yang belum ada dilengkapi dari template sektor toko. Pengaturan akun yang sudah ada tidak
-                        diubah; detailnya bisa dilihat di{' '}
+                        Akun yang belum ada dilengkapi dari pengaturan standar jenis usaha Anda. Pengaturan yang sudah
+                        ada tidak diubah; detailnya bisa dilihat di{' '}
                         <Link href="/kelola/akuntansi/pemetaan" className="font-semibold text-brand underline">
                             Pemetaan akun
                         </Link>

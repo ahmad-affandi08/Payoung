@@ -113,8 +113,8 @@ export default function HalamanDetailSuratJalan({
             ) : null}
             {SuratJalan.NomorFaktur === null && SuratJalan.Status === 'Diposting' ? (
                 <Pemberitahuan jenis="peringatan" judul="Belum difakturkan">
-                    Barangnya sudah diserahkan dan nilainya ada di akun Piutang Belum Difakturkan. Faktur Pajak gabungan
-                    dibuat paling lama akhir bulan penyerahan.
+                    Barangnya sudah diserahkan tetapi belum ditagihkan lewat faktur. Faktur gabungan dibuat paling lama
+                    akhir bulan penyerahan.
                 </Pemberitahuan>
             ) : null}
 
@@ -124,6 +124,11 @@ export default function HalamanDetailSuratJalan({
                         Cetak surat jalan
                     </a>
                 </Button>
+                {Izin.Kelola && SuratJalan.NomorFaktur === null && SuratJalan.Status === 'Diposting' ? (
+                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+                        <Link href={`${AlamatGrosir}/faktur/buat?surat-jalan=${SuratJalan.Uuid}`}>Buat faktur</Link>
+                    </Button>
+                ) : null}
                 {bolehRetur ? (
                     <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                         <Link href={`${AlamatGrosir}/retur/buat/${SuratJalan.Uuid}`}>Buat retur</Link>

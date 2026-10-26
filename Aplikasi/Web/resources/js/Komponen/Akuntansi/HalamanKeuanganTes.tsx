@@ -193,7 +193,7 @@ describe('F-13a bagan akun', () => {
 
         RenderUji(<HalamanBaganAkun {...propsBagan} Izin={{ Kelola: false }} />);
         expect(screen.queryByRole('button', { name: 'Tambah akun' })).toBeNull();
-        expect(screen.getByText('akuntansi.kelola')).toBeTruthy();
+        expect(screen.getByText(/akses untuk mengelola pembukuan/)).toBeTruthy();
         expect(screen.queryByRole('button', { name: /Aksi untuk akun/ })).toBeNull();
     });
 });

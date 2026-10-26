@@ -67,6 +67,6 @@ describe('Uang QRIS tanpa penjualan (E8)', () => {
         RenderUji(<HalamanDaftarQrisTanpaPenjualan {...props} Tagihan={BuatHasilTabel([])} Izin={{ Kelola: false }} />);
 
         expect(screen.getByText('Tidak ada uang QRIS yang masuk tanpa penjualan.')).toBeTruthy();
-        expect(screen.getByText(/akuntansi\.kelola/)).toBeTruthy();
+        expect(screen.getByText(/akses untuk mengelola pembukuan/)).toBeTruthy();
     });
 });

@@ -197,7 +197,7 @@ export default function HalamanDetailOrderProduksi({
                 id="persediaan-produksi-jurnal"
                 jurnal={Jurnal}
                 lihatJurnal={Izin.LihatJurnal}
-                keterangan="Debit persediaan hasil; kredit persediaan bahan dan overhead produksi dibebankan."
+                keterangan="Nilai barang hasil produksi bertambah, nilai bahan berkurang, dan biaya overhead produksi ikut dicatat."
                 kosong={
                     Order.Status === 'Draf'
                         ? 'Jurnal dibuat saat produksi diposting.'

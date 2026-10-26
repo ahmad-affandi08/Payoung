@@ -409,14 +409,13 @@ export default function HalamanDetailStokAwal({
                         <p>Total nilai Rp 0, jadi tidak ada jurnal yang dibuat.</p>
                     ) : (
                         <p>
-                            Jurnal otomatis: Debit Persediaan, Kredit Ekuitas saldo awal, masing-masing{' '}
-                            {FormatNilai(StokAwal.TotalNilai)}. Bila stok di lokasi ini sedang minus, selisih HPP ikut
-                            dicatat.
+                            Nilai persediaan {FormatNilai(StokAwal.TotalNilai)} dicatat otomatis ke pembukuan sebagai
+                            modal awal. Bila stok di lokasi ini sedang minus, selisih modal barang ikut dicatat.
                         </p>
                     )}
                     {lewatAntrean ? (
                         <p>
-                            Dokumen ini besar ({barisMutasi.toLocaleString('id-ID')} baris mutasi), jadi diproses di
+                            Dokumen ini besar ({barisMutasi.toLocaleString('id-ID')} baris barang), jadi diproses di
                             latar belakang. Halaman diperbarui otomatis setelah selesai.
                         </p>
                     ) : null}

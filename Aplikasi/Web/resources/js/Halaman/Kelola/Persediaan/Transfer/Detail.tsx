@@ -486,8 +486,8 @@ export default function HalamanDetailTransferStok({
                     judul={`Tutup transfer ${nomor}?`}
                     keterangan={
                         <p>
-                            Semua barang yang belum diterima dicatat sebagai susut (Debit susut & barang rusak).
-                            Transfer tidak bisa diterima lagi.
+                            Semua barang yang belum diterima dicatat sebagai susut atau barang rusak. Transfer tidak
+                            bisa diterima lagi.
                         </p>
                     }
                     labelAksi="Tutup transfer"

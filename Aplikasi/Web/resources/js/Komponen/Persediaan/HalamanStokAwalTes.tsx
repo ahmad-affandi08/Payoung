@@ -137,11 +137,11 @@ describe('Kelola/Persediaan/StokAwal/Daftar (F-05a, TabelData D-16)', () => {
 
     it('peringatan akun jurnal hanya untuk pemegang izin posting', () => {
         RenderUji(<HalamanDaftarStokAwal {...PropsDaftar({ KesiapanAkun: AkunBelumSiap })} />);
-        expect(screen.getByText('Akun jurnal persediaan belum lengkap')).toBeTruthy();
+        expect(screen.getByText('Pengaturan pembukuan toko belum lengkap')).toBeTruthy();
         cleanup();
 
         RenderUji(<HalamanDaftarStokAwal {...PropsDaftar({ KesiapanAkun: AkunBelumSiap, Izin: IzinStafGudang })} />);
-        expect(screen.queryByText('Akun jurnal persediaan belum lengkap')).toBeNull();
+        expect(screen.queryByText('Pengaturan pembukuan toko belum lengkap')).toBeNull();
     });
 
     it('data ekstrem: 500 dokumen, nomor Mono, nilai Rp 1.250.000.000 rata kanan tabular, draf tanpa nomor', () => {
@@ -432,7 +432,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Posting stok awal' }));
         const dialog = screen.getByRole('alertdialog');
         expect(dialog.textContent).toContain('Rp 28.345,68');
-        expect(dialog.textContent).toContain('Debit Persediaan, Kredit Ekuitas saldo awal');
+        expect(dialog.textContent).toContain('dicatat otomatis ke pembukuan sebagai modal awal');
         expect(dialog.textContent).not.toContain('latar belakang');
 
         fireEvent.click(within(dialog).getByRole('button', { name: 'Posting stok awal' }));
@@ -447,14 +447,14 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail({ BatasPostingLangsung: 4 })} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Posting stok awal' }));
-        expect(screen.getByRole('alertdialog').textContent).toContain('5 baris mutasi');
+        expect(screen.getByRole('alertdialog').textContent).toContain('5 baris barang');
     });
 
     it('akun belum dipetakan: posting nonaktif dengan penjelasan', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail({ KesiapanAkun: AkunBelumSiap })} />);
 
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Posting stok awal' }).disabled).toBe(true);
-        expect(screen.getByText('Akun jurnal persediaan belum lengkap')).toBeTruthy();
+        expect(screen.getByText('Pengaturan pembukuan toko belum lengkap')).toBeTruthy();
     });
 
     it('staf gudang: bisa ubah draf, tidak ada tombol posting, alasan tertulis', () => {
