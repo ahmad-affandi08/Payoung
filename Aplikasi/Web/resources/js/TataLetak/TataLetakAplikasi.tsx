@@ -150,12 +150,13 @@ const menuPersediaan: ItemMenu[] = [
         fitur: 'stok.opname',
         lanjutan: true,
     },
-    // F-05e: order produksi (resep → bahan keluar, hasil masuk).
+    // F-05e: order produksi (resep → bahan keluar, hasil masuk). Retail umum, sembako, fashion, elektronik, dan pet shop
+    // memakainya untuk memecah kemasan (karung beras → pak 5 kg); apotek tidak (racikan punya alurnya sendiri).
     {
         label: 'Produksi',
         href: '/kelola/persediaan/produksi',
         izin: IzinTenant.PersediaanLihat,
-        sektor: ['FNB', 'RTL-BLD', 'WHS'],
+        sektor: ['FNB', 'RTL-BLD', 'WHS', 'RTL-GEN', 'RTL-FRS', 'RTL-FSH', 'RTL-ELC', 'RTL-PET'],
         lanjutan: true,
     },
     // F-05f: bahan terbuang (waste) & food cost.

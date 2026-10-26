@@ -279,6 +279,13 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
 
         // Sektor belum diketahui: semua tampil (perilaku lama).
         expect(Label(SaringMenuTerlihat(akses))).toContain('Grosir');
+        // Produksi (juga dipakai toko retail/sembako untuk pecah kemasan): tidak untuk jasa murni.
+        const SubPersediaan = (menu: ReturnType<typeof SaringMenuTerlihat>) =>
+            (menu.find(({ menu: m }) => m.label === 'Persediaan')?.sub ?? []).map((m) => m.label);
+        expect(SubPersediaan(SaringMenuTerlihat(akses, { sektorOutlet: ['RTL-FRS'] }))).toContain('Produksi');
+        expect(SubPersediaan(SaringMenuTerlihat(akses, { sektorOutlet: ['RTL-GEN'] }))).toContain('Produksi');
+        expect(SubPersediaan(SaringMenuTerlihat(akses, { sektorOutlet: ['SVC-SLN'] }))).not.toContain('Produksi');
+        expect(SubPersediaan(SaringMenuTerlihat(akses, { sektorOutlet: ['RTL-PHR'] }))).not.toContain('Produksi');
         // Kafe saja: grosir, laundry, reservasi tersembunyi.
         const kafe = SaringMenuTerlihat(akses, { sektorOutlet: ['FNB-CAF'] });
         expect(Label(kafe)).not.toContain('Grosir');

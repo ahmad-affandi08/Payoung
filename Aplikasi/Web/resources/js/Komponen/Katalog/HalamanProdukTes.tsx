@@ -30,7 +30,14 @@ import {
     OpsiKelompokPajakUji,
     OpsiSatuanUji,
 } from './DataUjiKatalog';
-import { AturGalatBalasanUji, AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from './TiruanInertia';
+import {
+    AturGalatBalasanUji,
+    AturHalamanUji,
+    kirimanForm,
+    RenderUji,
+    TambahPropsHalamanUji,
+    tiruanRouter,
+} from './TiruanInertia';
 
 vi.mock('@inertiajs/react', async () => (await import('./TiruanInertia')).TiruanInertia);
 
@@ -256,6 +263,24 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
             'Konsinyasi',
         ]);
         expect(screen.getByText('Barang yang dihitung stoknya, misal sabun atau minuman botol.')).toBeTruthy();
+    });
+
+    it('retail (toko sembako) bisa memilih jenis Produksi untuk pecah kemasan, tetapi tidak Bahan baku atau Resep', () => {
+        TambahPropsHalamanUji({ SektorOutlet: ['RTL-FRS'] });
+        render(<HalamanFormProduk {...PropsForm()} />);
+
+        const jenis = screen.getAllByRole('radio').map((r) => r.getAttribute('value'));
+        expect(jenis).toContain('Produksi');
+        expect(jenis).not.toContain('BahanBaku');
+        expect(jenis).not.toContain('Resep');
+        expect(screen.getByText(/beras pak 5 kg dari karung 25 kg/)).toBeTruthy();
+    });
+
+    it.each([['SVC-SLN'], ['RTL-PHR']])('%s (salon/apotek) tidak ditawari jenis Produksi', (sektor) => {
+        TambahPropsHalamanUji({ SektorOutlet: [sektor] });
+        render(<HalamanFormProduk {...PropsForm()} />);
+
+        expect(screen.getAllByRole('radio').map((r) => r.getAttribute('value'))).not.toContain('Produksi');
     });
 
     it('harga bertingkat tidak valid ditahan di peramban: tetap di langkah harga dengan masalah di barisnya', () => {

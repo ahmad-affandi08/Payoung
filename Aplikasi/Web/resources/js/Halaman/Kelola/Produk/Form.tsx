@@ -133,7 +133,7 @@ const penjelasanJenis: Record<JenisProduk, string> = {
     IndukVarian:
         'Satu produk dengan banyak pilihan, misal kaos dengan ukuran dan warna. Varian dibuat setelah disimpan.',
     Paket: 'Beberapa produk dijual sebagai satu paket berharga sendiri. Isi paket diatur setelah produk disimpan.',
-    Produksi: 'Barang jadi yang dibuat dari bahan baku dan punya stok sendiri.',
+    Produksi: 'Barang jadi dari bahan lain dan punya stok sendiri, misal beras pak 5 kg dari karung 25 kg.',
     BahanBaku: 'Bahan untuk resep atau produksi. Tidak dijual langsung di kasir.',
     Konsinyasi: 'Barang titipan penitip. Hutang ke penitip baru tercatat saat barang terjual.',
 };
@@ -230,6 +230,8 @@ export default function HalamanFormProduk({
     const sektorSeri = PakaiSektor(['RTL-ELC', 'SVC-WRK', 'WHS']);
     const sektorResep = PakaiSektor(['FNB', 'RTL-FLR']);
     const sektorProduksi = PakaiSektor(['FNB', 'RTL-FLR', 'WHS', 'RTL-BLD', 'BIZ-MFG']);
+    // Retail memecah kemasan (karung beras → pak 2,5 kg) lewat jenis Produksi; bahan baku tetap khusus sektor produksi.
+    const sektorKemasanRetail = PakaiSektor(['RTL-GEN', 'RTL-FRS', 'RTL-FSH', 'RTL-ELC', 'RTL-PET']);
     // Barang titipan (konsinyasi) lazim di warung/kelontong, toko kue & kafe (titip jajanan), butik, dan distributor.
     const sektorKonsinyasi = PakaiSektor(['FNB', 'RTL', 'WHS']);
     const induk = data.Jenis === 'IndukVarian';
@@ -984,11 +986,13 @@ export default function HalamanFormProduk({
         nilai === data.Jenis ||
         (nilai === 'Resep'
             ? sektorResep
-            : ['Produksi', 'BahanBaku'].includes(nilai)
-              ? sektorProduksi
-              : nilai === 'Konsinyasi'
-                ? sektorKonsinyasi
-                : true);
+            : nilai === 'Produksi'
+              ? sektorProduksi || sektorKemasanRetail
+              : nilai === 'BahanBaku'
+                ? sektorProduksi
+                : nilai === 'Konsinyasi'
+                  ? sektorKonsinyasi
+                  : true);
     const pilihanJenis = UrutkanJenisProduk(Jenis, sektorMakanan)
         .filter((item) => CekJenisTersedia(item.Nilai))
         .map((item) => ({
