@@ -276,7 +276,7 @@ function SusunNotaReturUji($tes): HasilNotaReturPajak
 }
 
 describe('Rekap nota retur pajak dari retur grosir (v4.08)', function (): void {
-    it('retur atas faktur ber-NSFP direkap per baris dengan DPP, DPP nilai lain 11/12, dan PPN; tanpa NSFP dijelaskan', function (): void {
+    it('retur atas faktur ber-NSFP direkap per baris dengan DPP, DPP nilai lain 11/12, dan PPN, tanpa NSFP dijelaskan', function (): void {
         Carbon::setTestNow('2026-09-28 03:00:00');
         $faktur = FakturCoretaxUji($this, $this->toko, '200', '2026-09-27');
         $retur = ReturCoretaxUji($this, $faktur->SuratJalan->firstOrFail(), '20');

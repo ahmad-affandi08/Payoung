@@ -59,7 +59,7 @@ void main() {
   tearDown(() => u.Tutup());
 
   test(
-    'promo QRIS: tidak di keranjang, berlaku saat QRIS dipilih, tidak bila sisa dibayar tunai; ikut Penjualan.Buat',
+    'promo QRIS: tidak di keranjang, berlaku saat QRIS dipilih, tidak bila sisa dibayar tunai. Ikut Penjualan.Buat',
     () async {
       final (katalog, k) = await Siapkan([
         Promo('01K5PROMO00000000000000011', 'QRIS5K', {
@@ -95,7 +95,7 @@ void main() {
   );
 
   test(
-    'transaksi pertama & batas 1x per hari memakai cache pelanggan; setelah bayar cache bertambah → tidak berlaku lagi',
+    'transaksi pertama & batas 1x per hari memakai cache pelanggan. Setelah bayar cache bertambah → tidak berlaku lagi',
     () async {
       final (katalog, k) = await Siapkan([
         Promo('01K5PROMO00000000000000012', 'PERTAMA5K', {'TransaksiPertama': true}),
@@ -144,7 +144,7 @@ void main() {
     },
   );
 
-  test('F-16c bagian 4a poin berlipat: tidak mengubah harga; label "Poin 2×" hanya bila pelanggan dipilih', () async {
+  test('F-16c bagian 4a poin berlipat: tidak mengubah harga. Label "Poin 2×" hanya bila pelanggan dipilih', () async {
     final (katalog, k) = await Siapkan([
       {
         'Uuid': '01K5PROMO00000000000000021',

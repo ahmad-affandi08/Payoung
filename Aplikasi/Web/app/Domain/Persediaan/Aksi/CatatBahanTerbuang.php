@@ -84,11 +84,11 @@ final class CatatBahanTerbuang
 
         foreach ($kebutuhan as $k) {
             if ($k->jenis === JenisProduk::Konsinyasi) {
-                throw new PelanggaranAturanBisnis('ProdukKonsinyasi', "{$k->nama} barang konsinyasi; catat lewat retur ke penitip.", 'UuidProduk');
+                throw new PelanggaranAturanBisnis('ProdukKonsinyasi', "{$k->nama} barang konsinyasi. Catat lewat retur ke penitip.", 'UuidProduk');
             }
 
             if ($k->pelacakan !== PelacakanProduk::Tidak) {
-                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$k->nama} memakai batch/nomor seri; catat lewat penyesuaian stok dengan memilih batch/seri.", 'UuidProduk');
+                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$k->nama} memakai batch/nomor seri. Catat lewat penyesuaian stok dengan memilih batch/seri.", 'UuidProduk');
             }
 
             $jumlah = $data->jumlah->KeDesimal()->multipliedBy($k->pembilang)->dividedBy($k->penyebut, Kuantitas::SKALA, RoundingMode::HalfUp);

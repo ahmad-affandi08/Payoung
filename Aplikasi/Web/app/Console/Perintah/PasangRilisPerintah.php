@@ -42,7 +42,7 @@ final class PasangRilisPerintah extends Command
     ];
 
     protected $signature = 'rilis:pasang
-        {--kering : Hanya tampilkan rencana dari langkah yang mendukungnya; tidak migrasi dan tidak mengubah data}
+        {--kering : Hanya tampilkan rencana dari langkah yang mendukungnya. Tidak migrasi dan tidak mengubah data}
         {--dengan-situs : Ikut menimpa halaman situs pemasaran dengan isi bawaan terbaru (situs:segarkan-bawaan)}';
 
     protected $description = 'Menjalankan semua langkah sesudah memperbarui kode: migrasi, penyelarasan data tenant lama, dan cache.';
@@ -54,7 +54,7 @@ final class PasangRilisPerintah extends Command
         $gagal = [];
 
         if (! $kering && ! $this->Jalankan('migrate', ['--force' => true])) {
-            $this->error('Migrasi gagal; langkah lain dihentikan. Perbaiki dulu, lalu jalankan ulang.');
+            $this->error('Migrasi gagal. Langkah lain dihentikan. Perbaiki dulu, lalu jalankan ulang.');
 
             return self::FAILURE;
         }
@@ -96,7 +96,7 @@ final class PasangRilisPerintah extends Command
             return self::FAILURE;
         }
 
-        $this->info($kering ? 'Rencana selesai; tidak ada yang diubah.' : 'Rilis terpasang.');
+        $this->info($kering ? 'Rencana selesai. Tidak ada yang diubah.' : 'Rilis terpasang.');
 
         return self::SUCCESS;
     }

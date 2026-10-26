@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('Pilihan produk', function (): void {
-    it('memasang kelompok berurutan, lalu mengurutkan ulang dan melepas satu dengan jejak; tercatat di log audit', function (): void {
+    it('memasang kelompok berurutan, lalu mengurutkan ulang dan melepas satu dengan jejak. Tercatat di log audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanKatalog::BuatTenant('Kedai Kopi Senja Solo');
         $gula = BantuanKomposisi::BuatKelompokPilihan('Level Gula');
         $es = BantuanKomposisi::BuatKelompokPilihan('Level Es', [['Normal', '0'], ['Tanpa Es', '0']]);
@@ -65,7 +65,7 @@ describe('Pilihan produk', function (): void {
             ->and($props['Tersedia'])->toBe([]);
     });
 
-    it('isolasi: kelompok tenant lain tidak ditemukan, produk tenant lain 404; kasir 403', function (): void {
+    it('isolasi: kelompok tenant lain tidak ditemukan, produk tenant lain 404. Kasir 403', function (): void {
         BantuanKatalog::BuatTenant('Warung Kopi Tetangga Sebelah');
         $kelompokB = BantuanKomposisi::BuatKelompokPilihan();
         $menuB = BantuanKomposisi::BuatProdukResep();
@@ -105,7 +105,7 @@ describe('Pilihan produk', function (): void {
         ]);
     });
 
-    it('GET pilihan produk merender Kelola/Produk/Pilihan dengan Kepala (butuh halaman FE); bahan baku 404', function (): void {
+    it('GET pilihan produk merender Kelola/Produk/Pilihan dengan Kepala (butuh halaman FE). Bahan baku 404', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanKatalog::BuatTenant();
         $menu = BantuanKomposisi::BuatProdukResep();
         $bahan = BantuanKomposisi::BuatBahan();

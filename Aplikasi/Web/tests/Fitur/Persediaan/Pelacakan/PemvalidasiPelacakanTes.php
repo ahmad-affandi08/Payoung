@@ -36,7 +36,7 @@ describe('F-05a PemvalidasiPelacakan (DesainF05a C.4, H-3)', function (): void {
         'seri 100 karakter' => ['Seri', '1', null, null, [str_repeat('S', 100)]],
     ]);
 
-    it('batch: nomor batch wajib (≤ 60) dan kedaluwarsa wajib (H-3); nomor seri harus kosong', function (): void {
+    it('batch: nomor batch wajib (≤ 60) dan kedaluwarsa wajib (H-3). Nomor seri harus kosong', function (): void {
         expect(PeriksaBarisPelacakanUji('Batch', '48', '  ', null))->toBe([
             ['Bidang' => 'NomorBatch', 'Pesan' => 'Isi nomor batch untuk Susu UHT Full Cream 1 Liter (batch & kedaluwarsa).'],
             ['Bidang' => 'TanggalKedaluwarsa', 'Pesan' => 'Isi tanggal kedaluwarsa batch untuk Susu UHT Full Cream 1 Liter (batch & kedaluwarsa).'],
@@ -72,7 +72,7 @@ describe('F-05a PemvalidasiPelacakan (DesainF05a C.4, H-3)', function (): void {
         ]);
     });
 
-    it('seri: maksimal MaksimalNomorSeriPerBaris nomor per baris; batch & kedaluwarsa harus kosong', function (): void {
+    it('seri: maksimal MaksimalNomorSeriPerBaris nomor per baris. Batch & kedaluwarsa harus kosong', function (): void {
         config(['persediaan.StokAwal.MaksimalNomorSeriPerBaris' => 2]);
         $tiga = ['RC18-0001', 'RC18-0002', 'RC18-0003'];
 

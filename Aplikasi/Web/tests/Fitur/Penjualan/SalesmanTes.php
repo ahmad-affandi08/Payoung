@@ -407,7 +407,7 @@ describe('API /api/pos/v1/salesman', function (): void {
 });
 
 describe('Back-office Grosir › Kunjungan', function (): void {
-    it('menampilkan kunjungan dengan filter salesman, hasil, tanggal; ekspor CSV; detail pesanan menyebut salesman', function (): void {
+    it('menampilkan kunjungan dengan filter salesman, hasil, tanggal. Ekspor CSV. Detail pesanan menyebut salesman', function (): void {
         /** @var TestCase $this */
         $k = SiapkanSalesman($this);
         $pesanan = ItemPesananSalesman($k, [['UuidProduk' => $k['Gula']->Uuid, 'Jumlah' => '50']]);
@@ -448,7 +448,7 @@ describe('Back-office Grosir › Kunjungan', function (): void {
             ->where('Tindakan.Konfirmasi', true));
     });
 
-    it('tanpa izin grosir.kelola ditolak; kunjungan tenant lain tidak terlihat', function (): void {
+    it('tanpa izin grosir.kelola ditolak. Kunjungan tenant lain tidak terlihat', function (): void {
         /** @var TestCase $this */
         $a = SiapkanSalesman($this, 'Distributor Sembako Solo');
         expect(BantuanKasir::KirimRingkas($this, $a['TokenHp'], [ItemKunjungan($a)]))->toBe([['Diterima', null]]);

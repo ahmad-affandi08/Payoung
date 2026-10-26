@@ -109,7 +109,7 @@ describe('F-05a enum persediaan (DesainF05a B.4)', function (): void {
             ->and(JenisSumberJurnal::StokAwal->BuatTautan(''))->toBeNull();
     });
 
-    it('JenisDokumenBernomor: SA 4 digit dan JU 6 digit per periode; periode tidak valid ditolak', function (): void {
+    it('JenisDokumenBernomor: SA 4 digit dan JU 6 digit per periode. Periode tidak valid ditolak', function (): void {
         expect(JenisDokumenBernomor::StokAwal->FormatNomor('2026-09', 1))->toBe('SA/2026/09/0001')
             ->and(JenisDokumenBernomor::StokAwal->FormatNomor('2026-12', 12345))->toBe('SA/2026/12/12345')
             ->and(JenisDokumenBernomor::Jurnal->FormatNomor('2026-09', 42))->toBe('JU/2026/09/000042');

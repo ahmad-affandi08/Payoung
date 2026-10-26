@@ -72,7 +72,7 @@ describe('katalog:terapkan', function (): void {
             ->and(Addon::query()->where('Kode', 'OUTLET_TAMBAHAN')->sole()->HargaBulanan)->toBe('99000.00');
     });
 
-    it('menerbitkan harga promo hari ini + harga normal terjadwal; tenant lama ikut promo dan terkunci setelahnya', function (): void {
+    it('menerbitkan harga promo hari ini + harga normal terjadwal. Tenant lama ikut promo dan terkunci setelahnya', function (): void {
         $this->artisan('katalog:terapkan')->assertSuccessful();
 
         $versi = VersiTerbit('STARTER');
@@ -105,7 +105,7 @@ describe('katalog:terapkan', function (): void {
         expect($log)->toHaveCount(7)->and($log->first()->IdPenggunaPengelola)->toBeNull();
     });
 
-    it('situs pemasaran menampilkan promo hanya karena harga normal benar-benar terjadwal; setelah promo harga normal tampil', function (): void {
+    it('situs pemasaran menampilkan promo hanya karena harga normal benar-benar terjadwal. Setelah promo harga normal tampil', function (): void {
         $this->artisan('katalog:terapkan')->assertSuccessful();
 
         $paket = collect(app(PaketPublik::class)->Ambil())->keyBy('Kode');
@@ -133,7 +133,7 @@ describe('katalog:terapkan', function (): void {
             ->and(HargaTagihan('STARTER', '2026-10-12', '2026-10-12'))->toBe('59000.00');
     });
 
-    it('menyelaraskan add-on: harga, fitur, aktif; menambah yang belum ada; tidak menyentuh yang sudah sesuai', function (): void {
+    it('menyelaraskan add-on: harga, fitur, aktif. Menambah yang belum ada. Tidak menyentuh yang sudah sesuai', function (): void {
         Addon::query()->where('Kode', 'OUTLET_TAMBAHAN')->update(['HargaBulanan' => '99000', 'Status' => StatusPaket::Diarsipkan->value]);
         Addon::query()->where('Kode', 'INSIGHT')->update(['HargaBulanan' => '59000']);
         Addon::query()->where('Kode', 'SELF_ORDER')->delete();

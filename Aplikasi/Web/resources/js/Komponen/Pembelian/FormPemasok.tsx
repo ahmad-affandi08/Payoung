@@ -89,7 +89,7 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
                     Ubah({ Kode: nilai });
                 }}
                 galat={galat.Kode}
-                {...(kodeDiketik ? {} : { keterangan: 'Disarankan dari nama pemasok; boleh diganti.' })}
+                {...(kodeDiketik ? {} : { keterangan: 'Disarankan dari nama pemasok. Boleh diganti.' })}
                 maxLength={30}
                 kode
                 required

@@ -137,7 +137,7 @@ describe('Tautan absen pribadi (D-198)', () => {
         expect(tombol.disabled).toBe(true);
     });
 
-    it('sudah ada tautan: tampil, bisa dikirim lewat WhatsApp; buat ulang dan cabut lewat konfirmasi dulu', async () => {
+    it('sudah ada tautan: tampil, bisa dikirim lewat WhatsApp. Buat ulang dan cabut lewat konfirmasi dulu', async () => {
         const alamat = 'https://payoung.id/kedai-senja/absen/aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789AbCd';
         TiruFetch({ Tautan: alamat, TautanDibuatPada: '2026-10-25T03:00:00+00:00', Wajah: wajahKosong });
         RenderUji(<PanelAbsenHp karyawan={karyawan} saatTutup={() => undefined} />);

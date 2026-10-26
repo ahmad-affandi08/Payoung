@@ -78,7 +78,7 @@ describe('F-03 BR-03.6 pengurai angka Indonesia (deterministik)', function (): v
 });
 
 describe('F-03 preset impor (data JSON, H.10)', function (): void {
-    it('semua berkas preset valid menurut skema; hanya Umum yang bukan asumsi', function (): void {
+    it('semua berkas preset valid menurut skema. Hanya Umum yang bukan asumsi', function (): void {
         $berkas = glob(PembacaPresetImpor::AmbilFolder().'/*.json') ?: [];
         expect(array_map(fn (string $p): string => basename($p, '.json'), $berkas))->toEqualCanonicalizing(['Umum', 'Majoo', 'Moka', 'Pawoon']);
 
@@ -104,7 +104,7 @@ describe('F-03 preset impor (data JSON, H.10)', function (): void {
         expect($galat)->toContain('Kode wajib PascalCase', 'VersiFormat harus 1', 'Asumsi wajib boolean', 'Kolom wajib objek dan memetakan Nama', 'Varian.Mode harus Tidak, KolomInduk, atau BarisPerVarian');
     });
 
-    it('pemetaan otomatis per preset memakai alias (Moka: Item Name/Price/Category; judul dinormalisasi)', function (): void {
+    it('pemetaan otomatis per preset memakai alias (Moka: Item Name/Price/Category. Judul dinormalisasi)', function (): void {
         $kolom = [
             ['Indeks' => 0, 'Judul' => 'Category Name', 'Contoh' => []],
             ['Indeks' => 1, 'Judul' => 'ITEM NAME', 'Contoh' => []],

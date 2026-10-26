@@ -68,7 +68,7 @@ void main() {
           .toList();
 
   for (final (nama, ukuran) in [('360', ukuranHp), ('800', ukuranTablet), ('1280', ukuranDesktop)]) {
-    testWidgets('lebar $nama dp: tutup buta menyembunyikan kas seharusnya sampai hitungan disimpan; selisih pas → '
+    testWidgets('lebar $nama dp: tutup buta menyembunyikan kas seharusnya sampai hitungan disimpan. Selisih pas → '
         'laporan Z → buka shift', (tester) async {
       final u = await MasukRuangKerja(tester, ukuran: ukuran);
       await BukaTutupShift(tester);
@@ -136,7 +136,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('tidak buta & di bawah toleransi: selisih tampil sambil mengetik, tutup tanpa PIN; pecahan mengisi kas', (
+  testWidgets('tidak buta & di bawah toleransi: selisih tampil sambil mengetik, tutup tanpa PIN. Pecahan mengisi kas', (
     tester,
   ) async {
     final u = await MasukRuangKerja(tester, dataAwal: DataAwalUji(tutupShiftButa: false));
@@ -167,7 +167,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('pesanan tertahan menolak tutup shift; laporan X bisa dibuka kapan saja dari layar Shift', (
+  testWidgets('pesanan tertahan menolak tutup shift. Laporan X bisa dibuka kapan saja dari layar Shift', (
     tester,
   ) async {
     final u = await MasukRuangKerja(tester);

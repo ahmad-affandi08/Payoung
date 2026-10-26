@@ -69,7 +69,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
             <form onSubmit={Kirim} className="flex flex-col gap-4" aria-label="Aturan kehadiran" noValidate>
                 <Panel
                     judul="Bukti kehadiran"
-                    keterangan="Karyawan absen dari HP setelah login atau lewat tautan absen pribadinya. Wajahnya selalu dicocokkan dengan wajah terdaftar; di sini Anda mengatur foto dan lokasinya."
+                    keterangan="Karyawan absen dari HP setelah login atau lewat tautan absen pribadinya. Wajahnya selalu dicocokkan dengan wajah terdaftar. Di sini Anda mengatur foto dan lokasinya."
                 >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
@@ -122,7 +122,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                         {Menit(
                             'ToleransiTerlambatMenit',
                             'Toleransi terlambat',
-                            'Terlambat dihitung bila masuk lewat batas ini; nilainya selisih penuh dari jam mulai.',
+                            'Terlambat dihitung bila masuk lewat batas ini. Nilainya selisih penuh dari jam mulai.',
                         )}
                         {Menit(
                             'ToleransiPulangCepatMenit',
@@ -143,7 +143,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
 
                 <Panel
                     judul="Notifikasi WhatsApp"
-                    keterangan="Pengingat dikirim ke nomor HP akun karyawan; peringatan dikirim ke anggota yang boleh melihat karyawan di outlet itu."
+                    keterangan="Pengingat dikirim ke nomor HP akun karyawan. Peringatan dikirim ke anggota yang boleh melihat karyawan di outlet itu."
                 >
                     <div className="flex flex-col gap-4">
                         {!WhatsappAktif ? (

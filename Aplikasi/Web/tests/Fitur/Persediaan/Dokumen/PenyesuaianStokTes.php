@@ -79,7 +79,7 @@ describe('F-05b penyesuaian stok: posting & jurnal', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('Lainnya boleh masuk (harga modal wajib, Cr Selisih HPP) dan keluar (PenyesuaianKeluar, Dr Selisih HPP); alasan lain tidak boleh masuk', function (): void {
+    it('Lainnya boleh masuk (harga modal wajib, Cr Selisih HPP) dan keluar (PenyesuaianKeluar, Dr Selisih HPP). Alasan lain tidak boleh masuk', function (): void {
         $t = SiapkanPenyesuaian();
 
         expect(B::KodeGalat(fn () => B::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Rusak, [B::Baris($t['Produk']['Stok'], '2', '38500')])))->toBe('BarisTidakValid')
@@ -127,7 +127,7 @@ describe('F-05b penyesuaian stok: posting & jurnal', function (): void {
 });
 
 describe('F-05b penyesuaian stok: batas persetujuan (§19.2)', function (): void {
-    it('di atas batas → Menunggu persetujuan; pembuat/pengaju tidak boleh menyetujui; orang lain menyetujui → Diposting', function (): void {
+    it('di atas batas → Menunggu persetujuan. Pembuat/pengaju tidak boleh menyetujui. Orang lain menyetujui → Diposting', function (): void {
         $t = SiapkanPenyesuaian();
         $draf = B::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Hilang, [B::Baris($t['Produk']['Stok'], '-13')]);
         // D-38: pengaju bukan-Pemilik (Pemilik sendiri langsung memposting, diuji di bawah).
@@ -172,7 +172,7 @@ describe('F-05b penyesuaian stok: batas persetujuan (§19.2)', function (): void
             ->and(LogAudit::query()->where('Peristiwa', 'penyesuaian-stok.posting')->sole()->NilaiBaru['DisetujuiLangsung'] ?? null)->toBe('PenyetujuTunggal');
     });
 
-    it('tepat di batas langsung diposting; ditolak kembali ke Draf beralasan lalu bisa dibatalkan', function (): void {
+    it('tepat di batas langsung diposting. Ditolak kembali ke Draf beralasan lalu bisa dibatalkan', function (): void {
         $t = SiapkanPenyesuaian();
         app(UbahPengaturanPersediaan::class)->Jalankan(MetodeHpp::RataRata, false, Uang::Dari('77000'));
         expect(app(PengaturanPersediaanTenant::class)->Ambil()->batasPersetujuanPenyesuaian->KeString())->toBe('77000.00');

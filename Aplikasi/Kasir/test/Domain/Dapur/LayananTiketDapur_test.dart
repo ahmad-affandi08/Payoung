@@ -123,7 +123,7 @@ void main() {
     expect(tiketDapur, isNot(contains('Kopi')));
   });
 
-  test('hanya baris yang dikirim; stasiun tanpa printer dilewati; printer gagal dilaporkan per stasiun', () async {
+  test('hanya baris yang dikirim. Stasiun tanpa printer dilewati. Printer gagal dilaporkan per stasiun', () async {
     await Siapkan();
     await PrinterDapur.SimpanSemua(u.repositori, {bar: const PrinterDapur.Struk()});
     final pesanan = await KirimPesanan();

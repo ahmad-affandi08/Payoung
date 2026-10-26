@@ -28,7 +28,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('F-17 BR-17.2 tandai habis dari back-office', function (): void {
-    it('Pemilik menandai habis lalu tersedia lagi; idempoten dan hanya keadaan yang berubah dicatat audit', function (): void {
+    it('Pemilik menandai habis lalu tersedia lagi. Idempoten dan hanya keadaan yang berubah dicatat audit', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $masuk = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);
@@ -62,7 +62,7 @@ describe('F-17 BR-17.2 tandai habis dari back-office', function (): void {
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         expect(ProdukHabis::query()->count())->toBe(0);
     });
-    it('halaman detail produk memuat keadaan habis per outlet; induk varian tanpa panel', function (): void {
+    it('halaman detail produk memuat keadaan habis per outlet. Induk varian tanpa panel', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $masuk = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);
@@ -82,7 +82,7 @@ describe('F-17 BR-17.2 tandai habis dari back-office', function (): void {
 });
 
 describe('F-17 BR-17.2 dampak ke toko online dan self-order', function (): void {
-    it('toko online: produk habis hilang dari menu dan checkout menolaknya; tersedia lagi diterima', function (): void {
+    it('toko online: produk habis hilang dari menu dan checkout menolaknya. Tersedia lagi diterima', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
 
@@ -150,7 +150,7 @@ describe('F-17 BR-17.2 tandai habis dari aplikasi POS', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'produk.tersedia')->count())->toBe(1);
     });
 
-    it('pelaku yang bukan anggota tenant ditolak dan produk tak dikenal 404; tanpa token 401', function (): void {
+    it('pelaku yang bukan anggota tenant ditolak dan produk tak dikenal 404, tanpa token 401', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $produk = BantuanKatalog::BuatProduk(['Nama' => 'Soto Ayam Kampung Special'], '27000.00');
@@ -231,7 +231,7 @@ describe('PRD-11 ketersediaan per outlet × kanal', function (): void {
         expect(KanalAda($produk->Id, $k['Outlet']->Id))->toBe(['Semua']);
     });
 
-    it('transisi penyimpanan: Semua menggantikan kanal tunggal; kanal saat Semua tidak mengubah; tiga kanal digabung; tersedia di satu kanal memecah Semua', function (): void {
+    it('transisi penyimpanan: Semua menggantikan kanal tunggal. Kanal saat Semua tidak mengubah. Tiga kanal digabung. Tersedia di satu kanal memecah Semua', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $ubah = fn (bool $habis, KanalKetersediaan $kanal) => app(UbahKetersediaanProduk::class)->Jalankan($k['Outlet']->Id, $k['Kopi']->Uuid, $habis, idPenggunaBackOffice: $k['Pemilik']->Id, kanal: $kanal);
@@ -282,7 +282,7 @@ describe('PRD-11 ketersediaan per outlet × kanal', function (): void {
             ->and($log[2]->NilaiBaru['KanalHabis'])->toBe(['TokoOnline', 'SelfOrder']);
     });
 
-    it('back-office: panel memuat keadaan per kanal; ubah per kanal lewat form; Kanal tidak dikenal ditolak', function (): void {
+    it('back-office: panel memuat keadaan per kanal. Ubah per kanal lewat form; Kanal tidak dikenal ditolak', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $masuk = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);
@@ -299,7 +299,7 @@ describe('PRD-11 ketersediaan per outlet × kanal', function (): void {
             ->where('Ketersediaan.0.Kanal.TokoOnline', false));
     });
 
-    it('migrasi: baris lama berarti semua kanal (bawaan Semua); satu produk bisa punya baris beberapa kanal tetapi tidak ganda', function (): void {
+    it('migrasi: baris lama berarti semua kanal (bawaan Semua). Satu produk bisa punya baris beberapa kanal tetapi tidak ganda', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
 

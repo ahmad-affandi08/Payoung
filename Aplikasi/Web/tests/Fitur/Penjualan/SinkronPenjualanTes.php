@@ -79,7 +79,7 @@ function SaldoStokPenjualan(int $idProduk, int $idGudang): ?string
 }
 
 describe('F-07b penjualan lewat sinkron (Penjualan.Buat): diterima & tersimpan', function (): void {
-    it('penjualan PPN 12% (DPP 11/12) split QRIS + tunai: dokumen, baris, pajak, pembayaran, stok, jurnal J-07.1/J-07.2, riwayat & audit tercatat; invariant terjaga', function (): void {
+    it('penjualan PPN 12% (DPP 11/12) split QRIS + tunai: dokumen, baris, pajak, pembayaran, stok, jurnal J-07.1/J-07.2, riwayat & audit tercatat. Invariant terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -332,7 +332,7 @@ describe('F-07b penjualan lewat sinkron (Penjualan.Buat): diterima & tersimpan',
 });
 
 describe('F-07b idempotensi & isolasi', function (): void {
-    it('BR-07.6 Uuid sama dikirim ulang = Duplikat tanpa dokumen/stok/jurnal ganda; batch dikirim ulang seluruhnya Duplikat; Uuid sama dengan nomor lain = UuidSudahDipakai', function (): void {
+    it('BR-07.6 Uuid sama dikirim ulang = Duplikat tanpa dokumen/stok/jurnal ganda. Batch dikirim ulang seluruhnya Duplikat; Uuid sama dengan nomor lain = UuidSudahDipakai', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $satu = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -383,7 +383,7 @@ describe('F-07b idempotensi & isolasi', function (): void {
 });
 
 describe('F-07b aturan penolakan', function (): void {
-    it('shift, kasir, nomor (BR-07.1), waktu: ShiftTidakDitemukan, KasirTidakDitemukan (bukan anggota tenant), NomorTidakValid, NomorSudahDipakai, WaktuTidakValid; kasir yang izin/outletnya berubah setelah transaksi offline diterima + PerluTinjauan IzinBerubah (PRD v1.46)', function (): void {
+    it('shift, kasir, nomor (BR-07.1), waktu: ShiftTidakDitemukan, KasirTidakDitemukan (bukan anggota tenant), NomorTidakValid, NomorSudahDipakai, WaktuTidakValid. Kasir yang izin/outletnya berubah setelah transaksi offline diterima + PerluTinjauan IzinBerubah (PRD v1.46)', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
@@ -432,7 +432,7 @@ describe('F-07b aturan penolakan', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('produk: bahan baku, induk varian = ProdukTidakBisaDijual (konsinyasi diterima sejak F-05i: dijual sebagai titipan, J-05.7); seri langsung tanpa nomor seri = NomorSeriTidakSesuai (F-05h) dan seri sebagai bahan resep = PelacakanBelumDidukung, batch diterima (F-05g, tanpa stok batch = ditinjau BatchTidakCukup); produk diarsipkan/dihapus setelah dijual offline tetap diterima (dihapus: stok tidak dikurangi, ditinjau)', function (): void {
+    it('produk: bahan baku, induk varian = ProdukTidakBisaDijual (konsinyasi diterima sejak F-05i: dijual sebagai titipan, J-05.7). Seri langsung tanpa nomor seri = NomorSeriTidakSesuai (F-05h) dan seri sebagai bahan resep = PelacakanBelumDidukung, batch diterima (F-05g, tanpa stok batch = ditinjau BatchTidakCukup). Produk diarsipkan/dihapus setelah dijual offline tetap diterima (dihapus: stok tidak dikurangi, ditinjau)', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $semua = BantuanPersediaan::BuatProdukSemuaJenis(BantuanKomposisi::Satuan('Pieces', 'pcs', false), BantuanKomposisi::Satuan('Kilogram', 'kg'));
         $induk = BantuanKatalog::BuatProduk(['Nama' => 'Kaos Polos Katun Combed 30s', 'Jenis' => JenisProduk::IndukVarian]);
@@ -500,7 +500,7 @@ describe('F-07b aturan penolakan', function (): void {
         ]);
     });
 
-    it('E7: tarif PPN yang baru berakhir (perangkat belum memperbarui tarif) diterima + PerluTinjauan TarifPajakLama; tarif yang sudah lama berakhir atau karangan tetap TarifPajakTidakSah', function (): void {
+    it('E7: tarif PPN yang baru berakhir (perangkat belum memperbarui tarif) diterima + PerluTinjauan TarifPajakLama. Tarif yang sudah lama berakhir atau karangan tetap TarifPajakTidakSah', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $hari = fn (int $mundur): string => now('Asia/Jakarta')->subDays($mundur)->toDateString();
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '11.000000', berlakuMulai: $hari(730), berlakuSampai: $hari(11));
@@ -521,7 +521,7 @@ describe('F-07b aturan penolakan', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('BR-07.3 diskon manual (PRD v1.46): kasir tanpa izin atau di atas batas tanpa penyetuju, dan di atas 30% tanpa Pemilik = diterima + PerluTinjauan DiskonMelebihiBatas; supervisor menyetujui sampai 30%; penyetuju tanpa izin setujui = PenyetujuTidakBerwenang', function (): void {
+    it('BR-07.3 diskon manual (PRD v1.46): kasir tanpa izin atau di atas batas tanpa penyetuju, dan di atas 30% tanpa Pemilik = diterima + PerluTinjauan DiskonMelebihiBatas. Supervisor menyetujui sampai 30%. Penyetuju tanpa izin setujui = PenyetujuTidakBerwenang', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $pemilik = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         $kasirLain = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -559,7 +559,7 @@ describe('F-07b aturan penolakan', function (): void {
         $tinjau = fn (array $item): ?string => Penjualan::query()->where('Uuid', $item['Uuid'])->sole()->AlasanTinjauan;
         expect($tinjau($d1))->toBe("DiskonMelebihiBatas: diskon 5% diberikan tanpa persetujuan, padahal {$k['Kasir']->Nama} tidak punya izin diskon manual")
             ->and($tinjau($d2))->toBe('DiskonMelebihiBatas: diskon 15% melebihi batas kasir 10% tanpa persetujuan supervisor')
-            ->and($tinjau($d5))->toBe("DiskonMelebihiBatas: diskon 30,01% melebihi batas persetujuan 30% ({$k['Supervisor']->Nama}); hanya Pemilik yang boleh menyetujui")
+            ->and($tinjau($d5))->toBe("DiskonMelebihiBatas: diskon 30,01% melebihi batas persetujuan 30% ({$k['Supervisor']->Nama}). Hanya Pemilik yang boleh menyetujui")
             ->and(array_map($tinjau, [$d3, $d4, $d6, $d7, $d8, $d10]))->toBe([null, null, null, null, null, null])
             ->and(Penjualan::query()->where('Uuid', $d5['Uuid'])->sole()->IdPenyetujuDiskon)->toBe($k['Supervisor']->Id);
 
@@ -574,7 +574,7 @@ describe('F-07b aturan penolakan', function (): void {
         unset($d9);
     });
 
-    it('BR-07.3 penyetuju = kasir sendiri (perangkat tanpa dialog PIN): diterima bila kasir ber-izin penjualan.diskon.setujui sampai BatasDiskonPenyetuju (di atasnya diterima + DiskonMelebihiBatas); Pemilik tanpa batas; kasir tanpa izin setujui = PenyetujuTidakBerwenang', function (): void {
+    it('BR-07.3 penyetuju = kasir sendiri (perangkat tanpa dialog PIN): diterima bila kasir ber-izin penjualan.diskon.setujui sampai BatasDiskonPenyetuju (di atasnya diterima + DiskonMelebihiBatas); Pemilik tanpa batas. Kasir tanpa izin setujui = PenyetujuTidakBerwenang', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $pemilik = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -619,7 +619,7 @@ describe('F-07b aturan penolakan', function (): void {
             ->and(Penjualan::query()->where('Uuid', $lebih['Uuid'])->sole()->AlasanTinjauan)->toStartWith('DiskonMelebihiBatas: diskon 16% melebihi batas persetujuan 15%');
     });
 
-    it('hitung ulang MesinKalkulasi: Ringkasan berbeda = HitunganTidakCocok; harga pilihan tidak sama dengan Σ pilihan = HitunganTidakCocok; harga jual snapshot berbeda dari harga katalog tetap diterima (§18.3)', function (): void {
+    it('hitung ulang MesinKalkulasi: Ringkasan berbeda = HitunganTidakCocok. Harga pilihan tidak sama dengan Σ pilihan = HitunganTidakCocok. Harga jual snapshot berbeda dari harga katalog tetap diterima (§18.3)', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '35000.00']]];
@@ -636,7 +636,7 @@ describe('F-07b aturan penolakan', function (): void {
             ->and($respons->json('Hasil.2.Status'))->toBe('Diterima');
     });
 
-    it('pembayaran fase 1: metode lain = MetodeBayarBelumDidukung; dua tunai atau non-tunai melebihi total = PembayaranTidakValid; kurang = PembayaranKurang; metode nonaktif setelah transaksi offline tetap diterima', function (): void {
+    it('pembayaran fase 1: metode lain = MetodeBayarBelumDidukung. Dua tunai atau non-tunai melebihi total = PembayaranTidakValid. Kurang = PembayaranKurang. Metode nonaktif setelah transaksi offline tetap diterima', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $nonaktif = BantuanPenjualan::BuatMetode(JenisMetodePembayaran::Ewallet, 'GoPay Toko', false);
@@ -665,7 +665,7 @@ describe('F-07b aturan penolakan', function (): void {
         expect(SaldoPeranJurnalPenjualan((int) $p->IdJurnal, PeranAkun::PiutangPencairan, $k['Outlet']->Id))->toBe('38500.00');
     });
 
-    it('§18/F-15 periode terkunci: penjualan offline diterima dengan tanggal bisnis asli + tinjauan PeriodeTerkunci; jurnal & stok dibukukan hari pertama periode terbuka berikutnya; void juga', function (): void {
+    it('§18/F-15 periode terkunci: penjualan offline diterima dengan tanggal bisnis asli + tinjauan PeriodeTerkunci. Jurnal & stok dibukukan hari pertama periode terbuka berikutnya. Void juga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -709,7 +709,7 @@ describe('F-07b aturan penolakan', function (): void {
 });
 
 describe('F-07b stok penjualan (aturan #9–#10)', function (): void {
-    it('§18.3 stok tidak cukup tidak menolak: diterima, stok minus, PerluTinjauan StokTidakCukup; invariant SaldoStok = Σ MutasiStok & Σ debit = Σ kredit terjaga', function (): void {
+    it('§18.3 stok tidak cukup tidak menolak: diterima, stok minus, PerluTinjauan StokTidakCukup. Invariant SaldoStok = Σ MutasiStok & Σ debit = Σ kredit terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '2');
         $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '5', 'Harga' => '38500.00']]]);
@@ -916,7 +916,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('(a) himpunan pajak per baris dicocokkan dengan kelompok pajak produk & profil pajak outlet menurut kategori JenisPajak pada tanggal bisnis: beda = diterima + PajakBerbeda; outlet non-PKP tidak memungut PPN', function (): void {
+    it('(a) himpunan pajak per baris dicocokkan dengan kelompok pajak produk & profil pajak outlet menurut kategori JenisPajak pada tanggal bisnis: beda = diterima + PajakBerbeda. Outlet non-PKP tidak memungut PPN', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -963,7 +963,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $p = fn (array $item): Penjualan => Penjualan::query()->where('Uuid', $item['Uuid'])->sole();
-        $harap = "DiskonMelebihiBatas: diskon 30,0001% melebihi batas persetujuan 30% ({$k['Supervisor']->Nama}); hanya Pemilik yang boleh menyetujui";
+        $harap = "DiskonMelebihiBatas: diskon 30,0001% melebihi batas persetujuan 30% ({$k['Supervisor']->Nama}). Hanya Pemilik yang boleh menyetujui";
         expect($p($naik)->TotalDiskon)->toBe('1498.64')
             ->and($p($naik)->AlasanTinjauan)->toBe($harap)
             ->and($p($turun)->TotalDiskon)->toBe('1498.62')
@@ -992,7 +992,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
             ->and($p->IdPenyetujuDiskon)->toBe($spvLuar->Id);
     });
 
-    it('harga manual kasir: supervisor ber-izin pos.harga.timpa = diterima bersih + HargaAsli & alasan tersimpan; kasir tanpa izin = tinjauan HargaManualTanpaIzin; dengan PIN penyetuju ber-izin = bersih; alasan kosong = HargaManualTanpaAlasan; harga sama dengan asli bukan perubahan', function (): void {
+    it('harga manual kasir: supervisor ber-izin pos.harga.timpa = diterima bersih + HargaAsli & alasan tersimpan. Kasir tanpa izin = tinjauan HargaManualTanpaIzin, dengan PIN penyetuju ber-izin = bersih. Alasan kosong = HargaManualTanpaAlasan. Harga sama dengan asli bukan perubahan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Bubuk Robusta Temanggung 250 gram', 'Jenis' => JenisProduk::NonStok], '40000.00');
         $manual = fn (string $harga = '35000.00', string $alasan = 'Kemasan penyok'): array => ['Produk' => $kopi, 'Jumlah' => '1', 'Harga' => $harga, 'HargaManual' => ['HargaAsli' => '40000.00', 'Alasan' => $alasan]];
@@ -1036,7 +1036,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
         ]))->toBe([['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang'], ['Ditolak', 'PenyetujuTidakBerwenang']]);
     });
 
-    it('(saran 1) bentrok indeks unik (1062) saat dua kiriman bersamaan: penjualan dibaca ulang; Nomor & TotalAkhir sama = Duplikat, selain itu UuidSudahDipakai/NomorSudahDipakai; masalah database lain diteruskan', function (): void {
+    it('(saran 1) bentrok indeks unik (1062) saat dua kiriman bersamaan: penjualan dibaca ulang; Nomor & TotalAkhir sama = Duplikat, selain itu UuidSudahDipakai/NomorSudahDipakai. Masalah database lain diteruskan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -1067,7 +1067,7 @@ describe('F-07b tindak lanjut tinjauan (PRD v1.46)', function (): void {
             ->and(fn () => $selesaikan->invoke($aksi, $galat(1213, 'PRIMARY'), $p->Uuid, $p->Nomor, Uang::Dari($p->TotalAkhir)))->toThrow(QueryException::class);
     });
 
-    it('(saran 2) CLAUDE.md #8: HPP & jurnal penjualan hanya boleh diisi di dalam penerimaan; di luar penerimaan penjualan Rp 0 tanpa jurnal (IdJurnal null) dan baris ber-HPP 0 tetap tidak bisa diubah; penanda pulih setelah masalah', function (): void {
+    it('(saran 2) CLAUDE.md #8: HPP & jurnal penjualan hanya boleh diisi di dalam penerimaan. Di luar penerimaan penjualan Rp 0 tanpa jurnal (IdJurnal null) dan baris ber-HPP 0 tetap tidak bisa diubah. Penanda pulih setelah masalah', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Bungkus Kado Gratis', 'Jenis' => JenisProduk::Jasa], '0.00');
         $gratis = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $jasa, 'Jumlah' => '1', 'Harga' => '0.00']]]);

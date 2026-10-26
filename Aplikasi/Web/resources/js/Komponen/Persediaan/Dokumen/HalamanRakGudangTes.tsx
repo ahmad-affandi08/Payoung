@@ -78,7 +78,7 @@ describe('Kelola/Persediaan/Rak (F-05c)', () => {
         );
     });
 
-    it('daftar: menu baris menawarkan ubah dan nonaktifkan; rak nonaktif ditawari aktifkan kembali; hanya lihat tanpa aksi', () => {
+    it('daftar: menu baris menawarkan ubah dan nonaktifkan. Rak nonaktif ditawari aktifkan kembali. Hanya lihat tanpa aksi', () => {
         RenderUji(
             <HalamanDaftarRakGudang Rak={[Rak()]} OpsiGudang={[GudangUtama]} Saring={{ Gudang: '' }} Izin={Izin} />,
         );
@@ -116,7 +116,7 @@ describe('Kelola/Persediaan/Rak (F-05c)', () => {
         expect(screen.queryAllByRole('button', { name: /Aksi/ })).toHaveLength(0);
     });
 
-    it('detail: tempatkan satu kategori mengirim UuidKategori; tanpa kategori tombol mati', () => {
+    it('detail: tempatkan satu kategori mengirim UuidKategori, tanpa kategori tombol mati', () => {
         RenderUji(
             <HalamanDetailRakGudang
                 Produk={BuatHasilTabel([produk])}

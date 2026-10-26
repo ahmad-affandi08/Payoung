@@ -54,7 +54,7 @@ void main() {
   });
 
   test(
-    'ganti kanal GoFood: harga daftar GoFood; produk tanpa harga GoFood tetap harga dasar; kembali ke bawa pulang',
+    'ganti kanal GoFood: harga daftar GoFood. Produk tanpa harga GoFood tetap harga dasar. Kembali ke bawa pulang',
     () async {
       await Siapkan();
       final katalog = await u.MuatKatalog();
@@ -104,7 +104,7 @@ void main() {
   );
 
   test(
-    'metode platform hanya untuk kanalnya; bayar GoFood → outbox Penjualan.Buat Kanal GoFood + nomor pesanan',
+    'metode platform hanya untuk kanalnya. Bayar GoFood → outbox Penjualan.Buat Kanal GoFood + nomor pesanan',
     () async {
       await Siapkan();
       final katalog = await u.MuatKatalog();

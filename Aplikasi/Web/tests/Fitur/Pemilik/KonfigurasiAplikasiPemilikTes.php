@@ -55,7 +55,7 @@ function MasukSebagaiPemilikKonfigurasi(object $uji, string $namaToko): array
     return [$token, $data['Tenant']->Uuid, $data['Tenant']->Id];
 }
 
-it('perlu masuk; versi cadangan config bila belum ada rilis; tanpa header versi tidak dinilai wajib/ada pembaruan', function (): void {
+it('perlu masuk. Versi cadangan config bila belum ada rilis, tanpa header versi tidak dinilai wajib/ada pembaruan', function (): void {
     [$token, $uuidTenant] = MasukSebagaiPemilikKonfigurasi($this, 'Toko Konfigurasi Pemilik');
 
     $this->getJson('/api/pemilik/v1/konfigurasi-aplikasi')->assertUnauthorized();
@@ -74,7 +74,7 @@ it('perlu masuk; versi cadangan config bila belum ada rilis; tanpa header versi 
     ])->and($hasil['FlagFitur'])->toBe([]);
 });
 
-it('versi di bawah minimal = WajibPembaruan; di bawah terbaru = AdaPembaruan; platform dari X-Platform-Aplikasi; rilis Pos tidak ikut', function (): void {
+it('versi di bawah minimal = WajibPembaruan. Di bawah terbaru = AdaPembaruan. Platform dari X-Platform-Aplikasi. Rilis Pos tidak ikut', function (): void {
     [$token, $uuidTenant] = MasukSebagaiPemilikKonfigurasi($this, 'Toko Rilis Pemilik');
     BuatRilisPemilik('Android', '1.4.0', ['VersiMinimum' => '1.2.0', 'VersiMinimumBerlakuPada' => now()->subDay()]);
     BuatRilisPemilik('Ios', '2.0.0', ['VersiMinimum' => '1.9.0', 'VersiMinimumBerlakuPada' => now()->subDay()]);
@@ -91,7 +91,7 @@ it('versi di bawah minimal = WajibPembaruan; di bawah terbaru = AdaPembaruan; pl
         ->and($ambil('1.5.0', 'Windows'))->toMatchArray(['Platform' => 'Android', 'VersiTerbaru' => '1.4.0']);
 });
 
-it('flag fitur tenant: Global mati = kill switch untuk tenant mana pun; aturan Tenant lain tidak bocor', function (): void {
+it('flag fitur tenant: Global mati = kill switch untuk tenant mana pun. Aturan Tenant lain tidak bocor', function (): void {
     [$token, $uuidTenant, $idTenant] = MasukSebagaiPemilikKonfigurasi($this, 'Toko Flag Pemilik');
     [$tokenLain, $uuidTenantLain] = MasukSebagaiPemilikKonfigurasi($this, 'Toko Flag Lain');
 

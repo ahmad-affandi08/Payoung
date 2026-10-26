@@ -40,7 +40,7 @@ describe('Pustaka/MenuSektor (audit #33: ringkasan menu menurut jenis usaha)', (
         expect(Label(hasil.Muncul)).not.toContain('Bahan terbuang');
     });
 
-    it('sektor yang sama tidak menghasilkan perubahan; sektor campuran menggabungkan menu keduanya', () => {
+    it('sektor yang sama tidak menghasilkan perubahan. Sektor campuran menggabungkan menu keduanya', () => {
         const sama = BandingkanMenuSektor(butir, ['FNB-CAF'], ['FNB-CAF']);
 
         expect(sama).toEqual({ Muncul: [], Hilang: [] });

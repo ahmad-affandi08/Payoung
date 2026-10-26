@@ -69,7 +69,7 @@ describe('Halaman promo (F-16c)', () => {
     });
     afterEach(() => cleanup());
 
-    it('daftar: pemakaian/kuota & total potongan tampil; tanpa fitur tampil ajakan paket; tambah hanya untuk pengelola', () => {
+    it('daftar: pemakaian/kuota & total potongan tampil, tanpa fitur tampil ajakan paket. Tambah hanya untuk pengelola', () => {
         RenderUji(
             <HalamanDaftarPromo
                 Promo={[HappyHour]}
@@ -204,7 +204,7 @@ describe('Halaman promo (F-16c)', () => {
         );
     });
 
-    it('efektivitas (F-16c bagian 4c): pakai, potongan, uplift naik; promo belum berjalan = pemberitahuan', () => {
+    it('efektivitas (F-16c bagian 4c): pakai, potongan, uplift naik. Promo belum berjalan = pemberitahuan', () => {
         const promo = { Uuid: HappyHour.Uuid, Kode: 'KOPI10', Nama: 'Diskon 10% kopi susu', Status: 'Aktif' };
         RenderUji(
             <HalamanEfektivitasPromo
@@ -239,7 +239,7 @@ describe('Halaman promo (F-16c)', () => {
         expect(screen.getByText('Promo belum berjalan')).toBeTruthy();
     });
 
-    it('klaim pemasok (F-16c bagian 4b): klaim terbuka & riwayat tampil; catat pembayaran klaim dikirim sebagai POST', () => {
+    it('klaim pemasok (F-16c bagian 4b): klaim terbuka & riwayat tampil. Catat pembayaran klaim dikirim sebagai POST', () => {
         window.history.replaceState({}, '', '/kelola/promo/klaim-pemasok');
         RenderUji(
             <HalamanKlaimPemasok
@@ -342,7 +342,7 @@ describe('Halaman promo (F-16c)', () => {
         );
     });
 
-    it('voucher (F-16c bagian 2): pemakaian & pesanan kasir tampil; buat kode massal berawalan dikirim sebagai POST', () => {
+    it('voucher (F-16c bagian 2): pemakaian & pesanan kasir tampil. Buat kode massal berawalan dikirim sebagai POST', () => {
         expect(FormatBerlakuSampai(null)).toBe('Ikut periode promo');
         expect(FormatBerlakuSampai('2026-10-31T17:00:00Z')).toBe('31 Okt 2026');
         const promo: BarisPromo & { Definisi: null } = {

@@ -74,7 +74,7 @@ it('CSP ketat dikirim Report-Only dengan sumber skrip terdaftar tanpa unsafe-inl
         ->and($respons->headers->get('Content-Security-Policy'))->toBe(PasangHeaderKeamanan::CSP);
 });
 
-it('laporan CSP dicatat dengan kunci yang dikenal saja, dipotong, dan dijawab 204; badan sampah tidak membuat masalah', function (): void {
+it('laporan CSP dicatat dengan kunci yang dikenal saja, dipotong, dan dijawab 204. Badan sampah tidak membuat masalah', function (): void {
     Log::spy();
 
     $this->postJson('/laporan-csp', ['csp-report' => [

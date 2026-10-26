@@ -140,7 +140,7 @@ class _BagianRiwayatSalesmanState extends ConsumerState<BagianRiwayatSalesman> {
                   Expanded(
                     child: Text(
                       _offline
-                          ? 'Offline. Daftar dari kantor tampil saat online; catatan di atas tetap tersimpan.'
+                          ? 'Offline. Daftar dari kantor tampil saat online. Catatan di atas tetap tersimpan.'
                           : _galatServer!,
                       style: teks.bodyMedium,
                     ),

@@ -171,7 +171,7 @@ describe('Beranda konsol', () => {
         expect(screen.getByText(/Semua terkendali/)).toBeTruthy();
     });
 
-    it('bagian tanpa izin tidak tampil; tanpa satu pun bagian muncul pesan hubungi Super Admin', () => {
+    it('bagian tanpa izin tidak tampil, tanpa satu pun bagian muncul pesan hubungi Super Admin', () => {
         propsHalaman = Props([]);
         render(
             <Beranda Ringkasan={{ Tenant: null, Tagihan: null, Dukungan: null, Operasional: null, Perhatian: [] }} />,

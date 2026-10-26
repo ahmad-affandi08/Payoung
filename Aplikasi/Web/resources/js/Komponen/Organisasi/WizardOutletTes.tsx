@@ -114,7 +114,7 @@ describe('Wizard tambah outlet (halaman)', () => {
             />,
         );
 
-    it('Lanjut menahan nama dan kode yang salah; kode dari 6 karakter ditolak', () => {
+    it('Lanjut menahan nama dan kode yang salah. Kode dari 6 karakter ditolak', () => {
         Render();
 
         expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
@@ -143,7 +143,7 @@ describe('Wizard tambah outlet (halaman)', () => {
         expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
     });
 
-    it('usaha grosir mendapat langkah Kanvas; nomor kendaraan yang salah menahan Lanjut', () => {
+    it('usaha grosir mendapat langkah Kanvas. Nomor kendaraan yang salah menahan Lanjut', () => {
         TambahPropsHalamanUji({ SektorOutlet: ['WHS-DST'] });
         Render();
         fireEvent.change(screen.getByLabelText('Nama outlet'), { target: { value: 'Truk Solo' } });

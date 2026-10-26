@@ -16,7 +16,7 @@ describe('Batas paket di layar F-02 (BR-02.1)', () => {
 });
 
 describe('Izin tenant untuk menu (UX saja, server tetap penentu)', () => {
-    it('Pemilik selalu punya izin; anggota lain sesuai daftar izin; tanpa akses berarti tanpa izin', () => {
+    it('Pemilik selalu punya izin. Anggota lain sesuai daftar izin, tanpa akses berarti tanpa izin', () => {
         expect(PunyaIzinTenant({ Pemilik: true, Izin: [] }, IzinTenant.AuditLihat)).toBe(true);
         expect(PunyaIzinTenant({ Pemilik: false, Izin: ['outlet.lihat'] }, IzinTenant.OutletLihat)).toBe(true);
         expect(PunyaIzinTenant({ Pemilik: false, Izin: ['outlet.lihat'] }, IzinTenant.OutletKelola)).toBe(false);

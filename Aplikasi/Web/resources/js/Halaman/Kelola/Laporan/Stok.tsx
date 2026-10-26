@@ -575,7 +575,7 @@ export default function HalamanLaporanStok({
                     </h2>
                     <p className="text-label text-teks-sekunder">
                         Batch yang masih bersisa dan sudah lewat atau kedaluwarsa dalam 30 hari. Penjualan mengambil
-                        batch berkedaluwarsa terdekat lebih dulu; barang yang sudah lewat dicatat sebagai bahan terbuang
+                        batch berkedaluwarsa terdekat lebih dulu. Barang yang sudah lewat dicatat sebagai bahan terbuang
                         atau penyesuaian stok.
                     </p>
                     <TabelData
@@ -646,7 +646,7 @@ export default function HalamanLaporanStok({
                         Kebutuhan = yang lebih besar antara rata-rata pemakaian pada hari yang sama dalam{' '}
                         {String(Rencana.Minggu)} minggu terakhir dan pre-order yang diambil pada tanggal itu (pre-order
                         biasanya sudah ikut di riwayat penjualan, jadi tidak dijumlahkan). Produksi = kebutuhan − saldo
-                        sekarang. Ini perkiraan; sesuaikan dengan cuaca, promo, dan kapasitas oven sebelum produksi.
+                        sekarang. Ini perkiraan. Sesuaikan dengan cuaca, promo, dan kapasitas oven sebelum produksi.
                     </p>
                     <TabelData
                         id="laporan-stok-rencana"

@@ -24,7 +24,7 @@ it('tenant baru: kode outlet dari nama usaha dan gudang bernama sesuai usahanya'
     expect($gudang->Nama)->toBe('Gudang Raja Sayur')->and($gudang->Kode)->toBe('RSY');
 });
 
-it('merapikan hanya nama bawaan lama; kode gudang & nama buatan pemilik tidak berubah; aman diulang', function (): void {
+it('merapikan hanya nama bawaan lama. Kode gudang & nama buatan pemilik tidak berubah. Aman diulang', function (): void {
     ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Warung Sembako Berkah');
     BantuanOrganisasi::AturKonteks($tenant->Id);
     $toko = Gudang::query()->sole();

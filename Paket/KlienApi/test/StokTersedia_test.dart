@@ -41,7 +41,7 @@ void main() {
     expect(hasil.tersedia, {'P1': '12.0000', 'P2': '0.0000', 'P3': '-3.5000'});
   });
 
-  test('BR-05.2: angka JSON jadi teks; baris tanpa Uuid atau tanpa jumlah dilewati, bukan dianggap nol', () {
+  test('BR-05.2: angka JSON jadi teks. Baris tanpa Uuid atau tanpa jumlah dilewati, bukan dianggap nol', () {
     final hasil = StokTersediaPos.DariJson({
       'Produk': [
         {'UuidProduk': 'P1', 'Tersedia': 5},

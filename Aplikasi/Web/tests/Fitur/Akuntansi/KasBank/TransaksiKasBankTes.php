@@ -141,7 +141,7 @@ describe('F-13a transaksi kas & bank (FIN-03, PRD "Rincian F-13a")', function ()
             ->and(Storage::disk((string) config('akuntansi.DiskLampiran'))->allFiles())->toBe([]);
     });
 
-    it('lampiran opsional tersimpan privat dan hanya diunduh lewat rute berizin; jenis berkas dibatasi', function (): void {
+    it('lampiran opsional tersimpan privat dan hanya diunduh lewat rute berizin. Jenis berkas dibatasi', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
 

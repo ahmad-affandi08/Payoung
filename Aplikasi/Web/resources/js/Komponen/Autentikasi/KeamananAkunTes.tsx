@@ -75,7 +75,7 @@ describe('ringkasan keamanan', () => {
 });
 
 describe('panel email akun', () => {
-    it('terverifikasi: tidak ada peringatan; ganti email mengirim email baru + kata sandi', () => {
+    it('terverifikasi: tidak ada peringatan. Ganti email mengirim email baru + kata sandi', () => {
         Render();
 
         expect(screen.queryByText('Email belum terverifikasi')).toBeNull();

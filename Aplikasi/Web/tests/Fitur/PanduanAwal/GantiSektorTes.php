@@ -143,7 +143,7 @@ describe('ganti jenis usaha (D-165)', function (): void {
         expect($outlet->fresh()?->TemplateSektor)->toBe('FNB-CAF');
     });
 
-    it('khusus Pemilik: Kasir ditolak; outlet tenant lain tidak bisa diganti', function (): void {
+    it('khusus Pemilik: Kasir ditolak. Outlet tenant lain tidak bisa diganti', function (): void {
         [$konteks, $outlet] = SiapkanTenantSalahSektorUji();
         $kasir = BantuanOrganisasi::TambahAnggota($konteks['Tenant']->Id, PeranTenantBawaan::Kasir);
 

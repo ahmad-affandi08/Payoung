@@ -63,7 +63,7 @@ void main() {
   }
 
   test(
-    'ongkir hanya untuk kanal Antar, rupiah bulat, 0 sampai batas wajar; keluar dari Antar menghapus ongkir',
+    'ongkir hanya untuk kanal Antar, rupiah bulat, 0 sampai batas wajar. Keluar dari Antar menghapus ongkir',
     () async {
       final katalog = await u.MuatKatalog();
       final k = await u.MuatKonteks();
@@ -103,7 +103,7 @@ void main() {
     );
   });
 
-  test('gratis ongkir dari promo: di bawah minimal ongkir ditagih penuh; di atas minimal ongkir nol; outbox membawa '
+  test('gratis ongkir dari promo: di bawah minimal ongkir ditagih penuh. Di atas minimal ongkir nol. Outbox membawa '
       'BiayaKirim & DiskonKirim', () async {
     await u.repositori.SimpanPengaturan(KunciPengaturan.promo, jsonEncode(PromoGratisOngkir()));
     final k = await u.MuatKonteks();

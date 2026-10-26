@@ -54,7 +54,7 @@ describe('PanelFakturPajak (TAX-07)', () => {
         expect(screen.queryByRole('button', { name: 'Buat Faktur Pajak' })).toBeNull();
     });
 
-    it('dialog: pembeli tanpa NPWP/NIK tampil tetapi tidak bisa dipilih; memilih yang sah membuka tombol kirim', async () => {
+    it('dialog: pembeli tanpa NPWP/NIK tampil tetapi tidak bisa dipilih. Memilih yang sah membuka tombol kirim', async () => {
         const Ambil = SiapkanFetch();
 
         RenderUji(<PanelFakturPajak uuidPenjualan="PJ1" faktur={null} bolehBuat bolehKelola />);
@@ -79,7 +79,7 @@ describe('PanelFakturPajak (TAX-07)', () => {
         });
     });
 
-    it('faktur aktif: pembeli, catatan, isian nomor Coretax, dan tombol batal; tanpa izin hanya melihat nomor', () => {
+    it('faktur aktif: pembeli, catatan, isian nomor Coretax, dan tombol batal, tanpa izin hanya melihat nomor', () => {
         RenderUji(<PanelFakturPajak uuidPenjualan="PJ1" faktur={fakturAktif} bolehBuat bolehKelola />);
         expect(screen.getByText('Faktur Pajak aktif')).toBeTruthy();
         expect(screen.getByText('CV Sinar Bengawan')).toBeTruthy();

@@ -101,6 +101,6 @@ final class PendaftaranKontroler extends Kontroler
         // Kegagalan kirim tidak boleh diam: sebelumnya pengguna tetap disuruh "cek email" walau tidak ada yang dikirim.
         return redirect()->route('kelola.panduan-awal')->with('Kilat', $terkirim
             ? "Selamat datang di {$hasil['Tenant']->Nama}! Cek email Anda untuk verifikasi."
-            : "Selamat datang di {$hasil['Tenant']->Nama}! Email verifikasi belum berhasil dikirim; kirim ulang dari banner di atas.");
+            : "Selamat datang di {$hasil['Tenant']->Nama}! Email verifikasi belum berhasil dikirim. Kirim ulang dari banner di atas.");
     }
 }

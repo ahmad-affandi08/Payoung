@@ -139,7 +139,7 @@ describe('Izin per peran di rute back-office (WajibIzinTenant)', function (): vo
 });
 
 describe('Peran kustom', function (): void {
-    it('Pemilik membuat & mengubah peran kustom; perubahan tercatat di log audit', function (): void {
+    it('Pemilik membuat & mengubah peran kustom. Perubahan tercatat di log audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
@@ -157,7 +157,7 @@ describe('Peran kustom', function (): void {
         $this->assertDatabaseHas('LogAudit', ['IdTenant' => $tenant->Id, 'Peristiwa' => 'peran.ubah', 'IdObjek' => $peran->Id]);
     });
 
-    it('halaman buat peran (halaman penuh): daftar izin; tanpa peran.kelola 403; simpan kembali ke daftar peran', function (): void {
+    it('halaman buat peran (halaman penuh): daftar izin, tanpa peran.kelola 403. Simpan kembali ke daftar peran', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/peran/buat')->assertOk()
@@ -241,7 +241,7 @@ describe('Peran kustom', function (): void {
         expect(Peran::query()->whereKey($lama->Id)->exists())->toBeFalse();
     });
 
-    it('peran kustom yang masih dipakai tidak bisa dihapus; yang tidak dipakai bisa', function (): void {
+    it('peran kustom yang masih dipakai tidak bisa dihapus, yang tidak dipakai bisa', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/peran', ['Nama' => 'Barista', 'Izin' => ['penjualan.buat']]);
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->post('/kelola/peran', ['Nama' => 'Kurir', 'Izin' => ['penjualan.buat']]);

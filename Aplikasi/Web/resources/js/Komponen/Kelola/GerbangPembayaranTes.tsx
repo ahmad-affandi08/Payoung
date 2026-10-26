@@ -127,7 +127,7 @@ describe('Gerbang pembayaran toko (v2.06)', () => {
         expect(uji.router).toEqual(['/kelola/pembayaran/gerbang/uji']);
     });
 
-    it('uji berhasil: bisa diaktifkan; penyedia dilarang platform menampilkan peringatan dan tidak bisa diaktifkan', () => {
+    it('uji berhasil: bisa diaktifkan. Penyedia dilarang platform menampilkan peringatan dan tidak bisa diaktifkan', () => {
         const { unmount: Lepas } = render(
             <HalamanGerbangPembayaran
                 Gerbang={Gerbang({ StatusUji: 'Berhasil', LabelStatusUji: 'Uji berhasil' })}

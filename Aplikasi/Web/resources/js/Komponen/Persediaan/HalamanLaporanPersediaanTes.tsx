@@ -50,7 +50,7 @@ describe('Kelola/Persediaan/Saldo (F-05a, TabelData D-16)', () => {
     });
     afterEach(() => cleanup());
 
-    it('kosong: ajakan isi stok awal untuk persediaan.kelola; tanpa izin kelola diarahkan ke pengelola', () => {
+    it('kosong: ajakan isi stok awal untuk persediaan.kelola, tanpa izin kelola diarahkan ke pengelola', () => {
         RenderUji(<HalamanSaldoStok {...PropsSaldo()} />);
         expect(screen.getByRole('link', { name: 'Buat stok awal' }).getAttribute('href')).toBe(
             '/kelola/persediaan/stok-awal/buat',
@@ -128,7 +128,7 @@ describe('Kelola/Persediaan/Saldo (F-05a, TabelData D-16)', () => {
         );
     });
 
-    it('data ekstrem: 1.000 baris; angka rata kanan tabular; paginasi server', () => {
+    it('data ekstrem: 1.000 baris. Angka rata kanan tabular. Paginasi server', () => {
         const baris = Array.from({ length: 1000 }, (_, i) => BuatBarisSaldo(i + 1));
         const { container } = RenderUji(
             <HalamanSaldoStok {...PropsSaldo({ Saldo: BuatHasilTabel(baris, 20000, 1000) })} />,
@@ -203,7 +203,7 @@ describe('Kelola/Persediaan/KartuStok (F-05a)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/persediaan/kartu-stok'));
     afterEach(() => cleanup());
 
-    it('belum memilih: ajakan memilih produk & lokasi; kirim kosong memberi masalah lokal', () => {
+    it('belum memilih: ajakan memilih produk & lokasi. Kirim kosong memberi masalah lokal', () => {
         RenderUji(<HalamanKartuStok {...PropsKartu()} />);
 
         expect(screen.getByText('Pilih produk dan lokasi stok, lalu tekan Tampilkan kartu stok.')).toBeTruthy();
@@ -294,7 +294,7 @@ describe('Kelola/Persediaan/Pengaturan (F-05a)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/persediaan/pengaturan'));
     afterEach(() => cleanup());
 
-    it('tanpa perubahan tombol simpan nonaktif; ubah stok minus langsung PUT', () => {
+    it('tanpa perubahan tombol simpan nonaktif. Ubah stok minus langsung PUT', () => {
         RenderUji(<HalamanPengaturanPersediaan {...PropsPengaturan()} />);
 
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan pengaturan' }).disabled).toBe(true);

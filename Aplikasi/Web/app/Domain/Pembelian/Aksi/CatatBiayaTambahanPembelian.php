@@ -121,7 +121,7 @@ final class CatatBiayaTambahanPembelian
                 ->all());
 
             if ($baris === []) {
-                throw new PelanggaranAturanBisnis('PenerimaanTidakValid', "Semua barang {$grn->Nomor} sudah diretur; tidak ada yang bisa dibebani biaya.", 'UuidPenerimaan');
+                throw new PelanggaranAturanBisnis('PenerimaanTidakValid', "Semua barang {$grn->Nomor} sudah diretur. Tidak ada yang bisa dibebani biaya.", 'UuidPenerimaan');
             }
 
             $alokasi = $this->pengalokasi->Alokasikan($data->jumlah, array_map(fn (PenerimaanBarangDetail $d): Uang => self::Bobot($d, $data->dasarAlokasi), $baris));

@@ -41,7 +41,7 @@ function LaporkanProfilUji(TestCase $tes, string $token, string $produsen, strin
 }
 
 describe('v1.98 daftar kompatibilitas perangkat (HCL)', function (): void {
-    it('agregat lintas tenant: Kompatibel/Terbatas otomatis, printer LAN dilewati; tanda tim mengalahkan otomatis; publik tanpa nama tenant', function (): void {
+    it('agregat lintas tenant: Kompatibel/Terbatas otomatis, printer LAN dilewati. Tanda tim mengalahkan otomatis. Publik tanpa nama tenant', function (): void {
         ['Tenant' => $a] = BantuanOrganisasi::BuatTenant('Kopi Senja Solo');
         ['Tenant' => $b] = BantuanOrganisasi::BuatTenant('Toko Berkah Klaten');
         ['Token' => $tokenA1] = BantuanPerangkat::BuatDanAktifkan($this, $a->Id);
@@ -78,7 +78,7 @@ describe('v1.98 daftar kompatibilitas perangkat (HCL)', function (): void {
         $this->put(BantuanPengelola::Url("/kompatibilitas-perangkat/{$rpp->Uuid}"), ['Status' => 'Kompatibel', 'Catatan' => 'x'])
             ->assertSessionHasErrors('Status');
         $this->put(BantuanPengelola::Url("/kompatibilitas-perangkat/{$rpp->Uuid}"), [
-            'Status' => 'Tersertifikasi', 'Catatan' => 'Lolos uji lab dengan firmware 2.1; perbarui firmware lama.',
+            'Status' => 'Tersertifikasi', 'Catatan' => 'Lolos uji lab dengan firmware 2.1. Perbarui firmware lama.',
         ])->assertSessionHasNoErrors();
         expect($rpp->refresh()->AmbilStatus())->toBe(StatusKompatibilitas::Tersertifikasi)
             ->and(LogAuditPengelola::query()->where('Aksi', 'kompatibilitas.tandai')->count())->toBe(1);
@@ -104,7 +104,7 @@ describe('v1.98 daftar kompatibilitas perangkat (HCL)', function (): void {
         expect($publik->getContent())->not->toContain('Kopi Senja Solo')->not->toContain('Toko Berkah Klaten');
     });
 
-    it('perangkat yang tidak lagi melapor menjadi Belum diuji dan hilang dari publik; izin: Dukungan tidak bisa melihat', function (): void {
+    it('perangkat yang tidak lagi melapor menjadi Belum diuji dan hilang dari publik. Izin: Dukungan tidak bisa melihat', function (): void {
         ['Tenant' => $a] = BantuanOrganisasi::BuatTenant('Kopi Senja Solo');
         ['Perangkat' => $perangkat, 'Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $a->Id);
         LaporkanProfilUji($this, $token, 'iMin', 'D4-503', null, ['Cetak' => 'Lolos', 'Potong' => 'Lolos', 'Laci' => 'Lolos', 'Pemindai' => 'Lolos']);

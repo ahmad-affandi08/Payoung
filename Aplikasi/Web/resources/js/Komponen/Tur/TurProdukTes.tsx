@@ -82,7 +82,7 @@ describe('definisi tur', () => {
         }
     });
 
-    it('target dipilih menurut urutan nama dan hanya yang terlihat; elemen berukuran nol diabaikan', () => {
+    it('target dipilih menurut urutan nama dan hanya yang terlihat. Elemen berukuran nol diabaikan', () => {
         const tersembunyi = PasangTarget('menu-samping', { top: 0, left: 0, width: 0, height: 0 });
         const tombol = PasangTarget('tombol-menu');
 
@@ -92,7 +92,7 @@ describe('definisi tur', () => {
         expect(tersembunyi.isConnected).toBe(true);
     });
 
-    it('langkah opsional tanpa target terlihat dibuang; langkah tanpa target yang wajib tetap ada', () => {
+    it('langkah opsional tanpa target terlihat dibuang. Langkah tanpa target yang wajib tetap ada', () => {
         const tanpaTarget = SusunLangkahAktif(TurDashboard).map((l) => l.Kunci);
         expect(tanpaTarget).toEqual(['sambutan', 'menu', 'pencarian', 'notifikasi', 'siap']);
 
@@ -191,7 +191,7 @@ describe('menjalankan tur', () => {
         TambahPropsHalamanUji({ TurDilihat: [] });
     });
 
-    it('Lanjut dan Kembali berpindah langkah; langkah target menyorot elemen; langkah terakhir bertombol Selesai', () => {
+    it('Lanjut dan Kembali berpindah langkah. Langkah target menyorot elemen. Langkah terakhir bertombol Selesai', () => {
         PasangTarget('tombol-menu');
         PasangTarget('pencarian-cepat');
         PasangTarget('notifikasi');

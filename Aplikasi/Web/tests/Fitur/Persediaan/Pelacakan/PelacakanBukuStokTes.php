@@ -81,7 +81,7 @@ describe('F-05a buku stok untuk produk ber-pelacakan (DesainF05a C.4)', function
             ->and(BantuanBuku::PeriksaInvarianBuku($t['Tenant']->Id))->toBe([]);
     });
 
-    it('seri: satu baris = satu unit; nomor ganda NomorSeriSudahAda; keluar hanya bila Tersedia di lokasi itu', function (): void {
+    it('seri: satu baris = satu unit. Nomor ganda NomorSeriSudahAda. Keluar hanya bila Tersedia di lokasi itu', function (): void {
         $t = BantuanPelacakan::SiapkanTenant('Toko Elektronik Maju Jaya', stokBolehMinus: true);
         $rice = $t['Produk']['Seri'];
         $masuk = fn (string $kunci, string $nomor, string $jumlah = '1'): DataBarisMutasi => new DataBarisMutasi($kunci, $rice->Id, $t['Gudang']->Id, JenisMutasi::StokAwal,

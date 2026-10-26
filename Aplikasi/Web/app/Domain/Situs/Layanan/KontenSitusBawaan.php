@@ -125,7 +125,7 @@ final class KontenSitusBawaan
                         'Jenis' => 'TabUsaha',
                         'Label' => 'Untuk jenis usaha Anda',
                         'Judul' => 'Satu aplikasi, enam cara pakai',
-                        'Subjudul' => 'Pilih jenis usaha saat mendaftar; produk, pajak, dan menu ikut disiapkan.',
+                        'Subjudul' => 'Pilih jenis usaha saat mendaftar. Produk, pajak, dan menu ikut disiapkan.',
                         'Item' => [
                             [
                                 'Label' => 'Kafe & Resto',
@@ -186,7 +186,7 @@ final class KontenSitusBawaan
                                 'Label' => 'Apotek',
                                 'Ikon' => 'Pill',
                                 'Judul' => 'Obat keras dijual dengan resep dan apoteker',
-                                'Teks' => 'Golongan obat tampil di kasir; penyerahan obat keras meminta data resep dan PIN apoteker, tercatat rapi.',
+                                'Teks' => 'Golongan obat tampil di kasir. Penyerahan obat keras meminta data resep dan PIN apoteker, tercatat rapi.',
                                 'Poin' => [
                                     ['Teks' => 'Resep tersimpan terenkripsi di setiap penjualan'],
                                     ['Teks' => 'Obat racikan dengan komponen yang dipotong per batch'],
@@ -200,7 +200,7 @@ final class KontenSitusBawaan
                                 'Label' => 'Bengkel',
                                 'Ikon' => 'Car',
                                 'Judul' => 'Dari perintah kerja sampai tagihan satu alur',
-                                'Teks' => 'Catat kendaraan, jasa, dan sparepart dalam perintah kerja; pelanggan menyetujui lewat tautan, lalu ditagih di kasir.',
+                                'Teks' => 'Catat kendaraan, jasa, dan sparepart dalam perintah kerja. Pelanggan menyetujui lewat tautan, lalu ditagih di kasir.',
                                 'Poin' => [
                                     ['Teks' => 'Data kendaraan dan riwayat servis per pelanggan'],
                                     ['Teks' => 'Persetujuan pelanggan lewat tautan sebelum dikerjakan'],
@@ -256,14 +256,14 @@ final class KontenSitusBawaan
                         'Jenis' => 'Integrasi',
                         'Label' => 'Terhubung',
                         'Judul' => 'Terhubung ke cara bayar, pesan, dan perangkat yang sudah Anda pakai',
-                        'Subjudul' => 'Hanya yang benar-benar tersedia di aplikasi; perangkat yang sudah kami uji ada di halaman Perangkat kompatibel.',
+                        'Subjudul' => 'Hanya yang benar-benar tersedia di aplikasi. Perangkat yang sudah kami uji ada di halaman Perangkat kompatibel.',
                         'Kelompok' => [
                             ['Ikon' => 'CreditCard', 'Judul' => 'Pembayaran', 'Teks' => 'QRIS lewat DOKU, dan metode lain yang Anda atur sendiri.', 'Item' => [['Nama' => 'QRIS (DOKU)'], ['Nama' => 'Tunai'], ['Nama' => 'Kartu EDC'], ['Nama' => 'Transfer bank'], ['Nama' => 'E-wallet'], ['Nama' => 'Deposit pelanggan'], ['Nama' => 'Tempo']]],
                             ['Ikon' => 'MessageCircle', 'Judul' => 'WhatsApp & email', 'Teks' => 'Struk digital, pengingat piutang, kampanye pelanggan, dan notifikasi status pesanan lewat WhatsApp.', 'Item' => [['Nama' => 'Struk digital'], ['Nama' => 'Pengingat piutang'], ['Nama' => 'Kampanye pelanggan'], ['Nama' => 'Status pesanan']]],
                             ['Ikon' => 'Printer', 'Judul' => 'Printer & perangkat', 'Teks' => 'Cetak struk, tiket dapur, dan buka laci kas dari perangkat yang ada.', 'Item' => [['Nama' => 'Bluetooth'], ['Nama' => 'LAN'], ['Nama' => 'USB'], ['Nama' => 'Sunmi / iMin'], ['Nama' => 'AirPrint & PDF'], ['Nama' => 'Laci kas'], ['Nama' => 'Layar pelanggan'], ['Nama' => 'Pemindai barcode']]],
-                            ['Ikon' => 'Truck', 'Judul' => 'Pesan-antar & toko online', 'Teks' => 'Penjualan lewat kanal ojol dicatat dengan harga per kanal; toko online dan kios memakai stok yang sama.', 'Item' => [['Nama' => 'GoFood'], ['Nama' => 'GrabFood'], ['Nama' => 'ShopeeFood'], ['Nama' => 'Toko online'], ['Nama' => 'Self-order QR'], ['Nama' => 'Kios']]],
+                            ['Ikon' => 'Truck', 'Judul' => 'Pesan-antar & toko online', 'Teks' => 'Penjualan lewat kanal ojol dicatat dengan harga per kanal. Toko online dan kios memakai stok yang sama.', 'Item' => [['Nama' => 'GoFood'], ['Nama' => 'GrabFood'], ['Nama' => 'ShopeeFood'], ['Nama' => 'Toko online'], ['Nama' => 'Self-order QR'], ['Nama' => 'Kios']]],
                         ],
-                        'Catatan' => 'Pesanan dari GoFood, GrabFood, dan ShopeeFood dimasukkan manual ke kasir; sambungan otomatis belum tersedia.',
+                        'Catatan' => 'Pesanan dari GoFood, GrabFood, dan ShopeeFood dimasukkan manual ke kasir. Sambungan otomatis belum tersedia.',
                     ],
                     [
                         'Jenis' => 'GambarTeks',
@@ -273,8 +273,8 @@ final class KontenSitusBawaan
                         'Poin' => [
                             ['Teks' => 'Printer struk Bluetooth, LAN, USB, dan printer bawaan Sunmi/iMin'],
                             ['Teks' => 'Layar dapur (KDS) dan tiket terpisah per stasiun'],
-                            ['Teks' => 'Buka & tutup shift dengan hitung kas; selisih langsung terlihat'],
-                            ['Teks' => 'Hak akses per peran; diskon besar minta PIN penyetuju'],
+                            ['Teks' => 'Buka & tutup shift dengan hitung kas. Selisih langsung terlihat'],
+                            ['Teks' => 'Hak akses per peran. Diskon besar minta PIN penyetuju'],
                         ],
                         'PosisiGambar' => 'Kanan',
                         'Spesimen' => 'PemilikDuo',
@@ -306,7 +306,7 @@ final class KontenSitusBawaan
                     [
                         'Jenis' => 'Harga',
                         'Judul' => 'Mulai gratis, naik saat outlet bertambah',
-                        'Subjudul' => 'Harga per bulan untuk satu usaha. Naik paket kapan saja dari back-office; turun paket lewat tim kami.',
+                        'Subjudul' => 'Harga per bulan untuk satu usaha. Naik paket kapan saja dari back-office. Turun paket lewat tim kami.',
                         'TampilkanTahunan' => true,
                         'PaketDisorot' => 'PRO',
                         'TeksTombol' => 'Mulai',
@@ -352,7 +352,7 @@ final class KontenSitusBawaan
                             ['Ikon' => 'RefreshCw', 'Judul' => 'Void & retur tetap rapi', 'Teks' => 'Dokumen lama tidak diubah. Koreksi memakai dokumen pembalik, stok dan jurnal ikut kembali sendiri.'],
                             ['Ikon' => 'MessageCircle', 'Judul' => 'Struk tanpa kertas', 'Teks' => 'Kirim struk lewat WhatsApp atau email, atau cetak QR struk di kertas.'],
                             ['Ikon' => 'ChefHat', 'Judul' => 'Pesanan sampai ke dapur', 'Teks' => 'Tiket tercetak per stasiun atau muncul di layar dapur, tanpa kertas pesanan tercecer.'],
-                            ['Ikon' => 'QrCode', 'Judul' => 'Tamu pesan dari HP', 'Teks' => 'Self-order lewat QR di meja; pesanan masuk ke kasir dengan perkiraan total.'],
+                            ['Ikon' => 'QrCode', 'Judul' => 'Tamu pesan dari HP', 'Teks' => 'Self-order lewat QR di meja. Pesanan masuk ke kasir dengan perkiraan total.'],
                         ],
                     ],
                     [
@@ -415,7 +415,7 @@ final class KontenSitusBawaan
                     [
                         'Jenis' => 'Harga',
                         'Judul' => 'Pilih paket sesuai jumlah outlet',
-                        'Subjudul' => 'Bayar tahunan lebih hemat. Naik paket kapan saja; turun paket lewat tim kami.',
+                        'Subjudul' => 'Bayar tahunan lebih hemat. Naik paket kapan saja. Turun paket lewat tim kami.',
                         'TampilkanTahunan' => true,
                         'PaketDisorot' => 'PRO',
                         'TeksTombol' => 'Mulai',
@@ -518,9 +518,9 @@ final class KontenSitusBawaan
                         'Judul' => 'Yang membedakan usaha jasa dari toko',
                         'Item' => [
                             ['Ikon' => 'Users', 'Judul' => 'Komisi menempel ke orang', 'Teks' => 'Aturan komisi per layanan atau kategori, boleh dibagi ke beberapa staf dalam satu transaksi. Angkanya masuk ke rekap gaji bulanan tanpa dihitung ulang, dan kasbon langsung dipotong di sana.'],
-                            ['Ikon' => 'Wallet', 'Judul' => 'Deposit & paket sesi', 'Teks' => 'Pelanggan mengisi saldo atau membeli paket sesi; sisa sesi berkurang sendiri tiap kunjungan.'],
+                            ['Ikon' => 'Wallet', 'Judul' => 'Deposit & paket sesi', 'Teks' => 'Pelanggan mengisi saldo atau membeli paket sesi. Sisa sesi berkurang sendiri tiap kunjungan.'],
                             ['Ikon' => 'Clock', 'Judul' => 'Reservasi per staf', 'Teks' => 'Slot diambil dari jadwal kerja. Pelanggan bisa memesan online dan diingatkan lewat WhatsApp sehari sebelumnya.'],
-                            ['Ikon' => 'WashingMachine', 'Judul' => 'Tiket laundry bisa dilacak', 'Teks' => 'Nota ber-QR; pelanggan memeriksa status sendiri dan diberi tahu saat cucian siap diambil.'],
+                            ['Ikon' => 'WashingMachine', 'Judul' => 'Tiket laundry bisa dilacak', 'Teks' => 'Nota ber-QR. Pelanggan memeriksa status sendiri dan diberi tahu saat cucian siap diambil.'],
                             ['Ikon' => 'ClipboardList', 'Judul' => 'Uang muka tercatat', 'Teks' => 'Pre-order dengan DP, diambil dan dilunasi kemudian, dengan bukti uang muka tercetak.'],
                             ['Ikon' => 'Smartphone', 'Judul' => 'Absen di perangkat kasir', 'Teks' => 'PIN dan swafoto, terhubung ke jadwal kerja dan target penjualan per staf.'],
                         ],

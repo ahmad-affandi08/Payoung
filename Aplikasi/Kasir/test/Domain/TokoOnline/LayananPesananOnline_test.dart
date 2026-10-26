@@ -263,7 +263,7 @@ void main() {
   });
 
   test(
-    'F-16c gratis ongkir: pesanan membawa DiskonOngkir ke keranjang; outbox memuat ongkir kotor + diskonnya',
+    'F-16c gratis ongkir: pesanan membawa DiskonOngkir ke keranjang. Outbox memuat ongkir kotor + diskonnya',
     () async {
       final katalog = await u.MuatKatalog();
       final k = await u.MuatKonteks();
@@ -314,7 +314,7 @@ void main() {
     },
   );
 
-  test('pesanan tanpa ongkir tidak mengirim kunci ongkir sama sekali; pesanan yang belum Siap ditolak', () async {
+  test('pesanan tanpa ongkir tidak mengirim kunci ongkir sama sekali. Pesanan yang belum Siap ditolak', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
 
@@ -355,7 +355,7 @@ void main() {
     );
   });
 
-  test('F-17 bagian 3: pesanan pembeli yang masuk memasang pelanggannya tanpa menghitung ulang harga; outbox membawa '
+  test('F-17 bagian 3: pesanan pembeli yang masuk memasang pelanggannya tanpa menghitung ulang harga. Outbox membawa '
       'UuidPelanggan', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();

@@ -26,7 +26,7 @@ final class PenghitungProrataAddon
     public function Hitung(Uang $hargaBulanan, int $jumlahBulanPeriode, int $jumlah, CarbonInterface $sekarang, CarbonInterface $periodeMulai, CarbonInterface $periodeSelesai): array
     {
         if ($jumlahBulanPeriode < 1 || $jumlah < 1 || $hargaBulanan->BernilaiNegatif()) {
-            throw new InvalidArgumentException('Harga add-on tidak boleh negatif; jumlah bulan dan jumlah minimal 1.');
+            throw new InvalidArgumentException('Harga add-on tidak boleh negatif. Jumlah bulan dan jumlah minimal 1.');
         }
 
         $hariPeriode = max(1, self::HariKeAtas($periodeMulai, $periodeSelesai));

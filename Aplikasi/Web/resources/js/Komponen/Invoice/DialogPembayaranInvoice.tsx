@@ -85,7 +85,7 @@ export default function DialogPembayaranInvoice({
             judul={`Catat pembayaran ${nomor}`}
             keterangan={
                 konfirmasi === undefined
-                    ? `Sisa tagihan ${FormatRupiah(sisa)}. Jumlah sudah terisi sisa tagihan; ubah bila pelanggan membayar sebagian.`
+                    ? `Sisa tagihan ${FormatRupiah(sisa)}. Jumlah sudah terisi sisa tagihan. Ubah bila pelanggan membayar sebagian.`
                     : `Menerima konfirmasi dari ${konfirmasi.NamaPengirim}. Pastikan uangnya sudah masuk ke rekening. Sisa tagihan ${FormatRupiah(sisa)}.`
             }
             galatUmum={galat.Umum}

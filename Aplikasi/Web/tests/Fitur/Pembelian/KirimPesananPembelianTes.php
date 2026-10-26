@@ -131,7 +131,7 @@ it('ditolak: PO belum disetujui, pemasok tanpa nomor sah, WhatsApp usaha tidak a
     expect(PesanPoTerkirim())->toHaveCount(2);
 });
 
-it('PO yang dibatalkan sebelum terkirim menjadi Dibatalkan dan tidak ada pesan keluar; kegagalan penyedia dicatat tanpa nomor', function (): void {
+it('PO yang dibatalkan sebelum terkirim menjadi Dibatalkan dan tidak ada pesan keluar. Kegagalan penyedia dicatat tanpa nomor', function (): void {
     $t = SiapkanPoKirim($this);
     $po = $t['Po'];
     $dibatalkan = PengirimanPesananPembelian::query()->create(['IdPesananPembelian' => $po->Id, 'Tujuan' => '6281234567890', 'Status' => StatusPengirimanPesananPembelian::Diantrekan]);

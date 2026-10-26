@@ -350,7 +350,7 @@ final class PenyediaAplikasi extends ServiceProvider
 
         try {
             if (Cache::add('peringatan-konfigurasi-produksi', 1, 86400)) {
-                Log::critical('Konfigurasi produksi berbahaya; periksa nilai lingkungan (Panduan/PasangDiHosting.md §7b).', ['Masalah' => $masalah]);
+                Log::critical('Konfigurasi produksi berbahaya. Periksa nilai lingkungan (Panduan/PasangDiHosting.md §7b).', ['Masalah' => $masalah]);
             }
         } catch (Throwable) {
             // Cache (database) belum siap, misalnya saat migrasi pertama: peringatan ini tidak boleh menggagalkan boot.

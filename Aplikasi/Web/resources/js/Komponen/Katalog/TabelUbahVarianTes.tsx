@@ -33,7 +33,7 @@ const Varian = (uuid: string, nama: string, barcode: string | null): BarisVarian
 describe('Tabel ubah varian (audit kemudahan pakai #18)', () => {
     afterEach(() => cleanup());
 
-    it('isi harga sama untuk semua lalu simpan hanya baris yang berubah; barcode yang sudah ada terkunci', () => {
+    it('isi harga sama untuk semua lalu simpan hanya baris yang berubah. Barcode yang sudah ada terkunci', () => {
         RenderUji(
             <TabelUbahVarian
                 uuidProduk="01J9PRD0000000000000000000"
@@ -68,7 +68,7 @@ describe('Tabel ubah varian (audit kemudahan pakai #18)', () => {
         });
         afterEach(() => cleanup());
 
-        it('barcode dari kamera mengisi baris yang masih kosong; baris yang sudah punya barcode tidak punya tombol kamera', async () => {
+        it('barcode dari kamera mengisi baris yang masih kosong. Baris yang sudah punya barcode tidak punya tombol kamera', async () => {
             const tiruan = SiapkanKameraTiruan(kamera);
 
             RenderUji(

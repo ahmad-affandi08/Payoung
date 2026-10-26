@@ -56,7 +56,7 @@ describe('SLA jam kerja', function (): void {
             ->and($hitung('2026-09-24 09:00', 18))->toBe('2026-09-28 09:00', '2 hari kerja (Gratis): 8 jam Kamis + 9 jam Jumat + 1 jam Senin');
     });
 
-    it('hari libur terbit dilewati; libur yang dibatalkan tidak', function (): void {
+    it('hari libur terbit dilewati. Libur yang dibatalkan tidak', function (): void {
         HariLibur::query()->create(['Tanggal' => '2026-09-28', 'Nama' => 'Cuti bersama uji', 'Jenis' => JenisHariLibur::CutiBersama, 'Status' => StatusDataMaster::Terbit]);
         HariLibur::query()->create(['Tanggal' => '2026-09-29', 'Nama' => 'Libur batal', 'Jenis' => JenisHariLibur::Nasional, 'Status' => StatusDataMaster::Dibatalkan, 'DibatalkanPada' => now()]);
         $hasil = app(PenghitungSlaTiket::class)->TambahJamKerja(WibSla('2026-09-25 16:00')->utc(), 4)->setTimezone('Asia/Jakarta')->format('Y-m-d H:i');
@@ -106,7 +106,7 @@ describe('SLA jam kerja', function (): void {
 });
 
 describe('Eskalasi otomatis karena SLA', function (): void {
-    it('SLA terlewati naik ke L2 (Dukungan + Super Admin diberi tahu), lalu ke Teknis setelah 4 jam kerja tanpa respons; tidak naik dua kali', function (): void {
+    it('SLA terlewati naik ke L2 (Dukungan + Super Admin diberi tahu), lalu ke Teknis setelah 4 jam kerja tanpa respons. Tidak naik dua kali', function (): void {
         $dukungan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
@@ -148,7 +148,7 @@ describe('Eskalasi otomatis karena SLA', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'dukungan.tiket.eskalasi-otomatis')->count())->toBe(2);
     });
 
-    it('tiket yang sudah direspons atau sudah selesai tidak dieskalasi; tiket mendesak memakai jam kalender', function (): void {
+    it('tiket yang sudah direspons atau sudah selesai tidak dieskalasi. Tiket mendesak memakai jam kalender', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanDukungan::BuatTenant('Toko Tanpa Eskalasi', 'pemilik@tanpaeskalasi.id');
         $direspons = BantuanDukungan::BuatTiket($tenant, $pemilik, judul: 'Sudah direspons tim');
@@ -168,7 +168,7 @@ describe('Eskalasi otomatis karena SLA', function (): void {
 });
 
 describe('Eskalasi manual', function (): void {
-    it('petugas Dukungan menaikkan tiket ke L2 lalu Teknis dengan alasan; tidak bisa turun atau mengulang; tim tujuan diberi tahu', function (): void {
+    it('petugas Dukungan menaikkan tiket ke L2 lalu Teknis dengan alasan. Tidak bisa turun atau mengulang. Tim tujuan diberi tahu', function (): void {
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MasukSebagaiPetugasSla($this, PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanDukungan::BuatTenant('Toko Eskalasi Manual', 'pemilik@eskalasimanual.id');

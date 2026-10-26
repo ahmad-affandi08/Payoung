@@ -346,7 +346,7 @@ function FormUbahBaris({
                             nilai={formulir.data.HariMasuk}
                             saatBerubah={(nilai) => formulir.setData('HariMasuk', nilai.replace(/\D/g, ''))}
                             galat={formulir.errors.HariMasuk}
-                            keterangan={`Gaji pokok = upah ${FormatRupiah(baris.UpahHarian)} × hari masuk. Dihitung dari absensi dan cuti berbayar; ubah bila karyawan tidak mengisi absensi.`}
+                            keterangan={`Gaji pokok = upah ${FormatRupiah(baris.UpahHarian)} × hari masuk. Dihitung dari absensi dan cuti berbayar. Ubah bila karyawan tidak mengisi absensi.`}
                             inputMode="numeric"
                             maxLength={2}
                             required

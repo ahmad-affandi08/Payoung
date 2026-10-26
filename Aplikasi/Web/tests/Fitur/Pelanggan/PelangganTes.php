@@ -123,7 +123,7 @@ describe('F-16a back-office pelanggan', function (): void {
         expect(LogAudit::query()->whereIn('Peristiwa', ['pelanggan.arsipkan', 'pelanggan.pulihkan'])->count())->toBe(2);
     });
 
-    it('halaman buat (halaman penuh): pemilik 200; supervisor & kasir 403', function (): void {
+    it('halaman buat (halaman penuh): pemilik 200. Supervisor & kasir 403', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
 
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
@@ -137,7 +137,7 @@ describe('F-16a back-office pelanggan', function (): void {
         $this->get('/kelola/pelanggan/buat')->assertForbidden();
     });
 
-    it('izin: kasir tanpa akses, supervisor hanya melihat; tenant lain 404', function (): void {
+    it('izin: kasir tanpa akses, supervisor hanya melihat. Tenant lain 404', function (): void {
         $a = BantuanKatalog::SiapkanTenantProduk('Toko A');
         $pelanggan = Pelanggan::query()->create(['Nama' => 'Ani', 'NoHp' => '6281234567890']);
 
@@ -164,7 +164,7 @@ describe('F-16a back-office pelanggan', function (): void {
 });
 
 describe('F-16a pelanggan di POS', function (): void {
-    it('Pelanggan.Buat idempoten; nomor HP ganda jadi alias; penjualan tertaut; riwayat & ringkasan di back-office', function (): void {
+    it('Pelanggan.Buat idempoten. Nomor HP ganda jadi alias. Penjualan tertaut. Riwayat & ringkasan di back-office', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Kopi Senja Rasa Nusantara');
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $item = ItemPelanggan($k);
@@ -202,7 +202,7 @@ describe('F-16a pelanggan di POS', function (): void {
         expect($audit->NilaiBaru['NoHp'] ?? null)->toBe('0813****2222')->and($audit->NilaiBaru['Sumber'] ?? null)->toBe('POS');
     });
 
-    it('penjualan dengan pelanggan belum dikenal tetap diterima + PerluTinjauan; nomor HP tidak valid ditolak', function (): void {
+    it('penjualan dengan pelanggan belum dikenal tetap diterima + PerluTinjauan. Nomor HP tidak valid ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
 
@@ -237,7 +237,7 @@ describe('F-16a pelanggan di POS', function (): void {
 });
 
 describe('Identitas pajak pelanggan (Faktur Pajak Coretax, v3.11)', function (): void {
-    it('NPWP & NIK disimpan sebagai digit terenkripsi, audit tersamar, nama/alamat sesuai NPWP; panjang salah ditolak; ubah tanpa bidang pajak tidak menghapusnya', function (): void {
+    it('NPWP & NIK disimpan sebagai digit terenkripsi, audit tersamar, nama/alamat sesuai NPWP. Panjang salah ditolak. Ubah tanpa bidang pajak tidak menghapusnya', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Bangunan Makmur Jaya');
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

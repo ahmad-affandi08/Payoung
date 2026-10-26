@@ -88,7 +88,7 @@ void main() {
   }
 
   for (final (nama, ukuran) in [('360', ukuranHp), ('800', ukuranTablet), ('1280', ukuranDesktop)]) {
-    testWidgets('denah meja per area di $nama dp; buka meja → layar Jual mode pesanan', (tester) async {
+    testWidgets('denah meja per area di $nama dp. Buka meja → layar Jual mode pesanan', (tester) async {
       final u = await MasukKasir(tester, ukuran);
       expect(find.text('Meja'), findsOneWidget, reason: 'Menu Meja tampil karena mode meja outlet aktif.');
 
@@ -434,7 +434,7 @@ void main() {
   }
 
   for (final (nama, ukuran) in [('360', ukuranHp), ('1280', ukuranDesktop)]) {
-    testWidgets('K-2 lanjutan: KDS beralih ke layar panggil antrian di $nama dp; pilihan diingat perangkat', (
+    testWidgets('K-2 lanjutan: KDS beralih ke layar panggil antrian di $nama dp. Pilihan diingat perangkat', (
       tester,
     ) async {
       final u = LingkunganUji.Buat();

@@ -216,7 +216,7 @@ describe('BuatReturGrosir (BR-12.7, J-12.4)', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($this->k['Tenant']->Id))->toBe([]);
     });
 
-    it('barang rusak masuk lokasi stok Rusak; tanpa lokasi Rusak tetap diposting & ditandai perlu ditinjau', function (): void {
+    it('barang rusak masuk lokasi stok Rusak, tanpa lokasi Rusak tetap diposting & ditandai perlu ditinjau', function (): void {
         $suratJalan = SuratJalanUntukReturUji($this);
 
         // Outlet belum punya lokasi Rusak: barangnya tetap kembali ke lokasi asal, dokumennya ditandai.

@@ -16,7 +16,7 @@ describe('SaranAkun (audit kemudahan pakai #15)', () => {
         expect(SaranAkun('Cetak brosur promo Lebaran', beban)?.Kode).toBe('6-4000');
     });
 
-    it('tidak dikenal → akun lain-lain; satu-satunya akun dipakai bila tidak ada lain-lain', () => {
+    it('tidak dikenal → akun lain-lain. Satu-satunya akun dipakai bila tidak ada lain-lain', () => {
         expect(SaranAkun('Beli es batu & galon', beban)?.Kode).toBe('6-9000');
         expect(SaranAkun('Apa saja', [{ Kode: '4-9000', Nama: 'Pendapatan Lain' }])?.Kode).toBe('4-9000');
         expect(SaranAkun('Apa saja', [{ Kode: '3-1000', Nama: 'Modal Pemilik' }])?.Kode).toBe('3-1000');

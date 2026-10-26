@@ -76,7 +76,7 @@ describe('F-05a impor stok awal: izin persediaan.kelola & isolasi tenant/outlet'
         expect($impor->refresh()->Status)->toBe(StatusImporStokAwal::MenungguPemetaan);
     });
 
-    it('pengguna berakses per outlet hanya melihat impornya sendiri; lokasi di luar aksesnya = 404', function (): void {
+    it('pengguna berakses per outlet hanya melihat impornya sendiri. Lokasi di luar aksesnya = 404', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $pemilik = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $imporPemilik = BantuanImporStokAwal::Unggah($pemilik, BantuanImporStokAwal::BuatCsv(BuatBarisImporSederhana()), $t['Gudang']->Uuid);
@@ -93,7 +93,7 @@ describe('F-05a impor stok awal: izin persediaan.kelola & isolasi tenant/outlet'
         $terbatas->get("/kelola/persediaan/stok-awal/impor/{$imporSendiri->Uuid}")->assertOk();
     });
 
-    it('batalkan dari MenungguPemetaan: audit stok-awal.impor.batalkan; tidak bisa dibatalkan dua kali atau diterapkan', function (): void {
+    it('batalkan dari MenungguPemetaan: audit stok-awal.impor.batalkan. Tidak bisa dibatalkan dua kali atau diterapkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImporStokAwal::Unggah($masuk, BantuanImporStokAwal::BuatCsv(BuatBarisImporSederhana()), $t['Gudang']->Uuid);

@@ -60,7 +60,7 @@ beforeEach(function (): void {
 });
 
 describe('Draf & terbit dokumen legal (P-06)', function (): void {
-    it('Konten & Legal membuat draf, menyunting, lalu menerbitkan; tercatat di log audit', function (): void {
+    it('Konten & Legal membuat draf, menyunting, lalu menerbitkan. Tercatat di log audit', function (): void {
         MasukSebagaiLegal($this);
 
         $dokumen = TerbitkanDokumenUji($this, JenisDokumenLegal::SyaratKetentuan);
@@ -84,7 +84,7 @@ describe('Draf & terbit dokumen legal (P-06)', function (): void {
             ->and(DokumenLegal::query()->count())->toBe(1);
     });
 
-    it('BR-P06.4: satu draf per jenis; draf baru menyalin isi versi terakhir; draf bisa dihapus', function (): void {
+    it('BR-P06.4: satu draf per jenis. Draf baru menyalin isi versi terakhir. Draf bisa dihapus', function (): void {
         MasukSebagaiLegal($this);
         TerbitkanDokumenUji($this, JenisDokumenLegal::SyaratKetentuan);
 
@@ -162,7 +162,7 @@ describe('Tanggal berlaku & pengumuman (BR-P06.3)', function (): void {
 });
 
 describe('Versi berlaku & prasyarat registrasi (BR-P06.2, BR-P06.4)', function (): void {
-    it('registrasi baru siap setelah S&K, Kebijakan Privasi, dan PPD berlaku; versi terjadwal belum dihitung', function (): void {
+    it('registrasi baru siap setelah S&K, Kebijakan Privasi, dan PPD berlaku. Versi terjadwal belum dihitung', function (): void {
         $kueri = app(DokumenLegalBerlaku::class);
         expect($kueri->AmbilKekuranganRegistrasi(now()))->toBe([JenisDokumenLegal::SyaratKetentuan, JenisDokumenLegal::KebijakanPrivasi, JenisDokumenLegal::PerjanjianPemrosesanData]);
 
@@ -197,7 +197,7 @@ describe('Versi berlaku & prasyarat registrasi (BR-P06.2, BR-P06.4)', function (
 });
 
 describe('Izin dokumen legal', function (): void {
-    it('semua peran boleh membaca; hanya Konten & Legal dan Super Admin yang mengubah', function (PeranPengelolaBawaan $peran): void {
+    it('semua peran boleh membaca. Hanya Konten & Legal dan Super Admin yang mengubah', function (PeranPengelolaBawaan $peran): void {
         MasukSebagaiLegal($this);
         $dokumen = TerbitkanDokumenUji($this, JenisDokumenLegal::SyaratKetentuan);
 

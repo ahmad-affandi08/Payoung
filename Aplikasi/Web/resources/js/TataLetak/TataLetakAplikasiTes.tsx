@@ -83,7 +83,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(screen.getByRole('link', { name: 'Pengaturan' })).toBeTruthy();
     });
 
-    it('D-204: Kotak tindakan berlencana merah berisi jumlah yang perlu ditindak; tanpa butir tidak ada lencana; hanya di menu itu', () => {
+    it('D-204: Kotak tindakan berlencana merah berisi jumlah yang perlu ditindak, tanpa butir tidak ada lencana. Hanya di menu itu', () => {
         propsHalaman = { ...BuatProps({}, [], true), TindakanPerluDicek: 7 };
         const { rerender: RenderUlang } = render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
 
@@ -271,7 +271,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(SubPenjualan(campur)).toContain('Perangkat kasir');
     });
 
-    it('audit #33: menu khusus sektor difilter sektor outlet; mode sederhana menyembunyikan menu lanjutan', () => {
+    it('audit #33: menu khusus sektor difilter sektor outlet. Mode sederhana menyembunyikan menu lanjutan', () => {
         const akses = { Pemilik: true, Izin: [] };
         const Label = (menu: ReturnType<typeof SaringMenuTerlihat>) => menu.map(({ menu: m }) => m.label);
         const SubPenjualan = (menu: ReturnType<typeof SaringMenuTerlihat>) =>
@@ -315,7 +315,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(Label(sederhana)).toContain('Produk');
     });
 
-    it('klik label grup membuka/menutup sub-menu tanpa pindah halaman; chevron memutar saat terbuka', () => {
+    it('klik label grup membuka/menutup sub-menu tanpa pindah halaman. Chevron memutar saat terbuka', () => {
         propsHalaman = BuatProps({}, ['produk.lihat']);
         render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
 
@@ -424,7 +424,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(screen.queryByRole('navigation', { name: 'Menu persediaan' })).toBeNull();
     });
 
-    it('F-05a: Pemilik melihat seluruh menu; urutannya dari yang paling sering dipakai (D-27)', () => {
+    it('F-05a: Pemilik melihat seluruh menu. Urutannya dari yang paling sering dipakai (D-27)', () => {
         // D-27: 13 entri sejak grosir (v2.78), diurutkan per frekuensi pakai. Outlet, Perangkat, Pengguna & peran,
         // Log audit, dan Langganan pindah ke Pengaturan; "Shift & kas" digabung ke "Penjualan & kasir".
         expect(SaringMenuTerlihat({ Pemilik: true, Izin: [] }).map(({ menu }) => menu.label)).toEqual([
@@ -477,7 +477,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(CekMenuAktif('/kelola/laporan/penjualan', '/kelola/laporan/pajak?dari=2026-10-01')).toBe(true);
     });
 
-    it('Pengaturan aktif di /kelola/peran; aria-current hanya pada satu menu utama (D-27)', () => {
+    it('Pengaturan aktif di /kelola/peran. Aria-current hanya pada satu menu utama (D-27)', () => {
         propsHalaman = BuatProps({}, ['pengguna.lihat', 'outlet.lihat']);
         urlHalaman = '/kelola/peran/01J9';
         render(<TataLetakAplikasi judul="Peran">isi</TataLetakAplikasi>);
@@ -488,7 +488,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(CekMenuAktif('/kelola', '/kelola/outlet')).toBe(false);
     });
 
-    it('bilah samping bisa diciutkan lewat tombol di bilah atas; remah roti menyebut usaha dan halaman', () => {
+    it('bilah samping bisa diciutkan lewat tombol di bilah atas. Remah roti menyebut usaha dan halaman', () => {
         propsHalaman = BuatProps({}, ['outlet.lihat']);
         urlHalaman = '/kelola/outlet';
         const { container } = render(<TataLetakAplikasi judul="Outlet">isi</TataLetakAplikasi>);
@@ -586,7 +586,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(tiruanRouter.post).toHaveBeenCalledWith('/keluar');
     });
 
-    it('D-23: fitur di luar paket tetap tampil bergembok; klik = dialog naik paket / add-on', () => {
+    it('D-23: fitur di luar paket tetap tampil bergembok. Klik = dialog naik paket / add-on', () => {
         propsHalaman = {
             ...BuatProps({}, [], true),
             FiturPaket: {

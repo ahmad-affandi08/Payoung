@@ -56,7 +56,7 @@ function Tabel() {
 }
 
 describe('TabelData: opsi TanStack stabil antar-render (regresi pembekuan)', () => {
-    it('columnFilters berreferensi sama saat induk dirender ulang tanpa perubahan filter; reset halaman otomatis mati', () => {
+    it('columnFilters berreferensi sama saat induk dirender ulang tanpa perubahan filter. Reset halaman otomatis mati', () => {
         const { rerender: RenderUlang } = render(<Tabel />);
         RenderUlang(<Tabel />);
         RenderUlang(<Tabel />);

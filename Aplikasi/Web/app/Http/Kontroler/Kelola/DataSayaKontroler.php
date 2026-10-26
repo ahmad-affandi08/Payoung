@@ -60,7 +60,7 @@ final class DataSayaKontroler extends DasarKelolaKontroler
     {
         $minta->Jalankan($this->Pelaku()->Id);
 
-        return back()->with('Kilat', 'Ekspor data sedang disiapkan. Halaman ini diperbarui otomatis; unduh begitu statusnya Siap.');
+        return back()->with('Kilat', 'Ekspor data sedang disiapkan. Halaman ini diperbarui otomatis. Unduh begitu statusnya Siap.');
     }
 
     public function Unduh(string $uuidEkspor, PencatatAudit $audit): StreamedResponse

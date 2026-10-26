@@ -81,7 +81,7 @@ describe('F-05a pembatalan stok awal', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('idempoten: membatalkan dua kali tidak membuat mutasi atau jurnal kedua; setelah batal produk boleh diberi stok awal lagi bertanggal tidak sebelum mutasi pembatalan (H-5)', function (): void {
+    it('idempoten: membatalkan dua kali tidak membuat mutasi atau jurnal kedua. Setelah batal produk boleh diberi stok awal lagi bertanggal tidak sebelum mutasi pembatalan (H-5)', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $dokumen = BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '10', '38000')], $t['Pemilik']->Id);
@@ -98,7 +98,7 @@ describe('F-05a pembatalan stok awal', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('hanya dokumen Diposting yang bisa dibatalkan; alasan wajib 5–255 karakter; posting ulang dokumen batal ditolak', function (): void {
+    it('hanya dokumen Diposting yang bisa dibatalkan. Alasan wajib 5–255 karakter. Posting ulang dokumen batal ditolak', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '10', '38000')]);
@@ -155,7 +155,7 @@ describe('F-05a pembatalan stok awal ditolak bila stok sudah terpakai (StokSudah
             ->and(BantuanStokAwal::PeriksaInvarianTanpaJurnalPenjualan($t['Tenant']->Id))->toBe([]);
     });
 
-    it('seri: nomor seri stok awal sudah keluar; tanpa pemakaian pembatalan mengeluarkan semua nomor seri', function (): void {
+    it('seri: nomor seri stok awal sudah keluar, tanpa pemakaian pembatalan mengeluarkan semua nomor seri', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $gudangLain = BantuanPersediaan::BuatGudang($t['Outlet'], 'Gudang Elektronik');

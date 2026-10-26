@@ -158,7 +158,7 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'tagihan-qris.buat')->count())->toBe(1);
     });
 
-    it('masalah: 409 GerbangBelumAktif; 422 MetodeBukanQrisDinamis (QRIS statis, nonaktif, tidak dikenal); 422 JumlahTidakBulat/JumlahTidakValid; tanpa panggilan gerbang', function (): void {
+    it('masalah: 409 GerbangBelumAktif; 422 MetodeBukanQrisDinamis (QRIS statis, nonaktif, tidak dikenal); 422 JumlahTidakBulat/JumlahTidakValid, tanpa panggilan gerbang', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
@@ -179,7 +179,7 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
             ->and(HitungPanggilanDoku('/checkout/v1/payment'))->toBe(1);
     });
 
-    it('gerbang menolak: 502 GerbangGagal tanpa membocorkan secret key; tidak ada tagihan tersisa sehingga Uuid sama bisa dicoba lagi', function (): void {
+    it('gerbang menolak: 502 GerbangGagal tanpa membocorkan secret key. Tidak ada tagihan tersisa sehingga Uuid sama bisa dicoba lagi', function (): void {
         $status = 'tolak';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
@@ -274,7 +274,7 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
             ->and(app(PenyediaTindakanPenjualan::class)->SaringDokumen('TagihanQris', [$tagihan->Uuid]))->toBe([$tagihan->Uuid]);
     });
 
-    it('rekonsiliasi terjadwal: gerbang ditanya dengan NomorPesanan; lunas diterapkan; tanpa kabar lewat batas = Kedaluwarsa', function (): void {
+    it('rekonsiliasi terjadwal: gerbang ditanya dengan NomorPesanan. Lunas diterapkan, tanpa kabar lewat batas = Kedaluwarsa', function (): void {
         $charge = '500';
         $status = 'PENDING';
         PalsukanDokuTidakPasti($charge, $status);
@@ -344,7 +344,7 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
 });
 
 describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
-    it('cek status: gerbang ditanya paling sering sekali per 5 detik per tagihan; SUCCESS = Lunas; lewat batas + 2 menit tanpa lunas = Kedaluwarsa lokal', function (): void {
+    it('cek status: gerbang ditanya paling sering sekali per 5 detik per tagihan; SUCCESS = Lunas. Lewat batas + 2 menit tanpa lunas = Kedaluwarsa lokal', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
@@ -378,7 +378,7 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         expect($this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$lain}")->json('Status'))->toBe('Kedaluwarsa');
     });
 
-    it('webhook DOKU bertanda tangan sah = Lunas (idempoten); tanda tangan salah 401; penyedia lain/yang sudah dihapus 404; jumlah berbeda tidak melunasi (tercatat); tagihan tak dikenal 200 Diterima false', function (): void {
+    it('webhook DOKU bertanda tangan sah = Lunas (idempoten). Tanda tangan salah 401. Penyedia lain/yang sudah dihapus 404. Jumlah berbeda tidak melunasi (tercatat). Tagihan tak dikenal 200 Diterima false', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
@@ -413,7 +413,7 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         WebhookDoku($this, $k, $buat['NomorPesanan'])->assertNotFound();
     });
 
-    it('batal: Menunggu = Dibatalkan (idempoten); Lunas = 409 SudahLunas; gerbang ditanya dulu sehingga pembayaran yang baru masuk tidak dibatalkan', function (): void {
+    it('batal: Menunggu = Dibatalkan (idempoten); Lunas = 409 SudahLunas. Gerbang ditanya dulu sehingga pembayaran yang baru masuk tidak dibatalkan', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
@@ -434,7 +434,7 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         expect(TagihanQris::query()->where('Uuid', $tiga)->value('Status'))->toBe(StatusTagihanQris::Lunas);
     });
 
-    it('isolasi tenant: perangkat tenant lain 404 (baca & batal); webhook memulihkan tenant dari nomor pesanan tanpa menyentuh tenant lain', function (): void {
+    it('isolasi tenant: perangkat tenant lain 404 (baca & batal). Webhook memulihkan tenant dari nomor pesanan tanpa menyentuh tenant lain', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $a = SiapkanQrisDinamis($this, 'Toko Kelontong Berkah Solo');
@@ -522,7 +522,7 @@ describe('F-08 QRIS dinamis: pemakaian di Penjualan.Buat', function (): void {
 });
 
 describe('F-08 QRIS dinamis: back-office & data awal POS', function (): void {
-    it('pemilik menambah metode QRIS dinamis tanpa gambar/bank; halaman memberi tahu gerbang aktif (tanpa kredensial); data-awal POS memuatnya', function (): void {
+    it('pemilik menambah metode QRIS dinamis tanpa gambar/bank. Halaman memberi tahu gerbang aktif (tanpa kredensial). Data-awal POS memuatnya', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         BantuanGerbangTenant::Aktifkan($tenant->Id);
 

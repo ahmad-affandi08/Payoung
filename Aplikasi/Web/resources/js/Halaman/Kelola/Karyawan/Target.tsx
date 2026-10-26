@@ -185,7 +185,7 @@ export default function HalamanTargetPenjualan({
                     saatKonfirmasi={() => Hapus(dialog.target)}
                     saatBatal={Tutup}
                 >
-                    <p>Penjualan tidak berubah; hanya target periode ini yang dihapus.</p>
+                    <p>Penjualan tidak berubah. Hanya target periode ini yang dihapus.</p>
                 </DialogKonfirmasi>
             ) : null}
         </TataLetakAplikasi>

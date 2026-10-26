@@ -201,7 +201,7 @@ enum IzinTenant: string
             self::SalesmanKunjungan => 'Mencatat kunjungan pelanggan & mengambil pesanan grosir dari aplikasi (Salesman)',
             self::TokoOnlineKelola => 'Mengelola toko online, zona ongkir, dan pesanan online',
             self::PengirimanKelola => 'Mengelola kurir dan status pengiriman pesanan',
-            self::ApotekObatKerasJual => 'Menyerahkan obat keras, psikotropika, narkotika, dan Obat Wajib Apotek; memvalidasi resep (Apoteker)',
+            self::ApotekObatKerasJual => 'Menyerahkan obat keras, psikotropika, narkotika, dan Obat Wajib Apotek. Memvalidasi resep (Apoteker)',
             self::ApotekResepLihat => 'Melihat resep penjualan beserta data pasien (laporan apotek)',
         };
     }

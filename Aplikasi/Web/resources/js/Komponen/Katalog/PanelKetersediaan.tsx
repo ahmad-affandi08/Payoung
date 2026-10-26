@@ -43,7 +43,7 @@ export default function PanelKetersediaan({ uuidProduk, baris, bolehUbah }: Prop
         <Panel
             judul="Ketersediaan per outlet"
             idJudul="judul-ketersediaan"
-            keterangan="Tandai habis bila bahan atau barangnya kosong hari ini, untuk semua kanal atau hanya satu (kasir, toko online, self-order & kios). Produk hilang dari kanal itu di outlet itu; stok tidak berubah."
+            keterangan="Tandai habis bila bahan atau barangnya kosong hari ini, untuk semua kanal atau hanya satu (kasir, toko online, self-order & kios). Produk hilang dari kanal itu di outlet itu. Stok tidak berubah."
         >
             {baris.length === 0 ? (
                 <p className="text-isi text-teks-sekunder">Belum ada outlet aktif.</p>

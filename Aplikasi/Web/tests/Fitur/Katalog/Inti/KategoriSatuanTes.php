@@ -54,7 +54,7 @@ describe('F-03 kategori bertingkat', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'kategori.ubah')->count())->toBe(1);
     });
 
-    it('hapus: ditolak bila punya sub-kategori atau produk; produk terhapus dilepas; jejak Kategori dicatat', function (): void {
+    it('hapus: ditolak bila punya sub-kategori atau produk. Produk terhapus dilepas. Jejak Kategori dicatat', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $induk = BantuanKatalog::BuatKategori('Makanan');
         $anak = BantuanKatalog::BuatKategori('Roti', $induk);

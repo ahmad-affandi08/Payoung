@@ -102,7 +102,7 @@ final class PelacakNomorSeri
     public function TandaiKeluar(NomorSeri $seri, StatusNomorSeri $status): void
     {
         if ($status === StatusNomorSeri::Tersedia) {
-            throw new LogicException('Status keluar nomor seri tidak boleh Tersedia; pakai TandaiMasuk.');
+            throw new LogicException('Status keluar nomor seri tidak boleh Tersedia. Pakai TandaiMasuk.');
         }
 
         $seri->Status = $status;

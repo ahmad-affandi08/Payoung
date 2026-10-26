@@ -510,7 +510,7 @@ export default function HalamanDetailPerintahKerja({
 
             <Panel
                 judul="Estimasi jasa & sparepart"
-                keterangan="Harga dari daftar harga saat disimpan. Total adalah perkiraan; kasir bisa menerapkan promo atau pembulatan saat menagih."
+                keterangan="Harga dari daftar harga saat disimpan. Total adalah perkiraan. Kasir bisa menerapkan promo atau pembulatan saat menagih."
             >
                 <TabelData
                     id="bengkel-perintah-kerja-baris"

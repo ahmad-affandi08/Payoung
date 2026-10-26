@@ -93,7 +93,7 @@ const versi = {
 };
 
 describe('daftar templat komunikasi', () => {
-    it('menampilkan sumber teks per kanal dan bahasa, draf, dan status BSP; tautan ke editor', () => {
+    it('menampilkan sumber teks per kanal dan bahasa, draf, dan status BSP. Tautan ke editor', () => {
         const peristiwa: PeristiwaTemplat[] = [
             {
                 Kode: 'tagihan.pengingat.h-7',

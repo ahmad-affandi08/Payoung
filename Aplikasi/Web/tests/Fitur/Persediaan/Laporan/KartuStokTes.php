@@ -61,7 +61,7 @@ function AmbilKartuStokUji(Produk $produk, Gudang $gudang, string $dari, string 
 }
 
 describe('F-05a kartu stok (BR-05.1, DesainF05a C.8, H-5)', function (): void {
-    it('BR-05.1 baris dalam rentang urut Id dengan saldo berjalan; saldo awal = baris terakhir sebelum rentang; saldo akhir = baris terakhir rentang', function (): void {
+    it('BR-05.1 baris dalam rentang urut Id dengan saldo berjalan. Saldo awal = baris terakhir sebelum rentang. Saldo akhir = baris terakhir rentang', function (): void {
         $d = SiapkanKartuStokUji();
         $kartu = AmbilKartuStokUji($d['Minyak'], $d['Gudang'], '2026-09-05', '2026-09-30');
 
@@ -100,7 +100,7 @@ describe('F-05a kartu stok (BR-05.1, DesainF05a C.8, H-5)', function (): void {
         ])->and($baris['DicatatPada'])->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/');
     });
 
-    it('rentang tanpa mutasi: saldo awal = saldo akhir = baris terakhir sebelum rentang; sebelum riwayat = nol', function (): void {
+    it('rentang tanpa mutasi: saldo awal = saldo akhir = baris terakhir sebelum rentang. Sebelum riwayat = nol', function (): void {
         $d = SiapkanKartuStokUji();
         $november = AmbilKartuStokUji($d['Minyak'], $d['Gudang'], '2026-11-01', '2026-11-30');
         $agustus = AmbilKartuStokUji($d['Minyak'], $d['Gudang'], '2026-08-01', '2026-08-31');
@@ -124,7 +124,7 @@ describe('F-05a kartu stok (BR-05.1, DesainF05a C.8, H-5)', function (): void {
             ->and($h2['SaldoAwal'])->toBe(['Jumlah' => '0.0000', 'Nilai' => '0.00']);
     });
 
-    it('HTTP: props PropsKartuStok dengan produk & lokasi terpilih; tanggal bawaan awal bulan s.d. hari ini; dari > sampai ditukar', function (): void {
+    it('HTTP: props PropsKartuStok dengan produk & lokasi terpilih. Tanggal bawaan awal bulan s.d. hari ini. Dari > sampai ditukar', function (): void {
         $d = SiapkanKartuStokUji();
         $this->travelTo(CarbonImmutable::parse('2026-09-24 10:00:00', 'Asia/Jakarta'));
         $masuk = fn () => BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
@@ -167,7 +167,7 @@ describe('F-05a kartu stok (BR-05.1, DesainF05a C.8, H-5)', function (): void {
                 ->where('Saring.Sampai', '2026-09-24'));
     });
 
-    it('HTTP isolasi: produk atau lokasi tenant lain = 404; lokasi di outlet di luar akses = 404; Kasir 403', function (): void {
+    it('HTTP isolasi: produk atau lokasi tenant lain = 404. Lokasi di outlet di luar akses = 404; Kasir 403', function (): void {
         $d = SiapkanKartuStokUji();
         $b = BantuanPersediaan::SiapkanTenant('Toko Kelontong Maju Mundur');
         $produkB = BantuanKatalog::BuatProduk(['Nama' => 'Kecap Manis Bango 520 ml'], '24000.00', $b['Pcs']);

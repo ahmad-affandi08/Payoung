@@ -97,7 +97,7 @@ function AmbilBarisRingkasan(int $idOutlet, string $tanggal): array
 }
 
 describe('F-14a ringkasan penjualan harian (RingkasanPenjualanHarian)', function (): void {
-    it('invariant: setelah penjualan, void, dan retur diterima, baris ringkasan (lewat penangan antrean) = Σ dokumen; void dikeluarkan, retur mengurangi; angka & per metode/kanal sesuai', function (): void {
+    it('invariant: setelah penjualan, void, dan retur diterima, baris ringkasan (lewat penangan antrean) = Σ dokumen. Void dikeluarkan, retur mengurangi. Angka & per metode/kanal sesuai', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -138,7 +138,7 @@ describe('F-14a ringkasan penjualan harian (RingkasanPenjualanHarian)', function
             ->and($baris->PerKanal)->toEqual([['Kanal' => 'BawaPulang', 'Bersih' => '38500.00', 'JumlahTransaksi' => 1]]);
     });
 
-    it('data uji lengkap: Σ dokumen = ringkasan; kotor, diskon, retur, bersih, pajak, HPP, per metode (tunai bersih kembalian − refund) & kanal', function (): void {
+    it('data uji lengkap: Σ dokumen = ringkasan. Kotor, diskon, retur, bersih, pajak, HPP, per metode (tunai bersih kembalian − refund) & kanal', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $o = $d['Outlet']->Id;
         $tanggal = $d['A']->TanggalBisnis->toDateString();
@@ -159,7 +159,7 @@ describe('F-14a ringkasan penjualan harian (RingkasanPenjualanHarian)', function
             ]);
     });
 
-    it('penangan antrean idempoten: dijalankan berulang (atau peristiwa ganda) hasilnya sama; baris rusak diperbaiki; baris outlet tanpa dokumen dihapus', function (): void {
+    it('penangan antrean idempoten: dijalankan berulang (atau peristiwa ganda) hasilnya sama. Baris rusak diperbaiki. Baris outlet tanpa dokumen dihapus', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $o = $d['Outlet']->Id;
         $tanggal = $d['A']->TanggalBisnis->toDateString();
@@ -183,7 +183,7 @@ describe('F-14a ringkasan penjualan harian (RingkasanPenjualanHarian)', function
             ->and(RingkasanPenjualanHarian::query()->where('IdOutlet', $o)->sole()->only(array_keys($sebelum)))->toBe($sebelum);
     });
 
-    it('perintah laporan:bangun-ulang-ringkasan {tanggal?}: membangun ulang semua tenant dari dokumen; tanpa tanggal = H-1 & H-2; tanggal tidak valid ditolak; dijadwalkan tiap malam', function (): void {
+    it('perintah laporan:bangun-ulang-ringkasan {tanggal?}: membangun ulang semua tenant dari dokumen, tanpa tanggal = H-1 & H-2. Tanggal tidak valid ditolak. Dijadwalkan tiap malam', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $o = $d['Outlet']->Id;
         $tanggal = $d['A']->TanggalBisnis->toDateString();

@@ -50,7 +50,7 @@ function MasukPengelolaKesehatan(TestCase $tes, PeranPengelolaBawaan $peran = Pe
 }
 
 describe('menghitung skor', function (): void {
-    it('tenant baru yang sudah bertransaksi dinilai Sehat tanpa tugas; hitungan ulang di hari yang sama tidak menggandakan baris', function (): void {
+    it('tenant baru yang sudah bertransaksi dinilai Sehat tanpa tugas. Hitungan ulang di hari yang sama tidak menggandakan baris', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Sehat Solo');
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '50');
         BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $produk, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
@@ -85,7 +85,7 @@ describe('menghitung skor', function (): void {
             ->and(SkorKesehatanTenant::query()->where('IdTenant', $normal->Id)->exists())->toBeTrue();
     });
 
-    it('skor lebih dari 90 hari dihapus; skor kemarin dipertahankan sebagai riwayat', function (): void {
+    it('skor lebih dari 90 hari dihapus. Skor kemarin dipertahankan sebagai riwayat', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Tenant Riwayat');
         SkorKesehatanTenant::query()->create(['IdTenant' => $tenant->Id, 'Tanggal' => '2026-07-01', 'Skor' => 50, 'Kategori' => KategoriKesehatan::PerluPerhatian, 'Faktor' => []]);
         SkorKesehatanTenant::query()->create(['IdTenant' => $tenant->Id, 'Tanggal' => '2026-10-19', 'Skor' => 60, 'Kategori' => KategoriKesehatan::PerluPerhatian, 'Faktor' => []]);
@@ -104,7 +104,7 @@ describe('menghitung skor', function (): void {
 });
 
 describe('tugas otomatis', function (): void {
-    it('tenant 3 hari belum bertransaksi → tugas onboarding; ditutup otomatis begitu transaksi pertama masuk', function (): void {
+    it('tenant 3 hari belum bertransaksi → tugas onboarding. Ditutup otomatis begitu transaksi pertama masuk', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Macet Onboarding');
         UmurkanTenant($k['Tenant'], '2026-10-17 03:00:00');
         HitungSkorUji();
@@ -138,7 +138,7 @@ describe('tugas otomatis', function (): void {
         expect(TugasTenant::query()->where('IdTenant', $tenant->Id)->count())->toBe(0);
     });
 
-    it('tenant lama tanpa aktivitas dan tertunggak → skor Berisiko dan tugas Berisiko; ditandai dihubungi tidak dibuka lagi selama 14 hari', function (): void {
+    it('tenant lama tanpa aktivitas dan tertunggak → skor Berisiko dan tugas Berisiko. Ditandai dihubungi tidak dibuka lagi selama 14 hari', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Kedai Berisiko Klaten');
         UmurkanTenant($tenant, '2026-08-01 03:00:00');
         Langganan::query()->where('IdTenant', $tenant->Id)->update(['Status' => 'Tertunggak']);
@@ -190,7 +190,7 @@ describe('tugas otomatis', function (): void {
 });
 
 describe('halaman konsol', function (): void {
-    it('daftar tenant menampilkan kategori terbaru dan bisa difilter; tampilan 360° memuat rincian faktor dan tugas terbuka', function (): void {
+    it('daftar tenant menampilkan kategori terbaru dan bisa difilter. Tampilan 360° memuat rincian faktor dan tugas terbuka', function (): void {
         ['Tenant' => $berisiko] = BantuanOrganisasi::BuatTenant('Kedai Berisiko Tampil');
         ['Tenant' => $baru] = BantuanOrganisasi::BuatTenant('Kedai Baru Tampil');
         UmurkanTenant($berisiko, '2026-08-01 03:00:00');
@@ -214,7 +214,7 @@ describe('halaman konsol', function (): void {
         $this->get(BantuanPengelola::Url("/tenant/{$baru->Uuid}"))->assertInertia(fn (AssertableInertia $h) => $h->has('Tenant.Kesehatan.Terbaru'));
     });
 
-    it('halaman tugas: sebaran kategori, daftar terbuka lebih dulu, filter jenis; izin menangani hanya untuk yang boleh menulis catatan', function (): void {
+    it('halaman tugas: sebaran kategori, daftar terbuka lebih dulu, filter jenis. Izin menangani hanya untuk yang boleh menulis catatan', function (): void {
         ['Tenant' => $a] = BantuanOrganisasi::BuatTenant('Kedai Tugas A');
         UmurkanTenant($a, '2026-10-10 03:00:00');
         HitungSkorUji();

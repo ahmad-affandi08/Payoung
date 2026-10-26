@@ -138,7 +138,7 @@ void main() {
     });
   }
 
-  testWidgets('bingkai memakai warna merek: bilah atas, rel, dan bilah bawah; logo di tengah bilah atas', (
+  testWidgets('bingkai memakai warna merek: bilah atas, rel, dan bilah bawah. Logo di tengah bilah atas', (
     tester,
   ) async {
     final warna = TokenWarna.bawaan;
@@ -278,7 +278,7 @@ void main() {
     );
   }
 
-  testWidgets('kunci otomatis setelah diam 15 menit (bawaan); sentuhan mengulang hitungan; buka dengan PIN sama', (
+  testWidgets('kunci otomatis setelah diam 15 menit (bawaan). Sentuhan mengulang hitungan. Buka dengan PIN sama', (
     tester,
   ) async {
     final u = await MasukRuangKerja(tester);
@@ -325,7 +325,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('tidak mengunci selama keranjang berisi (transaksi/QRIS berjalan); kunci setelah keranjang kosong', (
+  testWidgets('tidak mengunci selama keranjang berisi (transaksi/QRIS berjalan). Kunci setelah keranjang kosong', (
     tester,
   ) async {
     final u = await MasukRuangKerja(tester, pengaturan: {KunciPengaturan.menitKunciOtomatis: '1'});
@@ -405,7 +405,7 @@ void main() {
 
   // Di lebar lega, karena test ini memastikan nama kasir yang tampil di bilah atas ikut berganti; di HP bilahnya
   // hanya menampilkan ikon (ganti kasir dari HP diuji lewat 'ganti kasir dari layar kunci').
-  testWidgets('ketuk nama kasir → ganti kasir; bisa dibatalkan tanpa PIN', (tester) async {
+  testWidgets('ketuk nama kasir → ganti kasir. Bisa dibatalkan tanpa PIN', (tester) async {
     final u = await MasukRuangKerja(tester);
     await tester.tap(find.byTooltip('Ganti kasir'));
     await Tunggu(tester);

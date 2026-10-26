@@ -24,7 +24,7 @@ describe('Impor pelanggan (F-16a, v3.36)', () => {
     });
     afterEach(() => cleanup());
 
-    it('tanpa berkas: tombol periksa nonaktif; templat bisa diunduh', () => {
+    it('tanpa berkas: tombol periksa nonaktif. Templat bisa diunduh', () => {
         RenderUji(<HalamanImporPelanggan Hasil={null} MaksimalBaris={5000} />);
         expect(screen.getByRole('button', { name: 'Periksa berkas' }).hasAttribute('disabled')).toBe(true);
         expect(screen.getByRole('link', { name: 'Unduh templat' }).getAttribute('href')).toBe(

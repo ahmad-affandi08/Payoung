@@ -45,7 +45,7 @@ final class PenerapImporStokAwal
             try {
                 $lanjut = DB::transaction(fn (): ?bool => $this->TerapkanSatuPotongan($impor->Id, $maksimalBaris));
             } catch (PelanggaranAturanBisnis $galat) {
-                PengirimTugasImporStokAwal::Gagalkan($impor->Id, 'Draf stok awal gagal dibuat: '.$galat->getMessage().' Draf yang sudah dibuat tetap tersimpan; perbaiki lalu klik Lanjutkan impor.');
+                PengirimTugasImporStokAwal::Gagalkan($impor->Id, 'Draf stok awal gagal dibuat: '.$galat->getMessage().' Draf yang sudah dibuat tetap tersimpan. Perbaiki lalu klik Lanjutkan impor.');
 
                 return true;
             }

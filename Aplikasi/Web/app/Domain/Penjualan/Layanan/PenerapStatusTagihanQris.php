@@ -60,7 +60,7 @@ final class PenerapStatusTagihanQris
                 $dilaporkan = self::UraiJumlah($jumlahGerbang);
 
                 if ($dilaporkan === null || ! $dilaporkan->SamaDengan($jumlah)) {
-                    Log::warning('Jumlah QRIS dinamis dari gerbang berbeda dengan tagihan; status tidak diubah.', [
+                    Log::warning('Jumlah QRIS dinamis dari gerbang berbeda dengan tagihan. Status tidak diubah.', [
                         'NomorPesanan' => $tagihan->NomorPesanan,
                         'Jumlah' => $tagihan->Jumlah,
                         'JumlahGerbang' => mb_substr($jumlahGerbang, 0, 30),
@@ -91,7 +91,7 @@ final class PenerapStatusTagihanQris
             $this->riwayat->Catat(TagihanQris::JENIS_DOKUMEN, $tagihan->Id, $asal->value, $tujuan->value, null, $sumber);
 
             if ($asal !== StatusTagihanQris::Menunggu && $tujuan === StatusTagihanQris::Lunas) {
-                Log::warning('Tagihan QRIS dinamis dibayar setelah berstatus akhir; periksa penjualan terkait.', [
+                Log::warning('Tagihan QRIS dinamis dibayar setelah berstatus akhir. Periksa penjualan terkait.', [
                     'NomorPesanan' => $tagihan->NomorPesanan,
                     'StatusAsal' => $asal->value,
                 ]);

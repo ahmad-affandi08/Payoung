@@ -86,7 +86,7 @@ export default function KemajuanImporStokAwal({ impor }: { impor: RingkasanImpor
             )}
             {kueri.isError ? (
                 <Pemberitahuan jenis="peringatan">
-                    Status belum bisa dibaca. Proses tetap berjalan di server; kami coba lagi otomatis.
+                    Status belum bisa dibaca. Proses tetap berjalan di server. Kami coba lagi otomatis.
                 </Pemberitahuan>
             ) : null}
             <p className="text-keterangan text-teks-sekunder">

@@ -124,7 +124,7 @@ export default function HalamanLaporanPajak({
         <TataLetakAplikasi judul="Laporan pajak">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Pajak keluaran dari penjualan yang diterima server, dikelompokkan per bulan tanggal bisnis. Penjualan
-                yang di-void tidak dihitung; pajak retur mengurangi pada bulan returnya.
+                yang di-void tidak dihitung. Pajak retur mengurangi pada bulan returnya.
             </p>
 
             <SaringLaporan

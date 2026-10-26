@@ -119,7 +119,7 @@ void main() {
       );
     });
 
-    test('BR-05.2: baris terpisah (catatan berbeda) tetap dihitung bersama; pesan menyebut stok keseluruhan', () async {
+    test('BR-05.2: baris terpisah (catatan berbeda) tetap dihitung bersama. Pesan menyebut stok keseluruhan', () async {
       await AturStok({UuidUji.roti: '4.0000'});
 
       var keranjang = TambahRoti(Keranjang.kosong, jumlah: 3);
@@ -142,7 +142,7 @@ void main() {
       expect(() => TambahRoti(Keranjang.kosong, jumlah: 2, satuan: 'Lusin'), GalatStok(pesan));
     });
 
-    test('BR-05.2: produk di luar daftar server tanpa batas; perangkat tanpa salinan tidak membatasi', () async {
+    test('BR-05.2: produk di luar daftar server tanpa batas. Perangkat tanpa salinan tidak membatasi', () async {
       await AturStok({UuidUji.roti: '1.0000'});
       expect(Tambah(Keranjang.kosong, UuidUji.croissant, jumlah: 500).baris.single.jumlah, Kuantitas.DariBulat(500));
 
@@ -186,7 +186,7 @@ void main() {
   });
 
   group('mengubah baris', () {
-    test('BR-05.2: UbahJumlah naik melebihi stok ditolak; turun dan tetap diizinkan walau salinan turun', () async {
+    test('BR-05.2: UbahJumlah naik melebihi stok ditolak. Turun dan tetap diizinkan walau salinan turun', () async {
       await AturStok({UuidUji.roti: '5.0000'});
       final keranjang = TambahRoti(Keranjang.kosong, jumlah: 4);
       final uuidBaris = keranjang.baris.single.uuid;

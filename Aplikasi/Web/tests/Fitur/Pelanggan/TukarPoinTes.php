@@ -168,7 +168,7 @@ describe('F-16b tukar poin di penjualan', function (): void {
 });
 
 describe('F-16b saldo poin untuk POS', function (): void {
-    it('GET /api/pos/v1/pelanggan/{uuid}/poin: saldo terkini & aturan tukar; pelanggan tenant lain = 404', function (): void {
+    it('GET /api/pos/v1/pelanggan/{uuid}/poin: saldo terkini & aturan tukar. Pelanggan tenant lain = 404', function (): void {
         $k = SiapkanTukarPoin($this, 120);
         $lain = BantuanPenjualan::Siapkan($this, 'Toko Lain Jaya');
         $tetangga = Pelanggan::query()->create(['Nama' => 'Ani Tetangga', 'NoHp' => '6281234567890']);
@@ -187,7 +187,7 @@ describe('F-16b saldo poin untuk POS', function (): void {
 });
 
 describe('F-16b pengaturan tukar poin', function (): void {
-    it('nilai tukar tidak boleh melebihi belanja per poin; minimal tukar 1–100.000', function (): void {
+    it('nilai tukar tidak boleh melebihi belanja per poin. Minimal tukar 1–100.000', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Pengaturan Tukar');
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
         $dasar = ['Aktif' => true, 'BelanjaPerPoin' => '10000', 'MasaBerlakuBulan' => 12, 'BulanEvaluasiTier' => 12];

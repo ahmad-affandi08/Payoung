@@ -172,7 +172,7 @@ describe('permintaan pembelian (F-04 PR)', () => {
         expect(screen.getByText('Tambahkan minimal satu produk.')).toBeTruthy();
     });
 
-    it('detail: draf punya Ubah & Ajukan; yang menunggu persetujuan punya Setujui/Tolak; yang disetujui punya Jadikan PO', () => {
+    it('detail: draf punya Ubah & Ajukan, yang menunggu persetujuan punya Setujui/Tolak, yang disetujui punya Jadikan PO', () => {
         RenderUji(<HalamanDetailPermintaan {...PropsDetail('Draf', { Ubah: true, Ajukan: true, Batalkan: true })} />);
         expect(screen.getByRole('link', { name: 'Ubah draf' })).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Ajukan permintaan' }));
@@ -198,7 +198,7 @@ describe('permintaan pembelian (F-04 PR)', () => {
         expect(screen.getByRole('button', { name: 'Jadikan pesanan pembelian' })).toBeTruthy();
     });
 
-    it('detail: menunggu persetujuan tanpa hak memutuskan menampilkan penjelasan; hasil PO ditautkan', () => {
+    it('detail: menunggu persetujuan tanpa hak memutuskan menampilkan penjelasan. Hasil PO ditautkan', () => {
         RenderUji(<HalamanDetailPermintaan {...PropsDetail('Diajukan')} />);
         expect(screen.getByText('Menunggu persetujuan', { selector: 'p, div, h5, h3, strong, span' })).toBeTruthy();
         cleanup();

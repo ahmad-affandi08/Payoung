@@ -92,7 +92,7 @@ describe('P-07 override batas/fitur sementara (BR-P07.7)', function (): void {
         'jenis trial lewat override' => [['Jenis' => 'Trial'], 'Jenis'],
     ]);
 
-    it('satu kunci hanya satu override aktif; setelah dicabut boleh dibuat lagi', function (): void {
+    it('satu kunci hanya satu override aktif. Setelah dicabut boleh dibuat lagi', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Dukungan);
 

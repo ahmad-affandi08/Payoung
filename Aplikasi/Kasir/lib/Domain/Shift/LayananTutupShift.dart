@@ -408,7 +408,7 @@ class LayananTutupShift {
       if (penyetuju == null) {
         throw GalatKasir(
           'PersetujuanDiperlukan',
-          'Selisih $selisih melebihi toleransi $toleransi; wajib disetujui supervisor dengan PIN.',
+          'Selisih $selisih melebihi toleransi $toleransi. Wajib disetujui supervisor dengan PIN.',
         );
       }
     }

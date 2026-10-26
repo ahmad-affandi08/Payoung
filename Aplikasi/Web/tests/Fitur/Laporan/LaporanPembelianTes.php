@@ -46,7 +46,7 @@ function SiapkanPembelianLaporan(mixed $tes): array
     return [...$t, 'Minyak' => $minyak, 'Gula' => $gula, 'A' => $a, 'B' => $b, 'Po' => $po];
 }
 
-it('per pemasok: faktur, total, retur, pembelian bersih, dibayar, sisa hutang; urut pembelian bersih; ekspor CSV', function (): void {
+it('per pemasok: faktur, total, retur, pembelian bersih, dibayar, sisa hutang. Urut pembelian bersih. Ekspor CSV', function (): void {
     $k = SiapkanPembelianLaporan($this);
 
     $this->get('/kelola/laporan/pembelian')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -78,7 +78,7 @@ it('periode memakai tanggal faktur: faktur di luar periode tidak ikut', function
         ->where('Isi.0.NamaPemasok', 'PT Sumber Pangan Nusantara'));
 });
 
-it('per produk: jumlah, nilai beli, harga rata-rata/terendah/tertinggi per satuan dasar, jumlah faktur dan pemasok; ekspor CSV', function (): void {
+it('per produk: jumlah, nilai beli, harga rata-rata/terendah/tertinggi per satuan dasar, jumlah faktur dan pemasok. Ekspor CSV', function (): void {
     $k = SiapkanPembelianLaporan($this);
 
     $this->get('/kelola/laporan/pembelian?tab=produk')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -101,7 +101,7 @@ it('per produk: jumlah, nilai beli, harga rata-rata/terendah/tertinggi per satua
     expect($csv)->toContain('Nilai beli')->toContain('Harga tertinggi')->toContain('1152000.00');
 });
 
-it('PO outstanding: hanya PO disetujui/diterima sebagian dengan baris belum lengkap; nilai sisa, umur, keterlambatan; PO lengkap hilang', function (): void {
+it('PO outstanding: hanya PO disetujui/diterima sebagian dengan baris belum lengkap. Nilai sisa, umur, keterlambatan; PO lengkap hilang', function (): void {
     $k = SiapkanPembelianLaporan($this);
 
     $this->get('/kelola/laporan/pembelian?tab=po')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -124,7 +124,7 @@ it('PO outstanding: hanya PO disetujui/diterima sebagian dengan baris belum leng
     $this->get('/kelola/laporan/pembelian?tab=po')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('Isi', 0));
 });
 
-it('outlet di luar akses menghasilkan laporan kosong; tab tidak dikenal kembali ke per pemasok', function (): void {
+it('outlet di luar akses menghasilkan laporan kosong. Tab tidak dikenal kembali ke per pemasok', function (): void {
     SiapkanPembelianLaporan($this);
 
     $this->get('/kelola/laporan/pembelian?outlet=01JZZZZZZZZZZZZZZZZZZZZZZZ')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('Isi', 0));

@@ -29,7 +29,7 @@ function OutletDenah(Tenant $tenant): Outlet
 }
 
 describe('POS-03 denah meja', function (): void {
-    it('simpan letak meja: tampil di detail outlet dan API POS; null = belum ditata; audit sekali per simpan', function (): void {
+    it('simpan letak meja: tampil di detail outlet dan API POS. Null = belum ditata. Audit sekali per simpan', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $dua = Meja::query()->create(['IdOutlet' => $k['Outlet']->Id, 'Nama' => '8', 'Kapasitas' => 2]);

@@ -110,7 +110,7 @@ describe('Rekap gaji (F-18 bagian 3)', () => {
         });
     });
 
-    it('daftar: pilih siklus mingguan mengirim tanggal mulai usulan; pengingat tampil bila rentang sudah lewat (D-219)', () => {
+    it('daftar: pilih siklus mingguan mengirim tanggal mulai usulan. Pengingat tampil bila rentang sudah lewat (D-219)', () => {
         const props = {
             OpsiPeriode: [{ Nilai: '2026-10', Label: 'Oktober 2026' }],
             OpsiStatus: [{ Nilai: 'Draf' as const, Label: 'Draf' }],
@@ -161,7 +161,7 @@ describe('Rekap gaji (F-18 bagian 3)', () => {
         });
     });
 
-    it('draf: ubah baris mengirim nilai tanpa desimal nol; bayar memilih akun beban gaji 6-1000', () => {
+    it('draf: ubah baris mengirim nilai tanpa desimal nol. Bayar memilih akun beban gaji 6-1000', () => {
         RenderUji(<HalamanDetailRekapGaji {...PropsDetail()} />);
         BukaMenu(screen.getAllByRole('button', { name: /Aksi gaji Dewi Junior/ })[0] as HTMLElement);
         fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah tambahan & potongan' }));
@@ -182,7 +182,7 @@ describe('Rekap gaji (F-18 bagian 3)', () => {
         });
     });
 
-    it('sudah dibayar: tanpa tombol bayar/hapus & tanpa ubah baris (hanya cetak slip, v3.35); tautan jurnal tampil', () => {
+    it('sudah dibayar: tanpa tombol bayar/hapus & tanpa ubah baris (hanya cetak slip, v3.35). Tautan jurnal tampil', () => {
         RenderUji(<HalamanDetailRekapGaji {...PropsDetail('Dibayar')} />);
         expect(screen.queryByRole('button', { name: 'Bayar gaji' })).toBeNull();
         expect(screen.queryByRole('button', { name: 'Hapus draf' })).toBeNull();

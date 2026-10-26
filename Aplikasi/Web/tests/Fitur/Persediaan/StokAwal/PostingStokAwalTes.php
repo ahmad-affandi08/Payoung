@@ -135,7 +135,7 @@ describe('F-05a posting stok awal J-05.1 (BR-05.1)', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('produk batch: BatchStok terisi; produk seri: satu mutasi per nomor dengan pembagian nilai 333,33/333,33/333,34', function (): void {
+    it('produk batch: BatchStok terisi. Produk seri: satu mutasi per nomor dengan pembagian nilai 333,33/333,33/333,34', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
 
@@ -186,7 +186,7 @@ describe('F-05a posting stok awal J-05.1 (BR-05.1)', function (): void {
 });
 
 describe('F-05a posting stok awal: pemeriksaan ulang saat posting', function (): void {
-    it('StokAwalSudahAda: produk yang sudah punya stok awal Diposting di lokasi yang sama ditolak; lokasi lain boleh', function (): void {
+    it('StokAwalSudahAda: produk yang sudah punya stok awal Diposting di lokasi yang sama ditolak. Lokasi lain boleh', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '5', '38000')], $t['Pemilik']->Id);

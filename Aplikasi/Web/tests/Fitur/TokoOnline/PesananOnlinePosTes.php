@@ -50,7 +50,7 @@ it('ringkas: menunggu, perlu ditagih, dan pesanan baru sejak polling terakhir', 
     expect(collect($daftar)->pluck('Status')->all())->toEqualCanonicalizing(['MenungguKonfirmasi', 'Siap']);
 });
 
-it('kasir menerima, memproses, dan menandai siap; kiriman ulang idempoten; status mundur ditolak', function (): void {
+it('kasir menerima, memproses, dan menandai siap. Kiriman ulang idempoten. Status mundur ditolak', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $p = PesanOnlineUntukPos($k);
     $ubah = fn (string $status, ?string $alasan = null) => $this->withToken($k['Token'])
@@ -66,7 +66,7 @@ it('kasir menerima, memproses, dan menandai siap; kiriman ulang idempoten; statu
     expect($p->refresh()->DikonfirmasiOleh)->toBe($k['Kasir']->Id);
 });
 
-it('tolak wajib alasan; tanpa izin ditolak; pesanan outlet lain tidak ditemukan', function (): void {
+it('tolak wajib alasan, tanpa izin ditolak. Pesanan outlet lain tidak ditemukan', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $p = PesanOnlineUntukPos($k);
 

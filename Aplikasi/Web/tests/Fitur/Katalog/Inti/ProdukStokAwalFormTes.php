@@ -46,7 +46,7 @@ function IsiFormProdukBerstok(array $t, array $timpa = []): array
     ], $timpa));
 }
 
-it('produk baru + stok sekarang: stok awal Diposting, saldo stok 24, jurnal seimbang; tanpa stok = tanpa dokumen', function (): void {
+it('produk baru + stok sekarang: stok awal Diposting, saldo stok 24, jurnal seimbang, tanpa stok = tanpa dokumen', function (): void {
     $t = BantuanPersediaan::SiapkanTenant('Toko Kelontong Berkah Sragen');
     $masuk = fn () => BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 

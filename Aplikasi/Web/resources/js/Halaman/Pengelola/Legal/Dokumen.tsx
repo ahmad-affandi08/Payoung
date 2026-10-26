@@ -65,7 +65,7 @@ export default function HalamanDokumenLegal({ Dokumen }: { Dokumen: DokumenLegal
                     saatKonfirmasi={Hapus}
                     saatBatal={() => AturKonfirmasiHapus(false)}
                 >
-                    <p>Hanya draf ini yang dihapus; versi yang sudah terbit tidak terpengaruh.</p>
+                    <p>Hanya draf ini yang dihapus. Versi yang sudah terbit tidak terpengaruh.</p>
                 </DialogKonfirmasi>
             ) : null}
             <Link href="/legal" className="text-label font-semibold text-brand underline">

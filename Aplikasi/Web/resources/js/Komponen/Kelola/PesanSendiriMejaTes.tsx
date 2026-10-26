@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('F-17 QR pesan sendiri di halaman outlet', () => {
-    it('sakelar: hidupkan mengirim POST; tanpa fitur kanal.self-order tombol nonaktif dengan penjelasan', () => {
+    it('sakelar: hidupkan mengirim POST, tanpa fitur kanal.self-order tombol nonaktif dengan penjelasan', () => {
         RenderUji(
             <BagianMeja
                 alamatOutlet="/kelola/outlet/O-1"
@@ -68,7 +68,7 @@ describe('F-17 QR pesan sendiri di halaman outlet', () => {
         expect(screen.getByText('Fitur Self-order QR belum aktif')).toBeTruthy();
     });
 
-    it('aksi baris "QR pesan sendiri" memuat QR & URL; buat ulang minta konfirmasi lalu POST', async () => {
+    it('aksi baris "QR pesan sendiri" memuat QR & URL. Buat ulang minta konfirmasi lalu POST', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({
@@ -122,7 +122,7 @@ describe('F-17 QR pesan sendiri di halaman outlet', () => {
         expect(screen.queryByRole('menuitem', { name: 'Arsipkan' })).toBeNull();
     });
 
-    it('halaman cetak QR: kartu per meja aktif dengan nama meja & URL; peringatan bila belum aktif', () => {
+    it('halaman cetak QR: kartu per meja aktif dengan nama meja & URL. Peringatan bila belum aktif', () => {
         RenderUji(
             <HalamanQrMeja
                 Outlet={{ Uuid: 'O-1', Kode: 'SLO1', Nama: 'Kedai Solo Baru' }}

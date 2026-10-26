@@ -24,7 +24,7 @@ void main() {
     return data;
   }
 
-  test('TeksQris data-awal tersimpan di metode QRIS statis; server lama (tanpa kunci) = null', () async {
+  test('TeksQris data-awal tersimpan di metode QRIS statis. Server lama (tanpa kunci) = null', () async {
     final u = LingkunganUji.Buat();
     addTearDown(u.db.close);
 

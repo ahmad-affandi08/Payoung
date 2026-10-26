@@ -104,7 +104,7 @@ export default function HalamanDetailInvoice({
 
             {invoice.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Invoice dibatalkan">
-                    {invoice.AlasanBatal}. Jurnalnya sudah dibalik; pelanggan yang membuka tautan melihat tanda
+                    {invoice.AlasanBatal}. Jurnalnya sudah dibalik. Pelanggan yang membuka tautan melihat tanda
                     dibatalkan.
                 </Pemberitahuan>
             ) : null}
@@ -415,7 +415,7 @@ export default function HalamanDetailInvoice({
                     keterangan={
                         invoice.Status === 'Draf'
                             ? 'Draf dibatalkan tanpa jurnal. Draf yang sudah dibatalkan tidak bisa dibuka lagi.'
-                            : 'Jurnalnya dibalik dan piutangnya dibatalkan. Invoice yang sudah dibayar tidak bisa dibatalkan; batalkan dulu pembayarannya. Uang muka yang dipotong dilepas dan bisa dipakai lagi.'
+                            : 'Jurnalnya dibalik dan piutangnya dibatalkan. Invoice yang sudah dibayar tidak bisa dibatalkan. Batalkan dulu pembayarannya. Uang muka yang dipotong dilepas dan bisa dipakai lagi.'
                     }
                     labelAksi="Batalkan"
                     alamat={`${AlamatInvoice}/${invoice.Uuid}/batalkan`}
@@ -425,7 +425,7 @@ export default function HalamanDetailInvoice({
             {tolakKonfirmasi !== null ? (
                 <DialogAlasanGrosir
                     judul="Tolak konfirmasi pembayaran"
-                    keterangan="Beri alasan, misalnya uangnya tidak ditemukan di mutasi bank atau jumlahnya tidak cocok. Pelanggan tidak diberi tahu otomatis; hubungi mereka bila perlu."
+                    keterangan="Beri alasan, misalnya uangnya tidak ditemukan di mutasi bank atau jumlahnya tidak cocok. Pelanggan tidak diberi tahu otomatis. Hubungi mereka bila perlu."
                     labelAksi="Tolak konfirmasi"
                     alamat={`${AlamatInvoice}/${invoice.Uuid}/konfirmasi/${tolakKonfirmasi.Uuid}/tolak`}
                     saatTutup={() => AturTolakKonfirmasi(null)}

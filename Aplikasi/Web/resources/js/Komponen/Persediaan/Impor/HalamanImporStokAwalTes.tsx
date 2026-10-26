@@ -158,7 +158,7 @@ describe('Impor stok awal langkah 1: unggah (DesainF05a E)', () => {
         );
     });
 
-    it('tanpa lokasi stok yang bisa diakses: pesan kosong, tanpa form unggah; ringkasan hasil riwayat', () => {
+    it('tanpa lokasi stok yang bisa diakses: pesan kosong, tanpa form unggah. Ringkasan hasil riwayat', () => {
         RenderUji(
             <HalamanDaftarImporStokAwal
                 Riwayat={{

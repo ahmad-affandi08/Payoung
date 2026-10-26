@@ -21,7 +21,7 @@ import '../Pendukung/PasangAplikasi.dart';
 /// menambah 12 unit sekaligus (harga bertingkat ikut berlaku).
 void main() {
   group('PengaliJumlah', () {
-    test('mengurai 12*kode, 2,5x nama, 12* menunggu; tanpa pengali atau nol = masukan apa adanya', () {
+    test('mengurai 12*kode, 2,5x nama, 12* menunggu, tanpa pengali atau nol = masukan apa adanya', () {
       final a = PengaliJumlah.Urai('12*RTG-01');
       expect(a.jumlah, Kuantitas.DariBulat(12));
       expect(a.sisa, 'RTG-01');
@@ -35,7 +35,7 @@ void main() {
     });
   });
 
-  test('TampilanKatalog otomatis: Retail & Grosir daftar, lainnya ubin; pilihan perangkat menang', () {
+  test('TampilanKatalog otomatis: Retail & Grosir daftar, lainnya ubin. Pilihan perangkat menang', () {
     expect(TampilanKatalog.Otomatis.Tentukan('Retail'), TampilanKatalog.Daftar);
     expect(TampilanKatalog.Otomatis.Tentukan('Grosir'), TampilanKatalog.Daftar);
     expect(TampilanKatalog.Otomatis.Tentukan('Cepat'), TampilanKatalog.Ubin);
@@ -149,7 +149,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('mode Meja: beranda ruang kerja = denah meja; tanpa mode kasir tetap layar Jual ubin', (tester) async {
+  testWidgets('mode Meja: beranda ruang kerja = denah meja, tanpa mode kasir tetap layar Jual ubin', (tester) async {
     final u = await Masuk(tester, const Size(1280, 900), modeKasir: 'Meja', meja: true);
     expect(find.byType(LayarMeja), findsOneWidget);
     await Lepas(tester, u);

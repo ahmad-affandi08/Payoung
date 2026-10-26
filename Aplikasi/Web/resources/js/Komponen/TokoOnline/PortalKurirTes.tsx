@@ -64,7 +64,7 @@ describe('portal kurir', () => {
         );
     });
 
-    it('Dikirim: serah terima mengirim nama penerima + foto sebagai FormData; gagal mengirim alasan', () => {
+    it('Dikirim: serah terima mengirim nama penerima + foto sebagai FormData. Gagal mengirim alasan', () => {
         RenderUji(
             <HalamanPortalKurir
                 NamaToko="Kopi Senja"

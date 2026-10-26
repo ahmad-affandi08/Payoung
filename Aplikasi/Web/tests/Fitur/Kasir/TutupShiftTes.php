@@ -103,7 +103,7 @@ function AmbilShiftUji(string $uuid): Shift
 }
 
 describe('F-11 tutup shift lewat sinkron', function (): void {
-    it('diterima: kas seharusnya dihitung server, kolom tutup & non-tunai per metode tersimpan, riwayat & audit; kirim ulang = Duplikat; data lain = ShiftSudahDitutup', function (): void {
+    it('diterima: kas seharusnya dihitung server, kolom tutup & non-tunai per metode tersimpan, riwayat & audit. Kirim ulang = Duplikat. Data lain = ShiftSudahDitutup', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $pecahan = [['Nominal' => '100000.00', 'Jumlah' => 4], ['Nominal' => '50000.00', 'Jumlah' => 1], ['Nominal' => '2000.00', 'Jumlah' => 1]];
         $item = ItemTutupShiftUji($k, '452000.00', timpa: [
@@ -140,7 +140,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
             ->and(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemTutupShiftUji($k, '450000.00')]))->toBe([['Ditolak', 'ShiftSudahDitutup']]);
     });
 
-    it('kiriman ulang Shift.Buka & Shift.Tutup setelah akses kasir dicabut tetap Duplikat (outbox tidak macet); isi berbeda tetap ditolak', function (): void {
+    it('kiriman ulang Shift.Buka & Shift.Tutup setelah akses kasir dicabut tetap Duplikat (outbox tidak macet). Isi berbeda tetap ditolak', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $item = ItemTutupShiftUji($k, '452000.00');
 
@@ -156,7 +156,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
             ->and(BantuanKasir::KirimRingkas($this, $k['Token'], [BantuanKasir::ItemBukaShift($k['Kasir'], '1.00', uuid: $k['UuidShift'])]))->toBe([['Ditolak', 'UuidSudahDipakai']]);
     });
 
-    it('izin & shift bersama (BR-06.2): tanpa penjualan.buat = TanpaIzin; kasir lain di shift bukan bersama = BukanShiftSendiri; supervisor boleh menutup', function (): void {
+    it('izin & shift bersama (BR-06.2): tanpa penjualan.buat = TanpaIzin. Kasir lain di shift bukan bersama = BukanShiftSendiri. Supervisor boleh menutup', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
         $kasirLain = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -212,7 +212,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
             ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 
-    it('selisih di atas toleransi: tanpa alasan = AlasanDiperlukan, tanpa penyetuju = PersetujuanDiperlukan, penyetuju tanpa izin = PenyetujuTidakBerwenang; supervisor sah diterima', function (): void {
+    it('selisih di atas toleransi: tanpa alasan = AlasanDiperlukan, tanpa penyetuju = PersetujuanDiperlukan, penyetuju tanpa izin = PenyetujuTidakBerwenang. Supervisor sah diterima', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $alasan = 'Uang kembalian salah hitung saat antrean ramai';
 
@@ -269,7 +269,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemTutupShiftUji($k, '430000.00')]))->toBe([['Diterima', null]]);
     });
 
-    it('kas seharusnya perangkat berbeda: diterima dengan angka server + PerluTinjauan KasSeharusnyaBerbeda; persetujuan dinilai dari selisih server', function (): void {
+    it('kas seharusnya perangkat berbeda: diterima dengan angka server + PerluTinjauan KasSeharusnyaBerbeda. Persetujuan dinilai dari selisih server', function (): void {
         $k = SiapkanShiftTutupUji($this);
 
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemTutupShiftUji($k, '452000.00', '440000.00')]))->toBe([['Diterima', null]]);
@@ -305,7 +305,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
             ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 
-    it('isolasi tenant: perangkat tenant lain tidak bisa menutup shift tenant ini; kolom tutup tidak bisa diubah lewat model setelah ditutup', function (): void {
+    it('isolasi tenant: perangkat tenant lain tidak bisa menutup shift tenant ini. Kolom tutup tidak bisa diubah lewat model setelah ditutup', function (): void {
         $a = SiapkanShiftTutupUji($this);
         $b = BantuanKasir::Siapkan($this, 'Warung Bakso Pak Kumis');
 
@@ -324,7 +324,7 @@ describe('F-11 tutup shift lewat sinkron', function (): void {
 });
 
 describe('F-11 laporan shift back-office', function (): void {
-    it('detail shift: laporan X berjalan, lalu Z dengan data tutup (kas, alasan, penyetuju, non-tunai vs sistem, jurnal); daftar menampilkan selisih; tenant lain 404', function (): void {
+    it('detail shift: laporan X berjalan, lalu Z dengan data tutup (kas, alasan, penyetuju, non-tunai vs sistem, jurnal). Daftar menampilkan selisih. Tenant lain 404', function (): void {
         $k = SiapkanShiftTutupUji($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
 
@@ -381,7 +381,7 @@ describe('F-11 laporan shift back-office', function (): void {
 });
 
 describe('F-11 × F-09 kas seharusnya setelah void & retur tunai', function (): void {
-    it('void penjualan tunai (Rp 77.000) dan retur tunai dari laci (Rp 38.500) mengurangi kas seharusnya: 452.000 − 77.000 − 38.500 = Rp 336.500; retur transfer tidak mengurangi laci', function (): void {
+    it('void penjualan tunai (Rp 77.000) dan retur tunai dari laci (Rp 38.500) mengurangi kas seharusnya: 452.000 − 77.000 − 38.500 = Rp 336.500. Retur transfer tidak mengurangi laci', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $tunai = Penjualan::query()->where('TotalAkhir', '77000.00')->sole();
         $qris = Penjualan::query()->where('TotalAkhir', '38500.00')->sole();

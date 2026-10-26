@@ -119,7 +119,7 @@ final class PemeriksaBarisStok
         }
 
         if ($b->hppSatuan !== null && ($keluar || $b->hppSatuan->isNegative() || $b->hppSatuan->strippedOfTrailingZeros()->getScale() > 6)) {
-            return $keluar ? "Stok keluar {$p->nama} dinilai HPP berjalan; harga modal tidak diisi." : "Harga modal {$p->nama} tidak boleh negatif, maksimal 6 angka desimal.";
+            return $keluar ? "Stok keluar {$p->nama} dinilai HPP berjalan. Harga modal tidak diisi." : "Harga modal {$p->nama} tidak boleh negatif, maksimal 6 angka desimal.";
         }
 
         return match ($p->pelacakan) {

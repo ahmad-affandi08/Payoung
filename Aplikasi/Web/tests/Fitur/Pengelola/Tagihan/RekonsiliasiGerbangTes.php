@@ -258,7 +258,7 @@ describe('BR-P08.11 rekonsiliasi pembayaran gerbang tersangkut', function (): vo
             ->and($panggilan)->toBeInt();
     });
 
-    it('D-98: naik paket lunas lewat DOKU mengganti paket langganan tanpa menggeser periode; putaran ulang tidak mengubah apa pun', function (): void {
+    it('D-98: naik paket lunas lewat DOKU mengganti paket langganan tanpa menggeser periode. Putaran ulang tidak mengubah apa pun', function (): void {
         /** @var array{Tenant: Tenant, Pengguna: Pengguna} $data */
         $data = BantuanTagihan::DaftarTenant();
         $langganan = Langganan::query()->where('IdTenant', $data['Tenant']->Id)->sole();

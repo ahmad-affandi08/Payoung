@@ -33,7 +33,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('produk ber-batch kini bisa dijual (batch dipilih server, FEFO); produk bernomor seri ditandai', () {
+  test('produk ber-batch kini bisa dijual (batch dipilih server, FEFO). Produk bernomor seri ditandai', () {
     final susu = katalog.CariProduk(UuidUji.susuUht)!;
     expect(susu.pelacakan, 'Batch');
     expect(susu.AmbilAlasanTidakBisaDijual(), isNull);
@@ -45,7 +45,7 @@ void main() {
     expect(u.penjualan.BuatBaris(katalog, k, susu).jumlah, Kuantitas.DariBulat(1));
   });
 
-  test('jumlah baris = banyaknya nomor seri; jumlah tidak bisa diubah terpisah; baris dengan nomor tidak digabung', () {
+  test('jumlah baris = banyaknya nomor seri. Jumlah tidak bisa diubah terpisah. Baris dengan nomor tidak digabung', () {
     final hp = katalog.CariProduk(ponsel)!;
     final baris = u.penjualan.BuatBaris(katalog, k, hp, nomorSeri: ['IMEI-0001', 'IMEI-0002']);
     expect(baris.jumlah, Kuantitas.DariBulat(2));
@@ -91,7 +91,7 @@ void main() {
   );
 
   test(
-    'bayar mengirim Baris[].NomorSeri di outbox; baris tanpa nomor seri tidak membawa kuncinya; Keranjang JSON utuh',
+    'bayar mengirim Baris[].NomorSeri di outbox. Baris tanpa nomor seri tidak membawa kuncinya; Keranjang JSON utuh',
     () async {
       final hp = katalog.CariProduk(ponsel)!;
       final susu = katalog.CariProduk(UuidUji.susuUht)!;

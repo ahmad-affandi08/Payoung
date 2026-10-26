@@ -252,7 +252,7 @@ describe('lembar Bantuan kontekstual', () => {
         vi.stubGlobal('fetch', ambil);
     });
 
-    it('tidak memuat apa pun sampai dibuka; lalu menampilkan artikel halaman ini, artikel lain, dan tautan dukungan', async () => {
+    it('tidak memuat apa pun sampai dibuka, lalu menampilkan artikel halaman ini, artikel lain, dan tautan dukungan', async () => {
         Render(<TombolBantuan bolehHubungiDukungan />);
         expect(ambil).not.toHaveBeenCalled();
 
@@ -278,7 +278,7 @@ describe('lembar Bantuan kontekstual', () => {
         );
     });
 
-    it('mengetik di kotak cari memuat ulang dengan kata itu; tautan dukungan hilang tanpa izin tiket', async () => {
+    it('mengetik di kotak cari memuat ulang dengan kata itu. Tautan dukungan hilang tanpa izin tiket', async () => {
         Render(<TombolBantuan bolehHubungiDukungan={false} />);
         fireEvent.click(screen.getByRole('button', { name: 'Bantuan' }));
         const lembar = await screen.findByRole('dialog');
@@ -290,7 +290,7 @@ describe('lembar Bantuan kontekstual', () => {
         expect(String(PanggilanArtikel()[1]?.[0])).toContain('cari=stok');
     });
 
-    it('masalah jaringan memberi pesan yang bisa dipahami; hasil kosong menyarankan dukungan', async () => {
+    it('masalah jaringan memberi pesan yang bisa dipahami. Hasil kosong menyarankan dukungan', async () => {
         PasangJawaban(() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }));
         Render(<TombolBantuan bolehHubungiDukungan />);
         fireEvent.click(screen.getByRole('button', { name: 'Bantuan' }));
@@ -354,7 +354,7 @@ describe('konsol artikel bantuan', () => {
         expect(screen.getAllByRole('button', { name: 'Tulis artikel bantuan' })).not.toHaveLength(0);
     });
 
-    it('ubah: formulir memuat konteks satu per baris dan video; hanya baca tanpa izin menyembunyikan simpan', () => {
+    it('ubah: formulir memuat konteks satu per baris dan video. Hanya baca tanpa izin menyembunyikan simpan', () => {
         uji.url = '/situs/bantuan/01J9BNT0000000000000000001';
         uji.props = PropsKonsol();
         const artikel = {

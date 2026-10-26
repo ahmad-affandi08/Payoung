@@ -26,7 +26,7 @@ function BerkasPemasokCsv(string $isi, string $nama = 'pemasok.csv'): UploadedFi
     return UploadedFile::fake()->createWithContent($nama, $isi);
 }
 
-it('impor: periksa tidak menyimpan; terapkan membuat yang baru, melewati yang terdaftar & bermasalah; ulang = 0 baru', function (): void {
+it('impor: periksa tidak menyimpan. Terapkan membuat yang baru, melewati yang terdaftar & bermasalah. Ulang = 0 baru', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Sembako Berkah Jaya');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
@@ -56,7 +56,7 @@ it('impor: periksa tidak menyimpan; terapkan membuat yang baru, melewati yang te
         ->where('Hasil.SudahAda', 1)
         ->where('Hasil.Bermasalah', 6)
         ->where('Hasil.Masalah', fn ($masalah): bool => collect($masalah)->pluck('Pesan')->all() === [
-            'Kode sama dengan baris sebelumnya di berkas ini; baris ini dilewati.',
+            'Kode sama dengan baris sebelumnya di berkas ini. Baris ini dilewati.',
             'Kode hanya huruf, angka, titik, garis bawah, atau tanda hubung (maksimal 30).',
             'Termin harus angka 0 sampai 365 hari atau "Tunai".',
             'Nomor HP hanya angka, spasi, +, (, ), atau tanda hubung.',
@@ -87,7 +87,7 @@ it('impor: periksa tidak menyimpan; terapkan membuat yang baru, melewati yang te
     expect(Pemasok::query()->count())->toBe(3);
 });
 
-it('tanpa kolom Kode: kode otomatis berurutan setelah nomor tertinggi (termasuk yang sudah dihapus); nama yang sama dilewati', function (): void {
+it('tanpa kolom Kode: kode otomatis berurutan setelah nomor tertinggi (termasuk yang sudah dihapus). Nama yang sama dilewati', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Sembako Berkah Jaya');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
@@ -106,7 +106,7 @@ it('tanpa kolom Kode: kode otomatis berurutan setelah nomor tertinggi (termasuk 
     $this->post('/kelola/pembelian/pemasok/impor', ['Berkas' => BerkasPemasokCsv($csv), 'Terapkan' => '1'])->assertSessionHas('Kilat', '0 pemasok baru diimpor.');
 });
 
-it('impor ditolak: kolom Nama tidak ada, bukan berkas tabel, tanpa berkas; kode pemasok yang dihapus tidak dipakai ulang', function (): void {
+it('impor ditolak: kolom Nama tidak ada, bukan berkas tabel, tanpa berkas. Kode pemasok yang dihapus tidak dipakai ulang', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Sembako Berkah Jaya');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);

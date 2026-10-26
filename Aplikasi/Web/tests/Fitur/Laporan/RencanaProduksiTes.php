@@ -86,7 +86,7 @@ function BuatPreOrderRoti(mixed $tes, array $k, string $jumlah, string $tanggalA
 }
 
 describe('tab Rencana produksi', function (): void {
-    it('rata-rata Jumat dalam 4 minggu (0, 8, 6, 10 → 6) dikurangi saldo 1 = produksi 5; hanya produk jenis Produksi', function (): void {
+    it('rata-rata Jumat dalam 4 minggu (0, 8, 6, 10 → 6) dikurangi saldo 1 = produksi 5. Hanya produk jenis Produksi', function (): void {
         $k = SiapkanBakeryRencana($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 
@@ -109,7 +109,7 @@ describe('tab Rencana produksi', function (): void {
             ->where('Nilai', null));
     });
 
-    it('pre-order yang diambil pada tanggal itu menaikkan kebutuhan bila lebih besar dari rata-rata; tanggal lain dan yang dibatalkan tidak', function (): void {
+    it('pre-order yang diambil pada tanggal itu menaikkan kebutuhan bila lebih besar dari rata-rata. Tanggal lain dan yang dibatalkan tidak', function (): void {
         $k = SiapkanBakeryRencana($this);
         BuatPreOrderRoti($this, $k, '9', '2026-10-16');
         BuatPreOrderRoti($this, $k, '40', '2026-10-17');
@@ -128,7 +128,7 @@ describe('tab Rencana produksi', function (): void {
             ->where('Rencana.Baris.0.Rekomendasi', '39.0000'));
     });
 
-    it('tanpa tanggal rencana untuk besok; tanggal lampau dipaksa ke hari ini; terlalu jauh dipotong 60 hari', function (): void {
+    it('tanpa tanggal rencana untuk besok. Tanggal lampau dipaksa ke hari ini. Terlalu jauh dipotong 60 hari', function (): void {
         $k = SiapkanBakeryRencana($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 
@@ -159,7 +159,7 @@ describe('tab Rencana produksi', function (): void {
 });
 
 describe('formulir order produksi terisi dari rencana', function (): void {
-    it('produk, lokasi, jumlah, dan tanggal terisi; bahan dimuat dari resep oleh halaman', function (): void {
+    it('produk, lokasi, jumlah, dan tanggal terisi. Bahan dimuat dari resep oleh halaman', function (): void {
         $k = SiapkanBakeryRencana($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
         $kueri = http_build_query(['produk' => $k['Roti']->Uuid, 'gudang' => $k['Gudang']->Uuid, 'jumlah' => '5', 'tanggal' => '2026-10-16']);

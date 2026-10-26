@@ -52,7 +52,7 @@ it('BR-03.3 riwayat tetap utuh setelah satuan produk dihapus (IdProdukSatuan kos
         ->and(RiwayatHarga::query()->distinct()->pluck('Sumber')->all())->toBe([SumberPerubahanHarga::Sistem]);
 });
 
-it('sumber Impor tidak menulis audit per produk; satuan tanpa harga tidak menulis apa pun', function (): void {
+it('sumber Impor tidak menulis audit per produk. Satuan tanpa harga tidak menulis apa pun', function (): void {
     app(HapusHargaSatuanProduk::class)->Jalankan($this->pak, SumberPerubahanHarga::Impor);
     expect(LogAudit::query()->where('Peristiwa', 'produk.harga.ubah')->exists())->toBeFalse();
 

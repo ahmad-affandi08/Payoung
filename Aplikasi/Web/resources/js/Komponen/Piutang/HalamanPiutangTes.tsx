@@ -39,14 +39,14 @@ describe('Halaman piutang pelanggan (F-12)', () => {
     });
     afterEach(() => cleanup());
 
-    it('alokasi pelunasan: kosong = dilewati; tidak boleh melebihi sisa piutang', () => {
+    it('alokasi pelunasan: kosong = dilewati. Tidak boleh melebihi sisa piutang', () => {
         expect(PeriksaAlokasiPiutang('', { Sisa: '77000.00' })).toBeNull();
         expect(PeriksaAlokasiPiutang('77000.01', { Sisa: '77000.00' })).toBe('Maksimal Rp 77.000 (sisa piutang).');
         expect(PeriksaAlokasiPiutang('-1', { Sisa: '77000.00' })).toBe('Isi jumlah yang valid.');
         expect(PeriksaAlokasiPiutang('77000', { Sisa: '77000.00' })).toBeNull();
     });
 
-    it('daftar piutang: ringkasan umur tampil; tombol pelunasan hanya untuk akuntansi.kelola', () => {
+    it('daftar piutang: ringkasan umur tampil. Tombol pelunasan hanya untuk akuntansi.kelola', () => {
         const props = {
             Piutang: {
                 ...BuatHasilTabel([]),
@@ -80,7 +80,7 @@ describe('Halaman piutang pelanggan (F-12)', () => {
         expect(screen.getByText('Belum ada pelunasan piutang.')).toBeTruthy();
     });
 
-    it('D-23 D: pengingat terakhir tampil; pengaturan pengingat otomatis dikirim; tanpa izin tidak tampil', () => {
+    it('D-23 D: pengingat terakhir tampil. Pengaturan pengingat otomatis dikirim, tanpa izin tidak tampil', () => {
         const baris: BarisPiutang = {
             Uuid: '01J9PTG0000000000000000001',
             Nomor: 'UTM-K01-260924-0001',
@@ -165,7 +165,7 @@ describe('Halaman piutang pelanggan (F-12)', () => {
         );
     });
 
-    it('detail pelunasan: pembatalan hanya bila diizinkan; alasan batal tampil', () => {
+    it('detail pelunasan: pembatalan hanya bila diizinkan. Alasan batal tampil', () => {
         const props = {
             Pelunasan: {
                 Uuid: '01J9BYR0000000000000000001',
@@ -238,7 +238,7 @@ describe('Halaman piutang pelanggan (F-12)', () => {
         expect(screen.getByRole('button', { name: 'Simpan nomor' })).toBeTruthy();
     });
 
-    it('E8 hapus-buku: dialog mengirim tanggal & alasan; daftar menampilkan dokumen dan tombol "Riwayat hapus-buku"', () => {
+    it('E8 hapus-buku: dialog mengirim tanggal & alasan. Daftar menampilkan dokumen dan tombol "Riwayat hapus-buku"', () => {
         const baris: BarisPiutang = {
             Uuid: '01J9PTG0000000000000000009',
             Nomor: 'UTM-K01-260801-0009',

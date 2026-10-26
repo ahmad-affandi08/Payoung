@@ -142,7 +142,7 @@ describe('F-03 DaftarKelompokPajak (kueri untuk Tim 1 & Tim 4)', function (): vo
         ]);
     });
 
-    it('CariIdBerdasarkanKategori memilih Id terkecil; CariIdBerdasarkanNama tanpa beda huruf; hanya tenant aktif', function (): void {
+    it('CariIdBerdasarkanKategori memilih Id terkecil; CariIdBerdasarkanNama tanpa beda huruf. Hanya tenant aktif', function (): void {
         $pertama = SimpanKelompok('Makan & minum', KategoriPajakProduk::KenaPbjt, ['PbjtMakananMinuman']);
         SimpanKelompok('Minuman kemasan', KategoriPajakProduk::KenaPbjt, ['PbjtMakananMinuman']);
         $kueri = app(DaftarKelompokPajak::class);

@@ -22,7 +22,7 @@ it('sisa tidak pernah negatif dan persen dibatasi 100', function (): void {
         ->and(DataKuotaUji(1, 3)->AmbilPersen())->toBe(34);
 });
 
-it('batas 0 = 100% terpakai dan habis; tanpa batas tidak punya sisa maupun persen', function (): void {
+it('batas 0 = 100% terpakai dan habis, tanpa batas tidak punya sisa maupun persen', function (): void {
     expect(DataKuotaUji(0, 0)->AmbilPersen())->toBe(100)
         ->and(DataKuotaUji(0, 0)->CekHabis())->toBeTrue()
         ->and(DataKuotaUji(5000, null)->AmbilSisa())->toBeNull()

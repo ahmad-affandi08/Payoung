@@ -100,7 +100,7 @@ describe('F-03 daftar harga (E.7)', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Kasir)->get('/kelola/daftar-harga/buat')->assertForbidden();
     });
 
-    it('halaman daftar: baris dengan nama outlet, label kanal, waktu lokal, jumlah produk; opsi kanal & zona waktu', function (): void {
+    it('halaman daftar: baris dengan nama outlet, label kanal, waktu lokal, jumlah produk. Opsi kanal & zona waktu', function (): void {
         $daftar = BantuanHarga::BuatDaftarHarga('Harga Bandara', [
             'IdOutlet' => [$this->bandara->Id], 'Kanal' => KanalPenjualan::BawaPulang, 'Prioritas' => 5,
             'MulaiPada' => '2026-10-01 00:00:00', 'SelesaiPada' => null,
@@ -202,7 +202,7 @@ describe('F-03 daftar harga (E.7)', function (): void {
         expect(LogAudit::query()->whereIn('Peristiwa', ['daftar-harga.nonaktifkan', 'daftar-harga.aktifkan', 'daftar-harga.ubah'])->count())->toBe(3);
     });
 
-    it('izin & isolasi tenant: Kasir 403 pada mutasi; daftar harga tenant lain 404', function (): void {
+    it('izin & isolasi tenant: Kasir 403 pada mutasi. Daftar harga tenant lain 404', function (): void {
         $daftar = BantuanHarga::BuatDaftarHarga('Harga Member');
         $kasir = fn () => BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Kasir);
 

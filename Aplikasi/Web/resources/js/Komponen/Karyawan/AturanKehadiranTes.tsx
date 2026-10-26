@@ -37,7 +37,7 @@ describe('Aturan kehadiran (F-18 bagian 5)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/karyawan/aturan-kehadiran'));
     afterEach(() => cleanup());
 
-    it('menyimpan semua aturan sebagai teks menit; wajib jadwal dan notifikasi bisa dinyalakan', () => {
+    it('menyimpan semua aturan sebagai teks menit. Wajib jadwal dan notifikasi bisa dinyalakan', () => {
         RenderUji(<HalamanAturanKehadiran {...Props()} />);
         fireEvent.click(screen.getByRole('checkbox', { name: 'Wajib punya jadwal kerja untuk absen masuk' }));
         fireEvent.click(

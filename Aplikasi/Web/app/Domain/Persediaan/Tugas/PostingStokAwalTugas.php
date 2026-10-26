@@ -66,7 +66,7 @@ final class PostingStokAwalTugas implements ShouldQueue
     public function failed(?Throwable $galat): void
     {
         $this->JalankanDalamTenant(function (): void {
-            app(GagalkanPostingStokAwal::class)->Jalankan($this->idStokAwal, 'Pencatatan terhenti karena masalah sistem. Stok dan jurnal tidak berubah; coba catat lagi.', $this->idPengguna);
+            app(GagalkanPostingStokAwal::class)->Jalankan($this->idStokAwal, 'Pencatatan terhenti karena masalah sistem. Stok dan jurnal tidak berubah. Coba catat lagi.', $this->idPengguna);
         });
     }
 

@@ -74,7 +74,7 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->where('Dasbor.JumlahPerluTinjauan', $perluTinjauan));
     });
 
-    it('rentang tanggal: bawaan hari ini; beberapa hari dibanding periode sebelumnya; akhir tidak melewati hari ini; salah format & rentang terlalu panjang dinormalkan', function (): void {
+    it('rentang tanggal: bawaan hari ini. Beberapa hari dibanding periode sebelumnya. Akhir tidak melewati hari ini. Salah format & rentang terlalu panjang dinormalkan', function (): void {
         $this->travelTo(CarbonImmutable::parse('2026-09-30 05:00:00', 'UTC'));
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
@@ -130,7 +130,7 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->where('Dasbor.Periode.Sampai', '2026-10-01'));
     });
 
-    it('tanpa izin laporan.penjualan.lihat beranda tanpa angka; dibatasi outlet akses; tenant lain tidak melihat angka tenant ini', function (): void {
+    it('tanpa izin laporan.penjualan.lihat beranda tanpa angka. Dibatasi outlet akses. Tenant lain tidak melihat angka tenant ini', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
 
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -165,7 +165,7 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->where('Dasbor.ProdukTerlaris', []));
     });
 
-    it('D-203 widget Ringkasan cepat: peringkat kasir, kategori, jenis pesanan, metode bayar mengikuti periode; anti-fraud diringkas; komisi tanpa data = nol', function (): void {
+    it('D-203 widget Ringkasan cepat: peringkat kasir, kategori, jenis pesanan, metode bayar mengikuti periode. Anti-fraud diringkas. Komisi tanpa data = nol', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
 
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
@@ -182,7 +182,7 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
 });
 
 describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void {
-    it('tab ringkasan harian, per produk (server), kategori, jam (heatmap lokal outlet), kasir, kanal, metode bayar, diskon cocok dengan data uji; void dikeluarkan, retur mengurangi', function (): void {
+    it('tab ringkasan harian, per produk (server), kategori, jam (heatmap lokal outlet), kasir, kanal, metode bayar, diskon cocok dengan data uji. Void dikeluarkan, retur mengurangi', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $sembako = Kategori::query()->create(['Nama' => 'Sembako & Kebutuhan Dapur']);
         $d['Minyak']->forceFill(['IdKategori' => $sembako->Id])->save();
@@ -263,7 +263,7 @@ describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void 
             ->where('Isi.0.TotalDiskon', '3850.00'));
     });
 
-    it('filter kanal, kasir, outlet; periode lebih dari 92 hari dipotong dengan peringatan; ekspor CSV mengikuti filter', function (): void {
+    it('filter kanal, kasir, outlet. Periode lebih dari 92 hari dipotong dengan peringatan. Ekspor CSV mengikuti filter', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
 
@@ -315,7 +315,7 @@ describe('F-14a laporan penjualan /kelola/laporan/penjualan', function (): void 
 });
 
 describe('F-14a laporan pajak /kelola/laporan/pajak', function (): void {
-    it('PPN keluaran per bulan dari PenjualanPajak dikurangi pajak retur (DPP proporsional); void dikeluarkan; ekspor CSV; izin laporan.keuangan.lihat', function (): void {
+    it('PPN keluaran per bulan dari PenjualanPajak dikurangi pajak retur (DPP proporsional). Void dikeluarkan. Ekspor CSV. Izin laporan.keuangan.lihat', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id, PeranTenantBawaan::Akuntan);
 
@@ -380,7 +380,7 @@ describe('F-14a laporan pajak /kelola/laporan/pajak', function (): void {
 });
 
 describe('F-14a laporan stok /kelola/laporan/stok', function (): void {
-    it('nilai persediaan per lokasi & kategori pada tanggal (dari MutasiStok) dan stok kritis (saldo ≤ minimum); ekspor CSV; izin persediaan.lihat; isolasi tenant', function (): void {
+    it('nilai persediaan per lokasi & kategori pada tanggal (dari MutasiStok) dan stok kritis (saldo ≤ minimum). Ekspor CSV. Izin persediaan.lihat. Isolasi tenant', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $sembako = Kategori::query()->create(['Nama' => 'Sembako & Kebutuhan Dapur']);
         $d['Minyak']->forceFill(['IdKategori' => $sembako->Id])->save();
@@ -431,7 +431,7 @@ describe('F-14a laporan stok /kelola/laporan/stok', function (): void {
 });
 
 describe('F-05g batch kedaluwarsa: laporan stok & Kotak Tindakan', function (): void {
-    it('tab kedaluwarsa memuat batch bersisa yang lewat atau jatuh dalam 30 hari (urut terdekat; batch habis & yang masih jauh tidak ikut); ekspor CSV; butir stok.kedaluwarsa Penting bila ada yang lewat', function (): void {
+    it('tab kedaluwarsa memuat batch bersisa yang lewat atau jatuh dalam 30 hari (urut terdekat. Batch habis & yang masih jauh tidak ikut). Ekspor CSV. Butir stok.kedaluwarsa Penting bila ada yang lewat', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         // Tenant boleh mematikan kewajiban kedaluwarsa batch; fixture ini punya satu batch tanpa tanggal (UHT-TANPA).

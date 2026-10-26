@@ -131,7 +131,7 @@ class RacikanBaris {
       _ when komponen.isEmpty => 'Tambahkan minimal satu obat ke racikan.',
       _ when komponen.length > maksKomponen => 'Racikan paling banyak $maksKomponen obat.',
       _ when komponen.map((k) => k.uuidProduk).toSet().length != komponen.length =>
-        'Ada obat yang tercantum dua kali; gabungkan jumlahnya.',
+        'Ada obat yang tercantum dua kali. Gabungkan jumlahnya.',
       _ when komponen.any((k) => k.jumlah.BernilaiNol() || k.jumlah.BernilaiNegatif()) =>
         'Jumlah setiap obat harus lebih dari 0.',
       _ => null,

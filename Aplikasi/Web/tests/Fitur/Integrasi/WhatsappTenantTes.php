@@ -65,7 +65,7 @@ function SimpanFonnteToko(TestCase $tes, array $toko, string $token = TOKEN_FONN
 }
 
 describe('D-108 WhatsApp milik tenant', function (): void {
-    it('simpan: kredensial terenkripsi, halaman hanya petunjuk; aktifkan ditolak sebelum uji; uji berhasil → aktif dan dipakai tanpa kuota', function (): void {
+    it('simpan: kredensial terenkripsi, halaman hanya petunjuk. Aktifkan ditolak sebelum uji. Uji berhasil → aktif dan dipakai tanpa kuota', function (): void {
         Http::fake([
             'api.fonnte.com/device' => Http::response(['status' => true, 'device_status' => 'connect']),
             'api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9001']]),
@@ -111,7 +111,7 @@ describe('D-108 WhatsApp milik tenant', function (): void {
         Http::assertSent(fn ($r) => $r->url() === 'https://api.fonnte.com/send' && $r->header('Authorization') === [TOKEN_FONNTE_TOKO]);
     });
 
-    it('uji gagal tidak mengaktifkan; mengubah isian setelah aktif menonaktifkan dan pesan kembali ke nomor Payoung berkuota', function (): void {
+    it('uji gagal tidak mengaktifkan. Mengubah isian setelah aktif menonaktifkan dan pesan kembali ke nomor Payoung berkuota', function (): void {
         $toko = TokoWa();
         SimpanFonnteToko($this, $toko);
         Http::fake(['api.fonnte.com/device' => Http::response(['status' => false, 'reason' => 'invalid token'])]);

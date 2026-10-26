@@ -296,7 +296,7 @@ export default function HalamanPesanSendiri({ Aktif, Toko, Meja, Token, Slug, Me
                     className="flex items-center gap-2 rounded-kontrol border border-peringatan bg-peringatan-lembut p-3 text-label text-teks-utama"
                 >
                     <WifiOffIcon aria-hidden="true" className="size-4 shrink-0 text-peringatan" />
-                    Tidak ada koneksi internet. Keranjang tetap tersimpan; kirim pesanan setelah tersambung lagi.
+                    Tidak ada koneksi internet. Keranjang tetap tersimpan. Kirim pesanan setelah tersambung lagi.
                 </div>
             )}
             {Aktif ? (

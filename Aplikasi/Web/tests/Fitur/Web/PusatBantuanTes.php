@@ -54,7 +54,7 @@ function UrlPublikBantuan(string $jalur): string
 }
 
 describe('konsol artikel bantuan', function (): void {
-    it('Konten & Legal menulis draf, menyimpan dengan konteks dan video, lalu menerbitkan; audit tercatat', function (): void {
+    it('Konten & Legal menulis draf, menyimpan dengan konteks dan video, lalu menerbitkan. Audit tercatat', function (): void {
         MasukKontenBantuan();
         $this->post(BantuanPengelola::Url('/situs/bantuan'), ['Judul' => 'Cara Buka Shift Kasir!'])->assertRedirect();
 
@@ -89,7 +89,7 @@ describe('konsol artikel bantuan', function (): void {
             ->where('PilihanKategori', ['Kasir']));
     });
 
-    it('slug unik dan valid; video harus https YouTube/Vimeo; konteks hanya jalur /kelola (maks 10)', function (): void {
+    it('slug unik dan valid. Video harus https YouTube/Vimeo. Konteks hanya jalur /kelola (maks 10)', function (): void {
         MasukKontenBantuan();
         BuatArtikelBantuanUji();
         $a = BuatArtikelBantuanUji(['Slug' => 'lain', 'Status' => StatusArtikel::Draf, 'DiterbitkanPada' => null]);
@@ -107,7 +107,7 @@ describe('konsol artikel bantuan', function (): void {
         $this->put($alamat, [...$isi, 'UrlVideo' => 'https://vimeo.com/123456', 'Konteks' => ['/kelola']])->assertSessionHasNoErrors();
     });
 
-    it('artikel terbit harus ditarik dulu sebelum dihapus; Dukungan ditolak melihat konsol bantuan; slug terlarang di situs', function (): void {
+    it('artikel terbit harus ditarik dulu sebelum dihapus; Dukungan ditolak melihat konsol bantuan. Slug terlarang di situs', function (): void {
         $a = BuatArtikelBantuanUji();
 
         MasukKontenBantuan(PeranPengelolaBawaan::Dukungan);
@@ -128,7 +128,7 @@ describe('konsol artikel bantuan', function (): void {
 describe('Pusat Bantuan publik', function (): void {
     beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
-    it('hanya artikel terbit; draf 404; dikelompokkan per kategori; cari dan filter kategori', function (): void {
+    it('hanya artikel terbit. Draf 404. Dikelompokkan per kategori. Cari dan filter kategori', function (): void {
         BuatArtikelBantuanUji();
         BuatArtikelBantuanUji(['Slug' => 'cara-buka-shift', 'Judul' => 'Cara buka shift', 'Kategori' => 'Kasir', 'Isi' => 'Hitung kas awal laci.', 'Ringkasan' => null, 'Urutan' => 1]);
         BuatArtikelBantuanUji(['Slug' => 'draf-rahasia', 'Judul' => 'Draf rahasia', 'Status' => StatusArtikel::Draf, 'DiterbitkanPada' => null]);
@@ -154,7 +154,7 @@ describe('Pusat Bantuan publik', function (): void {
         $this->get(UrlPublikBantuan('/pusat-bantuan/tidak-ada'))->assertNotFound();
     });
 
-    it('halaman artikel: isi, tautan video, terkait sekategori, meta kanonik; hasil cari noindex di HTML', function (): void {
+    it('halaman artikel: isi, tautan video, terkait sekategori, meta kanonik. Hasil cari noindex di HTML', function (): void {
         BuatArtikelBantuanUji(['UrlVideo' => 'https://youtu.be/abc123']);
         BuatArtikelBantuanUji(['Slug' => 'cara-ubah-harga', 'Judul' => 'Cara ubah harga', 'Urutan' => 1]);
         BuatArtikelBantuanUji(['Slug' => 'cara-buka-shift', 'Judul' => 'Cara buka shift', 'Kategori' => 'Kasir']);
@@ -211,7 +211,7 @@ describe('bantuan kontekstual di back-office', function (): void {
         expect(array_column($lain->json('Halaman'), 'Slug'))->toBe(['umum']);
     });
 
-    it('cari menampilkan hasil menurut judul/ringkasan; jalur rusak jatuh ke /kelola; wajib masuk', function (): void {
+    it('cari menampilkan hasil menurut judul/ringkasan. Jalur rusak jatuh ke /kelola. Wajib masuk', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $masuk = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);

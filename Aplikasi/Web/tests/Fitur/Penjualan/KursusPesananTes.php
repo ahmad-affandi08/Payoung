@@ -17,7 +17,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('kursus tersimpan & tampil di snapshot; pembuka dikirim, utama ditahan lalu dikirim sebagai ronde baru; kursus tak dikenal ditolak', function (): void {
+it('kursus tersimpan & tampil di snapshot. Pembuka dikirim, utama ditahan lalu dikirim sebagai ronde baru. Kursus tak dikenal ditolak', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
     $uuid = $buka['Uuid'];

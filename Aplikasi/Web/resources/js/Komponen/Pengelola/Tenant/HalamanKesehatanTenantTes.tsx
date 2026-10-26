@@ -115,7 +115,7 @@ describe('halaman tugas tenant (PGL-09)', () => {
         });
     });
 
-    it('tugas yang sudah selesai tanpa aksi; belum pernah dihitung diberi penjelasan', () => {
+    it('tugas yang sudah selesai tanpa aksi. Belum pernah dihitung diberi penjelasan', () => {
         AturHalaman([IzinPengelola.TenantLihat, IzinPengelola.TenantCatatanTulis]);
         Render(
             <HalamanTugasTenant

@@ -171,7 +171,7 @@ void main() {
     expect(await u.repositoriMeja.CariPesananDiMeja(mejaD01), isNull);
   });
 
-  test('tolak: alasan wajib, dikirim ke server; staf tanpa izin ditolak', () async {
+  test('tolak: alasan wajib, dikirim ke server. Staf tanpa izin ditolak', () async {
     await expectLater(
       () => layanan.Tolak(Pesanan(), kasir: rina, alasan: ' x '),
       throwsA(isA<GalatKasir>().having((g) => g.kode, 'kode', 'AlasanWajib')),

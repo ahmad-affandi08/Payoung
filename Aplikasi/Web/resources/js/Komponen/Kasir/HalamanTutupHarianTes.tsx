@@ -88,7 +88,7 @@ describe('Tutup harian (F-15)', () => {
         );
     });
 
-    it('hari dengan shift terbuka tidak bisa ditutup; tanpa izin kelola tidak ada aksi', () => {
+    it('hari dengan shift terbuka tidak bisa ditutup, tanpa izin kelola tidak ada aksi', () => {
         RenderUji(<HalamanTutupHarian Hari={hari} Izin={{ Kelola: true }} />);
         BukaMenu(screen.getAllByRole('button', { name: /Aksi Outlet Solo 15/ })[0] as HTMLElement);
         fireEvent.click(screen.getByRole('menuitem', { name: 'Tutup hari' }));

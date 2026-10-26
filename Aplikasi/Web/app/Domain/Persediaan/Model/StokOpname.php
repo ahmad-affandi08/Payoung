@@ -98,7 +98,7 @@ final class StokOpname extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Dokumen stok opname tidak pernah dihapus; opname dibatalkan.');
+            throw new LogicException('Dokumen stok opname tidak pernah dihapus. Opname dibatalkan.');
         });
     }
 

@@ -25,7 +25,7 @@ describe('v2.00 mode Pelayan', function (): void {
             ->and(IzinTenant::PesananMejaCatat->AmbilKelompok())->toBe('Penjualan');
     });
 
-    it('pelayan membuka pesanan & mengirim ke dapur; staf gudang ditolak TanpaIzin', function (): void {
+    it('pelayan membuka pesanan & mengirim ke dapur. Staf gudang ditolak TanpaIzin', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         $pelayan = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Pelayan);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);

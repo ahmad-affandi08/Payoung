@@ -81,7 +81,7 @@ function SlotReservasiUji(TestCase $tes, array $k, ?string $staf = null): array
         ->assertOk()->json('Slot');
 }
 
-it('slot dari jadwal staf & durasi; reservasi mengunci jam staf; bentrok ditolak; "siapa saja" memilih staf kosong', function (): void {
+it('slot dari jadwal staf & durasi. Reservasi mengunci jam staf. Bentrok ditolak; "siapa saja" memilih staf kosong', function (): void {
     $k = SiapkanSalon($this);
 
     $slot = SlotReservasiUji($this, $k);
@@ -123,7 +123,7 @@ it('slot dari jadwal staf & durasi; reservasi mengunci jam staf; bentrok ditolak
         }));
 });
 
-it('status: datang → selesai; batal wajib alasan & membebaskan slot; tidak datang hanya setelah lewat jam; pindah jadwal', function (): void {
+it('status: datang → selesai. Batal wajib alasan & membebaskan slot. Tidak datang hanya setelah lewat jam. Pindah jadwal', function (): void {
     $k = SiapkanSalon($this);
     $this->post('/kelola/reservasi', IsianReservasi($k))->assertSessionHasNoErrors();
     $this->post('/kelola/reservasi', IsianReservasi($k, ['Jam' => '09:00', 'NamaPelanggan' => 'Budi']))->assertSessionHasNoErrors();
@@ -148,7 +148,7 @@ it('status: datang → selesai; batal wajib alasan & membebaskan slot; tidak dat
         ->and(RiwayatStatusDokumen::query()->where('JenisDokumen', 'Reservasi')->where('IdDokumen', $dua->Id)->orderBy('Id')->pluck('StatusKe')->all())->toBe(['Dikonfirmasi', 'Hadir', 'Selesai']);
 });
 
-it('reservasi online: tutup = 404; konfirmasi otomatis/menunggu; persetujuan wajib; batas per nomor; batal lewat kode; Kotak Tindakan', function (): void {
+it('reservasi online: tutup = 404. Konfirmasi otomatis/menunggu. Persetujuan wajib. Batas per nomor. Batal lewat kode; Kotak Tindakan', function (): void {
     $k = SiapkanSalon($this);
     $slug = $k['Tenant']->Slug;
     app(KonteksTenant::class)->Kosongkan();
@@ -200,7 +200,7 @@ it('reservasi online: tutup = 404; konfirmasi otomatis/menunggu; persetujuan waj
     $this->get("/{$slug}/reservasi/ZZZZZZZZZZZZ")->assertNotFound();
 });
 
-it('pengingat WhatsApp H-1 sekali; izin: supervisor boleh, tanpa izin 403; reservasi tenant lain 404', function (): void {
+it('pengingat WhatsApp H-1 sekali. Izin: supervisor boleh, tanpa izin 403. Reservasi tenant lain 404', function (): void {
     $k = SiapkanSalon($this);
     $this->post('/kelola/reservasi', IsianReservasi($k))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

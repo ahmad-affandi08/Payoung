@@ -38,7 +38,7 @@ describe('X7 halaman Token API', () => {
     });
     afterEach(cleanup);
 
-    it('daftar token hanya menampilkan prefiks; token baru tampil sekali dengan tombol salin', () => {
+    it('daftar token hanya menampilkan prefiks. Token baru tampil sekali dengan tombol salin', () => {
         RenderUji(
             <HalamanTokenApi
                 {...props}

@@ -55,7 +55,7 @@ describe('Halaman pelanggan (F-16a)', () => {
     });
     afterEach(() => cleanup());
 
-    it('daftar: ringkasan belanja & tag tampil; tambah (halaman penuh /buat) hanya untuk pelanggan.kelola; ubah di panel', () => {
+    it('daftar: ringkasan belanja & tag tampil. Tambah (halaman penuh /buat) hanya untuk pelanggan.kelola. Ubah di panel', () => {
         RenderUji(
             <HalamanDaftarPelanggan
                 Pelanggan={BuatHasilTabel([Ani])}
@@ -113,7 +113,7 @@ describe('Halaman pelanggan (F-16a)', () => {
         expect(TutupPanel).toHaveBeenCalled();
     });
 
-    it('detail: profil, ringkasan, riwayat bertaut ke penjualan; arsipkan mengirim POST', () => {
+    it('detail: profil, ringkasan, riwayat bertaut ke penjualan. Arsipkan mengirim POST', () => {
         RenderUji(
             <HalamanDetailPelanggan
                 PesananOnline={[]}
@@ -196,7 +196,7 @@ describe('Halaman pelanggan (F-16a)', () => {
         );
     });
 
-    it('F-16b tier: daftar tier dengan pengali; tambah lewat halaman /buat; tanpa fitur tampil ajakan paket', () => {
+    it('F-16b tier: daftar tier dengan pengali. Tambah lewat halaman /buat, tanpa fitur tampil ajakan paket', () => {
         RenderUji(
             <HalamanTierPelanggan
                 Tier={[
@@ -358,7 +358,7 @@ describe('Halaman pelanggan (F-16a)', () => {
         );
     });
 
-    it('F-16d daftar isi deposit: tinjauan tampil; batal isi butuh alasan ≥ 5 karakter lalu terkirim', () => {
+    it('F-16d daftar isi deposit: tinjauan tampil. Batal isi butuh alasan ≥ 5 karakter lalu terkirim', () => {
         window.history.replaceState({}, '', '/kelola/pelanggan/isi-deposit');
         RenderUji(
             <HalamanIsiDeposit

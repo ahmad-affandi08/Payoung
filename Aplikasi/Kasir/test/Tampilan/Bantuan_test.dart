@@ -16,7 +16,7 @@ import '../Pendukung/PasangAplikasi.dart';
 /// P-09: Pengaturan › Bantuan. Staf yang masuk membuat tiket (log perangkat terbaru ikut, sudah tersaring), melihat
 /// batas respons SLA jam kerja, dan hanya tiketnya sendiri yang diminta dari server.
 void main() {
-  testWidgets('hubungi bantuan: tiket terkirim dengan staf, kategori, layar asal, dan log terfilter; daftar tampil', (
+  testWidgets('hubungi bantuan: tiket terkirim dengan staf, kategori, layar asal, dan log terfilter. Daftar tampil', (
     tester,
   ) async {
     final u = LingkunganUji.Buat();

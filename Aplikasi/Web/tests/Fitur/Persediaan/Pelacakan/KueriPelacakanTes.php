@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a RincianBatchSaldo (DesainF05a C.4, halaman saldo)', function (): void {
-    it('batch bersisa per pasangan, urut kedaluwarsa terdekat; batch habis & pasangan lain tidak ikut', function (): void {
+    it('batch bersisa per pasangan, urut kedaluwarsa terdekat. Batch habis & pasangan lain tidak ikut', function (): void {
         $t = BantuanPelacakan::SiapkanTenant();
         $susu = $t['Produk']['Batch'];
         $pelacak = app(PelacakBatchStok::class);
@@ -47,7 +47,7 @@ describe('F-05a RincianBatchSaldo (DesainF05a C.4, halaman saldo)', function ():
             ->and(app(RincianBatchSaldo::class)->UntukPasangan([]))->toBe([]);
     });
 
-    it('HitungSeriTersedia menghitung hanya nomor seri Tersedia per pasangan; isolasi tenant', function (): void {
+    it('HitungSeriTersedia menghitung hanya nomor seri Tersedia per pasangan. Isolasi tenant', function (): void {
         $a = BantuanPelacakan::SiapkanTenant('Toko Elektronik Maju Jaya');
         $rice = $a['Produk']['Seri'];
         $pelacak = app(PelacakNomorSeri::class);
@@ -74,7 +74,7 @@ describe('F-05a RincianBatchSaldo (DesainF05a C.4, halaman saldo)', function ():
 });
 
 describe('F-05a RiwayatStokProduk (DesainF05a C.4)', function (): void {
-    it('PemeriksaRiwayatStok diikat ke RiwayatStokProduk; true hanya bila produk punya MutasiStok di tenant aktif', function (): void {
+    it('PemeriksaRiwayatStok diikat ke RiwayatStokProduk. True hanya bila produk punya MutasiStok di tenant aktif', function (): void {
         $a = BantuanPelacakan::SiapkanTenant();
         $pemeriksa = app(PemeriksaRiwayatStok::class);
         expect($pemeriksa)->toBeInstanceOf(RiwayatStokProduk::class)

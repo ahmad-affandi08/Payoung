@@ -108,7 +108,7 @@ export default function PanelKuotaTransaksi({ kuota }: { kuota: DataKuotaTransak
                     {kuota.Jangka === 'Hari'
                         ? 'Kuota dihitung per hari bisnis outlet (mengikuti zona waktu dan jam tutup buku) dan kembali penuh saat hari berganti. '
                         : 'Kuota dihitung per bulan kalender dan kembali penuh tiap tanggal 1. '}
-                    Transaksi yang dibatalkan (void) tetap dihitung; retur tidak.
+                    Transaksi yang dibatalkan (void) tetap dihitung. Retur tidak.
                 </p>
             </div>
         </Panel>

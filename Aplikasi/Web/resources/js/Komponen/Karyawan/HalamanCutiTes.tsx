@@ -35,7 +35,7 @@ describe('Cuti & izin karyawan (F-18 EMP-03)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/karyawan/cuti'));
     afterEach(() => cleanup());
 
-    it('mencatat: bawaan Cuti tetap digaji; memilih Izin mematikan gaji; kiriman memuat jenis dan tanggal', () => {
+    it('mencatat: bawaan Cuti tetap digaji. Memilih Izin mematikan gaji. Kiriman memuat jenis dan tanggal', () => {
         RenderUji(<HalamanCuti {...Props([dasar])} />);
         fireEvent.click(screen.getByRole('button', { name: 'Catat cuti atau izin' }));
 
@@ -48,7 +48,7 @@ describe('Cuti & izin karyawan (F-18 EMP-03)', () => {
         });
     });
 
-    it('membatalkan: menu baris hanya untuk catatan berlaku; kiriman membawa alasan ke alamat batal', () => {
+    it('membatalkan: menu baris hanya untuk catatan berlaku. Kiriman membawa alasan ke alamat batal', () => {
         RenderUji(<HalamanCuti {...Props([dasar])} />);
         BukaMenu(screen.getAllByRole('button', { name: /Aksi cuti Rina Wulandari/ })[0] as HTMLElement);
         fireEvent.click(screen.getByRole('menuitem', { name: 'Batalkan catatan' }));
@@ -60,7 +60,7 @@ describe('Cuti & izin karyawan (F-18 EMP-03)', () => {
         });
     });
 
-    it('catatan yang sudah dibatalkan tanpa menu aksi; tanpa izin tidak ada tombol catat', () => {
+    it('catatan yang sudah dibatalkan tanpa menu aksi, tanpa izin tidak ada tombol catat', () => {
         RenderUji(
             <HalamanCuti
                 {...Props([

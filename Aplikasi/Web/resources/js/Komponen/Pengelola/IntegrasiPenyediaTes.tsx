@@ -201,7 +201,7 @@ describe('Integrasi: pilih penyedia (v2.04)', () => {
 });
 
 describe('Integrasi: ringkasan konfigurasi (T2)', () => {
-    it('enkripsi tersimpan "Ssl" tampil sebagai SSL; kata sandi hanya tampil sebagai titik', () => {
+    it('enkripsi tersimpan "Ssl" tampil sebagai SSL. Kata sandi hanya tampil sebagai titik', () => {
         const slot = Slot('Email', [{ Nilai: 'Smtp', Label: 'SMTP', Keterangan: '', Resmi: true }]);
         const bidang = [
             ...slot.BidangPengaturan,

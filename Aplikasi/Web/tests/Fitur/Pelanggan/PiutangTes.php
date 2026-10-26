@@ -93,7 +93,7 @@ describe('F-12 penjualan tempo', function (): void {
         expect(Piutang::query()->count())->toBe(1);
     });
 
-    it('tempo tanpa pelanggan ditolak; dua pembayaran tempo ditolak', function (): void {
+    it('tempo tanpa pelanggan ditolak. Dua pembayaran tempo ditolak', function (): void {
         $k = SiapkanTempo($this);
 
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [
@@ -102,7 +102,7 @@ describe('F-12 penjualan tempo', function (): void {
         ]))->toBe([['Ditolak', 'TempoTanpaPelanggan'], ['Ditolak', 'PembayaranTidakValid']]);
     });
 
-    it('BR-12.1: melebihi limit tanpa penyetuju = diterima + tinjauan; dengan PIN supervisor tercatat penyetujunya', function (): void {
+    it('BR-12.1: melebihi limit tanpa penyetuju = diterima + tinjauan, dengan PIN supervisor tercatat penyetujunya', function (): void {
         $k = SiapkanTempo($this, '50000');
         $tanpa = ItemTempo($k);
         $dengan = ItemTempo($k, timpa: ['UuidPenyetujuTempo' => $k['Supervisor']->Uuid]);

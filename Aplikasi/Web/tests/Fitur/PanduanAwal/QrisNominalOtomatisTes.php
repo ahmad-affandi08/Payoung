@@ -97,7 +97,7 @@ it('teks QRIS hanya berarti untuk QRIS statis: jenis lain mengabaikannya', funct
     expect(MetodePembayaran::query()->where('Jenis', 'QrisDinamis')->sole()->TeksQris)->toBeNull();
 });
 
-it('metode QRIS statis lama: aktifkan nominal otomatis lalu matikan; teks cacat atau metode lain ditolak; tenant lain 404', function (): void {
+it('metode QRIS statis lama: aktifkan nominal otomatis lalu matikan. Teks cacat atau metode lain ditolak. Tenant lain 404', function (): void {
     ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
     ['Tenant' => $lain, 'Pemilik' => $pemilikLain] = BantuanPanduanAwal::BuatTenant('Toko Roti Harum');
     $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
@@ -128,7 +128,7 @@ it('metode QRIS statis lama: aktifkan nominal otomatis lalu matikan; teks cacat 
     BantuanPanduanAwal::Masuk($this, $pemilikLain, $lain)->post($alamat($metode), ['TeksQris' => TeksQrisStatisUji()])->assertNotFound();
 });
 
-it('data-awal POS membawa TeksQris hanya untuk QRIS statis yang punya teks; jenis lain dan tanpa teks null', function (): void {
+it('data-awal POS membawa TeksQris hanya untuk QRIS statis yang punya teks. Jenis lain dan tanpa teks null', function (): void {
     $a = BantuanPenjualan::Siapkan($this, 'Toko Kelontong Berkah Solo');
     $a['Qris']->forceFill(['TeksQris' => TeksQrisStatisUji()])->save();
     $a['Edc']->forceFill(['TeksQris' => TeksQrisStatisUji()])->save();

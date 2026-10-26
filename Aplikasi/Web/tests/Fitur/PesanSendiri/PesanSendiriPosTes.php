@@ -82,7 +82,7 @@ describe('F-17 pesan sendiri di POS', function (): void {
             ->assertNotFound()->assertJsonPath('Galat.Kode', 'PesananTidakDitemukan');
     });
 
-    it('terima oleh pelayan: status Diterima, idempoten dengan UuidPesananTerbuka sama, audit; tamu melihat Diterima', function (): void {
+    it('terima oleh pelayan: status Diterima, idempoten dengan UuidPesananTerbuka sama, audit. Tamu melihat Diterima', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $pelayan = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Pelayan);
         $kiriman = KirimPesananTamu($this, $k);
@@ -124,7 +124,7 @@ describe('F-17 pesan sendiri di POS', function (): void {
         expect(LogAudit::query()->where('Peristiwa', 'like', 'pesan-sendiri.%')->count())->toBe(1);
     });
 
-    it('tolak beralasan (3–200 karakter), idempoten; tamu melihat alasan; terima setelah ditolak → 409', function (): void {
+    it('tolak beralasan (3–200 karakter), idempoten. Tamu melihat alasan. Terima setelah ditolak → 409', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $kiriman = KirimPesananTamu($this, $k);
         $data = ['UuidPengguna' => $k['Kasir']->Uuid, 'Alasan' => 'Nasi goreng sedang habis, silakan pesan menu lain'];
@@ -142,7 +142,7 @@ describe('F-17 pesan sendiri di POS', function (): void {
         expect(LogAudit::query()->where('Peristiwa', 'pesan-sendiri.tolak')->sole()->IdPengguna)->toBe($k['Kasir']->Id);
     });
 
-    it('izin: staf gudang ditolak TanpaIzin (403); pengguna bukan anggota ditolak; status tetap menunggu', function (): void {
+    it('izin: staf gudang ditolak TanpaIzin (403). Pengguna bukan anggota ditolak. Status tetap menunggu', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
         $kiriman = KirimPesananTamu($this, $k);

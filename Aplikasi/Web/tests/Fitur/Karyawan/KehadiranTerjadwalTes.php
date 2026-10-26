@@ -139,7 +139,7 @@ describe('aturan kehadiran', function (): void {
 });
 
 describe('rekap gaji: lembur, potongan terlambat & tidak masuk', function (): void {
-    it('draf menghitung dari absensi vs jadwal; jurnal tetap seimbang; potongan kehadiran masuk Pendapatan Lain', function (): void {
+    it('draf menghitung dari absensi vs jadwal. Jurnal tetap seimbang. Potongan kehadiran masuk Pendapatan Lain', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Gaji Kehadiran');
         $dewi = Karyawan::query()->create([
             'Nama' => 'Dewi Kehadiran', 'GajiPokok' => '3000000', 'IdOutlet' => $k['Outlet']->Id,
@@ -225,7 +225,7 @@ describe('rekap gaji: lembur, potongan terlambat & tidak masuk', function (): vo
             ->and($baris->Bersih)->toBe('0.00');
     });
 
-    it('formulir karyawan menyimpan tarif; tarif tidak ditulis ke log audit dan hanya terlihat pemegang karyawan.kelola', function (): void {
+    it('formulir karyawan menyimpan tarif. Tarif tidak ditulis ke log audit dan hanya terlihat pemegang karyawan.kelola', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Tarif Karyawan');
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Gita Lembur', 'GajiPokok' => '2500000', 'TarifLemburPerJam' => '15000', 'PotonganTerlambatPerMenit' => '500', 'PotonganTidakMasukPerHari' => '85000'])->assertRedirect();
@@ -291,7 +291,7 @@ describe('notifikasi kehadiran lewat WhatsApp', function (): void {
         expect($jalankan($k))->toBe(0)->and(PesanKehadiranTerkirim())->toHaveCount(0);
     });
 
-    it('peringatan ke pengelola: belum masuk setelah jeda, sekali saja; karyawan tidak menerimanya', function () use ($jalankan): void {
+    it('peringatan ke pengelola: belum masuk setelah jeda, sekali saja. Karyawan tidak menerimanya', function () use ($jalankan): void {
         [$k] = SiapkanNotifikasiKehadiran($this, ['PeringatanPengelolaAktif' => true, 'PeringatanPengelolaSetelahMenit' => 15]);
 
         $this->travelTo(CarbonImmutable::parse('2026-10-05 08:10:00', 'Asia/Jakarta'));
@@ -309,7 +309,7 @@ describe('notifikasi kehadiran lewat WhatsApp', function (): void {
         expect(PesanKehadiranTerkirim('6281288880001'))->toHaveCount(1);
     });
 
-    it('peringatan terlambat: karyawan sudah masuk tetapi lewat toleransi; yang tepat waktu tidak memicu pesan', function () use ($jalankan): void {
+    it('peringatan terlambat: karyawan sudah masuk tetapi lewat toleransi, yang tepat waktu tidak memicu pesan', function () use ($jalankan): void {
         [$k, $karyawan] = SiapkanNotifikasiKehadiran($this, ['PeringatanPengelolaAktif' => true, 'PeringatanPengelolaSetelahMenit' => 15]);
         CatatAbsenUji($karyawan, $k['Outlet']->Id, '2026-10-05', '08:12', null);
 

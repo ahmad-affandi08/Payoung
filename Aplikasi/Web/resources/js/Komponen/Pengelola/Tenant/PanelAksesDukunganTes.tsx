@@ -45,7 +45,7 @@ describe('PGL-16 panel akses dukungan (konsol)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('tanpa izin dari Owner: menjelaskan keadaan dan tidak menawarkan masuk; tombol darurat hanya untuk yang berizin', () => {
+    it('tanpa izin dari Owner: menjelaskan keadaan dan tidak menawarkan masuk. Tombol darurat hanya untuk yang berizin', () => {
         RenderUji(<PanelAksesDukungan uuidTenant="01K5TENANT" data={kosong} bolehMasuk bolehDarurat={false} />);
 
         expect(screen.getByText(/belum memberi izin akses dukungan/)).toBeTruthy();
@@ -172,7 +172,7 @@ describe('PGL-16 panel akses dukungan (konsol)', () => {
         });
     });
 
-    it('izin darurat yang berlaku bisa ditutup Super Admin; izin Owner tidak punya tombol tutup', () => {
+    it('izin darurat yang berlaku bisa ditutup Super Admin. Izin Owner tidak punya tombol tutup', () => {
         RenderUji(
             <PanelAksesDukungan
                 uuidTenant="01K5TENANT"

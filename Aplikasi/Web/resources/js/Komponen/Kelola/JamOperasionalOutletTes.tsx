@@ -24,7 +24,7 @@ describe('F-e jam operasional outlet', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/outlet/O-1'));
     afterEach(cleanup);
 
-    it('belum diatur: penjelasan selalu buka, semua hari terisi 08:00–21:00 sebagai usulan; tombol hapus tidak ada', () => {
+    it('belum diatur: penjelasan selalu buka, semua hari terisi 08:00–21:00 sebagai usulan. Tombol hapus tidak ada', () => {
         RenderUji(<JamOperasionalOutlet alamatOutlet="/kelola/outlet/O-1" data={Data(false)} bolehKelola />);
         expect(screen.getByText(/dianggap selalu buka/)).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Hapus pengaturan jam' })).toBeNull();
@@ -39,7 +39,7 @@ describe('F-e jam operasional outlet', () => {
         expect(isi.Jam.Minggu).toEqual({ Buka: '08:00', Tutup: '21:00' });
     });
 
-    it('sudah diatur: hari libur tidak dikirim; mematikan Buka menjadikan hari itu null; hapus pengaturan mengirim null', () => {
+    it('sudah diatur: hari libur tidak dikirim. Mematikan Buka menjadikan hari itu null. Hapus pengaturan mengirim null', () => {
         RenderUji(<JamOperasionalOutlet alamatOutlet="/kelola/outlet/O-1" data={Data(true)} bolehKelola />);
         const daftar = screen.getByRole('list', { name: 'Jam operasional per hari' });
         const rabu = within(daftar).getByText('Rabu').closest('li') as HTMLElement;

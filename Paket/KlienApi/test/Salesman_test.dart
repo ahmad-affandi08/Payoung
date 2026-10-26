@@ -85,7 +85,7 @@ void main() {
     expect(warung.sisaPiutang.BernilaiNol(), isTrue);
   });
 
-  test('pelanggan salesman tanpa kata: hanya halaman; nilai uang rusak dibaca nol, bukan gagal', () async {
+  test('pelanggan salesman tanpa kata: hanya halaman. Nilai uang rusak dibaca nol, bukan gagal', () async {
     late http.Request dikirim;
     final klien = BuatKlien((p) async {
       dikirim = p;

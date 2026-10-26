@@ -36,7 +36,7 @@ function SiapkanTenantStarter(): array
     return $t;
 }
 
-it('fitur di luar paket Starter ditawarkan paket termurah & add-on; fitur paket tidak ditawarkan', function (): void {
+it('fitur di luar paket Starter ditawarkan paket termurah & add-on. Fitur paket tidak ditawarkan', function (): void {
     $t = SiapkanTenantStarter();
 
     BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id)->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -55,7 +55,7 @@ it('fitur di luar paket Starter ditawarkan paket termurah & add-on; fitur paket 
         }));
 });
 
-it('Pemilik meminta add-on → tiket dukungan; fitur aktif/tanpa add-on ditolak; tanpa izin langganan 403', function (): void {
+it('Pemilik meminta add-on → tiket dukungan. Fitur aktif/tanpa add-on ditolak, tanpa izin langganan 403', function (): void {
     $t = SiapkanTenantStarter();
     $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 

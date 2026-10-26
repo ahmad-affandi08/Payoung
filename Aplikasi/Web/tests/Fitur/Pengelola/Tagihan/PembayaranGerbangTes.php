@@ -416,7 +416,7 @@ describe('BR-P08.11 notifikasi webhook', function (): void {
             ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit);
     });
 
-    it('jumlah yang dibayar berbeda dari total tidak dilunasi otomatis; pembayaran tetap menunggu verifikasi manual', function (): void {
+    it('jumlah yang dibayar berbeda dari total tidak dilunasi otomatis. Pembayaran tetap menunggu verifikasi manual', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);
         MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan);

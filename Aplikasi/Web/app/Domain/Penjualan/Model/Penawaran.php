@@ -107,7 +107,7 @@ final class Penawaran extends ModelDasar
         });
 
         self::deleting(static function (): void {
-            throw new LogicException('Penawaran tidak pernah dihapus; batalkan saja.');
+            throw new LogicException('Penawaran tidak pernah dihapus. Batalkan saja.');
         });
     }
 

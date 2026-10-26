@@ -21,7 +21,7 @@ type PilihanStatus = 'Semua' | StatusKompatibilitas;
 const ARTI_STATUS: { Status: StatusKompatibilitas; Judul: string; Teks: string }[] = [
     { Status: 'Tersertifikasi', Judul: 'Tersertifikasi', Teks: 'Lolos uji tim kami dengan perangkat nyata.' },
     { Status: 'Kompatibel', Judul: 'Kompatibel', Teks: 'Lolos Uji Perangkat di usaha pengguna.' },
-    { Status: 'Terbatas', Judul: 'Terbatas', Teks: 'Bisa dipakai dengan kendala; baca catatannya.' },
+    { Status: 'Terbatas', Judul: 'Terbatas', Teks: 'Bisa dipakai dengan kendala. Baca catatannya.' },
 ];
 
 function KartuPerangkat({ baris }: { baris: BarisKompatibilitas }) {

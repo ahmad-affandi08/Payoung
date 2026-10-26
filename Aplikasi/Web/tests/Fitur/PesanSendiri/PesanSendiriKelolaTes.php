@@ -20,7 +20,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('F-17 QR meja & sakelar pesan sendiri', function (): void {
-    it('sakelar outlet: tampil di detail, hidup/mati dengan audit; tanpa fitur hanya bisa dimatikan; kasir 403', function (): void {
+    it('sakelar outlet: tampil di detail, hidup/mati dengan audit, tanpa fitur hanya bisa dimatikan. Kasir 403', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -44,7 +44,7 @@ describe('F-17 QR meja & sakelar pesan sendiri', function (): void {
         $this->post("{$alamat}/pesan-sendiri", ['Aktif' => false])->assertForbidden();
     });
 
-    it('QR meja: token dibuat saat pertama dilihat, URL publik & SVG; halaman cetak memuat meja aktif', function (): void {
+    it('QR meja: token dibuat saat pertama dilihat, URL publik & SVG. Halaman cetak memuat meja aktif', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $baru = Meja::query()->create(['IdOutlet' => $k['Outlet']->Id, 'Nama' => '12', 'Kapasitas' => 4]);
         Meja::query()->create(['IdOutlet' => $k['Outlet']->Id, 'Nama' => 'Lama', 'Kapasitas' => 4, 'Status' => 'Diarsipkan']);
@@ -70,7 +70,7 @@ describe('F-17 QR meja & sakelar pesan sendiri', function (): void {
             ->where('Meja.2.Nama', '12'));
     });
 
-    it('buat ulang QR: token baru, audit, URL lama 404 dan URL baru bisa memesan; kasir 403', function (): void {
+    it('buat ulang QR: token baru, audit, URL lama 404 dan URL baru bisa memesan. Kasir 403', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 

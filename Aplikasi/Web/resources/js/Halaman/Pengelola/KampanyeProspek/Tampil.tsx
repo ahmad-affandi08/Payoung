@@ -134,7 +134,7 @@ export default function Tampil({ Kampanye, EmailKampanyeAktif, Penerima }: Props
                                         judul: 'Jalankan kampanye?',
                                         labelAksi: 'Jalankan kampanye',
                                         varian: 'utama',
-                                        isi: `Email dikirim ke semua kontak aktif di sektor terpilih, sedikit demi sedikit (paling banyak ${String(Kampanye.BatasPerHari)} per hari, pukul 08.00–17.00 WIB). Daftar penerima ditetapkan sekarang; yang berhenti berlangganan sesudahnya tidak dikirimi.`,
+                                        isi: `Email dikirim ke semua kontak aktif di sektor terpilih, sedikit demi sedikit (paling banyak ${String(Kampanye.BatasPerHari)} per hari, pukul 08.00–17.00 WIB). Daftar penerima ditetapkan sekarang, yang berhenti berlangganan sesudahnya tidak dikirimi.`,
                                     })
                                 }
                             >

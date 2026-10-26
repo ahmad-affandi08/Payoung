@@ -61,7 +61,7 @@ export default function HalamanDetailInvoiceBerulang({
 
             {t.GalatTerakhir !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Siklus terakhir gagal terbit">
-                    {t.GalatTerakhir} Sistem mencoba lagi besok pagi; perbaiki masalahnya agar invoice terbit.
+                    {t.GalatTerakhir} Sistem mencoba lagi besok pagi. Perbaiki masalahnya agar invoice terbit.
                 </Pemberitahuan>
             ) : null}
 
@@ -190,7 +190,7 @@ export default function HalamanDetailInvoiceBerulang({
                 <DialogFormulir
                     jenis="konfirmasi"
                     judul="Hentikan templat ini?"
-                    keterangan="Tidak ada invoice baru yang terbit dari templat ini. Invoice yang sudah terbit tidak berubah. Templat yang dihentikan tidak bisa dihidupkan lagi; buat templat baru bila perlu. Untuk berhenti sementara, pakai Jeda."
+                    keterangan="Tidak ada invoice baru yang terbit dari templat ini. Invoice yang sudah terbit tidak berubah. Templat yang dihentikan tidak bisa dihidupkan lagi. Buat templat baru bila perlu. Untuk berhenti sementara, pakai Jeda."
                     saatTutup={() => AturHentikan(false)}
                 >
                     <div className="flex flex-wrap justify-end gap-2">

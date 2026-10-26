@@ -230,7 +230,7 @@ export function FormTangguhkan({ uuid, pilihanKategori, saatSelesai }: PropsDasa
             judul="Tangguhkan tenant"
             keterangan={
                 <p>
-                    Owner hanya bisa masuk, melihat laporan, mengekspor data, dan membayar tagihan; aplikasi kasir
+                    Owner hanya bisa masuk, melihat laporan, mengekspor data, dan membayar tagihan. Aplikasi kasir
                     terkunci. Tidak ada data yang dihapus. Owner menerima email berisi kategori alasan, bukan catatan
                     internal.
                 </p>

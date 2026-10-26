@@ -74,7 +74,7 @@ class EnkripsiBasisData {
   static void PastikanPustakaEnkripsi(Database db) {
     final hasil = db.select('PRAGMA cipher');
     if (hasil.isEmpty) {
-      throw StateError('Pustaka SQLite tanpa dukungan enkripsi; basis data kasir tidak dibuka.');
+      throw StateError('Pustaka SQLite tanpa dukungan enkripsi. Basis data kasir tidak dibuka.');
     }
   }
 

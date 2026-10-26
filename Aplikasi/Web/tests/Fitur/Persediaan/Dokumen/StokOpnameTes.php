@@ -63,7 +63,7 @@ function UrutanBaris(StokOpname $opname, int $idProduk, ?string $nomorSeri = nul
 }
 
 describe('F-05b stok opname: snapshot, status, satu opname aktif', function (): void {
-    it('mulai: snapshot per produk, per batch, per nomor seri; nomor SO; status Berlangsung', function (): void {
+    it('mulai: snapshot per produk, per batch, per nomor seri. Nomor SO. Status Berlangsung', function (): void {
         $t = SiapkanOpname();
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, 'Opname akhir bulan', $t['Pemilik']->Id);
         $baris = StokOpnameDetail::query()->where('IdStokOpname', $opname->Id)->orderBy('Urutan')->get();
@@ -77,7 +77,7 @@ describe('F-05b stok opname: snapshot, status, satu opname aktif', function (): 
             ->and($baris->every(fn ($b) => $b->JumlahFisik === null && $b->IdMutasiSnapshot > 0))->toBeTrue();
     });
 
-    it('satu opname aktif per lokasi; opname kategori boleh berbarengan dengan kategori lain, tidak dengan seluruh produk', function (): void {
+    it('satu opname aktif per lokasi. Opname kategori boleh berbarengan dengan kategori lain, tidak dengan seluruh produk', function (): void {
         $t = SiapkanOpname();
         $minuman = BantuanKatalog::BuatKategori('Minuman');
         $sembako = BantuanKatalog::BuatKategori('Sembako');
@@ -103,7 +103,7 @@ describe('F-05b stok opname: snapshot, status, satu opname aktif', function (): 
             ->and(B::KodeGalat(fn () => Hitung($opname, [new DataHitungOpname(null, $t['Produk']['Stok']->Id, Kuantitas::Dari('3'))], $t['Pemilik']->Id)))->toBe('ProdukDiLuarKategori');
     });
 
-    it('alur status: hitung berkali-kali → tinjau → kembali hitung → tinjau → setujui; hitung saat ditinjau ditolak', function (): void {
+    it('alur status: hitung berkali-kali → tinjau → kembali hitung → tinjau → setujui. Hitung saat ditinjau ditolak', function (): void {
         $t = SiapkanOpname();
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, null, $t['Pemilik']->Id);
 
@@ -135,7 +135,7 @@ describe('F-05b stok opname: snapshot, status, satu opname aktif', function (): 
 });
 
 describe('F-05b stok opname: BR-05.3 selisih = fisik − (snapshot + mutasi selama opname)', function (): void {
-    it('penjualan & mutasi lain selama opname tidak dianggap selisih; jurnal kurang → Susut, lebih → Selisih HPP', function (): void {
+    it('penjualan & mutasi lain selama opname tidak dianggap selisih. Jurnal kurang → Susut, lebih → Selisih HPP', function (): void {
         $t = SiapkanOpname();
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, null, $t['Pemilik']->Id);
 
@@ -176,7 +176,7 @@ describe('F-05b stok opname: BR-05.3 selisih = fisik − (snapshot + mutasi sela
             ->and(BantuanStokAwal::PeriksaInvarianTanpaJurnalPenjualan($t['Tenant']->Id))->toBe([]);
     });
 
-    it('baris belum dihitung tidak disesuaikan; produk tanpa snapshot yang ditemukan menjadi opname lebih bernilai HPP berjalan', function (): void {
+    it('baris belum dihitung tidak disesuaikan. Produk tanpa snapshot yang ditemukan menjadi opname lebih bernilai HPP berjalan', function (): void {
         $t = SiapkanOpname();
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, null, $t['Pemilik']->Id);
         // Produksi belum pernah punya saldo di lokasi ini: tidak ada di snapshot, HPP belum diketahui → nilai 0.

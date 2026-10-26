@@ -1597,7 +1597,7 @@ class PengaturSesi extends Notifier<KeadaanSesi> {
       _Dicabut(
         sisa == 0
             ? 'Perangkat ini sudah dicabut dari back-office. Semua data sudah terkirim.'
-            : 'Perangkat ini sudah dicabut dari back-office. $sisa data belum terkirim dan tetap tersimpan; data dikirim '
+            : 'Perangkat ini sudah dicabut dari back-office. $sisa data belum terkirim dan tetap tersimpan. Data dikirim '
                   'atas nama perangkat ini setelah aktivasi ulang.',
       );
     } else if (hasil.tersambung != false) {

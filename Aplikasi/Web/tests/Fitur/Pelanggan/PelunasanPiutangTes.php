@@ -91,7 +91,7 @@ function SaldoJurnalSeimbang(int $idJurnal): bool
 }
 
 describe('F-12 pelunasan piutang', function (): void {
-    it('melunasi banyak piutang sekaligus, sebagian; jurnal Dr Kas Cr Piutang Usaha seimbang; saldo Piutang Usaha = Σ sisa', function (): void {
+    it('melunasi banyak piutang sekaligus, sebagian. Jurnal Dr Kas Cr Piutang Usaha seimbang. Saldo Piutang Usaha = Σ sisa', function (): void {
         $k = SiapkanPiutangDuaFaktur($this);
         $idTenant = $k['Tenant']->Id;
 
@@ -178,7 +178,7 @@ describe('F-12 pelunasan piutang', function (): void {
             ->assertJsonPath('Meta.Total', 1)->assertJsonPath('Data.0.Uuid', $k['P1']->Uuid)->assertJsonPath('Data.0.HariLewat', 45);
     });
 
-    it('izin: kasir tidak bisa melihat piutang; supervisor melihat tetapi tidak bisa melunasi; tenant lain 404', function (): void {
+    it('izin: kasir tidak bisa melihat piutang. Supervisor melihat tetapi tidak bisa melunasi. Tenant lain 404', function (): void {
         $k = SiapkanPiutangDuaFaktur($this);
         $this->post('/kelola/piutang/pelunasan', IsianPelunasan($k, [[$k['P1'], '5000']]))->assertSessionHasNoErrors();
         $bayar = PembayaranPiutang::query()->sole();
@@ -198,7 +198,7 @@ describe('F-12 pelunasan piutang', function (): void {
         $this->get('/kelola/piutang')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('Piutang.Data', 0));
     });
 
-    it('limit kredit & termin disimpan dari formulir pelanggan; detail menampilkan posisi kredit', function (): void {
+    it('limit kredit & termin disimpan dari formulir pelanggan. Detail menampilkan posisi kredit', function (): void {
         $k = SiapkanPiutangDuaFaktur($this);
         $isian = ['Nama' => 'Toko Makmur Jaya', 'NoHp' => '081355550001', 'SetujuPemasaran' => false];
 
@@ -220,7 +220,7 @@ describe('F-12 pelunasan piutang', function (): void {
 });
 
 describe('F-12 metode Tempo', function (): void {
-    it('limit kredit pertama menyiapkan metode Tempo sekali; tanpa limit tidak dibuat', function (): void {
+    it('limit kredit pertama menyiapkan metode Tempo sekali, tanpa limit tidak dibuat', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Bangunan Sumber Makmur');
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $isian = ['Nama' => 'CV Karya Beton', 'NoHp' => '081355550009', 'SetujuPemasaran' => false];

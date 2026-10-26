@@ -39,7 +39,7 @@ function BuatPengumumanPemilik(string $judul, string $jenis, array $sasaran, str
     return $p;
 }
 
-it('hanya pengumuman terbit untuk semua platform atau platform Pemilik; perlu masuk & tenant', function (): void {
+it('hanya pengumuman terbit untuk semua platform atau platform Pemilik. Perlu masuk & tenant', function (): void {
     $data = BantuanOrganisasi::BuatTenant('Toko Pengumuman Pemilik');
     $data['Pemilik']->forceFill(['EmailDiverifikasiPada' => now()])->save();
     BuatPengumumanPemilik('Fitur laporan baru', 'YangBaru', ['Platform' => ['Pemilik']]);

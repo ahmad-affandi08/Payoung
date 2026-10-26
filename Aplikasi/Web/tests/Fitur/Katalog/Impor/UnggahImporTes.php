@@ -20,7 +20,7 @@ beforeEach(function (): void {
 });
 
 describe('F-03 BR-03.6 unggah berkas impor', function (): void {
-    it('CSV: BOM, pemisah titik koma, Windows-1252 (é, ñ) dibaca benar; judul & contoh untuk pemetaan', function (): void {
+    it('CSV: BOM, pemisah titik koma, Windows-1252 (é, ñ) dibaca benar. Judul & contoh untuk pemetaan', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -98,7 +98,7 @@ describe('F-03 BR-03.6 unggah berkas impor', function (): void {
         expect(ImporProduk::query()->count())->toBe(1);
     });
 
-    it('halaman riwayat: preset (Asumsi), batas berkas, BatasSku; unggah dicatat audit; berkas sama pernah diimpor ditandai', function (): void {
+    it('halaman riwayat: preset (Asumsi), batas berkas, BatasSku. Unggah dicatat audit. Berkas sama pernah diimpor ditandai', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $baris = [['Nama Produk', 'SKU', 'Harga Jual', 'Kelompok Pajak'], ['Kopi Susu', 'KPS-1', '18000', 'Barang kena PPN']];

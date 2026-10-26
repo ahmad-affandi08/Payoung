@@ -119,7 +119,7 @@ final class TemplateSektorKontroler extends Kontroler
         $ubah->Jalankan($this->AmbilPelaku(), $templateSektor, false);
 
         return redirect()->route('pengelola.template-sektor.daftar')
-            ->with('Kilat', "Template {$templateSektor->Kode} dinonaktifkan. Tidak ditawarkan ke tenant baru; tenant lama tidak berubah.");
+            ->with('Kilat', "Template {$templateSektor->Kode} dinonaktifkan. Tidak ditawarkan ke tenant baru. Tenant lama tidak berubah.");
     }
 
     public function Aktifkan(TemplateSektor $templateSektor, UbahKeaktifanTemplate $ubah): RedirectResponse

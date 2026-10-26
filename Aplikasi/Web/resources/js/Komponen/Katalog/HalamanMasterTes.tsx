@@ -55,7 +55,7 @@ describe('Kelola/Kategori & Satuan (E.5)', () => {
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
 
-    it('induk tidak boleh diri sendiri/turunan atau tingkat 3; hapus hanya kategori kosong tanpa anak', () => {
+    it('induk tidak boleh diri sendiri/turunan atau tingkat 3. Hapus hanya kategori kosong tanpa anak', () => {
         expect([...AmbilTurunanKategori(kategori, 'K1')].sort()).toEqual(['K1', 'K2', 'K3']);
         RenderUji(<HalamanDaftarKategori Kategori={kategori} OpsiStasiunDapur={[]} Izin={IzinPenuh} />);
 
@@ -422,7 +422,7 @@ describe('Kelola/KelompokPilihan (E.9)', () => {
         expect(RingkasAturanPilih('0', '3')).toBe('Opsional, maks 3');
     });
 
-    it('daftar menampilkan harga tambahan & bahan; simpan tanpa kolom tampilan', () => {
+    it('daftar menampilkan harga tambahan & bahan. Simpan tanpa kolom tampilan', () => {
         const props: PropsDaftarKelompokPilihan = {
             KelompokPilihan: [
                 {

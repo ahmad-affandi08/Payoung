@@ -188,11 +188,11 @@ final class RingkasanBerandaPengelola
         }
 
         if ($tenant !== null && $tenant['Berisiko'] > 0) {
-            $butir[] = ['Judul' => $tenant['Berisiko'].' tenant berisiko berhenti', 'Keterangan' => 'Skor kesehatan rendah; hubungi sebelum mereka pergi.', 'Tautan' => '/tugas-tenant', 'Tingkat' => 'peringatan'];
+            $butir[] = ['Judul' => $tenant['Berisiko'].' tenant berisiko berhenti', 'Keterangan' => 'Skor kesehatan rendah. Hubungi sebelum mereka pergi.', 'Tautan' => '/tugas-tenant', 'Tingkat' => 'peringatan'];
         }
 
         if ($tenant !== null && $pelaku->PunyaIzin(IzinPengelola::TenantPenghapusanDataKelola) && $tenant['PenghapusanDataMenunggu'] > 0) {
-            $butir[] = ['Judul' => $tenant['PenghapusanDataMenunggu'].' permintaan penghapusan data', 'Keterangan' => 'Pemilik usaha meminta data dihapus (UU PDP); tinjau setelah masa tunggu.', 'Tautan' => '/tenant', 'Tingkat' => 'info'];
+            $butir[] = ['Judul' => $tenant['PenghapusanDataMenunggu'].' permintaan penghapusan data', 'Keterangan' => 'Pemilik usaha meminta data dihapus (UU PDP). Tinjau setelah masa tunggu.', 'Tautan' => '/tenant', 'Tingkat' => 'info'];
         }
 
         return $butir;

@@ -23,7 +23,7 @@ describe('Sidik wajah absensi web', () => {
         expect(KeSidikWajah([0.12345, -0.5, 20, Number.NaN])).toEqual([1235, -5000, 100000, 0]);
     });
 
-    it('koordinat 7 angka desimal; akurasi dibulatkan ke atas', () => {
+    it('koordinat 7 angka desimal. Akurasi dibulatkan ke atas', () => {
         expect(KeTeksKoordinat(-7.556)).toBe('-7.5560000');
         expect(KeAkurasiMeter(12.2)).toBe(13);
         expect(KeAkurasiMeter(-1)).toBe(0);
@@ -33,7 +33,7 @@ describe('Sidik wajah absensi web', () => {
 describe('Penilaian wajah', () => {
     const asli = { real: 0.9, live: 0.8, embedding: [0.1, 0.2] };
 
-    it('kosong, ganda, palsu, tanpa sidik, lalu lolos; tidak ada syarat kedip lagi', () => {
+    it('kosong, ganda, palsu, tanpa sidik, lalu lolos. Tidak ada syarat kedip lagi', () => {
         expect(NilaiWajah([])).toEqual({ Lolos: false, Alasan: 'TidakAdaWajah' });
         expect(NilaiWajah([asli, asli])).toEqual({ Lolos: false, Alasan: 'BanyakWajah' });
         expect(NilaiWajah([{ ...asli, real: 0.2 }])).toEqual({ Lolos: false, Alasan: 'BukanWajahAsli' });
@@ -69,7 +69,7 @@ describe('Penilaian wajah', () => {
 });
 
 describe('Keadaan lingkaran kamera', () => {
-    it('mode daftar: wajah lolos = siap (hijau); mode absen: hijau hanya bila server bilang cocok', () => {
+    it('mode daftar: wajah lolos = siap (hijau). Mode absen: hijau hanya bila server bilang cocok', () => {
         const lolos = { Lolos: true } as const;
 
         expect(TentukanKeadaan(lolos, null)).toBe('siap');
@@ -117,7 +117,7 @@ describe('Keadaan lingkaran kamera', () => {
 });
 
 describe('Peredam kedip warna', () => {
-    it('keadaan baru dipakai setelah dua pemindaian berturut-turut; keluar dari hijau seketika', () => {
+    it('keadaan baru dipakai setelah dua pemindaian berturut-turut. Keluar dari hijau seketika', () => {
         const p = new PenstabilKeadaan();
         p.Atur('tidak-ada-wajah');
 

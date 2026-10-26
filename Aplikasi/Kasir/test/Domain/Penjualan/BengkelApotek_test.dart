@@ -106,7 +106,7 @@ void main() {
   );
 
   group('Bengkel bagian 2: perintah kerja ke keranjang', () {
-    test('offline ditolak PerluOnline; daftar siap tagih & satu perintah kerja lewat jalur POS', () async {
+    test('offline ditolak PerluOnline. Daftar siap tagih & satu perintah kerja lewat jalur POS', () async {
       u.server.penangan = (p) async => throw http.ClientException('offline');
       await expectLater(
         u.perintahKerja.Ambil(),
@@ -129,8 +129,8 @@ void main() {
     });
 
     test(
-      'harga & diskon perintah kerja dipakai, mekanik jadi staf baris, pelanggan terpasang; keranjang tersimpan (K-4) '
-      'membawa tautannya; bayar mengirim UuidPerintahKerja; struk mencetak nomor & nomor polisi',
+      'harga & diskon perintah kerja dipakai, mekanik jadi staf baris, pelanggan terpasang. Keranjang tersimpan (K-4) '
+      'membawa tautannya. Bayar mengirim UuidPerintahKerja. Struk mencetak nomor & nomor polisi',
       () async {
         final keranjang = u.perintahKerja.MuatKeKeranjang(PerintahKerjaPos.DariJson(PerintahKerjaUji()), katalog, k);
         final servis = keranjang.baris.first;
@@ -211,7 +211,7 @@ void main() {
     });
 
     test(
-      'bagian 3: nomor seri sparepart dari perintah kerja ikut baris & Penjualan.Buat; kosong = kasir mengisi dulu',
+      'bagian 3: nomor seri sparepart dari perintah kerja ikut baris & Penjualan.Buat. Kosong = kasir mengisi dulu',
       () async {
         // Katalog bengkel + satu sparepart bernomor seri (pakai produk seri uji: ponsel).
         final dasar = KatalogBengkelApotekUji();
@@ -403,7 +403,7 @@ void main() {
     });
 
     test(
-      'pembayaran diblokir tanpa resep, lalu tanpa apoteker; resep + PIN apoteker → muatan persis kontrak',
+      'pembayaran diblokir tanpa resep, lalu tanpa apoteker. Resep + PIN apoteker → muatan persis kontrak',
       () async {
         final keranjang = KeranjangDari([amoxicillin, asamMefenamat, diazepam, paracetamol]);
         await expectLater(
@@ -482,7 +482,7 @@ void main() {
       expect((data['Baris']! as List<Object?>).cast<Map<String, Object?>>().single.containsKey('DenganResep'), isFalse);
     });
 
-    test('barang bukan obat & obat bebas tidak pernah diblokir; muatan tidak berubah', () async {
+    test('barang bukan obat & obat bebas tidak pernah diblokir. Muatan tidak berubah', () async {
       await BayarTunai(KeranjangDari([UuidUji.croissant, paracetamol, ctm]));
       final data = await OutboxTerakhir();
       expect(data.keys, isNot(containsAll(['Resep', 'UuidApoteker', 'UuidPerintahKerja'])));

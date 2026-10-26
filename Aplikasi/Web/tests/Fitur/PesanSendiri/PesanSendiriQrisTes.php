@@ -70,7 +70,7 @@ describe('bayar QRIS dari HP tamu', function (): void {
         $this->get($k['Alamat'])->assertInertia(fn (AssertableInertia $h) => $h->where('Pembayaran.Qris', true));
     });
 
-    it('QRIS ditolak selama gerbang atau sakelar belum siap; pesanan bayar di kasir tetap jalan', function (): void {
+    it('QRIS ditolak selama gerbang atau sakelar belum siap. Pesanan bayar di kasir tetap jalan', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
 
         $this->postJson("{$k['Alamat']}/pesan-qris", BantuanPesanSendiri::Kiriman([[$k['Nasi'], 1]]))

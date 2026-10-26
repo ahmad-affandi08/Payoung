@@ -33,7 +33,7 @@ void main() {
       ),
     );
 
-    expect(tester.takeException(), isNull, reason: 'Tidak meluap di lebar 360dp; teks panjang dipotong.');
+    expect(tester.takeException(), isNull, reason: 'Tidak meluap di lebar 360dp. Teks panjang dipotong.');
     expect(find.text('Offline'), findsOneWidget);
     final ikon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
     expect(ikon.color, TokenWarna.bawaan.peringatan);
@@ -43,7 +43,7 @@ void main() {
     expect(diketuk, 1);
   });
 
-  testWidgets('PanelTugas: judul, tombol Tutup & Esc menutup; samping selebar 400, lembar selebar layar', (
+  testWidgets('PanelTugas: judul, tombol Tutup & Esc menutup. Samping selebar 400, lembar selebar layar', (
     tester,
   ) async {
     var ditutup = 0;

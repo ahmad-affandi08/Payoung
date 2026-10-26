@@ -132,7 +132,7 @@ final class TagihanLangganan extends ModelDasar
         });
 
         self::deleting(static function (): void {
-            throw new LogicException('Tagihan langganan tidak boleh dihapus; batalkan lewat status Dibatalkan.');
+            throw new LogicException('Tagihan langganan tidak boleh dihapus. Batalkan lewat status Dibatalkan.');
         });
     }
 

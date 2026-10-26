@@ -95,7 +95,7 @@ describe('D-108 kuota pesan WhatsApp nomor Payoung', function (): void {
             ->and(PemakaianPesanWa::query()->sole()->Jumlah)->toBe(1);
     });
 
-    it('kuota 0 menutup nomor Payoung; tanpa batas (null) tetap menghitung tetapi tidak menolak', function (): void {
+    it('kuota 0 menutup nomor Payoung, tanpa batas (null) tetap menghitung tetapi tidak menolak', function (): void {
         SiapkanTenantKuota(0);
         expect(KirimSatu()->berhasil)->toBeFalse();
         Http::assertNothingSent();
@@ -144,7 +144,7 @@ describe('D-108 kuota pesan WhatsApp nomor Payoung', function (): void {
             ->and(PemakaianPesanWa::query()->sole()->Jumlah)->toBe(1);
     });
 
-    it('Kotak Tindakan: muncul saat sisa ≤ 20% (Perhatian) dan saat habis (Penting); diam bila aman, tanpa batas, atau WhatsApp sendiri aktif', function (): void {
+    it('Kotak Tindakan: muncul saat sisa ≤ 20% (Perhatian) dan saat habis (Penting). Diam bila aman, tanpa batas, atau WhatsApp sendiri aktif', function (): void {
         $t = SiapkanTenantKuota(10);
         $konteks = new DataKonteksTindakan($t['Tenant']->Id, 1, true, [], null, CarbonImmutable::today());
         $penyedia = app(PenyediaTindakanWhatsapp::class);
@@ -198,7 +198,7 @@ describe('F-17 kesiapan kabar pesanan toko online lewat WhatsApp', function (): 
         expect($belum['Siap'])->toBeFalse()->and($belum['Alasan'])->toContain('belum tersambung');
     });
 
-    it('kuota terpakai habis menghasilkan peringatan kuota habis; masih ada sisa dianggap siap', function (): void {
+    it('kuota terpakai habis menghasilkan peringatan kuota habis. Masih ada sisa dianggap siap', function (): void {
         $t = SiapkanTenantKuota(2);
         $pengirim = app(PembuatPengirimWhatsapp::class)->AmbilAktif();
         $siap = fn (): array => app(KesiapanNotifikasiPesananOnline::class)->Ambil($t['Tenant']->Id);

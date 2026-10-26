@@ -51,7 +51,7 @@ void main() {
     await Tunggu(tester);
   }
 
-  testWidgets('label berat: Jeruk Medan 1,25 kg Rp 40.000; awalan lain tidak dikenal', (tester) async {
+  testWidgets('label berat: Jeruk Medan 1,25 kg Rp 40.000. Awalan lain tidak dikenal', (tester) async {
     final u = await MasukJual(tester, nilai: 'Berat');
     await Pindai(tester, '2712345012508');
     expect(find.text('Jeruk Medan'), findsNWidgets(2), reason: 'Ubin katalog + baris keranjang.');

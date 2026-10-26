@@ -102,7 +102,7 @@ describe('F-13a bagan akun (FIN-01, PRD "Rincian F-13a")', function (): void {
         expect(AkunKode('4-1150')->SaldoNormal)->toBe(SaldoNormal::Debit)->and(AkunKode('4-1150')->CekKontra())->toBeTrue();
     });
 
-    it('ubah nama selalu boleh; kode & tipe terkunci setelah ada jurnal; tipe harus cocok dengan peran yang dipetakan', function (): void {
+    it('ubah nama selalu boleh. Kode & tipe terkunci setelah ada jurnal. Tipe harus cocok dengan peran yang dipetakan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanJurnal::Posting(BantuanJurnal::DataStokAwal());
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
@@ -168,7 +168,7 @@ describe('F-13a bagan akun (FIN-01, PRD "Rincian F-13a")', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'akun.hapus')->count())->toBe(1);
     });
 
-    it('nonaktifkan: akun yang masih dipetakan ditolak; akun nonaktif tidak ditawarkan untuk kategori kas', function (): void {
+    it('nonaktifkan: akun yang masih dipetakan ditolak. Akun nonaktif tidak ditawarkan untuk kategori kas', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Akuntan);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -187,7 +187,7 @@ describe('F-13a bagan akun (FIN-01, PRD "Rincian F-13a")', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'akun.status')->count())->toBe(1);
     });
 
-    it('izin: Kasir 403 melihat; Manajer Outlet tanpa akuntansi.kelola 403 mengubah; akun tenant lain 404', function (): void {
+    it('izin: Kasir 403 melihat; Manajer Outlet tanpa akuntansi.kelola 403 mengubah. Akun tenant lain 404', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Toko Sembako Berkah Jaya');
         $modalA = AkunKode('3-1000');
         BantuanPersediaan::MasukSebagai($this, $a['Tenant']->Id, PeranTenantBawaan::Kasir)->get('/kelola/akuntansi/akun')->assertForbidden();

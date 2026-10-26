@@ -172,7 +172,7 @@ class _PanelPesananGrosirState extends ConsumerState<PanelPesananGrosir> {
               padding: const EdgeInsets.only(top: TokenJarak.jarak8),
               child: Text(
                 'Perkiraan melebihi sisa limit kredit ${pelanggan!.nama} sebesar ${Uang.Nol().Kurangi(selisihLimit).FormatRupiah()}. '
-                'Pesanan tetap bisa disimpan; konfirmasinya diputuskan di back-office.',
+                'Pesanan tetap bisa disimpan. Konfirmasinya diputuskan di back-office.',
                 style: teks.bodySmall?.copyWith(color: warna.peringatan),
               ),
             ),

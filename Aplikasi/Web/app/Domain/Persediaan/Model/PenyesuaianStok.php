@@ -96,7 +96,7 @@ final class PenyesuaianStok extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Dokumen penyesuaian stok tidak pernah dihapus; draf dibatalkan.');
+            throw new LogicException('Dokumen penyesuaian stok tidak pernah dihapus. Draf dibatalkan.');
         });
     }
 

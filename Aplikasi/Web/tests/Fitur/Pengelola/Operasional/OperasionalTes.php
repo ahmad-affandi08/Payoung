@@ -159,7 +159,7 @@ describe('BR-P11.1: alert kritis scheduler & antrean, sekali per insiden', funct
         Mail::assertSent(AlertOperasionalTerbuka::class, 1);
     });
 
-    it('job antrean tertua > 5 menit membuka alert; job tertunda (delay) tidak dihitung', function (): void {
+    it('job antrean tertua > 5 menit membuka alert. Job tertunda (delay) tidak dihitung', function (): void {
         $this->artisan('pengelola:detak');
         CatatBackupBerhasil(now()->subHour());
         TambahJobAntrean(-600);
@@ -204,7 +204,7 @@ describe('Job gagal & backup', function (): void {
             ->toBe('Authorization: Bearer [disembunyikan] kata_sandi="[disembunyikan]"');
     });
 
-    it('coba ulang mengembalikan job ke antrean, buang wajib alasan; keduanya tercatat di audit', function (): void {
+    it('coba ulang mengembalikan job ke antrean, buang wajib alasan. Keduanya tercatat di audit', function (): void {
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MasukSebagaiOperasional($this, $teknis);
         $ulang = TambahJobGagal();
@@ -237,7 +237,7 @@ describe('Job gagal & backup', function (): void {
         expect(DB::table('failed_jobs')->where('uuid', $uuid)->exists())->toBeTrue();
     });
 
-    it('Teknis mencatat uji restore manual; lokasi berkredensial dan waktu masa depan ditolak', function (): void {
+    it('Teknis mencatat uji restore manual. Lokasi berkredensial dan waktu masa depan ditolak', function (): void {
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MasukSebagaiOperasional($this, $teknis);
         $isian = ['Jenis' => 'UjiRestore', 'Hasil' => 'Berhasil', 'SelesaiPada' => '2026-09-24T09:30', 'UkuranMb' => 512, 'Keterangan' => 'Restore ke VPS uji 42 menit'];

@@ -302,7 +302,7 @@ export default function HalamanNomorSeri({
                     {TotalHasil > BatasHasil ? (
                         <p className="text-label text-teks-sekunder">
                             Menampilkan {String(BatasHasil)} dari {String(TotalHasil)} nomor. Persempit pencarian atau
-                            filter status untuk hasil lain; ekspor CSV memuat lebih banyak.
+                            filter status untuk hasil lain. Ekspor CSV memuat lebih banyak.
                         </p>
                     ) : null}
                     <TabelData

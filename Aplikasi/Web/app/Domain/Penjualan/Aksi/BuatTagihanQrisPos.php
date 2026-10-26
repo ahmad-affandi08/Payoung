@@ -206,7 +206,7 @@ final class BuatTagihanQrisPos
     {
         return new PelanggaranAturanBisnis(
             $kode,
-            'Koneksi ke gerbang pembayaran terputus sebelum QRIS diterima, jadi tagihan ini belum pasti dan tidak ditampilkan. Buat tagihan QRIS baru atau pakai metode lain; tagihan lama dicek otomatis.',
+            'Koneksi ke gerbang pembayaran terputus sebelum QRIS diterima, jadi tagihan ini belum pasti dan tidak ditampilkan. Buat tagihan QRIS baru atau pakai metode lain. Tagihan lama dicek otomatis.',
             'Umum',
             $statusHttp,
         );

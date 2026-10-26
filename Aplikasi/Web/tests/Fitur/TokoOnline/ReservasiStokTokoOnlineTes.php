@@ -63,7 +63,7 @@ function HitungRoti(TestCase $tes, string $slug, array $kiriman): TestResponse
     return $tes->postJson("/{$slug}/keranjang/hitung", ['Outlet' => $kiriman['Outlet'], 'JenisPemenuhan' => 'AmbilSendiri', 'Baris' => $kiriman['Baris']]);
 }
 
-it('checkout mencadangkan stok; pesanan lain hanya mendapat sisanya; ditolak & kedaluwarsa melepas; SaldoStok tidak berubah', function (): void {
+it('checkout mencadangkan stok. Pesanan lain hanya mendapat sisanya. Ditolak & kedaluwarsa melepas; SaldoStok tidak berubah', function (): void {
     $k = SiapkanStokOnline($this);
     $pertama = KirimanRoti($k, 2);
     $this->postJson("/{$k['Slug']}/pesan", $pertama)->assertCreated();
@@ -128,7 +128,7 @@ it('kasir menagih pesanan → cadangan Dipakai dan stok berkurang lewat mutasi p
     HitungRoti($this, $k['Slug'], KirimanRoti($k, 2))->assertUnprocessable()->assertJsonPath('Galat.Kode', 'StokTidakCukup');
 });
 
-it('toko yang mengizinkan stok minus tetap menerima pesanan melebihi stok; cadangannya tetap tercatat', function (): void {
+it('toko yang mengizinkan stok minus tetap menerima pesanan melebihi stok. Cadangannya tetap tercatat', function (): void {
     $k = SiapkanStokOnline($this, '1');
     BantuanPersediaan::AturMetodeHpp($k['Tenant'], MetodeHpp::RataRata, stokBolehMinus: true);
 

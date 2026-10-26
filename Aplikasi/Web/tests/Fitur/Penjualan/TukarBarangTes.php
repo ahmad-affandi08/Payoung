@@ -109,7 +109,7 @@ describe('K-11 tukar barang', function (): void {
         expect(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('Tukar tanpa UuidReturTukar ditolak; nilai tukar melebihi retur atau retur belum ada = diterima + tinjauan TukarBermasalah', function (): void {
+    it('Tukar tanpa UuidReturTukar ditolak. Nilai tukar melebihi retur atau retur belum ada = diterima + tinjauan TukarBermasalah', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

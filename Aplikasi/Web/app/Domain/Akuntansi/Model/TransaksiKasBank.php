@@ -43,7 +43,7 @@ final class TransaksiKasBank extends ModelDasar
 {
     use MilikTenant;
 
-    public const PESAN_TIDAK_BISA_DIUBAH = 'Transaksi kas & bank yang sudah disimpan tidak bisa diubah/dihapus; koreksi lewat dokumen pembalik';
+    public const PESAN_TIDAK_BISA_DIUBAH = 'Transaksi kas & bank yang sudah disimpan tidak bisa diubah/dihapus. Koreksi lewat dokumen pembalik';
 
     protected $table = 'TransaksiKasBank';
 

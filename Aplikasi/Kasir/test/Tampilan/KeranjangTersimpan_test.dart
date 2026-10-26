@@ -35,7 +35,7 @@ void main() {
   Future<String?> Draf(WidgetTester tester, LingkunganUji u) =>
       tester.runAsync(() => u.repositori.AmbilPengaturan(PengaturKeranjang.kunciDraf)).then((v) => v);
 
-  testWidgets('keranjang dipulihkan setelah aplikasi dibuka ulang; draf dihapus setelah dibayar', (tester) async {
+  testWidgets('keranjang dipulihkan setelah aplikasi dibuka ulang. Draf dihapus setelah dibayar', (tester) async {
     final u = LingkunganUji.Buat();
     final dataAwal = DataAwalUji();
     await tester.runAsync(() async {

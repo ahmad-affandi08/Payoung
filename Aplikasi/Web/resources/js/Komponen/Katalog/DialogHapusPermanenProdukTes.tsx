@@ -50,7 +50,7 @@ describe('D-218 dialog hapus permanen produk', () => {
         vi.unstubAllGlobals();
     });
 
-    it('menampilkan peringatan, jumlah riwayat dengan nama yang mudah dipahami; tombol mati sampai nama diketik persis', async () => {
+    it('menampilkan peringatan, jumlah riwayat dengan nama yang mudah dipahami. Tombol mati sampai nama diketik persis', async () => {
         TiruFetch(bisaDihapus);
         RenderUji(<DialogHapusPermanenProduk uuid={UUID} nama={NAMA} saatSelesai={vi.fn()} />);
 

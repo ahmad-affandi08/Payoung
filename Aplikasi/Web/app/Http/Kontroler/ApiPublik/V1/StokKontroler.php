@@ -69,7 +69,7 @@ final class StokKontroler
             $p = $produk[strtoupper((string) $b['UuidProduk'])] ?? throw new PelanggaranAturanBisnis('ProdukTidakDikenal', 'Produk baris ke-'.($i + 1).' tidak ditemukan.', "Baris.{$i}.UuidProduk");
 
             if ($p->pelacakan === PelacakanProduk::Seri) {
-                throw new PelanggaranAturanBisnis('PelacakanBelumDidukung', "{$p->nama} bernomor seri; sesuaikan per unit dari back-office.", "Baris.{$i}.UuidProduk");
+                throw new PelanggaranAturanBisnis('PelacakanBelumDidukung', "{$p->nama} bernomor seri. Sesuaikan per unit dari back-office.", "Baris.{$i}.UuidProduk");
             }
 
             $jumlah = Kuantitas::Dari((string) $b['Jumlah']);

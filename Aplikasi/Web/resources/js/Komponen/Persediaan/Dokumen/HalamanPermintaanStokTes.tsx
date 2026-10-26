@@ -201,7 +201,7 @@ describe('D-105 form permintaan stok', () => {
         expect(PeriksaBarisPermintaan({ ...dasar, BolehDesimal: true, Jumlah: '2.5' })).toBeNull();
     });
 
-    it('lokasi peminta terisi otomatis bila hanya satu; ajukan tanpa barang ditolak lokal', () => {
+    it('lokasi peminta terisi otomatis bila hanya satu. Ajukan tanpa barang ditolak lokal', () => {
         RenderUji(
             <HalamanFormPermintaanStok
                 OpsiGudangTujuan={[GudangKedua]}

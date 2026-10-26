@@ -117,7 +117,7 @@ describe('Riwayat versi & jadwal terbit D-63', () => {
         expect(SaatPulihkan).toHaveBeenCalledWith(revisi[0]);
     });
 
-    it('tanpa izin kelola tidak ada tombol pulihkan; kosong menjelaskan kapan versi pertama tersimpan', () => {
+    it('tanpa izin kelola tidak ada tombol pulihkan. Kosong menjelaskan kapan versi pertama tersimpan', () => {
         const { rerender: RenderUlang } = render(
             <PanelRiwayat
                 terbuka

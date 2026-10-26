@@ -159,7 +159,7 @@ describe('OWN-02 dasbor Aplikasi Owner', function (): void {
             ->assertJsonPath('PerluTindakan', []);
     });
 
-    it('laba kotor null tanpa izin laporan.keuangan.lihat; tanpa izin laporan.penjualan.lihat → 403 TanpaIzin; dibatasi outlet akses', function (): void {
+    it('laba kotor null tanpa izin laporan.keuangan.lihat, tanpa izin laporan.penjualan.lihat → 403 TanpaIzin. Dibatasi outlet akses', function (): void {
         $k = SiapkanPenjualanDasborUji($this);
         $manajer = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
         $tokenManajer = TokenPemilikUji($this, $manajer, 'kata-sandi-uji');
@@ -199,7 +199,7 @@ describe('OWN-02 dasbor Aplikasi Owner', function (): void {
         expect(array_column(AmbilPemilikUji($this, $tokenCabang, $k['Tenant']->Uuid, '/perangkat')->assertOk()->json('Perangkat'), 'Nama'))->toBe(['Kasir Cabang']);
     });
 
-    it('isolasi tenant: tanpa X-Tenant atau tenant orang lain → 403 TenantTidakDiizinkan; pemilik tenant lain tidak melihat angka tenant ini', function (): void {
+    it('isolasi tenant: tanpa X-Tenant atau tenant orang lain → 403 TenantTidakDiizinkan. Pemilik tenant lain tidak melihat angka tenant ini', function (): void {
         $k = SiapkanPenjualanDasborUji($this);
         $token = TokenPemilikUji($this, $k['Pemilik']);
         $lain = BantuanOrganisasi::BuatTenant('Warung Bakso Pak Kumis');
@@ -221,7 +221,7 @@ describe('OWN-02 dasbor Aplikasi Owner', function (): void {
 });
 
 describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
-    it('penjualan per produk, kategori, kasir, jam, kanal (angka sama dengan laporan F-14a; void dikeluarkan, retur mengurangi)', function (): void {
+    it('penjualan per produk, kategori, kasir, jam, kanal (angka sama dengan laporan F-14a. Void dikeluarkan, retur mengurangi)', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $sembako = Kategori::query()->create(['Nama' => 'Sembako & Kebutuhan Dapur']);
         $d['Minyak']->forceFill(['IdKategori' => $sembako->Id])->save();
@@ -266,7 +266,7 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
             ->and($jam->json('Total.Omzet'))->toBe($jam->json('Baris.0.Omzet'));
     });
 
-    it('rentang maks 31 hari (lebih → 422 RentangTerlaluPanjang); tanggal terbalik & kelompok tak dikenal → 422', function (): void {
+    it('rentang maks 31 hari (lebih → 422 RentangTerlaluPanjang). Tanggal terbalik & kelompok tak dikenal → 422', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $token = TokenPemilikUji($this, $d['Pemilik']);
 
@@ -327,7 +327,7 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
         AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $k['Tenant']->Uuid, '/laporan/laba-rugi?dari=2026-10-01&sampai=2026-10-07')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
     });
 
-    it('OWN-09 anti-fraud: skor risiko kasir sama dengan tab Anti-fraud back-office; wajib izin laporan & fitur Anti-fraud; rentang maks 31 hari', function (): void {
+    it('OWN-09 anti-fraud: skor risiko kasir sama dengan tab Anti-fraud back-office. Wajib izin laporan & fitur Anti-fraud. Rentang maks 31 hari', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Minimarket Jujur Makmur Sragen');
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];
@@ -374,7 +374,7 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
         AmbilPemilikUji($this, TokenPemilikUji($this, $lain['Pemilik']), $k['Tenant']->Uuid, $url)->assertStatus(403)->assertJsonPath('Galat.Kode', 'TenantTidakDiizinkan');
     });
 
-    it('daftar shift satu tanggal bisnis: terbuka tanpa selisih, tertutup dengan selisih; tanggal lain kosong', function (): void {
+    it('daftar shift satu tanggal bisnis: terbuka tanpa selisih, tertutup dengan selisih. Tanggal lain kosong', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $token = TokenPemilikUji($this, $k['Pemilik']);
         $shift = Shift::query()->where('Uuid', $k['UuidShift'])->sole();
@@ -555,7 +555,7 @@ describe('OWN-04 persetujuan dokumen jarak jauh (PO & penyesuaian stok)', functi
 });
 
 describe('OWN-08 status perangkat POS', function (): void {
-    it('daftar perangkat: status Aktif/BelumDiaktifkan/Dicabut, terakhir aktif (UTC), outbox tertunda, versi aplikasi; yang dicabut di akhir', function (): void {
+    it('daftar perangkat: status Aktif/BelumDiaktifkan/Dicabut, terakhir aktif (UTC), outbox tertunda, versi aplikasi, yang dicabut di akhir', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         Perangkat::query()->whereKey($k['Perangkat']->Id)->update(['JumlahOutboxTertunda' => 3]);
         $belum = BantuanPerangkat::BuatPerangkat($k['Tenant']->Id, $k['Outlet'], JenisPerangkat::Kds, 'Layar Dapur Utama')['Perangkat'];

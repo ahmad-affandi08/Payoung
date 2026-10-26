@@ -38,7 +38,7 @@ beforeEach(function (): void {
 });
 
 describe('tab di tampilan 360°', function (): void {
-    it('Dukungan melihat tiket dan perangkat; tagihan hanya untuk peran yang boleh (tab disembunyikan, bukan kosong)', function (): void {
+    it('Dukungan melihat tiket dan perangkat. Tagihan hanya untuk peran yang boleh (tab disembunyikan, bukan kosong)', function (): void {
         BantuanOrganisasi::AturKonteks($this->tenant->Id);
         BantuanPerangkat::BuatDanAktifkan($this, $this->tenant->Id, null, 'Kasir Depan');
         app(KonteksTenant::class)->Kosongkan();
@@ -68,7 +68,7 @@ describe('tab di tampilan 360°', function (): void {
             ->where('Tenant.Tiket', null));
     });
 
-    it('perangkat tidak membocorkan token, kunci PIN, atau profil hardware; perangkat dicabut dan lama offline ditandai', function (): void {
+    it('perangkat tidak membocorkan token, kunci PIN, atau profil hardware. Perangkat dicabut dan lama offline ditandai', function (): void {
         BantuanOrganisasi::AturKonteks($this->tenant->Id);
         ['Perangkat' => $aktif] = BantuanPerangkat::BuatDanAktifkan($this, $this->tenant->Id, null, 'Kasir Depan');
         ['Perangkat' => $lama] = BantuanPerangkat::BuatDanAktifkan($this, $this->tenant->Id, null, 'Kasir Gudang Lama');
@@ -99,7 +99,7 @@ describe('tab di tampilan 360°', function (): void {
         expect($mentah)->not->toContain('HashToken')->not->toContain('KunciPinOffline')->not->toContain('ProfilHardware')->not->toContain('TokenPush');
     });
 
-    it('tiket lewat batas SLA ditandai dan dihitung; tab membaca tenant yang dibuka saja', function (): void {
+    it('tiket lewat batas SLA ditandai dan dihitung. Tab membaca tenant yang dibuka saja', function (): void {
         BantuanOrganisasi::AturKonteks($this->tenant->Id);
         $lain = BantuanDukungan::BuatTenant('Toko Lain Sukoharjo', 'lain.aktivitas@contoh.id');
         BantuanDukungan::BuatTiket($lain['Tenant'], $lain['Pengguna'], 'Tiket tenant lain tidak boleh tampil');

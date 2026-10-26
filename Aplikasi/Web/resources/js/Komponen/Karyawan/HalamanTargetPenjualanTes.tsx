@@ -40,7 +40,7 @@ describe('Target penjualan (F-18 bagian 3)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/karyawan/target'));
     afterEach(() => cleanup());
 
-    it('menampilkan progres & proyeksi; ubah target mengirim sasaran yang sama', () => {
+    it('menampilkan progres & proyeksi. Ubah target mengirim sasaran yang sama', () => {
         RenderUji(<HalamanTargetPenjualan {...Props()} />);
         expect(screen.getAllByText('82,5%').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Rp 12.500.000').length).toBeGreaterThan(0);
@@ -54,7 +54,7 @@ describe('Target penjualan (F-18 bagian 3)', () => {
         });
     });
 
-    it('bulan lalu tanpa kolom proyeksi; tanpa izin kelola tidak ada tombol & aksi', () => {
+    it('bulan lalu tanpa kolom proyeksi, tanpa izin kelola tidak ada tombol & aksi', () => {
         RenderUji(<HalamanTargetPenjualan {...Props(false, false)} />);
         expect(screen.queryByText('Rp 12.500.000')).toBeNull();
         expect(screen.queryByRole('button', { name: 'Tambah target' })).toBeNull();

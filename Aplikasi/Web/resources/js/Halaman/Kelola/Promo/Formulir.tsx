@@ -342,7 +342,7 @@ export default function HalamanFormulirPromo({
                         label="Batas potongan ongkir"
                         nilai={isian.Jumlah}
                         saatBerubah={(nilai) => Ubah({ Jumlah: nilai })}
-                        keterangan="Kosongkan untuk menggratiskan seluruh ongkir. Isi untuk subsidi sebagian, misal Rp 10.000: ongkir Rp 15.000 menjadi Rp 5.000. Berlaku di checkout toko online saat ada ongkir; syarat minimal belanja, kanal, dan jam ikut aturan promo di atas."
+                        keterangan="Kosongkan untuk menggratiskan seluruh ongkir. Isi untuk subsidi sebagian, misal Rp 10.000: ongkir Rp 15.000 menjadi Rp 5.000. Berlaku di checkout toko online saat ada ongkir. Syarat minimal belanja, kanal, dan jam ikut aturan promo di atas."
                         galat={galat.Jumlah}
                     />
                 ) : null}
@@ -354,7 +354,7 @@ export default function HalamanFormulirPromo({
                         desimal={1}
                         digitBulat={2}
                         akhiran="kali"
-                        keterangan="Poin loyalti transaksi yang memenuhi syarat dikalikan angka ini (lebih dari 1 sampai 10). Tidak mengubah harga dan bisa berjalan bersama promo potongan; bila beberapa promo poin berlaku, dipakai pengali terbesar."
+                        keterangan="Poin loyalti transaksi yang memenuhi syarat dikalikan angka ini (lebih dari 1 sampai 10). Tidak mengubah harga dan bisa berjalan bersama promo potongan. Bila beberapa promo poin berlaku, dipakai pengali terbesar."
                         galat={galat.Pengali}
                         required
                     />
@@ -602,12 +602,12 @@ export default function HalamanFormulirPromo({
         <>
             <p className="text-isi text-teks-sekunder">
                 Syarat pelanggan berlaku hanya bila kasir memilih pelanggan. Saat kasir offline, riwayat pelanggan
-                memakai data terakhir di perangkat; bila ternyata tidak memenuhi syarat, penjualan tetap diterima dan
+                memakai data terakhir di perangkat. Bila ternyata tidak memenuhi syarat, penjualan tetap diterima dan
                 masuk tinjauan.
             </p>
             {OpsiMetodeBayar.length > 0 ? (
                 <GrupCentang
-                    legenda="Metode bayar (kosong = semua; semua pembayaran wajib memakai metode terpilih)"
+                    legenda="Metode bayar (kosong = semua. Semua pembayaran wajib memakai metode terpilih)"
                     opsi={OpsiMetodeBayar.map((o) => ({ nilai: o.Nilai, label: o.Label }))}
                     terpilih={isian.MetodeBayar}
                     saatBerubah={(terpilih) => Ubah({ MetodeBayar: terpilih })}

@@ -71,7 +71,7 @@ describe('Langkah 4 Produk (F-01): centang produk contoh memakai Checkbox', () =
     beforeEach(() => AturHalamanUji({}, '/kelola/panduan-awal/produk'));
     afterEach(() => cleanup());
 
-    it('"Pilih semua" menjadi indeterminate saat sebagian dipilih; produk yang sudah ada tidak bisa dicentang', () => {
+    it('"Pilih semua" menjadi indeterminate saat sebagian dipilih. Produk yang sudah ada tidak bisa dicentang', () => {
         RenderUji(<HalamanProdukPanduan {...BuatPropsProduk()} />);
 
         const semua = screen.getByRole('checkbox', { name: 'Pilih semua' });

@@ -155,7 +155,7 @@ describe('F-03 BR-03.6 impor idempoten & bisa dilanjutkan', function (): void {
         $masuk->post("/kelola/produk/impor/{$impor->Uuid}/lanjutkan")->assertSessionHasErrors('Impor');
     });
 
-    it('impor yang tampak terhenti (Menerapkan tanpa kemajuan > 10 menit) boleh dilanjutkan; yang baru berjalan tidak', function (): void {
+    it('impor yang tampak terhenti (Menerapkan tanpa kemajuan > 10 menit) boleh dilanjutkan, yang baru berjalan tidak', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImpor::Unggah($masuk, BantuanImpor::BuatCsv(BarisIdempotensi(2)));

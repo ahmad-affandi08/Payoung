@@ -16,7 +16,7 @@ void main() {
     ],
   );
 
-  test('peringatan hanya untuk batch terdepan yang lewat atau ≤ 7 hari; stok batch kosong diberi tahu', () {
+  test('peringatan hanya untuk batch terdepan yang lewat atau ≤ 7 hari. Stok batch kosong diberi tahu', () {
     expect(LayananInfoBatch.SusunPeringatan('Susu', Info([-3, 40])), (
       teks: 'Susu: batch B0 sudah lewat kedaluwarsa 3 hari. Tarik dari rak sebelum dijual.',
       lewat: true,

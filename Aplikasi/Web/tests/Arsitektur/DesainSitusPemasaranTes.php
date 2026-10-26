@@ -140,7 +140,7 @@ test('animasi muncul-saat-gulir hanya dipakai di situs pemasaran (D-25)', functi
     $pelanggaran = CariPemakaianDiLuarSitus(['/\bmuncul-saat-gulir\b/']);
 
     expect($pelanggaran)->toBe([], implode("\n", [
-        'muncul-saat-gulir berdurasi 320 ms, di luar batas 100–200 ms §17.6.4; hanya payoung.id (D-25).',
+        'muncul-saat-gulir berdurasi 320 ms, di luar batas 100–200 ms §17.6.4. Hanya payoung.id (D-25).',
         'Berkas:',
         ...$pelanggaran,
     ]));

@@ -69,7 +69,7 @@ function PesanEmail(string $dari, array $ubah = []): array
 }
 
 describe('Pintu masuk dan tanda tangan', function (): void {
-    it('tanpa rahasia terpasang pintu masuk mati (404); tanda tangan salah, hilang, atau basi ditolak 401', function (): void {
+    it('tanpa rahasia terpasang pintu masuk mati (404). Tanda tangan salah, hilang, atau basi ditolak 401', function (): void {
         config(['dukungan.MasukRahasia' => '']);
         KirimPesanMasuk($this, PesanEmail('rina@kopinusantara.id'))->assertNotFound();
 
@@ -81,7 +81,7 @@ describe('Pintu masuk dan tanda tangan', function (): void {
         expect(PesanMasukDukungan::query()->count())->toBe(0);
     });
 
-    it('badan cacat 422; kanal selain Email/WhatsApp, nomor tiket aneh, dan isi kosong ditolak validasi', function (): void {
+    it('badan cacat 422. Kanal selain Email/WhatsApp, nomor tiket aneh, dan isi kosong ditolak validasi', function (): void {
         KirimPesanMasuk($this, ['Kanal' => 'Telegram', 'Dari' => 'x', 'IdPesan' => '1', 'Isi' => 'halo'])->assertStatus(422)->assertJsonPath('Galat.Kode', 'ValidasiGagal');
         KirimPesanMasuk($this, PesanEmail('rina@kopinusantara.id', ['NomorTiket' => 'TKT-1']))->assertStatus(422);
         KirimPesanMasuk($this, PesanEmail('rina@kopinusantara.id', ['Isi' => '']))->assertStatus(422);
@@ -145,7 +145,7 @@ describe('Tiket baru dari email', function (): void {
 });
 
 describe('Balasan', function (): void {
-    it('balasan email dengan nomor tiket di subjek masuk sebagai pesan pengguna; kutipan riwayat dipangkas; tiket Selesai dibuka lagi', function (): void {
+    it('balasan email dengan nomor tiket di subjek masuk sebagai pesan pengguna. Kutipan riwayat dipangkas. Tiket Selesai dibuka lagi', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanDukungan::BuatTenant('Kopi Balas', 'rina@kopibalas.id');
         $tiket = BantuanDukungan::BuatTiket($tenant, $pemilik);
         app(KonteksTenant::class)->Atur($tenant->Id);
@@ -165,7 +165,7 @@ describe('Balasan', function (): void {
             ->and(TiketDukungan::query()->count())->toBe(1);
     });
 
-    it('nomor tiket di isi WhatsApp atau payload; tiket tenant lain tidak ditemukan; tiket ditutup tidak bisa dibalas', function (): void {
+    it('nomor tiket di isi WhatsApp atau payload. Tiket tenant lain tidak ditemukan. Tiket ditutup tidak bisa dibalas', function (): void {
         ['Tenant' => $tenantA, 'Pengguna' => $pemilikA] = BantuanDukungan::BuatTenant('Kopi Alfa', 'alfa@kopialfa.id');
         ['Tenant' => $tenantB, 'Pengguna' => $pemilikB] = BantuanDukungan::BuatTenant('Kopi Beta', 'beta@kopibeta.id');
         $tiketA = BantuanDukungan::BuatTiket($tenantA, $pemilikA);
@@ -248,7 +248,7 @@ describe('Pembatasan', function (): void {
 });
 
 describe('Pembersih pesan masuk', function (): void {
-    it('memangkas kutipan, membuang karakter kendali, membatasi panjang; judul dan nomor tiket', function (): void {
+    it('memangkas kutipan, membuang karakter kendali, membatasi panjang. Judul dan nomor tiket', function (): void {
         $p = new PembersihPesanMasuk;
 
         expect($p->RapikanIsi("Baris satu\x00\r\nBaris dua\r\n> kutipan\r\n\r\n\r\n\r\nBaris tiga"))->toBe("Baris satu\nBaris dua\n\nBaris tiga")

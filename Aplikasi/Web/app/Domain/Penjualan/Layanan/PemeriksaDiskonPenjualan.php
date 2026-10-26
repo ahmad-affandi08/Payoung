@@ -71,7 +71,7 @@ final class PemeriksaDiskonPenjualan
         $persen = self::FormatPersenMelebihi($terbesar, $penyetuju !== null || $izinSetujui ? $pengaturan->batasDiskonPenyetuju : $pengaturan->batasDiskonManual);
 
         $tinjauan['DiskonMelebihiBatas'] = match (true) {
-            $penyetuju !== null => "DiskonMelebihiBatas: diskon {$persen} melebihi batas persetujuan {$batasPenyetuju} ({$penyetuju->nama}); hanya Pemilik yang boleh menyetujui",
+            $penyetuju !== null => "DiskonMelebihiBatas: diskon {$persen} melebihi batas persetujuan {$batasPenyetuju} ({$penyetuju->nama}). Hanya Pemilik yang boleh menyetujui",
             ! $izinManual && ! self::CekMelebihi($diskon, $pengaturan->batasDiskonManual) => "DiskonMelebihiBatas: diskon {$persen} diberikan tanpa persetujuan, padahal {$kasir->nama} tidak punya izin diskon manual",
             default => "DiskonMelebihiBatas: diskon {$persen} melebihi batas kasir {$batasKasir} tanpa persetujuan supervisor",
         };

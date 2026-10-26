@@ -20,7 +20,7 @@ void main() {
 
   group('aktivasi & data awal', () {
     test(
-      'kode ditukar token; token & kunci PIN ke secure storage, identitas & data awal ke basis data lokal',
+      'kode ditukar token. Token & kunci PIN ke secure storage, identitas & data awal ke basis data lokal',
       () async {
         u.server.penangan = (p) async => p.url.path.endsWith('aktivasi')
             ? JsonUji({
@@ -73,7 +73,7 @@ void main() {
       expect((await u.masuk.Masuk(rina, KasusPin(0)['Pin']! as String)).uuid, rina.uuid);
     });
 
-    test('staf tanpa verifier offline memakai server; tanpa internet diberi tahu cara mengaturnya', () async {
+    test('staf tanpa verifier offline memakai server, tanpa internet diberi tahu cara mengaturnya', () async {
       await u.SiapkanAktif();
       final sari = await u.Staf('Sari Lestari');
       u.server.penangan = (_) async => JsonUji({
@@ -128,7 +128,7 @@ void main() {
       },
     );
 
-    test('pecahan tidak sama dengan kas awal & kas awal minus ditolak; tidak ada data tersimpan', () async {
+    test('pecahan tidak sama dengan kas awal & kas awal minus ditolak. Tidak ada data tersimpan', () async {
       await u.SiapkanAktif();
       final rina = await u.Staf('Rina Wulandari');
 
@@ -141,7 +141,7 @@ void main() {
       expect(await u.repositori.AmbilOutboxSiapKirim(50, u.jam), isEmpty);
     });
 
-    test('BR-06.4 kas keluar di atas batas butuh supervisor berizin; kategori wajib; setoran tanpa kategori', () async {
+    test('BR-06.4 kas keluar di atas batas butuh supervisor berizin. Kategori wajib. Setoran tanpa kategori', () async {
       await u.SiapkanAktif();
       final rina = await u.Staf('Rina Wulandari');
       final budi = await u.Staf('Budi Santoso');
@@ -211,7 +211,7 @@ void main() {
     });
 
     test(
-      'BR-06.2 shift bukan bersama: kasir lain ditolak, supervisor boleh; shift bersama: kasir lain boleh',
+      'BR-06.2 shift bukan bersama: kasir lain ditolak, supervisor boleh. Shift bersama: kasir lain boleh',
       () async {
         await u.SiapkanAktif();
         final rina = await u.Staf('Rina Wulandari');
@@ -326,7 +326,7 @@ void main() {
     });
 
     test('audit P0 F-01 masa pemulihan: outbox dikosongkan dulu (termasuk yang menunggu jadwal ulang), baru token '
-        'dihapus; item membawa perangkat pembuatnya', () async {
+        'dihapus. Item membawa perangkat pembuatnya', () async {
       await u.SiapkanAktif();
       await u.repositori.SimpanPengaturan(KunciPengaturan.uuidPerangkat, '01K5PRGLAMA000000000000001');
       final rina = await u.Staf('Rina Wulandari');
@@ -401,7 +401,7 @@ void main() {
     });
 
     test(
-      'audit P0 F-01 SelesaikanPencabutan: offline = token dipertahankan; online = sisa dikirim lalu token dihapus',
+      'audit P0 F-01 SelesaikanPencabutan: offline = token dipertahankan. Online = sisa dikirim lalu token dihapus',
       () async {
         await u.SiapkanAktif();
         await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.Nol());

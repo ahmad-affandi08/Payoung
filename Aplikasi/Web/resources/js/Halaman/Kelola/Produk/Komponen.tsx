@@ -88,7 +88,7 @@ export default function HalamanKomponenProduk({ Kepala, Komponen, Izin }: PropsK
                 <Panel
                     judul="Isi paket"
                     idJudul="judul-komponen"
-                    keterangan="Stok setiap komponen terpotong saat paket terjual. Alokasi harga membagi harga paket ke tiap komponen untuk laporan; kosongkan semua agar dibagi otomatis menurut harga jual biasa."
+                    keterangan="Stok setiap komponen terpotong saat paket terjual. Alokasi harga membagi harga paket ke tiap komponen untuk laporan. Kosongkan semua agar dibagi otomatis menurut harga jual biasa."
                 >
                     {komponen.length === 0 ? (
                         <p className="rounded-kontrol border border-dashed border-garis-input px-3 py-2 text-isi text-teks-sekunder">

@@ -46,7 +46,7 @@ function SiapkanSesiDukunganUji(TestCase $tes, array $isian = []): array
 }
 
 describe('P-09 langkah 1: Owner memberi dan mencabut izin', function (): void {
-    it('Owner memberi izin berbatas waktu; tercatat di audit tenant dan hanya satu yang berlaku', function (): void {
+    it('Owner memberi izin berbatas waktu. Tercatat di audit tenant dan hanya satu yang berlaku', function (): void {
         $tenant = Bantuan::BuatTenant();
 
         Bantuan::OwnerBeriIzin($this, $tenant, ['DurasiJam' => 72, 'Cakupan' => 'BacaUbah', 'Catatan' => 'Tolong rapikan produk.'])
@@ -128,7 +128,7 @@ describe('P-09 langkah 2: petugas masuk sebagai tenant', function (): void {
         Bantuan::PetugasMinta($this, Bantuan::BuatPetugas(PeranPengelolaBawaan::Keuangan), $tenant['Tenant'])->assertForbidden();
     });
 
-    it('petugas dengan izin Owner masuk ke back-office; banner dan identitas teknis terpasang, tercatat di dua audit', function (): void {
+    it('petugas dengan izin Owner masuk ke back-office. Banner dan identitas teknis terpasang, tercatat di dua audit', function (): void {
         [$tenant, $petugas] = SiapkanSesiDukunganUji($this);
 
         // Isi HTML dibaca langsung: respons sesi dukungan disamarkan setelah dirender, jadi `assertInertia` (yang membaca
@@ -213,7 +213,7 @@ describe('P-09 langkah 2: petugas masuk sebagai tenant', function (): void {
     });
 });
 
-describe('BR-P09.2: baca saja menolak ubah; baca & ubah mengizinkan', function (): void {
+describe('BR-P09.2: baca saja menolak ubah. Baca & ubah mengizinkan', function (): void {
     it('Baca saja: mengubah data ditolak dengan pesan "Izin akses hanya baca" dan tercatat di audit tenant dan pengelola', function (): void {
         [$tenant, $petugas] = SiapkanSesiDukunganUji($this);
 
@@ -370,7 +370,7 @@ describe('P-09 langkah 4: pencabutan, kedaluwarsa, dan petugas nonaktif memutus 
         $this->get('/kelola')->assertRedirect();
     });
 
-    it('izin habis waktu: sesi berhenti; perintah penyapu mengisi alasan Kedaluwarsa', function (): void {
+    it('izin habis waktu: sesi berhenti. Perintah penyapu mengisi alasan Kedaluwarsa', function (): void {
         [$tenant, , $peramban] = SiapkanSesiDukunganUji($this, ['DurasiJam' => 1]);
 
         $this->travel(61)->minutes();
@@ -486,7 +486,7 @@ describe('P-09 langkah 5: akses darurat hanya Super Admin dan Owner diberi tahu'
         expect(AksesDukungan::query()->withoutGlobalScopes()->count())->toBe(1);
     });
 
-    it('Super Admin menutup akses darurat lebih awal; izin Owner tidak bisa dicabut dari konsol', function (): void {
+    it('Super Admin menutup akses darurat lebih awal. Izin Owner tidak bisa dicabut dari konsol', function (): void {
         $tenant = Bantuan::BuatTenant();
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
         $this->post(BantuanPengelola::Url("/tenant/{$tenant['Tenant']->Uuid}/akses-dukungan/darurat"), BukaDaruratUji())->assertSessionHasNoErrors();
@@ -515,7 +515,7 @@ describe('P-09 langkah 5: akses darurat hanya Super Admin dan Owner diberi tahu'
 });
 
 describe('P-09 langkah 3-4: Owner melihat jejak sesi', function (): void {
-    it('Owner membuka daftar permintaan sesi petugas; tenant lain mendapat 404', function (): void {
+    it('Owner membuka daftar permintaan sesi petugas. Tenant lain mendapat 404', function (): void {
         [$tenant] = SiapkanSesiDukunganUji($this);
         $this->get('/kelola/produk')->assertOk();
         BantuanOrganisasi::AturKonteks($tenant['Tenant']->Id);

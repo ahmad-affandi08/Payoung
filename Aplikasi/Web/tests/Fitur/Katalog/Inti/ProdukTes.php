@@ -236,7 +236,7 @@ describe('F-03 SimpanProduk lewat form', function (): void {
         $masuk()->post("/kelola/produk/{$lain->Uuid}/satuan/{$satuanLain->Uuid}/barcode", ['Barcode' => '8991234500017'])->assertSessionHasNoErrors();
     });
 
-    it('satuan: tepat satu satuan dasar, konversi > 0, satuan unik; satuan dibuang ikut menghapus barcode & harga dengan jejak', function (): void {
+    it('satuan: tepat satu satuan dasar, konversi > 0, satuan unik. Satuan dibuang ikut menghapus barcode & harga dengan jejak', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $dus = BantuanKatalog::BuatSatuan('Dus', 'dus');
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);

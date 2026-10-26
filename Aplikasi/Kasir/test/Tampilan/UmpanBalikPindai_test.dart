@@ -68,7 +68,7 @@ void main() {
   bool CekDisorot(WidgetTester tester) =>
       tester.widgetList<BarisKeranjang>(find.byType(BarisKeranjang)).any((b) => b.disorot);
 
-  testWidgets('pemindai tanpa fokus (1280 dp): berhasil → bunyi + sorot sebentar; kode tak dikenal → bunyi gagal', (
+  testWidgets('pemindai tanpa fokus (1280 dp): berhasil → bunyi + sorot sebentar. Kode tak dikenal → bunyi gagal', (
     tester,
   ) async {
     final (u, umpanBalik) = await Masuk(tester, const Size(1280, 900));

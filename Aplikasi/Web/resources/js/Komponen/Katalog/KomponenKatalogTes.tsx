@@ -86,7 +86,7 @@ function BarcodeUji({ awal = [] as string[] }) {
 describe('BidangBarcode (BR-03.1)', () => {
     afterEach(() => cleanup());
 
-    it('Enter dari pemindai menambah barcode tanpa mengirim formulir; duplikat ditolak', () => {
+    it('Enter dari pemindai menambah barcode tanpa mengirim formulir. Duplikat ditolak', () => {
         render(<BarcodeUji awal={['8991234567890']} />);
         const input = screen.getByLabelText<HTMLInputElement>('Barcode pcs');
 
@@ -111,7 +111,7 @@ describe('BidangBarcode (BR-03.1)', () => {
 describe('BidangBarcode: ketikan yang ditinggalkan tidak hilang diam-diam', () => {
     afterEach(() => cleanup());
 
-    it('meninggalkan isian menambahkan barcode yang valid; tombol Tambah sesudahnya tidak menggandakan', () => {
+    it('meninggalkan isian menambahkan barcode yang valid. Tombol Tambah sesudahnya tidak menggandakan', () => {
         render(<BarcodeUji />);
         const input = screen.getByLabelText<HTMLInputElement>('Barcode pcs');
 
@@ -227,7 +227,7 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
         expect(screen.queryByLabelText('Harga baris 2')).toBeNull();
     });
 
-    it('tanpa baris: isian harga langsung tampil; mengetik membuat baris dasar, mengosongkan membuangnya lagi', () => {
+    it('tanpa baris: isian harga langsung tampil. Mengetik membuat baris dasar, mengosongkan membuangnya lagi', () => {
         const SaatBerubah = vi.fn();
         render(
             <TabelHargaBertingkat
@@ -296,7 +296,7 @@ describe('PemilihProduk (TanStack Query, KunciKueri.Produk.Cari)', () => {
         );
     });
 
-    it('mencari, menampilkan hasil, dan memilih dengan keyboard; produk yang dikecualikan disembunyikan', async () => {
+    it('mencari, menampilkan hasil, dan memilih dengan keyboard. Produk yang dikecualikan disembunyikan', async () => {
         const Ambil = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>

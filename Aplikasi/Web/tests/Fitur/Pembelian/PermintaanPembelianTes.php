@@ -109,7 +109,7 @@ describe('alur permintaan pembelian', function (): void {
             ->and(PermintaanPembelian::query()->count())->toBe(1);
     });
 
-    it('four-eyes: pengaju tidak bisa menyetujui sendiri; penyetuju lain menyetujui atau menolak dengan alasan', function (): void {
+    it('four-eyes: pengaju tidak bisa menyetujui sendiri. Penyetuju lain menyetujui atau menolak dengan alasan', function (): void {
         $k = SiapkanPermintaanUji();
         $staf = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafPembelian);
         $admin = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Admin);
@@ -148,7 +148,7 @@ describe('alur permintaan pembelian', function (): void {
         expect($pr->refresh()->Status)->toBe(StatusPermintaanPembelian::Disetujui);
     });
 
-    it('jadikan PO: pemasok wajib kecuali ada usulan; usulan dipakai bila tidak dipilih; hanya yang disetujui', function (): void {
+    it('jadikan PO: pemasok wajib kecuali ada usulan. Usulan dipakai bila tidak dipilih. Hanya yang disetujui', function (): void {
         $k = SiapkanPermintaanUji();
         MasukPermintaan($this, $k)->post('/kelola/pembelian/permintaan', KirimanPermintaanUji($k))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -170,7 +170,7 @@ describe('alur permintaan pembelian', function (): void {
         expect(PesananPembelian::query()->sole()->IdPemasok)->toBe($k['Pemasok']->Id);
     });
 
-    it('batalkan butuh alasan 5 karakter ke atas dan final; draf yang sudah diajukan terkunci di model', function (): void {
+    it('batalkan butuh alasan 5 karakter ke atas dan final. Draf yang sudah diajukan terkunci di model', function (): void {
         $k = SiapkanPermintaanUji();
         MasukPermintaan($this, $k)->post('/kelola/pembelian/permintaan', KirimanPermintaanUji($k))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -203,7 +203,7 @@ describe('alur permintaan pembelian', function (): void {
 });
 
 describe('akses permintaan pembelian', function (): void {
-    it('halaman daftar, form, dan detail memuat props; tindakan mengikuti status dan izin', function (): void {
+    it('halaman daftar, form, dan detail memuat props. Tindakan mengikuti status dan izin', function (): void {
         $k = SiapkanPermintaanUji();
         MasukPermintaan($this, $k)->get('/kelola/pembelian/permintaan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Pembelian/Permintaan/Daftar')->where('Izin.Kelola', true));
@@ -223,7 +223,7 @@ describe('akses permintaan pembelian', function (): void {
         $this->getJson('/kelola/pembelian/permintaan?cari=PP%2F')->assertOk()->assertJsonPath('Data.0.Nomor', $pr->Nomor)->assertJsonPath('Data.0.JumlahBaris', 2);
     });
 
-    it('Kasir 403; tenant lain tidak melihat permintaan ini (404)', function (): void {
+    it('Kasir 403. Tenant lain tidak melihat permintaan ini (404)', function (): void {
         $k = SiapkanPermintaanUji();
         MasukPermintaan($this, $k)->post('/kelola/pembelian/permintaan', KirimanPermintaanUji($k))->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

@@ -476,7 +476,7 @@ class _LembarReturTanpaStrukState extends ConsumerState<LembarReturTanpaStruk> {
         Padding(
           padding: const EdgeInsets.only(top: TokenJarak.jarak4),
           child: Text(
-            'Barang pengganti dipilih di layar Jual dan minimal senilai retur; kekurangannya dibayar pelanggan.',
+            'Barang pengganti dipilih di layar Jual dan minimal senilai retur. Kekurangannya dibayar pelanggan.',
             style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
           ),
         ),

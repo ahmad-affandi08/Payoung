@@ -140,7 +140,7 @@ class _LembarPerintahKerjaState extends ConsumerState<LembarPerintahKerja> {
             children: [
               Expanded(
                 child: Text(
-                  'Perintah kerja outlet ini yang sudah disetujui pelanggan. Perlu koneksi internet; pembayaran tetap '
+                  'Perintah kerja outlet ini yang sudah disetujui pelanggan. Perlu koneksi internet. Pembayaran tetap '
                   'bisa offline.',
                   style: teks.bodySmall,
                 ),

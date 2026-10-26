@@ -37,7 +37,7 @@ beforeEach(function (): void {
 afterEach(fn () => Carbon::setTestNow());
 
 describe('F-18 bagian 3 target penjualan', function (): void {
-    it('target outlet & karyawan: realisasi, persen, proyeksi; void mengurangi realisasi karyawan; simpan ulang mengganti', function (): void {
+    it('target outlet & karyawan: realisasi, persen, proyeksi. Void mengurangi realisasi karyawan. Simpan ulang mengganti', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Cantik Target');
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $maya = Karyawan::query()->create(['Nama' => 'Maya Senior']);

@@ -35,7 +35,7 @@ describe('F-03 BR-03.3 riwayat harga dari Aksi Tim 1 (lewat SimpanHargaProduk/Ha
             ->and($riwayat->IdSatuan)->toBe($t['Pcs']->Id);
     });
 
-    it('form produk: harga awal bersumber Manual dengan pengubah; satuan yang dibuang mencatat HargaBaru null', function (): void {
+    it('form produk: harga awal bersumber Manual dengan pengubah. Satuan yang dibuang mencatat HargaBaru null', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $dus = BantuanKatalog::BuatSatuan('Dus', 'dus');
         $form = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], ['Satuan' => [

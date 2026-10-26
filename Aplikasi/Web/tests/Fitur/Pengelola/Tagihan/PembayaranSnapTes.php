@@ -290,7 +290,7 @@ describe('D-159 membuat pembayaran SNAP', function (): void {
         expect(collect($halaman->viewData('page')['props']['PilihanBayar'])->pluck('Metode')->all())->toBe(['ShopeePay']);
     });
 
-    it('DOKU menolak dengan pasti: pembayaran ditutup Ditolak; hasil tak pasti dibiarkan Menunggu', function (): void {
+    it('DOKU menolak dengan pasti: pembayaran ditutup Ditolak. Hasil tak pasti dibiarkan Menunggu', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
         AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-generate', ['responseCode' => '4004700', 'responseMessage' => 'Invalid merchantId '.BantuanTagihan::KUNCI_RAHASIA_DOKU], 400);
@@ -319,7 +319,7 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
         return [$tenant, $pemilik, $tagihan, PembayaranSnapUji($tagihan)];
     }
 
-    it('notifikasi QRIS memicu pertanyaan status; status 00 melunasi tagihan dan jawabannya berbentuk SNAP', function (): void {
+    it('notifikasi QRIS memicu pertanyaan status. Status 00 melunasi tagihan dan jawabannya berbentuk SNAP', function (): void {
         [$tenant, , $tagihan, $pembayaran] = SiapkanQrisMenunggu($this);
         AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-query', ['responseCode' => '2005100', 'latestTransactionStatus' => '00', 'amount' => ['value' => number_format((int) $tagihan->Total, 2, '.', ''), 'currency' => 'IDR']]);
 

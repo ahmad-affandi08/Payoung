@@ -49,7 +49,7 @@ beforeEach(function (): void {
 });
 
 describe('Komponen paket', function (): void {
-    it('menyimpan komponen lewat HTTP, lalu mengganti: Uuid baris tetap, yang dilepas dicatat jejaknya; tercatat di log audit', function (): void {
+    it('menyimpan komponen lewat HTTP, lalu mengganti: Uuid baris tetap, yang dilepas dicatat jejaknya. Tercatat di log audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanKatalog::BuatTenant('Rumah Makan Ayam Geprek Bu Rini');
         $paket = BantuanKomposisi::BuatPaket();
         $nasi = BantuanKatalog::BuatProduk(['Nama' => 'Nasi Ayam Geprek Sambal Bawang', 'Jenis' => JenisProduk::Resep]);
@@ -98,7 +98,7 @@ describe('Komponen paket', function (): void {
             ->and(PaketProdukDetail::query()->orderBy('Urutan')->pluck('AlokasiHarga')->all())->toBe(['66.666667', '33.333333']);
     });
 
-    it('komponen harus bisa dijual, bukan paket, bukan paket itu sendiri, tidak ganda, jumlah > 0; hanya produk jenis Paket', function (): void {
+    it('komponen harus bisa dijual, bukan paket, bukan paket itu sendiri, tidak ganda, jumlah > 0. Hanya produk jenis Paket', function (): void {
         BantuanKatalog::BuatTenant();
         $paket = BantuanKomposisi::BuatPaket();
         $paketLain = BantuanKomposisi::BuatPaket('Paket Keluarga Hemat Berempat');
@@ -127,7 +127,7 @@ describe('Komponen paket', function (): void {
             ->and($galat($paket, [[$anak, '1'], [$nasi, '1']]))->toBe([]);
     });
 
-    it('isolasi: komponen tenant lain ditolak, paket tenant lain 404; kasir 403', function (): void {
+    it('isolasi: komponen tenant lain ditolak, paket tenant lain 404. Kasir 403', function (): void {
         BantuanKatalog::BuatTenant('Warung Makan Tetangga Sebelah');
         $paketB = BantuanKomposisi::BuatPaket();
         $nasiB = BantuanKatalog::BuatProduk(['Nama' => 'Nasi Rames Komplit Lauk Telur']);
@@ -165,7 +165,7 @@ describe('Komponen paket', function (): void {
         ]]);
     });
 
-    it('GET komponen merender Kelola/Produk/Komponen (butuh halaman FE); produk bukan paket 404', function (): void {
+    it('GET komponen merender Kelola/Produk/Komponen (butuh halaman FE). Produk bukan paket 404', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanKatalog::BuatTenant();
         $paket = BantuanKomposisi::BuatPaket();
         $nasi = BantuanKatalog::BuatProduk(['Nama' => 'Nasi Ayam Geprek Sambal Bawang']);

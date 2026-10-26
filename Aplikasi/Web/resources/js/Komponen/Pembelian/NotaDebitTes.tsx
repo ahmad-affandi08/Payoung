@@ -68,7 +68,7 @@ describe('Nota debit pembelian (v6.07)', () => {
         );
     });
 
-    it('buat: mengirim nilai, baris terpilih, dan alasan; akun uang kembali hanya bila melebihi sisa hutang', () => {
+    it('buat: mengirim nilai, baris terpilih, dan alasan. Akun uang kembali hanya bila melebihi sisa hutang', () => {
         RenderUji(
             <HalamanBuatNotaDebit
                 Faktur={{ ...Faktur, SisaHutang: '100000.00' }}
@@ -105,7 +105,7 @@ describe('Nota debit pembelian (v6.07)', () => {
         });
     });
 
-    it('buat: tanpa kelebihan sisa hutang tidak meminta akun; peringatan batas persetujuan untuk non-penyetuju', () => {
+    it('buat: tanpa kelebihan sisa hutang tidak meminta akun. Peringatan batas persetujuan untuk non-penyetuju', () => {
         RenderUji(
             <HalamanBuatNotaDebit
                 Faktur={Faktur}

@@ -277,7 +277,7 @@ describe('masalah dan jeda', function (): void {
         expect(JalankanBerulangUji($this, '2026-09-27', $b))->toBe(1);
     });
 
-    it('dijeda tidak terbit; dilanjutkan melompati siklus yang terlewat tanpa menumpuk invoice', function (): void {
+    it('dijeda tidak terbit. Dilanjutkan melompati siklus yang terlewat tanpa menumpuk invoice', function (): void {
         $templat = BuatBerulangUji($this);
         $ubah = app(UbahStatusInvoiceBerulang::class);
         $ubah->Jalankan($templat->Uuid, StatusInvoiceBerulang::Dijeda, $this->k['Pemilik']->Id);
@@ -292,7 +292,7 @@ describe('masalah dan jeda', function (): void {
             ->and(Invoice::query()->count())->toBe(0);
     });
 
-    it('hentikan bersifat tetap; templat selesai tidak bisa diubah atau dihidupkan lagi', function (): void {
+    it('hentikan bersifat tetap. Templat selesai tidak bisa diubah atau dihidupkan lagi', function (): void {
         $templat = BuatBerulangUji($this);
         $ubah = app(UbahStatusInvoiceBerulang::class);
         $ubah->Jalankan($templat->Uuid, StatusInvoiceBerulang::Selesai, $this->k['Pemilik']->Id);

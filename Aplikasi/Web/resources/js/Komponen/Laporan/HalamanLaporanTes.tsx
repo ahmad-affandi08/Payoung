@@ -299,7 +299,7 @@ describe('F-14a dasbor pemilik di beranda', () => {
         expect(wadah.querySelector('svg')).toBeNull();
     });
 
-    it('D-203 widget tanpa izin (komisi, stok) tidak dirender; widget bisa disembunyikan lewat Atur widget dan diingat', () => {
+    it('D-203 widget tanpa izin (komisi, stok) tidak dirender. Widget bisa disembunyikan lewat Atur widget dan diingat', () => {
         window.localStorage.clear();
         const terbatas: DasborPemilik = { ...dasbor, StokKritis: null, Widget: { ...dasbor.Widget, Komisi: null } };
         const { unmount: Lepas } = RenderUji(<HalamanBerandaKelola Dasbor={terbatas} />);
@@ -803,7 +803,7 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('link', { name: 'Ringkasan harian' })).toBeTruthy();
     });
 
-    it('tab per produk: TabelData mode server dengan ekspor sesuai filter; keadaan kosong', () => {
+    it('tab per produk: TabelData mode server dengan ekspor sesuai filter. Keadaan kosong', () => {
         RenderUji(
             <HalamanLaporanPenjualan
                 {...PropsPenjualan({
@@ -909,7 +909,7 @@ describe('F-14a laporan pajak & stok', () => {
         );
     });
 
-    it('stok: nilai persediaan per lokasi & kategori; tab stok kritis bertautan kartu stok', () => {
+    it('stok: nilai persediaan per lokasi & kategori. Tab stok kritis bertautan kartu stok', () => {
         AturHalamanUji({}, '/kelola/laporan/stok');
         const nilai: PropsLaporanStok = {
             Saring: { Tab: 'nilai', Tanggal: '2026-10-07', Gudang: '', Hari: 14 },
@@ -1015,7 +1015,7 @@ describe('§10.10 laporan pembelian', () => {
         OpsiOutlet: [{ Nilai: 'o1', Label: 'Toko Kelontong Berkah Solo' }],
     };
 
-    it('per pemasok: nama, pembelian bersih, sisa hutang; ekspor sesuai filter', () => {
+    it('per pemasok: nama, pembelian bersih, sisa hutang. Ekspor sesuai filter', () => {
         RenderUji(
             <HalamanLaporanPembelian
                 {...dasar}

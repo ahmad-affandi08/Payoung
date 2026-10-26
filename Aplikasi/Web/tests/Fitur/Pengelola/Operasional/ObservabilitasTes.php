@@ -127,7 +127,7 @@ describe('Pencatat metrik API', function (): void {
         expect(MetrikApi::query()->count())->toBe(1);
     });
 
-    it('API nyata dicatat per kelompok; halaman web dan /sehat tidak', function (): void {
+    it('API nyata dicatat per kelompok. Halaman web dan /sehat tidak', function (): void {
         $this->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertUnauthorized();
         $this->getJson('/api/pemilik/v1/profil')->assertUnauthorized();
         $this->get('/sehat');
@@ -187,7 +187,7 @@ describe('Alert error rate dan latensi (BR-P11.1 lanjutan)', function (): void {
         expect(app(PeriksaKondisiOperasional::class)->Jalankan())->toBe([]);
     });
 
-    it('p95 API POS di atas 400 ms membuka alert peringatan, email tetapi tanpa WhatsApp; p95 Owner yang lambat tidak dinilai', function (): void {
+    it('p95 API POS di atas 400 ms membuka alert peringatan, email tetapi tanpa WhatsApp. P95 Owner yang lambat tidak dinilai', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 80, 'JumlahGalatServer' => 0, 'TotalDurasiMs' => 40000, 'Hingga250Ms' => 40, 'Hingga800Ms' => 40]);
         TambahMetrikMenit('Pemilik', 1, ['JumlahPermintaan' => 80, 'JumlahGalatServer' => 0, 'TotalDurasiMs' => 90000, 'Hingga1600Ms' => 80]);
@@ -235,7 +235,7 @@ describe('Outbox perangkat macet', function (): void {
         expect($perangkat->refresh()->OutboxTertundaSejak)->not->toBeNull();
     });
 
-    it('outbox tidak kosong > 2 jam membuka alert peringatan; daftar memuat tenant, outlet, dan perangkat; pulih menutup alert', function (): void {
+    it('outbox tidak kosong > 2 jam membuka alert peringatan. Daftar memuat tenant, outlet, dan perangkat. Pulih menutup alert', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Toko Outbox Macet Sragen');
         ['Tenant' => $tenantSehat] = BantuanOrganisasi::BuatTenant('Toko Lancar Jaya');
         ['Perangkat' => $macet] = BantuanPerangkat::BuatPerangkat($tenant->Id, nama: 'Kasir Depan Sragen');
@@ -274,7 +274,7 @@ describe('Outbox perangkat macet', function (): void {
 });
 
 describe('Alert kritis lewat WhatsApp', function (): void {
-    it('alert kritis dikirim ke semua nomor sekali per insiden; tanpa nomor tidak dikirim lalu dicoba lagi setelah nomor diatur', function (): void {
+    it('alert kritis dikirim ke semua nomor sekali per insiden, tanpa nomor tidak dikirim lalu dicoba lagi setelah nomor diatur', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         TambahMetrikMenit('Pos', 1, ['JumlahPermintaan' => 60, 'JumlahGalatServer' => 6, 'TotalDurasiMs' => 3000, 'Hingga100Ms' => 60]);
 
@@ -309,7 +309,7 @@ describe('Alert kritis lewat WhatsApp', function (): void {
         expect(AlertOperasional::query()->sole()->WaTerkirimPada)->not->toBeNull();
     });
 
-    it('Teknis mengatur nomor penerima: dirapikan, tanpa duplikat, diaudit tersamar; nomor tidak sah dan terlalu banyak ditolak; peran lain ditolak', function (): void {
+    it('Teknis mengatur nomor penerima: dirapikan, tanpa duplikat, diaudit tersamar. Nomor tidak sah dan terlalu banyak ditolak. Peran lain ditolak', function (): void {
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MasukSebagaiTeknisObservabilitas($this, $teknis);
 
@@ -384,7 +384,7 @@ describe('Penundaan alert lalu lintas API (P-11 PGL-20, v6.60)', function (): vo
         Mail::assertNothingSent();
     });
 
-    it('error rate tinggi baru membuka insiden setelah bertahan 2 menit; email sekali', function (): void {
+    it('error rate tinggi baru membuka insiden setelah bertahan 2 menit. Email sekali', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MetrikPosBuruk();
 
@@ -414,7 +414,7 @@ describe('Penundaan alert lalu lintas API (P-11 PGL-20, v6.60)', function (): vo
         Mail::assertNothingSent();
     });
 
-    it('insiden yang sudah terbuka tidak membuka-menutup saat sempat sehat sebentar; baru tertutup setelah sehat 5 menit', function (): void {
+    it('insiden yang sudah terbuka tidak membuka-menutup saat sempat sehat sebentar. Baru tertutup setelah sehat 5 menit', function (): void {
         BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         MetrikPosBuruk();
         app(PeriksaKondisiOperasional::class)->Jalankan();

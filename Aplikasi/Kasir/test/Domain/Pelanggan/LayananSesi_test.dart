@@ -72,7 +72,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('katalog menandai paket sesi; jual paket wajib pelanggan & per paket utuh; baris paket tidak diretur', () async {
+  test('katalog menandai paket sesi. Jual paket wajib pelanggan & per paket utuh. Baris paket tidak diretur', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
     final paket = katalog.CariProduk(paketCreambath)!;
@@ -104,7 +104,7 @@ void main() {
   });
 
   test(
-    'saldo sesi dibaca online (offline = PerluOnline); pakai sesi menulis outbox Sesi.Pakai; aturan jumlah & layanan',
+    'saldo sesi dibaca online (offline = PerluOnline). Pakai sesi menulis outbox Sesi.Pakai. Aturan jumlah & layanan',
     () async {
       final katalog = await u.MuatKatalog();
       u.server.penangan = (p) async {

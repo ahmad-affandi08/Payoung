@@ -87,7 +87,7 @@ describe('Grosir › Kanvas (Modul Salesman bagian 3)', () => {
         );
     });
 
-    it('daftar kendaraan + rekap: muat, terjual, retur, bongkar, sisa per produk; uang, setoran, dan selisih bertulisan', () => {
+    it('daftar kendaraan + rekap: muat, terjual, retur, bongkar, sisa per produk. Uang, setoran, dan selisih bertulisan', () => {
         RenderUji(<HalamanDaftarKanvas {...Props()} />);
 
         expect(screen.getAllByRole('link', { name: 'Kanvas AD 1234 XY' })[0]?.getAttribute('href')).toBe(
@@ -160,7 +160,7 @@ describe('Grosir › Kanvas (Modul Salesman bagian 3)', () => {
         expect(panel.getAllByRole('link', { name: 'Daftar ambil' })).toHaveLength(2);
     });
 
-    it('tanpa izin transfer, tautan muat & bongkar tidak tampil; shift terbuka ditandai', () => {
+    it('tanpa izin transfer, tautan muat & bongkar tidak tampil. Shift terbuka ditandai', () => {
         RenderUji(
             <HalamanDaftarKanvas
                 {...Props({

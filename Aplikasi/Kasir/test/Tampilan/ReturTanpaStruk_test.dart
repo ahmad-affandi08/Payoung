@@ -168,7 +168,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('tanpa penyetuju berizin: dialog PIN tidak menawarkan staf; produk ber-batch tidak bisa dipilih', (
+  testWidgets('tanpa penyetuju berizin: dialog PIN tidak menawarkan staf. Produk ber-batch tidak bisa dipilih', (
     tester,
   ) async {
     final u = await Masuk(tester, const Size(1280, 900), izinBudi: false);

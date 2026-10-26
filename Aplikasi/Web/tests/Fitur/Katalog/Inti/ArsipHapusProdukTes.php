@@ -91,7 +91,7 @@ describe('F-03 BR-03.2 arsip, pulihkan, hapus', function (): void {
         expect(Produk::query()->whereKey($produk->Id)->sole()->Aktif)->toBeFalse();
     });
 
-    it('induk varian: anak yang sudah dipakai memblokir hapus; bila semua anak belum dipakai, anak dihapus lebih dulu', function (): void {
+    it('induk varian: anak yang sudah dipakai memblokir hapus. Bila semua anak belum dipakai, anak dihapus lebih dulu', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         app()->tag([PemeriksaPalsuPenjualanArsip::class], PemeriksaPemakaianProduk::TAG);
         $induk = BantuanKatalog::BuatProduk(['Jenis' => JenisProduk::IndukVarian, 'Nama' => 'Kaos Polos Katun', 'AtributVarian' => [['Nama' => 'Ukuran', 'Nilai' => ['S', 'M']]]], null, $t['Pcs']);
@@ -112,7 +112,7 @@ describe('F-03 BR-03.2 arsip, pulihkan, hapus', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'produk.hapus')->count())->toBe(3);
     });
 
-    it('arsip induk varian ikut mengarsipkan anak; pulihkan memeriksa BatasSku untuk semua anak sekaligus', function (): void {
+    it('arsip induk varian ikut mengarsipkan anak. Pulihkan memeriksa BatasSku untuk semua anak sekaligus', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk(kodePaket: 'GRATIS');
         $induk = BantuanKatalog::BuatProduk(['Jenis' => JenisProduk::IndukVarian, 'AtributVarian' => [['Nama' => 'Ukuran', 'Nilai' => ['S', 'M']]]], null, $t['Pcs']);
         BantuanKatalog::BuatProduk(['IdInduk' => $induk->Id, 'KunciVarian' => 'ukuran=s'], null, $t['Pcs']);
@@ -139,7 +139,7 @@ describe('F-03 BR-03.2 arsip, pulihkan, hapus', function (): void {
         expect(app(PemakaianSku::class)->Hitung())->toBe(100);
     });
 
-    it('BatasSku saat membuat: ditolak di batas; produk arsip dan induk varian tidak dihitung', function (): void {
+    it('BatasSku saat membuat: ditolak di batas. Produk arsip dan induk varian tidak dihitung', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk(kodePaket: 'GRATIS');
         foreach (range(1, 100) as $nomor) {
             BantuanKatalog::BuatProduk(['Nama' => "Produk Pengisi {$nomor}"], null, $t['Pcs']);

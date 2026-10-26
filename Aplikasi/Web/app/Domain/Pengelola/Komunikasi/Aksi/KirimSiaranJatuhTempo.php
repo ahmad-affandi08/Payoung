@@ -197,7 +197,7 @@ final class KirimSiaranJatuhTempo
         }
 
         if ($pengirim->CekResmi()) {
-            return [StatusPenerimaSiaran::Dilewati, 'Penyedia WhatsApp resmi hanya mengirim templat yang disetujui Meta; siaran teks bebas tidak bisa terkirim. Pakai email.'];
+            return [StatusPenerimaSiaran::Dilewati, 'Penyedia WhatsApp resmi hanya mengirim templat yang disetujui Meta. Siaran teks bebas tidak bisa terkirim. Pakai email.'];
         }
 
         try {

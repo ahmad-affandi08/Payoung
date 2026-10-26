@@ -8,7 +8,7 @@ void main() {
   const struk = ProfilPrinter(alamat: '192.168.1.50');
   const dapur = ProfilPrinter(jenis: JenisTransport.BluetoothKlasik, alamat: 'AA:BB', nama: 'Dapur');
 
-  test('Gabung: stasiun yang memakai printer struk satu kartu dengan struk; printer sendiri kartu terpisah', () {
+  test('Gabung: stasiun yang memakai printer struk satu kartu dengan struk. Printer sendiri kartu terpisah', () {
     final daftar = DaftarPrinter.Gabung(struk, {
       'bar': const PrinterDapur.Struk(),
       'dapur': const PrinterDapur.Sendiri(dapur),
@@ -38,7 +38,7 @@ void main() {
     expect(hasil.dapur['dapur']?.profil?.alamat, 'AA:BB');
   });
 
-  test('Susun: hanya printer struk pertama yang jadi struk; tanpa struk = tidak ada profil struk', () {
+  test('Susun: hanya printer struk pertama yang jadi struk, tanpa struk = tidak ada profil struk', () {
     final tanpa = DaftarPrinter.Susun([
       const PrinterPerangkat(profil: dapur, stasiun: {'dapur'}),
     ]);

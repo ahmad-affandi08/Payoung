@@ -50,7 +50,7 @@ function IsianPengumuman(array $timpa = []): array
 {
     return [
         'Judul' => 'Pemeliharaan server Sabtu malam',
-        'Isi' => 'Sinkron berhenti sebentar; transaksi tetap tersimpan di perangkat dan terkirim setelahnya.',
+        'Isi' => 'Sinkron berhenti sebentar. Transaksi tetap tersimpan di perangkat dan terkirim setelahnya.',
         'Jenis' => 'Pemeliharaan',
         'TampilMulai' => '2026-10-07T00:00:00Z',
         'TampilSampai' => '2026-10-10T18:00:00Z',

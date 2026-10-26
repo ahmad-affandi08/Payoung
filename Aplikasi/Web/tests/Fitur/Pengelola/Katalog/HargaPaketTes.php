@@ -55,7 +55,7 @@ beforeEach(function (): void {
 });
 
 describe('Harga paket berversi (P-04, BR-P04.1, BR-P04.5)', function (): void {
-    it('Keuangan mengusulkan, Super Admin menerbitkan; Keuangan tidak bisa menyetujui; ajuan Super Admin langsung terbit (D-34)', function (): void {
+    it('Keuangan mengusulkan, Super Admin menerbitkan; Keuangan tidak bisa menyetujui. Ajuan Super Admin langsung terbit (D-34)', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $superAdminPenyusun = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
@@ -84,7 +84,7 @@ describe('Harga paket berversi (P-04, BR-P04.1, BR-P04.5)', function (): void {
             ->and($harga->refresh()->BerlakuSampai?->toDateString())->toBe('2026-12-31');
     });
 
-    it('harga baru mengakhiri harga lama; harga terbit tidak bisa diubah', function (): void {
+    it('harga baru mengakhiri harga lama. Harga terbit tidak bisa diubah', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $lama = UsulkanHargaPro($this, $keuangan, '199000', '2026-10-01');
@@ -184,7 +184,7 @@ describe('Harga paket berversi (P-04, BR-P04.1, BR-P04.5)', function (): void {
             ->toBe('199000.00');
     });
 
-    it('harga kedua dengan tanggal berlaku sama ditolak; harga terbit tidak bisa dihapus', function (): void {
+    it('harga kedua dengan tanggal berlaku sama ditolak. Harga terbit tidak bisa dihapus', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $pertama = UsulkanHargaPro($this, $keuangan, '199000', '2026-10-01');
@@ -195,7 +195,7 @@ describe('Harga paket berversi (P-04, BR-P04.1, BR-P04.5)', function (): void {
         expect(fn () => $pertama->refresh()->delete())->toThrow(LogicException::class);
     });
 
-    it('§19.3: Dukungan tidak bisa mengusulkan harga; pengaju yang bukan penyusun juga tidak bisa meninjau', function (): void {
+    it('§19.3: Dukungan tidak bisa mengusulkan harga. Pengaju yang bukan penyusun juga tidak bisa meninjau', function (): void {
         $dukungan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $superAdminPengaju = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);

@@ -97,7 +97,7 @@ describe('F-05a halaman stok awal', function (): void {
             ->where('StokAwal.Baris.0.SaldoDiGudang', '0.0000'));
     });
 
-    it('detail: baris, jurnal, riwayat, tindakan per izin; kesiapan akun menandai peran yang belum dipetakan', function (): void {
+    it('detail: baris, jurnal, riwayat, tindakan per izin. Kesiapan akun menandai peran yang belum dipetakan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $dokumen = BantuanStokAwal::BuatDanPosting($t['Gudang'], [

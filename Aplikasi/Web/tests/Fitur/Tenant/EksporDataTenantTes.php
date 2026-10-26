@@ -39,7 +39,7 @@ function BacaZipEksporUji(EksporDataTenant $ekspor): array
 }
 
 describe('E5 ekspor data lengkap usaha', function (): void {
-    it('Pemilik meminta ekspor: ZIP berisi CSV tiap tabel data usaha, profil, anggota, dan petunjuk; tanpa rahasia dan data tenant lain', function (): void {
+    it('Pemilik meminta ekspor: ZIP berisi CSV tiap tabel data usaha, profil, anggota, dan petunjuk, tanpa rahasia dan data tenant lain', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Sumber Rejeki Sragen');
         BantuanKatalog::BuatProduk(['Nama' => 'Kopi Tubruk Robusta Temanggung 250 gram'], '35000.00', $t['Pcs']);
         BantuanKatalog::BuatProduk(['Nama' => '=HYPERLINK("http://jahat.example","klik")'], '1000.00', $t['Pcs']);
@@ -74,7 +74,7 @@ describe('E5 ekspor data lengkap usaha', function (): void {
             ->and(DB::table('LogAudit')->where('Peristiwa', 'data.ekspor-siap')->count())->toBe(1);
     });
 
-    it('halaman Data saya dan unduhan: hanya Pemilik; unduh mencatat waktu; tenant lain tidak bisa mengunduh', function (): void {
+    it('halaman Data saya dan unduhan: hanya Pemilik. Unduh mencatat waktu. Tenant lain tidak bisa mengunduh', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Sumber Rejeki Sragen');
         $kasir = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Kasir);
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)->post('/kelola/pengaturan/data-saya/ekspor')->assertSessionHasNoErrors();
@@ -99,7 +99,7 @@ describe('E5 ekspor data lengkap usaha', function (): void {
         BantuanKatalog::MasukSebagai($this, $lain['Tenant']->Id)->get("/kelola/pengaturan/data-saya/ekspor/{$uuid}/unduh")->assertNotFound();
     });
 
-    it('batas permintaan: satu ekspor per 24 jam; ekspor gagal tidak menahan; ekspor yang sedang berjalan menolak permintaan kedua', function (): void {
+    it('batas permintaan: satu ekspor per 24 jam. Ekspor gagal tidak menahan. Ekspor yang sedang berjalan menolak permintaan kedua', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Sumber Rejeki Sragen');
         $minta = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)->post('/kelola/pengaturan/data-saya/ekspor');
 

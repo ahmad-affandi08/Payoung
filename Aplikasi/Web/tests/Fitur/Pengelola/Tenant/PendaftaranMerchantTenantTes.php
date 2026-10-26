@@ -78,7 +78,7 @@ function JawabanKonsol(string $bisnis = 'ACTIVE', string $brand = 'ACTIVE'): arr
 }
 
 describe('detail tenant di konsol', function (): void {
-    it('menampilkan status dan ID; NIK/rekening tersamar; tanpa foto, shared key, atau token callback di halaman', function (): void {
+    it('menampilkan status dan ID; NIK/rekening tersamar, tanpa foto, shared key, atau token callback di halaman', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant('Toko Kelontong Berkah Solo', 'owner.berkah@contoh.id');
         BuatPendaftaranKonsol($tenant);
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Dukungan);
@@ -123,7 +123,7 @@ describe('detail tenant di konsol', function (): void {
 });
 
 describe('segarkan status dari konsol', function (): void {
-    it('Get Business Data → Aktif; tercatat di audit pengelola tanpa rahasia; shared key tersimpan terenkripsi', function (): void {
+    it('Get Business Data → Aktif. Tercatat di audit pengelola tanpa rahasia. Shared key tersimpan terenkripsi', function (): void {
         Http::fake(['api-uat.doku.com/*' => Http::response(JawabanKonsol(), 200)]);
         $tenant = BantuanTenantPengelola::BuatTenant();
         BuatPendaftaranKonsol($tenant);
@@ -183,7 +183,7 @@ describe('segarkan status dari konsol', function (): void {
 });
 
 describe('penampung merchantId/terminalId QRIS (diisi manual)', function (): void {
-    it('Teknis dengan 2FA baru mengisi dan mengosongkan; tercatat di audit; hanya penampung', function (): void {
+    it('Teknis dengan 2FA baru mengisi dan mengosongkan. Tercatat di audit. Hanya penampung', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         BuatPendaftaranKonsol($tenant);
         $pelaku = BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Teknis);
@@ -219,7 +219,7 @@ describe('penampung merchantId/terminalId QRIS (diisi manual)', function (): voi
         $this->put(UrlMerchantKonsol($tenant, 'penampung-qris'), ['IdPedagangQris' => 'MCH-1', 'IdTerminalQris' => 'TRM-1'])->assertSessionHasErrors('Umum');
     });
 
-    it('izin: peran tanpa integrasi.kelola ditolak 403; tanpa 2FA baru ditolak dan nilai tidak berubah', function (): void {
+    it('izin: peran tanpa integrasi.kelola ditolak 403, tanpa 2FA baru ditolak dan nilai tidak berubah', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         BuatPendaftaranKonsol($tenant);
 

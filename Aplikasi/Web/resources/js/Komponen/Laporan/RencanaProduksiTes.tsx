@@ -82,7 +82,7 @@ describe('tab Rencana produksi di laporan stok', () => {
         );
     });
 
-    it('jumlah pecahan dikirim tanpa nol di belakang; tanpa izin kelola persediaan tombol tidak tampil', () => {
+    it('jumlah pecahan dikirim tanpa nol di belakang, tanpa izin kelola persediaan tombol tidak tampil', () => {
         expect(BuatUrlDrafProduksi({ ...roti, Rekomendasi: '4.2500' }, '2026-10-16')).toContain('jumlah=4.25');
         expect(BuatUrlDrafProduksi({ ...roti, Rekomendasi: '10.0000' }, '2026-10-16')).toContain('jumlah=10&');
 
@@ -149,7 +149,7 @@ describe('formulir order produksi terisi dari rencana', () => {
         );
     });
 
-    it('jumlah hasil berubah: bahan dihitung ulang dari resep otomatis; mengubah bahan sendiri menghentikannya sampai "Kembalikan ke resep"', async () => {
+    it('jumlah hasil berubah: bahan dihitung ulang dari resep otomatis. Mengubah bahan sendiri menghentikannya sampai "Kembalikan ke resep"', async () => {
         const AmbilUji = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>

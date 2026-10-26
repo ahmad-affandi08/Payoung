@@ -232,7 +232,7 @@ describe('BR-03.5 estimasi HPP resep', function (): void {
         expect(app(HppResep::class)->Hitung($menu)->hppSatuan)->toBe('391.666700');
     });
 
-    it('satu bahan tanpa HPP → BelumTersedia; ikatan F-05a (HPP dari saldo) tanpa saldo bahan → BelumTersedia; tanpa resep → TanpaResep', function (): void {
+    it('satu bahan tanpa HPP → BelumTersedia. Ikatan F-05a (HPP dari saldo) tanpa saldo bahan → BelumTersedia, tanpa resep → TanpaResep', function (): void {
         BantuanKatalog::BuatTenant();
         $kopi = BantuanKomposisi::BuatBahan();
         $susu = BantuanKomposisi::BuatBahan('Susu Segar Full Cream Pasteurisasi', 'ml', 'Mililiter');

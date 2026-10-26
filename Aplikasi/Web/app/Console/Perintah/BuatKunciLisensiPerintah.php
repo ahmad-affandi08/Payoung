@@ -60,7 +60,7 @@ final class BuatKunciLisensiPerintah extends Command
         fclose($pegangan);
         chmod($berkas, 0600);
 
-        $this->info("Kunci privat disimpan di {$berkas}. Cadangkan di tempat aman; kalau hilang, lisensi baru tidak bisa diterbitkan.");
+        $this->info("Kunci privat disimpan di {$berkas}. Cadangkan di tempat aman. Kalau hilang, lisensi baru tidak bisa diterbitkan.");
         $this->line('Tempel kunci publik ini ke config/lisensi.php (KunciPublik) lalu commit:');
         $this->line($kunci['KunciPublik']);
 

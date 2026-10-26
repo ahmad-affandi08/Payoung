@@ -84,7 +84,7 @@ describe('F-18 bagian 3 kasbon karyawan (J-18.1)', function (): void {
             ->where('Izin.Kelola', true));
     });
 
-    it('batal membalik jurnal; karyawan nonaktif ditolak; Kasir tidak berizin; tenant lain tidak melihat', function (): void {
+    it('batal membalik jurnal. Karyawan nonaktif ditolak; Kasir tidak berizin. Tenant lain tidak melihat', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Kopi Senja Solo');
         $b = BantuanPersediaan::SiapkanTenant('Warung Bakso Pak Kumis');
         BantuanOrganisasi::AturKonteks($a['Tenant']->Id);

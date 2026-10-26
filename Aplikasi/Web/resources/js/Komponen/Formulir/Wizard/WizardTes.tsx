@@ -20,7 +20,7 @@ const semua = urutan.map(Langkah);
 afterEach(() => cleanup());
 
 describe('CariLangkahTerdekat', () => {
-    it('langkah yang ada dipertahankan; yang hilang mundur ke langkah sebelumnya menurut urutan baku', () => {
+    it('langkah yang ada dipertahankan, yang hilang mundur ke langkah sebelumnya menurut urutan baku', () => {
         const tanpaC = [Langkah('A'), Langkah('B'), Langkah('Tinjau')];
 
         expect(CariLangkahTerdekat(tanpaC, 'B', urutan)).toBe('B');
@@ -30,7 +30,7 @@ describe('CariLangkahTerdekat', () => {
 });
 
 describe('useAlurWizard', () => {
-    it('Maju memeriksa langkah ini; langkah di depan terkunci sampai dicapai', () => {
+    it('Maju memeriksa langkah ini. Langkah di depan terkunci sampai dicapai', () => {
         const Periksa = vi.fn((kunci: Kunci) => kunci !== 'B');
         const { result } = renderHook(() => useAlurWizard(semua, Periksa, { awal: 'A', urutan }));
 
@@ -81,7 +81,7 @@ describe('useAlurWizard', () => {
         expect(result.current.nomorFokus).toBe(1);
     });
 
-    it('Paksa membuka langkah dan membuka semua langkah lain; daftar langkah yang mengecil menggeser langkah aktif', () => {
+    it('Paksa membuka langkah dan membuka semua langkah lain. Daftar langkah yang mengecil menggeser langkah aktif', () => {
         const { result, rerender: UlangRender } = renderHook(
             ({ langkah }: { langkah: LangkahWizard<Kunci>[] }) =>
                 useAlurWizard(langkah, () => true, { awal: 'A', urutan }),
@@ -126,7 +126,7 @@ function ContohWizard({ saatSimpan, tahan }: { saatSimpan: () => void; tahan?: (
 }
 
 describe('CangkangWizard', () => {
-    it('penunjuk "Langkah n dari N"; Enter di isian = Lanjut; hanya langkah terakhir yang menyimpan', () => {
+    it('penunjuk "Langkah n dari N"; Enter di isian = Lanjut. Hanya langkah terakhir yang menyimpan', () => {
         const Simpan = vi.fn();
         render(<ContohWizard saatSimpan={Simpan} />);
 

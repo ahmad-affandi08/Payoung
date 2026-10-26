@@ -49,7 +49,7 @@ describe('F-05a QA: unggah impor stok awal lintas pengguna', function (): void {
 });
 
 describe('F-05a QA: retensi impor tidak menghapus asal dokumen (aturan #8)', function (): void {
-    it('impor lama yang dirujuk stok awal Diposting disimpan (berkas & baris dipangkas); impor tanpa dokumen dihapus', function (): void {
+    it('impor lama yang dirujuk stok awal Diposting disimpan (berkas & baris dipangkas). Impor tanpa dokumen dihapus', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

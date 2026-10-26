@@ -103,7 +103,7 @@ final class RekonsiliasiBankKontroler extends DasarAkuntansiKontroler
         return back()->with('Kilat', match ($data['Keputusan']) {
             'Cocok' => 'Mutasi dicocokkan.',
             'Abaikan' => 'Mutasi diabaikan.',
-            default => 'Keputusan dibatalkan; mutasi kembali belum cocok.',
+            default => 'Keputusan dibatalkan. Mutasi kembali belum cocok.',
         });
     }
 }

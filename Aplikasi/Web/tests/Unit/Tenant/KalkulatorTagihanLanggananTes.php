@@ -33,7 +33,7 @@ describe('KalkulatorTagihanLangganan', function (): void {
             ->and($rincian->total->KeString())->toBe('69000.00');
     });
 
-    it('diskon persen memakai bagian bulan yang tercakup kupon, dibulatkan HalfUp; tidak pernah melebihi subtotal', function (): void {
+    it('diskon persen memakai bagian bulan yang tercakup kupon, dibulatkan HalfUp. Tidak pernah melebihi subtotal', function (): void {
         $kalkulator = new KalkulatorTagihanLangganan;
 
         // 758.400 × 15% × 5/12 = 47.400

@@ -28,7 +28,7 @@ beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-10-13 09:30', 'Asia/Jakarta'));
 });
 
-it('antrian hari ini berisi layanan & staf; check-in idempoten; penjualan menyelesaikan & menautkan reservasi', function (): void {
+it('antrian hari ini berisi layanan & staf. Check-in idempoten. Penjualan menyelesaikan & menautkan reservasi', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Salon Cantik Ayu Solo');
     $layanan = BantuanKatalog::BuatProduk(['Nama' => 'Creambath Ginseng', 'Jenis' => JenisProduk::Jasa, 'DurasiMenit' => 60], '85000.00');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
@@ -77,7 +77,7 @@ it('antrian hari ini berisi layanan & staf; check-in idempoten; penjualan menyel
     expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Duplikat', null]]);
 });
 
-it('reservasi tidak dikenal atau sudah selesai: penjualan tetap diterima + tinjauan; check-in butuh izin & outlet sendiri', function (): void {
+it('reservasi tidak dikenal atau sudah selesai: penjualan tetap diterima + tinjauan. Check-in butuh izin & outlet sendiri', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Barbershop Gagah Klaten');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
 

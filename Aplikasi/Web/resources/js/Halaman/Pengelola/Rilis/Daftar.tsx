@@ -399,7 +399,7 @@ function FormHentikan({ rilis, saatSelesai }: { rilis: RilisAplikasi; saatSelesa
     return (
         <DialogFormulir
             judul={`Hentikan rollout ${rilis.Versi}`}
-            keterangan="Perangkat yang belum memasang tidak lagi ditawari versi ini. Perangkat yang sudah memasang tetap berjalan; matikan fitur bermasalah lewat flag fitur."
+            keterangan="Perangkat yang belum memasang tidak lagi ditawari versi ini. Perangkat yang sudah memasang tetap berjalan. Matikan fitur bermasalah lewat flag fitur."
             saatTutup={saatSelesai}
         >
             <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>

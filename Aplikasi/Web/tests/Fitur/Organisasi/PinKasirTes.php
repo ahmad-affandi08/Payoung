@@ -64,7 +64,7 @@ describe('F-02 langkah 4: pengguna mengatur PIN kasir miliknya', function (): vo
 });
 
 describe('Atur ulang PIN anggota (Pemilik/Admin/Manajer, izin pengguna.pin.atur)', function (): void {
-    it('Pemilik mengatur ulang PIN kasir; halaman hanya menampilkan status, bukan PIN', function (): void {
+    it('Pemilik mengatur ulang PIN kasir. Halaman hanya menampilkan status, bukan PIN', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         BantuanPerangkat::AturPin($tenant->Id, $kasir->Id, '482915');

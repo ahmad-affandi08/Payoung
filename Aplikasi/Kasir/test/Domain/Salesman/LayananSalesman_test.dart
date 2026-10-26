@@ -101,7 +101,7 @@ void main() {
       }
     });
 
-    test('hanya produk berstok biasa (jenis Stok, tanpa batch/seri) yang bisa dipesan; cari nama, SKU, barcode', () {
+    test('hanya produk berstok biasa (jenis Stok, tanpa batch/seri) yang bisa dipesan. Cari nama, SKU, barcode', () {
       expect(LayananSalesman.CekBolehDipesan(Produk(UuidUji.roti)), isTrue);
       expect(LayananSalesman.CekBolehDipesan(Produk(UuidUji.croissant)), isTrue);
       expect(LayananSalesman.CekBolehDipesan(Produk(jerukMedan)), isTrue);
@@ -237,7 +237,7 @@ void main() {
       expect(minimal.keys, ['UuidPelanggan', 'UuidPengguna', 'DibuatPada', 'Baris']);
     });
 
-    test('Kunjungan.Catat: koordinat berpasangan string desimal; tanpa lokasi = tanpa kunci lokasi', () {
+    test('Kunjungan.Catat: koordinat berpasangan string desimal, tanpa lokasi = tanpa kunci lokasi', () {
       final dengan = LayananSalesman.SusunDataKunjungan(
         uuidPelanggan: UuidSalesmanUji.tokoMakmur,
         uuidPengguna: UuidSalesmanUji.dewi,
@@ -354,7 +354,7 @@ void main() {
     });
 
     test(
-      'lokasi tidak tersedia tidak menahan kunjungan; kunjungan kedua ditolak selama yang pertama berjalan',
+      'lokasi tidak tersedia tidak menahan kunjungan. Kunjungan kedua ditolak selama yang pertama berjalan',
       () async {
         u.lokasi = PenentuLokasiTiruan(tersedia: false);
         await u.repositoriSalesman.GantiPelanggan([
@@ -449,7 +449,7 @@ void main() {
       );
     });
 
-    test('sinkron mengirim pesanan lebih dulu, lalu kunjungan; penolakan server tampil di riwayat', () async {
+    test('sinkron mengirim pesanan lebih dulu, lalu kunjungan. Penolakan server tampil di riwayat', () async {
       await u.repositoriSalesman.GantiPelanggan([
         for (final p in PelangganSalesmanUji()) PelangganSalesmanPos.DariJson(p),
       ], u.jam);
@@ -507,7 +507,7 @@ void main() {
   });
 
   group('cache pelanggan offline', () {
-    test('unduh halaman demi halaman lalu ganti utuh; offline = cache lama tetap; cari nama & nomor HP', () async {
+    test('unduh halaman demi halaman lalu ganti utuh. Offline = cache lama tetap. Cari nama & nomor HP', () async {
       final halaman = <String>[];
       u.server.penangan = (p) async {
         expect(p.headers['X-Id-Kasir'], UuidSalesmanUji.dewi);
@@ -574,7 +574,7 @@ void main() {
 
   group('mode ruang kerja & rel navigasi', () {
     test(
-      'hanya salesman → mode Salesman tanpa shift; kasir & pemilik tetap alur kasir kecuali di HP Salesman',
+      'hanya salesman → mode Salesman tanpa shift. Kasir & pemilik tetap alur kasir kecuali di HP Salesman',
       () async {
         final rina = await u.Staf('Rina Wulandari');
         const pemilik = StafLokal(uuid: 'P', nama: 'Pemilik', pemilik: true, izin: []);
@@ -594,7 +594,7 @@ void main() {
       },
     );
 
-    test('rel kasir memuat Salesman bila berizin; melebihi 8 item → Salesman dilepas, Pengaturan tetap', () {
+    test('rel kasir memuat Salesman bila berizin. Melebihi 8 item → Salesman dilepas, Pengaturan tetap', () {
       const kasirSalesman = StafLokal(
         uuid: 'K',
         nama: 'Kasir',
@@ -652,7 +652,7 @@ void main() {
     Keranjang Isi({PelangganTerpilih? pelanggan = toko, List<ItemKeranjang>? baris}) =>
         Keranjang(baris: baris ?? [Baris(UuidUji.roti, UuidUji.psRotiLusin, 3)], pelanggan: pelanggan);
 
-    test('izin: kasir berizin jual atau salesman boleh; staf tanpa keduanya tidak', () async {
+    test('izin: kasir berizin jual atau salesman boleh. Staf tanpa keduanya tidak', () async {
       final rina = await u.Staf('Rina Wulandari');
       const gudang = StafLokal(uuid: 'G', nama: 'Staf Gudang', pemilik: false, izin: ['produk.lihat']);
 

@@ -59,7 +59,7 @@ it('nota tagihan: piutang terbuka pelanggan, dibayar & sisa, hari lewat jatuh te
         ->where('TotalLewat', '0.00'));
 });
 
-it('nota tagihan: kasir tanpa izin; pelanggan tenant lain 404', function (): void {
+it('nota tagihan: kasir tanpa izin. Pelanggan tenant lain 404', function (): void {
     $a = BantuanPenjualan::Siapkan($this, 'Toko Nota A');
     $toko = Pelanggan::query()->create(['Nama' => 'Toko Makmur', 'NoHp' => '6281355550002']);
 

@@ -88,7 +88,7 @@ it('bulanan tanggal 31: jatuh tempo dicatat & disusul mengikuti akhir bulan; jur
         ->toThrow(UniqueConstraintViolationException::class);
 });
 
-it('periode terkunci: ditolak, alasan di Kotak Tindakan, tidak dimajukan; hentikan & aktifkan lagi tanpa menyusul; lewat jadwal harian', function (): void {
+it('periode terkunci: ditolak, alasan di Kotak Tindakan, tidak dimajukan. Hentikan & aktifkan lagi tanpa menyusul. Lewat jadwal harian', function (): void {
     $k = SiapkanSewaBulanan($this);
     $jadwal = $k['Jadwal'];
     app(KunciPeriodeAkuntansi::class)->Jalankan('2026-02', (int) $jadwal->DibuatOleh);

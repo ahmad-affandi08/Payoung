@@ -27,7 +27,7 @@ beforeEach(function (): void {
     Mail::fake();
 });
 
-it('pendaftaran baru menandai panduan wajib; tenant lama bebas', function (): void {
+it('pendaftaran baru menandai panduan wajib. Tenant lama bebas', function (): void {
     ['Tenant' => $baru] = BantuanOrganisasi::BuatTenant('Kopi Baru Wajib Panduan', panduanWajib: true);
     ['Tenant' => $lama, 'Pemilik' => $pemilikLama] = BantuanOrganisasi::BuatTenant('Kopi Lama Bebas Panduan');
 
@@ -39,7 +39,7 @@ it('pendaftaran baru menandai panduan wajib; tenant lama bebas', function (): vo
     BantuanPanduanAwal::Masuk($this, $pemilikLama, $lama)->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Beranda'));
 });
 
-it('pemilik tenant baru dialihkan ke panduan; langkah wajib tidak bisa dilewati; rute bebas tetap terbuka; anggota lain menunggu', function (): void {
+it('pemilik tenant baru dialihkan ke panduan. Langkah wajib tidak bisa dilewati. Rute bebas tetap terbuka. Anggota lain menunggu', function (): void {
     ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Kopi Susu Wajib Panduan', panduanWajib: true);
     $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
     $masuk = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);

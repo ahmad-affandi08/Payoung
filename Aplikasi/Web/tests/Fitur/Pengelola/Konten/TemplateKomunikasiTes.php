@@ -69,7 +69,7 @@ describe('konsol templat komunikasi', function (): void {
             ->where('Izin.Kelola', true));
     });
 
-    it('BR-P06.4: menyimpan draf email lalu menerbitkannya menjadi versi 1; audit tercatat', function (): void {
+    it('BR-P06.4: menyimpan draf email lalu menerbitkannya menjadi versi 1. Audit tercatat', function (): void {
         MasukTemplatKomunikasi();
 
         $terbit = TerbitkanTemplatUji();
@@ -89,7 +89,7 @@ describe('konsol templat komunikasi', function (): void {
             ->where('Peristiwa.0.Sel.0.Sumber', 'Templat')->where('Peristiwa.0.Sel.0.VersiTerbit', 1));
     });
 
-    it('BR-P06.1: perubahan sesudah terbit menjadi versi baru; versi terbit tidak bisa diubah atau dihapus', function (): void {
+    it('BR-P06.1: perubahan sesudah terbit menjadi versi baru. Versi terbit tidak bisa diubah atau dihapus', function (): void {
         MasukTemplatKomunikasi();
         $v1 = TerbitkanTemplatUji();
 
@@ -102,7 +102,7 @@ describe('konsol templat komunikasi', function (): void {
         expect(TemplateKomunikasi::query()->whereKey($v1->Id)->exists())->toBeTrue();
     });
 
-    it('BR-P06.4: satu draf per kombinasi; menyimpan lagi memperbarui draf yang sama, bisa dihapus', function (): void {
+    it('BR-P06.4: satu draf per kombinasi. Menyimpan lagi memperbarui draf yang sama, bisa dihapus', function (): void {
         MasukTemplatKomunikasi();
         $this->put(AlamatTemplatUji(), IsiEmailUji())->assertSessionHasNoErrors();
         $this->put(AlamatTemplatUji(), IsiEmailUji(['Isi' => 'Isi kedua {NamaPemilik}.']))->assertSessionHasNoErrors();
@@ -138,7 +138,7 @@ describe('konsol templat komunikasi', function (): void {
         $this->get(AlamatTemplatUji('email', 'id', 'tagihan.tidak-ada'))->assertNotFound();
     });
 
-    it('status BSP hanya untuk WhatsApp; templat WhatsApp yang ditolak BSP tidak bisa diterbitkan', function (): void {
+    it('status BSP hanya untuk WhatsApp. Templat WhatsApp yang ditolak BSP tidak bisa diterbitkan', function (): void {
         MasukTemplatKomunikasi();
         $this->put(AlamatTemplatUji('whatsapp'), ['Isi' => 'Halo {NamaPemilik}, bayar di {Tautan}'])->assertSessionHasNoErrors();
         $draf = TemplateKomunikasi::query()->sole();
@@ -201,7 +201,7 @@ describe('penyusun pesan komunikasi', function (): void {
         }
     });
 
-    it('memilih versi terbit tertinggi; draf tidak dipakai', function (): void {
+    it('memilih versi terbit tertinggi. Draf tidak dipakai', function (): void {
         MasukTemplatKomunikasi();
         TerbitkanTemplatUji();
         TerbitkanTemplatUji('email', 'id', IsiEmailUji(['Isi' => 'Versi dua {NamaPemilik}.']));
@@ -212,7 +212,7 @@ describe('penyusun pesan komunikasi', function (): void {
         expect($pesan->sumber)->toBe('Templat')->and($pesan->versi)->toBe(2)->and($pesan->isi)->toBe('Versi dua Rina.')->and($pesan->subjek)->toBe('Tagihan INV/2026/09/000001 menunggu');
     });
 
-    it('bahasa Inggris tanpa versi terbit memakai bawaan Inggris; dengan versi terbit Indonesia saja tetap bawaan Inggris', function (): void {
+    it('bahasa Inggris tanpa versi terbit memakai bawaan Inggris, dengan versi terbit Indonesia saja tetap bawaan Inggris', function (): void {
         $penyusun = app(PenyusunPesanKomunikasi::class);
         $v = VariabelPenyusunUji();
 
@@ -238,7 +238,7 @@ describe('penyusun pesan komunikasi', function (): void {
 });
 
 describe('sambungan ke email pengingat tagihan', function (): void {
-    it('email memakai versi terbit dari konsol; tanpa versi terbit tampilan tidak berubah', function (): void {
+    it('email memakai versi terbit dari konsol, tanpa versi terbit tampilan tidak berubah', function (): void {
         $tanpa = new PengingatTagihanLangganan(TahapPengingatTagihan::HMinus7, 'Rina', 'INV/1', 'Rp 249.000', 'Pro', '1 Oktober 2026', null);
         expect($tanpa->subject)->toBe('Tagihan INV/1 sudah terbit');
 
@@ -253,7 +253,7 @@ describe('sambungan ke email pengingat tagihan', function (): void {
 });
 
 describe('PGL-07: kanal Notifikasi aplikasi dan peristiwa tiket', function (): void {
-    it('draf notifikasi: judul satu baris maks. 65, isi maks. 200, variabel dikenal; diterbitkan lalu dipakai penyusun', function (): void {
+    it('draf notifikasi: judul satu baris maks. 65, isi maks. 200, variabel dikenal. Diterbitkan lalu dipakai penyusun', function (): void {
         MasukTemplatKomunikasi();
         $alamat = AlamatTemplatUji('notifikasi');
 
@@ -284,7 +284,7 @@ describe('PGL-07: kanal Notifikasi aplikasi dan peristiwa tiket', function (): v
 
                 expect($bawaan['Subjek'])->toBeNull()
                     ->and(mb_strlen((string) $bawaan['Judul']))->toBeLessThanOrEqual(65)
-                    ->and(mb_strlen($bawaan['Isi']))->toBeLessThanOrEqual(200 + 40, 'Bawaan memuat variabel; teks terisi harus tetap pendek.');
+                    ->and(mb_strlen($bawaan['Isi']))->toBeLessThanOrEqual(200 + 40, 'Bawaan memuat variabel. Teks terisi harus tetap pendek.');
                 $dikenal = array_column($peristiwa->AmbilVariabel(), 'Nama');
                 expect(array_diff(PenyusunPesanKomunikasi::AmbilVariabelDipakai($bawaan['Judul'].' '.$bawaan['Isi']), $dikenal))->toBe([]);
             }

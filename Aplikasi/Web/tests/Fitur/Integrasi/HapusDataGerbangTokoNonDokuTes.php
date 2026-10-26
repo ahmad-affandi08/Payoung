@@ -60,7 +60,7 @@ function SisipkanKonfigurasiMentah(string $jenis, string $lingkungan, string $pe
     ]);
 }
 
-it('menghapus gerbang tenant & izin katalog penyedia lama, menyisakan DOKU; gerbang billing platform tidak tersentuh', function (): void {
+it('menghapus gerbang tenant & izin katalog penyedia lama, menyisakan DOKU. Gerbang billing platform tidak tersentuh', function (): void {
     $a = BantuanOrganisasi::BuatTenant('Toko Kelontong Berkah Solo');
     $b = BantuanOrganisasi::BuatTenant('Warung Makan Sederhana Klaten');
     $c = BantuanOrganisasi::BuatTenant('Bengkel Motor Jaya Sragen');

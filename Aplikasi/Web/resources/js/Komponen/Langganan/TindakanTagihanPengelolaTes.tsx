@@ -137,7 +137,7 @@ describe('PanelTindakanTagihan (D-112)', () => {
         });
     });
 
-    it('Super Admin langsung menyetujui; tagihan Rp 0 dan tanpa izin refund tidak punya tombol refund', () => {
+    it('Super Admin langsung menyetujui. Tagihan Rp 0 dan tanpa izin refund tidak punya tombol refund', () => {
         const { unmount: Lepas } = RenderPanel({ Status: 'Lunas' }, { ...izinPenuh, SetujuiRefund: true });
         fireEvent.click(screen.getByRole('button', { name: 'Ajukan refund' }));
         expect(screen.getByRole('button', { name: 'Setujui refund' })).toBeTruthy();
@@ -200,7 +200,7 @@ describe('Refund (BR-P08.2)', () => {
         expect(screen.getByText('Ditolak: Layanan dipakai penuh')).toBeTruthy();
     });
 
-    it('antrean refund: Super Admin menyetujui lewat POST dan menolak dengan alasan; tanpa izin hanya melihat', () => {
+    it('antrean refund: Super Admin menyetujui lewat POST dan menolak dengan alasan, tanpa izin hanya melihat', () => {
         const antrean: BarisRefundMenunggu[] = [
             { ...refund, UuidTagihan: 'TG-9', NomorTagihan: 'INV/2026/09/000009', NamaTenant: 'Kopi Nusantara' },
         ];
@@ -237,7 +237,7 @@ describe('PanelBatasRefund (D-113)', () => {
     beforeEach(() => AturHalamanUji({}, '/tagihan'));
     afterEach(() => cleanup());
 
-    it('Super Admin mengubah batas lewat PUT; peran lain hanya melihat nilainya', () => {
+    it('Super Admin mengubah batas lewat PUT. Peran lain hanya melihat nilainya', () => {
         const { unmount: Lepas } = render(<PanelBatasRefund batas="1000000.00" boleh />);
 
         expect(screen.getByText(/Rp\s?1\.000\.000/)).toBeTruthy();
@@ -276,7 +276,7 @@ describe('PanelTransferManual (Owner, tagihan manual)', () => {
         },
     ];
 
-    it('menampilkan rekening tujuan dan jumlah tepat; form bukti mengirim berkas ke rute unggah', () => {
+    it('menampilkan rekening tujuan dan jumlah tepat. Form bukti mengirim berkas ke rute unggah', () => {
         render(<PanelTransferManual uuidTagihan="TG-1" total="13320000.00" rekening={rekening} bolehUnggah />);
 
         expect(screen.getByText('1234567890')).toBeTruthy();
@@ -328,7 +328,7 @@ describe('PanelPengaturanPenagihan (D-114)', () => {
         RekeningDariKonsol: true,
     };
 
-    it('menampilkan status PKP dan rekening; nilai awal server diberi penanda; peran tanpa izin tidak melihat tombol ubah', () => {
+    it('menampilkan status PKP dan rekening. Nilai awal server diberi penanda. Peran tanpa izin tidak melihat tombol ubah', () => {
         const { unmount: Lepas } = render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
 
         expect(screen.getByText(/Bukan PKP \(tagihan tanpa PPN\)/)).toBeTruthy();
@@ -358,7 +358,7 @@ describe('PanelPengaturanPenagihan (D-114)', () => {
         });
     });
 
-    it('Super Admin menambah rekening kedua dan mengirim seluruh daftar; maksimal lima rekening', () => {
+    it('Super Admin menambah rekening kedua dan mengirim seluruh daftar. Maksimal lima rekening', () => {
         render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Ubah rekening' }));

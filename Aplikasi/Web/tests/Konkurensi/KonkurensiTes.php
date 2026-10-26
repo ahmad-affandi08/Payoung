@@ -96,7 +96,7 @@ it('item outbox penjualan yang sama dikirim dua perangkat/proses bersamaan: terc
         ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
 });
 
-it('dua pencatatan bahan terbuang bersamaan melebihi stok: satu diterima, satu StokTidakCukup; stok tidak minus', function (): void {
+it('dua pencatatan bahan terbuang bersamaan melebihi stok: satu diterima, satu StokTidakCukup. Stok tidak minus', function (): void {
     $t = BantuanPersediaan::SiapkanTenant('Kafe Serentak Klaten');
     $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
     BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '100', '1000')], $t['Pemilik']->Id, CarbonImmutable::now('Asia/Jakarta')->subDays(2)->format('Y-m-d'));

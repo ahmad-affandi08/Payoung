@@ -43,7 +43,7 @@ function AturNoHpUji(Pengguna $pengguna, string $noHp): void
     Pengguna::query()->whereKey($pengguna->Id)->update(['NoHp' => $noHp]);
 }
 
-it('Owner menerima ringkasan; Akuntan setelah berlangganan; Kasir tanpa butir tidak menerima; sekali per hari; bisa berhenti', function (): void {
+it('Owner menerima ringkasan; Akuntan setelah berlangganan; Kasir tanpa butir tidak menerima. Sekali per hari. Bisa berhenti', function (): void {
     $t = BantuanPersediaan::SiapkanTenant('Toko Kelontong Makmur Sragen');
     $idTenant = $t['Tenant']->Id;
     $akuntan = BantuanOrganisasi::TambahAnggota($idTenant, PeranTenantBawaan::Akuntan);
@@ -103,7 +103,7 @@ it('Owner menerima ringkasan; Akuntan setelah berlangganan; Kasir tanpa butir ti
     expect(LanggananRingkasanTindakan::query()->where('IdPengguna', $t['Pemilik']->Id)->value('Aktif'))->toBeFalse();
 });
 
-it('tanpa butir penting/perhatian tidak ada pesan; langganan milik tenant sendiri; tanpa nomor HP tidak bisa berlangganan', function (): void {
+it('tanpa butir penting/perhatian tidak ada pesan. Langganan milik tenant sendiri, tanpa nomor HP tidak bisa berlangganan', function (): void {
     $a = BantuanPersediaan::SiapkanTenant('Kopi Senja Solo');
     $b = BantuanPersediaan::SiapkanTenant('Warung Bakso Pak Kumis');
     AturNoHpUji($a['Pemilik'], '081211110009');

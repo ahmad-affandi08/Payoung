@@ -72,7 +72,7 @@ describe('Halaman pre-order (F-12 bagian 2)', () => {
         expect(screen.getAllByText('Rp 50.000').length).toBeGreaterThan(0);
     });
 
-    it('detail: batalkan dengan DP dikembalikan dari akun bank dikirim sebagai POST; tanpa izin tombol tersembunyi', () => {
+    it('detail: batalkan dengan DP dikembalikan dari akun bank dikirim sebagai POST, tanpa izin tombol tersembunyi', () => {
         window.history.replaceState({}, '', `/kelola/pre-order/${detail.Uuid}`);
         RenderUji(
             <HalamanDetailPreOrder

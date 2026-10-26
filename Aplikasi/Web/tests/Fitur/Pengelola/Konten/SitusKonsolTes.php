@@ -141,7 +141,7 @@ describe('D-21 halaman berblok', function (): void {
         ]])->assertSessionHasErrors(['Bagian.0.Judul', 'Bagian.0.TombolUtama.Tautan', 'Bagian.1.Jenis', 'Bagian.2.UrlYoutube', 'Bagian']);
     });
 
-    it('halaman bawaan: slug tetap, tidak bisa dihapus; beranda tidak bisa disembunyikan', function (): void {
+    it('halaman bawaan: slug tetap, tidak bisa dihapus. Beranda tidak bisa disembunyikan', function (): void {
         MasukSebagaiKontenSitus($this);
         $this->get(BantuanPengelola::Url('/situs/halaman'));
         $fitur = HalamanSitus::query()->where('Slug', 'fitur')->sole();
@@ -233,7 +233,7 @@ describe('D-63 penyunting visual halaman situs', function (): void {
 });
 
 describe('D-63 revisi, jadwal, gandakan, templat', function (): void {
-    it('menerbitkan mencatat revisi; memulihkan menaruhnya di draf dan menyimpan draf lama dulu', function (): void {
+    it('menerbitkan mencatat revisi. Memulihkan menaruhnya di draf dan menyimpan draf lama dulu', function (): void {
         MasukSebagaiKontenSitus($this);
         $this->post(BantuanPengelola::Url('/situs/halaman'), ['Slug' => 'riwayat', 'Judul' => 'Riwayat']);
         $halaman = HalamanSitus::query()->where('Slug', 'riwayat')->sole();
@@ -375,7 +375,7 @@ describe('D-91 menu Solusi di pengaturan situs', function (): void {
 });
 
 describe('D-21 pustaka gambar', function (): void {
-    it('unggah PNG → dilayani publik dengan cache; SVG ditolak; gambar terpakai tidak bisa dihapus', function (): void {
+    it('unggah PNG → dilayani publik dengan cache; SVG ditolak. Gambar terpakai tidak bisa dihapus', function (): void {
         MasukSebagaiKontenSitus($this);
 
         $this->post(BantuanPengelola::Url('/situs/gambar'), ['Berkas' => UploadedFile::fake()->image('kasir.png', 320, 200), 'TeksAlternatif' => 'Layar kasir'])

@@ -96,7 +96,7 @@ function AmbilPasanganSaldoUji(array $hasil): array
 }
 
 describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
-    it('BR-05.1 baris saldo per (produk, lokasi) urut nama; ringkasan total nilai, jumlah baris, jumlah minus; invarian saldo = Σ mutasi', function (): void {
+    it('BR-05.1 baris saldo per (produk, lokasi) urut nama. Ringkasan total nilai, jumlah baris, jumlah minus. Invarian saldo = Σ mutasi', function (): void {
         $d = SiapkanSaldoStokUji();
         $hasil = AmbilSaldoStokUji();
 
@@ -152,7 +152,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Kata' => '8991234500017'])))->toBe(['Gula Pasir Kristal Putih Kemasan 1 kg @ Gudang Toko Sembako Berkah Jaya']);
     });
 
-    it('urut -Nilai (terbesar dulu) dan Jumlah (terkecil dulu); kolom urut/filter & nilai tak dikenal diabaikan', function (): void {
+    it('urut -Nilai (terbesar dulu) dan Jumlah (terkecil dulu). Kolom urut/filter & nilai tak dikenal diabaikan', function (): void {
         SiapkanSaldoStokUji();
 
         expect(AmbilPasanganSaldoUji(AmbilSaldoStokUji(['Urut' => '-Nilai'])))->toBe([
@@ -172,7 +172,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->toEqual(new DataPermintaanTabel('', [['Kolom' => 'Nama', 'Turun' => false]], 1, 25, []));
     });
 
-    it('berhalaman sesuai ukuran halaman tabel; halaman di luar rentang dijepit; ringkasan atas semua baris', function (): void {
+    it('berhalaman sesuai ukuran halaman tabel. Halaman di luar rentang dijepit. Ringkasan atas semua baris', function (): void {
         SiapkanSaldoStokUji();
 
         $h1 = AmbilSaldoStokUji(perHalaman: 3);
@@ -185,7 +185,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->and($h2['Ringkasan']['JumlahBaris'])->toBe(4);
     });
 
-    it('filter, urut, dan halaman di SQL: jumlah kueri tetap dan tidak ada kueri yang memuat semua baris/produk; karakter wildcard kata diperlakukan harfiah', function (): void {
+    it('filter, urut, dan halaman di SQL: jumlah kueri tetap dan tidak ada kueri yang memuat semua baris/produk. Karakter wildcard kata diperlakukan harfiah', function (): void {
         $d = SiapkanSaldoStokUji();
         $toko = $d['Toko'];
 
@@ -233,7 +233,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->and(AmbilSaldoStokUji(['Kata' => '_'])['Saldo']['Data'])->toBe([]);
     });
 
-    it('lokasi diarsipkan tetap tampil (GudangAktif false); akses per outlet hanya melihat lokasi outletnya', function (): void {
+    it('lokasi diarsipkan tetap tampil (GudangAktif false). Akses per outlet hanya melihat lokasi outletnya', function (): void {
         $d = SiapkanSaldoStokUji();
         Gudang::query()->whereKey($d['Belakang']->Id)->update(['Status' => StatusOrganisasi::Diarsipkan->value]);
 
@@ -300,7 +300,7 @@ describe('F-05a saldo stok (DesainF05a C.8, D)', function (): void {
             ->assertJsonPath('Ringkasan.TotalNilai', '-115500.00');
     });
 
-    it('HTTP: izin persediaan.lihat (Kasir 403); staf gudang per outlet hanya melihat outletnya', function (): void {
+    it('HTTP: izin persediaan.lihat (Kasir 403). Staf gudang per outlet hanya melihat outletnya', function (): void {
         $d = SiapkanSaldoStokUji();
 
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id, PeranTenantBawaan::Kasir)->get('/kelola/persediaan/saldo')->assertForbidden();

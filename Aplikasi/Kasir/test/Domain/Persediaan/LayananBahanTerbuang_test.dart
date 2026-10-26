@@ -36,7 +36,7 @@ void main() {
     return jsonDecode(baris.Data) as Map<String, Object?>;
   }
 
-  test('hanya produk berstok/beresep tanpa batch/seri yang ditawarkan; bahan baku ikut walau tidak tampil di POS', () {
+  test('hanya produk berstok/beresep tanpa batch/seri yang ditawarkan. Bahan baku ikut walau tidak tampil di POS', () {
     final semua = LayananBahanTerbuang.CariProduk(katalog, '').map((p) => p.uuid).toSet();
     expect(
       semua,
@@ -61,7 +61,7 @@ void main() {
   });
 
   test(
-    'jumlah dibaca dengan koma desimal; kosong, bukan angka, nol, >4 desimal, dan desimal di satuan bulat ditolak',
+    'jumlah dibaca dengan koma desimal. Kosong, bukan angka, nol, >4 desimal, dan desimal di satuan bulat ditolak',
     () {
       final roti = katalog.CariProduk(UuidUji.roti)!;
       final pcs = roti.satuan.firstWhere((s) => s.nama == 'Pcs');
@@ -85,7 +85,7 @@ void main() {
     },
   );
 
-  test('catat offline: baris lokal + outbox satuan dasar; satuan lusin dikonversi ×12; catatan kosong tidak dikirim', () async {
+  test('catat offline: baris lokal + outbox satuan dasar. Satuan lusin dikonversi ×12. Catatan kosong tidak dikirim', () async {
     final roti = katalog.CariProduk(UuidUji.roti)!;
     final lusin = roti.satuan.firstWhere((s) => s.nama == 'Lusin');
 
@@ -183,7 +183,7 @@ void main() {
     expect(await Coba(pencatat: pemilik), 'Tersimpan');
   });
 
-  test('catatan lokal lewat 30 hari yang sudah terkirim dibuang saat mencatat; yang belum terkirim disimpan', () async {
+  test('catatan lokal lewat 30 hari yang sudah terkirim dibuang saat mencatat, yang belum terkirim disimpan', () async {
     final croissant = katalog.CariProduk(UuidUji.croissant)!;
     Future<String> Catat() => u.bahanTerbuang.Catat(
       produk: croissant,

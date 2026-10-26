@@ -63,7 +63,7 @@ describe('Uang QRIS tanpa penjualan (E8)', () => {
         expect(screen.getAllByText(/Refund lewat dasbor DOKU/).length).toBeGreaterThan(0);
     });
 
-    it('tanpa izin akuntansi.kelola tampil pesan hanya-lihat; daftar kosong memakai keadaan kosong', () => {
+    it('tanpa izin akuntansi.kelola tampil pesan hanya-lihat. Daftar kosong memakai keadaan kosong', () => {
         RenderUji(<HalamanDaftarQrisTanpaPenjualan {...props} Tagihan={BuatHasilTabel([])} Izin={{ Kelola: false }} />);
 
         expect(screen.getByText('Tidak ada uang QRIS yang masuk tanpa penjualan.')).toBeTruthy();

@@ -169,7 +169,7 @@ final class ImporPemasok
             $kunci = self::KunciBaris($isian);
 
             if (isset($calon[$kunci])) {
-                $masalah[] = ['Baris' => (int) $nomor, 'Nama' => $nama, 'Pesan' => ($isian['Kode'] === null ? 'Nama' : 'Kode').' sama dengan baris sebelumnya di berkas ini; baris ini dilewati.'];
+                $masalah[] = ['Baris' => (int) $nomor, 'Nama' => $nama, 'Pesan' => ($isian['Kode'] === null ? 'Nama' : 'Kode').' sama dengan baris sebelumnya di berkas ini. Baris ini dilewati.'];
 
                 continue;
             }

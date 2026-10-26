@@ -121,7 +121,7 @@ final class KonteksPengelola
         $namaKelas = ltrim($kelasModel, '\\');
 
         if (! in_array($namaKelas, self::MODEL_DATA_PLATFORM, true)) {
-            throw new LogicException("{$kelasModel} adalah data usaha tenant; baca lewat JalankanLintasTenant.");
+            throw new LogicException("{$kelasModel} adalah data usaha tenant. Baca lewat JalankanLintasTenant.");
         }
 
         return $kelasModel::query()->withoutGlobalScope(LingkupTenant::class);

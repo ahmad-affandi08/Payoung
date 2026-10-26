@@ -21,7 +21,7 @@ beforeEach(function (): void {
 });
 
 describe('BR-01.3: modul template per outlet (OutletFitur) dibatasi paket', function (): void {
-    it('OutletFitur = kunci fitur template (aktif); fitur efektif = paket ∩ OutletFitur', function (): void {
+    it('OutletFitur = kunci fitur template (aktif). Fitur efektif = paket ∩ OutletFitur', function (): void {
         $versi = BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         ['Tenant' => $tenant, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant(kodePaket: 'GRATIS');
 

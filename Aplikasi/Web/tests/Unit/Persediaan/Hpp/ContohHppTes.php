@@ -136,7 +136,7 @@ describe('F-05a contoh kerja HPP rata-rata bergerak (DesainF05a C.3, BR-04.2/04.
         JalankanContohHppUji(new HppRataRataBergerak, AmbilContohHppRataRata()[$nama]);
     })->with(array_keys(AmbilContohHppRataRata()));
 
-    it('masuk berjalan dinilai pada A; tanpa A dinilai 0 dan ditandai hppTidakDiketahui', function (): void {
+    it('masuk berjalan dinilai pada A, tanpa A dinilai 0 dan ditandai hppTidakDiketahui', function (): void {
         $strategi = new HppRataRataBergerak;
         $keadaan = KeadaanHpp::BuatKosong();
 

@@ -126,7 +126,7 @@ export default function HalamanHargaPaket({ Paket, Harga, IdPengguna }: PropsHar
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
             {Paket.HargaNegosiasi ? (
                 <Pemberitahuan jenis="info" judul="Harga negosiasi">
-                    Paket ini tidak punya harga tetap; harga disepakati per tenant.
+                    Paket ini tidak punya harga tetap. Harga disepakati per tenant.
                 </Pemberitahuan>
             ) : null}
 

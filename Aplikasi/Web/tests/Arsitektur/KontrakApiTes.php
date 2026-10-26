@@ -36,7 +36,7 @@ function AmbilKontrakRuteApi(): array
     return $hasil;
 }
 
-it('rute API POS & Pemilik yang sudah dirilis tidak dihapus/diubah; rute baru tercatat di baseline', function (): void {
+it('rute API POS & Pemilik yang sudah dirilis tidak dihapus/diubah. Rute baru tercatat di baseline', function (): void {
     $berkas = base_path('../../Spesifikasi/KontrakApi/RuteApi.json');
     $sekarang = AmbilKontrakRuteApi();
 

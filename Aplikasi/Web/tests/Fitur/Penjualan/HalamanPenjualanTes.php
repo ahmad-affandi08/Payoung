@@ -26,7 +26,7 @@ beforeEach(function (): void {
 });
 
 describe('F-07b halaman back-office penjualan', function (): void {
-    it('daftar & detail penjualan: baris, pajak, pembayaran, mutasi stok bertautan kartu stok, jurnal, shift; detail shift menampilkan penjualannya', function (): void {
+    it('daftar & detail penjualan: baris, pajak, pembayaran, mutasi stok bertautan kartu stok, jurnal, shift. Detail shift menampilkan penjualannya', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -82,7 +82,7 @@ describe('F-07b halaman back-office penjualan', function (): void {
             ->where('Penjualan.Daftar.0.Uuid', $item['Uuid']));
     });
 
-    it('D-16 TabelData: JSON {Data, Meta} di URL yang sama; cari nomor, filter tinjauan/status/tanggal, urut total', function (): void {
+    it('D-16 TabelData: JSON {Data, Meta} di URL yang sama. Cari nomor, filter tinjauan/status/tanggal, urut total', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '3');
         $kecil = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -104,7 +104,7 @@ describe('F-07b halaman back-office penjualan', function (): void {
         $this->getJson('/kelola/penjualan')->assertForbidden();
     });
 
-    it('izin laporan.penjualan.lihat (Kasir & Supervisor 403); pengguna per outlet hanya melihat penjualan outletnya; penjualan tenant lain 404', function (): void {
+    it('izin laporan.penjualan.lihat (Kasir & Supervisor 403). Pengguna per outlet hanya melihat penjualan outletnya. Penjualan tenant lain 404', function (): void {
         $a = BantuanPenjualan::Siapkan($this, 'Toko Kelontong Berkah Solo');
         $minyak = BantuanPenjualan::BuatProdukBerstok($a['Gudang'], $a['Pemilik']->Id);
         $item = BantuanPenjualan::Item($a, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -132,7 +132,7 @@ describe('F-07b halaman back-office penjualan', function (): void {
 });
 
 describe('F-07b gambar QRIS untuk POS', function (): void {
-    it('GET /api/pos/v1/metode-pembayaran/{uuid}/gambar-qris: gambar metode QRIS statis aktif tenant perangkat; tanpa gambar, bukan QRIS, nonaktif, atau tenant lain = 404; data-awal menandai AdaGambarQris', function (): void {
+    it('GET /api/pos/v1/metode-pembayaran/{uuid}/gambar-qris: gambar metode QRIS statis aktif tenant perangkat, tanpa gambar, bukan QRIS, nonaktif, atau tenant lain = 404. Data-awal menandai AdaGambarQris', function (): void {
         Storage::fake('local');
         $a = BantuanPenjualan::Siapkan($this, 'Toko Kelontong Berkah Solo');
         $path = app(PenyimpanGambarQris::class)->Simpan($a['Tenant']->Id, UploadedFile::fake()->image('qris.png', 300, 300));
@@ -160,7 +160,7 @@ describe('F-07b gambar QRIS untuk POS', function (): void {
 });
 
 describe('F-07b pengaturan kasir: batas diskon & pembulatan tunai', function (): void {
-    it('bawaan 10%/30% tanpa pembulatan; simpan batas & pembulatan tercatat audit; nilai tidak valid ditolak; nilai tersimpan rusak kembali ke bawaan', function (): void {
+    it('bawaan 10%/30% tanpa pembulatan. Simpan batas & pembulatan tercatat audit. Nilai tidak valid ditolak. Nilai tersimpan rusak kembali ke bawaan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Admin);
 

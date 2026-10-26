@@ -177,7 +177,7 @@ describe('Kelola/Tim: aksi baris & konfirmasi nonaktifkan (F-02 BR-02.1, D-101)'
         Izin: izin,
     };
 
-    it('akun sendiri tanpa menu aksi; nonaktifkan lewat AlertDialog lalu POST ke /kelola/tim/status', () => {
+    it('akun sendiri tanpa menu aksi. Nonaktifkan lewat AlertDialog lalu POST ke /kelola/tim/status', () => {
         AturPropsAplikasi([], true);
         RenderDenganKueri(<HalamanDaftarTim {...props} />);
 
@@ -354,7 +354,7 @@ describe('Kelola/Perangkat: cabut lewat AlertDialog (F-02 langkah 5, BR-02.3)', 
         expect(AmbilKiriman()).toEqual([{ metode: 'post', url: '/kelola/perangkat/D-1/cabut', data: {} }]);
     });
 
-    it('menu aksi perangkat aktif menawarkan pindah HP; tambah perangkat lewat dialog', () => {
+    it('menu aksi perangkat aktif menawarkan pindah HP. Tambah perangkat lewat dialog', () => {
         AturPropsAplikasi(['perangkat.kelola']);
         RenderDenganKueri(<HalamanDaftarPerangkat {...props} />);
 
@@ -454,7 +454,7 @@ describe('Pengelola/Tenant 360°: Tabs & tindakan berisiko (P-07, BR-P07.3)', ()
     };
     const aturan = { MaksHariTrial: 14, MaksKaliTrial: 2, MaksHariOverride: 30 };
 
-    it('ringkasan tampil di tab pertama; tab override memuat tabel override', () => {
+    it('ringkasan tampil di tab pertama. Tab override memuat tabel override', () => {
         AturPropsPengelola(['tenant.lihat']);
         RenderDenganKueri(<TampilTenant Tenant={BuatTenant()} Pilihan={pilihan} Aturan={aturan} />);
 

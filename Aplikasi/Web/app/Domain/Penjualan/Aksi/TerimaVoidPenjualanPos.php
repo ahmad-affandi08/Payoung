@@ -294,7 +294,7 @@ final class TerimaVoidPenjualanPos
     private function PastikanBolehVoid(DataVoidPenjualanPos $data, Penjualan $penjualan): void
     {
         if ($penjualan->IdPerangkat !== $data->idPerangkat) {
-            throw new PelanggaranAturanBisnis('VoidTidakDiizinkan', "Penjualan {$penjualan->Nomor} dibuat di perangkat lain. Void hanya bisa dari perangkat dan shift yang sama; gunakan retur.", 'UuidPenjualan');
+            throw new PelanggaranAturanBisnis('VoidTidakDiizinkan', "Penjualan {$penjualan->Nomor} dibuat di perangkat lain. Void hanya bisa dari perangkat dan shift yang sama. Gunakan retur.", 'UuidPenjualan');
         }
 
         if ($penjualan->Status !== StatusPenjualan::Lunas) {

@@ -69,7 +69,7 @@ describe('F-06 buka shift lewat sinkron (POST /api/pos/v1/sinkron/kirim)', funct
             ->and($hasil[1]['Galat']['Detail'])->toBe(['UuidShift' => $pertama['Uuid']]);
     });
 
-    it('BR-06.1 kasir yang sudah punya shift di perangkat lain (offline) tetap diterima tetapi ditandai PerluTinjauan; shift bersama (BR-06.2) tidak ditandai', function (): void {
+    it('BR-06.1 kasir yang sudah punya shift di perangkat lain (offline) tetap diterima tetapi ditandai PerluTinjauan. Shift bersama (BR-06.2) tidak ditandai', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $perangkat2 = BantuanPerangkat::BuatDanAktifkan($this, $k['Tenant']->Id, $k['Outlet'], 'Kasir Belakang');
         $perangkat3 = BantuanPerangkat::BuatDanAktifkan($this, $k['Tenant']->Id, $k['Outlet'], 'Kasir Teras');
@@ -110,7 +110,7 @@ describe('F-06 buka shift lewat sinkron (POST /api/pos/v1/sinkron/kirim)', funct
         ]);
     });
 
-    it('izin & akses: pengguna tanpa penjualan.buat ditolak TanpaIzin; pengguna di luar outlet perangkat ditolak KasirTidakDitemukan', function (): void {
+    it('izin & akses: pengguna tanpa penjualan.buat ditolak TanpaIzin. Pengguna di luar outlet perangkat ditolak KasirTidakDitemukan', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
         $luarOutlet = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir, semuaOutlet: false);

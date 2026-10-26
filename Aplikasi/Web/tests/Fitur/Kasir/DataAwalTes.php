@@ -51,7 +51,7 @@ describe('F-06 PIN kasir offline & data awal (GET /api/pos/v1/data-awal)', funct
         }
     });
 
-    it('§25.2 no. 3: aktivasi mengirim kunci PIN perangkat; data awal membungkus verifier yang cocok dengan PIN, tanpa hash PIN mentah', function (): void {
+    it('§25.2 no. 3: aktivasi mengirim kunci PIN perangkat. Data awal membungkus verifier yang cocok dengan PIN, tanpa hash PIN mentah', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         ['Kode' => $kode] = BantuanPerangkat::BuatPerangkat($k['Tenant']->Id, $k['Outlet'], nama: 'Kasir Teras');
@@ -76,7 +76,7 @@ describe('F-06 PIN kasir offline & data awal (GET /api/pos/v1/data-awal)', funct
             ->and($respons->getContent())->not->toContain('HashPin');
     });
 
-    it('staf hanya anggota aktif dengan akses outlet perangkat; kategori kas hanya yang aktif; pengaturan kasir ikut', function (): void {
+    it('staf hanya anggota aktif dengan akses outlet perangkat. Kategori kas hanya yang aktif. Pengaturan kasir ikut', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $cabang = BantuanJurnal::BuatOutlet();
@@ -114,7 +114,7 @@ describe('F-06 PIN kasir offline & data awal (GET /api/pos/v1/data-awal)', funct
             ]);
     });
 
-    it('isolasi & pencabutan: staf tenant lain tidak ikut; perangkat dicabut 403 dan kunci PIN-nya dikosongkan', function (): void {
+    it('isolasi & pencabutan: staf tenant lain tidak ikut. Perangkat dicabut 403 dan kunci PIN-nya dikosongkan', function (): void {
         $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         $b = BantuanKasir::Siapkan($this, 'Warung Bakso Pak Kumis');
 
@@ -260,7 +260,7 @@ describe('Pengaturan struk per outlet (D-76)', function (): void {
 });
 
 describe('Logo merek outlet untuk bilah atas (D-16)', function (): void {
-    it('Outlet.AdaLogo & /logo-outlet memberi logo usaha walau saklar tampil struk dimatikan; struk tetap 404', function (): void {
+    it('Outlet.AdaLogo & /logo-outlet memberi logo usaha walau saklar tampil struk dimatikan. Struk tetap 404', function (): void {
         $k = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         Storage::fake((string) config('tenant.DiskLogo'));
@@ -301,7 +301,7 @@ describe('Logo merek outlet untuk bilah atas (D-16)', function (): void {
 });
 
 describe('Pengaturan struk: isolasi tenant', function (): void {
-    it('pengaturan, identitas, dan logo struk tenant A tidak terlihat oleh perangkat tenant B; simpan A tidak mengubah B', function (): void {
+    it('pengaturan, identitas, dan logo struk tenant A tidak terlihat oleh perangkat tenant B. Simpan A tidak mengubah B', function (): void {
         $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         $b = BantuanKasir::Siapkan($this, 'Warung Bakso Pak Kumis');
         Tenant::query()->whereKey($a['Tenant']->Id)->update(['Npwp' => '0123456789012345']);

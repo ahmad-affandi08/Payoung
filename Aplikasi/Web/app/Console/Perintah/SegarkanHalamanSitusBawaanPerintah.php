@@ -55,7 +55,7 @@ final class SegarkanHalamanSitusBawaanPerintah extends Command
             ->all();
 
         if ($adaDiDatabase === []) {
-            $this->info('Tidak ada halaman yang perlu disegarkan; situs sudah memakai isi bawaan.');
+            $this->info('Tidak ada halaman yang perlu disegarkan. Situs sudah memakai isi bawaan.');
 
             return self::SUCCESS;
         }
@@ -67,7 +67,7 @@ final class SegarkanHalamanSitusBawaanPerintah extends Command
         }
 
         if (! $this->option('paksa') && ! $this->confirm('Lanjutkan?', false)) {
-            $this->info('Dibatalkan; tidak ada yang diubah.');
+            $this->info('Dibatalkan. Tidak ada yang diubah.');
 
             return self::SUCCESS;
         }

@@ -47,7 +47,7 @@ function IsianMetodePembayaranUji(string $jenis, array $ubah = []): array
 }
 
 describe('F-01 langkah 5: metode pembayaran', function (): void {
-    it('Tunai selalu ada sejak pendaftaran; perintah panduan-awal:siapkan-bawaan idempoten', function (): void {
+    it('Tunai selalu ada sejak pendaftaran. Perintah panduan-awal:siapkan-bawaan idempoten', function (): void {
         ['Tenant' => $tenant] = BantuanPanduanAwal::BuatTenant();
         expect(MetodePembayaran::query()->sole()->Jenis)->toBe(JenisMetodePembayaran::Tunai);
 
@@ -69,7 +69,7 @@ describe('F-01 langkah 5: metode pembayaran', function (): void {
         expect($tunai->refresh()->Aktif)->toBeTrue();
     });
 
-    it('QRIS statis: gambar wajib & harus gambar; disimpan di disk privat dan hanya bisa diunduh tenant sendiri', function (): void {
+    it('QRIS statis: gambar wajib & harus gambar. Disimpan di disk privat dan hanya bisa diunduh tenant sendiri', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         ['Tenant' => $lain, 'Pemilik' => $pemilikLain] = BantuanPanduanAwal::BuatTenant('Toko Roti Harum');
         $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
@@ -107,7 +107,7 @@ describe('F-01 langkah 5: metode pembayaran', function (): void {
                 ->where('BatasGambarQris', ['UkuranMaksimalKb' => 2048, 'Ekstensi' => ['png', 'jpg', 'jpeg', 'webp']]));
     });
 
-    it('EDC: bank tidak aktif, tidak dikenal, atau jenis salah ditolak (KodeBank); biaya > 10 persen ditolak', function (): void {
+    it('EDC: bank tidak aktif, tidak dikenal, atau jenis salah ditolak (KodeBank). Biaya > 10 persen ditolak', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
 
@@ -126,7 +126,7 @@ describe('F-01 langkah 5: metode pembayaran', function (): void {
             ->and($edc->IdAkun)->toBeNull();
     });
 
-    it('transfer wajib nomor & nama pemilik rekening; dompet digital boleh; nonaktif/aktif tercatat di log audit', function (): void {
+    it('transfer wajib nomor & nama pemilik rekening. Dompet digital boleh. Nonaktif/aktif tercatat di log audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
 

@@ -80,7 +80,7 @@ void main() {
     return (u: u, cari: cari, kandidat: kandidat);
   }
 
-  testWidgets('daftar transaksi terbaru tampil sendiri; ketuk satu langsung membuka struknya', (tester) async {
+  testWidgets('daftar transaksi terbaru tampil sendiri. Ketuk satu langsung membuka struknya', (tester) async {
     final (:u, :cari, :kandidat) = await Masuk(tester);
     expect(kandidat, isNotEmpty, reason: 'Daftar terbaru dimuat saat lembar retur dibuka.');
     expect(kandidat.first.queryParameters['kata'], '');

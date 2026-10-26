@@ -127,7 +127,7 @@ export default function HalamanFormPermintaanStok({
                 <Panel
                     judul="Permintaan"
                     idJudul="judul-dokumen-permintaan"
-                    keterangan="Stok tidak berubah saat permintaan diajukan; barang berpindah saat pengirim mengirim transfer."
+                    keterangan="Stok tidak berubah saat permintaan diajukan. Barang berpindah saat pengirim mengirim transfer."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangOutlet

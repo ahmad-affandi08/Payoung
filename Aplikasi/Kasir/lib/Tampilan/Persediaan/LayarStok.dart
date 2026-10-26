@@ -68,7 +68,7 @@ class LayarStok extends ConsumerWidget {
           ),
           const SizedBox(height: TokenJarak.jarak8),
           Text(
-            'Perlu online. Pindai barcode dengan pemindai atau ketik SKU; isian tersimpan di perangkat sampai dikirim.',
+            'Perlu online. Pindai barcode dengan pemindai atau ketik SKU. Isian tersimpan di perangkat sampai dikirim.',
             style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
           ),
           const SizedBox(height: TokenJarak.jarak24),
@@ -94,7 +94,7 @@ class LayarStok extends ConsumerWidget {
           const SizedBox(height: TokenJarak.jarak8),
           Text(
             'Catat bahan atau menu yang basi, rusak, salah buat, atau tumpah. Stok berkurang dan nilainya masuk '
-            'laporan food cost. Bisa dicatat saat offline; terkirim otomatis saat online.',
+            'laporan food cost. Bisa dicatat saat offline. Terkirim otomatis saat online.',
             style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
           ),
           const SizedBox(height: TokenJarak.jarak12),

@@ -55,7 +55,7 @@ function SaldoKasBank(int $idTenant, string $sampai): string
 }
 
 describe('F-13 arus kas (FIN-07)', function (): void {
-    it('penjualan tunai, beban, aset tetap, modal: aktivitas benar; transfer antar kas tidak tampil; kas awal + kenaikan = kas akhir', function (): void {
+    it('penjualan tunai, beban, aset tetap, modal: aktivitas benar. Transfer antar kas tidak tampil. Kas awal + kenaikan = kas akhir', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $jual = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);

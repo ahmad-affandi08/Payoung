@@ -101,7 +101,7 @@ describe('SakelarPadat (Toggle)', () => {
         window.localStorage.clear();
     });
 
-    it('aria-pressed dan teks mengikuti keadaan; preferensi disimpan per peramban', () => {
+    it('aria-pressed dan teks mengikuti keadaan. Preferensi disimpan per peramban', () => {
         render(<PadatUji />);
         const sakelar = screen.getByRole('button', { name: 'Tampilan padat: nonaktif' });
 
@@ -115,7 +115,7 @@ describe('SakelarPadat (Toggle)', () => {
 describe('LangkahImpor (stepper)', () => {
     afterEach(() => cleanup());
 
-    it('langkah aktif ditandai aria-current dan teks; batang progres hanya visual', () => {
+    it('langkah aktif ditandai aria-current dan teks. Batang progres hanya visual', () => {
         const { container } = render(<LangkahImpor status="Pratinjau" />);
         const aktif = screen.getByRole('list', { name: 'Langkah impor produk' }).querySelector('[aria-current="step"]');
 

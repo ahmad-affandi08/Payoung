@@ -118,7 +118,7 @@ final class PanduanAwalKontroler extends DasarPanduanAwalKontroler
         $pesan = array_filter([
             "Template {$hasil['Template']} diterapkan.",
             $hasil['PajakDikonfirmasi'] ? 'Pajak diatur sesuai usulan.' : 'Periksa pengaturan pajak di langkah Pajak.',
-            $hasil['JumlahProduk'] > 0 ? "{$hasil['JumlahProduk']} produk contoh ditambahkan; ubah harganya kapan saja di menu Produk." : null,
+            $hasil['JumlahProduk'] > 0 ? "{$hasil['JumlahProduk']} produk contoh ditambahkan. Ubah harganya kapan saja di menu Produk." : null,
             $hasil['ProdukTerlewatKuota'] > 0 ? "{$hasil['ProdukTerlewatKuota']} produk contoh tidak ditambahkan karena kuota paket penuh." : null,
             'Tunai siap dipakai.',
         ]);

@@ -140,7 +140,7 @@ describe('Tarif pajak bertanggal (P-02, BR-P02.1, BR-P02.2)', function (): void 
         expect($tarif->refresh()->Status)->toBe(StatusDataMaster::MenungguTinjauan);
     });
 
-    it('BR-P02.1: tarif terbit tidak bisa diubah atau dihapus; koreksi lewat tarif baru', function (): void {
+    it('BR-P02.1: tarif terbit tidak bisa diubah atau dihapus. Koreksi lewat tarif baru', function (): void {
         $pengaju = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $tarif = AjukanTarifBaru($this, $pengaju, ['KodeJenisPajak' => 'PbjtMakananMinuman', 'Tarif' => '10', 'PengaliDppPembilang' => 1, 'PengaliDppPenyebut' => 1, 'KodeWilayah' => '33.74']);
@@ -346,7 +346,7 @@ describe('Tarif pajak bertanggal (P-02, BR-P02.1, BR-P02.2)', function (): void 
             ->and(PersetujuanDataMaster::query()->count())->toBe(1);
     });
 
-    it('D-34: Super Admin boleh menyetujui draf yang ia susun; satu persetujuannya cukup untuk tarif nasional', function (): void {
+    it('D-34: Super Admin boleh menyetujui draf yang ia susun. Satu persetujuannya cukup untuk tarif nasional', function (): void {
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $pengaju = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         SebagaiPengelola($this, $superAdmin)->post(BantuanPengelola::Url('/referensi/tarif-pajak'), DataTarif())->assertSessionHasNoErrors();

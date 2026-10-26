@@ -131,7 +131,7 @@ export default function HalamanGantiSektor({ Outlet, Template, Pratinjau }: Prop
                 <Pemberitahuan jenis="info" judul="Aman, tidak ada transaksi yang berubah">
                     Salah memilih jenis usaha saat mendaftar? Pilih yang benar di sini. Produk, transaksi, jurnal, dan
                     data pelanggan Anda tidak disentuh. Data bawaan jenis usaha lama (akun, kategori, fitur) hanya
-                    dibersihkan bila belum pernah dipakai; yang sudah dipakai tetap ada.
+                    dibersihkan bila belum pernah dipakai, yang sudah dipakai tetap ada.
                 </Pemberitahuan>
                 <Panel judul="Pilih outlet dan jenis usaha baru" tingkat="h2">
                     <div className="grid gap-4 sm:grid-cols-2">

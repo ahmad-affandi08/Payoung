@@ -39,7 +39,7 @@ function SiapkanVoidRetur(mixed $tes, string $namaUsaha = 'Toko Kelontong Berkah
 }
 
 describe('F-09 halaman back-office void & retur', function (): void {
-    it('daftar Void & Retur (TabelData): jenis, nomor, kasir, penyetuju, nominal, alasan, jeda sejak bayar; cari, filter jenis/tanggal, urut nominal; JSON {Data, Meta}', function (): void {
+    it('daftar Void & Retur (TabelData): jenis, nomor, kasir, penyetuju, nominal, alasan, jeda sejak bayar. Cari, filter jenis/tanggal, urut nominal; JSON {Data, Meta}', function (): void {
         [$k, $void, $retur, $uuidDivoid, $uuidAsal] = SiapkanVoidRetur($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
 
@@ -80,7 +80,7 @@ describe('F-09 halaman back-office void & retur', function (): void {
             ->and($json('?urut=Id;DROP TABLE VoidPenjualan&saring[IdTenant]=1')->json('Meta.Total'))->toBe(2);
     });
 
-    it('detail penjualan menampilkan void & retur; detail retur menampilkan baris, refund, mutasi stok ke lokasi Toko, jurnal, dan penjualan asal', function (): void {
+    it('detail penjualan menampilkan void & retur. Detail retur menampilkan baris, refund, mutasi stok ke lokasi Toko, jurnal, dan penjualan asal', function (): void {
         [$k, $void, $retur, $uuidDivoid, $uuidAsal] = SiapkanVoidRetur($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Admin);
 
@@ -120,7 +120,7 @@ describe('F-09 halaman back-office void & retur', function (): void {
         $this->get('/kelola/penjualan/retur/'.BantuanKasir::Uuid())->assertNotFound();
     });
 
-    it('izin laporan.penjualan.lihat (Kasir & Supervisor 403); pengguna per outlet hanya melihat void/retur outletnya; tenant lain 404', function (): void {
+    it('izin laporan.penjualan.lihat (Kasir & Supervisor 403). Pengguna per outlet hanya melihat void/retur outletnya. Tenant lain 404', function (): void {
         [$k, , $retur] = SiapkanVoidRetur($this);
 
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir);

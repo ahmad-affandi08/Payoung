@@ -91,7 +91,7 @@ function ProdukTitipan(string $nama = 'Keripik Singkong Pedas Bu Sari 200 gram')
 }
 
 describe('F-05i konsinyasi', function (): void {
-    it('titipan masuk tanpa jurnal, terjual = J-05.7, setoran & pembatalannya, retur ke penitip; hutang & invarian konsisten', function (): void {
+    it('titipan masuk tanpa jurnal, terjual = J-05.7, setoran & pembatalannya, retur ke penitip. Hutang & invarian konsisten', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $penitip = BantuanPembelian::BuatPemasok('Bu Sari Keripik Rumahan', idPengguna: $k['Pemilik']->Id);
         $keripik = ProdukTitipan();
@@ -191,7 +191,7 @@ describe('F-05i konsinyasi', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('halaman konsinyasi: penitip, dokumen, form, rincian; simpan titipan & setoran lewat HTTP; kasir tanpa izin; tenant lain 404', function (): void {
+    it('halaman konsinyasi: penitip, dokumen, form, rincian. Simpan titipan & setoran lewat HTTP. Kasir tanpa izin. Tenant lain 404', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $penitip = BantuanPembelian::BuatPemasok('Bu Sari Keripik Rumahan', idPengguna: $k['Pemilik']->Id);
         $keripik = ProdukTitipan();

@@ -257,7 +257,7 @@ enum PenyediaIntegrasi: string
     {
         return match ($this) {
             self::Smtp => 'Server SMTP apa pun, misal dari hosting.',
-            self::AmazonSes => 'Region Jakarta (ap-southeast-3); ganti host bila memakai region lain. Pakai kredensial SMTP SES, bukan access key IAM.',
+            self::AmazonSes => 'Region Jakarta (ap-southeast-3). Ganti host bila memakai region lain. Pakai kredensial SMTP SES, bukan access key IAM.',
             self::Mailgun => 'Pakai smtp.eu.mailgun.org untuk akun region EU.',
             self::SendGrid => 'Nama pengguna selalu "apikey".',
             self::Brevo => 'Nama pengguna = login SMTP di menu SMTP & API.',
@@ -273,12 +273,12 @@ enum PenyediaIntegrasi: string
             self::Hostinger => '',
             self::Doku => $this->AmbilPenyediaGerbang()?->AmbilKeterangan() ?? '',
             self::MetaCloud, self::Fonnte, self::Wablas, self::StarSender, self::Watzap => $this->AmbilPenyediaWhatsapp()?->AmbilKeterangan() ?? '',
-            self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. DOKU Checkout: setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku. DOKU SNAP (QRIS, virtual account, DANA, ShopeePay; halaman bayar Payoung): buat kunci SNAP di kartu ini, daftarkan kunci publiknya di dasbor DOKU › API Keys › Merchant Public Key, lalu setel URL notifikasi SNAP dan Token URL ke https://<domain-aplikasi>/webhook/billing/snap (panduan: Panduan/DokuSnap.md).',
+            self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. DOKU Checkout: setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku. DOKU SNAP (QRIS, virtual account, DANA, ShopeePay. Halaman bayar Payoung): buat kunci SNAP di kartu ini, daftarkan kunci publiknya di dasbor DOKU › API Keys › Merchant Public Key, lalu setel URL notifikasi SNAP dan Token URL ke https://<domain-aplikasi>/webhook/billing/snap (panduan: Panduan/DokuSnap.md).',
             self::DokuPartner => 'Akun Partner Payoung di DOKU (Brand ID partner + secret key) untuk mendaftarkan merchant tenant lewat KYB: tenant cukup mengunggah foto KTP, selfie, foto tempat usaha, dan rekening. Payoung harus berstatus Partner di DOKU. URL callback KYB tidak perlu disetel manual: alamatnya dikirim otomatis saat pendaftaran (https://<domain-aplikasi>/webhook/pembayaran/doku-partner). Aktivasi QRIS per Brand masih dilakukan di DOKU Dashboard.',
             self::SmtpKampanye => 'Pengirim email kampanye ke calon pelanggan, terpisah dari email transaksional (verifikasi, tagihan, struk). Pakai domain atau subdomain lain (misal info.payoung.id) yang SPF, DKIM, dan DMARC-nya sudah diatur, supaya keluhan spam dari kampanye tidak merusak reputasi domain utama. Tanpa ini kampanye tidak bisa dijalankan.',
             self::GoogleAnalytics => 'Menarik data Google Analytics 4 situs payoung.id ke menu Analitik › Situs. Buat akun layanan di Google Cloud (aktifkan Google Analytics Data API), unduh kunci JSON, lalu tambahkan alamat email akun layanan itu sebagai pengguna Viewer di properti GA4 (Admin › Property access management). Panduan: Panduan/AnalitikGoogle.md.',
             self::Google => 'Pemilik toko daftar dan masuk dengan akun Google. Masuk dengan Google menggantikan verifikasi dua langkah (2FA). Panduan lengkap: Panduan/LoginGoogle.md.',
-            self::Fcm => 'Satu proyek Firebase melayani Android & iOS sekaligus; sertifikat APNs diunggah di Firebase, bukan di sini. Isi berkas akun layanan dari Setelan proyek → Akun layanan → Buat kunci baru.',
+            self::Fcm => 'Satu proyek Firebase melayani Android & iOS sekaligus. Sertifikat APNs diunggah di Firebase, bukan di sini. Isi berkas akun layanan dari Setelan proyek → Akun layanan → Buat kunci baru.',
             default => '',
         };
     }

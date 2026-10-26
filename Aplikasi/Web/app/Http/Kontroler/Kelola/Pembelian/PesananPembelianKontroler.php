@@ -167,7 +167,7 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
     {
         $po = $batalkan->Jalankan($this->CariDokumen(PesananPembelian::class, $pesanan), $this->Pelaku()->Id, true);
 
-        return to_route('kelola.pembelian.pesanan.detail', ['pesanan' => $po->Uuid])->with('Kilat', "{$po->Nomor} ditutup; sisa pesanan tidak ditunggu lagi.");
+        return to_route('kelola.pembelian.pesanan.detail', ['pesanan' => $po->Uuid])->with('Kilat', "{$po->Nomor} ditutup. Sisa pesanan tidak ditunggu lagi.");
     }
 
     public function Cetak(string $pesanan, DetailPembelian $detail, ProfilTenant $profil): Response

@@ -700,7 +700,7 @@ export default function HalamanUbahHalamanSitus({
                         </div>
                         <p className="flex items-center gap-1.5 text-keterangan text-teks-sekunder">
                             <Monitor className="size-3.5 shrink-0" aria-hidden /> Klik bagian mana pun di kanvas untuk
-                            menyuntingnya. Perubahan tersimpan otomatis sebagai draf; pengunjung baru melihatnya setelah
+                            menyuntingnya. Perubahan tersimpan otomatis sebagai draf. Pengunjung baru melihatnya setelah
                             Terbitkan.
                         </p>
                     </main>

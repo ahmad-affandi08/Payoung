@@ -196,7 +196,7 @@ describe('CRM-06 jual gift card di back-office', function (): void {
 });
 
 describe('CRM-06 cek gift card di POS', function (): void {
-    it('kode benar (huruf kecil, tanpa tanda hubung) mengembalikan saldo; salah/tak ada/tenant lain = 404 yang sama', function (): void {
+    it('kode benar (huruf kecil, tanpa tanda hubung) mengembalikan saldo. Salah/tak ada/tenant lain = 404 yang sama', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '100000');
         $tulis = strtolower(str_replace('-', ' ', $kartu->Kode));
@@ -228,7 +228,7 @@ describe('CRM-06 cek gift card di POS', function (): void {
 });
 
 describe('CRM-06 bayar dengan gift card', function (): void {
-    it('memotong saldo kartu di transaksi penjualan; bukan uang masuk laci; Referensi tersimpan samar; void mengembalikan; invarian terjaga', function (): void {
+    it('memotong saldo kartu di transaksi penjualan, bukan uang masuk laci; Referensi tersimpan samar. Void mengembalikan. Invarian terjaga', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '100000');
 
@@ -259,7 +259,7 @@ describe('CRM-06 bayar dengan gift card', function (): void {
         expect(SaldoKartu($kartu))->toBe('100000.00');
     });
 
-    it('kartu habis dipakai berstatus Habis lalu Aktif lagi setelah void; seluruh nilai bisa dipakai', function (): void {
+    it('kartu habis dipakai berstatus Habis lalu Aktif lagi setelah void. Seluruh nilai bisa dipakai', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '77000');
 
@@ -274,7 +274,7 @@ describe('CRM-06 bayar dengan gift card', function (): void {
         expect(PeriksaInvarianGiftCard($k['Tenant']->Id))->toBe([]);
     });
 
-    it('saldo kurang: tetap diterima, saldo minus, tinjauan GiftCardBermasalah; kode tak dikenal: diterima + tinjauan, tanpa mutasi', function (): void {
+    it('saldo kurang: tetap diterima, saldo minus, tinjauan GiftCardBermasalah. Kode tak dikenal: diterima + tinjauan, tanpa mutasi', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '20000');
 
@@ -290,7 +290,7 @@ describe('CRM-06 bayar dengan gift card', function (): void {
             ->and(MutasiGiftCard::query()->where('Jenis', JenisMutasiGiftCard::Pakai->value)->count())->toBe(1);
     });
 
-    it('kartu hangus atau lewat masa berlaku tetap diterima dengan tinjauan; kode tanpa format sah atau dua pembayaran gift card ditolak', function (): void {
+    it('kartu hangus atau lewat masa berlaku tetap diterima dengan tinjauan. Kode tanpa format sah atau dua pembayaran gift card ditolak', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '100000');
         $kartu->forceFill(['BerlakuSampai' => now()->subDays(2)->toDateString()])->save();
@@ -310,7 +310,7 @@ describe('CRM-06 bayar dengan gift card', function (): void {
             ->and(BantuanKasir::KirimRingkas($this, $k['Token'], [$duaKartu]))->toBe([['Ditolak', 'PembayaranTidakValid']]);
     });
 
-    it('retur penjualan yang sebagian dibayar gift card: refund tunai paling banyak bagian non-kartu; bagian kartu tidak bisa diuangkan', function (): void {
+    it('retur penjualan yang sebagian dibayar gift card: refund tunai paling banyak bagian non-kartu. Bagian kartu tidak bisa diuangkan', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '100000');
         // Total 77.000: gift card 50.000 + tunai 27.000.
@@ -351,7 +351,7 @@ describe('CRM-06 kedaluwarsa dan pengelolaan kartu', function (): void {
             ->and(MutasiGiftCard::query()->where('Jenis', JenisMutasiGiftCard::Hangus->value)->count())->toBe(1);
     });
 
-    it('daftar & rincian riwayat; perpanjang masa berlaku; hanguskan manual; kembalikan uang hanya untuk kartu belum dipakai', function (): void {
+    it('daftar & rincian riwayat. Perpanjang masa berlaku. Hanguskan manual. Kembalikan uang hanya untuk kartu belum dipakai', function (): void {
         $k = SiapkanGiftCard($this);
         $utuh = JualKartu($this, $k, '100000');
         $terpakai = JualKartu($this, $k, '100000');
@@ -391,7 +391,7 @@ describe('CRM-06 kedaluwarsa dan pengelolaan kartu', function (): void {
         expect(PeriksaInvarianGiftCard($k['Tenant']->Id))->toBe([]);
     });
 
-    it('tautan sumber jurnal membuka daftar kartu dengan rincian; tenant lain tidak bisa membaca atau mengubah kartu ini', function (): void {
+    it('tautan sumber jurnal membuka daftar kartu dengan rincian. Tenant lain tidak bisa membaca atau mengubah kartu ini', function (): void {
         $k = SiapkanGiftCard($this);
         $kartu = JualKartu($this, $k, '100000');
         $mutasi = MutasiGiftCard::query()->sole();

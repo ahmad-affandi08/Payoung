@@ -213,7 +213,7 @@ final class OutletKontroler extends DasarKelolaKontroler
     {
         $baris = $atur->BuatUlangToken($this->CariOutlet($outlet));
 
-        return back()->with('Kilat', "Tautan kios {$baris->Nama} dibuat ulang. Tautan lama tidak berlaku lagi; buka tautan baru di tablet outlet.");
+        return back()->with('Kilat', "Tautan kios {$baris->Nama} dibuat ulang. Tautan lama tidak berlaku lagi. Buka tautan baru di tablet outlet.");
     }
 
     public function Simpan(SimpanOutletPermintaan $permintaan, SimpanOutlet $simpan): RedirectResponse

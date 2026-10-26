@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { AmbilNamaBerkasIlustrasi, AmbilTampilanSektor, KelompokkanSektor } from '@/Pustaka/TampilanSektor';
 
 describe('Tampilan sektor (ilustrasi & kelompok pemilih jenis usaha, D-178)', () => {
-    it('kode dikenal memakai ilustrasinya sendiri; kode baru jatuh ke ilustrasi awalannya; kode asing ke umum', () => {
+    it('kode dikenal memakai ilustrasinya sendiri. Kode baru jatuh ke ilustrasi awalannya. Kode asing ke umum', () => {
         const kafe = AmbilTampilanSektor('FNB-CAF');
         const laundry = AmbilTampilanSektor('SVC-LDR');
         expect(kafe.Kelompok).toBe('Makanan');

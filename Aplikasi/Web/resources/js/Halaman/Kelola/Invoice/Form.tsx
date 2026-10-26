@@ -209,7 +209,7 @@ export default function HalamanFormInvoice({
                             />
                             <BidangTeks
                                 label="Termin pembayaran (hari)"
-                                keterangan="Terisi dari data pelanggan; ubah bila berbeda. 0 = bayar langsung."
+                                keterangan="Terisi dari data pelanggan. Ubah bila berbeda. 0 = bayar langsung."
                                 nilai={termin}
                                 saatBerubah={(nilai) => AturTermin(nilai.replace(/\D/g, '').slice(0, 3))}
                                 inputMode="numeric"
@@ -285,7 +285,7 @@ export default function HalamanFormInvoice({
 
                         <Panel
                             judul="PPh yang dipotong pelanggan"
-                            keterangan="Isi bila pelanggan Anda memotong PPh (misalnya PPh 23 atas jasa). Tarif diisi sesuai ketentuan atau bukti potong; sistem tidak menebaknya."
+                            keterangan="Isi bila pelanggan Anda memotong PPh (misalnya PPh 23 atas jasa). Tarif diisi sesuai ketentuan atau bukti potong. Sistem tidak menebaknya."
                         >
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <BidangTeks

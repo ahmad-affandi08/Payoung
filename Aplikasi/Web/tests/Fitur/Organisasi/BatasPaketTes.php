@@ -51,7 +51,7 @@ describe('BR-02.1 / BR-P04.3: batas outlet ditegakkan server', function (): void
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman->where('BatasOutlet', ['Batas' => 1, 'Terpakai' => 1]));
     });
 
-    it('paket Pro (3 outlet): outlet ke-4 ditolak; outlet arsip tidak dihitung, tetapi memulihkannya memakai kuota lagi', function (): void {
+    it('paket Pro (3 outlet): outlet ke-4 ditolak. Outlet arsip tidak dihitung, tetapi memulihkannya memakai kuota lagi', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant(kodePaket: 'PRO');
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 

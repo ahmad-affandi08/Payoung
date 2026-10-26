@@ -94,7 +94,7 @@ describe('Kelola/Produk/Label (PRD-10 cetak label)', () => {
         expect(document.getElementById('area-cetak-label')).toBeNull();
     });
 
-    it('cetak: tombol aktif bila ada stiker, memanggil window.print; nonaktif bila total 0', () => {
+    it('cetak: tombol aktif bila ada stiker, memanggil window.print. Nonaktif bila total 0', () => {
         RenderUji(<HalamanLabelProduk {...PropsLabel()} />);
         const tombol = screen.getByRole('button', { name: 'Cetak label' });
 
@@ -124,7 +124,7 @@ describe('Kelola/Produk/Label (PRD-10 cetak label)', () => {
         expect(screen.getByText('8 stiker pada 1 lembar.')).toBeTruthy();
     });
 
-    it('lebih dari 5.000 stiker diblokir dengan alasan; lembar A4 65 stiker membagi halaman; lewati stiker pertama', () => {
+    it('lebih dari 5.000 stiker diblokir dengan alasan. Lembar A4 65 stiker membagi halaman. Lewati stiker pertama', () => {
         RenderUji(<HalamanLabelProduk {...PropsLabel({ Baris: [BuatBaris({ Jumlah: 65 })] })} />);
         expect(screen.getByText('65 stiker pada 1 lembar.')).toBeTruthy();
 
@@ -275,7 +275,7 @@ describe('Kelola/Produk/Label (PRD-10 cetak label)', () => {
         expect(document.getElementById('area-cetak-label')?.textContent).not.toContain('8991234567891');
     });
 
-    it('mencari barang menambah baris; memilih barang yang sudah ada menambah satu stiker', async () => {
+    it('mencari barang menambah baris. Memilih barang yang sudah ada menambah satu stiker', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({

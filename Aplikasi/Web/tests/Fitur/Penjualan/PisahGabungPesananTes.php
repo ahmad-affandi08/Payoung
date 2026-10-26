@@ -23,7 +23,7 @@ beforeEach(function (): void {
 });
 
 describe('v1.99 pisah tagihan & gabung meja', function (): void {
-    it('pisah: item terpilih pindah ke pesanan baru, keduanya dibayar terpisah; stok & jurnal dari penjualan, tiket dapur tetap', function (): void {
+    it('pisah: item terpilih pindah ke pesanan baru, keduanya dibayar terpisah. Stok & jurnal dari penjualan, tiket dapur tetap', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         $uuid = $buka['Uuid'];
@@ -58,7 +58,7 @@ describe('v1.99 pisah tagihan & gabung meja', function (): void {
             ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 
-    it('gabung: semua item meja 9 pindah ke meja 7, meja 9 ditutup Digabung; pesanan tertutup menolak pindah; beda outlet ditolak', function (): void {
+    it('gabung: semua item meja 9 pindah ke meja 7, meja 9 ditutup Digabung. Pesanan tertutup menolak pindah. Beda outlet ditolak', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         $buka7 = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         $tambah7 = BantuanPesananTerbuka::ItemTambah($k, $buka7['Uuid'], [[$k['Kopi'], '1', '25000.00']]);

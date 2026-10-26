@@ -26,7 +26,7 @@ void main() {
     expect(pdf.length, greaterThan(1000));
   });
 
-  test('dialog cetak dibuka dengan PDF & format kertas; batal atau tidak tersedia = GalatPrinter berpesan', () async {
+  test('dialog cetak dibuka dengan PDF & format kertas. Batal atau tidak tersedia = GalatPrinter berpesan', () async {
     final panggilan = <(Uint8List, String, PdfPageFormat)>[];
     await TransportCetakSistem(
       cetak: (pdf, nama, format) async {

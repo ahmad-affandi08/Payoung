@@ -30,7 +30,7 @@ describe('PenguraiStatusSnap', function (): void {
         expect(PenguraiStatusSnap::UraiDompetAtauQris([]))->toBe(StatusPembayaranGerbang::Menunggu);
     });
 
-    it('virtual account: paymentFlagStatus 00 lunas; jawaban Pending dengan paidAmount terisi TIDAK lunas', function (): void {
+    it('virtual account: paymentFlagStatus 00 lunas. Jawaban Pending dengan paidAmount terisi TIDAK lunas', function (): void {
         expect(PenguraiStatusSnap::UraiVirtualAccount(['virtualAccountData' => ['paymentFlagStatus' => '00']]))->toBe(StatusPembayaranGerbang::Lunas)
             ->and(PenguraiStatusSnap::UraiVirtualAccount(['virtualAccountData' => ['paymentFlagStatus' => '01']]))->toBe(StatusPembayaranGerbang::Menunggu)
             ->and(PenguraiStatusSnap::UraiVirtualAccount([

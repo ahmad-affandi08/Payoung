@@ -101,7 +101,7 @@ final class TimKontroler extends DasarKelolaKontroler
             abort_unless($bolehKaryawan, 403);
             $karyawan = $simpan->Jalankan($permintaan->AmbilRincianKaryawan($this->Pelaku()->Id));
 
-            return redirect()->route('kelola.tim.daftar')->with('Kilat', "{$karyawan->Nama} ditambahkan ke tim tanpa akun masuk. Atur jadwal dan gajinya di menu Tim; kasih akses masuk kapan saja dari daftar tim.");
+            return redirect()->route('kelola.tim.daftar')->with('Kilat', "{$karyawan->Nama} ditambahkan ke tim tanpa akun masuk. Atur jadwal dan gajinya di menu Tim. Kasih akses masuk kapan saja dari daftar tim.");
         }
 
         abort_unless($boleh(IzinTenant::PenggunaUndang), 403);
@@ -117,7 +117,7 @@ final class TimKontroler extends DasarKelolaKontroler
         );
         $pesan = $pengguna->CekHanyaKasir()
             ? "{$pengguna->Nama} ditambahkan ke tim. Ia masuk aplikasi kasir dengan PIN yang Anda buat."
-            : "{$pengguna->Nama} ditambahkan ke tim. Berikan email & kata sandi awal kepadanya; ia wajib menggantinya saat pertama masuk.";
+            : "{$pengguna->Nama} ditambahkan ke tim. Berikan email & kata sandi awal kepadanya. Ia wajib menggantinya saat pertama masuk.";
 
         return redirect()->route('kelola.tim.daftar')->with('Kilat', $pesan);
     }

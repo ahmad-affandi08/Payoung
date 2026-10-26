@@ -150,7 +150,7 @@ final class AsetTetapKontroler extends DasarAkuntansiKontroler
         $data = $permintaan->validate(['Alasan' => ['required', 'string', 'min:5', 'max:500']]);
         $aset = $batalkan->Jalankan($aset, (string) $data['Alasan'], $this->Pelaku()->Id);
 
-        return to_route('kelola.akuntansi.aset-tetap.detail', ['asetTetap' => $aset->Uuid])->with('Kilat', "Aset {$aset->Nomor} dibatalkan; jurnal perolehannya dibalik.");
+        return to_route('kelola.akuntansi.aset-tetap.detail', ['asetTetap' => $aset->Uuid])->with('Kilat', "Aset {$aset->Nomor} dibatalkan. Jurnal perolehannya dibalik.");
     }
 
     /** @return list<array{Nilai: string, Label: string, UmurBulan: int}> */

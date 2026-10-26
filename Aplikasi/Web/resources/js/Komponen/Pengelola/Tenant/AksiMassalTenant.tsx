@@ -29,10 +29,10 @@ const JUDUL: Record<JenisAksi, string> = {
 const KETERANGAN: Record<JenisAksi, string> = {
     trial: 'Hari tambahan dan alasan yang sama dicatat di semua tenant terpilih. Tenant yang tidak sedang uji coba dilewati.',
     tangguhkan:
-        'Owner hanya bisa masuk, melihat laporan, mengekspor data, dan membayar tagihan; aplikasi kasir terkunci. Tidak ada data yang dihapus.',
-    aktifkan: 'Hanya tenant yang sedang ditangguhkan yang diaktifkan; lainnya dilewati.',
+        'Owner hanya bisa masuk, melihat laporan, mengekspor data, dan membayar tagihan. Aplikasi kasir terkunci. Tidak ada data yang dihapus.',
+    aktifkan: 'Hanya tenant yang sedang ditangguhkan yang diaktifkan. Lainnya dilewati.',
     catatan: 'Satu catatan yang sama ditulis di riwayat internal semua tenant terpilih. Owner tidak melihatnya.',
-    hapus: 'Menghapus tenant terpilih beserta SEMUA datanya (pengguna, transaksi, jurnal, berkas). Tidak bisa dibatalkan. Hanya tenant berpenanda Uji, Demo, atau Internal tanpa tagihan berbayar yang dihapus; yang lain dilewati.',
+    hapus: 'Menghapus tenant terpilih beserta SEMUA datanya (pengguna, transaksi, jurnal, berkas). Tidak bisa dibatalkan. Hanya tenant berpenanda Uji, Demo, atau Internal tanpa tagihan berbayar yang dihapus, yang lain dilewati.',
 };
 
 type Isian = { Hari: string; Alasan: string; Kategori: string; Catatan: string; Isi: string; Frasa: string };

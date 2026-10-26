@@ -101,7 +101,7 @@ describe('Cetak struk bagian 4: buka laci manual tanpa transaksi selalu dicatat 
             ->and($log($disetujui)->DisetujuiOleh)->toBe($k['Supervisor']->Id);
     });
 
-    it('PIN tidak wajib (bawaan): tanpa penyetuju tidak ditandai tinjauan; shift tertutup ditandai ShiftTidakAktif', function (): void {
+    it('PIN tidak wajib (bawaan): tanpa penyetuju tidak ditandai tinjauan. Shift tertutup ditandai ShiftTidakAktif', function (): void {
         $k = SiapkanShiftLaciUji($this);
         $awal = ItemBukaLaciUji($k['UuidShift'], $k['Kasir']->Uuid);
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$awal]))->toBe([['Diterima', null]]);

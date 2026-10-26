@@ -58,7 +58,7 @@ function BuatProps(status: 'Draf' | 'Dibayar', baris: BarisGajiKaryawan[]): Prop
 describe('Slip gaji (F-18, v3.35)', () => {
     afterEach(() => cleanup());
 
-    it('satu slip per karyawan: pendapatan, potongan, bersih; nilai nol tidak ditampilkan', () => {
+    it('satu slip per karyawan: pendapatan, potongan, bersih. Nilai nol tidak ditampilkan', () => {
         render(<HalamanSlipGaji {...BuatProps('Dibayar', [Maya])} />);
         const slip = screen.getByRole('article', { name: `Slip gaji ${Maya.Nama}` });
 
@@ -72,7 +72,7 @@ describe('Slip gaji (F-18, v3.35)', () => {
         expect(within(slip).getByText(/Dibayar 31 Okt 2026/)).toBeTruthy();
     });
 
-    it('draf bertanda; banyak karyawan = banyak slip', () => {
+    it('draf bertanda. Banyak karyawan = banyak slip', () => {
         render(
             <HalamanSlipGaji
                 {...BuatProps('Draf', [Maya, { ...Maya, UuidKaryawan: '01J9KRY0000000000000000002', Nama: 'Dewi' }])}

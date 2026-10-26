@@ -76,7 +76,7 @@ it('mencocokkan nonce bila diminta dan menolak yang berbeda', function (): void 
         ->and(fn () => $verifikator->Verifikasi($token, 'nonce-lain'))->toThrow(TokenGoogleTidakSah::class, 'Nonce');
 });
 
-it('kunci publik di-cache; kid baru memicu muat ulang sekali (rotasi kunci Google)', function (): void {
+it('kunci publik di-cache. Kid baru memicu muat ulang sekali (rotasi kunci Google)', function (): void {
     $verifikator = app(PemverifikasiTokenGoogle::class);
     $verifikator->Verifikasi(BantuanGoogle::BuatToken());
     $verifikator->Verifikasi(BantuanGoogle::BuatToken());

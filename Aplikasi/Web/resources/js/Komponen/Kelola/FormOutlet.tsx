@@ -171,7 +171,7 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
                     kodeTerkunci
                         ? 'Kode dikunci karena outlet sudah bertransaksi.'
                         : !kodeDiketik && formulir.data.Kode !== ''
-                          ? 'Disarankan dari nama outlet; boleh diganti. Tidak bisa diubah setelah outlet bertransaksi.'
+                          ? 'Disarankan dari nama outlet. Boleh diganti. Tidak bisa diubah setelah outlet bertransaksi.'
                           : '3–5 karakter untuk nomor dokumen, misal JKT1. Tidak bisa diubah setelah outlet bertransaksi.'
                 }
                 maxLength={5}

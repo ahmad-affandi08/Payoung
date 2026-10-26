@@ -389,7 +389,7 @@ export default function HalamanFormOrderProduksi({
                 <Panel
                     judul="Bahan"
                     idJudul="judul-bahan-produksi"
-                    keterangan={`${bahan.length.toLocaleString('id-ID')} dari ${MaksBahan.toLocaleString('id-ID')} baris. Bahan terisi otomatis dari resep produk yang dipilih dan ikut menyesuaikan jumlah hasil. Ubah jumlahnya bila pemakaian nyata berbeda; setelah itu penyesuaian otomatis berhenti.`}
+                    keterangan={`${bahan.length.toLocaleString('id-ID')} dari ${MaksBahan.toLocaleString('id-ID')} baris. Bahan terisi otomatis dari resep produk yang dipilih dan ikut menyesuaikan jumlah hasil. Ubah jumlahnya bila pemakaian nyata berbeda. Setelah itu penyesuaian otomatis berhenti.`}
                 >
                     {produk !== null && (!otomatis || bahan.length === 0) ? (
                         <div className="flex flex-wrap gap-2">

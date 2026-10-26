@@ -78,7 +78,7 @@ export default function HalamanDokumenKonsinyasi({ Dokumen, OpsiJenis, OpsiPemas
     return (
         <HalamanDaftarPembelian
             judul="Riwayat titipan"
-            keterangan="Titipan masuk dinilai harga titip; retur ke penitip dinilai harga rata-rata titipan saat keluar. Keduanya tidak dijurnal karena barang titipan bukan aset toko."
+            keterangan="Titipan masuk dinilai harga titip. Retur ke penitip dinilai harga rata-rata titipan saat keluar. Keduanya tidak dijurnal karena barang titipan bukan aset toko."
             izin={Izin}
             objek="titipan"
         >

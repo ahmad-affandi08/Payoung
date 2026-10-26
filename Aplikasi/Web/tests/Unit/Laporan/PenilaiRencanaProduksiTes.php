@@ -18,7 +18,7 @@ function Rencana(array $harian, string $hariIni, string $target, string $preOrde
 // Rabu 14 Okt 2026; target Jumat 16 Okt. Jumat sebelumnya: 9 Okt, 2 Okt, 25 Sep, 18 Sep.
 const HARIAN_JUMAT = ['2026-10-09' => '10.0000', '2026-10-02' => '6.0000', '2026-09-25' => '8.0000'];
 
-it('rata-rata hari yang sama dari empat minggu terakhir; hari tanpa penjualan dihitung nol', function (): void {
+it('rata-rata hari yang sama dari empat minggu terakhir. Hari tanpa penjualan dihitung nol', function (): void {
     $hasil = Rencana(HARIAN_JUMAT, '2026-10-14', '2026-10-16');
 
     expect($hasil['Sampel'])->toBe(4)
@@ -42,7 +42,7 @@ it('kebutuhan = yang terbesar antara rata-rata dan pre-order (tidak dijumlahkan)
         ->and($besar['PreOrder'])->toBe('9.0000');
 });
 
-it('rekomendasi = kebutuhan − saldo, tidak pernah negatif; satuan bulat dibulatkan ke atas, desimal tetap empat angka', function (): void {
+it('rekomendasi = kebutuhan − saldo, tidak pernah negatif. Satuan bulat dibulatkan ke atas, desimal tetap empat angka', function (): void {
     expect(Rencana(HARIAN_JUMAT, '2026-10-14', '2026-10-16', saldo: '2')['Rekomendasi'])->toBe('4.0000')
         ->and(Rencana(HARIAN_JUMAT, '2026-10-14', '2026-10-16', saldo: '6')['Rekomendasi'])->toBe('0.0000')
         ->and(Rencana(HARIAN_JUMAT, '2026-10-14', '2026-10-16', saldo: '40')['Rekomendasi'])->toBe('0.0000')
@@ -53,7 +53,7 @@ it('rekomendasi = kebutuhan − saldo, tidak pernah negatif; satuan bulat dibula
         ->and(Rencana(['2026-10-09' => '17.0000'], '2026-10-14', '2026-10-16', desimal: true)['Rekomendasi'])->toBe('4.2500');
 });
 
-it('hari ini tidak pernah dihitung sebagai riwayat (belum selesai); tanpa riwayat hanya pre-order yang berlaku', function (): void {
+it('hari ini tidak pernah dihitung sebagai riwayat (belum selesai), tanpa riwayat hanya pre-order yang berlaku', function (): void {
     // Target Rabu 21 Okt: minggu sebelumnya jatuh pada hari ini (14 Okt) sehingga dilewati; tersisa 7 Okt, 30 Sep, 23 Sep.
     $hasil = Rencana(['2026-10-14' => '99.0000'], '2026-10-14', '2026-10-21');
 

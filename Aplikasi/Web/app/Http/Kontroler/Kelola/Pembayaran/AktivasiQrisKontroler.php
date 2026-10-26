@@ -44,7 +44,7 @@ final class AktivasiQrisKontroler extends DasarKelolaKontroler
         $simpan->Jalankan($permintaan->AmbilData());
         $ajukan->Jalankan();
 
-        return to_route('kelola.pembayaran.aktivasi-qris')->with('Kilat', 'Pendaftaran dikirim. Peninjauan DOKU biasanya 1 sampai 2 hari kerja; statusnya tampil di halaman ini.');
+        return to_route('kelola.pembayaran.aktivasi-qris')->with('Kilat', 'Pendaftaran dikirim. Peninjauan DOKU biasanya 1 sampai 2 hari kerja. Statusnya tampil di halaman ini.');
     }
 
     public function Batal(BatalkanPendaftaranMerchant $batalkan): RedirectResponse

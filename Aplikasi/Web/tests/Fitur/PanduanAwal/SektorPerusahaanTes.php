@@ -95,7 +95,7 @@ it('Beranda usaha Perusahaan tanpa omzet kasir: Dasbor kosong; Penagihan null se
         ->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/Beranda')->where('Dasbor', null)->where('Penagihan', null));
 });
 
-it('panduan awal usaha Perusahaan tidak memuat langkah Metode pembayaran dan Perangkat kasir; tenant biasa tetap memuatnya', function (): void {
+it('panduan awal usaha Perusahaan tidak memuat langkah Metode pembayaran dan Perangkat kasir. Tenant biasa tetap memuatnya', function (): void {
     BantuanPanduanAwal::TerbitkanTemplate('BIZ-JSA');
     BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
     ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Konsultan Langkah Panduan', panduanWajib: true);

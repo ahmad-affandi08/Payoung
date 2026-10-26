@@ -74,7 +74,7 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
         expect(screen.getByText('Kopi Nusantara Tunjungan')).toBeTruthy();
     });
 
-    it('tombol tambah outlet membuka halaman penuh /kelola/outlet/buat; batas penuh menonaktifkannya', () => {
+    it('tombol tambah outlet membuka halaman penuh /kelola/outlet/buat. Batas penuh menonaktifkannya', () => {
         RenderUji(<HalamanDaftarOutlet Outlet={outlet} Merek={[]} Kota={[]} BatasOutlet={batas} />);
         expect(screen.getByRole('link', { name: 'Tambah outlet' }).getAttribute('href')).toBe('/kelola/outlet/buat');
         cleanup();
@@ -217,7 +217,7 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
         expect(tiruanRouter.post).toHaveBeenCalledWith('/kelola/outlet/O-1/gudang/G-1/arsipkan', {}, expect.anything());
     });
 
-    it('F-10a meja: area & meja tampil, meja diarsipkan lewat aksi baris, tambah meja membuka formulir; mode mati hanya info', () => {
+    it('F-10a meja: area & meja tampil, meja diarsipkan lewat aksi baris, tambah meja membuka formulir. Mode mati hanya info', () => {
         const outletAktif = {
             Uuid: 'O-1',
             Kode: 'JKT1',
@@ -319,7 +319,7 @@ describe('Kelola/Outlet (F-02 langkah 1, TabelData D-16)', () => {
 });
 
 describe('Kelola/PIN (F-02 langkah 4)', () => {
-    it('status PIN bertulis; atur ulang dari menu aksi membuka formulir PIN anggota', () => {
+    it('status PIN bertulis. Atur ulang dari menu aksi membuka formulir PIN anggota', () => {
         RenderUji(
             <HalamanPin
                 PinSayaDiatur
@@ -375,7 +375,7 @@ describe('Kelola/Peran (§19.1): buat peran di halaman penuh', () => {
         expect(screen.getByRole('link', { name: 'Buat peran' }).getAttribute('href')).toBe('/kelola/peran/buat');
     });
 
-    it('halaman buat: izin khusus Pemilik tidak ditawarkan; kirim POST /kelola/peran; Batal kembali ke daftar', () => {
+    it('halaman buat: izin khusus Pemilik tidak ditawarkan. Kirim POST /kelola/peran; Batal kembali ke daftar', () => {
         AturHalamanUji({}, '/kelola/peran/buat');
         RenderUji(<HalamanBuatPeran DaftarIzin={daftarIzin} />);
 

@@ -108,7 +108,7 @@ describe('back-office /kelola', function (): void {
         $masuk()->get('/kelola/pelanggan')->assertOk();
     });
 
-    it('tab Anti-fraud hanya untuk paket yang memuatnya; tab lain tidak terpengaruh', function (): void {
+    it('tab Anti-fraud hanya untuk paket yang memuatnya. Tab lain tidak terpengaruh', function (): void {
         $t = TenantPaketUji('PRO', 'Kedai Kopi Wonogiri');
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 
@@ -140,7 +140,7 @@ describe('back-office /kelola', function (): void {
         $masuk()->get('/kelola/grosir/pesanan/buat')->assertOk();
     });
 
-    it('override fitur dari konsol membuka fitur di luar paket; mematikan penegakan membuka semuanya', function (): void {
+    it('override fitur dari konsol membuka fitur di luar paket. Mematikan penegakan membuka semuanya', function (): void {
         $t = TenantPaketUji('STARTER', 'Toko Roti Manis Sukoharjo');
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 

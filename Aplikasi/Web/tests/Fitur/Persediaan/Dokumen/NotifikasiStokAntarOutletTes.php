@@ -97,7 +97,7 @@ function HariTerimaKabar(): CarbonImmutable
 }
 
 describe('permintaan stok', function (): void {
-    it('diajukan: manajer outlet asal dikabari; manajer tujuan dan outlet lain tidak', function (): void {
+    it('diajukan: manajer outlet asal dikabari. Manajer tujuan dan outlet lain tidak', function (): void {
         $t = SiapkanKabarStok();
         $permintaan = AjukanPermintaanKabar($t);
 
@@ -114,7 +114,7 @@ describe('permintaan stok', function (): void {
             ->and($kabar->Data['Href'])->toBe("/kelola/persediaan/permintaan/{$permintaan->Uuid}");
     });
 
-    it('ditolak: manajer outlet tujuan dikabari beserta alasannya; pengirim yang menolak dan manajer asal tidak', function (): void {
+    it('ditolak: manajer outlet tujuan dikabari beserta alasannya. Pengirim yang menolak dan manajer asal tidak', function (): void {
         $t = SiapkanKabarStok();
         $permintaan = AjukanPermintaanKabar($t);
         app(TolakPermintaanStok::class)->Jalankan($permintaan, 'Stok gudang sedang opname', $t['ManajerAsal']->Id);
@@ -161,7 +161,7 @@ describe('permintaan stok', function (): void {
 });
 
 describe('transfer diterima', function (): void {
-    it('pengirim dan manajer outlet asal dikabari; penerima yang mencatat tidak; barang rusak dan ditolak disebut', function (): void {
+    it('pengirim dan manajer outlet asal dikabari. Penerima yang mencatat tidak. Barang rusak dan ditolak disebut', function (): void {
         $t = SiapkanKabarStok();
         $transfer = KirimTransferKabar($t);
         app(TerimaTransferStok::class)->Jalankan($transfer, [
@@ -209,7 +209,7 @@ describe('transfer diterima', function (): void {
 });
 
 describe('transfer macet', function (): void {
-    it('3 hari: manajer outlet tujuan dikabari; 7 hari: pengirim dan manajer asal; tidak menggandakan', function (): void {
+    it('3 hari: manajer outlet tujuan dikabari; 7 hari: pengirim dan manajer asal. Tidak menggandakan', function (): void {
         $t = SiapkanKabarStok();
         $transfer = KirimTransferKabar($t);
         $aksi = app(BeritahuTransferStokMacet::class);

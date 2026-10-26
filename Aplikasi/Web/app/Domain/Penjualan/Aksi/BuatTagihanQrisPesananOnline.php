@@ -199,7 +199,7 @@ final class BuatTagihanQrisPesananOnline
     {
         return new PelanggaranAturanBisnis(
             'GerbangTidakPasti',
-            'Koneksi ke penyedia pembayaran terputus sebelum QRIS diterima. Muat ulang halaman ini untuk mendapat QRIS baru; kalau uang Anda sudah terpotong, hubungi toko.',
+            'Koneksi ke penyedia pembayaran terputus sebelum QRIS diterima. Muat ulang halaman ini untuk mendapat QRIS baru. Kalau uang Anda sudah terpotong, hubungi toko.',
             'Umum',
             $statusHttp,
         );

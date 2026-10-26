@@ -149,7 +149,7 @@ export default function HalamanBuatPencairan({
             <Panel judul="Pembayaran yang dicairkan">
                 {Terpilih.Metode === '' || Terpilih.Outlet === '' ? (
                     <p className="text-isi text-teks-sekunder">
-                        Pilih metode dan outletnya dulu; daftar pembayaran yang menunggu pencairan akan tampil otomatis.
+                        Pilih metode dan outletnya dulu. Daftar pembayaran yang menunggu pencairan akan tampil otomatis.
                     </p>
                 ) : baris.length === 0 ? (
                     <p className="text-isi text-teks-sekunder">

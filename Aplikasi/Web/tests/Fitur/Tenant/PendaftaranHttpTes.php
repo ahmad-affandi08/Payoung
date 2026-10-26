@@ -162,7 +162,7 @@ describe('CAPTCHA & rate limit (BR-00.4)', function (): void {
 });
 
 describe('Verifikasi email (BR-00.5)', function (): void {
-    it('tautan bertanda tangan memverifikasi email; tautan kedaluwarsa atau dirusak ditolak', function (): void {
+    it('tautan bertanda tangan memverifikasi email. Tautan kedaluwarsa atau dirusak ditolak', function (): void {
         $pengguna = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data())['Pengguna'];
         $parameter = ['pengguna' => $pengguna->Uuid, 'hash' => app(PenandaVerifikasiEmail::class)->BuatHash($pengguna)];
 
@@ -299,7 +299,7 @@ describe('Masuk & pemilih tenant (BR-00.1, isolasi tenant)', function (): void {
         $this->assertGuest('web');
     });
 
-    it('tamu diarahkan ke halaman masuk; keluar mengakhiri sesi', function (): void {
+    it('tamu diarahkan ke halaman masuk. Keluar mengakhiri sesi', function (): void {
         $this->get('/kelola')->assertRedirect(route('masuk'));
 
         app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data());
@@ -383,7 +383,7 @@ describe('Badan email verifikasi (D-26)', function (): void {
 });
 
 describe('Dokumen legal publik', function (): void {
-    it('menampilkan versi yang berlaku; jenis tidak dikenal 404', function (): void {
+    it('menampilkan versi yang berlaku. Jenis tidak dikenal 404', function (): void {
         $this->get('/legal/syarat-ketentuan')
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman->component('Situs/DokumenLegal')->where('Dokumen.Versi', 1));
         $this->get('/legal/tidak-ada')->assertNotFound();

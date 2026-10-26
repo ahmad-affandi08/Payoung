@@ -8,7 +8,7 @@ use App\Domain\Laporan\Layanan\PencariPasanganProduk;
  * Rekomendasi bundling §10.10: analisis keranjang (support, keyakinan, lift), tanpa float.
  */
 
-it('menghitung support, keyakinan A→B / B→A, dan lift; pasangan di bawah support minimum dibuang', function (): void {
+it('menghitung support, keyakinan A→B / B→A, dan lift. Pasangan di bawah support minimum dibuang', function (): void {
     // 10 transaksi: kopi(1)+roti(2) ×4, kopi saja ×3, roti saja ×1, teh(3)+roti(2) ×1 (support 1), teh saja ×1.
     $keranjang = [
         [1, 2], [2, 1], [1, 2], [1, 2],
@@ -33,7 +33,7 @@ it('menghitung support, keyakinan A→B / B→A, dan lift; pasangan di bawah sup
     ]);
 });
 
-it('urut lift terbesar lalu support; produk ganda dalam satu transaksi dihitung sekali; keranjang terlalu besar dilewati', function (): void {
+it('urut lift terbesar lalu support. Produk ganda dalam satu transaksi dihitung sekali. Keranjang terlalu besar dilewati', function (): void {
     $keranjang = [];
 
     for ($i = 0; $i < 3; $i++) {

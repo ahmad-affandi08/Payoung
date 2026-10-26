@@ -39,7 +39,7 @@ function TangkapKueriKunciBuku(Closure $aksi): array
 describe('F-05a buku stok: urutan kunci (DesainF05a C.2)', function (): void {
     // Audit F-07 (v2.32): pemeriksaan idempotensi MutasiStok dibaca TANPA kunci (kunci celah = deadlock di test dua
     // koneksi); SaldoStok yang sudah ada dikunci FOR UPDATE lebih dulu, upsert hanya untuk pasangan baru.
-    it('SaldoStok dikunci urut (IdProduk, IdGudang) walau baris dokumen tidak urut; urutan L1 → L3 (kunci, upsert pasangan baru) → L6; idempotensi tanpa kunci', function (): void {
+    it('SaldoStok dikunci urut (IdProduk, IdGudang) walau baris dokumen tidak urut. Urutan L1 → L3 (kunci, upsert pasangan baru) → L6. Idempotensi tanpa kunci', function (): void {
         $t = BantuanPersediaan::SiapkanTenant(metodeHpp: MetodeHpp::Fifo);
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $g1 = $t['Gudang']->Id;

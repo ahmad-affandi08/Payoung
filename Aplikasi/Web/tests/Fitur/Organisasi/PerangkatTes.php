@@ -115,7 +115,7 @@ describe('F-02 langkah 5: tambah perangkat & kode aktivasi di back-office', func
         expect([$k1->Kode, $k2->Kode, $dapur->Kode, $k3->Kode])->toBe(["{$kode}-K01", "{$kode}-K02", "{$kode}-D01", "{$kode}-K03"]);
     });
 
-    it('membuat ulang kode membatalkan kode lama; mencabut membatalkan kode yang belum dipakai', function (): void {
+    it('membuat ulang kode membatalkan kode lama. Mencabut membatalkan kode yang belum dipakai', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         ['Perangkat' => $perangkat, 'Kode' => $kodeLama] = BantuanPerangkat::BuatPerangkat($tenant->Id);
 
@@ -155,7 +155,7 @@ describe('F-02 langkah 5: tambah perangkat & kode aktivasi di back-office', func
 });
 
 describe('BR-02.1: batas perangkat per outlet dari paket', function (): void {
-    it('paket Gratis (1 perangkat/outlet) menolak perangkat kedua; perangkat dicabut tidak dihitung', function (): void {
+    it('paket Gratis (1 perangkat/outlet) menolak perangkat kedua. Perangkat dicabut tidak dihitung', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant(kodePaket: 'GRATIS');
         $outlet = PerangkatUjiOutletUtama($tenant->Id);
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);

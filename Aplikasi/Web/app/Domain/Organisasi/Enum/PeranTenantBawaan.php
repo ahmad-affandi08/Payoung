@@ -71,11 +71,11 @@ enum PeranTenantBawaan: string
             self::Kasir => 'POS: jual, bayar, simpan pesanan, cetak, buka/tutup shift sendiri.',
             self::StafGudang => 'Penerimaan, transfer, opname, penyesuaian stok (butuh persetujuan).',
             self::StafPembelian => 'Pemasok & pesanan pembelian.',
-            self::Akuntan => 'Keuangan, jurnal, pajak, tutup buku; membaca semua laporan.',
+            self::Akuntan => 'Keuangan, jurnal, pajak, tutup buku. Membaca semua laporan.',
             self::Pelayan => 'Aplikasi POS mode Pelayan: ambil pesanan meja & kirim ke dapur, tanpa pembayaran.',
             self::Salesman => 'Aplikasi mode Salesman: kunjungan pelanggan, lihat stok & piutang pelanggan, ambil pesanan grosir (dikonfirmasi back-office).',
-            self::Karyawan => 'Hanya absen masuk/pulang dari HP (D-180). Tanpa akses dashboard lain; cocok untuk staf yang tidak memakai kasir.',
-            self::Apoteker => 'POS apotek: jual seperti Kasir, ditambah menyerahkan obat keras/psikotropika/narkotika dengan resep dan Obat Wajib Apotek; laporan apotek dengan data pasien.',
+            self::Karyawan => 'Hanya absen masuk/pulang dari HP (D-180). Tanpa akses dashboard lain. Cocok untuk staf yang tidak memakai kasir.',
+            self::Apoteker => 'POS apotek: jual seperti Kasir, ditambah menyerahkan obat keras/psikotropika/narkotika dengan resep dan Obat Wajib Apotek. Laporan apotek dengan data pasien.',
         };
     }
 

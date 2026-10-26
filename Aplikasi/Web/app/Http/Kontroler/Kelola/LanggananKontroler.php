@@ -261,7 +261,7 @@ final class LanggananKontroler extends Kontroler
             array_values(array_map('strval', $valid['UuidAnggotaTetap'] ?? [])),
         );
 
-        return back()->with('Kilat', 'Usaha Anda sekarang memakai paket Gratis. Kasir terbuka lagi dalam batas paket Gratis; data tidak dihapus.');
+        return back()->with('Kilat', 'Usaha Anda sekarang memakai paket Gratis. Kasir terbuka lagi dalam batas paket Gratis. Data tidak dihapus.');
     }
 
     public function BatalkanTurunPaket(string $turunPaket, BatalkanTurunPaket $batalkan): RedirectResponse

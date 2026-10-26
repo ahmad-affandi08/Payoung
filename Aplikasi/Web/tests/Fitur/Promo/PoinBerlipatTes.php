@@ -85,7 +85,7 @@ function PoinPenjualan(string $uuid): int
 }
 
 describe('F-16c bagian 4 poin berlipat', function (): void {
-    it('pengali promo × pengali tier; pengali terbesar menang (tidak bertumpuk); tanpa tinjauan; pemakaian tercatat Rp 0', function (): void {
+    it('pengali promo × pengali tier. Pengali terbesar menang (tidak bertumpuk), tanpa tinjauan. Pemakaian tercatat Rp 0', function (): void {
         $k = SiapkanPoinBerlipat($this);
         $dua = BuatPromoPoin('POIN2X', '2');
         BuatPromoPoin('POIN3X-BESAR', '3', ['MinimalSubtotal' => '200000.00']);
@@ -119,7 +119,7 @@ describe('F-16c bagian 4 poin berlipat', function (): void {
         expect(PoinPenjualan($kedua['Uuid']))->toBe(23);
     });
 
-    it('tanpa pelanggan tidak ada poin dan pemakaian tidak dicatat; kuota habis tetap diterima + tinjauan', function (): void {
+    it('tanpa pelanggan tidak ada poin dan pemakaian tidak dicatat. Kuota habis tetap diterima + tinjauan', function (): void {
         $k = SiapkanPoinBerlipat($this);
         $promo = BuatPromoPoin('POIN2X-TERBATAS', '2', kuota: 1);
 

@@ -143,7 +143,7 @@ class _LembarReservasiState extends ConsumerState<LembarReservasi> {
             children: [
               Expanded(
                 child: Text(
-                  'Reservasi outlet ini hari ini, urut jam. Perlu koneksi internet; pembayaran tetap bisa offline.',
+                  'Reservasi outlet ini hari ini, urut jam. Perlu koneksi internet. Pembayaran tetap bisa offline.',
                   style: teks.bodySmall,
                 ),
               ),

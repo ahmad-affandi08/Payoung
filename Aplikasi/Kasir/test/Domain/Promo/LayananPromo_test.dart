@@ -49,7 +49,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('promo diunduh saat katalog diperbarui; server lama/offline = promo tersimpan tetap dipakai', () async {
+  test('promo diunduh saat katalog diperbarui. Server lama/offline = promo tersimpan tetap dipakai', () async {
     u.server.penangan = (p) async =>
         http.Response(jsonEncode(PromoBundelKopi()), 200, headers: {'content-type': 'application/json'});
     await u.katalog.PerbaruiPromo();
@@ -63,7 +63,7 @@ void main() {
     expect(k.namaPromo['01K5PROMO00000000000000001'], '2 kopi Rp 25.000');
   });
 
-  test('bundel 2 kopi Rp 25.000 diterapkan otomatis; bukan diskon manual; Promo ikut di Penjualan.Buat', () async {
+  test('bundel 2 kopi Rp 25.000 diterapkan otomatis, bukan diskon manual; Promo ikut di Penjualan.Buat', () async {
     await u.SiapkanKatalog();
     await u.repositori.SimpanPengaturan(KunciPengaturan.promo, jsonEncode(PromoBundelKopi()));
     final katalog = await u.MuatKatalog();
@@ -125,7 +125,7 @@ void main() {
     );
   });
 
-  test('promo berakhir atau kuota habis tidak diterapkan; promo tak terbaca dilewati', () async {
+  test('promo berakhir atau kuota habis tidak diterapkan. Promo tak terbaca dilewati', () async {
     await u.SiapkanKatalog();
     final data = PromoBundelKopi(selesai: '2020-01-01T00:00:00Z');
     (data['Promo']! as List<Object?>).add({

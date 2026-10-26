@@ -202,7 +202,7 @@ describe('Rincian kampanye prospek', () => {
         },
     ];
 
-    it('draf: jalankan lewat konfirmasi; tombol mati selama email kampanye belum aktif', () => {
+    it('draf: jalankan lewat konfirmasi. Tombol mati selama email kampanye belum aktif', () => {
         AturKonsol();
         const { unmount: Lepas } = RenderUji(
             <Tampil Kampanye={{ ...kampanye, Isi: 'Isi pesan' }} EmailKampanyeAktif={false} Penerima={[]} />,
@@ -233,7 +233,7 @@ describe('Rincian kampanye prospek', () => {
         );
     });
 
-    it('dijeda: alasan tampil, bisa dilanjutkan atau dibatalkan; hasil per penerima gagal di atas', () => {
+    it('dijeda: alasan tampil, bisa dilanjutkan atau dibatalkan. Hasil per penerima gagal di atas', () => {
         AturKonsol();
         RenderUji(
             <Tampil
@@ -289,7 +289,7 @@ describe('Rincian kampanye prospek', () => {
 });
 
 describe('Kontak prospek', () => {
-    it('menampilkan kontak dan ringkasannya; impor menunggu berkas dan sumber', () => {
+    it('menampilkan kontak dan ringkasannya. Impor menunggu berkas dan sumber', () => {
         AturKonsol('/kampanye-prospek/kontak');
         RenderUji(
             <Kontak
@@ -324,7 +324,7 @@ describe('Kontak prospek', () => {
 });
 
 describe('Berhenti berlangganan publik', () => {
-    it('konfirmasi lalu kirim; tidak pernah menampilkan alamat email', () => {
+    it('konfirmasi lalu kirim. Tidak pernah menampilkan alamat email', () => {
         AturHalamanUji({}, '/berhenti-prospek/01JKONTAK0000000000000001');
         const alamat = '/berhenti-prospek/01JKONTAK0000000000000001?expires=1&signature=abc';
         const { container } = RenderUji(<BerhentiProspek Ditemukan SudahBerhenti={false} AlamatKirim={alamat} />);

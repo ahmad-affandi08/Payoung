@@ -102,7 +102,7 @@ describe('Toko online › Kabar pesanan lewat WhatsApp', () => {
 describe('D-110 bagikan toko online', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
 
-    it('menampilkan tautan, QR, salin, WhatsApp, unduh QR, dan poster; peringatan bila toko belum menerima pesanan', () => {
+    it('menampilkan tautan, QR, salin, WhatsApp, unduh QR, dan poster. Peringatan bila toko belum menerima pesanan', () => {
         RenderUji(<HalamanTokoOnline {...props} />);
 
         const bagikan = screen.getByRole('region', { name: 'Bagikan toko' });

@@ -50,7 +50,7 @@ describe('Langganan: add-on mandiri (D-49)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/langganan'));
     afterEach(() => cleanup());
 
-    it('add-on dimiliki: berhenti berlangganan mengirim POST; yang sudah berhenti bisa dilanjutkan', () => {
+    it('add-on dimiliki: berhenti berlangganan mengirim POST, yang sudah berhenti bisa dilanjutkan', () => {
         render(<BagianAddon addon={dasar} />);
         expect(screen.getByText(/diperpanjang otomatis/)).toBeTruthy();
 
@@ -64,7 +64,7 @@ describe('Langganan: add-on mandiri (D-49)', () => {
         expect(tiruanRouter.post).toHaveBeenCalledWith('/kelola/langganan/addon/AD-1/lanjut', {}, expect.anything());
     });
 
-    it('beli add-on: jumlah hanya untuk add-on penambah batas; perkiraan prorata tampil; alasan menonaktifkan tombol', () => {
+    it('beli add-on: jumlah hanya untuk add-on penambah batas. Perkiraan prorata tampil. Alasan menonaktifkan tombol', () => {
         render(<BagianAddon addon={dasar} />);
         const daftar = screen.getByRole('list', { name: 'Add-on yang bisa dibeli' });
         const [perangkat, insight] = within(daftar).getAllByRole('listitem') as [HTMLElement, HTMLElement];
@@ -86,7 +86,7 @@ describe('Langganan: add-on mandiri (D-49)', () => {
         expect(screen.getAllByRole('button', { name: 'Beli add-on' })[0]).toHaveProperty('disabled', true);
     });
 
-    it('dialog fitur terkunci: bisa dibeli → "Beli add-on" + perkiraan; belum bisa → alasan + permintaan lewat tim', () => {
+    it('dialog fitur terkunci: bisa dibeli → "Beli add-on" + perkiraan. Belum bisa → alasan + permintaan lewat tim', () => {
         const addonToko = {
             Kode: 'TOKO_ONLINE',
             Nama: 'Toko online',

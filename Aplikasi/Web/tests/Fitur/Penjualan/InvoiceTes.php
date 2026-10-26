@@ -129,7 +129,7 @@ function GalatInvoiceUji(callable $aksi): ?string
 }
 
 describe('SimpanInvoice (draf)', function (): void {
-    it('draf belum bernomor, belum berjurnal, belum berpiutang; angkanya dihitung server', function (): void {
+    it('draf belum bernomor, belum berjurnal, belum berpiutang. Angkanya dihitung server', function (): void {
         $jurnalSebelum = Jurnal::query()->count();
         $draf = DrafInvoiceUji($this, [BarisJasaUji('Konsultasi manajemen', '2', '5000000.00', '500000.00')]);
 
@@ -148,7 +148,7 @@ describe('SimpanInvoice (draf)', function (): void {
             ->and(Jurnal::query()->count())->toBe($jurnalSebelum);
     });
 
-    it('draf bisa diganti isinya; setelah terbit ditolak', function (): void {
+    it('draf bisa diganti isinya. Setelah terbit ditolak', function (): void {
         $draf = DrafInvoiceUji($this);
         $ubah = app(SimpanInvoice::class)->Jalankan(new DataInvoice(
             jenis: JenisInvoice::Penjualan,
@@ -176,7 +176,7 @@ describe('SimpanInvoice (draf)', function (): void {
         ), $this->k['Pemilik']->Id, $draf->Uuid)))->toBe('InvoiceTidakBisaDiubah');
     });
 
-    it('barang berstok ditolak dengan alasan; jasa dan tanpa stok dari katalog diterima', function (): void {
+    it('barang berstok ditolak dengan alasan. Jasa dan tanpa stok dari katalog diterima', function (): void {
         $stok = BantuanKatalog::BuatProduk(['Nama' => 'Gula pasir 1 kg'], '15000.00');
         $tanpaStok = BantuanKatalog::BuatProduk(['Nama' => 'Voucher layanan', 'Jenis' => JenisProduk::NonStok], '100000.00');
 
@@ -204,7 +204,7 @@ describe('SimpanInvoice (draf)', function (): void {
 });
 
 describe('TerbitkanInvoice (J-21.1)', function (): void {
-    it('mengakui pendapatan jasa & piutang tanpa PPN bila outlet bukan PKP; nomor INV/{OUTLET}/{YYMM}/{SEQ4}', function (): void {
+    it('mengakui pendapatan jasa & piutang tanpa PPN bila outlet bukan PKP. Nomor INV/{OUTLET}/{YYMM}/{SEQ4}', function (): void {
         $invoice = TerbitInvoiceUji($this, DrafInvoiceUji($this));
 
         $kode = mb_strtoupper($this->k['Outlet']->Kode);
@@ -257,7 +257,7 @@ describe('TerbitkanInvoice (J-21.1)', function (): void {
             ->and(JurnalPeranInvoiceUji($idJurnal, PeranAkun::PpnKeluaran))->toBe(['Debit' => '0.00', 'Kredit' => '1100000.00']);
     });
 
-    it('diskon baris didebit ke Diskon Penjualan; jasa ke Pendapatan Jasa dan barang tanpa stok ke Penjualan', function (): void {
+    it('diskon baris didebit ke Diskon Penjualan. Jasa ke Pendapatan Jasa dan barang tanpa stok ke Penjualan', function (): void {
         $invoice = TerbitInvoiceUji($this, DrafInvoiceUji($this, [
             BarisJasaUji('Konsultasi', '1', '10000000.00', '1000000.00'),
             BarisJasaUji('Paket modul pelatihan', '10', '250000.00', jenis: JenisBarisInvoice::Barang),
@@ -271,7 +271,7 @@ describe('TerbitkanInvoice (J-21.1)', function (): void {
             ->and(JurnalPeranInvoiceUji($idJurnal, PeranAkun::Penjualan))->toBe(['Debit' => '0.00', 'Kredit' => '2500000.00']);
     });
 
-    it('PPh diharapkan = DPP baris jasa × tarif yang diisi pengguna; baris barang tidak ikut dasar PPh', function (): void {
+    it('PPh diharapkan = DPP baris jasa × tarif yang diisi pengguna. Baris barang tidak ikut dasar PPh', function (): void {
         $invoice = TerbitInvoiceUji($this, DrafInvoiceUji($this, [
             BarisJasaUji('Konsultasi', '1', '10000000.00'),
             BarisJasaUji('Buku panduan', '10', '100000.00', jenis: JenisBarisInvoice::Barang),
@@ -285,7 +285,7 @@ describe('TerbitkanInvoice (J-21.1)', function (): void {
             ->and($invoice->Tagihan)->toBe('11000000.00');
     });
 
-    it('tanggal masa depan ditolak saat terbit; draf masa depan boleh disimpan', function (): void {
+    it('tanggal masa depan ditolak saat terbit. Draf masa depan boleh disimpan', function (): void {
         $draf = DrafInvoiceUji($this, tanggal: '2026-10-05');
 
         expect(GalatInvoiceUji(fn () => TerbitInvoiceUji($this, $draf)))->toBe('TanggalMasaDepan');
@@ -314,7 +314,7 @@ describe('TerbitkanInvoice (J-21.1)', function (): void {
 });
 
 describe('Pembayaran invoice (BP, PPh dipotong pelanggan)', function (): void {
-    it('pelunasan penuh melunasi piutang; jurnal Dr kas/bank, Cr Piutang Usaha', function (): void {
+    it('pelunasan penuh melunasi piutang. Jurnal Dr kas/bank, Cr Piutang Usaha', function (): void {
         PakaiPpnUji($this);
         $invoice = TerbitInvoiceUji($this, DrafInvoiceUji($this, [BarisJasaUji(uuidKelompok: $this->kelompokPpn->Uuid)]));
 
@@ -367,7 +367,7 @@ describe('Pembayaran invoice (BP, PPh dipotong pelanggan)', function (): void {
             ->and(JurnalPeranInvoiceUji($idJurnal, PeranAkun::PiutangUsaha))->toBe(['Debit' => '0.00', 'Kredit' => '11100000.00']);
     });
 
-    it('pembayaran sebagian, lalu sisa; potongan PPh melebihi pelunasan ditolak', function (): void {
+    it('pembayaran sebagian, lalu sisa. Potongan PPh melebihi pelunasan ditolak', function (): void {
         $invoice = TerbitInvoiceUji($this, DrafInvoiceUji($this));
         $bayar = fn (?string $jumlah, string $pph = '0.00') => app(CatatPembayaranInvoice::class)->Jalankan(
             $invoice->Uuid,
@@ -402,7 +402,7 @@ describe('Pembayaran invoice (BP, PPh dipotong pelanggan)', function (): void {
 });
 
 describe('Invoice uang muka (J-21.2) dan pemotongannya (J-21.1)', function (): void {
-    it('DP: Dr Piutang, Cr Uang Muka Pelanggan (DPP) dan PPN keluaran; belum ada pendapatan', function (): void {
+    it('DP: Dr Piutang, Cr Uang Muka Pelanggan (DPP) dan PPN keluaran. Belum ada pendapatan', function (): void {
         PakaiPpnUji($this);
         $dp = TerbitInvoiceUji($this, DrafInvoiceUji($this, [BarisJasaUji('Uang muka 30% proyek', harga: '3000000.00', uuidKelompok: $this->kelompokPpn->Uuid)], jenis: JenisInvoice::UangMuka));
 
@@ -416,7 +416,7 @@ describe('Invoice uang muka (J-21.2) dan pemotongannya (J-21.1)', function (): v
             ->and(JurnalPeranInvoiceUji($idJurnal, PeranAkun::PendapatanJasa))->toBe(['Debit' => '0.00', 'Kredit' => '0.00']);
     });
 
-    it('invoice akhir memotong DP: piutang = total − DP, UM didebit, PPN hanya sisa yang belum diakui; jurnal seimbang', function (): void {
+    it('invoice akhir memotong DP: piutang = total − DP, UM didebit, PPN hanya sisa yang belum diakui. Jurnal seimbang', function (): void {
         PakaiPpnUji($this);
         $dp = TerbitInvoiceUji($this, DrafInvoiceUji($this, [BarisJasaUji('Uang muka 30%', harga: '3000000.00', uuidKelompok: $this->kelompokPpn->Uuid)], jenis: JenisInvoice::UangMuka));
 
@@ -513,7 +513,7 @@ describe('BatalkanInvoice', function (): void {
         expect(GalatInvoiceUji(fn () => app(BatalkanInvoice::class)->Jalankan($invoice->Uuid, 'Batal saja', $this->k['Pemilik']->Id)))->toBe('PiutangSudahDibayar');
     });
 
-    it('DP yang sudah dipotong tidak bisa dibatalkan; membatalkan invoice akhir melepasnya', function (): void {
+    it('DP yang sudah dipotong tidak bisa dibatalkan. Membatalkan invoice akhir melepasnya', function (): void {
         $dp = TerbitInvoiceUji($this, DrafInvoiceUji($this, [BarisJasaUji('Uang muka', harga: '2000000.00')], jenis: JenisInvoice::UangMuka));
         $akhir = TerbitInvoiceUji($this, DrafInvoiceUji($this, uangMuka: [$dp->Uuid]));
 

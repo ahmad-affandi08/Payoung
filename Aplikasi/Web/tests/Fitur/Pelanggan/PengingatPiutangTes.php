@@ -129,7 +129,7 @@ it('kirim manual: WhatsApp ke pelanggan (bukan email walau pelanggan punya email
     BantuanOrganisasi::Masuk($this, $kasir, $k['Tenant']->Id)->post("/kelola/piutang/{$k['P1']->Uuid}/pengingat")->assertForbidden();
 });
 
-it('pelanggan tanpa nomor WhatsApp sah ditolak walau punya email (D-33); WhatsApp usaha belum aktif ditolak; piutang tenant lain 404', function (): void {
+it('pelanggan tanpa nomor WhatsApp sah ditolak walau punya email (D-33); WhatsApp usaha belum aktif ditolak. Piutang tenant lain 404', function (): void {
     $a = SiapkanPiutangPengingat($this, 'Grosir Sembako Solo');
     Pelanggan::query()->whereKey($a['Toko']->Id)->update(['NoHp' => '12345']);
     $this->post("/kelola/piutang/{$a['P1']->Uuid}/pengingat")
@@ -148,7 +148,7 @@ it('pelanggan tanpa nomor WhatsApp sah ditolak walau punya email (D-33); WhatsAp
     BantuanOrganisasi::Masuk($this, $a['Pemilik'], $a['Tenant']->Id)->post("/kelola/piutang/{$b['P1']->Uuid}/pengingat")->assertNotFound();
 });
 
-it('otomatis: H-3 sekali "akan jatuh tempo", H+1 sekali "sudah lewat", tidak dobel; mati = tidak ada; pengaturan diaudit', function (): void {
+it('otomatis: H-3 sekali "akan jatuh tempo", H+1 sekali "sudah lewat", tidak dobel. Mati = tidak ada. Pengaturan diaudit', function (): void {
     $k = SiapkanPiutangPengingat($this);
     $jatuhTempo = CarbonImmutable::parse($k['P1']->JatuhTempo->toDateString(), 'Asia/Jakarta');
     $jalankan = fn () => Artisan::call('pelanggan:kirim-pengingat-piutang', ['--tenant' => [$k['Tenant']->Id]]);

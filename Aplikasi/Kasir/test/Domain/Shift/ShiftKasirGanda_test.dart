@@ -36,7 +36,7 @@ void main() {
   LayananShift LayananDenganCek(Future<List<ShiftKasirPerangkatLainPos>> Function(String) cek) =>
       LayananShift(repositori: u.repositori, cekShiftKasirLain: cek, jam: () => u.jam);
 
-  test('shift kasir di perangkat lain ditolak dengan nama perangkat; tidak ada shift atau outbox tersimpan', () async {
+  test('shift kasir di perangkat lain ditolak dengan nama perangkat. Tidak ada shift atau outbox tersimpan', () async {
     String? ditanya;
     final layanan = LayananDenganCek((uuid) async {
       ditanya = uuid;

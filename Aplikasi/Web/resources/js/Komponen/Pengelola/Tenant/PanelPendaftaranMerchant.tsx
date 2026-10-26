@@ -106,7 +106,7 @@ export default function PanelPendaftaranMerchant({ uuidTenant, data, bolehKelola
                         <Pemberitahuan jenis="info" judul="Langkah berikutnya">
                             Aktifkan layanan QRIS untuk Brand ini di DOKU Dashboard (Pengaturan, Akun, Layanan, Tambah
                             Layanan, QRIS di bagian QR Payment, Aktivasi): isi Nama Pendek Brand dan MCC. Setelah aktif,
-                            DOKU mengisi merchantId dan terminalId otomatis; catat keduanya di kolom di bawah.
+                            DOKU mengisi merchantId dan terminalId otomatis. Catat keduanya di kolom di bawah.
                         </Pemberitahuan>
                     ) : null}
                 </>

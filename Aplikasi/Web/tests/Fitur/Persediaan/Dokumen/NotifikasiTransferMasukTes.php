@@ -54,7 +54,7 @@ function SiapkanKirimanStok(): array
     return [...$t, 'Produk' => $p, 'GudangCabang' => $gudangCabang, 'ManajerTujuan' => $manajerTujuan, 'ManajerLain' => $manajerLain];
 }
 
-it('transfer dikirim: manajer outlet tujuan dikabari sekali; pengirim dan manajer outlet lain tidak', function (): void {
+it('transfer dikirim: manajer outlet tujuan dikabari sekali. Pengirim dan manajer outlet lain tidak', function (): void {
     $t = SiapkanKirimanStok();
     $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '30')]);
 

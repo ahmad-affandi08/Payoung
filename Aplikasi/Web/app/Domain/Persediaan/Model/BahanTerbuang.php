@@ -68,11 +68,11 @@ final class BahanTerbuang extends ModelDasar
     {
         self::updating(function (self $baris): void {
             if ($baris->getOriginal('IdJurnal') !== null && array_intersect(array_keys($baris->getDirty()), self::KOLOM_ISI) !== []) {
-                throw new LogicException('Catatan bahan terbuang tidak bisa diubah isinya; batalkan lalu catat ulang.');
+                throw new LogicException('Catatan bahan terbuang tidak bisa diubah isinya. Batalkan lalu catat ulang.');
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Catatan bahan terbuang tidak pernah dihapus; batalkan untuk koreksi.');
+            throw new LogicException('Catatan bahan terbuang tidak pernah dihapus. Batalkan untuk koreksi.');
         });
     }
 

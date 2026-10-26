@@ -284,7 +284,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(kiriman2[1].Uuid).toBe(data.Uuid);
     });
 
-    it('ubah: baris biasa, batch, dan seri; total perkiraan tanpa float; PUT dengan VersiDiubahPada', () => {
+    it('ubah: baris biasa, batch, dan seri. Total perkiraan tanpa float; PUT dengan VersiDiubahPada', () => {
         RenderUji(<HalamanFormStokAwal {...PropsUbah()} />);
 
         expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Ubah draf stok awal');
@@ -313,7 +313,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(data).not.toHaveProperty('Uuid');
     });
 
-    it('ubah: nomor seri menentukan jumlah; hapus baris mengurangi total', () => {
+    it('ubah: nomor seri menentukan jumlah. Hapus baris mengurangi total', () => {
         RenderUji(<HalamanFormStokAwal {...PropsUbah()} />);
 
         UbahNilai(screen.getByRole('textbox', { name: 'Nomor seri Mesin Espresso Mini' }), 'SN-001\nSN-002');
@@ -358,7 +358,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(tiruanRouter.put).not.toHaveBeenCalled();
     });
 
-    it('masalah server per baris tampil di bawah isian; masalah lain di ringkasan', () => {
+    it('masalah server per baris tampil di bawah isian. Masalah lain di ringkasan', () => {
         AturHalamanUji({
             'Baris.0.HppSatuan': 'Harga modal tidak valid.',
             'Baris.2.NomorSeri': 'Nomor seri SN-002 sudah ada.',
@@ -376,7 +376,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
         expect(ringkasan?.textContent).not.toContain('Harga modal tidak valid.');
     });
 
-    it('stok minus di lokasi: peringatan selisih HPP (H-16); ganti lokasi menyembunyikan saldo lama', () => {
+    it('stok minus di lokasi: peringatan selisih HPP (H-16). Ganti lokasi menyembunyikan saldo lama', () => {
         const props = PropsUbah();
         RenderUji(
             <HalamanFormStokAwal
@@ -411,7 +411,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('draf: ringkasan, baris batch/seri, tombol ubah/buang/posting; jurnal belum ada', () => {
+    it('draf: ringkasan, baris batch/seri, tombol ubah/buang/posting. Jurnal belum ada', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail()} />);
 
         expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Stok awal Draf tanpa nomor');
@@ -484,7 +484,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         );
     });
 
-    it('diposting: jurnal bertaut (izin laporan keuangan); batalkan wajib alasan 5–255 karakter', () => {
+    it('diposting: jurnal bertaut (izin laporan keuangan). Batalkan wajib alasan 5–255 karakter', () => {
         const props = BuatPropsDetail({
             Tindakan: { Ubah: false, Buang: false, Posting: false, Batalkan: true },
             Jurnal: [
@@ -549,7 +549,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         expect(within(screen.getByRole('alertdialog')).getByText(/sudah berkurang/)).toBeTruthy();
     });
 
-    it('tanpa izin lihat jurnal: nomor jurnal tanpa tautan; pembalik diberi label', () => {
+    it('tanpa izin lihat jurnal: nomor jurnal tanpa tautan. Pembalik diberi label', () => {
         const props = BuatPropsDetail({
             Izin: IzinLihat,
             Tindakan: { Ubah: false, Buang: false, Posting: false, Batalkan: false },
@@ -590,7 +590,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         expect(screen.queryByRole('button', { name: /Posting|Batalkan|Buang/ })).toBeNull();
     });
 
-    it('memproses: memantau status posting; posting gagal menampilkan pesan masalah', async () => {
+    it('memproses: memantau status posting. Posting gagal menampilkan pesan masalah', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({

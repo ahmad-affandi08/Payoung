@@ -33,7 +33,7 @@ export const langkahKampanye: LangkahKampanye[] = [
         Kunci: 'Tinjau',
         Label: 'Tinjau & simpan',
         Keterangan:
-            'Periksa ringkasan di bawah. Pesan baru disimpan sebagai draf; mengirim atau menjadwalkan dilakukan setelahnya.',
+            'Periksa ringkasan di bawah. Pesan baru disimpan sebagai draf. Mengirim atau menjadwalkan dilakukan setelahnya.',
     },
 ];
 

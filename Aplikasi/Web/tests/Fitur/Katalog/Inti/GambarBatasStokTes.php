@@ -24,7 +24,7 @@ beforeEach(function (): void {
 });
 
 describe('F-03 gambar produk (disk privat)', function (): void {
-    it('unggah: diubah ukurannya (besar ≤ 800, kecil ≤ 256), nama berversi, unduh privat dengan cache immutable; ganti & hapus membersihkan berkas', function (): void {
+    it('unggah: diubah ukurannya (besar ≤ 800, kecil ≤ 256), nama berversi, unduh privat dengan cache immutable. Ganti & hapus membersihkan berkas', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $produk = BantuanKatalog::BuatProduk([], null, $t['Pcs']);
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
@@ -75,7 +75,7 @@ describe('F-03 gambar produk (disk privat)', function (): void {
 });
 
 describe('F-03 batas stok per lokasi stok (ProdukGudang)', function (): void {
-    it('StafGudang (persediaan.kelola) menyimpan min/max; set diganti; baris kosong dihapus; min > max ditolak', function (): void {
+    it('StafGudang (persediaan.kelola) menyimpan min/max. Set diganti. Baris kosong dihapus. Min > max ditolak', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $toko = Gudang::query()->orderBy('Id')->firstOrFail();
         $dapur = Gudang::query()->create(['IdOutlet' => $t['Outlet']->Id, 'Kode' => 'DPR', 'Nama' => 'Dapur', 'Jenis' => JenisGudang::cases()[0]]);

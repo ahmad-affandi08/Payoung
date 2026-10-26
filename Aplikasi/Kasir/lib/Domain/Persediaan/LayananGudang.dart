@@ -128,7 +128,7 @@ class LayananGudang {
   LayananGudang({required this.klien, required this.repositori, PembuatUlid? ulid}) : _ulid = ulid ?? PembuatUlid();
 
   static const String pesanPerluOnline =
-      'Modul gudang perlu online. Isian tetap tersimpan di perangkat; coba lagi saat terhubung internet.';
+      'Modul gudang perlu online. Isian tetap tersimpan di perangkat. Coba lagi saat terhubung internet.';
 
   final KlienPos klien;
   final RepositoriKasir repositori;

@@ -53,14 +53,14 @@ final class TerapkanImporProdukTugas implements ShouldBeUniqueUntilProcessing, S
                 PengirimTugasImpor::KirimLanjutan(new self($this->idTenant, $this->idPengguna, $this->idImporProduk));
             }
         }, IzinTenant::ProdukKelola, function (string $alasan): void {
-            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan; pengguna yang berizin bisa melanjutkan impor.');
+            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan. Pengguna yang berizin bisa melanjutkan impor.');
         });
     }
 
     public function failed(?Throwable $galat): void
     {
         app(KonteksTugasImpor::class)->Jalankan($this->idTenant, $this->idPengguna, function (): void {
-            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor terhenti karena masalah sistem. Baris yang sudah diimpor tidak diulang; klik Lanjutkan impor untuk meneruskan.');
+            PengirimTugasImpor::Gagalkan($this->idImporProduk, 'Impor terhenti karena masalah sistem. Baris yang sudah diimpor tidak diulang. Klik Lanjutkan impor untuk meneruskan.');
         });
     }
 }

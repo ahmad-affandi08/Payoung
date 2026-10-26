@@ -54,7 +54,7 @@ final class BangunUlangSaldoStokDukungan
             $keadaanSesudah = ['JumlahPerbedaan' => count($sesudah), 'JumlahPasanganDiperbaiki' => $diperbaiki, 'Contoh' => array_slice($sesudah, 0, self::BATAS_CONTOH)];
 
             if ($diperbaiki === 0) {
-                return new HasilKerjaAlat(StatusHasilAlatDukungan::TanpaPerubahan, 'Saldo stok sudah sama dengan buku stok; tidak ada yang diperbaiki.', $keadaanSebelum, $keadaanSesudah);
+                return new HasilKerjaAlat(StatusHasilAlatDukungan::TanpaPerubahan, 'Saldo stok sudah sama dengan buku stok. Tidak ada yang diperbaiki.', $keadaanSebelum, $keadaanSesudah);
             }
 
             $sisa = count($sesudah) === 0 ? 'Tidak ada perbedaan tersisa.' : count($sesudah).' perbedaan tersisa (lapisan FIFO atau nomor seri, perlu ditinjau tim teknis).';

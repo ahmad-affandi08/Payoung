@@ -28,7 +28,7 @@ it('menggolongkan pelanggan ke segmen RFM sesuai urutan aturan', function (): vo
         ->and(PenggolongRfm::Golongkan($bahan('2026-09-01', 2, 2), $hariIni, null))->toBe(SegmenRfm::Potensial);
 });
 
-it('batas Juara = persentil 80 dari belanja > 0; butuh minimal 5 pembeli', function (): void {
+it('batas Juara = persentil 80 dari belanja > 0. Butuh minimal 5 pembeli', function (): void {
     expect(PenggolongRfm::HitungBatasJuara(['10.00', '20.00', '0.00', '30.00']))->toBeNull()
         ->and(PenggolongRfm::HitungBatasJuara(['50.00', '10.00', '40.00', '20.00', '30.00', '0.00']))->toBe('40.00');
 });

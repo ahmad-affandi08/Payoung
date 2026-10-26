@@ -86,7 +86,7 @@ void main() {
       expect(TransportBle.HitungUkuranPotongan(517), 180);
     });
 
-    test('hanya tulis tanpa respons → tiap potongan diberi jeda; galat tulis → GalatPrinter & tetap diputus', () async {
+    test('hanya tulis tanpa respons → tiap potongan diberi jeda. Galat tulis → GalatPrinter & tetap diputus', () async {
       final tanpaRespons = KlienBleTiruan([K('18f0', '2af1', tanpaRespons: true)], mtu: 23);
       await TransportBle('X', tanpaRespons, jedaTanpaRespons: Duration.zero).Kirim(List.filled(45, 1));
       expect(tanpaRespons.tulisan.map((t) => (t.$2.length, t.$3)), [(20, true), (20, true), (5, true)]);
@@ -140,7 +140,7 @@ void main() {
       () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(kanal, null),
     );
 
-    test('Siapkan: tanpa Bluetooth / izin ditolak / Bluetooth mati → pesan jelas; siap → null', () async {
+    test('Siapkan: tanpa Bluetooth / izin ditolak / Bluetooth mati → pesan jelas. Siap → null', () async {
       const k = KanalBluetoothKlasik();
       expect(await k.Siapkan(), isNull);
       status = {'Didukung': false};
@@ -152,7 +152,7 @@ void main() {
       expect(await k.Siapkan(), contains('Bluetooth mati'));
     });
 
-    test('daftar printer terpasang & kirim byte ke alamat MAC; galat platform → GalatPrinter berpesan', () async {
+    test('daftar printer terpasang & kirim byte ke alamat MAC. Galat platform → GalatPrinter berpesan', () async {
       const k = KanalBluetoothKlasik();
       final daftar = await k.DaftarTerpasang();
       expect(daftar.map((p) => (p.nama, p.alamat, p.jenis)), [

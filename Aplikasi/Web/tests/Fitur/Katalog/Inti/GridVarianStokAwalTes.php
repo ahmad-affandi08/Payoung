@@ -62,7 +62,7 @@ function SiapkanIndukKaos(TestCase $tes, array $t): array
     return [$induk, Produk::query()->where('IdInduk', $induk->Id)->orderBy('Id')->get()->all()];
 }
 
-it('stok awal grid: satu dokumen diposting, saldo per varian benar, jurnal seimbang; detail induk membawa stok & lokasi', function (): void {
+it('stok awal grid: satu dokumen diposting, saldo per varian benar, jurnal seimbang. Detail induk membawa stok & lokasi', function (): void {
     $t = BantuanPersediaan::SiapkanTenant('Toko Kaos Laweyan Solo');
     [$induk, $varian] = SiapkanIndukKaos($this, $t);
     expect($varian)->toHaveCount(6);

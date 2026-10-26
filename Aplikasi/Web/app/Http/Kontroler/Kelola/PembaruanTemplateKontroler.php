@@ -34,6 +34,6 @@ final class PembaruanTemplateKontroler extends Kontroler
             $hasil->jumlahStasiunDapur > 0 ? "{$hasil->jumlahStasiunDapur} stasiun dapur" : null,
         ]);
 
-        return back()->with('Kilat', "Template {$hasil->namaTemplate} diperbarui ke versi {$hasil->versi}. ".($bagian === [] ? 'Tidak ada data baru yang perlu ditambahkan; yang sudah Anda miliki tidak diubah.' : 'Ditambahkan: '.implode(', ', $bagian).'. Data yang sudah ada tidak diubah.'));
+        return back()->with('Kilat', "Template {$hasil->namaTemplate} diperbarui ke versi {$hasil->versi}. ".($bagian === [] ? 'Tidak ada data baru yang perlu ditambahkan, yang sudah Anda miliki tidak diubah.' : 'Ditambahkan: '.implode(', ', $bagian).'. Data yang sudah ada tidak diubah.'));
     }
 }

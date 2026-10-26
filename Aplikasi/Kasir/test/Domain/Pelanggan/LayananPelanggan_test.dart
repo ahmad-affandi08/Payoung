@@ -38,7 +38,7 @@ void main() {
     expect(LayananPelanggan.SamarkanNoHp('6281311112222'), '0813****2222');
   });
 
-  test('pelanggan baru offline: outbox Pelanggan.Buat + cache tersamar; nama & nomor divalidasi', () async {
+  test('pelanggan baru offline: outbox Pelanggan.Buat + cache tersamar. Nama & nomor divalidasi', () async {
     final baru = await u.pelanggan.Buat(nama: '  Budi Santoso ', noHp: '0813 1111 2222', kasir: rina);
     expect(baru.nama, 'Budi Santoso');
     expect(baru.noHpSamar, '0813****2222');
@@ -68,7 +68,7 @@ void main() {
     );
   });
 
-  test('cari: online dari server & dicatat saat dipilih; offline dari cache perangkat', () async {
+  test('cari: online dari server & dicatat saat dipilih. Offline dari cache perangkat', () async {
     u.server.penangan = (p) async => http.Response(
       jsonEncode({
         'Pelanggan': [
@@ -94,7 +94,7 @@ void main() {
     expect((await u.pelanggan.AmbilTerakhir()).map((p) => p.nama), ['Budi Santoso', 'Ani Rahmawati']);
   });
 
-  test('bayar dengan pelanggan: Penjualan.Buat membawa UuidPelanggan setelah Pelanggan.Buat; keranjang tertahan menyimpannya', () async {
+  test('bayar dengan pelanggan: Penjualan.Buat membawa UuidPelanggan setelah Pelanggan.Buat. Keranjang tertahan menyimpannya', () async {
     await u.SiapkanKatalog();
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
@@ -125,7 +125,7 @@ void main() {
     expect(LayananPenjualan.jenisOutbox, 'Penjualan.Buat');
   });
 
-  test('F-16b harga tier: pelanggan GOLD mendapat harga daftar tier; lepas pelanggan kembali ke harga dasar', () async {
+  test('F-16b harga tier: pelanggan GOLD mendapat harga daftar tier. Lepas pelanggan kembali ke harga dasar', () async {
     final katalogJson = KatalogUji();
     katalogJson['DaftarHarga'] = [
       {
@@ -198,7 +198,7 @@ void main() {
     expect(PelangganTerpilih.DariJson(hasil.KeJson())?.namaTier, 'Gold');
   });
 
-  test('F-16b tukar poin: saldo wajib online; batas poin = saldo & sisa belanja; nilai = poin × nilai tukar', () async {
+  test('F-16b tukar poin: saldo wajib online. Batas poin = saldo & sisa belanja. Nilai = poin × nilai tukar', () async {
     u.server.penangan = (p) async => http.Response(
       jsonEncode({
         'Pelanggan': {'Uuid': 'P1', 'SaldoPoin': 120},
@@ -229,7 +229,7 @@ void main() {
   });
 
   test(
-    'F-16b bayar dengan tukar poin: diskon sebelum pajak, TukarPoin di outbox; melebihi sisa belanja ditolak',
+    'F-16b bayar dengan tukar poin: diskon sebelum pajak, TukarPoin di outbox. Melebihi sisa belanja ditolak',
     () async {
       await u.SiapkanKatalog();
       final katalog = await u.MuatKatalog();

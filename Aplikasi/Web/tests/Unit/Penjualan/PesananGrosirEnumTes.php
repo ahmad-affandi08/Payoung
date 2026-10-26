@@ -40,7 +40,7 @@ describe('StatusPesananGrosir', function (): void {
             ->and(StatusPesananGrosir::Selesai->BisaBerubahKe(StatusPesananGrosir::Dibatalkan))->toBeFalse();
     });
 
-    it('hanya Draf boleh diubah; hanya Dikonfirmasi & SebagianDikirim boleh dikirim', function (): void {
+    it('hanya Draf boleh diubah. Hanya Dikonfirmasi & SebagianDikirim boleh dikirim', function (): void {
         expect(StatusPesananGrosir::Draf->CekBolehDiubah())->toBeTrue()
             ->and(StatusPesananGrosir::Dikonfirmasi->CekBolehDiubah())->toBeFalse()
             ->and(StatusPesananGrosir::Dikonfirmasi->CekBolehDikirim())->toBeTrue()
@@ -70,7 +70,7 @@ describe('penomoran grosir', function (): void {
 });
 
 describe('izin grosir', function (): void {
-    it('grosir.kelola bawaan Manajer Outlet & Supervisor; persetujuan kredit hanya Manajer Outlet', function (): void {
+    it('grosir.kelola bawaan Manajer Outlet & Supervisor. Persetujuan kredit hanya Manajer Outlet', function (): void {
         $izin = fn (PeranTenantBawaan $peran): array => array_map(fn (IzinTenant $i): string => $i->value, $peran->AmbilIzin());
 
         expect($izin(PeranTenantBawaan::ManajerOutlet))->toContain('grosir.kelola')

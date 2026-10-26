@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('F-05e order produksi: bahan langsung muncul setelah produk dipilih', () => {
-    it('memilih produk memuat bahan dari resep tanpa menekan tombol; jumlah hasil kosong memakai takaran satu satuan', async () => {
+    it('memilih produk memuat bahan dari resep tanpa menekan tombol. Jumlah hasil kosong memakai takaran satu satuan', async () => {
         const AmbilUji = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>

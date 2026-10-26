@@ -128,7 +128,7 @@ describe('DialogFormulir', () => {
         expect(Tutup).toHaveBeenCalledOnce();
     });
 
-    it('jenis konfirmasi memakai alertdialog; jenis panel memakai panel samping', () => {
+    it('jenis konfirmasi memakai alertdialog. Jenis panel memakai panel samping', () => {
         const tampilanAwal = render(
             <DialogFormulir
                 jenis="konfirmasi"
@@ -152,7 +152,7 @@ describe('DialogFormulir', () => {
         expect(within(panel).getByText('Berlaku 72 jam.')).toBeTruthy();
     });
 
-    it('lebar "lebar" memperlebar dialog & panel; bawaan "sedang"', () => {
+    it('lebar "lebar" memperlebar dialog & panel. Bawaan "sedang"', () => {
         const dialog = render(
             <DialogFormulir judul="Tambah kupon" lebar="lebar" saatTutup={vi.fn()}>
                 <p>isi</p>
@@ -229,7 +229,7 @@ describe('DialogTinjauan', () => {
 });
 
 describe('Penanda masalah umum pada dialog (agar DialogHasil tidak menelan masalah)', () => {
-    it('DialogFormulir yang menyambungkan galatUmum menampilkannya dan menandai dirinya; tanpa prop tidak ditandai', () => {
+    it('DialogFormulir yang menyambungkan galatUmum menampilkannya dan menandai dirinya, tanpa prop tidak ditandai', () => {
         render(
             <DialogFormulir
                 judul="Tambah lokasi stok"

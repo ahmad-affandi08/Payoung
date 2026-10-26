@@ -52,7 +52,7 @@ describe('HitungDesimal: aritmetika BigInt tanpa float (CLAUDE.md #7, DesainF05a
         expect(HitungNilaiBaris('99999999999999.9999', '9999999999999.999999')).toBe('999999999999999998900000000.00');
     });
 
-    it('nilai baris belum valid (sedang diketik) = null; total melewatinya', () => {
+    it('nilai baris belum valid (sedang diketik) = null. Total melewatinya', () => {
         expect(HitungNilaiBaris('', '1000')).toBeNull();
         expect(HitungNilaiBaris('5', '')).toBeNull();
         expect(

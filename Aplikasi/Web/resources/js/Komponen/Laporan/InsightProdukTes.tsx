@@ -243,7 +243,7 @@ describe('X6 saran restock di laporan stok', () => {
         expect(screen.getByText('Belum ada pemakaian stok dalam 28 hari terakhir.')).toBeTruthy();
     });
 
-    it('slow & fast moving: ringkasan kelas, nilai tertahan, kolom kelas; pilihan rentang memuat ulang dengan filter', () => {
+    it('slow & fast moving: ringkasan kelas, nilai tertahan, kolom kelas. Pilihan rentang memuat ulang dengan filter', () => {
         RenderUji(
             <HalamanLaporanStok
                 {...props}

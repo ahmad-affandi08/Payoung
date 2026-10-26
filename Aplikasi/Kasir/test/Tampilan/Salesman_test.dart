@@ -160,7 +160,7 @@ void main() {
       await tester.enterText(find.byKey(const ValueKey('Jumlah-${UuidUji.roti}-${UuidUji.psRotiPcs}')), '12');
       await Tunggu(tester);
       expect(find.text('Rp 132.000'), findsOneWidget);
-      expect(find.text('Perkiraan; harga final dari kantor'), findsOneWidget);
+      expect(find.text('Perkiraan. Harga final dari kantor'), findsOneWidget);
       expect(find.textContaining('Stok kantor ± 480 Pcs'), findsOneWidget);
       await tester.enterText(find.byKey(const ValueKey('CatatanPesanan')), 'Kirim Kamis pagi');
       await Tunggu(tester);

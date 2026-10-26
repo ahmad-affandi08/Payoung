@@ -68,7 +68,7 @@ function MasukOutlet(object $tes, int $idTenant, int $idOutlet, PeranTenantBawaa
 }
 
 describe('F-05b HTTP transfer stok', function (): void {
-    it('buat draf, kirim, terima sebagian, tutup lewat form; daftar TabelData JSON', function (): void {
+    it('buat draf, kirim, terima sebagian, tutup lewat form. Daftar TabelData JSON', function (): void {
         $t = SiapkanHttpDokumen();
         $batch = BatchStok::query()->where('NomorBatch', 'UHT-2609A')->sole();
         $uuid = (string) Str::ulid();
@@ -104,7 +104,7 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->assertJsonPath('Data.0.LabelStatus', 'Diterima');
     });
 
-    it('D-94 cetak surat jalan transfer: draf 409; setelah kirim memuat barang & batch tanpa nilai; outlet lain 404', function (): void {
+    it('D-94 cetak surat jalan transfer: draf 409. Setelah kirim memuat barang & batch tanpa nilai. Outlet lain 404', function (): void {
         $t = SiapkanHttpDokumen();
         $batch = BatchStok::query()->where('NomorBatch', 'UHT-2609A')->sole();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '12'), B::Baris($t['Produk']['Batch'], '5', null, $batch->Id)]);
@@ -157,7 +157,7 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->where('Baris.0.JumlahSisa', '0.0000'));
     });
 
-    it('D-95 daftar ambil barang: boleh untuk draf & dalam perjalanan, 409 setelah diterima; form Buat terisi lokasi dari ?asal/?tujuan', function (): void {
+    it('D-95 daftar ambil barang: boleh untuk draf & dalam perjalanan, 409 setelah diterima. Form Buat terisi lokasi dari ?asal/?tujuan', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '12')]);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
@@ -184,7 +184,7 @@ describe('F-05b HTTP transfer stok', function (): void {
         $this->get('/kelola/persediaan/transfer/buat?tujuan='.Str::ulid())->assertNotFound();
     });
 
-    it('D-96: pintasan Retur ke Gudang mengisi Toko → Gudang di outlet yang sama; tanpa pasangan dibiarkan kosong', function (): void {
+    it('D-96: pintasan Retur ke Gudang mengisi Toko → Gudang di outlet yang sama, tanpa pasangan dibiarkan kosong', function (): void {
         $t = SiapkanHttpDokumen();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -205,7 +205,7 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->where('Awal.UuidGudangTujuan', $t['GudangCabang']->Uuid));
     });
 
-    it('D-225: Bongkar stok kanvas mengisi baris draf dari sisa stok; produk ber-batch dilewati dan dijelaskan', function (): void {
+    it('D-225: Bongkar stok kanvas mengisi baris draf dari sisa stok. Produk ber-batch dilewati dan dijelaskan', function (): void {
         $t = SiapkanHttpDokumen();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -215,13 +215,13 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->has('Awal.Baris', 1)
             ->where('Awal.Baris.0.UuidProduk', $t['Produk']['Stok']->Uuid)
             ->where('Awal.Baris.0.Jumlah', '137')
-            ->where('Awal.Catatan', '1 produk ber-batch atau bernomor seri tidak diisi otomatis; tambahkan manual.'));
+            ->where('Awal.Catatan', '1 produk ber-batch atau bernomor seri tidak diisi otomatis. Tambahkan manual.'));
 
         // Lokasi di luar tenant tidak boleh dipakai.
         $this->get('/kelola/persediaan/transfer/buat?arah=bongkar&asal='.Str::ulid())->assertNotFound();
     });
 
-    it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403); tanpa persediaan.lihat 403', function (): void {
+    it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403), tanpa persediaan.lihat 403', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '1')]);
         $kasir = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -234,7 +234,7 @@ describe('F-05b HTTP transfer stok', function (): void {
         expect(TransferStok::query()->findOrFail($draf->Id)->Status)->toBe(StatusTransferStok::Draf);
     });
 
-    it('batas outlet: pengguna outlet asal tidak bisa menerima (403); pengguna outlet tujuan bisa; outlet lain = 404', function (): void {
+    it('batas outlet: pengguna outlet asal tidak bisa menerima (403). Pengguna outlet tujuan bisa. Outlet lain = 404', function (): void {
         $t = SiapkanHttpDokumen();
         $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '3')]), $t['Pemilik']->Id);
         $badan = ['Tanggal' => B::Kemarin(), 'Baris' => [['Urutan' => 1, 'Jumlah' => '3']]];
@@ -257,7 +257,7 @@ describe('F-05b HTTP transfer stok', function (): void {
 });
 
 describe('F-05b HTTP stok opname', function (): void {
-    it('hitung buta: jumlah sistem tidak ada di respons selama berlangsung; tampil setelah diajukan', function (): void {
+    it('hitung buta: jumlah sistem tidak ada di respons selama berlangsung. Tampil setelah diajukan', function (): void {
         $t = SiapkanHttpDokumen();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $uuid = (string) Str::ulid();
@@ -291,7 +291,7 @@ describe('F-05b HTTP stok opname', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('menyetujui butuh persediaan.penyesuaian.setujui (StafGudang 403); opname outlet lain 404', function (): void {
+    it('menyetujui butuh persediaan.penyesuaian.setujui (StafGudang 403). Opname outlet lain 404', function (): void {
         $t = SiapkanHttpDokumen();
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, null, $t['Pemilik']->Id);
         app(SimpanHitungStokOpname::class)->Jalankan($opname, [new DataHitungOpname(1, null, Kuantitas::Dari('1'))], $t['Pemilik']->Id);
@@ -305,7 +305,7 @@ describe('F-05b HTTP stok opname', function (): void {
 });
 
 describe('F-05b HTTP penyesuaian stok', function (): void {
-    it('form → ajukan di atas batas → penyetuju lain menyetujui; pembuat tidak melihat tombol setujui', function (): void {
+    it('form → ajukan di atas batas → penyetuju lain menyetujui. Pembuat tidak melihat tombol setujui', function (): void {
         $t = SiapkanHttpDokumen();
         $uuid = (string) Str::ulid();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
@@ -327,7 +327,7 @@ describe('F-05b HTTP penyesuaian stok', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('StafGudang tidak boleh menyetujui (403); pelacakan batch per lokasi; pengaturan batas lewat halaman pengaturan', function (): void {
+    it('StafGudang tidak boleh menyetujui (403). Pelacakan batch per lokasi. Pengaturan batas lewat halaman pengaturan', function (): void {
         $t = SiapkanHttpDokumen();
         $menunggu = app(AjukanPenyesuaianStok::class)->Jalankan(B::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Rusak, [B::Baris($t['Produk']['Stok'], '-20')]), $t['Pemilik']->Id);
 

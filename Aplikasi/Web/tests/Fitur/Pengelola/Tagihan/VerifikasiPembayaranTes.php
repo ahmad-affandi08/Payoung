@@ -147,7 +147,7 @@ describe('Antrean verifikasi (P-08 langkah 3)', function (): void {
 });
 
 describe('Terima pembayaran → tagihan Lunas → langganan Aktif (BR-00.7)', function (): void {
-    it('Trial → Aktif: paket, siklus, dan periode sebulan diperbarui; audit & email Owner', function (): void {
+    it('Trial → Aktif: paket, siklus, dan periode sebulan diperbarui. Audit & email Owner', function (): void {
         $pembayaran = BayarTagihanUji($this, $this->pemilik, $this->tenant);
         $this->travel(2)->hours();
 
@@ -221,7 +221,7 @@ describe('Terima pembayaran → tagihan Lunas → langganan Aktif (BR-00.7)', fu
 });
 
 describe('Tolak pembayaran', function (): void {
-    it('alasan wajib; tagihan tetap terbuka, Owner diberi email, dan bisa mengunggah bukti baru', function (): void {
+    it('alasan wajib. Tagihan tetap terbuka, Owner diberi email, dan bisa mengunggah bukti baru', function (): void {
         $pembayaran = BayarTagihanUji($this, $this->pemilik, $this->tenant);
         MasukTagihanPengelola($this, $this->keuangan);
         $url = BantuanPengelola::Url("/tagihan/pembayaran/{$pembayaran->Uuid}/tolak");
@@ -260,7 +260,7 @@ describe('Perpanjangan, tunggakan, dan grandfathering (BR-P04.1)', function (): 
             ->and($tagihanKedua->refresh()->MulaiLanggananPaket?->toDateString())->toBe('2026-09-23');
     });
 
-    it('Tertunggak → Aktif lewat pembayaran tagihan yang sudah lewat jatuh tempo; periode tetap menyambung', function (): void {
+    it('Tertunggak → Aktif lewat pembayaran tagihan yang sudah lewat jatuh tempo. Periode tetap menyambung', function (): void {
         $pertama = BayarTagihanUji($this, $this->pemilik, $this->tenant);
         app(TerimaPembayaranLangganan::class)->Jalankan($this->keuangan, $pertama->Uuid, '276390');
         $akhirPertama = LanggananTagihanUji($this->tenant)->PeriodeSelesai;
@@ -333,7 +333,7 @@ describe('Penangguhan manual tidak dicabut lewat tagihan (BR-P07.4 × BR-P08.9)'
 });
 
 describe('Terima massal antrean verifikasi', function (): void {
-    it('menerima pembayaran terpilih setelah dicentang sudah dicocokkan; yang sudah tidak menunggu dilewati dengan alasan; Dukungan ditolak', function (): void {
+    it('menerima pembayaran terpilih setelah dicentang sudah dicocokkan, yang sudah tidak menunggu dilewati dengan alasan; Dukungan ditolak', function (): void {
         $pembayaran = BayarTagihanUji($this, $this->pemilik, $this->tenant);
         $alamat = BantuanPengelola::Url('/tagihan/pembayaran/terima-massal');
         $masuk = fn () => MasukTagihanPengelola($this, $this->keuangan);

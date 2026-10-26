@@ -121,7 +121,7 @@ final class Invoice extends ModelDasar
         });
 
         self::deleting(static function (): void {
-            throw new LogicException('Invoice tidak pernah dihapus; batalkan saja.');
+            throw new LogicException('Invoice tidak pernah dihapus. Batalkan saja.');
         });
     }
 

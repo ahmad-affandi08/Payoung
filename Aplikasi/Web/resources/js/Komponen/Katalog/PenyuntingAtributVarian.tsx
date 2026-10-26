@@ -179,7 +179,7 @@ export default function PenyuntingAtributVarian({
                         ? 'Belum ada kombinasi varian.'
                         : `${String(kombinasi.length)} kombinasi varian.`}
                     {kombinasi.length > MaksimalKombinasi
-                        ? ` Maksimal ${String(MaksimalKombinasi)} varian baru sekali buat; kurangi nilai atribut.`
+                        ? ` Maksimal ${String(MaksimalKombinasi)} varian baru sekali buat. Kurangi nilai atribut.`
                         : ''}
                 </p>
             </div>

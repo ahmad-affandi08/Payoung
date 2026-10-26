@@ -212,7 +212,7 @@ describe('Impor produk langkah 2–5 (E.10)', () => {
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Impor 1.180 baris valid' }).disabled).toBe(true);
     });
 
-    it('proses: progres dari polling status; status berubah → router.reload()', async () => {
+    it('proses: progres dari polling status. Status berubah → router.reload()', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({

@@ -78,7 +78,7 @@ function GerbangToko(array $toko): ?GerbangPembayaranTenant
 }
 
 describe('v2.06 gerbang pembayaran milik toko', function (): void {
-    it('simpan DOKU: kredensial terenkripsi, halaman hanya petunjuk 4 karakter; aktifkan ditolak sebelum uji; uji berhasil → aktif dipakai runtime', function (): void {
+    it('simpan DOKU: kredensial terenkripsi, halaman hanya petunjuk 4 karakter. Aktifkan ditolak sebelum uji. Uji berhasil → aktif dipakai runtime', function (): void {
         // Order uji tidak ada (404) tetapi tanda tangan diterima DOKU: kunci dianggap benar.
         Http::fake(['api-sandbox.doku.com/*' => Http::response(['message' => ['Order not found']], 404)]);
         $toko = TokoGerbang();
@@ -127,7 +127,7 @@ describe('v2.06 gerbang pembayaran milik toko', function (): void {
             ->and(LogAudit::query()->whereIn('Peristiwa', ['gerbang-pembayaran.uji', 'gerbang-pembayaran.aktifkan'])->count())->toBe(2);
     });
 
-    it('audit kemudahan pakai #24: aktifkan gerbang membuat pilihan bayar QRIS dinamis sekali; metode yang sudah ada tidak diubah', function (): void {
+    it('audit kemudahan pakai #24: aktifkan gerbang membuat pilihan bayar QRIS dinamis sekali. Metode yang sudah ada tidak diubah', function (): void {
         $toko = TokoGerbang();
         SimpanDokuToko($this, $toko);
         GerbangToko($toko)->forceFill(['StatusUji' => StatusUjiGerbang::Berhasil])->save();
@@ -154,7 +154,7 @@ describe('v2.06 gerbang pembayaran milik toko', function (): void {
         expect(MetodePembayaran::query()->where('Jenis', JenisMetodePembayaran::QrisDinamis->value)->exists())->toBeFalse();
     });
 
-    it('ubah isian → Belum diuji & nonaktif; kosongkan kredensial = dipertahankan; kredensial wajib saat gerbang belum ada; penyedia lama ditolak', function (): void {
+    it('ubah isian → Belum diuji & nonaktif. Kosongkan kredensial = dipertahankan. Kredensial wajib saat gerbang belum ada. Penyedia lama ditolak', function (): void {
         $toko = TokoGerbang();
         SimpanDokuToko($this, $toko);
         GerbangToko($toko)->forceFill(['StatusUji' => StatusUjiGerbang::Berhasil, 'Aktif' => true])->save();
@@ -200,7 +200,7 @@ describe('v2.06 gerbang pembayaran milik toko', function (): void {
         expect(GerbangToko($toko)->Aktif)->toBeFalse();
     });
 
-    it('platform melarang penyedia (wajib alasan): toko tidak bisa memilihnya dan gerbang aktifnya berhenti dipakai; platform tidak melihat kredensial', function (): void {
+    it('platform melarang penyedia (wajib alasan): toko tidak bisa memilihnya dan gerbang aktifnya berhenti dipakai. Platform tidak melihat kredensial', function (): void {
         $toko = TokoGerbang();
         SimpanDokuToko($this, $toko);
         GerbangToko($toko)->forceFill(['StatusUji' => StatusUjiGerbang::Berhasil, 'Aktif' => true])->save();
@@ -235,7 +235,7 @@ describe('v2.06 gerbang pembayaran milik toko', function (): void {
         expect(app(PembuatGerbangPembayaran::class)->AmbilAktifTenant())->not->toBeNull();
     });
 
-    it('isolasi tenant & izin: toko lain tidak melihat/memakai gerbang toko A; kasir tanpa izin 403', function (): void {
+    it('isolasi tenant & izin: toko lain tidak melihat/memakai gerbang toko A. Kasir tanpa izin 403', function (): void {
         $a = TokoGerbang('Toko Kelontong Berkah Solo');
         $b = TokoGerbang('Warung Makan Sederhana Klaten');
         SimpanDokuToko($this, $a);

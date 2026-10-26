@@ -55,7 +55,7 @@ export default function PanelPengaturanHalaman({
                     <BidangTeks
                         label="Alamat halaman"
                         kode
-                        keterangan={bawaan ? 'Halaman bawaan; alamat tetap.' : 'Huruf kecil, angka, tanda hubung.'}
+                        keterangan={bawaan ? 'Halaman bawaan. Alamat tetap.' : 'Huruf kecil, angka, tanda hubung.'}
                         nilai={draf.Slug}
                         saatBerubah={(v) => saatUbah({ Slug: v.toLowerCase() }, true)}
                         galat={galat.Slug}

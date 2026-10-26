@@ -40,7 +40,7 @@ function AkhiriTrialDuaFaktorUji(int $idTenant): void
 }
 
 describe('Aktivasi 2FA (§20.2, BR-00.8)', function (): void {
-    it('Owner mengaktifkan 2FA lewat QR + kode pertama; kode pemulihan tampil sekali dan tersimpan terenkripsi', function (): void {
+    it('Owner mengaktifkan 2FA lewat QR + kode pertama. Kode pemulihan tampil sekali dan tersimpan terenkripsi', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pengguna] = DaftarkanTenantDuaFaktorUji();
         $this->actingAs($pengguna, 'web')->withSession([IdentifikasiTenantSesi::KUNCI_SESI => $tenant->Id]);
 
@@ -169,7 +169,7 @@ describe('Masuk dua langkah (BR-00.8)', function (): void {
         $this->assertGuest('web');
     });
 
-    it('langkah kedua kedaluwarsa setelah 10 menit; tanpa langkah pertama halaman 2FA tidak bisa dibuka', function (): void {
+    it('langkah kedua kedaluwarsa setelah 10 menit, tanpa langkah pertama halaman 2FA tidak bisa dibuka', function (): void {
         ['Pengguna' => $pengguna] = DaftarkanTenantDuaFaktorUji();
         $rahasia = BantuanAutentikasi::AktifkanDuaFaktor($pengguna);
 

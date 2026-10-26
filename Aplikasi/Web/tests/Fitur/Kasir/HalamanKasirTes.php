@@ -23,7 +23,7 @@ beforeEach(function (): void {
 });
 
 describe('F-06 halaman back-office shift', function (): void {
-    it('daftar & detail shift: ringkasan kas non-penjualan dan mutasi dengan jurnal; tautan sumber jurnal membuka shift', function (): void {
+    it('daftar & detail shift: ringkasan kas non-penjualan dan mutasi dengan jurnal. Tautan sumber jurnal membuka shift', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $shift = BantuanKasir::ItemBukaShift($k['Kasir'], '500000.00');
         $keluar = BantuanKasir::ItemMutasiKas($shift['Uuid'], $k['Kasir'], 'Keluar', '45000.00', $k['KategoriKeluar']);
@@ -96,7 +96,7 @@ describe('F-06 halaman back-office shift', function (): void {
         $this->getJson('/kelola/kasir/shift')->assertForbidden();
     });
 
-    it('izin & isolasi: Kasir 403; shift tenant lain 404; pengguna per outlet hanya melihat shift outletnya', function (): void {
+    it('izin & isolasi: Kasir 403. Shift tenant lain 404. Pengguna per outlet hanya melihat shift outletnya', function (): void {
         $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         $shiftA = BantuanKasir::ItemBukaShift($a['Kasir']);
         BantuanKasir::KirimRingkas($this, $a['Token'], [$shiftA]);
@@ -157,7 +157,7 @@ describe('F-06 kategori kas', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'kas.kategori.status')->count())->toBe(1);
     });
 
-    it('izin akuntansi.kelola (Manajer Outlet 403); kategori tenant lain 404', function (): void {
+    it('izin akuntansi.kelola (Manajer Outlet 403). Kategori tenant lain 404', function (): void {
         $a = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         BantuanPersediaan::MasukSebagai($this, $a['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
         $this->get('/kelola/kasir/kategori-kas')->assertForbidden();
@@ -172,7 +172,7 @@ describe('F-06 kategori kas', function (): void {
 });
 
 describe('F-06 pengaturan kasir', function (): void {
-    it('BR-06.4/BR-06.2 bawaan Rp 200.000 & shift bersama mati; simpan tercatat audit; izin outlet.kelola; nilai tidak valid ditolak', function (): void {
+    it('BR-06.4/BR-06.2 bawaan Rp 200.000 & shift bersama mati. Simpan tercatat audit. Izin outlet.kelola. Nilai tidak valid ditolak', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir);
         $this->get('/kelola/kasir/pengaturan')->assertForbidden();

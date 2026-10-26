@@ -108,7 +108,7 @@ export default function TampilanKuitansiInvoice({ dokumen }: { dokumen: DokumenK
             <p className="text-keterangan text-teks-sekunder">
                 Kuitansi ini dibuat otomatis oleh sistem penagihan penjual.
                 {perluMeterai
-                    ? ' Dokumen yang menyebut uang di atas Rp 5.000.000 dapat dikenai bea meterai; bubuhkan meterai bila diperlukan.'
+                    ? ' Dokumen yang menyebut uang di atas Rp 5.000.000 dapat dikenai bea meterai. Bubuhkan meterai bila diperlukan.'
                     : ''}
             </p>
         </article>

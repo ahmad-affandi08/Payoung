@@ -290,7 +290,7 @@ function PanelUjiCoba({ hasil }: { hasil: HasilUjiCoba }) {
             judul={hasil.Lolos ? 'Uji coba lolos' : 'Uji coba menemukan masalah'}
         >
             <p>
-                Template diterapkan ke tenant sementara dengan transaksi contoh. Semua data uji sudah dibuang; tidak ada
+                Template diterapkan ke tenant sementara dengan transaksi contoh. Semua data uji sudah dibuang. Tidak ada
                 tenant sungguhan yang berubah.
             </p>
             <ul className="mt-2 list-disc pl-5">

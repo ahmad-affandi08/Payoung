@@ -54,7 +54,7 @@ function NilaiBarisNeraca(array $baris, string $kode): ?string
 }
 
 describe('F-13 neraca (FIN-07)', function (): void {
-    it('seimbang; persediaan neraca = Σ nilai stok, hutang usaha = Σ sisa faktur, laba tahun berjalan = pendapatan − HPP − beban', function (): void {
+    it('seimbang. Persediaan neraca = Σ nilai stok, hutang usaha = Σ sisa faktur, laba tahun berjalan = pendapatan − HPP − beban', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $idPemilik = $t['Pemilik']->Id;
         $hariIni = BantuanPembelian::Hari();
@@ -97,7 +97,7 @@ describe('F-13 neraca (FIN-07)', function (): void {
         expect(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('laba sebelum 1 Januari tampil sebagai laba tahun-tahun lalu, laba sesudahnya laba tahun berjalan; ekspor CSV', function (): void {
+    it('laba sebelum 1 Januari tampil sebagai laba tahun-tahun lalu, laba sesudahnya laba tahun berjalan. Ekspor CSV', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         CatatKasBankNeraca('Penerimaan', '2025-12-01', '3-1000', '1-1100', '1000000.00', 'Modal awal');
         CatatKasBankNeraca('Pengeluaran', '2025-12-20', '1-1100', '6-2000', '100000.00', 'Listrik Desember');

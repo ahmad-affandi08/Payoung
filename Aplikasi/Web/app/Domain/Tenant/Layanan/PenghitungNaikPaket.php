@@ -62,7 +62,7 @@ final class PenghitungNaikPaket
         if ($penuhBaru->Bandingkan($penuhLama) <= 0) {
             throw new PelanggaranAturanBisnis(
                 'BukanNaikPaket',
-                "Paket {$paketBaru->Nama} tidak lebih mahal dari paket {$paketLama->Nama}. Turun paket berlaku mulai periode berikutnya; hubungi tim kami untuk mengaturnya.",
+                "Paket {$paketBaru->Nama} tidak lebih mahal dari paket {$paketLama->Nama}. Turun paket berlaku mulai periode berikutnya. Hubungi tim kami untuk mengaturnya.",
                 'KodePaket',
             );
         }

@@ -66,7 +66,7 @@ function IsiStokUji(Produk $produk, int $idGudang, string $jumlah): void
 }
 
 describe('F-07 BR-05.2 stok tersedia untuk kasir', function (): void {
-    it('produk tidak boleh minus muncul dengan sisa stok benar; tanpa saldo = 0.0000; saldo minus dan desimal apa adanya', function (): void {
+    it('produk tidak boleh minus muncul dengan sisa stok benar, tanpa saldo = 0.0000. Saldo minus dan desimal apa adanya', function (): void {
         $k = SiapkanStokPos($this);
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter'], '38500.00', $k['Pcs']);
         $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Pandan Wangi Cianjur Premium'], '16000.00', $k['Pcs']);
@@ -151,7 +151,7 @@ describe('F-07 BR-05.2 stok tersedia untuk kasir', function (): void {
         }
     });
 
-    it('sisa stok hanya dari lokasi stok Toko outlet; gudang lain dan outlet lain tidak dihitung', function (): void {
+    it('sisa stok hanya dari lokasi stok Toko outlet. Gudang lain dan outlet lain tidak dihitung', function (): void {
         $k = SiapkanStokPos($this);
         $produk = BantuanKatalog::BuatProduk(['Nama' => 'Air Mineral Botol 600 ml Dus 24'], '48000.00', $k['Pcs']);
         $gudangBelakang = BantuanPersediaan::BuatGudang($k['Outlet'], 'Gudang Belakang', JenisGudang::Gudang);

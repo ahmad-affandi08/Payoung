@@ -30,7 +30,7 @@ describe('Impor pemasok (PLT-10, F31)', () => {
     });
     afterEach(() => cleanup());
 
-    it('tanpa berkas: tombol periksa nonaktif; templat bisa diunduh; batas baris tampil', () => {
+    it('tanpa berkas: tombol periksa nonaktif. Templat bisa diunduh. Batas baris tampil', () => {
         RenderUji(<HalamanImporPemasok Hasil={null} MaksimalBaris={2000} />);
         expect(screen.getByRole('button', { name: 'Periksa berkas' }).hasAttribute('disabled')).toBe(true);
         expect(screen.getByRole('link', { name: 'Unduh templat' }).getAttribute('href')).toBe(

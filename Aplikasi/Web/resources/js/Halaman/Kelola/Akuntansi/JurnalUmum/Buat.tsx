@@ -180,7 +180,7 @@ export default function HalamanBuatJurnalUmum({
     return (
         <TataLetakAplikasi judul="Catat jurnal umum" jejak={[{ label: 'Jurnal', href: '/kelola/akuntansi/jurnal' }]}>
             <DaftarGalatServer galat={galat} kecuali={kecuali} />
-            <KartuFormulir keterangan="Untuk pencatatan yang tidak punya dokumen sendiri, misalnya penyesuaian akhir bulan. Jurnal langsung diposting saat disimpan dan tidak bisa diubah; koreksi dengan dokumen pembalik. Akun persediaan, piutang, hutang, deposit, dan aset tetap tidak tersedia di sini karena saldonya mengikuti dokumen modulnya.">
+            <KartuFormulir keterangan="Untuk pencatatan yang tidak punya dokumen sendiri, misalnya penyesuaian akhir bulan. Jurnal langsung diposting saat disimpan dan tidak bisa diubah. Koreksi dengan dokumen pembalik. Akun persediaan, piutang, hutang, deposit, dan aset tetap tidak tersedia di sini karena saldonya mengikuti dokumen modulnya.">
                 <form onSubmit={Simpan} className="flex flex-col gap-4" aria-label="Formulir jurnal umum" noValidate>
                     <BidangOutlet
                         nilai={isian.UuidOutlet}

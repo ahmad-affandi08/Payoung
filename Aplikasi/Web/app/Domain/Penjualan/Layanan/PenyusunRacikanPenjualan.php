@@ -92,7 +92,7 @@ final class PenyusunRacikanPenjualan
                 $p = $komponenProduk[$k['UuidProduk']] ?? throw new PelanggaranAturanBisnis('ProdukTidakDikenal', 'Obat racikan ke-'.($i + 1).' tidak ditemukan.', "{$bidangKomponen}.UuidProduk");
 
                 if (! in_array($p->jenis, self::JENIS_KOMPONEN, true)) {
-                    throw new PelanggaranAturanBisnis('KomponenRacikanTidakValid', "{$p->nama} berjenis {$p->jenis->AmbilLabel()} tidak bisa menjadi bahan racikan; pakai produk berstok.", "{$bidangKomponen}.UuidProduk");
+                    throw new PelanggaranAturanBisnis('KomponenRacikanTidakValid', "{$p->nama} berjenis {$p->jenis->AmbilLabel()} tidak bisa menjadi bahan racikan. Pakai produk berstok.", "{$bidangKomponen}.UuidProduk");
                 }
 
                 if ($p->pelacakan === PelacakanProduk::Seri) {

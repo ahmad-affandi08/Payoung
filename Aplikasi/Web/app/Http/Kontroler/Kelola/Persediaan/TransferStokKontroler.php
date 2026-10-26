@@ -184,7 +184,7 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         $t = $terima->Jalankan($this->CariTransfer($transferStok, tujuan: true), $permintaan->AmbilBaris(), $permintaan->AmbilTanggal(), $this->Pelaku()->Id);
         $pesan = $t->Status === StatusTransferStok::Diterima
             ? "Transfer {$t->Nomor} diterima seluruhnya."
-            : 'Penerimaan dicatat. Sisa barang masih dalam perjalanan; terima lagi atau tutup transfer dengan alasan selisih.';
+            : 'Penerimaan dicatat. Sisa barang masih dalam perjalanan. Terima lagi atau tutup transfer dengan alasan selisih.';
 
         return redirect()->route(self::ALAMAT, ['transferStok' => $t->Uuid])->with('Kilat', $pesan);
     }
@@ -261,11 +261,11 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         }
 
         if ($sisa['JumlahDilewati'] > 0) {
-            $catatan[] = "{$sisa['JumlahDilewati']} produk ber-batch atau bernomor seri tidak diisi otomatis; tambahkan manual.";
+            $catatan[] = "{$sisa['JumlahDilewati']} produk ber-batch atau bernomor seri tidak diisi otomatis. Tambahkan manual.";
         }
 
         if ($sisa['Terpotong']) {
-            $catatan[] = 'Sisa stok melebihi batas baris satu dokumen; buat transfer lagi untuk sisanya.';
+            $catatan[] = 'Sisa stok melebihi batas baris satu dokumen. Buat transfer lagi untuk sisanya.';
         }
 
         return [

@@ -74,7 +74,7 @@ describe('tampilan toko online', () => {
         expect(screen.getByText(/Jl\. Slamet Riyadi 10/)).toBeTruthy();
     });
 
-    it('kategori dan pencarian memfilter menu; hasil kosong memberi petunjuk', () => {
+    it('kategori dan pencarian memfilter menu. Hasil kosong memberi petunjuk', () => {
         RenderUji(<HalamanTokoOnline {...props} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Roti' }));
@@ -90,7 +90,7 @@ describe('tampilan toko online', () => {
         expect(screen.getByText(/Tidak ada menu yang cocok/)).toBeTruthy();
     });
 
-    it('desktop: keranjang tampil sebagai kolom di samping menu; kartu menandai jumlah dan punya pengatur jumlah', () => {
+    it('desktop: keranjang tampil sebagai kolom di samping menu. Kartu menandai jumlah dan punya pengatur jumlah', () => {
         RenderUji(<HalamanTokoOnline {...props} />);
 
         const keranjang = screen.getByRole('complementary', { name: 'Keranjang' });
@@ -110,7 +110,7 @@ describe('tampilan toko online', () => {
         expect(within(keranjang).getByText('Keranjang masih kosong')).toBeTruthy();
     });
 
-    it('keranjang dua langkah: lanjut ke data pesanan lalu kembali; kirim pesanan menunggu persetujuan data', async () => {
+    it('keranjang dua langkah: lanjut ke data pesanan lalu kembali. Kirim pesanan menunggu persetujuan data', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn(() =>
@@ -149,7 +149,7 @@ describe('tampilan toko online', () => {
         expect(screen.getByRole('button', { name: 'Lanjut ke data pesanan' })).toBeTruthy();
     });
 
-    it('HP: keranjang tidak di dasar halaman; bilah bawah membuka laci keranjang', () => {
+    it('HP: keranjang tidak di dasar halaman. Bilah bawah membuka laci keranjang', () => {
         vi.stubGlobal('matchMedia', (kueri: string) => ({
             matches: true,
             media: kueri,

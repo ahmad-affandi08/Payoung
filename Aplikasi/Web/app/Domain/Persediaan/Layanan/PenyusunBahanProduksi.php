@@ -111,7 +111,7 @@ final class PenyusunBahanProduksi
             }
 
             if ($p->pelacakan !== PelacakanProduk::Tidak) {
-                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$p->nama} memakai batch/nomor seri; bahan berpelacakan belum bisa dipakai di order produksi.", $bidang);
+                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$p->nama} memakai batch/nomor seri. Bahan berpelacakan belum bisa dipakai di order produksi.", $bidang);
             }
 
             if (! $b['jumlah']->KeDesimal()->isPositive()) {

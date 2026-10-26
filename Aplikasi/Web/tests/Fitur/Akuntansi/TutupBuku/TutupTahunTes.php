@@ -47,7 +47,7 @@ function SaldoLabaRugiTutupTahun(string $sampai): string
 }
 
 describe('F-15 tutup tahun (J-15.1)', function (): void {
-    it('syarat 12 bulan terkunci & tahun berakhir; jurnal penutup per outlet ke Laba Ditahan; laba rugi tetap; tidak bisa dua kali; bulan tidak bisa dibuka', function (): void {
+    it('syarat 12 bulan terkunci & tahun berakhir. Jurnal penutup per outlet ke Laba Ditahan. Laba rugi tetap. Tidak bisa dua kali. Bulan tidak bisa dibuka', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
         $utama = $t['Outlet']->Id;
@@ -105,7 +105,7 @@ describe('F-15 tutup tahun (J-15.1)', function (): void {
             ->where('Periode.2.TahunDitutup', true));
     });
 
-    it('tahun tanpa saldo laba rugi tidak perlu ditutup; Kasir tidak berizin; tenant lain tidak terpengaruh', function (): void {
+    it('tahun tanpa saldo laba rugi tidak perlu ditutup; Kasir tidak berizin. Tenant lain tidak terpengaruh', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Kopi Senja Solo');
         $b = BantuanPersediaan::SiapkanTenant('Warung Bakso Pak Kumis');
         BantuanOrganisasi::AturKonteks($a['Tenant']->Id);

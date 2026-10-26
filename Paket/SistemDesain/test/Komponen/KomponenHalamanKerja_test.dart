@@ -16,7 +16,7 @@ void main() {
     );
   }
 
-  testWidgets('SorotanAngka: label, angka besar, keterangan; nada mewarnai angka saja', (tester) async {
+  testWidgets('SorotanAngka: label, angka besar, keterangan. Nada mewarnai angka saja', (tester) async {
     await Pasang(
       tester,
       const SorotanAngka(

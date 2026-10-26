@@ -23,7 +23,7 @@ const definisi = [
 ];
 
 describe('Grid ukuran × warna (§9.4, D-143)', () => {
-    it('urutan nilai mengikuti definisi induk, bukan abjad; kombinasi yang belum jadi varian tidak punya sel', () => {
+    it('urutan nilai mengikuti definisi induk, bukan abjad. Kombinasi yang belum jadi varian tidak punya sel', () => {
         const grid = SusunGridVarian(
             [
                 Varian('V1', 'XL', 'Putih'),

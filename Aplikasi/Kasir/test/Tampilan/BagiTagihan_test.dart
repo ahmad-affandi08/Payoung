@@ -188,7 +188,7 @@ void main() {
     await Ketuk(tester, find.byKey(const ValueKey('StrukTamu2')));
     await Tunggu(tester, const Duration(milliseconds: 600));
 
-    expect(u.printer.kiriman, hasLength(1), reason: 'Hanya struk tamu 2; cetak otomatis struk utama dimatikan.');
+    expect(u.printer.kiriman, hasLength(1), reason: 'Hanya struk tamu 2. Cetak otomatis struk utama dimatikan.');
     final teks = u.printer.AmbilTeks();
     expect(teks, contains('Tamu 2 dari 2'));
     expect(teks, contains('Tagihan dibagi per nominal'));

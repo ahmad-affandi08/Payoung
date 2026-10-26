@@ -154,7 +154,7 @@ describe('F-12 bagian 2 pre-order dari POS', function (): void {
             ->and($kirim(ItemPreOrder($k, timpa: ['TanggalAmbil' => '2020-01-01'])))->toBe([['Ditolak', 'TanggalAmbilTidakValid']]);
     });
 
-    it('cari & ambil: DP dipakai lewat metode Uang Muka → pendapatan & stok saat diserahkan; void mengembalikan DP', function (): void {
+    it('cari & ambil: DP dipakai lewat metode Uang Muka → pendapatan & stok saat diserahkan. Void mengembalikan DP', function (): void {
         $k = SiapkanPreOrder($this);
         $item = ItemPreOrder($k);
         BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
@@ -272,7 +272,7 @@ describe('F-12 bagian 2 pre-order back-office', function (): void {
         $this->post("/kelola/pre-order/{$pa->Uuid}/selesaikan-uang-muka", ['Cara' => 'Hangus', 'Alasan' => 'Coba lagi dua kali'])->assertSessionHasErrors('Status');
     });
 
-    it('kasir tanpa akuntansi.kelola tidak bisa membatalkan; pre-order tenant lain 404', function (): void {
+    it('kasir tanpa akuntansi.kelola tidak bisa membatalkan. Pre-order tenant lain 404', function (): void {
         $k = SiapkanPreOrder($this);
         $item = ItemPreOrder($k);
         BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);

@@ -82,7 +82,7 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/akuntansi/jurnal-umum/buat'));
     afterEach(() => cleanup());
 
-    it('buat: simpan nonaktif sampai seimbang; total & selisih dihitung tanpa float; payload membawa UuidKlien', () => {
+    it('buat: simpan nonaktif sampai seimbang. Total & selisih dihitung tanpa float. Payload membawa UuidKlien', () => {
         RenderUji(<HalamanBuatJurnalUmum {...propsBuat} />);
         const simpan = screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan & posting' });
         expect(simpan.disabled).toBe(true);
@@ -127,7 +127,7 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
         expect((screen.getByLabelText(/Debit baris 2/) as HTMLInputElement).value).toBe('');
     });
 
-    it('buat: mengisi debit mengosongkan kredit baris yang sama; baris bisa ditambah & dihapus (minimal dua)', () => {
+    it('buat: mengisi debit mengosongkan kredit baris yang sama. Baris bisa ditambah & dihapus (minimal dua)', () => {
         RenderUji(<HalamanBuatJurnalUmum {...propsBuat} />);
         fireEvent.change(screen.getByLabelText(/Kredit baris 1/), { target: { value: '500' } });
         fireEvent.change(screen.getByLabelText(/Debit baris 1/), { target: { value: '700' } });
@@ -140,7 +140,7 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
         expect(screen.queryByLabelText(/Debit baris 3/)).toBeNull();
     });
 
-    it('buat: masalah per baris dari server tampil di barisnya; masalah umum "Baris" tampil di bawah tabel', () => {
+    it('buat: masalah per baris dari server tampil di barisnya. Masalah umum "Baris" tampil di bawah tabel', () => {
         AturHalamanUji(
             {
                 'Baris.0.UuidAkun': 'Akun 1-1400 Persediaan adalah akun kendali.',
@@ -153,7 +153,7 @@ describe('Kelola/Akuntansi/JurnalUmum (FIN-05, D-131)', () => {
         expect(screen.getByRole('alert').textContent).toContain('Jurnal belum seimbang');
     });
 
-    it('detail: nomor, baris jurnal seimbang, tautan jurnal & lampiran; dokumen pembalik hanya untuk yang berhak', () => {
+    it('detail: nomor, baris jurnal seimbang, tautan jurnal & lampiran. Dokumen pembalik hanya untuk yang berhak', () => {
         RenderUji(<HalamanDetailJurnalUmum {...propsDetail} />);
         expect(screen.getAllByText('JM/2026/09/0001').length).toBeGreaterThan(0);
         expect(screen.getByRole('link', { name: 'JU/2026/09/000009' }).getAttribute('href')).toBe(

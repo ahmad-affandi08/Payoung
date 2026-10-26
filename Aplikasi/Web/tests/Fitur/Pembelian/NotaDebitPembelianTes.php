@@ -78,7 +78,7 @@ function CatatNotaDebit(FakturPembelian $faktur, string $nilai, int $idPengguna,
 }
 
 describe('v6.07 nota debit pembelian (BR-04.10)', function (): void {
-    it('stok tersisa menurunkan nilai persediaan, bagian terjual mengurangi HPP; hutang faktur berkurang; pembatalan membalik', function (): void {
+    it('stok tersisa menurunkan nilai persediaan, bagian terjual mengurangi HPP. Hutang faktur berkurang. Pembatalan membalik', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -164,7 +164,7 @@ describe('v6.07 nota debit pembelian (BR-04.10)', function (): void {
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('faktur sudah dibayar: bagian melebihi sisa hutang diterima sebagai uang (BR-04.9); pembayaran terkunci selama nota berlaku', function (): void {
+    it('faktur sudah dibayar: bagian melebihi sisa hutang diterima sebagai uang (BR-04.9). Pembayaran terkunci selama nota berlaku', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -226,7 +226,7 @@ describe('v6.07 nota debit pembelian (BR-04.10)', function (): void {
         expect($faktur->refresh()->JumlahRetur)->toBe('0.00')->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('nota di atas batas persetujuan butuh izin penyetuju; faktur dibatalkan ditolak', function (): void {
+    it('nota di atas batas persetujuan butuh izin penyetuju. Faktur dibatalkan ditolak', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -249,7 +249,7 @@ describe('v6.07 nota debit pembelian (BR-04.10)', function (): void {
         expect(B::KodeGalat(fn () => CatatNotaDebit($faktur2, '1000', $id)))->toBe('FakturTidakValid');
     });
 
-    it('halaman: formulir dari faktur, simpan, daftar, rincian, tautan di faktur, batalkan; kasir tanpa izin; tenant lain 404', function (): void {
+    it('halaman: formulir dari faktur, simpan, daftar, rincian, tautan di faktur, batalkan. Kasir tanpa izin. Tenant lain 404', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $pemasok = BantuanPembelian::BuatPemasok();
         $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Premium Rojolele 5 kg'], '85000.00', $t['Pcs']);

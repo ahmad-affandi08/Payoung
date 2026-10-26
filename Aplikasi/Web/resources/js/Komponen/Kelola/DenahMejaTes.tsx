@@ -34,7 +34,7 @@ describe('POS-03 denah meja: hitungan', () => {
         expect(RapatkanKeKanvas(446)).toBe(450);
     });
 
-    it('titik kanvas dari pointer relatif ke kotak; kotak tanpa ukuran = tengah', () => {
+    it('titik kanvas dari pointer relatif ke kotak. Kotak tanpa ukuran = tengah', () => {
         const kotak = { left: 100, top: 50, width: 400, height: 250 };
 
         expect(HitungTitikKanvas(300, 175, kotak)).toEqual({ x: 500, y: 500 });
@@ -58,7 +58,7 @@ describe('POS-03 denah meja: layar', () => {
         expect(screen.queryByRole('button', { name: 'Atur denah' })).toBeNull();
     });
 
-    it('denah kosong: ajakan menata; meja diarsipkan tidak ikut', () => {
+    it('denah kosong: ajakan menata. Meja diarsipkan tidak ikut', () => {
         RenderUji(
             <DenahMeja
                 alamatOutlet="/kelola/outlet/O-1"
@@ -114,7 +114,7 @@ describe('POS-03 denah meja: layar', () => {
         });
     });
 
-    it('seret dengan pointer memakai kotak kanvas; batal mengembalikan letak semula', () => {
+    it('seret dengan pointer memakai kotak kanvas. Batal mengembalikan letak semula', () => {
         RenderUji(<DenahMeja alamatOutlet="/kelola/outlet/O-1" meja={[BuatMeja('1', [200, 300])]} bolehKelola />);
         fireEvent.click(screen.getByRole('button', { name: 'Atur denah' }));
 

@@ -60,7 +60,7 @@ it('tenant baru tidak dihukum karena umurnya: target hari aktif mengecil sesuai 
         ->and($nilai(13, 10))->toBe(40);
 });
 
-it('tren transaksi: stabil atau naik 15 poin, turun sedikit 8 poin, turun tajam 0; tanpa pembanding 15 bila ada transaksi', function (): void {
+it('tren transaksi: stabil atau naik 15 poin, turun sedikit 8 poin, turun tajam 0, tanpa pembanding 15 bila ada transaksi', function (): void {
     $tren = fn (int $ini, int $lalu): int => (new PenilaiKesehatanTenant)->Nilai(UkuranKesehatan(['TransaksiMingguIni' => $ini, 'TransaksiMingguLalu' => $lalu]))['Faktor']['TrenTransaksi']['Poin'];
 
     expect($tren(90, 100))->toBe(15)
@@ -73,7 +73,7 @@ it('tren transaksi: stabil atau naik 15 poin, turun sedikit 8 poin, turun tajam 
         ->and($tren(0, 0))->toBe(0);
 });
 
-it('fitur utama 4 poin per fitur sampai 5 fitur; perangkat offline, tiket lama, dan tunggakan mengurangi poin', function (): void {
+it('fitur utama 4 poin per fitur sampai 5 fitur. Perangkat offline, tiket lama, dan tunggakan mengurangi poin', function (): void {
     $nilai = new PenilaiKesehatanTenant;
 
     expect($nilai->Nilai(UkuranKesehatan(['FiturDipakai' => 0]))['Faktor']['FiturDipakai']['Poin'])->toBe(0)

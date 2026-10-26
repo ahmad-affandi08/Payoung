@@ -224,7 +224,7 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
                             required
                         />
                         <p className="text-keterangan text-teks-sekunder">
-                            Dipilih otomatis dari nama kategori; ubah bila kurang pas.
+                            Dipilih otomatis dari nama kategori. Ubah bila kurang pas.
                         </p>
                         <KotakCentang
                             label="Tampilkan kode akun (untuk akuntan)"

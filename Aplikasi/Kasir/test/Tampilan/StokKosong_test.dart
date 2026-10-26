@@ -68,7 +68,7 @@ void main() {
     await Tunggu(tester);
   }
 
-  testWidgets('BR-05.2: produk dengan sisa stok nol tampil "Habis" dan tidak bisa ditambah; produk lain tetap bisa', (
+  testWidgets('BR-05.2: produk dengan sisa stok nol tampil "Habis" dan tidak bisa ditambah. Produk lain tetap bisa', (
     tester,
   ) async {
     final u = await MasukJual(tester, {UuidUji.roti: '0.0000'});

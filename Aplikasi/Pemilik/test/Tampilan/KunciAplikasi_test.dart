@@ -94,7 +94,7 @@ void main() {
       expect(SidikPin.PinSah(''), isFalse);
     });
 
-    test('sidik bergantung pada garam; cocok hanya untuk PIN yang sama', () {
+    test('sidik bergantung pada garam. Cocok hanya untuk PIN yang sama', () {
       final garam = SidikPin.BuatGaram();
       final sidik = SidikPin.Hitung('246810', garam);
 
@@ -168,7 +168,7 @@ void main() {
     expect(find.text('Omzet'), findsOneWidget);
   });
 
-  testWidgets('PIN salah: pesan sisa percobaan; lima kali salah memutus sesi dan menghapus token', (tester) async {
+  testWidgets('PIN salah: pesan sisa percobaan. Lima kali salah memutus sesi dan menghapus token', (tester) async {
     PasangPinTersimpan('246810');
     await Pasang(tester);
 
@@ -211,7 +211,7 @@ void main() {
     expect(sesi.isi[PenyimpanSesi.kunciToken], isNull);
   });
 
-  testWidgets('biometrik aktif: terbuka tanpa PIN; biometrik gagal: PIN tetap bisa dipakai', (tester) async {
+  testWidgets('biometrik aktif: terbuka tanpa PIN. Biometrik gagal: PIN tetap bisa dipakai', (tester) async {
     PasangPinTersimpan('246810');
     sesi.isi[KunciPenyimpan.biometrik] = '1';
     final biometrik = BiometrikTiruan(berhasil: false);
@@ -237,7 +237,7 @@ void main() {
     expect(find.text('Buka dengan sidik jari atau wajah'), findsNothing);
   });
 
-  testWidgets('di latar kurang dari semenit tetap terbuka; lebih dari semenit terkunci lagi', (tester) async {
+  testWidgets('di latar kurang dari semenit tetap terbuka. Lebih dari semenit terkunci lagi', (tester) async {
     PasangPinTersimpan('246810');
     await Pasang(tester);
     await Ketik(tester, '246810');

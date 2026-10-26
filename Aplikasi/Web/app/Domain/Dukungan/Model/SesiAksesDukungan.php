@@ -77,7 +77,7 @@ final class SesiAksesDukungan extends ModelDasar
             }
         });
         self::deleting(static function (): never {
-            throw new \LogicException('Sesi akses dukungan tidak pernah dihapus; jejaknya dipertahankan.');
+            throw new \LogicException('Sesi akses dukungan tidak pernah dihapus. Jejaknya dipertahankan.');
         });
     }
 

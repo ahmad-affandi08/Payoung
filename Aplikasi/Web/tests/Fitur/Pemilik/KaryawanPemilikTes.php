@@ -75,7 +75,7 @@ it('kehadiran hari ini (terlambat, sedang bekerja, belum masuk dijadwalkan), tar
     $this->withToken($token)->withHeaders(['X-Tenant' => $lain['Tenant']->Uuid, 'X-Versi-Aplikasi' => '1.0.0'])->getJson('/api/pemilik/v1/karyawan')->assertForbidden();
 });
 
-it('OWN-11 insight mingguan: minggu lalu vs sebelumnya untuk Aplikasi Pemilik; tanpa penjualan = null', function (): void {
+it('OWN-11 insight mingguan: minggu lalu vs sebelumnya untuk Aplikasi Pemilik, tanpa penjualan = null', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-22 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Insight Owner');
     BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');

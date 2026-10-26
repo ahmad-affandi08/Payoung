@@ -222,7 +222,7 @@ export default function HalamanFormKampanye({
                             ? ` (${String(pratinjau.data.TanpaKontak)} lainnya cocok tetapi tidak punya nomor WhatsApp yang sah).`
                             : '.'}
                         {pratinjau.data.JumlahPenerima > pratinjau.data.MaksPenerima
-                            ? ` Paling banyak ${String(pratinjau.data.MaksPenerima)} per kampanye; persempit segmennya.`
+                            ? ` Paling banyak ${String(pratinjau.data.MaksPenerima)} per kampanye. Persempit segmennya.`
                             : null}
                     </>
                 ) : (

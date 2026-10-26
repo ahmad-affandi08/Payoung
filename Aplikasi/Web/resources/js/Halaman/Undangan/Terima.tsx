@@ -76,7 +76,7 @@ export default function HalamanTerimaUndangan({ Token, Berlaku, Email, NamaTenan
             <TataLetakAutentikasi judul={judul} keterangan={`Undangan untuk ${Email}.`}>
                 <div className="flex flex-col gap-4 text-isi text-teks-sekunder">
                     <p>
-                        Email ini sudah punya akun. Masuk dulu; setelah itu Anda kembali ke halaman ini untuk menerima
+                        Email ini sudah punya akun. Masuk dulu. Setelah itu Anda kembali ke halaman ini untuk menerima
                         undangan.
                     </p>
                     <Button

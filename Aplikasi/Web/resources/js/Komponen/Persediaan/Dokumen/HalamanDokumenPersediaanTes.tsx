@@ -291,7 +291,7 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
     });
     afterEach(() => cleanup());
 
-    it('daftar kosong: ajakan buat untuk persediaan.kelola; hanya lihat tanpa tombol', () => {
+    it('daftar kosong: ajakan buat untuk persediaan.kelola. Hanya lihat tanpa tombol', () => {
         RenderUji(
             <HalamanDaftarTransferStok
                 Transfer={BuatHasilTabel([])}
@@ -345,7 +345,7 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
         );
     });
 
-    it('D-105 terima per barang: bagi sisa jadi diterima, rusak, dan dikembalikan; total tidak boleh melebihi sisa', () => {
+    it('D-105 terima per barang: bagi sisa jadi diterima, rusak, dan dikembalikan. Total tidak boleh melebihi sisa', () => {
         RenderUji(<HalamanDetailTransferStok {...PropsTransfer()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Terima barang' }));
         const dialog = screen.getByRole('dialog');
@@ -368,7 +368,7 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
         );
     });
 
-    it('D-105 PeriksaBagianTerima: bagian tak valid dilaporkan per bagian; semua kosong dianggap tidak diproses', () => {
+    it('D-105 PeriksaBagianTerima: bagian tak valid dilaporkan per bagian. Semua kosong dianggap tidak diproses', () => {
         expect(PeriksaBagianTerima({ Terima: '', Rusak: '', Ditolak: '' }, '18.0000', false)).toBeNull();
         expect(PeriksaBagianTerima({ Terima: '10', Rusak: '3', Ditolak: '5' }, '18.0000', false)).toBeNull();
         expect(PeriksaBagianTerima({ Terima: '1.5', Rusak: '', Ditolak: '' }, '18.0000', false)).toEqual({
@@ -382,7 +382,7 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
         });
     });
 
-    it('tutup dengan selisih wajib alasan; draf menampilkan kirim dengan konfirmasi', () => {
+    it('tutup dengan selisih wajib alasan. Draf menampilkan kirim dengan konfirmasi', () => {
         RenderUji(<HalamanDetailTransferStok {...PropsTransfer()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Tutup dengan selisih' }));
         const dialog = screen.getByRole('alertdialog');
@@ -427,7 +427,7 @@ describe('Kelola/Persediaan/Opname (F-05b, BR-05.3)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('hitung buta: tidak ada jumlah sistem di layar; simpan hanya baris yang berubah', () => {
+    it('hitung buta: tidak ada jumlah sistem di layar. Simpan hanya baris yang berubah', () => {
         RenderUji(<HalamanDetailStokOpname {...PropsOpname()} />);
 
         expect(screen.getByText('Hitung buta')).toBeTruthy();
@@ -634,7 +634,7 @@ describe('Kelola/Persediaan/Penyesuaian (F-05b, §19.2)', () => {
     });
     afterEach(() => cleanup());
 
-    it('ajukan di atas batas menjelaskan butuh persetujuan; menunggu persetujuan tanpa tombol setujui untuk pembuat', () => {
+    it('ajukan di atas batas menjelaskan butuh persetujuan. Menunggu persetujuan tanpa tombol setujui untuk pembuat', () => {
         RenderUji(<HalamanDetailPenyesuaianStok {...PropsPenyesuaian()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Ajukan penyesuaian' }));
         const dialog = screen.getByRole('alertdialog');
@@ -664,7 +664,7 @@ describe('Kelola/Persediaan/Penyesuaian (F-05b, §19.2)', () => {
         expect(screen.queryByRole('button', { name: 'Setujui & posting' })).toBeNull();
     });
 
-    it('form: alasan Rusak hanya boleh kurangi stok; payload bertanda arah', () => {
+    it('form: alasan Rusak hanya boleh kurangi stok. Payload bertanda arah', () => {
         const props: PropsFormPenyesuaianStok = {
             Mode: 'Ubah',
             Penyesuaian: {
@@ -777,7 +777,7 @@ describe('Kelola/Persediaan/Penyesuaian (F-05b, §19.2)', () => {
             name: 'Harga modal Minyak Goreng Sawit 2 L',
         });
         expect(hpp.value).toBe('31.250');
-        expect(screen.getByText('Diisi dari HPP rata-rata saat ini Rp 31.250; boleh diubah.')).toBeTruthy();
+        expect(screen.getByText('Diisi dari HPP rata-rata saat ini Rp 31.250. Boleh diubah.')).toBeTruthy();
     });
 
     it('pengaturan: ubah batas persetujuan dikirim bersama pengaturan lain', () => {

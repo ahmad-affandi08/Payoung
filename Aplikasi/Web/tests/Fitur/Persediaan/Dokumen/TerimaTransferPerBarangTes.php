@@ -53,7 +53,7 @@ function HariTerimaPerBarang(): CarbonImmutable
 }
 
 describe('D-105 terima per barang: diterima, rusak, ditolak', function (): void {
-    it('satu penerimaan dibagi tiga: stok tujuan, susut rusak, dan stok kembali ke asal; semua jurnal seimbang', function (): void {
+    it('satu penerimaan dibagi tiga: stok tujuan, susut rusak, dan stok kembali ke asal. Semua jurnal seimbang', function (): void {
         $t = SiapkanTransferPerBarang();
         $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '30')]), $t['Pemilik']->Id);
 
@@ -98,7 +98,7 @@ describe('D-105 terima per barang: diterima, rusak, ditolak', function (): void 
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('penerimaan sebagian: rusak ikut mengurangi sisa; ditolak di penerimaan kedua menyelesaikan transfer', function (): void {
+    it('penerimaan sebagian: rusak ikut mengurangi sisa. Ditolak di penerimaan kedua menyelesaikan transfer', function (): void {
         $t = SiapkanTransferPerBarang();
         $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '30')]), $t['Pemilik']->Id);
 

@@ -54,7 +54,7 @@ describe('PeranAkun: istilah kamus & alias kunci lama (P-03, BR-P03.4, DesainF01
             ->and(PeranAkun::DariKunci(''))->toBeNull();
     });
 
-    it('NormalisasiPemetaan mengganti kunci lama; kunci baru menang bila keduanya ada; kunci asing dibiarkan', function (): void {
+    it('NormalisasiPemetaan mengganti kunci lama. Kunci baru menang bila keduanya ada. Kunci asing dibiarkan', function (): void {
         expect(PeranAkun::NormalisasiPemetaan([
             'KasOutlet' => '1-1100',
             'PiutangSettlement' => '1-1300',

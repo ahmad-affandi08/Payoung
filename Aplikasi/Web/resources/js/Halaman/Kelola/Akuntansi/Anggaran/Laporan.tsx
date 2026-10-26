@@ -139,7 +139,7 @@ export default function HalamanLaporanAnggaran({
         <TataLetakAplikasi judul="Anggaran vs realisasi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Bandingkan anggaran dengan hasil sebenarnya dari jurnal. Pendapatan di bawah target dan biaya di atas
-                anggaran ditandai. Memilih satu outlet membandingkan anggaran outlet itu; tanpa outlet, yang dibaca
+                anggaran ditandai. Memilih satu outlet membandingkan anggaran outlet itu, tanpa outlet, yang dibaca
                 adalah anggaran seluruh usaha.
             </p>
             <AksiHalaman>

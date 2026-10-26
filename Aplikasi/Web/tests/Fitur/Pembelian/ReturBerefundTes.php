@@ -61,7 +61,7 @@ function JurnalRefund(string $jenis, int $idSumber, string $kunci = 'Utama'): ar
 }
 
 describe('E8 retur pembelian dengan pengembalian uang', function (): void {
-    it('retur belanja stok tunai: uang kembali ke akun pilihan (Dr kas, Cr persediaan); tanpa akun ditolak; pembatalan membalik', function (): void {
+    it('retur belanja stok tunai: uang kembali ke akun pilihan (Dr kas, Cr persediaan), tanpa akun ditolak. Pembatalan membalik', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $tahu = BantuanKatalog::BuatProduk(['Nama' => 'Tahu Putih Kotak isi 10']);
@@ -98,7 +98,7 @@ describe('E8 retur pembelian dengan pengembalian uang', function (): void {
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('retur atas faktur yang sebagian dibayar: memotong sisa hutang, selebihnya uang kembali; pembayaran terkunci selama retur berlaku', function (): void {
+    it('retur atas faktur yang sebagian dibayar: memotong sisa hutang, selebihnya uang kembali. Pembayaran terkunci selama retur berlaku', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();

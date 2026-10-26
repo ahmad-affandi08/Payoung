@@ -160,7 +160,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('BR-17.3: pesanan menunggu diterima, diproses & ditandai siap dari kasir; tolak wajib alasan', (
+  testWidgets('BR-17.3: pesanan menunggu diterima, diproses & ditandai siap dari kasir. Tolak wajib alasan', (
     tester,
   ) async {
     final u = await MasukJual(tester, const Size(1280, 900));

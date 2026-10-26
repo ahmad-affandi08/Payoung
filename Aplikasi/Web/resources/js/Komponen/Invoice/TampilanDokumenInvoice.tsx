@@ -161,7 +161,7 @@ export default function TampilanDokumenInvoice({
                     <span className="font-semibold text-teks-utama tabular-nums">
                         {FormatRupiah(i.PphDipotongPembeli)}
                     </span>{' '}
-                    dipotong pembeli saat pembayaran; mohon sertakan bukti potong.
+                    dipotong pembeli saat pembayaran. Mohon sertakan bukti potong.
                 </p>
             ) : null}
 

@@ -70,7 +70,7 @@ describe('D-210 segmen penerima', function (): void {
 });
 
 describe('D-210 membuat dan membatalkan siaran', function (): void {
-    it('Super Admin menjadwalkan siaran; tercatat di audit', function (): void {
+    it('Super Admin menjadwalkan siaran. Tercatat di audit', function (): void {
         BantuanTenantPengelola::BuatTenant('Toko A', 'a@contoh.id');
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
 
@@ -110,7 +110,7 @@ describe('D-210 membuat dan membatalkan siaran', function (): void {
         expect($terjadwal->refresh()->Status)->toBe(StatusSiaran::Dibatalkan)->and($mengirim->refresh()->Status)->toBe(StatusSiaran::Mengirim);
     });
 
-    it('§19.3: hanya Super Admin; peran lain ditolak', function (PeranPengelolaBawaan $peran): void {
+    it('§19.3: hanya Super Admin. Peran lain ditolak', function (PeranPengelolaBawaan $peran): void {
         BantuanTenantPengelola::Masuk($this, $peran);
 
         $this->get(BantuanPengelola::Url('/komunikasi'))->assertForbidden();

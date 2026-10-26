@@ -44,7 +44,7 @@ describe('TataLetakPanduan: lewati & lanjutkan kapan saja (F-01)', () => {
         expect(screen.queryByRole('button', { name: 'Lanjutkan' })).toBeNull();
     });
 
-    it('D-24 panduan wajib: tanpa sidebar & tanpa tautan Beranda; langkah wajib tanpa "Lewati", Perangkat "Nanti saja"', () => {
+    it('D-24 panduan wajib: tanpa sidebar & tanpa tautan Beranda. Langkah wajib tanpa "Lewati", Perangkat "Nanti saja"', () => {
         const progres = { ...BuatProgresContoh({ ProfilUsaha: 'Selesai' }), Wajib: true };
         const { unmount: Lepas } = render(
             <TataLetakPanduan progres={progres} langkah="Pajak">
@@ -82,7 +82,7 @@ describe('TataLetakPanduan: lewati & lanjutkan kapan saja (F-01)', () => {
         expect(screen.getByRole('link', { name: 'Ke Beranda' }).getAttribute('href')).toBe('/kelola');
     });
 
-    it('langkah pertama kembali ke ringkasan; langkah yang sudah selesai tidak menawarkan "Lewati dulu"', () => {
+    it('langkah pertama kembali ke ringkasan. Langkah yang sudah selesai tidak menawarkan "Lewati dulu"', () => {
         render(
             <TataLetakPanduan progres={BuatProgresContoh({ ProfilUsaha: 'Selesai' })} langkah="ProfilUsaha">
                 isi

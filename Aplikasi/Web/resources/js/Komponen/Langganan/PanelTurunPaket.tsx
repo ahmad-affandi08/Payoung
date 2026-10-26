@@ -89,7 +89,7 @@ export default function PanelTurunPaket({ data }: { data: DataTurunPaket }) {
                 <h2 className="text-subjudul font-semibold text-teks-utama">Pindah ke paket Gratis</h2>
                 <p className="text-isi text-teks-sekunder">
                     Langganan Anda ditangguhkan. Pindah ke paket Gratis supaya kasir terbuka lagi sekarang dalam batas
-                    paket Gratis; tagihan yang belum dibayar dibatalkan dan data Anda tidak dihapus.
+                    paket Gratis. Tagihan yang belum dibayar dibatalkan dan data Anda tidak dihapus.
                 </p>
                 <div>
                     <Tombol varian="sekunder" onClick={() => AturTerbuka(true)}>
@@ -198,7 +198,7 @@ function FormTurunPaket({
                 <p>
                     {seketika
                         ? 'Berlaku seketika. '
-                        : 'Berlaku mulai perpanjangan berikutnya; periode yang sudah dibayar tetap berjalan. '}
+                        : 'Berlaku mulai perpanjangan berikutnya. Periode yang sudah dibayar tetap berjalan. '}
                     Outlet dan pengguna yang tidak dipilih diarsipkan (bukan dihapus) dan bisa dipulihkan bila Anda naik
                     paket lagi.
                 </p>

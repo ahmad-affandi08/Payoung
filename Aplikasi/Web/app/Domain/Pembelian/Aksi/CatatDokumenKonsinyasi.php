@@ -190,7 +190,7 @@ final class CatatDokumenKonsinyasi
             }
 
             if ($p->pelacakan !== PelacakanProduk::Tidak) {
-                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$p->nama} memakai batch/nomor seri; titipan berpelacakan belum didukung.", $bidang);
+                throw new PelanggaranAturanBisnis('PelacakanTidakDidukung', "{$p->nama} memakai batch/nomor seri. Titipan berpelacakan belum didukung.", $bidang);
             }
 
             if ($data->jenis === JenisDokumenKonsinyasi::Masuk && $p->diarsipkan) {
@@ -255,7 +255,7 @@ final class CatatDokumenKonsinyasi
             if ($milik !== null && (int) $milik !== $pemasok->Id) {
                 $nama = (string) Pemasok::query()->withTrashed()->whereKey((int) $milik)->value('Nama');
 
-                throw new PelanggaranAturanBisnis('ProdukMilikPenitipLain', "{$p->nama} adalah titipan {$nama}. Satu produk hanya untuk satu penitip; buat produk terpisah untuk penitip lain.", "Baris.{$i}.UuidProduk");
+                throw new PelanggaranAturanBisnis('ProdukMilikPenitipLain', "{$p->nama} adalah titipan {$nama}. Satu produk hanya untuk satu penitip. Buat produk terpisah untuk penitip lain.", "Baris.{$i}.UuidProduk");
             }
 
             if ($milik !== null) {

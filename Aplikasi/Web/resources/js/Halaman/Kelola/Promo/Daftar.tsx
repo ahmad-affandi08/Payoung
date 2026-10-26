@@ -139,7 +139,7 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
                 <p className="text-keterangan text-teks-sekunder lg:pt-6">
                     {mode === 'Terbaik'
                         ? 'Kasir memilih yang potongannya paling besar: semua promo biasa digabung, atau satu promo eksklusif.'
-                        : 'Promo dipakai urut prioritas (angka besar dulu); promo eksklusif hanya dipakai bila belum ada promo lain dan menghentikan promo berikutnya.'}
+                        : 'Promo dipakai urut prioritas (angka besar dulu). Promo eksklusif hanya dipakai bila belum ada promo lain dan menghentikan promo berikutnya.'}
                 </p>
             </Card>
 

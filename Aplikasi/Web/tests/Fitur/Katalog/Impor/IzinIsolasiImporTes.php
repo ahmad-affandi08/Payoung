@@ -69,7 +69,7 @@ describe('F-03 izin impor/ekspor produk', function (): void {
         expect(ProdukHarga::query()->where('IdProduk', $beras->Id)->count())->toBe(0);
     });
 
-    it('batalkan dari Pratinjau: tidak ada produk berubah, audit produk.impor.batalkan; tidak bisa dibatalkan dua kali', function (): void {
+    it('batalkan dari Pratinjau: tidak ada produk berubah, audit produk.impor.batalkan. Tidak bisa dibatalkan dua kali', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImpor::Unggah($masuk, BantuanImpor::BuatCsv([['Nama Produk', 'Kelompok Pajak'], ['Kopi Tubruk', 'Barang kena PPN']]));

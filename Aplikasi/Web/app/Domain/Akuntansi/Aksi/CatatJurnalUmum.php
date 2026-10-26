@@ -212,7 +212,7 @@ final class CatatJurnalUmum
             $sisi = $adaDebit ? 'D' : 'K';
 
             if (isset($sisiPerKunci[$kunci]) && $sisiPerKunci[$kunci] !== $sisi) {
-                throw new PelanggaranAturanBisnis('AkunDuaSisi', "Akun {$akun->AmbilLabel()} muncul di sisi debit dan kredit pada outlet yang sama; nettokan jadi satu baris.", "{$bidang}.UuidAkun");
+                throw new PelanggaranAturanBisnis('AkunDuaSisi', "Akun {$akun->AmbilLabel()} muncul di sisi debit dan kredit pada outlet yang sama. Nettokan jadi satu baris.", "{$bidang}.UuidAkun");
             }
 
             $sisiPerKunci[$kunci] = $sisi;

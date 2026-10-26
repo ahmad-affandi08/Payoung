@@ -164,7 +164,7 @@ export default function DialogKirimGrosir({
                                         saatBerubah={(daftar) =>
                                             AturNomorSeri((lama) => ({ ...lama, [b.Urutan]: daftar }))
                                         }
-                                        keterangan={`Satu nomor seri per baris; isi ${KalikanDesimal(jumlah[b.Urutan] ?? '0', b.Konversi, 0)} nomor sesuai jumlah yang diserahkan.`}
+                                        keterangan={`Satu nomor seri per baris. Isi ${KalikanDesimal(jumlah[b.Urutan] ?? '0', b.Konversi, 0)} nomor sesuai jumlah yang diserahkan.`}
                                     />
                                 ) : null}
                                 {b.Pelacakan === 'Seri' ? (

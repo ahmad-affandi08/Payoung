@@ -98,7 +98,7 @@ describe('D-124 Pusat Unduhan: ekspor ditunda ke latar belakang', function (): v
         expect(BerkasUnduhan::query()->count())->toBe(0);
     });
 
-    it('paling banyak tiga berkas aktif per pengguna; yang keempat ditolak dengan pesan dan tidak membuat baris', function (): void {
+    it('paling banyak tiga berkas aktif per pengguna, yang keempat ditolak dengan pesan dan tidak membuat baris', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         $pemilik = BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
         BantuanOrganisasi::AturKonteks($d['Tenant']->Id);
@@ -118,7 +118,7 @@ describe('D-124 Pusat Unduhan: ekspor ditunda ke latar belakang', function (): v
 });
 
 describe('D-124 Pusat Unduhan: daftar, unduh, hapus, isolasi', function (): void {
-    it('daftar hanya berisi berkas milik sendiri; pengguna lain dan tenant lain tidak bisa melihat atau mengunduh', function (): void {
+    it('daftar hanya berisi berkas milik sendiri. Pengguna lain dan tenant lain tidak bisa melihat atau mengunduh', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
         $this->get(ALAMAT_EKSPOR.'&format=csv&latarbelakang=1');
@@ -149,7 +149,7 @@ describe('D-124 Pusat Unduhan: daftar, unduh, hapus, isolasi', function (): void
             ->where('Unduhan.Meta.Total', 0));
     });
 
-    it('berkas kedaluwarsa tidak bisa diunduh; hapus membuang berkas fisik; yang masih disiapkan tidak bisa dihapus', function (): void {
+    it('berkas kedaluwarsa tidak bisa diunduh. Hapus membuang berkas fisik, yang masih disiapkan tidak bisa dihapus', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
         $this->get(ALAMAT_EKSPOR.'&format=csv&latarbelakang=1');

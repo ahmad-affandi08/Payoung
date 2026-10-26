@@ -45,7 +45,7 @@ describe('D-22 tambah anggota tim langsung', function (): void {
         Mail::assertNothingSent();
     });
 
-    it('menolak email terdaftar, kata sandi lemah, dan peran kosong; pengguna tanpa izin ditolak', function (): void {
+    it('menolak email terdaftar, kata sandi lemah, dan peran kosong. Pengguna tanpa izin ditolak', function (): void {
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $url = BantuanPengelola::Url('/tim-internal');
         $this->actingAs($superAdmin, 'pengelola')->withSession(BantuanPengelola::SesiTerverifikasi());
@@ -63,7 +63,7 @@ describe('D-22 tambah anggota tim langsung', function (): void {
             ->assertForbidden();
     });
 
-    it('anggota dengan kata sandi awal diarahkan ke ganti kata sandi; setelah diganti lanjut aktivasi 2FA', function (): void {
+    it('anggota dengan kata sandi awal diarahkan ke ganti kata sandi. Setelah diganti lanjut aktivasi 2FA', function (): void {
         $anggota = PenggunaPengelola::factory()->DenganPeran(PeranPengelolaBawaan::Dukungan)->createOne([
             'KataSandi' => 'SandiAwal12345',
             'WajibGantiKataSandi' => true,

@@ -68,7 +68,7 @@ describe('Halaman karyawan (F-18)', () => {
         ]);
     });
 
-    it('jadwal: ubah jam lalu simpan mengirim sel yang berubah; sel outlet lain terkunci', () => {
+    it('jadwal: ubah jam lalu simpan mengirim sel yang berubah. Sel outlet lain terkunci', () => {
         window.history.replaceState({}, '', '/kelola/karyawan/jadwal');
         RenderUji(
             <HalamanJadwalKerja
@@ -175,7 +175,7 @@ describe('Halaman karyawan (F-18)', () => {
         );
     });
 
-    it('komisi: format nilai, tombol tambah hanya untuk karyawan.kelola; laporan menampilkan total bersih', () => {
+    it('komisi: format nilai, tombol tambah hanya untuk karyawan.kelola. Laporan menampilkan total bersih', () => {
         expect(FormatNilaiKomisi('Persen', '12.50')).toBe('12,50%');
         expect(FormatNilaiKomisi('Persen', '10.00')).toBe('10%');
         expect(FormatNilaiKomisi('Tetap', '5000.00')).toBe('Rp 5.000 per jumlah');

@@ -25,7 +25,7 @@ beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-10-13 08:00', 'Asia/Jakarta'));
 });
 
-it('kalender & slot staf; booking dari kasir mengisi slot; slot yang sama ditolak 409; tanpa izin 403', function (): void {
+it('kalender & slot staf. Booking dari kasir mengisi slot. Slot yang sama ditolak 409, tanpa izin 403', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Salon Cantik Ayu Solo Baru');
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $creambath = BantuanKatalog::BuatProduk(['Nama' => 'Creambath Ginseng Rambut Panjang', 'Jenis' => JenisProduk::Jasa, 'DurasiMenit' => 60], '85000.00');

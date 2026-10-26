@@ -137,7 +137,7 @@ describe('SimpanPesananGrosir', function (): void {
             ->toThrow(PelanggaranAturanBisnis::class);
     });
 
-    it('cakupan: produk jasa ditolak dengan sebabnya; produk ber-batch dan bernomor seri kini diterima (alokasi di surat jalan)', function (): void {
+    it('cakupan: produk jasa ditolak dengan sebabnya. Produk ber-batch dan bernomor seri kini diterima (alokasi di surat jalan)', function (): void {
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Antar Barang', 'Jenis' => JenisProduk::Jasa->value], '50000.00', $this->t['Pcs']);
         $batch = BantuanKatalog::BuatProduk(['Nama' => 'Susu UHT 1 liter', 'Pelacakan' => PelacakanProduk::Batch->value], '20000.00', $this->t['Pcs']);
         $seri = BantuanKatalog::BuatProduk(['Nama' => 'Ponsel Android 8/256', 'Pelacakan' => PelacakanProduk::Seri->value], '2500000.00', $this->t['Pcs']);

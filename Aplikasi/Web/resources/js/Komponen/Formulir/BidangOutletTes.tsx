@@ -36,7 +36,7 @@ function Terkendali({
     );
 }
 
-describe('BidangOutlet (outlet bidang pertama; satu outlet = isi otomatis)', () => {
+describe('BidangOutlet (outlet bidang pertama. Satu outlet = isi otomatis)', () => {
     it('hanya satu outlet: terisi otomatis dan terkunci', () => {
         render(<Terkendali opsi={[solo]} />);
 

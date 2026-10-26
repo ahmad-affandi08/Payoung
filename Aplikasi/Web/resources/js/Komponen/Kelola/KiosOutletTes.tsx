@@ -12,7 +12,7 @@ afterEach(() => cleanup());
 const alamat = '/kelola/outlet/O-1';
 
 describe('Pengaturan kios pesan sendiri di halaman outlet (F-17 bagian 4)', () => {
-    it('kios mati: hidupkan mengirim POST; tanpa fitur self-order tombol nonaktif dengan penjelasan', () => {
+    it('kios mati: hidupkan mengirim POST, tanpa fitur self-order tombol nonaktif dengan penjelasan', () => {
         RenderUji(
             <KiosOutlet
                 alamatOutlet={alamat}

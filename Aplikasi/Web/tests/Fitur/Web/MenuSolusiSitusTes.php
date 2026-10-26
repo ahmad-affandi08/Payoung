@@ -83,7 +83,7 @@ describe('D-91 menu Solusi', function (): void {
             ->toBe(['/solusi/toko-kelontong-minimarket', '/solusi/toko-sayur-sembako']);
     });
 
-    it('template dinonaktifkan tidak muncul, dan kolom tanpa sektor hilang; tanpa sektor sama sekali butir Solusi dihilangkan', function (): void {
+    it('template dinonaktifkan tidak muncul, dan kolom tanpa sektor hilang, tanpa sektor sama sekali butir Solusi dihilangkan', function (): void {
         BuatTemplateTerbitUji('FNB-CAF', 'Kafe / kedai kopi');
         BuatTemplateTerbitUji('RTL-FRS', 'Sayur, buah & sembako', aktif: false);
 

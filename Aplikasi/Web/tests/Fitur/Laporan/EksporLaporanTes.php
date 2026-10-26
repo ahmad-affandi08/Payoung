@@ -60,7 +60,7 @@ describe('Kop laporan seragam (D-43): laporan penjualan', function (): void {
         expect($bagian['xl/workbook.xml'])->toContain('name="Detail Penjualan"');
     });
 
-    it('CSV (bawaan tanpa parameter) tab detail: header dan baris per item; sama dengan format=csv', function (): void {
+    it('CSV (bawaan tanpa parameter) tab detail: header dan baris per item. Sama dengan format=csv', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
 
@@ -90,7 +90,7 @@ describe('Kop laporan seragam (D-43): laporan penjualan', function (): void {
                 ->where('Jumlah.0', 'Jumlah'));
     });
 
-    it('tab detail di halaman: TabelData mode server dengan cari, urut, dan halaman; tenant lain tidak terlihat', function (): void {
+    it('tab detail di halaman: TabelData mode server dengan cari, urut, dan halaman. Tenant lain tidak terlihat', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
 

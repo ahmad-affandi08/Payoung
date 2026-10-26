@@ -194,7 +194,7 @@ final class PelangganKontroler extends DasarKelolaKontroler
     {
         $hasil = $ubah->Jalankan($this->CariPelanggan($pelanggan), StatusPelanggan::Diarsipkan, $this->Pelaku()->Id);
 
-        return back()->with('Kilat', "Pelanggan {$hasil->Nama} diarsipkan; tidak muncul lagi di pencarian kasir.");
+        return back()->with('Kilat', "Pelanggan {$hasil->Nama} diarsipkan. Tidak muncul lagi di pencarian kasir.");
     }
 
     public function Pulihkan(string $pelanggan, UbahStatusPelanggan $ubah): RedirectResponse

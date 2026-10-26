@@ -658,7 +658,7 @@ class PanelBayarState extends ConsumerState<PanelBayar> {
             '${SyaratApotek.SebutNama(syarat.barisWajibApoteker)} hanya boleh diserahkan apoteker. Pilih apoteker '
             'yang menyerahkan obat.',
         pesanKosong:
-            'Belum ada apoteker berizin di perangkat ini. Obat ini tidak bisa diserahkan; keluarkan dari keranjang '
+            'Belum ada apoteker berizin di perangkat ini. Obat ini tidak bisa diserahkan. Keluarkan dari keranjang '
             'atau minta pemilik memberi izin "apotek.obat-keras.jual" lalu sinkronkan perangkat.',
         bolehJarakJauh: false,
       ),

@@ -20,7 +20,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('Jenis pesanan kasir per outlet (v3.51)', function (): void {
-    it('otomatis: retail tanpa pilihan; mode kasir Cepat/Meja atau stasiun dapur aktif → makan di tempat & bawa pulang', function (): void {
+    it('otomatis: retail tanpa pilihan. Mode kasir Cepat/Meja atau stasiun dapur aktif → makan di tempat & bawa pulang', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $dataAwal = fn () => $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk();
 
@@ -42,7 +42,7 @@ describe('Jenis pesanan kasir per outlet (v3.51)', function (): void {
         $dataAwal()->assertJsonPath('Outlet.JenisPesanan', ['MakanDiTempat', 'BawaPulang']);
     });
 
-    it('diatur manual di detail outlet: urutan tetap, bawaan dari daftar, audit; kosong = tanpa pilihan; otomatis lagi', function (): void {
+    it('diatur manual di detail outlet: urutan tetap, bawaan dari daftar, audit. Kosong = tanpa pilihan. Otomatis lagi', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -96,7 +96,7 @@ describe('Jenis pesanan kasir per outlet (v3.51)', function (): void {
         $dataAwal()->assertJsonPath('Outlet.ModeKasir', ['Grosir', 'Retail'])->assertJsonPath('Outlet.ModeKasirBawaan', 'Grosir');
     });
 
-    it('kasir tanpa izin outlet.kelola ditolak; outlet tenant lain 404', function (): void {
+    it('kasir tanpa izin outlet.kelola ditolak. Outlet tenant lain 404', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
         BantuanOrganisasi::Masuk($this, $kasir, $k['Tenant']->Id);

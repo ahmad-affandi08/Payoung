@@ -299,7 +299,7 @@ function FormProdukCepat({
         const catatan = [
             `${String(masuk.length)} produk dimasukkan ke daftar. Periksa lalu pilih Tambah produk.`,
             hasil.Baris.length > masuk.length
-                ? `${String(hasil.Baris.length - masuk.length)} produk belum masuk karena maksimal ${String(maksimalBarisManual)} per simpan; tempel lagi setelah disimpan.`
+                ? `${String(hasil.Baris.length - masuk.length)} produk belum masuk karena maksimal ${String(maksimalBarisManual)} per simpan. Tempel lagi setelah disimpan.`
                 : null,
             hasil.Dilewati.length > 0
                 ? `Baris ${hasil.Dilewati.join(', ')} dilewati karena tidak ada nama atau harga.`

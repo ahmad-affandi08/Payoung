@@ -25,7 +25,7 @@ beforeEach(function (): void {
 });
 
 describe('F-10a stasiun dapur', function (): void {
-    it('tambah, ubah, nama unik, arsip & pulihkan; daftar urut & audit', function (): void {
+    it('tambah, ubah, nama unik, arsip & pulihkan. Daftar urut & audit', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Kedai Kopi Senja');
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -62,7 +62,7 @@ describe('F-10a stasiun dapur', function (): void {
         expect(StasiunDapur::query()->count())->toBe(SimpanStasiunDapur::MAKS_AKTIF);
     });
 
-    it('kategori → stasiun: dipilih lewat form, tidak dikirim = tidak diubah, kosong = bawaan; stasiun arsip/tenant lain ditolak', function (): void {
+    it('kategori → stasiun: dipilih lewat form, tidak dikirim = tidak diubah, kosong = bawaan. Stasiun arsip/tenant lain ditolak', function (): void {
         $b = BantuanKatalog::SiapkanTenantProduk('Warung Bakso Pak Kumis');
         $stasiunLain = StasiunDapur::query()->create(['Nama' => 'Dapur']);
         $t = BantuanKatalog::SiapkanTenantProduk('Kedai Kopi Senja');
@@ -93,7 +93,7 @@ describe('F-10a stasiun dapur', function (): void {
         unset($b);
     });
 
-    it('template sektor membuat stasiun idempoten (FNB-CAF: Bar, Dapur); nama yang sudah ada dilewati', function (): void {
+    it('template sektor membuat stasiun idempoten (FNB-CAF: Bar, Dapur). Nama yang sudah ada dilewati', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         $t = BantuanPanduanAwal::BuatTenant('Kedai Kopi Senja');
         StasiunDapur::query()->create(['Nama' => 'dapur', 'Status' => 'Diarsipkan']);
@@ -107,7 +107,7 @@ describe('F-10a stasiun dapur', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'stasiun-dapur.tambah-template')->sole()->NilaiBaru)->toBe(['Nama' => ['Bar']]);
     });
 
-    it('izin: kasir (produk.lihat) hanya melihat, tidak bisa mengubah; isolasi tenant', function (): void {
+    it('izin: kasir (produk.lihat) hanya melihat, tidak bisa mengubah. Isolasi tenant', function (): void {
         $a = BantuanKatalog::SiapkanTenantProduk('Kedai A');
         $stasiun = StasiunDapur::query()->create(['Nama' => 'Dapur']);
 

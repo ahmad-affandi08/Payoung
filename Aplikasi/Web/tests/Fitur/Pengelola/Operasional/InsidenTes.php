@@ -44,7 +44,7 @@ function IsianInsiden(array $timpa = []): array
     return [
         'Judul' => 'Sinkron kasir tertunda',
         'Tingkat' => 'Besar',
-        'Dampak' => 'Transaksi dari aplikasi kasir terkirim lebih lambat dari biasanya; data tetap aman di perangkat.',
+        'Dampak' => 'Transaksi dari aplikasi kasir terkirim lebih lambat dari biasanya. Data tetap aman di perangkat.',
         'Komponen' => ['Kasir'],
         'PersenTenantTerdampak' => 4,
         'Diumumkan' => true,
@@ -59,7 +59,7 @@ function StatusPublik(TestCase $tes): array
 }
 
 describe('mencatat dan memperbarui insiden', function (): void {
-    it('Teknis membuka insiden: kronologi awal, audit; validasi judul, komponen, persen, dan waktu mulai', function (): void {
+    it('Teknis membuka insiden: kronologi awal, audit. Validasi judul, komponen, persen, dan waktu mulai', function (): void {
         MasukPengelolaInsiden($this);
         $url = BantuanPengelola::Url('/operasional/insiden');
 
@@ -156,7 +156,7 @@ describe('mencatat dan memperbarui insiden', function (): void {
             ->assertSessionHasErrors(['Umum' => 'Umumkan insiden ini dulu sebelum menerbitkan post-mortem.']);
     });
 
-    it('izin: Keuangan tidak boleh melihat; peran yang boleh melihat tetapi tidak mengelola ditolak menulis', function (): void {
+    it('izin: Keuangan tidak boleh melihat. Peran yang boleh melihat tetapi tidak mengelola ditolak menulis', function (): void {
         MasukPengelolaInsiden($this, PeranPengelolaBawaan::Keuangan);
         $this->get(BantuanPengelola::Url('/operasional/insiden'))->assertForbidden();
         $this->post(BantuanPengelola::Url('/operasional/insiden'), IsianInsiden())->assertForbidden();
@@ -171,7 +171,7 @@ describe('mencatat dan memperbarui insiden', function (): void {
 });
 
 describe('halaman status publik', function (): void {
-    it('normal bila tidak ada insiden; komponen terdampak mengikuti tingkat insiden aktif yang diumumkan; insiden selesai pindah ke riwayat', function (): void {
+    it('normal bila tidak ada insiden. Komponen terdampak mengikuti tingkat insiden aktif yang diumumkan. Insiden selesai pindah ke riwayat', function (): void {
         $normal = StatusPublik($this);
         expect($normal['Keseluruhan'])->toBe('Normal')
             ->and($normal['LabelKeseluruhan'])->toBe('Semua layanan berjalan normal')
@@ -205,7 +205,7 @@ describe('halaman status publik', function (): void {
             ->and(collect($status['Komponen'])->pluck('Kondisi', 'Kode')['Pembayaran'])->toBe('Normal');
     });
 
-    it('tidak membocorkan data internal; riwayat hanya 30 hari terakhir; tembolok dilupakan saat insiden berubah', function (): void {
+    it('tidak membocorkan data internal. Riwayat hanya 30 hari terakhir. Tembolok dilupakan saat insiden berubah', function (): void {
         MasukPengelolaInsiden($this);
         $this->post(BantuanPengelola::Url('/operasional/insiden'), IsianInsiden(['PersenTenantTerdampak' => 55]))->assertSessionHasNoErrors();
         $mentah = $this->get('https://payoung.test/status/data')->assertOk()->assertHeader('Access-Control-Allow-Origin', '*')->getContent();
@@ -225,7 +225,7 @@ describe('halaman status publik', function (): void {
         expect(StatusPublik($this)['Aktif'][0]['LabelStatus'])->toBe('Dipantau');
     });
 
-    it('halaman /status memakai shell situs dan memuat data awal; hanya domain pemasaran', function (): void {
+    it('halaman /status memakai shell situs dan memuat data awal. Hanya domain pemasaran', function (): void {
         MasukPengelolaInsiden($this);
         $this->post(BantuanPengelola::Url('/operasional/insiden'), IsianInsiden())->assertSessionHasNoErrors();
 
@@ -237,7 +237,7 @@ describe('halaman status publik', function (): void {
 });
 
 describe('ekspor statis untuk hosting terpisah', function (): void {
-    it('status:ekspor menulis status.json dan index.html; tanpa tujuan gagal; JSON sama dengan yang disajikan', function (): void {
+    it('status:ekspor menulis status.json dan index.html, tanpa tujuan gagal; JSON sama dengan yang disajikan', function (): void {
         $folder = sys_get_temp_dir().'/status-ekspor-'.bin2hex(random_bytes(4));
         MasukPengelolaInsiden($this);
         $this->post(BantuanPengelola::Url('/operasional/insiden'), IsianInsiden())->assertSessionHasNoErrors();

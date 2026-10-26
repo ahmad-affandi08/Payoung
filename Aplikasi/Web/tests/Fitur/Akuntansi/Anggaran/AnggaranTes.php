@@ -99,7 +99,7 @@ describe('F8 anggaran vs realisasi (FIN-11)', function (): void {
                 && collect($baris)->firstWhere('Kode', '6-2000')['Status'] === 'Baik'));
     });
 
-    it('menyimpan ulang mengubah dan menghapus angka; yang tidak berubah tidak ditulis dan tidak diaudit', function (): void {
+    it('menyimpan ulang mengubah dan menghapus angka, yang tidak berubah tidak ditulis dan tidak diaudit', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $akuntan = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
         $akuntan->put('/kelola/akuntansi/anggaran', ['Tahun' => 2026, 'Baris' => [BarisAnggaran('6-2000', [1 => '500000', 2 => '500000'])]])->assertRedirect();
@@ -134,7 +134,7 @@ describe('F8 anggaran vs realisasi (FIN-11)', function (): void {
         expect(Anggaran::query()->count())->toBe(0);
     });
 
-    it('cakupan outlet terpisah dari seluruh usaha; laporan memakai anggaran sesuai outlet dan realisasi outlet itu', function (): void {
+    it('cakupan outlet terpisah dari seluruh usaha. Laporan memakai anggaran sesuai outlet dan realisasi outlet itu', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $solo = BantuanJurnal::BuatOutlet();
         CatatRealisasiAnggaran('Pengeluaran', '2026-09-05', '1-1100', '6-2000', '300000.00', $t['Outlet']->Id);

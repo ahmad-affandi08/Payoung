@@ -102,7 +102,7 @@ final class HapusPermanenTenantUji
         }
 
         if ($segar->Penanda === null) {
-            throw new PelanggaranAturanBisnis('BR-P07.9', "{$segar->Nama} bukan tenant uji. Hanya tenant berpenanda Uji, Demo, atau Internal yang bisa dihapus permanen; tenant sungguhan ditutup lewat penghapusan data UU PDP.");
+            throw new PelanggaranAturanBisnis('BR-P07.9', "{$segar->Nama} bukan tenant uji. Hanya tenant berpenanda Uji, Demo, atau Internal yang bisa dihapus permanen. Tenant sungguhan ditutup lewat penghapusan data UU PDP.");
         }
 
         if (trim($konfirmasiSlug) !== $segar->Slug) {
@@ -120,7 +120,7 @@ final class HapusPermanenTenantUji
             ->exists();
 
         if ($berbayar) {
-            throw new PelanggaranAturanBisnis('BR-P07.9', "{$segar->Nama} punya tagihan langganan berbayar. Menghapusnya mengubah pendapatan platform; hapus dulu penandanya bila memang ini tenant sungguhan.");
+            throw new PelanggaranAturanBisnis('BR-P07.9', "{$segar->Nama} punya tagihan langganan berbayar. Menghapusnya mengubah pendapatan platform. Hapus dulu penandanya bila memang ini tenant sungguhan.");
         }
 
         if (DB::table('KomisiMitra')->where('IdTenant', $segar->Id)->exists()) {

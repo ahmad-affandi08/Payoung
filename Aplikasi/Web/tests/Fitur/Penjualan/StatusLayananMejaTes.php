@@ -59,7 +59,7 @@ describe('K-12 status layanan meja', function (): void {
             ->toBe([['Ditolak', 'DataTidakValid']]);
     });
 
-    it('perlu dibersihkan setelah pesanan meja dibayar; tanda bersih lama diabaikan, yang baru menghapus; isolasi outlet', function (): void {
+    it('perlu dibersihkan setelah pesanan meja dibayar. Tanda bersih lama diabaikan, yang baru menghapus. Isolasi outlet', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         BantuanPesananTerbuka::Kirim($this, $k, [$buka, BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Kopi'], '1', '25000.00']])]);

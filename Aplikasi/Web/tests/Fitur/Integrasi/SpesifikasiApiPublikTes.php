@@ -55,7 +55,7 @@ function CocokkanDenganSkema(array $data, array $skema, string $jejak): void
     }
 }
 
-it('setiap rute /api/v1 terdokumentasi dan sebaliknya; cakupan & peristiwa webhook sama dengan enum', function (): void {
+it('setiap rute /api/v1 terdokumentasi dan sebaliknya. Cakupan & peristiwa webhook sama dengan enum', function (): void {
     $spesifikasi = BacaSpesifikasiApiPublik();
     expect($spesifikasi['openapi'])->toBe('3.1.0');
 

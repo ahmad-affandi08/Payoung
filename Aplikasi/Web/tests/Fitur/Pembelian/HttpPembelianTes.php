@@ -34,7 +34,7 @@ beforeEach(function (): void {
 });
 
 describe('F-04 HTTP pembelian', function (): void {
-    it('alur lengkap lewat rute: pemasok, PO, persetujuan, terima, faktur, bayar, retur; semua halaman tampil', function (): void {
+    it('alur lengkap lewat rute: pemasok, PO, persetujuan, terima, faktur, bayar, retur. Semua halaman tampil', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter']);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
@@ -166,7 +166,7 @@ describe('F-04 HTTP pembelian', function (): void {
         $this->put('/kelola/pembelian/pengaturan', ['BatasPersetujuanPo' => '0', 'ToleransiPenerimaanPersen' => '0'])->assertForbidden();
     });
 
-    it('isolasi tenant: dokumen & pemasok tenant lain 404; batas outlet: dokumen lokasi outlet lain 404', function (): void {
+    it('isolasi tenant: dokumen & pemasok tenant lain 404. Batas outlet: dokumen lokasi outlet lain 404', function (): void {
         $a = BantuanPembelian::SiapkanTenant();
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter']);
         $pemasok = BantuanPembelian::BuatPemasok();

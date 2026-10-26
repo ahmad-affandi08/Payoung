@@ -42,7 +42,7 @@ describe('DialogRahasia', () => {
         expect(screen.queryByRole('button', { name: /Batal|Tutup/ })).toBeNull();
     });
 
-    it('tidak tertutup lewat Esc maupun klik di luar; hanya tombol konfirmasi yang memanggil saatSelesai', () => {
+    it('tidak tertutup lewat Esc maupun klik di luar. Hanya tombol konfirmasi yang memanggil saatSelesai', () => {
         const SaatSelesai = vi.fn();
         render(<Contoh saatSelesai={SaatSelesai} />);
 
@@ -114,7 +114,7 @@ describe('useRahasiaSekali', () => {
         );
     }
 
-    it('terbuka saat server mengirim nilai; tertutup hanya lewat selesai; nilai yang sama tidak membukanya lagi', () => {
+    it('terbuka saat server mengirim nilai. Tertutup hanya lewat selesai. Nilai yang sama tidak membukanya lagi', () => {
         const awal = { Nilai: 'pertama' };
         render(<Perangkai awal={awal} />);
         expect(screen.getByRole('status').textContent).toBe('pertama');

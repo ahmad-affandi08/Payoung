@@ -63,7 +63,7 @@ void main() {
     expect(pulih.baris.map((b) => b.hargaTerbuka), [true, true]);
   });
 
-  test('tanpa harga ketikan: harga daftar jadi bawaan; tanpa harga daftar ditolak', () async {
+  test('tanpa harga ketikan: harga daftar jadi bawaan, tanpa harga daftar ditolak', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
     expect(u.penjualan.BuatBaris(katalog, k, katalog.CariProduk(jasaServis)!).hargaSatuan.KeString(), '50000.00');

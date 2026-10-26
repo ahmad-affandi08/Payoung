@@ -38,7 +38,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('muat online menyalin daftar ke perangkat; setelah restart offline daftar yang tersimpan dipakai', () async {
+  test('muat online menyalin daftar ke perangkat. Setelah restart offline daftar yang tersimpan dipakai', () async {
     final sebelum = BuatWadah();
     await sebelum.read(penyediaProdukHabis.notifier).Muat();
     expect(sebelum.read(penyediaProdukHabis), unorderedEquals(daftarServer));
@@ -67,7 +67,7 @@ void main() {
     expect(sesudahRestart.read(penyediaProdukHabis), isEmpty);
   });
 
-  test('belum pernah dimuat dan offline: tetap kosong tanpa galat; salinan rusak diabaikan', () async {
+  test('belum pernah dimuat dan offline: tetap kosong tanpa galat. Salinan rusak diabaikan', () async {
     online = false;
     final wadah = BuatWadah();
     await wadah.read(penyediaProdukHabis.notifier).Muat();

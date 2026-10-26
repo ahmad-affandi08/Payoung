@@ -121,7 +121,7 @@ const judulLangkah: Record<Langkah, { judul: string; keterangan: string; aksi: s
     gagal: {
         judul: 'Gagal kirim',
         keterangan:
-            'Tulis sebabnya (toko tutup, ditolak, alamat salah). Surat jalan tetap berlaku; bisa dikirim ulang.',
+            'Tulis sebabnya (toko tutup, ditolak, alamat salah). Surat jalan tetap berlaku. Bisa dikirim ulang.',
         aksi: 'Catat gagal kirim',
     },
     'batal-berangkat': {

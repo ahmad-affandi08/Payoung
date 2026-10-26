@@ -32,7 +32,7 @@ function OutletUtamaMeja(Tenant $tenant): Outlet
 }
 
 describe('F-10a meja & area', function (): void {
-    it('tambah area & meja, tampil di detail outlet; nama unik per outlet; ubah & audit', function (): void {
+    it('tambah area & meja, tampil di detail outlet. Nama unik per outlet. Ubah & audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Kedai Kopi Senja Rasa Nusantara');
         $outlet = OutletUtamaMeja($tenant);
         $alamat = "/kelola/outlet/{$outlet->Uuid}";
@@ -67,7 +67,7 @@ describe('F-10a meja & area', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'area-meja.buat')->count())->toBe(1);
     });
 
-    it('arsip: area berisi meja aktif ditolak; meja diarsipkan lalu area; pulihkan meja butuh area aktif', function (): void {
+    it('arsip: area berisi meja aktif ditolak. Meja diarsipkan lalu area. Pulihkan meja butuh area aktif', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $outlet = OutletUtamaMeja($tenant);
         $alamat = "/kelola/outlet/{$outlet->Uuid}";
@@ -91,7 +91,7 @@ describe('F-10a meja & area', function (): void {
             ->and(LogAudit::query()->whereIn('Peristiwa', ['meja.arsipkan', 'meja.pulihkan', 'area-meja.arsipkan', 'area-meja.pulihkan'])->count())->toBe(4);
     });
 
-    it('fitur pos.mode-meja: paket Starter tidak bisa menambah; data lama tetap bisa diubah & diarsipkan', function (): void {
+    it('fitur pos.mode-meja: paket Starter tidak bisa menambah. Data lama tetap bisa diubah & diarsipkan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Toko Kelontong Berkah', 'STARTER');
         $outlet = OutletUtamaMeja($tenant);
         $alamat = "/kelola/outlet/{$outlet->Uuid}";
@@ -135,7 +135,7 @@ describe('F-10a meja & area', function (): void {
 });
 
 describe('F-10a buat banyak meja', function (): void {
-    it('Meja 1 sampai 12 dalam satu aksi: area, kapasitas, urutan; nama bentrok menggagalkan semuanya; batas dan izin', function (): void {
+    it('Meja 1 sampai 12 dalam satu aksi: area, kapasitas, urutan. Nama bentrok menggagalkan semuanya. Batas dan izin', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Kedai Kopi Senja Massal');
         $outlet = OutletUtamaMeja($tenant);
         $alamat = "/kelola/outlet/{$outlet->Uuid}";

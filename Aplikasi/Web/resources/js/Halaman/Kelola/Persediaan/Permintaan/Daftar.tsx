@@ -131,7 +131,7 @@ export default function HalamanDaftarPermintaanStok({
         <TataLetakAplikasi judul="Permintaan stok">
             <p className="max-w-2xl text-isi text-teks-sekunder">
                 Outlet yang kehabisan barang meminta stok ke gudang utama atau outlet lain. Pengirim melihat permintaan
-                yang perlu dikirim, lalu menjawabnya dengan transfer; stok baru berpindah saat transfer dikirim.
+                yang perlu dikirim, lalu menjawabnya dengan transfer. Stok baru berpindah saat transfer dikirim.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="permintaan stok" /> : null}
             <DaftarGalatServer galat={props.errors} />

@@ -61,7 +61,7 @@ describe('PanelObservabilitasLanjutan (PGL-20)', () => {
         expect(screen.getByText(/paling sedikit 20/)).toBeTruthy();
     });
 
-    it('menampilkan penolakan sinkron dan webhook gagal; keadaan kosong tersedia', () => {
+    it('menampilkan penolakan sinkron dan webhook gagal. Keadaan kosong tersedia', () => {
         RenderUji(<PanelObservabilitasLanjutan data={data} />);
 
         expect(
@@ -83,7 +83,7 @@ describe('PanelObservabilitasLanjutan (PGL-20)', () => {
         expect(screen.getByText('Tidak ada webhook keluar yang gagal.')).toBeTruthy();
     });
 
-    it('tautan runbook: jangkar ditempel di belakang alamat dasar; kosong = tanpa tautan', () => {
+    it('tautan runbook: jangkar ditempel di belakang alamat dasar. Kosong = tanpa tautan', () => {
         expect(AlamatRunbookAlert('https://wiki.payoung.id/runbook', 'outbox-macet')).toBe(
             'https://wiki.payoung.id/runbook#outbox-macet',
         );

@@ -114,7 +114,7 @@ describe('F-03 varian', function (): void {
         expect(Produk::query()->where('IdInduk', $induk->Id)->orderBy('Id')->pluck('Sku')->all())->toBe(['KAOS-01', 'KAOS-02', 'KAOS-03', 'KAOS-04', 'KAOS-05', 'KAOS-06']);
     });
 
-    it('ubah induk meneruskan kategori, merek, pajak, dan tampilan ke anak; nilai yang dipakai anak tidak bisa dihapus', function (): void {
+    it('ubah induk meneruskan kategori, merek, pajak, dan tampilan ke anak. Nilai yang dipakai anak tidak bisa dihapus', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         [$induk, $form] = BuatIndukVarianUji($this, $t, [['Nama' => 'Ukuran', 'Nilai' => ['S', 'M']]]);
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)->post("/kelola/produk/{$induk->Uuid}/varian", ['AtributVarian' => [], 'JenisAnak' => 'Stok', 'HargaDasar' => ''])->assertSessionHasNoErrors();

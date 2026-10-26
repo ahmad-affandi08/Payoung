@@ -37,7 +37,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('berat & validasi tiket; estimasi dari durasi reguler/express', () async {
+  test('berat & validasi tiket. Estimasi dari durasi reguler/express', () async {
     final k = await u.MuatKonteks();
     expect(k.laundry.aktif, isTrue);
     expect(LayananLaundry.UraiBerat(' 3,5 '), Decimal.parse('3.5'));
@@ -74,7 +74,7 @@ void main() {
     expect(LaundryKeranjang.DariJson(tiket.KeJson())?.RingkasIsi(), 'Bed cover ×1');
   });
 
-  test('bayar: blok Laundry di outbox & tersimpan lokal; struk & nota memuat rincian + QR lacak', () async {
+  test('bayar: blok Laundry di outbox & tersimpan lokal. Struk & nota memuat rincian + QR lacak', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
     final tiket = u.laundry.BuatTiket(
@@ -149,7 +149,7 @@ void main() {
     expect(nota, contains('Lacak cucian:'));
   });
 
-  test('daftar cucian & ubah status online; offline = PerluOnline; tanpa izin ditolak', () async {
+  test('daftar cucian & ubah status online. Offline = PerluOnline, tanpa izin ditolak', () async {
     u.server.penangan = (p) async => throw http.ClientException('offline');
     await expectLater(u.laundry.Cari(), throwsA(isA<GalatKasir>().having((g) => g.kode, 'kode', 'PerluOnline')));
 

@@ -18,7 +18,7 @@ beforeEach(function (): void {
 });
 
 describe('P-07 catatan internal (BR-P07.9)', function (): void {
-    it('semua peran yang bekerja dengan tenant bisa menulis catatan; tampil di 360° dan riwayat', function (PeranPengelolaBawaan $peran): void {
+    it('semua peran yang bekerja dengan tenant bisa menulis catatan. Tampil di 360° dan riwayat', function (PeranPengelolaBawaan $peran): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         $anggota = BantuanTenantPengelola::Masuk($this, $peran);
 
@@ -57,7 +57,7 @@ describe('P-07 catatan internal (BR-P07.9)', function (): void {
 });
 
 describe('P-07 penanda tenant (BR-P07.8)', function (): void {
-    it('Super Admin menandai tenant Demo lalu menghapus penanda; tercatat dengan nilai lama/baru', function (): void {
+    it('Super Admin menandai tenant Demo lalu menghapus penanda. Tercatat dengan nilai lama/baru', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
 

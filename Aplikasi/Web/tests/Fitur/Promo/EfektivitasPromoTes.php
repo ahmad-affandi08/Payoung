@@ -21,7 +21,7 @@ beforeEach(function (): void {
 });
 
 describe('F-16c bagian 4c efektivitas promo', function (): void {
-    it('uplift = (bersih selama promo − bersih sebelum) ÷ sebelum, periode pembanding sama panjang; promo belum mulai', function (): void {
+    it('uplift = (bersih selama promo − bersih sebelum) ÷ sebelum, periode pembanding sama panjang. Promo belum mulai', function (): void {
         // Hari ini (WIB) 2026-10-10; promo mulai 2026-10-08 → periode 3 hari, pembanding 2026-10-05 s.d. 2026-10-07.
         $this->travelTo(CarbonImmutable::parse('2026-10-06 05:00:00', 'UTC'));
         $k = BantuanPenjualan::Siapkan($this, 'Kopi Senja Uplift');

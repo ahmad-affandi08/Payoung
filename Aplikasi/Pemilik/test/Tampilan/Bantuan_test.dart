@@ -131,7 +131,7 @@ void main() {
     expect(find.text('Tiket TKT-2026-000012 terkirim.'), findsOneWidget);
   });
 
-  testWidgets('percakapan menampilkan pesan tim dan pelapor; balasan terkirim dan muncul', (tester) async {
+  testWidgets('percakapan menampilkan pesan tim dan pelapor. Balasan terkirim dan muncul', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
     await tester.tap(find.byTooltip('Bantuan'));

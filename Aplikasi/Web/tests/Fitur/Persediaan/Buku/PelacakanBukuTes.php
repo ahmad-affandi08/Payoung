@@ -42,7 +42,7 @@ function AmbilIdSeriUjiBuku(string $nomor): int
 }
 
 describe('F-05a buku stok: batch (C.4)', function (): void {
-    it('batch masuk membuat/menambah BatchStok per nomor batch; baris mutasi menyimpan IdBatchStok', function (): void {
+    it('batch masuk membuat/menambah BatchStok per nomor batch. Baris mutasi menyimpan IdBatchStok', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $id = $p['Batch']->Id;
@@ -140,7 +140,7 @@ describe('F-05a buku stok: batch (C.4)', function (): void {
 });
 
 describe('F-05a buku stok: nomor seri (C.4)', function (): void {
-    it('seri masuk → Tersedia di lokasi; jual → Terjual; keluar lagi → NomorSeriTidakTersedia; retur → aktif kembali', function (): void {
+    it('seri masuk → Tersedia di lokasi. Jual → Terjual. Keluar lagi → NomorSeriTidakTersedia. Retur → aktif kembali', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $id = $p['Seri']->Id;

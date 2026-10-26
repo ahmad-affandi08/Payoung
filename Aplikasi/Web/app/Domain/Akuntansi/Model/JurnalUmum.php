@@ -38,7 +38,7 @@ final class JurnalUmum extends ModelDasar
 {
     use MilikTenant;
 
-    public const PESAN_TIDAK_BISA_DIUBAH = 'Jurnal umum yang sudah disimpan tidak bisa diubah/dihapus; koreksi lewat dokumen pembalik';
+    public const PESAN_TIDAK_BISA_DIUBAH = 'Jurnal umum yang sudah disimpan tidak bisa diubah/dihapus. Koreksi lewat dokumen pembalik';
 
     protected $table = 'JurnalUmum';
 

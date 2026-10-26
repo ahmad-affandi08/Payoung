@@ -132,7 +132,7 @@ void main() {
     expect((kendaraan.unitPerangkat, kendaraan.jenisUnit, kendaraan.pengenalUnit), (false, 'Kendaraan', 'AD 1234 XY'));
   });
 
-  test('Apotek: golongan obat, OWA, prekursor, wajib resep dari katalog; server lama = bukan obat', () {
+  test('Apotek: golongan obat, OWA, prekursor, wajib resep dari katalog. Server lama = bukan obat', () {
     final keras = ProdukPos.DariJson({
       'Uuid': 'P1',
       'Nama': 'Amoxicillin 500 mg Kapsul',

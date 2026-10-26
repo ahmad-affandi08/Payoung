@@ -154,7 +154,7 @@ final class ImporPelanggan
             }
 
             if (isset($calon[$isian['NoHp']])) {
-                $masalah[] = ['Baris' => (int) $nomor, 'Nama' => $nama, 'Pesan' => 'Nomor HP sama dengan baris sebelumnya di berkas ini; baris ini dilewati.'];
+                $masalah[] = ['Baris' => (int) $nomor, 'Nama' => $nama, 'Pesan' => 'Nomor HP sama dengan baris sebelumnya di berkas ini. Baris ini dilewati.'];
 
                 continue;
             }

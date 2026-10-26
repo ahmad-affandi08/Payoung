@@ -93,7 +93,7 @@ describe('Pembuka geser (carousel hero beranda)', () => {
         expect(screen.getByText('Tetap jalan tanpa internet')).toBeTruthy();
     });
 
-    it('tombol panah dan titik berlabel Indonesia mengganti sorotan; titik aktif ditandai aria-current', () => {
+    it('tombol panah dan titik berlabel Indonesia mengganti sorotan. Titik aktif ditandai aria-current', () => {
         render(<RenderBagian bagian={[BuatHero(3)]} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Sorotan berikutnya' }));
@@ -151,7 +151,7 @@ describe('Pembuka geser (carousel hero beranda)', () => {
         expect(Aktif()).toBe('2 dari 3');
     });
 
-    it('memilih sorotan sendiri menghentikan pergantian otomatis; tombol Jeda juga', () => {
+    it('memilih sorotan sendiri menghentikan pergantian otomatis. Tombol Jeda juga', () => {
         render(<RenderBagian bagian={[BuatHero(3)]} />);
         const Aktif = () => SlideAktif()[0]?.getAttribute('aria-label');
 
@@ -189,7 +189,7 @@ describe('Pembuka geser (carousel hero beranda)', () => {
         expect(SlideAktif()[0]?.getAttribute('aria-label')).toBe('3 dari 3');
     });
 
-    it('geser jari ke kiri/kanan di HP mengganti sorotan; geseran pendek diabaikan', () => {
+    it('geser jari ke kiri/kanan di HP mengganti sorotan. Geseran pendek diabaikan', () => {
         render(<RenderBagian bagian={[BuatHero(3)]} />);
         const panggung = screen.getAllByRole('group', { hidden: true })[0]?.parentElement as HTMLElement;
 

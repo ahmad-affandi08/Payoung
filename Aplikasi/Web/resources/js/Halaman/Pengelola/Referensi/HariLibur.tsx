@@ -449,7 +449,7 @@ function FormPembatalan({ jenis, hari, saatSelesai }: PropsFormPembatalan) {
     return (
         <DialogTinjauan
             judul={`Tinjau pembatalan ${hari.Nama}`}
-            deskripsi={`Alasan: ${hari.AlasanPembatalan ?? '—'}. Bila disetujui, hari libur tidak lagi dipakai tenant; datanya tetap tersimpan.`}
+            deskripsi={`Alasan: ${hari.AlasanPembatalan ?? '—'}. Bila disetujui, hari libur tidak lagi dipakai tenant. Datanya tetap tersimpan.`}
             saatTutup={saatSelesai}
             galatUmum={galatUmum}
             aksi={

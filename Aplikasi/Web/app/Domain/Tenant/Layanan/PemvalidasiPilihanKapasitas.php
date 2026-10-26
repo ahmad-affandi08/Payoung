@@ -32,7 +32,7 @@ final class PemvalidasiPilihanKapasitas
             $outletTetap = array_values(array_unique(array_intersect($uuidOutlet, array_column($outletAktif, 'Uuid'))));
 
             if ($outletTetap === [] || count($outletTetap) > $batas) {
-                throw new PelanggaranAturanBisnis('PilihanOutletTidakSah', "Pilih 1 sampai {$batas} outlet yang tetap aktif; outlet lain diarsipkan (datanya tetap ada).", 'UuidOutletTetap');
+                throw new PelanggaranAturanBisnis('PilihanOutletTidakSah', "Pilih 1 sampai {$batas} outlet yang tetap aktif. Outlet lain diarsipkan (datanya tetap ada).", 'UuidOutletTetap');
             }
         }
 

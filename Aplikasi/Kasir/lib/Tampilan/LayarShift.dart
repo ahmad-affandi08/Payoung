@@ -104,7 +104,7 @@ class LayarShift extends ConsumerWidget {
         ButirPeriksa(
           nada: tertunda == 0 ? NadaStatus.Sukses : NadaStatus.Peringatan,
           judul: tertunda == 0 ? 'Semua data sudah terkirim' : '$tertunda data belum terkirim',
-          keterangan: tertunda == 0 ? null : 'Shift tetap boleh ditutup; data dikirim otomatis saat online.',
+          keterangan: tertunda == 0 ? null : 'Shift tetap boleh ditutup. Data dikirim otomatis saat online.',
         ),
         const ButirPeriksa(
           nada: NadaStatus.Netral,

@@ -117,7 +117,7 @@ const opsiPelacakan: { Nilai: PelacakanProduk; Label: string; Keterangan: string
         Nilai: 'Seri',
         Label: 'Nomor seri',
         Keterangan:
-            'Satu nomor per unit, misal ponsel. Satuan dasar harus bilangan bulat; jual saat stok kosong dimatikan.',
+            'Satu nomor per unit, misal ponsel. Satuan dasar harus bilangan bulat. Jual saat stok kosong dimatikan.',
     },
 ];
 
@@ -567,7 +567,7 @@ export default function HalamanFormProduk({
                         ? 'Pilih golongan bila produk ini obat. Obat keras, psikotropika, dan narkotika hanya bisa dijual apoteker.'
                         : golonganObat === 'Bebas' || golonganObat === 'BebasTerbatas' || data.ObatWajibApotek
                           ? golonganObat === 'Keras'
-                              ? 'Dijual tanpa resep oleh apoteker; penyerahannya tetap tercatat.'
+                              ? 'Dijual tanpa resep oleh apoteker. Penyerahannya tetap tercatat.'
                               : 'Dijual tanpa resep. Batch dipilih otomatis dari kedaluwarsa terdekat.'
                           : 'Wajib resep dokter dan hanya bisa dijual apoteker. Tercatat di Laporan apotek.'}
                 </p>

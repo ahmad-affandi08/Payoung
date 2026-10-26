@@ -78,7 +78,7 @@ final class AksesDukungan extends ModelDasar
             }
         });
         self::deleting(static function (): never {
-            throw new \LogicException('Izin akses dukungan tidak pernah dihapus; jejaknya dipertahankan.');
+            throw new \LogicException('Izin akses dukungan tidak pernah dihapus. Jejaknya dipertahankan.');
         });
     }
 

@@ -19,7 +19,7 @@ void main() {
 
   for (final ukuran in const [Size(1280, 900), Size(360, 740)]) {
     testWidgets(
-      'tertunda lama → peringatan; setelah terkirim: sinkron terakhir, jam salah, ditinjau (${ukuran.width.toInt()} dp)',
+      'tertunda lama → peringatan. Setelah terkirim: sinkron terakhir, jam salah, ditinjau (${ukuran.width.toInt()} dp)',
       (tester) async {
         final u = LingkunganUji.Buat();
         var online = false;
@@ -98,7 +98,7 @@ void main() {
   }
 
   testWidgets(
-    'data toko yang lebih dari sehari tidak diperbarui → peringatan dengan waktunya; segar → tanpa peringatan',
+    'data toko yang lebih dari sehari tidak diperbarui → peringatan dengan waktunya. Segar → tanpa peringatan',
     (tester) async {
       final u = LingkunganUji.Buat();
       await tester.runAsync(() async {

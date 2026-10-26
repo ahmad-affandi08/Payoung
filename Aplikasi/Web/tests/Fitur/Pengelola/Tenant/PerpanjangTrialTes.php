@@ -32,7 +32,7 @@ beforeEach(function (): void {
 });
 
 describe('P-07 perpanjang trial (BR-P07.6)', function (): void {
-    it('Dukungan memperpanjang trial dari tanggal akhir trial; tercatat di audit dengan IdTenant (BR-P07.3)', function (): void {
+    it('Dukungan memperpanjang trial dari tanggal akhir trial. Tercatat di audit dengan IdTenant (BR-P07.3)', function (): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         $akhirLama = LanggananUji($tenant)->TrialBerakhirPada;
         $anggota = BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Dukungan);
@@ -80,7 +80,7 @@ describe('P-07 perpanjang trial (BR-P07.6)', function (): void {
         'alasan terlalu pendek' => [7, 'minta', 'Alasan'],
     ]);
 
-    it('hanya saat status Trial; tenant yang sudah turun ke Gratis atau sudah Aktif ditolak', function (StatusLangganan $status): void {
+    it('hanya saat status Trial. Tenant yang sudah turun ke Gratis atau sudah Aktif ditolak', function (StatusLangganan $status): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         LanggananUji($tenant)->update(['Status' => $status]);
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Dukungan);

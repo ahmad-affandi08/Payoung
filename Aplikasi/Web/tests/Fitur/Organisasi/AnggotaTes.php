@@ -24,7 +24,7 @@ beforeEach(function (): void {
 });
 
 describe('Peran & akses outlet anggota (F-02 langkah 3)', function (): void {
-    it('Pemilik mengubah peran dan outlet yang ditugaskan; OutletPengguna mengikuti; tercatat di log audit', function (): void {
+    it('Pemilik mengubah peran dan outlet yang ditugaskan; OutletPengguna mengikuti. Tercatat di log audit', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         BantuanOrganisasi::AturKonteks($tenant->Id);
@@ -110,7 +110,7 @@ describe('Peran & akses outlet anggota (F-02 langkah 3)', function (): void {
 });
 
 describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
-    it('anggota nonaktif langsung kehilangan akses; undangan yang ia kirim ikut dibatalkan; bisa diaktifkan kembali', function (): void {
+    it('anggota nonaktif langsung kehilangan akses. Undangan yang ia kirim ikut dibatalkan. Bisa diaktifkan kembali', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $admin = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Admin);
         BantuanOrganisasi::Masuk($this, $admin, $tenant->Id)
@@ -143,7 +143,7 @@ describe('Nonaktifkan & aktifkan kembali anggota', function (): void {
         expect(AnggotaUji($tenant->Id, $pemilik->Id)->Status)->toBe(StatusKeanggotaan::Aktif);
     });
 
-    it('halaman undang pengguna (halaman penuh): opsi peran, outlet, kursi; tanpa pengguna.undang 403; kirim kembali ke daftar', function (): void {
+    it('halaman undang pengguna (halaman penuh): opsi peran, outlet, kursi, tanpa pengguna.undang 403. Kirim kembali ke daftar', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
 
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/pengguna/undangan/buat')->assertOk()

@@ -132,7 +132,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('mode selain Grosir tidak menawarkan pesanan grosir; tanpa pelanggan juga tidak', (tester) async {
+  testWidgets('mode selain Grosir tidak menawarkan pesanan grosir, tanpa pelanggan juga tidak', (tester) async {
     final u = await MasukJual(tester, const Size(1280, 900), modeKasir: 'Retail');
     await IsiKeranjang(tester);
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Bayar').first);

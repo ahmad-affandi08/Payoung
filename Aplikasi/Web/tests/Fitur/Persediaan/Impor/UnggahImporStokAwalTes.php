@@ -82,7 +82,7 @@ describe('F-05a impor stok awal: unggah berkas (pola BR-03.6)', function (): voi
             ->where('BatasBerkas.Ekstensi', ['xlsx', 'csv']));
     });
 
-    it('idempoten per HashBerkas: berkas yang sama selama impor masih aktif tidak membuat impor baru; setelah dibatalkan boleh unggah ulang', function (): void {
+    it('idempoten per HashBerkas: berkas yang sama selama impor masih aktif tidak membuat impor baru. Setelah dibatalkan boleh unggah ulang', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $baris = [BantuanImporStokAwal::JUDUL, ['MGS-2L', '', '', '', '10', '38500']];
@@ -133,7 +133,7 @@ describe('F-05a impor stok awal: unggah berkas (pola BR-03.6)', function (): voi
             ->and(Storage::disk('local')->allFiles('impor'))->toBe([]);
     });
 
-    it('lokasi stok bawaan tenant lain = 404; lokasi diarsipkan ditolak GudangDiarsipkan', function (): void {
+    it('lokasi stok bawaan tenant lain = 404. Lokasi diarsipkan ditolak GudangDiarsipkan', function (): void {
         $lain = BantuanPersediaan::SiapkanTenant('Apotek Sehat Sentosa');
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

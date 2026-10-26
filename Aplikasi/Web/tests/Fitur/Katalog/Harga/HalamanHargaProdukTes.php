@@ -52,7 +52,7 @@ describe('F-03 halaman harga produk (E.6)', function (): void {
                 ->where('Izin.UbahHarga', true));
     });
 
-    it('BR-03.3 menyimpan harga dasar & bertingkat; riwayat mencatat pengguna dari konteks audit dan tampil di halaman', function (): void {
+    it('BR-03.3 menyimpan harga dasar & bertingkat. Riwayat mencatat pengguna dari konteks audit dan tampil di halaman', function (): void {
         $pemilik = $this->t['Pemilik'];
         $tes = BantuanOrganisasi::Masuk($this, $pemilik, $this->t['Tenant']->Id);
 
@@ -87,7 +87,7 @@ describe('F-03 halaman harga produk (E.6)', function (): void {
         ]])->assertSessionHasErrors(['Satuan.0.Harga.0.Harga']);
     });
 
-    it('menyimpan harga produk di daftar harga dari halaman produk; masalah baris rata dipetakan ke Harga.{k}', function (): void {
+    it('menyimpan harga produk di daftar harga dari halaman produk. Masalah baris rata dipetakan ke Harga.{k}', function (): void {
         $urlDaftar = "{$this->url}/daftar-harga/{$this->daftar->Uuid}";
         $tes = BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id);
 

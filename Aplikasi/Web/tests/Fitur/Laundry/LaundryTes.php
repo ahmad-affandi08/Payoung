@@ -60,7 +60,7 @@ function SiapkanCucian(TestCase $tes, array $laundry = [], string $nama = 'Laund
     return [$k, $item];
 }
 
-it('Penjualan.Buat dengan blok Laundry membuat tiket Diterima (Uuid = penjualan), idempoten; data-awal membawa pengaturan', function (): void {
+it('Penjualan.Buat dengan blok Laundry membuat tiket Diterima (Uuid = penjualan), idempoten. Data-awal membawa pengaturan', function (): void {
     [$k, $item] = SiapkanCucian($this);
     expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]])
         ->and(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Duplikat', null]]);
@@ -84,7 +84,7 @@ it('Penjualan.Buat dengan blok Laundry membuat tiket Diterima (Uuid = penjualan)
         ->assertJsonPath('Laundry.AwalanLacak', url('/s/'.base_convert((string) $k['Tenant']->Id, 10, 36).'.'));
 });
 
-it('estimasi tidak wajar dihitung dari pengaturan; tanpa nama/berat/item = tinjauan Laundry', function (): void {
+it('estimasi tidak wajar dihitung dari pengaturan, tanpa nama/berat/item = tinjauan Laundry', function (): void {
     [$k, $item] = SiapkanCucian($this, ['EstimasiSelesaiPada' => '2020-01-01T00:00:00Z', 'NamaPelanggan' => null, 'Berat' => null, 'Item' => [], 'JenisLayanan' => 'Reguler']);
     expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]]);
 
@@ -94,10 +94,10 @@ it('estimasi tidak wajar dihitung dari pengaturan; tanpa nama/berat/item = tinja
     expect($t->EstimasiSelesaiPada->equalTo($p->DibuatOfflinePada->copy()->addHours(48)))->toBeTrue()
         ->and($t->NamaPelanggan)->toBe('Tanpa nama')
         ->and($p->PerluTinjauan)->toBeTrue()
-        ->and($p->AlasanTinjauan)->toContain('Laundry: tiket tanpa nama pelanggan; tiket tanpa berat maupun item');
+        ->and($p->AlasanTinjauan)->toContain('Laundry: tiket tanpa nama pelanggan. Tiket tanpa berat maupun item');
 });
 
-it('kasir: cari & ubah status maju, Siap mengirim WhatsApp sekali, Diambil tercatat; mundur ditolak; outlet lain 404', function (): void {
+it('kasir: cari & ubah status maju, Siap mengirim WhatsApp sekali, Diambil tercatat. Mundur ditolak. Outlet lain 404', function (): void {
     [$k, $item] = SiapkanCucian($this);
     BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
     $status = fn (string $s) => $this->withToken($k['Token'])->postJson("/api/pos/v1/laundry/{$item['Uuid']}/status", ['Status' => $s, 'UuidPengguna' => $k['Kasir']->Uuid]);
@@ -131,7 +131,7 @@ it('kasir: cari & ubah status maju, Siap mengirim WhatsApp sekali, Diambil terca
     $this->withToken($k['Token'])->postJson("/api/pos/v1/laundry/{$item['Uuid']}/status", ['Status' => 'Dibatalkan', 'UuidPengguna' => $k['Kasir']->Uuid])->assertUnprocessable();
 });
 
-it('lacak publik /s/{kode} menampilkan status cucian walau struk digital mati; void membatalkan tiket', function (): void {
+it('lacak publik /s/{kode} menampilkan status cucian walau struk digital mati. Void membatalkan tiket', function (): void {
     [$k, $item] = SiapkanCucian($this);
     BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
     $kode = KodeStrukDigital::Buat($k['Tenant']->Id, $item['Uuid']);
@@ -160,7 +160,7 @@ it('lacak publik /s/{kode} menampilkan status cucian walau struk digital mati; v
     $this->get('/s/'.$kode)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Struk.Laundry.Status', 'Dibatalkan'));
 });
 
-it('back-office: daftar & filter terlambat, ubah status, pengaturan diaudit & divalidasi, Kotak Tindakan; Kasir 403; tenant lain 404', function (): void {
+it('back-office: daftar & filter terlambat, ubah status, pengaturan diaudit & divalidasi, Kotak Tindakan; Kasir 403. Tenant lain 404', function (): void {
     [$k, $item] = SiapkanCucian($this);
     BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -195,7 +195,7 @@ it('back-office: daftar & filter terlambat, ubah status, pengaturan diaudit & di
     BantuanOrganisasi::Masuk($this, $b['Pemilik'], $b['Tenant']->Id)->post("/kelola/laundry/{$item['Uuid']}/status", ['Status' => 'Diambil'])->assertNotFound();
 });
 
-it('audit F-17: WhatsApp siap paling banyak sekali — pekerja terhenti setelah kirim tidak mengulang; penyedia gagal boleh dicoba lagi', function (): void {
+it('audit F-17: WhatsApp siap paling banyak sekali — pekerja terhenti setelah kirim tidak mengulang. Penyedia gagal boleh dicoba lagi', function (): void {
     [$k, $item] = SiapkanCucian($this);
     BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

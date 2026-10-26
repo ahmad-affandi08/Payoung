@@ -146,7 +146,7 @@ export default function HalamanBuatTransaksiKasBank({
     return (
         <TataLetakAplikasi judul="Catat transaksi kas & bank">
             <DaftarGalatServer galat={galat} kecuali={Object.keys(isian)} />
-            <KartuFormulir keterangan="Pengeluaran operasional, penerimaan di luar penjualan, atau transfer antar kas/bank. Transaksi langsung dijurnal saat disimpan dan tidak bisa diubah; koreksi dengan dokumen pembalik.">
+            <KartuFormulir keterangan="Pengeluaran operasional, penerimaan di luar penjualan, atau transfer antar kas/bank. Transaksi langsung dijurnal saat disimpan dan tidak bisa diubah. Koreksi dengan dokumen pembalik.">
                 <form
                     onSubmit={Simpan}
                     className="flex flex-col gap-4"

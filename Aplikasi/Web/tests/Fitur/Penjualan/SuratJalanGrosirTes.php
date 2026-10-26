@@ -249,7 +249,7 @@ describe('KirimPesananGrosir: penyerahan sebagai titik pengakuan (BR-12.2, J-12.
 
         try {
             KirimUji($this, $pesanan, [[9, '1']]);
-            $this->fail('Baris nomor 9 tidak ada di pesanan; seharusnya ditolak.');
+            $this->fail('Baris nomor 9 tidak ada di pesanan. Seharusnya ditolak.');
         } catch (PelanggaranAturanBisnis $galat) {
             expect($galat->kode)->toBe('BarisTidakDikenal');
         }

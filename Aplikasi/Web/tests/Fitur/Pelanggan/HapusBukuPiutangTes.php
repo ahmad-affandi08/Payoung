@@ -80,7 +80,7 @@ function IsianHapusBuku(?string $tanggal = null, string $alasan = 'Pelanggan tut
 }
 
 describe('E8 hapus-buku piutang', function (): void {
-    it('membukukan seluruh sisa sebagai beban: Dr Beban Piutang Tak Tertagih, Cr Piutang Usaha seimbang; piutang keluar dari daftar tagihan', function (): void {
+    it('membukukan seluruh sisa sebagai beban: Dr Beban Piutang Tak Tertagih, Cr Piutang Usaha seimbang. Piutang keluar dari daftar tagihan', function (): void {
         $k = SiapkanPiutangHapusBuku($this);
         $idTenant = $k['Tenant']->Id;
 
@@ -168,7 +168,7 @@ describe('E8 hapus-buku piutang', function (): void {
             ->and($pencatat->PeriksaBisaDiretur((int) $k['P2']->IdPenjualan))->toBeNull();
     });
 
-    it('izin: kasir tidak bisa melihat; supervisor melihat riwayat tetapi tidak bisa menghapus-buku; tenant lain tidak melihat dokumennya', function (): void {
+    it('izin: kasir tidak bisa melihat. Supervisor melihat riwayat tetapi tidak bisa menghapus-buku. Tenant lain tidak melihat dokumennya', function (): void {
         $k = SiapkanPiutangHapusBuku($this);
         $this->post("/kelola/piutang/{$k['P1']->Uuid}/hapus-buku", IsianHapusBuku())->assertSessionHasNoErrors();
         $dokumen = HapusBukuPiutang::query()->sole();

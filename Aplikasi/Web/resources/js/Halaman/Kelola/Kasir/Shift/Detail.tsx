@@ -578,7 +578,7 @@ export default function HalamanDetailShift({
                 {Penjualan.DaftarTerpotong ? (
                     <>
                         {' '}
-                        Tabel menampilkan {Penjualan.Daftar.length} penjualan terakhir; semua penjualan ada di{' '}
+                        Tabel menampilkan {Penjualan.Daftar.length} penjualan terakhir. Semua penjualan ada di{' '}
                         <Link href="/kelola/penjualan" className="font-semibold text-brand underline">
                             daftar penjualan
                         </Link>

@@ -75,7 +75,7 @@ function IsianKonfirmasiUji(array $ubah = []): array
 }
 
 describe('Konfirmasi pembayaran: dari pelanggan', function (): void {
-    it('klaim tercatat menunggu tanpa jurnal atau perubahan sisa; halaman publik menampilkannya tanpa nama pengirim', function (): void {
+    it('klaim tercatat menunggu tanpa jurnal atau perubahan sisa. Halaman publik menampilkannya tanpa nama pengirim', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $kode = KodeKonfirmasiUji($invoice);
         $jurnal = Jurnal::query()->count();
@@ -130,7 +130,7 @@ describe('Konfirmasi pembayaran: dari pelanggan', function (): void {
         expect(KonfirmasiPembayaranInvoice::query()->count())->toBe(0);
     });
 
-    it('klaim identik tidak digandakan; paling banyak tiga klaim menunggu per invoice', function (): void {
+    it('klaim identik tidak digandakan. Paling banyak tiga klaim menunggu per invoice', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $kode = KodeKonfirmasiUji($invoice);
         Auth::logout();
@@ -187,7 +187,7 @@ describe('Konfirmasi pembayaran: dari pelanggan', function (): void {
 });
 
 describe('Konfirmasi pembayaran: verifikasi penagih', function (): void {
-    it('detail menampilkan klaim; menerima lewat pencatatan pembayaran menautkan klaim ke pelunasan', function (): void {
+    it('detail menampilkan klaim. Menerima lewat pencatatan pembayaran menautkan klaim ke pelunasan', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $kode = KodeKonfirmasiUji($invoice);
         Auth::logout();
@@ -220,7 +220,7 @@ describe('Konfirmasi pembayaran: verifikasi penagih', function (): void {
             ->where('Konfirmasi.0.BisaDiputuskan', false));
     });
 
-    it('pembayaran yang gagal tidak menandai klaim; klaim milik invoice lain atau sudah diputuskan ditolak', function (): void {
+    it('pembayaran yang gagal tidak menandai klaim. Klaim milik invoice lain atau sudah diputuskan ditolak', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $lain = InvoiceTerbitKonfirmasiUji($this);
         Auth::logout();
@@ -243,7 +243,7 @@ describe('Konfirmasi pembayaran: verifikasi penagih', function (): void {
         $this->post("/kelola/invoice/{$invoice->Uuid}/pembayaran", ['UuidAkun' => $akun, 'Tanggal' => '2026-09-27', 'UuidKonfirmasi' => 'bukan-ulid'])->assertSessionHasErrors('UuidKonfirmasi');
     });
 
-    it('menolak klaim: alasan wajib, idempoten, tidak bisa menolak yang sudah diterima; invoice tetap terbuka', function (): void {
+    it('menolak klaim: alasan wajib, idempoten, tidak bisa menolak yang sudah diterima. Invoice tetap terbuka', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         Auth::logout();
         $this->post('/i/'.KodeKonfirmasiUji($invoice).'/konfirmasi-bayar', IsianKonfirmasiUji(['Jumlah' => '2000000']))->assertSessionHasNoErrors();
@@ -305,7 +305,7 @@ describe('Konfirmasi pembayaran: verifikasi penagih', function (): void {
         expect($butir()->has('invoice.konfirmasi-bayar'))->toBeFalse();
     });
 
-    it('kasir tanpa izin invoice.kelola tidak bisa menolak; isi klaim tidak bisa diubah dan klaim tidak bisa dihapus di model', function (): void {
+    it('kasir tanpa izin invoice.kelola tidak bisa menolak. Isi klaim tidak bisa diubah dan klaim tidak bisa dihapus di model', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         Auth::logout();
         $this->post('/i/'.KodeKonfirmasiUji($invoice).'/konfirmasi-bayar', IsianKonfirmasiUji())->assertSessionHasNoErrors();
@@ -338,7 +338,7 @@ describe('Konfirmasi pembayaran: bukti transfer', function (): void {
         return UploadedFile::fake()->createWithContent('bukti.png', $isi);
     }
 
-    it('foto bukti diolah ulang menjadi JPEG di disk privat folder tenant; penagih mengunduhnya, tenant lain tidak', function (): void {
+    it('foto bukti diolah ulang menjadi JPEG di disk privat folder tenant. Penagih mengunduhnya, tenant lain tidak', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $kode = KodeKonfirmasiUji($invoice);
         Auth::logout();
@@ -368,7 +368,7 @@ describe('Konfirmasi pembayaran: bukti transfer', function (): void {
         $this->get("/kelola/invoice/{$invoice->Uuid}/konfirmasi/{$konfirmasi->Uuid}/bukti")->assertForbidden();
     });
 
-    it('bukti opsional: tanpa bukti tautan unduh 404; klaim identik tidak menyimpan berkas kedua', function (): void {
+    it('bukti opsional: tanpa bukti tautan unduh 404. Klaim identik tidak menyimpan berkas kedua', function (): void {
         $invoice = InvoiceTerbitKonfirmasiUji($this);
         $kode = KodeKonfirmasiUji($invoice);
         Auth::logout();

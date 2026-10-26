@@ -160,7 +160,7 @@ export default function HalamanTarifPajak({ Tarif, JenisPajak, IdPengguna }: Pro
         <TataLetakPengelola judul="Referensi">
             <TabReferensi />
             <Pemberitahuan jenis="info" judul="Aturan tarif pajak">
-                Tarif terbit tidak pernah diubah atau dihapus; koreksi dibuat sebagai tarif baru dengan tanggal berlaku
+                Tarif terbit tidak pernah diubah atau dihapus. Koreksi dibuat sebagai tarif baru dengan tanggal berlaku
                 baru. Tarif nasional butuh 2 penyetuju, tarif daerah 1 penyetuju, dan pengaju tidak boleh menyetujui
                 drafnya sendiri. Super Admin tidak terikat aturan ini: ajuannya langsung terbit.
             </Pemberitahuan>

@@ -46,7 +46,7 @@ export default function HalamanDaftarKonsinyasi({ Penitip, TotalSisa, Izin }: Pr
     return (
         <HalamanDaftarPembelian
             judul="Konsinyasi"
-            keterangan="Barang titipan pemasok (penitip) yang dijual toko. Stok titipan bukan aset toko; yang terjual menjadi hutang ke penitip dan dilunasi lewat setoran."
+            keterangan="Barang titipan pemasok (penitip) yang dijual toko. Stok titipan bukan aset toko, yang terjual menjadi hutang ke penitip dan dilunasi lewat setoran."
             izin={Izin}
             objek="konsinyasi"
         >

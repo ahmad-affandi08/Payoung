@@ -115,7 +115,7 @@ describe('OWN-07 ubah harga', function (): void {
 });
 
 describe('OWN-07 tandai habis dan daftar produk', function (): void {
-    it('mencari produk dengan harga dasar dan status habis per outlet; menandai habis lalu tersedia lagi (idempoten)', function (): void {
+    it('mencari produk dengan harga dasar dan status habis per outlet. Menandai habis lalu tersedia lagi (idempoten)', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $produk = BantuanKatalog::BuatProduk(['Nama' => 'Roti Bakar Cokelat Keju'], '15000.00');
@@ -197,7 +197,7 @@ describe('OWN-07 promo', function (): void {
 });
 
 describe('OWN-07 pengeluaran dengan foto nota', function (): void {
-    it('opsi memuat kategori kas keluar dan akun kas/bank; pengeluaran terposting (jurnal seimbang), foto nota tersimpan privat', function (): void {
+    it('opsi memuat kategori kas keluar dan akun kas/bank. Pengeluaran terposting (jurnal seimbang), foto nota tersimpan privat', function (): void {
         Storage::fake((string) config('akuntansi.DiskLampiran'));
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -231,7 +231,7 @@ describe('OWN-07 pengeluaran dengan foto nota', function (): void {
         expect($jurnal)->not->toBeNull();
     });
 
-    it('Idempotency-Key yang sama menghasilkan satu pengeluaran; jumlah salah, kategori/akun asing, dan tanpa izin ditolak', function (): void {
+    it('Idempotency-Key yang sama menghasilkan satu pengeluaran. Jumlah salah, kategori/akun asing, dan tanpa izin ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         app(SiapkanKategoriBiayaBawaan::class)->Jalankan();

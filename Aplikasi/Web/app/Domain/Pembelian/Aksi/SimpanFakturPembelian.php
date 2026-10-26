@@ -294,7 +294,7 @@ final class SimpanFakturPembelian
         }
 
         if ($hasil === []) {
-            throw new PelanggaranAturanBisnis('PenerimaanTidakValid', 'Semua barang di penerimaan ini sudah diretur; tidak ada yang bisa difakturkan.', 'UuidPenerimaan');
+            throw new PelanggaranAturanBisnis('PenerimaanTidakValid', 'Semua barang di penerimaan ini sudah diretur. Tidak ada yang bisa difakturkan.', 'UuidPenerimaan');
         }
 
         return $hasil;

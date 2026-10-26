@@ -69,7 +69,7 @@ export default function PersetujuanCookie({ analitik }: { analitik: PengaturanAn
                     {pilihan !== null
                         ? `Pilihan Anda saat ini: ${pilihan === 'terima' ? 'diterima' : 'ditolak'}. `
                         : ''}
-                    Kami memakai cookie analitik untuk memahami cara situs ini dipakai. Anda boleh menolak; situs tetap
+                    Kami memakai cookie analitik untuk memahami cara situs ini dipakai. Anda boleh menolak. Situs tetap
                     berfungsi normal.{' '}
                     <a href="/legal/kebijakan-privasi" className="text-brand underline">
                         Kebijakan privasi

@@ -46,7 +46,7 @@ function IsianTimUji(int $idTenant, array $isian = []): array
 }
 
 describe('D-101 daftar Tim: satu baris per orang', function (): void {
-    it('akun yang tertaut ke karyawan jadi satu baris; akun tanpa karyawan dan karyawan tanpa akun jadi baris sendiri', function (): void {
+    it('akun yang tertaut ke karyawan jadi satu baris. Akun tanpa karyawan dan karyawan tanpa akun jadi baris sendiri', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
         $masuk->post('/kelola/tim', IsianTimUji($tenant->Id, ['Jabatan' => 'Barista', 'GajiPokok' => '2500000']))->assertSessionHasNoErrors();
@@ -122,7 +122,7 @@ describe('D-101 tambah anggota tim: tiga jenis akses, satu formulir', function (
         Mail::assertNothingSent();
     });
 
-    it('Dashboard: wajib email & kata sandi awal; tanpa email ditolak dengan pesan jelas', function (): void {
+    it('Dashboard: wajib email & kata sandi awal, tanpa email ditolak dengan pesan jelas', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
@@ -205,7 +205,7 @@ describe('D-101 nonaktifkan & aktifkan satu orang sekaligus', function (): void 
             ->and($karyawan->refresh()->Status->value)->toBe('Aktif');
     });
 
-    it('karyawan tanpa akun cukup UuidKaryawan; tanpa satu pun yang dipilih ditolak', function (): void {
+    it('karyawan tanpa akun cukup UuidKaryawan, tanpa satu pun yang dipilih ditolak', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
         $masuk->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Pelayan'])->assertSessionHasNoErrors();

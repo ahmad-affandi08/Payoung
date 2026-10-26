@@ -77,7 +77,7 @@ void main() {
       expect(katalog.AmbilTampil().map((p) => p.nama), isNot(contains('Gula Aren Cair')));
     });
 
-    test('produk sama (satuan & pilihan sama) → jumlah +1; pilihan berbeda → baris baru', () async {
+    test('produk sama (satuan & pilihan sama) → jumlah +1. Pilihan berbeda → baris baru', () async {
       await Siapkan(bukaShift: false);
       final keranjang = KeranjangContoh();
       expect(keranjang.baris, hasLength(2));
@@ -97,7 +97,7 @@ void main() {
       expect(lain.baris, hasLength(3));
     });
 
-    test('pilihan wajib (min 1) & maksimal dicek; harga pilihan ditambahkan ke harga satuan', () async {
+    test('pilihan wajib (min 1) & maksimal dicek. Harga pilihan ditambahkan ke harga satuan', () async {
       await Siapkan(bukaShift: false);
       expect(() => u.penjualan.BuatBaris(katalog, k, Produk(UuidUji.kopiSusu)), GalatDengan('PilihanBelumLengkap'));
       expect(
@@ -127,7 +127,7 @@ void main() {
     });
 
     test(
-      'produk induk varian dan bahan baku ditolak dengan pesan jelas; produk ber-batch kini bisa dijual (F-05g)',
+      'produk induk varian dan bahan baku ditolak dengan pesan jelas. Produk ber-batch kini bisa dijual (F-05g)',
       () async {
         await Siapkan(bukaShift: false);
         expect(() => u.penjualan.BuatBaris(katalog, k, Produk(UuidUji.kaos)), GalatDengan('ProdukTidakBisaDijual'));
@@ -168,7 +168,7 @@ void main() {
       expect(katalog.CariKode('0000'), isNull);
     });
 
-    test('menghapus baris terakhir keranjang meja tetap terikat pesanan; keranjang biasa kembali kosong', () async {
+    test('menghapus baris terakhir keranjang meja tetap terikat pesanan. Keranjang biasa kembali kosong', () async {
       await Siapkan(bukaShift: false);
       final biasa = Keranjang(baris: [u.penjualan.BuatBaris(katalog, k, Produk(UuidUji.roti))]);
       expect(u.penjualan.HapusBaris(biasa, biasa.baris.single.uuid), same(Keranjang.kosong));
@@ -197,7 +197,7 @@ void main() {
       expect(hitungan.peringatan, isEmpty);
     });
 
-    test('PKP: PPN 12% DPP 11/12 dari tarif bertanggal; tidak memungut PBJT → PBJT tidak dihitung', () async {
+    test('PKP: PPN 12% DPP 11/12 dari tarif bertanggal. Tidak memungut PBJT → PBJT tidak dihitung', () async {
       await Siapkan(
         bukaShift: false,
         dataAwal: DataAwalUji(
@@ -257,7 +257,7 @@ void main() {
   });
 
   group('BR-07.3 diskon manual', () {
-    test('≤ batas manual boleh; di atas batas butuh penyetuju; di atas batas penyetuju hanya Pemilik', () async {
+    test('≤ batas manual boleh. Di atas batas butuh penyetuju. Di atas batas penyetuju hanya Pemilik', () async {
       await Siapkan(bukaShift: false);
       final dasar = Uang.DariBulat(100000);
       StatusDiskon Periksa(String persen, StafLokal kasir, {PenyetujuDiskon? penyetuju}) =>
@@ -401,7 +401,7 @@ void main() {
       );
     });
 
-    test('bayar dengan diskon di atas batas tanpa penyetuju ditolak; dengan penyetuju tercatat di outbox', () async {
+    test('bayar dengan diskon di atas batas tanpa penyetuju ditolak, dengan penyetuju tercatat di outbox', () async {
       await Siapkan();
       var keranjang = KeranjangContoh();
       keranjang = keranjang.Salin(diskonPesanan: () => DiskonManual.DariPersen(Decimal.parse('20')));
@@ -439,7 +439,7 @@ void main() {
     });
 
     test(
-      'tunai: payload outbox Penjualan.Buat persis kontrak F-07b; penjualan, detail, pembayaran tersimpan',
+      'tunai: payload outbox Penjualan.Buat persis kontrak F-07b. Penjualan, detail, pembayaran tersimpan',
       () async {
         await Siapkan();
         final shift = (await u.repositori.AmbilShiftAktif())!;
@@ -546,7 +546,7 @@ void main() {
       },
     );
 
-    test('BR-07.1: nomor urut per perangkat per hari; hari berikutnya mulai dari 0001', () async {
+    test('BR-07.1: nomor urut per perangkat per hari. Hari berikutnya mulai dari 0001', () async {
       await Siapkan();
       Future<String> Jual() async => (await u.penjualan.Bayar(
         keranjang: KeranjangContoh(),
@@ -561,7 +561,7 @@ void main() {
       expect(await Jual(), 'INV/SLB/260925/POS-001-0001');
     });
 
-    test('BR-08.1 split & BR-08.6 pembulatan hanya bagian tunai; referensi EDC tersimpan', () async {
+    test('BR-08.1 split & BR-08.6 pembulatan hanya bagian tunai. Referensi EDC tersimpan', () async {
       await Siapkan(dataAwal: DataAwalUji(pembulatanTunai: {'Kelipatan': 1000, 'Arah': 'Bawah'}));
       final keranjang = KeranjangContoh();
 
@@ -684,7 +684,7 @@ void main() {
 
       final daftar = await u.db.select(u.db.pesananTertahan).get();
       expect(daftar.single.Label, startsWith('Es Kopi Susu Aren +1 | '));
-      expect(await u.db.select(u.db.outbox).get(), hasLength(1), reason: 'Hanya Shift.Buka; pesanan tertahan lokal.');
+      expect(await u.db.select(u.db.outbox).get(), hasLength(1), reason: 'Hanya Shift.Buka. Pesanan tertahan lokal.');
 
       final dibuka = await u.penjualan.BukaPesanan(daftar.single.Uuid);
       expect(dibuka.baris.map((b) => b.nama), keranjang.baris.map((b) => b.nama));
@@ -885,7 +885,7 @@ void main() {
 
   group('F-18 staf pelayan baris (komisi)', () {
     test(
-      'baris dengan staf mengirim Baris.Staf; tanpa staf tidak ada kunci; keranjang tertahan menyimpan staf',
+      'baris dengan staf mengirim Baris.Staf, tanpa staf tidak ada kunci. Keranjang tertahan menyimpan staf',
       () async {
         await Siapkan();
         final dasar = KeranjangContoh();
@@ -946,7 +946,7 @@ void main() {
       expect(LayananPenjualan.PeriksaTempo(pelanggan: lewat, jumlah: Uang.DariBulat(1), batasHariLewat: 30), isEmpty);
     });
 
-    test('tempo wajib pelanggan; di luar limit tanpa penyetuju ditolak; dengan PIN tercatat di outbox', () async {
+    test('tempo wajib pelanggan. Di luar limit tanpa penyetuju ditolak, dengan PIN tercatat di outbox', () async {
       await Siapkan(dataAwal: DataAwalUji(tempo: true));
       expect(k.metodePembayaran.map((m) => m.Jenis), contains('Tempo'));
       final keranjang = KeranjangContoh();

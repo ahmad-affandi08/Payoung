@@ -141,7 +141,7 @@ final class PenghitungBarisFakturPajak
     public function SusunBaris(SuratJalanDetail|ReturGrosirDetail|PenjualanDetail $d, ?array $hitung, BigDecimal $tarif, ?array $kode, array &$masalah, array &$peringatan): DataBarisFakturPajak
     {
         if ($hitung === null) {
-            $masalah[] = "Baris \"{$d->NamaProduk}\" bukan objek PPN (kelompok pajaknya tidak memuat PPN). Coretax tidak menerima baris tanpa PPN dalam satu faktur; pisahkan penyerahannya.";
+            $masalah[] = "Baris \"{$d->NamaProduk}\" bukan objek PPN (kelompok pajaknya tidak memuat PPN). Coretax tidak menerima baris tanpa PPN dalam satu faktur. Pisahkan penyerahannya.";
 
             return new DataBarisFakturPajak('A', self::KODE_BARANG_BAWAAN, $d->NamaProduk, self::KODE_SATUAN_BAWAAN, '0', '0', '0', '0', '0', '0', '0');
         }

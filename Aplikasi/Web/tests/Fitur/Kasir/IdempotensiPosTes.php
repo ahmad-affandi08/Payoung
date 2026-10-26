@@ -19,7 +19,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('kunci sama + isi sama = respons diputar ulang tanpa memproses ulang; isi berbeda = 409; format salah = 400', function (): void {
+it('kunci sama + isi sama = respons diputar ulang tanpa memproses ulang. Isi berbeda = 409. Format salah = 400', function (): void {
     $k = BantuanKasir::Siapkan($this);
     $item = BantuanKasir::ItemBukaShift($k['Kasir']);
     $kirim = fn (array $isi, string $kunci) => $this->withToken($k['Token'])->withHeader('Idempotency-Key', $kunci)->postJson('/api/pos/v1/sinkron/kirim', $isi);

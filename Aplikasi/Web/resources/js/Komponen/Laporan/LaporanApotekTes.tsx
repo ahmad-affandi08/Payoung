@@ -145,7 +145,7 @@ describe('Laporan › Laporan apotek', () => {
         expect(kedaluwarsa.getAttribute('href')).toBe('/kelola/laporan/stok?tab=kedaluwarsa');
     });
 
-    it('pemegang izin resep tidak melihat catatan penyamaran; daftar kosong menjelaskan', () => {
+    it('pemegang izin resep tidak melihat catatan penyamaran. Daftar kosong menjelaskan', () => {
         RenderUji(<HalamanLaporanApotek {...Props({ LihatPasien: true, Penjualan: BuatHasilTabel([]) })} />);
 
         expect(screen.queryByText(/Nama pasien disamarkan/)).toBeNull();

@@ -47,7 +47,7 @@ function AturNoHpInsight(Pengguna $pengguna, string $noHp): void
     Pengguna::query()->whereKey($pengguna->Id)->update(['NoHp' => $noHp]);
 }
 
-it('Owner menerima insight minggu lalu vs minggu sebelumnya; sekali per minggu; Kasir tanpa izin laporan tidak menerima', function (): void {
+it('Owner menerima insight minggu lalu vs minggu sebelumnya. Sekali per minggu; Kasir tanpa izin laporan tidak menerima', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-21 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Insight Wonogiri');
     BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
@@ -113,7 +113,7 @@ it('anggota ber-izin laporan penjualan tanpa persediaan.lihat menerima insight t
         ->and((string) InsightTerkirim('6281277770012')[0]['message'])->not->toContain('Saran restock');
 });
 
-it('sakelar di laporan penjualan: Owner bawaan aktif, berhenti = tidak dikirim; tanpa penjualan tidak dikirim', function (): void {
+it('sakelar di laporan penjualan: Owner bawaan aktif, berhenti = tidak dikirim, tanpa penjualan tidak dikirim', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-21 05:00:00', 'UTC'));
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Insight Wonogiri');
     BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');

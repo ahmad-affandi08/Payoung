@@ -177,7 +177,7 @@ export default function HalamanDaftarArmada({ Armada, Izin }: PropsDaftarArmada)
             {isian !== null ? (
                 <DialogFormulir
                     judul={isian.Uuid === null ? 'Tambah armada' : 'Ubah armada'}
-                    keterangan="Nomor kendaraan harus unik; dipakai di surat jalan."
+                    keterangan="Nomor kendaraan harus unik. Dipakai di surat jalan."
                     galatUmum={galat.Umum}
                     saatTutup={() => AturIsian(null)}
                 >

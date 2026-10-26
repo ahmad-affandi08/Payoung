@@ -94,7 +94,7 @@ const propsBagan: PropsBaganAkun = {
 };
 
 describe('F-13a menu Akuntansi', () => {
-    it('laporan.keuangan.lihat membuka pekerjaan pembukuan; laporan keuangan pindah ke menu Laporan (D-27)', () => {
+    it('laporan.keuangan.lihat membuka pekerjaan pembukuan. Laporan keuangan pindah ke menu Laporan (D-27)', () => {
         const menu = SaringMenuTerlihat({ Pemilik: false, Izin: ['laporan.keuangan.lihat'] });
         const akuntansi = menu.find(({ menu: induk }) => induk.label === 'Akuntansi');
 
@@ -145,7 +145,7 @@ describe('F-13a bagan akun', () => {
         expect(screen.getAllByText(/Sudah ada jurnal \(kode & tipe terkunci\)/)).toHaveLength(2);
     });
 
-    it('tambah akun anak: tipe mengikuti induk, dikirim dengan UuidInduk; hapus hanya untuk akun yang belum dipakai', () => {
+    it('tambah akun anak: tipe mengikuti induk, dikirim dengan UuidInduk. Hapus hanya untuk akun yang belum dipakai', () => {
         RenderUji(<HalamanBaganAkun {...propsBagan} />);
 
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk akun 1-1200 Bank' }));
@@ -182,7 +182,7 @@ describe('F-13a bagan akun', () => {
         );
     });
 
-    it('ubah akun berjurnal: kode terkunci; tanpa izin kelola hanya lihat', () => {
+    it('ubah akun berjurnal: kode terkunci, tanpa izin kelola hanya lihat', () => {
         RenderUji(<HalamanBaganAkun {...propsBagan} />);
         BukaMenu(screen.getByRole('button', { name: 'Aksi untuk akun 1-1200 Bank' }));
         fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah akun' }));
@@ -232,7 +232,7 @@ describe('F-13a pemetaan akun', () => {
     });
     afterEach(() => cleanup());
 
-    it('status tipe salah terlihat dengan teks; pilihan akun hanya tipe & kontra yang sesuai; simpan & override outlet', () => {
+    it('status tipe salah terlihat dengan teks. Pilihan akun hanya tipe & kontra yang sesuai. Simpan & override outlet', () => {
         RenderUji(<HalamanPemetaanAkun {...propsPemetaan} />);
         expect(screen.getByText('Tipe akun salah')).toBeTruthy();
         expect(screen.getByText(/harus memakai akun kontra/)).toBeTruthy();
@@ -458,7 +458,7 @@ describe('F-13a kas & bank', () => {
         );
     });
 
-    it('detail: tautan pembalik, lampiran, jurnal; dokumen pembalik hanya bila belum dibalik', () => {
+    it('detail: tautan pembalik, lampiran, jurnal. Dokumen pembalik hanya bila belum dibalik', () => {
         const detail: PropsDetailTransaksiKasBank = {
             Transaksi: {
                 ...barisKasBank,
@@ -520,7 +520,7 @@ describe('F-13a laporan keuangan', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/akuntansi/laporan/buku-besar'));
     afterEach(() => cleanup());
 
-    it('buku besar: tanpa akun = ajakan memilih & ekspor nonaktif; dengan akun = ringkasan, saldo berjalan, ekspor berfilter', () => {
+    it('buku besar: tanpa akun = ajakan memilih & ekspor nonaktif, dengan akun = ringkasan, saldo berjalan, ekspor berfilter', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/buku-besar');
         const kosong: PropsBukuBesar = {
             Saring: { ...saring, Akun: '' },
@@ -641,7 +641,7 @@ describe('F-13a laporan keuangan', () => {
         );
     });
 
-    it('laba rugi: kelompok, laba kotor & bersih, kolom pembanding; ganti outlet memuat ulang dengan filter di URL', () => {
+    it('laba rugi: kelompok, laba kotor & bersih, kolom pembanding. Ganti outlet memuat ulang dengan filter di URL', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/laba-rugi');
         const BuatNilai = (n: string, s: string) => ({ Nilai: n, NilaiSebelumnya: s });
         const props: PropsLabaRugi = {
@@ -724,7 +724,7 @@ describe('F-13a laporan keuangan', () => {
         );
     });
 
-    it('neraca: kelompok aset/kewajiban/ekuitas, laba belum ditutup di ekuitas, kolom posisi awal; tidak seimbang diberi tahu', () => {
+    it('neraca: kelompok aset/kewajiban/ekuitas, laba belum ditutup di ekuitas, kolom posisi awal. Tidak seimbang diberi tahu', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/neraca');
         const BuatNilai = (n: string, a: string) => ({ Nilai: n, NilaiAwal: a });
         const BuatBaris = (
@@ -781,7 +781,7 @@ describe('F-13a laporan keuangan', () => {
         );
     });
 
-    it('arus kas: aktivitas operasi/investasi/pendanaan, kas awal & akhir; tanpa akun kas diberi tahu', () => {
+    it('arus kas: aktivitas operasi/investasi/pendanaan, kas awal & akhir, tanpa akun kas diberi tahu', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/laporan/arus-kas');
         const BuatBaris = (
             Id: string,

@@ -89,7 +89,7 @@ function KodePublikPenawaran(Penawaran $penawaran): string
 }
 
 describe('Penawaran: alur back-office', function (): void {
-    it('form, simpan & terbitkan, daftar, detail, dan cetak; angka dihitung server dan penawaran terbit bernomor PNW', function (): void {
+    it('form, simpan & terbitkan, daftar, detail, dan cetak. Angka dihitung server dan penawaran terbit bernomor PNW', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
         $this->get('/kelola/penawaran/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -148,7 +148,7 @@ describe('Penawaran: alur back-office', function (): void {
             ->and(Piutang::query()->count())->toBe($piutangSebelum);
     });
 
-    it('draf bisa diubah lalu diterbitkan; setelah terbit tidak bisa diubah lewat rute maupun langsung di model', function (): void {
+    it('draf bisa diubah lalu diterbitkan. Setelah terbit tidak bisa diubah lewat rute maupun langsung di model', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this))->assertSessionHasNoErrors();
         $penawaran = Penawaran::query()->sole();
@@ -203,7 +203,7 @@ describe('Penawaran: alur back-office', function (): void {
         expect($penawaran->refresh()->Status->value)->toBe('Draf');
     });
 
-    it('pembatalan meminta alasan; penawaran tidak dikenal 404; salin menghasilkan isian baru tanpa Uuid', function (): void {
+    it('pembatalan meminta alasan. Penawaran tidak dikenal 404. Salin menghasilkan isian baru tanpa Uuid', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
         $penawaran = Penawaran::query()->sole();
@@ -228,7 +228,7 @@ describe('Penawaran: alur back-office', function (): void {
 });
 
 describe('Penawaran: halaman publik dan keputusan pelanggan', function (): void {
-    it('kode rahasia: draf dan kode salah 404; terbit tampil tanpa kontak pembeli dan menghitung dilihat hanya dari pengunjung', function (): void {
+    it('kode rahasia: draf dan kode salah 404. Terbit tampil tanpa kontak pembeli dan menghitung dilihat hanya dari pengunjung', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this))->assertSessionHasNoErrors();
         $draf = Penawaran::query()->sole();
@@ -335,7 +335,7 @@ describe('Penawaran: halaman publik dan keputusan pelanggan', function (): void 
         expect($penawaran->refresh()->Status->value)->toBe('Diterima')->and($penawaran->SumberKeputusan)->toBe('Staf');
     });
 
-    it('staf menandai ditolak atau diterima; keputusan memerlukan penawaran terbit', function (): void {
+    it('staf menandai ditolak atau diterima. Keputusan memerlukan penawaran terbit', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this))->assertSessionHasNoErrors();
         $penawaran = Penawaran::query()->sole();
@@ -348,7 +348,7 @@ describe('Penawaran: halaman publik dan keputusan pelanggan', function (): void 
 });
 
 describe('Penawaran: dijadikan invoice', function (): void {
-    it('menyalin baris ke draf invoice bertanggal hari ini; penawaran menjadi diterima (staf) dan menunjuk invoice; klik ganda tidak menggandakan', function (): void {
+    it('menyalin baris ke draf invoice bertanggal hari ini. Penawaran menjadi diterima (staf) dan menunjuk invoice. Klik ganda tidak menggandakan', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this, ['NomorReferensi' => 'PO-7788', 'Lanjutkan' => true]))->assertSessionHasNoErrors();
         $penawaran = Penawaran::query()->sole();
@@ -415,7 +415,7 @@ describe('Penawaran: dijadikan invoice', function (): void {
 });
 
 describe('Penawaran: kirim WhatsApp', function (): void {
-    it('terkirim ke nomor pelanggan dengan tautan publik; nomor tidak masuk audit; kirim ulang kena jeda; hanya yang menunggu keputusan', function (): void {
+    it('terkirim ke nomor pelanggan dengan tautan publik. Nomor tidak masuk audit. Kirim ulang kena jeda. Hanya yang menunggu keputusan', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/penawaran', IsianPenawaranHttp($this))->assertSessionHasNoErrors();
         $penawaran = Penawaran::query()->sole();
@@ -457,7 +457,7 @@ describe('Penawaran: kirim WhatsApp', function (): void {
 });
 
 describe('Penawaran: Kotak Tindakan dan tautan ke invoice', function (): void {
-    it('Kotak Tindakan: diterima belum ditagih dan terbit belum ditanggapi; hilang setelah invoice aktif atau diputuskan', function (): void {
+    it('Kotak Tindakan: diterima belum ditagih dan terbit belum ditanggapi. Hilang setelah invoice aktif atau diputuskan', function (): void {
         $penyedia = app(PenyediaTindakanInvoice::class);
         $konteks = fn (CarbonImmutable $hari, bool $izin = true) => new DataKonteksTindakan($this->k['Tenant']->Id, $this->k['Pemilik']->Id, false, $izin ? ['invoice.kelola'] : [], null, $hari);
         $butir = fn (CarbonImmutable $hari) => collect($penyedia->Kumpulkan($konteks($hari)))->filter(fn ($b) => $b->jumlah > 0)->keyBy('kunci');

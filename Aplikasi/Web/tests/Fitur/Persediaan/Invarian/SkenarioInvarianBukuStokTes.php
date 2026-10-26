@@ -90,7 +90,7 @@ function AmbilPotretCacheStok(int $idTenant): array
 }
 
 describe('F-05a invarian buku stok nyata × bangun ulang (Tim A + Tim H)', function (): void {
-    it('BR-05.1 BR-04.2: masuk, terima, jual (biasa/batch/seri, dua lokasi) → invarian terpenuhi; cache yang dirusak dibangun ulang persis seperti hasil mesin', function (MetodeHpp $metode): void {
+    it('BR-05.1 BR-04.2: masuk, terima, jual (biasa/batch/seri, dua lokasi) → invarian terpenuhi. Cache yang dirusak dibangun ulang persis seperti hasil mesin', function (MetodeHpp $metode): void {
         $fifo = $metode === MetodeHpp::Fifo;
         $t = BantuanPersediaan::SiapkanTenant('Toko Sembako Berkah Jaya', $metode);
         $id = $t['Tenant']->Id;

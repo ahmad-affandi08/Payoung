@@ -112,7 +112,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('D-35: alamat server toko diketik manual; alamat tidak sah ditolak sebelum dikirim', (tester) async {
+  testWidgets('D-35: alamat server toko diketik manual. Alamat tidak sah ditolak sebelum dikirim', (tester) async {
     final u = LingkunganUji.Buat();
     await PasangAplikasi(tester, u, pemindaiQr: PemindaiQrTiruan(tersedia: false));
 

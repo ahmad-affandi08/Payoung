@@ -43,7 +43,7 @@ describe('P-07 panel penghapusan data (konsol)', () => {
         expect(container.textContent).toBe('');
     });
 
-    it('selama masa tunggu tombol laksanakan terkunci tetapi tolak tersedia; tanpa izin tidak ada tombol', () => {
+    it('selama masa tunggu tombol laksanakan terkunci tetapi tolak tersedia, tanpa izin tidak ada tombol', () => {
         RenderUji(<PanelPenghapusanData uuidTenant="01K5TENANT" slug="toko-a" permintaan={[dasar]} boleh />);
 
         expect((screen.getByRole('button', { name: 'Laksanakan penghapusan' }) as HTMLButtonElement).disabled).toBe(
@@ -82,7 +82,7 @@ describe('P-07 panel penghapusan data (konsol)', () => {
         });
     });
 
-    it('menolak mengirim alasan ke rute tolak; yang sudah dilaksanakan menampilkan ringkasan tanpa tombol', () => {
+    it('menolak mengirim alasan ke rute tolak, yang sudah dilaksanakan menampilkan ringkasan tanpa tombol', () => {
         RenderUji(<PanelPenghapusanData uuidTenant="01K5TENANT" slug="toko-a" permintaan={[dasar]} boleh />);
         fireEvent.click(screen.getByRole('button', { name: 'Tolak permintaan' }));
         fireEvent.change(screen.getByLabelText(/Alasan penolakan/), { target: { value: 'Ada sengketa pembayaran.' } });

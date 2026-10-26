@@ -80,7 +80,7 @@ describe('Halaman Absen berlogin', () => {
         expect(screen.queryByRole('button', { name: /Absen/ })).toBeNull();
     });
 
-    it('wajah disetujui: tombol Absen masuk, atau Absen keluar bila masih ada absensi terbuka; riwayat tampil', () => {
+    it('wajah disetujui: tombol Absen masuk, atau Absen keluar bila masih ada absensi terbuka. Riwayat tampil', () => {
         const disetujui = { Status: 'Disetujui' as const, Label: 'Disetujui', AlasanTolak: null };
         RenderUji(<HalamanAbsensi {...dasar} Wajah={disetujui} />);
         expect(screen.getByRole('button', { name: 'Absen masuk' })).not.toBeNull();
@@ -165,7 +165,7 @@ describe('Halaman Absen berlogin', () => {
         expect(screen.getByText('Pemindai wajah siap')).not.toBeNull();
     });
 
-    it('mesin wajah mulai disiapkan begitu halaman terbuka, bukan saat tombol diketuk; tidak saat offline', async () => {
+    it('mesin wajah mulai disiapkan begitu halaman terbuka, bukan saat tombol diketuk. Tidak saat offline', async () => {
         const { MuatMesinWajah } = await import('@/Fitur/Absensi/MesinWajah');
         vi.mocked(MuatMesinWajah).mockClear();
 
@@ -207,7 +207,7 @@ describe('Halaman Absen berlogin', () => {
         expect(screen.getByText('Perlu dicek')).not.toBeNull();
     });
 
-    it('akun yang juga punya akses dashboard diberi jalan ke dashboard; staf biasa hanya punya tombol Keluar', () => {
+    it('akun yang juga punya akses dashboard diberi jalan ke dashboard. Staf biasa hanya punya tombol Keluar', () => {
         RenderUji(<HalamanAbsensi {...dasar} BisaDashboard />);
         expect(screen.getByRole('link', { name: 'Buka dashboard' }).getAttribute('href')).toBe('/kelola');
         cleanup();

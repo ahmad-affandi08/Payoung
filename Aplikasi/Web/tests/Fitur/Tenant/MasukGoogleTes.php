@@ -256,7 +256,7 @@ describe('Daftar dengan Google', function (): void {
         expect(session(SesiAutentikasiTenant::GOOGLE_PENDAFTARAN))->toBeNull();
     });
 
-    it('wajib setuju S&K, nomor WhatsApp valid, dan nama usaha; akun belum dibuat bila validasi gagal', function (): void {
+    it('wajib setuju S&K, nomor WhatsApp valid, dan nama usaha. Akun belum dibuat bila validasi gagal', function (): void {
         MasukLewatGoogleUji($this, ['email' => 'baru@gmail.com'], tujuan: 'daftar');
 
         $this->post('/daftar/google', ['Nama' => 'Sinta', 'NoHp' => '123', 'NamaUsaha' => 'W', 'Setuju' => false])
@@ -322,7 +322,7 @@ describe('Keamanan akun: tautkan & lepas', function (): void {
             ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'akun.google-lepas')->exists())->toBeTrue();
     });
 
-    it('akun pendaftar Google mengatur kata sandi tanpa kata sandi lama; setelah itu boleh melepas Google', function (): void {
+    it('akun pendaftar Google mengatur kata sandi tanpa kata sandi lama. Setelah itu boleh melepas Google', function (): void {
         MasukLewatGoogleUji($this, ['email' => 'baru@gmail.com'], tujuan: 'daftar');
         $this->post('/daftar/google', ['Nama' => 'Sinta', 'NoHp' => '081299998888', 'NamaUsaha' => 'Warung Sinta', 'Setuju' => true]);
         $pengguna = Pengguna::query()->where('Email', 'baru@gmail.com')->sole();

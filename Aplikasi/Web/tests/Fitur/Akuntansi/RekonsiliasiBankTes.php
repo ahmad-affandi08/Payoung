@@ -44,7 +44,7 @@ function RekeningKoranCsv(): UploadedFile
     ]));
 }
 
-it('impor → cocok otomatis (yang tidak ambigu) → cocok manual, abaikan, batal; tanpa jurnal baru', function (): void {
+it('impor → cocok otomatis (yang tidak ambigu) → cocok manual, abaikan, batal, tanpa jurnal baru', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $bank = Akun::query()->where('KasBank', true)->orderBy('Kode')->firstOrFail();
@@ -108,7 +108,7 @@ it('impor → cocok otomatis (yang tidak ambigu) → cocok manual, abaikan, bata
         ->has('BukuBelumCocok', 1));
 });
 
-it('berkas tanpa kolom tanggal/nominal ditolak; akun bukan kas/bank 404; kasir tanpa akses; supervisor tanpa kelola', function (): void {
+it('berkas tanpa kolom tanggal/nominal ditolak. Akun bukan kas/bank 404. Kasir tanpa akses. Supervisor tanpa kelola', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $bank = Akun::query()->where('KasBank', true)->orderBy('Kode')->firstOrFail();

@@ -105,7 +105,7 @@ describe('DialogMasukPembeli', () => {
 });
 
 describe('Halaman Akun saya', () => {
-    it('sudah masuk: tier, poin, riwayat pesanan & belanja kasir; tanggal lahir terkunci', () => {
+    it('sudah masuk: tier, poin, riwayat pesanan & belanja kasir. Tanggal lahir terkunci', () => {
         RenderUji(
             <HalamanAkunTokoOnline
                 Slug="kopi-senja"
@@ -152,7 +152,7 @@ describe('Halaman Akun saya', () => {
         expect(screen.getByText('Sudah tersimpan. Untuk mengubahnya, hubungi toko.')).toBeTruthy();
     });
 
-    it('belum masuk: ajakan masuk; toko tanpa akun pembeli menjelaskan bahwa pesan tetap bisa', () => {
+    it('belum masuk: ajakan masuk. Toko tanpa akun pembeli menjelaskan bahwa pesan tetap bisa', () => {
         RenderUji(
             <HalamanAkunTokoOnline
                 Slug="kopi-senja"

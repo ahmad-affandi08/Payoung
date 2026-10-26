@@ -97,7 +97,7 @@ describe('Keadaan layanan untuk pelapor', function (): void {
 });
 
 describe('Mengirim pesan obrolan', function (): void {
-    it('pesan pertama membuat tiket berkanal Obrolan dengan SLA paket; pesan berikutnya masuk ke tiket yang sama', function (): void {
+    it('pesan pertama membuat tiket berkanal Obrolan dengan SLA paket. Pesan berikutnya masuk ke tiket yang sama', function (): void {
         $this->travelTo(Carbon::parse('2026-09-24 09:00:00', 'Asia/Jakarta'));
 
         $pertama = BantuanDukungan::MasukSebagaiTenant($this, $this->pemilik, $this->tenant)
@@ -174,7 +174,7 @@ describe('Mengirim pesan obrolan', function (): void {
             ->and(json_encode($milikLain))->not->toContain('Rahasia tenant A');
     });
 
-    it('mengakhiri obrolan menandai tiket Selesai; pesan berikutnya membuka obrolan baru', function (): void {
+    it('mengakhiri obrolan menandai tiket Selesai. Pesan berikutnya membuka obrolan baru', function (): void {
         $masuk = fn () => BantuanDukungan::MasukSebagaiTenant($this, $this->pemilik, $this->tenant);
         $masuk()->postJson(UrlObrolanTenant(), ['Isi' => 'Halo.'])->assertCreated();
         $pertama = TiketObrolanUji($this->tenant->Id);
@@ -202,7 +202,7 @@ describe('Pemberitahuan: obrolan tidak membanjiri email', function (): void {
         Mail::assertSent(TiketDukunganBaru::class, 1);
     });
 
-    it('balasan petugas saat pelapor sedang membaca tidak dikirim lewat email; saat ia tidak membaca tetap dikirim', function (): void {
+    it('balasan petugas saat pelapor sedang membaca tidak dikirim lewat email. Saat ia tidak membaca tetap dikirim', function (): void {
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         $kirim = BantuanDukungan::MasukSebagaiTenant($this, $this->pemilik, $this->tenant)->postJson(UrlObrolanTenant(), ['Isi' => 'Halo.'])->json();
         $uuid = $kirim['Obrolan']['Uuid'];
@@ -220,7 +220,7 @@ describe('Pemberitahuan: obrolan tidak membanjiri email', function (): void {
 });
 
 describe('Inbox petugas', function (): void {
-    it('kehadiran: siap, detak memperpanjang, tidak berdetak = offline, mematikan = offline; tanpa izin tangani ditolak', function (): void {
+    it('kehadiran: siap, detak memperpanjang, tidak berdetak = offline, mematikan = offline, tanpa izin tangani ditolak', function (): void {
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
 
         MasukSebagaiPetugasObrolan($this, $petugas)->postJson(UrlObrolan('/kehadiran'), ['Siap' => true])->assertOk()
@@ -271,7 +271,7 @@ describe('Inbox petugas', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'tenant.data.akses')->count())->toBe($sebelum + 1);
     });
 
-    it('membalas mengisi respons pertama, menugaskan pembalas, dan mengubah Baru menjadi Ditangani; menyelesaikan menutup obrolan', function (): void {
+    it('membalas mengisi respons pertama, menugaskan pembalas, dan mengubah Baru menjadi Ditangani. Menyelesaikan menutup obrolan', function (): void {
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         $kirim = BantuanDukungan::MasukSebagaiTenant($this, $this->pemilik, $this->tenant)->postJson(UrlObrolanTenant(), ['Isi' => 'Halo.'])->json();
         $uuid = $kirim['Obrolan']['Uuid'];

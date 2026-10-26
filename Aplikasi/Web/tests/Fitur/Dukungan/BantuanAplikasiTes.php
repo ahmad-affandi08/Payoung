@@ -118,7 +118,7 @@ describe('Aplikasi Kasir', function (): void {
             ->assertOk()->assertJsonCount(2, 'Tiket.Pesan');
     });
 
-    it('menolak staf yang bukan anggota outlet, UuidPengguna kosong, dan isian tidak sah; perangkat tanpa token ditolak', function (): void {
+    it('menolak staf yang bukan anggota outlet, UuidPengguna kosong, dan isian tidak sah. Perangkat tanpa token ditolak', function (): void {
         ['Tenant' => $tenant] = BantuanDukungan::BuatTenant('Toko Bantuan Ditolak', 'pemilik@bantuanditolak.id');
         ['Tenant' => $lain, 'Pengguna' => $pemilikLain] = BantuanDukungan::BuatTenant('Toko Lain Bantuan', 'pemilik@lainbantuan.id');
         ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);

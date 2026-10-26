@@ -41,7 +41,7 @@ describe('D-21 halaman publik', function (): void {
             ->and(mb_strlen($bawaan['DeskripsiSeo']))->toBeLessThanOrEqual(170);
     });
 
-    it('semua halaman bawaan tampil sebelum konsol menyimpan apa pun; slug tak dikenal 404', function (): void {
+    it('semua halaman bawaan tampil sebelum konsol menyimpan apa pun. Slug tak dikenal 404', function (): void {
         foreach (array_keys(KontenSitusBawaan::AmbilHalaman()) as $slug) {
             $jalur = $slug === HalamanSitus::SLUG_BERANDA ? '/' : '/'.$slug;
             $this->get($jalur)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -76,7 +76,7 @@ describe('D-21 halaman publik', function (): void {
         });
     });
 
-    it('meta SEO dirender server & di-escape; kanonik mengikuti domain pemasaran', function (): void {
+    it('meta SEO dirender server & di-escape. Kanonik mengikuti domain pemasaran', function (): void {
         AturDomainSitusUji();
         PengaturanSitus::query()->create([
             'Kunci' => PengaturanSitus::KUNCI_UMUM,
@@ -120,7 +120,7 @@ describe('D-21 halaman publik', function (): void {
             ->where('Situs.Pengumuman.Teks', 'Diskon 17 Agustus'));
     });
 
-    it('halaman belum terbit atau disembunyikan tidak tampil; pratinjau hanya lewat tautan bertanda tangan', function (): void {
+    it('halaman belum terbit atau disembunyikan tidak tampil. Pratinjau hanya lewat tautan bertanda tangan', function (): void {
         $halaman = HalamanSitus::query()->create([
             'Slug' => 'promo-lebaran',
             'Judul' => 'Promo Lebaran',
@@ -143,7 +143,7 @@ describe('D-21 halaman publik', function (): void {
         $this->get('/promo-lebaran')->assertNotFound();
     });
 
-    it('peta situs memuat halaman terbit & bawaan tanpa halaman tersembunyi; domain tenant tidak diindeks', function (): void {
+    it('peta situs memuat halaman terbit & bawaan tanpa halaman tersembunyi. Domain tenant tidak diindeks', function (): void {
         AturDomainSitusUji();
         app(SiapkanHalamanSitusBawaan::class)->Jalankan();
         HalamanSitus::query()->where('Slug', 'tentang')->update(['Aktif' => false]);

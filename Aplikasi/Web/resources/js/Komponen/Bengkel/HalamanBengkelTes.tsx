@@ -176,7 +176,7 @@ describe('Bengkel (§9.10)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('daftar: nomor polisi, status berteks, total disetujui; aksi baris mengirim status', () => {
+    it('daftar: nomor polisi, status berteks, total disetujui. Aksi baris mengirim status', () => {
         RenderUji(
             <HalamanDaftarPerintahKerja
                 PerintahKerja={BuatHasilTabel([barisDaftar])}
@@ -233,7 +233,7 @@ describe('Bengkel (§9.10)', () => {
         );
     });
 
-    it('detail: batalkan butuh alasan minimal 5 huruf; ditagih menautkan penjualan', () => {
+    it('detail: batalkan butuh alasan minimal 5 huruf. Ditagih menautkan penjualan', () => {
         RenderUji(
             <HalamanDetailPerintahKerja
                 {...PropsDetail({
@@ -281,7 +281,7 @@ describe('Bengkel (§9.10)', () => {
         );
     });
 
-    it('formulir ubah: tanpa bidang harga; mekanik hanya baris jasa; dikirim PUT tanpa HargaSatuan', () => {
+    it('formulir ubah: tanpa bidang harga. Mekanik hanya baris jasa. Dikirim PUT tanpa HargaSatuan', () => {
         const props: PropsFormPerintahKerja = {
             Isian: {
                 Uuid: uuidPk,
@@ -361,7 +361,7 @@ describe('Bengkel (§9.10)', () => {
         expect(data.Baris.some((b) => 'HargaSatuan' in b)).toBe(false);
     });
 
-    it('halaman persetujuan publik: setujui sebagian mengirim baris terpilih; setelah diputuskan tanpa tombol', () => {
+    it('halaman persetujuan publik: setujui sebagian mengirim baris terpilih. Setelah diputuskan tanpa tombol', () => {
         const pk = BuatPerintahKerja();
         const props: PropsPersetujuanServis = {
             NamaToko: 'Bengkel Jaya Motor',

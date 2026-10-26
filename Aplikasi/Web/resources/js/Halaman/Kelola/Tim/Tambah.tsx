@@ -304,7 +304,7 @@ export default function HalamanTambahTim({
                     <BidangTeks
                         label="Kata sandi awal"
                         jenis="password"
-                        keterangan="Minimal 8 karakter, berisi huruf dan angka. Berikan ke orangnya; ia wajib menggantinya saat pertama masuk."
+                        keterangan="Minimal 8 karakter, berisi huruf dan angka. Berikan ke orangnya. Ia wajib menggantinya saat pertama masuk."
                         nilai={d.KataSandi}
                         saatBerubah={(nilai) => formulir.setData('KataSandi', nilai)}
                         galat={galat.KataSandi}

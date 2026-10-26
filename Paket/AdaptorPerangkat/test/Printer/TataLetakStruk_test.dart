@@ -28,7 +28,7 @@ void main() {
       expect(teks.every((b) => b.length <= 32), isTrue);
     });
 
-    test('80 mm = 48 kolom; teks besar memakai setengah kolom', () {
+    test('80 mm = 48 kolom. Teks besar memakai setengah kolom', () {
       final teks = TataLetakStruk.KeTeks(
         const DokumenStruk([
           BarisDuaKolom('TOTAL', 'Rp 56.000'),
@@ -42,7 +42,7 @@ void main() {
       expect(teks[1], '         LUNAS');
     });
 
-    test('huruf beraksen & tanda kutip pintar dirapikan ke ASCII; karakter lain jadi "?"', () {
+    test('huruf beraksen & tanda kutip pintar dirapikan ke ASCII. Karakter lain jadi "?"', () {
       expect(TataLetakStruk.RapikanTeks('Café “Senja” – 2×'), 'Cafe "Senja" - 2x');
       expect(TataLetakStruk.RapikanTeks('Kopi ☕'), 'Kopi ?');
       expect(TataLetakStruk.RapikanTeks('−Rp 2.000'), '-Rp 2.000');
@@ -63,7 +63,7 @@ void main() {
       expect(kecil.titik, [1, 1, 0, 0]);
     });
 
-    test('KeJson/DariJson bolak-balik; data rusak → null', () {
+    test('KeJson/DariJson bolak-balik. Data rusak → null', () {
       final gambar = GambarMonokrom(3, 3, Uint8List.fromList([1, 0, 1, 0, 1, 0, 1, 1, 1]));
       final kembali = GambarMonokrom.DariJson(gambar.KeJson())!;
       expect((kembali.lebar, kembali.tinggi), (3, 3));

@@ -238,7 +238,7 @@ export default function HalamanAbsensi({
         <TataLetakAplikasi judul="Absensi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Absen masuk & pulang karyawan dari HP (login, lokasi, dan pencocokan wajah). Jam memakai zona waktu
-                outlet; terlambat dihitung dari jadwal kerja. Absen yang lokasinya janggal tetap tercatat dan ditandai
+                outlet. Terlambat dihitung dari jadwal kerja. Absen yang lokasinya janggal tetap tercatat dan ditandai
                 Perlu dicek.
             </p>
             {BolehKoreksi ? (

@@ -155,13 +155,13 @@ final class Penjualan extends ModelDasar
                     || ($kolom === 'Status' && self::CekStatusBoleh($penjualan));
 
                 if (! $boleh) {
-                    throw new LogicException("Penjualan yang sudah diterima tidak boleh diubah (kolom {$kolom}); koreksi lewat void/retur.");
+                    throw new LogicException("Penjualan yang sudah diterima tidak boleh diubah (kolom {$kolom}). Koreksi lewat void/retur.");
                 }
             }
         });
 
         self::deleting(function (): void {
-            throw new LogicException('Penjualan tidak boleh dihapus; koreksi lewat void/retur.');
+            throw new LogicException('Penjualan tidak boleh dihapus. Koreksi lewat void/retur.');
         });
     }
 

@@ -67,7 +67,7 @@ void main() {
     };
   }
 
-  testWidgets('kartu Beranda meringkas kehadiran; ketuk membuka layar Karyawan', (tester) async {
+  testWidgets('kartu Beranda meringkas kehadiran. Ketuk membuka layar Karyawan', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
 

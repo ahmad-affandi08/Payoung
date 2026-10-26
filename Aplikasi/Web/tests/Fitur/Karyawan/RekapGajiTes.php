@@ -100,7 +100,7 @@ describe('F-18 bagian 3 rekap gaji', function (): void {
         $this->put($alamatDewi, ['Tambahan' => '0', 'PotonganKasbon' => '900000', 'PotonganLain' => '200000'])
             ->assertSessionHasErrors(['PotonganLain' => 'Potongan melebihi gaji kotor. Kurangi potongan.']);
         // Dewi: kotor 1.500.000, potong kasbon 800.000 + denda 50.000 → bersih 650.000.
-        $this->put($alamatDewi, ['Tambahan' => '500000', 'PotonganKasbon' => '800000', 'PotonganLain' => '50000', 'Catatan' => 'Lembur 5 hari; denda terlambat'])->assertRedirect();
+        $this->put($alamatDewi, ['Tambahan' => '500000', 'PotonganKasbon' => '800000', 'PotonganLain' => '50000', 'Catatan' => 'Lembur 5 hari. Denda terlambat'])->assertRedirect();
 
         $this->post("/kelola/karyawan/gaji/{$rekap->Uuid}/bayar", ['Tanggal' => '2026-10-21', 'AkunKasBank' => $kas->Uuid, 'AkunBeban' => $beban->Uuid])
             ->assertSessionHasErrors(['Tanggal' => 'Tanggal bayar tidak boleh setelah hari ini.']);
@@ -144,7 +144,7 @@ describe('F-18 bagian 3 rekap gaji', function (): void {
         expect($csv)->toContain('Nama,Jabatan,"Gaji pokok"')->toContain('Dewi Junior')->toContain('650000.00');
     });
 
-    it('draf bisa dihapus; periode yang dipakai kembali tersedia; butuh karyawan.kelola; tenant lain tidak bisa mengakses', function (): void {
+    it('draf bisa dihapus. Periode yang dipakai kembali tersedia. Butuh karyawan.kelola. Tenant lain tidak bisa mengakses', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Kopi Senja Solo');
         $b = BantuanPersediaan::SiapkanTenant('Warung Bakso Pak Kumis');
         BantuanOrganisasi::AturKonteks($a['Tenant']->Id);

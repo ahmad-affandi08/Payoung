@@ -107,7 +107,7 @@ function PeriksaInvarianStokSaja(int $idTenant, bool $fifo): array
 }
 
 describe('F-05a invarian end-to-end: stok awal → batal → posting lagi (aturan #9, #17)', function (): void {
-    it('BR-05.1 J-05.1: MA & FIFO, produk biasa/bahan baku/produksi/batch/seri; setiap langkah Σ debit = Σ kredit dan SaldoStok = Σ MutasiStok', function (MetodeHpp $metode): void {
+    it('BR-05.1 J-05.1: MA & FIFO, produk biasa/bahan baku/produksi/batch/seri. Setiap langkah Σ debit = Σ kredit dan SaldoStok = Σ MutasiStok', function (MetodeHpp $metode): void {
         $fifo = $metode === MetodeHpp::Fifo;
         $t = BantuanPersediaan::SiapkanTenant('Toko Sembako Berkah Jaya', $metode);
         $id = $t['Tenant']->Id;

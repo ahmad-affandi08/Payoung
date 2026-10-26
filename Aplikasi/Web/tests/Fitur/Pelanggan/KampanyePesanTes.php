@@ -98,7 +98,7 @@ function IsianKampanye(array $timpa = []): array
     ];
 }
 
-it('pratinjau hanya menghitung yang setuju promosi & punya nomor WhatsApp sah; kirim WhatsApp bertahap, tujuan terenkripsi, selesai', function (): void {
+it('pratinjau hanya menghitung yang setuju promosi & punya nomor WhatsApp sah. Kirim WhatsApp bertahap, tujuan terenkripsi, selesai', function (): void {
     $k = SiapkanKampanye($this);
 
     $this->postJson('/kelola/pelanggan/kampanye/pratinjau', ['Kanal' => 'Whatsapp', 'Segmen' => []])->assertOk()->assertJson([
@@ -153,7 +153,7 @@ it('pratinjau hanya menghitung yang setuju promosi & punya nomor WhatsApp sah; k
     $this->getJson('/kelola/pelanggan/kampanye')->assertJsonPath('Data.0.Status', 'Selesai');
 });
 
-it('tautan berhenti berlangganan: GET hanya konfirmasi, POST mencabut persetujuan; tautan diubah = 404', function (): void {
+it('tautan berhenti berlangganan: GET hanya konfirmasi, POST mencabut persetujuan. Tautan diubah = 404', function (): void {
     $k = SiapkanKampanye($this);
     $tautan = TautanBerhentiLangganan::Buat($k['Tenant']->Id, $k['Budi']->Uuid);
     app(KonteksTenant::class)->Kosongkan();

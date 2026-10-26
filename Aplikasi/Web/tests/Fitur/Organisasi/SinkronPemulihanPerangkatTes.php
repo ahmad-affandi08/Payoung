@@ -47,7 +47,7 @@ function KonteksTindakanPemilik(array $k): DataKonteksTindakan
 }
 
 describe('perangkat dicabut dengan outbox tertunda', function (): void {
-    it('item sebelum dicabut diterima atas nama perangkat itu + tinjauan; item sesudahnya ditolak; endpoint lain tetap 403', function (): void {
+    it('item sebelum dicabut diterima atas nama perangkat itu + tinjauan. Item sesudahnya ditolak. Endpoint lain tetap 403', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $dibuat = CarbonImmutable::now()->subMinutes(20);
         $sebelum = BantuanKasir::ItemBukaShift($k['Kasir'], uuid: UuidPada($dibuat));
@@ -99,7 +99,7 @@ describe('perangkat dicabut dengan outbox tertunda', function (): void {
 });
 
 describe('aktivasi ulang: outbox lama dikirim perangkat baru', function (): void {
-    it('item lama dikreditkan ke perangkat asal, bukan pengirim; dicatat untuk ditinjau di Kotak Tindakan', function (): void {
+    it('item lama dikreditkan ke perangkat asal, bukan pengirim. Dicatat untuk ditinjau di Kotak Tindakan', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $lama = $k['Perangkat'];
         $item = BantuanKasir::ItemBukaShift($k['Kasir'], uuid: UuidPada(CarbonImmutable::now()->subMinutes(15)));

@@ -93,7 +93,7 @@ it('paket tanpa api.publik tidak bisa membuat token; Owner dengan fitur membuat 
     BantuanOrganisasi::Masuk($this, $admin, $k['Tenant']->Id)->get('/kelola/pengaturan/api')->assertForbidden();
 });
 
-it('token membaca produk & stok dengan kursor; tanpa cakupan 403; token tenant lain tidak melihat datanya', function (): void {
+it('token membaca produk & stok dengan kursor, tanpa cakupan 403. Token tenant lain tidak melihat datanya', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Integrasi Sukoharjo');
     AktifkanApiPublik($k['Tenant']);
     $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Pandan Wangi Karung 5 kg', '40', '60000', '75000.00');
@@ -132,7 +132,7 @@ it('token membaca produk & stok dengan kursor; tanpa cakupan 403; token tenant l
     expect(collect($api('/api/v1/produk', $tokenLain)->json('Data'))->pluck('Nama'))->not->toContain('Beras Pandan Wangi Karung 5 kg');
 });
 
-it('penjualan per rentang tanggal dengan baris & pembayaran; rentang tidak valid 422; dicabut & kedaluwarsa 401', function (): void {
+it('penjualan per rentang tanggal dengan baris & pembayaran. Rentang tidak valid 422. Dicabut & kedaluwarsa 401', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Toko Sembako Integrasi Sukoharjo');
     AktifkanApiPublik($k['Tenant']);
     $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Pandan Wangi Karung 5 kg', '40', '60000', '75000.00');
@@ -167,7 +167,7 @@ it('penjualan per rentang tanggal dengan baris & pembayaran; rentang tidak valid
     $this->withToken($tokenSementara)->getJson('/api/v1/penjualan?dari=2026-10-05&sampai=2026-10-05')->assertUnauthorized();
 });
 
-it('X7 bagian 4 stok:tulis: penyesuaian stok dari sistem lain langsung diposting di bawah batas, menunggu persetujuan di atasnya; idempoten per Uuid; audit atas nama Owner pembuat token', function (): void {
+it('X7 bagian 4 stok:tulis: penyesuaian stok dari sistem lain langsung diposting di bawah batas, menunggu persetujuan di atasnya. Idempoten per Uuid. Audit atas nama Owner pembuat token', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanApiPublik($k['Tenant']);
     $semen = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Semen Gresik Portland Komposit 40 kg', '200', '52000', '63500.00');

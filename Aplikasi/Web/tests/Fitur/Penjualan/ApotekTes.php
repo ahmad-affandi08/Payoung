@@ -86,7 +86,7 @@ function JualObatUji(object $tes, array $k, array $opsi, array $timpa = []): Pen
 }
 
 describe('Produk obat: golongan, OWA, prekursor (form produk)', function (): void {
-    it('obat bergolongan wajib Batch & kedaluwarsa (termasuk obat bebas); dengan Batch tersimpan; OWA hanya untuk obat keras', function (): void {
+    it('obat bergolongan wajib Batch & kedaluwarsa (termasuk obat bebas), dengan Batch tersimpan; OWA hanya untuk obat keras', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Apotek Sehat Sentosa Solo');
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $isi = fn (array $timpa): array => BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], array_replace([
@@ -121,7 +121,7 @@ describe('Produk obat: golongan, OWA, prekursor (form produk)', function (): voi
         expect($p->refresh()->GolonganObat)->toBeNull()->and($p->ObatWajibApotek)->toBeFalse()->and($p->Prekursor)->toBeFalse();
     });
 
-    it('jenis tanpa stok (Jasa) tidak boleh bergolongan obat; golongan tidak dikenal ditolak', function (): void {
+    it('jenis tanpa stok (Jasa) tidak boleh bergolongan obat. Golongan tidak dikenal ditolak', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Apotek Sehat Sentosa Solo');
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $form = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], ['Nama' => 'Tuslah racik', 'Jenis' => 'Jasa', 'GolonganObat' => 'Keras']);
@@ -199,7 +199,7 @@ describe('Penjualan.Buat dengan resep (BR apotek, diterima + tinjauan)', functio
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('kasir biasa (asisten) menjual obat keras: ApotekerTidakBerwenang; dengan UuidApoteker berizin = sah dan tercatat', function (): void {
+    it('kasir biasa (asisten) menjual obat keras: ApotekerTidakBerwenang, dengan UuidApoteker berizin = sah dan tercatat', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $amox = BuatObatUji($k, 'Amoxicillin 500 mg Kapsul', GolonganObat::Keras);
@@ -218,7 +218,7 @@ describe('Penjualan.Buat dengan resep (BR apotek, diterima + tinjauan)', functio
             ->and($sah->IdApoteker)->toBe($apoteker->Id);
     });
 
-    it('Obat Wajib Apotek: apoteker tanpa resep = sah (tercatat apotekernya); kasir biasa = ApotekerTidakBerwenang', function (): void {
+    it('Obat Wajib Apotek: apoteker tanpa resep = sah (tercatat apotekernya). Kasir biasa = ApotekerTidakBerwenang', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $mef = BuatObatUji($k, 'Asam Mefenamat 500 mg Tablet', GolonganObat::Keras, owa: true);
@@ -244,7 +244,7 @@ describe('Penjualan.Buat dengan resep (BR apotek, diterima + tinjauan)', functio
         expect($p->PerluTinjauan)->toBeFalse()->and($p->IdApoteker)->toBeNull();
     });
 
-    it('psikotropika: resep tanpa alamat pasien = ResepTidakLengkap; tanda DenganResep per baris dihormati', function (): void {
+    it('psikotropika: resep tanpa alamat pasien = ResepTidakLengkap. Tanda DenganResep per baris dihormati', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $diaz = BuatObatUji($k, 'Diazepam 2 mg Tablet', GolonganObat::Psikotropika, batch: 'DZ-01');
@@ -262,7 +262,7 @@ describe('Penjualan.Buat dengan resep (BR apotek, diterima + tinjauan)', functio
             ->and($detail)->toBe([true, false]);
     });
 
-    it('blok Resep tanpa isian wajib ditolak DataTidakValid; kiriman ganda = Duplikat dengan satu resep (idempoten)', function (): void {
+    it('blok Resep tanpa isian wajib ditolak DataTidakValid. Kiriman ganda = Duplikat dengan satu resep (idempoten)', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $amox = BuatObatUji($k, 'Amoxicillin 500 mg Kapsul', GolonganObat::Keras);
@@ -309,7 +309,7 @@ function BarisRacikanUji(Produk $jasaRacik, array $komponen, array $timpa = []):
 }
 
 describe('Racikan apotek (bagian 3): resep racik sebagai resep sementara pada baris jasa racik', function (): void {
-    it('apoteker + resep: komponen berkurang FEFO dari batch, HPP baris = Σ komponen, golongan terkuat & DenganResep, snapshot komposisi; kirim ulang Duplikat; void mengembalikan stok; retur ditolak', function (): void {
+    it('apoteker + resep: komponen berkurang FEFO dari batch, HPP baris = Σ komponen, golongan terkuat & DenganResep, snapshot komposisi. Kirim ulang Duplikat. Void mengembalikan stok. Retur ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $ctm = BuatObatUji($k, 'CTM Chlorpheniramine 4 mg Tablet', GolonganObat::BebasTerbatas);
@@ -369,7 +369,7 @@ describe('Racikan apotek (bagian 3): resep racik sebagai resep sementara pada ba
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('racikan berisi obat keras oleh kasir biasa tanpa resep: diterima + ResepTidakLengkap & ApotekerTidakBerwenang atas nama racikannya; racikan obat bebas tanpa tinjauan', function (): void {
+    it('racikan berisi obat keras oleh kasir biasa tanpa resep: diterima + ResepTidakLengkap & ApotekerTidakBerwenang atas nama racikannya. Racikan obat bebas tanpa tinjauan', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $para = BuatObatUji($k, 'Paracetamol 500 mg Tablet', GolonganObat::Bebas);
         $amox = BuatObatUji($k, 'Amoxicillin 500 mg Kapsul', GolonganObat::Keras, owa: true);
@@ -408,7 +408,7 @@ describe('Racikan apotek (bagian 3): resep racik sebagai resep sementara pada ba
 });
 
 describe('Laporan apotek: obat wajib resep & data pendukung SIPNAP', function (): void {
-    it('daftar obat wajib resep: batch & resep tampil; data pasien utuh hanya untuk apotek.resep.lihat; ekspor CSV; isolasi tenant; kasir ditolak', function (): void {
+    it('daftar obat wajib resep: batch & resep tampil. Data pasien utuh hanya untuk apotek.resep.lihat. Ekspor CSV. Isolasi tenant. Kasir ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Apotek Sehat Sentosa Solo');
         $apoteker = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Apoteker);
         $amox = BuatObatUji($k, 'Amoxicillin 500 mg Kapsul', GolonganObat::Keras, batch: 'AMX-2601');
@@ -487,7 +487,7 @@ describe('Laporan apotek: obat wajib resep & data pendukung SIPNAP', function ()
 });
 
 describe('Template sektor Apotek RTL-PHR', function (): void {
-    it('produk contoh obat dibuat bergolongan & berpelacakan Batch; embalase/tuslah sebagai jasa', function (): void {
+    it('produk contoh obat dibuat bergolongan & berpelacakan Batch. Embalase/tuslah sebagai jasa', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('RTL-PHR');
         ['Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant('Apotek Sehat Sentosa Solo');
         BantuanPanduanAwal::Terapkan($outlet, 'RTL-PHR');

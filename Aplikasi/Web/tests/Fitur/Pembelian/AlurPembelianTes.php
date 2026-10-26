@@ -80,7 +80,7 @@ function SaldoProduk(int $idProduk, int $idGudang): SaldoStok
 }
 
 describe('F-04 pesanan pembelian: status & persetujuan (§19.2)', function (): void {
-    it('PO di bawah batas langsung Disetujui; di atas batas menunggu persetujuan orang lain, bukan pembuatnya', function (): void {
+    it('PO di bawah batas langsung Disetujui. Di atas batas menunggu persetujuan orang lain, bukan pembuatnya', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         // D-38: Pemilik yang mengajukan langsung disetujui, jadi four-eyes diuji lewat pengaju bukan-Pemilik.
         $id = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->Id;
@@ -131,7 +131,7 @@ describe('F-04 pesanan pembelian: status & persetujuan (§19.2)', function (): v
             ->and($po->Total)->toBe('1851000.00');
     });
 
-    it('PO dibatalkan hanya sebelum ada penerimaan; setelahnya hanya bisa ditutup', function (): void {
+    it('PO dibatalkan hanya sebelum ada penerimaan. Setelahnya hanya bisa ditutup', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -222,7 +222,7 @@ describe('F-04 penerimaan barang (GRN): BR-04.1, BR-04.2, BR-04.3, landed cost, 
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('batch & nomor seri masuk dari GRN; seri wajib sebanyak jumlah dasar; satuan dus dikonversi ke satuan dasar', function (): void {
+    it('batch & nomor seri masuk dari GRN. Seri wajib sebanyak jumlah dasar. Satuan dus dikonversi ke satuan dasar', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -256,7 +256,7 @@ describe('F-04 penerimaan barang (GRN): BR-04.1, BR-04.2, BR-04.3, landed cost, 
 });
 
 describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', function (): void {
-    it('faktur 3-way: selisih harga BR-04.4 ke Selisih HPP; PPN masukan dikreditkan; hutang = total faktur', function (): void {
+    it('faktur 3-way: selisih harga BR-04.4 ke Selisih HPP; PPN masukan dikreditkan. Hutang = total faktur', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
@@ -291,7 +291,7 @@ describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', fun
             ->and(KodeGalatPembelian(fn () => BantuanPembelian::Fakturkan($pemasok, [BantuanPembelian::TerimaTanpaPo($pemasok, $t['Gudang'], [[$sabun, '1', '12000']], $id)], $id, nomor: 'INV/SPN/X1')))->toBe('NomorFakturGanda');
     });
 
-    it('pembayaran sebagian & banyak faktur satu pemasok; lebih dari sisa ditolak; pembatalan mengembalikan sisa', function (): void {
+    it('pembayaran sebagian & banyak faktur satu pemasok. Lebih dari sisa ditolak. Pembatalan mengembalikan sisa', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -318,7 +318,7 @@ describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', fun
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('retur sebelum faktur mengurangi hutang belum difakturkan; sesudah faktur mengurangi sisa hutang faktur; pembatalan retur membalik', function (): void {
+    it('retur sebelum faktur mengurangi hutang belum difakturkan. Sesudah faktur mengurangi sisa hutang faktur. Pembatalan retur membalik', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -353,7 +353,7 @@ describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', fun
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('pembatalan GRN membalik stok & jurnal, jumlah diterima PO kembali; ditolak bila stok sudah terpakai', function (): void {
+    it('pembatalan GRN membalik stok & jurnal, jumlah diterima PO kembali. Ditolak bila stok sudah terpakai', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $pemasok = BantuanPembelian::BuatPemasok();
@@ -379,7 +379,7 @@ describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', fun
         expect($po2->refresh()->Status)->toBe(StatusPesananPembelian::Disetujui)->and($po2->Detail()->firstOrFail()->JumlahDiterima)->toBe('0.0000');
     });
 
-    it('belanja stok satu langkah: GRN + faktur lunas + pembayaran, satu jurnal J-04.3; dibatalkan utuh', function (): void {
+    it('belanja stok satu langkah: GRN + faktur lunas + pembayaran, satu jurnal J-04.3. Dibatalkan utuh', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $id = $t['Pemilik']->Id;
         $cabai = BantuanKatalog::BuatProduk(['Nama' => 'Cabai Rawit Merah Segar'], null, $t['Kg']);
@@ -406,7 +406,7 @@ describe('F-04 faktur, hutang, pembayaran, retur, belanja stok, pembatalan', fun
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('FIFO: penerimaan membuat lapisan; invarian lapisan terjaga', function (): void {
+    it('FIFO: penerimaan membuat lapisan. Invarian lapisan terjaga', function (): void {
         $t = BantuanPembelian::SiapkanTenant(MetodeHpp::Fifo);
         $id = $t['Pemilik']->Id;
         $roti = BantuanKatalog::BuatProduk(['Nama' => 'Roti Tawar Kupas Gandum 400 gram']);

@@ -48,7 +48,7 @@ describe('F-05a pengaturan persediaan: metode HPP (BR-04.2) & stok minus (BR-05.
                     && collect($opsi)->every(fn ($o) => is_string($o['Keterangan']) && $o['Keterangan'] !== '')));
     });
 
-    it('PUT: mengubah metode HPP & stok minus sebelum ada riwayat stok; audit nilai lama/baru; kunci lain Pengaturan utuh', function (): void {
+    it('PUT: mengubah metode HPP & stok minus sebelum ada riwayat stok. Audit nilai lama/baru. Kunci lain Pengaturan utuh', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $sebelum = Tenant::query()->findOrFail($t['Tenant']->Id)->Pengaturan ?? [];
 

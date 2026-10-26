@@ -102,7 +102,7 @@ describe('D-108 halaman Pengaturan › WhatsApp', () => {
         expect(screen.getByText(/pasang WhatsApp sendiri/)).toBeTruthy();
     });
 
-    it('tanpa batas menampilkan jumlah terkirim saja; nomor Payoung belum tersambung diberi tahu', () => {
+    it('tanpa batas menampilkan jumlah terkirim saja. Nomor Payoung belum tersambung diberi tahu', () => {
         RenderUji(<HalamanWhatsapp {...BuatProps({ Kuota: BuatKuota(1234, null), NomorPayoungTersedia: false })} />);
 
         expect(screen.getByText('1.234')).toBeTruthy();

@@ -136,7 +136,7 @@ class _PanelPreOrderState extends ConsumerState<PanelPreOrder> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Pesanan atas nama ${keranjang.pelanggan?.nama ?? '-'}. Uang muka dicatat sekarang; stok berkurang dan '
+            'Pesanan atas nama ${keranjang.pelanggan?.nama ?? '-'}. Uang muka dicatat sekarang. Stok berkurang dan '
             'penjualan tercatat saat pesanan diambil.',
             style: teks.bodySmall,
           ),

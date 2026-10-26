@@ -78,7 +78,7 @@ function AmbilTokenCookie(TestResponse $respons): string
     return (string) $cookie?->getValue();
 }
 
-it('tombol masuk hanya aktif bila WhatsApp platform & sakelar toko hidup; tanpa itu checkout tamu tetap jalan', function (): void {
+it('tombol masuk hanya aktif bila WhatsApp platform & sakelar toko hidup, tanpa itu checkout tamu tetap jalan', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
 
     $this->get($k['AlamatToko'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Akun.Aktif', true)->where('Akun.Pelanggan', null));
@@ -153,7 +153,7 @@ it('nomor baru: kode WhatsApp → salah sekali → benar → lengkapi nama → m
     ])->assertUnprocessable()->assertJsonPath('Galat.Kode', 'TokenDaftarTidakBerlaku');
 });
 
-it('pelanggan kasir yang sudah ada langsung masuk tanpa daftar ulang; datanya tidak ditimpa; nomornya jadi terverifikasi', function (): void {
+it('pelanggan kasir yang sudah ada langsung masuk tanpa daftar ulang. Datanya tidak ditimpa. Nomornya jadi terverifikasi', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $lama = Pelanggan::query()->create(['Nama' => 'Bu Ratna Kasir', 'NoHp' => '6281277771234', 'Alamat' => 'Jl. Lama 1']);
@@ -248,7 +248,7 @@ it('WhatsApp Cloud API resmi: kode dikirim lewat templat autentikasi dengan tomb
     });
 });
 
-it('pesanan pembeli yang masuk tertaut ke Pelanggan dengan nomor terverifikasi; tamu bernomor sama tidak tertaut', function (): void {
+it('pesanan pembeli yang masuk tertaut ke Pelanggan dengan nomor terverifikasi. Tamu bernomor sama tidak tertaut', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $token = MasukSebagaiPembeli($this, $k);
 
@@ -265,7 +265,7 @@ it('pesanan pembeli yang masuk tertaut ke Pelanggan dengan nomor terverifikasi; 
     $p = Pelanggan::query()->sole();
     $milik = PesananOnline::query()->where('Uuid', $kiriman['Uuid'])->sole();
     expect($milik->IdPelanggan)->toBe($p->Id)
-        ->and($milik->NoHp)->toBe('6281277771234', 'Nomor ketikan diabaikan; yang dipakai nomor terverifikasi.')
+        ->and($milik->NoHp)->toBe('6281277771234', 'Nomor ketikan diabaikan, yang dipakai nomor terverifikasi.')
         ->and(PesananOnline::query()->where('Uuid', $tamu['Uuid'])->sole()->IdPelanggan)->toBeNull();
 });
 
@@ -292,7 +292,7 @@ it('harga tier pelanggan berlaku di keranjang & checkout pembeli yang masuk, tid
     expect($pesanan->Total)->toBe('50000.00')->and($pesanan->Detail->first()?->HargaSatuan)->toBe('20000.00');
 });
 
-it('halaman Akun saya: profil, riwayat pesanan online; ubah profil; tanggal lahir hanya diisi sekali; keluar mencabut sesi', function (): void {
+it('halaman Akun saya: profil, riwayat pesanan online. Ubah profil. Tanggal lahir hanya diisi sekali. Keluar mencabut sesi', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $token = MasukSebagaiPembeli($this, $k);
     // Tanpa cookie dulu: klien uji menyimpan cookie `withCookie` untuk permintaan sesudahnya.
@@ -350,7 +350,7 @@ it('isolasi tenant: sesi pembeli toko A tidak berlaku di toko B walau cookie-nya
     expect(PesananOnline::query()->where('Uuid', $kiriman['Uuid'])->sole()->IdPelanggan)->toBeNull();
 });
 
-it('back-office: sakelar akun pembeli tersimpan & mematikan tombol masuk; pesanan menampilkan pelanggan tertautnya', function (): void {
+it('back-office: sakelar akun pembeli tersimpan & mematikan tombol masuk. Pesanan menampilkan pelanggan tertautnya', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $token = MasukSebagaiPembeli($this, $k);
     $kiriman = BantuanTokoOnline::Kiriman($k);
@@ -375,7 +375,7 @@ it('back-office: sakelar akun pembeli tersimpan & mematikan tombol masuk; pesana
     $this->get($k['AlamatToko'])->assertInertia(fn (AssertableInertia $h) => $h->where('Akun.Aktif', false)->where('Akun.Pelanggan', null));
 });
 
-it('POS: pesanan pembeli yang masuk membawa Pelanggan (bentuk hasil cari POS, HP tersamar) supaya kasir memasangnya; tamu null', function (): void {
+it('POS: pesanan pembeli yang masuk membawa Pelanggan (bentuk hasil cari POS, HP tersamar) supaya kasir memasangnya. Tamu null', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $token = MasukSebagaiPembeli($this, $k);
     $this->postJson($k['AlamatToko'].'/pesan', $tamu = BantuanTokoOnline::Kiriman($k))->assertCreated();

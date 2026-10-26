@@ -85,7 +85,7 @@ const DATA = [
 describe('Halaman publik kompatibilitas perangkat (v1.98, D-92)', () => {
     afterEach(() => cleanup());
 
-    it('perangkat & printer dipisah; status bertulisan, sambungan, jumlah usaha, dan catatan tim tampil dalam shell situs', () => {
+    it('perangkat & printer dipisah. Status bertulisan, sambungan, jumlah usaha, dan catatan tim tampil dalam shell situs', () => {
         render(<HalamanKompatibilitasPerangkatPublik Baris={DATA} />);
 
         expect(screen.getByRole('heading', { level: 1, name: 'Perangkat & printer yang didukung' })).toBeTruthy();
@@ -100,7 +100,7 @@ describe('Halaman publik kompatibilitas perangkat (v1.98, D-92)', () => {
         expect(screen.getByText('Terbatas (1)')).toBeTruthy();
     });
 
-    it('pencarian dan filter status memfilter kartu; hasil nihil menampilkan keadaan kosong bertulisan', () => {
+    it('pencarian dan filter status memfilter kartu. Hasil nihil menampilkan keadaan kosong bertulisan', () => {
         render(<HalamanKompatibilitasPerangkatPublik Baris={DATA} />);
 
         fireEvent.change(screen.getByPlaceholderText('Cari merek atau model'), { target: { value: 'sunmi' } });

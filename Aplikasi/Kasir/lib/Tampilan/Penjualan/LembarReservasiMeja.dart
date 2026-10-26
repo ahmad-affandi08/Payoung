@@ -146,7 +146,7 @@ class _LembarReservasiMejaState extends ConsumerState<LembarReservasiMeja> {
               Expanded(
                 child: Text(
                   'Reservasi meja outlet ini hari ini, urut jam. Isi keranjang (atau buka pesanan mejanya) lebih dulu, lalu '
-                  'pilih "Tagih di keranjang" supaya uang muka tamu otomatis dipotong. Perlu koneksi internet; pembayaran tetap bisa offline.',
+                  'pilih "Tagih di keranjang" supaya uang muka tamu otomatis dipotong. Perlu koneksi internet. Pembayaran tetap bisa offline.',
                   style: teks.bodySmall,
                 ),
               ),

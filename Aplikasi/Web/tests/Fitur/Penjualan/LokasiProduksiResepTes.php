@@ -49,7 +49,7 @@ function SiapkanResepLokasiProduksi(mixed $uji, ?LokasiProduksi $lokasi, ?JenisG
 }
 
 describe('BR-05.4 bahan resep dikurangi dari lokasi produksi', function (): void {
-    it('resep berlokasi Dapur: bahan keluar dari lokasi Dapur outlet, lokasi Toko tidak berubah; void mengembalikan ke Dapur; invariant terjaga', function (): void {
+    it('resep berlokasi Dapur: bahan keluar dari lokasi Dapur outlet, lokasi Toko tidak berubah. Void mengembalikan ke Dapur. Invariant terjaga', function (): void {
         [$k, $susu, $esKopi] = SiapkanResepLokasiProduksi($this, LokasiProduksi::Dapur, JenisGudang::Dapur);
 
         $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $esKopi, 'Jumlah' => '2', 'Harga' => '25000.00']]]);
@@ -71,7 +71,7 @@ describe('BR-05.4 bahan resep dikurangi dari lokasi produksi', function (): void
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('lokasi Bar memakai lokasi Bar; resep tanpa lokasi produksi tetap mengurangi lokasi Toko (perilaku lama)', function (): void {
+    it('lokasi Bar memakai lokasi Bar. Resep tanpa lokasi produksi tetap mengurangi lokasi Toko (perilaku lama)', function (): void {
         [$k, $susu, $esKopi] = SiapkanResepLokasiProduksi($this, LokasiProduksi::Bar, JenisGudang::Bar);
         $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $esKopi, 'Jumlah' => '1', 'Harga' => '25000.00']]]);
         BantuanKasir::KirimRingkas($this, $k['Token'], [$item]);

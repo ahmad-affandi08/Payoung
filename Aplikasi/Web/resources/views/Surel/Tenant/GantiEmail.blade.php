@@ -4,7 +4,7 @@ Ada permintaan menjadikan alamat email ini sebagai email akun Anda. Buka tautan 
 
 {!! $Tautan !!}
 
-Tautan ini berlaku {!! $JamBerlaku !!} jam. Email akun baru berganti setelah tautan dibuka; sebelum itu email lama Anda tetap dipakai.
+Tautan ini berlaku {!! $JamBerlaku !!} jam. Email akun baru berganti setelah tautan dibuka. Sebelum itu email lama Anda tetap dipakai.
 
 Jika Anda tidak merasa meminta ini, abaikan saja -- tidak ada yang berubah pada akun.
 

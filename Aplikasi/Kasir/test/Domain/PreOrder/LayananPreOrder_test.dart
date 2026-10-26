@@ -45,7 +45,7 @@ void main() {
     return Keranjang(baris: [baris], pelanggan: pelanggan);
   }
 
-  test('buat pre-order offline: nomor SO, outbox & baris lokal, DP tunai masuk kas shift; aturan ditolak', () async {
+  test('buat pre-order offline: nomor SO, outbox & baris lokal, DP tunai masuk kas shift. Aturan ditolak', () async {
     final k = await u.MuatKonteks();
     final tunai = k.metodePembayaran.firstWhere((m) => m.Jenis == 'Tunai');
     final tempo = k.metodePembayaran.where((m) => m.Jenis == 'Tempo').firstOrNull;
@@ -120,7 +120,7 @@ void main() {
   });
 
   test(
-    'ambil: cari online → keranjang berharga pesanan + DP; bayar dengan Uang Muka + tunai; offline ditolak',
+    'ambil: cari online → keranjang berharga pesanan + DP. Bayar dengan Uang Muka + tunai. Offline ditolak',
     () async {
       final katalog = await u.MuatKatalog();
       final k = await u.MuatKonteks();

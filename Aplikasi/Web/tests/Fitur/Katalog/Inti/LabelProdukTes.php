@@ -65,7 +65,7 @@ describe('PRD-10 halaman Cetak label', function (): void {
                 ->where('Izin.Kelola', true));
     });
 
-    it('Item[]: satuan tertentu dengan jumlah stiker (penerimaan barang); uuid sama digabung, jumlah dibatasi 500 dan ditandai terpotong', function (): void {
+    it('Item[]: satuan tertentu dengan jumlah stiker (penerimaan barang). Uuid sama digabung, jumlah dibatasi 500 dan ditandai terpotong', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $a = SiapkanAirMineralLabel($t);
 
@@ -81,7 +81,7 @@ describe('PRD-10 halaman Cetak label', function (): void {
                 ->where('Terpotong', true));
     });
 
-    it('induk varian diganti seluruh variannya; produk diarsipkan dan produk tanpa harga ditangani', function (): void {
+    it('induk varian diganti seluruh variannya. Produk diarsipkan dan produk tanpa harga ditangani', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $induk = BantuanKatalog::BuatProduk(['Nama' => 'Kaos Polos Katun', 'Jenis' => JenisProduk::IndukVarian], null, $t['Pcs']);
         $merah = BantuanKatalog::BuatProduk(['Nama' => 'Kaos Polos Katun Merah / L', 'IdInduk' => $induk->Id], '65000.00', $t['Pcs']);
@@ -100,7 +100,7 @@ describe('PRD-10 halaman Cetak label', function (): void {
                 ->where('Baris.1.Barcode', []));
     });
 
-    it('uuid tidak sah ditolak; tanpa parameter = halaman kosong; produk tenant lain tidak muncul', function (): void {
+    it('uuid tidak sah ditolak, tanpa parameter = halaman kosong. Produk tenant lain tidak muncul', function (): void {
         $a = BantuanKatalog::SiapkanTenantProduk('Toko Tenant A');
         $rahasia = BantuanKatalog::BuatProduk(['Nama' => 'Produk Rahasia Tenant A'], '1000.00', $a['Pcs']);
         $satuanRahasia = ProdukSatuan::query()->where('IdProduk', $rahasia->Id)->sole();
@@ -114,7 +114,7 @@ describe('PRD-10 halaman Cetak label', function (): void {
         $masukB()->getJson('/kelola/produk/label/cari?kata=Rahasia')->assertOk()->assertExactJson(['Data' => []]);
     });
 
-    it('cari: nama, SKU, atau barcode persis; induk varian dan produk diarsipkan tidak ditawarkan', function (): void {
+    it('cari: nama, SKU, atau barcode persis. Induk varian dan produk diarsipkan tidak ditawarkan', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $a = SiapkanAirMineralLabel($t);
         BantuanKatalog::BuatProduk(['Nama' => 'Air Mineral Lama', 'DiarsipkanPada' => now()], '1000.00', $t['Pcs']);
@@ -130,7 +130,7 @@ describe('PRD-10 halaman Cetak label', function (): void {
 });
 
 describe('PRD-10 barcode internal dari halaman Cetak label (atas pilihan sadar)', function (): void {
-    it('membuat barcode hanya untuk satuan yang belum punya; yang sudah punya dikembalikan apa adanya; panggilan ulang tidak menggandakan', function (): void {
+    it('membuat barcode hanya untuk satuan yang belum punya, yang sudah punya dikembalikan apa adanya. Panggilan ulang tidak menggandakan', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $a = SiapkanAirMineralLabel($t);
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
@@ -169,7 +169,7 @@ describe('PRD-10 barcode internal dari halaman Cetak label (atas pilihan sadar)'
             ->and(ProdukBarcode::query()->count())->toBe(1);
     });
 
-    it('tenant lain tidak bisa membuat barcode untuk satuan tenant ini; hanya izin kelola produk', function (): void {
+    it('tenant lain tidak bisa membuat barcode untuk satuan tenant ini. Hanya izin kelola produk', function (): void {
         $a = BantuanKatalog::SiapkanTenantProduk('Toko Tenant A');
         $air = SiapkanAirMineralLabel($a);
         $b = BantuanKatalog::SiapkanTenantProduk('Toko Tenant B');

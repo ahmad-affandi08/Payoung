@@ -120,7 +120,7 @@ describe('AturanFormStokAwal (pemeriksaan lokal C.6.1)', () => {
         expect(PeriksaBarisStokAwal(BuatBarisForm({ HppSatuan: '0' }), aturan)).toEqual({});
     });
 
-    it('batch wajib nomor & kedaluwarsa (WajibKedaluwarsaBatch); seri memakai jumlah nomor', () => {
+    it('batch wajib nomor & kedaluwarsa (WajibKedaluwarsaBatch). Seri memakai jumlah nomor', () => {
         const batch = BuatBarisForm({ Pelacakan: 'Batch', NomorBatch: ' ', TanggalKedaluwarsa: null });
 
         expect(PeriksaBarisStokAwal(batch, aturan)).toEqual({
@@ -142,7 +142,7 @@ describe('AturanFormStokAwal (pemeriksaan lokal C.6.1)', () => {
         });
     });
 
-    it('BarisGanda: produk sama tanpa batch ganda; batch berbeda boleh', () => {
+    it('BarisGanda: produk sama tanpa batch ganda. Batch berbeda boleh', () => {
         const a = BuatBarisForm();
         const b1 = BuatBarisForm({ UuidProduk: 'B', Pelacakan: 'Batch', NomorBatch: 'X1' });
         const b2 = BuatBarisForm({ UuidProduk: 'B', Pelacakan: 'Batch', NomorBatch: 'x1 ' });
@@ -152,7 +152,7 @@ describe('AturanFormStokAwal (pemeriksaan lokal C.6.1)', () => {
         expect([...CariBarisGanda([a, b1, a, b2])]).toEqual([2, 3]);
     });
 
-    it('tanggal tidak di masa depan; baris mutasi menghitung nomor seri satu per nomor; saldo minus', () => {
+    it('tanggal tidak di masa depan. Baris mutasi menghitung nomor seri satu per nomor. Saldo minus', () => {
         expect(PeriksaTanggalStokAwal('2026-09-25', '2026-09-24')).toBe(
             'Tanggal stok awal tidak boleh setelah hari ini.',
         );
@@ -182,7 +182,7 @@ describe('PanelKesiapanAkun & LabelStatusStokAwal', () => {
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
 
-    it('akun siap: tidak menampilkan apa pun; belum siap: daftar akun & "Perbaiki otomatis" (audit #12) mengirim POST', () => {
+    it('akun siap: tidak menampilkan apa pun. Belum siap: daftar akun & "Perbaiki otomatis" (audit #12) mengirim POST', () => {
         const { container } = render(<PanelKesiapanAkun kesiapan={AkunSiap} />);
         expect(container.textContent).toBe('');
         cleanup();
@@ -221,7 +221,7 @@ describe('PemilihProdukStok (KunciKueri.Persediaan.CariProduk)', () => {
         );
     });
 
-    it('menampilkan stok saat ini; produk yang stok awalnya sudah dicatat tidak bisa dipilih', async () => {
+    it('menampilkan stok saat ini. Produk yang stok awalnya sudah dicatat tidak bisa dipilih', async () => {
         const Ambil = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>
@@ -290,7 +290,7 @@ describe('PemantauPosting (polling status tiap 3 detik)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('Memproses: menanyakan /status; saat status berubah halaman dimuat ulang', async () => {
+    it('Memproses: menanyakan /status. Saat status berubah halaman dimuat ulang', async () => {
         const Ambil = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>

@@ -17,7 +17,7 @@ describe('Konfirmasi pembayaran invoice oleh pelanggan (halaman publik)', () => 
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
 
-    it('jumlah awal sisa tagihan; tombol aktif hanya bila nama diisi dan jumlah sah', () => {
+    it('jumlah awal sisa tagihan. Tombol aktif hanya bila nama diisi dan jumlah sah', () => {
         RenderUji(<KonfirmasiBayarInvoicePublik kode={kode} konfirmasi={Konfirmasi()} />);
 
         const kirim = screen.getByRole('button', { name: 'Saya sudah bayar' }) as HTMLButtonElement;
@@ -84,7 +84,7 @@ describe('Konfirmasi pembayaran invoice oleh pelanggan (halaman publik)', () => 
         expect(screen.queryByText(/bukti\.png/)).toBeNull();
     });
 
-    it('klaim yang menunggu diperiksa tampil sebagai info tanpa nama pengirim; masalah server tampil terbaca', () => {
+    it('klaim yang menunggu diperiksa tampil sebagai info tanpa nama pengirim. Masalah server tampil terbaca', () => {
         AturHalamanUji({ Umum: 'Sudah ada 3 konfirmasi yang menunggu verifikasi penjual.' });
         RenderUji(
             <KonfirmasiBayarInvoicePublik

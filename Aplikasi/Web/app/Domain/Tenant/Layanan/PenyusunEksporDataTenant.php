@@ -249,7 +249,7 @@ final class PenyusunEksporDataTenant
             'Dibuat: '.CarbonImmutable::now('Asia/Jakarta')->format('d/m/Y H:i').' WIB',
             '',
             'Berkas ini berisi data usaha Anda: satu berkas CSV per tabel (UTF-8, pemisah koma). Nama kolom sama dengan nama kolom di sistem.',
-            'Jumlah baris per berkas ada di bawah. Simpan berkas ini di tempat aman; isinya mencakup data pelanggan dan karyawan Anda.',
+            'Jumlah baris per berkas ada di bawah. Simpan berkas ini di tempat aman. Isinya mencakup data pelanggan dan karyawan Anda.',
             '',
             'Tidak ikut diekspor demi keamanan: kata sandi, PIN, token dan kunci akses, kredensial integrasi, sidik wajah karyawan,',
             'identitas pajak terenkripsi (NIK dan NPWP), foto dan lampiran (berkas gambar/dokumen, hanya jalurnya yang tercatat), serta log teknis.',

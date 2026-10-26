@@ -183,7 +183,7 @@ function PastikanTanpaBocorDi(TestCase $klien, string $alamat, bool $json, strin
 }
 
 describe('F-05a isolasi tenant: setiap rute persediaan & jurnal × dokumen tenant B (aturan #11)', function (): void {
-    it('dokumen, impor, dan jurnal tenant B = 404 di semua rute berdokumen; tidak ada yang berubah', function (): void {
+    it('dokumen, impor, dan jurnal tenant B = 404 di semua rute berdokumen. Tidak ada yang berubah', function (): void {
         $b = BantuanPersediaan::SiapkanTenant('Warung Bu Tini Jaya');
         $produkB = BantuanPersediaan::BuatProdukSemuaJenis($b['Pcs'], $b['Kg'])['Stok'];
         $dokB = BuatDokumenIsolasiLangsung($b['Gudang'], $produkB, $b['Pemilik']->Id);
@@ -251,7 +251,7 @@ describe('F-05a isolasi tenant: setiap rute persediaan & jurnal × dokumen tenan
 });
 
 describe('F-05a isolasi outlet: pengguna per outlet × lokasi stok outlet lain (DesainF05a D)', function (): void {
-    it('dokumen di lokasi stok outlet lain = 404 di semua rute berdokumen; simpan & filter lokasi outlet lain ditolak', function (): void {
+    it('dokumen di lokasi stok outlet lain = 404 di semua rute berdokumen. Simpan & filter lokasi outlet lain ditolak', function (): void {
         $t = BantuanPersediaan::SiapkanTenant('Toko Bangunan Sinar Abadi');
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['Stok'];
         $cabang = Outlet::query()->create(['IdMerek' => Merek::query()->value('Id'), 'Kode' => 'SOLO', 'Nama' => 'Cabang Solo Baru']);

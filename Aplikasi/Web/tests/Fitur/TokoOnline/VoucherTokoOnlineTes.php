@@ -57,7 +57,7 @@ function HitungVoucherOnline(TestCase $tes, array $k, ?string $kode): TestRespon
     ]);
 }
 
-it('perkiraan: voucher sah memotong total tanpa dipesan; kode salah = masalah bidang KodeVoucher', function (): void {
+it('perkiraan: voucher sah memotong total tanpa dipesan. Kode salah = masalah bidang KodeVoucher', function (): void {
     $k = SiapkanVoucherOnline($this);
 
     $tanpa = HitungVoucherOnline($this, $k, null)->assertOk()->assertJsonPath('Voucher', null)->json();
@@ -74,7 +74,7 @@ it('perkiraan: voucher sah memotong total tanpa dipesan; kode salah = masalah bi
     HitungVoucherOnline($this, $k, 'SALAH-123')->assertNotFound()->assertJsonPath('Galat.Kode', 'VoucherTidakDitemukan');
 });
 
-it('checkout memesan voucher atas pesanan; kasir menagih dengan voucher → terpakai di penjualan; jatah habis untuk pesanan lain', function (): void {
+it('checkout memesan voucher atas pesanan. Kasir menagih dengan voucher → terpakai di penjualan. Jatah habis untuk pesanan lain', function (): void {
     $k = SiapkanVoucherOnline($this);
     $kiriman = [...BantuanTokoOnline::Kiriman($k), 'KodeVoucher' => 'ONLINE5K'];
     $this->postJson("/{$k['Slug']}/pesan", $kiriman)->assertCreated();
@@ -118,7 +118,7 @@ it('checkout memesan voucher atas pesanan; kasir menagih dengan voucher → terp
         ->and($penjualan->AlasanTinjauan ?? '')->not->toContain('VoucherTidakBerlaku');
 });
 
-it('pesanan ditolak melepas voucher sehingga bisa dipakai lagi; kode salah berulang dibatasi', function (): void {
+it('pesanan ditolak melepas voucher sehingga bisa dipakai lagi. Kode salah berulang dibatasi', function (): void {
     $k = SiapkanVoucherOnline($this);
     $kiriman = [...BantuanTokoOnline::Kiriman($k), 'KodeVoucher' => 'ONLINE5K'];
     $this->postJson("/{$k['Slug']}/pesan", $kiriman)->assertCreated();

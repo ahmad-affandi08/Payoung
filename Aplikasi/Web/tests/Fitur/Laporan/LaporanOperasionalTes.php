@@ -31,7 +31,7 @@ beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::now('UTC')->setTime(5, 0));
 });
 
-it('waktu saji dapur: rata-rata tunggu/masak/total, median, persentil 90, sajikan, dan tiket lewat target per stasiun; ekspor CSV', function (): void {
+it('waktu saji dapur: rata-rata tunggu/masak/total, median, persentil 90, sajikan, dan tiket lewat target per stasiun. Ekspor CSV', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
     $tambah = BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Kopi'], '2', '25000.00'], [$k['Nasi'], '1', '35000.00']]);
@@ -103,7 +103,7 @@ it('waktu saji dapur: tiket yang belum siap dan tiket di luar periode tidak dihi
     $this->get('/kelola/laporan/penjualan?tab=waktu-saji')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('Isi', 0));
 });
 
-it('food cost: teoretis dari penjualan, terbuang dari susut, selisih stok dari penyesuaian; persen terhadap penjualan bersih; ekspor CSV', function (): void {
+it('food cost: teoretis dari penjualan, terbuang dari susut, selisih stok dari penyesuaian. Persen terhadap penjualan bersih. Ekspor CSV', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Kopi'], 'Jumlah' => '5', 'Harga' => '25000.00']]]);
     $terbuang = [
@@ -146,7 +146,7 @@ it('food cost: teoretis dari penjualan, terbuang dari susut, selisih stok dari p
     expect($csv)->toContain('Nilai teoretis')->toContain('Varian vs teoretis')->toContain('64000.00');
 });
 
-it('performa kasir: transaksi, omzet, jam kerja shift tutup, transaksi & omzet per jam, persen void; ekspor CSV', function (): void {
+it('performa kasir: transaksi, omzet, jam kerja shift tutup, transaksi & omzet per jam, persen void. Ekspor CSV', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Kopi'], 'Jumlah' => '2', 'Harga' => '25000.00']]]);
     BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Kopi'], 'Jumlah' => '1', 'Harga' => '25000.00']]]);
@@ -193,7 +193,7 @@ it('performa kasir tanpa shift tertutup: jam kerja nol dan angka per jam kosong,
         ->where('Isi.0.OmzetPerJam', null));
 });
 
-it('prediksi penjualan: rata-rata hari-dalam-minggu dari riwayat harian, 14 hari ke depan; data kurang dari 14 hari tidak diperkirakan; ekspor CSV', function (): void {
+it('prediksi penjualan: rata-rata hari-dalam-minggu dari riwayat harian, 14 hari ke depan. Data kurang dari 14 hari tidak diperkirakan. Ekspor CSV', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-16 05:00:00', 'UTC'));
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
@@ -232,7 +232,7 @@ it('prediksi penjualan: rata-rata hari-dalam-minggu dari riwayat harian, 14 hari
         ->where('Isi.Baris', []));
 });
 
-it('rekomendasi bundling: pasangan produk yang sering dibeli bersama dengan support, keyakinan, lift, dan saran harga paket; ekspor CSV', function (): void {
+it('rekomendasi bundling: pasangan produk yang sering dibeli bersama dengan support, keyakinan, lift, dan saran harga paket. Ekspor CSV', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     BantuanFitur::Beri($k['Tenant']->Id, 'laporan.insight');
     $jual = fn (array $produk) => BantuanPenjualan::Jual($this, $k, ['Baris' => array_map(fn (array $p): array => ['Produk' => $p[0], 'Jumlah' => '1', 'Harga' => $p[1]], $produk)]);

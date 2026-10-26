@@ -39,7 +39,7 @@ function SiapkanKafeSoloUji(bool $denganKota = true): array
 }
 
 describe('F-01 langkah 3: usulan & konfirmasi pajak (tarif dari TarifPajak, CLAUDE.md #12)', function (): void {
-    it('mengusulkan PBJT, service charge template, dan tarif PBJT kota dari master; tarif berubah → prop berubah', function (): void {
+    it('mengusulkan PBJT, service charge template, dan tarif PBJT kota dari master. Tarif berubah → prop berubah', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = SiapkanKafeSoloUji();
         $tarif = BantuanPanduanAwal::TerbitkanTarif('PbjtMakananMinuman', '33.72', '10.000000', true);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');

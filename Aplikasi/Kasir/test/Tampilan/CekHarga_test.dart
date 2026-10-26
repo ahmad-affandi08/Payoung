@@ -77,7 +77,7 @@ void main() {
     });
   }
 
-  testWidgets('F4 lalu pindai barcode: hanya tampil harga; induk varian tanpa varian tampil alasannya', (tester) async {
+  testWidgets('F4 lalu pindai barcode: hanya tampil harga. Induk varian tanpa varian tampil alasannya', (tester) async {
     final u = await Masuk(tester, const Size(1280, 900));
     await tester.sendKeyEvent(LogicalKeyboardKey.f4);
     await Tunggu(tester);

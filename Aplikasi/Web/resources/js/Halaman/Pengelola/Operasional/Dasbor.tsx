@@ -480,7 +480,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
             <Bagian judul={`Error rate & p95 API (${String(Metrik.Jendela)} menit terakhir)`}>
                 <p className="max-w-3xl text-label text-teks-sekunder">
                     Alert kritis bila masalah server (5xx) mencapai {String(Metrik.BatasErrorRatePersen)}% dengan paling
-                    sedikit {String(Metrik.MinimumPermintaan)} permintaan; peringatan bila p95 API POS melewati{' '}
+                    sedikit {String(Metrik.MinimumPermintaan)} permintaan. Peringatan bila p95 API POS melewati{' '}
                     {String(Metrik.BatasP95PosMs)} ms. Insiden baru terbuka setelah kondisi buruk bertahan{' '}
                     {String(Metrik.KonfirmasiMenit)} menit dan baru tertutup setelah sehat {String(Metrik.PulihMenit)}{' '}
                     menit, supaya gangguan sesaat tidak mengirim email berulang. p95 dibaca dari kelompok latensi, jadi
@@ -508,7 +508,7 @@ export default function DasborOperasional({ Dasbor }: { Dasbor: Dasbor }) {
             <Bagian judul={`Perangkat dengan outbox macet (${String(OutboxMacet.Daftar.length)})`}>
                 <p className="max-w-3xl text-label text-teks-sekunder">
                     Transaksi sudah terjadi di kasir tetapi belum sampai ke server lebih dari{' '}
-                    {String(OutboxMacet.BatasJam)} jam. Hubungi tenant agar kasir tersambung ke internet; jangan
+                    {String(OutboxMacet.BatasJam)} jam. Hubungi tenant agar kasir tersambung ke internet. Jangan
                     mencabut perangkat sebelum outbox terkirim. Membuka daftar ini tercatat di log audit.
                 </p>
                 <TabelData

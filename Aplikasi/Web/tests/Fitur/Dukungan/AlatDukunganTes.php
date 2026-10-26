@@ -194,7 +194,7 @@ describe('BR-P09.3: cabut perangkat', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'dukungan.alat.CabutPerangkat')->where('IdPenggunaPengelola', $petugas->Id)->count())->toBe(1);
     });
 
-    it('mencabut lagi perangkat yang sudah dicabut = TanpaPerubahan; perangkat tenant lain tidak ditemukan (isolasi tenant)', function (): void {
+    it('mencabut lagi perangkat yang sudah dicabut = TanpaPerubahan. Perangkat tenant lain tidak ditemukan (isolasi tenant)', function (): void {
         [$tenant, $petugas] = SiapkanAlatUji($this);
         ['Perangkat' => $perangkat] = BantuanPerangkat::BuatDanAktifkan($this, $tenant['Tenant']->Id);
         ['Perangkat' => $milikLain] = BantuanPerangkat::BuatDanAktifkan($this, BantuanOrganisasi::BuatTenant('Toko Lain')['Tenant']->Id);
@@ -264,7 +264,7 @@ describe('Minta dan baca log perangkat', function (): void {
         expect(LogPerangkatDiunggah::query()->count())->toBe(1);
     });
 
-    it('meminta dua kali sebelum dijawab = TanpaPerubahan; permintaan kedaluwarsa setelah 7 hari', function (): void {
+    it('meminta dua kali sebelum dijawab = TanpaPerubahan. Permintaan kedaluwarsa setelah 7 hari', function (): void {
         [$tenant, $petugas] = SiapkanAlatUji($this);
         ['Perangkat' => $perangkat, 'Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant['Tenant']->Id);
 
@@ -277,7 +277,7 @@ describe('Minta dan baca log perangkat', function (): void {
         $this->withToken($token)->postJson('/api/pos/v1/perangkat/log', ['Baris' => ['terlambat']])->assertStatus(409);
     });
 
-    it('membaca log perangkat yang belum mengunggah = LogBelumAda; perangkat dicabut tidak bisa diminta', function (): void {
+    it('membaca log perangkat yang belum mengunggah = LogBelumAda. Perangkat dicabut tidak bisa diminta', function (): void {
         [$tenant, $petugas] = SiapkanAlatUji($this);
         ['Perangkat' => $perangkat] = BantuanPerangkat::BuatDanAktifkan($this, $tenant['Tenant']->Id);
 
@@ -406,7 +406,7 @@ describe('Kirim ulang pesan WhatsApp & email verifikasi', function (): void {
         return [$pesan, $tenant, $petugas];
     }
 
-    it('daftar kirim ulang menyamarkan nomor; kirim ulang membuat pesan baru ke antrean dan mencatat hasil', function (): void {
+    it('daftar kirim ulang menyamarkan nomor. Kirim ulang membuat pesan baru ke antrean dan mencatat hasil', function (): void {
         Queue::fake();
         [$pesan, $tenant, $petugas] = SiapkanPesanGagal($this);
 
@@ -435,7 +435,7 @@ describe('Kirim ulang pesan WhatsApp & email verifikasi', function (): void {
         expect(PesanKeluar::query()->count())->toBe(2);
     });
 
-    it('WhatsApp tenant belum aktif = KanalTidakAktif; pesan yang tidak gagal atau milik tenant lain ditolak', function (): void {
+    it('WhatsApp tenant belum aktif = KanalTidakAktif. Pesan yang tidak gagal atau milik tenant lain ditolak', function (): void {
         Queue::fake();
         [$pesan, $tenant, $petugas] = SiapkanPesanGagal($this, whatsappAktif: false);
         config(['integrasi.Whatsapp' => null]);

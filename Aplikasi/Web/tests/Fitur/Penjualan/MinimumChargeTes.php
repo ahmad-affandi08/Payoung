@@ -77,7 +77,7 @@ it('area & meja: minimum tersimpan, produk selisih disiapkan sekali, API POS mem
     expect($meja7['MinimumCharge'])->toBe('300000.00');
 });
 
-it('penjualan pesanan meja di bawah minimum diterima + tinjauan; selisih ditagih lewat produk minimum charge = bersih', function (): void {
+it('penjualan pesanan meja di bawah minimum diterima + tinjauan. Selisih ditagih lewat produk minimum charge = bersih', function (): void {
     $k = BantuanPesananTerbuka::SiapkanRestoran($this);
     [$area, $uuidOutlet] = SiapkanAreaVip($k);
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id)

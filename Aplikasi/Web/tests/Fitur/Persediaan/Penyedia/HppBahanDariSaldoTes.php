@@ -23,7 +23,7 @@ describe('F-05a BR-03.5 PenyediaHppBahan dari SaldoStok (DesainF05a C.8)', funct
         expect(app(PenyediaHppBahan::class))->toBeInstanceOf(HppBahanDariSaldo::class);
     });
 
-    it('per lokasi stok = HppRataRata lokasi itu; lokasi tanpa saldo = null', function (): void {
+    it('per lokasi stok = HppRataRata lokasi itu. Lokasi tanpa saldo = null', function (): void {
         $t = BantuanPersediaan::SiapkanTenant('Kedai Kopi Senja Temaram');
         $gula = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['BahanBaku'];
         $dapur = BantuanPersediaan::BuatGudang($t['Outlet'], 'Dapur Belakang');
@@ -35,7 +35,7 @@ describe('F-05a BR-03.5 PenyediaHppBahan dari SaldoStok (DesainF05a C.8)', funct
             ->and($penyedia->AmbilHppSatuan($gula->Id, $dapur->Id))->toBeNull();
     });
 
-    it('rata-rata tenant = Σ nilai ÷ Σ jumlah lokasi berstok positif (skala 6, HalfUp); lokasi minus/nol diabaikan', function (): void {
+    it('rata-rata tenant = Σ nilai ÷ Σ jumlah lokasi berstok positif (skala 6, HalfUp). Lokasi minus/nol diabaikan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant('Kedai Kopi Senja Temaram', stokBolehMinus: true);
         $gula = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['BahanBaku'];
         $dapur = BantuanPersediaan::BuatGudang($t['Outlet'], 'Dapur Belakang');
@@ -53,7 +53,7 @@ describe('F-05a BR-03.5 PenyediaHppBahan dari SaldoStok (DesainF05a C.8)', funct
             ->and(PemeriksaInvarian::PeriksaRantaiMutasi($t['Tenant']->Id))->toBe([]);
     });
 
-    it('tanpa lokasi berstok positif = HppRataRata bukan null terakhir; tanpa saldo sama sekali = null', function (): void {
+    it('tanpa lokasi berstok positif = HppRataRata bukan null terakhir, tanpa saldo sama sekali = null', function (): void {
         $t = BantuanPersediaan::SiapkanTenant('Kedai Kopi Senja Temaram');
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $gula = $produk['BahanBaku'];

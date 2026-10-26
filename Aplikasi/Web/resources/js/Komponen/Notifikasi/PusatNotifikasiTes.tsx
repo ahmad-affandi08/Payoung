@@ -53,7 +53,7 @@ describe('F31 lonceng notifikasi', () => {
         expect(within(tautan).getByText('3')).toBeTruthy();
     });
 
-    it('tanpa notifikasi baru: tanpa lencana; di atas 99 ditulis 99+', () => {
+    it('tanpa notifikasi baru: tanpa lencana. Di atas 99 ditulis 99+', () => {
         RenderUji(<LonceNotifikasi belumDibaca={0} />);
         const kosong = screen.getByRole('link', { name: 'Notifikasi' });
         expect(kosong.textContent).toBe('');
@@ -88,7 +88,7 @@ describe('F31 halaman pusat notifikasi', () => {
         expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/laporan/stok?tab=kritis');
     });
 
-    it('notifikasi yang sudah dibaca langsung dibuka; tanpa tautan web (persetujuan) tidak ada tombol buka', () => {
+    it('notifikasi yang sudah dibaca langsung dibuka, tanpa tautan web (persetujuan) tidak ada tombol buka', () => {
         RenderUji(
             <HalamanNotifikasi
                 {...Props({
@@ -137,7 +137,7 @@ describe('F31 halaman pusat notifikasi', () => {
         expect(screen.getByText('Semua notifikasi sudah dibaca.')).toBeTruthy();
     });
 
-    it('pengaturan: jenis yang dibisukan tidak tercentang; simpan mengirim daftar dibisukan; persetujuan tidak bisa dimatikan', () => {
+    it('pengaturan: jenis yang dibisukan tidak tercentang. Simpan mengirim daftar dibisukan. Persetujuan tidak bisa dimatikan', () => {
         RenderUji(<HalamanNotifikasi {...Props({ Dibisukan: ['StokKritis'] })} />);
 
         expect(screen.queryByRole('checkbox', { name: 'Permintaan persetujuan' })).toBeNull();

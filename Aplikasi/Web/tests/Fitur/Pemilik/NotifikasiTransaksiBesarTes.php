@@ -44,7 +44,7 @@ function KabarTransaksiBesar(): array
     return NotifikasiPengguna::query()->where('Jenis', JenisNotifikasiPengguna::TransaksiBesar->value)->orderBy('Id')->get()->all();
 }
 
-it('void bernilai di atas batas dikabarkan ke pemilik sekali; di bawah batas tidak', function (): void {
+it('void bernilai di atas batas dikabarkan ke pemilik sekali. Di bawah batas tidak', function (): void {
     $k = SiapkanTokoTransaksiBesar($this);
     $besar = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Tv'], 'Jumlah' => '1', 'Harga' => '1500000.00']]]);
     $kecil = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Tv'], 'Jumlah' => '1', 'Harga' => '300000.00']]]);
@@ -64,7 +64,7 @@ it('void bernilai di atas batas dikabarkan ke pemilik sekali; di bawah batas tid
         ->and($kabar[0]->Data['Href'])->toBe("/kelola/penjualan/{$besar->Uuid}");
 });
 
-it('batas 0 mengabarkan setiap void; dibisukan pengguna = tidak dibuat', function (): void {
+it('batas 0 mengabarkan setiap void. Dibisukan pengguna = tidak dibuat', function (): void {
     $k = SiapkanTokoTransaksiBesar($this, '0.00');
     $satu = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Tv'], 'Jumlah' => '1', 'Harga' => '300000.00']]]);
     $dua = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Tv'], 'Jumlah' => '1', 'Harga' => '310000.00']]]);

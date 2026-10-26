@@ -47,7 +47,7 @@ final class PenyusunFakturPajakPenjualan
         $peringatan = [];
 
         if ($penjualan->Status !== StatusPenjualan::Lunas) {
-            $masalah[] = 'Penjualan ini sudah dibatalkan atau diretur. Faktur Pajak hanya untuk penjualan yang masih berlaku; batalkan Faktur Pajaknya.';
+            $masalah[] = 'Penjualan ini sudah dibatalkan atau diretur. Faktur Pajak hanya untuk penjualan yang masih berlaku. Batalkan Faktur Pajaknya.';
         }
 
         $identitas = $this->penghitung->SusunIdentitasPembeli($pembeli, $masalah);
@@ -67,7 +67,7 @@ final class PenyusunFakturPajakPenjualan
         }
 
         if ($pajakDokumen->contains(fn (PenjualanPajak $p): bool => ! in_array($p->KodeJenisPajak, $kodePpn, true))) {
-            $masalah[] = 'Penjualan ini juga memuat pajak selain PPN (mis. PB1/PBJT). Faktur Pajak PPN tidak dapat memuatnya; terbitkan langsung di Coretax.';
+            $masalah[] = 'Penjualan ini juga memuat pajak selain PPN (mis. PB1/PBJT). Faktur Pajak PPN tidak dapat memuatnya. Terbitkan langsung di Coretax.';
         }
 
         if ($detail === []) {

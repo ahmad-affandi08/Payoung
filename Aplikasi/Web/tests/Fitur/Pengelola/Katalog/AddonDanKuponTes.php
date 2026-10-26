@@ -105,7 +105,7 @@ describe('Kupon langganan (P-04)', function (): void {
         'kode tidak valid' => [['Kode' => 'a b'], 'Kode'],
     ]);
 
-    it('kupon dinonaktifkan, bukan dihapus; kode tidak bisa diubah', function (): void {
+    it('kupon dinonaktifkan, bukan dihapus. Kode tidak bisa diubah', function (): void {
         MasukSebagaiKatalog($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin));
         $data = ['Kode' => 'HEMAT10', 'Jenis' => 'Persen', 'Nilai' => '10', 'DurasiBulan' => 1, 'Aktif' => true];
         $this->post(BantuanPengelola::Url('/katalog/kupon'), $data);

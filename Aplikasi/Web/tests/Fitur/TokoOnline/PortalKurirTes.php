@@ -66,7 +66,7 @@ function TautanKurir(TestCase $tes, array $k, Kurir $kurir): string
     return "/{$k['Slug']}/kurir/{$token}";
 }
 
-it('kurir membuka tautan, berangkat, lalu menyerahkan dengan foto tanpa EXIF; staf melihat buktinya', function (): void {
+it('kurir membuka tautan, berangkat, lalu menyerahkan dengan foto tanpa EXIF. Staf melihat buktinya', function (): void {
     $k = SiapkanPortalKurir($this);
     $tautan = TautanKurir($this, $k, $k['Joko']);
     $tautanBayu = TautanKurir($this, $k, $k['Bayu']);
@@ -123,7 +123,7 @@ it('kurir membuka tautan, berangkat, lalu menyerahkan dengan foto tanpa EXIF; st
     $this->get("/kelola/pengiriman/{$kirim->Uuid}/bukti")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
 });
 
-it('membuat ulang dan mencabut tautan mematikan tautan lama; kurir diarsipkan ditolak; gagal wajib alasan', function (): void {
+it('membuat ulang dan mencabut tautan mematikan tautan lama. Kurir diarsipkan ditolak. Gagal wajib alasan', function (): void {
     $k = SiapkanPortalKurir($this);
     $lama = TautanKurir($this, $k, $k['Joko']);
     $baru = TautanKurir($this, $k, $k['Joko']);

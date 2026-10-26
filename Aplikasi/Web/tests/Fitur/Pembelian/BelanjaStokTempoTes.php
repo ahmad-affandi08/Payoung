@@ -20,7 +20,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('bayar nanti: GRN + faktur belum dibayar, jatuh tempo dari tempo, hutang & jurnal seimbang; tanpa pemasok ditolak', function (): void {
+it('bayar nanti: GRN + faktur belum dibayar, jatuh tempo dari tempo, hutang & jurnal seimbang, tanpa pemasok ditolak', function (): void {
     $t = BantuanPembelian::SiapkanTenant();
     $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter']);
     $pemasok = BantuanPembelian::BuatPemasok('PT Sumber Pangan Nusantara');

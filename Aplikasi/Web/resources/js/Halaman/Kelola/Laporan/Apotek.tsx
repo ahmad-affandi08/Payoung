@@ -250,7 +250,7 @@ export default function HalamanLaporanApotek({
                         .
                         {LihatPasien
                             ? ''
-                            : ' Nama pasien disamarkan dan alamat disembunyikan; hanya pengguna yang boleh melihat resep yang bisa membukanya.'}
+                            : ' Nama pasien disamarkan dan alamat disembunyikan. Hanya pengguna yang boleh melihat resep yang bisa membukanya.'}
                     </p>
                     <TabelData
                         id="laporan-apotek-resep"

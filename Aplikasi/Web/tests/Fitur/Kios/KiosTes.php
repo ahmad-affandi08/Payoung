@@ -51,7 +51,7 @@ function KirimanKios(array $k, string $metode = 'BayarSaatAmbil', string $santap
 }
 
 describe('Sakelar & tautan kios di back-office', function (): void {
-    it('hidup/mati dengan audit; token dibuat saat pertama hidup dan dipertahankan; detail outlet memuat tautan', function (): void {
+    it('hidup/mati dengan audit. Token dibuat saat pertama hidup dan dipertahankan. Detail outlet memuat tautan', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -84,7 +84,7 @@ describe('Sakelar & tautan kios di back-office', function (): void {
         $this->get($k['AlamatKios'])->assertNotFound();
     });
 
-    it('tanpa fitur self-order kios tidak bisa dihidupkan (mematikan tetap boleh); kasir 403', function (): void {
+    it('tanpa fitur self-order kios tidak bisa dihidupkan (mematikan tetap boleh). Kasir 403', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -103,7 +103,7 @@ describe('Sakelar & tautan kios di back-office', function (): void {
 });
 
 describe('Halaman & pesanan kios', function (): void {
-    it('halaman kios tanpa login memuat menu; token salah 404; kios mati menampilkan pesan tidak aktif', function (): void {
+    it('halaman kios tanpa login memuat menu. Token salah 404. Kios mati menampilkan pesan tidak aktif', function (): void {
         $k = SiapkanKios($this);
 
         $this->get($k['AlamatKios'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -116,7 +116,7 @@ describe('Halaman & pesanan kios', function (): void {
         $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k))->assertStatus(409)->assertJsonPath('Galat.Kode', 'KiosTidakAktif');
     });
 
-    it('pesan bayar di kasir: nomor antrian harian K001, K002; tanpa data pribadi; masuk daftar pesanan online outlet', function (): void {
+    it('pesan bayar di kasir: nomor antrian harian K001, K002, tanpa data pribadi. Masuk daftar pesanan online outlet', function (): void {
         $k = SiapkanKios($this);
         $hitung = $this->postJson("{$k['AlamatKios']}/hitung", KirimanKios($k))->assertOk();
         expect($hitung->json('Subtotal'))->not->toBeNull();
@@ -149,7 +149,7 @@ describe('Halaman & pesanan kios', function (): void {
         expect(PesananOnline::query()->count())->toBe(1);
     });
 
-    it('QRIS ditolak selama sakelar QRIS toko mati; bayar di muka membuat pesanan menunggu pembayaran', function (): void {
+    it('QRIS ditolak selama sakelar QRIS toko mati. Bayar di muka membuat pesanan menunggu pembayaran', function (): void {
         $k = SiapkanKios($this);
 
         $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k, 'QrisOnline'))
@@ -237,7 +237,7 @@ describe('Bayar QRIS di kios', function (): void {
 });
 
 describe('Layar antrian & kedaluwarsa', function (): void {
-    it('layar antrian memisahkan disiapkan dan siap; yang belum dibayar/selesai tidak tampil', function (): void {
+    it('layar antrian memisahkan disiapkan dan siap, yang belum dibayar/selesai tidak tampil', function (): void {
         $k = SiapkanKios($this);
 
         foreach (range(1, 4) as $i) {
@@ -256,7 +256,7 @@ describe('Layar antrian & kedaluwarsa', function (): void {
             ->component('Publik/AntrianKios')->where('Antrian.Siap', ['K003'])->where('Antrian.Disiapkan', ['K002']));
     });
 
-    it('pesanan kios yang tidak dijawab kasir hangus setelah 30 menit tanpa butuh toko online aktif; toko online memakai batasnya sendiri', function (): void {
+    it('pesanan kios yang tidak dijawab kasir hangus setelah 30 menit tanpa butuh toko online aktif. Toko online memakai batasnya sendiri', function (): void {
         $k = SiapkanKios($this);
         $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k))->assertCreated();
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

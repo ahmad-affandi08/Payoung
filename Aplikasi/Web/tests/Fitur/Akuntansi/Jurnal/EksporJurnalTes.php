@@ -21,7 +21,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('mengekspor satu baris per baris jurnal dengan akun, outlet, debit, kredit; cari dan filter tanggal ikut', function (): void {
+it('mengekspor satu baris per baris jurnal dengan akun, outlet, debit, kredit. Cari dan filter tanggal ikut', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(idSumber: 1, idPengguna: $t['Pemilik']->Id, baris: [
         DataBarisJurnal::Debit(PeranAkun::PersediaanBarangDagang, Uang::Dari('10600000.00'), $t['Outlet']->Id, 'Minyak goreng 2 L, dus'),
@@ -46,7 +46,7 @@ it('mengekspor satu baris per baris jurnal dengan akun, outlet, debit, kredit; c
     expect(array_values(array_filter(explode("\n", str_replace("\r", '', ltrim($diLuar, "\xEF\xBB\xBF"))))))->toHaveCount(1);
 });
 
-it('pelaku berbatas outlet hanya mengekspor jurnal yang semua barisnya di outlet aksesnya; kasir ditolak', function (): void {
+it('pelaku berbatas outlet hanya mengekspor jurnal yang semua barisnya di outlet aksesnya. Kasir ditolak', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     $solo = BantuanJurnal::BuatOutlet();
     BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(idSumber: 1, idPengguna: $t['Pemilik']->Id, baris: [

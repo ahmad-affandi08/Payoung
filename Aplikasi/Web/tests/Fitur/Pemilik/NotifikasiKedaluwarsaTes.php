@@ -57,7 +57,7 @@ function SiapkanBatchKedaluwarsa(object $tes): array
 }
 
 describe('F23 peringatan kedaluwarsa batch lewat push', function (): void {
-    it('satu ringkasan untuk Owner: lewat, ≤ 7 hari, dan ≤ 30 hari; batch yang masih jauh tidak ikut', function (): void {
+    it('satu ringkasan untuk Owner: lewat, ≤ 7 hari, dan ≤ 30 hari. Batch yang masih jauh tidak ikut', function (): void {
         $k = SiapkanBatchKedaluwarsa($this);
         PasangPerangkatOwner($k['Pemilik']->Id);
 
@@ -131,7 +131,7 @@ describe('F23 peringatan kedaluwarsa batch lewat push', function (): void {
             ->and(PengingatKedaluwarsaBatch::query()->count())->toBe(0);
     });
 
-    it('perintah tindakan:buat-notifikasi-operasional ikut mengumumkan kedaluwarsa; tenant lain tidak bocor (isolasi)', function (): void {
+    it('perintah tindakan:buat-notifikasi-operasional ikut mengumumkan kedaluwarsa. Tenant lain tidak bocor (isolasi)', function (): void {
         $k = SiapkanBatchKedaluwarsa($this);
         PasangPerangkatOwner($k['Pemilik']->Id);
         $lain = BantuanPenjualan::Siapkan($this, 'Toko Lain');

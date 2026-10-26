@@ -143,7 +143,7 @@ function PeriksaInvarianDeposit(int $idTenant): array
 }
 
 describe('F-16d isi deposit dari POS', function (): void {
-    it('isi tunai: dokumen Diterima, saldo bertambah, jurnal J-16.1 Dr Kas Outlet Cr Deposit Pelanggan, masuk kas shift; kirim ulang = Duplikat', function (): void {
+    it('isi tunai: dokumen Diterima, saldo bertambah, jurnal J-16.1 Dr Kas Outlet Cr Deposit Pelanggan, masuk kas shift. Kirim ulang = Duplikat', function (): void {
         $k = SiapkanDeposit($this);
         $item = ItemIsiDeposit($k, '150000.00');
 
@@ -247,7 +247,7 @@ function JualDenganDeposit(TestCase $tes, array $k, string $deposit = '77000.00'
 }
 
 describe('F-16d bayar dengan deposit', function (): void {
-    it('memotong saldo di transaksi penjualan; bukan uang masuk laci; void mengembalikan saldo; invarian terjaga', function (): void {
+    it('memotong saldo di transaksi penjualan, bukan uang masuk laci. Void mengembalikan saldo. Invarian terjaga', function (): void {
         $k = SiapkanDeposit($this);
         IsiDepositAni($this, $k, '100000.00');
 
@@ -267,7 +267,7 @@ describe('F-16d bayar dengan deposit', function (): void {
         expect(PeriksaInvarianDeposit($k['Tenant']->Id))->toBe([]);
     });
 
-    it('saldo kurang (dipakai dua perangkat): tetap diterima, saldo minus, tinjauan DepositKurang; tanpa pelanggan atau dua pembayaran deposit ditolak', function (): void {
+    it('saldo kurang (dipakai dua perangkat): tetap diterima, saldo minus, tinjauan DepositKurang, tanpa pelanggan atau dua pembayaran deposit ditolak', function (): void {
         $k = SiapkanDeposit($this);
         IsiDepositAni($this, $k, '50000.00');
 
@@ -339,7 +339,7 @@ describe('F-16d deposit di back-office', function (): void {
         expect(PeriksaInvarianDeposit($k['Tenant']->Id))->toBe([]);
     });
 
-    it('batal isi deposit: status Dibatalkan, saldo & jurnal dibalik; tidak bisa bila saldo sudah dipakai; daftar isi deposit', function (): void {
+    it('batal isi deposit: status Dibatalkan, saldo & jurnal dibalik. Tidak bisa bila saldo sudah dipakai. Daftar isi deposit', function (): void {
         $k = SiapkanDeposit($this);
         $isi = IsiDepositAni($this, $k, '100000.00');
         $isiKedua = IsiDepositAni($this, $k, '30000.00', 2);
@@ -371,7 +371,7 @@ describe('F-16d deposit di back-office', function (): void {
 });
 
 describe('F-16d API POS saldo deposit & isolasi tenant', function (): void {
-    it('perangkat membaca saldo pelanggan sendiri; pelanggan tenant lain atau diarsipkan = 404', function (): void {
+    it('perangkat membaca saldo pelanggan sendiri. Pelanggan tenant lain atau diarsipkan = 404', function (): void {
         $k = SiapkanDeposit($this);
         IsiDepositAni($this, $k, '100000.00');
 

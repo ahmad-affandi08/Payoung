@@ -83,7 +83,7 @@ describe('Persetujuan ulang versi materiil (BR-P06.5)', function (): void {
             ->get('/kelola')->assertInertia(fn (AssertableInertia $halaman) => $halaman->component('Kelola/Beranda')->where('PengumumanLegal', []));
     });
 
-    it('menyetujui versi terbaru menutup versi materiil yang terlewat; versi tak materiil sesudahnya ikut disetujui', function (): void {
+    it('menyetujui versi terbaru menutup versi materiil yang terlewat. Versi tak materiil sesudahnya ikut disetujui', function (): void {
         BantuanAutentikasi::TerbitkanVersi(JenisDokumenLegal::SyaratKetentuan, 2, '2026-10-23');
         $terbaru = BantuanAutentikasi::TerbitkanVersi(JenisDokumenLegal::SyaratKetentuan, 3, '2026-11-01', materiil: false);
         $this->travelTo(Carbon::parse('2026-11-02 10:00:00', 'Asia/Jakarta'));
@@ -94,7 +94,7 @@ describe('Persetujuan ulang versi materiil (BR-P06.5)', function (): void {
         $this->get('/kelola')->assertOk();
     });
 
-    it('Perjanjian Pemrosesan Data materiil yang terbit setelah registrasi juga wajib disetujui; yang berlaku sebelum registrasi tidak', function (): void {
+    it('Perjanjian Pemrosesan Data materiil yang terbit setelah registrasi juga wajib disetujui, yang berlaku sebelum registrasi tidak', function (): void {
         // PPD v1 sudah disetujui saat registrasi (wajib sejak v1.26); v2 materiil terbit setelahnya.
         $ppd = BantuanAutentikasi::TerbitkanVersi(JenisDokumenLegal::PerjanjianPemrosesanData, 2, '2026-10-23');
         $this->travelTo(Carbon::parse('2026-10-23 10:00:00', 'Asia/Jakarta'));
@@ -108,7 +108,7 @@ describe('Persetujuan ulang versi materiil (BR-P06.5)', function (): void {
             ->get('/kelola')->assertOk();
     });
 
-    it('anggota bukan Owner tidak diminta menyetujui; halaman persetujuan menolak kirimannya', function (): void {
+    it('anggota bukan Owner tidak diminta menyetujui. Halaman persetujuan menolak kirimannya', function (): void {
         $versiBaru = BantuanAutentikasi::TerbitkanVersi(JenisDokumenLegal::SyaratKetentuan, 2, '2026-10-23');
         $anggota = Pengguna::factory()->create();
         TenantPengguna::query()->create(['IdTenant' => $this->tenant->Id, 'IdPengguna' => $anggota->Id]);

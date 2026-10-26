@@ -17,7 +17,7 @@ http.Response Json(Object isi, int status) =>
     http.Response(jsonEncode(isi), status, headers: {'content-type': 'application/json'});
 
 void main() {
-  test('konfigurasi aplikasi: FiturPaket.PersetujuanJarakJauh dibaca; server lama tanpa kunci = null', () async {
+  test('konfigurasi aplikasi: FiturPaket.PersetujuanJarakJauh dibaca. Server lama tanpa kunci = null', () async {
     Future<KonfigurasiAplikasi> Ambil(Map<String, Object?> isi) =>
         BuatKlien((_) async => Json(isi, 200)).AmbilKonfigurasiAplikasi();
 
@@ -44,7 +44,7 @@ void main() {
     expect(Galat(409, 'ShiftTidakDitemukan').CekGalatPerantara(), isFalse);
   });
 
-  test('aktivasi tanpa token; kode dirapikan; respons dipetakan termasuk kunci PIN offline', () async {
+  test('aktivasi tanpa token. Kode dirapikan. Respons dipetakan termasuk kunci PIN offline', () async {
     late http.Request dikirim;
     final klien = BuatKlien((permintaan) async {
       dikirim = permintaan;
@@ -344,7 +344,7 @@ void main() {
     expect(jsonDecode(dikirim.last.body), {'Status': 'Dimasak'});
   });
 
-  test('F-16a cari pelanggan: kata < 3 tanpa permintaan; hasil tersamar', () async {
+  test('F-16a cari pelanggan: kata < 3 tanpa permintaan. Hasil tersamar', () async {
     final dikirim = <http.Request>[];
     final klien = BuatKlien((permintaan) async {
       dikirim.add(permintaan);
@@ -557,7 +557,7 @@ void main() {
     });
   });
 
-  test('F-16c bagian 2 voucher: pesan mengirim kode & penjualan, promo ikut; habis → GalatApi VoucherHabis', () async {
+  test('F-16c bagian 2 voucher: pesan mengirim kode & penjualan, promo ikut. Habis → GalatApi VoucherHabis', () async {
     final dikirim = <http.Request>[];
     var habis = false;
     final klien = BuatKlien((permintaan) async {
@@ -720,7 +720,7 @@ void main() {
   );
 
   test(
-    'P-10 server lama tanpa FlagFitur & versi: nilai bawaan aman; tanpa ambilJumlahOutbox header tidak dikirim',
+    'P-10 server lama tanpa FlagFitur & versi: nilai bawaan aman, tanpa ambilJumlahOutbox header tidak dikirim',
     () async {
       late http.Request dikirim;
       final klien = BuatKlien((permintaan) async {

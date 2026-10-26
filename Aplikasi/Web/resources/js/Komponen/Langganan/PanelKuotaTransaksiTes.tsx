@@ -42,7 +42,7 @@ describe('PanelKuotaTransaksi', () => {
         expect(screen.queryByText('Kuota transaksi hampir habis')).toBeNull();
     });
 
-    it('hampir habis memperingatkan; habis menjelaskan layar jual terkunci dan transaksi lama tetap tersimpan', () => {
+    it('hampir habis memperingatkan. Habis menjelaskan layar jual terkunci dan transaksi lama tetap tersimpan', () => {
         const hasil = render(
             <PanelKuotaTransaksi
                 kuota={{

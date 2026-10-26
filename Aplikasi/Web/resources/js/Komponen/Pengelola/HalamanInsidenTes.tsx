@@ -122,7 +122,7 @@ describe('konsol insiden (PGL-21)', () => {
         expect(StatusBerikut('Selesai')).toEqual([]);
     });
 
-    it('Teknis: menu insiden berjalan memuat pembaruan; insiden selesai tanpa pembaruan; kronologi bisa dibuka', () => {
+    it('Teknis: menu insiden berjalan memuat pembaruan. Insiden selesai tanpa pembaruan. Kronologi bisa dibuka', () => {
         AturHalaman([IzinPengelola.OperasionalLihat, IzinPengelola.OperasionalKelola]);
         Render(<HalamanInsiden {...Props([aktif, selesai])} />);
 

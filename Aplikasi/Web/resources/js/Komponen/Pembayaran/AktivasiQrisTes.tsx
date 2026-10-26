@@ -159,7 +159,7 @@ describe('PeriksaLangkah (pemeriksaan awal di peramban)', () => {
         expect(PeriksaLangkah(0, { ...lengkap, Nik: '' }, Pendaftaran()).Nik).toBeUndefined();
     });
 
-    it('langkah 2: bank, nama, dan nomor rekening 5 sampai 20 angka; kosong boleh bila sudah tersimpan', () => {
+    it('langkah 2: bank, nama, dan nomor rekening 5 sampai 20 angka. Kosong boleh bila sudah tersimpan', () => {
         expect(Object.keys(PeriksaLangkah(1, isianKosong, null)).sort()).toEqual([
             'IdReferensiBank',
             'NamaPemilikRekening',

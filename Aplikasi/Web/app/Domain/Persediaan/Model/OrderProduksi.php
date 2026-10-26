@@ -101,7 +101,7 @@ final class OrderProduksi extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Order produksi tidak pernah dihapus; draf dibatalkan.');
+            throw new LogicException('Order produksi tidak pernah dihapus. Draf dibatalkan.');
         });
     }
 

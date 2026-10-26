@@ -97,7 +97,7 @@ describe('SusunLangkahProduk (daftar langkah wizard per jenis)', () => {
 });
 
 describe('CariLangkahTerdekat', () => {
-    it('langkah yang masih ada tetap; yang hilang mundur ke langkah relevan terdekat sebelumnya', () => {
+    it('langkah yang masih ada tetap, yang hilang mundur ke langkah relevan terdekat sebelumnya', () => {
         const jasa = SusunLangkahProduk(Aturan('Jasa'));
 
         expect(CariLangkahTerdekat(jasa, 'HargaStok')).toBe('HargaStok');
@@ -453,7 +453,7 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(LabelLangkahAktif()).toBe('Satuan & barcode');
     });
 
-    it('barcode yang diketik lalu langsung Lanjut ikut tersimpan; yang tidak valid menahan Lanjut', () => {
+    it('barcode yang diketik lalu langsung Lanjut ikut tersimpan, yang tidak valid menahan Lanjut', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         IsiNama('Air Mineral 600 ml');
         Lanjut();
@@ -557,7 +557,7 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(screen.getByText('Sabun Cair')).toBeTruthy();
     });
 
-    it('Enter di isian = Lanjut dan tidak menyimpan; hanya langkah Tinjau yang menyimpan', () => {
+    it('Enter di isian = Lanjut dan tidak menyimpan. Hanya langkah Tinjau yang menyimpan', () => {
         const { container } = render(<HalamanFormProduk {...PropsForm()} />);
         const form = container.querySelector('form');
 
@@ -673,7 +673,7 @@ describe('Wizard tambah produk (D-128)', () => {
         expect(body.Satuan[0]?.HargaAwal).toEqual([{ JumlahMinimum: '1', Harga: '45000' }]);
     });
 
-    it('masalah server di langkah yang biasanya dilewati membuka langkah itu; masalah harga membuka langkah harga', () => {
+    it('masalah server di langkah yang biasanya dilewati membuka langkah itu. Masalah harga membuka langkah harga', () => {
         render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkKosong, Satuan: [], Jenis: 'Jasa' } })} />);
         IsiNama('Potong rambut');
         Lanjut();

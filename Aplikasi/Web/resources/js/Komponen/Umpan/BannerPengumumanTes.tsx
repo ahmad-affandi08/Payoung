@@ -35,7 +35,7 @@ describe('P-10 PGL-19 banner pengumuman back-office', () => {
     beforeEach(() => window.localStorage.clear());
     afterEach(() => cleanup());
 
-    it('menampilkan jadwal pemeliharaan; hanya Yang baru/Info bisa ditutup dan diingat di peramban', () => {
+    it('menampilkan jadwal pemeliharaan. Hanya Yang baru/Info bisa ditutup dan diingat di peramban', () => {
         render(<BannerPengumuman pengumuman={pengumuman} />);
 
         expect(screen.getByRole('region', { name: 'Pengumuman Payoung' })).toBeTruthy();

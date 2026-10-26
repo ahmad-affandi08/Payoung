@@ -102,7 +102,7 @@ it('konsol: Mitra & Penjualan menambah mitra (kode unik, rahasia terenkripsi & t
     $this->get(BantuanPengelola::Url('/mitra'))->assertForbidden();
 });
 
-it('tautan mitra: klik pertama dicatat di cookie, pendaftaran teratribusi sekali; kode tak dikenal & klik > 90 hari diabaikan', function (): void {
+it('tautan mitra: klik pertama dicatat di cookie, pendaftaran teratribusi sekali. Kode tak dikenal & klik > 90 hari diabaikan', function (): void {
     $agen = Mitra::query()->create(['Kode' => 'AGEN-SOLO', 'Nama' => 'Agen Solo', 'Jenis' => 'Reseller', 'PersenKomisi' => '20.00', 'KomisiBerulang' => true]);
     Mitra::query()->create(['Kode' => 'LAIN', 'Nama' => 'Mitra lain', 'Jenis' => 'Referral', 'PersenKomisi' => '10.00']);
 

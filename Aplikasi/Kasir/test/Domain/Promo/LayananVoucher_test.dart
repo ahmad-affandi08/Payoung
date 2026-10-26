@@ -46,7 +46,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('offline → PerluOnline; ditolak server → pesan server; kode kosong ditolak tanpa permintaan', () async {
+  test('offline → PerluOnline. Ditolak server → pesan server. Kode kosong ditolak tanpa permintaan', () async {
     await expectLater(
       layanan.Pesan('  ', Keranjang.kosong),
       throwsA(isA<GalatKasir>().having((g) => g.kode, 'kode', 'KodeVoucherWajib')),
@@ -72,7 +72,7 @@ void main() {
     );
   });
 
-  test('voucher dipesan → promo voucher berlaku; tanpa voucher tidak; Penjualan.Buat membawa Voucher & Uuid', () async {
+  test('voucher dipesan → promo voucher berlaku, tanpa voucher tidak; Penjualan.Buat membawa Voucher & Uuid', () async {
     await u.SiapkanKatalog();
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();

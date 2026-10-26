@@ -40,7 +40,7 @@ describe('PemilihPelangganGrosir (dropdown, PRD v3.14)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('berbentuk dropdown bernama Pelanggan tanpa tombol Cari; pilihan aktif tampil di pemicu', () => {
+    it('berbentuk dropdown bernama Pelanggan tanpa tombol Cari. Pilihan aktif tampil di pemicu', () => {
         SiapkanFetch();
         RenderUji(
             <PemilihPelangganGrosir uuidTerpilih="P-MAKMUR" namaTerpilih="Toko Makmur Jaya" saatPilih={vi.fn()} />,

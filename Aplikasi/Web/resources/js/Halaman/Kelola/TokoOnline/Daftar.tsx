@@ -614,7 +614,7 @@ function TautanPortalKurir({ kurir }: { kurir: Kurir }) {
         <div className="mt-2 flex flex-col gap-2 border-t border-garis pt-2">
             <p className="text-keterangan text-teks-sekunder">
                 {kurir.TautanPortal
-                    ? 'Portal kurir aktif. Kirim tautan ini hanya ke kurirnya; siapa pun yang memegangnya bisa melihat alamat pengiriman.'
+                    ? 'Portal kurir aktif. Kirim tautan ini hanya ke kurirnya. Siapa pun yang memegangnya bisa melihat alamat pengiriman.'
                     : 'Kurir bisa menandai berangkat, diterima (dengan foto), atau gagal dari HP lewat tautan portal.'}
             </p>
             {kurir.TautanPortal ? (

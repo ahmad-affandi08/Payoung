@@ -66,7 +66,7 @@ describe('Hari libur (P-02, BR-P02.2)', function (): void {
             ->and(PersetujuanDataMaster::query()->sole()->IdPenggunaPengelola)->toBe($superAdmin->Id);
     });
 
-    it('penolakan mengembalikan semua ke draf; hari libur terbit tidak bisa diubah atau dihapus', function (): void {
+    it('penolakan mengembalikan semua ke draf. Hari libur terbit tidak bisa diubah atau dihapus', function (): void {
         $konten = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         BuatDrafLibur($this, $konten, '2027-01-01', 'Tahun Baru');
@@ -197,7 +197,7 @@ describe('Hari libur (P-02, BR-P02.2)', function (): void {
         $this->assertDatabaseHas('LogAuditPengelola', ['Aksi' => 'referensi.hari-libur.batal', 'IdObjek' => $hari->Id]);
     });
 
-    it('BR-P02.6: pembatalan yang ditolak membuat hari libur tetap berlaku; draf tidak bisa diajukan pembatalan', function (): void {
+    it('BR-P02.6: pembatalan yang ditolak membuat hari libur tetap berlaku. Draf tidak bisa diajukan pembatalan', function (): void {
         $konten = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         BuatDrafLibur($this, $konten, '2027-01-01', 'Tahun Baru');

@@ -111,7 +111,7 @@ describe('Ganti email di Keamanan akun (BR-00.5)', function (): void {
             ->where('Akun.BisaGantiEmail', true));
     });
 
-    it('mengirim tautan ke alamat baru; email akun baru berganti dan terverifikasi setelah tautan dibuka', function (): void {
+    it('mengirim tautan ke alamat baru. Email akun baru berganti dan terverifikasi setelah tautan dibuka', function (): void {
         ['Pengguna' => $pengguna] = MasukSebagaiOwnerGantiEmail($this);
 
         $this->post('/kelola/keamanan/email', ['Email' => 'Rina.Baru@KopiNusantara.id', 'KataSandi' => 'kata-sandi-kuat-123'])

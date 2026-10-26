@@ -54,7 +54,7 @@ final class PemasokKontroler extends DasarPembelianKontroler
         $aktif = $permintaan->boolean('Aktif');
         $hasil = $ubah->Jalankan($this->CariPemasok($pemasok), $aktif, $this->Pelaku()->Id);
 
-        return back()->with('Kilat', $aktif ? "Pemasok {$hasil->Nama} diaktifkan." : "Pemasok {$hasil->Nama} dinonaktifkan; tidak bisa dipilih di dokumen baru.");
+        return back()->with('Kilat', $aktif ? "Pemasok {$hasil->Nama} diaktifkan." : "Pemasok {$hasil->Nama} dinonaktifkan. Tidak bisa dipilih di dokumen baru.");
     }
 
     public function Hapus(string $pemasok, HapusPemasok $hapus): RedirectResponse

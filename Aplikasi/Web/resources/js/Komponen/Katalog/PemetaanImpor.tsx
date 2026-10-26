@@ -116,7 +116,7 @@ export default function PemetaanImpor({
                 {presetAsumsi ? (
                     <PeringatanAsumsi>
                         Nama kolom format aplikasi ini belum diverifikasi dengan berkas ekspor asli. Pastikan setiap
-                        bidang menunjuk kolom yang benar; lihat contoh isi di samping pilihan.
+                        bidang menunjuk kolom yang benar. Lihat contoh isi di samping pilihan.
                     </PeringatanAsumsi>
                 ) : null}
                 <div aria-live="polite">

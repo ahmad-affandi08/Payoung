@@ -108,7 +108,7 @@ void main() {
     expect(find.text('Rp 1.250.000'), findsOneWidget);
   });
 
-  testWidgets('kill switch pemilik.karyawan: kartu Karyawan hari ini hilang; tanpa flag tetap tampil', (tester) async {
+  testWidgets('kill switch pemilik.karyawan: kartu Karyawan hari ini hilang, tanpa flag tetap tampil', (tester) async {
     server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(flag: {'pemilik.karyawan': false}));
     await PasangPemilik(tester, server: server, sesi: sesi);
 

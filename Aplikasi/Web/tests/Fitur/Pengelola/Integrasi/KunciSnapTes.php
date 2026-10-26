@@ -120,7 +120,7 @@ describe('D-159 kunci SNAP di konsol Integrasi', function (): void {
             ->and(array_column(PenyediaIntegrasi::DokuBilling->AmbilBidangKredensial(), 'Kunci'))->toBe(['KunciRahasia']);
     });
 
-    it('uji koneksi: token SNAP diterima = keterangan sukses; ditolak = keterangan "belum siap" tanpa menggagalkan Checkout', function (): void {
+    it('uji koneksi: token SNAP diterima = keterangan sukses. Ditolak = keterangan "belum siap" tanpa menggagalkan Checkout', function (): void {
         $pasangan = (new PembuatKunciSnap)->Buat();
         $penguji = new PengujiDokuBilling;
         $pengaturan = ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-0201-1'];

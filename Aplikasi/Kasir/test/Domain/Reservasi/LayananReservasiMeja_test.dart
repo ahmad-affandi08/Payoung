@@ -57,7 +57,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('offline ditolak; antrian terbaca; tamu datang butuh izin dan meja, meja pilihan dikirim ke server', () async {
+  test('offline ditolak. Antrian terbaca. Tamu datang butuh izin dan meja, meja pilihan dikirim ke server', () async {
     u.server.penangan = (p) async => throw http.ClientException('offline');
     await expectLater(u.reservasiMeja.Ambil(), GalatDengan('PerluOnline'));
 
@@ -88,7 +88,7 @@ void main() {
   });
 
   test(
-    'pasang uang muka: validasi keranjang & reservasi; bayar membawa UuidReservasiMeja dan baris Uang muka',
+    'pasang uang muka: validasi keranjang & reservasi. Bayar membawa UuidReservasiMeja dan baris Uang muka',
     () async {
       final katalog = await u.MuatKatalog();
       final k = await u.MuatKonteks();

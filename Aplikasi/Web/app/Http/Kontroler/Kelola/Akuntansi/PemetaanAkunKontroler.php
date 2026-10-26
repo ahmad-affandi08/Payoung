@@ -61,6 +61,6 @@ final class PemetaanAkunKontroler extends DasarAkuntansiKontroler
         $outlet = $this->CariOutlet((string) $permintaan->AmbilUuidOutlet());
         $hapus->Jalankan($peran, $outlet->Id);
 
-        return to_route('kelola.akuntansi.pemetaan.daftar')->with('Kilat', "Pemetaan khusus {$outlet->Nama} untuk {$peran->AmbilLabel()} dihapus; outlet ini kembali memakai pemetaan umum.");
+        return to_route('kelola.akuntansi.pemetaan.daftar')->with('Kilat', "Pemetaan khusus {$outlet->Nama} untuk {$peran->AmbilLabel()} dihapus. Outlet ini kembali memakai pemetaan umum.");
     }
 }

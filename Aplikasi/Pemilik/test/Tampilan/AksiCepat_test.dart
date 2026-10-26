@@ -148,7 +148,7 @@ void main() {
       expect(find.text('Harga Kopi Susu Gula Aren menjadi Rp 20.000.'), findsOneWidget);
     });
 
-    testWidgets('harga kosong atau nol: tombol Simpan harga nonaktif; produk tanpa harga jual tidak bisa dipilih', (
+    testWidgets('harga kosong atau nol: tombol Simpan harga nonaktif. Produk tanpa harga jual tidak bisa dipilih', (
       tester,
     ) async {
       await BukaAksiCepat(tester);
@@ -185,7 +185,7 @@ void main() {
   });
 
   group('tandai habis', () {
-    testWidgets('dua outlet: pilih outlet dulu; saklar mengirim PUT dengan outlet, lalu daftar dimuat ulang', (
+    testWidgets('dua outlet: pilih outlet dulu. Saklar mengirim PUT dengan outlet, lalu daftar dimuat ulang', (
       tester,
     ) async {
       var habis = false;
@@ -238,7 +238,7 @@ void main() {
   });
 
   group('promo', () {
-    testWidgets('daftar promo; saklar mematikan lewat PUT status Aktif=false dan memuat ulang', (tester) async {
+    testWidgets('daftar promo. Saklar mematikan lewat PUT status Aktif=false dan memuat ulang', (tester) async {
       var aktif = true;
       jawaban['GET aksi-cepat/promo'] = (p) => JsonUji({
         'Promo': [
@@ -320,7 +320,7 @@ void main() {
     }
 
     testWidgets(
-      'tombol Simpan baru aktif setelah kategori, jumlah, dan sumber terisi; kirim multipart dengan foto dan kunci idempotensi',
+      'tombol Simpan baru aktif setelah kategori, jumlah, dan sumber terisi. Kirim multipart dengan foto dan kunci idempotensi',
       (tester) async {
         jawaban['GET aksi-cepat/pengeluaran/opsi'] = (p) => JsonUji(opsi);
         jawaban['POST aksi-cepat/pengeluaran'] = (p) => JsonUji({

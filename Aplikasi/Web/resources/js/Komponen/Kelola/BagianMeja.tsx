@@ -279,7 +279,7 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
                           ),
                       }
                     : {})}
-                kosong={{ judul: 'Belum ada area. Area opsional; meja tanpa area tetap bisa dipakai.' }}
+                kosong={{ judul: 'Belum ada area. Area opsional. Meja tanpa area tetap bisa dipakai.' }}
             />
             <DenahMeja alamatOutlet={alamatOutlet} meja={modeMeja.Meja} bolehKelola={bolehKelola} />
             <TabelData

@@ -32,7 +32,7 @@ void main() {
 
   tearDown(() => u.Tutup());
 
-  test('pengaturan tersimpan diurai; bentuk rusak atau kosong = tanpa minimum', () {
+  test('pengaturan tersimpan diurai. Bentuk rusak atau kosong = tanpa minimum', () {
     final pos = MinimumChargePos.DariJson({
       'UuidProduk': 'P1',
       'Meja': {'M1': '150000.00', 'M2': 'bukan-uang', 'M3': 5},

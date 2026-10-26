@@ -105,7 +105,7 @@ void main() {
     }
   });
 
-  testWidgets('BarisKeranjang: rincian, jumlah, total; tombol tambah/kurang: kotak 36dp, area ketuk ≥ 44dp', (
+  testWidgets('BarisKeranjang: rincian, jumlah, total. Tombol tambah/kurang: kotak 36dp, area ketuk ≥ 44dp', (
     tester,
   ) async {
     var tambah = 0;
@@ -146,7 +146,7 @@ void main() {
     expect((tambah, kurang, ubah), (1, 1, 1));
   });
 
-  testWidgets('PapanAngka: tombol 1–9, 000, 0, hapus mengirim label; tinggi ≥ 48dp', (tester) async {
+  testWidgets('PapanAngka: tombol 1–9, 000, 0, hapus mengirim label. Tinggi ≥ 48dp', (tester) async {
     final ditekan = <String>[];
     await Pasang(tester, PapanAngka(saatTekan: ditekan.add));
 

@@ -41,7 +41,7 @@ trait JagaDokumenTerposting
         });
 
         static::deleting(function (Model $dokumen): void {
-            throw new LogicException('Dokumen '.$dokumen->getTable().' tidak pernah dihapus; koreksi lewat pembatalan (dokumen pembalik).');
+            throw new LogicException('Dokumen '.$dokumen->getTable().' tidak pernah dihapus. Koreksi lewat pembatalan (dokumen pembalik).');
         });
     }
 

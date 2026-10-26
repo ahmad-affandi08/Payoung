@@ -152,7 +152,7 @@ final class SimpanHitungStokOpname
         $seri = $nomorSeri === null ? null : NomorSeri::query()->where('IdProduk', $info->id)->where('Nomor', $nomorSeri)->first();
 
         if ($batch === null && $nomorBatch !== null && (bool) config('persediaan.StokAwal.WajibKedaluwarsaBatch', true) && $h->tanggalKedaluwarsa === null) {
-            throw new PelanggaranAturanBisnis('KedaluwarsaWajib', "{$label}: batch {$nomorBatch} belum tercatat; isi tanggal kedaluwarsanya.", 'Hitung');
+            throw new PelanggaranAturanBisnis('KedaluwarsaWajib', "{$label}: batch {$nomorBatch} belum tercatat. Isi tanggal kedaluwarsanya.", 'Hitung');
         }
 
         $sistem = MutasiStok::query()

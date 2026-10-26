@@ -87,7 +87,7 @@ function AjukanDariKasir(TestCase $tes, string $token, Pengguna $kasir, array $t
 }
 
 describe('alur setujui & tolak', function (): void {
-    it('kasir mengajukan → muncul di antrean pemilik → disetujui → perangkat menerima penyetuju; riwayat & audit', function (): void {
+    it('kasir mengajukan → muncul di antrean pemilik → disetujui → perangkat menerima penyetuju. Riwayat & audit', function (): void {
         $k = BantuanKasir::Siapkan($this);
         AktifkanPersetujuanJarakJauh($k['Tenant']);
         $uuid = (string) Str::ulid();
@@ -127,7 +127,7 @@ describe('alur setujui & tolak', function (): void {
             ->and(PemilikPersetujuan($this, $token, $k['Tenant'], 'GET', 'persetujuan')->json('Persetujuan'))->toBe([]);
     });
 
-    it('tolak wajib alasan 5–255 karakter; perangkat menerima alasan; tidak bisa disetujui lagi', function (): void {
+    it('tolak wajib alasan 5–255 karakter. Perangkat menerima alasan. Tidak bisa disetujui lagi', function (): void {
         $k = BantuanKasir::Siapkan($this);
         AktifkanPersetujuanJarakJauh($k['Tenant']);
         $uuid = AjukanDariKasir($this, $k['Token'], $k['Kasir'])->json('Persetujuan.Uuid');
@@ -145,7 +145,7 @@ describe('alur setujui & tolak', function (): void {
             ->assertJsonPath('Persetujuan.Penyetuju', null);
     });
 
-    it('kasir membatalkan → hilang dari antrean; lewat 10 menit → Kedaluwarsa dan tidak bisa disetujui', function (): void {
+    it('kasir membatalkan → hilang dari antrean. Lewat 10 menit → Kedaluwarsa dan tidak bisa disetujui', function (): void {
         $k = BantuanKasir::Siapkan($this);
         AktifkanPersetujuanJarakJauh($k['Tenant']);
         $batal = AjukanDariKasir($this, $k['Token'], $k['Kasir'])->json('Persetujuan.Uuid');
@@ -166,7 +166,7 @@ describe('alur setujui & tolak', function (): void {
 });
 
 describe('wewenang, four-eyes, fitur, isolasi', function (): void {
-    it('penyetuju wajib punya izin yang diminta; permintaan khusus pemilik hanya untuk pemilik; pemohon tidak bisa menyetujui sendiri', function (): void {
+    it('penyetuju wajib punya izin yang diminta. Permintaan khusus pemilik hanya untuk pemilik. Pemohon tidak bisa menyetujui sendiri', function (): void {
         $k = BantuanKasir::Siapkan($this);
         AktifkanPersetujuanJarakJauh($k['Tenant']);
         $kas = AjukanDariKasir($this, $k['Token'], $k['Kasir'])->json('Persetujuan.Uuid');
@@ -187,7 +187,7 @@ describe('wewenang, four-eyes, fitur, isolasi', function (): void {
         expect(array_column(PemilikPersetujuan($this, $tokenPemilik, $k['Tenant'], 'GET', 'persetujuan')->json('Persetujuan'), 'Uuid'))->toBe([$pemilik, $olehSupervisor]);
     });
 
-    it('izin di luar daftar ditolak; pemohon bukan anggota outlet ditolak; fitur paket tidak aktif = FiturTidakTersedia & data-awal false', function (): void {
+    it('izin di luar daftar ditolak. Pemohon bukan anggota outlet ditolak. Fitur paket tidak aktif = FiturTidakTersedia & data-awal false', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $this->flushHeaders();
         $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk()->assertJsonPath('Pengaturan.PersetujuanJarakJauh', false);
@@ -216,7 +216,7 @@ describe('wewenang, four-eyes, fitur, isolasi', function (): void {
         $this->withToken($k['Token'])->getJson('/api/pos/v1/konfigurasi-aplikasi')->assertOk()->assertJsonPath('FiturPaket.PersetujuanJarakJauh', false);
     });
 
-    it('pemilik tenant lain tidak melihat & tidak bisa memutuskan; perangkat lain tidak bisa membaca permintaan', function (): void {
+    it('pemilik tenant lain tidak melihat & tidak bisa memutuskan. Perangkat lain tidak bisa membaca permintaan', function (): void {
         $k = BantuanKasir::Siapkan($this);
         AktifkanPersetujuanJarakJauh($k['Tenant']);
         $uuid = AjukanDariKasir($this, $k['Token'], $k['Kasir'])->json('Persetujuan.Uuid');

@@ -14,7 +14,7 @@ function BarisInsight(int $id, string $nama, string $qty, string $bersih, string
     return ['IdProduk' => $id, 'NamaProduk' => $nama, 'Qty' => $qty, 'Bersih' => $bersih, 'Hpp' => $hpp];
 }
 
-it('ABC: produk penyusun ±80% omzet kelas A, berikutnya sampai 95% B, sisanya C; omzet nol diabaikan', function (): void {
+it('ABC: produk penyusun ±80% omzet kelas A, berikutnya sampai 95% B, sisanya C. Omzet nol diabaikan', function (): void {
     $hasil = (new PenilaiInsightProduk)->Abc([
         BarisInsight(1, 'Kopi Susu', '100', '500000.00'),
         BarisInsight(2, 'Americano', '60', '300000.00'),

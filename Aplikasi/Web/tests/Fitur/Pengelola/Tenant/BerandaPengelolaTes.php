@@ -22,7 +22,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('Super Admin melihat seluruh ringkasan; tenant uji tidak dihitung; langganan dipilah menurut status', function (): void {
+it('Super Admin melihat seluruh ringkasan. Tenant uji tidak dihitung. Langganan dipilah menurut status', function (): void {
     $kopi = BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
     $toko = BantuanTenantPengelola::BuatTenant('Toko Bangunan Sinar Jaya', 'budi@sinarjaya.co.id');
     $demo = BantuanTenantPengelola::BuatTenant('Salon Demo', 'demo@salon.id');

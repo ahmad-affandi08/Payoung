@@ -150,7 +150,7 @@ void main() {
   });
 
   test(
-    'tutup pas: shift Tertutup + outbox Shift.Tutup sesuai kontrak dalam satu transaksi; laporan Z tertunda',
+    'tutup pas: shift Tertutup + outbox Shift.Tutup sesuai kontrak dalam satu transaksi. Laporan Z tertunda',
     () async {
       await Siapkan();
       u.jam = u.jam.add(const Duration(hours: 8));
@@ -205,7 +205,7 @@ void main() {
   );
 
   test(
-    'selisih kurang di bawah toleransi Rp 10.000 tanpa penyetuju; di atas toleransi wajib alasan & penyetuju ber-izin',
+    'selisih kurang di bawah toleransi Rp 10.000 tanpa penyetuju. Di atas toleransi wajib alasan & penyetuju ber-izin',
     () async {
       await Siapkan();
       expect((await u.tutupShift.Pratinjau(shift.Uuid, Uang.DariBulat(435100))).butuhPersetujuan, isFalse);
@@ -254,7 +254,7 @@ void main() {
   );
 
   test(
-    'toleransi dari data awal: Rp 50.000 menerima selisih Rp 22.000 tanpa penyetuju; tutup buta dari data awal',
+    'toleransi dari data awal: Rp 50.000 menerima selisih Rp 22.000 tanpa penyetuju. Tutup buta dari data awal',
     () async {
       await Siapkan(dataAwal: DataAwalUji(toleransiSelisihKas: '50000.00', tutupShiftButa: false));
       expect(await u.tutupShift.CekTutupButa(), isFalse);
@@ -264,7 +264,7 @@ void main() {
   );
 
   test(
-    'ditolak: pesanan tertahan, pecahan ≠ kas aktual, kasir lain di shift bukan bersama; supervisor boleh',
+    'ditolak: pesanan tertahan, pecahan ≠ kas aktual, kasir lain di shift bukan bersama. Supervisor boleh',
     () async {
       await Siapkan();
       await u.penjualan.TahanPesanan(KeranjangContoh(), rina, Uang.DariBulat(67100));

@@ -26,7 +26,7 @@ final class TerapkanImporStokAwalTugas implements ShouldBeUniqueUntilProcessing,
 {
     use Queueable;
 
-    public const PESAN_GAGAL = 'Pembuatan draf terhenti karena masalah sistem. Draf yang sudah dibuat tidak diulang; klik Lanjutkan impor untuk meneruskan.';
+    public const PESAN_GAGAL = 'Pembuatan draf terhenti karena masalah sistem. Draf yang sudah dibuat tidak diulang. Klik Lanjutkan impor untuk meneruskan.';
 
     public int $tries = 3;
 
@@ -56,7 +56,7 @@ final class TerapkanImporStokAwalTugas implements ShouldBeUniqueUntilProcessing,
                 PengirimTugasImporStokAwal::KirimLanjutan(new self($this->idTenant, $this->idPengguna, $this->idImporStokAwal));
             }
         }, IzinTenant::PersediaanKelola, function (string $alasan): void {
-            PengirimTugasImporStokAwal::Gagalkan($this->idImporStokAwal, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan; pengguna yang berizin bisa melanjutkan impor.');
+            PengirimTugasImporStokAwal::Gagalkan($this->idImporStokAwal, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan. Pengguna yang berizin bisa melanjutkan impor.');
         });
     }
 

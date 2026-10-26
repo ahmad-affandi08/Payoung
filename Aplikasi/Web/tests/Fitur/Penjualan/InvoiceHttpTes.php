@@ -149,7 +149,7 @@ describe('HTTP back-office invoice', function (): void {
         expect($invoice->refresh()->TerkirimPada)->not->toBeNull();
     });
 
-    it('draf bisa diubah lalu diterbitkan dari detail; angka tidak bisa dikarang klien; setelah terbit tidak bisa diubah', function (): void {
+    it('draf bisa diubah lalu diterbitkan dari detail. Angka tidak bisa dikarang klien. Setelah terbit tidak bisa diubah', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
         $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Total' => '1.00', 'Tagihan' => '1.00']))->assertSessionHasNoErrors();
@@ -175,7 +175,7 @@ describe('HTTP back-office invoice', function (): void {
         expect($invoice->refresh()->Total)->toBe('3000000.00');
     });
 
-    it('pembatalan lewat rute meminta alasan; invoice tidak dikenal 404', function (): void {
+    it('pembatalan lewat rute meminta alasan. Invoice tidak dikenal 404', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Lanjutkan' => true]))->assertSessionHasNoErrors();
         $invoice = Invoice::query()->sole();
@@ -187,7 +187,7 @@ describe('HTTP back-office invoice', function (): void {
         $this->get('/kelola/invoice/'.strtoupper((string) Str::ulid()))->assertNotFound();
     });
 
-    it('pencarian jasa hanya mengembalikan jasa/tanpa stok beserta harga katalog; pelanggan dicari lewat dropdown', function (): void {
+    it('pencarian jasa hanya mengembalikan jasa/tanpa stok beserta harga katalog. Pelanggan dicari lewat dropdown', function (): void {
         BantuanKatalog::BuatProduk(['Nama' => 'Beras Pulen 5 kg'], '70000.00');
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
@@ -210,7 +210,7 @@ describe('HTTP back-office invoice', function (): void {
         $this->getJson('/kelola/invoice/uang-muka?pelanggan=tidak-ada')->assertOk()->assertJsonCount(0, 'Data');
     });
 
-    it('tanpa izin invoice.kelola ditolak; fitur invoice.penagihan harus ada di paket untuk aksi tulis', function (): void {
+    it('tanpa izin invoice.kelola ditolak. Fitur invoice.penagihan harus ada di paket untuk aksi tulis', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->k['Tenant']->Id, PeranTenantBawaan::Kasir);
         $this->get('/kelola/invoice')->assertForbidden();
         $this->post('/kelola/invoice', IsianInvoiceHttp($this))->assertForbidden();
@@ -238,7 +238,7 @@ describe('HTTP back-office invoice', function (): void {
 });
 
 describe('HTTP aksi massal invoice', function (): void {
-    it('menerbitkan draf, mengirim, dan mengingatkan banyak invoice sekaligus; yang tidak bisa dilewati dengan alasannya', function (): void {
+    it('menerbitkan draf, mengirim, dan mengingatkan banyak invoice sekaligus, yang tidak bisa dilewati dengan alasannya', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->post('/kelola/invoice', IsianInvoiceHttp($this))->assertSessionHasNoErrors();
         $this->post('/kelola/invoice', IsianInvoiceHttp($this, ['Perihal' => 'Jasa kedua']))->assertSessionHasNoErrors();
@@ -284,7 +284,7 @@ describe('HTTP aksi massal invoice', function (): void {
 });
 
 describe('HTTP ringkasan penagihan dan ekspor', function (): void {
-    it('Beranda dan daftar menampilkan ditagih, diterima, beredar, dan lewat jatuh tempo; kosong bila belum ada invoice', function (): void {
+    it('Beranda dan daftar menampilkan ditagih, diterima, beredar, dan lewat jatuh tempo. Kosong bila belum ada invoice', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
         $this->get('/kelola/invoice')->assertInertia(fn (AssertableInertia $h) => $h->where('Ringkasan', null));

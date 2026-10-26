@@ -110,7 +110,7 @@ class _PanelRacikanState extends ConsumerState<PanelRacikan> {
 
   void _Tambah(ProdukJual produk) {
     if (_komponen.any((k) => k.produk.uuid == produk.uuid)) {
-      setState(() => _galat = '${produk.nama} sudah ada di racikan; ubah jumlahnya.');
+      setState(() => _galat = '${produk.nama} sudah ada di racikan. Ubah jumlahnya.');
       return;
     }
     setState(() {

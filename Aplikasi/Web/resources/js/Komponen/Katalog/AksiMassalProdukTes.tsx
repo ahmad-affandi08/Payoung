@@ -45,7 +45,7 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
         tiruanRouter.get.mockClear();
     });
 
-    it('arsipkan & sembunyikan dari kasir mengirim Uuid terpilih; pindah kategori butuh kategori', () => {
+    it('arsipkan & sembunyikan dari kasir mengirim Uuid terpilih. Pindah kategori butuh kategori', () => {
         RenderUji(
             <AksiMassalProduk
                 konteks={Konteks}
@@ -74,7 +74,7 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
         );
     });
 
-    it('PRD-10: Cetak label membuka halaman label dengan produk terpilih; tanpa izin kelola hanya tombol itu yang tampil', () => {
+    it('PRD-10: Cetak label membuka halaman label dengan produk terpilih, tanpa izin kelola hanya tombol itu yang tampil', () => {
         const { container, unmount: Bongkar } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
 
         fireEvent.click(within(container).getByRole('button', { name: 'Cetak label' }));

@@ -132,7 +132,7 @@ describe('P-10 rilis aplikasi', function (): void {
         unset($perangkat);
     });
 
-    it('kanal Beta hanya untuk tenant Uji/Internal; hentikan rollout wajib alasan dan berhenti ditawarkan', function (): void {
+    it('kanal Beta hanya untuk tenant Uji/Internal. Hentikan rollout wajib alasan dan berhenti ditawarkan', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
         MasukSebagaiTeknisRilis($this);
@@ -151,7 +151,7 @@ describe('P-10 rilis aplikasi', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'rilis.hentikan')->sole()->Alasan)->toBe('Crash saat cetak struk di Sunmi V2');
     });
 
-    it('BR-P10.1 versi minimum diumumkan ≥ 7 hari kecuali keamanan; BR-P10.2 dampak perangkat lama & outbox; perangkat lama tetap dilayani', function (): void {
+    it('BR-P10.1 versi minimum diumumkan ≥ 7 hari kecuali keamanan; BR-P10.2 dampak perangkat lama & outbox. Perangkat lama tetap dilayani', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         ['Perangkat' => $perangkat, 'Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
         // Perangkat melaporkan 3 transaksi belum terkirim di versi 1.4.0.
@@ -185,7 +185,7 @@ describe('P-10 rilis aplikasi', function (): void {
         $this->delete(BantuanPengelola::Url("/rilis/{$rilis->Uuid}/versi-minimum"))->assertSessionHasErrors('Umum');
     });
 
-    it('perbaikan keamanan boleh berlaku hari ini; versi minimum yang belum berlaku bisa dibatalkan', function (): void {
+    it('perbaikan keamanan boleh berlaku hari ini. Versi minimum yang belum berlaku bisa dibatalkan', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
         MasukSebagaiTeknisRilis($this);

@@ -60,7 +60,7 @@ beforeEach(function (): void {
     $this->keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
 });
 
-it('MRR, ARR, pendapatan per paket & sektor dari tagihan lunas; piutang per umur; tenant uji tidak dihitung', function (): void {
+it('MRR, ARR, pendapatan per paket & sektor dari tagihan lunas. Piutang per umur. Tenant uji tidak dihitung', function (): void {
     ['Tenant' => $a, 'Pengguna' => $pemilikA] = BantuanTagihan::DaftarTenant();
     ['Tenant' => $b, 'Pengguna' => $pemilikB] = BantuanTagihan::DaftarTenant('bayu@sinarjaya.id', '081298765432', 'Sinar Jaya');
     ['Tenant' => $c, 'Pengguna' => $pemilikC] = BantuanTagihan::DaftarTenant('sari@warungsari.id', '081311112222', 'Warung Sari');
@@ -117,7 +117,7 @@ it('churn: pelanggan berbayar di awal periode yang periodenya habis lewat masa t
     expect(LaporanLanggananUji('2026-10-01', '2026-10-27')['Churn']['PelangganBerhenti'])->toBe(0);
 });
 
-it('HTTP: Keuangan membuka /laporan-langganan; peran tanpa izin tagihan ditolak', function (): void {
+it('HTTP: Keuangan membuka /laporan-langganan. Peran tanpa izin tagihan ditolak', function (): void {
     ['Tenant' => $a, 'Pengguna' => $pemilikA] = BantuanTagihan::DaftarTenant();
     LunasiTagihanLaporanUji($this, $pemilikA, $a);
     $sesi = BantuanPengelola::SesiTerverifikasi();

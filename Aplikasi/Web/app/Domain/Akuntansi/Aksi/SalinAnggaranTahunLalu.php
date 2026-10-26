@@ -34,7 +34,7 @@ final class SalinAnggaranTahunLalu
 
             // Kunci baris tahun tujuan lebih dulu supaya dua salinan bersamaan tidak sama-sama lolos pemeriksaan kosong.
             if (SimpanAnggaran::Cakupan(Anggaran::query()->where('Tahun', $tahun), $idOutlet)->lockForUpdate()->exists()) {
-                throw new PelanggaranAturanBisnis('AnggaranSudahAda', "Anggaran {$tahun} sudah ada; ubah langsung di halaman susun.");
+                throw new PelanggaranAturanBisnis('AnggaranSudahAda', "Anggaran {$tahun} sudah ada. Ubah langsung di halaman susun.");
             }
 
             $asal = SimpanAnggaran::Cakupan(Anggaran::query()->where('Tahun', $tahun - 1), $idOutlet)

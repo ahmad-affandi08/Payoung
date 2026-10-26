@@ -39,7 +39,7 @@ export default function PanelNotaReturPajak({ query }: { query: Record<string, s
     return (
         <Panel
             judul="Nota retur pajak (Coretax)"
-            keterangan="Dari retur grosir pada periode ini atas faktur yang sudah punya nomor Faktur Pajak. Bila pembeli PKP, pembeli yang membuat retur di Coretax dan Anda mengonfirmasinya; bila bukan PKP, Anda yang mencatatnya di menu Retur Pajak Keluaran."
+            keterangan="Dari retur grosir pada periode ini atas faktur yang sudah punya nomor Faktur Pajak. Bila pembeli PKP, pembeli yang membuat retur di Coretax dan Anda mengonfirmasinya. Bila bukan PKP, Anda yang mencatatnya di menu Retur Pajak Keluaran."
             aksi={
                 data?.BisaDiekspor ? (
                     <TautanUnduh

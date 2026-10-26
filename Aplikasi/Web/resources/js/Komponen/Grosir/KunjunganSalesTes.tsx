@@ -54,7 +54,7 @@ describe('Grosir › Kunjungan salesman (Modul Salesman bagian 1)', () => {
     });
     afterEach(() => cleanup());
 
-    it('tautan peta memakai koordinat string apa adanya; tanpa koordinat tidak ada tautan', () => {
+    it('tautan peta memakai koordinat string apa adanya, tanpa koordinat tidak ada tautan', () => {
         expect(BuatTautanPeta('-7.5666001', '110.8166002')).toBe(
             'https://www.google.com/maps?q=-7.5666001,110.8166002',
         );

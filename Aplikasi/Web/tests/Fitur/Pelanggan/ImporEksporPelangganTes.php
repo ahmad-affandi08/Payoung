@@ -27,7 +27,7 @@ function BerkasPelangganCsv(string $isi, string $nama = 'pelanggan.csv'): Upload
     return UploadedFile::fake()->createWithContent($nama, $isi);
 }
 
-it('impor: periksa tidak menyimpan; terapkan membuat yang baru, melewati yang terdaftar & bermasalah; ulang = 0 baru', function (): void {
+it('impor: periksa tidak menyimpan. Terapkan membuat yang baru, melewati yang terdaftar & bermasalah. Ulang = 0 baru', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Kue Bu Sri Lestari');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
@@ -89,7 +89,7 @@ it('impor ditolak: kolom wajib tidak ada, bukan berkas tabel', function (): void
     $this->post('/kelola/pelanggan/impor', [])->assertSessionHasErrors('Berkas');
 });
 
-it('ekspor: ikut filter, kolom bisa diimpor ulang (semua sudah ada), tercatat di audit; izin pelanggan.kelola', function (): void {
+it('ekspor: ikut filter, kolom bisa diimpor ulang (semua sudah ada), tercatat di audit. Izin pelanggan.kelola', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Kue Bu Sri');
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);

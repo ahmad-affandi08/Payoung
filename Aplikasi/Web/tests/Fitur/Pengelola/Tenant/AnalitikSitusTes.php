@@ -65,7 +65,7 @@ beforeEach(function (): void {
 });
 
 describe('RentangAnalitik', function (): void {
-    it('bawaan 28 hari terakhir sampai kemarin; pembanding sama panjang tepat sebelumnya', function (): void {
+    it('bawaan 28 hari terakhir sampai kemarin. Pembanding sama panjang tepat sebelumnya', function (): void {
         $rentang = RentangAnalitik::Bangun(null, null);
 
         expect($rentang->UntukTampilan())->toBe(['Dari' => '2026-09-28', 'Sampai' => '2026-10-25', 'Hari' => 28])
@@ -281,7 +281,7 @@ describe('data laporan', function (): void {
         }
     });
 
-    it('hasil disimpan di cache supaya kuota Data API hemat; segarkan=1 mengambil ulang', function (): void {
+    it('hasil disimpan di cache supaya kuota Data API hemat. Segarkan=1 mengambil ulang', function (): void {
         AktifkanAnalitikUji();
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Analis);
         Http::fake([
@@ -311,7 +311,7 @@ describe('data laporan', function (): void {
             ->and($respons->getContent())->not->toContain('ya29.rahasia-token')->not->toContain('PRIVATE KEY');
     });
 
-    it('kuota habis dan permintaan ditolak dijelaskan; galat tidak ikut tersimpan di cache', function (): void {
+    it('kuota habis dan permintaan ditolak dijelaskan. Galat tidak ikut tersimpan di cache', function (): void {
         AktifkanAnalitikUji();
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Analis);
         Http::fake([

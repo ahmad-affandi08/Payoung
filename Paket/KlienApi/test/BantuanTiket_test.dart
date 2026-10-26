@@ -69,7 +69,7 @@ void main() {
     );
   });
 
-  test('daftar tiket mengirim UuidPengguna dan memetakan baris; baris rusak dibuang', () async {
+  test('daftar tiket mengirim UuidPengguna dan memetakan baris. Baris rusak dibuang', () async {
     late http.Request dikirim;
     final klien = BuatKlien((p) async {
       dikirim = p;

@@ -25,7 +25,7 @@ it('garis lurus: 48 bulan, mulai bulan perolehan, total tepat', function (): voi
         ->and(TotalJadwal($jadwal))->toBe('12000000.00');
 });
 
-it('pembulatan diserap bulan terakhir; nilai sisa tidak disusutkan', function (): void {
+it('pembulatan diserap bulan terakhir. Nilai sisa tidak disusutkan', function (): void {
     $jadwal = PenghitungPenyusutan::HitungJadwal(Uang::Dari('10000001'), Uang::Dari('1'), Uang::Nol(), 3, '2026-01', '2026-01');
 
     expect(array_map(fn (array $b): string => $b['Jumlah']->KeString(), $jadwal))->toBe(['3333333.33', '3333333.33', '3333333.34'])

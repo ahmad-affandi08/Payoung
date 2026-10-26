@@ -40,7 +40,7 @@ void main() {
     k,
   );
 
-  test('bayar latihan: kembalian dihitung, nomor LATIHAN, tanpa penjualan/outbox; validasi tetap jalan', () async {
+  test('bayar latihan: kembalian dihitung, nomor LATIHAN, tanpa penjualan/outbox. Validasi tetap jalan', () async {
     final outboxAwal = (await u.db.select(u.db.outbox).get()).length;
     final hasil = await u.penjualan.Bayar(
       keranjang: Croissant(),

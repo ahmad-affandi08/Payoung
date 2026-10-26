@@ -226,7 +226,7 @@ export default function PanelAlatBantuDukungan({ uuidTenant, data }: PropsPanelA
                                             AturTindakan({
                                                 judul: 'Bangun ulang saldo stok',
                                                 keterangan:
-                                                    'Saldo stok dan sisa batch dihitung ulang dari buku stok (MutasiStok). Hanya yang menyimpang yang diperbaiki; hasil sebelum dan sesudah dicatat.',
+                                                    'Saldo stok dan sisa batch dihitung ulang dari buku stok (MutasiStok). Hanya yang menyimpang yang diperbaiki. Hasil sebelum dan sesudah dicatat.',
                                                 labelKirim: 'Bangun ulang saldo',
                                                 url: `${dasar}/saldo-stok/bangun-ulang`,
                                                 bahaya: true,

@@ -73,7 +73,7 @@ describe('formulir prospek publik', function (): void {
         Mail::assertQueued(ProspekSitusBaru::class, fn (ProspekSitusBaru $surel): bool => $surel->hasTo('sales@payoung.test'));
     });
 
-    it('email notifikasi jatuh ke email kontak situs; tanpa keduanya tidak mengirim email', function (): void {
+    it('email notifikasi jatuh ke email kontak situs, tanpa keduanya tidak mengirim email', function (): void {
         Mail::fake();
         $this->post('/prospek', IsianProspek())->assertSessionHas('ProspekTerkirim', true);
         Mail::assertNothingQueued();

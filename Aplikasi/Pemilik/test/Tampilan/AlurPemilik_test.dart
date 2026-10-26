@@ -81,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('D-35: masuk ke server toko sendiri; alamat tersimpan dan bertahan setelah keluar', (tester) async {
+  testWidgets('D-35: masuk ke server toko sendiri. Alamat tersimpan dan bertahan setelah keluar', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
 
@@ -202,7 +202,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('2FA: kode diminta setelah kata sandi; banyak usaha → pilih usaha', (tester) async {
+  testWidgets('2FA: kode diminta setelah kata sandi. Banyak usaha → pilih usaha', (tester) async {
     server.penangan = (p) async {
       if (p.url.path.endsWith('/masuk')) {
         return JsonUji({'PerluDuaFaktor': true, 'TokenTantangan': 'tantangan-1'});
@@ -239,7 +239,7 @@ void main() {
     expect(find.text('Laundry Bersih'), findsOneWidget);
   });
 
-  testWidgets('kata sandi salah tampil; sesi tersimpan + 401 → kembali ke layar masuk', (tester) async {
+  testWidgets('kata sandi salah tampil. Sesi tersimpan + 401 → kembali ke layar masuk', (tester) async {
     server.penangan = (p) async => p.url.path.endsWith('/masuk')
         ? JsonUji({
             'Galat': {'Kode': 'KredensialSalah', 'Pesan': 'Email atau kata sandi salah.'},

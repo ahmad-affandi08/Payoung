@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('D-20 pembagian domain', function (): void {
-    it('domain pemasaran: beranda dilayani dengan tautan masuk & daftar ke domain tenant; legal & kompatibilitas tetap dilayani', function (): void {
+    it('domain pemasaran: beranda dilayani dengan tautan masuk & daftar ke domain tenant. Legal & kompatibilitas tetap dilayani', function (): void {
         $this->get('https://payoung.test/')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Situs/Halaman')
             ->where('Situs.TombolMasuk.Tautan', 'https://dashboard.payoung.test/masuk')
@@ -55,7 +55,7 @@ describe('D-20 pembagian domain', function (): void {
         $this->get('https://dashboard.payoung.test/kelola')->assertRedirect();
     });
 
-    it('domain tenant: pengguna masuk membuka back-office; domain pengelola tidak melayani rute tenant', function (): void {
+    it('domain tenant: pengguna masuk membuka back-office. Domain pengelola tidak melayani rute tenant', function (): void {
         BantuanPendaftaran::SiapkanPrasyarat();
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Toko Domain Terpisah');
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);

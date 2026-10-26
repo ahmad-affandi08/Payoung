@@ -80,7 +80,7 @@ describe('PanelPendaftaranMerchant (konsol)', () => {
         expect(screen.queryByLabelText(/merchantId/)).toBeNull();
     });
 
-    it('Ditinjau: status, ID bisnis/brand, NIK & rekening tersamar; segarkan memanggil rute konsol', () => {
+    it('Ditinjau: status, ID bisnis/brand, NIK & rekening tersamar. Segarkan memanggil rute konsol', () => {
         render(<PanelPendaftaranMerchant uuidTenant="T-1" data={Data(Pendaftaran())} bolehKelola />);
 
         expect(screen.getByText('Sedang ditinjau')).toBeTruthy();
@@ -122,7 +122,7 @@ describe('PanelPendaftaranMerchant (konsol)', () => {
         expect(screen.getByText('Foto KTP buram.')).toBeTruthy();
     });
 
-    it('penampung QRIS diisi manual dan disimpan lewat PUT; nilai awal dari data', () => {
+    it('penampung QRIS diisi manual dan disimpan lewat PUT. Nilai awal dari data', () => {
         render(
             <PanelPendaftaranMerchant
                 uuidTenant="T-1"

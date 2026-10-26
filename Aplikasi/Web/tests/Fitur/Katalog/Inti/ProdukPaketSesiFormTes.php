@@ -39,7 +39,7 @@ function IsiFormPaketSesi(array $t, array $timpa = []): array
     ], $timpa));
 }
 
-it('Jasa + paket sesi: produk, harga, dan definisi paket (semua layanan Jasa) tersimpan sekaligus; kirim ulang idempoten', function (): void {
+it('Jasa + paket sesi: produk, harga, dan definisi paket (semua layanan Jasa) tersimpan sekaligus. Kirim ulang idempoten', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Salon Ayu Sederhana Klaten');
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

@@ -351,7 +351,7 @@ describe('BR-08.4 pengingat & rekap potongan', function (): void {
         expect($tindakan())->toBeNull();
     });
 
-    it('batas hari menunggu bisa diatur tenant per metode: lebih pendek memunculkan butir lebih cepat, kosong = bawaan jenis; tunai dan angka tidak sah ditolak', function (): void {
+    it('batas hari menunggu bisa diatur tenant per metode: lebih pendek memunculkan butir lebih cepat, kosong = bawaan jenis. Tunai dan angka tidak sah ditolak', function (): void {
         ['K' => $k, 'Metode' => $qris] = SiapkanPencairanUji($this);
         $tindakan = function () use ($k): ?array {
             $butir = null;
@@ -402,7 +402,7 @@ describe('BR-08.4 pengingat & rekap potongan', function (): void {
             ->and($kode(fn () => app(UbahBatasHariMenungguMetode::class)->Jalankan($qris, 61)))->toBe('BatasHariTidakSah');
     });
 
-    it('HTTP: atur batas hari menunggu lewat halaman metode pembayaran; daftar metode membawa batas berlaku & kustom', function (): void {
+    it('HTTP: atur batas hari menunggu lewat halaman metode pembayaran. Daftar metode membawa batas berlaku & kustom', function (): void {
         ['K' => $k, 'Metode' => $qris] = SiapkanPencairanUji($this);
         $pemilik = fn () => $this->actingAs($k['Pemilik'])->withSession(['IdTenantAktif' => $k['Tenant']->Id]);
 

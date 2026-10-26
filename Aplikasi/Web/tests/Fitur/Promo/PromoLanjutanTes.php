@@ -74,7 +74,7 @@ function SiapkanPromoLanjutan(TestCase $tes): array
 }
 
 describe('F-16c bagian 3 promo bersyarat di penjualan POS', function (): void {
-    it('metode bayar: dibayar penuh QRIS = sesuai server; dibayar tunai padahal promo khusus QRIS = diterima + tinjauan', function (): void {
+    it('metode bayar: dibayar penuh QRIS = sesuai server. Dibayar tunai padahal promo khusus QRIS = diterima + tinjauan', function (): void {
         $k = SiapkanPromoLanjutan($this);
         $promo = BuatPromoLanjutan('QRIS5K', ['MetodeBayar' => [$k['Qris']->Uuid]]);
 
@@ -94,7 +94,7 @@ describe('F-16c bagian 3 promo bersyarat di penjualan POS', function (): void {
             ->and(PromoPemakaian::query()->count())->toBe(2);
     });
 
-    it('transaksi pertama & ulang tahun dari data server; transaksi kedua memakai promo transaksi pertama = tinjauan', function (): void {
+    it('transaksi pertama & ulang tahun dari data server. Transaksi kedua memakai promo transaksi pertama = tinjauan', function (): void {
         $k = SiapkanPromoLanjutan($this);
         $hariIni = CarbonImmutable::now($k['Outlet']->ZonaWaktu);
         $ani = Pelanggan::query()->create(['Nama' => 'Ani Rahmawati', 'NoHp' => '6281234567890', 'TanggalLahir' => $hariIni->subYears(30)->toDateString()]);
@@ -127,7 +127,7 @@ describe('F-16c bagian 3 promo bersyarat di penjualan POS', function (): void {
             ]);
     });
 
-    it('batas per pelanggan per hari; tanpa pelanggan promo berbatas tidak berlaku', function (): void {
+    it('batas per pelanggan per hari, tanpa pelanggan promo berbatas tidak berlaku', function (): void {
         $k = SiapkanPromoLanjutan($this);
         $ani = Pelanggan::query()->create(['Nama' => 'Ani Rahmawati', 'NoHp' => '6281234567890']);
         $harian = BuatPromoLanjutan('HARIAN5K', ['BatasPerPelanggan' => ['Jumlah' => 1, 'Periode' => 'Hari']]);
@@ -155,7 +155,7 @@ describe('F-16c bagian 3 promo bersyarat di penjualan POS', function (): void {
 });
 
 describe('F-16c bagian 3 formulir promo', function (): void {
-    it('menyimpan syarat bagian 3 ke Definisi; validasi jarak ulang tahun, batas, dan metode bayar', function (): void {
+    it('menyimpan syarat bagian 3 ke Definisi. Validasi jarak ulang tahun, batas, dan metode bayar', function (): void {
         $k = SiapkanPromoLanjutan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         $isian = IsianPromoLanjutan(['MetodeBayar' => [$k['Qris']->Uuid], 'UlangTahun' => 'Rentang', 'HariUlangTahun' => 7, 'TransaksiPertama' => true, 'BatasPerPelanggan' => 2, 'PeriodeBatasPelanggan' => 'Promo']);

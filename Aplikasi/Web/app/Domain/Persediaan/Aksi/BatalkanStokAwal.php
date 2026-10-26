@@ -268,7 +268,7 @@ final class BatalkanStokAwal
             if ($s->Status !== StatusNomorSeri::Tersedia || $s->IdGudang !== $gudangAsal[$s->Id]) {
                 throw new PelanggaranAturanBisnis(
                     'StokSudahTerpakai',
-                    'Nomor seri '.$s->Nomor.' '.($produk[$s->IdProduk]->nama ?? '')." sudah tidak ada di {$namaGudang}. Stok awal tidak bisa dibatalkan; koreksi lewat penyesuaian stok.",
+                    'Nomor seri '.$s->Nomor.' '.($produk[$s->IdProduk]->nama ?? '')." sudah tidak ada di {$namaGudang}. Stok awal tidak bisa dibatalkan. Koreksi lewat penyesuaian stok.",
                     detail: ['Nomor' => $s->Nomor],
                 );
             }

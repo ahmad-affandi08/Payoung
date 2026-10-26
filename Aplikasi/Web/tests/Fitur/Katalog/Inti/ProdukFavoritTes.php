@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('K-16 Produk.Favorit lewat form', function (): void {
-    it('membuat produk Favorit; tanpa field Favorit = false; detail & form edit membawanya', function (): void {
+    it('membuat produk Favorit, tanpa field Favorit = false. Detail & form edit membawanya', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $favorit = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], ['Nama' => 'Es Kopi Susu Gula Aren', 'Favorit' => true]);
@@ -42,7 +42,7 @@ describe('K-16 Produk.Favorit lewat form', function (): void {
             ->assertInertia(fn ($halaman) => $halaman->where('Produk.Favorit', true));
     });
 
-    it('edit tanpa field Favorit (klien lama) tidak mereset; Favorit false melepas; perubahan tercatat di audit', function (): void {
+    it('edit tanpa field Favorit (klien lama) tidak mereset; Favorit false melepas. Perubahan tercatat di audit', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
         $form = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], ['Nama' => 'Nasi Goreng Kampung Spesial', 'Favorit' => true]);

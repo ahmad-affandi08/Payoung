@@ -71,7 +71,7 @@ describe('Reservasi (F-07 mode service)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('waktu reservasi berformat Indonesia; aksi baris mengikuti transisi status', () => {
+    it('waktu reservasi berformat Indonesia. Aksi baris mengikuti transisi status', () => {
         expect(FormatWaktuReservasi(baris.MulaiPada, baris.SelesaiPada)).toMatch(
             /13 Okt 2026 \| \d{2}\.\d{2}–\d{2}\.\d{2}/,
         );
@@ -116,7 +116,7 @@ describe('Reservasi (F-07 mode service)', () => {
         );
     });
 
-    it('tanpa layanan berdurasi: tombol catat nonaktif dengan petunjuk; halaman publik tutup', () => {
+    it('tanpa layanan berdurasi: tombol catat nonaktif dengan petunjuk. Halaman publik tutup', () => {
         RenderUji(<HalamanDaftarReservasi {...Props({ OpsiLayanan: [] })} />);
         expect((screen.getByRole('button', { name: 'Catat reservasi' }) as HTMLButtonElement).disabled).toBe(true);
         expect(screen.getByText(/Isi "Durasi layanan"/)).toBeTruthy();

@@ -35,7 +35,7 @@ function SimpanFlagUji(TestCase $tes, array $isian): void
 }
 
 describe('P-10 flag fitur', function (): void {
-    it('kill switch Global mati mengalahkan aturan tenant; aturan tenant > paket > persentase > global hidup; EvaluatorFitur & konfigurasi-aplikasi ikut', function (): void {
+    it('kill switch Global mati mengalahkan aturan tenant. Aturan tenant > paket > persentase > global hidup; EvaluatorFitur & konfigurasi-aplikasi ikut', function (): void {
         ['Tenant' => $a] = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
         ['Tenant' => $b] = BantuanOrganisasi::BuatTenant('Toko Budi');
         ['Token' => $tokenA] = BantuanPerangkat::BuatDanAktifkan($this, $a->Id);
@@ -82,7 +82,7 @@ describe('P-10 flag fitur', function (): void {
             ->where('Aturan.2.Persen', 0));
     });
 
-    it('validasi: alasan wajib, kunci berformat D-06, objek wajib untuk paket/tenant; izin hanya Teknis & Super Admin', function (): void {
+    it('validasi: alasan wajib, kunci berformat D-06, objek wajib untuk paket/tenant. Izin hanya Teknis & Super Admin', function (): void {
         MasukSebagaiPengelolaFlag($this, PeranPengelolaBawaan::Keuangan);
         $this->get(BantuanPengelola::Url('/flag-fitur'))->assertForbidden();
         $this->post(BantuanPengelola::Url('/flag-fitur'), [])->assertForbidden();

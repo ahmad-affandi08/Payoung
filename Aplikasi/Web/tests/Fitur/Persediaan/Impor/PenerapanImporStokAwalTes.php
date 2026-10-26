@@ -41,7 +41,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a impor stok awal: pratinjau & pembuatan draf per lokasi (tidak memposting)', function (): void {
-    it('baris valid dikelompokkan per lokasi → draf Sumber Impor; baris ganda & stok awal sudah diposting ditolak; tidak ada mutasi stok atau jurnal', function (): void {
+    it('baris valid dikelompokkan per lokasi → draf Sumber Impor. Baris ganda & stok awal sudah diposting ditolak. Tidak ada mutasi stok atau jurnal', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $gudangBelakang = BantuanPersediaan::BuatGudang($t['Outlet'], 'Gudang Belakang Pasar Gede');
@@ -151,7 +151,7 @@ describe('F-05a impor stok awal: pratinjau & pembuatan draf per lokasi (tidak me
             ->and(StokAwal::query()->where('IdImporStokAwal', $impor->Id)->orderBy('Id')->pluck('JumlahBaris')->all())->toBe([2, 2, 1]);
     });
 
-    it('produk diarsipkan setelah pratinjau → impor Gagal dengan pesan; draf yang sudah dibuat tidak diulang saat dilanjutkan', function (): void {
+    it('produk diarsipkan setelah pratinjau → impor Gagal dengan pesan. Draf yang sudah dibuat tidak diulang saat dilanjutkan', function (): void {
         config(['persediaan.StokAwal.MaksimalBaris' => 1]);
         $t = BantuanPersediaan::SiapkanTenant();
         $gula = BantuanKatalog::BuatProduk(['Nama' => 'Gula Pasir Kristal Putih 1 kg', 'Sku' => 'GULA-1'], '17500.00', $t['Pcs']);
@@ -183,7 +183,7 @@ describe('F-05a impor stok awal: pratinjau & pembuatan draf per lokasi (tidak me
             ->and(MutasiStok::query()->count())->toBe(0);
     });
 
-    it('lebih dari BatasBarisSinkron baris valid → pembuatan draf di antrean; pengunggah menjadi pembuat draf & pelaku audit', function (): void {
+    it('lebih dari BatasBarisSinkron baris valid → pembuatan draf di antrean. Pengunggah menjadi pembuat draf & pelaku audit', function (): void {
         config(['persediaan.Impor.BatasBarisSinkron' => 1]);
         $t = BantuanPersediaan::SiapkanTenant();
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit 2 Liter', 'Sku' => 'MGS-2L'], '38500.00', $t['Pcs']);

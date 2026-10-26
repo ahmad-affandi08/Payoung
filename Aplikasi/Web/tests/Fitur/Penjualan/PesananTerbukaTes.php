@@ -118,7 +118,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
         expect(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('idempoten: buka & tambah dikirim ulang = Duplikat, tanpa tiket ganda; meja arsip / produk tak dikenal ditolak', function (): void {
+    it('idempoten: buka & tambah dikirim ulang = Duplikat, tanpa tiket ganda. Meja arsip / produk tak dikenal ditolak', function (): void {
         $k = SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         $tambah = BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Kopi'], '1', '25000.00']]);
@@ -135,7 +135,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
             ->and(KirimPesanan($this, $k, [BantuanPesananTerbuka::ItemTambah($k, BantuanKasir::Uuid(), [[$k['Kopi'], '1', '25000.00']])]))->toBe([['Ditolak', 'PesananTidakDitemukan']]);
     });
 
-    it('BR-07.5 void item: belum dikirim bebas; sudah dikirim wajib alasan & penyetuju ber-izin void, tiketnya dibatalkan, diaudit', function (): void {
+    it('BR-07.5 void item: belum dikirim bebas. Sudah dikirim wajib alasan & penyetuju ber-izin void, tiketnya dibatalkan, diaudit', function (): void {
         $k = SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         $terkirim = BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Nasi'], '1', '35000.00']]);
@@ -157,7 +157,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'pesanan-terbuka.void-item')->sole()->NilaiBaru)->toMatchArray(['Alasan' => 'Pelanggan batal']);
     });
 
-    it('BR-07.5 opsi waste: void item yang sudah dibuat dicatat sebagai bahan terbuang (stok berkurang sekali, idempoten, diaudit); tanpa opsi stok tidak berubah', function (): void {
+    it('BR-07.5 opsi waste: void item yang sudah dibuat dicatat sebagai bahan terbuang (stok berkurang sekali, idempoten, diaudit), tanpa opsi stok tidak berubah', function (): void {
         $k = SiapkanRestoran($this);
         $stok = fn (): string => (string) DB::table('SaldoStok')->where('IdProduk', $k['Kopi']->Id)->where('IdGudang', $k['Gudang']->Id)->value('JumlahTersedia');
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
@@ -193,7 +193,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('BR-07.5 opsi waste: item jasa tanpa stok dilewati dengan keterangan tanpa menggagalkan void; stok kurang dicatat dengan tinjauan, bukan ditolak', function (): void {
+    it('BR-07.5 opsi waste: item jasa tanpa stok dilewati dengan keterangan tanpa menggagalkan void. Stok kurang dicatat dengan tinjauan, bukan ditolak', function (): void {
         $k = SiapkanRestoran($this);
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Biaya Layanan Meja Privat', 'Jenis' => JenisProduk::Jasa], '10000.00');
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
@@ -211,7 +211,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
             ->and(BahanTerbuang::query()->sole()->PerluTinjauan)->toBeTrue();
     });
 
-    it('BR-07.5 laporan void item: item yang dibatalkan setelah dikirim ke dapur tampil dengan alasan, pembatal, penyetuju, dan status terbuang; item belum dikirim tidak', function (): void {
+    it('BR-07.5 laporan void item: item yang dibatalkan setelah dikirim ke dapur tampil dengan alasan, pembatal, penyetuju, dan status terbuang. Item belum dikirim tidak', function (): void {
         $k = SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         $terkirim = BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Nasi'], '1', '35000.00'], [$k['Kopi'], '2', '25000.00']]);
@@ -248,7 +248,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
         expect($csv)->toContain('Pelanggan batal')->and($csv)->toContain('Salah buat')->and($csv)->toContain('Bahan terbuang');
     });
 
-    it('ubah header last-writer-wins (pindah meja diaudit); batal pesanan dengan item terkirim butuh penyetuju; bayar setelah batal = tinjauan', function (): void {
+    it('ubah header last-writer-wins (pindah meja diaudit). Batal pesanan dengan item terkirim butuh penyetuju. Bayar setelah batal = tinjauan', function (): void {
         $k = SiapkanRestoran($this);
         $buka = BantuanPesananTerbuka::ItemBuka($k, $k['Meja']);
         KirimPesanan($this, $k, [$buka, BantuanPesananTerbuka::ItemTambah($k, $buka['Uuid'], [[$k['Kopi'], '1', '25000.00']])]);
@@ -281,7 +281,7 @@ describe('F-07 mode meja: pesanan terbuka', function (): void {
             ->and((string) Penjualan::query()->where('Uuid', $tanpa['Uuid'])->value('AlasanTinjauan'))->toContain('PesananTidakDikenal');
     });
 
-    it('kunci bayar online: perangkat lain 409 sampai dilepas; mode cepat KirimDapur membuat tiket dari penjualan', function (): void {
+    it('kunci bayar online: perangkat lain 409 sampai dilepas. Mode cepat KirimDapur membuat tiket dari penjualan', function (): void {
         $k = SiapkanRestoran($this);
         ['Kode' => $kode] = BantuanPerangkat::BuatPerangkat($k['Tenant']->Id, $k['Outlet'], JenisPerangkat::Pelayan, 'Tablet Pelayan');
         $tokenPelayan = BantuanPerangkat::Aktifkan($this, $kode);
@@ -336,7 +336,7 @@ describe('API POS batas laju', function (): void {
 });
 
 describe('F-10b KDS', function (): void {
-    it('tiket per stasiun, ubah status satu langkah (maju/mundur), waktu dicatat, lompat ditolak, tiket outlet lain 404; data meja', function (): void {
+    it('tiket per stasiun, ubah status satu langkah (maju/mundur), waktu dicatat, lompat ditolak, tiket outlet lain 404. Data meja', function (): void {
         $k = SiapkanRestoran($this);
         ['Kode' => $kode] = BantuanPerangkat::BuatPerangkat($k['Tenant']->Id, $k['Outlet'], JenisPerangkat::Kds, 'Layar Dapur');
         $tokenKds = BantuanPerangkat::Aktifkan($this, $kode);

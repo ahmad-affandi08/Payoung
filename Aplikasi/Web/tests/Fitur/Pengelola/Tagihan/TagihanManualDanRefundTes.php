@@ -95,7 +95,7 @@ beforeEach(function (): void {
 });
 
 describe('Hak akses', function (): void {
-    it('Keuangan menerbitkan, mencatat, dan mengajukan refund tetapi tidak memutuskan refund besar; peran lain tidak punya izin tagihan', function (): void {
+    it('Keuangan menerbitkan, mencatat, dan mengajukan refund tetapi tidak memutuskan refund besar. Peran lain tidak punya izin tagihan', function (): void {
         expect($this->keuangan->PunyaIzin(IzinPengelola::TagihanTerbitkan))->toBeTrue()
             ->and($this->keuangan->PunyaIzin(IzinPengelola::TagihanRefund))->toBeTrue()
             ->and($this->keuangan->PunyaIzin(IzinPengelola::TagihanRefundSetujui))->toBeFalse()
@@ -275,7 +275,7 @@ describe('Tagihan manual paket harga negosiasi (E4)', function (): void {
 });
 
 describe('Hapus-buku (E6)', function (): void {
-    it('hanya tagihan lewat jatuh tempo; alasan wajib; kupon dilepas; tidak boleh selagi ada pembayaran menunggu', function (): void {
+    it('hanya tagihan lewat jatuh tempo. Alasan wajib. Kupon dilepas. Tidak boleh selagi ada pembayaran menunggu', function (): void {
         KuponLangganan::query()->create(['Kode' => 'HEMAT10', 'Jenis' => 'Persen', 'Nilai' => '10', 'DurasiBulan' => 1]);
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->post(BantuanTagihan::Url('/kelola/langganan/tagihan'), ['KodePaket' => 'PRO', 'Siklus' => 'Bulanan', 'KodeKupon' => 'HEMAT10'])
@@ -392,7 +392,7 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
         expect($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Dikembalikan);
     });
 
-    it('refund perpanjangan mengembalikan akhir periode ke awal perpanjangan; refund tagihan lama yang sudah disusul perpanjangan tidak menyentuh layanan', function (): void {
+    it('refund perpanjangan mengembalikan akhir periode ke awal perpanjangan. Refund tagihan lama yang sudah disusul perpanjangan tidak menyentuh layanan', function (): void {
         $pertama = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
         $akhirPertama = Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->PeriodeSelesai;
         $kedua = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
@@ -505,7 +505,7 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman->has('RekeningTujuan', 2)->where('RekeningTujuan.1.Kode', 'REK2'));
     });
 
-    it('D-114: status PKP platform diatur Super Admin dari konsol; berlaku untuk tagihan berikutnya saja dan teraudit', function (): void {
+    it('D-114: status PKP platform diatur Super Admin dari konsol. Berlaku untuk tagihan berikutnya saja dan teraudit', function (): void {
         $ubah = fn (array $isian) => MasukManual($this, $this->superAdmin)->put(BantuanPengelola::Url('/tagihan/pengaturan/pkp'), $isian);
 
         // Nilai awal server (env) dipakai selama belum disimpan: PKP, tagihan memuat PPN.

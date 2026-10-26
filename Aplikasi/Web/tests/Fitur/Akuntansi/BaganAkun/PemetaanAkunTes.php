@@ -23,7 +23,7 @@ beforeEach(function (): void {
 });
 
 describe('F-13a pemetaan akun (PRD "Rincian F-13a", BR-P03.3)', function (): void {
-    it('daftar: satu baris per peran tingkat tenant + override outlet; status sesuai/tipe salah; opsi akun aktif', function (): void {
+    it('daftar: satu baris per peran tingkat tenant + override outlet. Status sesuai/tipe salah. Opsi akun aktif', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $solo = BantuanJurnal::BuatOutlet();
         $kasSolo = Akun::query()->create(['Kode' => '1-1110', 'Nama' => 'Kas Outlet Solo Baru', 'Jenis' => TipeAkun::Aset, 'SaldoNormal' => SaldoNormal::Debit, 'KasBank' => true]);
@@ -88,7 +88,7 @@ describe('F-13a pemetaan akun (PRD "Rincian F-13a", BR-P03.3)', function (): voi
             ->and(LogAudit::query()->where('Peristiwa', 'akun.pemetaan.hapus')->count())->toBe(1);
     });
 
-    it('peran kas/bank menandai akunnya sebagai akun kas/bank; akun nonaktif tidak bisa dipetakan', function (): void {
+    it('peran kas/bank menandai akunnya sebagai akun kas/bank. Akun nonaktif tidak bisa dipetakan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $bri = Akun::query()->create(['Kode' => '1-1210', 'Nama' => 'Bank BRI', 'Jenis' => TipeAkun::Aset, 'SaldoNormal' => SaldoNormal::Debit]);
         $mati = Akun::query()->create(['Kode' => '1-1220', 'Nama' => 'Bank Lama', 'Jenis' => TipeAkun::Aset, 'SaldoNormal' => SaldoNormal::Debit, 'Aktif' => false]);
@@ -120,7 +120,7 @@ describe('F-13a pemetaan akun (PRD "Rincian F-13a", BR-P03.3)', function (): voi
         expect(PemetaanAkun::query()->where('Kunci', 'PersediaanBarangDagang')->count())->toBe(2);
     });
 
-    it('izin & isolasi: Kasir 403; Manajer Outlet tidak bisa mengubah; akun tenant lain ditolak', function (): void {
+    it('izin & isolasi: Kasir 403; Manajer Outlet tidak bisa mengubah. Akun tenant lain ditolak', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Toko Sembako Berkah Jaya');
         $bankA = Akun::query()->where('Kode', '1-1200')->sole();
         BantuanPersediaan::MasukSebagai($this, $a['Tenant']->Id, PeranTenantBawaan::Kasir)->get('/kelola/akuntansi/pemetaan')->assertForbidden();

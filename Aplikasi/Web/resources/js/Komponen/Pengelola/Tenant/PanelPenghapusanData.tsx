@@ -66,7 +66,7 @@ export default function PanelPenghapusanData({ uuidTenant, slug, permintaan, bol
                             <>
                                 {baris.MasaTungguSelesai ? null : (
                                     <Pemberitahuan jenis="info">
-                                        Masa tunggu belum berakhir. Owner masih bisa membatalkan; pelaksanaan baru
+                                        Masa tunggu belum berakhir. Owner masih bisa membatalkan. Pelaksanaan baru
                                         dibuka setelah {FormatTanggalWaktu(baris.BerlakuPada)}.
                                     </Pemberitahuan>
                                 )}

@@ -34,7 +34,7 @@ function StatusLanggananTunggakanUji(int $idTenant): StatusLangganan
 }
 
 describe('Penjadwal tunggakan (P-08 langkah 4, F-00 state machine)', function (): void {
-    it('jatuh tempo lewat → Tertunggak; setelah masa tenggang 7 hari → Ditangguhkan; idempoten & tercatat audit', function (): void {
+    it('jatuh tempo lewat → Tertunggak. Setelah masa tenggang 7 hari → Ditangguhkan. Idempoten & tercatat audit', function (): void {
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->post('/kelola/langganan/tagihan', ['KodePaket' => 'PRO', 'Siklus' => 'Bulanan'])
             ->assertSessionHasNoErrors();

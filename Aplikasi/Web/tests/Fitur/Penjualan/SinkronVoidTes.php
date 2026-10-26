@@ -35,7 +35,7 @@ function SaldoStokVoid(int $idProduk, int $idGudang): ?string
 }
 
 describe('F-09 void penjualan lewat sinkron (Penjualan.Void)', function (): void {
-    it('void penjualan PPN split QRIS + tunai: VoidPenjualan (refund tunai bersih & non-tunai), status Void, mutasi pembalik & jurnal pembalik J-09.1, riwayat & audit; invariant terjaga', function (): void {
+    it('void penjualan PPN split QRIS + tunai: VoidPenjualan (refund tunai bersih & non-tunai), status Void, mutasi pembalik & jurnal pembalik J-09.1, riwayat & audit. Invariant terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -94,7 +94,7 @@ describe('F-09 void penjualan lewat sinkron (Penjualan.Void)', function (): void
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('idempoten: Uuid sama = Duplikat tanpa pembalik ganda; void kedua Uuid lain = SudahDivoid; Uuid void dipakai untuk penjualan lain = UuidSudahDipakai', function (): void {
+    it('idempoten: Uuid sama = Duplikat tanpa pembalik ganda. Void kedua Uuid lain = SudahDivoid; Uuid void dipakai untuk penjualan lain = UuidSudahDipakai', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $satu = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -162,7 +162,7 @@ describe('F-09 void penjualan lewat sinkron (Penjualan.Void)', function (): void
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('kasir yang sendiri ber-izin penjualan.void menyetujui dirinya; penjualan Rp 0 di-void tanpa jurnal', function (): void {
+    it('kasir yang sendiri ber-izin penjualan.void menyetujui dirinya. Penjualan Rp 0 di-void tanpa jurnal', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $gratis = BantuanKatalog::BuatProduk(['Nama' => 'Kantong Belanja Kertas Gratis', 'Jenis' => JenisProduk::NonStok], '0.00');
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $gratis, 'Jumlah' => '1', 'Harga' => '0.00']]]);

@@ -51,7 +51,7 @@ describe('Perangkat tepercaya konsol (BR-P01.2, D-42)', function (): void {
         expect(PerangkatTepercayaPengelola::query()->count())->toBe(0);
     });
 
-    it('login dari perangkat tepercaya cukup kata sandi; tanpa cookie tetap diminta kode', function (): void {
+    it('login dari perangkat tepercaya cukup kata sandi, tanpa cookie tetap diminta kode', function (): void {
         $pengguna = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $nilai = TerbitkanPerangkat($pengguna);
         $this->travel(3)->days();
@@ -159,7 +159,7 @@ describe('Konfirmasi kode untuk aksi berbahaya (D-42)', function (): void {
         $this->assertDatabaseCount('UndanganPengelola', 1);
     });
 
-    it('kode yang dimasukkan lebih dari 15 menit lalu diminta lagi; menu biasa tidak terpengaruh', function (): void {
+    it('kode yang dimasukkan lebih dari 15 menit lalu diminta lagi. Menu biasa tidak terpengaruh', function (): void {
         $pengguna = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $this->actingAs($pengguna, 'pengelola')->withSession(BantuanPengelola::SesiTerverifikasi());
 
@@ -240,7 +240,7 @@ describe('Halaman Keamanan akun konsol (D-42)', function (): void {
             ->and(PerangkatTepercayaPengelola::query()->where('Uuid', $uuidLain)->value('DicabutPada'))->toBeNull();
     });
 
-    it('Super Admin mencabut perangkat tepercaya anggota dari Tim internal; anggota biasa tidak boleh', function (): void {
+    it('Super Admin mencabut perangkat tepercaya anggota dari Tim internal. Anggota biasa tidak boleh', function (): void {
         $super = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $anggota = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Analis);
         TerbitkanPerangkat($anggota);

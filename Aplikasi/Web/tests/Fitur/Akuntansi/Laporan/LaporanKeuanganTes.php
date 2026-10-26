@@ -60,7 +60,7 @@ function SiapkanDataLaporan(TestCase $tes): array
 }
 
 describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', function (): void {
-    it('laba rugi = pendapatan − HPP − beban cocok dengan data penjualan uji; pembanding bulan sebelumnya', function (): void {
+    it('laba rugi = pendapatan − HPP − beban cocok dengan data penjualan uji. Pembanding bulan sebelumnya', function (): void {
         $d = SiapkanDataLaporan($this);
         $bulan = $d['Tanggal'];
         $pendapatan = Uang::Nol();
@@ -93,7 +93,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
                     && collect($baris)->last()['Label'] === 'Laba bersih'));
     });
 
-    it('periode pembanding: bulan penuh → bulan penuh sebelumnya; rentang bebas → jumlah hari yang sama', function (): void {
+    it('periode pembanding: bulan penuh → bulan penuh sebelumnya. Rentang bebas → jumlah hari yang sama', function (): void {
         expect(LabaRugi::HitungPeriodeSebelumnya('2026-09-01', '2026-09-30'))->toBe(['2026-08-01', '2026-08-31'])
             ->and(LabaRugi::HitungPeriodeSebelumnya('2026-03-01', '2026-03-31'))->toBe(['2026-02-01', '2026-02-28'])
             ->and(LabaRugi::HitungPeriodeSebelumnya('2026-01-01', '2026-03-31'))->toBe(['2025-10-01', '2025-12-31'])
@@ -129,7 +129,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
             ->where('Laporan.Total', fn ($total): bool => $total['SaldoAwalDebit'] === $total['SaldoAwalKredit'] && $total['SaldoAwalDebit'] !== '0.00'));
     });
 
-    it('buku besar: saldo awal, mutasi urut, saldo berjalan benar di halaman berikutnya; tautan jurnal & dokumen sumber', function (): void {
+    it('buku besar: saldo awal, mutasi urut, saldo berjalan benar di halaman berikutnya. Tautan jurnal & dokumen sumber', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         CatatKasBank('Penerimaan', '2026-08-31', '3-1000', '1-1100', '1000000.00', null, 'Modal awal');
 
@@ -173,7 +173,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
         $masuk->get('/kelola/akuntansi/laporan/buku-besar?akun=01J9ZC5V7Q8R2T4W6Y8A0B2C4D')->assertNotFound();
     });
 
-    it('ekspor CSV memakai filter yang sama; angka desimal tidak dinetralkan, teks berbahaya dinetralkan', function (): void {
+    it('ekspor CSV memakai filter yang sama. Angka desimal tidak dinetralkan, teks berbahaya dinetralkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         CatatKasBank('Pengeluaran', '2026-09-05', '1-1100', '6-9000', '15000.00', null, '=HYPERLINK("http://jahat")');
         $kas = Akun::query()->where('Kode', '1-1100')->sole();
@@ -234,7 +234,7 @@ describe('F-13a laporan keuangan (FIN-06, FIN-07; PRD "Rincian F-13a")', functio
         $this->get("/kelola/akuntansi/laporan/laba-rugi?{$periode}&outlet={$solo->Uuid}")->assertNotFound();
     });
 
-    it('filter tanggal tidak sah jatuh ke bulan berjalan; rentang terbalik ditukar', function (): void {
+    it('filter tanggal tidak sah jatuh ke bulan berjalan. Rentang terbalik ditukar', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $hariIni = CarbonImmutable::today();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);

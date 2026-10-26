@@ -52,7 +52,7 @@ function CatatBiaya(PenerimaanBarang $grn, string $jumlah, int $idPengguna, Dasa
 }
 
 describe('v3.41 biaya tambahan pembelian', function (): void {
-    it('porsi stok tersisa ke persediaan, porsi terjual ke HPP; nilai & HPP rata-rata naik; pembatalan membalik', function (): void {
+    it('porsi stok tersisa ke persediaan, porsi terjual ke HPP. Nilai & HPP rata-rata naik. Pembatalan membalik', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Premium Rojolele 5 kg'], '85000.00', $t['Pcs']);
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Pouch 2 Liter'], '38000.00', $t['Pcs']);
@@ -112,7 +112,7 @@ describe('v3.41 biaya tambahan pembelian', function (): void {
             ->and(BantuanPembelian::PeriksaInvarian($t['Tenant']->Id))->toBe([]);
     });
 
-    it('halaman: daftar, formulir dari penerimaan, simpan, rincian, batalkan; kasir tanpa izin; tenant lain 404', function (): void {
+    it('halaman: daftar, formulir dari penerimaan, simpan, rincian, batalkan. Kasir tanpa izin. Tenant lain 404', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Premium Rojolele 5 kg'], '85000.00', $t['Pcs']);
         $grn = BantuanPembelian::TerimaTanpaPo(null, $t['Gudang'], [[$beras, '10', '2000']], $t['Pemilik']->Id);

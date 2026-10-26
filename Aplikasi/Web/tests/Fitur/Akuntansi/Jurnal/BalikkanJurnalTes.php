@@ -46,7 +46,7 @@ function AmbilBarisJurnalTanpaUrutan(int $idJurnal): array
 }
 
 describe('F-05a BalikkanJurnal (aturan #8, DesainF05a C.5)', function (): void {
-    it('aturan #8: jurnal pembalik adalah cermin persis (debit ↔ kredit per akun & outlet) dengan IdJurnalDibalik; asal tidak berubah', function (): void {
+    it('aturan #8: jurnal pembalik adalah cermin persis (debit ↔ kredit per akun & outlet) dengan IdJurnalDibalik. Asal tidak berubah', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $solo = BantuanJurnal::BuatOutlet();
         $asal = BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(idSumber: 1, idPengguna: $t['Pemilik']->Id, baris: [
@@ -96,7 +96,7 @@ describe('F-05a BalikkanJurnal (aturan #8, DesainF05a C.5)', function (): void {
             ->and(Jurnal::query()->count())->toBe(2);
     });
 
-    it('satu jurnal hanya bisa dibalik sekali (JurnalSudahDibalik); jurnal tidak dikenal ditolak', function (): void {
+    it('satu jurnal hanya bisa dibalik sekali (JurnalSudahDibalik). Jurnal tidak dikenal ditolak', function (): void {
         BantuanPersediaan::SiapkanTenant();
         $asal = BantuanJurnal::Posting(BantuanJurnal::DataStokAwal());
         BalikkanJurnalUji($asal->idJurnal);

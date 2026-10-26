@@ -69,7 +69,7 @@ void main() {
   tearDown(() => u.Tutup());
 
   group('buka & ubah pesanan', () {
-    test('BR-07.1 nomor OB per perangkat; outbox Buka ber-Uuid pesanan; meja terisi & label wajib ditolak', () async {
+    test('BR-07.1 nomor OB per perangkat. Outbox Buka ber-Uuid pesanan. Meja terisi & label wajib ditolak', () async {
       await Siapkan();
       final d01 = await Meja(mejaD01);
       final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: d01, jumlahTamu: 3);
@@ -121,7 +121,7 @@ void main() {
       expect(dikirim.AmbilBarisAktif().every((b) => b.dikirimKeDapur), isTrue);
     });
 
-    test('pindah meja: meja lain yang terisi ditolak; perubahan header dikirim dengan DiubahPada', () async {
+    test('pindah meja: meja lain yang terisi ditolak. Perubahan header dikirim dengan DiubahPada', () async {
       await Siapkan();
       final a = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
       await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaT01));
@@ -156,7 +156,7 @@ void main() {
 
   group('baris, ronde & dapur', () {
     test(
-      'kirim ke dapur = ronde 1 terkirim; simpan tanpa kirim = ronde 2; kirim berikutnya memakai KirimDapur',
+      'kirim ke dapur = ronde 1 terkirim. Simpan tanpa kirim = ronde 2. Kirim berikutnya memakai KirimDapur',
       () async {
         await Siapkan();
         final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
@@ -221,7 +221,7 @@ void main() {
     );
 
     test(
-      'BR-07.5 batal item: belum dikirim cukup konfirmasi; terkirim butuh alasan & penyetuju penjualan.void',
+      'BR-07.5 batal item: belum dikirim cukup konfirmasi. Terkirim butuh alasan & penyetuju penjualan.void',
       () async {
         await Siapkan();
         final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
@@ -318,7 +318,7 @@ void main() {
     });
 
     test(
-      'batal pesanan: ada item di dapur → kasir tanpa izin void butuh penyetuju; pesanan hilang dari daftar',
+      'batal pesanan: ada item di dapur → kasir tanpa izin void butuh penyetuju. Pesanan hilang dari daftar',
       () async {
         await Siapkan();
         final pesanan = await u.pesananMeja.Buka(kasir: sari, k: k, meja: await Meja(mejaD01));
@@ -342,7 +342,7 @@ void main() {
   });
 
   group('bayar', () {
-    test('bayar pesanan = satu Penjualan.Buat (MakanDiTempat, UuidPesananTerbuka); item batal tidak ditagih', () async {
+    test('bayar pesanan = satu Penjualan.Buat (MakanDiTempat, UuidPesananTerbuka). Item batal tidak ditagih', () async {
       await Siapkan();
       await u.shift.BukaShift(kasir: rina, kasAwal: Uang.DariBulat(500000));
       final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
@@ -416,7 +416,7 @@ void main() {
     };
 
     test(
-      'snapshot: pesanan perangkat lain masuk; perubahan lokal tertunda tidak ditimpa; ditutup & usang dihapus',
+      'snapshot: pesanan perangkat lain masuk. Perubahan lokal tertunda tidak ditimpa. Ditutup & usang dihapus',
       () async {
         await Siapkan();
         final lokal = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
@@ -637,7 +637,7 @@ void main() {
       );
     });
 
-    test('kunci bayar: 409 PesananSedangDibayar ditolak; offline tetap boleh bayar', () async {
+    test('kunci bayar: 409 PesananSedangDibayar ditolak. Offline tetap boleh bayar', () async {
       await Siapkan();
       u.server.penangan = (p) async => http.Response(
         jsonEncode({
@@ -668,7 +668,7 @@ void main() {
   });
 
   group('v1.99 pisah tagihan & gabung meja', () {
-    test('pisah: item terpilih pindah ke tagihan baru (outbox Buka lalu PindahBaris); semua dipilih ditolak', () async {
+    test('pisah: item terpilih pindah ke tagihan baru (outbox Buka lalu PindahBaris). Semua dipilih ditolak', () async {
       await Siapkan();
       final pesanan = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01), jumlahTamu: 2);
       final isi = await u.pesananMeja.SimpanBaris(
@@ -718,7 +718,7 @@ void main() {
       expect(await u.repositoriMeja.AmbilUuidPesananTertunda(), containsAll([pesanan.uuid, hasil.baru.uuid]));
     });
 
-    test('gabung: semua item pindah, asal ditutup Digabung & mejanya kosong; asal kosong ditolak', () async {
+    test('gabung: semua item pindah, asal ditutup Digabung & mejanya kosong. Asal kosong ditolak', () async {
       await Siapkan();
       final d01 = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaD01));
       final t01 = await u.pesananMeja.Buka(kasir: rina, k: k, meja: await Meja(mejaT01));

@@ -389,7 +389,7 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
                     Di jendela cetak: pilih printer dan ukuran kertas{' '}
                     {`${String(tata.LebarHalamanMm)} × ${String(tata.TinggiHalamanMm)} mm`}, skala 100% (bukan Sesuaikan
                     ke halaman), margin Tidak ada, dan matikan Header dan footer. Cetak satu lembar percobaan di kertas
-                    biasa lebih dulu; bila posisinya bergeser, atur geseran di atas.
+                    biasa lebih dulu. Bila posisinya bergeser, atur geseran di atas.
                 </p>
             </Panel>
 

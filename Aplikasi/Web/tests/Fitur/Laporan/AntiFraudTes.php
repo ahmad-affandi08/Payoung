@@ -28,7 +28,7 @@ beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-10-07 05:00:00', 'UTC'));
 });
 
-it('kasir dengan void tunai cepat, void tinggi, buka laci manual, dan kas kurang berisiko Tinggi; kasir lain Rendah', function (): void {
+it('kasir dengan void tunai cepat, void tinggi, buka laci manual, dan kas kurang berisiko Tinggi. Kasir lain Rendah', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Minimarket Jujur Makmur Sragen');
     BantuanFitur::Beri($k['Tenant']->Id, 'keamanan.anti-fraud');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
@@ -92,7 +92,7 @@ it('kasir dengan void tunai cepat, void tinggi, buka laci manual, dan kas kurang
     BantuanOrganisasi::Masuk($this, $kasir, $k['Tenant']->Id)->get($url)->assertForbidden();
 });
 
-it('audit F-15/F-16: kas kurang dibebankan ke kasir pemilik shift walau ditutup supervisor; void berjam mundur tidak dihitung void cepat', function (): void {
+it('audit F-15/F-16: kas kurang dibebankan ke kasir pemilik shift walau ditutup supervisor. Void berjam mundur tidak dihitung void cepat', function (): void {
     $k = BantuanPenjualan::Siapkan($this, 'Minimarket Adil Sukoharjo');
     BantuanFitur::Beri($k['Tenant']->Id, 'keamanan.anti-fraud');
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);

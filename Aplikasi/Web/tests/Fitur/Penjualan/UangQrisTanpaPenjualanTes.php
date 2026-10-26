@@ -67,7 +67,7 @@ function SiapkanQrisTerlambat(TestCase $tes, string $nama = 'Kafe QRIS Terlambat
 }
 
 describe('E8 uang QRIS tanpa penjualan', function (): void {
-    it('daftar memuat tagihan POS yang menunggu keputusan; tagihan toko online dan yang terhubung ke penjualan tidak ikut', function (): void {
+    it('daftar memuat tagihan POS yang menunggu keputusan. Tagihan toko online dan yang terhubung ke penjualan tidak ikut', function (): void {
         $k = SiapkanQrisTerlambat($this);
         $satu = BuatTagihanQrisTerlambat($k);
         BuatTagihanQrisTerlambat($k, '1000.00', ['Sumber' => SumberTagihanQris::TokoOnline, 'IdPerangkat' => null]);
@@ -79,7 +79,7 @@ describe('E8 uang QRIS tanpa penjualan', function (): void {
             ->where('Tagihan.Data.0.Jumlah', '38500.00')->where('Tagihan.Data.0.Ditutup', false)->where('Izin.Kelola', true)->has('OpsiAkun'));
     });
 
-    it('dikembalikan ke pelanggan: ditutup tanpa jurnal; catatan wajib; tidak bisa ditutup dua kali', function (): void {
+    it('dikembalikan ke pelanggan: ditutup tanpa jurnal. Catatan wajib. Tidak bisa ditutup dua kali', function (): void {
         $k = SiapkanQrisTerlambat($this);
         $tagihan = BuatTagihanQrisTerlambat($k);
         $url = "/kelola/akuntansi/qris-tanpa-penjualan/{$tagihan->Uuid}/tutup";
@@ -100,7 +100,7 @@ describe('E8 uang QRIS tanpa penjualan', function (): void {
         $this->getJson('/kelola/akuntansi/qris-tanpa-penjualan?saring[Penutupan]=Ditutup')->assertOk()->assertJsonPath('Meta.Total', 1)->assertJsonPath('Data.0.HasilPenutupan', 'Dikembalikan');
     });
 
-    it('diakui sebagai pendapatan lain: Dr kas/bank, Cr Pendapatan Lain seimbang; buka kembali membalik jurnal dan bisa ditutup ulang', function (): void {
+    it('diakui sebagai pendapatan lain: Dr kas/bank, Cr Pendapatan Lain seimbang. Buka kembali membalik jurnal dan bisa ditutup ulang', function (): void {
         $k = SiapkanQrisTerlambat($this);
         $tagihan = BuatTagihanQrisTerlambat($k, '125000.00');
         $url = "/kelola/akuntansi/qris-tanpa-penjualan/{$tagihan->Uuid}/tutup";
@@ -148,7 +148,7 @@ describe('E8 uang QRIS tanpa penjualan', function (): void {
         }
     });
 
-    it('izin: supervisor melihat tetapi tidak bisa menutup; kasir tidak bisa melihat; tenant lain tidak melihat tagihannya', function (): void {
+    it('izin: supervisor melihat tetapi tidak bisa menutup. Kasir tidak bisa melihat. Tenant lain tidak melihat tagihannya', function (): void {
         $k = SiapkanQrisTerlambat($this);
         $tagihan = BuatTagihanQrisTerlambat($k);
 

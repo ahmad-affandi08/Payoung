@@ -77,7 +77,7 @@ export default function HalamanDaftarHapusBuku({ HapusBuku, OpsiStatus, Izin }: 
     return (
         <HalamanDaftarPiutang
             judul="Hapus-buku piutang"
-            keterangan="Sisa piutang yang dinyatakan tidak akan tertagih dan sudah dibukukan sebagai beban. Piutangnya tidak dihapus dari riwayat; membatalkan hapus-buku mengembalikannya sebagai tagihan terbuka."
+            keterangan="Sisa piutang yang dinyatakan tidak akan tertagih dan sudah dibukukan sebagai beban. Piutangnya tidak dihapus dari riwayat. Membatalkan hapus-buku mengembalikannya sebagai tagihan terbuka."
             izin={Izin}
             objek="hapus-buku piutang"
         >

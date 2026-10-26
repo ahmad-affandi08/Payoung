@@ -98,7 +98,7 @@ function KodeGalatPengirimanUji(Closure $fn): ?string
 }
 
 describe('Armada pengiriman', function (): void {
-    it('nomor kendaraan dinormalkan dan unik per tenant; ubah, nonaktifkan, aktifkan idempoten dengan audit', function (): void {
+    it('nomor kendaraan dinormalkan dan unik per tenant. Ubah, nonaktifkan, aktifkan idempoten dengan audit', function (): void {
         $armada = app(SimpanArmada::class)->Jalankan(new DataArmada('Truk Engkel 1', ' ad  1234  xy ', 'Pak Slamet', null), null, $this->k['Pemilik']->Id);
 
         expect($armada->NomorKendaraan)->toBe('AD 1234 XY')
@@ -120,7 +120,7 @@ describe('Armada pengiriman', function (): void {
 });
 
 describe('CatatPengirimanSuratJalan', function (): void {
-    it('alur lengkap: berangkat (armada & pengemudi tersalin), diterima (penerima), tanpa menyentuh angka surat jalan; selesai tak bisa diubah', function (): void {
+    it('alur lengkap: berangkat (armada & pengemudi tersalin), diterima (penerima), tanpa menyentuh angka surat jalan. Selesai tak bisa diubah', function (): void {
         $armada = app(SimpanArmada::class)->Jalankan(new DataArmada('Truk Engkel 1', 'AD 1234 XY', 'Pak Slamet'), null, $this->k['Pemilik']->Id);
         $suratJalan = SuratJalanPengirimanUji($this);
         $totalSebelum = [$suratJalan->Total, $suratJalan->TotalHpp, $suratJalan->IdJurnal];
@@ -151,7 +151,7 @@ describe('CatatPengirimanSuratJalan', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'grosir.pengiriman-ubah')->count())->toBe(2);
     });
 
-    it('gagal kirim wajib beralasan lalu bisa dikirim ulang; batal berangkat kembali ke Disiapkan; ambil sendiri langsung Diterima', function (): void {
+    it('gagal kirim wajib beralasan lalu bisa dikirim ulang. Batal berangkat kembali ke Disiapkan. Ambil sendiri langsung Diterima', function (): void {
         $suratJalan = SuratJalanPengirimanUji($this);
         $jalan = CatatPengirimanUji($this, $suratJalan, StatusPengirimanGrosir::DalamPerjalanan, ['namaPengemudi' => 'Pak Joko']);
         expect($jalan->NamaPengirim)->toBe('Pak Joko')
@@ -170,7 +170,7 @@ describe('CatatPengirimanSuratJalan', function (): void {
         expect($langsung->StatusPengiriman)->toBe(StatusPengirimanGrosir::Diterima);
     });
 
-    it('armada nonaktif ditolak; surat jalan dibatalkan tidak punya pengiriman; surat jalan yang sudah diterima tidak bisa dibatalkan lewat tombol (pakai retur)', function (): void {
+    it('armada nonaktif ditolak. Surat jalan dibatalkan tidak punya pengiriman. Surat jalan yang sudah diterima tidak bisa dibatalkan lewat tombol (pakai retur)', function (): void {
         $armada = app(SimpanArmada::class)->Jalankan(new DataArmada('Pickup 2', 'AD 99 ZZ'), null, $this->k['Pemilik']->Id);
         app(UbahStatusArmada::class)->Jalankan($armada, false, $this->k['Pemilik']->Id);
 
@@ -186,7 +186,7 @@ describe('CatatPengirimanSuratJalan', function (): void {
 });
 
 describe('HTTP pengiriman & armada grosir', function (): void {
-    it('armada lewat rute, kabar pengiriman lewat rute dengan masalah per bidang, halaman detail & daftar membawa status; tenant lain 404', function (): void {
+    it('armada lewat rute, kabar pengiriman lewat rute dengan masalah per bidang, halaman detail & daftar membawa status. Tenant lain 404', function (): void {
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
 
         $this->post('/kelola/grosir/armada', ['Nama' => 'Truk Engkel 1', 'NomorKendaraan' => 'ad 1234 xy', 'NamaPengemudi' => 'Pak Slamet'])->assertSessionHasNoErrors();

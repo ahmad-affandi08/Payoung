@@ -27,7 +27,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a InfoProdukStok (DesainF05a C.1)', function (): void {
-    it('AmbilBanyak/AmbilDariUuid memetakan jenis, pelacakan, BolehMinus, dan satuan dasar; produk terhapus hanya bila diminta', function (): void {
+    it('AmbilBanyak/AmbilDariUuid memetakan jenis, pelacakan, BolehMinus, dan satuan dasar. Produk terhapus hanya bila diminta', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $produk['Stok']->update(['BolehMinus' => true]);
@@ -49,7 +49,7 @@ describe('F-05a InfoProdukStok (DesainF05a C.1)', function (): void {
             ->and(array_keys($info->AmbilDariUuid([$produk['Seri']->Uuid, 'TIDAKADA'])))->toBe([$produk['Seri']->Uuid]);
     });
 
-    it('CariUntukStok: hanya jenis berstok (tanpa Konsinyasi/Jasa) dan belum diarsipkan; nama/SKU mengandung atau barcode persis', function (): void {
+    it('CariUntukStok: hanya jenis berstok (tanpa Konsinyasi/Jasa) dan belum diarsipkan. Nama/SKU mengandung atau barcode persis', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $produk['Seri']->update(['DiarsipkanPada' => now(), 'Aktif' => false]);
@@ -73,7 +73,7 @@ describe('F-05a InfoProdukStok (DesainF05a C.1)', function (): void {
             ->and($info->HitungBerstok())->toBe(4);
     });
 
-    it('CariKunciImpor: SKU tanpa beda huruf, lalu barcode persis, lalu nama persis; nama ganda = ambigu; tenant lain tidak ikut', function (): void {
+    it('CariKunciImpor: SKU tanpa beda huruf, lalu barcode persis, lalu nama persis. Nama ganda = ambigu. Tenant lain tidak ikut', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $produk['Stok']->update(['Sku' => 'MGR-2L']);
@@ -99,7 +99,7 @@ describe('F-05a InfoProdukStok (DesainF05a C.1)', function (): void {
 });
 
 describe('F-05a InfoGudang (DesainF05a C.1)', function (): void {
-    it('AmbilBoleh membatasi ke outlet yang boleh diakses & status; CariKunciImpor Kode lalu Nama; data tenant lain tidak terlihat', function (): void {
+    it('AmbilBoleh membatasi ke outlet yang boleh diakses & status; CariKunciImpor Kode lalu Nama. Data tenant lain tidak terlihat', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $belakang = BantuanPersediaan::BuatGudang($t['Outlet'], 'Gudang Belakang Toko');
         $cabang = Outlet::query()->create(['IdMerek' => Merek::query()->value('Id'), 'Kode' => 'SOLO', 'Nama' => 'Cabang Solo Baru']);
@@ -130,7 +130,7 @@ describe('F-05a InfoGudang (DesainF05a C.1)', function (): void {
 });
 
 describe('F-05a TanggalBisnisOutlet (DesainF05a C.1)', function (): void {
-    it('memakai zona outlet dan JamTutupBuku: sebelum jam tutup buku = hari sebelumnya; tanpa outlet = zona tenant', function (): void {
+    it('memakai zona outlet dan JamTutupBuku: sebelum jam tutup buku = hari sebelumnya, tanpa outlet = zona tenant', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $t['Outlet']->update(['ZonaWaktu' => 'Asia/Jakarta', 'JamTutupBuku' => '04:00']);
         $makassar = Outlet::query()->create(['IdMerek' => Merek::query()->value('Id'), 'Kode' => 'MKS', 'Nama' => 'Cabang Makassar', 'ZonaWaktu' => 'Asia/Makassar', 'JamTutupBuku' => '00:00']);
@@ -147,7 +147,7 @@ describe('F-05a TanggalBisnisOutlet (DesainF05a C.1)', function (): void {
 });
 
 describe('F-05a PengaturanPersediaanTenant (DesainF05a C.1)', function (): void {
-    it('bawaan RataRata & tidak boleh minus; membaca Tenant.Pengaturan; kunci baca di dalam transaksi', function (): void {
+    it('bawaan RataRata & tidak boleh minus. Membaca Tenant.Pengaturan. Kunci baca di dalam transaksi', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $kueri = app(PengaturanPersediaanTenant::class);
 

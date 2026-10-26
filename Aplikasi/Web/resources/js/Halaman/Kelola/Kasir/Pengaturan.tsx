@@ -358,7 +358,7 @@ function BagianBarcodeTimbangan({ awal, galat }: { awal: BarcodeTimbangan; galat
         <form noValidate onSubmit={Simpan} className="flex flex-col gap-4">
             <Panel
                 judul="Barcode timbangan"
-                keterangan="Untuk barang yang ditimbang (buah, daging, kue curah). Timbangan mencetak barcode berawalan 21–29 berisi berat atau harga; kasir cukup memindainya."
+                keterangan="Untuk barang yang ditimbang (buah, daging, kue curah). Timbangan mencetak barcode berawalan 21–29 berisi berat atau harga. Kasir cukup memindainya."
             >
                 <KotakCentang label="Kasir membaca barcode timbangan" nilai={aktif} saatBerubah={AturAktif} />
                 {aktif ? (

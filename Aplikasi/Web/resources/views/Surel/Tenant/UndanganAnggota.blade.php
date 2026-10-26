@@ -2,7 +2,7 @@ Halo,
 
 {!! $NamaPengundang !!} mengundang Anda bergabung ke {!! $NamaTenant !!}.
 
-Buka tautan berikut untuk menerima undangan. Jika sudah punya akun, masuk dengan email ini; jika belum, buat kata sandi di halaman tersebut:
+Buka tautan berikut untuk menerima undangan. Jika sudah punya akun, masuk dengan email ini. Jika belum, buat kata sandi di halaman tersebut:
 {!! $Tautan !!}
 
 Undangan berlaku sampai {!! $BerlakuSampai !!} dan hanya bisa dipakai sekali.

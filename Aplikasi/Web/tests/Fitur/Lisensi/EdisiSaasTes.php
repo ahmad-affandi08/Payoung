@@ -55,7 +55,7 @@ describe('Edisi SaaS menolak jalan pintas edisi Lisensi (D-35)', function (): vo
         expect(fn () => app(PengaturIntegrasiServer::class)->AmbilDaftar())->toThrow(PelanggaranAturanBisnis::class);
     });
 
-    it('D-36: penanda edisi terkunci paket Payoung Mandiri menang atas EDISI di .env; repo tidak membawanya', function (): void {
+    it('D-36: penanda edisi terkunci paket Payoung Mandiri menang atas EDISI di .env. Repo tidak membawanya', function (): void {
         $berkas = base_path('bootstrap/EdisiTerkunci.php');
         expect(is_file($berkas))->toBeFalse()
             ->and(config('lisensi.EdisiTerkunci'))->toBeFalse();

@@ -76,7 +76,7 @@ describe('F-03 bagian katalog POS Tim 1 (D.3)', function (): void {
             ->and($bagian['Produk'][1])->toMatchArray(['UuidInduk' => $induk->Uuid, 'Aktif' => false, 'AtributVarian' => [['Nama' => 'Ukuran', 'Nilai' => 'Reguler']], 'UrlGambar' => null]);
     });
 
-    it('delta: hanya baris dengan DiubahPada ≥ sejak, termasuk produk terhapus (Dihapus: true); tenant lain tidak ikut', function (): void {
+    it('delta: hanya baris dengan DiubahPada ≥ sejak, termasuk produk terhapus (Dihapus: true). Tenant lain tidak ikut', function (): void {
         // Jam dibekukan sebelum tenant & satuan dibuat: tanpa itu `CreatedAt` satuan memakai jam nyata yang sudah
         // melewati batas 2026-10-01 03:30 dan tes menjadi bergantung pada tanggal berjalan.
         Carbon::setTestNow('2026-10-01 03:00:00');
@@ -142,7 +142,7 @@ describe('K-25 katalog POS: item harga terbuka', function (): void {
 });
 
 describe('K-16 katalog POS: produk favorit pilihan pemilik', function (): void {
-    it('Produk membawa Favorit (tingkat tenant, false bila tidak ditandai); perubahan favorit masuk delta', function (): void {
+    it('Produk membawa Favorit (tingkat tenant, false bila tidak ditandai). Perubahan favorit masuk delta', function (): void {
         Carbon::setTestNow('2026-10-01 03:00:00');
         $t = BantuanKatalog::SiapkanTenantProduk();
         $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Es Kopi Susu Gula Aren', 'Favorit' => true, 'IdKelompokPajak' => $t['KelompokPajak']->Id], null, $t['Pcs']);

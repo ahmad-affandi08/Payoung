@@ -67,7 +67,7 @@ function SaldoPoin(Pelanggan $p): int
 }
 
 describe('F-16b perolehan & pembalikan poin', function (): void {
-    it('poin = ⌊total ÷ belanja per poin × pengali tier⌋ di transaksi penjualan; kirim ulang tidak menggandakan; berlaku 12 bulan', function (): void {
+    it('poin = ⌊total ÷ belanja per poin × pengali tier⌋ di transaksi penjualan. Kirim ulang tidak menggandakan. Berlaku 12 bulan', function (): void {
         $k = SiapkanLoyalti($this);
         $item = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $k['Produk'], 'Jumlah' => '2', 'Harga' => '38500.00']]], ['UuidPelanggan' => $k['Ani']->Uuid]);
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]]);
@@ -111,7 +111,7 @@ describe('F-16b perolehan & pembalikan poin', function (): void {
             ->where('Pengaturan.Aktif', true));
     });
 
-    it('void membalik poin; retur membalik proporsional terhadap refund kumulatif', function (): void {
+    it('void membalik poin. Retur membalik proporsional terhadap refund kumulatif', function (): void {
         $k = SiapkanLoyalti($this);
         $jual = JualKe($this, $k, $k['Ani']);
         expect(SaldoPoin($k['Ani']))->toBe(7);
@@ -139,7 +139,7 @@ describe('F-16b perolehan & pembalikan poin', function (): void {
 });
 
 describe('F-16b proses malam', function (): void {
-    it('kedaluwarsa FIFO (idempoten) lalu evaluasi tier dari belanja; tier dikunci & tier diarsipkan tidak dipakai', function (): void {
+    it('kedaluwarsa FIFO (idempoten) lalu evaluasi tier dari belanja. Tier dikunci & tier diarsipkan tidak dipakai', function (): void {
         $k = SiapkanLoyalti($this);
         $budi = Pelanggan::query()->create(['Nama' => 'Budi', 'NoHp' => '6281311112222']);
         $reseller = Pelanggan::query()->create(['Nama' => 'Toko Reseller', 'NoHp' => '6281399990000']);
@@ -171,7 +171,7 @@ describe('F-16b proses malam', function (): void {
 });
 
 describe('F-16b back-office', function (): void {
-    it('tier: tambah, kode unik & terkunci, pengali tervalidasi, arsip; atur tier pelanggan; penyesuaian poin tidak boleh minus', function (): void {
+    it('tier: tambah, kode unik & terkunci, pengali tervalidasi, arsip. Atur tier pelanggan. Penyesuaian poin tidak boleh minus', function (): void {
         $k = SiapkanLoyalti($this);
         BantuanKatalog::MasukSebagai($this, $k['Tenant']->Id);
 
@@ -220,7 +220,7 @@ describe('F-16b back-office', function (): void {
         expect(LogAudit::query()->whereIn('Peristiwa', ['tier-pelanggan.tambah', 'tier-pelanggan.ubah', 'tier-pelanggan.arsipkan', 'pelanggan.tier', 'pelanggan.poin-sesuaikan', 'loyalti.pengaturan'])->count())->toBe(7);
     });
 
-    it('izin: supervisor melihat tier & pengaturan tetapi tidak bisa mengubah; tenant lain 404', function (): void {
+    it('izin: supervisor melihat tier & pengaturan tetapi tidak bisa mengubah. Tenant lain 404', function (): void {
         $k = SiapkanLoyalti($this);
         $gold = TierPelanggan::query()->create(['Kode' => 'GOLD', 'Nama' => 'Gold']);
 

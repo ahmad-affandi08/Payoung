@@ -49,7 +49,7 @@ function StatusSerialJual(Produk $produk): array
 }
 
 describe('F-05h penjualan produk bernomor seri', function (): void {
-    it('nomor seri yang dicatat kasir dikeluarkan satu per unit (Terjual, tertaut ke baris), HPP baris = Σ unit, saldo turun; invariant terjaga', function (): void {
+    it('nomor seri yang dicatat kasir dikeluarkan satu per unit (Terjual, tertaut ke baris), HPP baris = Σ unit, saldo turun. Invariant terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002', 'IMEI-0003']);
@@ -126,7 +126,7 @@ describe('F-05h void & retur mengembalikan nomor seri', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('retur: nomor yang disebut kasir kembali; tanpa nomor, unit belum-diretur berurutan; nomor asing atau yang sudah diretur ditolak', function (): void {
+    it('retur: nomor yang disebut kasir kembali, tanpa nomor, unit belum-diretur berurutan. Nomor asing atau yang sudah diretur ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002', 'IMEI-0003']);
@@ -159,7 +159,7 @@ describe('F-05h void & retur mengembalikan nomor seri', function (): void {
 });
 
 describe('F-05h riwayat nomor seri /kelola/persediaan/kartu-stok/nomor-seri', function (): void {
-    it('cari potongan nomor (status, lokasi, penjualan) dan riwayat satu unit dari masuk sampai terjual; tenant lain tidak terlihat; izin persediaan.lihat', function (): void {
+    it('cari potongan nomor (status, lokasi, penjualan) dan riwayat satu unit dari masuk sampai terjual. Tenant lain tidak terlihat. Izin persediaan.lihat', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002']);
@@ -252,7 +252,7 @@ describe('F-05h riwayat nomor seri (v3.13): buka otomatis, filter, pembeli & gar
             ->assertRedirect('/kelola/persediaan/kartu-stok/nomor-seri?cari=IMEI&status=Tersedia');
     });
 
-    it('satu hasil atau nomor yang persis sama langsung membuka riwayatnya; beberapa hasil tidak', function (): void {
+    it('satu hasil atau nomor yang persis sama langsung membuka riwayatnya. Beberapa hasil tidak', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-00011']);
@@ -292,7 +292,7 @@ describe('F-05h riwayat nomor seri (v3.13): buka otomatis, filter, pembeli & gar
         $this->get('/kelola/persediaan/kartu-stok/nomor-seri?produk=01K5TIDAKADA00000000000000')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->has('Hasil', 0));
     });
 
-    it('unit terjual membawa penjualan, pembeli, dan garansi; pembeli & tautan hanya bagi yang berizin', function (): void {
+    it('unit terjual membawa penjualan, pembeli, dan garansi. Pembeli & tautan hanya bagi yang berizin', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hp = BuatProdukSerialJual($k, ['IMEI-0001', 'IMEI-0002']);

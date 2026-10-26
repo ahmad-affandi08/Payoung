@@ -39,7 +39,7 @@ describe('PeriksaQris', () => {
         expect(hasil.Sah === false && hasil.Pesan.length > 0).toBe(true);
     });
 
-    it('memberi nama merchant dan kota; spasi di tepi diabaikan', () => {
+    it('memberi nama merchant dan kota. Spasi di tepi diabaikan', () => {
         expect(PeriksaQris(`  ${vektor.Kasus[0]?.Statis ?? ''}\n`)).toEqual({
             Sah: true,
             NamaMerchant: 'TOKO SEMBAKO MAJU JAYA',

@@ -50,7 +50,7 @@ beforeEach(function (): void {
 });
 
 describe('konsol artikel', function (): void {
-    it('Konten & Legal menulis draf (slug dari judul), menyimpan, lalu menerbitkan; audit tercatat', function (): void {
+    it('Konten & Legal menulis draf (slug dari judul), menyimpan, lalu menerbitkan. Audit tercatat', function (): void {
         MasukKontenArtikel();
         $this->post(BantuanPengelola::Url('/situs/artikel'), ['Judul' => 'Cara Menghitung HPP Kopi!'])->assertRedirect();
 
@@ -81,7 +81,7 @@ describe('konsol artikel', function (): void {
             ->where('PilihanKategori', ['Keuangan']));
     });
 
-    it('slug unik & valid; sampul harus ada di pustaka', function (): void {
+    it('slug unik & valid. Sampul harus ada di pustaka', function (): void {
         MasukKontenArtikel();
         BuatArtikelUji();
         $a = BuatArtikelUji(['Slug' => 'lain', 'Status' => StatusArtikel::Draf, 'DiterbitkanPada' => null]);
@@ -121,7 +121,7 @@ describe('konsol artikel', function (): void {
 });
 
 describe('blog publik', function (): void {
-    it('hanya artikel terbit yang tampil; draf 404; kategori & paginasi', function (): void {
+    it('hanya artikel terbit yang tampil. Draf 404. Kategori & paginasi', function (): void {
         BuatArtikelUji();
         BuatArtikelUji(['Slug' => 'draf-rahasia', 'Judul' => 'Draf rahasia', 'Status' => StatusArtikel::Draf, 'DiterbitkanPada' => null]);
         foreach (range(1, 13) as $i) {

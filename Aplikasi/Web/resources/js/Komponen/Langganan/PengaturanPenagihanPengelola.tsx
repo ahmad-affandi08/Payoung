@@ -51,7 +51,7 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
                     ) : null}
                 </div>
                 <p className="text-keterangan text-teks-sekunder">
-                    Perubahan hanya berlaku untuk tagihan yang terbit sesudahnya; tagihan yang sudah terbit tidak
+                    Perubahan hanya berlaku untuk tagihan yang terbit sesudahnya. Tagihan yang sudah terbit tidak
                     berubah.
                 </p>
             </div>
@@ -106,7 +106,7 @@ function FormUbahPkp({ pkp, saatSelesai }: { pkp: boolean; saatSelesai: () => vo
             judul="Ubah status PKP"
             keterangan={
                 <p>
-                    Nyalakan hanya setelah SPPKP terbit. Tagihan yang terbit sesudah ini mengikuti status baru; yang
+                    Nyalakan hanya setelah SPPKP terbit. Tagihan yang terbit sesudah ini mengikuti status baru, yang
                     sudah terbit tidak berubah. Perubahan tercatat di audit.
                 </p>
             }

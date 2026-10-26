@@ -66,7 +66,7 @@ void main() {
     expect(antrian.namaMetodeUangMuka, 'Uang muka (DP)');
   });
 
-  test('AmbilReservasiMeja tanpa DP: metode uang muka null; server lama tanpa kolom tetap terbaca', () async {
+  test('AmbilReservasiMeja tanpa DP: metode uang muka null. Server lama tanpa kolom tetap terbaca', () async {
     final klien = BuatKlien(
       (p) async => Json({
         'Reservasi': [
@@ -84,7 +84,7 @@ void main() {
     expect(antrian.reservasi.single.BisaDilayani, isTrue);
   });
 
-  test('HadirReservasiMeja mengirim pengguna & meja (opsional); galat kapasitas dilempar sebagai GalatApi', () async {
+  test('HadirReservasiMeja mengirim pengguna & meja (opsional). Galat kapasitas dilempar sebagai GalatApi', () async {
     final isi = <Map<String, Object?>>[];
     final klien = BuatKlien((p) async {
       isi.add(jsonDecode(p.body) as Map<String, Object?>);

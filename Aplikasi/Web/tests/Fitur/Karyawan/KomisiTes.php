@@ -92,7 +92,7 @@ describe('F-18 komisi penjualan', function (): void {
         expect($jumlah->KeString())->toBe($penuh->KeString());
     });
 
-    it('void membatalkan penuh; retur separuh memotong separuh; laporan menghitung bersih', function (): void {
+    it('void membatalkan penuh. Retur separuh memotong separuh. Laporan menghitung bersih', function (): void {
         $k = SiapkanKomisi($this);
         $jual = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Produk'], 'Jumlah' => '2', 'Harga' => '38500.00', 'Staf' => [$k['Senior']->Uuid]]]]);
         $void = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Produk'], 'Jumlah' => '1', 'Harga' => '38500.00', 'Staf' => [$k['Junior']->Uuid]]]]);
@@ -146,7 +146,7 @@ describe('F-18 aturan komisi back-office', function (): void {
         $this->get('/kelola/karyawan/komisi')->assertForbidden();
     });
 
-    it('halaman tambah aturan (halaman penuh): opsi kategori; tanpa karyawan.kelola 403', function (): void {
+    it('halaman tambah aturan (halaman penuh): opsi kategori, tanpa karyawan.kelola 403', function (): void {
         $k = SiapkanKomisi($this);
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 

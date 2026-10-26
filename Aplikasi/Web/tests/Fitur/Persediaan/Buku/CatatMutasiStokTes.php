@@ -168,7 +168,7 @@ describe('F-05a buku stok: pencatatan (BR-05.1, DesainF05a C.2)', function (): v
             ->and(BantuanBuku::PeriksaInvarianBuku($b['Tenant']->Id, true))->toBe([]);
     });
 
-    it('FIFO pembalik ber-idMutasiAsal mengonsumsi tepat lapisan sumbernya; lapisan yang sudah terpakai → LapisanSudahTerpakai', function (): void {
+    it('FIFO pembalik ber-idMutasiAsal mengonsumsi tepat lapisan sumbernya. Lapisan yang sudah terpakai → LapisanSudahTerpakai', function (): void {
         $b = SiapkanBukuStokUji(MetodeHpp::Fifo);
         $id = $b['Produk']['Stok']->Id;
         $g = $b['Gudang']->Id;
@@ -313,7 +313,7 @@ describe('F-05a buku stok: validasi masukan (DesainF05a C.2 langkah 1 & 5)', fun
             ->and(BantuanBuku::PeriksaInvarianBuku($b['Tenant']->Id))->toBe([]);
     });
 
-    it('baris pembalik: jenis sama & tanda kebalikan boleh walau jenisnya satu arah; selain itu ArahMutasiTidakSesuai', function (): void {
+    it('baris pembalik: jenis sama & tanda kebalikan boleh walau jenisnya satu arah. Selain itu ArahMutasiTidakSesuai', function (): void {
         $b = SiapkanBukuStokUji();
         $id = $b['Produk']['Stok']->Id;
         $g = $b['Gudang']->Id;

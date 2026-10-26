@@ -20,7 +20,7 @@ enum CakupanApi: string
             self::StokBaca => 'Baca saldo stok per lokasi',
             self::PenjualanBaca => 'Baca penjualan beserta baris & pembayaran',
             self::PelangganBaca => 'Baca data pelanggan (nama, nomor HP, email)',
-            self::StokTulis => 'Buat penyesuaian stok (masuk/keluar) dari sistem lain; di atas batas nilai menunggu persetujuan',
+            self::StokTulis => 'Buat penyesuaian stok (masuk/keluar) dari sistem lain. Di atas batas nilai menunggu persetujuan',
         };
     }
 

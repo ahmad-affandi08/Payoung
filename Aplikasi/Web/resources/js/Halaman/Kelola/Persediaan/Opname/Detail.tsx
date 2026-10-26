@@ -433,7 +433,7 @@ export default function HalamanDetailStokOpname({
                     <Panel
                         judul="Lembar hitung"
                         idJudul="judul-lembar-hitung"
-                        keterangan="Kosongkan jumlah bila barang belum dihitung; baris yang belum dihitung tidak disesuaikan."
+                        keterangan="Kosongkan jumlah bila barang belum dihitung. Baris yang belum dihitung tidak disesuaikan."
                     >
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="flex flex-col gap-1">
@@ -457,7 +457,7 @@ export default function HalamanDetailStokOpname({
                                         teksDialog={{
                                             judul: 'Pindai barcode dengan kamera',
                                             petunjuk:
-                                                'Arahkan kamera ke barcode barang atau label nomor seri/IMEI satu per satu. Kamera tetap terbuka; tekan Selesai bila sudah.',
+                                                'Arahkan kamera ke barcode barang atau label nomor seri/IMEI satu per satu. Kamera tetap terbuka. Tekan Selesai bila sudah.',
                                         }}
                                         label="Pindai barcode dengan kamera"
                                         saatTerbaca={(kode) => void ProsesKode(kode)}

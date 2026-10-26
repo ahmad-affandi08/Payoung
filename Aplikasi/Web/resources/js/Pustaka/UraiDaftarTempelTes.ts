@@ -19,7 +19,7 @@ describe('UraiDaftarTempel (D-23 A: tempel daftar produk)', () => {
         expect(BacaHargaTeks('lima ribu')).toBeNull();
     });
 
-    it('salinan Excel (Tab) dengan judul kolom dan kategori; kategori tak dikenal dilaporkan', () => {
+    it('salinan Excel (Tab) dengan judul kolom dan kategori. Kategori tak dikenal dilaporkan', () => {
         const hasil = UraiDaftarTempel(
             'Nama\tHarga\tKategori\nKopi Susu Gula Aren\t18.000\tminuman\nNasi Goreng Kampung\t25000\tMakanan\nDonat\t8000\tKue',
             kategori,
@@ -34,7 +34,7 @@ describe('UraiDaftarTempel (D-23 A: tempel daftar produk)', () => {
         expect(hasil.Dilewati).toEqual([]);
     });
 
-    it('pesan WhatsApp bebas: nomor/poin di depan dibuang, harga di akhir; baris tanpa harga dilewati', () => {
+    it('pesan WhatsApp bebas: nomor/poin di depan dibuang, harga di akhir. Baris tanpa harga dilewati', () => {
         const hasil = UraiDaftarTempel(
             '1. Es Teh Manis - Rp5.000,-\n• Roti Bakar Coklat Keju: 12rb\n\nMie Ayam Bakso 2,5k\nMenu spesial hari ini\nKopi 3 in 1 = 4.000',
             kategori,

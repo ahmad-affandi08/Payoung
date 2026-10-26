@@ -47,7 +47,7 @@ final class PenjagaAkunKendali
         if ($peran !== null) {
             throw new PelanggaranAturanBisnis(
                 'AkunKendali',
-                "Akun {$akun->AmbilLabel()} adalah akun kendali ({$peran}); saldonya mengikuti dokumen modulnya dan tidak bisa dijurnal manual. Ubah lewat dokumen yang sesuai (penyesuaian stok, hapus-buku piutang, pembayaran hutang, dsb.).",
+                "Akun {$akun->AmbilLabel()} adalah akun kendali ({$peran}). Saldonya mengikuti dokumen modulnya dan tidak bisa dijurnal manual. Ubah lewat dokumen yang sesuai (penyesuaian stok, hapus-buku piutang, pembayaran hutang, dsb.).",
                 $bidang,
             );
         }
@@ -68,7 +68,7 @@ final class PenjagaAkunKendali
             if (isset($peta[$akun->Id])) {
                 throw new PelanggaranAturanBisnis(
                     'AkunKendali',
-                    "Akun {$akun->AmbilLabel()} adalah akun kendali ({$peta[$akun->Id]}); saldonya mengikuti dokumen modulnya dan tidak bisa dijurnal manual. Ubah lewat dokumen yang sesuai (penyesuaian stok, hapus-buku piutang, pembayaran hutang, dsb.).",
+                    "Akun {$akun->AmbilLabel()} adalah akun kendali ({$peta[$akun->Id]}). Saldonya mengikuti dokumen modulnya dan tidak bisa dijurnal manual. Ubah lewat dokumen yang sesuai (penyesuaian stok, hapus-buku piutang, pembayaran hutang, dsb.).",
                     $bidang,
                 );
             }

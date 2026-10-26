@@ -68,7 +68,7 @@ void main() {
 
   for (final ukuran in const [Size(1280, 900), Size(800, 1280), Size(360, 740)]) {
     testWidgets(
-      'cek harga: batch FEFO + status; tambah ke keranjang → peringatan batch lewat (${ukuran.width.toInt()} dp)',
+      'cek harga: batch FEFO + status. Tambah ke keranjang → peringatan batch lewat (${ukuran.width.toInt()} dp)',
       (tester) async {
         final u = await Masuk(tester, ukuran, online: true);
         await CekHargaSusu(tester);
@@ -89,7 +89,7 @@ void main() {
     );
   }
 
-  testWidgets('offline: cek harga menyebut info batch butuh internet; tambah ke keranjang tanpa peringatan', (
+  testWidgets('offline: cek harga menyebut info batch butuh internet. Tambah ke keranjang tanpa peringatan', (
     tester,
   ) async {
     final u = await Masuk(tester, const Size(1280, 900), online: false);

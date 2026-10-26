@@ -89,7 +89,7 @@ describe('F-05a J-05.1 PostingJurnal (DesainF05a C.5)', function (): void {
         expect(BantuanJurnal::Posting(BantuanJurnal::DataStokAwal())->nomor)->toBe('JU/2026/09/000001');
     });
 
-    it('J-05.1: jurnal bernilai nol ditolak JurnalKosong; baris nol di kedua sisi dibuang', function (): void {
+    it('J-05.1: jurnal bernilai nol ditolak JurnalKosong. Baris nol di kedua sisi dibuang', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
 
         expect(TangkapPelanggaranJurnal(fn () => BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(nilai: '0.00')))->kode)->toBe('JurnalKosong')
@@ -130,7 +130,7 @@ describe('F-05a J-05.1 PostingJurnal (DesainF05a C.5)', function (): void {
         ], 'ke-1 harus menyebut tepat satu'],
     ]);
 
-    it('J-05.1: baris dengan akun, outlet, dan sisi sama digabung; debit & kredit akun sama tidak dinetralkan', function (): void {
+    it('J-05.1: baris dengan akun, outlet, dan sisi sama digabung. Debit & kredit akun sama tidak dinetralkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $hasil = BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(baris: [
             DataBarisJurnal::Kredit(PeranAkun::EkuitasSaldoAwal, Uang::Dari('1000000.00'), $t['Outlet']->Id),
@@ -191,7 +191,7 @@ describe('F-05a J-05.1 PostingJurnal (DesainF05a C.5)', function (): void {
         expect($lain->sudahAda)->toBeFalse()->and($lain->nomor)->toBe('JU/2026/09/000002');
     });
 
-    it('idempotensi: sumber sama dengan total berbeda ditolak JurnalSumberGanda; jurnal lama tidak berubah', function (): void {
+    it('idempotensi: sumber sama dengan total berbeda ditolak JurnalSumberGanda. Jurnal lama tidak berubah', function (): void {
         BantuanPersediaan::SiapkanTenant();
         BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(idSumber: 12, nilai: '1000000.00'));
         $galat = TangkapPelanggaranJurnal(fn () => BantuanJurnal::Posting(BantuanJurnal::DataStokAwal(idSumber: 12, nilai: '1000000.01')));
@@ -239,7 +239,7 @@ describe('F-05a J-05.1 PostingJurnal (DesainF05a C.5)', function (): void {
             ->and(BuatBarisJurnalUji($diUtama->idJurnal)[0]['IdAkun'])->toBe($persediaanTenant);
     });
 
-    it('PeriodeTerkunci: jurnal bertanggal di periode terkunci ditolak; periode lain tetap bisa', function (): void {
+    it('PeriodeTerkunci: jurnal bertanggal di periode terkunci ditolak. Periode lain tetap bisa', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanPersediaan::KunciPeriode('2026-08', $t['Pemilik']->Id);
 

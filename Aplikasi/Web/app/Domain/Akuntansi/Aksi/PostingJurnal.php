@@ -66,7 +66,7 @@ final class PostingJurnal
                 if (! Uang::Dari($ada->TotalDebit)->SamaDengan($totalDebit) || ! Uang::Dari($ada->TotalKredit)->SamaDengan($totalKredit)) {
                     throw new PelanggaranAturanBisnis(
                         'JurnalSumberGanda',
-                        "Dokumen sumber ini sudah punya jurnal {$ada->Nomor} dengan nilai berbeda. Jurnal yang sudah diposting tidak bisa diubah; koreksi lewat jurnal pembalik.",
+                        "Dokumen sumber ini sudah punya jurnal {$ada->Nomor} dengan nilai berbeda. Jurnal yang sudah diposting tidak bisa diubah. Koreksi lewat jurnal pembalik.",
                         detail: ['Nomor' => $ada->Nomor, 'TotalDebitAda' => $ada->TotalDebit, 'TotalDebitBaru' => $totalDebit->KeString()],
                     );
                 }

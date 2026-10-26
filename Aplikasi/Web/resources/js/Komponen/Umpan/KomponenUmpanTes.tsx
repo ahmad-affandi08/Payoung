@@ -7,7 +7,7 @@ import Pemberitahuan from './Pemberitahuan';
 describe('komponen Umpan di atas shadcn/ui (API lama tetap)', () => {
     afterEach(() => cleanup());
 
-    it('Pemberitahuan: bahaya & peringatan = alert, info & sukses = status; judul bawaan berupa teks', () => {
+    it('Pemberitahuan: bahaya & peringatan = alert, info & sukses = status. Judul bawaan berupa teks', () => {
         render(
             <>
                 <Pemberitahuan jenis="bahaya">Gagal menyimpan.</Pemberitahuan>

@@ -103,7 +103,7 @@ export default function HalamanCetakReturGrosir({ Retur, Baris, Usaha }: PropsCe
 
             <p className="text-keterangan text-teks-sekunder">
                 {notaKredit
-                    ? `Nilai di atas mengurangi tagihan faktur ${Retur.NomorFaktur ?? ''}. Tidak ada uang yang berpindah; yang tersisa dari faktur itulah yang ditagihkan.`
+                    ? `Nilai di atas mengurangi tagihan faktur ${Retur.NomorFaktur ?? ''}. Tidak ada uang yang berpindah, yang tersisa dari faktur itulah yang ditagihkan.`
                     : 'Penyerahannya belum difakturkan, jadi belum ada tagihan yang dikurangi. Faktur nanti hanya menagihkan barang yang tidak dikembalikan.'}
             </p>
 

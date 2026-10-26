@@ -159,7 +159,7 @@ it('pembayaran masuk membukukan uang muka (J-17.1) dan memindahkan pesanan ke me
         ->and(SaldoPeranOnline($jurnal->Id, PeranAkun::PiutangPencairan, $pesanan->IdOutlet))->toBe('60000.00');
 });
 
-it('kasir menagih pesanan berbayar dengan metode Uang muka; void mengembalikan uang mukanya', function (): void {
+it('kasir menagih pesanan berbayar dengan metode Uang muka. Void mengembalikan uang mukanya', function (): void {
     $status = 'PENDING';
     PalsukanGerbangOnline($status);
     $k = SiapkanBayarOnline($this);
@@ -286,7 +286,7 @@ function SiapkanPesananGratisOngkir(TestCase $tes, array $k): array
     return [$pesanan, $uangMuka, $promo];
 }
 
-it('F-16c gratis ongkir: pesanan bergratis ongkir ditagih dengan BiayaKirim + DiskonKirim; ongkir kotor ke Pendapatan Pengiriman, potongan ke Diskon Penjualan, pemakaian promo tercatat', function (): void {
+it('F-16c gratis ongkir: pesanan bergratis ongkir ditagih dengan BiayaKirim + DiskonKirim. Ongkir kotor ke Pendapatan Pengiriman, potongan ke Diskon Penjualan, pemakaian promo tercatat', function (): void {
     $status = 'PENDING';
     PalsukanGerbangOnline($status);
     $k = SiapkanBayarOnline($this);
@@ -347,7 +347,7 @@ it('F-16c gratis ongkir: kasir yang menagih ongkir penuh padahal pesanan bergrat
     expect($penjualan->PerluTinjauan)->toBeTrue()
         ->and($penjualan->AlasanTinjauan)->toContain('OngkirBerbeda')
         ->and($penjualan->AlasanTinjauan)->toContain('PromoBerbeda')
-        ->and($penjualan->AlasanTinjauan)->toContain('diskon ongkir perangkat Rp 0; server Rp 12.000')
+        ->and($penjualan->AlasanTinjauan)->toContain('diskon ongkir perangkat Rp 0. Server Rp 12.000')
         // Tanpa potongan, tidak ada yang dicatat sebagai pemakaian promo.
         ->and(PromoPemakaian::query()->where('IdPenjualan', $penjualan->Id)->count())->toBe(0);
 });
@@ -393,7 +393,7 @@ it('pesanan berbayar yang ditolak muncul di Kotak Tindakan dan pengembaliannya d
         ->assertSessionHasErrors();
 });
 
-it('E8: pesanan berbayar yang belum ditagih di kasir lebih dari 12 jam muncul di Kotak Tindakan; yang baru dibayar atau sudah dibatalkan tidak', function (): void {
+it('E8: pesanan berbayar yang belum ditagih di kasir lebih dari 12 jam muncul di Kotak Tindakan, yang baru dibayar atau sudah dibatalkan tidak', function (): void {
     $status = 'PENDING';
     PalsukanGerbangOnline($status);
     $k = SiapkanBayarOnline($this);

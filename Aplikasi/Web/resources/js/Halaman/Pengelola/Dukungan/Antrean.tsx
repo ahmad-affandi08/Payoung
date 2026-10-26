@@ -121,7 +121,7 @@ const kolom: KolomTabel<BarisAntrean>[] = [
 export default function AntreanTiket({ Tiket, PilihanStatus, PilihanPrioritas, BolehTangani = false }: PropsAntrean) {
     return (
         <TataLetakPengelola judul="Tiket dukungan">
-            <AksiHalaman keterangan="Obrolan langsung dari tenant dijawab di inbox obrolan; yang tidak terjawab tetap masuk antrean ini.">
+            <AksiHalaman keterangan="Obrolan langsung dari tenant dijawab di inbox obrolan, yang tidak terjawab tetap masuk antrean ini.">
                 <Link href="/dukungan/obrolan" className="text-label font-semibold text-brand underline">
                     Buka obrolan langsung
                 </Link>

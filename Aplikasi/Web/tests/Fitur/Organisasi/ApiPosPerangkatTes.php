@@ -80,7 +80,7 @@ describe('POST /api/pos/v1/perangkat/aktivasi (F-02 langkah 5)', function (): vo
         $this->postJson('/api/pos/v1/perangkat/aktivasi', ['Kode' => $kode, 'Platform' => 'Android'])->assertStatus(422)->assertJsonPath('Galat.Kode', 'KodeAktivasiTidakBerlaku');
     });
 
-    it('kode lama tidak berlaku setelah kode baru dibuat; aktivasi ulang mengganti token sehingga instalasi lama keluar', function (): void {
+    it('kode lama tidak berlaku setelah kode baru dibuat. Aktivasi ulang mengganti token sehingga instalasi lama keluar', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         ['Perangkat' => $perangkat, 'Token' => $tokenLama] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
 

@@ -46,7 +46,7 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
 
         return array_values(array_filter([
             $this->ButirAbsen($konteks, $dari, $sampai, 'DiluarJadwal', 'karyawan.absen-diluar-jadwal', 'Absen di luar jadwal', 'Karyawan absen di kasir padahal tidak sesuai jadwal kerjanya. Periksa, lalu jadwalkan atau koreksi absensinya.', 'Absen masuk tidak sesuai jadwal'),
-            $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat; periksa lalu tandai sudah dicek.', null),
+            $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat. Periksa lalu tandai sudah dicek.', null),
             $this->ButirKoreksi($konteks),
             ...$gaji,
         ]));

@@ -44,7 +44,7 @@ function Baris(uuid: string, pilihan: string[] = [], catatan = '', jumlah = 1): 
 describe('Keranjang pesan sendiri (F-17)', () => {
     afterEach(() => window.localStorage.clear());
 
-    it('menggabung produk & pilihan sama tanpa catatan; catatan berbeda jadi baris baru; jumlah maks. 50', () => {
+    it('menggabung produk & pilihan sama tanpa catatan. Catatan berbeda jadi baris baru. Jumlah maks. 50', () => {
         let keranjang = TambahKeKeranjang([], Baris('A', ['P-NORMAL', 'P-BOBA']));
         keranjang = TambahKeKeranjang(keranjang, Baris('B', ['P-BOBA', 'P-NORMAL'], '', 49));
         expect(keranjang).toHaveLength(1);
@@ -85,7 +85,7 @@ describe('Keranjang pesan sendiri (F-17)', () => {
         expect(AlihkanPilihan(topping, ['P-BOBA', 'P-KEJU'], 'P-KEJU')).toEqual(['P-BOBA']);
     });
 
-    it('disimpan per token meja; isi rusak diabaikan; riwayat pesanan terbaru di depan (maks. 5)', () => {
+    it('disimpan per token meja. Isi rusak diabaikan. Riwayat pesanan terbaru di depan (maks. 5)', () => {
         SimpanKeranjang('TOKEN-7', [Baris('A', ['P-NORMAL'], '', 2)]);
         expect(BacaKeranjang('TOKEN-7')).toEqual([Baris('A', ['P-NORMAL'], '', 2)]);
         expect(BacaKeranjang('TOKEN-9')).toEqual([]);

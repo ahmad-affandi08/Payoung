@@ -59,7 +59,7 @@ final class VerifikasiEmailKontroler extends Kontroler
             // yang tidak pernah datang dan penyebabnya hanya terlihat di log.
             Log::error('Email verifikasi gagal dikirim ulang.', ['Pesan' => $galat->getMessage()]);
 
-            return back()->withErrors(['Umum' => 'Email verifikasi gagal dikirim. Coba lagi beberapa saat; bila tetap gagal, hubungi dukungan.']);
+            return back()->withErrors(['Umum' => 'Email verifikasi gagal dikirim. Coba lagi beberapa saat. Bila tetap gagal, hubungi dukungan.']);
         }
 
         return back()->with('Kilat', "Tautan verifikasi dikirim ulang ke {$pengguna->Email}.");

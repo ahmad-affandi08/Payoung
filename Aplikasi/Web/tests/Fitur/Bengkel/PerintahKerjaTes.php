@@ -291,7 +291,7 @@ it('perintah kerja yang belum disetujui atau tidak dikenal tidak tertagih: penju
         ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
 });
 
-it('harga mengikuti tier pelanggan; jenis produk dan mekanik di sparepart ditolak; revisi setelah ditolak kembali ke Diagnosis', function (): void {
+it('harga mengikuti tier pelanggan. Jenis produk dan mekanik di sparepart ditolak. Revisi setelah ditolak kembali ke Diagnosis', function (): void {
     $k = SiapkanBengkel($this, 'Bengkel Mitra Gold Boyolali');
     $kendaraan = BuatKendaraanUji($this, $k, 'B 9876 KJT');
     $gold = TierPelanggan::query()->create(['Kode' => 'GOLD', 'Nama' => 'Gold', 'MinimalBelanja' => '0']);
@@ -329,7 +329,7 @@ it('harga mengikuti tier pelanggan; jenis produk dan mekanik di sparepart ditola
     expect($pk->refresh()->Status)->toBe(StatusPerintahKerja::Diagnosis)->and($pk->Total)->toBe('42500.00');
 });
 
-it('tautan persetujuan: token salah, slug tenant lain, atau lewat 7 hari = 404; isolasi tenant back-office & POS; izin bengkel.kelola', function (): void {
+it('tautan persetujuan: token salah, slug tenant lain, atau lewat 7 hari = 404. Isolasi tenant back-office & POS. Izin bengkel.kelola', function (): void {
     $k = SiapkanBengkel($this);
     $pk = BuatPerintahKerjaUji($this, $k, BuatKendaraanUji($this, $k));
     MasukBengkel($this, $k)->post("/kelola/bengkel/perintah-kerja/{$pk->Uuid}/persetujuan")->assertSessionHasNoErrors();

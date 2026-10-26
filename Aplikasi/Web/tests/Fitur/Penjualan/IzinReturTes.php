@@ -19,7 +19,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('supervisor tanpa izin retur tidak bisa menyetujui retur tetapi tetap bisa void; kasir ber-izin retur menyetujui sendiri', function (): void {
+it('supervisor tanpa izin retur tidak bisa menyetujui retur tetapi tetap bisa void. Kasir ber-izin retur menyetujui sendiri', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);

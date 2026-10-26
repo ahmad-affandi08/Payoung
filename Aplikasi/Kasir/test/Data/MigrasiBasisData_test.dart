@@ -186,7 +186,7 @@ void main() {
     expect(await db.customSelect('PRAGMA user_version').map((r) => r.read<int>('user_version')).getSingle(), 32);
   });
 
-  test('F-11 migrasi 2 → 3 hanya menambah kolom tutup shift; outbox tertunda, shift, & penjualan tetap utuh', () async {
+  test('F-11 migrasi 2 → 3 hanya menambah kolom tutup shift. Outbox tertunda, shift, & penjualan tetap utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -235,7 +235,7 @@ void main() {
     expect((await db.select(db.shift).get()).single.Selisih, '-2000.00');
   });
 
-  test('PRD v1.46 migrasi 3 → 4 hanya menambah kolom Kategori kelompok pajak; outbox & katalog lama utuh', () async {
+  test('PRD v1.46 migrasi 3 → 4 hanya menambah kolom Kategori kelompok pajak. Outbox & katalog lama utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -274,7 +274,7 @@ void main() {
     expect((await db.select(db.kelompokPajakDetail).get()).single.Kategori, 'Ppn');
   });
 
-  test('F-09 migrasi 4 → 5 hanya menambah tabel void & retur; outbox tertunda & penjualan lama utuh', () async {
+  test('F-09 migrasi 4 → 5 hanya menambah tabel void & retur. Outbox tertunda & penjualan lama utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -338,7 +338,7 @@ void main() {
   });
 
   test(
-    'F-07 mode meja migrasi 5 → 6 hanya menambah tabel meja & pesanan terbuka; outbox tertunda & retur utuh',
+    'F-07 mode meja migrasi 5 → 6 hanya menambah tabel meja & pesanan terbuka. Outbox tertunda & retur utuh',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -393,7 +393,7 @@ void main() {
     },
   );
 
-  test('F-16a migrasi 6 → 7 hanya menambah tabel pelanggan lokal; pesanan terbuka & outbox tertunda utuh', () async {
+  test('F-16a migrasi 6 → 7 hanya menambah tabel pelanggan lokal. Pesanan terbuka & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -433,7 +433,7 @@ void main() {
     expect((await db.select(db.pelangganLokal).get()).single.Nama, 'Ani Rahmawati');
   });
 
-  test('F-16b migrasi 7 → 8 menambah kolom tier pelanggan lokal; pelanggan & outbox tertunda utuh', () async {
+  test('F-16b migrasi 7 → 8 menambah kolom tier pelanggan lokal. Pelanggan & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -470,7 +470,7 @@ void main() {
     expect((await db.select(db.pelangganLokal).get()).single.KodeTier, 'GOLD');
   });
 
-  test('F-12 migrasi 8 → 9 menambah kolom kredit pelanggan lokal; tier & outbox tertunda utuh', () async {
+  test('F-12 migrasi 8 → 9 menambah kolom kredit pelanggan lokal. Tier & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -508,7 +508,7 @@ void main() {
     expect((await db.select(db.pelangganLokal).get()).single.LimitKredit, '5000000.00');
   });
 
-  test('F-18 migrasi 9 → 10 menambah tabel absensi lokal; pelanggan & outbox tertunda utuh', () async {
+  test('F-18 migrasi 9 → 10 menambah tabel absensi lokal. Pelanggan & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -542,7 +542,7 @@ void main() {
     expect((await db.select(db.absensiLokal).get()).single.NamaStaf, 'Rina Wulandari');
   });
 
-  test('F-12 bagian 2 migrasi 10 → 11 menambah tabel pre-order lokal; absensi & outbox tertunda utuh', () async {
+  test('F-12 bagian 2 migrasi 10 → 11 menambah tabel pre-order lokal. Absensi & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -574,7 +574,7 @@ void main() {
     expect((await db.select(db.nomorUrutPesananPenjualan).get()).single.Terakhir, 1);
   });
 
-  test('F-16c bagian 3 migrasi 11 → 12 menambah data promo pelanggan; pelanggan & outbox tertunda utuh', () async {
+  test('F-16c bagian 3 migrasi 11 → 12 menambah data promo pelanggan. Pelanggan & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -648,7 +648,7 @@ void main() {
   });
 
   test(
-    'F-16d bagian 2 migrasi 13 → 14 menambah kolom paket sesi produk & mengosongkan kursor katalog; outbox utuh',
+    'F-16d bagian 2 migrasi 13 → 14 menambah kolom paket sesi produk & mengosongkan kursor katalog. Outbox utuh',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -683,7 +683,7 @@ void main() {
   );
 
   test(
-    'laundry migrasi 14 → 15 menambah kolom Laundry penjualan lokal; penjualan lama & outbox tertunda utuh',
+    'laundry migrasi 14 → 15 menambah kolom Laundry penjualan lokal. Penjualan lama & outbox tertunda utuh',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -710,7 +710,7 @@ void main() {
       expect(kolom, 1);
     },
   );
-  test('audit P0 F-01 migrasi 15 → 16 menambah perangkat pembuat outbox; item tertunda ditandai perangkat aktif, tidak hilang', () async {
+  test('audit P0 F-01 migrasi 15 → 16 menambah perangkat pembuat outbox. Item tertunda ditandai perangkat aktif, tidak hilang', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -736,7 +736,7 @@ void main() {
     expect(outbox.first.Percobaan, 2);
   });
 
-  test('F-05f bagian 2 migrasi 16 → 17 menambah tabel bahan terbuang lokal; outbox tertunda utuh', () async {
+  test('F-05f bagian 2 migrasi 16 → 17 menambah tabel bahan terbuang lokal. Outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -776,7 +776,7 @@ void main() {
     expect((await db.select(db.bahanTerbuangLokal).get()).single.NamaProduk, 'Croissant');
   });
 
-  test('X8 migrasi 17 → 18 menambah kolom kanal metode pembayaran; metode & outbox tertunda utuh', () async {
+  test('X8 migrasi 17 → 18 menambah kolom kanal metode pembayaran. Metode & outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -815,7 +815,7 @@ void main() {
     expect((await (db.select(db.metodePembayaran)..where((m) => m.Uuid.equals('MTD2'))).getSingle()).Kanal, 'GoFood');
   });
 
-  test('F-17 bagian 3 migrasi 18 → 19 menambah kolom ongkir kena pajak; kursor katalog direset, outbox tertunda utuh', () async {
+  test('F-17 bagian 3 migrasi 18 → 19 menambah kolom ongkir kena pajak. Kursor katalog direset, outbox tertunda utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -862,7 +862,7 @@ void main() {
     final ppn = await (db.select(db.kelompokPajakDetail)..where((d) => d.KodeJenisPajak.equals('Ppn'))).getSingle();
     expect(ppn.KenaBiayaKirim, isTrue);
   });
-  test('F-17 bagian 3 + F-05h migrasi 19 → 20 menambah ongkir penjualan & nomor seri detail; penjualan lama berongkir nol, outbox utuh', () async {
+  test('F-17 bagian 3 + F-05h migrasi 19 → 20 menambah ongkir penjualan & nomor seri detail. Penjualan lama berongkir nol, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -897,7 +897,7 @@ void main() {
         .get();
     expect(kolom, hasLength(1));
   });
-  test('F-05h migrasi 20 → 21 menambah masa garansi produk & detail penjualan; kursor katalog direset, outbox utuh', () async {
+  test('F-05h migrasi 20 → 21 menambah masa garansi produk & detail penjualan. Kursor katalog direset, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -931,7 +931,7 @@ void main() {
     expect(kunci, contains('UuidPerangkat'));
     expect(kunci, isNot(contains('KursorKatalog')));
   });
-  test('v3.52 migrasi 21 → 22 menambah nomor antrian & nama pemesan penjualan; penjualan lama null, outbox utuh', () async {
+  test('v3.52 migrasi 21 → 22 menambah nomor antrian & nama pemesan penjualan. Penjualan lama null, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -962,7 +962,7 @@ void main() {
     expect((jual.Nomor, jual.NomorAntrian, jual.NamaPemesan), ('INV/1', null, null));
   });
 
-  test('K-9 migrasi 22 → 23 menambah atribut varian produk; kursor katalog dihapus agar katalog dimuat ulang, outbox utuh', () async {
+  test('K-9 migrasi 22 → 23 menambah atribut varian produk. Kursor katalog dihapus agar katalog dimuat ulang, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -993,7 +993,7 @@ void main() {
   });
 
   test(
-    'K-12 migrasi 23 → 24 menambah tanda minta bill & tabel meja perlu dibersihkan; pesanan & outbox utuh',
+    'K-12 migrasi 23 → 24 menambah tanda minta bill & tabel meja perlu dibersihkan. Pesanan & outbox utuh',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -1024,7 +1024,7 @@ void main() {
     },
   );
 
-  test('K-25 migrasi 24 → 25 menambah tanda harga terbuka produk & memuat ulang katalog; outbox utuh', () async {
+  test('K-25 migrasi 24 → 25 menambah tanda harga terbuka produk & memuat ulang katalog. Outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -1055,7 +1055,7 @@ void main() {
   });
 
   test(
-    'Modul Salesman bagian 2 migrasi 25 → 26 hanya menambah tabel salesman; outbox tertunda & dokumen lama utuh',
+    'Modul Salesman bagian 2 migrasi 25 → 26 hanya menambah tabel salesman. Outbox tertunda & dokumen lama utuh',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -1145,7 +1145,7 @@ void main() {
 
   test(
     'Bengkel & Apotek bagian 2 migrasi 26 → 27 hanya menambah kolom golongan obat produk serta perintah kerja & resep '
-    'penjualan; outbox tertunda, penjualan, & produk lama utuh, kursor katalog dihapus',
+    'penjualan. Outbox tertunda, penjualan, & produk lama utuh, kursor katalog dihapus',
     () async {
       final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
       addTearDown(() => folder.deleteSync(recursive: true));
@@ -1224,7 +1224,7 @@ void main() {
     },
   );
 
-  test('Apotek bagian 4 migrasi 27 → 28 menambah kolom racikan detail penjualan; detail lama null, outbox utuh', () async {
+  test('Apotek bagian 4 migrasi 27 → 28 menambah kolom racikan detail penjualan. Detail lama null, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -1253,7 +1253,7 @@ void main() {
     expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ1', 'Tertunda', 2));
   });
 
-  test('K-14 migrasi 28 → 29 menambah kolom bagian tagihan penjualan; penjualan lama null, outbox utuh', () async {
+  test('K-14 migrasi 28 → 29 menambah kolom bagian tagihan penjualan. Penjualan lama null, outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -1282,7 +1282,7 @@ void main() {
     expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ1', 'Tertunda', 2));
   });
 
-  test('K-16 migrasi 29 → 30 menambah kolom favorit produk (bawaan tidak) dan memuat ulang katalog; outbox utuh', () async {
+  test('K-16 migrasi 29 → 30 menambah kolom favorit produk (bawaan tidak) dan memuat ulang katalog. Outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -1316,7 +1316,7 @@ void main() {
     expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ1', 'Tertunda', 2));
   });
 
-  test('POS-03 migrasi 30 → 31 menambah letak meja di denah (belum ditata = null); meja & outbox utuh', () async {
+  test('POS-03 migrasi 30 → 31 menambah letak meja di denah (belum ditata = null). Meja & outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');
@@ -1345,7 +1345,7 @@ void main() {
     expect((outbox.Uuid, outbox.Status, outbox.Percobaan), ('PJ1', 'Tertunda', 2));
   });
 
-  test('D-189 migrasi 31 → 32 menambah teks QRIS statis metode bayar (lama null); metode & outbox utuh', () async {
+  test('D-189 migrasi 31 → 32 menambah teks QRIS statis metode bayar (lama null). Metode & outbox utuh', () async {
     final folder = Directory.systemTemp.createTempSync('migrasi_kasir_');
     addTearDown(() => folder.deleteSync(recursive: true));
     final berkas = File('${folder.path}/kasir.sqlite');

@@ -187,7 +187,7 @@ class _EditorProfilPrinterState extends ConsumerState<EditorProfilPrinter> {
       return [
         Text(
           'Struk dibuka di dialog cetak perangkat: pilih printer kantor, AirPrint, atau simpan sebagai PDF. '
-          'Cocok sebagai cadangan; laci kas tidak bisa dibuka lewat printer sistem.',
+          'Cocok sebagai cadangan. Laci kas tidak bisa dibuka lewat printer sistem.',
           style: teks.bodyMedium,
         ),
       ];
@@ -345,7 +345,7 @@ class _EditorProfilPrinterState extends ConsumerState<EditorProfilPrinter> {
             onChanged: (nilai) => setState(() => _umpanAkhir = nilai.round()),
           ),
           Text(
-            'Kurangi bila kertas di bawah tulisan terakhir terlalu panjang; naikkan bila tulisan ikut terpotong.',
+            'Kurangi bila kertas di bawah tulisan terakhir terlalu panjang. Naikkan bila tulisan ikut terpotong.',
             style: teks.bodySmall,
           ),
         ],

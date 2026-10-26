@@ -54,7 +54,7 @@ function CariButir(array $butir, string $kunci): ?array
     return null;
 }
 
-it('penjualan perlu dicek tampil di Kotak Tindakan & beranda; ditandai sudah dicek hilang (idempoten, audit, dokumen tidak berubah)', function (): void {
+it('penjualan perlu dicek tampil di Kotak Tindakan & beranda. Ditandai sudah dicek hilang (idempoten, audit, dokumen tidak berubah)', function (): void {
     $k = SiapkanTindakan($this);
     $jual = $k['Penjualan'];
     expect($jual->PerluTinjauan)->toBeTrue();
@@ -103,7 +103,7 @@ it('penjualan perlu dicek tampil di Kotak Tindakan & beranda; ditandai sudah dic
     $this->post('/kelola/tindakan/tinjau', ['Jenis' => 'Penjualan', 'Uuid' => [BantuanKasir::Uuid()]])->assertSessionHasErrors('Uuid');
 });
 
-it('kasir tanpa izin laporan tidak melihat butir penjualan dan tidak bisa menandai; tenant lain tidak bisa menandai dokumen tenant ini', function (): void {
+it('kasir tanpa izin laporan tidak melihat butir penjualan dan tidak bisa menandai. Tenant lain tidak bisa menandai dokumen tenant ini', function (): void {
     $k = SiapkanTindakan($this);
 
     BantuanOrganisasi::Masuk($this, $k['Kasir'], $k['Tenant']->Id);
@@ -123,7 +123,7 @@ it('kasir tanpa izin laporan tidak melihat butir penjualan dan tidak bisa menand
     expect(DB::table('TinjauanDokumen')->count())->toBe(0);
 });
 
-it('pengingat: shift terbuka > 24 jam & bulan lalu belum tutup buku (mulai tanggal 10); selesai sendiri', function (): void {
+it('pengingat: shift terbuka > 24 jam & bulan lalu belum tutup buku (mulai tanggal 10). Selesai sendiri', function (): void {
     $k = SiapkanTindakan($this);
     $this->travelTo(now('Asia/Jakarta')->addMonthNoOverflow()->startOfMonth()->addDays(11)->setTime(10, 0));
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -147,7 +147,7 @@ it('pengingat: shift terbuka > 24 jam & bulan lalu belum tutup buku (mulai tangg
     expect($angka)->toBe($diurutkan);
 });
 
-it('E10: tarif pajak nasional yang akan berganti diumumkan di Kotak Tindakan bagi pemegang akuntansi.kelola; tarif pertama atau yang jauh di depan tidak', function (): void {
+it('E10: tarif pajak nasional yang akan berganti diumumkan di Kotak Tindakan bagi pemegang akuntansi.kelola. Tarif pertama atau yang jauh di depan tidak', function (): void {
     $k = SiapkanTindakan($this);
     $hari = fn (int $maju): string => now('Asia/Jakarta')->addDays($maju)->toDateString();
     $lama = BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '11.000000', berlakuMulai: $hari(-700), berlakuSampai: $hari(9));

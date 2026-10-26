@@ -50,7 +50,7 @@ function SiapkanPenjualanPelanggan(mixed $tes): array
     return [...$k, 'Minyak' => $minyak, 'Ani' => $ani, 'Budi' => $budi, 'UuidPenjualanBudi' => $itemBudi['Uuid']];
 }
 
-it('per pelanggan: omzet bersih, porsi, baris tanpa pelanggan, urut omzet; ekspor CSV', function (): void {
+it('per pelanggan: omzet bersih, porsi, baris tanpa pelanggan, urut omzet. Ekspor CSV', function (): void {
     $k = SiapkanPenjualanPelanggan($this);
     BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 
@@ -91,7 +91,7 @@ it('per pelanggan: retur mengurangi pelanggan penjualan asalnya, bukan baris tan
         ->where('Isi.1.Retur', '0.00'));
 });
 
-it('perbandingan outlet: angka per outlet, margin laba kotor, porsi omzet; ekspor CSV', function (): void {
+it('perbandingan outlet: angka per outlet, margin laba kotor, porsi omzet. Ekspor CSV', function (): void {
     $k = SiapkanPenjualanPelanggan($this);
     BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 

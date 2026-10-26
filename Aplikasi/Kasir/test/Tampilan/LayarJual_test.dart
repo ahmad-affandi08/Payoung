@@ -99,7 +99,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('F-17 BR-17.2: produk habis tampil "Habis" dan tidak bisa ditambah; tahan ubin menandai tersedia lagi', (
+  testWidgets('F-17 BR-17.2: produk habis tampil "Habis" dan tidak bisa ditambah. Tahan ubin menandai tersedia lagi', (
     tester,
   ) async {
     final u = await MasukJual(tester, produkHabis: {UuidUji.americano});
@@ -280,7 +280,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('pilihan wajib & opsional lewat panel item; produk induk varian ditolak dengan pesan jelas', (
+  testWidgets('pilihan wajib & opsional lewat panel item. Produk induk varian ditolak dengan pesan jelas', (
     tester,
   ) async {
     final u = await MasukJual(tester);
@@ -309,7 +309,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('BR-07.3 diskon item di atas batas → PIN penyetuju; bayar QRIS statis dengan konfirmasi kasir', (
+  testWidgets('BR-07.3 diskon item di atas batas → PIN penyetuju. Bayar QRIS statis dengan konfirmasi kasir', (
     tester,
   ) async {
     final u = await MasukJual(tester);
@@ -379,7 +379,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('audit #25: penyetuju tunggal terpilih otomatis; persetujuan diskon berlaku sementara untuk kasir sama', (
+  testWidgets('audit #25: penyetuju tunggal terpilih otomatis. Persetujuan diskon berlaku sementara untuk kasir sama', (
     tester,
   ) async {
     final u = await MasukJual(tester);
@@ -585,7 +585,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('pesanan tertahan: tahan → daftar → buka kembali; keranjang di kiri sesuai pengaturan', (tester) async {
+  testWidgets('pesanan tertahan: tahan → daftar → buka kembali. Keranjang di kiri sesuai pengaturan', (tester) async {
     final u = LingkunganUji.Buat();
     await tester.runAsync(() async {
       await u.SiapkanAktif();

@@ -52,7 +52,7 @@ function CatatRute(string $rute, int $jumlah, int $ms, int $status = 200, string
 }
 
 describe('Metrik per rute', function (): void {
-    it('permintaan dihitung per nama rute di cache lalu disiram per jam ke MetrikRuteApi; rute lambat diperingkat dahulu', function (): void {
+    it('permintaan dihitung per nama rute di cache lalu disiram per jam ke MetrikRuteApi. Rute lambat diperingkat dahulu', function (): void {
         CatatRute('pos.sinkron.kirim', 25, 900);
         CatatRute('pos.sinkron.kirim', 5, 50, 500);
         CatatRute('pos.data-awal', 40, 30);
@@ -196,7 +196,7 @@ describe('Webhook keluar gagal per tenant', function (): void {
 });
 
 describe('Dasbor dan tautan runbook', function (): void {
-    it('Teknis melihat bagian lanjutan dan jangkar alert; mengatur tautan runbook yang diaudit; alamat tidak aman ditolak; peran lain ditolak', function (): void {
+    it('Teknis melihat bagian lanjutan dan jangkar alert. Mengatur tautan runbook yang diaudit. Alamat tidak aman ditolak. Peran lain ditolak', function (): void {
         $teknis = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis);
         $this->actingAs($teknis, 'pengelola')->withSession(BantuanPengelola::SesiTerverifikasi());
         CatatRute('pos.sinkron.kirim', 25, 900);

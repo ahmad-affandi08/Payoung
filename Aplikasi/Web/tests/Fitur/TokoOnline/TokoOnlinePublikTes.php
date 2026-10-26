@@ -57,7 +57,7 @@ it('menerapkan zona ongkir dan gratis ongkir menurut subtotal server', function 
     $this->postJson($k['AlamatToko'].'/keranjang/hitung', $kirim)->assertUnprocessable()->assertJsonPath('Galat.Kode', 'DiLuarZona');
 });
 
-it('F-16c gratis ongkir: promo memotong ongkir zona di checkout; total dihitung server dan pesanan menyimpan pasangan Ongkir/DiskonOngkir', function (): void {
+it('F-16c gratis ongkir: promo memotong ongkir zona di checkout. Total dihitung server dan pesanan menyimpan pasangan Ongkir/DiskonOngkir', function (): void {
     $k = SiapkanTokoOnline($this);
     BantuanTokoOnline::BuatPromoGratisOngkir($k);
     $kirim = KirimanOnline($k, 'Kirim');

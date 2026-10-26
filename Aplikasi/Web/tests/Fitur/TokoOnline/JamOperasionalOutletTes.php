@@ -33,7 +33,7 @@ function JamKedaiKopi(): array
     return ['Senin' => $hari, 'Selasa' => $hari, 'Rabu' => $hari, 'Kamis' => $hari, 'Jumat' => $hari, 'Sabtu' => $hari, 'Minggu' => null];
 }
 
-it('mengatur jam operasional: tersimpan, diaudit sekali, tampil di detail outlet; menghapusnya mengembalikan selalu buka', function (): void {
+it('mengatur jam operasional: tersimpan, diaudit sekali, tampil di detail outlet. Menghapusnya mengembalikan selalu buka', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     BantuanKatalog::MasukSebagai($this, $k['Tenant']->Id);
     $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
@@ -58,7 +58,7 @@ it('mengatur jam operasional: tersimpan, diaudit sekali, tampil di detail outlet
     $this->get($alamat)->assertInertia(fn (AssertableInertia $h) => $h->where('JamOperasional.Diatur', false));
 });
 
-it('menolak jam tidak sah, buka sama dengan tutup, dan semua hari libur; tidak ada yang tersimpan', function (): void {
+it('menolak jam tidak sah, buka sama dengan tutup, dan semua hari libur. Tidak ada yang tersimpan', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     BantuanKatalog::MasukSebagai($this, $k['Tenant']->Id);
     $alamat = "/kelola/outlet/{$k['Outlet']->Uuid}";
@@ -71,7 +71,7 @@ it('menolak jam tidak sah, buka sama dengan tutup, dan semua hari libur; tidak a
     expect(Outlet::query()->findOrFail($k['Outlet']->Id)->JamOperasional)->toBeNull();
 });
 
-it('toko online: di jam buka menerima pesanan; di luar jam hitung & pesan ditolak OutletTutup dan halaman menunjukkan kapan buka lagi', function (): void {
+it('toko online: di jam buka menerima pesanan. Di luar jam hitung & pesan ditolak OutletTutup dan halaman menunjukkan kapan buka lagi', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $k['Outlet']->forceFill(['JamOperasional' => JamKedaiKopi()])->save();
     $kirim = BantuanTokoOnline::Kiriman($k);
@@ -101,7 +101,7 @@ it('toko online: di jam buka menerima pesanan; di luar jam hitung & pesan ditola
     $this->postJson($k['AlamatToko'].'/pesan', $kirim)->assertCreated();
 });
 
-it('pesan tutup manual pemilik didahulukan dari kalimat jam operasional; tanpa pengaturan jam outlet buka kapan saja', function (): void {
+it('pesan tutup manual pemilik didahulukan dari kalimat jam operasional, tanpa pengaturan jam outlet buka kapan saja', function (): void {
     $k = BantuanTokoOnline::Siapkan($this);
     $kirim = BantuanTokoOnline::Kiriman($k);
 

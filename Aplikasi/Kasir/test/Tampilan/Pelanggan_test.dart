@@ -173,7 +173,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('F-16b: tukar 50 poin (online) → potongan sebelum pajak di keranjang; offline ditolak (1280 dp)', (
+  testWidgets('F-16b: tukar 50 poin (online) → potongan sebelum pajak di keranjang. Offline ditolak (1280 dp)', (
     tester,
   ) async {
     final u = await MasukJual(
@@ -221,7 +221,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('F-12: Tempo hanya untuk pelanggan terpilih; di atas limit → PIN penyetuju; outbox UuidPenyetujuTempo', (
+  testWidgets('F-12: Tempo hanya untuk pelanggan terpilih. Di atas limit → PIN penyetuju. Outbox UuidPenyetujuTempo', (
     tester,
   ) async {
     final u = await MasukJual(

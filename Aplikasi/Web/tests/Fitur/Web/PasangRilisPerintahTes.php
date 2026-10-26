@@ -30,7 +30,7 @@ it('perintah yang mengubah keputusan pemilik produk tidak ikut otomatis', functi
     expect($nama)->not->toContain('katalog:terapkan')->not->toContain('situs:segarkan-bawaan')->not->toContain('legal:siapkan-pembaruan');
 });
 
-it('mode kering hanya menampilkan rencana; masalah satu langkah dilaporkan dan tidak menghentikan yang lain', function (): void {
+it('mode kering hanya menampilkan rencana. Masalah satu langkah dilaporkan dan tidak menghentikan yang lain', function (): void {
     // Basis data uji kosong (katalog fitur belum ada), jadi validasi template memang gagal: kode keluar harus gagal
     // supaya skrip deploy tidak menganggapnya berhasil, tetapi langkah sesudahnya tetap dijalankan.
     $this->artisan('rilis:pasang --kering')

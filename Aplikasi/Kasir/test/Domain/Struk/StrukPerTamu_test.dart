@@ -84,7 +84,7 @@ void main() {
     );
   }
 
-  test('BR-08.2 bagian tiap tamu tersimpan lokal bersama penjualan; kontrak outbox tidak memuatnya', () async {
+  test('BR-08.2 bagian tiap tamu tersimpan lokal bersama penjualan. Kontrak outbox tidak memuatnya', () async {
     final hasil = await JualDibagi();
 
     expect(hasil.bagianTagihan!.tamu, hasLength(3));
@@ -123,7 +123,7 @@ void main() {
     expect(u.printer.kiriman, isEmpty);
   });
 
-  test('struk satu tamu: bagian, metode, uang diterima, kembalian; tanpa rincian barang dan tanpa buka laci', () async {
+  test('struk satu tamu: bagian, metode, uang diterima, kembalian, tanpa rincian barang dan tanpa buka laci', () async {
     final hasil = await JualDibagi();
 
     await u.struk.CetakStrukTamu(hasil.uuid, tamuKe: 1);
@@ -143,7 +143,7 @@ void main() {
     expect(u.printer.kiriman, hasLength(1));
   });
 
-  test('semua tamu: satu struk per tamu berurutan; non-tunai tanpa kembalian; cetak ulang bertanda', () async {
+  test('semua tamu: satu struk per tamu berurutan; non-tunai tanpa kembalian. Cetak ulang bertanda', () async {
     final hasil = await JualDibagi();
 
     await u.struk.CetakStrukTamu(hasil.uuid, cetakUlang: true);

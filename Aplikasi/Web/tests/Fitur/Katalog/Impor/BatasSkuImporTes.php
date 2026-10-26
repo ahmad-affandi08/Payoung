@@ -36,7 +36,7 @@ function BarisBatasSku(int $jumlah, string $awalan): array
 }
 
 describe('F-03 BR-P04.3 / BR-02.1 BatasSku untuk impor', function (): void {
-    it('pratinjau menampilkan blokir bila produk baru melebihi sisa kuota; terapkan ditolak; yang muat boleh', function (): void {
+    it('pratinjau menampilkan blokir bila produk baru melebihi sisa kuota. Terapkan ditolak, yang muat boleh', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk(kodePaket: 'GRATIS');
         foreach (range(1, 97) as $n) {
             BantuanKatalog::BuatProduk(['Nama' => "Produk Pengisi {$n}"], null, $t['Pcs']);
@@ -60,7 +60,7 @@ describe('F-03 BR-P04.3 / BR-02.1 BatasSku untuk impor', function (): void {
         expect($muat->refresh()->Status)->toBe(StatusImporProduk::Selesai)->and(Produk::query()->count())->toBe(100);
     });
 
-    it('batas turun di tengah penerapan → berhenti rapi di batas (Gagal + pesan), sisa baris tetap Valid; setelah kuota ada, Lanjutkan', function (): void {
+    it('batas turun di tengah penerapan → berhenti rapi di batas (Gagal + pesan), sisa baris tetap Valid. Setelah kuota ada, Lanjutkan', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk(kodePaket: 'GRATIS');
         foreach (range(1, 97) as $n) {
             BantuanKatalog::BuatProduk(['Nama' => "Produk Pengisi {$n}"], null, $t['Pcs']);

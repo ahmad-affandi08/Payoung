@@ -95,7 +95,7 @@ describe('Situs bagian B: persetujuan cookie', () => {
         expect(document.querySelector('script[src*="googletagmanager"]')).toBeNull();
     });
 
-    it('Terima memuat GA4 dengan ID dari konsol; pilihan diingat pada kunjungan berikutnya', () => {
+    it('Terima memuat GA4 dengan ID dari konsol. Pilihan diingat pada kunjungan berikutnya', () => {
         render(<PersetujuanCookie analitik={analitik} />);
         fireEvent.click(screen.getByRole('button', { name: 'Terima' }));
 
@@ -107,7 +107,7 @@ describe('Situs bagian B: persetujuan cookie', () => {
         expect(screen.queryByRole('region', { name: 'Persetujuan cookie' })).toBeNull();
     });
 
-    it('audit F-22: "Pengaturan cookie" membuka bilah lagi; menarik persetujuan menghapus cookie analitik & memuat ulang', () => {
+    it('audit F-22: "Pengaturan cookie" membuka bilah lagi. Menarik persetujuan menghapus cookie analitik & memuat ulang', () => {
         const MuatUlang = vi.fn();
         vi.stubGlobal('location', { ...window.location, reload: MuatUlang, hostname: 'localhost' });
         window.localStorage.setItem(KUNCI_PERSETUJUAN, 'terima');

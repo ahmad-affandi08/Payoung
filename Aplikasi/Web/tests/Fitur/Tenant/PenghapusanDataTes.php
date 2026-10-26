@@ -134,7 +134,7 @@ function AjukanPenghapusanUji(TestCase $tes, Tenant $tenant, array $isian = []):
 }
 
 describe('P-07 Owner mengajukan penghapusan data', function (): void {
-    it('syarat: ekspor harus sudah diunduh, kata sandi benar, frasa konfirmasi persis; lalu masa tunggu 14 hari dan email ke Owner', function (): void {
+    it('syarat: ekspor harus sudah diunduh, kata sandi benar, frasa konfirmasi persis, lalu masa tunggu 14 hari dan email ke Owner', function (): void {
         $s = SiapkanTenantUntukDihapusUji('Toko Sumber Rejeki Sragen', denganEksporDiunduh: false);
 
         // Belum ada ekspor yang diunduh.
@@ -163,7 +163,7 @@ describe('P-07 Owner mengajukan penghapusan data', function (): void {
         AjukanPenghapusanUji($this, $s['Tenant'])->assertSessionHasErrors('Umum');
     });
 
-    it('kata sandi salah ditolak; kasir dan Admin tidak boleh; edisi Lisensi tidak punya penutupan akun', function (): void {
+    it('kata sandi salah ditolak. Kasir dan Admin tidak boleh. Edisi Lisensi tidak punya penutupan akun', function (): void {
         $s = SiapkanTenantUntukDihapusUji();
 
         AjukanPenghapusanUji($this, $s['Tenant'], ['KataSandi' => 'salah-sekali'])->assertSessionHasErrors('KataSandi');
@@ -175,7 +175,7 @@ describe('P-07 Owner mengajukan penghapusan data', function (): void {
         BantuanOrganisasi::Masuk($this, $admin, $s['Tenant']->Id)->post('/kelola/pengaturan/data-saya/penghapusan', ['KataSandi' => 'kata-sandi-uji', 'Konfirmasi' => 'HAPUS DATA'])->assertForbidden();
     });
 
-    it('Owner membatalkan selama masa tunggu; permintaan baru boleh sesudahnya', function (): void {
+    it('Owner membatalkan selama masa tunggu. Permintaan baru boleh sesudahnya', function (): void {
         $s = SiapkanTenantUntukDihapusUji();
         AjukanPenghapusanUji($this, $s['Tenant'])->assertSessionHasNoErrors();
 
@@ -218,7 +218,7 @@ describe('P-07 Super Admin melaksanakan penghapusan data', function (): void {
         return $s + ['Uuid' => $uuid];
     }
 
-    it('sebelum masa tunggu berakhir ditolak; izin dan 2FA baru ditegakkan; slug harus diketik', function (): void {
+    it('sebelum masa tunggu berakhir ditolak. Izin dan 2FA baru ditegakkan. Slug harus diketik', function (): void {
         $s = SiapkanTenantUntukDihapusUji();
         AjukanPenghapusanUji($this, $s['Tenant'])->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($s['Tenant']->Id);

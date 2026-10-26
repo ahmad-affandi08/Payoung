@@ -51,7 +51,7 @@ function KaryawanTim(string $nama): Karyawan
 }
 
 describe('D-180 isian awal "Ikut absensi" menurut peran', function (): void {
-    it('Kasir beremail ikut absensi; Manajer Outlet dan Supervisor tidak; bisa ditimpa pemilik toko', function (): void {
+    it('Kasir beremail ikut absensi; Manajer Outlet dan Supervisor tidak. Bisa ditimpa pemilik toko', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 
@@ -110,7 +110,7 @@ describe('D-180 ikut absensi butuh akun beremail', function (): void {
             ->and(KaryawanTim('Tanpa Akun')->IkutAbsensi)->toBeFalse();
     });
 
-    it('mengubah karyawan tanpa akun beremail menjadi ikut absensi ditolak dengan pesan jelas; dengan akun Gmail diterima', function (): void {
+    it('mengubah karyawan tanpa akun beremail menjadi ikut absensi ditolak dengan pesan jelas, dengan akun Gmail diterima', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
         $masuk->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Tanpa Akun'])->assertSessionHasNoErrors();

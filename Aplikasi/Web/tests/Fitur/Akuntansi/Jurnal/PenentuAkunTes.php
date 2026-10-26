@@ -19,7 +19,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a PenentuAkun, KesiapanPeranAkun, PenjagaKunciPeriode (DesainF05a C.5)', function (): void {
-    it('BR-P03.3: template sektor memetakan semua peran persediaan; kesiapan Siap', function (): void {
+    it('BR-P03.3: template sektor memetakan semua peran persediaan. Kesiapan Siap', function (): void {
         BantuanPersediaan::SiapkanTenant();
 
         expect(app(KesiapanPeranAkun::class)->Periksa([
@@ -41,7 +41,7 @@ describe('F-05a PenentuAkun, KesiapanPeranAkun, PenjagaKunciPeriode (DesainF05a 
         ]]);
     });
 
-    it('BR-02.4: pemetaan outlet dipakai untuk outlet itu; tanpa pemetaan tenant, outlet lain belum siap', function (): void {
+    it('BR-02.4: pemetaan outlet dipakai untuk outlet itu, tanpa pemetaan tenant, outlet lain belum siap', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $solo = BantuanJurnal::BuatOutlet();
         $idTenant = BantuanJurnal::IdAkunPeran(PeranAkun::KasOutlet);
@@ -62,7 +62,7 @@ describe('F-05a PenentuAkun, KesiapanPeranAkun, PenjagaKunciPeriode (DesainF05a 
             ->and(fn () => $penentu->AmbilIdAkun(PeranAkun::KasOutlet, $t['Outlet']->Id))->toThrow(PelanggaranAturanBisnis::class, 'Akun untuk Kas outlet belum dipetakan.');
     });
 
-    it('BR-P03.4: pemetaan berkunci lama (Waste) tetap dibaca untuk SusutPersediaan; kunci baru menang', function (): void {
+    it('BR-P03.4: pemetaan berkunci lama (Waste) tetap dibaca untuk SusutPersediaan. Kunci baru menang', function (): void {
         BantuanPersediaan::SiapkanTenant();
         $baru = BantuanJurnal::IdAkunPeran(PeranAkun::SusutPersediaan);
         $lama = BantuanJurnal::AkunLain(TipeAkun::Hpp, $baru);

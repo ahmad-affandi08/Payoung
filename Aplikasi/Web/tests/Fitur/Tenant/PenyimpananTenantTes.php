@@ -24,7 +24,7 @@ beforeEach(function (): void {
 });
 
 describe('E2 penyimpanan berkas per tenant', function (): void {
-    it('pengukur menjumlah berkas di folder tenant itu saja; unggahan berhasil menambah pemakaian', function (): void {
+    it('pengukur menjumlah berkas di folder tenant itu saja. Unggahan berhasil menambah pemakaian', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $produk = BantuanKatalog::BuatProduk([], null, $t['Pcs']);
         $lain = BantuanKatalog::SiapkanTenantProduk();
@@ -46,7 +46,7 @@ describe('E2 penyimpanan berkas per tenant', function (): void {
             ->and($pengukur->Segarkan($t['Tenant']->Id)->DiukurPada)->not->toBeNull();
     });
 
-    it('unggahan gambar produk ditolak PenyimpananPenuh bila melewati batas paket; tanpa batas selalu lolos', function (): void {
+    it('unggahan gambar produk ditolak PenyimpananPenuh bila melewati batas paket, tanpa batas selalu lolos', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk();
         $produk = BantuanKatalog::BuatProduk([], null, $t['Pcs']);
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);

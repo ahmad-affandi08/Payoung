@@ -44,7 +44,7 @@ final class KirimUlangVerifikasiEmailDukungan
             if ($pengguna->EmailDiverifikasiPada !== null) {
                 $keadaan = ['EmailTerverifikasi' => true];
 
-                return new HasilKerjaAlat(StatusHasilAlatDukungan::TanpaPerubahan, 'Email pengguna sudah terverifikasi; tidak ada yang dikirim.', $keadaan, $keadaan);
+                return new HasilKerjaAlat(StatusHasilAlatDukungan::TanpaPerubahan, 'Email pengguna sudah terverifikasi. Tidak ada yang dikirim.', $keadaan, $keadaan);
             }
 
             if (! Cache::add("dukungan:verifikasi-email:{$pengguna->Id}", 1, now()->addMinutes(self::JEDA_MENIT))) {

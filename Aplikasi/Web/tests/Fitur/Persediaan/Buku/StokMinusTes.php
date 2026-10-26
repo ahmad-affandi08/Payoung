@@ -70,7 +70,7 @@ describe('F-05a BR-05.2 stok minus', function (): void {
         'tanpa pelacakan, tenant boleh' => [PelacakanProduk::Tidak, null, true, true],
     ]);
 
-    it('F-07b abaikanBatasMinus: dokumen tetap dicatat walau stok tidak cukup; baris yang melanggar BR-05.2 dilaporkan, baris yang cukup atau boleh minus tidak; bawaan tetap menolak', function (): void {
+    it('F-07b abaikanBatasMinus: dokumen tetap dicatat walau stok tidak cukup. Baris yang melanggar BR-05.2 dilaporkan, baris yang cukup atau boleh minus tidak. Bawaan tetap menolak', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $p = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $p['Produksi']->forceFill(['BolehMinus' => true])->save();

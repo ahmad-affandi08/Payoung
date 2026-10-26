@@ -68,7 +68,7 @@ describe('Katalog paket (P-04)', function (): void {
             ->and(Addon::query()->where('Kode', 'OUTLET_TAMBAHAN')->sole()->TambahanBatas)->toBe(['BatasOutlet' => 1]);
     });
 
-    it('Keuangan menyusun draf paket dengan batas & fitur; batas kosong = tak terbatas; tercatat di audit', function (): void {
+    it('Keuangan menyusun draf paket dengan batas & fitur. Batas kosong = tak terbatas. Tercatat di audit', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
 
         SebagaiAnggotaKatalog($this, $keuangan)->post(BantuanPengelola::Url('/katalog/paket'), DataPaketUji())->assertSessionHasNoErrors();
@@ -194,7 +194,7 @@ describe('Katalog paket (P-04)', function (): void {
 });
 
 describe('Katalog fitur (P-04)', function (): void {
-    it('Super Admin menambah fitur dengan kunci D-06; kunci tidak bisa diubah; Keuangan tidak bisa', function (): void {
+    it('Super Admin menambah fitur dengan kunci D-06. Kunci tidak bisa diubah; Keuangan tidak bisa', function (): void {
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         SebagaiAnggotaKatalog($this, $superAdmin);

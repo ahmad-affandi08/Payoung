@@ -143,7 +143,7 @@ describe('Outlet (F-02 langkah 1)', function (): void {
         'nitku salah' => [['Nitku' => '12345'], 'Nitku'],
     ]);
 
-    it('BR-02.2: kode unik per tenant tanpa membedakan huruf, termasuk outlet arsip; tenant lain boleh memakai kode sama', function (): void {
+    it('BR-02.2: kode unik per tenant tanpa membedakan huruf, termasuk outlet arsip. Tenant lain boleh memakai kode sama', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         $tes->post('/kelola/outlet', IsianOutletUji($tenant->Id))->assertSessionHasNoErrors();
 
@@ -184,7 +184,7 @@ describe('Outlet (F-02 langkah 1)', function (): void {
             ->and($profil['HargaTermasukPajak'])->toBeTrue();
     });
 
-    it('arsip: outlet terakhir tidak bisa diarsipkan; outlet arsip tetap ada dan bisa dipulihkan', function (): void {
+    it('arsip: outlet terakhir tidak bisa diarsipkan. Outlet arsip tetap ada dan bisa dipulihkan', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $utama = Outlet::query()->sole();
@@ -223,7 +223,7 @@ describe('Outlet (F-02 langkah 1)', function (): void {
             ->has('JenisGudang', count(JenisGudang::cases())));
     });
 
-    it('halaman tambah outlet (halaman penuh): opsi merek, kota, batas paket; tanpa outlet.kelola 403; simpan ke detail', function (): void {
+    it('halaman tambah outlet (halaman penuh): opsi merek, kota, batas paket, tanpa outlet.kelola 403. Simpan ke detail', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
 
         $tes->get('/kelola/outlet/buat')->assertOk()->assertInertia(fn (AssertableInertia $halaman) => $halaman
@@ -258,7 +258,7 @@ describe('Outlet (F-02 langkah 1)', function (): void {
 });
 
 describe('Lokasi stok (F-02 langkah 2, BR-02.4)', function (): void {
-    it('menambah Dapur & Gudang Belakang; kode gudang unik per tenant', function (): void {
+    it('menambah Dapur & Gudang Belakang. Kode gudang unik per tenant', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $utama = Outlet::query()->sole();
@@ -272,7 +272,7 @@ describe('Lokasi stok (F-02 langkah 2, BR-02.4)', function (): void {
         expect(Gudang::query()->where('IdOutlet', $utama->Id)->pluck('Kode')->sort()->values()->all())->toBe(['KNS', 'KNS-DPR', 'KNS-GB']);
     });
 
-    it('lokasi stok jual terakhir tidak bisa diarsipkan atau diubah menjadi Rusak; setelah ada lokasi lain boleh', function (): void {
+    it('lokasi stok jual terakhir tidak bisa diarsipkan atau diubah menjadi Rusak. Setelah ada lokasi lain boleh', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $utama = Outlet::query()->sole();
@@ -300,7 +300,7 @@ describe('Lokasi stok (F-02 langkah 2, BR-02.4)', function (): void {
 });
 
 describe('Merek', function (): void {
-    it('menambah, mengganti nama, dan menghapus merek yang belum dipakai; merek dipakai atau merek terakhir tidak bisa dihapus', function (): void {
+    it('menambah, mengganti nama, dan menghapus merek yang belum dipakai. Merek dipakai atau merek terakhir tidak bisa dihapus', function (): void {
         ['Tenant' => $tenant, 'Tes' => $tes] = MasukPemilikOutlet($this);
         BantuanOrganisasi::AturKonteks($tenant->Id);
         $bawaan = Merek::query()->sole();

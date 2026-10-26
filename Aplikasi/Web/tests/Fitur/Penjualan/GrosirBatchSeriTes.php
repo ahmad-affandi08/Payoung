@@ -130,7 +130,7 @@ describe('Grosir produk ber-batch (FEFO)', function (): void {
             ->and(SisaBatchGrosirUji($this->susu))->toBe(['UHT-A' => '30.0000', 'UHT-B' => '40.0000']);
     });
 
-    it('retur kembali ke batch asal terbalik dari alokasi, pada HPP tiap batch; pembatalan membalik; surat jalan beretur tak bisa dibatalkan', function (): void {
+    it('retur kembali ke batch asal terbalik dari alokasi, pada HPP tiap batch. Pembatalan membalik. Surat jalan beretur tak bisa dibatalkan', function (): void {
         $suratJalan = KirimGrosirUji($this, $this->susu, '50');
 
         $retur = ReturGrosirBatchSeriUji($this, $suratJalan, '25');
@@ -171,7 +171,7 @@ describe('Grosir produk bernomor seri', function (): void {
         ], $this->k['Pemilik']->Id, '2026-09-01');
     });
 
-    it('surat jalan wajib menyebut satu nomor seri per unit yang tersedia; nomor yang dikirim jadi Terjual', function (): void {
+    it('surat jalan wajib menyebut satu nomor seri per unit yang tersedia. Nomor yang dikirim jadi Terjual', function (): void {
         expect(KodeGalatGrosirUji(fn () => KirimGrosirUji($this, $this->ponsel, '2', ['IMEI-0001'])))->toBe('NomorSeriTidakSesuai')
             ->and(KodeGalatGrosirUji(fn () => KirimGrosirUji($this, $this->ponsel, '2', ['IMEI-0001', 'imei-0001'])))->toBe('NomorSeriGanda')
             ->and(KodeGalatGrosirUji(fn () => KirimGrosirUji($this, $this->ponsel, '2', ['IMEI-0001', 'IMEI-9999'])))->toBe('NomorSeriTidakTersedia')
@@ -193,7 +193,7 @@ describe('Grosir produk bernomor seri', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($this->k['Tenant']->Id))->toBe([]);
     });
 
-    it('retur hanya nomor yang diserahkan dan belum diretur; nomor kembali Tersedia, pembatalan retur menjualnya lagi', function (): void {
+    it('retur hanya nomor yang diserahkan dan belum diretur. Nomor kembali Tersedia, pembatalan retur menjualnya lagi', function (): void {
         $suratJalan = KirimGrosirUji($this, $this->ponsel, '2', ['IMEI-0001', 'IMEI-0002']);
 
         expect(KodeGalatGrosirUji(fn () => ReturGrosirBatchSeriUji($this, $suratJalan, '1', ['IMEI-0003'])))->toBe('NomorSeriReturTidakValid')

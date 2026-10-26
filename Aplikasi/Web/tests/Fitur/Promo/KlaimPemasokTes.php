@@ -79,7 +79,7 @@ function ItemPromoPemasok(array $k): array
 }
 
 describe('F-16c bagian 4b klaim promo pemasok', function (): void {
-    it('klaim = potongan × bagian pemasok per transaksi; void membatalkan klaim; diskon tetap di jurnal penjualan', function (): void {
+    it('klaim = potongan × bagian pemasok per transaksi. Void membatalkan klaim. Diskon tetap di jurnal penjualan', function (): void {
         $k = SiapkanPromoPemasok($this);
         $satu = ItemPromoPemasok($k);
         $dua = ItemPromoPemasok($k);
@@ -123,7 +123,7 @@ describe('F-16c bagian 4b klaim promo pemasok', function (): void {
         expect((string) JurnalDetail::query()->where('IdJurnal', $jurnal->Id)->where('IdAkun', BantuanJurnal::IdAkunPeran(PeranAkun::DiskonPenjualan))->sum('Debit'))->toBe('7700.00');
     });
 
-    it('penerimaan klaim: semua klaim terbuka ≤ tanggal diterima, jurnal Dr kas/bank Cr piutang klaim seimbang; halaman & izin', function (): void {
+    it('penerimaan klaim: semua klaim terbuka ≤ tanggal diterima, jurnal Dr kas/bank Cr piutang klaim seimbang. Halaman & izin', function (): void {
         $k = SiapkanPromoPemasok($this);
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemPromoPemasok($k), ItemPromoPemasok($k)]))->toBe([['Diterima', null], ['Diterima', null]]);
 
@@ -166,7 +166,7 @@ describe('F-16c bagian 4b klaim promo pemasok', function (): void {
         $this->get('/kelola/promo/klaim-pemasok')->assertForbidden();
     });
 
-    it('tenant lama tanpa peran Piutang Klaim Pemasok: akun 1-1460 & pemetaan dibuat otomatis; klaim lama tanpa jurnal dikredit ke HPP saat diterima', function (): void {
+    it('tenant lama tanpa peran Piutang Klaim Pemasok: akun 1-1460 & pemetaan dibuat otomatis. Klaim lama tanpa jurnal dikredit ke HPP saat diterima', function (): void {
         $k = SiapkanPromoPemasok($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         // Simulasi tenant yang menerapkan template sebelum v1.93.
@@ -204,7 +204,7 @@ describe('F-16c bagian 4b klaim promo pemasok', function (): void {
         ])->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 
-    it('bagian 4e potong hutang: klaim mengurangi faktur terbuka paling lama (Dr Hutang Usaha, Cr piutang klaim); hutang kurang ditolak; tidak bisa dibatalkan', function (): void {
+    it('bagian 4e potong hutang: klaim mengurangi faktur terbuka paling lama (Dr Hutang Usaha, Cr piutang klaim). Hutang kurang ditolak. Tidak bisa dibatalkan', function (): void {
         $k = SiapkanPromoPemasok($this);
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemPromoPemasok($k), ItemPromoPemasok($k)]))->toBe([['Diterima', null], ['Diterima', null]]);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -260,7 +260,7 @@ describe('F-16c bagian 4b klaim promo pemasok', function (): void {
         expect($pembayaran->refresh()->Status)->toBe(StatusDokumenTerposting::Diposting);
     });
 
-    it('formulir promo: bagian pemasok 0–100%, bagian > 0 wajib pemasok; tersimpan di promo', function (): void {
+    it('formulir promo: bagian pemasok 0–100%, bagian > 0 wajib pemasok. Tersimpan di promo', function (): void {
         $k = SiapkanPromoPemasok($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         $isian = [

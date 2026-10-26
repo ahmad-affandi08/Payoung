@@ -93,7 +93,7 @@ export default function HalamanFormPermintaan({
                 <Panel
                     judul="Permintaan"
                     idJudul="judul-dokumen-permintaan"
-                    keterangan="Permintaan tidak mengubah stok. Harga hanya perkiraan; pemasok dan harga final ditentukan saat dijadikan pesanan pembelian."
+                    keterangan="Permintaan tidak mengubah stok. Harga hanya perkiraan. Pemasok dan harga final ditentukan saat dijadikan pesanan pembelian."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangOutlet

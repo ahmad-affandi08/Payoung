@@ -98,7 +98,7 @@ export default function HalamanPembaruanTemplate({ Tawaran }: { Tawaran: Tawaran
                 >
                     <p>
                         Template {pilihan.NamaTemplate} untuk {pilihan.NamaOutlet} diperbarui. Hanya data baru yang
-                        ditambahkan; data yang sudah ada tidak diubah.
+                        ditambahkan. Data yang sudah ada tidak diubah.
                     </p>
                 </DialogKonfirmasi>
             ) : null}

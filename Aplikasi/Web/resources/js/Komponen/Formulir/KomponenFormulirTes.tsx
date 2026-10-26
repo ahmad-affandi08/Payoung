@@ -69,7 +69,7 @@ describe('komponen Formulir di atas shadcn/ui (API lama tetap)', () => {
         expect(kotak.getAttribute('aria-checked')).toBe('true');
     });
 
-    it('GrupCentang: menambah/menghapus nilai terpilih; masalah terhubung ke fieldset', () => {
+    it('GrupCentang: menambah/menghapus nilai terpilih. Masalah terhubung ke fieldset', () => {
         const SaatBerubah = vi.fn();
         render(
             <GrupCentang

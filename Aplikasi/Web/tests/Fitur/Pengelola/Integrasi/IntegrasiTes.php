@@ -160,7 +160,7 @@ describe('Kerahasiaan kredensial (BR-P05.1, BR-P05.6)', function (): void {
             ->and($log->NilaiBaru['KredensialDiganti'] ?? null)->toBe(['KataSandi']);
     });
 
-    it('kolom kredensial kosong saat menyunting mempertahankan nilai lama; kredensial pendek tidak diberi petunjuk', function (): void {
+    it('kolom kredensial kosong saat menyunting mempertahankan nilai lama. Kredensial pendek tidak diberi petunjuk', function (): void {
         MasukSebagaiIntegrasi($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $this->post(BantuanPengelola::Url('/integrasi'), DataEmailUji())->assertSessionHasNoErrors();
         $diubahPertama = AmbilEmailStaging()->KredensialDiubahPada;
@@ -224,7 +224,7 @@ describe('Kerahasiaan kredensial (BR-P05.1, BR-P05.6)', function (): void {
 });
 
 describe('Tes koneksi & aktivasi (BR-P05.4)', function (): void {
-    it('tidak bisa aktif sebelum tes koneksi berhasil; perubahan isi menonaktifkan sampai diuji ulang', function (): void {
+    it('tidak bisa aktif sebelum tes koneksi berhasil. Perubahan isi menonaktifkan sampai diuji ulang', function (): void {
         MasukSebagaiIntegrasi($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $this->post(BantuanPengelola::Url('/integrasi'), DataEmailUji())->assertSessionHasNoErrors();
         $uuid = AmbilEmailStaging()->Uuid;
@@ -357,7 +357,7 @@ describe('Uji berkala, alert, banner, rotasi (BR-P05.3, BR-P05.5)', function ():
 });
 
 describe('Penerapan konfigurasi aktif (P-05)', function (): void {
-    it('konfigurasi aktif lingkungan server diterapkan ke mailer dan CAPTCHA; yang nonaktif diabaikan', function (): void {
+    it('konfigurasi aktif lingkungan server diterapkan ke mailer dan CAPTCHA, yang nonaktif diabaikan', function (): void {
         MasukSebagaiIntegrasi($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $this->post(BantuanPengelola::Url('/integrasi'), DataEmailUji())->assertSessionHasNoErrors();
         $this->post(BantuanPengelola::Url('/integrasi'), [

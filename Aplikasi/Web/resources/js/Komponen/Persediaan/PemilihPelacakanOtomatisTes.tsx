@@ -59,7 +59,7 @@ describe('PemilihPelacakan: batch terpilih otomatis', () => {
         await waitFor(() => expect(tampil.getByLabelText('hasil').textContent).toBe('B1|LOT-A'));
     });
 
-    it('batch tunggal terpilih sendiri; nomor seri tidak dipilihkan otomatis', async () => {
+    it('batch tunggal terpilih sendiri. Nomor seri tidak dipilihkan otomatis', async () => {
         SiapkanBatch([{ Uuid: 'B9', NomorBatch: 'LOT-Z' }]);
         const batch = RenderUji(<Wadah />);
 

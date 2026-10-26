@@ -53,7 +53,7 @@ describe('F-05a QA: IDOR rute stok awal', function (): void {
         expect($drafA->fresh()?->Status)->toBe(StatusStokAwal::Draf);
     });
 
-    it('buang draf di outlet di luar akses pelaku = 404; draf di outletnya sendiri boleh dibuang', function (): void {
+    it('buang draf di outlet di luar akses pelaku = 404. Draf di outletnya sendiri boleh dibuang', function (): void {
         [$t, $p] = SiapkanKeamananStokAwal();
         $cabang = BantuanHarga::BuatOutlet('SKH-03', 'Cabang Sukoharjo');
         $gudangCabang = BantuanPersediaan::BuatGudang($cabang, 'Gudang Cabang Sukoharjo');
@@ -163,7 +163,7 @@ describe('F-05a QA: penjaga model aturan #8 (dokumen terposting tidak diubah/dih
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('dokumen Dibuang tidak bisa diubah lagi; baris draf tetap bisa diubah selama Draf', function (): void {
+    it('dokumen Dibuang tidak bisa diubah lagi. Baris draf tetap bisa diubah selama Draf', function (): void {
         [$t, $p] = SiapkanKeamananStokAwal();
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '10', '38000')]);
         $baris = StokAwalDetail::query()->where('IdStokAwal', $draf->Id)->sole();

@@ -259,7 +259,7 @@ class KonteksPenjualan {
         : DataPromoPos.DariJson(jsonDecode(teksPromo) as Map<String, Object?>);
     if (!ZonaWaktuOutlet.CekDikenal(zona)) {
       developer.log(
-        'Zona waktu outlet "${zona ?? '-'}" tidak dikenal; tanggal bisnis memakai UTC+7 (WIB).',
+        'Zona waktu outlet "${zona ?? '-'}" tidak dikenal. Tanggal bisnis memakai UTC+7 (WIB).',
         name: 'KonteksPenjualan',
       );
     }

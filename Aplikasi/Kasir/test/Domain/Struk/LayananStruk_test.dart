@@ -176,7 +176,7 @@ void main() {
     },
   );
 
-  test('F-16c bagian 4a: promo poin berlipat dicetak di bawah total; tidak dicetak pada penjualan void', () async {
+  test('F-16c bagian 4a: promo poin berlipat dicetak di bawah total. Tidak dicetak pada penjualan void', () async {
     await Siapkan();
     final hasil = await Jual(JenisMetodeBayar.tunai);
     Future<List<String>> Teks() async => TataLetakStruk.KeTeks(
@@ -206,7 +206,7 @@ void main() {
     expect(await Teks(), isNot(contains('Poin masuk setelah transaksi tersinkron')));
   });
 
-  test('POS-11 struk digital: QR & tautan = awalan dari server + Uuid penjualan; tanpa awalan tidak dicetak', () async {
+  test('POS-11 struk digital: QR & tautan = awalan dari server + Uuid penjualan, tanpa awalan tidak dicetak', () async {
     await Siapkan(struk: {'AwalanStrukDigital': 'https://payoung.id/s/1c.'});
     final hasil = await Jual(JenisMetodeBayar.tunai);
     Future<DokumenStruk> Susun() async => PenyusunStrukPenjualan.Susun(
@@ -229,7 +229,7 @@ void main() {
     expect((await Susun()).baris.whereType<BarisQr>(), isEmpty);
   });
 
-  test('saklar back-office dipatuhi: tanpa kasir, pelanggan, NPWP; nama & penutup kustom; tanpa tanda air', () async {
+  test('saklar back-office dipatuhi: tanpa kasir, pelanggan, NPWP. Nama & penutup kustom, tanpa tanda air', () async {
     await Siapkan(
       struk: {
         'NamaDicetak': 'Senja Coffee',
@@ -252,7 +252,7 @@ void main() {
     expect(teks, isNot(contains('Payoung')));
   });
 
-  test('cetak otomatis: tanpa printer / otomatis mati = tidak mencetak; tunai membuka laci, EDC tidak', () async {
+  test('cetak otomatis: tanpa printer / otomatis mati = tidak mencetak. Tunai membuka laci, EDC tidak', () async {
     await Siapkan();
     final tunai = await Jual(JenisMetodeBayar.tunai);
     expect(await u.struk.CetakSetelahBayar(tunai.uuid), isFalse);
@@ -274,7 +274,7 @@ void main() {
     expect(u.printer.CekBukaLaci(), isFalse);
   });
 
-  test('cetak ulang bertanda CETAK ULANG; penjualan void bertanda DIBATALKAN', () async {
+  test('cetak ulang bertanda CETAK ULANG. Penjualan void bertanda DIBATALKAN', () async {
     await Siapkan();
     final hasil = await Jual(JenisMetodeBayar.tunai);
     await profil.Simpan(u.repositori);
@@ -289,7 +289,7 @@ void main() {
   });
 
   test(
-    'printer gagal → GalatPrinter berpesan; penjualan tetap tersimpan; belum diatur → pesan cara mengatur',
+    'printer gagal → GalatPrinter berpesan. Penjualan tetap tersimpan. Belum diatur → pesan cara mengatur',
     () async {
       await Siapkan();
       final hasil = await Jual(JenisMetodeBayar.tunai);
@@ -304,7 +304,7 @@ void main() {
     },
   );
 
-  test('logo outlet bilah atas (D-16): diunduh apa adanya (base64) saat data awal; tanpa logo → kosong; gagal unduh → '
+  test('logo outlet bilah atas (D-16): diunduh apa adanya (base64) saat data awal, tanpa logo → kosong. Gagal unduh → '
       'logo lama tetap', () async {
     var adaLogo = true;
     var logoTersedia = true;
@@ -371,7 +371,7 @@ void main() {
   });
 
   test(
-    'logo struk: diunduh & disimpan 1 bit saat data awal; dimatikan → dihapus; gagal unduh → logo lama tetap',
+    'logo struk: diunduh & disimpan 1 bit saat data awal. Dimatikan → dihapus. Gagal unduh → logo lama tetap',
     () async {
       final logo = GambarMonokrom(8, 1, Uint8List.fromList([1, 1, 1, 1, 0, 0, 0, 0]));
       var adaLogo = true;
@@ -416,7 +416,7 @@ void main() {
   );
 
   test(
-    '3b bukti void: nomor, alasan, penyetuju, refund; laci hanya bila refund tunai & diminta; cetak ulang bertanda',
+    '3b bukti void: nomor, alasan, penyetuju, refund. Laci hanya bila refund tunai & diminta. Cetak ulang bertanda',
     () async {
       await Siapkan();
       final hasil = await Jual(JenisMetodeBayar.tunai);
@@ -445,7 +445,7 @@ void main() {
     },
   );
 
-  test('3b laporan shift X: judul, transaksi, per metode, kas laci; laporan Z setelah tutup', () async {
+  test('3b laporan shift X: judul, transaksi, per metode, kas laci. Laporan Z setelah tutup', () async {
     await Siapkan();
     await Jual(JenisMetodeBayar.tunai);
     await profil.Simpan(u.repositori);
@@ -465,7 +465,7 @@ void main() {
     expect(teks, contains('Kas aktual'));
   });
 
-  test('3b nota retur: nomor, asal, baris (rusak ditandai), total refund per metode, alasan; laci bila diminta', () {
+  test('3b nota retur: nomor, asal, baris (rusak ditandai), total refund per metode, alasan. Laci bila diminta', () {
     const identitas = IdentitasStruk(
       pengaturan: StrukPos(namaUsaha: 'Kopi Senja'),
       namaUsaha: 'Kopi Senja',
@@ -523,7 +523,7 @@ void main() {
   });
 
   test(
-    '4a bukti uang muka pre-order: pelanggan, tanggal ambil, barang, DP & sisa; laci hanya bila DP tunai & diminta',
+    '4a bukti uang muka pre-order: pelanggan, tanggal ambil, barang, DP & sisa. Laci hanya bila DP tunai & diminta',
     () async {
       await Siapkan();
       await profil.Simpan(u.repositori);

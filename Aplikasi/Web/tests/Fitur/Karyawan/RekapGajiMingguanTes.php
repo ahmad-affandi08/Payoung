@@ -45,7 +45,7 @@ function CatatHadirMingguan(Karyawan $karyawan, int $idOutlet, string $tanggal):
 }
 
 describe('F-18 gaji mingguan', function (): void {
-    it('rekap mingguan hanya memuat karyawan bersiklus mingguan; upah harian = upah × hari masuk; bulanan tetap terpisah', function (): void {
+    it('rekap mingguan hanya memuat karyawan bersiklus mingguan. Upah harian = upah × hari masuk. Bulanan tetap terpisah', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Sayur Mingguan');
         $budi = Karyawan::query()->create(['Nama' => 'Budi Tetap Mingguan', 'GajiPokok' => '600000', 'SiklusGaji' => SiklusGaji::Mingguan, 'IdOutlet' => $k['Outlet']->Id]);
         $citra = Karyawan::query()->create([
@@ -89,7 +89,7 @@ describe('F-18 gaji mingguan', function (): void {
         expect(RekapGajiBaris::query()->where('IdRekapGaji', $bulanan->Id)->pluck('IdKaryawan')->all())->toBe([$dewi->Id]);
     });
 
-    it('hari masuk bisa disesuaikan selama draf (0 sampai jumlah hari rentang); karyawan bergaji tetap tidak punya hari masuk', function (): void {
+    it('hari masuk bisa disesuaikan selama draf (0 sampai jumlah hari rentang). Karyawan bergaji tetap tidak punya hari masuk', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Sayur Hari Masuk');
         $budi = Karyawan::query()->create(['Nama' => 'Budi Tetap Mingguan', 'GajiPokok' => '600000', 'SiklusGaji' => SiklusGaji::Mingguan, 'IdOutlet' => $k['Outlet']->Id]);
         $citra = Karyawan::query()->create([
@@ -121,7 +121,7 @@ describe('F-18 gaji mingguan', function (): void {
             ->where('Baris.1.HariMasuk', 6));
     });
 
-    it('rentang mingguan tidak boleh beririsan, tidak setelah hari ini, dan harus tanggal yang valid; tanggal mulai tidak harus Senin', function (): void {
+    it('rentang mingguan tidak boleh beririsan, tidak setelah hari ini, dan harus tanggal yang valid. Tanggal mulai tidak harus Senin', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Sayur Rentang');
         Karyawan::query()->create(['Nama' => 'Budi Tetap Mingguan', 'GajiPokok' => '600000', 'SiklusGaji' => SiklusGaji::Mingguan, 'IdOutlet' => $k['Outlet']->Id]);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
@@ -171,7 +171,7 @@ describe('F-18 gaji mingguan', function (): void {
         $this->delete("/kelola/karyawan/gaji/{$rekap->Uuid}")->assertSessionHasErrors('Umum');
     });
 
-    it('usulan rekap berikutnya dan pengingat Kotak Tindakan bila rentang sudah lewat; tanpa karyawan mingguan tidak ada pengingat', function (): void {
+    it('usulan rekap berikutnya dan pengingat Kotak Tindakan bila rentang sudah lewat, tanpa karyawan mingguan tidak ada pengingat', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Sayur Pengingat');
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
         $kunci = function () {
@@ -205,7 +205,7 @@ describe('F-18 gaji mingguan', function (): void {
         expect($kunci())->not->toContain('karyawan.rekap-gaji-mingguan');
     });
 
-    it('formulir karyawan menyimpan siklus & dasar gaji; upah harian wajib diisi; peran tanpa karyawan.kelola ditolak', function (): void {
+    it('formulir karyawan menyimpan siklus & dasar gaji. Upah harian wajib diisi. Peran tanpa karyawan.kelola ditolak', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Toko Sayur Formulir Gaji');
         $citra = Karyawan::query()->create(['Nama' => 'Citra Harian', 'IdOutlet' => $k['Outlet']->Id]);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);

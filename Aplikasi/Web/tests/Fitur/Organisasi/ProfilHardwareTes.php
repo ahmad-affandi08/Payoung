@@ -23,7 +23,7 @@ beforeEach(function (): void {
 });
 
 describe('POST /api/pos/v1/perangkat/profil-hardware (v1.96)', function (): void {
-    it('menyimpan profil & hasil uji; laporan sama tidak diaudit ulang; tampil ringkas di daftar perangkat', function (): void {
+    it('menyimpan profil & hasil uji. Laporan sama tidak diaudit ulang. Tampil ringkas di daftar perangkat', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant('Kopi Senja Solo');
         ['Perangkat' => $perangkat, 'Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
         $profil = [
@@ -56,7 +56,7 @@ describe('POST /api/pos/v1/perangkat/profil-hardware (v1.96)', function (): void
             ->and(Perangkat::query()->findOrFail($perangkat->Id)->ProfilHardware['Uji'] ?? null)->toBe(['Cetak' => 'Gagal']);
     });
 
-    it('validasi: kunci tak dikenal & nilai uji di luar pilihan ditolak; tanpa token 401', function (): void {
+    it('validasi: kunci tak dikenal & nilai uji di luar pilihan ditolak, tanpa token 401', function (): void {
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
 

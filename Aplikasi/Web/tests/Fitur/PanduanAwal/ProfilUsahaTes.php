@@ -79,7 +79,7 @@ describe('F-01 langkah 1: profil usaha', function (): void {
                 ->where('Progres.Langkah.0.Status', 'Selesai'));
     });
 
-    it('PKP tanpa NPWP ditolak; NPWP 18 angka ditolak; kota tidak dikenal ditolak', function (): void {
+    it('PKP tanpa NPWP ditolak; NPWP 18 angka ditolak. Kota tidak dikenal ditolak', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
 
@@ -91,7 +91,7 @@ describe('F-01 langkah 1: profil usaha', function (): void {
         expect(Tenant::query()->findOrFail($tenant->Id)->Npwp)->toBeNull();
     });
 
-    it('logo diunggah, diganti (berkas lama dihapus), diunduh dengan izin, lalu dihapus; semua di disk privat', function (): void {
+    it('logo diunggah, diganti (berkas lama dihapus), diunduh dengan izin, lalu dihapus. Semua di disk privat', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
 

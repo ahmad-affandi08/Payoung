@@ -49,7 +49,7 @@ void main() {
     await expectLater(BacaPengaturan(EnkripsiBasisData.BuatKunci()), throwsA(anything));
   });
 
-  test('berkas lama polos dienkripsi di tempat; outbox & pengaturan tetap utuh', () async {
+  test('berkas lama polos dienkripsi di tempat. Outbox & pengaturan tetap utuh', () async {
     final polos = BasisDataKasir(NativeDatabase(berkas));
     final repositori = RepositoriKasir(polos);
     await repositori.SimpanPengaturan('NamaOutlet', 'Toko Sembako Berkah Jaya');

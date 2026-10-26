@@ -14,7 +14,7 @@ beforeEach(function (): void {
 });
 
 describe('F-06 BR-06.1 satu kasir satu shift terbuka per outlet: cek sebelum membuka shift (online)', function (): void {
-    it('perangkat B melihat shift terbuka kasir yang sama di perangkat A; perangkat A sendiri tidak melihatnya', function (): void {
+    it('perangkat B melihat shift terbuka kasir yang sama di perangkat A. Perangkat A sendiri tidak melihatnya', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $buka = BantuanKasir::ItemBukaShift($k['Kasir']);
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$buka]))->toBe([['Diterima', null]]);

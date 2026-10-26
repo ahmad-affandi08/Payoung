@@ -93,7 +93,7 @@ export default function HalamanFitur({ Fitur }: { Fitur: Fitur[] }) {
                     : {})}
                 kosong={{
                     ilustrasi: true,
-                    judul: 'Belum ada fitur. Tambahkan fitur pertama; kunci fitur dipakai kode aplikasi, jadi tulis sesuai modul yang sudah dibangun.',
+                    judul: 'Belum ada fitur. Tambahkan fitur pertama. Kunci fitur dipakai kode aplikasi, jadi tulis sesuai modul yang sudah dibangun.',
                 }}
             />
         </TataLetakPengelola>

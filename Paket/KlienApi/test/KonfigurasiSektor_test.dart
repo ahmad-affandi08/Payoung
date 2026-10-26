@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 /// D-183: `GET /api/pemilik/v1/konfigurasi-aplikasi` membawa `HanyaPerusahaan` (usaha tanpa kasir) untuk menyaring tab
 /// Aplikasi Owner. Server lama tanpa kunci itu = false (semua tab tampil).
 void main() {
-  test('HanyaPerusahaan dibaca dari konfigurasi; tanpa kunci = false', () {
+  test('HanyaPerusahaan dibaca dari konfigurasi, tanpa kunci = false', () {
     final tanpaKasir = KonfigurasiAplikasi.DariJson({
       'Aplikasi': <String, Object?>{},
       'FlagFitur': <String, Object?>{},
@@ -36,7 +36,7 @@ void main() {
     expect(Muat([]).CekSesuaiSektor(['FNB']), isTrue);
   });
 
-  test('Kuota transaksi dibaca dari Kuota.Transaksi; server lama tanpa kunci = null', () {
+  test('Kuota transaksi dibaca dari Kuota.Transaksi. Server lama tanpa kunci = null', () {
     final dengan = KonfigurasiAplikasi.DariJson({
       'Aplikasi': <String, Object?>{},
       'FlagFitur': <String, Object?>{},

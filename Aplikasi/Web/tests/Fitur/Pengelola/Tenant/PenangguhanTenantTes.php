@@ -114,7 +114,7 @@ describe('P-07 tangguhkan manual (BR-P07.4)', function (): void {
 });
 
 describe('P-07 aktifkan kembali (BR-P07.5)', function (): void {
-    it('Keuangan mengaktifkan kembali dengan keputusan tertulis; status sebelum penangguhan dipulihkan', function (StatusLangganan $asal): void {
+    it('Keuangan mengaktifkan kembali dengan keputusan tertulis. Status sebelum penangguhan dipulihkan', function (StatusLangganan $asal): void {
         $tenant = BantuanTenantPengelola::BuatTenant('Kopi Nusantara', 'rina@kopinusantara.id');
         Langganan::query()->where('IdTenant', $tenant->Id)->sole()->update(['Status' => $asal]);
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
@@ -192,7 +192,7 @@ describe('P-07 × P-08: aktifkan kembali memeriksa tunggakan (BR-P07.5, BR-P08.1
         ]);
     };
 
-    it('penangguhan karena tunggakan lewat masa tenggang tidak bisa diaktifkan kembali lewat tombol; jalannya pembayaran', function () use ($siapkan): void {
+    it('penangguhan karena tunggakan lewat masa tenggang tidak bisa diaktifkan kembali lewat tombol. Jalannya pembayaran', function () use ($siapkan): void {
         $tenant = BantuanTenantPengelola::BuatTenant();
         $siapkan($tenant, 10, null);
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Keuangan);

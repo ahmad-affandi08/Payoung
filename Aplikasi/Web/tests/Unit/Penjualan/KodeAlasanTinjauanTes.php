@@ -8,7 +8,7 @@ use App\Domain\Penjualan\Enum\KodeAlasanTinjauan;
  * PRD v1.46 saran (6): `AlasanTinjauan` (`Kode: keterangan; ...`) diurai menjadi label manusiawi untuk halaman web.
  */
 
-it('mengurai beberapa alasan; titik koma di dalam keterangan tidak memecah alasan; kode tidak dikenal tetap tampil', function (): void {
+it('mengurai beberapa alasan. Titik koma di dalam keterangan tidak memecah alasan. Kode tidak dikenal tetap tampil', function (): void {
     $alasan = 'IzinBerubah: Sari tidak lagi terdaftar di outlet ini; Sari tidak lagi punya izin berjualan; '
         .'PengaturanBerbeda: biaya layanan di perangkat 5%, pengaturan outlet 0%; StokTidakCukup: Minyak Goreng 2 Liter (sisa −3); '
         .'KodeBaru: sesuatu yang belum dikenal';

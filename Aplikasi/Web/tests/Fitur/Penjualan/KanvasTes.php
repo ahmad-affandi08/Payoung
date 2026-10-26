@@ -109,7 +109,7 @@ describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
             ->where('Rekap.Produk', []));
     });
 
-    it('BR-02.1: kendaraan kanvas memakai kuota outlet paket; paket penuh ditolak tanpa outlet/lokasi stok baru', function (): void {
+    it('BR-02.1: kendaraan kanvas memakai kuota outlet paket. Paket penuh ditolak tanpa outlet/lokasi stok baru', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Kanvas Gratisan', kodePaket: 'GRATIS');
         BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
 
@@ -123,7 +123,7 @@ describe('Modul Salesman bagian 3: kendaraan kanvas', function (): void {
             ->and(Gudang::query()->count())->toBe(1);
     });
 
-    it('ubah outlet: sakelar kanvas + nomor kendaraan tersimpan & teraudit; klien tanpa kunci Kanvas tidak mengubahnya; dimatikan = plat dikosongkan', function (): void {
+    it('ubah outlet: sakelar kanvas + nomor kendaraan tersimpan & teraudit. Klien tanpa kunci Kanvas tidak mengubahnya. Dimatikan = plat dikosongkan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant('Toko Grosir Kanvas Klaten');
         BantuanFitur::Beri($tenant->Id, 'piutang.grosir');
         BantuanOrganisasi::AturKonteks($tenant->Id);

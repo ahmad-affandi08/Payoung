@@ -230,7 +230,7 @@ describe('FIN-05 jurnal umum manual (D-131)', function (): void {
             ->and(Storage::disk((string) config('akuntansi.DiskLampiran'))->allFiles())->toBe([]);
     });
 
-    it('idempoten per UuidKlien: kiriman ganda menghasilkan satu dokumen & satu jurnal; aksi langsung mengembalikan dokumen yang sama', function (): void {
+    it('idempoten per UuidKlien: kiriman ganda menghasilkan satu dokumen & satu jurnal. Aksi langsung mengembalikan dokumen yang sama', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $akrual = BuatAkunAkrual();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
@@ -265,7 +265,7 @@ describe('FIN-05 jurnal umum manual (D-131)', function (): void {
             ->and(JurnalUmum::query()->count())->toBe(1);
     });
 
-    it('lampiran opsional tersimpan privat, hanya diunduh lewat rute berizin; jenis berkas dibatasi', function (): void {
+    it('lampiran opsional tersimpan privat, hanya diunduh lewat rute berizin. Jenis berkas dibatasi', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $akrual = BuatAkunAkrual();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);
@@ -344,7 +344,7 @@ describe('FIN-05 jurnal umum manual (D-131)', function (): void {
         expect(JurnalUmum::query()->count())->toBe(1)->and(Jurnal::query()->count())->toBe(1);
     });
 
-    it('dokumen append-only: model menolak ubah & hapus; satu dokumen tidak bisa punya dua pembalik di skema', function (): void {
+    it('dokumen append-only: model menolak ubah & hapus. Satu dokumen tidak bisa punya dua pembalik di skema', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $akrual = BuatAkunAkrual();
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Akuntan);

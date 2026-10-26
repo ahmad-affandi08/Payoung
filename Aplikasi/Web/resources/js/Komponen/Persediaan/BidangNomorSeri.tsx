@@ -115,7 +115,7 @@ export default function BidangNomorSeri({
             </div>
             <p id={`${id}-jumlah`} aria-live="polite" className="text-keterangan text-teks-sekunder tabular-nums">
                 {jumlah.toLocaleString('id-ID')} nomor seri (maksimal {maksimal.toLocaleString('id-ID')}). Satu nomor
-                per baris; bisa ditempel dari Excel atau dipindai.
+                per baris. Bisa ditempel dari Excel atau dipindai.
             </p>
             {galat ? (
                 <p id={`${id}-galat`} className="text-keterangan font-semibold text-bahaya">

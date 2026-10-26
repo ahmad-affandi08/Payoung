@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { AdaAngkaAnggaran, HitungTotalSetahun, SamaAnggaran, SingkatBulan } from '@/Pustaka/Anggaran';
 
 describe('F8 pustaka anggaran', () => {
-    it('total setahun menjumlah desimal tanpa float; bulan kosong dihitung nol', () => {
+    it('total setahun menjumlah desimal tanpa float. Bulan kosong dihitung nol', () => {
         expect(HitungTotalSetahun(['1000000.10', '', '2000000.20', ...Array<string>(9).fill('')])).toBe('3000000.30');
         expect(HitungTotalSetahun(Array<string>(12).fill('333.33'))).toBe('3999.96');
         expect(HitungTotalSetahun(Array<string>(12).fill(''))).toBe('0');

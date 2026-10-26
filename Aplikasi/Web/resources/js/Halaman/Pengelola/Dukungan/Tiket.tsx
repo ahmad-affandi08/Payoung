@@ -170,7 +170,7 @@ function FormBalasan({
             <form onSubmit={Kirim} className="flex flex-col gap-3" noValidate>
                 {!masihTerbuka ? (
                     <Pemberitahuan jenis="info">
-                        Tiket tidak terbuka. Hanya catatan internal yang bisa ditulis; buka lagi tiket untuk membalas
+                        Tiket tidak terbuka. Hanya catatan internal yang bisa ditulis. Buka lagi tiket untuk membalas
                         tenant.
                     </Pemberitahuan>
                 ) : null}

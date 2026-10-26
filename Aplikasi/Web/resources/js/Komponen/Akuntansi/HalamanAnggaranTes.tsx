@@ -141,7 +141,7 @@ describe('F8 laporan anggaran vs realisasi', () => {
         expect(screen.queryByRole('link', { name: 'Susun anggaran' })).toBeNull();
     });
 
-    it('mengganti filter memuat ulang laporan dengan filter di URL; ekspor membawa filter', () => {
+    it('mengganti filter memuat ulang laporan dengan filter di URL. Ekspor membawa filter', () => {
         RenderUji(<HalamanLaporanAnggaran {...PropsLaporan()} />);
 
         PilihOpsi(screen.getByRole('combobox', { name: /Sampai bulan/ }), '12');
@@ -188,7 +188,7 @@ describe('F8 susun anggaran', () => {
         expect(kirimanForm).toEqual([]);
     });
 
-    it('mengubah satu bulan tidak mengisi bulan lain; mengganti tahun dikunci selama ada perubahan belum disimpan', () => {
+    it('mengubah satu bulan tidak mengisi bulan lain. Mengganti tahun dikunci selama ada perubahan belum disimpan', () => {
         RenderUji(<HalamanSusunAnggaran {...PropsSusun()} />);
 
         fireEvent.change(screen.getByLabelText('Penjualan Maret'), { target: { value: '2500000' } });
@@ -198,7 +198,7 @@ describe('F8 susun anggaran', () => {
         expect(screen.getByRole('combobox', { name: /Tahun/ }).hasAttribute('disabled')).toBe(true);
     });
 
-    it('anggaran kosong menawarkan salin dari tahun lalu; sudah berisi tidak', () => {
+    it('anggaran kosong menawarkan salin dari tahun lalu. Sudah berisi tidak', () => {
         RenderUji(<HalamanSusunAnggaran {...PropsSusun({ Akun: [Akun('6-2000', 'Beban Listrik', 'Beban')] })} />);
         fireEvent.click(screen.getByRole('button', { name: 'Salin dari 2025' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(

@@ -68,7 +68,7 @@ final class TimPengujiSeeder extends Seeder
         $email = mb_strtolower($this->Ambil('PENGUJI_EMAIL', 'Email Owner tenant penguji'));
 
         if (Pengguna::query()->where('Email', $email)->exists()) {
-            $this->command?->warn("Owner {$email} sudah ada; tidak ada yang diubah. Kode aktivasi baru: Kelola › Perangkat.");
+            $this->command?->warn("Owner {$email} sudah ada. Tidak ada yang diubah. Kode aktivasi baru: Kelola › Perangkat.");
 
             return;
         }

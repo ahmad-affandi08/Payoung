@@ -99,7 +99,7 @@ describe('CRM-06 halaman gift card', () => {
         expect(screen.queryByText('AB23-CD45-EF67')).toBeNull();
     });
 
-    it('tanpa izin kelola tidak ada tombol jual dan menu baris hanya riwayat; paket tanpa fitur menyembunyikan tombol jual', () => {
+    it('tanpa izin kelola tidak ada tombol jual dan menu baris hanya riwayat. Paket tanpa fitur menyembunyikan tombol jual', () => {
         RenderUji(<HalamanGiftCard {...BuatProps({ Izin: { Kelola: false } })} />);
         expect(screen.queryByRole('button', { name: 'Jual gift card' })).toBeNull();
         BukaMenu(screen.getByRole('button', { name: /Aksi gift card/ }));
@@ -110,7 +110,7 @@ describe('CRM-06 halaman gift card', () => {
         expect(screen.queryByRole('button', { name: 'Jual gift card' })).toBeNull();
     });
 
-    it('batalkan & kembalikan uang hanya untuk kartu utuh; kartu terpakai hanya bisa dihanguskan; alasan ≥ 5 karakter', () => {
+    it('batalkan & kembalikan uang hanya untuk kartu utuh. Kartu terpakai hanya bisa dihanguskan. Alasan ≥ 5 karakter', () => {
         const terpakai = BuatKartu({
             Uuid: '01K5GIFTCARD000000000000003',
             KodeSamar: 'GC-••••-••••-AAAA',

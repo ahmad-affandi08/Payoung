@@ -47,7 +47,7 @@ function BuatEsTehBervarian(array $k): array
 }
 
 describe('F-17 v2.06 perkiraan total', function (): void {
-    it('PBJT 10% dari DPP subtotal + biaya layanan 5% (tarif kota outlet): rincian & total sama dengan mesin kasir; tersimpan di pesanan', function (): void {
+    it('PBJT 10% dari DPP subtotal + biaya layanan 5% (tarif kota outlet): rincian & total sama dengan mesin kasir. Tersimpan di pesanan', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $k['Outlet']->forceFill(['KodeKota' => '33.72'])->save();
         BantuanPanduanAwal::TerbitkanTarif('PbjtMakananMinuman', '33.72', '10.000000', true);
@@ -78,7 +78,7 @@ describe('F-17 v2.06 perkiraan total', function (): void {
         expect(PesananSendiri::query()->sole()->Perkiraan['Total'])->toBe('123585.00');
     });
 
-    it('tanpa tarif terbit pajak tidak dihitung (tidak di-hard-code); harga termasuk pajak tidak menambah total', function (): void {
+    it('tanpa tarif terbit pajak tidak dihitung (tidak di-hard-code). Harga termasuk pajak tidak menambah total', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         BantuanPenjualan::AturProfilPajak($k, pungutPbjt: true);
@@ -114,7 +114,7 @@ describe('F-17 v2.06 varian', function (): void {
                 ]));
     });
 
-    it('pesan varian: baris menyimpan anak varian + nama "Induk — Varian"; API POS memuat anak; varian wajib & harus milik induk', function (): void {
+    it('pesan varian: baris menyimpan anak varian + nama "Induk — Varian"; API POS memuat anak. Varian wajib & harus milik induk', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $v = BuatEsTehBervarian($k);
         $lain = BuatEsTehBervarian($k);

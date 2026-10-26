@@ -66,7 +66,7 @@ describe('F-05a PelacakNomorSeri (DesainF05a C.4, F-05h)', function (): void {
             ->toThrow(PelanggaranAturanBisnis::class, 'Nomor seri RC18-2609-000124 sedang dalam perjalanan transfer.');
     });
 
-    it('H-19: nomor seri unik per produk, bukan per tenant; tenant lain bebas memakai nomor yang sama (isolasi tenant)', function (): void {
+    it('H-19: nomor seri unik per produk, bukan per tenant. Tenant lain bebas memakai nomor yang sama (isolasi tenant)', function (): void {
         $a = BantuanPelacakan::SiapkanTenant('Toko Elektronik Maju Jaya');
         $pelacak = app(PelacakNomorSeri::class);
         $blender = BantuanKatalog::BuatProduk(['Nama' => 'Blender Kaca 1,5 Liter (nomor seri)', 'Pelacakan' => 'Seri'], '425000.00', $a['Pcs']);

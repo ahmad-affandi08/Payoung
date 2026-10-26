@@ -4,7 +4,7 @@ import 'package:kasir/Tampilan/LayarStatusSinkron.dart';
 /// Audit kemudahan pakai #30: layar Sinkron memakai bahasa sehari-hari untuk setiap jenis kiriman; kode teknis
 /// (`Penjualan.Void`, `PesananTerbuka.KirimDapur`, …) tidak pernah tampil.
 void main() {
-  test('semua jenis outbox kasir berlabel bahasa sehari-hari; jenis tak dikenal jadi "Data lain"', () {
+  test('semua jenis outbox kasir berlabel bahasa sehari-hari. Jenis tak dikenal jadi "Data lain"', () {
     const jenis = [
       'Shift.Buka',
       'Shift.Tutup',

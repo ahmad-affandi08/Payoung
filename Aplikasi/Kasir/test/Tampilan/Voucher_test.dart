@@ -77,7 +77,7 @@ void main() {
 
   for (final ukuran in const [Size(1280, 900), Size(800, 1000), Size(360, 740)]) {
     testWidgets(
-      'pakai voucher HEMAT → potongan Rp 5.000; voucher habis → pesan server; hapus voucher (${ukuran.width.toInt()} dp)',
+      'pakai voucher HEMAT → potongan Rp 5.000. Voucher habis → pesan server. Hapus voucher (${ukuran.width.toInt()} dp)',
       (tester) async {
         final u = await MasukJual(tester, ukuran);
         await Ketuk(tester, find.byWidgetPredicate((w) => w is UbinProduk && w.nama.startsWith('Americano')));

@@ -61,7 +61,7 @@ it('penjualan datar 8 minggu: perkiraan = rata-rata hari itu, faktor tren 1,00, 
     expect($minggu['Perkiraan'])->toBe('0.00')->and($minggu['PerkiraanTransaksi'])->toBe(0);
 });
 
-it('tren naik dibatasi 1,25 dan turun dibatasi 0,80; tanpa 8 minggu data faktor 1,00', function (): void {
+it('tren naik dibatasi 1,25 dan turun dibatasi 0,80, tanpa 8 minggu data faktor 1,00', function (): void {
     $hariIni = CarbonImmutable::parse('2026-10-14');
     $naik = [];
     $turun = [];
@@ -79,7 +79,7 @@ it('tren naik dibatasi 1,25 dan turun dibatasi 0,80; tanpa 8 minggu data faktor 
         ->and($ramal->Ramal(SeriHarian($hariIni->subDays(30), $hariIni, '100000.00', 5), $hariIni, 1)['FaktorTren'])->toBe('1.00');
 });
 
-it('perkiraan dikalikan faktor tren dan dibulatkan ke sen; total perkiraan = jumlah baris', function (): void {
+it('perkiraan dikalikan faktor tren dan dibulatkan ke sen. Total perkiraan = jumlah baris', function (): void {
     $hariIni = CarbonImmutable::parse('2026-10-14');
     $seri = [];
 

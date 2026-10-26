@@ -68,7 +68,7 @@ export default function HalamanDaftarReturGrosir({ Retur, OpsiStatus, Izin }: Pr
     return (
         <HalamanGrosir
             judul="Retur grosir"
-            keterangan="Barang yang dikembalikan pembeli. Retur membalik pengakuan penjualan surat jalannya; bila penyerahan itu sudah difakturkan, returnya sekaligus menjadi nota kredit yang mengurangi piutang."
+            keterangan="Barang yang dikembalikan pembeli. Retur membalik pengakuan penjualan surat jalannya. Bila penyerahan itu sudah difakturkan, returnya sekaligus menjadi nota kredit yang mengurangi piutang."
             izin={Izin}
             objek="retur grosir"
         >

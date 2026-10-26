@@ -120,7 +120,7 @@ final class PenerapKonfigurasiIntegrasi
                 Crypt::decryptString(is_string($atribut['Kredensial'] ?? null) ? $atribut['Kredensial'] : '');
                 $daftar[] = (new KonfigurasiIntegrasi)->newFromBuilder($atribut);
             } catch (DecryptException) {
-                Log::error('Kredensial integrasi tidak bisa didekripsi; periksa APP_KEY/APP_PREVIOUS_KEYS.', ['Jenis' => $atribut['Jenis'] ?? null]);
+                Log::error('Kredensial integrasi tidak bisa didekripsi. Periksa APP_KEY/APP_PREVIOUS_KEYS.', ['Jenis' => $atribut['Jenis'] ?? null]);
             }
         }
 

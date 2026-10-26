@@ -59,7 +59,7 @@ function IsianAset(string $uuidKas, array $timpa = []): array
     ];
 }
 
-it('perolehan → penyusutan terjadwal (menyusul, idempoten) → pelepasan dengan rugi; jurnal seimbang', function (): void {
+it('perolehan → penyusutan terjadwal (menyusul, idempoten) → pelepasan dengan rugi. Jurnal seimbang', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $kas = Akun::query()->where('KasBank', true)->orderBy('Kode')->firstOrFail();
@@ -118,7 +118,7 @@ it('perolehan → penyusutan terjadwal (menyusul, idempoten) → pelepasan denga
     expect(PenyusutanAset::query()->count())->toBe(4);
 });
 
-it('saldo awal: Dr aset / Cr akumulasi awal / Cr ekuitas; mulai bulan berjalan; pelepasan berlaba ke pendapatan lain', function (): void {
+it('saldo awal: Dr aset / Cr akumulasi awal / Cr ekuitas. Mulai bulan berjalan. Pelepasan berlaba ke pendapatan lain', function (): void {
     $t = BantuanPersediaan::SiapkanTenant();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $kas = Akun::query()->where('KasBank', true)->orderBy('Kode')->firstOrFail();
@@ -177,7 +177,7 @@ it('validasi, tanah tanpa penyusutan, pembatalan sebelum disusutkan membalik jur
     PastikanJurnalSeimbang();
 });
 
-it('izin: kasir tanpa akses, supervisor tanpa kelola; tenant lain 404', function (): void {
+it('izin: kasir tanpa akses, supervisor tanpa kelola. Tenant lain 404', function (): void {
     $a = BantuanPersediaan::SiapkanTenant();
     BantuanOrganisasi::AturKonteks($a['Tenant']->Id);
     $kas = Akun::query()->where('KasBank', true)->orderBy('Kode')->firstOrFail();

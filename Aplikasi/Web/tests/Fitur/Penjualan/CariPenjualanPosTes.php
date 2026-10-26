@@ -64,7 +64,7 @@ describe('F-09 GET /api/pos/v1/penjualan/cari (struk asal untuk retur)', functio
             ]]);
     });
 
-    it('baris memuat UuidProdukSatuan (satuan jual yang dipakai) dan BolehDesimal (satuan dasar produk); kunci tambahan, kompatibel mundur', function (): void {
+    it('baris memuat UuidProdukSatuan (satuan jual yang dipakai) dan BolehDesimal (satuan dasar produk). Kunci tambahan, kompatibel mundur', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '30');
         $dus = BantuanKomposisi::TambahSatuanProduk($minyak, BantuanKomposisi::Satuan('Dus', 'dus', false), '12');
@@ -132,7 +132,7 @@ describe('F-09 GET /api/pos/v1/penjualan/cari (struk asal untuk retur)', functio
         $this->withHeaders(['Authorization' => ''])->getJson('/api/pos/v1/penjualan/cari?nomor='.urlencode($p->Nomor))->assertUnauthorized();
     });
 
-    it('menemukan struk dari isi QR struk digital (tautan, kode, atau Uuid), tanpa mengetik nomor utuh; outlet lain tetap 404', function (): void {
+    it('menemukan struk dari isi QR struk digital (tautan, kode, atau Uuid), tanpa mengetik nomor utuh. Outlet lain tetap 404', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -152,7 +152,7 @@ describe('F-09 GET /api/pos/v1/penjualan/cari (struk asal untuk retur)', functio
 });
 
 describe('F-09 GET /api/pos/v1/penjualan/kandidat (pilih struk untuk retur tanpa mengetik nomor utuh)', function (): void {
-    it('tanpa kata: penjualan terbaru yang masih bisa diretur; dengan kata: nomor yang memuat kata itu; void, diretur penuh, dan lewat batas hari tidak muncul', function (): void {
+    it('tanpa kata: penjualan terbaru yang masih bisa diretur, dengan kata: nomor yang memuat kata itu. Void, diretur penuh, dan lewat batas hari tidak muncul', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];

@@ -40,7 +40,7 @@ function AmbilTokenAturUlangUji(): string
 }
 
 describe('Minta tautan (BR-00.9, §25 no. 18)', function (): void {
-    it('email terdaftar dan tidak terdaftar mendapat jawaban yang sama; tautan hanya dikirim ke akun yang ada', function (): void {
+    it('email terdaftar dan tidak terdaftar mendapat jawaban yang sama. Tautan hanya dikirim ke akun yang ada', function (): void {
         $this->get('/lupa-kata-sandi')->assertInertia(fn (AssertableInertia $halaman) => $halaman
             ->component('Autentikasi/LupaKataSandi')
             ->where('MenitBerlaku', 60));
@@ -60,7 +60,7 @@ describe('Minta tautan (BR-00.9, §25 no. 18)', function (): void {
             ->not->toBe(AmbilTokenAturUlangUji());
     });
 
-    it('permintaan dibatasi per IP; batas per email tidak membuka apa pun', function (): void {
+    it('permintaan dibatasi per IP. Batas per email tidak membuka apa pun', function (): void {
         foreach (range(1, LupaKataSandiKontroler::BATAS_PERMINTAAN_PER_EMAIL_PER_JAM + 1) as $_) {
             $this->post('/lupa-kata-sandi', ['Email' => 'rina@kopinusantara.id'])->assertSessionHasNoErrors();
             $this->travel(2)->minutes();
@@ -117,7 +117,7 @@ describe('Atur ulang kata sandi (BR-00.9)', function (): void {
             ->and($log->Ip)->toBe('203.0.113.9');
     });
 
-    it('tautan berlaku 60 menit; token salah, email lain, dan kata sandi lemah ditolak', function (): void {
+    it('tautan berlaku 60 menit. Token salah, email lain, dan kata sandi lemah ditolak', function (): void {
         $this->post('/lupa-kata-sandi', ['Email' => 'rina@kopinusantara.id']);
         $token = AmbilTokenAturUlangUji();
         $isian = ['Token' => $token, 'Email' => 'rina@kopinusantara.id', 'KataSandi' => 'kopi-baru-2026', 'KonfirmasiKataSandi' => 'kopi-baru-2026'];

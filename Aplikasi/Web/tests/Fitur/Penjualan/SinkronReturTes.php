@@ -57,7 +57,7 @@ function SaldoStokRetur(int $idProduk, int $idGudang): ?string
 }
 
 describe('F-09 retur penjualan lewat sinkron (ReturPenjualan.Buat)', function (): void {
-    it('retur parsial berulang sampai habis (PPN 12% DPP 11/12, diskon pesanan): nilai proporsional ke sen, retur terakhir mengambil sisa (Σ = TotalBaris), stok layak jual ke Toko & rusak ke lokasi Rusak, jurnal J-09.2 tunai vs transfer, status DireturSebagian → Diretur; invariant terjaga', function (): void {
+    it('retur parsial berulang sampai habis (PPN 12% DPP 11/12, diskon pesanan): nilai proporsional ke sen, retur terakhir mengambil sisa (Σ = TotalBaris), stok layak jual ke Toko & rusak ke lokasi Rusak, jurnal J-09.2 tunai vs transfer, status DireturSebagian → Diretur. Invariant terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanPanduanAwal::TerbitkanTarif('Ppn', null, '12.000000');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -158,7 +158,7 @@ describe('F-09 retur penjualan lewat sinkron (ReturPenjualan.Buat)', function ()
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('idempoten: Uuid sama = Duplikat tanpa dokumen/stok/jurnal ganda; Uuid sama dengan nomor lain = UuidSudahDipakai; nomor dipakai = NomorSudahDipakai', function (): void {
+    it('idempoten: Uuid sama = Duplikat tanpa dokumen/stok/jurnal ganda; Uuid sama dengan nomor lain = UuidSudahDipakai. Nomor dipakai = NomorSudahDipakai', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '5', 'Harga' => '38500.00']]]);
@@ -232,7 +232,7 @@ describe('F-09 retur penjualan lewat sinkron (ReturPenjualan.Buat)', function ()
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('BatasHariRetur (bawaan 7 hari sejak tanggal bisnis penjualan): hari ke-7 diterima, hari ke-8 ReturTidakDiizinkan; pengaturan 0 = hanya hari yang sama', function (): void {
+    it('BatasHariRetur (bawaan 7 hari sejak tanggal bisnis penjualan): hari ke-7 diterima, hari ke-8 ReturTidakDiizinkan. Pengaturan 0 = hanya hari yang sama', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $baris = ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]];
@@ -272,7 +272,7 @@ describe('F-09 retur penjualan lewat sinkron (ReturPenjualan.Buat)', function ()
         expect(ReturPenjualan::query()->count())->toBe(0)
             ->and($p->refresh()->Status)->toBe(StatusPenjualan::Lunas);
     });
-    it('F-11 ringkasan shift: refund tunai = tunai void + retur tunai dari laci shift ini; jumlah & nominal void/retur terisi', function (): void {
+    it('F-11 ringkasan shift: refund tunai = tunai void + retur tunai dari laci shift ini. Jumlah & nominal void/retur terisi', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $divoid = BantuanPenjualan::Jual($this, $k, [

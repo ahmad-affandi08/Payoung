@@ -895,7 +895,7 @@ function IsiTab({
                         Perkiraan = rata-rata penjualan bersih pada hari yang sama dalam minggu selama 8 minggu terakhir
                         (hari tutup dihitung nol) × faktor tren {ramal.FaktorTren.replace('.', ',')} (penjualan 4 minggu
                         terakhir dibanding 4 minggu sebelumnya, dibatasi 0,80 sampai 1,25). Ini perkiraan statistik
-                        sederhana, bukan jaminan; promo, cuaca, dan hari libur belum diperhitungkan.
+                        sederhana, bukan jaminan. Promo, cuaca, dan hari libur belum diperhitungkan.
                     </p>
                     <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:max-w-xl">
                         <div>
@@ -1056,7 +1056,7 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Dari tiket dapur yang sudah siap. Total = dikirim ke dapur sampai siap; tunggu dan masak hanya
+                        Dari tiket dapur yang sudah siap. Total = dikirim ke dapur sampai siap. Tunggu dan masak hanya
                         terisi bila KDS menandai tahap Dimasak. Persentil 90 berarti 9 dari 10 tiket selesai lebih cepat
                         dari angka itu.
                     </p>
@@ -1384,7 +1384,7 @@ export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     return (
         <TataLetakAplikasi judul="Laporan penjualan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Angka dihitung dari penjualan yang sudah diterima server. Penjualan yang di-void tidak dihitung; retur
+                Angka dihitung dari penjualan yang sudah diterima server. Penjualan yang di-void tidak dihitung. Retur
                 mengurangi penjualan pada tanggal returnya. Bersih = kotor − diskon − retur, di luar pajak dan biaya
                 layanan.
             </p>

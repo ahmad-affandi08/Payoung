@@ -74,7 +74,7 @@ final class SimpanInvoiceBerulang
         }
 
         if ($data->isi->jenis !== JenisInvoice::Penjualan || $data->isi->uuidUangMuka !== []) {
-            throw new PelanggaranAturanBisnis('JenisTidakDidukung', 'Hanya invoice penjualan yang bisa diulang otomatis; uang muka dibuat satu per satu.', 'Jenis');
+            throw new PelanggaranAturanBisnis('JenisTidakDidukung', 'Hanya invoice penjualan yang bisa diulang otomatis. Uang muka dibuat satu per satu.', 'Jenis');
         }
 
         $this->simpanInvoice->Periksa($data->isi);

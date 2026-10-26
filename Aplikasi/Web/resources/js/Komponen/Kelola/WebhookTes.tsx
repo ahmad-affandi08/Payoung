@@ -50,7 +50,7 @@ describe('X7 halaman Webhook', () => {
     });
     afterEach(cleanup);
 
-    it('rahasia baru tampil sekali dengan tombol salin; log kiriman menampilkan kode respons', () => {
+    it('rahasia baru tampil sekali dengan tombol salin. Log kiriman menampilkan kode respons', () => {
         RenderUji(<HalamanWebhook {...props} RahasiaBaru={{ Nama: 'Sistem gudang', Rahasia: 'r'.repeat(48) }} />);
 
         expect(screen.getByText('r'.repeat(48))).toBeTruthy();

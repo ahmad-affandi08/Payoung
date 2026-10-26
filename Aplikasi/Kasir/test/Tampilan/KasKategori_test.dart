@@ -11,7 +11,7 @@ import '../Pendukung/PasangAplikasi.dart';
 /// Audit kemudahan pakai #8: kategori kas berupa chip; bila ada lebih dari satu dan belum dipilih, formulir menolak
 /// sebelum dialog PIN supervisor dibuka (sebelumnya supervisor memasukkan PIN dulu lalu ditolak "Pilih kategori").
 void main() {
-  testWidgets('kas keluar besar tanpa kategori: galat tampil, PIN supervisor tidak diminta; pilih chip lalu PIN', (
+  testWidgets('kas keluar besar tanpa kategori: galat tampil, PIN supervisor tidak diminta. Pilih chip lalu PIN', (
     tester,
   ) async {
     final u = LingkunganUji.Buat();

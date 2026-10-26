@@ -106,7 +106,7 @@ function AturLebar(lebar: 'hp' | 'tablet' | 'desktop') {
 const MatchMediaAsli = window.matchMedia;
 
 describe('KeadaanUrl (D-16 kontrak parameter TabelData)', () => {
-    it('membaca & menulis cari, urut bertingkat, halaman, ukuran halaman, dan filter; bawaan tidak ditulis', () => {
+    it('membaca & menulis cari, urut bertingkat, halaman, ukuran halaman, dan filter. Bawaan tidak ditulis', () => {
         const bawaan = BacaUrut('-DibuatPada');
         const keadaan = BacaKeadaanDariUrl(
             '?cari=kopi&urut=Nama,-Harga&halaman=3&perHalaman=50&saring%5BStatus%5D=Aktif,Nonaktif&tab=stok',
@@ -174,7 +174,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         window.matchMedia = MatchMediaAsli;
     });
 
-    it('memakai tabel awal dari props tanpa memanggil server; urut lewat kepala kolom memperbarui URL & mengambil data', async () => {
+    it('memakai tabel awal dari props tanpa memanggil server. Urut lewat kepala kolom memperbarui URL & mengambil data', async () => {
         PasangFetch(() => Hasil(BuatProduk(2, 'Teh Tarik')));
         Render(
             <TabelData
@@ -199,7 +199,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(panggilanFetch).toEqual(['/kelola/produk?urut=Harga']);
     });
 
-    it('cari ditahan 300 ms lalu kembali ke halaman 1; filter ya memunculkan chip yang bisa dihapus', async () => {
+    it('cari ditahan 300 ms lalu kembali ke halaman 1. Filter ya memunculkan chip yang bisa dihapus', async () => {
         window.history.replaceState({}, '', '/kelola/produk?halaman=2');
         PasangFetch(() => Hasil(BuatProduk(1)));
         Render(
@@ -317,7 +317,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(screen.getByRole('button', { name: 'Filter' })).toBeTruthy();
     });
 
-    it('HP: sembunyiBilaKosong melewati label nilai null (baris judul laporan); tanpa filter & urut tidak ada tombol Filter', () => {
+    it('HP: sembunyiBilaKosong melewati label nilai null (baris judul laporan), tanpa filter & urut tidak ada tombol Filter', () => {
         AturLebar('hp');
         type BarisLaporan = { Id: string; Label: string; Nilai: string | null };
         const kolomLaporan: KolomTabel<BarisLaporan>[] = [
@@ -362,7 +362,7 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(screen.queryByRole('button', { name: 'Filter' })).toBeNull();
     });
 
-    it('tablet menyembunyikan kolom prioritas rendah; pilihan kolom pengguna disimpan per tabel', () => {
+    it('tablet menyembunyikan kolom prioritas rendah. Pilihan kolom pengguna disimpan per tabel', () => {
         AturLebar('tablet');
         const { unmount: Lepas } = Render(
             <TabelData

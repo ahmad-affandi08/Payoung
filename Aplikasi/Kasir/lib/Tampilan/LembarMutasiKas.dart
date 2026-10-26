@@ -541,7 +541,7 @@ class _DialogPinSupervisorState extends ConsumerState<DialogPinSupervisor> {
                   const SizedBox(height: 12),
                   Text(
                     'Permintaan "${menunggu.judul}" sudah dikirim ke Aplikasi Owner. Tunggu keputusan pemilik atau '
-                    'supervisor; berlaku 10 menit.',
+                    'supervisor. Berlaku 10 menit.',
                   ),
                 ],
               )

@@ -218,7 +218,7 @@ export default function HalamanPajak({
                                 <label htmlFor={`${idLegendaHarga}-termasuk`} className="cursor-pointer">
                                     Sudah termasuk pajak
                                     <span className="block text-keterangan text-teks-sekunder">
-                                        Pelanggan membayar sesuai harga di menu; pajak dihitung dari dalam harga.
+                                        Pelanggan membayar sesuai harga di menu. Pajak dihitung dari dalam harga.
                                     </span>
                                 </label>
                             </div>

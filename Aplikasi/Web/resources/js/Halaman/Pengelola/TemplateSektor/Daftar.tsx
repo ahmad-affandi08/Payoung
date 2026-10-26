@@ -140,7 +140,7 @@ export default function HalamanDaftarTemplateSektor({ Template }: { Template: Ri
     return (
         <TataLetakPengelola judul="Template sektor">
             <p className="text-isi text-teks-sekunder">
-                Paket konfigurasi yang diterapkan saat tenant onboarding. Versi terbit tidak diubah; perbaikan dibuat
+                Paket konfigurasi yang diterapkan saat tenant onboarding. Versi terbit tidak diubah. Perbaikan dibuat
                 sebagai draf versi baru. Tenant lama tidak berubah tanpa persetujuannya.
             </p>
             {nonaktifkan ? (

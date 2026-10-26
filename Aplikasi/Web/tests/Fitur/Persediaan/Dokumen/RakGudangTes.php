@@ -53,7 +53,7 @@ function SiapkanRak(): array
 }
 
 describe('rak gudang: master dan penempatan produk', function (): void {
-    it('kode disimpan huruf besar dan unik per lokasi stok; ubah tidak memindah lokasi; audit tercatat', function (): void {
+    it('kode disimpan huruf besar dan unik per lokasi stok. Ubah tidak memindah lokasi. Audit tercatat', function (): void {
         $t = SiapkanRak();
 
         expect($t['RakA']->Kode)->toBe('A-01')
@@ -65,7 +65,7 @@ describe('rak gudang: master dan penempatan produk', function (): void {
             ->and(B::KodeGalat(fn () => app(SimpanRakGudang::class)->Jalankan(0, $t['RakA'], 'B-01', 'Bentrok', 5, $t['Pemilik']->Id)))->toBe('KodeRakDipakai');
     });
 
-    it('menempatkan produk: tambah, pindah dari rak lain, lewati yang sudah ada; hanya produk berstok', function (): void {
+    it('menempatkan produk: tambah, pindah dari rak lain, lewati yang sudah ada. Hanya produk berstok', function (): void {
         $t = SiapkanRak();
         $stok = $t['Produk']['Stok']->Id;
         $tetapkan = app(TetapkanProdukRak::class);
@@ -98,7 +98,7 @@ describe('rak gudang: master dan penempatan produk', function (): void {
 });
 
 describe('opname per rak', function (): void {
-    it('snapshot hanya produk di rak; lembar hitung menolak produk di luar rak; rak kosong atau rak + kategori ditolak', function (): void {
+    it('snapshot hanya produk di rak. Lembar hitung menolak produk di luar rak. Rak kosong atau rak + kategori ditolak', function (): void {
         $t = SiapkanRak();
         app(TetapkanProdukRak::class)->Jalankan($t['RakA'], [$t['Produk']['Stok']->Id], $t['Pemilik']->Id);
         app(TetapkanProdukRak::class)->Jalankan($t['RakB'], [$t['Produk']['BahanBaku']->Id], $t['Pemilik']->Id);
@@ -117,7 +117,7 @@ describe('opname per rak', function (): void {
             ->and(B::KodeGalat(fn () => app(SimpanHitungStokOpname::class)->Jalankan($opname, [new DataHitungOpname(null, $t['Produk']['BahanBaku']->Id, Kuantitas::Dari('3'))], $t['Pemilik']->Id)))->toBe('ProdukDiLuarRak');
     });
 
-    it('rak berbeda boleh berbarengan; rak sama, seluruh produk, dan kategori beririsan bentrok', function (): void {
+    it('rak berbeda boleh berbarengan. Rak sama, seluruh produk, dan kategori beririsan bentrok', function (): void {
         $t = SiapkanRak();
         $stok = $t['Produk']['Stok'];
         $minuman = BantuanKatalog::BuatKategori('Minuman');
@@ -139,7 +139,7 @@ describe('opname per rak', function (): void {
         expect($mulai($minuman->Uuid, null)->Status->value)->toBe('Berlangsung');
     });
 
-    it('isi rak dibekukan selama opname rak itu berjalan, lalu terbuka lagi; nonaktifkan rak juga ditolak', function (): void {
+    it('isi rak dibekukan selama opname rak itu berjalan, lalu terbuka lagi. Nonaktifkan rak juga ditolak', function (): void {
         $t = SiapkanRak();
         app(TetapkanProdukRak::class)->Jalankan($t['RakA'], [$t['Produk']['Stok']->Id], $t['Pemilik']->Id);
         $opname = app(MulaiStokOpname::class)->Jalankan($t['Gudang']->Id, null, false, null, $t['Pemilik']->Id, null, $t['RakA']->Uuid);
@@ -157,7 +157,7 @@ describe('opname per rak', function (): void {
 });
 
 describe('HTTP rak gudang dan ringkasan penghitung', function (): void {
-    it('daftar, tambah, ubah, isi rak, lepas produk, nonaktifkan; opsi rak di daftar opname; ringkasan penghitung di detail', function (): void {
+    it('daftar, tambah, ubah, isi rak, lepas produk, nonaktifkan. Opsi rak di daftar opname. Ringkasan penghitung di detail', function (): void {
         $t = SiapkanRak();
         $stok = $t['Produk']['Stok'];
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

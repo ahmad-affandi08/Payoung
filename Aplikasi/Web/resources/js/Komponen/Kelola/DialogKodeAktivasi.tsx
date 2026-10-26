@@ -12,7 +12,7 @@ export default function DialogKodeAktivasi({ kode, saatSelesai }: { kode: KodeAk
             peringatan={
                 <>
                     Kode berlaku sampai {FormatTanggalWaktu(kode.KedaluwarsaPada)} dan hanya bisa dipakai sekali.
-                    Biarkan dialog ini terbuka sampai perangkat selesai diaktifkan; setelah ditutup kodenya tidak bisa
+                    Biarkan dialog ini terbuka sampai perangkat selesai diaktifkan. Setelah ditutup kodenya tidak bisa
                     dilihat lagi, dan Anda perlu membuat kode baru. Kode lama untuk perangkat ini (bila ada) tidak
                     berlaku lagi.
                 </>

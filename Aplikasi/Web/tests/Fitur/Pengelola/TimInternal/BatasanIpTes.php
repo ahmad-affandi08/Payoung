@@ -33,7 +33,7 @@ describe('Filter alamat', function (): void {
             ->and($hasil['TidakSah'])->toBe(['999.1.1.1', '10.0.0.0/33', 'abc']);
     });
 
-    it('mencocokkan alamat tunggal dan rentang; daftar kosong mengizinkan semua', function (): void {
+    it('mencocokkan alamat tunggal dan rentang. Daftar kosong mengizinkan semua', function (): void {
         $allowlist = app(AllowlistIpPengelola::class);
         expect($allowlist->CekBoleh('8.8.8.8'))->toBeTrue()->and($allowlist->CekAktif())->toBeFalse();
 

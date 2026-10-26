@@ -173,7 +173,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
             ->and(TarifPajak::query()->count())->toBe(2);
     });
 
-    it('D-36: berkas data master yang dibuat setelah masa pembaruan lisensi ditolak; di dalam masa pembaruan diterima', function (): void {
+    it('D-36: berkas data master yang dibuat setelah masa pembaruan lisensi ditolak. Di dalam masa pembaruan diterima', function (): void {
         app(PasangLisensi::class)->Jalankan(BantuanLisensi::Berkas(BantuanLisensi::Data(pembaruanSampai: '2027-10-02')), 'Kopi Nusantara', PemilikLisensiUji());
         $paket = ['Format' => 1, 'DibuatPada' => '2027-10-02T16:59:59Z', 'TarifPajak' => [], 'HariLibur' => [
             ['Tanggal' => '2027-08-17', 'Nama' => 'Hari Kemerdekaan RI', 'Jenis' => 'Nasional', 'NomorDasarHukum' => null, 'Dibatalkan' => false],
@@ -228,7 +228,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
             ->and($evaluator->CekMasihDalamBatas($sumber, 'BatasOutlet', 2))->toBeFalse();
     });
 
-    it('ganti lisensi (tambah outlet) tidak membuat usaha baru; satu lisensi tetap satu usaha', function (): void {
+    it('ganti lisensi (tambah outlet) tidak membuat usaha baru. Satu lisensi tetap satu usaha', function (): void {
         app(PasangLisensi::class)->Jalankan(BantuanLisensi::Berkas(), 'Kopi Nusantara', PemilikLisensiUji());
         app(PasangLisensi::class)->Jalankan(BantuanLisensi::Berkas(BantuanLisensi::Data(batasOutlet: 5, nomor: 'PAYOUNG-L-2026-0001-B')));
 
@@ -258,7 +258,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
         expect(app(EvaluatorFitur::class)->HitungBatasEfektif($sumber)['BatasOutlet'])->toBe(2);
     });
 
-    it('berkas palsu ditolak sebelum apa pun tersimpan; pemasangan pertama wajib menyebut usaha & Owner', function (): void {
+    it('berkas palsu ditolak sebelum apa pun tersimpan. Pemasangan pertama wajib menyebut usaha & Owner', function (): void {
         $palsu = json_decode(BantuanLisensi::Berkas(), true);
         $palsu['Data']['BatasOutlet'] = null;
 
@@ -279,7 +279,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
         $this->get('/masuk')->assertStatus(503);
     });
 
-    it('hanya dilayani di domain lisensi; alamat utama ke halaman masuk tanpa tautan daftar', function (): void {
+    it('hanya dilayani di domain lisensi. Alamat utama ke halaman masuk tanpa tautan daftar', function (): void {
         app(PasangLisensi::class)->Jalankan(BantuanLisensi::Berkas(), 'Kopi Nusantara', PemilikLisensiUji());
 
         $this->get('/')->assertRedirect('/masuk');
@@ -316,7 +316,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
                 ->where('Akses.Pemilik', true));
     });
 
-    it('jadwal tagihan, trial, dan Platform Pengelola tidak berjalan; jadwal operasional toko tetap', function (): void {
+    it('jadwal tagihan, trial, dan Platform Pengelola tidak berjalan. Jadwal operasional toko tetap', function (): void {
         $acara = collect(app(Schedule::class)->events());
         $lolos = fn (string $perintah): bool => $acara->first(fn ($e) => str_contains((string) $e->command, $perintah))->filtersPass(app());
 
@@ -343,7 +343,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
             ->and((string) $konfigurasi->getRawOriginal('Kredensial'))->not->toContain('tok-fonnte');
     });
 
-    it('Owner mengatur WhatsApp server dari back-office: simpan, uji & aktif, nonaktifkan; kredensial tidak kembali ke halaman', function (): void {
+    it('Owner mengatur WhatsApp server dari back-office: simpan, uji & aktif, nonaktifkan. Kredensial tidak kembali ke halaman', function (): void {
         Http::fake(['api.fonnte.com/*' => Http::response(['status' => true, 'device_status' => 'connect'])]);
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = PasangUntukPemilikSiap();
 
@@ -386,7 +386,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
             ->and(BantuanDaftarPengaturan::CariTautanTanpaRute($tautan))->toBe([]);
     });
 
-    it('integrasi server: hanya Owner; jenis platform lain dan penyedia jenis lain ditolak', function (): void {
+    it('integrasi server: hanya Owner. Jenis platform lain dan penyedia jenis lain ditolak', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = PasangUntukPemilikSiap();
         $admin = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Admin);
         BantuanAutentikasi::AktifkanDuaFaktor($admin);

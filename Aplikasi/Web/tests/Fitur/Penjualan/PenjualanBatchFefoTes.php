@@ -59,7 +59,7 @@ function SaldoProdukBatchJual(Produk $produk, int $idGudang): ?string
 }
 
 describe('F-05g penjualan produk ber-batch (FEFO di server)', function (): void {
-    it('satu baris dipecah FEFO lintas batch (kedaluwarsa terdekat dulu, tanpa kedaluwarsa terakhir); HPP baris = Σ pecahan; saldo & batch turun; invariant terjaga', function (): void {
+    it('satu baris dipecah FEFO lintas batch (kedaluwarsa terdekat dulu, tanpa kedaluwarsa terakhir); HPP baris = Σ pecahan. Saldo & batch turun. Invariant terjaga', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $susu = BuatProdukBatchJual($k, [['C-TANPA', '5', null], ['B-LAMA', '5', 40], ['A-DEKAT', '3', 10]]);
@@ -145,7 +145,7 @@ describe('F-05g penjualan produk ber-batch (FEFO di server)', function (): void 
 });
 
 describe('F-05g void & retur mengembalikan stok ke batch asal', function (): void {
-    it('void: setiap pecahan kembali ke batch yang sama (tanpa membuat batch baru); saldo & sisa batch pulih', function (): void {
+    it('void: setiap pecahan kembali ke batch yang sama (tanpa membuat batch baru). Saldo & sisa batch pulih', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $susu = BuatProdukBatchJual($k, [['A-DEKAT', '3', 10], ['B-LAMA', '5', 40]]);
@@ -163,7 +163,7 @@ describe('F-05g void & retur mengembalikan stok ke batch asal', function (): voi
             ->and(PemeriksaInvarian::PeriksaSemua($k['Tenant']->Id))->toBe([]);
     });
 
-    it('retur parsial berulang: unit kembali ke batch tempat unit itu diambil (berurutan, bilangan bulat), retur terakhir menutup sisa; nilai HPP Σ = asal', function (): void {
+    it('retur parsial berulang: unit kembali ke batch tempat unit itu diambil (berurutan, bilangan bulat), retur terakhir menutup sisa. Nilai HPP Σ = asal', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $susu = BuatProdukBatchJual($k, [['A-DEKAT', '3', 10], ['B-LAMA', '5', 40]]);

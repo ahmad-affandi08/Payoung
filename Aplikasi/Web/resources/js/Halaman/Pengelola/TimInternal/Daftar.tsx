@@ -449,7 +449,7 @@ function FormNonaktifkan({ anggota, saatSelesai }: { anggota: Anggota; saatSeles
             judul={`Nonaktifkan ${anggota.Nama}?`}
             keterangan={
                 <p>
-                    Sesinya langsung terputus dan ia tidak bisa masuk lagi. Akun tidak dihapus; riwayat audit tetap
+                    Sesinya langsung terputus dan ia tidak bisa masuk lagi. Akun tidak dihapus. Riwayat audit tetap
                     tersimpan.
                 </p>
             }

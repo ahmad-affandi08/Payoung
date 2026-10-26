@@ -224,7 +224,7 @@ describe('Membuat tagihan (BR-P08.1, BR-P04.1, BR-P04.7, §12.2)', function (): 
         'siklus' => [['KodePaket' => 'PRO', 'Siklus' => 'Mingguan'], 'Siklus'],
     ]);
 
-    it('CLAUDE.md #12: tagihan ditolak bila tarif PPN belum terbit; tanpa PPN bila platform non-PKP', function (): void {
+    it('CLAUDE.md #12: tagihan ditolak bila tarif PPN belum terbit, tanpa PPN bila platform non-PKP', function (): void {
         DB::table('TarifPajak')->update(['Status' => 'Draf']);
 
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
@@ -249,7 +249,7 @@ describe('Membuat tagihan (BR-P08.1, BR-P04.1, BR-P04.7, §12.2)', function (): 
             ->assertSessionHasErrors('Umum');
     });
 
-    it('BR-P08.1: nomor urut tanpa celah lintas tenant dan bulan, mulai lagi dari 1 di tahun baru; tagihan batal tetap memegang nomornya', function (): void {
+    it('BR-P08.1: nomor urut tanpa celah lintas tenant dan bulan, mulai lagi dari 1 di tahun baru. Tagihan batal tetap memegang nomornya', function (): void {
         ['Tenant' => $tenantB, 'Pengguna' => $pemilikB] = BantuanTagihan::DaftarTenant('budi@tokobudi.id', '081298765432', 'Toko Budi');
         $a1 = BuatTagihanUji($this, $this->pemilik, $this->tenant);
         $this->post("/kelola/langganan/tagihan/{$a1->Uuid}/batalkan")->assertSessionHasNoErrors();
@@ -350,7 +350,7 @@ describe('Naik paket & perpanjangan (F-19, D-98)', function (): void {
             ->and($tagihan->JatuhTempoPada->equalTo(now()->addDays(10)))->toBeTrue();
     });
 
-    it('D-98: Pro ke Bisnis saat Aktif menerbitkan tagihan naik paket berisi selisih prorata; paket belum berganti sebelum lunas', function (): void {
+    it('D-98: Pro ke Bisnis saat Aktif menerbitkan tagihan naik paket berisi selisih prorata. Paket belum berganti sebelum lunas', function (): void {
         AktifkanPaketProUntukUji($this);
         $halaman = BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->get('/kelola/langganan')->assertOk();
         $pilihan = collect($halaman->viewData('page')['props']['PilihanPaket'])->keyBy('Kode');

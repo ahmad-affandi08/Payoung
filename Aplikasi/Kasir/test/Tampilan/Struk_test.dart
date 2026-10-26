@@ -115,7 +115,7 @@ void main() {
       await Lepas(tester, u);
     });
 
-    testWidgets('bayar tunai → struk tercetak otomatis + laci terbuka; cetak lagi bertanda CETAK ULANG ($dp)', (
+    testWidgets('bayar tunai → struk tercetak otomatis + laci terbuka. Cetak lagi bertanda CETAK ULANG ($dp)', (
       tester,
     ) async {
       final u = await Masuk(tester, ukuran, printer: const ProfilPrinter(alamat: '192.168.1.50'));
@@ -314,7 +314,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('Bluetooth LE: izin ditolak → pesan; tidak ada printer → petunjuk; bayar mencetak lewat BLE', (
+  testWidgets('Bluetooth LE: izin ditolak → pesan. Tidak ada printer → petunjuk. Bayar mencetak lewat BLE', (
     tester,
   ) async {
     final u = await Masuk(tester, const Size(1280, 900));

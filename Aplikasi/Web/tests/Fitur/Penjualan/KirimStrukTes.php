@@ -152,7 +152,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
             ->assertOk()->assertExactJson(['Uuid' => $uuid, 'Status' => 'Diantrekan', 'PesanGalat' => null]);
     });
 
-    it('tugas: Fonnte (tidak resmi) mengirim teks struk; status Terkirim + IdPesanPenyedia', function (): void {
+    it('tugas: Fonnte (tidak resmi) mengirim teks struk. Status Terkirim + IdPesanPenyedia', function (): void {
         Queue::fake();
         PasangWhatsapp();
         Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['80123']])]);
@@ -175,7 +175,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
             ->assertOk()->assertExactJson(['Uuid' => $pesan->Uuid, 'Status' => 'Terkirim', 'PesanGalat' => null]);
     });
 
-    it('tugas: WhatsApp Cloud API resmi memakai templat [toko, total, URL] bila nama templat diisi; tanpa templat = teks', function (): void {
+    it('tugas: WhatsApp Cloud API resmi memakai templat [toko, total, URL] bila nama templat diisi, tanpa templat = teks', function (): void {
         Queue::fake();
         PasangWhatsapp('MetaCloud', 'struk_digital');
         Http::fake(['graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid.HBg1']]])]);
@@ -226,7 +226,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
         expect($pesan->refresh()->Status)->toBe(StatusPesanKeluar::Terkirim);
     });
 
-    it('D-33: kirim struk lewat email selalu 409 EmailBelumAktif (juga bila integrasi email platform aktif); tidak ada baris PesanKeluar', function (): void {
+    it('D-33: kirim struk lewat email selalu 409 EmailBelumAktif (juga bila integrasi email platform aktif). Tidak ada baris PesanKeluar', function (): void {
         Queue::fake();
         PasangWhatsapp();
         [$k, $p] = SiapkanJualStruk($this);
@@ -279,7 +279,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
         KirimStruk($this, $k, $p->Uuid)->assertStatus(409)->assertJsonPath('Galat.Kode', 'StrukDigitalNonaktif');
     });
 
-    it('nomor/email tidak sah = 422 TujuanTidakValid; isian kosong/kanal asing = 422 ValidasiGagal', function (string $kanal, string $tujuan): void {
+    it('nomor/email tidak sah = 422 TujuanTidakValid. Isian kosong/kanal asing = 422 ValidasiGagal', function (string $kanal, string $tujuan): void {
         PasangWhatsapp();
         [$k, $p] = SiapkanJualStruk($this);
 
@@ -361,7 +361,7 @@ describe('K3 kirim struk digital dari POS', function (): void {
         ))->times(3);
     });
 
-    it('masalah email (kiriman lama sebelum D-33): pesan difilter dari alamat pelanggan; kegagalan sistem (failed) menandai Gagal', function (): void {
+    it('masalah email (kiriman lama sebelum D-33): pesan difilter dari alamat pelanggan. Kegagalan sistem (failed) menandai Gagal', function (): void {
         Queue::fake();
         Mail::shouldReceive('to')->andThrow(new RuntimeException('550 mailbox pelanggan@contoh.id unavailable'));
         [$k, $p] = SiapkanJualStruk($this, whatsapp: false);

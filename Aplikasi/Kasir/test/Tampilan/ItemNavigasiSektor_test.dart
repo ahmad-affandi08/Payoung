@@ -44,7 +44,7 @@ void main() {
     expect(_Tujuan(const ['SVC-SLN']), contains(TujuanRuangKerja.Stok));
   });
 
-  test('pre-order: kue & katering, fashion, inden elektronik, florist, percetakan; bukan apotek/kelontong/bengkel', () {
+  test('pre-order: kue & katering, fashion, inden elektronik, florist, percetakan, bukan apotek/kelontong/bengkel', () {
     expect(_CekSektor(const ['FNB-BAK'], KonteksPenjualan.sektorPreOrder), isTrue);
     expect(_CekSektor(const ['FNB-CAF'], KonteksPenjualan.sektorPreOrder), isTrue);
     expect(_CekSektor(const ['RTL-FSH'], KonteksPenjualan.sektorPreOrder), isTrue);
@@ -55,7 +55,7 @@ void main() {
     expect(_CekSektor(const ['SVC-WRK'], KonteksPenjualan.sektorPreOrder), isFalse);
   });
 
-  test('komisi staf per item: jasa, F&B, butik/toko HP, bangunan, grosir; bukan kelontong/apotek', () {
+  test('komisi staf per item: jasa, F&B, butik/toko HP, bangunan, grosir, bukan kelontong/apotek', () {
     expect(_CekSektor(const ['SVC-SLN'], KonteksPenjualan.sektorKomisiStaf), isTrue);
     expect(_CekSektor(const ['RTL-FSH'], KonteksPenjualan.sektorKomisiStaf), isTrue);
     expect(_CekSektor(const ['RTL-GEN'], KonteksPenjualan.sektorKomisiStaf), isFalse);

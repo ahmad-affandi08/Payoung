@@ -366,7 +366,7 @@ final class PemvalidasiImporStokAwal
     private function PeriksaProduk(DataInfoProdukStok $produk, array $data): array
     {
         if ($produk->jenis === JenisProduk::Konsinyasi) {
-            return [self::Galat('Produk', "{$produk->nama} adalah barang konsinyasi; stoknya dicatat lewat penerimaan konsinyasi, bukan stok awal.")];
+            return [self::Galat('Produk', "{$produk->nama} adalah barang konsinyasi. Stoknya dicatat lewat penerimaan konsinyasi, bukan stok awal.")];
         }
 
         if (! $produk->jenis->CekPunyaStok()) {

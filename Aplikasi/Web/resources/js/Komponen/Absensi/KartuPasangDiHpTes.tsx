@@ -36,7 +36,7 @@ describe('Kartu Pasang di HP', () => {
         expect(result.current.bisaPasang).toBe(false);
     });
 
-    it('iPhone tanpa jendela pasang mendapat petunjuk Bagikan; sudah terpasang tidak menampilkan apa pun', () => {
+    it('iPhone tanpa jendela pasang mendapat petunjuk Bagikan. Sudah terpasang tidak menampilkan apa pun', () => {
         vi.stubGlobal('navigator', {
             ...navigator,
             userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',

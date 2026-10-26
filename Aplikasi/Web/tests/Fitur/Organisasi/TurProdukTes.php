@@ -19,7 +19,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('Beranda memuat tur yang sudah dilihat pengguna; kosong untuk pengguna baru', function (): void {
+it('Beranda memuat tur yang sudah dilihat pengguna. Kosong untuk pengguna baru', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 

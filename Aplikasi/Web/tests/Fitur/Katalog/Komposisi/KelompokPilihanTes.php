@@ -97,7 +97,7 @@ describe('Kelompok pilihan (modifier)', function (): void {
             ->and($galat(2, 20, $dua))->toBe([]);
     });
 
-    it('bahan pilihan harus jenis bahan dengan jumlah > 0; bahan tenant lain tidak ditemukan', function (): void {
+    it('bahan pilihan harus jenis bahan dengan jumlah > 0. Bahan tenant lain tidak ditemukan', function (): void {
         ['Tenant' => $tenantA, 'Pemilik' => $pemilikA] = BantuanKatalog::BuatTenant('Kedai Kopi Senja Solo');
         $jasa = BantuanKatalog::BuatProduk(['Nama' => 'Jasa Antar Kurir Internal', 'Jenis' => JenisProduk::Jasa]);
         $susu = BantuanKomposisi::BuatBahan('Susu Oat Barista Edition', 'ml', 'Mililiter');
@@ -182,7 +182,7 @@ describe('Kelompok pilihan (modifier)', function (): void {
         $this->assertDatabaseHas('LogAudit', ['IdTenant' => $tenant->Id, 'Peristiwa' => 'kelompok-pilihan.hapus', 'IdObjek' => $kelompok->Id]);
     });
 
-    it('isolasi & izin: kelompok tenant lain 404; kasir 403 untuk tambah, ubah, hapus', function (): void {
+    it('isolasi & izin: kelompok tenant lain 404. Kasir 403 untuk tambah, ubah, hapus', function (): void {
         BantuanKatalog::BuatTenant('Warung Kopi Tetangga Sebelah');
         $kelompokB = BantuanKomposisi::BuatKelompokPilihan();
         ['Tenant' => $tenantA, 'Pemilik' => $pemilikA] = BantuanKatalog::BuatTenant('Kedai Kopi Senja Solo');

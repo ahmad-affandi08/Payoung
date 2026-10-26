@@ -32,7 +32,7 @@ function JumlahProdukContohTemplate(string $kode): int
     return count(app(PembacaIsiTemplate::class)->Baca(BantuanPanduanAwal::TerbitkanTemplate($kode)->Isi)->produkContoh);
 }
 
-it('satu klik: template, pajak, produk contoh, dan metode bayar siap; langsung ke langkah Perangkat; diulang tidak menggandakan', function (): void {
+it('satu klik: template, pajak, produk contoh, dan metode bayar siap. Langsung ke langkah Perangkat. Diulang tidak menggandakan', function (): void {
     $jumlahContoh = JumlahProdukContohTemplate('FNB-CAF');
     ['Tenant' => $tenant, 'Pemilik' => $pemilik, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant('Kopi Nusantara Laweyan Cepat');
     Outlet::query()->whereKey($outlet->Id)->update(['KodeKota' => '33.72']);
@@ -59,7 +59,7 @@ it('satu klik: template, pajak, produk contoh, dan metode bayar siap; langsung k
     expect(Produk::query()->count())->toBe($jumlahContoh);
 });
 
-it('kota belum diisi padahal PBJT diusulkan: pajak dibiarkan untuk diisi manual; kuota SKU hampir penuh: produk contoh sebatas sisa kuota', function (): void {
+it('kota belum diisi padahal PBJT diusulkan: pajak dibiarkan untuk diisi manual. Kuota SKU hampir penuh: produk contoh sebatas sisa kuota', function (): void {
     $jumlahContoh = JumlahProdukContohTemplate('FNB-CAF');
     ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant('Kopi Tanpa Kota Cepat', 'GRATIS');
     BantuanOrganisasi::AturKonteks($tenant->Id);

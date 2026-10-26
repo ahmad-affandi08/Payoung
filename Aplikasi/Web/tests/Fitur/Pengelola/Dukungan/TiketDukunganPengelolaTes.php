@@ -201,7 +201,7 @@ describe('Menangani tiket', function (): void {
             ->assertDownload('panduan-printer.pdf');
     });
 
-    it('PGL-07: balasan ke tenant membuat notifikasi aplikasi untuk pelapor tanpa isi balasan; catatan internal tidak', function (): void {
+    it('PGL-07: balasan ke tenant membuat notifikasi aplikasi untuk pelapor tanpa isi balasan. Catatan internal tidak', function (): void {
         Queue::fake();
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $tenant, 'Pengguna' => $pengguna] = BantuanDukungan::BuatTenant();
@@ -284,7 +284,7 @@ describe('Menangani tiket', function (): void {
 });
 
 describe('Aksi massal tiket', function (): void {
-    it('tandai selesai dan tutup banyak tiket; tutup wajib alasan; yang final dilewati dengan alasan; peran tanpa izin ditolak', function (): void {
+    it('tandai selesai dan tutup banyak tiket. Tutup wajib alasan, yang final dilewati dengan alasan. Peran tanpa izin ditolak', function (): void {
         $petugas = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Dukungan);
         ['Tenant' => $tenant, 'Pengguna' => $pengguna] = BantuanDukungan::BuatTenant();
         $a = BantuanDukungan::BuatTiket($tenant, $pengguna, 'Tiket A');

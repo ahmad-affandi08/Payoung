@@ -36,7 +36,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('isi deposit offline: nomor DEP, outbox Deposit.Isi, tunai masuk kas shift; aturan jumlah & metode', () async {
+  test('isi deposit offline: nomor DEP, outbox Deposit.Isi, tunai masuk kas shift. Aturan jumlah & metode', () async {
     final k = await u.MuatKonteks();
     expect(k.deposit.berlaku, isTrue);
     final tunai = k.metodePembayaran.firstWhere((m) => m.Jenis == 'Tunai');
@@ -113,7 +113,7 @@ void main() {
     );
   });
 
-  test('saldo deposit online; offline → PerluOnline', () async {
+  test('saldo deposit online. Offline → PerluOnline', () async {
     u.server.penangan = (p) async {
       expect(p.url.path, endsWith('/api/pos/v1/pelanggan/${ani.uuid}/deposit'));
       return Json({
@@ -131,7 +131,7 @@ void main() {
   });
 
   test(
-    'bayar dengan deposit: wajib pelanggan & saldo dicek, tidak melebihi saldo; outbox membawa metode Deposit',
+    'bayar dengan deposit: wajib pelanggan & saldo dicek, tidak melebihi saldo. Outbox membawa metode Deposit',
     () async {
       final katalog = await u.MuatKatalog();
       final k = await u.MuatKonteks();
@@ -176,7 +176,7 @@ void main() {
   );
 
   test(
-    'bukti isi deposit: judul, nomor, pelanggan, jumlah, saldo sesudah bila diketahui; laci hanya bila diminta',
+    'bukti isi deposit: judul, nomor, pelanggan, jumlah, saldo sesudah bila diketahui. Laci hanya bila diminta',
     () async {
       final hasil = IsiDepositTersimpan(
         uuid: '01K5ISIDEPOSIT000000000001',

@@ -52,7 +52,7 @@ describe('EvaluatorFitur (P-04, BR-P04.3)', function (): void {
             ->and($evaluator->CekFiturAktif(BuatSumber(['modulOutletAktif' => ['pos.retail']]), 'pos.retail'))->toBeTrue();
     });
 
-    it('batas efektif = paket + add-on × jumlah, ditimpa override; tak terbatas tetap tak terbatas', function (): void {
+    it('batas efektif = paket + add-on × jumlah, ditimpa override. Tak terbatas tetap tak terbatas', function (): void {
         $sumber = BuatSumber([
             'addon' => [
                 ['KunciFitur' => null, 'TambahanBatas' => ['BatasOutlet' => 1, 'BatasSku' => 500], 'Jumlah' => 2],
@@ -87,7 +87,7 @@ describe('EvaluatorFitur (P-04, BR-P04.3)', function (): void {
             ->and($evaluator->CekMasihDalamBatas($sumber, 'BatasSku', 0, 101))->toBeFalse();
     });
 
-    it('BR-01.3: modul outlet membatasi fitur paket; null = tanpa batasan; override tetap dibatasi modul outlet', function (): void {
+    it('BR-01.3: modul outlet membatasi fitur paket. Null = tanpa batasan. Override tetap dibatasi modul outlet', function (): void {
         $evaluator = new EvaluatorFitur;
         $tanpaModul = BuatSumber(['fiturPaket' => ['pos.retail', 'pos.kds']]);
         $denganModul = BuatSumber(['fiturPaket' => ['pos.retail', 'pos.kds'], 'modulOutletAktif' => ['pos.retail', 'pos.mode-meja']]);

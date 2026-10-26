@@ -71,7 +71,7 @@ void main() {
     expect(LayarInsight.Persen(null), isNull);
   });
 
-  testWidgets('kartu Beranda meringkas minggu lalu; ketuk membuka layar Insight', (tester) async {
+  testWidgets('kartu Beranda meringkas minggu lalu. Ketuk membuka layar Insight', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
 

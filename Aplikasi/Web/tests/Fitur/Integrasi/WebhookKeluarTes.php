@@ -92,7 +92,7 @@ function DaftarkanWebhookUji(mixed $tes, array $k, array $peristiwa, string $url
     return ['Webhook' => WebhookTenant::query()->latest('Id')->firstOrFail(), 'Rahasia' => $rahasia];
 }
 
-it('penjualan selesai, void, dan retur terkirim bertanda tangan HMAC dengan IdPeristiwa; rahasia hanya tampil sekali', function (): void {
+it('penjualan selesai, void, dan retur terkirim bertanda tangan HMAC dengan IdPeristiwa. Rahasia hanya tampil sekali', function (): void {
     Http::fake(['gudang.contoh.co.id/*' => Http::response('{"diterima":true}', 200)]);
     $k = BantuanPenjualan::Siapkan($this, 'Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($k['Tenant']);
@@ -146,7 +146,7 @@ it('penjualan selesai, void, dan retur terkirim bertanda tangan HMAC dengan IdPe
             ->missing('Kiriman.0.Muatan'));
 });
 
-it('gagal dicoba ulang 1m, 5m, 30m, 2j, 12j lewat perintah terjadwal lalu Gagal; kirim ulang memakai IdPeristiwa yang sama', function (): void {
+it('gagal dicoba ulang 1m, 5m, 30m, 2j, 12j lewat perintah terjadwal lalu Gagal. Kirim ulang memakai IdPeristiwa yang sama', function (): void {
     $pulih = false;
     Http::fake(['gudang.contoh.co.id/*' => function () use (&$pulih) {
         return $pulih ? Http::response('', 204) : Http::response('Layanan sedang pemeliharaan', 503);
@@ -358,7 +358,7 @@ it('produk.diubah dikirim setiap kali produk disimpan (IdPeristiwa berbeda), dat
     Http::assertSentCount(2);
 });
 
-it('produk.diubah: sekali per perubahan nyata dari harga, arsip, dan pulihkan; simpan ulang tanpa perubahan tidak mengirim', function (): void {
+it('produk.diubah: sekali per perubahan nyata dari harga, arsip, dan pulihkan. Simpan ulang tanpa perubahan tidak mengirim', function (): void {
     Http::fake(['gudang.contoh.co.id/*' => Http::response('', 204)]);
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($t['Tenant']);
@@ -467,7 +467,7 @@ it('penangan webhook integrasi hanya diantrekan bila tenant punya webhook aktif 
     expect($antreanIntegrasi())->toBe(1);
 });
 
-it('pelanggan.dibuat, shift.ditutup, stok.disesuaikan, PO disetujui, dan GRN diposting terkirim sesuai spesifikasi; hanya yang dilanggan', function (): void {
+it('pelanggan.dibuat, shift.ditutup, stok.disesuaikan, PO disetujui, dan GRN diposting terkirim sesuai spesifikasi. Hanya yang dilanggan', function (): void {
     Http::fake(['gudang.contoh.co.id/*' => Http::response('', 204)]);
     $k = BantuanPenjualan::Siapkan($this, 'Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($k['Tenant']);
@@ -522,7 +522,7 @@ it('pelanggan.dibuat, shift.ditutup, stok.disesuaikan, PO disetujui, dan GRN dip
     expect(json_encode($data('stok.disesuaikan')))->not->toContain('Hpp')->not->toContain('Nilai');
 });
 
-it('PeristiwaIntegrasi yang ditangani ulang tidak menggandakan kiriman; kunci berbeda (tutup ulang shift) = kiriman baru', function (): void {
+it('PeristiwaIntegrasi yang ditangani ulang tidak menggandakan kiriman. Kunci berbeda (tutup ulang shift) = kiriman baru', function (): void {
     Http::fake(['*' => Http::response('ok', 200)]);
     $k = BantuanPenjualan::Siapkan($this, 'Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($k['Tenant']);
@@ -538,7 +538,7 @@ it('PeristiwaIntegrasi yang ditangani ulang tidak menggandakan kiriman; kunci be
     expect(KirimanWebhook::query()->pluck('KunciPeristiwa')->sort()->values()->all())->toBe(['1', '2']);
 });
 
-it('stok.menipis dikirim sekali saat saldo turun melewati stok minimum; terkirim lagi setelah stok diisi di atas minimum', function (): void {
+it('stok.menipis dikirim sekali saat saldo turun melewati stok minimum. Terkirim lagi setelah stok diisi di atas minimum', function (): void {
     Http::fake(['gudang.contoh.co.id/*' => Http::response('', 204)]);
     $k = BantuanPenjualan::Siapkan($this, 'Toko Bangunan Sumber Rejeki Boyolali');
     AktifkanFiturWebhook($k['Tenant']);

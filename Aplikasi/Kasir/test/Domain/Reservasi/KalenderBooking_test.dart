@@ -28,7 +28,7 @@ void main() {
   );
   const maya = StafReservasiPos(uuid: 'S1', nama: 'Maya', jamMulai: '09:00', jamSelesai: '17:00');
 
-  test('rentang kosong mengabaikan reservasi batal/tidak datang & staf lain; tumpang tindih digabung', () {
+  test('rentang kosong mengabaikan reservasi batal/tidak datang & staf lain. Tumpang tindih digabung', () {
     final kosong = LayananReservasi.HitungKosong(maya, [
       R('2026-10-13T03:00:00Z', '2026-10-13T04:00:00Z'), // 10:00–11:00 WIB
       R('2026-10-13T03:30:00Z', '2026-10-13T04:30:00Z'), // 10:30–11:30 WIB (tumpang tindih)
@@ -40,7 +40,7 @@ void main() {
     expect(LayananReservasi.HitungKosong(maya, const [], 'Asia/Makassar').single, (mulai: '09:00', selesai: '17:00'));
   });
 
-  test('booking ditolak tanpa izin, tanpa nama, atau HP terlalu pendek; offline = PerluOnline', () async {
+  test('booking ditolak tanpa izin, tanpa nama, atau HP terlalu pendek. Offline = PerluOnline', () async {
     final u = LingkunganUji.Buat();
     addTearDown(u.Tutup);
     await u.SiapkanAktif();

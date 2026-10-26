@@ -73,7 +73,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('buka kamera: strip tampil dengan kamera belakang; kamera tetap terbuka untuk banyak barang', (
+  testWidgets('buka kamera: strip tampil dengan kamera belakang. Kamera tetap terbuka untuk banyak barang', (
     tester,
   ) async {
     final (u, pabrik) = await Masuk(tester);
@@ -98,7 +98,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('barang yang tetap terlihat hanya dihitung sekali; setelah sempat hilang barang sama dihitung lagi', (
+  testWidgets('barang yang tetap terlihat hanya dihitung sekali. Setelah sempat hilang barang sama dihitung lagi', (
     tester,
   ) async {
     final (u, pabrik) = await Masuk(tester);
@@ -168,7 +168,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('hanya satu kamera: tombol ganti nonaktif dengan penjelasan; senter kamera belakang menyala', (
+  testWidgets('hanya satu kamera: tombol ganti nonaktif dengan penjelasan. Senter kamera belakang menyala', (
     tester,
   ) async {
     final (u, pabrik) = await Masuk(tester, kamera: PemindaiKameraTiruan(jumlahKamera: 1));
@@ -205,7 +205,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('produk berpilihan membuka panel; pindaian saat panel terbuka diabaikan, keranjang tidak berubah', (
+  testWidgets('produk berpilihan membuka panel. Pindaian saat panel terbuka diabaikan, keranjang tidak berubah', (
     tester,
   ) async {
     final (u, pabrik) = await Masuk(tester);
@@ -224,7 +224,7 @@ void main() {
     await Lepas(tester, u);
   });
 
-  testWidgets('pindah ke menu lain mematikan kamera; kembali ke Jual kamera tertutup sampai dibuka lagi', (
+  testWidgets('pindah ke menu lain mematikan kamera. Kembali ke Jual kamera tertutup sampai dibuka lagi', (
     tester,
   ) async {
     final (u, pabrik) = await Masuk(tester);

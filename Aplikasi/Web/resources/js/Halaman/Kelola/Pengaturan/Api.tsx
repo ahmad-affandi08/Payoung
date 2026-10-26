@@ -129,7 +129,7 @@ function DialogTokenBaru({ nama, token, saatSelesai }: { nama: string; token: st
     return (
         <DialogRahasia
             judul={`Token ${nama} dibuat`}
-            peringatan="Salin token ini sekarang dan simpan di tempat aman. Token tidak bisa ditampilkan lagi; bila hilang, cabut lalu buat token baru."
+            peringatan="Salin token ini sekarang dan simpan di tempat aman. Token tidak bisa ditampilkan lagi. Bila hilang, cabut lalu buat token baru."
             saatSelesai={saatSelesai}
         >
             <NilaiRahasia nilai={token} jenis="token" />

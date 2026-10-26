@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * (BR-P03.4). Urutan kunci JSON tidak dijamin MySQL, jadi dibandingkan dengan toEqual.
  */
 describe('Migrasi UbahKunciPeranAkunDrafTemplate', function (): void {
-    it('mengganti PiutangSettlement/Waste hanya di versi Draf (kunci baru menang bila keduanya ada); versi Terbit utuh', function (): void {
+    it('mengganti PiutangSettlement/Waste hanya di versi Draf (kunci baru menang bila keduanya ada). Versi Terbit utuh', function (): void {
         $template = TemplateSektor::query()->create(['Kode' => 'UJI-MIG', 'Nama' => 'Uji migrasi']);
         $isiLama = ['PemetaanAkun' => ['KasOutlet' => '1-1100', 'PiutangSettlement' => '1-1300', 'Waste' => '5-1300'], 'Kategori' => ['Kopi']];
         // Disisipkan lewat query builder: model menolak perubahan isi versi terbit (BR-P03.4).

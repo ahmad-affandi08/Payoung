@@ -58,7 +58,7 @@ function SiapkanDrafOtomatis(TestCase $tes): array
     return $t + ['PemasokA' => $pemasokA, 'PemasokB' => $pemasokB, 'Beras' => $beras, 'Minyak' => $minyak, 'Gula' => $gula, 'DusBeras' => $dus];
 }
 
-it('draf per pemasok dengan satuan & harga beli terakhir; jumlah sampai stok maksimum; tanpa riwayat dilaporkan; ulang tidak menggandakan', function (): void {
+it('draf per pemasok dengan satuan & harga beli terakhir. Jumlah sampai stok maksimum, tanpa riwayat dilaporkan. Ulang tidak menggandakan', function (): void {
     $k = SiapkanDrafOtomatis($this);
     $masuk = fn () => BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 
@@ -98,7 +98,7 @@ it('draf per pemasok dengan satuan & harga beli terakhir; jumlah sampai stok mak
     });
 });
 
-it('jadwal pagi mengikuti pengaturan; pengguna tanpa izin pembelian ditolak', function (): void {
+it('jadwal pagi mengikuti pengaturan. Pengguna tanpa izin pembelian ditolak', function (): void {
     $k = SiapkanDrafOtomatis($this);
 
     $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -126,7 +126,7 @@ it('jadwal pagi mengikuti pengaturan; pengguna tanpa izin pembelian ditolak', fu
     expect(PesananPembelian::query()->where('DibuatOtomatis', true)->where('Status', StatusPesananPembelian::Draf->value)->count())->toBe(2);
 });
 
-it('F24 sumber perkiraan: kebutuhan dari laju pemakaian 28 hari × cakupan hari − saldo − PO terbuka, tanpa perlu stok minimum; catatan menyebut dasarnya', function (): void {
+it('F24 sumber perkiraan: kebutuhan dari laju pemakaian 28 hari × cakupan hari − saldo − PO terbuka, tanpa perlu stok minimum. Catatan menyebut dasarnya', function (): void {
     $t = BantuanPembelian::SiapkanTenant();
     $id = $t['Pemilik']->Id;
     $pemasok = BantuanPembelian::BuatPemasok('PT Beras Delanggu Sejahtera');
@@ -163,7 +163,7 @@ it('F24 sumber perkiraan: kebutuhan dari laju pemakaian 28 hari × cakupan hari 
     expect($jumlah)->toBe(['20.0000', '160.0000']);
 });
 
-it('F24 pengaturan: sumber draf dan cakupan disimpan lewat formulir; nilai di luar pilihan ditolak', function (): void {
+it('F24 pengaturan: sumber draf dan cakupan disimpan lewat formulir. Nilai di luar pilihan ditolak', function (): void {
     $t = BantuanPembelian::SiapkanTenant();
     BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
     $dasar = ['BatasPersetujuanPo' => '5000000', 'ToleransiPenerimaanPersen' => '0', 'DrafPoOtomatis' => true];

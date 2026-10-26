@@ -75,7 +75,7 @@ describe('Reservasi meja (D-145)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/reservasi-meja'));
     afterEach(() => cleanup());
 
-    it('aksi baris: datang, ubah, catat uang muka, tidak datang, batalkan; tanpa uang muka tampil "Tanpa uang muka"', () => {
+    it('aksi baris: datang, ubah, catat uang muka, tidak datang, batalkan, tanpa uang muka tampil "Tanpa uang muka"', () => {
         RenderUji(<HalamanDaftarReservasiMeja {...Props()} />);
         expect(screen.getAllByText('Bapak Hendra Wijaya').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Tanpa uang muka').length).toBeGreaterThan(0);
@@ -88,7 +88,7 @@ describe('Reservasi meja (D-145)', () => {
         expect(screen.getByRole('menuitem', { name: 'Batalkan' })).toBeTruthy();
     });
 
-    it('uang muka tercatat tampil bersama sisanya; batal mewajibkan memilih nasib uang muka', () => {
+    it('uang muka tercatat tampil bersama sisanya. Batal mewajibkan memilih nasib uang muka', () => {
         const dengan: BarisReservasiMeja = {
             ...baris,
             BolehCatatDp: false,

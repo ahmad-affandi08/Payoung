@@ -45,7 +45,7 @@ describe('F-05a PelacakanTerkunci di Katalog (DesainF05a C.4)', function (): voi
         expect($produk->refresh()->Pelacakan)->toBe(PelacakanProduk::Batch)->and($produk->Merek)->toBe('Sanbe');
     });
 
-    it('PerbaruiProdukSebagian (impor): pelacakan terkunci setelah ada riwayat stok; tanpa perubahan pelacakan tetap jalan', function (): void {
+    it('PerbaruiProdukSebagian (impor): pelacakan terkunci setelah ada riwayat stok, tanpa perubahan pelacakan tetap jalan', function (): void {
         $t = BantuanPelacakan::SiapkanTenant('Toko Elektronik Maju Jaya');
         $stok = $t['Produk']['Stok'];
         $stok->forceFill(['IdKelompokPajak' => BantuanKatalog::BuatKelompokPajak('Barang elektronik kena PPN')->Id])->save();

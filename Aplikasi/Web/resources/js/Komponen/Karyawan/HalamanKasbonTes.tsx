@@ -51,7 +51,7 @@ describe('Kasbon karyawan (F-18 bagian 3)', () => {
         });
     });
 
-    it('kasbon yang sudah dicicil tidak bisa dibatalkan; tanpa izin tidak ada tombol & aksi', () => {
+    it('kasbon yang sudah dicicil tidak bisa dibatalkan, tanpa izin tidak ada tombol & aksi', () => {
         RenderUji(<HalamanKasbon {...Props([{ ...dasar, Sisa: '300000.00' }])} />);
         BukaMenu(screen.getAllByRole('button', { name: /Aksi kasbon Rina Wulandari/ })[0] as HTMLElement);
         expect(screen.queryByRole('menuitem', { name: 'Batalkan kasbon' })).toBeNull();

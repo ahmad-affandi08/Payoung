@@ -48,7 +48,7 @@ void main() {
   });
   tearDown(() => u.Tutup());
 
-  test('offline ditolak; check-in lalu muat: staf & pelanggan ikut; bayar membawa UuidReservasi', () async {
+  test('offline ditolak; check-in lalu muat: staf & pelanggan ikut. Bayar membawa UuidReservasi', () async {
     final katalog = await u.MuatKatalog();
     final k = await u.MuatKonteks();
     u.server.penangan = (p) async => throw http.ClientException('offline');

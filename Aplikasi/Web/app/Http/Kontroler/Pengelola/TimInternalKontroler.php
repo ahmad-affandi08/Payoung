@@ -109,7 +109,7 @@ final class TimInternalKontroler extends Kontroler
             $kodePeran,
         );
 
-        return back()->with('Kilat', "{$pengguna->Nama} ditambahkan. Berikan email & kata sandi awal kepadanya; ia wajib menggantinya dan mengaktifkan 2FA saat pertama masuk.");
+        return back()->with('Kilat', "{$pengguna->Nama} ditambahkan. Berikan email & kata sandi awal kepadanya. Ia wajib menggantinya dan mengaktifkan 2FA saat pertama masuk.");
     }
 
     public function Undang(UndangAnggotaTimPermintaan $permintaan, UndangAnggotaTim $undang): RedirectResponse

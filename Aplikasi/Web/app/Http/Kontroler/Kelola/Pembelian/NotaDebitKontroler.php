@@ -105,6 +105,6 @@ final class NotaDebitKontroler extends DasarPembelianKontroler
         /** @var NotaDebitPembelian $n */
         $n = $batalkan->Jalankan($this->CariDokumen(NotaDebitPembelian::class, strtoupper($nota)), $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
 
-        return to_route('kelola.pembelian.nota-debit.detail', ['nota' => $n->Uuid])->with('Kilat', "{$n->Nomor} dibatalkan; hutang faktur, nilai stok, dan jurnalnya dikembalikan.");
+        return to_route('kelola.pembelian.nota-debit.detail', ['nota' => $n->Uuid])->with('Kilat', "{$n->Nomor} dibatalkan. Hutang faktur, nilai stok, dan jurnalnya dikembalikan.");
     }
 }

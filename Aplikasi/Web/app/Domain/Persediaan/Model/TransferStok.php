@@ -99,7 +99,7 @@ final class TransferStok extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Dokumen transfer stok tidak pernah dihapus; draf dibatalkan.');
+            throw new LogicException('Dokumen transfer stok tidak pernah dihapus. Draf dibatalkan.');
         });
     }
 

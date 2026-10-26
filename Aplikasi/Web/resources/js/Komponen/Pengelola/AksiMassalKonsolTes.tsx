@@ -24,7 +24,7 @@ describe('Aksi massal konsol', () => {
     });
     afterEach(() => cleanup());
 
-    it('tiket: tandai selesai langsung terkirim; tutup butuh alasan', () => {
+    it('tiket: tandai selesai langsung terkirim. Tutup butuh alasan', () => {
         RenderUji(
             <AksiMassalTiket
                 konteks={Konteks([{ Uuid: '01J9TKT0000000000000000001' }, { Uuid: '01J9TKT0000000000000000002' }])}

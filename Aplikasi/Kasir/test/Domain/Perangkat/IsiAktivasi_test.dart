@@ -25,7 +25,7 @@ void main() {
     expect(IsiAktivasi.Uraikan('ftp://kasir.tokoabc.id/aktivasi-perangkat?kode=X').alamatServer, isNull);
   });
 
-  test('alamat ketikan dinormalkan; yang tidak sah ditolak', () {
+  test('alamat ketikan dinormalkan, yang tidak sah ditolak', () {
     expect(IsiAktivasi.NormalkanAlamat('kasir.tokoabc.id').toString(), 'https://kasir.tokoabc.id/');
     expect(
       IsiAktivasi.NormalkanAlamat(' https://kasir.tokoabc.id/payoung ').toString(),

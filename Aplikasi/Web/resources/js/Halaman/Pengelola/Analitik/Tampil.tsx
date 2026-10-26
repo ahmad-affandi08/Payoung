@@ -219,7 +219,7 @@ export default function HalamanAnalitikPlatform({
                 <TabsContent value="adopsi" className="flex flex-col gap-3">
                     <p className="max-w-3xl text-isi text-teks-sekunder">
                         Dari tenant yang menjual dalam {String(HariFitur)} hari terakhir, berapa persen yang memakai
-                        tiap fitur (opname, pesanan pembelian, dan pelanggan baru dalam {String(HariFitur)} hari; promo
+                        tiap fitur (opname, pesanan pembelian, dan pelanggan baru dalam {String(HariFitur)} hari. Promo
                         dan karyawan cukup ada). Angka dalam kurung = jumlah tenant.
                     </p>
                     <TabelData

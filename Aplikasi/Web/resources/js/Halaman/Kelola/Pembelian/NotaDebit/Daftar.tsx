@@ -94,7 +94,7 @@ export default function HalamanDaftarNotaDebit({ Nota, OpsiJenis, OpsiStatus, Iz
     return (
         <HalamanDaftarPembelian
             judul="Nota debit pembelian"
-            keterangan="Pengurang hutang untuk selisih harga atau klaim kepada pemasok tanpa barang yang dikembalikan. Catat dari halaman fakturnya; barang yang dikembalikan tetap lewat retur."
+            keterangan="Pengurang hutang untuk selisih harga atau klaim kepada pemasok tanpa barang yang dikembalikan. Catat dari halaman fakturnya. Barang yang dikembalikan tetap lewat retur."
             izin={Izin}
             objek="nota debit"
         >

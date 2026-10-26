@@ -30,7 +30,7 @@ beforeEach(function (): void {
 
 afterEach(fn () => Carbon::setTestNow());
 
-it('hari aman ditutup otomatis atas nama Owner; hari tanpa shift & hari berjalan dibiarkan; ulang tidak menggandakan', function (): void {
+it('hari aman ditutup otomatis atas nama Owner. Hari tanpa shift & hari berjalan dibiarkan. Ulang tidak menggandakan', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
     BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
@@ -66,7 +66,7 @@ it('hari aman ditutup otomatis atas nama Owner; hari tanpa shift & hari berjalan
         ->where('Hari.2.DitutupOtomatis', true));
 });
 
-it('shift masih terbuka atau ada peringatan: tidak ditutup otomatis; tenant lain tidak tersentuh', function (): void {
+it('shift masih terbuka atau ada peringatan: tidak ditutup otomatis. Tenant lain tidak tersentuh', function (): void {
     $a = BantuanPenjualan::Siapkan($this, 'Kopi Senja Solo');
     $b = BantuanPenjualan::Siapkan($this, 'Warung Bakso Pak Kumis');
     BantuanOrganisasi::AturKonteks($a['Tenant']->Id);

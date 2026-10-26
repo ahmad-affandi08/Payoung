@@ -49,7 +49,7 @@ describe('Berkas lisensi bertanda tangan (D-35)', function (): void {
             ->and(fn () => $penanda->Baca(BantuanLisensi::Berkas(), ''))->toThrow(LisensiTidakSah::class, 'Kunci publik');
     });
 
-    it('D-36 format 2: masa pembaruan ikut ditandatangani; format 1 lama tetap sah tanpa batas pembaruan', function (): void {
+    it('D-36 format 2: masa pembaruan ikut ditandatangani. Format 1 lama tetap sah tanpa batas pembaruan', function (): void {
         $publik = BantuanLisensi::Kunci()['KunciPublik'];
         $penanda = app(PenandaLisensi::class);
         $berkas = BantuanLisensi::Berkas(BantuanLisensi::Data(pembaruanSampai: '2027-10-02'));

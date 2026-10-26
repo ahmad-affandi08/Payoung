@@ -34,7 +34,7 @@ function SiapkanUmpanBalik(mixed $tes): array
     return [...$k, 'Minyak' => $minyak, 'Penjualan' => $p, 'Kode' => KodeStrukDigital::Buat($k['Tenant']->Id, $p->Uuid)];
 }
 
-it('struk menawarkan penilaian; kiriman pertama tersimpan, halaman menampilkan penilaian, kiriman kedua tidak menimpa', function (): void {
+it('struk menawarkan penilaian. Kiriman pertama tersimpan, halaman menampilkan penilaian, kiriman kedua tidak menimpa', function (): void {
     $k = SiapkanUmpanBalik($this);
 
     $this->get('/s/'.$k['Kode'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -86,7 +86,7 @@ it('tenant lain tidak bisa menilai transaksi ini lewat kode tenant lain', functi
     expect(UmpanBalikTransaksi::query()->count())->toBe(0);
 });
 
-it('transaksi void tidak ditawarkan dan ditolak; saklar pengaturan struk mematikan penilaian', function (): void {
+it('transaksi void tidak ditawarkan dan ditolak. Saklar pengaturan struk mematikan penilaian', function (): void {
     $k = SiapkanUmpanBalik($this);
     $kedua = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Minyak'], 'Jumlah' => '1', 'Harga' => '38500.00']]]);
     $kodeKedua = KodeStrukDigital::Buat($k['Tenant']->Id, $kedua->Uuid);
@@ -107,7 +107,7 @@ it('transaksi void tidak ditawarkan dan ditolak; saklar pengaturan struk mematik
     $this->get('/kelola/kasir/struk')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Pengaturan.TampilkanUmpanBalik', false));
 });
 
-it('batas 30 hari: transaksi lama tidak ditawarkan dan ditolak; waktu berjalan menutupnya', function (): void {
+it('batas 30 hari: transaksi lama tidak ditawarkan dan ditolak. Waktu berjalan menutupnya', function (): void {
     $k = SiapkanUmpanBalik($this);
     $this->get('/s/'.$k['Kode'])->assertInertia(fn (AssertableInertia $h) => $h->where('Struk.UmpanBalik.Diminta', true));
 
@@ -118,7 +118,7 @@ it('batas 30 hari: transaksi lama tidak ditawarkan dan ditolak; waktu berjalan m
     expect(UmpanBalikTransaksi::query()->count())->toBe(0);
 });
 
-it('tab Umpan balik di laporan penjualan: rata-rata, sebaran, tingkat respons, daftar terbaru; ekspor CSV', function (): void {
+it('tab Umpan balik di laporan penjualan: rata-rata, sebaran, tingkat respons, daftar terbaru. Ekspor CSV', function (): void {
     $k = SiapkanUmpanBalik($this);
     $jual = fn () => BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $k['Minyak'], 'Jumlah' => '1', 'Harga' => '38500.00']]]);
     $kedua = $jual();

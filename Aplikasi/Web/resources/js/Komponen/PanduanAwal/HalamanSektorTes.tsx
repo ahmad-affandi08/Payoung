@@ -169,7 +169,7 @@ describe('Langkah 2 Jenis usaha & template (F-01, BR-01.1 aditif)', () => {
         expect(screen.getByLabelText('Yang disiapkan').textContent).toContain('Belum ada produk contoh');
     });
 
-    it('template dikelompokkan menurut jenis usaha dengan judul kelompok; satu kelompok saja tanpa judul', () => {
+    it('template dikelompokkan menurut jenis usaha dengan judul kelompok. Satu kelompok saja tanpa judul', () => {
         render(
             <HalamanSektor
                 {...BuatProps({

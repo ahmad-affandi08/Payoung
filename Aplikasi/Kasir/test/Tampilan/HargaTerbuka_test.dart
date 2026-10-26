@@ -46,7 +46,7 @@ void main() {
     await Tunggu(tester);
   }
 
-  testWidgets('barang lain-lain: ketik harga & keterangan; ketuk lagi = baris baru', (tester) async {
+  testWidgets('barang lain-lain: ketik harga & keterangan. Ketuk lagi = baris baru', (tester) async {
     final u = await MasukJual(tester);
     await Cari(tester, 'lain');
     await tester.tap(find.text('Barang lain-lain'));

@@ -57,7 +57,7 @@ final class EksporDiLatarBelakang
             $this->proses->Jalankan($berkas, fn (): Response => $lanjut($permintaan));
         });
 
-        return redirect()->route('kelola.unduhan.daftar')->with('Kilat', 'Berkas sedang disiapkan. Halaman ini diperbarui otomatis; unduh begitu statusnya Siap.');
+        return redirect()->route('kelola.unduhan.daftar')->with('Kilat', 'Berkas sedang disiapkan. Halaman ini diperbarui otomatis. Unduh begitu statusnya Siap.');
     }
 
     /** "kelola.laporan.penjualan.ekspor" → "Laporan penjualan"; diganti nama berkas sebenarnya setelah selesai. */

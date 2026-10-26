@@ -37,7 +37,7 @@ function SiapkanHttpStokAwal(): array
 }
 
 describe('F-05a HTTP stok awal: draf', function (): void {
-    it('Pemilik menyimpan draf lewat form; kirim ulang dengan Uuid yang sama tidak membuat dokumen kedua', function (): void {
+    it('Pemilik menyimpan draf lewat form. Kirim ulang dengan Uuid yang sama tidak membuat dokumen kedua', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();
         $isi = BantuanStokAwal::IsiForm($t['Gudang'], [
             BantuanStokAwal::IsiBaris($p['Stok'], '24', '37500'),
@@ -79,7 +79,7 @@ describe('F-05a HTTP stok awal: draf', function (): void {
         ]))->assertSessionHasErrors(['Baris.1.UuidProduk']);
     });
 
-    it('ubah draf dengan VersiDiubahPada; dokumen Diposting tidak bisa diubah atau dibuang (StatusTidakSesuai)', function (): void {
+    it('ubah draf dengan VersiDiubahPada. Dokumen Diposting tidak bisa diubah atau dibuang (StatusTidakSesuai)', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '5', '38000')]);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
@@ -114,7 +114,7 @@ describe('F-05a HTTP stok awal: draf', function (): void {
 });
 
 describe('F-05a HTTP stok awal: posting, batalkan, status', function (): void {
-    it('posting berulang lewat HTTP menghasilkan satu set mutasi dan satu jurnal; status JSON memuat nomor', function (): void {
+    it('posting berulang lewat HTTP menghasilkan satu set mutasi dan satu jurnal. Status JSON memuat nomor', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '10', '38000'), BantuanStokAwal::Baris($p['BahanBaku'], '7.25', '14750')]);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
@@ -131,7 +131,7 @@ describe('F-05a HTTP stok awal: posting, batalkan, status', function (): void {
         expect(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('batalkan lewat HTTP: alasan wajib 5–255 karakter; berhasil membalik stok', function (): void {
+    it('batalkan lewat HTTP: alasan wajib 5–255 karakter. Berhasil membalik stok', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();
         $dokumen = BantuanStokAwal::BuatDanPosting($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '10', '38000')], $t['Pemilik']->Id);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

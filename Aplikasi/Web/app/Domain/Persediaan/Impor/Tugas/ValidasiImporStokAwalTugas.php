@@ -55,7 +55,7 @@ final class ValidasiImporStokAwalTugas implements ShouldBeUniqueUntilProcessing,
                 PengirimTugasImporStokAwal::KirimLanjutan(new self($this->idTenant, $this->idPengguna, $this->idImporStokAwal));
             }
         }, IzinTenant::PersediaanKelola, function (string $alasan): void {
-            PengirimTugasImporStokAwal::Gagalkan($this->idImporStokAwal, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan; pengguna yang berizin bisa melanjutkan impor.');
+            PengirimTugasImporStokAwal::Gagalkan($this->idImporStokAwal, 'Impor dihentikan karena '.$alasan.'. Baris yang sudah diimpor tetap tersimpan. Pengguna yang berizin bisa melanjutkan impor.');
         });
     }
 

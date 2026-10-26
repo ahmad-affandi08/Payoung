@@ -75,7 +75,7 @@ void main() {
     expect(item.CekHargaDikunci, isTrue);
   });
 
-  test('kasir tanpa izin: butuh penyetuju ber-PIN; dengan penyetuju, penyetuju dicatat di baris', () {
+  test('kasir tanpa izin: butuh penyetuju ber-PIN, dengan penyetuju, penyetuju dicatat di baris', () {
     final keranjang = IsiCroissant();
     final uuid = keranjang.baris.single.uuid;
 
@@ -95,7 +95,7 @@ void main() {
     expect(ubah.baris.single.penyetujuHarga?.uuid, penyetujuTerpilih.uuid);
   });
 
-  test('alasan wajib dan maksimal 100 karakter; harga harus lebih dari nol', () {
+  test('alasan wajib dan maksimal 100 karakter. Harga harus lebih dari nol', () {
     final keranjang = IsiCroissant();
     final uuid = keranjang.baris.single.uuid;
 
@@ -135,7 +135,7 @@ void main() {
     expect(keranjang.baris.last.hargaAsli, isNull);
   });
 
-  test('kembalikan harga: lewat PulihkanHargaItem atau mengetik harga asal; harga & penanda pulih', () {
+  test('kembalikan harga: lewat PulihkanHargaItem atau mengetik harga asal. Harga & penanda pulih', () {
     var keranjang = IsiCroissant();
     final uuid = keranjang.baris.single.uuid;
     final asal = keranjang.baris.single.hargaSatuan;
@@ -187,7 +187,7 @@ void main() {
   });
 
   test(
-    'bayar: Penjualan.Buat membawa HargaManual & UuidPenyetujuHarga; baris tanpa perubahan tidak membawanya',
+    'bayar: Penjualan.Buat membawa HargaManual & UuidPenyetujuHarga. Baris tanpa perubahan tidak membawanya',
     () async {
       await u.shift.BukaShift(kasir: rina, kasAwal: Uang.DariBulat(500000));
       var keranjang = IsiCroissant();

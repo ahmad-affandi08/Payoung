@@ -62,11 +62,11 @@ export default function PemantauPosting({ uuid, status }: { uuid: string; status
                 {terbaru?.LabelStatus ?? 'Memproses'}: stok, HPP, dan jurnal sedang dicatat.
             </p>
             <p className="mt-1">
-                Halaman ini diperbarui otomatis. Anda boleh meninggalkan halaman ini; proses tetap berjalan.
+                Halaman ini diperbarui otomatis. Anda boleh meninggalkan halaman ini. Proses tetap berjalan.
             </p>
             {kueri.isError ? (
                 <p className="mt-1 font-semibold text-peringatan">
-                    Status belum bisa dibaca. Proses tetap berjalan di server; kami coba lagi otomatis.
+                    Status belum bisa dibaca. Proses tetap berjalan di server. Kami coba lagi otomatis.
                 </p>
             ) : null}
         </Pemberitahuan>

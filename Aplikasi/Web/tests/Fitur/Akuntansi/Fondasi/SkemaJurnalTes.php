@@ -56,7 +56,7 @@ describe('F-05a skema jurnal (DesainF05a B.2, C.5)', function (): void {
             ->and(Schema::hasColumns('KunciPeriode', ['Id', 'IdTenant', 'Periode', 'DikunciPada', 'DikunciOleh']))->toBeTrue();
     });
 
-    it('jurnal tersimpan milik tenant; idempotensi sumber dan nomor unik per tenant dijaga indeks', function (): void {
+    it('jurnal tersimpan milik tenant. Idempotensi sumber dan nomor unik per tenant dijaga indeks', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         ['Jurnal' => $jurnal] = BuatJurnalUjiSkema();
 
@@ -85,7 +85,7 @@ describe('F-05a skema jurnal (DesainF05a B.2, C.5)', function (): void {
             ->and(JurnalDetail::query()->sum('Debit'))->toEqual('12345.68');
     });
 
-    it('KunciPeriode unik per tenant & periode; nomor jurnal JU 6 digit dari PenomorDokumen', function (): void {
+    it('KunciPeriode unik per tenant & periode. Nomor jurnal JU 6 digit dari PenomorDokumen', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $kunci = BantuanPersediaan::KunciPeriode('2026-08', $t['Pemilik']->Id);
 

@@ -139,7 +139,7 @@ describe('PGL-16 halaman Pengaturan › Akses dukungan (Owner)', () => {
         expect(screen.getByText(/Belum ada alat bantu yang dijalankan/)).toBeTruthy();
     });
 
-    it('riwayat sesi menampilkan jumlah permintaan, perubahan, dan penolakan; jejak dimuat saat dibuka', async () => {
+    it('riwayat sesi menampilkan jumlah permintaan, perubahan, dan penolakan. Jejak dimuat saat dibuka', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn(() =>

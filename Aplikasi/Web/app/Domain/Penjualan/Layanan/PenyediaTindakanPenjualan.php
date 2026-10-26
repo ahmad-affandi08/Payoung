@@ -198,7 +198,7 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
             'Penjualan',
             $menit >= 10 ? TingkatTindakan::Penting : TingkatTindakan::Perhatian,
             'Pesanan toko online menunggu konfirmasi',
-            $jumlah.' pesanan belum dijawab; yang tertua sudah '.$menit.' menit. Pesanan yang tidak dikonfirmasi sampai batas waktu toko akan hangus sendiri.',
+            $jumlah.' pesanan belum dijawab, yang tertua sudah '.$menit.' menit. Pesanan yang tidak dikonfirmasi sampai batas waktu toko akan hangus sendiri.',
             $jumlah,
             '/kelola/toko-online',
             'Buka pesanan',

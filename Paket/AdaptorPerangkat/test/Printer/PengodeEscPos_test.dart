@@ -37,7 +37,7 @@ void main() {
       expect(byte.sublist(byte.length - PerintahEscPos.potongKertas.length), PerintahEscPos.potongKertas);
     });
 
-    test('umpan sebelum potong bisa diatur; 0 = tanpa umpan; bawaan tidak lagi 4 baris', () {
+    test('umpan sebelum potong bisa diatur; 0 = tanpa umpan. Bawaan tidak lagi 4 baris', () {
       expect(PerintahEscPos.potongKertas.sublist(0, 3), [0x1B, 0x64, PerintahEscPos.umpanAkhirBawaan]);
       expect(PerintahEscPos.umpanAkhirBawaan, lessThan(4));
       expect(PerintahEscPos.PotongKertas(0), [0x1D, 0x56, 0x42, 0x00]);

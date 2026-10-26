@@ -69,7 +69,7 @@ describe('PanelBayarSnap (D-159)', () => {
         vi.clearAllMocks();
     });
 
-    it('kepala menampilkan total dan nomor tagihan; pilihan dikelompokkan QRIS, dompet digital, virtual account', () => {
+    it('kepala menampilkan total dan nomor tagihan. Pilihan dikelompokkan QRIS, dompet digital, virtual account', () => {
         Panel();
 
         expect(screen.getByText('Total pembayaran')).toBeTruthy();
@@ -135,7 +135,7 @@ describe('PanelBayarSnap (D-159)', () => {
         await waitFor(() => expect(screen.getByText('Gambar QR gagal dibuat.')).toBeTruthy());
     });
 
-    it('virtual account mengirim kanal bank; nomor VA dan jumlah masing-masing bisa disalin', async () => {
+    it('virtual account mengirim kanal bank. Nomor VA dan jumlah masing-masing bisa disalin', async () => {
         const Ambil = vi.fn().mockResolvedValue(JawabJson({ Pembayaran: { TampilanBayar: tampilanVa } }));
         const Tulis = vi.fn().mockResolvedValue(undefined);
         vi.stubGlobal('fetch', Ambil);

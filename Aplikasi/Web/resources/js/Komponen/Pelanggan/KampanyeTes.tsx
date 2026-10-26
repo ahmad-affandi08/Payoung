@@ -100,7 +100,7 @@ describe('CRM-07 kampanye pesan', () => {
         });
     });
 
-    it('rincian: ringkasan, contoh pesan, tanpa aksi kirim setelah selesai; jadwal diubah ke UTC', () => {
+    it('rincian: ringkasan, contoh pesan, tanpa aksi kirim setelah selesai. Jadwal diubah ke UTC', () => {
         RenderUji(
             <HalamanDetailKampanye
                 Kampanye={{
@@ -177,7 +177,7 @@ describe('Wizard buat kampanye (CRM-07)', () => {
 
     const Lanjut = () => fireEvent.click(screen.getByRole('button', { name: 'Lanjut' }));
 
-    it('empat langkah; nama kosong menahan Lanjut dan isi yang baru sapaan ditolak', () => {
+    it('empat langkah. Nama kosong menahan Lanjut dan isi yang baru sapaan ditolak', () => {
         RenderUji(<HalamanFormKampanye {...PropsForm} />);
 
         expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();

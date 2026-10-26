@@ -173,7 +173,7 @@ final class SimpanAnggaran
                 }
 
                 if (! $jumlah->BernilaiNol() && ! $satu->Aktif) {
-                    throw new PelanggaranAturanBisnis('AkunNonaktif', "Akun {$satu->Kode} sudah nonaktif; anggarannya hanya bisa dikosongkan.");
+                    throw new PelanggaranAturanBisnis('AkunNonaktif', "Akun {$satu->Kode} sudah nonaktif. Anggarannya hanya bisa dikosongkan.");
                 }
             }
         }

@@ -109,7 +109,7 @@ export default function PembuatVarian({
                         label="Harga jual varian baru (opsional)"
                         nilai={hargaDasar}
                         saatBerubah={AturHargaDasar}
-                        keterangan="Sama untuk semua varian baru; ubah per varian nanti bila perlu."
+                        keterangan="Sama untuk semua varian baru. Ubah per varian nanti bila perlu."
                         galat={galat.HargaDasar}
                     />
                 ) : (

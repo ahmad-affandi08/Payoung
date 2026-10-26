@@ -72,7 +72,7 @@ export default function HalamanDaftarSuratJalan({
     return (
         <HalamanGrosir
             judul="Surat jalan grosir"
-            keterangan="Barang yang sudah diserahkan ke pembeli. Surat jalan tidak bisa diedit; koreksinya lewat pembatalan yang membalik stok dan jurnalnya."
+            keterangan="Barang yang sudah diserahkan ke pembeli. Surat jalan tidak bisa diedit. Koreksinya lewat pembatalan yang membalik stok dan jurnalnya."
             izin={Izin}
             objek="surat jalan"
         >

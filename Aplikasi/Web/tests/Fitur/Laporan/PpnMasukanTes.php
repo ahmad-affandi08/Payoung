@@ -24,7 +24,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('PPN masukan: dikreditkan vs tidak dikreditkan, retur mengurangi, faktur batal tidak ikut, selisih lebih bayar; ekspor CSV', function (): void {
+it('PPN masukan: dikreditkan vs tidak dikreditkan, retur mengurangi, faktur batal tidak ikut, selisih lebih bayar. Ekspor CSV', function (): void {
     $t = BantuanPembelian::SiapkanTenant();
     $id = $t['Pemilik']->Id;
     $plastik = BantuanKatalog::BuatProduk(['Nama' => 'Kantong Plastik HD 24x40 isi 100']);

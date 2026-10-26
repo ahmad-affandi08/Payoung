@@ -81,7 +81,7 @@ final class BukaUlangShift
         }
 
         if (TutupHarian::query()->where('IdOutlet', $shift->IdOutlet)->where('TanggalBisnis', $shift->TanggalBisnis->toDateString())->exists()) {
-            throw new PelanggaranAturanBisnis('HariSudahDitutup', 'Hari bisnis shift ini sudah ditutup harian; shift tidak bisa dibuka ulang.', 'UuidShift', 409);
+            throw new PelanggaranAturanBisnis('HariSudahDitutup', 'Hari bisnis shift ini sudah ditutup harian. Shift tidak bisa dibuka ulang.', 'UuidShift', 409);
         }
 
         $peminta = $this->anggota->Cari($idTenant, $data->uuidPeminta, $shift->IdOutlet);

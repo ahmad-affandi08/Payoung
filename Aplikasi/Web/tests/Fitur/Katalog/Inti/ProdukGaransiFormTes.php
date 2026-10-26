@@ -33,7 +33,7 @@ function IsiFormGaransi(array $t, array $timpa = []): array
     ], $timpa));
 }
 
-it('produk bernomor seri menyimpan masa garansi; diubah lewat form ubah; dikosongkan = tanpa garansi', function (): void {
+it('produk bernomor seri menyimpan masa garansi. Diubah lewat form ubah. Dikosongkan = tanpa garansi', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Ponsel Nusantara Solo');
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -51,7 +51,7 @@ it('produk bernomor seri menyimpan masa garansi; diubah lewat form ubah; dikoson
     expect(Produk::query()->where('Uuid', $form['Uuid'])->sole()->MasaGaransiBulan)->toBeNull();
 });
 
-it('produk tanpa pelacakan seri mengabaikan masa garansi; nilai di luar 1–240 ditolak', function (): void {
+it('produk tanpa pelacakan seri mengabaikan masa garansi. Nilai di luar 1–240 ditolak', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Ponsel Nusantara Solo');
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -64,7 +64,7 @@ it('produk tanpa pelacakan seri mengabaikan masa garansi; nilai di luar 1–240 
     $masuk()->post('/kelola/produk', IsiFormGaransi($t, ['Nama' => 'Ponsel Uji Besar', 'MasaGaransiBulan' => 241]))->assertSessionHasErrors('MasaGaransiBulan');
 });
 
-it('kode barang/jasa dan kode satuan Coretax disimpan dari form produk (format dicek); impor tidak menimpanya', function (): void {
+it('kode barang/jasa dan kode satuan Coretax disimpan dari form produk (format dicek). Impor tidak menimpanya', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Ponsel Nusantara Solo');
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -82,7 +82,7 @@ it('kode barang/jasa dan kode satuan Coretax disimpan dari form produk (format d
     expect($produk->refresh()->KodeBarangJasaCoretax)->toBeNull()->and($produk->KodeUnitCoretax)->toBeNull();
 });
 
-it('K-25: harga terbuka disimpan dari form untuk jenis yang boleh; jenis lain & impor tidak mengubahnya', function (): void {
+it('K-25: harga terbuka disimpan dari form untuk jenis yang boleh. Jenis lain & impor tidak mengubahnya', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk('Toko Ponsel Nusantara Solo');
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 

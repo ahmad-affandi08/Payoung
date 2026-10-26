@@ -95,7 +95,7 @@ describe('Penghitung prorata (D-49)', function (): void {
         expect($akhir['HariDitagih'])->toBe(1)->and($akhir['Subtotal']->KeString())->toBe('6667.00');
     });
 
-    it('harga penuh di awal periode; prorata hari tersisa dibulatkan ke atas; minimal sehari; tahunan = 12 bulan', function (): void {
+    it('harga penuh di awal periode. Prorata hari tersisa dibulatkan ke atas. Minimal sehari. Tahunan = 12 bulan', function (): void {
         $hitung = new PenghitungProrataAddon;
         $mulai = Carbon::parse('2026-09-01 10:00:00');
         $selesai = Carbon::parse('2026-10-01 10:00:00');
@@ -174,7 +174,7 @@ describe('Beli add-on → bayar → aktif', function (): void {
         expect($sesudah['BatasPerangkatPerOutlet'])->toBe($sebelum['BatasPerangkatPerOutlet'] + 3);
     });
 
-    it('ditolak: langganan belum berbayar aktif (trial), paket Gratis, add-on diarsipkan; tidak ada tagihan dibuat', function (): void {
+    it('ditolak: langganan belum berbayar aktif (trial), paket Gratis, add-on diarsipkan. Tidak ada tagihan dibuat', function (): void {
         Langganan::query()->where('IdTenant', $this->tenant->Id)->update(['Status' => StatusLangganan::Trial->value]);
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->post(BantuanTagihan::Url('/kelola/langganan/addon/beli'), ['KodeAddon' => 'TOKO_ONLINE'])->assertSessionHasErrors('Umum');
@@ -257,7 +257,7 @@ describe('Perpanjangan, berhenti, dan tagihan terbuka', function (): void {
         // Tagihan add-on yang sudah lunas dalam jendela H-7 juga tidak dianggap tagihan paket.
     });
 
-    it('tagihan add-on lewat jatuh tempo tanpa dibayar dibatalkan oleh penjadwal; paket tidak ikut tertunggak', function (): void {
+    it('tagihan add-on lewat jatuh tempo tanpa dibayar dibatalkan oleh penjadwal. Paket tidak ikut tertunggak', function (): void {
         $addon = BeliAddonUji($this, $this->pemilik, $this->tenant);
 
         $this->travelTo($addon->JatuhTempoPada->copy()->addMinute());
@@ -269,7 +269,7 @@ describe('Perpanjangan, berhenti, dan tagihan terbuka', function (): void {
             ->and(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->Status)->toBe(StatusLangganan::Aktif);
     });
 
-    it('laporan langganan: MRR tetap dari tagihan paket; pendapatan add-on tampil di grup Add-on', function (): void {
+    it('laporan langganan: MRR tetap dari tagihan paket. Pendapatan add-on tampil di grup Add-on', function (): void {
         $paket = BeliAddonUji($this, $this->pemilik, $this->tenant);
         BayarTagihanAddonUji($this, $this->pemilik, $this->tenant, $this->keuangan, $paket);
 

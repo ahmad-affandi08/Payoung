@@ -339,7 +339,7 @@ class _BagianPiutangState extends ConsumerState<_BagianPiutang> {
               Expanded(
                 child: Text(
                   _offline
-                      ? 'Offline. Rincian piutang hanya bisa dilihat saat online; ringkasan di atas dari data '
+                      ? 'Offline. Rincian piutang hanya bisa dilihat saat online. Ringkasan di atas dari data '
                             'terakhir yang diunduh.'
                       : _galat!,
                   style: teks.bodyMedium,

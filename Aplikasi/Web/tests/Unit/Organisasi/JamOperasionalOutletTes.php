@@ -32,7 +32,7 @@ it('buka tepat pada jam buka dan tutup tepat pada jam tutup', function (): void 
         ->and(JamOperasionalOutlet::CekBuka($jam, CarbonImmutable::parse('2026-10-14 21:00')))->toBeFalse();
 });
 
-it('hari libur tutup seharian; buka berikutnya dicari ke hari buka terdekat', function (): void {
+it('hari libur tutup seharian. Buka berikutnya dicari ke hari buka terdekat', function (): void {
     $jam = JamWarung();
     // Minggu 18 Oktober 2026 siang.
     $minggu = CarbonImmutable::parse('2026-10-18 12:00');
@@ -61,7 +61,7 @@ it('jam yang melewati tengah malam tetap berlaku sampai jam tutup keesokan harin
         ->and(JamOperasionalOutlet::CekBuka($jam, CarbonImmutable::parse('2026-10-16 00:00')))->toBeFalse();
 });
 
-it('normalkan: hari tak disebut jadi libur; jam tidak sah, buka = tutup, dan semua libur ditolak; null = tidak diatur', function (): void {
+it('normalkan: hari tak disebut jadi libur. Jam tidak sah, buka = tutup, dan semua libur ditolak. Null = tidak diatur', function (): void {
     $hasil = JamOperasionalOutlet::Normalkan(['Senin' => ['Buka' => '08:00', 'Tutup' => '17:00']]);
     expect($hasil)->not->toBeNull()
         ->and(array_keys((array) $hasil))->toBe(array_values(JamOperasionalOutlet::HARI))

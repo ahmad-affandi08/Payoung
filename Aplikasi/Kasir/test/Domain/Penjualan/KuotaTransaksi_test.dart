@@ -23,7 +23,7 @@ void main() {
   group('KuotaTransaksiEfektif', () {
     final desember = DateTime.utc(2026, 12, 15, 3);
 
-    test('hitungan server + penjualan belum tercakup; habis saat terpakai mencapai batas', () {
+    test('hitungan server + penjualan belum tercakup. Habis saat terpakai mencapai batas', () {
       final aman = KuotaTransaksiEfektif.Hitung(
         kuota: Kuota(terpakai: 90),
         penjualanBelumTercakup: 5,
@@ -96,7 +96,7 @@ void main() {
       );
     });
 
-    test('kuota harian tanpa saat berakhir memakai tanggal WIB; rentang tanggal bisnis sesuai jangka', () {
+    test('kuota harian tanpa saat berakhir memakai tanggal WIB. Rentang tanggal bisnis sesuai jangka', () {
       const tanpaAkhir = KuotaTransaksiAplikasi(
         jangka: JangkaKuotaTransaksi.Hari,
         periode: '2026-12-15',
@@ -170,7 +170,7 @@ void main() {
     Future<int> Hitung({required DateTime sejak, Set<String> tertunda = const {}}) =>
         u.repositoriPenjualan.HitungPenjualanBelumTercakupKuota(sejak: sejak, uuidTertundaSaatAmbil: tertunda);
 
-    test('dibuat sejak konfigurasi dibaca ikut dihitung; sebelumnya dan sudah terkirim tidak', () async {
+    test('dibuat sejak konfigurasi dibaca ikut dihitung. Sebelumnya dan sudah terkirim tidak', () async {
       final sekarang = u.jam;
       final satu = await JualTunai();
       await JualTunai();

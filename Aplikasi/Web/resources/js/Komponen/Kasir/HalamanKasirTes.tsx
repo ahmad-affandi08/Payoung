@@ -113,7 +113,7 @@ describe('F-06 halaman kasir back-office', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/kasir/shift'));
     afterEach(() => cleanup());
 
-    it('daftar shift (TabelData D-16): Rupiah terformat, penanda perlu ditinjau, tautan ke detail, filter; keadaan kosong', () => {
+    it('daftar shift (TabelData D-16): Rupiah terformat, penanda perlu ditinjau, tautan ke detail, filter. Keadaan kosong', () => {
         window.history.replaceState({}, '', '/kelola/kasir/shift');
         RenderUji(<HalamanDaftarShift {...PropsDaftar([barisShift])} />);
         const tabel = screen.getByRole('table', { name: 'Daftar shift' });
@@ -131,7 +131,7 @@ describe('F-06 halaman kasir back-office', () => {
         expect(screen.getByText(/Belum ada shift/)).toBeTruthy();
     });
 
-    it('detail shift: alasan tinjauan, pecahan kas awal, mutasi dengan tautan jurnal; tanpa mutasi = keadaan kosong', () => {
+    it('detail shift: alasan tinjauan, pecahan kas awal, mutasi dengan tautan jurnal, tanpa mutasi = keadaan kosong', () => {
         const props: PropsDetailShift = {
             Shift: {
                 ...barisShift,
@@ -332,7 +332,7 @@ describe('F-06 halaman kasir back-office', () => {
         );
     });
 
-    it('pengaturan kasir F-07b: batas diskon (persen tanpa float) & pembulatan tunai terkirim; pembulatan mati = null', () => {
+    it('pengaturan kasir F-07b: batas diskon (persen tanpa float) & pembulatan tunai terkirim. Pembulatan mati = null', () => {
         expect(UbahKeMasukanPersen('10.00')).toBe('10');
         expect(UbahKeMasukanPersen('25.50')).toBe('25.5');
         expect(NormalisasiMasukanPersen('12,755%')).toBe('12.75');
@@ -382,7 +382,7 @@ describe('F-06 halaman kasir back-office', () => {
             expect.anything(),
         );
     });
-    it('F-11 daftar shift: selisih tutup shift bertanda; belum ditutup = "Belum ditutup"', () => {
+    it('F-11 daftar shift: selisih tutup shift bertanda. Belum ditutup = "Belum ditutup"', () => {
         window.history.replaceState({}, '', '/kelola/kasir/shift');
         RenderUji(
             <HalamanDaftarShift
@@ -406,7 +406,7 @@ describe('F-06 halaman kasir back-office', () => {
         expect(within(tabel).getByText('−Rp 22.000')).toBeTruthy();
     });
 
-    it('F-11 detail shift: laporan X saat berjalan; laporan Z + tutup shift (selisih, alasan, penyetuju, non-tunai vs sistem, jurnal)', () => {
+    it('F-11 detail shift: laporan X saat berjalan. Laporan Z + tutup shift (selisih, alasan, penyetuju, non-tunai vs sistem, jurnal)', () => {
         const dasar: PropsDetailShift = {
             Shift: { ...barisShift, DiterimaPada: '2026-09-24T05:00:00Z', AlasanTinjauan: null, PecahanKasAwal: [] },
             MutasiKas: [],

@@ -244,7 +244,7 @@ describe('Terbitkan template (BR-P03.3, BR-P03.4)', function (): void {
         expect(AmbilVersiUji('FNB-QSR', 1)->Status)->toBe(StatusTemplateSektor::Draf);
     });
 
-    it('terbit lalu duplikasi menjadi draf versi 2; versi lama menjadi Usang saat versi 2 terbit', function (): void {
+    it('terbit lalu duplikasi menjadi draf versi 2. Versi lama menjadi Usang saat versi 2 terbit', function (): void {
         TarifPajak::query()->create([
             'IdJenisPajak' => JenisPajak::query()->where('Kode', 'Ppn')->value('Id'),
             'Tarif' => '12', 'PengaliDppPembilang' => 11, 'PengaliDppPenyebut' => 12,
@@ -287,7 +287,7 @@ describe('Terbitkan template (BR-P03.3, BR-P03.4)', function (): void {
 });
 
 describe('Versi usang (BR-P03.4)', function (): void {
-    it('versi usang tidak bisa diubah; duplikasi dicatat di log audit', function (): void {
+    it('versi usang tidak bisa diubah. Duplikasi dicatat di log audit', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin));
         $this->post(UrlVersi('FNB-CAF', 1, '/terbitkan'))->assertSessionHasNoErrors();
         $this->post(UrlVersi('FNB-CAF', 1, '/duplikasi'))->assertSessionHasNoErrors();
@@ -310,7 +310,7 @@ describe('Versi usang (BR-P03.4)', function (): void {
 });
 
 describe('Hapus draf (BR-P03.2)', function (): void {
-    it('versi terbit tidak bisa dihapus; draf bisa dihapus dan template kosong ikut terhapus', function (): void {
+    it('versi terbit tidak bisa dihapus. Draf bisa dihapus dan template kosong ikut terhapus', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin));
         $this->post(UrlVersi('FNB-CAF', 1, '/terbitkan'))->assertSessionHasNoErrors();
         $this->delete(UrlVersi('FNB-CAF', 1))->assertSessionHasErrors('Umum');
@@ -327,7 +327,7 @@ describe('Hapus draf (BR-P03.2)', function (): void {
 });
 
 describe('Buat template baru (P-03 langkah 1)', function (): void {
-    it('Konten & Legal membuat template dari template dasar; isi disalin sebagai draf versi 1', function (): void {
+    it('Konten & Legal membuat template dari template dasar. Isi disalin sebagai draf versi 1', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::KontenLegal));
 
         $this->post(BantuanPengelola::Url('/template-sektor'), [
@@ -360,7 +360,7 @@ describe('Buat template baru (P-03 langkah 1)', function (): void {
 });
 
 describe('Nonaktifkan sektor (D-47, BR-P03.2)', function (): void {
-    it('sektor terbit bisa dinonaktifkan lalu diaktifkan lagi; hilang dari pilihan tenant baru, audit tercatat', function (): void {
+    it('sektor terbit bisa dinonaktifkan lalu diaktifkan lagi. Hilang dari pilihan tenant baru, audit tercatat', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin));
         $this->post(UrlVersi('FNB-CAF', 1, '/terbitkan'))->assertSessionHasNoErrors();
         $tenant = app(TemplateTerbit::class);
@@ -393,7 +393,7 @@ describe('Nonaktifkan sektor (D-47, BR-P03.2)', function (): void {
         expect(TemplateSektor::query()->where('Kode', 'FNB-QSR')->value('DinonaktifkanPada'))->toBeNull();
     });
 
-    it('hanya peran penerbit yang boleh; peran lain 403', function (): void {
+    it('hanya peran penerbit yang boleh. Peran lain 403', function (): void {
         MasukSebagaiTemplate($this, BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Teknis));
         $this->post(UrlVersi('FNB-CAF', 1, '/terbitkan'))->assertSessionHasNoErrors();
 

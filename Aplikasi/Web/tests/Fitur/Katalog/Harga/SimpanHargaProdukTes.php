@@ -118,7 +118,7 @@ describe('F-03 SimpanHargaProduk: BR-03.3 riwayat harga', function (): void {
             ->and(ProdukHarga::query()->orderBy('Id')->pluck('DiubahPada')->all())->toEqual($diubahPada);
     });
 
-    it('hanya satuan yang disebut yang diganti; satuan lain dan baris daftar harga tidak disentuh', function (): void {
+    it('hanya satuan yang disebut yang diganti. Satuan lain dan baris daftar harga tidak disentuh', function (): void {
         $pak = BantuanHarga::TambahSatuan($this->produk, BantuanKatalog::BuatSatuan('Pak', 'pak'), '10');
         SimpanHarga($this->produk, [$pak->Id => [['1', '45000'], ['5', '42000']]]);
         $daftar = BantuanHarga::BuatDaftarHarga();

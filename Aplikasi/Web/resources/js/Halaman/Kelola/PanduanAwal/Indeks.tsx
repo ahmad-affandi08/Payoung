@@ -42,7 +42,7 @@ export default function HalamanIndeksPanduanAwal({ Progres }: PropsIndeksPanduan
                 <span className="font-mono text-label">({Progres.Outlet.Kode})</span> sampai siap berjualan: profil
                 usaha, jenis usaha, pajak, produk, metode pembayaran, dan perangkat kasir.{' '}
                 {wajib
-                    ? 'Lima langkah pertama wajib diselesaikan sebelum membuka menu lain; perangkat kasir boleh diatur nanti.'
+                    ? 'Lima langkah pertama wajib diselesaikan sebelum membuka menu lain. Perangkat kasir boleh diatur nanti.'
                     : 'Langkah yang dilewati bisa dikerjakan nanti.'}
             </p>
 

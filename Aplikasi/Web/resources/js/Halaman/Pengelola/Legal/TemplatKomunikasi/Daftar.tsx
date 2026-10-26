@@ -17,7 +17,7 @@ export default function HalamanDaftarTemplatKomunikasi({ Peristiwa }: { Peristiw
             <TabLegal />
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Teks pesan yang dikirim Payoung ke Owner. Tanpa versi terbit, pesan memakai teks bawaan. Versi terbit
-                tidak bisa diubah; perubahan selalu menjadi versi baru.
+                tidak bisa diubah. Perubahan selalu menjadi versi baru.
             </p>
             {Peristiwa.map((peristiwa) => (
                 <Panel key={peristiwa.Kode} judul={peristiwa.Label} keterangan={peristiwa.Keterangan}>

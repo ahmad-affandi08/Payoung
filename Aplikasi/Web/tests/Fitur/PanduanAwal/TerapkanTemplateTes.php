@@ -146,7 +146,7 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
         expect(HitungDataTemplateUji())->toBe($jumlah);
     });
 
-    it('BR-01.1 aditif: akun yang diganti nama & pengaturan yang diubah tenant tidak ditimpa; template kedua hanya menambah yang belum ada', function (): void {
+    it('BR-01.1 aditif: akun yang diganti nama & pengaturan yang diubah tenant tidak ditimpa. Template kedua hanya menambah yang belum ada', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
         ['Tenant' => $tenant, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant();
@@ -183,7 +183,7 @@ describe('F-01 langkah 2: terapkan template sektor', function (): void {
             ->toThrow(QueryException::class);
     });
 
-    it('BR-P03.1: template & versi dicatat di outlet; versi terbit baru tidak mengubah tenant sampai diterapkan lagi', function (): void {
+    it('BR-P03.1: template & versi dicatat di outlet. Versi terbit baru tidak mengubah tenant sampai diterapkan lagi', function (): void {
         $versi1 = BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         ['Tenant' => $tenant, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant();
         BantuanPanduanAwal::Terapkan($outlet, 'FNB-CAF');

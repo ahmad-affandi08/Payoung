@@ -39,7 +39,7 @@ describe('Nomor antrian & nama pemesan (v3.52)', function (): void {
             ->where('Penjualan.NamaPemesan', 'Budi'));
     });
 
-    it('perangkat lama tanpa antrian: label tetap catatan; nama pemesan terlalu panjang ditolak', function (): void {
+    it('perangkat lama tanpa antrian: label tetap catatan. Nama pemesan terlalu panjang ditolak', function (): void {
         $k = BantuanPesananTerbuka::SiapkanRestoran($this);
         $lama = BantuanPenjualan::Item($k, ['Baris' => [['Produk' => $k['Nasi'], 'Jumlah' => '1', 'Harga' => '35000.00']]], [
             'KirimDapur' => true,

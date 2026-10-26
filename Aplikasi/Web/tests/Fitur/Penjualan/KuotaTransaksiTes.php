@@ -113,7 +113,7 @@ it('status mengikuti pemakaian: Normal, HampirHabis mulai 80%, Habis saat mencap
     expect(KuotaPos($this, $k))->toMatchArray(['Terpakai' => 5, 'Sisa' => 0, 'Persen' => 100, 'Status' => 'Habis']);
 });
 
-it('penjualan di luar kuota tetap diterima saat sinkron (uang sudah di laci); hanya transaksi baru yang ditahan aplikasi', function (): void {
+it('penjualan di luar kuota tetap diterima saat sinkron (uang sudah di laci). Hanya transaksi baru yang ditahan aplikasi', function (): void {
     $k = SiapkanTokoKuota($this, 1);
     JualKuota($this, $k);
     expect(KuotaPos($this, $k)['Status'])->toBe('Habis');
@@ -132,7 +132,7 @@ it('void tetap dihitung: membatalkan transaksi tidak mengembalikan kuota', funct
         ->and(KuotaPos($this, $k)['Terpakai'])->toBe(1);
 });
 
-it('hanya penjualan bulan berjalan dihitung; bulan lalu tidak', function (): void {
+it('hanya penjualan bulan berjalan dihitung. Bulan lalu tidak', function (): void {
     $k = SiapkanTokoKuota($this, 5);
     JualKuota($this, $k, 2);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

@@ -174,7 +174,7 @@ describe.each(kasus)('dialog rahasia sekali-tampil: $nama', (k) => {
         expect(semua.every((el) => dialog.contains(el))).toBe(true);
     });
 
-    it('Esc tidak menutup dialog; tombol selesai menutupnya', () => {
+    it('Esc tidak menutup dialog. Tombol selesai menutupnya', () => {
         k.Render();
 
         fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });

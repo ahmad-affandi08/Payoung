@@ -192,7 +192,7 @@ describe('Tim (D-101): satu daftar untuk akun & karyawan', () => {
         );
     });
 
-    it('tanpa izin nonaktifkan pengguna, hanya bagian karyawan yang dikirim; tanpa izin apa pun tidak ada aksi status', () => {
+    it('tanpa izin nonaktifkan pengguna, hanya bagian karyawan yang dikirim, tanpa izin apa pun tidak ada aksi status', () => {
         Render(
             <HalamanDaftarTim
                 {...PropsDaftar({ Izin: { ...izinPenuh, Nonaktifkan: false, UbahAkses: false, AturPin: false } })}
@@ -241,7 +241,7 @@ function KeLangkahPeran(nama = 'Budi Gudang', pin = '482915') {
 }
 
 describe('Tambah anggota tim (D-101): wizard bertahap, tiga jenis akses', () => {
-    it('Kasir terpilih lebih dulu: PIN tampil di langkah Akun, email & kata sandi tidak; pindah ke Dashboard memunculkan email', () => {
+    it('Kasir terpilih lebih dulu: PIN tampil di langkah Akun, email & kata sandi tidak. Pindah ke Dashboard memunculkan email', () => {
         Render(<HalamanTambahTim {...PropsTambah()} />);
 
         expect(screen.getByText('Langkah 1 dari 4')).toBeTruthy();
@@ -258,7 +258,7 @@ describe('Tambah anggota tim (D-101): wizard bertahap, tiga jenis akses', () => 
         expect(screen.getAllByLabelText(/Kata sandi awal/).length).toBeGreaterThan(0);
     });
 
-    it('Tanpa akun melewati PIN & peran dan menawarkan outlet utama; gaji & komisi hanya bila diminta', () => {
+    it('Tanpa akun melewati PIN & peran dan menawarkan outlet utama. Gaji & komisi hanya bila diminta', () => {
         Render(<HalamanTambahTim {...PropsTambah()} />);
 
         fireEvent.change(screen.getAllByLabelText(/^Nama/)[0] as HTMLElement, { target: { value: 'Rina' } });
@@ -275,7 +275,7 @@ describe('Tambah anggota tim (D-101): wizard bertahap, tiga jenis akses', () => 
         expect(screen.getByLabelText('Gaji pokok (opsional)')).toBeTruthy();
     });
 
-    it('tanpa izin karyawan: tidak ada jenis "Tanpa akun" dan tidak ada tawaran gaji; tanpa izin akun: hanya "Tanpa akun masuk"', () => {
+    it('tanpa izin karyawan: tidak ada jenis "Tanpa akun" dan tidak ada tawaran gaji, tanpa izin akun: hanya "Tanpa akun masuk"', () => {
         Render(<HalamanTambahTim {...PropsTambah({ BolehKaryawan: false })} />);
         expect(screen.queryByRole('radio', { name: /Tanpa akun masuk/ })).toBeNull();
         KeLangkahPeran();
@@ -348,7 +348,7 @@ describe('Tambah anggota tim (D-101): wizard bertahap, tiga jenis akses', () => 
         expect(screen.getByText('Isi kata sandi awal untuk pengguna yang memakai email.')).toBeTruthy();
     });
 
-    it('Tinjau tidak menampilkan PIN; Tambah ke tim mengirim data kasir; server menolak = kembali ke langkah itu', () => {
+    it('Tinjau tidak menampilkan PIN; Tambah ke tim mengirim data kasir. Server menolak = kembali ke langkah itu', () => {
         Render(<HalamanTambahTim {...PropsTambah()} />);
         KeLangkahPeran('Budi Kasir', '482915');
         fireEvent.click(screen.getByRole('radio', { name: /^Kasir/ }));

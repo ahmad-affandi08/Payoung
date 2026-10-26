@@ -124,7 +124,7 @@ describe('uji coba sandbox template sektor', function (): void {
         expect($jumlah)->toBe(22);
     });
 
-    it('izin: Konten & Legal dan Teknis boleh; Analis dan Dukungan ditolak; tamu dialihkan', function (): void {
+    it('izin: Konten & Legal dan Teknis boleh; Analis dan Dukungan ditolak. Tamu dialihkan', function (): void {
         MasukUjiCoba(PeranPengelolaBawaan::Analis);
         $this->postJson(UrlUjiCoba())->assertForbidden();
         MasukUjiCoba(PeranPengelolaBawaan::Dukungan);

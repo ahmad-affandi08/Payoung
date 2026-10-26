@@ -26,7 +26,7 @@ beforeEach(function (): void {
 });
 
 describe('D-110 bagikan toko online', function (): void {
-    it('halaman toko online memuat tautan dan QR; poster memuat nama toko, tautan, QR, dan status aktif', function (): void {
+    it('halaman toko online memuat tautan dan QR. Poster memuat nama toko, tautan, QR, dan status aktif', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 
@@ -42,7 +42,7 @@ describe('D-110 bagikan toko online', function (): void {
             ->where('NamaToko', fn (string $nama): bool => $nama !== ''));
     });
 
-    it('poster butuh izin toko-online.kelola; kasir ditolak', function (): void {
+    it('poster butuh izin toko-online.kelola. Kasir ditolak', function (): void {
         $k = BantuanTokoOnline::Siapkan($this);
         $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
 

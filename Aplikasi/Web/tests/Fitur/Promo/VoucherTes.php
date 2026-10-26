@@ -86,7 +86,7 @@ function ItemVoucher(array $k, ?string $uuid = null, bool $pakaiPromo = true, ?s
 }
 
 describe('F-16c bagian 2 voucher di POS', function (): void {
-    it('pesan voucher: promo ikut dikirim; sekali pakai tidak bisa dipesan transaksi lain sampai dilepas', function (): void {
+    it('pesan voucher: promo ikut dikirim. Sekali pakai tidak bisa dipesan transaksi lain sampai dilepas', function (): void {
         $k = SiapkanVoucher($this);
         $jualA = BantuanKasir::Uuid();
         $jualB = BantuanKasir::Uuid();
@@ -112,7 +112,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
         $this->withToken($k['Token'])->postJson('/api/pos/v1/voucher/pesan', ['Kode' => 'HEMAT10K', 'UuidPenjualan' => $jualA])->assertOk();
     });
 
-    it('voucher tidak dikenal, nonaktif, kedaluwarsa, atau promonya diarsipkan ditolak; voucher tenant lain tidak dikenal', function (): void {
+    it('voucher tidak dikenal, nonaktif, kedaluwarsa, atau promonya diarsipkan ditolak. Voucher tenant lain tidak dikenal', function (): void {
         $k = SiapkanVoucher($this);
         $lain = SiapkanVoucher($this, namaUsaha: 'Toko Lain Voucher');
         BantuanOrganisasi::AturKonteks($lain['Tenant']->Id);
@@ -134,7 +134,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
         $pesan('HEMAT10K')->assertStatus(422)->assertJsonPath('Galat.Kode', 'PromoTidakBerlaku');
     });
 
-    it('penjualan bervoucher: diterima tanpa tinjauan, voucher terpakai sekali (idempoten), habis untuk transaksi lain; void melepas', function (): void {
+    it('penjualan bervoucher: diterima tanpa tinjauan, voucher terpakai sekali (idempoten), habis untuk transaksi lain. Void melepas', function (): void {
         $k = SiapkanVoucher($this);
         $item = ItemVoucher($k);
         $this->withToken($k['Token'])->postJson('/api/pos/v1/voucher/pesan', ['Kode' => 'HEMAT10K', 'UuidPenjualan' => $item['Uuid']])->assertOk();
@@ -163,7 +163,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
         $this->withToken($k['Token'])->postJson('/api/pos/v1/voucher/pesan', ['Kode' => 'HEMAT10K', 'UuidPenjualan' => BantuanKasir::Uuid()])->assertOk();
     });
 
-    it('voucher tanpa pesanan online atau melewati batas: penjualan tetap diterima + tinjauan; promo voucher tanpa kode = PromoBerbeda', function (): void {
+    it('voucher tanpa pesanan online atau melewati batas: penjualan tetap diterima + tinjauan. Promo voucher tanpa kode = PromoBerbeda', function (): void {
         $k = SiapkanVoucher($this);
         $k['Voucher']->forceFill(['JumlahDipakai' => 1])->save();
         $item = ItemVoucher($k);
@@ -172,7 +172,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $jual = Penjualan::query()->where('Uuid', $item['Uuid'])->sole();
         expect($jual->PerluTinjauan)->toBeTrue()
-            ->and($jual->AlasanTinjauan)->toContain('VoucherTidakBerlaku: voucher HEMAT10K tidak dipesan online untuk penjualan ini; voucher HEMAT10K melewati batas pakai (1)')
+            ->and($jual->AlasanTinjauan)->toContain('VoucherTidakBerlaku: voucher HEMAT10K tidak dipesan online untuk penjualan ini. Voucher HEMAT10K melewati batas pakai (1)')
             ->and($jual->AlasanTinjauan)->not->toContain('PromoBerbeda')
             ->and($k['Voucher']->refresh()->JumlahDipakai)->toBe(2);
 
@@ -199,7 +199,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
 });
 
 describe('F-16c bagian 2 back-office voucher', function (): void {
-    it('promo wajib voucher lewat formulir; kode tunggal, massal berawalan, nonaktifkan, daftar, ekspor CSV, audit', function (): void {
+    it('promo wajib voucher lewat formulir. Kode tunggal, massal berawalan, nonaktifkan, daftar, ekspor CSV, audit', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kopi Senja Kode');
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 
@@ -248,7 +248,7 @@ describe('F-16c bagian 2 back-office voucher', function (): void {
             ->and($csv)->toContain('MERDEKA-17,100,0,2026-10-31T17:00:00Z,Nonaktif');
     });
 
-    it('kasir tanpa pelanggan.kelola tidak bisa menambah & mengekspor; voucher & promo tenant lain 404', function (): void {
+    it('kasir tanpa pelanggan.kelola tidak bisa menambah & mengekspor. Voucher & promo tenant lain 404', function (): void {
         $k = SiapkanVoucher($this);
         $lain = SiapkanVoucher($this, namaUsaha: 'Toko Lain Kode');
 

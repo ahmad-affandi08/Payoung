@@ -55,7 +55,7 @@ describe('Buat faktur grosir', () => {
         expect(kelompok[0]?.Baris).toHaveLength(2);
     });
 
-    it('Pilih semua mengisi satu kelompok; memilih di kelompok lain mengganti pilihan', () => {
+    it('Pilih semua mengisi satu kelompok. Memilih di kelompok lain mengganti pilihan', () => {
         AturHalamanUji();
         RenderUji(<HalamanBuatFakturGrosir {...Props()} />);
 

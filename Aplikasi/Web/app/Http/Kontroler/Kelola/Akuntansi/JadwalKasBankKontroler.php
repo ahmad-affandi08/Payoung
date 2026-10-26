@@ -48,7 +48,7 @@ final class JadwalKasBankKontroler extends DasarAkuntansiKontroler
         );
 
         return back()->with('Kilat', $hasil->Aktif
-            ? "Jadwal {$hasil->Keterangan} aktif; berikutnya dicatat {$hasil->TanggalBerikutnya->toDateString()}."
+            ? "Jadwal {$hasil->Keterangan} aktif. Berikutnya dicatat {$hasil->TanggalBerikutnya->toDateString()}."
             : "Jadwal {$hasil->Keterangan} dihentikan. Transaksi yang sudah tercatat tidak berubah.");
     }
 }

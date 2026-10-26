@@ -202,7 +202,7 @@ final class BatalkanPenerimaanBarang
 
                 throw new PelanggaranAturanBisnis(
                     'StokSudahTerpakai',
-                    "Stok {$nama} sudah berkurang (tersedia {$format($tersedia)}, diterima {$format($jumlah)}). Penerimaan tidak bisa dibatalkan; kembalikan barang lewat retur pembelian.",
+                    "Stok {$nama} sudah berkurang (tersedia {$format($tersedia)}, diterima {$format($jumlah)}). Penerimaan tidak bisa dibatalkan. Kembalikan barang lewat retur pembelian.",
                     detail: ['Tersedia' => $tersedia->KeString(), 'Diterima' => $jumlah->KeString()],
                 );
             }

@@ -37,7 +37,7 @@ function UndangLewatHttp(TestCase $tes, PenggunaPengelola $superAdmin, string $e
 }
 
 describe('Undangan anggota tim (P-01 langkah 3–5)', function (): void {
-    it('Super Admin mengundang lewat email; token hanya tersimpan sebagai hash', function (): void {
+    it('Super Admin mengundang lewat email. Token hanya tersimpan sebagai hash', function (): void {
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
 
         $path = UndangLewatHttp($this, $superAdmin, 'Budi@Contoh.id', ['Dukungan', 'Keuangan']);

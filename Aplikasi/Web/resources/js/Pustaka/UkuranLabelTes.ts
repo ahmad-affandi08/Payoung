@@ -54,7 +54,7 @@ describe('UkuranLabel: media bawaan', () => {
         expect(tata.AtasMm).toBe(8.7);
     });
 
-    it('gulung: halaman seukuran stiker; tiga berdampingan = satu baris tiga stiker', () => {
+    it('gulung: halaman seukuran stiker. Tiga berdampingan = satu baris tiga stiker', () => {
         const satu = HitungTataHalaman(
             MediaBawaan.find((m) => m.Kode === 'GULUNG-58x40') as (typeof MediaBawaan)[number],
             tanpaGeser,
@@ -111,7 +111,7 @@ describe('UkuranLabel: sebar & bagi ke halaman', () => {
 });
 
 describe('UkuranLabel: tata isi', () => {
-    it('label 38 × 21 mm: satu baris nama; barcode masih muat bila isi dibatasi', () => {
+    it('label 38 × 21 mm: satu baris nama. Barcode masih muat bila isi dibatasi', () => {
         const penuh = HitungTataIsi(21.2, IsiLabelBawaan, true);
         const tanpaNama = HitungTataIsi(21.2, { ...IsiLabelBawaan, Nama: false }, true);
 
@@ -121,7 +121,7 @@ describe('UkuranLabel: tata isi', () => {
         expect(penuh.TinggiBarcodeMm).toBeGreaterThanOrEqual(6);
     });
 
-    it('label sangat pendek dengan semua isi tidak muat; tanpa barcode selalu muat', () => {
+    it('label sangat pendek dengan semua isi tidak muat, tanpa barcode selalu muat', () => {
         const pendek = HitungTataIsi(15, { ...IsiLabelBawaan, Sku: true }, true);
 
         expect(pendek.Muat).toBe(false);

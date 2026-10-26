@@ -55,7 +55,7 @@ it('kanal Antar berongkir Rp 15.000 digratiskan promo: diterima, pemakaian promo
         ->and($pakai->first()?->IdPromo)->toBe($promo->Id);
 });
 
-it('retur penjualan berongkir: bagian ongkir dibalik ke Pendapatan Pengiriman, bukan Retur Penjualan; laporan retur tanpa ongkir', function (): void {
+it('retur penjualan berongkir: bagian ongkir dibalik ke Pendapatan Pengiriman, bukan Retur Penjualan. Laporan retur tanpa ongkir', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter', '10', '30000', '50000.00');

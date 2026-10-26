@@ -29,7 +29,7 @@ describe('F-05a impor stok awal: templat & laporan (anti formula injection)', fu
         }
     });
 
-    it('templat isi=produk: produk berstok aktif (termasuk bahan baku, produksi, batch, seri), tanpa konsinyasi/jasa/arsip/tenant lain; lokasi = kode lokasi; nama berumus dinetralkan', function (): void {
+    it('templat isi=produk: produk berstok aktif (termasuk bahan baku, produksi, batch, seri), tanpa konsinyasi/jasa/arsip/tenant lain. Lokasi = kode lokasi. Nama berumus dinetralkan', function (): void {
         $lain = BantuanPersediaan::SiapkanTenant('Apotek Sehat Sentosa');
         BantuanKatalog::BuatProduk(['Nama' => 'Paracetamol 500 mg Strip Isi 10 (tenant lain)', 'Sku' => 'PCT-500'], '5000.00', $lain['Pcs']);
         $t = BantuanPersediaan::SiapkanTenant();
@@ -66,7 +66,7 @@ describe('F-05a impor stok awal: templat & laporan (anti formula injection)', fu
         $masuk->get("/kelola/persediaan/stok-awal/impor/templat?format=xlsx&isi=produk&gudang={$lain['Gudang']->Uuid}")->assertNotFound();
     });
 
-    it('laporan masalah & semua baris: kolom asli + Nomor Baris, Status Impor, Masalah; sel berumus (=, +, -, @) dinetralkan', function (): void {
+    it('laporan masalah & semua baris: kolom asli + Nomor Baris, Status Impor, Masalah. Sel berumus (=, +, -, @) dinetralkan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 

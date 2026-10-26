@@ -55,7 +55,7 @@ function Data(tambahan: Partial<PropsCetakTransferStok['Transfer']> = {}): Props
 describe('Cetak surat jalan transfer stok (D-94)', () => {
     afterEach(() => cleanup());
 
-    it('memuat nomor, lokasi asal & tujuan, barang dengan batch, kolom Diterima kosong, dan tanda tangan; tanpa nilai uang', () => {
+    it('memuat nomor, lokasi asal & tujuan, barang dengan batch, kolom Diterima kosong, dan tanda tangan, tanpa nilai uang', () => {
         const { container } = RenderUji(<HalamanCetakTransferStok {...Data()} />);
 
         expect(screen.getByRole('heading', { level: 1, name: 'Surat Jalan Transfer' })).toBeTruthy();

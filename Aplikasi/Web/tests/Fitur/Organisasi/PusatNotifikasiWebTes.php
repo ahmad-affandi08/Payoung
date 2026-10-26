@@ -40,7 +40,7 @@ function SiapkanStokMenipis(object $tes): array
     return $k;
 }
 
-it('notifikasi operasional juga dibuat untuk anggota tanpa perangkat Owner; lonceng dan halaman web membacanya dengan tautan', function (): void {
+it('notifikasi operasional juga dibuat untuk anggota tanpa perangkat Owner. Lonceng dan halaman web membacanya dengan tautan', function (): void {
     $k = SiapkanStokMenipis($this);
     $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
 
@@ -64,7 +64,7 @@ it('notifikasi operasional juga dibuat untuk anggota tanpa perangkat Owner; lonc
             ->where('Saring.Tampil', 'semua'));
 });
 
-it('tandai dibaca: satu atau semua, hanya milik sendiri; filter belum dibaca; lencana ikut turun', function (): void {
+it('tandai dibaca: satu atau semua, hanya milik sendiri. Filter belum dibaca. Lencana ikut turun', function (): void {
     $k = SiapkanStokMenipis($this);
     $lain = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Admin);
     $buat = app(BuatNotifikasiPengguna::class);
@@ -94,7 +94,7 @@ it('tandai dibaca: satu atau semua, hanya milik sendiri; filter belum dibaca; le
     $masuk->post('/kelola/notifikasi/dibaca', ['Uuid' => ['bukan-ulid']])->assertSessionHasErrors('Uuid.0');
 });
 
-it('tautan: Href di bawah /kelola dipakai; Href ke luar diabaikan; notifikasi lama memakai tautan bawaan jenisnya; Persetujuan tanpa tautan web', function (): void {
+it('tautan: Href di bawah /kelola dipakai; Href ke luar diabaikan. Notifikasi lama memakai tautan bawaan jenisnya; Persetujuan tanpa tautan web', function (): void {
     $k = SiapkanStokMenipis($this);
     $buat = app(BuatNotifikasiPengguna::class);
     $buat->Jalankan($k['Pemilik']->Id, JenisNotifikasiPengguna::StokKritis, 'uji:a', 'Stok menipis', 'A', ['Href' => '/kelola/laporan/stok?tab=kritis']);
@@ -115,7 +115,7 @@ it('tautan: Href di bawah /kelola dipakai; Href ke luar diabaikan; notifikasi la
         }));
 });
 
-it('bisukan jenis: notifikasi baru jenis itu tidak dibuat (Persetujuan tetap); pengaturan menggantikan, tidak menumpuk', function (): void {
+it('bisukan jenis: notifikasi baru jenis itu tidak dibuat (Persetujuan tetap). Pengaturan menggantikan, tidak menumpuk', function (): void {
     $k = SiapkanStokMenipis($this);
     $masuk = BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
     $buat = app(BuatNotifikasiPengguna::class);

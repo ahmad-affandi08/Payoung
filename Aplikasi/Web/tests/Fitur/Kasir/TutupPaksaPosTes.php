@@ -15,7 +15,7 @@ beforeEach(function (): void {
 });
 
 describe('F-11 shift lama perangkat yang menahan shift baru: lihat & tutup paksa dari aplikasi POS', function (): void {
-    it('GET shift/terbuka mengembalikan shift aktif perangkat ini; setelah ditutup paksa supervisor, shift baru bisa dibuka', function (): void {
+    it('GET shift/terbuka mengembalikan shift aktif perangkat ini. Setelah ditutup paksa supervisor, shift baru bisa dibuka', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $lama = BantuanKasir::ItemBukaShift($k['Kasir']);
         $baru = BantuanKasir::ItemBukaShift($k['Kasir']);
@@ -43,7 +43,7 @@ describe('F-11 shift lama perangkat yang menahan shift baru: lihat & tutup paksa
         expect($this->withToken($k['Token'])->getJson('/api/pos/v1/shift/terbuka')->assertOk()->json('Shift.0.Uuid'))->toBe($baru['Uuid']);
     });
 
-    it('penyetuju tanpa izin shift.selisih.setujui ditolak 403; alasan terlalu pendek 422; shift tidak ada atau milik perangkat lain 404', function (): void {
+    it('penyetuju tanpa izin shift.selisih.setujui ditolak 403. Alasan terlalu pendek 422. Shift tidak ada atau milik perangkat lain 404', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $lama = BantuanKasir::ItemBukaShift($k['Kasir']);
         BantuanKasir::KirimRingkas($this, $k['Token'], [$lama]);

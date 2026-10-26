@@ -28,7 +28,7 @@ it('di luar musim Lebaran atau tanpa data Lebaran tahun lalu: 364 hari (52 mingg
     expect(PenilaiMusimRestock::TentukanPergeseran(CarbonImmutable::parse('2026-03-01'), 14, $lebaran)['Jenis'])->toBe('TahunLalu');
 });
 
-it('faktor dari laju tahun lalu, dibatasi 0,50–3,00; data kosong = 1,00', function (): void {
+it('faktor dari laju tahun lalu, dibatasi 0,50–3,00. Data kosong = 1,00', function (): void {
     expect((string) PenilaiMusimRestock::HitungFaktor('28', 14, '28', 28))->toBe('2.00')
         ->and((string) PenilaiMusimRestock::HitungFaktor('7', 14, '28', 28))->toBe('0.50')
         ->and((string) PenilaiMusimRestock::HitungFaktor('100', 14, '10', 28))->toBe('3.00')

@@ -184,7 +184,7 @@ export default function Buat({ PilihanStatus, PilihanKesehatan, PilihanPaket, Te
                         label="Waktu kirim"
                         keterangan={
                             data.Kanal === 'WhatsApp'
-                                ? `Kosongkan untuk kirim segera. WhatsApp hanya dikirim jam ${String(Whatsapp.JamMulai)}.00–${String(Whatsapp.JamSelesai)}.00 WIB; di luar jam itu pengiriman menunggu pagi.`
+                                ? `Kosongkan untuk kirim segera. WhatsApp hanya dikirim jam ${String(Whatsapp.JamMulai)}.00–${String(Whatsapp.JamSelesai)}.00 WIB. Di luar jam itu pengiriman menunggu pagi.`
                                 : 'Kosongkan untuk kirim segera. Email dikirim bertahap tiap lima menit.'
                         }
                         nilai={data.Jadwal}

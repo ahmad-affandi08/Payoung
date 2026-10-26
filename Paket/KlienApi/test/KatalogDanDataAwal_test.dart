@@ -25,7 +25,7 @@ Map<String, Object?> DataAwalF06() => {
 
 void main() {
   group('AmbilKatalog (F-03 D.3)', () {
-    test('tanpa kursor meminta katalog lengkap; bagian & tipe dipetakan, uang tetap string', () async {
+    test('tanpa kursor meminta katalog lengkap. Bagian & tipe dipetakan, uang tetap string', () async {
       late http.Request dikirim;
       final klien = BuatKlien((p) async {
         dikirim = p;
@@ -133,7 +133,7 @@ void main() {
       expect(katalog.produkBarcode.single.barcode, '8991234567890');
     });
 
-    test('dengan kursor mengirim ?sejak= ter-encode; delta membawa Terhapus', () async {
+    test('dengan kursor mengirim ?sejak= ter-encode. Delta membawa Terhapus', () async {
       late http.Request dikirim;
       final klien = BuatKlien((p) async {
         dikirim = p;
@@ -173,12 +173,12 @@ void main() {
       expect(katalog.produk[1].jumlahSesiPaket, 10);
       expect(katalog.produk.last.masaGaransiBulan, 12);
       expect(katalog.produk[1].masaGaransiBulan, isNull, reason: 'Server lama atau produk tanpa garansi.');
-      expect(katalog.produk.map((p) => p.hargaTerbuka), [false, false, true], reason: 'K-25; server lama = false.');
+      expect(katalog.produk.map((p) => p.hargaTerbuka), [false, false, true], reason: 'K-25. Server lama = false.');
       expect(katalog.produk.map((p) => p.favorit), [
         false,
         false,
         true,
-      ], reason: 'K-16; server lama tanpa Favorit = false.');
+      ], reason: 'K-16. Server lama tanpa Favorit = false.');
       expect(katalog.terhapus.single.entitas, 'ProdukBarcode');
     });
 
@@ -281,7 +281,7 @@ void main() {
       expect(data.perangkat!.nomorUrutPenjualan, isEmpty);
     });
 
-    test('PRD v1.46: Outlet.ZonaWaktu & Perangkat.NomorUrutPenjualan dipetakan; entri tidak valid diabaikan', () {
+    test('PRD v1.46: Outlet.ZonaWaktu & Perangkat.NomorUrutPenjualan dipetakan. Entri tidak valid diabaikan', () {
       final data = DataAwal.DariJson({
         ...DataAwalF06(),
         'Outlet': {'Uuid': 'O1', 'Kode': 'MKS', 'Nama': 'Makassar', 'ZonaWaktu': 'Asia/Makassar'},
@@ -301,7 +301,7 @@ void main() {
       expect(bukanPeta.perangkat!.nomorUrutPenjualan, isEmpty);
     });
 
-    test('F-09: Perangkat.NomorUrutRetur dipetakan seperti NomorUrutPenjualan; absen/tidak valid → kosong', () {
+    test('F-09: Perangkat.NomorUrutRetur dipetakan seperti NomorUrutPenjualan. Absen/tidak valid → kosong', () {
       final data = DataAwal.DariJson({
         ...DataAwalF06(),
         'Perangkat': {
@@ -325,7 +325,7 @@ void main() {
       expect(bukanPeta.perangkat!.nomorUrutRetur, isEmpty);
     });
 
-    test('F-16d: Deposit & Perangkat.NomorUrutIsiDeposit dipetakan; server lama → tidak berlaku & kosong', () {
+    test('F-16d: Deposit & Perangkat.NomorUrutIsiDeposit dipetakan. Server lama → tidak berlaku & kosong', () {
       final data = DataAwal.DariJson({
         ...DataAwalF06(),
         'Perangkat': {
@@ -346,7 +346,7 @@ void main() {
       expect(lama.deposit.minimalIsi, DepositPos.minimalIsiBawaan);
     });
 
-    test('F-09: baris penjualan/cari memetakan BolehDesimal & UuidProdukSatuan; absen → null', () {
+    test('F-09: baris penjualan/cari memetakan BolehDesimal & UuidProdukSatuan. Absen → null', () {
       Map<String, Object?> Baris([Map<String, Object?> tambahan = const {}]) => {
         'Uuid': 'B1',
         'NamaProduk': 'Biji Kopi Arabika Gayo',
@@ -429,7 +429,7 @@ void main() {
       expect([baru.limitKredit, baru.sisaPiutang, baru.hariLewatJatuhTempo], ['5000000.00', '77000.00', 12]);
     });
 
-    test('server lama tanpa BatasHariRetur → 7 hari; nilai server dipetakan', () {
+    test('server lama tanpa BatasHariRetur → 7 hari. Nilai server dipetakan', () {
       expect(DataAwal.DariJson(DataAwalF06()).batasHariRetur, 7);
       final data = DataAwal.DariJson({
         ...DataAwalF06(),
@@ -507,7 +507,7 @@ void main() {
       ],
     };
 
-    test('nomor dikodekan di query; respons dipetakan (uang & jumlah tetap teks desimal)', () async {
+    test('nomor dikodekan di query. Respons dipetakan (uang & jumlah tetap teks desimal)', () async {
       late http.Request dikirim;
       final klien = BuatKlien((p) async {
         dikirim = p;
@@ -532,7 +532,7 @@ void main() {
       expect(hasil.retur.single.totalRefund, '33333.33');
     });
 
-    test('404 PenjualanTidakDitemukan → GalatApi; server tak terjangkau → GalatJaringan', () async {
+    test('404 PenjualanTidakDitemukan → GalatApi. Server tak terjangkau → GalatJaringan', () async {
       final tidakAda = BuatKlien(
         (_) async => Json({
           'Galat': {'Kode': 'PenjualanTidakDitemukan', 'Pesan': 'Penjualan tidak ditemukan.'},
@@ -575,7 +575,7 @@ void main() {
     expect(() => klien.AmbilGambarProduk('https://contoh.id/bukan-pos/P1'), throwsA(isA<GalatJaringan>()));
   });
 
-  test('PRD v1.46: Pajak[].Kategori (Ppn/Pbjt/Lainnya) dipetakan; nilai lain → null', () {
+  test('PRD v1.46: Pajak[].Kategori (Ppn/Pbjt/Lainnya) dipetakan. Nilai lain → null', () {
     PajakKelompokPos Urai(Object? kategori) => PajakKelompokPos.DariJson({
       'KodeJenisPajak': 'PbjtMakananMinuman',
       'DasarPengenaan': 'Subtotal',
@@ -589,7 +589,7 @@ void main() {
     expect(Urai(3).kategori, isNull);
   });
 
-  test('PRD v1.79: Struk dipetakan; server lama tanpa Struk → null; saklar absen → aktif', () {
+  test('PRD v1.79: Struk dipetakan. Server lama tanpa Struk → null. Saklar absen → aktif', () {
     final struk = StrukPos.DariJson({
       'NamaUsaha': 'Kopi Senja',
       'Npwp': '0123456789012345',
@@ -621,7 +621,7 @@ void main() {
     expect(await klien.AmbilLogoStruk(), isNull);
   });
 
-  test('D-48: KodeSektor dipetakan; server lama tanpa kunci → kosong (semua fitur sektor tampil)', () {
+  test('D-48: KodeSektor dipetakan. Server lama tanpa kunci → kosong (semua fitur sektor tampil)', () {
     final data = DataAwal.DariJson({
       ...DataAwalF06(),
       'KodeSektor': ['RTL-GEN', 'SVC-WRK'],

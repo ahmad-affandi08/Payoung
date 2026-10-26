@@ -45,7 +45,7 @@ void main() {
     expect((transport as TransportBluetoothKlasikAndroid).alamat, PemindaiPrinterPlatform.alamatInnerPrinterSunmi);
   });
 
-  test('iMin: printer bawaan = perangkat USB internal; cetak dikirim lewat kanal USB ke VID:PID', () async {
+  test('iMin: printer bawaan = perangkat USB internal. Cetak dikirim lewat kanal USB ke VID:PID', () async {
     PasangKanal(
       produsen: 'iMin',
       usb: [

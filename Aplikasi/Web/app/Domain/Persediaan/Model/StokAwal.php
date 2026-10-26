@@ -122,7 +122,7 @@ final class StokAwal extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Dokumen stok awal tidak pernah dihapus; draf dibuang (status Dibuang).');
+            throw new LogicException('Dokumen stok awal tidak pernah dihapus. Draf dibuang (status Dibuang).');
         });
     }
 

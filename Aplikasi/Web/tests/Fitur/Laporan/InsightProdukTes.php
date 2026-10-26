@@ -38,7 +38,7 @@ function SiapkanPenjualanInsight(mixed $tes): array
     return [...$k, 'Minyak' => $minyak, 'Teh' => $teh];
 }
 
-it('analisis ABC: produk penyumbang ±80% omzet kelas A, sisanya setelah 95% kelas C; ekspor CSV', function (): void {
+it('analisis ABC: produk penyumbang ±80% omzet kelas A, sisanya setelah 95% kelas C. Ekspor CSV', function (): void {
     $k = SiapkanPenjualanInsight($this);
     BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 
@@ -79,7 +79,7 @@ it('menu engineering: populer & margin tinggi = Star, keduanya rendah = Dog, amb
     expect($csv)->toContain('Margin per unit')->toContain('Star')->toContain('Dog');
 });
 
-it('saran restock: pemakaian hari ini belum dihitung, besok jadi laju harian; cakupan hari mengubah saran beli', function (): void {
+it('saran restock: pemakaian hari ini belum dihitung, besok jadi laju harian. Cakupan hari mengubah saran beli', function (): void {
     $k = SiapkanPenjualanInsight($this);
     BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id);
 

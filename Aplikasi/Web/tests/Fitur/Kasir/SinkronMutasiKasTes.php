@@ -69,7 +69,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
             ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 
-    it('kas masuk (Dr Kas Outlet / Cr akun kategori) dan setoran J-11.3 (Dr Kas Brankas / Cr Kas Outlet); setoran tanpa kategori', function (): void {
+    it('kas masuk (Dr Kas Outlet / Cr akun kategori) dan setoran J-11.3 (Dr Kas Brankas / Cr Kas Outlet). Setoran tanpa kategori', function (): void {
         $k = SiapkanShiftKasUji($this);
         $masuk = BantuanKasir::ItemMutasiKas($k['UuidShift'], $k['Kasir'], 'Masuk', '20000.00', $k['KategoriMasuk']);
         $setoran = BantuanKasir::ItemMutasiKas($k['UuidShift'], $k['Kasir'], 'Setoran', '1500000.00', null);
@@ -110,7 +110,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
         expect(MutasiKas::query()->where('Uuid', $disetujui['Uuid'])->sole()->DisetujuiOleh)->toBe($k['Supervisor']->Id);
     });
 
-    it('BR-06.4 batas mengikuti pengaturan tenant (0 = setiap kas keluar butuh persetujuan); kas masuk tidak butuh persetujuan', function (): void {
+    it('BR-06.4 batas mengikuti pengaturan tenant (0 = setiap kas keluar butuh persetujuan). Kas masuk tidak butuh persetujuan', function (): void {
         $k = SiapkanShiftKasUji($this);
         $tenant = Tenant::query()->findOrFail($k['Tenant']->Id);
         $tenant->Pengaturan = array_merge($tenant->Pengaturan ?? [], ['BatasKasKeluar' => '0.00']);
@@ -122,7 +122,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
         ]))->toBe([['Ditolak', 'PersetujuanDiperlukan'], ['Diterima', null]]);
     });
 
-    it('idempoten & urutan batch: shift dan mutasinya dalam satu batch diproses berurutan; kirim ulang = Duplikat tanpa jurnal ganda', function (): void {
+    it('idempoten & urutan batch: shift dan mutasinya dalam satu batch diproses berurutan. Kirim ulang = Duplikat tanpa jurnal ganda', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $shift = BantuanKasir::ItemBukaShift($k['Kasir']);
         $mutasi = BantuanKasir::ItemMutasiKas($shift['Uuid'], $k['Kasir'], 'Keluar', '15000.00', $k['KategoriKeluar']);
@@ -141,7 +141,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
             ->and(Jurnal::query()->where('JenisSumber', JenisSumberJurnal::MutasiKas->value)->count())->toBe(1);
     });
 
-    it('BR-06.2 shift bukan bersama: kasir lain ditolak BukanShiftSendiri, supervisor boleh; shift bersama: kasir lain boleh', function (): void {
+    it('BR-06.2 shift bukan bersama: kasir lain ditolak BukanShiftSendiri, supervisor boleh. Shift bersama: kasir lain boleh', function (): void {
         $k = SiapkanShiftKasUji($this);
         $kasirLain = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
 
@@ -158,7 +158,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
         ]))->toBe([['Diterima', null], ['Diterima', null]]);
     });
 
-    it('K33: pencatat yang izin/outlet-nya berubah saat offline tetap diterima + PerluTinjauan IzinBerubah (uang sudah bergerak); bukan anggota usaha ditolak', function (): void {
+    it('K33: pencatat yang izin/outlet-nya berubah saat offline tetap diterima + PerluTinjauan IzinBerubah (uang sudah bergerak), bukan anggota usaha ditolak', function (): void {
         $k = SiapkanShiftKasUji($this, bersama: true);
         $gudang = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::StafGudang);
         $luarOutlet = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir, semuaOutlet: false);
@@ -181,7 +181,7 @@ describe('F-06 kas masuk/keluar/setoran lewat sinkron', function (): void {
             ->and(MutasiKas::query()->where('Uuid', $bukanAnggota['Uuid'])->exists())->toBeFalse();
     });
 
-    it('penolakan: shift perangkat lain, kategori salah jenis/nonaktif, jumlah 0, waktu sebelum buka shift; periode terkunci (§18/F-15) diterima & dibukukan di periode berikutnya', function (): void {
+    it('penolakan: shift perangkat lain, kategori salah jenis/nonaktif, jumlah 0, waktu sebelum buka shift. Periode terkunci (§18/F-15) diterima & dibukukan di periode berikutnya', function (): void {
         $k = SiapkanShiftKasUji($this);
         $perangkat2 = BantuanPerangkat::BuatDanAktifkan($this, $k['Tenant']->Id, $k['Outlet'], 'Kasir Belakang');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

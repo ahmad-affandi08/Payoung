@@ -67,7 +67,7 @@ function SiapkanKaryawan(TestCase $tes, string $nama = 'Kopi Senja Karyawan'): a
 }
 
 describe('F-18 data karyawan', function (): void {
-    it('tambah tanpa akun, tautkan akun lalu akun ganda ditolak, ubah, nonaktifkan; gaji hanya untuk karyawan.kelola', function (): void {
+    it('tambah tanpa akun, tautkan akun lalu akun ganda ditolak, ubah, nonaktifkan. Gaji hanya untuk karyawan.kelola', function (): void {
         $k = SiapkanKaryawan($this);
 
         $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Rina Wulandari', 'Jabatan' => 'Barista', 'LevelStaf' => 'Senior', 'GajiPokok' => '3500000', 'UuidOutlet' => $k['Outlet']->Uuid])
@@ -106,7 +106,7 @@ describe('F-18 data karyawan', function (): void {
         $this->get('/kelola/tim')->assertForbidden();
     });
 
-    it('halaman tambah (halaman penuh): opsi outlet & izin; tanpa izin tambah 403', function (): void {
+    it('halaman tambah (halaman penuh): opsi outlet & izin, tanpa izin tambah 403', function (): void {
         $k = SiapkanKaryawan($this);
         $this->get('/kelola/tim/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Tim/Tambah')
@@ -122,7 +122,7 @@ describe('F-18 data karyawan', function (): void {
 });
 
 describe('F-18 jadwal kerja', function (): void {
-    it('simpan, ubah, hapus jadwal minggu; jam tidak valid & bentrok outlet lain ditolak; salin minggu lalu', function (): void {
+    it('simpan, ubah, hapus jadwal minggu. Jam tidak valid & bentrok outlet lain ditolak. Salin minggu lalu', function (): void {
         $k = SiapkanKaryawan($this);
         $this->post('/kelola/tim', ['Akses' => 'Tanpa', 'Nama' => 'Dimas Pratama', 'UuidOutlet' => $k['Outlet']->Uuid])->assertSessionHasNoErrors();
         $dimas = Karyawan::query()->sole();
@@ -156,7 +156,7 @@ describe('F-18 jadwal kerja', function (): void {
 });
 
 describe('F-18 absensi dari POS', function (): void {
-    it('masuk & keluar idempoten dengan swafoto; karyawan dibuat otomatis; rekap menghitung terlambat', function (): void {
+    it('masuk & keluar idempoten dengan swafoto. Karyawan dibuat otomatis. Rekap menghitung terlambat', function (): void {
         $k = SiapkanKaryawan($this);
         $uuid = BantuanKasir::Uuid();
         $masuk = ItemAbsensi('Absensi.Masuk', ['UuidPengguna' => $k['Kasir']->Uuid, 'MasukPada' => JamHariIni(9, 40), 'Swafoto' => SwafotoUji()], $uuid);
@@ -260,7 +260,7 @@ describe('D-44 absen POS vs jadwal', function (): void {
         expect($daftar->json('Meta.Total'))->toBe(1)->and($daftar->json('Data.0.DiluarJadwal'))->toBeTrue();
     });
 
-    it('sesuai jadwal tidak ditandai; tanpa aturan WajibJadwal tidak pernah ditandai', function (): void {
+    it('sesuai jadwal tidak ditandai, tanpa aturan WajibJadwal tidak pernah ditandai', function (): void {
         $k = SiapkanKaryawan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $hariIni = CarbonImmutable::now('Asia/Jakarta')->toDateString();

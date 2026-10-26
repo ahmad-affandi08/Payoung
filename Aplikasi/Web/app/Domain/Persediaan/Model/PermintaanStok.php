@@ -67,7 +67,7 @@ final class PermintaanStok extends ModelDasar
             }
         });
         self::deleting(function (): void {
-            throw new LogicException('Permintaan stok tidak pernah dihapus; batalkan atau tutup.');
+            throw new LogicException('Permintaan stok tidak pernah dihapus. Batalkan atau tutup.');
         });
     }
 

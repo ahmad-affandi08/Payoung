@@ -8,7 +8,7 @@ vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/Tiruan
 afterEach(() => cleanup());
 
 describe('TabTautan: satu gaya tab untuk seluruh web', () => {
-    it('tab aktif ditandai aria-current, teks brand, dan batang bawah; tab lain tidak', () => {
+    it('tab aktif ditandai aria-current, teks brand, dan batang bawah. Tab lain tidak', () => {
         render(
             <TabTautan
                 label="Bagian produk"

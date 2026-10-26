@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 describe('POST /api/pemilik/v1/lupa-kata-sandi', function (): void {
-    it('email terdaftar dan tidak terdaftar mendapat jawaban yang sama; tautan hanya dikirim ke akun yang ada', function (): void {
+    it('email terdaftar dan tidak terdaftar mendapat jawaban yang sama. Tautan hanya dikirim ke akun yang ada', function (): void {
         $terdaftar = $this->postJson('/api/pemilik/v1/lupa-kata-sandi', ['Email' => 'RINA@kopinusantara.id']);
         $tidakAda = $this->postJson('/api/pemilik/v1/lupa-kata-sandi', ['Email' => 'tidak-ada@contoh.id']);
 

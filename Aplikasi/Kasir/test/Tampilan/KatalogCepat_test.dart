@@ -97,7 +97,7 @@ void main() {
     );
   }
 
-  testWidgets('kategori terakhir dipulihkan saat layar Jual dibuka lagi; kategori yang hilang kembali ke Semua', (
+  testWidgets('kategori terakhir dipulihkan saat layar Jual dibuka lagi. Kategori yang hilang kembali ke Semua', (
     tester,
   ) async {
     final u = await Masuk(tester, const Size(1280, 900), kategoriTersimpan: UuidUji.kategoriMakanan);
@@ -110,7 +110,7 @@ void main() {
     await Lepas(tester, lain);
   });
 
-  testWidgets('`?` di luar kolom isian membuka daftar pintasan; di kolom cari tetap jadi teks', (tester) async {
+  testWidgets('`?` di luar kolom isian membuka daftar pintasan. Di kolom cari tetap jadi teks', (tester) async {
     final u = await Masuk(tester, const Size(1280, 900));
     await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.slash, character: '?');

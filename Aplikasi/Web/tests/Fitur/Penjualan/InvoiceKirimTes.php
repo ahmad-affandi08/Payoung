@@ -183,7 +183,7 @@ it('invoice dibatalkan sebelum tugas berjalan menjadi Dibatalkan tanpa pesan kel
         ->and(KirimanInvoiceTerekam())->toBe(0);
 });
 
-it('pengingat yang lunas sebelum terkirim dibatalkan; kegagalan penyedia dicoba ulang lalu Gagal tanpa nomor', function (): void {
+it('pengingat yang lunas sebelum terkirim dibatalkan. Kegagalan penyedia dicoba ulang lalu Gagal tanpa nomor', function (): void {
     $invoice = InvoiceTerbitKirimUji($this);
     $lunas = PengirimanInvoice::query()->create(['IdInvoice' => $invoice->Id, 'Jenis' => JenisPengirimanInvoice::Pengingat, 'Tahap' => 'H0', 'Tujuan' => '6281355550101', 'Status' => StatusPengirimanInvoice::Diantrekan]);
     app(CatatPembayaranInvoice::class)->Jalankan($invoice->Uuid, BantuanPembelian::AkunKas('1-1200')->Uuid, CarbonImmutable::parse('2026-09-27'), null, Uang::Nol(), null, null, $this->k['Pemilik']->Id);

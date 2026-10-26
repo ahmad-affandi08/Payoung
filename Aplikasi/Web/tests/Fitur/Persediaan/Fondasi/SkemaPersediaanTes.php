@@ -66,7 +66,7 @@ function BuatMutasiMentahSkema(int $idProduk, int $idGudang, string $jumlah, str
 }
 
 describe('F-05a skema persediaan (DesainF05a B.1–B.3)', function (): void {
-    it('tipe kolom: uang decimal(18,2), HPP per unit decimal(19,6), jumlah decimal(18,4); tanpa float/double', function (): void {
+    it('tipe kolom: uang decimal(18,2), HPP per unit decimal(19,6), jumlah decimal(18,4), tanpa float/double', function (): void {
         $harapan = [
             'MutasiStok' => ['Jumlah' => 'decimal(18,4)', 'HppSatuan' => 'decimal(19,6)', 'TotalHpp' => 'decimal(18,2)', 'SelisihHpp' => 'decimal(18,2)',
                 'SaldoSetelah' => 'decimal(18,4)', 'NilaiSetelah' => 'decimal(18,2)', 'HppRataRataSetelah' => 'decimal(19,6)'],
@@ -90,7 +90,7 @@ describe('F-05a skema persediaan (DesainF05a B.1–B.3)', function (): void {
         expect($melayang)->toBe([]);
     });
 
-    it('setiap tabel tenant ber-IdTenant ber-FK; semua indeks sekunder diawali IdTenant; nama constraint eksplisit ≤ 64', function (): void {
+    it('setiap tabel tenant ber-IdTenant ber-FK. Semua indeks sekunder diawali IdTenant. Nama constraint eksplisit ≤ 64', function (): void {
         $daftar = implode(',', array_fill(0, count(TABEL_F05A), '?'));
 
         foreach (TABEL_F05A as $tabel) {
@@ -296,7 +296,7 @@ describe('F-05a izin, rute, dan ikatan provider (DesainF05a B.5, D, G)', functio
 });
 
 describe('F-05a pemeriksa invarian (DesainF05a F, aturan #17)', function (): void {
-    it('tenant tanpa mutasi = konsisten; saldo rusak, rantai putus, dan Q=0 bernilai terdeteksi', function (): void {
+    it('tenant tanpa mutasi = konsisten. Saldo rusak, rantai putus, dan Q=0 bernilai terdeteksi', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $idTenant = $t['Tenant']->Id;
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg'])['Stok'];

@@ -18,7 +18,7 @@ void main() {
   });
   tearDown(() => folder.deleteSync(recursive: true));
 
-  test('filter menyamarkan HP, email, NIK, kartu, token; angka pendek tetap', () {
+  test('filter menyamarkan HP, email, NIK, kartu, token. Angka pendek tetap', () {
     expect(
       LogLokal.SaringPii('WA 0812-3456-7890 ke rina@contoh.id NIK 3372011234567890 Bearer abc.def kode 500 baris 42'),
       'WA [disamarkan] ke [disamarkan] NIK [disamarkan] Bearer [disamarkan] kode 500 baris 42',
@@ -40,7 +40,7 @@ void main() {
     expect(File('${folder.path}/log/kasir.1.log').existsSync(), isTrue, reason: 'Berkas diputar saat > 400 bait.');
   });
 
-  test('kirim tertunda: hanya galat/peringatan, sekali saja; offline = dicoba lagi', () async {
+  test('kirim tertunda: hanya galat/peringatan, sekali saja. Offline = dicoba lagi', () async {
     final u = LingkunganUji.Buat();
     addTearDown(u.Tutup);
     await u.SiapkanAktif();
@@ -100,7 +100,7 @@ void main() {
     },
   );
 
-  test('PGL-16 bagian 2: unggah offline atau permintaan sudah terpenuhi = 0 tanpa melempar; log kosong tetap mengirim satu baris', () async {
+  test('PGL-16 bagian 2: unggah offline atau permintaan sudah terpenuhi = 0 tanpa melempar. Log kosong tetap mengirim satu baris', () async {
     final u = LingkunganUji.Buat();
     addTearDown(u.Tutup);
     await u.SiapkanAktif();

@@ -74,7 +74,7 @@ describe('OWN-01 masuk Aplikasi Owner', function (): void {
             ]);
     });
 
-    it('multi tenant: hanya keanggotaan aktif, urut nama, tanda pemilik per tenant; audit di setiap tenant aktif', function (): void {
+    it('multi tenant: hanya keanggotaan aktif, urut nama, tanda pemilik per tenant. Audit di setiap tenant aktif', function (): void {
         $a = SiapkanPemilikUji('Warung Bakso Pak Kumis');
         $b = BantuanOrganisasi::BuatTenant('Apotek Sehat Sentosa');
         $c = BantuanOrganisasi::BuatTenant('Toko Bangunan Makmur Jaya');
@@ -92,7 +92,7 @@ describe('OWN-01 masuk Aplikasi Owner', function (): void {
             ->toBe([$a['Tenant']->Id, $b['Tenant']->Id]);
     });
 
-    it('kata sandi salah atau email tidak dikenal → 422 KredensialSalah tanpa token; email belum diverifikasi → 403; validasi 422', function (): void {
+    it('kata sandi salah atau email tidak dikenal → 422 KredensialSalah tanpa token. Email belum diverifikasi → 403. Validasi 422', function (): void {
         $t = SiapkanPemilikUji();
 
         foreach ([[$t['Pemilik']->Email, 'kata-sandi-salah'], ['tidak.ada@contoh.id', BantuanAutentikasi::KATA_SANDI]] as [$email, $sandi]) {
@@ -139,7 +139,7 @@ describe('OWN-01 masuk Aplikasi Owner', function (): void {
 });
 
 describe('OWN-01 + BR-00.8 masuk dengan verifikasi dua langkah', function (): void {
-    it('akun ber-2FA menerima TokenTantangan (bukan token akses); kode salah 422 KodeSalah; TOTP benar → token; tantangan sekali pakai', function (): void {
+    it('akun ber-2FA menerima TokenTantangan (bukan token akses). Kode salah 422 KodeSalah; TOTP benar → token. Tantangan sekali pakai', function (): void {
         $t = SiapkanPemilikUji();
         $rahasia = BantuanAutentikasi::AktifkanDuaFaktor($t['Pemilik']);
 
@@ -168,7 +168,7 @@ describe('OWN-01 + BR-00.8 masuk dengan verifikasi dua langkah', function (): vo
             ->assertJsonPath('Galat.Kode', 'TantanganTidakBerlaku');
     });
 
-    it('kode pemulihan diterima sekali; tantangan kedaluwarsa setelah 5 menit; 5 kode salah menghanguskan tantangan', function (): void {
+    it('kode pemulihan diterima sekali. Tantangan kedaluwarsa setelah 5 menit; 5 kode salah menghanguskan tantangan', function (): void {
         $t = SiapkanPemilikUji();
         $rahasia = BantuanAutentikasi::AktifkanDuaFaktor($t['Pemilik']);
         $masuk = fn (): string => KirimMasukPemilik($this, ['Email' => $t['Pemilik']->Email, 'KataSandi' => BantuanAutentikasi::KATA_SANDI, 'NamaPerangkat' => 'iPad'])->json('TokenTantangan');
@@ -215,7 +215,7 @@ describe('OWN-01 token akses: keluar, kedaluwarsa, dicabut', function (): void {
         $this->withToken($token)->getJson('/api/pemilik/v1/profil')->assertStatus(401)->assertJsonPath('Galat.Kode', 'TokenTidakValid');
     });
 
-    it('keluar → 204, token itu dicabut (401), token perangkat lain tetap berlaku; audit pemilik.keluar', function (): void {
+    it('keluar → 204, token itu dicabut (401), token perangkat lain tetap berlaku. Audit pemilik.keluar', function (): void {
         $t = SiapkanPemilikUji();
         $data = ['Email' => $t['Pemilik']->Email, 'KataSandi' => BantuanAutentikasi::KATA_SANDI];
         $tokenHp = KirimMasukPemilik($this, [...$data, 'NamaPerangkat' => 'HP'])->json('Token');

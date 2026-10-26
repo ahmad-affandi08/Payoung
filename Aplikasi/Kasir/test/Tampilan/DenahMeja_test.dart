@@ -70,7 +70,7 @@ void main() {
   }
 
   for (final (nama, ukuran) in [('360', ukuranHp), ('800', ukuranTablet), ('1280', ukuranDesktop)]) {
-    testWidgets('denah di $nama dp: meja tertata di kanvas, yang belum di baris sendiri; ketuk meja membuka pesanan', (
+    testWidgets('denah di $nama dp: meja tertata di kanvas, yang belum di baris sendiri. Ketuk meja membuka pesanan', (
       tester,
     ) async {
       final u = await MasukKasir(tester, ukuran, tertata: true);

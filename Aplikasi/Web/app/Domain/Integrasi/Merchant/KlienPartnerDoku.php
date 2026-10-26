@@ -209,7 +209,7 @@ final class KlienPartnerDoku
 
         // Kredensial partner Payoung ditolak = masalah di sisi kita, bukan data tenant: jangan menyalahkan isian tenant.
         if (in_array($status, [401, 403], true)) {
-            throw new GalatPartnerDoku('Kredensial Partner DOKU di sisi Payoung ditolak. Tim Payoung perlu memeriksanya; coba lagi nanti.', tidakPasti: true, statusHttp: $status);
+            throw new GalatPartnerDoku('Kredensial Partner DOKU di sisi Payoung ditolak. Tim Payoung perlu memeriksanya. Coba lagi nanti.', tidakPasti: true, statusHttp: $status);
         }
 
         $pesan = $this->Saring("DOKU menolak saat {$kegiatan} (HTTP {$status}): ".$this->PesanPenyedia($respons), $token);

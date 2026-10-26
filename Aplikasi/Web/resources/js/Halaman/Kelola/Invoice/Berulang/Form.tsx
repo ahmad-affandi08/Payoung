@@ -257,7 +257,7 @@ export default function HalamanFormInvoiceBerulang({
                         />
                         <BidangTeks
                             label="Termin pembayaran (hari)"
-                            keterangan="Terisi dari data pelanggan; ubah bila berbeda. 0 = bayar langsung."
+                            keterangan="Terisi dari data pelanggan. Ubah bila berbeda. 0 = bayar langsung."
                             nilai={termin}
                             saatBerubah={(nilai) => AturTermin(nilai.replace(/\D/g, '').slice(0, 3))}
                             inputMode="numeric"

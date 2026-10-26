@@ -1243,7 +1243,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                     {!props.AksesDukungan && props.PengingatDuaFaktor ? (
                         <Pemberitahuan jenis="info" judul="Aktifkan verifikasi dua langkah">
                             Paket Bisnis mewajibkan verifikasi dua langkah untuk Pemilik, Admin, dan Akuntan. Selama
-                            masa coba Anda masih bisa memakai semua menu; setelahnya menu dibuka setelah verifikasi
+                            masa coba Anda masih bisa memakai semua menu. Setelahnya menu dibuka setelah verifikasi
                             aktif.{' '}
                             <Link href="/kelola/keamanan" className="font-semibold text-brand underline">
                                 Aktifkan sekarang

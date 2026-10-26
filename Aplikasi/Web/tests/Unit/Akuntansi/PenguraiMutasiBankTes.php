@@ -21,7 +21,7 @@ it('membaca nominal format Indonesia, internasional, kurung, minus, dan akhiran 
     ['75.000 DB', '75000.00', -1],
 ]);
 
-it('kosong = null; teks bukan angka ditolak', function (): void {
+it('kosong = null. Teks bukan angka ditolak', function (): void {
     expect(PenguraiMutasiBank::UraiNominal(''))->toBeNull()
         ->and(PenguraiMutasiBank::UraiNominal('-'))->toBeNull();
     PenguraiMutasiBank::UraiNominal('PEND');

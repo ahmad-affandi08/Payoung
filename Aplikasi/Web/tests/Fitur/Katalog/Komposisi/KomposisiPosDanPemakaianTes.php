@@ -45,7 +45,7 @@ beforeEach(function (): void {
 });
 
 describe('BR-03.2 produk dipakai di komposisi', function (): void {
-    it('bahan resep versi terbaru, bahan pilihan, dan komponen paket = dipakai; versi lama tidak dihitung', function (): void {
+    it('bahan resep versi terbaru, bahan pilihan, dan komponen paket = dipakai. Versi lama tidak dihitung', function (): void {
         BantuanKatalog::BuatTenant();
         $kopi = BantuanKomposisi::BuatBahan();
         $gula = BantuanKomposisi::BuatBahan('Gula Pasir Kristal Putih');
@@ -76,7 +76,7 @@ describe('BR-03.2 produk dipakai di komposisi', function (): void {
 });
 
 describe('Bagian katalog POS Tim 3', function (): void {
-    it('sinkron lengkap: kelompok, pilihan, pemasangan, resep versi terbaru dengan bahan, komponen paket; uang & jumlah string', function (): void {
+    it('sinkron lengkap: kelompok, pilihan, pemasangan, resep versi terbaru dengan bahan, komponen paket. Uang & jumlah string', function (): void {
         ['Tenant' => $tenant, 'Outlet' => $outlet] = BantuanKatalog::BuatTenant('Kedai Kopi Senja Solo');
         $kopi = BantuanKomposisi::BuatBahan();
         $susu = BantuanKomposisi::BuatBahan('Susu Segar Full Cream Pasteurisasi', 'ml', 'Mililiter');

@@ -63,7 +63,7 @@ final class BangunUlangRingkasanHarianDukungan
             return new HasilKerjaAlat(
                 $sama ? StatusHasilAlatDukungan::TanpaPerubahan : StatusHasilAlatDukungan::Berhasil,
                 $sama
-                    ? 'Ringkasan harian sudah sama dengan dokumen sumber; tidak ada yang berubah.'
+                    ? 'Ringkasan harian sudah sama dengan dokumen sumber. Tidak ada yang berubah.'
                     : "Ringkasan {$dari->toDateString()} sampai {$sampai->toDateString()} dibangun ulang: bersih {$sebelum['TotalBersih']} menjadi {$sesudah['TotalBersih']}.",
                 $sebelum,
                 $sesudah,

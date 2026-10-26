@@ -18,7 +18,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('Barcode timbangan (v3.55)', function (): void {
-    it('bawaan mati; diaktifkan dengan awalan & nilai; ikut data awal; awalan 20 ditolak; tanpa izin 403', function (): void {
+    it('bawaan mati. Diaktifkan dengan awalan & nilai. Ikut data awal. Awalan 20 ditolak, tanpa izin 403', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')
             ->assertJsonPath('Pengaturan.BarcodeTimbangan', ['Aktif' => false, 'Awalan' => ['27'], 'Nilai' => 'Berat']);

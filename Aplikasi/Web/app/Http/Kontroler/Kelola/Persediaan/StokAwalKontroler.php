@@ -118,7 +118,7 @@ final class StokAwalKontroler extends DasarPersediaanKontroler
     private function LanjutkanPosting(Request $permintaan, RedirectResponse $hasil, string $uuid): RedirectResponse
     {
         if ($permintaan->boolean('Lanjutkan') && ! $this->CekIzin(IzinTenant::PersediaanStokAwalPosting)) {
-            return $hasil->withErrors(['Umum' => 'Draf disimpan. Anda belum punya izin mencatat stok awal; minta pemegang izin mencatatnya.']);
+            return $hasil->withErrors(['Umum' => 'Draf disimpan. Anda belum punya izin mencatat stok awal. Minta pemegang izin mencatatnya.']);
         }
 
         return $this->LanjutkanSetelahSimpan($permintaan, $hasil, fn () => $this->Posting($uuid, app(AjukanPostingStokAwal::class)), 'kelola.persediaan.stok-awal.detail', ['stokAwal' => $uuid]);

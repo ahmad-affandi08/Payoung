@@ -20,7 +20,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('ringkasan hari ini: dua penjualan, satu void, satu retur; per metode & per kasir; tanpa HPP', function (): void {
+it('ringkasan hari ini: dua penjualan, satu void, satu retur. Per metode & per kasir, tanpa HPP', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);

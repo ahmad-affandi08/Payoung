@@ -26,7 +26,7 @@ beforeEach(function (): void {
  * diketik ulang, stok harus nol, dan produk tidak boleh masih jadi bahan/komponen/pilihan produk lain.
  */
 describe('D-218 hapus permanen produk beserta riwayat', function (): void {
-    it('produk yang sudah terjual: pratinjau menghitung riwayat; hapus membuang semua barisnya tetapi nota, jurnal, dan stok produk lain utuh', function (): void {
+    it('produk yang sudah terjual: pratinjau menghitung riwayat. Hapus membuang semua barisnya tetapi nota, jurnal, dan stok produk lain utuh', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Premium Pulen 5 Kg', '10', '60000', '75000.00');
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Minyak Goreng 2 Liter', '5', '30000', '38500.00');
@@ -88,7 +88,7 @@ describe('D-218 hapus permanen produk beserta riwayat', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'produk.hapus-permanen')->sole()->NilaiBaru)->toMatchArray(['PenyesuaianStok' => 1]);
     });
 
-    it('stok minus atau produk ber-batch → ditolak dengan petunjuk; tidak ada yang terhapus', function (): void {
+    it('stok minus atau produk ber-batch → ditolak dengan petunjuk. Tidak ada yang terhapus', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
         $batch = $produk['Batch'];

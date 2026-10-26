@@ -86,7 +86,7 @@ beforeEach(function (): void {
 });
 
 describe('SektorProspek', function (): void {
-    it('membaca kode maupun nama sektor tanpa membedakan huruf besar kecil; yang tak dikenal null', function (): void {
+    it('membaca kode maupun nama sektor tanpa membedakan huruf besar kecil, yang tak dikenal null', function (): void {
         expect(SektorProspek::DariTeks('FNB-CAF'))->toBe(SektorProspek::KafeKopi)
             ->and(SektorProspek::DariTeks('  kafe & KEDAI kopi '))->toBe(SektorProspek::KafeKopi)
             ->and(SektorProspek::DariTeks('Jasa profesional & agensi'))->toBe(SektorProspek::JasaProfesional)
@@ -141,7 +141,7 @@ describe('D-216 impor kontak', function (): void {
             ->and(json_encode($log->NilaiBaru))->not->toContain('contoh.id');
     });
 
-    it('kontak yang sudah berhenti tidak hidup kembali lewat impor ulang; titik koma dan urutan kolom bebas', function (): void {
+    it('kontak yang sudah berhenti tidak hidup kembali lewat impor ulang. Titik koma dan urutan kolom bebas', function (): void {
         $berhenti = BuatKontakProspekUji('pergi@contoh.id', SektorProspek::Salon, StatusKontakProspek::Berhenti);
 
         $hasil = app(ImporKontakProspek::class)->Jalankan(PelakuKampanyeUji(), "Sektor;Email\nSalon, barbershop & spa;pergi@contoh.id\nSVC-SLN;baru@contoh.id", 'Dataset uji kota Bandung');
@@ -160,7 +160,7 @@ describe('D-216 impor kontak', function (): void {
         expect(KontakProspek::query()->count())->toBe(0);
     });
 
-    it('lewat halaman: hanya Super Admin (komunikasi.kelola); berkas CSV diunggah dengan sumber', function (): void {
+    it('lewat halaman: hanya Super Admin (komunikasi.kelola). Berkas CSV diunggah dengan sumber', function (): void {
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::Analis);
         $this->get(BantuanPengelola::Url('/kampanye-prospek/kontak'))->assertForbidden();
         $this->post(BantuanPengelola::Url('/kampanye-prospek/kontak/impor'), [])->assertForbidden();
@@ -196,7 +196,7 @@ describe('D-216 impor kontak', function (): void {
 });
 
 describe('D-216 membuat dan menjalankan kampanye', function (): void {
-    it('draf dibuat dengan sektor terpilih; tanpa sektor, tanpa kontak aktif, atau batas di luar rentang ditolak', function (): void {
+    it('draf dibuat dengan sektor terpilih, tanpa sektor, tanpa kontak aktif, atau batas di luar rentang ditolak', function (): void {
         BuatKontakProspekUji('kopi@contoh.id');
         $aksi = app(BuatKampanyeProspek::class);
         $pelaku = PelakuKampanyeUji();
@@ -222,7 +222,7 @@ describe('D-216 membuat dan menjalankan kampanye', function (): void {
             ->and(PenerimaKampanyeProspek::query()->count())->toBe(0);
     });
 
-    it('menjalankan menetapkan penerima: hanya kontak aktif di sektor terpilih; jeda, lanjut, dan batal', function (): void {
+    it('menjalankan menetapkan penerima: hanya kontak aktif di sektor terpilih. Jeda, lanjut, dan batal', function (): void {
         AktifkanEmailKampanyeUji();
         BuatKontakProspekUji('a@contoh.id');
         BuatKontakProspekUji('b@contoh.id');
@@ -299,7 +299,7 @@ describe('D-216 membuat dan menjalankan kampanye', function (): void {
 });
 
 describe('D-216 pengiriman bertahap', function (): void {
-    it('sedikit demi sedikit dan berbatas per hari; email memuat sumber, tautan berhenti, dan List-Unsubscribe satu klik', function (): void {
+    it('sedikit demi sedikit dan berbatas per hari. Email memuat sumber, tautan berhenti, dan List-Unsubscribe satu klik', function (): void {
         AktifkanEmailKampanyeUji();
 
         foreach (range(1, 12) as $nomor) {
@@ -368,7 +368,7 @@ describe('D-216 pengiriman bertahap', function (): void {
             ->and($kampanye->JumlahDilewati)->toBe(1);
     });
 
-    it('lima kegagalan beruntun menjeda kampanye dengan alasan; email kampanye dimatikan juga menjeda', function (): void {
+    it('lima kegagalan beruntun menjeda kampanye dengan alasan. Email kampanye dimatikan juga menjeda', function (): void {
         AktifkanEmailKampanyeUji(['transport' => 'smtp', 'host' => '127.0.0.1', 'port' => 1, 'timeout' => 2]);
 
         foreach (range(1, 7) as $nomor) {
@@ -473,7 +473,7 @@ describe('D-216 pengirim bawaan bila Email kampanye kosong', function (): void {
 });
 
 describe('D-216 berhenti berlangganan publik', function (): void {
-    it('GET hanya konfirmasi, POST menghentikan; tautan diubah atau tanda tangan hilang = 404; alamat email tak pernah tampil', function (): void {
+    it('GET hanya konfirmasi, POST menghentikan. Tautan diubah atau tanda tangan hilang = 404. Alamat email tak pernah tampil', function (): void {
         $kontak = BuatKontakProspekUji('rahasia@contoh.id');
         $tautan = TautanBerhentiProspek::Buat($kontak);
 

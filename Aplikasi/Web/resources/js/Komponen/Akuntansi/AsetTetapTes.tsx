@@ -105,7 +105,7 @@ describe('Aset tetap (FIN-10, v3.38)', () => {
         });
     });
 
-    it('rincian: jadwal bertaut jurnal, aksi jual/hapus; batal hanya bila belum disusutkan', () => {
+    it('rincian: jadwal bertaut jurnal, aksi jual/hapus. Batal hanya bila belum disusutkan', () => {
         const props: PropsDetailAsetTetap = {
             Aset: {
                 ...Aset,

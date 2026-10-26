@@ -107,6 +107,6 @@ final class BiayaTambahanKontroler extends DasarPembelianKontroler
     {
         $b = $batalkan->Jalankan($this->CariDokumen(BiayaTambahanPembelian::class, strtoupper($biaya)), $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
 
-        return to_route('kelola.pembelian.biaya-tambahan.detail', ['biaya' => $b->Uuid])->with('Kilat', "{$b->Nomor} dibatalkan; nilai stok dan jurnalnya dikembalikan.");
+        return to_route('kelola.pembelian.biaya-tambahan.detail', ['biaya' => $b->Uuid])->with('Kilat', "{$b->Nomor} dibatalkan. Nilai stok dan jurnalnya dikembalikan.");
     }
 }

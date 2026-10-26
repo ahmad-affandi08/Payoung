@@ -65,7 +65,7 @@ function SiapkanPiutangGiro(TestCase $tes): array
 }
 
 describe('v3.42 giro/cek mundur', function (): void {
-    it('giro masuk: pelunasan ke Giro Mundur Diterima, cair ke bank, tolak membuka piutang lagi; batal langsung ditolak', function (): void {
+    it('giro masuk: pelunasan ke Giro Mundur Diterima, cair ke bank, tolak membuka piutang lagi. Batal langsung ditolak', function (): void {
         $k = SiapkanPiutangGiro($this);
         $hari = app(TanggalBisnisOutlet::class)->Hitung(null);
         $isian = fn (Piutang $p, string $jatuhTempo): array => [
@@ -114,7 +114,7 @@ describe('v3.42 giro/cek mundur', function (): void {
         $this->post("/kelola/akuntansi/giro/{$g2->Uuid}/cair", ['UuidAkun' => $bank->Uuid, 'Tanggal' => $hari->format('Y-m-d')])->assertNotFound();
     });
 
-    it('giro keluar: pembayaran hutang ke Hutang Giro, cair mengurangi bank; invarian hutang', function (): void {
+    it('giro keluar: pembayaran hutang ke Hutang Giro, cair mengurangi bank. Invarian hutang', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $pemasok = BantuanPembelian::BuatPemasok('CV Sumber Rejeki', idPengguna: $t['Pemilik']->Id);
         $beras = BantuanKatalog::BuatProduk(['Nama' => 'Beras Premium Rojolele 5 kg'], '85000.00', $t['Pcs']);

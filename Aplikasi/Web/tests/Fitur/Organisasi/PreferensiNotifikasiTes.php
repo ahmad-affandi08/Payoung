@@ -30,7 +30,7 @@ beforeEach(function (): void {
     Queue::fake();
 });
 
-it('push dimatikan per jenis: notifikasi tetap dibuat untuk web tetapi tidak dikirim ke FCM; jenis lain tetap dikirim', function (): void {
+it('push dimatikan per jenis: notifikasi tetap dibuat untuk web tetapi tidak dikirim ke FCM. Jenis lain tetap dikirim', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     app(UbahPengaturanNotifikasi::class)->Jalankan($k['Pemilik']->Id, [], ['StokKritis']);
@@ -45,7 +45,7 @@ it('push dimatikan per jenis: notifikasi tetap dibuat untuk web tetapi tidak dik
     Queue::assertPushed(KirimNotifikasiPushTugas::class, fn (KirimNotifikasiPushTugas $t): bool => $t->idNotifikasi === $kas->Id);
 });
 
-it('persetujuan tidak bisa dimatikan pushnya; jenis tidak dikenal ditolak', function (): void {
+it('persetujuan tidak bisa dimatikan pushnya. Jenis tidak dikenal ditolak', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $ubah = app(UbahPengaturanNotifikasi::class);
@@ -55,7 +55,7 @@ it('persetujuan tidak bisa dimatikan pushnya; jenis tidak dikenal ditolak', func
         ->and(NotifikasiPushDimatikan::query()->count())->toBe(0);
 });
 
-it('outlet dibisukan: penerima kabar outlet itu tidak lagi menyertakan pengguna; outlet lain tetap; di luar akses ditolak', function (): void {
+it('outlet dibisukan: penerima kabar outlet itu tidak lagi menyertakan pengguna. Outlet lain tetap. Di luar akses ditolak', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $cabang = BantuanJurnal::BuatOutlet('KLT', 'Cabang Klaten');

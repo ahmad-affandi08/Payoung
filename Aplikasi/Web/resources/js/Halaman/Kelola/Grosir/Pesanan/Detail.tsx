@@ -242,7 +242,7 @@ export default function HalamanDetailPesananGrosir({
             {dialog === 'batalkan' ? (
                 <DialogAlasanGrosir
                     judul="Batalkan pesanan grosir"
-                    keterangan="Pesanan yang sudah ada surat jalannya tidak bisa dibatalkan; koreksinya lewat retur."
+                    keterangan="Pesanan yang sudah ada surat jalannya tidak bisa dibatalkan. Koreksinya lewat retur."
                     labelAksi="Batalkan pesanan"
                     alamat={`${alamat}/${Pesanan.Uuid}/batalkan`}
                     saatTutup={() => AturDialog(null)}

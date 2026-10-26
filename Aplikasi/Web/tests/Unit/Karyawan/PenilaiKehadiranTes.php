@@ -21,7 +21,7 @@ it('tepat waktu, di dalam toleransi: tidak ada terlambat, pulang cepat, maupun l
     expect(NilaiUji('2026-10-05 08:05:00', '2026-10-05 15:55:00'))->toBe(['TerlambatMenit' => 0, 'PulangCepatMenit' => 0, 'LemburMenit' => 0]);
 });
 
-it('terlambat melewati toleransi dihitung penuh dari jam mulai; pulang cepat dihitung penuh dari jam selesai', function (): void {
+it('terlambat melewati toleransi dihitung penuh dari jam mulai. Pulang cepat dihitung penuh dari jam selesai', function (): void {
     expect(NilaiUji('2026-10-05 08:06:00', '2026-10-05 15:50:00'))->toBe(['TerlambatMenit' => 6, 'PulangCepatMenit' => 10, 'LemburMenit' => 0]);
 });
 

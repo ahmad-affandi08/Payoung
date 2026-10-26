@@ -393,7 +393,7 @@ class _LembarGudangState extends ConsumerState<LembarGudang> {
       final c = _produkBaru.putIfAbsent(uuidProduk, TextEditingController.new);
       c.text = LayananGudang.TambahJumlah(c.text).replaceAll('.', ',');
       draf.produkBaru[uuidProduk] = c.text;
-      setState(() => _pesanPindai = '${produk.nama} tidak ada di lembar hitung; ditambahkan sebagai baris baru.');
+      setState(() => _pesanPindai = '${produk.nama} tidak ada di lembar hitung. Ditambahkan sebagai baris baru.');
       _Ubah();
       return;
     }
@@ -479,7 +479,7 @@ class _LembarGudangState extends ConsumerState<LembarGudang> {
           JenisGudang.Opname =>
             '$isi baris hasil hitung disimpan. Selisih dihitung saat opname disetujui di back-office.',
           _ =>
-            '$isi baris diterima. Stok bertambah sekarang dan tidak bisa diubah; koreksi lewat retur atau penyesuaian.',
+            '$isi baris diterima. Stok bertambah sekarang dan tidak bisa diubah. Koreksi lewat retur atau penyesuaian.',
         }),
         actions: [
           TextButton(onPressed: () => Navigator.of(konteks).pop(false), child: const Text('Periksa lagi')),
@@ -522,7 +522,7 @@ class _LembarGudangState extends ConsumerState<LembarGudang> {
       return '${hasil.nomor} diposting. Pesanan sudah diterima penuh.';
     }
     await _Buka(_DariPesanan(baru));
-    return '${hasil.nomor} diposting. Stok bertambah; sisa pesanan masih bisa diterima.';
+    return '${hasil.nomor} diposting. Stok bertambah. Sisa pesanan masih bisa diterima.';
   }
 
   Future<String> _KirimTransfer(_Dokumen dokumen, DrafGudang draf) async {

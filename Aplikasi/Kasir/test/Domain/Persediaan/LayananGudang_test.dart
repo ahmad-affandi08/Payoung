@@ -30,7 +30,7 @@ void main() {
 
   PesananGudangPos Pesanan() => PesananGudangPos.DariJson(PesananGudangUji());
 
-  test('izin: terima barang boleh pembelian.kelola atau persediaan.kelola; transfer & opname persediaan.kelola', () {
+  test('izin: terima barang boleh pembelian.kelola atau persediaan.kelola. Transfer & opname persediaan.kelola', () {
     const pembelian = StafLokal(uuid: 'S1', nama: 'Dewi', pemilik: false, izin: ['pembelian.kelola']);
     for (final j in JenisGudang.values) {
       expect(LayananGudang.CekBoleh(budi, j), isTrue, reason: j.name);
@@ -41,7 +41,7 @@ void main() {
   });
 
   test(
-    'draf tersimpan lokal lalu dimuat lagi utuh (kunci idempotensi tetap); hapus = draf baru berkunci baru',
+    'draf tersimpan lokal lalu dimuat lagi utuh (kunci idempotensi tetap). Hapus = draf baru berkunci baru',
     () async {
       final draf = await u.gudang.MuatDraf(JenisGudang.Penerimaan, UuidGudangUji.po);
       draf.jumlah[1] = '2';
@@ -77,7 +77,7 @@ void main() {
   });
 
   test(
-    'terima barang: validasi sisa, batch wajib, tanggal, nomor seri; tanpa izin ditolak sebelum ke server',
+    'terima barang: validasi sisa, batch wajib, tanggal, nomor seri, tanpa izin ditolak sebelum ke server',
     () async {
       Future<String> Coba(void Function(DrafGudang d) isi, {StafLokal? staf, PesananGudangPos? pesanan}) async {
         final draf = await u.gudang.MuatDraf(JenisGudang.Penerimaan, UuidGudangUji.po);
@@ -126,7 +126,7 @@ void main() {
   );
 
   test(
-    'terima barang: bentuk permintaan, satuan PO apa adanya, surat jalan; koneksi putus → kunci sama saat coba lagi',
+    'terima barang: bentuk permintaan, satuan PO apa adanya, surat jalan. Koneksi putus → kunci sama saat coba lagi',
     () async {
       final draf = await u.gudang.MuatDraf(JenisGudang.Penerimaan, UuidGudangUji.po);
       draf
@@ -185,7 +185,7 @@ void main() {
     );
   });
 
-  test('transfer masuk: melebihi sisa & desimal di satuan bulat ditolak; kirim Urutan + Jumlah satuan dasar', () async {
+  test('transfer masuk: melebihi sisa & desimal di satuan bulat ditolak. Kirim Urutan + Jumlah satuan dasar', () async {
     final transfer = TransferGudangPos.DariJson(TransferGudangUji());
     final draf = await u.gudang.MuatDraf(JenisGudang.Transfer, UuidGudangUji.transfer);
 
@@ -207,7 +207,7 @@ void main() {
     });
   });
 
-  test('opname: hanya baris yang diisi (boleh 0) + produk baru hasil pindai; seri hanya 0/1', () async {
+  test('opname: hanya baris yang diisi (boleh 0) + produk baru hasil pindai. Seri hanya 0/1', () async {
     final opname = OpnameGudangPos.DariJson(OpnameGudangUji());
     final draf = await u.gudang.MuatDraf(JenisGudang.Opname, UuidGudangUji.opname);
     await expectLater(u.gudang.KirimHitung(opname, draf, budi), throwsA(isA<GalatKasir>()));

@@ -107,7 +107,7 @@ describe('X8 / BR-08.7 metode pembayaran platform ojol di panduan awal', functio
 });
 
 describe('X8 / BR-08.7 penjualan kanal ojol dari POS', function (): void {
-    it('data-awal membawa Kanal metode platform; penjualan GoFood dibayar GoFood masuk Piutang Pencairan tanpa menyentuh kas', function (): void {
+    it('data-awal membawa Kanal metode platform. Penjualan GoFood dibayar GoFood masuk Piutang Pencairan tanpa menyentuh kas', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $gofood = BuatMetodePlatform(KanalPenjualan::GoFood, 'GoFood');
         BuatMetodePlatform(KanalPenjualan::ShopeeFood, 'ShopeeFood (nonaktif)', false);
@@ -137,7 +137,7 @@ describe('X8 / BR-08.7 penjualan kanal ojol dari POS', function (): void {
         $pemilik()->get('/kelola/penjualan?Kanal=GoFood')->assertOk();
     });
 
-    it('metode GoFood untuk penjualan bawa pulang atau GrabFood ditolak MetodeBayarBedaKanal; tunai di kanal ojol tetap boleh', function (): void {
+    it('metode GoFood untuk penjualan bawa pulang atau GrabFood ditolak MetodeBayarBedaKanal. Tunai di kanal ojol tetap boleh', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $gofood = BuatMetodePlatform(KanalPenjualan::GoFood, 'GoFood');
         $ayam = BantuanKatalog::BuatProduk(['Nama' => 'Es Teh Manis Jumbo', 'Jenis' => JenisProduk::NonStok], '8000.00');

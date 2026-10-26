@@ -18,7 +18,7 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
-it('BR-03.1: SKU & barcode beda huruf/spasi dianggap sama; kirim ganda Uuid sama = satu produk', function (): void {
+it('BR-03.1: SKU & barcode beda huruf/spasi dianggap sama. Kirim ganda Uuid sama = satu produk', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk();
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
     $form = BantuanKatalog::IsiFormProduk($t['Pcs'], $t['KelompokPajak'], ['Sku' => 'kopi-ab/01', 'Satuan' => [BantuanKatalog::IsiSatuanForm($t['Pcs'], '1', ['ab-8991234'])]]);

@@ -117,7 +117,7 @@ final class DataDemoLokal extends Seeder
         $adaSebelumnya = PenggunaPengelola::query()->where('Email', $email)->first();
 
         if ($adaSebelumnya !== null) {
-            $this->ringkasan[] = "Super Admin {$email} sudah ada; kata sandi tidak diubah.";
+            $this->ringkasan[] = "Super Admin {$email} sudah ada. Kata sandi tidak diubah.";
 
             return $adaSebelumnya;
         }
@@ -294,7 +294,7 @@ final class DataDemoLokal extends Seeder
     private function DaftarkanTenantDemo(DaftarkanTenant $daftarkanTenant, string $kataSandi): void
     {
         if (Pengguna::query()->where('Email', self::EMAIL_PEMILIK)->exists()) {
-            $this->ringkasan[] = 'Tenant demo sudah ada; lewati pendaftaran.';
+            $this->ringkasan[] = 'Tenant demo sudah ada. Lewati pendaftaran.';
 
             return;
         }

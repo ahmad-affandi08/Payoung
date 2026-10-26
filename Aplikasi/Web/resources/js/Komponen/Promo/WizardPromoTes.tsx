@@ -216,7 +216,7 @@ describe('Wizard tambah promo (halaman)', () => {
     });
     afterEach(() => cleanup());
 
-    it('mulai di langkah 1 dari 6; langkah di depan terkunci dan Lanjut menolak isian kosong', () => {
+    it('mulai di langkah 1 dari 6. Langkah di depan terkunci dan Lanjut menolak isian kosong', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
 
         expect(screen.getByText('Langkah 1 dari 6')).not.toBeNull();
@@ -252,7 +252,7 @@ describe('Wizard tambah promo (halaman)', () => {
         expect(screen.getByText('Langkah 2 dari 6')).not.toBeNull();
     });
 
-    it('Tinjau memuat kalimat ringkasan dan Ubah kembali ke langkah itu; menyimpan mengirim POST', () => {
+    it('Tinjau memuat kalimat ringkasan dan Ubah kembali ke langkah itu. Menyimpan mengirim POST', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
         fireEvent.change(screen.getByLabelText('Kode promo'), { target: { value: 'kopi10' } });
         fireEvent.change(screen.getByLabelText('Nama promo'), { target: { value: 'Kopi 10 persen' } });
@@ -288,7 +288,7 @@ describe('Wizard tambah promo (halaman)', () => {
         );
     });
 
-    it('pendanaan pemasok hanya tampil untuk potongan harga; poin berlipat tidak memilikinya', () => {
+    it('pendanaan pemasok hanya tampil untuk potongan harga. Poin berlipat tidak memilikinya', () => {
         RenderUji(<HalamanFormulirPromo Promo={null} FiturAktif {...opsi} />);
         fireEvent.change(screen.getByLabelText('Kode promo'), { target: { value: 'kopi10' } });
         fireEvent.change(screen.getByLabelText('Nama promo'), { target: { value: 'Kopi 10 persen' } });

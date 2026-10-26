@@ -174,7 +174,7 @@ export default function HalamanGerbangPembayaran({
                             {!Gerbang.PenyediaDiizinkan ? (
                                 <Pemberitahuan jenis="peringatan">
                                     Penyedia ini sedang tidak tersedia dari platform. Kasir tidak bisa membuat QRIS
-                                    dinamis baru; hubungi dukungan Payoung.
+                                    dinamis baru. Hubungi dukungan Payoung.
                                 </Pemberitahuan>
                             ) : null}
                             {Gerbang.PesanUji ? (

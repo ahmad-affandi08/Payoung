@@ -141,7 +141,7 @@ describe('F-01 langkah 7 (D-24: kini butir "Persiapan toko" di Kotak Tindakan): 
         expect(Satuan::query()->count())->toBe(1);
     });
 
-    it('item tanpa izin tidak tampil; semua selesai → daftar kosong', function (): void {
+    it('item tanpa izin tidak tampil. Semua selesai → daftar kosong', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         $manajer = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::ManajerOutlet);
@@ -153,7 +153,7 @@ describe('F-01 langkah 7 (D-24: kini butir "Persiapan toko" di Kotak Tindakan): 
         expect(AmbilLangkahUji($kasir, $tenant->Id))->toBe([]);
     });
 
-    it('F-05a butir "Isi stok awal": tampil bila ada produk berstok & izin persediaan.kelola; selesai hanya bila ada stok awal Diposting', function (): void {
+    it('F-05a butir "Isi stok awal": tampil bila ada produk berstok & izin persediaan.kelola. Selesai hanya bila ada stok awal Diposting', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         $stafGudang = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::StafGudang);

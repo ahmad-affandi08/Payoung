@@ -88,7 +88,7 @@ describe('SusunIklan', () => {
         expect(satu.map((butir) => butir.kunci)).not.toContain('paket');
     });
 
-    it('tanpa kunci harga janji "tetap di harga ini" tidak muncul; tanpa promo tidak ada diskon', () => {
+    it('tanpa kunci harga janji "tetap di harga ini" tidak muncul, tanpa promo tidak ada diskon', () => {
         const tanpaKunci = SusunIklan({ ...penawaranPromo, Promo: { ...PromoUji(), HargaTerkunci: false } }, false);
         expect(tanpaKunci[0]?.teks).not.toContain('tetap di harga ini');
 
@@ -97,7 +97,7 @@ describe('SusunIklan', () => {
         expect(JSON.stringify(tanpaPromo[0])).not.toContain('Diskon');
     });
 
-    it('tanpa penawaran (tidak ada paket berbayar) tidak menyebut harga; edisi Lisensi tidak ada iklan harga sama sekali', () => {
+    it('tanpa penawaran (tidak ada paket berbayar) tidak menyebut harga. Edisi Lisensi tidak ada iklan harga sama sekali', () => {
         expect(SusunIklan(null, false)[0]?.kunci).toBe('gratis');
         expect(SusunIklan(penawaranPromo, true).map((butir) => butir.kunci)).toEqual(['offline', 'pantau', 'lengkap']);
     });

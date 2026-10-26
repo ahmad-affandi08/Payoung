@@ -213,7 +213,7 @@ describe('Kirim ganda metode pembayaran', function (): void {
 });
 
 describe('Langkah hanya Selesai lewat Aksinya', function (): void {
-    it('profil usaha, sektor, dan pajak tidak bisa ditandai Selesai langsung (404); produk, metode pembayaran, perangkat bisa; semua bisa dilewati', function (): void {
+    it('profil usaha, sektor, dan pajak tidak bisa ditandai Selesai langsung (404). Produk, metode pembayaran, perangkat bisa. Semua bisa dilewati', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         // Sektor tanpa template terbit boleh dilanjutkan langsung (panduan tidak macet); di sini ada template terbit.
         BantuanPanduanAwal::TerbitkanTemplate();
@@ -327,7 +327,7 @@ describe('Izin', function (): void {
 });
 
 describe('Validasi uang, nama, dan berkas', function (): void {
-    it('harga: "0" dan batas DECIMAL(18,2) diterima persis; negatif, notasi ilmiah, koma, angka Unicode, dan array ditolak tanpa 500', function (): void {
+    it('harga: "0" dan batas DECIMAL(18,2) diterima persis. Negatif, notasi ilmiah, koma, angka Unicode, dan array ditolak tanpa 500', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $tes = fn () => BantuanPanduanAwal::Masuk($this, $pemilik, $tenant);
 
@@ -408,7 +408,7 @@ describe('Validasi uang, nama, dan berkas', function (): void {
 });
 
 describe('Pajak & PKP', function (): void {
-    it('tenant non-PKP tidak bisa memaksa PPN lewat isian pajak; berpindah PKP setelah penerapan mengikuti profil usaha', function (): void {
+    it('tenant non-PKP tidak bisa memaksa PPN lewat isian pajak. Berpindah PKP setelah penerapan mengikuti profil usaha', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         ['Tenant' => $tenant, 'Pemilik' => $pemilik, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant();
         BantuanPanduanAwal::Terapkan($outlet, 'FNB-CAF');

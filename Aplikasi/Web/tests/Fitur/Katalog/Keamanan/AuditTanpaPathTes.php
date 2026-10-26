@@ -23,7 +23,7 @@ beforeEach(function (): void {
     config(['katalog.DiskGambar' => 'local']);
 });
 
-it('audit gambar & impor tidak memuat path penyimpanan; gambar dicatat sebagai VersiGambar', function (): void {
+it('audit gambar & impor tidak memuat path penyimpanan. Gambar dicatat sebagai VersiGambar', function (): void {
     $t = BantuanKatalog::SiapkanTenantProduk();
     $produk = BantuanKatalog::BuatProduk([], null, $t['Pcs']);
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);

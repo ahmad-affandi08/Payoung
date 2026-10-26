@@ -154,7 +154,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         vi.unstubAllGlobals();
     });
 
-    it('kosong tanpa filter mengarahkan ke stok awal; kosong dengan filter menawarkan hapus filter', () => {
+    it('kosong tanpa filter mengarahkan ke stok awal. Kosong dengan filter menawarkan hapus filter', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
         const tampilan = RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([])} />);
         expect(screen.getByText('Belum ada jurnal. Jurnal terbentuk otomatis saat stok awal diposting.')).toBeTruthy();
@@ -168,7 +168,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
         expect(screen.getByText('Tidak ada hasil untuk pencarian atau filter ini.')).toBeTruthy();
     });
 
-    it('masalah server ditampilkan; paginasi server tampil bila lebih dari satu halaman', () => {
+    it('masalah server ditampilkan. Paginasi server tampil bila lebih dari satu halaman', () => {
         window.history.replaceState({}, '', '/kelola/akuntansi/jurnal');
         AturHalamanUji({ Tanggal: 'Periode Agustus 2026 sudah dikunci.' }, '/kelola/akuntansi/jurnal');
         RenderUji(<HalamanDaftarJurnal {...BuatPropsDaftar([barisJurnal], 3)} />);

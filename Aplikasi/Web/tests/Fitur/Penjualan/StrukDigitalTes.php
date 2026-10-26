@@ -15,7 +15,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('POS-11 struk digital /s/{kodeStruk}', function (): void {
-    it('tanpa login menampilkan isi struk (tanpa HPP); kode dari awalan data-awal + Uuid; void ditandai', function (): void {
+    it('tanpa login menampilkan isi struk (tanpa HPP). Kode dari awalan data-awal + Uuid. Void ditandai', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);

@@ -151,7 +151,7 @@ void main() {
   });
 
   group('void transaksi (BR-09.1)', () {
-    test('payload Penjualan.Void persis kontrak; status Void + VoidPenjualan + outbox satu transaksi setelah '
+    test('payload Penjualan.Void persis kontrak. Status Void + VoidPenjualan + outbox satu transaksi setelah '
         'Penjualan.Buat', () async {
       final jual = await JualTunai();
       u.jam = u.jam.add(const Duration(minutes: 3));
@@ -201,7 +201,7 @@ void main() {
       expect((await DataOutbox('Penjualan.Void'))['UuidPenyetuju'], budi.uuid, reason: 'Budi menyetujui dirinya.');
     });
 
-    test('alasan < 5 huruf, tanpa penyetuju, penyetuju tanpa izin, kasir tanpa izin → ditolak; tidak ada yang '
+    test('alasan < 5 huruf, tanpa penyetuju, penyetuju tanpa izin, kasir tanpa izin → ditolak. Tidak ada yang '
         'tersimpan', () async {
       final jual = await JualTunai();
       await expectLater(
@@ -247,8 +247,8 @@ void main() {
           PilihanReturBaris(baris: b, jumlah: Kuantitas.Dari(j), kondisi: kondisi),
     ];
 
-    test('cari online memakai nomor persis; payload ReturPenjualan.Buat persis kontrak; nomor RJ per perangkat '
-        'per hari; refund tunai + transfer', () async {
+    test('cari online memakai nomor persis. Payload ReturPenjualan.Buat persis kontrak. Nomor RJ per perangkat '
+        'per hari. Refund tunai + transfer', () async {
       ServerStruk(StrukUji());
       final hasil = await layananRetur.Cari('  ${UuidStruk.nomor} ');
       expect(u.server.permintaan.single.url.query, 'nomor=INV%2FSLB%2F260920%2FPOS-002-0007');
@@ -339,7 +339,7 @@ void main() {
     });
 
     test(
-      'F-12 retur penjualan tempo: potong piutang lebih dulu (≤ sisa), sisanya tunai; refund tunai lebih ditolak',
+      'F-12 retur penjualan tempo: potong piutang lebih dulu (≤ sisa), sisanya tunai. Refund tunai lebih ditolak',
       () async {
         ServerStruk(
           StrukUji(
@@ -492,7 +492,7 @@ void main() {
       expect({for (final n in urut) n.Tanggal: n.Terakhir}, {'260924': 7, '260923': 30});
     });
 
-    test('BolehDesimal dari server menentukan jumlah desimal; null → heuristik lama', () {
+    test('BolehDesimal dari server menentukan jumlah desimal. Null → heuristik lama', () {
       BarisPenjualanCariPos Baris(String jumlah, {bool? boleh, String? bisa}) => BarisPenjualanCariPos.DariJson(
         BarisStrukUji('01K5BRS0000000000000000009', 'Uji', 'kg', jumlah, '10000.00', bisa: bisa, bolehDesimal: boleh),
       );
@@ -588,8 +588,8 @@ void main() {
       );
     });
 
-    test('offline → "Retur butuh koneksi internet untuk mencari struk."; tidak ditemukan; struk lokal belum '
-        'terkirim; retur sebelumnya belum terkirim', () async {
+    test('offline → "Retur butuh koneksi internet untuk mencari struk."; tidak ditemukan. Struk lokal belum '
+        'terkirim. Retur sebelumnya belum terkirim', () async {
       u.server.penangan = (_) async => throw http.ClientException('offline');
       await expectLater(
         layananRetur.Cari(UuidStruk.nomor),
@@ -617,7 +617,7 @@ void main() {
     });
 
     test(
-      'penjualan asal di perangkat ini: status lokal DireturSebagian lalu Diretur; tidak bisa di-void lagi',
+      'penjualan asal di perangkat ini: status lokal DireturSebagian lalu Diretur. Tidak bisa di-void lagi',
       () async {
         final jual = await JualTunai();
         final detail = await u.repositoriPenjualan.AmbilDetail(jual.uuid);
@@ -684,8 +684,8 @@ void main() {
   });
 
   group('kas shift setelah void & retur (sama dengan server RingkasanPenjualanShift)', () {
-    test('tunai masuk bersih tetap menghitung penjualan yang di-void; refund tunai void & retur mengurangi kas '
-        'seharusnya; laporan X menampilkan jumlah & nominal void/retur', () async {
+    test('tunai masuk bersih tetap menghitung penjualan yang di-void. Refund tunai void & retur mengurangi kas '
+        'seharusnya. Laporan X menampilkan jumlah & nominal void/retur', () async {
       final jual = await JualTunai();
       await JualCampuran();
       final awal = await u.tutupShift.SusunLaporan(shift.Uuid);

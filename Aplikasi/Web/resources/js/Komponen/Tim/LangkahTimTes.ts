@@ -28,7 +28,7 @@ const isian: IsianTim = {
 const konteks = { isian, aksesTersedia: ['Kasir', 'Dashboard', 'Tanpa'] as IsianTim['Akses'][], outletKurang: false };
 
 describe('SusunLangkahTim', () => {
-    it('akun melewati Akun masuk lalu Tugas & outlet; tanpa akun hanya memilih outlet utama', () => {
+    it('akun melewati Akun masuk lalu Tugas & outlet, tanpa akun hanya memilih outlet utama', () => {
         expect(SusunLangkahTim({ akses: 'Kasir', punyaKaryawan: true, aturGaji: false }).map((l) => l.Kunci)).toEqual([
             'Siapa',
             'Akun',
@@ -74,7 +74,7 @@ describe('PeriksaLangkahTim', () => {
         );
     });
 
-    it('Akun: kasir wajib PIN kuat; dashboard wajib email dan kata sandi huruf+angka, PIN opsional tetapi harus kuat', () => {
+    it('Akun: kasir wajib PIN kuat. Dashboard wajib email dan kata sandi huruf+angka, PIN opsional tetapi harus kuat', () => {
         expect(PeriksaLangkahTim('Akun', konteks)).toEqual({});
         expect(PeriksaLangkahTim('Akun', { ...konteks, isian: { ...isian, Pin: '' } }).Pin).toContain(
             'wajib diberi PIN',
@@ -113,7 +113,7 @@ describe('PeriksaLangkahTim', () => {
         expect(PeriksaLangkahTim('Gaji', { ...konteks, isian: { ...harian, GajiPokok: '75000' } })).toEqual({});
     });
 
-    it('Peran: peran wajib; peran bercakupan terpilih butuh minimal satu outlet; Gaji memeriksa angka', () => {
+    it('Peran: peran wajib. Peran bercakupan terpilih butuh minimal satu outlet; Gaji memeriksa angka', () => {
         expect(PeriksaLangkahTim('Peran', konteks)).toEqual({});
         expect(PeriksaLangkahTim('Peran', { ...konteks, isian: { ...isian, Peran: '' } }).Peran).toBe('Pilih peran.');
         expect(PeriksaLangkahTim('Peran', { ...konteks, outletKurang: true }).Outlet).toContain('minimal satu outlet');

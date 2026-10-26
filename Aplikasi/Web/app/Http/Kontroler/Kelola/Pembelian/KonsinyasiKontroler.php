@@ -188,7 +188,7 @@ final class KonsinyasiKontroler extends DasarPembelianKontroler
         $s = $batalkan->Jalankan($s, $permintaan->AmbilAlasan(), $this->Pelaku()->Id);
         $p = $this->CariPemasokTermasukArsipDariId($s->IdPemasok);
 
-        return to_route('kelola.pembelian.konsinyasi.penitip', ['pemasok' => $p->Uuid])->with('Kilat', $s->Status === StatusDokumenTerposting::Dibatalkan ? "Setoran {$s->Nomor} dibatalkan; jurnalnya dibalik dan hutang penitip kembali." : "Setoran {$s->Nomor} tidak berubah.");
+        return to_route('kelola.pembelian.konsinyasi.penitip', ['pemasok' => $p->Uuid])->with('Kilat', $s->Status === StatusDokumenTerposting::Dibatalkan ? "Setoran {$s->Nomor} dibatalkan. Jurnalnya dibalik dan hutang penitip kembali." : "Setoran {$s->Nomor} tidak berubah.");
     }
 
     private function CariPemasokTermasukArsip(string $uuid): Pemasok

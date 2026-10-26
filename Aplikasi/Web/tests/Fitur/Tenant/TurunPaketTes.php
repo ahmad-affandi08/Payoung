@@ -68,7 +68,7 @@ beforeEach(function (): void {
 });
 
 describe('Turun paket mandiri (BR-P04.4)', function (): void {
-    it('halaman Langganan menawarkan paket yang lebih murah dengan kelebihan kapasitasnya; paket yang lebih mahal tidak', function (): void {
+    it('halaman Langganan menawarkan paket yang lebih murah dengan kelebihan kapasitasnya. Paket yang lebih mahal tidak', function (): void {
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->get('/kelola/langganan')->assertOk()
             ->assertInertia(fn (AssertableInertia $h) => $h
                 ->where('TurunPaket.Bisa', true)
@@ -128,7 +128,7 @@ describe('Turun paket mandiri (BR-P04.4)', function (): void {
         expect($tagihan->Paket->Kode)->toBe('STARTER')->and($tagihan->PaketAsal()->first()?->Kode)->toBe('PRO');
     });
 
-    it('tagihan perpanjangan yang masih terbuka menghalangi pengajuan; membatalkan permintaan mengembalikan perpanjangan ke paket berjalan', function (): void {
+    it('tagihan perpanjangan yang masih terbuka menghalangi pengajuan. Membatalkan permintaan mengembalikan perpanjangan ke paket berjalan', function (): void {
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->post('/kelola/langganan/tagihan', ['KodePaket' => 'PRO', 'Siklus' => 'Bulanan'])->assertSessionHasNoErrors();
         AjukanTurunPaketUji($this, 'STARTER')->assertSessionHasErrors('KodePaket');
         $tagihan = TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $this->tenant->Id)->sole();
@@ -151,7 +151,7 @@ describe('Turun paket mandiri (BR-P04.4)', function (): void {
         expect(PermintaanTurunPaket::query()->count())->toBe(0);
     });
 
-    it('kelebihan outlet dan pengguna: wajib memilih yang tetap aktif; saat berlaku sisanya diarsipkan/dinonaktifkan, Pemilik dan data tetap', function (): void {
+    it('kelebihan outlet dan pengguna: wajib memilih yang tetap aktif. Saat berlaku sisanya diarsipkan/dinonaktifkan, Pemilik dan data tetap', function (): void {
         BantuanOrganisasi::AturKonteks($this->tenant->Id);
         $utama = Outlet::query()->orderBy('Id')->firstOrFail();
         $idMerek = Merek::query()->value('Id');
@@ -253,7 +253,7 @@ describe('Turun paket mandiri (BR-P04.4)', function (): void {
             ->and(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->Status)->toBe(StatusLangganan::Aktif);
     });
 
-    it('ditangguhkan karena tunggakan: pindah ke Gratis seketika membatalkan tagihan terbuka dan menyesuaikan kapasitas; penangguhan manual ditolak', function (): void {
+    it('ditangguhkan karena tunggakan: pindah ke Gratis seketika membatalkan tagihan terbuka dan menyesuaikan kapasitas. Penangguhan manual ditolak', function (): void {
         BantuanOrganisasi::AturKonteks($this->tenant->Id);
         $utama = Outlet::query()->orderBy('Id')->firstOrFail();
         $kedua = Outlet::query()->create(['IdMerek' => Merek::query()->value('Id'), 'Kode' => 'SOLO', 'Nama' => 'Cabang Solo']);
@@ -282,7 +282,7 @@ describe('Turun paket mandiri (BR-P04.4)', function (): void {
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->post('/kelola/langganan/pindah-gratis', [])->assertSessionHasErrors('Umum');
     });
 
-    it('hanya Pemilik (langganan.kelola) yang bisa mengajukan; isolasi tenant', function (): void {
+    it('hanya Pemilik (langganan.kelola) yang bisa mengajukan. Isolasi tenant', function (): void {
         $kasir = BantuanOrganisasi::TambahAnggota($this->tenant->Id, PeranTenantBawaan::Kasir);
         BantuanTagihan::Masuk($this, $kasir, $this->tenant)->post('/kelola/langganan/turun-paket', ['KodePaket' => 'STARTER'])->assertForbidden();
 

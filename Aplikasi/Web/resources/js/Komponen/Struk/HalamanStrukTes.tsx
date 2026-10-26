@@ -61,7 +61,7 @@ describe('Pengaturan struk (PRD v1.79)', () => {
         expect(baris[1]).toBe('Outlet Utama');
     });
 
-    it('alamat & telepon pratinjau = data outlet asli, bukan contoh; belum diisi = tidak tercetak (D-177)', () => {
+    it('alamat & telepon pratinjau = data outlet asli, bukan contoh. Belum diisi = tidak tercetak (D-177)', () => {
         const baris = SusunPratinjauStruk(bawaan, profil, '58').map((b) => b.teks);
         expect(baris).toContain('Jl. Solo Purwodadi KM 32');
         expect(baris).toContain('Telp. 0271-123456');

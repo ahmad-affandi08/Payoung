@@ -248,7 +248,7 @@ export default function HalamanDaftarLaundry({ Tiket, OpsiStatus, OpsiOutlet, Pe
     return (
         <TataLetakAplikasi judul="Laundry">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Cucian dicatat kasir saat pelanggan menyerahkan pakaian. Ubah statusnya sesuai proses; saat siap,
+                Cucian dicatat kasir saat pelanggan menyerahkan pakaian. Ubah statusnya sesuai proses. Saat siap,
                 pelanggan dikabari dan bisa melacak lewat QR di nota.
                 {Pengaturan.Aktif ? null : ' Isian laundry di aplikasi kasir belum aktif (buka Pengaturan).'}
             </p>

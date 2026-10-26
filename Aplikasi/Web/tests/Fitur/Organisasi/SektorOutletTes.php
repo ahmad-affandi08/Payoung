@@ -17,7 +17,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('Sektor outlet untuk pemfilteran fitur (D-48)', function (): void {
-    it('data awal kasir: kosong sebelum template diterapkan; lalu template outlet + jenis usaha tambahan', function (): void {
+    it('data awal kasir: kosong sebelum template diterapkan, lalu template outlet + jenis usaha tambahan', function (): void {
         $k = BantuanKasir::Siapkan($this);
         $dataAwal = fn () => $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk();
 

@@ -209,7 +209,7 @@ class _PanelPelangganState extends ConsumerState<PanelPelanggan> {
               Text('Pelanggan baru', style: teks.titleMedium),
               const SizedBox(height: TokenJarak.jarak4),
               Text(
-                'Bisa dibuat saat offline; data dikirim ke server bersama transaksi.',
+                'Bisa dibuat saat offline. Data dikirim ke server bersama transaksi.',
                 style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
               ),
               const SizedBox(height: TokenJarak.jarak16),

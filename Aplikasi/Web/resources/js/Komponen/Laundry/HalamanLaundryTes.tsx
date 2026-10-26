@@ -70,7 +70,7 @@ describe('Laundry (§9.9)', () => {
         expect(RingkasIsiLaundry({ Berat: null, Item: [] })).toBe('-');
     });
 
-    it('baris menampilkan lewat perkiraan (berteks); aksi mengikuti status berikutnya dan mengirim status', () => {
+    it('baris menampilkan lewat perkiraan (berteks). Aksi mengikuti status berikutnya dan mengirim status', () => {
         RenderUji(<HalamanDaftarLaundry {...Props()} />);
         expect(screen.getAllByText('Ratna Sari Dewi Kusumawardhani').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Lewat perkiraan').length).toBeGreaterThan(0);
@@ -87,7 +87,7 @@ describe('Laundry (§9.9)', () => {
         );
     });
 
-    it('pengaturan: parfum dipisah koma dikirim sebagai daftar; tanpa izin tidak ada tombol', () => {
+    it('pengaturan: parfum dipisah koma dikirim sebagai daftar, tanpa izin tidak ada tombol', () => {
         RenderUji(<HalamanDaftarLaundry {...Props()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Pengaturan' }));
         const parfum = screen.getByRole('textbox', { name: /Pilihan parfum/ });

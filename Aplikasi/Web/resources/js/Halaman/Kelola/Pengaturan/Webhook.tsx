@@ -203,7 +203,7 @@ function DialogRahasiaBaru({ nama, rahasia, saatSelesai }: { nama: string; rahas
     return (
         <DialogRahasia
             judul={`Webhook ${nama} dibuat`}
-            peringatan="Salin rahasia penandatangan ini sekarang dan pasang di aplikasi penerima untuk memeriksa tanda tangan. Rahasia tidak bisa ditampilkan lagi; bila hilang, hapus lalu tambahkan webhook baru."
+            peringatan="Salin rahasia penandatangan ini sekarang dan pasang di aplikasi penerima untuk memeriksa tanda tangan. Rahasia tidak bisa ditampilkan lagi. Bila hilang, hapus lalu tambahkan webhook baru."
             saatSelesai={saatSelesai}
         >
             <NilaiRahasia nilai={rahasia} jenis="rahasia" />

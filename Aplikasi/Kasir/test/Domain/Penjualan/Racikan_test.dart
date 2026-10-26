@@ -89,7 +89,7 @@ void main() {
     );
   });
 
-  test('golongan racikan = terkuat komponennya dan tidak pernah OWA; ikut aturan penyerahan obat keranjang', () {
+  test('golongan racikan = terkuat komponennya dan tidak pernah OWA. Ikut aturan penyerahan obat keranjang', () {
     expect(PuyerDemam().Obat?.golongan, GolonganObat.BebasTerbatas);
     expect(PuyerDemam().Obat?.CekWajibResep, isFalse);
     // Asam mefenamat OWA dijual satuan tanpa resep, tetapi di dalam racikan tetap wajib resep & apoteker.
@@ -115,7 +115,7 @@ void main() {
   });
 
   test(
-    'harga saran = jasa racik + harga obat × jumlah; hanya jasa yang bisa membawa racikan; bahan tanpa nomor seri',
+    'harga saran = jasa racik + harga obat × jumlah. Hanya jasa yang bisa membawa racikan. Bahan tanpa nomor seri',
     () {
       final jasa = katalog.CariProduk(jasaServisMotor)!;
       final saran = u.penjualan.HitungHargaSaranRacikan(katalog, k, jasa, PuyerDemam().komponen);

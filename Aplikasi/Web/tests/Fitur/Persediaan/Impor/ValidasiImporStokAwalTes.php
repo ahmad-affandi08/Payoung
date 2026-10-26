@@ -134,7 +134,7 @@ describe('F-05a impor stok awal: validasi baris (produk, lokasi, jumlah, harga m
             ->assertSessionHasErrors(['Impor' => 'Tidak ada baris valid untuk dijadikan draf. Perbaiki berkas lalu unggah ulang.']);
     });
 
-    it('ubah pemetaan dari Pratinjau menghapus hasil validasi lama lalu memeriksa ulang; audit stok-awal.impor.pemetaan', function (): void {
+    it('ubah pemetaan dari Pratinjau menghapus hasil validasi lama lalu memeriksa ulang. Audit stok-awal.impor.pemetaan', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
         $impor = BantuanImporStokAwal::Unggah($masuk, BantuanImporStokAwal::BuatCsv([
@@ -158,7 +158,7 @@ describe('F-05a impor stok awal: validasi baris (produk, lokasi, jumlah, harga m
 });
 
 describe('F-05a impor stok awal: validasi di antrean (berkas besar)', function (): void {
-    it('lebih dari BatasBarisSinkron → antrean; anggaran waktu habis → tugas mengirim dirinya lagi dan melanjutkan tanpa baris ganda', function (): void {
+    it('lebih dari BatasBarisSinkron → antrean. Anggaran waktu habis → tugas mengirim dirinya lagi dan melanjutkan tanpa baris ganda', function (): void {
         config(['persediaan.Impor.BatasBarisSinkron' => 10]);
         $t = BantuanPersediaan::SiapkanTenant();
         $masuk = BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

@@ -163,7 +163,7 @@ describe('F-05e posting & jurnal J-05.6', function (): void {
 });
 
 describe('F-05e pembatalan', function (): void {
-    it('draf dibatalkan tanpa efek stok; terposting dibalik (stok & jurnal) dengan alasan wajib', function (): void {
+    it('draf dibatalkan tanpa efek stok. Terposting dibalik (stok & jurnal) dengan alasan wajib', function (): void {
         $t = SiapkanProduksi();
         $p = $t['Produk'];
         $draf = DrafProduksi($t['Gudang'], $p['Produksi'], '10');
@@ -198,7 +198,7 @@ describe('F-05e pembatalan', function (): void {
 });
 
 describe('F-05e HTTP back-office', function (): void {
-    it('buat draf, detail, resep JSON, posting lewat rute; isolasi tenant', function (): void {
+    it('buat draf, detail, resep JSON, posting lewat rute. Isolasi tenant', function (): void {
         $t = SiapkanProduksi();
         $p = $t['Produk'];
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);

@@ -194,7 +194,7 @@ function IsiPengaturanStruk({
                                 keterangan={
                                     LogoOutletKhusus
                                         ? 'Logo khusus outlet ini.'
-                                        : 'Belum ada logo khusus; memakai logo usaha. Unggah untuk menggantinya.'
+                                        : 'Belum ada logo khusus. Memakai logo usaha. Unggah untuk menggantinya.'
                                 }
                                 galat={galat.Logo}
                             />

@@ -92,7 +92,7 @@ describe('PemilihTanggal (§17.6.7 tampilan 22/09/2026)', () => {
 });
 
 describe('PemilihTanggalWaktu', () => {
-    it('tanggal + jam 24 jam; tempelan datetime-local diterima utuh', () => {
+    it('tanggal + jam 24 jam. Tempelan datetime-local diterima utuh', () => {
         const SaatBerubah = vi.fn();
         render(<Terkendali jenis="waktu" awal="" saatBerubah={SaatBerubah} />);
         const tanggal = screen.getByLabelText<HTMLInputElement>('Mulai berlaku');

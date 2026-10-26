@@ -59,7 +59,7 @@ it('mencatat absensi yang terlewat (Manual) dengan jam waktu outlet, termasuk sh
         ->assertJsonPath('Data.0.JamMasuk', '20:00')->assertJsonPath('Data.0.JamKeluar', '02:30')->assertJsonPath('Data.0.KeluarBeda', true);
 });
 
-it('koreksi jam absensi kasir: nilai lama di audit; alasan wajib; keluar sebelum masuk, masa depan, dan tumpang tindih ditolak', function (): void {
+it('koreksi jam absensi kasir: nilai lama di audit. Alasan wajib. Keluar sebelum masuk, masa depan, dan tumpang tindih ditolak', function (): void {
     [$k, $rina] = SiapkanKoreksiAbsensi($this);
     $a = Absensi::query()->create([
         'IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'TanggalBisnis' => '2026-10-01',
@@ -90,7 +90,7 @@ it('koreksi jam absensi kasir: nilai lama di audit; alasan wajib; keluar sebelum
         ->and($audit->NilaiBaru['Alasan'] ?? null)->toBe('Kasir lupa absen keluar');
 });
 
-it('hanya karyawan.kelola yang boleh mengoreksi; yang lain hanya melihat (BolehKoreksi=false)', function (): void {
+it('hanya karyawan.kelola yang boleh mengoreksi, yang lain hanya melihat (BolehKoreksi=false)', function (): void {
     [$k, $rina] = SiapkanKoreksiAbsensi($this);
     $this->get('/kelola/karyawan/absensi')->assertInertia(fn (AssertableInertia $h) => $h->where('BolehKoreksi', true));
 

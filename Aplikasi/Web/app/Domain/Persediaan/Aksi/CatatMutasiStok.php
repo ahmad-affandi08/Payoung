@@ -321,7 +321,7 @@ final class CatatMutasiStok
 
         if (($masuk && ($baris->idBatchStok !== null || $baris->idNomorSeri !== null))
             || (! $masuk && ($baris->batchMasuk !== null || $baris->nomorSeriMasuk !== null))) {
-            throw self::Galat('JumlahTidakValid', 'Batch/nomor seri masuk hanya untuk mutasi masuk; batch/nomor seri keluar hanya untuk mutasi keluar.', $k);
+            throw self::Galat('JumlahTidakValid', 'Batch/nomor seri masuk hanya untuk mutasi masuk. Batch/nomor seri keluar hanya untuk mutasi keluar.', $k);
         }
 
         if ($baris->batchMasuk !== null) {

@@ -135,7 +135,7 @@ describe('POST /masuk/google', function (): void {
 });
 
 describe('Google menggantikan 2FA wajib paket Bisnis di API', function (): void {
-    it('Owner Bisnis tanpa 2FA: masuk kata sandi → 403 DuaFaktorWajib; masuk Google → data terbuka', function (): void {
+    it('Owner Bisnis tanpa 2FA: masuk kata sandi → 403 DuaFaktorWajib. Masuk Google → data terbuka', function (): void {
         $t = SiapkanPemilikGoogleUji('BISNIS');
         DB::table('Langganan')->where('IdTenant', $t['Tenant']->Id)->update(['Status' => StatusLangganan::Aktif->value]);
 

@@ -55,7 +55,7 @@ describe('tab aktivitas tenant di tampilan 360°', () => {
         expect(screen.getAllByText('Belum dibayar').length).toBeGreaterThan(0);
     });
 
-    it('tiket: penanda lewat SLA bertulisan dan tautan ke tiket; tanpa tiket diberi penjelasan', () => {
+    it('tiket: penanda lewat SLA bertulisan dan tautan ke tiket, tanpa tiket diberi penjelasan', () => {
         Render(
             <TabTiketTenant
                 tiket={{

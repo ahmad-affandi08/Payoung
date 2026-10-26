@@ -174,7 +174,7 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Izin }: P
                 keterangan={
                     <p className="max-w-2xl text-isi text-teks-sekunder">
                         Harga khusus untuk outlet, kanal (misal online), tingkat pelanggan, atau periode tertentu. Bila
-                        beberapa daftar cocok, prioritas terbesar dipakai; bila sama, yang syaratnya lebih spesifik.
+                        beberapa daftar cocok, prioritas terbesar dipakai. Bila sama, yang syaratnya lebih spesifik.
                         Produk yang tidak ada di daftar ini memakai harga jual biasa.
                     </p>
                 }

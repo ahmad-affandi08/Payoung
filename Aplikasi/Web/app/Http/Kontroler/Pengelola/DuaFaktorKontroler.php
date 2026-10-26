@@ -170,7 +170,7 @@ final class DuaFaktorKontroler extends Kontroler
 
         return redirect()->to($aman ? $kembali : route('pengelola.beranda'))->with(
             'Kilat',
-            'Kode diterima. Ulangi aksi tadi; selama '.(int) config('pengelola.MenitKonfirmasiDuaFaktor').' menit ke depan kode tidak diminta lagi.',
+            'Kode diterima. Ulangi aksi tadi. Selama '.(int) config('pengelola.MenitKonfirmasiDuaFaktor').' menit ke depan kode tidak diminta lagi.',
         );
     }
 

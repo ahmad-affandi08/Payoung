@@ -26,7 +26,7 @@ beforeEach(function (): void {
 afterEach(fn () => Carbon::setTestNow());
 
 describe('F-15 tutup harian per outlet', function (): void {
-    it('shift belum ditutup ditolak; setelah shift ditutup hari ditutup, ringkasan dihitung ulang & dicuplik, audit; tidak bisa dua kali atau tanggal depan', function (): void {
+    it('shift belum ditutup ditolak. Setelah shift ditutup hari ditutup, ringkasan dihitung ulang & dicuplik, audit. Tidak bisa dua kali atau tanggal depan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
@@ -77,7 +77,7 @@ describe('F-15 tutup harian per outlet', function (): void {
             ->where('Hari.0.DitutupOleh', auth()->user()?->Nama));
     });
 
-    it('perangkat belum sinkron sejak hari berakhir & penjualan perlu tinjauan = peringatan; wajib dikonfirmasi lalu disimpan', function (): void {
+    it('perangkat belum sinkron sejak hari berakhir & penjualan perlu tinjauan = peringatan. Wajib dikonfirmasi lalu disimpan', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
         $p = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '1', 'Harga' => '38500.00']]]);
@@ -112,7 +112,7 @@ describe('F-15 tutup harian per outlet', function (): void {
         $this->post('/kelola/kasir/tutup-harian', ['Outlet' => $k['Outlet']->Uuid, 'TanggalBisnis' => '2026-10-16'])->assertRedirect();
     });
 
-    it('izin: Kasir tidak bisa melihat/menutup; outlet tenant lain = 404; tutup harian tenant lain tidak terlihat', function (): void {
+    it('izin: Kasir tidak bisa melihat/menutup. Outlet tenant lain = 404. Tutup harian tenant lain tidak terlihat', function (): void {
         $a = BantuanPenjualan::Siapkan($this, 'Kopi Senja Solo');
         $b = BantuanPenjualan::Siapkan($this, 'Warung Bakso Pak Kumis');
         foreach ([$a, $b] as $k) {

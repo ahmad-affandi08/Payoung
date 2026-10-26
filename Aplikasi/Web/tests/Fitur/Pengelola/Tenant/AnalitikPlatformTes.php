@@ -101,7 +101,7 @@ describe('funnel pendaftaran', function (): void {
             ->and($sektor['RTL-GEN']['Transaksi'])->toBe(1);
     });
 
-    it('tenant Uji/Demo/Internal tidak dihitung; filter periode daftar dan sektor bekerja', function (): void {
+    it('tenant Uji/Demo/Internal tidak dihitung. Filter periode daftar dan sektor bekerja', function (): void {
         $lama = BuatTenantAnalitik('Toko Lama', '2026-01-10 03:00:00', 'RTL-GEN');
         $baru = BuatTenantAnalitik('Toko Baru', '2026-10-10 03:00:00', 'FNB-CAF');
         $uji = BuatTenantAnalitik('Toko Uji', '2026-10-10 03:00:00', 'FNB-CAF');
@@ -128,7 +128,7 @@ describe('funnel pendaftaran', function (): void {
 });
 
 describe('adopsi fitur', function (): void {
-    it('hanya menghitung tenant yang menjual; persen per sektor, baris Semua sektor di depan', function (): void {
+    it('hanya menghitung tenant yang menjual. Persen per sektor, baris Semua sektor di depan', function (): void {
         $a = BuatTenantAnalitik('Kedai A', '2026-09-01 03:00:00');
         $b = BuatTenantAnalitik('Kedai B', '2026-09-01 03:00:00');
         $c = BuatTenantAnalitik('Toko C', '2026-09-01 03:00:00');
@@ -205,7 +205,7 @@ describe('retensi kohort', function (): void {
 });
 
 describe('PerbaruiAnalitikTenant', function (): void {
-    it('mengisi sektor, panduan, transaksi pertama, bayar pertama, fitur, dan aktivitas bulanan; tonggak yang tercapai tidak berubah', function (): void {
+    it('mengisi sektor, panduan, transaksi pertama, bayar pertama, fitur, dan aktivitas bulanan. Tonggak yang tercapai tidak berubah', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Analitik Solo');
         Outlet::query()->withoutGlobalScopes()->where('IdTenant', $k['Tenant']->Id)->update(['TemplateSektor' => 'FNB-CAF']);
         ProgresPanduanAwal::query()->withoutGlobalScopes()->updateOrCreate(['IdTenant' => $k['Tenant']->Id], ['SelesaiPada' => '2026-10-02 03:00:00']);
@@ -239,7 +239,7 @@ describe('PerbaruiAnalitikTenant', function (): void {
             ->and(AktivitasTenantBulanan::query()->where('IdTenant', $k['Tenant']->Id)->where('Bulan', '2026-10-01')->count())->toBe(1);
     });
 
-    it('tenant ber-penanda tidak diproses; tagihan bernilai nol bukan tonggak bayar', function (): void {
+    it('tenant ber-penanda tidak diproses. Tagihan bernilai nol bukan tonggak bayar', function (): void {
         ['Tenant' => $uji] = BantuanOrganisasi::BuatTenant('Tenant Uji Analitik');
         Tenant::query()->whereKey($uji->Id)->update(['Penanda' => PenandaTenant::Uji->value]);
         ['Tenant' => $normal] = BantuanOrganisasi::BuatTenant('Tenant Normal Analitik');

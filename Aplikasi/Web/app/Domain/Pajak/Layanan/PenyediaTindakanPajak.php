@@ -62,7 +62,7 @@ final class PenyediaTindakanPajak implements PenyediaTindakan
                 $sudahBerlaku ? TingkatTindakan::Perhatian : TingkatTindakan::Info,
                 $sudahBerlaku ? "Tarif {$nama} {$persen}% sudah berlaku" : "Tarif {$nama} berubah menjadi {$persen}%",
                 ($sudahBerlaku ? 'Berlaku sejak ' : 'Berlaku mulai ').$mulai->format('d/m/Y')
-                    .'. Aplikasi kasir memperbarui tarif otomatis saat tersinkron; pastikan semua perangkat kasir pernah tersambung internet sebelum dan sesudah tanggal itu.',
+                    .'. Aplikasi kasir memperbarui tarif otomatis saat tersinkron. Pastikan semua perangkat kasir pernah tersambung internet sebelum dan sesudah tanggal itu.',
                 1,
                 '/kelola/kelompok-pajak',
                 'Lihat kelompok pajak',

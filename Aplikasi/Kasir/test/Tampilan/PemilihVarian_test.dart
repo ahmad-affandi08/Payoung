@@ -75,7 +75,7 @@ void main() {
     expect(ProdukJual.UraiAtributVarian(null).definisi, isEmpty);
   });
 
-  test('katalog: tanpa kata cari hanya induk yang tampil; anak bisa dicari; AmbilVarian berisi anak aktif', () async {
+  test('katalog: tanpa kata cari hanya induk yang tampil. Anak bisa dicari; AmbilVarian berisi anak aktif', () async {
     final u = LingkunganUji.Buat();
     addTearDown(u.Tutup);
     await u.SiapkanKatalog(KatalogVarian());

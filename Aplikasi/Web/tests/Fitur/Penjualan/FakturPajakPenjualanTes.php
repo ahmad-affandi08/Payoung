@@ -103,7 +103,7 @@ it('menerbitkan faktur dan angka baris Coretax cocok dengan pembukuan (harga bel
     expect($xml)->toContain('<TIN>0123456789012345</TIN>')->toContain('<BuyerName>CV Sinar Bengawan Abadi</BuyerName>')->toContain('<RefDesc>'.$p->Nomor.'</RefDesc>');
 });
 
-it('harga sudah termasuk PPN: DPP = bruto − PPN di dalam harga; selisih pembulatan dilaporkan, bukan disembunyikan', function (): void {
+it('harga sudah termasuk PPN: DPP = bruto − PPN di dalam harga. Selisih pembulatan dilaporkan, bukan disembunyikan', function (): void {
     $p = JualKenaPpn($this, inklusif: true);
     TerbitkanFakturKasir($this, $p);
 
@@ -155,7 +155,7 @@ it('idempoten per pelanggan, tolak pelanggan lain sampai dibatalkan, lalu bisa d
         ->and($hasil->faktur[0]->nomorDokumenPembeli)->toBe('3372011234567890');
 });
 
-it('faktur yang dibatalkan tidak diekspor; penjualan yang di-void sesudahnya ditandai bermasalah', function (): void {
+it('faktur yang dibatalkan tidak diekspor. Penjualan yang di-void sesudahnya ditandai bermasalah', function (): void {
     $p = JualKenaPpn($this);
     $faktur = TerbitkanFakturKasir($this, $p);
 
@@ -169,7 +169,7 @@ it('faktur yang dibatalkan tidak diekspor; penjualan yang di-void sesudahnya dit
     expect($ringkasan['JumlahDiperiksa'])->toBe(0);
 });
 
-it('nomor Faktur Pajak diisi kemudian dan diaudit; faktur terbatalkan tidak bisa diubah', function (): void {
+it('nomor Faktur Pajak diisi kemudian dan diaudit. Faktur terbatalkan tidak bisa diubah', function (): void {
     $p = JualKenaPpn($this);
     $faktur = TerbitkanFakturKasir($this, $p);
 
@@ -190,7 +190,7 @@ it('outlet di luar akses dan tenant lain diperlakukan sebagai tidak ditemukan', 
         ->toThrow(PelanggaranAturanBisnis::class, 'Penjualan tidak ditemukan');
 });
 
-it('lewat web: terbitkan, isi nomor, batalkan; Kasir tanpa izin akuntansi ditolak; detail memuat FakturPajak dan Izin', function (): void {
+it('lewat web: terbitkan, isi nomor, batalkan; Kasir tanpa izin akuntansi ditolak. Detail memuat FakturPajak dan Izin', function (): void {
     $p = JualKenaPpn($this);
     BantuanOrganisasi::Masuk($this, $this->k['Pemilik'], $this->k['Tenant']->Id);
 

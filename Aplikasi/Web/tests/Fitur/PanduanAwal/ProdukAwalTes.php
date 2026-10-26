@@ -86,7 +86,7 @@ describe('F-01 langkah 4: produk awal (contoh template & tambah cepat)', functio
             ->and(ProdukHarga::query()->sole()->Harga)->toBe('22000.00');
     });
 
-    it('produk contoh yang tidak ada di template ditolak; tanpa template ProdukContoh kosong', function (): void {
+    it('produk contoh yang tidak ada di template ditolak, tanpa template ProdukContoh kosong', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF', ['ProdukContoh' => []]);
         ['Tenant' => $tenant, 'Pemilik' => $pemilik, 'Outlet' => $outlet] = BantuanPanduanAwal::BuatTenant();
 
@@ -98,7 +98,7 @@ describe('F-01 langkah 4: produk awal (contoh template & tambah cepat)', functio
             ->assertSessionHasErrors('ProdukContoh.0.Nama');
     });
 
-    it('(d) tambah cepat: harga "15.000" ditolak, "15000" diterima; jenis NonStok untuk kafe, Stok untuk retail', function (): void {
+    it('(d) tambah cepat: harga "15.000" ditolak, "15000" diterima. Jenis NonStok untuk kafe, Stok untuk retail', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         BantuanPanduanAwal::TerbitkanTemplate('RTL-GEN');
         ['Tenant' => $kafe, 'Pemilik' => $pemilikKafe, 'Outlet' => $outletKafe] = BantuanPanduanAwal::BuatTenant();
@@ -127,7 +127,7 @@ describe('F-01 langkah 4: produk awal (contoh template & tambah cepat)', functio
             ->and(Produk::query()->sole()->IdKelompokPajak)->toBe(KelompokPajak::query()->where('Nama', 'Barang kena PPN')->value('Id'));
     });
 
-    it('tanpa template: jenis Stok dengan satuan PCS dibuat otomatis; data realistis (nama 60 karakter, Rp 1.250.000.000)', function (): void {
+    it('tanpa template: jenis Stok dengan satuan PCS dibuat otomatis. Data realistis (nama 60 karakter, Rp 1.250.000.000)', function (): void {
         BantuanPanduanAwal::TerbitkanTemplate('FNB-CAF');
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
         $nama = 'Paket Katering Pernikahan Premium 500 Porsi Menu Nusantara A';

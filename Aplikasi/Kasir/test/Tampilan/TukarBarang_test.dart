@@ -95,7 +95,7 @@ void main() {
 
   for (final ukuran in const [Size(1280, 900), Size(360, 740)]) {
     testWidgets(
-      'pengganti lebih mahal: nilai retur membayar, sisa tunai; retur & penjualan tersimpan bersama (${ukuran.width.toInt()} dp)',
+      'pengganti lebih mahal: nilai retur membayar, sisa tunai. Retur & penjualan tersimpan bersama (${ukuran.width.toInt()} dp)',
       (tester) async {
         final u = await Masuk(tester, ukuran);
         await MulaiTukar(tester);

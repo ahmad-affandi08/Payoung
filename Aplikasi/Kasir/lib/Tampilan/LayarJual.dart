@@ -1112,7 +1112,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
               ),
               title: Text(LayananPenjualan.AmbilLabelKanal(p)),
               subtitle: LayananPenjualan.kanalPlatform.contains(p)
-                  ? const Text('Pesanan dari aplikasi; harga & pembayaran platform')
+                  ? const Text('Pesanan dari aplikasi. Harga & pembayaran platform')
                   : null,
               trailing: p == sekarang ? const Icon(Icons.check) : null,
               onTap: () => Navigator.of(konteks).pop(p),
@@ -1251,7 +1251,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     final keranjang = ref.read(penyediaKeranjang);
     if (keranjang.tukar != null) {
       // Pesanan tertahan tidak membawa retur tukar barang; menahannya akan membuang retur & PIN penyetuju diam-diam.
-      _TampilPesan('Tukar barang sedang berjalan. Selesaikan pembayarannya atau batalkan dulu; tidak bisa ditahan.');
+      _TampilPesan('Tukar barang sedang berjalan. Selesaikan pembayarannya atau batalkan dulu. Tidak bisa ditahan.');
       return;
     }
     final k = await ref.read(penyediaKonteksPenjualan.future);

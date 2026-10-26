@@ -177,7 +177,7 @@ describe('Inbox obrolan konsol (PLT-12)', () => {
         });
     });
 
-    it('memilih obrolan memuat percakapan; balasan, ambil, dan selesaikan memakai endpoint obrolan', async () => {
+    it('memilih obrolan memuat percakapan. Balasan, ambil, dan selesaikan memakai endpoint obrolan', async () => {
         const catatan = PasangFetch(() => BuatAwal());
         Render();
 

@@ -33,7 +33,7 @@ it('CRC16/CCITT-FALSE: nilai acuan standar "123456789" = 29B1', function (): voi
     expect((new PemeriksaQris)->HitungCrc16('123456789'))->toBe('29B1');
 });
 
-it('QRIS statis dari vektor lolos dan memberi nama merchant; hasil QRIS bernominal punya CRC sah tetapi ditolak sebagai sumber', function (): void {
+it('QRIS statis dari vektor lolos dan memberi nama merchant. Hasil QRIS bernominal punya CRC sah tetapi ditolak sebagai sumber', function (): void {
     $pemeriksa = new PemeriksaQris;
 
     foreach (VektorQris()['Kasus'] as $kasus) {

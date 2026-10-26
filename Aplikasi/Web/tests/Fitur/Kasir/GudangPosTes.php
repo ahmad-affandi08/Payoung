@@ -235,7 +235,7 @@ describe('transfer masuk', function (): void {
 });
 
 describe('stok opname', function (): void {
-    it('daftar opname berlangsung; hitung baris lama & produk baru hasil pindai; hitung buta menyembunyikan jumlah sistem', function (): void {
+    it('daftar opname berlangsung. Hitung baris lama & produk baru hasil pindai. Hitung buta menyembunyikan jumlah sistem', function (): void {
         $k = SiapkanGudangPos($this);
         BantuanStokAwal::BuatDanPosting($k['Gudang'], [
             BantuanStokAwal::Baris($k['Produk']['Stok'], '100', '38500'),
@@ -265,7 +265,7 @@ describe('stok opname', function (): void {
             ->and(StokOpnameDetail::query()->where('IdProduk', $k['Produk']['Produksi']->Id)->value('DihitungOleh'))->toBe($k['StafGudang']->Id);
     });
 
-    it('kasir tanpa izin ditolak; produk tidak dikenal ditolak; tenant lain tidak bisa menyentuh opname', function (): void {
+    it('kasir tanpa izin ditolak. Produk tidak dikenal ditolak. Tenant lain tidak bisa menyentuh opname', function (): void {
         $k = SiapkanGudangPos($this);
         $opname = app(MulaiStokOpname::class)->Jalankan($k['Gudang']->Id, null, false, null, $k['Pemilik']->Id);
         $hitung = fn (string $token, string $uuidPengguna, array $baris): TestResponse => KirimGudang($this, $token, 'POST', "gudang/opname/{$opname->Uuid}/hitung", ['UuidPengguna' => $uuidPengguna, 'Hitung' => $baris]);

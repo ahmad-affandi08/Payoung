@@ -39,7 +39,7 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
     return (
         <Panel
             judul="Faktur Pajak Keluaran (Coretax)"
-            keterangan="Dari faktur penjualan grosir dan Faktur Pajak per transaksi kasir pada periode ini. Unduh XML lalu impor di Coretax; nomor Faktur Pajak diisi Coretax, bukan Payoung."
+            keterangan="Dari faktur penjualan grosir dan Faktur Pajak per transaksi kasir pada periode ini. Unduh XML lalu impor di Coretax. Nomor Faktur Pajak diisi Coretax, bukan Payoung."
             aksi={
                 data?.BisaDiekspor ? (
                     <TautanUnduh
@@ -99,7 +99,7 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
                     {data.Selisih.length > 0 ? (
                         <Pemberitahuan jenis="info" judul="Selisih pembulatan dengan faktur internal">
                             Coretax membulatkan DPP dan PPN per baris, jadi angkanya bisa berbeda beberapa sen dari
-                            faktur di Payoung (yang dibulatkan per dokumen). Pembukuan tidak diubah; cocokkan saat
+                            faktur di Payoung (yang dibulatkan per dokumen). Pembukuan tidak diubah. Cocokkan saat
                             rekonsiliasi SPT Masa PPN.
                             <ul className="mt-1 flex list-disc flex-col gap-1 pl-5">
                                 {data.Selisih.map((s) => (

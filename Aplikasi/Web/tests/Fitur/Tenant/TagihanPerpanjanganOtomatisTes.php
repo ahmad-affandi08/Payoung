@@ -143,7 +143,7 @@ describe('P-08 langkah 1: tagihan perpanjangan otomatis H-7', function (): void 
 });
 
 describe('P-08 langkah 4: pengingat H-7, H-3, H0, H+3', function (): void {
-    it('setiap tahap sekali; tahap terlewat tidak dikirim berurutan; H+3 menyebut tanggal penangguhan; WhatsApp ke nomor Owner', function (): void {
+    it('setiap tahap sekali. Tahap terlewat tidak dikirim berurutan; H+3 menyebut tanggal penangguhan; WhatsApp ke nomor Owner', function (): void {
         config(['integrasi.Whatsapp' => ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'rahasia-uji']]]);
         Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9001']])]);
 
@@ -185,7 +185,7 @@ describe('P-08 langkah 4: pengingat H-7, H-3, H0, H+3', function (): void {
         Mail::assertSent(PengingatTagihanLangganan::class, fn (PengingatTagihanLangganan $s): bool => $s->subject === 'Segera bayar INV/2026/09/000001');
     });
 
-    it('PGL-07: Owner juga menerima notifikasi aplikasi bertemplat per tahap, sekali per tahap; dibisukan = tidak dibuat', function (): void {
+    it('PGL-07: Owner juga menerima notifikasi aplikasi bertemplat per tahap, sekali per tahap. Dibisukan = tidak dibuat', function (): void {
         $idPemilik = $this->pemilik->Id;
         Queue::fake();
 
@@ -227,7 +227,7 @@ describe('P-08 langkah 4: pengingat H-7, H-3, H0, H+3', function (): void {
         expect($notifikasi->Judul)->toBe('Ada tagihan INV/2026/09/000001')->and($notifikasi->Isi)->toBe('Halo Rina Wulandari, bayar Rp 276.390 ya.');
     });
 
-    it('tagihan buatan Owner tidak memicu email "tagihan terbit"; tahap berikutnya tetap diingatkan; lunas berhenti diingatkan', function (): void {
+    it('tagihan buatan Owner tidak memicu email "tagihan terbit"; tahap berikutnya tetap diingatkan. Lunas berhenti diingatkan', function (): void {
         DB::table('Langganan')->where('IdTenant', $this->tenant->Id)->update(['Status' => StatusLangganan::Gratis->value, 'PeriodeMulai' => null, 'PeriodeSelesai' => null]);
         BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
             ->post('/kelola/langganan/tagihan', ['KodePaket' => 'PRO', 'Siklus' => 'Bulanan'])

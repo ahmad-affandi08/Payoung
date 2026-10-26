@@ -84,7 +84,7 @@ function SisaBarisTenantUji(int $idTenant): int
 }
 
 describe('D-213 hapus permanen tenant uji', function (): void {
-    it('menghapus tenant berpenanda beserta semua datanya; tenant lain, akun bersama, dan audit konsol tetap', function (): void {
+    it('menghapus tenant berpenanda beserta semua datanya. Tenant lain, akun bersama, dan audit konsol tetap', function (): void {
         $uji = SiapkanTenantHapusUji('Toko Uji Kasir');
         $lain = SiapkanTenantHapusUji('Warung Sungguhan', penanda: null);
         $id = $uji['Tenant']->Id;
@@ -148,7 +148,7 @@ describe('D-213 hapus permanen tenant uji', function (): void {
             ->and(LogAuditPengelola::query()->where('Aksi', 'tenant.hapus-permanen')->count())->toBe(0);
     });
 
-    it('slug yang diketik harus sama dan alasan wajib; tidak ada yang terhapus bila keliru', function (): void {
+    it('slug yang diketik harus sama dan alasan wajib. Tidak ada yang terhapus bila keliru', function (): void {
         $uji = SiapkanTenantHapusUji('Toko Uji Kasir');
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
 
@@ -159,7 +159,7 @@ describe('D-213 hapus permanen tenant uji', function (): void {
         expect(DB::table('Tenant')->where('Id', $uji['Tenant']->Id)->exists())->toBeTrue();
     });
 
-    it('hanya Super Admin yang berizin; peran lain 403 dan data utuh', function (): void {
+    it('hanya Super Admin yang berizin. Peran lain 403 dan data utuh', function (): void {
         $uji = SiapkanTenantHapusUji('Toko Uji Kasir');
 
         foreach ([PeranPengelolaBawaan::Keuangan, PeranPengelolaBawaan::Dukungan] as $peran) {
@@ -182,7 +182,7 @@ describe('D-213 hapus permanen tenant uji', function (): void {
         expect(DB::table('Tenant')->where('Id', $uji['Tenant']->Id)->exists())->toBeTrue();
     });
 
-    it('aksi massal: yang berpenanda terhapus, yang sungguhan dilewati; frasa konfirmasi wajib', function (): void {
+    it('aksi massal: yang berpenanda terhapus, yang sungguhan dilewati. Frasa konfirmasi wajib', function (): void {
         $a = SiapkanTenantHapusUji('Toko Uji A');
         $b = SiapkanTenantHapusUji('Toko Uji B', PenandaTenant::Demo);
         $asli = SiapkanTenantHapusUji('Warung Sungguhan', penanda: null);

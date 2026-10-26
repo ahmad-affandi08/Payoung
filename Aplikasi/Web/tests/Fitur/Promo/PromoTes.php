@@ -176,7 +176,7 @@ describe('F-16c promo di penjualan POS', function (): void {
         expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$beda]))->toBe([['Ditolak', 'HitunganTidakCocok']]);
     });
 
-    it('GET /api/pos/v1/promo: promo aktif belum berakhir + mode; arsip & berakhir tidak ikut; tenant tanpa fitur kosong', function (): void {
+    it('GET /api/pos/v1/promo: promo aktif belum berakhir + mode. Arsip & berakhir tidak ikut. Tenant tanpa fitur kosong', function (): void {
         $k = SiapkanPromo($this);
         Promo::query()->create(['Kode' => 'LAMA', 'Nama' => 'Promo lalu', 'SelesaiPada' => CarbonImmutable::now()->subDay(), 'Definisi' => ['Aksi' => ['Jenis' => 'DiskonTetapPesanan', 'Jumlah' => '1000']]]);
         Promo::query()->create(['Kode' => 'ARSIP', 'Nama' => 'Promo arsip', 'Status' => StatusPromo::Diarsipkan, 'Definisi' => ['Aksi' => ['Jenis' => 'DiskonTetapPesanan', 'Jumlah' => '1000']]]);
@@ -191,7 +191,7 @@ describe('F-16c promo di penjualan POS', function (): void {
 });
 
 describe('F-16c back-office promo', function (): void {
-    it('tambah promo bundel lewat formulir: definisi kanonik, tanggal zona tenant, audit; validasi per aksi', function (): void {
+    it('tambah promo bundel lewat formulir: definisi kanonik, tanggal zona tenant, audit. Validasi per aksi', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Kopi Senja Formulir');
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
 
@@ -253,7 +253,7 @@ describe('F-16c back-office promo', function (): void {
             ->where('Promo.0.LabelAksi', 'Bundel harga tetap'));
     });
 
-    it('kasir tanpa pelanggan.kelola tidak bisa mengubah; promo tenant lain 404', function (): void {
+    it('kasir tanpa pelanggan.kelola tidak bisa mengubah. Promo tenant lain 404', function (): void {
         $k = SiapkanPromo($this);
         $lain = BantuanPenjualan::Siapkan($this, 'Toko Lain Promo');
         BantuanOrganisasi::AturKonteks($lain['Tenant']->Id);

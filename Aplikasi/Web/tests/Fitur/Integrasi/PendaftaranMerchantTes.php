@@ -165,7 +165,7 @@ function KirimMerchant(TestCase $tes, array $toko, array $ubah = [], bool $denga
 }
 
 describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): void {
-    it('berhasil: token, tiga unggahan multipart, registrasi bertanda tangan dengan NIK & id berkas; status Ditinjau; foto dihapus', function (): void {
+    it('berhasil: token, tiga unggahan multipart, registrasi bertanda tangan dengan NIK & id berkas. Status Ditinjau. Foto dihapus', function (): void {
         FakePartnerSukses();
         $toko = TokoMerchant();
 
@@ -335,7 +335,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         Http::assertSentCount(5);
     });
 
-    it('masalah 4xx pasti: Gagal dengan pesan terfilter (tanpa secret, token, NIK, rekening); foto lokal dihapus; boleh dikirim ulang', function (): void {
+    it('masalah 4xx pasti: Gagal dengan pesan terfilter (tanpa secret, token, NIK, rekening). Foto lokal dihapus. Boleh dikirim ulang', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT.header.payload-rahasia'], 200),
@@ -361,7 +361,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         expect($p->Status)->toBe(StatusPendaftaranMerchant::Ditinjau)->and($p->IdBisnisDoku)->toBe('BSN-0001-AAAA')->and($p->PesanGalat)->toBeNull();
     });
 
-    it('masalah 5xx saat registrasi: tetap Dikirim dan dapat diulang; id berkas tersimpan jadi unggahan tidak diulang', function (): void {
+    it('masalah 5xx saat registrasi: tetap Dikirim dan dapat diulang. Id berkas tersimpan jadi unggahan tidak diulang', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT-X'], 200),
@@ -390,7 +390,7 @@ describe('alur kirim: token, unggah berkas, registrasi bisnis', function (): voi
         expect($p->Status)->toBe(StatusPendaftaranMerchant::Ditinjau)->and($p->IdBisnisDoku)->toBe('BSN-0001-AAAA');
     });
 
-    it('jaringan putus di tengah unggahan: berkas yang sudah terunggah dihapus, sisanya tetap; percobaan habis kembali ke Draf', function (): void {
+    it('jaringan putus di tengah unggahan: berkas yang sudah terunggah dihapus, sisanya tetap. Percobaan habis kembali ke Draf', function (): void {
         SetelUlangHttp();
         Http::fake([
             'api-uat.doku.com'.AWALAN_PARTNER.'/token' => Http::response(['token' => 'JWT-X'], 200),
@@ -471,7 +471,7 @@ describe('validasi isian dan foto', function (): void {
         expect(PendaftaranToko($toko))->toBeNull()->and(BerkasTersimpan())->toBe(0);
     });
 
-    it('foto bukan JPG/PNG atau terlalu besar ditolak validasi; isi byte yang menyamar jadi .jpg ditolak Aksi', function (): void {
+    it('foto bukan JPG/PNG atau terlalu besar ditolak validasi. Isi byte yang menyamar jadi .jpg ditolak Aksi', function (): void {
         $toko = TokoMerchant();
 
         MasukMerchant($this, $toko)->post(UrlMerchant('/draf'), IsianMerchant([
@@ -513,7 +513,7 @@ describe('status dari DOKU (Get Business Data)', function (): void {
         SetelUlangHttp();
     }
 
-    it('ACTIVE: Aktif, menyimpan Brand ID & shared key (terenkripsi), DisetujuiPada; permintaan GET bertanda tangan dengan parameter PERSONAL', function (): void {
+    it('ACTIVE: Aktif, menyimpan Brand ID & shared key (terenkripsi), DisetujuiPada. Permintaan GET bertanda tangan dengan parameter PERSONAL', function (): void {
         $toko = TokoMerchant();
         SiapkanDitinjau($this, $toko);
         Http::fake(['api-uat.doku.com/*' => Http::response(JawabanBisnis('ACTIVE', 'ACTIVE', ['id' => 'BSN-0001-AAAA']), 200)]);
@@ -641,7 +641,7 @@ describe('webhook callback KYB /webhook/pembayaran/doku-partner', function (): v
         Queue::assertNothingPushed();
     });
 
-    it('callback sah hanya menandai dan memicu penyegaran; isi badan (ACTIVE) tidak dipercaya', function (): void {
+    it('callback sah hanya menandai dan memicu penyegaran. Isi badan (ACTIVE) tidak dipercaya', function (): void {
         $toko = TokoMerchant();
         SiapkanDitinjau($this, $toko);
         Queue::fake();
@@ -700,7 +700,7 @@ describe('webhook callback KYB /webhook/pembayaran/doku-partner', function (): v
 });
 
 describe('pembersihan foto sementara', function (): void {
-    it('foto lebih dari 24 jam dihapus dan draf kembali meminta unggah ulang; yang masih baru dibiarkan', function (): void {
+    it('foto lebih dari 24 jam dihapus dan draf kembali meminta unggah ulang, yang masih baru dibiarkan', function (): void {
         $tokoLama = TokoMerchant('Toko Lama');
         $tokoBaru = TokoMerchant('Toko Baru');
         MasukMerchant($this, $tokoLama)->post(UrlMerchant('/draf'), IsianMerchant())->assertSessionHasNoErrors();
@@ -727,7 +727,7 @@ describe('pembersihan foto sementara', function (): void {
             ->and(app(BersihkanBerkasPendaftaranMerchant::class)->Jalankan())->toBe(0);
     });
 
-    it('batal menghapus baris dan foto; tidak bisa batal saat Ditinjau', function (): void {
+    it('batal menghapus baris dan foto. Tidak bisa batal saat Ditinjau', function (): void {
         $toko = TokoMerchant();
         MasukMerchant($this, $toko)->post(UrlMerchant('/draf'), IsianMerchant())->assertSessionHasNoErrors();
         expect(BerkasTersimpan())->toBe(3);
@@ -743,7 +743,7 @@ describe('pembersihan foto sementara', function (): void {
 });
 
 describe('halaman tenant: props, izin, dan isolasi tenant', function (): void {
-    it('halaman hanya memuat NIK & rekening tersamar; tidak ada foto, shared key, ID bisnis, atau token callback', function (): void {
+    it('halaman hanya memuat NIK & rekening tersamar. Tidak ada foto, shared key, ID bisnis, atau token callback', function (): void {
         FakePartnerSukses();
         $toko = TokoMerchant();
         KirimMerchant($this, $toko)->assertSessionHasNoErrors();
@@ -817,7 +817,7 @@ describe('halaman tenant: props, izin, dan isolasi tenant', function (): void {
 });
 
 describe('skema: tabel sub account lama dihapus, tabel pendaftaran merchant baru', function (): void {
-    it('SubAkunPembayaran (pendekatan sub account yang salah arah) tidak ada lagi; tabel baru lengkap dengan kolom penampung QRIS', function (): void {
+    it('SubAkunPembayaran (pendekatan sub account yang salah arah) tidak ada lagi. Tabel baru lengkap dengan kolom penampung QRIS', function (): void {
         expect(Schema::hasTable('SubAkunPembayaran'))->toBeFalse()
             ->and(Schema::hasTable('PendaftaranMerchantPembayaran'))->toBeTrue()
             ->and(Schema::hasColumns('PendaftaranMerchantPembayaran', [

@@ -9,7 +9,7 @@ use App\Domain\Laporan\Layanan\PenilaiRisikoKasir;
  * F-14 anti-fraud: skor risiko kasir transparan (alasan berteks), pembanding rata-rata semua kasir, batas 100.
  */
 
-it('diskon & retur ≥ 2× rata-rata dengan minimal 3 kejadian; kas kurang dalam toleransi = +10; skor dibatasi 100', function (): void {
+it('diskon & retur ≥ 2× rata-rata dengan minimal 3 kejadian. Kas kurang dalam toleransi = +10. Skor dibatasi 100', function (): void {
     $penilai = new PenilaiRisikoKasir;
     $hasil = $penilai->Nilai([
         1 => ['JumlahTransaksi' => 20, 'Kotor' => '1000000.00', 'JumlahVoid' => 0, 'VoidCepatTunai' => 0, 'JumlahRetur' => 6, 'JumlahBerdiskon' => 10, 'TotalDiskon' => '200000.00', 'BukaLaciManual' => 1, 'ShiftSelisihKurang' => 1, 'SelisihKurang' => '5000.00'],

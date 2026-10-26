@@ -173,7 +173,7 @@ function PeriksaInvarianSesi(int $idTenant): array
 }
 
 describe('F-16d paket sesi: beli di kasir (J-16.2)', function (): void {
-    it('saldo sesi dibuat, nilai bersih setelah diskon masuk Pendapatan Diterima Dimuka (bukan pendapatan); kirim ulang = Duplikat', function (): void {
+    it('saldo sesi dibuat, nilai bersih setelah diskon masuk Pendapatan Diterima Dimuka (bukan pendapatan). Kirim ulang = Duplikat', function (): void {
         $k = SiapkanPaketSesi($this);
         $item = BantuanPenjualan::Item($k, [
             'Baris' => [['Produk' => $k['Paket'], 'Jumlah' => '1', 'Harga' => '1000000.00', 'DiskonManual' => ['Persen' => '10']]],
@@ -202,7 +202,7 @@ describe('F-16d paket sesi: beli di kasir (J-16.2)', function (): void {
         expect(PeriksaInvarianSesi($k['Tenant']->Id))->toBe([]);
     });
 
-    it('jumlah 2 = 2 × sesi paket; tanpa pelanggan atau jumlah pecahan ditolak; pelanggan belum dikenal = diterima + tinjauan', function (): void {
+    it('jumlah 2 = 2 × sesi paket, tanpa pelanggan atau jumlah pecahan ditolak. Pelanggan belum dikenal = diterima + tinjauan', function (): void {
         $k = SiapkanPaketSesi($this, jumlahSesi: 5);
         [, $saldo] = JualPaketSesi($this, $k, '400000.00', ['Jumlah' => '2']);
         expect($saldo->JumlahSesi)->toBe(10)->and($saldo->NilaiAwal)->toBe('800000.00');
@@ -224,7 +224,7 @@ describe('F-16d paket sesi: beli di kasir (J-16.2)', function (): void {
 });
 
 describe('F-16d paket sesi: pemakaian dari kasir (J-16.3)', function (): void {
-    it('tiap sesi mengakui NilaiTersisa ÷ SisaSesi, sesi terakhir mengakui sisa; habis = status Habis; kirim ulang = Duplikat', function (): void {
+    it('tiap sesi mengakui NilaiTersisa ÷ SisaSesi, sesi terakhir mengakui sisa. Habis = status Habis. Kirim ulang = Duplikat', function (): void {
         $k = SiapkanPaketSesi($this, jumlahSesi: 3);
         [, $saldo] = JualPaketSesi($this, $k, '100000.00');
 
@@ -257,7 +257,7 @@ describe('F-16d paket sesi: pemakaian dari kasir (J-16.3)', function (): void {
         expect(PeriksaInvarianSesi($k['Tenant']->Id))->toBe([]);
     });
 
-    it('layanan di luar paket & sesi melebihi sisa: diterima + tinjauan; saldo/produk tidak dikenal ditolak', function (): void {
+    it('layanan di luar paket & sesi melebihi sisa: diterima + tinjauan. Saldo/produk tidak dikenal ditolak', function (): void {
         $k = SiapkanPaketSesi($this, jumlahSesi: 2);
         [, $saldo] = JualPaketSesi($this, $k, '300000.00');
 
@@ -279,7 +279,7 @@ describe('F-16d paket sesi: pemakaian dari kasir (J-16.3)', function (): void {
         expect(PeriksaInvarianSesi($k['Tenant']->Id))->toBe([]);
     });
 
-    it('API POS saldo sesi pelanggan (online) berisi paket aktif & layanan yang boleh ditukar; pelanggan tenant lain 404', function (): void {
+    it('API POS saldo sesi pelanggan (online) berisi paket aktif & layanan yang boleh ditukar. Pelanggan tenant lain 404', function (): void {
         $k = SiapkanPaketSesi($this);
         [, $saldo] = JualPaketSesi($this, $k);
         PakaiSesi($this, $k, $saldo);
@@ -312,7 +312,7 @@ describe('F-16d paket sesi: pemakaian dari kasir (J-16.3)', function (): void {
 });
 
 describe('F-16d paket sesi: void, retur, tutup sisa, hangus', function (): void {
-    it('void setelah 2 sesi dipakai: sisa dibatalkan, pengakuan dibalik; semua akun kembali nol', function (): void {
+    it('void setelah 2 sesi dipakai: sisa dibatalkan, pengakuan dibalik. Semua akun kembali nol', function (): void {
         $k = SiapkanPaketSesi($this);
         [$jual, $saldo] = JualPaketSesi($this, $k);
         PakaiSesi($this, $k, $saldo);
@@ -346,7 +346,7 @@ describe('F-16d paket sesi: void, retur, tutup sisa, hangus', function (): void 
             ->toBe([['Ditolak', 'ReturPaketSesiTidakDidukung']]);
     });
 
-    it('back-office: kembalikan sisa ke kas (Dr Diterima Dimuka Cr Kas), void sesudahnya ditolak; batalkan pemakaian; audit & izin', function (): void {
+    it('back-office: kembalikan sisa ke kas (Dr Diterima Dimuka Cr Kas), void sesudahnya ditolak. Batalkan pemakaian. Audit & izin', function (): void {
         $k = SiapkanPaketSesi($this);
         [$jual, $saldo] = JualPaketSesi($this, $k);
         PakaiSesi($this, $k, $saldo);
@@ -417,7 +417,7 @@ describe('F-16d paket sesi: void, retur, tutup sisa, hangus', function (): void 
 });
 
 describe('F-16d paket sesi: master & back-office', function (): void {
-    it('tambah & ubah paket sesi: hanya produk Jasa, satu per produk, layanan wajib dipilih; daftar TabelData', function (): void {
+    it('tambah & ubah paket sesi: hanya produk Jasa, satu per produk, layanan wajib dipilih. Daftar TabelData', function (): void {
         $k = SiapkanPaketSesi($this);
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
         $barang = BantuanKatalog::BuatProduk(['Nama' => 'Shampo Anti Ketombe 400 ml']);
@@ -459,7 +459,7 @@ describe('F-16d paket sesi: master & back-office', function (): void {
         $this->post('/kelola/paket-sesi', $isian())->assertForbidden();
     });
 
-    it('daftar saldo sesi & detail pelanggan; tenant lain tidak bisa membuka saldo sesi', function (): void {
+    it('daftar saldo sesi & detail pelanggan. Tenant lain tidak bisa membuka saldo sesi', function (): void {
         $k = SiapkanPaketSesi($this);
         [, $saldo] = JualPaketSesi($this, $k);
         BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
@@ -479,7 +479,7 @@ describe('F-16d paket sesi: master & back-office', function (): void {
     });
 });
 
-it('kasir bawaan tidak punya izin pelanggan.sesi.kelola; admin punya', function (): void {
+it('kasir bawaan tidak punya izin pelanggan.sesi.kelola. Admin punya', function (): void {
     $k = SiapkanPaketSesi($this);
     $admin = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Admin);
     [, $saldo] = JualPaketSesi($this, $k);

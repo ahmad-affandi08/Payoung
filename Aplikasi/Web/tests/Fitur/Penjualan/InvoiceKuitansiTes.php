@@ -86,7 +86,7 @@ describe('Kuitansi invoice', function (): void {
             ->where('Kuitansi.SisaSetelah', '0.00'));
     });
 
-    it('halaman publik memakai kode rahasia invoice: tanpa kontak pembeli; kode, pembayaran, atau tenant yang salah 404', function (): void {
+    it('halaman publik memakai kode rahasia invoice: tanpa kontak pembeli. Kode, pembayaran, atau tenant yang salah 404', function (): void {
         [$invoice, $pertama] = InvoiceDibayarDuaKaliUji($this);
         $kode = KodeInvoicePublik::Buat($invoice->IdTenant, $invoice->KodePublik);
         $lain = BantuanPersediaan::SiapkanTenant('Konsultan Lain Kuitansi');
@@ -115,7 +115,7 @@ describe('Kuitansi invoice', function (): void {
         $this->get("/i/{$kode}")->assertInertia(fn (AssertableInertia $h) => $h->has('Dokumen.Pelunasan.0.Uuid'));
     });
 
-    it('kuitansi pembayaran milik invoice lain 404; draf tidak punya kuitansi', function (): void {
+    it('kuitansi pembayaran milik invoice lain 404. Draf tidak punya kuitansi', function (): void {
         [$invoice, $pertama] = InvoiceDibayarDuaKaliUji($this);
         $this->post('/kelola/invoice', [
             'Jenis' => 'Penjualan', 'UuidPelanggan' => $this->klien->Uuid, 'UuidOutlet' => $this->k['Outlet']->Uuid, 'Tanggal' => '2026-09-29',
@@ -143,7 +143,7 @@ describe('Kuitansi invoice', function (): void {
             ->where('Kuitansi.SisaSetelah', '4000000.00'));
     });
 
-    it('tanpa izin invoice.kelola kuitansi back-office ditolak; tenant lain 404', function (): void {
+    it('tanpa izin invoice.kelola kuitansi back-office ditolak. Tenant lain 404', function (): void {
         [$invoice, $pertama] = InvoiceDibayarDuaKaliUji($this);
 
         BantuanKatalog::MasukSebagai($this, $this->k['Tenant']->Id, PeranTenantBawaan::Kasir);

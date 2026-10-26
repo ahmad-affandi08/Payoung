@@ -199,7 +199,7 @@ void main() {
     });
   }
 
-  testWidgets('retur offline: pesan jelas bahwa retur butuh internet; tidak ada yang tersimpan', (tester) async {
+  testWidgets('retur offline: pesan jelas bahwa retur butuh internet. Tidak ada yang tersimpan', (tester) async {
     final (u, _) = await MasukRuangKerja(tester, ukuran: ukuranTablet);
     await BukaRiwayat(tester);
     await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Retur dari struk'));

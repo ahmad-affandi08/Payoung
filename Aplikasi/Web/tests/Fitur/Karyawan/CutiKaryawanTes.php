@@ -91,7 +91,7 @@ describe('mencatat dan membatalkan cuti', function (): void {
         expect(CutiKaryawan::query()->count())->toBe(0);
     });
 
-    it('catatan yang bertabrakan ditolak; setelah dibatalkan rentang itu bisa dicatat ulang; pembatalan butuh alasan dan hanya sekali', function (): void {
+    it('catatan yang bertabrakan ditolak. Setelah dibatalkan rentang itu bisa dicatat ulang. Pembatalan butuh alasan dan hanya sekali', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Cuti Tabrakan');
         $rina = Karyawan::query()->create(['Nama' => 'Rina Tabrakan', 'IdOutlet' => $k['Outlet']->Id]);
         $sari = Karyawan::query()->create(['Nama' => 'Sari Lain', 'IdOutlet' => $k['Outlet']->Id]);
@@ -122,7 +122,7 @@ describe('mencatat dan membatalkan cuti', function (): void {
         expect(CutiKaryawan::query()->where('IdKaryawan', $rina->Id)->where('Status', StatusCuti::Aktif->value)->count())->toBe(2);
     });
 
-    it('Kasir hanya boleh melihat daftar tetapi tidak mencatat; tenant lain tidak melihat catatan ini', function (): void {
+    it('Kasir hanya boleh melihat daftar tetapi tidak mencatat. Tenant lain tidak melihat catatan ini', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Cuti Izin');
         $rina = Karyawan::query()->create(['Nama' => 'Rina Izin', 'IdOutlet' => $k['Outlet']->Id]);
         $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
@@ -138,7 +138,7 @@ describe('mencatat dan membatalkan cuti', function (): void {
 });
 
 describe('efek cuti pada rekap gaji', function (): void {
-    it('cuti berbayar bukan tidak masuk; cuti tidak berbayar dan hari tanpa keterangan tetap dihitung; absensi pada hari cuti dinilai biasa', function (): void {
+    it('cuti berbayar bukan tidak masuk. Cuti tidak berbayar dan hari tanpa keterangan tetap dihitung. Absensi pada hari cuti dinilai biasa', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Cuti Gaji');
         $dewi = Karyawan::query()->create([
             'Nama' => 'Dewi Cuti', 'GajiPokok' => '3000000', 'IdOutlet' => $k['Outlet']->Id,
@@ -192,7 +192,7 @@ describe('efek cuti pada notifikasi kehadiran', function (): void {
             ->values();
     }
 
-    it('karyawan yang sedang cuti tidak diingatkan dan tidak diperingatkan belum masuk; setelah cuti dibatalkan pesan berjalan lagi', function (): void {
+    it('karyawan yang sedang cuti tidak diingatkan dan tidak diperingatkan belum masuk. Setelah cuti dibatalkan pesan berjalan lagi', function (): void {
         // Senin 5 Okt 2026, 07.35 WIB: shift 08.00–16.00, pengingat 30 menit sebelumnya.
         $this->travelTo(CarbonImmutable::parse('2026-10-05 07:35:00', 'Asia/Jakarta'));
         $k = BantuanPenjualan::Siapkan($this, 'Kedai Cuti Notifikasi');

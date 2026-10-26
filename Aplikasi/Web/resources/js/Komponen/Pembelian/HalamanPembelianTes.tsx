@@ -212,7 +212,7 @@ function PropsRetur(baris: BarisDetailPenerimaan[] = [BarisPenerimaanRetur()]): 
 }
 
 describe('Pintasan Cetak label barang diterima (PRD-10)', () => {
-    it('satu stiker per satuan dasar; baris tanpa satuan atau jumlah bulat dilewati; kosong = tanpa tautan', () => {
+    it('satu stiker per satuan dasar. Baris tanpa satuan atau jumlah bulat dilewati. Kosong = tanpa tautan', () => {
         expect(
             BuatTautanLabel([
                 BarisPenerimaanRetur(),
@@ -246,14 +246,14 @@ describe('Aturan halaman pembelian (F-04 fase 1)', () => {
         ).toBe('Isi tepat 4 nomor seri.');
     });
 
-    it('alokasi pembayaran tidak boleh melebihi sisa; retur tidak boleh melebihi sisa bisa diretur', () => {
+    it('alokasi pembayaran tidak boleh melebihi sisa. Retur tidak boleh melebihi sisa bisa diretur', () => {
         expect(PeriksaAlokasi('', { Sisa: '1000000.00' })).toBeNull();
         expect(PeriksaAlokasi('1000000.01', { Sisa: '1000000.00' })).toBe('Maksimal Rp 1.000.000 (sisa hutang).');
         expect(PeriksaBarisRetur(BarisPenerimaanRetur(), { Jumlah: '21', NomorSeri: [] })).toBe('Maksimal 20.');
         expect(PeriksaBarisRetur(BarisPenerimaanRetur(), { Jumlah: '20', NomorSeri: [] })).toBeNull();
     });
 
-    it('jatuh tempo = tanggal + termin; keterangan keterlambatan hutang', () => {
+    it('jatuh tempo = tanggal + termin. Keterangan keterlambatan hutang', () => {
         expect(TambahHari('2026-09-24', 30)).toBe('2026-10-24');
         expect(TambahHari('2026-12-20', 14)).toBe('2027-01-03');
         expect(FormatHariLewat(-3)).toBe('3 hari lagi');
@@ -332,7 +332,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         expect(tiruanRouter.visit).toHaveBeenCalledWith('/kelola/pembelian/pemasok');
     });
 
-    it('form pesanan: di atas batas persetujuan tampil peringatan; simpan mengirim PUT dengan baris', () => {
+    it('form pesanan: di atas batas persetujuan tampil peringatan. Simpan mengirim PUT dengan baris', () => {
         RenderUji(
             <HalamanFormPesanan
                 Mode="Ubah"
@@ -394,7 +394,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         );
     });
 
-    it('detail pesanan: tombol mengikuti Tindakan; tolak butuh alasan; ajukan mengirim POST', () => {
+    it('detail pesanan: tombol mengikuti Tindakan. Tolak butuh alasan. Ajukan mengirim POST', () => {
         RenderUji(<HalamanDetailPesanan {...PropsDetail()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Ajukan pesanan' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
@@ -428,7 +428,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         );
     });
 
-    it('detail pesanan: kirim ke WhatsApp pemasok hanya bila diizinkan; riwayat pengiriman berstatus berteks', () => {
+    it('detail pesanan: kirim ke WhatsApp pemasok hanya bila diizinkan. Riwayat pengiriman berstatus berteks', () => {
         RenderUji(<HalamanDetailPesanan {...PropsDetail()} />);
         expect(screen.queryByRole('button', { name: 'Kirim ke WhatsApp pemasok' })).toBeNull();
         expect(screen.queryByRole('list', { name: 'Riwayat pengiriman ke pemasok' })).toBeNull();
@@ -538,7 +538,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         expect((screen.getByLabelText(/Tempo \(hari\)/) as HTMLInputElement).value).toBe('14');
     });
 
-    it('faktur: harga faktur berbeda tampil sebagai selisih; simpan mengirim harga per baris', () => {
+    it('faktur: harga faktur berbeda tampil sebagai selisih. Simpan mengirim harga per baris', () => {
         RenderUji(
             <HalamanFormFaktur
                 OpsiPemasok={[Pemasok]}
@@ -686,7 +686,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
     });
 
-    it('hutang: ringkasan umur tampil; pengaturan hanya bisa disimpan bila berubah', () => {
+    it('hutang: ringkasan umur tampil. Pengaturan hanya bisa disimpan bila berubah', () => {
         RenderUji(
             <HalamanDaftarHutang
                 Hutang={{

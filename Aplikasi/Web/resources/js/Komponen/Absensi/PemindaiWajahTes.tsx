@@ -122,7 +122,7 @@ describe('PemindaiWajah', () => {
         expect(TombolFoto().disabled).toBe(true);
     });
 
-    it('tidak ada wajah: netral dan tombol mati; wajah terlalu jauh: petunjuk posisi', async () => {
+    it('tidak ada wajah: netral dan tombol mati. Wajah terlalu jauh: petunjuk posisi', async () => {
         SiapkanKamera();
         vi.mocked(PindaiWajah).mockResolvedValue({ Penilaian: { Lolos: false, Alasan: 'TidakAdaWajah' }, Sidik: null });
         const hasil = render(
@@ -144,7 +144,7 @@ describe('PemindaiWajah', () => {
         expect(TombolFoto().disabled).toBe(true);
     });
 
-    it('daftar: hijau begitu wajah terbaca (tanpa cek server); foto dikumpulkan satu per ketukan dengan jeda antar-foto', async () => {
+    it('daftar: hijau begitu wajah terbaca (tanpa cek server). Foto dikumpulkan satu per ketukan dengan jeda antar-foto', async () => {
         const SaatSelesai = vi.fn();
         SiapkanKamera();
         render(

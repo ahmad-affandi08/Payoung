@@ -36,7 +36,7 @@ function Terkendali({
 }
 
 describe('RapikanTeksJam', () => {
-    it('membaca ketikan tanpa titik dua & pemisah titik/koma; menolak jam di luar 24 jam', () => {
+    it('membaca ketikan tanpa titik dua & pemisah titik/koma. Menolak jam di luar 24 jam', () => {
         expect(['8', '08', '830', '0830', '1730', '17.30', '17,30', '7:05', '23:59'].map(RapikanTeksJam)).toEqual([
             '08:00',
             '08:00',
@@ -61,7 +61,7 @@ describe('RapikanTeksJam', () => {
 });
 
 describe('PemilihJam', () => {
-    it('ketik 4 angka langsung jadi JJ:MM; ketikan pendek dirapikan saat ditinggalkan; ketikan salah diberi masalah', () => {
+    it('ketik 4 angka langsung jadi JJ:MM. Ketikan pendek dirapikan saat ditinggalkan. Ketikan salah diberi masalah', () => {
         const SaatBerubah = vi.fn();
         render(<Terkendali awal="" saatBerubah={SaatBerubah} />);
         const isian = screen.getByLabelText<HTMLInputElement>('Jam masuk');
@@ -80,7 +80,7 @@ describe('PemilihJam', () => {
         expect(isian.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('klik isian membuka panel: pilih jam lalu menit; pilihan cepat & Sekarang menutup panel', () => {
+    it('klik isian membuka panel: pilih jam lalu menit. Pilihan cepat & Sekarang menutup panel', () => {
         const SaatBerubah = vi.fn();
         render(
             <Terkendali

@@ -32,7 +32,7 @@ void main() {
           {
             'Uuid': 'A1',
             'Judul': 'Pemeliharaan server Sabtu malam',
-            'Isi': 'Sinkron berhenti sebentar; transaksi tetap tersimpan di perangkat.',
+            'Isi': 'Sinkron berhenti sebentar. Transaksi tetap tersimpan di perangkat.',
             'Jenis': 'Pemeliharaan',
             'LabelJenis': 'Pemeliharaan terjadwal',
             'Tautan': null,

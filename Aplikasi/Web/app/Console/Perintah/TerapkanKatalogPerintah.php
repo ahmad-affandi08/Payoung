@@ -15,7 +15,7 @@ final class TerapkanKatalogPerintah extends Command
 {
     protected $signature = 'katalog:terapkan
         {--kering : Hanya tampilkan rencana, jangan ubah data}
-        {--tanpa-pelanggan-lama : Harga baru hanya untuk langganan baru; langganan yang sudah ada tetap memakai harga lamanya}
+        {--tanpa-pelanggan-lama : Harga baru hanya untuk langganan baru. Langganan yang sudah ada tetap memakai harga lamanya}
         {--tanpa-aktifkan-addon : Jangan mengaktifkan add-on yang masih diarsipkan}';
 
     protected $description = 'Menerapkan harga paket, add-on, dan fitur katalog dari berkas data rilis ke server (langsung terbit, berlaku untuk tenant yang sudah ada pada tagihan berikutnya).';

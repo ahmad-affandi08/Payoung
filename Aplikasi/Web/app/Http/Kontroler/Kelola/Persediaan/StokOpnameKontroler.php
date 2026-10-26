@@ -66,7 +66,7 @@ final class StokOpnameKontroler extends DasarDokumenPersediaanKontroler
         );
 
         return redirect()->route(self::ALAMAT, ['stokOpname' => $opname->Uuid])
-            ->with('Kilat', "Stok opname {$opname->Nomor} dimulai. Transaksi tetap berjalan; selisih dihitung dari saldo saat ini.");
+            ->with('Kilat', "Stok opname {$opname->Nomor} dimulai. Transaksi tetap berjalan. Selisih dihitung dari saldo saat ini.");
     }
 
     public function Detail(string $stokOpname, DetailStokOpname $detail): Response

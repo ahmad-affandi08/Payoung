@@ -109,7 +109,7 @@ final class PembuatPengirimWhatsapp
             // Didekripsi eksplisit (bukan lewat cast) agar kunci APP_KEY yang salah tertangkap di sini.
             $isi = json_decode(Crypt::decryptString((string) $baris->getRawOriginal('Kredensial')), true);
         } catch (DecryptException) {
-            Log::error('Kredensial WhatsApp tenant tidak bisa didekripsi; periksa APP_KEY/APP_PREVIOUS_KEYS.', ['IdTenant' => $baris->IdTenant]);
+            Log::error('Kredensial WhatsApp tenant tidak bisa didekripsi. Periksa APP_KEY/APP_PREVIOUS_KEYS.', ['IdTenant' => $baris->IdTenant]);
 
             return null;
         }

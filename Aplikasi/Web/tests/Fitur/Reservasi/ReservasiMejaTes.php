@@ -69,7 +69,7 @@ function AkunKasUji(): string
     return app(DaftarAkunPilihan::class)->AmbilKasBank()[0]['Uuid'];
 }
 
-it('buat reservasi: meja terkunci, nomor RM, riwayat & audit; kapasitas kurang dan bentrok ditolak', function (): void {
+it('buat reservasi: meja terkunci, nomor RM, riwayat & audit. Kapasitas kurang dan bentrok ditolak', function (): void {
     $k = SiapkanKedai($this);
 
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors()->assertSessionHas('Kilat', 'Reservasi RM/2026/10/0001 dicatat.');
@@ -112,7 +112,7 @@ it('buat reservasi: meja terkunci, nomor RM, riwayat & audit; kapasitas kurang d
     expect($json->json('Meta.Total'))->toBe(1)->and($json->json('Data.0.NamaPemesan'))->toBe('Ibu Sari');
 });
 
-it('uang muka dibukukan sebagai kewajiban; satu DP per reservasi; dikembalikan atau hangus menutup saldo', function (): void {
+it('uang muka dibukukan sebagai kewajiban. Satu DP per reservasi. Dikembalikan atau hangus menutup saldo', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors();
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k, ['UuidMeja' => $k['Meja9']->Uuid, 'JumlahTamu' => 2, 'NamaPemesan' => 'Mbak Rina']))->assertSessionHasNoErrors();
@@ -160,7 +160,7 @@ it('uang muka dibukukan sebagai kewajiban; satu DP per reservasi; dikembalikan a
     $this->put("/kelola/reservasi-meja/{$satu->Uuid}", IsianReservasiMeja($k, ['Jam' => '20:00']))->assertSessionHasErrors('Status');
 });
 
-it('status: Sudah datang butuh meja; Batal butuh alasan; transisi tak sah ditolak', function (): void {
+it('status: Sudah datang butuh meja; Batal butuh alasan. Transisi tak sah ditolak', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k, ['UuidMeja' => '']))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -179,7 +179,7 @@ it('status: Sudah datang butuh meja; Batal butuh alasan; transisi tak sah ditola
         ->and(RiwayatStatusDokumen::query()->where('JenisDokumen', 'ReservasiMeja')->where('IdDokumen', $r->Id)->orderBy('Id')->pluck('StatusKe')->all())->toBe(['Dikonfirmasi', 'Hadir']);
 });
 
-it('izin: kasir 403, supervisor boleh; reservasi tenant lain 404', function (): void {
+it('izin: kasir 403, supervisor boleh. Reservasi tenant lain 404', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -213,7 +213,7 @@ function ItemBayarReservasiMeja(array $k, ReservasiMeja|string $reservasi, strin
     ], ['UuidReservasiMeja' => $reservasi instanceof ReservasiMeja ? $reservasi->Uuid : $reservasi]);
 }
 
-it('kasir: antrian, tamu datang, bayar memotong uang muka & menyelesaikan reservasi; void mengembalikan DP', function (): void {
+it('kasir: antrian, tamu datang, bayar memotong uang muka & menyelesaikan reservasi. Void mengembalikan DP', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -270,7 +270,7 @@ it('kasir: antrian, tamu datang, bayar memotong uang muka & menyelesaikan reserv
         ->and(BantuanPembelian::PeriksaInvarian($idTenant))->toBe([]);
 });
 
-it('kasir: uang muka melebihi sisa, reservasi tak dikenal/berakhir = penjualan tetap diterima + tinjauan; tanpa rujukan ditolak', function (): void {
+it('kasir: uang muka melebihi sisa, reservasi tak dikenal/berakhir = penjualan tetap diterima + tinjauan, tanpa rujukan ditolak', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($idTenant = $k['Tenant']->Id);
@@ -306,7 +306,7 @@ it('kasir: uang muka melebihi sisa, reservasi tak dikenal/berakhir = penjualan t
     expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$tanpa]))->toBe([['Ditolak', 'UangMukaTanpaPesanan']]);
 });
 
-it('kasir: tamu datang butuh meja; kasir menempatkan tamu di meja yang cukup dan bebas, bahkan setelah jam lewat', function (): void {
+it('kasir: tamu datang butuh meja. Kasir menempatkan tamu di meja yang cukup dan bebas, bahkan setelah jam lewat', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k, ['UuidMeja' => '', 'JumlahTamu' => 3]))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -325,7 +325,7 @@ it('kasir: tamu datang butuh meja; kasir menempatkan tamu di meja yang cukup dan
     expect($r->refresh()->IdMeja)->toBe($k['Meja']->Id);
 });
 
-it('kasir: pengguna tanpa izin 403; reservasi outlet lain 404', function (): void {
+it('kasir: pengguna tanpa izin 403. Reservasi outlet lain 404', function (): void {
     $k = SiapkanKedai($this);
     $this->post('/kelola/reservasi-meja', IsianReservasiMeja($k))->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

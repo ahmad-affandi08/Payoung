@@ -101,7 +101,7 @@ export default function HalamanDaftarPemasok({ Pemasok, Izin }: PropsDaftarPemas
         <TataLetakAplikasi judul="Pemasok">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Daftar pemasok untuk pesanan pembelian, penerimaan barang, dan hutang. Termin bawaan dipakai untuk
-                menghitung jatuh tempo faktur. Pemasok yang sudah dipakai tidak bisa dihapus; nonaktifkan saja.
+                menghitung jatuh tempo faktur. Pemasok yang sudah dipakai tidak bisa dihapus. Nonaktifkan saja.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman>{tombolTambah}</AksiHalaman>
@@ -191,7 +191,7 @@ export default function HalamanDaftarPemasok({ Pemasok, Izin }: PropsDaftarPemas
                         })
                     }
                 >
-                    <p>Pemasok yang sudah dipakai di dokumen pembelian tidak bisa dihapus; nonaktifkan saja.</p>
+                    <p>Pemasok yang sudah dipakai di dokumen pembelian tidak bisa dihapus. Nonaktifkan saja.</p>
                 </DialogKonfirmasi>
             ) : null}
         </TataLetakAplikasi>

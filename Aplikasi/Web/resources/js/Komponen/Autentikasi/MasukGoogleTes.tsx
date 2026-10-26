@@ -19,7 +19,7 @@ afterEach(() => cleanup());
 const paket = [{ Kode: 'PRO', Nama: 'Pro', MasaTrialHari: 14 }];
 
 describe('tombol Google di halaman masuk & daftar', () => {
-    it('masuk: tombol mengarah ke /masuk/google dan memakai logo; tanpa integrasi tombol tidak ada', () => {
+    it('masuk: tombol mengarah ke /masuk/google dan memakai logo, tanpa integrasi tombol tidak ada', () => {
         RenderUji(<HalamanMasuk MasukGoogle />);
 
         const tautan = screen.getByRole('link', { name: 'Masuk dengan Google' });
@@ -49,7 +49,7 @@ describe('tombol Google di halaman masuk & daftar', () => {
 });
 
 describe('lengkapi pendaftaran Google', () => {
-    it('menampilkan email Google, tanpa kolom email/kata sandi/CAPTCHA; mengirim ke /daftar/google', () => {
+    it('menampilkan email Google, tanpa kolom email/kata sandi/CAPTCHA. Mengirim ke /daftar/google', () => {
         kirimanForm.length = 0;
         RenderUji(
             <HalamanLengkapiGoogle

@@ -138,7 +138,7 @@ describe('D-105 transfer menjawab permintaan', function (): void {
         expect($p->refresh()->Status)->toBe(StatusPermintaanStok::Selesai);
     });
 
-    it('produk di luar permintaan boleh ikut dikirim tetapi tidak dihitung; permintaan lain outlet ditolak', function (): void {
+    it('produk di luar permintaan boleh ikut dikirim tetapi tidak dihitung. Permintaan lain outlet ditolak', function (): void {
         $t = SiapkanPermintaan();
         $p = AjukanPermintaanUji($t, [BarisPermintaanUji($t['Produk']['Stok'], '30')]);
         $lain = B::BuatOutlet('KLATEN', 'Cabang Klaten');
@@ -156,7 +156,7 @@ describe('D-105 transfer menjawab permintaan', function (): void {
 });
 
 describe('D-105 mengakhiri permintaan', function (): void {
-    it('peminta membatalkan, pengirim menolak, keduanya wajib beralasan; hanya saat Diajukan', function (): void {
+    it('peminta membatalkan, pengirim menolak, keduanya wajib beralasan. Hanya saat Diajukan', function (): void {
         $t = SiapkanPermintaan();
         $a = AjukanPermintaanUji($t, [BarisPermintaanUji($t['Produk']['Stok'], '5')]);
         $b = AjukanPermintaanUji($t, [BarisPermintaanUji($t['Produk']['Stok'], '6')]);
@@ -172,7 +172,7 @@ describe('D-105 mengakhiri permintaan', function (): void {
             ->and(B::KodeGalat(fn () => B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '5')], uuidPermintaanStok: $b->Uuid)))->toBe('PermintaanSudahBerakhir');
     });
 
-    it('menutup sisa hanya setelah sebagian terkirim; permintaan yang ditutup tidak menerima pengiriman draf lama', function (): void {
+    it('menutup sisa hanya setelah sebagian terkirim. Permintaan yang ditutup tidak menerima pengiriman draf lama', function (): void {
         $t = SiapkanPermintaan();
         $p = AjukanPermintaanUji($t, [BarisPermintaanUji($t['Produk']['Stok'], '30')]);
         $drafLama = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '5')], uuidPermintaanStok: $p->Uuid);

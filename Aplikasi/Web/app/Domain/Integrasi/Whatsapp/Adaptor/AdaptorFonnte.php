@@ -29,7 +29,7 @@ final class AdaptorFonnte extends AdaptorWhatsappDasar
         $status = (string) ($respons->json('device_status') ?? '');
 
         return $status === 'connect'
-            ? HasilUjiLayanan::Berhasil('Token diterima; perangkat Fonnte tersambung.')
+            ? HasilUjiLayanan::Berhasil('Token diterima. Perangkat Fonnte tersambung.')
             : HasilUjiLayanan::Gagal("Token diterima, tetapi perangkat Fonnte belum tersambung ({$status}). Pindai ulang QR di dasbor Fonnte.");
     }
 

@@ -48,7 +48,7 @@ export default function PanelKesiapanAkun({ kesiapan }: { kesiapan: KesiapanAkun
                     </div>
                     <p className="text-keterangan">
                         Akun yang belum ada dilengkapi dari pengaturan standar jenis usaha Anda. Pengaturan yang sudah
-                        ada tidak diubah; detailnya bisa dilihat di{' '}
+                        ada tidak diubah. Detailnya bisa dilihat di{' '}
                         <Link href="/kelola/akuntansi/pemetaan" className="font-semibold text-brand underline">
                             Pemetaan akun
                         </Link>

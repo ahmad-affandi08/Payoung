@@ -42,7 +42,7 @@ function AmbilPesanTerkirim(): array
     return Http::recorded()->map(fn (array $r): string => (string) $r[0]['message'])->values()->all();
 }
 
-it('ambil sendiri: pembeli dikabari saat dikonfirmasi dan saat siap diambil, dengan tautan status; tidak untuk Diproses', function (): void {
+it('ambil sendiri: pembeli dikabari saat dikonfirmasi dan saat siap diambil, dengan tautan status. Tidak untuk Diproses', function (): void {
     Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9101']])]);
     $k = BantuanTokoOnline::Siapkan($this);
     $p = BuatPesananUntukNotifikasi($k);
@@ -82,7 +82,7 @@ it('kirim: Siap tidak dikabarkan, kurir berangkat dikabarkan "dalam perjalanan"'
     expect($pesan)->toHaveCount(2)->and($pesan[1])->toContain('sedang dalam perjalanan ke alamat Anda');
 });
 
-it('ditolak dan kedaluwarsa dikabarkan; satu pesan per peristiwa walau dipicu ulang', function (): void {
+it('ditolak dan kedaluwarsa dikabarkan. Satu pesan per peristiwa walau dipicu ulang', function (): void {
     Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['9103']])]);
     $k = BantuanTokoOnline::Siapkan($this);
     $ditolak = BuatPesananUntukNotifikasi($k);

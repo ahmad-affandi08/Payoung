@@ -61,7 +61,7 @@ describe('Rekonsiliasi bank (FIN-09, v3.39)', () => {
     });
     afterEach(() => cleanup());
 
-    it('ringkasan selisih dan jumlah kandidat; cocokkan otomatis', () => {
+    it('ringkasan selisih dan jumlah kandidat. Cocokkan otomatis', () => {
         RenderUji(<HalamanRekonsiliasiBank {...Props()} />);
         expect(screen.getByText('−Rp 15.000')).toBeTruthy();
         expect(screen.getAllByText('1 kemungkinan pasangan di buku').length).toBeGreaterThan(0);

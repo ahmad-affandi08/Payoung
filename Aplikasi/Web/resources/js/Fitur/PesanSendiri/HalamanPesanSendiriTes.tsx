@@ -253,7 +253,7 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
         expect(JSON.parse(window.localStorage.getItem(`pesan-sendiri:${props.Token}:keranjang`) ?? '[]')).toEqual([]);
     });
 
-    it('status ditolak menampilkan alasan; offline menampilkan peringatan', async () => {
+    it('status ditolak menampilkan alasan. Offline menampilkan peringatan', async () => {
         window.localStorage.setItem(
             `pesan-sendiri:${props.Token}:pesanan`,
             JSON.stringify(['01J8Z0A1B2C3D4E5F6G7H8J9K0']),
@@ -272,7 +272,7 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
         expect(screen.getByText(/Tidak ada koneksi internet/)).toBeTruthy();
     });
 
-    it('v2.06 varian wajib dipilih (varian tanpa harga nonaktif); keranjang menampilkan nama varian dan perkiraan total dari server', async () => {
+    it('v2.06 varian wajib dipilih (varian tanpa harga nonaktif). Keranjang menampilkan nama varian dan perkiraan total dari server', async () => {
         // Test sebelumnya memicu event offline; status online TanStack Query bersifat global, jadi dipulihkan.
         onlineManager.setOnline(true);
         const panggilan = PasangFetch();
@@ -310,7 +310,7 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
             UuidVarian: 'ESTEH-JUMBO',
         });
     });
-    it('SLS-04: tanpa QRIS tombol bayar sekarang tidak ada; dengan QRIS ada dan membuka layar QR sampai lunas', async () => {
+    it('SLS-04: tanpa QRIS tombol bayar sekarang tidak ada, dengan QRIS ada dan membuka layar QR sampai lunas', async () => {
         const panggilan = PasangFetch({ Status: 'MenungguKonfirmasi', AlasanTolak: null }, true);
         RenderUji(<HalamanPesanSendiri {...props} Pembayaran={{ Qris: true }} />);
 
@@ -361,7 +361,7 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
         expect(screen.getByRole('button', { name: 'Kirim pesanan' })).toBeTruthy();
     });
 
-    it('BR-17.2: menu disegarkan berkala; produk yang ditandai habis hilang dari daftar', async () => {
+    it('BR-17.2: menu disegarkan berkala. Produk yang ditandai habis hilang dari daftar', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         PasangFetch();
         RenderUji(<HalamanPesanSendiri {...props} />);

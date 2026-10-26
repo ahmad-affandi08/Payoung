@@ -80,7 +80,7 @@ describe('Kotak Tindakan (D-23 C)', () => {
     });
     afterEach(() => cleanup());
 
-    it('beranda: maksimal 5 butir dengan tautan ke Kotak Tindakan; tanpa butir tidak tampil', () => {
+    it('beranda: maksimal 5 butir dengan tautan ke Kotak Tindakan, tanpa butir tidak tampil', () => {
         const butir = ['a', 'b', 'c', 'd', 'e', 'f'].map((k) => BuatButir(k, 'Info'));
         render(<RingkasTindakan butir={butir} />);
 
@@ -95,7 +95,7 @@ describe('Kotak Tindakan (D-23 C)', () => {
         expect(container.innerHTML).toBe('');
     });
 
-    it('butir Penting terbuka; pilih rincian lalu tandai sudah dicek mengirim Jenis & Uuid', () => {
+    it('butir Penting terbuka. Pilih rincian lalu tandai sudah dicek mengirim Jenis & Uuid', () => {
         render(
             <HalamanKotakTindakan Butir={[penjualan, BuatButir('stok.kritis', 'Perhatian')]} Izin={{ Tandai: true }} />,
         );
@@ -112,7 +112,7 @@ describe('Kotak Tindakan (D-23 C)', () => {
         expect(screen.getByRole('button', { name: 'Tandai sudah dicek (2)' })).toBeTruthy();
     });
 
-    it('butir yang tidak bisa ditandai tidak punya kotak centang; kosong = "Semua beres"', () => {
+    it('butir yang tidak bisa ditandai tidak punya kotak centang. Kosong = "Semua beres"', () => {
         render(
             <HalamanKotakTindakan
                 Butir={[{ ...penjualan, BolehTandai: false, Tingkat: 'Perhatian' }]}
@@ -128,7 +128,7 @@ describe('Kotak Tindakan (D-23 C)', () => {
         expect(screen.getByText('Semua beres')).toBeTruthy();
     });
 
-    it('D-23 D: ringkasan pagi lewat WhatsApp bisa dimatikan; akun tanpa nomor HP tidak bisa mengaktifkan', () => {
+    it('D-23 D: ringkasan pagi lewat WhatsApp bisa dimatikan. Akun tanpa nomor HP tidak bisa mengaktifkan', () => {
         render(
             <HalamanKotakTindakan
                 Butir={[]}

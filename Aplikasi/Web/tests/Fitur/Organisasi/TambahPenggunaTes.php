@@ -83,7 +83,7 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
             ->assertJsonPath('Pengguna.Nama', 'Siti Kasir');
     });
 
-    it('karyawan tanpa email wajib PIN kuat; email wajib disertai kata sandi awal', function (): void {
+    it('karyawan tanpa email wajib PIN kuat. Email wajib disertai kata sandi awal', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
 

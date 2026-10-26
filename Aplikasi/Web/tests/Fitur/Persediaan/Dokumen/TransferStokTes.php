@@ -147,7 +147,7 @@ describe('F-05b transfer stok: status & alur', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('terima penuh sekaligus langsung Diterima; jurnal terima Dr persediaan tujuan (outlet tujuan) / Cr PDP (outlet asal)', function (): void {
+    it('terima penuh sekaligus langsung Diterima. Jurnal terima Dr persediaan tujuan (outlet tujuan) / Cr PDP (outlet asal)', function (): void {
         $t = SiapkanTransfer();
         $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '10'), B::Baris($t['Produk']['BahanBaku'], '0.5')]), $t['Pemilik']->Id);
         $transfer = app(TerimaTransferStok::class)->Jalankan($transfer, [new DataTerimaTransfer(1, Kuantitas::Dari('10')), new DataTerimaTransfer(2, Kuantitas::Dari('0.5'))], CarbonImmutable::parse(B::Kemarin()), $t['Pemilik']->Id);
@@ -163,7 +163,7 @@ describe('F-05b transfer stok: status & alur', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('batal hanya sebelum dikirim; stok asal tidak cukup = StokTidakCukup tanpa perubahan', function (): void {
+    it('batal hanya sebelum dikirim. Stok asal tidak cukup = StokTidakCukup tanpa perubahan', function (): void {
         $t = SiapkanTransfer();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '150')]);
 
@@ -199,7 +199,7 @@ describe('F-05b transfer stok: penilaian HPP kirim/terima', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 
-    it('FIFO: kirim mengambil lapisan tertua; nilai kirim = nilai terima', function (): void {
+    it('FIFO: kirim mengambil lapisan tertua. Nilai kirim = nilai terima', function (): void {
         $t = SiapkanTransfer(MetodeHpp::Fifo);
         $ps = B::DrafPenyesuaian($t['Gudang'], AlasanPenyesuaian::Lainnya, [B::Baris($t['Produk']['Stok'], '10', '41000')], 'Stok titipan lama ditemukan');
         app(AjukanPenyesuaianStok::class)->Jalankan($ps, $t['Pemilik']->Id);

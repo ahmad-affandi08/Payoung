@@ -24,7 +24,7 @@ beforeEach(function (): void {
 afterEach(fn () => Carbon::setTestNow());
 
 describe('F-15 tutup bulan: kunci & buka kunci periode', function (): void {
-    it('daftar 24 periode; kunci September → jurnal September ditolak, Oktober tetap bisa; audit tercatat', function (): void {
+    it('daftar 24 periode. Kunci September → jurnal September ditolak, Oktober tetap bisa. Audit tercatat', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Pemilik);
 
@@ -69,7 +69,7 @@ describe('F-15 tutup bulan: kunci & buka kunci periode', function (): void {
         expect(KunciPeriode::query()->pluck('Periode')->all())->toBe(['2026-08']);
     });
 
-    it('buka kunci wajib alasan, tercatat audit dengan siapa & kapan dikunci; setelah dibuka jurnal bisa lagi', function (): void {
+    it('buka kunci wajib alasan, tercatat audit dengan siapa & kapan dikunci. Setelah dibuka jurnal bisa lagi', function (): void {
         $t = BantuanPersediaan::SiapkanTenant();
         BantuanPersediaan::KunciPeriode('2026-08', $t['Pemilik']->Id);
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Pemilik);
@@ -89,7 +89,7 @@ describe('F-15 tutup bulan: kunci & buka kunci periode', function (): void {
             ->and(Jurnal::query()->count())->toBe(1);
     });
 
-    it('izin: Kasir tidak bisa melihat; tanpa akuntansi.kelola tidak bisa mengunci; kunci tenant lain tidak berpengaruh', function (): void {
+    it('izin: Kasir tidak bisa melihat, tanpa akuntansi.kelola tidak bisa mengunci. Kunci tenant lain tidak berpengaruh', function (): void {
         $a = BantuanPersediaan::SiapkanTenant('Kopi Senja Solo');
         $b = BantuanPersediaan::SiapkanTenant('Warung Bakso Pak Kumis');
 

@@ -44,7 +44,7 @@ export default function PanelRiwayat({
                     <SheetTitle className="text-judul font-semibold text-teks-utama">Riwayat versi</SheetTitle>
                     <SheetDescription className="text-isi text-teks-sekunder">
                         Setiap kali halaman diterbitkan, salinannya disimpan di sini. Memulihkan versi menaruh isinya di
-                        draf; situs publik tidak berubah sampai Anda menerbitkan lagi.
+                        draf. Situs publik tidak berubah sampai Anda menerbitkan lagi.
                     </SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col gap-2 px-4 pb-6">

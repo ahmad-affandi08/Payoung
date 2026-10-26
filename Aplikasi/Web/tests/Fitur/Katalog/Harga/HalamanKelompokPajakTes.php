@@ -37,7 +37,7 @@ describe('F-03 halaman kelompok pajak (E.8, §12.2)', function (): void {
                 ->where('Izin.KelolaPajak', false));
     });
 
-    it('halaman tambah (halaman penuh): opsi jenis pajak, kategori, dasar pengenaan; tanpa daftar kelompok; Kasir & Manajer 403', function (): void {
+    it('halaman tambah (halaman penuh): opsi jenis pajak, kategori, dasar pengenaan, tanpa daftar kelompok; Kasir & Manajer 403', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Akuntan)->get('/kelola/kelompok-pajak/buat')->assertOk()
             ->assertInertia(fn (AssertableInertia $h) => $h->component('Kelola/KelompokPajak/Buat')
                 ->has('JenisPajak', 3)
@@ -49,7 +49,7 @@ describe('F-03 halaman kelompok pajak (E.8, §12.2)', function (): void {
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->get('/kelola/kelompok-pajak/buat')->assertForbidden();
     });
 
-    it('Akuntan membuat dan mengubah kelompok pajak; masalah konsistensi kategori di bidang Pajak', function (): void {
+    it('Akuntan membuat dan mengubah kelompok pajak. Masalah konsistensi kategori di bidang Pajak', function (): void {
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Akuntan);
 
         $masuk()->from('/kelola/kelompok-pajak/buat')->post('/kelola/kelompok-pajak', ['Nama' => 'Makan & minum', 'Kategori' => 'KenaPbjt', 'Pajak' => [
@@ -68,7 +68,7 @@ describe('F-03 halaman kelompok pajak (E.8, §12.2)', function (): void {
         expect($kelompok->refresh()->Nama)->toBe('Makan & minum dine-in');
     });
 
-    it('izin & isolasi: Kasir/Manajer 403 saat menyimpan; kelompok tenant lain 404', function (): void {
+    it('izin & isolasi: Kasir/Manajer 403 saat menyimpan. Kelompok tenant lain 404', function (): void {
         $body = ['Nama' => 'Non-pajak', 'Kategori' => 'NonPajak', 'Pajak' => []];
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::Kasir)->post('/kelola/kelompok-pajak', $body)->assertForbidden();
         BantuanKatalog::MasukSebagai($this, $this->t['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)

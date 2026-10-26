@@ -102,7 +102,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         expect(nav.querySelector('a[href="/kelola/persediaan/kartu-stok"]')?.textContent).toBe('Per produk');
     });
 
-    it('awal: ajakan mencari; kirim pencarian ke server dengan query cari', () => {
+    it('awal: ajakan mencari. Kirim pencarian ke server dengan query cari', () => {
         RenderUji(<HalamanNomorSeri {...Props()} />);
         expect(screen.getByText(/Masukkan nomor seri atau IMEI/)).toBeTruthy();
 
@@ -138,7 +138,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         expect(tiruan.opsiTerakhir()).toMatchObject({ jenisKode: 'Seri' });
     });
 
-    it('hasil: status, keterangan jual & garansi; total melebihi batas diberi catatan dan tautan ekspor', () => {
+    it('hasil: status, keterangan jual & garansi. Total melebihi batas diberi catatan dan tautan ekspor', () => {
         RenderUji(
             <HalamanNomorSeri
                 {...Props({
@@ -208,7 +208,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         expect(screen.queryByRole('link', { name: 'Ponsel Android 8/256 GB Hitam' })).toBeNull();
     });
 
-    it('unit tersedia: lokasi stok dan kartu stok menyertakan lokasi; tanpa hasil ada pesan kosong', () => {
+    it('unit tersedia: lokasi stok dan kartu stok menyertakan lokasi, tanpa hasil ada pesan kosong', () => {
         RenderUji(
             <HalamanNomorSeri
                 {...Props({
@@ -230,7 +230,7 @@ describe('Kelola/Persediaan/NomorSeri (F-05h)', () => {
         expect(screen.getByText('Nomor seri tidak ditemukan.')).toBeTruthy();
     });
 
-    it('filter produk: penanda produk dan tautan melepas filter; tab membawa produk', () => {
+    it('filter produk: penanda produk dan tautan melepas filter. Tab membawa produk', () => {
         RenderUji(
             <HalamanNomorSeri
                 {...Props({

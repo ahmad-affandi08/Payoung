@@ -45,7 +45,7 @@ describe('TataLetakPengelola: menu sesuai izin, penanda lingkungan, banner (P-01
         document.cookie = 'sidebar_state=; path=/; max-age=0';
     });
 
-    it('menu utama hanya berisi item yang diizinkan; menu aktif menurut segmen pertama URL', () => {
+    it('menu utama hanya berisi item yang diizinkan. Menu aktif menurut segmen pertama URL', () => {
         propsHalaman = BuatProps(['katalog.lihat', 'audit.lihat']);
         urlHalaman = '/katalog/addon';
         render(

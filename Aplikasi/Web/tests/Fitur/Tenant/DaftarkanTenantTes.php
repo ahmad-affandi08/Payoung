@@ -56,7 +56,7 @@ describe('Pendaftaran tenant (F-00)', function (): void {
         expect(Tenant::query()->orderBy('Id')->pluck('Slug')->all())->toBe(['kopi-nusantara', 'kopi-nusantara-2', 'kelola-usaha']);
     });
 
-    it('BR-00.1: email dan nomor WhatsApp unik; pendaftaran gagal tidak meninggalkan data', function (): void {
+    it('BR-00.1: email dan nomor WhatsApp unik. Pendaftaran gagal tidak meninggalkan data', function (): void {
         app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data());
 
         expect(fn () => app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data(noHp: '081299999999')))
@@ -96,7 +96,7 @@ describe('Pendaftaran tenant (F-00)', function (): void {
         Mail::assertQueued(UpayaPendaftaranAkunTerdaftar::class, fn (UpayaPendaftaranAkunTerdaftar $surel) => $surel->hasTo('budi@toko.id') && $surel->identitas === ['nomor WhatsApp']);
     });
 
-    it('BR-00.6: paket pilihan dipakai bila aktif; GRATIS langsung berstatus Gratis; negosiasi memakai paket bawaan', function (): void {
+    it('BR-00.6: paket pilihan dipakai bila aktif; GRATIS langsung berstatus Gratis. Negosiasi memakai paket bawaan', function (): void {
         $starter = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data(kodePaket: 'STARTER'))['Tenant'];
         $gratis = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data('b@contoh.id', '081200000010', 'GRATIS'))['Tenant'];
         $enterprise = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data('c@contoh.id', '081200000011', 'ENTERPRISE'))['Tenant'];
@@ -114,7 +114,7 @@ describe('Pendaftaran tenant (F-00)', function (): void {
             ->and(Tenant::query()->count())->toBe(0);
     });
 
-    it('isolasi tenant: data organisasi tenant A tidak terlihat dari konteks tenant B; tanpa konteks gagal tertutup', function (): void {
+    it('isolasi tenant: data organisasi tenant A tidak terlihat dari konteks tenant B, tanpa konteks gagal tertutup', function (): void {
         $a = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data())['Tenant'];
         $b = app(DaftarkanTenant::class)->Jalankan(BantuanPendaftaran::Data('budi@toko.id', '081200000077', namaUsaha: 'Toko Budi'))['Tenant'];
         $konteks = app(KonteksTenant::class);

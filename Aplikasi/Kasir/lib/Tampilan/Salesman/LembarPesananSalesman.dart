@@ -33,7 +33,7 @@ class LembarPesananSalesman extends ConsumerStatefulWidget {
   const LembarPesananSalesman({super.key, required this.staf, required this.uuidPelanggan, required this.saatTerkirim});
 
   static const String judul = 'Ambil pesanan';
-  static const String keteranganPerkiraan = 'Perkiraan; harga final dari kantor';
+  static const String keteranganPerkiraan = 'Perkiraan. Harga final dari kantor';
 
   final StafLokal staf;
   final String uuidPelanggan;
@@ -318,7 +318,7 @@ class _LembarPesananSalesmanState extends ConsumerState<LembarPesananSalesman> {
             ),
             Text(
               stok.diambilPada == null
-                  ? 'Stok kantor belum pernah diunduh; stok tidak menahan pesanan.'
+                  ? 'Stok kantor belum pernah diunduh. Stok tidak menahan pesanan.'
                   : 'Stok kantor per ${FormatWaktu.FormatTanggalJam(stok.diambilPada!)}; hanya petunjuk.',
               style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
             ),

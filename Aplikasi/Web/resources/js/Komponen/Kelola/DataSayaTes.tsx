@@ -49,7 +49,7 @@ describe('E5 halaman Data saya', () => {
         ]);
     });
 
-    it('ekspor siap menampilkan ringkasan dan tombol unduh; ekspor berjalan mengunci tombol minta', () => {
+    it('ekspor siap menampilkan ringkasan dan tombol unduh. Ekspor berjalan mengunci tombol minta', () => {
         RenderUji(<HalamanDataSaya Ekspor={[baris]} Penghapusan={penghapusan} PerluKataSandi />);
 
         expect(screen.getByText('Siap diunduh')).toBeTruthy();
@@ -70,7 +70,7 @@ describe('E5 halaman Data saya', () => {
         expect(screen.queryByRole('button', { name: 'Unduh' })).toBeNull();
     });
 
-    it('tutup akun: tombol terkunci sampai ekspor diunduh; formulir meminta kata sandi dan frasa konfirmasi lalu mengirim POST', () => {
+    it('tutup akun: tombol terkunci sampai ekspor diunduh. Formulir meminta kata sandi dan frasa konfirmasi lalu mengirim POST', () => {
         RenderUji(
             <HalamanDataSaya Ekspor={[]} Penghapusan={{ ...penghapusan, EksporSudahDiunduh: false }} PerluKataSandi />,
         );
@@ -95,7 +95,7 @@ describe('E5 halaman Data saya', () => {
         expect(kiriman?.data).toMatchObject({ KataSandi: 'kata-sandi-uji', Konfirmasi: 'HAPUS DATA' });
     });
 
-    it('akun Google tanpa kata sandi tidak diminta kata sandi; permintaan menunggu menampilkan tanggal dan tombol batal', () => {
+    it('akun Google tanpa kata sandi tidak diminta kata sandi. Permintaan menunggu menampilkan tanggal dan tombol batal', () => {
         RenderUji(<HalamanDataSaya Ekspor={[]} Penghapusan={penghapusan} PerluKataSandi={false} />);
         fireEvent.click(screen.getByRole('button', { name: 'Ajukan penghapusan data' }));
         expect(screen.queryByLabelText(/Kata sandi Anda/, { selector: 'input' })).toBeNull();

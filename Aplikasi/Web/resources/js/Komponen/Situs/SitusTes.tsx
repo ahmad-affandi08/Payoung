@@ -56,7 +56,7 @@ function BuatSitus(tambahan: Partial<DataSitus> = {}): DataSitus {
 afterEach(cleanup);
 
 describe('Situs pemasaran D-21: utilitas', () => {
-    it('tautan halaman situs lewat Inertia; jalur sistem, domain lain, dan pintasan eksternal tidak', () => {
+    it('tautan halaman situs lewat Inertia. Jalur sistem, domain lain, dan pintasan eksternal tidak', () => {
         expect(CekTautanHalamanSitus('/fitur')).toBe(true);
         expect(CekTautanHalamanSitus('/solusi/kafe-resto#harga')).toBe(true);
         expect(CekTautanHalamanSitus('/legal/kebijakan-privasi')).toBe(false);
@@ -270,7 +270,7 @@ describe('Situs pemasaran D-21: tata letak & blok', () => {
         expect(banner.className).not.toContain('fixed');
     });
 
-    it('pratinjau menampilkan penanda draf; tanpa nomor WhatsApp tidak ada tombol melayang', () => {
+    it('pratinjau menampilkan penanda draf, tanpa nomor WhatsApp tidak ada tombol melayang', () => {
         situs = BuatSitus({ WhatsAppMelayang: false, Pengumuman: null });
         render(
             <TataLetakSitus judul="Uji" pratinjau>
@@ -282,7 +282,7 @@ describe('Situs pemasaran D-21: tata letak & blok', () => {
         expect(screen.queryByRole('link', { name: 'Chat WhatsApp' })).toBeNull();
     });
 
-    it('Hero pertama memakai h1; FAQ bisa dibuka; harga bulanan/tahunan, gratis, dan harga negosiasi', () => {
+    it('Hero pertama memakai h1; FAQ bisa dibuka. Harga bulanan/tahunan, gratis, dan harga negosiasi', () => {
         situs = BuatSitus();
         render(
             <RenderBagian

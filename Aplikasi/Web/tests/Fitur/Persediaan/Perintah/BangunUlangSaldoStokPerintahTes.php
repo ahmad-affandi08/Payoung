@@ -150,7 +150,7 @@ describe('persediaan:bangun-ulang-saldo --periksa (DesainF05a C.9, aturan #9)', 
 });
 
 describe('persediaan:bangun-ulang-saldo (bangun ulang, DesainF05a C.9)', function (): void {
-    it('BR-05.1: memperbaiki jumlah, nilai, HPP rata-rata, mutasi terakhir; membuat baris yang hilang; menolkan baris yatim; memperbaiki batch', function (): void {
+    it('BR-05.1: memperbaiki jumlah, nilai, HPP rata-rata, mutasi terakhir. Membuat baris yang hilang. Menolkan baris yatim. Memperbaiki batch', function (): void {
         $l = SiapkanLedgerBangunUlang();
         $id = $l['Tenant']->Id;
         $p = $l['Produk'];
@@ -243,7 +243,7 @@ describe('persediaan:bangun-ulang-saldo (bangun ulang, DesainF05a C.9)', functio
 });
 
 describe('persediaan:bangun-ulang-saldo lintas tenant (aturan #11)', function (): void {
-    it('isolasi tenant: --tenant hanya memproses tenant itu; tiap tenant lewat KonteksTenant sendiri; audit per tenant', function (): void {
+    it('isolasi tenant: --tenant hanya memproses tenant itu. Tiap tenant lewat KonteksTenant sendiri. Audit per tenant', function (): void {
         $a = SiapkanLedgerBangunUlang('Toko Kelontong Makmur Sentosa');
         $b = SiapkanLedgerBangunUlang('Warung Bu Tini Jaya');
         foreach ([$a, $b] as $l) {
@@ -268,7 +268,7 @@ describe('persediaan:bangun-ulang-saldo lintas tenant (aturan #11)', function ()
             ->and(DB::table('LogAudit')->where('Peristiwa', 'persediaan.saldo.bangun-ulang')->orderBy('Id')->pluck('IdTenant')->all())->toBe([$a['Tenant']->Id, $b['Tenant']->Id]);
     });
 
-    it('--tenant tidak valid ditolak; tenant tak dikenal diperingatkan; konteks tenant pemanggil dipulihkan', function (): void {
+    it('--tenant tidak valid ditolak. Tenant tak dikenal diperingatkan. Konteks tenant pemanggil dipulihkan', function (): void {
         $l = SiapkanLedgerBangunUlang();
 
         $this->artisan('persediaan:bangun-ulang-saldo', ['--tenant' => ['abc']])->expectsOutputToContain('Id tenant tidak valid: abc')->assertExitCode(1);

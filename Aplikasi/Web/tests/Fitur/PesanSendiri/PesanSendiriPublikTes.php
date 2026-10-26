@@ -24,7 +24,7 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
 beforeEach(fn () => BantuanPendaftaran::SiapkanPrasyarat());
 
 describe('F-17 halaman publik pesan sendiri', function (): void {
-    it('menampilkan menu meja: kategori, harga server, kelompok pilihan; produk tersembunyi/bahan baku tidak ikut', function (): void {
+    it('menampilkan menu meja: kategori, harga server, kelompok pilihan. Produk tersembunyi/bahan baku tidak ikut', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         BantuanKatalog::BuatProduk(['Nama' => 'Gula Aren Cair Bahan Baku', 'Jenis' => JenisProduk::BahanBaku]);
         BantuanKatalog::BuatProduk(['Nama' => 'Menu Rahasia Dapur', 'TampilDiPos' => false]);
@@ -52,7 +52,7 @@ describe('F-17 halaman publik pesan sendiri', function (): void {
             ->where('Menu.Produk.1.KelompokPilihan', []));
     });
 
-    it('slug atau token tidak dikenal = halaman tidak ditemukan (404); rute sistem tidak tertutupi', function (): void {
+    it('slug atau token tidak dikenal = halaman tidak ditemukan (404). Rute sistem tidak tertutupi', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
 
         $this->get("/{$k['Slug']}/meja/".Str::random(32))->assertNotFound()
@@ -184,7 +184,7 @@ describe('F-17 halaman publik pesan sendiri', function (): void {
         $kirim([[$k['Kopi'], 1, [$k['GulaSedikit'], $k['Boba'], $k['Keju']]]])->assertCreated();
     });
 
-    it('batas 5 pesanan menunggu per meja; kedaluwarsa 30 menit membebaskan jatah; meja lain tidak terpengaruh', function (): void {
+    it('batas 5 pesanan menunggu per meja. Kedaluwarsa 30 menit membebaskan jatah. Meja lain tidak terpengaruh', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
 
         foreach (range(1, 5) as $_) {
@@ -200,7 +200,7 @@ describe('F-17 halaman publik pesan sendiri', function (): void {
         expect(PesananSendiri::query()->where('IdMeja', $k['Meja']->Id)->where('Status', 'Kedaluwarsa')->count())->toBe(5);
     });
 
-    it('polling status: menunggu → kedaluwarsa setelah 30 menit; hanya dari meja yang sama', function (): void {
+    it('polling status: menunggu → kedaluwarsa setelah 30 menit. Hanya dari meja yang sama', function (): void {
         $k = BantuanPesanSendiri::Siapkan($this);
         $kiriman = BantuanPesanSendiri::Kiriman([[$k['Nasi'], 2]]);
         $this->postJson("{$k['Alamat']}/pesan", $kiriman)->assertCreated();

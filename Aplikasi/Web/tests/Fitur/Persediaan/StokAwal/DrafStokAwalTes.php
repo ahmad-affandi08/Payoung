@@ -55,7 +55,7 @@ function AmbilKodeGalatDraf(Closure $kerja): ?string
 }
 
 describe('F-05a stok awal draf: buat & ubah', function (): void {
-    it('membuat draf dengan snapshot produk, Nilai = Jumlah × HPP (2 desimal, HalfUp), total, riwayat, dan audit; tanpa mutasi stok', function (): void {
+    it('membuat draf dengan snapshot produk, Nilai = Jumlah × HPP (2 desimal, HalfUp), total, riwayat, dan audit, tanpa mutasi stok', function (): void {
         [$t, $p] = SiapkanDrafStokAwalUji();
 
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [
@@ -93,7 +93,7 @@ describe('F-05a stok awal draf: buat & ubah', function (): void {
             ->and(StokAwalDetail::query()->value('Jumlah'))->toBe('5.0000');
     });
 
-    it('ubah draf mengganti semua baris dan menghitung ulang total; versi usang ditolak DokumenBerubah', function (): void {
+    it('ubah draf mengganti semua baris dan menghitung ulang total. Versi usang ditolak DokumenBerubah', function (): void {
         [$t, $p] = SiapkanDrafStokAwalUji();
         $this->travelTo(CarbonImmutable::now()->subMinutes(5));
         $draf = BantuanStokAwal::BuatDraf($t['Gudang'], [BantuanStokAwal::Baris($p['Stok'], '5', '38000')]);
@@ -132,7 +132,7 @@ describe('F-05a stok awal draf: pemeriksaan isi (C.6.1)', function (): void {
             ->and(StokAwal::query()->count())->toBe(0);
     });
 
-    it('jumlah dalam satuan dasar: pcs harus bulat, kg boleh desimal; jumlah 0 dan HPP > 6 desimal ditolak (H-2)', function (): void {
+    it('jumlah dalam satuan dasar: pcs harus bulat, kg boleh desimal. Jumlah 0 dan HPP > 6 desimal ditolak (H-2)', function (): void {
         [$t, $p] = SiapkanDrafStokAwalUji();
         $buat = fn (array $baris) => fn () => BantuanStokAwal::BuatDraf($t['Gudang'], $baris);
 

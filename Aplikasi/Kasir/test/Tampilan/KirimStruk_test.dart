@@ -33,7 +33,7 @@ void main() {
       }
     });
 
-    test('D-33: struk digital hanya lewat WhatsApp; alamat email ditolak sebagai nomor tidak sah', () {
+    test('D-33: struk digital hanya lewat WhatsApp. Alamat email ditolak sebagai nomor tidak sah', () {
       expect(KanalStruk.whatsapp, 'Whatsapp');
       expect(
         () => LayananKirimStruk.RapikanTujuan('siti.rahma@contoh.co.id'),
@@ -127,7 +127,7 @@ void main() {
     });
   }
 
-  testWidgets('D-33: tanpa pilihan Email; nomor tidak sah ditolak di perangkat; belum tersinkron → pesan jelas', (
+  testWidgets('D-33: tanpa pilihan Email. Nomor tidak sah ditolak di perangkat. Belum tersinkron → pesan jelas', (
     tester,
   ) async {
     var dikirim = 0;

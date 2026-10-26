@@ -21,7 +21,7 @@ beforeEach(function (): void {
 });
 
 describe('F-05a kueri buku stok', function (): void {
-    it('MutasiDokumen: baris satu dokumen urut Id, opsional hanya berawalan kunci tertentu; tenant lain tidak ikut', function (): void {
+    it('MutasiDokumen: baris satu dokumen urut Id, opsional hanya berawalan kunci tertentu. Tenant lain tidak ikut', function (): void {
         $lain = BantuanPersediaan::SiapkanTenant('Warung Kopi Tetangga');
         $pLain = BantuanPersediaan::BuatProdukSemuaJenis($lain['Pcs'], $lain['Kg']);
         BantuanBuku::Catat([BantuanBuku::BuatBaris('P/1', $pLain['Stok']->Id, $lain['Gudang']->Id, '1', '1000.00')], JenisReferensiMutasi::StokAwal, 555);
@@ -50,7 +50,7 @@ describe('F-05a kueri buku stok', function (): void {
             ->and($kueri->Ambil(JenisReferensiMutasi::PenerimaanBarang, 555))->toBe([]);
     });
 
-    it('CekAdaMutasi: false sebelum ada mutasi di tenant aktif, true sesudahnya; mutasi tenant lain tidak dihitung', function (): void {
+    it('CekAdaMutasi: false sebelum ada mutasi di tenant aktif, true sesudahnya. Mutasi tenant lain tidak dihitung', function (): void {
         $lain = BantuanPersediaan::SiapkanTenant('Warung Kopi Tetangga');
         $pLain = BantuanPersediaan::BuatProdukSemuaJenis($lain['Pcs'], $lain['Kg']);
         BantuanBuku::CatatMasuk($pLain['Stok']->Id, $lain['Gudang']->Id, '1', '1000.00');

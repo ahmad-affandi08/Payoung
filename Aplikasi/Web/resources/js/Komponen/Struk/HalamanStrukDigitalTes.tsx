@@ -159,7 +159,7 @@ describe('Struk digital publik (POS-11)', () => {
         expect(screen.getByRole('alert').textContent).toContain('Batas waktu memberi penilaian');
     });
 
-    it('F7: penilaian yang sudah dikirim tampil tanpa formulir; tanpa permintaan tidak ada bagian penilaian', () => {
+    it('F7: penilaian yang sudah dikirim tampil tanpa formulir, tanpa permintaan tidak ada bagian penilaian', () => {
         RenderUji(
             <HalamanStrukDigital Struk={{ ...struk, UmpanBalik: { Diminta: false, Nilai: 5, Komentar: 'Mantap' } }} />,
         );

@@ -40,7 +40,7 @@ function BuatProdukBatchPos(array $k, array $batch): Produk
     return $produk;
 }
 
-it('batch urut FEFO dengan sisa hari; batch habis hilang setelah dijual; produk tanpa batch kosong; tenant lain 404', function (): void {
+it('batch urut FEFO dengan sisa hari. Batch habis hilang setelah dijual. Produk tanpa batch kosong. Tenant lain 404', function (): void {
     $k = BantuanPenjualan::Siapkan($this);
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $susu = BuatProdukBatchPos($k, [['C-TANPA', '5', null], ['B-LAMA', '5', 40], ['A-DEKAT', '3', 10]]);

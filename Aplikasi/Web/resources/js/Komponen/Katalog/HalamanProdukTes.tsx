@@ -93,7 +93,7 @@ describe('Kelola/Produk/Daftar (DesainF03 E.2, TabelData D-16)', () => {
         expect(pertama?.querySelector('td.font-mono')?.textContent).toBe('PRD-000001');
     }, 30_000);
 
-    it('arsipkan mengirim POST; tanpa izin kelola aksi disembunyikan dan alasannya tertulis', () => {
+    it('arsipkan mengirim POST, tanpa izin kelola aksi disembunyikan dan alasannya tertulis', () => {
         RenderUji(<HalamanDaftarProduk {...PropsDaftar({ Produk: BuatHasilTabel([BuatBarisProduk(1)]) })} />);
         // Aksi baris ada di DropdownMenu (Radix): dibuka dengan keyboard, lalu item "Arsipkan" dipilih.
         fireEvent.keyDown(screen.getByRole('button', { name: 'Aksi baris' }), { key: 'Enter' });
@@ -245,7 +245,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         ]);
     });
 
-    it('bawaan wizard: langkah 1 menawarkan semua jenis (yang umum di atas) dengan contoh; langkah di depan terkunci', () => {
+    it('bawaan wizard: langkah 1 menawarkan semua jenis (yang umum di atas) dengan contoh. Langkah di depan terkunci', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
 
         expect(screen.getByText('Langkah 1 dari 5')).toBeTruthy();
@@ -297,7 +297,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(kirimanForm).toHaveLength(0);
     });
 
-    it('harga jual kosong ditahan di peramban dengan pesan jelas; harga 0 (gratis) boleh', () => {
+    it('harga jual kosong ditahan di peramban dengan pesan jelas. Harga 0 (gratis) boleh', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         IsiNama('Sabun');
         Lanjut();
@@ -374,7 +374,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(LangkahAktif()).toBe('Pajak & tampilan');
     });
 
-    it('Jasa + "Jual sebagai paket sesi" mengirim PaketSesi; jumlah sesi wajib; langkah satuan dilewati', () => {
+    it('Jasa + "Jual sebagai paket sesi" mengirim PaketSesi. Jumlah sesi wajib. Langkah satuan dilewati', () => {
         render(<HalamanFormProduk {...PropsForm({ FiturPaketSesi: true })} />);
         IsiNama('Paket Creambath 10x');
         fireEvent.click(screen.getByRole('radio', { name: /Jasa/ }));
@@ -484,7 +484,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(screen.getAllByText('Perlu diperbaiki')).toHaveLength(2);
     });
 
-    it('F-07 mode service: produk Jasa punya isian durasi layanan (langkah pajak & tampilan) yang ikut dikirim; jenis lain tanpa isian', () => {
+    it('F-07 mode service: produk Jasa punya isian durasi layanan (langkah pajak & tampilan) yang ikut dikirim. Jenis lain tanpa isian', () => {
         render(<HalamanFormProduk {...PropsForm({ Produk: { ...produkBaru, Jenis: 'Jasa' } })} />);
         IsiNama('Potong rambut');
         Lanjut();
@@ -530,7 +530,7 @@ describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
         expect(kirimanForm[0]?.url).toBe('/kelola/produk/01J9PRODUKBARU000000000000A');
     });
 
-    it('mode Ubah: barcode yang diketik lalu Simpan ikut ditambahkan; yang tidak valid menahan simpan', () => {
+    it('mode Ubah: barcode yang diketik lalu Simpan ikut ditambahkan, yang tidak valid menahan simpan', () => {
         render(
             <HalamanFormProduk
                 {...PropsForm({
@@ -750,7 +750,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         expect(screen.getByText('Favorit di kasir').nextElementSibling?.textContent).toBe('Ya');
     });
 
-    it('BR-03.2: produk terpakai tidak menawarkan hapus, alasan ditulis; arsip tetap bisa', () => {
+    it('BR-03.2: produk terpakai tidak menawarkan hapus, alasan ditulis. Arsip tetap bisa', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
 
         expect(screen.queryByRole('button', { name: 'Hapus produk' })).toBeNull();
@@ -812,7 +812,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         expect(screen.getByText('Barcode 8991234500017 sudah dipakai produk Teh Botol.')).toBeTruthy();
     });
 
-    it('BR-03.1: barcode di detail bisa dihapus setelah konfirmasi; tanpa izin kelola tidak ada isian maupun tombol hapus', () => {
+    it('BR-03.1: barcode di detail bisa dihapus setelah konfirmasi, tanpa izin kelola tidak ada isian maupun tombol hapus', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Hapus barcode 8991234567890' }));
@@ -831,7 +831,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         expect(screen.queryByRole('button', { name: /Pindai kamera/ })).toBeNull();
     });
 
-    it('F-17 BR-17.2: tandai habis & tersedia lagi per outlet lewat POST; tanpa izin hanya baca; induk varian tanpa panel', () => {
+    it('F-17 BR-17.2: tandai habis & tersedia lagi per outlet lewat POST, tanpa izin hanya baca. Induk varian tanpa panel', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
 
         expect(screen.getByText('Tersedia')).toBeTruthy();
@@ -859,7 +859,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         expect(screen.queryByText('Ketersediaan per outlet')).toBeNull();
     });
 
-    it('PRD-11: tandai habis per kanal mengirim Kanal; habis sebagian diberi label sendiri; Semua tidak mengirim Kanal', () => {
+    it('PRD-11: tandai habis per kanal mengirim Kanal. Habis sebagian diberi label sendiri; Semua tidak mengirim Kanal', () => {
         RenderUji(
             <HalamanDetailProduk
                 {...PropsDetail({
@@ -910,7 +910,7 @@ describe('Kelola/Produk/Detail (DesainF03 E.4)', () => {
         );
     });
 
-    it('batas stok: min > maks ditolak di peramban; tanpa izin persediaan hanya baca', () => {
+    it('batas stok: min > maks ditolak di peramban, tanpa izin persediaan hanya baca', () => {
         RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
         fireEvent.change(screen.getByLabelText('Stok maksimum Gudang utama'), { target: { value: '5' } });
 
@@ -1051,7 +1051,7 @@ describe('Kelola/Produk/Harga, Pilihan, Resep, Komponen (E.6, E.9)', () => {
     beforeEach(() => AturHalamanUji());
     afterEach(() => cleanup());
 
-    it('harga dasar: PUT per satuan; riwayat menampilkan lama → baru', () => {
+    it('harga dasar: PUT per satuan. Riwayat menampilkan lama → baru', () => {
         const props: PropsHargaProduk = {
             Kepala: BuatKepala(),
             Satuan: [
@@ -1096,7 +1096,7 @@ describe('Kelola/Produk/Harga, Pilihan, Resep, Komponen (E.6, E.9)', () => {
         );
     });
 
-    it('pilihan produk: pasang, urutkan, simpan berurutan; varian anak hanya baca', () => {
+    it('pilihan produk: pasang, urutkan, simpan berurutan. Varian anak hanya baca', () => {
         render(
             <HalamanPilihanProduk
                 Kepala={BuatKepala()}

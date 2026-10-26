@@ -241,7 +241,7 @@ export default function HalamanDetailFaktur({
             {batalkan ? (
                 <DialogAlasan
                     judul={`Batalkan faktur ${f.Nomor}?`}
-                    keterangan="Hutang dan jurnal faktur dibalik; penerimaan barangnya bisa difakturkan ulang. Hanya untuk faktur yang belum dibayar."
+                    keterangan="Hutang dan jurnal faktur dibalik. Penerimaan barangnya bisa difakturkan ulang. Hanya untuk faktur yang belum dibayar."
                     labelAksi="Batalkan faktur"
                     alamat={`${alamat}/${f.Uuid}/batalkan`}
                     saatTutup={() => AturBatalkan(false)}

@@ -83,7 +83,7 @@ export const daftarPengaturan: GrupPengaturan[] = [
             {
                 label: 'Ganti jenis usaha',
                 keterangan:
-                    'Salah memilih jenis usaha saat mendaftar? Ganti di sini; data bawaan lama yang belum dipakai dibersihkan, transaksi tidak berubah.',
+                    'Salah memilih jenis usaha saat mendaftar? Ganti di sini. Data bawaan lama yang belum dipakai dibersihkan, transaksi tidak berubah.',
                 href: '/kelola/pengaturan/ganti-sektor',
                 izin: IzinTenant.DataKelola,
             },

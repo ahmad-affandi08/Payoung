@@ -51,7 +51,7 @@ void main() {
     expect(const HasilUjiPerangkat(cetak: HasilUji.Lolos).lengkap, isFalse);
   });
 
-  test('offline: tersimpan & tertunda; sinkron berikutnya mengirimnya sekali', () async {
+  test('offline: tersimpan & tertunda. Sinkron berikutnya mengirimnya sekali', () async {
     u.server.penangan = (_) async => throw http.ClientException('tidak ada jaringan');
     expect(await layanan.Simpan(hasil), isFalse);
     expect(await u.repositori.AmbilPengaturan(KunciPengaturan.profilHardwareTertunda), '1');

@@ -128,7 +128,7 @@ describe('Komunikasi konsol (D-210)', () => {
         expect(await screen.findByText(/tenant tanpa kontak email/)).toBeTruthy();
     });
 
-    it('rincian siaran terjadwal bisa dibatalkan setelah konfirmasi; siaran selesai tidak', () => {
+    it('rincian siaran terjadwal bisa dibatalkan setelah konfirmasi. Siaran selesai tidak', () => {
         AturKonsol();
         const { unmount: Lepas } = RenderUji(
             <Tampil Siaran={{ ...siaran, Isi: 'Isi pesan', Segmen: {} }} Penerima={[]} />,

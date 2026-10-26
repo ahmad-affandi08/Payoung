@@ -38,7 +38,7 @@ beforeEach(function (): void {
 });
 
 describe('v2.04 katalog penyedia', function (): void {
-    it('setiap jenis punya daftar penyedia; semua penyedia email memakai bidang SMTP dengan nilai bawaan', function (): void {
+    it('setiap jenis punya daftar penyedia. Semua penyedia email memakai bidang SMTP dengan nilai bawaan', function (): void {
         expect(count(JenisIntegrasi::Email->AmbilDaftarPenyedia()))->toBeGreaterThanOrEqual(15)
             ->and(array_map(fn ($p) => $p->value, JenisIntegrasi::GerbangPembayaran->AmbilDaftarPenyedia()))->toBe(['Doku'])
             ->and(array_map(fn ($p) => $p->value, JenisIntegrasi::Whatsapp->AmbilDaftarPenyedia()))->toBe(['MetaCloud', 'Fonnte', 'Wablas', 'StarSender', 'Watzap'])
@@ -65,7 +65,7 @@ describe('v2.04 katalog penyedia', function (): void {
             ->where('GerbangTenant.0.Diizinkan', true));
     });
 
-    it('pilih SendGrid untuk email; ganti ke Brevo mewajibkan kredensial baru dan mengulang uji', function (): void {
+    it('pilih SendGrid untuk email. Ganti ke Brevo mewajibkan kredensial baru dan mengulang uji', function (): void {
         MasukTeknisPenyedia($this);
         $dasar = [
             'Jenis' => 'Email', 'Lingkungan' => 'Staging', 'Penyedia' => 'SendGrid',
@@ -147,7 +147,7 @@ describe('v2.04 katalog penyedia', function (): void {
             ->and(DB::table('GerbangPembayaranTenant')->count())->toBe(0);
     });
 
-    it('WhatsApp tidak resmi Fonnte: perangkat tersambung = berhasil; belum tersambung = gagal; aktif di runtime', function (): void {
+    it('WhatsApp tidak resmi Fonnte: perangkat tersambung = berhasil. Belum tersambung = gagal. Aktif di runtime', function (): void {
         Http::fakeSequence('api.fonnte.com/*')
             ->push(['status' => true, 'device_status' => 'disconnect'])
             ->push(['status' => true, 'device_status' => 'connect']);
@@ -167,7 +167,7 @@ describe('v2.04 katalog penyedia', function (): void {
         expect(app(PembuatPengirimWhatsapp::class)->AmbilAktif())->toBeInstanceOf(AdaptorFonnte::class);
     });
 
-    it('kredensial opsional (secret key Wablas) boleh kosong; bidang pengaturan opsional (templat Meta) boleh kosong', function (): void {
+    it('kredensial opsional (secret key Wablas) boleh kosong. Bidang pengaturan opsional (templat Meta) boleh kosong', function (): void {
         MasukTeknisPenyedia($this);
         $this->post(BantuanPengelola::Url('/integrasi'), [
             'Jenis' => 'Whatsapp', 'Lingkungan' => 'Staging', 'Penyedia' => 'Wablas', 'Pengaturan' => ['Domain' => 'https://jkt.wablas.com'],

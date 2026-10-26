@@ -16,7 +16,7 @@ const duaOutlet: OpsiOutletPengguna[] = [...satuOutlet, { Uuid: 'O-2', Kode: 'CA
 afterEach(cleanup);
 
 describe('AmbilCakupan & TerapkanCakupanPeran', () => {
-    it('peran Pemilik selalu Semua; peran belum dipilih diperlakukan Bebas', () => {
+    it('peran Pemilik selalu Semua. Peran belum dipilih diperlakukan Bebas', () => {
         expect(AmbilCakupan(pemilik)).toBe('Semua');
         expect(AmbilCakupan(undefined)).toBe('Bebas');
         expect(AmbilCakupan(terpilih)).toBe('Terpilih');
@@ -80,7 +80,7 @@ describe('CakupanOutletPeran', () => {
         expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
     });
 
-    it('Terpilih: daftar outlet saja; mencentang outlet melapor tanpa menyalakan semua outlet', () => {
+    it('Terpilih: daftar outlet saja. Mencentang outlet melapor tanpa menyalakan semua outlet', () => {
         const SaatBerubah = vi.fn();
         render(
             <CakupanOutletPeran
@@ -96,7 +96,7 @@ describe('CakupanOutletPeran', () => {
         expect(SaatBerubah).toHaveBeenCalledWith({ SemuaOutlet: false, Outlet: ['O-2'] });
     });
 
-    it('Bebas: saklar semua outlet; menyalakannya menyembunyikan daftar outlet', () => {
+    it('Bebas: saklar semua outlet. Menyalakannya menyembunyikan daftar outlet', () => {
         const SaatBerubah = vi.fn();
         const { rerender: Render } = render(
             <CakupanOutletPeran

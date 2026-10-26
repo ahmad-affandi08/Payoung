@@ -14,7 +14,7 @@ if (! hash_equals($hitung, $tanda) || abs(time() - (int) $waktu) > 300) {
     http_response_code(401);
     exit;
 }
-// Simpan X-Id-Peristiwa; abaikan bila sudah pernah diproses.`;
+// Simpan X-Id-Peristiwa. Abaikan bila sudah pernah diproses.`;
 
 const contohVerifikasiNode = `import crypto from 'node:crypto';
 
@@ -112,7 +112,7 @@ export default function Pengembang() {
                             Pengenal selalu <span className="font-mono">Uuid</span>. HPP, nilai persediaan, NPWP/NIK,
                             alamat, dan limit kredit pelanggan tidak pernah dikirim (UU Pelindungan Data Pribadi).
                         </li>
-                        <li>Batas 120 permintaan per menit per token; lewat batas dijawab 429 dengan Retry-After.</li>
+                        <li>Batas 120 permintaan per menit per token. Lewat batas dijawab 429 dengan Retry-After.</li>
                         <li>
                             Masalah berbentuk{' '}
                             <span className="font-mono">{'{"Galat": {"Kode": "...", "Pesan": "..."}}'}</span>: 401 token
@@ -175,7 +175,7 @@ export default function Pengembang() {
 
                 <Bagian id="versi" judul="Versi & perubahan">
                     <p className="text-isi text-teks-utama">
-                        Field baru bisa bertambah kapan saja; abaikan field yang tidak dikenal. Perubahan yang tidak
+                        Field baru bisa bertambah kapan saja. Abaikan field yang tidak dikenal. Perubahan yang tidak
                         kompatibel terbit sebagai versi baru di alamat baru, dan versi lama tetap didukung paling
                         sedikit 6 bulan setelah diumumkan.
                     </p>

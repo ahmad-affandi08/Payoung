@@ -38,7 +38,7 @@ describe('Tanda wajib otomatis (*)', () => {
         expect(field?.querySelector(':scope > [data-slot="field-label"]')?.textContent).toBe('Nama usaha');
     });
 
-    it('BidangPilihan required: pemicu diberi aria-required & data-wajib; tanpa required tidak', () => {
+    it('BidangPilihan required: pemicu diberi aria-required & data-wajib, tanpa required tidak', () => {
         const opsi = [{ Nilai: '33.74', Label: 'Kota Semarang' }];
         const { rerender: RenderUlang } = render(
             <BidangPilihan label="Kota" nilai="" opsi={opsi} saatBerubah={() => undefined} required />,

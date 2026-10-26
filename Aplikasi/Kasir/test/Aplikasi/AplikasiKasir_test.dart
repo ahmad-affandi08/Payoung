@@ -7,7 +7,7 @@ import '../Pendukung/LingkunganUji.dart';
 import '../Pendukung/PasangAplikasi.dart';
 
 void main() {
-  testWidgets('menampilkan penanda lingkungan selain produksi; perangkat baru membuka layar aktivasi', (tester) async {
+  testWidgets('menampilkan penanda lingkungan selain produksi. Perangkat baru membuka layar aktivasi', (tester) async {
     final u = LingkunganUji.Buat();
     await PasangAplikasi(tester, u, lingkungan: Lingkungan.Staging);
     expect(find.text('Aktifkan perangkat kasir'), findsOneWidget);

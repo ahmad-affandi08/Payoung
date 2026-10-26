@@ -123,7 +123,7 @@ describe('BidangTanggal', () => {
         expect(UraiTanggal('2026-')).toBeUndefined();
     });
 
-    it('isian HH/BB/TTTT hanya mengirim tanggal sah; kalender mengisi TTTT-BB-HH yang sama', () => {
+    it('isian HH/BB/TTTT hanya mengirim tanggal sah. Kalender mengisi TTTT-BB-HH yang sama', () => {
         const SaatBerubah = vi.fn();
 
         function Bungkus() {
@@ -221,7 +221,7 @@ describe('Harga paket four-eyes (P-04, BR-P04.5)', () => {
     };
     const paket = { Uuid: 'PK1', Kode: 'PRO', Nama: 'Pro', HargaNegosiasi: false };
 
-    it('peninjau lain menolak lewat AlertDialog; catatan & keputusan terkirim', () => {
+    it('peninjau lain menolak lewat AlertDialog. Catatan & keputusan terkirim', () => {
         AturHalaman([IzinPengelola.KatalogPaketSetujui], '/katalog/paket/PK1/harga');
         RenderDenganKueri(<HalamanHargaPaket Paket={paket} Harga={[harga]} IdPengguna={9} />);
         expect(screen.getByText('Menunggu tinjauan')).toBeTruthy();
@@ -547,7 +547,7 @@ describe('Referensi wilayah & tarif pajak (P-02, TabelData D-16)', () => {
         { Nilai: 'KabupatenKota', Label: 'Kabupaten/kota' },
     ];
 
-    it('wilayah: tabel server dengan cari; ubah lewat aksi baris hanya dengan izin kelola', () => {
+    it('wilayah: tabel server dengan cari. Ubah lewat aksi baris hanya dengan izin kelola', () => {
         AturHalaman([IzinPengelola.ReferensiWilayahKelola], '/referensi/wilayah');
         const { unmount: Lepas } = RenderDenganKueri(
             <HalamanWilayah Wilayah={HasilUji(wilayah)} PilihanTingkat={pilihanTingkat} PilihanZonaWaktu={['WIB']} />,
@@ -569,7 +569,7 @@ describe('Referensi wilayah & tarif pajak (P-02, TabelData D-16)', () => {
         expect(screen.queryByRole('button', { name: 'Tambah wilayah' })).toBeNull();
     });
 
-    it('tarif pajak: peninjau lain meninjau dari aksi baris; tarif terbit tanpa aksi', () => {
+    it('tarif pajak: peninjau lain meninjau dari aksi baris. Tarif terbit tanpa aksi', () => {
         const dasar = {
             KodeJenisPajak: 'Ppn',
             NamaJenisPajak: 'PPN',
@@ -662,7 +662,7 @@ describe('Rilis aplikasi (P-10)', () => {
         ]);
     });
 
-    it('terbitkan draf mengirim persen rollout; versi minimum menampilkan dampak perangkat lama (BR-P10.2)', async () => {
+    it('terbitkan draf mengirim persen rollout. Versi minimum menampilkan dampak perangkat lama (BR-P10.2)', async () => {
         AturHalaman([IzinPengelola.RilisLihat, IzinPengelola.RilisKelola], '/rilis');
         const TiruanFetch = vi
             .spyOn(globalThis, 'fetch')
@@ -761,7 +761,7 @@ describe('v1.98 kompatibilitas perangkat (HCL)', () => {
         DisegarkanPada: '2026-09-26T19:30:00Z',
     };
 
-    it('menampilkan status & angka uji; tim bisa segarkan dan menandai Tersertifikasi dengan catatan', () => {
+    it('menampilkan status & angka uji. Tim bisa segarkan dan menandai Tersertifikasi dengan catatan', () => {
         AturHalaman([IzinPengelola.RilisLihat, IzinPengelola.RilisKelola], '/kompatibilitas-perangkat');
         RenderDenganKueri(<HalamanKompatibilitasPerangkat Baris={[printer]} />);
         expect(screen.getAllByText('RPP02N').length).toBeGreaterThan(0);
@@ -817,7 +817,7 @@ describe('P-10 PGL-19 pengumuman platform', () => {
         AlasanCabut: null,
     };
 
-    it('ringkasan sasaran memakai label; kosong = semua', () => {
+    it('ringkasan sasaran memakai label. Kosong = semua', () => {
         expect(RingkasSasaran(draf, opsi)).toBe('Kasir Android | paket Bisnis | semua sektor | versi …–1.2.0');
         expect(
             RingkasSasaran(
