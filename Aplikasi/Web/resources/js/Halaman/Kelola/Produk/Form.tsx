@@ -133,7 +133,8 @@ const penjelasanJenis: Record<JenisProduk, string> = {
     IndukVarian:
         'Satu produk dengan banyak pilihan, misal kaos dengan ukuran dan warna. Varian dibuat setelah disimpan.',
     Paket: 'Beberapa produk dijual sebagai satu paket berharga sendiri. Isi paket diatur setelah produk disimpan.',
-    Produksi: 'Barang jadi dari bahan lain dan punya stok sendiri, misal beras pak 5 kg dari karung 25 kg.',
+    Produksi:
+        'Barang jadi dari bahan lain dan punya stok sendiri, misal beras pak 5 kg dari karung 25 kg. Resep diisi setelah produk disimpan.',
     BahanBaku: 'Bahan untuk resep atau produksi. Tidak dijual langsung di kasir.',
     Konsinyasi: 'Barang titipan penitip. Hutang ke penitip baru tercatat saat barang terjual.',
 };
