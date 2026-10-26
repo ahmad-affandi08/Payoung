@@ -1272,6 +1272,49 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
         expect(tiruanRouter.delete).toHaveBeenCalledWith('/kelola/produk/01J9PRODUK00000000000000001');
     });
 
+    it('D-218: tombol "Hapus permanen beserta riwayat" hanya untuk Pemilik pada produk berriwayat, dan membuka dialog konfirmasi', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() =>
+                Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            Total: 3,
+                            Tabel: 1,
+                            Rincian: [{ Tabel: 'MutasiStok', Jumlah: 3 }],
+                            Penghalang: null,
+                        }),
+                        {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json' },
+                        },
+                    ),
+                ),
+            ),
+        );
+        const tombol = 'Hapus permanen beserta riwayat';
+        const awal = RenderUji(<HalamanDetailProduk {...PropsDetail()} />);
+        expect(screen.queryByRole('button', { name: tombol })).toBeNull();
+        awal.unmount();
+
+        const tanpaRiwayat = RenderUji(
+            <HalamanDetailProduk
+                {...PropsDetail({
+                    BolehHapusPermanen: true,
+                    Produk: { ...PropsDetail().Produk, AlasanTidakBisaDihapus: null },
+                })}
+            />,
+        );
+        expect(screen.queryByRole('button', { name: tombol })).toBeNull();
+        tanpaRiwayat.unmount();
+
+        RenderUji(<HalamanDetailProduk {...PropsDetail({ BolehHapusPermanen: true })} />);
+        fireEvent.click(screen.getByRole('button', { name: tombol }));
+        expect(await screen.findByRole('alertdialog', { name: 'Hapus permanen Susu UHT 1 L?' })).toBeTruthy();
+        expect(await screen.findByText('3 mutasi stok')).toBeTruthy();
+        vi.unstubAllGlobals();
+    });
+
     it('sakelar tampil (Switch) mengubah TampilDiPos/TampilOnline di body FormProduk', () => {
         render(<HalamanFormProduk {...PropsForm()} />);
         IsiNama('Sabun cair');

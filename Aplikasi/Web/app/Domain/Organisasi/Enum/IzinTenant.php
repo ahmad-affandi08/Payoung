@@ -179,7 +179,7 @@ enum IzinTenant: string
             self::LaporanKeuanganLihat => 'Melihat laporan keuangan',
             self::AkuntansiKelola => 'Mengelola jurnal, pajak, dan tutup buku',
             self::LanggananKelola => 'Mengelola langganan & tagihan',
-            self::DataKelola => 'Mengunduh ekspor data lengkap usaha, mengganti jenis usaha outlet, dan menutup akun usaha',
+            self::DataKelola => 'Mengunduh ekspor data lengkap usaha, mengganti jenis usaha outlet, menghapus permanen produk beserta riwayatnya, dan menutup akun usaha',
             self::BantuanTiketLihat => 'Melihat tiket bantuan & balasan tim dukungan',
             self::BantuanTiketKelola => 'Membuat, membalas, dan menyelesaikan tiket bantuan',
             self::DukunganAksesKelola => 'Memberi, memantau, dan mencabut izin akses tim dukungan Payoung ke usaha',

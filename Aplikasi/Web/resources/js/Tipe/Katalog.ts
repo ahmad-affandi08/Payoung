@@ -259,6 +259,17 @@ export type PropsDetailProduk = {
     Jenis: AturanJenisProduk[];
     BatasSku: Batas;
     Izin: IzinKatalog;
+    /** D-218: Pemilik boleh menghapus produk beserta seluruh riwayatnya. */
+    BolehHapusPermanen?: boolean;
+};
+
+/** D-218: ringkasan riwayat yang ikut terhapus (`GET /kelola/produk/{uuid}/hapus-permanen`). */
+export type PratinjauHapusPermanen = {
+    Total: number;
+    Tabel: number;
+    Rincian: { Tabel: string; Jumlah: number }[];
+    /** Alasan (kalimat utuh) mengapa belum boleh dihapus permanen; null = boleh. */
+    Penghalang: string | null;
 };
 
 // E.5 Kelola/Kategori/Daftar dan Kelola/Satuan/Daftar.

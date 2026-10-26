@@ -7,6 +7,8 @@ export const KunciKueri = {
     Tabel: (id: string, alamat: string, query: string) => ['Tabel', id, alamat, query] as const,
     TabelSemua: (id: string) => ['Tabel', id] as const,
     Perangkat: (idOutlet: string) => ['Perangkat', idOutlet] as const,
+    // D-218: pratinjau riwayat yang ikut terhapus saat produk dihapus permanen.
+    PratinjauHapusProduk: (uuid: string) => ['PratinjauHapusProduk', uuid] as const,
     // Pencarian cepat di kepala halaman: hasil per sumber (produk, pelanggan, …) untuk satu kata.
     PencarianCepat: (idSumber: string, kata: string) => ['PencarianCepat', idSumber, kata] as const,
     Laporan: (nama: string, saring: Record<string, string>) => ['Laporan', nama, saring] as const,

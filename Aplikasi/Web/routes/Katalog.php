@@ -59,6 +59,9 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::post('/produk/{produk}/arsipkan', [ProdukKontroler::class, 'Arsipkan'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.arsipkan');
     Route::post('/produk/{produk}/pulihkan', [ProdukKontroler::class, 'Pulihkan'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.pulihkan');
     Route::delete('/produk/{produk}', [ProdukKontroler::class, 'Hapus'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.hapus');
+    // D-218: hapus produk beserta seluruh riwayatnya; khusus Pemilik (`data.kelola`).
+    Route::get('/produk/{produk}/hapus-permanen', [ProdukKontroler::class, 'PratinjauHapusPermanen'])->middleware($izin(IzinTenant::DataKelola))->where('produk', $ulid)->name('kelola.produk.hapus-permanen.pratinjau');
+    Route::delete('/produk/{produk}/hapus-permanen', [ProdukKontroler::class, 'HapusPermanen'])->middleware($izin(IzinTenant::DataKelola))->where('produk', $ulid)->name('kelola.produk.hapus-permanen');
 
     // Gambar, varian, barcode internal, batas stok.
     Route::get('/produk/{produk}/gambar', [GambarProdukKontroler::class, 'Unduh'])->middleware($lihat)->where('produk', $ulid)->name('kelola.produk.gambar');

@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Katalog\Aksi\ArsipkanProduk;
 use App\Domain\Katalog\Aksi\BuatBarcodeInternal;
 use App\Domain\Katalog\Aksi\HapusBarcodeProduk;
+use App\Domain\Katalog\Aksi\HapusPermanenProduk;
 use App\Domain\Katalog\Aksi\HapusProduk;
 use App\Domain\Katalog\Aksi\PulihkanProduk;
 use App\Domain\Katalog\Aksi\SimpanProduk;
@@ -181,6 +182,8 @@ final class ProdukKontroler extends DasarKatalogKontroler
             'Jenis' => JenisProduk::AmbilDaftarAturan(),
             'BatasSku' => $this->AmbilBatasSku(),
             'Izin' => $this->AmbilIzinKatalog(),
+            // D-218: tombol "Hapus permanen beserta riwayat" hanya untuk Pemilik (`data.kelola`).
+            'BolehHapusPermanen' => $this->CekIzin(IzinTenant::DataKelola),
         ]);
     }
 
@@ -265,6 +268,22 @@ final class ProdukKontroler extends DasarKatalogKontroler
         $hapus->Jalankan($baris);
 
         return redirect()->route('kelola.produk.daftar')->with('Kilat', "Produk {$baris->Nama} dihapus.");
+    }
+
+    /** D-218: ringkasan riwayat yang ikut terhapus + penghalang, untuk dialog "Hapus permanen" (izin `data.kelola`). */
+    public function PratinjauHapusPermanen(string $produk, HapusPermanenProduk $aksi): JsonResponse
+    {
+        return response()->json($aksi->Pratinjau($this->CariProduk($produk)));
+    }
+
+    /** D-218: hapus produk beserta seluruh riwayatnya; nama produk wajib diketik ulang. */
+    public function HapusPermanen(Request $permintaan, string $produk, HapusPermanenProduk $aksi): RedirectResponse
+    {
+        $baris = $this->CariProduk($produk);
+        $hasil = $aksi->Jalankan($baris, $permintaan->string('KonfirmasiNama')->toString());
+
+        return redirect()->route('kelola.produk.daftar')
+            ->with('Kilat', "Produk {$baris->Nama} dihapus permanen beserta {$hasil['Total']} baris riwayatnya.");
     }
 
     public function BuatBarcodeInternal(string $produk, string $produkSatuan, BuatBarcodeInternal $buat): RedirectResponse

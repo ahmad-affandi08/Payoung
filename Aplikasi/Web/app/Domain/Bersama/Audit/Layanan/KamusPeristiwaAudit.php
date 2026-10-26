@@ -476,6 +476,7 @@ final class KamusPeristiwaAudit
         'produk.gambar.hapus' => 'Gambar produk dihapus',
         'produk.gambar.ubah' => 'Gambar produk diubah',
         'produk.hapus' => 'Produk dihapus',
+        'produk.hapus-permanen' => 'Produk dihapus permanen beserta riwayatnya',
         'produk.harga.ubah' => 'Harga produk diubah',
         'produk.impor.batalkan' => 'Impor produk dibatalkan',
         'produk.impor.lanjutkan' => 'Impor produk dilanjutkan',

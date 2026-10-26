@@ -2,6 +2,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { useState, type ReactNode } from 'react';
 
 import BidangGambar from '@/Komponen/Formulir/BidangGambar';
+import DialogHapusPermanenProduk from '@/Komponen/Katalog/DialogHapusPermanenProduk';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BarcodeSatuanDetail from '@/Komponen/Katalog/BarcodeSatuanDetail';
 import { LabelTigaKeadaan } from '@/Komponen/Katalog/BantuanKatalog';
@@ -111,10 +112,12 @@ export default function HalamanDetailProduk({
     Jenis,
     BatasSku,
     Izin,
+    BolehHapusPermanen = false,
 }: PropsDetailProduk) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [gambar, AturGambar] = useState<File | null>(null);
     const [mengunggah, AturMengunggah] = useState(false);
+    const [dialogHapusPermanen, AturDialogHapusPermanen] = useState(false);
     const dasar = Produk.SatuanDasar;
     const induk = Produk.Jenis === 'IndukVarian';
     const grid = induk ? SusunGridVarian(Varian, Produk.AtributVarian) : null;
@@ -265,6 +268,24 @@ export default function HalamanDetailProduk({
                 <p className="text-keterangan text-teks-sekunder">
                     Produk ini tidak bisa dihapus: {Produk.AlasanTidakBisaDihapus}. Arsipkan bila tidak dijual lagi.
                 </p>
+            ) : null}
+
+            {BolehHapusPermanen && Produk.AlasanTidakBisaDihapus !== null ? (
+                <div className="flex flex-wrap items-center gap-2">
+                    <Tombol varian="bahaya" onClick={() => AturDialogHapusPermanen(true)}>
+                        Hapus permanen beserta riwayat
+                    </Tombol>
+                    <span className="text-keterangan text-teks-sekunder">
+                        Khusus Pemilik. Menghapus produk dan seluruh riwayatnya, tidak bisa dibatalkan.
+                    </span>
+                </div>
+            ) : null}
+            {dialogHapusPermanen ? (
+                <DialogHapusPermanenProduk
+                    uuid={Produk.Uuid}
+                    nama={Produk.Nama}
+                    saatSelesai={() => AturDialogHapusPermanen(false)}
+                />
             ) : null}
 
             <div className="grid gap-4 lg:grid-cols-3">
