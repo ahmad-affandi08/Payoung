@@ -29,6 +29,28 @@ describe('P-01 langkah 1–2: Super Admin pertama & peran bawaan', function (): 
             ->and($log->NilaiBaru)->not->toHaveKey('KataSandi');
     });
 
+    it('pengelola:siapkan-peran memberi izin baru ke peran bawaan yang sudah ada tanpa menggandakan', function (): void {
+        $this->artisan('pengelola:buat-super-admin', ['--nama' => 'Rina Pengelola', '--email' => 'rina@contoh.id'])
+            ->expectsQuestion('Kata sandi (minimal 12 karakter, huruf dan angka)', 'rahasia-kuat-123')
+            ->expectsQuestion('Ulangi kata sandi', 'rahasia-kuat-123')
+            ->assertSuccessful();
+
+        $peran = PeranPengelola::query()->where('Kode', PeranPengelolaBawaan::SuperAdmin->value)->firstOrFail();
+        $peran->Izin()->where('KunciIzin', IzinPengelola::KomunikasiKelola->value)->delete();
+        $pengguna = PenggunaPengelola::query()->where('Email', 'rina@contoh.id')->firstOrFail();
+        $pengguna->LupakanIzin();
+
+        expect($pengguna->PunyaIzin(IzinPengelola::KomunikasiKelola))->toBeFalse();
+
+        $this->artisan('pengelola:siapkan-peran')->assertSuccessful();
+        $this->artisan('pengelola:siapkan-peran')->assertSuccessful();
+
+        $pengguna->LupakanIzin();
+
+        expect($pengguna->PunyaIzin(IzinPengelola::KomunikasiKelola))->toBeTrue()
+            ->and($peran->Izin()->count())->toBe(count(IzinPengelola::cases()));
+    });
+
     it('menolak kata sandi lemah atau konfirmasi yang berbeda', function (string $kataSandi, string $konfirmasi): void {
         $this->artisan('pengelola:buat-super-admin', ['--nama' => 'Rina', '--email' => 'rina@contoh.id'])
             ->expectsQuestion('Kata sandi (minimal 12 karakter, huruf dan angka)', $kataSandi)

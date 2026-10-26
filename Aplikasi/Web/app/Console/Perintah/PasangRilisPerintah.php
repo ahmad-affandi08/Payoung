@@ -24,6 +24,7 @@ final class PasangRilisPerintah extends Command
     /** Langkah data: `Kering` = perintah mengerti `--kering` (hanya menampilkan rencana). */
     public const LANGKAH_DATA_SAAS = [
         ['Perintah' => 'organisasi:siapkan-peran', 'Kering' => false],
+        ['Perintah' => 'pengelola:siapkan-peran', 'Kering' => false],
         ['Perintah' => 'organisasi:rapikan-nama-bawaan', 'Kering' => false],
         ['Perintah' => 'panduan-awal:siapkan-bawaan', 'Kering' => false],
         ['Perintah' => 'katalog:lengkapi-fitur', 'Kering' => true],
