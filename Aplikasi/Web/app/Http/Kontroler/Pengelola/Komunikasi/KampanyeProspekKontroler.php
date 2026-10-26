@@ -91,8 +91,8 @@ final class KampanyeProspekKontroler extends Kontroler
             'EmailKampanyeAktif' => PengirimKampanyeProspek::Tersedia(),
             'Penerima' => array_values($penerima->map(fn (PenerimaKampanyeProspek $p): array => [
                 'Id' => $p->Id,
-                'Email' => $p->Kontak->Email,
-                'Sektor' => $p->Kontak->Sektor->AmbilLabel(),
+                'Email' => $p->Kontak?->Email ?? '',
+                'Sektor' => $p->Kontak?->Sektor->AmbilLabel() ?? '',
                 'Status' => $p->Status->value,
                 'Alasan' => $p->Alasan,
                 'DikirimPada' => $p->DikirimPada?->toIso8601String(),

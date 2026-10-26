@@ -127,6 +127,12 @@ final class KirimKampanyeProspekJatuhTempo
         foreach (PenerimaKampanyeProspek::query()->with('Kontak')->whereIn('Id', $ids)->orderBy('Id')->get() as $penerima) {
             $kontak = $penerima->Kontak;
 
+            if ($kontak === null) {
+                $penerima->update(['Status' => StatusPenerimaSiaran::Dilewati, 'Alasan' => 'Kontak sudah dihapus.']);
+
+                continue;
+            }
+
             if ($kontak->Status !== StatusKontakProspek::Aktif) {
                 $penerima->update(['Status' => StatusPenerimaSiaran::Dilewati, 'Alasan' => $kontak->Status === StatusKontakProspek::Berhenti ? 'Sudah berhenti berlangganan.' : 'Alamat tidak aktif.']);
 

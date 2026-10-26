@@ -161,6 +161,9 @@ describe('POST /api/pos/v1/kasir/masuk-pin (§20.2)', function (): void {
     });
 
     it('5 kali PIN salah mengunci 5 menit per perangkat + pengguna; PIN benar pun ditolak selama terkunci', function (): void {
+        // Waktu dibekukan: tanpa itu sisa kunci bisa 299 detik bila jam melewati batas detik di tengah tes.
+        $this->freezeTime();
+
         ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
         $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
         BantuanPerangkat::AturPin($tenant->Id, $kasir->Id, '482915');

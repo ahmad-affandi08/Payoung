@@ -17,6 +17,7 @@ const POLA_KUNCI_PRIBADI = '/^(NoHp|NoWa|NoTelepon|NomorHp|NomorTelepon|Telepon|
 function KunciPribadiDikecualikan(): array
 {
     return [
+        'AlamatPengirim' => 'Alamat email pengirim milik Payoung (konfigurasi integrasi), bukan alamat orang.',
         'AlamatIp' => 'Alamat jaringan perangkat/pengakses, bukan alamat tempat tinggal.',
         'AlamatApi' => 'URL layanan API, bukan alamat orang.',
         'AlamatSitus' => 'URL situs.',
