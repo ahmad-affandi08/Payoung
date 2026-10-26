@@ -49,8 +49,8 @@ export default function Buat({ PilihanSektor, EmailKampanyeAktif, BatasBawaan, M
             <form onSubmit={Kirim} noValidate className="flex flex-col gap-4">
                 {!EmailKampanyeAktif ? (
                     <Pemberitahuan jenis="peringatan" judul="Email kampanye belum aktif">
-                        Draf tetap bisa disimpan, tetapi baru bisa dijalankan setelah pengirim kampanye diatur di{' '}
-                        <Link href="/integrasi">Integrasi › Email kampanye</Link>.
+                        Draf tetap bisa disimpan, tetapi baru bisa dijalankan setelah ada pengirim email di{' '}
+                        <Link href="/integrasi">Integrasi › Email</Link> (atau Email kampanye untuk domain terpisah).
                     </Pemberitahuan>
                 ) : null}
                 <Panel tingkat="h3" judul="Email">

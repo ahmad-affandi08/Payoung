@@ -11,6 +11,7 @@ use App\Domain\Pengelola\Komunikasi\Enum\SektorProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKontakProspek;
 use App\Domain\Pengelola\Komunikasi\Kueri\SegmenKampanyeProspek;
+use App\Domain\Pengelola\Komunikasi\Layanan\PengirimKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Layanan\PenyusunIsiKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KontakProspek;
@@ -36,7 +37,7 @@ final class KampanyeProspekKontroler extends Kontroler
     {
         return Inertia::render('Pengelola/KampanyeProspek/Daftar', [
             'Kampanye' => array_values(KampanyeProspek::query()->orderByDesc('Id')->limit(100)->get()->map(fn (KampanyeProspek $k): array => self::Petakan($k))->all()),
-            'EmailKampanyeAktif' => config('integrasi.EmailKampanyeAktif') === true,
+            'EmailKampanyeAktif' => PengirimKampanyeProspek::Tersedia(),
             'Kontak' => self::RingkasKontak(),
         ]);
     }
@@ -45,7 +46,7 @@ final class KampanyeProspekKontroler extends Kontroler
     {
         return Inertia::render('Pengelola/KampanyeProspek/Buat', [
             'PilihanSektor' => $segmen->HitungPerSektor(),
-            'EmailKampanyeAktif' => config('integrasi.EmailKampanyeAktif') === true,
+            'EmailKampanyeAktif' => PengirimKampanyeProspek::Tersedia(),
             'BatasBawaan' => BuatKampanyeProspek::BATAS_BAWAAN_PER_HARI,
             'MaksBatas' => BuatKampanyeProspek::MAKS_BATAS_PER_HARI,
             'PenandaSektor' => PenyusunIsiKampanyeProspek::PENANDA_SEKTOR,
@@ -87,7 +88,7 @@ final class KampanyeProspekKontroler extends Kontroler
 
         return Inertia::render('Pengelola/KampanyeProspek/Tampil', [
             'Kampanye' => [...self::Petakan($kampanyeProspek), 'Isi' => $kampanyeProspek->Isi],
-            'EmailKampanyeAktif' => config('integrasi.EmailKampanyeAktif') === true,
+            'EmailKampanyeAktif' => PengirimKampanyeProspek::Tersedia(),
             'Penerima' => array_values($penerima->map(fn (PenerimaKampanyeProspek $p): array => [
                 'Id' => $p->Id,
                 'Email' => $p->Kontak->Email,

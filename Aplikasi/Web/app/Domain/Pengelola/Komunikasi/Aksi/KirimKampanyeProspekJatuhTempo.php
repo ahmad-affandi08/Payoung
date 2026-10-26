@@ -8,6 +8,7 @@ use App\Domain\Pengelola\Komunikasi\Enum\StatusKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKontakProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusPenerimaSiaran;
 use App\Domain\Pengelola\Komunikasi\Layanan\PenghitungKampanyeProspek;
+use App\Domain\Pengelola\Komunikasi\Layanan\PengirimKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Layanan\PenyusunIsiKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Layanan\TautanBerhentiProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KampanyeProspek;
@@ -15,7 +16,6 @@ use App\Domain\Pengelola\Komunikasi\Model\PenerimaKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Surel\PesanKampanyeProspek;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -70,8 +70,8 @@ final class KirimKampanyeProspekJatuhTempo
             ->get();
 
         foreach ($daftar as $kampanye) {
-            if (config('integrasi.EmailKampanyeAktif') !== true) {
-                $this->Jeda($kampanye, 'Email kampanye tidak aktif di Integrasi.');
+            if (! PengirimKampanyeProspek::Tersedia()) {
+                $this->Jeda($kampanye, 'Email kampanye tidak aktif: tidak ada pengirim email di Integrasi.');
 
                 continue;
             }
@@ -134,13 +134,13 @@ final class KirimKampanyeProspekJatuhTempo
             }
 
             try {
-                Mail::mailer('kampanye')->to($kontak->Email)->send(new PesanKampanyeProspek(
+                PengirimKampanyeProspek::Mailer()->to($kontak->Email)->send(new PesanKampanyeProspek(
                     PenyusunIsiKampanyeProspek::Isi($kampanye->Subjek, $kontak->Sektor),
                     PenyusunIsiKampanyeProspek::Isi($kampanye->Isi, $kontak->Sektor),
                     TautanBerhentiProspek::Buat($kontak),
                     $kontak->Sumber,
-                    (string) config('integrasi.EmailKampanye.AlamatPengirim'),
-                    (string) config('integrasi.EmailKampanye.NamaPengirim'),
+                    PengirimKampanyeProspek::AlamatPengirim(),
+                    PengirimKampanyeProspek::NamaPengirim(),
                 ));
                 $penerima->update(['Status' => StatusPenerimaSiaran::Terkirim, 'Alasan' => null, 'DikirimPada' => Carbon::now()]);
                 $terkirim++;

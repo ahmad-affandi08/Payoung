@@ -5,9 +5,11 @@ misalnya hasil impor dari portal data terbuka, dengan cara yang menjaga reputasi
 
 ## Yang perlu disiapkan sekali
 
-### 1. Pengirim terpisah (wajib)
-Kampanye **tidak bisa dijalankan** tanpa ini, dan sengaja tidak memakai pengirim email transaksional (verifikasi, tagihan, struk).
-Sebabnya: bila banyak penerima menandai email sebagai spam, yang rusak adalah reputasi domain pengirimnya. Kalau itu domain yang
+### 1. Pengirim terpisah (dianjurkan)
+Bila kartu **Email kampanye** belum diisi, kampanye memakai **email bawaan yang sudah terpasang** (Integrasi › Email atau `.env`) dengan
+alamat pengirim bawaannya (D-217). Itu cukup untuk mulai dengan volume kecil, tetapi memakai domain yang sama dengan email transaksional
+(verifikasi, tagihan, struk). Tanpa pengirim apa pun (atau hanya `log`/`array`) kampanye tidak bisa dijalankan.
+Pengirim terpisah lebih aman dan **didahulukan** bila diisi. Sebabnya: bila banyak penerima menandai email sebagai spam, yang rusak adalah reputasi domain pengirimnya. Kalau itu domain yang
 sama dengan email verifikasi, pendaftar baru berhenti menerima email verifikasi.
 
 1. Siapkan domain atau subdomain lain, misal `info.payoung.id`, dan buat kotak pengirim di penyedia email massal atau SMTP hosting.

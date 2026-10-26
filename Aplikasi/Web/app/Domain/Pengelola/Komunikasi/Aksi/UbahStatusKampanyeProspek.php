@@ -9,6 +9,7 @@ use App\Domain\Pengelola\Komunikasi\Enum\StatusKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKontakProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusPenerimaSiaran;
 use App\Domain\Pengelola\Komunikasi\Layanan\PenghitungKampanyeProspek;
+use App\Domain\Pengelola\Komunikasi\Layanan\PengirimKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KontakProspek;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
@@ -36,8 +37,8 @@ final class UbahStatusKampanyeProspek
                 throw new PelanggaranAturanBisnis('P-12', "Kampanye berstatus {$asal->AmbilLabel()} tidak bisa diubah menjadi {$tujuan->AmbilLabel()}.", 'Status');
             }
 
-            if ($tujuan === StatusKampanyeProspek::Berjalan && config('integrasi.EmailKampanyeAktif') !== true) {
-                throw new PelanggaranAturanBisnis('P-12', 'Email kampanye belum aktif. Atur dan aktifkan di Integrasi › Email kampanye (pakai domain pengirim terpisah dari email transaksi).', 'Status');
+            if ($tujuan === StatusKampanyeProspek::Berjalan && ! PengirimKampanyeProspek::Tersedia()) {
+                throw new PelanggaranAturanBisnis('P-12', 'Belum ada pengirim email. Atur Integrasi › Email, atau Email kampanye bila ingin domain pengirim terpisah dari email transaksi.', 'Status');
             }
 
             $ubah = ['Status' => $tujuan];

@@ -14,6 +14,7 @@ use App\Domain\Pengelola\Komunikasi\Enum\SektorProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusKontakProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\StatusPenerimaSiaran;
+use App\Domain\Pengelola\Komunikasi\Layanan\PengirimKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Layanan\TautanBerhentiProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Model\KontakProspek;
@@ -212,11 +213,11 @@ describe('D-216 membuat dan menjalankan kampanye', function (): void {
             ->and(fn () => $aksi->Jalankan($pelaku, 'Nama kampanye', 'Subjek', str_repeat('x', 30), ['FNB-CAF'], 501))->toThrow(PelanggaranAturanBisnis::class, 'Batas kirim');
     });
 
-    it('tanpa email kampanye aktif kampanye tidak bisa dijalankan dan tidak jatuh ke pengirim transaksional', function (): void {
+    it('tanpa pengirim email sama sekali (kampanye maupun bawaan) kampanye tidak bisa dijalankan', function (): void {
         BuatKontakProspekUji('kopi@contoh.id');
         $kampanye = BuatKampanyeProspekUji();
 
-        expect(fn () => JalankanKampanyeProspekUji($kampanye))->toThrow(PelanggaranAturanBisnis::class, 'Email kampanye belum aktif')
+        expect(fn () => JalankanKampanyeProspekUji($kampanye))->toThrow(PelanggaranAturanBisnis::class, 'Belum ada pengirim email')
             ->and($kampanye->refresh()->Status)->toBe(StatusKampanyeProspek::Draf)
             ->and(PenerimaKampanyeProspek::query()->count())->toBe(0);
     });
@@ -398,6 +399,76 @@ describe('D-216 pengiriman bertahap', function (): void {
         JalankanKampanyeProspekUji(BuatKampanyeProspekUji());
 
         $this->artisan('prospek:kirim-kampanye')->expectsOutputToContain('1 kampanye diproses, 1 email terkirim.')->assertSuccessful();
+    });
+});
+
+describe('D-216 pengirim bawaan bila Email kampanye kosong', function (): void {
+    function PasangEmailBawaanUji(string $mailer = 'smtp'): void
+    {
+        config([
+            'integrasi.EmailKampanyeAktif' => false,
+            'mail.default' => $mailer,
+            'mail.mailers.smtp' => ['transport' => 'array'],
+            'mail.from.address' => 'halo@payoung.id',
+            'mail.from.name' => 'Payoung',
+        ]);
+    }
+
+    it('tanpa Email kampanye tetapi dengan email bawaan sungguhan: tersedia, memakai alamat pengirim bawaan', function (): void {
+        PasangEmailBawaanUji();
+
+        expect(PengirimKampanyeProspek::MemakaiPengirimKhusus())->toBeFalse()
+            ->and(PengirimKampanyeProspek::MemakaiPengirimBawaan())->toBeTrue()
+            ->and(PengirimKampanyeProspek::Tersedia())->toBeTrue()
+            ->and(PengirimKampanyeProspek::AlamatPengirim())->toBe('halo@payoung.id')
+            ->and(PengirimKampanyeProspek::NamaPengirim())->toBe('Payoung');
+    });
+
+    it('pengirim bawaan palsu (log/array) atau tanpa alamat pengirim tidak dianggap tersedia', function (): void {
+        PasangEmailBawaanUji('log');
+        expect(PengirimKampanyeProspek::Tersedia())->toBeFalse();
+
+        PasangEmailBawaanUji('array');
+        expect(PengirimKampanyeProspek::Tersedia())->toBeFalse();
+
+        PasangEmailBawaanUji();
+        config(['mail.from.address' => '']);
+        expect(PengirimKampanyeProspek::Tersedia())->toBeFalse();
+    });
+
+    it('Email kampanye aktif tetap didahulukan atas email bawaan', function (): void {
+        PasangEmailBawaanUji();
+        AktifkanEmailKampanyeUji();
+
+        expect(PengirimKampanyeProspek::MemakaiPengirimKhusus())->toBeTrue()
+            ->and(PengirimKampanyeProspek::MemakaiPengirimBawaan())->toBeFalse()
+            ->and(PengirimKampanyeProspek::AlamatPengirim())->toBe('info@kampanye.payoung.id');
+    });
+
+    it('kampanye berjalan dan terkirim lewat email bawaan, dengan email uji dari alamat bawaan', function (): void {
+        PasangEmailBawaanUji();
+        BuatKontakProspekUji('kopi@contoh.id');
+        $kampanye = BuatKampanyeProspekUji();
+        BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);
+
+        $this->post(BantuanPengelola::Url("/kampanye-prospek/{$kampanye->Uuid}/uji"))->assertSessionHas('Kilat');
+        JalankanKampanyeProspekUji($kampanye);
+
+        expect(app(KirimKampanyeProspekJatuhTempo::class)->Jalankan())->toBe(['Kampanye' => 1, 'Terkirim' => 1]);
+
+        $pesan = Mail::mailer('smtp')->getSymfonyTransport()->messages();
+
+        expect($pesan)->toHaveCount(2)
+            ->and($pesan->last()->getOriginalMessage()->getFrom()[0]->getAddress())->toBe('halo@payoung.id')
+            ->and($pesan->last()->getOriginalMessage()->getTextBody())->toContain('/berhenti-prospek/');
+    });
+
+    it('tanpa pengirim apa pun kampanye tidak bisa dijalankan', function (): void {
+        config(['integrasi.EmailKampanyeAktif' => false, 'mail.default' => 'array']);
+        $kampanye = BuatKampanyeProspekUji();
+        BuatKontakProspekUji('kopi@contoh.id');
+
+        expect(fn () => JalankanKampanyeProspekUji($kampanye))->toThrow(PelanggaranAturanBisnis::class, 'Belum ada pengirim email');
     });
 });
 

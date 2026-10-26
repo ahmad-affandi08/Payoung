@@ -79,9 +79,9 @@ export default function Daftar({
             <NavigasiKampanye />
             {!EmailKampanyeAktif ? (
                 <Pemberitahuan jenis="peringatan" judul="Email kampanye belum aktif">
-                    Kampanye baru bisa dijalankan setelah pengirim kampanye diatur di{' '}
-                    <Link href="/integrasi">Integrasi › Email kampanye</Link>. Pakai domain atau subdomain pengirim yang
-                    terpisah dari email transaksional.
+                    Belum ada pengirim email. Atur <Link href="/integrasi">Integrasi › Email</Link> (dipakai juga untuk
+                    kampanye bila Email kampanye kosong), atau <Link href="/integrasi">Integrasi › Email kampanye</Link>{' '}
+                    untuk domain pengirim yang terpisah dari email transaksional.
                 </Pemberitahuan>
             ) : null}
             <AksiHalaman

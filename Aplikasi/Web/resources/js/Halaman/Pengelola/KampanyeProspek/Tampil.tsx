@@ -101,7 +101,8 @@ export default function Tampil({ Kampanye, EmailKampanyeAktif, Penerima }: Props
             ) : null}
             {!EmailKampanyeAktif && (Kampanye.Status === 'Draf' || Kampanye.Status === 'Dijeda') ? (
                 <Pemberitahuan jenis="peringatan" judul="Email kampanye belum aktif">
-                    Atur dan aktifkan pengirim kampanye di Integrasi › Email kampanye sebelum menjalankan kampanye.
+                    Atur pengirim email di Integrasi › Email (atau Email kampanye untuk domain terpisah) sebelum
+                    menjalankan kampanye.
                 </Pemberitahuan>
             ) : null}
             <Panel tingkat="h3" judul="Ringkasan">
