@@ -100,7 +100,12 @@ export default function RingkasanTim({
                     <BarisRingkasan nama="Level staf">
                         {isian.LevelStaf.trim() === '' ? 'Tidak diisi' : isian.LevelStaf}
                     </BarisRingkasan>
-                    <BarisRingkasan nama="Gaji pokok">{Uang(isian.GajiPokok)}</BarisRingkasan>
+                    <BarisRingkasan nama="Siklus gaji">
+                        {isian.SiklusGaji === 'Mingguan' ? 'Mingguan' : 'Bulanan'}
+                    </BarisRingkasan>
+                    <BarisRingkasan nama={isian.DasarGaji === 'PerHariMasuk' ? 'Upah per hari masuk' : 'Gaji pokok'}>
+                        {Uang(isian.GajiPokok)}
+                    </BarisRingkasan>
                     <BarisRingkasan nama="Tarif lembur per jam">{Uang(isian.TarifLemburPerJam)}</BarisRingkasan>
                     <BarisRingkasan nama="Potongan per menit terlambat">
                         {Uang(isian.PotonganTerlambatPerMenit)}

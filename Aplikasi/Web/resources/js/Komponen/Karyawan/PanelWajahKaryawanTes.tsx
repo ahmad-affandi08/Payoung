@@ -17,6 +17,8 @@ const karyawan: BarisKaryawan = {
     Nama: 'Rina Wulandari',
     Jabatan: 'Barista',
     LevelStaf: null,
+    SiklusGaji: 'Bulanan',
+    DasarGaji: 'Tetap',
     GajiPokok: null,
     TarifLemburPerJam: null,
     PotonganTerlambatPerMenit: null,

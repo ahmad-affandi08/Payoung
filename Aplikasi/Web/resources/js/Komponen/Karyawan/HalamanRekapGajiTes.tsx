@@ -6,7 +6,7 @@ import HalamanDetailRekapGaji from '@/Halaman/Kelola/Karyawan/DetailGaji';
 import { AturHalamanUji, kirimanForm, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
-import type { BarisGajiKaryawan, BarisRekapGaji, PropsDetailRekapGaji } from '@/Tipe/Karyawan';
+import type { BarisGajiKaryawan, BarisRekapGaji, PropsDaftarRekapGaji, PropsDetailRekapGaji } from '@/Tipe/Karyawan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -14,6 +14,11 @@ const rekap: BarisRekapGaji = {
     Uuid: 'R1',
     Periode: '2026-10',
     LabelPeriode: 'Oktober 2026',
+    Siklus: 'Bulanan',
+    LabelSiklus: 'Bulanan',
+    TanggalMulai: '2026-10-01',
+    TanggalSelesai: '2026-10-31',
+    JumlahHari: 31,
     Status: 'Draf',
     LabelStatus: 'Draf',
     TotalKotor: '4500000.00',
@@ -27,6 +32,8 @@ const baris: BarisGajiKaryawan = {
     Nama: 'Dewi Junior',
     Jabatan: 'Terapis',
     GajiPokok: '1000000.00',
+    UpahHarian: null,
+    HariMasuk: null,
     Komisi: '0.00',
     Tambahan: '500000.00',
     LemburMenit: 0,
@@ -41,6 +48,14 @@ const baris: BarisGajiKaryawan = {
     Bersih: '650000.00',
     Catatan: 'Lembur 5 hari',
     SisaKasbon: '1300000.00',
+};
+
+const usulanMingguan: PropsDaftarRekapGaji['UsulanMingguan'] = {
+    Usulan: '2026-10-19',
+    UsulanSelesai: '2026-10-25',
+    LabelUsulan: '19–25 Oktober 2026',
+    JumlahKaryawan: 0,
+    SudahLewat: false,
 };
 
 function PropsDetail(status: BarisRekapGaji['Status'] = 'Draf'): PropsDetailRekapGaji {
@@ -78,6 +93,11 @@ describe('Rekap gaji (F-18 bagian 3)', () => {
                     { Nilai: 'Draf', Label: 'Draf' },
                     { Nilai: 'Dibayar', Label: 'Dibayar' },
                 ]}
+                OpsiSiklus={[
+                    { Nilai: 'Bulanan', Label: 'Bulanan' },
+                    { Nilai: 'Mingguan', Label: 'Mingguan' },
+                ]}
+                UsulanMingguan={usulanMingguan}
             />,
         );
         expect(screen.getAllByText('Oktober 2026').length).toBeGreaterThan(0);
@@ -87,6 +107,57 @@ describe('Rekap gaji (F-18 bagian 3)', () => {
             metode: 'post',
             url: '/kelola/karyawan/gaji',
             data: { Periode: '2026-09' },
+        });
+    });
+
+    it('daftar: pilih siklus mingguan mengirim tanggal mulai usulan; pengingat tampil bila rentang sudah lewat (D-219)', () => {
+        const props = {
+            OpsiPeriode: [{ Nilai: '2026-10', Label: 'Oktober 2026' }],
+            OpsiStatus: [{ Nilai: 'Draf' as const, Label: 'Draf' }],
+            OpsiSiklus: [
+                { Nilai: 'Bulanan' as const, Label: 'Bulanan' },
+                { Nilai: 'Mingguan' as const, Label: 'Mingguan' },
+            ],
+            UsulanMingguan: { ...usulanMingguan, JumlahKaryawan: 3, SudahLewat: true },
+        };
+        RenderUji(<HalamanRekapGaji Rekap={BuatHasilTabel([rekap])} {...props} />);
+        expect(screen.getByText(/Rekap gaji mingguan 19–25 Oktober 2026 untuk 3 karyawan/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Buat rekap gaji' }));
+        fireEvent.click(screen.getByRole('combobox', { name: /Siklus gaji/ }));
+        fireEvent.click(screen.getByRole('option', { name: 'Mingguan' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Buat draf' }));
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'post',
+            url: '/kelola/karyawan/gaji',
+            data: { Siklus: 'Mingguan', Periode: '2026-10-19' },
+        });
+    });
+
+    it('draf upah harian: hari masuk tampil di baris dan dikirim saat diubah (D-219)', () => {
+        const harian: BarisGajiKaryawan = { ...baris, GajiPokok: '450000.00', UpahHarian: '75000.00', HariMasuk: 6 };
+        const props = PropsDetail();
+        RenderUji(
+            <HalamanDetailRekapGaji
+                {...props}
+                Rekap={{
+                    ...props.Rekap,
+                    Siklus: 'Mingguan',
+                    LabelSiklus: 'Mingguan',
+                    LabelPeriode: '19–25 Oktober 2026',
+                    JumlahHari: 7,
+                }}
+                Baris={[harian]}
+            />,
+        );
+        expect(screen.getByText('6 hari × Rp 75.000')).toBeTruthy();
+        BukaMenu(screen.getAllByRole('button', { name: /Aksi gaji Dewi Junior/ })[0] as HTMLElement);
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah tambahan & potongan' }));
+        fireEvent.change(screen.getByRole('textbox', { name: /Hari masuk/ }), { target: { value: '5' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan gaji' }));
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'put',
+            url: '/kelola/karyawan/gaji/R1/baris/KR1',
+            data: { HariMasuk: '5' },
         });
     });
 

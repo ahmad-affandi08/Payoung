@@ -6,6 +6,9 @@ namespace App\Http\Permintaan\Kelola;
 
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Karyawan\Data\DataKaryawan;
+use App\Domain\Karyawan\Enum\DasarGaji;
+use App\Domain\Karyawan\Enum\SiklusGaji;
+use Illuminate\Validation\Rule;
 
 /**
  * D-101: satu formulir "Tambah anggota tim". `Akses` memilih apa yang dibuat:
@@ -34,6 +37,8 @@ final class TambahTimPermintaan extends TambahPenggunaPermintaan
         $karyawan = [
             'LevelStaf' => ['nullable', 'string', 'max:40'],
             'GajiPokok' => self::ANGKA,
+            'SiklusGaji' => ['nullable', 'string', Rule::enum(SiklusGaji::class)],
+            'DasarGaji' => ['nullable', 'string', Rule::enum(DasarGaji::class)],
             'TarifLemburPerJam' => self::ANGKA,
             'PotonganTerlambatPerMenit' => self::ANGKA,
             'PotonganTidakMasukPerHari' => self::ANGKA,
@@ -115,6 +120,8 @@ final class TambahTimPermintaan extends TambahPenggunaPermintaan
             potonganTerlambatPerMenit: $uang('PotonganTerlambatPerMenit'),
             potonganTidakMasukPerHari: $uang('PotonganTidakMasukPerHari'),
             ikutAbsensi: $this->AmbilIkutAbsensi(),
+            siklusGaji: $teks('SiklusGaji') === null ? null : SiklusGaji::from((string) $teks('SiklusGaji')),
+            dasarGaji: $teks('DasarGaji') === null ? null : DasarGaji::from((string) $teks('DasarGaji')),
         );
     }
 }

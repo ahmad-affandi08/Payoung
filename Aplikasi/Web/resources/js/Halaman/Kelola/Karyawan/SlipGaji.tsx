@@ -59,7 +59,14 @@ function Slip({ baris, props }: { baris: BarisGajiKaryawan; props: PropsSlipGaji
                 <section className="flex flex-col gap-2">
                     <h2 className="text-label font-semibold text-teks-sekunder">Pendapatan</h2>
                     <dl className="flex flex-col gap-1">
-                        <BarisNilai label="Gaji pokok" nilai={baris.GajiPokok} />
+                        <BarisNilai
+                            label={
+                                baris.UpahHarian !== null && baris.HariMasuk !== null
+                                    ? `Upah harian (${String(baris.HariMasuk)} hari × ${FormatRupiah(baris.UpahHarian)})`
+                                    : 'Gaji pokok'
+                            }
+                            nilai={baris.GajiPokok}
+                        />
                         {CekAda(baris.Komisi) ? <BarisNilai label="Komisi" nilai={baris.Komisi} /> : null}
                         {CekAda(baris.Tambahan) ? (
                             <BarisNilai label="Tambahan (tunjangan)" nilai={baris.Tambahan} />

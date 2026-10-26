@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Karyawan\Data;
 
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Karyawan\Enum\DasarGaji;
+use App\Domain\Karyawan\Enum\SiklusGaji;
 
-/** Masukan `SimpanKaryawan` (F-18). Teks opsional kosong = null. `ikutAbsensi` null = tidak diubah (karyawan baru: ikut). */
+/** Masukan `SimpanKaryawan` (F-18). Teks opsional kosong = null. `ikutAbsensi` null = tidak diubah (karyawan baru: ikut).
+ * `siklusGaji`/`dasarGaji` null = tidak diubah (karyawan baru: Bulanan/Tetap), D-219. */
 final readonly class DataKaryawan
 {
     public function __construct(
@@ -21,5 +24,7 @@ final readonly class DataKaryawan
         public ?Uang $potonganTerlambatPerMenit = null,
         public ?Uang $potonganTidakMasukPerHari = null,
         public ?bool $ikutAbsensi = null,
+        public ?SiklusGaji $siklusGaji = null,
+        public ?DasarGaji $dasarGaji = null,
     ) {}
 }

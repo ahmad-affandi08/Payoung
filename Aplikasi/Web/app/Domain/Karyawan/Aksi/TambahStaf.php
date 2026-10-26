@@ -62,6 +62,8 @@ final class TambahStaf
                     potonganTerlambatPerMenit: $rinciKaryawan?->potonganTerlambatPerMenit,
                     potonganTidakMasukPerHari: $rinciKaryawan?->potonganTidakMasukPerHari,
                     ikutAbsensi: $rinciKaryawan?->ikutAbsensi,
+                    siklusGaji: $rinciKaryawan?->siklusGaji,
+                    dasarGaji: $rinciKaryawan?->dasarGaji,
                 ));
             }
 

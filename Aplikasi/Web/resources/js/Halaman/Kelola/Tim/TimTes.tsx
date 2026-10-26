@@ -30,6 +30,8 @@ const BuatKaryawan = (
     Nama: nama,
     Jabatan: 'Barista',
     LevelStaf: null,
+    SiklusGaji: 'Bulanan' as const,
+    DasarGaji: 'Tetap' as const,
     GajiPokok: '2500000.00',
     TarifLemburPerJam: null,
     PotonganTerlambatPerMenit: null,

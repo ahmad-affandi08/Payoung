@@ -3,6 +3,8 @@ import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
 /** Kontrak props halaman karyawan F-18 bagian 1 (karyawan, jadwal kerja, absensi). Uang string desimal; jam `HH:mm`. */
 
 export type StatusKaryawan = 'Aktif' | 'Nonaktif';
+export type SiklusGaji = 'Bulanan' | 'Mingguan';
+export type DasarGaji = 'Tetap' | 'PerHariMasuk';
 export type OpsiUuidNama = { Uuid: string; Nama: string };
 
 export type BarisKaryawan = {
@@ -10,7 +12,10 @@ export type BarisKaryawan = {
     Nama: string;
     Jabatan: string | null;
     LevelStaf: string | null;
-    /** Hanya untuk pelihat ber-izin `karyawan.kelola`. */
+    /** D-219: siklus bayar gaji dan cara gaji pokok dihitung (tetap per siklus atau upah per hari masuk). */
+    SiklusGaji: SiklusGaji;
+    DasarGaji: DasarGaji;
+    /** Hanya untuk pelihat ber-izin `karyawan.kelola`. Gaji per siklus, atau upah per hari bila `DasarGaji` PerHariMasuk. */
     GajiPokok: string | null;
     /** D-44: tarif lembur per jam, potongan per menit terlambat, potongan per hari tidak masuk (hanya `karyawan.kelola`). */
     TarifLemburPerJam: string | null;
@@ -216,13 +221,19 @@ export type PropsCuti = {
     Izin: { Kelola: boolean };
 };
 
-/** F-18 bagian 3: rekap gaji bulanan. Uang = string desimal. */
+/** F-18 bagian 3: rekap gaji bulanan atau mingguan (D-219). Uang = string desimal. */
 export type StatusRekapGaji = 'Draf' | 'Dibayar';
 
 export type BarisRekapGaji = {
     Uuid: string;
     Periode: string;
     LabelPeriode: string;
+    Siklus: SiklusGaji;
+    LabelSiklus: string;
+    TanggalMulai: string;
+    TanggalSelesai: string;
+    /** Jumlah hari dalam rentang rekap (batas hari masuk upah harian). */
+    JumlahHari: number;
     Status: StatusRekapGaji;
     LabelStatus: string;
     TotalKotor: string;
@@ -235,6 +246,15 @@ export type PropsDaftarRekapGaji = {
     Rekap: HasilTabel<BarisRekapGaji>;
     OpsiPeriode: { Nilai: string; Label: string }[];
     OpsiStatus: { Nilai: StatusRekapGaji; Label: string }[];
+    OpsiSiklus: { Nilai: SiklusGaji; Label: string }[];
+    /** Usulan rekap mingguan berikutnya: sehari setelah rekap mingguan terakhir (tanpa rekap, Senin pekan ini). */
+    UsulanMingguan: {
+        Usulan: string;
+        UsulanSelesai: string;
+        LabelUsulan: string;
+        JumlahKaryawan: number;
+        SudahLewat: boolean;
+    };
 };
 
 export type BarisGajiKaryawan = {
@@ -242,6 +262,9 @@ export type BarisGajiKaryawan = {
     Nama: string;
     Jabatan: string | null;
     GajiPokok: string;
+    /** D-219: hanya karyawan berupah per hari masuk (GajiPokok = UpahHarian × HariMasuk). */
+    UpahHarian: string | null;
+    HariMasuk: number | null;
     Komisi: string;
     Tambahan: string;
     /** D-44: lembur & potongan kehadiran dari absensi vs jadwal; bisa disesuaikan selama draf. */

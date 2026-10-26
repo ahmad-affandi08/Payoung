@@ -104,6 +104,15 @@ describe('PeriksaLangkahTim', () => {
         expect(PeriksaLangkahTim('Akun', { ...konteks, isian: { ...isian, NoHp: '12' } }).NoHp).toContain('8–20 angka');
     });
 
+    it('Gaji: upah per hari masuk wajib diisi (D-219)', () => {
+        const harian = { ...isian, DasarGaji: 'PerHariMasuk' as const, SiklusGaji: 'Mingguan' as const };
+
+        expect(PeriksaLangkahTim('Gaji', { ...konteks, isian: harian }).GajiPokok).toBe(
+            'Isi upah per hari untuk karyawan berupah harian.',
+        );
+        expect(PeriksaLangkahTim('Gaji', { ...konteks, isian: { ...harian, GajiPokok: '75000' } })).toEqual({});
+    });
+
     it('Peran: peran wajib; peran bercakupan terpilih butuh minimal satu outlet; Gaji memeriksa angka', () => {
         expect(PeriksaLangkahTim('Peran', konteks)).toEqual({});
         expect(PeriksaLangkahTim('Peran', { ...konteks, isian: { ...isian, Peran: '' } }).Peran).toBe('Pilih peran.');
@@ -125,6 +134,8 @@ describe('PetakanGalatTimKeLangkah', () => {
         expect(PetakanGalatTimKeLangkah('Outlet.0', 'Kasir')).toBe('Peran');
         expect(PetakanGalatTimKeLangkah('UuidOutlet', 'Tanpa')).toBe('Outlet');
         expect(PetakanGalatTimKeLangkah('GajiPokok', 'Kasir')).toBe('Gaji');
+        expect(PetakanGalatTimKeLangkah('SiklusGaji', 'Kasir')).toBe('Gaji');
+        expect(PetakanGalatTimKeLangkah('DasarGaji', 'Kasir')).toBe('Gaji');
         expect(PetakanGalatTimKeLangkah('Umum', 'Kasir')).toBeNull();
         expect(HitungLangkahTimBergalat({ Pin: 'x', Nama: 'y', Umum: 'z' }, 'Kasir')).toEqual(['Siapa', 'Akun']);
     });

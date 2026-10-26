@@ -59,6 +59,8 @@ const kunciAkun = ['Email', 'KataSandi', 'Pin', 'NoHp'];
 const kunciPeran = ['Peran', 'SemuaOutlet', 'Outlet', 'JugaKaryawan', 'UuidKaryawan', 'IkutAbsensi'];
 const kunciGaji = [
     'LevelStaf',
+    'SiklusGaji',
+    'DasarGaji',
     'GajiPokok',
     'TarifLemburPerJam',
     'PotonganTerlambatPerMenit',
@@ -143,6 +145,9 @@ export type IsianTim = {
     Peran: string;
     UuidOutlet: string;
     LevelStaf: string;
+    /** D-219: kosong = Bulanan / Tetap. */
+    SiklusGaji?: 'Bulanan' | 'Mingguan';
+    DasarGaji?: 'Tetap' | 'PerHariMasuk';
     GajiPokok: string;
     TarifLemburPerJam: string;
     PotonganTerlambatPerMenit: string;
@@ -233,9 +238,13 @@ export function PeriksaLangkahTim(
         for (const [isi, nama] of angka) {
             const nilai = isian[isi];
 
-            if (nilai !== '' && !polaUang.test(nilai)) {
+            if (typeof nilai === 'string' && nilai !== '' && !polaUang.test(nilai)) {
                 galat[isi] = `${nama} harus angka dengan pemisah desimal titik (maks. 2 desimal).`;
             }
+        }
+
+        if (isian.DasarGaji === 'PerHariMasuk' && isian.GajiPokok.trim() === '') {
+            galat.GajiPokok = 'Isi upah per hari untuk karyawan berupah harian.';
         }
 
         if (isian.LevelStaf.trim().length > 40) {

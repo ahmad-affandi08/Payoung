@@ -53,7 +53,16 @@ const kolom: KolomTabel<BarisGajiKaryawan>[] = [
         header: 'Gaji pokok',
         enableSorting: false,
         meta: { label: 'Gaji pokok', prioritas: 'rendah', angka: true },
-        cell: ({ row }) => Rupiah(row.original.GajiPokok),
+        cell: ({ row: { original: b } }) => (
+            <span className="flex flex-col items-end">
+                <span>{Rupiah(b.GajiPokok)}</span>
+                {b.UpahHarian !== null && b.HariMasuk !== null ? (
+                    <span className="text-keterangan text-teks-sekunder">
+                        {b.HariMasuk} hari × {FormatRupiah(b.UpahHarian)}
+                    </span>
+                ) : null}
+            </span>
+        ),
     },
     {
         id: 'Komisi',
@@ -148,7 +157,7 @@ export default function HalamanDetailRekapGaji({ Rekap, Baris, OpsiAkunKasBank, 
     };
 
     return (
-        <TataLetakAplikasi judul={`Rekap gaji ${Rekap.LabelPeriode}`}>
+        <TataLetakAplikasi judul={`Rekap gaji ${Rekap.LabelSiklus.toLowerCase()} ${Rekap.LabelPeriode}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <Button asChild variant="link" className="h-auto px-0">
                     <Link href={alamatDaftar}>Kembali ke rekap gaji</Link>
@@ -260,11 +269,13 @@ export default function HalamanDetailRekapGaji({ Rekap, Baris, OpsiAkunKasBank, 
                         </DropdownMenuItem>
                     </>
                 )}
-                kosong={{ judul: 'Tidak ada karyawan dengan gaji pokok atau komisi di periode ini.' }}
+                kosong={{
+                    judul: `Tidak ada karyawan bergaji ${Rekap.LabelSiklus.toLowerCase()} dengan gaji pokok atau komisi di periode ini.`,
+                }}
             />
 
             {dialog?.jenis === 'ubah' ? (
-                <FormUbahBaris alamat={alamat} baris={dialog.baris} saatSelesai={Tutup} />
+                <FormUbahBaris alamat={alamat} baris={dialog.baris} jumlahHari={Rekap.JumlahHari} saatSelesai={Tutup} />
             ) : null}
             {dialog?.jenis === 'bayar' ? (
                 <FormBayar
@@ -297,10 +308,12 @@ function TanpaDesimalNol(nilai: string): string {
 function FormUbahBaris({
     alamat,
     baris,
+    jumlahHari,
     saatSelesai,
 }: {
     alamat: string;
     baris: BarisGajiKaryawan;
+    jumlahHari: number;
     saatSelesai: () => void;
 }) {
     const formulir = useForm({
@@ -310,6 +323,7 @@ function FormUbahBaris({
         PotonganTidakMasuk: TanpaDesimalNol(baris.PotonganTidakMasuk),
         PotonganKasbon: TanpaDesimalNol(baris.PotonganKasbon),
         PotonganLain: TanpaDesimalNol(baris.PotonganLain),
+        HariMasuk: baris.HariMasuk === null ? '' : String(baris.HariMasuk),
         Catatan: baris.Catatan ?? '',
     });
 
@@ -325,6 +339,20 @@ function FormUbahBaris({
             saatTutup={saatSelesai}
         >
             <form onSubmit={Kirim} className="grid gap-4 sm:grid-cols-2" noValidate>
+                {baris.UpahHarian !== null ? (
+                    <div className="sm:col-span-2">
+                        <BidangTeks
+                            label={`Hari masuk (maks. ${String(jumlahHari)})`}
+                            nilai={formulir.data.HariMasuk}
+                            saatBerubah={(nilai) => formulir.setData('HariMasuk', nilai.replace(/\D/g, ''))}
+                            galat={formulir.errors.HariMasuk}
+                            keterangan={`Gaji pokok = upah ${FormatRupiah(baris.UpahHarian)} × hari masuk. Dihitung dari absensi dan cuti berbayar; ubah bila karyawan tidak mengisi absensi.`}
+                            inputMode="numeric"
+                            maxLength={2}
+                            required
+                        />
+                    </div>
+                ) : null}
                 <BidangUang
                     label="Tambahan (lembur, tunjangan)"
                     nilai={formulir.data.Tambahan}

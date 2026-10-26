@@ -105,6 +105,26 @@ final class PenjagaKunciPeriode
         return trim((self::NAMA_BULAN[$bulan] ?? $bulan).' '.$tahun);
     }
 
+    /**
+     * "2026-10-19", "2026-10-25" → "19–25 Oktober 2026"; lintas bulan "28 Oktober – 3 November 2026"; lintas tahun
+     * "29 Desember 2026 – 4 Januari 2027".
+     */
+    public static function FormatRentang(string $dari, string $sampai): string
+    {
+        [$t1, $b1, $h1] = explode('-', $dari) + ['', '', ''];
+        [$t2, $b2, $h2] = explode('-', $sampai) + ['', '', ''];
+        $hari1 = (string) (int) $h1;
+        $hari2 = (string) (int) $h2;
+        $bulan1 = self::NAMA_BULAN[$b1] ?? $b1;
+        $bulan2 = self::NAMA_BULAN[$b2] ?? $b2;
+
+        if ($t1 !== $t2) {
+            return "{$hari1} {$bulan1} {$t1} – {$hari2} {$bulan2} {$t2}";
+        }
+
+        return $b1 === $b2 ? "{$hari1}–{$hari2} {$bulan1} {$t1}" : "{$hari1} {$bulan1} – {$hari2} {$bulan2} {$t1}";
+    }
+
     private function CariTanggalTerbukaBerikutnya(CarbonImmutable $tanggal): CarbonImmutable
     {
         $awal = $tanggal->startOfMonth();

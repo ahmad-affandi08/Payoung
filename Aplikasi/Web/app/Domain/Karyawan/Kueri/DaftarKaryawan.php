@@ -74,6 +74,8 @@ final class DaftarKaryawan
             'Nama' => $k->Nama,
             'Jabatan' => $k->Jabatan,
             'LevelStaf' => $k->LevelStaf,
+            'SiklusGaji' => $k->SiklusGaji->value,
+            'DasarGaji' => $k->DasarGaji->value,
             'GajiPokok' => $lihatGaji && $k->GajiPokok !== null ? (string) $k->GajiPokok : null,
             'TarifLemburPerJam' => $lihatGaji && $k->TarifLemburPerJam !== null ? (string) $k->TarifLemburPerJam : null,
             'PotonganTerlambatPerMenit' => $lihatGaji && $k->PotonganTerlambatPerMenit !== null ? (string) $k->PotonganTerlambatPerMenit : null,

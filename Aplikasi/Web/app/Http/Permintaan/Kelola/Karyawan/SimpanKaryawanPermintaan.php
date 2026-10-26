@@ -6,7 +6,10 @@ namespace App\Http\Permintaan\Kelola\Karyawan;
 
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Karyawan\Data\DataKaryawan;
+use App\Domain\Karyawan\Enum\DasarGaji;
+use App\Domain\Karyawan\Enum\SiklusGaji;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /** Isian karyawan (F-18): nama, jabatan, level staf (komisi bagian 2), gaji pokok, akun tertaut, outlet utama. */
 final class SimpanKaryawanPermintaan extends FormRequest
@@ -24,6 +27,8 @@ final class SimpanKaryawanPermintaan extends FormRequest
             'TarifLemburPerJam' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
             'PotonganTerlambatPerMenit' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
             'PotonganTidakMasukPerHari' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
+            'SiklusGaji' => ['nullable', 'string', Rule::enum(SiklusGaji::class)],
+            'DasarGaji' => ['nullable', 'string', Rule::enum(DasarGaji::class)],
             'UuidPengguna' => ['nullable', 'string', 'ulid'],
             'UuidOutlet' => ['nullable', 'string', 'ulid'],
             // D-180: kosong = tidak diubah (karyawan baru: bawaan menurut peran).
@@ -40,6 +45,8 @@ final class SimpanKaryawanPermintaan extends FormRequest
 
         return [
             'GajiPokok.regex' => "Gaji pokok {$angka}",
+            'SiklusGaji.*' => 'Pilih siklus gaji: bulanan atau mingguan.',
+            'DasarGaji.*' => 'Pilih dasar gaji: tetap per siklus atau upah per hari masuk.',
             'TarifLemburPerJam.regex' => "Tarif lembur {$angka}",
             'PotonganTerlambatPerMenit.regex' => "Potongan terlambat {$angka}",
             'PotonganTidakMasukPerHari.regex' => "Potongan tidak masuk {$angka}",
@@ -72,6 +79,8 @@ final class SimpanKaryawanPermintaan extends FormRequest
             potonganTerlambatPerMenit: $uang('PotonganTerlambatPerMenit'),
             potonganTidakMasukPerHari: $uang('PotonganTidakMasukPerHari'),
             ikutAbsensi: $this->filled('IkutAbsensi') ? $this->boolean('IkutAbsensi') : null,
+            siklusGaji: $this->filled('SiklusGaji') ? SiklusGaji::from((string) $this->input('SiklusGaji')) : null,
+            dasarGaji: $this->filled('DasarGaji') ? DasarGaji::from((string) $this->input('DasarGaji')) : null,
         );
     }
 }

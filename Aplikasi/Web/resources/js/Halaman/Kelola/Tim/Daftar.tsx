@@ -95,8 +95,22 @@ function BuatKolom(namaOutlet: Map<string, string>, uuidSaya: string, lihatGaji:
                       header: 'Gaji pokok',
                       enableSorting: false,
                       meta: { label: 'Gaji pokok', prioritas: 'rendah' as const, angka: true },
-                      cell: ({ row }: { row: { original: BarisTim } }) =>
-                          row.original.Karyawan?.GajiPokok ? FormatRupiah(row.original.Karyawan.GajiPokok) : '—',
+                      cell: ({ row }: { row: { original: BarisTim } }) => {
+                          const k = row.original.Karyawan;
+
+                          if (!k?.GajiPokok) {
+                              return '—';
+                          }
+
+                          const per =
+                              k.DasarGaji === 'PerHariMasuk'
+                                  ? 'hari masuk'
+                                  : k.SiklusGaji === 'Mingguan'
+                                    ? 'minggu'
+                                    : 'bulan';
+
+                          return `${FormatRupiah(k.GajiPokok)} / ${per}`;
+                      },
                   },
               ]
             : []),

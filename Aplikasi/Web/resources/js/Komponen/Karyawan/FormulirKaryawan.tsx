@@ -8,7 +8,7 @@ import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisKaryawan, OpsiUuidNama } from '@/Tipe/Karyawan';
+import type { BarisKaryawan, DasarGaji, OpsiUuidNama, SiklusGaji } from '@/Tipe/Karyawan';
 
 export const AlamatKaryawan = '/kelola/karyawan';
 
@@ -16,6 +16,8 @@ type IsianKaryawan = {
     Nama: string;
     Jabatan: string;
     LevelStaf: string;
+    SiklusGaji: SiklusGaji;
+    DasarGaji: DasarGaji;
     GajiPokok: string;
     TarifLemburPerJam: string;
     PotonganTerlambatPerMenit: string;
@@ -30,6 +32,8 @@ function BuatIsian(k: BarisKaryawan): IsianKaryawan {
         Nama: k.Nama,
         Jabatan: k.Jabatan ?? '',
         LevelStaf: k.LevelStaf ?? '',
+        SiklusGaji: k.SiklusGaji,
+        DasarGaji: k.DasarGaji,
         GajiPokok: (k.GajiPokok ?? '').replace(/\.00$/, ''),
         TarifLemburPerJam: (k.TarifLemburPerJam ?? '').replace(/\.00$/, ''),
         PotonganTerlambatPerMenit: (k.PotonganTerlambatPerMenit ?? '').replace(/\.00$/, ''),
@@ -106,11 +110,44 @@ function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, 
                 keterangan="Dipakai aturan komisi bertingkat, misal Senior atau Junior."
                 maxLength={40}
             />
+            <BidangPilihan
+                label="Siklus gaji"
+                nilai={isian.SiklusGaji}
+                opsi={[
+                    { Nilai: 'Bulanan', Label: 'Bulanan' },
+                    { Nilai: 'Mingguan', Label: 'Mingguan' },
+                ]}
+                saatBerubah={(nilai) => Ubah({ SiklusGaji: nilai === 'Mingguan' ? 'Mingguan' : 'Bulanan' })}
+                galat={galat.SiklusGaji}
+            />
+            <BidangPilihan
+                label="Cara menghitung gaji pokok"
+                nilai={isian.DasarGaji}
+                opsi={[
+                    { Nilai: 'Tetap', Label: `Gaji tetap per ${isian.SiklusGaji === 'Mingguan' ? 'minggu' : 'bulan'}` },
+                    { Nilai: 'PerHariMasuk', Label: 'Upah per hari masuk' },
+                ]}
+                saatBerubah={(nilai) => Ubah({ DasarGaji: nilai === 'PerHariMasuk' ? 'PerHariMasuk' : 'Tetap' })}
+                galat={galat.DasarGaji}
+            />
             <BidangUang
-                label="Gaji pokok (opsional)"
+                label={
+                    isian.DasarGaji === 'PerHariMasuk'
+                        ? 'Upah per hari masuk'
+                        : isian.SiklusGaji === 'Mingguan'
+                          ? 'Gaji pokok per minggu (opsional)'
+                          : 'Gaji pokok (opsional)'
+                }
                 nilai={isian.GajiPokok}
                 saatBerubah={(nilai) => Ubah({ GajiPokok: nilai })}
                 galat={galat.GajiPokok}
+                {...(isian.DasarGaji === 'PerHariMasuk'
+                    ? {
+                          required: true,
+                          keterangan:
+                              'Gaji pokok rekap = upah × hari masuk (dari absensi dan cuti berbayar). Hari masuk bisa disesuaikan di draf rekap.',
+                      }
+                    : {})}
             />
             <BidangUang
                 label="Tarif lembur per jam (opsional)"

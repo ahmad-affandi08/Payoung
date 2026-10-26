@@ -11,6 +11,7 @@ use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Karyawan\Aksi\KelolaRekapGaji;
+use App\Domain\Karyawan\Enum\SiklusGaji;
 use App\Domain\Karyawan\Enum\StatusRekapGaji;
 use App\Domain\Karyawan\Kueri\DaftarRekapGaji;
 use App\Domain\Karyawan\Model\RekapGaji;
@@ -21,12 +22,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Rekap gaji bulanan (F-18 bagian 3, `/kelola/karyawan/gaji`). Seluruhnya butuh `karyawan.kelola` karena memuat gaji.
+ * Rekap gaji bulanan atau mingguan (F-18 bagian 3, D-219, `/kelola/karyawan/gaji`). Seluruhnya butuh `karyawan.kelola` karena memuat gaji.
  */
 final class RekapGajiKontroler extends DasarKelolaKontroler
 {
@@ -38,16 +40,22 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
 
         return ResponsTabel::Kirim($permintaan, 'Kelola/Karyawan/Gaji', 'Rekap', fn (): array => $daftar->Ambil($tabel), fn (): array => [
             'OpsiPeriode' => $daftar->AmbilOpsiPeriode(),
+            'UsulanMingguan' => $daftar->AmbilUsulanMingguan(),
+            'OpsiSiklus' => array_map(fn (SiklusGaji $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], SiklusGaji::cases()),
             'OpsiStatus' => array_map(fn (StatusRekapGaji $s): array => ['Nilai' => $s->value, 'Label' => $s->AmbilLabel()], StatusRekapGaji::cases()),
         ]);
     }
 
     public function Simpan(Request $permintaan, KelolaRekapGaji $kelola): RedirectResponse
     {
-        $data = $permintaan->validate(['Periode' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/']], ['Periode.*' => 'Pilih periode bulan.']);
-        $rekap = $kelola->Buat($data['Periode'], $this->Pelaku()->Id);
+        $data = $permintaan->validate([
+            'Siklus' => ['nullable', 'string', Rule::enum(SiklusGaji::class)],
+            'Periode' => ['required', 'string', 'regex:/^\d{4}-\d{2}(-\d{2})?$/'],
+        ], ['Siklus.*' => 'Pilih siklus gaji: bulanan atau mingguan.', 'Periode.*' => 'Pilih periode bulan atau isi tanggal mulai minggu.']);
+        $siklus = SiklusGaji::tryFrom((string) ($data['Siklus'] ?? '')) ?? SiklusGaji::Bulanan;
+        $rekap = $kelola->Buat($data['Periode'], $this->Pelaku()->Id, $siklus);
 
-        return to_route('kelola.karyawan.gaji.detail', ['rekap' => $rekap->Uuid])->with('Kilat', "Draf rekap gaji {$rekap->Periode} dibuat.");
+        return to_route('kelola.karyawan.gaji.detail', ['rekap' => $rekap->Uuid])->with('Kilat', "Draf rekap gaji {$rekap->AmbilLabel()} dibuat.");
     }
 
     public function Detail(string $rekap, DaftarRekapGaji $daftar, DaftarAkunPilihan $akun): Response
@@ -70,8 +78,10 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
             'Lembur' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
             'PotonganTerlambat' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
             'PotonganTidakMasuk' => ['nullable', 'string', 'regex:/^\d{1,16}(\.\d{1,2})?$/'],
+            'HariMasuk' => ['nullable', 'integer', 'min:0', 'max:31'],
             'Catatan' => ['nullable', 'string', 'max:255'],
         ], [
+            'HariMasuk.*' => 'Isi hari masuk dengan angka bulat, misal 6.',
             'Tambahan.*' => 'Isi tambahan dalam rupiah, misal 0 atau 150000.',
             'PotonganKasbon.*' => 'Isi potongan kasbon dalam rupiah.',
             'PotonganLain.*' => 'Isi potongan lain dalam rupiah.',
@@ -82,7 +92,7 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
         ]);
         $catatan = is_string($data['Catatan'] ?? null) && trim($data['Catatan']) !== '' ? trim($data['Catatan']) : null;
         $model = RekapGaji::query()->where('Uuid', $rekap)->firstOrFail();
-        $kelola->UbahBaris($model, $karyawan, Uang::Dari($data['Tambahan']), Uang::Dari($data['PotonganKasbon']), Uang::Dari($data['PotonganLain']), $catatan, self::UangAtauNull($data['Lembur'] ?? null), self::UangAtauNull($data['PotonganTerlambat'] ?? null), self::UangAtauNull($data['PotonganTidakMasuk'] ?? null));
+        $kelola->UbahBaris($model, $karyawan, Uang::Dari($data['Tambahan']), Uang::Dari($data['PotonganKasbon']), Uang::Dari($data['PotonganLain']), $catatan, self::UangAtauNull($data['Lembur'] ?? null), self::UangAtauNull($data['PotonganTerlambat'] ?? null), self::UangAtauNull($data['PotonganTidakMasuk'] ?? null), isset($data['HariMasuk']) && $data['HariMasuk'] !== '' ? (int) $data['HariMasuk'] : null);
 
         return to_route('kelola.karyawan.gaji.detail', ['rekap' => $model->Uuid])->with('Kilat', 'Baris gaji diperbarui.');
     }
@@ -123,7 +133,7 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
         $tanggal = CarbonImmutable::createFromFormat('!Y-m-d', $data['Tanggal']) ?: CarbonImmutable::today();
         $kelola->Bayar($model, $tanggal, $data['AkunKasBank'], $data['AkunBeban'], $this->Pelaku()->Id);
 
-        return to_route('kelola.karyawan.gaji.detail', ['rekap' => $model->Uuid])->with('Kilat', "Gaji {$model->Periode} dibayar dan dijurnal.");
+        return to_route('kelola.karyawan.gaji.detail', ['rekap' => $model->Uuid])->with('Kilat', "Gaji {$model->AmbilLabel()} dibayar dan dijurnal.");
     }
 
     public function Hapus(string $rekap, KelolaRekapGaji $kelola): RedirectResponse
@@ -131,7 +141,7 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
         $model = RekapGaji::query()->where('Uuid', $rekap)->firstOrFail();
         $kelola->Hapus($model);
 
-        return to_route('kelola.karyawan.gaji')->with('Kilat', "Draf rekap gaji {$model->Periode} dihapus.");
+        return to_route('kelola.karyawan.gaji')->with('Kilat', "Draf rekap gaji {$model->AmbilLabel()} dihapus.");
     }
 
     /**
@@ -160,10 +170,10 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
     {
         $model = RekapGaji::query()->where('Uuid', $rekap)->firstOrFail();
         $detail = $daftar->AmbilDetail($model);
-        $kunci = ['Nama', 'Jabatan', 'GajiPokok', 'Komisi', 'Tambahan', 'LemburMenit', 'Lembur', 'Kotor', 'TerlambatMenit', 'PotonganTerlambat', 'HariTidakMasuk', 'PotonganTidakMasuk', 'PotonganKasbon', 'PotonganLain', 'Bersih', 'Catatan'];
+        $kunci = ['Nama', 'Jabatan', 'GajiPokok', 'HariMasuk', 'Komisi', 'Tambahan', 'LemburMenit', 'Lembur', 'Kotor', 'TerlambatMenit', 'PotonganTerlambat', 'HariTidakMasuk', 'PotonganTidakMasuk', 'PotonganKasbon', 'PotonganLain', 'Bersih', 'Catatan'];
         $kolom = [
             new KolomLaporan('Nama'), new KolomLaporan('Jabatan'),
-            new KolomLaporan('Gaji pokok', JenisKolom::Uang, jumlahkan: true), new KolomLaporan('Komisi', JenisKolom::Uang, jumlahkan: true),
+            new KolomLaporan('Gaji pokok', JenisKolom::Uang, jumlahkan: true), new KolomLaporan('Hari masuk', JenisKolom::Teks, 12), new KolomLaporan('Komisi', JenisKolom::Uang, jumlahkan: true),
             new KolomLaporan('Tambahan', JenisKolom::Uang, jumlahkan: true),
             new KolomLaporan('Lembur (menit)', JenisKolom::Bilangan, jumlahkan: true), new KolomLaporan('Lembur', JenisKolom::Uang, jumlahkan: true),
             new KolomLaporan('Kotor', JenisKolom::Uang, jumlahkan: true),
@@ -180,7 +190,7 @@ final class RekapGajiKontroler extends DasarKelolaKontroler
             "rekap-gaji-{$model->Periode}",
             $kolom,
             $isi,
-            [['Periode', (string) $model->Periode]],
+            [['Periode', $model->AmbilLabel()], ['Siklus', $model->Siklus->AmbilLabel()]],
         );
     }
 

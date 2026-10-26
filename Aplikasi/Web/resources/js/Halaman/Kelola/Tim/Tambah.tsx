@@ -46,6 +46,8 @@ type Isian = {
     JugaKaryawan: boolean;
     IkutAbsensi: boolean;
     LevelStaf: string;
+    SiklusGaji: 'Bulanan' | 'Mingguan';
+    DasarGaji: 'Tetap' | 'PerHariMasuk';
     GajiPokok: string;
     TarifLemburPerJam: string;
     PotonganTerlambatPerMenit: string;
@@ -116,6 +118,8 @@ export default function HalamanTambahTim({
         JugaKaryawan: true,
         IkutAbsensi: true,
         LevelStaf: '',
+        SiklusGaji: 'Bulanan',
+        DasarGaji: 'Tetap',
         GajiPokok: '',
         TarifLemburPerJam: '',
         PotonganTerlambatPerMenit: '',
@@ -203,6 +207,8 @@ export default function HalamanTambahTim({
             ...(aturGaji
                 ? {
                       LevelStaf: data.LevelStaf,
+                      SiklusGaji: data.SiklusGaji,
+                      DasarGaji: data.DasarGaji,
                       GajiPokok: data.GajiPokok,
                       TarifLemburPerJam: data.TarifLemburPerJam,
                       PotonganTerlambatPerMenit: data.PotonganTerlambatPerMenit,
@@ -435,11 +441,46 @@ export default function HalamanTambahTim({
                 keterangan="Dipakai aturan komisi bertingkat, misal Senior atau Junior."
                 maxLength={40}
             />
+            <BidangPilihan
+                label="Siklus gaji"
+                nilai={d.SiklusGaji}
+                opsi={[
+                    { Nilai: 'Bulanan', Label: 'Bulanan' },
+                    { Nilai: 'Mingguan', Label: 'Mingguan' },
+                ]}
+                saatBerubah={(nilai) => formulir.setData('SiklusGaji', nilai === 'Mingguan' ? 'Mingguan' : 'Bulanan')}
+                galat={galat.SiklusGaji}
+            />
+            <BidangPilihan
+                label="Cara menghitung gaji pokok"
+                nilai={d.DasarGaji}
+                opsi={[
+                    { Nilai: 'Tetap', Label: `Gaji tetap per ${d.SiklusGaji === 'Mingguan' ? 'minggu' : 'bulan'}` },
+                    { Nilai: 'PerHariMasuk', Label: 'Upah per hari masuk' },
+                ]}
+                saatBerubah={(nilai) =>
+                    formulir.setData('DasarGaji', nilai === 'PerHariMasuk' ? 'PerHariMasuk' : 'Tetap')
+                }
+                galat={galat.DasarGaji}
+            />
             <BidangUang
-                label="Gaji pokok (opsional)"
+                label={
+                    d.DasarGaji === 'PerHariMasuk'
+                        ? 'Upah per hari masuk'
+                        : d.SiklusGaji === 'Mingguan'
+                          ? 'Gaji pokok per minggu (opsional)'
+                          : 'Gaji pokok (opsional)'
+                }
                 nilai={d.GajiPokok}
                 saatBerubah={(nilai) => formulir.setData('GajiPokok', nilai)}
                 galat={galat.GajiPokok}
+                {...(d.DasarGaji === 'PerHariMasuk'
+                    ? {
+                          required: true,
+                          keterangan:
+                              'Gaji pokok rekap = upah × hari masuk (dari absensi dan cuti berbayar). Hari masuk bisa disesuaikan di draf rekap.',
+                      }
+                    : {})}
             />
             <BidangUang
                 label="Tarif lembur per jam (opsional)"

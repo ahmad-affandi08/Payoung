@@ -115,6 +115,8 @@ describe('Halaman karyawan (F-18)', () => {
             Nama: 'Rina Wulandari',
             Jabatan: 'Barista',
             LevelStaf: 'Senior',
+            SiklusGaji: 'Bulanan',
+            DasarGaji: 'Tetap',
             GajiPokok: '3500000.00',
             TarifLemburPerJam: null,
             PotonganTerlambatPerMenit: null,

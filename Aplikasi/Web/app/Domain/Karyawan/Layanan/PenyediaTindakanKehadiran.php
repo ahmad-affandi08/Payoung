@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
 use App\Domain\Karyawan\Kueri\DaftarPermintaanKoreksi;
+use App\Domain\Karyawan\Kueri\DaftarRekapGaji;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\Karyawan;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,18 +20,25 @@ use Illuminate\Database\Eloquent\Builder;
  * - **absen di luar jadwal** (Perhatian): absen dari aplikasi kasir 7 hari terakhir yang diterima walau tidak sesuai jadwal;
  * - **absen perlu dicek** (Perhatian): absen dari HP 7 hari terakhir yang lokasinya janggal (di luar radius, GPS lemah, titik
  *   outlet belum diatur) tetapi tetap dicatat;
- * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya.
+ * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya;
+ * - **rekap gaji mingguan siap dibuat** (Perhatian, izin `karyawan.kelola`, D-219): ada karyawan bergaji mingguan dan
+ *   tujuh hari sejak rekap mingguan terakhir sudah lewat.
  */
 final class PenyediaTindakanKehadiran implements PenyediaTindakan
 {
     private const HARI = 7;
 
-    public function __construct(private readonly DaftarPermintaanKoreksi $koreksi) {}
+    public function __construct(
+        private readonly DaftarPermintaanKoreksi $koreksi,
+        private readonly DaftarRekapGaji $rekapGaji,
+    ) {}
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
+        $gaji = $konteks->CekIzin('karyawan.kelola') ? [$this->ButirGajiMingguan()] : [];
+
         if (! $konteks->CekIzin('karyawan.lihat')) {
-            return [];
+            return array_values(array_filter($gaji));
         }
 
         $dari = $konteks->hariIni->subDays(self::HARI)->toDateString();
@@ -40,6 +48,7 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
             $this->ButirAbsen($konteks, $dari, $sampai, 'DiluarJadwal', 'karyawan.absen-diluar-jadwal', 'Absen di luar jadwal', 'Karyawan absen di kasir padahal tidak sesuai jadwal kerjanya. Periksa, lalu jadwalkan atau koreksi absensinya.', 'Absen masuk tidak sesuai jadwal'),
             $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat; periksa lalu tandai sudah dicek.', null),
             $this->ButirKoreksi($konteks),
+            ...$gaji,
         ]));
     }
 
@@ -75,6 +84,26 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
                 $a->TanggalBisnis->toDateString(),
                 "/kelola/karyawan/absensi?saring[{$kolom}]=1",
             ))->all()),
+        );
+    }
+
+    private function ButirGajiMingguan(): ?DataButirTindakan
+    {
+        $usulan = $this->rekapGaji->AmbilUsulanMingguan();
+
+        if ($usulan['JumlahKaryawan'] === 0 || ! $usulan['SudahLewat']) {
+            return null;
+        }
+
+        return new DataButirTindakan(
+            'karyawan.rekap-gaji-mingguan',
+            'Karyawan',
+            TingkatTindakan::Perhatian,
+            'Rekap gaji mingguan siap dibuat',
+            "Rekap gaji mingguan {$usulan['LabelUsulan']} untuk {$usulan['JumlahKaryawan']} karyawan bergaji mingguan sudah bisa dibuat. Buat draf, periksa hari masuknya, lalu bayar.",
+            1,
+            '/kelola/karyawan/gaji',
+            'Buka rekap gaji',
         );
     }
 

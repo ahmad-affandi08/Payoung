@@ -15,6 +15,8 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Karyawan\Enum\DasarGaji;
+use App\Domain\Karyawan\Enum\SiklusGaji;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Enum\StatusRekapGaji;
 use App\Domain\Karyawan\Kueri\DaftarKasbon;
@@ -30,9 +32,12 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
- * F-18 bagian 3 rekap gaji bulanan (EMP-06):
- * - **Buat** draf periode `YYYY-MM` (tidak setelah bulan berjalan, satu per periode): baris untuk karyawan aktif yang
- *   punya gaji pokok atau komisi di periode itu. Komisi = komisi bersih (komisi − dibatalkan) tanggal bisnis periode.
+ * F-18 bagian 3 rekap gaji (EMP-06), bulanan atau mingguan (D-219):
+ * - **Buat** draf `Bulanan` periode `YYYY-MM` (tidak setelah bulan berjalan, satu per periode) atau `Mingguan` rentang
+ *   tujuh hari sejak tanggal mulai `YYYY-MM-DD` (tidak setelah hari ini, tidak boleh beririsan dengan rekap mingguan
+ *   lain): baris untuk karyawan aktif **bersiklus sama** yang punya gaji pokok atau komisi di rentang itu. Karyawan
+ *   berdasar `PerHariMasuk` digaji upah per hari × hari masuk (absensi + cuti berbayar berjadwal, bisa diubah selama
+ *   draf) dan tidak kena potongan tidak masuk. Komisi = komisi bersih (komisi − dibatalkan) tanggal bisnis periode.
  *   Potongan kasbon awal = min(sisa kasbon aktif, gaji kotor). Audit `rekap-gaji.buat`.
  * - **Ubah baris** (draf): tambahan (lembur/tunjangan), potongan kasbon (≤ sisa kasbon aktif), potongan lain, catatan;
  *   gaji bersih tidak boleh minus. Audit `rekap-gaji.ubah`.
@@ -61,45 +66,69 @@ final class KelolaRekapGaji
         private readonly PencatatAudit $audit,
     ) {}
 
-    public function Buat(string $periode, int $idPengguna): RekapGaji
+    public function Buat(string $periode, int $idPengguna, SiklusGaji $siklus = SiklusGaji::Bulanan): RekapGaji
     {
-        if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode) !== 1) {
-            throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Periode harus berformat tahun-bulan, misal 2026-09.', 'Periode');
-        }
+        [$awal, $akhir] = $this->TentukanRentang($periode, $siklus);
 
-        if ($periode > $this->HariIni()->format('Y-m')) {
-            throw new PelanggaranAturanBisnis('PeriodeBelumMulai', 'Rekap gaji hanya untuk bulan berjalan atau sebelumnya.', 'Periode');
-        }
-
-        $awal = CarbonImmutable::createFromFormat('!Y-m', $periode) ?: throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Periode tidak valid.', 'Periode');
-
-        return DB::transaction(function () use ($periode, $awal, $idPengguna): RekapGaji {
+        return DB::transaction(function () use ($periode, $awal, $akhir, $idPengguna, $siklus): RekapGaji {
             if (RekapGaji::query()->where('Periode', $periode)->lockForUpdate()->exists()) {
                 throw new PelanggaranAturanBisnis('RekapSudahAda', "Rekap gaji {$periode} sudah dibuat.", 'Periode');
             }
 
-            $komisi = $this->komisi->AmbilBersihPerKaryawan($awal->toDateString(), $awal->endOfMonth()->toDateString());
+            if ($siklus === SiklusGaji::Mingguan) {
+                $bertabrakan = RekapGaji::query()->where('Siklus', SiklusGaji::Mingguan->value)
+                    ->where('TanggalMulai', '<=', $akhir->toDateString())->where('TanggalSelesai', '>=', $awal->toDateString())
+                    ->lockForUpdate()->first();
+
+                if ($bertabrakan !== null) {
+                    throw new PelanggaranAturanBisnis('RentangBertabrakan', 'Rentang ini beririsan dengan rekap gaji mingguan '.$bertabrakan->AmbilLabel().'. Pilih tanggal mulai setelah rekap itu.', 'Periode');
+                }
+            }
+
+            $komisi = $this->komisi->AmbilBersihPerKaryawan($awal->toDateString(), $akhir->toDateString());
             $karyawan = Karyawan::query()
+                ->where('SiklusGaji', $siklus->value)
                 ->where(fn ($k) => $k->where('Status', StatusKaryawan::Aktif->value)->orWhereIn('Id', array_keys($komisi)))
                 ->orderBy('Nama')
                 ->get();
-            $hadir = $this->kehadiran->Hitung($awal->toDateString(), $awal->endOfMonth()->toDateString(), $this->HariIni());
+            $hadir = $this->kehadiran->Hitung($awal->toDateString(), $akhir->toDateString(), $this->HariIni());
+            $hariMasuk = $karyawan->contains(fn (Karyawan $k): bool => $k->DasarGaji === DasarGaji::PerHariMasuk)
+                ? $this->kehadiran->HitungHariMasuk($awal->toDateString(), $akhir->toDateString())
+                : [];
+            $jumlahHari = (int) $awal->diffInDays($akhir) + 1;
             $sisaKasbon = $this->HitungSisaKasbon(array_values(array_map('intval', $karyawan->pluck('Id')->all())));
-            $rekap = RekapGaji::query()->create(['Periode' => $periode, 'Status' => StatusRekapGaji::Draf, 'DibuatOleh' => $idPengguna]);
+            $rekap = RekapGaji::query()->create([
+                'Periode' => $periode,
+                'Siklus' => $siklus,
+                'TanggalMulai' => $awal->toDateString(),
+                'TanggalSelesai' => $akhir->toDateString(),
+                'Status' => StatusRekapGaji::Draf,
+                'DibuatOleh' => $idPengguna,
+            ]);
 
             foreach ($karyawan as $k) {
                 $pokok = Uang::Dari($k->GajiPokok ?? '0');
+                $upahHarian = null;
+                $hari = null;
+
+                if ($k->DasarGaji === DasarGaji::PerHariMasuk) {
+                    $upahHarian = $pokok;
+                    $hari = min($hariMasuk[$k->Id] ?? 0, $jumlahHari);
+                    $pokok = $upahHarian->Kali($hari);
+                }
+
                 $nilaiKomisi = Uang::Dari($komisi[$k->Id] ?? '0');
                 $h = $hadir[$k->Id] ?? ['TerlambatMenit' => 0, 'LemburMenit' => 0, 'HariTidakMasuk' => 0];
                 $lembur = $k->TarifLemburPerJam === null ? Uang::Nol() : self::HitungPerJam($k->TarifLemburPerJam, $h['LemburMenit']);
 
-                if ($pokok->BernilaiNol() && $nilaiKomisi->BernilaiNol() && $lembur->BernilaiNol()) {
+                // Berupah harian tetap masuk rekap walau hari masuknya 0 (belum ada absensi): pengelola mengisi hari masuk selama draf.
+                if ($pokok->BernilaiNol() && $nilaiKomisi->BernilaiNol() && $lembur->BernilaiNol() && ($upahHarian === null || $upahHarian->BernilaiNol())) {
                     continue;
                 }
 
                 $kotor = $pokok->Tambah($nilaiKomisi)->Tambah($lembur);
                 $potTerlambat = $k->PotonganTerlambatPerMenit === null ? Uang::Nol() : Uang::Dari($k->PotonganTerlambatPerMenit)->Kali($h['TerlambatMenit']);
-                $potTidakMasuk = $k->PotonganTidakMasukPerHari === null ? Uang::Nol() : Uang::Dari($k->PotonganTidakMasukPerHari)->Kali($h['HariTidakMasuk']);
+                $potTidakMasuk = $k->PotonganTidakMasukPerHari === null || $upahHarian !== null ? Uang::Nol() : Uang::Dari($k->PotonganTidakMasukPerHari)->Kali($h['HariTidakMasuk']);
                 // Potongan kehadiran tidak boleh membuat gaji minus: terlambat dulu, lalu tidak masuk, sampai sebatas gaji kotor.
                 $potTerlambat = $potTerlambat->Bandingkan($kotor) > 0 ? $kotor : $potTerlambat;
                 $potTidakMasuk = $potTerlambat->Tambah($potTidakMasuk)->Bandingkan($kotor) > 0 ? $kotor->Kurangi($potTerlambat) : $potTidakMasuk;
@@ -110,6 +139,8 @@ final class KelolaRekapGaji
                     'IdRekapGaji' => $rekap->Id,
                     'IdKaryawan' => $k->Id,
                     'GajiPokok' => $pokok->KeString(),
+                    'UpahHarian' => $upahHarian?->KeString(),
+                    'HariMasuk' => $hari,
                     'Komisi' => $nilaiKomisi->KeString(),
                     'Tambahan' => '0.00',
                     'LemburMenit' => $h['LemburMenit'],
@@ -125,13 +156,13 @@ final class KelolaRekapGaji
             }
 
             $this->HitungTotal($rekap);
-            $this->audit->Catat('rekap-gaji.buat', $rekap, nilaiBaru: ['Periode' => $periode]);
+            $this->audit->Catat('rekap-gaji.buat', $rekap, nilaiBaru: ['Periode' => $periode, 'Siklus' => $siklus->value]);
 
             return $rekap;
         });
     }
 
-    public function UbahBaris(RekapGaji $rekap, string $uuidKaryawan, Uang $tambahan, Uang $potonganKasbon, Uang $potonganLain, ?string $catatan, ?Uang $lembur = null, ?Uang $potonganTerlambat = null, ?Uang $potonganTidakMasuk = null): RekapGajiBaris
+    public function UbahBaris(RekapGaji $rekap, string $uuidKaryawan, Uang $tambahan, Uang $potonganKasbon, Uang $potonganLain, ?string $catatan, ?Uang $lembur = null, ?Uang $potonganTerlambat = null, ?Uang $potonganTidakMasuk = null, ?int $hariMasuk = null): RekapGajiBaris
     {
         foreach (['Tambahan' => $tambahan, 'PotonganKasbon' => $potonganKasbon, 'PotonganLain' => $potonganLain, 'Lembur' => $lembur, 'PotonganTerlambat' => $potonganTerlambat, 'PotonganTidakMasuk' => $potonganTidakMasuk] as $bidang => $nilai) {
             if ($nilai?->BernilaiNegatif() === true) {
@@ -139,7 +170,7 @@ final class KelolaRekapGaji
             }
         }
 
-        return DB::transaction(function () use ($rekap, $uuidKaryawan, $tambahan, $potonganKasbon, $potonganLain, $catatan, $lembur, $potonganTerlambat, $potonganTidakMasuk): RekapGajiBaris {
+        return DB::transaction(function () use ($rekap, $uuidKaryawan, $tambahan, $potonganKasbon, $potonganLain, $catatan, $lembur, $potonganTerlambat, $potonganTidakMasuk, $hariMasuk): RekapGajiBaris {
             $rekap = $this->KunciDraf($rekap);
             $idKaryawan = Karyawan::query()->where('Uuid', $uuidKaryawan)->value('Id');
             $baris = $idKaryawan === null ? null : RekapGajiBaris::query()->where('IdRekapGaji', $rekap->Id)->where('IdKaryawan', $idKaryawan)->first();
@@ -154,7 +185,7 @@ final class KelolaRekapGaji
                 throw new PelanggaranAturanBisnis('MelebihiSisaKasbon', 'Potongan kasbon melebihi sisa kasbon '.$sisa->FormatRupiah().'.', 'PotonganKasbon');
             }
 
-            $kolomAudit = ['Tambahan', 'Lembur', 'PotonganKasbon', 'PotonganLain', 'PotonganTerlambat', 'PotonganTidakMasuk', 'Catatan'];
+            $kolomAudit = ['HariMasuk', 'Tambahan', 'Lembur', 'PotonganKasbon', 'PotonganLain', 'PotonganTerlambat', 'PotonganTidakMasuk', 'Catatan'];
             $lama = $baris->only($kolomAudit);
             $baris->fill([
                 'Tambahan' => $tambahan->KeString(),
@@ -165,6 +196,20 @@ final class KelolaRekapGaji
                 'PotonganTidakMasuk' => ($potonganTidakMasuk ?? Uang::Dari($baris->PotonganTidakMasuk))->KeString(),
                 'Catatan' => $catatan,
             ]);
+
+            if ($hariMasuk !== null) {
+                if ($baris->UpahHarian === null) {
+                    throw new PelanggaranAturanBisnis('BukanUpahHarian', 'Karyawan ini digaji tetap, jadi tidak punya hari masuk.', 'HariMasuk');
+                }
+
+                if ($hariMasuk < 0 || $hariMasuk > $rekap->HitungJumlahHari()) {
+                    throw new PelanggaranAturanBisnis('HariMasukTidakValid', 'Hari masuk harus antara 0 dan '.$rekap->HitungJumlahHari().'.', 'HariMasuk');
+                }
+
+                $baris->HariMasuk = $hariMasuk;
+                $baris->GajiPokok = Uang::Dari($baris->UpahHarian)->Kali($hariMasuk)->KeString();
+            }
+
             $bersih = $baris->HitungKotor()->Kurangi($baris->HitungPotongan());
 
             if ($bersih->BernilaiNegatif()) {
@@ -181,6 +226,8 @@ final class KelolaRekapGaji
     }
 
     public const MAKS_TAMBAHAN_MASSAL = 500;
+
+    private const MAKS_HARI_MUNDUR_MINGGUAN = 366;
 
     /**
      * Aksi massal draf rekap (audit kemudahan pakai): menambah `Tambahan` (bonus, THR, tunjangan) pada karyawan
@@ -281,7 +328,7 @@ final class KelolaRekapGaji
 
             foreach ($perOutlet as $kunci => $n) {
                 $idOutlet = $kunci === 0 ? null : $kunci;
-                $barisJurnal[] = new DataBarisJurnal(peran: null, idAkun: $akunBeban, idOutlet: $idOutlet, debit: $n['Kotor'], kredit: Uang::Nol(), memo: "Gaji {$rekap->Periode}");
+                $barisJurnal[] = new DataBarisJurnal(peran: null, idAkun: $akunBeban, idOutlet: $idOutlet, debit: $n['Kotor'], kredit: Uang::Nol(), memo: "Gaji {$rekap->AmbilLabel()}");
                 $barisJurnal[] = DataBarisJurnal::Kredit(PeranAkun::PiutangKaryawan, $n['Kasbon'], $idOutlet, 'Potongan kasbon');
                 $barisJurnal[] = DataBarisJurnal::Kredit(PeranAkun::PendapatanLain, $n['Lain'], $idOutlet, 'Potongan lain & kehadiran gaji');
                 $barisJurnal[] = new DataBarisJurnal(peran: null, idAkun: $akunKas, idOutlet: $idOutlet, debit: Uang::Nol(), kredit: $n['Bersih'], memo: 'Gaji dibayar');
@@ -293,7 +340,7 @@ final class KelolaRekapGaji
                 uuidSumber: $rekap->Uuid,
                 nomorSumber: $rekap->Periode,
                 tanggal: $tanggal,
-                keterangan: "Rekap gaji {$rekap->Periode}",
+                keterangan: "Rekap gaji {$rekap->AmbilLabel()}",
                 baris: $barisJurnal,
                 idPengguna: $idPengguna,
             ));
@@ -312,6 +359,44 @@ final class KelolaRekapGaji
 
             return $rekap;
         });
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable} tanggal mulai & selesai (termasuk) rentang rekap
+     */
+    private function TentukanRentang(string $periode, SiklusGaji $siklus): array
+    {
+        $hariIni = $this->HariIni();
+
+        if ($siklus === SiklusGaji::Bulanan) {
+            if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode) !== 1) {
+                throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Periode harus berformat tahun-bulan, misal 2026-09.', 'Periode');
+            }
+
+            if ($periode > $hariIni->format('Y-m')) {
+                throw new PelanggaranAturanBisnis('PeriodeBelumMulai', 'Rekap gaji hanya untuk bulan berjalan atau sebelumnya.', 'Periode');
+            }
+
+            $awal = CarbonImmutable::createFromFormat('!Y-m', $periode) ?: throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Periode tidak valid.', 'Periode');
+
+            return [$awal, $awal->endOfMonth()->startOfDay()];
+        }
+
+        $awal = preg_match('/^\d{4}-\d{2}-\d{2}$/', $periode) === 1 ? CarbonImmutable::createFromFormat('!Y-m-d', $periode) : false;
+
+        if ($awal === false || $awal->format('Y-m-d') !== $periode) {
+            throw new PelanggaranAturanBisnis('PeriodeTidakValid', 'Tanggal mulai minggu harus berformat tahun-bulan-tanggal, misal 2026-10-19.', 'Periode');
+        }
+
+        if ($awal > $hariIni) {
+            throw new PelanggaranAturanBisnis('PeriodeBelumMulai', 'Rekap gaji mingguan tidak bisa dimulai setelah hari ini.', 'Periode');
+        }
+
+        if ($awal < $hariIni->subDays(self::MAKS_HARI_MUNDUR_MINGGUAN)) {
+            throw new PelanggaranAturanBisnis('PeriodeTerlaluLama', 'Tanggal mulai terlalu lama. Rekap mingguan hanya sampai satu tahun ke belakang.', 'Periode');
+        }
+
+        return [$awal, $awal->addDays(6)];
     }
 
     /**

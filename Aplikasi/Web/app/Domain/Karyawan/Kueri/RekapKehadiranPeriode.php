@@ -81,4 +81,37 @@ final class RekapKehadiranPeriode
 
         return $hasil;
     }
+
+    /**
+     * Hari masuk per karyawan dalam rentang, dasar upah per hari masuk (D-219): jumlah tanggal bisnis berbeda yang punya
+     * absensi, ditambah hari cuti/izin berbayar yang berjadwal dan belum terhitung. Tidak bergantung pada
+     * `IkutAbsensi`: karyawan tanpa absensi mendapat 0 dan pengelola mengisinya sendiri selama draf.
+     *
+     * @return array<int, int> Id karyawan → hari masuk
+     */
+    public function HitungHariMasuk(string $dari, string $sampai): array
+    {
+        /** @var array<int, array<string, true>> $tanggal */
+        $tanggal = [];
+
+        foreach (Absensi::query()->whereBetween('TanggalBisnis', [$dari, $sampai])->get(['IdKaryawan', 'TanggalBisnis']) as $a) {
+            $tanggal[$a->IdKaryawan][$a->TanggalBisnis->toDateString()] = true;
+        }
+
+        $jadwal = [];
+
+        foreach (JadwalKerja::query()->whereBetween('Tanggal', [$dari, $sampai])->get(['IdKaryawan', 'Tanggal']) as $j) {
+            $jadwal[$j->IdKaryawan][$j->Tanggal->toDateString()] = true;
+        }
+
+        foreach ($this->cuti->AmbilPerTanggal($dari, $sampai) as $idKaryawan => $hari) {
+            foreach ($hari as $tgl => $c) {
+                if ($c['Berbayar'] && isset($jadwal[$idKaryawan][$tgl])) {
+                    $tanggal[$idKaryawan][$tgl] = true;
+                }
+            }
+        }
+
+        return array_map(static fn (array $hari): int => count($hari), $tanggal);
+    }
 }

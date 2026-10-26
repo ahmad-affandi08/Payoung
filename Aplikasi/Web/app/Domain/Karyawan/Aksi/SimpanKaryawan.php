@@ -8,6 +8,7 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Karyawan\Data\DataKaryawan;
+use App\Domain\Karyawan\Enum\DasarGaji;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\DaftarAnggota;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
@@ -71,6 +72,19 @@ final class SimpanKaryawan
             'IdPengguna' => $idPengguna,
             'IdOutlet' => $idOutlet,
         ];
+
+        // D-219: kosong = tidak diubah (karyawan baru memakai bawaan kolom: Bulanan/Tetap).
+        if ($data->siklusGaji !== null) {
+            $isian['SiklusGaji'] = $data->siklusGaji->value;
+        }
+
+        if ($data->dasarGaji !== null) {
+            $isian['DasarGaji'] = $data->dasarGaji->value;
+        }
+
+        if (($data->dasarGaji ?? $karyawan?->DasarGaji) === DasarGaji::PerHariMasuk && ($isian['GajiPokok'] ?? null) === null) {
+            throw new PelanggaranAturanBisnis('UpahHarianWajib', 'Isi upah per hari untuk karyawan berupah harian.', 'GajiPokok');
+        }
 
         // D-180/D-198: karyawan absen lewat login (akun beremail) atau tautan absen pribadi, jadi ikut absensi butuh salah
         // satunya. Karyawan baru: bawaan menurut peran (tanpa akun beremail = tidak ikut). Ubah data lewat jalur yang

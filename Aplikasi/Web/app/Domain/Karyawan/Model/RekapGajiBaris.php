@@ -29,6 +29,8 @@ use Illuminate\Support\Carbon;
  * @property string $PotonganTerlambat
  * @property int $HariTidakMasuk
  * @property string $PotonganTidakMasuk
+ * @property string|null $UpahHarian D-219: upah per hari (hanya karyawan DasarGaji PerHariMasuk); GajiPokok = UpahHarian × HariMasuk
+ * @property int|null $HariMasuk
  * @property string $Bersih
  * @property string|null $Catatan
  * @property Carbon|null $DibuatPada
@@ -43,7 +45,7 @@ final class RekapGajiBaris extends ModelDasar
     protected bool $pakaiUuid = false;
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Catatan' => null, 'LemburMenit' => 0, 'Lembur' => '0.00', 'TerlambatMenit' => 0, 'PotonganTerlambat' => '0.00', 'HariTidakMasuk' => 0, 'PotonganTidakMasuk' => '0.00'];
+    protected $attributes = ['Catatan' => null, 'UpahHarian' => null, 'HariMasuk' => null, 'LemburMenit' => 0, 'Lembur' => '0.00', 'TerlambatMenit' => 0, 'PotonganTerlambat' => '0.00', 'HariTidakMasuk' => 0, 'PotonganTidakMasuk' => '0.00'];
 
     public function HitungKotor(): Uang
     {
