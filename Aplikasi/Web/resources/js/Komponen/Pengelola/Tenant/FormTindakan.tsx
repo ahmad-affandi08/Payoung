@@ -350,6 +350,57 @@ export function FormPenanda({
     );
 }
 
+/**
+ * Hapus permanen tenant uji (D-213). Hanya ditawarkan untuk tenant berpenanda Uji/Demo/Internal; server tetap memeriksa
+ * penanda, tagihan berbayar, dan slug. Mengetik slug adalah konfirmasi yang disengaja karena tidak bisa dibalik.
+ */
+export function FormHapusPermanen({ uuid, nama, slug, saatSelesai }: PropsDasar & { nama: string; slug: string }) {
+    const formulir = useForm({ KonfirmasiSlug: '', Alasan: '' });
+    const Kirim = (peristiwa: FormEvent) => {
+        peristiwa.preventDefault();
+        formulir.delete(`/tenant/${uuid}/hapus-permanen`, { preserveScroll: true, onSuccess: saatSelesai });
+    };
+
+    return (
+        <KerangkaForm
+            judul={`Hapus permanen ${nama}`}
+            keterangan={
+                <div className="flex flex-col gap-2">
+                    <p>
+                        Tenant uji ini dihapus <strong>beserta semua datanya</strong>: pengguna dan akunnya, outlet,
+                        produk, transaksi, jurnal, tagihan, perangkat, dan berkas. Tidak bisa dibatalkan.
+                    </p>
+                    <p>Catatan siapa yang menghapus dan alasannya tetap tersimpan di log audit konsol.</p>
+                </div>
+            }
+            labelKirim="Hapus permanen"
+            varianKirim="bahaya"
+            memproses={formulir.processing}
+            galatUmum={AmbilGalatUmum(formulir.errors)}
+            saatKirim={Kirim}
+            saatBatal={saatSelesai}
+        >
+            <BidangTeksPanjang
+                label="Alasan"
+                nilai={formulir.data.Alasan}
+                baris={3}
+                maksimal={500}
+                saatBerubah={(nilai) => formulir.setData('Alasan', nilai)}
+                galat={formulir.errors.Alasan}
+                required
+            />
+            <BidangTeks
+                label={`Ketik slug "${slug}" untuk memastikan`}
+                nilai={formulir.data.KonfirmasiSlug}
+                saatBerubah={(nilai) => formulir.setData('KonfirmasiSlug', nilai)}
+                galat={formulir.errors.KonfirmasiSlug}
+                autoComplete="off"
+                required
+            />
+        </KerangkaForm>
+    );
+}
+
 export function FormCabutOverride({
     uuid,
     uuidOverride,

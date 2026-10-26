@@ -63,6 +63,7 @@ export const IzinPengelola = {
     TenantAktifkan: 'tenant.aktifkan',
     TenantPenandaUbah: 'tenant.penanda.ubah',
     TenantPenghapusanDataKelola: 'tenant.penghapusan-data.kelola',
+    TenantHapusPermanen: 'tenant.hapus-permanen',
     // P-08 Tagihan langganan.
     TagihanLihat: 'tagihan.lihat',
     TagihanVerifikasi: 'tagihan.verifikasi',

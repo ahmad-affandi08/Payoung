@@ -7,6 +7,7 @@ namespace App\Http\Kontroler\Pengelola\Tenant;
 use App\Domain\Pengelola\Tenant\Aksi\AktifkanKembaliTenant;
 use App\Domain\Pengelola\Tenant\Aksi\BuatOverrideTenant;
 use App\Domain\Pengelola\Tenant\Aksi\CabutOverrideTenant;
+use App\Domain\Pengelola\Tenant\Aksi\HapusPermanenTenantUji;
 use App\Domain\Pengelola\Tenant\Aksi\PerpanjangTrial;
 use App\Domain\Pengelola\Tenant\Aksi\TangguhkanTenant;
 use App\Domain\Pengelola\Tenant\Aksi\TulisCatatanTenant;
@@ -17,6 +18,7 @@ use App\Http\Kontroler\Kontroler;
 use App\Http\Kontroler\Pengelola\PelakuPengelola;
 use App\Http\Permintaan\Pengelola\Tenant\AlasanTindakanPermintaan;
 use App\Http\Permintaan\Pengelola\Tenant\BuatOverrideTenantPermintaan;
+use App\Http\Permintaan\Pengelola\Tenant\HapusPermanenTenantPermintaan;
 use App\Http\Permintaan\Pengelola\Tenant\PerpanjangTrialPermintaan;
 use App\Http\Permintaan\Pengelola\Tenant\TangguhkanTenantPermintaan;
 use App\Http\Permintaan\Pengelola\Tenant\TulisCatatanTenantPermintaan;
@@ -90,5 +92,18 @@ final class TindakanTenantKontroler extends Kontroler
         return back()->with('Kilat', $tenant->Penanda === null
             ? 'Penanda dihapus. Tenant kembali dihitung di metrik bisnis.'
             : "Tenant ditandai {$tenant->Penanda->AmbilLabel()} dan dikecualikan dari metrik bisnis.");
+    }
+
+    /**
+     * D-213: hapus permanen tenant uji. Izin `tenant.hapus-permanen` dan 2FA baru ditegakkan di rute; penanda, tagihan,
+     * dan slug ditegakkan aksi. Halaman tenant sudah tidak ada sesudahnya, jadi kembali ke daftar.
+     */
+    public function HapusPermanen(Tenant $tenant, HapusPermanenTenantPermintaan $permintaan, HapusPermanenTenantUji $hapus): RedirectResponse
+    {
+        $hasil = $hapus->Jalankan($this->AmbilPelaku(), $tenant, $permintaan->AmbilKonfirmasiSlug(), $permintaan->AmbilAlasan());
+        $baris = number_format($hasil['Baris'], 0, ',', '.');
+        $gagal = $hasil['BerkasGagal'] > 0 ? " {$hasil['BerkasGagal']} berkas gagal dihapus dari penyimpanan dan perlu dibersihkan manual." : '';
+
+        return redirect('/tenant')->with('Kilat', "{$hasil['Nama']} dihapus permanen: {$baris} baris data dari {$hasil['Tabel']} tabel, {$hasil['Pengguna']} akun pengguna, dan {$hasil['Berkas']} berkas.{$gagal}");
     }
 }

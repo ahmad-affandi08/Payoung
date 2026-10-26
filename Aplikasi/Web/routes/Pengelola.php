@@ -522,6 +522,9 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::put('/tenant/massal/aktifkan', [TenantMassalKontroler::class, 'Aktifkan'])
                 ->middleware([$izin(IzinPengelola::TenantAktifkan), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tenant.massal.aktifkan');
+            Route::delete('/tenant/massal/hapus-permanen', [TenantMassalKontroler::class, 'HapusPermanen'])
+                ->middleware([$izin(IzinPengelola::TenantHapusPermanen), WajibDuaFaktorBaru::class, 'throttle:6,1'])
+                ->name('pengelola.tenant.massal.hapus-permanen');
             Route::post('/tenant/{tenant}/catatan', [TindakanTenantKontroler::class, 'TulisCatatan'])
                 ->middleware($izin(IzinPengelola::TenantCatatanTulis))
                 ->name('pengelola.tenant.catatan.tulis');
@@ -547,6 +550,10 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::put('/tenant/{tenant}/pendaftaran-merchant/penampung-qris', [PendaftaranMerchantTenantKontroler::class, 'AturPenampungQris'])
                 ->middleware([$izin(IzinPengelola::IntegrasiKelola), WajibDuaFaktorBaru::class])
                 ->name('pengelola.tenant.pendaftaran-merchant.penampung-qris');
+            // D-213: hapus permanen tenant berpenanda Uji/Demo/Internal; hanya Super Admin dengan kode 2FA yang baru.
+            Route::delete('/tenant/{tenant}/hapus-permanen', [TindakanTenantKontroler::class, 'HapusPermanen'])
+                ->middleware([$izin(IzinPengelola::TenantHapusPermanen), WajibDuaFaktorBaru::class, 'throttle:6,1'])
+                ->name('pengelola.tenant.hapus-permanen');
             // UU PDP: penghapusan data dan penutupan akun, hanya Super Admin dengan kode 2FA yang baru.
             Route::post('/tenant/{tenant}/penghapusan-data/{permintaan}/laksanakan', [PenghapusanDataTenantKontroler::class, 'Laksanakan'])
                 ->middleware([$izin(IzinPengelola::TenantPenghapusanDataKelola), WajibDuaFaktorBaru::class])

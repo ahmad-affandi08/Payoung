@@ -6,6 +6,7 @@ import {
     FormAktifkan,
     FormCabutOverride,
     FormCatatan,
+    FormHapusPermanen,
     FormOverride,
     FormPenanda,
     FormPerpanjangTrial,
@@ -40,6 +41,7 @@ type Tindakan =
     | 'tangguhkan'
     | 'aktifkan'
     | 'penanda'
+    | 'hapus-permanen'
     | { cabut: string; kunci: string }
     | null;
 
@@ -51,6 +53,7 @@ const labelAksi: Record<string, string> = {
     'tenant.aktifkan': 'Aktifkan kembali',
     'tenant.catatan.tulis': 'Tulis catatan',
     'tenant.penanda.ubah': 'Ubah penanda',
+    'tenant.hapus-permanen': 'Hapus permanen tenant uji',
     'tenant.penghapusan-data-laksana': 'Laksanakan penghapusan data',
     'tenant.penghapusan-data-tolak': 'Tolak penghapusan data',
     'tenant.merchant.segarkan': 'Segarkan status merchant DOKU',
@@ -187,6 +190,12 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                 status !== null &&
                 !['Ditangguhkan', 'Berhenti'].includes(status),
         },
+        {
+            kunci: 'hapus-permanen',
+            label: 'Hapus permanen',
+            varian: 'bahaya',
+            boleh: PunyaIzin(pengguna, IzinPengelola.TenantHapusPermanen) && Profil.Penanda !== null,
+        },
     ];
     const tombolTerlihat = tombol.filter((item) => item.boleh);
 
@@ -265,6 +274,9 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                     pilihanPenanda={Pilihan.Penanda}
                     saatSelesai={Tutup}
                 />
+            ) : null}
+            {tindakan === 'hapus-permanen' ? (
+                <FormHapusPermanen uuid={Profil.Uuid} nama={Profil.Nama} slug={Profil.Slug} saatSelesai={Tutup} />
             ) : null}
             {tindakan !== null && typeof tindakan === 'object' ? (
                 <FormCabutOverride

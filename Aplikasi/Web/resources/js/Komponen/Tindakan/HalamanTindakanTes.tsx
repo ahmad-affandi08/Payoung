@@ -45,6 +45,7 @@ vi.mock('@inertiajs/react', () => {
             isDirty: false,
             post: Kirim('post'),
             put: Kirim('put'),
+            delete: Kirim('delete'),
             submit: (metode: string, url: string, opsi?: { onSuccess?: () => void }) => Kirim(metode)(url, opsi),
             reset: vi.fn(),
         };
@@ -518,6 +519,45 @@ describe('Pengelola/Tenant 360°: Tabs & tindakan berisiko (P-07, BR-P07.3)', ()
                     Subtotal: '12000000',
                     Keterangan: 'Kontrak Enterprise 12 bulan',
                 },
+            },
+        ]);
+    });
+
+    it('D-213: hapus permanen hanya untuk tenant berpenanda dan pemegang izin, dengan slug diketik ulang', () => {
+        const uji = BuatTenant();
+        const berpenanda = { ...uji, Profil: { ...uji.Profil, Penanda: 'Uji' } };
+
+        // Tenant sungguhan (tanpa penanda): tombol tidak ada walau berizin.
+        AturPropsPengelola(['tenant.lihat', 'tenant.hapus-permanen']);
+        const { unmount: LepasBiasa } = RenderDenganKueri(
+            <TampilTenant Tenant={uji} Pilihan={pilihan} Aturan={aturan} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Hapus permanen' })).toBeNull();
+        LepasBiasa();
+
+        // Berpenanda tetapi tanpa izin: tombol tidak ada.
+        AturPropsPengelola(['tenant.lihat']);
+        const { unmount: LepasTanpaIzin } = RenderDenganKueri(
+            <TampilTenant Tenant={berpenanda} Pilihan={pilihan} Aturan={aturan} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Hapus permanen' })).toBeNull();
+        LepasTanpaIzin();
+
+        AturPropsPengelola(['tenant.lihat', 'tenant.hapus-permanen']);
+        RenderDenganKueri(<TampilTenant Tenant={berpenanda} Pilihan={pilihan} Aturan={aturan} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Hapus permanen' }));
+        const dialog = screen.getByRole('alertdialog', { name: 'Hapus permanen Kopi Nusantara' });
+        fireEvent.change(within(dialog).getByLabelText('Alasan'), {
+            target: { value: 'Tenant percobaan, sudah tidak dipakai.' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Ketik slug/), { target: { value: 'kopi-nusantara' } });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Hapus permanen' }));
+
+        expect(AmbilKiriman()).toEqual([
+            {
+                metode: 'delete',
+                url: '/tenant/T-1/hapus-permanen',
+                data: { KonfirmasiSlug: 'kopi-nusantara', Alasan: 'Tenant percobaan, sudah tidak dipakai.' },
             },
         ]);
     });

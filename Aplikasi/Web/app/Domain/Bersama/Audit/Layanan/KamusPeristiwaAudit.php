@@ -633,6 +633,7 @@ final class KamusPeristiwaAudit
         'tenant.daftar' => 'Tenant didaftarkan',
         'tenant.daftar.ekspor' => 'Daftar tenant diekspor',
         'tenant.data.akses' => 'Data tenant diakses petugas Payoung',
+        'tenant.hapus-permanen' => 'Tenant uji dihapus permanen',
         'tenant.merchant.penampung-qris' => 'Penampung dana QRIS tenant diatur',
         'tenant.merchant.segarkan' => 'Status merchant tenant disegarkan',
         'tenant.override.buat' => 'Override tenant dibuat',

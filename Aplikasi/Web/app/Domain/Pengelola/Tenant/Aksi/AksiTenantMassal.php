@@ -10,8 +10,8 @@ use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Model\Tenant;
 
 /**
- * Aksi massal tenant terpilih di daftar tenant konsol (D-208): perpanjang uji coba, tangguhkan, aktifkan kembali, dan
- * tulis catatan internal. Tiap tenant tetap lewat aksi satuannya (aturan bisnis, audit per tenant dengan `IdTenant`,
+ * Aksi massal tenant terpilih di daftar tenant konsol (D-208): perpanjang uji coba, tangguhkan, aktifkan kembali,
+ * tulis catatan internal, dan (D-213) hapus permanen tenant uji. Tiap tenant tetap lewat aksi satuannya (aturan bisnis, audit per tenant dengan `IdTenant`,
  * email ke Owner), jadi aksi massal tidak pernah melonggarkan aturan satuan. Tenant saling lepas: yang tidak memenuhi
  * syarat (misal bukan lagi Trial, batas perpanjangan tercapai) dilewati dan alasannya dirangkum, bukan membatalkan
  * yang lain. Izin per aksi ditegakkan di rute, sama dengan aksi satuan.
@@ -25,6 +25,7 @@ final class AksiTenantMassal
         private readonly TangguhkanTenant $tangguhkan,
         private readonly AktifkanKembaliTenant $aktifkan,
         private readonly TulisCatatanTenant $catatan,
+        private readonly HapusPermanenTenantUji $hapusPermanen,
     ) {}
 
     /**
@@ -61,6 +62,19 @@ final class AksiTenantMassal
     public function TulisCatatan(PenggunaPengelola $pelaku, array $uuid, string $isi): array
     {
         return $this->Terapkan($uuid, fn (Tenant $t) => $this->catatan->Jalankan($pelaku, $t, $isi));
+    }
+
+    /**
+     * Hapus permanen tenant uji (D-213). Tiap tenant tetap lewat aksi satuannya: yang bukan berpenanda atau punya tagihan
+     * berbayar dilewati beserta alasannya. Konfirmasi massal (frasa) diperiksa di kontroler; slug tiap tenant sah karena
+     * pelaku sudah memilihnya sendiri dari daftar.
+     *
+     * @param  list<string>  $uuid
+     * @return array{Diubah: int, Dilewati: array<string, int>}
+     */
+    public function HapusPermanen(PenggunaPengelola $pelaku, array $uuid, string $alasan): array
+    {
+        return $this->Terapkan($uuid, fn (Tenant $t) => $this->hapusPermanen->Jalankan($pelaku, $t, $t->Slug, $alasan));
     }
 
     /**

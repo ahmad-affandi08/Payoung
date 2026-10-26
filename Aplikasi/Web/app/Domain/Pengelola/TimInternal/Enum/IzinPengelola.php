@@ -65,6 +65,8 @@ enum IzinPengelola: string
     case TenantPenandaUbah = 'tenant.penanda.ubah';
     // UU PDP: memutuskan (melaksanakan atau menolak) permintaan penghapusan data dan penutupan akun; hanya Super Admin.
     case TenantPenghapusanDataKelola = 'tenant.penghapusan-data.kelola';
+    // D-213: menghapus PERMANEN tenant berpenanda Uji/Demo/Internal beserta seluruh datanya; hanya Super Admin.
+    case TenantHapusPermanen = 'tenant.hapus-permanen';
     // P-08 Tagihan langganan & verifikasi pembayaran (§19.3: Keuangan & Super Admin).
     case TagihanLihat = 'tagihan.lihat';
     case TagihanVerifikasi = 'tagihan.verifikasi';
@@ -144,6 +146,7 @@ enum IzinPengelola: string
             self::TenantAktifkan => 'Mengaktifkan kembali tenant yang ditangguhkan',
             self::TenantPenandaUbah => 'Mengubah penanda tenant Uji/Demo/Internal',
             self::TenantPenghapusanDataKelola => 'Melaksanakan atau menolak permintaan penghapusan data dan penutupan akun tenant (UU PDP)',
+            self::TenantHapusPermanen => 'Menghapus permanen tenant berpenanda Uji, Demo, atau Internal beserta seluruh datanya',
             // P-08
             self::TagihanLihat => 'Melihat tagihan langganan & bukti transfer',
             self::TagihanVerifikasi => 'Menerima atau menolak pembayaran langganan',

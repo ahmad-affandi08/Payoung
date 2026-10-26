@@ -2,7 +2,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
-import AksiMassalTenant, { MaksTenantMassal } from '@/Komponen/Pengelola/Tenant/AksiMassalTenant';
+import AksiMassalTenant, { FrasaHapusPermanen, MaksTenantMassal } from '@/Komponen/Pengelola/Tenant/AksiMassalTenant';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -33,7 +33,10 @@ function Masuk(izin: string[]) {
 }
 
 describe('Aksi massal tenant (D-208)', () => {
-    beforeEach(() => tiruanRouter.put.mockClear());
+    beforeEach(() => {
+        tiruanRouter.put.mockClear();
+        tiruanRouter.delete.mockClear();
+    });
     afterEach(() => cleanup());
 
     it('hanya aksi yang diizinkan yang tampil', () => {
@@ -95,6 +98,40 @@ describe('Aksi massal tenant (D-208)', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Kirim pesan…' }));
 
         expect(tiruanRouter.get).toHaveBeenCalledWith('/komunikasi/buat', { tenant: terpilih.map((t) => t.Uuid) });
+    });
+
+    it('hapus permanen (D-213) hanya bagi yang berizin, dan baru terkirim setelah alasan cukup dan frasa persis diketik', () => {
+        Masuk(['tenant.catatan.tulis']);
+        RenderUji(<AksiMassalTenant konteks={Konteks(Terpilih(2))} pilihanKategori={KATEGORI} />);
+        expect(screen.queryByRole('button', { name: 'Hapus permanen…' })).toBeNull();
+        cleanup();
+
+        Masuk(['tenant.hapus-permanen']);
+        const terpilih = Terpilih(2);
+        RenderUji(<AksiMassalTenant konteks={Konteks(terpilih)} pilihanKategori={KATEGORI} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hapus permanen…' }));
+        const kirim = screen.getByRole('button', { name: 'Hapus permanen' }) as HTMLButtonElement;
+        expect(kirim.disabled).toBe(true);
+
+        fireEvent.change(screen.getByLabelText(/Alasan/), { target: { value: 'Membersihkan tenant percobaan lama.' } });
+        fireEvent.change(screen.getByLabelText(/Ketik HAPUS PERMANEN/), { target: { value: 'hapus permanen' } });
+        expect(kirim.disabled).toBe(true);
+
+        fireEvent.change(screen.getByLabelText(/Ketik HAPUS PERMANEN/), { target: { value: FrasaHapusPermanen } });
+        expect(kirim.disabled).toBe(false);
+        fireEvent.click(kirim);
+
+        expect(tiruanRouter.delete).toHaveBeenLastCalledWith(
+            '/tenant/massal/hapus-permanen',
+            expect.objectContaining({
+                data: {
+                    Uuid: terpilih.map((t) => t.Uuid),
+                    Alasan: 'Membersihkan tenant percobaan lama.',
+                    Frasa: 'HAPUS PERMANEN',
+                },
+            }),
+        );
     });
 
     it('melebihi batas menonaktifkan semua aksi dan menampilkan peringatan', () => {

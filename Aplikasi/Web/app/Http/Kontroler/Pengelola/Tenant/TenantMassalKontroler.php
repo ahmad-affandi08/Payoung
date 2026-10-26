@@ -21,6 +21,8 @@ final class TenantMassalKontroler extends Kontroler
 {
     use PelakuPengelola;
 
+    public const FRASA_HAPUS = 'HAPUS PERMANEN';
+
     public function PerpanjangTrial(Request $permintaan, AksiTenantMassal $massal): RedirectResponse
     {
         $valid = $permintaan->validate([
@@ -61,6 +63,21 @@ final class TenantMassalKontroler extends Kontroler
         ], attributes: ['Uuid' => 'tenant terpilih', 'Isi' => 'catatan']);
 
         return $this->Rangkum($massal->TulisCatatan($this->AmbilPelaku(), $this->Uuid($valid), trim((string) $valid['Isi'])), 'diberi catatan');
+    }
+
+    /**
+     * Hapus permanen tenant uji terpilih (D-213). Selain izin & 2FA baru di rute, pelaku mengetik frasa konfirmasi; tiap
+     * tenant tetap diperiksa aksi satuannya (penanda, tagihan berbayar), jadi tenant sungguhan terpilih tidak akan terhapus.
+     */
+    public function HapusPermanen(Request $permintaan, AksiTenantMassal $massal): RedirectResponse
+    {
+        $valid = $permintaan->validate([
+            ...$this->AturanUuid(),
+            'Alasan' => ['required', 'string', 'min:10', 'max:500'],
+            'Frasa' => ['required', 'string', Rule::in([self::FRASA_HAPUS])],
+        ], messages: ['Frasa.in' => 'Ketik "'.self::FRASA_HAPUS.'" persis untuk melanjutkan.'], attributes: ['Uuid' => 'tenant terpilih', 'Frasa' => 'konfirmasi']);
+
+        return $this->Rangkum($massal->HapusPermanen($this->AmbilPelaku(), $this->Uuid($valid), trim((string) $valid['Alasan'])), 'dihapus permanen');
     }
 
     /**

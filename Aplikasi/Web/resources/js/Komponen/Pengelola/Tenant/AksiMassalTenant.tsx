@@ -13,13 +13,17 @@ import { IzinPengelola, PunyaIzin, type Pilihan, type PropsBersamaPengelola } fr
 /** Batas server `AksiTenantMassal::MAKS`. */
 export const MaksTenantMassal = 50;
 
-type JenisAksi = 'trial' | 'tangguhkan' | 'aktifkan' | 'catatan';
+type JenisAksi = 'trial' | 'tangguhkan' | 'aktifkan' | 'catatan' | 'hapus';
+
+/** Frasa konfirmasi server (`TenantMassalKontroler::FRASA_HAPUS`). */
+export const FrasaHapusPermanen = 'HAPUS PERMANEN';
 
 const JUDUL: Record<JenisAksi, string> = {
     trial: 'Perpanjang uji coba',
     tangguhkan: 'Tangguhkan tenant',
     aktifkan: 'Aktifkan kembali',
     catatan: 'Beri catatan internal',
+    hapus: 'Hapus permanen',
 };
 
 const KETERANGAN: Record<JenisAksi, string> = {
@@ -28,9 +32,10 @@ const KETERANGAN: Record<JenisAksi, string> = {
         'Owner hanya bisa masuk, melihat laporan, mengekspor data, dan membayar tagihan; aplikasi kasir terkunci. Tidak ada data yang dihapus.',
     aktifkan: 'Hanya tenant yang sedang ditangguhkan yang diaktifkan; lainnya dilewati.',
     catatan: 'Satu catatan yang sama ditulis di riwayat internal semua tenant terpilih. Owner tidak melihatnya.',
+    hapus: 'Menghapus tenant terpilih beserta SEMUA datanya (pengguna, transaksi, jurnal, berkas). Tidak bisa dibatalkan. Hanya tenant berpenanda Uji, Demo, atau Internal tanpa tagihan berbayar yang dihapus; yang lain dilewati.',
 };
 
-type Isian = { Hari: string; Alasan: string; Kategori: string; Catatan: string; Isi: string };
+type Isian = { Hari: string; Alasan: string; Kategori: string; Catatan: string; Isi: string; Frasa: string };
 
 /**
  * Aksi untuk tenant terpilih di daftar tenant konsol (D-208). Tiap aksi hanya tampil bila pelaku berizin; tenant yang
@@ -52,6 +57,7 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
         Kategori: pilihanKategori[0]?.Nilai ?? '',
         Catatan: '',
         Isi: '',
+        Frasa: '',
     });
     const [galat, AturGalat] = useState<Record<string, string>>({});
     const [memproses, AturMemproses] = useState(false);
@@ -97,6 +103,12 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
             case 'catatan':
                 router.post('/tenant/massal/catatan', { Uuid: uuid, Isi: isian.Isi }, pilihan);
                 break;
+            case 'hapus':
+                router.delete('/tenant/massal/hapus-permanen', {
+                    data: { Uuid: uuid, Alasan: isian.Alasan, Frasa: isian.Frasa },
+                    ...pilihan,
+                });
+                break;
         }
     };
 
@@ -112,7 +124,9 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
               ? isian.Catatan.trim().length >= 10 && isian.Kategori !== ''
               : aksi === 'aktifkan'
                 ? isian.Alasan.trim().length >= 10
-                : isian.Isi.trim().length >= 3;
+                : aksi === 'hapus'
+                  ? isian.Alasan.trim().length >= 10 && isian.Frasa === FrasaHapusPermanen
+                  : isian.Isi.trim().length >= 3;
 
     const jumlahTeks = uuid.length.toLocaleString('id-ID');
 
@@ -152,9 +166,14 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                     Tangguhkan…
                 </Tombol>
             ) : null}
+            {PunyaIzin(pengguna, IzinPengelola.TenantHapusPermanen) ? (
+                <Tombol varian="bahaya" disabled={terlaluBanyak} onClick={() => Buka('hapus')}>
+                    Hapus permanen…
+                </Tombol>
+            ) : null}
             {aksi !== null ? (
                 <DialogFormulir
-                    jenis={aksi === 'tangguhkan' ? 'konfirmasi' : 'dialog'}
+                    jenis={aksi === 'tangguhkan' || aksi === 'hapus' ? 'konfirmasi' : 'dialog'}
                     judul={`${JUDUL[aksi]} (${jumlahTeks} tenant)`}
                     keterangan={KETERANGAN[aksi]}
                     galatUmum={galat.Umum ?? galat.Uuid}
@@ -179,7 +198,7 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                                 required
                             />
                         ) : null}
-                        {aksi === 'trial' || aksi === 'aktifkan' ? (
+                        {aksi === 'trial' || aksi === 'aktifkan' || aksi === 'hapus' ? (
                             <BidangTeksPanjang
                                 label="Alasan"
                                 nilai={isian.Alasan}
@@ -211,6 +230,16 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                                 />
                             </>
                         ) : null}
+                        {aksi === 'hapus' ? (
+                            <BidangTeks
+                                label={`Ketik ${FrasaHapusPermanen} untuk memastikan`}
+                                nilai={isian.Frasa}
+                                saatBerubah={(nilai) => Ubah('Frasa', nilai)}
+                                galat={galat.Frasa}
+                                autoComplete="off"
+                                required
+                            />
+                        ) : null}
                         {aksi === 'catatan' ? (
                             <BidangTeksPanjang
                                 label="Isi catatan"
@@ -225,7 +254,7 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                         <DialogFooter className="sm:justify-start">
                             <Tombol
                                 type="submit"
-                                varian={aksi === 'tangguhkan' ? 'bahaya' : 'utama'}
+                                varian={aksi === 'tangguhkan' || aksi === 'hapus' ? 'bahaya' : 'utama'}
                                 memproses={memproses}
                                 disabled={!siapKirim}
                             >
