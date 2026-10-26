@@ -38,6 +38,7 @@ final class SkemaBagianSitus
      */
     public const SPESIMEN = [
         'Kasir', 'KasirBayar', 'KasirBerhasil', 'KasirShift', 'KasirRiwayat', 'KasirKas', 'KasirHp',
+        'KasirSektorKafe', 'KasirSektorToko', 'KasirSektorSalon', 'KasirSektorLaundry', 'KasirSektorApotek', 'KasirSektorBengkel',
         'Pemilik', 'PemilikDuo', 'PemilikLaporan', 'PemilikPersetujuan', 'PemilikKaryawan', 'PemilikInsight',
         'Struk', 'Jurnal',
     ];

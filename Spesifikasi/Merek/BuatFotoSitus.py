@@ -2,7 +2,7 @@
 """Mengubah tangkapan layar asli aplikasi Payoung menjadi WebP untuk situs pemasaran (`payoung.id`).
 
 Sumbernya keluaran test widget yang merender layar **asli** aplikasi dengan data contoh
-(`Aplikasi/Kasir/AlatSitus/FotoPlayStore_test.dart` & `Aplikasi/Pemilik/AlatSitus/FotoPlayStore_test.dart`,
+(`Aplikasi/Kasir/AlatSitus/FotoPlayStore_test.dart`, `FotoSitusSektor_test.dart` & `Aplikasi/Pemilik/AlatSitus/FotoPlayStore_test.dart`,
 hasilnya di `AlatSitus/Hasil/PlayStore/`, tidak masuk Git). Tidak ada gambar karangan atau mockup pesaing di sini.
 
 Pakai:  python3 Spesifikasi/Merek/BuatFotoSitus.py
@@ -16,6 +16,7 @@ from PIL import Image
 
 AKAR = Path(__file__).resolve().parents[2]
 KASIR = AKAR / 'Aplikasi/Kasir/AlatSitus/Hasil/PlayStore'
+SEKTOR = AKAR / 'Aplikasi/Kasir/AlatSitus/Hasil/Sektor'
 PEMILIK = AKAR / 'Aplikasi/Pemilik/AlatSitus/Hasil/PlayStore'
 TUJUAN = AKAR / 'Aplikasi/Web/resources/js/Aset/Situs'
 
@@ -29,6 +30,13 @@ DAFTAR = {
     'KasirShift': (KASIR / 'Tablet4Shift.png', TABLET),
     'KasirRiwayat': (KASIR / 'Tablet5Riwayat.png', TABLET),
     'KasirKas': (KASIR / 'Tablet6Kas.png', TABLET),
+    # D-212: layar Jual per sektor usaha dengan gambar produk (`FotoSitusSektor_test.dart`).
+    'KasirSektorKafe': (SEKTOR / 'Kafe.png', TABLET),
+    'KasirSektorToko': (SEKTOR / 'Toko.png', TABLET),
+    'KasirSektorSalon': (SEKTOR / 'Salon.png', TABLET),
+    'KasirSektorLaundry': (SEKTOR / 'Laundry.png', TABLET),
+    'KasirSektorApotek': (SEKTOR / 'Apotek.png', TABLET),
+    'KasirSektorBengkel': (SEKTOR / 'Bengkel.png', TABLET),
     'KasirHpJual': (KASIR / 'Hp1Jual.png', PONSEL),
     'PemilikBeranda': (PEMILIK / 'PemilikHp1Beranda.png', PONSEL),
     'PemilikLaporan': (PEMILIK / 'PemilikHp2Laporan.png', PONSEL),

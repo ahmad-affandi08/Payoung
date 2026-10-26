@@ -109,12 +109,12 @@ it('ikon yang dipakai copy bawaan ada di daftar ikon yang diizinkan', function (
     expect($tidakDikenal)->toBe([]);
 });
 
-it('beranda bawaan dibuka carousel lima sorotan berisi tangkapan layar asli, tanpa klaim sosial karangan (D-39)', function (): void {
+it('beranda bawaan dibuka carousel delapan sorotan (kasir tiap sektor usaha, pembayaran, Aplikasi Pemilik) berisi tangkapan layar asli, tanpa klaim sosial karangan (D-39)', function (): void {
     $bagian = KontenSitusBawaan::AmbilHalaman()['beranda']['Bagian'];
     $jenis = array_column($bagian, 'Jenis');
 
     expect($jenis[0])->toBe('HeroGeser')
-        ->and($bagian[0]['Sorotan'])->toHaveCount(5)
+        ->and($bagian[0]['Sorotan'])->toHaveCount(8)
         ->and($jenis)->toContain('TabUsaha', 'Langkah', 'Integrasi', 'Harga', 'Faq', 'Cta')
         // Bukti sosial hanya boleh diisi pemilik dari konsol: tidak ada testimoni atau logo klien karangan.
         ->and($jenis)->not->toContain('Testimoni')
@@ -123,5 +123,13 @@ it('beranda bawaan dibuka carousel lima sorotan berisi tangkapan layar asli, tan
     foreach ($bagian[0]['Sorotan'] as $sorotan) {
         expect(SkemaBagianSitus::SPESIMEN)->toContain($sorotan['Spesimen']);
         expect($sorotan['TombolUtama'])->not->toBeNull();
+    }
+
+    // D-212: enam sorotan pertama memperlihatkan kasir tiap sektor, dan semua berkas gambarnya ada di build.
+    $spesimen = array_column($bagian[0]['Sorotan'], 'Spesimen');
+    expect(array_slice($spesimen, 0, 6))->toBe(['KasirSektorKafe', 'KasirSektorToko', 'KasirSektorSalon', 'KasirSektorLaundry', 'KasirSektorApotek', 'KasirSektorBengkel']);
+
+    foreach (array_slice($spesimen, 0, 6) as $nama) {
+        expect(resource_path("js/Aset/Situs/{$nama}.webp"))->toBeFile();
     }
 });

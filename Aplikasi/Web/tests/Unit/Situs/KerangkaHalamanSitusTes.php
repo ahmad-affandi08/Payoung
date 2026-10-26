@@ -20,10 +20,10 @@ it('mengambil sorotan pertama dari blok HeroGeser beserta gambar spesimennya', f
         ->and($pembuka['Judul'])->toBe($bagian[0]['Sorotan'][0]['Judul'])
         ->and($pembuka['TombolUtama']['Label'])->toBe('Coba gratis')
         ->and($pembuka['Gambar']['Url'])->toBeNull()
-        ->and($pembuka['Gambar']['Berkas'])->toBe('KasirJual')
+        ->and($pembuka['Gambar']['Berkas'])->toBe('KasirSektorKafe')
         ->and($pembuka['Gambar']['Lebar'])->toBe(1600);
 
-    expect(resource_path('js/Aset/Situs/KasirJual.webp'))->toBeFile();
+    expect(resource_path('js/Aset/Situs/KasirSektorKafe.webp'))->toBeFile();
 });
 
 it('mengambil blok Hero biasa dan memakai gambar unggahan bila ada', function (): void {

@@ -8,6 +8,12 @@ import gambarKasirBerhasil from '@/Aset/Situs/KasirBerhasil.webp';
 import gambarKasirShift from '@/Aset/Situs/KasirShift.webp';
 import gambarKasirRiwayat from '@/Aset/Situs/KasirRiwayat.webp';
 import gambarKasirKas from '@/Aset/Situs/KasirKas.webp';
+import gambarKasirSektorKafe from '@/Aset/Situs/KasirSektorKafe.webp';
+import gambarKasirSektorToko from '@/Aset/Situs/KasirSektorToko.webp';
+import gambarKasirSektorSalon from '@/Aset/Situs/KasirSektorSalon.webp';
+import gambarKasirSektorLaundry from '@/Aset/Situs/KasirSektorLaundry.webp';
+import gambarKasirSektorApotek from '@/Aset/Situs/KasirSektorApotek.webp';
+import gambarKasirSektorBengkel from '@/Aset/Situs/KasirSektorBengkel.webp';
 import gambarKasirHpJual from '@/Aset/Situs/KasirHpJual.webp';
 import gambarPemilikBeranda from '@/Aset/Situs/PemilikBeranda.webp';
 import gambarPemilikLaporan from '@/Aset/Situs/PemilikLaporan.webp';
@@ -183,6 +189,36 @@ export const FOTO = {
         ...TABLET,
         alt: 'Layar Kas aplikasi Kasir Payoung: perkiraan kas di laci Rp 746.600, asal uang di laci, serta kas masuk dan keluar.',
     },
+    KasirSektorKafe: {
+        src: gambarKasirSektorKafe,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk kafe: katalog menu kopi, non-kopi, dan makanan dengan foto, keranjang Es Kopi Susu Aren, Croissant Cokelat, dan Matcha Latte, total Rp 95.700 dengan PBJT 10%.',
+    },
+    KasirSektorToko: {
+        src: gambarKasirSektorToko,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk toko dan retail: katalog sembako, minuman, dan kebutuhan harian dengan foto produk, keranjang beras, minyak goreng, telur, dan mi instan, total Rp 142.000.',
+    },
+    KasirSektorSalon: {
+        src: gambarKasirSektorSalon,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk salon dan jasa: daftar layanan rambut, kuku, dan perawatan dengan gambar, keranjang potong rambut, creambath, dan manicure, total Rp 200.000.',
+    },
+    KasirSektorLaundry: {
+        src: gambarKasirSektorLaundry,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk laundry: layanan kiloan, satuan, sepatu, dan boneka dengan gambar, keranjang cuci setrika, bedcover, kemeja, dan cuci sepatu, total Rp 96.000.',
+    },
+    KasirSektorApotek: {
+        src: gambarKasirSektorApotek,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk apotek: katalog obat bebas, vitamin, alat kesehatan, dan perawatan dengan gambar, keranjang paracetamol, vitamin C, dan masker medis, total Rp 96.000.',
+    },
+    KasirSektorBengkel: {
+        src: gambarKasirSektorBengkel,
+        ...TABLET,
+        alt: 'Aplikasi Kasir Payoung untuk bengkel: jasa servis, oli, dan sparepart dengan gambar, keranjang servis rutin, oli mesin, busi, dan filter oli, total Rp 184.000.',
+    },
     KasirHp: {
         src: gambarKasirHpJual,
         ...PONSEL,
@@ -331,6 +367,12 @@ export const SPESIMEN: Record<NamaSpesimen, (props: PropsFoto) => ReactNode> = {
     KasirShift: Tablet(FOTO.KasirShift),
     KasirRiwayat: Tablet(FOTO.KasirRiwayat),
     KasirKas: Tablet(FOTO.KasirKas),
+    KasirSektorKafe: Tablet(FOTO.KasirSektorKafe),
+    KasirSektorToko: Tablet(FOTO.KasirSektorToko),
+    KasirSektorSalon: Tablet(FOTO.KasirSektorSalon),
+    KasirSektorLaundry: Tablet(FOTO.KasirSektorLaundry),
+    KasirSektorApotek: Tablet(FOTO.KasirSektorApotek),
+    KasirSektorBengkel: Tablet(FOTO.KasirSektorBengkel),
     KasirHp: Ponsel(FOTO.KasirHp),
     Pemilik: SpesimenPemilik,
     PemilikDuo: SpesimenPemilikDuo,
