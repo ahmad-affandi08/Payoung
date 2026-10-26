@@ -179,7 +179,7 @@ final class UjiCobaTemplateSektor
         $lolos = $neraca['Seimbang'] && $sesuai;
 
         return self::Hasil('Laporan', 'Neraca saldo dan laba rugi menghitung benar', $lolos, $lolos
-            ? "Neraca saldo seimbang; pendapatan {$pendapatan->FormatRupiah()}, HPP {$hpp->FormatRupiah()}, laba kotor {$kotor->FormatRupiah()}."
+            ? "Neraca saldo seimbang. Pendapatan {$pendapatan->FormatRupiah()}, HPP {$hpp->FormatRupiah()}, laba kotor {$kotor->FormatRupiah()}."
             : ($neraca['Seimbang'] ? "Laba rugi tidak sesuai harapan (pendapatan {$pendapatan->FormatRupiah()}, HPP {$hpp->FormatRupiah()})." : 'Neraca saldo tidak seimbang.'));
     }
 

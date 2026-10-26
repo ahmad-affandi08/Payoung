@@ -77,7 +77,7 @@ final class BukaUlangShift
         }
 
         if ($shift->Status !== StatusShift::Tertutup) {
-            throw new PelanggaranAturanBisnis('ShiftTidakTertutup', "Shift ini {$shift->Status->AmbilLabel()}; hanya shift yang sudah ditutup yang bisa dibuka ulang.", 'UuidShift', 409);
+            throw new PelanggaranAturanBisnis('ShiftTidakTertutup', "Shift ini {$shift->Status->AmbilLabel()}. Hanya shift yang sudah ditutup yang bisa dibuka ulang.", 'UuidShift', 409);
         }
 
         if (TutupHarian::query()->where('IdOutlet', $shift->IdOutlet)->where('TanggalBisnis', $shift->TanggalBisnis->toDateString())->exists()) {

@@ -93,7 +93,7 @@ final class PenyusunNotaReturPajak
             }
 
             if ($retur->PengaliDppPembilang !== 11 || $retur->PengaliDppPenyebut !== 12) {
-                $masalah[] = "Retur ini memakai pengali DPP {$retur->PengaliDppPembilang}/{$retur->PengaliDppPenyebut}; rekap baru mendukung DPP nilai lain 11/12.";
+                $masalah[] = "Retur ini memakai pengali DPP {$retur->PengaliDppPembilang}/{$retur->PengaliDppPenyebut}. Rekap baru mendukung DPP nilai lain 11/12.";
             }
 
             $identitas = $this->penghitung->SusunIdentitasPembeli($pembeli[$retur->IdPelanggan] ?? null, $masalah);

@@ -87,7 +87,7 @@ export default function Pengembang() {
                         <li>
                             Ambil halaman berikutnya dengan <span className="font-mono">?kursor=</span> berisi{' '}
                             <span className="font-mono">Kursor.Berikutnya</span> sampai nilainya{' '}
-                            <span className="font-mono">null</span>; ukuran halaman{' '}
+                            <span className="font-mono">null</span>. Ukuran halaman{' '}
                             <span className="font-mono">?per=</span> 1–200 (bawaan 50).
                         </li>
                     </ol>
@@ -151,7 +151,7 @@ export default function Pengembang() {
                 <Bagian id="webhook" judul="Webhook">
                     <p className="text-isi text-teks-utama">
                         Daftarkan alamat HTTPS publik di <strong>Pengaturan › Webhook</strong>. Payoung mengirim POST
-                        JSON <span className="font-mono">{'{IdPeristiwa, Peristiwa, TerjadiPada, Data}'}</span>; balas
+                        JSON <span className="font-mono">{'{IdPeristiwa, Peristiwa, TerjadiPada, Data}'}</span>. Balas
                         2xx dalam 10 detik. Gagal dicoba lagi 1 menit, 5 menit, 30 menit, 2 jam, lalu 12 jam kemudian.
                         Pakai <span className="font-mono">X-Id-Peristiwa</span> untuk mengabaikan kiriman ganda.
                     </p>

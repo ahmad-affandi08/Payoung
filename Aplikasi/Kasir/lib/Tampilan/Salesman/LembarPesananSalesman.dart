@@ -319,7 +319,7 @@ class _LembarPesananSalesmanState extends ConsumerState<LembarPesananSalesman> {
             Text(
               stok.diambilPada == null
                   ? 'Stok kantor belum pernah diunduh. Stok tidak menahan pesanan.'
-                  : 'Stok kantor per ${FormatWaktu.FormatTanggalJam(stok.diambilPada!)}; hanya petunjuk.',
+                  : 'Stok kantor per ${FormatWaktu.FormatTanggalJam(stok.diambilPada!)}. Hanya petunjuk.',
               style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
             ),
           ],

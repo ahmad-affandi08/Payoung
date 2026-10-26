@@ -31,7 +31,7 @@ function BukanProsa(teks: string): boolean {
         /&\w+;|Mozilla|AppleWebKit|Gecko|-src\b|frame-ancestors|base-uri|object-src|'self'|charset|Max-Age|Path=|SameSite|=\S*;\s/i.test(
             teks,
         ) ||
-        (teks.match(/\s/g) ?? []).length < 3 ||
+        (teks.match(/\s/g) ?? []).length < 2 ||
         /[\w-]+\s*:\s*[^;\n]{1,40};\s*[\w-]+\s*:/.test(teks) ||
         teks
             .split('; ')
@@ -66,7 +66,7 @@ describe('Bahasa antarmuka tanpa titik koma', () => {
                 ) {
                     const teks = isi.slice(simpul.getStart(sf), simpul.getEnd());
 
-                    if (/[A-Za-z0-9)%\]]; [a-z](?![\w]*[=:-])/.test(teks) && !BukanProsa(teks)) {
+                    if (/(^\s*|[A-Za-z0-9)%\]}]); [a-z](?![\w]*[=:-])/.test(teks) && !BukanProsa(teks)) {
                         const baris = sf.getLineAndCharacterOfPosition(simpul.getStart(sf)).line + 1;
                         pelanggar.push(`${jalur}:${String(baris)}`);
                     }
@@ -78,5 +78,5 @@ describe('Bahasa antarmuka tanpa titik koma', () => {
         }
 
         expect(pelanggar).toEqual([]);
-    });
+    }, 60_000);
 });

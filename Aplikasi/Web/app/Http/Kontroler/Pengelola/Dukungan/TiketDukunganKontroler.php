@@ -144,7 +144,7 @@ final class TiketDukunganKontroler extends Kontroler
         ]);
         $tiket = $eskalasi->Jalankan($this->AmbilPelaku(), $tiketDukungan, TingkatEskalasiTiket::from((string) $valid['Tingkat']), (string) $valid['Alasan']);
 
-        return back()->with('Kilat', "Tiket {$tiket->Nomor} dieskalasi ke {$tiket->TingkatEskalasi->AmbilLabel()}; tim tujuan diberi tahu lewat email.");
+        return back()->with('Kilat', "Tiket {$tiket->Nomor} dieskalasi ke {$tiket->TingkatEskalasi->AmbilLabel()}. Tim tujuan diberi tahu lewat email.");
     }
 
     /**

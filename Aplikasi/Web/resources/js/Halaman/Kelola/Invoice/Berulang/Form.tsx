@@ -278,7 +278,7 @@ export default function HalamanFormInvoiceBerulang({
                     <div className="flex flex-col gap-4">
                         <BidangTeks
                             label="Perihal"
-                            keterangan="Boleh memakai {periode}, {bulan}, dan {tahun}; diisi sesuai tanggal invoice. Contoh: Maintenance {periode}."
+                            keterangan="Boleh memakai {periode}, {bulan}, dan {tahun}. Diisi sesuai tanggal invoice. Contoh: Maintenance {periode}."
                             nilai={perihal}
                             saatBerubah={AturPerihal}
                             maxLength={150}

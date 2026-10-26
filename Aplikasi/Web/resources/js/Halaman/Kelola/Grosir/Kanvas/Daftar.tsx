@@ -367,7 +367,7 @@ export default function HalamanDaftarKanvas({
             {terpilih !== null && Rekap !== null ? (
                 <Panel
                     judul={`Rekap ${terpilih.Nama}`}
-                    keterangan={`Hari bisnis ${FormatTanggal(Rekap.Tanggal)}. Barang dari buku stok ${terpilih.NamaGudang ?? 'lokasi Toko'}; uang dari penjualan kasir di outlet ini.`}
+                    keterangan={`Hari bisnis ${FormatTanggal(Rekap.Tanggal)}. Barang dari buku stok ${terpilih.NamaGudang ?? 'lokasi Toko'}. Uang dari penjualan kasir di outlet ini.`}
                 >
                     <div className="flex flex-wrap items-end gap-3">
                         <div className="w-full max-w-xs">

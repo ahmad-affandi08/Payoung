@@ -259,7 +259,7 @@ final class DataDemoLokal extends Seeder
 
             $this->ringkasan[] = $status === StatusDataMaster::Terbit
                 ? "Tarif pajak #{$tarif->Id} diterbitkan untuk demo lokal."
-                : "Tarif pajak #{$tarif->Id} masih {$status->value}; periksa di Platform Pengelola > Referensi > Tarif pajak.";
+                : "Tarif pajak #{$tarif->Id} masih {$status->value}. Periksa di Platform Pengelola > Referensi > Tarif pajak.";
         }
     }
 

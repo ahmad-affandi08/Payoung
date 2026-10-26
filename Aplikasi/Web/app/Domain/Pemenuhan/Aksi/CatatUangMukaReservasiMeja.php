@@ -54,7 +54,7 @@ final class CatatUangMukaReservasiMeja
             $r = ReservasiMeja::query()->whereKey($reservasi->Id)->lockForUpdate()->firstOrFail();
 
             if (! $r->Status->CekMemakaiMeja()) {
-                throw new PelanggaranAturanBisnis('ReservasiSudahBerakhir', "Reservasi {$r->Nomor} berstatus {$r->Status->AmbilLabel()}; uang muka tidak bisa dicatat lagi.", 'Status');
+                throw new PelanggaranAturanBisnis('ReservasiSudahBerakhir', "Reservasi {$r->Nomor} berstatus {$r->Status->AmbilLabel()}. Uang muka tidak bisa dicatat lagi.", 'Status');
             }
 
             if (Uang::Dari($r->JumlahDp)->Bandingkan(Uang::Nol()) > 0) {

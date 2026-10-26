@@ -76,7 +76,7 @@ export default function HalamanDetailTransaksiKasBank({ Transaksi: t, Jurnal, Iz
                     >
                         {t.NomorDibalik}
                     </Link>
-                    ; jurnalnya mencerminkan jurnal asal sehingga pengaruhnya menjadi nol.
+                    . Jurnalnya mencerminkan jurnal asal sehingga pengaruhnya menjadi nol.
                 </Pemberitahuan>
             ) : null}
             {t.Dibalik && t.UuidPembalik ? (

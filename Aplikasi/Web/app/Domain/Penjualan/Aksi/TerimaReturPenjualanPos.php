@@ -449,7 +449,7 @@ final class TerimaReturPenjualanPos
         if ($sudahKeluar->Tambah($uangKeluar)->Bandingkan($batas) > 0) {
             throw new PelanggaranAturanBisnis(
                 'GiftCardTidakBisaDiuangkan',
-                "Penjualan ini sebagian dibayar gift card ({$bayarGiftCard->FormatRupiah()}). Refund tunai/transfer paling banyak {$batas->FormatRupiah()}; bagian gift card dikembalikan lewat void atau tukar barang.",
+                "Penjualan ini sebagian dibayar gift card ({$bayarGiftCard->FormatRupiah()}). Refund tunai/transfer paling banyak {$batas->FormatRupiah()}. Bagian gift card dikembalikan lewat void atau tukar barang.",
                 'Refund',
             );
         }

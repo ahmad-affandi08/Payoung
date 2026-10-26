@@ -26,7 +26,7 @@ final class TandaiPesananPenjualanSiap
             $pesanan = PesananPenjualan::query()->whereKey($pesanan->Id)->lockForUpdate()->firstOrFail();
 
             if (! $pesanan->Status->BisaBerubahKe(StatusPesananPenjualan::Siap) || $pesanan->Status !== StatusPesananPenjualan::Dipesan) {
-                throw new PelanggaranAturanBisnis('StatusTidakValid', "Pre-order {$pesanan->Nomor} berstatus {$pesanan->Status->AmbilLabel()}; hanya pesanan Dipesan yang bisa ditandai siap.", 'Status');
+                throw new PelanggaranAturanBisnis('StatusTidakValid', "Pre-order {$pesanan->Nomor} berstatus {$pesanan->Status->AmbilLabel()}. Hanya pesanan Dipesan yang bisa ditandai siap.", 'Status');
             }
 
             $pesanan->fill(['Status' => StatusPesananPenjualan::Siap, 'SiapPada' => CarbonImmutable::now()]);

@@ -239,7 +239,7 @@ final class PenyusunFakturPajakCoretax
         if ($faktur->TarifPpn === null) {
             $masalah[] = 'Faktur ini tidak memuat PPN (tidak ada tarif PPN tersimpan), jadi tidak diekspor sebagai Faktur Pajak.';
         } elseif ($faktur->PengaliDppPembilang !== 11 || $faktur->PengaliDppPenyebut !== 12) {
-            $masalah[] = "Faktur ini memakai pengali DPP {$faktur->PengaliDppPembilang}/{$faktur->PengaliDppPenyebut}; ekspor baru mendukung DPP nilai lain 11/12 (kode transaksi 04). Terbitkan Faktur Pajaknya langsung di Coretax.";
+            $masalah[] = "Faktur ini memakai pengali DPP {$faktur->PengaliDppPembilang}/{$faktur->PengaliDppPenyebut}. Ekspor baru mendukung DPP nilai lain 11/12 (kode transaksi 04). Terbitkan Faktur Pajaknya langsung di Coretax.";
         }
 
         $identitas = $this->penghitung->SusunIdentitasPembeli($pembeli, $masalah);

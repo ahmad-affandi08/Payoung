@@ -73,7 +73,7 @@ export default function HalamanDetailJurnalUmum({ JurnalUmum: j, Jurnal, Baris, 
                     <Link href={`${alamat}/${j.UuidDibalik}`} className="font-mono font-semibold text-brand underline">
                         {j.NomorDibalik}
                     </Link>
-                    ; jurnalnya mencerminkan jurnal asal sehingga pengaruhnya menjadi nol.
+                    . Jurnalnya mencerminkan jurnal asal sehingga pengaruhnya menjadi nol.
                 </Pemberitahuan>
             ) : null}
             {j.Dibalik && j.UuidPembalik ? (

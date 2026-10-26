@@ -1038,7 +1038,7 @@ function BannerLangganan({ tenant, bolehBayar }: { tenant: TenantAktif; bolehBay
             <Pemberitahuan jenis="peringatan" judul="Tagihan langganan belum dibayar">
                 <p>
                     Periode langganan berakhir {FormatTanggalWaktu(tenant.PeriodeSelesai)}. Semua fitur tetap berjalan
-                    {tenant.BatasTenggangPada ? ` sampai ${FormatTanggalWaktu(tenant.BatasTenggangPada)}` : ''}; setelah
+                    {tenant.BatasTenggangPada ? ` sampai ${FormatTanggalWaktu(tenant.BatasTenggangPada)}` : ''}. Setelah
                     itu langganan ditangguhkan dan data tidak bisa diubah.
                 </p>
                 <p className="mt-1">{ajakan}</p>

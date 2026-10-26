@@ -45,7 +45,7 @@ final class EskalasikanTiketDukungan
                 }
 
                 if (! $tingkat->CekLebihTinggiDari($tiket->TingkatEskalasi)) {
-                    throw new PelanggaranAturanBisnis('P-09', "Tiket sudah berada di {$tiket->TingkatEskalasi->AmbilLabel()}; eskalasi hanya bisa naik.", 'Tingkat');
+                    throw new PelanggaranAturanBisnis('P-09', "Tiket sudah berada di {$tiket->TingkatEskalasi->AmbilLabel()}. Eskalasi hanya bisa naik.", 'Tingkat');
                 }
 
                 $asal = $tiket->TingkatEskalasi;

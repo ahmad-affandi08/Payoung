@@ -105,7 +105,7 @@ final class KirimPesananGrosir
         if (! $pesanan->Status->CekBolehDikirim()) {
             throw new PelanggaranAturanBisnis(
                 'PesananBelumBisaDikirim',
-                "Pesanan {$pesanan->Nomor} berstatus {$pesanan->Status->AmbilLabel()}; hanya pesanan yang sudah dikonfirmasi bisa dikirim.",
+                "Pesanan {$pesanan->Nomor} berstatus {$pesanan->Status->AmbilLabel()}. Hanya pesanan yang sudah dikonfirmasi bisa dikirim.",
             );
         }
 

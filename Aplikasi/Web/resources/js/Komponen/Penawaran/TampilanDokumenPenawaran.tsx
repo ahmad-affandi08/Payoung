@@ -156,7 +156,7 @@ export default function TampilanDokumenPenawaran({ dokumen }: { dokumen: Dokumen
                 </section>
             ) : null}
             <p className="text-keterangan text-teks-sekunder">
-                Harga dan pajak pada penawaran ini adalah perkiraan sampai {FormatTanggal(p.BerlakuSampai)}; angka pada
+                Harga dan pajak pada penawaran ini adalah perkiraan sampai {FormatTanggal(p.BerlakuSampai)}. Angka pada
                 invoice mengikuti tarif pajak yang berlaku pada tanggal invoice.
             </p>
         </article>

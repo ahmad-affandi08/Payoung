@@ -147,7 +147,7 @@ export default function HalamanBuatAsetTetap({ OpsiKelompok, OpsiOutlet, OpsiAku
                                     nilai={d.UmurBulan}
                                     saatBerubah={(nilai) => formulir.setData('UmurBulan', nilai.replace(/\D/g, ''))}
                                     galat={formulir.errors.UmurBulan}
-                                    keterangan={`${FormatMasaManfaat(Number(d.UmurBulan))}; maksimal ${String(UmurMaksimal)} bulan`}
+                                    keterangan={`${FormatMasaManfaat(Number(d.UmurBulan))}. Maksimal ${String(UmurMaksimal)} bulan`}
                                     inputMode="numeric"
                                     maxLength={3}
                                     required

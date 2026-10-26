@@ -128,7 +128,7 @@ final class TimPengujiSeeder extends Seeder
         $pelaku = PenggunaPengelola::query()->orderBy('Id')->first();
 
         if ($pelaku === null) {
-            $this->command?->warn("Belum ada akun pengelola, jadi batas perangkat paket ({$batas}) tidak bisa dinaikkan; hanya {$batas} perangkat yang dibuat.");
+            $this->command?->warn("Belum ada akun pengelola, jadi batas perangkat paket ({$batas}) tidak bisa dinaikkan. Hanya {$batas} perangkat yang dibuat.");
 
             return;
         }

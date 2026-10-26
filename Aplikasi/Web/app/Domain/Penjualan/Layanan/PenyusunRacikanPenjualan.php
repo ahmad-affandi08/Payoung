@@ -100,7 +100,7 @@ final class PenyusunRacikanPenjualan
                 }
 
                 if (isset($dipakai[$p->id])) {
-                    throw new PelanggaranAturanBisnis('KomponenRacikanGanda', "{$p->nama} tercantum dua kali di racikan {$racikan->nama}; gabungkan jumlahnya.", "{$bidangKomponen}.UuidProduk");
+                    throw new PelanggaranAturanBisnis('KomponenRacikanGanda', "{$p->nama} tercantum dua kali di racikan {$racikan->nama}. Gabungkan jumlahnya.", "{$bidangKomponen}.UuidProduk");
                 }
 
                 $dipakai[$p->id] = true;

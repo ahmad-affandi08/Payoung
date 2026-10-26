@@ -1770,7 +1770,7 @@ final class TerimaPenjualanPos
     private function PastikanBahanBisaDikurangi(DataKebutuhanStok $k, int $indeks, bool $langsung): void
     {
         if ($k->pelacakan === PelacakanProduk::Seri && ! $langsung) {
-            throw new PelanggaranAturanBisnis('PelacakanBelumDidukung', "{$k->nama} ({$k->jalur}) memakai {$k->pelacakan->AmbilLabel()}; nomor seri hanya bisa dijual sebagai barang langsung, bukan bahan resep, komponen paket, atau bahan pilihan.", "Baris.{$indeks}.UuidProduk");
+            throw new PelanggaranAturanBisnis('PelacakanBelumDidukung', "{$k->nama} ({$k->jalur}) memakai {$k->pelacakan->AmbilLabel()}. Nomor seri hanya bisa dijual sebagai barang langsung, bukan bahan resep, komponen paket, atau bahan pilihan.", "Baris.{$indeks}.UuidProduk");
         }
     }
 

@@ -39,7 +39,7 @@ final class PenjagaPesananTerbuka
     public function PastikanTerbuka(PesananTerbuka $pesanan): void
     {
         if ($pesanan->Status !== StatusPesananTerbuka::Terbuka) {
-            throw new PelanggaranAturanBisnis('PesananSudahDitutup', "Pesanan {$pesanan->Nomor} sudah {$pesanan->Status->AmbilLabel()}; tidak bisa diubah lagi.", 'UuidPesanan', 409);
+            throw new PelanggaranAturanBisnis('PesananSudahDitutup', "Pesanan {$pesanan->Nomor} sudah {$pesanan->Status->AmbilLabel()}. Tidak bisa diubah lagi.", 'UuidPesanan', 409);
         }
     }
 

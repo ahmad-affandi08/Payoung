@@ -96,7 +96,7 @@ final class PenerapStatusTagihanQris
                     'StatusAsal' => $asal->value,
                 ]);
                 $tagihan->PerluTinjauan = true;
-                $tagihan->AlasanTinjauan = mb_substr("Uang QRIS diterima setelah tagihan berstatus {$asal->value}; cocokkan dengan penjualan atau kembalikan dana ke pelanggan.", 0, 255);
+                $tagihan->AlasanTinjauan = mb_substr("Uang QRIS diterima setelah tagihan berstatus {$asal->value}. Cocokkan dengan penjualan atau kembalikan dana ke pelanggan.", 0, 255);
                 $tagihan->save();
             }
 

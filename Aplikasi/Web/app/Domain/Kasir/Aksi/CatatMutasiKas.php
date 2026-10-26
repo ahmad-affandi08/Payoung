@@ -126,7 +126,7 @@ final class CatatMutasiKas
         $sudahDitutup = $shift->Status === StatusShift::Tertutup;
 
         if (! $shift->Status->CekAktif() && ! $sudahDitutup) {
-            throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini sudah {$shift->Status->AmbilLabel()}; kas tidak bisa dicatat lagi.", 'UuidShift');
+            throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini sudah {$shift->Status->AmbilLabel()}. Kas tidak bisa dicatat lagi.", 'UuidShift');
         }
 
         if ($data->dicatatPada->lessThan(CarbonImmutable::parse($shift->DibukaPada)->subSeconds(self::TOLERANSI_JAM_DETIK))) {

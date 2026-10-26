@@ -70,7 +70,7 @@ final class TutupShiftPaksa
             }
 
             if (! $shift->Status->CekAktif()) {
-                throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini {$shift->Status->AmbilLabel()}; tidak perlu ditutup paksa.", 'UuidShift');
+                throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini {$shift->Status->AmbilLabel()}. Tidak perlu ditutup paksa.", 'UuidShift');
             }
 
             $sekarang = CarbonImmutable::now();

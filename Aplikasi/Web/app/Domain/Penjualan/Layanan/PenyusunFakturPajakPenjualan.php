@@ -63,7 +63,7 @@ final class PenyusunFakturPajakPenjualan
         if ($ppn === null) {
             $masalah[] = 'Penjualan ini tidak memuat PPN, jadi tidak bisa dijadikan Faktur Pajak.';
         } elseif ($ppn->PengaliDppPembilang !== 11 || $ppn->PengaliDppPenyebut !== 12) {
-            $masalah[] = "Penjualan ini memakai pengali DPP {$ppn->PengaliDppPembilang}/{$ppn->PengaliDppPenyebut}; baru mendukung DPP nilai lain 11/12 (kode transaksi 04). Terbitkan Faktur Pajaknya langsung di Coretax.";
+            $masalah[] = "Penjualan ini memakai pengali DPP {$ppn->PengaliDppPembilang}/{$ppn->PengaliDppPenyebut}. Baru mendukung DPP nilai lain 11/12 (kode transaksi 04). Terbitkan Faktur Pajaknya langsung di Coretax.";
         }
 
         if ($pajakDokumen->contains(fn (PenjualanPajak $p): bool => ! in_array($p->KodeJenisPajak, $kodePpn, true))) {

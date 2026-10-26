@@ -353,7 +353,7 @@ export default function HalamanFormPenyesuaianStok({
                                                 simbolSatuan={b.SimbolSatuan}
                                                 keterangan={
                                                     b.HppRataRata !== null
-                                                        ? `Diisi dari HPP rata-rata saat ini ${FormatHppSatuan(b.HppRataRata)}; boleh diubah.`
+                                                        ? `Diisi dari HPP rata-rata saat ini ${FormatHppSatuan(b.HppRataRata)}. Boleh diubah.`
                                                         : undefined
                                                 }
                                                 required

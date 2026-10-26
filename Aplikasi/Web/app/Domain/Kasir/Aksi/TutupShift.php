@@ -101,7 +101,7 @@ final class TutupShift
         }
 
         if (! $shift->Status->CekAktif()) {
-            throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini {$shift->Status->AmbilLabel()}; tidak bisa ditutup.", 'UuidShift');
+            throw new PelanggaranAturanBisnis('ShiftTidakAktif', "Shift ini {$shift->Status->AmbilLabel()}. Tidak bisa ditutup.", 'UuidShift');
         }
 
         if ($penutup === null) {
@@ -246,7 +246,7 @@ final class TutupShift
         $wajib = $mutlak->Bandingkan($toleransi) > 0;
 
         if ($wajib && mb_strlen(trim((string) $data->alasan)) < self::PANJANG_ALASAN_MINIMAL) {
-            throw new PelanggaranAturanBisnis('AlasanDiperlukan', "Selisih kas {$selisih->FormatRupiah()} melebihi toleransi {$toleransi->FormatRupiah()}; tulis alasan minimal 5 karakter.", 'Alasan', 422, [
+            throw new PelanggaranAturanBisnis('AlasanDiperlukan', "Selisih kas {$selisih->FormatRupiah()} melebihi toleransi {$toleransi->FormatRupiah()}. Tulis alasan minimal 5 karakter.", 'Alasan', 422, [
                 'Selisih' => $selisih->KeString(),
                 'ToleransiSelisihKas' => $toleransi->KeString(),
             ]);
@@ -254,7 +254,7 @@ final class TutupShift
 
         if ($data->uuidPenyetuju === null) {
             if ($wajib) {
-                throw new PelanggaranAturanBisnis('PersetujuanDiperlukan', "Selisih kas {$selisih->FormatRupiah()} melebihi toleransi {$toleransi->FormatRupiah()}; wajib disetujui supervisor dengan PIN.", 'UuidPenyetuju', 422, [
+                throw new PelanggaranAturanBisnis('PersetujuanDiperlukan', "Selisih kas {$selisih->FormatRupiah()} melebihi toleransi {$toleransi->FormatRupiah()}. Wajib disetujui supervisor dengan PIN.", 'UuidPenyetuju', 422, [
                     'Selisih' => $selisih->KeString(),
                     'ToleransiSelisihKas' => $toleransi->KeString(),
                 ]);

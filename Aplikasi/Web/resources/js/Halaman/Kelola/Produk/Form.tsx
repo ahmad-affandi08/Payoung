@@ -675,7 +675,7 @@ export default function HalamanFormProduk({
                 </div>
                 <p className="text-keterangan text-teks-sekunder">
                     Diisi bila barangnya sudah ada di toko. Langsung tercatat sebagai stok awal
-                    {lokasiStok.length === 1 ? ` di ${lokasiStok[0]?.Nama ?? ''}` : ''}; kosongkan bila belum ada stok.
+                    {lokasiStok.length === 1 ? ` di ${lokasiStok[0]?.Nama ?? ''}` : ''}. Kosongkan bila belum ada stok.
                 </p>
             </div>
         ) : null;
