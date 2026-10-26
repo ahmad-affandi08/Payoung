@@ -149,9 +149,9 @@ describe('Kerahasiaan kredensial (BR-P05.1, BR-P05.6)', function (): void {
             ->assertDontSee(RAHASIA_SMTP_UJI)
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
                 ->component('Pengelola/Integrasi/Daftar')
-                // v2.69/v2.70, D-57, D-215: 9 jenis platform (termasuk LoginSosial/Google, PendaftaranMerchant/DOKU Partner, dan AnalitikGoogle) × 2 lingkungan.
+                // v2.69/v2.70, D-57, D-215: 10 jenis platform (termasuk LoginSosial/Google, PendaftaranMerchant/DOKU Partner, AnalitikGoogle, dan EmailKampanye) × 2 lingkungan.
                 // Gerbang pembayaran QRIS tidak termasuk (diatur tenant sejak v2.06); Push (FCM) & GerbangBilling (DOKU penagih langganan) termasuk.
-                ->has('Integrasi', 18)
+                ->has('Integrasi', 20)
                 ->where('Integrasi.0.Konfigurasi.PetunjukKredensial.KataSandi', '••••'));
         expect($this->get(BantuanPengelola::Url('/integrasi'))->getContent())->not->toContain('9876');
 

@@ -16,6 +16,9 @@ return [
     // Email transaksional dari konfigurasi aktif P-05 (prasyarat registrasi di produksi, F-00).
     'EmailAktif' => false,
 
+    // D-216: pengirim email kampanye (domain terpisah dari email transaksional) dari integrasi `EmailKampanye`.
+    'EmailKampanyeAktif' => false,
+
     // Disk `Objek` (S3-compatible) tersedia bila konfigurasi penyimpanan aktif.
     'PenyimpananObjekAktif' => false,
 

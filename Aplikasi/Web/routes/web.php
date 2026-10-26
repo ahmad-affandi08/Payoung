@@ -6,6 +6,7 @@ use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\MejaPesanSendiri;
 use App\Domain\Pelanggan\Layanan\TautanBerhentiLangganan;
+use App\Domain\Pengelola\Komunikasi\Layanan\TautanBerhentiProspek;
 use App\Domain\Penjualan\Layanan\KodeInvoicePublik;
 use App\Domain\Penjualan\Layanan\KodeStrukDigital;
 use App\Domain\Penjualan\Layanan\PenentuKonteksKios;
@@ -30,6 +31,7 @@ use App\Http\Kontroler\Kelola\PusatBantuanKontroler as BantuanKontekstualKontrol
 use App\Http\Kontroler\Kelola\TerimaUndanganKontroler;
 use App\Http\Kontroler\Kelola\TindakanKontroler;
 use App\Http\Kontroler\Kelola\TurProdukKontroler;
+use App\Http\Kontroler\Pengelola\Komunikasi\BerhentiProspekKontroler;
 use App\Http\Kontroler\Publik\AbsenTautanKontroler;
 use App\Http\Kontroler\Publik\AkunTokoOnlineKontroler;
 use App\Http\Kontroler\Publik\BerhentiLanggananKontroler;
@@ -182,6 +184,16 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
         ->where('kode', TautanBerhentiLangganan::POLA)
         ->middleware('throttle:30,1')
         ->name('publik.berhenti-langganan.kirim');
+    // D-216: berhenti menerima kampanye email prospek (tautan bertanda tangan relatif; POST tanpa CSRF untuk satu klik RFC 8058).
+    Route::get('/berhenti-prospek/{kontak}', [BerhentiProspekKontroler::class, 'Tampilkan'])
+        ->where('kontak', TautanBerhentiProspek::POLA)
+        ->middleware('throttle:30,1')
+        ->name(TautanBerhentiProspek::NAMA_RUTE);
+    Route::post('/berhenti-prospek/{kontak}', [BerhentiProspekKontroler::class, 'Kirim'])
+        ->where('kontak', TautanBerhentiProspek::POLA)
+        ->withoutMiddleware(ValidateCsrfToken::class)
+        ->middleware('throttle:30,1')
+        ->name('publik.berhenti-prospek.kirim');
 
     // D-57 Masuk dengan Google. Di luar grup `guest`: tujuan "tautkan" dipakai pengguna yang sudah masuk (Keamanan akun).
     Route::get('/masuk/google', [MasukGoogleKontroler::class, 'Mulai'])->middleware('throttle:20,1')->name('masuk.google');

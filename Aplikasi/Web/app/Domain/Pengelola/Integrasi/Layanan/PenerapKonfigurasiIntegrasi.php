@@ -55,6 +55,15 @@ final class PenerapKonfigurasiIntegrasi
                     'filesystems.disks.Objek' => PenyusunKonfigurasiLaravel::DiskS3($konfigurasi->Pengaturan, $konfigurasi->Kredensial),
                     'integrasi.PenyimpananObjekAktif' => true,
                 ]),
+                // D-216: pengirim email kampanye prospek, terpisah dari `mail.default` (email transaksional).
+                JenisIntegrasi::EmailKampanye => config([
+                    'mail.mailers.kampanye' => PenyusunKonfigurasiLaravel::MailerSmtp($konfigurasi->Pengaturan, $konfigurasi->Kredensial),
+                    'integrasi.EmailKampanye' => [
+                        'AlamatPengirim' => (string) ($konfigurasi->Pengaturan['AlamatPengirim'] ?? ''),
+                        'NamaPengirim' => (string) ($konfigurasi->Pengaturan['NamaPengirim'] ?? ''),
+                    ],
+                    'integrasi.EmailKampanyeAktif' => true,
+                ]),
                 // v2.06: gerbang pembayaran diatur tiap tenant (`GerbangPembayaranTenant`); baris platform lama diabaikan.
                 JenisIntegrasi::GerbangPembayaran => null,
                 // v2.04 WhatsApp, v2.69 Push (FCM), v2.70 gerbang billing, v4.70 Masuk dengan Google, DOKU Partner (pendaftaran merchant): bentuknya sama — penyedia, pengaturan,

@@ -17,6 +17,8 @@ use App\Http\Kontroler\Pengelola\Katalog\KuponKontroler;
 use App\Http\Kontroler\Pengelola\Katalog\PaketKontroler;
 use App\Http\Kontroler\Pengelola\KataSandiKontroler;
 use App\Http\Kontroler\Pengelola\KeamananKontroler;
+use App\Http\Kontroler\Pengelola\Komunikasi\KampanyeProspekKontroler;
+use App\Http\Kontroler\Pengelola\Komunikasi\KontakProspekKontroler;
 use App\Http\Kontroler\Pengelola\Komunikasi\SiaranKontroler;
 use App\Http\Kontroler\Pengelola\Konten\ArtikelBantuanKontroler;
 use App\Http\Kontroler\Pengelola\Konten\ArtikelSitusKontroler;
@@ -361,6 +363,19 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
             Route::post('/komunikasi', [SiaranKontroler::class, 'Simpan'])->name('pengelola.komunikasi.simpan');
             Route::get('/komunikasi/{siaran}', [SiaranKontroler::class, 'Tampil'])->name('pengelola.komunikasi.tampil');
             Route::put('/komunikasi/{siaran}/batal', [SiaranKontroler::class, 'Batalkan'])->name('pengelola.komunikasi.batal');
+
+            // D-216: kampanye email ke calon pelanggan (kontak prospek + kampanye bertahap). Rute tetap didaftarkan
+            // sebelum `{kampanyeProspek}` supaya `kontak` dan `buat` tidak terbaca sebagai uuid.
+            Route::get('/kampanye-prospek', [KampanyeProspekKontroler::class, 'Daftar'])->name('pengelola.kampanye-prospek.daftar');
+            Route::get('/kampanye-prospek/buat', [KampanyeProspekKontroler::class, 'Buat'])->name('pengelola.kampanye-prospek.buat');
+            Route::get('/kampanye-prospek/kontak', [KontakProspekKontroler::class, 'Daftar'])->name('pengelola.kampanye-prospek.kontak');
+            Route::post('/kampanye-prospek/kontak/impor', [KontakProspekKontroler::class, 'Impor'])->middleware('throttle:10,1')->name('pengelola.kampanye-prospek.kontak.impor');
+            Route::put('/kampanye-prospek/kontak/{kontakProspek}/henti', [KontakProspekKontroler::class, 'Henti'])->name('pengelola.kampanye-prospek.kontak.henti');
+            Route::delete('/kampanye-prospek/kontak/{kontakProspek}', [KontakProspekKontroler::class, 'Hapus'])->name('pengelola.kampanye-prospek.kontak.hapus');
+            Route::post('/kampanye-prospek', [KampanyeProspekKontroler::class, 'Simpan'])->name('pengelola.kampanye-prospek.simpan');
+            Route::get('/kampanye-prospek/{kampanyeProspek}', [KampanyeProspekKontroler::class, 'Tampil'])->name('pengelola.kampanye-prospek.tampil');
+            Route::put('/kampanye-prospek/{kampanyeProspek}/status', [KampanyeProspekKontroler::class, 'UbahStatus'])->name('pengelola.kampanye-prospek.status');
+            Route::post('/kampanye-prospek/{kampanyeProspek}/uji', [KampanyeProspekKontroler::class, 'Uji'])->middleware('throttle:10,1')->name('pengelola.kampanye-prospek.uji');
         });
 
         // P-03 Template sektor (BR-P03.5: isi bisnis, akun, dan terbitkan dipisah per izin).

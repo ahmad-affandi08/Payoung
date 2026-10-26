@@ -495,6 +495,13 @@ final class KamusPeristiwaAudit
         'promo.klaim-pemasok.terima' => 'Klaim promo ke pemasok diterima',
         'promo.pengaturan' => 'Pengaturan promo diubah',
 
+        'prospek.kampanye.buat' => 'Kampanye prospek dibuat',
+        'prospek.kampanye.status' => 'Status kampanye prospek diubah',
+        'prospek.kampanye.uji' => 'Email uji kampanye prospek dikirim',
+        'prospek.kontak.hapus' => 'Kontak prospek dihapus',
+        'prospek.kontak.henti' => 'Kontak prospek dihentikan',
+        'prospek.kontak.impor' => 'Kontak prospek diimpor',
+
         'rak-gudang.buat' => 'Rak gudang dibuat',
         'rak-gudang.lepas-produk' => 'Produk dilepas dari rak gudang',
         'rak-gudang.tetapkan-produk' => 'Produk ditetapkan ke rak gudang',

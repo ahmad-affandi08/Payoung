@@ -158,3 +158,6 @@ Schedule::command('pesanan-online:kedaluwarsa')->everyFiveMinutes()->withoutOver
 
 // D-210: siaran platform ke pemilik tenant dikirim bertahap (WhatsApp hanya jam 08.00–21.00 WIB).
 $jadwalSaas('komunikasi:kirim-siaran')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
+
+// D-216: kampanye email prospek dikirim sedikit demi sedikit pada jam kerja (08.00–17.00 WIB).
+$jadwalSaas('prospek:kirim-kampanye')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();

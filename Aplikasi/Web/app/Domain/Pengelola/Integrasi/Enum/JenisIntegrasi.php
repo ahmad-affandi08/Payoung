@@ -20,6 +20,7 @@ enum JenisIntegrasi: string
     case LoginSosial = 'LoginSosial';
     case PendaftaranMerchant = 'PendaftaranMerchant';
     case AnalitikGoogle = 'AnalitikGoogle';
+    case EmailKampanye = 'EmailKampanye';
 
     /**
      * Jenis yang dikonfigurasi di tingkat platform. v2.06: gerbang pembayaran diatur tiap tenant (akun merchant
@@ -46,6 +47,7 @@ enum JenisIntegrasi: string
             self::LoginSosial => PenyediaIntegrasi::Google,
             self::PendaftaranMerchant => PenyediaIntegrasi::DokuPartner,
             self::AnalitikGoogle => PenyediaIntegrasi::GoogleAnalytics,
+            self::EmailKampanye => PenyediaIntegrasi::SmtpKampanye,
         };
     }
 
@@ -70,6 +72,7 @@ enum JenisIntegrasi: string
             self::LoginSosial => 'Masuk dengan Google',
             self::PendaftaranMerchant => 'DOKU Partner (pendaftaran merchant)',
             self::AnalitikGoogle => 'Google Analytics (laporan di konsol)',
+            self::EmailKampanye => 'Email kampanye (domain pengirim terpisah)',
         };
     }
 }
