@@ -66,14 +66,15 @@ it('impor → cocok otomatis (yang tidak ambigu) → cocok manual, abaikan, bata
 
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $jurnalSebelum = JurnalDetail::query()->count();
-    $this->post("/kelola/akuntansi/rekonsiliasi/{$bank->Uuid}/impor", ['Berkas' => RekeningKoranCsv()])->assertSessionHas('Kilat', '5 mutasi baru diimpor, 0 sudah pernah diimpor.');
+    $this->post("/kelola/akuntansi/rekonsiliasi/{$bank->Uuid}/impor", ['Berkas' => RekeningKoranCsv()])->assertSessionHas('Kilat', '5 mutasi baru diimpor, 0 sudah pernah diimpor. 2 mutasi dicocokkan otomatis.');
     $this->post("/kelola/akuntansi/rekonsiliasi/{$bank->Uuid}/impor", ['Berkas' => RekeningKoranCsv()])->assertSessionHas('Kilat', '0 mutasi baru diimpor, 5 sudah pernah diimpor.');
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     expect(MutasiBank::query()->count())->toBe(5)
         ->and((string) MutasiBank::query()->where('Keterangan', 'SETORAN TUNAI')->sole()->Masuk)->toBe('2500000.00')
         ->and((string) MutasiBank::query()->where('Keterangan', 'BIAYA ADM')->sole()->Keluar)->toBe('15000.00');
 
-    $this->post("/kelola/akuntansi/rekonsiliasi/{$bank->Uuid}/cocokkan-otomatis")->assertSessionHas('Kilat', '2 mutasi dicocokkan otomatis.');
+    // Impor sudah mencocokkan dua mutasi yang jelas pasangannya; menjalankan ulang tidak menemukan yang baru.
+    $this->post("/kelola/akuntansi/rekonsiliasi/{$bank->Uuid}/cocokkan-otomatis")->assertSessionHas('Kilat', 'Tidak ada mutasi yang bisa dicocokkan otomatis. Sisanya pilih manual.');
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     expect(MutasiBank::query()->where('Status', StatusMutasiBank::Cocok->value)->pluck('Keterangan')->sort()->values()->all())
         ->toBe(['SETORAN TUNAI', 'TRSF E-BANKING DB PEMBAYARAN PEMASOK']);

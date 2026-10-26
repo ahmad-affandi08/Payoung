@@ -115,7 +115,7 @@ describe('Grosir › Kanvas (Modul Salesman bagian 3)', () => {
             '/kelola/persediaan/transfer/buat?tujuan=01J9GDG0000000000000000001',
         );
         expect(screen.getByRole('link', { name: 'Bongkar stok' }).getAttribute('href')).toBe(
-            '/kelola/persediaan/transfer/buat?asal=01J9GDG0000000000000000001',
+            '/kelola/persediaan/transfer/buat?arah=bongkar&asal=01J9GDG0000000000000000001',
         );
     });
 

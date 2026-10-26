@@ -63,6 +63,8 @@ export default function HalamanFormPenawaran({
     );
     const [berlakuManual, AturBerlakuManual] = useState(ubah);
     const [termin, AturTermin] = useState(Isian === null ? '' : String(Isian.TerminHari));
+    // Termin dari data pelanggan yang terisi otomatis; diganti lagi bila pelanggan lain dipilih dan belum diubah manual.
+    const [terminOtomatis, AturTerminOtomatis] = useState('');
     const [perihal, AturPerihal] = useState(Isian?.Perihal ?? '');
     const [referensi, AturReferensi] = useState(Isian?.NomorReferensi ?? '');
     const [inklusif, AturInklusif] = useState(Isian?.HargaTermasukPajak ?? false);
@@ -155,9 +157,17 @@ export default function HalamanFormPenawaran({
                                 uuidTerpilih={uuidPelanggan}
                                 namaTerpilih={namaPelanggan}
                                 alamat={`${AlamatInvoice}/pelanggan/cari`}
-                                saatPilih={(uuid, nama) => {
+                                saatPilih={(uuid, nama, terminHari) => {
                                     AturPelanggan(uuid);
                                     AturNamaPelanggan(nama);
+                                    if (
+                                        !ubah &&
+                                        terminHari !== undefined &&
+                                        (termin === '' || termin === terminOtomatis)
+                                    ) {
+                                        AturTermin(String(terminHari));
+                                        AturTerminOtomatis(String(terminHari));
+                                    }
                                 }}
                                 galat={galat.UuidPelanggan}
                             />

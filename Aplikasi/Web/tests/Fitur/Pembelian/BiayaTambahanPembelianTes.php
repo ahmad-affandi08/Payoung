@@ -119,7 +119,7 @@ describe('v3.41 biaya tambahan pembelian', function (): void {
         BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 
         $this->get("/kelola/pembelian/biaya-tambahan/buat?penerimaan={$grn->Uuid}")->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Kelola/Pembelian/BiayaTambahan/Buat')->where('Penerimaan.Nomor', $grn->Nomor)->where('Penerimaan.Baris.0.Jumlah', '10.0000'));
+            ->component('Kelola/Pembelian/BiayaTambahan/Buat')->where('Penerimaan.Nomor', $grn->Nomor)->where('Penerimaan.UuidPemasok', null)->where('Penerimaan.Baris.0.Jumlah', '10.0000'));
         $this->post('/kelola/pembelian/biaya-tambahan', [
             'UuidPenerimaan' => $grn->Uuid,
             'Jenis' => 'BeaMasuk',

@@ -392,7 +392,9 @@ export default function HalamanDaftarKanvas({
                                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
                                     <Link
                                         href={`/kelola/persediaan/transfer/buat${
-                                            terpilih.UuidGudang === null ? '' : `?asal=${terpilih.UuidGudang}`
+                                            terpilih.UuidGudang === null
+                                                ? ''
+                                                : `?arah=bongkar&asal=${terpilih.UuidGudang}`
                                         }`}
                                     >
                                         Bongkar stok

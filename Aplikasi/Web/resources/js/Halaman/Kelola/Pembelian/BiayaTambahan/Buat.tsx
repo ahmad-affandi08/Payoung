@@ -39,7 +39,8 @@ export default function HalamanBuatBiayaTambahan({
         Tanggal: HariIni,
         Jumlah: '',
         UuidAkun: OpsiAkun[0]?.Uuid ?? '',
-        UuidPemasok: '',
+        // Penagih biasanya pemasok penerimaan itu sendiri (bisa diganti atau dikosongkan).
+        UuidPemasok: OpsiPemasok.some((p) => p.Uuid === Penerimaan.UuidPemasok) ? (Penerimaan.UuidPemasok ?? '') : '',
         Catatan: '',
     });
     const adaPelacakan = Penerimaan.Baris.some((b) => b.Pelacakan);

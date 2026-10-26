@@ -528,7 +528,12 @@ export type PropsRekonsiliasiBank = {
     };
     BukuBelumCocok: BarisJurnalBank[];
     OpsiStatus: { Nilai: StatusMutasiBank; Label: string }[];
-    HasilImpor: { Baru: number; Duplikat: number; Bermasalah: { Baris: number; Pesan: string }[] } | null;
+    HasilImpor: {
+        Baru: number;
+        Duplikat: number;
+        Dicocokkan?: number;
+        Bermasalah: { Baris: number; Pesan: string }[];
+    } | null;
     Izin: { Kelola: boolean };
 };
 

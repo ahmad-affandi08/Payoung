@@ -15,6 +15,7 @@ use App\Domain\Penjualan\Kueri\DaftarDokumenGrosir;
 use App\Domain\Penjualan\Kueri\DetailGrosir;
 use App\Domain\Penjualan\Kueri\DokumenCetakGrosir;
 use App\Domain\Penjualan\Kueri\IsianFormGrosir;
+use App\Domain\Penjualan\Model\Armada;
 use App\Domain\Penjualan\Model\PesananGrosir;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Grosir\AlasanGrosirPermintaan;
@@ -70,6 +71,8 @@ final class PesananGrosirKontroler extends DasarGrosirKontroler
             ...$detail->Pesanan($dokumen),
             'Izin' => $izin,
             'OpsiGudang' => $this->AmbilOpsiGudang(),
+            // D-225: memilih armada di dialog kirim mengisi nama pengemudi & nomor kendaraan.
+            'OpsiArmada' => array_values(Armada::query()->where('Aktif', true)->orderBy('Nama')->get()->map(fn (Armada $a): array => ['Uuid' => $a->Uuid, 'Nama' => $a->Nama, 'NomorKendaraan' => $a->NomorKendaraan, 'NamaPengemudi' => $a->NamaPengemudi])->all()),
             'HariIni' => $this->HariIni(),
             'Tindakan' => [
                 'Ubah' => $izin['Kelola'] && $dokumen->Status->CekBolehDiubah(),

@@ -16,7 +16,14 @@ const pelanggan = [
         LimitKredit: '50000000.00',
         SisaPiutang: '2000000.00',
     },
-    { Uuid: 'P-WARUNG', Nama: 'Warung Bu Sri', NoHp: '0812****1234', LimitKredit: null, SisaPiutang: '0.00' },
+    {
+        Uuid: 'P-WARUNG',
+        Nama: 'Warung Bu Sri',
+        NoHp: '0812****1234',
+        LimitKredit: null,
+        SisaPiutang: '0.00',
+        TerminHari: 14,
+    },
 ];
 
 function SiapkanFetch() {
@@ -59,7 +66,7 @@ describe('PemilihPelangganGrosir (dropdown, PRD v3.14)', () => {
         expect(screen.getByText('0812****1234 | tanpa limit kredit')).toBeTruthy();
 
         fireEvent.click(screen.getByRole('option', { name: /Warung Bu Sri/ }));
-        expect(SaatPilih).toHaveBeenCalledWith('P-WARUNG', 'Warung Bu Sri');
+        expect(SaatPilih).toHaveBeenCalledWith('P-WARUNG', 'Warung Bu Sri', 14);
     });
 
     it('mengetik di kotak cari dalam dropdown meminta pelanggan sesuai kata (jeda 300 ms)', async () => {

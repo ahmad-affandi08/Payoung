@@ -18,6 +18,7 @@ use App\Domain\Persediaan\Kueri\DaftarTransferStok;
 use App\Domain\Persediaan\Kueri\DetailPermintaanStok;
 use App\Domain\Persediaan\Kueri\DetailTransferStok;
 use App\Domain\Persediaan\Kueri\DokumenCetakTransferStok;
+use App\Domain\Persediaan\Kueri\SisaStokUntukTransfer;
 use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
 use App\Domain\Tenant\Kueri\ProfilTenant;
@@ -52,13 +53,20 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DetailPermintaanStok $detailPermintaan): Response
+    public function Buat(Request $permintaan, DetailPermintaanStok $detailPermintaan, SisaStokUntukTransfer $sisaStok): Response
     {
         // D-105: tombol "Penuhi" di permintaan stok membawa isi permintaan (`?permintaan=` uuid) ke form transfer.
         $uuidPermintaan = $permintaan->query('permintaan');
 
         if (is_string($uuidPermintaan) && $uuidPermintaan !== '') {
             return $this->RenderForm('Buat', null, $this->SusunAwalDariPermintaan($uuidPermintaan, $detailPermintaan));
+        }
+
+        // D-225: "Bongkar stok" kanvas membawa seluruh sisa stok bak kendaraan (`?arah=bongkar&asal=` uuid) sebagai baris draf.
+        $uuidAsal = $permintaan->query('asal');
+
+        if ($permintaan->query('arah') === 'bongkar' && is_string($uuidAsal) && $uuidAsal !== '') {
+            return $this->RenderForm('Buat', null, $this->SusunAwalBongkar($uuidAsal, $sisaStok));
         }
 
         // D-95: tombol Muat/Bongkar di halaman Kanvas membawa lokasi bak kendaraan lewat `?asal=` / `?tujuan=` (uuid).
@@ -230,6 +238,42 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         }
 
         return ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''];
+    }
+
+    /**
+     * D-225: isi awal "Bongkar stok" kanvas. Asal = bak kendaraan yang boleh diakses pengguna; tujuan = satu-satunya
+     * Gudang lain di usaha ini (bila ada beberapa, pengguna memilih sendiri). Seluruh sisa stok menjadi baris draf.
+     *
+     * @return array<string, mixed>
+     */
+    private function SusunAwalBongkar(string $uuidAsal, SisaStokUntukTransfer $sisaStok): array
+    {
+        $asal = $this->CariGudangBoleh($uuidAsal);
+        $gudang = array_values(array_filter(
+            $this->AmbilOpsiGudangDokumen(semuaOutlet: true),
+            fn (array $g): bool => $g['Jenis'] === JenisGudang::Gudang->value && $g['Uuid'] !== $asal->uuid,
+        ));
+        $sisa = $sisaStok->Ambil($asal->id, (int) config('persediaan.Dokumen.MaksimalBaris', 500));
+        $catatan = [];
+
+        if ($sisa['Baris'] === []) {
+            $catatan[] = 'Tidak ada sisa stok di lokasi ini yang bisa dibongkar.';
+        }
+
+        if ($sisa['JumlahDilewati'] > 0) {
+            $catatan[] = "{$sisa['JumlahDilewati']} produk ber-batch atau bernomor seri tidak diisi otomatis; tambahkan manual.";
+        }
+
+        if ($sisa['Terpotong']) {
+            $catatan[] = 'Sisa stok melebihi batas baris satu dokumen; buat transfer lagi untuk sisanya.';
+        }
+
+        return [
+            'UuidGudangAsal' => $asal->uuid,
+            'UuidGudangTujuan' => count($gudang) === 1 ? $gudang[0]['Uuid'] : '',
+            'Baris' => $sisa['Baris'],
+            'Catatan' => $catatan === [] ? null : implode(' ', $catatan),
+        ];
     }
 
     /**

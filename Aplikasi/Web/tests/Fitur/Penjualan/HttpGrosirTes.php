@@ -333,7 +333,9 @@ describe('HTTP back-office grosir', function (): void {
             ->assertJsonCount(1, 'Data')
             ->assertJsonPath('Data.0.Uuid', $this->toko->Uuid)
             ->assertJsonPath('Data.0.LimitKredit', '50000000.00')
-            ->assertJsonPath('Data.0.SisaPiutang', '0.00');
+            ->assertJsonPath('Data.0.SisaPiutang', '0.00')
+            // D-225: termin pelanggan ikut supaya invoice/penawaran mengisi terminnya sendiri.
+            ->assertJsonPath('Data.0.TerminHari', $this->toko->TerminHari);
         // Dropdown: kata kosong atau pendek menampilkan daftar awal (tanpa minimal huruf), tersaring status aktif.
         $this->getJson('/kelola/grosir/pelanggan/cari?kata=')->assertOk()->assertJsonPath('Data.0.Nama', 'Toko Makmur Jaya');
         $this->getJson('/kelola/grosir/pelanggan/cari?kata=Mk')->assertOk()->assertJsonCount(0, 'Data');

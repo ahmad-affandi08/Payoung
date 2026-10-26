@@ -82,6 +82,8 @@ export type AwalFormTransferStok = {
     UuidPermintaanStok?: string;
     NomorPermintaan?: string;
     Baris?: BarisFormTransferStok[];
+    /** Penjelasan isian otomatis (mis. bongkar kanvas): yang diisi, dan yang harus ditambahkan manual. */
+    Catatan?: string | null;
 };
 export type PropsFormTransferStok = {
     Mode: 'Buat' | 'Ubah';

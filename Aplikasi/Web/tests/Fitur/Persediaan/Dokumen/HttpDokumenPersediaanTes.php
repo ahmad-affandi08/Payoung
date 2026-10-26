@@ -205,6 +205,22 @@ describe('F-05b HTTP transfer stok', function (): void {
             ->where('Awal.UuidGudangTujuan', $t['GudangCabang']->Uuid));
     });
 
+    it('D-225: Bongkar stok kanvas mengisi baris draf dari sisa stok; produk ber-batch dilewati dan dijelaskan', function (): void {
+        $t = SiapkanHttpDokumen();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        $this->get('/kelola/persediaan/transfer/buat?arah=bongkar&asal='.$t['Gudang']->Uuid)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/Form')
+            ->where('Awal.UuidGudangAsal', $t['Gudang']->Uuid)
+            ->has('Awal.Baris', 1)
+            ->where('Awal.Baris.0.UuidProduk', $t['Produk']['Stok']->Uuid)
+            ->where('Awal.Baris.0.Jumlah', '137')
+            ->where('Awal.Catatan', '1 produk ber-batch atau bernomor seri tidak diisi otomatis; tambahkan manual.'));
+
+        // Lokasi di luar tenant tidak boleh dipakai.
+        $this->get('/kelola/persediaan/transfer/buat?arah=bongkar&asal='.Str::ulid())->assertNotFound();
+    });
+
     it('izin: persediaan.lihat melihat tetapi tidak membuat/mengirim (403); tanpa persediaan.lihat 403', function (): void {
         $t = SiapkanHttpDokumen();
         $draf = B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '1')]);

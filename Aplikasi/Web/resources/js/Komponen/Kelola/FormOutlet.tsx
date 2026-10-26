@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Komponen/Ui/card';
 import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
 import { Switch } from '@/Komponen/Ui/switch';
 import PemilihJam from '@/Komponen/Tanggal/PemilihJam';
+import { SaranKodeOutlet } from '@/Pustaka/SaranKode';
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import type { Kota, Pilihan } from '@/Tipe/Organisasi';
 
@@ -76,6 +77,8 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
     // Tambah outlet berupa wizard bertahap (kode terkunci setelah bertransaksi, jadi layak ditinjau); Profil outlet
     // (ubah) tetap satu halaman.
     const bertahap = uuid === null;
+    // Outlet baru: kode disarankan dari nama selama belum diketik sendiri.
+    const [kodeDiketik, AturKodeDiketik] = useState(uuid !== null);
     const [percobaan, AturPercobaan] = useState<KunciLangkahOutlet[]>([]);
     const galatServer = formulir.errors as Record<string, string | undefined>;
     const perluMerek = merek.length > 1;
@@ -147,7 +150,11 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
             <BidangTeks
                 label="Nama outlet"
                 nilai={formulir.data.Nama}
-                saatBerubah={(nilai) => formulir.setData('Nama', nilai)}
+                saatBerubah={(nilai) =>
+                    kodeDiketik
+                        ? formulir.setData('Nama', nilai)
+                        : formulir.setData({ ...formulir.data, Nama: nilai, Kode: SaranKodeOutlet(nilai) })
+                }
                 galat={galat.Nama}
                 maxLength={150}
                 required
@@ -155,12 +162,17 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
             <BidangTeks
                 label="Kode outlet"
                 nilai={formulir.data.Kode}
-                saatBerubah={(nilai) => formulir.setData('Kode', nilai.toUpperCase())}
+                saatBerubah={(nilai) => {
+                    AturKodeDiketik(true);
+                    formulir.setData('Kode', nilai.toUpperCase());
+                }}
                 galat={galat.Kode}
                 keterangan={
                     kodeTerkunci
                         ? 'Kode dikunci karena outlet sudah bertransaksi.'
-                        : '3–5 karakter untuk nomor dokumen, misal JKT1. Tidak bisa diubah setelah outlet bertransaksi.'
+                        : !kodeDiketik && formulir.data.Kode !== ''
+                          ? 'Disarankan dari nama outlet; boleh diganti. Tidak bisa diubah setelah outlet bertransaksi.'
+                          : '3–5 karakter untuk nomor dokumen, misal JKT1. Tidak bisa diubah setelah outlet bertransaksi.'
                 }
                 maxLength={5}
                 disabled={kodeTerkunci}

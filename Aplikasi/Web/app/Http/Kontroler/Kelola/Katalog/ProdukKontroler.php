@@ -104,6 +104,15 @@ final class ProdukKontroler extends DasarKatalogKontroler
         if ($paket === null) {
             $produk = $simpan->Jalankan(null, $data);
 
+            // Produk yang belum lengkap tanpa resep atau isi paket langsung diarahkan ke langkah berikutnya.
+            if ($produk->Jenis->CekBolehResep()) {
+                return redirect()->route('kelola.produk.resep', ['produk' => $produk->Uuid])->with('Kilat', "Produk {$produk->Nama} disimpan. Lanjutkan dengan mengisi resepnya.");
+            }
+
+            if ($produk->Jenis->CekBolehKomponen()) {
+                return redirect()->route('kelola.produk.komponen', ['produk' => $produk->Uuid])->with('Kilat', "Produk {$produk->Nama} disimpan. Lanjutkan dengan memilih isi paketnya.");
+            }
+
             return redirect()->route('kelola.produk.detail', ['produk' => $produk->Uuid])->with('Kilat', "Produk {$produk->Nama} disimpan.");
         }
 

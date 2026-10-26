@@ -87,6 +87,7 @@ export default function HalamanDetailPesananGrosir({
     SuratJalan,
     Riwayat,
     OpsiGudang,
+    OpsiArmada,
     HariIni,
     Tindakan,
 }: PropsDetailPesananGrosir) {
@@ -233,6 +234,7 @@ export default function HalamanDetailPesananGrosir({
                     uuidPesanan={Pesanan.Uuid}
                     baris={Baris}
                     opsiGudang={OpsiGudang}
+                    opsiArmada={OpsiArmada ?? []}
                     hariIni={HariIni}
                     saatTutup={() => AturDialog(null)}
                 />

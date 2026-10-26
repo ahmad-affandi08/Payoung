@@ -283,6 +283,8 @@ export type PropsDetailPesananGrosir = {
     Riwayat: RiwayatGrosir[];
     Izin: IzinGrosir;
     OpsiGudang: OpsiGudangGrosir[];
+    /** Armada aktif; memilihnya di dialog kirim mengisi pengemudi & nomor kendaraan. */
+    OpsiArmada?: ArmadaGrosir[];
     HariIni: string;
     Tindakan: { Ubah: boolean; Konfirmasi: boolean; Kirim: boolean; Batalkan: boolean };
 };

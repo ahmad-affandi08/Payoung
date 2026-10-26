@@ -59,6 +59,8 @@ export default function HalamanFormInvoice({
     );
     const [tanggal, AturTanggal] = useState(Isian?.Tanggal ?? HariIni);
     const [termin, AturTermin] = useState(Isian === null ? '' : String(Isian.TerminHari));
+    // Termin dari data pelanggan yang terisi otomatis; diganti lagi bila pelanggan lain dipilih dan belum diubah manual.
+    const [terminOtomatis, AturTerminOtomatis] = useState('');
     const [perihal, AturPerihal] = useState(Isian?.Perihal ?? '');
     const [referensi, AturReferensi] = useState(Isian?.NomorReferensi ?? '');
     const [inklusif, AturInklusif] = useState(Isian?.HargaTermasukPajak ?? false);
@@ -174,9 +176,17 @@ export default function HalamanFormInvoice({
                                 uuidTerpilih={uuidPelanggan}
                                 namaTerpilih={namaPelanggan}
                                 alamat={`${AlamatInvoice}/pelanggan/cari`}
-                                saatPilih={(uuid, nama) => {
+                                saatPilih={(uuid, nama, terminHari) => {
                                     AturPelanggan(uuid);
                                     AturNamaPelanggan(nama);
+                                    if (
+                                        !ubah &&
+                                        terminHari !== undefined &&
+                                        (termin === '' || termin === terminOtomatis)
+                                    ) {
+                                        AturTermin(String(terminHari));
+                                        AturTerminOtomatis(String(terminHari));
+                                    }
                                     AturDipilihDp([]);
                                 }}
                                 galat={galat.UuidPelanggan}
@@ -199,7 +209,7 @@ export default function HalamanFormInvoice({
                             />
                             <BidangTeks
                                 label="Termin pembayaran (hari)"
-                                keterangan="Kosong = ikut termin di data pelanggan. 0 = bayar langsung."
+                                keterangan="Terisi dari data pelanggan; ubah bila berbeda. 0 = bayar langsung."
                                 nilai={termin}
                                 saatBerubah={(nilai) => AturTermin(nilai.replace(/\D/g, '').slice(0, 3))}
                                 inputMode="numeric"

@@ -25,7 +25,7 @@ final class DaftarPilihanPelanggan
     /**
      * Cocok nama, atau nomor HP bila yang diketik berupa angka (sebagian nomor cukup).
      *
-     * @return list<array{Uuid: string, Nama: string, NoHp: string, LimitKredit: string|null, SisaPiutang: string}>
+     * @return list<array{Uuid: string, Nama: string, NoHp: string, LimitKredit: string|null, SisaPiutang: string, TerminHari: int}>
      */
     public function Cari(string $kata, int $batas = self::BATAS): array
     {
@@ -43,7 +43,7 @@ final class DaftarPilihanPelanggan
             ->orderBy('Nama')
             ->orderBy('Id')
             ->limit(max(1, min(50, $batas)))
-            ->get(['Id', 'Uuid', 'Nama', 'NoHp']);
+            ->get(['Id', 'Uuid', 'Nama', 'NoHp', 'TerminHari']);
         $kredit = $this->kredit->AmbilRingkas(array_values(array_map('intval', $daftar->pluck('Id')->all())), CarbonImmutable::today());
 
         return array_values($daftar->map(fn (Pelanggan $p): array => [
@@ -52,6 +52,7 @@ final class DaftarPilihanPelanggan
             'NoHp' => NomorHp::Samarkan($p->NoHp),
             'LimitKredit' => $kredit[$p->Id]['LimitKredit'] ?? null,
             'SisaPiutang' => $kredit[$p->Id]['SisaPiutang'] ?? '0.00',
+            'TerminHari' => $p->TerminHari,
         ])->all());
     }
 }

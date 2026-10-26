@@ -93,6 +93,7 @@ final class DaftarBiayaTambahan
                 'Status' => $grn->Status->value,
                 'NamaGudang' => $gudang->nama ?? '',
                 'NamaPemasok' => $grn->IdPemasok === null ? null : Pemasok::query()->withTrashed()->whereKey($grn->IdPemasok)->value('Nama'),
+                'UuidPemasok' => $grn->IdPemasok === null ? null : Pemasok::query()->whereKey($grn->IdPemasok)->value('Uuid'),
                 'Baris' => array_values($baris->map(fn (PenerimaanBarangDetail $d): array => [
                     'Id' => $d->Id,
                     'NamaProduk' => $d->NamaProduk,

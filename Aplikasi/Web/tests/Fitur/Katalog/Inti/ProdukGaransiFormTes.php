@@ -131,3 +131,14 @@ it('BR-05.4: lokasi produksi disimpan dari form hanya untuk produk Resep (Dapur/
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     expect(Produk::query()->where('Uuid', $barang['Uuid'])->sole()->LokasiProduksi)->toBeNull();
 });
+
+it('setelah simpan, produk Resep langsung diarahkan ke halaman resepnya, produk Stok ke detail', function (): void {
+    $t = BantuanKatalog::SiapkanTenantProduk('Kedai Kopi Senja Solo');
+    $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+    $resep = IsiFormGaransi($t, ['Nama' => 'Kopi Susu Gula Aren', 'Jenis' => 'Resep', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null, 'LokasiProduksi' => 'Bar']);
+    $masuk()->post('/kelola/produk', $resep)->assertSessionHasNoErrors()->assertRedirect("/kelola/produk/{$resep['Uuid']}/resep");
+
+    $barang = IsiFormGaransi($t, ['Nama' => 'Gula Pasir 1 kg Curah', 'Pelacakan' => PelacakanProduk::Tidak->value, 'MasaGaransiBulan' => null]);
+    $masuk()->post('/kelola/produk', $barang)->assertSessionHasNoErrors()->assertRedirect("/kelola/produk/{$barang['Uuid']}");
+});

@@ -17,6 +17,8 @@ export type HasilPelangganGrosir = {
     NoHp: string | null;
     LimitKredit: string | null;
     SisaPiutang?: string | null;
+    /** Termin bayar pelanggan (hari); dipakai invoice & penawaran untuk mengisi termin otomatis. */
+    TerminHari?: number;
 };
 
 const alamatCari = '/kelola/grosir/pelanggan/cari';
@@ -54,7 +56,7 @@ export default function PemilihPelangganGrosir({
 }: {
     uuidTerpilih: string;
     namaTerpilih: string;
-    saatPilih: (uuid: string, nama: string) => void;
+    saatPilih: (uuid: string, nama: string, terminHari?: number) => void;
     galat?: string | undefined;
     /** Titik akhir pencarian; bawaan pencarian pelanggan grosir, invoice memakai rutenya sendiri (F-21). */
     alamat?: string;
@@ -126,7 +128,7 @@ export default function PemilihPelangganGrosir({
                     key={p.Uuid}
                     value={p.Uuid}
                     onSelect={() => {
-                        saatPilih(p.Uuid, p.Nama);
+                        saatPilih(p.Uuid, p.Nama, p.TerminHari);
                         Buka(false);
                     }}
                     className="min-h-9 cursor-pointer flex-col items-start gap-0 rounded-kontrol px-2 py-1.5 text-isi text-teks-utama data-[selected=true]:bg-brand-lembut data-[selected=true]:text-teks-utama pointer-coarse:min-h-11"

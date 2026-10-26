@@ -52,7 +52,7 @@ final class RekonsiliasiBankKontroler extends DasarAkuntansiKontroler
         ]);
     }
 
-    public function Impor(string $akun, Request $permintaan, ImporMutasiBank $impor): RedirectResponse
+    public function Impor(string $akun, Request $permintaan, ImporMutasiBank $impor, DaftarAkunPilihan $pilihan, CocokkanMutasiBankOtomatis $cocokkan): RedirectResponse
     {
         $data = $permintaan->validate(['Berkas' => ['required', 'file', 'max:5120']], [
             'Berkas.required' => 'Pilih berkas rekening koran (.csv atau .xlsx).',
@@ -63,9 +63,23 @@ final class RekonsiliasiBankKontroler extends DasarAkuntansiKontroler
         $berkas = $data['Berkas'];
         $hasil = $impor->Jalankan((string) $berkas->getRealPath(), $berkas->getClientOriginalName(), strtoupper($akun), $this->Pelaku()->Id);
 
+        // Mutasi yang jelas pasangannya langsung dicocokkan; yang ambigu tetap menunggu keputusan manual.
+        $dicocokkan = 0;
+
+        if ($hasil['Impor']->Baru > 0) {
+            $terpilih = $pilihan->CariKasBankDariUuid(strtoupper($akun));
+            $dicocokkan = $terpilih === null ? 0 : $cocokkan->Jalankan($terpilih['Id'], $this->Pelaku()->Id);
+        }
+
+        $kilat = "{$hasil['Impor']->Baru} mutasi baru diimpor, {$hasil['Impor']->Duplikat} sudah pernah diimpor.";
+
+        if ($dicocokkan > 0) {
+            $kilat .= " {$dicocokkan} mutasi dicocokkan otomatis.";
+        }
+
         return back()
-            ->with('Kilat', "{$hasil['Impor']->Baru} mutasi baru diimpor, {$hasil['Impor']->Duplikat} sudah pernah diimpor.")
-            ->with('HasilImporMutasi', ['Baru' => $hasil['Impor']->Baru, 'Duplikat' => $hasil['Impor']->Duplikat, 'Bermasalah' => $hasil['Bermasalah']]);
+            ->with('Kilat', $kilat)
+            ->with('HasilImporMutasi', ['Baru' => $hasil['Impor']->Baru, 'Duplikat' => $hasil['Impor']->Duplikat, 'Bermasalah' => $hasil['Bermasalah'], 'Dicocokkan' => $dicocokkan]);
     }
 
     public function CocokkanOtomatis(string $akun, DaftarAkunPilihan $pilihan, CocokkanMutasiBankOtomatis $cocokkan): RedirectResponse

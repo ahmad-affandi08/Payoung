@@ -10,7 +10,7 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { KalikanDesimal } from '@/Pustaka/HitungDesimal';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisDetailPesananGrosir, OpsiGudangGrosir } from '@/Tipe/Grosir';
+import type { ArmadaGrosir, BarisDetailPesananGrosir, OpsiGudangGrosir } from '@/Tipe/Grosir';
 
 /**
  * Dialog penyerahan barang (surat jalan, BR-12.2). Jumlah kirim bawaannya = seluruh sisa baris, karena itulah yang
@@ -23,12 +23,14 @@ export default function DialogKirimGrosir({
     uuidPesanan,
     baris,
     opsiGudang,
+    opsiArmada = [],
     hariIni,
     saatTutup,
 }: {
     uuidPesanan: string;
     baris: BarisDetailPesananGrosir[];
     opsiGudang: OpsiGudangGrosir[];
+    opsiArmada?: ArmadaGrosir[];
     hariIni: string;
     saatTutup: () => void;
 }) {
@@ -38,11 +40,23 @@ export default function DialogKirimGrosir({
     const [tanggal, AturTanggal] = useState(hariIni);
     const [namaPengirim, AturNamaPengirim] = useState('');
     const [nomorKendaraan, AturNomorKendaraan] = useState('');
+    const [uuidArmada, AturUuidArmada] = useState('');
     const [jumlah, AturJumlah] = useState<Record<number, string>>(
         Object.fromEntries(bisaDikirim.map((b) => [b.Urutan, b.SisaKirim])),
     );
     const [nomorSeri, AturNomorSeri] = useState<Record<number, string[]>>({});
     const [memproses, AturMemproses] = useState(false);
+
+    /** Armada yang dipilih mengisi pengemudi dan nomor kendaraannya; keduanya tetap bisa diubah. */
+    const PilihArmada = (uuid: string) => {
+        AturUuidArmada(uuid);
+        const armada = opsiArmada.find((a) => a.Uuid === uuid);
+
+        if (armada !== undefined) {
+            AturNamaPengirim(armada.NamaPengemudi ?? '');
+            AturNomorKendaraan(armada.NomorKendaraan);
+        }
+    };
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -100,6 +114,18 @@ export default function DialogKirimGrosir({
                     maxLength={10}
                     required
                 />
+                {opsiArmada.length > 0 ? (
+                    <BidangPilihan
+                        label="Armada (opsional)"
+                        nilai={uuidArmada}
+                        kosong="Pilih armada"
+                        opsi={opsiArmada.map((a) => ({
+                            Nilai: a.Uuid,
+                            Label: `${a.Nama} | ${a.NomorKendaraan}`,
+                        }))}
+                        saatBerubah={PilihArmada}
+                    />
+                ) : null}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <BidangTeks
                         label="Nama pengirim"

@@ -186,6 +186,11 @@ export default function HalamanFormTransferStok({
                     {galatServer.UuidPermintaanStok ? ` ${galatServer.UuidPermintaanStok}` : ''}
                 </Pemberitahuan>
             ) : null}
+            {Awal?.Catatan ? (
+                <Pemberitahuan jenis="info" judul="Isi otomatis dari sisa stok">
+                    {Awal.Catatan}
+                </Pemberitahuan>
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"

@@ -719,6 +719,8 @@ export type PropsBuatBiayaTambahan = {
         Status: StatusDokumenPembelian;
         NamaGudang: string;
         NamaPemasok: string | null;
+        /** Pemasok penerimaan yang masih aktif; terisi otomatis sebagai penagih biaya. */
+        UuidPemasok?: string | null;
         Baris: {
             Id: number;
             NamaProduk: string;

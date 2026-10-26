@@ -7,6 +7,7 @@ import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import { SaranKodePemasok } from '@/Pustaka/SaranKode';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisPemasok } from '@/Tipe/Pembelian';
 
@@ -54,6 +55,8 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
     const [isian, AturIsian] = useState<IsianPemasok>(awal);
+    // Pemasok baru: kode disarankan dari nama selama belum diketik sendiri.
+    const [kodeDiketik, AturKodeDiketik] = useState(uuid !== null);
     const [memproses, AturMemproses] = useState(false);
 
     const Ubah = (ubah: Partial<IsianPemasok>) => AturIsian({ ...isian, ...ubah });
@@ -81,8 +84,12 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
             <BidangTeks
                 label="Kode pemasok"
                 nilai={isian.Kode}
-                saatBerubah={(nilai) => Ubah({ Kode: nilai })}
+                saatBerubah={(nilai) => {
+                    AturKodeDiketik(true);
+                    Ubah({ Kode: nilai });
+                }}
                 galat={galat.Kode}
+                {...(kodeDiketik ? {} : { keterangan: 'Disarankan dari nama pemasok; boleh diganti.' })}
                 maxLength={30}
                 kode
                 required
@@ -90,7 +97,9 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
             <BidangTeks
                 label="Nama pemasok"
                 nilai={isian.Nama}
-                saatBerubah={(nilai) => Ubah({ Nama: nilai })}
+                saatBerubah={(nilai) =>
+                    Ubah(kodeDiketik ? { Nama: nilai } : { Nama: nilai, Kode: SaranKodePemasok(nilai) })
+                }
                 galat={galat.Nama}
                 maxLength={150}
                 required
