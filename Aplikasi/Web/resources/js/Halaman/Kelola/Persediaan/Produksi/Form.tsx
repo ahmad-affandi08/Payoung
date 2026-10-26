@@ -91,6 +91,11 @@ export default function HalamanFormOrderProduksi({
     const [galatProduk, AturGalatProduk] = useState<string | null>(null);
     const [galatResep, AturGalatResep] = useState<string | null>(null);
     const [memuatResep, AturMemuatResep] = useState(false);
+    // Bahan mengikuti resep otomatis (saat produk dipilih dan jumlah hasil berubah) sampai pengguna mengubah bahan
+    // sendiri; "Muat ulang dari resep" menyalakannya lagi. Order lama yang dibuka untuk diubah tidak ditimpa.
+    const [otomatis, AturOtomatis] = useState(Order === null);
+    const terakhirMuat = useRef<string | null>(null);
+    const nomorMuat = useRef(0);
     const [periksa, AturPeriksa] = useState(false);
     const [memproses, AturMemproses] = useState(false);
     const judul = Mode === 'Buat' ? 'Buat order produksi' : 'Ubah draf order produksi';
@@ -108,21 +113,34 @@ export default function HalamanFormOrderProduksi({
             return;
         }
 
+        const urutan = ++nomorMuat.current;
+        terakhirMuat.current = `${uuid}|${banyak}`;
         AturMemuatResep(true);
         AturGalatResep(null);
 
         try {
             const hasil = await AmbilBahanResep(uuid, banyak);
 
+            // Jawaban yang sudah tertinggal (produk atau jumlah berganti saat menunggu) dibuang.
+            if (urutan !== nomorMuat.current) {
+                return;
+            }
+
             if ('Galat' in hasil) {
                 AturGalatResep(hasil.Galat);
+                terakhirMuat.current = null;
             } else {
                 AturBahan(hasil.Bahan.map((b) => ({ ...b, Kunci: BuatKunci() })));
             }
         } catch {
-            AturGalatResep('Resep tidak bisa dimuat. Periksa koneksi lalu coba lagi.');
+            if (urutan === nomorMuat.current) {
+                AturGalatResep('Resep tidak bisa dimuat. Periksa koneksi lalu coba lagi.');
+                terakhirMuat.current = null;
+            }
         } finally {
-            AturMemuatResep(false);
+            if (urutan === nomorMuat.current) {
+                AturMemuatResep(false);
+            }
         }
     };
 
@@ -137,6 +155,19 @@ export default function HalamanFormOrderProduksi({
         // Hanya sekali saat dipasang: `IsiDariResep` memakai state yang berubah dan tidak boleh memicu muat ulang.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Jumlah hasil berubah: takaran bahan dihitung ulang dari resep (selama pengguna belum mengubah bahan sendiri).
+    useEffect(() => {
+        if (!otomatis || produk === null || !jumlahValid || terakhirMuat.current === `${produk.Uuid}|${jumlahHasil}`) {
+            return;
+        }
+
+        const tunda = setTimeout(() => void IsiDariResep({ Uuid: produk.Uuid, Jumlah: jumlahHasil }), 400);
+
+        return () => clearTimeout(tunda);
+        // `IsiDariResep` dibuat ulang tiap render; yang menentukan kapan menghitung ulang hanya tiga nilai ini.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [otomatis, produk, jumlahHasil]);
 
     const PilihHasil = (p: ProdukStokTerpilih) => {
         if (p.Jenis !== 'Produksi') {
@@ -154,6 +185,7 @@ export default function HalamanFormOrderProduksi({
         }
 
         AturGalatProduk(null);
+        AturOtomatis(true);
         AturProduk({
             Uuid: p.Uuid,
             Nama: p.Nama,
@@ -163,9 +195,15 @@ export default function HalamanFormOrderProduksi({
             Pelacakan: p.Pelacakan,
         });
         AturBahan([]);
+        // Bahan langsung muncul dari resep; jumlah hasil belum diisi = takaran untuk satu satuan hasil.
+        void IsiDariResep({
+            Uuid: p.Uuid,
+            Jumlah: CekJumlahProduksi(jumlahHasil, p.BolehDesimal) ? jumlahHasil : '1',
+        });
     };
 
-    const TambahBahan = (p: ProdukStokTerpilih) =>
+    const TambahBahan = (p: ProdukStokTerpilih) => {
+        AturOtomatis(false);
         AturBahan((lama) => [
             ...lama,
             {
@@ -179,6 +217,7 @@ export default function HalamanFormOrderProduksi({
                 Jumlah: '',
             },
         ]);
+    };
 
     const Simpan = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -350,18 +389,22 @@ export default function HalamanFormOrderProduksi({
                 <Panel
                     judul="Bahan"
                     idJudul="judul-bahan-produksi"
-                    keterangan={`${bahan.length.toLocaleString('id-ID')} dari ${MaksBahan.toLocaleString('id-ID')} baris. Isi dari resep, lalu ubah jumlah sesuai pemakaian nyata.`}
+                    keterangan={`${bahan.length.toLocaleString('id-ID')} dari ${MaksBahan.toLocaleString('id-ID')} baris. Bahan terisi otomatis dari resep produk yang dipilih dan ikut menyesuaikan jumlah hasil. Ubah jumlahnya bila pemakaian nyata berbeda; setelah itu penyesuaian otomatis berhenti.`}
                 >
-                    <div className="flex flex-wrap gap-2">
-                        <Tombol
-                            varian="sekunder"
-                            onClick={() => void IsiDariResep()}
-                            memproses={memuatResep}
-                            disabled={produk === null}
-                        >
-                            Isi bahan dari resep
-                        </Tombol>
-                    </div>
+                    {produk !== null && (!otomatis || bahan.length === 0) ? (
+                        <div className="flex flex-wrap gap-2">
+                            <Tombol
+                                varian="sekunder"
+                                onClick={() => {
+                                    AturOtomatis(true);
+                                    void IsiDariResep();
+                                }}
+                                memproses={memuatResep}
+                            >
+                                {bahan.length === 0 ? 'Isi bahan dari resep' : 'Kembalikan ke resep'}
+                            </Tombol>
+                        </div>
+                    ) : null}
                     {galatResep ? <GalatBidang>{galatResep}</GalatBidang> : null}
                     <PemilihProdukStok
                         label="Tambah bahan"
@@ -400,7 +443,10 @@ export default function HalamanFormOrderProduksi({
                                         variant="ghost"
                                         size="icon-sm"
                                         aria-label={`Hapus bahan ${b.NamaProduk}`}
-                                        onClick={() => AturBahan((lama) => lama.filter((x) => x.Kunci !== b.Kunci))}
+                                        onClick={() => {
+                                            AturOtomatis(false);
+                                            AturBahan((lama) => lama.filter((x) => x.Kunci !== b.Kunci));
+                                        }}
                                     >
                                         <Trash2Icon aria-hidden="true" />
                                     </Button>
@@ -409,11 +455,12 @@ export default function HalamanFormOrderProduksi({
                                     <BidangJumlah
                                         label={`Dipakai ${b.NamaProduk}`}
                                         nilai={b.Jumlah}
-                                        saatBerubah={(jumlah) =>
+                                        saatBerubah={(jumlah) => {
+                                            AturOtomatis(false);
                                             AturBahan((lama) =>
                                                 lama.map((x) => (x.Kunci === b.Kunci ? { ...x, Jumlah: jumlah } : x)),
-                                            )
-                                        }
+                                            );
+                                        }}
                                         desimal={b.BolehDesimal ? 4 : 0}
                                         akhiran={b.SimbolSatuan}
                                         galat={

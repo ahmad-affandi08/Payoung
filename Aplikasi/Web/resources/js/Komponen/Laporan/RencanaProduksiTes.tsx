@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanLaporanStok, { BuatUrlDrafProduksi } from '@/Halaman/Kelola/Laporan/Stok';
@@ -147,6 +147,59 @@ describe('formulir order produksi terisi dari rencana', () => {
         expect(String(AmbilUji.mock.calls[0]?.[0])).toBe(
             `/kelola/persediaan/produksi/resep?produk=${roti.UuidProduk}&jumlah=8`,
         );
+    });
+
+    it('jumlah hasil berubah: bahan dihitung ulang dari resep otomatis; mengubah bahan sendiri menghentikannya sampai "Kembalikan ke resep"', async () => {
+        const AmbilUji = vi.fn().mockResolvedValue({
+            ok: true,
+            json: () =>
+                Promise.resolve({
+                    VersiResep: 2,
+                    Bahan: [
+                        {
+                            UuidProduk: '01J9BAHAN0000000000000001',
+                            NamaProduk: 'Tepung Terigu Protein Tinggi',
+                            Sku: null,
+                            SimbolSatuan: 'kg',
+                            BolehDesimal: true,
+                            JumlahStandar: '4',
+                            Jumlah: '4',
+                        },
+                    ],
+                }),
+        });
+        vi.stubGlobal('fetch', AmbilUji);
+
+        RenderUji(
+            <HalamanFormOrderProduksi
+                Mode="Buat"
+                Order={null}
+                Awal={awal}
+                OpsiGudang={[GudangUtama]}
+                HariIni="2026-10-14"
+                MaksBahan={100}
+                WajibKedaluwarsaBatch
+            />,
+        );
+        await waitFor(() => expect(AmbilUji).toHaveBeenCalledTimes(1));
+        // Selama bahan mengikuti resep tidak perlu tombol.
+        expect(screen.queryByRole('button', { name: 'Kembalikan ke resep' })).toBeNull();
+
+        fireEvent.change(screen.getByLabelText(/Jumlah hasil/), { target: { value: '16' } });
+        await waitFor(() => expect(AmbilUji).toHaveBeenCalledTimes(2));
+        expect(String(AmbilUji.mock.calls[1]?.[0])).toBe(
+            `/kelola/persediaan/produksi/resep?produk=${roti.UuidProduk}&jumlah=16`,
+        );
+
+        // Bahan diubah sendiri: perhitungan otomatis berhenti dan tombol kembali ke resep muncul.
+        fireEvent.change(screen.getByLabelText(/Dipakai Tepung Terigu Protein Tinggi/), { target: { value: '5' } });
+        fireEvent.change(screen.getByLabelText(/Jumlah hasil/), { target: { value: '20' } });
+        await new Promise((selesai) => setTimeout(selesai, 700));
+        expect(AmbilUji).toHaveBeenCalledTimes(2);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Kembalikan ke resep' }));
+        await waitFor(() => expect(AmbilUji).toHaveBeenCalledTimes(3));
+        expect(String(AmbilUji.mock.calls[2]?.[0])).toContain('jumlah=20');
     });
 
     it('tanpa isian awal formulir kosong dan resep tidak dimuat sendiri', () => {
