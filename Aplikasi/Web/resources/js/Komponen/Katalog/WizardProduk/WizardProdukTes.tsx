@@ -417,7 +417,6 @@ function IsiNama(nama: string) {
 }
 
 function IsiHargaDasar(harga: string) {
-    fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
     fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: harga } });
 }
 

@@ -187,9 +187,8 @@ function IsiNama(nama: string) {
     fireEvent.change(screen.getByLabelText('Nama produk'), { target: { value: nama } });
 }
 
-/** Langkah harga: buka baris harga dasar lalu isi harga per satuan dasar (tulis "5.000" seperti diketik pengguna). */
+/** Langkah harga: isian harga jual langsung tampil; isi harga per satuan dasar (tulis "5.000" seperti diketik pengguna). */
 function IsiHargaDasar(harga: string) {
-    fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
     fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: harga } });
 }
 
@@ -288,7 +287,9 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         IsiNama('Sabun');
         Lanjut();
         Lanjut();
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
+        Lanjut();
+        IsiHargaDasar('5.000');
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah harga bertingkat' }));
         Lanjut();
 
         expect(LangkahAktif()).toBe('Harga & stok');
@@ -622,7 +623,8 @@ describe('Kelola/Produk/Form ubah produk (tab bebas, tidak berubah)', () => {
     it('harga bertingkat tidak valid ditahan di peramban dan tab Harga dibuka (produk lama dengan satuan baru)', () => {
         render(<HalamanFormProduk {...PropsForm({ Mode: 'Ubah', Kepala: BuatKepala() })} />);
         fireEvent.click(screen.getByRole('tab', { name: 'Harga' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
+        IsiHargaDasar('5.000');
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah harga bertingkat' }));
         fireEvent.click(screen.getByRole('tab', { name: 'Umum' }));
         fireEvent.click(screen.getByRole('button', { name: 'Simpan perubahan' }));
 
@@ -1404,7 +1406,6 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
         fireEvent.click(screen.getByRole('checkbox', { name: /Obat Wajib Apotek/ }));
         expect(screen.getByText(/Dijual tanpa resep oleh apoteker/)).toBeTruthy();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
         fireEvent.change(screen.getByLabelText(/HNA per/), { target: { value: '650' } });
         fireEvent.change(screen.getByLabelText('Margin (%)'), { target: { value: '25' } });
         fireEvent.click(screen.getByRole('button', { name: 'Pakai sebagai harga' }));

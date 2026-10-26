@@ -114,12 +114,21 @@ export default function TabelHargaBertingkat({
     const hasilPeriksa = PeriksaBarisHarga(baris, { wajibDasar, bolehDesimal });
     const perBaris = tampilkanGalat ? hasilPeriksa.perBaris : {};
     const umum = tampilkanGalat ? hasilPeriksa.umum : null;
-    const Ubah = (indeks: number, perubahan: Partial<BarisHarga>) =>
-        saatBerubah(baris.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item)));
+    // Harga dasar langsung tampil sebagai isian kosong (tanpa tombol "Isi harga jual"): kosong = satuan tidak dijual di
+    // kasir, jadi baris baru benar-benar dibuat begitu harga diketik dan dibuang lagi bila harga dikosongkan.
+    const barisKosong = wajibDasar && !disabled && baris.length === 0;
+    const tampil: BarisHarga[] = barisKosong ? [{ JumlahMinimum: '1', Harga: '' }] : baris;
+    const Ubah = (indeks: number, perubahan: Partial<BarisHarga>) => {
+        const berubah = tampil.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item));
+        const hanyaDasarKosong =
+            wajibDasar && berubah.length === 1 && berubah[0]?.Harga === '' && berubah[0].JumlahMinimum === '1';
+
+        saatBerubah(hanyaDasarKosong ? [] : berubah);
+    };
 
     return (
         <div className="flex flex-col gap-2">
-            {baris.length === 0 ? (
+            {tampil.length === 0 ? (
                 <p className="rounded-kontrol border border-dashed border-garis-input px-3 py-2 text-isi text-teks-sekunder">
                     {wajibDasar
                         ? `Belum ada harga jual per ${simbolSatuan}. Selama kosong, ${simbolSatuan} belum bisa dipilih di kasir (masih bisa dipakai saat belanja stok).`
@@ -142,7 +151,7 @@ export default function TabelHargaBertingkat({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {baris.map((item, indeks) => {
+                        {tampil.map((item, indeks) => {
                             const dasar =
                                 wajibDasar &&
                                 indeks === 0 &&
@@ -175,7 +184,7 @@ export default function TabelHargaBertingkat({
                                             saatBerubah={(nilai) => Ubah(indeks, { Harga: nilai })}
                                             disabled={disabled}
                                             galat={galatServer[`${String(indeks)}.Harga`] ?? perBaris[indeks]?.Harga}
-                                            required
+                                            required={!barisKosong}
                                         />
                                     </TableCell>
                                     <TableCell className="py-1 pr-0">
@@ -202,11 +211,16 @@ export default function TabelHargaBertingkat({
                     </TableBody>
                 </TabelForm>
             )}
+            {barisKosong ? (
+                <p className="text-keterangan text-teks-sekunder">
+                    Kosongkan bila {simbolSatuan} tidak dijual di kasir (masih bisa dipakai saat belanja stok).
+                </p>
+            ) : null}
             <div aria-live="polite">
                 {umum ? <p className="text-keterangan font-semibold text-bahaya">{umum}</p> : null}
             </div>
             <div className="flex flex-wrap gap-2">
-                {!disabled ? (
+                {!disabled && !barisKosong ? (
                     <Button
                         type="button"
                         variant="outline"

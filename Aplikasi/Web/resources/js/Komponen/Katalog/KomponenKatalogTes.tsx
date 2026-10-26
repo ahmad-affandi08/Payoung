@@ -227,7 +227,42 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
         expect(screen.queryByLabelText('Harga baris 2')).toBeNull();
     });
 
-    it('tanpa baris: menjelaskan dengan bahasa biasa bahwa satuan itu belum bisa dipilih di kasir', () => {
+    it('tanpa baris: isian harga langsung tampil; mengetik membuat baris dasar, mengosongkan membuangnya lagi', () => {
+        const SaatBerubah = vi.fn();
+        render(
+            <TabelHargaBertingkat
+                judul="Harga per dus"
+                baris={[]}
+                saatBerubah={SaatBerubah}
+                simbolSatuan="dus"
+                bolehDesimal={false}
+                wajibDasar
+            />,
+        );
+
+        expect(screen.queryByRole('button', { name: 'Isi harga jual' })).toBeNull();
+        expect(
+            screen.getByText('Kosongkan bila dus tidak dijual di kasir (masih bisa dipakai saat belanja stok).'),
+        ).toBeTruthy();
+        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '15000' } });
+        expect(SaatBerubah).toHaveBeenLastCalledWith([{ JumlahMinimum: '1', Harga: '15000' }]);
+
+        cleanup();
+        render(
+            <TabelHargaBertingkat
+                judul="Harga per dus"
+                baris={[{ JumlahMinimum: '1', Harga: '15000' }]}
+                saatBerubah={SaatBerubah}
+                simbolSatuan="dus"
+                bolehDesimal={false}
+                wajibDasar
+            />,
+        );
+        fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: '' } });
+        expect(SaatBerubah).toHaveBeenLastCalledWith([]);
+    });
+
+    it('hanya lihat tanpa baris: menjelaskan dengan bahasa biasa bahwa satuan itu belum bisa dipilih di kasir', () => {
         render(
             <TabelHargaBertingkat
                 judul="Harga per dus"
@@ -236,6 +271,7 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
                 simbolSatuan="dus"
                 bolehDesimal={false}
                 wajibDasar
+                disabled
             />,
         );
 
@@ -244,7 +280,6 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
                 'Belum ada harga jual per dus. Selama kosong, dus belum bisa dipilih di kasir (masih bisa dipakai saat belanja stok).',
             ),
         ).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Isi harga jual' })).toBeTruthy();
     });
 });
 
