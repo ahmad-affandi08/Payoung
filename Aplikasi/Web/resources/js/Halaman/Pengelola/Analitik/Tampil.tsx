@@ -1,6 +1,7 @@
 import { KolomBilangan } from '@/Komponen/Laporan/KolomLaporan';
 import SaringLaporan from '@/Komponen/Laporan/SaringLaporan';
 import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
+import TabAnalitik from '@/Komponen/Pengelola/TabAnalitik';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
@@ -141,6 +142,8 @@ export default function HalamanAnalitikPlatform({
 
     return (
         <TataLetakPengelola judul="Analitik platform">
+            <TabAnalitik />
+
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Angka agregat dari semua tenant tanpa nama atau data pribadi. Tenant uji, demo, dan internal tidak
                 dihitung. Bahan dihitung ulang tiap pukul 03.50 WIB, jadi transaksi hari ini baru tampil besok.

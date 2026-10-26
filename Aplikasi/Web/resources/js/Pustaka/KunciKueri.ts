@@ -18,6 +18,9 @@ export const KunciKueri = {
     ObrolanPesan: (uuid: string) => ['ObrolanPesan', uuid] as const,
     // D-210: estimasi penerima siaran platform menurut kanal dan segmen.
     SiaranEstimasi: (kanal: string, segmen: string) => ['SiaranEstimasi', kanal, segmen] as const,
+    // D-215: laporan Google Analytics 4 di konsol per laporan dan rentang tanggal.
+    AnalitikGoogle: (laporan: string, dari: string, sampai: string) =>
+        ['AnalitikGoogle', laporan, dari, sampai] as const,
     // PRD v3.14: pemilih pelanggan di formulir pesanan grosir (dropdown cari-server).
     Grosir: {
         CariPelanggan: (kata: string) => ['Grosir', 'CariPelanggan', kata] as const,
