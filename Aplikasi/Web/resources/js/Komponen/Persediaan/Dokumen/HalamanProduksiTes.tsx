@@ -117,8 +117,8 @@ describe('F-05e produksi: halaman', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Posting produksi' }));
-        const tombol = screen.getAllByRole('button', { name: 'Posting produksi' }).at(-1);
+        fireEvent.click(screen.getByRole('button', { name: 'Catat produksi' }));
+        const tombol = screen.getAllByRole('button', { name: 'Catat produksi' }).at(-1);
         fireEvent.click(tombol ?? document.body);
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             `/kelola/persediaan/produksi/${Uuid}/posting`,

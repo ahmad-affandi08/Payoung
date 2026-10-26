@@ -389,7 +389,7 @@ describe('Kelola/Persediaan/StokAwal/Form (F-05a)', () => {
             />,
         );
 
-        expect(screen.getByText('Stok minus. Selisih HPP dicatat saat posting.')).toBeTruthy();
+        expect(screen.getByText('Stok minus. Selisih HPP dicatat saat stok awal dicatat.')).toBeTruthy();
         expect(screen.getByText(/stok saat ini −4 kg/)).toBeTruthy();
 
         UbahNilai(screen.getByRole('combobox', { name: 'Lokasi stok' }), GudangLama.Uuid);
@@ -422,20 +422,20 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         expect(screen.getByText('Kedaluwarsa 31 Jan 2027')).toBeTruthy();
         expect(screen.getByText('3 nomor seri')).toBeTruthy();
         expect(screen.getByText('Rp 1.234,5678')).toBeTruthy();
-        expect(screen.getByText('Jurnal dibuat saat stok awal diposting.')).toBeTruthy();
+        expect(screen.getByText('Jurnal dibuat saat stok awal dicatat.')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Batalkan stok awal' })).toBeNull();
     });
 
     it('posting: konfirmasi menyebut total & jurnal, lalu POST /posting', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail()} />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Posting stok awal' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Catat stok awal' }));
         const dialog = screen.getByRole('alertdialog');
         expect(dialog.textContent).toContain('Rp 28.345,68');
         expect(dialog.textContent).toContain('dicatat otomatis ke pembukuan sebagai modal awal');
         expect(dialog.textContent).not.toContain('latar belakang');
 
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Posting stok awal' }));
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Catat stok awal' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             `/kelola/persediaan/stok-awal/${UuidDokumen}/posting`,
             {},
@@ -446,14 +446,14 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
     it('dokumen besar (baris seri dihitung per nomor) diposting lewat antrean', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail({ BatasPostingLangsung: 4 })} />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Posting stok awal' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Catat stok awal' }));
         expect(screen.getByRole('alertdialog').textContent).toContain('5 baris barang');
     });
 
     it('akun belum dipetakan: posting nonaktif dengan penjelasan', () => {
         RenderUji(<HalamanDetailStokAwal {...BuatPropsDetail({ KesiapanAkun: AkunBelumSiap })} />);
 
-        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Posting stok awal' }).disabled).toBe(true);
+        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Catat stok awal' }).disabled).toBe(true);
         expect(screen.getByText('Pengaturan pembukuan toko belum lengkap')).toBeTruthy();
     });
 
@@ -467,8 +467,8 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
             />,
         );
 
-        expect(screen.queryByRole('button', { name: 'Posting stok awal' })).toBeNull();
-        expect(screen.getByText('Menunggu posting')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Catat stok awal' })).toBeNull();
+        expect(screen.getByText('Menunggu dicatat')).toBeTruthy();
     });
 
     it('buang draf: konfirmasi lalu POST /buang', () => {
@@ -606,7 +606,7 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
                 StokAwal={{ ...props.StokAwal, Status: 'Memproses', LabelStatus: 'Memproses' }}
             />,
         );
-        expect(screen.getByText('Stok awal sedang diposting')).toBeTruthy();
+        expect(screen.getByText('Stok awal sedang dicatat')).toBeTruthy();
         await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalled());
         expect(tiruanRouter.reload).not.toHaveBeenCalled();
         cleanup();
@@ -617,8 +617,8 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
                 StokAwal={{ ...props.StokAwal, PesanGalat: 'Stok awal Biji Kopi Arabika Gayo sudah ada.' }}
             />,
         );
-        expect(screen.getByText('Posting terakhir gagal')).toBeTruthy();
-        expect(screen.getByText(/sudah ada\. Perbaiki draf lalu posting ulang\./)).toBeTruthy();
+        expect(screen.getByText('Pencatatan terakhir gagal')).toBeTruthy();
+        expect(screen.getByText(/sudah ada\. Perbaiki draf lalu catat ulang\./)).toBeTruthy();
     });
 
     it('alasan batal divalidasi 5–255 karakter', () => {

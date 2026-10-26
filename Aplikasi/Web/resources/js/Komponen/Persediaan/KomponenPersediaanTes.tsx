@@ -221,7 +221,7 @@ describe('PemilihProdukStok (KunciKueri.Persediaan.CariProduk)', () => {
         );
     });
 
-    it('menampilkan stok saat ini; produk yang stok awalnya sudah diposting tidak bisa dipilih', async () => {
+    it('menampilkan stok saat ini; produk yang stok awalnya sudah dicatat tidak bisa dipilih', async () => {
         const Ambil = vi.fn().mockResolvedValue({
             ok: true,
             json: () =>
@@ -262,7 +262,7 @@ describe('PemilihProdukStok (KunciKueri.Persediaan.CariProduk)', () => {
         expect(screen.getByRole('option', { name: /Arabika Gayo/ }).textContent).toContain('stok −4 kg');
         const robusta = screen.getByRole('option', { name: /Robusta/ });
         expect(robusta.getAttribute('aria-disabled')).toBe('true');
-        expect(robusta.textContent).toContain('Stok awal sudah diposting di lokasi ini');
+        expect(robusta.textContent).toContain('Stok awal sudah dicatat di lokasi ini');
 
         fireEvent.click(robusta);
         expect(SaatPilih).not.toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('PemantauPosting (polling status tiap 3 detik)', () => {
         vi.stubGlobal('fetch', Ambil);
         RenderUji(<PemantauPosting uuid={UuidDokumen} status="Memproses" />);
 
-        expect(screen.getByText('Stok awal sedang diposting')).toBeTruthy();
+        expect(screen.getByText('Stok awal sedang dicatat')).toBeTruthy();
         await waitFor(() => expect(tiruanRouter.reload).toHaveBeenCalled());
         expect(Ambil.mock.calls[0]?.[0]).toBe(`/kelola/persediaan/stok-awal/${UuidDokumen}/status`);
     });
