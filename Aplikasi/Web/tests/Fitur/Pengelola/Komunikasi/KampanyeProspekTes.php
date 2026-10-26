@@ -465,8 +465,8 @@ describe('D-216 pengirim bawaan bila Email kampanye kosong', function (): void {
 
     it('tanpa pengirim apa pun kampanye tidak bisa dijalankan', function (): void {
         config(['integrasi.EmailKampanyeAktif' => false, 'mail.default' => 'array']);
-        $kampanye = BuatKampanyeProspekUji();
         BuatKontakProspekUji('kopi@contoh.id');
+        $kampanye = BuatKampanyeProspekUji();
 
         expect(fn () => JalankanKampanyeProspekUji($kampanye))->toThrow(PelanggaranAturanBisnis::class, 'Belum ada pengirim email');
     });
