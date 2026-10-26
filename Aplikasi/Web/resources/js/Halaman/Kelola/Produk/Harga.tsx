@@ -118,7 +118,7 @@ function EditorDaftarHarga({
                 </Link>
             }
             aksi={<LabelStatus jenis={daftar.Aktif ? 'sukses' : 'netral'} teks={daftar.Aktif ? 'Aktif' : 'Nonaktif'} />}
-            keterangan={`${daftar.Ringkasan}. Kosongkan satuan yang memakai harga dasar.`}
+            keterangan={`${daftar.Ringkasan}. Kosongkan satuan yang memakai harga jual biasa.`}
         >
             {satuan.map((item) => (
                 <div key={item.UuidProdukSatuan} className="flex flex-col gap-1">
@@ -166,7 +166,7 @@ const kolomRiwayat: KolomTabel<BarisRiwayatHarga>[] = [
         header: 'Harga',
         enableSorting: false,
         meta: { label: 'Harga', prioritas: 'utama', wajib: true },
-        cell: ({ row }) => `${row.original.NamaDaftarHarga ?? 'Harga dasar'} | ${row.original.NamaSatuan}`,
+        cell: ({ row }) => `${row.original.NamaDaftarHarga ?? 'Harga biasa'} | ${row.original.NamaSatuan}`,
     },
     {
         id: 'JumlahMinimum',
@@ -253,9 +253,9 @@ export default function HalamanHargaProduk({
             />
 
             <Panel
-                judul="Harga dasar & harga bertingkat"
+                judul="Harga jual & harga bertingkat"
                 idJudul="judul-harga-dasar"
-                keterangan={`Harga ${LabelHargaTermasukPajak}. Satuan tanpa harga dasar hanya dipakai untuk pembelian dan tidak muncul di kasir. Harga satuan lain tidak dihitung otomatis dari isi satuan.`}
+                keterangan={`Harga ${LabelHargaTermasukPajak}. Satuan yang harganya kosong tidak muncul di kasir (masih bisa dipakai saat belanja stok). Harga tiap satuan diisi sendiri, tidak dihitung otomatis dari isi satuan.`}
             >
                 {Satuan.map((item, indeks) => (
                     <div key={item.UuidProdukSatuan} className="flex flex-col gap-1">
@@ -285,7 +285,7 @@ export default function HalamanHargaProduk({
                 {Izin.UbahHarga ? (
                     <div>
                         <Tombol onClick={SimpanDasar} memproses={memproses}>
-                            Simpan harga dasar
+                            Simpan harga jual
                         </Tombol>
                     </div>
                 ) : null}

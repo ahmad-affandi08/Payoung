@@ -57,7 +57,7 @@ export function PeriksaBarisHarga(
     const adaDasar = baris.some(
         (item) => CekDesimalPositif(item.JumlahMinimum) && BandingkanDesimal(item.JumlahMinimum, '1') === 0,
     );
-    const umum = wajibDasar && baris.length > 0 && !adaDasar ? 'Harga dasar untuk jumlah minimum 1 wajib ada.' : null;
+    const umum = wajibDasar && baris.length > 0 && !adaDasar ? 'Harga jual untuk jumlah minimum 1 wajib diisi.' : null;
 
     return { perBaris, umum };
 }
@@ -121,7 +121,9 @@ export default function TabelHargaBertingkat({
         <div className="flex flex-col gap-2">
             {baris.length === 0 ? (
                 <p className="rounded-kontrol border border-dashed border-garis-input px-3 py-2 text-isi text-teks-sekunder">
-                    Belum ada harga. Tanpa harga dasar, satuan ini hanya untuk pembelian dan tidak muncul di kasir.
+                    {wajibDasar
+                        ? `Belum ada harga jual per ${simbolSatuan}. Selama kosong, ${simbolSatuan} belum bisa dipilih di kasir (masih bisa dipakai saat belanja stok).`
+                        : 'Belum ada harga.'}
                 </p>
             ) : (
                 <TabelForm label="Harga bertingkat" lebar="sempit">
@@ -179,7 +181,7 @@ export default function TabelHargaBertingkat({
                                     <TableCell className="py-1 pr-0">
                                         {dasar ? (
                                             <span className="inline-flex h-8 pointer-coarse:h-11 items-center text-keterangan text-teks-sekunder">
-                                                Harga dasar
+                                                Harga jual
                                             </span>
                                         ) : (
                                             <Button
@@ -213,11 +215,7 @@ export default function TabelHargaBertingkat({
                         }
                         className="h-8 pointer-coarse:h-11"
                     >
-                        {baris.length === 0
-                            ? wajibDasar
-                                ? 'Isi harga dasar'
-                                : 'Isi harga'
-                            : 'Tambah harga bertingkat'}
+                        {baris.length === 0 ? (wajibDasar ? 'Isi harga jual' : 'Isi harga') : 'Tambah harga bertingkat'}
                     </Button>
                 ) : null}
                 {!disabled && baris.length > 1 ? (

@@ -135,9 +135,9 @@ export default function HalamanDetailDaftarHarga({
         },
         {
             id: 'HargaDasar',
-            header: 'Harga dasar',
+            header: 'Harga biasa',
             enableSorting: false,
-            meta: { label: 'Harga dasar', angka: true, prioritas: 'penting', kelasSel: 'text-teks-sekunder' },
+            meta: { label: 'Harga biasa', angka: true, prioritas: 'penting', kelasSel: 'text-teks-sekunder' },
             cell: ({ row }) => (row.original.HargaDasar === null ? '—' : FormatRupiah(row.original.HargaDasar)),
         },
         {
@@ -217,8 +217,8 @@ export default function HalamanDetailDaftarHarga({
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Nonaktifkan {DaftarHarga.Nama}?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Kasir berhenti memakai harga di daftar ini dan kembali ke harga dasar atau
-                                            daftar lain yang cocok. Daftar bisa diaktifkan lagi kapan saja.
+                                            Kasir berhenti memakai harga di daftar ini dan kembali ke harga jual biasa
+                                            atau daftar lain yang cocok. Daftar bisa diaktifkan lagi kapan saja.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

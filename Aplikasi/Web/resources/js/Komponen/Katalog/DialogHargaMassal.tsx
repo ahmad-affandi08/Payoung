@@ -58,7 +58,7 @@ export default function DialogHargaMassal({ uuid, saatTutup, saatSelesai }: Prop
     return (
         <DialogFormulir
             judul={`Ubah harga ${uuid.length.toLocaleString('id-ID')} produk`}
-            keterangan="Harga dasar dan harga bertingkat berubah sekaligus. Harga di daftar harga khusus tidak ikut berubah. Setiap perubahan tercatat di riwayat harga."
+            keterangan="Harga jual dan harga bertingkat berubah sekaligus. Harga di daftar harga khusus tidak ikut berubah. Setiap perubahan tercatat di riwayat harga."
             galatUmum={galat.Umum}
             saatTutup={saatTutup}
         >

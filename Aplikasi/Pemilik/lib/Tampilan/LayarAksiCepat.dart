@@ -237,7 +237,7 @@ class _LayarUbahHargaState extends ConsumerState<_LayarUbahHarga> with _Pencaria
                               : '${p.sku} | ${FormatTampilan.Rupiah(p.hargaDasar!)}')
                         : p.jenis == 'IndukVarian'
                         ? 'Ubah harga per varian di dashboard.'
-                        : 'Belum punya harga dasar. Atur di dashboard.',
+                        : 'Belum punya harga jual. Atur di dashboard.',
                   ),
                   trailing: p.bisaUbahHarga ? const Icon(Icons.edit_outlined) : null,
                   enabled: p.bisaUbahHarga,

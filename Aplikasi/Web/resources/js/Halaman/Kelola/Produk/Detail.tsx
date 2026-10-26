@@ -66,9 +66,9 @@ const kolomVarian: KolomTabel<Varian>[] = [
     },
     {
         id: 'HargaDasar',
-        header: 'Harga dasar',
+        header: 'Harga jual',
         enableSorting: false,
-        meta: { label: 'Harga dasar', angka: true, prioritas: 'penting' },
+        meta: { label: 'Harga jual', angka: true, prioritas: 'penting' },
         cell: ({ row }) =>
             row.original.HargaDasar === null ? (
                 <span className="text-teks-sekunder">Belum ada harga</span>
@@ -136,7 +136,7 @@ export default function HalamanDetailProduk({
                         {satuan.Nama} ({satuan.Simbol})
                     </span>
                     <span className="block text-keterangan text-teks-sekunder">
-                        {satuan.BisaDijual ? 'Dijual di kasir' : 'Hanya untuk pembelian (belum ada harga dasar)'}
+                        {satuan.BisaDijual ? 'Dijual di kasir' : 'Belum ada harga jual, jadi belum muncul di kasir'}
                     </span>
                 </>
             ),

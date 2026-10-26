@@ -92,7 +92,7 @@ final class PenyelarasBarisHarga
             }
 
             if ($wajibDasar && $daftar !== [] && ! $adaDasar) {
-                throw new PelanggaranAturanBisnis('HargaDasarWajib', 'Isi harga untuk jumlah minimum 1 (harga dasar) sebelum menambah harga bertingkat.', "Satuan.{$i}.Harga");
+                throw new PelanggaranAturanBisnis('HargaDasarWajib', 'Isi harga untuk jumlah minimum 1 (harga jual biasa) sebelum menambah harga bertingkat.', "Satuan.{$i}.Harga");
             }
 
             $i++;

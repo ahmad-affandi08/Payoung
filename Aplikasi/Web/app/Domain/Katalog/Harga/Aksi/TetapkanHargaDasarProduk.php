@@ -51,7 +51,7 @@ final class TetapkanHargaDasarProduk
             $dasar = $baris->first(fn (ProdukHarga $h): bool => BigDecimal::of($h->JumlahMinimum)->isEqualTo(1));
 
             if ($satuan === null || $dasar === null) {
-                throw new PelanggaranAturanBisnis('HargaDasarTidakAda', 'Produk ini belum punya harga dasar. Atur harganya di dashboard dulu.', 'Harga');
+                throw new PelanggaranAturanBisnis('HargaDasarTidakAda', 'Produk ini belum punya harga jual. Atur harganya di dashboard dulu.', 'Harga');
             }
 
             $lama = Uang::Dari($dasar->Harga);

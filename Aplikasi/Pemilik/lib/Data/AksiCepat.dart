@@ -1,6 +1,6 @@
 import 'package:klien_api/KlienApi.dart';
 
-/// Produk di daftar aksi cepat Owner (OWN-07). Harga berupa string desimal; null = belum punya harga dasar.
+/// Produk di daftar aksi cepat Owner (OWN-07). Harga berupa string desimal; null = belum punya harga jual.
 class ProdukAksiCepat {
   const ProdukAksiCepat({
     required this.uuid,

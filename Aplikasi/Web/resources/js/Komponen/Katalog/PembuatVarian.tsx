@@ -106,7 +106,7 @@ export default function PembuatVarian({
                 />
                 {bolehUbahHarga ? (
                     <BidangUang
-                        label="Harga dasar varian baru (opsional)"
+                        label="Harga jual varian baru (opsional)"
                         nilai={hargaDasar}
                         saatBerubah={AturHargaDasar}
                         keterangan="Sama untuk semua varian baru; ubah per varian nanti bila perlu."

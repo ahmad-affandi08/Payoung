@@ -132,7 +132,7 @@ void main() {
         findsOneWidget,
         reason: 'Induk varian tidak bisa diubah.',
       );
-      expect(find.text('Belum punya harga dasar. Atur di dashboard.'), findsOneWidget);
+      expect(find.text('Belum punya harga jual. Atur di dashboard.'), findsOneWidget);
 
       await tester.tap(find.text('Kopi Susu Gula Aren'));
       await tester.pumpAndSettle();
@@ -148,7 +148,7 @@ void main() {
       expect(find.text('Harga Kopi Susu Gula Aren menjadi Rp 20.000.'), findsOneWidget);
     });
 
-    testWidgets('harga kosong atau nol: tombol Simpan harga nonaktif; produk tanpa harga dasar tidak bisa dipilih', (
+    testWidgets('harga kosong atau nol: tombol Simpan harga nonaktif; produk tanpa harga jual tidak bisa dipilih', (
       tester,
     ) async {
       await BukaAksiCepat(tester);
@@ -157,7 +157,7 @@ void main() {
 
       await tester.tap(find.text('Roti Tanpa Harga'));
       await tester.pumpAndSettle();
-      expect(find.text('Simpan harga'), findsNothing, reason: 'Produk tanpa harga dasar tidak membuka dialog.');
+      expect(find.text('Simpan harga'), findsNothing, reason: 'Produk tanpa harga jual tidak membuka dialog.');
 
       await tester.tap(find.text('Kopi Susu Gula Aren'));
       await tester.pumpAndSettle();

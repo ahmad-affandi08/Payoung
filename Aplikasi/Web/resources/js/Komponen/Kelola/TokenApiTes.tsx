@@ -24,7 +24,7 @@ const props: PropsHalamanTokenApi = {
         },
     ],
     OpsiCakupan: [
-        { Nilai: 'produk:baca', Label: 'Baca produk, satuan, barcode & harga dasar' },
+        { Nilai: 'produk:baca', Label: 'Baca produk, satuan, barcode & harga jual' },
         { Nilai: 'penjualan:baca', Label: 'Baca penjualan beserta baris & pembayaran' },
     ],
     TokenBaru: null,

@@ -16,7 +16,7 @@ enum CakupanApi: string
     public function AmbilLabel(): string
     {
         return match ($this) {
-            self::ProdukBaca => 'Baca produk, satuan, barcode & harga dasar',
+            self::ProdukBaca => 'Baca produk, satuan, barcode & harga jual',
             self::StokBaca => 'Baca saldo stok per lokasi',
             self::PenjualanBaca => 'Baca penjualan beserta baris & pembayaran',
             self::PelangganBaca => 'Baca data pelanggan (nama, nomor HP, email)',

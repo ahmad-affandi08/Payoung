@@ -162,7 +162,7 @@ describe('Kelola/DaftarHarga (E.7)', () => {
             />,
         );
 
-        expect(screen.getByText('Belum ada daftar harga. Semua produk memakai harga dasar.')).toBeTruthy();
+        expect(screen.getByText('Belum ada daftar harga. Semua produk memakai harga jual biasa.')).toBeTruthy();
         expect(screen.getByRole('link', { name: 'Buat daftar harga' }).getAttribute('href')).toBe(
             '/kelola/daftar-harga/buat',
         );

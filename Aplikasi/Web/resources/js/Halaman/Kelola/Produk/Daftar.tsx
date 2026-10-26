@@ -66,9 +66,9 @@ const kolom: KolomTabel<BarisProduk>[] = [
     },
     {
         id: 'HargaDasar',
-        header: 'Harga dasar',
+        header: 'Harga jual',
         enableSorting: false,
-        meta: { label: 'Harga dasar', angka: true, prioritas: 'penting' },
+        meta: { label: 'Harga jual', angka: true, prioritas: 'penting' },
         cell: ({ row: { original: produk } }) =>
             produk.HargaDasar === null ? (
                 <span className="text-teks-sekunder">Belum ada harga</span>

@@ -575,8 +575,8 @@ export default function HalamanLaporanStok({
                     </h2>
                     <p className="text-label text-teks-sekunder">
                         Batch yang masih bersisa dan sudah lewat atau kedaluwarsa dalam 30 hari. Penjualan mengambil
-                        batch berkedaluwarsa terdekat lebih dulu (FEFO); barang yang sudah lewat dicatat sebagai bahan
-                        terbuang atau penyesuaian stok.
+                        batch berkedaluwarsa terdekat lebih dulu; barang yang sudah lewat dicatat sebagai bahan terbuang
+                        atau penyesuaian stok.
                     </p>
                     <TabelData
                         id="laporan-stok-kedaluwarsa"

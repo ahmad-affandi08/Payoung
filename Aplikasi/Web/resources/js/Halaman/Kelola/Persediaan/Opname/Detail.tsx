@@ -389,7 +389,7 @@ export default function HalamanDetailStokOpname({
                               ? `Kategori ${Opname.NamaKategori}`
                               : 'Seluruh produk'}
                     </Keterangan>
-                    <Keterangan label="Snapshot">{FormatTanggalWaktu(Opname.SnapshotPada)}</Keterangan>
+                    <Keterangan label="Stok dicatat pada">{FormatTanggalWaktu(Opname.SnapshotPada)}</Keterangan>
                     <Keterangan label="Dihitung">
                         {Opname.JumlahDihitung.toLocaleString('id-ID')} dari{' '}
                         {Opname.JumlahBaris.toLocaleString('id-ID')} baris
@@ -519,7 +519,7 @@ export default function HalamanDetailStokOpname({
                     </Panel>
 
                     <Panel
-                        judul="Barang di luar snapshot"
+                        judul="Barang di luar daftar hitung"
                         idJudul="judul-baris-baru"
                         keterangan="Barang yang ditemukan tetapi tidak ada di daftar (batch baru, nomor seri lain, atau produk tanpa saldo)."
                     >

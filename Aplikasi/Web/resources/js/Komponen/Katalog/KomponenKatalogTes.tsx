@@ -172,7 +172,7 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
         ];
         const { perBaris, umum } = PeriksaBarisHarga(baris, { wajibDasar: true, bolehDesimal: false });
 
-        expect(umum).toBe('Harga dasar untuk jumlah minimum 1 wajib ada.');
+        expect(umum).toBe('Harga jual untuk jumlah minimum 1 wajib diisi.');
         expect(perBaris[0]).toBeUndefined();
         expect(perBaris[1]).toEqual({
             JumlahMinimum: 'Jumlah minimum ini sudah ada di baris lain.',
@@ -227,7 +227,7 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
         expect(screen.queryByLabelText('Harga baris 2')).toBeNull();
     });
 
-    it('tanpa baris: menjelaskan satuan hanya untuk pembelian', () => {
+    it('tanpa baris: menjelaskan dengan bahasa biasa bahwa satuan itu belum bisa dipilih di kasir', () => {
         render(
             <TabelHargaBertingkat
                 judul="Harga per dus"
@@ -239,8 +239,12 @@ describe('TabelHargaBertingkat (harga dasar + bertingkat, string saja)', () => {
             />,
         );
 
-        expect(screen.getByText(/satuan ini hanya untuk pembelian/)).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Isi harga dasar' })).toBeTruthy();
+        expect(
+            screen.getByText(
+                'Belum ada harga jual per dus. Selama kosong, dus belum bisa dipilih di kasir (masih bisa dipakai saat belanja stok).',
+            ),
+        ).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Isi harga jual' })).toBeTruthy();
     });
 });
 

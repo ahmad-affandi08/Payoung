@@ -75,7 +75,7 @@ function TombolStatusDaftar({ daftar }: { daftar: BarisDaftarHarga }) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Nonaktifkan {daftar.Nama}?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Kasir berhenti memakai harga di daftar ini dan kembali ke harga dasar atau daftar lain yang
+                        Kasir berhenti memakai harga di daftar ini dan kembali ke harga jual biasa atau daftar lain yang
                         cocok. Daftar bisa diaktifkan lagi kapan saja.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -175,7 +175,7 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Izin }: P
                     <p className="max-w-2xl text-isi text-teks-sekunder">
                         Harga khusus untuk outlet, kanal (misal online), tingkat pelanggan, atau periode tertentu. Bila
                         beberapa daftar cocok, prioritas terbesar dipakai; bila sama, yang syaratnya lebih spesifik.
-                        Produk tanpa harga di daftar memakai harga dasar.
+                        Produk yang tidak ada di daftar ini memakai harga jual biasa.
                     </p>
                 }
             >
@@ -212,7 +212,7 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Izin }: P
                     },
                 ]}
                 alamatDetail={(daftar) => `/kelola/daftar-harga/${daftar.Uuid}`}
-                kosong={{ ilustrasi: true, judul: 'Belum ada daftar harga. Semua produk memakai harga dasar.' }}
+                kosong={{ ilustrasi: true, judul: 'Belum ada daftar harga. Semua produk memakai harga jual biasa.' }}
             />
         </TataLetakAplikasi>
     );

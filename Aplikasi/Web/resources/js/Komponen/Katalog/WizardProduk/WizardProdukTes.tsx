@@ -269,7 +269,7 @@ describe('PeriksaLangkahProduk (validasi klien per langkah, cermin aturan server
         });
         expect(PeriksaLangkahProduk('HargaStok', KonteksDenganHarga([{ JumlahMinimum: '12', Harga: '4500' }]))).toEqual(
             {
-                'Satuan.0.HargaAwal': 'Harga dasar untuk jumlah minimum 1 wajib ada.',
+                'Satuan.0.HargaAwal': 'Harga jual untuk jumlah minimum 1 wajib diisi.',
             },
         );
         expect(
@@ -417,7 +417,7 @@ function IsiNama(nama: string) {
 }
 
 function IsiHargaDasar(harga: string) {
-    fireEvent.click(screen.getByRole('button', { name: 'Isi harga dasar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Isi harga jual' }));
     fireEvent.change(screen.getByLabelText('Harga baris 1'), { target: { value: harga } });
 }
 
