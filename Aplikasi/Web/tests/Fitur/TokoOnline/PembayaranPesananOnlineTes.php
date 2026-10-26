@@ -347,7 +347,7 @@ it('F-16c gratis ongkir: kasir yang menagih ongkir penuh padahal pesanan bergrat
     expect($penjualan->PerluTinjauan)->toBeTrue()
         ->and($penjualan->AlasanTinjauan)->toContain('OngkirBerbeda')
         ->and($penjualan->AlasanTinjauan)->toContain('PromoBerbeda')
-        ->and($penjualan->AlasanTinjauan)->toContain('diskon ongkir perangkat Rp 0. Server Rp 12.000')
+        ->and($penjualan->AlasanTinjauan)->toContain('diskon ongkir perangkat Rp 0; server Rp 12.000')
         // Tanpa potongan, tidak ada yang dicatat sebagai pemakaian promo.
         ->and(PromoPemakaian::query()->where('IdPenjualan', $penjualan->Id)->count())->toBe(0);
 });

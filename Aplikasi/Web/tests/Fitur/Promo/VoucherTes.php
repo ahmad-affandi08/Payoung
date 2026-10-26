@@ -172,7 +172,7 @@ describe('F-16c bagian 2 voucher di POS', function (): void {
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $jual = Penjualan::query()->where('Uuid', $item['Uuid'])->sole();
         expect($jual->PerluTinjauan)->toBeTrue()
-            ->and($jual->AlasanTinjauan)->toContain('VoucherTidakBerlaku: voucher HEMAT10K tidak dipesan online untuk penjualan ini. Voucher HEMAT10K melewati batas pakai (1)')
+            ->and($jual->AlasanTinjauan)->toContain('VoucherTidakBerlaku: voucher HEMAT10K tidak dipesan online untuk penjualan ini; voucher HEMAT10K melewati batas pakai (1)')
             ->and($jual->AlasanTinjauan)->not->toContain('PromoBerbeda')
             ->and($k['Voucher']->refresh()->JumlahDipakai)->toBe(2);
 

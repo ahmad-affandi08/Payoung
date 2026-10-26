@@ -94,7 +94,7 @@ it('estimasi tidak wajar dihitung dari pengaturan, tanpa nama/berat/item = tinja
     expect($t->EstimasiSelesaiPada->equalTo($p->DibuatOfflinePada->copy()->addHours(48)))->toBeTrue()
         ->and($t->NamaPelanggan)->toBe('Tanpa nama')
         ->and($p->PerluTinjauan)->toBeTrue()
-        ->and($p->AlasanTinjauan)->toContain('Laundry: tiket tanpa nama pelanggan. Tiket tanpa berat maupun item');
+        ->and($p->AlasanTinjauan)->toContain('Laundry: tiket tanpa nama pelanggan; tiket tanpa berat maupun item');
 });
 
 it('kasir: cari & ubah status maju, Siap mengirim WhatsApp sekali, Diambil tercatat. Mundur ditolak. Outlet lain 404', function (): void {
