@@ -19,6 +19,7 @@ enum JenisIntegrasi: string
     case GerbangBilling = 'GerbangBilling';
     case LoginSosial = 'LoginSosial';
     case PendaftaranMerchant = 'PendaftaranMerchant';
+    case AnalitikGoogle = 'AnalitikGoogle';
 
     /**
      * Jenis yang dikonfigurasi di tingkat platform. v2.06: gerbang pembayaran diatur tiap tenant (akun merchant
@@ -44,6 +45,7 @@ enum JenisIntegrasi: string
             self::GerbangBilling => PenyediaIntegrasi::DokuBilling,
             self::LoginSosial => PenyediaIntegrasi::Google,
             self::PendaftaranMerchant => PenyediaIntegrasi::DokuPartner,
+            self::AnalitikGoogle => PenyediaIntegrasi::GoogleAnalytics,
         };
     }
 
@@ -67,6 +69,7 @@ enum JenisIntegrasi: string
             self::GerbangBilling => 'Akun DOKU Payoung (induk): tagihan langganan',
             self::LoginSosial => 'Masuk dengan Google',
             self::PendaftaranMerchant => 'DOKU Partner (pendaftaran merchant)',
+            self::AnalitikGoogle => 'Google Analytics (laporan di konsol)',
         };
     }
 }

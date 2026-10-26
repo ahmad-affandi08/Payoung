@@ -11,6 +11,7 @@ use App\Domain\Pengelola\Integrasi\Penguji\PengujiDokuPartner;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiFcm;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiGerbangPembayaran;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiGoogle;
+use App\Domain\Pengelola\Integrasi\Penguji\PengujiGoogleAnalytics;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiKoneksi;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiKoneksiPenyedia;
 use App\Domain\Pengelola\Integrasi\Penguji\PengujiS3;
@@ -58,6 +59,7 @@ enum PenyediaIntegrasi: string
     case DokuBilling = 'DokuBilling';
     case Google = 'Google';
     case DokuPartner = 'DokuPartner';
+    case GoogleAnalytics = 'GoogleAnalytics';
 
     private const MODE = ['Kunci' => 'Mode', 'Label' => 'Mode', 'Jenis' => 'Pilihan', 'Wajib' => true, 'Opsi' => ['Sandbox', 'Produksi'], 'Bawaan' => 'Sandbox', 'Keterangan' => 'Sandbox untuk uji coba tanpa uang sungguhan.'];
 
@@ -72,6 +74,7 @@ enum PenyediaIntegrasi: string
             self::DokuBilling => JenisIntegrasi::GerbangBilling,
             self::Google => JenisIntegrasi::LoginSosial,
             self::DokuPartner => JenisIntegrasi::PendaftaranMerchant,
+            self::GoogleAnalytics => JenisIntegrasi::AnalitikGoogle,
             default => JenisIntegrasi::Email,
         };
     }
@@ -137,6 +140,9 @@ enum PenyediaIntegrasi: string
                 ['Kunci' => 'DompetDana', 'Label' => 'Bayar dengan DANA (SNAP)', 'Jenis' => 'Pilihan', 'Wajib' => false, 'Opsi' => ['Mati', 'Aktif'], 'Bawaan' => 'Mati', 'Keterangan' => 'Aktifkan hanya bila layanan DANA sudah aktif di akun DOKU.'],
                 ['Kunci' => 'DompetShopeePay', 'Label' => 'Bayar dengan ShopeePay (SNAP)', 'Jenis' => 'Pilihan', 'Wajib' => false, 'Opsi' => ['Mati', 'Aktif'], 'Bawaan' => 'Mati', 'Keterangan' => 'Aktifkan hanya bila layanan ShopeePay sudah aktif di akun DOKU.'],
             ],
+            self::GoogleAnalytics => [
+                ['Kunci' => 'IdProperti', 'Label' => 'ID properti GA4 (angka)', 'Wajib' => true, 'Jenis' => 'Teks', 'Keterangan' => 'Google Analytics › Admin › Property settings › Property ID (hanya angka, misal 412345678). Bukan Measurement ID yang berawalan G-.'],
+            ],
             self::DokuPartner => [
                 self::MODE,
                 // Brand ID partner bukan rahasia (ikut terkirim di header `Client-Id` setiap permintaan); yang rahasia hanya secret key.
@@ -178,6 +184,7 @@ enum PenyediaIntegrasi: string
             // Berkas akun layanan Firebase ±2.400 karakter sehingga batas 2.000 bawaan menolak berkas yang utuh.
             self::Fcm => [['Kunci' => 'AkunLayanan', 'Label' => 'Akun layanan Firebase (isi berkas JSON)', 'Wajib' => true, 'Maks' => 8192]],
             self::DokuBilling, self::DokuPartner => [['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]],
+            self::GoogleAnalytics => [['Kunci' => 'AkunLayanan', 'Label' => 'Akun layanan Google (isi berkas JSON)', 'Wajib' => true, 'Maks' => 8192]],
             default => [],
         };
     }
@@ -208,6 +215,7 @@ enum PenyediaIntegrasi: string
             JenisIntegrasi::GerbangBilling => PengujiDokuBilling::class,
             JenisIntegrasi::LoginSosial => PengujiGoogle::class,
             JenisIntegrasi::PendaftaranMerchant => PengujiDokuPartner::class,
+            JenisIntegrasi::AnalitikGoogle => PengujiGoogleAnalytics::class,
         };
     }
 
@@ -237,6 +245,7 @@ enum PenyediaIntegrasi: string
             self::DokuBilling => 'Akun DOKU Payoung (induk)',
             self::Google => 'Google (Masuk dengan Google)',
             self::DokuPartner => 'DOKU Partner (pendaftaran merchant)',
+            self::GoogleAnalytics => 'Google Analytics 4 (Data API)',
         };
     }
 
@@ -262,6 +271,7 @@ enum PenyediaIntegrasi: string
             self::MetaCloud, self::Fonnte, self::Wablas, self::StarSender, self::Watzap => $this->AmbilPenyediaWhatsapp()?->AmbilKeterangan() ?? '',
             self::DokuBilling => 'Akun DOKU induk milik Payoung. Dipakai untuk menagih langganan tenant (DOKU Checkout). Berbeda dari gerbang QRIS milik toko, yang akunnya milik tenant masing-masing. DOKU Checkout: setel URL notifikasi di dasbor DOKU akun ini ke https://<domain-aplikasi>/webhook/billing/doku. DOKU SNAP (QRIS, virtual account, DANA, ShopeePay; halaman bayar Payoung): buat kunci SNAP di kartu ini, daftarkan kunci publiknya di dasbor DOKU › API Keys › Merchant Public Key, lalu setel URL notifikasi SNAP dan Token URL ke https://<domain-aplikasi>/webhook/billing/snap (panduan: Panduan/DokuSnap.md).',
             self::DokuPartner => 'Akun Partner Payoung di DOKU (Brand ID partner + secret key) untuk mendaftarkan merchant tenant lewat KYB: tenant cukup mengunggah foto KTP, selfie, foto tempat usaha, dan rekening. Payoung harus berstatus Partner di DOKU. URL callback KYB tidak perlu disetel manual: alamatnya dikirim otomatis saat pendaftaran (https://<domain-aplikasi>/webhook/pembayaran/doku-partner). Aktivasi QRIS per Brand masih dilakukan di DOKU Dashboard.',
+            self::GoogleAnalytics => 'Menarik data Google Analytics 4 situs payoung.id ke menu Analitik › Situs. Buat akun layanan di Google Cloud (aktifkan Google Analytics Data API), unduh kunci JSON, lalu tambahkan alamat email akun layanan itu sebagai pengguna Viewer di properti GA4 (Admin › Property access management). Panduan: Panduan/AnalitikGoogle.md.',
             self::Google => 'Pemilik toko daftar dan masuk dengan akun Google. Masuk dengan Google menggantikan verifikasi dua langkah (2FA). Panduan lengkap: Panduan/LoginGoogle.md.',
             self::Fcm => 'Satu proyek Firebase melayani Android & iOS sekaligus; sertifikat APNs diunggah di Firebase, bukan di sini. Isi berkas akun layanan dari Setelan proyek → Akun layanan → Buat kunci baru.',
             default => '',

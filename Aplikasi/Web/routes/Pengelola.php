@@ -43,6 +43,7 @@ use App\Http\Kontroler\Pengelola\Tagihan\TagihanKontroler;
 use App\Http\Kontroler\Pengelola\Tagihan\TagihanManualKontroler;
 use App\Http\Kontroler\Pengelola\TemplateSektor\TemplateSektorKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\AnalitikKontroler;
+use App\Http\Kontroler\Pengelola\Tenant\AnalitikSitusKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\KesehatanTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PendaftaranMerchantTenantKontroler;
 use App\Http\Kontroler\Pengelola\Tenant\PenghapusanDataTenantKontroler;
@@ -498,6 +499,14 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
         Route::get('/analitik', [AnalitikKontroler::class, 'Tampilkan'])
             ->middleware($izin(IzinPengelola::AnalitikLihat))
             ->name('pengelola.analitik.tampil');
+
+        // D-215: laporan Google Analytics 4 situs di konsol (data agregat pengunjung; izin yang sama).
+        Route::middleware($izin(IzinPengelola::AnalitikLihat))->group(function (): void {
+            Route::get('/analitik/situs', [AnalitikSitusKontroler::class, 'Tampilkan'])->name('pengelola.analitik.situs');
+            Route::get('/analitik/situs/data', [AnalitikSitusKontroler::class, 'Data'])
+                ->middleware('throttle:60,1')
+                ->name('pengelola.analitik.situs.data');
+        });
 
         // P-07 Siklus hidup tenant (§19.3: izin per tindakan).
         Route::middleware($izin(IzinPengelola::TenantLihat))->group(function () use ($izin): void {

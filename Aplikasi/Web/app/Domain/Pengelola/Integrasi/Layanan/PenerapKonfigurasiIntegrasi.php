@@ -61,7 +61,7 @@ final class PenerapKonfigurasiIntegrasi
                 // dan kredensial diterbitkan apa adanya, lalu dibaca layanan pemakainya lewat `config('integrasi.*')`.
                 // `match` ini tanpa `default` dengan sengaja: menambah jenis integrasi baru tanpa menerbitkannya di
                 // sini akan gagal keras, bukan diam-diam tidak aktif. Dijaga `PenerapKonfigurasiIntegrasiTes`.
-                JenisIntegrasi::Whatsapp, JenisIntegrasi::Push, JenisIntegrasi::GerbangBilling, JenisIntegrasi::LoginSosial, JenisIntegrasi::PendaftaranMerchant => config([
+                JenisIntegrasi::Whatsapp, JenisIntegrasi::Push, JenisIntegrasi::GerbangBilling, JenisIntegrasi::LoginSosial, JenisIntegrasi::PendaftaranMerchant, JenisIntegrasi::AnalitikGoogle => config([
                     'integrasi.'.$konfigurasi->Jenis->value => [
                         'Penyedia' => $konfigurasi->Penyedia->value,
                         'Pengaturan' => $konfigurasi->Pengaturan,
