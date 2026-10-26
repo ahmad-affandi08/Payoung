@@ -101,9 +101,8 @@ final class TindakanTenantKontroler extends Kontroler
     public function HapusPermanen(Tenant $tenant, HapusPermanenTenantPermintaan $permintaan, HapusPermanenTenantUji $hapus): RedirectResponse
     {
         $hasil = $hapus->Jalankan($this->AmbilPelaku(), $tenant, $permintaan->AmbilKonfirmasiSlug(), $permintaan->AmbilAlasan());
-        $baris = number_format($hasil['Baris'], 0, ',', '.');
         $gagal = $hasil['BerkasGagal'] > 0 ? " {$hasil['BerkasGagal']} berkas gagal dihapus dari penyimpanan dan perlu dibersihkan manual." : '';
 
-        return redirect('/tenant')->with('Kilat', "{$hasil['Nama']} dihapus permanen: {$baris} baris data dari {$hasil['Tabel']} tabel, {$hasil['Pengguna']} akun pengguna, dan {$hasil['Berkas']} berkas.{$gagal}");
+        return redirect('/tenant')->with('Kilat', "{$hasil['Nama']} dihapus permanen: {$hasil['Baris']} baris data dari {$hasil['Tabel']} tabel, {$hasil['Pengguna']} akun pengguna, dan {$hasil['Berkas']} berkas.{$gagal}");
     }
 }

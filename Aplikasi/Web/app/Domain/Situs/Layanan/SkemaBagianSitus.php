@@ -90,7 +90,7 @@ final class SkemaBagianSitus
             // Pembuka beranda berupa carousel (permintaan pemilik produk): tiap sorotan punya judul, satu kalimat,
             // tombol, dan tangkapan layar asli. Semua teks sorotan selalu ada di HTML; hanya satu yang terlihat.
             'HeroGeser' => [
-                'Sorotan' => ['Daftar', 2, 6, [
+                'Sorotan' => ['Daftar', 2, 8, [
                     'Label' => ['Teks', 40, true],
                     'Judul' => ['Teks', 120, true],
                     'Teks' => ['TeksPanjang', 260],
