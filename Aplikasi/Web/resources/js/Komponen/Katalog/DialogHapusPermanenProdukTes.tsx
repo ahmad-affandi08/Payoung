@@ -31,6 +31,7 @@ const bisaDihapus: PratinjauHapusPermanen = {
     Total: 1248,
     Tabel: 9,
     Penghalang: null,
+    Stok: { Lokasi: 0, Nilai: '0.00' },
     Rincian: [
         { Tabel: 'PenjualanDetail', Jumlah: 900 },
         { Tabel: 'MutasiStok', Jumlah: 300 },
@@ -71,6 +72,14 @@ describe('D-218 dialog hapus permanen produk', () => {
         expect(tombol.disabled).toBe(false);
     });
 
+    it('produk yang masih berstok: memberi tahu nilai stok yang otomatis dicatat sebagai stok hilang', async () => {
+        TiruFetch({ ...bisaDihapus, Stok: { Lokasi: 2, Nilai: '600000.00' } });
+        RenderUji(<DialogHapusPermanenProduk uuid={UUID} nama={NAMA} saatSelesai={vi.fn()} />);
+
+        expect(await screen.findByText(/masih punya stok di 2 lokasi/)).toBeTruthy();
+        expect(screen.getByText(/otomatis dicatat sebagai stok hilang/).textContent).toContain('600.000');
+    });
+
     it('mengirim DELETE ke rute hapus-permanen dengan nama konfirmasi', async () => {
         TiruFetch(bisaDihapus);
         RenderUji(<DialogHapusPermanenProduk uuid={UUID} nama={NAMA} saatSelesai={vi.fn()} />);
@@ -94,6 +103,7 @@ describe('D-218 dialog hapus permanen produk', () => {
             Total: 12,
             Tabel: 3,
             Rincian: [{ Tabel: 'MutasiStok', Jumlah: 12 }],
+            Stok: { Lokasi: 1, Nilai: '0.00' },
             Penghalang: 'Produk ini masih punya stok. Kosongkan dulu lewat Penyesuaian stok (stok keluar).',
         });
         RenderUji(<DialogHapusPermanenProduk uuid={UUID} nama={NAMA} saatSelesai={vi.fn()} />);
@@ -104,7 +114,7 @@ describe('D-218 dialog hapus permanen produk', () => {
     });
 
     it('produk tanpa riwayat dan galat memuat riwayat punya keadaan sendiri', async () => {
-        TiruFetch({ Total: 0, Tabel: 0, Rincian: [], Penghalang: null });
+        TiruFetch({ Total: 0, Tabel: 0, Rincian: [], Penghalang: null, Stok: { Lokasi: 0, Nilai: '0.00' } });
         RenderUji(<DialogHapusPermanenProduk uuid={UUID} nama={NAMA} saatSelesai={vi.fn()} />);
         expect(await screen.findByText('Produk ini belum punya riwayat.')).toBeTruthy();
 

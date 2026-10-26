@@ -1283,6 +1283,7 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
                             Tabel: 1,
                             Rincian: [{ Tabel: 'MutasiStok', Jumlah: 3 }],
                             Penghalang: null,
+                            Stok: { Lokasi: 0, Nilai: '0.00' },
                         }),
                         {
                             status: 200,

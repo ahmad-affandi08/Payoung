@@ -270,6 +270,8 @@ export type PratinjauHapusPermanen = {
     Rincian: { Tabel: string; Jumlah: number }[];
     /** Alasan (kalimat utuh) mengapa belum boleh dihapus permanen; null = boleh. */
     Penghalang: string | null;
+    /** Sisa stok yang dihabiskan otomatis (penyesuaian Hilang) sebelum riwayat dihapus; Nilai = Rupiah. */
+    Stok: { Lokasi: number; Nilai: string };
 };
 
 // E.5 Kelola/Kategori/Daftar dan Kelola/Satuan/Daftar.

@@ -6,6 +6,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import { FormatRupiah } from '@/Pustaka/Format';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
 import { LabelTabelRiwayat } from '@/Pustaka/LabelRiwayatProduk';
 import type { PratinjauHapusPermanen } from '@/Tipe/Katalog';
@@ -107,6 +108,13 @@ export default function DialogHapusPermanenProduk({
                             </Tombol>
                         ) : null}
                     </div>
+                ) : null}
+                {pratinjau !== undefined && terhalang === null && pratinjau.Stok.Lokasi > 0 ? (
+                    <Pemberitahuan jenis="peringatan">
+                        Produk ini masih punya stok di {pratinjau.Stok.Lokasi.toLocaleString('id-ID')} lokasi. Sisa stok
+                        bernilai {FormatRupiah(pratinjau.Stok.Nilai)} otomatis dicatat sebagai stok hilang (beban susut
+                        di laba rugi) sebelum riwayatnya dihapus.
+                    </Pemberitahuan>
                 ) : null}
                 {terhalang === null ? (
                     <BidangTeks

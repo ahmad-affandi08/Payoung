@@ -8,6 +8,7 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Database\PenghapusBerantai;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Katalog\Kontrak\PengosongStokProduk;
 use App\Domain\Katalog\Model\Produk;
 use App\Domain\Tenant\Layanan\PenguncianTenant;
 use Illuminate\Support\Facades\DB;
@@ -24,10 +25,12 @@ use Illuminate\Support\Facades\DB;
  * Jurnal dan jejak audit tidak disentuh (tetap seimbang). Sesudah itu produk dihapus lewat `HapusProduk` (barcode,
  * harga, SKU dilepas, kasir menerima `Dihapus: true`).
  *
- * Penjagaan yang tetap berlaku supaya pembukuan dan produk lain tidak rusak diam-diam:
- * - saldo stok semua lokasi harus nol (kosongkan lewat penyesuaian stok dulu, supaya nilai persediaan di jurnal turun
- *   dengan benar, bukan menggantung);
- * - produk tidak boleh masih dipakai sebagai bahan resep, komponen paket, atau bahan pilihan produk lain (lepaskan dulu).
+ * Sisa stok tidak menghalangi: sebelum riwayat dihapus, stoknya dihabiskan lewat penyesuaian stok biasa (alasan Hilang,
+ * `PengosongStokProduk`, diikat Persediaan: Dr Beban Susut, Cr Persediaan) supaya nilai persediaan di pembukuan turun dengan benar dan tidak
+ * menggantung. Jurnal penyesuaian itu tetap ada. Stok minus dan produk ber-batch/bernomor seri ditolak dengan petunjuk.
+ *
+ * Penjagaan lain supaya produk lain tidak rusak diam-diam: produk tidak boleh masih dipakai sebagai bahan resep,
+ * komponen paket, atau bahan pilihan produk lain (lepaskan dulu).
  *
  * Satu transaksi: gagal di tengah = tidak ada yang terhapus. Tidak bisa dibalik setelah berhasil.
  */
@@ -41,18 +44,20 @@ final class HapusPermanenProduk
         private readonly PenguncianTenant $penguncian,
         private readonly PenghapusBerantai $penghapus,
         private readonly HapusProduk $hapusProduk,
+        private readonly PengosongStokProduk $kosongkanStok,
         private readonly PencatatAudit $audit,
     ) {}
 
     /**
      * Pratinjau untuk dialog konfirmasi: apa yang akan dihapus dan apa yang menghalangi. Tidak mengubah apa pun.
      *
-     * @return array{Total: int, Tabel: int, Rincian: list<array{Tabel: string, Jumlah: int}>, Penghalang: string|null}
+     * @return array{Total: int, Tabel: int, Rincian: list<array{Tabel: string, Jumlah: int}>, Penghalang: string|null, Stok: array{Lokasi: int, Nilai: string}}
      */
     public function Pratinjau(Produk $produk): array
     {
         $ids = $this->AmbilIdTermasukVarian($produk);
         $jumlah = $this->penghapus->Hitung($this->penghapus->Rencanakan('Produk', $ids, self::KECUALI));
+        $stok = $this->kosongkanStok->Pratinjau($ids);
         $rincian = [];
 
         foreach ($jumlah as $tabel => $banyak) {
@@ -64,6 +69,7 @@ final class HapusPermanenProduk
             'Tabel' => count($jumlah),
             'Rincian' => $rincian,
             'Penghalang' => $this->AmbilPenghalang($ids),
+            'Stok' => ['Lokasi' => $stok['Lokasi'], 'Nilai' => $stok['Nilai']],
         ];
     }
 
@@ -87,7 +93,14 @@ final class HapusPermanenProduk
                 throw new PelanggaranAturanBisnis('HapusPermanenDitolak', $penghalang);
             }
 
+            $idPengguna = $this->audit->AmbilIdPengguna();
+
+            if ($idPengguna === null) {
+                throw new PelanggaranAturanBisnis('HapusPermanenDitolak', 'Pelaku penghapusan tidak dikenali. Masuk ulang lalu coba lagi.');
+            }
+
             $lama = ['Sku' => $produk->Sku, 'Nama' => $produk->Nama, 'Jenis' => $produk->Jenis->value];
+            $penyesuaian = $this->kosongkanStok->Jalankan($ids, $idPengguna, $produk->Nama);
             $dihapus = $this->penghapus->Terapkan($this->penghapus->Rencanakan('Produk', $ids, self::KECUALI));
             $this->hapusProduk->Jalankan($produk);
 
@@ -99,7 +112,7 @@ final class HapusPermanenProduk
             }
 
             $total = array_sum($dihapus);
-            $this->audit->Catat('produk.hapus-permanen', $produk, $lama, ['Baris' => $total, 'Tabel' => count($dihapus), 'Rincian' => array_slice($rincian, 0, 15)]);
+            $this->audit->Catat('produk.hapus-permanen', $produk, $lama, ['Baris' => $total, 'Tabel' => count($dihapus), 'PenyesuaianStok' => $penyesuaian, 'Rincian' => array_slice($rincian, 0, 15)]);
 
             return ['Total' => $total, 'Tabel' => count($dihapus), 'Rincian' => $rincian];
         });
@@ -120,8 +133,10 @@ final class HapusPermanenProduk
      */
     private function AmbilPenghalang(array $ids): ?string
     {
-        if (DB::table('SaldoStok')->whereIn('IdProduk', $ids)->where('JumlahTersedia', '<>', 0)->exists()) {
-            return 'Produk ini masih punya stok. Kosongkan dulu lewat Penyesuaian stok (stok keluar), supaya nilai persediaan di pembukuan ikut turun, lalu hapus permanen.';
+        $penghalangStok = $this->kosongkanStok->Pratinjau($ids)['Penghalang'];
+
+        if ($penghalangStok !== null) {
+            return $penghalangStok;
         }
 
         $dipakai = [];

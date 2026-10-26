@@ -5,12 +5,15 @@ declare(strict_types=1);
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Model\Produk;
+use App\Domain\Persediaan\Enum\JenisMutasi;
+use App\Domain\Persediaan\Enum\JenisReferensiMutasi;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use Illuminate\Support\Facades\DB;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Katalog\BantuanKomposisi;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
+use Tests\Pendukung\Persediaan\BantuanLaporan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
@@ -61,19 +64,48 @@ describe('D-218 hapus permanen produk beserta riwayat', function (): void {
             ->and(LogAudit::query()->where('Peristiwa', 'produk.hapus-permanen')->sole()->NilaiBaru)->toMatchArray(['Baris' => $pratinjau->json('Total')]);
     });
 
-    it('stok masih ada → ditolak dengan petunjuk penyesuaian stok; tidak ada yang terhapus', function (): void {
+    it('stok masih ada → dihabiskan otomatis lewat penyesuaian Hilang (jurnal seimbang), lalu produk dan riwayatnya terhapus', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         $beras = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Beras Premium Pulen 5 Kg', '10', '60000', '75000.00');
         $masuk = fn () => BantuanKatalog::MasukSebagai($this, $k['Tenant']->Id);
+        $jurnalSebelum = DB::table('Jurnal')->count();
 
         $masuk()->getJson("/kelola/produk/{$beras->Uuid}/hapus-permanen")->assertOk()
-            ->assertJsonPath('Penghalang', 'Produk ini masih punya stok. Kosongkan dulu lewat Penyesuaian stok (stok keluar), supaya nilai persediaan di pembukuan ikut turun, lalu hapus permanen.');
+            ->assertJsonPath('Penghalang', null)
+            ->assertJsonPath('Stok.Lokasi', 1)
+            ->assertJsonPath('Stok.Nilai', '600000.00');
         $masuk()->delete("/kelola/produk/{$beras->Uuid}/hapus-permanen", ['KonfirmasiNama' => 'Beras Premium Pulen 5 Kg'])
-            ->assertSessionHasErrors('Umum');
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/kelola/produk');
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-        expect(Produk::query()->whereKey($beras->Id)->exists())->toBeTrue()
-            ->and(DB::table('MutasiStok')->where('IdProduk', $beras->Id)->count())->toBe(1);
+        expect(Produk::query()->withTrashed()->whereKey($beras->Id)->sole()->DihapusPada)->not->toBeNull()
+            ->and(DB::table('MutasiStok')->where('IdProduk', $beras->Id)->count())->toBe(0)
+            ->and(DB::table('SaldoStok')->where('IdProduk', $beras->Id)->count())->toBe(0)
+            ->and(DB::table('PenyesuaianStok')->count())->toBe(1)
+            ->and(DB::table('Jurnal')->count())->toBe($jurnalSebelum + 1)
+            ->and(DB::table('JurnalDetail')->sum('Debit'))->toEqual(DB::table('JurnalDetail')->sum('Kredit'))
+            ->and(LogAudit::query()->where('Peristiwa', 'produk.hapus-permanen')->sole()->NilaiBaru)->toMatchArray(['PenyesuaianStok' => 1]);
+    });
+
+    it('stok minus atau produk ber-batch → ditolak dengan petunjuk; tidak ada yang terhapus', function (): void {
+        $t = BantuanPersediaan::SiapkanTenant();
+        $produk = BantuanPersediaan::BuatProdukSemuaJenis($t['Pcs'], $t['Kg']);
+        $batch = $produk['Batch'];
+        BantuanLaporan::CatatMutasi($batch, $t['Gudang'], '5.0000', '50000.00');
+        $minus = $produk['Stok'];
+        BantuanLaporan::CatatMutasi($minus, $t['Gudang'], '-2.0000', '-20000.00', '2026-09-01', JenisMutasi::PenyesuaianKeluar, JenisReferensiMutasi::PenyesuaianStok);
+
+        $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+        $masuk()->getJson("/kelola/produk/{$batch->Uuid}/hapus-permanen")->assertOk()
+            ->assertJsonPath('Penghalang', "{$batch->Nama} memakai pelacakan batch atau nomor seri. Kosongkan stoknya lewat Penyesuaian stok (pilih batch atau nomor serinya), lalu hapus permanen.");
+        $masuk()->delete("/kelola/produk/{$batch->Uuid}/hapus-permanen", ['KonfirmasiNama' => $batch->Nama])->assertSessionHasErrors('Umum');
+        $masuk()->delete("/kelola/produk/{$minus->Uuid}/hapus-permanen", ['KonfirmasiNama' => $minus->Nama])
+            ->assertSessionHasErrors(['Umum' => "Stok {$minus->Nama} minus di sebagian lokasi. Perbaiki dulu lewat Penyesuaian stok atau Stok opname, lalu hapus permanen."]);
+
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(Produk::query()->whereKey([$batch->Id, $minus->Id])->count())->toBe(2)
+            ->and(DB::table('PenyesuaianStok')->count())->toBe(0);
     });
 
     it('masih dipakai sebagai bahan resep produk lain → ditolak sebut nama produknya', function (): void {
