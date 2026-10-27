@@ -225,23 +225,6 @@ export default function HalamanDaftarPiutangPelanggan({
             opsi: OpsiPelanggan.map((p) => ({ nilai: p.Uuid, label: p.Nama })),
         },
     ];
-    const tombol = (
-        <div className="flex flex-wrap gap-2">
-            {bolehIngatkan && Pengingat ? (
-                <Tombol varian="sekunder" onClick={() => AturAturPengingat(true)}>
-                    Pengingat otomatis: {Pengingat.Aktif ? 'aktif' : 'mati'}
-                </Tombol>
-            ) : null}
-            <Tombol varian="sekunder" onClick={() => router.visit(`${AlamatPiutang}/hapus-buku`)}>
-                Riwayat hapus-buku
-            </Tombol>
-            {Izin.Kelola ? (
-                <Button asChild className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatPiutang}/pelunasan/buat`}>Terima pelunasan</Link>
-                </Button>
-            ) : null}
-        </div>
-    );
     const AksiBaris = (p: BarisPiutang) => [
         ...(Izin.Kelola
             ? [
@@ -285,7 +268,28 @@ export default function HalamanDaftarPiutangPelanggan({
             izin={Izin}
             objek="pelunasan piutang"
         >
-            <AksiHalaman>{tombol}</AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatPiutang}/pelunasan/buat`}>Terima pelunasan</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[
+                    ...(bolehIngatkan && Pengingat
+                        ? [
+                              {
+                                  label: `Pengingat otomatis: ${Pengingat.Aktif ? 'aktif' : 'mati'}`,
+                                  saatKlik: () => AturAturPengingat(true),
+                              },
+                          ]
+                        : []),
+                    { label: 'Riwayat hapus-buku', href: `${AlamatPiutang}/hapus-buku` },
+                ]}
+            />
             <TabelData
                 id="piutang-pelanggan"
                 label="Daftar piutang pelanggan"

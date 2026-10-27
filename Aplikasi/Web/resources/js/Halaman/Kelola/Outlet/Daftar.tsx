@@ -107,14 +107,18 @@ export default function HalamanDaftarOutlet({ Outlet, Merek, BatasOutlet }: Prop
                         <span className="font-semibold text-teks-utama">{FormatBatas(BatasOutlet, 'outlet')}</span>
                     </p>
                 }
-            >
-                {bolehKelola && penuh ? <Tombol disabled>Tambah outlet</Tombol> : null}
-                {bolehKelola && !penuh ? (
-                    <Button asChild>
-                        <Link href="/kelola/outlet/buat">Tambah outlet</Link>
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+                {...(bolehKelola
+                    ? {
+                          utama: penuh ? (
+                              <Tombol disabled>Tambah outlet</Tombol>
+                          ) : (
+                              <Button asChild>
+                                  <Link href="/kelola/outlet/buat">Tambah outlet</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+            />
 
             {bolehKelola && penuh ? <PemberitahuanBatasOutlet /> : null}
 

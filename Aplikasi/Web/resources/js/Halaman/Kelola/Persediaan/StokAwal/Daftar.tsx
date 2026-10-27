@@ -115,17 +115,6 @@ export default function HalamanDaftarStokAwal({
             opsi: OpsiGudang.map((gudang) => ({ nilai: gudang.Uuid, label: FormatLabelGudang(gudang) })),
         },
     ];
-    const tombolBuat = Izin.Kelola ? (
-        <>
-            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatStokAwal}/impor`}>Impor dari Excel</Link>
-            </Button>
-            <Button asChild className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatStokAwal}/buat`}>Buat stok awal</Link>
-            </Button>
-        </>
-    ) : null;
-
     return (
         <TataLetakAplikasi judul="Stok awal">
             <p className="max-w-2xl text-isi text-teks-sekunder">
@@ -137,7 +126,18 @@ export default function HalamanDaftarStokAwal({
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="dokumen stok awal" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
-            <AksiHalaman>{tombolBuat}</AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatStokAwal}/buat`}>Buat stok awal</Link>
+                              </Button>
+                          ),
+                          lainnya: [{ label: 'Impor dari Excel', href: `${AlamatStokAwal}/impor` }],
+                      }
+                    : {})}
+            />
 
             <TabelData
                 id="persediaan-stok-awal"

@@ -430,7 +430,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
     const barisHp = (
         <div className="flex flex-col gap-2">
             {kotakCari}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 {adaSaringAtauUrut ? sheetFilter : null}
                 <MenuLainnya butir={butirMenu} />
                 {props.ekspor?.laporan ? ekspor : null}

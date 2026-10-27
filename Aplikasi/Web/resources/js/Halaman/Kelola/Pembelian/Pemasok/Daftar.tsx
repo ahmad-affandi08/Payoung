@@ -86,17 +86,6 @@ export default function HalamanDaftarPemasok({ Pemasok, Izin }: PropsDaftarPemas
     const [ubah, AturUbah] = useState<BarisPemasok | null>(null);
     const [hapus, AturHapus] = useState<BarisPemasok | null>(null);
     const [memproses, AturMemproses] = useState(false);
-    const tombolTambah = (
-        <>
-            <Button asChild variant="outline">
-                <Link href={`${alamat}/impor`}>Impor pemasok</Link>
-            </Button>
-            <Button asChild>
-                <Link href={`${alamat}/buat`}>Tambah pemasok</Link>
-            </Button>
-        </>
-    );
-
     return (
         <TataLetakAplikasi judul="Pemasok">
             <p className="max-w-3xl text-isi text-teks-sekunder">
@@ -104,7 +93,14 @@ export default function HalamanDaftarPemasok({ Pemasok, Izin }: PropsDaftarPemas
                 menghitung jatuh tempo faktur. Pemasok yang sudah dipakai tidak bisa dihapus. Nonaktifkan saja.
             </p>
             {Izin.Kelola ? (
-                <AksiHalaman>{tombolTambah}</AksiHalaman>
+                <AksiHalaman
+                    utama={
+                        <Button asChild>
+                            <Link href={`${alamat}/buat`}>Tambah pemasok</Link>
+                        </Button>
+                    }
+                    lainnya={[{ label: 'Impor pemasok', href: `${alamat}/impor` }]}
+                />
             ) : (
                 <PesanHanyaLihat izin="pembelian.kelola" objek="pemasok" />
             )}

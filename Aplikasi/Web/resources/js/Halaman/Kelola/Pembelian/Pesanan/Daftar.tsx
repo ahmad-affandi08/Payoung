@@ -1,8 +1,7 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
-import Tombol from '@/Komponen/Formulir/Tombol';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import {
     BuatSaringPembelian,
@@ -16,7 +15,6 @@ import {
 } from '@/Komponen/Pembelian/DaftarPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import type { BarisDaftarPesanan, PropsDaftarPesanan } from '@/Tipe/Pembelian';
 
@@ -59,20 +57,6 @@ export default function HalamanDaftarPesanan({ Pesanan, OpsiStatus, OpsiPemasok,
             {},
             { onStart: () => AturMenyiapkan(true), onFinish: () => AturMenyiapkan(false) },
         );
-    const tombol = (
-        <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatPembelian}/permintaan`}>Permintaan pembelian</Link>
-            </Button>
-            {Izin.Kelola ? (
-                <Tombol varian="sekunder" onClick={SiapkanDraf} memproses={menyiapkan}>
-                    Siapkan draf dari stok menipis
-                </Tombol>
-            ) : null}
-            <TombolBuat href={`${alamat}/buat`} label="Buat pesanan pembelian" izin={Izin} />
-        </div>
-    );
-
     return (
         <HalamanDaftarPembelian
             judul="Pesanan pembelian"
@@ -80,7 +64,21 @@ export default function HalamanDaftarPesanan({ Pesanan, OpsiStatus, OpsiPemasok,
             izin={Izin}
             objek="pesanan pembelian"
         >
-            <AksiHalaman>{tombol}</AksiHalaman>
+            <AksiHalaman
+                utama={<TombolBuat href={`${alamat}/buat`} label="Buat pesanan pembelian" izin={Izin} />}
+                lainnya={[
+                    { label: 'Permintaan pembelian', href: `${AlamatPembelian}/permintaan` },
+                    ...(Izin.Kelola
+                        ? [
+                              {
+                                  label: 'Siapkan draf dari stok menipis',
+                                  saatKlik: SiapkanDraf,
+                                  nonaktif: menyiapkan,
+                              },
+                          ]
+                        : []),
+                ]}
+            />
             <TabelData
                 id="pembelian-pesanan"
                 label="Daftar pesanan pembelian"

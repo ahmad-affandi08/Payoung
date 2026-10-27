@@ -221,6 +221,36 @@ describe('Halaman rincian: langkah berikutnya + menu Lainnya (D-228)', () => {
     });
 });
 
+describe('Tombol banyak tidak terpotong di HP (D-228)', () => {
+    it('wadah aksi utama membungkus dan setiap tombol punya lebar minimum, jadi tidak ada yang keluar layar', () => {
+        AturLebar('hp');
+        render(
+            <QueryClientProvider client={new QueryClient()}>
+                <PenyediaAksiHalaman>
+                    <AksiHalaman>
+                        <button type="button">Permintaan stok</button>
+                        <button type="button">Retur ke Gudang</button>
+                        <button type="button">Buat transfer</button>
+                    </AksiHalaman>
+                    <TabelData
+                        id="barang-banyak"
+                        label="Daftar barang"
+                        kolom={kolom}
+                        sumber={{ mode: 'lokal', data: awal.Data }}
+                        ambilIdBaris={(b) => b.Uuid}
+                        kosong={{ judul: 'Kosong' }}
+                    />
+                </PenyediaAksiHalaman>
+            </QueryClientProvider>,
+        );
+
+        const slot = document.querySelector('[data-slot="aksi-utama-halaman"]') as HTMLElement;
+        expect(within(slot).getAllByRole('button')).toHaveLength(3);
+        expect(slot.className).toContain('flex-wrap');
+        expect(slot.className).toContain('[&>*]:min-w-28');
+    });
+});
+
 describe('Jejak halaman di HP (D-228)', () => {
     it('jejak tanpa tautan disembunyikan di HP, jejak yang punya jalan kembali tetap tampil', () => {
         const bagian = render(<JejakHalaman jejak={[{ label: 'Kopi Nusantara' }, { label: 'Produk' }]} />);

@@ -100,20 +100,6 @@ export default function HalamanDaftarTransferStok({ Transfer, OpsiGudang, OpsiSt
             opsi: OpsiGudang.map((g) => ({ nilai: g.Uuid, label: FormatLabelGudang(g) })),
         },
     ];
-    const tombolBuat = Izin.Kelola ? (
-        <>
-            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                <Link href="/kelola/persediaan/permintaan">Permintaan stok</Link>
-            </Button>
-            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatTransfer}/buat?arah=retur-ke-gudang`}>Retur ke Gudang</Link>
-            </Button>
-            <Button asChild className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatTransfer}/buat`}>Buat transfer</Link>
-            </Button>
-        </>
-    ) : null;
-
     return (
         <TataLetakAplikasi judul="Transfer stok">
             <p className="max-w-2xl text-isi text-teks-sekunder">
@@ -122,7 +108,21 @@ export default function HalamanDaftarTransferStok({ Transfer, OpsiGudang, OpsiSt
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="transfer stok" /> : null}
             <DaftarGalatServer galat={props.errors} />
-            <AksiHalaman>{tombolBuat}</AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatTransfer}/buat`}>Buat transfer</Link>
+                              </Button>
+                          ),
+                          lainnya: [
+                              { label: 'Permintaan stok', href: '/kelola/persediaan/permintaan' },
+                              { label: 'Retur ke Gudang', href: `${AlamatTransfer}/buat?arah=retur-ke-gudang` },
+                          ],
+                      }
+                    : {})}
+            />
             <TabelData
                 id="persediaan-transfer"
                 label="Daftar transfer stok"
@@ -136,7 +136,7 @@ export default function HalamanDaftarTransferStok({ Transfer, OpsiGudang, OpsiSt
                 kosong={{
                     ilustrasi: true,
                     judul: 'Belum ada transfer stok.',
-                    ...(tombolBuat ? {} : { aksi: <span>Minta pengelola persediaan membuat transfer.</span> }),
+                    ...(Izin.Kelola ? {} : { aksi: <span>Minta pengelola persediaan membuat transfer.</span> }),
                 }}
             />
         </TataLetakAplikasi>

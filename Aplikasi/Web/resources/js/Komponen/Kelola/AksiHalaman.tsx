@@ -176,7 +176,7 @@ export default function AksiHalaman({
         return (
             <div className="flex flex-wrap items-center gap-2">
                 {keterangan}
-                <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 [&>*:not(:last-child)]:flex-1">
+                <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 [&>*:not(:last-child)]:min-w-28 [&>*:not(:last-child)]:flex-1">
                     {utama}
                     {children}
                     <MenuLainnya butir={lainnya} />

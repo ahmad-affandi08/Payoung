@@ -116,17 +116,6 @@ export default function HalamanDaftarPermintaanStok({
             opsi: OpsiGudang.map((g) => ({ nilai: g.Uuid, label: FormatLabelGudang(g) })),
         },
     ];
-    const tombol = Izin.Kelola ? (
-        <>
-            <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                <Link href="/kelola/persediaan/transfer">Transfer stok</Link>
-            </Button>
-            <Button asChild className="h-8 pointer-coarse:h-11">
-                <Link href={`${AlamatPermintaan}/buat`}>Minta stok</Link>
-            </Button>
-        </>
-    ) : null;
-
     return (
         <TataLetakAplikasi judul="Permintaan stok">
             <p className="max-w-2xl text-isi text-teks-sekunder">
@@ -135,7 +124,18 @@ export default function HalamanDaftarPermintaanStok({
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="permintaan stok" /> : null}
             <DaftarGalatServer galat={props.errors} />
-            <AksiHalaman>{tombol}</AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatPermintaan}/buat`}>Minta stok</Link>
+                              </Button>
+                          ),
+                          lainnya: [{ label: 'Transfer stok', href: '/kelola/persediaan/transfer' }],
+                      }
+                    : {})}
+            />
             <TabelData
                 id="persediaan-permintaan"
                 label="Daftar permintaan stok"
@@ -149,7 +149,7 @@ export default function HalamanDaftarPermintaanStok({
                 kosong={{
                     ilustrasi: true,
                     judul: 'Belum ada permintaan stok.',
-                    ...(tombol ? {} : { aksi: <span>Minta pengelola persediaan mengajukan permintaan.</span> }),
+                    ...(Izin.Kelola ? {} : { aksi: <span>Minta pengelola persediaan mengajukan permintaan.</span> }),
                 }}
             />
         </TataLetakAplikasi>

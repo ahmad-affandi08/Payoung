@@ -153,19 +153,23 @@ export default function HalamanHariLibur({
                         />
                     </div>
                 }
-            >
-                {bolehAjukan && adaDraf ? (
-                    <Tombol onClick={AjukanTahun}>
-                        {bebasTinjauan ? `Terbitkan semua draf ${Tahun}` : `Ajukan semua draf ${Tahun}`}
-                    </Tombol>
-                ) : null}
-                {bisaTinjau && !meninjau ? (
-                    <Tombol onClick={() => AturMeninjau(true)}>Tinjau hari libur {Tahun}</Tombol>
-                ) : null}
-                {bolehAjukan && sunting === null ? (
-                    <Tombol onClick={() => AturSunting('baru')}>Tambah hari libur</Tombol>
-                ) : null}
-            </AksiHalaman>
+                langkah={[
+                    ...(bolehAjukan && adaDraf
+                        ? [
+                              {
+                                  label: bebasTinjauan ? `Terbitkan semua draf ${Tahun}` : `Ajukan semua draf ${Tahun}`,
+                                  saatKlik: AjukanTahun,
+                              },
+                          ]
+                        : []),
+                    ...(bisaTinjau && !meninjau
+                        ? [{ label: `Tinjau hari libur ${Tahun}`, saatKlik: () => AturMeninjau(true) }]
+                        : []),
+                    ...(bolehAjukan && sunting === null
+                        ? [{ label: 'Tambah hari libur', saatKlik: () => AturSunting('baru') }]
+                        : []),
+                ]}
+            />
 
             {sunting !== null ? (
                 <FormHariLibur

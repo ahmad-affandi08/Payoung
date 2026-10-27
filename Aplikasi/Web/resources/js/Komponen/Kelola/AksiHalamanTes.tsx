@@ -166,4 +166,81 @@ describe('Baris aksi di halaman daftar', () => {
 
         expect(pelanggar).toEqual([]);
     });
+    it('halaman bertabel tidak menumpuk dua tombol atau lebih sebagai anak AksiHalaman (D-228)', () => {
+        // Anak AksiHalaman di HP dipindahkan apa adanya ke baris Filter bilah alat tabel. Dua tombol atau lebih membuat
+        // barisnya sesak (dulu bahkan terpotong di kiri layar). Aksi utama masuk `utama`/`langkah`, sisanya `lainnya`
+        // supaya di HP jadi menu "Lainnya".
+        const pelanggar: string[] = [];
+
+        for (const jalur of BerkasBackOffice()) {
+            const isi = readFileSync(jalur, 'utf8');
+
+            if (!isi.includes('<TabelData')) {
+                continue;
+            }
+
+            let dari = 0;
+
+            for (;;) {
+                const awal = isi.indexOf('<AksiHalaman', dari);
+
+                if (awal === -1) {
+                    break;
+                }
+
+                // Akhir tag pembuka: ">" pertama di luar kurung kurawal (atribut bisa memuat JSX dan panah fungsi).
+                let kedalaman = 0;
+                let akhirTag = awal + '<AksiHalaman'.length;
+
+                for (; akhirTag < isi.length; akhirTag += 1) {
+                    const huruf = isi[akhirTag];
+
+                    if (huruf === '{') {
+                        kedalaman += 1;
+                    } else if (huruf === '}') {
+                        kedalaman -= 1;
+                    } else if (huruf === '>' && kedalaman === 0) {
+                        break;
+                    }
+                }
+
+                dari = akhirTag;
+
+                if (isi[akhirTag - 1] === '/') {
+                    continue;
+                }
+
+                const tutup = isi.indexOf('</AksiHalaman>', akhirTag);
+                let anak = isi.slice(akhirTag + 1, tutup);
+                const variabel = /^\s*\{(\w+)\}\s*$/.exec(anak)?.[1];
+
+                if (variabel !== undefined) {
+                    // Definisi `const x = ...;` sampai titik koma di luar tanda kurung.
+                    const mulai = isi.indexOf(`const ${variabel}`);
+                    let dalam = 0;
+                    let selesai = mulai;
+
+                    for (; selesai < isi.length; selesai += 1) {
+                        const huruf = isi[selesai];
+
+                        if (huruf === '(' || huruf === '{' || huruf === '[') {
+                            dalam += 1;
+                        } else if (huruf === ')' || huruf === '}' || huruf === ']') {
+                            dalam -= 1;
+                        } else if (huruf === ';' && dalam === 0) {
+                            break;
+                        }
+                    }
+
+                    anak = mulai === -1 ? '' : isi.slice(mulai, selesai);
+                }
+
+                if ((anak.match(/<(?:Tombol|Button|TombolBuat)\b/g) ?? []).length >= 2) {
+                    pelanggar.push(Ringkas(jalur));
+                }
+            }
+        }
+
+        expect(pelanggar).toEqual([]);
+    });
 });
