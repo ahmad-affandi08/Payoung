@@ -80,6 +80,8 @@ export type BarisAbsensi = {
     UuidKaryawan: string | null;
     NamaKaryawan: string | null;
     NamaOutlet: string | null;
+    /** Tanggal kalender masuk (waktu outlet). Beda dari `TanggalBisnis` bila masuk sebelum jam tutup buku outlet. */
+    TanggalMasuk: string;
     JamMasuk: string;
     JamKeluar: string | null;
     KeluarBeda: boolean;

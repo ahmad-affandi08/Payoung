@@ -56,7 +56,13 @@ it('mencatat absensi yang terlewat (Manual) dengan jam waktu outlet, termasuk sh
 
     $this->getJson('/kelola/karyawan/absensi')->assertOk()
         ->assertJsonPath('Data.0.Sumber', 'Manual')->assertJsonPath('Data.0.Dikoreksi', true)
-        ->assertJsonPath('Data.0.JamMasuk', '20:00')->assertJsonPath('Data.0.JamKeluar', '02:30')->assertJsonPath('Data.0.KeluarBeda', true);
+        ->assertJsonPath('Data.0.JamMasuk', '20:00')->assertJsonPath('Data.0.JamKeluar', '02:30')->assertJsonPath('Data.0.KeluarBeda', true)
+        ->assertJsonPath('Data.0.TanggalMasuk', '2026-09-30');
+
+    // Masuk sebelum jam tutup buku dihitung ke hari kerja sebelumnya: tanggal kalender masuk tetap terlihat.
+    Absensi::query()->update(['TanggalBisnis' => '2026-09-29']);
+    $this->getJson('/kelola/karyawan/absensi')->assertOk()
+        ->assertJsonPath('Data.0.TanggalBisnis', '2026-09-29')->assertJsonPath('Data.0.TanggalMasuk', '2026-09-30');
 });
 
 it('koreksi jam absensi kasir: nilai lama di audit. Alasan wajib. Keluar sebelum masuk, masa depan, dan tumpang tindih ditolak', function (): void {

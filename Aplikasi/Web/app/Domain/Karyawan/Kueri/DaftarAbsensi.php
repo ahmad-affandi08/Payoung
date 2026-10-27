@@ -110,6 +110,8 @@ final class DaftarAbsensi
                 'UuidKaryawan' => $k?->Uuid,
                 'NamaKaryawan' => $k?->Nama,
                 'NamaOutlet' => $namaOutlet[$a->IdOutlet] ?? null,
+                // Tanggal kalender (waktu outlet) saat masuk. Beda dari TanggalBisnis bila masuk sebelum JamTutupBuku.
+                'TanggalMasuk' => $masuk->toDateString(),
                 'JamMasuk' => $masuk->format('H:i'),
                 'JamKeluar' => $keluar?->format('H:i'),
                 'KeluarBeda' => $keluar !== null && $keluar->toDateString() !== $masuk->toDateString(),

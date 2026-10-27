@@ -18,6 +18,7 @@ function BarisUji(ubah: Partial<BarisAbsensi> = {}): BarisAbsensi {
         UuidKaryawan: Karyawan.Uuid,
         NamaKaryawan: Karyawan.Nama,
         NamaOutlet: Outlet.Nama,
+        TanggalMasuk: '2026-09-30',
         JamMasuk: '20:00',
         JamKeluar: '02:30',
         KeluarBeda: true,

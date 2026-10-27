@@ -137,6 +137,7 @@ describe('Halaman karyawan (F-18)', () => {
             UuidKaryawan: baris.Uuid,
             NamaKaryawan: baris.Nama,
             NamaOutlet: Outlet.Nama,
+            TanggalMasuk: '2026-09-25',
             JamMasuk: '09:40',
             JamKeluar: '17:05',
             KeluarBeda: false,
@@ -162,7 +163,10 @@ describe('Halaman karyawan (F-18)', () => {
         };
         RenderUji(
             <HalamanAbsensi
-                Absensi={BuatHasilTabel([absensi])}
+                Absensi={BuatHasilTabel([
+                    absensi,
+                    { ...absensi, Uuid: '01J9ABS0000000000000000002', TanggalMasuk: '2026-09-26', JamMasuk: '01:12' },
+                ])}
                 OpsiKaryawan={[]}
                 OpsiOutlet={[Outlet]}
                 BolehKoreksi={false}
@@ -170,6 +174,9 @@ describe('Halaman karyawan (F-18)', () => {
         );
         expect(screen.queryByRole('button', { name: 'Catat absensi terlewat' })).toBeNull();
         expect(screen.getAllByText('Terlambat 40 menit').length).toBeGreaterThan(0);
+        // Masuk dini hari (sebelum jam tutup buku) dihitung hari kerja sebelumnya: tanggal kalender masuk tetap terlihat.
+        expect(screen.getAllByText(/dihitung hari kerja ini/).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/Masuk 26 Sep/).length).toBeGreaterThan(0);
         expect(screen.getAllByRole('link', { name: 'Swafoto masuk' })[0]?.getAttribute('href')).toBe(
             '/kelola/karyawan/absensi/01J9ABS0000000000000000001/swafoto/masuk',
         );

@@ -73,7 +73,17 @@ const kolom: KolomTabel<BarisAbsensi>[] = [
         accessorKey: 'TanggalBisnis',
         header: 'Tanggal',
         meta: { label: 'Tanggal', prioritas: 'penting', kelasSel: 'whitespace-nowrap' },
-        cell: ({ row }) => FormatTanggal(row.original.TanggalBisnis),
+        cell: ({ row: { original: a } }) => (
+            <span className="flex flex-col">
+                <span>{FormatTanggal(a.TanggalBisnis)}</span>
+                {/* Masuk dini hari (sebelum jam tutup buku outlet) dihitung ke hari kerja sebelumnya. */}
+                {a.TanggalMasuk !== a.TanggalBisnis ? (
+                    <span className="text-keterangan text-teks-sekunder">
+                        Masuk {FormatTanggal(a.TanggalMasuk)}, dihitung hari kerja ini
+                    </span>
+                ) : null}
+            </span>
+        ),
     },
     {
         id: 'Karyawan',
