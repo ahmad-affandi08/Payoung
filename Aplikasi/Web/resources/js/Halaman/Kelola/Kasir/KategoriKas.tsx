@@ -133,12 +133,16 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
                 di luar penjualan. Setiap kategori dijurnal ke akun yang dipilih. Kategori yang sudah dipakai cukup
                 dinonaktifkan, tidak dihapus.
             </p>
-            <AksiHalaman>
-                <Tombol varian="sekunder" memproses={memprosesBiaya} onClick={SiapkanBiayaUmum}>
-                    Tambah biaya umum (listrik, transport, dll.)
-                </Tombol>
-                <Button onClick={() => Buka(null)}>Tambah kategori kas</Button>
-            </AksiHalaman>
+            <AksiHalaman
+                utama={<Button onClick={() => Buka(null)}>Tambah kategori kas</Button>}
+                lainnya={[
+                    {
+                        label: memprosesBiaya ? 'Memproses…' : 'Tambah biaya umum (listrik, transport, dll.)',
+                        saatKlik: SiapkanBiayaUmum,
+                        nonaktif: memprosesBiaya,
+                    },
+                ]}
+            />
 
             <TabelData
                 id="kasir-kategori-kas"

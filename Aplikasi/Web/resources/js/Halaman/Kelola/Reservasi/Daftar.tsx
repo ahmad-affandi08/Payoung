@@ -524,20 +524,18 @@ export default function HalamanDaftarReservasi(props: PropsDaftarReservasi) {
                     Belum ada layanan yang bisa direservasi. Isi &quot;Durasi layanan&quot; pada produk berjenis Jasa.
                 </p>
             ) : null}
-            <AksiHalaman>
-                {
-                    <div className="flex flex-wrap gap-2">
-                        {Izin.Pengaturan ? (
-                            <Tombol varian="sekunder" onClick={() => AturDialog({ jenis: 'pengaturan' })}>
-                                Pengaturan
-                            </Tombol>
-                        ) : null}
-                        <Tombol onClick={() => AturDialog({ jenis: 'catat' })} disabled={layanan.length === 0}>
-                            Catat reservasi
-                        </Tombol>
-                    </div>
+            <AksiHalaman
+                utama={
+                    <Tombol onClick={() => AturDialog({ jenis: 'catat' })} disabled={layanan.length === 0}>
+                        Catat reservasi
+                    </Tombol>
                 }
-            </AksiHalaman>
+                lainnya={
+                    Izin.Pengaturan
+                        ? [{ label: 'Pengaturan', saatKlik: () => AturDialog({ jenis: 'pengaturan' }) }]
+                        : []
+                }
+            />
             <TabelData
                 id="reservasi"
                 label="Daftar reservasi"

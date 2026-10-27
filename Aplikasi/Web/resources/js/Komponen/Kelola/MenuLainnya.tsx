@@ -31,12 +31,22 @@ export default function MenuLainnya({ butir, label = 'Aksi lainnya' }: { butir: 
             <DropdownMenuContent align="end" className="min-w-48">
                 {butir.map((satu) =>
                     satu.href === undefined ? (
-                        <DropdownMenuItem key={satu.label} onSelect={() => satu.saatKlik?.()} className="min-h-10">
+                        <DropdownMenuItem
+                            key={satu.label}
+                            disabled={satu.nonaktif === true}
+                            onSelect={() => satu.saatKlik?.()}
+                            className="min-h-10"
+                        >
                             {satu.label}
                         </DropdownMenuItem>
-                    ) : satu.unduh === true ? (
+                    ) : satu.unduh === true || satu.tabBaru === true ? (
                         <DropdownMenuItem key={satu.label} asChild className="min-h-10">
-                            <a href={satu.href}>{satu.label}</a>
+                            <a
+                                href={satu.href}
+                                {...(satu.tabBaru === true ? { target: '_blank', rel: 'noreferrer' } : {})}
+                            >
+                                {satu.label}
+                            </a>
                         </DropdownMenuItem>
                     ) : (
                         <DropdownMenuItem key={satu.label} asChild className="min-h-10">

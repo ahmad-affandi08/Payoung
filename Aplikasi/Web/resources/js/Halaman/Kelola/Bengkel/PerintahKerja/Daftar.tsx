@@ -62,14 +62,15 @@ export default function HalamanDaftarPerintahKerja({
 
     return (
         <TataLetakAplikasi judul="Perintah kerja bengkel">
-            <AksiHalaman keterangan="Catat keluhan, susun estimasi jasa & sparepart, minta persetujuan pelanggan lewat WhatsApp, lalu tagih di kasir.">
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href="/kelola/bengkel/kendaraan">Kendaraan pelanggan</Link>
-                </Button>
-                <Button asChild className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatPerintahKerja}/buat`}>Buat perintah kerja</Link>
-                </Button>
-            </AksiHalaman>
+            <AksiHalaman
+                keterangan="Catat keluhan, susun estimasi jasa & sparepart, minta persetujuan pelanggan lewat WhatsApp, lalu tagih di kasir."
+                utama={
+                    <Button asChild className="h-8 pointer-coarse:h-11">
+                        <Link href={`${AlamatPerintahKerja}/buat`}>Buat perintah kerja</Link>
+                    </Button>
+                }
+                lainnya={[{ label: 'Kendaraan pelanggan', href: '/kelola/bengkel/kendaraan' }]}
+            />
             <TabelData
                 id="bengkel-perintah-kerja"
                 label="Daftar perintah kerja"

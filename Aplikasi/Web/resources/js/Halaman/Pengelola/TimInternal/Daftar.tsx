@@ -152,25 +152,17 @@ export default function Daftar({ Anggota, Undangan, Peran, BatasanIp = null }: P
                     Alamat IP Anda saat ini <span className="font-mono">{BatasanIp.IpAnda}</span>.
                 </p>
             ) : null}
-            <AksiHalaman>
-                {PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang) || BatasanIp !== null ? (
-                    <div className="flex flex-wrap gap-2">
-                        {BatasanIp !== null ? (
-                            <Tombol varian="sekunder" onClick={() => AturFormTerbuka('ip')}>
-                                Pembatasan IP
-                            </Tombol>
-                        ) : null}
-                        {PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang) ? (
-                            <>
-                                <Tombol varian="sekunder" onClick={() => AturFormTerbuka('undang')}>
-                                    Undang lewat email
-                                </Tombol>
-                                <Tombol onClick={() => AturFormTerbuka('tambah')}>Tambah anggota</Tombol>
-                            </>
-                        ) : null}
-                    </div>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang)
+                    ? { utama: <Tombol onClick={() => AturFormTerbuka('tambah')}>Tambah anggota</Tombol> }
+                    : {})}
+                lainnya={[
+                    ...(BatasanIp !== null ? [{ label: 'Pembatasan IP', saatKlik: () => AturFormTerbuka('ip') }] : []),
+                    ...(PunyaIzin(pengguna, IzinPengelola.TimAnggotaUndang)
+                        ? [{ label: 'Undang lewat email', saatKlik: () => AturFormTerbuka('undang') }]
+                        : []),
+                ]}
+            />
             <TabelData
                 id="pengelola-tim-internal"
                 label="Daftar anggota tim internal"

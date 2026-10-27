@@ -10,6 +10,10 @@ export type ItemAksiHalaman = {
     href?: string;
     /** Dengan `href`: tautan biasa (unduhan berkas), bukan navigasi Inertia. */
     unduh?: boolean;
+    /** Buka tautan di tab baru (tautan biasa, bukan Inertia). */
+    tabBaru?: boolean;
+    /** Aksi sedang berjalan atau belum boleh dipakai: butir tidak bisa dipilih. */
+    nonaktif?: boolean;
     saatKlik?: () => void;
 };
 
@@ -34,6 +38,8 @@ function SamaIsi(a: ItemAksiHalaman[], b: ItemAksiHalaman[]): boolean {
                 butir.label === lain.label &&
                 butir.href === lain.href &&
                 butir.unduh === lain.unduh &&
+                butir.tabBaru === lain.tabBaru &&
+                butir.nonaktif === lain.nonaktif &&
                 butir.saatKlik === lain.saatKlik
             );
         })

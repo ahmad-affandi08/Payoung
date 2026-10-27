@@ -11,7 +11,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
@@ -133,18 +132,18 @@ export default function HalamanInsiden(props: PropsInsiden) {
                 . Insiden yang berdampak di atas {String(props.AmbangWajibUmumPersen)}% tenant aktif wajib diumumkan
                 dalam 15 menit, jadi sistem langsung mengumumkannya.
             </p>
-            <AksiHalaman>
-                <Button asChild variant="outline">
-                    <a href="/status" target="_blank" rel="noreferrer">
-                        Lihat halaman status
-                    </a>
-                </Button>
-                {bolehKelola ? (
-                    <Tombol memproses={memproses} onClick={() => AturDialog({ jenis: 'buka' })}>
-                        Catat insiden
-                    </Tombol>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(bolehKelola
+                    ? {
+                          utama: (
+                              <Tombol memproses={memproses} onClick={() => AturDialog({ jenis: 'buka' })}>
+                                  Catat insiden
+                              </Tombol>
+                          ),
+                      }
+                    : {})}
+                lainnya={[{ label: 'Lihat halaman status', href: '/status', tabBaru: true }]}
+            />
             <TabelData
                 id="pengelola-insiden"
                 label="Insiden layanan"

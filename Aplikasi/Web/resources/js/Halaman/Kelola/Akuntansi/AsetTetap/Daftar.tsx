@@ -1,7 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import Tombol from '@/Komponen/Formulir/Tombol';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
@@ -143,14 +142,20 @@ export default function HalamanDaftarAsetTetap({ Aset, OpsiKelompok, OpsiStatus,
                 kelompok harta pajak.
             </p>
             {Izin.Kelola ? (
-                <AksiHalaman>
-                    <Tombol varian="sekunder" onClick={Susutkan} memproses={memproses}>
-                        Susutkan sampai bulan ini
-                    </Tombol>
-                    <Button asChild>
-                        <Link href={`${alamat}/buat`}>Catat aset</Link>
-                    </Button>
-                </AksiHalaman>
+                <AksiHalaman
+                    utama={
+                        <Button asChild>
+                            <Link href={`${alamat}/buat`}>Catat aset</Link>
+                        </Button>
+                    }
+                    lainnya={[
+                        {
+                            label: memproses ? 'Memproses…' : 'Susutkan sampai bulan ini',
+                            saatKlik: Susutkan,
+                            nonaktif: memproses,
+                        },
+                    ]}
+                />
             ) : (
                 <PesanHanyaLihat izin="akuntansi.kelola" objek="aset tetap" />
             )}

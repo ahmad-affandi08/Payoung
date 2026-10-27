@@ -10,7 +10,6 @@ import type { DefinisiSaring, HasilTabel, KolomTabel } from '@/Komponen/TabelDat
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
-import { Button } from '@/Komponen/Ui/button';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -136,14 +135,13 @@ export default function HalamanDaftarGiro({ Giro, OpsiStatus, OpsiArah, OpsiAkun
             judul="Giro & cek mundur"
             jejak={[{ label: 'Kas & bank', href: '/kelola/akuntansi/kas-bank' }]}
         >
-            <AksiHalaman keterangan="Giro dicatat saat menerima pelunasan piutang atau membayar hutang dengan cara bayar giro.">
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href="/kelola/piutang/pelunasan/buat">Terima pelunasan</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href="/kelola/pembelian/pembayaran/buat">Bayar hutang</Link>
-                </Button>
-            </AksiHalaman>
+            <AksiHalaman
+                keterangan="Giro dicatat saat menerima pelunasan piutang atau membayar hutang dengan cara bayar giro."
+                lainnya={[
+                    { label: 'Terima pelunasan', href: '/kelola/piutang/pelunasan/buat' },
+                    { label: 'Bayar hutang', href: '/kelola/pembelian/pembayaran/buat' },
+                ]}
+            />
             <TabelData
                 id="akuntansi-giro"
                 label="Daftar giro"

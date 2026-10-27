@@ -101,19 +101,22 @@ export default function HalamanFlagFitur({ Aturan, OpsiKunci, OpsiPaket, OpsiTen
                 Urutan: kill switch (Global mati) mengalahkan semua aturan, lalu aturan tenant, paket, persentase, dan
                 Global hidup. Kunci tanpa aturan dianggap hidup.
             </p>
-            <AksiHalaman>
-                {bolehKelola ? (
-                    <div className="flex flex-wrap gap-2">
-                        <Tombol
-                            varian="sekunder"
-                            onClick={() => AturDialog({ jenis: 'simpan', awal: { Cakupan: 'Global', Nilai: false } })}
-                        >
-                            Kill switch
-                        </Tombol>
-                        <Tombol onClick={() => AturDialog({ jenis: 'simpan', awal: null })}>Tambah aturan</Tombol>
-                    </div>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(bolehKelola
+                    ? {
+                          utama: (
+                              <Tombol onClick={() => AturDialog({ jenis: 'simpan', awal: null })}>Tambah aturan</Tombol>
+                          ),
+                          lainnya: [
+                              {
+                                  label: 'Kill switch',
+                                  saatKlik: () =>
+                                      AturDialog({ jenis: 'simpan', awal: { Cakupan: 'Global', Nilai: false } }),
+                              },
+                          ],
+                      }
+                    : {})}
+            />
             <TabelData
                 id="pengelola-flag-fitur"
                 label="Aturan flag fitur"

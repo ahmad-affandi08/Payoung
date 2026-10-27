@@ -82,16 +82,18 @@ export default function HalamanDokumenKonsinyasi({ Dokumen, OpsiJenis, OpsiPemas
             izin={Izin}
             objek="titipan"
         >
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={AlamatKonsinyasi}>Penitip & hutang</Link>
-                </Button>
-                {Izin.Kelola ? (
-                    <Button asChild className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatKonsinyasi}/buat?jenis=Masuk`}>Catat titipan masuk</Link>
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                {...(Izin.Kelola
+                    ? {
+                          utama: (
+                              <Button asChild className="h-8 pointer-coarse:h-11">
+                                  <Link href={`${AlamatKonsinyasi}/buat?jenis=Masuk`}>Catat titipan masuk</Link>
+                              </Button>
+                          ),
+                      }
+                    : {})}
+                lainnya={[{ label: 'Penitip & hutang', href: AlamatKonsinyasi }]}
+            />
             <TabelData
                 id="pembelian-konsinyasi-dokumen"
                 label="Riwayat dokumen titipan"

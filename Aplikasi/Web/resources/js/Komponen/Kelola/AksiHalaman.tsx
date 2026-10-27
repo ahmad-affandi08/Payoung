@@ -30,6 +30,7 @@ function TombolSekunder({ butir }: { butir: ItemAksiHalaman }) {
                 type="button"
                 variant="outline"
                 className="h-8 pointer-coarse:h-11"
+                disabled={butir.nonaktif === true}
                 onClick={() => butir.saatKlik?.()}
             >
                 {butir.label}
@@ -39,8 +40,10 @@ function TombolSekunder({ butir }: { butir: ItemAksiHalaman }) {
 
     return (
         <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-            {butir.unduh === true ? (
-                <a href={butir.href}>{butir.label}</a>
+            {butir.unduh === true || butir.tabBaru === true ? (
+                <a href={butir.href} {...(butir.tabBaru === true ? { target: '_blank', rel: 'noreferrer' } : {})}>
+                    {butir.label}
+                </a>
             ) : (
                 <Link href={butir.href}>{butir.label}</Link>
             )}
@@ -78,7 +81,10 @@ export default function AksiHalaman({ keterangan, utama, lainnya = [], children 
         terbaru.current = lainnya;
     });
     const kunci = lainnya
-        .map((b) => `${b.label}|${b.href ?? ''}|${b.unduh === true ? '1' : '0'}|${b.saatKlik ? '1' : '0'}`)
+        .map(
+            (b) =>
+                `${b.label}|${b.href ?? ''}|${b.unduh === true ? '1' : '0'}|${b.tabBaru === true ? '1' : '0'}|${b.nonaktif === true ? '1' : '0'}|${b.saatKlik ? '1' : '0'}`,
+        )
         .join('~');
 
     useEffect(() => {

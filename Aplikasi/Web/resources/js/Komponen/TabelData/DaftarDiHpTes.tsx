@@ -144,6 +144,40 @@ describe('Daftar di HP (D-228)', () => {
     });
 });
 
+describe('Aksi sekunder: tab baru dan nonaktif (D-228)', () => {
+    function HalamanAksi() {
+        return (
+            <PenyediaAksiHalaman>
+                <AksiHalaman
+                    lainnya={[
+                        { label: 'Lihat status', href: '/status', tabBaru: true },
+                        { label: 'Susutkan', saatKlik: () => undefined, nonaktif: true },
+                    ]}
+                />
+            </PenyediaAksiHalaman>
+        );
+    }
+
+    it('layar lebar: tautan tab baru memakai target _blank dan aksi nonaktif tidak bisa ditekan', () => {
+        AturLebar('desktop');
+        render(<HalamanAksi />);
+
+        const tautan = screen.getByRole('link', { name: 'Lihat status' });
+        expect(tautan.getAttribute('target')).toBe('_blank');
+        expect(tautan.getAttribute('rel')).toBe('noreferrer');
+        expect((screen.getByRole('button', { name: 'Susutkan' }) as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('HP: butir yang sama ada di menu Lainnya, tautan tab baru tetap target _blank', () => {
+        AturLebar('hp');
+        render(<HalamanAksi />);
+
+        BukaMenu(screen.getByRole('button', { name: 'Aksi lainnya' }));
+        expect(screen.getByRole('menuitem', { name: 'Lihat status' }).getAttribute('target')).toBe('_blank');
+        expect(screen.getByRole('menuitem', { name: 'Susutkan' }).getAttribute('aria-disabled')).toBe('true');
+    });
+});
+
 describe('Jejak halaman di HP (D-228)', () => {
     it('jejak tanpa tautan disembunyikan di HP, jejak yang punya jalan kembali tetap tampil', () => {
         const bagian = render(<JejakHalaman jejak={[{ label: 'Kopi Nusantara' }, { label: 'Produk' }]} />);
