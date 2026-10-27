@@ -15,7 +15,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -122,40 +121,30 @@ export default function HalamanDetailPesananGrosir({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${alamat}/${Pesanan.Uuid}/ubah`}>Ubah draf</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Konfirmasi ? (
-                    <Button onClick={Konfirmasi} disabled={memproses} className="h-8 pointer-coarse:h-11">
-                        Konfirmasi pesanan
-                    </Button>
-                ) : null}
-                {Tindakan.Kirim ? (
-                    <Button onClick={() => AturDialog('kirim')} className="h-8 pointer-coarse:h-11">
-                        Kirim barang
-                    </Button>
-                ) : null}
-                {/* Daftar ambil barang hanya berguna selama masih ada sisa yang belum dikirim. */}
-                {Tindakan.Kirim ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <a href={`${alamat}/${Pesanan.Uuid}/ambil-barang`} target="_blank" rel="noreferrer">
-                            Cetak daftar ambil barang
-                        </a>
-                    </Button>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturDialog('batalkan')}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Batalkan
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.Konfirmasi
+                        ? [{ label: 'Konfirmasi pesanan', saatKlik: Konfirmasi, nonaktif: memproses }]
+                        : []),
+                    ...(Tindakan.Kirim ? [{ label: 'Kirim barang', saatKlik: () => AturDialog('kirim') }] : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${Pesanan.Uuid}/ubah` }] : []),
+                    // Daftar ambil barang hanya berguna selama masih ada sisa yang belum dikirim.
+                    ...(Tindakan.Kirim
+                        ? [
+                              {
+                                  label: 'Cetak daftar ambil barang',
+                                  href: `${alamat}/${Pesanan.Uuid}/ambil-barang`,
+                                  tabBaru: true,
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan', saatKlik: () => AturDialog('batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{Pesanan.NamaPelanggan}</KeteranganGrosir>

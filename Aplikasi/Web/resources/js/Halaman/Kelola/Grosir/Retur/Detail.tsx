@@ -15,7 +15,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
@@ -112,22 +111,18 @@ export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <a href={`${alamat}/${Retur.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        {Retur.MengurangiPiutang ? 'Cetak nota kredit' : 'Cetak tanda terima retur'}
-                    </a>
-                </Button>
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Batalkan retur
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                lainnya={[
+                    {
+                        label: Retur.MengurangiPiutang ? 'Cetak nota kredit' : 'Cetak tanda terima retur',
+                        href: `${alamat}/${Retur.Uuid}/cetak`,
+                        tabBaru: true,
+                    },
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan retur', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{Retur.NamaPelanggan}</KeteranganGrosir>

@@ -8,7 +8,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -65,32 +64,22 @@ export default function HalamanDetailInvoiceBerulang({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${alamat}/${t.Uuid}/ubah`}>Ubah templat</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Jeda ? (
-                    <Tombol varian="sekunder" memproses={memproses === 'jeda'} onClick={() => Ubah('jeda')}>
-                        Jeda
-                    </Tombol>
-                ) : null}
-                {Tindakan.Lanjut ? (
-                    <Tombol memproses={memproses === 'lanjut'} onClick={() => Ubah('lanjut')}>
-                        Lanjutkan
-                    </Tombol>
-                ) : null}
-                {Tindakan.Hentikan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturHentikan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Hentikan
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.Lanjut
+                        ? [{ label: 'Lanjutkan', saatKlik: () => Ubah('lanjut'), nonaktif: memproses === 'lanjut' }]
+                        : []),
+                    ...(Tindakan.Jeda
+                        ? [{ label: 'Jeda', saatKlik: () => Ubah('jeda'), nonaktif: memproses === 'jeda' }]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah templat', href: `${alamat}/${t.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Hentikan
+                        ? [{ label: 'Hentikan', saatKlik: () => AturHentikan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{t.NamaPelanggan}</KeteranganGrosir>

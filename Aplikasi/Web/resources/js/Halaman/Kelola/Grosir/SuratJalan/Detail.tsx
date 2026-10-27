@@ -16,7 +16,6 @@ import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
@@ -118,32 +117,22 @@ export default function HalamanDetailSuratJalan({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <a href={`${alamat}/${SuratJalan.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        Cetak surat jalan
-                    </a>
-                </Button>
-                {Izin.Kelola && SuratJalan.NomorFaktur === null && SuratJalan.Status === 'Diposting' ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatGrosir}/faktur/buat?surat-jalan=${SuratJalan.Uuid}`}>Buat faktur</Link>
-                    </Button>
-                ) : null}
-                {bolehRetur ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatGrosir}/retur/buat/${SuratJalan.Uuid}`}>Buat retur</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Batalkan surat jalan
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={
+                    Izin.Kelola && SuratJalan.NomorFaktur === null && SuratJalan.Status === 'Diposting'
+                        ? [{ label: 'Buat faktur', href: `${AlamatGrosir}/faktur/buat?surat-jalan=${SuratJalan.Uuid}` }]
+                        : []
+                }
+                lainnya={[
+                    { label: 'Cetak surat jalan', href: `${alamat}/${SuratJalan.Uuid}/cetak`, tabBaru: true },
+                    ...(bolehRetur
+                        ? [{ label: 'Buat retur', href: `${AlamatGrosir}/retur/buat/${SuratJalan.Uuid}` }]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan surat jalan', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{SuratJalan.NamaPelanggan}</KeteranganGrosir>

@@ -20,7 +20,6 @@ import DialogPembayaranInvoice from '@/Komponen/Invoice/DialogPembayaranInvoice'
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
-import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
@@ -114,48 +113,50 @@ export default function HalamanDetailInvoice({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatInvoice}/${invoice.Uuid}/ubah`}>Ubah draf</Link>
-                    </Button>
-                ) : null}
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <a href={`${AlamatInvoice}/${invoice.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        Cetak / PDF
-                    </a>
-                </Button>
-                {invoice.TautanPublik !== null ? (
-                    <Button variant="outline" onClick={SalinTautan} className="h-8 pointer-coarse:h-11">
-                        {tersalin ? 'Tautan tersalin' : 'Salin tautan'}
-                    </Button>
-                ) : null}
-                {Tindakan.Kirim ? (
-                    <Tombol varian="sekunder" memproses={memproses === 'Invoice'} onClick={() => Kirim('Invoice')}>
-                        Kirim lewat WhatsApp
-                    </Tombol>
-                ) : null}
-                {Tindakan.Ingatkan ? (
-                    <Tombol varian="sekunder" memproses={memproses === 'Pengingat'} onClick={() => Kirim('Pengingat')}>
-                        Kirim pengingat
-                    </Tombol>
-                ) : null}
-                {Tindakan.CatatPembayaran ? <Tombol onClick={() => AturBayar(true)}>Catat pembayaran</Tombol> : null}
-                {Tindakan.Terbitkan ? (
-                    <Tombol memproses={memproses === 'Terbit'} onClick={Terbitkan}>
-                        Terbitkan invoice
-                    </Tombol>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        {invoice.Status === 'Draf' ? 'Batalkan draf' : 'Batalkan invoice'}
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.Terbitkan
+                        ? [{ label: 'Terbitkan invoice', saatKlik: Terbitkan, nonaktif: memproses === 'Terbit' }]
+                        : []),
+                    ...(Tindakan.CatatPembayaran
+                        ? [{ label: 'Catat pembayaran', saatKlik: () => AturBayar(true) }]
+                        : []),
+                    ...(Tindakan.Kirim
+                        ? [
+                              {
+                                  label: 'Kirim lewat WhatsApp',
+                                  saatKlik: () => Kirim('Invoice'),
+                                  nonaktif: memproses === 'Invoice',
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Ingatkan
+                        ? [
+                              {
+                                  label: 'Kirim pengingat',
+                                  saatKlik: () => Kirim('Pengingat'),
+                                  nonaktif: memproses === 'Pengingat',
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${AlamatInvoice}/${invoice.Uuid}/ubah` }] : []),
+                    { label: 'Cetak / PDF', href: `${AlamatInvoice}/${invoice.Uuid}/cetak`, tabBaru: true },
+                    ...(invoice.TautanPublik !== null
+                        ? [{ label: tersalin ? 'Tautan tersalin' : 'Salin tautan', saatKlik: SalinTautan }]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [
+                              {
+                                  label: invoice.Status === 'Draf' ? 'Batalkan draf' : 'Batalkan invoice',
+                                  saatKlik: () => AturBatalkan(true),
+                                  bahaya: true,
+                              },
+                          ]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{invoice.NamaPelanggan}</KeteranganGrosir>

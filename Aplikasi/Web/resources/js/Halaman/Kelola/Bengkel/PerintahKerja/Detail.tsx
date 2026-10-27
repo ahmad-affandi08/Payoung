@@ -13,7 +13,6 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -417,40 +416,30 @@ export default function HalamanDetailPerintahKerja({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPerintahKerja}/${pk.Uuid}/ubah`}>Ubah estimasi</Link>
-                    </Button>
-                ) : null}
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <a href={`${AlamatPerintahKerja}/${pk.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        Cetak
-                    </a>
-                </Button>
-                {Tindakan.TujuanStatus.map((s) =>
-                    s.Nilai === 'Dibatalkan' || s.Nilai === 'Selesai' ? (
-                        <Tombol
-                            key={s.Nilai}
-                            varian={s.Nilai === 'Dibatalkan' ? 'bahaya' : 'utama'}
-                            onClick={() =>
-                                AturDialog({ status: s.Nilai, label: LabelAksiStatusBengkel[s.Nilai] ?? s.Label })
-                            }
-                        >
-                            {LabelAksiStatusBengkel[s.Nilai] ?? s.Label}
-                        </Tombol>
-                    ) : (
-                        <Tombol
-                            key={s.Nilai}
-                            varian={s.Nilai === 'Diagnosis' ? 'sekunder' : 'utama'}
-                            memproses={memproses}
-                            onClick={() => UbahStatus(s.Nilai)}
-                        >
-                            {LabelAksiStatusBengkel[s.Nilai] ?? s.Label}
-                        </Tombol>
-                    ),
-                )}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={Tindakan.TujuanStatus.filter((s) => s.Nilai !== 'Dibatalkan')
+                    .sort((a, b) => Number(a.Nilai === 'Diagnosis') - Number(b.Nilai === 'Diagnosis'))
+                    .map((s) => ({
+                        label: LabelAksiStatusBengkel[s.Nilai] ?? s.Label,
+                        saatKlik: () =>
+                            s.Nilai === 'Selesai'
+                                ? AturDialog({ status: s.Nilai, label: LabelAksiStatusBengkel[s.Nilai] ?? s.Label })
+                                : UbahStatus(s.Nilai),
+                        nonaktif: memproses,
+                    }))}
+                lainnya={[
+                    ...(Tindakan.Ubah
+                        ? [{ label: 'Ubah estimasi', href: `${AlamatPerintahKerja}/${pk.Uuid}/ubah` }]
+                        : []),
+                    { label: 'Cetak', href: `${AlamatPerintahKerja}/${pk.Uuid}/cetak`, tabBaru: true },
+                    ...Tindakan.TujuanStatus.filter((s) => s.Nilai === 'Dibatalkan').map((s) => ({
+                        label: LabelAksiStatusBengkel[s.Nilai] ?? s.Label,
+                        saatKlik: () =>
+                            AturDialog({ status: s.Nilai, label: LabelAksiStatusBengkel[s.Nilai] ?? s.Label }),
+                        bahaya: true,
+                    })),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">

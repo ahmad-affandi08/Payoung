@@ -15,7 +15,6 @@ import {
 } from '@/Komponen/Grosir/BagianDokumenGrosir';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
@@ -65,22 +64,14 @@ export default function HalamanDetailFakturGrosir({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <a href={`${alamat}/${Faktur.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        Cetak faktur
-                    </a>
-                </Button>
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Batalkan faktur
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                lainnya={[
+                    { label: 'Cetak faktur', href: `${alamat}/${Faktur.Uuid}/cetak`, tabBaru: true },
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan faktur', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{Faktur.NamaPelanggan}</KeteranganGrosir>

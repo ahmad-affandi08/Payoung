@@ -13,7 +13,6 @@ import PemilihRentangTanggal from '@/Komponen/Tanggal/PemilihRentangTanggal';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -165,21 +164,19 @@ export default function HalamanPenitipKonsinyasi({
             jejak={[{ label: 'Konsinyasi', href: AlamatKonsinyasi }]}
         >
             {Izin.Kelola ? (
-                <AksiHalaman>
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatKonsinyasi}/buat?jenis=Retur&pemasok=${Penitip.Uuid}`}>
-                            Retur ke penitip
-                        </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatKonsinyasi}/buat?jenis=Masuk&pemasok=${Penitip.Uuid}`}>
-                            Catat titipan masuk
-                        </Link>
-                    </Button>
-                    <Tombol onClick={() => AturSetor(true)} disabled={!adaHutang}>
-                        Setor ke penitip
-                    </Tombol>
-                </AksiHalaman>
+                <AksiHalaman
+                    langkah={[{ label: 'Setor ke penitip', saatKlik: () => AturSetor(true), nonaktif: !adaHutang }]}
+                    lainnya={[
+                        {
+                            label: 'Retur ke penitip',
+                            href: `${AlamatKonsinyasi}/buat?jenis=Retur&pemasok=${Penitip.Uuid}`,
+                        },
+                        {
+                            label: 'Catat titipan masuk',
+                            href: `${AlamatKonsinyasi}/buat?jenis=Masuk&pemasok=${Penitip.Uuid}`,
+                        },
+                    ]}
+                />
             ) : null}
 
             <Panel>

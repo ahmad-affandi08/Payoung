@@ -14,6 +14,8 @@ export type ItemAksiHalaman = {
     tabBaru?: boolean;
     /** Aksi sedang berjalan atau belum boleh dipakai: butir tidak bisa dipilih. */
     nonaktif?: boolean;
+    /** Aksi merusak (batalkan, hentikan): teks merah. */
+    bahaya?: boolean;
     saatKlik?: () => void;
 };
 
@@ -40,6 +42,7 @@ function SamaIsi(a: ItemAksiHalaman[], b: ItemAksiHalaman[]): boolean {
                 butir.unduh === lain.unduh &&
                 butir.tabBaru === lain.tabBaru &&
                 butir.nonaktif === lain.nonaktif &&
+                butir.bahaya === lain.bahaya &&
                 butir.saatKlik === lain.saatKlik
             );
         })

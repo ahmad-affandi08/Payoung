@@ -99,14 +99,12 @@ export default function HalamanDetailAsetTetap({ Aset, Jadwal, OpsiAkun, Izin }:
     return (
         <TataLetakAplikasi judul={`${Aset.Nomor} ${Aset.Nama}`} jejak={[{ label: 'Aset tetap', href: alamat }]}>
             {Izin.Kelola && aktif ? (
-                <AksiHalaman>
-                    {Aset.BisaDibatalkan ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('batal')}>
-                            Batalkan aset
-                        </Tombol>
-                    ) : null}
-                    <Tombol onClick={() => AturDialog('lepas')}>Jual atau hapus aset</Tombol>
-                </AksiHalaman>
+                <AksiHalaman
+                    langkah={[{ label: 'Jual atau hapus aset', saatKlik: () => AturDialog('lepas') }]}
+                    lainnya={
+                        Aset.BisaDibatalkan ? [{ label: 'Batalkan aset', saatKlik: () => AturDialog('batal') }] : []
+                    }
+                />
             ) : null}
 
             <Panel>

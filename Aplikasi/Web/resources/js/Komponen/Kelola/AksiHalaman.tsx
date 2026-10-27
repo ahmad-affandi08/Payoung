@@ -3,6 +3,7 @@ import { Children, useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 import { Button } from '@/Komponen/Ui/button';
+import { cn } from '@/Komponen/Ui/utils';
 import { useLebarLayar } from '@/Komponen/TabelData/useLebarLayar';
 
 import { useAksiHalaman, type ItemAksiHalaman } from './KonteksAksiHalaman';
@@ -20,6 +21,11 @@ type PropsAksiHalaman = {
      * Aksi sekunder (mis. "Impor dari Excel"). Layar lebar: tombol di samping aksi utama. HP: menu "Lainnya".
      */
     lainnya?: ItemAksiHalaman[];
+    /**
+     * Langkah berikutnya untuk dokumen yang aksinya bergantung status (konfirmasi, kirim, bayar, terbitkan). Urutan =
+     * prioritas: yang pertama jadi aksi utama berwarna, sisanya ikut daftar sekunder di depan `lainnya` (D-228).
+     */
+    langkah?: ItemAksiHalaman[];
     children?: ReactNode;
 };
 
@@ -29,6 +35,38 @@ function TombolSekunder({ butir }: { butir: ItemAksiHalaman }) {
             <Button
                 type="button"
                 variant="outline"
+                className={cn('h-8 pointer-coarse:h-11', butir.bahaya === true && 'text-bahaya')}
+                disabled={butir.nonaktif === true}
+                onClick={() => butir.saatKlik?.()}
+            >
+                {butir.label}
+            </Button>
+        );
+    }
+
+    return (
+        <Button
+            asChild
+            variant="outline"
+            className={cn('h-8 pointer-coarse:h-11', butir.bahaya === true && 'text-bahaya')}
+        >
+            {butir.unduh === true || butir.tabBaru === true ? (
+                <a href={butir.href} {...(butir.tabBaru === true ? { target: '_blank', rel: 'noreferrer' } : {})}>
+                    {butir.label}
+                </a>
+            ) : (
+                <Link href={butir.href}>{butir.label}</Link>
+            )}
+        </Button>
+    );
+}
+
+/** Aksi utama berwarna yang dibuat dari satu butir `langkah`. */
+function TombolUtamaAksi({ butir }: { butir: ItemAksiHalaman }) {
+    if (butir.href === undefined) {
+        return (
+            <Button
+                type="button"
                 className="h-8 pointer-coarse:h-11"
                 disabled={butir.nonaktif === true}
                 onClick={() => butir.saatKlik?.()}
@@ -39,7 +77,7 @@ function TombolSekunder({ butir }: { butir: ItemAksiHalaman }) {
     }
 
     return (
-        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
+        <Button asChild className="h-8 pointer-coarse:h-11">
             {butir.unduh === true || butir.tabBaru === true ? (
                 <a href={butir.href} {...(butir.tabBaru === true ? { target: '_blank', rel: 'noreferrer' } : {})}>
                     {butir.label}
@@ -66,7 +104,16 @@ function TombolSekunder({ butir }: { butir: ItemAksiHalaman }) {
  * Filter bilah alat tabel (lewat `PenyediaAksiHalaman`) dan aksi sekunder masuk menu "Lainnya". Halaman tanpa tabel
  * memakai satu baris: aksi utama selebar sisa baris, ditambah menu "Lainnya".
  */
-export default function AksiHalaman({ keterangan, utama, lainnya = [], children }: PropsAksiHalaman) {
+export default function AksiHalaman({
+    keterangan,
+    utama: utamaLangsung,
+    lainnya: lainnyaLangsung = [],
+    langkah = [],
+    children,
+}: PropsAksiHalaman) {
+    const [langkahUtama, ...langkahSisa] = langkah;
+    const utama = utamaLangsung ?? (langkahUtama ? <TombolUtamaAksi butir={langkahUtama} /> : undefined);
+    const lainnya = [...langkahSisa, ...lainnyaLangsung];
     const lebar = useLebarLayar();
     const konteks = useAksiHalaman();
     const hp = lebar === 'hp';
@@ -83,7 +130,7 @@ export default function AksiHalaman({ keterangan, utama, lainnya = [], children 
     const kunci = lainnya
         .map(
             (b) =>
-                `${b.label}|${b.href ?? ''}|${b.unduh === true ? '1' : '0'}|${b.tabBaru === true ? '1' : '0'}|${b.nonaktif === true ? '1' : '0'}|${b.saatKlik ? '1' : '0'}`,
+                `${b.label}|${b.href ?? ''}|${b.unduh === true ? '1' : '0'}|${b.tabBaru === true ? '1' : '0'}|${b.nonaktif === true ? '1' : '0'}|${b.bahaya === true ? '1' : '0'}|${b.saatKlik ? '1' : '0'}`,
         )
         .join('~');
 
@@ -129,7 +176,7 @@ export default function AksiHalaman({ keterangan, utama, lainnya = [], children 
         return (
             <div className="flex flex-wrap items-center gap-2">
                 {keterangan}
-                <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
+                <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 [&>*:not(:last-child)]:flex-1">
                     {utama}
                     {children}
                     <MenuLainnya butir={lainnya} />

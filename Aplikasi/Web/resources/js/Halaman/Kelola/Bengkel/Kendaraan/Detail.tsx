@@ -3,12 +3,10 @@ import { useState } from 'react';
 
 import DialogKendaraan, { AlamatKendaraan } from '@/Komponen/Bengkel/DialogKendaraan';
 import { AlamatPerintahKerja, BuatKolomPerintahKerja } from '@/Komponen/Bengkel/KolomPerintahKerja';
-import Tombol from '@/Komponen/Formulir/Tombol';
 import { KartuKeteranganGrosir, KeteranganGrosir } from '@/Komponen/Grosir/BagianDokumenGrosir';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import { JudulUnit, KataUnit, LabelPengenal } from '@/Pustaka/UnitServis';
@@ -26,16 +24,14 @@ export default function HalamanDetailKendaraan({ Kendaraan: k, Riwayat }: PropsD
             <div className="flex flex-wrap items-center gap-3">
                 <LabelStatus jenis={k.Aktif ? 'sukses' : 'netral'} teks={k.Aktif ? 'Aktif' : 'Diarsipkan'} />
             </div>
-            <AksiHalaman>
-                <Tombol varian="sekunder" onClick={() => AturUbah(true)}>
-                    Ubah {KataUnit(k.Jenis).toLowerCase()}
-                </Tombol>
-                {k.Aktif ? (
-                    <Button asChild className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPerintahKerja}/buat?kendaraan=${k.Uuid}`}>Buat perintah kerja</Link>
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={
+                    k.Aktif
+                        ? [{ label: 'Buat perintah kerja', href: `${AlamatPerintahKerja}/buat?kendaraan=${k.Uuid}` }]
+                        : []
+                }
+                lainnya={[{ label: `Ubah ${KataUnit(k.Jenis).toLowerCase()}`, saatKlik: () => AturUbah(true) }]}
+            />
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label={KataUnit(k.Jenis)}>{k.Label}</KeteranganGrosir>
                 {k.Jenis === 'Perangkat' ? (

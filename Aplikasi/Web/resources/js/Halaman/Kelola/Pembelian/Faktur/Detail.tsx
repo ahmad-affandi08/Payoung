@@ -1,4 +1,3 @@
-import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -16,7 +15,6 @@ import {
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -137,25 +135,26 @@ export default function HalamanDetailFaktur({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Bayar && f.Pemasok ? (
-                    <Button asChild>
-                        <Link href={`${AlamatPembelian}/pembayaran/buat?pemasok=${f.Pemasok.Uuid}&faktur=${f.Uuid}`}>
-                            Bayar faktur
-                        </Link>
-                    </Button>
-                ) : null}
-                {Tindakan.NotaDebit ? (
-                    <Button asChild variant="outline">
-                        <Link href={`${AlamatPembelian}/nota-debit/buat?faktur=${f.Uuid}`}>Buat nota debit</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                        Batalkan faktur
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={
+                    Tindakan.Bayar && f.Pemasok
+                        ? [
+                              {
+                                  label: 'Bayar faktur',
+                                  href: `${AlamatPembelian}/pembayaran/buat?pemasok=${f.Pemasok.Uuid}&faktur=${f.Uuid}`,
+                              },
+                          ]
+                        : []
+                }
+                lainnya={[
+                    ...(Tindakan.NotaDebit
+                        ? [{ label: 'Buat nota debit', href: `${AlamatPembelian}/nota-debit/buat?faktur=${f.Uuid}` }]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan faktur', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

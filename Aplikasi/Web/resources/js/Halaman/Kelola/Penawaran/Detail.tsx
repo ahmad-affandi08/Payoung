@@ -1,7 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import Tombol from '@/Komponen/Formulir/Tombol';
 import {
     DialogAlasanGrosir,
     KartuKeteranganGrosir,
@@ -15,7 +14,6 @@ import Panel from '@/Komponen/Kelola/Panel';
 import { AlamatPenawaran, LabelStatusPenawaran } from '@/Komponen/Penawaran/BagianPenawaran';
 import DialogKeputusanPenawaran from '@/Komponen/Penawaran/DialogKeputusanPenawaran';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
-import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
@@ -106,74 +104,67 @@ export default function HalamanDetailPenawaran({
                 </Pemberitahuan>
             ) : null}
 
-            <AksiHalaman>
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPenawaran}/${p.Uuid}/ubah`}>Ubah draf</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Salin ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`${AlamatPenawaran}/buat?salin=${p.Uuid}`}>Salin jadi penawaran baru</Link>
-                    </Button>
-                ) : null}
-                {p.Status !== 'Draf' ? (
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <a href={`${AlamatPenawaran}/${p.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                            Cetak / PDF
-                        </a>
-                    </Button>
-                ) : null}
-                {p.TautanPublik !== null ? (
-                    <Button variant="outline" onClick={SalinTautan} className="h-8 pointer-coarse:h-11">
-                        {tersalin ? 'Tautan tersalin' : 'Salin tautan'}
-                    </Button>
-                ) : null}
-                {Tindakan.Kirim ? (
-                    <Tombol
-                        varian="sekunder"
-                        memproses={memproses === 'Kirim'}
-                        onClick={() => Kirim('Kirim', `${AlamatPenawaran}/${p.Uuid}/kirim`)}
-                    >
-                        Kirim lewat WhatsApp
-                    </Tombol>
-                ) : null}
-                {Tindakan.Putuskan ? (
-                    <>
-                        <Tombol varian="sekunder" onClick={() => AturPutuskan('Tolak')}>
-                            Tandai ditolak
-                        </Tombol>
-                        <Tombol varian="sekunder" onClick={() => AturPutuskan('Terima')}>
-                            Tandai diterima
-                        </Tombol>
-                    </>
-                ) : null}
-                {Tindakan.JadikanInvoice ? (
-                    <Tombol
-                        memproses={memproses === 'Invoice'}
-                        onClick={() => Kirim('Invoice', `${AlamatPenawaran}/${p.Uuid}/jadikan-invoice`)}
-                    >
-                        {p.Invoice !== null && p.Invoice.Status === 'Draf' ? 'Buka draf invoice' : 'Jadikan invoice'}
-                    </Tombol>
-                ) : null}
-                {Tindakan.Terbitkan ? (
-                    <Tombol
-                        memproses={memproses === 'Terbit'}
-                        onClick={() => Kirim('Terbit', `${AlamatPenawaran}/${p.Uuid}/terbitkan`)}
-                    >
-                        Terbitkan penawaran
-                    </Tombol>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        {p.Status === 'Draf' ? 'Batalkan draf' : 'Batalkan penawaran'}
-                    </Button>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.JadikanInvoice
+                        ? [
+                              {
+                                  label:
+                                      p.Invoice !== null && p.Invoice.Status === 'Draf'
+                                          ? 'Buka draf invoice'
+                                          : 'Jadikan invoice',
+                                  saatKlik: () => Kirim('Invoice', `${AlamatPenawaran}/${p.Uuid}/jadikan-invoice`),
+                                  nonaktif: memproses === 'Invoice',
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Terbitkan
+                        ? [
+                              {
+                                  label: 'Terbitkan penawaran',
+                                  saatKlik: () => Kirim('Terbit', `${AlamatPenawaran}/${p.Uuid}/terbitkan`),
+                                  nonaktif: memproses === 'Terbit',
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Kirim
+                        ? [
+                              {
+                                  label: 'Kirim lewat WhatsApp',
+                                  saatKlik: () => Kirim('Kirim', `${AlamatPenawaran}/${p.Uuid}/kirim`),
+                                  nonaktif: memproses === 'Kirim',
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Putuskan
+                        ? [
+                              { label: 'Tandai diterima', saatKlik: () => AturPutuskan('Terima') },
+                              { label: 'Tandai ditolak', saatKlik: () => AturPutuskan('Tolak') },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${AlamatPenawaran}/${p.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Salin
+                        ? [{ label: 'Salin jadi penawaran baru', href: `${AlamatPenawaran}/buat?salin=${p.Uuid}` }]
+                        : []),
+                    ...(p.Status !== 'Draf'
+                        ? [{ label: 'Cetak / PDF', href: `${AlamatPenawaran}/${p.Uuid}/cetak`, tabBaru: true }]
+                        : []),
+                    ...(p.TautanPublik !== null
+                        ? [{ label: tersalin ? 'Tautan tersalin' : 'Salin tautan', saatKlik: SalinTautan }]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [
+                              {
+                                  label: p.Status === 'Draf' ? 'Batalkan draf' : 'Batalkan penawaran',
+                                  saatKlik: () => AturBatalkan(true),
+                                  bahaya: true,
+                              },
+                          ]
+                        : []),
+                ]}
+            />
 
             <KartuKeteranganGrosir>
                 <KeteranganGrosir label="Pelanggan">{p.NamaPelanggan}</KeteranganGrosir>

@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { EllipsisIcon } from 'lucide-react';
 
 import { Button } from '@/Komponen/Ui/button';
+import { cn } from '@/Komponen/Ui/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Komponen/Ui/dropdown-menu';
 
 import type { ItemAksiHalaman } from './KonteksAksiHalaman';
@@ -35,12 +36,16 @@ export default function MenuLainnya({ butir, label = 'Aksi lainnya' }: { butir: 
                             key={satu.label}
                             disabled={satu.nonaktif === true}
                             onSelect={() => satu.saatKlik?.()}
-                            className="min-h-10"
+                            className={cn('min-h-10', satu.bahaya === true && 'text-bahaya')}
                         >
                             {satu.label}
                         </DropdownMenuItem>
                     ) : satu.unduh === true || satu.tabBaru === true ? (
-                        <DropdownMenuItem key={satu.label} asChild className="min-h-10">
+                        <DropdownMenuItem
+                            key={satu.label}
+                            asChild
+                            className={cn('min-h-10', satu.bahaya === true && 'text-bahaya')}
+                        >
                             <a
                                 href={satu.href}
                                 {...(satu.tabBaru === true ? { target: '_blank', rel: 'noreferrer' } : {})}
@@ -49,7 +54,11 @@ export default function MenuLainnya({ butir, label = 'Aksi lainnya' }: { butir: 
                             </a>
                         </DropdownMenuItem>
                     ) : (
-                        <DropdownMenuItem key={satu.label} asChild className="min-h-10">
+                        <DropdownMenuItem
+                            key={satu.label}
+                            asChild
+                            className={cn('min-h-10', satu.bahaya === true && 'text-bahaya')}
+                        >
                             <Link href={satu.href}>{satu.label}</Link>
                         </DropdownMenuItem>
                     ),

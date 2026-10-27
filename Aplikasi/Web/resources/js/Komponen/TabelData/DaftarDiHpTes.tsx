@@ -178,6 +178,49 @@ describe('Aksi sekunder: tab baru dan nonaktif (D-228)', () => {
     });
 });
 
+describe('Halaman rincian: langkah berikutnya + menu Lainnya (D-228)', () => {
+    function HalamanRincian() {
+        return (
+            <PenyediaAksiHalaman>
+                <AksiHalaman
+                    langkah={[
+                        { label: 'Konfirmasi pesanan', saatKlik: () => undefined },
+                        { label: 'Kirim barang', saatKlik: () => undefined },
+                    ]}
+                    lainnya={[
+                        { label: 'Ubah draf', href: '/ubah' },
+                        { label: 'Batalkan', saatKlik: () => undefined, bahaya: true },
+                    ]}
+                />
+            </PenyediaAksiHalaman>
+        );
+    }
+
+    it('layar lebar: semua aksi tetap tombol, aksi merusak berteks merah', () => {
+        AturLebar('desktop');
+        render(<HalamanRincian />);
+
+        expect(screen.getByRole('button', { name: 'Konfirmasi pesanan' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Kirim barang' })).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Ubah draf' }).getAttribute('href')).toBe('/ubah');
+        expect(screen.getByRole('button', { name: 'Batalkan' }).className).toContain('text-bahaya');
+    });
+
+    it('HP: hanya langkah pertama jadi tombol, langkah lain, ubah, dan batalkan masuk menu Lainnya', () => {
+        AturLebar('hp');
+        render(<HalamanRincian />);
+
+        expect(screen.getByRole('button', { name: 'Konfirmasi pesanan' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Kirim barang' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Batalkan' })).toBeNull();
+
+        BukaMenu(screen.getByRole('button', { name: 'Aksi lainnya' }));
+        expect(screen.getByRole('menuitem', { name: 'Kirim barang' })).toBeTruthy();
+        expect(screen.getByRole('menuitem', { name: 'Ubah draf' })).toBeTruthy();
+        expect(screen.getByRole('menuitem', { name: 'Batalkan' }).className).toContain('text-bahaya');
+    });
+});
+
 describe('Jejak halaman di HP (D-228)', () => {
     it('jejak tanpa tautan disembunyikan di HP, jejak yang punya jalan kembali tetap tampil', () => {
         const bagian = render(<JejakHalaman jejak={[{ label: 'Kopi Nusantara' }, { label: 'Produk' }]} />);
