@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Karyawan\Aksi\SelaraskanTanggalAbsensi;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
@@ -109,4 +110,18 @@ it('hanya karyawan.kelola yang boleh mengoreksi, yang lain hanya melihat (BolehK
         ->assertForbidden();
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     expect(Absensi::query()->count())->toBe(0);
+});
+
+it('D-230: absensi lama yang tanggalnya mengikuti jam tutup buku diselaraskan ke tanggal kalender. Manual tidak disentuh dan aman diulang', function (): void {
+    [$k, $rina] = SiapkanKoreksiAbsensi($this);
+    $dasar = ['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id];
+    // 13.02 WIB tanggal 1 Okt tercatat tanggal 30 Sep (jam tutup buku outlet digeser terlalu siang).
+    $lama = Absensi::query()->create([...$dasar, 'TanggalBisnis' => '2026-09-30', 'MasukPada' => '2026-10-01T06:02:00Z']);
+    $manual = Absensi::query()->create([...$dasar, 'TanggalBisnis' => '2026-09-25', 'MasukPada' => '2026-09-26T01:00:00Z', 'Sumber' => 'Manual']);
+
+    expect(app(SelaraskanTanggalAbsensi::class)->Jalankan($k['Tenant']->Id))->toBe(1);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect($lama->refresh()->TanggalBisnis->toDateString())->toBe('2026-10-01')
+        ->and($manual->refresh()->TanggalBisnis->toDateString())->toBe('2026-09-25')
+        ->and(app(SelaraskanTanggalAbsensi::class)->Jalankan($k['Tenant']->Id))->toBe(0);
 });

@@ -47,6 +47,17 @@ final class TanggalBisnisOutlet
     }
 
     /**
+     * Tanggal kalender di zona waktu outlet (tanpa `JamTutupBuku`). Dipakai absensi karyawan (D-230): jadwal kerja dan
+     * tanggal di ponsel karyawan memakai tanggal kalender, jadi absen pukul 13.02 tanggal 27 tercatat tanggal 27.
+     */
+    public function HitungKalender(int $idOutlet, ?CarbonInterface $waktu = null): CarbonImmutable
+    {
+        return CarbonImmutable::instance($waktu ?? CarbonImmutable::now())
+            ->setTimezone($this->AmbilOutlet($idOutlet)->ZonaWaktu)
+            ->startOfDay();
+    }
+
+    /**
      * F-15 tutup harian: saat tanggal bisnis `$tanggal` outlet berakhir, yaitu `JamTutupBuku` hari berikutnya di zona
      * waktu outlet (00:00 = tengah malam).
      */

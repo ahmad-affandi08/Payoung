@@ -26,6 +26,7 @@ final class PasangRilisPerintah extends Command
         ['Perintah' => 'organisasi:siapkan-peran', 'Kering' => false],
         ['Perintah' => 'pengelola:siapkan-peran', 'Kering' => false],
         ['Perintah' => 'organisasi:rapikan-nama-bawaan', 'Kering' => false],
+        ['Perintah' => 'karyawan:selaraskan-tanggal-absensi', 'Kering' => false],
         ['Perintah' => 'panduan-awal:siapkan-bawaan', 'Kering' => false],
         ['Perintah' => 'katalog:lengkapi-fitur', 'Kering' => true],
         ['Perintah' => 'template:terapkan', 'Kering' => true],
@@ -36,6 +37,7 @@ final class PasangRilisPerintah extends Command
     public const LANGKAH_DATA_LISENSI = [
         ['Perintah' => 'organisasi:siapkan-peran', 'Kering' => false],
         ['Perintah' => 'organisasi:rapikan-nama-bawaan', 'Kering' => false],
+        ['Perintah' => 'karyawan:selaraskan-tanggal-absensi', 'Kering' => false],
         ['Perintah' => 'panduan-awal:siapkan-bawaan', 'Kering' => false],
         ['Perintah' => 'lisensi:siapkan-data', 'Kering' => false],
         ['Perintah' => 'kasir:siapkan-kategori-biaya', 'Kering' => false],

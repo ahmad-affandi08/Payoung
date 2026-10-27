@@ -149,6 +149,16 @@ it('daftar wajah: persetujuan pemrosesan wajib, jumlah foto pas, tidak bisa daft
         ->and(WajahKaryawan::query()->sole()->DitinjauOleh)->toBeNull();
 });
 
+it('D-230: absen masuk dini hari (sebelum jam tutup buku) tercatat di tanggal kalender, bukan hari kemarin', function (): void {
+    [$k, , $alamat] = SiapkanAbsensiWeb($this);
+    $this->travelTo(CarbonImmutable::parse('2026-10-06 02:30:00', 'Asia/Jakarta'));
+
+    $this->postJson("{$alamat}/masuk", KirimanAbsenWebUji())->assertOk();
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(Absensi::query()->sole()->TanggalBisnis->toDateString())->toBe('2026-10-06');
+});
+
 it('masuk & keluar di dalam radius dengan wajah cocok: Sumber Web, jarak & kemiripan tercatat, idempoten per Uuid', function (): void {
     [$k, $karyawan, $alamat] = SiapkanAbsensiWeb($this);
     $masuk = KirimanAbsenWebUji();

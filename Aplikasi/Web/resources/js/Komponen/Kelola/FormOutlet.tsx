@@ -231,7 +231,7 @@ export default function FormOutlet({ awal, uuid, kodeTerkunci = false, merek, ko
                 nilai={formulir.data.JamTutupBuku}
                 saatBerubah={(nilai) => formulir.setData('JamTutupBuku', nilai)}
                 galat={galat.JamTutupBuku}
-                keterangan="Transaksi sebelum jam ini masuk tanggal bisnis kemarin. Kafe yang tutup 02.00 memakai 04:00."
+                keterangan="Transaksi sebelum jam ini masuk tanggal bisnis kemarin. Kafe yang tutup 02.00 memakai 04:00. Absensi karyawan tidak terpengaruh, selalu memakai tanggal kalender."
                 contoh="04:00"
                 langkahMenit={30}
                 required

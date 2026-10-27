@@ -76,7 +76,7 @@ final class CatatAbsensiMasukPos
                     'IdKaryawan' => $karyawan->Id,
                     'IdOutlet' => $data->idOutlet,
                     'IdPerangkat' => $data->idPerangkat,
-                    'TanggalBisnis' => $this->tanggalBisnis->Hitung($data->idOutlet, $data->waktu)->toDateString(),
+                    'TanggalBisnis' => $this->tanggalBisnis->HitungKalender($data->idOutlet, $data->waktu)->toDateString(),
                     'MasukPada' => $data->waktu->utc(),
                     'PathSwafotoMasuk' => $path,
                     'DiluarJadwal' => $diluar,

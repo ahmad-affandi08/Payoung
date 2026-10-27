@@ -103,7 +103,7 @@ final class CatatAbsensiWeb
                     'IdKaryawan' => $karyawan->Id,
                     'IdOutlet' => $outlet['Id'],
                     'IdPerangkat' => null,
-                    'TanggalBisnis' => $this->tanggalBisnis->Hitung($outlet['Id'], $sekarang)->toDateString(),
+                    'TanggalBisnis' => $this->tanggalBisnis->HitungKalender($outlet['Id'], $sekarang)->toDateString(),
                     'MasukPada' => $sekarang->utc(),
                     'PathSwafotoMasuk' => $path,
                     'Sumber' => Absensi::SUMBER_WEB,
@@ -192,7 +192,7 @@ final class CatatAbsensiWeb
     }
 
     /**
-     * Outlet utama karyawan + outlet jadwalnya pada tanggal bisnis hari ini dan kemarin (tanggal bisnis outlet utama,
+     * Outlet utama karyawan + outlet jadwalnya pada tanggal kalender hari ini dan kemarin (tanggal kalender outlet utama,
      * bukan tanggal UTC; kemarin untuk shift malam yang melewati tengah malam). Tanpa outlet utama = semua outlet.
      *
      * @return list<int>|null
@@ -203,7 +203,7 @@ final class CatatAbsensiWeb
             return null;
         }
 
-        $hariIni = $this->tanggalBisnis->Hitung($karyawan->IdOutlet, $sekarang);
+        $hariIni = $this->tanggalBisnis->HitungKalender($karyawan->IdOutlet, $sekarang);
         $jadwal = JadwalKerja::query()
             ->where('IdKaryawan', $karyawan->Id)
             ->whereBetween('Tanggal', [$hariIni->subDay()->toDateString(), $hariIni->toDateString()])
