@@ -5,13 +5,17 @@ Panduan ini menjelaskan **apa yang sudah otomatis**, **apa yang tetap butuh akun
 
 ## 1. Pembangunan otomatis (GitHub Actions › "Bangun Aplikasi")
 
+Semua perintah build memakai flavor titik mulai `-t "$TITIK_MULAI"` (`lib/UtamaProduksi.dart`) dan
+`--dart-define=ALAMAT_SERVER=https://dashboard.payoung.id/`; aplikasi memang tidak punya `lib/main.dart`, jadi tanpa
+`-t` build gagal "Target file lib/main.dart not found" (v7.39).
+
 Berkas: `.github/workflows/BangunAplikasi.yml`. Berjalan manual (**Actions › Bangun Aplikasi › Run workflow**), pada tag
 `kasir-v*` / `pemilik-v*`, dan pada pull request yang menyentuh folder `windows/`, `ios/`, `android/` atau berkas itu sendiri
 (runner macOS/Windows berbayar, jadi tidak jalan di setiap push).
 
 | Tugas | Runner | Hasil (artefak) | Bisa dipasang? |
 |---|---|---|---|
-| `windows-kasir` | windows-latest | `Payoung-Kasir-Windows-x.y.z.zip` (folder Release), `Payoung-Kasir-Pemasang-x.y.z.exe` (Inno Setup, per pengguna tanpa admin), `Payoung-Kasir-Microsoft-Store-x.y.z.msix` (bila identitas Store diisi), `SHA256SUMS.txt` | **Ya.** Tanpa sertifikat, Windows SmartScreen memperingatkan "penerbit tidak dikenal" (Info lanjut › Tetap jalankan). Paket MSIX dipasang lewat Microsoft Store atau `Add-AppxPackage`. |
+| `windows-kasir` | windows-latest | `Payoung-Kasir-Windows-x.y.z.zip` (folder Release), `Payoung-Kasir-Pemasang-x.y.z.exe` (Inno Setup, per pengguna tanpa admin), `Payoung-Kasir-Microsoft-Store-x.y.z.msix`, `SHA256SUMS.txt` | **Ya.** Tanpa sertifikat, Windows SmartScreen memperingatkan "penerbit tidak dikenal" (Info lanjut › Tetap jalankan). Paket MSIX dipasang lewat Microsoft Store atau `Add-AppxPackage`. |
 | `ios` (Kasir, Owner) | macos-latest | `Payoung-…-iOS-tanpa-tanda-tangan.zip` (`Runner.app`) | **Tidak.** Hanya bukti bahwa proyek iOS terbangun. IPA yang bisa dipasang butuh akun Apple Developer (bagian 3). |
 | `android` (Kasir, Owner) | ubuntu-latest | `Payoung-…-debug.apk` (uji sideload); `.aab` rilis hanya bila secret kunci unggah ada | APK debug **ya** (uji); AAB rilis hanya lewat Play Console. |
 
