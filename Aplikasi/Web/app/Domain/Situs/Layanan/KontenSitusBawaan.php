@@ -325,6 +325,11 @@ final class KontenSitusBawaan
                         ],
                     ],
                     $ctaDaftar,
+                    [
+                        'Jenis' => 'UnduhAplikasi',
+                        'Judul' => 'Unduh aplikasi Payoung',
+                        'Subjudul' => 'Aplikasi kasir untuk Android, iPhone/iPad, dan Windows.',
+                    ],
                 ],
             ],
             'fitur' => [

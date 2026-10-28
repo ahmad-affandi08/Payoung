@@ -133,3 +133,12 @@ it('beranda bawaan dibuka carousel delapan sorotan (kasir tiap sektor usaha, pem
         expect(resource_path("js/Aset/Situs/{$nama}.webp"))->toBeFile();
     }
 });
+
+it('beranda bawaan ditutup blok unduh aplikasi (badge Google Play)', function (): void {
+    // Pengunjung beranda yang sudah membaca sampai bawah bisa langsung memasang aplikasi kasir.
+    $bagian = KontenSitusBawaan::AmbilHalaman()['beranda']['Bagian'];
+    $terakhir = $bagian[array_key_last($bagian)];
+
+    expect($terakhir['Jenis'])->toBe('UnduhAplikasi')
+        ->and($terakhir['Judul'])->toBe('Unduh aplikasi Payoung');
+});
