@@ -25,7 +25,7 @@ Setiap artefak disertai `SHA256SUMS.txt`. Artefak disimpan 14–30 hari.
 | **Akun Apple Developer** (US$ 99/tahun) | Sertifikat distribusi + provisioning profile + App Store Connect untuk TestFlight/App Store | Belum ada langkah IPA bertanda tangan; ditambahkan setelah akun ada (fastlane atau `flutter build ipa` dengan secret) |
 | **Kunci unggah Android** | Build rilis Android sengaja menolak kunci debug (audit F-04) | Secret `PAYOUNG_KEYSTORE_BASE64`, `PAYOUNG_KEYSTORE_PASSWORD`, `PAYOUNG_KEY_ALIAS`, `PAYOUNG_KEY_PASSWORD` |
 | **Tempat menyimpan pemasang Windows** (D-02 belum diputuskan) | Pembaruan otomatis mengunduh dari alamat **https** yang stabil | Unggah `Payoung-Kasir-Pemasang-x.y.z.exe` ke hosting/CDN pilihan, lalu catat di konsol (bagian 4) |
-| **Akun Microsoft Partner Center** (US$ 19 sekali, perorangan) | Mendaftarkan aplikasi Windows supaya bisa dicari dan dipasang dari Microsoft Store, tanpa peringatan SmartScreen | Daftar di `partner.microsoft.com`, pesan nama aplikasi, lalu salin tiga nilai **Product identity** ke variabel repositori (bagian 5) |
+| **Akun Microsoft Partner Center** (US$ 19 sekali, perorangan) | Mendaftarkan aplikasi Windows supaya bisa dicari dan dipasang dari Microsoft Store, tanpa peringatan SmartScreen | Daftar di `partner.microsoft.com`, pesan nama aplikasi, lalu salin tiga nilai **Product identity** ke `msix_config` di pubspec (bagian 5) |
 
 ## 3. iOS / iPadOS (POS-21)
 
@@ -64,11 +64,13 @@ jadi tidak perlu sertifikat penandatangan kode untuk rute ini.
 
 1. Daftar akun perorangan di `partner.microsoft.com` (US$ 19 sekali) dan lengkapi pajak serta rekening.
 2. Partner Center › **Apps and games › New product › MSIX or PWA app**, pesan nama aplikasi (mis. *Payoung Kasir*).
-3. Buka **Product identity** dan salin tiga nilai:
-   - `Package/Identity/Name` → variabel repositori `MICROSOFT_STORE_IDENTITAS` (mis. `12345Payoung.PayoungKasir`)
-   - `Package/Properties/Publisher` → `MICROSOFT_STORE_PENERBIT` (mis. `CN=1A2B3C4D-...`)
-   - `Package/Properties/PublisherDisplayName` → `MICROSOFT_STORE_NAMA_PENERBIT` (mis. `Payoung`)
-4. GitHub › repo ini › **Settings › Secrets and variables › Actions › Variables** — tambahkan tiga variabel di atas.
+3. Buka **Product identity** dan salin tiga nilai ke `msix_config` di `Aplikasi/Kasir/pubspec.yaml`:
+   - `Package/Identity/Name` → `identity_name` (sekarang `Payoung.PayoungKasir`)
+   - `Package/Identity/Publisher` → `publisher` (sekarang `CN=7D079BE1-7B4E-4274-A554-53F61593BC61`)
+   - `Package/Properties/PublisherDisplayName` → `publisher_display_name` (sekarang `Payoung`)
+4. Commit perubahannya. Nilai ini bukan rahasia (tercetak di manifest paket dan tampil di halaman Store), jadi
+   boleh berada di repo. Kalau nama aplikasi di Partner Center berubah, tiga nilai itu ikut berubah dan paket lama
+   tidak bisa diunggah lagi.
 
 **Setiap kali merilis:**
 
