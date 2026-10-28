@@ -2,7 +2,9 @@ name: Bangun Aplikasi
 
 # POS-20/POS-21 (D-154): membuktikan aplikasi Flutter benar-benar terbangun di Windows, iOS, dan Android, dan menghasilkan
 # berkas yang bisa dicoba tanpa akun toko/sertifikat:
-#   - Windows: folder Release (zip) + pemasang Inno Setup (.exe) — tidak ditandatangani kecuali ada secret sertifikat.
+#   - Windows: folder Release (zip) + pemasang Inno Setup (.exe) — tidak ditandatangani kecuali ada secret sertifikat
+#     — plus paket MSIX untuk Microsoft Store bila identitas Store diisi sebagai variabel repositori
+#     (MICROSOFT_STORE_IDENTITAS, MICROSOFT_STORE_PENERBIT, MICROSOFT_STORE_NAMA_PENERBIT).
 #   - iOS: Runner.app TANPA tanda tangan (`--no-codesign`); bukan IPA, tidak bisa dipasang di perangkat. IPA bertanda
 #     tangan untuk TestFlight butuh akun Apple Developer (Panduan/RilisAplikasi.md).
 #   - Android: APK debug untuk uji sideload; AAB rilis hanya bila secret kunci unggah tersedia.
@@ -85,6 +87,26 @@ jobs:
           "$SIGNTOOL" sign /f "$(cygpath -w "$RUNNER_TEMP/sertifikat.pfx")" /p "${PFX_SANDI}" /fd SHA256 \
             /tr http://timestamp.digicert.com /td SHA256 keluaran/Payoung-Kasir-Pemasang-*.exe
           rm -f "$RUNNER_TEMP/sertifikat.pfx"
+      # POS-20: paket MSIX untuk Microsoft Store. Identitas dan penerbit WAJIB sama dengan Product identity di
+      # Partner Center, karena itu tidak ditulis di pubspec tetapi diambil dari variabel repositori. Tanpa
+      # variabel, langkah dilewati supaya job Windows tetap berguna untuk pemasang Inno Setup.
+      - name: Paket MSIX untuk Microsoft Store
+        if: vars.MICROSOFT_STORE_IDENTITAS != '' && vars.MICROSOFT_STORE_PENERBIT != ''
+        working-directory: Aplikasi/Kasir
+        env:
+          IDENTITAS: ${{ vars.MICROSOFT_STORE_IDENTITAS }}
+          PENERBIT: ${{ vars.MICROSOFT_STORE_PENERBIT }}
+          NAMA_PENERBIT: ${{ vars.MICROSOFT_STORE_NAMA_PENERBIT }}
+        run: |
+          dart run msix:create --store \
+            --identity-name "$IDENTITAS" \
+            --publisher "$PENERBIT" \
+            --publisher-display-name "${NAMA_PENERBIT:-Payoung}" \
+            --version "${{ steps.versi.outputs.versi }}.0" \
+            --build-windows false \
+            --output-name "Payoung-Kasir-Microsoft-Store-${{ steps.versi.outputs.versi }}"
+          cp build/windows/x64/runner/Release/Payoung-Kasir-Microsoft-Store-*.msix \
+            "$GITHUB_WORKSPACE/keluaran/"
       - name: Checksum SHA-256 (dipakai pembaruan otomatis)
         run: |
           cd keluaran

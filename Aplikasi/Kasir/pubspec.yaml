@@ -51,6 +51,18 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.35.0
   build_runner: ^2.16.1
+  # POS-20: paket MSIX untuk Microsoft Store (`dart run msix:create`). Identitas dan penerbit yang
+  # dipakai saat mengirim ke Store datang dari Partner Center lewat variabel repositori CI, bukan
+  # ditulis di sini, supaya paket tidak pernah terkirim dengan identitas contoh (Panduan/RilisAplikasi.md).
+  msix: ^3.18.0
+
+msix_config:
+  display_name: Payoung Kasir
+  publisher_display_name: Payoung
+  logo_path: windows/runner/resources/app_icon.ico
+  languages: id-ID, en-US
+  # Empat bagian sesuai aturan MSIX; CI menimpanya dengan versi pubspec (x.y.z.0).
+  msix_version: 1.0.0.0
 
 flutter:
   uses-material-design: true
