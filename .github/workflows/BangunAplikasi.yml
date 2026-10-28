@@ -63,23 +63,41 @@ jobs:
         id: versi
         working-directory: Aplikasi/Kasir
         run: |
-          VERSI="$(grep -E '^version:' pubspec.yaml | head -1 | sed -E 's/version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
+          VERSI="$(grep -E '^version:' pubspec.yaml | head -1 | tr -d '\r' | sed -E 's/version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
           echo "versi=${VERSI}" >> "$GITHUB_OUTPUT"
       - name: Zip folder Release
         run: |
           mkdir -p keluaran
           cd Aplikasi/Kasir/build/windows/x64/runner/Release
           7z a -tzip "$GITHUB_WORKSPACE/keluaran/Payoung-Kasir-Windows-${{ steps.versi.outputs.versi }}.zip" ./*
+      # POS-20: paket MSIX untuk Microsoft Store. Identitas dan penerbit ada di `msix_config`
+      # (`Aplikasi/Kasir/pubspec.yaml`) dan harus sama dengan Product identity di Partner Center.
+      # Sengaja SEBELUM pemasang Inno Setup: paket Store tidak boleh tertahan bila pemasang bermasalah.
+      - name: Paket MSIX untuk Microsoft Store
+        working-directory: Aplikasi/Kasir
+        run: |
+          dart run msix:create --build-windows false \
+            --version "${{ steps.versi.outputs.versi }}.0" \
+            --output-name "Payoung-Kasir-Microsoft-Store-${{ steps.versi.outputs.versi }}"
+          cp build/windows/x64/runner/Release/Payoung-Kasir-Microsoft-Store-*.msix \
+            "$GITHUB_WORKSPACE/keluaran/"
       - name: Pemasang Inno Setup
         run: |
-          if ! command -v iscc >/dev/null 2>&1 && [ ! -f "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
+          ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+          if [ ! -f "$ISCC" ]; then
             choco install innosetup -y --no-progress
           fi
-          ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
-          "$ISCC" "/DVersiAplikasi=${{ steps.versi.outputs.versi }}" \
-            "/DSumber=$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/build/windows/x64/runner/Release")" \
-            "/DKeluar=$(cygpath -w "$GITHUB_WORKSPACE/keluaran")" \
-            "$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/windows/Pemasang/Payoung.iss")"
+          if [ ! -f "$ISCC" ]; then
+            ISCC="$(command -v iscc)"
+          fi
+          SUMBER="$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/build/windows/x64/runner/Release")"
+          KELUAR="$(cygpath -w "$GITHUB_WORKSPACE/keluaran")"
+          SKRIP="$(cygpath -w "$GITHUB_WORKSPACE/Aplikasi/Kasir/windows/Pemasang/Payoung.iss")"
+          echo "ISCC=$ISCC"
+          echo "SUMBER=$SUMBER"
+          echo "KELUAR=$KELUAR"
+          echo "SKRIP=$SKRIP"
+          "$ISCC" "/DVersiAplikasi=${{ steps.versi.outputs.versi }}" "/DSumber=$SUMBER" "/DKeluar=$KELUAR" "$SKRIP"
       - name: Tanda tangan pemasang (hanya bila sertifikat tersedia)
         env:
           PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
@@ -94,16 +112,6 @@ jobs:
           "$SIGNTOOL" sign /f "$(cygpath -w "$RUNNER_TEMP/sertifikat.pfx")" /p "${PFX_SANDI}" /fd SHA256 \
             /tr http://timestamp.digicert.com /td SHA256 keluaran/Payoung-Kasir-Pemasang-*.exe
           rm -f "$RUNNER_TEMP/sertifikat.pfx"
-      # POS-20: paket MSIX untuk Microsoft Store. Identitas dan penerbit ada di `msix_config`
-      # (`Aplikasi/Kasir/pubspec.yaml`) dan harus sama dengan Product identity di Partner Center.
-      - name: Paket MSIX untuk Microsoft Store
-        working-directory: Aplikasi/Kasir
-        run: |
-          dart run msix:create --build-windows false \
-            --version "${{ steps.versi.outputs.versi }}.0" \
-            --output-name "Payoung-Kasir-Microsoft-Store-${{ steps.versi.outputs.versi }}"
-          cp build/windows/x64/runner/Release/Payoung-Kasir-Microsoft-Store-*.msix \
-            "$GITHUB_WORKSPACE/keluaran/"
       - name: Checksum SHA-256 (dipakai pembaruan otomatis)
         run: |
           cd keluaran
