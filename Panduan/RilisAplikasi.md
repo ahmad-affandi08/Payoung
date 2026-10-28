@@ -89,7 +89,11 @@ jadi tidak perlu sertifikat penandatangan kode untuk rute ini.
    langkah 2) bila pembaruan otomatis ingin menunjuk ke sana.
 
 **Batas yang jujur:** paket MSIX belum pernah dibangun di mesin pengembang (Flutter Windows hanya bisa dikompilasi di
-Windows); yang membuktikannya adalah job CI `windows-kasir`. Pengiriman ke Partner Center dan sertifikasi Microsoft
+Windows); yang membuktikannya adalah job CI `windows-kasir`. Windows runner kini memakai Visual Studio 18 (MSVC 14.51)
+yang mengubah deprecasi `<experimental/coroutine>` menjadi galat keras; karena `audioplayers_windows` masih memakai
+header itu, `Aplikasi/Kasir/windows/CMakeLists.txt` mendefinisikan `_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS`
+sebelum `include(flutter/generated_plugins.cmake)`. Bila kelak plugin itu pindah ke `<coroutine>` C++20, definisi itu
+boleh dihapus. Pengiriman ke Partner Center dan sertifikasi Microsoft
 dilakukan manual oleh pemilik produk — CI hanya menghasilkan berkas `.msix` dan checksum-nya. Aplikasi berjalan sebagai
 paket desktop penuh (`runFullTrust`), jadi printer jaringan, SQLite lokal, dan pembaruan mandiri tetap bekerja seperti
 versi pemasang.

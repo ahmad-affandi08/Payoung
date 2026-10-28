@@ -55,6 +55,13 @@ add_subdirectory("runner")
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+#
+# `audioplayers_windows` masih memakai <experimental/coroutine>. Visual Studio 18 (MSVC 14.51) mengubah
+# peringatan deprecasinya menjadi galat STL1011 ("<experimental/coroutine> ... will be REMOVED SOON"),
+# sehingga build Windows gagal. Definisi ini mematikannya untuk aplikasi dan semua plugin yang
+# ditambahkan sesudahnya (atribut direktori diwariskan ke add_subdirectory).
+add_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 include(flutter/generated_plugins.cmake)
 
 
