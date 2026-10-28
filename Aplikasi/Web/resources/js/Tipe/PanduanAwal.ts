@@ -2,6 +2,7 @@
  * Kontrak props halaman F-01 Panduan Awal (DesainF01 §E, dibekukan bersama tim Backend).
  * Uang & persen berupa string desimal dari server; jangan diubah ke number (CLAUDE.md #7).
  */
+import type { TautanUnduhAplikasi } from '@/Tipe/Aplikasi';
 import type { Batas, Kota, Pilihan } from '@/Tipe/Organisasi';
 
 export type LangkahPanduan = 'ProfilUsaha' | 'Sektor' | 'Pajak' | 'Produk' | 'MetodePembayaran' | 'Perangkat';
@@ -185,6 +186,8 @@ export type PropsPerangkatPanduan = {
     BolehKelolaPerangkat: boolean;
     /** PIN kasir pengguna yang sedang masuk sudah diatur (dipakai masuk di aplikasi kasir). */
     PinSayaDiatur: boolean;
+    /** v7.35 (P-10): tautan unduh aplikasi kasir per platform. */
+    UnduhanAplikasi: TautanUnduhAplikasi[];
 };
 
 /** Alamat POST panduan awal (DesainF01 §D). Hanya string URL; rute dimiliki Backend. */

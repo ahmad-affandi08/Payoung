@@ -97,4 +97,17 @@ describe('F-01 langkah 6: perangkat kasir (memakai aktivasi F-02b)', function ()
         BantuanOrganisasi::AturKonteks($tenant->Id);
         expect(Perangkat::query()->count())->toBe(0);
     });
+
+    it('langkah Perangkat menampilkan tautan unduh aplikasi kasir (v7.35)', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
+        config(['aplikasi.Pos.Android.TautanUnduh' => 'https://play.google.com/store/apps/details?id=id.payoung.kasir']);
+
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/perangkat')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->component('Kelola/PanduanAwal/Perangkat')
+                ->where('UnduhanAplikasi.0.Platform', 'Android')
+                ->where('UnduhanAplikasi.0.Url', 'https://play.google.com/store/apps/details?id=id.payoung.kasir')
+                ->where('UnduhanAplikasi.0.QrSvg', fn (string $svg) => str_contains($svg, '<svg')));
+    });
 });

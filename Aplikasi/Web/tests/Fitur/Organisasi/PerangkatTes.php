@@ -240,6 +240,20 @@ describe('Izin & isolasi perangkat', function (): void {
         expect($perangkatB->refresh()->Nama)->toBe('Kasir Depan')->and($perangkatB->DicabutPada)->toBeNull()
             ->and(KodeAktivasi::query()->where('IdTenant', $tenantB->Id)->count())->toBe(1);
     });
+    it('menampilkan tautan unduh aplikasi kasir beserta QR sebelum kode aktivasi dipakai (v7.35)', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        config(['aplikasi.Pos.Android.TautanUnduh' => 'https://play.google.com/store/apps/details?id=id.payoung.kasir']);
+
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)->get('/kelola/perangkat')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->component('Kelola/Perangkat/Daftar')
+                ->has('UnduhanAplikasi', 1)
+                ->where('UnduhanAplikasi.0.Platform', 'Android')
+                ->where('UnduhanAplikasi.0.Label', 'Android')
+                ->where('UnduhanAplikasi.0.Url', 'https://play.google.com/store/apps/details?id=id.payoung.kasir')
+                ->where('UnduhanAplikasi.0.QrSvg', fn (string $svg) => str_contains($svg, '<svg')));
+    });
 });
 
 describe('Log audit perangkat', function (): void {

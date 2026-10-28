@@ -24,6 +24,7 @@ function BuatProps(pinDiatur: boolean): PropsPerangkatPanduan {
         },
         Perangkat: [],
         KodeAktivasiBaru: null,
+        UnduhanAplikasi: [],
         BolehKelolaPerangkat: true,
         PinSayaDiatur: pinDiatur,
     };

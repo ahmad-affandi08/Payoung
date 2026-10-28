@@ -329,6 +329,7 @@ describe('Kelola/Perangkat: cabut lewat AlertDialog (F-02 langkah 5, BR-02.3)', 
         Outlet: [{ Uuid: 'O-1', Kode: 'JKT1', Nama: 'Sudirman', BatasPerangkat: batas }],
         JenisPerangkat: [{ Nilai: 'Kasir', Label: 'Kasir' }],
         KodeAktivasiBaru: null,
+        UnduhanAplikasi: [],
     };
 
     it('Batal tidak mengirim apa pun; Cabut perangkat mengirim POST cabut', () => {

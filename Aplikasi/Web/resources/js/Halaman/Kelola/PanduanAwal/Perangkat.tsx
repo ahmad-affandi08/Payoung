@@ -7,6 +7,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import FormPin from '@/Komponen/Kelola/FormPin';
 import DialogKodeAktivasi from '@/Komponen/Kelola/DialogKodeAktivasi';
 import Panel from '@/Komponen/Kelola/Panel';
+import UnduhAplikasi from '@/Komponen/Kelola/UnduhAplikasi';
 import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwal/RingkasanGalatFormulir';
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
 import TabelData from '@/Komponen/TabelData/TabelData';
@@ -66,6 +67,7 @@ export default function HalamanPerangkatPanduan({
     KodeAktivasiBaru,
     BolehKelolaPerangkat,
     PinSayaDiatur,
+    UnduhanAplikasi,
 }: PropsPerangkatPanduan) {
     const elemenFormulir = useRef<HTMLFormElement>(null);
     const [memproses, AturMemproses] = useState<string | null>(null);
@@ -98,6 +100,8 @@ export default function HalamanPerangkatPanduan({
                 <span className="font-semibold text-teks-utama">{FormatBatas(Outlet.BatasPerangkat, 'perangkat')}</span>
                 .
             </p>
+
+            <UnduhAplikasi Unduhan={UnduhanAplikasi} />
 
             {/* Audit kemudahan pakai #2: tanpa PIN, pemilik baru tahu saat masuk di aplikasi kasir gagal. */}
             {PinSayaDiatur ? (
@@ -190,7 +194,9 @@ export default function HalamanPerangkatPanduan({
                     judul: 'Belum ada perangkat kasir di outlet ini. Tambahkan satu untuk mulai berjualan di aplikasi kasir.',
                 }}
             />
-            {kodeBaru.aktif ? <DialogKodeAktivasi kode={kodeBaru.aktif} saatSelesai={kodeBaru.selesai} /> : null}
+            {kodeBaru.aktif ? (
+                <DialogKodeAktivasi kode={kodeBaru.aktif} Unduhan={UnduhanAplikasi} saatSelesai={kodeBaru.selesai} />
+            ) : null}
         </TataLetakPanduan>
     );
 }

@@ -1,9 +1,22 @@
 import DialogRahasia, { NilaiRahasia } from '@/Komponen/Umpan/DialogRahasia';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import type { TautanUnduhAplikasi } from '@/Tipe/Aplikasi';
 import type { KodeAktivasiBaru } from '@/Tipe/PanduanAwal';
 
-/** Kode aktivasi 8 karakter + QR untuk perangkat baru (F-02b BR-02.3), dipakai di halaman Perangkat dan langkah 6 F-01. */
-export default function DialogKodeAktivasi({ kode, saatSelesai }: { kode: KodeAktivasiBaru; saatSelesai: () => void }) {
+/**
+ * Kode aktivasi 8 karakter + QR untuk perangkat baru (F-02b BR-02.3), dipakai di halaman Perangkat dan langkah 6 F-01.
+ * v7.35: bila aplikasinya belum terpasang, tautan unduhnya ada di dialog ini — kode aktivasi tidak berguna tanpa
+ * aplikasi, dan dialog inilah tempat kasir baru pertama kali dibuat.
+ */
+export default function DialogKodeAktivasi({
+    kode,
+    Unduhan,
+    saatSelesai,
+}: {
+    kode: KodeAktivasiBaru;
+    Unduhan: TautanUnduhAplikasi[];
+    saatSelesai: () => void;
+}) {
     const sumberQr = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(kode.QrSvg)}`;
 
     return (
@@ -23,6 +36,25 @@ export default function DialogKodeAktivasi({ kode, saatSelesai }: { kode: KodeAk
                 Buka aplikasi kasir, pilih &quot;Aktifkan perangkat&quot;, lalu pindai QR ini atau ketik kodenya.
                 Perangkat Windows tidak punya pemindai, jadi kodenya diketik:
             </p>
+            {Unduhan.length > 0 ? (
+                <p>
+                    Belum punya aplikasi kasirnya? Unduh untuk{' '}
+                    {Unduhan.map((baris, indeks) => (
+                        <span key={baris.Platform}>
+                            <a
+                                href={baris.Url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-brand underline"
+                            >
+                                {baris.Label}
+                            </a>
+                            {indeks < Unduhan.length - 1 ? ' atau ' : ''}
+                        </span>
+                    ))}
+                    .
+                </p>
+            ) : null}
             <img
                 src={sumberQr}
                 alt={`Kode QR aktivasi ${kode.NamaPerangkat}`}

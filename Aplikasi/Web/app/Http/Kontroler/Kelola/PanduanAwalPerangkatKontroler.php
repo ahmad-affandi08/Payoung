@@ -14,7 +14,9 @@ use App\Domain\Organisasi\Kueri\DaftarPinAnggota;
 use App\Domain\Organisasi\Kueri\PemakaianPerangkat;
 use App\Domain\Organisasi\Layanan\PembuatQrKodeAktivasi;
 use App\Domain\Organisasi\Model\Perangkat;
+use App\Domain\Tenant\Enum\AplikasiRilis;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
+use App\Domain\Tenant\Layanan\PenyusunUnduhanAplikasi;
 use App\Http\Permintaan\Kelola\PanduanAwal\SimpanPerangkatPanduanPermintaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +32,7 @@ final class PanduanAwalPerangkatKontroler extends DasarPanduanAwalKontroler
 {
     private const KUNCI_KODE_BARU = 'KodeAktivasiBaru';
 
-    public function Tampilkan(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr, AksesPengguna $akses, DaftarPinAnggota $pin): Response
+    public function Tampilkan(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr, AksesPengguna $akses, DaftarPinAnggota $pin, PenyusunUnduhanAplikasi $unduhan): Response
     {
         $outlet = $this->OutletPanduan();
         $kodeBaru = $permintaan->session()->get(self::KUNCI_KODE_BARU);
@@ -57,6 +59,8 @@ final class PanduanAwalPerangkatKontroler extends DasarPanduanAwalKontroler
             'BolehKelolaPerangkat' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::PerangkatKelola),
             // Audit kemudahan pakai #2: PIN kasir pengguna sendiri diminta di sini, bukan baru gagal di aplikasi kasir.
             'PinSayaDiatur' => $pin->CekPinDiatur($this->IdTenant(), $this->Pelaku()->Id),
+            // v7.35: langkah ini yang pertama kali meminta aplikasi dipasang, jadi tautan unduhnya ikut di sini.
+            'UnduhanAplikasi' => $unduhan->Susun(AplikasiRilis::Pos),
         ]);
     }
 

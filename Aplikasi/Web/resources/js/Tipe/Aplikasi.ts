@@ -18,6 +18,15 @@ export type PengumumanPlatform = {
     TampilSampai: string;
 };
 
+/** v7.35 (F-02b, P-10): tempat mengunduh aplikasi kasir per platform. `QrSvg` hanya terisi pada satu platform. */
+export type TautanUnduhAplikasi = {
+    Platform: string;
+    Label: string;
+    Versi: string;
+    Url: string;
+    QrSvg: string | null;
+};
+
 /** PGL-16: sesi akses dukungan yang sedang berjalan (null = pengguna biasa). */
 export type AksesDukunganAktif = {
     NamaPetugas: string;

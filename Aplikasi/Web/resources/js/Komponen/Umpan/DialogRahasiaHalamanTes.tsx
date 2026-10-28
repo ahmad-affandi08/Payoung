@@ -86,6 +86,7 @@ const kasus: Kasus[] = [
                     ]}
                     JenisPerangkat={[{ Nilai: 'Kasir', Label: 'Kasir' }]}
                     KodeAktivasiBaru={kodeAktivasi}
+                    UnduhanAplikasi={[]}
                 />,
             ),
     },
@@ -107,6 +108,7 @@ const kasus: Kasus[] = [
                     KodeAktivasiBaru={kodeAktivasi}
                     BolehKelolaPerangkat
                     PinSayaDiatur
+                    UnduhanAplikasi={[]}
                 />,
             ),
     },

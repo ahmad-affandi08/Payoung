@@ -8,6 +8,7 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DialogKodeAktivasi from '@/Komponen/Kelola/DialogKodeAktivasi';
+import UnduhAplikasi from '@/Komponen/Kelola/UnduhAplikasi';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
@@ -19,7 +20,7 @@ import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
-import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
+import type { PropsBersamaAplikasi, TautanUnduhAplikasi } from '@/Tipe/Aplikasi';
 import { CekBatasPenuh, FormatBatas, IzinTenant, PunyaIzinTenant, type Batas, type Pilihan } from '@/Tipe/Organisasi';
 import type { KodeAktivasiBaru } from '@/Tipe/PanduanAwal';
 
@@ -50,6 +51,8 @@ type PropsDaftar = {
     Outlet: Outlet[];
     JenisPerangkat: Pilihan[];
     KodeAktivasiBaru: KodeAktivasiBaru | null;
+    /** v7.35 (F-02b, P-10): tautan unduh aplikasi kasir per platform. */
+    UnduhanAplikasi: TautanUnduhAplikasi[];
 };
 
 const labelStatus: Record<StatusPerangkat, { jenis: 'sukses' | 'peringatan' | 'netral'; teks: string }> = {
@@ -109,7 +112,13 @@ const kolom: KolomTabel<Perangkat>[] = [
 ];
 
 /** Perangkat POS per outlet: tambah, aktivasi lewat kode + QR, cabut (F-02 langkah 5, BR-02.1, BR-02.3). */
-export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangkat, KodeAktivasiBaru }: PropsDaftar) {
+export default function HalamanDaftarPerangkat({
+    Perangkat,
+    Outlet,
+    JenisPerangkat,
+    KodeAktivasiBaru,
+    UnduhanAplikasi,
+}: PropsDaftar) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const bolehKelola = PunyaIzinTenant(props.Akses, IzinTenant.PerangkatKelola);
     const [formTerbuka, AturFormTerbuka] = useState(false);
@@ -123,6 +132,8 @@ export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangk
                 Setiap aplikasi kasir, layar dapur, atau perangkat gudang didaftarkan di sini lalu diaktifkan dengan
                 kode 8 karakter atau QR. Kode perangkat dipakai untuk nomor transaksi saat offline.
             </p>
+
+            <UnduhAplikasi Unduhan={UnduhanAplikasi} />
 
             {Outlet.length > 0 ? (
                 <ul className="grid grid-cols-1 gap-2 text-label sm:grid-cols-2 lg:grid-cols-4">
@@ -213,7 +224,9 @@ export default function HalamanDaftarPerangkat({ Perangkat, Outlet, JenisPerangk
                     judul: 'Belum ada perangkat. Tambahkan perangkat kasir pertama untuk mulai berjualan.',
                 }}
             />
-            {kodeBaru.aktif ? <DialogKodeAktivasi kode={kodeBaru.aktif} saatSelesai={kodeBaru.selesai} /> : null}
+            {kodeBaru.aktif ? (
+                <DialogKodeAktivasi kode={kodeBaru.aktif} Unduhan={UnduhanAplikasi} saatSelesai={kodeBaru.selesai} />
+            ) : null}
         </TataLetakAplikasi>
     );
 }

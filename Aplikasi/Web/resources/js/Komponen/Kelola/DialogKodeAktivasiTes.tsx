@@ -16,9 +16,19 @@ const kode = {
     KedaluwarsaPada: '2026-09-27T10:15:00+07:00',
 };
 
+const unduhan = [
+    {
+        Platform: 'Android',
+        Label: 'Android',
+        Versi: '1.0.0',
+        Url: 'https://play.google.com/store/apps/details?id=id.payoung.kasir',
+        QrSvg: null,
+    },
+];
+
 describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
     it('berjudul nama & kode perangkat, memuat QR, dan memakai dialog rahasia yang sama dengan nilai rahasia lain', () => {
-        render(<DialogKodeAktivasi kode={kode} saatSelesai={vi.fn()} />);
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={vi.fn()} />);
 
         expect(screen.getByRole('alertdialog', { name: 'Aktifkan Kasir Depan (JKT1-K02)' })).toBeTruthy();
         expect(screen.getByAltText('Kode QR aktivasi Kasir Depan')).toBeTruthy();
@@ -28,7 +38,7 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
     });
 
     it('menampilkan kode apa adanya tanpa tanda hubung', () => {
-        render(<DialogKodeAktivasi kode={kode} saatSelesai={vi.fn()} />);
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={vi.fn()} />);
 
         // Server memang menormalkan tanda hubung, tetapi yang tampil harus persis sama dengan isi QR
         // dan dengan yang diketik di aplikasi kasir supaya tidak membingungkan.
@@ -40,7 +50,7 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
         const TulisTeks = vi.fn().mockResolvedValue(undefined);
         Object.assign(navigator, { clipboard: { writeText: TulisTeks } });
 
-        render(<DialogKodeAktivasi kode={kode} saatSelesai={vi.fn()} />);
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={vi.fn()} />);
         fireEvent.click(screen.getByRole('button', { name: /Salin kode/ }));
 
         expect(TulisTeks).toHaveBeenCalledWith('A7K9M2QT');
@@ -48,7 +58,7 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
     });
 
     it('menyebut pemindaian QR sekaligus batasnya di Windows', () => {
-        render(<DialogKodeAktivasi kode={kode} saatSelesai={vi.fn()} />);
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={vi.fn()} />);
 
         // Pemindai (mobile_scanner) hanya ada di Android & iOS, jadi janji "pindai" harus disertai
         // keterangan bahwa di Windows kodenya diketik.
@@ -56,9 +66,23 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
         expect(screen.getByText(/Windows tidak punya pemindai/i)).toBeTruthy();
     });
 
+    it('menawarkan tautan unduh aplikasi bila belum terpasang (v7.35)', () => {
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={vi.fn()} />);
+
+        const tautan = screen.getByRole('link', { name: 'Android' });
+        expect(tautan.getAttribute('href')).toBe('https://play.google.com/store/apps/details?id=id.payoung.kasir');
+        expect(screen.getByText(/Belum punya aplikasi kasirnya/)).toBeTruthy();
+    });
+
+    it('tidak menampilkan kalimat unduh bila server belum punya tautan', () => {
+        render(<DialogKodeAktivasi kode={kode} Unduhan={[]} saatSelesai={vi.fn()} />);
+
+        expect(screen.queryByText(/Belum punya aplikasi kasirnya/)).toBeNull();
+    });
+
     it('konfirmasi memanggil saatSelesai', () => {
         const SaatSelesai = vi.fn();
-        render(<DialogKodeAktivasi kode={kode} saatSelesai={SaatSelesai} />);
+        render(<DialogKodeAktivasi kode={kode} Unduhan={unduhan} saatSelesai={SaatSelesai} />);
 
         fireEvent.click(screen.getByRole('button', { name: LABEL_SELESAI_RAHASIA }));
         expect(SaatSelesai).toHaveBeenCalledTimes(1);

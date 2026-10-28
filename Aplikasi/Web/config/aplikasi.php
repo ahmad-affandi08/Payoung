@@ -27,7 +27,9 @@ return [
         'Android' => [
             'VersiTerbaru' => env('APLIKASI_POS_ANDROID_VERSI_TERBARU', '1.0.0'),
             'VersiMinimal' => env('APLIKASI_POS_ANDROID_VERSI_MINIMAL', '1.0.0'),
-            'TautanUnduh' => env('APLIKASI_POS_ANDROID_TAUTAN_UNDUH'),
+            // Bawaan = halaman Play Store (v7.35), supaya halaman Perangkat & panduan awal di back-office langsung
+            // bisa mengarahkan pemilik usaha mengunduh aplikasi. Rilis P-10 (`UrlUnduh`) menang atas nilai ini.
+            'TautanUnduh' => env('APLIKASI_POS_ANDROID_TAUTAN_UNDUH', 'https://play.google.com/store/apps/details?id=id.payoung.kasir'),
         ],
         'Ios' => [
             'VersiTerbaru' => env('APLIKASI_POS_IOS_VERSI_TERBARU', '1.0.0'),

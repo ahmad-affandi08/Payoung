@@ -17,7 +17,9 @@ use App\Domain\Organisasi\Kueri\PenyaringSektor;
 use App\Domain\Organisasi\Layanan\PembuatQrKodeAktivasi;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\Perangkat;
+use App\Domain\Tenant\Enum\AplikasiRilis;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
+use App\Domain\Tenant\Layanan\PenyusunUnduhanAplikasi;
 use App\Http\Permintaan\Kelola\SimpanPerangkatPermintaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +36,7 @@ final class PerangkatKontroler extends DasarKelolaKontroler
 {
     private const KUNCI_KODE_BARU = 'KodeAktivasiBaru';
 
-    public function Daftar(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr, PenyaringSektor $sektor): Response
+    public function Daftar(Request $permintaan, DaftarPerangkat $daftar, PemakaianPerangkat $pemakaian, PastikanBatasPaket $batasPaket, PembuatQrKodeAktivasi $qr, PenyaringSektor $sektor, PenyusunUnduhanAplikasi $unduhan): Response
     {
         $boleh = $this->IdOutletBoleh();
         $idTenant = $this->IdTenant();
@@ -60,6 +62,8 @@ final class PerangkatKontroler extends DasarKelolaKontroler
                 ...$kodeBaru,
                 'QrSvg' => $qr->BuatSvg($kodeBaru['Kode']),
             ] : null,
+            // v7.35: tempat mengunduh aplikasi kasir, ditampilkan sebelum kode aktivasi bisa dipakai.
+            'UnduhanAplikasi' => $unduhan->Susun(AplikasiRilis::Pos),
         ]);
     }
 
