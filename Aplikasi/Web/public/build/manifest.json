@@ -402,15 +402,6 @@
       "_UnitServis-B_6suDa-.js"
     ]
   },
-  "_DialogKodeAktivasi-BMY6nTeJ.js": {
-    "file": "assets/DialogKodeAktivasi-BMY6nTeJ.js",
-    "name": "DialogKodeAktivasi",
-    "imports": [
-      "_jsx-runtime-B23tBWN-.js",
-      "_FormatWaktu-bKvj24HB.js",
-      "_DialogRahasia-TPn73lS7.js"
-    ]
-  },
   "_DialogKodePemulihan-0Nie-Z2h.js": {
     "file": "assets/DialogKodePemulihan-0Nie-Z2h.js",
     "name": "DialogKodePemulihan",
@@ -2127,6 +2118,17 @@
     "file": "assets/UlidKlien-B0DxO_Hx.js",
     "name": "UlidKlien"
   },
+  "_UnduhAplikasi-C-WP6MW6.js": {
+    "file": "assets/UnduhAplikasi-C-WP6MW6.js",
+    "name": "UnduhAplikasi",
+    "imports": [
+      "_jsx-runtime-B23tBWN-.js",
+      "_button-5eUioe5T.js",
+      "_FormatWaktu-bKvj24HB.js",
+      "_Panel-BunJRU2l.js",
+      "_DialogRahasia-TPn73lS7.js"
+    ]
+  },
   "_UnitServis-B_6suDa-.js": {
     "file": "assets/UnitServis-B_6suDa-.js",
     "name": "UnitServis",
@@ -2780,7 +2782,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-BTy6XnlS.js",
+    "file": "assets/Aplikasi-CJuzYoNM.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -3376,6 +3378,10 @@
   "resources/js/Aset/Sektor/WhsDst.webp": {
     "file": "assets/WhsDst-BTAobQ8f.webp",
     "src": "resources/js/Aset/Sektor/WhsDst.webp"
+  },
+  "resources/js/Aset/Situs/GooglePlay.png": {
+    "file": "assets/GooglePlay-BJAFhx2f.png",
+    "src": "resources/js/Aset/Situs/GooglePlay.png"
   },
   "resources/js/Aset/Situs/KasirBayar.webp": {
     "file": "assets/KasirBayar-IQCdn7RN.webp",
@@ -5949,7 +5955,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/PanduanAwal/Perangkat.tsx": {
-    "file": "assets/Perangkat-g3IzQ07F.js",
+    "file": "assets/Perangkat-PkNnOyNq.js",
     "name": "Perangkat",
     "src": "resources/js/Halaman/Kelola/PanduanAwal/Perangkat.tsx",
     "isDynamicEntry": true,
@@ -5970,7 +5976,7 @@
       "_AjakanTambahBatas-JcxAM6Hx.js",
       "_TataLetakPanduan-CoO-ACNM.js",
       "_FormPin-BDw-n9VR.js",
-      "_DialogKodeAktivasi-BMY6nTeJ.js"
+      "_UnduhAplikasi-C-WP6MW6.js"
     ]
   },
   "resources/js/Halaman/Kelola/PanduanAwal/Produk.tsx": {
@@ -7523,7 +7529,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Perangkat/Daftar.tsx": {
-    "file": "assets/Daftar-Cl5UNkl0.js",
+    "file": "assets/Daftar-DU2SEs6C.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/Perangkat/Daftar.tsx",
     "isDynamicEntry": true,
@@ -7547,7 +7553,7 @@
       "_MenuAksiBaris-FpFTxlpD.js",
       "_BidangOutlet-BovStAhh.js",
       "_AjakanTambahBatas-JcxAM6Hx.js",
-      "_DialogKodeAktivasi-BMY6nTeJ.js"
+      "_UnduhAplikasi-C-WP6MW6.js"
     ]
   },
   "resources/js/Halaman/Kelola/Persediaan/BahanTerbuang/Daftar.tsx": {
@@ -10865,7 +10871,7 @@
     ]
   },
   "resources/js/Halaman/Situs/Halaman.tsx": {
-    "file": "assets/Halaman-CBXH4Ecd.js",
+    "file": "assets/Halaman-Bk2qmdZ6.js",
     "name": "Halaman",
     "src": "resources/js/Halaman/Situs/Halaman.tsx",
     "isDynamicEntry": true,
@@ -10908,7 +10914,8 @@
       "assets/KasirHpJual-luAc3d9s.webp",
       "assets/PemilikPersetujuan--sOrN4RM.webp",
       "assets/PemilikKaryawan-CjjjjWN_.webp",
-      "assets/PemilikInsight-D7WoFRwA.webp"
+      "assets/PemilikInsight-D7WoFRwA.webp",
+      "assets/GooglePlay-BJAFhx2f.png"
     ]
   },
   "resources/js/Halaman/Situs/KompatibilitasPerangkat.tsx": {
@@ -11086,7 +11093,7 @@
     ]
   },
   "resources/js/Situs.tsx": {
-    "file": "assets/Situs-B9kgPb4j.js",
+    "file": "assets/Situs-DmQg-oWI.js",
     "name": "Situs",
     "src": "resources/js/Situs.tsx",
     "isEntry": true,
