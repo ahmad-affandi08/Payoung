@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { Check, ChevronDown, Clock, Mail, MapPin, MessageCircle, Phone, Smartphone } from 'lucide-react';
 
+import gambarGooglePlay from '@/Aset/Situs/GooglePlay.png';
 import PanggungSpesimen from '@/Komponen/Situs/PanggungSpesimen';
 import { SPESIMEN } from '@/Komponen/Situs/SpesimenSitus';
 import TeksKaya from '@/Komponen/Situs/TeksKaya';
@@ -258,14 +259,35 @@ export function BagianUnduhAplikasi({ bagian, latar, garisAtas }: PropsBagian<'U
                 <ul className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
                     {tersedia.map((p) => (
                         <li key={p.Kunci} className="flex flex-col gap-1">
-                            <TombolSitus
-                                href={props.Situs.TautanUnduh[p.Kunci] ?? '#'}
-                                ukuran="besar"
-                                varian={gelap ? 'terang' : 'utama'}
-                                className="w-full sm:w-auto"
-                            >
-                                {p.Label}
-                            </TombolSitus>
+                            {/* Badge resmi Google Play (versi Indonesia) untuk Android: paling dikenal pengguna HP,
+                                dan Google mewajibkan badge resmi dipakai apa adanya. Platform lain tetap tombol situs. */}
+                            {p.Kunci === 'Android' ? (
+                                <a
+                                    href={props.Situs.TautanUnduh[p.Kunci] ?? '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Dapatkan aplikasi Payoung di Google Play"
+                                    className="inline-flex w-fit rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                                >
+                                    <img
+                                        src={gambarGooglePlay}
+                                        alt="Dapatkan di Google Play"
+                                        width={646}
+                                        height={250}
+                                        loading="lazy"
+                                        className="h-12 w-auto"
+                                    />
+                                </a>
+                            ) : (
+                                <TombolSitus
+                                    href={props.Situs.TautanUnduh[p.Kunci] ?? '#'}
+                                    ukuran="besar"
+                                    varian={gelap ? 'terang' : 'utama'}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {p.Label}
+                                </TombolSitus>
+                            )}
                             <span className={cn('text-label', gelap ? 'text-brand-gelap-teks' : 'text-teks-sekunder')}>
                                 {p.Keterangan}
                             </span>
