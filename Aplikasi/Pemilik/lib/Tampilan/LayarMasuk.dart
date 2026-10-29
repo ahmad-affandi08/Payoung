@@ -224,7 +224,7 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
   }
 }
 
-/// Panel merek di atas formulir Masuk: payung menadah koin di latar teal gelap yang membulat di bawah (D-231).
+/// Panel merek di atas formulir Masuk: payung menadah koin di atas alas lingkaran terang pada latar teal gelap yang membulat di bawah (D-231).
 class _PanelMerek extends StatelessWidget {
   const _PanelMerek();
 
@@ -267,7 +267,15 @@ class _PanelMerek extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IlustrasiMerek(IlustrasiOwner.Payung, lebar: tinggi * 0.58),
+                  // Payung berwarna teal gelap: tanpa alas terang ia menyatu dengan latar panel dan tampak rusak.
+                  Container(
+                    key: const ValueKey('AlasLogoMasuk'),
+                    width: tinggi * 0.62,
+                    height: tinggi * 0.62,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: warna.permukaan, shape: BoxShape.circle),
+                    child: IlustrasiMerek(IlustrasiOwner.Payung, lebar: tinggi * 0.54),
+                  ),
                   const SizedBox(height: TokenJarak.jarak4),
                   Text(
                     'Payoung Owner',

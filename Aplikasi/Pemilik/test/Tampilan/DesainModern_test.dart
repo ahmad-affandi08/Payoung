@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
 import 'package:pemilik/Tampilan/Komponen/KomponenModern.dart';
+import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
@@ -69,6 +70,16 @@ void main() {
     await PasangPemilik(tester, server: server, sesi: PenyimpanSesiMemori());
 
     expect(find.byKey(const ValueKey('IlustrasiPayung')), findsOneWidget);
+    // D-237: payung teal gelap wajib berada di atas alas terang, bukan langsung di panel teal gelap.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('AlasLogoMasuk')),
+        matching: find.byKey(const ValueKey('IlustrasiPayung')),
+      ),
+      findsOneWidget,
+    );
+    final alas = tester.widget<Container>(find.byKey(const ValueKey('AlasLogoMasuk')));
+    expect((alas.decoration! as BoxDecoration).color, TokenWarna.bawaan.permukaan);
     expect(find.text('Masuk ke Payoung Owner'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
