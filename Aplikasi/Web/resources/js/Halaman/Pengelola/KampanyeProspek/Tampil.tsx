@@ -16,6 +16,8 @@ import { JenisStatusKampanye } from './Daftar';
 type PropsTampil = {
     Kampanye: BarisKampanyeProspek & { Isi: string };
     EmailKampanyeAktif: boolean;
+    /** Sekarang di dalam jam kirim (08.00–17.00 WIB). Bawaan `true` untuk pemanggil lama. */
+    DiJamKirim?: boolean;
     Penerima: PenerimaKampanyeProspekTampil[];
 };
 
@@ -69,7 +71,7 @@ const kolom: KolomTabel<PenerimaKampanyeProspekTampil>[] = [
  * Rincian kampanye prospek (D-216): isi, hasil, email uji ke diri sendiri, jalankan, jeda, lanjutkan, dan batalkan, serta
  * hasil per penerima (gagal dan dilewati di atas).
  */
-export default function Tampil({ Kampanye, EmailKampanyeAktif, Penerima }: PropsTampil) {
+export default function Tampil({ Kampanye, EmailKampanyeAktif, DiJamKirim = true, Penerima }: PropsTampil) {
     const [aksi, AturAksi] = useState<AksiStatus | null>(null);
     const [memproses, AturMemproses] = useState(false);
 
@@ -97,6 +99,13 @@ export default function Tampil({ Kampanye, EmailKampanyeAktif, Penerima }: Props
             {Kampanye.Status === 'Dijeda' && Kampanye.AlasanJeda ? (
                 <Pemberitahuan jenis="peringatan" judul="Kampanye dijeda">
                     {Kampanye.AlasanJeda}
+                </Pemberitahuan>
+            ) : null}
+            {Kampanye.Status === 'Berjalan' && !DiJamKirim ? (
+                <Pemberitahuan jenis="info" judul="Menunggu jam kirim">
+                    Email hanya dikirim pukul 08.00 sampai 17.00 WIB, paling banyak {Kampanye.BatasPerHari} per hari.
+                    Sekarang di luar jam itu, jadi belum ada yang terkirim. Pengiriman dilanjutkan otomatis pada jam
+                    kirim berikutnya.
                 </Pemberitahuan>
             ) : null}
             {!EmailKampanyeAktif && (Kampanye.Status === 'Draf' || Kampanye.Status === 'Dijeda') ? (

@@ -233,6 +233,18 @@ describe('Rincian kampanye prospek', () => {
         );
     });
 
+    it('berjalan di luar jam kirim: penjelasan "Menunggu jam kirim" tampil, di dalam jam kirim tidak', () => {
+        AturKonsol();
+        const berjalan = { ...kampanye, Status: 'Berjalan' as const, LabelStatus: 'Berjalan', Isi: 'Isi pesan' };
+        const hasil = RenderUji(<Tampil Kampanye={berjalan} EmailKampanyeAktif DiJamKirim={false} Penerima={[]} />);
+
+        expect(screen.getByText('Menunggu jam kirim')).toBeTruthy();
+        expect(screen.getByText(/jadi belum ada yang terkirim/)).toBeTruthy();
+        hasil.unmount();
+        RenderUji(<Tampil Kampanye={berjalan} EmailKampanyeAktif DiJamKirim Penerima={[]} />);
+        expect(screen.queryByText('Menunggu jam kirim')).toBeNull();
+    });
+
     it('dijeda: alasan tampil, bisa dilanjutkan atau dibatalkan. Hasil per penerima gagal di atas', () => {
         AturKonsol();
         RenderUji(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Pengelola\Komunikasi;
 
 use App\Domain\Pengelola\Komunikasi\Aksi\BuatKampanyeProspek;
+use App\Domain\Pengelola\Komunikasi\Aksi\KirimKampanyeProspekJatuhTempo;
 use App\Domain\Pengelola\Komunikasi\Aksi\KirimUjiKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Aksi\UbahStatusKampanyeProspek;
 use App\Domain\Pengelola\Komunikasi\Enum\SektorProspek;
@@ -89,6 +90,7 @@ final class KampanyeProspekKontroler extends Kontroler
         return Inertia::render('Pengelola/KampanyeProspek/Tampil', [
             'Kampanye' => [...self::Petakan($kampanyeProspek), 'Isi' => $kampanyeProspek->Isi],
             'EmailKampanyeAktif' => PengirimKampanyeProspek::Tersedia(),
+            'DiJamKirim' => KirimKampanyeProspekJatuhTempo::DiJamKirim(),
             'Penerima' => array_values($penerima->map(fn (PenerimaKampanyeProspek $p): array => [
                 'Id' => $p->Id,
                 'Email' => $p->Kontak->Email ?? '',

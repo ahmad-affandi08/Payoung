@@ -277,7 +277,7 @@ describe('D-216 membuat dan menjalankan kampanye', function (): void {
         $this->put(BantuanPengelola::Url("/kampanye-prospek/{$kampanye->Uuid}/status"), ['Status' => 'Berjalan'])->assertSessionHas('Kilat');
         $this->put(BantuanPengelola::Url("/kampanye-prospek/{$kampanye->Uuid}/status"), ['Status' => 'Selesai'])->assertSessionHasErrors('Status');
         $this->get(BantuanPengelola::Url("/kampanye-prospek/{$kampanye->Uuid}"))->assertInertia(fn (AssertableInertia $h) => $h
-            ->component('Pengelola/KampanyeProspek/Tampil')->where('Kampanye.Status', 'Berjalan')->has('Penerima', 1)->where('Penerima.0.Email', 'a@contoh.id'));
+            ->component('Pengelola/KampanyeProspek/Tampil')->where('Kampanye.Status', 'Berjalan')->has('DiJamKirim')->has('Penerima', 1)->where('Penerima.0.Email', 'a@contoh.id'));
     });
 
     it('email uji dikirim ke alamat petugas sendiri dengan awalan [UJI] dan tautan berhenti contoh', function (): void {
