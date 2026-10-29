@@ -10,6 +10,7 @@ use App\Domain\Karyawan\Kueri\JadwalStafReservasi;
 use App\Domain\Katalog\Kueri\LayananReservasi;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
+use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Pemenuhan\Aksi\BatalkanReservasiPelanggan;
 use App\Domain\Pemenuhan\Aksi\BuatReservasi;
 use App\Domain\Pemenuhan\Data\DataReservasi;
@@ -18,6 +19,7 @@ use App\Domain\Pemenuhan\Kueri\DaftarReservasi;
 use App\Domain\Pemenuhan\Kueri\PengaturanReservasiTenant;
 use App\Domain\Pemenuhan\Kueri\SlotReservasi;
 use App\Domain\Pemenuhan\Model\Reservasi;
+use App\Domain\Tenant\Kueri\PengaturanStrukTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use Carbon\CarbonImmutable;
@@ -55,7 +57,10 @@ final class ReservasiPublikKontroler extends Kontroler
             $hariIni = CarbonImmutable::now($profil['ZonaWaktu'])->toDateString();
 
             return [
-                'Toko' => ['Nama' => $profil['Nama']],
+                'Toko' => [
+                    'Nama' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
+                    'UrlLogo' => $this->UrlLogo($idTenant, $slugTenant),
+                ],
                 'Slug' => $slugTenant,
                 'Outlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas(null, hanyaAktif: true)),
                 'Layanan' => array_map(fn (array $l): array => ['Uuid' => $l['Uuid'], 'Nama' => $l['Nama'], 'DurasiMenit' => $l['DurasiMenit'], 'Harga' => $l['Harga']], $layanan->Ambil(true)),
@@ -132,7 +137,7 @@ final class ReservasiPublikKontroler extends Kontroler
 
     public function Status(string $slugTenant, string $kodeAkses, DaftarReservasi $daftar): SymfonyResponse
     {
-        $props = $this->DalamTenant($slugTenant, function (int $idTenant) use ($kodeAkses, $daftar): ?array {
+        $props = $this->DalamTenant($slugTenant, function (int $idTenant) use ($slugTenant, $kodeAkses, $daftar): ?array {
             $r = Reservasi::query()->where('KodeAkses', strtoupper($kodeAkses))->first();
 
             if ($r === null) {
@@ -142,7 +147,10 @@ final class ReservasiPublikKontroler extends Kontroler
             $baris = $daftar->Petakan(collect([$r]))[0];
 
             return [
-                'Toko' => ['Nama' => app(NamaTampilUsaha::class)->UntukTenant($idTenant)],
+                'Toko' => [
+                    'Nama' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
+                    'UrlLogo' => $this->UrlLogo($idTenant, $slugTenant, $r->IdOutlet),
+                ],
                 'Reservasi' => [
                     'Nomor' => $baris['Nomor'],
                     'MulaiPada' => $baris['MulaiPada'],
@@ -171,6 +179,20 @@ final class ReservasiPublikKontroler extends Kontroler
 
             return back()->with('Kilat', 'Reservasi dibatalkan.');
         });
+    }
+
+    /** Logo tenant lewat rute publik `/{slug}/logo` (D-238); null = kepala memakai inisial toko. Outlet reservasi lebih dulu. */
+    private function UrlLogo(int $idTenant, string $slugTenant, ?int $idOutlet = null): ?string
+    {
+        $outlet = $idOutlet === null
+            ? Outlet::query()->orderBy('Id')->first(['Id', 'Uuid'])
+            : Outlet::query()->whereKey($idOutlet)->first(['Id', 'Uuid']);
+
+        if ($outlet === null || app(PengaturanStrukTenant::class)->AmbilPathLogoUsaha($idTenant, $outlet->Id) === null) {
+            return null;
+        }
+
+        return url("/{$slugTenant}/logo").'?outlet='.$outlet->Uuid;
     }
 
     private function DalamTenant(string $slugTenant, Closure $kerja, ?Closure $tidakDikenal = null): mixed

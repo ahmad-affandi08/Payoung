@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Katalog\Kueri\MenuPesanSendiri;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
+use App\Domain\Organisasi\Enum\StatusOrganisasi;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Pelanggan\Kueri\ProfilPembeliOnline;
 use App\Domain\Pelanggan\Layanan\SesiPembeliOnline;
@@ -226,9 +227,12 @@ final class TokoOnlineKontroler extends Kontroler
         $uuidDipilih = is_string($request->query('outlet')) ? strtoupper($request->query('outlet')) : null;
 
         return $this->DalamTenant($slugTenant, function (int $idTenant) use ($uuidDipilih, $pengaturan, $penyimpan): StreamedResponse {
-            $k = $this->penentu->Cari($uuidDipilih) ?? $this->penentu->Cari();
-            abort_if($k === null, 404);
-            $path = $pengaturan->AmbilPathLogoUsaha($idTenant, $k->idOutlet);
+            // Logo adalah aset merek publik: dipakai juga halaman reservasi & self-order yang outletnya belum tentu
+            // membuka toko online, jadi outlet dicari dari yang aktif (terpilih dulu, lalu yang pertama).
+            $idOutlet = ($uuidDipilih === null ? null : Outlet::query()->where('Status', StatusOrganisasi::Aktif->value)->where('Uuid', $uuidDipilih)->value('Id'))
+                ?? Outlet::query()->where('Status', StatusOrganisasi::Aktif->value)->orderBy('Id')->value('Id');
+            abort_if($idOutlet === null, 404);
+            $path = $pengaturan->AmbilPathLogoUsaha($idTenant, (int) $idOutlet);
             abort_if($path === null, 404);
 
             return $penyimpan->UnduhPublik($path);

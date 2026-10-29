@@ -15,6 +15,10 @@ type PropsPemilihSlot = {
     nilai: string;
     saatPilih: (jam: string) => void;
     galat?: string | undefined;
+    /** `pil` = tombol bulat besar untuk halaman pelanggan (D-240), bawaan `baku` untuk back-office. */
+    gaya?: 'baku' | 'pil';
+    /** Sembunyikan judul "Jam" bila halaman sudah memberinya judul langkah sendiri. */
+    judulTersembunyi?: boolean;
 };
 
 /** Ambil slot kosong dari server (jadwal staf, reservasi lain, jeda). */
@@ -45,6 +49,8 @@ export default function PemilihSlot({
     nilai,
     saatPilih,
     galat,
+    gaya = 'baku',
+    judulTersembunyi = false,
 }: PropsPemilihSlot) {
     const siap = outlet !== '' && layanan !== '' && tanggal !== '';
     const kueri = useQuery({
@@ -56,7 +62,9 @@ export default function PemilihSlot({
 
     return (
         <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-label font-semibold text-teks-utama">Jam</legend>
+            <legend className={cn('mb-1 text-label font-semibold text-teks-utama', judulTersembunyi && 'sr-only')}>
+                Jam
+            </legend>
             {!siap ? (
                 <p className="text-keterangan text-teks-sekunder">
                     Pilih layanan dan tanggal untuk melihat jam kosong.
@@ -85,10 +93,16 @@ export default function PemilihSlot({
                             aria-pressed={nilai === s.Jam}
                             onClick={() => saatPilih(s.Jam)}
                             className={cn(
-                                'h-9 min-w-16 rounded-kontrol border px-3 text-isi tabular-nums pointer-coarse:h-11',
+                                gaya === 'pil'
+                                    ? 'h-11 min-w-20 rounded-full border-2 px-4 text-subjudul tabular-nums'
+                                    : 'h-9 min-w-16 rounded-kontrol border px-3 text-isi tabular-nums pointer-coarse:h-11',
                                 nilai === s.Jam
-                                    ? 'border-brand bg-brand font-semibold text-brand-teks'
-                                    : 'border-garis-input bg-permukaan text-teks-utama hover:bg-permukaan-sorot',
+                                    ? gaya === 'pil'
+                                        ? 'border-brand-gelap bg-brand-gelap font-bold text-permukaan'
+                                        : 'border-brand bg-brand font-semibold text-brand-teks'
+                                    : gaya === 'pil'
+                                      ? 'border-garis bg-permukaan text-teks-utama hover:bg-permukaan-sorot'
+                                      : 'border-garis-input bg-permukaan text-teks-utama hover:bg-permukaan-sorot',
                             )}
                         >
                             {s.Jam}

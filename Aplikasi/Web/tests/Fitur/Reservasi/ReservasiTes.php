@@ -15,6 +15,7 @@ use App\Domain\Tenant\Model\Tenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -241,4 +242,26 @@ it('audit F-19: batas hari ke depan eksklusif — tepat tengah malam setelah har
     $this->post("/{$slug}/reservasi", ['Tanggal' => '2026-10-14', 'Jam' => '00:00'] + $isian)
         ->assertSessionHasErrors(['Tanggal' => 'Reservasi paling jauh 1 hari ke depan.']);
     $this->post("/{$slug}/reservasi", ['Tanggal' => '2026-10-13', 'Jam' => '09:00'] + $isian)->assertSessionHasNoErrors();
+});
+
+it('reservasi online D-240: kepala memakai logo tenant lewat rute publik walau outlet tidak membuka toko online', function (): void {
+    $k = SiapkanSalon($this);
+    $slug = $k['Tenant']->Slug;
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    PengaturanReservasi::query()->create(['OnlineAktif' => true, 'KonfirmasiOtomatis' => true, 'MinimalMenitSebelum' => 60]);
+    app(KonteksTenant::class)->Kosongkan();
+
+    $this->get("/{$slug}/reservasi")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Toko.UrlLogo', null));
+    $this->get("/{$slug}/logo")->assertNotFound();
+
+    Storage::fake((string) config('tenant.DiskLogo'));
+    Storage::disk((string) config('tenant.DiskLogo'))->put("logo/{$k['Tenant']->Id}/logo.png", 'png-palsu');
+    $tenant = Tenant::query()->findOrFail($k['Tenant']->Id);
+    $tenant->Pengaturan = [...($tenant->Pengaturan ?? []), 'PathLogo' => "logo/{$k['Tenant']->Id}/logo.png"];
+    $tenant->save();
+
+    $this->get("/{$slug}/reservasi")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Toko.UrlLogo', url("/{$slug}/logo").'?outlet='.$k['Outlet']->Uuid));
+    $this->get("/{$slug}/logo?outlet=".$k['Outlet']->Uuid)->assertOk();
+    $this->get("/{$slug}/logo")->assertOk();
 });
