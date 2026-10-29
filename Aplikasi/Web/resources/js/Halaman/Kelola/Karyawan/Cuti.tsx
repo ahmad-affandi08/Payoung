@@ -6,6 +6,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -125,15 +126,15 @@ export default function HalamanCuti({ Cuti, OpsiKaryawan, Izin }: PropsCuti) {
 
     return (
         <TataLetakAplikasi judul="Cuti & izin karyawan">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="max-w-3xl text-isi text-teks-sekunder">
-                    Catat hari karyawan tidak bekerja. Yang tetap digaji tidak dihitung tidak masuk di rekap gaji, dan
-                    pengingat shift serta peringatan belum masuk tidak dikirim pada harinya.
-                </p>
-                {Izin.Kelola ? (
-                    <Tombol onClick={() => AturDialog({ jenis: 'catat' })}>Catat cuti atau izin</Tombol>
-                ) : null}
-            </div>
+            <p className="max-w-3xl text-isi text-teks-sekunder">
+                Catat hari karyawan tidak bekerja. Yang tetap digaji tidak dihitung tidak masuk di rekap gaji, dan
+                pengingat shift serta peringatan belum masuk tidak dikirim pada harinya.
+            </p>
+            {Izin.Kelola ? (
+                <AksiHalaman
+                    utama={<Tombol onClick={() => AturDialog({ jenis: 'catat' })}>Catat cuti atau izin</Tombol>}
+                />
+            ) : null}
             <TabelData
                 id="karyawan-cuti"
                 label="Daftar cuti dan izin"

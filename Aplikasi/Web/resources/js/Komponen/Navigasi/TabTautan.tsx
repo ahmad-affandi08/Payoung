@@ -99,7 +99,9 @@ export function JalurGulirTab({ children, className }: { children: ReactNode; cl
     };
 
     return (
-        <div ref={pembungkus} className={cn('relative', className)}>
+        // `min-w-0 max-w-full`: sebagai anak flex (misal bersebelahan dengan tombol Ekspor) jalur ini tidak boleh melebar
+        // sebesar deretan tabnya, kalau tidak halaman ikut tergeser menyamping alih-alih tabnya.
+        <div ref={pembungkus} className={cn('relative max-w-full min-w-0', className)}>
             {children}
             <button
                 type="button"

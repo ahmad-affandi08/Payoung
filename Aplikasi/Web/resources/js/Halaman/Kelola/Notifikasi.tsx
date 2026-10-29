@@ -123,11 +123,14 @@ export default function HalamanNotifikasi({
                         ))}
                     </nav>
                 }
-            >
-                <Tombol varian="sekunder" disabled={BelumDibaca === 0} onClick={() => TandaiDibaca([], true)}>
-                    Tandai semua dibaca
-                </Tombol>
-            </AksiHalaman>
+                lainnya={[
+                    {
+                        label: 'Tandai semua dibaca',
+                        saatKlik: () => TandaiDibaca([], true),
+                        nonaktif: BelumDibaca === 0,
+                    },
+                ]}
+            />
 
             {Notifikasi.length === 0 ? (
                 <KeadaanKosong

@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./NavigasiTab-BPf0QY-q.js";var n=e(),r=[{label:`Dokumen legal`,href:`/legal`},{label:`Templat pesan`,href:`/template-komunikasi`}];function i(){return(0,n.jsx)(t,{label:`Legal`,daftarTab:r})}export{i as t};

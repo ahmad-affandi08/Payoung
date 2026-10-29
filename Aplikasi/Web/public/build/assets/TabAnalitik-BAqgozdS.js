@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-B23tBWN-.js";import{a as t}from"./dist-D4veJNCv.js";import{n}from"./TabTautan-BkiBRdSK.js";var r=e();function i(){let{url:e}=t(),i=e.startsWith(`/analitik/situs`);return(0,r.jsx)(n,{label:`Analitik`,tab:[{label:`Platform`,href:`/analitik`,aktif:!i},{label:`Situs (Google Analytics)`,href:`/analitik/situs`,aktif:i}]})}export{i as t};

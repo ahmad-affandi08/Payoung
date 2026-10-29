@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{a as t}from"./dist-D4veJNCv.js";import{n}from"./TabTautan-DhX3XDpB.js";var r=e();function i(){let{url:e}=t(),i=e.startsWith(`/kampanye-prospek/kontak`);return(0,r.jsx)(n,{label:`Kampanye prospek`,tab:[{label:`Kampanye`,href:`/kampanye-prospek`,aktif:!i},{label:`Kontak`,href:`/kampanye-prospek/kontak`,aktif:i}]})}export{i as t};

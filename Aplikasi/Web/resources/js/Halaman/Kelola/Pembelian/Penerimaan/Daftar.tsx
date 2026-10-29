@@ -1,4 +1,3 @@
-import { Link } from '@inertiajs/react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
@@ -14,7 +13,6 @@ import {
 } from '@/Komponen/Pembelian/DaftarPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import type { BarisDaftarPenerimaan, PropsDaftarPenerimaan } from '@/Tipe/Pembelian';
 
@@ -62,13 +60,6 @@ const kolom: KolomTabel<BarisDaftarPenerimaan>[] = [
 
 /** F-04 fase 1: daftar penerimaan barang (GRN) & belanja stok. */
 export default function HalamanDaftarPenerimaan({ Penerimaan, OpsiStatus, OpsiPemasok, Izin }: PropsDaftarPenerimaan) {
-    const tombol = (
-        <span className="flex flex-wrap gap-2">
-            <TombolBuat href={`${alamat}/buat`} label="Terima barang" izin={Izin} />
-            <TombolBuat href={`${AlamatPembelian}/belanja-stok`} label="Belanja stok" izin={Izin} />
-        </span>
-    );
-
     return (
         <HalamanDaftarPembelian
             judul="Penerimaan barang"
@@ -76,12 +67,13 @@ export default function HalamanDaftarPenerimaan({ Penerimaan, OpsiStatus, OpsiPe
             izin={Izin}
             objek="penerimaan barang"
         >
-            <AksiHalaman>
-                <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                    <Link href={`${AlamatPembelian}/biaya-tambahan`}>Biaya tambahan</Link>
-                </Button>
-                {Izin.Kelola ? tombol : null}
-            </AksiHalaman>
+            <AksiHalaman
+                utama={<TombolBuat href={`${alamat}/buat`} label="Terima barang" izin={Izin} />}
+                lainnya={[
+                    ...(Izin.Kelola ? [{ label: 'Belanja stok', href: `${AlamatPembelian}/belanja-stok` }] : []),
+                    { label: 'Biaya tambahan', href: `${AlamatPembelian}/biaya-tambahan` },
+                ]}
+            />
             <TabelData
                 id="pembelian-penerimaan"
                 label="Daftar penerimaan barang"

@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{n as t}from"./TabTautan-DhX3XDpB.js";var n=e();function r({aktif:e}){return(0,n.jsx)(t,{label:`Deposit dan gift card`,tab:[{label:`Isi deposit`,href:`/kelola/pelanggan/isi-deposit`,aktif:e===`isi-deposit`},{label:`Gift card`,href:`/kelola/pelanggan/gift-card`,aktif:e===`gift-card`}]})}export{r as t};

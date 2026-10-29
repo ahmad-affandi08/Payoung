@@ -6,6 +6,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -107,14 +108,13 @@ export default function HalamanKasbon({ Kasbon, TotalSisa, OpsiKaryawan, OpsiAku
 
     return (
         <TataLetakAplikasi judul="Kasbon karyawan">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="max-w-3xl text-isi text-teks-sekunder">
-                    Kasbon belum lunas:{' '}
-                    <strong className="tabular-nums text-teks-utama">{FormatRupiah(TotalSisa)}</strong>. Sisa kasbon
-                    bisa dipotong dari rekap gaji.
-                </p>
-                {Izin.Kelola ? <Tombol onClick={() => AturDialog({ jenis: 'catat' })}>Catat kasbon</Tombol> : null}
-            </div>
+            <p className="max-w-3xl text-isi text-teks-sekunder">
+                Kasbon belum lunas: <strong className="tabular-nums text-teks-utama">{FormatRupiah(TotalSisa)}</strong>.
+                Sisa kasbon bisa dipotong dari rekap gaji.
+            </p>
+            {Izin.Kelola ? (
+                <AksiHalaman utama={<Tombol onClick={() => AturDialog({ jenis: 'catat' })}>Catat kasbon</Tombol>} />
+            ) : null}
             <TabelData
                 id="karyawan-kasbon"
                 label="Daftar kasbon"

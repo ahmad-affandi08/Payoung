@@ -50,6 +50,14 @@ describe('TabTautan: satu gaya tab untuk seluruh web', () => {
         }
     });
 
+    it('jalur tab tidak melebar sebesar deretan tabnya saat jadi anak flex (halaman tidak ikut tergeser)', () => {
+        render(<TabTautan label="Bagian" tab={[{ label: 'Satu', href: '/a', aktif: true }]} />);
+
+        const jalur = screen.getByRole('navigation', { name: 'Bagian' }).parentElement as HTMLElement;
+        expect(jalur.className).toContain('min-w-0');
+        expect(jalur.className).toContain('max-w-full');
+    });
+
     it('panah kanan muncul saat ada tab di luar layar dan menggeser bilah', () => {
         render(
             <TabTautan
