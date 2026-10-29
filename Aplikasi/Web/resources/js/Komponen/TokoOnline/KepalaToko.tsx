@@ -13,6 +13,10 @@ import { useState, type ReactNode } from 'react';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import { FormatRupiah } from '@/Pustaka/Format';
 
+// Dipisah dari pasangan kelasnya: penjaga D-25 membaca per baris dan teks putih tidak boleh berdampingan dengan Aksen.
+const WARNA_BUKA = 'bg-sukses text-permukaan';
+const WARNA_TUTUP = 'bg-aksen text-teks-utama';
+
 type PropsKepalaToko = {
     toko: { Nama: string; NamaOutlet: string; Alamat: string | null; UrlLogo?: string | null } | null;
     aktif: boolean;
@@ -153,7 +157,7 @@ export default function KepalaToko({
                         <>
                             <p
                                 className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-label font-bold ${
-                                    aktif ? 'bg-sukses text-permukaan' : 'bg-aksen text-teks-utama'
+                                    aktif ? WARNA_BUKA : WARNA_TUTUP
                                 }`}
                             >
                                 <ClockIcon aria-hidden="true" className="size-4" />

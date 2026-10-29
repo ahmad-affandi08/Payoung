@@ -60,6 +60,13 @@ function JalurBolehD25(): array
         'Gaya/Muat.css',
         'Halaman/Publik/Absensi.tsx',
         'Halaman/Publik/TokoOnline.tsx',
+        // D-238: halaman toko online publik dipecah ke `Komponen/TokoOnline/` (kepala, kartu sorotan, kartu produk, keranjang)
+        // dan status pesanan memakai gaya yang sama, jadi ruangnya tetap yang sama dengan D-55 (Aksen = warna merek
+        // toko, bukan penanda status). `JudulHalaman` memuat skala `toko` (nama toko besar di kepala) sebagai definisi
+        // skala, bukan pemakaian di antarmuka back-office.
+        'Komponen/TokoOnline/',
+        'Halaman/Publik/StatusPesananOnline.tsx',
+        'Komponen/Umpan/JudulHalaman.tsx',
         // D-80: kios pesan sendiri dan layar antrian adalah papan yang dibaca dari jarak jauh (nomor antrian, judul layar
         // sambutan), jadi memakai skala besar yang sama dengan hero; tetap bukan bagian back-office atau halaman tenant biasa.
         'Halaman/Publik/Kios.tsx',

@@ -232,7 +232,7 @@ final class TokoOnlineKontroler extends Kontroler
             abort_if($path === null, 404);
 
             return $penyimpan->UnduhPublik($path);
-        });
+        }, fn (): never => abort(404));
     }
 
     public function Gambar(string $slugTenant, string $produk, Request $permintaan, MenuPesanSendiri $menu, PenyimpanGambarProduk $penyimpan): StreamedResponse
