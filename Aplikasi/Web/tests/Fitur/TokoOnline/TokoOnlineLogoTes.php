@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
+use Tests\Pendukung\Penjualan\BantuanPesanSendiri;
 use Tests\Pendukung\Penjualan\BantuanTokoOnline;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
@@ -56,4 +57,19 @@ it('produk favorit pemilik ditandai di menu toko online', function (): void {
     $this->get($k['AlamatToko'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
         ->where('Menu.Produk', fn ($produk) => collect($produk)->firstWhere('Uuid', $k['Kopi']->Uuid)['Favorit'] === true
             && collect($produk)->firstWhere('Uuid', $k['Nasi']->Uuid)['Favorit'] === false));
+});
+
+it('self-order meja memakai logo yang sama: UrlLogo kosong tanpa logo, menunjuk rute publik bila ada', function (): void {
+    $k = BantuanPesanSendiri::Siapkan($this);
+
+    $this->get($k['Alamat'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Toko.UrlLogo', null));
+
+    Storage::fake((string) config('tenant.DiskLogo'));
+    Storage::disk((string) config('tenant.DiskLogo'))->put("logo/{$k['Tenant']->Id}/logo.png", 'png-palsu');
+    $tenant = Tenant::query()->findOrFail($k['Tenant']->Id);
+    $tenant->Pengaturan = [...($tenant->Pengaturan ?? []), 'PathLogo' => "logo/{$k['Tenant']->Id}/logo.png"];
+    $tenant->save();
+
+    $this->get($k['Alamat'])->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->where('Toko.UrlLogo', url("/{$k['Slug']}/logo").'?outlet='.$k['Outlet']->Uuid));
 });

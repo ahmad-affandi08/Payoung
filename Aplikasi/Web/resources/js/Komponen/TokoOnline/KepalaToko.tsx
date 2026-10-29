@@ -44,7 +44,7 @@ export function BuatInisial(nama: string): string {
 }
 
 /** Logo tenant di kepala toko. Gagal dimuat atau belum ada → inisial toko di kotak apricot. */
-function LogoToko({ nama, url }: { nama: string; url: string | null | undefined }) {
+export function LogoToko({ nama, url }: { nama: string; url: string | null | undefined }) {
     const [gagal, AturGagal] = useState(false);
 
     if (url && !gagal) {

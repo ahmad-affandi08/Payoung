@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Katalog\Kueri\MenuPesanSendiri;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
+use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Penjualan\Aksi\BuatPesananMeja;
 use App\Domain\Penjualan\Aksi\BuatPesananSendiri;
 use App\Domain\Penjualan\Aksi\BuatTagihanQrisPesananOnline;
@@ -23,6 +24,7 @@ use App\Domain\Penjualan\Layanan\PenghitungPesanSendiri;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\TagihanQris;
+use App\Domain\Tenant\Kueri\PengaturanStrukTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Publik\HitungPesanSendiriPermintaan;
@@ -61,7 +63,14 @@ final class PesanSendiriKontroler extends Kontroler
 
             return [
                 'Aktif' => $konteks->aktif,
-                'Toko' => ['Nama' => app(NamaTampilUsaha::class)->UntukOutlet($konteks->idOutlet, $idTenant), 'NamaOutlet' => $konteks->namaOutlet],
+                'Toko' => [
+                    'Nama' => app(NamaTampilUsaha::class)->UntukOutlet($konteks->idOutlet, $idTenant),
+                    'NamaOutlet' => $konteks->namaOutlet,
+                    // D-239: logo yang sama dengan toko online (rute publik `/{slug}/logo`); null = kepala memakai inisial.
+                    'UrlLogo' => app(PengaturanStrukTenant::class)->AmbilPathLogoUsaha($idTenant, $konteks->idOutlet) === null
+                        ? null
+                        : url("/{$slugTenant}/logo").'?outlet='.Outlet::query()->whereKey($konteks->idOutlet)->value('Uuid'),
+                ],
                 'Meja' => ['Nama' => $konteks->namaMeja],
                 'Token' => $tokenMeja,
                 'Slug' => $slugTenant,

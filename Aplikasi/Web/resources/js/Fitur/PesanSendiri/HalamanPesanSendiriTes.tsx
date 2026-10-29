@@ -166,6 +166,8 @@ function PasangFetch(
     return panggilan;
 }
 
+const NAMA_TOKO_UJI = 'Kedai Kopi Senja Rasa Nusantara';
+
 describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
     beforeEach(() => window.localStorage.clear());
     afterEach(() => {
@@ -185,6 +187,38 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
         expect(screen.queryByText('Es Kopi Susu Gula Aren Ukuran Besar')).toBeNull();
         expect(screen.getByText('Nasi Goreng Kampung Spesial Telur Mata Sapi')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Makanan' }).getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('kepala meja (D-239): logo tenant, nama meja berukuran terbesar, dan cara bayar. Tanpa logo jadi inisial', () => {
+        PasangFetch();
+        const dengan = {
+            ...props,
+            Toko: { Nama: NAMA_TOKO_UJI, NamaOutlet: 'Solo Baru', UrlLogo: '/kopi-senja/logo?outlet=O1' },
+        };
+        const { unmount: Lepas } = RenderUji(<HalamanPesanSendiri {...dengan} />);
+
+        expect(screen.getByRole('img', { name: `Logo ${NAMA_TOKO_UJI}` }).getAttribute('src')).toBe(
+            '/kopi-senja/logo?outlet=O1',
+        );
+        expect(screen.getByRole('heading', { name: 'Meja 7' }).className).toContain('text-sorotan-besar-hp');
+        expect(screen.getByText('Pesan dari HP')).toBeTruthy();
+        expect(screen.getByText('Bayar di kasir')).toBeTruthy();
+        expect(screen.queryByText('Bayar QRIS')).toBeNull();
+        Lepas();
+
+        RenderUji(<HalamanPesanSendiri {...props} Pembayaran={{ Qris: true }} />);
+        expect(screen.queryByRole('img', { name: /Logo/ })).toBeNull();
+        expect(screen.getByText('Bayar QRIS')).toBeTruthy();
+    });
+
+    it('kartu menu menandai jumlah di keranjang dan menyebut jumlah pilihan menu', () => {
+        PasangFetch();
+        RenderUji(<HalamanPesanSendiri {...props} />);
+
+        expect(screen.getByText(`${String(props.Menu.Produk.length)} pilihan`)).toBeTruthy();
+        expect(screen.queryByText(/di keranjang$/)).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah Nasi Goreng Kampung Spesial Telur Mata Sapi' }));
+        expect(screen.getByText('1 di keranjang')).toBeTruthy();
     });
 
     it('QR tidak dikenal, pesan sendiri belum aktif, dan menu kosong', () => {
