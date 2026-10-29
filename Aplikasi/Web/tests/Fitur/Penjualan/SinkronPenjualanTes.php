@@ -832,7 +832,7 @@ describe('F-07b data-awal', function (): void {
         ])
             // v3.51 jenis pesanan & v3.58 mode kasir (aditif; outlet retail tanpa template = kosong).
             ->and($respons->json('Outlet'))->toBe(['Uuid' => $k['Outlet']->Uuid, 'Kode' => $k['Outlet']->Kode, 'Nama' => $k['Outlet']->Nama, 'Alamat' => 'Jl. Slamet Riyadi 12, Solo', 'Telepon' => null, 'AdaLogo' => false, 'ZonaWaktu' => 'Asia/Jakarta', 'JamTutupBuku' => '04:00', 'JenisPesanan' => [], 'JenisPesananBawaan' => null, 'ModeKasir' => [], 'ModeKasirBawaan' => null])
-            ->and($respons->json('Perangkat'))->toBe(['Uuid' => $k['Perangkat']->Uuid, 'Kode' => $k['Perangkat']->Kode, 'NomorUrutPenjualan' => [], 'NomorUrutRetur' => [], 'NomorUrutIsiDeposit' => []])
+            ->and($respons->json('Perangkat'))->toBe(['Uuid' => $k['Perangkat']->Uuid, 'Kode' => $k['Perangkat']->Kode, 'AwalanAntrian' => null, 'NomorUrutPenjualan' => [], 'NomorUrutRetur' => [], 'NomorUrutIsiDeposit' => []])
             // Belum ada penjualan: objek JSON kosong, bukan larik.
             ->and($respons->getContent())->toContain('"NomorUrutPenjualan":{}')
             ->and($respons->getContent())->toContain('"NomorUrutRetur":{}')

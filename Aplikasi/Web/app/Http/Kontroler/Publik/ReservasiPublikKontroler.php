@@ -136,7 +136,7 @@ final class ReservasiPublikKontroler extends Kontroler
 
     public function Status(string $slugTenant, string $kodeAkses, DaftarReservasi $daftar): SymfonyResponse
     {
-        $props = $this->DalamTenant($slugTenant, function (int $idTenant) use ($slugTenant, $kodeAkses, $daftar): ?array {
+        $props = $this->DalamTenant($slugTenant, function (int $idTenant) use ($kodeAkses, $daftar): ?array {
             $r = Reservasi::query()->where('KodeAkses', strtoupper($kodeAkses))->first();
 
             if ($r === null) {
