@@ -61,7 +61,7 @@ type PropsBilahAlat<T> = {
     KembalikanKolom: () => void;
 };
 
-const kelasTombolAlat = 'h-8 pointer-coarse:h-11 gap-2 border-garis-input text-label font-semibold text-teks-utama';
+const kelasTombolAlat = 'h-8 pointer-coarse:h-11 gap-2 text-label font-semibold';
 
 function TombolSaring({
     definisi,
@@ -90,7 +90,7 @@ function TombolSaring({
         <Popover>
             <PopoverTrigger asChild>
                 <Button type="button" variant="outline" className={kelasTombolAlat}>
-                    <ListFilterIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                    <ListFilterIcon aria-hidden="true" className="size-4" />
                     {definisi.label}
                     {nilai !== '' || definisi.nilaiBawaan ? (
                         <span className="max-w-40 truncate font-normal text-teks-sekunder">
@@ -160,7 +160,7 @@ function AturKolom<T>({
         <Popover>
             <PopoverTrigger asChild>
                 <Button type="button" variant="outline" className={kelasTombolAlat}>
-                    <Columns3Icon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                    <Columns3Icon aria-hidden="true" className="size-4" />
                     Atur kolom
                 </Button>
             </PopoverTrigger>
@@ -307,7 +307,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                 {props.pindaiKamera === true ? (
                     <TombolPindaiKamera
                         ikonSaja
-                        kelasIkon="border-garis-input bg-permukaan"
+                        kelasIkon="bg-permukaan"
                         label={`Pindai barcode untuk mencari di ${props.label}`}
                         saatTerbaca={(barcode) => props.AturCari(barcode)}
                     />
@@ -315,7 +315,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
                 {props.pindaiKamera === 'Seri' ? (
                     <TombolPindaiKamera
                         ikonSaja
-                        kelasIkon="border-garis-input bg-permukaan"
+                        kelasIkon="bg-permukaan"
                         jenisKode="Seri"
                         label={`Pindai nomor seri atau IMEI untuk mencari di ${props.label}`}
                         saatTerbaca={(kode) => props.AturCari(kode)}
@@ -328,7 +328,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
         <Sheet>
             <SheetTrigger asChild>
                 <Button type="button" variant="outline" className={`${kelasTombolAlat} h-11`}>
-                    <FilterIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                    <FilterIcon aria-hidden="true" className="size-4" />
                     Filter{jumlahSaring > 0 ? ` (${String(jumlahSaring)})` : ''}
                 </Button>
             </SheetTrigger>
@@ -375,7 +375,7 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
     ) : props.ekspor ? (
         <Button asChild variant="outline" className={kelasTombolAlat}>
             <a href={props.ekspor.query === '' ? props.ekspor.alamat : `${props.ekspor.alamat}?${props.ekspor.query}`}>
-                <DownloadIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                <DownloadIcon aria-hidden="true" className="size-4" />
                 {props.ekspor.label ?? 'Ekspor'}
             </a>
         </Button>

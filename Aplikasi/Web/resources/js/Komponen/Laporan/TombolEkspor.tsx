@@ -94,7 +94,7 @@ export default function TombolEkspor({
                 <Button type="button" variant="outline" className={cn(kelasTombol, className)}>
                     <DownloadIcon aria-hidden="true" />
                     {label}
-                    <ChevronDownIcon aria-hidden="true" className="size-3.5 text-teks-sekunder" />
+                    <ChevronDownIcon aria-hidden="true" className="size-3.5" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72">

@@ -37,11 +37,7 @@ export default function Keamanan({ Perangkat, HariPerangkatTepercaya, MenitKonfi
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="px-6">
-                    <Button
-                        asChild
-                        variant="outline"
-                        className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold"
-                    >
+                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11 text-label font-semibold">
                         <Link href="/ganti-kata-sandi">Ganti kata sandi</Link>
                     </Button>
                 </CardContent>
@@ -97,7 +93,7 @@ export default function Keamanan({ Perangkat, HariPerangkatTepercaya, MenitKonfi
                                     </div>
                                     <Button
                                         variant="outline"
-                                        className="h-8 pointer-coarse:h-11 shrink-0 border-garis-input text-label font-semibold"
+                                        className="h-8 pointer-coarse:h-11 shrink-0 text-label font-semibold"
                                         onClick={() => Cabut(perangkat)}
                                     >
                                         Cabut
@@ -110,7 +106,7 @@ export default function Keamanan({ Perangkat, HariPerangkatTepercaya, MenitKonfi
                         <div>
                             <Button
                                 variant="outline"
-                                className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold text-bahaya"
+                                className="h-8 pointer-coarse:h-11 text-label font-semibold text-bahaya"
                                 onClick={CabutSemua}
                             >
                                 Cabut semua perangkat

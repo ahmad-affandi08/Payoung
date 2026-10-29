@@ -74,7 +74,7 @@ export default function HalamanKeamananAkun({
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold"
+                                    className="h-8 pointer-coarse:h-11 text-label font-semibold"
                                 >
                                     <Link href="/ganti-kata-sandi">
                                         {Google.KataSandiOtomatis ? 'Buat kata sandi' : 'Ganti kata sandi'}
@@ -124,7 +124,7 @@ export default function HalamanKeamananAkun({
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold"
+                                    className="h-8 pointer-coarse:h-11 text-label font-semibold"
                                 >
                                     <Link href="/kelola/keamanan/pin">Atur PIN kasir</Link>
                                 </Button>
@@ -291,11 +291,7 @@ function PanelEmail({ akun }: { akun: PropsKeamananAkun['Akun'] }) {
                         email.
                     </p>
                     <div className="mt-2">
-                        <Button
-                            asChild
-                            variant="outline"
-                            className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold"
-                        >
+                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11 text-label font-semibold">
                             <Link href="/ganti-kata-sandi">Atur kata sandi dulu</Link>
                         </Button>
                     </div>
@@ -339,7 +335,7 @@ function PanelGoogle({ google }: { google: PropsKeamananAkun['Google'] }) {
                             <Button
                                 asChild
                                 variant="outline"
-                                className="h-8 pointer-coarse:h-11 border-garis-input text-label font-semibold"
+                                className="h-8 pointer-coarse:h-11 text-label font-semibold"
                             >
                                 <Link href="/ganti-kata-sandi">Atur kata sandi</Link>
                             </Button>

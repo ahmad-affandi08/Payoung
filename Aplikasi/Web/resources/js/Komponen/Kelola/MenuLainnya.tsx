@@ -24,9 +24,9 @@ export default function MenuLainnya({ butir, label = 'Aksi lainnya' }: { butir: 
                     variant="outline"
                     size="icon"
                     aria-label={label}
-                    className="h-8 pointer-coarse:h-11 w-8 pointer-coarse:w-11 shrink-0 border-garis-input"
+                    className="h-8 pointer-coarse:h-11 w-8 pointer-coarse:w-11 shrink-0"
                 >
-                    <EllipsisIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
+                    <EllipsisIcon aria-hidden="true" className="size-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-48">

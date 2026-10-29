@@ -20,7 +20,7 @@ const angka = new Intl.NumberFormat('id-ID');
 export default function PaginasiTabel({ label, meta, jumlahBaris, AturHalaman, AturPerHalaman }: PropsPaginasi) {
     const awal = meta.Total === 0 ? 0 : (meta.Halaman - 1) * meta.PerHalaman + 1;
     const akhir = meta.Total === 0 ? 0 : awal + jumlahBaris - 1;
-    const kelasTombol = 'size-11 border-garis-input sm:size-9';
+    const kelasTombol = 'size-11 sm:size-9';
 
     return (
         <nav
