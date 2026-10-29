@@ -229,7 +229,7 @@ export default function PemilihRentangTanggal({
             aria-haspopup="dialog"
             aria-expanded={terbuka}
             onClick={() => AturTerbuka(true)}
-            className="h-8 w-full justify-between border-garis-input bg-permukaan px-3 text-isi font-normal pointer-coarse:h-11"
+            className="h-8 w-full justify-between border-garis-input bg-permukaan px-3 text-isi font-normal text-teks-utama hover:bg-permukaan-redup hover:text-teks-utama pointer-coarse:h-11"
         >
             <span className="flex min-w-0 items-center gap-2">
                 <CalendarRangeIcon aria-hidden="true" className="size-4 text-teks-sekunder" />
