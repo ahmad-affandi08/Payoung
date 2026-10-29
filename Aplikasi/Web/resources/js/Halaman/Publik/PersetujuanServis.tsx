@@ -19,7 +19,12 @@ import { JenisStatusPerintahKerja, type PropsPersetujuanServis } from '@/Tipe/Be
  * mencentang pekerjaan & sparepart yang disetujui (boleh sebagian), lalu menyetujui atau menolak semuanya. Angka
  * dari server; halaman ini tidak menghitung harga. Setelah diputuskan, halaman hanya menampilkan hasilnya.
  */
-export default function HalamanPersetujuanServis({ NamaToko, AlamatDasar, PerintahKerja: pk }: PropsPersetujuanServis) {
+export default function HalamanPersetujuanServis({
+    NamaToko,
+    UrlLogo,
+    AlamatDasar,
+    PerintahKerja: pk,
+}: PropsPersetujuanServis) {
     const { props } = usePage<{ Kilat?: string | null; errors: Record<string, string> }>();
     const [dipilih, AturDipilih] = useState<string[]>(pk.Baris.map((b) => b.Uuid));
     const [catatan, AturCatatan] = useState('');
@@ -31,7 +36,7 @@ export default function HalamanPersetujuanServis({ NamaToko, AlamatDasar, Perint
     const Tolak = () => router.post(`${AlamatDasar}/tolak`, { Catatan: catatan === '' ? null : catatan }, pilihan);
 
     return (
-        <KerangkaPelanggan toko={NamaToko}>
+        <KerangkaPelanggan toko={NamaToko} urlLogo={UrlLogo}>
             <Head title={`Persetujuan servis ${pk.Nomor}`} />
             <header className="flex flex-col gap-1 border-b border-garis pb-4">
                 <JudulHalaman>Estimasi servis {pk.Kendaraan === null ? '' : JudulUnit(pk.Kendaraan)}</JudulHalaman>

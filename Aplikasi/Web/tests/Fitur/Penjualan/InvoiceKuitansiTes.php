@@ -94,6 +94,7 @@ describe('Kuitansi invoice', function (): void {
 
         $this->get("/i/{$kode}/kuitansi/{$pertama->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Publik/KuitansiInvoice')
+            ->where('UrlLogo', null)
             ->where('KodeInvoice', $kode)
             ->where('Dokumen.Kuitansi.Nomor', $pertama->Nomor)
             ->where('Dokumen.Pembeli.NoHp', '')

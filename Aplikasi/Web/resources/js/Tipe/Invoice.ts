@@ -278,7 +278,11 @@ export type DokumenInvoice = {
 
 export type PropsCetakInvoice = DokumenInvoice & { Uuid: string };
 
-export type PropsInvoiceDigital = { Dokumen: DokumenInvoice | null; KodeInvoice: string | null };
+export type PropsInvoiceDigital = {
+    Dokumen: DokumenInvoice | null;
+    KodeInvoice: string | null;
+    UrlLogo?: string | null;
+};
 
 /** Klaim "sudah bayar" dari pelanggan (F-21 bagian 4) yang dilihat penagih di detail invoice. */
 export type KonfirmasiInvoice = {
@@ -458,4 +462,8 @@ export type DokumenKuitansiInvoice = {
     Pembeli: { Nama: string; Alamat: string | null; NoHp: string; Email: string | null; Npwp: string | null };
 };
 
-export type PropsKuitansiInvoiceDigital = { Dokumen: DokumenKuitansiInvoice | null; KodeInvoice: string };
+export type PropsKuitansiInvoiceDigital = {
+    Dokumen: DokumenKuitansiInvoice | null;
+    KodeInvoice: string;
+    UrlLogo?: string | null;
+};

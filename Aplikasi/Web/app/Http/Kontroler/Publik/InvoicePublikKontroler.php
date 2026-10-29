@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Publik;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Organisasi\Kueri\UrlLogoPublik;
 use App\Domain\Penjualan\Aksi\CatatInvoiceDilihat;
 use App\Domain\Penjualan\Aksi\KirimKonfirmasiPembayaranInvoice;
 use App\Domain\Penjualan\Kueri\DokumenKuitansiInvoice;
@@ -27,10 +28,11 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final class InvoicePublikKontroler extends Kontroler
 {
-    public function Tampilkan(string $kodeInvoice, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, InvoicePublik $kueri, CatatInvoiceDilihat $catat): SymfonyResponse
+    public function Tampilkan(string $kodeInvoice, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, InvoicePublik $kueri, CatatInvoiceDilihat $catat, UrlLogoPublik $logo): SymfonyResponse
     {
         $kode = KodeInvoicePublik::Urai($kodeInvoice);
         $dokumen = null;
+        $urlLogo = null;
 
         if ($kode !== null && $profil->CekAda($kode['IdTenant'])) {
             $konteks->Atur($kode['IdTenant']);
@@ -40,6 +42,7 @@ final class InvoicePublikKontroler extends Kontroler
 
                 if ($invoice !== null) {
                     $dokumen = $kueri->Ambil($invoice);
+                    $urlLogo = $logo->Ambil($kode['IdTenant']);
 
                     if ($permintaan->user() === null) {
                         $catat->Jalankan($invoice);
@@ -50,7 +53,7 @@ final class InvoicePublikKontroler extends Kontroler
             }
         }
 
-        return Inertia::render('Publik/InvoiceDigital', ['Dokumen' => $dokumen, 'KodeInvoice' => $dokumen === null ? null : $kodeInvoice])
+        return Inertia::render('Publik/InvoiceDigital', ['Dokumen' => $dokumen, 'KodeInvoice' => $dokumen === null ? null : $kodeInvoice, 'UrlLogo' => $urlLogo])
             ->toResponse($permintaan)
             ->setStatusCode($dokumen === null ? 404 : 200);
     }
@@ -59,10 +62,11 @@ final class InvoicePublikKontroler extends Kontroler
      * Kuitansi satu pembayaran invoice (F-21 bagian 5), tanpa login. Kuncinya kode rahasia invoice; Uuid pembayaran hanya
      * memilih pembayaran mana. Kode salah, draf, dan pembayaran yang bukan milik invoice ini dijawab 404 yang sama.
      */
-    public function Kuitansi(string $kodeInvoice, string $pembayaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, InvoicePublik $kueri, DokumenKuitansiInvoice $dokumenKuitansi): SymfonyResponse
+    public function Kuitansi(string $kodeInvoice, string $pembayaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, InvoicePublik $kueri, DokumenKuitansiInvoice $dokumenKuitansi, UrlLogoPublik $logo): SymfonyResponse
     {
         $kode = KodeInvoicePublik::Urai($kodeInvoice);
         $dokumen = null;
+        $urlLogo = null;
 
         if ($kode !== null && $profil->CekAda($kode['IdTenant'])) {
             $konteks->Atur($kode['IdTenant']);
@@ -70,12 +74,13 @@ final class InvoicePublikKontroler extends Kontroler
             try {
                 $invoice = $kueri->Cari($kode['KodePublik']);
                 $dokumen = $invoice === null ? null : $dokumenKuitansi->Ambil($invoice, $pembayaran, untukPublik: true);
+                $urlLogo = $dokumen === null ? null : $logo->Ambil($kode['IdTenant']);
             } finally {
                 $konteks->Kosongkan();
             }
         }
 
-        return Inertia::render('Publik/KuitansiInvoice', ['Dokumen' => $dokumen, 'KodeInvoice' => $kodeInvoice])
+        return Inertia::render('Publik/KuitansiInvoice', ['Dokumen' => $dokumen, 'KodeInvoice' => $kodeInvoice, 'UrlLogo' => $urlLogo])
             ->toResponse($permintaan)
             ->setStatusCode($dokumen === null ? 404 : 200);
     }

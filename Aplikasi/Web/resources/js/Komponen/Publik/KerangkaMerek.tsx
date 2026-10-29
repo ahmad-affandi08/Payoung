@@ -14,8 +14,8 @@ type PropsKerangkaMerek = {
     skala?: 'toko' | 'situs';
     /** Kalimat pendek di bawah judul, ditaruh di dalam kepala gelap. */
     keterangan?: ReactNode;
-    /** `xl` (bawaan) untuk satu kolom sempit, `3xl` untuk halaman berdaftar seperti Akun saya. */
-    lebar?: 'xl' | '3xl';
+    /** `xl` (bawaan) untuk satu kolom sempit, `3xl` untuk halaman berdaftar seperti Akun saya, `4xl` untuk dokumen A4. */
+    lebar?: 'xl' | '3xl' | '4xl';
     children: ReactNode;
 };
 
@@ -33,12 +33,12 @@ export default function KerangkaMerek({
     lebar = 'xl',
     children,
 }: PropsKerangkaMerek) {
-    const kelasLebar = lebar === '3xl' ? 'max-w-3xl' : 'max-w-xl';
+    const kelasLebar = { xl: 'max-w-xl', '3xl': 'max-w-3xl', '4xl': 'max-w-4xl' }[lebar];
     const nama = toko?.Nama ?? 'Payoung';
 
     return (
-        <div className="flex min-h-dvh flex-col bg-latar text-isi text-teks-utama">
-            <header className="bg-brand-gelap pb-14 text-permukaan">
+        <div className="flex min-h-dvh flex-col bg-latar text-isi text-teks-utama print:bg-permukaan">
+            <header className="bg-brand-gelap pb-14 text-permukaan print:hidden">
                 <div className={`mx-auto flex w-full ${kelasLebar} flex-col gap-4 px-4 pt-5`}>
                     <div className="flex items-center gap-3">
                         <LogoToko nama={nama} url={toko?.UrlLogo} />
@@ -53,10 +53,12 @@ export default function KerangkaMerek({
                     </div>
                 </div>
             </header>
-            <main className={`mx-auto -mt-8 flex w-full ${kelasLebar} flex-1 flex-col gap-4 px-4 pb-6 tepi-bawah-aman`}>
+            <main
+                className={`mx-auto -mt-8 flex w-full ${kelasLebar} flex-1 flex-col gap-4 px-4 pb-6 tepi-bawah-aman print:mt-0 print:max-w-none print:p-0`}
+            >
                 {children}
             </main>
-            <footer className="py-4 text-center text-label text-teks-sekunder">Didukung Payoung</footer>
+            <footer className="py-4 text-center text-label text-teks-sekunder print:hidden">Didukung Payoung</footer>
         </div>
     );
 }

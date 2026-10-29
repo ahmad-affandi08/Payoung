@@ -12,6 +12,7 @@ use App\Domain\Bengkel\Layanan\TautanPersetujuanServis;
 use App\Domain\Bengkel\Model\PerintahKerja;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
+use App\Domain\Organisasi\Kueri\UrlLogoPublik;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use Closure;
@@ -41,6 +42,7 @@ final class PersetujuanServisKontroler extends Kontroler
 
             return Inertia::render('Publik/PersetujuanServis', [
                 'NamaToko' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
+                'UrlLogo' => app(UrlLogoPublik::class)->Ambil($idTenant),
                 'AlamatDasar' => TautanPersetujuanServis::Buat($slugTenant, $tokenServis),
                 'PerintahKerja' => [
                     'Nomor' => $d['Nomor'],

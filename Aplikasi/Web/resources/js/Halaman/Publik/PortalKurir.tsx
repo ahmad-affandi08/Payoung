@@ -31,6 +31,7 @@ type PengirimanKurir = {
 
 type PropsPortalKurir = {
     NamaToko: string;
+    UrlLogo?: string | null;
     NamaKurir: string;
     AlamatDasar: string;
     Pengiriman: PengirimanKurir[];
@@ -49,13 +50,19 @@ function JenisStatus(status: PengirimanKurir['Status']): 'sukses' | 'peringatan'
  * F-10 (v3.49) portal kurir: halaman HP untuk kurir tanpa akun Payoung, dibuka lewat tautan rahasia dari toko. Kurir
  * menandai berangkat, menyerahkan barang (nama penerima + foto bukti opsional), atau gagal mengirim (alasan).
  */
-export default function HalamanPortalKurir({ NamaToko, NamaKurir, AlamatDasar, Pengiriman }: PropsPortalKurir) {
+export default function HalamanPortalKurir({
+    NamaToko,
+    UrlLogo,
+    NamaKurir,
+    AlamatDasar,
+    Pengiriman,
+}: PropsPortalKurir) {
     const { props } = usePage<{ Kilat?: string | null; errors: Record<string, string> }>();
     const berjalan = Pengiriman.filter((p) => p.Status === 'Dikemas' || p.Status === 'Dikirim');
     const selesai = Pengiriman.filter((p) => p.Status !== 'Dikemas' && p.Status !== 'Dikirim');
 
     return (
-        <KerangkaPelanggan toko={NamaToko}>
+        <KerangkaPelanggan toko={NamaToko} urlLogo={UrlLogo}>
             <Head title="Portal kurir" />
             <header className="border-b border-garis pb-4">
                 <JudulHalaman>Pengiriman {NamaKurir}</JudulHalaman>

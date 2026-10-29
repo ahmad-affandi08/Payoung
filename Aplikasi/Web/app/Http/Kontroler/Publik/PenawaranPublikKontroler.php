@@ -7,6 +7,7 @@ namespace App\Http\Kontroler\Publik;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Organisasi\Kueri\UrlLogoPublik;
 use App\Domain\Penjualan\Aksi\CatatPenawaranDilihat;
 use App\Domain\Penjualan\Aksi\PutuskanPenawaran;
 use App\Domain\Penjualan\Enum\KeputusanPenawaran;
@@ -29,10 +30,11 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final class PenawaranPublikKontroler extends Kontroler
 {
-    public function Tampilkan(string $kodePenawaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, PenawaranPublik $kueri, CatatPenawaranDilihat $catat): SymfonyResponse
+    public function Tampilkan(string $kodePenawaran, Request $permintaan, KonteksTenant $konteks, ProfilTenant $profil, PenawaranPublik $kueri, CatatPenawaranDilihat $catat, UrlLogoPublik $logo): SymfonyResponse
     {
         $kode = KodeInvoicePublik::Urai($kodePenawaran);
         $dokumen = null;
+        $urlLogo = null;
 
         if ($kode !== null && $profil->CekAda($kode['IdTenant'])) {
             $konteks->Atur($kode['IdTenant']);
@@ -42,6 +44,7 @@ final class PenawaranPublikKontroler extends Kontroler
 
                 if ($penawaran !== null) {
                     $dokumen = $kueri->Ambil($penawaran);
+                    $urlLogo = $logo->Ambil($kode['IdTenant']);
 
                     if ($permintaan->user() === null) {
                         $catat->Jalankan($penawaran);
@@ -52,7 +55,7 @@ final class PenawaranPublikKontroler extends Kontroler
             }
         }
 
-        return Inertia::render('Publik/PenawaranDigital', ['Dokumen' => $dokumen, 'KodePenawaran' => $dokumen === null ? null : $kodePenawaran])
+        return Inertia::render('Publik/PenawaranDigital', ['Dokumen' => $dokumen, 'KodePenawaran' => $dokumen === null ? null : $kodePenawaran, 'UrlLogo' => $urlLogo])
             ->toResponse($permintaan)
             ->setStatusCode($dokumen === null ? 404 : 200);
     }

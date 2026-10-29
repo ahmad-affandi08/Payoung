@@ -8,6 +8,8 @@ import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 type PropsKerangka = {
     /** Nama outlet yang tampil di kepala (D-77). Tanpa nama, kepala menampilkan merek Payoung. */
     toko?: string | null | undefined;
+    /** Logo tenant (D-242) bila halaman tahu alamatnya, selain itu kepala memakai inisial toko. */
+    urlLogo?: string | null | undefined;
     children: ReactNode;
 };
 
@@ -16,12 +18,12 @@ type PropsKerangka = {
  * berlangganan): kepala bernama outlet, isi satu kolom di atas latar lembut, dan kaki "Didukung Payoung". Hanya
  * pembungkus visual; isi dan aksinya tetap milik halaman masing-masing (D-92).
  */
-export default function KerangkaPelanggan({ toko, children }: PropsKerangka) {
+export default function KerangkaPelanggan({ toko, urlLogo, children }: PropsKerangka) {
     return (
         <div className="flex min-h-screen flex-col bg-latar text-isi text-teks-utama">
             <header className="bg-brand-gelap text-permukaan">
                 <div className="mx-auto flex h-16 w-full max-w-xl items-center gap-3 px-4">
-                    <LogoToko nama={toko ?? 'Payoung'} url={null} />
+                    <LogoToko nama={toko ?? 'Payoung'} url={urlLogo} />
                     <span className="min-w-0 truncate text-subjudul font-bold">{toko ?? 'Payoung'}</span>
                 </div>
             </header>

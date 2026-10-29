@@ -185,4 +185,8 @@ export type DokumenPenawaran = {
 
 export type PropsCetakPenawaran = DokumenPenawaran & { Uuid: string };
 
-export type PropsPenawaranDigital = { Dokumen: DokumenPenawaran | null; KodePenawaran: string | null };
+export type PropsPenawaranDigital = {
+    Dokumen: DokumenPenawaran | null;
+    KodePenawaran: string | null;
+    UrlLogo?: string | null;
+};

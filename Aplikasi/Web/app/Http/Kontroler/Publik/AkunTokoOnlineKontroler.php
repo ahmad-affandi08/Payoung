@@ -7,7 +7,7 @@ namespace App\Http\Kontroler\Publik;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
-use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Organisasi\Kueri\UrlLogoPublik;
 use App\Domain\Pelanggan\Aksi\DaftarkanPelangganOnline;
 use App\Domain\Pelanggan\Aksi\MintaKodeMasukPelanggan;
 use App\Domain\Pelanggan\Aksi\PerbaruiProfilPelangganOnline;
@@ -18,7 +18,6 @@ use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Penjualan\Kueri\RiwayatBelanjaPembeliOnline;
 use App\Domain\Penjualan\Layanan\PenentuAkunTokoOnline;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
-use App\Domain\Tenant\Kueri\PengaturanStrukTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Publik\AkunTokoOnlinePermintaan;
@@ -61,7 +60,7 @@ final class AkunTokoOnlineKontroler extends Kontroler
                 'Toko' => [
                     'Nama' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
                     // D-241: logo yang sama dengan toko online; null = kepala memakai inisial toko.
-                    'UrlLogo' => $this->UrlLogo($idTenant, $slugTenant),
+                    'UrlLogo' => app(UrlLogoPublik::class)->Ambil($idTenant),
                 ],
                 'AkunAktif' => $this->akun->CekAktif(),
                 'Pelanggan' => $pelanggan === null ? null : $this->profilPembeli->Ambil($pelanggan),
@@ -185,18 +184,6 @@ final class AkunTokoOnlineKontroler extends Kontroler
     {
         return $this->sesi->CariPelanggan($request->cookie(SesiPembeliOnline::NAMA_COOKIE))
             ?? throw new PelanggaranAturanBisnis('BelumMasuk', 'Sesi Anda sudah berakhir. Silakan masuk lagi.', 'Umum', 401);
-    }
-
-    /** Logo tenant lewat rute publik `/{slug}/logo` (D-238), outlet pertama yang punya logo; null = kepala memakai inisial. */
-    private function UrlLogo(int $idTenant, string $slugTenant): ?string
-    {
-        $outlet = Outlet::query()->orderBy('Id')->first(['Id', 'Uuid']);
-
-        if ($outlet === null || app(PengaturanStrukTenant::class)->AmbilPathLogoUsaha($idTenant, $outlet->Id) === null) {
-            return null;
-        }
-
-        return url("/{$slugTenant}/logo").'?outlet='.$outlet->Uuid;
     }
 
     private function DalamTenant(string $slugTenant, Closure $kerja, ?Closure $tidakDikenal = null): mixed

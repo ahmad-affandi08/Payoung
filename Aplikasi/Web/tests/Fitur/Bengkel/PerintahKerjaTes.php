@@ -191,6 +191,7 @@ it('alur penuh: kendaraan → perintah kerja berharga server → persetujuan seb
     app(KonteksTenant::class)->Kosongkan();
     $this->get($jalur)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
         ->component('Publik/PersetujuanServis')
+        ->where('UrlLogo', null)
         ->where('PerintahKerja.BolehDiputuskan', true)
         ->where('PerintahKerja.Kendaraan.NomorPolisi', 'AD 1234 XY')
         ->where('PerintahKerja.Total', '200000.00')

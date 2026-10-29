@@ -244,6 +244,7 @@ describe('Penawaran: halaman publik dan keputusan pelanggan', function (): void 
         Auth::logout();
         $this->get('/p/'.$kode)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Publik/PenawaranDigital')
+            ->where('UrlLogo', null)
             ->where('Dokumen.Penawaran.Nomor', $draf->Nomor)
             ->where('Dokumen.Penawaran.BisaDiputuskan', true)
             ->where('Dokumen.Penawaran.StatusTampil', 'MenungguKeputusan')

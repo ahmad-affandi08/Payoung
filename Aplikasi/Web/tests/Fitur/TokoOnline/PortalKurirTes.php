@@ -73,6 +73,7 @@ it('kurir membuka tautan, berangkat, lalu menyerahkan dengan foto tanpa EXIF. St
 
     $this->get($tautan)->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
         ->component('Publik/PortalKurir')
+        ->where('UrlLogo', null)
         ->where('NamaKurir', 'Joko Santoso')
         ->has('Pengiriman', 1)
         ->where('Pengiriman.0.Nomor', $k['Pesanan']->Nomor)

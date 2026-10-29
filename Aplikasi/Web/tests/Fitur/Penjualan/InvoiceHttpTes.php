@@ -461,6 +461,7 @@ describe('HTTP halaman invoice publik', function (): void {
         Auth::logout();
         $this->get("/i/{$kode}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Publik/InvoiceDigital')
+            ->where('UrlLogo', null)
             ->where('Dokumen.Invoice.Nomor', $invoice->Nomor)
             ->where('Dokumen.Pembeli.Nama', 'PT Sumber Makmur Sentosa')
             ->where('Dokumen.Pembeli.NoHp', '')

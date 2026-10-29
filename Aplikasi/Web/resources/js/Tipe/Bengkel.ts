@@ -236,6 +236,7 @@ export type BarisPersetujuanPublik = {
 
 export type PropsPersetujuanServis = {
     NamaToko: string;
+    UrlLogo?: string | null;
     AlamatDasar: string;
     PerintahKerja: {
         Nomor: string;
