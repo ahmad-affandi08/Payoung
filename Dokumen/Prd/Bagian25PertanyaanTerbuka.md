@@ -269,6 +269,7 @@
 | D-233 | Dari pemilik produk, 29/10/2026. Tombol sekunder berlatar putih memakai border dan teks warna primary (mengikuti back-office Majoo), bukan border abu dan teks gelap. Pemicu isian (dropdown, pemilih tanggal) tidak ikut karena harus terlihat sebagai kolom isian. |
 | D-234 | Dari pemilik produk, 29/10/2026. Aplikasi Owner memakai ilustrasi mini bergaya SVG (diekspor PNG dari skrip sumber) untuk aksi cepat, baris menu penting (Kunci aplikasi, Bantuan, Keluar), dan ubin angka Beranda. Baris menu lain tetap ikon Material sampai diminta. |
 | D-235 | Dari pemilik produk, 29/10/2026. Keadaan kosong layar penuh di Aplikasi Owner satu bentuk (ilustrasi merek, judul tebal, kalimat penjelas, rata tengah) dan berada di tengah sisa layar. Keadaan kosong yang berada di dalam kartu laporan atau Beranda (bagian kecil) tetap ringkas. |
+| D-236 | Dari pemilik produk, 29/10/2026. Grafik di Aplikasi Owner dibuat tanpa pustaka grafik (CustomPainter) supaya ukuran dan perawatan tidak bertambah. Aturan: angka selalu tertulis di dekat grafik (legenda berpersen, tooltip/semantik), warna dari token dan tidak pernah satu-satunya pembawa makna (§17.6.11), irisan paling banyak lima ditambah "Lainnya", grafik disembunyikan bila datanya tidak bermakna (kurang dari dua baris, atau rugi pada donat laba rugi). Donat stok tidak dibuat karena ringkasan stok API tidak memisahkan produk sehat/kritis/minus secara andal. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

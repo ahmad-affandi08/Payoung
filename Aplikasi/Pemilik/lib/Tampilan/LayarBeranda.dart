@@ -8,6 +8,7 @@ import 'BilahSaringan.dart';
 import 'DaftarPengumuman.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/GrafikKomposisi.dart';
 import 'Komponen/KomponenModern.dart';
 import 'LayarKunciAplikasi.dart';
 import 'LayarNotifikasi.dart';
@@ -41,6 +42,29 @@ class _IsiBeranda extends ConsumerWidget {
 
   final DasborPemilik dasbor;
 
+  /// Batang omzet per jam dari jam pertama sampai terakhir yang ada penjualan (jam kosong = batang nol). Nilai tiap
+  /// batang ada di tooltip dan label semantik.
+  static List<BatangGrafik> _BatangJam(List<BarisNilai> perJam) {
+    final nilai = <int, double>{
+      for (final j in perJam)
+        if (int.tryParse(j.nama) case final int jam) jam: double.tryParse(j.omzet) ?? 0,
+    };
+    final maks = nilai.values.fold<double>(0, (m, n) => n > m ? n : m);
+    if (nilai.isEmpty || maks <= 0) {
+      return const [];
+    }
+    final awal = nilai.keys.reduce((a, b) => a < b ? a : b);
+    final akhir = nilai.keys.reduce((a, b) => a > b ? a : b);
+    return [
+      for (var jam = awal; jam <= akhir; jam++)
+        BatangGrafik(
+          label: '$jam',
+          rasio: (nilai[jam] ?? 0) / maks,
+          keterangan: 'Jam $jam: ${FormatTampilan.Rupiah('${(nilai[jam] ?? 0).round()}')}',
+        ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final teks = Theme.of(context).textTheme;
@@ -49,7 +73,6 @@ class _IsiBeranda extends ConsumerWidget {
 
     double Maks(List<BarisNilai> daftar) =>
         daftar.fold<double>(0, (m, b) => (double.tryParse(b.omzet) ?? 0) > m ? double.tryParse(b.omzet) ?? 0 : m);
-    final maksOutlet = Maks(d.perOutlet);
     final maksProduk = Maks(d.produkTeratas);
 
     // Jam tersibuk untuk kartu sorotan (hanya bila ada penjualan per jam).
@@ -139,19 +162,20 @@ class _IsiBeranda extends ConsumerWidget {
             lebarIlustrasi: 132,
           ),
         ],
+        if (_BatangJam(d.perJam) case final List<BatangGrafik> batangJam when batangJam.length >= 2) ...[
+          const _JudulBagian(judul: 'Omzet per jam'),
+          KartuModern(anak: GrafikBatang(batang: batangJam)),
+        ],
         if (d.perOutlet.length > 1) ...[
           const _JudulBagian(judul: 'Per outlet'),
           KartuModern(
-            anak: Column(
-              children: [
-                for (final o in d.perOutlet)
-                  _BarisPeringkat(
-                    judul: o.nama,
-                    keterangan: '${o.transaksi ?? 0} transaksi',
-                    nilai: FormatTampilan.Rupiah(o.omzet),
-                    rasio: maksOutlet == 0 ? 0 : (double.tryParse(o.omzet) ?? 0) / maksOutlet,
-                  ),
-              ],
+            anak: PanelKomposisi(
+              irisan: IrisanKomposisi.DariBarisNilai(
+                d.perOutlet,
+                rincian: (o) => '${FormatTampilan.Rupiah(o.omzet)} | ${o.transaksi ?? 0} transaksi',
+              ),
+              judulPusat: 'Outlet',
+              nilaiPusat: '${d.perOutlet.length}',
             ),
           ),
         ],

@@ -9,6 +9,7 @@ import '../Data/KlienPemilik.dart';
 import 'BilahSaringan.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/GrafikKomposisi.dart';
 import 'Komponen/KomponenModern.dart';
 
 const List<(ModeLaporan, String)> _modeLaporan = [
@@ -177,6 +178,12 @@ class _Penjualan extends ConsumerWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (_GrafikPenjualan.Layak(l.baris, kelompok)) ...[
+                      KartuModern(
+                        anak: _GrafikPenjualan(baris: l.baris, kelompok: kelompok, totalOmzet: l.totalOmzet),
+                      ),
+                      const SizedBox(height: TokenJarak.jarak12),
+                    ],
                     KartuModern(
                       padding: EdgeInsets.zero,
                       anak: Column(
@@ -208,6 +215,59 @@ class _Penjualan extends ConsumerWidget {
                     ),
                   ],
                 ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Grafik penjualan sesuai kelompok: per jam = batang jam 0 sampai 23 yang ada, selain itu donat komposisi omzet
+/// (paling banyak lima irisan, sisanya "Lainnya"). Daftar di bawahnya tetap memuat semua angka.
+class _GrafikPenjualan extends StatelessWidget {
+  const _GrafikPenjualan({required this.baris, required this.kelompok, required this.totalOmzet});
+
+  final List<BarisNilai> baris;
+  final String kelompok;
+  final String totalOmzet;
+
+  /// Perlu setidaknya dua baris berangka positif supaya perbandingan bermakna.
+  static bool Layak(List<BarisNilai> baris, String kelompok) =>
+      baris.where((b) => (double.tryParse(b.omzet) ?? 0) > 0).length >= 2;
+
+  @override
+  Widget build(BuildContext context) {
+    if (kelompok == 'Jam') {
+      final nilai = {for (final b in baris) b.nama: double.tryParse(b.omzet) ?? 0};
+      final jam = baris.map((b) => int.tryParse(b.nama)).whereType<int>().toList()..sort();
+      final maks = nilai.values.fold<double>(0, (m, n) => n > m ? n : m);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Omzet per jam', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: TokenJarak.jarak12),
+          GrafikBatang(
+            batang: [
+              if (jam.isNotEmpty)
+                for (var j = jam.first; j <= jam.last; j++)
+                  BatangGrafik(
+                    label: '$j',
+                    rasio: maks <= 0 ? 0 : (nilai['$j'] ?? 0) / maks,
+                    keterangan: 'Jam $j: ${FormatTampilan.Rupiah('${(nilai['$j'] ?? 0).round()}')}',
+                  ),
+            ],
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Komposisi omzet', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: TokenJarak.jarak12),
+        PanelKomposisi(
+          irisan: IrisanKomposisi.DariBarisNilai(baris),
+          judulPusat: 'Total',
+          nilaiPusat: FormatTampilan.Rupiah(totalOmzet),
         ),
       ],
     );
@@ -271,6 +331,19 @@ class _LabaRugi extends ConsumerWidget {
                 ),
               ),
             ),
+            if (_AlokasiPendapatan(l) case final List<IrisanKomposisi> irisan) ...[
+              const SizedBox(height: TokenJarak.jarak12),
+              KartuModern(
+                anak: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Ke mana pendapatan pergi', style: teks.titleSmall),
+                    const SizedBox(height: TokenJarak.jarak12),
+                    PanelKomposisi(irisan: irisan, judulPusat: 'Pendapatan', nilaiPusat: '100%'),
+                  ],
+                ),
+              ),
+            ],
             if (akun.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(top: TokenJarak.jarak12),
@@ -306,6 +379,27 @@ class _LabaRugi extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Pembagian pendapatan ke HPP, beban, dan laba bersih. Hanya bila pendapatan positif dan ketiganya tidak negatif
+  /// (rugi tidak bisa digambar sebagai porsi); selain itu null dan angka tetap terbaca di daftar.
+  static List<IrisanKomposisi>? _AlokasiPendapatan(LabaRugiPemilik l) {
+    // Hanya tanda angka yang diperiksa (porsi gambar), bukan perhitungan uang.
+    int Tanda(String nilai) => (double.tryParse(nilai) ?? 0).sign.toInt();
+    if (Tanda(l.pendapatan.nilai) <= 0 ||
+        Tanda(l.hpp.nilai) < 0 ||
+        Tanda(l.beban.nilai) < 0 ||
+        Tanda(l.labaBersih.nilai) < 0) {
+      return null;
+    }
+    return [
+      for (final (label, n) in [
+        ('Harga pokok penjualan', l.hpp.nilai),
+        ('Beban', l.beban.nilai),
+        ('Laba bersih', l.labaBersih.nilai),
+      ])
+        if ((double.tryParse(n) ?? 0) > 0) IrisanKomposisi(label: label, nilai: double.parse(n)),
+    ];
   }
 
   static String _Kelompok(String kunci) => switch (kunci) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
+import 'package:pemilik/Tampilan/Komponen/GrafikKomposisi.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
@@ -105,6 +106,11 @@ void main() {
       expect(find.text('Rp 2.000.000'), findsOneWidget);
       expect(find.text('Rp 750.000'), findsOneWidget);
       expect(find.text('+25% dari bulan sebelumnya'), findsOneWidget);
+      expect(find.text('Ke mana pendapatan pergi'), findsOneWidget);
+      expect(find.byType(GrafikDonat), findsOneWidget, reason: 'D-236: donat HPP, beban, dan laba bersih.');
+      expect(find.text('60%'), findsOneWidget, reason: 'HPP 3.000.000 dari pendapatan 5.000.000.');
+      expect(find.text('25%'), findsOneWidget);
+      expect(find.text('15%'), findsOneWidget);
       expect(find.text('Penjualan Barang'), findsOneWidget);
       expect(find.text('4-1000 | Pendapatan'), findsOneWidget);
       expect(find.text('6-2000 | Beban'), findsOneWidget);

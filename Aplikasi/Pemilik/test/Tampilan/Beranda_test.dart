@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
+import 'package:pemilik/Tampilan/Komponen/GrafikKomposisi.dart';
 import 'package:pemilik/Tampilan/Komponen/KomponenModern.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -62,6 +63,13 @@ void main() {
     await tester.scrollUntilVisible(find.text('Jam tersibuk: 12.00'), 200);
     expect(find.text('Es Kopi Susu Aren paling laku hari ini.'), findsOneWidget);
     expect(find.byKey(const ValueKey('IlustrasiToko')), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Omzet per jam'), 200);
+    expect(find.byType(GrafikBatang), findsOneWidget, reason: 'D-236: batang omzet per jam berlabel jam.');
+    expect(find.bySemanticsLabel(RegExp(r'Jam 12: Rp\s700\.000')), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Per outlet'), 200);
+    expect(find.byType(GrafikDonat), findsOneWidget, reason: 'D-236: donat komposisi omzet per outlet.');
+    expect(find.text('64%'), findsOneWidget, reason: 'Solo Baru 800.000 dari 1.250.000.');
+    expect(find.text('Rp 800.000 | 30 transaksi'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Produk terlaris'), 200);
     expect(find.text('Es Kopi Susu Aren'), findsOneWidget);
     expect(find.text('25 terjual'), findsOneWidget);
