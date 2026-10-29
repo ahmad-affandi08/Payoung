@@ -24,6 +24,7 @@ flutter:
     - assets/fonts/LisensiOFL.txt
     - assets/merek/
     - assets/ilustrasi/
+    - assets/ilustrasi/owner/
   fonts:
     - family: AtkinsonHyperlegibleNext
       fonts:

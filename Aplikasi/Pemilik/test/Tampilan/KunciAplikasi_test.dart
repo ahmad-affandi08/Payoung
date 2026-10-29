@@ -261,8 +261,9 @@ void main() {
     await Pasang(tester);
     await Ketik(tester, '246810');
 
-    await tester.tap(find.byTooltip('Akun'));
+    await tester.tap(find.text('Lainnya'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Kunci aplikasi'), 200);
     await tester.tap(find.text('Kunci aplikasi'));
     await tester.pumpAndSettle();
     expect(find.text('PIN aktif'), findsOneWidget);

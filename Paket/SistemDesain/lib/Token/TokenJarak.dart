@@ -13,6 +13,12 @@ abstract final class TokenJarak {
   static const double radiusKontrol = 6;
   static const double radiusPanel = 8;
 
+  /// Bahasa bentuk modern Aplikasi Owner (D-231): kartu besar membulat, kartu sorotan, tombol, dan kapsul.
+  static const double radiusKartu = 24;
+  static const double radiusKartuUtama = 28;
+  static const double radiusTombol = 16;
+  static const double radiusKapsul = 999;
+
   /// Target sentuh minimum mode Nyaman.
   static const double targetSentuh = 48;
 

@@ -4,12 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
+import 'package:pemilik/Tampilan/Komponen/KomponenModern.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
 /// OWN-03 / X4 persetujuan jarak jauh di Aplikasi Owner: lencana jumlah menunggu, kartu permintaan (judul, nilai,
 /// outlet | perangkat | pemohon, rincian), setujui dengan konfirmasi, tolak wajib alasan ≥ 5 huruf, galat server
 /// (sudah diputuskan/kedaluwarsa) tampil sebagai pesan; di 360 dan 800 dp.
+
+/// Lencana jumlah menunggu di bilah navigasi bawah (Beranda punya lencana "perlu tindakan" sendiri).
+Finder LencanaNav(String jumlah) =>
+    find.descendant(of: find.byType(BilahNavigasiMengambang), matching: find.widgetWithText(LencanaAngka, jumlah));
+
 void main() {
   late ServerTiruan server;
   late PenyimpanSesiMemori sesi;
@@ -107,7 +113,7 @@ void main() {
       expect(sesi.isi[PenyimpanSesi.kunciTenant], 'T1');
 
       // Lencana jumlah menunggu di navigasi bawah.
-      expect(find.widgetWithText(Badge, '2'), findsOneWidget);
+      expect(LencanaNav('2'), findsOneWidget);
       await tester.tap(find.text('Persetujuan'));
       await tester.pumpAndSettle();
       expect(find.text('Kas keluar di atas batas'), findsOneWidget);
@@ -115,6 +121,8 @@ void main() {
       expect(find.textContaining('Solo Baru | Kasir Depan | Rina Wulandari'), findsWidgets);
       expect(find.textContaining('Galon 12 + es balok 4'), findsWidgets);
 
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Setujui').first);
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Setujui').first);
       await tester.pumpAndSettle();
       expect(find.text('Setujui "Kas keluar di atas batas"?'), findsOneWidget);
@@ -122,8 +130,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(server.permintaan.any((p) => p.url.path.endsWith('/persetujuan/KAS1/setujui')), isTrue);
       expect(find.text('Kas keluar di atas batas'), findsNothing);
-      expect(find.widgetWithText(Badge, '1'), findsOneWidget);
+      expect(LencanaNav('1'), findsOneWidget);
 
+      // Pesan hasil (snackbar melayang) menutup kartu berikutnya sampai hilang sendiri.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(OutlinedButton, 'Tolak'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const ValueKey('AlasanTolak')), 'no');

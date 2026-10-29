@@ -6,6 +6,7 @@ import '../Aplikasi/Penyedia.dart';
 import 'BilahSaringan.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// Shift kasir pada tanggal terpilih: siapa, kapan, dan selisih kas saat tutup shift (OWN-03/05).
 class LayarShift extends ConsumerWidget {
@@ -26,7 +27,7 @@ class LayarShift extends ConsumerWidget {
           nilai: shift,
           saatCobaLagi: () => ref.invalidate(penyediaShift),
           isi: (daftar) => daftar.isEmpty
-              ? const KotakPanel(
+              ? const KartuModern(
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Penjualan,
                     ikon: Icons.schedule_outlined,
@@ -34,8 +35,8 @@ class LayarShift extends ConsumerWidget {
                     keterangan: 'Shift kasir, jam buka dan tutup, serta selisih kas muncul di sini.',
                   ),
                 )
-              : KotakPanel(
-                  rapat: true,
+              : KartuModern(
+                  padding: EdgeInsets.zero,
                   anak: Column(
                     children: [
                       for (final (i, s) in daftar.indexed) ...[

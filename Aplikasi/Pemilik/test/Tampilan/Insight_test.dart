@@ -71,9 +71,12 @@ void main() {
     expect(LayarInsight.Persen(null), isNull);
   });
 
-  testWidgets('kartu Beranda meringkas minggu lalu. Ketuk membuka layar Insight', (tester) async {
+  testWidgets('baris di tab Lainnya meringkas minggu lalu. Ketuk membuka layar Insight', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Insight minggu lalu'), 200);
 
     expect(find.text('Insight minggu lalu'), findsOneWidget);
     expect(find.textContaining('(+745,5%) | 2 transaksi'), findsOneWidget);
@@ -87,11 +90,13 @@ void main() {
     expect(find.text('habis ±1 hari lagi | Toko | saran beli 40 krg'), findsOneWidget);
   });
 
-  testWidgets('tanpa penjualan untuk dibandingkan: kartu tidak tampil', (tester) async {
+  testWidgets('tanpa penjualan untuk dibandingkan: baris Insight tidak tampil', (tester) async {
     server.penangan = (p) => Penangan(p, kosong: true);
     await PasangPemilik(tester, server: server, sesi: sesi);
 
     expect(find.text('Omzet'), findsOneWidget);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
     expect(find.text('Insight minggu lalu'), findsNothing);
   });
 }

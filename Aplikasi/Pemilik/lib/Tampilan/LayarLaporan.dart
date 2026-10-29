@@ -9,6 +9,7 @@ import '../Data/KlienPemilik.dart';
 import 'BilahSaringan.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/KomponenModern.dart';
 
 const List<(ModeLaporan, String)> _modeLaporan = [
   (ModeLaporan.Penjualan, 'Penjualan'),
@@ -38,20 +39,13 @@ class LayarLaporan extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(TokenJarak.jarak16),
       children: [
+        const KepalaHalaman(judul: 'Laporan'),
         BilahSaringan(outlet: outlet),
         const SizedBox(height: TokenJarak.jarak12),
-        Wrap(
-          spacing: TokenJarak.jarak8,
-          runSpacing: TokenJarak.jarak8,
-          children: [
-            for (final (nilai, label) in daftarMode)
-              ChoiceChip(
-                label: Text(label),
-                selected: modeAktif == nilai,
-                showCheckmark: false,
-                onSelected: (_) => ref.read(penyediaModeLaporan.notifier).Atur(nilai),
-              ),
-          ],
+        _PilihanLaporan(
+          pilihan: daftarMode,
+          aktif: modeAktif,
+          saatPilih: (nilai) => ref.read(penyediaModeLaporan.notifier).Atur(nilai),
         ),
         const SizedBox(height: TokenJarak.jarak12),
         switch (modeAktif) {
@@ -61,6 +55,82 @@ class LayarLaporan extends ConsumerWidget {
           ModeLaporan.Stok => const _Stok(),
         },
       ],
+    );
+  }
+}
+
+/// Pilihan laporan sebagai ubin berilustrasi (dua kolom): ubin terpilih berlatar nada merek dan bercincin merek.
+class _PilihanLaporan extends StatelessWidget {
+  const _PilihanLaporan({required this.pilihan, required this.aktif, required this.saatPilih});
+
+  final List<(ModeLaporan, String)> pilihan;
+  final ModeLaporan aktif;
+  final ValueChanged<ModeLaporan> saatPilih;
+
+  static IlustrasiOwner PilihIlustrasi(ModeLaporan mode) => switch (mode) {
+    ModeLaporan.Penjualan => IlustrasiOwner.MiniPenjualan,
+    ModeLaporan.LabaRugi => IlustrasiOwner.MiniLaba,
+    ModeLaporan.AntiFraud => IlustrasiOwner.MiniWaspada,
+    ModeLaporan.Stok => IlustrasiOwner.KotakStok,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return LayoutBuilder(
+      builder: (context, batas) {
+        final lebar = (batas.maxWidth - TokenJarak.jarak8) / 2;
+        return Wrap(
+          spacing: TokenJarak.jarak8,
+          runSpacing: TokenJarak.jarak8,
+          children: [
+            for (final (nilai, label) in pilihan)
+              SizedBox(
+                key: ValueKey('Laporan-${nilai.name}'),
+                width: lebar,
+                child: Semantics(
+                  button: true,
+                  selected: aktif == nilai,
+                  child: Material(
+                    color: aktif == nilai ? TentukanNadaLembut(context, warna.brand, 0.14) : warna.permukaan,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(TokenJarak.radiusKartu - 4),
+                      side: BorderSide(color: aktif == nilai ? warna.brand : warna.permukaan, width: 2),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => saatPilih(nilai),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 68),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: TokenJarak.jarak12,
+                            vertical: TokenJarak.jarak8,
+                          ),
+                          child: Row(
+                            children: [
+                              IlustrasiMerek(PilihIlustrasi(nilai), lebar: 44),
+                              const SizedBox(width: TokenJarak.jarak8),
+                              Expanded(
+                                child: Text(
+                                  label,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: teks.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -96,7 +166,7 @@ class _Penjualan extends ConsumerWidget {
           nilai: laporan,
           saatCobaLagi: () => ref.invalidate(penyediaLaporan),
           isi: (l) => l.baris.isEmpty
-              ? const KotakPanel(
+              ? const KartuModern(
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Laporan,
                     ikon: Icons.bar_chart_outlined,
@@ -107,8 +177,8 @@ class _Penjualan extends ConsumerWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    KotakPanel(
-                      rapat: true,
+                    KartuModern(
+                      padding: EdgeInsets.zero,
                       anak: Column(
                         children: [
                           for (final (i, b) in l.baris.indexed) ...[
@@ -169,8 +239,8 @@ class _LabaRugi extends ConsumerWidget {
           children: [
             Text('Periode ${l.dari} s.d. ${l.sampai}', style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
             const SizedBox(height: TokenJarak.jarak8),
-            KotakPanel(
-              rapat: true,
+            KartuModern(
+              padding: EdgeInsets.zero,
               anak: Column(
                 children: [
                   for (final (i, (label, n)) in ringkasan.indexed) ...[
@@ -204,7 +274,7 @@ class _LabaRugi extends ConsumerWidget {
             if (akun.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(top: TokenJarak.jarak12),
-                child: KotakPanel(
+                child: KartuModern(
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Laporan,
                     ikon: Icons.balance_outlined,
@@ -215,8 +285,8 @@ class _LabaRugi extends ConsumerWidget {
               )
             else ...[
               const SizedBox(height: TokenJarak.jarak12),
-              KotakPanel(
-                rapat: true,
+              KartuModern(
+                padding: EdgeInsets.zero,
                 anak: Column(
                   children: [
                     for (final (i, b) in akun.indexed) ...[
@@ -258,7 +328,7 @@ class _AntiFraud extends ConsumerWidget {
       nilai: ref.watch(penyediaAntiFraud),
       saatCobaLagi: () => ref.invalidate(penyediaAntiFraud),
       isi: (daftar) => daftar.isEmpty
-          ? const KotakPanel(
+          ? const KartuModern(
               anak: KeadaanKosong(
                 ilustrasi: IlustrasiKosong.Laporan,
                 ikon: Icons.shield_outlined,
@@ -277,7 +347,7 @@ class _AntiFraud extends ConsumerWidget {
                 for (final k in daftar)
                   Padding(
                     padding: const EdgeInsets.only(bottom: TokenJarak.jarak12),
-                    child: KotakPanel(
+                    child: KartuModern(
                       anak: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -382,8 +452,8 @@ class _StokState extends ConsumerState<_Stok> {
                 const SizedBox(height: TokenJarak.jarak12),
                 Text('Perlu dibeli', style: teks.titleSmall),
                 const SizedBox(height: TokenJarak.jarak8),
-                KotakPanel(
-                  rapat: true,
+                KartuModern(
+                  padding: EdgeInsets.zero,
                   anak: Column(
                     children: [
                       for (final (i, k) in s.kritis.indexed) ...[
@@ -406,7 +476,7 @@ class _StokState extends ConsumerState<_Stok> {
               Text('Saldo stok', style: teks.titleSmall),
               const SizedBox(height: TokenJarak.jarak8),
               if (s.saldo.isEmpty)
-                const KotakPanel(
+                const KartuModern(
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Laporan,
                     ikon: Icons.inventory_2_outlined,
@@ -415,8 +485,8 @@ class _StokState extends ConsumerState<_Stok> {
                   ),
                 )
               else ...[
-                KotakPanel(
-                  rapat: true,
+                KartuModern(
+                  padding: EdgeInsets.zero,
                   anak: Column(
                     children: [
                       for (final (i, b) in s.saldo.indexed) ...[

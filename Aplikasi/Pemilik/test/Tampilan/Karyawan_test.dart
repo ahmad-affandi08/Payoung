@@ -67,9 +67,12 @@ void main() {
     };
   }
 
-  testWidgets('kartu Beranda meringkas kehadiran. Ketuk membuka layar Karyawan', (tester) async {
+  testWidgets('baris di tab Lainnya meringkas kehadiran. Ketuk membuka layar Karyawan', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Karyawan hari ini'), 200);
 
     expect(find.text('Karyawan hari ini'), findsOneWidget);
     expect(find.text('1 hadir | 1 terlambat | 1 belum masuk'), findsOneWidget);
@@ -87,11 +90,13 @@ void main() {
     expect(find.textContaining('150.000'), findsOneWidget);
   });
 
-  testWidgets('tanpa izin karyawan.lihat (403): kartu tidak tampil, Beranda tetap', (tester) async {
+  testWidgets('tanpa izin karyawan.lihat (403): baris tidak tampil, Beranda tetap', (tester) async {
     server.penangan = (p) => Penangan(p, statusKaryawan: 403);
     await PasangPemilik(tester, server: server, sesi: sesi);
 
     expect(find.text('Omzet'), findsOneWidget);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
     expect(find.text('Karyawan hari ini'), findsNothing);
   });
 }

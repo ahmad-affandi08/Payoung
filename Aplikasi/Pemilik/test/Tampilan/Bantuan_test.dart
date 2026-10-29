@@ -87,7 +87,10 @@ void main() {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
 
-    await tester.tap(find.byTooltip('Bantuan'));
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Bantuan'), 200);
+    await tester.tap(find.text('Bantuan'));
     await tester.pumpAndSettle();
 
     expect(find.text('TKT-2026-000012 | Laporan omzet tidak sesuai'), findsOneWidget);
@@ -99,7 +102,10 @@ void main() {
   testWidgets('buat tiket: kategori dipilih, isian diperiksa, dan layar asal ikut dikirim', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
-    await tester.tap(find.byTooltip('Bantuan'));
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Bantuan'), 200);
+    await tester.tap(find.text('Bantuan'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Buat tiket'));
@@ -125,7 +131,7 @@ void main() {
       'Kategori': 'Laporan',
       'Judul': 'Laporan omzet tidak sesuai',
       'Isi': 'Omzet kemarin di Owner beda dengan kasir.',
-      'LayarAsal': 'Beranda',
+      'LayarAsal': 'Lainnya',
     });
     expect(kirim.headers['X-Tenant'], 'T1');
     expect(find.text('Tiket TKT-2026-000012 terkirim.'), findsOneWidget);
@@ -134,7 +140,10 @@ void main() {
   testWidgets('percakapan menampilkan pesan tim dan pelapor. Balasan terkirim dan muncul', (tester) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
-    await tester.tap(find.byTooltip('Bantuan'));
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Bantuan'), 200);
+    await tester.tap(find.text('Bantuan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('TKT-2026-000012 | Laporan omzet tidak sesuai'));
     await tester.pumpAndSettle();

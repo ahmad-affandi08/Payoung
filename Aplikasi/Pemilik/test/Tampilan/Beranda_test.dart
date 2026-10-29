@@ -1,12 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:pemilik/Data/PenyimpanSesi.dart';
+import 'package:pemilik/Tampilan/Komponen/KomponenModern.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
-/// OWN-02 (D-56): Beranda Aplikasi Owner yang modern: kartu omzet bermerek, ubin angka, dan bagian berpanel
-/// (perlu tindakan dengan lencana jumlah, per outlet berbatang, per jam, produk terlaris berperingkat).
+/// OWN-02 (D-56, D-231): Beranda Aplikasi Owner yang modern: sapaan, kartu omzet bermerek dengan kurva per jam, ubin
+/// angka, kartu sorotan jam tersibuk, dan bagian berkartu (perlu tindakan dengan lencana jumlah, per outlet berbatang,
+/// produk terlaris berperingkat).
 void main() {
   late ServerTiruan server;
   late PenyimpanSesiMemori sesi;
@@ -32,21 +35,33 @@ void main() {
     };
   }
 
-  testWidgets('kartu omzet, ubin angka, dan bagian berpanel tampil', (tester) async {
+  testWidgets('sapaan, kartu omzet berkurva, ubin angka, sorotan jam tersibuk, dan bagian berkartu tampil', (
+    tester,
+  ) async {
     server.penangan = Penangan;
     await PasangPemilik(tester, server: server, sesi: sesi);
 
+    expect(find.textContaining('Selamat sore'), findsOneWidget, reason: 'Sapaan mengikuti jam (15.00).');
     expect(find.text('Omzet'), findsOneWidget);
     expect(find.text('Rp 1.250.000'), findsOneWidget);
-    expect(find.byType(DeretKartuAngka), findsOneWidget);
-    expect(find.widgetWithText(KartuAngka, 'Transaksi'), findsOneWidget);
-    expect(find.widgetWithText(KartuAngka, 'Laba kotor'), findsOneWidget);
+    expect(find.byType(GrafikLengkung), findsOneWidget, reason: 'Kurva omzet per jam di kartu omzet.');
+    expect(
+      find.bySemanticsLabel(RegExp('Omzet per jam: jam 9 Rp 100.000, jam 12 Rp 700.000, jam 15 Rp 450.000')),
+      findsOneWidget,
+      reason: 'Kurva punya label bacaan angka per jam untuk pembaca layar.',
+    );
+    expect(find.text('Transaksi'), findsOneWidget);
+    expect(find.text('Rata-rata'), findsOneWidget);
+    expect(find.text('Laba kotor'), findsOneWidget);
+    expect(find.text('Rp 480.000'), findsOneWidget);
 
+    await tester.scrollUntilVisible(find.text('Perlu tindakan'), 200);
     expect(find.text('Perlu tindakan'), findsOneWidget);
-    expect(find.byType(LencanaTeks), findsOneWidget, reason: 'Lencana jumlah hal perlu tindakan.');
+    expect(find.byType(LencanaAngka), findsOneWidget, reason: 'Lencana jumlah hal perlu tindakan.');
 
-    await tester.scrollUntilVisible(find.text('Per jam'), 200);
-    expect(find.byType(GrafikBatang), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Jam tersibuk: 12.00'), 200);
+    expect(find.text('Es Kopi Susu Aren paling laku hari ini.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('IlustrasiToko')), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Produk terlaris'), 200);
     expect(find.text('Es Kopi Susu Aren'), findsOneWidget);
     expect(find.text('25 terjual'), findsOneWidget);
@@ -64,8 +79,9 @@ void main() {
     };
     await PasangPemilik(tester, server: server, sesi: sesi);
 
+    await tester.scrollUntilVisible(find.text('Tidak ada yang perlu ditindaklanjuti.'), 200);
     expect(find.text('Tidak ada yang perlu ditindaklanjuti.'), findsOneWidget);
     expect(find.byType(KeadaanKosong), findsOneWidget);
-    expect(find.byType(LencanaTeks), findsNothing);
+    expect(find.byType(LencanaAngka), findsNothing);
   });
 }

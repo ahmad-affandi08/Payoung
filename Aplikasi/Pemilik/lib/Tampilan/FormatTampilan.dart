@@ -21,6 +21,9 @@ abstract final class FormatTampilan {
   /// `Sabtu, 26 Sep 2026`.
   static String Tanggal(DateTime t) => '${_hari[t.weekday - 1]}, ${t.day} ${_bulan[t.month - 1]} ${t.year}';
 
+  /// `26 Sep 2026` (tanpa nama hari), untuk kapsul saringan yang sempit.
+  static String TanggalPendek(DateTime t) => '${t.day} ${_bulan[t.month - 1]} ${t.year}';
+
   /// `26 Sep 14.05`.
   static String TanggalJam(DateTime t) =>
       '${t.day} ${_bulan[t.month - 1]} ${t.hour.toString().padLeft(2, '0')}.${t.minute.toString().padLeft(2, '0')}';

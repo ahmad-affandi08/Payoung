@@ -72,7 +72,7 @@ void main() {
       sesi: sesi,
       tambahan: [if (kamera != null) penyediaKameraNota.overrideWithValue(kamera)],
     );
-    await tester.tap(find.byTooltip('Aksi cepat'));
+    await tester.tap(find.text('Lainnya'));
     await tester.pumpAndSettle();
   }
 
@@ -93,7 +93,7 @@ void main() {
     'Habis': jenis == 'IndukVarian' ? null : habis,
   };
 
-  testWidgets('Aksi cepat: empat pintasan tampil di bilah atas Beranda', (tester) async {
+  testWidgets('Aksi cepat: empat pintasan tampil di tab Lainnya', (tester) async {
     await BukaAksiCepat(tester);
 
     expect(find.text('Ubah harga'), findsOneWidget);
@@ -406,7 +406,7 @@ void main() {
         'Produk': [Produk('P1', 'Es Kopi Susu Gula Aren Premium Ukuran Besar dengan Topping Tambahan Banyak')],
       });
       await PasangPemilik(tester, server: server, sesi: sesi, ukuran: ukuran);
-      await tester.tap(find.byTooltip('Aksi cepat'));
+      await tester.tap(find.text('Lainnya'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Ubah harga'));
       await tester.pumpAndSettle();

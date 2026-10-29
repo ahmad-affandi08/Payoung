@@ -113,13 +113,17 @@ void main() {
     await PasangPemilik(tester, server: server, sesi: sesi);
 
     expect(find.text('Rp 1.250.000'), findsOneWidget);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
     expect(find.text('Karyawan hari ini'), findsNothing);
   });
 
-  testWidgets('flag tidak mematikan fitur lain: pemilik.karyawan hidup = kartu Karyawan tampil', (tester) async {
+  testWidgets('flag tidak mematikan fitur lain: pemilik.karyawan hidup = baris Karyawan tampil', (tester) async {
     server.penangan = (p) => Penangan(p, konfigurasi: Konfigurasi(flag: {'pemilik.insight': false}));
     await PasangPemilik(tester, server: server, sesi: sesi);
-
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Karyawan hari ini'), 200);
     expect(find.text('Karyawan hari ini'), findsOneWidget);
   });
 
@@ -129,6 +133,9 @@ void main() {
 
     expect(find.text('Rp 1.250.000'), findsOneWidget);
     expect(find.text('Perbarui aplikasi'), findsNothing);
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Karyawan hari ini'), 200);
     expect(find.text('Karyawan hari ini'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -141,10 +148,10 @@ void main() {
 
     await tester.tap(find.text('Laporan'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'Penjualan'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Laba rugi'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsNothing);
-    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsNothing);
+    expect(find.byKey(const ValueKey('Laporan-Penjualan')), findsOneWidget);
+    expect(find.byKey(const ValueKey('Laporan-LabaRugi')), findsOneWidget);
+    expect(find.byKey(const ValueKey('Laporan-AntiFraud')), findsNothing);
+    expect(find.byKey(const ValueKey('Laporan-Stok')), findsNothing);
   });
 
   testWidgets('D-183: jasa umum berkasir tanpa stok: Anti-fraud tampil, Stok tidak', (tester) async {
@@ -152,8 +159,8 @@ void main() {
     await PasangPemilik(tester, server: server, sesi: sesi);
     await tester.tap(find.text('Laporan'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsNothing);
+    expect(find.byKey(const ValueKey('Laporan-AntiFraud')), findsOneWidget);
+    expect(find.byKey(const ValueKey('Laporan-Stok')), findsNothing);
   });
 
   testWidgets('D-183: restoran melihat mode Anti-fraud dan Stok', (tester) async {
@@ -161,7 +168,7 @@ void main() {
     await PasangPemilik(tester, server: server, sesi: sesi);
     await tester.tap(find.text('Laporan'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'Anti-fraud'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Stok'), findsOneWidget);
+    expect(find.byKey(const ValueKey('Laporan-AntiFraud')), findsOneWidget);
+    expect(find.byKey(const ValueKey('Laporan-Stok')), findsOneWidget);
   });
 }

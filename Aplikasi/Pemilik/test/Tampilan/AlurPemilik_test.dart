@@ -123,6 +123,7 @@ void main() {
       expect(find.text('Rp 1.250.000'), findsOneWidget);
       expect(find.textContaining('+25% dari kemarin'), findsOneWidget);
       expect(find.textContaining('-17% dari minggu lalu'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Selisih kas shift Rina'), 200);
       expect(find.text('Selisih kas shift Rina'), findsOneWidget);
       final dasbor = server.permintaan.lastWhere((p) => p.url.path.endsWith('/dasbor'));
       expect(dasbor.headers['Authorization'], 'Bearer 5|rahasia');
@@ -148,12 +149,17 @@ void main() {
     expect(server.permintaan.last.url.queryParameters['kelompok'], 'Kategori');
     expect(find.text('Total'), findsOneWidget);
 
+    // D-231: shift dan perangkat kasir ada di tab Lainnya, dibuka sebagai halaman turunan.
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Shift'));
     await tester.pumpAndSettle();
     expect(find.text('Rina | Solo Baru'), findsOneWidget);
     expect(find.text('−Rp 20.000'), findsOneWidget);
 
-    await tester.tap(find.text('Perangkat'));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Perangkat kasir'));
     await tester.pumpAndSettle();
     expect(find.textContaining('(lama tidak tersambung)'), findsOneWidget);
     expect(find.textContaining('3 data belum terkirim'), findsOneWidget);
@@ -183,7 +189,9 @@ void main() {
     };
     await PasangPemilik(tester, server: server, sesi: sesi);
     await Masuk(tester);
-    await tester.tap(find.text('Perangkat'));
+    await tester.tap(find.text('Lainnya'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Perangkat kasir'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Cabut perangkat'));

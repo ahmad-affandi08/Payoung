@@ -12,7 +12,7 @@ paths:
 
 - [ ] Layar tetap bisa dipahami jika semua warna dihapus.
 - [ ] Warna hanya untuk aksi utama & status; status selalu disertai teks/ikon.
-- [ ] Tanpa gradien (kecuali kepala sidebar merek `BrandGelap` → `Brand`, D-15), efek kaca, bayangan dekoratif, emoji, ilustrasi dekoratif (ilustrasi merek penjelas keadaan kosong diizinkan, D-68; ilustrasi jenis usaha di pemilih sektor diizinkan, D-178).
+- [ ] Tanpa gradien (kecuali kepala sidebar merek `BrandGelap` → `Brand`, D-15), efek kaca, bayangan dekoratif, emoji, ilustrasi dekoratif (ilustrasi merek penjelas keadaan kosong diizinkan, D-68; ilustrasi jenis usaha di pemilih sektor diizinkan, D-178; ilustrasi merek Aplikasi Owner diizinkan, D-231).
 - [ ] Tidak ada kartu yang lebih jelas bila dijadikan baris tabel.
 - [ ] Halaman punya **satu rumah**: menu samping (kerja harian) atau Pengaturan (sekali atur), tidak keduanya; anggaran navigasi §17.4.10 masih terpenuhi (maks. 12 entri level utama, 7 sub-menu per grup).
 - [ ] Web: setiap kelas `text-*` berasal dari token `@theme` (D-28); tidak ada kelas semantik karangan sendiri.

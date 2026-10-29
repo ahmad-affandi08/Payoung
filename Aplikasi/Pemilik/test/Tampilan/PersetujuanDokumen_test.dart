@@ -5,12 +5,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:pemilik/Data/PenyimpanSesi.dart';
+import 'package:pemilik/Tampilan/Komponen/KomponenModern.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
 /// OWN-04 persetujuan PO & penyesuaian stok jarak jauh: kartu dokumen di tab Persetujuan (lencana ikut menghitung),
 /// setujui dengan konfirmasi, tolak wajib alasan yang dikirim ke server, dokumen buatan sendiri tidak bisa disetujui
 /// (360 dan 800 dp).
+/// Lencana jumlah menunggu di bilah navigasi bawah (Beranda punya lencana "perlu tindakan" sendiri).
+Finder LencanaNav(String jumlah) =>
+    find.descendant(of: find.byType(BilahNavigasiMengambang), matching: find.widgetWithText(LencanaAngka, jumlah));
+
 void main() {
   late ServerTiruan server;
   late PenyimpanSesiMemori sesi;
@@ -101,7 +106,7 @@ void main() {
       await Masuk(tester);
 
       // Lencana hanya menghitung dokumen yang bisa disetujui pengguna.
-      expect(find.widgetWithText(Badge, '1'), findsOneWidget);
+      expect(LencanaNav('1'), findsOneWidget);
       await tester.tap(find.text('Persetujuan'));
       await tester.pumpAndSettle();
       expect(find.text('PO PT Sumber Pangan Nusantara'), findsOneWidget);

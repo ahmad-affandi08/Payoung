@@ -7,6 +7,7 @@ import '../Aplikasi/Penyedia.dart';
 import '../Data/KlienPemilik.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// Status perangkat POS per outlet (OWN-08): terakhir aktif, data belum terkirim, versi aplikasi. Perangkat yang tidak
 /// menghubungi server lebih dari 30 menit ditandai.
@@ -29,7 +30,7 @@ class LayarPerangkat extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             if (daftar.isEmpty)
-              const KotakPanel(
+              const KartuModern(
                 anak: KeadaanKosong(
                   ilustrasi: IlustrasiKosong.Outlet,
                   ikon: Icons.point_of_sale_outlined,
@@ -38,8 +39,8 @@ class LayarPerangkat extends ConsumerWidget {
                 ),
               )
             else
-              KotakPanel(
-                rapat: true,
+              KartuModern(
+                padding: EdgeInsets.zero,
                 anak: Column(
                   children: [
                     for (final (i, p) in daftar.indexed) ...[

@@ -3,23 +3,21 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
 import '../Data/NotifikasiPush.dart';
-import 'LayarAksiCepat.dart';
-import 'LayarBantuan.dart';
-import 'LayarKunciAplikasi.dart';
+import 'Komponen/KomponenModern.dart';
 import 'LayarBeranda.dart';
+import 'LayarLainnya.dart';
 import 'LayarLaporan.dart';
 import 'LayarNotifikasi.dart';
 import 'LayarPerangkat.dart';
 import 'LayarPersetujuan.dart';
-import 'LayarShift.dart';
 
-/// Bingkai Aplikasi Owner: bilah atas (nama usaha, ganti usaha, keluar) dan navigasi bawah Beranda | Laporan |
-/// Persetujuan (lencana jumlah menunggu) | Shift | Perangkat (mode kepadatan Nyaman, §17.6), dengan pusat
-/// notifikasi dari ikon lonceng di bilah atas.
+/// Bingkai Aplikasi Owner (D-231): empat tab Beranda | Laporan | Persetujuan (lencana jumlah menunggu) | Lainnya di
+/// bilah navigasi kapsul yang mengambang (mode kepadatan Nyaman, §17.6). Tiap tab membawa judulnya sendiri. Shift,
+/// perangkat, karyawan, insight, aksi cepat, bantuan, dan akun ada di tab Lainnya; pusat notifikasi dari lonceng
+/// di Beranda.
 class BingkaiPemilik extends ConsumerStatefulWidget {
   const BingkaiPemilik({super.key});
 
@@ -33,14 +31,12 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
   final List<StreamSubscription<Object?>> _langgananPush = [];
 
   static const int _indeksPersetujuan = 2;
-  static const int _indeksPerangkat = 4;
 
   static const _tujuan = [
     (Icons.home_outlined, Icons.home, 'Beranda'),
     (Icons.bar_chart_outlined, Icons.bar_chart, 'Laporan'),
     (Icons.approval_outlined, Icons.approval, 'Persetujuan'),
-    (Icons.schedule_outlined, Icons.schedule, 'Shift'),
-    (Icons.point_of_sale_outlined, Icons.point_of_sale, 'Perangkat'),
+    (Icons.menu, Icons.menu, 'Lainnya'),
   ];
 
   @override
@@ -111,105 +107,44 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
       _BukaNotifikasi();
       return;
     }
-    // D-183: usaha tanpa kasir tidak punya tab Perangkat; tautan itu dibiarkan di tab sekarang.
+    // D-183: usaha tanpa kasir tidak punya daftar perangkat; tautan itu dibiarkan di tab sekarang.
     final tanpaKasir = ref.read(penyediaKonfigurasiAplikasi).value?.hanyaPerusahaan ?? false;
-    setState(() {
-      _indeks = switch (pesan.data['Tautan']) {
-        'persetujuan' => _indeksPersetujuan,
-        'perangkat' when !tanpaKasir => _indeksPerangkat,
-        _ => _indeks,
-      };
-    });
+    switch (pesan.data['Tautan']) {
+      case 'persetujuan':
+        setState(() => _indeks = _indeksPersetujuan);
+      case 'perangkat' when !tanpaKasir:
+        unawaited(BukaHalaman(context, judul: 'Perangkat kasir', isi: const LayarPerangkat()));
+    }
   }
 
-  void _BukaNotifikasi() {
-    unawaited(
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text('Notifikasi')),
-            body: const LayarNotifikasi(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// P-09: tombol Bantuan; nama tab aktif ikut sebagai layar asal tiket.
-  void _BukaBantuan() {
-    unawaited(
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => LayarBantuan(layarAsal: _tujuan[_indeks.clamp(0, _tujuan.length - 1)].$3),
-        ),
-      ),
-    );
-  }
+  void _BukaNotifikasi() => unawaited(BukaNotifikasi(context));
 
   @override
   Widget build(BuildContext context) {
-    final sesi = ref.watch(penyediaSesi);
-    final notifier = ref.read(penyediaSesi.notifier);
     final menunggu =
         (ref.watch(penyediaPersetujuan).value?.length ?? 0) +
         (ref.watch(penyediaDokumenPersetujuan).value?.where((d) => d.bisaDisetujui).length ?? 0);
-    final belumDibaca = ref.watch(penyediaNotifikasi).value?.belumDibaca ?? 0;
-    final warna = TokenWarna.AmbilDari(context);
-    // D-183: usaha tanpa kasir (sektor Perusahaan) tidak punya shift dan perangkat kasir, jadi dua tab itu tidak tampil.
-    final tanpaKasir = ref.watch(penyediaKonfigurasiAplikasi).value?.hanyaPerusahaan ?? false;
-    final tujuan = tanpaKasir ? _tujuan.take(_indeksPerangkat - 1).toList() : _tujuan;
-    final indeks = _indeks.clamp(0, tujuan.length - 1);
+    final indeks = _indeks.clamp(0, _tujuan.length - 1);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: warna.brandGelap,
-        foregroundColor: warna.permukaan,
-        surfaceTintColor: warna.brandGelap,
-        title: Text(sesi.namaTenant ?? 'Payoung Owner', style: const TextStyle(fontWeight: FontWeight.w700)),
-        actions: [
-          IconButton(
-            tooltip: 'Aksi cepat',
-            onPressed: () =>
-                unawaited(Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LayarAksiCepat()))),
-            icon: const Icon(Icons.bolt_outlined),
-          ),
-          IconButton(tooltip: 'Bantuan', onPressed: _BukaBantuan, icon: const Icon(Icons.help_outline)),
-          IconButton(
-            tooltip: belumDibaca > 0 ? 'Notifikasi ($belumDibaca belum dibaca)' : 'Notifikasi',
-            onPressed: _BukaNotifikasi,
-            icon: belumDibaca > 0
-                ? Badge(label: Text('$belumDibaca'), child: const Icon(Icons.notifications_outlined))
-                : const Icon(Icons.notifications_outlined),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'Akun',
-            icon: const Icon(Icons.account_circle_outlined),
-            onSelected: (pilih) => switch (pilih) {
-              'ganti' => notifier.GantiTenant(),
-              'kunci' => unawaited(
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LayarKunciAplikasi())),
-              ),
-              _ => unawaited(notifier.Keluar()),
-            },
-            itemBuilder: (_) => [
-              if (sesi.tenant.length > 1) const PopupMenuItem(value: 'ganti', child: Text('Ganti usaha')),
-              const PopupMenuItem(value: 'kunci', child: Text('Kunci aplikasi')),
-              const PopupMenuItem(value: 'keluar', child: Text('Keluar')),
-            ],
-          ),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: IndexedStack(
+          index: indeks,
+          children: const [LayarBeranda(), LayarLaporan(), LayarPersetujuan(), LayarLainnya()],
+        ),
       ),
-      body: IndexedStack(
-        index: indeks,
-        children: [
-          const LayarBeranda(),
-          const LayarLaporan(),
-          const LayarPersetujuan(),
-          if (!tanpaKasir) ...const [LayarShift(), LayarPerangkat()],
+      bottomNavigationBar: BilahNavigasiMengambang(
+        indeks: indeks,
+        butir: [
+          for (final (i, (ikon, ikonAktif, label)) in _tujuan.indexed)
+            ButirNavigasi(
+              ikon: ikon,
+              ikonAktif: ikonAktif,
+              label: label,
+              lencana: i == _indeksPersetujuan ? menunggu : 0,
+            ),
         ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: indeks,
-        onDestinationSelected: (i) {
+        saatPilih: (i) {
           if (i == _indeksPersetujuan) {
             ref
               ..invalidate(penyediaPersetujuan)
@@ -217,19 +152,6 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
           }
           setState(() => _indeks = i);
         },
-        destinations: [
-          for (final (i, (ikon, ikonAktif, label)) in tujuan.indexed)
-            NavigationDestination(
-              icon: i == _indeksPersetujuan && menunggu > 0
-                  ? Badge(label: Text('$menunggu'), child: Icon(ikon))
-                  : Icon(ikon),
-              selectedIcon: i == _indeksPersetujuan && menunggu > 0
-                  ? Badge(label: Text('$menunggu'), child: Icon(ikonAktif))
-                  : Icon(ikonAktif),
-              label: label,
-              tooltip: i == _indeksPersetujuan && menunggu > 0 ? '$label ($menunggu menunggu)' : label,
-            ),
-        ],
       ),
     );
   }

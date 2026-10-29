@@ -98,7 +98,7 @@ void main() {
 
       await tester.tap(find.text('Laporan'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Stok'));
+      await tester.tap(find.byKey(const ValueKey('Laporan-Stok')));
       await tester.pumpAndSettle();
 
       expect(find.text('Rp 180.000'), findsWidgets);

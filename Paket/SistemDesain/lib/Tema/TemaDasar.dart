@@ -89,3 +89,100 @@ ThemeData BuatTema({KepadatanTipografi kepadatan = KepadatanTipografi.Nyaman}) {
     extensions: [warna],
   );
 }
+
+/// Tema modern Aplikasi Owner (D-231): turunan [BuatTema] dengan kartu besar membulat tanpa garis tepi, tombol 52dp
+/// berradius 16, chip kapsul, kolom isian terisi, dan lembar bawah membulat. Warna tetap dari token, tanpa bayangan
+/// dekoratif. Aplikasi Kasir tetap memakai [BuatTema] (mode padat untuk kerja berjam-jam).
+ThemeData BuatTemaModern({KepadatanTipografi kepadatan = KepadatanTipografi.Nyaman}) {
+  const warna = TokenWarna.bawaan;
+  final dasar = BuatTema(kepadatan: kepadatan);
+  final bentukTombol = RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusTombol));
+  const tinggiTombol = Size(64, 52);
+  return dasar.copyWith(
+    cardTheme: CardThemeData(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: warna.permukaan,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKartu)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        shape: bentukTombol,
+        minimumSize: tinggiTombol,
+        textStyle: dasar.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        shape: bentukTombol,
+        minimumSize: tinggiTombol,
+        foregroundColor: warna.brand,
+        backgroundColor: warna.brandTint,
+        side: BorderSide.none,
+        textStyle: dasar.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        shape: bentukTombol,
+        foregroundColor: warna.brand,
+        textStyle: dasar.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      shape: const StadiumBorder(),
+      side: BorderSide.none,
+      backgroundColor: warna.permukaan,
+      selectedColor: warna.brand,
+      checkmarkColor: warna.permukaan,
+      labelStyle: dasar.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700, color: warna.teksSekunder),
+      secondaryLabelStyle: dasar.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700, color: warna.permukaan),
+      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak8, vertical: TokenJarak.jarak8),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: warna.permukaan,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(TokenJarak.radiusTombol),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(TokenJarak.radiusTombol),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(TokenJarak.radiusTombol),
+        borderSide: BorderSide(color: warna.brand, width: 2),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: warna.permukaan,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKartuUtama)),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: warna.permukaan,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(TokenJarak.radiusKartuUtama + 2)),
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: warna.brandGelap,
+      contentTextStyle: dasar.textTheme.bodyMedium?.copyWith(color: warna.permukaan),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusTombol)),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: warna.latar,
+      foregroundColor: warna.teksUtama,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleTextStyle: dasar.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: warna.teksUtama),
+    ),
+    listTileTheme: ListTileThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusTombol)),
+    ),
+  );
+}

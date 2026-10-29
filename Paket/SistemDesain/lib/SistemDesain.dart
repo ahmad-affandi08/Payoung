@@ -8,6 +8,7 @@ export 'Komponen/BilahStatus.dart';
 export 'Komponen/DialogHasil.dart';
 export 'Komponen/GrafikBatang.dart';
 export 'Komponen/HitungPecahan.dart';
+export 'Komponen/IlustrasiOwner.dart';
 export 'Komponen/KartuAngka.dart';
 export 'Komponen/KeadaanKosong.dart';
 export 'Komponen/KotakPanel.dart';

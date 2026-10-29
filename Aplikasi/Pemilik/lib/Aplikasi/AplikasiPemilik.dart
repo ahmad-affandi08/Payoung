@@ -16,7 +16,7 @@ class AplikasiPemilik extends StatelessWidget {
       title: 'Payoung Owner',
       debugShowCheckedModeBanner: false,
       // Hanya tema terang, tanpa darkTheme (D-14).
-      theme: BuatTema(),
+      theme: BuatTemaModern(),
       themeMode: ThemeMode.light,
       builder: (context, anak) => lingkungan.tampilkanPenanda
           ? Banner(

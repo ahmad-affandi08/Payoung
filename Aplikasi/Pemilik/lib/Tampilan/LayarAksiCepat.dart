@@ -18,19 +18,19 @@ class LayarAksiCepat extends StatelessWidget {
   const LayarAksiCepat({super.key});
 
   static const _aksi = [
-    (Icons.sell_outlined, 'Ubah harga', 'Ganti harga jual satu produk.', _TujuanAksi.harga),
+    (Icons.sell_outlined, 'Ubah harga', 'Ganti harga jual satu produk.', TujuanAksiCepat.harga),
     (
       Icons.do_not_disturb_on_outlined,
       'Tandai habis',
       'Sembunyikan produk yang kehabisan di satu outlet.',
-      _TujuanAksi.habis,
+      TujuanAksiCepat.habis,
     ),
-    (Icons.local_offer_outlined, 'Promo', 'Nyalakan atau matikan promo.', _TujuanAksi.promo),
+    (Icons.local_offer_outlined, 'Promo', 'Nyalakan atau matikan promo.', TujuanAksiCepat.promo),
     (
       Icons.receipt_long_outlined,
       'Catat pengeluaran',
       'Catat biaya, lengkap dengan foto nota.',
-      _TujuanAksi.pengeluaran,
+      TujuanAksiCepat.pengeluaran,
     ),
   ];
 
@@ -53,10 +53,10 @@ class LayarAksiCepat extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => switch (tujuan) {
-                      _TujuanAksi.harga => const _LayarUbahHarga(),
-                      _TujuanAksi.habis => const _LayarTandaiHabis(),
-                      _TujuanAksi.promo => const _LayarPromo(),
-                      _TujuanAksi.pengeluaran => const _LayarPengeluaran(),
+                      TujuanAksiCepat.harga => const _LayarUbahHarga(),
+                      TujuanAksiCepat.habis => const _LayarTandaiHabis(),
+                      TujuanAksiCepat.promo => const _LayarPromo(),
+                      TujuanAksiCepat.pengeluaran => const _LayarPengeluaran(),
                     },
                   ),
                 ),
@@ -68,7 +68,20 @@ class LayarAksiCepat extends StatelessWidget {
   );
 }
 
-enum _TujuanAksi { harga, habis, promo, pengeluaran }
+/// Tujuan aksi cepat yang bisa dibuka langsung (ubin Aksi cepat di tab Lainnya, atau daftar di [LayarAksiCepat]).
+enum TujuanAksiCepat { harga, habis, promo, pengeluaran }
+
+/// Membuka layar aksi cepat [tujuan] sebagai halaman turunan.
+Future<void> BukaAksiCepat(BuildContext context, TujuanAksiCepat tujuan) => Navigator.of(context).push(
+  MaterialPageRoute<void>(
+    builder: (_) => switch (tujuan) {
+      TujuanAksiCepat.harga => const _LayarUbahHarga(),
+      TujuanAksiCepat.habis => const _LayarTandaiHabis(),
+      TujuanAksiCepat.promo => const _LayarPromo(),
+      TujuanAksiCepat.pengeluaran => const _LayarPengeluaran(),
+    },
+  ),
+);
 
 String _PesanGalat(Object galat) => switch (galat) {
   GalatApi() => galat.pesan,

@@ -5,6 +5,7 @@ import 'package:klien_api/KlienApi.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Aplikasi/Penyedia.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// P-10 PGL-18: Aplikasi Owner di bawah versi minimal. Seluruh isi aplikasi diganti layar ini sampai aplikasi
 /// diperbarui; tidak ada transaksi tertunda di Owner (semua data dibaca langsung dari server), jadi tidak ada yang
@@ -36,7 +37,7 @@ class LayarWajibPerbarui extends ConsumerWidget {
             ),
             const SizedBox(height: TokenJarak.jarak12),
             if (tautan != null)
-              KotakPanel(
+              KartuModern(
                 anak: Row(
                   children: [
                     Expanded(child: SelectableText(tautan, style: teks.bodyMedium)),

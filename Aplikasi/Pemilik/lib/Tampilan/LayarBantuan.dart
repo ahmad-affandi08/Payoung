@@ -8,6 +8,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 import '../Aplikasi/Penyedia.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// Teks batas respons SLA: "Respons paling lambat 24 Sep 17.00 (jam kerja)"; tiket yang sudah direspons atau lewat SLA
 /// diberi kalimat sendiri supaya tidak berjanji dua kali.
@@ -56,7 +57,7 @@ class LayarBantuan extends ConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               if (daftar.isEmpty)
-                const KotakPanel(
+                const KartuModern(
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Umum,
                     ikon: Icons.support_agent_outlined,

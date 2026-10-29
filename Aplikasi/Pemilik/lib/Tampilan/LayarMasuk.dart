@@ -90,126 +90,192 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
     final duaFaktor = sesi.tahap == TahapSesi.DuaFaktor;
     final clientIdGoogle = ref.watch(penyediaClientIdGoogle).asData?.value;
     return Scaffold(
-      body: SafeArea(
+      body: SingleChildScrollView(
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(TokenJarak.jarak24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: AutofillGroup(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Center(child: LogoMerek.lengkap()),
-                    const SizedBox(height: TokenJarak.jarak24),
-                    Text(duaFaktor ? 'Verifikasi dua langkah' : 'Masuk ke Payoung Owner', style: teks.headlineSmall),
-                    const SizedBox(height: TokenJarak.jarak8),
-                    Text(
-                      duaFaktor
-                          ? 'Masukkan 6 angka dari aplikasi autentikator Anda, atau kode pemulihan.'
-                          : 'Pakai email dan kata sandi akun back-office.',
-                      style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const _PanelMerek(),
+                Padding(
+                  padding: const EdgeInsets.all(TokenJarak.jarak24),
+                  child: AutofillGroup(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          duaFaktor ? 'Verifikasi dua langkah' : 'Masuk ke Payoung Owner',
+                          style: teks.headlineSmall,
+                        ),
+                        const SizedBox(height: TokenJarak.jarak8),
+                        Text(
+                          duaFaktor
+                              ? 'Masukkan 6 angka dari aplikasi autentikator Anda, atau kode pemulihan.'
+                              : 'Pakai email dan kata sandi akun back-office.',
+                          style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
+                        ),
+                        const SizedBox(height: TokenJarak.jarak16),
+                        if (duaFaktor)
+                          TextField(
+                            controller: _kode,
+                            keyboardType: TextInputType.number,
+                            autofillHints: const [AutofillHints.oneTimeCode],
+                            decoration: const InputDecoration(labelText: 'Kode verifikasi'),
+                            onSubmitted: (_) => unawaited(notifier.KonfirmasiDuaFaktor(_kode.text)),
+                          )
+                        else ...[
+                          TextField(
+                            controller: _email,
+                            keyboardType: TextInputType.emailAddress,
+                            autofillHints: const [AutofillHints.email],
+                            decoration: const InputDecoration(labelText: 'Email'),
+                          ),
+                          const SizedBox(height: TokenJarak.jarak12),
+                          TextField(
+                            controller: _sandi,
+                            obscureText: !_sandiTerlihat,
+                            autofillHints: const [AutofillHints.password],
+                            decoration: InputDecoration(
+                              labelText: 'Kata sandi',
+                              // Tombol mata: target sentuh IconButton sudah 48dp (§17.6.4).
+                              suffixIcon: IconButton(
+                                onPressed: () => setState(() => _sandiTerlihat = !_sandiTerlihat),
+                                icon: Icon(_sandiTerlihat ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                                tooltip: _sandiTerlihat ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi',
+                              ),
+                            ),
+                            onSubmitted: (_) => unawaited(_Masuk()),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              key: const ValueKey('LupaKataSandi'),
+                              onPressed: sesi.sibuk || _mengirimLupaSandi ? null : () => unawaited(_LupaKataSandi()),
+                              child: Text(_mengirimLupaSandi ? 'Mengirim…' : 'Lupa kata sandi?'),
+                            ),
+                          ),
+                          const SizedBox(height: TokenJarak.jarak8),
+                          if (_pakaiServerSendiri)
+                            TextField(
+                              key: const ValueKey('AlamatServer'),
+                              controller: _alamat,
+                              keyboardType: TextInputType.url,
+                              autocorrect: false,
+                              decoration: InputDecoration(
+                                labelText: 'Alamat server toko',
+                                hintText: 'https://kasir.tokoanda.com',
+                                helperText: 'Untuk toko yang memasang Payoung di server sendiri.',
+                                errorText: _galatAlamat,
+                              ),
+                              onSubmitted: (_) => unawaited(_Masuk()),
+                            )
+                          else
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton(
+                                onPressed: sesi.sibuk ? null : () => setState(() => _pakaiServerSendiri = true),
+                                child: const Text('Toko memakai server sendiri?'),
+                              ),
+                            ),
+                        ],
+                        if (sesi.pesan != null) ...[
+                          const SizedBox(height: TokenJarak.jarak12),
+                          Text(sesi.pesan!, style: teks.bodyMedium?.copyWith(color: warna.bahaya)),
+                        ],
+                        const SizedBox(height: TokenJarak.jarak16),
+                        SizedBox(
+                          height: TokenJarak.targetSentuh,
+                          child: FilledButton(
+                            onPressed: sesi.sibuk
+                                ? null
+                                : () => unawaited(duaFaktor ? notifier.KonfirmasiDuaFaktor(_kode.text) : _Masuk()),
+                            child: Text(sesi.sibuk ? 'Memproses…' : (duaFaktor ? 'Verifikasi' : 'Masuk')),
+                          ),
+                        ),
+                        if (!duaFaktor && clientIdGoogle != null) ...[
+                          const SizedBox(height: TokenJarak.jarak12),
+                          SizedBox(
+                            height: TokenJarak.targetSentuh,
+                            child: OutlinedButton.icon(
+                              key: const ValueKey('MasukGoogle'),
+                              onPressed: sesi.sibuk ? null : () => unawaited(notifier.MasukGoogle(clientIdGoogle)),
+                              icon: Image.asset('assets/Google.png', width: 20, height: 20, excludeFromSemantics: true),
+                              label: const Text('Masuk dengan Google'),
+                            ),
+                          ),
+                          const SizedBox(height: TokenJarak.jarak8),
+                          Text(
+                            'Akun Google menggantikan kode verifikasi dua langkah.',
+                            textAlign: TextAlign.center,
+                            style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+                          ),
+                        ],
+                      ],
                     ),
-                    const SizedBox(height: TokenJarak.jarak16),
-                    if (duaFaktor)
-                      TextField(
-                        controller: _kode,
-                        keyboardType: TextInputType.number,
-                        autofillHints: const [AutofillHints.oneTimeCode],
-                        decoration: const InputDecoration(labelText: 'Kode verifikasi'),
-                        onSubmitted: (_) => unawaited(notifier.KonfirmasiDuaFaktor(_kode.text)),
-                      )
-                    else ...[
-                      TextField(
-                        controller: _email,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: const InputDecoration(labelText: 'Email'),
-                      ),
-                      const SizedBox(height: TokenJarak.jarak12),
-                      TextField(
-                        controller: _sandi,
-                        obscureText: !_sandiTerlihat,
-                        autofillHints: const [AutofillHints.password],
-                        decoration: InputDecoration(
-                          labelText: 'Kata sandi',
-                          // Tombol mata: target sentuh IconButton sudah 48dp (§17.6.4).
-                          suffixIcon: IconButton(
-                            onPressed: () => setState(() => _sandiTerlihat = !_sandiTerlihat),
-                            icon: Icon(_sandiTerlihat ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                            tooltip: _sandiTerlihat ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi',
-                          ),
-                        ),
-                        onSubmitted: (_) => unawaited(_Masuk()),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          key: const ValueKey('LupaKataSandi'),
-                          onPressed: sesi.sibuk || _mengirimLupaSandi ? null : () => unawaited(_LupaKataSandi()),
-                          child: Text(_mengirimLupaSandi ? 'Mengirim…' : 'Lupa kata sandi?'),
-                        ),
-                      ),
-                      const SizedBox(height: TokenJarak.jarak8),
-                      if (_pakaiServerSendiri)
-                        TextField(
-                          key: const ValueKey('AlamatServer'),
-                          controller: _alamat,
-                          keyboardType: TextInputType.url,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            labelText: 'Alamat server toko',
-                            hintText: 'https://kasir.tokoanda.com',
-                            helperText: 'Untuk toko yang memasang Payoung di server sendiri.',
-                            errorText: _galatAlamat,
-                          ),
-                          onSubmitted: (_) => unawaited(_Masuk()),
-                        )
-                      else
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton(
-                            onPressed: sesi.sibuk ? null : () => setState(() => _pakaiServerSendiri = true),
-                            child: const Text('Toko memakai server sendiri?'),
-                          ),
-                        ),
-                    ],
-                    if (sesi.pesan != null) ...[
-                      const SizedBox(height: TokenJarak.jarak12),
-                      Text(sesi.pesan!, style: teks.bodyMedium?.copyWith(color: warna.bahaya)),
-                    ],
-                    const SizedBox(height: TokenJarak.jarak16),
-                    SizedBox(
-                      height: TokenJarak.targetSentuh,
-                      child: FilledButton(
-                        onPressed: sesi.sibuk
-                            ? null
-                            : () => unawaited(duaFaktor ? notifier.KonfirmasiDuaFaktor(_kode.text) : _Masuk()),
-                        child: Text(sesi.sibuk ? 'Memproses…' : (duaFaktor ? 'Verifikasi' : 'Masuk')),
-                      ),
-                    ),
-                    if (!duaFaktor && clientIdGoogle != null) ...[
-                      const SizedBox(height: TokenJarak.jarak12),
-                      SizedBox(
-                        height: TokenJarak.targetSentuh,
-                        child: OutlinedButton.icon(
-                          key: const ValueKey('MasukGoogle'),
-                          onPressed: sesi.sibuk ? null : () => unawaited(notifier.MasukGoogle(clientIdGoogle)),
-                          icon: Image.asset('assets/Google.png', width: 20, height: 20, excludeFromSemantics: true),
-                          label: const Text('Masuk dengan Google'),
-                        ),
-                      ),
-                      const SizedBox(height: TokenJarak.jarak8),
-                      Text(
-                        'Akun Google menggantikan kode verifikasi dua langkah.',
-                        textAlign: TextAlign.center,
-                        style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
-                      ),
-                    ],
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Panel merek di atas formulir Masuk: payung menadah koin di latar teal gelap yang membulat di bawah (D-231).
+class _PanelMerek extends StatelessWidget {
+  const _PanelMerek();
+
+  @override
+  Widget build(BuildContext context) {
+    final warna = TokenWarna.AmbilDari(context);
+    final teks = Theme.of(context).textTheme;
+    // Tinggi panel mengikuti layar: ponsel pendek tetap memuat seluruh formulir tanpa menggulir.
+    final tinggi = (MediaQuery.sizeOf(context).height * 0.24).clamp(150.0, 300.0);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: warna.brandGelap,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(48)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: tinggi,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                top: -60,
+                right: -70,
+                child: Container(
+                  width: 220,
+                  height: 220,
+                  decoration: BoxDecoration(color: warna.permukaan.withValues(alpha: 0.05), shape: BoxShape.circle),
                 ),
               ),
-            ),
+              Positioned(
+                bottom: -50,
+                left: -60,
+                child: Container(
+                  width: 170,
+                  height: 170,
+                  decoration: BoxDecoration(color: warna.permukaan.withValues(alpha: 0.05), shape: BoxShape.circle),
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IlustrasiMerek(IlustrasiOwner.Payung, lebar: tinggi * 0.58),
+                  const SizedBox(height: TokenJarak.jarak4),
+                  Text(
+                    'Payoung Owner',
+                    style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: warna.permukaan),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

@@ -9,6 +9,7 @@ import '../Aplikasi/Penyedia.dart';
 import '../Data/KlienPemilik.dart';
 import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// Persetujuan jarak jauh (OWN-03, X4): antrean permintaan dari kasir yang boleh diputuskan pengguna (outlet akses &
 /// izin sama dengan back-office), terlama dulu. Setujui dengan konfirmasi; tolak wajib alasan 5–255 karakter yang
@@ -26,25 +27,65 @@ class LayarPersetujuan extends ConsumerWidget {
       child: KeadaanData(
         nilai: ref.watch(penyediaPersetujuan),
         saatCobaLagi: () => ref.invalidate(penyediaPersetujuan),
-        isi: (daftar) => ListView(
-          padding: const EdgeInsets.all(TokenJarak.jarak16),
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            if (daftar.isEmpty && (ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[]).isEmpty)
-              const KotakPanel(
-                anak: KeadaanKosong(
-                  ilustrasi: IlustrasiKosong.Umum,
-                  ikon: Icons.approval_outlined,
-                  judul: 'Tidak ada permintaan persetujuan.',
-                  keterangan:
-                      'Permintaan dari kasir muncul di sini dan dicek otomatis tiap 15 detik saat aplikasi terbuka.',
-                ),
-              ),
-            for (final p in daftar) _KartuPersetujuan(permintaan: p),
-            for (final d in ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[])
-              _KartuDokumen(dokumen: d),
-          ],
-        ),
+        isi: (daftar) {
+          final dokumen = ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[];
+          final total = daftar.length + dokumen.where((d) => d.bisaDisetujui).length;
+          final warna = TokenWarna.AmbilDari(context);
+          return ListView(
+            padding: const EdgeInsets.all(TokenJarak.jarak16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              const KepalaHalaman(judul: 'Persetujuan'),
+              if (daftar.isEmpty && dokumen.isEmpty)
+                const _KosongPersetujuan()
+              else ...[
+                if (total > 0) ...[
+                  KartuSorotan(
+                    latar: TentukanNadaLembut(context, warna.aksen, 0.16),
+                    judul: '$total menunggu keputusan Anda',
+                    keterangan: 'Cukup satu ketukan untuk setuju atau tolak.',
+                    ilustrasi: IlustrasiOwner.PapanSetuju,
+                    lebarIlustrasi: 96,
+                  ),
+                  const SizedBox(height: TokenJarak.jarak12),
+                ],
+                for (final p in daftar) _KartuPersetujuan(permintaan: p),
+                for (final d in dokumen) _KartuDokumen(dokumen: d),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Keadaan kosong bergambar: papan persetujuan bertanda centang, kalimat yang menjelaskan apa yang akan muncul.
+class _KosongPersetujuan extends StatelessWidget {
+  const _KosongPersetujuan();
+
+  @override
+  Widget build(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: TokenJarak.jarak32),
+      child: Column(
+        children: [
+          const IlustrasiMerek(IlustrasiOwner.PapanSetuju, lebar: 220),
+          const SizedBox(height: TokenJarak.jarak16),
+          Text(
+            'Tidak ada permintaan persetujuan.',
+            textAlign: TextAlign.center,
+            style: teks.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: TokenJarak.jarak8),
+          Text(
+            'Permintaan dari kasir muncul di sini dan dicek otomatis tiap 15 detik saat aplikasi terbuka.',
+            textAlign: TextAlign.center,
+            style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
+          ),
+        ],
       ),
     );
   }
@@ -120,32 +161,33 @@ class _KartuDokumenState extends ConsumerState<_KartuDokumen> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final d = widget.dokumen;
-    return Container(
-      margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
-      decoration: BoxDecoration(
-        color: warna.permukaan,
-        border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
-        borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(TokenJarak.jarak16),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+      child: KartuModern(
+        anak: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: warna.peringatan.withValues(alpha: 0.12),
-                  child: Icon(
-                    d.jenis == 'PenyesuaianStok' ? Icons.inventory_2_outlined : Icons.local_shipping_outlined,
-                    color: warna.peringatan,
-                  ),
+                LingkarIkon(
+                  ikon: d.jenis == 'PenyesuaianStok' ? Icons.inventory_2_outlined : Icons.local_shipping_outlined,
+                  warna: warna.peringatan,
                 ),
                 const SizedBox(width: TokenJarak.jarak12),
-                Expanded(child: Text(d.judul, style: teks.titleMedium)),
-                Text(FormatTampilan.Rupiah(d.nilai), style: teks.titleMedium),
+                Expanded(
+                  child: Text(d.judul, style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                ),
               ],
+            ),
+            const SizedBox(height: TokenJarak.jarak8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                FormatTampilan.Rupiah(d.nilai),
+                style: teks.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4),
+              ),
             ),
             const SizedBox(height: TokenJarak.jarak4),
             Text(
@@ -270,30 +312,33 @@ class _KartuPersetujuanState extends ConsumerState<_KartuPersetujuan> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final p = widget.permintaan;
-    return Container(
-      margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
-      decoration: BoxDecoration(
-        color: warna.permukaan,
-        border: Border.all(color: warna.garis, width: TokenJarak.tebalGaris),
-        borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(TokenJarak.jarak16),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+      child: KartuModern(
+        anak: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: warna.peringatan.withValues(alpha: 0.12),
-                  child: Icon(Icons.approval_outlined, color: warna.peringatan),
-                ),
+                LingkarIkon(ikon: Icons.approval_outlined, warna: warna.peringatan),
                 const SizedBox(width: TokenJarak.jarak12),
-                Expanded(child: Text(p.judul, style: teks.titleMedium)),
-                if (p.nilai != null) Text(FormatTampilan.Rupiah(p.nilai!), style: teks.titleMedium),
+                Expanded(
+                  child: Text(p.judul, style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                ),
               ],
             ),
+            if (p.nilai != null) ...[
+              const SizedBox(height: TokenJarak.jarak8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  FormatTampilan.Rupiah(p.nilai!),
+                  style: teks.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4),
+                ),
+              ),
+            ],
             const SizedBox(height: TokenJarak.jarak4),
             Text(
               [
@@ -314,7 +359,7 @@ class _KartuPersetujuanState extends ConsumerState<_KartuPersetujuan> {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: warna.latar,
-                  borderRadius: BorderRadius.circular(TokenJarak.radiusPanel),
+                  borderRadius: BorderRadius.circular(TokenJarak.radiusTombol),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(TokenJarak.jarak12),
