@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     DialogAlasan,
@@ -17,7 +18,6 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatJumlahStok, FormatNilai } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -220,50 +220,34 @@ export default function HalamanDetailTransferStok({
 
     return (
         <TataLetakAplikasi judul={`Transfer ${nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-subjudul font-semibold text-teks-utama">{nomor}</span>
-                    <LabelStatusDokumen status={Transfer.Status} label={Transfer.LabelStatus} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={alamat}>Kembali ke daftar</Link>
-                    </Button>
-                    {Transfer.Status === 'Draf' ||
+            <AksiHalaman
+                keterangan={<LabelStatusDokumen status={Transfer.Status} label={Transfer.LabelStatus} />}
+                langkah={[
+                    ...(Tindakan.Terima ? [{ label: 'Terima barang', saatKlik: () => AturDialog('Terima') }] : []),
+                    ...(Tindakan.Kirim ? [{ label: 'Kirim transfer', saatKlik: () => AturDialog('Kirim') }] : []),
+                ]}
+                lainnya={[
+                    ...(Transfer.Status === 'Draf' ||
                     Transfer.Status === 'Dikirim' ||
-                    Transfer.Status === 'DiterimaSebagian' ? (
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <a href={`${alamat}/${Transfer.Uuid}/cetak-ambil`} target="_blank" rel="noreferrer">
-                                Cetak daftar ambil barang
-                            </a>
-                        </Button>
-                    ) : null}
-                    {Transfer.Status !== 'Draf' ? (
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <a href={`${alamat}/${Transfer.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                                Cetak surat jalan
-                            </a>
-                        </Button>
-                    ) : null}
-                    {Tindakan.Ubah ? (
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`${alamat}/${Transfer.Uuid}/ubah`}>Ubah draf</Link>
-                        </Button>
-                    ) : null}
-                    {Tindakan.Batalkan ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Batalkan')}>
-                            Batalkan draf
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Tutup ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Tutup')}>
-                            Tutup dengan selisih
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Terima ? <Tombol onClick={() => AturDialog('Terima')}>Terima barang</Tombol> : null}
-                    {Tindakan.Kirim ? <Tombol onClick={() => AturDialog('Kirim')}>Kirim transfer</Tombol> : null}
-                </div>
-            </div>
+                    Transfer.Status === 'DiterimaSebagian'
+                        ? [
+                              {
+                                  label: 'Cetak daftar ambil barang',
+                                  href: `${alamat}/${Transfer.Uuid}/cetak-ambil`,
+                                  tabBaru: true,
+                              },
+                          ]
+                        : []),
+                    ...(Transfer.Status !== 'Draf'
+                        ? [{ label: 'Cetak surat jalan', href: `${alamat}/${Transfer.Uuid}/cetak`, tabBaru: true }]
+                        : []),
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${Transfer.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Tutup ? [{ label: 'Tutup dengan selisih', saatKlik: () => AturDialog('Tutup') }] : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan draf', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             {Transfer.Status === 'Dibatalkan' ? (
                 <Pemberitahuan jenis="info" judul="Transfer dibatalkan">

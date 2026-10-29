@@ -6,13 +6,13 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import TombolEkspor from '@/Komponen/Laporan/TombolEkspor';
-import { Button } from '@/Komponen/Ui/button';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
@@ -158,35 +158,27 @@ export default function HalamanDetailRekapGaji({ Rekap, Baris, OpsiAkunKasBank, 
 
     return (
         <TataLetakAplikasi judul={`Rekap gaji ${Rekap.LabelSiklus.toLowerCase()} ${Rekap.LabelPeriode}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <Button asChild variant="link" className="h-auto px-0">
-                    <Link href={alamatDaftar}>Kembali ke rekap gaji</Link>
-                </Button>
-                <div className="flex flex-wrap gap-2">
-                    <TombolEkspor alamat={`${alamat}/ekspor`} />
-                    {Baris.length > 0 ? (
-                        <Button
-                            asChild
-                            variant="outline"
-                            className="h-8 pointer-coarse:h-11 px-4 text-label font-semibold"
-                        >
-                            <a href={`${alamat}/slip`} target="_blank" rel="noreferrer">
-                                Cetak semua slip
-                            </a>
-                        </Button>
-                    ) : null}
-                    {draf ? (
-                        <>
-                            <Tombol varian="sekunder" onClick={() => AturDialog({ jenis: 'hapus' })}>
-                                Hapus draf
-                            </Tombol>
-                            <Tombol onClick={() => AturDialog({ jenis: 'bayar' })} disabled={Baris.length === 0}>
-                                Bayar gaji
-                            </Tombol>
-                        </>
-                    ) : null}
-                </div>
-            </div>
+            <AksiHalaman
+                langkah={[
+                    ...(draf
+                        ? [
+                              {
+                                  label: 'Bayar gaji',
+                                  saatKlik: () => AturDialog({ jenis: 'bayar' }),
+                                  nonaktif: Baris.length === 0,
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Baris.length > 0 ? [{ label: 'Cetak semua slip', href: `${alamat}/slip`, tabBaru: true }] : []),
+                    ...(draf
+                        ? [{ label: 'Hapus draf', saatKlik: () => AturDialog({ jenis: 'hapus' }), bahaya: true }]
+                        : []),
+                ]}
+            >
+                <TombolEkspor alamat={`${alamat}/ekspor`} />
+            </AksiHalaman>
 
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-isi sm:grid-cols-4">
                 <div className="flex flex-col gap-1">

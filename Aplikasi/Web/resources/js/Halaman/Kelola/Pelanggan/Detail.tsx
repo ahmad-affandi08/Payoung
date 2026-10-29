@@ -5,6 +5,7 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 
 import FormulirPelanggan, { AlamatPelanggan } from '@/Komponen/Pelanggan/FormulirPelanggan';
@@ -298,40 +299,41 @@ export default function HalamanDetailPelanggan({
 
     return (
         <TataLetakAplikasi judul={p.Nama}>
-            <div className="flex flex-wrap items-center gap-2">
-                <Link href={AlamatPelanggan} className="text-brand underline">
-                    Kembali ke daftar pelanggan
-                </Link>
-                {p.Status === 'Aktif' ? (
-                    <LabelStatus jenis="sukses" teks="Aktif" />
-                ) : (
-                    <LabelStatus jenis="netral" teks="Diarsipkan" />
-                )}
-            </div>
-            {Izin.Kelola ? (
-                <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => AturUbah(true)}>Ubah pelanggan</Button>
-                    {p.Status === 'Aktif' ? (
-                        <Button
-                            variant="outline"
-                            onClick={() =>
-                                router.post(`${AlamatPelanggan}/${p.Uuid}/arsipkan`, {}, { preserveScroll: true })
-                            }
-                        >
-                            Arsipkan
-                        </Button>
+            <AksiHalaman
+                keterangan={
+                    p.Status === 'Aktif' ? (
+                        <LabelStatus jenis="sukses" teks="Aktif" />
                     ) : (
-                        <Button
-                            variant="outline"
-                            onClick={() =>
-                                router.post(`${AlamatPelanggan}/${p.Uuid}/pulihkan`, {}, { preserveScroll: true })
-                            }
-                        >
-                            Pulihkan
-                        </Button>
-                    )}
-                </div>
-            ) : null}
+                        <LabelStatus jenis="netral" teks="Diarsipkan" />
+                    )
+                }
+                langkah={Izin.Kelola ? [{ label: 'Ubah pelanggan', saatKlik: () => AturUbah(true) }] : []}
+                lainnya={
+                    Izin.Kelola
+                        ? [
+                              p.Status === 'Aktif'
+                                  ? {
+                                        label: 'Arsipkan',
+                                        saatKlik: () =>
+                                            router.post(
+                                                `${AlamatPelanggan}/${p.Uuid}/arsipkan`,
+                                                {},
+                                                { preserveScroll: true },
+                                            ),
+                                    }
+                                  : {
+                                        label: 'Pulihkan',
+                                        saatKlik: () =>
+                                            router.post(
+                                                `${AlamatPelanggan}/${p.Uuid}/pulihkan`,
+                                                {},
+                                                { preserveScroll: true },
+                                            ),
+                                    },
+                          ]
+                        : []
+                }
+            />
 
             <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
                 <Card className="gap-4 rounded-panel p-4 shadow-none">

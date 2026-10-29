@@ -15,6 +15,7 @@ import KepalaProduk from '@/Komponen/Katalog/KepalaProduk';
 import PanelKetersediaan from '@/Komponen/Katalog/PanelKetersediaan';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -27,9 +28,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '@/Komponen/Ui/alert-dialog';
-import { Button } from '@/Komponen/Ui/button';
 import { SusunGridVarian } from '@/Pustaka/GridVarian';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -118,6 +117,7 @@ export default function HalamanDetailProduk({
     const [gambar, AturGambar] = useState<File | null>(null);
     const [mengunggah, AturMengunggah] = useState(false);
     const [dialogHapusPermanen, AturDialogHapusPermanen] = useState(false);
+    const [hapusProduk, AturHapusProduk] = useState(false);
     const dasar = Produk.SatuanDasar;
     const induk = Produk.Jenis === 'IndukVarian';
     const grid = induk ? SusunGridVarian(Varian, Produk.AtributVarian) : null;
@@ -199,69 +199,56 @@ export default function HalamanDetailProduk({
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="produk ini" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
-            {!Izin.Kelola && Produk.DiarsipkanPada === null ? (
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={`/kelola/produk/label?Produk[]=${Produk.Uuid}`}>Cetak label</Link>
-                    </Button>
-                </div>
-            ) : null}
-
-            {Izin.Kelola ? (
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild className="h-8 pointer-coarse:h-11">
-                        <Link href={`/kelola/produk/${Produk.Uuid}/ubah`}>Ubah produk</Link>
-                    </Button>
-                    {Produk.DiarsipkanPada === null ? (
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`/kelola/produk/label?Produk[]=${Produk.Uuid}`}>Cetak label</Link>
-                        </Button>
-                    ) : null}
-                    {Produk.DiarsipkanPada === null ? (
-                        <Tombol
-                            varian="sekunder"
-                            onClick={() => router.post(`/kelola/produk/${Produk.Uuid}/arsipkan`, {}, opsiKirim)}
-                        >
-                            Arsipkan produk
-                        </Tombol>
-                    ) : (
-                        <Tombol
-                            varian="sekunder"
-                            onClick={() => router.post(`/kelola/produk/${Produk.Uuid}/pulihkan`, {}, opsiKirim)}
-                        >
-                            Pulihkan produk
-                        </Tombol>
-                    )}
-                    {Produk.AlasanTidakBisaDihapus === null ? (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" className="h-8 pointer-coarse:h-11">
-                                    Hapus produk
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-subjudul font-semibold text-teks-utama">
-                                        Hapus {Produk.Nama}?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-isi text-teks-sekunder">
-                                        Produk, barcode, dan harganya dihapus permanen, dan SKU bisa dipakai produk
-                                        lain. Bila produk hanya tidak dijual lagi, pilih Arsipkan.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                    <AlertDialogAction
-                                        variant="destructive"
-                                        onClick={() => router.delete(`/kelola/produk/${Produk.Uuid}`)}
-                                    >
-                                        Ya, hapus produk
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    ) : null}
-                </div>
+            <AksiHalaman
+                langkah={Izin.Kelola ? [{ label: 'Ubah produk', href: `/kelola/produk/${Produk.Uuid}/ubah` }] : []}
+                lainnya={[
+                    ...(Produk.DiarsipkanPada === null
+                        ? [{ label: 'Cetak label', href: `/kelola/produk/label?Produk[]=${Produk.Uuid}` }]
+                        : []),
+                    ...(Izin.Kelola && Produk.DiarsipkanPada === null
+                        ? [
+                              {
+                                  label: 'Arsipkan produk',
+                                  saatKlik: () => router.post(`/kelola/produk/${Produk.Uuid}/arsipkan`, {}, opsiKirim),
+                              },
+                          ]
+                        : []),
+                    ...(Izin.Kelola && Produk.DiarsipkanPada !== null
+                        ? [
+                              {
+                                  label: 'Pulihkan produk',
+                                  saatKlik: () => router.post(`/kelola/produk/${Produk.Uuid}/pulihkan`, {}, opsiKirim),
+                              },
+                          ]
+                        : []),
+                    ...(Izin.Kelola && Produk.AlasanTidakBisaDihapus === null
+                        ? [{ label: 'Hapus produk', saatKlik: () => AturHapusProduk(true), bahaya: true }]
+                        : []),
+                ]}
+            />
+            {Izin.Kelola && Produk.AlasanTidakBisaDihapus === null ? (
+                <AlertDialog open={hapusProduk} onOpenChange={AturHapusProduk}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-subjudul font-semibold text-teks-utama">
+                                Hapus {Produk.Nama}?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-isi text-teks-sekunder">
+                                Produk, barcode, dan harganya dihapus permanen, dan SKU bisa dipakai produk lain. Bila
+                                produk hanya tidak dijual lagi, pilih Arsipkan.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                variant="destructive"
+                                onClick={() => router.delete(`/kelola/produk/${Produk.Uuid}`)}
+                            >
+                                Ya, hapus produk
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             ) : null}
 
             {Izin.Kelola && Produk.AlasanTidakBisaDihapus !== null ? (

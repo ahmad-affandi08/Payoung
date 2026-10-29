@@ -108,16 +108,20 @@ export default function AksiHalaman({
     keterangan,
     utama: utamaLangsung,
     lainnya: lainnyaLangsung = [],
-    langkah = [],
+    langkah: langkahProp,
     children,
 }: PropsAksiHalaman) {
+    // Halaman rincian dokumen memberi `langkah` (walau kosong). Aksinya tetap di tempatnya, tepat di bawah judul,
+    // bukan dipindah ke bilah alat tabel rincian barang yang letaknya jauh di bawah ringkasan.
+    const rincian = langkahProp !== undefined;
+    const langkah = langkahProp ?? [];
     const [langkahUtama, ...langkahSisa] = langkah;
     const utama = utamaLangsung ?? (langkahUtama ? <TombolUtamaAksi butir={langkahUtama} /> : undefined);
     const lainnya = [...langkahSisa, ...lainnyaLangsung];
     const lebar = useLebarLayar();
     const konteks = useAksiHalaman();
     const hp = lebar === 'hp';
-    const slot = hp ? (konteks?.slot ?? null) : null;
+    const slot = hp && !rincian ? (konteks?.slot ?? null) : null;
     const AturLainnya = konteks?.AturLainnya;
     const adaIsi = Children.toArray(children).length > 0 || Boolean(utama) || lainnya.length > 0;
 

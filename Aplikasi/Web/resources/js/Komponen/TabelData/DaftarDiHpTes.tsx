@@ -221,6 +221,38 @@ describe('Halaman rincian: langkah berikutnya + menu Lainnya (D-228)', () => {
     });
 });
 
+describe('Halaman rincian dengan tabel di HP (D-228)', () => {
+    it('aksi rincian tetap di bawah judul, tidak dipindah ke bilah alat tabel rincian barang', () => {
+        AturLebar('hp');
+        render(
+            <QueryClientProvider client={new QueryClient()}>
+                <PenyediaAksiHalaman>
+                    <AksiHalaman
+                        keterangan={<span>Draf</span>}
+                        langkah={[{ label: 'Kirim transfer', saatKlik: () => undefined }]}
+                        lainnya={[{ label: 'Batalkan draf', saatKlik: () => undefined, bahaya: true }]}
+                    />
+                    <TabelData
+                        id="barang-rincian"
+                        label="Daftar barang"
+                        kolom={kolom}
+                        sumber={{ mode: 'lokal', data: awal.Data }}
+                        ambilIdBaris={(b) => b.Uuid}
+                        kosong={{ judul: 'Kosong' }}
+                    />
+                </PenyediaAksiHalaman>
+            </QueryClientProvider>,
+        );
+
+        const slot = document.querySelector('[data-slot="aksi-utama-halaman"]') as HTMLElement;
+        expect(within(slot).queryByRole('button', { name: 'Kirim transfer' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Kirim transfer' })).toBeTruthy();
+        expect(screen.getByText('Draf')).toBeTruthy();
+        BukaMenu(screen.getAllByRole('button', { name: 'Aksi lainnya' })[0] as HTMLElement);
+        expect(screen.getByRole('menuitem', { name: 'Batalkan draf' })).toBeTruthy();
+    });
+});
+
 describe('Tombol banyak tidak terpotong di HP (D-228)', () => {
     it('wadah aksi utama membungkus dan setiap tombol punya lebar minimum, jadi tidak ada yang keluar layar', () => {
         AturLebar('hp');

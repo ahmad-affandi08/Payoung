@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import { HitungBarisMutasi } from '@/Komponen/Persediaan/AturanFormStokAwal';
 import LabelStatusStokAwal from '@/Komponen/Persediaan/LabelStatusStokAwal';
@@ -13,7 +14,6 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatHppSatuan, FormatJumlahStok, FormatNilai } from '@/Pustaka/FormatPersediaan';
@@ -193,37 +193,27 @@ export default function HalamanDetailStokAwal({
 
     return (
         <TataLetakAplikasi judul={`Stok awal ${nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-subjudul font-semibold text-teks-utama">{nomor}</span>
-                    <LabelStatusStokAwal status={StokAwal.Status} label={StokAwal.LabelStatus} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={alamat}>Kembali ke daftar</Link>
-                    </Button>
-                    {Tindakan.Ubah ? (
-                        <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                            <Link href={`${alamat}/${StokAwal.Uuid}/ubah`}>Ubah draf</Link>
-                        </Button>
-                    ) : null}
-                    {Tindakan.Buang ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Buang')}>
-                            Buang draf
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Batalkan ? (
-                        <Tombol varian="bahaya" onClick={() => AturDialog('Batalkan')}>
-                            Batalkan stok awal
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Posting ? (
-                        <Tombol onClick={() => AturDialog('Posting')} disabled={!KesiapanAkun.Siap}>
-                            Catat stok awal
-                        </Tombol>
-                    ) : null}
-                </div>
-            </div>
+            <AksiHalaman
+                keterangan={<LabelStatusStokAwal status={StokAwal.Status} label={StokAwal.LabelStatus} />}
+                langkah={[
+                    ...(Tindakan.Posting
+                        ? [
+                              {
+                                  label: 'Catat stok awal',
+                                  saatKlik: () => AturDialog('Posting'),
+                                  nonaktif: !KesiapanAkun.Siap,
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${StokAwal.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Buang ? [{ label: 'Buang draf', saatKlik: () => AturDialog('Buang') }] : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan stok awal', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <PemantauPosting uuid={StokAwal.Uuid} status={StokAwal.Status} />
             {StokAwal.Status === 'Draf' && StokAwal.PesanGalat ? (

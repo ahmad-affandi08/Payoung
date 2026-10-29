@@ -1,8 +1,8 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-import Tombol from '@/Komponen/Formulir/Tombol';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     DialogAlasan,
@@ -12,7 +12,6 @@ import {
 } from '@/Komponen/Persediaan/Dokumen/KomponenDokumen';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -83,39 +82,26 @@ export default function HalamanDetailPermintaanStok({
 
     return (
         <TataLetakAplikasi judul={`Permintaan ${Permintaan.Nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-subjudul font-semibold text-teks-utama">{Permintaan.Nomor}</span>
-                    <LabelStatusDokumen status={Permintaan.Status} label={Permintaan.LabelStatus} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={alamat}>Kembali ke daftar</Link>
-                    </Button>
-                    {Tindakan.Batalkan ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Batalkan')}>
-                            Batalkan permintaan
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Tutup ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Tutup')}>
-                            Tutup sisa
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Tolak ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Tolak')}>
-                            Tolak permintaan
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Penuhi ? (
-                        <Button asChild className="h-8 pointer-coarse:h-11">
-                            <Link href={`/kelola/persediaan/transfer/buat?permintaan=${Permintaan.Uuid}`}>
-                                Penuhi dengan transfer
-                            </Link>
-                        </Button>
-                    ) : null}
-                </div>
-            </div>
+            <AksiHalaman
+                keterangan={<LabelStatusDokumen status={Permintaan.Status} label={Permintaan.LabelStatus} />}
+                langkah={[
+                    ...(Tindakan.Penuhi
+                        ? [
+                              {
+                                  label: 'Penuhi dengan transfer',
+                                  href: `/kelola/persediaan/transfer/buat?permintaan=${Permintaan.Uuid}`,
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Tutup ? [{ label: 'Tutup sisa', saatKlik: () => AturDialog('Tutup') }] : []),
+                    ...(Tindakan.Tolak ? [{ label: 'Tolak permintaan', saatKlik: () => AturDialog('Tolak') }] : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan permintaan', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             {Permintaan.Status === 'Ditolak' ||
             Permintaan.Status === 'Dibatalkan' ||

@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
@@ -6,6 +6,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     DialogAlasan,
@@ -22,7 +23,6 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import { Input } from '@/Komponen/Ui/input';
 import { Label } from '@/Komponen/Ui/label';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -332,29 +332,21 @@ export default function HalamanDetailStokOpname({
 
     return (
         <TataLetakAplikasi judul={`Stok opname ${Opname.Nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-subjudul font-semibold text-teks-utama">{Opname.Nomor}</span>
-                    <LabelStatusDokumen status={Opname.Status} label={Opname.LabelStatus} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">
-                        <Link href={alamat}>Kembali ke daftar</Link>
-                    </Button>
-                    {Tindakan.Batalkan ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Batalkan')}>
-                            Batalkan opname
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Kembalikan ? (
-                        <Tombol varian="sekunder" onClick={() => AturDialog('Kembalikan')}>
-                            Hitung ulang
-                        </Tombol>
-                    ) : null}
-                    {Tindakan.Ajukan ? <Tombol onClick={() => AturDialog('Ajukan')}>Selesai hitung</Tombol> : null}
-                    {Tindakan.Setujui ? <Tombol onClick={() => AturDialog('Setujui')}>Setujui opname</Tombol> : null}
-                </div>
-            </div>
+            <AksiHalaman
+                keterangan={<LabelStatusDokumen status={Opname.Status} label={Opname.LabelStatus} />}
+                langkah={[
+                    ...(Tindakan.Ajukan ? [{ label: 'Selesai hitung', saatKlik: () => AturDialog('Ajukan') }] : []),
+                    ...(Tindakan.Setujui ? [{ label: 'Setujui opname', saatKlik: () => AturDialog('Setujui') }] : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Kembalikan
+                        ? [{ label: 'Hitung ulang', saatKlik: () => AturDialog('Kembalikan') }]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan opname', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             {Opname.SistemTersembunyi ? (
                 <Pemberitahuan jenis="info" judul="Hitung buta">

@@ -405,7 +405,8 @@ describe('Kelola/Persediaan/Transfer (F-05b)', () => {
                 })}
             />,
         );
-        expect(screen.getByText('Draf tanpa nomor')).toBeTruthy();
+        // Nomor tidak lagi diulang di bawah judul (D-231): judul halaman sudah memuatnya.
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Draf tanpa nomor');
         fireEvent.click(screen.getByRole('button', { name: 'Kirim transfer' }));
         fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Kirim transfer' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
