@@ -15,6 +15,9 @@ abstract final class StatusOutbox {
 abstract final class KunciPengaturan {
   static const String uuidPerangkat = 'UuidPerangkat';
   static const String kodePerangkat = 'KodePerangkat';
+
+  /// K26: awalan huruf nomor antrian perangkat (kosong = nomor polos).
+  static const String awalanAntrian = 'AwalanAntrian';
   static const String namaPerangkat = 'NamaPerangkat';
   static const String namaOutlet = 'NamaOutlet';
   static const String namaUsaha = 'NamaUsaha';
@@ -303,6 +306,7 @@ class RepositoriKasir {
     final perangkat = data.perangkat;
     if (perangkat != null && perangkat.kode.isNotEmpty) {
       await SimpanPengaturan(KunciPengaturan.kodePerangkat, perangkat.kode);
+      await SimpanPengaturan(KunciPengaturan.awalanAntrian, perangkat.awalanAntrian ?? '');
       // PRD v1.46 (e): sekuens lokal = max(lokal, server) per tanggal, agar pemasangan ulang tidak memakai nomor lama.
       for (final entri in perangkat.nomorUrutPenjualan.entries) {
         final lama = await (db.select(

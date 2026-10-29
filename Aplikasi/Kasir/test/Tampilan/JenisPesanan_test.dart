@@ -17,11 +17,12 @@ import '../Pendukung/PasangAplikasi.dart';
 /// bisa mengganti ke Bawa pulang, dan outbox `Penjualan.Buat` membawa kanal yang dipilih. Outlet retail (tanpa jenis
 /// pesanan) tidak melihat tombol itu dan tetap tercatat Bawa pulang.
 void main() {
-  Future<LingkunganUji> MasukJual(WidgetTester tester, Size ukuran, {bool fnb = true}) async {
+  Future<LingkunganUji> MasukJual(WidgetTester tester, Size ukuran, {bool fnb = true, String? awalanAntrian}) async {
     final u = LingkunganUji.Buat();
     final dataAwal = DataAwalUji(
       jenisPesanan: fnb ? const ['MakanDiTempat', 'BawaPulang'] : null,
       jenisPesananBawaan: fnb ? 'MakanDiTempat' : null,
+      awalanAntrian: awalanAntrian,
     );
     await tester.runAsync(() async {
       await u.SiapkanAktif(dataAwal: dataAwal);
@@ -165,4 +166,18 @@ void main() {
       await Lepas(tester, u);
     });
   }
+
+  testWidgets('K26: perangkat berawalan A memberi nomor antrian A-001 di layar, outbox, dan label tiket', (
+    tester,
+  ) async {
+    final u = await MasukJual(tester, const Size(1280, 900), awalanAntrian: 'a');
+    await Ketuk(tester, Ubin('Americano Panas'));
+    await Bayar(tester);
+
+    expect(find.text('A-001'), findsOneWidget);
+    final outbox = await OutboxTerakhir(tester, u);
+    expect(outbox['NomorAntrian'], 'A-001');
+    expect((outbox['NomorAntrian']! as String).length, lessThanOrEqualTo(10));
+    await Lepas(tester, u);
+  });
 }

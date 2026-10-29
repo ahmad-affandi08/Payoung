@@ -102,6 +102,7 @@ Map<String, Object?> DataAwalUji({
   String? modeKasir,
   bool tukar = false,
   bool giftCard = false,
+  String? awalanAntrian,
 }) => {
   'Karyawan': ?karyawan,
   // F-16d: deposit pelanggan (fitur paket) hanya bila diminta test.
@@ -153,6 +154,7 @@ Map<String, Object?> DataAwalUji({
     'NomorUrutPenjualan': ?nomorUrutPenjualan,
     'NomorUrutRetur': ?nomorUrutRetur,
     'NomorUrutIsiDeposit': ?nomorUrutIsiDeposit,
+    'AwalanAntrian': ?awalanAntrian,
   },
   'ProfilPajak':
       profilPajak ??

@@ -39,6 +39,8 @@ type Perangkat = {
     VersiAplikasi: string | null;
     /** v1.96: ringkasan profil hardware & hasil wizard uji perangkat. */
     PerangkatKeras?: string | null;
+    /** K26: awalan huruf nomor antrian (`A` → `A-042`), null = nomor polos. */
+    AwalanAntrian?: string | null;
     DiaktifkanPada: string | null;
     TerakhirAktifPada: string | null;
     DicabutPada: string | null;
@@ -80,6 +82,7 @@ const kolom: KolomTabel<Perangkat>[] = [
                     {baris.LabelJenis}
                     {baris.Platform ? ` | ${baris.Platform}` : ''}
                     {baris.VersiAplikasi ? ` | versi ${baris.VersiAplikasi}` : ''}
+                    {baris.AwalanAntrian ? ` | antrian ${baris.AwalanAntrian}-` : ''}
                 </span>
                 {baris.PerangkatKeras ? (
                     <span className="block text-keterangan text-teks-sekunder">{baris.PerangkatKeras}</span>
@@ -204,7 +207,10 @@ export default function HalamanDaftarPerangkat({
                     bolehKelola && baris.Status !== 'Dicabut' ? (
                         <ItemAksiBaris
                             aksi={[
-                                { label: 'Ubah nama', saatPilih: () => AturUbah(baris) },
+                                {
+                                    label: baris.Jenis === 'Kasir' ? 'Ubah nama & awalan antrian' : 'Ubah nama',
+                                    saatPilih: () => AturUbah(baris),
+                                },
                                 {
                                     label: baris.Status === 'Aktif' ? 'Pindahkan ke HP lain' : 'Buat kode baru',
                                     saatPilih: () =>
@@ -282,7 +288,8 @@ function FormTambah({ outlet, jenis, saatSelesai }: PropsFormTambah) {
 }
 
 function FormUbahNama({ perangkat, saatSelesai }: { perangkat: Perangkat; saatSelesai: () => void }) {
-    const formulir = useForm({ Nama: perangkat.Nama });
+    const kasir = perangkat.Jenis === 'Kasir';
+    const formulir = useForm({ Nama: perangkat.Nama, AwalanAntrian: perangkat.AwalanAntrian ?? '' });
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -290,7 +297,7 @@ function FormUbahNama({ perangkat, saatSelesai }: { perangkat: Perangkat; saatSe
     };
 
     return (
-        <DialogFormulir judul={`Ubah nama ${perangkat.Nama}`} saatTutup={saatSelesai}>
+        <DialogFormulir judul={`Ubah ${perangkat.Nama}`} saatTutup={saatSelesai}>
             <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
                 <BidangTeks
                     label={`Nama perangkat ${perangkat.Kode}`}
@@ -301,9 +308,22 @@ function FormUbahNama({ perangkat, saatSelesai }: { perangkat: Perangkat; saatSe
                     autoFocus
                     required
                 />
+                {kasir ? (
+                    <BidangTeks
+                        label="Awalan nomor antrian (opsional)"
+                        nilai={formulir.data.AwalanAntrian}
+                        saatBerubah={(nilai) =>
+                            formulir.setData('AwalanAntrian', nilai.replace(/[^A-Za-z]/g, '').toUpperCase())
+                        }
+                        galat={formulir.errors.AwalanAntrian}
+                        keterangan="Satu atau dua huruf, misal A, supaya nomor antrian kasir ini jadi A-042 dan tidak sama dengan kasir lain di outlet. Kosongkan untuk nomor polos."
+                        maxLength={2}
+                        kode
+                    />
+                ) : null}
                 <div className="flex flex-wrap gap-2">
                     <Tombol type="submit" memproses={formulir.processing}>
-                        Simpan nama
+                        Simpan
                     </Tombol>
                     <Tombol varian="sekunder" onClick={saatSelesai}>
                         Batal

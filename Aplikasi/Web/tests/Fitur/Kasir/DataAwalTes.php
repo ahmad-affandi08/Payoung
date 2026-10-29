@@ -129,6 +129,16 @@ describe('F-06 PIN kasir offline & data awal (GET /api/pos/v1/data-awal)', funct
         expect(Perangkat::query()->findOrFail($a['Perangkat']->Id)->KunciPinOffline)->toBeNull();
     });
 
+    it('K26: data awal membawa awalan antrian perangkat (null bila belum diatur)', function (): void {
+        $k = BantuanKasir::Siapkan($this);
+        $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk()->assertJsonPath('Perangkat.AwalanAntrian', null);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        Perangkat::query()->whereKey($k['Perangkat']->Id)->update(['AwalanAntrian' => 'B']);
+
+        $this->withToken($k['Token'])->getJson('/api/pos/v1/data-awal')->assertOk()->assertJsonPath('Perangkat.AwalanAntrian', 'B');
+    });
+
     it('pengaturan struk (PRD v1.79): bawaan, simpan dari back-office (audit), dan blok Struk di data awal: NPWP hanya bila outlet PKP, logo, tanda air paket', function (): void {
         $k = BantuanKasir::Siapkan($this, 'Kopi Senja Solo');
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);

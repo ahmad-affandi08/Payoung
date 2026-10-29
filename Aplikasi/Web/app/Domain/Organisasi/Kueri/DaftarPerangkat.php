@@ -39,6 +39,7 @@ final class DaftarPerangkat
                 'Platform' => $perangkat->Platform?->value,
                 'VersiAplikasi' => $perangkat->VersiAplikasi,
                 'PerangkatKeras' => self::RingkasProfilHardware($perangkat->ProfilHardware),
+                'AwalanAntrian' => $perangkat->AwalanAntrian,
                 'DiaktifkanPada' => $perangkat->DiaktifkanPada?->toIso8601String(),
                 'TerakhirAktifPada' => $perangkat->TerakhirAktifPada?->toIso8601String(),
                 'DicabutPada' => $perangkat->DicabutPada?->toIso8601String(),

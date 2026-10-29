@@ -8,6 +8,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Organisasi\Aksi\BuatKodeAktivasi;
 use App\Domain\Organisasi\Aksi\BuatPerangkat;
 use App\Domain\Organisasi\Aksi\CabutPerangkat;
+use App\Domain\Organisasi\Aksi\UbahAwalanAntrianPerangkat;
 use App\Domain\Organisasi\Aksi\UbahNamaPerangkat;
 use App\Domain\Organisasi\Enum\JenisPerangkat;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
@@ -75,9 +76,14 @@ final class PerangkatKontroler extends DasarKelolaKontroler
         return $this->KembaliDenganKode($hasil['Perangkat'], $hasil['Kode'], $hasil['KedaluwarsaPada']);
     }
 
-    public function Ubah(string $perangkat, SimpanPerangkatPermintaan $permintaan, UbahNamaPerangkat $ubah): RedirectResponse
+    public function Ubah(string $perangkat, SimpanPerangkatPermintaan $permintaan, UbahNamaPerangkat $ubah, UbahAwalanAntrianPerangkat $ubahAwalan): RedirectResponse
     {
         $baris = $ubah->Jalankan($this->CariPerangkat($perangkat), $permintaan->string('Nama')->toString());
+
+        // K26: awalan antrian hanya diubah bila formulir mengirimkannya (formulir ubah nama lama tidak menyentuhnya).
+        if ($permintaan->exists('AwalanAntrian')) {
+            $baris = $ubahAwalan->Jalankan($baris, $permintaan->filled('AwalanAntrian') ? $permintaan->string('AwalanAntrian')->toString() : null);
+        }
 
         return back()->with('Kilat', "Nama perangkat {$baris->Kode} disimpan.");
     }

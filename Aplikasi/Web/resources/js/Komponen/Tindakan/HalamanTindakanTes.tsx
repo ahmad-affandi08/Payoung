@@ -374,6 +374,58 @@ describe('Kelola/Perangkat: cabut lewat AlertDialog (F-02 langkah 5, BR-02.3)', 
         });
     });
 
+    it('K26: perangkat kasir punya isian awalan antrian (huruf besar, maks. 2), jenis lain hanya nama', () => {
+        AturPropsAplikasi(['perangkat.kelola']);
+        RenderDenganKueri(
+            <HalamanDaftarPerangkat
+                {...props}
+                Perangkat={[
+                    { ...perangkat, AwalanAntrian: 'B' },
+                    {
+                        ...perangkat,
+                        Uuid: 'D-3',
+                        Kode: 'KDS01',
+                        Nama: 'Layar Dapur',
+                        Jenis: 'Kds',
+                        LabelJenis: 'Dapur',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByText(/antrian B-/)).toBeTruthy();
+        BukaMenu(screen.getByRole('button', { name: 'Aksi perangkat Kasir Depan (KSR01)' }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah nama & awalan antrian' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah Kasir Depan' });
+        const isian = within(dialog).getByLabelText('Awalan nomor antrian (opsional)') as HTMLInputElement;
+        expect(isian.value).toBe('B');
+        fireEvent.change(isian, { target: { value: 'a1c' } });
+        expect(isian.value).toBe('AC');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan' }));
+        expect(AmbilKiriman()[0]).toMatchObject({ metode: 'put', url: '/kelola/perangkat/D-1' });
+        cleanup();
+
+        AturPropsAplikasi(['perangkat.kelola']);
+        RenderDenganKueri(
+            <HalamanDaftarPerangkat
+                {...props}
+                Perangkat={[
+                    {
+                        ...perangkat,
+                        Uuid: 'D-3',
+                        Kode: 'KDS01',
+                        Nama: 'Layar Dapur',
+                        Jenis: 'Kds',
+                        LabelJenis: 'Dapur',
+                    },
+                ]}
+            />,
+        );
+        BukaMenu(screen.getByRole('button', { name: 'Aksi perangkat Layar Dapur (KDS01)' }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Ubah nama' }));
+        expect(screen.queryByLabelText('Awalan nomor antrian (opsional)')).toBeNull();
+    });
+
     it('kosong: pesan ajakan menambah perangkat', () => {
         AturPropsAplikasi([]);
         RenderDenganKueri(<HalamanDaftarPerangkat {...props} Perangkat={[]} />);

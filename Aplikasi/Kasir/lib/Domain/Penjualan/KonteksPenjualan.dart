@@ -122,6 +122,7 @@ class KonteksPenjualan {
     required this.uuidOutlet,
     required this.kodeOutlet,
     required this.kodePerangkat,
+    this.awalanAntrian,
     required this.jamTutupBuku,
     required this.profilPajak,
     required this.tarif,
@@ -150,6 +151,9 @@ class KonteksPenjualan {
   final String? uuidOutlet;
   final String? kodeOutlet;
   final String? kodePerangkat;
+
+  /// K26: awalan huruf nomor antrian perangkat (`A` → `A-042`), null = nomor polos.
+  final String? awalanAntrian;
 
   /// `HH:mm` waktu outlet; transaksi sebelum jam ini masuk tanggal bisnis hari sebelumnya.
   final String jamTutupBuku;
@@ -263,10 +267,12 @@ class KonteksPenjualan {
         name: 'KonteksPenjualan',
       );
     }
+    final awalanAntrian = await repositori.AmbilPengaturan(KunciPengaturan.awalanAntrian);
     return KonteksPenjualan(
       uuidOutlet: await repositori.AmbilPengaturan(KunciPengaturan.uuidOutlet),
       kodeOutlet: await repositori.AmbilPengaturan(KunciPengaturan.kodeOutlet),
       kodePerangkat: await repositori.AmbilPengaturan(KunciPengaturan.kodePerangkat),
+      awalanAntrian: awalanAntrian == null || awalanAntrian.trim().isEmpty ? null : awalanAntrian.trim(),
       jamTutupBuku: await repositori.AmbilPengaturan(KunciPengaturan.jamTutupBuku) ?? '00:00',
       profilPajak: ProfilPajakPos.DariJson(profil == null ? null : jsonDecode(profil)),
       tarif: (await katalog.AmbilTarifPajak()).map(TarifPajakLokal.DariBaris).toList(),

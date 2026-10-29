@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $ProfilHardware
  * @property string|null $HashToken
  * @property string|null $KunciPinOffline
+ * @property string|null $AwalanAntrian K26: awalan huruf nomor antrian (maks. 2 huruf besar, unik per outlet), null = nomor polos
  * @property Carbon|null $DiaktifkanPada
  * @property Carbon|null $TerakhirAktifPada
  * @property int $JumlahOutboxTertunda
@@ -72,6 +73,7 @@ final class Perangkat extends ModelDasar
         'MintaLogPada' => null,
         'LogDiunggahPada' => null,
         'DicabutPada' => null,
+        'AwalanAntrian' => null,
     ];
 
     public static function BuatHashToken(string $rahasia): string

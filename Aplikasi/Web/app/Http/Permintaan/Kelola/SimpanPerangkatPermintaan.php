@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * Tambah perangkat (F-02b): `Outlet` = Uuid outlet, dicari ulang di kontroler dalam scope tenant & akses pelaku.
- * Saat mengubah, hanya `Nama` yang dipakai.
+ * Saat mengubah, `Nama` dan `AwalanAntrian` (K26) yang dipakai.
  */
 final class SimpanPerangkatPermintaan extends FormRequest
 {
@@ -25,6 +25,8 @@ final class SimpanPerangkatPermintaan extends FormRequest
             'Nama' => ['required', 'string', 'max:100'],
             'Outlet' => $baru ? ['required', 'string', 'size:26'] : ['nullable'],
             'Jenis' => $baru ? ['required', Rule::enum(JenisPerangkat::class)] : ['nullable'],
+            // K26: hanya dipakai saat mengubah; kosong = nomor antrian polos.
+            'AwalanAntrian' => ['nullable', 'string', 'regex:/^[A-Za-z]{1,2}$/'],
         ];
     }
 
@@ -37,6 +39,7 @@ final class SimpanPerangkatPermintaan extends FormRequest
             'Nama.required' => 'Isi nama perangkat, misal "Kasir Depan".',
             'Outlet.required' => 'Pilih outlet perangkat ini.',
             'Outlet.size' => 'Pilih outlet dari daftar.',
+            'AwalanAntrian.regex' => 'Awalan antrian hanya 1 atau 2 huruf, misal A.',
         ];
     }
 }

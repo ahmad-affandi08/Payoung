@@ -255,10 +255,15 @@ class PerangkatPos {
     this.nomorUrutPenjualan = const {},
     this.nomorUrutRetur = const {},
     this.nomorUrutIsiDeposit = const {},
+    this.awalanAntrian,
   });
 
   final String uuid;
   final String kode;
+
+  /// K26: awalan huruf nomor antrian perangkat ini (`A` → `A-042`) agar dua kasir di satu outlet tidak memanggil nomor
+  /// yang sama. Hanya 1–2 huruf; server lama atau nilai tidak valid → null (nomor polos `042`).
+  final String? awalanAntrian;
 
   /// Nomor urut penjualan terakhir perangkat ini di server per tanggal `YYMMDD` (`Perangkat.NomorUrutPenjualan`,
   /// PRD v1.46 (e)), agar pemasangan ulang aplikasi tidak memakai nomor yang sama. Kunci absen/tidak valid diabaikan.
@@ -282,10 +287,17 @@ class PerangkatPos {
             nomorUrutPenjualan: _AmbilNomorUrut(peta['NomorUrutPenjualan']),
             nomorUrutRetur: _AmbilNomorUrut(peta['NomorUrutRetur']),
             nomorUrutIsiDeposit: _AmbilNomorUrut(peta['NomorUrutIsiDeposit']),
+            awalanAntrian: _AmbilAwalanAntrian(peta['AwalanAntrian']),
           );
   }
 
   static final RegExp _polaYymmdd = RegExp(r'^\d{6}$');
+  static final RegExp _polaAwalanAntrian = RegExp(r'^[A-Za-z]{1,2}$');
+
+  static String? _AmbilAwalanAntrian(Object? nilai) {
+    final teks = UraiJson.AmbilTeksAtauNull(nilai)?.trim();
+    return teks != null && _polaAwalanAntrian.hasMatch(teks) ? teks.toUpperCase() : null;
+  }
 
   static Map<String, int> _AmbilNomorUrut(Object? nilai) {
     final hasil = <String, int>{};

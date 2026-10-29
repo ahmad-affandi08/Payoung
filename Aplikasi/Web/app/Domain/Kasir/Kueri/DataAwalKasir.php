@@ -128,6 +128,8 @@ final class DataAwalKasir
             'Perangkat' => [
                 'Uuid' => $perangkat->Uuid,
                 'Kode' => $perangkat->Kode,
+                // K26 (aditif): awalan huruf nomor antrian perangkat ini (`A` → `A-042`), null = nomor polos.
+                'AwalanAntrian' => $perangkat->AwalanAntrian,
                 // Objek JSON walau kosong (`{}`), bukan larik.
                 'NomorUrutPenjualan' => $nomorUrut === [] ? new stdClass : $nomorUrut,
                 'NomorUrutRetur' => $nomorUrutRetur === [] ? new stdClass : $nomorUrutRetur,

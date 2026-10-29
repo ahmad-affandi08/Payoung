@@ -325,6 +325,27 @@ void main() {
       expect(bukanPeta.perangkat!.nomorUrutRetur, isEmpty);
     });
 
+    test('K26: Perangkat.AwalanAntrian hanya 1–2 huruf (huruf besar), selain itu atau server lama → null', () {
+      PerangkatPos? Baca(Object? nilai) => DataAwal.DariJson({
+        ...DataAwalF06(),
+        'Perangkat': {'Uuid': 'D1', 'Kode': 'K02', 'AwalanAntrian': nilai},
+      }).perangkat;
+
+      expect(Baca('a')!.awalanAntrian, 'A');
+      expect(Baca(' bc ')!.awalanAntrian, 'BC');
+      expect(Baca('ABC')!.awalanAntrian, isNull);
+      expect(Baca('1')!.awalanAntrian, isNull);
+      expect(Baca('')!.awalanAntrian, isNull);
+      expect(Baca(null)!.awalanAntrian, isNull);
+      expect(
+        DataAwal.DariJson({
+          ...DataAwalF06(),
+          'Perangkat': {'Uuid': 'D1', 'Kode': 'K02'},
+        }).perangkat!.awalanAntrian,
+        isNull,
+      );
+    });
+
     test('F-16d: Deposit & Perangkat.NomorUrutIsiDeposit dipetakan. Server lama → tidak berlaku & kosong', () {
       final data = DataAwal.DariJson({
         ...DataAwalF06(),

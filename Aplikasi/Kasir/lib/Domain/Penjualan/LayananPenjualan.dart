@@ -1598,6 +1598,8 @@ class LayananPenjualan {
   /// v3.52 (§9.2): nomor antrian penjualan bayar-dulu di outlet yang menawarkan jenis pesanan (FnB) = urut harian
   /// perangkat dari nomor BR-07.1 (`…-0042` → `042`), jadi tidak butuh sekuens baru dan tetap unik per perangkat per
   /// hari offline. Pesanan meja, pengambilan pre-order, dan reservasi tidak bernomor antrian (sudah punya nama/meja).
+  /// K26: bila perangkat punya awalan huruf (diatur di back-office), nomor jadi `A-042` supaya dua kasir di satu outlet
+  /// tidak memanggil nomor yang sama (maks. 10 karakter di server).
   static String? AmbilNomorAntrian(String nomor, Keranjang keranjang, KonteksPenjualan k) {
     if (k.jenisPesanan.isEmpty ||
         keranjang.pesananMeja != null ||
@@ -1606,8 +1608,9 @@ class LayananPenjualan {
         keranjang.perintahKerja != null) {
       return null;
     }
-    final urut = int.tryParse(nomor.split('-').last);
-    return urut?.toString().padLeft(3, '0');
+    final urut = int.tryParse(nomor.split('-').last)?.toString().padLeft(3, '0');
+    final awalan = k.awalanAntrian;
+    return urut == null || awalan == null || awalan.isEmpty ? urut : '$awalan-$urut';
   }
 
   /// Susun penjualan lokal + payload outbox `Penjualan.Buat` persis kontrak Rincian F-07b (kunci PascalCase, uang

@@ -143,6 +143,40 @@ describe('F-02 langkah 5: tambah perangkat & kode aktivasi di back-office', func
         expect($perangkat->refresh()->Nama)->toBe('Kasir Lantai 2')->and($perangkat->Kode)->toEndWith('-K01');
     });
 
+    it('K26: awalan antrian disimpan huruf besar, unik per outlet di antara perangkat belum dicabut, dan bisa dikosongkan', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+        $outlet = PerangkatUjiOutletUtama($tenant->Id);
+        $depan = BantuanPerangkat::BuatPerangkat($tenant->Id, $outlet)['Perangkat'];
+        $belakang = BantuanPerangkat::BuatPerangkat($tenant->Id, $outlet, nama: 'Kasir Belakang')['Perangkat'];
+        $masuk = BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id);
+
+        $masuk->put("/kelola/perangkat/{$depan->Uuid}", ['Nama' => 'Kasir Depan', 'AwalanAntrian' => 'a'])->assertSessionHasNoErrors();
+        expect($depan->refresh()->AwalanAntrian)->toBe('A');
+
+        // Awalan yang sama di outlet yang sama ditolak (dua kasir tidak boleh memanggil nomor yang sama).
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Belakang', 'AwalanAntrian' => 'A'])->assertSessionHasErrors('AwalanAntrian');
+        expect($belakang->refresh()->AwalanAntrian)->toBeNull();
+
+        // Bentuk yang tidak valid ditolak; huruf lain diterima.
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Belakang', 'AwalanAntrian' => 'AB1'])->assertSessionHasErrors('AwalanAntrian');
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Belakang', 'AwalanAntrian' => 'B'])->assertSessionHasNoErrors();
+        expect($belakang->refresh()->AwalanAntrian)->toBe('B');
+
+        // Formulir ubah nama lama (tanpa kunci AwalanAntrian) tidak menyentuh awalan; kosong = nomor polos lagi.
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Teras'])->assertSessionHasNoErrors();
+        expect($belakang->refresh()->AwalanAntrian)->toBe('B');
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Teras', 'AwalanAntrian' => ''])->assertSessionHasNoErrors();
+        expect($belakang->refresh()->AwalanAntrian)->toBeNull();
+
+        // Perangkat dicabut melepas hurufnya; outlet lain boleh memakai huruf yang sama.
+        $masuk->post("/kelola/perangkat/{$depan->Uuid}/cabut")->assertSessionHasNoErrors();
+        $masuk->put("/kelola/perangkat/{$belakang->Uuid}", ['Nama' => 'Kasir Teras', 'AwalanAntrian' => 'A'])->assertSessionHasNoErrors();
+        expect($belakang->refresh()->AwalanAntrian)->toBe('A');
+
+        $masuk->get('/kelola/perangkat')->assertOk()->assertInertia(fn (AssertableInertia $halaman) => $halaman
+            ->where('Perangkat', fn ($daftar) => collect($daftar)->firstWhere('Uuid', $belakang->Uuid)['AwalanAntrian'] === 'A'));
+    });
+
     it('perangkat tidak bisa ditambahkan di outlet yang diarsipkan', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
         $cabang = PerangkatUjiBuatOutlet($tenant->Id, 'CBG1');
