@@ -67,6 +67,9 @@ function JalurBolehD25(): array
         'Komponen/TokoOnline/',
         'Halaman/Publik/StatusPesananOnline.tsx',
         'Komponen/Umpan/JudulHalaman.tsx',
+        // D-239: self-order QR meja memakai bahasa visual toko online yang sama (Aksen = warna merek toko, tombol tambah
+        // dan penanda jumlah), bukan penanda status.
+        'Halaman/Publik/PesanSendiri.tsx',
         // D-80: kios pesan sendiri dan layar antrian adalah papan yang dibaca dari jarak jauh (nomor antrian, judul layar
         // sambutan), jadi memakai skala besar yang sama dengan hero; tetap bukan bagian back-office atau halaman tenant biasa.
         'Halaman/Publik/Kios.tsx',
