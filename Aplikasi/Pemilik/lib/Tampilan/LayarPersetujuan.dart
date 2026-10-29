@@ -31,61 +31,37 @@ class LayarPersetujuan extends ConsumerWidget {
           final dokumen = ref.watch(penyediaDokumenPersetujuan).value ?? const <DokumenMenunggu>[];
           final total = daftar.length + dokumen.where((d) => d.bisaDisetujui).length;
           final warna = TokenWarna.AmbilDari(context);
+          if (daftar.isEmpty && dokumen.isEmpty) {
+            return const DaftarDenganKosong(
+              kepala: [KepalaHalaman(judul: 'Persetujuan')],
+              kosong: KosongModern(
+                ilustrasi: IlustrasiOwner.PapanSetuju,
+                judul: 'Tidak ada permintaan persetujuan.',
+                keterangan:
+                    'Permintaan dari kasir muncul di sini dan dicek otomatis tiap 15 detik saat aplikasi terbuka.',
+              ),
+            );
+          }
           return ListView(
             padding: const EdgeInsets.all(TokenJarak.jarak16),
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               const KepalaHalaman(judul: 'Persetujuan'),
-              if (daftar.isEmpty && dokumen.isEmpty)
-                const _KosongPersetujuan()
-              else ...[
-                if (total > 0) ...[
-                  KartuSorotan(
-                    latar: TentukanNadaLembut(context, warna.aksen, 0.16),
-                    judul: '$total menunggu keputusan Anda',
-                    keterangan: 'Cukup satu ketukan untuk setuju atau tolak.',
-                    ilustrasi: IlustrasiOwner.PapanSetuju,
-                    lebarIlustrasi: 96,
-                  ),
-                  const SizedBox(height: TokenJarak.jarak12),
-                ],
-                for (final p in daftar) _KartuPersetujuan(permintaan: p),
-                for (final d in dokumen) _KartuDokumen(dokumen: d),
+              if (total > 0) ...[
+                KartuSorotan(
+                  latar: TentukanNadaLembut(context, warna.aksen, 0.16),
+                  judul: '$total menunggu keputusan Anda',
+                  keterangan: 'Cukup satu ketukan untuk setuju atau tolak.',
+                  ilustrasi: IlustrasiOwner.PapanSetuju,
+                  lebarIlustrasi: 96,
+                ),
+                const SizedBox(height: TokenJarak.jarak12),
               ],
+              for (final p in daftar) _KartuPersetujuan(permintaan: p),
+              for (final d in dokumen) _KartuDokumen(dokumen: d),
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-/// Keadaan kosong bergambar: papan persetujuan bertanda centang, kalimat yang menjelaskan apa yang akan muncul.
-class _KosongPersetujuan extends StatelessWidget {
-  const _KosongPersetujuan();
-
-  @override
-  Widget build(BuildContext context) {
-    final teks = Theme.of(context).textTheme;
-    final warna = TokenWarna.AmbilDari(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: TokenJarak.jarak32),
-      child: Column(
-        children: [
-          const IlustrasiMerek(IlustrasiOwner.PapanSetuju, lebar: 220),
-          const SizedBox(height: TokenJarak.jarak16),
-          Text(
-            'Tidak ada permintaan persetujuan.',
-            textAlign: TextAlign.center,
-            style: teks.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: TokenJarak.jarak8),
-          Text(
-            'Permintaan dari kasir muncul di sini dan dicek otomatis tiap 15 detik saat aplikasi terbuka.',
-            textAlign: TextAlign.center,
-            style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
-          ),
-        ],
       ),
     );
   }

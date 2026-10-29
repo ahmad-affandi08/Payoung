@@ -11,6 +11,7 @@ import '../Aplikasi/Penyedia.dart';
 import '../Data/AksiCepat.dart';
 import '../Data/KlienPemilik.dart';
 import 'FormatTampilan.dart';
+import 'Komponen/KomponenModern.dart';
 
 /// Aksi cepat Owner (OWN-07): ubah harga, tandai produk habis ("86"), nyalakan atau matikan promo, dan catat pengeluaran
 /// dengan foto nota. Setiap aksi memakai Aksi back-office yang sama di server, jadi hasilnya identik dengan dashboard.
@@ -170,11 +171,13 @@ mixin _PencarianProduk<T extends StatefulWidget> on State<T> {
       return const Center(child: TandaMuat(ukuran: 48));
     }
     if (data.isEmpty) {
-      return const KeadaanKosong(
-        ikon: Icons.search_off,
-        judul: 'Produk tidak ditemukan.',
-        keterangan: 'Coba nama atau SKU lain.',
-        ringkas: true,
+      return const Center(
+        child: KosongModern(
+          ilustrasi: IlustrasiOwner.KotakStok,
+          judul: 'Produk tidak ditemukan.',
+          keterangan: 'Coba nama atau SKU lain.',
+          lebarIlustrasi: 180,
+        ),
       );
     }
     return Stack(
@@ -406,11 +409,12 @@ class _LayarTandaiHabisState extends ConsumerState<_LayarTandaiHabis> with _Penc
         _PemilihOutlet(dipilih: _outlet, saatPilih: _PilihOutlet),
         if (_outlet == null)
           const Expanded(
-            child: KeadaanKosong(
-              ikon: Icons.storefront_outlined,
-              judul: 'Pilih outlet dulu.',
-              keterangan: 'Status habis berlaku per outlet.',
-              ringkas: true,
+            child: Center(
+              child: KosongModern(
+                ilustrasi: IlustrasiOwner.Toko,
+                judul: 'Pilih outlet dulu.',
+                keterangan: 'Status habis berlaku per outlet.',
+              ),
             ),
           )
         else ...[
@@ -512,11 +516,12 @@ class _LayarPromoState extends ConsumerState<_LayarPromo> {
           : daftar == null
           ? const Center(child: TandaMuat(ukuran: 48))
           : daftar.isEmpty
-          ? const KeadaanKosong(
-              ikon: Icons.local_offer_outlined,
-              judul: 'Belum ada promo.',
-              keterangan: 'Buat promo di dashboard, lalu nyalakan atau matikan dari sini.',
-              ringkas: true,
+          ? const Center(
+              child: KosongModern(
+                ilustrasi: IlustrasiOwner.IkonPromo,
+                judul: 'Belum ada promo.',
+                keterangan: 'Buat promo di dashboard, lalu nyalakan atau matikan dari sini.',
+              ),
             )
           : RefreshIndicator(
               onRefresh: _Muat,
@@ -643,11 +648,12 @@ class _LayarPengeluaranState extends ConsumerState<_LayarPengeluaran> {
           : opsi == null
           ? const Center(child: TandaMuat(ukuran: 48))
           : opsi.kategori.isEmpty || opsi.sumber.isEmpty
-          ? const KeadaanKosong(
-              ikon: Icons.receipt_long_outlined,
-              judul: 'Pengeluaran belum bisa dicatat.',
-              keterangan: 'Siapkan kategori biaya dan akun kas di dashboard dulu.',
-              ringkas: true,
+          ? const Center(
+              child: KosongModern(
+                ilustrasi: IlustrasiOwner.IkonPengeluaran,
+                judul: 'Pengeluaran belum bisa dicatat.',
+                keterangan: 'Siapkan kategori biaya dan akun kas di dashboard dulu.',
+              ),
             )
           : ListView(
               padding: const EdgeInsets.all(TokenJarak.jarak16),

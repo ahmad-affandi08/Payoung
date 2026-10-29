@@ -168,7 +168,7 @@ def mini_waspada(u=56):
         f'<rect x="29" y="20" width="6" height="19" rx="3" fill="{R}"/><circle cx="32" cy="46" r="3.6" fill="{R}"/>')
 
 
-# --- ikon ilustrasi 64x64 untuk aksi cepat, menu Lainnya, dan ubin angka Beranda (D-234) ---------------------------------
+# --- ikon ilustrasi (viewBox 64, diekspor 160 px agar cukup tajam juga sebagai ilustrasi keadaan kosong) untuk aksi cepat, menu Lainnya, dan ubin angka Beranda (D-234) ---------------------------------
 def ikon_harga(u=56):
     return _svg("0 0 64 64", u,
         f'<path d="M8 32 L32 8 H55 V31 L31 55 Z" fill="{A}" stroke="{AD}" stroke-width="3" stroke-linejoin="round"/>'
@@ -283,16 +283,16 @@ SET = {
     "MiniLaba": (lambda: mini_laba(64), 64),
     "MiniKas": (lambda: mini_kas(64), 64),
     "MiniWaspada": (lambda: mini_waspada(64), 64),
-    "IkonHarga": (lambda: ikon_harga(64), 64),
-    "IkonHabis": (lambda: ikon_habis(64), 64),
-    "IkonPromo": (lambda: ikon_promo(64), 64),
-    "IkonPengeluaran": (lambda: ikon_pengeluaran(64), 64),
-    "IkonKunci": (lambda: ikon_kunci(64), 64),
-    "IkonBantuan": (lambda: ikon_bantuan(64), 64),
-    "IkonKeluar": (lambda: ikon_keluar(64), 64),
-    "IkonTransaksi": (lambda: ikon_transaksi(64), 64),
-    "IkonRataRata": (lambda: ikon_rata_rata(64), 64),
-    "IkonLaba": (lambda: ikon_laba(64), 64),
+    "IkonHarga": (lambda: ikon_harga(160), 160),
+    "IkonHabis": (lambda: ikon_habis(160), 160),
+    "IkonPromo": (lambda: ikon_promo(160), 160),
+    "IkonPengeluaran": (lambda: ikon_pengeluaran(160), 160),
+    "IkonKunci": (lambda: ikon_kunci(160), 160),
+    "IkonBantuan": (lambda: ikon_bantuan(160), 160),
+    "IkonKeluar": (lambda: ikon_keluar(160), 160),
+    "IkonTransaksi": (lambda: ikon_transaksi(160), 160),
+    "IkonRataRata": (lambda: ikon_rata_rata(160), 160),
+    "IkonLaba": (lambda: ikon_laba(160), 160),
 }
 
 

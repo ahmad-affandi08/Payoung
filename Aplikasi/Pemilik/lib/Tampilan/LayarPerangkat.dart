@@ -25,66 +25,65 @@ class LayarPerangkat extends ConsumerWidget {
       child: KeadaanData(
         nilai: ref.watch(penyediaPerangkat),
         saatCobaLagi: () => ref.invalidate(penyediaPerangkat),
-        isi: (daftar) => ListView(
-          padding: const EdgeInsets.all(TokenJarak.jarak16),
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            if (daftar.isEmpty)
-              const KartuModern(
-                anak: KeadaanKosong(
-                  ilustrasi: IlustrasiKosong.Outlet,
-                  ikon: Icons.point_of_sale_outlined,
+        isi: (daftar) => daftar.isEmpty
+            ? const DaftarDenganKosong(
+                kosong: KosongModern(
+                  ilustrasi: IlustrasiOwner.Toko,
                   judul: 'Belum ada perangkat POS.',
                   keterangan: 'Perangkat kasir yang sudah diaktifkan muncul di sini beserta status sambungannya.',
                 ),
               )
-            else
-              KartuModern(
-                padding: EdgeInsets.zero,
-                anak: Column(
-                  children: [
-                    for (final (i, p) in daftar.indexed) ...[
-                      if (i > 0) Divider(height: 1, color: warna.garis),
-                      Builder(
-                        builder: (context) {
-                          final diam =
-                              p.status == 'Aktif' &&
-                              (p.terakhirAktifPada == null || sekarang.difference(p.terakhirAktifPada!) > batasDiam);
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: diam ? warna.peringatan.withValues(alpha: 0.12) : warna.latar,
-                              child: Icon(
-                                diam ? Icons.cloud_off_outlined : Icons.point_of_sale_outlined,
-                                color: diam ? warna.peringatan : warna.teksSekunder,
-                              ),
-                            ),
-                            title: Text('${p.nama} (${p.kode})'),
-                            subtitle: Text(
-                              [
-                                '${p.jenis} | ${p.outlet}',
-                                if (p.status != 'Aktif') p.status,
-                                if (p.terakhirAktifPada != null)
-                                  'aktif ${FormatTampilan.TanggalJam(p.terakhirAktifPada!)}${diam ? ' (lama tidak tersambung)' : ''}',
-                                if (p.outboxTertunda > 0) '${p.outboxTertunda} data belum terkirim',
-                                if (p.versiAplikasi != null) 'versi ${p.versiAplikasi}',
-                              ].join(' | '),
-                            ),
-                            trailing: p.status == 'Dicabut'
-                                ? null
-                                : IconButton(
-                                    tooltip: 'Cabut perangkat',
-                                    icon: const Icon(Icons.link_off_outlined),
-                                    onPressed: () => _Cabut(context, ref, p),
+            : ListView(
+                padding: const EdgeInsets.all(TokenJarak.jarak16),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  KartuModern(
+                    padding: EdgeInsets.zero,
+                    anak: Column(
+                      children: [
+                        for (final (i, p) in daftar.indexed) ...[
+                          if (i > 0) Divider(height: 1, color: warna.garis),
+                          Builder(
+                            builder: (context) {
+                              final diam =
+                                  p.status == 'Aktif' &&
+                                  (p.terakhirAktifPada == null ||
+                                      sekarang.difference(p.terakhirAktifPada!) > batasDiam);
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: diam ? warna.peringatan.withValues(alpha: 0.12) : warna.latar,
+                                  child: Icon(
+                                    diam ? Icons.cloud_off_outlined : Icons.point_of_sale_outlined,
+                                    color: diam ? warna.peringatan : warna.teksSekunder,
                                   ),
-                          );
-                        },
-                      ),
-                    ],
-                  ],
-                ),
+                                ),
+                                title: Text('${p.nama} (${p.kode})'),
+                                subtitle: Text(
+                                  [
+                                    '${p.jenis} | ${p.outlet}',
+                                    if (p.status != 'Aktif') p.status,
+                                    if (p.terakhirAktifPada != null)
+                                      'aktif ${FormatTampilan.TanggalJam(p.terakhirAktifPada!)}${diam ? ' (lama tidak tersambung)' : ''}',
+                                    if (p.outboxTertunda > 0) '${p.outboxTertunda} data belum terkirim',
+                                    if (p.versiAplikasi != null) 'versi ${p.versiAplikasi}',
+                                  ].join(' | '),
+                                ),
+                                trailing: p.status == 'Dicabut'
+                                    ? null
+                                    : IconButton(
+                                        tooltip: 'Cabut perangkat',
+                                        icon: const Icon(Icons.link_off_outlined),
+                                        onPressed: () => _Cabut(context, ref, p),
+                                      ),
+                              );
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
-          ],
-        ),
       ),
     );
   }

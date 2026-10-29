@@ -60,6 +60,28 @@ class _LayarNotifikasiState extends ConsumerState<LayarNotifikasi> {
           for (final n in tampil) {
             kelompok.putIfAbsent(_KunciHari(n.dibuatPada), () => []).add(n);
           }
+          if (tampil.isEmpty) {
+            return DaftarDenganKosong(
+              kepala: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: SegmenPil<bool>(
+                        pilihan: [(false, 'Semua'), (true, 'Belum dibaca (${data.belumDibaca})')],
+                        nilai: _hanyaBelumDibaca,
+                        saatPilih: (nilai) => setState(() => _hanyaBelumDibaca = nilai),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              kosong: KosongModern(
+                ilustrasi: IlustrasiOwner.Lonceng,
+                judul: _hanyaBelumDibaca ? 'Semua notifikasi sudah dibaca.' : 'Belum ada notifikasi.',
+                keterangan: 'Kabar penting usaha Anda muncul di sini.',
+              ),
+            );
+          }
           return ListView(
             padding: const EdgeInsets.all(TokenJarak.jarak16),
             physics: const AlwaysScrollableScrollPhysics(),
@@ -82,29 +104,6 @@ class _LayarNotifikasiState extends ConsumerState<LayarNotifikasi> {
                     onPressed: () => unawaited(_TandaiSemua()),
                     icon: const Icon(Icons.done_all),
                     label: const Text('Tandai semua dibaca'),
-                  ),
-                ),
-              if (tampil.isEmpty)
-                KartuModern(
-                  anak: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: TokenJarak.jarak24),
-                    child: Column(
-                      children: [
-                        const IlustrasiMerek(IlustrasiOwner.Lonceng, lebar: 180),
-                        const SizedBox(height: TokenJarak.jarak8),
-                        Text(
-                          _hanyaBelumDibaca ? 'Semua notifikasi sudah dibaca.' : 'Belum ada notifikasi.',
-                          textAlign: TextAlign.center,
-                          style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: TokenJarak.jarak4),
-                        Text(
-                          'Kabar penting usaha Anda muncul di sini.',
-                          textAlign: TextAlign.center,
-                          style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               for (final MapEntry(key: kunci, value: daftar) in kelompok.entries) ...[
@@ -138,16 +137,15 @@ class _LayarNotifikasiState extends ConsumerState<LayarNotifikasi> {
                   ],
                 ),
               ],
-              if (tampil.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: TokenJarak.jarak16),
-                  child: Column(
-                    children: [
-                      const IlustrasiMerek(IlustrasiOwner.Lonceng, lebar: 96),
-                      Text('Itu semua kabar terbaru', style: teks.bodyMedium?.copyWith(color: warna.teksSekunder)),
-                    ],
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(top: TokenJarak.jarak16),
+                child: Column(
+                  children: [
+                    const IlustrasiMerek(IlustrasiOwner.Lonceng, lebar: 96),
+                    Text('Itu semua kabar terbaru', style: teks.bodyMedium?.copyWith(color: warna.teksSekunder)),
+                  ],
                 ),
+              ),
             ],
           );
         },

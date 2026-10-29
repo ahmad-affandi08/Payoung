@@ -268,6 +268,7 @@
 | D-232 | Dicatat agen (D-12, D-17), 29/10/2026, atas laporan pemilik produk. Aksi halaman rincian dokumen di HP: satu tombol berwarna (langkah berikutnya) + menu ⋯, status dokumen di samping, tanpa tautan "Kembali ke daftar" dan tanpa mengulang nomor dokumen di bawah judul. Aksi halaman rincian tetap di bawah judul, tidak dipindah ke bilah alat tabel (berbeda dari halaman daftar, D-228). |
 | D-233 | Dari pemilik produk, 29/10/2026. Tombol sekunder berlatar putih memakai border dan teks warna primary (mengikuti back-office Majoo), bukan border abu dan teks gelap. Pemicu isian (dropdown, pemilih tanggal) tidak ikut karena harus terlihat sebagai kolom isian. |
 | D-234 | Dari pemilik produk, 29/10/2026. Aplikasi Owner memakai ilustrasi mini bergaya SVG (diekspor PNG dari skrip sumber) untuk aksi cepat, baris menu penting (Kunci aplikasi, Bantuan, Keluar), dan ubin angka Beranda. Baris menu lain tetap ikon Material sampai diminta. |
+| D-235 | Dari pemilik produk, 29/10/2026. Keadaan kosong layar penuh di Aplikasi Owner satu bentuk (ilustrasi merek, judul tebal, kalimat penjelas, rata tengah) dan berada di tengah sisa layar. Keadaan kosong yang berada di dalam kartu laporan atau Beranda (bagian kecil) tetap ringkas. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

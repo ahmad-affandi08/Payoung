@@ -52,42 +52,41 @@ class LayarBantuan extends ConsumerWidget {
         child: KeadaanData(
           nilai: ref.watch(penyediaTiketBantuan),
           saatCobaLagi: () => ref.invalidate(penyediaTiketBantuan),
-          isi: (daftar) => ListView(
-            padding: const EdgeInsets.all(TokenJarak.jarak16),
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              if (daftar.isEmpty)
-                const KartuModern(
-                  anak: KeadaanKosong(
-                    ilustrasi: IlustrasiKosong.Umum,
-                    ikon: Icons.support_agent_outlined,
+          isi: (daftar) => daftar.isEmpty
+              ? const DaftarDenganKosong(
+                  kosong: KosongModern(
+                    ilustrasi: IlustrasiOwner.IkonBantuan,
                     judul: 'Belum ada tiket bantuan.',
                     keterangan: 'Ketuk Buat tiket untuk menghubungi tim Payoung. Balasan muncul di sini.',
                   ),
-                ),
-              for (final t in daftar)
-                Card(
-                  margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
-                  child: ListTile(
-                    title: Text('${t.nomor} | ${t.judul}'),
-                    subtitle: Text(
-                      TeksBatasSla(t),
-                      style: TextStyle(color: t.lewatSla && t.terbuka ? warna.bahaya : warna.teksSekunder),
-                    ),
-                    trailing: t.menungguBalasan
-                        ? const Icon(Icons.mark_chat_unread_outlined)
-                        : const Icon(Icons.chevron_right),
-                    onTap: () => unawaited(
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => LayarTiketBantuan(uuid: t.uuid, nomor: t.nomor),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(TokenJarak.jarak16),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    for (final t in daftar)
+                      Card(
+                        margin: const EdgeInsets.only(bottom: TokenJarak.jarak12),
+                        child: ListTile(
+                          title: Text('${t.nomor} | ${t.judul}'),
+                          subtitle: Text(
+                            TeksBatasSla(t),
+                            style: TextStyle(color: t.lewatSla && t.terbuka ? warna.bahaya : warna.teksSekunder),
+                          ),
+                          trailing: t.menungguBalasan
+                              ? const Icon(Icons.mark_chat_unread_outlined)
+                              : const Icon(Icons.chevron_right),
+                          onTap: () => unawaited(
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => LayarTiketBantuan(uuid: t.uuid, nomor: t.nomor),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
         ),
       ),
     );

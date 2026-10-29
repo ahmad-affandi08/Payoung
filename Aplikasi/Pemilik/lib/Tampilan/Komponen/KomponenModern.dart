@@ -155,6 +155,81 @@ class LingkarIkon extends StatelessWidget {
   );
 }
 
+/// Keadaan kosong layar penuh Aplikasi Owner (D-235): satu bentuk untuk semua layar. Ilustrasi merek, judul tebal, lalu
+/// satu kalimat yang menjelaskan apa yang akan muncul, semuanya rata tengah. Letakkan lewat [DaftarDenganKosong] supaya
+/// berada di tengah sisa layar (bukan menempel di bawah judul), atau langsung di dalam `Center` bila layarnya tidak
+/// punya kepala.
+class KosongModern extends StatelessWidget {
+  const KosongModern({
+    super.key,
+    required this.ilustrasi,
+    required this.judul,
+    this.keterangan,
+    this.aksi,
+    this.lebarIlustrasi = 220,
+  });
+
+  final IlustrasiOwner ilustrasi;
+  final String judul;
+  final String? keterangan;
+
+  /// Tombol untuk mengisi bagian ini; null = tidak ada.
+  final Widget? aksi;
+  final double lebarIlustrasi;
+
+  @override
+  Widget build(BuildContext context) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak24, vertical: TokenJarak.jarak32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IlustrasiMerek(ilustrasi, lebar: lebarIlustrasi),
+          const SizedBox(height: TokenJarak.jarak16),
+          Text(
+            judul,
+            textAlign: TextAlign.center,
+            style: teks.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          if (keterangan case final String k) ...[
+            const SizedBox(height: TokenJarak.jarak8),
+            Text(
+              k,
+              textAlign: TextAlign.center,
+              style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
+            ),
+          ],
+          if (aksi case final Widget a) ...[const SizedBox(height: TokenJarak.jarak16), a],
+        ],
+      ),
+    );
+  }
+}
+
+/// Layar yang bisa ditarik untuk menyegarkan, berisi [kepala] (judul, saringan) lalu [kosong] di tengah sisa layar.
+/// Dipakai semua layar Owner yang daftarnya bisa kosong supaya keadaan kosongnya sama letaknya.
+class DaftarDenganKosong extends StatelessWidget {
+  const DaftarDenganKosong({super.key, this.kepala = const [], required this.kosong});
+
+  final List<Widget> kepala;
+  final Widget kosong;
+
+  @override
+  Widget build(BuildContext context) => CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    slivers: [
+      if (kepala.isNotEmpty)
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(TokenJarak.jarak16, TokenJarak.jarak16, TokenJarak.jarak16, 0),
+          sliver: SliverList(delegate: SliverChildListDelegate(kepala)),
+        ),
+      SliverFillRemaining(hasScrollBody: false, child: Center(child: kosong)),
+    ],
+  );
+}
+
 /// Lencana angka bulat: merah untuk hal yang menunggu keputusan, apricot di atas navigasi.
 class LencanaAngka extends StatelessWidget {
   const LencanaAngka({super.key, required this.jumlah, this.aksen = false, this.label});
