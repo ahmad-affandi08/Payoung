@@ -113,6 +113,8 @@ final class StrukDigitalPenjualan
             'PoinDiperoleh' => $p->IdPelanggan === null || $p->Status === StatusPenjualan::Void ? null : $this->poin->AmbilPerolehanPenjualan($p->Id),
             // D-110: tautan toko online outlet ini bila sedang menerima pesanan, supaya pembeli bisa memesan lagi dari struk.
             'TokoOnline' => $this->AmbilTautanTokoOnline($idTenant, $outlet?->uuidOutlet),
+            // D-241: logo yang sama dengan toko online (rute publik `/{slug}/logo`), hanya bila saklar logo struk menyala.
+            'UrlLogo' => $struk->tampilkanLogo ? $this->AmbilUrlLogo($idTenant, $outlet?->idOutlet, $outlet?->uuidOutlet) : null,
             'CatatanKaki' => $struk->catatanKaki,
             'TeksPenutup' => $struk->teksPenutup,
             'Laundry' => $laundry,
@@ -137,6 +139,15 @@ final class StrukDigitalPenjualan
             && ! $p->DibuatOfflinePada->copy()->addDays(KirimUmpanBalikTransaksi::HARI_BERLAKU)->lessThan(now());
 
         return $layak ? ['Diminta' => true, 'Nilai' => null, 'Komentar' => null] : null;
+    }
+
+    private function AmbilUrlLogo(int $idTenant, ?int $idOutlet, ?string $uuidOutlet): ?string
+    {
+        if ($this->pengaturan->AmbilPathLogoUsaha($idTenant, $idOutlet) === null) {
+            return null;
+        }
+
+        return url('/'.$this->profil->AmbilSlug($idTenant).'/logo').($uuidOutlet === null ? '' : '?outlet='.$uuidOutlet);
     }
 
     private function AmbilTautanTokoOnline(int $idTenant, ?string $uuidOutlet): ?string

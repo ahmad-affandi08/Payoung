@@ -29,6 +29,7 @@ describe('POS-11 struk digital /s/{kodeStruk}', function (): void {
             ->where('Struk.NamaUsaha', $k['Outlet']->Nama)
             ->where('Struk.TotalAkhir', '77000.00')
             ->where('Struk.Dibatalkan', false)
+            ->where('Struk.UrlLogo', null)
             ->has('Struk.Baris', 1)
             ->where('Struk.Baris.0.NamaProduk', 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter')
             ->missing('Struk.Baris.0.TotalHpp')

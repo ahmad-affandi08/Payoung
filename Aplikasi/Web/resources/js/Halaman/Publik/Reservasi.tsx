@@ -6,8 +6,8 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import KerangkaMerek from '@/Komponen/Publik/KerangkaMerek';
 import { PanelHasil } from '@/Komponen/Publik/KerangkaPelanggan';
-import KerangkaReservasi from '@/Komponen/Reservasi/KerangkaReservasi';
 import PemilihHari, { SusunJajaranHari } from '@/Komponen/Reservasi/PemilihHari';
 import PemilihSlot from '@/Komponen/Reservasi/PemilihSlot';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -112,12 +112,12 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
 
     if (!props.Aktif) {
         return (
-            <KerangkaReservasi toko={props.Toko} label="Reservasi online" judul="Reservasi">
+            <KerangkaMerek toko={props.Toko} label="Reservasi online" judul="Reservasi">
                 <Head title="Reservasi" />
-                <PanelHasil jenis="netral" judul="Reservasi online belum dibuka">
+                <PanelHasil jenis="netral" judulBagian judul="Reservasi online belum dibuka">
                     Hubungi toko langsung untuk membuat janji.
                 </PanelHasil>
-            </KerangkaReservasi>
+            </KerangkaMerek>
         );
     }
 
@@ -130,7 +130,7 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
             : 'Pilih layanan, tanggal, dan jam.';
 
     return (
-        <KerangkaReservasi
+        <KerangkaMerek
             toko={props.Toko}
             label="Reservasi online"
             judul={props.Toko?.Nama ?? 'Reservasi'}
@@ -143,7 +143,7 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
             <Head title={`Reservasi ${props.Toko?.Nama ?? ''}`} />
             {galat.Umum ? <Pemberitahuan jenis="bahaya">{galat.Umum}</Pemberitahuan> : null}
             {layanan.length === 0 ? (
-                <PanelHasil jenis="netral" judul="Belum ada layanan">
+                <PanelHasil jenis="netral" judulBagian judul="Belum ada layanan">
                     Layanan yang bisa dipesan online belum tersedia. Hubungi toko langsung.
                 </PanelHasil>
             ) : (
@@ -276,6 +276,6 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
                     </div>
                 </form>
             )}
-        </KerangkaReservasi>
+        </KerangkaMerek>
     );
 }

@@ -150,6 +150,7 @@ export default function DialogMasukPembeli({ slug, namaToko, saatMasuk, saatTutu
                         nilai={kode}
                         saatBerubah={(v) => AturKode(v.replace(/\D/g, '').slice(0, 6))}
                         inputMode="numeric"
+                        kode
                         autoComplete="one-time-code"
                         maxLength={6}
                         autoFocus

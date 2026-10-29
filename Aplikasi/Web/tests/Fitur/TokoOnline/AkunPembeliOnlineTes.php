@@ -297,7 +297,7 @@ it('halaman Akun saya: profil, riwayat pesanan online. Ubah profil. Tanggal lahi
     $token = MasukSebagaiPembeli($this, $k);
     // Tanpa cookie dulu: klien uji menyimpan cookie `withCookie` untuk permintaan sesudahnya.
     $this->get($k['AlamatToko'].'/akun')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-        ->component('Publik/AkunTokoOnline')->where('AkunAktif', true)->where('Pelanggan', null)->where('Riwayat', null));
+        ->component('Publik/AkunTokoOnline')->where('AkunAktif', true)->where('Toko.UrlLogo', null)->where('Pelanggan', null)->where('Riwayat', null));
     $this->putJson($k['AlamatToko'].'/akun/profil', ['Nama' => 'Penyusup'])->assertUnauthorized()->assertJsonPath('Galat.Kode', 'BelumMasuk');
 
     $kiriman = BantuanTokoOnline::Kiriman($k, 'Kirim');

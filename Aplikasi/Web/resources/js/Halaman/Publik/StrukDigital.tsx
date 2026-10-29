@@ -1,7 +1,8 @@
 import { Head, usePage } from '@inertiajs/react';
 
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import StatusLacakLaundry from '@/Komponen/Laundry/StatusLacakLaundry';
+import KerangkaMerek from '@/Komponen/Publik/KerangkaMerek';
+import { PanelHasil } from '@/Komponen/Publik/KerangkaPelanggan';
 import FormUmpanBalik, { type UmpanBalikStruk } from '@/Komponen/Struk/FormUmpanBalik';
 import { PENUTUP_BAWAAN } from '@/Komponen/Struk/PratinjauStruk';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -10,6 +11,8 @@ import type { StatusLaundryPublik } from '@/Tipe/Laundry';
 
 export type StrukDigital = {
     NamaUsaha: string;
+    /** D-241: logo tenant lewat rute publik `/{slug}/logo`; null = kepala memakai inisial usaha. */
+    UrlLogo?: string | null;
     TeksKepala: string[];
     NamaOutlet: string | null;
     Alamat: string | null;
@@ -81,32 +84,31 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
     const { url } = usePage();
     if (Struk === null) {
         return (
-            <>
+            <KerangkaMerek label="Struk digital" judul="Struk" skala="situs">
                 <Head title="Struk belum tersedia" />
-                <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-2 px-4 py-10">
-                    <JudulHalaman skala="ringkas">Struk belum tersedia</JudulHalaman>
-                    <p className="text-isi text-teks-sekunder">
-                        Struk ini belum terkirim dari kasir atau tautannya salah. Coba buka lagi beberapa saat kemudian.
-                    </p>
-                </main>
-            </>
+                <PanelHasil jenis="netral" judulBagian judul="Struk belum tersedia">
+                    Struk ini belum terkirim dari kasir atau tautannya salah. Coba buka lagi beberapa saat kemudian.
+                </PanelHasil>
+            </KerangkaMerek>
         );
     }
 
     return (
-        <>
+        <KerangkaMerek
+            toko={{ Nama: Struk.NamaUsaha, UrlLogo: Struk.UrlLogo ?? null }}
+            label="Struk digital"
+            judul={Struk.NamaUsaha}
+            skala="situs"
+            keterangan={Struk.NamaOutlet}
+        >
             <Head title={`Struk ${Struk.Nomor}`} />
-            <main className="mx-auto flex max-w-md flex-col gap-4 px-4 py-8">
+            <>
                 {Struk.Laundry ? <StatusLacakLaundry Laundry={Struk.Laundry} /> : null}
                 <article
                     aria-label={`Struk ${Struk.Nomor}`}
-                    className="flex flex-col gap-3 rounded-kontrol border border-garis bg-permukaan p-4 font-mono text-keterangan text-teks-sekunder"
+                    className="flex flex-col gap-3 rounded-3xl bg-permukaan p-5 font-mono text-keterangan text-teks-sekunder"
                 >
                     <header className="text-center">
-                        <JudulHalaman skala="ringkas" className="text-isi">
-                            {Struk.NamaUsaha}
-                        </JudulHalaman>
-                        {Struk.NamaOutlet ? <p>{Struk.NamaOutlet}</p> : null}
                         {Struk.Alamat ? <p>{Struk.Alamat}</p> : null}
                         {Struk.TeksKepala.map((teks) => (
                             <p key={teks}>{teks}</p>
@@ -116,7 +118,7 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
                     {Struk.Dibatalkan ? (
                         <p
                             role="status"
-                            className="rounded-kontrol border border-bahaya px-2 py-1 text-center font-bold text-bahaya"
+                            className="rounded-2xl border border-bahaya bg-bahaya-lembut px-2 py-2 text-center font-bold text-bahaya"
                         >
                             TRANSAKSI DIBATALKAN
                         </p>
@@ -170,7 +172,9 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
                         {CekNol(Struk.Pembulatan) ? null : (
                             <Baris kiri="Pembulatan" kanan={FormatRupiah(Struk.Pembulatan)} />
                         )}
-                        <Baris kiri="TOTAL" kanan={FormatRupiah(Struk.TotalAkhir)} tebal />
+                        <div className="my-1 rounded-2xl bg-brand-lembut px-3 py-2 text-subjudul">
+                            <Baris kiri="TOTAL" kanan={FormatRupiah(Struk.TotalAkhir)} tebal />
+                        </div>
                         {Struk.Pembayaran.map((b, i) => (
                             <Baris key={i} kiri={b.NamaMetode} kanan={FormatRupiah(b.Jumlah)} />
                         ))}
@@ -200,7 +204,7 @@ export default function HalamanStrukDigital({ Struk }: { Struk: StrukDigital | n
                 {Struk.UmpanBalik ? (
                     <FormUmpanBalik umpanBalik={Struk.UmpanBalik} alamat={`${url.split('?')[0] ?? url}/umpan-balik`} />
                 ) : null}
-            </main>
-        </>
+            </>
+        </KerangkaMerek>
     );
 }

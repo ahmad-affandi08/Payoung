@@ -32,7 +32,7 @@ export default function FormUmpanBalik({ umpanBalik, alamat }: { umpanBalik: Ump
         return (
             <section
                 aria-label="Penilaian Anda"
-                className="flex flex-col items-center gap-2 rounded-kontrol border border-garis bg-permukaan p-4 text-center"
+                className="flex flex-col items-center gap-2 rounded-3xl bg-permukaan p-5 text-center"
             >
                 <p className="text-isi font-semibold text-teks-utama">Terima kasih atas penilaian Anda</p>
                 <div role="img" aria-label={`${String(umpanBalik.Nilai ?? 0)} dari 5 bintang`} className="flex gap-1">
@@ -60,7 +60,7 @@ export default function FormUmpanBalik({ umpanBalik, alamat }: { umpanBalik: Ump
             onSubmit={Kirim}
             noValidate
             aria-label="Penilaian transaksi"
-            className="flex flex-col gap-3 rounded-kontrol border border-garis bg-permukaan p-4"
+            className="flex flex-col gap-3 rounded-3xl bg-permukaan p-5"
         >
             <fieldset className="flex flex-col items-center gap-2">
                 <legend className="text-isi font-semibold text-teks-utama">Bagaimana pengalaman Anda?</legend>

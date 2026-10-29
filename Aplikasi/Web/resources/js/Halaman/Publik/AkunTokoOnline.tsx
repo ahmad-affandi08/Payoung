@@ -1,13 +1,13 @@
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, ReceiptTextIcon, ShoppingBagIcon, SparklesIcon } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
+import KerangkaMerek from '@/Komponen/Publik/KerangkaMerek';
 import DialogMasukPembeli, { type ProfilPembeli } from '@/Komponen/TokoOnline/DialogMasukPembeli';
-import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -37,7 +37,7 @@ type BelanjaRiwayat = {
 
 type Props = {
     Slug: string;
-    Toko: { Nama: string } | null;
+    Toko: { Nama: string; UrlLogo?: string | null } | null;
     AkunAktif: boolean;
     Pelanggan: ProfilPembeli | null;
     Riwayat: { Pesanan: PesananRiwayat[]; Belanja: BelanjaRiwayat[] } | null;
@@ -102,201 +102,217 @@ export default function AkunTokoOnline({ Slug, Toko, AkunAktif, Pelanggan, Riway
     }
 
     return (
-        <main className="min-h-dvh bg-latar text-teks-utama">
+        <KerangkaMerek
+            toko={Toko}
+            lebar="3xl"
+            label="Akun saya"
+            judul={Pelanggan?.Nama ?? (Toko ? `Masuk ke ${Toko.Nama}` : 'Akun saya')}
+            skala="situs"
+            keterangan={
+                <a
+                    href={`/${Slug}`}
+                    className="inline-flex min-h-10 items-center gap-1.5 font-semibold text-brand-gelap-teks underline"
+                >
+                    <ArrowLeftIcon aria-hidden="true" className="size-4" />
+                    Kembali belanja di {Toko?.Nama ?? 'toko'}
+                </a>
+            }
+        >
             <Head title={Toko ? `Akun saya | ${Toko.Nama}` : 'Akun saya'} />
-            <header className="bg-brand-gelap text-permukaan">
-                <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 pt-5 pb-7">
-                    <a
-                        href={`/${Slug}`}
-                        className="inline-flex min-h-10 items-center gap-1.5 text-label font-semibold text-brand-gelap-teks underline"
-                    >
-                        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-                        Kembali belanja di {Toko?.Nama ?? 'toko'}
-                    </a>
-                    <JudulHalaman className="text-permukaan">Akun saya</JudulHalaman>
-                </div>
-            </header>
-            <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
-                {Toko === null ? (
-                    <Pemberitahuan jenis="peringatan">Toko tidak ditemukan.</Pemberitahuan>
-                ) : Pelanggan === null ? (
-                    <section className="flex flex-col gap-4 rounded-panel border border-garis bg-permukaan p-4">
-                        <h2 className="text-subjudul font-semibold text-teks-utama">Masuk ke {Toko.Nama}</h2>
-                        {AkunAktif ? (
-                            <>
-                                <p className="text-isi text-teks-sekunder">
-                                    Masuk dengan nomor WhatsApp untuk melihat riwayat belanja dan poin Anda. Tidak perlu
-                                    kata sandi.
-                                </p>
-                                <div>
-                                    <Tombol onClick={() => AturDialogMasuk(true)}>Masuk dengan WhatsApp</Tombol>
-                                </div>
-                            </>
-                        ) : (
+            {Toko === null ? (
+                <Pemberitahuan jenis="peringatan">Toko tidak ditemukan.</Pemberitahuan>
+            ) : Pelanggan === null ? (
+                <section className="flex flex-col gap-4 rounded-3xl bg-permukaan p-5">
+                    <h2 className="text-judul-bagian-hp font-extrabold text-teks-utama">Masuk tanpa kata sandi</h2>
+                    {AkunAktif ? (
+                        <>
                             <p className="text-isi text-teks-sekunder">
-                                Toko ini belum membuka akun pembeli. Anda tetap bisa memesan tanpa masuk.
+                                Masuk dengan nomor WhatsApp untuk melihat riwayat belanja dan poin Anda. Tidak perlu
+                                kata sandi.
                             </p>
+                            <ul className="flex flex-col gap-2 text-isi text-teks-utama">
+                                <li className="flex items-center gap-2">
+                                    <ReceiptTextIcon aria-hidden="true" className="size-5 text-brand" />
+                                    Semua pesanan dan belanja di satu tempat
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <SparklesIcon aria-hidden="true" className="size-5 text-brand" />
+                                    Poin dan tingkat member terlihat langsung
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <ShoppingBagIcon aria-hidden="true" className="size-5 text-brand" />
+                                    Data pesanan terisi otomatis
+                                </li>
+                            </ul>
+                            <Tombol ukuran="besar" bentuk="pil" onClick={() => AturDialogMasuk(true)}>
+                                Masuk dengan WhatsApp
+                            </Tombol>
+                        </>
+                    ) : (
+                        <p className="text-isi text-teks-sekunder">
+                            Toko ini belum membuka akun pembeli. Anda tetap bisa memesan tanpa masuk.
+                        </p>
+                    )}
+                </section>
+            ) : (
+                <>
+                    <section aria-label="Kartu member" className="flex flex-col gap-4 rounded-3xl bg-permukaan p-5">
+                        <dl className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1 rounded-2xl bg-brand-lembut p-4">
+                                <dt className="text-keterangan font-semibold text-teks-sekunder">Tingkat member</dt>
+                                <dd className="text-judul-bagian-hp font-extrabold break-words text-teks-utama">
+                                    {Pelanggan.Tier ?? 'Belum ada'}
+                                </dd>
+                            </div>
+                            {Pelanggan.Poin !== null ? (
+                                <div className="flex flex-col gap-1 rounded-2xl bg-brand-gelap p-4 text-permukaan">
+                                    <dt className="text-keterangan font-semibold text-brand-gelap-teks">Poin</dt>
+                                    <dd className="text-judul-bagian-hp font-extrabold tabular-nums">
+                                        {Pelanggan.Poin.toLocaleString('id-ID')} poin
+                                    </dd>
+                                </div>
+                            ) : null}
+                        </dl>
+                        <p className="text-isi text-teks-sekunder">
+                            WhatsApp{' '}
+                            <span className="font-semibold text-teks-utama tabular-nums">{Pelanggan.NoHp}</span>
+                        </p>
+                        <p className="text-keterangan text-teks-sekunder">
+                            Poin bertambah saat pesanan dibayar di toko. Nomor WhatsApp adalah identitas akun Anda dan
+                            tidak bisa diganti di sini.
+                        </p>
+                    </section>
+
+                    <section
+                        aria-labelledby="judul-pesanan"
+                        className="flex flex-col gap-3 rounded-3xl bg-permukaan p-5"
+                    >
+                        <h2 id="judul-pesanan" className="text-judul-bagian-hp font-extrabold text-teks-utama">
+                            Pesanan online
+                        </h2>
+                        {(Riwayat?.Pesanan.length ?? 0) === 0 ? (
+                            <p className="text-isi text-teks-sekunder">Belum ada pesanan online.</p>
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {Riwayat?.Pesanan.map((p) => (
+                                    <li
+                                        key={p.Nomor}
+                                        className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-garis p-3"
+                                    >
+                                        <div className="flex min-w-0 flex-col">
+                                            <a href={p.UrlStatus} className="font-mono text-isi text-brand underline">
+                                                {p.Nomor}
+                                            </a>
+                                            <span className="text-keterangan text-teks-sekunder">
+                                                {FormatTanggalWaktu(p.DibuatPada)} | {p.JenisPemenuhan}
+                                                {p.Outlet ? ` | ${p.Outlet}` : ''}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <LabelStatus jenis={AmbilJenisStatus(p.Status)} teks={p.LabelStatus} />
+                                            <span className="font-bold tabular-nums">{FormatRupiah(p.Total)}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
                         )}
                     </section>
-                ) : (
-                    <>
-                        <section className="flex flex-col gap-3 rounded-panel border border-garis bg-permukaan p-4">
-                            <h2 className="text-subjudul font-semibold text-teks-utama">{Pelanggan.Nama}</h2>
-                            <dl className="grid gap-2 text-isi sm:grid-cols-3">
-                                <div>
-                                    <dt className="text-keterangan text-teks-sekunder">WhatsApp</dt>
-                                    <dd className="tabular-nums">{Pelanggan.NoHp}</dd>
-                                </div>
-                                <div>
-                                    <dt className="text-keterangan text-teks-sekunder">Tingkat member</dt>
-                                    <dd>{Pelanggan.Tier ?? 'Belum ada'}</dd>
-                                </div>
-                                {Pelanggan.Poin !== null ? (
-                                    <div>
-                                        <dt className="text-keterangan text-teks-sekunder">Poin</dt>
-                                        <dd className="tabular-nums">{Pelanggan.Poin.toLocaleString('id-ID')} poin</dd>
-                                    </div>
-                                ) : null}
-                            </dl>
-                            <p className="text-keterangan text-teks-sekunder">
-                                Poin bertambah saat pesanan dibayar di toko. Nomor WhatsApp adalah identitas akun Anda
-                                dan tidak bisa diganti di sini.
-                            </p>
-                        </section>
 
-                        <section
-                            aria-labelledby="judul-pesanan"
-                            className="flex flex-col gap-3 rounded-panel border border-garis bg-permukaan p-4"
-                        >
-                            <h2 id="judul-pesanan" className="text-subjudul font-semibold text-teks-utama">
-                                Pesanan online
-                            </h2>
-                            {(Riwayat?.Pesanan.length ?? 0) === 0 ? (
-                                <p className="text-isi text-teks-sekunder">Belum ada pesanan online.</p>
-                            ) : (
-                                <ul className="divide-y divide-garis">
-                                    {Riwayat?.Pesanan.map((p) => (
-                                        <li
-                                            key={p.Nomor}
-                                            className="flex flex-wrap items-center justify-between gap-2 py-3"
-                                        >
-                                            <div className="flex min-w-0 flex-col">
-                                                <a
-                                                    href={p.UrlStatus}
-                                                    className="font-mono text-isi text-brand underline"
-                                                >
-                                                    {p.Nomor}
-                                                </a>
-                                                <span className="text-keterangan text-teks-sekunder">
-                                                    {FormatTanggalWaktu(p.DibuatPada)} | {p.JenisPemenuhan}
-                                                    {p.Outlet ? ` | ${p.Outlet}` : ''}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <LabelStatus jenis={AmbilJenisStatus(p.Status)} teks={p.LabelStatus} />
-                                                <span className="tabular-nums">{FormatRupiah(p.Total)}</span>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
+                    <section
+                        aria-labelledby="judul-belanja"
+                        className="flex flex-col gap-3 rounded-3xl bg-permukaan p-5"
+                    >
+                        <h2 id="judul-belanja" className="text-judul-bagian-hp font-extrabold text-teks-utama">
+                            Belanja di toko
+                        </h2>
+                        {(Riwayat?.Belanja.length ?? 0) === 0 ? (
+                            <p className="text-isi text-teks-sekunder">Belum ada belanja tercatat.</p>
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {Riwayat?.Belanja.map((b) => (
+                                    <li
+                                        key={b.Nomor}
+                                        className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-garis p-3"
+                                    >
+                                        <div className="flex min-w-0 flex-col">
+                                            <a href={b.UrlStruk} className="font-mono text-isi text-brand underline">
+                                                {b.Nomor}
+                                            </a>
+                                            <span className="text-keterangan text-teks-sekunder">
+                                                {FormatTanggal(b.Tanggal)}
+                                                {b.Outlet ? ` | ${b.Outlet}` : ''}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <LabelStatus jenis={AmbilJenisStatus(b.Status)} teks={b.LabelStatus} />
+                                            <span className="font-bold tabular-nums">{FormatRupiah(b.Total)}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
 
-                        <section
-                            aria-labelledby="judul-belanja"
-                            className="flex flex-col gap-3 rounded-panel border border-garis bg-permukaan p-4"
-                        >
-                            <h2 id="judul-belanja" className="text-subjudul font-semibold text-teks-utama">
-                                Belanja di toko
-                            </h2>
-                            {(Riwayat?.Belanja.length ?? 0) === 0 ? (
-                                <p className="text-isi text-teks-sekunder">Belum ada belanja tercatat.</p>
-                            ) : (
-                                <ul className="divide-y divide-garis">
-                                    {Riwayat?.Belanja.map((b) => (
-                                        <li
-                                            key={b.Nomor}
-                                            className="flex flex-wrap items-center justify-between gap-2 py-3"
-                                        >
-                                            <div className="flex min-w-0 flex-col">
-                                                <a
-                                                    href={b.UrlStruk}
-                                                    className="font-mono text-isi text-brand underline"
-                                                >
-                                                    {b.Nomor}
-                                                </a>
-                                                <span className="text-keterangan text-teks-sekunder">
-                                                    {FormatTanggal(b.Tanggal)}
-                                                    {b.Outlet ? ` | ${b.Outlet}` : ''}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <LabelStatus jenis={AmbilJenisStatus(b.Status)} teks={b.LabelStatus} />
-                                                <span className="tabular-nums">{FormatRupiah(b.Total)}</span>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
-
-                        <section className="flex flex-col gap-3 rounded-panel border border-garis bg-permukaan p-4">
-                            <h2 className="text-subjudul font-semibold text-teks-utama">Profil</h2>
-                            <form noValidate onSubmit={SimpanProfil} className="flex flex-col gap-4">
-                                <BidangTeks
-                                    label="Nama"
-                                    nilai={profil.Nama}
-                                    saatBerubah={(v) => AturProfil((x) => ({ ...x, Nama: v }))}
-                                    autoComplete="name"
-                                    required
-                                />
-                                <BidangTeks
-                                    label="Email (opsional)"
-                                    nilai={profil.Email}
-                                    saatBerubah={(v) => AturProfil((x) => ({ ...x, Email: v }))}
-                                    jenis="email"
-                                    autoComplete="email"
-                                />
-                                <PemilihTanggal
-                                    label="Tanggal lahir (opsional)"
-                                    nilai={profil.TanggalLahir}
-                                    saatBerubah={(v) => AturProfil((x) => ({ ...x, TanggalLahir: v }))}
-                                    disabled={Pelanggan.TanggalLahir !== null}
-                                    keterangan={
-                                        Pelanggan.TanggalLahir !== null
-                                            ? 'Sudah tersimpan. Untuk mengubahnya, hubungi toko.'
-                                            : 'Hanya bisa diisi sekali. Dipakai untuk promo ulang tahun bila toko punya.'
-                                    }
-                                />
-                                <KotakCentang
-                                    label="Kirimi saya info promo lewat WhatsApp."
-                                    nilai={profil.SetujuPemasaran}
-                                    saatBerubah={(v) => AturProfil((x) => ({ ...x, SetujuPemasaran: v }))}
-                                />
-                                {pesan ? <Pemberitahuan jenis={pesan.jenis}>{pesan.teks}</Pemberitahuan> : null}
-                                <div>
-                                    <Tombol type="submit" memproses={memproses === 'profil'}>
-                                        Simpan profil
-                                    </Tombol>
-                                </div>
-                            </form>
-                        </section>
-
-                        <section className="flex flex-wrap gap-3">
-                            <Tombol
-                                varian="sekunder"
-                                memproses={memproses === 'keluar'}
-                                onClick={() => void Keluar(false)}
-                            >
-                                Keluar
+                    <section className="flex flex-col gap-3 rounded-3xl bg-permukaan p-5">
+                        <h2 className="text-judul-bagian-hp font-extrabold text-teks-utama">Profil</h2>
+                        <form noValidate onSubmit={SimpanProfil} className="flex flex-col gap-4">
+                            <BidangTeks
+                                label="Nama"
+                                nilai={profil.Nama}
+                                saatBerubah={(v) => AturProfil((x) => ({ ...x, Nama: v }))}
+                                autoComplete="name"
+                                required
+                            />
+                            <BidangTeks
+                                label="Email (opsional)"
+                                nilai={profil.Email}
+                                saatBerubah={(v) => AturProfil((x) => ({ ...x, Email: v }))}
+                                jenis="email"
+                                autoComplete="email"
+                            />
+                            <PemilihTanggal
+                                label="Tanggal lahir (opsional)"
+                                nilai={profil.TanggalLahir}
+                                saatBerubah={(v) => AturProfil((x) => ({ ...x, TanggalLahir: v }))}
+                                disabled={Pelanggan.TanggalLahir !== null}
+                                keterangan={
+                                    Pelanggan.TanggalLahir !== null
+                                        ? 'Sudah tersimpan. Untuk mengubahnya, hubungi toko.'
+                                        : 'Hanya bisa diisi sekali. Dipakai untuk promo ulang tahun bila toko punya.'
+                                }
+                            />
+                            <KotakCentang
+                                label="Kirimi saya info promo lewat WhatsApp."
+                                nilai={profil.SetujuPemasaran}
+                                saatBerubah={(v) => AturProfil((x) => ({ ...x, SetujuPemasaran: v }))}
+                            />
+                            {pesan ? <Pemberitahuan jenis={pesan.jenis}>{pesan.teks}</Pemberitahuan> : null}
+                            <Tombol type="submit" ukuran="besar" bentuk="pil" memproses={memproses === 'profil'}>
+                                Simpan profil
                             </Tombol>
-                            <Tombol varian="sekunder" disabled={memproses !== null} onClick={() => void Keluar(true)}>
-                                Keluar dari semua perangkat
-                            </Tombol>
-                        </section>
-                    </>
-                )}
-            </div>
+                        </form>
+                    </section>
+
+                    <section className="flex flex-wrap gap-3">
+                        <Tombol
+                            varian="sekunder"
+                            bentuk="pil"
+                            memproses={memproses === 'keluar'}
+                            onClick={() => void Keluar(false)}
+                        >
+                            Keluar
+                        </Tombol>
+                        <Tombol
+                            varian="sekunder"
+                            bentuk="pil"
+                            disabled={memproses !== null}
+                            onClick={() => void Keluar(true)}
+                        >
+                            Keluar dari semua perangkat
+                        </Tombol>
+                    </section>
+                </>
+            )}
             {dialogMasuk && Toko ? (
                 <DialogMasukPembeli
                     slug={Slug}
@@ -308,6 +324,6 @@ export default function AkunTokoOnline({ Slug, Toko, AkunAktif, Pelanggan, Riway
                     saatTutup={() => AturDialogMasuk(false)}
                 />
             ) : null}
-        </main>
+        </KerangkaMerek>
     );
 }

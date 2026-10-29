@@ -181,4 +181,17 @@ describe('Struk digital publik (POS-11)', () => {
         RenderUji(<HalamanStrukDigital Struk={null} />);
         expect(screen.getByRole('heading', { name: 'Struk belum tersedia' })).toBeTruthy();
     });
+
+    it('D-241: kepala bermerek memuat nama usaha sebagai judul dan logo bila ada, inisial bila tidak', () => {
+        const { unmount: Lepas } = RenderUji(<HalamanStrukDigital Struk={struk} />);
+        expect(screen.getByRole('heading', { level: 1, name: 'Kopi Senja Solo' })).toBeTruthy();
+        expect(screen.getByText('KS')).toBeTruthy();
+        expect(screen.getByText('Outlet Solo Baru')).toBeTruthy();
+        Lepas();
+
+        RenderUji(<HalamanStrukDigital Struk={{ ...struk, UrlLogo: '/kopi-senja/logo?outlet=01JOUTLET' }} />);
+        expect(screen.getByAltText('Logo Kopi Senja Solo').getAttribute('src')).toBe(
+            '/kopi-senja/logo?outlet=01JOUTLET',
+        );
+    });
 });

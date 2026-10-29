@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 import { FormatWaktuReservasi } from '@/Halaman/Kelola/Reservasi/Daftar';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import KerangkaMerek from '@/Komponen/Publik/KerangkaMerek';
 import { PanelHasil } from '@/Komponen/Publik/KerangkaPelanggan';
-import KerangkaReservasi from '@/Komponen/Reservasi/KerangkaReservasi';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import type { StatusReservasi } from '@/Tipe/Reservasi';
@@ -55,12 +55,12 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
 
     if (!Ditemukan || !r) {
         return (
-            <KerangkaReservasi toko={Toko} label="Reservasi" judul="Reservasi" skala="situs">
+            <KerangkaMerek toko={Toko} label="Reservasi" judul="Reservasi" skala="situs">
                 <Head title="Status reservasi" />
-                <PanelHasil jenis="netral" judul="Reservasi tidak ditemukan">
+                <PanelHasil jenis="netral" judulBagian judul="Reservasi tidak ditemukan">
                     Periksa kembali tautan dari toko.
                 </PanelHasil>
-            </KerangkaReservasi>
+            </KerangkaMerek>
         );
     }
 
@@ -68,7 +68,7 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
     const sekarang = INDEKS_LANGKAH[r.Status];
 
     return (
-        <KerangkaReservasi toko={Toko} label="Status reservasi" judul={`Reservasi ${r.Nomor}`} skala="situs">
+        <KerangkaMerek toko={Toko} label="Status reservasi" judul={`Reservasi ${r.Nomor}`} skala="situs">
             <Head title="Status reservasi" />
             {props.Kilat ? <Pemberitahuan jenis="sukses">{props.Kilat}</Pemberitahuan> : null}
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
@@ -161,6 +161,6 @@ export default function HalamanStatusReservasi({ Ditemukan, Slug, Kode, Toko, Re
             <Link href={`/${Slug}/reservasi`} className="text-label font-semibold text-brand hover:underline">
                 Buat reservasi lagi
             </Link>
-        </KerangkaReservasi>
+        </KerangkaMerek>
     );
 }

@@ -1,7 +1,7 @@
 import { CircleAlert, CircleCheck, Link2Off } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { IkonMerek } from '@/Komponen/Merek/LogoMerek';
+import { LogoToko } from '@/Komponen/TokoOnline/KepalaToko';
 import { cn } from '@/Komponen/Ui/utils';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 
@@ -19,18 +19,16 @@ type PropsKerangka = {
 export default function KerangkaPelanggan({ toko, children }: PropsKerangka) {
     return (
         <div className="flex min-h-screen flex-col bg-latar text-isi text-teks-utama">
-            <header className="border-b border-garis bg-permukaan">
-                <div className="mx-auto flex h-14 w-full max-w-xl items-center gap-3 px-4">
-                    <IkonMerek nama="Payoung" className="size-7" />
-                    <span className="min-w-0 truncate text-isi font-semibold">{toko ?? 'Payoung'}</span>
+            <header className="bg-brand-gelap text-permukaan">
+                <div className="mx-auto flex h-16 w-full max-w-xl items-center gap-3 px-4">
+                    <LogoToko nama={toko ?? 'Payoung'} url={null} />
+                    <span className="min-w-0 truncate text-subjudul font-bold">{toko ?? 'Payoung'}</span>
                 </div>
             </header>
             <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-6 tepi-bawah-aman">
                 {children}
             </main>
-            <footer className="border-t border-garis bg-permukaan py-4 text-center text-label text-teks-sekunder">
-                Didukung Payoung
-            </footer>
+            <footer className="py-4 text-center text-label text-teks-sekunder">Didukung Payoung</footer>
         </div>
     );
 }
@@ -46,20 +44,27 @@ const KELAS_HASIL = {
 export function PanelHasil({
     jenis,
     judul,
+    judulBagian = false,
     children,
 }: {
     jenis: keyof typeof IKON_HASIL;
     judul: string;
+    /** Bila halaman sudah punya judul `<h1>` sendiri (kepala bermerek), judul panel jadi `<h2>`. */
+    judulBagian?: boolean;
     children?: ReactNode;
 }) {
     const Ikon = IKON_HASIL[jenis];
 
     return (
-        <section className="flex flex-col items-center gap-3 rounded-panel border border-garis bg-permukaan px-6 py-10 text-center">
+        <section className="flex flex-col items-center gap-3 rounded-3xl bg-permukaan px-6 py-10 text-center">
             <span className={cn('flex size-14 items-center justify-center rounded-full', KELAS_HASIL[jenis])}>
                 <Ikon aria-hidden className="size-7" strokeWidth={1.75} />
             </span>
-            <JudulHalaman className="text-center">{judul}</JudulHalaman>
+            {judulBagian ? (
+                <h2 className="text-center text-judul font-bold text-teks-utama">{judul}</h2>
+            ) : (
+                <JudulHalaman className="text-center">{judul}</JudulHalaman>
+            )}
             {children ? <div className="max-w-md text-isi text-teks-sekunder">{children}</div> : null}
         </section>
     );

@@ -150,6 +150,9 @@ describe('Halaman Akun saya', () => {
         );
         expect(screen.getByText('Rp 1.250.000')).toBeTruthy();
         expect(screen.getByText('Sudah tersimpan. Untuk mengubahnya, hubungi toko.')).toBeTruthy();
+        // D-241: nama pelanggan jadi judul halaman, kartu member memuat tier dan poin.
+        expect(screen.getByRole('heading', { level: 1, name: profil.Nama })).toBeTruthy();
+        expect(screen.getByRole('region', { name: 'Kartu member' })).toBeTruthy();
     });
 
     it('belum masuk: ajakan masuk. Toko tanpa akun pembeli menjelaskan bahwa pesan tetap bisa', () => {
