@@ -55,6 +55,21 @@ final class PenyimpanLogoTenant
         ]);
     }
 
+    /**
+     * Logo untuk halaman publik toko online (kepala toko dan pratinjau tautan). Beda dengan [Unduh]: boleh disimpan
+     * peramban dan CDN beberapa menit, karena logo usaha memang untuk dilihat pembeli. Jenis isi dikunci ke gambar
+     * (`nosniff`) dan hanya berkas bernama logo tenant yang sah yang sampai ke sini (path dari pengaturan tenant).
+     */
+    public function UnduhPublik(string $path): StreamedResponse
+    {
+        abort_unless($this->AmbilDisk()->exists($path), 404);
+
+        return $this->AmbilDisk()->response($path, 'logo.'.pathinfo($path, PATHINFO_EXTENSION), [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'public, max-age=600',
+        ], 'inline');
+    }
+
     private function AmbilDisk(): FilesystemAdapter
     {
         $disk = Storage::disk((string) config('tenant.DiskLogo'));

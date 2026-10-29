@@ -1,7 +1,6 @@
 import { CheckIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import type { ProdukToko } from '@/Komponen/TokoOnline/TipeToko';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
@@ -51,88 +50,146 @@ export default function LembarOpsiProduk({ produk, saatTambah, saatTutup }: Prop
         saatTambah(varian || null, pilihan);
     }
 
+    // Harga yang ditampilkan di tombol hanya petunjuk. Server selalu menghitung ulang harga di keranjang.
+    const hargaVarian = (produk.Varian ?? []).find((v) => v.Uuid === varian)?.Harga ?? null;
+    const hargaDasar = Number(hargaVarian ?? produk.Harga);
+    const hargaTambahan = produk.KelompokPilihan.flatMap((k) => k.Pilihan)
+        .filter((x) => pilihan.includes(x.Uuid))
+        .reduce((jumlah, x) => jumlah + Number(x.Harga), 0);
+    const perkiraan = String(hargaDasar + hargaTambahan);
+
     return (
         <Sheet open onOpenChange={(buka) => (buka ? undefined : saatTutup())}>
             <SheetContent
                 side="bottom"
                 aria-describedby={undefined}
-                className="mx-auto max-h-[88dvh] w-full gap-0 overflow-hidden rounded-t-panel p-0 sm:max-w-lg"
+                className="mx-auto max-h-[92dvh] w-full gap-0 overflow-hidden rounded-t-3xl p-0 sm:max-w-lg"
             >
-                <SheetHeader className="border-b border-garis p-4 pr-12">
-                    <SheetTitle className="text-subjudul">{produk.Nama}</SheetTitle>
-                    <SheetDescription className="text-keterangan">
-                        Pilih sesuai selera, lalu tambahkan ke keranjang.
-                    </SheetDescription>
-                </SheetHeader>
-                <div className="flex flex-col gap-5 overflow-y-auto p-4">
-                    {(produk.Varian?.length ?? 0) > 0 ? (
-                        <BidangPilihan
-                            label="Varian"
-                            nilai={varian}
-                            opsi={(produk.Varian ?? [])
-                                .filter((v) => v.Tersedia)
-                                .map((v) => ({
-                                    Nilai: v.Uuid,
-                                    Label: `${v.Nama}${v.Harga ? ` | ${FormatRupiah(v.Harga)}` : ''}`,
-                                }))}
-                            kosong="Pilih varian"
-                            saatBerubah={(nilai) => {
-                                AturVarian(nilai);
-                                AturGalat(null);
-                            }}
+                <SheetHeader className="flex-row items-center gap-3 p-5 pr-14 pb-2">
+                    {produk.UrlGambar ? (
+                        <img
+                            src={produk.UrlGambar}
+                            alt=""
+                            className="size-16 shrink-0 rounded-2xl bg-brand-lembut object-cover"
                         />
+                    ) : null}
+                    <div className="flex min-w-0 flex-col gap-1">
+                        <SheetTitle className="text-judul-bagian-hp font-extrabold">{produk.Nama}</SheetTitle>
+                        <SheetDescription className="text-isi">
+                            Pilih sesuai selera, lalu tambahkan ke keranjang.
+                        </SheetDescription>
+                    </div>
+                </SheetHeader>
+                <div className="flex flex-col gap-5 overflow-y-auto p-5 pt-3">
+                    {(produk.Varian?.length ?? 0) > 0 ? (
+                        <fieldset className="flex flex-col gap-2">
+                            <legend className="mb-1 text-label font-bold tracking-wide text-teks-sekunder uppercase">
+                                Varian <span className="normal-case">| wajib pilih 1</span>
+                            </legend>
+                            {(produk.Varian ?? [])
+                                .filter((v) => v.Tersedia)
+                                .map((v) => (
+                                    <label
+                                        key={v.Uuid}
+                                        className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 text-subjudul font-semibold has-focus-visible:ring-2 has-focus-visible:ring-brand ${
+                                            varian === v.Uuid
+                                                ? 'border-brand-gelap bg-brand-lembut text-teks-utama'
+                                                : 'border-garis text-teks-utama'
+                                        }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="varian"
+                                            className="sr-only"
+                                            checked={varian === v.Uuid}
+                                            onChange={() => {
+                                                AturVarian(v.Uuid);
+                                                AturGalat(null);
+                                            }}
+                                        />
+                                        <span
+                                            aria-hidden="true"
+                                            className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${
+                                                varian === v.Uuid
+                                                    ? 'border-brand-gelap bg-brand-gelap text-permukaan'
+                                                    : 'border-garis-input'
+                                            }`}
+                                        >
+                                            {varian === v.Uuid ? <CheckIcon className="size-3.5" /> : null}
+                                        </span>
+                                        {v.Nama}
+                                        {v.Harga ? (
+                                            <span className="ml-auto font-bold tabular-nums">
+                                                {FormatRupiah(v.Harga)}
+                                            </span>
+                                        ) : null}
+                                    </label>
+                                ))}
+                        </fieldset>
                     ) : null}
                     {produk.KelompokPilihan.map((kelompok) => (
                         <fieldset key={kelompok.Uuid} className="flex flex-col gap-2">
-                            <legend className="text-label font-semibold text-teks-utama">
+                            <legend className="mb-1 text-label font-bold tracking-wide text-teks-sekunder uppercase">
                                 {kelompok.Nama}
-                                <span className="font-normal text-teks-sekunder">
+                                <span className="font-semibold normal-case">
                                     {' '}
-                                    (pilih {kelompok.MinimalPilih}–{kelompok.MaksimalPilih})
+                                    | pilih {kelompok.MinimalPilih}–{kelompok.MaksimalPilih}
                                 </span>
                             </legend>
-                            <div className="flex flex-wrap gap-2">
-                                {kelompok.Pilihan.map((x) => {
-                                    const aktif = pilihan.includes(x.Uuid);
+                            {kelompok.Pilihan.map((x) => {
+                                const aktif = pilihan.includes(x.Uuid);
 
-                                    return (
-                                        <label
-                                            key={x.Uuid}
-                                            className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-label has-focus-visible:ring-2 has-focus-visible:ring-brand ${
+                                return (
+                                    <label
+                                        key={x.Uuid}
+                                        className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 text-subjudul font-semibold has-focus-visible:ring-2 has-focus-visible:ring-brand ${
+                                            aktif
+                                                ? 'border-brand-gelap bg-brand-lembut text-teks-utama'
+                                                : 'border-garis text-teks-utama'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only"
+                                            checked={aktif}
+                                            onChange={(e) => {
+                                                AturPilihan((lama) =>
+                                                    e.target.checked
+                                                        ? [...lama, x.Uuid]
+                                                        : lama.filter((u) => u !== x.Uuid),
+                                                );
+                                                AturGalat(null);
+                                            }}
+                                        />
+                                        <span
+                                            aria-hidden="true"
+                                            className={`grid size-6 shrink-0 place-items-center rounded-md border-2 ${
                                                 aktif
-                                                    ? 'border-brand bg-brand-lembut font-semibold text-teks-utama'
-                                                    : 'border-garis text-teks-utama'
+                                                    ? 'border-brand-gelap bg-brand-gelap text-permukaan'
+                                                    : 'border-garis-input'
                                             }`}
                                         >
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only"
-                                                checked={aktif}
-                                                onChange={(e) => {
-                                                    AturPilihan((lama) =>
-                                                        e.target.checked
-                                                            ? [...lama, x.Uuid]
-                                                            : lama.filter((u) => u !== x.Uuid),
-                                                    );
-                                                    AturGalat(null);
-                                                }}
-                                            />
-                                            {aktif ? (
-                                                <CheckIcon aria-hidden="true" className="size-4 text-brand" />
-                                            ) : null}
-                                            {x.Nama}
-                                            {Number(x.Harga) > 0 ? ` (+${FormatRupiah(x.Harga)})` : ''}
-                                        </label>
-                                    );
-                                })}
-                            </div>
+                                            {aktif ? <CheckIcon className="size-3.5" /> : null}
+                                        </span>
+                                        {x.Nama}
+                                        {Number(x.Harga) > 0 ? (
+                                            <span className="ml-auto font-bold tabular-nums">
+                                                +{FormatRupiah(x.Harga)}
+                                            </span>
+                                        ) : null}
+                                    </label>
+                                );
+                            })}
                         </fieldset>
                     ))}
                     {galat ? <Pemberitahuan jenis="bahaya">{galat}</Pemberitahuan> : null}
                 </div>
-                <SheetFooter className="tepi-bawah-aman border-t border-garis p-4">
-                    <Tombol ukuran="besar" onClick={Simpan}>
-                        Tambah ke keranjang
+                <SheetFooter className="tepi-bawah-aman p-4 pt-2">
+                    <Tombol ukuran="besar" bentuk="pil" onClick={Simpan} aria-label="Tambah ke keranjang">
+                        <span className="flex w-full items-center justify-between gap-3">
+                            <span>Tambah ke keranjang</span>
+                            <span className="tabular-nums">{FormatRupiah(perkiraan)}</span>
+                        </span>
                     </Tombol>
                 </SheetFooter>
             </SheetContent>

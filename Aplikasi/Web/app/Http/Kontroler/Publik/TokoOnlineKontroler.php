@@ -31,7 +31,9 @@ use App\Domain\Penjualan\Layanan\PenghitungTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\TagihanQris;
+use App\Domain\Tenant\Kueri\PengaturanStrukTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
+use App\Domain\Tenant\Layanan\PenyimpanLogoTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Publik\TokoOnlinePermintaan;
 use Closure;
@@ -76,7 +78,15 @@ final class TokoOnlineKontroler extends Kontroler
             return [
                 'Aktif' => $k->aktif && ($bisaAmbil || $bisaKirim),
                 'Slug' => $slugTenant,
-                'Toko' => ['Nama' => app(NamaTampilUsaha::class)->UntukOutlet($k->idOutlet, $idTenant), 'NamaOutlet' => $k->namaOutlet, 'Alamat' => $outlet->Alamat],
+                'Toko' => [
+                    'Nama' => app(NamaTampilUsaha::class)->UntukOutlet($k->idOutlet, $idTenant),
+                    'NamaOutlet' => $k->namaOutlet,
+                    'Alamat' => $outlet->Alamat,
+                    // Logo outlet (bila ada) menimpa logo usaha; tanpa keduanya null dan kepala toko memakai inisial.
+                    'UrlLogo' => app(PengaturanStrukTenant::class)->AmbilPathLogoUsaha($idTenant, $k->idOutlet) === null
+                        ? null
+                        : url("/{$slugTenant}/logo").'?outlet='.$outlet->Uuid,
+                ],
                 'Outlet' => $daftarOutlet->map(fn (Outlet $o): array => ['Uuid' => $o->Uuid, 'Nama' => $o->Nama])->values()->all(),
                 'OutletDipilih' => $outlet->Uuid,
                 'Pemenuhan' => ['AmbilSendiri' => $bisaAmbil, 'Kirim' => $bisaKirim],
@@ -207,6 +217,21 @@ final class TokoOnlineKontroler extends Kontroler
                 'StatusTagihan' => $tagihan?->Status->value,
                 'KedaluwarsaPada' => $tagihan?->KedaluwarsaPada->toIso8601String(),
             ]);
+        });
+    }
+
+    /** Logo toko untuk kepala halaman dan pratinjau tautan; 404 bila toko tak aktif atau belum punya logo. */
+    public function Logo(string $slugTenant, Request $request, PengaturanStrukTenant $pengaturan, PenyimpanLogoTenant $penyimpan): StreamedResponse
+    {
+        $uuidDipilih = is_string($request->query('outlet')) ? strtoupper($request->query('outlet')) : null;
+
+        return $this->DalamTenant($slugTenant, function (int $idTenant) use ($uuidDipilih, $pengaturan, $penyimpan): StreamedResponse {
+            $k = $this->penentu->Cari($uuidDipilih) ?? $this->penentu->Cari();
+            abort_if($k === null, 404);
+            $path = $pengaturan->AmbilPathLogoUsaha($idTenant, $k->idOutlet);
+            abort_if($path === null, 404);
+
+            return $penyimpan->UnduhPublik($path);
         });
     }
 

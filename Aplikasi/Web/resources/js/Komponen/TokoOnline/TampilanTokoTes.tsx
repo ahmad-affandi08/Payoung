@@ -228,6 +228,74 @@ describe('tampilan toko online', () => {
     });
 });
 
+describe('kepala toko modern (D-238)', () => {
+    it('logo tenant tampil di kepala. Tanpa logo atau saat gagal dimuat, inisial toko jadi penggantinya', () => {
+        const dengan = {
+            ...props,
+            Toko: { ...props.Toko, UrlLogo: '/kopi-senja/logo?outlet=01JOUTLET00000000000000001' },
+        };
+        const { unmount: Lepas } = RenderUji(<HalamanTokoOnline {...dengan} />);
+
+        const logo = screen.getByRole('img', { name: 'Logo Kopi Senja' });
+        expect(logo.getAttribute('src')).toBe('/kopi-senja/logo?outlet=01JOUTLET00000000000000001');
+
+        fireEvent.error(logo);
+        expect(screen.queryByRole('img', { name: 'Logo Kopi Senja' })).toBeNull();
+        expect(screen.getByText('KS')).toBeTruthy();
+        Lepas();
+
+        RenderUji(<HalamanTokoOnline {...props} />);
+        expect(screen.queryByRole('img', { name: 'Logo Kopi Senja' })).toBeNull();
+        expect(screen.getByText('KS')).toBeTruthy();
+    });
+
+    it('nama toko jadi judul terbesar halaman', () => {
+        RenderUji(<HalamanTokoOnline {...props} />);
+
+        const judul = screen.getByRole('heading', { level: 1, name: 'Kopi Senja' });
+        expect(judul.className).toContain('text-sorotan-besar-hp');
+    });
+
+    it('produk favorit pemilik jadi kartu sorotan dan bisa langsung ditambah ke keranjang', () => {
+        const dengan = {
+            ...props,
+            Menu: {
+                ...props.Menu,
+                Produk: props.Menu.Produk.map((p, i) => ({ ...p, Favorit: i === 0 })),
+            },
+        };
+        RenderUji(<HalamanTokoOnline {...dengan} />);
+
+        const sorotan = screen.getByRole('article', { name: 'Favorit toko: Kopi Susu Gula Aren' });
+        expect(within(sorotan).getByText('Favorit toko')).toBeTruthy();
+
+        fireEvent.click(within(sorotan).getByRole('button', { name: 'Tambah Kopi Susu Gula Aren (favorit toko)' }));
+        expect(screen.getByText('1 di keranjang')).toBeTruthy();
+    });
+
+    it('tanpa produk favorit tidak ada kartu sorotan, dan toko tutup tidak menyorot apa pun', () => {
+        RenderUji(<HalamanTokoOnline {...props} />);
+        expect(screen.queryByRole('article', { name: /Favorit toko/ })).toBeNull();
+        cleanup();
+
+        const favorit = {
+            ...props,
+            Menu: { ...props.Menu, Produk: props.Menu.Produk.map((p) => ({ ...p, Favorit: true })) },
+        };
+        RenderUji(<HalamanTokoOnline {...favorit} Aktif={false} />);
+        expect(screen.queryByRole('article', { name: /Favorit toko/ })).toBeNull();
+    });
+
+    it('kartu menu menampilkan nama kategori dan judul bagian menghitung pilihan', () => {
+        RenderUji(<HalamanTokoOnline {...props} />);
+
+        expect(screen.getByText('2 pilihan')).toBeTruthy();
+        expect(screen.getAllByText('Kopi').length).toBeGreaterThan(0);
+        fireEvent.click(screen.getByRole('button', { name: 'Roti' }));
+        expect(screen.getByText('1 pilihan')).toBeTruthy();
+    });
+});
+
 describe('status pesanan online', () => {
     const BuatPesanan = (status: string, label: string) => ({
         Nomor: 'ON/SOLO/261005-0001',

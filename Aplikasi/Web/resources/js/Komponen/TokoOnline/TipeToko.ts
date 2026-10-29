@@ -18,6 +18,8 @@ export type ProdukToko = {
     Harga: string;
     UrlGambar: string | null;
     UuidKategori: string | null;
+    /** Produk favorit pilihan pemilik (K-16); satu di antaranya jadi kartu sorotan di kepala toko. */
+    Favorit?: boolean;
     KelompokPilihan: KelompokPilihanProduk[];
     Varian?: VarianProduk[];
 };

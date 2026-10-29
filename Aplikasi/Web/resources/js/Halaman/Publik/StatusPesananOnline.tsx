@@ -116,22 +116,24 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                     </>
                 ) : (
                     <>
-                        <header className="-mx-4 -mt-6 flex flex-col gap-2 bg-brand-gelap px-4 pt-6 pb-8 text-permukaan">
+                        <header className="-mx-4 -mt-6 flex flex-col gap-3 bg-brand-gelap px-4 pt-6 pb-10 text-permukaan">
                             <p className="inline-flex items-center gap-1.5 text-label font-semibold text-brand-gelap-teks">
                                 <ReceiptTextIcon aria-hidden="true" className="size-4" />
                                 {Toko?.Nama}
                             </p>
-                            <JudulHalaman className="text-permukaan">Pesanan {p.Nomor}</JudulHalaman>
+                            <JudulHalaman skala="situs" className="[overflow-wrap:anywhere] text-permukaan">
+                                Pesanan {p.Nomor}
+                            </JudulHalaman>
                         </header>
                         {gagal ? (
-                            <div className="flex items-center gap-3 rounded-panel border border-bahaya bg-bahaya-lembut p-4 text-bahaya">
+                            <div className="flex items-center gap-3 rounded-3xl border border-bahaya bg-bahaya-lembut p-4 text-bahaya">
                                 <XCircleIcon aria-hidden="true" className="size-6 shrink-0" />
                                 <p className="text-isi font-semibold">{p.LabelStatus}</p>
                             </div>
                         ) : (
                             <ol
                                 aria-label="Perkembangan pesanan"
-                                className="grid grid-cols-5 gap-1 rounded-panel border border-garis bg-permukaan p-3"
+                                className="-mt-9 grid grid-cols-5 gap-1 rounded-3xl bg-permukaan p-4"
                             >
                                 {LANGKAH_PESANAN.map((nama, indeks) => {
                                     const sekarang = INDEKS_LANGKAH[p.Status] ?? 0;
@@ -149,7 +151,7 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                                                     lewat
                                                         ? 'bg-sukses text-permukaan'
                                                         : aktif
-                                                          ? 'bg-brand text-brand-teks ring-4 ring-brand-lembut'
+                                                          ? 'bg-aksen text-teks-utama ring-4 ring-aksen-lembut'
                                                           : 'bg-permukaan-sorot text-teks-sekunder'
                                                 }`}
                                             >
@@ -160,7 +162,7 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                                                 )}
                                             </span>
                                             <span
-                                                className={`text-keterangan ${aktif ? 'font-semibold text-teks-utama' : 'text-teks-sekunder'}`}
+                                                className={`text-keterangan ${aktif ? 'font-bold text-teks-utama' : 'text-teks-sekunder'}`}
                                             >
                                                 {nama}
                                             </span>
@@ -210,8 +212,8 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                             ) : null}
                         </dl>
                         {perluBayar ? (
-                            <section className="flex flex-col items-center gap-3 rounded-panel border border-garis bg-permukaan p-4 text-center">
-                                <h2 className="text-subjudul font-semibold">Bayar pesanan ini</h2>
+                            <section className="flex flex-col items-center gap-3 rounded-3xl bg-permukaan p-5 text-center">
+                                <h2 className="text-judul-bagian-hp font-extrabold">Bayar pesanan ini</h2>
                                 <p className="text-keterangan text-teks-sekunder">
                                     Pesanan diproses toko setelah pembayaran masuk. Kalau QRIS lewat waktu, buat QRIS
                                     baru di halaman ini.
@@ -222,9 +224,11 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                                         <img
                                             src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(tagihan.Qr)}`}
                                             alt={`QRIS pembayaran pesanan ${p.Nomor}`}
-                                            className="size-64 max-w-full rounded-panel border border-garis bg-permukaan p-3"
+                                            className="size-64 max-w-full rounded-3xl border-4 border-brand-gelap bg-permukaan p-3"
                                         />
-                                        <p className="text-subjudul font-semibold">{FormatRupiah(tagihan.Jumlah)}</p>
+                                        <p className="text-judul-bagian-hp font-extrabold tabular-nums">
+                                            {FormatRupiah(tagihan.Jumlah)}
+                                        </p>
                                         <p className="text-keterangan text-teks-sekunder">
                                             Berlaku sampai {FormatTanggalWaktu(tagihan.KedaluwarsaPada)}. Halaman ini
                                             memperbarui sendiri setelah pembayaran masuk.
@@ -242,8 +246,8 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                                 Pembayaran {FormatRupiah(p.JumlahDibayar)} sudah kami terima.
                             </Pemberitahuan>
                         ) : null}
-                        <section className="rounded-panel border border-garis bg-permukaan p-4">
-                            <h2 className="mb-3 text-subjudul font-semibold">Rincian</h2>
+                        <section className="rounded-3xl bg-permukaan p-5">
+                            <h2 className="mb-3 text-judul font-extrabold">Rincian</h2>
                             <ul className="divide-y divide-garis">
                                 {p.Baris.map((b, i) => (
                                     <li key={`${b.Nama}-${String(i)}`} className="flex justify-between gap-3 py-2">
@@ -254,7 +258,7 @@ export default function StatusPesananOnline({ Ditemukan, Slug, KodeAkses, Toko, 
                                     </li>
                                 ))}
                             </ul>
-                            <div className="mt-3 flex justify-between border-t border-garis pt-3 text-subjudul font-semibold">
+                            <div className="mt-3 flex justify-between border-t border-garis pt-3 text-judul font-extrabold">
                                 <span>Total</span>
                                 <span>{FormatRupiah(p.Total)}</span>
                             </div>

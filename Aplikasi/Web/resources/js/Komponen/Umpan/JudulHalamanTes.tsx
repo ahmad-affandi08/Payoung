@@ -80,4 +80,18 @@ describe('Judul halaman', () => {
         expect(ringkas.className).toContain('text-subjudul');
         expect(ringkas.className).not.toContain('text-judul-bagian');
     });
+
+    it('skala toko memakai ukuran sorotan besar dan warna bisa ditimpa tanpa kehilangan ukurannya', () => {
+        render(
+            <JudulHalaman skala="toko" className="text-permukaan">
+                Kopi Senja
+            </JudulHalaman>,
+        );
+
+        const toko = screen.getByRole('heading', { level: 1, name: 'Kopi Senja' });
+        expect(toko.className).toContain('text-sorotan-besar-hp');
+        expect(toko.className).toContain('sm:text-sorotan-besar');
+        expect(toko.className).toContain('text-permukaan');
+        expect(toko.className).not.toContain('text-teks-utama');
+    });
 });

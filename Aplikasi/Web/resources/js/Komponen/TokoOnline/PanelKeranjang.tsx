@@ -72,7 +72,7 @@ type PropsPanelKeranjang = {
 /** Rincian harga dari server; dipakai di langkah keranjang dan ringkasan langkah pesan. */
 function RincianHarga({ hasil }: { hasil: HasilHitung }) {
     return (
-        <dl className="flex flex-col gap-1.5 rounded-panel bg-permukaan-redup p-3 text-isi">
+        <dl className="flex flex-col gap-1.5 rounded-3xl bg-permukaan-redup p-4 text-isi">
             <div className="flex justify-between gap-3">
                 <dt className="text-teks-sekunder">Subtotal</dt>
                 <dd className="tabular-nums">{FormatRupiah(hasil.Subtotal)}</dd>
@@ -95,7 +95,7 @@ function RincianHarga({ hasil }: { hasil: HasilHitung }) {
                     <dd className="tabular-nums">−{FormatRupiah(hasil.DiskonOngkir)}</dd>
                 </div>
             ) : null}
-            <div className="flex justify-between gap-3 border-t border-garis pt-2 text-subjudul font-semibold">
+            <div className="flex justify-between gap-3 border-t border-garis pt-3 text-judul font-extrabold">
                 <dt>Total</dt>
                 <dd className="tabular-nums">{FormatRupiah(hasil.Total)}</dd>
             </div>
@@ -132,7 +132,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
     if (langkah === 'keranjang') {
         return (
             <div className="flex flex-col gap-5">
-                <ul className="divide-y divide-garis rounded-panel border border-garis" aria-label="Isi keranjang">
+                <ul className="divide-y divide-garis rounded-3xl border-2 border-garis" aria-label="Isi keranjang">
                     {p.baris.map((b) => {
                         const barisProduk = p.produk.get(b.UuidProduk);
                         const rincian = [
@@ -145,7 +145,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                         return (
                             <li key={b.Uuid} className="flex items-center gap-3 p-3">
                                 <span className="flex min-w-0 flex-1 flex-col">
-                                    <span className="truncate text-isi font-semibold text-teks-utama">
+                                    <span className="truncate text-subjudul font-bold text-teks-utama">
                                         {barisProduk?.Nama}
                                     </span>
                                     {rincian.length > 0 ? (
@@ -155,7 +155,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                                     ) : null}
                                 </span>
                                 <div className="flex shrink-0 items-center gap-1">
-                                    <div className="flex items-center rounded-full border border-garis">
+                                    <div className="flex items-center rounded-full bg-brand-gelap p-0.5 text-permukaan">
                                         <button
                                             type="button"
                                             aria-label="Kurangi jumlah"
@@ -164,13 +164,13 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                                         >
                                             <MinusIcon aria-hidden="true" className="size-4" />
                                         </button>
-                                        <span className="w-6 text-center text-isi font-semibold tabular-nums">
+                                        <span className="w-7 text-center text-isi font-bold tabular-nums">
                                             {b.Jumlah}
                                         </span>
                                         <button
                                             type="button"
                                             aria-label="Tambah jumlah"
-                                            className="grid size-10 place-items-center rounded-full"
+                                            className="grid size-10 place-items-center rounded-full bg-aksen text-teks-utama"
                                             onClick={() => p.saatUbahJumlah(b.Uuid, 1)}
                                         >
                                             <PlusIcon aria-hidden="true" className="size-4" />
@@ -196,9 +196,9 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                         {p.opsiPemenuhan.map((o) => (
                             <label
                                 key={o.nilai}
-                                className={`flex min-h-14 cursor-pointer items-center gap-2 rounded-panel border p-3 text-isi font-semibold has-focus-visible:ring-2 has-focus-visible:ring-brand ${
+                                className={`flex min-h-14 cursor-pointer items-center gap-2 rounded-2xl border-2 p-3 text-subjudul font-bold has-focus-visible:ring-2 has-focus-visible:ring-brand ${
                                     p.jenis === o.nilai
-                                        ? 'border-brand bg-brand-lembut text-teks-utama'
+                                        ? 'border-brand-gelap bg-brand-lembut text-teks-utama'
                                         : 'border-garis text-teks-utama'
                                 }`}
                             >
@@ -274,7 +274,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                         dikirim.
                     </p>
                 )}
-                <Tombol ukuran="besar" disabled={!p.hasil} onClick={() => p.saatGantiLangkah('pesan')}>
+                <Tombol ukuran="besar" bentuk="pil" disabled={!p.hasil} onClick={() => p.saatGantiLangkah('pesan')}>
                     Lanjut ke data pesanan
                 </Tombol>
             </div>
@@ -416,7 +416,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                 saatBerubah={p.saatGantiSetuju}
             />
             {p.galat ? <Pemberitahuan jenis="bahaya">{p.galat}</Pemberitahuan> : null}
-            <Tombol type="submit" ukuran="besar" memproses={p.memproses} disabled={!p.hasil || !p.setuju}>
+            <Tombol type="submit" ukuran="besar" bentuk="pil" memproses={p.memproses} disabled={!p.hasil || !p.setuju}>
                 Kirim pesanan
             </Tombol>
         </form>

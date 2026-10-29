@@ -103,6 +103,8 @@ final class MenuPesanSendiri
                 'Nama' => $p->Nama,
                 'IdKategori' => $p->IdKategori,
                 'Harga' => $hargaKartu->KeString(),
+                // K-16: pilihan pemilik. Toko online memakainya untuk kartu sorotan di kepala halaman.
+                'Favorit' => $p->Favorit,
                 'UrlGambar' => PenyimpanGambarProduk::BuatUrl($p, 'kecil', $dasarGambar),
                 'KelompokPilihan' => array_map(fn (array $g): array => [
                     'Uuid' => $g['Kelompok']->Uuid,

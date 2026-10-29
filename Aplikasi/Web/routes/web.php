@@ -500,6 +500,7 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
     Route::prefix('/{slugTenant}')
         ->where(['slugTenant' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->group(function (): void {
+            Route::get('/logo', [TokoOnlineKontroler::class, 'Logo'])->middleware('throttle:120,1')->name('publik.toko-online.logo');
             Route::get('/gambar/{produk}', [TokoOnlineKontroler::class, 'Gambar'])->where('produk', '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}')->middleware('throttle:300,1')->name('publik.toko-online.gambar');
             Route::post('/keranjang/hitung', [TokoOnlineKontroler::class, 'Hitung'])->withoutMiddleware(ValidateCsrfToken::class)->middleware('throttle:60,1')->name('publik.toko-online.hitung');
             Route::post('/pesan', [TokoOnlineKontroler::class, 'Pesan'])->withoutMiddleware(ValidateCsrfToken::class)->middleware('throttle:20,1')->name('publik.toko-online.pesan');

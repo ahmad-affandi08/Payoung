@@ -7,6 +7,8 @@ type PropsTombol = {
     varian?: 'utama' | 'sekunder' | 'bahaya';
     /** `besar`: satu aksi utama selebar layar di halaman HP (misal absensi web), tinggi 56px. */
     ukuran?: 'normal' | 'besar';
+    /** `pil`: sudut bulat penuh untuk aksi utama di halaman publik toko (D-238). Bawaan mengikuti kontrol back-office. */
+    bentuk?: 'normal' | 'pil';
     memproses?: boolean;
     children: ReactNode;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'>;
@@ -23,6 +25,7 @@ const kelasUkuran = {
 export default function Tombol({
     varian = 'utama',
     ukuran = 'normal',
+    bentuk = 'normal',
     memproses = false,
     children,
     disabled,
@@ -35,7 +38,7 @@ export default function Tombol({
             variant={varianUi[varian]}
             disabled={disabled === true || memproses}
             aria-busy={memproses || undefined}
-            className={`${kelasUkuran[ukuran]} font-semibold focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60`}
+            className={`${kelasUkuran[ukuran]} ${bentuk === 'pil' ? 'rounded-full' : ''} font-semibold focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60`}
             {...atribut}
         >
             {memproses ? (
