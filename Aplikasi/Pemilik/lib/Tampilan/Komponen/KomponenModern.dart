@@ -127,11 +127,14 @@ class SegmenPil<T> extends StatelessWidget {
   }
 }
 
-/// Ikon dalam kotak membulat berlatar nada lembut dari [warna].
+/// Ikon dalam kotak membulat berlatar nada lembut dari [warna]. Memakai ilustrasi mini ([ilustrasi], D-234) bila ada,
+/// selain itu ikon Material [ikon].
 class LingkarIkon extends StatelessWidget {
-  const LingkarIkon({super.key, required this.ikon, required this.warna, this.ukuran = 44});
+  const LingkarIkon({super.key, this.ikon, this.ilustrasi, required this.warna, this.ukuran = 44})
+    : assert(ikon != null || ilustrasi != null, 'Isi ikon atau ilustrasi.');
 
-  final IconData ikon;
+  final IconData? ikon;
+  final IlustrasiOwner? ilustrasi;
   final Color warna;
   final double ukuran;
 
@@ -139,11 +142,16 @@ class LingkarIkon extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: ukuran,
     height: ukuran,
+    alignment: Alignment.center,
     decoration: BoxDecoration(
       color: TentukanNadaLembut(context, warna, 0.13),
       borderRadius: BorderRadius.circular(ukuran * 0.34),
     ),
-    child: Icon(ikon, size: ukuran * 0.48, color: warna),
+    child: switch ((ilustrasi, ikon)) {
+      (final IlustrasiOwner i, _) => IlustrasiMerek(i, lebar: ukuran * 0.78),
+      (_, final IconData k) => Icon(k, size: ukuran * 0.48, color: warna),
+      _ => const SizedBox.shrink(),
+    },
   );
 }
 
@@ -210,15 +218,17 @@ class AvatarPemilik extends StatelessWidget {
 class BarisMenu extends StatelessWidget {
   const BarisMenu({
     super.key,
-    required this.ikon,
+    this.ikon,
+    this.ilustrasi,
     required this.warnaIkon,
     required this.judul,
     this.keterangan,
     this.saatTekan,
     this.akhir,
-  });
+  }) : assert(ikon != null || ilustrasi != null, 'Isi ikon atau ilustrasi.');
 
-  final IconData ikon;
+  final IconData? ikon;
+  final IlustrasiOwner? ilustrasi;
   final Color warnaIkon;
   final String judul;
   final String? keterangan;
@@ -237,7 +247,7 @@ class BarisMenu extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak12),
         child: Row(
           children: [
-            LingkarIkon(ikon: ikon, warna: warnaIkon),
+            LingkarIkon(ikon: ikon, ilustrasi: ilustrasi, warna: warnaIkon),
             const SizedBox(width: TokenJarak.jarak12),
             Expanded(
               child: Column(

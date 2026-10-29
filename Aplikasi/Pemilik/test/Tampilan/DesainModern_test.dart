@@ -116,11 +116,27 @@ void main() {
     for (final aksi in ['Ubah harga', 'Tandai habis', 'Promo', 'Catat pengeluaran']) {
       expect(find.text(aksi), findsOneWidget, reason: aksi);
     }
+    // D-234: aksi cepat memakai ilustrasi mini, bukan ikon Material polos.
+    for (final nama in ['IkonHarga', 'IkonHabis', 'IkonPromo', 'IkonPengeluaran']) {
+      expect(find.byKey(ValueKey('Ilustrasi$nama')), findsOneWidget, reason: nama);
+    }
     expect(find.text('Shift'), findsOneWidget);
     expect(find.text('Perangkat kasir'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Keluar'), 200);
     expect(find.text('Bantuan'), findsOneWidget);
     expect(find.text('Kunci aplikasi'), findsOneWidget);
+    for (final nama in ['IkonKunci', 'IkonBantuan', 'IkonKeluar']) {
+      expect(find.byKey(ValueKey('Ilustrasi$nama')), findsOneWidget, reason: nama);
+    }
+  });
+
+  testWidgets('Beranda: ubin Transaksi, Rata-rata, dan Laba kotor memakai ilustrasi mini (D-234)', (tester) async {
+    server.penangan = Penangan;
+    await PasangPemilik(tester, server: server, sesi: sesi);
+
+    for (final nama in ['IkonTransaksi', 'IkonRataRata']) {
+      expect(find.byKey(ValueKey('Ilustrasi$nama')), findsOneWidget, reason: nama);
+    }
   });
 
   testWidgets('D-183: usaha tanpa kasir tidak punya shift, perangkat kasir, dan aksi cepat di Lainnya', (tester) async {

@@ -47,10 +47,10 @@ class LayarLainnya extends ConsumerWidget {
         const SizedBox(height: TokenJarak.jarak8),
         _GrafisAksi(
           butir: [
-            (Icons.sell_outlined, 'Ubah harga', warna.aksen, TujuanAksiCepat.harga),
-            (Icons.do_not_disturb_on_outlined, 'Tandai habis', warna.bahaya, TujuanAksiCepat.habis),
-            (Icons.local_offer_outlined, 'Promo', warna.sukses, TujuanAksiCepat.promo),
-            (Icons.receipt_long_outlined, 'Catat pengeluaran', warna.info, TujuanAksiCepat.pengeluaran),
+            (IlustrasiOwner.IkonHarga, 'Ubah harga', warna.aksen, TujuanAksiCepat.harga),
+            (IlustrasiOwner.IkonHabis, 'Tandai habis', warna.bahaya, TujuanAksiCepat.habis),
+            (IlustrasiOwner.IkonPromo, 'Promo', warna.sukses, TujuanAksiCepat.promo),
+            (IlustrasiOwner.IkonPengeluaran, 'Catat pengeluaran', warna.info, TujuanAksiCepat.pengeluaran),
           ],
         ),
         JarakBagian,
@@ -103,7 +103,7 @@ class LayarLainnya extends ConsumerWidget {
         DaftarMenu(
           baris: [
             BarisMenu(
-              ikon: Icons.shield_outlined,
+              ilustrasi: IlustrasiOwner.IkonKunci,
               warnaIkon: warna.sukses,
               judul: 'Kunci aplikasi',
               keterangan: 'PIN dan sidik jari',
@@ -112,7 +112,7 @@ class LayarLainnya extends ConsumerWidget {
               ),
             ),
             BarisMenu(
-              ikon: Icons.help_outline,
+              ilustrasi: IlustrasiOwner.IkonBantuan,
               warnaIkon: warna.info,
               judul: 'Bantuan',
               keterangan: 'Hubungi tim Payoung',
@@ -130,7 +130,7 @@ class LayarLainnya extends ConsumerWidget {
                 saatTekan: notifier.GantiTenant,
               ),
             BarisMenu(
-              ikon: Icons.logout,
+              ilustrasi: IlustrasiOwner.IkonKeluar,
               warnaIkon: warna.bahaya,
               judul: 'Keluar',
               saatTekan: () => unawaited(notifier.Keluar()),
@@ -234,7 +234,7 @@ class _KartuProfil extends StatelessWidget {
 class _GrafisAksi extends StatelessWidget {
   const _GrafisAksi({required this.butir});
 
-  final List<(IconData, String, Color, TujuanAksiCepat)> butir;
+  final List<(IlustrasiOwner, String, Color, TujuanAksiCepat)> butir;
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +243,7 @@ class _GrafisAksi extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final (i, (ikon, label, warnaIkon, tujuan)) in butir.indexed) ...[
+          for (final (i, (ilustrasi, label, warnaIkon, tujuan)) in butir.indexed) ...[
             if (i > 0) const SizedBox(width: 6),
             Expanded(
               child: KartuModern(
@@ -252,7 +252,7 @@ class _GrafisAksi extends StatelessWidget {
                 anak: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    LingkarIkon(ikon: ikon, warna: warnaIkon, ukuran: 46),
+                    LingkarIkon(ilustrasi: ilustrasi, warna: warnaIkon, ukuran: 52),
                     const SizedBox(height: TokenJarak.jarak8),
                     Text(
                       label,

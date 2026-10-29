@@ -26,6 +26,18 @@ enum IlustrasiOwner {
   MiniLaba,
   MiniKas,
   MiniWaspada,
+
+  /// Ikon ilustrasi mini (D-234) untuk aksi cepat, menu Lainnya, dan ubin angka Beranda.
+  IkonHarga,
+  IkonHabis,
+  IkonPromo,
+  IkonPengeluaran,
+  IkonKunci,
+  IkonBantuan,
+  IkonKeluar,
+  IkonTransaksi,
+  IkonRataRata,
+  IkonLaba,
 }
 
 /// Menampilkan [ilustrasi] selebar [lebar]. Dekoratif: tidak dibacakan pembaca layar (namanya selalu tertulis di

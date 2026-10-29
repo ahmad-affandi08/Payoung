@@ -75,7 +75,7 @@ class _IsiBeranda extends ConsumerWidget {
             children: [
               Expanded(
                 child: _UbinAngka(
-                  ikon: Icons.receipt_long_outlined,
+                  ilustrasi: IlustrasiOwner.IkonTransaksi,
                   warnaIkon: warna.brand,
                   label: 'Transaksi',
                   nilai: '${d.transaksi}',
@@ -84,7 +84,7 @@ class _IsiBeranda extends ConsumerWidget {
               const SizedBox(width: TokenJarak.jarak8),
               Expanded(
                 child: _UbinAngka(
-                  ikon: Icons.shopping_basket_outlined,
+                  ilustrasi: IlustrasiOwner.IkonRataRata,
                   warnaIkon: warna.aksen,
                   label: 'Rata-rata',
                   nilai: FormatTampilan.Rupiah(d.rataRata),
@@ -94,7 +94,7 @@ class _IsiBeranda extends ConsumerWidget {
                 const SizedBox(width: TokenJarak.jarak8),
                 Expanded(
                   child: _UbinAngka(
-                    ikon: Icons.savings_outlined,
+                    ilustrasi: IlustrasiOwner.IkonLaba,
                     warnaIkon: warna.sukses,
                     label: 'Laba kotor',
                     nilai: FormatTampilan.Rupiah(d.labaKotor!),
@@ -435,9 +435,9 @@ class _KartuOmzet extends StatelessWidget {
 
 /// Ubin angka ringkas: ikon berlatar lembut, label, lalu nilai (mengecil bila sempit).
 class _UbinAngka extends StatelessWidget {
-  const _UbinAngka({required this.ikon, required this.warnaIkon, required this.label, required this.nilai});
+  const _UbinAngka({required this.ilustrasi, required this.warnaIkon, required this.label, required this.nilai});
 
-  final IconData ikon;
+  final IlustrasiOwner ilustrasi;
   final Color warnaIkon;
   final String label;
   final String nilai;
@@ -451,7 +451,7 @@ class _UbinAngka extends StatelessWidget {
       anak: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LingkarIkon(ikon: ikon, warna: warnaIkon, ukuran: 36),
+          LingkarIkon(ilustrasi: ilustrasi, warna: warnaIkon, ukuran: 42),
           const SizedBox(height: TokenJarak.jarak8),
           Text(label, style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
           FittedBox(

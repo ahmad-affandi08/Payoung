@@ -168,10 +168,109 @@ def mini_waspada(u=56):
         f'<rect x="29" y="20" width="6" height="19" rx="3" fill="{R}"/><circle cx="32" cy="46" r="3.6" fill="{R}"/>')
 
 
+# --- ikon ilustrasi 64x64 untuk aksi cepat, menu Lainnya, dan ubin angka Beranda (D-234) ---------------------------------
+def ikon_harga(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M8 32 L32 8 H55 V31 L31 55 Z" fill="{A}" stroke="{AD}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<circle cx="45" cy="19" r="4.5" fill="{W}"/>'
+        f'<rect x="21" y="30" width="19" height="4.5" rx="2.2" fill="{AL}" transform="rotate(-45 30 32)"/>'
+        f'<rect x="25" y="38" width="13" height="4.5" rx="2.2" fill="{AL}" transform="rotate(-45 31 40)"/>'
+        f"{kilau(14, 14, 5, AL)}")
+
+
+def ikon_habis(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M8 22 L32 12 L56 22 V46 L32 56 L8 46Z" fill="{KAYU}"/>'
+        f'<path d="M8 22 L32 32 L56 22" stroke="{KAYU2}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<path d="M32 32 V56" stroke="{KAYU2}" stroke-width="3"/>'
+        f'<circle cx="46" cy="44" r="13" fill="{R}"/><circle cx="46" cy="44" r="13" stroke="{W}" stroke-width="3"/>'
+        f'<rect x="38.5" y="41.5" width="15" height="5" rx="2.5" fill="{W}"/>')
+
+
+def ikon_promo(u=56):
+    return _svg("0 0 64 64", u,
+        f'<circle cx="32" cy="32" r="24" fill="{G}"/><circle cx="32" cy="32" r="24" stroke="{GD}" stroke-width="3"/>'
+        f'<circle cx="32" cy="32" r="17" stroke="{W}" stroke-opacity="0.5" stroke-width="2" stroke-dasharray="3 4"/>'
+        f'<circle cx="24" cy="24" r="4.6" fill="{W}"/><circle cx="40" cy="40" r="4.6" fill="{W}"/>'
+        f'<path d="M41 22 L23 42" stroke="{W}" stroke-width="5" stroke-linecap="round"/>'
+        f"{kilau(54, 12, 6, A)}{kilau(10, 52, 4, AL)}")
+
+
+def ikon_pengeluaran(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M12 6 H44 V54 L39 50 L34 54 L29 50 L24 54 L19 50 L12 54Z" fill="{W}" stroke="{TL}" stroke-width="2.5" stroke-linejoin="round"/>'
+        f'<rect x="19" y="15" width="18" height="4" rx="2" fill="{TL}"/><rect x="19" y="24" width="12" height="4" rx="2" fill="{TL}"/><rect x="19" y="33" width="16" height="4" rx="2" fill="{TL}"/>'
+        f'<circle cx="46" cy="44" r="13" fill="{R}"/><circle cx="46" cy="44" r="13" stroke="{W}" stroke-width="3"/>'
+        f'<path d="M46 37 V50 M40.5 45 L46 50.5 L51.5 45" stroke="{W}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def ikon_kunci(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M32 5 L54 13 V32 C54 45 45 54 32 59 C19 54 10 45 10 32 V13Z" fill="{G}"/>'
+        f'<path d="M32 5 L54 13 V32 C54 45 45 54 32 59Z" fill="{GD}" fill-opacity="0.35"/>'
+        f'<path d="M24 29 V25 A8 8 0 0 1 40 25 V29" stroke="{W}" stroke-width="4.5" stroke-linecap="round"/>'
+        f'<rect x="20" y="28" width="24" height="18" rx="5" fill="{W}"/>'
+        f'<circle cx="32" cy="35.5" r="3" fill="{GD}"/><rect x="30.7" y="36" width="2.6" height="6" rx="1.3" fill="{GD}"/>')
+
+
+def ikon_bantuan(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M12 10 H46 A8 8 0 0 1 54 18 V36 A8 8 0 0 1 46 44 H30 L20 54 V44 H12 A8 8 0 0 1 4 36 V18 A8 8 0 0 1 12 10Z" fill="{T}"/>'
+        f'<path d="M24 24 Q24 17 29 17 Q35 17 35 23 Q35 27 30 30 Q28.5 31.2 28.5 34" stroke="{W}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
+        f'<circle cx="28.5" cy="39.5" r="2.7" fill="{W}"/>'
+        f'<circle cx="50" cy="48" r="9" fill="{A}"/><circle cx="50" cy="48" r="9" stroke="{W}" stroke-width="2.5"/>'
+        f'<circle cx="46.5" cy="48" r="1.6" fill="{W}"/><circle cx="50" cy="48" r="1.6" fill="{W}"/><circle cx="53.5" cy="48" r="1.6" fill="{W}"/>')
+
+
+def ikon_keluar(u=56):
+    return _svg("0 0 64 64", u,
+        f'<rect x="8" y="8" width="32" height="48" rx="5" fill="{TL}"/>'
+        f'<path d="M14 14 H34 V52 H14Z" fill="{KAYU}"/><path d="M14 14 H34 V52 H14Z" stroke="{KAYU2}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<circle cx="29" cy="33" r="2.4" fill="{KAYU2}"/>'
+        f'<path d="M34 32 H56 M47 22 L57 32 L47 42" stroke="{R}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def ikon_transaksi(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M12 6 H48 V56 L42.5 51.5 L37 56 L31 51.5 L25 56 L19.5 51.5 L12 56Z" fill="{W}" stroke="{TL}" stroke-width="2.5" stroke-linejoin="round"/>'
+        f'<rect x="19" y="15" width="22" height="4.5" rx="2.2" fill="{TL}"/><rect x="19" y="25" width="15" height="4.5" rx="2.2" fill="{TL}"/><rect x="19" y="35" width="19" height="4.5" rx="2.2" fill="{TL}"/>'
+        f'<circle cx="46" cy="44" r="12" fill="{G}"/><circle cx="46" cy="44" r="12" stroke="{W}" stroke-width="3"/>'
+        f'<path d="M40.5 44.5 L44.5 48.5 L52 40" stroke="{W}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def ikon_rata_rata(u=56):
+    return _svg("0 0 64 64", u,
+        f'<path d="M20 30 Q32 4 44 30" stroke="{AD}" stroke-width="4.5" stroke-linecap="round"/>'
+        f'<circle cx="25" cy="27" r="6.5" fill="{R}"/><circle cx="39" cy="26" r="6.5" fill="{G}"/>'
+        f'<path d="M7 29 H57 L50 54 H14Z" fill="{A}" stroke="{AD}" stroke-width="3" stroke-linejoin="round"/>'
+        f'<path d="M22 35 L24 49 M32 35 V49 M42 35 L40 49" stroke="{AL}" stroke-width="3.5" stroke-linecap="round"/>'
+        f"{kilau(55, 12, 5, AL)}")
+
+
+def ikon_laba(u=56):
+    return _svg("0 0 64 64", u,
+        f'{koin(32, 11, 8)}'
+        f'<path d="M17 24 L22 14 L29 22Z" fill="{AD}"/>'
+        f'<rect x="19" y="45" width="8" height="12" rx="3" fill="{AD}"/><rect x="41" y="45" width="8" height="12" rx="3" fill="{AD}"/>'
+        f'<ellipse cx="33" cy="37" rx="23" ry="17" fill="{A}"/><ellipse cx="33" cy="37" rx="23" ry="17" stroke="{AD}" stroke-width="3"/>'
+        f'<ellipse cx="53" cy="39" rx="7" ry="6" fill="{AL}" stroke="{AD}" stroke-width="2.5"/>'
+        f'<circle cx="51" cy="39" r="1.3" fill="{AD}"/><circle cx="55" cy="39" r="1.3" fill="{AD}"/>'
+        f'<circle cx="44" cy="30" r="2.6" fill="{TD}"/>'
+        f'<path d="M24 28 Q33 24 40 28" stroke="{AD}" stroke-width="3" stroke-linecap="round"/>'
+        f'<path d="M10 33 Q5 31 6 26" stroke="{AD}" stroke-width="3" stroke-linecap="round"/>')
+
+
 # --- ekspor ---------------------------------------------------------------------------------------------------------
+import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+
+
+def _peramban() -> str:
+    """Chrome dari PATH, atau Chromium Playwright (`/opt/pw-browsers/chromium`) di lingkungan agen; bisa ditimpa `CHROME`."""
+    return os.environ.get("CHROME") or shutil.which("google-chrome") or "/opt/pw-browsers/chromium"
 
 SET = {
     "Payung": (lambda: payung(280), 280),
@@ -184,6 +283,16 @@ SET = {
     "MiniLaba": (lambda: mini_laba(64), 64),
     "MiniKas": (lambda: mini_kas(64), 64),
     "MiniWaspada": (lambda: mini_waspada(64), 64),
+    "IkonHarga": (lambda: ikon_harga(64), 64),
+    "IkonHabis": (lambda: ikon_habis(64), 64),
+    "IkonPromo": (lambda: ikon_promo(64), 64),
+    "IkonPengeluaran": (lambda: ikon_pengeluaran(64), 64),
+    "IkonKunci": (lambda: ikon_kunci(64), 64),
+    "IkonBantuan": (lambda: ikon_bantuan(64), 64),
+    "IkonKeluar": (lambda: ikon_keluar(64), 64),
+    "IkonTransaksi": (lambda: ikon_transaksi(64), 64),
+    "IkonRataRata": (lambda: ikon_rata_rata(64), 64),
+    "IkonLaba": (lambda: ikon_laba(64), 64),
 }
 
 
@@ -199,7 +308,7 @@ def Ekspor(keluar: Path) -> None:
             )
             subprocess.run(
                 [
-                    "google-chrome", "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars",
+                    _peramban(), "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars",
                     "--default-background-color=00000000", "--force-device-scale-factor=3",
                     f"--window-size={lebar},{tinggi}", f"--screenshot={keluar / (nama + '.png')}", html.as_uri(),
                 ],
