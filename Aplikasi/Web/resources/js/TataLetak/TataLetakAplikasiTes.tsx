@@ -5,10 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PropsBersamaAplikasi, TenantAktif } from '@/Tipe/Aplikasi';
 
 import TataLetakAplikasi, {
+    BagiKelompokSub,
     CariMenuProdukAktif,
     CariSubMenuAktif,
     CekMenuAktif,
     SaringMenuTerlihat,
+    type ItemMenu,
 } from './TataLetakAplikasi';
 
 let propsHalaman: PropsBersamaAplikasi;
@@ -358,6 +360,12 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             '/kelola/persediaan/saldo',
         );
         const sub = screen.getByRole('navigation', { name: 'Menu persediaan' });
+        // D-252: lima pekerjaan mengubah stok dikelompokkan di subgrup "Ubah stok" yang tertutup sampai dibuka.
+        const subgrup = within(sub).getByRole('button', { name: 'Ubah stok' });
+        expect(subgrup.getAttribute('aria-expanded')).toBe('false');
+        expect(Array.from(sub.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Saldo stok', 'Kartu stok']);
+        fireEvent.click(subgrup);
+        expect(subgrup.getAttribute('aria-expanded')).toBe('true');
         // D-27: stok awal, impornya, dan pengaturan persediaan pindah ke Pengaturan (kegiatan menyiapkan toko).
         expect(Array.from(sub.querySelectorAll('a')).map((a) => a.textContent)).toEqual([
             'Saldo stok',
@@ -378,6 +386,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         render(<TataLetakAplikasi judul="Saldo stok">isi</TataLetakAplikasi>);
 
         const sub = screen.getByRole('navigation', { name: 'Menu persediaan' });
+        fireEvent.click(within(sub).getByRole('button', { name: 'Ubah stok' }));
         const alamat = Array.from(sub.querySelectorAll('a')).map((a) => a.getAttribute('href'));
 
         expect(alamat).not.toContain('/kelola/persediaan/stok-awal');
@@ -616,6 +625,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
 
         fireEvent.click(screen.getByRole('button', { name: 'Pelanggan' }));
         expect(screen.getByRole('link', { name: 'Daftar pelanggan' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Promo & saldo' }));
         expect(screen.queryByRole('link', { name: 'Promo' })).toBeNull();
 
         fireEvent.click(screen.getByRole('button', { name: 'Promo (perlu naik paket)' }));
@@ -670,10 +680,62 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
 
         fireEvent.click(screen.getByRole('button', { name: 'Pelanggan' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Promo & saldo' }));
         fireEvent.click(screen.getByRole('button', { name: 'Deposit & gift card (perlu naik paket)' }));
         const dialog = screen.getByRole('dialog');
         expect(within(dialog).getByText('Minta Pemilik usaha untuk naik paket atau menambah add-on.')).toBeTruthy();
         expect(within(dialog).queryByRole('link', { name: /Lihat paket/ })).toBeNull();
+    });
+
+    it('D-252: subgrup tertutup sampai dibuka, terbuka sendiri bila berisi halaman aktif, dan tetap bisa dilipat', () => {
+        propsHalaman = BuatProps({}, ['laporan.keuangan.lihat', 'laporan.penjualan.lihat']);
+        urlHalaman = '/kelola/akuntansi/laporan/arus-kas';
+        render(<TataLetakAplikasi judul="Arus kas">isi</TataLetakAplikasi>);
+
+        const sub = screen.getByRole('navigation', { name: 'Menu laporan' });
+        const subgrup = within(sub).getByRole('button', { name: 'Laporan keuangan' });
+        // Halaman aktif ada di dalamnya, jadi sudah terbuka dan hanya subgrup itu yang menyala.
+        expect(subgrup.getAttribute('aria-expanded')).toBe('true');
+        expect(within(sub).getByRole('link', { name: 'Arus kas' }).getAttribute('aria-current')).toBe('page');
+        expect(within(sub).getByRole('link', { name: 'Laporan penjualan' })).toBeTruthy();
+        fireEvent.click(subgrup);
+        expect(subgrup.getAttribute('aria-expanded')).toBe('false');
+        expect(within(sub).queryByRole('link', { name: 'Arus kas' })).toBeNull();
+    });
+
+    it('D-252: subgrup yang hanya menyisakan satu butir terlihat tampil rata tanpa judul', () => {
+        // Hanya laporan.penjualan.lihat: Laporan keuangan butuh izin lain, jadi subgrupnya kosong dan tidak muncul.
+        propsHalaman = BuatProps({}, ['laporan.penjualan.lihat']);
+        urlHalaman = '/kelola/laporan/penjualan';
+        render(<TataLetakAplikasi judul="Laporan penjualan">isi</TataLetakAplikasi>);
+
+        const sub = screen.getByRole('navigation', { name: 'Menu laporan' });
+        expect(within(sub).queryByRole('button', { name: 'Laporan keuangan' })).toBeNull();
+        expect(within(sub).getByRole('link', { name: 'Laporan penjualan' })).toBeTruthy();
+    });
+
+    it('D-252: BagiKelompokSub menggabungkan butir berurutan sekelompok dan meratakan subgrup satu butir', () => {
+        const BuatButir = (label: string, kelompok?: string): ItemMenu => ({
+            label,
+            href: `/kelola/${label}`,
+            izin: null,
+            ...(kelompok === undefined ? {} : { kelompok }),
+        });
+
+        expect(
+            BagiKelompokSub([
+                BuatButir('a'),
+                BuatButir('b', 'G1'),
+                BuatButir('c', 'G1'),
+                BuatButir('d'),
+                BuatButir('e', 'G2'),
+            ]).map((bagian) => [bagian.kelompok, bagian.item.map((i) => i.label)]),
+        ).toEqual([
+            [null, ['a']],
+            ['G1', ['b', 'c']],
+            [null, ['d']],
+            [null, ['e']],
+        ]);
     });
 
     it('memasang Toaster dengan label Bahasa Indonesia', () => {

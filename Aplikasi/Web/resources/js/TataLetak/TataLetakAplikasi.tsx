@@ -72,7 +72,7 @@ type PropsTataLetak = {
  * `fitur` = kunci fitur paket (D-23): di luar paket tetap tampil dengan gembok; klik = dialog naik paket/add-on.
  * `pemisah` = garis pemisah di atas item ini (D-27: memisahkan kerja harian dari pengaturan & bantuan).
  */
-type ItemMenu = {
+export type ItemMenu = {
     label: string;
     href: string;
     izin: KunciIzinTenant | null;
@@ -98,6 +98,12 @@ type ItemMenu = {
     kecualiSektor?: string[];
     /** Audit #33: disembunyikan di "Mode sederhana" (tetap bisa dibuka lewat Ctrl+K). */
     lanjutan?: boolean;
+    /**
+     * D-252: nama subgrup di dalam grup menu. Butir berurutan dengan `kelompok` sama dirender sebagai subgrup yang bisa
+     * dilipat (terbuka bila berisi halaman aktif). Daftar `sub` tetap rata, jadi izin, sektor, pencarian, dan jejak tidak
+     * berubah. Subgrup yang tersisa kurang dari dua butir terlihat tampil rata. Dijaga `AnggaranNavigasiTes`.
+     */
+    kelompok?: string;
     /**
      * Awalan jalur halaman saudara yang memakai butir menu ini sebagai rumahnya (tab di halaman lain): "Deposit &
      * gift card" menyala juga di `/kelola/pelanggan/gift-card`, tanpa menambah butir sub-menu (anggaran D-27).
@@ -135,11 +141,17 @@ const menuPersediaan: ItemMenu[] = [
     { label: 'Saldo stok', href: '/kelola/persediaan/saldo', izin: IzinTenant.PersediaanLihat },
     { label: 'Kartu stok', href: '/kelola/persediaan/kartu-stok', izin: IzinTenant.PersediaanLihat },
     // Penyesuaian (barang rusak/hilang/salah catat) lebih sering dipakai daripada transfer & opname.
-    { label: 'Penyesuaian stok', href: '/kelola/persediaan/penyesuaian', izin: IzinTenant.PersediaanLihat },
+    {
+        label: 'Penyesuaian stok',
+        href: '/kelola/persediaan/penyesuaian',
+        kelompok: 'Ubah stok',
+        izin: IzinTenant.PersediaanLihat,
+    },
     // F-05b: transfer dan stok opname (lihat: persediaan.lihat; tindakan dijaga di rute).
     {
         label: 'Transfer stok',
         href: '/kelola/persediaan/transfer',
+        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         fitur: 'stok.transfer',
         lanjutan: true,
@@ -147,6 +159,7 @@ const menuPersediaan: ItemMenu[] = [
     {
         label: 'Stok opname',
         href: '/kelola/persediaan/opname',
+        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         fitur: 'stok.opname',
         lanjutan: true,
@@ -156,6 +169,7 @@ const menuPersediaan: ItemMenu[] = [
     {
         label: 'Produksi',
         href: '/kelola/persediaan/produksi',
+        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         sektor: ['FNB', 'RTL-BLD', 'WHS', 'RTL-GEN', 'RTL-FRS', 'RTL-FSH', 'RTL-ELC', 'RTL-PET'],
         lanjutan: true,
@@ -164,6 +178,7 @@ const menuPersediaan: ItemMenu[] = [
     {
         label: 'Bahan terbuang',
         href: '/kelola/persediaan/bahan-terbuang',
+        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         // D-88: toko sayur/buah, kelontong, pet shop, florist, dan apotek juga membuang barang (layu, busuk, kedaluwarsa).
         sektor: ['FNB', 'RTL-BLD', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR', 'RTL-PHR'],
@@ -230,13 +245,30 @@ const menuGrosir: ItemMenu[] = [
 const menuPelanggan: ItemMenu[] = [
     { label: 'Daftar pelanggan', href: '/kelola/pelanggan', izin: IzinTenant.PelangganLihat },
     // F-12: piutang pelanggan (penjualan tempo) & pelunasan — ditagih terus, jadi di atas promo yang disiapkan sekali.
-    { label: 'Piutang pelanggan', href: '/kelola/piutang', izin: IzinTenant.PelangganLihat },
-    { label: 'Pelunasan piutang', href: '/kelola/piutang/pelunasan', izin: IzinTenant.PelangganLihat },
+    {
+        label: 'Piutang pelanggan',
+        href: '/kelola/piutang',
+        kelompok: 'Piutang & tagihan',
+        izin: IzinTenant.PelangganLihat,
+    },
+    {
+        label: 'Pelunasan piutang',
+        href: '/kelola/piutang/pelunasan',
+        kelompok: 'Piutang & tagihan',
+        izin: IzinTenant.PelangganLihat,
+    },
     // F-21 (D-166): invoice & penagihan B2B untuk jasa dan barang tanpa stok; rumahnya di grup yang sudah memuat piutang.
-    { label: 'Invoice', href: '/kelola/invoice', izin: IzinTenant.InvoiceKelola, fitur: 'invoice.penagihan' },
+    {
+        label: 'Invoice',
+        href: '/kelola/invoice',
+        kelompok: 'Piutang & tagihan',
+        izin: IzinTenant.InvoiceKelola,
+        fitur: 'invoice.penagihan',
+    },
     {
         label: 'Promo',
         href: '/kelola/promo',
+        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
         kecualiSektor: ['BIZ'],
@@ -245,6 +277,7 @@ const menuPelanggan: ItemMenu[] = [
     {
         label: 'Klaim promo pemasok',
         href: '/kelola/promo/klaim-pemasok',
+        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
         kecualiSektor: ['BIZ'],
@@ -253,6 +286,7 @@ const menuPelanggan: ItemMenu[] = [
     {
         label: 'Deposit & gift card',
         href: '/kelola/pelanggan/isi-deposit',
+        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'pelanggan.deposit',
         awalanLain: ['/kelola/pelanggan/gift-card'],
@@ -262,6 +296,7 @@ const menuPelanggan: ItemMenu[] = [
     {
         label: 'Saldo paket sesi',
         href: '/kelola/pelanggan/saldo-sesi',
+        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'pelanggan.paket-sesi',
         sektor: ['SVC'],
@@ -270,13 +305,30 @@ const menuPelanggan: ItemMenu[] = [
 
 // D-101: grup "Tim" — satu daftar untuk akun masuk (pengguna) dan data karyawan; jadwal, absensi, komisi, gaji (karyawan.lihat).
 const menuKaryawan: ItemMenu[] = [
-    { label: 'Daftar tim', href: '/kelola/tim', izin: IzinTenant.KaryawanLihat, atau: IzinTenant.PenggunaLihat },
-    { label: 'Jadwal kerja', href: '/kelola/karyawan/jadwal', izin: IzinTenant.KaryawanLihat },
-    { label: 'Absensi', href: '/kelola/karyawan/absensi', izin: IzinTenant.KaryawanLihat },
+    {
+        label: 'Daftar tim',
+        href: '/kelola/tim',
+        kelompok: 'Staf & kehadiran',
+        izin: IzinTenant.KaryawanLihat,
+        atau: IzinTenant.PenggunaLihat,
+    },
+    {
+        label: 'Jadwal kerja',
+        href: '/kelola/karyawan/jadwal',
+        kelompok: 'Staf & kehadiran',
+        izin: IzinTenant.KaryawanLihat,
+    },
+    {
+        label: 'Absensi',
+        href: '/kelola/karyawan/absensi',
+        kelompok: 'Staf & kehadiran',
+        izin: IzinTenant.KaryawanLihat,
+    },
     // F-18 bagian 2: komisi (aturannya pindah ke Pengaturan, D-27).
     {
         label: 'Laporan komisi',
         href: '/kelola/karyawan/komisi/laporan',
+        kelompok: 'Gaji & insentif',
         izin: IzinTenant.KaryawanLihat,
         fitur: 'karyawan.komisi',
         // D-183: komisi lazim di Indonesia untuk capster/terapis/mekanik/crew (jasa), pelayan, SPG butik & toko HP,
@@ -284,10 +336,27 @@ const menuKaryawan: ItemMenu[] = [
         sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
     },
     // F-18 bagian 3: kasbon, target penjualan.
-    { label: 'Kasbon', href: '/kelola/karyawan/kasbon', izin: IzinTenant.KaryawanLihat, lanjutan: true },
-    { label: 'Target penjualan', href: '/kelola/karyawan/target', izin: IzinTenant.KaryawanLihat, lanjutan: true },
+    {
+        label: 'Kasbon',
+        href: '/kelola/karyawan/kasbon',
+        kelompok: 'Gaji & insentif',
+        izin: IzinTenant.KaryawanLihat,
+        lanjutan: true,
+    },
+    {
+        label: 'Target penjualan',
+        href: '/kelola/karyawan/target',
+        kelompok: 'Gaji & insentif',
+        izin: IzinTenant.KaryawanLihat,
+        lanjutan: true,
+    },
     // F-18 bagian 3: rekap gaji bulanan (memuat gaji).
-    { label: 'Rekap gaji', href: '/kelola/karyawan/gaji', izin: IzinTenant.KaryawanKelola },
+    {
+        label: 'Rekap gaji',
+        href: '/kelola/karyawan/gaji',
+        kelompok: 'Gaji & insentif',
+        izin: IzinTenant.KaryawanKelola,
+    },
     // D-27 (disesuaikan v6.49): log audit menjawab "siapa melakukan apa", jadi bertetangga dengan daftar tim.
     { label: 'Log audit', href: '/kelola/log-audit', izin: IzinTenant.AuditLihat },
 ];
@@ -353,6 +422,21 @@ const menuAkuntansi: ItemMenu[] = [
     {
         label: 'Jurnal',
         href: '/kelola/akuntansi/jurnal',
+        kelompok: 'Catatan keuangan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
+    },
+    {
+        label: 'Buku besar',
+        href: '/kelola/akuntansi/laporan/buku-besar',
+        kelompok: 'Catatan keuangan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
+    },
+    {
+        label: 'Neraca saldo',
+        href: '/kelola/akuntansi/laporan/neraca-saldo',
+        kelompok: 'Catatan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
@@ -360,18 +444,6 @@ const menuAkuntansi: ItemMenu[] = [
     // F-08 BR-08.4: pencairan dana non-tunai (J-08.1). Rumahnya di Akuntansi, bukan Penjualan, karena yang dikerjakan
     // di sini pembukuan uang masuk rekening & beban biaya pembayaran — pekerjaan yang sama dengan Kas & bank.
     { label: 'Pencairan dana', href: '/kelola/akuntansi/pencairan', izin: IzinTenant.LaporanKeuanganLihat },
-    {
-        label: 'Buku besar',
-        href: '/kelola/akuntansi/laporan/buku-besar',
-        izin: IzinTenant.LaporanKeuanganLihat,
-        fitur: 'akuntansi.penuh',
-    },
-    {
-        label: 'Neraca saldo',
-        href: '/kelola/akuntansi/laporan/neraca-saldo',
-        izin: IzinTenant.LaporanKeuanganLihat,
-        fitur: 'akuntansi.penuh',
-    },
     // FIN-10 (v3.38): aset tetap & penyusutan otomatis bulanan (kerja berkala, jadi menu, bukan Pengaturan).
     {
         label: 'Aset tetap',
@@ -425,18 +497,21 @@ const menuLaporan: ItemMenu[] = [
     {
         label: 'Laba rugi',
         href: '/kelola/akuntansi/laporan/laba-rugi',
+        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'laporan.lengkap',
     },
     {
         label: 'Neraca',
         href: '/kelola/akuntansi/laporan/neraca',
+        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
     {
         label: 'Arus kas',
         href: '/kelola/akuntansi/laporan/arus-kas',
+        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
@@ -903,6 +978,132 @@ export function SaringMenuTerlihat(
     });
 }
 
+/** Bagian sub-menu: butir tunggal (`kelompok` null) atau satu subgrup yang bisa dilipat (D-252). */
+export type BagianSubMenu = { kelompok: string | null; item: ItemMenu[] };
+
+/**
+ * Membagi daftar sub-menu rata menjadi bagian-bagian menurut `kelompok` (D-252). Butir berurutan dengan kelompok sama
+ * menjadi satu subgrup. Subgrup yang tersisa kurang dari dua butir terlihat (karena izin, sektor, atau mode sederhana)
+ * dirender rata, supaya tidak ada subgrup berisi satu halaman.
+ */
+export function BagiKelompokSub(sub: ItemMenu[]): BagianSubMenu[] {
+    const bagian: BagianSubMenu[] = [];
+
+    for (const item of sub) {
+        const kelompok = item.kelompok ?? null;
+        const terakhir = bagian[bagian.length - 1];
+
+        if (kelompok !== null && terakhir?.kelompok === kelompok) {
+            terakhir.item.push(item);
+        } else {
+            bagian.push({ kelompok, item: [item] });
+        }
+    }
+
+    return bagian.flatMap((b): BagianSubMenu[] =>
+        b.kelompok !== null && b.item.length < 2 ? b.item.map((item) => ({ kelompok: null, item: [item] })) : [b],
+    );
+}
+
+type PropsButirSub = {
+    item: ItemMenu;
+    aktif: boolean;
+    terkunci: FiturPaket['Terkunci'];
+    saatTerkunci: (kunci: string) => void;
+};
+
+/** Satu halaman di dalam sub-menu: tautan, atau tombol bergembok bila fiturnya di luar paket. */
+function ButirSubMenu({ item, aktif, terkunci, saatTerkunci }: PropsButirSub) {
+    const kunci = item.fitur !== undefined && item.fitur in terkunci ? item.fitur : null;
+
+    return (
+        <SidebarMenuSubItem>
+            <SidebarMenuSubButton asChild isActive={aktif} className={kelasTombolSubMenuSidebar}>
+                {kunci === null ? (
+                    <Link href={item.href} aria-current={aktif ? 'page' : undefined}>
+                        {item.label}
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        aria-haspopup="dialog"
+                        aria-label={`${item.label} (perlu naik paket)`}
+                        onClick={() => saatTerkunci(kunci)}
+                    >
+                        <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+                        <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                    </button>
+                )}
+            </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+    );
+}
+
+/**
+ * Subgrup di dalam grup menu (D-252): judul yang bisa dilipat dengan halaman-halamannya menjorok di bawahnya. Terbuka
+ * sejak awal dan otomatis terbuka bila berisi halaman yang sedang dibuka, selain itu tertutup supaya grup yang panjang
+ * tetap bisa dipindai.
+ */
+function KelompokSubMenu({
+    judul,
+    item,
+    subAktif,
+    terkunci,
+    saatTerkunci,
+}: Omit<PropsButirSub, 'item' | 'aktif'> & {
+    judul: string;
+    item: ItemMenu[];
+    subAktif: string | null;
+}) {
+    const berisiAktif = item.some((butir) => butir.href === subAktif);
+    const [terbuka, AturTerbuka] = useState(berisiAktif);
+    const [aktifSebelumnya, AturAktifSebelumnya] = useState(berisiAktif);
+
+    // Halaman aktif pindah ke subgrup ini (tautan, Ctrl+K): buka, tanpa mengganggu pilihan pengguna selama tetap di sini.
+    if (berisiAktif !== aktifSebelumnya) {
+        AturAktifSebelumnya(berisiAktif);
+
+        if (berisiAktif) {
+            AturTerbuka(true);
+        }
+    }
+
+    return (
+        <Collapsible asChild open={terbuka} onOpenChange={AturTerbuka}>
+            <SidebarMenuSubItem>
+                <CollapsibleTrigger asChild>
+                    <button
+                        type="button"
+                        className="group/kelompok flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 text-left text-label font-semibold text-sidebar-foreground transition-[background-color,color] duration-200 ease-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    >
+                        <span className="min-w-0 flex-1 truncate">{judul}</span>
+                        <ChevronRightIcon
+                            aria-hidden="true"
+                            className="size-3.5 shrink-0 transition-transform duration-200 ease-out group-data-[state=open]/kelompok:rotate-90"
+                        />
+                    </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                    <ul
+                        aria-label={judul}
+                        className="mt-1 ml-2.5 flex min-w-0 flex-col gap-1 border-l border-sidebar-border pl-2"
+                    >
+                        {item.map((butir) => (
+                            <ButirSubMenu
+                                key={butir.href}
+                                item={butir}
+                                aktif={subAktif === butir.href}
+                                terkunci={terkunci}
+                                saatTerkunci={saatTerkunci}
+                            />
+                        ))}
+                    </ul>
+                </CollapsibleContent>
+            </SidebarMenuSubItem>
+        </Collapsible>
+    );
+}
+
 /**
  * Satu menu utama sidebar. Grup bersub-menu adalah tombol Collapsible: klik label membuka/menutup sub-menu dengan
  * animasi tinggi dan chevron memutar 90°. Saat sidebar diciutkan menjadi ikon (sub-menu tak terlihat), klik langsung
@@ -982,40 +1183,28 @@ function ItemMenuSidebar({
                 <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                     <nav aria-label={labelSub}>
                         <SidebarMenuSub className="mt-1 mb-1">
-                            {sub.map((item) => {
-                                const kunci = item.fitur !== undefined && item.fitur in terkunci ? item.fitur : null;
-
-                                return (
-                                    <SidebarMenuSubItem key={item.href}>
-                                        <SidebarMenuSubButton
-                                            asChild
-                                            isActive={subAktif === item.href}
-                                            className={kelasTombolSubMenuSidebar}
-                                        >
-                                            {kunci === null ? (
-                                                <Link
-                                                    href={item.href}
-                                                    aria-current={subAktif === item.href ? 'page' : undefined}
-                                                >
-                                                    {item.label}
-                                                </Link>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    aria-haspopup="dialog"
-                                                    aria-label={`${item.label} (perlu naik paket)`}
-                                                    onClick={() => saatTerkunci(kunci)}
-                                                >
-                                                    <span className="min-w-0 flex-1 truncate text-left">
-                                                        {item.label}
-                                                    </span>
-                                                    <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                                                </button>
-                                            )}
-                                        </SidebarMenuSubButton>
-                                    </SidebarMenuSubItem>
-                                );
-                            })}
+                            {BagiKelompokSub(sub).map((bagian) =>
+                                bagian.kelompok === null ? (
+                                    bagian.item.map((item) => (
+                                        <ButirSubMenu
+                                            key={item.href}
+                                            item={item}
+                                            aktif={subAktif === item.href}
+                                            terkunci={terkunci}
+                                            saatTerkunci={saatTerkunci}
+                                        />
+                                    ))
+                                ) : (
+                                    <KelompokSubMenu
+                                        key={bagian.kelompok}
+                                        judul={bagian.kelompok}
+                                        item={bagian.item}
+                                        subAktif={subAktif}
+                                        terkunci={terkunci}
+                                        saatTerkunci={saatTerkunci}
+                                    />
+                                ),
+                            )}
                         </SidebarMenuSub>
                     </nav>
                 </CollapsibleContent>

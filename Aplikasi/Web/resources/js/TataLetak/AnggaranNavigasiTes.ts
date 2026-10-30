@@ -37,13 +37,50 @@ const BATAS_LEVEL_SATU = 13;
  * menjelaskan alasannya di sini, bukan sekadar menaikkan angkanya lagi.
  */
 const BATAS_SUB_MENU = 8;
+/*
+ * D-252: subgrup di dalam grup ("Ubah stok" di Persediaan, "Gaji & insentif" di Tim). Yang dipindai mata tetap
+ * `BATAS_SUB_MENU` entri langsung (butir tanpa subgrup + judul subgrupnya), sedangkan jumlah halaman seluruhnya boleh
+ * tumbuh sampai `BATAS_HALAMAN_GRUP`, dan tiap subgrup memuat paling banyak `BATAS_SUBGRUP` halaman. Subgrup baru wajib
+ * berisi minimal tiga halaman, kalau tidak jadikan butir biasa. Menaikkan angka-angka ini butuh alasan setingkat D-252.
+ */
+const BATAS_HALAMAN_GRUP = 16;
+const BATAS_SUBGRUP = 8;
+const MINIMAL_ISI_SUBGRUP = 3;
 
-type Butir = { label: string; href: string; sub?: { label: string; href: string }[] };
+type Butir = { label: string; href: string; kelompok?: string; sub?: Butir[] };
 
 const menu = daftarMenu as Butir[];
-const grup = menu.filter(
-    (butir): butir is Butir & { sub: { label: string; href: string }[] } => butir.sub !== undefined,
-);
+const grup = menu.filter((butir): butir is Butir & { sub: Butir[] } => butir.sub !== undefined);
+
+/** Butir `sub` dibagi menjadi entri langsung dan subgrup (berurutan, sesuai urutan tampil). */
+function BagiEntri(sub: Butir[]): { langsung: string[]; subgrup: Map<string, Butir[]>; terpecah: string[] } {
+    const langsung: string[] = [];
+    const subgrup = new Map<string, Butir[]>();
+    const terpecah: string[] = [];
+    let sebelumnya: string | null = null;
+
+    for (const butir of sub) {
+        const kelompok = butir.kelompok ?? null;
+
+        if (kelompok === null) {
+            langsung.push(butir.label);
+        } else {
+            if (!subgrup.has(kelompok)) {
+                subgrup.set(kelompok, []);
+                langsung.push(kelompok);
+            } else if (sebelumnya !== kelompok) {
+                // Subgrup yang sama muncul lagi setelah butir lain: akan dirender sebagai dua subgrup kembar.
+                terpecah.push(kelompok);
+            }
+
+            subgrup.get(kelompok)?.push(butir);
+        }
+
+        sebelumnya = kelompok;
+    }
+
+    return { langsung, subgrup, terpecah };
+}
 
 describe('Anggaran navigasi back-office (D-27)', () => {
     it(`menu utama maksimal ${String(BATAS_LEVEL_SATU)} entri`, () => {
@@ -51,12 +88,43 @@ describe('Anggaran navigasi back-office (D-27)', () => {
         expect(menu.map((butir) => butir.label).length).toBeLessThanOrEqual(BATAS_LEVEL_SATU);
     });
 
-    it(`setiap grup maksimal ${String(BATAS_SUB_MENU)} sub-menu`, () => {
+    it(`setiap grup maksimal ${String(BATAS_SUB_MENU)} entri langsung dan ${String(BATAS_HALAMAN_GRUP)} halaman`, () => {
         const kelebihan = grup
-            .filter((butir) => butir.sub.length > BATAS_SUB_MENU)
-            .map((butir) => `${butir.label}: ${String(butir.sub.length)}`);
+            .filter(
+                (butir) =>
+                    BagiEntri(butir.sub).langsung.length > BATAS_SUB_MENU || butir.sub.length > BATAS_HALAMAN_GRUP,
+            )
+            .map(
+                (butir) =>
+                    `${butir.label}: ${String(BagiEntri(butir.sub).langsung.length)} entri, ${String(butir.sub.length)} halaman`,
+            );
 
         expect(kelebihan).toEqual([]);
+    });
+
+    it(`subgrup (D-252): butir sekelompok berurutan, minimal ${String(MINIMAL_ISI_SUBGRUP)} halaman, maksimal ${String(BATAS_SUBGRUP)}, namanya tidak kembar`, () => {
+        const masalah: string[] = [];
+
+        for (const butir of grup) {
+            const { subgrup, terpecah } = BagiEntri(butir.sub);
+            const labelHalaman = new Set(butir.sub.map((s) => s.label));
+
+            for (const kelompok of terpecah) {
+                masalah.push(`${butir.label}: subgrup "${kelompok}" terputus oleh butir lain`);
+            }
+
+            for (const [kelompok, isi] of subgrup) {
+                if (isi.length < MINIMAL_ISI_SUBGRUP || isi.length > BATAS_SUBGRUP) {
+                    masalah.push(`${butir.label}: subgrup "${kelompok}" berisi ${String(isi.length)} halaman`);
+                }
+
+                if (kelompok === butir.label || labelHalaman.has(kelompok)) {
+                    masalah.push(`${butir.label}: nama subgrup "${kelompok}" sama dengan nama grup atau halaman`);
+                }
+            }
+        }
+
+        expect(masalah).toEqual([]);
     });
 
     it('grup berisi minimal dua sub-menu, kalau tidak jadikan item biasa', () => {

@@ -100,13 +100,14 @@ describe('F-13a menu Akuntansi', () => {
 
         expect(akuntansi?.menu.href).toBe('/kelola/akuntansi/jurnal');
         // D-27: Akuntansi berisi pekerjaan pembukuan; Bagan & pemetaan akun pindah ke Pengaturan.
+        // D-252: Jurnal, Buku besar, dan Neraca saldo satu subgrup "Catatan keuangan", jadi berurutan.
         expect(akuntansi?.sub.map((m) => m.label)).toEqual([
             'Jurnal',
+            'Buku besar',
+            'Neraca saldo',
             'Kas & bank',
             // F-08 BR-08.4 (v2.83): pencairan dana non-tunai, pekerjaan pembukuan sejenis Kas & bank.
             'Pencairan dana',
-            'Buku besar',
-            'Neraca saldo',
             // FIN-10 (v3.38): aset tetap & penyusutan, pekerjaan pembukuan berkala.
             'Aset tetap',
             'Tutup buku',
