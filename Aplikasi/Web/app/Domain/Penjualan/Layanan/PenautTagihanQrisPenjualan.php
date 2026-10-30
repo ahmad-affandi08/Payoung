@@ -17,6 +17,7 @@ use App\Domain\Penjualan\Model\TagihanQris;
  * penerimaan penjualan (kunci baris tagihan):
  * - tagihan dikenal & belum dipakai penjualan lain → ditautkan (`UuidPenjualan`) dan `PenjualanPembayaran.RefEksternal`
  *   = `NomorPesanan` (indeks unik per tenant mencegah pembayaran ganda);
+ * - tagihan yang sudah ditutup operator (`DitutupPada`) tidak ditautkan dan menjadi tinjauan `QrisDinamisDipakaiUlang`;
  * - masalah tidak menolak penjualan (offline-first; uang mungkin sudah diterima) tetapi menjadi alasan tinjauan:
  *   `QrisDinamisTidakDikenal` (tanpa referensi / tagihan tidak ada), `QrisDinamisDipakaiUlang` (sudah ditautkan ke
  *   penjualan lain atau dua kali di penjualan ini; tidak ditautkan), `QrisDinamisBelumLunas` (status bukan Lunas saat
@@ -50,6 +51,15 @@ final class PenautTagihanQrisPenjualan
 
             if (($tagihan->UuidPenjualan !== null && $tagihan->UuidPenjualan !== $data->uuid) || in_array($tagihan->NomorPesanan, $refEksternal, true)) {
                 $masalah[KodeAlasanTinjauan::QrisDinamisDipakaiUlang->value][] = "tagihan {$tagihan->NomorPesanan} sudah dipakai penjualan lain";
+
+                continue;
+            }
+
+            // Tagihan yang sudah ditutup operator (dikembalikan / diakui pendapatan lain, J-08.2) tidak boleh ditautkan: uang itu
+            // sudah dibukukan di sana, menautkannya berarti mengakui uang yang sama sekali lagi lewat penjualan. Penjualannya
+            // tetap diterima dan masuk tinjauan; operator membuka kembali penutupan tagihan bila memang itu pembayaran yang benar.
+            if ($tagihan->DitutupPada !== null) {
+                $masalah[KodeAlasanTinjauan::QrisDinamisDipakaiUlang->value][] = "tagihan {$tagihan->NomorPesanan} sudah ditutup sebagai uang tanpa penjualan, buka kembali penutupannya lebih dulu bila ini pembayaran yang benar";
 
                 continue;
             }

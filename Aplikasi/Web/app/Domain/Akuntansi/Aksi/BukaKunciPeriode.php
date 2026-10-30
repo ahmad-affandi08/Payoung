@@ -43,8 +43,15 @@ final class BukaKunciPeriode
             throw new PelanggaranAturanBisnis('TahunSudahDitutup', "Tahun buku {$tahun} sudah ditutup, jadi kunci {$label} tidak bisa dibuka. Catat koreksinya di tahun berjalan.", 'Periode');
         }
 
-        DB::transaction(function () use ($periode, $alasan, $label): void {
+        DB::transaction(function () use ($periode, $alasan, $label, $tahun): void {
             $kunci = KunciPeriode::query()->where('Periode', $periode)->lockForUpdate()->first();
+
+            // Diperiksa ulang SETELAH kunci baris didapat: TutupTahunAkuntansi mengunci semua baris kunci tahun itu, jadi bila
+            // penutupan tahun sedang berjalan, aksi ini menunggu lalu melihat hasilnya. Pemeriksaan di luar transaksi saja
+            // meloloskan pembukaan kunci pada tahun yang baru saja ditutup (bulannya terbuka di tahun buku yang sudah tutup).
+            if ($this->tutupTahun->CekDitutup($tahun)) {
+                throw new PelanggaranAturanBisnis('TahunSudahDitutup', "Tahun buku {$tahun} sudah ditutup, jadi kunci {$label} tidak bisa dibuka. Catat koreksinya di tahun berjalan.", 'Periode');
+            }
 
             if ($kunci === null) {
                 throw new PelanggaranAturanBisnis('PeriodeTidakTerkunci', "Periode {$label} tidak sedang dikunci.", 'Periode');

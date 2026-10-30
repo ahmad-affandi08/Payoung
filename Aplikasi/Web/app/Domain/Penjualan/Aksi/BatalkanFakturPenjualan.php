@@ -14,6 +14,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Penjualan\Layanan\PenyusunJurnalGrosir;
 use App\Domain\Penjualan\Model\FakturPenjualan;
+use App\Domain\Penjualan\Model\ReturGrosir;
 use App\Domain\Penjualan\Model\SuratJalan;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,11 @@ use Illuminate\Support\Facades\DB;
  *
  * Ditolak bila piutangnya sudah dibayar walau sebagian (`PiutangSudahDibayar`): uang yang sudah masuk tidak boleh
  * kehilangan dokumen dasarnya. Batalkan pelunasannya dulu, atau terbitkan nota kredit bila barangnya kembali.
+ *
+ * Ditolak pula bila faktur sudah punya retur grosir yang masih berlaku (`FakturPunyaReturGrosir`): nota kredit retur
+ * itu sudah mengurangi `PiutangUsaha`, sedangkan jurnal pembalik di sini memakai total penuh faktur. Membatalkannya
+ * begitu saja membuat `PiutangUsaha` minus dan `PiutangBelumDifakturkan` lebih besar dari yang sebenarnya masih
+ * tertagih. Batalkan retur grosirnya dulu (urutan terbalik dari penerbitannya).
  */
 final class BatalkanFakturPenjualan
 {
@@ -43,7 +49,7 @@ final class BatalkanFakturPenjualan
     ) {}
 
     /**
-     * @throws PelanggaranAturanBisnis AlasanBatalWajib, FakturTidakDitemukan, PiutangSudahDibayar
+     * @throws PelanggaranAturanBisnis AlasanBatalWajib, FakturTidakDitemukan, PiutangSudahDibayar, FakturPunyaReturGrosir
      */
     public function Jalankan(string $uuidFaktur, string $alasan, int $idPengguna): FakturPenjualan
     {
@@ -78,6 +84,23 @@ final class BatalkanFakturPenjualan
             throw new PelanggaranAturanBisnis('PiutangSudahDibayar', $halangan);
         }
 
+        // Surat jalan dikunci lebih dulu (urutan yang sama dengan BuatReturGrosir) sebelum retur dibaca, supaya retur yang
+        // sedang diterbitkan untuk faktur ini selesai dan terlihat di pemeriksaan di bawah.
+        $suratJalan = SuratJalan::query()->where('IdFakturPenjualan', $faktur->Id)->orderBy('Id')->lockForUpdate()->get();
+        $retur = ReturGrosir::query()
+            ->where('IdFakturPenjualan', $faktur->Id)
+            ->where('Status', StatusDokumenTerposting::Diposting->value)
+            ->orderBy('Id')
+            ->lockForUpdate()
+            ->first(['Nomor']);
+
+        if ($retur !== null) {
+            throw new PelanggaranAturanBisnis(
+                'FakturPunyaReturGrosir',
+                "Faktur {$faktur->Nomor} punya retur grosir {$retur->Nomor} yang masih berlaku. Batalkan retur itu dulu, baru faktur ini.",
+            );
+        }
+
         $tanggal = CarbonImmutable::parse($faktur->Tanggal->format('Y-m-d'));
         $jurnal = $this->postingJurnal->Jalankan(new DataJurnal(
             jenisSumber: JenisSumberJurnal::FakturPenjualan,
@@ -95,7 +118,7 @@ final class BatalkanFakturPenjualan
         $this->pencatatPiutang->BatalkanFaktur($faktur->Id, $idPengguna);
         $nomorSuratJalan = [];
 
-        foreach (SuratJalan::query()->where('IdFakturPenjualan', $faktur->Id)->lockForUpdate()->get() as $sj) {
+        foreach ($suratJalan as $sj) {
             $nomorSuratJalan[] = $sj->Nomor;
             $sj->IdFakturPenjualan = null;
             $sj->DiubahOleh = $idPengguna;

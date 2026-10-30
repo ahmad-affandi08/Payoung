@@ -14,6 +14,7 @@ use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\Piutang;
+use App\Domain\Penjualan\Aksi\BatalkanFakturPenjualan;
 use App\Domain\Penjualan\Aksi\BatalkanReturGrosir;
 use App\Domain\Penjualan\Aksi\BuatFakturPenjualan;
 use App\Domain\Penjualan\Aksi\BuatReturGrosir;
@@ -298,6 +299,37 @@ describe('BuatReturGrosir (BR-12.7, J-12.4)', function (): void {
         expect(ReturGrosir::query()->count())->toBe(0)
             ->and($piutang->refresh()->JumlahDikurangi)->toBe('0.00')
             ->and(SisaStokReturUji($this))->toBe('800.0000');
+    });
+
+    it('faktur yang punya retur grosir berlaku tidak bisa dibatalkan sampai retur itu dibatalkan lebih dulu (PiutangUsaha tidak boleh minus)', function (): void {
+        $suratJalan = SuratJalanUntukReturUji($this);
+        $faktur = app(BuatFakturPenjualan::class)->Jalankan(
+            new DataFakturPenjualan([$suratJalan->Uuid], CarbonImmutable::parse('2026-09-21')),
+            $this->k['Pemilik']->Id,
+        );
+        $retur = ReturUji($this, $suratJalan->refresh(), [[1, '50']]);
+
+        try {
+            app(BatalkanFakturPenjualan::class)->Jalankan($faktur->Uuid, 'Salah pelanggan di fakturnya', $this->k['Pemilik']->Id);
+            $this->fail('Faktur dengan retur grosir yang masih berlaku seharusnya tidak bisa dibatalkan.');
+        } catch (PelanggaranAturanBisnis $galat) {
+            expect($galat->kode)->toBe('FakturPunyaReturGrosir')
+                ->and($galat->getMessage())->toContain($retur->Nomor);
+        }
+
+        // Tidak ada yang setengah jalan: faktur tetap berlaku, piutang dan surat jalan tidak tersentuh.
+        $piutang = Piutang::query()->where('IdFakturPenjualan', $faktur->Id)->sole();
+        expect($faktur->refresh()->Status)->toBe(StatusDokumenTerposting::Diposting)
+            ->and($piutang->AmbilSisa()->KeString())->toBe('2250000.00')
+            ->and($suratJalan->refresh()->IdFakturPenjualan)->toBe($faktur->Id);
+
+        // Urutan yang benar: retur dibatalkan dulu, sesudah itu faktur boleh dibatalkan dan angkanya kembali utuh.
+        app(BatalkanReturGrosir::class)->Jalankan($retur->Uuid, 'Pembeli mengambil kembali barangnya', $this->k['Pemilik']->Id);
+        $dibatalkan = app(BatalkanFakturPenjualan::class)->Jalankan($faktur->Uuid, 'Salah pelanggan di fakturnya', $this->k['Pemilik']->Id);
+
+        expect($dibatalkan->Status)->toBe(StatusDokumenTerposting::Dibatalkan)
+            ->and(BarisJurnalReturUji((int) $dibatalkan->IdJurnalPembatalan, PeranAkun::PiutangBelumDifakturkan))->toBe(['Debit' => '3000000.00', 'Kredit' => '0.00'])
+            ->and(PemeriksaInvarian::PeriksaSemua($this->k['Tenant']->Id))->toBe([]);
     });
 
     it('BR-12.7: nilai retur melebihi sisa tagihan → sisa tagihan terpotong, selebihnya dikembalikan sebagai uang dari kas/bank (J-12.4 seimbang), pembatalan membalik keduanya', function (): void {

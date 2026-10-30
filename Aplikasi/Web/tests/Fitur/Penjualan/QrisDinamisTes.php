@@ -9,6 +9,8 @@ use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
+use App\Domain\Penjualan\Aksi\TutupTagihanQrisTanpaPenjualan;
+use App\Domain\Penjualan\Enum\HasilPenutupanTagihanQris;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanPenjualan;
@@ -517,6 +519,36 @@ describe('F-08 QRIS dinamis: pemakaian di Penjualan.Buat', function (): void {
             ->and(TagihanQris::query()->where('Uuid', $menunggu['Uuid'])->value('UuidPenjualan'))->toBe($items[2]['Uuid'])
             ->and(PenjualanPembayaran::query()->whereNotNull('RefEksternal')->count())->toBe(3)
             ->and(Penjualan::query()->where('PerluTinjauan', true)->count())->toBe(5)
+            ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
+    });
+});
+
+describe('F-08 QRIS dinamis: tagihan yang sudah ditutup operator', function (): void {
+    it('penjualan offline yang tersinkron sesudah penutupan tidak menautkan tagihan itu lagi: diterima sebagai tinjauan, uangnya tidak diakui dua kali', function (): void {
+        $status = 'PENDING';
+        PalsukanDoku($status);
+        $k = SiapkanQrisDinamis($this);
+        $buat = BuatQrisPos($this, $k, $k['QrisDinamis'])->json();
+        WebhookDoku($this, $k, $buat['NomorPesanan'])->assertOk();
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        // Uang masuk tanpa penjualan: inilah tagihan yang muncul di antrean "QRIS tanpa penjualan" untuk ditutup operator.
+        TagihanQris::query()->where('Uuid', $buat['Uuid'])->update(['PerluTinjauan' => true]);
+        app(TutupTagihanQrisTanpaPenjualan::class)->Jalankan($buat['Uuid'], HasilPenutupanTagihanQris::Dikembalikan, 'Pembeli batal, uang dikembalikan tunai', null, null, $k['Pemilik']->Id);
+
+        $item = BantuanPenjualan::Item($k, [
+            'Baris' => [['Produk' => $k['Minyak'], 'Jumlah' => '1', 'Harga' => '38500.00']],
+            'Pembayaran' => [['Metode' => $k['QrisDinamis'], 'Jumlah' => '38500.00', 'Referensi' => $buat['Uuid']]],
+        ]);
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $penjualan = Penjualan::query()->sole();
+
+        expect($penjualan->PerluTinjauan)->toBeTrue()
+            ->and($penjualan->AlasanTinjauan)->toStartWith('QrisDinamisDipakaiUlang: tagihan '.$buat['NomorPesanan'].' sudah ditutup')
+            ->and(TagihanQris::query()->where('Uuid', $buat['Uuid'])->value('UuidPenjualan'))->toBeNull()
+            ->and(PenjualanPembayaran::query()->whereNotNull('RefEksternal')->count())->toBe(0)
             ->and(PemeriksaInvarian::PeriksaJurnalSeimbang($k['Tenant']->Id))->toBe([]);
     });
 });
