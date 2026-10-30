@@ -1,6 +1,7 @@
 import { ClockIcon, XIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
+import { PemicuDalamPembungkus } from '@/Komponen/Formulir/PerilakuPopoverCari';
 import { Button } from '@/Komponen/Ui/button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/Komponen/Ui/input-group';
 import { Label } from '@/Komponen/Ui/label';
@@ -88,6 +89,16 @@ export default function PemilihJam({
     const [terbuka, AturTerbuka] = useState(false);
     const [galatKetikan, AturGalatKetikan] = useState<string | null>(null);
     const refPanel = useRef<HTMLDivElement>(null);
+    const refAkar = useRef<HTMLDivElement>(null);
+    // Di dalam Dialog/Sheet, kunci gulir pembungkus memblokir sentuhan di panel yang di-portal ke body,
+    // jadi kolom jam/menit tidak bisa digulir di HP. Panel dibuat `modal` hanya di sana (lihat PerilakuPopoverCari).
+    const [modal, AturModal] = useState(false);
+    const Buka = (buka: boolean) => {
+        if (buka) {
+            AturModal(PemicuDalamPembungkus(refAkar.current));
+        }
+        AturTerbuka(buka);
+    };
 
     const sah = UraiTeksJam(nilai);
     const [jamTerpilih, menitTerpilih] = sah === undefined ? [undefined, undefined] : sah.split(':');
@@ -144,7 +155,7 @@ export default function PemilihJam({
     const SaatTombol = (peristiwa: KeyboardEvent<HTMLInputElement>) => {
         if (peristiwa.altKey && peristiwa.key === 'ArrowDown') {
             peristiwa.preventDefault();
-            AturTerbuka(true);
+            Buka(true);
         } else if (peristiwa.key === 'Escape' && terbuka) {
             AturTerbuka(false);
         } else if (peristiwa.key === 'Enter' && terbuka) {
@@ -153,14 +164,14 @@ export default function PemilihJam({
     };
 
     return (
-        <div className={cn('flex min-w-0 flex-col gap-1', className)}>
+        <div ref={refAkar} className={cn('flex min-w-0 flex-col gap-1', className)}>
             <Label
                 htmlFor={idBidang}
                 className={labelTersembunyi ? 'sr-only' : 'text-label font-semibold text-teks-utama'}
             >
                 {label}
             </Label>
-            <Popover open={terbuka && !disabled} onOpenChange={AturTerbuka}>
+            <Popover modal={modal} open={terbuka && !disabled} onOpenChange={Buka}>
                 <PopoverAnchor asChild>
                     <InputGroup className="h-8 min-w-0 border-garis-input bg-permukaan pointer-coarse:h-11">
                         <InputGroupInput
@@ -171,7 +182,7 @@ export default function PemilihJam({
                             maxLength={5}
                             placeholder={contoh}
                             onChange={(peristiwa) => SaatKetik(peristiwa.target.value)}
-                            onClick={() => AturTerbuka(true)}
+                            onClick={() => Buka(true)}
                             onBlur={SaatKeluar}
                             onKeyDown={SaatTombol}
                             aria-label={labelAria ?? (labelTersembunyi ? label : undefined)}
@@ -201,7 +212,7 @@ export default function PemilihJam({
                                     size="icon-xs"
                                     aria-label={`Pilih ${label}`}
                                     disabled={disabled}
-                                    onClick={() => AturTerbuka(!terbuka)}
+                                    onClick={() => Buka(!terbuka)}
                                     className="text-teks-sekunder hover:text-brand"
                                 >
                                     <ClockIcon />
@@ -247,7 +258,7 @@ export default function PemilihJam({
                                 <div
                                     role="listbox"
                                     aria-label={`${judul} ${label}`}
-                                    className="flex h-48 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1"
+                                    className="flex h-48 touch-pan-y flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1"
                                 >
                                     {daftar.map((angka) => (
                                         <button

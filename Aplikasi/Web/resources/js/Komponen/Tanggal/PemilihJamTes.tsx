@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/Komponen/Ui/dialog';
 import { RapikanTeksJam } from '@/Pustaka/Tanggal';
 
 import PemilihJam, { AmbilJamSekarang, SusunDaftarMenit, type PilihanCepatJam } from './PemilihJam';
@@ -115,5 +116,35 @@ describe('PemilihJam', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Kosongkan Jam masuk' }));
         expect(SaatBerubah).toHaveBeenLastCalledWith('');
+    });
+});
+
+describe('PemilihJam: gulir kolom di HP', () => {
+    it('di dalam dialog panel dibuat modal, supaya kunci gulir dialog tidak memblokir sentuhan di kolom jam/menit', () => {
+        render(
+            <Dialog open>
+                <DialogContent>
+                    <DialogTitle>Jadwal</DialogTitle>
+                    <DialogDescription>Isi jam</DialogDescription>
+                    <Terkendali awal="08:00" saatBerubah={vi.fn()} />
+                </DialogContent>
+            </Dialog>,
+        );
+
+        fireEvent.click(screen.getByLabelText('Jam masuk'));
+        const panel = screen.getByRole('dialog', { name: 'Pilih Jam masuk' });
+
+        // Popover modal memasang aria-hidden pada sisa halaman (termasuk dialog di bawahnya), non-modal tidak.
+        expect(screen.getByText('Isi jam').closest('[aria-hidden="true"]')).not.toBeNull();
+        expect(within(panel).getByRole('listbox', { name: 'Jam Jam masuk' }).className).toContain('touch-pan-y');
+    });
+
+    it('di luar dialog panel tetap non-modal, halaman masih bisa digulir dan diklik', () => {
+        render(<Terkendali awal="08:00" saatBerubah={vi.fn()} />);
+
+        fireEvent.click(screen.getByLabelText('Jam masuk'));
+
+        expect(screen.getByRole('dialog', { name: 'Pilih Jam masuk' })).toBeTruthy();
+        expect(screen.getByLabelText('Jam masuk').closest('[aria-hidden="true"]')).toBeNull();
     });
 });
