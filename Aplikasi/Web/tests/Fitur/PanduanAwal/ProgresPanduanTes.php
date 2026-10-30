@@ -116,13 +116,18 @@ describe('F-01 langkah 7 (D-24: kini butir "Persiapan toko" di Kotak Tindakan): 
             'PanduanAwal' => false, 'TambahProduk' => false, 'AturMetodePembayaran' => false, 'AktifkanPerangkat' => false, 'UndangStaf' => false, 'AturPin' => false,
         ])->and($langkah[0]['Tautan'])->toBe(route('kelola.panduan-awal'));
 
-        // Butir yang belum selesai tampil di Kotak Tindakan & ringkasan Beranda; Beranda tidak lagi memuat checklist.
+        // Butir yang belum selesai tampil di Kotak Tindakan; Beranda tidak memuat checklist maupun ringkasan tindakan (D-247).
         BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
                 ->component('Kelola/Beranda')
                 ->missing('LangkahBerikutnya')
-                ->where('Tindakan', fn ($butir) => collect($butir)->pluck('Kunci')->intersect(['awal.PanduanAwal', 'awal.AturPin'])->count() === 2));
+                ->missing('Tindakan'));
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/tindakan')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->component('Kelola/Tindakan')
+                ->where('Butir', fn ($butir) => collect($butir)->pluck('Kunci')->intersect(['awal.PanduanAwal', 'awal.AturPin'])->count() === 2));
 
         BantuanOrganisasi::AturKonteks($tenant->Id);
         app(TambahProdukCepat::class)->Jalankan([new DataProdukCepat('Kopi Susu Aren', Uang::Dari('18000'), null, app(PastikanSatuanStandar::class)->Jalankan(new DataSatuanStandar('PCS', 'Pcs', 'pcs', false)), JenisProduk::NonStok, null)]);

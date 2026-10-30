@@ -5,11 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HalamanKotakTindakan from '@/Halaman/Kelola/Tindakan';
 import type { ButirTindakan } from '@/Tipe/Tindakan';
 
-import RingkasTindakan from './RingkasTindakan';
-
 /*
- * D-23 C Kotak Tindakan: ringkasan di beranda (maks. 5 butir, tautan ke kotak), halaman kotak (rincian terbuka untuk
- * butir Penting, pilih lalu "Tandai sudah dicek" mengirim Jenis + Uuid), dan keadaan kosong "Semua beres".
+ * D-23 C Kotak Tindakan: halaman kotak (rincian terbuka untuk butir Penting, pilih lalu "Tandai sudah dicek" mengirim
+ * Jenis + Uuid) dan keadaan kosong "Semua beres". Ringkasan di Beranda sudah dihapus (D-247).
  */
 
 const uji = vi.hoisted(() => ({ kiriman: [] as { url: string; data: unknown }[] }));
@@ -79,21 +77,6 @@ describe('Kotak Tindakan (D-23 C)', () => {
         uji.kiriman = [];
     });
     afterEach(() => cleanup());
-
-    it('beranda: maksimal 5 butir dengan tautan ke Kotak Tindakan, tanpa butir tidak tampil', () => {
-        const butir = ['a', 'b', 'c', 'd', 'e', 'f'].map((k) => BuatButir(k, 'Info'));
-        render(<RingkasTindakan butir={butir} />);
-
-        expect(screen.getByRole('region', { name: 'Perlu tindakan' })).toBeTruthy();
-        expect(screen.getByRole('link', { name: 'Buka Kotak Tindakan (6)' }).getAttribute('href')).toBe(
-            '/kelola/tindakan',
-        );
-        expect(screen.getAllByRole('listitem')).toHaveLength(5);
-        cleanup();
-
-        const { container } = render(<RingkasTindakan butir={[]} />);
-        expect(container.innerHTML).toBe('');
-    });
 
     it('butir Penting terbuka. Pilih rincian lalu tandai sudah dicek mengirim Jenis & Uuid', () => {
         render(

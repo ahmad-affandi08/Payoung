@@ -84,9 +84,13 @@ it('langkah wajib selesai lewat siapkan otomatis → panduan langsung tuntas (au
 
     BantuanOrganisasi::AturKonteks($tenant->Id);
     expect(ProgresPanduanAwal::query()->sole()->SelesaiPada)->not->toBeNull();
+    // D-247: Beranda tidak lagi memuat ringkasan tindakan; butir persiapan toko ada di Kotak Tindakan.
     $masuk()->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
         ->component('Kelola/Beranda')
-        ->where('Tindakan', fn ($butir) => collect($butir)->pluck('Kunci')->contains('awal.AktifkanPerangkat')));
+        ->missing('Tindakan'));
+    $masuk()->get('/kelola/tindakan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+        ->component('Kelola/Tindakan')
+        ->where('Butir', fn ($butir) => collect($butir)->pluck('Kunci')->contains('awal.AktifkanPerangkat')));
     $masuk()->get('/kelola/produk')->assertOk();
 });
 

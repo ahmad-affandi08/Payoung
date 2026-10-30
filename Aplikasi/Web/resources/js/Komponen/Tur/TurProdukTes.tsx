@@ -97,14 +97,12 @@ describe('definisi tur', () => {
         expect(tanpaTarget).toEqual(['sambutan', 'menu', 'pencarian', 'notifikasi', 'siap']);
 
         PasangTarget('bantuan');
-        PasangTarget('kotak-tindakan');
         expect(SusunLangkahAktif(TurDashboard).map((l) => l.Kunci)).toEqual([
             'sambutan',
             'menu',
             'pencarian',
             'notifikasi',
             'bantuan',
-            'tindakan',
             'siap',
         ]);
     });

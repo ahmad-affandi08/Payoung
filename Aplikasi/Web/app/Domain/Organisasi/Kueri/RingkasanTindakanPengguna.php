@@ -9,7 +9,7 @@ use App\Domain\Bersama\Tindakan\Kueri\KotakTindakan;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Ringkasan Kotak Tindakan per pengguna (D-23 C, D-204): butir tanpa rincian untuk kartu "Perlu tindakan" di Beranda
+ * Ringkasan Kotak Tindakan per pengguna (D-23 C, D-204): butir tanpa rincian untuk lencana jumlah di menu samping
  * dan jumlah butir untuk lencana merah di menu samping. Kotak Tindakan menjalankan puluhan COUNT, dan menu samping
  * tampil di setiap halaman, jadi hasilnya disimpan 60 detik per tenant & pengguna (izin dan cakupan outlet berbeda
  * per pengguna). Halaman `/kelola/tindakan` tetap membaca langsung lalu memperbarui jumlahnya lewat `Simpan`, dan

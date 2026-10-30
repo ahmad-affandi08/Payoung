@@ -58,13 +58,6 @@ export const TurDashboard: DefinisiTur = {
             Opsional: true,
         },
         {
-            Kunci: 'tindakan',
-            Judul: 'Perlu tindakan',
-            Isi: 'Kotak Tindakan merangkum hal yang perlu Anda periksa, diurutkan dari yang paling penting. Buka setiap hari agar tidak ada yang terlewat.',
-            Target: ['kotak-tindakan'],
-            Opsional: true,
-        },
-        {
             Kunci: 'siap',
             Judul: 'Siap mulai',
             Isi: 'Itu saja. Selamat bekerja!',

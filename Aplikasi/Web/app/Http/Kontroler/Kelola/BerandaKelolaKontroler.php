@@ -8,7 +8,6 @@ use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Laporan\Kueri\DasborPemilik;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
-use App\Domain\Organisasi\Kueri\RingkasanTindakanPengguna;
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Organisasi\Kueri\TurProdukPengguna;
@@ -21,14 +20,14 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Beranda back-office. F-01 menambahkan checklist "Langkah Berikutnya" (kosong = bagian disembunyikan). F-14a:
+ * Beranda back-office. F-14a:
  * dasbor pemilik (`Dasbor`, rentang lewat query `dari` & `sampai`, bawaan hari ini) hanya untuk pemegang izin `laporan.penjualan.lihat`, dibatasi outlet akses; pengguna tanpa
- * izin melihat beranda tanpa angka (`Dasbor` = null). Wizard panduan awal ada di `PanduanAwalKontroler`. D-23 C:
- * ringkasan Kotak Tindakan (`Tindakan`).
+ * izin melihat beranda tanpa angka (`Dasbor` = null). Wizard panduan awal ada di `PanduanAwalKontroler`. Hal yang perlu
+ * ditindaklanjuti tidak diulang di Beranda: semuanya ada di Kotak Tindakan (`TindakanKontroler`, D-247).
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, RingkasanTindakanPengguna $ringkasan, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
+    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
@@ -42,10 +41,6 @@ final class BerandaKelolaKontroler extends DasarKelolaKontroler
         return Inertia::render('Kelola/Beranda', [
             // PLT-12: tur yang sudah dilihat pengguna ini (Beranda menawarkan tur keliling dashboard sekali).
             'TurDilihat' => $tur->KodeSudahDilihat($idPengguna),
-            // D-23 C: ringkasan Kotak Tindakan (D-24: termasuk checklist persiapan toko yang dulu di Beranda) (tanpa rincian; rincian & tandai di /kelola/tindakan).
-            // Audit kinerja skala besar: Kotak Tindakan menjalankan puluhan COUNT, dan Beranda dibuka paling sering. Ringkasan
-            // disimpan 60 detik per tenant & pengguna oleh `RingkasanTindakanPengguna` (juga dipakai lencana menu samping).
-            'Tindakan' => $ringkasan->Ambil($idTenant, $idPengguna),
             // F-21: usaha yang menagih lewat invoice melihat ringkasan penagihannya di Beranda (null bila belum pernah ada invoice).
             'Penagihan' => $akses->CekIzin($idTenant, $idPengguna, IzinTenant::InvoiceKelola)
                 ? $penagihan->Ambil($tanggal->Hitung(null), $this->IdOutletBoleh())
