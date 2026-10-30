@@ -27,7 +27,7 @@ function Props(ubah: Partial<PropsAturanKehadiran> = {}): PropsAturanKehadiran {
             SimpanFotoBukti: true,
             TolakDiLuarRadius: false,
             TutupOtomatisAktif: true,
-            TutupOtomatisSetelahMenit: 120,
+            TutupOtomatisSetelahMenit: 300,
         },
         WhatsappAktif: true,
         Izin: { Kelola: true },

@@ -49,7 +49,7 @@ final class AturanKehadiran extends ModelDasar
         'SimpanFotoBukti' => true,
         'TolakDiLuarRadius' => false,
         'TutupOtomatisAktif' => true,
-        'TutupOtomatisSetelahMenit' => 120,
+        'TutupOtomatisSetelahMenit' => 300,
     ];
 
     /**

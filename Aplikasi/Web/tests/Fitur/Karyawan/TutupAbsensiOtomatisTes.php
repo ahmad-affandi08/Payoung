@@ -91,12 +91,12 @@ describe('penutupan absensi yang lupa keluar', function (): void {
         [$k, , $absensi] = SiapkanAbsensiTerbuka($this);
         $penutup = app(PenutupAbsensiOtomatis::class);
 
-        // 17.00 + 119 menit: masih dalam masa tunggu lembur.
-        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 18:59:00')))->toBe(0);
+        // 17.00 + 299 menit: masih dalam masa tunggu lembur (bawaan 5 jam).
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 21:59:00')))->toBe(0);
         expect($absensi->refresh()->KeluarPada)->toBeNull();
 
-        // 17.00 + 120 menit: ditutup, jam keluar tetap 17.00.
-        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 19:00:00')))->toBe(1);
+        // 17.00 + 300 menit: ditutup, jam keluar tetap 17.00.
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 22:00:00')))->toBe(1);
         $absensi->refresh();
 
         expect($absensi->KeluarPada?->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 17:00:00')->toIso8601ZuluString())
@@ -136,20 +136,20 @@ describe('penutupan absensi yang lupa keluar', function (): void {
     it('tanpa jadwal: ditutup pukul 23.59 hari masuk, jadi tidak menyambung ke hari berikutnya', function (): void {
         [, , $absensi] = SiapkanAbsensiTerbuka($this, '2026-10-05 08:00', null);
 
-        expect(app(PenutupAbsensiOtomatis::class)->TutupYangLewat(WibUtcTutup('2026-10-06 03:00:00')))->toBe(1);
+        expect(app(PenutupAbsensiOtomatis::class)->TutupYangLewat(WibUtcTutup('2026-10-06 06:00:00')))->toBe(1);
         $absensi->refresh();
 
         expect($absensi->KeluarPada?->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 23:59:00')->toIso8601ZuluString())
             ->and($absensi->KeluarOtomatis)->toBeTrue();
     });
 
-    it('shift malam: 20.00-02.00 tidak ditutup sebelum 02.00 + masa tunggu, lalu keluarnya 02.00', function (): void {
+    it('shift malam: 20.00-02.00 tidak ditutup sebelum 02.00 + masa tunggu 5 jam, lalu keluarnya 02.00', function (): void {
         [, , $absensi] = SiapkanAbsensiTerbuka($this, '2026-10-05 20:00', ['20:00', '02:00']);
         $penutup = app(PenutupAbsensiOtomatis::class);
 
         expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 23:59:00')))->toBe(0)
-            ->and($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 03:00:00')))->toBe(0)
-            ->and($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 04:00:00')))->toBe(1);
+            ->and($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 06:59:00')))->toBe(0)
+            ->and($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 07:00:00')))->toBe(1);
         expect($absensi->refresh()->KeluarPada?->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-06 02:00:00')->toIso8601ZuluString());
     });
 
@@ -213,7 +213,7 @@ describe('dipicu dari jadwal dan halaman absen', function (): void {
             'PengingatShiftAktif' => false, 'PengingatShiftMenitSebelum' => 30, 'PeringatanPengelolaAktif' => false, 'PeringatanPengelolaSetelahMenit' => 15];
 
         $this->get('/kelola/karyawan/aturan-kehadiran')->assertInertia(fn (AssertableInertia $h) => $h
-            ->where('Aturan.TutupOtomatisAktif', true)->where('Aturan.TutupOtomatisSetelahMenit', 120));
+            ->where('Aturan.TutupOtomatisAktif', true)->where('Aturan.TutupOtomatisSetelahMenit', 300));
         $this->put('/kelola/karyawan/aturan-kehadiran', [...$dasar, 'TutupOtomatisSetelahMenit' => 800])->assertSessionHasErrors('TutupOtomatisSetelahMenit');
         $this->put('/kelola/karyawan/aturan-kehadiran', [...$dasar, 'TutupOtomatisAktif' => false, 'TutupOtomatisSetelahMenit' => 45])->assertSessionHasNoErrors();
 
