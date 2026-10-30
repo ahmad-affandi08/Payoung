@@ -55,17 +55,19 @@ final class JadwalMingguan
             ->orderBy('Nama')
             ->get();
         $idKaryawan = array_values(array_map('intval', $karyawan->pluck('Id')->all()));
-        $cuti = $this->cuti->AmbilPerTanggal($hari[0], $hari[6], $idKaryawan);
+        // Cuti dibaca sekali sejak sehari sebelum Senin (untuk hitungan kekurangan staf shift malam) dan dipakai dua-duanya.
+        $cutiLuas = $this->cuti->AmbilPerTanggal($senin->subDay()->toDateString(), $hari[6], $idKaryawan);
+        $cuti = array_map(fn (array $perTanggal): array => array_filter($perTanggal, fn (string $tanggal): bool => $tanggal >= $hari[0], ARRAY_FILTER_USE_KEY), $cutiLuas);
         $shift = ShiftKerja::query()->orderBy('Urutan')->orderBy('JamMulai')->orderBy('Nama')->get();
         $uuidShift = $shift->pluck('Uuid', 'Id');
+        $perSel = $jadwal->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->Tanggal->toDateString());
         $baris = [];
 
         foreach ($karyawan as $k) {
             $sel = [];
 
             foreach ($hari as $tanggal) {
-                $sel[$tanggal] = $jadwal
-                    ->filter(fn (JadwalKerja $j): bool => $j->IdKaryawan === $k->Id && $j->Tanggal->toDateString() === $tanggal)
+                $sel[$tanggal] = ($perSel->get($k->Id.'|'.$tanggal) ?? collect())
                     ->map(fn (JadwalKerja $j): array => [
                         'Uuid' => $j->Uuid,
                         'JamMulai' => $j->JamMulai,
@@ -103,7 +105,7 @@ final class JadwalMingguan
             'Baris' => $baris,
             'ShiftKerja' => $shift->map(fn (ShiftKerja $s): array => ['Uuid' => $s->Uuid, 'Nama' => $s->Nama, 'JamMulai' => $s->JamMulai, 'JamSelesai' => $s->JamSelesai, 'Aktif' => $s->Aktif, 'Urutan' => $s->Urutan])->values()->all(),
             'Kebutuhan' => $kebutuhan,
-            'Kekurangan' => $kebutuhan === [] ? [] : $this->HitungKekurangan($kebutuhan, $jadwalLuas->where('IdOutlet', $idOutlet), $hari, $senin, $idKaryawan),
+            'Kekurangan' => $kebutuhan === [] ? [] : $this->HitungKekurangan($kebutuhan, $jadwalLuas->where('IdOutlet', $idOutlet), $hari, $cutiLuas),
             'TukarShift' => $this->AmbilTukarShift($idOutlet),
         ];
     }
@@ -112,12 +114,11 @@ final class JadwalMingguan
      * @param  list<array{HariKe: int, JamMulai: string, JamSelesai: string, Minimal: int}>  $kebutuhan
      * @param  \Illuminate\Support\Collection<int, JadwalKerja>  $jadwalOutlet
      * @param  list<string>  $hari
-     * @param  list<int>  $idKaryawan
+     * @param  array<int, array<string, array{Jenis: string, Berbayar: bool}>>  $cuti
      * @return list<array{Tanggal: string, JamMulai: string, JamSelesai: string, Minimal: int, Terjadwal: int, Kurang: int}>
      */
-    private function HitungKekurangan(array $kebutuhan, $jadwalOutlet, array $hari, CarbonImmutable $senin, array $idKaryawan): array
+    private function HitungKekurangan(array $kebutuhan, $jadwalOutlet, array $hari, array $cuti): array
     {
-        $cuti = $this->cuti->AmbilPerTanggal($senin->subDay()->toDateString(), $hari[6], $idKaryawan);
         $perTanggal = [];
 
         foreach ($jadwalOutlet as $j) {

@@ -33,7 +33,16 @@ final class KelolaTukarShift
 
     public function Ajukan(Karyawan $pemohon, string $uuidJadwal, string $uuidRekan, ?string $uuidJadwalRekan, string $alasan): PermintaanTukarShift
     {
-        $jadwal = JadwalKerja::query()->where('Uuid', $uuidJadwal)->where('IdKaryawan', $pemohon->Id)->first();
+        return DB::transaction(fn (): PermintaanTukarShift => $this->BuatPermintaan($pemohon, $uuidJadwal, $uuidRekan, $uuidJadwalRekan, $alasan), 3);
+    }
+
+    /**
+     * Baris jadwal dikunci sebelum pemeriksaan permintaan ganda, jadi dua pengajuan bersamaan untuk shift yang sama
+     * tidak lolos berbarengan.
+     */
+    private function BuatPermintaan(Karyawan $pemohon, string $uuidJadwal, string $uuidRekan, ?string $uuidJadwalRekan, string $alasan): PermintaanTukarShift
+    {
+        $jadwal = JadwalKerja::query()->where('Uuid', $uuidJadwal)->where('IdKaryawan', $pemohon->Id)->lockForUpdate()->first();
         $rekan = Karyawan::query()->where('Uuid', $uuidRekan)->first();
 
         if (! $jadwal instanceof JadwalKerja) {
@@ -48,7 +57,7 @@ final class KelolaTukarShift
         $jadwalRekan = null;
 
         if ($uuidJadwalRekan !== null) {
-            $jadwalRekan = JadwalKerja::query()->where('Uuid', $uuidJadwalRekan)->where('IdKaryawan', $rekan->Id)->where('IdOutlet', $jadwal->IdOutlet)->first();
+            $jadwalRekan = JadwalKerja::query()->where('Uuid', $uuidJadwalRekan)->where('IdKaryawan', $rekan->Id)->where('IdOutlet', $jadwal->IdOutlet)->lockForUpdate()->first();
 
             if (! $jadwalRekan instanceof JadwalKerja) {
                 throw new PelanggaranAturanBisnis('JadwalTidakDitemukan', 'Shift rekan yang diminta tidak ditemukan di outlet yang sama.', 'UuidJadwalRekan');
@@ -85,44 +94,67 @@ final class KelolaTukarShift
 
     public function Tanggapi(Karyawan $rekan, string $uuid, bool $terima): PermintaanTukarShift
     {
-        $permintaan = $this->CariTerbuka($uuid);
+        return DB::transaction(function () use ($rekan, $uuid, $terima): PermintaanTukarShift {
+            $permintaan = $this->CariTerbuka($uuid);
 
-        if ($permintaan->IdKaryawanRekan !== $rekan->Id || $permintaan->Status !== StatusTukarShift::MenungguRekan) {
-            throw new PelanggaranAturanBisnis('TidakBerhak', 'Permintaan ini bukan untuk Anda atau sudah ditanggapi.', 'Umum');
-        }
+            if ($permintaan->IdKaryawanRekan !== $rekan->Id || $permintaan->Status !== StatusTukarShift::MenungguRekan) {
+                throw new PelanggaranAturanBisnis('TidakBerhak', 'Permintaan ini bukan untuk Anda atau sudah ditanggapi.', 'Umum');
+            }
 
-        $permintaan->forceFill([
-            'Status' => $terima ? StatusTukarShift::MenungguPengelola : StatusTukarShift::Ditolak,
-            'RekanMenanggapiPada' => now(),
-            'AlasanKeputusan' => $terima ? null : 'Ditolak oleh rekan.',
-            'DiputuskanPada' => $terima ? null : now(),
-        ])->save();
-        $this->audit->Catat($terima ? 'tukar-shift.terima' : 'tukar-shift.tolak-rekan', $permintaan);
+            $permintaan->forceFill([
+                'Status' => $terima ? StatusTukarShift::MenungguPengelola : StatusTukarShift::Ditolak,
+                'RekanMenanggapiPada' => now(),
+                'AlasanKeputusan' => $terima ? null : 'Ditolak oleh rekan.',
+                'DiputuskanPada' => $terima ? null : now(),
+            ])->save();
+            $this->audit->Catat($terima ? 'tukar-shift.terima' : 'tukar-shift.tolak-rekan', $permintaan);
 
-        return $permintaan;
+            return $permintaan;
+        }, 3);
     }
 
     public function Batalkan(Karyawan $pemohon, string $uuid): PermintaanTukarShift
     {
-        $permintaan = $this->CariTerbuka($uuid);
+        return DB::transaction(function () use ($pemohon, $uuid): PermintaanTukarShift {
+            $permintaan = $this->CariTerbuka($uuid);
 
-        if ($permintaan->IdKaryawanPemohon !== $pemohon->Id) {
-            throw new PelanggaranAturanBisnis('TidakBerhak', 'Hanya pemohon yang bisa membatalkan permintaan ini.', 'Umum');
-        }
+            if ($permintaan->IdKaryawanPemohon !== $pemohon->Id) {
+                throw new PelanggaranAturanBisnis('TidakBerhak', 'Hanya pemohon yang bisa membatalkan permintaan ini.', 'Umum');
+            }
 
-        $permintaan->forceFill(['Status' => StatusTukarShift::Dibatalkan, 'DiputuskanPada' => now()])->save();
-        $this->audit->Catat('tukar-shift.batal', $permintaan);
+            $permintaan->forceFill(['Status' => StatusTukarShift::Dibatalkan, 'DiputuskanPada' => now()])->save();
+            $this->audit->Catat('tukar-shift.batal', $permintaan);
 
-        return $permintaan;
+            return $permintaan;
+        }, 3);
     }
 
-    public function Putuskan(string $uuid, bool $setuju, ?string $alasan, int $idPengguna): PermintaanTukarShift
+    /**
+     * @param  list<int>|null  $idOutletBoleh  outlet yang boleh diakses pengelola, null = semua. Permintaan untuk shift di
+     *                                          luar akses itu diperlakukan tidak ada.
+     */
+    public function Putuskan(string $uuid, bool $setuju, ?string $alasan, int $idPengguna, ?array $idOutletBoleh = null): PermintaanTukarShift
     {
-        return DB::transaction(function () use ($uuid, $setuju, $alasan, $idPengguna): PermintaanTukarShift {
+        return DB::transaction(function () use ($uuid, $setuju, $alasan, $idPengguna, $idOutletBoleh): PermintaanTukarShift {
+            // Urutan gembok sama dengan penyimpanan jadwal (karyawan dulu, baru baris lain) supaya tidak saling menunggu.
+            $awal = PermintaanTukarShift::query()->where('Uuid', $uuid)->first();
+
+            if ($awal instanceof PermintaanTukarShift) {
+                Karyawan::query()->whereIn('Id', [$awal->IdKaryawanPemohon, $awal->IdKaryawanRekan])->orderBy('Id')->lockForUpdate()->get(['Id']);
+            }
+
             $permintaan = PermintaanTukarShift::query()->where('Uuid', $uuid)->lockForUpdate()->first();
 
             if (! $permintaan instanceof PermintaanTukarShift || $permintaan->Status !== StatusTukarShift::MenungguPengelola) {
                 throw new PelanggaranAturanBisnis('TidakBisaDiputuskan', 'Permintaan tidak ditemukan atau belum/sudah diputuskan.', 'Umum');
+            }
+
+            if ($idOutletBoleh !== null) {
+                $idOutlet = JadwalKerja::query()->whereKey($permintaan->IdJadwalPemohon)->value('IdOutlet');
+
+                if ($idOutlet === null || ! in_array((int) $idOutlet, $idOutletBoleh, true)) {
+                    throw new PelanggaranAturanBisnis('TidakBisaDiputuskan', 'Permintaan tidak ditemukan atau belum/sudah diputuskan.', 'Umum');
+                }
             }
 
             if ($setuju) {
@@ -203,7 +235,7 @@ final class KelolaTukarShift
 
     private function CariTerbuka(string $uuid): PermintaanTukarShift
     {
-        $permintaan = PermintaanTukarShift::query()->where('Uuid', $uuid)->first();
+        $permintaan = PermintaanTukarShift::query()->where('Uuid', $uuid)->lockForUpdate()->first();
 
         if (! $permintaan instanceof PermintaanTukarShift || ! $permintaan->Status->CekTerbuka()) {
             throw new PelanggaranAturanBisnis('PermintaanTidakAktif', 'Permintaan tidak ditemukan atau sudah selesai.', 'Umum');

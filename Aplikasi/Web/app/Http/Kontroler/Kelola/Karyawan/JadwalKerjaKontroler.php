@@ -136,7 +136,7 @@ final class JadwalKerjaKontroler extends DasarKelolaKontroler
         $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
         $jumlah = $terapkan->Jalankan($outlet->Id, self::AmbilSenin($valid['Senin'], $outlet->Id), $this->Pelaku()->Id);
 
-        return back()->with('Kilat', $jumlah === 0 ? 'Tidak ada hari kosong yang bisa diisi dari pola.' : "{$jumlah} shift terisi dari pola jadwal.");
+        return back()->with('Kilat', $jumlah === 0 ? 'Tidak ada hari kosong yang bisa diisi dari pola.' : "{$jumlah} hari terisi dari pola jadwal.");
     }
 
     public function SimpanKebutuhan(Request $permintaan, SimpanKebutuhanStaf $simpan): RedirectResponse
@@ -180,7 +180,7 @@ final class JadwalKerjaKontroler extends DasarKelolaKontroler
         $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
         $jumlah = $salin->Jalankan($outlet->Id, self::AmbilSenin($valid['Senin'], $outlet->Id), $this->Pelaku()->Id);
 
-        return back()->with('Kilat', $jumlah === 0 ? 'Tidak ada jadwal minggu lalu yang bisa disalin.' : "{$jumlah} jadwal disalin dari minggu lalu.");
+        return back()->with('Kilat', $jumlah === 0 ? 'Tidak ada jadwal minggu lalu yang bisa disalin.' : "Jadwal {$jumlah} hari disalin dari minggu lalu.");
     }
 
     /** Senin dari tanggal `YYYY-MM-DD` (atau minggu ini menurut tanggal bisnis outlet). */

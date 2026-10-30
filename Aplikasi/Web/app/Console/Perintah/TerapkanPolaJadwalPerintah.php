@@ -59,7 +59,7 @@ final class TerapkanPolaJadwalPerintah extends Command
             $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
         }
 
-        $this->line(count($daftar)." tenant diperiksa, {$terisi} shift terisi dari pola, {$galat} tenant gagal.");
+        $this->line(count($daftar)." tenant diperiksa, {$terisi} hari terisi dari pola, {$galat} tenant gagal.");
 
         return $galat === 0 ? self::SUCCESS : self::FAILURE;
     }

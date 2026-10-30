@@ -45,6 +45,16 @@ type Dialog = 'shift' | 'massal' | 'pola' | 'kebutuhan' | null;
 export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadwal, Izin }: PropsJadwalKerja) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [isian, AturIsian] = useState<Isian>(() => BuatIsian(Jadwal.Baris));
+    // Jadwal dari server berubah (isi massal, salin, pola, tukar shift, atau simpan berhasil): isian dimuat ulang dari server.
+    // Dibandingkan menurut isinya, jadi simpan yang gagal (jadwal sama) tidak membuang ketikan pengguna.
+    const jejakServer = JSON.stringify(Jadwal.Baris);
+    const [jejakTerakhir, AturJejakTerakhir] = useState(jejakServer);
+
+    if (jejakTerakhir !== jejakServer) {
+        AturJejakTerakhir(jejakServer);
+        AturIsian(BuatIsian(Jadwal.Baris));
+    }
+
     const [dialog, AturDialog] = useState<Dialog>(null);
     const [memproses, AturMemproses] = useState(false);
     const pilihanMulai = SusunPilihanJam(isian, 'JamMulai');

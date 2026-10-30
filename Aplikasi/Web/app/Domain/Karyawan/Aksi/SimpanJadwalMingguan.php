@@ -13,6 +13,7 @@ use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\ShiftKerja;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,6 +23,12 @@ use Illuminate\Support\Facades\DB;
  * (`JadwalBentrok`), dan shift milik satu karyawan tidak boleh saling tumpang tindih termasuk dengan shift malam hari
  * sebelumnya atau sesudahnya (`JadwalBertumpuk`). `JamSelesai` ≤ `JamMulai` = lewat tengah malam. Audit
  * `jadwal-kerja.simpan`. Galat selalu menunjuk `Sel.{i}.JamMulai` supaya layar bisa menandai selnya.
+ *
+ * Konkurensi dan kueri: dalam satu transaksi baris `Karyawan` yang terlibat dikunci berurutan Id (satu gembok per karyawan,
+ * dipakai juga oleh tukar shift) lalu jadwal mereka dibaca sekali untuk seluruh minggu plus sehari di kedua sisi. Semua
+ * pemeriksaan bentrok memakai salinan di memori itu, jadi jumlah kueri tidak bertambah menurut jumlah sel.
+ * `JalankanLonggar` dipakai isi massal, salin minggu lalu, dan pola: sel yang bentrok dilewati dan dihitung, bukan
+ * membatalkan seluruh isian.
  */
 final class SimpanJadwalMingguan
 {
@@ -34,6 +41,28 @@ final class SimpanJadwalMingguan
      */
     public function Jalankan(DataJadwalMingguan $data): int
     {
+        return $this->Proses($data, false)['Berubah'];
+    }
+
+    /**
+     * Seperti `Jalankan`, tetapi sel yang bentrok dengan outlet lain atau bertumpuk dilewati.
+     *
+     * @return array{Berubah: int, Dilewati: int}
+     */
+    public function JalankanLonggar(DataJadwalMingguan $data): array
+    {
+        return $this->Proses($data, true);
+    }
+
+    /**
+     * @return array{Berubah: int, Dilewati: int}
+     */
+    private function Proses(DataJadwalMingguan $data, bool $longgar): array
+    {
+        if ($data->sel === []) {
+            return ['Berubah' => 0, 'Dilewati' => 0];
+        }
+
         $awal = $data->senin->toDateString();
         $akhir = $data->senin->addDays(6)->toDateString();
         $uuid = array_values(array_unique(array_map(fn (array $s): string => $s['UuidKaryawan'], $data->sel)));
@@ -88,15 +117,36 @@ final class SimpanJadwalMingguan
             }
         }
 
-        return DB::transaction(function () use ($data, $karyawan, $peta, $awal, $akhir): int {
+        return DB::transaction(function () use ($data, $karyawan, $peta, $awal, $akhir, $longgar): array {
+            $idKaryawan = $karyawan->pluck('Id')->map(fn ($id): int => (int) $id)->unique()->sort()->values()->all();
+            // Satu gembok per karyawan, selalu berurutan Id supaya dua penyimpanan bersamaan tidak saling mengunci silang.
+            Karyawan::query()->whereIn('Id', $idKaryawan)->orderBy('Id')->lockForUpdate()->get(['Id']);
+            /** @var array<int, Collection<int, JadwalKerja>> $punya */
+            $punya = JadwalKerja::query()
+                ->whereIn('IdKaryawan', $idKaryawan)
+                ->whereBetween('Tanggal', [$data->senin->subDay()->toDateString(), $data->senin->addDays(7)->toDateString()])
+                ->lockForUpdate()
+                ->get()
+                ->groupBy('IdKaryawan')
+                ->all();
             $berubah = 0;
+            $dilewati = 0;
 
             foreach ($data->sel as $i => $sel) {
                 /** @var Karyawan $k */
                 $k = $karyawan->get($sel['UuidKaryawan']);
+                $punya[$k->Id] ??= collect();
 
-                if ($this->SimpanSel($k, $sel['Tanggal'], $sel['Shift'], $data->idOutlet, $peta, $i)) {
-                    $berubah++;
+                try {
+                    if ($this->SimpanSel($k, $sel['Tanggal'], $sel['Shift'], $data->idOutlet, $peta, $i, $punya[$k->Id])) {
+                        $berubah++;
+                    }
+                } catch (PelanggaranAturanBisnis $galat) {
+                    if (! $longgar || ! in_array($galat->kode, ['JadwalBentrok', 'JadwalBertumpuk'], true)) {
+                        throw $galat;
+                    }
+
+                    $dilewati++;
                 }
             }
 
@@ -104,21 +154,22 @@ final class SimpanJadwalMingguan
                 $this->audit->Catat('jadwal-kerja.simpan', null, nilaiBaru: ['IdOutlet' => $data->idOutlet, 'Minggu' => "{$awal}..{$akhir}", 'JumlahBerubah' => $berubah], idPengguna: $data->idPengguna);
             }
 
-            return $berubah;
+            return ['Berubah' => $berubah, 'Dilewati' => $dilewati];
         }, 3);
     }
 
     /**
+     * Semua pemeriksaan di sini mendahului penulisan, jadi sel yang ditolak tidak meninggalkan perubahan sebagian.
+     *
      * @param  list<array{JamMulai: string, JamSelesai: string, UuidShift: string|null}>  $baru
-     * @param  \Illuminate\Support\Collection<string, ShiftKerja>  $peta
+     * @param  Collection<string, ShiftKerja>  $peta
+     * @param  Collection<int, JadwalKerja>  $punya  jadwal karyawan ini (minggu itu ± sehari), diubah di tempat sesuai penulisan
      */
-    private function SimpanSel(Karyawan $k, string $tanggal, array $baru, int $idOutlet, $peta, int $i): bool
+    private function SimpanSel(Karyawan $k, string $tanggal, array $baru, int $idOutlet, Collection $peta, int $i, Collection $punya): bool
     {
-        $tetangga = JadwalKerja::query()
-            ->where('IdKaryawan', $k->Id)
-            ->whereBetween('Tanggal', [CarbonImmutable::parse($tanggal)->subDay()->toDateString(), CarbonImmutable::parse($tanggal)->addDay()->toDateString()])
-            ->lockForUpdate()
-            ->get();
+        $kemarin = CarbonImmutable::parse($tanggal)->subDay()->toDateString();
+        $besok = CarbonImmutable::parse($tanggal)->addDay()->toDateString();
+        $tetangga = $punya->filter(fn (JadwalKerja $j): bool => in_array($j->Tanggal->toDateString(), [$kemarin, $tanggal, $besok], true));
         $ada = $tetangga->filter(fn (JadwalKerja $j): bool => $j->Tanggal->toDateString() === $tanggal);
         $diOutlet = $ada->where('IdOutlet', $idOutlet)->values();
 
@@ -150,6 +201,12 @@ final class SimpanJadwalMingguan
         foreach ($diOutlet as $j) {
             if (! isset($kunciBaru[$j->JamMulai])) {
                 $j->delete();
+                $kunciPunya = $punya->search(fn (JadwalKerja $x): bool => $x->Id === $j->Id);
+
+                if ($kunciPunya !== false) {
+                    $punya->forget($kunciPunya);
+                }
+
                 $berubah = true;
             }
         }
@@ -159,14 +216,14 @@ final class SimpanJadwalMingguan
             $lama = $diOutlet->firstWhere('JamMulai', $s['JamMulai']);
 
             if ($lama === null) {
-                JadwalKerja::query()->create([
+                $punya->push(JadwalKerja::query()->create([
                     'IdKaryawan' => $k->Id,
                     'IdOutlet' => $idOutlet,
                     'IdShiftKerja' => $idShift,
                     'Tanggal' => $tanggal,
                     'JamMulai' => $s['JamMulai'],
                     'JamSelesai' => $s['JamSelesai'],
-                ]);
+                ]));
                 $berubah = true;
 
                 continue;

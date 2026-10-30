@@ -74,6 +74,8 @@ final class SimpanPolaJadwal
         }
 
         return DB::transaction(function () use ($karyawan, $idOutlet, $baris, $shift, $idPengguna): int {
+            // Gembok karyawan (sama dengan penyimpanan jadwal) supaya dua penyimpanan pola bersamaan tidak bentrok di kunci unik.
+            Karyawan::query()->whereKey($karyawan->Id)->lockForUpdate()->get(['Id']);
             PolaJadwalKerja::query()->where('IdKaryawan', $karyawan->Id)->delete();
 
             foreach ($baris as $b) {

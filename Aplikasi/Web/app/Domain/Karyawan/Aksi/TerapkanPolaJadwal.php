@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Karyawan\Aksi;
 
-use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Karyawan\Data\DataJadwalMingguan;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
 use App\Domain\Karyawan\Kueri\CutiAktifKaryawan;
@@ -17,6 +16,7 @@ use Carbon\CarbonImmutable;
 /**
  * Terapkan pola jadwal berulang ke satu minggu di satu outlet (F-18, D-251). Hanya karyawan aktif, hari yang masih
  * kosong, dan hari tanpa cuti/izin berlaku yang diisi. Hari yang bertumpuk atau bentrok dengan outlet lain dilewati.
+ * Seluruh minggu diproses dalam satu transaksi (`SimpanJadwalMingguan::JalankanLonggar`).
  * `$hanyaMingguKosong` (perintah terjadwal): karyawan yang minggu itu sudah punya jadwal apa pun dibiarkan, supaya hari
  * yang sengaja dikosongkan pengelola tidak terisi lagi.
  */
@@ -27,7 +27,7 @@ final class TerapkanPolaJadwal
         private readonly CutiAktifKaryawan $cuti,
     ) {}
 
-    /** @return int jumlah shift terisi */
+    /** @return int jumlah hari (karyawan + tanggal) yang terisi */
     public function Jalankan(int $idOutlet, CarbonImmutable $senin, ?int $idPengguna, bool $hanyaMingguKosong = false): int
     {
         $pola = PolaJadwalKerja::query()->where('IdOutlet', $idOutlet)->orderBy('HariKe')->get()->groupBy('IdKaryawan');
@@ -42,7 +42,7 @@ final class TerapkanPolaJadwal
         $ada = JadwalKerja::query()->whereIn('IdKaryawan', $aktif->pluck('Id')->all())->whereBetween('Tanggal', [$awal, $akhir])->get(['IdKaryawan', 'Tanggal']);
         $cuti = $this->cuti->AmbilPerTanggal($awal, $akhir, array_values(array_map('intval', $aktif->pluck('Id')->all())));
         $uuidShift = ShiftKerja::query()->pluck('Uuid', 'Id');
-        $terisi = 0;
+        $sel = [];
 
         foreach ($aktif as $k) {
             if ($hanyaMingguKosong && $ada->contains('IdKaryawan', $k->Id)) {
@@ -58,17 +58,14 @@ final class TerapkanPolaJadwal
                     continue;
                 }
 
-                $shift = $barisHari->map(fn (PolaJadwalKerja $p): array => ['JamMulai' => $p->JamMulai, 'JamSelesai' => $p->JamSelesai, 'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null)])->values()->all();
-
-                try {
-                    $this->simpan->Jalankan(new DataJadwalMingguan($idOutlet, $senin, [['UuidKaryawan' => $k->Uuid, 'Tanggal' => $tanggal, 'Shift' => $shift]], $idPengguna));
-                    $terisi += count($shift);
-                } catch (PelanggaranAturanBisnis) {
-                    continue;
-                }
+                $sel[] = [
+                    'UuidKaryawan' => $k->Uuid,
+                    'Tanggal' => $tanggal,
+                    'Shift' => $barisHari->map(fn (PolaJadwalKerja $p): array => ['JamMulai' => $p->JamMulai, 'JamSelesai' => $p->JamSelesai, 'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null)])->values()->all(),
+                ];
             }
         }
 
-        return $terisi;
+        return $this->simpan->JalankanLonggar(new DataJadwalMingguan($idOutlet, $senin, $sel, $idPengguna))['Berubah'];
     }
 }

@@ -43,7 +43,7 @@ final class ShiftKerjaKontroler extends DasarKelolaKontroler
             'Alasan' => ['nullable', 'string', 'max:200'],
         ]);
         $setuju = (bool) $valid['Setuju'];
-        $tukar->Putuskan($permintaanTukar, $setuju, $valid['Alasan'] ?? null, $this->Pelaku()->Id);
+        $tukar->Putuskan($permintaanTukar, $setuju, $valid['Alasan'] ?? null, $this->Pelaku()->Id, $this->IdOutletBoleh());
 
         return back()->with('Kilat', $setuju ? 'Tukar shift disetujui dan jadwal sudah diperbarui.' : 'Tukar shift ditolak.');
     }

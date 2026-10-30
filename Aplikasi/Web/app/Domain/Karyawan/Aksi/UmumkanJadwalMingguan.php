@@ -12,6 +12,7 @@ use App\Domain\Karyawan\Layanan\PengirimJadwalMingguan;
 use App\Domain\Karyawan\Tugas\KirimJadwalMingguanTugas;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Umumkan jadwal mingguan satu outlet ke karyawan lewat WhatsApp (F-18, D-251, izin `karyawan.kelola`). Pengiriman lewat
@@ -41,6 +42,11 @@ final class UmumkanJadwalMingguan
 
         if ($jumlah === 0) {
             throw new PelanggaranAturanBisnis('TanpaPenerima', 'Belum ada karyawan berjadwal yang punya akun dengan nomor WhatsApp pada minggu ini.', 'Umum');
+        }
+
+        // Ketukan ganda atau dua pengelola menekan bersamaan: satu pengumuman per outlet dan minggu dalam satu menit.
+        if (! Cache::add("umumkan-jadwal:{$idTenant}:{$idOutlet}:{$senin->toDateString()}", 1, 60)) {
+            throw new PelanggaranAturanBisnis('BaruDikirim', 'Jadwal minggu ini baru saja dikirim. Tunggu semenit sebelum mengirim lagi.', 'Umum');
         }
 
         KirimJadwalMingguanTugas::dispatch($idTenant, $idOutlet, $senin->toDateString());

@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
  * Isi massal jadwal (F-18, D-251, izin `karyawan.kelola`): satu shift bernama diterapkan ke banyak karyawan di banyak
  * hari sekaligus pada satu minggu. Hanya hari yang masih kosong yang diisi. Hari yang sudah punya jadwal (di outlet mana
  * pun) atau yang bertumpuk dengan shift hari sebelum/sesudahnya dilewati dan dihitung, bukan membatalkan seluruh isian.
+ * Seluruh isian diproses dalam satu transaksi (`SimpanJadwalMingguan::JalankanLonggar`).
  */
 final class IsiMassalJadwal
 {
@@ -42,7 +43,7 @@ final class IsiMassalJadwal
             ->get(['IdKaryawan', 'Tanggal'])
             ->map(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->Tanggal->toDateString())
             ->flip();
-        $terisi = 0;
+        $sel = [];
         $dilewati = 0;
 
         foreach ($karyawan as $k) {
@@ -53,24 +54,12 @@ final class IsiMassalJadwal
                     continue;
                 }
 
-                try {
-                    $this->simpan->Jalankan(new DataJadwalMingguan(
-                        $idOutlet,
-                        $senin,
-                        [['UuidKaryawan' => $k->Uuid, 'Tanggal' => $t, 'Shift' => [['JamMulai' => $shift->JamMulai, 'JamSelesai' => $shift->JamSelesai, 'UuidShift' => $shift->Uuid]]]],
-                        $idPengguna,
-                    ));
-                    $terisi++;
-                } catch (PelanggaranAturanBisnis $galat) {
-                    if ($galat->kode === 'TanggalTidakValid') {
-                        throw $galat;
-                    }
-
-                    $dilewati++;
-                }
+                $sel[] = ['UuidKaryawan' => $k->Uuid, 'Tanggal' => $t, 'Shift' => [['JamMulai' => $shift->JamMulai, 'JamSelesai' => $shift->JamSelesai, 'UuidShift' => $shift->Uuid]]];
             }
         }
 
-        return ['Terisi' => $terisi, 'Dilewati' => $dilewati];
+        $hasil = $this->simpan->JalankanLonggar(new DataJadwalMingguan($idOutlet, $senin, $sel, $idPengguna));
+
+        return ['Terisi' => $hasil['Berubah'], 'Dilewati' => $dilewati + $hasil['Dilewati']];
     }
 }

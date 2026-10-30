@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -166,6 +167,38 @@ describe('Jadwal kerja (F-18, D-251)', () => {
             },
             expect.anything(),
         );
+    });
+
+    it('isian dimuat ulang saat jadwal dari server berubah, tetapi ketikan dipertahankan bila jadwalnya sama', () => {
+        const klien = new QueryClient();
+        // Struktur pohon sama dengan RenderUji (penyedia lalu halaman), supaya halaman tidak dipasang ulang.
+        const Bungkus = (props: PropsJadwalKerja) => (
+            <QueryClientProvider client={klien}>
+                <HalamanJadwalKerja {...props} />
+            </QueryClientProvider>
+        );
+        const { rerender: Ulangi } = RenderUji(<HalamanJadwalKerja {...PropsUji()} />);
+        const label = 'Dimas Pratama Wicaksono Adiwijaya Rabu mulai';
+        fireEvent.change(screen.getByLabelText(label), { target: { value: '07:30' } });
+
+        // Jadwal server sama (misal simpan gagal): ketikan tetap.
+        Ulangi(Bungkus(PropsUji()));
+        expect((screen.getByLabelText(label) as HTMLInputElement).value).toBe('07:30');
+
+        // Server mengisi Rabu (misal isi massal): isian ikut server dan tidak ada perubahan tertunda.
+        const baris = BarisJadwalUji();
+        baris.Jadwal['2026-09-23'] = [
+            {
+                Uuid: '01J9JDW0000000000000000003',
+                JamMulai: '13:00',
+                JamSelesai: '21:00',
+                OutletLain: false,
+                UuidShift: null,
+            },
+        ];
+        Ulangi(Bungkus(PropsUji({ Baris: [baris] })));
+        expect((screen.getByLabelText(label) as HTMLInputElement).value).toBe('13:00');
+        expect((screen.getByRole('button', { name: 'Simpan jadwal' }) as HTMLButtonElement).disabled).toBe(true);
     });
 
     it('menampilkan nama shift pada jam yang berasal dari shift bernama', () => {

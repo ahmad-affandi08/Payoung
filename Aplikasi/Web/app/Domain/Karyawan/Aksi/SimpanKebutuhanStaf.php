@@ -7,6 +7,8 @@ namespace App\Domain\Karyawan\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Karyawan\Model\KebutuhanStaf;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,6 +38,20 @@ final class SimpanKebutuhanStaf
             }
         }
 
+        // Tabel ini tanpa kunci unik, jadi dua penyimpanan bersamaan untuk outlet yang sama bisa menggandakan baris. Gembok
+        // per outlet menyerialkannya.
+        try {
+            return Cache::lock("kebutuhan-staf:{$idOutlet}", 15)->block(5, fn (): int => $this->Simpan($idOutlet, $baris, $idPengguna));
+        } catch (LockTimeoutException) {
+            throw new PelanggaranAturanBisnis('SedangDisimpan', 'Kebutuhan staf sedang disimpan oleh pengguna lain. Coba lagi sebentar.', 'Umum');
+        }
+    }
+
+    /**
+     * @param  list<array{HariKe: int, JamMulai: string, JamSelesai: string, Minimal: int}>  $baris
+     */
+    private function Simpan(int $idOutlet, array $baris, int $idPengguna): int
+    {
         return DB::transaction(function () use ($idOutlet, $baris, $idPengguna): int {
             KebutuhanStaf::query()->where('IdOutlet', $idOutlet)->delete();
 

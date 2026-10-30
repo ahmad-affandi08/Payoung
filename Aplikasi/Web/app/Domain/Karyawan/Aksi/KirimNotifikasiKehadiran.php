@@ -10,6 +10,7 @@ use App\Domain\Integrasi\Whatsapp\PengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
 use App\Domain\Karyawan\Kueri\CutiAktifKaryawan;
+use App\Domain\Karyawan\Layanan\PemilihShiftAbsensi;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -72,10 +73,13 @@ final class KirimNotifikasiKehadiran
         }
 
         $sekarang = $sekarang->utc();
-        $jadwal = JadwalKerja::query()
+        // D-251: seluruh shift dibaca (juga yang sudah bertanda) supaya absen dicocokkan ke shift yang dimaksud, tetapi hanya
+        // yang belum bertanda yang diproses.
+        $semuaJadwal = JadwalKerja::query()
             ->whereBetween('Tanggal', [$sekarang->subDays(2)->toDateString(), $sekarang->addDay()->toDateString()])
-            ->where(fn ($k) => $k->whereNull('PengingatShiftPada')->orWhereNull('PeringatanKehadiranPada'))
             ->get();
+        $jadwal = $semuaJadwal->filter(fn (JadwalKerja $j): bool => $j->PengingatShiftPada === null || $j->PeringatanKehadiranPada === null)->values();
+        $shiftPerHari = $semuaJadwal->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->Tanggal->toDateString());
 
         if ($jadwal->isEmpty()) {
             return $hasil;
@@ -103,6 +107,14 @@ final class KirimNotifikasiKehadiran
             $sekarang->addDay()->toDateString(),
             array_values(array_map('intval', $jadwal->pluck('IdKaryawan')->unique()->all())),
         );
+        // Absensi diambil sekali untuk semua karyawan yang diproses (bukan satu kueri per jadwal).
+        $absensiKaryawan = Absensi::query()
+            ->whereIn('IdKaryawan', $jadwal->pluck('IdKaryawan')->unique()->all())
+            ->where('MasukPada', '>=', $sekarang->subDays(3))
+            ->where('MasukPada', '<=', $sekarang->addDays(2))
+            ->orderBy('MasukPada')
+            ->get()
+            ->groupBy('IdKaryawan');
         $kejadian = [];
         $ditandai = [];
 
@@ -117,12 +129,11 @@ final class KirimNotifikasiKehadiran
             $batas = PenilaiKehadiran::AmbilBatasShift($j->Tanggal->toDateString(), $j->JamMulai, $j->JamSelesai);
             $mulai = $batas['Mulai']->subSeconds($detik);
             $selesai = $batas['Selesai']->subSeconds($detik);
-            $masuk = Absensi::query()
-                ->where('IdKaryawan', $j->IdKaryawan)
-                ->where('MasukPada', '>=', $mulai->subHours(4))
-                ->where('MasukPada', '<=', $selesai)
-                ->orderBy('MasukPada')
-                ->first();
+            $sehari = $shiftPerHari->get($j->IdKaryawan.'|'.$j->Tanggal->toDateString(), collect());
+            $masuk = ($absensiKaryawan->get($j->IdKaryawan) ?? collect())->first(
+                fn (Absensi $a): bool => $a->MasukPada >= $mulai->subHours(4) && $a->MasukPada <= $selesai
+                    && ($sehari->count() <= 1 || PemilihShiftAbsensi::Pilih($sehari->values(), CarbonImmutable::instance($a->MasukPada)->utc()->addSeconds($detik))?->Id === $j->Id),
+            );
 
             if ($aturan['PengingatShiftAktif'] && $j->PengingatShiftPada === null && $masuk === null
                 && $sekarang->greaterThanOrEqualTo($mulai->subMinutes($aturan['PengingatShiftMenitSebelum'])) && $sekarang->lessThan($mulai)) {

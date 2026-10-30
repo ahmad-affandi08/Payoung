@@ -91,7 +91,8 @@ final class PenutupAbsensiOtomatis
 
         $terbuka = Absensi::query()
             ->whereNull('KeluarPada')
-            ->where('MasukPada', '<', $sekarang->utc()->subMinutes($aturan['TutupOtomatisSetelahMenit']))
+            // Saat karyawan absen masuk, catatan lama ikut diperiksa walau belum melewati masa tunggu (shift berikutnya dimulai).
+            ->where('MasukPada', '<', $untukAbsenMasuk ? $sekarang->utc() : $sekarang->utc()->subMinutes($aturan['TutupOtomatisSetelahMenit']))
             ->when($idKaryawan !== null, fn ($kueri) => $kueri->where('IdKaryawan', $idKaryawan))
             ->orderBy('Id')
             ->limit(self::BATAS_PER_PUTARAN)

@@ -6,6 +6,8 @@ use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Karyawan\Aksi\KelolaTukarShift;
 use App\Domain\Karyawan\Enum\StatusTukarShift;
 use App\Domain\Karyawan\Layanan\PenghitungKekuranganStaf;
+use App\Domain\Karyawan\Layanan\PenutupAbsensiOtomatis;
+use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\PermintaanTukarShift;
@@ -16,6 +18,7 @@ use App\Domain\Organisasi\Model\Pengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
@@ -385,5 +388,119 @@ describe('tukar shift', function (): void {
         $tukar->Tanggapi($dimas, $p->Uuid, true);
 
         $this->get('/kelola/tindakan')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h->where('Butir', fn ($butir): bool => collect($butir)->contains(fn ($b): bool => $b['Kunci'] === 'karyawan.tukar-shift' && $b['Jumlah'] === 1)));
+    });
+});
+
+describe('jumlah kueri tidak bertambah menurut jumlah sel', function (): void {
+    /** Banyaknya kueri SELECT selama [kerjakan] berjalan. */
+    function HitungSelectJadwal(callable $kerjakan): int
+    {
+        $jumlah = 0;
+        DB::listen(function ($kueri) use (&$jumlah): void {
+            if (str_starts_with(strtolower(ltrim($kueri->sql)), 'select')) {
+                $jumlah++;
+            }
+        });
+        $kerjakan();
+
+        return $jumlah;
+    }
+
+    it('isi massal 12 karyawan x 6 hari memakai kueri baca yang jumlahnya tetap', function (): void {
+        [$k] = SiapkanJadwalShift($this);
+        $pagi = BuatShiftUji();
+        $uuid = collect(range(1, 12))->map(fn (int $n): string => Karyawan::query()->create(['Nama' => "Staf Massal {$n}", 'IdOutlet' => $k['Outlet']->Id])->Uuid)->all();
+        $hari = ['2026-09-21', '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26'];
+
+        $select = HitungSelectJadwal(fn () => $this->post('/kelola/karyawan/jadwal/isi-massal', [
+            'UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21', 'UuidShift' => $pagi->Uuid, 'UuidKaryawan' => $uuid, 'Tanggal' => $hari,
+        ])->assertSessionHasNoErrors());
+
+        expect(JadwalKerja::query()->count())->toBe(72)
+            ->and($select)->toBeLessThan(60);
+    });
+
+    it('menyimpan jadwal 10 karyawan x 7 hari dengan kueri baca tetap dan salin minggu lalu juga', function (): void {
+        [$k] = SiapkanJadwalShift($this);
+        $uuid = collect(range(1, 10))->map(fn (int $n): string => Karyawan::query()->create(['Nama' => "Staf Simpan {$n}", 'IdOutlet' => $k['Outlet']->Id])->Uuid)->all();
+        $sel = collect($uuid)->flatMap(fn (string $u): array => collect(range(21, 27))->map(fn (int $h): array => [
+            'UuidKaryawan' => $u, 'Tanggal' => "2026-09-{$h}", 'Shift' => [['JamMulai' => '08:00', 'JamSelesai' => '12:00'], ['JamMulai' => '17:00', 'JamSelesai' => '21:00']],
+        ])->all())->all();
+
+        $select = HitungSelectJadwal(fn () => $this->put('/kelola/karyawan/jadwal', ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21', 'Sel' => $sel])->assertSessionHasNoErrors());
+        expect(JadwalKerja::query()->count())->toBe(140)->and($select)->toBeLessThan(60);
+
+        $selectSalin = HitungSelectJadwal(fn () => $this->post('/kelola/karyawan/jadwal/salin', ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-28'])->assertSessionHasNoErrors());
+        expect(JadwalKerja::query()->count())->toBe(280)->and($selectSalin)->toBeLessThan(60);
+    });
+
+    it('salin minggu lalu melewati hari yang bertumpuk dengan shift malam hari sebelumnya, bukan menggagalkan semuanya', function (): void {
+        [$k, $rina, $dimas] = SiapkanJadwalShift($this);
+        // Rina punya shift malam Minggu 20 Sep (22:00–06:00) dan Senin 14 Sep 05:00–09:00 (minggu lalu). Menyalin Senin ke 21 Sep bertumpuk dengan
+        // shift malam 20 Sep, jadi sel itu dilewati sementara karyawan lain tetap tersalin.
+        foreach ([['2026-09-14', '05:00', '09:00']] as [$t, $m, $s]) {
+            JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => $t, 'JamMulai' => $m, 'JamSelesai' => $s]);
+        }
+        JadwalKerja::query()->create(['IdKaryawan' => $dimas->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-15', 'JamMulai' => '08:00', 'JamSelesai' => '16:00']);
+        JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-20', 'JamMulai' => '22:00', 'JamSelesai' => '06:00']);
+
+        $this->post('/kelola/karyawan/jadwal/salin', ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21'])->assertSessionHasNoErrors();
+        expect(JadwalKerja::query()->where('IdKaryawan', $rina->Id)->whereDate('Tanggal', '2026-09-21')->count())->toBe(0)
+            ->and(JadwalKerja::query()->where('IdKaryawan', $dimas->Id)->whereDate('Tanggal', '2026-09-22')->count())->toBe(1);
+    });
+});
+
+describe('perlindungan tukar shift', function (): void {
+    it('pengelola yang tidak berhak atas outlet shift tidak bisa memutuskan, dan pengajuan ganda atas shift yang sama ditolak', function (): void {
+        [$k, $rina, $dimas] = SiapkanJadwalShift($this);
+        $milik = JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-24', 'JamMulai' => '08:00', 'JamSelesai' => '16:00']);
+        $tukar = app(KelolaTukarShift::class);
+        $p = $tukar->Ajukan($rina, $milik->Uuid, $dimas->Uuid, null, '');
+        $tukar->Tanggapi($dimas, $p->Uuid, true);
+
+        expect(fn () => $tukar->Putuskan($p->Uuid, true, null, 1, [999999]))->toThrow(Exception::class)
+            ->and($p->refresh()->Status)->toBe(StatusTukarShift::MenungguPengelola)
+            ->and($milik->refresh()->IdKaryawan)->toBe($rina->Id);
+        $tukar->Putuskan($p->Uuid, true, null, 1, [$k['Outlet']->Id]);
+        expect($milik->refresh()->IdKaryawan)->toBe($dimas->Id);
+        // Permintaan yang sudah diputuskan tidak bisa ditanggapi atau dibatalkan lagi.
+        expect(fn () => $tukar->Tanggapi($dimas, $p->Uuid, false))->toThrow(Exception::class)
+            ->and(fn () => $tukar->Batalkan($rina, $p->Uuid))->toThrow(Exception::class);
+    });
+
+    it('umumkan dua kali dalam semenit ditolak sehingga pesan tidak terkirim ganda', function (): void {
+        [$k, $rina] = SiapkanJadwalShift($this);
+        $kasir = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Kasir);
+        Pengguna::query()->whereKey($kasir->Id)->update(['NoHp' => '081288880003']);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $rina->forceFill(['IdPengguna' => $kasir->Id])->save();
+        JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-22', 'JamMulai' => '08:00', 'JamSelesai' => '16:00']);
+        $isian = ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21'];
+
+        $this->post('/kelola/karyawan/jadwal/umumkan', $isian)->assertSessionHasNoErrors();
+        $this->post('/kelola/karyawan/jadwal/umumkan', $isian)->assertSessionHasErrors('Umum');
+        $kirim = collect(Http::recorded())->filter(fn (array $p): bool => str_contains($p[0]->url(), 'api.fonnte.com/send'))->count();
+        expect($kirim)->toBe(1);
+    });
+});
+
+describe('penutupan absensi dengan beberapa shift', function (): void {
+    it('saat absen masuk shift berikutnya, absensi shift sebelumnya ditutup di jam selesai shift walau masa tunggu belum habis', function (): void {
+        [$k, $rina] = SiapkanJadwalShift($this);
+        $this->travelTo(CarbonImmutable::parse('2026-09-21 16:05:00', 'Asia/Jakarta'));
+        foreach ([['14:00', '15:00'], ['16:00', '20:00']] as [$m, $s]) {
+            JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-21', 'JamMulai' => $m, 'JamSelesai' => $s]);
+        }
+        $absensi = Absensi::query()->create([
+            'IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'TanggalBisnis' => '2026-09-21',
+            'MasukPada' => CarbonImmutable::parse('2026-09-21 14:00:00', 'Asia/Jakarta')->utc(),
+        ]);
+        $penutup = app(PenutupAbsensiOtomatis::class);
+
+        expect($penutup->TutupYangLewat(CarbonImmutable::now(), $rina->Id))->toBe(0);
+        expect($penutup->TutupYangLewat(CarbonImmutable::now(), $rina->Id, untukAbsenMasuk: true))->toBe(1);
+        $absensi->refresh();
+        expect($absensi->KeluarOtomatis)->toBeTrue()
+            ->and(CarbonImmutable::instance($absensi->KeluarPada)->setTimezone('Asia/Jakarta')->format('H:i'))->toBe('15:00');
     });
 });
