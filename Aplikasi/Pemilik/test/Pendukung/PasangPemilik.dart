@@ -9,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:pemilik/Aplikasi/AplikasiPemilik.dart';
 import 'package:pemilik/Aplikasi/Lingkungan.dart';
 import 'package:pemilik/Aplikasi/Penyedia.dart';
+import 'package:pemilik/Aplikasi/TanpaCobaUlang.dart';
 import 'package:pemilik/Data/PenyimpanSesi.dart';
 
 /// Server tiruan `/api/pemilik/v1`: [penangan] per permintaan, semua permintaan dicatat.
@@ -39,6 +40,7 @@ Future<void> PasangPemilik(
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
+      retry: TanpaCobaUlangOtomatis,
       overrides: [
         penyediaLingkungan.overrideWithValue(lingkungan),
         penyediaKlienHttp.overrideWithValue(server.BuatKlien()),

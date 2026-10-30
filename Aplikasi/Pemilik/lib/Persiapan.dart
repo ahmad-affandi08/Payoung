@@ -7,6 +7,7 @@ import 'Aplikasi/AplikasiPemilik.dart';
 import 'Aplikasi/KunciAplikasi.dart';
 import 'Aplikasi/Lingkungan.dart';
 import 'Aplikasi/Penyedia.dart';
+import 'Aplikasi/TanpaCobaUlang.dart';
 import 'Data/KameraNota.dart';
 import 'Data/KunciPerangkat.dart';
 import 'Data/NotifikasiPush.dart';
@@ -22,6 +23,7 @@ Future<void> JalankanAplikasi(Lingkungan lingkungan) async {
   DaftarkanLisensiFont();
   runApp(
     ProviderScope(
+      retry: TanpaCobaUlangOtomatis,
       overrides: [
         penyediaLingkungan.overrideWithValue(lingkungan),
         penyediaNotifikasiPush.overrideWithValue(push),

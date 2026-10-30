@@ -94,4 +94,33 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('paket belum memuat Anti-fraud (403): pesan server tampil dengan "Coba lagi", tanpa memuat berulang', (
+    tester,
+  ) async {
+    server.penangan = (p) async {
+      if (p.url.path.endsWith('/laporan/anti-fraud')) {
+        return JsonUji({
+          'Galat': {
+            'Kode': 'FiturTidakAktif',
+            'Pesan': 'Anti-fraud belum termasuk di paket usaha ini. Naik paket atau tambah add-on di menu Langganan.',
+            'Detail': {'Fitur': 'keamanan.anti-fraud'},
+          },
+        }, 403);
+      }
+      return Penangan(p);
+    };
+    await PasangPemilik(tester, server: server, sesi: sesi);
+    await Masuk(tester);
+    await tester.tap(find.text('Laporan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Anti-fraud'));
+    // Riverpod 3 mencoba ulang provider gagal secara bawaan dan menahan status "memuat"; di sini galat harus langsung tampil.
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 10));
+
+    expect(find.textContaining('Anti-fraud belum termasuk di paket usaha ini'), findsOneWidget);
+    expect(find.text('Coba lagi'), findsOneWidget);
+    expect(server.permintaan.where((p) => p.url.path.endsWith('/laporan/anti-fraud')), hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
 }
