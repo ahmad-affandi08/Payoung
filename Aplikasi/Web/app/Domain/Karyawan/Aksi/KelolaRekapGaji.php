@@ -162,7 +162,7 @@ final class KelolaRekapGaji
         });
     }
 
-    public function UbahBaris(RekapGaji $rekap, string $uuidKaryawan, Uang $tambahan, Uang $potonganKasbon, Uang $potonganLain, ?string $catatan, ?Uang $lembur = null, ?Uang $potonganTerlambat = null, ?Uang $potonganTidakMasuk = null, ?int $hariMasuk = null): RekapGajiBaris
+    public function UbahBaris(RekapGaji $rekap, string $uuidKaryawan, Uang $tambahan, Uang $potonganKasbon, Uang $potonganLain, ?string $catatan, ?Uang $lembur = null, ?Uang $potonganTerlambat = null, ?Uang $potonganTidakMasuk = null, ?int $hariMasuk = null, bool $hitungTotal = true): RekapGajiBaris
     {
         foreach (['Tambahan' => $tambahan, 'PotonganKasbon' => $potonganKasbon, 'PotonganLain' => $potonganLain, 'Lembur' => $lembur, 'PotonganTerlambat' => $potonganTerlambat, 'PotonganTidakMasuk' => $potonganTidakMasuk] as $bidang => $nilai) {
             if ($nilai?->BernilaiNegatif() === true) {
@@ -170,7 +170,7 @@ final class KelolaRekapGaji
             }
         }
 
-        return DB::transaction(function () use ($rekap, $uuidKaryawan, $tambahan, $potonganKasbon, $potonganLain, $catatan, $lembur, $potonganTerlambat, $potonganTidakMasuk, $hariMasuk): RekapGajiBaris {
+        return DB::transaction(function () use ($rekap, $uuidKaryawan, $tambahan, $potonganKasbon, $potonganLain, $catatan, $lembur, $potonganTerlambat, $potonganTidakMasuk, $hariMasuk, $hitungTotal): RekapGajiBaris {
             $rekap = $this->KunciDraf($rekap);
             $idKaryawan = Karyawan::query()->where('Uuid', $uuidKaryawan)->value('Id');
             $baris = $idKaryawan === null ? null : RekapGajiBaris::query()->where('IdRekapGaji', $rekap->Id)->where('IdKaryawan', $idKaryawan)->first();
@@ -218,7 +218,12 @@ final class KelolaRekapGaji
 
             $baris->Bersih = $bersih->KeString();
             $baris->save();
-            $this->HitungTotal($rekap);
+
+            // Aksi massal menghitung total sekali di akhir; menghitungnya tiap baris memuat ulang seluruh baris rekap (kuadratik).
+            if ($hitungTotal) {
+                $this->HitungTotal($rekap);
+            }
+
             $this->audit->Catat('rekap-gaji.ubah', $rekap, nilaiLama: $lama, nilaiBaru: $baris->only($kolomAudit));
 
             return $baris;
@@ -275,8 +280,11 @@ final class KelolaRekapGaji
                     Uang::Dari($b->PotonganKasbon),
                     Uang::Dari($b->PotonganLain),
                     $catatan ?? $b->Catatan,
+                    hitungTotal: false,
                 );
             }
+
+            $this->HitungTotal($rekap);
 
             return count($uuidKaryawan);
         });

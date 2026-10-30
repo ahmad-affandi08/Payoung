@@ -77,14 +77,17 @@ final class CariPelangganPos
         }
 
         $daftar = Pelanggan::query()->whereKey(array_values(array_unique($id)))->where('Status', StatusPelanggan::Aktif->value)
-            ->get(['Id', 'Uuid', 'Nama', 'NoHp', 'IdTier', 'TanggalLahir']);
+            ->get(['Id', 'Uuid', 'Nama', 'NoHp', 'IdTier', 'TanggalLahir'])->values();
+        // Satu kali susun untuk semua pelanggan (kueri tier, saldo, kredit, belanja, dan promo sekali saja), bukan satu kali per
+        // pelanggan: layar pesanan online di kasir memanggil ini tiap beberapa detik.
+        $disusun = $this->Susun($daftar, $tanggalBisnis);
         $hasil = [];
 
-        foreach ($daftar as $p) {
-            $hasil[$p->Id] = $this->Susun(new Collection([$p]), $tanggalBisnis)[0] ?? null;
+        foreach ($daftar as $urutan => $p) {
+            $hasil[$p->Id] = $disusun[$urutan];
         }
 
-        return array_filter($hasil);
+        return $hasil;
     }
 
     /**

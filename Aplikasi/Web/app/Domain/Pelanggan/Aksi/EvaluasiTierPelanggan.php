@@ -49,22 +49,36 @@ final class EvaluasiTierPelanggan
             ->orderBy('Id')
             ->chunkById(200, function ($daftar) use ($tier, $total, &$berubah): void {
                 DB::transaction(function () use ($daftar, $tier, $total, &$berubah): void {
+                    // Hanya pelanggan yang tiernya berubah yang disimpan satu per satu (dengan kunci dan pemeriksaan ulang
+                    // TierTetap, supaya tier yang baru diatur admin tidak tertimpa). Penanda waktu evaluasi untuk semua
+                    // pelanggan di potongan ini ditulis dalam satu UPDATE, bukan satu UPDATE per pelanggan tiap malam.
+                    $sekarang = now();
+
                     foreach ($daftar as $p) {
                         /** @var Pelanggan $p */
                         $belanja = Uang::Dari($total[$p->Id] ?? '0');
                         $cocok = $tier->first(fn (TierPelanggan $t): bool => Uang::Dari($t->MinimalBelanja)->Bandingkan($belanja) <= 0);
                         $idBaru = $cocok?->Id;
 
-                        if ($idBaru !== $p->IdTier) {
-                            $lama = $p->IdTier;
-                            $p->IdTier = $idBaru;
-                            $berubah++;
-                            $this->audit->Catat('pelanggan.tier-otomatis', $p, ['IdTier' => $lama], ['IdTier' => $idBaru, 'Belanja' => $belanja->KeString()]);
+                        if ($idBaru === $p->IdTier) {
+                            continue;
                         }
 
-                        $p->TierDievaluasiPada = now();
-                        $p->save();
+                        $terkunci = Pelanggan::query()->whereKey($p->Id)->where('TierTetap', false)->lockForUpdate()->first();
+
+                        if ($terkunci === null) {
+                            continue;
+                        }
+
+                        $lama = $terkunci->IdTier;
+                        $terkunci->IdTier = $idBaru;
+                        $terkunci->TierDievaluasiPada = $sekarang;
+                        $terkunci->save();
+                        $berubah++;
+                        $this->audit->Catat('pelanggan.tier-otomatis', $terkunci, ['IdTier' => $lama], ['IdTier' => $idBaru, 'Belanja' => $belanja->KeString()]);
                     }
+
+                    Pelanggan::query()->whereIn('Id', $daftar->pluck('Id')->all())->where('TierTetap', false)->update(['TierDievaluasiPada' => $sekarang]);
                 });
             }, 'Id');
 

@@ -40,13 +40,7 @@ final class DaftarIsiDeposit
 
         return PenerapKueriTabel::Terapkan($kueri, $permintaan, ['DiterimaPada' => 'DiterimaPada', 'Jumlah' => 'Jumlah', 'Nomor' => 'Nomor'], function (Collection $baris): array {
             /** @var Collection<int, IsiDeposit> $baris */
-            $nama = [];
-
-            foreach ($baris as $isi) {
-                if ($isi->IdPelanggan !== null && ! isset($nama[$isi->IdPelanggan])) {
-                    $nama[$isi->IdPelanggan] = $this->identitas->AmbilRingkas($isi->IdPelanggan);
-                }
-            }
+            $nama = $this->identitas->AmbilNamaBanyak($baris->pluck('IdPelanggan')->all());
 
             return array_values($baris->map(fn (IsiDeposit $i): array => [
                 'Uuid' => $i->Uuid,

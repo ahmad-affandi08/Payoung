@@ -38,7 +38,8 @@ return [
         'UkuranEkstrakMaksimalKb' => 204800,
         'MaksimalBaris' => 20000,
         'BatasBarisSinkron' => 300,
-        'UkuranPotongan' => 50,
+        // Satu potongan = satu transaksi yang mengunci baris Tenant (sinkron kasir menunggu di baris itu), jadi kecil lebih baik.
+        'UkuranPotongan' => (int) env('KATALOG_IMPOR_UKURAN_POTONGAN', 20),
         'MaksimalDetikPerTugas' => 40,
         'HariSimpan' => 30,
     ],

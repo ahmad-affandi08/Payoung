@@ -85,11 +85,12 @@ final class SetujuiStokOpname
         $this->pengunciSaldo->Kunci(array_values($dihitung->map(fn (StokOpnameDetail $d): array => [$d->IdProduk, $opname->IdGudang])->all()));
         $produk = $this->infoProduk->AmbilBanyak(array_values(array_unique($dihitung->pluck('IdProduk')->all())), true);
         $barisMutasi = [];
+        $sejakTanpaPelacakan = $this->HitungMutasiTanpaPelacakan($dihitung->all(), $produk, $opname->IdGudang);
 
         foreach ($dihitung as $d) {
             $pelacakan = isset($produk[$d->IdProduk]) ? $produk[$d->IdProduk]->pelacakan : PelacakanProduk::Tidak;
             $this->LengkapiPelacakan($d, $opname->IdGudang);
-            $sejak = $this->HitungMutasiSejakSnapshot($d, $opname->IdGudang, $pelacakan);
+            $sejak = $sejakTanpaPelacakan[$d->Id] ?? $this->HitungMutasiSejakSnapshot($d, $opname->IdGudang, $pelacakan);
             $selisih = Kuantitas::Dari((string) $d->JumlahFisik)->Kurangi(Kuantitas::Dari($d->JumlahSistem)->Tambah($sejak));
             $d->MutasiSelamaOpname = $sejak->KeString();
             $d->Selisih = $selisih->KeString();
@@ -182,6 +183,52 @@ final class SetujuiStokOpname
         if ($d->NomorSeri !== null && $d->IdNomorSeri === null) {
             $d->IdNomorSeri = NomorSeri::query()->where('IdProduk', $d->IdProduk)->where('Nomor', $d->NomorSeri)->value('Id');
         }
+    }
+
+    /**
+     * Versi massal `HitungMutasiSejakSnapshot` untuk produk tanpa batch/nomor seri: baris yang penanda snapshot-nya sama
+     * (umumnya semua baris satu opname) dihitung dalam satu kueri `GROUP BY`, bukan satu kueri per baris selagi saldo
+     * semua produk terkunci. Baris produk berbatch/berseri tidak ada di hasil dan tetap dihitung per baris.
+     *
+     * @param  list<StokOpnameDetail>  $dihitung
+     * @param  array<int, mixed>  $produk  info produk per Id (`pelacakan`)
+     * @return array<int, Kuantitas> Σ mutasi per Id baris opname
+     */
+    private function HitungMutasiTanpaPelacakan(array $dihitung, array $produk, int $idGudang): array
+    {
+        $perSnapshot = [];
+
+        foreach ($dihitung as $d) {
+            $pelacakan = isset($produk[$d->IdProduk]) ? $produk[$d->IdProduk]->pelacakan : PelacakanProduk::Tidak;
+
+            if ($pelacakan === PelacakanProduk::Tidak) {
+                $perSnapshot[(int) $d->IdMutasiSnapshot][] = $d;
+            }
+        }
+
+        $hasil = [];
+
+        foreach ($perSnapshot as $snapshot => $baris) {
+            $idProduk = array_values(array_unique(array_map(fn (StokOpnameDetail $d): int => $d->IdProduk, $baris)));
+            $jumlah = [];
+
+            foreach (array_chunk($idProduk, 1000) as $potongan) {
+                $jumlah += MutasiStok::query()
+                    ->where('IdGudang', $idGudang)
+                    ->where('Id', '>', $snapshot)
+                    ->whereIn('IdProduk', $potongan)
+                    ->groupBy('IdProduk')
+                    ->selectRaw('IdProduk, SUM(Jumlah) as Total')
+                    ->pluck('Total', 'IdProduk')
+                    ->all();
+            }
+
+            foreach ($baris as $d) {
+                $hasil[$d->Id] = Kuantitas::Dari(BigDecimal::of((string) ($jumlah[$d->IdProduk] ?? '0'))->toScale(4));
+            }
+        }
+
+        return $hasil;
     }
 
     /** BR-05.3: Σ mutasi produk (batch/nomor seri) di lokasi ini sesudah penanda snapshot baris. */

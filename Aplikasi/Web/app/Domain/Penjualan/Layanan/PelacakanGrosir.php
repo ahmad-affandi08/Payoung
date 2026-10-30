@@ -65,6 +65,11 @@ final class PelacakanGrosir
      */
     public function SisaSeri(SuratJalanDetail $detail): array
     {
+        // Baris tanpa nomor seri (hampir semua baris) tidak punya apa-apa untuk dikurangi: lewati kueri retur.
+        if (array_filter($detail->RincianPelacakan ?? [], fn ($e): bool => is_array($e) && isset($e['Nomor'])) === []) {
+            return [];
+        }
+
         $sudah = [];
 
         foreach ($this->ReturBerlaku($detail) as $retur) {
