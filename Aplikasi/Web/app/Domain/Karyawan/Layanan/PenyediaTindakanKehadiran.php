@@ -13,6 +13,7 @@ use App\Domain\Karyawan\Kueri\DaftarPermintaanKoreksi;
 use App\Domain\Karyawan\Kueri\DaftarRekapGaji;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\Karyawan;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
  * - **absen di luar jadwal** (Perhatian): absen dari aplikasi kasir 7 hari terakhir yang diterima walau tidak sesuai jadwal;
  * - **absen perlu dicek** (Perhatian): absen dari HP 7 hari terakhir yang lokasinya janggal (di luar radius, GPS lemah, titik
  *   outlet belum diatur) tetapi tetap dicatat;
+ * - **absen keluar otomatis** (Perhatian, D-250): karyawan lupa absen keluar, jam keluarnya diisi sistem sesuai jam selesai
+ *   jadwal. Periksa lalu koreksi jamnya bila perlu, atau tandai sudah dicek;
  * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya;
  * - **rekap gaji mingguan siap dibuat** (Perhatian, izin `karyawan.kelola`, D-219): ada karyawan bergaji mingguan dan
  *   tujuh hari sejak rekap mingguan terakhir sudah lewat.
@@ -46,16 +49,18 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
 
         return array_values(array_filter([
             $this->ButirAbsen($konteks, $dari, $sampai, 'DiluarJadwal', 'karyawan.absen-diluar-jadwal', 'Absen di luar jadwal', 'Karyawan absen di kasir padahal tidak sesuai jadwal kerjanya. Periksa, lalu jadwalkan atau koreksi absensinya.', 'Absen masuk tidak sesuai jadwal'),
-            $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat. Periksa lalu tandai sudah dicek.', null),
+            $this->ButirAbsen($konteks, $dari, $sampai, 'PerluDicek', 'karyawan.absen-perlu-dicek', 'Absen perlu dicek', 'Karyawan absen dari HP, tetapi lokasinya jauh dari outlet atau sinyal GPS lemah. Absennya tetap tercatat. Periksa lalu tandai sudah dicek.', null, fn (Builder $k): Builder => $k->where('KeluarOtomatis', false)),
+            $this->ButirAbsen($konteks, $dari, $sampai, 'KeluarOtomatis', 'karyawan.absen-keluar-otomatis', 'Lupa absen keluar', 'Karyawan lupa absen keluar, jadi sistem menutup absensinya sesuai jam selesai jadwal. Periksa jam keluarnya, koreksi bila ia pulang di jam lain, lalu tandai sudah dicek.', 'Keluar ditutup otomatis', fn (Builder $k): Builder => $k->where('PerluDicek', true)),
             $this->ButirKoreksi($konteks),
             ...$gaji,
         ]));
     }
 
-    private function ButirAbsen(DataKonteksTindakan $konteks, string $dari, string $sampai, string $kolom, string $kunci, string $judul, string $keterangan, ?string $teksTetap): ?DataButirTindakan
+    private function ButirAbsen(DataKonteksTindakan $konteks, string $dari, string $sampai, string $kolom, string $kunci, string $judul, string $keterangan, ?string $teksTetap, ?Closure $batasi = null): ?DataButirTindakan
     {
         $kueri = fn (): Builder => Absensi::query()
             ->where($kolom, true)
+            ->when($batasi !== null, fn (Builder $k) => $batasi($k))
             ->where('TanggalBisnis', '>=', $dari)
             ->when($konteks->idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $konteks->idOutletBoleh ?: [0]));
         $jumlah = $kueri()->count();

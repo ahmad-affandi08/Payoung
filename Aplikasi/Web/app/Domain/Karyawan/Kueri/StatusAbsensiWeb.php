@@ -22,7 +22,7 @@ final class StatusAbsensiWeb
     ) {}
 
     /**
-     * @return array{Wajah: array{Status: string, Label: string, AlasanTolak: string|null}|null, AbsensiTerbuka: array{Uuid: string, MasukPada: string, NamaOutlet: string|null}|null, Riwayat: list<array{MasukPada: string, KeluarPada: string|null, NamaOutlet: string|null, PerluDicek: bool}>, JumlahFotoDaftar: int, SimpanFoto: bool}
+     * @return array{Wajah: array{Status: string, Label: string, AlasanTolak: string|null}|null, AbsensiTerbuka: array{Uuid: string, MasukPada: string, NamaOutlet: string|null}|null, Riwayat: list<array{MasukPada: string, KeluarPada: string|null, NamaOutlet: string|null, PerluDicek: bool, KeluarOtomatis: bool}>, JumlahFotoDaftar: int, SimpanFoto: bool}
      */
     public function Ambil(Karyawan $karyawan): array
     {
@@ -46,6 +46,7 @@ final class StatusAbsensiWeb
                 'KeluarPada' => $a->KeluarPada?->toIso8601String(),
                 'NamaOutlet' => $this->lokasi->AmbilNama($a->IdOutlet),
                 'PerluDicek' => $a->PerluDicek,
+                'KeluarOtomatis' => $a->KeluarOtomatis,
             ])->all()),
             'JumlahFotoDaftar' => (int) config('karyawan.JumlahFotoDaftarWajah'),
             // Foto hanya dikirim dari halaman bila aturan menyimpannya (wajah tetap dicocokkan lewat sidik di perangkat).

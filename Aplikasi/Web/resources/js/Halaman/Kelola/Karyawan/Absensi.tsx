@@ -120,6 +120,9 @@ const kolom: KolomTabel<BarisAbsensi>[] = [
                     {a.JamKeluar ?? '—'}
                     {a.KeluarBeda ? ' (+1 hari)' : ''}
                 </span>
+                {a.KeluarOtomatis ? (
+                    <span className="text-keterangan text-teks-sekunder">Otomatis, lupa absen keluar</span>
+                ) : null}
                 <TautanSwafoto a={a} jenis="keluar" />
             </span>
         ),

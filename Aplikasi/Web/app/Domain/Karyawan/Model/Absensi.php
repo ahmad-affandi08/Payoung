@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $TanggalBisnis
  * @property Carbon $MasukPada
  * @property Carbon|null $KeluarPada
+ * @property bool $KeluarOtomatis D-250: keluar diisi sistem sesuai jam selesai jadwal karena karyawan lupa absen keluar
  * @property string|null $PathSwafotoMasuk
  * @property string|null $PathSwafotoKeluar
  * @property string $Sumber
@@ -55,7 +56,7 @@ final class Absensi extends ModelDasar
     public const SUMBER_WEB = 'Web';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Sumber' => self::SUMBER_POS, 'DiluarJadwal' => false, 'PerluDicek' => false];
+    protected $attributes = ['Sumber' => self::SUMBER_POS, 'DiluarJadwal' => false, 'PerluDicek' => false, 'KeluarOtomatis' => false];
 
     /**
      * @return array<string, string>
@@ -66,6 +67,7 @@ final class Absensi extends ModelDasar
             'TanggalBisnis' => 'date',
             'DiluarJadwal' => 'boolean',
             'PerluDicek' => 'boolean',
+            'KeluarOtomatis' => 'boolean',
             'MasukPada' => 'datetime',
             'KeluarPada' => 'datetime',
             'DikoreksiPada' => 'datetime',

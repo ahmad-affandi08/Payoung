@@ -15,14 +15,15 @@ use Illuminate\Support\Facades\DB;
  * 0–480, toleransi terlambat & pulang cepat 0–120, ambang lembur 0–240, pengingat shift 5–240 menit sebelum mulai,
  * peringatan pengelola 5–240 menit setelah jam mulai dan tidak lebih awal dari toleransi terlambat (peringatan
  * "belum masuk" yang datang sebelum batas terlambat akan keliru). D-180: saklar simpan foto bukti dan tolak absen di luar
- * radius. Audit `aturan-kehadiran.simpan`.
+ * radius. D-250: saklar tutup otomatis absensi yang lupa keluar dan batas tunggunya, 0–720 menit setelah jam selesai
+ * jadwal. Audit `aturan-kehadiran.simpan`.
  */
 final class SimpanAturanKehadiran
 {
     public function __construct(private readonly PencatatAudit $audit) {}
 
     /**
-     * @param  array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}  $nilai
+     * @param  array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool, TutupOtomatisAktif: bool, TutupOtomatisSetelahMenit: int}  $nilai
      */
     public function Jalankan(array $nilai, int $idPengguna): AturanKehadiran
     {
@@ -54,6 +55,7 @@ final class SimpanAturanKehadiran
             'LemburSetelahMenit' => [0, 240, 'Ambang lembur'],
             'PengingatShiftMenitSebelum' => [5, 240, 'Pengingat shift'],
             'PeringatanPengelolaSetelahMenit' => [5, 240, 'Peringatan ke pengelola'],
+            'TutupOtomatisSetelahMenit' => [0, 720, 'Batas tunggu tutup otomatis'],
         ];
 
         foreach ($batas as $kunci => [$min, $maks, $nama]) {

@@ -12,12 +12,14 @@ use App\Domain\Karyawan\Aksi\CatatAbsensiWeb;
 use App\Domain\Karyawan\Aksi\DaftarkanWajahKaryawan;
 use App\Domain\Karyawan\Kueri\CekKecocokanWajah;
 use App\Domain\Karyawan\Kueri\StatusAbsensiWeb;
+use App\Domain\Karyawan\Layanan\PenutupAbsensiOtomatis;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Absensi\PembacaKirimanAbsensi;
 use App\Http\Respons\ResponsPwaAbsensi;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,9 +42,17 @@ final class AbsenTautanKontroler extends Kontroler
         private readonly PembacaKirimanAbsensi $pembaca,
     ) {}
 
-    public function Tampilkan(string $slugTenant, string $tokenAbsen, StatusAbsensiWeb $status): SymfonyResponse
+    public function Tampilkan(string $slugTenant, string $tokenAbsen, StatusAbsensiWeb $status, PenutupAbsensiOtomatis $penutup): SymfonyResponse
     {
-        return $this->DenganKaryawan($slugTenant, $tokenAbsen, fn (Karyawan $karyawan, int $idTenant): SymfonyResponse => Inertia::render('Publik/Absensi', [
+        return $this->DenganKaryawan($slugTenant, $tokenAbsen, fn (Karyawan $karyawan, int $idTenant): SymfonyResponse => $this->TampilkanHalaman($slugTenant, $tokenAbsen, $karyawan, $idTenant, $status, $penutup));
+    }
+
+    private function TampilkanHalaman(string $slugTenant, string $tokenAbsen, Karyawan $karyawan, int $idTenant, StatusAbsensiWeb $status, PenutupAbsensiOtomatis $penutup): SymfonyResponse
+    {
+        // D-250: catatan yang lupa keluar ditutup dulu sesuai jam selesai jadwal.
+        $penutup->TutupYangLewat(CarbonImmutable::now(), $karyawan->Id);
+
+        return Inertia::render('Publik/Absensi', [
             'NamaToko' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
             'NamaKaryawan' => $karyawan->Nama,
             'AlamatDasar' => url("/{$slugTenant}/absen/{$tokenAbsen}"),
@@ -50,7 +60,7 @@ final class AbsenTautanKontroler extends Kontroler
             'Berlogin' => false,
             'BisaDashboard' => false,
             ...$status->Ambil($karyawan),
-        ])->toResponse(request()));
+        ])->toResponse(request());
     }
 
     /** PWA (D-211): manifest per tautan pribadi, supaya halaman Absen bisa dipasang ke layar utama HP. */

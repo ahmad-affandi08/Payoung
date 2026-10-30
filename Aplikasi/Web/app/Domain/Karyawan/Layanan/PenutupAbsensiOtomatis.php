@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Karyawan\Layanan;
+
+use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
+use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
+use App\Domain\Karyawan\Model\Absensi;
+use App\Domain\Karyawan\Model\JadwalKerja;
+use App\Domain\Organisasi\Kueri\ZonaWaktuOutlet;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Menutup absensi yang lupa absen keluar (F-18, D-250) supaya jam kerjanya tidak menyambung ke hari berikutnya.
+ *
+ * - **Batas** = jam selesai jadwal karyawan pada tanggal masuk (shift yang melewati tengah malam berakhir keesokan harinya).
+ *   Tanpa jadwal, atau jadwalnya sudah berakhir sebelum karyawan masuk, batasnya akhir hari kalender outlet (23.59).
+ * - **Ditutup** setelah `batas + TutupOtomatisSetelahMenit` (ruang bagi yang memang lembur). Jam keluar yang dicatat adalah
+ *   **batas itu sendiri**, bukan jam sistem menutupnya, jadi lama kerja tidak membengkak. Lembur yang tidak diabsen tidak
+ *   dihitung.
+ * - Absensi ditandai `KeluarOtomatis` dan `PerluDicek` dengan catatan, supaya pengelola bisa mengoreksi jamnya
+ *   (`absensi.koreksi`) dan tampil di Kotak Tindakan. Audit `absensi.keluar-otomatis`.
+ *
+ * Dipanggil jadwal (`karyawan:tutup-absensi-terbuka`) dan di awal absen masuk/halaman absen karyawan, jadi karyawan
+ * tidak pernah tertahan oleh catatan kemarin. Dibaca dan ditulis dalam konteks tenant. Aman diulang.
+ */
+final class PenutupAbsensiOtomatis
+{
+    public const BATAS_PER_PUTARAN = 500;
+
+    public function __construct(
+        private readonly AturanKehadiranTenant $aturan,
+        private readonly ZonaWaktuOutlet $zona,
+        private readonly PencatatAudit $audit,
+    ) {}
+
+    /**
+     * Jam keluar otomatis (UTC) satu absensi terbuka: batas shift menurut jadwal, atau akhir hari kalender outlet.
+     * Murni: semua masukan sudah di tangan pemanggil. `$jadwal` = jadwal karyawan pada tanggal masuk (boleh kosong).
+     *
+     * @param  Collection<int, JadwalKerja>  $jadwal
+     */
+    public static function HitungBatasUtc(CarbonImmutable $masukUtc, int $selisihDetik, Collection $jadwal): CarbonImmutable
+    {
+        $masukLokal = $masukUtc->utc()->addSeconds($selisihDetik);
+        $batasLokal = null;
+
+        foreach ($jadwal as $j) {
+            $selesai = PenilaiKehadiran::AmbilBatasShift($masukLokal->toDateString(), $j->JamMulai, $j->JamSelesai)['Selesai'];
+
+            if ($selesai->greaterThan($masukLokal) && ($batasLokal === null || $selesai->greaterThan($batasLokal))) {
+                $batasLokal = $selesai;
+            }
+        }
+
+        $batasLokal ??= $masukLokal->setTime(23, 59, 0);
+
+        return $batasLokal->subSeconds($selisihDetik);
+    }
+
+    /**
+     * @param  int|null  $idKaryawan  null = semua karyawan tenant (jadwal berkala), selain itu hanya karyawan itu
+     * @return int jumlah absensi yang ditutup
+     */
+    public function TutupYangLewat(CarbonImmutable $sekarang, ?int $idKaryawan = null): int
+    {
+        $aturan = $this->aturan->Ambil();
+
+        if (! $aturan['TutupOtomatisAktif']) {
+            return 0;
+        }
+
+        $terbuka = Absensi::query()
+            ->whereNull('KeluarPada')
+            ->where('MasukPada', '<', $sekarang->utc()->subMinutes($aturan['TutupOtomatisSetelahMenit']))
+            ->when($idKaryawan !== null, fn ($kueri) => $kueri->where('IdKaryawan', $idKaryawan))
+            ->orderBy('Id')
+            ->limit(self::BATAS_PER_PUTARAN)
+            ->get();
+
+        if ($terbuka->isEmpty()) {
+            return 0;
+        }
+
+        $selisih = $this->zona->AmbilSelisihDetik(array_values(array_unique(array_map('intval', $terbuka->pluck('IdOutlet')->all()))));
+        $jadwal = JadwalKerja::query()
+            ->whereIn('IdKaryawan', $terbuka->pluck('IdKaryawan')->unique()->all())
+            ->whereIn('Tanggal', $terbuka->map(fn (Absensi $a): string => $this->TanggalMasukLokal($a, $selisih)->toDateString())->unique()->values()->all())
+            ->get();
+        $jumlah = 0;
+
+        foreach ($terbuka as $absensi) {
+            $detik = $selisih[$absensi->IdOutlet] ?? 25200;
+            $tanggal = $this->TanggalMasukLokal($absensi, $selisih)->toDateString();
+            $batas = self::HitungBatasUtc(
+                CarbonImmutable::instance($absensi->MasukPada),
+                $detik,
+                $jadwal->filter(fn (JadwalKerja $j): bool => $j->IdKaryawan === $absensi->IdKaryawan && $j->Tanggal->toDateString() === $tanggal)->values(),
+            );
+
+            if ($sekarang->lessThan($batas->addMinutes($aturan['TutupOtomatisSetelahMenit']))) {
+                continue;
+            }
+
+            if ($this->Tutup($absensi->Id, $batas, $detik)) {
+                $jumlah++;
+            }
+        }
+
+        return $jumlah;
+    }
+
+    /** @param array<int, int> $selisih */
+    private function TanggalMasukLokal(Absensi $absensi, array $selisih): CarbonImmutable
+    {
+        return CarbonImmutable::instance($absensi->MasukPada)->utc()->addSeconds($selisih[$absensi->IdOutlet] ?? 25200);
+    }
+
+    private function Tutup(int $idAbsensi, CarbonImmutable $batasUtc, int $selisihDetik): bool
+    {
+        return DB::transaction(function () use ($idAbsensi, $batasUtc, $selisihDetik): bool {
+            $absensi = Absensi::query()->whereKey($idAbsensi)->lockForUpdate()->first();
+
+            if ($absensi === null || $absensi->KeluarPada !== null) {
+                return false;
+            }
+
+            // Jam keluar tidak pernah mendahului jam masuk (masuk setelah batas, misalnya tepat 23.59).
+            $masuk = CarbonImmutable::instance($absensi->MasukPada)->utc();
+            $keluar = $batasUtc->lessThan($masuk) ? $masuk : $batasUtc;
+            $jamLokal = $keluar->addSeconds($selisihDetik)->format('H:i');
+            $catatan = "Lupa absen keluar, ditutup otomatis pukul {$jamLokal}";
+            $lama = ['KeluarPada' => null, 'KeluarOtomatis' => false, 'PerluDicek' => $absensi->PerluDicek];
+
+            $absensi->forceFill([
+                'KeluarPada' => $keluar,
+                'KeluarOtomatis' => true,
+                'PerluDicek' => true,
+                'CatatanPeriksa' => mb_substr($absensi->CatatanPeriksa === null ? $catatan : "{$absensi->CatatanPeriksa}; {$catatan}", 0, 200),
+            ])->save();
+            $this->audit->Catat('absensi.keluar-otomatis', $absensi, $lama, [
+                'KeluarPada' => $keluar->toIso8601ZuluString(),
+                'KeluarOtomatis' => true,
+                'PerluDicek' => true,
+            ], $absensi->IdTenant);
+
+            return true;
+        });
+    }
+}

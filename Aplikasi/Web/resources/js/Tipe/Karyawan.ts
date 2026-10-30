@@ -94,6 +94,8 @@ export type BarisAbsensi = {
     DiluarJadwal: boolean;
     /** D-180: lokasi janggal (di luar radius, GPS lemah, titik outlet belum diatur); absen tetap tercatat. */
     PerluDicek: boolean;
+    /** D-250: jam keluar diisi sistem sesuai jam selesai jadwal (karyawan lupa absen keluar). */
+    KeluarOtomatis: boolean;
     CatatanPeriksa: string | null;
     Status: StatusKehadiran;
     LabelStatus: string;
@@ -362,6 +364,10 @@ export type AturanKehadiran = {
     SimpanFotoBukti: boolean;
     /** D-180: tolak absen di luar radius outlet (bawaan: absen tetap tercatat dan ditandai perlu dicek). */
     TolakDiLuarRadius: boolean;
+    /** D-250: absensi yang lupa keluar ditutup otomatis sesuai jam selesai jadwal. */
+    TutupOtomatisAktif: boolean;
+    /** D-250: menunggu sekian menit setelah jam selesai sebelum ditutup (ruang lembur). */
+    TutupOtomatisSetelahMenit: number;
 };
 
 export type PropsAturanKehadiran = {
@@ -377,6 +383,8 @@ export type RiwayatAbsenSaya = {
     KeluarPada: string | null;
     NamaOutlet: string | null;
     PerluDicek: boolean;
+    /** D-250: jam keluar diisi sistem sesuai jam selesai jadwal karena karyawan lupa absen keluar. */
+    KeluarOtomatis: boolean;
 };
 
 /** Props halaman Absen (berlogin `/kelola/absen` maupun tautan pribadi `/{slug}/absen/{token}`, D-198). */

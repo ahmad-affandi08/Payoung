@@ -30,6 +30,8 @@ function BuatIsian(a: AturanKehadiran): Isian {
         PeringatanPengelolaSetelahMenit: String(a.PeringatanPengelolaSetelahMenit),
         SimpanFotoBukti: a.SimpanFotoBukti,
         TolakDiLuarRadius: a.TolakDiLuarRadius,
+        TutupOtomatisAktif: a.TutupOtomatisAktif,
+        TutupOtomatisSetelahMenit: String(a.TutupOtomatisSetelahMenit),
     };
 }
 
@@ -139,6 +141,32 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                         Tarif lembur dan potongan terlambat/tidak masuk diatur per karyawan di daftar karyawan, lalu
                         dipakai rekap gaji.
                     </p>
+                </Panel>
+
+                <Panel
+                    judul="Lupa absen keluar"
+                    keterangan="Karyawan yang lupa absen keluar tidak boleh membuat jam kerjanya menyambung ke hari berikutnya. Absensinya ditutup otomatis sesuai jam selesai jadwal."
+                >
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <KotakCentang
+                                label="Tutup otomatis absensi yang lupa keluar"
+                                nilai={formulir.data.TutupOtomatisAktif}
+                                saatBerubah={(nilai) => formulir.setData('TutupOtomatisAktif', nilai)}
+                                disabled={!Izin.Kelola}
+                            />
+                            <p className="text-keterangan text-teks-sekunder">
+                                Jam keluar yang dicatat adalah jam selesai jadwal, bukan jam sistem menutupnya. Tanpa
+                                jadwal, dicatat pukul 23.59 di hari masuk. Absensi itu ditandai &ldquo;perlu
+                                dicek&rdquo; dan muncul di Kotak Tindakan, supaya jam pulangnya bisa Anda koreksi.
+                            </p>
+                        </div>
+                        {Menit(
+                            'TutupOtomatisSetelahMenit',
+                            'Tunggu setelah jam selesai',
+                            'Selama batas ini karyawan yang masih bekerja (lembur) tidak ditutup. Isi 0 untuk menutup tepat setelah jam selesai.',
+                        )}
+                    </div>
                 </Panel>
 
                 <Panel

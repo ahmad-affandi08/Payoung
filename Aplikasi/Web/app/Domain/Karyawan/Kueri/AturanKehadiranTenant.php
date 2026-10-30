@@ -10,7 +10,7 @@ use App\Domain\Karyawan\Model\AturanKehadiran;
 final class AturanKehadiranTenant
 {
     /**
-     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}
+     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool, TutupOtomatisAktif: bool, TutupOtomatisSetelahMenit: int}
      */
     public function Ambil(): array
     {
@@ -18,7 +18,7 @@ final class AturanKehadiranTenant
     }
 
     /**
-     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool}
+     * @return array{WajibJadwal: bool, MasukPalingAwalMenit: int, ToleransiTerlambatMenit: int, ToleransiPulangCepatMenit: int, LemburSetelahMenit: int, PengingatShiftAktif: bool, PengingatShiftMenitSebelum: int, PeringatanPengelolaAktif: bool, PeringatanPengelolaSetelahMenit: int, SimpanFotoBukti: bool, TolakDiLuarRadius: bool, TutupOtomatisAktif: bool, TutupOtomatisSetelahMenit: int}
      */
     public static function Petakan(AturanKehadiran $a): array
     {
@@ -34,6 +34,8 @@ final class AturanKehadiranTenant
             'PeringatanPengelolaSetelahMenit' => $a->PeringatanPengelolaSetelahMenit,
             'SimpanFotoBukti' => $a->SimpanFotoBukti,
             'TolakDiLuarRadius' => $a->TolakDiLuarRadius,
+            'TutupOtomatisAktif' => $a->TutupOtomatisAktif,
+            'TutupOtomatisSetelahMenit' => $a->TutupOtomatisSetelahMenit,
         ];
     }
 }

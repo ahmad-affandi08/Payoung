@@ -26,6 +26,8 @@ function Props(ubah: Partial<PropsAturanKehadiran> = {}): PropsAturanKehadiran {
             PeringatanPengelolaSetelahMenit: 15,
             SimpanFotoBukti: true,
             TolakDiLuarRadius: false,
+            TutupOtomatisAktif: true,
+            TutupOtomatisSetelahMenit: 120,
         },
         WhatsappAktif: true,
         Izin: { Kelola: true },
@@ -56,6 +58,24 @@ describe('Aturan kehadiran (F-18 bagian 5)', () => {
                 ToleransiTerlambatMenit: '10',
                 MasukPalingAwalMenit: '60',
             },
+        });
+    });
+
+    it('D-250: tutup otomatis absensi yang lupa keluar bisa dimatikan dan batas tunggunya diubah', () => {
+        RenderUji(<HalamanAturanKehadiran {...Props()} />);
+
+        expect(
+            screen
+                .getByRole('checkbox', { name: 'Tutup otomatis absensi yang lupa keluar' })
+                .getAttribute('aria-checked'),
+        ).toBe('true');
+        fireEvent.change(screen.getByLabelText(/Tunggu setelah jam selesai \(menit\)/), { target: { value: '90' } });
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Tutup otomatis absensi yang lupa keluar' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan aturan kehadiran' }));
+
+        expect(kirimanForm.at(-1)).toMatchObject({
+            metode: 'put',
+            data: { TutupOtomatisAktif: false, TutupOtomatisSetelahMenit: '90' },
         });
     });
 

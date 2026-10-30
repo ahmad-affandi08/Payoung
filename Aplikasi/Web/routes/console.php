@@ -134,6 +134,8 @@ Schedule::command('invoice:kirim-pengingat')->dailyAt('09:10')->timezone('Asia/J
 
 // F-18 bagian 5 (D-44): pengingat shift & peringatan terlambat/belum masuk lewat WhatsApp (bila aturan kehadiran aktif).
 Schedule::command('karyawan:kirim-notifikasi-kehadiran')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
+// D-250: absensi yang lupa absen keluar ditutup sesuai jam selesai jadwal supaya jam kerja tidak menyambung ke hari berikutnya.
+Schedule::command('karyawan:tutup-absensi-terbuka')->everyFifteenMinutes()->withoutOverlapping(30)->runInBackground();
 
 // CRM-07: mulai kampanye pesan pelanggan yang jadwalnya sudah tiba (pengiriman bertahap & jam tenang di tugasnya).
 Schedule::command('pelanggan:jalankan-kampanye-terjadwal')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();

@@ -148,6 +148,7 @@ describe('Halaman karyawan (F-18)', () => {
             LemburMenit: 0,
             DiluarJadwal: false,
             PerluDicek: false,
+            KeluarOtomatis: false,
             CatatanPeriksa: null,
             Status: 'Terlambat',
             LabelStatus: 'Terlambat',

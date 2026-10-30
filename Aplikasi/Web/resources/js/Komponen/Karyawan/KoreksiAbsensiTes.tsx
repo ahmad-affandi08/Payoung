@@ -29,6 +29,7 @@ function BarisUji(ubah: Partial<BarisAbsensi> = {}): BarisAbsensi {
         LemburMenit: 0,
         DiluarJadwal: false,
         PerluDicek: false,
+        KeluarOtomatis: false,
         CatatanPeriksa: null,
         Status: 'TanpaJadwal',
         LabelStatus: 'Tanpa jadwal',

@@ -251,6 +251,7 @@
 | D-247 | Dari pemilik produk, 30/10/2026 ("pada beranda itu ga perlu ada hal yang harusnya masuk ke page tindakan"). Membalik sebagian D-23 C dan D-24 yang menempatkan ringkasan tindakan di Beranda. Yang dihapus hanya kartu daftar tindakan, bukan ringkasan angka. |
 | D-248 | Dari pemilik produk, 30/10/2026 ("yang TextAlignStart itu bagus, gunakan itu"). Ikon `PanelLeft` dianggap terlalu pasaran. Hanya tombol menu samping web yang diganti, bukan aplikasi Kasir dan Pemilik. |
 | D-249 | Dari pemilik produk, 30/10/2026 ("semisal pengennya 2 bulan, maksud saya bebas", "berikan yang terbaik dan tidak boleh ada yang di hardcode"). Pilihan lama langganan dibuka bebas dalam bulan, dengan batas, tangga diskon, dan rentang yang dapat diatur Super Admin dari konsol. Keputusan agen (D-12): bawaan 1 sampai 12 bulan, 3 bulan 7%, 6 bulan 12%, 12 bulan memakai harga tahunan katalog, langganan multi-tahun mandiri tidak ditawarkan, tagihan manual sampai 60 bulan. |
+| D-250 | Dari pemilik produk, 30/10/2026 ("Iya, kerjakan pakai jam selesai jadwal"), menjawab keluhan klien "absen diputus sehari biar jam kerjanya gak nerus". Absensi yang lupa keluar ditutup otomatis memakai jam selesai jadwal sebagai jam keluar. Keputusan agen (D-12): bawaan aktif, masa tunggu 120 menit setelah jam selesai, tanpa jadwal ditutup pukul 23.59 hari masuk, selalu ditandai perlu dicek. Menyempurnakan D-230 (tanggal absensi mengikuti kalender outlet) dan D-44 (jadwal terhubung ke absensi). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

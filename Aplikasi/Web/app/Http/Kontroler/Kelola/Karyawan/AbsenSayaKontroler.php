@@ -10,12 +10,14 @@ use App\Domain\Karyawan\Aksi\DaftarkanWajahKaryawan;
 use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Karyawan\Kueri\CekKecocokanWajah;
 use App\Domain\Karyawan\Kueri\StatusAbsensiWeb;
+use App\Domain\Karyawan\Layanan\PenutupAbsensiOtomatis;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Absensi\PembacaKirimanAbsensi;
 use App\Http\Respons\ResponsPwaAbsensi;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,9 +33,11 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final class AbsenSayaKontroler extends DasarKelolaKontroler
 {
-    public function Tampilkan(AbsenSaya $saya, StatusAbsensiWeb $status, NamaTampilUsaha $nama, AksesPengguna $akses): Response
+    public function Tampilkan(AbsenSaya $saya, StatusAbsensiWeb $status, NamaTampilUsaha $nama, AksesPengguna $akses, PenutupAbsensiOtomatis $penutup): Response
     {
         $karyawan = $this->CariKaryawan($saya);
+        // D-250: catatan yang lupa keluar ditutup dulu, supaya halaman tidak menampilkan "Sedang bekerja" berhari-hari.
+        $penutup->TutupYangLewat(CarbonImmutable::now(), $karyawan->Id);
         $izin = $akses->Ambil($this->IdTenant(), $this->Pelaku()->Id);
 
         return Inertia::render('Kelola/Absen/Saya', [

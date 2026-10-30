@@ -47,6 +47,9 @@ final class AturanKehadiranKontroler extends DasarKelolaKontroler
             // D-180: tidak dikirim = nilai tersimpan tidak berubah.
             'SimpanFotoBukti' => ['sometimes', 'boolean'],
             'TolakDiLuarRadius' => ['sometimes', 'boolean'],
+            // D-250: tidak dikirim = nilai tersimpan tidak berubah.
+            'TutupOtomatisAktif' => ['sometimes', 'boolean'],
+            'TutupOtomatisSetelahMenit' => ['sometimes', 'integer'],
         ], [
             '*.required' => 'Lengkapi isian ini.',
             '*.integer' => 'Isi dengan bilangan bulat (menit).',
@@ -63,6 +66,8 @@ final class AturanKehadiranKontroler extends DasarKelolaKontroler
             'PeringatanPengelolaSetelahMenit' => (int) $data['PeringatanPengelolaSetelahMenit'],
             'SimpanFotoBukti' => (bool) ($data['SimpanFotoBukti'] ?? $saatIni['SimpanFotoBukti']),
             'TolakDiLuarRadius' => (bool) ($data['TolakDiLuarRadius'] ?? $saatIni['TolakDiLuarRadius']),
+            'TutupOtomatisAktif' => (bool) ($data['TutupOtomatisAktif'] ?? $saatIni['TutupOtomatisAktif']),
+            'TutupOtomatisSetelahMenit' => (int) ($data['TutupOtomatisSetelahMenit'] ?? $saatIni['TutupOtomatisSetelahMenit']),
         ], $this->Pelaku()->Id);
 
         return back()->with('Kilat', 'Aturan kehadiran disimpan.');

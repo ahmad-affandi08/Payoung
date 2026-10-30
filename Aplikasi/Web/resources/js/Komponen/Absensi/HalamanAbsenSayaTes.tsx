@@ -101,6 +101,7 @@ describe('Halaman Absen berlogin', () => {
                         KeluarPada: null,
                         NamaOutlet: 'Outlet Solo',
                         PerluDicek: false,
+                        KeluarOtomatis: false,
                     },
                 ]}
             />,
@@ -136,6 +137,7 @@ describe('Halaman Absen berlogin', () => {
                         KeluarPada: '2026-10-04T09:30:00Z',
                         NamaOutlet: 'Outlet Solo',
                         PerluDicek: false,
+                        KeluarOtomatis: false,
                     },
                 ]}
             />,
@@ -188,6 +190,39 @@ describe('Halaman Absen berlogin', () => {
         expect(langkah.querySelector('[aria-current="step"]')?.textContent).toContain('Rekam wajah');
     });
 
+    it('D-250: absen yang lupa pulang tampil dengan tanggal keluarnya dan label ditutup otomatis', () => {
+        RenderUji(
+            <HalamanAbsensi
+                {...dasar}
+                Wajah={{ Status: 'Disetujui', Label: 'Disetujui', AlasanTolak: null }}
+                Riwayat={[
+                    {
+                        MasukPada: '2026-10-04T01:00:00Z',
+                        KeluarPada: '2026-10-04T10:00:00Z',
+                        NamaOutlet: 'Outlet Solo',
+                        PerluDicek: true,
+                        KeluarOtomatis: true,
+                    },
+                    {
+                        MasukPada: '2026-10-03T15:00:00Z',
+                        KeluarPada: '2026-10-04T02:00:00Z',
+                        NamaOutlet: 'Outlet Solo',
+                        PerluDicek: false,
+                        KeluarOtomatis: false,
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByText('Ditutup otomatis')).not.toBeNull();
+        expect(screen.getByText('Lupa absen pulang')).not.toBeNull();
+        expect(screen.queryByText('Perlu dicek')).toBeNull();
+        // Masuk 03 Okt 22.00 WIB, keluar 04 Okt 09.00 WIB: beda hari kalender, tanggal keluar ikut ditampilkan.
+        expect(screen.getByText(/22\.00 – 04 Okt 09\.00/)).not.toBeNull();
+        // Masuk dan keluar sama hari: tanpa tanggal.
+        expect(screen.getByText(/08\.00 – 17\.00/)).not.toBeNull();
+    });
+
     it('menandai absen yang lokasinya perlu dicek di riwayat', () => {
         RenderUji(
             <HalamanAbsensi
@@ -199,6 +234,7 @@ describe('Halaman Absen berlogin', () => {
                         KeluarPada: '2026-10-04T09:30:00Z',
                         NamaOutlet: 'Outlet Solo',
                         PerluDicek: true,
+                        KeluarOtomatis: false,
                     },
                 ]}
             />,

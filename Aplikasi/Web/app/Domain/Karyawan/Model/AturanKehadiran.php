@@ -24,6 +24,8 @@ use App\Domain\Bersama\Tenant\MilikTenant;
  * @property int $PeringatanPengelolaSetelahMenit
  * @property bool $SimpanFotoBukti D-180: foto swafoto tiap absen disimpan sebagai bukti (wajah tetap selalu dicocokkan)
  * @property bool $TolakDiLuarRadius D-180: absen di luar radius outlet ditolak (bawaan: hanya ditandai perlu dicek)
+ * @property bool $TutupOtomatisAktif D-250: absensi yang lupa keluar ditutup otomatis sesuai jam selesai jadwal
+ * @property int $TutupOtomatisSetelahMenit D-250: menunggu sekian menit setelah jam selesai sebelum ditutup (memberi ruang lembur)
  */
 final class AturanKehadiran extends ModelDasar
 {
@@ -46,6 +48,8 @@ final class AturanKehadiran extends ModelDasar
         'PeringatanPengelolaSetelahMenit' => 15,
         'SimpanFotoBukti' => true,
         'TolakDiLuarRadius' => false,
+        'TutupOtomatisAktif' => true,
+        'TutupOtomatisSetelahMenit' => 120,
     ];
 
     /**
@@ -65,6 +69,8 @@ final class AturanKehadiran extends ModelDasar
             'PeringatanPengelolaSetelahMenit' => 'integer',
             'SimpanFotoBukti' => 'boolean',
             'TolakDiLuarRadius' => 'boolean',
+            'TutupOtomatisAktif' => 'boolean',
+            'TutupOtomatisSetelahMenit' => 'integer',
         ];
     }
 }

@@ -13,6 +13,7 @@ use App\Domain\Karyawan\Kueri\AturanKehadiranTenant;
 use App\Domain\Karyawan\Layanan\PencocokWajah;
 use App\Domain\Karyawan\Layanan\PenegakJadwalAbsen;
 use App\Domain\Karyawan\Layanan\PengukurJarak;
+use App\Domain\Karyawan\Layanan\PenutupAbsensiOtomatis;
 use App\Domain\Karyawan\Layanan\PenyimpanSwafoto;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -53,6 +54,7 @@ final class CatatAbsensiWeb
         private readonly PencatatAudit $audit,
         private readonly PenegakJadwalAbsen $jadwal,
         private readonly AturanKehadiranTenant $aturan,
+        private readonly PenutupAbsensiOtomatis $penutup,
     ) {}
 
     public function Masuk(Karyawan $karyawan, DataAbsensiWeb $data): Absensi
@@ -66,6 +68,8 @@ final class CatatAbsensiWeb
         }
 
         $this->PastikanBolehAbsen($karyawan);
+        // D-250: catatan kemarin yang lupa keluar ditutup dulu (sesuai jam selesai jadwal), jadi tidak menahan absen hari ini.
+        $this->penutup->TutupYangLewat(CarbonImmutable::now(), $karyawan->Id);
         $this->PastikanBelumMasuk($karyawan);
 
         $sekarang = CarbonImmutable::now();
