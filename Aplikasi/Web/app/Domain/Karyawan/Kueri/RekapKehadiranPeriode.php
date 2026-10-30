@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Karyawan\Kueri;
 
+use App\Domain\Karyawan\Layanan\PemilihShiftAbsensi;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -50,33 +51,54 @@ final class RekapKehadiranPeriode
         $cuti = $this->cuti->AmbilPerTanggal($dari, $sampai);
         $selisih = $this->zona->AmbilSelisihDetik(array_values(array_unique(array_map('intval', $absensi->pluck('IdOutlet')->all()))));
         $hasil = [];
+        // D-251: satu karyawan boleh punya beberapa shift sehari. Hari tidak masuk dihitung sekali per hari berjadwal, dan
+        // tiap absen dinilai terhadap shift yang dimaksud jam masuknya (absen pertama per shift saja).
+        $perHari = [];
 
         foreach ($jadwal as $j) {
-            $tanggal = $j->Tanggal->toDateString();
             $hasil[$j->IdKaryawan] ??= ['TerlambatMenit' => 0, 'LemburMenit' => 0, 'HariTidakMasuk' => 0];
-            $a = $pertama[$j->IdKaryawan.'|'.$tanggal] ?? null;
+            $perHari[$j->IdKaryawan][$j->Tanggal->toDateString()][] = $j;
+        }
 
-            if ($a === null) {
-                if ($tanggal < $hariIni->toDateString() && ($cuti[$j->IdKaryawan][$tanggal]['Berbayar'] ?? false) !== true) {
-                    $hasil[$j->IdKaryawan]['HariTidakMasuk']++;
+        foreach ($perHari as $idKaryawan => $hari) {
+            foreach (array_keys($hari) as $tanggal) {
+                if (! isset($pertama[$idKaryawan.'|'.$tanggal]) && $tanggal < $hariIni->toDateString() && ($cuti[$idKaryawan][$tanggal]['Berbayar'] ?? false) !== true) {
+                    $hasil[$idKaryawan]['HariTidakMasuk']++;
                 }
+            }
+        }
 
+        $dinilai = [];
+
+        foreach ($absensi as $a) {
+            $tanggal = $a->TanggalBisnis->toDateString();
+            $shiftHari = collect($perHari[$a->IdKaryawan][$tanggal] ?? []);
+
+            if ($shiftHari->isEmpty()) {
                 continue;
             }
 
             $detik = $selisih[$a->IdOutlet] ?? 25200;
+            $masuk = CarbonImmutable::instance($a->MasukPada)->utc()->addSeconds($detik);
+            $j = PemilihShiftAbsensi::Pilih($shiftHari->values(), $masuk);
+
+            if ($j === null || isset($dinilai[$a->IdKaryawan.'|'.$tanggal.'|'.$j->JamMulai])) {
+                continue;
+            }
+
+            $dinilai[$a->IdKaryawan.'|'.$tanggal.'|'.$j->JamMulai] = true;
             $nilai = $this->penilai->Nilai(
                 $tanggal,
                 $j->JamMulai,
                 $j->JamSelesai,
-                CarbonImmutable::instance($a->MasukPada)->utc()->addSeconds($detik),
+                $masuk,
                 $a->KeluarPada === null ? null : CarbonImmutable::instance($a->KeluarPada)->utc()->addSeconds($detik),
                 $aturan['ToleransiTerlambatMenit'],
                 $aturan['ToleransiPulangCepatMenit'],
                 $aturan['LemburSetelahMenit'],
             );
-            $hasil[$j->IdKaryawan]['TerlambatMenit'] += $nilai['TerlambatMenit'];
-            $hasil[$j->IdKaryawan]['LemburMenit'] += $nilai['LemburMenit'];
+            $hasil[$a->IdKaryawan]['TerlambatMenit'] += $nilai['TerlambatMenit'];
+            $hasil[$a->IdKaryawan]['LemburMenit'] += $nilai['LemburMenit'];
         }
 
         return $hasil;

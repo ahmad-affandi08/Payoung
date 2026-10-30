@@ -64,11 +64,17 @@ final class PantauKaryawan
             $namaOutlet[$o['Id']] = $o['Nama'];
         }
 
-        $belumMasuk = array_values($belum->map(fn (JadwalKerja $j): array => [
-            'NamaKaryawan' => (string) ($namaKaryawan[$j->IdKaryawan] ?? ''),
-            'NamaOutlet' => $namaOutlet[$j->IdOutlet] ?? null,
-            'Jadwal' => "{$j->JamMulai}–{$j->JamSelesai}",
-        ])->all());
+        // D-251: karyawan dengan beberapa shift hari ini tampil sekali, jam shiftnya digabung.
+        $belumMasuk = array_values($belum->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->IdOutlet)->map(function ($shift): array {
+            /** @var JadwalKerja $pertama */
+            $pertama = $shift->first();
+
+            return [
+                'NamaKaryawan' => (string) ($namaKaryawan[$pertama->IdKaryawan] ?? ''),
+                'NamaOutlet' => $namaOutlet[$pertama->IdOutlet] ?? null,
+                'Jadwal' => $shift->map(fn (JadwalKerja $j): string => "{$j->JamMulai}–{$j->JamSelesai}")->implode(', '),
+            ];
+        })->all());
 
         $komisi = [];
         $bersih = $this->komisi->AmbilBersihPerKaryawan("{$bulan}-01", CarbonImmutable::parse("{$bulan}-01")->endOfMonth()->toDateString());

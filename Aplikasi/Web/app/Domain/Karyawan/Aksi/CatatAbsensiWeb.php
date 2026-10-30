@@ -69,7 +69,7 @@ final class CatatAbsensiWeb
 
         $this->PastikanBolehAbsen($karyawan);
         // D-250: catatan kemarin yang lupa keluar ditutup dulu (sesuai jam selesai jadwal), jadi tidak menahan absen hari ini.
-        $this->penutup->TutupYangLewat(CarbonImmutable::now(), $karyawan->Id);
+        $this->penutup->TutupYangLewat(CarbonImmutable::now(), $karyawan->Id, untukAbsenMasuk: true);
         $this->PastikanBelumMasuk($karyawan);
 
         $sekarang = CarbonImmutable::now();

@@ -78,11 +78,13 @@ describe('batas penutupan (murni)', function (): void {
             ->and($berakhir->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 23:59:00')->toIso8601ZuluString());
     });
 
-    it('beberapa jadwal pada hari yang sama: yang paling akhir berakhir menjadi batas', function (): void {
+    it('beberapa shift sehari: batas = jam selesai shift yang paling dekat dengan jam masuk', function (): void {
         $dua = collect([new JadwalKerja(['JamMulai' => '08:00', 'JamSelesai' => '12:00']), new JadwalKerja(['JamMulai' => '13:00', 'JamSelesai' => '18:00'])]);
-        $batas = PenutupAbsensiOtomatis::HitungBatasUtc(WibUtcTutup('2026-10-05 08:00:00'), 25200, $dua);
+        $pagi = PenutupAbsensiOtomatis::HitungBatasUtc(WibUtcTutup('2026-10-05 08:00:00'), 25200, $dua);
+        $siang = PenutupAbsensiOtomatis::HitungBatasUtc(WibUtcTutup('2026-10-05 13:00:00'), 25200, $dua);
 
-        expect($batas->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 18:00:00')->toIso8601ZuluString());
+        expect($pagi->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 12:00:00')->toIso8601ZuluString())
+            ->and($siang->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 18:00:00')->toIso8601ZuluString());
     });
 });
 

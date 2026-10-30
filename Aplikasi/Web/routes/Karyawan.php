@@ -13,6 +13,7 @@ use App\Http\Kontroler\Kelola\Karyawan\KaryawanKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\KasbonKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\KomisiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\RekapGajiKontroler;
+use App\Http\Kontroler\Kelola\Karyawan\ShiftKerjaKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\TargetPenjualanKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -31,7 +32,7 @@ $ulid = '[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}';
 
 // D-180: halaman Absen berlogin. Tanpa izin back-office: syaratnya karyawan aktif yang ikut absensi dan tertaut ke akun
 // ini (dicek kontroler; selain itu 404). Dibatasi per akun supaya tebakan massal tidak menekan server wajah.
-Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function (): void {
+Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function () use ($ulid): void {
     Route::get('/', [AbsenSayaKontroler::class, 'Tampilkan'])->middleware('throttle:60,1')->name('kelola.absen');
     // D-211: PWA, halaman Absen bisa dipasang ke layar utama HP.
     Route::get('/manifest', [AbsenSayaKontroler::class, 'Manifest'])->middleware('throttle:60,1')->name('kelola.absen.manifest');
@@ -41,6 +42,10 @@ Route::middleware([SiapkanAuditTenant::class])->prefix('absen')->group(function 
     Route::post('/masuk', [AbsenSayaKontroler::class, 'Masuk'])->middleware('throttle:absensi-web')->name('kelola.absen.masuk');
     Route::post('/keluar', [AbsenSayaKontroler::class, 'Keluar'])->middleware('throttle:absensi-web')->name('kelola.absen.keluar');
     Route::post('/minta-koreksi', [AbsenSayaKontroler::class, 'MintaKoreksi'])->middleware('throttle:10,1')->name('kelola.absen.minta-koreksi');
+    // D-251: tukar shift antar karyawan dari halaman Absen berlogin.
+    Route::post('/tukar-shift', [AbsenSayaKontroler::class, 'AjukanTukarShift'])->middleware('throttle:20,1')->name('kelola.absen.tukar-shift.ajukan');
+    Route::post('/tukar-shift/{tukarShift}/tanggapi', [AbsenSayaKontroler::class, 'TanggapiTukarShift'])->where('tukarShift', $ulid)->middleware('throttle:20,1')->name('kelola.absen.tukar-shift.tanggapi');
+    Route::post('/tukar-shift/{tukarShift}/batal', [AbsenSayaKontroler::class, 'BatalkanTukarShift'])->where('tukarShift', $ulid)->middleware('throttle:20,1')->name('kelola.absen.tukar-shift.batal');
 });
 
 Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])->prefix('karyawan')->group(function () use ($izin, $ulid): void {
@@ -80,6 +85,16 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::get('/{karyawan}/wajah/foto/{indeks}', [AbsenHpKaryawanKontroler::class, 'Foto'])->where(['karyawan' => $ulid, 'indeks' => '[0-9]'])->name('kelola.karyawan.wajah.foto');
         Route::put('/jadwal', [JadwalKerjaKontroler::class, 'Simpan'])->name('kelola.karyawan.jadwal.simpan');
         Route::post('/jadwal/salin', [JadwalKerjaKontroler::class, 'Salin'])->name('kelola.karyawan.jadwal.salin');
+        // F-18 D-251: isi massal, pola berulang, kebutuhan staf, umumkan lewat WhatsApp, shift bernama, tukar shift.
+        Route::post('/jadwal/isi-massal', [JadwalKerjaKontroler::class, 'IsiMassal'])->middleware('throttle:30,1')->name('kelola.karyawan.jadwal.isi-massal');
+        Route::put('/jadwal/pola/{karyawan}', [JadwalKerjaKontroler::class, 'SimpanPola'])->where('karyawan', $ulid)->name('kelola.karyawan.jadwal.pola.simpan');
+        Route::post('/jadwal/terapkan-pola', [JadwalKerjaKontroler::class, 'TerapkanPola'])->middleware('throttle:30,1')->name('kelola.karyawan.jadwal.terapkan-pola');
+        Route::put('/jadwal/kebutuhan', [JadwalKerjaKontroler::class, 'SimpanKebutuhan'])->name('kelola.karyawan.jadwal.kebutuhan');
+        Route::post('/jadwal/umumkan', [JadwalKerjaKontroler::class, 'Umumkan'])->middleware('throttle:6,1')->name('kelola.karyawan.jadwal.umumkan');
+        Route::post('/jadwal/shift', [ShiftKerjaKontroler::class, 'Simpan'])->name('kelola.karyawan.jadwal.shift.simpan');
+        Route::put('/jadwal/shift/{shift}', [ShiftKerjaKontroler::class, 'Perbarui'])->where('shift', $ulid)->name('kelola.karyawan.jadwal.shift.perbarui');
+        Route::delete('/jadwal/shift/{shift}', [ShiftKerjaKontroler::class, 'Hapus'])->where('shift', $ulid)->name('kelola.karyawan.jadwal.shift.hapus');
+        Route::post('/jadwal/tukar-shift/{permintaanTukar}/putuskan', [ShiftKerjaKontroler::class, 'PutuskanTukar'])->where('permintaanTukar', $ulid)->name('kelola.karyawan.jadwal.tukar-shift.putuskan');
         Route::get('/komisi/buat', [KomisiKontroler::class, 'Buat'])->name('kelola.karyawan.komisi.buat');
         Route::post('/komisi', [KomisiKontroler::class, 'Simpan'])->name('kelola.karyawan.komisi.simpan');
         Route::put('/komisi/{aturan}', [KomisiKontroler::class, 'Perbarui'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.perbarui');

@@ -9,10 +9,13 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Karyawan\Enum\StatusTukarShift;
 use App\Domain\Karyawan\Kueri\DaftarPermintaanKoreksi;
 use App\Domain\Karyawan\Kueri\DaftarRekapGaji;
 use App\Domain\Karyawan\Model\Absensi;
+use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
+use App\Domain\Karyawan\Model\PermintaanTukarShift;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -24,6 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
  * - **absen keluar otomatis** (Perhatian, D-250): karyawan lupa absen keluar, jam keluarnya diisi sistem sesuai jam selesai
  *   jadwal. Periksa lalu koreksi jamnya bila perlu, atau tandai sudah dicek;
  * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya;
+ * - **tukar shift menunggu keputusan** (Perhatian, izin `karyawan.kelola`, D-251): rekan sudah setuju, pengelola belum memutuskan;
  * - **rekap gaji mingguan siap dibuat** (Perhatian, izin `karyawan.kelola`, D-219): ada karyawan bergaji mingguan dan
  *   tujuh hari sejak rekap mingguan terakhir sudah lewat.
  */
@@ -38,7 +42,7 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
-        $gaji = $konteks->CekIzin('karyawan.kelola') ? [$this->ButirGajiMingguan()] : [];
+        $gaji = $konteks->CekIzin('karyawan.kelola') ? [$this->ButirTukarShift($konteks), $this->ButirGajiMingguan()] : [];
 
         if (! $konteks->CekIzin('karyawan.lihat')) {
             return array_values(array_filter($gaji));
@@ -109,6 +113,31 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
             1,
             '/kelola/karyawan/gaji',
             'Buka rekap gaji',
+        );
+    }
+
+    private function ButirTukarShift(DataKonteksTindakan $konteks): ?DataButirTindakan
+    {
+        $jumlah = PermintaanTukarShift::query()
+            ->where('Status', StatusTukarShift::MenungguPengelola->value)
+            ->whereIn('IdJadwalPemohon', JadwalKerja::query()
+                ->when($konteks->idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $konteks->idOutletBoleh ?: [0]))
+                ->select('Id'))
+            ->count();
+
+        if ($jumlah === 0) {
+            return null;
+        }
+
+        return new DataButirTindakan(
+            'karyawan.tukar-shift',
+            'Karyawan',
+            TingkatTindakan::Perhatian,
+            'Tukar shift menunggu keputusan',
+            'Karyawan mengajukan tukar shift dan rekannya sudah setuju. Buka Jadwal kerja untuk menyetujui atau menolak.',
+            $jumlah,
+            '/kelola/karyawan/jadwal',
+            'Buka jadwal kerja',
         );
     }
 

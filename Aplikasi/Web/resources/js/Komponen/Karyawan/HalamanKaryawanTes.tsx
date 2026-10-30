@@ -5,35 +5,13 @@ import HalamanAbsensi, { FormatDurasiMenit } from '@/Halaman/Kelola/Karyawan/Abs
 import HalamanBuatAturanKomisi from '@/Halaman/Kelola/Karyawan/BuatAturanKomisi';
 import HalamanAturanKomisi, { FormatNilaiKomisi } from '@/Halaman/Kelola/Karyawan/Komisi';
 import HalamanLaporanKomisi from '@/Halaman/Kelola/Karyawan/LaporanKomisi';
-import HalamanJadwalKerja, {
-    CekJam,
-    GeserTanggal,
-    RapikanJam,
-    SusunSelBerubah,
-} from '@/Halaman/Kelola/Karyawan/Jadwal';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel } from '@/Komponen/Persediaan/DataUjiPersediaan';
-import type { BarisAbsensi, BarisJadwal, BarisKaryawan } from '@/Tipe/Karyawan';
+import type { BarisAbsensi, BarisKaryawan } from '@/Tipe/Karyawan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
 const Outlet = { Uuid: '01J9OTL0000000000000000001', Nama: 'Kopi Senja Solo Baru' };
-const Hari = ['2026-09-21', '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27'];
-
-function BarisJadwalUji(): BarisJadwal {
-    return {
-        Uuid: '01J9KRY0000000000000000001',
-        Nama: 'Dimas Pratama Wicaksono Adiwijaya',
-        Jabatan: 'Barista',
-        Aktif: true,
-        Cuti: { '2026-09-23': { Jenis: 'Sakit', Berbayar: true } },
-        Jadwal: {
-            ...Object.fromEntries(Hari.map((t) => [t, null])),
-            '2026-09-21': { JamMulai: '08:00', JamSelesai: '16:00', OutletLain: false },
-            '2026-09-22': { JamMulai: '09:00', JamSelesai: '17:00', OutletLain: true },
-        },
-    };
-}
 
 describe('Halaman karyawan (F-18)', () => {
     beforeEach(() => {
@@ -43,70 +21,12 @@ describe('Halaman karyawan (F-18)', () => {
     });
     afterEach(() => cleanup());
 
-    it('bantuan jadwal: geser tanggal, cek & rapikan jam, sel berubah (outlet lain dilewati), durasi', () => {
-        expect(GeserTanggal('2026-09-28', -7)).toBe('2026-09-21');
-        expect(GeserTanggal('2026-12-28', 7)).toBe('2027-01-04');
-        expect([CekJam('08:00'), CekJam('24:00'), CekJam('8:00')]).toEqual([true, false, false]);
-        expect([RapikanJam('800'), RapikanJam('0830'), RapikanJam('08:30')]).toEqual(['08:00', '08:30', '08:30']);
-        const b = BarisJadwalUji();
-        expect(
-            SusunSelBerubah([b], {
-                [b.Uuid]: {
-                    '2026-09-21': { JamMulai: '', JamSelesai: '' },
-                    '2026-09-22': { JamMulai: '10:00', JamSelesai: '18:00' },
-                    '2026-09-23': { JamMulai: '22:00', JamSelesai: '06:00' },
-                },
-            }),
-        ).toEqual([
-            { UuidKaryawan: b.Uuid, Tanggal: '2026-09-21', JamMulai: null, JamSelesai: null },
-            { UuidKaryawan: b.Uuid, Tanggal: '2026-09-23', JamMulai: '22:00', JamSelesai: '06:00' },
-        ]);
+    it('durasi absensi diformat jam dan menit (bantuan jadwal dites di JadwalKerjaTes)', () => {
         expect([FormatDurasiMenit(445), FormatDurasiMenit(45), FormatDurasiMenit(null)]).toEqual([
             '7 j 25 m',
             '45 m',
             '—',
         ]);
-    });
-
-    it('jadwal: ubah jam lalu simpan mengirim sel yang berubah. Sel outlet lain terkunci', () => {
-        window.history.replaceState({}, '', '/kelola/karyawan/jadwal');
-        RenderUji(
-            <HalamanJadwalKerja
-                OpsiOutlet={[Outlet]}
-                UuidOutlet={Outlet.Uuid}
-                Senin="2026-09-21"
-                Jadwal={{ Hari, Baris: [BarisJadwalUji()] }}
-                Izin={{ Kelola: true }}
-            />,
-        );
-        expect(screen.getByText('Di outlet lain 09:00–17:00')).toBeTruthy();
-        const simpan = screen.getByRole('button', { name: 'Simpan jadwal' });
-        expect((simpan as HTMLButtonElement).disabled).toBe(true);
-        fireEvent.change(screen.getByLabelText('Dimas Pratama Wicaksono Adiwijaya Rabu mulai'), {
-            target: { value: '07:30' },
-        });
-        expect((simpan as HTMLButtonElement).disabled).toBe(true);
-        expect(screen.getByText(/isi keduanya atau kosongkan keduanya/)).toBeTruthy();
-        fireEvent.change(screen.getByLabelText('Dimas Pratama Wicaksono Adiwijaya Rabu selesai'), {
-            target: { value: '15:30' },
-        });
-        fireEvent.click(screen.getByRole('button', { name: 'Simpan jadwal' }));
-        expect(tiruanRouter.put).toHaveBeenCalledWith(
-            '/kelola/karyawan/jadwal',
-            {
-                UuidOutlet: Outlet.Uuid,
-                Senin: '2026-09-21',
-                Sel: [
-                    {
-                        UuidKaryawan: '01J9KRY0000000000000000001',
-                        Tanggal: '2026-09-23',
-                        JamMulai: '07:30',
-                        JamSelesai: '15:30',
-                    },
-                ],
-            },
-            expect.anything(),
-        );
     });
 
     it('absensi menampilkan terlambat (daftar karyawan kini di halaman Tim, lihat TimTes)', () => {

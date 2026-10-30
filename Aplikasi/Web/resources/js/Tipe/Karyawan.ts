@@ -50,25 +50,77 @@ export type AbsenHpKaryawan = {
     } | null;
 };
 
-export type SelJadwal = { JamMulai: string; JamSelesai: string; OutletLain: boolean } | null;
+/** Satu shift dalam sel jadwal (D-251). `OutletLain`: shift ada di outlet lain dan tidak bisa diubah dari outlet ini. */
+export type SelJadwal = {
+    Uuid: string;
+    JamMulai: string;
+    JamSelesai: string;
+    OutletLain: boolean;
+    UuidShift: string | null;
+};
 
 export type JenisCuti = 'Cuti' | 'Sakit' | 'Izin';
+
+/** Satu shift dalam pola jadwal berulang. `HariKe` 1 = Senin sampai 7 = Minggu. */
+export type BarisPola = { HariKe: number; JamMulai: string; JamSelesai: string; UuidShift: string | null };
 
 export type BarisJadwal = {
     Uuid: string;
     Nama: string;
     Jabatan: string | null;
     Aktif: boolean;
-    Jadwal: Record<string, SelJadwal>;
+    /** Tanggal `TTTT-BB-HH` → daftar shift hari itu (kosong = libur). */
+    Jadwal: Record<string, SelJadwal[]>;
     /** Hari cuti/izin yang berlaku minggu ini, kunci = tanggal `TTTT-BB-HH`. */
     Cuti: Record<string, { Jenis: JenisCuti; Berbayar: boolean }>;
+    Pola: BarisPola[];
+};
+
+/** Shift bernama milik usaha (Pagi, Siang, Malam). */
+export type ShiftKerja = {
+    Uuid: string;
+    Nama: string;
+    JamMulai: string;
+    JamSelesai: string;
+    Aktif: boolean;
+    Urutan: number;
+};
+
+export type KebutuhanStaf = { HariKe: number; JamMulai: string; JamSelesai: string; Minimal: number };
+
+export type KekuranganStaf = {
+    Tanggal: string;
+    JamMulai: string;
+    JamSelesai: string;
+    Minimal: number;
+    Terjadwal: number;
+    Kurang: number;
+};
+
+/** Permintaan tukar shift yang sudah disetujui rekan dan menunggu keputusan pengelola. */
+export type TukarShiftMenunggu = {
+    Uuid: string;
+    Pemohon: string;
+    Rekan: string;
+    Tanggal: string;
+    JamMulai: string;
+    JamSelesai: string;
+    TukarDengan: string | null;
+    Alasan: string;
 };
 
 export type PropsJadwalKerja = {
     OpsiOutlet: OpsiUuidNama[];
     UuidOutlet: string | null;
     Senin: string;
-    Jadwal: { Hari: string[]; Baris: BarisJadwal[] };
+    Jadwal: {
+        Hari: string[];
+        Baris: BarisJadwal[];
+        ShiftKerja: ShiftKerja[];
+        Kebutuhan: KebutuhanStaf[];
+        Kekurangan: KekuranganStaf[];
+        TukarShift: TukarShiftMenunggu[];
+    };
     Izin: { Kelola: boolean };
 };
 
@@ -404,4 +456,36 @@ export type PropsAbsenSaya = {
     JumlahFotoDaftar: number;
     /** Aturan "simpan foto bukti": foto hanya dikirim bila menyala (wajah tetap dicocokkan lewat sidik). */
     SimpanFoto: boolean;
+    /** D-251: jadwal pribadi + tukar shift. Hanya ada di halaman berlogin, tidak di tautan pribadi. */
+    JadwalSaya?: JadwalSaya;
+};
+
+/** Shift pribadi 14 hari ke depan, rekan yang bisa diajak bertukar, dan permintaan tukar shift (D-251). */
+export type JadwalSaya = {
+    Shift: { Uuid: string; Tanggal: string; JamMulai: string; JamSelesai: string; NamaOutlet: string | null }[];
+    Rekan: {
+        Uuid: string;
+        Nama: string;
+        Shift: { Uuid: string; Tanggal: string; JamMulai: string; JamSelesai: string }[];
+    }[];
+    Diajukan: {
+        Uuid: string;
+        Status: string;
+        Label: string;
+        Tanggal: string;
+        JamMulai: string;
+        JamSelesai: string;
+        Rekan: string;
+        TukarDengan: string | null;
+        AlasanKeputusan: string | null;
+    }[];
+    Masuk: {
+        Uuid: string;
+        Pemohon: string;
+        Tanggal: string;
+        JamMulai: string;
+        JamSelesai: string;
+        TukarDengan: string | null;
+        Alasan: string;
+    }[];
 };

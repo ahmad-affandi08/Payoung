@@ -170,6 +170,7 @@ final class KamusPeristiwaAudit
 
         'jadwal-kerja.salin' => 'Jadwal kerja disalin',
         'jadwal-kerja.simpan' => 'Jadwal kerja disimpan',
+        'jadwal-kerja.umumkan' => 'Jadwal kerja diumumkan ke karyawan',
 
         'jurnal.posting' => 'Jurnal dicatat',
 
@@ -180,6 +181,8 @@ final class KamusPeristiwaAudit
         'kampanye-pesan.jadwalkan' => 'Kampanye pesan dijadwalkan',
         'kampanye-pesan.jalankan' => 'Kampanye pesan dijalankan',
         'kampanye-pesan.simpan' => 'Kampanye pesan disimpan',
+
+        'kebutuhan-staf.simpan' => 'Kebutuhan staf minimal diatur',
 
         'karyawan.tambah' => 'Karyawan ditambahkan',
         'karyawan.tautan-absen.buat' => 'Tautan absen karyawan dibuat',
@@ -418,6 +421,8 @@ final class KamusPeristiwaAudit
         'penyesuaian-stok.tolak' => 'Penyesuaian stok ditolak',
         'penyesuaian-stok.ubah' => 'Penyesuaian stok diubah',
 
+        'pola-jadwal.simpan' => 'Pola jadwal berulang diatur',
+
         'peran.buat' => 'Peran dibuat',
         'peran.hapus' => 'Peran dihapus',
         'peran.ubah' => 'Peran diubah',
@@ -557,6 +562,9 @@ final class KamusPeristiwaAudit
         'sesi.masuk-perangkat-tepercaya' => 'Pengguna masuk dari perangkat tepercaya',
         'sesi.pilih-tenant' => 'Pengguna memilih usaha',
 
+        'shift-kerja.hapus' => 'Shift kerja dihapus',
+        'shift-kerja.simpan' => 'Shift kerja disimpan',
+
         'shift.buka' => 'Shift dibuka',
         'shift.buka-ulang' => 'Shift dibuka ulang',
         'shift.tutup' => 'Shift ditutup',
@@ -683,6 +691,13 @@ final class KamusPeristiwaAudit
         'transfer-stok.terima' => 'Transfer stok diterima',
         'transfer-stok.tutup' => 'Transfer stok ditutup',
         'transfer-stok.ubah' => 'Transfer stok diubah',
+
+        'tukar-shift.ajukan' => 'Tukar shift diajukan',
+        'tukar-shift.batal' => 'Tukar shift dibatalkan pemohon',
+        'tukar-shift.setujui' => 'Tukar shift disetujui',
+        'tukar-shift.terima' => 'Tukar shift diterima rekan',
+        'tukar-shift.tolak' => 'Tukar shift ditolak pengelola',
+        'tukar-shift.tolak-rekan' => 'Tukar shift ditolak rekan',
 
         'unduhan.hapus' => 'Unduhan dihapus',
         'unduhan.minta' => 'Ekspor besar diminta',

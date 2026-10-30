@@ -19,11 +19,13 @@ final class JadwalStafReservasi
      */
     public function Ambil(int $idOutlet, string $tanggal): array
     {
+        // D-251: satu staf boleh punya beberapa shift sehari, tiap shift menjadi satu jendela layanan.
         $jadwal = JadwalKerja::query()
             ->where('IdOutlet', $idOutlet)
             ->where('Tanggal', $tanggal)
+            ->orderBy('JamMulai')
             ->get(['IdKaryawan', 'JamMulai', 'JamSelesai'])
-            ->keyBy('IdKaryawan');
+            ->groupBy('IdKaryawan');
 
         if ($jadwal->isEmpty()) {
             return [];
@@ -34,10 +36,9 @@ final class JadwalStafReservasi
             ->where('Status', StatusKaryawan::Aktif->value)
             ->orderBy('Nama')
             ->get(['Id', 'Uuid', 'Nama'])
-            ->map(function (Karyawan $k) use ($jadwal): array {
-                $j = $jadwal->get($k->Id);
-                $mulai = substr((string) $j?->JamMulai, 0, 5);
-                $selesai = substr((string) $j?->JamSelesai, 0, 5);
+            ->flatMap(fn (Karyawan $k): array => ($jadwal->get($k->Id) ?? collect())->map(function (JadwalKerja $j) use ($k): array {
+                $mulai = substr($j->JamMulai, 0, 5);
+                $selesai = substr($j->JamSelesai, 0, 5);
 
                 return [
                     'Id' => $k->Id,
@@ -46,7 +47,7 @@ final class JadwalStafReservasi
                     'JamMulai' => $mulai,
                     'JamSelesai' => $selesai <= $mulai ? '23:59' : $selesai,
                 ];
-            })->all());
+            })->all())->all());
     }
 
     /**

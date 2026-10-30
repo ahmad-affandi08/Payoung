@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Menutup absensi yang lupa absen keluar (F-18, D-250) supaya jam kerjanya tidak menyambung ke hari berikutnya.
  *
- * - **Batas** = jam selesai jadwal karyawan pada tanggal masuk (shift yang melewati tengah malam berakhir keesokan harinya).
+ * - **Batas** = jam selesai shift yang dimaksud absen itu pada tanggal masuk (shift yang melewati tengah malam berakhir
+ *   keesokan harinya; bila ada beberapa shift sehari dipilih yang paling dekat dengan jam masuk, `PemilihShiftAbsensi`).
  *   Tanpa jadwal, atau jadwalnya sudah berakhir sebelum karyawan masuk, batasnya akhir hari kalender outlet (23.59).
  * - **Ditutup** setelah `batas + TutupOtomatisSetelahMenit` (ruang bagi yang memang lembur). Jam keluar yang dicatat adalah
  *   **batas itu sendiri**, bukan jam sistem menutupnya, jadi lama kerja tidak membengkak. Lembur yang tidak diabsen tidak
@@ -25,7 +26,8 @@ use Illuminate\Support\Facades\DB;
  *   (`absensi.koreksi`) dan tampil di Kotak Tindakan. Audit `absensi.keluar-otomatis`.
  *
  * Dipanggil jadwal (`karyawan:tutup-absensi-terbuka`) dan di awal absen masuk/halaman absen karyawan, jadi karyawan
- * tidak pernah tertahan oleh catatan kemarin. Dibaca dan ditulis dalam konteks tenant. Aman diulang.
+ * tidak pernah tertahan oleh catatan kemarin. Saat karyawan absen masuk lagi, shift pertamanya yang lupa keluar langsung
+ * ditutup begitu jam selesainya lewat dan ia punya shift berikutnya hari itu (shift terpisah), tanpa menunggu masa tunggu. Dibaca dan ditulis dalam konteks tenant. Aman diulang.
  */
 final class PenutupAbsensiOtomatis
 {
@@ -45,27 +47,41 @@ final class PenutupAbsensiOtomatis
      */
     public static function HitungBatasUtc(CarbonImmutable $masukUtc, int $selisihDetik, Collection $jadwal): CarbonImmutable
     {
+        return self::PilihShiftDanBatas($masukUtc, $selisihDetik, $jadwal)['Batas'];
+    }
+
+    /**
+     * @param  Collection<int, JadwalKerja>  $jadwal
+     * @return array{Shift: JadwalKerja|null, Batas: CarbonImmutable} `Shift` kosong bila batasnya akhir hari
+     */
+    public static function PilihShiftDanBatas(CarbonImmutable $masukUtc, int $selisihDetik, Collection $jadwal): array
+    {
         $masukLokal = $masukUtc->utc()->addSeconds($selisihDetik);
+        $shift = PemilihShiftAbsensi::Pilih($jadwal, $masukLokal);
         $batasLokal = null;
 
-        foreach ($jadwal as $j) {
-            $selesai = PenilaiKehadiran::AmbilBatasShift($masukLokal->toDateString(), $j->JamMulai, $j->JamSelesai)['Selesai'];
+        if ($shift !== null) {
+            $selesai = PenilaiKehadiran::AmbilBatasShift($masukLokal->toDateString(), $shift->JamMulai, $shift->JamSelesai)['Selesai'];
 
-            if ($selesai->greaterThan($masukLokal) && ($batasLokal === null || $selesai->greaterThan($batasLokal))) {
+            if ($selesai->greaterThan($masukLokal)) {
                 $batasLokal = $selesai;
+            } else {
+                $shift = null;
             }
         }
 
         $batasLokal ??= $masukLokal->setTime(23, 59, 0);
 
-        return $batasLokal->subSeconds($selisihDetik);
+        return ['Shift' => $shift, 'Batas' => $batasLokal->subSeconds($selisihDetik)];
     }
 
     /**
      * @param  int|null  $idKaryawan  null = semua karyawan tenant (jadwal berkala), selain itu hanya karyawan itu
+     * @param  bool  $untukAbsenMasuk  karyawan sedang absen masuk: shift terdahulu yang jam selesainya lewat ditutup walau masa
+     *                                  tunggu belum habis bila ia punya shift berikutnya hari itu
      * @return int jumlah absensi yang ditutup
      */
-    public function TutupYangLewat(CarbonImmutable $sekarang, ?int $idKaryawan = null): int
+    public function TutupYangLewat(CarbonImmutable $sekarang, ?int $idKaryawan = null, bool $untukAbsenMasuk = false): int
     {
         $aturan = $this->aturan->Ambil();
 
@@ -95,13 +111,13 @@ final class PenutupAbsensiOtomatis
         foreach ($terbuka as $absensi) {
             $detik = $selisih[$absensi->IdOutlet] ?? 25200;
             $tanggal = $this->TanggalMasukLokal($absensi, $selisih)->toDateString();
-            $batas = self::HitungBatasUtc(
-                CarbonImmutable::instance($absensi->MasukPada),
-                $detik,
-                $jadwal->filter(fn (JadwalKerja $j): bool => $j->IdKaryawan === $absensi->IdKaryawan && $j->Tanggal->toDateString() === $tanggal)->values(),
-            );
+            $jadwalHari = $jadwal->filter(fn (JadwalKerja $j): bool => $j->IdKaryawan === $absensi->IdKaryawan && $j->Tanggal->toDateString() === $tanggal)->values();
+            ['Shift' => $shift, 'Batas' => $batas] = self::PilihShiftDanBatas(CarbonImmutable::instance($absensi->MasukPada), $detik, $jadwalHari);
+            $adaShiftBerikutnya = $untukAbsenMasuk && $shift !== null
+                && $jadwalHari->contains(fn (JadwalKerja $j): bool => $j->JamMulai > $shift->JamMulai);
+            $habisMasaTunggu = $sekarang->greaterThanOrEqualTo($batas->addMinutes($aturan['TutupOtomatisSetelahMenit']));
 
-            if ($sekarang->lessThan($batas->addMinutes($aturan['TutupOtomatisSetelahMenit']))) {
+            if (! $habisMasaTunggu && ! ($adaShiftBerikutnya && $sekarang->greaterThanOrEqualTo($batas))) {
                 continue;
             }
 

@@ -5,6 +5,7 @@ import GarisWaktuRiwayat from '@/Komponen/Absensi/GarisWaktuRiwayat';
 import KartuPasangDiHp from '@/Komponen/Absensi/KartuPasangDiHp';
 import PanelAbsen from '@/Komponen/Absensi/PanelAbsen';
 import PanelDaftarWajah from '@/Komponen/Absensi/PanelDaftarWajah';
+import PanelJadwalSaya from '@/Komponen/Absensi/PanelJadwalSaya';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -121,6 +122,10 @@ export default function TampilanAbsen(props: PropsAbsenSaya) {
                         daring={daring}
                     />
                 )}
+
+                {Berlogin && props.JadwalSaya ? (
+                    <PanelJadwalSaya jadwal={props.JadwalSaya} alamatDasar={AlamatDasar} />
+                ) : null}
 
                 <KartuPasangDiHp keadaan={pasang} />
 

@@ -7,8 +7,10 @@ namespace App\Http\Kontroler\Kelola\Karyawan;
 use App\Domain\Karyawan\Aksi\AjukanKoreksiAbsensi;
 use App\Domain\Karyawan\Aksi\CatatAbsensiWeb;
 use App\Domain\Karyawan\Aksi\DaftarkanWajahKaryawan;
+use App\Domain\Karyawan\Aksi\KelolaTukarShift;
 use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Karyawan\Kueri\CekKecocokanWajah;
+use App\Domain\Karyawan\Kueri\JadwalSaya;
 use App\Domain\Karyawan\Kueri\StatusAbsensiWeb;
 use App\Domain\Karyawan\Layanan\PenutupAbsensiOtomatis;
 use App\Domain\Karyawan\Model\Karyawan;
@@ -33,7 +35,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final class AbsenSayaKontroler extends DasarKelolaKontroler
 {
-    public function Tampilkan(AbsenSaya $saya, StatusAbsensiWeb $status, NamaTampilUsaha $nama, AksesPengguna $akses, PenutupAbsensiOtomatis $penutup): Response
+    public function Tampilkan(AbsenSaya $saya, StatusAbsensiWeb $status, NamaTampilUsaha $nama, AksesPengguna $akses, PenutupAbsensiOtomatis $penutup, JadwalSaya $jadwalSaya): Response
     {
         $karyawan = $this->CariKaryawan($saya);
         // D-250: catatan yang lupa keluar ditutup dulu, supaya halaman tidak menampilkan "Sedang bekerja" berhari-hari.
@@ -49,6 +51,8 @@ final class AbsenSayaKontroler extends DasarKelolaKontroler
             // Staf yang hanya bisa absen tidak punya menu lain; yang punya akses dashboard diberi jalan ke sana.
             'BisaDashboard' => $izin !== null && ($izin['Pemilik'] || $izin['Izin'] !== []),
             ...$status->Ambil($karyawan),
+            // D-251: jadwal pribadi + tukar shift (hanya di halaman berlogin, bukan tautan pribadi).
+            'JadwalSaya' => $jadwalSaya->Ambil($karyawan),
         ]);
     }
 
@@ -102,6 +106,41 @@ final class AbsenSayaKontroler extends DasarKelolaKontroler
         $baris = $ajukan->Jalankan($this->CariKaryawan($saya), $valid['Jenis'], $valid['Alasan']);
 
         return response()->json(['Uuid' => $baris->Uuid, 'Status' => $baris->Status->value], 201);
+    }
+
+    /** D-251: ajukan tukar shift ke rekan. Jadwal baru berubah setelah rekan menerima dan pengelola menyetujui. */
+    public function AjukanTukarShift(Request $permintaan, AbsenSaya $saya, KelolaTukarShift $tukar): JsonResponse
+    {
+        $valid = $permintaan->validate([
+            'UuidJadwal' => ['required', 'string', 'ulid'],
+            'UuidRekan' => ['required', 'string', 'ulid'],
+            'UuidJadwalRekan' => ['nullable', 'string', 'ulid'],
+            'Alasan' => ['nullable', 'string', 'max:200'],
+        ]);
+        $baris = $tukar->Ajukan(
+            $this->CariKaryawan($saya),
+            (string) $valid['UuidJadwal'],
+            (string) $valid['UuidRekan'],
+            ($valid['UuidJadwalRekan'] ?? '') === '' ? null : (string) $valid['UuidJadwalRekan'],
+            (string) ($valid['Alasan'] ?? ''),
+        );
+
+        return response()->json(['Uuid' => $baris->Uuid, 'Status' => $baris->Status->value], 201);
+    }
+
+    public function TanggapiTukarShift(Request $permintaan, string $tukarShift, AbsenSaya $saya, KelolaTukarShift $tukar): JsonResponse
+    {
+        $valid = $permintaan->validate(['Terima' => ['required', 'boolean']]);
+        $baris = $tukar->Tanggapi($this->CariKaryawan($saya), $tukarShift, (bool) $valid['Terima']);
+
+        return response()->json(['Uuid' => $baris->Uuid, 'Status' => $baris->Status->value]);
+    }
+
+    public function BatalkanTukarShift(string $tukarShift, AbsenSaya $saya, KelolaTukarShift $tukar): JsonResponse
+    {
+        $baris = $tukar->Batalkan($this->CariKaryawan($saya), $tukarShift);
+
+        return response()->json(['Uuid' => $baris->Uuid, 'Status' => $baris->Status->value]);
     }
 
     /** Karyawan pengguna ini yang wajib absen; selain itu halaman dianggap tidak ada. */

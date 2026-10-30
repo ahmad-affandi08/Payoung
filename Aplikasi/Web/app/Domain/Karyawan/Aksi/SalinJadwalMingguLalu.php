@@ -13,12 +13,14 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Salin jadwal minggu sebelumnya ke minggu [senin] di outlet yang sama (F-18, izin `karyawan.kelola`): hanya karyawan
- * aktif dan hanya hari yang masih kosong (jadwal yang sudah ada tidak ditimpa). Audit `jadwal-kerja.salin`.
+ * aktif dan hanya hari yang masih kosong (hari yang sudah punya jadwal apa pun tidak ditimpa). Semua shift pada satu
+ * hari disalin bersama (D-251). Audit `jadwal-kerja.salin`.
  */
 final class SalinJadwalMingguLalu
 {
     public function __construct(private readonly PencatatAudit $audit) {}
 
+    /** @return int jumlah shift yang disalin */
     public function Jalankan(int $idOutlet, CarbonImmutable $senin, int $idPengguna): int
     {
         return DB::transaction(function () use ($idOutlet, $senin, $idPengguna): int {
@@ -27,24 +29,35 @@ final class SalinJadwalMingguLalu
                 ->where('IdOutlet', $idOutlet)
                 ->whereIn('IdKaryawan', $aktif)
                 ->whereBetween('Tanggal', [$senin->subDays(7)->toDateString(), $senin->subDay()->toDateString()])
+                ->orderBy('Tanggal')
+                ->orderBy('JamMulai')
                 ->get();
             $disalin = 0;
 
-            foreach ($lalu as $j) {
-                $tanggal = CarbonImmutable::parse($j->Tanggal->toDateString())->addDays(7)->toDateString();
+            foreach ($lalu->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->Tanggal->toDateString()) as $kelompok) {
+                $pertama = $kelompok->first();
 
-                if (JadwalKerja::query()->where('IdKaryawan', $j->IdKaryawan)->where('Tanggal', $tanggal)->exists()) {
+                if ($pertama === null) {
                     continue;
                 }
 
-                JadwalKerja::query()->create([
-                    'IdKaryawan' => $j->IdKaryawan,
-                    'IdOutlet' => $idOutlet,
-                    'Tanggal' => $tanggal,
-                    'JamMulai' => $j->JamMulai,
-                    'JamSelesai' => $j->JamSelesai,
-                ]);
-                $disalin++;
+                $tanggal = CarbonImmutable::parse($pertama->Tanggal->toDateString())->addDays(7)->toDateString();
+
+                if (JadwalKerja::query()->where('IdKaryawan', $pertama->IdKaryawan)->where('Tanggal', $tanggal)->exists()) {
+                    continue;
+                }
+
+                foreach ($kelompok as $j) {
+                    JadwalKerja::query()->create([
+                        'IdKaryawan' => $j->IdKaryawan,
+                        'IdOutlet' => $idOutlet,
+                        'IdShiftKerja' => $j->IdShiftKerja,
+                        'Tanggal' => $tanggal,
+                        'JamMulai' => $j->JamMulai,
+                        'JamSelesai' => $j->JamSelesai,
+                    ]);
+                    $disalin++;
+                }
             }
 
             if ($disalin > 0) {

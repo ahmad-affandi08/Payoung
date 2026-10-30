@@ -136,6 +136,8 @@ Schedule::command('invoice:kirim-pengingat')->dailyAt('09:10')->timezone('Asia/J
 Schedule::command('karyawan:kirim-notifikasi-kehadiran')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
 // D-250: absensi yang lupa absen keluar ditutup sesuai jam selesai jadwal supaya jam kerja tidak menyambung ke hari berikutnya.
 Schedule::command('karyawan:tutup-absensi-terbuka')->everyFifteenMinutes()->withoutOverlapping(30)->runInBackground();
+// D-251: jadwal dua minggu ke depan diisi dari pola jadwal berulang karyawan.
+Schedule::command('karyawan:terapkan-pola-jadwal')->dailyAt('05:55')->timezone('Asia/Jakarta')->withoutOverlapping(120)->runInBackground();
 
 // CRM-07: mulai kampanye pesan pelanggan yang jadwalnya sudah tiba (pengiriman bertahap & jam tenang di tugasnya).
 Schedule::command('pelanggan:jalankan-kampanye-terjadwal')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();

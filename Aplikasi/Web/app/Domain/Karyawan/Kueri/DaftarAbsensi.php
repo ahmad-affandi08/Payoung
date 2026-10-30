@@ -7,6 +7,7 @@ namespace App\Domain\Karyawan\Kueri;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tabel\Layanan\PenerapKueriTabel;
 use App\Domain\Karyawan\Enum\StatusKehadiran;
+use App\Domain\Karyawan\Layanan\PemilihShiftAbsensi;
 use App\Domain\Karyawan\Layanan\PenilaiKehadiran;
 use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -88,7 +89,11 @@ final class DaftarAbsensi
             $masuk = CarbonImmutable::instance($a->MasukPada)->utc()->addSeconds($detik);
             $keluar = $a->KeluarPada === null ? null : CarbonImmutable::instance($a->KeluarPada)->utc()->addSeconds($detik);
             $tanggal = $a->TanggalBisnis->toDateString();
-            $j = $jadwal->first(fn (JadwalKerja $j): bool => $j->IdKaryawan === $a->IdKaryawan && $j->Tanggal->toDateString() === $tanggal);
+            // D-251: karyawan boleh punya beberapa shift sehari, absen dinilai terhadap shift yang dimaksud jam masuknya.
+            $j = PemilihShiftAbsensi::Pilih(
+                $jadwal->filter(fn (JadwalKerja $j): bool => $j->IdKaryawan === $a->IdKaryawan && $j->Tanggal->toDateString() === $tanggal)->values(),
+                $masuk,
+            );
             $nilai = ['TerlambatMenit' => 0, 'PulangCepatMenit' => 0, 'LemburMenit' => 0];
 
             if ($j !== null) {

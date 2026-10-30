@@ -1,150 +1,90 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { ChevronDownIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 
+import DialogIsiMassal from '@/Komponen/Karyawan/Jadwal/DialogIsiMassal';
+import DialogKebutuhanStaf from '@/Komponen/Karyawan/Jadwal/DialogKebutuhanStaf';
+import DialogPolaJadwal from '@/Komponen/Karyawan/Jadwal/DialogPolaJadwal';
+import DialogShiftKerja from '@/Komponen/Karyawan/Jadwal/DialogShiftKerja';
+import PanelPerhatianJadwal from '@/Komponen/Karyawan/Jadwal/PanelPerhatianJadwal';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import { Button } from '@/Komponen/Ui/button';
-import PemilihJam, { type PilihanCepatJam } from '@/Komponen/Tanggal/PemilihJam';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Komponen/Ui/dropdown-menu';
+import PemilihJam from '@/Komponen/Tanggal/PemilihJam';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import {
+    AdaGalatJam,
+    BarisKosong,
+    BarisTerisi,
+    BuatIsian,
+    CekJam,
+    GeserTanggal,
+    LabelShift,
+    NamaHari,
+    SusunPilihanJam,
+    SusunSelBerubah,
+    type BarisIsian,
+    type Isian,
+} from '@/Fitur/Karyawan/LogikaJadwal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisJadwal, PropsJadwalKerja } from '@/Tipe/Karyawan';
+import type { PropsJadwalKerja } from '@/Tipe/Karyawan';
 
 const alamat = '/kelola/karyawan/jadwal';
-const namaHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
-type Isian = Record<string, Record<string, { JamMulai: string; JamSelesai: string }>>;
-
-/** Tanggal `YYYY-MM-DD` digeser [hari] (UTC, tanpa zona). */
-export function GeserTanggal(tanggal: string, hari: number): string {
-    const d = new Date(`${tanggal}T00:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + hari);
-
-    return d.toISOString().slice(0, 10);
-}
-
-/** `08:00` valid; kosong = boleh (hapus jadwal). */
-export function CekJam(jam: string): boolean {
-    return /^([01]\d|2[0-3]):[0-5]\d$/.test(jam);
-}
-
-/** Rapikan ketikan jam: `800` → `08:00`, `0830` → `08:30`; lainnya apa adanya. */
-export function RapikanJam(teks: string): string {
-    const angka = teks.replace(/\D/g, '');
-
-    if (angka.length === 3) {
-        return `0${angka[0]}:${angka.slice(1)}`;
-    }
-
-    return angka.length === 4 ? `${angka.slice(0, 2)}:${angka.slice(2)}` : teks.trim();
-}
+type Dialog = 'shift' | 'massal' | 'pola' | 'kebutuhan' | null;
 
 /**
- * Pilihan cepat jam di panel: jam yang paling sering dipakai di jadwal yang sedang tampil, dilengkapi jam umum,
- * maksimal enam dan urut waktu. Jadi toko yang biasa buka 07:00 langsung melihat 07:00 di depan.
+ * F-18 EMP-02, D-251: jadwal kerja mingguan per outlet (Senin–Minggu). Satu hari boleh punya beberapa shift, shift bisa
+ * dipasang dari daftar shift bernama, diisi massal, atau ditarik dari pola berulang. Di atas jadwal tampil jam yang
+ * kurang staf dan permintaan tukar shift. Jadwal bisa dikirim ke karyawan lewat WhatsApp.
  */
-export function SusunPilihanJam(isian: Isian, kolom: 'JamMulai' | 'JamSelesai'): PilihanCepatJam[] {
-    const umum =
-        kolom === 'JamMulai'
-            ? ['07:00', '08:00', '09:00', '10:00', '12:00', '16:00']
-            : ['15:00', '16:00', '17:00', '20:00', '21:00', '22:00'];
-    const hitungan = new Map<string, number>();
-
-    Object.values(isian).forEach((perHari) =>
-        Object.values(perHari).forEach((sel) => {
-            if (CekJam(sel[kolom])) {
-                hitungan.set(sel[kolom], (hitungan.get(sel[kolom]) ?? 0) + 1);
-            }
-        }),
-    );
-
-    const sering = [...hitungan.entries()].sort((a, b) => b[1] - a[1]).map(([jam]) => jam);
-
-    return [...new Set([...sering.slice(0, 4), ...umum])]
-        .slice(0, 6)
-        .sort()
-        .map((jam) => ({ Label: jam, Nilai: jam }));
-}
-
-function BuatIsian(baris: BarisJadwal[]): Isian {
-    return Object.fromEntries(
-        baris.map((b) => [
-            b.Uuid,
-            Object.fromEntries(
-                Object.entries(b.Jadwal).map(([t, j]) => [
-                    t,
-                    { JamMulai: j?.JamMulai ?? '', JamSelesai: j?.JamSelesai ?? '' },
-                ]),
-            ),
-        ]),
-    );
-}
-
-/** Sel yang berubah dibanding jadwal awal (hanya outlet ini) untuk dikirim. */
-export function SusunSelBerubah(baris: BarisJadwal[], isian: Isian) {
-    const sel: { UuidKaryawan: string; Tanggal: string; JamMulai: string | null; JamSelesai: string | null }[] = [];
-
-    for (const b of baris) {
-        for (const [tanggal, awal] of Object.entries(b.Jadwal)) {
-            if (awal?.OutletLain) {
-                continue;
-            }
-
-            const i = isian[b.Uuid]?.[tanggal] ?? { JamMulai: '', JamSelesai: '' };
-
-            if ((awal?.JamMulai ?? '') !== i.JamMulai || (awal?.JamSelesai ?? '') !== i.JamSelesai) {
-                sel.push({
-                    UuidKaryawan: b.Uuid,
-                    Tanggal: tanggal,
-                    JamMulai: i.JamMulai === '' ? null : i.JamMulai,
-                    JamSelesai: i.JamSelesai === '' ? null : i.JamSelesai,
-                });
-            }
-        }
-    }
-
-    return sel;
-}
-
-/** F-18 EMP-02: jadwal kerja mingguan per outlet (Senin–Minggu), simpan & salin minggu lalu. */
 export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadwal, Izin }: PropsJadwalKerja) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [isian, AturIsian] = useState<Isian>(() => BuatIsian(Jadwal.Baris));
+    const [dialog, AturDialog] = useState<Dialog>(null);
+    const [memproses, AturMemproses] = useState(false);
     const pilihanMulai = SusunPilihanJam(isian, 'JamMulai');
     const pilihanSelesai = SusunPilihanJam(isian, 'JamSelesai');
-    const [memproses, AturMemproses] = useState(false);
     const berubah = SusunSelBerubah(Jadwal.Baris, isian);
-    const galatLokal = berubah.some(
-        (s) =>
-            (s.JamMulai === null) !== (s.JamSelesai === null) ||
-            (s.JamMulai !== null && !CekJam(s.JamMulai)) ||
-            (s.JamSelesai !== null && !CekJam(s.JamSelesai)),
-    );
+    const galatLokal = AdaGalatJam(berubah);
+    const shiftAktif = Jadwal.ShiftKerja.filter((s) => s.Aktif);
+    const namaShift = new Map(Jadwal.ShiftKerja.map((s) => [s.Uuid, s.Nama]));
     const Buka = (uuidOutlet: string | null, senin: string) =>
         router.get(alamat, { ...(uuidOutlet ? { outlet: uuidOutlet } : {}), minggu: senin }, { preserveState: false });
-    const Ubah = (uuid: string, tanggal: string, kolom: 'JamMulai' | 'JamSelesai', nilai: string) =>
-        AturIsian((lama) => ({
-            ...lama,
-            [uuid]: {
-                ...lama[uuid],
-                [tanggal]: { ...(lama[uuid]?.[tanggal] ?? { JamMulai: '', JamSelesai: '' }), [kolom]: nilai },
-            },
-        }));
+    const KirimAksi = (jalur: string) =>
+        router.post(`${alamat}/${jalur}`, { UuidOutlet, Senin }, { preserveScroll: true });
+    const UbahSel = (uuid: string, tanggal: string, olah: (baris: BarisIsian[]) => BarisIsian[]) =>
+        AturIsian((lama) => {
+            const baris = olah(lama[uuid]?.[tanggal] ?? [BarisKosong()]);
+
+            return { ...lama, [uuid]: { ...lama[uuid], [tanggal]: baris.length === 0 ? [BarisKosong()] : baris } };
+        });
+    const UbahJam = (uuid: string, tanggal: string, indeks: number, kolom: 'JamMulai' | 'JamSelesai', nilai: string) =>
+        UbahSel(uuid, tanggal, (baris) =>
+            baris.map((b, i) => (i === indeks ? { ...b, [kolom]: nilai, UuidShift: null } : b)),
+        );
+    const TambahBaris = (uuid: string, tanggal: string, baru: BarisIsian) =>
+        UbahSel(uuid, tanggal, (baris) => [...BarisTerisi(baris), baru]);
+    const HapusBaris = (uuid: string, tanggal: string, indeks: number) =>
+        UbahSel(uuid, tanggal, (baris) => baris.filter((_, i) => i !== indeks));
     const Simpan = () =>
         router.put(
             alamat,
             { UuidOutlet, Senin, Sel: berubah },
             { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) },
         );
+    const Tutup = () => AturDialog(null);
 
     return (
         <TataLetakAplikasi judul="Jadwal kerja">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Isi jam kerja per hari: ketik (misal 830 → 08:30) atau klik isian untuk memilih. Kosongkan untuk libur.
-                Jam selesai lebih kecil dari jam mulai berarti shift lewat tengah malam. Keterlambatan di rekap absensi
-                dihitung dari jadwal ini.
+                Isi jam kerja per hari: ketik (misal 830 → 08:30), klik isian untuk memilih, atau pasang shift dengan
+                tombol Tambah. Satu hari boleh punya beberapa shift. Kosongkan untuk libur. Jam selesai lebih kecil dari
+                jam mulai berarti shift lewat tengah malam. Keterlambatan di rekap absensi dihitung dari jadwal ini.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="jadwal kerja" /> : null}
             <DaftarGalatServer galat={props.errors} />
@@ -168,18 +108,53 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                         Minggu berikutnya
                     </Button>
                 </div>
-                {Izin.Kelola && UuidOutlet ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => router.post(`${alamat}/salin`, { UuidOutlet, Senin }, { preserveScroll: true })}
-                    >
+            </div>
+
+            {Izin.Kelola && UuidOutlet ? (
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" onClick={() => AturDialog('massal')}>
+                        Isi massal
+                    </Button>
+                    <Button variant="outline" onClick={() => KirimAksi('salin')}>
                         Salin minggu lalu
                     </Button>
-                ) : null}
-                <Button asChild variant="outline">
-                    <Link href="/kelola/karyawan/cuti">Cuti & izin</Link>
-                </Button>
-            </div>
+                    <Button variant="outline" onClick={() => KirimAksi('terapkan-pola')}>
+                        Terapkan pola
+                    </Button>
+                    <Button variant="outline" onClick={() => KirimAksi('umumkan')}>
+                        Kirim ke karyawan
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Atur
+                                <ChevronDownIcon aria-hidden="true" className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            <DropdownMenuItem onSelect={() => AturDialog('shift')}>Shift kerja</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => AturDialog('pola')}>Pola berulang</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => AturDialog('kebutuhan')}>Kebutuhan staf</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/kelola/karyawan/cuti">Cuti dan izin</Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            ) : (
+                <div>
+                    <Button asChild variant="outline">
+                        <Link href="/kelola/karyawan/cuti">Cuti & izin</Link>
+                    </Button>
+                </div>
+            )}
+
+            <PanelPerhatianJadwal
+                alamat={alamat}
+                kekurangan={Jadwal.Kekurangan}
+                tukarShift={Jadwal.TukarShift}
+                bolehKelola={Izin.Kelola}
+            />
 
             {Jadwal.Baris.length === 0 ? (
                 <Pemberitahuan jenis="info" judul="Belum ada karyawan di outlet ini">
@@ -198,9 +173,11 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                             </p>
                             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
                                 {Jadwal.Hari.map((tanggal, i) => {
-                                    const awal = b.Jadwal[tanggal];
-                                    const nilai = isian[b.Uuid]?.[tanggal] ?? { JamMulai: '', JamSelesai: '' };
-                                    const kunci = !Izin.Kelola || awal?.OutletLain === true || !b.Aktif;
+                                    const awal = b.Jadwal[tanggal] ?? [];
+                                    const outletLain = awal.filter((s) => s.OutletLain);
+                                    const baris = isian[b.Uuid]?.[tanggal] ?? [BarisKosong()];
+                                    const kunci = !Izin.Kelola || outletLain.length > 0 || !b.Aktif;
+                                    const hari = NamaHari[i] ?? '';
 
                                     return (
                                         <fieldset
@@ -208,7 +185,7 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                                             className="min-w-0 rounded-panel border border-garis p-2"
                                         >
                                             <legend className="px-1 text-label text-teks-sekunder">
-                                                {namaHari[i]} {tanggal.slice(8, 10)}/{tanggal.slice(5, 7)}
+                                                {hari} {tanggal.slice(8, 10)}/{tanggal.slice(5, 7)}
                                             </legend>
                                             {b.Cuti[tanggal] ? (
                                                 <p className="mb-1 text-keterangan font-semibold text-teks-utama">
@@ -216,34 +193,129 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                                                     {b.Cuti[tanggal].Berbayar ? '' : ' | tidak digaji'}
                                                 </p>
                                             ) : null}
-                                            {awal?.OutletLain ? (
+                                            {outletLain.length > 0 ? (
                                                 <p className="text-keterangan text-teks-sekunder">
-                                                    Di outlet lain {awal.JamMulai}–{awal.JamSelesai}
+                                                    Di outlet lain{' '}
+                                                    {outletLain.map((s) => `${s.JamMulai}–${s.JamSelesai}`).join(', ')}
                                                 </p>
                                             ) : (
-                                                <div className="flex items-center gap-1">
-                                                    {(['JamMulai', 'JamSelesai'] as const).map((kolom) => (
-                                                        <PemilihJam
-                                                            key={kolom}
-                                                            label={`${b.Nama} ${namaHari[i] ?? ''} ${kolom === 'JamMulai' ? 'mulai' : 'selesai'}`}
-                                                            labelTersembunyi
-                                                            ringkas
-                                                            contoh={kolom === 'JamMulai' ? '08:00' : '16:00'}
-                                                            langkahMenit={15}
-                                                            pilihanCepat={
-                                                                kolom === 'JamMulai' ? pilihanMulai : pilihanSelesai
-                                                            }
-                                                            disabled={kunci}
-                                                            nilai={nilai[kolom]}
-                                                            galat={
-                                                                nilai[kolom] !== '' && !CekJam(nilai[kolom])
-                                                                    ? 'Format JJ:MM'
-                                                                    : undefined
-                                                            }
-                                                            saatBerubah={(baru) => Ubah(b.Uuid, tanggal, kolom, baru)}
-                                                            className="flex-1 [&_[data-slot=input-group]]:h-11"
-                                                        />
-                                                    ))}
+                                                <div className="flex flex-col gap-1.5">
+                                                    {baris.map((sel, n) => {
+                                                        const nomor = n === 0 ? '' : ` ${n + 1}`;
+                                                        const nama = sel.UuidShift
+                                                            ? namaShift.get(sel.UuidShift)
+                                                            : null;
+
+                                                        return (
+                                                            <div key={n} className="flex flex-col gap-0.5">
+                                                                {nama ? (
+                                                                    <span className="text-keterangan font-semibold text-teks-sekunder">
+                                                                        {nama}
+                                                                    </span>
+                                                                ) : null}
+                                                                <div className="flex items-center gap-1">
+                                                                    {(['JamMulai', 'JamSelesai'] as const).map(
+                                                                        (kolom) => (
+                                                                            <PemilihJam
+                                                                                key={kolom}
+                                                                                label={`${b.Nama} ${hari} ${kolom === 'JamMulai' ? 'mulai' : 'selesai'}${nomor}`}
+                                                                                labelTersembunyi
+                                                                                ringkas
+                                                                                contoh={
+                                                                                    kolom === 'JamMulai'
+                                                                                        ? '08:00'
+                                                                                        : '16:00'
+                                                                                }
+                                                                                langkahMenit={15}
+                                                                                pilihanCepat={
+                                                                                    kolom === 'JamMulai'
+                                                                                        ? pilihanMulai
+                                                                                        : pilihanSelesai
+                                                                                }
+                                                                                disabled={kunci}
+                                                                                nilai={sel[kolom]}
+                                                                                galat={
+                                                                                    sel[kolom] !== '' &&
+                                                                                    !CekJam(sel[kolom])
+                                                                                        ? 'Format JJ:MM'
+                                                                                        : undefined
+                                                                                }
+                                                                                saatBerubah={(baru) =>
+                                                                                    UbahJam(
+                                                                                        b.Uuid,
+                                                                                        tanggal,
+                                                                                        n,
+                                                                                        kolom,
+                                                                                        baru,
+                                                                                    )
+                                                                                }
+                                                                                className="flex-1 [&_[data-slot=input-group]]:h-11"
+                                                                            />
+                                                                        ),
+                                                                    )}
+                                                                    {!kunci &&
+                                                                    (baris.length > 1 ||
+                                                                        sel.JamMulai !== '' ||
+                                                                        sel.JamSelesai !== '') ? (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            aria-label={`Hapus shift${nomor} ${b.Nama} ${hari}`}
+                                                                            onClick={() =>
+                                                                                HapusBaris(b.Uuid, tanggal, n)
+                                                                            }
+                                                                        >
+                                                                            <XIcon
+                                                                                aria-hidden="true"
+                                                                                className="size-4"
+                                                                            />
+                                                                        </Button>
+                                                                    ) : null}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    {!kunci ? (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="self-start"
+                                                                    aria-label={`Tambah shift ${b.Nama} ${hari}`}
+                                                                >
+                                                                    <PlusIcon aria-hidden="true" className="size-4" />
+                                                                    Tambah
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="start">
+                                                                {shiftAktif.map((s) => (
+                                                                    <DropdownMenuItem
+                                                                        key={s.Uuid}
+                                                                        onSelect={() =>
+                                                                            TambahBaris(b.Uuid, tanggal, {
+                                                                                JamMulai: s.JamMulai,
+                                                                                JamSelesai: s.JamSelesai,
+                                                                                UuidShift: s.Uuid,
+                                                                            })
+                                                                        }
+                                                                    >
+                                                                        {LabelShift(s)}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                                <DropdownMenuItem
+                                                                    onSelect={() =>
+                                                                        UbahSel(b.Uuid, tanggal, (lama) => [
+                                                                            ...lama,
+                                                                            BarisKosong(),
+                                                                        ])
+                                                                    }
+                                                                >
+                                                                    Jam sendiri
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    ) : null}
                                                 </div>
                                             )}
                                         </fieldset>
@@ -273,6 +345,38 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                               : `${berubah.length} hari berubah.`}
                     </span>
                 </div>
+            ) : null}
+
+            {UuidOutlet && dialog === 'shift' ? (
+                <DialogShiftKerja alamat={alamat} shift={Jadwal.ShiftKerja} saatTutup={Tutup} />
+            ) : null}
+            {UuidOutlet && dialog === 'massal' ? (
+                <DialogIsiMassal
+                    alamat={alamat}
+                    uuidOutlet={UuidOutlet}
+                    senin={Senin}
+                    hari={Jadwal.Hari}
+                    karyawan={Jadwal.Baris}
+                    shift={Jadwal.ShiftKerja}
+                    saatTutup={Tutup}
+                />
+            ) : null}
+            {UuidOutlet && dialog === 'pola' ? (
+                <DialogPolaJadwal
+                    alamat={alamat}
+                    uuidOutlet={UuidOutlet}
+                    karyawan={Jadwal.Baris}
+                    shift={Jadwal.ShiftKerja}
+                    saatTutup={Tutup}
+                />
+            ) : null}
+            {UuidOutlet && dialog === 'kebutuhan' ? (
+                <DialogKebutuhanStaf
+                    alamat={alamat}
+                    uuidOutlet={UuidOutlet}
+                    kebutuhan={Jadwal.Kebutuhan}
+                    saatTutup={Tutup}
+                />
             ) : null}
         </TataLetakAplikasi>
     );
