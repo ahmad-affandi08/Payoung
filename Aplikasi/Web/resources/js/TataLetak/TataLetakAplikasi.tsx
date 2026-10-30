@@ -156,6 +156,15 @@ const menuPersediaan: ItemMenu[] = [
         fitur: 'stok.transfer',
         lanjutan: true,
     },
+    // D-105: outlet meminta stok ke gudang, terpenuhi saat transfer berkaitnya dikirim.
+    {
+        label: 'Permintaan stok',
+        href: '/kelola/persediaan/permintaan',
+        izin: IzinTenant.PersediaanLihat,
+        fitur: 'stok.transfer',
+        lanjutan: true,
+        kelompok: 'Ubah stok',
+    },
     {
         label: 'Stok opname',
         href: '/kelola/persediaan/opname',
@@ -190,20 +199,74 @@ const menuPersediaan: ItemMenu[] = [
 // Audit kemudahan pakai #14: belanja stok (beli tunai sekali simpan) paling sering dipakai toko kecil, jadi entri
 // pertama; riwayat pembayaran hutang dibuka dari halaman Hutang pemasok supaya grup tetap ≤ 7 sub-menu.
 const menuPembelian: ItemMenu[] = [
-    { label: 'Belanja stok', href: '/kelola/pembelian/belanja-stok', izin: IzinTenant.PembelianKelola },
+    // D-252: "Beli barang" = dari butuh sampai barang diterima. Permintaan pembelian dulu hanya terjangkau lewat tombol
+    // di daftar Pesanan pembelian.
+    {
+        label: 'Belanja stok',
+        href: '/kelola/pembelian/belanja-stok',
+        izin: IzinTenant.PembelianKelola,
+        kelompok: 'Beli barang',
+    },
+    {
+        label: 'Permintaan pembelian',
+        href: '/kelola/pembelian/permintaan',
+        izin: IzinTenant.PembelianKelola,
+        fitur: 'pembelian.po',
+        lanjutan: true,
+        kelompok: 'Beli barang',
+    },
     {
         label: 'Pesanan pembelian',
         href: '/kelola/pembelian/pesanan',
         izin: IzinTenant.PembelianKelola,
         fitur: 'pembelian.po',
         lanjutan: true,
+        kelompok: 'Beli barang',
     },
-    { label: 'Penerimaan barang', href: '/kelola/pembelian/penerimaan', izin: IzinTenant.PembelianKelola },
-    // Membayar hutang lebih sering daripada membuka daftar faktur.
-    { label: 'Hutang pemasok', href: '/kelola/pembelian/hutang', izin: IzinTenant.PembelianKelola },
-    { label: 'Faktur pembelian', href: '/kelola/pembelian/faktur', izin: IzinTenant.PembelianKelola, lanjutan: true },
-    { label: 'Retur pembelian', href: '/kelola/pembelian/retur', izin: IzinTenant.PembelianKelola, lanjutan: true },
+    {
+        label: 'Penerimaan barang',
+        href: '/kelola/pembelian/penerimaan',
+        izin: IzinTenant.PembelianKelola,
+        kelompok: 'Beli barang',
+    },
+    // "Hutang & retur" = tagihan dari pemasok sampai lunas, beserta koreksinya. Membayar hutang lebih sering daripada
+    // membuka daftar faktur.
+    {
+        label: 'Hutang pemasok',
+        href: '/kelola/pembelian/hutang',
+        izin: IzinTenant.PembelianKelola,
+        kelompok: 'Hutang & retur',
+    },
+    {
+        label: 'Faktur pembelian',
+        href: '/kelola/pembelian/faktur',
+        izin: IzinTenant.PembelianKelola,
+        lanjutan: true,
+        kelompok: 'Hutang & retur',
+    },
+    {
+        label: 'Retur pembelian',
+        href: '/kelola/pembelian/retur',
+        izin: IzinTenant.PembelianKelola,
+        lanjutan: true,
+        kelompok: 'Hutang & retur',
+    },
+    {
+        label: 'Nota debit',
+        href: '/kelola/pembelian/nota-debit',
+        izin: IzinTenant.PembelianKelola,
+        lanjutan: true,
+        kelompok: 'Hutang & retur',
+    },
+    {
+        label: 'Biaya tambahan',
+        href: '/kelola/pembelian/biaya-tambahan',
+        izin: IzinTenant.PembelianKelola,
+        lanjutan: true,
+        kelompok: 'Hutang & retur',
+    },
     { label: 'Pemasok', href: '/kelola/pembelian/pemasok', izin: IzinTenant.PembelianKelola },
+    { label: 'Konsinyasi', href: '/kelola/pembelian/konsinyasi', izin: IzinTenant.PembelianKelola, lanjutan: true },
 ];
 
 // Grosir (F-12, §9.7, D-32): satu alur jual-kirim-tagih beserta returnya, cermin grup "Pembelian" di sisi beli.
@@ -292,6 +355,14 @@ const menuPelanggan: ItemMenu[] = [
         awalanLain: ['/kelola/pelanggan/gift-card'],
         kecualiSektor: ['BIZ'],
     },
+    // CRM-07: kampanye pesan WhatsApp bersegmen (hanya pelanggan yang setuju menerima promosi).
+    {
+        label: 'Kampanye pesan',
+        href: '/kelola/pelanggan/kampanye',
+        izin: IzinTenant.PelangganKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Promo & saldo',
+    },
     // F-16d bagian 2: saldo paket sesi pelanggan.
     {
         label: 'Saldo paket sesi',
@@ -323,6 +394,14 @@ const menuKaryawan: ItemMenu[] = [
         href: '/kelola/karyawan/absensi',
         kelompok: 'Staf & kehadiran',
         izin: IzinTenant.KaryawanLihat,
+    },
+    // EMP-03: cuti, sakit, dan izin dicatat pengelola; cuti berbayar bukan "tidak masuk" di rekap gaji.
+    {
+        label: 'Cuti & izin',
+        href: '/kelola/karyawan/cuti',
+        izin: IzinTenant.KaryawanLihat,
+        lanjutan: true,
+        kelompok: 'Staf & kehadiran',
     },
     // F-18 bagian 2: komisi (aturannya pindah ke Pengaturan, D-27).
     {
@@ -440,10 +519,43 @@ const menuAkuntansi: ItemMenu[] = [
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
     },
-    { label: 'Kas & bank', href: '/kelola/akuntansi/kas-bank', izin: IzinTenant.LaporanKeuanganLihat },
+    // D-252: Kas & bank, pencairan dana, rekonsiliasi, giro, dan QRIS tanpa penjualan satu subgrup. Tiga yang terakhir
+    // dulu hanya terjangkau lewat tombol di halaman Kas & bank dan Ctrl+K, kini punya tempat di menu.
+    {
+        label: 'Kas & bank',
+        href: '/kelola/akuntansi/kas-bank',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        kelompok: 'Kas, bank & giro',
+    },
     // F-08 BR-08.4: pencairan dana non-tunai (J-08.1). Rumahnya di Akuntansi, bukan Penjualan, karena yang dikerjakan
-    // di sini pembukuan uang masuk rekening & beban biaya pembayaran — pekerjaan yang sama dengan Kas & bank.
-    { label: 'Pencairan dana', href: '/kelola/akuntansi/pencairan', izin: IzinTenant.LaporanKeuanganLihat },
+    // di sini pembukuan uang masuk rekening & beban biaya pembayaran, pekerjaan yang sama dengan Kas & bank.
+    {
+        label: 'Pencairan dana',
+        href: '/kelola/akuntansi/pencairan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        kelompok: 'Kas, bank & giro',
+    },
+    // FIN-09: mencocokkan rekening koran dengan catatan kas & bank.
+    {
+        label: 'Rekonsiliasi bank',
+        href: '/kelola/akuntansi/rekonsiliasi',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        kelompok: 'Kas, bank & giro',
+    },
+    // F-12: giro/cek mundur dari pelanggan dan ke pemasok sampai cair atau ditolak.
+    {
+        label: 'Giro & cek mundur',
+        href: '/kelola/akuntansi/giro',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        kelompok: 'Kas, bank & giro',
+    },
+    // E8: uang QRIS yang masuk tanpa penjualan, diputuskan dikembalikan atau diakui sebagai pendapatan lain.
+    {
+        label: 'QRIS tanpa penjualan',
+        href: '/kelola/akuntansi/qris-tanpa-penjualan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        kelompok: 'Kas, bank & giro',
+    },
     // FIN-10 (v3.38): aset tetap & penyusutan otomatis bulanan (kerja berkala, jadi menu, bukan Pengaturan).
     {
         label: 'Aset tetap',

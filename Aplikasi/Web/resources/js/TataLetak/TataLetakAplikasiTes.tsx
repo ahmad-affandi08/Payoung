@@ -372,6 +372,8 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             'Kartu stok',
             'Penyesuaian stok',
             'Transfer stok',
+            // D-252: halaman yang dulu hanya terjangkau lewat tombol di Transfer stok.
+            'Permintaan stok',
             'Stok opname',
             'Produksi',
             'Bahan terbuang',
@@ -392,7 +394,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(alamat).not.toContain('/kelola/persediaan/stok-awal');
         expect(alamat).not.toContain('/kelola/persediaan/stok-awal/impor');
         expect(alamat).not.toContain('/kelola/persediaan/pengaturan');
-        expect(alamat).toHaveLength(7);
+        expect(alamat).toHaveLength(8);
     });
 
     it('D-27: menu Pengaturan menyala saat membuka halaman yang rumahnya di sana', () => {
@@ -712,6 +714,40 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         const sub = screen.getByRole('navigation', { name: 'Menu laporan' });
         expect(within(sub).queryByRole('button', { name: 'Laporan keuangan' })).toBeNull();
         expect(within(sub).getByRole('link', { name: 'Laporan penjualan' })).toBeTruthy();
+    });
+
+    it('D-252: halaman giro dan rekonsiliasi punya tempat di subgrup Kas, bank & giro', () => {
+        propsHalaman = BuatProps({}, ['laporan.keuangan.lihat']);
+        urlHalaman = '/kelola/akuntansi/giro';
+        render(<TataLetakAplikasi judul="Giro & cek mundur">isi</TataLetakAplikasi>);
+
+        const sub = screen.getByRole('navigation', { name: 'Menu akuntansi' });
+        expect(within(sub).getByRole('button', { name: 'Kas, bank & giro' }).getAttribute('aria-expanded')).toBe(
+            'true',
+        );
+        expect(within(sub).getByRole('link', { name: 'Giro & cek mundur' }).getAttribute('aria-current')).toBe('page');
+        expect(within(sub).getByRole('link', { name: 'Rekonsiliasi bank' }).getAttribute('href')).toBe(
+            '/kelola/akuntansi/rekonsiliasi',
+        );
+        expect(within(sub).getByRole('link', { name: 'QRIS tanpa penjualan' })).toBeTruthy();
+        // Catatan keuangan tidak berisi halaman aktif, jadi tertutup.
+        expect(within(sub).getByRole('button', { name: 'Catatan keuangan' }).getAttribute('aria-expanded')).toBe(
+            'false',
+        );
+    });
+
+    it('D-252: grup Pembelian punya subgrup Beli barang dan Hutang & retur, Pemasok tetap rata', () => {
+        propsHalaman = BuatProps({}, ['pembelian.kelola']);
+        urlHalaman = '/kelola/pembelian/nota-debit';
+        render(<TataLetakAplikasi judul="Nota debit">isi</TataLetakAplikasi>);
+
+        const sub = screen.getByRole('navigation', { name: 'Menu pembelian' });
+        expect(within(sub).getByRole('button', { name: 'Hutang & retur' }).getAttribute('aria-expanded')).toBe('true');
+        expect(within(sub).getByRole('link', { name: 'Nota debit' }).getAttribute('aria-current')).toBe('page');
+        expect(within(sub).getByRole('button', { name: 'Beli barang' }).getAttribute('aria-expanded')).toBe('false');
+        expect(within(sub).getByRole('link', { name: 'Pemasok' })).toBeTruthy();
+        fireEvent.click(within(sub).getByRole('button', { name: 'Beli barang' }));
+        expect(within(sub).getByRole('link', { name: 'Permintaan pembelian' })).toBeTruthy();
     });
 
     it('D-252: BagiKelompokSub menggabungkan butir berurutan sekelompok dan meratakan subgrup satu butir', () => {

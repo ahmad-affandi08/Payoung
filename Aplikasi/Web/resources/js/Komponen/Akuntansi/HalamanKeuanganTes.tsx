@@ -108,6 +108,10 @@ describe('F-13a menu Akuntansi', () => {
             'Kas & bank',
             // F-08 BR-08.4 (v2.83): pencairan dana non-tunai, pekerjaan pembukuan sejenis Kas & bank.
             'Pencairan dana',
+            // D-252: tiga halaman yang dulu hanya terjangkau lewat tombol di Kas & bank dan Ctrl+K.
+            'Rekonsiliasi bank',
+            'Giro & cek mundur',
+            'QRIS tanpa penjualan',
             // FIN-10 (v3.38): aset tetap & penyusutan, pekerjaan pembukuan berkala.
             'Aset tetap',
             'Tutup buku',
