@@ -54,6 +54,10 @@ final class MasukPinKasir
             throw new PelanggaranAturanBisnis('PinBelumDiatur', 'PIN belum diatur. Atur PIN di back-office menu Keamanan akun, atau minta manajer mengaturnya.', 'Pin');
         }
 
+        if (! $this->penguncian->PesanPercobaan($perangkat->Id, $pengguna->Id)) {
+            $this->PastikanTidakTerkunci($perangkat, $pengguna->Id);
+        }
+
         if (! Hash::check($pin, $anggota->HashPin)) {
             $sisa = $this->penguncian->CatatGagal($perangkat->Id, $pengguna->Id);
 

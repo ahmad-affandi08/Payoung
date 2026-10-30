@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tenant\Layanan;
 
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -56,14 +57,37 @@ final class PengukurPenyimpanan
         return $total;
     }
 
-    /** Mengukur lalu menyimpan hasilnya untuk tenant aktif. */
+    /**
+     * Mengukur lalu menyimpan hasilnya untuk tenant aktif. Pemindaian disk memakan waktu, dan selama itu unggahan baru
+     * menambah `Byte` lewat `PenjagaPenyimpanan::Catat`. Menimpa dengan hasil pindaian saja menghapus penambahan itu,
+     * jadi selisih `Byte` sejak pindaian dimulai ditambahkan ke hasil. Bila berkas baru sudah ikut terpindai, angkanya
+     * terhitung dua kali sampai pengukuran berikutnya: lebih baik terlalu tinggi sedikit daripada kuota yang bocor.
+     */
     public function Segarkan(int $idTenant): PemakaianPenyimpanan
     {
+        $awal = PemakaianPenyimpanan::query()->firstOrCreate(['IdTenant' => $idTenant], ['Byte' => 0]);
+        $byteAwal = (int) $awal->Byte;
         $byte = $this->HitungByte($idTenant);
 
-        return PemakaianPenyimpanan::query()->updateOrCreate(
-            ['IdTenant' => $idTenant],
-            ['Byte' => $byte, 'DiukurPada' => now()],
-        );
+        return $this->TerapkanHasil($idTenant, $byteAwal, $byte);
+    }
+
+    /**
+     * Menyimpan hasil pindaian dengan menjaga penambahan yang masuk selama pindaian berlangsung.
+     *
+     * @param  int  $byteAwal  nilai `Byte` sebelum pindaian dimulai
+     * @param  int  $byte  hasil pindaian
+     */
+    public function TerapkanHasil(int $idTenant, int $byteAwal, int $byte): PemakaianPenyimpanan
+    {
+        return DB::transaction(function () use ($idTenant, $byteAwal, $byte): PemakaianPenyimpanan {
+            $baris = PemakaianPenyimpanan::query()->where('IdTenant', $idTenant)->lockForUpdate()->firstOrFail();
+            $tambahan = max(0, (int) $baris->Byte - $byteAwal);
+            $baris->Byte = $byte + $tambahan;
+            $baris->DiukurPada = now();
+            $baris->save();
+
+            return $baris;
+        });
     }
 }

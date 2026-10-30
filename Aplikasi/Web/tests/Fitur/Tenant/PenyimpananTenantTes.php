@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Domain\Tenant\Layanan\PengukurPenyimpanan;
+use App\Domain\Tenant\Layanan\PenjagaPenyimpanan;
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -44,6 +45,39 @@ describe('E2 penyimpanan berkas per tenant', function (): void {
             ->and($pengukur->HitungByte($t['Tenant']->Id))->toBeGreaterThanOrEqual(1750 + 1)
             ->and($pengukur->HitungByte($t['Tenant']->Id))->toBeLessThan(1750 + $gambar + 4096)
             ->and($pengukur->Segarkan($t['Tenant']->Id)->DiukurPada)->not->toBeNull();
+    });
+
+    it('Catat menambah secara atomik: baris pertama dibuat sekali, penambahan berikutnya menumpuk, nol tidak mengubah apa pun', function (): void {
+        $t = BantuanKatalog::SiapkanTenantProduk();
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        $penjaga = app(PenjagaPenyimpanan::class);
+
+        $penjaga->Catat($t['Tenant']->Id, 0);
+        expect(PemakaianPenyimpanan::query()->where('IdTenant', $t['Tenant']->Id)->count())->toBe(0);
+
+        $penjaga->Catat($t['Tenant']->Id, 1500);
+        $penjaga->Catat($t['Tenant']->Id, 2500);
+        $penjaga->Catat($t['Tenant']->Id, -10);
+
+        expect(PemakaianPenyimpanan::query()->where('IdTenant', $t['Tenant']->Id)->count())->toBe(1)
+            ->and($penjaga->AmbilByte($t['Tenant']->Id))->toBe(4000);
+    });
+
+    it('hasil pindaian tidak menghapus unggahan yang masuk selama pindaian berlangsung', function (): void {
+        $t = BantuanKatalog::SiapkanTenantProduk();
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        $penjaga = app(PenjagaPenyimpanan::class);
+        $pengukur = app(PengukurPenyimpanan::class);
+
+        $penjaga->Catat($t['Tenant']->Id, 3000);
+        $byteAwal = $penjaga->AmbilByte($t['Tenant']->Id);
+        // Pindaian dimulai, lalu unggahan 700 byte selesai sebelum hasilnya ditulis.
+        $penjaga->Catat($t['Tenant']->Id, 700);
+        $hasil = $pengukur->TerapkanHasil($t['Tenant']->Id, $byteAwal, 3000);
+
+        expect($hasil->Byte)->toBe(3700)
+            ->and($penjaga->AmbilByte($t['Tenant']->Id))->toBe(3700)
+            ->and($hasil->DiukurPada)->not->toBeNull();
     });
 
     it('unggahan gambar produk ditolak PenyimpananPenuh bila melewati batas paket, tanpa batas selalu lolos', function (): void {

@@ -6,6 +6,7 @@ namespace App\Domain\Tenant\Layanan;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Tenant\Model\PemakaianPenyimpanan;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
  * Penegakan `BatasPenyimpananMb` paket (audit E2, BR-P04.3) untuk unggahan yang boleh ditolak: gambar produk dan
@@ -44,12 +45,28 @@ final class PenjagaPenyimpanan
         );
     }
 
-    /** Menambah pemakaian setelah unggahan berhasil disimpan. */
+    /**
+     * Menambah pemakaian setelah unggahan berhasil disimpan. Penambahan dilakukan di database (`Byte = Byte + n`), bukan
+     * baca-tambah-simpan di PHP, supaya dua unggahan bersamaan sama-sama terhitung. Baris pertama tenant dibuat di
+     * sini; bila dua unggahan pertama berebut membuatnya, yang kalah menambah ke baris pemenang, bukan galat.
+     */
     public function Catat(int $idTenant, int $ukuran): void
     {
-        $baris = PemakaianPenyimpanan::query()->firstOrCreate(['IdTenant' => $idTenant], ['Byte' => 0]);
-        $baris->Byte += max(0, $ukuran);
-        $baris->save();
+        $ukuran = max(0, $ukuran);
+
+        if ($ukuran === 0) {
+            return;
+        }
+
+        if (PemakaianPenyimpanan::query()->where('IdTenant', $idTenant)->increment('Byte', $ukuran) > 0) {
+            return;
+        }
+
+        try {
+            PemakaianPenyimpanan::query()->create(['IdTenant' => $idTenant, 'Byte' => $ukuran]);
+        } catch (UniqueConstraintViolationException) {
+            PemakaianPenyimpanan::query()->where('IdTenant', $idTenant)->increment('Byte', $ukuran);
+        }
     }
 
     public function AmbilByte(int $idTenant): int

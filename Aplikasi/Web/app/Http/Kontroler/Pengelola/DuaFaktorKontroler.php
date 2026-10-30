@@ -31,6 +31,9 @@ final class DuaFaktorKontroler extends Kontroler
 {
     private const MAKS_PERCOBAAN = 5;
 
+    /** Jendela hitungan 2FA: 5 percobaan per 5 menit (sama dengan 2FA tenant), bukan per menit bawaan RateLimiter. */
+    private const DETIK_JENDELA = 300;
+
     public function TampilkanAktivasi(Request $permintaan, DuaFaktorPengelola $duaFaktor): Response|RedirectResponse
     {
         $pengguna = $this->PenggunaMasuk();
@@ -190,6 +193,6 @@ final class DuaFaktorKontroler extends Kontroler
             ]);
         }
 
-        RateLimiter::hit($kunci);
+        RateLimiter::hit($kunci, self::DETIK_JENDELA);
     }
 }

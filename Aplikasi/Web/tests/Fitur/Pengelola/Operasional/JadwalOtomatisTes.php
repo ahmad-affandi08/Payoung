@@ -13,6 +13,7 @@ use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Console\Scheduling\CacheEventMutex;
 use Illuminate\Console\Scheduling\Event;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Cache\Factory as FabrikCache;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
@@ -124,6 +125,28 @@ describe('D-209 halaman Jadwal & penyimpanan', function (): void {
 
         $baris->refresh();
         expect($baris->Berhasil)->toBeTrue()->and($baris->SelesaiPada)->not->toBeNull();
+    });
+
+    it('jalan manual memakai kunci withoutOverlapping milik jadwal: ditolak bila jadwal otomatis sedang berjalan, dan kunci dilepas sesudah selesai', function (): void {
+        $acara = app(Schedule::class)->command('list --raw')->withoutOverlapping();
+        $baris = RiwayatJadwal::query()->create(['Perintah' => 'list --raw', 'Sumber' => 'Manual', 'MulaiPada' => now()]);
+
+        // Jadwal otomatis sedang memegang kunci perintah itu.
+        expect($acara->mutex->create($acara))->toBeTrue();
+        app()->call([new JalankanPerintahJadwalTugas($baris->Id), 'handle']);
+
+        $baris->refresh();
+        expect($baris->Berhasil)->toBeFalse()
+            ->and($baris->SelesaiPada)->not->toBeNull()
+            ->and($baris->Keterangan)->toContain('Jadwal otomatis sedang menjalankan');
+
+        // Kunci dilepas jadwal; jalan manual berikutnya berhasil dan tidak meninggalkan kunci yang menyumbat jadwal.
+        $acara->mutex->forget($acara);
+        $ulang = RiwayatJadwal::query()->create(['Perintah' => 'list --raw', 'Sumber' => 'Manual', 'MulaiPada' => now()]);
+        app()->call([new JalankanPerintahJadwalTugas($ulang->Id), 'handle']);
+
+        expect($ulang->refresh()->Berhasil)->toBeTrue()
+            ->and($acara->mutex->exists($acara))->toBeFalse();
     });
 
     it('§19.3: peran tanpa izin operasional ditolak, Analis tidak bisa menjalankan', function (): void {

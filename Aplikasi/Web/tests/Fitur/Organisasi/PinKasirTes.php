@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Layanan\PenguncianPin;
 use App\Domain\Organisasi\Model\Merek;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\OutletPengguna;
@@ -229,5 +230,26 @@ describe('POST /api/pos/v1/kasir/masuk-pin (§20.2)', function (): void {
         $kirim()->assertForbidden();
         BantuanPerangkat::AturStatusLangganan($tenant->Id, StatusLangganan::Gratis);
         $kirim()->assertOk();
+    });
+});
+
+describe('§20.2 percobaan PIN dipesan sebelum PIN diperiksa', function (): void {
+    it('hanya PercobaanPinMaksimal percobaan yang boleh memeriksa PIN walau datang serentak: yang berikutnya ditolak dan PIN terkunci', function (): void {
+        config(['organisasi.PercobaanPinMaksimal' => 5, 'organisasi.MenitKunciPin' => 5]);
+        $penguncian = app(PenguncianPin::class);
+
+        // Enam permintaan serentak sama-sama lolos pemeriksaan "belum terkunci" lalu memesan percobaan.
+        $hasil = [];
+
+        for ($i = 0; $i < 6; $i++) {
+            $hasil[] = $penguncian->PesanPercobaan(901, 902);
+        }
+
+        expect($hasil)->toBe([true, true, true, true, true, false])
+            ->and($penguncian->AmbilSisaDetikKunci(901, 902))->toBeGreaterThan(0);
+
+        $penguncian->Bersihkan(901, 902);
+        expect($penguncian->PesanPercobaan(901, 902))->toBeTrue()
+            ->and($penguncian->CatatGagal(901, 902))->toBe(4);
     });
 });
