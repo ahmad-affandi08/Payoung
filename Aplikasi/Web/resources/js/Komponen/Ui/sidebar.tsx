@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/Komponen/Ui/utils"
-import { PanelLeftIcon } from "lucide-react"
+import { TextAlignStartIcon } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { useIsMobile } from "@/Komponen/Ui/hooks/use-mobile"
@@ -273,7 +273,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <TextAlignStartIcon />
       <span className="sr-only">Buka/tutup menu samping</span>
     </Button>
   )
