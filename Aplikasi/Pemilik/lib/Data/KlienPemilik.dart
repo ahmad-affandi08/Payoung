@@ -1122,7 +1122,9 @@ class KlienPemilik {
 
     final http.Response respons;
     try {
-      respons = await http.Response.fromStream(await _klien.send(permintaan).timeout(batasWaktu));
+      // Batas waktu mencakup SELURUH respons (header lalu isi). Bila hanya header yang dibatasi, server yang mengirim
+      // header lalu berhenti mengalirkan isi membuat layar berputar tanpa akhir, tanpa pesan galat dan tanpa "Coba lagi".
+      respons = await (() async => http.Response.fromStream(await _klien.send(permintaan)))().timeout(batasWaktu);
     } on TimeoutException {
       throw const GalatJaringan('Server tidak menjawab. Periksa koneksi internet.');
     } on SocketException {
