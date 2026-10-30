@@ -153,7 +153,7 @@ final class TerimaNotifikasiBillingLangganan
                 'NomorTagihan' => $tagihan->Nomor,
                 'JumlahDiterima' => $diterima->KeString(),
                 'IdTransaksiGerbang' => $notifikasi->idTransaksi,
-                'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->Siklus),
+                'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->JumlahBulan),
             ],
             idTenant: $tagihan->IdTenant,
         );

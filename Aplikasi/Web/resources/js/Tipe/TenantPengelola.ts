@@ -67,6 +67,7 @@ export type LanggananTenant = {
     PeriodeMulai: string | null;
     PeriodeSelesai: string | null;
     SiklusTagihan: string;
+    JumlahBulanSiklus: number;
     PerpanjanganTrial: number;
     SisaPerpanjanganTrial: number;
 };

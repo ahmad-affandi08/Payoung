@@ -107,7 +107,7 @@ final class CatatPembayaranManualLangganan
                     'JumlahDiterima' => $diterima->KeString(),
                     'TanggalTransfer' => $tanggalTransfer->toDateString(),
                     'NamaPengirim' => $namaPengirim,
-                    'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->Siklus),
+                    'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->JumlahBulan),
                 ],
                 alasan: $catatan,
                 idPelaku: $pelaku->Id,

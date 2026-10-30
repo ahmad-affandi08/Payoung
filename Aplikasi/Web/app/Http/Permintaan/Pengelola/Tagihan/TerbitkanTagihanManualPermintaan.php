@@ -8,7 +8,7 @@ use App\Domain\Tenant\Enum\SiklusTagihan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/** Tagihan manual paket harga negosiasi (P-08, D-112): paket, siklus, harga kesepakatan sebelum PPN, keterangan kontrak. */
+/** Tagihan manual paket harga negosiasi (P-08, D-112): paket, lama (bulan), harga kesepakatan sebelum PPN, keterangan kontrak. */
 final class TerbitkanTagihanManualPermintaan extends FormRequest
 {
     /**
@@ -18,7 +18,8 @@ final class TerbitkanTagihanManualPermintaan extends FormRequest
     {
         return [
             'KodePaket' => ['required', 'string', 'max:30'],
-            'Siklus' => ['required', 'string', Rule::enum(SiklusTagihan::class)],
+            'JumlahBulan' => ['required_without:Siklus', 'nullable', 'integer', 'min:1', 'max:120'],
+            'Siklus' => ['required_without:JumlahBulan', 'nullable', 'string', Rule::in([SiklusTagihan::Bulanan->value, SiklusTagihan::Tahunan->value])],
             'Subtotal' => ['required', 'string', 'regex:/^[1-9]\d{0,13}(\.\d{1,2})?$/'],
             'Keterangan' => ['required', 'string', 'min:5', 'max:300'],
         ];
@@ -29,12 +30,16 @@ final class TerbitkanTagihanManualPermintaan extends FormRequest
      */
     public function attributes(): array
     {
-        return ['KodePaket' => 'paket', 'Siklus' => 'siklus tagihan', 'Subtotal' => 'harga kesepakatan', 'Keterangan' => 'keterangan'];
+        return ['KodePaket' => 'paket', 'JumlahBulan' => 'lama langganan', 'Siklus' => 'siklus tagihan', 'Subtotal' => 'harga kesepakatan', 'Keterangan' => 'keterangan'];
     }
 
-    public function AmbilSiklus(): SiklusTagihan
+    public function AmbilJumlahBulan(): int
     {
-        return SiklusTagihan::from($this->string('Siklus')->toString());
+        if ($this->filled('JumlahBulan')) {
+            return $this->integer('JumlahBulan');
+        }
+
+        return SiklusTagihan::from($this->string('Siklus')->toString())->JumlahBulanBawaan() ?? 1;
     }
 
     public function AmbilKeterangan(): string

@@ -127,7 +127,7 @@ final class TerbitkanTagihanPerpanjanganOtomatis
                 $langganan,
                 $paket,
                 JenisTagihanLangganan::Perpanjangan,
-                $langganan->SiklusTagihan,
+                $langganan->AmbilJumlahBulanSiklus(),
                 $this->CariKuponLanjutan($langganan->IdTenant, $paket),
                 null,
                 $turun === null ? null : $paketBerjalan,

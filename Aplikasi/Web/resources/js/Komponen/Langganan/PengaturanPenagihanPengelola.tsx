@@ -8,6 +8,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import { AmbilGalatUmum, KerangkaForm } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 
+import { PanelLamaLangganan, type PengaturanLamaLangganan } from './PengaturanLamaLanggananPengelola';
+
 export type RekeningTujuan = { Kode: string; NamaBank: string; NomorRekening: string; AtasNama: string };
 
 export type PengaturanPenagihan = {
@@ -16,6 +18,8 @@ export type PengaturanPenagihan = {
     PkpDariKonsol: boolean;
     Rekening: RekeningTujuan[];
     RekeningDariKonsol: boolean;
+    LamaLangganan: PengaturanLamaLangganan;
+    LamaLanggananDariKonsol: boolean;
 };
 
 const MAKS_REKENING = 5;
@@ -82,6 +86,12 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
                     </ul>
                 )}
             </div>
+
+            <PanelLamaLangganan
+                aturan={pengaturan.LamaLangganan}
+                dariKonsol={pengaturan.LamaLanggananDariKonsol}
+                boleh={pengaturan.Boleh}
+            />
 
             {dialog === 'pkp' ? <FormUbahPkp pkp={pengaturan.PlatformPkp} saatSelesai={Tutup} /> : null}
             {dialog === 'rekening' ? <FormUbahRekening rekening={pengaturan.Rekening} saatSelesai={Tutup} /> : null}

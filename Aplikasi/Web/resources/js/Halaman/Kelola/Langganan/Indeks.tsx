@@ -1,10 +1,15 @@
 import { Link, useForm } from '@inertiajs/react';
 import { useId, type FormEvent } from 'react';
 
-import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BagianAddon, { type DataAddonLangganan } from '@/Komponen/Langganan/BagianAddon';
+import PilihLamaLangganan, {
+    CariHargaLama,
+    UraiLama,
+    type AturanLamaLangganan,
+    type HargaPerLama,
+} from '@/Komponen/Langganan/PilihLamaLangganan';
 import PanelKuotaTransaksi, { type DataKuotaTransaksi } from '@/Komponen/Langganan/PanelKuotaTransaksi';
 import PanelTurunPaket, { type DataTurunPaket } from '@/Komponen/Langganan/PanelTurunPaket';
 import TabelData from '@/Komponen/TabelData/TabelData';
@@ -25,7 +30,9 @@ type RingkasanLangganan = {
     LabelStatus: string;
     KodePaket: string;
     NamaPaket: string;
-    SiklusTagihan: 'Bulanan' | 'Tahunan';
+    SiklusTagihan: 'Bulanan' | 'Tahunan' | 'Kustom';
+    /** D-249: lama langganan berjalan dalam bulan. */
+    JumlahBulanSiklus: number;
     TrialBerakhirPada: string | null;
     PeriodeMulai: string | null;
     PeriodeSelesai: string | null;
@@ -38,6 +45,8 @@ type PilihanPaket = {
     Keterangan: string | null;
     HargaBulanan: string;
     HargaTahunan: string;
+    /** D-249: harga server untuk setiap lama yang boleh dipilih (sudah termasuk tangga diskon). */
+    HargaPerLama: HargaPerLama[];
     PaketBerjalan: boolean;
     /** D-98: pratinjau naik paket (selisih prorata sebelum PPN); null bila bukan naik paket. */
     NaikPaket: { Selisih: string; Subtotal: string; HariDitagih: number; HariPeriode: number } | null;
@@ -48,6 +57,7 @@ type PropsLangganan = {
     Langganan: RingkasanLangganan | null;
     Addon: DataAddonLangganan;
     PilihanPaket: PilihanPaket[];
+    AturanLama: AturanLamaLangganan;
     Tagihan: TagihanLangganan[];
     HariMasaTenggang: number;
     TurunPaket?: DataTurunPaket;
@@ -69,6 +79,7 @@ export default function HalamanLangganan({
     Langganan,
     Addon,
     PilihanPaket,
+    AturanLama,
     Tagihan,
     HariMasaTenggang,
     TurunPaket,
@@ -105,7 +116,7 @@ export default function HalamanLangganan({
                     </p>
                 </Pemberitahuan>
             ) : Langganan !== null && Langganan.Status !== 'Berhenti' ? (
-                <FormPilihPaket pilihan={PilihanPaket} langganan={Langganan} />
+                <FormPilihPaket pilihan={PilihanPaket} langganan={Langganan} aturan={AturanLama} />
             ) : null}
             {TurunPaket ? <PanelTurunPaket data={TurunPaket} /> : null}
             <BagianAddon addon={Addon} />
@@ -160,10 +171,10 @@ function RingkasanStatus({ langganan }: { langganan: RingkasanLangganan }) {
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-keterangan text-teks-sekunder">Siklus tagihan</dt>
+                    <dt className="text-keterangan text-teks-sekunder">Lama langganan</dt>
                     <dd>
                         {langganan.Status === 'Aktif' || langganan.Status === 'Tertunggak'
-                            ? langganan.SiklusTagihan
+                            ? `${langganan.JumlahBulanSiklus} bulan`
                             : '—'}
                     </dd>
                 </div>
@@ -180,7 +191,15 @@ function RingkasanStatus({ langganan }: { langganan: RingkasanLangganan }) {
     );
 }
 
-function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langganan: RingkasanLangganan }) {
+function FormPilihPaket({
+    pilihan,
+    langganan,
+    aturan,
+}: {
+    pilihan: PilihanPaket[];
+    langganan: RingkasanLangganan;
+    aturan: AturanLamaLangganan;
+}) {
     const idLegenda = useId();
     const bisaDipilih = pilihan.filter((paket) => paket.BisaDipilih);
     // D-23: dialog fitur terkunci menautkan `?paket=KODE` agar paket yang memuat fitur itu langsung terpilih.
@@ -190,13 +209,20 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
         bisaDipilih.find((paket) => paket.PaketBerjalan) ??
         bisaDipilih.find((paket) => paket.Kode === langganan.KodePaket) ??
         bisaDipilih[0];
-    const formulir = useForm<{ KodePaket: string; Siklus: string; KodeKupon: string }>({
+    // Bawaan lama = lama yang dipakai sekarang bila masih dalam rentang, selain itu batas minimal (dari aturan server).
+    const lamaBawaan =
+        langganan.JumlahBulanSiklus >= aturan.MinimalBulan && langganan.JumlahBulanSiklus <= aturan.MaksimalBulan
+            ? langganan.JumlahBulanSiklus
+            : aturan.MinimalBulan;
+    const formulir = useForm<{ KodePaket: string; JumlahBulan: string; KodeKupon: string }>({
         KodePaket: bawaan?.Kode ?? '',
-        Siklus: langganan.SiklusTagihan,
+        JumlahBulan: String(lamaBawaan),
         KodeKupon: '',
     });
     const perpanjangan = langganan.Status === 'Aktif' || langganan.Status === 'Tertunggak';
-    const naikPaket = pilihan.find((paket) => paket.Kode === formulir.data.KodePaket)?.NaikPaket ?? null;
+    const paketTerpilih = pilihan.find((paket) => paket.Kode === formulir.data.KodePaket);
+    const naikPaket = paketTerpilih?.NaikPaket ?? null;
+    const lamaTerpilih = UraiLama(formulir.data.JumlahBulan, aturan);
     const adaNaikPaket = pilihan.some((paket) => paket.NaikPaket !== null);
 
     const Kirim = (peristiwa: FormEvent) => {
@@ -244,7 +270,7 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                                         Per bulan
                                     </TableHead>
                                     <TableHead scope="col" className="px-3 text-right">
-                                        Per tahun
+                                        {lamaTerpilih === null ? 'Lama dipilih' : `Untuk ${lamaTerpilih} bulan`}
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -294,7 +320,11 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                                             {FormatRupiah(paket.HargaBulanan)}
                                         </TableCell>
                                         <TableCell className="px-3 text-right tabular-nums">
-                                            {FormatRupiah(paket.HargaTahunan)}
+                                            {(() => {
+                                                const hargaLama = CariHargaLama(paket.HargaPerLama, lamaTerpilih);
+
+                                                return hargaLama === null ? '—' : FormatRupiah(hargaLama.Subtotal);
+                                            })()}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -307,21 +337,17 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                 </FieldSet>
                 {naikPaket ? (
                     <p className="text-keterangan text-teks-sekunder">
-                        Siklus tagihan tetap {langganan.SiklusTagihan === 'Tahunan' ? 'tahunan' : 'bulanan'} dan masa
-                        berlangganan tidak berubah. Perpanjangan berikutnya memakai harga paket baru.
+                        Lama langganan tetap {langganan.JumlahBulanSiklus} bulan dan masa berlangganan tidak berubah.
+                        Perpanjangan berikutnya memakai harga paket baru.
                     </p>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <BidangPilihan
-                            label="Siklus tagihan"
-                            nilai={formulir.data.Siklus}
-                            opsi={[
-                                { Nilai: 'Bulanan', Label: 'Bulanan' },
-                                { Nilai: 'Tahunan', Label: 'Tahunan (lebih hemat)' },
-                            ]}
-                            saatBerubah={(nilai) => formulir.setData('Siklus', nilai)}
-                            galat={formulir.errors.Siklus}
-                            required
+                        <PilihLamaLangganan
+                            aturan={aturan}
+                            nilai={formulir.data.JumlahBulan}
+                            saatBerubah={(nilai) => formulir.setData('JumlahBulan', nilai)}
+                            harga={paketTerpilih?.HargaPerLama ?? []}
+                            galat={formulir.errors.JumlahBulan}
                         />
                         <BidangTeks
                             label="Kode kupon (opsional)"
@@ -337,7 +363,11 @@ function FormPilihPaket({ pilihan, langganan }: { pilihan: PilihanPaket[]; langg
                     Harga belum termasuk PPN. Rincian PPN dan total tampil di tagihan sebelum Anda membayar.
                 </p>
                 <div>
-                    <Tombol type="submit" memproses={formulir.processing} disabled={formulir.data.KodePaket === ''}>
+                    <Tombol
+                        type="submit"
+                        memproses={formulir.processing}
+                        disabled={formulir.data.KodePaket === '' || (!naikPaket && lamaTerpilih === null)}
+                    >
                         {naikPaket ? 'Buat tagihan naik paket' : 'Buat tagihan'}
                     </Tombol>
                 </div>

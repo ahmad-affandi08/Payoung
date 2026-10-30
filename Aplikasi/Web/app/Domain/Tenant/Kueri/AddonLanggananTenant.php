@@ -7,7 +7,6 @@ namespace App\Domain\Tenant\Kueri;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Layanan\KelayakanBeliAddon;
-use App\Domain\Tenant\Layanan\PenghitungPeriodeLangganan;
 use App\Domain\Tenant\Layanan\PenghitungProrataAddon;
 use App\Domain\Tenant\Model\Addon;
 use App\Domain\Tenant\Model\Fitur;
@@ -89,7 +88,7 @@ final class AddonLanggananTenant
 
         return $this->prorata->Hitung(
             Uang::Dari($addon->HargaBulanan),
-            PenghitungPeriodeLangganan::JumlahBulan($langganan->SiklusTagihan),
+            $langganan->AmbilJumlahBulanSiklus(),
             1,
             $sekarang,
             $langganan->PeriodeMulai,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Layanan;
 
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Kueri\HargaPaketBerlaku;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\Langganan;
@@ -21,6 +20,7 @@ final class PembandingHargaTurunPaket
     public function __construct(
         private readonly HargaPaketBerlaku $hargaBerlaku,
         private readonly TagihanLanggananTenant $tagihanTenant,
+        private readonly PenghitungHargaPeriode $hargaPeriode,
     ) {}
 
     /**
@@ -36,9 +36,9 @@ final class PembandingHargaTurunPaket
             return null;
         }
 
-        $tahunan = $langganan->SiklusTagihan === SiklusTagihan::Tahunan;
-        $hargaLama = $tahunan ? $lama->AmbilHargaTahunan() : $lama->AmbilHargaBulanan();
-        $hargaBaru = $tahunan ? $baru->AmbilHargaTahunan() : $baru->AmbilHargaBulanan();
+        $jumlahBulan = $langganan->AmbilJumlahBulanSiklus();
+        $hargaLama = $this->hargaPeriode->UntukHarga($lama, $jumlahBulan);
+        $hargaBaru = $this->hargaPeriode->UntukHarga($baru, $jumlahBulan);
 
         return [
             'LebihMurah' => $hargaBaru->Bandingkan($hargaLama) < 0,

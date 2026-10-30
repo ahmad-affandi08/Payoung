@@ -13,6 +13,8 @@ use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Layanan\PengaturanLamaLangganan;
+use App\Domain\Tenant\Layanan\PenghitungHargaPeriode;
 use App\Domain\Tenant\Layanan\PenghitungNaikPaket;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\Paket;
@@ -31,7 +33,21 @@ final class TagihanLanggananTenant
         private readonly KonteksTenant $konteks,
         private readonly HargaPaketBerlaku $hargaBerlaku,
         private readonly PenghitungNaikPaket $naikPaket,
+        private readonly PengaturanLamaLangganan $lamaLangganan,
+        private readonly PenghitungHargaPeriode $hargaPeriode,
     ) {}
+
+    /**
+     * D-249: aturan lama langganan yang boleh dipilih (dari konsol, bukan angka di kode) untuk input di halaman Langganan.
+     *
+     * @return array{MinimalBulan: int, MaksimalBulan: int, TanggaDiskon: list<array{DariBulan: int, Persen: string}>}
+     */
+    public function AmbilAturanLama(): array
+    {
+        $atur = $this->lamaLangganan->Ambil();
+
+        return ['MinimalBulan' => $atur['MinimalBulan'], 'MaksimalBulan' => $atur['MaksimalBulan'], 'TanggaDiskon' => $atur['TanggaDiskon']];
+    }
 
     /**
      * @return array<string, mixed>|null
@@ -50,6 +66,7 @@ final class TagihanLanggananTenant
             'KodePaket' => $langganan->Paket->Kode,
             'NamaPaket' => $langganan->Paket->Nama,
             'SiklusTagihan' => $langganan->SiklusTagihan->value,
+            'JumlahBulanSiklus' => $langganan->AmbilJumlahBulanSiklus(),
             'TrialBerakhirPada' => $langganan->TrialBerakhirPada?->toIso8601ZuluString(),
             'PeriodeMulai' => $langganan->PeriodeMulai?->toIso8601ZuluString(),
             'PeriodeSelesai' => $langganan->PeriodeSelesai?->toIso8601ZuluString(),
@@ -108,12 +125,26 @@ final class TagihanLanggananTenant
                 }
             }
 
+            $atur = $this->lamaLangganan->Ambil();
+            $hargaPerLama = [];
+
+            for ($bulan = $atur['MinimalBulan']; $bulan <= $atur['MaksimalBulan']; $bulan++) {
+                $hitungLama = $this->hargaPeriode->Hitung($harga->AmbilHargaBulanan(), $harga->AmbilHargaTahunan(), $bulan, $atur['TanggaDiskon']);
+                $hargaPerLama[] = [
+                    'JumlahBulan' => $bulan,
+                    'Subtotal' => $hitungLama['Subtotal']->KeString(),
+                    'HargaPenuh' => $hitungLama['HargaPenuh']->KeString(),
+                    'DiskonPersen' => $hitungLama['DiskonPersen'],
+                ];
+            }
+
             $hasil[] = [
                 'Kode' => $item->Kode,
                 'Nama' => $item->Nama,
                 'Keterangan' => $item->Keterangan,
                 'HargaBulanan' => $harga->AmbilHargaBulanan()->KeString(),
                 'HargaTahunan' => $harga->AmbilHargaTahunan()->KeString(),
+                'HargaPerLama' => $hargaPerLama,
                 'PaketBerjalan' => $paketBerjalan,
                 'NaikPaket' => $naik,
                 'BisaDipilih' => $paketBerjalan || ! $aktif || $naik !== null,

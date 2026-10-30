@@ -86,7 +86,7 @@ export default function RincianTagihan({ tagihan, namaTenant }: PropsRincianTagi
                                     <>
                                         Naik paket {tagihan.NaikPaket?.NamaPaketAsal ?? ''} ke {tagihan.NamaPaket}
                                         <span className="block text-keterangan text-teks-sekunder">
-                                            Selisih harga {tagihan.Siklus === 'Tahunan' ? 'tahunan' : 'bulanan'}
+                                            Selisih harga untuk lama langganan {tagihan.JumlahBulan} bulan
                                             {tagihan.NaikPaket?.HariDitagih != null &&
                                             tagihan.NaikPaket.HariPeriode != null
                                                 ? `, prorata ${tagihan.NaikPaket.HariDitagih} dari ${tagihan.NaikPaket.HariPeriode} hari periode berjalan`
@@ -95,8 +95,7 @@ export default function RincianTagihan({ tagihan, namaTenant }: PropsRincianTagi
                                     </>
                                 ) : (
                                     <>
-                                        Paket {tagihan.NamaPaket} |{' '}
-                                        {tagihan.Siklus === 'Tahunan' ? '12 bulan' : '1 bulan'}
+                                        Paket {tagihan.NamaPaket} | {tagihan.JumlahBulan} bulan
                                     </>
                                 )}
                             </TableHead>

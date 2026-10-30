@@ -380,7 +380,7 @@ export default function Tampil({ Tenant, Pilihan, Aturan }: PropsTampil) {
                                         'Periode',
                                         `${FormatTanggalWaktu(Langganan.PeriodeMulai)} – ${FormatTanggalWaktu(Langganan.PeriodeSelesai)}`,
                                     ],
-                                    ['Siklus tagihan', Langganan.SiklusTagihan],
+                                    ['Lama langganan', `${Langganan.JumlahBulanSiklus} bulan`],
                                     [
                                         'Add-on',
                                         Tenant.Addon.length === 0

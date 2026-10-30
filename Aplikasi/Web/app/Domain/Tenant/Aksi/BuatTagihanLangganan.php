@@ -7,12 +7,12 @@ namespace App\Domain\Tenant\Aksi;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\PermintaanTurunPaketMenunggu;
 use App\Domain\Tenant\Layanan\PenerbitTagihanLangganan;
+use App\Domain\Tenant\Layanan\PengaturanLamaLangganan;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\KuponLanggananPemakaian;
 use App\Domain\Tenant\Model\Langganan;
@@ -31,13 +31,15 @@ final class BuatTagihanLangganan
         private readonly KonteksTenant $konteks,
         private readonly PenerbitTagihanLangganan $penerbit,
         private readonly PermintaanTurunPaketMenunggu $turunPaket,
+        private readonly PengaturanLamaLangganan $lamaLangganan,
     ) {}
 
-    public function Jalankan(int $idPengguna, string $kodePaket, SiklusTagihan $siklus, ?string $kodeKupon = null): TagihanLangganan
+    public function Jalankan(int $idPengguna, string $kodePaket, int $jumlahBulan, ?string $kodeKupon = null): TagihanLangganan
     {
         $idTenant = $this->konteks->Wajib();
+        $this->lamaLangganan->PastikanSah($jumlahBulan);
 
-        return DB::transaction(function () use ($idTenant, $idPengguna, $kodePaket, $siklus, $kodeKupon): TagihanLangganan {
+        return DB::transaction(function () use ($idTenant, $idPengguna, $kodePaket, $jumlahBulan, $kodeKupon): TagihanLangganan {
             $langganan = Langganan::query()->where('IdTenant', $idTenant)->lockForUpdate()->first()
                 ?? throw new PelanggaranAturanBisnis('LanggananTidakAda', 'Data langganan usaha ini tidak ditemukan. Hubungi tim kami.');
 
@@ -71,7 +73,7 @@ final class BuatTagihanLangganan
                 $paket = $this->TentukanPaket($langganan, $turun->PaketTujuan->Kode);
                 $kupon = $kodeKupon === null || trim($kodeKupon) === '' ? null : $this->CariKupon($idTenant, strtoupper(trim($kodeKupon)), $paket);
 
-                return $this->penerbit->Terbitkan($langganan, $paket, JenisTagihanLangganan::Perpanjangan, $siklus, $kupon, $idPengguna, $langganan->Paket);
+                return $this->penerbit->Terbitkan($langganan, $paket, JenisTagihanLangganan::Perpanjangan, $jumlahBulan, $kupon, $idPengguna, $langganan->Paket);
             }
 
             $paket = $this->TentukanPaket($langganan, $kodePaket);
@@ -93,7 +95,7 @@ final class BuatTagihanLangganan
             $jenis = $this->TentukanJenis($langganan, $paket);
             $kupon = $kodeKupon === null || trim($kodeKupon) === '' ? null : $this->CariKupon($idTenant, strtoupper(trim($kodeKupon)), $paket);
 
-            return $this->penerbit->Terbitkan($langganan, $paket, $jenis, $siklus, $kupon, $idPengguna);
+            return $this->penerbit->Terbitkan($langganan, $paket, $jenis, $jumlahBulan, $kupon, $idPengguna);
         });
     }
 

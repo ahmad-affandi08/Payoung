@@ -468,14 +468,9 @@ export function FormCatatan({ uuid }: { uuid: string }) {
     );
 }
 
-const OPSI_SIKLUS_TAGIHAN = [
-    { Nilai: 'Bulanan', Label: 'Bulanan' },
-    { Nilai: 'Tahunan', Label: 'Tahunan' },
-];
-
 /** D-112: Keuangan menerbitkan tagihan manual untuk paket harga negosiasi (mis. Enterprise). */
 export function FormTagihanManual({ uuid, paket, saatSelesai }: PropsDasar & { paket: Pilihan[] }) {
-    const formulir = useForm({ KodePaket: paket[0]?.Nilai ?? '', Siklus: 'Tahunan', Subtotal: '', Keterangan: '' });
+    const formulir = useForm({ KodePaket: paket[0]?.Nilai ?? '', JumlahBulan: '12', Subtotal: '', Keterangan: '' });
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
         formulir.post(`/tenant/${uuid}/tagihan-manual`, { preserveScroll: true, onSuccess: saatSelesai });
@@ -486,9 +481,10 @@ export function FormTagihanManual({ uuid, paket, saatSelesai }: PropsDasar & { p
             judul="Terbitkan tagihan manual"
             keterangan={
                 <p>
-                    Untuk paket harga negosiasi. Isi harga kesepakatan <strong>sebelum PPN</strong> untuk satu siklus;
-                    PPN dan nomor tagihan dihitung otomatis. Pemilik usaha membayar dengan transfer dan mengunggah
-                    buktinya, atau Anda mencatat pembayaran yang sudah masuk dari halaman tagihan.
+                    Untuk paket harga negosiasi. Isi harga kesepakatan <strong>sebelum PPN</strong> untuk seluruh lama
+                    langganan yang disepakati. PPN dan nomor tagihan dihitung otomatis. Pemilik usaha membayar dengan
+                    transfer dan mengunggah buktinya, atau Anda mencatat pembayaran yang sudah masuk dari halaman
+                    tagihan.
                 </p>
             }
             labelKirim="Terbitkan tagihan"
@@ -505,12 +501,14 @@ export function FormTagihanManual({ uuid, paket, saatSelesai }: PropsDasar & { p
                 galat={formulir.errors.KodePaket}
                 required
             />
-            <BidangPilihan
-                label="Siklus tagihan"
-                nilai={formulir.data.Siklus}
-                opsi={OPSI_SIKLUS_TAGIHAN}
-                saatBerubah={(nilai) => formulir.setData('Siklus', nilai)}
-                galat={formulir.errors.Siklus}
+            <BidangTeks
+                label="Lama langganan (bulan)"
+                nilai={formulir.data.JumlahBulan}
+                saatBerubah={(nilai) => formulir.setData('JumlahBulan', nilai.replace(/\D/g, '').slice(0, 3))}
+                galat={formulir.errors.JumlahBulan}
+                inputMode="numeric"
+                maxLength={3}
+                keterangan="Bebas sesuai kontrak, batas atasnya diatur server."
                 required
             />
             <BidangUang

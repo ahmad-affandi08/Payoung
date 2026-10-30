@@ -195,6 +195,7 @@ final class TampilanTenant
             'PeriodeMulai' => $langganan->PeriodeMulai?->toIso8601String(),
             'PeriodeSelesai' => $langganan->PeriodeSelesai?->toIso8601String(),
             'SiklusTagihan' => $langganan->SiklusTagihan->value,
+            'JumlahBulanSiklus' => $langganan->AmbilJumlahBulanSiklus(),
             'PerpanjanganTrial' => $perpanjangan,
             'SisaPerpanjanganTrial' => max(0, PerpanjangTrial::MAKS_KALI - $perpanjangan),
         ];

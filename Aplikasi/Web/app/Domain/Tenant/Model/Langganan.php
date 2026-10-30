@@ -25,6 +25,7 @@ use LogicException;
  * @property Carbon|null $PeriodeMulai
  * @property Carbon|null $PeriodeSelesai
  * @property SiklusTagihan $SiklusTagihan
+ * @property int|null $JumlahBulanSiklus Terisi bila lama selain 1/12 bulan (`SiklusTagihan` = Kustom); kosong = ikuti siklus lama
  * @property-read Paket $Paket
  * @property-read Tenant $Tenant
  */
@@ -39,6 +40,7 @@ final class Langganan extends ModelDasar
         'PeriodeMulai' => null,
         'PeriodeSelesai' => null,
         'SiklusTagihan' => 'Bulanan',
+        'JumlahBulanSiklus' => null,
     ];
 
     protected static function booted(): void
@@ -66,6 +68,12 @@ final class Langganan extends ModelDasar
     public function CekDitangguhkanManual(): bool
     {
         return $this->Status === StatusLangganan::Ditangguhkan && $this->StatusSebelumDitangguhkan !== null;
+    }
+
+    /** Lama satu periode langganan dalam bulan (D-249): angka tersimpan, atau ikut siklus lama (Bulanan 1, Tahunan 12). */
+    public function AmbilJumlahBulanSiklus(): int
+    {
+        return $this->JumlahBulanSiklus ?? $this->SiklusTagihan->JumlahBulanBawaan() ?? 1;
     }
 
     /**
@@ -96,6 +104,7 @@ final class Langganan extends ModelDasar
             'PeriodeMulai' => 'datetime',
             'PeriodeSelesai' => 'datetime',
             'SiklusTagihan' => SiklusTagihan::class,
+            'JumlahBulanSiklus' => 'integer',
         ];
     }
 }

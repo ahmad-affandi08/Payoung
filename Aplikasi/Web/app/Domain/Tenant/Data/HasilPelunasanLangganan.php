@@ -32,7 +32,7 @@ final class HasilPelunasanLangganan
      *
      * @return array<string, string|int|null>
      */
-    public function LanggananBaru(int $idPaket, SiklusTagihan $siklus): array
+    public function LanggananBaru(int $idPaket, int $jumlahBulan): array
     {
         // D-49: pelunasan tagihan add-on tidak mengubah paket, siklus, atau periode langganan.
         if ($this->langgananTidakBerubah) {
@@ -42,7 +42,8 @@ final class HasilPelunasanLangganan
         return [
             'Status' => StatusLangganan::Aktif->value,
             'IdPaket' => $idPaket,
-            'SiklusTagihan' => $siklus->value,
+            'SiklusTagihan' => SiklusTagihan::DariJumlahBulan($jumlahBulan)->value,
+            'JumlahBulanSiklus' => $jumlahBulan,
             'PeriodeMulai' => $this->periode['Mulai']->toIso8601ZuluString(),
             'PeriodeSelesai' => $this->periode['Selesai']->toIso8601ZuluString(),
         ];

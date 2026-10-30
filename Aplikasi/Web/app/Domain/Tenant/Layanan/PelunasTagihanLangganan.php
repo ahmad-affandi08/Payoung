@@ -8,6 +8,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Tenant\Data\HasilPelunasanLangganan;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
+use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
@@ -99,7 +100,7 @@ final class PelunasTagihanLangganan
             && ($samaPaket || ($tagihan->IdPaketAsal !== null && $tagihan->IdPaketAsal === $langganan->IdPaket));
         $periode = $this->periode->Hitung(
             $lanjutan ? JenisTagihanLangganan::Perpanjangan : JenisTagihanLangganan::Aktivasi,
-            $tagihan->Siklus,
+            $tagihan->JumlahBulan,
             $sekarang,
             $langganan->PeriodeSelesai,
         );
@@ -132,7 +133,8 @@ final class PelunasTagihanLangganan
         $langganan->update([
             'Status' => StatusLangganan::Aktif,
             'IdPaket' => $tagihan->IdPaket,
-            'SiklusTagihan' => $tagihan->Siklus,
+            'SiklusTagihan' => SiklusTagihan::DariJumlahBulan($tagihan->JumlahBulan),
+            'JumlahBulanSiklus' => in_array($tagihan->JumlahBulan, [1, 12], true) ? null : $tagihan->JumlahBulan,
             'PeriodeMulai' => $periode['Mulai'],
             'PeriodeSelesai' => $periode['Selesai'],
         ]);

@@ -51,6 +51,8 @@ final class PenerbitTagihanLangganan
         private readonly PenghitungNaikPaket $naikPaket,
         private readonly PelunasTagihanLangganan $pelunas,
         private readonly PengaturanPenagihanPlatform $pengaturan,
+        private readonly PengaturanLamaLangganan $lamaLangganan,
+        private readonly PenghitungHargaPeriode $hargaPeriode,
     ) {}
 
     /**
@@ -60,7 +62,7 @@ final class PenerbitTagihanLangganan
         Langganan $langganan,
         Paket $paket,
         JenisTagihanLangganan $jenis,
-        SiklusTagihan $siklus,
+        int $jumlahBulan,
         ?KuponLangganan $kupon,
         ?int $idPengguna,
         ?Paket $paketAsal = null,
@@ -70,7 +72,8 @@ final class PenerbitTagihanLangganan
 
         $harga = $this->hargaBerlaku->Cari($paket->Id, $sekarang, $jenis === JenisTagihanLangganan::Perpanjangan && $paketAsal === null ? $this->tagihanTenant->AmbilMulaiLanggananPaket($paket->Id) : null)
             ?? throw new PelanggaranAturanBisnis('HargaBelumTersedia', "Harga paket {$paket->Nama} belum tersedia. Hubungi tim kami.", 'KodePaket');
-        $subtotal = $siklus === SiklusTagihan::Tahunan ? $harga->AmbilHargaTahunan() : $harga->AmbilHargaBulanan();
+        $this->lamaLangganan->PastikanDalamBatasPengaman($jumlahBulan);
+        $subtotal = $this->hargaPeriode->UntukHarga($harga, $jumlahBulan);
 
         if ($subtotal->Bandingkan(Uang::Nol()) <= 0) {
             throw new PelanggaranAturanBisnis('PaketTanpaBiaya', "Paket {$paket->Nama} tidak memerlukan tagihan.", 'KodePaket');
@@ -83,7 +86,6 @@ final class PenerbitTagihanLangganan
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan. Hubungi tim kami.');
         }
 
-        $jumlahBulan = PenghitungPeriodeLangganan::JumlahBulan($siklus);
         // D-49: add-on yang masih berlangganan ikut ditagih di perpanjangan (harga add-on berlaku saat ini, tanpa kupon).
         $barisAddon = $jenis === JenisTagihanLangganan::Perpanjangan ? $this->SusunBarisAddonPerpanjangan($idTenant, $jumlahBulan) : [];
         $totalAddon = array_reduce($barisAddon, fn (Uang $total, array $baris): Uang => $total->Tambah($baris['Subtotal']), Uang::Nol());
@@ -118,7 +120,7 @@ final class PenerbitTagihanLangganan
             // BR-P04.4: perpanjangan ke paket yang lebih murah (turun paket) menyebut paket asalnya supaya periode tetap menyambung.
             'IdPaketAsal' => $paketAsal?->Id,
             'IdHargaPaket' => $harga->Id,
-            'Siklus' => $siklus,
+            'Siklus' => SiklusTagihan::DariJumlahBulan($jumlahBulan),
             'JumlahBulan' => $jumlahBulan,
             'Subtotal' => $rincian->subtotal->KeString(),
             'IdKuponLangganan' => $kupon?->Id,
@@ -140,7 +142,7 @@ final class PenerbitTagihanLangganan
         ]);
 
         if ($barisAddon !== []) {
-            $periodeBaru = (new PenghitungPeriodeLangganan)->Hitung(JenisTagihanLangganan::Perpanjangan, $siklus, $sekarang, $langganan->PeriodeSelesai);
+            $periodeBaru = (new PenghitungPeriodeLangganan)->Hitung(JenisTagihanLangganan::Perpanjangan, $jumlahBulan, $sekarang, $langganan->PeriodeSelesai);
 
             foreach ($barisAddon as $baris) {
                 $this->CatatBarisAddon($tagihan, $baris, $periodeBaru['Mulai'], $periodeBaru['Selesai']);
@@ -158,7 +160,7 @@ final class PenerbitTagihanLangganan
         }
 
         $this->audit->Catat($idPengguna === null ? 'langganan.tagihan-otomatis' : 'langganan.tagihan-buat', $tagihan, nilaiBaru: [
-            'Nomor' => $tagihan->Nomor, 'Jenis' => $jenis->value, 'Paket' => $paket->Kode, 'Siklus' => $siklus->value,
+            'Nomor' => $tagihan->Nomor, 'Jenis' => $jenis->value, 'Paket' => $paket->Kode, 'Siklus' => SiklusTagihan::DariJumlahBulan($jumlahBulan)->value, 'JumlahBulan' => $jumlahBulan,
             'Total' => $rincian->total->KeString(), 'KodeKupon' => $kupon?->Kode, 'PaketAsal' => $paketAsal?->Kode,
             'Addon' => array_map(fn (array $baris): string => $baris['Addon']->Kode, $barisAddon),
         ], idTenant: $idTenant);
@@ -180,7 +182,7 @@ final class PenerbitTagihanLangganan
         Langganan $langganan,
         Paket $paket,
         JenisTagihanLangganan $jenis,
-        SiklusTagihan $siklus,
+        int $jumlahBulan,
         Uang $subtotal,
         string $keterangan,
         int $idPenggunaPengelola,
@@ -198,7 +200,7 @@ final class PenerbitTagihanLangganan
                 ?? throw new PelanggaranAturanBisnis('TarifPpnBelumTerbit', 'Tagihan belum bisa dibuat karena tarif PPN belum diterbitkan.');
         }
 
-        $jumlahBulan = PenghitungPeriodeLangganan::JumlahBulan($siklus);
+        $this->lamaLangganan->PastikanSahManual($jumlahBulan);
         $rincian = $this->kalkulator->Hitung(
             subtotal: $subtotal,
             jumlahBulan: $jumlahBulan,
@@ -216,7 +218,7 @@ final class PenerbitTagihanLangganan
             'Keterangan' => $keterangan,
             'IdPaket' => $paket->Id,
             'IdHargaPaket' => null,
-            'Siklus' => $siklus,
+            'Siklus' => SiklusTagihan::DariJumlahBulan($jumlahBulan),
             'JumlahBulan' => $jumlahBulan,
             'Subtotal' => $rincian->subtotal->KeString(),
             'Diskon' => '0.00',
@@ -255,7 +257,7 @@ final class PenerbitTagihanLangganan
         $hasil = $this->pelunas->Lunasi($langganan, $tagihan, $pembayaran, Uang::Nol(), $sekarang, mulaiPaketSebelumnya: $lanjutan);
         $this->audit->Catat('langganan.tagihan-lunas-kupon', $tagihan, nilaiLama: ['Status' => $hasil->statusTagihanLama], nilaiBaru: [
             'Nomor' => $tagihan->Nomor, 'Status' => $tagihan->Status->value, 'KodeKupon' => $tagihan->KodeKupon,
-            'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->Siklus),
+            'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->JumlahBulan),
         ], idTenant: $tagihan->IdTenant);
     }
 
@@ -281,7 +283,7 @@ final class PenerbitTagihanLangganan
 
         $harga = $this->hargaBerlaku->Cari($paket->Id, $sekarang, $this->tagihanTenant->AmbilMulaiLanggananPaket($paket->Id))
             ?? throw new PelanggaranAturanBisnis('HargaBelumTersedia', "Harga paket {$paket->Nama} belum tersedia. Hubungi tim kami.");
-        $jumlahBulan = PenghitungPeriodeLangganan::JumlahBulan($langganan->SiklusTagihan);
+        $jumlahBulan = $langganan->AmbilJumlahBulanSiklus();
         $hargaAddon = Uang::Dari($addon->HargaBulanan);
 
         if ($hargaAddon->Bandingkan(Uang::Nol()) <= 0) {
@@ -377,7 +379,7 @@ final class PenerbitTagihanLangganan
 
         $hitung = $this->naikPaket->Hitung($langganan, $paketLama, $paketBaru, $sekarang, $this->tagihanTenant->AmbilMulaiLanggananPaket($paketLama->Id));
         $hargaBaru = $hitung['HargaBaru'];
-        $siklus = $hitung['Siklus'];
+        $jumlahBulan = $hitung['JumlahBulan'];
         $tarif = null;
 
         if ($this->pengaturan->PlatformPkp()) {
@@ -409,8 +411,8 @@ final class PenerbitTagihanLangganan
             'IdPaket' => $paketBaru->Id,
             'IdHargaPaket' => $hargaBaru->Id,
             'IdPaketAsal' => $paketLama->Id,
-            'Siklus' => $siklus,
-            'JumlahBulan' => PenghitungPeriodeLangganan::JumlahBulan($siklus),
+            'Siklus' => SiklusTagihan::DariJumlahBulan($jumlahBulan),
+            'JumlahBulan' => $jumlahBulan,
             'HariDitagih' => $hitung['HariDitagih'],
             'HariPeriode' => $hitung['HariPeriode'],
             'Subtotal' => $rincian->subtotal->KeString(),
@@ -430,7 +432,7 @@ final class PenerbitTagihanLangganan
         ]);
 
         $this->audit->Catat('langganan.tagihan-naik-paket', $tagihan, nilaiBaru: [
-            'Nomor' => $tagihan->Nomor, 'PaketAsal' => $paketLama->Kode, 'PaketBaru' => $paketBaru->Kode, 'Siklus' => $siklus->value,
+            'Nomor' => $tagihan->Nomor, 'PaketAsal' => $paketLama->Kode, 'PaketBaru' => $paketBaru->Kode, 'Siklus' => SiklusTagihan::DariJumlahBulan($jumlahBulan)->value, 'JumlahBulan' => $jumlahBulan,
             'Selisih' => $hitung['Selisih']->KeString(), 'HariDitagih' => $hitung['HariDitagih'], 'HariPeriode' => $hitung['HariPeriode'],
             'Total' => $rincian->total->KeString(),
         ], idTenant: $idTenant);

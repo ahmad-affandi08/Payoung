@@ -6,7 +6,6 @@ namespace App\Domain\Tenant\Layanan;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Kueri\HargaPaketBerlaku;
 use App\Domain\Tenant\Model\HargaPaket;
@@ -19,7 +18,7 @@ use Carbon\CarbonImmutable;
  * pratinjau harga di halaman Langganan (`TagihanLanggananTenant`) supaya angka yang dilihat pemilik sama persis dengan
  * yang ditagihkan.
  *
- * Selisih = harga paket baru − harga paket berjalan untuk satu periode (siklus langganan: bulanan atau tahunan).
+ * Selisih = harga paket baru − harga paket berjalan untuk satu periode (lama langganan berjalan dalam bulan, D-249, dengan tangga diskon yang sama dengan penagihan).
  * Paket berjalan memakai harga jangkar grandfathering tenant (BR-P04.1), paket baru harga berlaku hari ini. Yang
  * ditagih = selisih × hari tersisa ÷ hari periode (`PenghitungProrataAddon`), sebelum PPN. Murni: tanpa tulis ke DB.
  */
@@ -28,11 +27,12 @@ final class PenghitungNaikPaket
     public function __construct(
         private readonly HargaPaketBerlaku $hargaBerlaku,
         private readonly PenghitungProrataAddon $prorata,
+        private readonly PenghitungHargaPeriode $hargaPeriode,
     ) {}
 
     /**
      * @param  CarbonImmutable|null  $mulaiPaketLama  jangkar grandfathering paket berjalan (`AmbilMulaiLanggananPaket`)
-     * @return array{HargaLama: HargaPaket, HargaBaru: HargaPaket, Siklus: SiklusTagihan, Selisih: Uang, Subtotal: Uang, Prorata: bool, HariDitagih: int, HariPeriode: int}
+     * @return array{HargaLama: HargaPaket, HargaBaru: HargaPaket, JumlahBulan: int, Selisih: Uang, Subtotal: Uang, Prorata: bool, HariDitagih: int, HariPeriode: int}
      *
      * @throws PelanggaranAturanBisnis
      */
@@ -55,9 +55,9 @@ final class PenghitungNaikPaket
             ?? throw new PelanggaranAturanBisnis('HargaBelumTersedia', "Harga paket {$paketLama->Nama} belum tersedia. Hubungi tim kami.", 'KodePaket');
         $hargaBaru = $this->hargaBerlaku->Cari($paketBaru->Id, $sekarang, null)
             ?? throw new PelanggaranAturanBisnis('HargaBelumTersedia', "Harga paket {$paketBaru->Nama} belum tersedia. Hubungi tim kami.", 'KodePaket');
-        $siklus = $langganan->SiklusTagihan;
-        $penuhLama = $siklus === SiklusTagihan::Tahunan ? $hargaLama->AmbilHargaTahunan() : $hargaLama->AmbilHargaBulanan();
-        $penuhBaru = $siklus === SiklusTagihan::Tahunan ? $hargaBaru->AmbilHargaTahunan() : $hargaBaru->AmbilHargaBulanan();
+        $jumlahBulan = $langganan->AmbilJumlahBulanSiklus();
+        $penuhLama = $this->hargaPeriode->UntukHarga($hargaLama, $jumlahBulan);
+        $penuhBaru = $this->hargaPeriode->UntukHarga($hargaBaru, $jumlahBulan);
 
         if ($penuhBaru->Bandingkan($penuhLama) <= 0) {
             throw new PelanggaranAturanBisnis(
@@ -73,7 +73,7 @@ final class PenghitungNaikPaket
         return [
             'HargaLama' => $hargaLama,
             'HargaBaru' => $hargaBaru,
-            'Siklus' => $siklus,
+            'JumlahBulan' => $jumlahBulan,
             'Selisih' => $selisih,
             'Subtotal' => $hitung['Subtotal'],
             'Prorata' => $hitung['Prorata'],

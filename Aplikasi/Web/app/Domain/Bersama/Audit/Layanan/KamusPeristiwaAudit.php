@@ -602,6 +602,7 @@ final class KamusPeristiwaAudit
         'tagihan.bukti.lihat' => 'Bukti pembayaran tagihan dilihat',
         'tagihan.hapus-buku' => 'Tagihan dihapus buku',
         'tagihan.jatuh-tempo' => 'Tagihan jatuh tempo',
+        'tagihan.lama-langganan.ubah' => 'Aturan lama langganan platform diubah',
         'tagihan.manual.terbit' => 'Tagihan manual diterbitkan',
         'tagihan.pembayaran.catat-langsung' => 'Pembayaran tagihan dicatat langsung',
         'tagihan.pembayaran.terima' => 'Pembayaran tagihan diterima',

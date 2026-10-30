@@ -63,6 +63,7 @@ final class LanggananKontroler extends Kontroler
             'KuotaTransaksiHarian' => $kuotaTransaksi->Ambil(app(KonteksTenant::class)->Wajib(), JangkaKuotaTransaksi::Hari)->KeLarik(),
             'Addon' => $addon->Ambil(app(KonteksTenant::class)->Wajib()),
             'PilihanPaket' => $this->kueri->AmbilPilihanPaket(),
+            'AturanLama' => $this->kueri->AmbilAturanLama(),
             'Tagihan' => $this->kueri->DaftarTagihan(),
             'HariMasaTenggang' => (int) config('tagihan.HariMasaTenggang'),
         ]);
@@ -74,7 +75,7 @@ final class LanggananKontroler extends Kontroler
         $tagihan = $buat->Jalankan(
             $pengguna->Id,
             $permintaan->string('KodePaket')->toString(),
-            $permintaan->AmbilSiklus(),
+            $permintaan->AmbilJumlahBulan(),
             $permintaan->AmbilKodeKupon(),
         );
 

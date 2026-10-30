@@ -10,7 +10,6 @@ use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Layanan\PenerbitTagihanLangganan;
@@ -36,11 +35,11 @@ final class TerbitkanTagihanManualLangganan
         private readonly PencatatAuditPengelola $audit,
     ) {}
 
-    public function Jalankan(PenggunaPengelola $pelaku, Tenant $tenant, string $kodePaket, SiklusTagihan $siklus, string $subtotal, string $keterangan): TagihanLangganan
+    public function Jalankan(PenggunaPengelola $pelaku, Tenant $tenant, string $kodePaket, int $jumlahBulan, string $subtotal, string $keterangan): TagihanLangganan
     {
         $harga = Uang::Dari($subtotal);
 
-        return DB::transaction(function () use ($pelaku, $tenant, $kodePaket, $siklus, $harga, $keterangan): TagihanLangganan {
+        return DB::transaction(function () use ($pelaku, $tenant, $kodePaket, $jumlahBulan, $harga, $keterangan): TagihanLangganan {
             $langganan = Langganan::query()->where('IdTenant', $tenant->Id)->lockForUpdate()->first()
                 ?? throw new PelanggaranAturanBisnis('LanggananTidakAda', 'Tenant ini belum punya langganan.');
 
@@ -66,12 +65,12 @@ final class TerbitkanTagihanManualLangganan
 
             $berjalan = in_array($langganan->Status, [StatusLangganan::Aktif, StatusLangganan::Tertunggak], true);
             $jenis = $berjalan && $langganan->IdPaket === $paket->Id ? JenisTagihanLangganan::Perpanjangan : JenisTagihanLangganan::Aktivasi;
-            $tagihan = $this->penerbit->TerbitkanManual($langganan, $paket, $jenis, $siklus, $harga, $keterangan, $pelaku->Id);
+            $tagihan = $this->penerbit->TerbitkanManual($langganan, $paket, $jenis, $jumlahBulan, $harga, $keterangan, $pelaku->Id);
 
             $this->audit->Catat(
                 'tagihan.manual.terbit',
                 $tagihan,
-                nilaiBaru: ['Nomor' => $tagihan->Nomor, 'Jenis' => $jenis->value, 'Paket' => $paket->Kode, 'Siklus' => $siklus->value, 'Subtotal' => $tagihan->Subtotal, 'Total' => $tagihan->Total],
+                nilaiBaru: ['Nomor' => $tagihan->Nomor, 'Jenis' => $jenis->value, 'Paket' => $paket->Kode, 'JumlahBulan' => $jumlahBulan, 'Subtotal' => $tagihan->Subtotal, 'Total' => $tagihan->Total],
                 alasan: $keterangan,
                 idPelaku: $pelaku->Id,
                 idTenant: $tenant->Id,

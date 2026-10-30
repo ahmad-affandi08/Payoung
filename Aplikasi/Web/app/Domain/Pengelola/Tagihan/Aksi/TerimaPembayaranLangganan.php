@@ -74,7 +74,7 @@ final class TerimaPembayaranLangganan
                     'Pembayaran' => StatusPembayaranLangganan::Diterima->value,
                     'NomorTagihan' => $tagihan->Nomor,
                     'JumlahDiterima' => $diterima->KeString(),
-                    'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->Siklus),
+                    'Langganan' => $hasil->LanggananBaru($tagihan->IdPaket, $tagihan->JumlahBulan),
                 ],
                 alasan: $catatan,
                 idPelaku: $verifikator->Id,

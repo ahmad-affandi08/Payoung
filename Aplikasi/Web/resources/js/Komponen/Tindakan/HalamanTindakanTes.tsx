@@ -470,6 +470,7 @@ function BuatTenant(): Tampilan360 {
             PeriodeMulai: '2026-09-01T00:00:00Z',
             PeriodeSelesai: '2026-10-01T00:00:00Z',
             SiklusTagihan: 'Bulanan',
+            JumlahBulanSiklus: 1,
             PerpanjanganTrial: 0,
             SisaPerpanjanganTrial: 2,
         },
@@ -568,7 +569,7 @@ describe('Pengelola/Tenant 360°: Tabs & tindakan berisiko (P-07, BR-P07.3)', ()
                 url: '/tenant/T-1/tagihan-manual',
                 data: {
                     KodePaket: 'ENTERPRISE',
-                    Siklus: 'Tahunan',
+                    JumlahBulan: '12',
                     Subtotal: '12000000',
                     Keterangan: 'Kontrak Enterprise 12 bulan',
                 },

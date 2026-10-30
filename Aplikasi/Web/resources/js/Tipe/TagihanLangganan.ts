@@ -27,7 +27,7 @@ export type TagihanLangganan = {
     Keterangan: string | null;
     KodePaket: string;
     NamaPaket: string;
-    Siklus: 'Bulanan' | 'Tahunan';
+    Siklus: 'Bulanan' | 'Tahunan' | 'Kustom';
     JumlahBulan: number;
     Subtotal: string;
     /** Subtotal paket saja (Subtotal − add-on), dihitung server. */

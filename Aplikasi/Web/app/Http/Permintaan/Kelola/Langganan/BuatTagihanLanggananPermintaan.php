@@ -17,14 +17,21 @@ final class BuatTagihanLanggananPermintaan extends FormRequest
     {
         return [
             'KodePaket' => ['required', 'string', 'max:30'],
-            'Siklus' => ['required', Rule::enum(SiklusTagihan::class)],
+            // D-249: lama langganan bebas dalam bulan (rentangnya diperiksa Aksi terhadap pengaturan konsol). `Siklus`
+            // (Bulanan/Tahunan) tetap diterima supaya klien lama yang belum mengirim `JumlahBulan` tidak rusak.
+            'JumlahBulan' => ['required_without:Siklus', 'nullable', 'integer', 'min:1', 'max:120'],
+            'Siklus' => ['required_without:JumlahBulan', 'nullable', Rule::in([SiklusTagihan::Bulanan->value, SiklusTagihan::Tahunan->value])],
             'KodeKupon' => ['nullable', 'string', 'max:30'],
         ];
     }
 
-    public function AmbilSiklus(): SiklusTagihan
+    public function AmbilJumlahBulan(): int
     {
-        return SiklusTagihan::from($this->string('Siklus')->toString());
+        if ($this->filled('JumlahBulan')) {
+            return $this->integer('JumlahBulan');
+        }
+
+        return SiklusTagihan::from($this->string('Siklus')->toString())->JumlahBulanBawaan() ?? 1;
     }
 
     public function AmbilKodeKupon(): ?string

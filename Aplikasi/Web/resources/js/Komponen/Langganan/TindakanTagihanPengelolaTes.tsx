@@ -326,7 +326,60 @@ describe('PanelPengaturanPenagihan (D-114)', () => {
             },
         ],
         RekeningDariKonsol: true,
+        LamaLangganan: {
+            MinimalBulan: 1,
+            MaksimalBulan: 12,
+            BatasTertinggiBulan: 36,
+            MaksimalBulanManual: 60,
+            TanggaDiskon: [
+                { DariBulan: 3, Persen: '7' },
+                { DariBulan: 6, Persen: '12' },
+            ],
+        },
+        LamaLanggananDariKonsol: true,
     };
+
+    it('D-249: menampilkan rentang lama dan tangga diskon dari server. Peran tanpa izin tidak melihat tombol ubah', () => {
+        const { unmount: Lepas } = render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        expect(screen.getByText(/1 sampai 12 bulan/)).toBeTruthy();
+        expect(screen.getByText(/Mulai 3 bulan/)).toBeTruthy();
+        expect(screen.getByText(/Mulai 6 bulan/)).toBeTruthy();
+        Lepas();
+
+        render(<PanelPengaturanPenagihan pengaturan={{ ...pengaturan, Boleh: false }} />);
+        expect(screen.queryByRole('button', { name: 'Ubah lama langganan' })).toBeNull();
+    });
+
+    it('D-249: Super Admin mengubah rentang dan menambah anak tangga lalu mengirim seluruhnya dengan alasan', () => {
+        render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ubah lama langganan' }));
+        const dialog = screen.getByRole('dialog', { name: 'Ubah lama langganan' });
+        fireEvent.change(within(dialog).getByLabelText(/Lama maksimal/), { target: { value: '24' } });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Tambah diskon' }));
+        fireEvent.change(within(dialog).getByLabelText(/Mulai lama \(bulan\) diskon 3/), { target: { value: '12' } });
+        fireEvent.change(within(dialog).getByLabelText(/Persen diskon 3/), { target: { value: '20' } });
+        fireEvent.change(within(dialog).getByLabelText(/Alasan perubahan/), {
+            target: { value: 'Promo langganan panjang' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan lama langganan' }));
+
+        expect(kirimanForm[0]).toMatchObject({
+            metode: 'put',
+            url: '/tagihan/pengaturan/lama-langganan',
+            data: {
+                MinimalBulan: '1',
+                MaksimalBulan: '24',
+                TanggaDiskon: [
+                    { DariBulan: '3', Persen: '7' },
+                    { DariBulan: '6', Persen: '12' },
+                    { DariBulan: '12', Persen: '20' },
+                ],
+                Alasan: 'Promo langganan panjang',
+            },
+        });
+    });
 
     it('menampilkan status PKP dan rekening. Nilai awal server diberi penanda. Peran tanpa izin tidak melihat tombol ubah', () => {
         const { unmount: Lepas } = render(<PanelPengaturanPenagihan pengaturan={pengaturan} />);
