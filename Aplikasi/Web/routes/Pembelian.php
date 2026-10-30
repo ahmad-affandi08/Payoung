@@ -18,6 +18,7 @@ use App\Http\Kontroler\Kelola\Pembelian\ProdukPembelianKontroler;
 use App\Http\Kontroler\Kelola\Pembelian\ReturPembelianKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
+use App\Http\Perantara\TolakKirimGanda;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
 
@@ -73,13 +74,13 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
 
     Route::get('/penerimaan', [PenerimaanBarangKontroler::class, 'Daftar'])->name('kelola.pembelian.penerimaan.daftar');
     Route::get('/penerimaan/buat', [PenerimaanBarangKontroler::class, 'Buat'])->name('kelola.pembelian.penerimaan.buat');
-    Route::post('/penerimaan', [PenerimaanBarangKontroler::class, 'Simpan'])->name('kelola.pembelian.penerimaan.simpan');
+    Route::post('/penerimaan', [PenerimaanBarangKontroler::class, 'Simpan'])->middleware(TolakKirimGanda::class)->name('kelola.pembelian.penerimaan.simpan');
     Route::get('/penerimaan/{penerimaan}', [PenerimaanBarangKontroler::class, 'Detail'])->where('penerimaan', $ulid)->name('kelola.pembelian.penerimaan.detail');
     Route::post('/penerimaan/{penerimaan}/batalkan', [PenerimaanBarangKontroler::class, 'Batalkan'])->where('penerimaan', $ulid)->name('kelola.pembelian.penerimaan.batalkan');
     Route::get('/penerimaan/{penerimaan}/lampiran', [PenerimaanBarangKontroler::class, 'Lampiran'])->where('penerimaan', $ulid)->name('kelola.pembelian.penerimaan.lampiran');
 
     Route::get('/belanja-stok', [PenerimaanBarangKontroler::class, 'BuatBelanja'])->name('kelola.pembelian.belanja-stok.buat');
-    Route::post('/belanja-stok', [PenerimaanBarangKontroler::class, 'SimpanBelanja'])->name('kelola.pembelian.belanja-stok.simpan');
+    Route::post('/belanja-stok', [PenerimaanBarangKontroler::class, 'SimpanBelanja'])->middleware(TolakKirimGanda::class)->name('kelola.pembelian.belanja-stok.simpan');
 
     Route::get('/faktur', [FakturPembelianKontroler::class, 'Daftar'])->name('kelola.pembelian.faktur.daftar');
     Route::get('/faktur/buat', [FakturPembelianKontroler::class, 'Buat'])->name('kelola.pembelian.faktur.buat');

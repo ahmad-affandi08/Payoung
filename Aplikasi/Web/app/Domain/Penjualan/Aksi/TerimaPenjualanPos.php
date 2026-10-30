@@ -1521,9 +1521,11 @@ final class TerimaPenjualanPos
         $idGudang = (int) $outlet->idGudangToko;
         // BR-05.4: bahan resep dikurangi dari lokasi produksi (Dapur/Bar) bila outlet punya; selain itu lokasi Toko.
         $gudangPerKunci = [];
+        $gudangProduksi = [];
 
         foreach ($lokasiPerKunci as $kunci => $lokasi) {
-            $gudangPerKunci[$kunci] = $lokasi === null ? $idGudang : ($this->outletPenjualan->AmbilIdGudangProduksi($outlet->idOutlet, $lokasi) ?? $idGudang);
+            // Lokasi produksi dicari sekali per jenis (Dapur/Bar), bukan sekali per bahan resep.
+            $gudangPerKunci[$kunci] = $lokasi === null ? $idGudang : ($gudangProduksi[$lokasi] ??= $this->outletPenjualan->AmbilIdGudangProduksi($outlet->idOutlet, $lokasi) ?? $idGudang);
         }
 
         /** @var array<string, HasilBarisMutasi> $hasilBaris */

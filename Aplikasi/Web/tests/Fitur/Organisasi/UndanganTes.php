@@ -11,6 +11,7 @@ use App\Domain\Organisasi\Model\TenantPengguna;
 use App\Domain\Organisasi\Model\UndanganPengguna;
 use App\Domain\Organisasi\Surel\UndanganAnggota;
 use App\Http\Perantara\IdentifikasiTenantSesi;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
@@ -39,7 +40,7 @@ function UndangAnggotaUji(TestCase $tes, Pengguna $pengundang, int $idTenant, st
         ->assertSessionHasNoErrors();
 
     $tautan = null;
-    Mail::assertQueued(UndanganAnggota::class, function (UndanganAnggota $surel) use ($email, &$tautan): bool {
+    Mail::assertSent(UndanganAnggota::class, function (UndanganAnggota $surel) use ($email, &$tautan): bool {
         if (! $surel->hasTo(strtolower($email))) {
             return false;
         }
@@ -83,6 +84,28 @@ describe('Mengundang pengguna (F-02 langkah 3)', function (): void {
             ->and($undangan->SemuaOutlet)->toBeFalse()
             ->and($undangan->DaftarIdOutlet)->toHaveCount(1);
         $this->assertDatabaseHas('LogAudit', ['IdTenant' => $tenant->Id, 'Peristiwa' => 'pengguna.undang', 'IdPengguna' => $pemilik->Id]);
+    });
+
+    it('email undangan dikirim sinkron: token mentah tidak pernah masuk antrean, dan kegagalan kirim memberi galat jelas tanpa membocorkan token', function (): void {
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanOrganisasi::BuatTenant();
+
+        UndangAnggotaUji($this, $pemilik, $tenant->Id, 'dewi@contoh.id');
+        Mail::assertNothingQueued();
+        Mail::assertSentCount(1);
+
+        $tertunda = Mockery::mock(PendingMail::class);
+        $tertunda->shouldReceive('send')->once()->andThrow(new RuntimeException('smtp mati'));
+        Mail::shouldReceive('to')->once()->andReturn($tertunda);
+
+        BantuanOrganisasi::AturKonteks($tenant->Id);
+        BantuanOrganisasi::Masuk($this, $pemilik, $tenant->Id)
+            ->post('/kelola/pengguna/undangan', [
+                'Email' => 'rina@contoh.id',
+                'Peran' => BantuanOrganisasi::Peran($tenant->Id, PeranTenantBawaan::Kasir)->Uuid,
+                'SemuaOutlet' => true,
+                'Outlet' => [],
+            ])
+            ->assertSessionHasErrors('Email');
     });
 
     it('mengundang ulang email yang sama membatalkan undangan lama', function (): void {

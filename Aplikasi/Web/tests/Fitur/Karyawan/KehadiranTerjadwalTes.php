@@ -284,6 +284,22 @@ describe('notifikasi kehadiran lewat WhatsApp', function (): void {
         expect(PesanKehadiranTerkirim())->toHaveCount(1)->and($lain->refresh()->PengingatShiftPada)->toBeNull();
     });
 
+    it('tanpa --tenant hanya tenant yang punya jadwal dengan penanda belum terisi yang dikunjungi', function (): void {
+        [$k] = SiapkanNotifikasiKehadiran($this, ['PeringatanPengelolaAktif' => true, 'PeringatanPengelolaSetelahMenit' => 15]);
+        // Tenant lain tanpa jadwal sama sekali: tidak boleh dikunjungi (dulu semua tenant dikunjungi tiap 5 menit).
+        BantuanOrganisasi::BuatTenant('Toko Tanpa Jadwal');
+        $this->travelTo(CarbonImmutable::parse('2026-10-05 08:16:00', 'Asia/Jakarta'));
+
+        expect(Artisan::call('karyawan:kirim-notifikasi-kehadiran'))->toBe(0)
+            ->and(Artisan::output())->toContain('1 tenant diperiksa');
+
+        // Setelah semua penanda terisi, tidak ada lagi yang perlu dikunjungi.
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        JadwalKerja::query()->update(['PengingatShiftPada' => now(), 'PeringatanKehadiranPada' => now()]);
+        Artisan::call('karyawan:kirim-notifikasi-kehadiran');
+        expect(Artisan::output())->toContain('0 tenant diperiksa');
+    });
+
     it('aturan mati (bawaan): tidak ada pesan sama sekali', function () use ($jalankan): void {
         [$k] = SiapkanNotifikasiKehadiran($this, ['PengingatShiftAktif' => false, 'PeringatanPengelolaAktif' => false]);
         $this->travelTo(CarbonImmutable::parse('2026-10-05 08:30:00', 'Asia/Jakarta'));

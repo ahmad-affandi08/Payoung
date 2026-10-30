@@ -27,6 +27,10 @@ abstract class TestCase extends TestCaseDasar
         parent::setUp();
         // Test HTTP tidak bergantung pada aset Vite yang sudah di-build (CI tidak menjalankan `npm run build` di job PHP).
         $this->withoutVite();
+        // Inertia SSR memanggil server dev lewat HTTP bila `public/hot` ada (sisa `npm run dev` di mesin pengembang).
+        // Panggilan itu tercatat oleh `Http::fake` dan merusak `Http::assertNothingSent`; hasil test tidak boleh bergantung
+        // pada keadaan mesin.
+        config(['inertia.ssr.enabled' => false]);
 
         // Ingatan fitur tenant (`SumberFiturTenant`) hidup selama satu permintaan di produksi. Satu test memakai satu
         // aplikasi untuk banyak permintaan HTTP, jadi ingatan dikosongkan di awal setiap permintaan agar perilakunya sama.

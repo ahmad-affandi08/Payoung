@@ -72,6 +72,48 @@ final class AksesPengguna
         ];
     }
 
+    /**
+     * Izin banyak anggota sekaligus (data awal POS memuat semua staf perangkat): izin semua peran yang terlibat dibaca dalam
+     * satu kueri, bukan dua kueri per anggota. Aturannya sama dengan `Ambil`: pemilik memegang semua izin, anggota tanpa
+     * peran tidak punya izin, selain itu izin peran utamanya.
+     *
+     * @param  iterable<TenantPengguna>  $anggota  anggota aktif satu tenant
+     * @return array<int, list<string>> kunci = `IdPengguna`
+     */
+    public function AmbilIzinBanyak(iterable $anggota): array
+    {
+        $daftar = [];
+        $idPeran = [];
+
+        foreach ($anggota as $baris) {
+            $daftar[] = $baris;
+
+            if (! $baris->Pemilik && $baris->IdPeran !== null) {
+                $idPeran[$baris->IdPeran] = true;
+            }
+        }
+
+        $izinPerPeran = [];
+
+        if ($idPeran !== []) {
+            foreach (PeranIzin::query()->whereIn('IdPeran', array_keys($idPeran))->orderBy('KunciIzin')->get(['IdPeran', 'KunciIzin']) as $izin) {
+                $izinPerPeran[$izin->IdPeran][] = (string) $izin->KunciIzin;
+            }
+        }
+
+        $hasil = [];
+
+        foreach ($daftar as $baris) {
+            $hasil[$baris->IdPengguna] = match (true) {
+                $baris->Pemilik => IzinTenant::AmbilSemuaKunci(),
+                $baris->IdPeran === null => [],
+                default => $izinPerPeran[$baris->IdPeran] ?? [],
+            };
+        }
+
+        return $hasil;
+    }
+
     public function CekIzin(int $idTenant, int $idPengguna, IzinTenant $izin): bool
     {
         $akses = $this->Ambil($idTenant, $idPengguna);

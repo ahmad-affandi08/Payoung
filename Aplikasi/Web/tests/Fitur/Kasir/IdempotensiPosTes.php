@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Idempotensi\Model\KunciIdempotensi;
 use App\Domain\Kasir\Model\Shift;
+use Illuminate\Support\Str;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Organisasi\BantuanPerangkat;
@@ -56,4 +57,26 @@ it('kunci berlaku per perangkat dan kedaluwarsa setelah 24 jam', function (): vo
     $this->travel(25)->hours();
     $this->withToken($k['Token'])->withHeader('Idempotency-Key', 'kunci-sama-123')->postJson('/api/pos/v1/sinkron/kirim', ['Item' => [$itemLain]])
         ->assertOk()->assertHeaderMissing('Idempotency-Replayed');
+});
+
+it('penolakan yang bergantung keadaan (403) tidak disimpan, sedangkan penolakan karena isi permintaan (422) tetap diputar ulang', function (): void {
+    $k = BantuanKasir::Siapkan($this);
+    $jalur = '/api/pos/v1/pesanan-online/'.(string) Str::ulid().'/status';
+    $kirim = fn (array $isi, string $kunci) => $this->withToken($k['Token'])->withHeader('Idempotency-Key', $kunci)->postJson($jalur, $isi);
+
+    // Pengguna tidak dikenal: ditolak 403. Setelah izin/fitur/langganan berubah, kirim ulang dengan kunci yang sama harus
+    // dinilai ulang, bukan mendapat penolakan lama selama 24 jam.
+    $isi = ['UuidPengguna' => (string) Str::ulid(), 'Status' => 'Dikonfirmasi'];
+    $pertama = $kirim($isi, 'status-01K5BBBB')->assertForbidden();
+    $kedua = $kirim($isi, 'status-01K5BBBB')->assertForbidden();
+    expect($pertama->headers->has('Idempotency-Replayed'))->toBeFalse()
+        ->and($kedua->headers->has('Idempotency-Replayed'))->toBeFalse();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(KunciIdempotensi::query()->count())->toBe(0);
+
+    // Isi permintaan tidak valid (422) ditentukan oleh isinya sendiri, jadi aman diputar ulang.
+    $kirim(['UuidPengguna' => 'bukan-ulid'], 'status-01K5CCCC')->assertStatus(422);
+    $kirim(['UuidPengguna' => 'bukan-ulid'], 'status-01K5CCCC')->assertStatus(422)->assertHeader('Idempotency-Replayed', 'true');
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(KunciIdempotensi::query()->count())->toBe(1);
 });

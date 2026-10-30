@@ -17,8 +17,10 @@ use App\Domain\Organisasi\Model\UndanganPengguna;
 use App\Domain\Organisasi\Surel\UndanganAnggota;
 use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * F-02 langkah 3: mengundang pengguna lewat email dengan peran & outlet yang ditugaskan.
@@ -84,8 +86,15 @@ final class UndangPengguna
             return $undangan;
         });
 
-        // Dikirim setelah commit dan tidak lewat queue, agar token asli tidak tersimpan di tabel jobs.
-        Mail::to($email)->queue(new UndanganAnggota($undangan, $token, $pengundang->Nama, $namaTenant));
+        // Dikirim setelah commit dan SINKRON (bukan `queue`), agar token asli tidak tersimpan di payload tabel jobs atau
+        // antrean Redis. Bila pengiriman gagal, undangan tetap ada; mengundang ulang membatalkan yang lama dan membuat token baru.
+        try {
+            Mail::to($email)->send(new UndanganAnggota($undangan, $token, $pengundang->Nama, $namaTenant));
+        } catch (Throwable $galat) {
+            Log::error('Email undangan anggota gagal dikirim.', ['IdTenant' => $idTenant, 'IdUndangan' => $undangan->Id, 'Galat' => $galat::class]);
+
+            throw new PelanggaranAturanBisnis('SurelUndanganGagal', 'Undangan dibuat tetapi email gagal dikirim. Coba undang ulang sebentar lagi.', 'Email', 502);
+        }
 
         return $undangan;
     }

@@ -45,15 +45,9 @@ use App\Domain\Penjualan\Peristiwa\PenjualanDiterima;
 use App\Domain\Penjualan\Peristiwa\PenjualanDivoid;
 use App\Domain\Penjualan\Peristiwa\ReturPenjualanDiterima;
 use App\Domain\Tenant\Kueri\SumberFiturTenant;
-use App\Domain\Tenant\Model\Addon;
 use App\Domain\Tenant\Model\Fitur;
-use App\Domain\Tenant\Model\FlagFitur;
 use App\Domain\Tenant\Model\Langganan;
-use App\Domain\Tenant\Model\LanggananAddon;
-use App\Domain\Tenant\Model\OutletFitur;
-use App\Domain\Tenant\Model\OverrideTenant;
 use App\Domain\Tenant\Model\Paket;
-use App\Domain\Tenant\Model\PaketFitur;
 use App\Domain\Tenant\Peristiwa\TagihanLanggananDilunasiGerbang;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
@@ -66,6 +60,7 @@ use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
@@ -75,6 +70,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -173,17 +169,24 @@ final class PenyediaAplikasi extends ServiceProvider
                 ->firstOrFail();
         });
 
-        // Ingatan fitur per permintaan dikosongkan bila data pembentuknya berubah lewat model, atau transaksi dibatalkan
-        // (nilai yang diingat bisa berasal dari tulisan yang akhirnya dibatalkan).
-        foreach ([Langganan::class, LanggananAddon::class, OverrideTenant::class, FlagFitur::class, OutletFitur::class, Paket::class, PaketFitur::class, Fitur::class, Addon::class] as $kelasFitur) {
-            foreach (['saved', 'deleted', 'restored'] as $peristiwaModel) {
-                Event::listen("eloquent.{$peristiwaModel}: {$kelasFitur}", function (): void {
-                    if ($this->app->resolved(SumberFiturTenant::class)) {
-                        $this->app->make(SumberFiturTenant::class)->Lupakan();
-                    }
-                });
+        // Ingatan fitur per permintaan dikosongkan bila ADA pernyataan tulis ke tabel pembentuknya, apa pun jalurnya (model,
+        // kueri massal, atau SQL mentah), dan bila transaksi dibatalkan (nilai yang diingat bisa berasal dari tulisan yang
+        // akhirnya dibatalkan). Pencocokan memakai nama tabel berkutip, jadi `Paket` tidak ikut mengosongkan karena `HargaPaket`.
+        DB::listen(function (QueryExecuted $kueri): void {
+            if (! $this->app->resolved(SumberFiturTenant::class)) {
+                return;
             }
-        }
+
+            $awal = strtolower(substr(ltrim($kueri->sql), 0, 7));
+
+            if (! str_starts_with($awal, 'insert') && ! str_starts_with($awal, 'update') && ! str_starts_with($awal, 'delete') && ! str_starts_with($awal, 'replace')) {
+                return;
+            }
+
+            if (preg_match('/`(?:Langganan|LanggananAddon|OverrideTenant|FlagFitur|OutletFitur|Paket|PaketFitur|Fitur|Addon)`/', $kueri->sql) === 1) {
+                $this->app->make(SumberFiturTenant::class)->Lupakan();
+            }
+        });
 
         Event::listen(TransactionRolledBack::class, function (): void {
             if ($this->app->resolved(SumberFiturTenant::class)) {

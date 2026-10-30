@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pelanggan\Layanan;
 
+use App\Domain\Bersama\Antrean\KunciPengiriman;
 use App\Domain\Integrasi\Whatsapp\HasilKirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
@@ -37,6 +38,13 @@ final class PengirimPengingatPiutang
 
     /** @return bool true bila perlu dicoba ulang. */
     public function Kirim(int $idPengingat, bool $percobaanTerakhir): bool
+    {
+        // Satu pengirim aktif per pesan (lihat `KunciPengiriman`).
+        return KunciPengiriman::Jalankan('pengingat-piutang:'.$idPengingat, fn (): bool => $this->Proses($idPengingat, $percobaanTerakhir), false);
+    }
+
+    /** @return bool true bila perlu dicoba ulang. */
+    private function Proses(int $idPengingat, bool $percobaanTerakhir): bool
     {
         $pengingat = PengingatPiutang::query()->find($idPengingat);
 

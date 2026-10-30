@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pelanggan\Layanan;
 
+use App\Domain\Bersama\Antrean\KunciPengiriman;
 use App\Domain\Integrasi\Whatsapp\HasilKirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
@@ -48,6 +49,14 @@ final class PengirimKampanyePesan
 
     /** @return int|null detik sampai giliran berikutnya; null bila kampanye selesai/berhenti. */
     public function KirimGiliran(int $idKampanye): ?int
+    {
+        // Satu giliran per kampanye pada satu waktu: dua pekerja untuk kampanye yang sama mengirim penerima yang sama dua kali.
+        // Giliran yang kalah kunci berhenti (null); giliran yang memegang kunci yang menjadwalkan giliran berikutnya.
+        return KunciPengiriman::Jalankan('kampanye-pesan:'.$idKampanye, fn (): ?int => $this->ProsesGiliran($idKampanye), null, 600);
+    }
+
+    /** @return int|null detik sampai giliran berikutnya; null bila kampanye selesai/berhenti. */
+    private function ProsesGiliran(int $idKampanye): ?int
     {
         $kampanye = KampanyePesan::query()->find($idKampanye);
 

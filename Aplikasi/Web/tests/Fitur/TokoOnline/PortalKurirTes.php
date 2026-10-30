@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
+use App\Domain\Pemenuhan\Aksi\UbahStatusPengirimanPesanan;
 use App\Domain\Pemenuhan\Enum\StatusPengirimanPesanan;
 use App\Domain\Pemenuhan\Model\Kurir;
 use App\Domain\Pemenuhan\Model\PengirimanPesanan;
+use App\Domain\Penjualan\Aksi\UbahStatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Model\PesananOnline;
 use Illuminate\Http\UploadedFile;
@@ -146,4 +148,20 @@ it('membuat ulang dan mencabut tautan mematikan tautan lama. Kurir diarsipkan di
     $this->put("/kelola/pengiriman/kurir/{$k['Bayu']->Uuid}", ['Nama' => 'Bayu Pratama', 'Jenis' => 'Internal', 'Status' => 'Diarsipkan'])->assertSessionHasNoErrors();
     $this->post("/kelola/pengiriman/kurir/{$k['Bayu']->Uuid}/tautan-portal")->assertSessionHasErrors('Kurir');
     $this->get('/kopi-tidak-ada/kurir/'.str_repeat('a', 40))->assertNotFound();
+});
+
+it('kurir yang menekan Dikirim dari data basi tidak menimpa pesanan yang baru dibatalkan staf', function (): void {
+    $k = SiapkanPortalKurir($this);
+    $pesananBasi = PesananOnline::query()->whereKey($k['Pesanan']->Id)->sole();
+    $kirimBasi = PengirimanPesanan::query()->whereKey($k['Kirim']->Id)->sole();
+    expect($pesananBasi->Status)->toBe(StatusPesananOnline::Siap)
+        ->and($kirimBasi->Status)->toBe(StatusPengirimanPesanan::Dikemas);
+
+    // Staf membatalkan pesanan (pengiriman ikut dibatalkan) sementara layar kurir masih memuat data lama.
+    app(UbahStatusPesananOnline::class)->Jalankan(PesananOnline::query()->whereKey($k['Pesanan']->Id)->sole(), StatusPesananOnline::Dibatalkan, $k['Pemilik']->Id, 'Pembeli minta batal');
+
+    expect(fn () => app(UbahStatusPengirimanPesanan::class)->Jalankan($kirimBasi, $pesananBasi, StatusPengirimanPesanan::Dikirim, ['IdKurir' => $k['Joko']->Id], null))
+        ->toThrow(LogicException::class)
+        ->and(PengirimanPesanan::query()->whereKey($k['Kirim']->Id)->sole()->Status)->toBe(StatusPengirimanPesanan::Dibatalkan)
+        ->and(PesananOnline::query()->whereKey($k['Pesanan']->Id)->sole()->Status)->toBe(StatusPesananOnline::Dibatalkan);
 });

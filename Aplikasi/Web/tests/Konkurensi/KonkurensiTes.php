@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Akuntansi\Model\Jurnal;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Karyawan\Model\JadwalKerja;
@@ -179,4 +180,18 @@ it('dua konfirmasi SO grosir bersamaan untuk pelanggan yang sama: paparan kredit
     expect(collect($hasil)->pluck('Galat')->filter()->values()->all())->toBe(['ButuhPersetujuanKredit'])
         ->and(PesananGrosir::query()->where('Status', StatusPesananGrosir::Dikonfirmasi->value)->count())->toBe(1)
         ->and(PesananGrosir::query()->where('Status', StatusPesananGrosir::Draf->value)->count())->toBe(1);
+});
+
+it('dua pekerja memposting jurnal untuk sumber berbeda bersamaan: tidak ada deadlock gap-lock pada pemeriksaan idempotensi', function (): void {
+    $t = BantuanPersediaan::SiapkanTenant('Toko Jurnal Serentak Magelang');
+    $isi = fn (int $mulai): array => ['IdTenant' => $t['Tenant']->Id, 'MulaiIdSumber' => $mulai, 'Jumlah' => 250];
+
+    $hasil = JalankanBersamaan('posting-jurnal', [$isi(1000), $isi(1001)]);
+
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    $hitung = collect($hasil)->pluck('Hasil');
+    expect($hitung->sum('Deadlock'))->toBe(0)
+        ->and($hitung->sum('LainLain'))->toBe(0)
+        ->and($hitung->sum('Diposting'))->toBe(500)
+        ->and(Jurnal::query()->count())->toBe(500);
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Penjualan\Layanan;
 
+use App\Domain\Bersama\Antrean\KunciPengiriman;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
@@ -36,6 +37,13 @@ final class PengirimInvoice
 
     /** @return bool true bila perlu dicoba ulang. */
     public function Kirim(int $idPengiriman, bool $percobaanTerakhir): bool
+    {
+        // Satu pengirim aktif per pesan (lihat `KunciPengiriman`).
+        return KunciPengiriman::Jalankan('invoice:'.$idPengiriman, fn (): bool => $this->Proses($idPengiriman, $percobaanTerakhir), false);
+    }
+
+    /** @return bool true bila perlu dicoba ulang. */
+    private function Proses(int $idPengiriman, bool $percobaanTerakhir): bool
     {
         $pengiriman = PengirimanInvoice::query()->find($idPengiriman);
 

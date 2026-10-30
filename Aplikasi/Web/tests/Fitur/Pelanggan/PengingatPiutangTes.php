@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -199,6 +200,27 @@ it('piutang lunas saat pengingat akan dikirim = dibatalkan, pelanggan tidak dita
 
     expect($pengingat->refresh()->Status)->toBe(StatusPengingatPiutang::Dibatalkan)
         ->and(PesanPengingatTerkirim())->toHaveCount(0);
+});
+
+it('dua pekerja untuk pengingat yang sama: yang kalah kunci melewatinya, pelanggan tidak ditagih dua kali', function (): void {
+    $k = SiapkanPiutangPengingat($this);
+    Queue::fake();
+    $this->post("/kelola/piutang/{$k['P1']->Uuid}/pengingat")->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $pengingat = PengingatPiutang::query()->sole();
+
+    // Pekerja lain sedang mengirim pengingat ini.
+    $kunci = Cache::lock('kirim:pengingat-piutang:'.$pengingat->Id, 60);
+    expect($kunci->get())->toBeTrue()
+        ->and(app(PengirimPengingatPiutang::class)->Kirim($pengingat->Id, false))->toBeFalse()
+        ->and(PesanPengingatTerkirim())->toHaveCount(0)
+        ->and($pengingat->refresh()->Status)->toBe(StatusPengingatPiutang::Diantrekan);
+
+    $kunci->release();
+    app(PengirimPengingatPiutang::class)->Kirim($pengingat->Id, false);
+
+    expect(PesanPengingatTerkirim())->toHaveCount(1)
+        ->and($pengingat->refresh()->Status)->toBe(StatusPengingatPiutang::Terkirim);
 });
 
 it('massal: pengingat banyak piutang sekaligus, yang baru diingatkan dilewati dengan alasannya, Uuid asing menolak semuanya', function (): void {

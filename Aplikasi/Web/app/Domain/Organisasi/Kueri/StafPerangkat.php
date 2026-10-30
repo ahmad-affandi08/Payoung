@@ -35,6 +35,7 @@ final class StafPerangkat
             ->keyBy('IdPengguna');
         $pengguna = Pengguna::query()->whereIn('Id', $anggota->keys()->all())->orderBy('Nama')->orderBy('Id')->get();
         $kunci = $perangkat->KunciPinOffline;
+        $izinPerPengguna = $this->akses->AmbilIzinBanyak($anggota);
         $hasil = [];
 
         foreach ($pengguna as $p) {
@@ -44,13 +45,12 @@ final class StafPerangkat
                 continue;
             }
 
-            $akses = $this->akses->Ambil($perangkat->IdTenant, $p->Id);
             $verifier = $baris->VerifierPinOffline;
             $hasil[] = [
                 'Uuid' => $p->Uuid,
                 'Nama' => $p->Nama,
                 'Pemilik' => $baris->Pemilik,
-                'Izin' => $akses['Izin'] ?? [],
+                'Izin' => $izinPerPengguna[$p->Id] ?? [],
                 'PinDiatur' => $baris->HashPin !== null,
                 'Pin' => $baris->HashPin !== null && $verifier !== null && $kunci !== null ? VerifierPinOffline::Bungkus($verifier, $kunci) : null,
             ];

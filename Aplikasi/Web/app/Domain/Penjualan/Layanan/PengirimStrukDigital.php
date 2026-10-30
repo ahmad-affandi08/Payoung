@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Penjualan\Layanan;
 
+use App\Domain\Bersama\Antrean\KunciPengiriman;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Integrasi\Whatsapp\HasilKirimWhatsapp;
@@ -36,6 +37,13 @@ final class PengirimStrukDigital
 
     /** @return bool true bila perlu dicoba ulang. */
     public function Kirim(int $idPesanKeluar, bool $percobaanTerakhir): bool
+    {
+        // Satu pengirim aktif per pesan (lihat `KunciPengiriman`).
+        return KunciPengiriman::Jalankan('struk-digital:'.$idPesanKeluar, fn (): bool => $this->Proses($idPesanKeluar, $percobaanTerakhir), false);
+    }
+
+    /** @return bool true bila perlu dicoba ulang. */
+    private function Proses(int $idPesanKeluar, bool $percobaanTerakhir): bool
     {
         $pesan = PesanKeluar::query()->find($idPesanKeluar);
 

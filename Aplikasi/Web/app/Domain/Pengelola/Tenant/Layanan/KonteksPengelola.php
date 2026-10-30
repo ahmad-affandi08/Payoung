@@ -139,14 +139,21 @@ final class KonteksPengelola
      *
      * @param  class-string<TModel>  $kelasModel
      * @param  Closure(Builder<TModel>): mixed  $saring  menyempitkan kueri ke baris yang butuh dikerjakan
+     * @param  int  $setelahIdTenant  hanya tenant dengan id lebih besar; untuk halaman berikutnya bagi pekerjaan yang tidak
+     *                                "terkuras" (baris tetap ada setelah dikerjakan, mis. pengukuran penyimpanan malam), karena
+     *                                hasil dipotong `$batas` dan tenant di ujung urutan tidak akan pernah terjangkau tanpa ini
      * @return list<int>
      */
-    public function IdTenantDenganPekerjaan(string $kelasModel, Closure $saring, int $batas = 5000, bool $termasukDitutup = false): array
+    public function IdTenantDenganPekerjaan(string $kelasModel, Closure $saring, int $batas = 5000, bool $termasukDitutup = false, int $setelahIdTenant = 0): array
     {
         $kueri = $kelasModel::query()->withoutGlobalScope(LingkupTenant::class);
         $saring($kueri);
 
         $dasar = $kueri->toBase();
+
+        if ($setelahIdTenant > 0) {
+            $dasar->where('IdTenant', '>', $setelahIdTenant);
+        }
 
         // Tenant yang akunnya sudah ditutup (UU PDP, P-07) tidak punya pekerjaan lagi; hanya penyapu retensi berkas yang
         // sengaja mencarinya.

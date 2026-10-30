@@ -6,12 +6,15 @@ namespace App\Domain\Organisasi\Kueri;
 
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\TenantPengguna;
+use App\Domain\Tenant\Kueri\TenantAktif;
 
 /**
  * Tenant tempat seorang pengguna menjadi anggota aktif (BR-00.1: pemilih tenant setelah masuk).
  */
 final class KeanggotaanPengguna
 {
+    public function __construct(private readonly TenantAktif $tenantAktif) {}
+
     /**
      * @return list<int>
      */
@@ -46,13 +49,20 @@ final class KeanggotaanPengguna
     }
 
     /**
-     * Semua tenant yang punya anggota (dipakai perintah penyelarasan peran bawaan, F-02).
+     * Semua tenant aktif yang punya anggota (dipakai perintah terjadwal yang menyapu tenant dan perintah penyelarasan
+     * peran bawaan, F-02). Tenant yang akunnya sudah ditutup tidak ikut: mereka tidak punya pekerjaan lagi, dan dulu tetap
+     * dikunjungi setiap putaran (bahkan tiap jam atau tiap 5 menit).
      *
      * @return list<int>
      */
     public function AmbilSemuaIdTenant(): array
     {
-        return array_values(array_map('intval', TenantPengguna::query()->distinct()->orderBy('IdTenant')->pluck('IdTenant')->all()));
+        return array_values(array_map('intval', TenantPengguna::query()
+            ->whereIn('IdTenant', $this->tenantAktif->KueriId())
+            ->distinct()
+            ->orderBy('IdTenant')
+            ->pluck('IdTenant')
+            ->all()));
     }
 
     public function CekAnggota(int $idPengguna, int $idTenant): bool

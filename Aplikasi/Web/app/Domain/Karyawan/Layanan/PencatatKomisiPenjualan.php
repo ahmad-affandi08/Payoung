@@ -44,6 +44,15 @@ final class PencatatKomisiPenjualan
 
         $karyawan = Karyawan::query()->whereIn('Uuid', $uuid)->get()->keyBy('Uuid');
         $aturan = AturanKomisi::query()->where('Status', StatusAturanKomisi::Aktif->value)->orderByDesc('Id')->get();
+        // Komisi yang sudah ada dibaca sekali untuk seluruh baris (dulu `firstOrCreate` = SELECT + INSERT per staf per baris,
+        // di dalam transaksi sinkron penjualan). Pencatatan ulang item yang sama tetap idempoten, dan indeks unik
+        // (IdPenjualanDetail, IdKaryawan) tetap menjaga bila ada penulis lain.
+        $sudahAda = [];
+
+        foreach (Komisi::query()->whereIn('IdPenjualanDetail', array_map(fn (DataBarisKomisi $b): int => $b->idPenjualanDetail, $baris))->get(['IdPenjualanDetail', 'IdKaryawan']) as $komisi) {
+            $sudahAda[$komisi->IdPenjualanDetail.':'.$komisi->IdKaryawan] = true;
+        }
+
         $masalah = [];
 
         foreach ($baris as $b) {
@@ -74,18 +83,22 @@ final class PencatatKomisiPenjualan
                 $jumlah = $samaSemua && $i === count($staf) - 1 ? $penuh->Kurangi($terbagi) : $penuh->Kali($porsi);
                 $terbagi = $terbagi->Tambah($jumlah);
 
-                Komisi::query()->firstOrCreate(
-                    ['IdPenjualanDetail' => $b->idPenjualanDetail, 'IdKaryawan' => $k->Id],
-                    [
-                        'IdPenjualan' => $idPenjualan,
-                        'IdAturanKomisi' => $pilih[$i]?->Id,
-                        'IdOutlet' => $idOutlet,
-                        'TanggalBisnis' => $tanggalBisnis->toDateString(),
-                        'Dasar' => $b->dasar->KeString(),
-                        'Porsi' => (string) $porsi->toScale(4, RoundingMode::HalfUp),
-                        'Jumlah' => $jumlah->KeString(),
-                    ],
-                );
+                if (isset($sudahAda[$b->idPenjualanDetail.':'.$k->Id])) {
+                    continue;
+                }
+
+                Komisi::query()->create([
+                    'IdPenjualanDetail' => $b->idPenjualanDetail,
+                    'IdKaryawan' => $k->Id,
+                    'IdPenjualan' => $idPenjualan,
+                    'IdAturanKomisi' => $pilih[$i]?->Id,
+                    'IdOutlet' => $idOutlet,
+                    'TanggalBisnis' => $tanggalBisnis->toDateString(),
+                    'Dasar' => $b->dasar->KeString(),
+                    'Porsi' => (string) $porsi->toScale(4, RoundingMode::HalfUp),
+                    'Jumlah' => $jumlah->KeString(),
+                ]);
+                $sudahAda[$b->idPenjualanDetail.':'.$k->Id] = true;
             }
         }
 

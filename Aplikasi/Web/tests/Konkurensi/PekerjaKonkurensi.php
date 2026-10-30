@@ -10,6 +10,7 @@ declare(strict_types=1);
  * Pemakaian: php PekerjaKonkurensi.php {skenario} {mulaiMikrodetik} {berkasJson}
  */
 
+use App\Domain\Akuntansi\Aksi\PostingJurnal;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Sinkron\Data\DataKonteksSinkron;
@@ -26,7 +27,9 @@ use App\Domain\Persediaan\Enum\AlasanBahanTerbuang;
 use App\Domain\Persediaan\Model\BahanTerbuang;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Tests\Pendukung\Akuntansi\BantuanJurnal;
 
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';
@@ -73,6 +76,21 @@ try {
             idPengguna: (int) $data['IdPengguna'],
         ))->Uuid,
         'konfirmasi-so' => app(KonfirmasiPesananGrosir::class)->Jalankan((string) $data['UuidPesanan'], (int) $data['IdPengguna'], false)->Uuid,
+        'posting-jurnal' => (function () use ($data): array {
+            // Dua pekerja memposting jurnal untuk sumber BERBEDA yang idnya berselang-seling (gap indeks unik yang sama).
+            $hasil = ['Diposting' => 0, 'Deadlock' => 0, 'LainLain' => 0];
+
+            for ($i = 0; $i < (int) $data['Jumlah']; $i++) {
+                try {
+                    app(PostingJurnal::class)->Jalankan(BantuanJurnal::DataStokAwal(idSumber: (int) $data['MulaiIdSumber'] + $i * 2, nilai: '1000.00'));
+                    $hasil['Diposting']++;
+                } catch (QueryException $galat) {
+                    in_array((int) ($galat->errorInfo[1] ?? 0), [1213, 1205], true) ? $hasil['Deadlock']++ : $hasil['LainLain']++;
+                }
+            }
+
+            return $hasil;
+        })(),
         default => throw new InvalidArgumentException("Skenario {$skenario} tidak dikenal."),
     };
 

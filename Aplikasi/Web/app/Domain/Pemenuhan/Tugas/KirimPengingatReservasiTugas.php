@@ -15,6 +15,7 @@ use App\Domain\Pemenuhan\Model\Reservasi;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -35,6 +36,13 @@ final class KirimPengingatReservasiTugas implements ShouldQueue
 
     public function handle(KonteksTenant $konteks, PembuatPengirimWhatsapp $whatsapp, ProfilTenant $profil, NamaTampilUsaha $namaTampil, LayananReservasi $layanan, ZonaWaktuOutlet $zona): void
     {
+        // Satu pengirim aktif per pesan (lihat `KunciPengiriman`): job ganda untuk pesan yang sama dilewati.
+        $kunciKirim = Cache::lock('kirim:pengingat-reservasi:'.$this->idReservasi, 300);
+
+        if (! $kunciKirim->get()) {
+            return;
+        }
+
         $sebelumnya = $konteks->Ambil();
         $konteks->Atur($this->idTenant);
 
@@ -68,6 +76,7 @@ final class KirimPengingatReservasiTugas implements ShouldQueue
             Log::warning('Pengingat reservasi gagal dikirim.', ['IdTenant' => $this->idTenant, 'IdReservasi' => $r->Id, 'Penyedia' => $pengirim->AmbilKode()]);
         } finally {
             $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
+            $kunciKirim->release();
         }
     }
 }

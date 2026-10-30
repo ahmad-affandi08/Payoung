@@ -16,15 +16,19 @@ use Symfony\Component\HttpFoundation\Response;
  * Audit F-12 (aturan emas #13, §16.1): header `Idempotency-Key` pada mutasi `/api/pos/v1/*` (setelah
  * `AutentikasiPerangkat`). Kunci sama + permintaan sama (metode, jalur, isi) = respons tersimpan diputar ulang
  * (`Idempotency-Replayed: true`); kunci sama + isi berbeda = 409 `KunciIdempotensiBentrok`; permintaan dengan kunci yang
- * masih diproses = 409 `PermintaanSedangDiproses`. Yang disimpan hanya jawaban JSON final (2xx/4xx selain 408/409/423/
- * 429), selama 24 jam per perangkat. Tanpa header = diproses seperti biasa (kompatibel mundur, aturan emas #16); data
+ * masih diproses = 409 `PermintaanSedangDiproses`. Yang disimpan hanya jawaban JSON final selama 24 jam per perangkat:
+ * 2xx, 400, dan 422 (ditentukan isi permintaannya sendiri). Jawaban yang bergantung keadaan di luar permintaan TIDAK
+ * disimpan: 401/402/403 (langganan ditangguhkan lalu dibayar, fitur paket belum aktif, izin diberikan belakangan), 404 (dokumen
+ * yang dirujuk belum sampai di server), 408/409/423/429 (sementara). Kalau disimpan, klien yang mengirim ulang dengan kunci
+ * yang sama (Gudang memakai kunci tetap per draf) terus mendapat penolakan lama sampai 24 jam sesudah keadaannya pulih. Tanpa header = diproses seperti biasa (kompatibel mundur, aturan emas #16); data
  * tetap idempoten lewat `Uuid` klien.
  */
 final class IdempotensiPos
 {
     public const HEADER = 'Idempotency-Key';
 
-    private const STATUS_TIDAK_DISIMPAN = [408, 409, 423, 429];
+    /** Penolakan yang bisa berubah tanpa isi permintaan berubah: tidak boleh diputar ulang. */
+    private const STATUS_TIDAK_DISIMPAN = [401, 402, 403, 404, 408, 409, 423, 429];
 
     public function __construct(private readonly PenyimpanIdempotensi $penyimpan) {}
 

@@ -102,4 +102,25 @@ describe('E2 penyimpanan berkas per tenant', function (): void {
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
         expect((int) PemakaianPenyimpanan::query()->where('IdTenant', $t['Tenant']->Id)->value('Byte'))->toBeGreaterThanOrEqual(2048);
     });
+
+    it('perintah penyimpanan:ukur membaca berantai: tenant di luar halaman pertama tetap diukur ulang', function (): void {
+        $idTenant = [];
+
+        foreach (['Toko Penyimpanan Satu', 'Toko Penyimpanan Dua', 'Toko Penyimpanan Tiga'] as $nama) {
+            $t = BantuanKatalog::SiapkanTenantProduk($nama);
+            Storage::disk('local')->put("kasir/bukti-kas/{$t['Tenant']->Id}/a.jpg", str_repeat('x', 4096));
+            BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+            // Sudah pernah diukur (punya baris), tetapi angkanya basi: berkas sebenarnya lebih besar.
+            PemakaianPenyimpanan::query()->create(['IdTenant' => $t['Tenant']->Id, 'Byte' => 1]);
+            $idTenant[] = $t['Tenant']->Id;
+        }
+
+        // Halaman baca hanya 2 tenant: tanpa pembacaan berantai, tenant ketiga tidak pernah terjangkau.
+        $this->artisan('penyimpanan:ukur', ['--halaman' => 2])->expectsOutput('3 tenant diukur penyimpanannya.')->assertSuccessful();
+
+        foreach ($idTenant as $id) {
+            BantuanOrganisasi::AturKonteks($id);
+            expect((int) PemakaianPenyimpanan::query()->where('IdTenant', $id)->value('Byte'))->toBeGreaterThanOrEqual(4096);
+        }
+    });
 });

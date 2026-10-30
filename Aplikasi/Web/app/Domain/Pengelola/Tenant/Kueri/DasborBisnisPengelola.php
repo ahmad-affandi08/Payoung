@@ -21,6 +21,7 @@ use App\Domain\Tenant\Model\Tenant;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -54,12 +55,35 @@ final class DasborBisnisPengelola
         $bolehTenant = $pelaku->PunyaIzin(IzinPengelola::TenantLihat);
 
         return [
-            'Bisnis' => $bolehTagihan ? Cache::remember('pengelola:beranda:bisnis', self::DETIK_SIMPAN, fn (): array => $this->AmbilBisnis()) : null,
+            'Bisnis' => $bolehTagihan ? $this->AmbilBisnisTersimpan() : null,
             'TenantPerSektor' => $bolehTenant ? $this->AmbilTenantPerSektor() : null,
             'TenantRisiko' => $bolehTenant ? $this->AmbilTenantRisiko() : null,
             'Konversi' => $bolehTenant ? $this->AmbilKonversi() : null,
             'Aktivitas' => $bolehTenant || $bolehTagihan ? $this->AmbilAktivitas($bolehTenant, $bolehTagihan) : null,
         ];
+    }
+
+    /**
+     * Blok bisnis disimpan beberapa menit. Saat simpanannya kedaluwarsa, beberapa petugas yang membuka Beranda bersamaan
+     * tidak boleh sama-sama menghitung ulang laporan berat itu: yang pertama menghitung, yang lain menunggu lalu memakai
+     * hasilnya.
+     *
+     * @return array<string, mixed>
+     */
+    private function AmbilBisnisTersimpan(): array
+    {
+        $kunci = 'pengelola:beranda:bisnis';
+        $ada = Cache::get($kunci);
+
+        if (is_array($ada)) {
+            return $ada;
+        }
+
+        try {
+            return Cache::lock($kunci.':hitung', 60)->block(30, fn (): array => Cache::remember($kunci, self::DETIK_SIMPAN, fn (): array => $this->AmbilBisnis()));
+        } catch (LockTimeoutException) {
+            return $this->AmbilBisnis();
+        }
     }
 
     /**
@@ -106,11 +130,18 @@ final class DasborBisnisPengelola
     {
         $hitung = [];
 
-        foreach (Tenant::query()->whereNull('Penanda')->where('Status', StatusTenant::Aktif->value)->get(['Id', 'Pengaturan']) as $t) {
-            $kode = $t->Pengaturan['Sektor'][0] ?? null;
-            $awalan = is_string($kode) && $kode !== '' ? strtoupper(explode('-', $kode)[0]) : '';
+        // Dikelompokkan di basis data menurut awalan kode sektor pertama (`Pengaturan.Sektor[0]`), bukan dengan memuat
+        // JSON pengaturan semua tenant aktif ke PHP di setiap pembukaan Beranda.
+        $baris = Tenant::query()->whereNull('Penanda')->where('Status', StatusTenant::Aktif->value)
+            ->selectRaw("UPPER(SUBSTRING_INDEX(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(Pengaturan, '$.Sektor[0]')), ''), '-', 1)) AS Awalan, COUNT(*) AS Jumlah")
+            ->groupBy('Awalan')
+            ->toBase()
+            ->get();
+
+        foreach ($baris as $b) {
+            $awalan = $b->Awalan === 'NULL' ? '' : (string) $b->Awalan;
             $nama = self::NAMA_SEKTOR[$awalan] ?? ($awalan === '' ? 'Belum memilih sektor' : 'Lainnya');
-            $hitung[$nama] = ($hitung[$nama] ?? 0) + 1;
+            $hitung[$nama] = ($hitung[$nama] ?? 0) + (int) $b->Jumlah;
         }
 
         arsort($hitung);
@@ -176,16 +207,16 @@ final class DasborBisnisPengelola
     {
         $kohort = Tenant::query()->whereNull('Penanda')
             ->where('DibuatPada', '>=', now()->subDays(60))
-            ->where('DibuatPada', '<', now()->subDays(30))
-            ->pluck('Id')->all();
-        $berbayar = $kohort === [] ? 0 : Langganan::query()->whereIn('IdTenant', $kohort)->where('Status', StatusLangganan::Aktif->value)->count();
-        $idPelanggan = Tenant::query()->whereNull('Penanda')->where('Status', StatusTenant::Aktif->value)->pluck('Id')->all();
+            ->where('DibuatPada', '<', now()->subDays(30));
+        $jumlahKohort = (clone $kohort)->count();
+        $berbayar = $jumlahKohort === 0 ? 0 : Langganan::query()->whereIn('IdTenant', (clone $kohort)->select('Id'))->where('Status', StatusLangganan::Aktif->value)->count();
+        $pelanggan = Tenant::query()->whereNull('Penanda')->where('Status', StatusTenant::Aktif->value)->select('Id');
 
         return [
-            'Kohort' => count($kohort),
+            'Kohort' => $jumlahKohort,
             'Berbayar' => $berbayar,
-            'Persen' => $kohort === [] ? '0.0' : (string) BigDecimal::of($berbayar)->multipliedBy(100)->dividedBy(count($kohort), 1, RoundingMode::HalfUp),
-            'UjiCobaBerjalan' => Langganan::query()->whereIn('IdTenant', $idPelanggan)->where('Status', StatusLangganan::Trial->value)->count(),
+            'Persen' => $jumlahKohort === 0 ? '0.0' : (string) BigDecimal::of($berbayar)->multipliedBy(100)->dividedBy($jumlahKohort, 1, RoundingMode::HalfUp),
+            'UjiCobaBerjalan' => Langganan::query()->whereIn('IdTenant', $pelanggan)->where('Status', StatusLangganan::Trial->value)->count(),
         ];
     }
 

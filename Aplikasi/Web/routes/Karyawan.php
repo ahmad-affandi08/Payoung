@@ -16,6 +16,7 @@ use App\Http\Kontroler\Kelola\Karyawan\RekapGajiKontroler;
 use App\Http\Kontroler\Kelola\Karyawan\TargetPenjualanKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
+use App\Http\Perantara\TolakKirimGanda;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
 
@@ -86,7 +87,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::post('/komisi/{aturan}/pulihkan', [KomisiKontroler::class, 'Pulihkan'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.pulihkan');
         Route::post('/cuti', [CutiKaryawanKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.karyawan.cuti.simpan');
         Route::post('/cuti/{cuti}/batal', [CutiKaryawanKontroler::class, 'Batalkan'])->where('cuti', $ulid)->name('kelola.karyawan.cuti.batal');
-        Route::post('/kasbon', [KasbonKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.karyawan.kasbon.simpan');
+        Route::post('/kasbon', [KasbonKontroler::class, 'Simpan'])->middleware(['throttle:60,1', TolakKirimGanda::class])->name('kelola.karyawan.kasbon.simpan');
         Route::post('/kasbon/{kasbon}/pelunasan', [KasbonKontroler::class, 'Lunasi'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.pelunasan');
         Route::post('/kasbon/{kasbon}/batal', [KasbonKontroler::class, 'Batalkan'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.batal');
         // F-18 bagian 3: rekap gaji bulanan (memuat gaji, jadi seluruhnya `karyawan.kelola`).

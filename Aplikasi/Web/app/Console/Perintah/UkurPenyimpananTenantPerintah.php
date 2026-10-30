@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
  */
 final class UkurPenyimpananTenantPerintah extends Command
 {
-    protected $signature = 'penyimpanan:ukur {--semua : Ukur semua tenant, bukan hanya yang sudah punya catatan}';
+    protected $signature = 'penyimpanan:ukur {--semua : Ukur semua tenant, bukan hanya yang sudah punya catatan} {--halaman=5000 : Jumlah tenant per halaman baca (untuk uji)}';
 
     protected $description = 'Mengukur ulang pemakaian penyimpanan berkas per tenant untuk batas paket.';
 
@@ -27,16 +27,23 @@ final class UkurPenyimpananTenantPerintah extends Command
     {
         $sebelumnya = $konteks->Ambil();
         $diukur = 0;
+        $ukuranHalaman = max(1, (int) $this->option('halaman'));
 
         try {
-            $daftar = $this->option('semua')
-                ? array_map('intval', Tenant::query()->where('Status', '<>', StatusTenant::Ditutup->value)->orderBy('Id')->pluck('Id')->all())
-                : $pengelola->IdTenantDenganPekerjaan(PemakaianPenyimpanan::class, fn ($q) => $q);
+            if ($this->option('semua')) {
+                $daftar = array_values(array_map('intval', Tenant::query()->where('Status', '<>', StatusTenant::Ditutup->value)->orderBy('Id')->pluck('Id')->all()));
+                $diukur = $this->UkurSemua($daftar, $konteks, $pengukur);
+            } else {
+                // Baris `PemakaianPenyimpanan` tidak pernah hilang setelah diukur, jadi hasil yang dipotong batas halaman
+                // akan selalu berisi tenant yang sama dan tenant di ujung urutan tidak pernah diukur ulang. Halaman
+                // dibaca berantai (id berikutnya) sampai habis.
+                $terakhir = 0;
 
-            foreach ($daftar as $idTenant) {
-                $konteks->Atur($idTenant);
-                $pengukur->Segarkan($idTenant);
-                $diukur++;
+                do {
+                    $halaman = $pengelola->IdTenantDenganPekerjaan(PemakaianPenyimpanan::class, fn ($q) => $q, $ukuranHalaman, setelahIdTenant: $terakhir);
+                    $diukur += $this->UkurSemua($halaman, $konteks, $pengukur);
+                    $terakhir = $halaman === [] ? $terakhir : max($halaman);
+                } while (count($halaman) >= $ukuranHalaman);
             }
         } finally {
             $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
@@ -45,5 +52,18 @@ final class UkurPenyimpananTenantPerintah extends Command
         $this->line("{$diukur} tenant diukur penyimpanannya.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  list<int>  $daftar
+     */
+    private function UkurSemua(array $daftar, KonteksTenant $konteks, PengukurPenyimpanan $pengukur): int
+    {
+        foreach ($daftar as $idTenant) {
+            $konteks->Atur($idTenant);
+            $pengukur->Segarkan($idTenant);
+        }
+
+        return count($daftar);
     }
 }

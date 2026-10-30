@@ -403,6 +403,59 @@ describe('BR-P08.11 notifikasi webhook', function (): void {
             ->and(LanggananGerbangUji($tenant)->Status)->not->toBe(StatusLangganan::Aktif);
     })->with(['FAILED', 'EXPIRED']);
 
+    it('SUCCESS yang datang terlambat setelah pembayaran ditutup Ditolak melunasi tagihan yang masih terbuka dan tercatat di audit', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);
+        MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan);
+        $pembayaran = PembayaranGerbangUji($tagihan);
+        $nomor = (string) $pembayaran->RefGateway;
+
+        KirimNotifikasiBilling($this, $nomor, 'EXPIRED', $tagihan->Total)->assertOk();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Ditolak);
+
+        KirimNotifikasiBilling($this, $nomor, 'SUCCESS', $tagihan->Total)->assertOk()->assertJson(['Diterima' => true]);
+
+        $penerus = PembayaranLangganan::query()->withoutGlobalScopes()->where('RefGateway', $nomor.'+T')->sole();
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and($penerus->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($penerus->IdTagihanLangganan)->toBe($tagihan->Id)
+            ->and($penerus->JumlahDiterima)->toBe($tagihan->Total)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and(LanggananGerbangUji($tenant)->Status)->toBe(StatusLangganan::Aktif)
+            ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'langganan.pembayaran-gerbang-lunas-terlambat')->count())->toBe(1)
+            ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'langganan.pembayaran-gerbang-lunas')->count())->toBe(1);
+
+        // Gerbang mengulang notifikasi yang sama: tanpa efek, tanpa pembayaran penerus kedua, tanpa perpanjangan kedua.
+        $selesai = LanggananGerbangUji($tenant)->PeriodeSelesai?->toDateTimeString();
+        KirimNotifikasiBilling($this, $nomor, 'SUCCESS', $tagihan->Total)->assertOk()->assertJson(['Diterima' => true]);
+        expect(PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->count())->toBe(2)
+            ->and(LanggananGerbangUji($tenant)->PeriodeSelesai?->toDateTimeString())->toBe($selesai)
+            ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'langganan.pembayaran-gerbang-lunas-tak-terpakai')->count())->toBe(0);
+    });
+
+    it('SUCCESS terlambat untuk tagihan yang sudah lunas atau ditutup tidak mengubah apa pun, tetapi dicatat untuk pengembalian uang', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);
+        MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan);
+        $pembayaran = PembayaranGerbangUji($tagihan);
+        $nomor = (string) $pembayaran->RefGateway;
+        KirimNotifikasiBilling($this, $nomor, 'EXPIRED', $tagihan->Total)->assertOk();
+        // Tagihan dilunasi lewat jalur lain (misal transfer manual) sebelum uang gerbang tiba.
+        $tagihan->refresh()->forceFill(['Status' => StatusTagihanLangganan::Lunas])->save();
+        $periodeSebelum = LanggananGerbangUji($tenant)->PeriodeSelesai?->toDateTimeString();
+
+        KirimNotifikasiBilling($this, $nomor, 'SUCCESS', $tagihan->Total)->assertOk()->assertJson(['Diterima' => true]);
+
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and(LanggananGerbangUji($tenant)->PeriodeSelesai?->toDateTimeString())->toBe($periodeSebelum)
+            ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'langganan.pembayaran-gerbang-lunas-tak-terpakai')->count())->toBe(1)
+            ->and(LogAudit::query()->withoutGlobalScopes()->where('Peristiwa', 'langganan.pembayaran-gerbang-lunas')->count())->toBe(0);
+
+        // Notifikasi diulang gerbang: dicatat lagi sebagai anomali yang sama, tetapi tetap tanpa efek pada tagihan.
+        KirimNotifikasiBilling($this, $nomor, 'SUCCESS', $tagihan->Total)->assertOk();
+        expect($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas);
+    });
+
     it('status yang belum final (PENDING) belum melunasi apa pun', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);

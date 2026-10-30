@@ -19,6 +19,7 @@ use App\Domain\Katalog\Resep\Kueri\HppResep;
 use App\Domain\Katalog\Resep\Model\Resep;
 use App\Domain\Katalog\Resep\Model\ResepDetail;
 use Brick\Math\BigDecimal;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * API baca publik Katalog untuk penerimaan penjualan POS (F-07b, CLAUDE.md #14): produk & satuan per Uuid (termasuk
@@ -82,9 +83,13 @@ final class KomposisiPenjualan
     public function AmbilKebutuhanStok(array $idProduk): array
     {
         $hasil = [];
+        $unik = array_values(array_unique($idProduk));
+        // Produk akar dimuat sekali untuk seluruh keranjang (dulu satu kueri per produk, di setiap penjualan sinkron).
+        $dimuat = $unik === [] ? new Collection : Produk::query()->withTrashed()->whereKey($unik)->get()->keyBy('Id');
 
-        foreach (array_values(array_unique($idProduk)) as $id) {
-            $hasil[$id] = $this->Uraikan($id, BigDecimal::one(), BigDecimal::one(), '', 0);
+        foreach ($unik as $id) {
+            $akar = $dimuat->get($id);
+            $hasil[$id] = $akar === null ? [] : $this->Uraikan($id, BigDecimal::one(), BigDecimal::one(), '', 0, $akar);
         }
 
         return $hasil;
@@ -177,9 +182,9 @@ final class KomposisiPenjualan
     /**
      * @return list<DataKebutuhanStok>
      */
-    private function Uraikan(int $idProduk, BigDecimal $pembilang, BigDecimal $penyebut, string $jalur, int $kedalaman): array
+    private function Uraikan(int $idProduk, BigDecimal $pembilang, BigDecimal $penyebut, string $jalur, int $kedalaman, ?Produk $dimuat = null): array
     {
-        $produk = Produk::query()->withTrashed()->whereKey($idProduk)->first();
+        $produk = $dimuat ?? Produk::query()->withTrashed()->whereKey($idProduk)->first();
 
         if ($produk === null || $kedalaman > self::KEDALAMAN_MAKSIMAL) {
             return [];

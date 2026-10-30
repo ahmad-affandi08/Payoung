@@ -50,10 +50,10 @@ final class LaporanLanggananPlatform
         $sekarang = CarbonImmutable::now();
         $awal = $dari->startOfDay();
         $akhir = $sampai->endOfDay()->lessThan($sekarang) ? $sampai->endOfDay() : $sekarang;
-        $tenant = Tenant::query()->whereNull('Penanda')->get(['Id', 'Pengaturan'])->keyBy('Id');
-        $idTenant = array_values(array_map('intval', $tenant->keys()->all()));
+        // Sektor tenant dibaca hanya untuk tagihan yang dipakai laporan (di bawah), bukan untuk seluruh tenant.
         $paket = Paket::query()->get(['Id', 'Kode', 'Nama'])->keyBy('Id');
-        $lunas = $this->MuatTagihanLunas($idTenant);
+        $lunas = $this->MuatTagihanLunas($awal, $akhir, $awal, $sampai->endOfDay());
+        $sektorTenant = $this->AmbilSektorTenant(array_values(array_unique(array_map(fn (TagihanLangganan $t): int => $t->IdTenant, $lunas))));
 
         // D-49/D-98: MRR/ARR/churn dihitung dari tagihan paket (aktivasi, perpanjangan); tagihan add-on hanya masuk ke
         // pendapatan (grup "Add-on"), tagihan naik paket (selisih prorata) masuk pendapatan paket barunya. MRR paket baru
@@ -69,12 +69,12 @@ final class LaporanLanggananPlatform
             'PendapatanPerPaket' => $this->SusunPendapatan($lunas, $awal, $sampai->endOfDay(), fn (TagihanLangganan $t): array => $t->Jenis === JenisTagihanLangganan::Addon
                 ? ['addon', 'Add-on']
                 : [(string) $t->IdPaket, $paket->get($t->IdPaket)->Nama ?? '—']),
-            'PendapatanPerSektor' => $this->SusunPendapatan($lunas, $awal, $sampai->endOfDay(), function (TagihanLangganan $t) use ($tenant): array {
-                $sektor = $tenant->get($t->IdTenant)->Pengaturan['Sektor'][0] ?? null;
+            'PendapatanPerSektor' => $this->SusunPendapatan($lunas, $awal, $sampai->endOfDay(), function (TagihanLangganan $t) use ($sektorTenant): array {
+                $sektor = $sektorTenant[$t->IdTenant] ?? null;
 
                 return is_string($sektor) && $sektor !== '' ? [$sektor, $sektor] : ['-', 'Belum memilih sektor'];
             }),
-            'Piutang' => $this->SusunPiutang($idTenant, $sekarang),
+            'Piutang' => $this->SusunPiutang($sekarang),
         ];
     }
 
@@ -87,9 +87,9 @@ final class LaporanLanggananPlatform
     public function TrenMrr(int $bulan = 12): array
     {
         $sekarang = CarbonImmutable::now();
-        $idTenant = array_values(array_map('intval', Tenant::query()->whereNull('Penanda')->pluck('Id')->all()));
+        // Hanya tagihan yang periodenya menyentuh 12 bulan terakhir (ditambah masa tenggang) yang menentukan MRR di rentang itu.
         $lunasPaket = array_values(array_filter(
-            $this->MuatTagihanLunas($idTenant),
+            $this->MuatTagihanLunas($sekarang->startOfMonth()->subMonthsNoOverflow($bulan - 1), $sekarang),
             fn (TagihanLangganan $t): bool => ! $t->Jenis->CekTengahPeriode(),
         ));
         $hasil = [];
@@ -105,18 +105,53 @@ final class LaporanLanggananPlatform
     }
 
     /**
-     * @param  list<int>  $idTenant
+     * Tagihan lunas tenant bukan uji yang relevan bagi laporan: periodenya (diperluas masa tenggang) menyentuh rentang
+     * `[$mrrDari, $mrrSampai]` yang dipakai penghitungan MRR, atau dibayar di dalam `[$bayarDari, $bayarSampai]` (pendapatan).
+     * Dulu SEMUA tagihan lunas sepanjang masa dari SEMUA tenant dimuat ke PHP, dan daftar id tenantnya dikirim sebagai
+     * parameter (melampaui batas parameter MySQL pada puluhan ribu tenant). Tenant bukan uji dipilih lewat subkueri.
+     *
      * @return list<TagihanLangganan>
      */
-    private function MuatTagihanLunas(array $idTenant): array
+    private function MuatTagihanLunas(CarbonImmutable $mrrDari, CarbonImmutable $mrrSampai, ?CarbonImmutable $bayarDari = null, ?CarbonImmutable $bayarSampai = null): array
     {
+        $tenggang = (int) config('tagihan.HariMasaTenggang');
+
         return array_values(DaftarTagihanPlatform::KueriTagihan()
-            ->whereIn('IdTenant', $idTenant)
+            ->whereIn('IdTenant', Tenant::query()->whereNull('Penanda')->select('Id'))
             ->where('Status', StatusTagihanLangganan::Lunas->value)
             ->whereNotNull('PeriodeMulai')
             ->whereNotNull('PeriodeSelesai')
+            ->where(function ($kueri) use ($mrrDari, $mrrSampai, $bayarDari, $bayarSampai, $tenggang): void {
+                $kueri->where(fn ($periode) => $periode
+                    ->where('PeriodeMulai', '<=', $mrrSampai)
+                    ->where('PeriodeSelesai', '>', $mrrDari->subDays($tenggang)));
+
+                if ($bayarDari !== null && $bayarSampai !== null) {
+                    $kueri->orWhereBetween('DibayarPada', [$bayarDari, $bayarSampai]);
+                }
+            })
             ->get(['Id', 'IdTenant', 'IdPaket', 'Jenis', 'JumlahBulan', 'Subtotal', 'Diskon', 'PeriodeMulai', 'PeriodeSelesai', 'DibayarPada'])
             ->all());
+    }
+
+    /**
+     * Sektor pertama tenant (`Pengaturan.Sektor[0]`) untuk tenant yang tagihannya masuk laporan.
+     *
+     * @param  list<int>  $idTenant
+     * @return array<int, string|null>
+     */
+    private function AmbilSektorTenant(array $idTenant): array
+    {
+        $hasil = [];
+
+        foreach (array_chunk($idTenant, 1000) as $potongan) {
+            foreach (Tenant::query()->whereKey($potongan)->get(['Id', 'Pengaturan']) as $t) {
+                $sektor = $t->Pengaturan['Sektor'][0] ?? null;
+                $hasil[$t->Id] = is_string($sektor) ? $sektor : null;
+            }
+        }
+
+        return $hasil;
     }
 
     /**
@@ -248,16 +283,15 @@ final class LaporanLanggananPlatform
     }
 
     /**
-     * @param  list<int>  $idTenant
      * @return array{Total: string, Jumlah: int, Umur: list<array{Kunci: string, Label: string, Jumlah: int, Total: string}>}
      */
-    private function SusunPiutang(array $idTenant, CarbonImmutable $sekarang): array
+    private function SusunPiutang(CarbonImmutable $sekarang): array
     {
         $hariIni = $sekarang->setTimezone('Asia/Jakarta')->startOfDay();
         $umur = array_map(fn (string $label): array => ['Jumlah' => 0, 'Total' => Uang::Nol()], self::KELOMPOK_UMUR);
         $total = Uang::Nol();
         $terbuka = DaftarTagihanPlatform::KueriTagihan()
-            ->whereIn('IdTenant', $idTenant)
+            ->whereIn('IdTenant', Tenant::query()->whereNull('Penanda')->select('Id'))
             ->whereIn('Status', StatusTagihanLangganan::NilaiTerbuka())
             ->get(['Id', 'Total', 'JatuhTempoPada']);
 

@@ -66,7 +66,9 @@ final class RingkasanBerandaPengelola
     private function RingkasTenant(): array
     {
         $pelanggan = Tenant::query()->whereNull('Penanda')->where('Status', StatusTenant::Aktif->value);
-        $idPelanggan = (clone $pelanggan)->pluck('Id')->all();
+        // Tenant dipilih lewat subkueri, bukan daftar id yang dikirim sebagai parameter (melampaui batas parameter MySQL
+        // pada puluhan ribu tenant dan memuat semua id ke memori di setiap pembukaan Beranda).
+        $idPelanggan = (clone $pelanggan)->select('Id');
         $perStatus = Langganan::query()->whereIn('IdTenant', $idPelanggan)->selectRaw('Status, COUNT(*) AS Jumlah')->groupBy('Status')->pluck('Jumlah', 'Status');
         $tanggalSkor = SkorKesehatanTenant::query()->max('Tanggal');
         $berisiko = $tanggalSkor === null ? 0 : SkorKesehatanTenant::query()
@@ -76,7 +78,7 @@ final class RingkasanBerandaPengelola
             ->count();
 
         return [
-            'Total' => count($idPelanggan),
+            'Total' => (clone $pelanggan)->count(),
             'Baru7Hari' => (clone $pelanggan)->where('DibuatPada', '>=', now()->subDays(7))->count(),
             'Trial' => (int) ($perStatus[StatusLangganan::Trial->value] ?? 0),
             'Berbayar' => (int) ($perStatus[StatusLangganan::Aktif->value] ?? 0),
@@ -95,11 +97,8 @@ final class RingkasanBerandaPengelola
     {
         $tagihan = fn () => $this->konteks->KueriDataPlatform(TagihanLangganan::class);
         $jatuhTempo = $tagihan()->where('Status', StatusTagihanLangganan::JatuhTempo->value);
-        $nilaiJatuhTempo = Uang::Nol();
-
-        foreach ((clone $jatuhTempo)->get(['Total']) as $baris) {
-            $nilaiJatuhTempo = $nilaiJatuhTempo->Tambah(Uang::Dari($baris->Total));
-        }
+        // Jumlah dihitung di basis data (DECIMAL, tanpa float), bukan dengan memuat semua baris tagihan jatuh tempo.
+        $nilaiJatuhTempo = Uang::Dari((string) ((clone $jatuhTempo)->selectRaw('COALESCE(SUM(Total), 0) AS Jumlah')->value('Jumlah') ?? '0'));
 
         return [
             'JatuhTempo' => (clone $jatuhTempo)->count(),

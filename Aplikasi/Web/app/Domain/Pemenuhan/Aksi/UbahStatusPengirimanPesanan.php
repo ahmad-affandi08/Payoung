@@ -43,13 +43,21 @@ final class UbahStatusPengirimanPesanan
         if ($status === StatusPengirimanPesanan::Diterima && (! is_string($data['NamaPenerima'] ?? null) || trim($data['NamaPenerima']) === '')) {
             throw new PelanggaranAturanBisnis('PenerimaWajib', 'Nama penerima wajib diisi.', 'NamaPenerima');
         }
-        if ($status === StatusPengirimanPesanan::Diterima && ! $this->selesai->CekSudahDibayar($pesanan)) {
-            throw new PelanggaranAturanBisnis('PenjualanBelumLunas', 'Pengiriman baru dapat diterima setelah pesanan ditautkan ke penjualan yang lunas.', 'Status');
-        }
-        if ($status === StatusPengirimanPesanan::Diterima && $pesanan->Status !== StatusPesananOnline::Siap) {
-            throw new PelanggaranAturanBisnis('PesananBelumSiap', 'Pesanan harus berstatus Siap sebelum pengiriman diselesaikan.', 'Status');
-        }
         DB::transaction(function () use ($pengiriman, $pesanan, $status, $data, $idPengguna): void {
+            // Pesanan dikunci lebih dulu, lalu pengiriman (urutan yang sama dengan `UbahStatusPesananOnline`), dan keduanya
+            // dimuat ulang: tanpa itu kurir yang menekan Dikirim dari status basi menimpa pesanan yang baru dibatalkan staf.
+            $pesananTerkunci = PesananOnline::query()->whereKey($pesanan->Id)->lockForUpdate()->firstOrFail();
+            $pesanan->setRawAttributes($pesananTerkunci->getAttributes(), true);
+            $pengirimanTerkunci = PengirimanPesanan::query()->whereKey($pengiriman->Id)->lockForUpdate()->firstOrFail();
+            $pengiriman->setRawAttributes($pengirimanTerkunci->getAttributes(), true);
+
+            if ($status === StatusPengirimanPesanan::Diterima && ! $this->selesai->CekSudahDibayar($pesanan)) {
+                throw new PelanggaranAturanBisnis('PenjualanBelumLunas', 'Pengiriman baru dapat diterima setelah pesanan ditautkan ke penjualan yang lunas.', 'Status');
+            }
+            if ($status === StatusPengirimanPesanan::Diterima && $pesanan->Status !== StatusPesananOnline::Siap) {
+                throw new PelanggaranAturanBisnis('PesananBelumSiap', 'Pesanan harus berstatus Siap sebelum pengiriman diselesaikan.', 'Status');
+            }
+
             $dari = $pengiriman->Status;
             $pengiriman->UbahStatus($status);
             $pengiriman->fill(array_intersect_key($data, array_flip(['IdKurir', 'NamaPenyedia', 'NomorResi', 'NamaPenerima', 'Alasan', 'PathBukti'])));

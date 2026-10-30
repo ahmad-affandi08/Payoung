@@ -109,7 +109,7 @@ describe('BR-02.1 / BR-P04.3: batas pengguna ditegakkan server', function (): vo
             ->post('/kelola/pengguna/undangan', ['Email' => 'kasir1@contoh.id', 'Peran' => $kasir, 'SemuaOutlet' => true])
             ->assertSessionHasNoErrors();
         $tautan = '';
-        Mail::assertQueued(UndanganAnggota::class, function (UndanganAnggota $surel) use (&$tautan): bool {
+        Mail::assertSent(UndanganAnggota::class, function (UndanganAnggota $surel) use (&$tautan): bool {
             $tautan = (string) parse_url($surel->Tautan(), PHP_URL_PATH);
 
             return true;

@@ -19,6 +19,7 @@ use App\Http\Kontroler\Kelola\Akuntansi\TransaksiKasBankKontroler;
 use App\Http\Kontroler\Kelola\Akuntansi\TutupBukuKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
+use App\Http\Perantara\TolakKirimGanda;
 use App\Http\Perantara\WajibIzinTenant;
 use Illuminate\Support\Facades\Route;
 
@@ -115,7 +116,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::AkuntansiKelola)
 
     // F-13a: transaksi kas & bank (halaman catat, simpan & pembalik).
     Route::get('/akuntansi/kas-bank/buat', [TransaksiKasBankKontroler::class, 'Buat'])->name('kelola.akuntansi.kas-bank.buat');
-    Route::post('/akuntansi/kas-bank', [TransaksiKasBankKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.kas-bank.simpan');
+    Route::post('/akuntansi/kas-bank', [TransaksiKasBankKontroler::class, 'Simpan'])->middleware(['throttle:60,1', TolakKirimGanda::class])->name('kelola.akuntansi.kas-bank.simpan');
     Route::put('/akuntansi/kas-bank/berulang/{jadwalKasBank}', [JadwalKasBankKontroler::class, 'Ubah'])->where('jadwalKasBank', $ulid)->name('kelola.akuntansi.kas-bank.berulang.ubah');
     // F-15: kunci & buka kunci periode (YYYY-MM).
     Route::post('/akuntansi/tutup-buku/{periode}/kunci', [TutupBukuKontroler::class, 'Kunci'])->where('periode', '\d{4}-\d{2}')->name('kelola.akuntansi.tutup-buku.kunci');
@@ -135,7 +136,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::AkuntansiKelola)
     Route::post('/akuntansi/qris-tanpa-penjualan/{tagihan}/buka-kembali', [TagihanQrisTanpaPenjualanKontroler::class, 'BukaKembali'])->where('tagihan', $ulid)->middleware('throttle:60,1')->name('kelola.akuntansi.qris-tanpa-penjualan.buka-kembali');
     // FIN-10 (v3.38): catat, susutkan, lepas, batalkan aset tetap. `buat` sebelum `{asetTetap}` (pola pencairan).
     Route::get('/akuntansi/aset-tetap/buat', [AsetTetapKontroler::class, 'Buat'])->name('kelola.akuntansi.aset-tetap.buat');
-    Route::post('/akuntansi/aset-tetap', [AsetTetapKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.akuntansi.aset-tetap.simpan');
+    Route::post('/akuntansi/aset-tetap', [AsetTetapKontroler::class, 'Simpan'])->middleware(['throttle:60,1', TolakKirimGanda::class])->name('kelola.akuntansi.aset-tetap.simpan');
     Route::post('/akuntansi/aset-tetap/susutkan', [AsetTetapKontroler::class, 'Susutkan'])->middleware('throttle:20,1')->name('kelola.akuntansi.aset-tetap.susutkan');
     Route::post('/akuntansi/aset-tetap/{asetTetap}/lepas', [AsetTetapKontroler::class, 'Lepas'])->where('asetTetap', $ulid)->name('kelola.akuntansi.aset-tetap.lepas');
     Route::post('/akuntansi/aset-tetap/{asetTetap}/batalkan', [AsetTetapKontroler::class, 'Batalkan'])->where('asetTetap', $ulid)->name('kelola.akuntansi.aset-tetap.batalkan');

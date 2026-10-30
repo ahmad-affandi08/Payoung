@@ -40,7 +40,10 @@ final class SumberFiturTenant
     /** Cadangan tetap kecil: perintah terjadwal yang menyapu puluhan ribu tenant tidak boleh menimbun memori. */
     private const MAKS_INGATAN = 64;
 
-    /** @var array<string, SumberFitur> */
+    /** Selisih waktu (detik) terbesar antara perakitan dan pemakaian ingatan; override/add-on punya batas waktu, jadi ingatan tidak boleh dipakai lintas waktu. */
+    private const MAKS_USIA_DETIK = 5;
+
+    /** @var array<string, array{0: SumberFitur, 1: int}> hasil dan detik perakitannya (waktu Carbon, ikut bergeser di test) */
     private array $ingatan = [];
 
     public function __construct(
@@ -61,16 +64,21 @@ final class SumberFiturTenant
         }
 
         $kunciIngatan = $idTenant.':'.($idOutlet ?? '-');
+        $sekarang = Carbon::now()->getTimestamp();
+        $ada = $this->ingatan[$kunciIngatan] ?? null;
 
-        if (! isset($this->ingatan[$kunciIngatan])) {
-            if (count($this->ingatan) >= self::MAKS_INGATAN) {
-                array_shift($this->ingatan);
-            }
-
-            $this->ingatan[$kunciIngatan] = $this->Rakit($idTenant, null, false, $idOutlet);
+        if ($ada !== null && abs($sekarang - $ada[1]) <= self::MAKS_USIA_DETIK) {
+            return $ada[0];
         }
 
-        return $this->ingatan[$kunciIngatan];
+        if ($ada === null && count($this->ingatan) >= self::MAKS_INGATAN) {
+            array_shift($this->ingatan);
+        }
+
+        $sumber = $this->Rakit($idTenant, null, false, $idOutlet);
+        $this->ingatan[$kunciIngatan] = [$sumber, $sekarang];
+
+        return $sumber;
     }
 
     /** Buang ingatan (dipanggil saat langganan, add-on, override, flag, atau modul outlet berubah). */
