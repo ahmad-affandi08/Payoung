@@ -19,6 +19,7 @@ use App\Domain\Katalog\Model\ProdukSatuan;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Harga satuan yang berlaku di server (lapis 3–5 price engine F-03) untuk F-07, self-order, dan toko online: memuat
@@ -41,41 +42,74 @@ final class HargaProdukBerlaku
         ?string $tier,
         CarbonImmutable $waktu,
     ): ?HasilHarga {
-        $baris = ProdukHarga::query()->where('IdProdukSatuan', $satuan->Id)->where('IdProduk', $produk->Id)->get();
-        $daftar = DaftarHarga::query()->whereIn('Id', $baris->pluck('IdDaftarHarga')->filter()->unique()->values()->all())->get();
-        $idOutletDaftar = [];
+        return $this->TentukanBanyak([[$produk, $satuan]], $jumlah, $idOutlet, $kanal, $tier, $waktu)[$satuan->Id] ?? null;
+    }
+
+    /**
+     * Harga banyak satuan sekaligus (menu publik: ratusan produk per muat). Baris harga, daftar harga, dan peta outlet
+     * dimuat sekali untuk semua pasangan lalu tiap pasangan diselesaikan `PenentuHarga` dengan katalog miliknya sendiri,
+     * jadi hasilnya sama persis dengan `Tentukan()` satu per satu (dulu 3 kueri per pasangan).
+     *
+     * @param  list<array{0: Produk, 1: ProdukSatuan}>  $pasangan
+     * @return array<int, HasilHarga|null> kunci = `ProdukSatuan.Id`
+     */
+    public function TentukanBanyak(
+        array $pasangan,
+        Kuantitas $jumlah,
+        ?int $idOutlet,
+        ?KanalPenjualan $kanal,
+        ?string $tier,
+        CarbonImmutable $waktu,
+    ): array {
+        if ($pasangan === []) {
+            return [];
+        }
+
+        $barisPerSatuan = ProdukHarga::query()
+            ->whereIn('IdProdukSatuan', array_map(fn (array $p): int => $p[1]->Id, $pasangan))
+            ->get()
+            ->groupBy('IdProdukSatuan');
+        $daftar = DaftarHarga::query()
+            ->whereIn('Id', $barisPerSatuan->flatten(1)->pluck('IdDaftarHarga')->filter()->unique()->values()->all())
+            ->get()
+            ->keyBy('Id');
+        $idOutletDaftar = $idOutlet === null ? [] : [$idOutlet];
 
         foreach ($daftar as $item) {
             $idOutletDaftar = [...$idOutletDaftar, ...($item->IdOutlet ?? [])];
         }
 
-        if ($idOutlet !== null) {
-            $idOutletDaftar[] = $idOutlet;
-        }
-
         $uuidOutlet = $this->petaOutlet->Ambil(array_values(array_unique($idOutletDaftar)));
-        $uuidDaftar = $daftar->pluck('Uuid', 'Id');
+        $uuidOutletPermintaan = $idOutlet === null ? null : ($uuidOutlet[$idOutlet] ?? null);
+        $hasil = [];
 
-        $katalog = new DataKatalogHarga(
-            array_values($daftar->map(fn (DaftarHarga $item): DataDaftarHargaResolusi => self::KeResolusi($item, $uuidOutlet))->all()),
-            array_values($baris->map(fn (ProdukHarga $item): DataBarisProdukHarga => new DataBarisProdukHarga(
+        foreach ($pasangan as [$produk, $satuan]) {
+            $baris = $barisPerSatuan->get($satuan->Id, new Collection)->filter(fn (ProdukHarga $item): bool => $item->IdProduk === $produk->Id);
+            $daftarSatuan = $daftar->only($baris->pluck('IdDaftarHarga')->filter()->unique()->values()->all());
+
+            $katalog = new DataKatalogHarga(
+                array_values($daftarSatuan->map(fn (DaftarHarga $item): DataDaftarHargaResolusi => self::KeResolusi($item, $uuidOutlet))->all()),
+                array_values($baris->map(fn (ProdukHarga $item): DataBarisProdukHarga => new DataBarisProdukHarga(
+                    $produk->Uuid,
+                    $satuan->Uuid,
+                    $item->IdDaftarHarga === null ? null : (string) $daftar->get($item->IdDaftarHarga)?->Uuid,
+                    Kuantitas::Dari($item->JumlahMinimum),
+                    Uang::Dari($item->Harga),
+                ))->all()),
+            );
+
+            $hasil[$satuan->Id] = $this->penentu->Tentukan($katalog, new DataPermintaanHarga(
                 $produk->Uuid,
                 $satuan->Uuid,
-                $item->IdDaftarHarga === null ? null : (string) $uuidDaftar->get($item->IdDaftarHarga),
-                Kuantitas::Dari($item->JumlahMinimum),
-                Uang::Dari($item->Harga),
-            ))->all()),
-        );
+                $jumlah,
+                $uuidOutletPermintaan,
+                $kanal,
+                $tier,
+                $waktu->utc(),
+            ));
+        }
 
-        return $this->penentu->Tentukan($katalog, new DataPermintaanHarga(
-            $produk->Uuid,
-            $satuan->Uuid,
-            $jumlah,
-            $idOutlet === null ? null : ($uuidOutlet[$idOutlet] ?? null),
-            $kanal,
-            $tier,
-            $waktu->utc(),
-        ));
+        return $hasil;
     }
 
     /**

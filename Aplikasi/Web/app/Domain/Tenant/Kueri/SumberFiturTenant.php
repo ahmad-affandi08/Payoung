@@ -28,9 +28,21 @@ use Illuminate\Support\Carbon;
  * outlet/perangkat/pengguna diambil dari berkas lisensi yang berlaku; batas lain tak terbatas. Override pengelola
  * diabaikan (konsolnya tidak ada, dan baris yang disisipkan langsung ke basis data tidak boleh menambah batas). Tanpa lisensi sah,
  * tidak ada fitur dan semua batas nol (permintaan HTTP pun sudah ditolak `WajibLisensiSah`).
+ *
+ * Hasil `Ambil()` biasa (tanpa kunci, tanpa waktu khusus) diingat selama satu permintaan/job: satu halaman back-office
+ * atau polling POS memeriksa fitur belasan kali (middleware, props Inertia, kuota), dan tiap perakitan memakan 6-10
+ * kueri. Class ini terdaftar `scoped`, jadi ingatannya tidak melewati permintaan. Ingatan dikosongkan setiap kali data
+ * yang membentuknya berubah lewat model (lihat `PenyediaAplikasi`) atau transaksi dibatalkan. Pembacaan ber-`$kunci`
+ * (penegakan batas paket di dalam transaksi) tidak pernah memakai ingatan.
  */
 final class SumberFiturTenant
 {
+    /** Cadangan tetap kecil: perintah terjadwal yang menyapu puluhan ribu tenant tidak boleh menimbun memori. */
+    private const MAKS_INGATAN = 64;
+
+    /** @var array<string, SumberFitur> */
+    private array $ingatan = [];
+
     public function __construct(
         private readonly FiturOutlet $fiturOutlet,
         private readonly FlagFiturTenant $flagFitur,
@@ -43,6 +55,32 @@ final class SumberFiturTenant
      * @param  int|null  $idOutlet  outlet yang modulnya ikut dievaluasi (F-01); null = tanpa batasan modul outlet
      */
     public function Ambil(int $idTenant, ?Carbon $pada = null, bool $kunci = false, ?int $idOutlet = null): SumberFitur
+    {
+        if ($kunci || $pada !== null) {
+            return $this->Rakit($idTenant, $pada, $kunci, $idOutlet);
+        }
+
+        $kunciIngatan = $idTenant.':'.($idOutlet ?? '-');
+
+        if (! isset($this->ingatan[$kunciIngatan])) {
+            if (count($this->ingatan) >= self::MAKS_INGATAN) {
+                array_shift($this->ingatan);
+            }
+
+            $this->ingatan[$kunciIngatan] = $this->Rakit($idTenant, null, false, $idOutlet);
+        }
+
+        return $this->ingatan[$kunciIngatan];
+    }
+
+    /** Buang ingatan (dipanggil saat langganan, add-on, override, flag, atau modul outlet berubah). */
+    public function Lupakan(): void
+    {
+        $this->ingatan = [];
+        $this->flagFitur->Lupakan();
+    }
+
+    private function Rakit(int $idTenant, ?Carbon $pada, bool $kunci, ?int $idOutlet): SumberFitur
     {
         $langganan = Langganan::query()
             ->with('Paket.Fitur')

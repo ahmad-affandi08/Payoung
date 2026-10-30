@@ -31,27 +31,38 @@ final class UbahStatusPesananOnline
         private readonly PencadangStok $pencadang,
     ) {}
 
+    /**
+     * Semua pemeriksaan dilakukan di dalam transaksi setelah baris pesanan dikunci dan dimuat ulang. Tanpa itu, pemeriksaan
+     * "sudah dibayar", urutan status, dan pengiriman memakai status basi: kasir yang menagih pesanan pada saat yang sama
+     * dengan staf yang membatalkannya, atau penyapu kedaluwarsa dengan tombol Konfirmasi, saling menimpa (pesanan
+     * `Dibatalkan` padahal penjualannya `Lunas`, atau hidup lagi setelah `Kedaluwarsa` tanpa cadangan stok dan voucher).
+     * Penagihan di kasir (`PenutupUangMukaPesananOnline`) mengunci baris pesanan yang sama, jadi keduanya berurutan.
+     */
     public function Jalankan(PesananOnline $pesanan, StatusPesananOnline $status, int $idPengguna, ?string $alasan = null): void
     {
-        if ($status === StatusPesananOnline::Selesai && ! $this->selesai->CekSudahDibayar($pesanan)) {
-            throw new PelanggaranAturanBisnis('PenjualanBelumLunas', 'Pesanan baru dapat diselesaikan setelah ditautkan ke penjualan yang lunas.', 'Status');
-        }
-        // Pesanan yang sudah ditagih di kasir (penjualan lunas) membawa stok keluar, pendapatan, dan uang muka terpakai:
-        // membatalkannya hanya mengubah status sambil membiarkan semua itu. Pembalikannya lewat void/retur penjualan.
-        if ($status === StatusPesananOnline::Dibatalkan && $this->selesai->CekSudahDibayar($pesanan)) {
-            throw new PelanggaranAturanBisnis('PenjualanSudahLunas', 'Pesanan sudah ditagih di kasir. Batalkan lewat void atau retur penjualannya.', 'Status', 409);
-        }
-        $pengiriman = $pesanan->JenisPemenuhan === JenisPemenuhanOnline::Kirim
-            ? PengirimanPesanan::query()->where('IdPesananOnline', $pesanan->Id)->first()
-            : null;
-        if ($status === StatusPesananOnline::Selesai && $pesanan->JenisPemenuhan === JenisPemenuhanOnline::Kirim
-            && $pengiriman?->Status !== StatusPengirimanPesanan::Diterima) {
-            throw new PelanggaranAturanBisnis('PengirimanBelumDiterima', 'Pesanan kirim selesai otomatis setelah pengiriman diterima.', 'Status');
-        }
-        if ($status === StatusPesananOnline::Dibatalkan && in_array($pengiriman?->Status, [StatusPengirimanPesanan::Dikirim, StatusPengirimanPesanan::Diterima], true)) {
-            throw new PelanggaranAturanBisnis('PengirimanSudahBerjalan', 'Pesanan tidak dapat dibatalkan setelah kurir berangkat.', 'Status', 409);
-        }
-        DB::transaction(function () use ($pesanan, $pengiriman, $status, $idPengguna, $alasan): void {
+        DB::transaction(function () use ($pesanan, $status, $idPengguna, $alasan): void {
+            $terkunci = PesananOnline::query()->whereKey($pesanan->Id)->lockForUpdate()->firstOrFail();
+            $pesanan->setRawAttributes($terkunci->getAttributes(), true);
+
+            if ($status === StatusPesananOnline::Selesai && ! $this->selesai->CekSudahDibayar($pesanan)) {
+                throw new PelanggaranAturanBisnis('PenjualanBelumLunas', 'Pesanan baru dapat diselesaikan setelah ditautkan ke penjualan yang lunas.', 'Status');
+            }
+            // Pesanan yang sudah ditagih di kasir (penjualan lunas) membawa stok keluar, pendapatan, dan uang muka terpakai:
+            // membatalkannya hanya mengubah status sambil membiarkan semua itu. Pembalikannya lewat void/retur penjualan.
+            if ($status === StatusPesananOnline::Dibatalkan && $this->selesai->CekSudahDibayar($pesanan)) {
+                throw new PelanggaranAturanBisnis('PenjualanSudahLunas', 'Pesanan sudah ditagih di kasir. Batalkan lewat void atau retur penjualannya.', 'Status', 409);
+            }
+            $pengiriman = $pesanan->JenisPemenuhan === JenisPemenuhanOnline::Kirim
+                ? PengirimanPesanan::query()->where('IdPesananOnline', $pesanan->Id)->lockForUpdate()->first()
+                : null;
+            if ($status === StatusPesananOnline::Selesai && $pesanan->JenisPemenuhan === JenisPemenuhanOnline::Kirim
+                && $pengiriman?->Status !== StatusPengirimanPesanan::Diterima) {
+                throw new PelanggaranAturanBisnis('PengirimanBelumDiterima', 'Pesanan kirim selesai otomatis setelah pengiriman diterima.', 'Status');
+            }
+            if ($status === StatusPesananOnline::Dibatalkan && in_array($pengiriman?->Status, [StatusPengirimanPesanan::Dikirim, StatusPengirimanPesanan::Diterima], true)) {
+                throw new PelanggaranAturanBisnis('PengirimanSudahBerjalan', 'Pesanan tidak dapat dibatalkan setelah kurir berangkat.', 'Status', 409);
+            }
+
             $dari = $pesanan->Status;
             $pesanan->UbahStatus($status);
             $pesanan->DiubahOleh = $idPengguna;

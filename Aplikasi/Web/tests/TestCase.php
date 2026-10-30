@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Domain\Tenant\Kueri\SumberFiturTenant;
 use Illuminate\Foundation\Testing\TestCase as TestCaseDasar;
+use Illuminate\Routing\Events\Routing;
 
 abstract class TestCase extends TestCaseDasar
 {
@@ -25,5 +27,11 @@ abstract class TestCase extends TestCaseDasar
         parent::setUp();
         // Test HTTP tidak bergantung pada aset Vite yang sudah di-build (CI tidak menjalankan `npm run build` di job PHP).
         $this->withoutVite();
+
+        // Ingatan fitur tenant (`SumberFiturTenant`) hidup selama satu permintaan di produksi. Satu test memakai satu
+        // aplikasi untuk banyak permintaan HTTP, jadi ingatan dikosongkan di awal setiap permintaan agar perilakunya sama.
+        $this->app->make('events')->listen(Routing::class, function (): void {
+            $this->app->make(SumberFiturTenant::class)->Lupakan();
+        });
     }
 }

@@ -40,6 +40,8 @@ final class PenawaranFiturTenant
         $addon = null;
         $addonTenant = $this->addonTenant->Ambil($idTenant);
         $prorata = array_column($addonTenant['Tersedia'], 'HargaProrata', 'Kode');
+        // Banyak fitur terkunci jatuh ke paket yang sama: harga tiap paket dicari sekali.
+        $hargaPaket = [];
 
         foreach (Fitur::query()->orderBy('Kunci')->get(['Kunci', 'Nama']) as $fitur) {
             if ($this->evaluator->CekFiturAktif($sumber, $fitur->Kunci)) {
@@ -56,7 +58,7 @@ final class PenawaranFiturTenant
                 'Paket' => $calon === null ? null : [
                     'Kode' => $calon->Kode,
                     'Nama' => $calon->Nama,
-                    'HargaBulanan' => $calon->HargaNegosiasi ? null : $this->harga->Cari($calon->Id, CarbonImmutable::now())?->HargaBulanan,
+                    'HargaBulanan' => $calon->HargaNegosiasi ? null : ($hargaPaket[$calon->Id] ??= [$this->harga->Cari($calon->Id, CarbonImmutable::now())?->HargaBulanan])[0],
                 ],
                 'Addon' => $tambahan === null ? null : [
                     'Kode' => $tambahan->Kode,

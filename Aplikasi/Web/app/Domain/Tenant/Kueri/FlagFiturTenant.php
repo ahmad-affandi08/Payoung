@@ -23,6 +23,12 @@ final class FlagFiturTenant
     /** @var list<FlagFitur>|null */
     private ?array $aturan = null;
 
+    /** Buang aturan yang diingat instance ini (dipanggil `SumberFiturTenant::Lupakan` saat flag berubah). */
+    public function Lupakan(): void
+    {
+        $this->aturan = null;
+    }
+
     /**
      * @return array<string, bool>
      */

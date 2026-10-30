@@ -22,6 +22,8 @@ use App\Domain\Penjualan\Model\PesananOnline;
 use App\Domain\Penjualan\Model\TagihanQris;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -39,13 +41,23 @@ use Throwable;
  * bersama tagihan akhirnya, sedangkan pembulatan ke atas akan meninggalkan sisa uang muka yang harus diurus manual
  * di setiap pesanan bersen.
  *
+ * "Satu tagihan hidup" ditegakkan dengan kunci per pesanan: pencarian tagihan hidup sampai tagihan dibuat berlangsung
+ * di dalam kunci, karena panggilan ke gerbang memakan waktu (detik) dan selama itu baris cadangan belum punya QR
+ * sehingga tidak terlihat oleh permintaan kedua. Tanpa kunci, klik ganda atau dua tab membuat dua QRIS untuk satu
+ * pesanan dan pembeli bisa membayar keduanya. Permintaan kedua menunggu, lalu mendapat QR yang sama.
+ *
  * Galat: 409 `PesananTidakMenungguPembayaran`, 409 `GerbangBelumAktif`, 409 `MetodeQrisBelumAda`,
- * 422 `JumlahTidakValid`, 502 `GerbangGagal`/`GerbangTidakPasti`.
+ * 422 `JumlahTidakValid`, 429 `SedangDiproses`, 502 `GerbangGagal`/`GerbangTidakPasti`.
  */
 final class BuatTagihanQrisPesananOnline
 {
     /** Cukup lama untuk membuka aplikasi bank, cukup singkat untuk tidak menahan stok pesanan lain. */
     public const MENIT_BERLAKU = 15;
+
+    /** Umur kunci per pesanan (melebihi batas waktu panggilan gerbang) dan lama permintaan kedua menunggu. */
+    private const DETIK_KUNCI = 60;
+
+    private const DETIK_TUNGGU_KUNCI = 20;
 
     public function __construct(
         private readonly KonteksTenant $konteks,
@@ -59,6 +71,21 @@ final class BuatTagihanQrisPesananOnline
      */
     public function Jalankan(PesananOnline $pesanan): array
     {
+        try {
+            return Cache::lock("tagihan-qris-online:{$pesanan->IdTenant}:{$pesanan->Id}", self::DETIK_KUNCI)
+                ->block(self::DETIK_TUNGGU_KUNCI, fn (): array => $this->Proses($pesanan));
+        } catch (LockTimeoutException) {
+            throw new PelanggaranAturanBisnis('SedangDiproses', 'QRIS pesanan ini sedang dibuat. Tunggu sebentar lalu muat ulang halaman.', 'Umum', 429);
+        }
+    }
+
+    /**
+     * @return array{0: TagihanQris, 1: bool}
+     */
+    private function Proses(PesananOnline $pesanan): array
+    {
+        // Dimuat ulang di dalam kunci: pesanan bisa baru saja dibatalkan atau dibayar oleh permintaan lain.
+        $pesanan->refresh();
         $hidup = $this->CariHidup($pesanan);
 
         if ($hidup !== null) {

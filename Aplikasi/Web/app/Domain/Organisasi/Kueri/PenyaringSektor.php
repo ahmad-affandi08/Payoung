@@ -21,9 +21,13 @@ final class PenyaringSektor
     /** @param  list<string>|null  $awalan  null = fitur umum */
     public function CekSesuai(?array $awalan): bool
     {
+        if ($awalan === null) {
+            return true;
+        }
+
         $kode = $this->sektor->AmbilKode();
 
-        if ($awalan === null || $kode === []) {
+        if ($kode === []) {
             return true;
         }
 

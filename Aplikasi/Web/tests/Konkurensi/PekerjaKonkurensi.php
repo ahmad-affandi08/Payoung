@@ -19,6 +19,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Pemenuhan\Aksi\BuatReservasi;
 use App\Domain\Pemenuhan\Data\DataReservasi;
 use App\Domain\Pemenuhan\Enum\SumberReservasi;
+use App\Domain\Penjualan\Aksi\KonfirmasiPesananGrosir;
 use App\Domain\Persediaan\Aksi\CatatBahanTerbuang;
 use App\Domain\Persediaan\Data\DataBahanTerbuang;
 use App\Domain\Persediaan\Enum\AlasanBahanTerbuang;
@@ -71,6 +72,7 @@ try {
             sumber: SumberReservasi::BackOffice,
             idPengguna: (int) $data['IdPengguna'],
         ))->Uuid,
+        'konfirmasi-so' => app(KonfirmasiPesananGrosir::class)->Jalankan((string) $data['UuidPesanan'], (int) $data['IdPengguna'], false)->Uuid,
         default => throw new InvalidArgumentException("Skenario {$skenario} tidak dikenal."),
     };
 

@@ -44,6 +44,16 @@ use App\Domain\Penjualan\Penangan\BeritahuTransaksiBesar;
 use App\Domain\Penjualan\Peristiwa\PenjualanDiterima;
 use App\Domain\Penjualan\Peristiwa\PenjualanDivoid;
 use App\Domain\Penjualan\Peristiwa\ReturPenjualanDiterima;
+use App\Domain\Tenant\Kueri\SumberFiturTenant;
+use App\Domain\Tenant\Model\Addon;
+use App\Domain\Tenant\Model\Fitur;
+use App\Domain\Tenant\Model\FlagFitur;
+use App\Domain\Tenant\Model\Langganan;
+use App\Domain\Tenant\Model\LanggananAddon;
+use App\Domain\Tenant\Model\OutletFitur;
+use App\Domain\Tenant\Model\OverrideTenant;
+use App\Domain\Tenant\Model\Paket;
+use App\Domain\Tenant\Model\PaketFitur;
 use App\Domain\Tenant\Peristiwa\TagihanLanggananDilunasiGerbang;
 use App\Http\Perantara\AutentikasiPemilik;
 use App\Http\Perantara\AutentikasiPerangkat;
@@ -56,6 +66,7 @@ use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -106,6 +117,8 @@ final class PenyediaAplikasi extends ServiceProvider
         $this->app->bind(GerbangPengelola::class, GerbangPengelolaDukungan::class);
         // PGL-16: sesi akses dukungan yang sah hanya hidup selama satu permintaan/job.
         $this->app->scoped(KonteksAksesDukungan::class);
+        // Fitur & batas paket tenant diingat per permintaan/job (belasan pemeriksaan per halaman); dikosongkan saat datanya berubah.
+        $this->app->scoped(SumberFiturTenant::class);
         // D-179: tagihan langganan memakai port penyedia; adaptor dipilih dari `integrasi.PenyediaTagihan`.
         // D-179: pendaftaran merchant (KYB) lewat port yang sama polanya.
         $this->app->bind(PendaftarMerchantPembayaran::class, static fn (Application $aplikasi): PendaftarMerchantPembayaran => $aplikasi->make(PembuatPendaftarMerchant::class)->Buat());
@@ -158,6 +171,24 @@ final class PenyediaAplikasi extends ServiceProvider
                 ->whereHas('TemplateSektor', fn ($kueri) => $kueri->where('Kode', $kode))
                 ->where('Versi', ctype_digit($nilai) ? (int) $nilai : 0)
                 ->firstOrFail();
+        });
+
+        // Ingatan fitur per permintaan dikosongkan bila data pembentuknya berubah lewat model, atau transaksi dibatalkan
+        // (nilai yang diingat bisa berasal dari tulisan yang akhirnya dibatalkan).
+        foreach ([Langganan::class, LanggananAddon::class, OverrideTenant::class, FlagFitur::class, OutletFitur::class, Paket::class, PaketFitur::class, Fitur::class, Addon::class] as $kelasFitur) {
+            foreach (['saved', 'deleted', 'restored'] as $peristiwaModel) {
+                Event::listen("eloquent.{$peristiwaModel}: {$kelasFitur}", function (): void {
+                    if ($this->app->resolved(SumberFiturTenant::class)) {
+                        $this->app->make(SumberFiturTenant::class)->Lupakan();
+                    }
+                });
+            }
+        }
+
+        Event::listen(TransactionRolledBack::class, function (): void {
+            if ($this->app->resolved(SumberFiturTenant::class)) {
+                $this->app->make(SumberFiturTenant::class)->Lupakan();
+            }
         });
 
         // Pabrik model berada di Database\Pabrik dengan akhiran "Pabrik" (PRD §13.7).

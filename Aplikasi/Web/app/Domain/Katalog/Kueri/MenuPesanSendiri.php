@@ -9,6 +9,7 @@ use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Enum\KanalKetersediaan;
+use App\Domain\Katalog\Harga\Data\HasilHarga;
 use App\Domain\Katalog\Harga\Kueri\HargaProdukBerlaku;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Katalog\Model\Kategori;
@@ -55,6 +56,7 @@ final class MenuPesanSendiri
         $kelompok = $this->AmbilKelompok(array_values($produk->map(fn (Produk $p): int => $p->Id)->all()));
         $waktu = CarbonImmutable::now();
         $hasil = [];
+        $hargaSatuan = $this->HitungHargaSatuan($produk, $anak, $satuan, $kelompok, $idOutlet, $kanal, $waktu);
 
         foreach ($produk as $p) {
             $grup = $kelompok[$p->Id] ?? [];
@@ -72,9 +74,7 @@ final class MenuPesanSendiri
                 /** @var Produk $a */
                 foreach ($anakPerInduk->get($p->Id, new Collection) as $a) {
                     $sa = $satuan[$a->Id] ?? null;
-                    $hargaAnak = $sa instanceof ProdukSatuan
-                        ? $this->harga->Tentukan($a, $sa, Kuantitas::Dari(1), $idOutlet, $kanal, null, $waktu)?->harga
-                        : null;
+                    $hargaAnak = $sa instanceof ProdukSatuan ? ($hargaSatuan[$sa->Id] ?? null)?->harga : null;
                     $varian[] = [
                         'Uuid' => $a->Uuid,
                         'Nama' => self::AmbilNamaVarian($p, $a),
@@ -88,9 +88,7 @@ final class MenuPesanSendiri
                     }
                 }
             } else {
-                $hargaKartu = $s instanceof ProdukSatuan
-                    ? $this->harga->Tentukan($p, $s, Kuantitas::Dari(1), $idOutlet, $kanal, null, $waktu)?->harga
-                    : null;
+                $hargaKartu = $s instanceof ProdukSatuan ? ($hargaSatuan[$s->Id] ?? null)?->harga : null;
             }
 
             if ($hargaKartu === null) {
@@ -336,6 +334,39 @@ final class MenuPesanSendiri
         }
 
         return $nama === [] ? 'Varian' : implode(' / ', $nama);
+    }
+
+    /**
+     * Harga satuan jual semua produk yang akan tampil (jumlah 1), dihitung sekali untuk seluruh menu. Menu publik
+     * dipolling tiap 15-30 detik per tamu, jadi harga tidak boleh dihitung dengan kueri tersendiri per produk.
+     *
+     * @param  Collection<array-key, Produk>  $produk
+     * @param  Collection<array-key, Produk>  $anak  anak varian semua induk
+     * @param  array<int, ProdukSatuan>  $satuan  kunci = `Produk.Id`
+     * @param  array<int, list<array{Kelompok: KelompokPilihan, Pilihan: list<Pilihan>}>>  $kelompok
+     * @return array<int, HasilHarga|null> kunci = `ProdukSatuan.Id`
+     */
+    private function HitungHargaSatuan(Collection $produk, Collection $anak, array $satuan, array $kelompok, int $idOutlet, KanalPenjualan $kanal, CarbonImmutable $waktu): array
+    {
+        $pasangan = [];
+
+        foreach ($produk as $p) {
+            if (! self::CekKelompokBisaDipenuhi($kelompok[$p->Id] ?? [])) {
+                continue;
+            }
+
+            if ($p->Jenis === JenisProduk::IndukVarian) {
+                foreach ($anak->where('IdInduk', $p->Id) as $a) {
+                    if (isset($satuan[$a->Id])) {
+                        $pasangan[] = [$a, $satuan[$a->Id]];
+                    }
+                }
+            } elseif (isset($satuan[$p->Id])) {
+                $pasangan[] = [$p, $satuan[$p->Id]];
+            }
+        }
+
+        return $this->harga->TentukanBanyak($pasangan, Kuantitas::Dari(1), $idOutlet, $kanal, null, $waktu);
     }
 
     /**

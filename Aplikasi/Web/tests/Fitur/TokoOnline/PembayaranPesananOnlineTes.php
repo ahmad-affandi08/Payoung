@@ -11,6 +11,7 @@ use App\Domain\Akuntansi\Model\JurnalDetail;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Peristiwa\PeristiwaIntegrasi;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
+use App\Domain\Penjualan\Aksi\UbahStatusPesananOnline;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
@@ -510,4 +511,21 @@ it('X7: uang muka pesanan online yang masuk memicu pembayaran.diterima sekali, w
         && $p->data['Jumlah'] === '60000.00'
         && $p->data['Metode'] === 'QRIS Otomatis'
         && $p->data['Alokasi'] === []);
+});
+
+it('UbahStatusPesananOnline memuat ulang pesanan dengan kunci: model basi tidak menimpa pesanan yang sudah dibatalkan pihak lain', function (): void {
+    $status = 'PENDING';
+    PalsukanGerbangOnline($status);
+    $k = SiapkanBayarOnline($this);
+    [$pesanan] = PesanBayarQris($this, $k);
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $basi = PesananOnline::query()->whereKey($pesanan->Id)->sole();
+    expect($basi->Status)->toBe(StatusPesananOnline::MenungguPembayaran);
+
+    // Pihak lain (staf lain atau penyapu kedaluwarsa) sudah membatalkan pesanan ini.
+    PesananOnline::query()->whereKey($pesanan->Id)->sole()->forceFill(['Status' => StatusPesananOnline::Dibatalkan])->save();
+
+    expect(fn () => app(UbahStatusPesananOnline::class)->Jalankan($basi, StatusPesananOnline::Dikonfirmasi, $k['Pemilik']->Id))
+        ->toThrow(LogicException::class)
+        ->and(PesananOnline::query()->whereKey($pesanan->Id)->sole()->Status)->toBe(StatusPesananOnline::Dibatalkan);
 });

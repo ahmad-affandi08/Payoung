@@ -205,12 +205,21 @@ final class PostingJurnal
     {
         $this->PastikanOutletTenant($baris);
         $this->PastikanAkunTenant($baris);
-        $idPerPeran = [];
+        $dibutuhkan = [];
+
+        foreach ($baris as $satu) {
+            if ($satu->peran !== null) {
+                $dibutuhkan[] = [$satu->peran, $satu->idOutlet];
+            }
+        }
+
+        $idPerPeran = $this->penentuAkun->AmbilIdAkunBanyak($dibutuhkan);
         $hasil = [];
 
         foreach ($baris as $satu) {
             if ($satu->peran !== null) {
                 $kunci = $satu->peran->value.'|'.($satu->idOutlet ?? 0);
+                // Peran yang tidak terselesaikan sekaligus (belum dipetakan / tipe salah) dilempar galat jelasnya di sini.
                 $idPerPeran[$kunci] ??= $this->penentuAkun->AmbilIdAkun($satu->peran, $satu->idOutlet);
                 $idAkun = $idPerPeran[$kunci];
             } else {

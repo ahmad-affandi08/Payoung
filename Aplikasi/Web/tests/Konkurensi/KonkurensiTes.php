@@ -3,17 +3,26 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Nilai\Kuantitas;
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Pelanggan\Model\Piutang;
 use App\Domain\Pemenuhan\Model\Reservasi;
+use App\Domain\Penjualan\Aksi\SimpanPesananGrosir;
+use App\Domain\Penjualan\Data\DataBarisPesananGrosir;
+use App\Domain\Penjualan\Data\DataPesananGrosir;
+use App\Domain\Penjualan\Enum\StatusPesananGrosir;
 use App\Domain\Penjualan\Model\Penjualan;
+use App\Domain\Penjualan\Model\PesananGrosir;
 use App\Domain\Persediaan\Model\BahanTerbuang;
 use App\Domain\Persediaan\Model\MutasiStok;
 use Carbon\CarbonImmutable;
 use Illuminate\Process\Pool;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use Tests\Pendukung\Katalog\BantuanHarga;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
@@ -125,4 +134,49 @@ it('dua reservasi bersamaan pada staf & jam yang sama: hanya satu yang mendapat 
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     expect(collect($hasil)->pluck('Galat')->filter()->values()->all())->toBe(['SlotTidakTersedia'])
         ->and(Reservasi::query()->where('IdKaryawan', $maya->Id)->count())->toBe(1);
+});
+
+it('dua penjualan tempo bersamaan untuk pelanggan yang sama: limit kredit hanya muat satu, yang lain menjadi tinjauan (BR-12.1)', function (): void {
+    $k = BantuanPenjualan::Siapkan($this, 'Grosir Serentak Kediri');
+    $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+    $toko = Pelanggan::query()->create(['Nama' => 'Toko Makmur Serentak', 'NoHp' => '6281355550077', 'LimitKredit' => '100000', 'TerminHari' => 14]);
+    $isi = function () use ($k, $minyak, $toko): array {
+        $item = BantuanPenjualan::Item(
+            $k,
+            ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']], 'Pembayaran' => [['Metode' => $k['Tempo'], 'Jumlah' => '77000.00']]],
+            ['UuidPelanggan' => $toko->Uuid],
+        );
+
+        return ['IdTenant' => $k['Tenant']->Id, 'IdPerangkat' => $k['Perangkat']->Id, 'IdOutlet' => $k['Outlet']->Id, 'Item' => [$item]];
+    };
+
+    $hasil = JalankanBersamaan('sinkron', [$isi(), $isi()]);
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    expect(collect($hasil)->pluck('Hasil')->flatten()->all())->toBe(['Diterima', 'Diterima'])
+        ->and(Piutang::query()->count())->toBe(2)
+        ->and(Penjualan::query()->where('PerluTinjauan', false)->count())->toBe(1)
+        ->and(Penjualan::query()->where('PerluTinjauan', true)->where('AlasanTinjauan', 'like', '%TempoBermasalah%')->count())->toBe(1);
+});
+
+it('dua konfirmasi SO grosir bersamaan untuk pelanggan yang sama: paparan kredit menghitung SO yang lain, hanya satu yang lolos limit (BR-12.6)', function (): void {
+    $t = BantuanKatalog::SiapkanTenantProduk('Grosir Serentak Madiun');
+    $gula = BantuanKatalog::BuatProduk(['Nama' => 'Gula Pasir Kemasan 1 kg', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '15000.00', $t['Pcs']);
+    $satuan = BantuanHarga::SatuanDasar($gula);
+    $toko = Pelanggan::query()->create(['Nama' => 'Toko Makmur Madiun', 'NoHp' => '6281355550088', 'LimitKredit' => '5000000', 'TerminHari' => 30]);
+    // 200 x 15.000 = 3.000.000: satu SO muat di limit 5.000.000, dua SO tidak.
+    $buat = fn (): string => app(SimpanPesananGrosir::class)->Jalankan(new DataPesananGrosir(
+        uuidPelanggan: $toko->Uuid,
+        idOutlet: $t['Outlet']->Id,
+        tanggal: CarbonImmutable::now('Asia/Jakarta')->startOfDay(),
+        baris: [new DataBarisPesananGrosir($gula->Uuid, $satuan->Uuid, Kuantitas::Dari('200'), Uang::Dari('0'))],
+    ), $t['Pemilik']->Id)->Uuid;
+    $isi = fn (string $uuid): array => ['IdTenant' => $t['Tenant']->Id, 'UuidPesanan' => $uuid, 'IdPengguna' => $t['Pemilik']->Id];
+
+    $hasil = JalankanBersamaan('konfirmasi-so', [$isi($buat()), $isi($buat())]);
+
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(collect($hasil)->pluck('Galat')->filter()->values()->all())->toBe(['ButuhPersetujuanKredit'])
+        ->and(PesananGrosir::query()->where('Status', StatusPesananGrosir::Dikonfirmasi->value)->count())->toBe(1)
+        ->and(PesananGrosir::query()->where('Status', StatusPesananGrosir::Draf->value)->count())->toBe(1);
 });

@@ -116,6 +116,17 @@ it('HargaProdukBerlaku dari database sama dengan test vector', function (string 
             $masukan['TierPelanggan'],
             CarbonImmutable::parse($masukan['Waktu']),
         );
+        // TentukanBanyak (dipakai menu publik) harus memberi hasil yang persis sama dengan Tentukan per satuan.
+        $banyak = app(HargaProdukBerlaku::class)->TentukanBanyak(
+            [[$produk, $satuan]],
+            Kuantitas::Dari($masukan['Jumlah']),
+            $masukan['UuidOutlet'] === null ? null : $m->Outlet($masukan['UuidOutlet'])->Id,
+            $masukan['Kanal'] === null ? null : KanalPenjualan::from($masukan['Kanal']),
+            $masukan['TierPelanggan'],
+            CarbonImmutable::parse($masukan['Waktu']),
+        );
+        expect($banyak[$satuan->Id] ?? null)->toEqual($hasil, "TentukanBanyak: {$kasus['Nama']}");
+
         /** @var array<string, string|null> $harapan */
         $harapan = $kasus['Harapan'];
         $aktual = $hasil === null ? ['Galat' => 'HargaTidakDitemukan'] : [

@@ -55,8 +55,23 @@ final class KonfirmasiPesananGrosir
     public function Jalankan(string $uuidPesanan, int $idPengguna, bool $bolehSetujuiKredit, ?string $alasanPersetujuan = null): PesananGrosir
     {
         return DB::transaction(function () use ($uuidPesanan, $idPengguna, $bolehSetujuiKredit, $alasanPersetujuan): PesananGrosir {
-            $pesanan = PesananGrosir::query()->with('Detail', 'Outlet')->where('Uuid', $uuidPesanan)->lockForUpdate()->first()
+            // Urutan kunci: Pelanggan dulu, baru baris pesanan. Dibalik (pesanan dulu) dua konfirmasi untuk pelanggan yang
+            // sama saling mengunci: yang satu memegang SO-nya dan menunggu pelanggan, yang lain memegang pelanggan dan
+            // memindai SO milik yang pertama saat menghitung paparan (deadlock). Id pelanggan dibaca tanpa kunci, lalu
+            // dicocokkan lagi setelah pesanan dikunci.
+            $idPelangganAwal = PesananGrosir::query()->where('Uuid', $uuidPesanan)->value('IdPelanggan');
+
+            if ($idPelangganAwal !== null) {
+                Pelanggan::query()->whereKey($idPelangganAwal)->lockForUpdate()->value('Id');
+            }
+
+            // Detail ikut dikunci: pembacaan biasa memakai snapshot yang sudah dibuat sebelum menunggu kunci di atas.
+            $pesanan = PesananGrosir::query()->with(['Detail' => fn ($kueri) => $kueri->lockForUpdate(), 'Outlet'])->where('Uuid', $uuidPesanan)->lockForUpdate()->first()
                 ?? throw new PelanggaranAturanBisnis('PesananTidakDitemukan', 'Pesanan grosir tidak ditemukan.');
+
+            if ($pesanan->IdPelanggan !== $idPelangganAwal) {
+                throw new PelanggaranAturanBisnis('PesananBerubah', 'Pelanggan pesanan ini berubah saat dikonfirmasi. Muat ulang lalu coba lagi.');
+            }
 
             if ($pesanan->Status !== StatusPesananGrosir::Draf) {
                 throw new PelanggaranAturanBisnis(
@@ -69,7 +84,9 @@ final class KonfirmasiPesananGrosir
                 throw new PelanggaranAturanBisnis('PesananTanpaBaris', 'Pesanan grosir harus punya minimal satu barang.', 'Baris');
             }
 
-            $pelanggan = Pelanggan::query()->whereKey($pesanan->IdPelanggan)->first()
+            // Baris pelanggan sudah dikunci di atas (sebelum pesanan), jadi paparan kredit di bawah dibaca dengan locking
+            // read (nilai terbaru, bukan snapshot transaksi ini) dan SO yang baru dikonfirmasi pihak lain ikut terhitung.
+            $pelanggan = Pelanggan::query()->whereKey($pesanan->IdPelanggan)->lockForUpdate()->first()
                 ?? throw new PelanggaranAturanBisnis('PelangganTidakDikenal', 'Pelanggan pesanan ini tidak ditemukan.');
             $barisHitung = [];
 
@@ -158,6 +175,7 @@ final class KonfirmasiPesananGrosir
             ->where('IdPelanggan', $idPelanggan)
             ->where('Status', StatusDokumenTerposting::Diposting->value)
             ->whereNull('IdFakturPenjualan')
+            ->sharedLock()
             ->get() as $suratJalan) {
             $nilai = $nilai->Tambah($suratJalan->AmbilTotal());
         }
@@ -175,6 +193,7 @@ final class KonfirmasiPesananGrosir
             ->where('IdPelanggan', $pesanan->IdPelanggan)
             ->where('Id', '!=', $pesanan->Id)
             ->whereIn('Status', [StatusPesananGrosir::Dikonfirmasi->value, StatusPesananGrosir::SebagianDikirim->value])
+            ->sharedLock()
             ->pluck('Id')
             ->all();
 
@@ -184,7 +203,7 @@ final class KonfirmasiPesananGrosir
 
         $nilai = Uang::Nol();
 
-        foreach (PesananGrosirDetail::query()->whereIn('IdPesananGrosir', $idLain)->get() as $baris) {
+        foreach (PesananGrosirDetail::query()->whereIn('IdPesananGrosir', $idLain)->sharedLock()->get() as $baris) {
             $sisa = $baris->AmbilSisaKirim();
 
             if ($sisa->Bandingkan(Kuantitas::Nol()) <= 0) {

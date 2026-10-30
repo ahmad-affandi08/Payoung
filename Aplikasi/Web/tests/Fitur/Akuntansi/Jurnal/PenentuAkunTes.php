@@ -62,6 +62,36 @@ describe('F-05a PenentuAkun, KesiapanPeranAkun, PenjagaKunciPeriode (DesainF05a 
             ->and(fn () => $penentu->AmbilIdAkun(PeranAkun::KasOutlet, $t['Outlet']->Id))->toThrow(PelanggaranAturanBisnis::class, 'Akun untuk Kas outlet belum dipetakan.');
     });
 
+    it('AmbilIdAkunBanyak memberi akun yang sama dengan AmbilIdAkun per peran (pemetaan outlet menang, peran belum dipetakan atau bertipe salah tidak ikut)', function (): void {
+        $t = BantuanPersediaan::SiapkanTenant();
+        $solo = BantuanJurnal::BuatOutlet();
+        $idTenant = BantuanJurnal::IdAkunPeran(PeranAkun::KasOutlet);
+        $akunSolo = BantuanJurnal::AkunLain(TipeAkun::Aset, $idTenant);
+        PemetaanAkun::query()->create(['Kunci' => PeranAkun::KasOutlet->value, 'IdAkun' => $akunSolo->Id, 'IdOutlet' => $solo->Id]);
+        PemetaanAkun::query()->where('Kunci', PeranAkun::SelisihHpp->value)->delete();
+        $beban = BantuanJurnal::AkunLain(TipeAkun::Beban, 0);
+        PemetaanAkun::query()->where('Kunci', PeranAkun::EkuitasSaldoAwal->value)->update(['IdAkun' => $beban->Id]);
+        $penentu = app(PenentuAkun::class);
+
+        $banyak = $penentu->AmbilIdAkunBanyak([
+            [PeranAkun::KasOutlet, $solo->Id],
+            [PeranAkun::KasOutlet, $t['Outlet']->Id],
+            [PeranAkun::KasOutlet, null],
+            [PeranAkun::PersediaanBarangDagang, $t['Outlet']->Id],
+            [PeranAkun::SelisihHpp, null],
+            [PeranAkun::EkuitasSaldoAwal, null],
+        ]);
+
+        expect($banyak)->toBe([
+            'KasOutlet|'.$solo->Id => $penentu->AmbilIdAkun(PeranAkun::KasOutlet, $solo->Id),
+            'KasOutlet|'.$t['Outlet']->Id => $penentu->AmbilIdAkun(PeranAkun::KasOutlet, $t['Outlet']->Id),
+            'KasOutlet|0' => $penentu->AmbilIdAkun(PeranAkun::KasOutlet, null),
+            'PersediaanBarangDagang|'.$t['Outlet']->Id => $penentu->AmbilIdAkun(PeranAkun::PersediaanBarangDagang, $t['Outlet']->Id),
+        ])
+            ->and($banyak['KasOutlet|'.$solo->Id])->toBe($akunSolo->Id)
+            ->and($penentu->AmbilIdAkunBanyak([]))->toBe([]);
+    });
+
     it('BR-P03.4: pemetaan berkunci lama (Waste) tetap dibaca untuk SusutPersediaan. Kunci baru menang', function (): void {
         BantuanPersediaan::SiapkanTenant();
         $baru = BantuanJurnal::IdAkunPeran(PeranAkun::SusutPersediaan);

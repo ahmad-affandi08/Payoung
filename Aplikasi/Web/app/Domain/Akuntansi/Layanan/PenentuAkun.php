@@ -39,6 +39,62 @@ final class PenentuAkun
         );
     }
 
+    /**
+     * Id akun untuk banyak peran sekaligus (satu jurnal memakai 6-8 peran): pemetaan dan akun dimuat dalam dua kueri,
+     * bukan dua kueri per peran. Aturan pemilihannya sama dengan `AmbilIdAkun`. Peran yang belum dipetakan atau bertipe
+     * salah tidak ada di hasil; pemanggil memanggil `AmbilIdAkun` untuknya agar galat yang jelas dilempar.
+     *
+     * @param  list<array{0: PeranAkun, 1: int|null}>  $peran  pasangan [peran, idOutlet]
+     * @return array<string, int> kunci `{peran}|{idOutlet atau 0}`
+     */
+    public function AmbilIdAkunBanyak(array $peran): array
+    {
+        if ($peran === []) {
+            return [];
+        }
+
+        $kunciPeran = [];
+        $idOutlet = [];
+
+        foreach ($peran as [$p, $outlet]) {
+            array_push($kunciPeran, $p->value, ...array_keys(array_filter(PeranAkun::KUNCI_LAMA, fn (string $baru): bool => $baru === $p->value)));
+
+            if ($outlet !== null) {
+                $idOutlet[] = $outlet;
+            }
+        }
+
+        $semua = PemetaanAkun::query()
+            ->whereIn('Kunci', array_values(array_unique($kunciPeran)))
+            ->where(fn ($kueri) => $idOutlet === []
+                ? $kueri->whereNull('IdOutlet')
+                : $kueri->whereNull('IdOutlet')->orWhereIn('IdOutlet', array_values(array_unique($idOutlet))))
+            ->get(['Kunci', 'IdAkun', 'IdOutlet']);
+        $akun = Akun::query()->whereKey($semua->pluck('IdAkun')->unique()->values()->all())->get(['Id', 'Jenis'])->keyBy('Id');
+        $hasil = [];
+
+        foreach ($peran as [$p, $outlet]) {
+            $kunciLama = array_keys(array_filter(PeranAkun::KUNCI_LAMA, fn (string $baru): bool => $baru === $p->value));
+            $pemetaan = $semua
+                ->filter(fn (PemetaanAkun $item): bool => ($item->Kunci === $p->value || in_array($item->Kunci, $kunciLama, true))
+                    && ($item->IdOutlet === null || $item->IdOutlet === $outlet))
+                ->sortBy(fn (PemetaanAkun $item): int => ($item->IdOutlet === null ? 2 : 0) + ($item->Kunci === $p->value ? 0 : 1))
+                ->first();
+
+            if (! $pemetaan instanceof PemetaanAkun) {
+                continue;
+            }
+
+            $dipetakan = $akun->get($pemetaan->IdAkun);
+
+            if ($dipetakan !== null && $dipetakan->Jenis === $p->AmbilTipeAkun()) {
+                $hasil[$p->value.'|'.($outlet ?? 0)] = (int) $dipetakan->Id;
+            }
+        }
+
+        return $hasil;
+    }
+
     /** Id akun yang siap dipakai, atau null bila peran belum dipetakan / tipe akunnya salah. */
     public function CariIdAkun(PeranAkun $peran, ?int $idOutlet): ?int
     {

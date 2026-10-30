@@ -18,9 +18,11 @@ final class KreditPelanggan
 {
     /**
      * @param  list<int>  $idPelanggan
+     * @param  bool  $kunci  baca piutang terbuka dengan locking read (nilai terbaru yang sudah commit, bukan snapshot
+     *                       transaksi); hanya untuk pemeriksaan keputusan di dalam transaksi
      * @return array<int, array{LimitKredit: string|null, SisaPiutang: string, HariLewatJatuhTempo: int}>
      */
-    public function AmbilRingkas(array $idPelanggan, CarbonImmutable $hariIni): array
+    public function AmbilRingkas(array $idPelanggan, CarbonImmutable $hariIni, bool $kunci = false): array
     {
         if ($idPelanggan === []) {
             return [];
@@ -39,6 +41,7 @@ final class KreditPelanggan
         $terbuka = Piutang::query()
             ->whereIn('IdPelanggan', array_keys($limit))
             ->whereIn('Status', [StatusPiutang::BelumLunas->value, StatusPiutang::DibayarSebagian->value])
+            ->when($kunci, fn ($kueri) => $kueri->orderBy('Id')->lockForUpdate())
             ->get();
 
         foreach ($terbuka as $piutang) {
@@ -62,11 +65,18 @@ final class KreditPelanggan
      * BR-12.1: alasan penjualan tempo [jumlah] butuh penyetuju (kosong = boleh tanpa penyetuju). Piutang penjualan ini
      * belum dicatat saat diperiksa.
      *
+     * Baris `Pelanggan` dikunci dulu, lalu piutang terbukanya dibaca dengan locking read: dua penjualan tempo atau
+     * konfirmasi SO untuk pelanggan yang sama berjalan berurutan dan yang kedua melihat piutang yang pertama (tanpa ini
+     * keduanya membaca sisa piutang lama dan sama-sama lolos limit). Pelunasan hanya mengunci baris piutang, jadi tidak
+     * ada urutan kunci yang berlawanan. Dipanggil di dalam transaksi pemanggil.
+     *
      * @return list<string>
      */
     public function Periksa(int $idPelanggan, Uang $jumlah, CarbonImmutable $hariIni, int $batasHariLewat): array
     {
-        $ringkas = $this->AmbilRingkas([$idPelanggan], $hariIni)[$idPelanggan] ?? null;
+        Pelanggan::query()->whereKey($idPelanggan)->lockForUpdate()->value('Id');
+
+        $ringkas = $this->AmbilRingkas([$idPelanggan], $hariIni, kunci: true)[$idPelanggan] ?? null;
 
         if ($ringkas === null) {
             return ['pelanggan tidak ditemukan'];
