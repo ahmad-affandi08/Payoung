@@ -157,21 +157,21 @@ describe('Anggaran navigasi back-office (D-27)', () => {
         // Kata kosong = seluruh butir yang boleh dilihat.
         expect(SaringPengaturan('', BolehSemua)).toEqual(daftarPengaturan);
 
-        // Cocok dari label.
-        const struk = SaringPengaturan('struk', BolehSemua).flatMap(({ butir }) => butir.map((b) => b.label));
-        expect(struk).toContain('Pengaturan struk');
+        // Cocok dari label (D-253: Pengaturan tinggal Usaha dan Integrasi & API).
+        const profil = SaringPengaturan('profil', BolehSemua).flatMap(({ butir }) => butir.map((b) => b.label));
+        expect(profil).toContain('Profil usaha');
 
         // Cocok dari keterangan saja: "NPWP" hanya muncul di keterangan Profil usaha.
         const npwp = SaringPengaturan('npwp', BolehSemua).flatMap(({ butir }) => butir.map((b) => b.label));
         expect(npwp).toEqual(['Profil usaha']);
 
         // Cocok dari nama grup: seluruh butir grup itu ikut.
-        const katalog = SaringPengaturan('katalog', BolehSemua);
-        expect(katalog).toHaveLength(1);
-        expect(katalog[0]?.judul).toBe('Katalog & harga');
+        const integrasi = SaringPengaturan('integrasi', BolehSemua);
+        expect(integrasi).toHaveLength(1);
+        expect(integrasi[0]?.judul).toBe('Integrasi & API');
 
         // Tanpa huruf besar/kecil, dan tanpa hasil = daftar kosong (bukan grup kosong).
-        expect(SaringPengaturan('  STRUK  ', BolehSemua).flatMap(({ butir }) => butir).length).toBeGreaterThan(0);
+        expect(SaringPengaturan('  PROFIL  ', BolehSemua).flatMap(({ butir }) => butir).length).toBeGreaterThan(0);
         expect(SaringPengaturan('zzz tidak ada', BolehSemua)).toEqual([]);
     });
 

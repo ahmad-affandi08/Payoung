@@ -109,6 +109,12 @@ export type ItemMenu = {
      * gift card" menyala juga di `/kelola/pelanggan/gift-card`, tanpa menambah butir sub-menu (anggaran D-27).
      */
     awalanLain?: string[];
+    /** D-253: butir yang rutenya hanya ada di satu edisi (misal Gerbang pembayaran di edisi Lisensi). Tanpa = semua edisi. */
+    edisi?: 'Saas' | 'Lisensi';
+    /** D-253: pintasan di Beranda untuk usaha bersektor itu (fitur khusus sektor, misal Laporan apotek). */
+    pintasanBeranda?: boolean;
+    /** D-253: kalimat penjelas untuk pintasan Beranda. */
+    keterangan?: string;
 };
 
 /** Menu utama bersub-menu: tampil bila ada sub-menu yang boleh dibuka; tautannya = sub-menu pertama yang boleh. */
@@ -119,11 +125,8 @@ type GrupMenu = ItemMenu & { labelSub: string; sub: ItemMenu[] };
 // kembali ke sini dari Pengaturan; yang diatur sekali (Kelompok pajak, Stasiun dapur) tetap di Pengaturan.
 const menuProduk: ItemMenu[] = [
     { label: 'Produk', href: '/kelola/produk', izin: IzinTenant.ProdukLihat },
-    { label: 'Kategori', href: '/kelola/kategori', izin: IzinTenant.ProdukLihat },
     // Harga per tier pelanggan dan per kanal (GoFood/GrabFood).
     { label: 'Daftar harga', href: '/kelola/daftar-harga', izin: IzinTenant.ProdukLihat, fitur: 'harga.daftar-harga' },
-    { label: 'Satuan', href: '/kelola/satuan', izin: IzinTenant.ProdukLihat },
-    { label: 'Pilihan (modifier)', href: '/kelola/kelompok-pilihan', izin: IzinTenant.ProdukLihat },
     // F-16d bagian 2: paket sesi (produk Jasa yang dijual sebagai N sesi).
     {
         label: 'Paket sesi',
@@ -131,6 +134,25 @@ const menuProduk: ItemMenu[] = [
         izin: IzinTenant.ProdukLihat,
         fitur: 'pelanggan.paket-sesi',
         sektor: ['SVC'],
+    },
+    { label: 'Kategori', href: '/kelola/kategori', izin: IzinTenant.ProdukLihat, kelompok: 'Atur produk' },
+    { label: 'Satuan', href: '/kelola/satuan', izin: IzinTenant.ProdukLihat, kelompok: 'Atur produk' },
+    {
+        label: 'Pilihan (modifier)',
+        href: '/kelola/kelompok-pilihan',
+        izin: IzinTenant.ProdukLihat,
+        kelompok: 'Atur produk',
+    },
+    // D-253: kelompok tarif pajak yang dipasang ke produk. Dulu di Pengaturan, kini bersama master katalog lainnya.
+    { label: 'Kelompok pajak', href: '/kelola/kelompok-pajak', izin: IzinTenant.ProdukLihat, kelompok: 'Atur produk' },
+    // D-253: stasiun pembuatan pesanan dan tiket dapur per stasiun (usaha F&B).
+    {
+        label: 'Stasiun dapur',
+        href: '/kelola/stasiun-dapur',
+        izin: IzinTenant.ProdukLihat,
+        fitur: 'pos.kds',
+        sektor: ['FNB'],
+        kelompok: 'Atur produk',
     },
     { label: 'Impor produk', href: '/kelola/produk/impor', izin: IzinTenant.ProdukKelola, lanjutan: true },
 ];
@@ -144,17 +166,17 @@ const menuPersediaan: ItemMenu[] = [
     {
         label: 'Penyesuaian stok',
         href: '/kelola/persediaan/penyesuaian',
-        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
+        kelompok: 'Ubah stok',
     },
     // F-05b: transfer dan stok opname (lihat: persediaan.lihat; tindakan dijaga di rute).
     {
         label: 'Transfer stok',
         href: '/kelola/persediaan/transfer',
-        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         fitur: 'stok.transfer',
         lanjutan: true,
+        kelompok: 'Ubah stok',
     },
     // D-105: outlet meminta stok ke gudang, terpenuhi saat transfer berkaitnya dikirim.
     {
@@ -168,30 +190,63 @@ const menuPersediaan: ItemMenu[] = [
     {
         label: 'Stok opname',
         href: '/kelola/persediaan/opname',
-        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         fitur: 'stok.opname',
         lanjutan: true,
+        kelompok: 'Ubah stok',
     },
     // F-05e: order produksi (resep → bahan keluar, hasil masuk). Retail umum, sembako, fashion, elektronik, dan pet shop
     // memakainya untuk memecah kemasan (karung beras → pak 5 kg); apotek tidak (racikan punya alurnya sendiri).
     {
         label: 'Produksi',
         href: '/kelola/persediaan/produksi',
-        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         sektor: ['FNB', 'RTL-BLD', 'WHS', 'RTL-GEN', 'RTL-FRS', 'RTL-FSH', 'RTL-ELC', 'RTL-PET'],
         lanjutan: true,
+        kelompok: 'Ubah stok',
     },
     // F-05f: bahan terbuang (waste) & food cost.
     {
         label: 'Bahan terbuang',
         href: '/kelola/persediaan/bahan-terbuang',
-        kelompok: 'Ubah stok',
         izin: IzinTenant.PersediaanLihat,
         // D-88: toko sayur/buah, kelontong, pet shop, florist, dan apotek juga membuang barang (layu, busuk, kedaluwarsa).
         sektor: ['FNB', 'RTL-BLD', 'RTL-GEN', 'RTL-FRS', 'RTL-PET', 'RTL-FLR', 'RTL-PHR'],
         lanjutan: true,
+        kelompok: 'Ubah stok',
+    },
+    // D-253: penyiapan stok kembali ke grupnya. Saldo pembuka dicatat sekali, tetapi lebih mudah dicari di sebelah stok yang
+    // dibukanya daripada di halaman Pengaturan.
+    {
+        label: 'Stok awal',
+        href: '/kelola/persediaan/stok-awal',
+        izin: IzinTenant.PersediaanLihat,
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+        kelompok: 'Siapkan stok',
+    },
+    {
+        label: 'Impor stok awal',
+        href: '/kelola/persediaan/stok-awal/impor',
+        izin: IzinTenant.PersediaanKelola,
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+        lanjutan: true,
+        kelompok: 'Siapkan stok',
+    },
+    // INV-07: rak atau zona untuk opname per rak.
+    {
+        label: 'Rak gudang',
+        href: '/kelola/persediaan/rak',
+        izin: IzinTenant.PersediaanLihat,
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+        lanjutan: true,
+        kelompok: 'Siapkan stok',
+    },
+    {
+        label: 'Pengaturan persediaan',
+        href: '/kelola/persediaan/pengaturan',
+        izin: IzinTenant.AkuntansiKelola,
+        kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
+        kelompok: 'Siapkan stok',
     },
 ];
 
@@ -267,6 +322,8 @@ const menuPembelian: ItemMenu[] = [
     },
     { label: 'Pemasok', href: '/kelola/pembelian/pemasok', izin: IzinTenant.PembelianKelola },
     { label: 'Konsinyasi', href: '/kelola/pembelian/konsinyasi', izin: IzinTenant.PembelianKelola, lanjutan: true },
+    // D-253: persetujuan PO, toleransi penerimaan, dan draf PO otomatis, dulu di Pengaturan.
+    { label: 'Pengaturan pembelian', href: '/kelola/pembelian/pengaturan', izin: IzinTenant.PembelianPoSetujui },
 ];
 
 // Grosir (F-12, §9.7, D-32): satu alur jual-kirim-tagih beserta returnya, cermin grup "Pembelian" di sisi beli.
@@ -301,6 +358,14 @@ const menuGrosir: ItemMenu[] = [
         fitur: 'piutang.grosir',
         lanjutan: true,
     },
+    // D-253: kendaraan dan pengemudi yang membawa surat jalan, dipilih saat barang berangkat.
+    {
+        label: 'Armada pengiriman',
+        href: '/kelola/grosir/armada',
+        izin: IzinTenant.GrosirKelola,
+        sektor: ['WHS', 'RTL-BLD', 'BIZ-MFG'],
+        lanjutan: true,
+    },
 ];
 
 // F-06: grup menu "Shift & kas" (pemantauan back-office; layar kasir ada di aplikasi Flutter): shift (laporan.penjualan.lihat), kategori kas (akuntansi.kelola), pengaturan (outlet.kelola).
@@ -311,49 +376,39 @@ const menuPelanggan: ItemMenu[] = [
     {
         label: 'Piutang pelanggan',
         href: '/kelola/piutang',
-        kelompok: 'Piutang & tagihan',
         izin: IzinTenant.PelangganLihat,
+        kelompok: 'Piutang & tagihan',
     },
     {
         label: 'Pelunasan piutang',
         href: '/kelola/piutang/pelunasan',
-        kelompok: 'Piutang & tagihan',
         izin: IzinTenant.PelangganLihat,
+        kelompok: 'Piutang & tagihan',
     },
     // F-21 (D-166): invoice & penagihan B2B untuk jasa dan barang tanpa stok; rumahnya di grup yang sudah memuat piutang.
     {
         label: 'Invoice',
         href: '/kelola/invoice',
-        kelompok: 'Piutang & tagihan',
         izin: IzinTenant.InvoiceKelola,
         fitur: 'invoice.penagihan',
+        kelompok: 'Piutang & tagihan',
     },
     {
         label: 'Promo',
         href: '/kelola/promo',
-        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
         kecualiSektor: ['BIZ'],
+        kelompok: 'Promo & loyalti',
     },
     // F-16c bagian 4b: klaim promo yang ditanggung pemasok.
     {
         label: 'Klaim promo pemasok',
         href: '/kelola/promo/klaim-pemasok',
-        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
         kecualiSektor: ['BIZ'],
-    },
-    // F-16d bagian 1: isi deposit pelanggan dari kasir; CRM-06: gift card satu rumah dengannya (tab di halaman).
-    {
-        label: 'Deposit & gift card',
-        href: '/kelola/pelanggan/isi-deposit',
-        kelompok: 'Promo & saldo',
-        izin: IzinTenant.PelangganLihat,
-        fitur: 'pelanggan.deposit',
-        awalanLain: ['/kelola/pelanggan/gift-card'],
-        kecualiSektor: ['BIZ'],
+        kelompok: 'Promo & loyalti',
     },
     // CRM-07: kampanye pesan WhatsApp bersegmen (hanya pelanggan yang setuju menerima promosi).
     {
@@ -361,13 +416,38 @@ const menuPelanggan: ItemMenu[] = [
         href: '/kelola/pelanggan/kampanye',
         izin: IzinTenant.PelangganKelola,
         kecualiSektor: ['BIZ'],
-        kelompok: 'Promo & saldo',
+        kelompok: 'Promo & loyalti',
+    },
+    // D-253: tingkatan pelanggan, harga khusus per tier, dan aturan poin, dulu di Pengaturan.
+    {
+        label: 'Tier pelanggan',
+        href: '/kelola/pelanggan/tier',
+        izin: IzinTenant.PelangganLihat,
+        kecualiSektor: ['BIZ'],
+        fitur: 'pelanggan.loyalti',
+        kelompok: 'Promo & loyalti',
+    },
+    {
+        label: 'Pengaturan loyalti',
+        href: '/kelola/pelanggan/loyalti',
+        izin: IzinTenant.PelangganLihat,
+        kecualiSektor: ['BIZ'],
+        fitur: 'pelanggan.loyalti',
+        kelompok: 'Promo & loyalti',
+    },
+    // F-16d bagian 1: isi deposit pelanggan dari kasir; CRM-06: gift card satu rumah dengannya (tab di halaman).
+    {
+        label: 'Deposit & gift card',
+        href: '/kelola/pelanggan/isi-deposit',
+        izin: IzinTenant.PelangganLihat,
+        fitur: 'pelanggan.deposit',
+        awalanLain: ['/kelola/pelanggan/gift-card'],
+        kecualiSektor: ['BIZ'],
     },
     // F-16d bagian 2: saldo paket sesi pelanggan.
     {
         label: 'Saldo paket sesi',
         href: '/kelola/pelanggan/saldo-sesi',
-        kelompok: 'Promo & saldo',
         izin: IzinTenant.PelangganLihat,
         fitur: 'pelanggan.paket-sesi',
         sektor: ['SVC'],
@@ -379,21 +459,21 @@ const menuKaryawan: ItemMenu[] = [
     {
         label: 'Daftar tim',
         href: '/kelola/tim',
-        kelompok: 'Staf & kehadiran',
         izin: IzinTenant.KaryawanLihat,
         atau: IzinTenant.PenggunaLihat,
+        kelompok: 'Staf & kehadiran',
     },
     {
         label: 'Jadwal kerja',
         href: '/kelola/karyawan/jadwal',
-        kelompok: 'Staf & kehadiran',
         izin: IzinTenant.KaryawanLihat,
+        kelompok: 'Staf & kehadiran',
     },
     {
         label: 'Absensi',
         href: '/kelola/karyawan/absensi',
-        kelompok: 'Staf & kehadiran',
         izin: IzinTenant.KaryawanLihat,
+        kelompok: 'Staf & kehadiran',
     },
     // EMP-03: cuti, sakit, dan izin dicatat pengelola; cuti berbayar bukan "tidak masuk" di rekap gaji.
     {
@@ -403,39 +483,57 @@ const menuKaryawan: ItemMenu[] = [
         lanjutan: true,
         kelompok: 'Staf & kehadiran',
     },
+    // D-253: wajib berjadwal saat absen, toleransi terlambat, ambang lembur, dan pengingat shift, dulu di Pengaturan.
+    {
+        label: 'Aturan kehadiran',
+        href: '/kelola/karyawan/aturan-kehadiran',
+        izin: IzinTenant.KaryawanLihat,
+        kelompok: 'Staf & kehadiran',
+    },
     // F-18 bagian 2: komisi (aturannya pindah ke Pengaturan, D-27).
     {
         label: 'Laporan komisi',
         href: '/kelola/karyawan/komisi/laporan',
-        kelompok: 'Gaji & insentif',
         izin: IzinTenant.KaryawanLihat,
         fitur: 'karyawan.komisi',
         // D-183: komisi lazim di Indonesia untuk capster/terapis/mekanik/crew (jasa), pelayan, SPG butik & toko HP,
         // sales toko bangunan, dan salesman grosir; tidak untuk kelontong, apotek, atau usaha jasa profesional.
         sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
+        kelompok: 'Gaji & insentif',
+    },
+    // D-253: dasar perhitungan komisi per staf pelayan atau per produk (aturan di sini, laporannya di sebelahnya).
+    {
+        label: 'Aturan komisi',
+        href: '/kelola/karyawan/komisi',
+        izin: IzinTenant.KaryawanLihat,
+        fitur: 'karyawan.komisi',
+        sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
+        kelompok: 'Gaji & insentif',
     },
     // F-18 bagian 3: kasbon, target penjualan.
     {
         label: 'Kasbon',
         href: '/kelola/karyawan/kasbon',
-        kelompok: 'Gaji & insentif',
         izin: IzinTenant.KaryawanLihat,
         lanjutan: true,
+        kelompok: 'Gaji & insentif',
     },
     {
         label: 'Target penjualan',
         href: '/kelola/karyawan/target',
-        kelompok: 'Gaji & insentif',
         izin: IzinTenant.KaryawanLihat,
         lanjutan: true,
+        kelompok: 'Gaji & insentif',
     },
     // F-18 bagian 3: rekap gaji bulanan (memuat gaji).
     {
         label: 'Rekap gaji',
         href: '/kelola/karyawan/gaji',
-        kelompok: 'Gaji & insentif',
         izin: IzinTenant.KaryawanKelola,
+        kelompok: 'Gaji & insentif',
     },
+    // D-253: izin tiap peran, bertetangga dengan Daftar tim dan Log audit.
+    { label: 'Peran & izin', href: '/kelola/peran', izin: IzinTenant.PenggunaLihat },
     // D-27 (disesuaikan v6.49): log audit menjawab "siapa melakukan apa", jadi bertetangga dengan daftar tim.
     { label: 'Log audit', href: '/kelola/log-audit', izin: IzinTenant.AuditLihat },
 ];
@@ -462,14 +560,6 @@ const menuPenjualan: ItemMenu[] = [
         // bukan untuk salon, bengkel, gym, cuci kendaraan, atau usaha jasa profesional (mereka memakai reservasi/invoice).
         sektor: ['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN'],
     },
-    { label: 'Shift kasir', href: '/kelola/kasir/shift', izin: IzinTenant.LaporanPenjualanLihat },
-    // F-15: tutup harian (End of Day) per outlet.
-    {
-        label: 'Tutup harian',
-        href: '/kelola/kasir/tutup-harian',
-        izin: IzinTenant.LaporanPenjualanLihat,
-        lanjutan: true,
-    },
     // F-12 bagian 2: pre-order & uang muka.
     // D-183: pre-order/PO + uang muka lazim di Indonesia untuk kue & katering (F&B), pre-order fashion, inden HP/elektronik,
     // buket florist, dan pesanan kustom (percetakan, konveksi).
@@ -490,8 +580,62 @@ const menuPenjualan: ItemMenu[] = [
         gantiBilaSektor: { sektor: ['FNB'], kecuali: ['SVC'], label: 'Reservasi meja', href: '/kelola/reservasi-meja' },
     },
     { label: 'Laundry', href: '/kelola/laundry', izin: IzinTenant.LaundryKelola, sektor: ['SVC-LDR'] },
+    {
+        label: 'Shift kasir',
+        href: '/kelola/kasir/shift',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        kelompok: 'Kasir harian',
+    },
+    // F-15: tutup harian (End of Day) per outlet.
+    {
+        label: 'Tutup harian',
+        href: '/kelola/kasir/tutup-harian',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        lanjutan: true,
+        kelompok: 'Kasir harian',
+    },
     // D-27 (disesuaikan v6.49): perangkat kasir dipakai tiap menambah kasir, mengganti HP, atau mencabut perangkat hilang.
-    { label: 'Perangkat kasir', href: '/kelola/perangkat', izin: IzinTenant.PerangkatLihat },
+    { label: 'Perangkat kasir', href: '/kelola/perangkat', izin: IzinTenant.PerangkatLihat, kelompok: 'Kasir harian' },
+    // D-253: pengaturan kasir, struk, kategori kas, metode dan gerbang pembayaran dulu di Pengaturan, kini satu subgrup
+    // dengan pekerjaan kasir yang dipengaruhinya.
+    {
+        label: 'Pengaturan kasir',
+        href: '/kelola/kasir/pengaturan',
+        izin: IzinTenant.OutletKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Atur kasir',
+    },
+    {
+        label: 'Pengaturan struk',
+        href: '/kelola/kasir/struk',
+        izin: IzinTenant.OutletKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Atur kasir',
+    },
+    {
+        label: 'Kategori kas',
+        href: '/kelola/kasir/kategori-kas',
+        izin: IzinTenant.AkuntansiKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Atur kasir',
+    },
+    {
+        label: 'Metode pembayaran',
+        href: '/kelola/panduan-awal/metode-pembayaran',
+        izin: IzinTenant.PanduanAwalKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Atur kasir',
+    },
+    // D-162: tenant SaaS tidak menempel akun DOKU sendiri. D-190: Aktivasi QRIS (DOKU) juga disembunyikan, QRIS toko = QRIS
+    // statis bernominal otomatis di Metode pembayaran (D-189). Jadi gerbang milik toko hanya ada di edisi Lisensi.
+    {
+        label: 'Gerbang pembayaran',
+        href: '/kelola/pembayaran/gerbang',
+        izin: IzinTenant.PembayaranGerbangAtur,
+        kecualiSektor: ['BIZ'],
+        edisi: 'Lisensi',
+        kelompok: 'Atur kasir',
+    },
 ];
 
 // F-05a: grup menu "Akuntansi"; jurnal (baca saja) memakai laporan.keuangan.lihat (DesainF05a H-13).
@@ -501,23 +645,23 @@ const menuAkuntansi: ItemMenu[] = [
     {
         label: 'Jurnal',
         href: '/kelola/akuntansi/jurnal',
-        kelompok: 'Catatan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+        kelompok: 'Catatan keuangan',
     },
     {
         label: 'Buku besar',
         href: '/kelola/akuntansi/laporan/buku-besar',
-        kelompok: 'Catatan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+        kelompok: 'Catatan keuangan',
     },
     {
         label: 'Neraca saldo',
         href: '/kelola/akuntansi/laporan/neraca-saldo',
-        kelompok: 'Catatan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+        kelompok: 'Catatan keuangan',
     },
     // D-252: Kas & bank, pencairan dana, rekonsiliasi, giro, dan QRIS tanpa penjualan satu subgrup. Tiga yang terakhir
     // dulu hanya terjangkau lewat tombol di halaman Kas & bank dan Ctrl+K, kini punya tempat di menu.
@@ -555,6 +699,29 @@ const menuAkuntansi: ItemMenu[] = [
         href: '/kelola/akuntansi/qris-tanpa-penjualan',
         izin: IzinTenant.LaporanKeuanganLihat,
         kelompok: 'Kas, bank & giro',
+    },
+    // D-253: bagan akun, pemetaan akun jurnal otomatis, dan anggaran tahunan, dulu di Pengaturan.
+    {
+        label: 'Bagan akun',
+        href: '/kelola/akuntansi/akun',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
+        kelompok: 'Akun & anggaran',
+    },
+    {
+        label: 'Pemetaan akun',
+        href: '/kelola/akuntansi/pemetaan',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
+        kelompok: 'Akun & anggaran',
+    },
+    // F8 (FIN-11): anggaran vs realisasi.
+    {
+        label: 'Anggaran',
+        href: '/kelola/akuntansi/anggaran',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
+        kelompok: 'Akun & anggaran',
     },
     // FIN-10 (v3.38): aset tetap & penyusutan otomatis bulanan (kerja berkala, jadi menu, bukan Pengaturan).
     {
@@ -606,26 +773,36 @@ const menuLaporan: ItemMenu[] = [
         izin: IzinTenant.PembelianKelola,
         fitur: 'laporan.lengkap',
     },
+    // D-253: penjualan obat wajib resep, psikotropika, narkotika, dan data pendukung SIPNAP, dulu di Pengaturan.
+    {
+        label: 'Laporan apotek',
+        href: '/kelola/laporan/apotek',
+        izin: IzinTenant.LaporanPenjualanLihat,
+        fitur: 'laporan.lengkap',
+        sektor: ['RTL-PHR'],
+        pintasanBeranda: true,
+        keterangan: 'Penjualan obat wajib resep, psikotropika & narkotika, dan data pendukung SIPNAP.',
+    },
     {
         label: 'Laba rugi',
         href: '/kelola/akuntansi/laporan/laba-rugi',
-        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'laporan.lengkap',
+        kelompok: 'Laporan keuangan',
     },
     {
         label: 'Neraca',
         href: '/kelola/akuntansi/laporan/neraca',
-        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+        kelompok: 'Laporan keuangan',
     },
     {
         label: 'Arus kas',
         href: '/kelola/akuntansi/laporan/arus-kas',
-        kelompok: 'Laporan keuangan',
         izin: IzinTenant.LaporanKeuanganLihat,
         fitur: 'akuntansi.penuh',
+        kelompok: 'Laporan keuangan',
     },
     // D-124: ekspor besar disiapkan di latar belakang; D-27 (disesuaikan v6.49): tempat mengambilnya ada di grup Laporan.
     {
@@ -1023,9 +1200,7 @@ export function CekMenuAktif(href: string, url: string): boolean {
     }
 
     if (href === '/kelola/pengaturan') {
-        return (
-            url.startsWith(href) || url.startsWith('/kelola/peran') || CariSubMenuAktif(butirPengaturan, url) !== null
-        );
+        return url.startsWith(href) || CariSubMenuAktif(butirPengaturan, url) !== null;
     }
 
     return url.startsWith(href);
@@ -1065,9 +1240,10 @@ function PilihTampilanItem(akses: PropsBersamaAplikasi['Akses'], sektorOutlet: s
 
 export function SaringMenuTerlihat(
     akses: PropsBersamaAplikasi['Akses'],
-    opsi: { sektorOutlet?: string[]; sederhana?: boolean } = {},
+    opsi: { sektorOutlet?: string[]; sederhana?: boolean; edisi?: 'Saas' | 'Lisensi' | undefined } = {},
 ): MenuTerlihat[] {
     const CekBoleh = (menu: ItemMenu) =>
+        (menu.edisi === undefined || menu.edisi === (opsi.edisi ?? 'Saas')) &&
         (menu.izin === null ||
             PunyaIzinTenant(akses, menu.izin) ||
             (menu.atau !== undefined && PunyaIzinTenant(akses, menu.atau))) &&
@@ -1393,10 +1569,10 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
     const tenantAktif = props.TenantAktif;
     const sektorOutlet = props.SektorOutlet ?? [];
     const [sederhana, AturSederhana] = useState(BacaModeSederhana);
-    const menuTerlihat = SaringMenuTerlihat(props.Akses, { sektorOutlet, sederhana });
+    const menuTerlihat = SaringMenuTerlihat(props.Akses, { sektorOutlet, sederhana, edisi: props.Edisi });
     // Ctrl+K tetap menemukan menu lanjutan walau mode sederhana aktif.
     const pencarian = SusunPencarian(
-        SaringMenuTerlihat(props.Akses, { sektorOutlet }),
+        SaringMenuTerlihat(props.Akses, { sektorOutlet, edisi: props.Edisi }),
         props.Akses,
         props.Edisi,
         sektorOutlet,

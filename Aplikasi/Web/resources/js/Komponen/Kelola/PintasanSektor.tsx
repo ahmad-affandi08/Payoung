@@ -2,14 +2,14 @@ import { Link, usePage } from '@inertiajs/react';
 import { ChevronRightIcon } from 'lucide-react';
 
 import Panel from '@/Komponen/Kelola/Panel';
-import { CekButirSesuaiEdisi, daftarPengaturan, type ButirPengaturan } from '@/Pustaka/DaftarPengaturan';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
+import { daftarMenu, type ItemMenu } from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import { PunyaIzinTenant } from '@/Tipe/Organisasi';
 
 /**
- * Pintasan Beranda untuk fitur khusus jenis usaha yang rumahnya Pengaturan (mis. Laporan apotek), supaya tidak
- * terkubur. Butir ditandai `pintasanBeranda` di `Pustaka/DaftarPengaturan`; hanya tampil bila sektor outlet sudah
+ * Pintasan Beranda untuk fitur khusus jenis usaha (mis. Laporan apotek), supaya tidak terkubur di dalam subgrup menu.
+ * Butir ditandai `pintasanBeranda` di menu samping (`TataLetak/TataLetakAplikasi`); hanya tampil bila sektor outlet sudah
  * diketahui dan cocok (sektor kosong tidak menampilkan apa pun, agar Beranda tenant baru tidak ramai), pengguna
  * berizin, dan fiturnya ada di paket. Tidak muncul sama sekali bila tidak ada butir yang berlaku.
  */
@@ -17,14 +17,14 @@ export default function PintasanSektor() {
     const { props } = usePage<PropsBersamaAplikasi>();
     const sektor = props.SektorOutlet ?? [];
     const terkunci = props.FiturPaket?.Terkunci ?? {};
-    const butir = daftarPengaturan
-        .flatMap((grup) => grup.butir)
+    const butir = daftarMenu
+        .flatMap((menu) => ('sub' in menu ? menu.sub : [menu]))
         .filter(
-            (satu: ButirPengaturan) =>
+            (satu: ItemMenu) =>
                 satu.pintasanBeranda === true &&
                 sektor.length > 0 &&
                 CekSesuaiSektor(satu, sektor) &&
-                CekButirSesuaiEdisi(satu, props.Edisi) &&
+                (satu.edisi === undefined || satu.edisi === (props.Edisi ?? 'Saas')) &&
                 (satu.izin === null ||
                     PunyaIzinTenant(props.Akses, satu.izin) ||
                     (satu.atau !== undefined && PunyaIzinTenant(props.Akses, satu.atau))) &&
@@ -46,7 +46,7 @@ export default function PintasanSektor() {
                         >
                             <span className="flex flex-col gap-1">
                                 <span className="text-label font-semibold text-teks-utama">{satu.label}</span>
-                                <span className="text-keterangan text-teks-sekunder">{satu.keterangan}</span>
+                                <span className="text-keterangan text-teks-sekunder">{satu.keterangan ?? ''}</span>
                             </span>
                             <ChevronRightIcon className="mt-0.5 size-4 shrink-0 text-teks-sekunder" aria-hidden />
                         </Link>

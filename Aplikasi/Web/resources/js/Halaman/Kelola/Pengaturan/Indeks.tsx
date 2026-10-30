@@ -37,7 +37,7 @@ export default function HalamanPengaturan() {
             (butir.atau !== undefined && PunyaIzinTenant(props.Akses, butir.atau)));
     const CekTerkunci = (butir: ButirPengaturan) => butir.fitur !== undefined && terkunci[butir.fitur] !== undefined;
 
-    // Kotak cari: 25 butir di 8 grup terlalu banyak untuk dipindai mata. Penyaringannya di `SaringPengaturan`
+    // Kotak cari untuk menyaring butir. Penyaringannya di `SaringPengaturan`
     // supaya bisa diuji tanpa merender halaman.
     const [kata, AturKata] = useState('');
     const cari = kata.trim();
@@ -62,7 +62,8 @@ export default function HalamanPengaturan() {
             ) : null}
 
             <p className="text-isi text-teks-sekunder">
-                Semua yang diatur sekali lalu jarang disentuh ada di sini, dikelompokkan per bagian usaha.
+                Pengaturan usaha dan integrasi ada di sini. Pengaturan kasir, struk, stok, pembelian, pelanggan, tim,
+                dan akuntansi ada di menu masing-masing.
             </p>
 
             <div className="max-w-md">

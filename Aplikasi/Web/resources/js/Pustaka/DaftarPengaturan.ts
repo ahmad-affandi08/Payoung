@@ -1,11 +1,13 @@
 import { IzinTenant, type KunciIzinTenant } from '@/Tipe/Organisasi';
 
 /**
- * Isi halaman Pengaturan (`/kelola/pengaturan`) — rumah semua halaman yang **diatur sekali lalu jarang disentuh**.
+ * Isi halaman Pengaturan (`/kelola/pengaturan`) — pengaturan **usaha secara keseluruhan** (profil, jenis usaha, outlet,
+ * data, akses dukungan) dan **integrasi** (API, webhook, WhatsApp). Pengaturan yang melekat pada satu modul (kasir,
+ * struk, stok, pembelian, loyalti, komisi, akun, dan sebagainya) tinggal di menu modulnya sebagai subgrup (D-253),
+ * bukan di sini.
  *
  * D-27: halaman di sini tidak boleh ikut muncul di menu samping (dijaga `AnggaranNavigasiTes`), supaya satu halaman
- * hanya punya satu rumah dan menu harian tetap pendek. Semuanya tetap bisa dicari lewat Ctrl+K karena
- * `SusunPencarian` ikut membaca daftar ini.
+ * hanya punya satu rumah. Semuanya tetap bisa dicari lewat Ctrl+K karena `SusunPencarian` ikut membaca daftar ini.
  *
  * `izin` null = semua anggota boleh. `fitur` = kunci fitur paket (D-23): di luar paket tetap tampil dengan gembok,
  * kliknya membuka dialog naik paket, sama seperti di menu samping.
@@ -24,8 +26,6 @@ export type ButirPengaturan = {
     sektor?: string[];
     /** D-167, D-183: disembunyikan bila SEMUA sektor usaha ada di daftar ini (mis. `BIZ`: usaha tanpa kasir). */
     kecualiSektor?: string[];
-    /** Pintasan di Beranda untuk usaha bersektor itu: fitur khusus sektor yang rumahnya Pengaturan (mis. Laporan apotek). */
-    pintasanBeranda?: boolean;
 };
 
 export type GrupPengaturan = { judul: string; butir: ButirPengaturan[] };
@@ -55,13 +55,7 @@ export const butirAkun: ButirPengaturan[] = [
  * Pintasan "Paling sering dipakai" di atas halaman Pengaturan (butir yang paling sering dibuka pemilik setelah
  * usaha berjalan). Hanya pintasan: rumah butirnya tetap grup masing-masing, jadi tidak melanggar "satu rumah".
  */
-export const pintasanPengaturan: string[] = [
-    '/kelola/kasir/pengaturan',
-    '/kelola/kasir/struk',
-    '/kelola/panduan-awal/metode-pembayaran',
-    '/kelola/outlet',
-    '/kelola/peran',
-];
+export const pintasanPengaturan: string[] = ['/kelola/pengaturan/profil-usaha', '/kelola/outlet'];
 
 export const daftarPengaturan: GrupPengaturan[] = [
     {
@@ -111,198 +105,8 @@ export const daftarPengaturan: GrupPengaturan[] = [
         ],
     },
     {
-        judul: 'Katalog & harga',
+        judul: 'Integrasi & API',
         butir: [
-            {
-                label: 'Kelompok pajak',
-                keterangan: 'Kelompok tarif pajak yang dipasang ke produk.',
-                href: '/kelola/kelompok-pajak',
-                izin: IzinTenant.ProdukLihat,
-            },
-            {
-                label: 'Stasiun dapur',
-                keterangan: 'Stasiun pembuatan pesanan dan tiket dapur yang dicetak untuk masing-masing.',
-                href: '/kelola/stasiun-dapur',
-                izin: IzinTenant.ProdukLihat,
-                fitur: 'pos.kds',
-                sektor: ['FNB'],
-            },
-        ],
-    },
-    {
-        judul: 'Kasir & struk',
-        butir: [
-            {
-                label: 'Pengaturan kasir',
-                keterangan: 'Mode kasir, kembalian, pembulatan, diskon, dan perilaku layar jual.',
-                href: '/kelola/kasir/pengaturan',
-                izin: IzinTenant.OutletKelola,
-                kecualiSektor: ['BIZ'],
-            },
-            {
-                label: 'Pengaturan struk',
-                keterangan: 'Isi struk, catatan kaki, logo, dan cetak otomatis. Satu pengaturan untuk semua outlet.',
-                href: '/kelola/kasir/struk',
-                izin: IzinTenant.OutletKelola,
-                kecualiSektor: ['BIZ'],
-            },
-            {
-                label: 'Kategori kas',
-                keterangan: 'Kategori kas masuk & keluar yang bisa dipilih kasir saat shift berjalan.',
-                href: '/kelola/kasir/kategori-kas',
-                izin: IzinTenant.AkuntansiKelola,
-                kecualiSektor: ['BIZ'],
-            },
-            {
-                label: 'Metode pembayaran',
-                keterangan: 'Tunai, QRIS, EDC, transfer, dan ojol yang tampil sebagai tombol di layar bayar kasir.',
-                href: '/kelola/panduan-awal/metode-pembayaran',
-                izin: IzinTenant.PanduanAwalKelola,
-                kecualiSektor: ['BIZ'],
-            },
-            {
-                label: 'Gerbang pembayaran',
-                keterangan: 'Gerbang QRIS milik toko untuk pembayaran dinamis di kasir.',
-                href: '/kelola/pembayaran/gerbang',
-                izin: IzinTenant.PembayaranGerbangAtur,
-                kecualiSektor: ['BIZ'],
-                // D-162: tenant SaaS tidak menempel akun DOKU sendiri. D-190: Aktivasi QRIS (DOKU) juga disembunyikan;
-                // QRIS toko = QRIS statis bernominal otomatis di Metode pembayaran (D-189).
-                edisi: 'Lisensi',
-            },
-        ],
-    },
-    {
-        judul: 'Stok & pembelian',
-        butir: [
-            {
-                label: 'Pengaturan persediaan',
-                keterangan: 'Metode harga pokok, stok minus, dan perilaku opname & penyesuaian.',
-                href: '/kelola/persediaan/pengaturan',
-                izin: IzinTenant.AkuntansiKelola,
-                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
-            },
-            {
-                label: 'Armada pengiriman',
-                keterangan: 'Kendaraan dan pengemudi yang membawa surat jalan grosir, dipilih saat barang berangkat.',
-                href: '/kelola/grosir/armada',
-                izin: IzinTenant.GrosirKelola,
-                sektor: ['WHS', 'RTL-BLD', 'BIZ-MFG'],
-            },
-            {
-                label: 'Rak gudang',
-                keterangan: 'Bagi lokasi stok menjadi rak atau zona dan tempatkan produknya, untuk opname per rak.',
-                href: '/kelola/persediaan/rak',
-                izin: IzinTenant.PersediaanLihat,
-                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
-            },
-            {
-                label: 'Stok awal',
-                keterangan: 'Saldo stok pembuka per produk & lokasi, dicatat sekali saat mulai memakai Payoung.',
-                href: '/kelola/persediaan/stok-awal',
-                izin: IzinTenant.PersediaanLihat,
-                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
-            },
-            {
-                label: 'Impor stok awal',
-                keterangan: 'Unggah stok awal banyak produk sekaligus dari Excel/CSV.',
-                href: '/kelola/persediaan/stok-awal/impor',
-                izin: IzinTenant.PersediaanKelola,
-                kecualiSektor: ['BIZ-JSA', 'BIZ-KTR'],
-            },
-            {
-                label: 'Laporan apotek',
-                keterangan: 'Penjualan obat wajib resep, psikotropika & narkotika, dan data pendukung SIPNAP.',
-                href: '/kelola/laporan/apotek',
-                izin: IzinTenant.LaporanPenjualanLihat,
-                fitur: 'laporan.lengkap',
-                sektor: ['RTL-PHR'],
-                pintasanBeranda: true,
-            },
-            {
-                label: 'Pengaturan pembelian',
-                keterangan: 'Persetujuan pesanan pembelian, toleransi penerimaan, dan draf PO otomatis.',
-                href: '/kelola/pembelian/pengaturan',
-                izin: IzinTenant.PembelianPoSetujui,
-            },
-        ],
-    },
-    {
-        judul: 'Pelanggan',
-        butir: [
-            {
-                label: 'Tier pelanggan',
-                keterangan: 'Tingkatan pelanggan dan harga khusus per tier.',
-                href: '/kelola/pelanggan/tier',
-                izin: IzinTenant.PelangganLihat,
-                kecualiSektor: ['BIZ'],
-                fitur: 'pelanggan.loyalti',
-            },
-            {
-                label: 'Pengaturan loyalti',
-                keterangan: 'Perolehan poin, masa berlaku, dan penukaran poin sebagai diskon.',
-                href: '/kelola/pelanggan/loyalti',
-                izin: IzinTenant.PelangganLihat,
-                kecualiSektor: ['BIZ'],
-                fitur: 'pelanggan.loyalti',
-            },
-        ],
-    },
-    {
-        judul: 'Karyawan',
-        butir: [
-            {
-                label: 'Aturan komisi',
-                keterangan: 'Dasar perhitungan komisi per staf pelayan atau per produk.',
-                href: '/kelola/karyawan/komisi',
-                izin: IzinTenant.KaryawanLihat,
-                fitur: 'karyawan.komisi',
-                sektor: ['SVC', 'FNB', 'RTL-FSH', 'RTL-ELC', 'RTL-BLD', 'WHS'],
-            },
-            {
-                label: 'Aturan kehadiran',
-                keterangan:
-                    'Wajib berjadwal saat absen, toleransi terlambat & pulang cepat, ambang lembur, serta pengingat shift dan peringatan ke pengelola lewat WhatsApp.',
-                href: '/kelola/karyawan/aturan-kehadiran',
-                izin: IzinTenant.KaryawanLihat,
-            },
-        ],
-    },
-    {
-        judul: 'Akuntansi',
-        butir: [
-            {
-                label: 'Bagan akun',
-                keterangan: 'Daftar akun (COA) beserta nama dan statusnya.',
-                href: '/kelola/akuntansi/akun',
-                izin: IzinTenant.LaporanKeuanganLihat,
-                fitur: 'akuntansi.penuh',
-            },
-            {
-                label: 'Pemetaan akun',
-                keterangan: 'Akun yang dipakai jurnal otomatis untuk penjualan, stok, pajak, dan kas.',
-                href: '/kelola/akuntansi/pemetaan',
-                izin: IzinTenant.LaporanKeuanganLihat,
-                fitur: 'akuntansi.penuh',
-            },
-            {
-                label: 'Anggaran',
-                keterangan: 'Susun anggaran tahunan per akun dan outlet, lalu bandingkan dengan realisasi dari jurnal.',
-                href: '/kelola/akuntansi/anggaran',
-                izin: IzinTenant.LaporanKeuanganLihat,
-                fitur: 'akuntansi.penuh',
-            },
-        ],
-    },
-    {
-        judul: 'Akses & keamanan',
-        butir: [
-            {
-                label: 'Peran & izin',
-                keterangan: 'Izin tiap peran. Anggota tim, akses masuk, dan PIN kasir ada di menu Tim.',
-                href: '/kelola/peran',
-                izin: IzinTenant.PenggunaLihat,
-            },
             {
                 label: 'Token API',
                 keterangan: 'Token untuk aplikasi lain membaca produk, stok, penjualan, atau pelanggan lewat API.',

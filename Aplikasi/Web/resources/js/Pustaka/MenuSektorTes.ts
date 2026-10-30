@@ -16,8 +16,8 @@ describe('Pustaka/MenuSektor (audit #33: ringkasan menu menurut jenis usaha)', (
 
         expect(new Set(kunci).size).toBe(kunci.length);
         expect(butir.some((satu) => satu.Label === 'Produksi' && satu.Lokasi === 'Menu samping')).toBe(true);
-        expect(butir.some((satu) => satu.Label === 'Laporan apotek' && satu.Lokasi === 'Pengaturan')).toBe(true);
-        expect(butir.some((satu) => satu.Label === 'Stasiun dapur' && satu.Lokasi === 'Pengaturan')).toBe(true);
+        expect(butir.some((satu) => satu.Label === 'Laporan apotek' && satu.Lokasi === 'Menu samping')).toBe(true);
+        expect(butir.some((satu) => satu.Label === 'Stasiun dapur' && satu.Lokasi === 'Menu samping')).toBe(true);
         // Butir umum (tanpa sektor) tidak ikut dihitung.
         expect(butir.some((satu) => satu.Label === 'Produk')).toBe(false);
     });

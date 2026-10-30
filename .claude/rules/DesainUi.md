@@ -14,7 +14,7 @@ paths:
 - [ ] Warna hanya untuk aksi utama & status; status selalu disertai teks/ikon.
 - [ ] Tanpa gradien (kecuali kepala sidebar merek `BrandGelap` → `Brand`, D-15), efek kaca, bayangan dekoratif, emoji, ilustrasi dekoratif (ilustrasi merek penjelas keadaan kosong diizinkan, D-68; ilustrasi jenis usaha di pemilih sektor diizinkan, D-178; ilustrasi merek Aplikasi Owner diizinkan, D-231).
 - [ ] Tidak ada kartu yang lebih jelas bila dijadikan baris tabel.
-- [ ] Halaman punya **satu rumah**: menu samping (kerja harian) atau Pengaturan (sekali atur), tidak keduanya; anggaran navigasi §17.4.10 masih terpenuhi (maks. 12 entri level utama, 7 sub-menu per grup).
+- [ ] Halaman punya **satu rumah**: menu samping (kerja harian dan pengaturan khusus satu modul) atau Pengaturan (hanya Usaha dan Integrasi & API, D-253), tidak keduanya; anggaran navigasi §17.4.10 masih terpenuhi (maks. 13 entri level utama, 8 entri langsung dan 16 halaman per grup).
 - [ ] Web: setiap kelas `text-*` berasal dari token `@theme` (D-28); tidak ada kelas semantik karangan sendiri.
 - [ ] Web: tombol aksi bisnis memakai `Tombol` (spinner & `aria-busy`), bukan `Button` shadcn mentah (D-28).
 - [ ] Web: bilah yang menempel di `bottom-0` memakai `tepi-bawah-aman` supaya tidak tertimpa indikator home (D-28).

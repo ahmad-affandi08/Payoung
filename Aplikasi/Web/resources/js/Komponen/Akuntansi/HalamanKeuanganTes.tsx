@@ -99,7 +99,7 @@ describe('F-13a menu Akuntansi', () => {
         const akuntansi = menu.find(({ menu: induk }) => induk.label === 'Akuntansi');
 
         expect(akuntansi?.menu.href).toBe('/kelola/akuntansi/jurnal');
-        // D-27: Akuntansi berisi pekerjaan pembukuan; Bagan & pemetaan akun pindah ke Pengaturan.
+        // D-27: Akuntansi berisi pekerjaan pembukuan. D-253: Bagan akun, Pemetaan akun, dan Anggaran ikut pindah ke sini.
         // D-252: Jurnal, Buku besar, dan Neraca saldo satu subgrup "Catatan keuangan", jadi berurutan.
         expect(akuntansi?.sub.map((m) => m.label)).toEqual([
             'Jurnal',
@@ -112,6 +112,10 @@ describe('F-13a menu Akuntansi', () => {
             'Rekonsiliasi bank',
             'Giro & cek mundur',
             'QRIS tanpa penjualan',
+            // D-253: pengaturan akuntansi pindah dari Pengaturan ke subgrup "Akun & anggaran".
+            'Bagan akun',
+            'Pemetaan akun',
+            'Anggaran',
             // FIN-10 (v3.38): aset tetap & penyusutan, pekerjaan pembukuan berkala.
             'Aset tetap',
             'Tutup buku',

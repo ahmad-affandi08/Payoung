@@ -4,26 +4,36 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HalamanPengaturan from '@/Halaman/Kelola/Pengaturan/Indeks';
 import { AturHalamanUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
+import { SaringMenuTerlihat } from '@/TataLetak/TataLetakAplikasi';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
 /*
- * D-183: fitur khusus sektor tidak boleh bocor ke sektor lain. Pengaturan memakai aturan `sektor` (hanya sektor itu) dan
- * `kecualiSektor` (semua sektor usaha ada di daftar itu, mis. usaha tanpa kasir).
+ * D-183: fitur khusus sektor tidak boleh bocor ke sektor lain. Menu samping dan Pengaturan memakai aturan `sektor`
+ * (hanya sektor itu) dan `kecualiSektor` (semua sektor usaha ada di daftar itu, mis. usaha tanpa kasir). Sejak D-253
+ * pengaturan modul tinggal di menu modulnya, jadi yang diperiksa adalah menu samping dan halaman Pengaturan sekaligus.
  */
 const akunPemilik = { Pemilik: true, Izin: [] };
+
+let labelMenu = new Set<string>();
 
 function Muat(sektor: string[]) {
     AturHalamanUji({}, '/kelola/pengaturan');
     TambahPropsHalamanUji({ Akses: akunPemilik, Edisi: 'Saas', SektorOutlet: sektor });
+    labelMenu = new Set(
+        SaringMenuTerlihat(akunPemilik, { sektorOutlet: sektor, edisi: 'Saas' }).flatMap((terlihat) =>
+            terlihat.sub.length > 0 ? terlihat.sub.map((item) => item.label) : [terlihat.menu.label],
+        ),
+    );
     render(<HalamanPengaturan />);
 }
 
+/** Ada di menu samping (pengaturan modul) atau di halaman Pengaturan (profil usaha, integrasi). */
 function Ada(label: string): boolean {
-    return screen.queryAllByText(label).length > 0;
+    return labelMenu.has(label) || screen.queryAllByText(label).length > 0;
 }
 
-describe('Pengaturan menurut sektor (D-183)', () => {
+describe('Menu dan Pengaturan menurut sektor (D-183, D-253)', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/pengaturan'));
     afterEach(() => cleanup());
 

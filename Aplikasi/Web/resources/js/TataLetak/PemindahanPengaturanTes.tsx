@@ -53,9 +53,24 @@ describe('Pemindahan butir dari Pengaturan (v6.49)', () => {
             expect(alamat.has(pindah), pindah).toBe(false);
         }
 
-        // Yang diatur sekali tetap di Pengaturan.
-        expect(alamat.has('/kelola/kelompok-pajak')).toBe(true);
-        expect(alamat.has('/kelola/kasir/struk')).toBe(true);
+        // D-253: yang tersisa di Pengaturan hanya usaha dan integrasi.
+        expect(alamat.has('/kelola/pengaturan/profil-usaha')).toBe(true);
+        expect(alamat.has('/kelola/outlet')).toBe(true);
+    });
+
+    it('D-253: pengaturan modul pindah ke menu modulnya dan tidak dobel di Pengaturan', () => {
+        const alamat = new Set(daftarPengaturan.flatMap(({ butir }) => butir.map((satu) => satu.href)));
+
+        expect(daftarPengaturan.map(({ judul }) => judul)).toEqual(['Usaha', 'Integrasi & API']);
+        expect(AlamatGrup('Penjualan & kasir')).toEqual(
+            expect.arrayContaining(['/kelola/kasir/pengaturan', '/kelola/kasir/struk']),
+        );
+        expect(AlamatGrup('Akuntansi')).toEqual(
+            expect.arrayContaining(['/kelola/akuntansi/akun', '/kelola/akuntansi/pemetaan']),
+        );
+        expect(alamat.has('/kelola/kasir/pengaturan')).toBe(false);
+        expect(alamat.has('/kelola/kasir/struk')).toBe(false);
+        expect(alamat.has('/kelola/akuntansi/akun')).toBe(false);
     });
 
     it('halaman menu akun (langganan, keamanan) tetap ditemukan lewat Ctrl+K dan tidak dobel di Pengaturan', () => {
@@ -97,12 +112,7 @@ describe('Halaman Pengaturan: Paling sering dipakai', () => {
             .getAllByRole('link')
             .map((tautan) => tautan.textContent);
 
-        expect(label).toEqual([
-            'Pengaturan kasir',
-            'Pengaturan struk',
-            'Metode pembayaran',
-            'Outlet & gudang',
-            'Peran & izin',
-        ]);
+        // D-253: pintasan hanya menunjuk butir yang masih tinggal di Pengaturan.
+        expect(label).toEqual(['Profil usaha', 'Outlet & gudang']);
     });
 });

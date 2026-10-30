@@ -125,9 +125,9 @@ describe('Pengaturan › Ganti jenis usaha (D-165)', () => {
         const sembunyi = screen.getByText(/^Disembunyikan \(/).nextElementSibling?.textContent ?? '';
 
         expect(tampil).toContain('Produksi');
-        expect(tampil).toContain('Stasiun dapur (di Pengaturan)');
+        expect(tampil).toContain('Stasiun dapur');
         expect(sembunyi).toContain('Paket sesi');
-        expect(sembunyi).toContain('Laporan apotek (di Pengaturan)');
+        expect(sembunyi).toContain('Laporan apotek');
         expect(screen.queryByText('Menu sudah menyesuaikan jenis usaha baru')).toBeNull();
     });
 
@@ -145,9 +145,9 @@ describe('Pengaturan › Ganti jenis usaha (D-165)', () => {
 
         const ringkasan = screen.getByText('Menu sudah menyesuaikan jenis usaha baru').parentElement?.textContent ?? '';
 
-        expect(ringkasan).toContain('Kini tersedia: Laporan apotek (di Pengaturan)');
+        expect(ringkasan).toContain('Kini tersedia: Laporan apotek');
         expect(ringkasan).toContain('Produksi');
-        expect(ringkasan).toContain('Stasiun dapur (di Pengaturan)');
+        expect(ringkasan).toContain('Stasiun dapur');
     });
 
     it('sesudah mengganti ke jenis usaha bermenu sama: menjelaskan bahwa tidak ada butir menu yang berubah', () => {
