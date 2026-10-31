@@ -6,11 +6,12 @@ use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Katalog\Harga\Model\DaftarHarga;
 use App\Domain\Katalog\Harga\Model\RiwayatHarga;
 use App\Domain\Katalog\Model\ProdukHarga;
-use App\Domain\Penjualan\Enum\KanalPenjualan;
 use App\Domain\Katalog\Pilihan\Model\Pilihan;
+use App\Domain\Penjualan\Enum\KanalPenjualan;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Katalog\BantuanKomposisi;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -22,13 +23,26 @@ beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
+/**
+ * Tenant siap mengisi produk, dengan fitur paket `harga.daftar-harga` (rute daftar harga ditegakkan per paket, D-111).
+ *
+ * @return array<string, mixed>
+ */
+function SiapkanTenantHargaKanal(): array
+{
+    $t = BantuanKatalog::SiapkanTenantProduk();
+    BantuanFitur::Beri($t['Tenant']->Id, 'harga.daftar-harga');
+
+    return $t;
+}
+
 function IsianHargaKanal(array $ubah = []): array
 {
     return array_merge(['Kanal' => ['GoFood'], 'Mode' => 'NaikPersen', 'Nilai' => '30', 'Pembulatan' => 500, 'Timpa' => false, 'UuidOutlet' => []], $ubah);
 }
 
 it('pratinjau: contoh harga baru dan jumlah produk, tanpa menyimpan apa pun', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
     BantuanKatalog::BuatProduk(['Nama' => 'Roti Bakar Coklat', 'Sku' => 'RBC', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '15000.00', $t['Pcs']);
 
@@ -52,7 +66,7 @@ it('pratinjau: contoh harga baru dan jumlah produk, tanpa menyimpan apa pun', fu
 });
 
 it('terapkan: membuat daftar tiap platform, mengisi harga, dan harga dasar tidak berubah', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
 
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)
@@ -77,7 +91,7 @@ it('terapkan: membuat daftar tiap platform, mengisi harga, dan harga dasar tidak
 });
 
 it('terapkan: harga bertingkat ikut naik, produk harga nol dan produk diarsipkan dilewati', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     $gelas = BantuanKatalog::BuatProduk(['Nama' => 'Es Teh Manis', 'Sku' => 'ETM', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '5000.00', $t['Pcs']);
     ProdukHarga::query()->create(['IdProduk' => $gelas->Id, 'IdProdukSatuan' => ProdukHarga::query()->where('IdProduk', $gelas->Id)->value('IdProdukSatuan'), 'IdDaftarHarga' => null, 'JumlahMinimum' => '12', 'Harga' => '4500.00']);
     BantuanKatalog::BuatProduk(['Nama' => 'Jasa Tanpa Harga', 'Sku' => 'JTH', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '0.00', $t['Pcs']);
@@ -98,7 +112,7 @@ it('terapkan: harga bertingkat ikut naik, produk harga nol dan produk diarsipkan
 });
 
 it('terapkan ulang: tanpa timpa harga yang ada dilewati, dengan timpa diganti, daftar nonaktif diaktifkan lagi', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -122,7 +136,7 @@ it('terapkan ulang: tanpa timpa harga yang ada dilewati, dengan timpa diganti, d
 });
 
 it('turun nominal: hasil negatif menolak semuanya dan tidak ada daftar yang tersisa', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     BantuanKatalog::BuatProduk(['Nama' => 'Gelas Plastik', 'Sku' => 'GP', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '1000.00', $t['Pcs']);
 
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)
@@ -134,7 +148,7 @@ it('turun nominal: hasil negatif menolak semuanya dan tidak ada daftar yang ters
 });
 
 it('masukan tidak valid ditolak: kanal bukan platform, pilihan kosong, cara tidak dikenal', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     BantuanKatalog::BuatProduk(['Nama' => 'Kopi', 'Sku' => 'K', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
 
@@ -149,7 +163,7 @@ it('masukan tidak valid ditolak: kanal bukan platform, pilihan kosong, cara tida
 });
 
 it('tanpa produk berharga: pesan jelas, tanpa izin ubah harga ditolak', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
 
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)
         ->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal())
@@ -157,7 +171,7 @@ it('tanpa produk berharga: pesan jelas, tanpa izin ubah harga ditolak', function
 });
 
 it('pilihan tambahan ikut naik per kanal, harga dasar pilihan tetap, dan terapkan ulang tanpa timpa melewati yang sudah ada', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
     BantuanKomposisi::BuatKelompokPilihan('Tambahan', [['Extra Shot', '5000'], ['Susu Oat', '8000'], ['Tanpa Gula', '0']], 0, 3);
     $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
@@ -195,7 +209,7 @@ it('pilihan tambahan ikut naik per kanal, harga dasar pilihan tetap, dan terapka
 });
 
 it('pilihan tidak ikut bila berlaku di outlet tertentu dan menyimpan kelompok pilihan tidak menghapus harga kanal', function (): void {
-    $t = BantuanKatalog::SiapkanTenantProduk();
+    $t = SiapkanTenantHargaKanal();
     BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
     $kelompok = BantuanKomposisi::BuatKelompokPilihan('Tambahan', [['Extra Shot', '5000']], 0, 1);
     $outlet = $t['Outlet'];

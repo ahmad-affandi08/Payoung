@@ -19,8 +19,8 @@ use App\Domain\Katalog\Model\ProdukHarga;
 use App\Domain\Katalog\Model\ProdukSatuan;
 use App\Domain\Katalog\Pilihan\Model\KelompokPilihan;
 use App\Domain\Katalog\Pilihan\Model\Pilihan;
-use App\Domain\Tenant\Layanan\PenguncianTenant;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
+use App\Domain\Tenant\Layanan\PenguncianTenant;
 use Illuminate\Support\Facades\DB;
 
 /**
