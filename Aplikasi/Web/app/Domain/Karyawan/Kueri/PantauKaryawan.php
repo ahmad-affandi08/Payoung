@@ -65,7 +65,7 @@ final class PantauKaryawan
         }
 
         // D-251: karyawan dengan beberapa shift hari ini tampil sekali, jam shiftnya digabung.
-        $belumMasuk = array_values($belum->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->IdOutlet)->map(function ($shift): array {
+        $belumMasuk = array_values($belum->groupBy(fn (JadwalKerja $j): string => $j->IdKaryawan.'|'.$j->IdOutlet)->map(function ($shift) use ($namaKaryawan, $namaOutlet): array {
             /** @var JadwalKerja $pertama */
             $pertama = $shift->first();
 

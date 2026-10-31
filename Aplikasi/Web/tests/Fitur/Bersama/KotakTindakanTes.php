@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Tindakan\Model\TinjauanDokumen;
 use App\Domain\Penjualan\Model\Penjualan;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
@@ -20,6 +21,8 @@ use Tests\TestCase;
  */
 
 beforeEach(function (): void {
+    // Jam dibekukan di tengah bulan dan tengah hari WIB, supaya hasil tidak bergantung kapan CI berjalan (batas bulan/hari).
+    $this->travelTo(CarbonImmutable::parse('2026-10-20 03:00:00', 'UTC'));
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
@@ -78,8 +81,9 @@ it('penjualan perlu dicek tampil di Kotak Tindakan & beranda. Ditandai sudah dic
         ->and($penjualan['Rincian'][0]['Uuid'])->toBe($jual->Uuid)
         ->and($penjualan['Rincian'][0]['Judul'])->toBe($jual->Nomor)
         ->and($penjualan['Rincian'][0]['Keterangan'])->toContain('PelangganTidakDikenal');
+    // D-247: Beranda tidak lagi memuat kartu "Perlu tindakan", hanya lencana jumlah di menu Kotak Tindakan.
     $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
-        ->where('Tindakan.0.Kunci', 'penjualan.tinjauan')->where('Tindakan.0.Rincian', []));
+        ->missing('Tindakan')->where('TindakanPerluDicek', fn ($jumlah): bool => $jumlah >= 1));
 
     $this->post('/kelola/tindakan/tinjau', ['Jenis' => 'Penjualan', 'Uuid' => [$jual->Uuid], 'Catatan' => 'Pelanggan sudah dicek manual'])
         ->assertSessionHasNoErrors()->assertRedirect();
