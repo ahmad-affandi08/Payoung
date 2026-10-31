@@ -12,7 +12,6 @@ use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Enum\PenandaTenant;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Carbon\CarbonImmutable;
@@ -212,7 +211,7 @@ describe('PerbaruiAnalitikTenant', function (): void {
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, jumlah: '50');
         BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $produk, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
         BantuanTagihan::AturTenant($k['Tenant']);
-        $tagihan = app(BuatTagihanLangganan::class)->Jalankan($k['Pemilik']->Id, 'PRO', SiklusTagihan::Bulanan);
+        $tagihan = app(BuatTagihanLangganan::class)->Jalankan($k['Pemilik']->Id, 'PRO', 1);
         TagihanLangganan::query()->whereKey($tagihan->Id)->update(['DibayarPada' => '2026-10-04 03:00:00', 'Status' => 'Lunas']);
 
         $hasil = app(PerbaruiAnalitikTenant::class)->Jalankan();

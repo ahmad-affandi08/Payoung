@@ -399,7 +399,7 @@ describe('Naik paket & perpanjangan (F-19, D-98)', function (): void {
         BantuanTagihan::AturTenant($this->tenant);
 
         DB::table('Langganan')->where('IdTenant', $this->tenant->Id)->update(['Status' => 'Berhenti']);
-        expect(fn () => app(BuatTagihanLangganan::class)->Jalankan($this->pemilik->Id, 'PRO', SiklusTagihan::Bulanan))
+        expect(fn () => app(BuatTagihanLangganan::class)->Jalankan($this->pemilik->Id, 'PRO', 1))
             ->toThrow(PelanggaranAturanBisnis::class, 'Langganan usaha ini sudah berhenti.');
     });
 });

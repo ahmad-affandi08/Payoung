@@ -232,6 +232,7 @@ final class KamusPeristiwaAudit
 
         'kelompok-pilihan.buat' => 'Kelompok pilihan dibuat',
         'kelompok-pilihan.hapus' => 'Kelompok pilihan dihapus',
+        'kelompok-pilihan.harga-kanal.ubah' => 'Harga pilihan tambahan di platform ojol diubah',
         'kelompok-pilihan.ubah' => 'Kelompok pilihan diubah',
 
         'kompatibilitas.tandai' => 'Kompatibilitas perangkat ditandai',
@@ -250,6 +251,8 @@ final class KamusPeristiwaAudit
         'langganan.kapasitas-dibatasi' => 'Kapasitas langganan dibatasi',
         'langganan.pembayaran-gerbang-gagal' => 'Pembayaran langganan lewat gerbang gagal',
         'langganan.pembayaran-gerbang-lunas' => 'Pembayaran langganan lewat gerbang lunas',
+        'langganan.pembayaran-gerbang-lunas-terlambat' => 'Pembayaran langganan lewat gerbang lunas setelah tagihan lewat batas',
+        'langganan.pembayaran-gerbang-lunas-tak-terpakai' => 'Pembayaran langganan lewat gerbang lunas tetapi tagihannya sudah tidak berlaku',
         'langganan.pembayaran-gerbang-mulai' => 'Pembayaran langganan lewat gerbang dimulai',
         'langganan.pindah-gratis' => 'Langganan dipindah ke paket Gratis',
         'langganan.status.otomatis' => 'Status langganan berubah otomatis',

@@ -78,7 +78,7 @@ final class PenutupAbsensiOtomatis
     /**
      * @param  int|null  $idKaryawan  null = semua karyawan tenant (jadwal berkala), selain itu hanya karyawan itu
      * @param  bool  $untukAbsenMasuk  karyawan sedang absen masuk: shift terdahulu yang jam selesainya lewat ditutup walau masa
-     *                                  tunggu belum habis bila ia punya shift berikutnya hari itu
+     *                                 tunggu belum habis bila ia punya shift berikutnya hari itu
      * @return int jumlah absensi yang ditutup
      */
     public function TutupYangLewat(CarbonImmutable $sekarang, ?int $idKaryawan = null, bool $untukAbsenMasuk = false): int

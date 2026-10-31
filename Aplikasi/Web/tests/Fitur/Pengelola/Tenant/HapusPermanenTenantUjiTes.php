@@ -11,7 +11,6 @@ use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
 use App\Domain\Tenant\Enum\PenandaTenant;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
 use Illuminate\Support\Facades\DB;
@@ -173,7 +172,7 @@ describe('D-213 hapus permanen tenant uji', function (): void {
     it('tenant yang punya tagihan langganan berbayar ditolak walau berpenanda', function (): void {
         $uji = SiapkanTenantHapusUji('Toko Uji Berbayar');
         BantuanTagihan::AturTenant($uji['Tenant']);
-        $tagihan = app(BuatTagihanLangganan::class)->Jalankan($uji['Pemilik']->Id, 'PRO', SiklusTagihan::Bulanan);
+        $tagihan = app(BuatTagihanLangganan::class)->Jalankan($uji['Pemilik']->Id, 'PRO', 1);
         TagihanLangganan::query()->whereKey($tagihan->Id)->update(['DibayarPada' => now(), 'Status' => 'Lunas']);
 
         BantuanTenantPengelola::Masuk($this, PeranPengelolaBawaan::SuperAdmin);

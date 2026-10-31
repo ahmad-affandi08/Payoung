@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Harga\Model\DaftarHarga;
 use App\Domain\Katalog\Harga\Model\RiwayatHarga;
 use App\Domain\Katalog\Model\ProdukHarga;
+use App\Domain\Katalog\Pilihan\Aksi\SimpanKelompokPilihan;
+use App\Domain\Katalog\Pilihan\Data\DataKelompokPilihan;
+use App\Domain\Katalog\Pilihan\Data\DataPilihan;
 use App\Domain\Katalog\Pilihan\Model\Pilihan;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
 use Tests\Pendukung\Katalog\BantuanKatalog;
@@ -227,10 +231,10 @@ it('pilihan tidak ikut bila berlaku di outlet tertentu dan menyimpan kelompok pi
     $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal())->assertSessionHasNoErrors();
     BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
     $pilihan = Pilihan::query()->where('Nama', 'Extra Shot')->sole();
-    app(\App\Domain\Katalog\Pilihan\Aksi\SimpanKelompokPilihan::class)->Jalankan(
+    app(SimpanKelompokPilihan::class)->Jalankan(
         $kelompok,
-        new \App\Domain\Katalog\Pilihan\Data\DataKelompokPilihan('Tambahan', 0, 1, 0, [
-            new \App\Domain\Katalog\Pilihan\Data\DataPilihan($pilihan->Uuid, 'Extra Shot', \App\Domain\Bersama\Nilai\Uang::Dari('5000'), true, null, null),
+        new DataKelompokPilihan('Tambahan', 0, 1, 0, [
+            new DataPilihan($pilihan->Uuid, 'Extra Shot', Uang::Dari('5000'), true, null, null),
         ], true),
     );
     expect(Pilihan::query()->where('Nama', 'Extra Shot')->sole()->HargaKanal)->toBe(['GoFood' => '6500.00']);

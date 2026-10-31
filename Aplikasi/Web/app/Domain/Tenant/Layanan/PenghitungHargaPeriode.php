@@ -59,7 +59,7 @@ final class PenghitungHargaPeriode
         }
 
         $diskon = $penuh
-            ->Kali(BigDecimal::of($persen)->dividedBy(100), RoundingMode::HalfUp)
+            ->Kali(BigDecimal::of($persen)->dividedBy(100, 8, RoundingMode::HalfUp), RoundingMode::HalfUp)
             ->BulatkanKeKelipatan(1, RoundingMode::HalfUp);
         $subtotal = $penuh->Kurangi($diskon);
         $dasar = BigDecimal::of($persen)->isZero() ? 'Bulanan' : 'TanggaDiskon';

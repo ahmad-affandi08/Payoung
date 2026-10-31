@@ -100,8 +100,8 @@ describe('beberapa shift per hari', function (): void {
 
         $kirim([['JamMulai' => '08:00', 'JamSelesai' => '12:00'], ['JamMulai' => '17:00', 'JamSelesai' => '21:00']])->assertSessionHasNoErrors();
         expect(JadwalKerja::query()->where('IdKaryawan', $rina->Id)->count())->toBe(2);
-        $this->get('/kelola/karyawan/jadwal?minggu=2026-09-21')->assertInertia(fn (AssertableInertia $h) => $h
-            ->has('Jadwal.Baris.0.Jadwal.2026-09-22', 2)->has('Jadwal.Baris.0.Jadwal.2026-09-21', 0));
+        $this->get('/kelola/karyawan/jadwal?minggu=2026-09-21')->assertInertia(fn (AssertableInertia $h) => $h // Baris diurutkan menurut nama: Dimas (tanpa shift) lalu Rina.
+            ->has('Jadwal.Baris.1.Jadwal.2026-09-22', 2)->has('Jadwal.Baris.1.Jadwal.2026-09-21', 0));
 
         $kirim([['JamMulai' => '08:00', 'JamSelesai' => '12:00']])->assertSessionHasNoErrors();
         expect(JadwalKerja::query()->where('IdKaryawan', $rina->Id)->count())->toBe(1);
@@ -458,10 +458,10 @@ describe('perlindungan tukar shift', function (): void {
         $p = $tukar->Ajukan($rina, $milik->Uuid, $dimas->Uuid, null, '');
         $tukar->Tanggapi($dimas, $p->Uuid, true);
 
-        expect(fn () => $tukar->Putuskan($p->Uuid, true, null, 1, [999999]))->toThrow(Exception::class)
+        expect(fn () => $tukar->Putuskan($p->Uuid, true, null, $k['Pemilik']->Id, [999999]))->toThrow(Exception::class)
             ->and($p->refresh()->Status)->toBe(StatusTukarShift::MenungguPengelola)
             ->and($milik->refresh()->IdKaryawan)->toBe($rina->Id);
-        $tukar->Putuskan($p->Uuid, true, null, 1, [$k['Outlet']->Id]);
+        $tukar->Putuskan($p->Uuid, true, null, $k['Pemilik']->Id, [$k['Outlet']->Id]);
         expect($milik->refresh()->IdKaryawan)->toBe($dimas->Id);
         // Permintaan yang sudah diputuskan tidak bisa ditanggapi atau dibatalkan lagi.
         expect(fn () => $tukar->Tanggapi($dimas, $p->Uuid, false))->toThrow(Exception::class)

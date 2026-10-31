@@ -14,6 +14,7 @@ use App\Domain\Karyawan\Model\PermintaanTukarShift;
 use App\Domain\Karyawan\Model\PolaJadwalKerja;
 use App\Domain\Karyawan\Model\ShiftKerja;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 /**
  * Isian jadwal mingguan satu outlet (F-18): baris = karyawan aktif berpangkalan di outlet ini atau yang punya jadwal di
@@ -112,7 +113,7 @@ final class JadwalMingguan
 
     /**
      * @param  list<array{HariKe: int, JamMulai: string, JamSelesai: string, Minimal: int}>  $kebutuhan
-     * @param  \Illuminate\Support\Collection<int, JadwalKerja>  $jadwalOutlet
+     * @param  Collection<int, JadwalKerja>  $jadwalOutlet
      * @param  list<string>  $hari
      * @param  array<int, array<string, array{Jenis: string, Berbayar: bool}>>  $cuti
      * @return list<array{Tanggal: string, JamMulai: string, JamSelesai: string, Minimal: int, Terjadwal: int, Kurang: int}>

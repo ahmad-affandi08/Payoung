@@ -8,7 +8,6 @@ use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
 use App\Domain\Tenant\Aksi\BuatTagihanLangganan;
-use App\Domain\Tenant\Enum\SiklusTagihan;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -32,7 +31,7 @@ beforeEach(function (): void {
     Mail::fake();
     ['Tenant' => $this->tenant, 'Pengguna' => $this->pemilik] = BantuanTagihan::DaftarTenant('owner.aktivitas@contoh.id', '081299001234', 'Kedai Aktivitas Solo');
     BantuanTagihan::AturTenant($this->tenant);
-    $this->tagihan = app(BuatTagihanLangganan::class)->Jalankan($this->pemilik->Id, 'PRO', SiklusTagihan::Bulanan);
+    $this->tagihan = app(BuatTagihanLangganan::class)->Jalankan($this->pemilik->Id, 'PRO', 1);
     $this->tiket = BantuanDukungan::BuatTiket($this->tenant, $this->pemilik, 'Printer struk tidak mencetak setelah pembaruan');
     app(KonteksTenant::class)->Kosongkan();
 });

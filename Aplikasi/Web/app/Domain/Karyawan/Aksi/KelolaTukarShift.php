@@ -131,7 +131,7 @@ final class KelolaTukarShift
 
     /**
      * @param  list<int>|null  $idOutletBoleh  outlet yang boleh diakses pengelola, null = semua. Permintaan untuk shift di
-     *                                          luar akses itu diperlakukan tidak ada.
+     *                                         luar akses itu diperlakukan tidak ada.
      */
     public function Putuskan(string $uuid, bool $setuju, ?string $alasan, int $idPengguna, ?array $idOutletBoleh = null): PermintaanTukarShift
     {

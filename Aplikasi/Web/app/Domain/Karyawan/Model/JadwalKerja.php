@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int $IdTenant
  * @property int $IdKaryawan
  * @property int $IdOutlet
+ * @property string $Uuid
  * @property int|null $IdShiftKerja D-251: shift asal baris ini (kosong = jam diketik sendiri)
  * @property Carbon $Tanggal
  * @property string $JamMulai
@@ -27,8 +28,6 @@ final class JadwalKerja extends ModelDasar
     use MilikTenant;
 
     protected $table = 'JadwalKerja';
-
-    protected bool $pakaiUuid = false;
 
     /**
      * @return array<string, string>

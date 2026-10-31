@@ -119,7 +119,7 @@ final class JadwalSaya
                     'Tanggal' => $j->Tanggal->toDateString(),
                     'JamMulai' => $j->JamMulai,
                     'JamSelesai' => $j->JamSelesai,
-                    ])->all()),
+                ])->all()),
             ])->all()),
             'Diajukan' => $diajukan,
             'Masuk' => $masuk,
