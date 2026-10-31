@@ -50,6 +50,7 @@ final class RekapKehadiranPeriode
 
         $cuti = $this->cuti->AmbilPerTanggal($dari, $sampai);
         $selisih = $this->zona->AmbilSelisihDetik(array_values(array_unique(array_map('intval', $absensi->pluck('IdOutlet')->all()))));
+        /** @var array<int, array{TerlambatMenit: int, LemburMenit: int, HariTidakMasuk: int}> $hasil */
         $hasil = [];
         // D-251: satu karyawan boleh punya beberapa shift sehari. Hari tidak masuk dihitung sekali per hari berjadwal, dan
         // tiap absen dinilai terhadap shift yang dimaksud jam masuknya (absen pertama per shift saja).
@@ -63,6 +64,7 @@ final class RekapKehadiranPeriode
         foreach ($perHari as $idKaryawan => $hari) {
             foreach (array_keys($hari) as $tanggal) {
                 if (! isset($pertama[$idKaryawan.'|'.$tanggal]) && $tanggal < $hariIni->toDateString() && ($cuti[$idKaryawan][$tanggal]['Berbayar'] ?? false) !== true) {
+                    $hasil[$idKaryawan] ??= ['TerlambatMenit' => 0, 'LemburMenit' => 0, 'HariTidakMasuk' => 0];
                     $hasil[$idKaryawan]['HariTidakMasuk']++;
                 }
             }
@@ -97,6 +99,7 @@ final class RekapKehadiranPeriode
                 $aturan['ToleransiPulangCepatMenit'],
                 $aturan['LemburSetelahMenit'],
             );
+            $hasil[$a->IdKaryawan] ??= ['TerlambatMenit' => 0, 'LemburMenit' => 0, 'HariTidakMasuk' => 0];
             $hasil[$a->IdKaryawan]['TerlambatMenit'] += $nilai['TerlambatMenit'];
             $hasil[$a->IdKaryawan]['LemburMenit'] += $nilai['LemburMenit'];
         }

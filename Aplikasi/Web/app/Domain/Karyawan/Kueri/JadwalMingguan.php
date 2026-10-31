@@ -68,7 +68,7 @@ final class JadwalMingguan
             $sel = [];
 
             foreach ($hari as $tanggal) {
-                $sel[$tanggal] = ($perSel->get($k->Id.'|'.$tanggal) ?? collect())
+                $sel[$tanggal] = array_values(($perSel->get($k->Id.'|'.$tanggal) ?? collect())
                     ->map(fn (JadwalKerja $j): array => [
                         'Uuid' => $j->Uuid,
                         'JamMulai' => $j->JamMulai,
@@ -76,8 +76,7 @@ final class JadwalMingguan
                         'OutletLain' => $j->IdOutlet !== $idOutlet,
                         'UuidShift' => $j->IdShiftKerja === null ? null : ($uuidShift[$j->IdShiftKerja] ?? null),
                     ])
-                    ->values()
-                    ->all();
+                    ->all());
             }
 
             $baris[] = [
@@ -87,24 +86,23 @@ final class JadwalMingguan
                 'Aktif' => $k->Status === StatusKaryawan::Aktif,
                 'Jadwal' => $sel,
                 'Cuti' => $cuti[$k->Id] ?? [],
-                'Pola' => $pola->get($k->Id, collect())->map(fn (PolaJadwalKerja $p): array => [
+                'Pola' => array_values($pola->get($k->Id, collect())->map(fn (PolaJadwalKerja $p): array => [
                     'HariKe' => $p->HariKe,
                     'JamMulai' => $p->JamMulai,
                     'JamSelesai' => $p->JamSelesai,
                     'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null),
-                ])->values()->all(),
+                ])->all()),
             ];
         }
 
-        $kebutuhan = KebutuhanStaf::query()->where('IdOutlet', $idOutlet)->orderBy('HariKe')->orderBy('JamMulai')->get()
+        $kebutuhan = array_values(KebutuhanStaf::query()->where('IdOutlet', $idOutlet)->orderBy('HariKe')->orderBy('JamMulai')->get()
             ->map(fn (KebutuhanStaf $b): array => ['HariKe' => $b->HariKe, 'JamMulai' => $b->JamMulai, 'JamSelesai' => $b->JamSelesai, 'Minimal' => $b->Minimal])
-            ->values()
-            ->all();
+            ->all());
 
         return [
             'Hari' => $hari,
             'Baris' => $baris,
-            'ShiftKerja' => $shift->map(fn (ShiftKerja $s): array => ['Uuid' => $s->Uuid, 'Nama' => $s->Nama, 'JamMulai' => $s->JamMulai, 'JamSelesai' => $s->JamSelesai, 'Aktif' => $s->Aktif, 'Urutan' => $s->Urutan])->values()->all(),
+            'ShiftKerja' => array_values($shift->map(fn (ShiftKerja $s): array => ['Uuid' => $s->Uuid, 'Nama' => $s->Nama, 'JamMulai' => $s->JamMulai, 'JamSelesai' => $s->JamSelesai, 'Aktif' => $s->Aktif, 'Urutan' => $s->Urutan])->all()),
             'Kebutuhan' => $kebutuhan,
             'Kekurangan' => $kebutuhan === [] ? [] : $this->HitungKekurangan($kebutuhan, $jadwalLuas->where('IdOutlet', $idOutlet), $hari, $cutiLuas),
             'TukarShift' => $this->AmbilTukarShift($idOutlet),

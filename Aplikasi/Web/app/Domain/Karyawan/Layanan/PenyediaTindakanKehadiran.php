@@ -62,9 +62,10 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
 
     private function ButirAbsen(DataKonteksTindakan $konteks, string $dari, string $sampai, string $kolom, string $kunci, string $judul, string $keterangan, ?string $teksTetap, ?Closure $batasi = null): ?DataButirTindakan
     {
+        /** @var Closure(): Builder<Absensi> $kueri */
         $kueri = fn (): Builder => Absensi::query()
             ->where($kolom, true)
-            ->when($batasi !== null, fn (Builder $k) => $batasi($k))
+            ->when($batasi !== null, fn (Builder $k): Builder => $batasi === null ? $k : $batasi($k))
             ->where('TanggalBisnis', '>=', $dari)
             ->when($konteks->idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdOutlet', $konteks->idOutletBoleh ?: [0]));
         $jumlah = $kueri()->count();

@@ -85,7 +85,7 @@ final class SetujuiStokOpname
         $this->pengunciSaldo->Kunci(array_values($dihitung->map(fn (StokOpnameDetail $d): array => [$d->IdProduk, $opname->IdGudang])->all()));
         $produk = $this->infoProduk->AmbilBanyak(array_values(array_unique($dihitung->pluck('IdProduk')->all())), true);
         $barisMutasi = [];
-        $sejakTanpaPelacakan = $this->HitungMutasiTanpaPelacakan($dihitung->all(), $produk, $opname->IdGudang);
+        $sejakTanpaPelacakan = $this->HitungMutasiTanpaPelacakan(array_values($dihitung->all()), $produk, $opname->IdGudang);
 
         foreach ($dihitung as $d) {
             $pelacakan = isset($produk[$d->IdProduk]) ? $produk[$d->IdProduk]->pelacakan : PelacakanProduk::Tidak;

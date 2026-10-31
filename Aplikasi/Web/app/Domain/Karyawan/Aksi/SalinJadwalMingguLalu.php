@@ -58,10 +58,16 @@ final class SalinJadwalMingguLalu
                 continue;
             }
 
+            $karyawan = $aktif->get($pertama->IdKaryawan);
+
+            if ($karyawan === null) {
+                continue;
+            }
+
             $sel[] = [
-                'UuidKaryawan' => $aktif[$pertama->IdKaryawan]->Uuid,
+                'UuidKaryawan' => $karyawan->Uuid,
                 'Tanggal' => $tanggal,
-                'Shift' => $kelompok->map(fn (JadwalKerja $j): array => ['JamMulai' => $j->JamMulai, 'JamSelesai' => $j->JamSelesai, 'UuidShift' => $j->IdShiftKerja === null ? null : ($uuidShift[$j->IdShiftKerja] ?? null)])->values()->all(),
+                'Shift' => array_values($kelompok->map(fn (JadwalKerja $j): array => ['JamMulai' => $j->JamMulai, 'JamSelesai' => $j->JamSelesai, 'UuidShift' => $j->IdShiftKerja === null ? null : ($uuidShift[$j->IdShiftKerja] ?? null)])->all()),
             ];
         }
 

@@ -61,7 +61,7 @@ final class TerapkanPolaJadwal
                 $sel[] = [
                     'UuidKaryawan' => $k->Uuid,
                     'Tanggal' => $tanggal,
-                    'Shift' => $barisHari->map(fn (PolaJadwalKerja $p): array => ['JamMulai' => $p->JamMulai, 'JamSelesai' => $p->JamSelesai, 'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null)])->values()->all(),
+                    'Shift' => array_values($barisHari->map(fn (PolaJadwalKerja $p): array => ['JamMulai' => $p->JamMulai, 'JamSelesai' => $p->JamSelesai, 'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null)])->all()),
                 ];
             }
         }

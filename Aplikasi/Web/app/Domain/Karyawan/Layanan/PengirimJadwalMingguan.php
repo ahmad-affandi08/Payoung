@@ -64,7 +64,7 @@ final class PengirimJadwalMingguan
             $noHp = $k->IdPengguna === null ? null : ($nomor[$k->IdPengguna] ?? null);
 
             if ($noHp !== null) {
-                $hasil[$k->Id] = ['Karyawan' => $k, 'NoHp' => $noHp, 'Jadwal' => $jadwal->get($k->Id)?->all() ?? []];
+                $hasil[$k->Id] = ['Karyawan' => $k, 'NoHp' => $noHp, 'Jadwal' => array_values($jadwal->get($k->Id)?->all() ?? [])];
             }
         }
 

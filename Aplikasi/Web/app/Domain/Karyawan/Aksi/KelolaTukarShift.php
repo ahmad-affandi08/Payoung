@@ -196,7 +196,11 @@ final class KelolaTukarShift
         $milikRekan?->forceFill(['IdKaryawan' => $permintaan->IdKaryawanPemohon])->save();
     }
 
-    /** Penerima shift tidak boleh sedang cuti, bentrok di outlet lain, atau bertumpuk dengan shiftnya sendiri. @param list<int> $abaikan */
+    /**
+     * Penerima shift tidak boleh sedang cuti, bentrok di outlet lain, atau bertumpuk dengan shiftnya sendiri.
+     *
+     * @param  list<int>  $abaikan
+     */
     private function PastikanMuat(int $idPenerima, JadwalKerja $shift, array $abaikan): void
     {
         $tanggal = $shift->Tanggal->toDateString();

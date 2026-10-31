@@ -208,7 +208,7 @@ final class AturHargaKanal
             }
 
             $baru = PenghitungPerubahanHarga::Hitung($lama, $mode, $angka, $pembulatan);
-            $nama = $namaProduk->get($b->IdProduk)?->Nama ?? 'Produk';
+            $nama = $namaProduk->get($b->IdProduk)->Nama ?? 'Produk';
 
             if ($baru->BernilaiNegatif()) {
                 throw new PelanggaranAturanBisnis('HargaNegatif', "Harga {$nama} akan menjadi negatif. Kurangi nilai penurunan.", 'Nilai');

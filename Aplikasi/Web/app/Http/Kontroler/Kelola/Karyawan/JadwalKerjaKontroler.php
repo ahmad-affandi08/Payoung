@@ -120,12 +120,12 @@ final class JadwalKerjaKontroler extends DasarKelolaKontroler
             'Baris.*.UuidShift' => ['nullable', 'string', 'ulid'],
         ]);
         $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
-        $jumlah = $simpan->Jalankan($outlet->Id, $karyawan, array_map(fn (array $b): array => [
+        $jumlah = $simpan->Jalankan($outlet->Id, $karyawan, array_values(array_map(fn (array $b): array => [
             'HariKe' => (int) $b['HariKe'],
             'JamMulai' => (string) $b['JamMulai'],
             'JamSelesai' => (string) $b['JamSelesai'],
             'UuidShift' => ($b['UuidShift'] ?? '') === '' ? null : (string) $b['UuidShift'],
-        ], $valid['Baris']), $this->Pelaku()->Id);
+        ], $valid['Baris'])), $this->Pelaku()->Id);
 
         return back()->with('Kilat', $jumlah === 0 ? 'Pola jadwal dihapus.' : "Pola jadwal disimpan ({$jumlah} shift per minggu).");
     }
@@ -150,12 +150,12 @@ final class JadwalKerjaKontroler extends DasarKelolaKontroler
             'Baris.*.Minimal' => ['required', 'integer', 'between:1,99'],
         ]);
         $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
-        $jumlah = $simpan->Jalankan($outlet->Id, array_map(fn (array $b): array => [
+        $jumlah = $simpan->Jalankan($outlet->Id, array_values(array_map(fn (array $b): array => [
             'HariKe' => (int) $b['HariKe'],
             'JamMulai' => (string) $b['JamMulai'],
             'JamSelesai' => (string) $b['JamSelesai'],
             'Minimal' => (int) $b['Minimal'],
-        ], $valid['Baris']), $this->Pelaku()->Id);
+        ], $valid['Baris'])), $this->Pelaku()->Id);
 
         return back()->with('Kilat', $jumlah === 0 ? 'Kebutuhan staf dihapus.' : "Kebutuhan staf disimpan ({$jumlah} aturan).");
     }
