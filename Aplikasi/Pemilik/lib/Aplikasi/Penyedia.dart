@@ -273,6 +273,40 @@ class PengaturSaringan extends Notifier<Saringan> {
 
 final penyediaSaringan = NotifierProvider<PengaturSaringan, Saringan>(PengaturSaringan.new);
 
+/// Rentang tanggal layar Laporan (dari s.d. sampai, keduanya termasuk). Bawaan: awal bulan berjalan sampai hari ini.
+/// Beranda dan Shift tetap memakai satu tanggal dari [Saringan]. Outlet dipakai bersama lewat [Saringan].
+class RentangLaporan {
+  const RentangLaporan({required this.dari, required this.sampai});
+
+  final DateTime dari;
+  final DateTime sampai;
+
+  static String _Iso(DateTime t) =>
+      '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+
+  String get dariIso => _Iso(dari);
+
+  String get sampaiIso => _Iso(sampai);
+}
+
+class PengaturRentangLaporan extends Notifier<RentangLaporan> {
+  @override
+  RentangLaporan build() {
+    final sekarang = ref.read(penyediaJam)();
+    return RentangLaporan(
+      dari: DateTime(sekarang.year, sekarang.month),
+      sampai: DateTime(sekarang.year, sekarang.month, sekarang.day),
+    );
+  }
+
+  void Atur(DateTime dari, DateTime sampai) => state = RentangLaporan(
+    dari: DateTime(dari.year, dari.month, dari.day),
+    sampai: DateTime(sampai.year, sampai.month, sampai.day),
+  );
+}
+
+final penyediaRentangLaporan = NotifierProvider<PengaturRentangLaporan, RentangLaporan>(PengaturRentangLaporan.new);
+
 /// Galat 401 dari layar data → sesi berakhir.
 Future<T> _Jaga<T>(Ref ref, Future<T> Function() ambil) async {
   try {
@@ -309,17 +343,18 @@ class PengaturKelompokLaporan extends Notifier<String> {
 
 final penyediaLaporan = FutureProvider.autoDispose<LaporanPenjualanPemilik>((ref) {
   final s = ref.watch(penyediaSaringan);
+  final r = ref.watch(penyediaRentangLaporan);
   final kelompok = ref.watch(penyediaKelompokLaporan);
   return _Jaga(
     ref,
     () => ref
         .read(penyediaKlien)
-        .AmbilLaporanPenjualan(dari: s.tanggalIso, sampai: s.tanggalIso, kelompok: kelompok, outlet: s.outlet),
+        .AmbilLaporanPenjualan(dari: r.dariIso, sampai: r.sampaiIso, kelompok: kelompok, outlet: s.outlet),
   );
 });
 
-/// OWN-05/09: layar Laporan menampilkan Penjualan (per kelompok), Laba rugi (bulan dari tanggal terpilih), atau
-/// Anti-fraud (7 hari berakhir di tanggal terpilih), atau Stok (OWN-06: nilai persediaan, kritis, saldo, kartu stok).
+/// OWN-05/09: layar Laporan menampilkan Penjualan (per kelompok), Laba rugi, atau Anti-fraud untuk rentang tanggal
+/// terpilih, atau Stok (OWN-06: nilai persediaan, kritis, saldo, kartu stok).
 enum ModeLaporan { Penjualan, LabaRugi, AntiFraud, Stok }
 
 class PengaturModeLaporan extends Notifier<ModeLaporan> {
@@ -331,24 +366,22 @@ class PengaturModeLaporan extends Notifier<ModeLaporan> {
 
 final penyediaModeLaporan = NotifierProvider<PengaturModeLaporan, ModeLaporan>(PengaturModeLaporan.new);
 
-/// Laba rugi satu bulan kalender yang memuat tanggal terpilih (pembanding: bulan sebelumnya, dari server).
+/// Laba rugi untuk rentang tanggal terpilih (pembanding: periode sebelumnya yang sama panjang, dari server).
 final penyediaLabaRugi = FutureProvider.autoDispose<LabaRugiPemilik>((ref) {
   final s = ref.watch(penyediaSaringan);
-  String Iso(DateTime t) =>
-      '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
-  final awal = DateTime(s.tanggal.year, s.tanggal.month);
-  final akhir = DateTime(s.tanggal.year, s.tanggal.month + 1, 0);
-  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilLabaRugi(dari: Iso(awal), sampai: Iso(akhir), outlet: s.outlet));
+  final r = ref.watch(penyediaRentangLaporan);
+  return _Jaga(
+    ref,
+    () => ref.read(penyediaKlien).AmbilLabaRugi(dari: r.dariIso, sampai: r.sampaiIso, outlet: s.outlet),
+  );
 });
 
 final penyediaAntiFraud = FutureProvider.autoDispose<List<RisikoKasirPemilik>>((ref) {
   final s = ref.watch(penyediaSaringan);
-  final awal = s.tanggal.subtract(const Duration(days: 6));
-  String Iso(DateTime t) =>
-      '${t.year.toString().padLeft(4, '0')}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+  final r = ref.watch(penyediaRentangLaporan);
   return _Jaga(
     ref,
-    () => ref.read(penyediaKlien).AmbilAntiFraud(dari: Iso(awal), sampai: s.tanggalIso, outlet: s.outlet),
+    () => ref.read(penyediaKlien).AmbilAntiFraud(dari: r.dariIso, sampai: r.sampaiIso, outlet: s.outlet),
   );
 });
 

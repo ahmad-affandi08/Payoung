@@ -7,7 +7,7 @@ import 'package:pemilik/Tampilan/Komponen/GrafikKomposisi.dart';
 import '../Pendukung/PasangPemilik.dart';
 
 /// OWN-05 laba rugi sederhana di Aplikasi Owner: pilih mode Laba rugi, kelima angka ringkasan + perubahan laba bersih
-/// terhadap bulan sebelumnya, rincian per akun, rentang satu bulan kalender dari tanggal terpilih, dan galat izin dari
+/// terhadap periode sebelumnya, rincian per akun, rentang tanggal terpilih, dan galat izin dari
 /// server tampil sebagai pesan (360 dan 800 dp).
 void main() {
   late ServerTiruan server;
@@ -97,15 +97,15 @@ void main() {
       await tester.tap(find.text('Laba rugi'));
       await tester.pumpAndSettle();
 
-      // Tanggal terpilih 26 Sep 2026 → satu bulan kalender penuh.
+      // Rentang bawaan: awal bulan sampai hari ini (26 Sep 2026).
       final minta = server.permintaan.lastWhere((p) => p.url.path.endsWith('/laporan/laba-rugi'));
       expect(minta.url.queryParameters['dari'], '2026-09-01');
-      expect(minta.url.queryParameters['sampai'], '2026-09-30');
+      expect(minta.url.queryParameters['sampai'], '2026-09-26');
 
       expect(find.text('Rp 5.000.000'), findsWidgets);
       expect(find.text('Rp 2.000.000'), findsOneWidget);
       expect(find.text('Rp 750.000'), findsOneWidget);
-      expect(find.text('+25% dari bulan sebelumnya'), findsOneWidget);
+      expect(find.text('+25% dari periode sebelumnya'), findsOneWidget);
       expect(find.text('Ke mana pendapatan pergi'), findsOneWidget);
       expect(find.byType(GrafikDonat), findsOneWidget, reason: 'D-236: donat HPP, beban, dan laba bersih.');
       expect(find.text('60%'), findsOneWidget, reason: 'HPP 3.000.000 dari pendapatan 5.000.000.');

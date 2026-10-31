@@ -19,8 +19,8 @@ const List<(ModeLaporan, String)> _modeLaporan = [
   (ModeLaporan.Stok, 'Stok'),
 ];
 
-/// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal pada tanggal & outlet terpilih, atau laba rugi
-/// bulan berjalan (dibandingkan bulan sebelumnya), skor risiko kasir 7 hari terakhir, atau cek stok (OWN-06).
+/// Laporan ringkas OWN-05: penjualan per produk/kategori/kasir/jam/kanal, laba rugi (dibandingkan periode sebelumnya
+/// yang sama panjang), atau skor risiko kasir untuk rentang tanggal & outlet terpilih, atau cek stok (OWN-06).
 class LayarLaporan extends ConsumerWidget {
   const LayarLaporan({super.key});
 
@@ -41,7 +41,7 @@ class LayarLaporan extends ConsumerWidget {
       padding: const EdgeInsets.all(TokenJarak.jarak16),
       children: [
         const KepalaHalaman(judul: 'Laporan'),
-        BilahSaringan(outlet: outlet),
+        BilahSaringan(outlet: outlet, rentang: true),
         const SizedBox(height: TokenJarak.jarak12),
         _PilihanLaporan(
           pilihan: daftarMode,
@@ -274,7 +274,7 @@ class _GrafikPenjualan extends StatelessWidget {
   }
 }
 
-/// Laba rugi sederhana (OWN-05): ringkasan lima angka dengan perubahan terhadap bulan sebelumnya, lalu rincian akun.
+/// Laba rugi sederhana (OWN-05): ringkasan lima angka dengan perubahan terhadap periode sebelumnya, lalu rincian akun.
 class _LabaRugi extends ConsumerWidget {
   const _LabaRugi();
 
@@ -307,7 +307,7 @@ class _LabaRugi extends ConsumerWidget {
                     if (i > 0) Divider(height: 1, color: warna.garis),
                     ListTile(
                       title: Text(label),
-                      subtitle: Text('Bulan sebelumnya ${FormatTampilan.Rupiah(n.nilaiSebelumnya)}'),
+                      subtitle: Text('Periode sebelumnya ${FormatTampilan.Rupiah(n.nilaiSebelumnya)}'),
                       trailing: Text(FormatTampilan.Rupiah(n.nilai), style: teks.titleSmall),
                     ),
                   ],
@@ -324,7 +324,10 @@ class _LabaRugi extends ConsumerWidget {
                 title: Text('Laba bersih', style: teks.titleSmall?.copyWith(color: warna.permukaan)),
                 subtitle: perubahan == null
                     ? null
-                    : Text('$perubahan dari bulan sebelumnya', style: teks.bodySmall?.copyWith(color: warna.permukaan)),
+                    : Text(
+                        '$perubahan dari periode sebelumnya',
+                        style: teks.bodySmall?.copyWith(color: warna.permukaan),
+                      ),
                 trailing: Text(
                   FormatTampilan.Rupiah(l.labaBersih.nilai),
                   style: teks.titleMedium?.copyWith(color: warna.permukaan, fontWeight: FontWeight.w700),
@@ -351,7 +354,7 @@ class _LabaRugi extends ConsumerWidget {
                   anak: KeadaanKosong(
                     ilustrasi: IlustrasiKosong.Laporan,
                     ikon: Icons.balance_outlined,
-                    judul: 'Belum ada pembukuan bulan ini.',
+                    judul: 'Belum ada pembukuan pada periode ini.',
                     keterangan: 'Pendapatan, HPP, dan beban per akun muncul di sini setelah ada transaksi.',
                   ),
                 ),
@@ -409,7 +412,7 @@ class _LabaRugi extends ConsumerWidget {
   };
 }
 
-/// Anti-fraud kasir (OWN-09): skor risiko per kasir selama 7 hari berakhir di tanggal terpilih, urut skor menurun.
+/// Anti-fraud kasir (OWN-09): skor risiko per kasir selama rentang tanggal terpilih, urut skor menurun.
 /// Setiap skor membawa alasan berteks; skor adalah petunjuk untuk diperiksa, bukan bukti kesalahan.
 class _AntiFraud extends ConsumerWidget {
   const _AntiFraud();
@@ -427,14 +430,14 @@ class _AntiFraud extends ConsumerWidget {
                 ilustrasi: IlustrasiKosong.Laporan,
                 ikon: Icons.shield_outlined,
                 judul: 'Belum ada aktivitas kasir untuk dinilai.',
-                keterangan: 'Skor risiko kasir 7 hari terakhir muncul di sini setelah ada transaksi.',
+                keterangan: 'Skor risiko kasir pada periode ini muncul di sini setelah ada transaksi.',
               ),
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '7 hari terakhir. Skor adalah petunjuk untuk diperiksa, bukan bukti kesalahan.',
+                  'Skor adalah petunjuk untuk diperiksa, bukan bukti kesalahan.',
                   style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
                 ),
                 const SizedBox(height: TokenJarak.jarak8),

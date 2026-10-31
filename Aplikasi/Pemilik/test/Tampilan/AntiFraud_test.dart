@@ -6,7 +6,7 @@ import 'package:pemilik/Data/PenyimpanSesi.dart';
 
 import '../Pendukung/PasangPemilik.dart';
 
-/// OWN-09 anti-fraud kasir di Aplikasi Owner: mode Anti-fraud di Laporan meminta 7 hari berakhir di tanggal terpilih,
+/// OWN-09 anti-fraud kasir di Aplikasi Owner: mode Anti-fraud di Laporan meminta rentang tanggal terpilih (bawaan awal bulan sampai hari ini),
 /// menampilkan kasir berurut skor dengan alasan berteks, dan kasir tanpa pola mencurigakan ditandai bersih
 /// (360 dan 800 dp).
 void main() {
@@ -82,7 +82,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final minta = server.permintaan.lastWhere((p) => p.url.path.endsWith('/laporan/anti-fraud'));
-      expect(minta.url.queryParameters['dari'], '2026-09-20');
+      expect(minta.url.queryParameters['dari'], '2026-09-01');
       expect(minta.url.queryParameters['sampai'], '2026-09-26');
 
       expect(find.text('Rina Wulandari'), findsOneWidget);
