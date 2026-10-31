@@ -174,7 +174,7 @@ final penyediaKlienPos = Provider<KlienPos>((ref) {
   final rahasia = ref.watch(penyediaRahasia);
   return KlienPos(
     alamatDasar: ref.watch(penyediaLingkungan).AmbilAlamatServer(tersimpan: ref.watch(penyediaAlamatServer)),
-    versiAplikasi: '1.0.0',
+    versiAplikasi: '1.0.1',
     ambilToken: () => rahasia.Baca(PenyimpanRahasia.kunciToken),
     klien: ref.watch(penyediaKlienHttp),
     // P-10 BR-P10.2: server tahu perangkat mana yang masih menyimpan transaksi belum terkirim.

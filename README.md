@@ -448,7 +448,7 @@ PHP=/opt/alt/php83/usr/bin/php bash Alat/Perbarui.sh   # bila PHP bawaan hosting
 | [`Panduan/RunbookOperasional.md`](Panduan/RunbookOperasional.md) | Respons alert (penjadwal berhenti, antrean tertunda, error rate, outbox macet, …) |
 | [`Panduan/SkalaBesar.md`](Panduan/SkalaBesar.md) | Daftar kerja menjaga performa di skala 100.000 pengguna |
 
-**Aplikasi mobile/desktop:** build Android/iOS/Windows lewat `BangunAplikasi.yml`; penandatanganan Android wajib kunci rilis; Windows punya pembaruan otomatis ber-checksum SHA-256. Kode build ada di `pubspec.yaml` masing-masing aplikasi (saat ini Kasir `1.0.0+12`, Pemilik `1.0.0+7`) dan dinaikkan setiap perubahan yang dirilis. Langkah lengkap: [`Panduan/RilisAplikasi.md`](Panduan/RilisAplikasi.md) dan [`Panduan/RilisPlayStore.md`](Panduan/RilisPlayStore.md). Versi minimum, rilis bertahap, flag fitur, dan kill switch diatur dari konsol (P-10).
+**Aplikasi mobile/desktop:** build Android/iOS/Windows lewat `BangunAplikasi.yml`; penandatanganan Android wajib kunci rilis; Windows punya pembaruan otomatis ber-checksum SHA-256. Kode build ada di `pubspec.yaml` masing-masing aplikasi (saat ini Kasir `1.0.1+14`, Pemilik `1.0.1+10`) dan dinaikkan setiap perubahan yang dirilis. Langkah lengkap: [`Panduan/RilisAplikasi.md`](Panduan/RilisAplikasi.md) dan [`Panduan/RilisPlayStore.md`](Panduan/RilisPlayStore.md). Versi minimum, rilis bertahap, flag fitur, dan kill switch diatur dari konsol (P-10).
 
 ---
 

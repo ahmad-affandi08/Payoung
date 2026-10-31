@@ -86,7 +86,7 @@ void main() {
     expect(find.text('Laporan laba rugi lebih cepat'), findsOneWidget);
     expect(find.text('Rp 1.250.000'), findsNothing, reason: 'Beranda tidak boleh bisa dipakai.');
     final minta = server.permintaan.firstWhere((p) => p.url.path.endsWith('/konfigurasi-aplikasi'));
-    expect(minta.headers['X-Versi-Aplikasi'], '1.0.0');
+    expect(minta.headers['X-Versi-Aplikasi'], '1.0.1');
     expect(minta.headers['X-Tenant'], 'T1');
     expect(minta.headers['X-Platform-Aplikasi'], 'Android');
   });

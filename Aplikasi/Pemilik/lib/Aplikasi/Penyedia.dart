@@ -12,7 +12,7 @@ import '../Data/PenyediaMasukGoogle.dart';
 import '../Data/PenyimpanSesi.dart';
 import 'Lingkungan.dart';
 
-const String versiAplikasi = '1.0.0';
+const String versiAplikasi = '1.0.1';
 
 final penyediaLingkungan = Provider<Lingkungan>((ref) => Lingkungan.Dev);
 final penyediaKlienHttp = Provider<http.Client>((ref) => http.Client());
