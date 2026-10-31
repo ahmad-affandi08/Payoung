@@ -80,6 +80,17 @@ describe('nomor HP', function (): void {
 });
 
 describe('F-16a back-office pelanggan', function (): void {
+    it('simpan pelanggan dengan TambahLagi kembali ke formulir kosong, bukan ke detail', function (): void {
+        $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
+        BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+        $this->post('/kelola/pelanggan', IsianPelanggan(['TambahLagi' => true]))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/kelola/pelanggan/buat');
+
+        expect(Pelanggan::query()->count())->toBe(1);
+    });
+
     it('tambah, nomor HP unik per tenant, ubah, daftar & cari, filter tag, arsip & pulihkan, audit tersamar', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
         BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AmbilKodeGalat, AmbilPesanGalat, AmbilTokenXsrf, PesanStatusHttp } from './PermintaanJson';
+import { AmbilKodeGalat, AmbilPesanGalat, AmbilPesanValidasi, AmbilTokenXsrf, PesanStatusHttp } from './PermintaanJson';
 
 describe('AmbilTokenXsrf', () => {
     it('mengambil token walau cookie lain mendahuluinya', () => {
@@ -52,5 +52,23 @@ describe('AmbilKodeGalat', () => {
     it('mengambil Galat.Kode untuk percabangan halaman (misal KodeQrWajib)', () => {
         expect(AmbilKodeGalat({ Galat: { Kode: 'KodeQrWajib', Pesan: 'Pindai QR' } })).toBe('KodeQrWajib');
         expect(AmbilKodeGalat({ message: 'x' })).toBeNull();
+    });
+});
+
+describe('AmbilPesanValidasi', () => {
+    it('mengambil pesan pertama dari galat validasi Laravel', () => {
+        expect(
+            AmbilPesanValidasi({
+                message: 'x',
+                errors: { Kode: ['Kode sudah dipakai.', 'lain'], Nama: ['Nama wajib.'] },
+            }),
+        ).toBe('Kode sudah dipakai.');
+    });
+
+    it('null bila tidak ada pesan yang bisa dipakai', () => {
+        expect(AmbilPesanValidasi(null)).toBeNull();
+        expect(AmbilPesanValidasi({ errors: {} })).toBeNull();
+        expect(AmbilPesanValidasi({ errors: { Kode: [] } })).toBeNull();
+        expect(AmbilPesanValidasi({ message: 'Server Error' })).toBeNull();
     });
 });

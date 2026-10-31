@@ -43,6 +43,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PembelianKelola)
     Route::post('/pemasok/impor', [ImporPemasokKontroler::class, 'Kirim'])->middleware('throttle:20,1')->name('kelola.pembelian.pemasok.impor.kirim');
     Route::get('/pemasok/impor/templat', [ImporPemasokKontroler::class, 'Templat'])->name('kelola.pembelian.pemasok.impor.templat');
     Route::post('/pemasok', [PemasokKontroler::class, 'Simpan'])->name('kelola.pembelian.pemasok.simpan');
+    // Tambah cepat dari dalam formulir lain (jawaban JSON); dibatasi supaya tidak dipakai menembak massal.
+    Route::post('/pemasok/cepat', [PemasokKontroler::class, 'SimpanCepat'])->middleware('throttle:30,1')->name('kelola.pembelian.pemasok.simpan-cepat');
     Route::put('/pemasok/{pemasok}', [PemasokKontroler::class, 'Perbarui'])->where('pemasok', $ulid)->name('kelola.pembelian.pemasok.perbarui');
     Route::post('/pemasok/{pemasok}/status', [PemasokKontroler::class, 'UbahStatus'])->where('pemasok', $ulid)->name('kelola.pembelian.pemasok.status');
     Route::delete('/pemasok/{pemasok}', [PemasokKontroler::class, 'Hapus'])->where('pemasok', $ulid)->name('kelola.pembelian.pemasok.hapus');

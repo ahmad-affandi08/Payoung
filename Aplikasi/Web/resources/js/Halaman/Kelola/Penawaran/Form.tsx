@@ -10,6 +10,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import PemilihPelangganGrosir from '@/Komponen/Grosir/PemilihPelangganGrosir';
 import { AlamatInvoice } from '@/Komponen/Invoice/BagianInvoice';
 import IsianBarisInvoice, { BuatBarisKosongInvoice } from '@/Komponen/Invoice/IsianBarisInvoice';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import { AlamatPenawaran } from '@/Komponen/Penawaran/BagianPenawaran';
@@ -82,6 +84,46 @@ export default function HalamanFormPenawaran({
               })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'penawaran',
+        aktif: Isian === null,
+        nilai: {
+            uuidPelanggan,
+            namaPelanggan,
+            uuidOutlet,
+            termin,
+            perihal,
+            referensi,
+            inklusif,
+            catatan,
+            syarat,
+            baris,
+        },
+        kosong: (n) =>
+            n.baris.every((b) => b.Nama.trim() === '' && b.Harga === '') &&
+            n.perihal.trim() === '' &&
+            n.catatan.trim() === '' &&
+            n.uuidPelanggan === '' &&
+            n.namaPelanggan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPelanggan(isi.uuidPelanggan);
+        AturNamaPelanggan(isi.namaPelanggan);
+        AturOutlet(isi.uuidOutlet);
+        AturTermin(isi.termin);
+        AturPerihal(isi.perihal);
+        AturReferensi(isi.referensi);
+        AturInklusif(isi.inklusif);
+        AturCatatan(isi.catatan);
+        AturSyarat(isi.syarat);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunci() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const judul = ubah ? `Ubah draf ${Isian?.Nomor ?? 'penawaran'}` : salinan ? 'Salin penawaran' : 'Buat penawaran';
     const subtotal = HitungSubtotalInvoice(baris);
@@ -127,6 +169,7 @@ export default function HalamanFormPenawaran({
         const pilihan = {
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (ubah) {
@@ -148,6 +191,9 @@ export default function HalamanFormPenawaran({
     return (
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Penawaran', href: AlamatPenawaran }]}>
             <DaftarGalatServer galat={galat} />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
 
             <form onSubmit={(e) => Kirim(e, false)} noValidate className="flex flex-col gap-4" aria-label={judul}>
                 <Panel judul="Pelanggan & masa berlaku">

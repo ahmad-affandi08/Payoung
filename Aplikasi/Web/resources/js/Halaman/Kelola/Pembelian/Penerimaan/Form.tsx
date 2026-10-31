@@ -10,14 +10,18 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
+    BuatKunciBaris,
     HitungTotalBaris,
     PeriksaBaris,
     SusunMasukanBaris,
     type MasukanBarisPembelian,
 } from '@/Komponen/Pembelian/AturanPembelian';
+import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import IsianBarisPembelian from '@/Komponen/Pembelian/IsianBarisPembelian';
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
@@ -37,7 +41,7 @@ import {
 } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisIsianBebas, BarisPesananUntukPenerimaan, PropsFormPenerimaan } from '@/Tipe/Pembelian';
+import type { BarisIsianBebas, BarisPesananUntukPenerimaan, OpsiPemasok, PropsFormPenerimaan } from '@/Tipe/Pembelian';
 
 type MasukanBarisDariPesanan = {
     IdBarisPesanan: number;
@@ -88,7 +92,7 @@ function CekTerminValid(termin: string): boolean {
 export default function HalamanFormPenerimaan({
     Mode,
     Pesanan,
-    OpsiPemasok,
+    OpsiPemasok: OpsiPemasokAwal,
     OpsiGudang,
     OpsiAkun,
     HariIni,
@@ -97,6 +101,9 @@ export default function HalamanFormPenerimaan({
 }: PropsFormPenerimaan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
+    // Pemasok yang ditambahkan lewat dialog "Tambah pemasok baru" langsung tersedia di pilihan tanpa memuat ulang halaman.
+    const [pemasokBaru, AturPemasokBaru] = useState<OpsiPemasok[]>([]);
+    const OpsiPemasok = [...OpsiPemasokAwal, ...pemasokBaru];
     const belanja = Mode === 'BelanjaStok';
     const [pemasok, AturPemasok] = useState('');
     const [gudang, AturGudang] = useState(Pesanan?.UuidGudang ?? '');
@@ -128,6 +135,30 @@ export default function HalamanFormPenerimaan({
         ),
     );
     const [periksa, AturPeriksa] = useState(false);
+    // Draf otomatis hanya untuk penerimaan tanpa pesanan dan belanja stok (baris diketik sendiri).
+    const draf = useDrafLokal({
+        nama: belanja ? 'belanja-stok' : 'penerimaan-tanpa-pesanan',
+        aktif: !Pesanan,
+        nilai: { pemasok, gudang, akun, bayarNanti, termin, nomor, ongkir, catatan, baris },
+        kosong: (n) => n.baris.length === 0 && n.catatan.trim() === '' && n.nomor.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPemasok(isi.pemasok);
+        AturGudang(isi.gudang);
+        AturAkun(isi.akun);
+        AturBayarNanti(isi.bayarNanti);
+        AturTermin(isi.termin);
+        AturNomor(isi.nomor);
+        AturOngkir(isi.ongkir);
+        AturCatatan(isi.catatan);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunciBaris() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const judul = belanja ? 'Belanja stok' : Pesanan ? `Terima barang ${Pesanan.Nomor}` : 'Terima barang tanpa pesanan';
     const alamatKembali = Pesanan ? `${AlamatPembelian}/pesanan/${Pesanan.Uuid}` : `${AlamatPembelian}/penerimaan`;
@@ -209,6 +240,7 @@ export default function HalamanFormPenerimaan({
             forceFormData: berkas.length > 0,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         });
     };
 
@@ -234,6 +266,9 @@ export default function HalamanFormPenerimaan({
                     'Lampiran',
                 ]}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel judul="Dokumen" idJudul="judul-dokumen-penerimaan">
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -264,30 +299,41 @@ export default function HalamanFormPenerimaan({
                                         (periksa && gudang === '' ? 'Pilih lokasi stok.' : undefined)
                                     }
                                 />
-                                <BidangPilihan
-                                    label={belanja && !bayarNanti ? 'Pemasok (opsional)' : 'Pemasok'}
-                                    nilai={pemasok}
-                                    kosong={belanja && !bayarNanti ? 'Tanpa pemasok' : 'Pilih pemasok'}
-                                    opsi={OpsiPemasok.filter((p) => p.Aktif).map((p) => ({
-                                        Nilai: p.Uuid,
-                                        Label: p.Nama,
-                                        Keterangan: p.Kode,
-                                    }))}
-                                    saatBerubah={(nilai) => {
-                                        AturPemasok(nilai);
-                                        const dipilih = OpsiPemasok.find((p) => p.Uuid === nilai);
-                                        if (dipilih && dipilih.TerminHari > 0) {
-                                            AturTermin(String(dipilih.TerminHari));
+                                <div className="flex flex-col gap-1.5">
+                                    <BidangPilihan
+                                        label={belanja && !bayarNanti ? 'Pemasok (opsional)' : 'Pemasok'}
+                                        nilai={pemasok}
+                                        kosong={belanja && !bayarNanti ? 'Tanpa pemasok' : 'Pilih pemasok'}
+                                        opsi={OpsiPemasok.filter((p) => p.Aktif).map((p) => ({
+                                            Nilai: p.Uuid,
+                                            Label: p.Nama,
+                                            Keterangan: p.Kode,
+                                        }))}
+                                        saatBerubah={(nilai) => {
+                                            AturPemasok(nilai);
+                                            const dipilih = OpsiPemasok.find((p) => p.Uuid === nilai);
+                                            if (dipilih && dipilih.TerminHari > 0) {
+                                                AturTermin(String(dipilih.TerminHari));
+                                            }
+                                        }}
+                                        required={belanja && bayarNanti}
+                                        galat={
+                                            galat.UuidPemasok ??
+                                            (periksa && belanja && bayarNanti && pemasok === ''
+                                                ? 'Pilih pemasok untuk belanja yang dibayar nanti.'
+                                                : undefined)
                                         }
-                                    }}
-                                    required={belanja && bayarNanti}
-                                    galat={
-                                        galat.UuidPemasok ??
-                                        (periksa && belanja && bayarNanti && pemasok === ''
-                                            ? 'Pilih pemasok untuk belanja yang dibayar nanti.'
-                                            : undefined)
-                                    }
-                                />
+                                    />
+                                    <TombolPemasokBaru
+                                        saatTersimpan={(pemasokDibuat) => {
+                                            AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+                                            AturPemasok(pemasokDibuat.Uuid);
+                                            if (pemasokDibuat.TerminHari > 0) {
+                                                AturTermin(String(pemasokDibuat.TerminHari));
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </>
                         )}
                         {belanja ? (

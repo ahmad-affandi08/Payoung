@@ -180,6 +180,11 @@ final class PelangganKontroler extends DasarKelolaKontroler
     {
         $pelanggan = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
+        // "Simpan & tambah lagi": kembali ke formulir kosong untuk memasukkan pelanggan berikutnya.
+        if ($permintaan->boolean('TambahLagi')) {
+            return redirect()->route('kelola.pelanggan.buat')->with('Kilat', "Pelanggan {$pelanggan->Nama} ditambahkan.");
+        }
+
         return redirect()->route('kelola.pelanggan.detail', ['pelanggan' => $pelanggan->Uuid])->with('Kilat', "Pelanggan {$pelanggan->Nama} ditambahkan.");
     }
 

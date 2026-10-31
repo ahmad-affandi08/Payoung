@@ -8,6 +8,8 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
@@ -16,6 +18,7 @@ import {
     PeriksaBaris,
     SusunMasukanBaris,
 } from '@/Komponen/Pembelian/AturanPembelian';
+import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import IsianBarisPembelian from '@/Komponen/Pembelian/IsianBarisPembelian';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -26,7 +29,7 @@ import { FormatLabelGudang } from '@/Pustaka/FormatPersediaan';
 import { BandingkanDesimal, JumlahkanDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { BarisIsianBebas, PropsFormPesanan } from '@/Tipe/Pembelian';
+import type { BarisIsianBebas, OpsiPemasok, PropsFormPesanan } from '@/Tipe/Pembelian';
 
 const alamat = `${AlamatPembelian}/pesanan`;
 
@@ -34,7 +37,7 @@ const alamat = `${AlamatPembelian}/pesanan`;
 export default function HalamanFormPesanan({
     Mode,
     Pesanan,
-    OpsiPemasok,
+    OpsiPemasok: OpsiPemasokAwal,
     OpsiGudang,
     HariIni,
     BatasPersetujuanPo,
@@ -42,6 +45,9 @@ export default function HalamanFormPesanan({
 }: PropsFormPesanan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
+    // Pemasok yang ditambahkan lewat dialog "Tambah pemasok baru" langsung tersedia di pilihan tanpa memuat ulang halaman.
+    const [pemasokBaru, AturPemasokBaru] = useState<OpsiPemasok[]>([]);
+    const OpsiPemasok = [...OpsiPemasokAwal, ...pemasokBaru];
     const [pemasok, AturPemasok] = useState(Pesanan?.UuidPemasok ?? '');
     const [gudang, AturGudang] = useState(Pesanan?.UuidGudang ?? '');
     const [tanggal, AturTanggal] = useState(Pesanan?.Tanggal ?? HariIni);
@@ -59,6 +65,27 @@ export default function HalamanFormPesanan({
         })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'pesanan-pembelian',
+        aktif: Pesanan === null,
+        nilai: { pemasok, gudang, tiba, termin, ongkir, catatan, baris },
+        kosong: (n) => n.baris.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPemasok(isi.pemasok);
+        AturGudang(isi.gudang);
+        AturTiba(isi.tiba);
+        AturTermin(isi.termin);
+        AturOngkir(isi.ongkir);
+        AturCatatan(isi.catatan);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunciBaris() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     // Audit kemudahan pakai #13: tombol utama menyimpan lalu langsung memproses dokumen; draf jadi pilihan kedua.
     const lanjutkan = useRef(false);
@@ -104,6 +131,7 @@ export default function HalamanFormPesanan({
             preserveScroll: true,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (Mode === 'Buat' || Pesanan === null) {
@@ -119,6 +147,9 @@ export default function HalamanFormPesanan({
                 galat={galat}
                 kecuali={['UuidPemasok', 'UuidGudang', 'Tanggal', 'PerkiraanTiba', 'TerminHari', 'Ongkir', 'Catatan']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"
@@ -137,19 +168,27 @@ export default function HalamanFormPesanan({
                             saatBerubah={AturGudang}
                             galat={galat.UuidGudang ?? (periksa && gudang === '' ? 'Pilih lokasi tujuan.' : undefined)}
                         />
-                        <BidangPilihan
-                            label="Pemasok"
-                            nilai={pemasok}
-                            kosong="Pilih pemasok"
-                            opsi={OpsiPemasok.filter((p) => p.Aktif || p.Uuid === pemasok).map((p) => ({
-                                Nilai: p.Uuid,
-                                Label: p.Nama,
-                                Keterangan: `${p.Kode}${p.Pkp ? ' | PKP' : ''}`,
-                            }))}
-                            saatBerubah={PilihPemasok}
-                            required
-                            galat={galat.UuidPemasok ?? (periksa && pemasok === '' ? 'Pilih pemasok.' : undefined)}
-                        />
+                        <div className="flex flex-col gap-1.5">
+                            <BidangPilihan
+                                label="Pemasok"
+                                nilai={pemasok}
+                                kosong="Pilih pemasok"
+                                opsi={OpsiPemasok.filter((p) => p.Aktif || p.Uuid === pemasok).map((p) => ({
+                                    Nilai: p.Uuid,
+                                    Label: p.Nama,
+                                    Keterangan: `${p.Kode}${p.Pkp ? ' | PKP' : ''}`,
+                                }))}
+                                saatBerubah={PilihPemasok}
+                                required
+                                galat={galat.UuidPemasok ?? (periksa && pemasok === '' ? 'Pilih pemasok.' : undefined)}
+                            />
+                            <TombolPemasokBaru
+                                saatTersimpan={(pemasokDibuat) => {
+                                    AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+                                    PilihPemasok(pemasokDibuat.Uuid);
+                                }}
+                            />
+                        </div>
                         <PemilihTanggal
                             id="tanggal-pesanan"
                             label="Tanggal pesanan"

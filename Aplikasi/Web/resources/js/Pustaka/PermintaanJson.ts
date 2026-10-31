@@ -30,6 +30,32 @@ export function AmbilPesanGalat(isi: unknown): string | null {
     return typeof pesan === 'string' && pesan !== '' ? pesan : null;
 }
 
+/**
+ * Pesan galat validasi bawaan Laravel (`{"errors": {"Kode": ["…"]}}`, status 422): pesan pertama yang ada.
+ * Dipakai agar dialog dan isian cepat bisa menampilkan penyebab sebenarnya, bukan pesan umum.
+ */
+export function AmbilPesanValidasi(isi: unknown): string | null {
+    if (typeof isi !== 'object' || isi === null || !('errors' in isi)) {
+        return null;
+    }
+
+    const galat = (isi as { errors: unknown }).errors;
+
+    if (typeof galat !== 'object' || galat === null) {
+        return null;
+    }
+
+    for (const pesan of Object.values(galat as Record<string, unknown>)) {
+        const pertama: unknown = Array.isArray(pesan) ? pesan[0] : pesan;
+
+        if (typeof pertama === 'string' && pertama !== '') {
+            return pertama;
+        }
+    }
+
+    return null;
+}
+
 /** Kode galat API Payoung (`Galat.Kode`); null bila bukan bentuk itu. */
 export function AmbilKodeGalat(isi: unknown): string | null {
     if (typeof isi !== 'object' || isi === null || !('Galat' in isi)) {
@@ -94,7 +120,9 @@ export async function KirimJson<T>(alamat: string, data: unknown = {}, metode: '
 
     if (!respons.ok) {
         throw new GalatPermintaan(
-            AmbilPesanGalat(isi) ?? PesanStatusHttp(respons.status),
+            AmbilPesanGalat(isi) ??
+                (respons.status === 422 ? AmbilPesanValidasi(isi) : null) ??
+                PesanStatusHttp(respons.status),
             respons.status,
             AmbilKodeGalat(isi),
         );

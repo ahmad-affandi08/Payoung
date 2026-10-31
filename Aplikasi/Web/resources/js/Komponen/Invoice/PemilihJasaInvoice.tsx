@@ -27,9 +27,14 @@ export function BuatUrlCariJasaInvoice(kata: string): string {
 export default function PemilihJasaInvoice({
     saatPilih,
     disabled,
+    id,
+    alihkanFokusSetelahPilih,
 }: {
     saatPilih: (produk: HasilCariJasaInvoice) => void;
     disabled?: boolean;
+    /** Entri cepat: id tombol pemicu dan pengalih fokus sesudah memilih (lihat `useEntriCepat`). */
+    id?: string;
+    alihkanFokusSetelahPilih?: () => boolean;
 }) {
     const [kata, AturKata] = useState('');
     const [terbuka, AturTerbuka] = useState(false);
@@ -83,6 +88,8 @@ export default function PemilihJasaInvoice({
             sorot={sorot}
             saatSorot={AturSorot}
             status={status}
+            id={id}
+            alihkanFokusTutup={alihkanFokusSetelahPilih}
         >
             {hasil.map((p) => (
                 <CommandItem

@@ -10,6 +10,8 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
@@ -80,6 +82,23 @@ export default function HalamanFormStokAwal({
         (StokAwal?.Baris ?? []).map((baris) => ({ ...baris, Kunci: BuatKunciBaris(), HppRataRata: null })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'stok-awal',
+        aktif: StokAwal === null,
+        nilai: { uuidGudang, catatan, daftarBaris },
+        kosong: (n) => n.daftarBaris.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturUuidGudang(isi.uuidGudang);
+        AturCatatan(isi.catatan);
+        AturDaftarBaris(isi.daftarBaris.map((b) => ({ ...b, Kunci: BuatKunciBaris() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     // Audit kemudahan pakai #13: tombol utama menyimpan lalu langsung memproses dokumen; draf jadi pilihan kedua.
     const lanjutkan = useRef(false);
@@ -179,6 +198,7 @@ export default function HalamanFormStokAwal({
             preserveScroll: true,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (StokAwal === null) {
@@ -198,6 +218,9 @@ export default function HalamanFormStokAwal({
     return (
         <TataLetakAplikasi judul={judul}>
             <PanelKesiapanAkun kesiapan={KesiapanAkun} />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <DaftarGalatServer
                 galat={galatServer}
                 kecuali={[

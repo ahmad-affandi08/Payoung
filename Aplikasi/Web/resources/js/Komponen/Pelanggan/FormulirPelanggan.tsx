@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 
 import BidangDaftarTeks from '@/Komponen/Formulir/BidangDaftarTeks';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
@@ -71,24 +71,32 @@ export function IsiFormulirPelanggan({
     const galat = props.errors;
     const [isian, AturIsian] = useState<IsianPelanggan>(() => BuatIsian(pelanggan));
     const [memproses, AturMemproses] = useState(false);
+    // "Simpan & tambah lagi": server membuka formulir kosong lagi, supaya banyak pelanggan bisa dimasukkan beruntun.
+    const tambahLagi = useRef(false);
     const hariIni = new Date().toISOString().slice(0, 10);
 
     const Ubah = (ubah: Partial<IsianPelanggan>) => AturIsian({ ...isian, ...ubah });
 
     const Simpan = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
+        const lagi = pelanggan === null && tambahLagi.current;
         const data = {
             ...isian,
+            ...(lagi ? { TambahLagi: true } : {}),
             TanggalLahir: isian.TanggalLahir === '' ? null : isian.TanggalLahir,
             Tag: isian.Tag.map((t) => t.trim()).filter((t) => t !== ''),
             TerminHari: isian.TerminHari === '' ? null : isian.TerminHari,
         };
         const opsi = {
-            preserveScroll: true,
+            // Formulir kosong yang baru harus mulai dari atas dan tanpa sisa isian lama.
+            preserveScroll: !lagi,
+            preserveState: !lagi,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
             onSuccess: () => saatSelesai?.(),
         };
+
+        tambahLagi.current = false;
 
         if (pelanggan === null) {
             router.post(AlamatPelanggan, data, opsi);
@@ -219,6 +227,20 @@ export function IsiFormulirPelanggan({
                 <Tombol type="button" varian="sekunder" onClick={saatBatal}>
                     Batal
                 </Tombol>
+                {pelanggan === null ? (
+                    <Tombol
+                        type="button"
+                        varian="sekunder"
+                        memproses={memproses}
+                        onClick={(peristiwa) => {
+                            // Bukan tombol kirim bawaan, supaya Enter di isian tetap berarti "Simpan" biasa.
+                            tambahLagi.current = true;
+                            peristiwa.currentTarget.form?.requestSubmit();
+                        }}
+                    >
+                        Simpan & tambah lagi
+                    </Tombol>
+                ) : null}
                 <Tombol type="submit" memproses={memproses}>
                     Simpan pelanggan
                 </Tombol>

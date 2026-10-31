@@ -10,8 +10,11 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -85,6 +88,7 @@ export default function HalamanFormOrderProduksi({
     const [nomorBatch, AturNomorBatch] = useState(Order?.NomorBatch ?? '');
     const [kedaluwarsa, AturKedaluwarsa] = useState(Order?.TanggalKedaluwarsa ?? '');
     const [keterangan, AturKeterangan] = useState(Order?.Keterangan ?? '');
+    const entri = useEntriCepat('produksi');
     const [bahan, AturBahan] = useState<BahanForm[]>(() =>
         (Order?.Bahan ?? []).map((b) => ({ ...b, Kunci: BuatKunci() })),
     );
@@ -97,6 +101,30 @@ export default function HalamanFormOrderProduksi({
     const terakhirMuat = useRef<string | null>(null);
     const nomorMuat = useRef(0);
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'order-produksi',
+        aktif: Order === null && awal === null,
+        nilai: { gudang, produk, jumlahHasil, overhead, nomorBatch, kedaluwarsa, keterangan, bahan },
+        kosong: (n) => n.produk === null && n.bahan.length === 0 && n.keterangan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        // Bahan dari draf dipertahankan apa adanya, jadi isi otomatis dari resep tidak menimpanya.
+        AturOtomatis(false);
+        AturGudang(isi.gudang);
+        AturProduk(isi.produk);
+        AturJumlahHasil(isi.jumlahHasil);
+        AturOverhead(isi.overhead);
+        AturNomorBatch(isi.nomorBatch);
+        AturKedaluwarsa(isi.kedaluwarsa);
+        AturKeterangan(isi.keterangan);
+        AturBahan(isi.bahan.map((b) => ({ ...b, Kunci: BuatKunci() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const judul = Mode === 'Buat' ? 'Buat order produksi' : 'Ubah draf order produksi';
     const jumlahValid = produk !== null && CekJumlahProduksi(jumlahHasil, produk.BolehDesimal);
@@ -203,11 +231,14 @@ export default function HalamanFormOrderProduksi({
     };
 
     const TambahBahan = (p: ProdukStokTerpilih) => {
+        const kunci = BuatKunci();
+
         AturOtomatis(false);
+        // Entri cepat: bahan baru di paling atas dan jumlahnya langsung aktif.
+        entri.CatatBarisBaru(kunci);
         AturBahan((lama) => [
-            ...lama,
             {
-                Kunci: BuatKunci(),
+                Kunci: kunci,
                 UuidProduk: p.Uuid,
                 NamaProduk: p.Nama,
                 Sku: p.Sku,
@@ -216,6 +247,7 @@ export default function HalamanFormOrderProduksi({
                 JumlahStandar: '0',
                 Jumlah: '',
             },
+            ...lama,
         ]);
     };
 
@@ -246,7 +278,12 @@ export default function HalamanFormOrderProduksi({
             Keterangan: keterangan.trim() === '' ? null : keterangan.trim(),
             Bahan: bahan.map((b) => ({ UuidProduk: b.UuidProduk, Jumlah: b.Jumlah })),
         };
-        const opsi = { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) };
+        const opsi = {
+            preserveScroll: true,
+            onStart: () => AturMemproses(true),
+            onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
+        };
 
         if (Order === null) {
             router.post(AlamatProduksi, { ...masukan, Uuid: uuidBaru ?? BuatUlid() }, opsi);
@@ -270,6 +307,9 @@ export default function HalamanFormOrderProduksi({
                     'Bahan',
                 ]}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Hasil produksi"
@@ -408,6 +448,8 @@ export default function HalamanFormOrderProduksi({
                     {galatResep ? <GalatBidang>{galatResep}</GalatBidang> : null}
                     <PemilihProdukStok
                         label="Tambah bahan"
+                        id={entri.idCari}
+                        alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                         uuidGudang={gudang === '' ? null : gudang}
                         saatPilih={TambahBahan}
                         kecuali={[...bahan.map((b) => b.UuidProduk), ...(produk ? [produk.Uuid] : [])]}
@@ -454,6 +496,8 @@ export default function HalamanFormOrderProduksi({
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                     <BidangJumlah
                                         label={`Dipakai ${b.NamaProduk}`}
+                                        id={entri.IdJumlah(b.Kunci)}
+                                        saatEnter={entri.KembaliKeCari}
                                         nilai={b.Jumlah}
                                         saatBerubah={(jumlah) => {
                                             AturOtomatis(false);

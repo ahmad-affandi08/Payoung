@@ -39,7 +39,28 @@ final class PemasokKontroler extends DasarPembelianKontroler
     {
         $pemasok = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.pemasok.daftar')->with('Kilat', "Pemasok {$pemasok->Nama} ditambahkan.");
+        // "Simpan & tambah lagi": kembali ke formulir kosong untuk memasukkan pemasok berikutnya.
+        $tujuan = $permintaan->boolean('TambahLagi') ? 'kelola.pembelian.pemasok.buat' : 'kelola.pembelian.pemasok.daftar';
+
+        return to_route($tujuan)->with('Kilat', "Pemasok {$pemasok->Nama} ditambahkan.");
+    }
+
+    /**
+     * Tambah pemasok dari dalam formulir lain (PO, belanja stok, konsinyasi), tanpa meninggalkan halaman. Aturan isian dan
+     * Aksi sama dengan `Simpan`, hanya jawabannya JSON berisi pilihan pemasok untuk dipakai langsung di dropdown.
+     */
+    public function SimpanCepat(SimpanPemasokPermintaan $permintaan, SimpanPemasok $simpan): JsonResponse
+    {
+        $pemasok = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
+
+        return response()->json(['Data' => [
+            'Uuid' => $pemasok->Uuid,
+            'Kode' => $pemasok->Kode,
+            'Nama' => $pemasok->Nama,
+            'Pkp' => (bool) $pemasok->Pkp,
+            'TerminHari' => (int) $pemasok->TerminHari,
+            'Aktif' => true,
+        ]], 201);
     }
 
     public function Perbarui(SimpanPemasokPermintaan $permintaan, string $pemasok, SimpanPemasok $simpan): RedirectResponse

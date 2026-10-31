@@ -10,8 +10,12 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
+import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
@@ -20,7 +24,7 @@ import { FormatJumlahStok, FormatLabelGudang } from '@/Pustaka/FormatPersediaan'
 import { AmbilTandaDesimal, BandingkanDesimal, CekDesimalValid, HitungTotalNilai } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
-import type { PropsFormKonsinyasi } from '@/Tipe/Pembelian';
+import type { OpsiPemasok, PropsFormKonsinyasi } from '@/Tipe/Pembelian';
 
 import { AlamatKonsinyasi } from './Daftar';
 
@@ -63,14 +67,18 @@ export default function HalamanFormKonsinyasi({
     Jenis,
     LabelJenis,
     UuidPemasokAwal,
-    OpsiPemasok,
+    OpsiPemasok: OpsiPemasokAwal,
     OpsiGudang,
     HariIni,
     MaksBaris,
 }: PropsFormKonsinyasi) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
+    // Pemasok yang ditambahkan lewat dialog "Tambah pemasok baru" langsung tersedia di pilihan tanpa memuat ulang halaman.
+    const [pemasokBaru, AturPemasokBaru] = useState<OpsiPemasok[]>([]);
+    const OpsiPemasok = [...OpsiPemasokAwal, ...pemasokBaru];
     const masuk = Jenis === 'Masuk';
+    const entri = useEntriCepat('konsinyasi');
     const gudangAktif = OpsiGudang.filter((g) => g.Aktif);
     const [gudang, AturGudang] = useState(gudangAktif.length === 1 ? (gudangAktif[0]?.Uuid ?? '') : '');
     const [pemasok, AturPemasok] = useState(UuidPemasokAwal ?? '');
@@ -78,6 +86,30 @@ export default function HalamanFormKonsinyasi({
     const [catatan, AturCatatan] = useState('');
     const [daftar, AturDaftar] = useState<BarisForm[]>([]);
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: masuk ? 'konsinyasi-masuk' : 'konsinyasi-retur',
+        aktif: true,
+        nilai: { gudang, pemasok, catatan, daftar },
+        kosong: (n) => n.daftar.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturGudang(isi.gudang);
+        AturPemasok(isi.pemasok);
+        AturCatatan(isi.catatan);
+        AturDaftar(
+            isi.daftar.map((b) => {
+                nomorKunci += 1;
+
+                return { ...b, Kunci: `ks-${String(nomorKunci)}` };
+            }),
+        );
+    };
     const [memproses, AturMemproses] = useState(false);
     const judul = masuk ? 'Catat titipan masuk' : 'Retur ke penitip';
     const total = HitungTotalNilai(daftar.map((b) => ({ Jumlah: b.Jumlah, HppSatuan: b.HargaTitip })));
@@ -87,10 +119,13 @@ export default function HalamanFormKonsinyasi({
 
     const Tambah = (p: ProdukStokTerpilih) => {
         nomorKunci += 1;
+        const kunci = `ks-${String(nomorKunci)}`;
+
+        // Entri cepat: barang baru di paling atas dan jumlahnya langsung aktif.
+        entri.CatatBarisBaru(kunci);
         AturDaftar((lama) => [
-            ...lama,
             {
-                Kunci: `ks-${String(nomorKunci)}`,
+                Kunci: kunci,
                 UuidProduk: p.Uuid,
                 NamaProduk: p.Nama,
                 Sku: p.Sku,
@@ -100,6 +135,7 @@ export default function HalamanFormKonsinyasi({
                 Jumlah: '',
                 HargaTitip: p.HppRataRata !== null && masuk ? p.HppRataRata.replace(/(\.\d{2})\d*$/, '$1') : '',
             },
+            ...lama,
         ]);
     };
 
@@ -130,7 +166,12 @@ export default function HalamanFormKonsinyasi({
                     HargaTitip: masuk ? b.HargaTitip : null,
                 })),
             },
-            { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) },
+            {
+                preserveScroll: true,
+                onStart: () => AturMemproses(true),
+                onFinish: () => AturMemproses(false),
+                onSuccess: () => draf.Hapus(),
+            },
         );
     };
 
@@ -140,6 +181,9 @@ export default function HalamanFormKonsinyasi({
                 galat={galatServer}
                 kecuali={['UuidGudang', 'UuidPemasok', 'Tanggal', 'Catatan', 'Baris']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"
@@ -164,20 +208,29 @@ export default function HalamanFormKonsinyasi({
                                 galatServer.UuidGudang ?? (periksa && gudang === '' ? 'Pilih lokasi stok.' : undefined)
                             }
                         />
-                        <BidangPilihan
-                            label="Penitip"
-                            nilai={pemasok}
-                            kosong="Pilih penitip"
-                            opsi={OpsiPemasok.filter((p) => p.Aktif || p.Uuid === pemasok).map((p) => ({
-                                Nilai: p.Uuid,
-                                Label: `${p.Nama} (${p.Kode})`,
-                            }))}
-                            saatBerubah={AturPemasok}
-                            required
-                            galat={
-                                galatServer.UuidPemasok ?? (periksa && pemasok === '' ? 'Pilih penitip.' : undefined)
-                            }
-                        />
+                        <div className="flex flex-col gap-1.5">
+                            <BidangPilihan
+                                label="Penitip"
+                                nilai={pemasok}
+                                kosong="Pilih penitip"
+                                opsi={OpsiPemasok.filter((p) => p.Aktif || p.Uuid === pemasok).map((p) => ({
+                                    Nilai: p.Uuid,
+                                    Label: `${p.Nama} (${p.Kode})`,
+                                }))}
+                                saatBerubah={AturPemasok}
+                                required
+                                galat={
+                                    galatServer.UuidPemasok ??
+                                    (periksa && pemasok === '' ? 'Pilih penitip.' : undefined)
+                                }
+                            />
+                            <TombolPemasokBaru
+                                saatTersimpan={(pemasokDibuat) => {
+                                    AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+                                    AturPemasok(pemasokDibuat.Uuid);
+                                }}
+                            />
+                        </div>
                         <PemilihTanggal
                             id="tanggal-konsinyasi"
                             label="Tanggal"
@@ -205,6 +258,8 @@ export default function HalamanFormKonsinyasi({
                 >
                     <PemilihProdukStok
                         label="Tambah produk titipan"
+                        id={entri.idCari}
+                        alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                         uuidGudang={gudang === '' ? null : gudang}
                         saatPilih={Tambah}
                         kecuali={daftar.map((b) => b.UuidProduk)}
@@ -266,6 +321,8 @@ export default function HalamanFormKonsinyasi({
                                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                         <BidangJumlah
                                             label={`Jumlah ${b.NamaProduk}`}
+                                            id={entri.IdJumlah(b.Kunci)}
+                                            saatEnter={entri.KembaliKeCari}
                                             nilai={b.Jumlah}
                                             saatBerubah={(jumlah) => Ubah(b.Kunci, { Jumlah: jumlah })}
                                             desimal={b.BolehDesimal ? 4 : 0}

@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
@@ -58,19 +58,30 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
     // Pemasok baru: kode disarankan dari nama selama belum diketik sendiri.
     const [kodeDiketik, AturKodeDiketik] = useState(uuid !== null);
     const [memproses, AturMemproses] = useState(false);
+    // "Simpan & tambah lagi": server membuka formulir kosong lagi, supaya banyak pemasok bisa dimasukkan beruntun.
+    const tambahLagi = useRef(false);
 
     const Ubah = (ubah: Partial<IsianPemasok>) => AturIsian({ ...isian, ...ubah });
 
     const Simpan = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
 
-        const data = { ...isian, TerminHari: isian.TerminHari === '' ? '0' : isian.TerminHari };
+        const lagi = uuid === null && tambahLagi.current;
+        const data = {
+            ...isian,
+            TerminHari: isian.TerminHari === '' ? '0' : isian.TerminHari,
+            ...(lagi ? { TambahLagi: true } : {}),
+        };
         const opsi = {
-            preserveScroll: true,
+            // Formulir kosong yang baru harus mulai dari atas dan tanpa sisa isian lama.
+            preserveScroll: !lagi,
+            preserveState: !lagi,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
             onSuccess: () => saatSelesai?.(),
         };
+
+        tambahLagi.current = false;
 
         if (uuid === null) {
             router.post(AlamatPemasok, data, opsi);
@@ -188,6 +199,20 @@ export default function FormPemasok({ uuid, awal, saatSelesai, saatBatal }: Prop
                 <Tombol type="button" varian="sekunder" onClick={saatBatal}>
                     Batal
                 </Tombol>
+                {uuid === null ? (
+                    <Tombol
+                        type="button"
+                        varian="sekunder"
+                        memproses={memproses}
+                        onClick={(peristiwa) => {
+                            // Bukan tombol kirim bawaan, supaya Enter di isian tetap berarti "Simpan" biasa.
+                            tambahLagi.current = true;
+                            peristiwa.currentTarget.form?.requestSubmit();
+                        }}
+                    >
+                        Simpan & tambah lagi
+                    </Tombol>
+                ) : null}
                 <Tombol type="submit" memproses={memproses}>
                     Simpan pemasok
                 </Tombol>

@@ -34,6 +34,37 @@ beforeEach(function (): void {
 });
 
 describe('F-04 HTTP pembelian', function (): void {
+    it('simpan pemasok dengan TambahLagi kembali ke formulir kosong, tanpa itu ke daftar', function (): void {
+        $t = BantuanPembelian::SiapkanTenant();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        $this->post('/kelola/pembelian/pemasok', [
+            'Kode' => 'SUP-101', 'Nama' => 'CV Tani Makmur', 'Pkp' => false, 'TerminHari' => 14, 'TambahLagi' => true,
+        ])->assertSessionHasNoErrors()->assertRedirect('/kelola/pembelian/pemasok/buat');
+        $this->post('/kelola/pembelian/pemasok', [
+            'Kode' => 'SUP-102', 'Nama' => 'UD Jaya Abadi', 'Pkp' => false, 'TerminHari' => 14, 'TambahLagi' => false,
+        ])->assertSessionHasNoErrors()->assertRedirect('/kelola/pembelian/pemasok');
+
+        expect(Pemasok::query()->whereIn('Kode', ['SUP-101', 'SUP-102'])->count())->toBe(2);
+    });
+
+    it('tambah pemasok cepat dari formulir lain mengembalikan pilihan pemasok, kode ganda ditolak', function (): void {
+        $t = BantuanPembelian::SiapkanTenant();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+        $isi = ['Kode' => 'TANI-MAKMUR', 'Nama' => 'CV Tani Makmur', 'Pkp' => false, 'TerminHari' => 14, 'NoHp' => null];
+
+        $this->postJson('/kelola/pembelian/pemasok/cepat', $isi)
+            ->assertCreated()
+            ->assertJsonPath('Data.Kode', 'TANI-MAKMUR')
+            ->assertJsonPath('Data.Nama', 'CV Tani Makmur')
+            ->assertJsonPath('Data.TerminHari', 14)
+            ->assertJsonPath('Data.Aktif', true)
+            ->assertJsonStructure(['Data' => ['Uuid', 'Kode', 'Nama', 'Pkp', 'TerminHari', 'Aktif']]);
+        $this->postJson('/kelola/pembelian/pemasok/cepat', $isi)->assertUnprocessable();
+
+        expect(Pemasok::query()->where('Kode', 'TANI-MAKMUR')->count())->toBe(1);
+    });
+
     it('alur lengkap lewat rute: pemasok, PO, persetujuan, terima, faktur, bayar, retur. Semua halaman tampil', function (): void {
         $t = BantuanPembelian::SiapkanTenant();
         $minyak = BantuanKatalog::BuatProduk(['Nama' => 'Minyak Goreng Sawit Bening Kemasan Pouch 2 Liter']);

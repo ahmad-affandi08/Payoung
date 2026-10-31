@@ -5,6 +5,7 @@ import BidangUang from '@/Komponen/Formulir/BidangUang';
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import PemilihJasaInvoice from '@/Komponen/Invoice/PemilihJasaInvoice';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
 import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
@@ -87,12 +88,30 @@ export default function IsianBarisInvoice({
     const penuh = baris.length >= maksimal;
     const opsiPajak = opsiKelompokPajak.map((k) => ({ Nilai: k.Uuid, Label: k.Nama }));
     const jumlahKolom = sembunyikanDiskon ? 8 : 9;
+    const entri = useEntriCepat('invoice');
+    // Entri cepat: baris baru di paling atas (dekat kotak cari). Baris dari katalog langsung memfokuskan jumlahnya,
+    // baris bebas memfokuskan uraiannya.
+    const TambahBarisBebas = () => {
+        const baru = BuatBarisKosongInvoice();
+
+        saatBerubah([baru, ...baris]);
+        requestAnimationFrame(() =>
+            document.querySelector<HTMLInputElement>(`[data-baris="${baru.Kunci}"] input`)?.focus(),
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
             <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <PemilihJasaInvoice
-                    saatPilih={(produk) => saatBerubah([...baris, BuatBarisDariJasa(produk)])}
+                    id={entri.idCari}
+                    alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
+                    saatPilih={(produk) => {
+                        const baru = BuatBarisDariJasa(produk);
+
+                        entri.CatatBarisBaru(baru.Kunci);
+                        saatBerubah([baru, ...baris]);
+                    }}
                     disabled={penuh}
                 />
                 <Button
@@ -100,7 +119,7 @@ export default function IsianBarisInvoice({
                     variant="outline"
                     className="h-8 pointer-coarse:h-11"
                     disabled={penuh}
-                    onClick={() => saatBerubah([...baris, BuatBarisKosongInvoice()])}
+                    onClick={TambahBarisBebas}
                 >
                     <PlusIcon aria-hidden className="size-4" />
                     Tambah baris bebas
@@ -142,7 +161,7 @@ export default function IsianBarisInvoice({
                             const subtotal = HitungSubtotalBaris(b);
 
                             return (
-                                <TableRow key={b.Kunci}>
+                                <TableRow key={b.Kunci} data-baris={b.Kunci}>
                                     <TableCell className={`${kelasSel} min-w-56`}>
                                         <div className="flex flex-col gap-2">
                                             <BidangTeks
@@ -187,6 +206,8 @@ export default function IsianBarisInvoice({
                                         <BidangJumlah
                                             label={`Jumlah baris ${String(indeks + 1)}`}
                                             labelTersembunyi
+                                            id={entri.IdJumlah(b.Kunci)}
+                                            saatEnter={entri.KembaliKeCari}
                                             nilai={b.Jumlah}
                                             saatBerubah={(nilai) => Ubah(b.Kunci, { Jumlah: nilai })}
                                             galat={

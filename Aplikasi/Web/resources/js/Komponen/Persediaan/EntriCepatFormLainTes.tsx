@@ -4,12 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDetailStokOpname from '@/Halaman/Kelola/Persediaan/Opname/Detail';
 import HalamanFormPenyesuaianStok from '@/Halaman/Kelola/Persediaan/Penyesuaian/Form';
+import HalamanFormKonsinyasi from '@/Halaman/Kelola/Pembelian/Konsinyasi/Form';
+import HalamanFormOrderProduksi from '@/Halaman/Kelola/Persediaan/Produksi/Form';
 import HalamanFormPermintaanStok from '@/Halaman/Kelola/Persediaan/Permintaan/Form';
 import HalamanFormStokAwal from '@/Halaman/Kelola/Persediaan/StokAwal/Form';
+import IsianBarisInvoice from '@/Komponen/Invoice/IsianBarisInvoice';
 import IsianBarisGrosir, { type BarisIsianGrosir } from '@/Komponen/Grosir/IsianBarisGrosir';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { AkunSiap, GudangKedua, GudangUtama } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import type { IzinDokumenPersediaan } from '@/Tipe/DokumenPersediaan';
+import type { BarisIsianInvoice } from '@/Tipe/Invoice';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -37,6 +41,8 @@ const Ajino = BuatProduk('01J9PRD0000000000000000002', 'Ajino Moto 250 gr', 'PRD
 type Kasus = {
     nama: string;
     awalanJumlah: string;
+    /** Nama tombol pemicu pemilih produk di form itu. */
+    labelCari?: string;
     pasang: () => void;
 };
 
@@ -119,12 +125,68 @@ const KasusForm: Kasus[] = [
             RenderUji(<Pembungkus />);
         },
     },
+    {
+        nama: 'Konsinyasi',
+        awalanJumlah: 'Jumlah',
+        labelCari: 'Tambah produk titipan',
+        pasang: () => {
+            AturHalamanUji({}, '/kelola/pembelian/konsinyasi/titipan-masuk');
+            RenderUji(
+                <HalamanFormKonsinyasi
+                    Jenis="Masuk"
+                    LabelJenis="Titipan masuk"
+                    UuidPemasokAwal={null}
+                    OpsiPemasok={[
+                        {
+                            Uuid: '01J9PMS0000000000000000001',
+                            Kode: 'SUP-001',
+                            Nama: 'Bu Sari Keripik Rumahan',
+                            Pkp: false,
+                            TerminHari: 0,
+                            Aktif: true,
+                        },
+                    ]}
+                    OpsiGudang={[
+                        {
+                            Uuid: '01J9GDG0000000000000000001',
+                            Kode: 'UTM',
+                            Nama: 'Gudang Utama',
+                            Jenis: 'Toko',
+                            NamaOutlet: 'Solo Baru',
+                            Aktif: true,
+                        },
+                    ]}
+                    HariIni="2026-10-11"
+                    MaksBaris={500}
+                />,
+            );
+        },
+    },
+    {
+        nama: 'Order produksi (bahan)',
+        awalanJumlah: 'Dipakai',
+        labelCari: 'Tambah bahan',
+        pasang: () => {
+            AturHalamanUji({}, '/kelola/persediaan/produksi/buat');
+            RenderUji(
+                <HalamanFormOrderProduksi
+                    Mode="Buat"
+                    Order={null}
+                    Awal={null}
+                    OpsiGudang={[GudangUtama]}
+                    HariIni="2026-09-27"
+                    MaksBahan={100}
+                    WajibKedaluwarsaBatch
+                />,
+            );
+        },
+    },
 ];
 
-async function PilihProduk(kata: string, nama: RegExp) {
+async function PilihProduk(kata: string, nama: RegExp, labelCari = 'Tambah produk') {
     // Daftar dari pilihan sebelumnya harus sudah benar-benar tertutup sebelum yang berikutnya dibuka.
     await waitFor(() => expect(document.querySelector('[data-slot="popover-content"]')).toBeNull());
-    fireEvent.click(screen.getByRole('combobox', { name: 'Tambah produk' }));
+    fireEvent.click(screen.getByRole('combobox', { name: labelCari }));
     const cari = screen.getByPlaceholderText('Cari nama, SKU, atau barcode');
     fireEvent.change(cari, { target: { value: kata } });
     await waitFor(() => expect(screen.getByRole('option', { name: nama })).toBeTruthy());
@@ -148,7 +210,7 @@ function PasangFetch() {
     );
 }
 
-describe.each(KasusForm)('Entri cepat barang ($nama)', ({ awalanJumlah, pasang }) => {
+describe.each(KasusForm)('Entri cepat barang ($nama)', ({ awalanJumlah, labelCari, pasang }) => {
     beforeEach(PasangFetch);
 
     afterEach(() => {
@@ -159,7 +221,7 @@ describe.each(KasusForm)('Entri cepat barang ($nama)', ({ awalanJumlah, pasang }
     it('barang yang dipilih langsung punya isian jumlah yang aktif, tanpa mengetuk lagi', async () => {
         pasang();
 
-        await PilihProduk('sasa', /Micin Sasa/);
+        await PilihProduk('sasa', /Micin Sasa/, labelCari);
 
         const jumlah = await screen.findByRole('textbox', { name: `${awalanJumlah} Micin Sasa 250 gr` });
         await waitFor(() => expect(document.activeElement).toBe(jumlah));
@@ -168,11 +230,11 @@ describe.each(KasusForm)('Entri cepat barang ($nama)', ({ awalanJumlah, pasang }
     it('barang berikutnya muncul paling atas, di bawah kotak cari', async () => {
         pasang();
 
-        await PilihProduk('sasa', /Micin Sasa/);
+        await PilihProduk('sasa', /Micin Sasa/, labelCari);
         const pertama = await screen.findByRole('textbox', { name: `${awalanJumlah} Micin Sasa 250 gr` });
         await waitFor(() => expect(document.activeElement).toBe(pertama));
         fireEvent.change(pertama, { target: { value: '5' } });
-        await PilihProduk('ajino', /Ajino Moto/);
+        await PilihProduk('ajino', /Ajino Moto/, labelCari);
 
         const urutan = screen
             .getAllByRole('textbox', { name: NamaIsianJumlah(awalanJumlah) })
@@ -186,7 +248,7 @@ describe.each(KasusForm)('Entri cepat barang ($nama)', ({ awalanJumlah, pasang }
 
     it('Enter di jumlah membuka kotak cari lagi dan tidak mengirim formulir', async () => {
         pasang();
-        await PilihProduk('sasa', /Micin Sasa/);
+        await PilihProduk('sasa', /Micin Sasa/, labelCari);
 
         const jumlah = await screen.findByRole('textbox', { name: `${awalanJumlah} Micin Sasa 250 gr` });
         await waitFor(() => expect(document.activeElement).toBe(jumlah));
@@ -276,5 +338,103 @@ describe('Entri cepat barang (Opname, barang di luar daftar)', () => {
         await waitFor(() => expect(document.activeElement).toBe(kotakCari));
         expect(tiruanRouter.post).not.toHaveBeenCalled();
         expect((pertama as HTMLInputElement).value).toBe('7');
+    });
+});
+
+function PembungkusInvoice() {
+    const [baris, AturBaris] = useState<BarisIsianInvoice[]>([]);
+
+    return (
+        <form onSubmit={(peristiwa) => tiruanRouter.post('/uji', {}, {}) ?? peristiwa.preventDefault()}>
+            <IsianBarisInvoice
+                baris={baris}
+                saatBerubah={AturBaris}
+                opsiKelompokPajak={[]}
+                periksa={false}
+                galatServer={{}}
+                maksimal={100}
+            />
+        </form>
+    );
+}
+
+describe('Entri cepat barang (baris Invoice dan Penawaran)', () => {
+    beforeEach(() => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockImplementation((url: string) =>
+                Promise.resolve({
+                    ok: true,
+                    status: 200,
+                    json: () =>
+                        Promise.resolve({
+                            Data: [
+                                {
+                                    Uuid: url.includes('desain') ? 'JSA2' : 'JSA1',
+                                    Nama: url.includes('desain') ? 'Jasa Desain Logo' : 'Jasa Servis AC',
+                                    Sku: null,
+                                    Jenis: 'Jasa',
+                                    SimbolSatuan: 'paket',
+                                    Harga: '350000.00',
+                                    UuidKelompokPajak: null,
+                                    HargaTermasukPajak: null,
+                                },
+                            ],
+                        }),
+                }),
+            ),
+        );
+    });
+
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+    });
+
+    function PasangInvoice() {
+        AturHalamanUji({}, '/kelola/invoice/buat');
+        RenderUji(<PembungkusInvoice />);
+    }
+
+    async function PilihJasa(kata: string, nama: RegExp) {
+        await waitFor(() => expect(document.querySelector('[data-slot="popover-content"]')).toBeNull());
+        fireEvent.click(screen.getByRole('combobox', { name: 'Tambah dari daftar jasa' }));
+        const cari = screen.getByPlaceholderText('Pilih jasa atau produk tanpa stok');
+        fireEvent.change(cari, { target: { value: kata } });
+        await waitFor(() => expect(screen.getByRole('option', { name: nama })).toBeTruthy());
+        fireEvent.keyDown(cari, { key: 'Enter' });
+    }
+
+    it('jasa yang dipilih muncul paling atas dan jumlahnya langsung aktif, Enter kembali ke kotak cari', async () => {
+        PasangInvoice();
+
+        await PilihJasa('servis', /Jasa Servis AC/);
+        const pertama = await screen.findByRole<HTMLInputElement>('textbox', { name: 'Jumlah baris 1' });
+        await waitFor(() => expect(document.activeElement).toBe(pertama));
+        fireEvent.change(pertama, { target: { value: '3' } });
+
+        await PilihJasa('desain', /Jasa Desain Logo/);
+        const barisAtas = await screen.findByDisplayValue('Jasa Desain Logo');
+        const barisBawah = screen.getByDisplayValue('Jasa Servis AC');
+        // Jasa yang dipilih belakangan berada di atas, dan jumlah yang sudah diketik pada baris pertama tidak hilang.
+        expect(barisAtas.compareDocumentPosition(barisBawah) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Jumlah baris 2' }).value).toBe('3');
+
+        const jumlahBaru = screen.getByRole('textbox', { name: 'Jumlah baris 1' });
+        await waitFor(() => expect(document.activeElement).toBe(jumlahBaru));
+        fireEvent.keyDown(jumlahBaru, { key: 'Enter' });
+
+        const kotakCari = await screen.findByPlaceholderText('Pilih jasa atau produk tanpa stok');
+        await waitFor(() => expect(document.activeElement).toBe(kotakCari));
+        expect(tiruanRouter.post).not.toHaveBeenCalled();
+    });
+
+    it('baris bebas ditambah di atas dan uraiannya langsung terfokus', async () => {
+        PasangInvoice();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah baris bebas' }));
+
+        const uraian = await screen.findByRole('textbox', { name: 'Uraian baris 1' });
+        await waitFor(() => expect(document.activeElement).toBe(uraian));
     });
 });

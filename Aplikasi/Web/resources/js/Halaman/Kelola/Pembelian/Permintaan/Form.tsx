@@ -6,6 +6,8 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import { BuatKunciBaris, PeriksaBaris, SusunMasukanBaris } from '@/Komponen/Pembelian/AturanPembelian';
@@ -46,6 +48,25 @@ export default function HalamanFormPermintaan({
         })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'permintaan-pembelian',
+        aktif: Permintaan === null,
+        nilai: { pemasok, gudang, dibutuhkan, catatan, baris },
+        kosong: (n) => n.baris.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPemasok(isi.pemasok);
+        AturGudang(isi.gudang);
+        AturDibutuhkan(isi.dibutuhkan);
+        AturCatatan(isi.catatan);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunciBaris() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const lanjutkan = useRef(false);
     const judul = Mode === 'Buat' ? 'Buat permintaan pembelian' : `Ubah draf ${Permintaan?.Nomor ?? ''}`;
@@ -74,6 +95,7 @@ export default function HalamanFormPermintaan({
             preserveScroll: true,
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (Mode === 'Buat' || Permintaan === null) {
@@ -89,6 +111,9 @@ export default function HalamanFormPermintaan({
                 galat={galat}
                 kecuali={['UuidGudang', 'UuidPemasok', 'Tanggal', 'DibutuhkanPada', 'Catatan']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Permintaan"

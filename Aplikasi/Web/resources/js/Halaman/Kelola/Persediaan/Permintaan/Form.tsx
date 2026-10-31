@@ -8,6 +8,8 @@ import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
@@ -60,6 +62,24 @@ export default function HalamanFormPermintaanStok({
     const [catatan, AturCatatan] = useState('');
     const [daftar, AturDaftar] = useState<BarisForm[]>([]);
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'permintaan-stok',
+        aktif: true,
+        nilai: { tujuan, asal, catatan, daftar },
+        kosong: (n) => n.daftar.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturTujuan(isi.tujuan);
+        AturAsal(isi.asal);
+        AturCatatan(isi.catatan);
+        AturDaftar(isi.daftar.map((b) => ({ ...b, Kunci: BuatKunci() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const galatTujuan =
         galatServer.UuidGudangTujuan ?? (periksa && tujuan === '' ? 'Pilih lokasi yang meminta.' : undefined);
@@ -120,7 +140,12 @@ export default function HalamanFormPermintaanStok({
                 Catatan: catatan.trim() === '' ? null : catatan.trim(),
                 Baris: daftar.map((b) => ({ UuidProduk: b.UuidProduk, Jumlah: b.Jumlah })),
             },
-            { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) },
+            {
+                preserveScroll: true,
+                onStart: () => AturMemproses(true),
+                onFinish: () => AturMemproses(false),
+                onSuccess: () => draf.Hapus(),
+            },
         );
     };
 
@@ -130,6 +155,9 @@ export default function HalamanFormPermintaanStok({
                 galat={galatServer}
                 kecuali={['UuidGudangAsal', 'UuidGudangTujuan', 'Tanggal', 'Catatan', 'Baris']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label="Minta stok" className="flex flex-col gap-4">
                 <Panel
                     judul="Permintaan"

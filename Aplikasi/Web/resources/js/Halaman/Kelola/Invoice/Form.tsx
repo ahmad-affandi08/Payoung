@@ -11,6 +11,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import PemilihPelangganGrosir from '@/Komponen/Grosir/PemilihPelangganGrosir';
 import { AlamatInvoice } from '@/Komponen/Invoice/BagianInvoice';
 import IsianBarisInvoice, { BuatBarisKosongInvoice } from '@/Komponen/Invoice/IsianBarisInvoice';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import { AmbilHasilCari } from '@/Komponen/Katalog/PemilihProduk';
 import Panel from '@/Komponen/Kelola/Panel';
@@ -82,6 +84,52 @@ export default function HalamanFormInvoice({
               })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: uangMuka ? 'invoice-uang-muka' : 'invoice',
+        aktif: Isian === null,
+        nilai: {
+            uuidPelanggan,
+            namaPelanggan,
+            uuidOutlet,
+            termin,
+            perihal,
+            referensi,
+            inklusif,
+            kodePph,
+            tarifPph,
+            catatan,
+            syarat,
+            infoBayar,
+            baris,
+        },
+        kosong: (n) =>
+            n.baris.every((b) => b.Nama.trim() === '' && b.Harga === '') &&
+            n.perihal.trim() === '' &&
+            n.catatan.trim() === '' &&
+            n.uuidPelanggan === '' &&
+            n.namaPelanggan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPelanggan(isi.uuidPelanggan);
+        AturNamaPelanggan(isi.namaPelanggan);
+        AturOutlet(isi.uuidOutlet);
+        AturTermin(isi.termin);
+        AturPerihal(isi.perihal);
+        AturReferensi(isi.referensi);
+        AturInklusif(isi.inklusif);
+        AturKodePph(isi.kodePph);
+        AturTarifPph(isi.tarifPph);
+        AturCatatan(isi.catatan);
+        AturSyarat(isi.syarat);
+        AturInfoBayar(isi.infoBayar);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunci() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const judul = ubah
         ? `Ubah draf ${Isian.Nomor ?? 'invoice'}`
@@ -138,6 +186,7 @@ export default function HalamanFormInvoice({
         const pilihan = {
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (ubah) {
@@ -161,6 +210,9 @@ export default function HalamanFormInvoice({
     return (
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Invoice', href: AlamatInvoice }]}>
             <DaftarGalatServer galat={galat} />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             {uangMuka ? (
                 <Pemberitahuan jenis="info" judul="Invoice uang muka">
                     Dipakai untuk meminta DP sebelum pekerjaan dimulai. Saat invoice akhir dibuat, DP yang sudah terbit

@@ -1,3 +1,5 @@
+import { beforeEach } from 'vitest';
+
 /**
  * Satu-satunya pelengkap jsdom untuk Vitest (didaftarkan di `test.setupFiles` pada `vite.config.ts`).
  * Bukan kode produksi: peramban sungguhan sudah punya semua API ini.
@@ -77,3 +79,13 @@ if (typeof globalThis.DOMRect !== 'function') {
     }
     globalThis.DOMRect = DOMRectUji as unknown as typeof DOMRect;
 }
+
+/* Draf otomatis form (`useDrafLokal`) memakai localStorage. Dikosongkan sebelum tiap tes supaya isian satu tes tidak
+ * muncul sebagai tawaran draf di tes berikutnya dalam berkas yang sama. */
+beforeEach(() => {
+    try {
+        window.localStorage.clear();
+    } catch {
+        // Penyimpanan tidak tersedia di lingkungan ini.
+    }
+});

@@ -11,6 +11,8 @@ import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
@@ -97,6 +99,30 @@ export default function HalamanFormPenyesuaianStok({
         }),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'penyesuaian-stok',
+        aktif: Penyesuaian === null,
+        nilai: { gudang, alasan, keterangan, daftar },
+        kosong: (n) => n.daftar.length === 0 && n.keterangan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturGudang(isi.gudang);
+        AturAlasan(isi.alasan);
+        AturKeterangan(isi.keterangan);
+        AturDaftar(
+            isi.daftar.map((b) => {
+                nomorKunci += 1;
+
+                return { ...b, Kunci: `ps-${String(nomorKunci)}` };
+            }),
+        );
+    };
     const [memproses, AturMemproses] = useState(false);
     // Audit kemudahan pakai #13: tombol utama menyimpan lalu langsung memproses dokumen; draf jadi pilihan kedua.
     const lanjutkan = useRef(false);
@@ -179,7 +205,12 @@ export default function HalamanFormPenyesuaianStok({
                 NomorSeri: b.Arah === 'Masuk' ? b.NomorSeri : null,
             })),
         };
-        const opsi = { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) };
+        const opsi = {
+            preserveScroll: true,
+            onStart: () => AturMemproses(true),
+            onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
+        };
 
         if (Penyesuaian === null) {
             router.post(alamat, { ...masukan, Uuid: uuidBaru ?? BuatUlid(), Lanjutkan: lanjutkan.current }, opsi);
@@ -198,6 +229,9 @@ export default function HalamanFormPenyesuaianStok({
                 galat={galatServer}
                 kecuali={['UuidGudang', 'Tanggal', 'KodeAlasan', 'Keterangan', 'Baris']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"

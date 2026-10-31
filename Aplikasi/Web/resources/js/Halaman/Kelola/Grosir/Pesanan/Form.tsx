@@ -8,6 +8,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import { AlamatGrosir } from '@/Komponen/Grosir/BagianDokumenGrosir';
 import IsianBarisGrosir, { BuatKunciBarisGrosir, type BarisIsianGrosir } from '@/Komponen/Grosir/IsianBarisGrosir';
 import PemilihPelangganGrosir from '@/Komponen/Grosir/PemilihPelangganGrosir';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -48,6 +50,26 @@ export default function HalamanFormPesananGrosir({ Isian, OpsiOutlet, OpsiGudang
         })),
     );
     const [periksa, AturPeriksa] = useState(false);
+    const draf = useDrafLokal({
+        nama: 'pesanan-grosir',
+        aktif: Isian === null,
+        nilai: { uuidPelanggan, namaPelanggan, uuidOutlet, tanggalKirim, catatan, baris },
+        kosong: (n) => n.baris.length === 0 && n.catatan.trim() === '' && n.uuidPelanggan === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturPelanggan(isi.uuidPelanggan);
+        AturNamaPelanggan(isi.namaPelanggan);
+        AturOutlet(isi.uuidOutlet);
+        AturTanggalKirim(isi.tanggalKirim);
+        AturCatatan(isi.catatan);
+        AturBaris(isi.baris.map((b) => ({ ...b, Kunci: BuatKunciBarisGrosir() })));
+    };
     const [memproses, AturMemproses] = useState(false);
     const ubah = Isian !== null;
     const judul = ubah ? `Ubah draf ${Isian.Nomor}` : 'Buat pesanan grosir';
@@ -76,6 +98,7 @@ export default function HalamanFormPesananGrosir({ Isian, OpsiOutlet, OpsiGudang
         const pilihan = {
             onStart: () => AturMemproses(true),
             onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
         };
 
         if (ubah) {
@@ -92,6 +115,9 @@ export default function HalamanFormPesananGrosir({ Isian, OpsiOutlet, OpsiGudang
     return (
         <TataLetakAplikasi judul={judul}>
             <DaftarGalatServer galat={galat} />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             <Pemberitahuan jenis="info" judul="Harga mengikuti daftar harga">
                 Harga grosir mengikuti daftar harga bertingkat & tier pelanggan. Harga dan total tampil setelah draf
                 disimpan. Periksa di halaman pesanan sebelum dikonfirmasi.

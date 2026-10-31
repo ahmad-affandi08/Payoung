@@ -6,6 +6,8 @@ import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import { GalatBidang } from '@/Komponen/Formulir/BagianBidang';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
+import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
+import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
@@ -77,6 +79,25 @@ export default function HalamanFormTransferStok({
     // Audit kemudahan pakai #13: tombol utama menyimpan lalu langsung memproses dokumen; draf jadi pilihan kedua.
     const lanjutkan = useRef(false);
     const entri = useEntriCepat('transfer');
+    // Draf otomatis di peramban, hanya untuk transfer baru yang dibuat dari nol (bukan dari permintaan stok).
+    const draf = useDrafLokal({
+        nama: 'transfer-stok',
+        aktif: Transfer === null && !Awal?.UuidPermintaanStok && (Awal?.Baris ?? []).length === 0,
+        nilai: { asal, tujuan, catatan, daftar },
+        kosong: (n) => n.daftar.length === 0 && n.catatan.trim() === '',
+    });
+    const PulihkanDraf = () => {
+        const isi = draf.Pulihkan();
+
+        if (isi === null) {
+            return;
+        }
+
+        AturAsal(isi.asal);
+        AturTujuan(isi.tujuan);
+        AturCatatan(isi.catatan);
+        AturDaftar(isi.daftar.map((b) => ({ ...b, Kunci: BuatKunci() })));
+    };
     const judul = Mode === 'Buat' ? 'Buat transfer stok' : 'Ubah draf transfer';
     const galatAsal = galatServer.UuidGudangAsal ?? (periksa && asal === '' ? 'Pilih lokasi asal.' : undefined);
     const galatTujuan =
@@ -160,7 +181,12 @@ export default function HalamanFormTransferStok({
                 UuidNomorSeri: b.UuidNomorSeri,
             })),
         };
-        const opsi = { preserveScroll: true, onStart: () => AturMemproses(true), onFinish: () => AturMemproses(false) };
+        const opsi = {
+            preserveScroll: true,
+            onStart: () => AturMemproses(true),
+            onFinish: () => AturMemproses(false),
+            onSuccess: () => draf.Hapus(),
+        };
 
         if (Transfer === null) {
             router.post(
@@ -188,6 +214,9 @@ export default function HalamanFormTransferStok({
                 galat={galatServer}
                 kecuali={['UuidGudangAsal', 'UuidGudangTujuan', 'Tanggal', 'Catatan', 'Baris', 'UuidPermintaanStok']}
             />
+            {draf.tawaran ? (
+                <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
+            ) : null}
             {Awal?.UuidPermintaanStok ? (
                 <Pemberitahuan jenis="info" judul={`Menjawab permintaan ${Awal.NomorPermintaan ?? ''}`.trim()}>
                     Barang dan jumlah diisi dari permintaan. Ubah seperlunya, pilih batch atau nomor seri bila produknya
