@@ -172,6 +172,9 @@ class _LayarAktivasiState extends ConsumerState<LayarAktivasi> {
             textAlign: TextAlign.center,
             style: teks.bodySmall,
           ),
+          // Orang yang mengunduh aplikasi lebih dulu belum punya akun atau kode aktivasi: arahkan ke situs pemasaran.
+          // Toko berserver sendiri tidak mendaftar lewat situs Payoung, jadi tautannya disembunyikan.
+          if (!_pakaiServerSendiri) ...[const SizedBox(height: TokenJarak.jarak8), const TautanSitusPemasaran()],
         ],
       ),
     );

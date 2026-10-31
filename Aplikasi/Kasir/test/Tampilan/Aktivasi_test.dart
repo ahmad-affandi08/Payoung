@@ -9,6 +9,23 @@ import '../Pendukung/PasangAplikasi.dart';
 /// F-02 langkah 5 di aplikasi kasir: kode aktivasi dipindai dari QR atau diketik.
 /// Pemindai (`mobile_scanner`) hanya ada di Android & iOS; di Windows layar ini hanya menyediakan isian manual.
 void main() {
+  testWidgets('orang yang mengunduh aplikasi lebih dulu diarahkan ke situs pemasaran, kecuali toko berserver sendiri', (
+    tester,
+  ) async {
+    final u = LingkunganUji.Buat();
+    await PasangAplikasi(tester, u, pemindaiQr: PemindaiQrTiruan(tersedia: false));
+
+    expect(find.text('Belum punya akun Payoung?'), findsOneWidget);
+    expect(find.byKey(const ValueKey('TautanSitusPemasaran')), findsOneWidget);
+
+    // Server sendiri (edisi Lisensi) tidak mendaftar lewat situs Payoung, jadi penunjuknya hilang.
+    await tester.tap(find.text('Toko memakai server sendiri?'));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('TautanSitusPemasaran')), findsNothing);
+
+    await Lepas(tester, u);
+  });
+
   testWidgets('tanpa pemindai hanya ada isian manual, tanpa tombol pindai', (tester) async {
     final u = LingkunganUji.Buat();
     await PasangAplikasi(tester, u, pemindaiQr: PemindaiQrTiruan(tersedia: false));

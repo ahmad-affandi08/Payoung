@@ -211,6 +211,12 @@ class _LayarMasukState extends ConsumerState<LayarMasuk> {
                             style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
                           ),
                         ],
+                        // Orang yang mengunduh aplikasi lebih dulu belum punya akun: arahkan ke situs pemasaran.
+                        // Toko berserver sendiri tidak mendaftar lewat situs Payoung, jadi tautannya disembunyikan.
+                        if (!duaFaktor && !_pakaiServerSendiri) ...[
+                          const SizedBox(height: TokenJarak.jarak16),
+                          const TautanSitusPemasaran(),
+                        ],
                       ],
                     ),
                   ),

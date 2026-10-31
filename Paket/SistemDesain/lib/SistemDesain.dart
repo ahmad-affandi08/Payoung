@@ -19,6 +19,7 @@ export 'Komponen/PapanAngka.dart';
 export 'Komponen/PapanPin.dart';
 export 'Komponen/SorotanAngka.dart';
 export 'Komponen/TandaMuat.dart';
+export 'Komponen/TautanSitusPemasaran.dart';
 export 'Komponen/TeksKode.dart';
 export 'Komponen/TeksUang.dart';
 export 'Komponen/UbinProduk.dart';

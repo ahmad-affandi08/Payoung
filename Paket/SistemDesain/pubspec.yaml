@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   inti:
     path: ../Inti
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
