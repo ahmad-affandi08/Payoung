@@ -11,6 +11,7 @@ import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -75,6 +76,7 @@ export default function HalamanFormTransferStok({
     const [memproses, AturMemproses] = useState(false);
     // Audit kemudahan pakai #13: tombol utama menyimpan lalu langsung memproses dokumen; draf jadi pilihan kedua.
     const lanjutkan = useRef(false);
+    const entri = useEntriCepat('transfer');
     const judul = Mode === 'Buat' ? 'Buat transfer stok' : 'Ubah draf transfer';
     const galatAsal = galatServer.UuidGudangAsal ?? (periksa && asal === '' ? 'Pilih lokasi asal.' : undefined);
     const galatTujuan =
@@ -90,11 +92,17 @@ export default function HalamanFormTransferStok({
     const Ubah = (kunci: string, perubahan: Partial<BarisForm>) =>
         AturDaftar((lama) => lama.map((b) => (b.Kunci === kunci ? { ...b, ...perubahan } : b)));
 
-    const Tambah = (p: ProdukStokTerpilih) =>
+    // Barang baru ditaruh paling atas, tepat di bawah kotak cari, dan jumlahnya langsung difokuskan (entri cepat).
+    const Tambah = (p: ProdukStokTerpilih) => {
+        const kunci = BuatKunci();
+
+        if (p.Pelacakan !== 'Seri') {
+            entri.CatatBarisBaru(kunci);
+        }
+
         AturDaftar((lama) => [
-            ...lama,
             {
-                Kunci: BuatKunci(),
+                Kunci: kunci,
                 UuidProduk: p.Uuid,
                 NamaProduk: p.Nama,
                 Sku: p.Sku,
@@ -108,7 +116,9 @@ export default function HalamanFormTransferStok({
                 UuidNomorSeri: null,
                 NomorSeri: null,
             },
+            ...lama,
         ]);
+    };
 
     const GantiAsal = (nilai: string) => {
         AturAsal(nilai);
@@ -246,6 +256,8 @@ export default function HalamanFormTransferStok({
                 >
                     <PemilihProdukStok
                         label="Tambah produk"
+                        id={entri.idCari}
+                        alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                         uuidGudang={asal === '' ? null : asal}
                         saatPilih={Tambah}
                         kecuali={daftar.filter((b) => b.Pelacakan === 'Tidak').map((b) => b.UuidProduk)}
@@ -253,7 +265,7 @@ export default function HalamanFormTransferStok({
                         keterangan={
                             asal === ''
                                 ? 'Pilih lokasi asal dulu agar stok saat ini ikut tampil.'
-                                : 'Produk batch & nomor seri: satu baris per batch atau per nomor seri.'
+                                : 'Barang yang dipilih muncul paling atas. Ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Produk batch & nomor seri: satu baris per batch atau per nomor seri.'
                         }
                     />
                     {galatDaftar ? <GalatBidang>{galatDaftar}</GalatBidang> : null}
@@ -292,6 +304,8 @@ export default function HalamanFormTransferStok({
                                             <BidangJumlah
                                                 label={`Jumlah ${b.NamaProduk}`}
                                                 labelTersembunyi
+                                                id={entri.IdJumlah(b.Kunci)}
+                                                saatEnter={entri.KembaliKeCari}
                                                 nilai={b.Jumlah}
                                                 saatBerubah={(jumlah) => Ubah(b.Kunci, { Jumlah: jumlah })}
                                                 desimal={b.BolehDesimal ? 4 : 0}

@@ -43,6 +43,9 @@ type PropsPemilihProdukStok = {
     disabled?: boolean;
     /** F-04: URL pencarian lain berbentuk sama (misal `/kelola/pembelian/produk/cari` yang juga membawa satuan beli). */
     buatUrl?: (kata: string, uuidGudang: string | null) => string;
+    /** Entri cepat barang: id tombol pemicu dan pengalih fokus sesudah memilih (lihat `useEntriCepat`). */
+    id?: string;
+    alihkanFokusSetelahPilih?: () => boolean;
 };
 
 /**
@@ -61,6 +64,8 @@ export default function PemilihProdukStok({
     galat,
     disabled,
     buatUrl = BuatUrlCariProdukStok,
+    id,
+    alihkanFokusSetelahPilih,
 }: PropsPemilihProdukStok) {
     const [kata, AturKata] = useState('');
     const [terbuka, AturTerbuka] = useState(false);
@@ -140,6 +145,8 @@ export default function PemilihProdukStok({
             saatSorot={AturSorot}
             status={status}
             saatPindai={SaatPindai}
+            id={id}
+            alihkanFokusTutup={alihkanFokusSetelahPilih}
         >
             {hasil.map((produk) => {
                 const tertolak = CekTertolak(produk);

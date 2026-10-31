@@ -8,6 +8,7 @@ import BidangUang from '@/Komponen/Formulir/BidangUang';
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok from '@/Komponen/Persediaan/PemilihProdukStok';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
@@ -62,22 +63,29 @@ export default function IsianBarisPembelian({
         saatBerubah(baris.map((b) => (b.Kunci === kunci ? { ...b, ...perubahan } : b)));
     const Hapus = (kunci: string) => saatBerubah(baris.filter((b) => b.Kunci !== kunci));
     const penuh = baris.length >= maksimal;
+    const entri = useEntriCepat('pembelian');
 
     return (
         <div className="flex flex-col gap-3">
             <PemilihProdukStok
                 label="Tambah produk"
+                id={entri.idCari}
+                alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                 uuidGudang={uuidGudang}
                 buatUrl={(kata, gudang) => BuatUrlCariProdukPembelian(kata, gudang, uuidPemasok)}
-                saatPilih={(produk) =>
-                    saatBerubah([...baris, BuatBarisDariProduk(produk as unknown as ProdukPembelian)])
-                }
+                saatPilih={(produk) => {
+                    // Barang baru ditaruh paling atas, tepat di bawah kotak cari, dan jumlahnya langsung difokuskan.
+                    const baru = BuatBarisDariProduk(produk as unknown as ProdukPembelian);
+
+                    entri.CatatBarisBaru(baru.Kunci);
+                    saatBerubah([baru, ...baris]);
+                }}
                 kecuali={baris.filter((b) => b.Pelacakan !== 'Batch').map((b) => b.UuidProduk)}
                 disabled={penuh}
                 keterangan={
                     penuh
                         ? `Batas ${maksimal.toLocaleString('id-ID')} baris per dokumen tercapai.`
-                        : 'Hanya produk yang punya stok. Harga per satuan yang dipilih (misal per dus). Terisi dari pembelian terakhir bila ada.'
+                        : 'Hanya produk yang punya stok. Barang yang dipilih muncul paling atas, ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Harga per satuan yang dipilih (misal per dus), terisi dari pembelian terakhir bila ada.'
                 }
             />
             {galatServer.Baris ? <GalatBidang>{galatServer.Baris}</GalatBidang> : null}
@@ -174,6 +182,8 @@ export default function IsianBarisPembelian({
                                                 <BidangJumlah
                                                     label={`Jumlah ${b.NamaProduk}`}
                                                     labelTersembunyi
+                                                    id={entri.IdJumlah(b.Kunci)}
+                                                    saatEnter={entri.KembaliKeCari}
                                                     nilai={b.Jumlah}
                                                     saatBerubah={(nilai) => Ubah(b.Kunci, { Jumlah: nilai })}
                                                     akhiran={simbol}

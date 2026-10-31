@@ -25,6 +25,13 @@ type PropsBidangJumlah = {
     disabled?: boolean;
     required?: boolean;
     labelTersembunyi?: boolean;
+    /** Id isian, supaya bisa difokuskan dari luar (entri cepat barang). Bawaan: id otomatis. */
+    id?: string;
+    /**
+     * Entri cepat: Enter di isian ini memanggil fungsi ini (misal pindah ke kotak cari produk) dan **tidak** mengirim
+     * formulir. Isi isian juga terpilih semua saat fokus, jadi ketikan pertama menggantikan nilai bawaan.
+     */
+    saatEnter?: () => void;
 };
 
 /**
@@ -43,8 +50,11 @@ export default function BidangJumlah({
     disabled,
     required,
     labelTersembunyi = false,
+    id: idKustom,
+    saatEnter,
 }: PropsBidangJumlah) {
-    const id = useId();
+    const idOtomatis = useId();
+    const id = idKustom ?? idOtomatis;
     const [teksKetik, AturTeksKetik] = useState<string | null>(null);
     const tampil = teksKetik ?? FormatMasukanJumlah(nilai).replace('−', '-');
     const opsi = { desimal, digitBulat };
@@ -80,6 +90,17 @@ export default function BidangJumlah({
                     value={tampil}
                     onChange={Ubah}
                     onBlur={() => AturTeksKetik(null)}
+                    onFocus={saatEnter ? (peristiwa) => peristiwa.currentTarget.select() : undefined}
+                    onKeyDown={
+                        saatEnter
+                            ? (peristiwa) => {
+                                  if (peristiwa.key === 'Enter') {
+                                      peristiwa.preventDefault();
+                                      saatEnter();
+                                  }
+                              }
+                            : undefined
+                    }
                     disabled={disabled}
                     required={required}
                     aria-invalid={galat ? true : undefined}

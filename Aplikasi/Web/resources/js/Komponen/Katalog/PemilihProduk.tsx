@@ -80,6 +80,13 @@ type PropsKerangka = {
     saatPindai?: ((barcode: string) => void) | undefined;
     /** `Seri` = pemilih yang dicari lewat nomor seri/IMEI (kendaraan/perangkat): QR, DataMatrix, Codabar ikut terbaca. */
     jenisKodePindai?: 'Produk' | 'Seri' | undefined;
+    /** Id tombol pemicu, supaya bisa difokuskan dari luar (entri cepat barang). Bawaan: id otomatis. */
+    id?: string | undefined;
+    /**
+     * Dipanggil saat daftar tertutup. Bila mengembalikan `true`, fokus sudah dialihkan (misal ke isian jumlah barang
+     * yang baru dipilih) dan fokus **tidak** dikembalikan ke tombol pemicu seperti biasa.
+     */
+    alihkanFokusTutup?: (() => boolean) | undefined;
     children: ReactNode;
 };
 
@@ -111,9 +118,12 @@ export function KerangkaPemilihProduk({
     status,
     saatPindai,
     jenisKodePindai = 'Produk',
+    id: idKustom,
+    alihkanFokusTutup,
     children,
 }: PropsKerangka) {
-    const id = useId();
+    const idOtomatis = useId();
+    const id = idKustom ?? idOtomatis;
     const idDaftar = `${id}-daftar`;
     const pemicu = useRef<HTMLButtonElement>(null);
     const { modal, isi, SiapkanBuka, SaatBukaFokus } = usePerilakuPopoverCari(pemicu, terbuka);
@@ -197,6 +207,9 @@ export function KerangkaPemilihProduk({
                             onOpenAutoFocus={SaatBukaFokus}
                             onCloseAutoFocus={(peristiwa) => {
                                 peristiwa.preventDefault();
+                                if (alihkanFokusTutup?.() === true) {
+                                    return;
+                                }
                                 if (pemicu.current?.isConnected) {
                                     pemicu.current.focus();
                                 }
