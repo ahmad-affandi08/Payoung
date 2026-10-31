@@ -24,6 +24,7 @@ import {
 import BidangHpp from '@/Komponen/Persediaan/BidangHpp';
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
 import PanelKesiapanAkun from '@/Komponen/Persediaan/PanelKesiapanAkun';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import { Button } from '@/Komponen/Ui/button';
@@ -69,6 +70,7 @@ export default function HalamanFormStokAwal({
 }: PropsFormStokAwal) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
+    const entri = useEntriCepat('stok-awal');
     // Kunci idempotensi dokumen baru: dibuat sekali per form, dipakai ulang saat kirim ulang.
     const [uuidBaru] = useState(() => (StokAwal === null ? BuatUlid() : null));
     const [uuidGudang, AturUuidGudang] = useState(StokAwal?.UuidGudang ?? '');
@@ -99,11 +101,17 @@ export default function HalamanFormStokAwal({
 
     const HapusBaris = (kunci: string) => AturDaftarBaris((lama) => lama.filter((baris) => baris.Kunci !== kunci));
 
-    const TambahProduk = (produk: ProdukStokTerpilih) =>
+    const TambahProduk = (produk: ProdukStokTerpilih) => {
+        const kunci = BuatKunciBaris();
+
+        // Entri cepat: barang baru di paling atas (dekat kotak cari) dan jumlahnya langsung difokuskan.
+        if (produk.Pelacakan !== 'Seri') {
+            entri.CatatBarisBaru(kunci);
+        }
+
         AturDaftarBaris((lama) => [
-            ...lama,
             {
-                Kunci: BuatKunciBaris(),
+                Kunci: kunci,
                 UuidProduk: produk.Uuid,
                 NamaProduk: produk.Nama,
                 Sku: produk.Sku,
@@ -119,7 +127,9 @@ export default function HalamanFormStokAwal({
                 TanggalKedaluwarsa: null,
                 NomorSeri: [],
             },
+            ...lama,
         ]);
+    };
 
     /** Ganti lokasi: saldo per baris milik lokasi lama, jadi disembunyikan sampai produk dipilih ulang. */
     const GantiGudang = (nilai: string) => {
@@ -253,6 +263,8 @@ export default function HalamanFormStokAwal({
                 >
                     <PemilihProdukStok
                         label="Tambah produk"
+                        id={entri.idCari}
+                        alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                         uuidGudang={gudangTerpilih?.Uuid ?? null}
                         saatPilih={TambahProduk}
                         kecuali={daftarBaris
@@ -265,7 +277,7 @@ export default function HalamanFormStokAwal({
                                 ? 'Pilih lokasi stok dulu agar stok saat ini ikut tampil.'
                                 : penuh
                                   ? `Batas ${BatasBaris.toLocaleString('id-ID')} baris per dokumen tercapai. Simpan draf ini lalu buat dokumen baru, atau pakai impor Excel.`
-                                  : 'Hanya produk yang punya stok. Produk batch boleh ditambah lebih dari sekali untuk batch berbeda.'
+                                  : 'Hanya produk yang punya stok. Barang yang dipilih muncul paling atas, ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Produk batch boleh ditambah lebih dari sekali untuk batch berbeda.'
                         }
                     />
                     {galatDaftar ? <GalatBidang>{galatDaftar}</GalatBidang> : null}
@@ -344,6 +356,8 @@ export default function HalamanFormStokAwal({
                                                         <BidangJumlah
                                                             label={`Jumlah ${nama}`}
                                                             labelTersembunyi
+                                                            id={entri.IdJumlah(baris.Kunci)}
+                                                            saatEnter={entri.KembaliKeCari}
                                                             nilai={baris.Jumlah}
                                                             saatBerubah={(jumlah) =>
                                                                 UbahBaris(baris.Kunci, { Jumlah: jumlah })

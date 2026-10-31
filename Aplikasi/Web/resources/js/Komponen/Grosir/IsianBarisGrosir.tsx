@@ -4,6 +4,7 @@ import { GalatBidang } from '@/Komponen/Formulir/BagianBidang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok from '@/Komponen/Persediaan/PemilihProdukStok';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
@@ -90,17 +91,30 @@ export default function IsianBarisGrosir({
         saatBerubah(baris.map((b) => (b.Kunci === kunci ? { ...b, ...perubahan } : b)));
     const Hapus = (kunci: string) => saatBerubah(baris.filter((b) => b.Kunci !== kunci));
     const penuh = baris.length >= maksimal;
+    const entri = useEntriCepat('grosir');
 
     return (
         <div className="flex flex-col gap-3">
             <PemilihProdukStok
                 label="Tambah produk"
+                id={entri.idCari}
+                alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                 uuidGudang={uuidGudang}
                 buatUrl={BuatUrlCariProdukGrosir}
-                saatPilih={(produk) =>
-                    saatBerubah([...baris, BuatBarisDariProdukGrosir(produk as unknown as HasilCariProdukGrosir)])
-                }
+                saatPilih={(produk) => {
+                    // Entri cepat: barang baru di paling atas (dekat kotak cari) dan jumlahnya langsung difokuskan.
+                    const baru = BuatBarisDariProdukGrosir(produk as unknown as HasilCariProdukGrosir);
+
+                    entri.CatatBarisBaru(baru.Kunci);
+                    saatBerubah([baru, ...baris]);
+                }}
                 disabled={penuh}
+                {...(penuh
+                    ? {}
+                    : {
+                          keterangan:
+                              'Barang yang dipilih muncul paling atas. Ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya.',
+                      })}
             />
             {penuh ? (
                 <p className="text-keterangan text-teks-sekunder">
@@ -149,6 +163,8 @@ export default function IsianBarisGrosir({
                                     <BidangJumlah
                                         label={`Jumlah ${b.NamaProduk}`}
                                         labelTersembunyi
+                                        id={entri.IdJumlah(b.Kunci)}
+                                        saatEnter={entri.KembaliKeCari}
                                         nilai={b.Jumlah}
                                         saatBerubah={(nilai) => Ubah(b.Kunci, { Jumlah: nilai })}
                                         galat={

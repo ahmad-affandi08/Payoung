@@ -15,6 +15,7 @@ import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
 import BidangHpp from '@/Komponen/Persediaan/BidangHpp';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -82,6 +83,7 @@ export default function HalamanFormPenyesuaianStok({
 }: PropsFormPenyesuaianStok) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
+    const entri = useEntriCepat('penyesuaian');
     const [uuidBaru] = useState(() => (Penyesuaian === null ? BuatUlid() : null));
     const [gudang, AturGudang] = useState(Penyesuaian?.UuidGudang ?? '');
     const [tanggal, AturTanggal] = useState(Penyesuaian?.Tanggal ?? HariIni);
@@ -112,10 +114,16 @@ export default function HalamanFormPenyesuaianStok({
 
     const Tambah = (p: ProdukStokTerpilih) => {
         nomorKunci += 1;
+        const kunci = `ps-${String(nomorKunci)}`;
+
+        // Entri cepat: barang baru di paling atas (dekat kotak cari) dan jumlahnya langsung difokuskan.
+        if (p.Pelacakan !== 'Seri') {
+            entri.CatatBarisBaru(kunci);
+        }
+
         AturDaftar((lama) => [
-            ...lama,
             {
-                Kunci: `ps-${String(nomorKunci)}`,
+                Kunci: kunci,
                 UuidProduk: p.Uuid,
                 NamaProduk: p.Nama,
                 Sku: p.Sku,
@@ -133,6 +141,7 @@ export default function HalamanFormPenyesuaianStok({
                 UuidNomorSeri: null,
                 NomorSeri: null,
             },
+            ...lama,
         ]);
     };
 
@@ -266,13 +275,15 @@ export default function HalamanFormPenyesuaianStok({
                 >
                     <PemilihProdukStok
                         label="Tambah produk"
+                        id={entri.idCari}
+                        alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                         uuidGudang={gudang === '' ? null : gudang}
                         saatPilih={Tambah}
                         disabled={gudang === '' || daftar.length >= BatasBaris}
                         keterangan={
                             gudang === ''
                                 ? 'Pilih lokasi stok dulu.'
-                                : 'Stok keluar dinilai HPP saat dicatat. Stok masuk hanya untuk alasan Lainnya.'
+                                : 'Barang yang dipilih muncul paling atas. Ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Stok keluar dinilai HPP saat dicatat. Stok masuk hanya untuk alasan Lainnya.'
                         }
                     />
                     {galatServer.Baris ? (
@@ -337,6 +348,8 @@ export default function HalamanFormPenyesuaianStok({
                                         {b.Pelacakan === 'Seri' ? null : (
                                             <BidangJumlah
                                                 label={`Jumlah ${b.NamaProduk}`}
+                                                id={entri.IdJumlah(b.Kunci)}
+                                                saatEnter={entri.KembaliKeCari}
                                                 nilai={b.Jumlah}
                                                 saatBerubah={(jumlah) => Ubah(b.Kunci, { Jumlah: jumlah })}
                                                 desimal={b.BolehDesimal ? 4 : 0}

@@ -15,6 +15,7 @@ import {
     PanelJurnalDokumen,
     PanelRiwayatDokumen,
 } from '@/Komponen/Persediaan/Dokumen/KomponenDokumen';
+import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, {
     BuatUrlCariProdukStok,
     type ProdukStokTerpilih,
@@ -171,6 +172,7 @@ export default function HalamanDetailStokOpname({
     Izin,
 }: PropsDetailStokOpname) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const entri = useEntriCepat('opname');
     const galat = props.errors;
     const [dialog, AturDialog] = useState<JenisDialog>(null);
     const [memproses, AturMemproses] = useState(false);
@@ -204,19 +206,24 @@ export default function HalamanDetailStokOpname({
             onSuccess: () => AturDialog(null),
         });
 
-    const TambahBaru = (produk: ProdukStokTerpilih, jumlah = '') => {
+    /** Barang di luar daftar hitung masuk paling atas (dekat kotak cari). Mengembalikan kunci barisnya. */
+    const TambahBaru = (produk: ProdukStokTerpilih, jumlah = ''): string => {
         nomorKunci += 1;
+        const kunci = `opname-${String(nomorKunci)}`;
+
         AturBaru((lama) => [
-            ...lama,
             {
-                Kunci: `opname-${String(nomorKunci)}`,
+                Kunci: kunci,
                 Produk: produk,
                 JumlahFisik: produk.Pelacakan === 'Seri' ? '1' : jumlah,
                 NomorBatch: '',
                 TanggalKedaluwarsa: '',
                 NomorSeri: '',
             },
+            ...lama,
         ]);
+
+        return kunci;
     };
 
     /** Satu barcode/SKU dari kotak pindai (Enter) atau dari kamera: tambah 1 ke barisnya, atau buat baris baru. */
@@ -518,8 +525,17 @@ export default function HalamanDetailStokOpname({
                     >
                         <PemilihProdukStok
                             label="Tambah barang yang ditemukan"
+                            id={entri.idCari}
+                            alihkanFokusSetelahPilih={entri.AlihkanFokusSetelahPilih}
                             uuidGudang={Opname.UuidGudang}
-                            saatPilih={(p) => TambahBaru(p)}
+                            saatPilih={(p) => {
+                                const kunci = TambahBaru(p);
+
+                                // Entri cepat: jumlah barang biasa langsung difokuskan, Enter kembali ke kotak cari.
+                                if (p.Pelacakan === 'Tidak') {
+                                    entri.CatatBarisBaru(kunci);
+                                }
+                            }}
                         />
                         {baru.length > 0 ? (
                             <ul className="flex flex-col divide-y divide-garis" aria-label="Barang tambahan">
@@ -599,6 +615,8 @@ export default function HalamanDetailStokOpname({
                                         ) : (
                                             <BidangJumlah
                                                 label={`Fisik ${b.Produk.Nama}`}
+                                                id={entri.IdJumlah(b.Kunci)}
+                                                saatEnter={entri.KembaliKeCari}
                                                 nilai={b.JumlahFisik}
                                                 saatBerubah={(nilai) =>
                                                     AturBaru((lama) =>
