@@ -421,7 +421,8 @@ describe('Kelola/Persediaan/StokAwal/Detail (F-05a)', () => {
         expect(screen.getByText('B-2026-09')).toBeTruthy();
         expect(screen.getByText('Kedaluwarsa 31 Jan 2027')).toBeTruthy();
         expect(screen.getByText('3 nomor seri')).toBeTruthy();
-        expect(screen.getByText('Rp 1.234,5678')).toBeTruthy();
+        // HPP per satuan di tabel detail paling banyak 2 desimal (1234.5678 menjadi Rp 1.234,57).
+        expect(screen.getByText('Rp 1.234,57')).toBeTruthy();
         expect(screen.getByText('Jurnal dibuat saat stok awal dicatat.')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Batalkan stok awal' })).toBeNull();
     });

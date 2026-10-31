@@ -33,27 +33,20 @@ export function FormatJumlahStok(nilai: string, simbol = ''): string {
 }
 
 /**
- * HPP per satuan (6 desimal di server): "1234.568000" → "Rp 1.234,568"; "1000.000000" → "Rp 1.000";
- * "1234.500000" → "Rp 1.234,50". Null = HPP belum diketahui → "—".
+ * HPP per satuan (6 desimal di server) ditampilkan sebagai Rupiah 2 desimal, dibulatkan HalfUp: "3636.545455" →
+ * "Rp 3.636,55"; "1234.568000" → "Rp 1.234,57"; "1000.000000" → "Rp 1.000"; "1234.500000" → "Rp 1.234,50".
+ * Presisi penuh tetap di server dan di isian HPP; hanya tampilan yang dibulatkan. Null = HPP belum diketahui → "—".
  */
 export function FormatHppSatuan(nilai: string | null): string {
     if (nilai === null) {
         return '—';
     }
 
-    const cocok = polaDesimal.exec(nilai.trim());
-
-    if (!cocok) {
+    if (!CekDesimalValid(nilai)) {
         throw new Error(`HPP tidak valid: "${nilai}"`);
     }
 
-    const [, tanda = '', bulat = '0', pecahan = ''] = cocok;
-    const bulatBersih = SisipkanRibuan(bulat);
-    const pecahanRingkas = pecahan.replace(/0+$/, '');
-    const pecahanTampil = pecahanRingkas === '' ? '' : `,${pecahanRingkas.padEnd(2, '0')}`;
-    const negatif = tanda === '-' && (bulatBersih !== '0' || pecahanRingkas !== '');
-
-    return `${negatif ? '−' : ''}Rp ${bulatBersih}${pecahanTampil}`;
+    return FormatRupiah(BulatkanDesimal(nilai, 2));
 }
 
 /** Nilai uang persediaan/mutasi (skala 2, boleh negatif): "-3703.70" → "−Rp 3.703,70". */

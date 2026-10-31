@@ -19,6 +19,11 @@ final class Uang implements Comparable<Uang> {
   /// Dari Rupiah bulat, misal `15000`.
   static Uang DariBulat(int rupiah) => Uang._(Decimal.fromInt(rupiah));
 
+  /// Untuk **tampilan** nilai dari server yang boleh lebih dari 2 desimal (misal HPP per satuan 6 desimal): dibulatkan ke
+  /// 2 desimal dengan [mode], bukan ditolak seperti [Dari]. Jangan dipakai untuk menghitung atau menyimpan uang.
+  static Uang DariPembulatan(String nilai, {ModePembulatan mode = ModePembulatan.SetengahMenjauhiNol}) =>
+      Uang._(BulatkanKeSkala(Decimal.parse(nilai), skala, mode));
+
   static Uang DariDesimal(Decimal nilai) {
     if (nilai.scale > skala) {
       throw ArgumentError.value(nilai.toString(), 'nilai', 'Uang maksimal $skala desimal');

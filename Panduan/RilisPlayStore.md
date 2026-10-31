@@ -6,7 +6,7 @@ teks di bawah siap ditempel. Bagian bertanda **[isi pemilik]** adalah data yang 
 | | Payoung POS | Payoung Owner |
 |---|---|---|
 | ID paket | `id.payoung.kasir` | `id.payoung.owner` |
-| Versi saat ini (`pubspec.yaml`) | `1.0.1+14` | `1.0.1+10` |
+| Versi saat ini (`pubspec.yaml`) | `1.0.1+14` | `1.0.1+11` |
 | Kategori | Bisnis | Bisnis |
 | Tag | Kasir, POS, Bisnis kecil | Bisnis, Analitik |
 | Harga | Gratis (langganan dibayar di dashboard web, bukan lewat Play) | Gratis |

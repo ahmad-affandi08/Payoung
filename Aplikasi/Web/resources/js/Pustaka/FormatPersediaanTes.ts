@@ -21,11 +21,17 @@ describe('FormatPersediaan: tampilan Indonesia dari string desimal server (§17.
         expect(() => FormatJumlahStok('1,5')).toThrow('Jumlah tidak valid');
     });
 
-    it('HPP per satuan: sampai 6 desimal, minimal 2 bila berpecahan, null = —', () => {
-        expect(FormatHppSatuan('1234.568000')).toBe('Rp 1.234,568');
+    it('HPP per satuan: selalu paling banyak 2 desimal (dibulatkan HalfUp), null = —', () => {
+        // Permintaan klien: "Rp 3.636,545455" di Saldo stok terlalu panjang, cukup 2 angka di belakang koma.
+        expect(FormatHppSatuan('3636.545455')).toBe('Rp 3.636,55');
+        expect(FormatHppSatuan('1234.568000')).toBe('Rp 1.234,57');
         expect(FormatHppSatuan('1000.000000')).toBe('Rp 1.000');
         expect(FormatHppSatuan('1234.500000')).toBe('Rp 1.234,50');
-        expect(FormatHppSatuan('333.333333')).toBe('Rp 333,333333');
+        expect(FormatHppSatuan('333.333333')).toBe('Rp 333,33');
+        expect(FormatHppSatuan('0.004999')).toBe('Rp 0');
+        expect(FormatHppSatuan('0.005000')).toBe('Rp 0,01');
+        expect(FormatHppSatuan('-3636.545455')).toBe('−Rp 3.636,55');
+        expect(FormatHppSatuan('-0.001000')).toBe('Rp 0');
         expect(FormatHppSatuan(null)).toBe('—');
         expect(() => FormatHppSatuan('x')).toThrow('HPP tidak valid');
     });

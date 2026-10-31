@@ -28,7 +28,9 @@ abstract final class FormatTampilan {
   static String TanggalJam(DateTime t) =>
       '${t.day} ${_bulan[t.month - 1]} ${t.hour.toString().padLeft(2, '0')}.${t.minute.toString().padLeft(2, '0')}';
 
-  static String Rupiah(String nilai) => Uang.Dari(nilai).FormatRupiah();
+  /// Rupiah dengan paling banyak 2 desimal. Nilai yang lebih panjang dari server (misal HPP 6 desimal) dibulatkan
+  /// HalfUp untuk tampilan, tidak membuat layar gagal.
+  static String Rupiah(String nilai) => Uang.DariPembulatan(nilai).FormatRupiah();
 
   /// Perbandingan [nilai] terhadap [pembanding]: `+12%`, `-5%`, atau null bila pembanding nol.
   static String? Perubahan(String nilai, String pembanding) {

@@ -16,6 +16,18 @@ void main() {
       expect(Uang.Dari('100.500').KeString(), '100.50');
     });
 
+    test('DariPembulatan membulatkan nilai panjang (HPP 6 desimal) ke 2 desimal hanya untuk tampilan', () {
+      expect(Uang.DariPembulatan('3636.545455').KeString(), '3636.55');
+      expect(Uang.DariPembulatan('3636.545455').FormatRupiah(), 'Rp 3.636,55');
+      expect(Uang.DariPembulatan('0.005').KeString(), '0.01');
+      expect(Uang.DariPembulatan('0.004999').KeString(), '0.00');
+      expect(Uang.DariPembulatan('-3636.545455').FormatRupiah(), '−Rp 3.636,55');
+      expect(Uang.DariPembulatan('1000.000000').FormatRupiah(), 'Rp 1.000');
+      expect(Uang.DariPembulatan('18000.5').KeString(), '18000.50');
+      // Jalur hitung tetap ketat: `Dari` masih menolak lebih dari 2 desimal.
+      expect(() => Uang.Dari('3636.545455'), throwsArgumentError);
+    });
+
     test('menghitung contoh struk kafe PRD Lampiran D dengan tepat', () {
       final subtotal = Uang.DariBulat(18000)
           .Kali(BuatDesimal('2'))
