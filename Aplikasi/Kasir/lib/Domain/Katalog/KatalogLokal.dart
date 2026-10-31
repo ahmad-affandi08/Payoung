@@ -39,11 +39,17 @@ class SatuanJual {
 }
 
 class PilihanJual {
-  const PilihanJual({required this.uuid, required this.nama, required this.harga});
+  const PilihanJual({required this.uuid, required this.nama, required this.harga, this.hargaKanal = const {}});
 
   final String uuid;
   final String nama;
   final Uang harga;
+
+  /// X8 (v7.86): harga khusus per kanal ojol (kunci = nama kanal, mis. `GoFood`). Kanal tanpa kunci memakai [harga].
+  final Map<String, Uang> hargaKanal;
+
+  /// Harga pilihan untuk [kanal] (nama kanal penjualan): harga khusus kanal bila ada, selain itu [harga] biasa.
+  Uang HargaUntuk(String? kanal) => (kanal == null ? null : hargaKanal[kanal]) ?? harga;
 }
 
 /// Kelompok pilihan (modifier) produk. `minimal ≥ 1` = wajib; `maksimal` null = tanpa batas atas.
@@ -275,6 +281,7 @@ class KatalogLokal {
     required this._barcode,
     required this.daftarHarga,
     required this._hargaPerProduk,
+    this._petaPilihan = const {},
   }) : _varianPerInduk = {
          for (final p in produk)
            if (p.uuidInduk != null && p.tampil) p.uuidInduk!: [],
@@ -306,6 +313,9 @@ class KatalogLokal {
       if (d.aktif && d.kanal != null) d.kanal!,
   };
   final Map<String, ProdukJual> _petaProduk;
+
+  /// Semua pilihan tambahan aktif menurut Uuid (untuk menghitung ulang harga pilihan di keranjang saat kanal berganti).
+  final Map<String, PilihanJual> _petaPilihan;
   final Map<String, ({String uuidProduk, String? uuidProdukSatuan})> _barcode;
   final Map<String, List<BarisProdukHarga>> _hargaPerProduk;
   final Map<String, List<ProdukJual>> _varianPerInduk;
@@ -313,6 +323,8 @@ class KatalogLokal {
   bool get CekKosong => produk.isEmpty;
 
   /// K-9: anak varian induk ini yang aktif & tampil di POS (urut nama).
+  PilihanJual? AmbilPilihan(String uuid) => _petaPilihan[uuid];
+
   List<ProdukJual> AmbilVarian(String uuidInduk) => _varianPerInduk[uuidInduk] ?? const [];
 
   ProdukJual? CariProduk(String uuid) => _petaProduk[uuid];
@@ -397,7 +409,14 @@ class KatalogLokal {
     for (final p in isi.pilihan.where((p) => p.Aktif)) {
       pilihanKelompok
           .putIfAbsent(p.UuidKelompokPilihan, () => [])
-          .add(PilihanJual(uuid: p.Uuid, nama: p.Nama, harga: Uang.Dari(p.Harga)));
+          .add(
+            PilihanJual(
+              uuid: p.Uuid,
+              nama: p.Nama,
+              harga: Uang.Dari(p.Harga),
+              hargaKanal: _UraiHargaKanal(p.HargaKanal),
+            ),
+          );
     }
     final kelompok = {
       for (final k in isi.kelompokPilihan)
@@ -495,7 +514,30 @@ class KatalogLokal {
       },
       daftarHarga: [for (final d in isi.daftarHarga) _KeResolusi(d)],
       hargaPerProduk: hargaPerProduk,
+      petaPilihan: {
+        for (final k in kelompok.values)
+          for (final p in k.pilihan) p.uuid: p,
+      },
     );
+  }
+
+  /// JSON `{"GoFood":"6500.00"}` dari kolom `Pilihan.HargaKanal`; rusak atau kosong = tanpa harga kanal.
+  static Map<String, Uang> _UraiHargaKanal(String? json) {
+    if (json == null || json.isEmpty) {
+      return const {};
+    }
+    try {
+      final isi = jsonDecode(json);
+      if (isi is! Map<String, Object?>) {
+        return const {};
+      }
+      return {
+        for (final e in isi.entries)
+          if (e.value is String) e.key: Uang.Dari(e.value! as String),
+      };
+    } on Object {
+      return const {};
+    }
   }
 
   static DaftarHargaResolusi _KeResolusi(BarisDaftarHarga d) {

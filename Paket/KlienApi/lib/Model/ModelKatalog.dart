@@ -342,12 +342,16 @@ class PilihanPos {
     required this.jumlah,
     required this.aktif,
     required this.urutan,
+    this.hargaKanal,
   });
 
   final String uuid;
   final String uuidKelompokPilihan;
   final String nama;
   final String harga;
+
+  /// X8 (v7.86): harga pilihan per kanal ojol (`{"GoFood": "6500.00"}`). Null atau tanpa kunci kanal = pakai [harga].
+  final Map<String, String>? hargaKanal;
   final String? uuidProdukBahan;
   final String? jumlah;
   final bool aktif;
@@ -358,11 +362,20 @@ class PilihanPos {
     uuidKelompokPilihan: UraiJson.AmbilTeks(json['UuidKelompokPilihan']),
     nama: UraiJson.AmbilTeks(json['Nama']),
     harga: UraiJson.AmbilDesimal(json['Harga']),
+    hargaKanal: _AmbilHargaKanal(json['HargaKanal']),
     uuidProdukBahan: UraiJson.AmbilTeksAtauNull(json['UuidProdukBahan']),
     jumlah: UraiJson.AmbilDesimalAtauNull(json['Jumlah']),
     aktif: UraiJson.AmbilBenar(json['Aktif'], true),
     urutan: UraiJson.AmbilBulat(json['Urutan']),
   );
+
+  static Map<String, String>? _AmbilHargaKanal(Object? nilai) {
+    final peta = UraiJson.AmbilPetaAtauNull(nilai);
+    if (peta == null || peta.isEmpty) {
+      return null;
+    }
+    return {for (final e in peta.entries) e.key: UraiJson.AmbilDesimal(e.value)};
+  }
 }
 
 class ProdukKelompokPilihanPos {

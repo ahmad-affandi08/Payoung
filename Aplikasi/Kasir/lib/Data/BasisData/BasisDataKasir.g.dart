@@ -7032,6 +7032,15 @@ class $PilihanTable extends Pilihan with TableInfo<$PilihanTable, BarisPilihan> 
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _HargaKanalMeta = const VerificationMeta('HargaKanal');
+  @override
+  late final GeneratedColumn<String> HargaKanal = GeneratedColumn<String>(
+    'HargaKanal',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _UuidProdukBahanMeta = const VerificationMeta('UuidProdukBahan');
   @override
   late final GeneratedColumn<String> UuidProdukBahan = GeneratedColumn<String>(
@@ -7075,6 +7084,7 @@ class $PilihanTable extends Pilihan with TableInfo<$PilihanTable, BarisPilihan> 
     UuidKelompokPilihan,
     Nama,
     Harga,
+    HargaKanal,
     UuidProdukBahan,
     Jumlah,
     Aktif,
@@ -7112,6 +7122,9 @@ class $PilihanTable extends Pilihan with TableInfo<$PilihanTable, BarisPilihan> 
     } else if (isInserting) {
       context.missing(_HargaMeta);
     }
+    if (data.containsKey('HargaKanal')) {
+      context.handle(_HargaKanalMeta, HargaKanal.isAcceptableOrUnknown(data['HargaKanal']!, _HargaKanalMeta));
+    }
     if (data.containsKey('UuidProdukBahan')) {
       context.handle(
         _UuidProdukBahanMeta,
@@ -7147,6 +7160,7 @@ class $PilihanTable extends Pilihan with TableInfo<$PilihanTable, BarisPilihan> 
       )!,
       Nama: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}Nama'])!,
       Harga: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}Harga'])!,
+      HargaKanal: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}HargaKanal']),
       UuidProdukBahan: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}UuidProdukBahan'],
@@ -7168,6 +7182,9 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
   final String UuidKelompokPilihan;
   final String Nama;
   final String Harga;
+
+  /// X8 (v7.86): peta kanal ke harga dalam JSON (`{"GoFood":"6500.00"}`); null = pakai Harga.
+  final String? HargaKanal;
   final String? UuidProdukBahan;
   final String? Jumlah;
   final bool Aktif;
@@ -7177,6 +7194,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
     required this.UuidKelompokPilihan,
     required this.Nama,
     required this.Harga,
+    this.HargaKanal,
     this.UuidProdukBahan,
     this.Jumlah,
     required this.Aktif,
@@ -7189,6 +7207,9 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
     map['UuidKelompokPilihan'] = Variable<String>(UuidKelompokPilihan);
     map['Nama'] = Variable<String>(Nama);
     map['Harga'] = Variable<String>(Harga);
+    if (!nullToAbsent || HargaKanal != null) {
+      map['HargaKanal'] = Variable<String>(HargaKanal);
+    }
     if (!nullToAbsent || UuidProdukBahan != null) {
       map['UuidProdukBahan'] = Variable<String>(UuidProdukBahan);
     }
@@ -7206,6 +7227,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
       UuidKelompokPilihan: Value(UuidKelompokPilihan),
       Nama: Value(Nama),
       Harga: Value(Harga),
+      HargaKanal: HargaKanal == null && nullToAbsent ? const Value.absent() : Value(HargaKanal),
       UuidProdukBahan: UuidProdukBahan == null && nullToAbsent ? const Value.absent() : Value(UuidProdukBahan),
       Jumlah: Jumlah == null && nullToAbsent ? const Value.absent() : Value(Jumlah),
       Aktif: Value(Aktif),
@@ -7220,6 +7242,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
       UuidKelompokPilihan: serializer.fromJson<String>(json['UuidKelompokPilihan']),
       Nama: serializer.fromJson<String>(json['Nama']),
       Harga: serializer.fromJson<String>(json['Harga']),
+      HargaKanal: serializer.fromJson<String?>(json['HargaKanal']),
       UuidProdukBahan: serializer.fromJson<String?>(json['UuidProdukBahan']),
       Jumlah: serializer.fromJson<String?>(json['Jumlah']),
       Aktif: serializer.fromJson<bool>(json['Aktif']),
@@ -7234,6 +7257,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
       'UuidKelompokPilihan': serializer.toJson<String>(UuidKelompokPilihan),
       'Nama': serializer.toJson<String>(Nama),
       'Harga': serializer.toJson<String>(Harga),
+      'HargaKanal': serializer.toJson<String?>(HargaKanal),
       'UuidProdukBahan': serializer.toJson<String?>(UuidProdukBahan),
       'Jumlah': serializer.toJson<String?>(Jumlah),
       'Aktif': serializer.toJson<bool>(Aktif),
@@ -7246,6 +7270,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
     String? UuidKelompokPilihan,
     String? Nama,
     String? Harga,
+    Value<String?> HargaKanal = const Value.absent(),
     Value<String?> UuidProdukBahan = const Value.absent(),
     Value<String?> Jumlah = const Value.absent(),
     bool? Aktif,
@@ -7255,6 +7280,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
     UuidKelompokPilihan: UuidKelompokPilihan ?? this.UuidKelompokPilihan,
     Nama: Nama ?? this.Nama,
     Harga: Harga ?? this.Harga,
+    HargaKanal: HargaKanal.present ? HargaKanal.value : this.HargaKanal,
     UuidProdukBahan: UuidProdukBahan.present ? UuidProdukBahan.value : this.UuidProdukBahan,
     Jumlah: Jumlah.present ? Jumlah.value : this.Jumlah,
     Aktif: Aktif ?? this.Aktif,
@@ -7266,6 +7292,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
       UuidKelompokPilihan: data.UuidKelompokPilihan.present ? data.UuidKelompokPilihan.value : this.UuidKelompokPilihan,
       Nama: data.Nama.present ? data.Nama.value : this.Nama,
       Harga: data.Harga.present ? data.Harga.value : this.Harga,
+      HargaKanal: data.HargaKanal.present ? data.HargaKanal.value : this.HargaKanal,
       UuidProdukBahan: data.UuidProdukBahan.present ? data.UuidProdukBahan.value : this.UuidProdukBahan,
       Jumlah: data.Jumlah.present ? data.Jumlah.value : this.Jumlah,
       Aktif: data.Aktif.present ? data.Aktif.value : this.Aktif,
@@ -7280,6 +7307,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
           ..write('UuidKelompokPilihan: $UuidKelompokPilihan, ')
           ..write('Nama: $Nama, ')
           ..write('Harga: $Harga, ')
+          ..write('HargaKanal: $HargaKanal, ')
           ..write('UuidProdukBahan: $UuidProdukBahan, ')
           ..write('Jumlah: $Jumlah, ')
           ..write('Aktif: $Aktif, ')
@@ -7289,7 +7317,8 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
   }
 
   @override
-  int get hashCode => Object.hash(Uuid, UuidKelompokPilihan, Nama, Harga, UuidProdukBahan, Jumlah, Aktif, Urutan);
+  int get hashCode =>
+      Object.hash(Uuid, UuidKelompokPilihan, Nama, Harga, HargaKanal, UuidProdukBahan, Jumlah, Aktif, Urutan);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7298,6 +7327,7 @@ class BarisPilihan extends DataClass implements Insertable<BarisPilihan> {
           other.UuidKelompokPilihan == this.UuidKelompokPilihan &&
           other.Nama == this.Nama &&
           other.Harga == this.Harga &&
+          other.HargaKanal == this.HargaKanal &&
           other.UuidProdukBahan == this.UuidProdukBahan &&
           other.Jumlah == this.Jumlah &&
           other.Aktif == this.Aktif &&
@@ -7309,6 +7339,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
   final Value<String> UuidKelompokPilihan;
   final Value<String> Nama;
   final Value<String> Harga;
+  final Value<String?> HargaKanal;
   final Value<String?> UuidProdukBahan;
   final Value<String?> Jumlah;
   final Value<bool> Aktif;
@@ -7319,6 +7350,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
     this.UuidKelompokPilihan = const Value.absent(),
     this.Nama = const Value.absent(),
     this.Harga = const Value.absent(),
+    this.HargaKanal = const Value.absent(),
     this.UuidProdukBahan = const Value.absent(),
     this.Jumlah = const Value.absent(),
     this.Aktif = const Value.absent(),
@@ -7330,6 +7362,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
     required String UuidKelompokPilihan,
     required String Nama,
     required String Harga,
+    this.HargaKanal = const Value.absent(),
     this.UuidProdukBahan = const Value.absent(),
     this.Jumlah = const Value.absent(),
     required bool Aktif,
@@ -7346,6 +7379,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
     Expression<String>? UuidKelompokPilihan,
     Expression<String>? Nama,
     Expression<String>? Harga,
+    Expression<String>? HargaKanal,
     Expression<String>? UuidProdukBahan,
     Expression<String>? Jumlah,
     Expression<bool>? Aktif,
@@ -7357,6 +7391,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
       if (UuidKelompokPilihan != null) 'UuidKelompokPilihan': UuidKelompokPilihan,
       if (Nama != null) 'Nama': Nama,
       if (Harga != null) 'Harga': Harga,
+      if (HargaKanal != null) 'HargaKanal': HargaKanal,
       if (UuidProdukBahan != null) 'UuidProdukBahan': UuidProdukBahan,
       if (Jumlah != null) 'Jumlah': Jumlah,
       if (Aktif != null) 'Aktif': Aktif,
@@ -7370,6 +7405,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
     Value<String>? UuidKelompokPilihan,
     Value<String>? Nama,
     Value<String>? Harga,
+    Value<String?>? HargaKanal,
     Value<String?>? UuidProdukBahan,
     Value<String?>? Jumlah,
     Value<bool>? Aktif,
@@ -7381,6 +7417,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
       UuidKelompokPilihan: UuidKelompokPilihan ?? this.UuidKelompokPilihan,
       Nama: Nama ?? this.Nama,
       Harga: Harga ?? this.Harga,
+      HargaKanal: HargaKanal ?? this.HargaKanal,
       UuidProdukBahan: UuidProdukBahan ?? this.UuidProdukBahan,
       Jumlah: Jumlah ?? this.Jumlah,
       Aktif: Aktif ?? this.Aktif,
@@ -7403,6 +7440,9 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
     }
     if (Harga.present) {
       map['Harga'] = Variable<String>(Harga.value);
+    }
+    if (HargaKanal.present) {
+      map['HargaKanal'] = Variable<String>(HargaKanal.value);
     }
     if (UuidProdukBahan.present) {
       map['UuidProdukBahan'] = Variable<String>(UuidProdukBahan.value);
@@ -7429,6 +7469,7 @@ class PilihanCompanion extends UpdateCompanion<BarisPilihan> {
           ..write('UuidKelompokPilihan: $UuidKelompokPilihan, ')
           ..write('Nama: $Nama, ')
           ..write('Harga: $Harga, ')
+          ..write('HargaKanal: $HargaKanal, ')
           ..write('UuidProdukBahan: $UuidProdukBahan, ')
           ..write('Jumlah: $Jumlah, ')
           ..write('Aktif: $Aktif, ')
@@ -24694,6 +24735,7 @@ typedef $$PilihanTableCreateCompanionBuilder = PilihanCompanion Function({
   required String UuidKelompokPilihan,
   required String Nama,
   required String Harga,
+  Value<String?> HargaKanal,
   Value<String?> UuidProdukBahan,
   Value<String?> Jumlah,
   required bool Aktif,
@@ -24705,6 +24747,7 @@ typedef $$PilihanTableUpdateCompanionBuilder = PilihanCompanion Function({
   Value<String> UuidKelompokPilihan,
   Value<String> Nama,
   Value<String> Harga,
+  Value<String?> HargaKanal,
   Value<String?> UuidProdukBahan,
   Value<String?> Jumlah,
   Value<bool> Aktif,
@@ -24729,6 +24772,9 @@ class $$PilihanTableFilterComposer extends Composer<_$BasisDataKasir, $PilihanTa
 
   ColumnFilters<String> get Harga =>
       $composableBuilder(column: $table.Harga, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get HargaKanal =>
+      $composableBuilder(column: $table.HargaKanal, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get UuidProdukBahan =>
       $composableBuilder(column: $table.UuidProdukBahan, builder: (column) => ColumnFilters(column));
@@ -24762,6 +24808,9 @@ class $$PilihanTableOrderingComposer extends Composer<_$BasisDataKasir, $Pilihan
   ColumnOrderings<String> get Harga =>
       $composableBuilder(column: $table.Harga, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get HargaKanal =>
+      $composableBuilder(column: $table.HargaKanal, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get UuidProdukBahan =>
       $composableBuilder(column: $table.UuidProdukBahan, builder: (column) => ColumnOrderings(column));
 
@@ -24791,6 +24840,8 @@ class $$PilihanTableAnnotationComposer extends Composer<_$BasisDataKasir, $Pilih
   GeneratedColumn<String> get Nama => $composableBuilder(column: $table.Nama, builder: (column) => column);
 
   GeneratedColumn<String> get Harga => $composableBuilder(column: $table.Harga, builder: (column) => column);
+
+  GeneratedColumn<String> get HargaKanal => $composableBuilder(column: $table.HargaKanal, builder: (column) => column);
 
   GeneratedColumn<String> get UuidProdukBahan =>
       $composableBuilder(column: $table.UuidProdukBahan, builder: (column) => column);
@@ -24831,6 +24882,7 @@ class $$PilihanTableTableManager
                 Value<String> UuidKelompokPilihan = const Value.absent(),
                 Value<String> Nama = const Value.absent(),
                 Value<String> Harga = const Value.absent(),
+                Value<String?> HargaKanal = const Value.absent(),
                 Value<String?> UuidProdukBahan = const Value.absent(),
                 Value<String?> Jumlah = const Value.absent(),
                 Value<bool> Aktif = const Value.absent(),
@@ -24841,6 +24893,7 @@ class $$PilihanTableTableManager
                 UuidKelompokPilihan: UuidKelompokPilihan,
                 Nama: Nama,
                 Harga: Harga,
+                HargaKanal: HargaKanal,
                 UuidProdukBahan: UuidProdukBahan,
                 Jumlah: Jumlah,
                 Aktif: Aktif,
@@ -24853,6 +24906,7 @@ class $$PilihanTableTableManager
                 required String UuidKelompokPilihan,
                 required String Nama,
                 required String Harga,
+                Value<String?> HargaKanal = const Value.absent(),
                 Value<String?> UuidProdukBahan = const Value.absent(),
                 Value<String?> Jumlah = const Value.absent(),
                 required bool Aktif,
@@ -24863,6 +24917,7 @@ class $$PilihanTableTableManager
                 UuidKelompokPilihan: UuidKelompokPilihan,
                 Nama: Nama,
                 Harga: Harga,
+                HargaKanal: HargaKanal,
                 UuidProdukBahan: UuidProdukBahan,
                 Jumlah: Jumlah,
                 Aktif: Aktif,

@@ -230,6 +230,7 @@ class RepositoriKatalog {
             UuidKelompokPilihan: x.uuidKelompokPilihan,
             Nama: x.nama,
             Harga: x.harga,
+            HargaKanal: Value(x.hargaKanal == null ? null : jsonEncode(x.hargaKanal)),
             UuidProdukBahan: Value(x.uuidProdukBahan),
             Jumlah: Value(x.jumlah),
             Aktif: x.aktif,

@@ -204,23 +204,44 @@ class LayananPenjualan {
   Keranjang HitungUlangHarga(Keranjang keranjang, KatalogLokal katalog, KonteksPenjualan k) => keranjang.Salin(
     baris: [
       for (final b in keranjang.baris)
-        b.uuidProdukSatuan == null || b.CekHargaDikunci
-            ? b
-            : b.Salin(
-                hargaSatuan:
-                    TentukanHarga(
-                      katalog,
-                      k,
-                      b.uuidProduk,
-                      b.uuidProdukSatuan!,
-                      b.jumlah,
-                      kanal: AmbilKanal(keranjang),
-                      tierPelanggan: keranjang.pelanggan?.kodeTier,
-                    ) ??
-                    b.hargaSatuan,
-              ),
+        _HitungUlangPilihan(
+          b.uuidProdukSatuan == null || b.CekHargaDikunci
+              ? b
+              : b.Salin(
+                  hargaSatuan:
+                      TentukanHarga(
+                        katalog,
+                        k,
+                        b.uuidProduk,
+                        b.uuidProdukSatuan!,
+                        b.jumlah,
+                        kanal: AmbilKanal(keranjang),
+                        tierPelanggan: keranjang.pelanggan?.kodeTier,
+                      ) ??
+                      b.hargaSatuan,
+                ),
+          katalog,
+          AmbilKanal(keranjang),
+        ),
     ],
   );
+
+  /// X8 (v7.86): harga pilihan tambahan mengikuti kanal. Pilihan yang sudah tidak ada di katalog (dihapus atau
+  /// dinonaktifkan) dibiarkan dengan harga saat dipilih. Harga satuan yang dikunci kasir tidak memengaruhi ini.
+  static ItemKeranjang _HitungUlangPilihan(ItemKeranjang baris, KatalogLokal katalog, KanalPenjualan kanal) {
+    if (baris.pilihan.isEmpty) {
+      return baris;
+    }
+    return baris.Salin(
+      pilihan: [
+        for (final p in baris.pilihan)
+          if (katalog.AmbilPilihan(p.uuid) case final PilihanJual ada)
+            PilihanTerpilih(uuid: p.uuid, nama: p.nama, harga: ada.HargaUntuk(kanal.name))
+          else
+            p,
+      ],
+    );
+  }
 
   /// Kanal harga keranjang: pesanan di meja = `MakanDiTempat` (daftar harga dine-in); selain itu kanal pilihan kasir
   /// (X8: GoFood, GrabFood, …) atau `BawaPulang`.

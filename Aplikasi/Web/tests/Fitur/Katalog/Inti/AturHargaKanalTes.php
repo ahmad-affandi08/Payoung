@@ -7,7 +7,9 @@ use App\Domain\Katalog\Harga\Model\DaftarHarga;
 use App\Domain\Katalog\Harga\Model\RiwayatHarga;
 use App\Domain\Katalog\Model\ProdukHarga;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
+use App\Domain\Katalog\Pilihan\Model\Pilihan;
 use Tests\Pendukung\Katalog\BantuanKatalog;
+use Tests\Pendukung\Katalog\BantuanKomposisi;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
@@ -152,4 +154,70 @@ it('tanpa produk berharga: pesan jelas, tanpa izin ubah harga ditolak', function
     BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id)
         ->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal())
         ->assertSessionHasErrors('Kanal');
+});
+
+it('pilihan tambahan ikut naik per kanal, harga dasar pilihan tetap, dan terapkan ulang tanpa timpa melewati yang sudah ada', function (): void {
+    $t = BantuanKatalog::SiapkanTenantProduk();
+    BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
+    BantuanKomposisi::BuatKelompokPilihan('Tambahan', [['Extra Shot', '5000'], ['Susu Oat', '8000'], ['Tanpa Gula', '0']], 0, 3);
+    $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+    $pratinjau = $masuk()->postJson('/kelola/daftar-harga/atur-kanal/pratinjau', IsianHargaKanal(['Kanal' => ['GoFood', 'GrabFood']]))->assertOk();
+    // Pilihan harga 0 dilewati: dua pilihan berharga.
+    expect($pratinjau->json('Data.PilihanIkut'))->toBeTrue()
+        ->and($pratinjau->json('Data.TotalPilihan'))->toBe(2)
+        ->and($pratinjau->json('Data.Kanal.0.PilihanDiisi'))->toBe(2);
+
+    $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal(['Kanal' => ['GoFood']]))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('Kilat', fn (string $pesan): bool => str_contains($pesan, '2 pilihan tambahan'));
+
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    $shot = Pilihan::query()->where('Nama', 'Extra Shot')->sole();
+    $oat = Pilihan::query()->where('Nama', 'Susu Oat')->sole();
+    $polos = Pilihan::query()->where('Nama', 'Tanpa Gula')->sole();
+
+    // 5.000 × 1,30 = 6.500; 8.000 × 1,30 = 10.400 → kelipatan 500 = 10.500.
+    expect($shot->HargaKanal)->toBe(['GoFood' => '6500.00'])
+        ->and($oat->HargaKanal)->toBe(['GoFood' => '10500.00'])
+        ->and($shot->Harga)->toBe('5000.00')
+        ->and($polos->HargaKanal)->toBeNull()
+        ->and(LogAudit::query()->where('Peristiwa', 'kelompok-pilihan.harga-kanal.ubah')->count())->toBe(1);
+
+    // GrabFood terpisah dari GoFood. Terapkan GoFood lagi dengan persen lain tanpa timpa = tidak berubah.
+    $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal(['Kanal' => ['GoFood', 'GrabFood'], 'Nilai' => '50']))->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Pilihan::query()->where('Nama', 'Extra Shot')->sole()->HargaKanal)->toBe(['GoFood' => '6500.00', 'GrabFood' => '7500.00']);
+
+    $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal(['Nilai' => '50', 'Timpa' => true]))->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Pilihan::query()->where('Nama', 'Extra Shot')->sole()->HargaKanal)->toBe(['GoFood' => '7500.00', 'GrabFood' => '7500.00']);
+});
+
+it('pilihan tidak ikut bila berlaku di outlet tertentu dan menyimpan kelompok pilihan tidak menghapus harga kanal', function (): void {
+    $t = BantuanKatalog::SiapkanTenantProduk();
+    BantuanKatalog::BuatProduk(['Nama' => 'Kopi Susu Gula Aren', 'Sku' => 'KSG', 'IdKelompokPajak' => $t['KelompokPajak']->Id], '20000.00', $t['Pcs']);
+    $kelompok = BantuanKomposisi::BuatKelompokPilihan('Tambahan', [['Extra Shot', '5000']], 0, 1);
+    $outlet = $t['Outlet'];
+    $masuk = fn () => BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+
+    $pratinjau = $masuk()->postJson('/kelola/daftar-harga/atur-kanal/pratinjau', IsianHargaKanal(['UuidOutlet' => [$outlet->Uuid]]))->assertOk();
+    expect($pratinjau->json('Data.PilihanIkut'))->toBeFalse()
+        ->and($pratinjau->json('Data.TotalPilihan'))->toBe(0);
+
+    $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal(['UuidOutlet' => [$outlet->Uuid]]))->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    expect(Pilihan::query()->where('Nama', 'Extra Shot')->sole()->HargaKanal)->toBeNull();
+
+    // Mengubah kelompok pilihan lewat aksi biasa tidak menghapus harga kanal yang sudah ada.
+    $masuk()->post('/kelola/daftar-harga/atur-kanal', IsianHargaKanal())->assertSessionHasNoErrors();
+    BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+    $pilihan = Pilihan::query()->where('Nama', 'Extra Shot')->sole();
+    app(\App\Domain\Katalog\Pilihan\Aksi\SimpanKelompokPilihan::class)->Jalankan(
+        $kelompok,
+        new \App\Domain\Katalog\Pilihan\Data\DataKelompokPilihan('Tambahan', 0, 1, 0, [
+            new \App\Domain\Katalog\Pilihan\Data\DataPilihan($pilihan->Uuid, 'Extra Shot', \App\Domain\Bersama\Nilai\Uang::Dari('5000'), true, null, null),
+        ], true),
+    );
+    expect(Pilihan::query()->where('Nama', 'Extra Shot')->sole()->HargaKanal)->toBe(['GoFood' => '6500.00']);
 });

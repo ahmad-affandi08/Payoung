@@ -219,6 +219,9 @@ export default function DialogAturHargaOjol({ Outlet, saatTutup }: PropsDialogAt
                                         ? `, ${k.Dilewati.toLocaleString('id-ID')} dilewati karena sudah punya harga`
                                         : ''}
                                     {k.DaftarAda ? '' : ' (daftar harganya dibuat otomatis)'}
+                                    {pratinjau.PilihanIkut && k.PilihanDiisi > 0
+                                        ? `, ${k.PilihanDiisi.toLocaleString('id-ID')} pilihan tambahan ikut`
+                                        : ''}
                                 </li>
                             ))}
                         </ul>
@@ -252,6 +255,49 @@ export default function DialogAturHargaOjol({ Outlet, saatTutup }: PropsDialogAt
                                 </p>
                             ) : null}
                         </div>
+                        {pratinjau.PilihanIkut && pratinjau.ContohPilihan.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                                <p className="text-label font-semibold text-teks-utama">
+                                    Pilihan tambahan (extra, topping) ikut naik
+                                </p>
+                                <ul
+                                    className="flex flex-col divide-y divide-garis"
+                                    aria-label="Contoh pilihan tambahan"
+                                >
+                                    {pratinjau.ContohPilihan.map((c) => (
+                                        <li
+                                            key={`${c.Kelompok}-${c.Pilihan}`}
+                                            className="flex flex-wrap items-baseline justify-between gap-2 py-1.5"
+                                        >
+                                            <span className="min-w-0 break-words text-isi text-teks-utama">
+                                                {c.Pilihan}
+                                                <span className="text-teks-sekunder">{` | ${c.Kelompok}`}</span>
+                                            </span>
+                                            <span className="text-isi tabular-nums text-teks-utama">
+                                                <span className="text-teks-sekunder">{FormatRupiah(c.HargaBiasa)}</span>
+                                                {' → '}
+                                                <span className="font-semibold">{FormatRupiah(c.HargaBaru)}</span>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                {pratinjau.TotalPilihan > pratinjau.ContohPilihan.length ? (
+                                    <p className="text-keterangan text-teks-sekunder">
+                                        Dan{' '}
+                                        {(pratinjau.TotalPilihan - pratinjau.ContohPilihan.length).toLocaleString(
+                                            'id-ID',
+                                        )}{' '}
+                                        pilihan lainnya.
+                                    </p>
+                                ) : null}
+                            </div>
+                        ) : null}
+                        {!pratinjau.PilihanIkut && pratinjau.TotalPilihan > 0 ? (
+                            <p className="text-keterangan text-teks-sekunder">
+                                Pilihan tambahan tidak ikut karena harganya berlaku untuk semua outlet. Pilih Semua
+                                outlet bila ingin pilihan tambahan ikut naik.
+                            </p>
+                        ) : null}
                     </section>
                 ) : null}
 

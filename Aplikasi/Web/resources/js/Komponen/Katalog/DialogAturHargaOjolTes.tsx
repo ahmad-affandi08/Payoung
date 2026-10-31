@@ -19,15 +19,45 @@ const Outlet = [
 
 const Pratinjau: PratinjauHargaKanal = {
     Kanal: [
-        { Kanal: 'GoFood', Label: 'GoFood', DaftarAda: false, Diisi: 12, Dilewati: 0 },
-        { Kanal: 'GrabFood', Label: 'GrabFood', DaftarAda: true, Diisi: 9, Dilewati: 3 },
-        { Kanal: 'ShopeeFood', Label: 'ShopeeFood', DaftarAda: false, Diisi: 12, Dilewati: 0 },
+        {
+            Kanal: 'GoFood',
+            Label: 'GoFood',
+            DaftarAda: false,
+            Diisi: 12,
+            Dilewati: 0,
+            PilihanDiisi: 2,
+            PilihanDilewati: 0,
+        },
+        {
+            Kanal: 'GrabFood',
+            Label: 'GrabFood',
+            DaftarAda: true,
+            Diisi: 9,
+            Dilewati: 3,
+            PilihanDiisi: 1,
+            PilihanDilewati: 1,
+        },
+        {
+            Kanal: 'ShopeeFood',
+            Label: 'ShopeeFood',
+            DaftarAda: false,
+            Diisi: 12,
+            Dilewati: 0,
+            PilihanDiisi: 2,
+            PilihanDilewati: 0,
+        },
     ],
     Contoh: [
         { Produk: 'Kopi Susu Gula Aren', Sku: 'KSG', Satuan: 'cup', HargaBiasa: '20000.00', HargaBaru: '26000.00' },
         { Produk: 'Roti Bakar Coklat', Sku: 'RBC', Satuan: 'porsi', HargaBiasa: '15000.00', HargaBaru: '19500.00' },
     ],
     TotalSatuan: 12,
+    PilihanIkut: true,
+    TotalPilihan: 2,
+    ContohPilihan: [
+        { Pilihan: 'Extra shot', Kelompok: 'Tambahan', HargaBiasa: '5000.00', HargaBaru: '6500.00' },
+        { Pilihan: 'Oat milk', Kelompok: 'Susu', HargaBiasa: '6000.00', HargaBaru: '7800.00' },
+    ],
 };
 
 function Pasang(saatTutup = vi.fn()) {
@@ -109,6 +139,35 @@ describe('Dialog Atur harga ojol', () => {
         expect(data).toMatchObject({ Mode: 'NaikPersen', Nilai: '30', Pembulatan: 500, Timpa: false, UuidOutlet: [] });
         opsi.onSuccess();
         expect(SaatTutup).toHaveBeenCalled();
+    });
+
+    it('pilihan tambahan (modifier) ikut ditampilkan dengan harga lama → baru', async () => {
+        Pasang();
+        IsiPersen('30');
+        fireEvent.click(screen.getByRole('button', { name: 'Lihat contoh' }));
+
+        expect(await screen.findByText('Pilihan tambahan (extra, topping) ikut naik')).toBeTruthy();
+        expect(screen.getByText('Extra shot')).toBeTruthy();
+        expect(screen.getByText('Rp 6.500')).toBeTruthy();
+        expect(screen.getAllByText(/pilihan tambahan ikut/)).toHaveLength(3);
+    });
+
+    it('outlet tertentu: pilihan tambahan tidak ikut dan dialog menjelaskan alasannya', async () => {
+        FetchTiruan.mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ Data: { ...Pratinjau, PilihanIkut: false, ContohPilihan: [] } }),
+        });
+        Pasang();
+        IsiPersen('30');
+        PilihOpsi(screen.getByRole('combobox', { name: 'Berlaku di' }), 'Pilih');
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Kopi Senja Kartasura' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Lihat contoh' }));
+
+        expect(
+            await screen.findByText(/Pilihan tambahan tidak ikut karena harganya berlaku untuk semua outlet/),
+        ).toBeTruthy();
+        expect(screen.queryByText('Pilihan tambahan (extra, topping) ikut naik')).toBeNull();
     });
 
     it('mengubah isian apa pun membatalkan contoh, jadi yang diterapkan selalu yang terakhir dilihat', async () => {

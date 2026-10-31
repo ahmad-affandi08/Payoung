@@ -193,10 +193,13 @@ class _PanelItemState extends ConsumerState<PanelItem> {
     _pilihan.add(pilihan.uuid);
   });
 
+  /// X8 (v7.86): harga pilihan tambahan mengikuti kanal keranjang (GoFood, GrabFood, ShopeeFood punya harga sendiri).
+  String _NamaKanal() => LayananPenjualan.AmbilKanal(ref.read(penyediaKeranjang)).name;
+
   List<PilihanTerpilih> _AmbilPilihan() => [
     for (final k in widget.produk?.kelompokPilihan ?? const <KelompokPilihanJual>[])
       for (final p in k.pilihan)
-        if (_pilihan.contains(p.uuid)) PilihanTerpilih(uuid: p.uuid, nama: p.nama, harga: p.harga),
+        if (_pilihan.contains(p.uuid)) PilihanTerpilih(uuid: p.uuid, nama: p.nama, harga: p.HargaUntuk(_NamaKanal())),
   ];
 
   Future<void> _Simpan() async {
@@ -553,7 +556,11 @@ class _PanelItemState extends ConsumerState<PanelItem> {
               children: [
                 for (final p in kelompok.pilihan)
                   FilterChip(
-                    label: Text(p.harga.BernilaiNol() ? p.nama : '${p.nama} +${p.harga.FormatRupiah()}'),
+                    label: Text(
+                      p.HargaUntuk(_NamaKanal()).BernilaiNol()
+                          ? p.nama
+                          : '${p.nama} +${p.HargaUntuk(_NamaKanal()).FormatRupiah()}',
+                    ),
                     selected: _pilihan.contains(p.uuid),
                     onSelected: (_) => _Pilih(kelompok, p),
                   ),

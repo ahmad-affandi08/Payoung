@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $IdKelompokPilihan
  * @property string $Nama
  * @property string $Harga
+ * @property array<string, string>|null $HargaKanal peta kanal ke harga (X8, v7.86): kosong = pakai `Harga`
  * @property int|null $IdProduk
  * @property string|null $Jumlah
  * @property bool $Aktif
@@ -61,6 +62,6 @@ final class Pilihan extends ModelDasar
      */
     protected function casts(): array
     {
-        return ['Harga' => 'decimal:2', 'Jumlah' => 'decimal:4', 'Aktif' => 'boolean', 'Urutan' => 'integer'];
+        return ['Harga' => 'decimal:2', 'HargaKanal' => 'array', 'Jumlah' => 'decimal:4', 'Aktif' => 'boolean', 'Urutan' => 'integer'];
     }
 }

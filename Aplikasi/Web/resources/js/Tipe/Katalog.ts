@@ -635,7 +635,19 @@ export type HasilBarcodeLabel = { Data: { Uuid: string; Barcode: string; Baru: b
 
 /** "Atur harga ojol" (`POST /kelola/daftar-harga/atur-kanal/pratinjau`): contoh harga baru dan jumlah produk per platform. */
 export type PratinjauHargaKanal = {
-    Kanal: { Kanal: string; Label: string; DaftarAda: boolean; Diisi: number; Dilewati: number }[];
+    Kanal: {
+        Kanal: string;
+        Label: string;
+        DaftarAda: boolean;
+        Diisi: number;
+        Dilewati: number;
+        PilihanDiisi: number;
+        PilihanDilewati: number;
+    }[];
     Contoh: { Produk: string; Sku: string | null; Satuan: string; HargaBiasa: string; HargaBaru: string }[];
     TotalSatuan: number;
+    /** False bila cakupannya outlet tertentu: pilihan tambahan (modifier) tidak punya harga per outlet, jadi tidak ikut. */
+    PilihanIkut: boolean;
+    TotalPilihan: number;
+    ContohPilihan: { Pilihan: string; Kelompok: string; HargaBiasa: string; HargaBaru: string }[];
 };

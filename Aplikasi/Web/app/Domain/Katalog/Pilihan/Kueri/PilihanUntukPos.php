@@ -47,6 +47,8 @@ final class PilihanUntukPos implements BagianKatalogPos
                 'UuidKelompokPilihan' => $uuidKelompok->get($baris->IdKelompokPilihan),
                 'Nama' => $baris->Nama,
                 'Harga' => $baris->Harga,
+                // X8 (v7.86): harga per kanal ojol, null = sama dengan Harga. Aplikasi lama mengabaikan bidang ini.
+                'HargaKanal' => $baris->HargaKanal === [] ? null : $baris->HargaKanal,
                 'UuidProdukBahan' => $baris->IdProduk === null ? null : $uuidProduk->get($baris->IdProduk),
                 'Jumlah' => $baris->Jumlah,
                 'Aktif' => $baris->Aktif,

@@ -171,6 +171,9 @@ class Pilihan extends Table {
   TextColumn get UuidKelompokPilihan => text()();
   TextColumn get Nama => text()();
   TextColumn get Harga => text()();
+
+  /// X8 (v7.86): peta kanal ke harga dalam JSON (`{"GoFood":"6500.00"}`); null = pakai Harga.
+  TextColumn get HargaKanal => text().nullable()();
   TextColumn get UuidProdukBahan => text().nullable()();
   TextColumn get Jumlah => text().nullable()();
   BoolColumn get Aktif => boolean()();

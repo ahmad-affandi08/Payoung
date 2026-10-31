@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Katalog\Harga\Aksi;
 
+use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Katalog\Harga\Data\DataBarisHarga;
 use App\Domain\Katalog\Harga\Data\DataDaftarHarga;
 use App\Domain\Katalog\Harga\Enum\SumberPerubahanHarga;
@@ -15,6 +17,9 @@ use App\Domain\Katalog\Harga\Model\DaftarHarga;
 use App\Domain\Katalog\Model\Produk;
 use App\Domain\Katalog\Model\ProdukHarga;
 use App\Domain\Katalog\Model\ProdukSatuan;
+use App\Domain\Katalog\Pilihan\Model\KelompokPilihan;
+use App\Domain\Katalog\Pilihan\Model\Pilihan;
+use App\Domain\Tenant\Layanan\PenguncianTenant;
 use App\Domain\Penjualan\Enum\KanalPenjualan;
 use Illuminate\Support\Facades\DB;
 
@@ -31,6 +36,9 @@ use Illuminate\Support\Facades\DB;
  * - Rumus dipakai bersama `UbahHargaProdukMassal` lewat {@see PenghitungPerubahanHarga}.
  * - Tanpa timpa, satuan produk yang sudah punya harga di daftar itu dilewati. Dengan timpa, seluruh baris harga satuan
  *   itu di daftar diganti. Setiap perubahan tercatat di `RiwayatHarga` (BR-03.3) lewat `SimpanHargaDaftarHarga`.
+ * - Pilihan tambahan (modifier, `Pilihan.Harga`) ikut: harga per kanal disimpan di `Pilihan.HargaKanal` dengan rumus yang
+ *   sama (v7.86). Pilihan tidak punya outlet, jadi hanya ikut bila berlaku di semua outlet; untuk outlet tertentu pilihan
+ *   dibiarkan. Pilihan aktif dengan harga 0 dilewati. Harga dasar `Pilihan.Harga` tidak pernah diubah.
  * - `Terapkan` satu transaksi: semua kanal terisi atau tidak sama sekali. Pengguna yang dibatasi outlet hanya boleh
  *   memakai outletnya (`OutletDiLuarAkses`).
  */
@@ -46,12 +54,15 @@ final class AturHargaKanal
         private readonly SimpanDaftarHarga $simpanDaftar,
         private readonly SimpanHargaDaftarHarga $simpanHarga,
         private readonly UbahStatusDaftarHarga $ubahStatus,
+        private readonly KonteksTenant $konteks,
+        private readonly PenguncianTenant $penguncian,
+        private readonly PencatatAudit $audit,
     ) {}
 
     /**
      * @param  list<string>  $kanal  nilai {@see KanalPenjualan} platform
      * @param  list<int>|null  $idOutlet  null/kosong = semua outlet
-     * @return array{Kanal: list<array{Kanal: string, Label: string, DaftarAda: bool, Diisi: int, Dilewati: int}>, Contoh: list<array{Produk: string, Sku: string|null, Satuan: string, HargaBiasa: string, HargaBaru: string}>, TotalSatuan: int}
+     * @return array{Kanal: list<array{Kanal: string, Label: string, DaftarAda: bool, Diisi: int, Dilewati: int, PilihanDiisi: int, PilihanDilewati: int}>, Contoh: list<array{Produk: string, Sku: string|null, Satuan: string, HargaBiasa: string, HargaBaru: string}>, TotalSatuan: int, PilihanIkut: bool, TotalPilihan: int, ContohPilihan: list<array{Pilihan: string, Kelompok: string, HargaBiasa: string, HargaBaru: string}>}
      *
      * @throws PelanggaranAturanBisnis
      */
@@ -60,16 +71,26 @@ final class AturHargaKanal
         $daftarKanal = $this->PastikanKanal($kanal);
         $rencana = $this->SusunRencana($mode, $nilai, $pembulatan);
         $idOutlet = $this->RapikanOutlet($idOutlet);
+        $pilihanIkut = $idOutlet === null;
+        $rencanaPilihan = $pilihanIkut ? $this->SusunRencanaPilihan($mode, $nilai, $pembulatan) : [];
         $ringkas = [];
 
         foreach ($daftarKanal as $k) {
             $daftar = $this->CariDaftar($k, $idOutlet);
             $sudahAda = $daftar === null ? [] : $this->AmbilSatuanBerharga($daftar);
             [$diisi, $dilewati] = $this->HitungDiisi($rencana, $sudahAda, $timpa);
-            $ringkas[] = ['Kanal' => $k->value, 'Label' => $k->AmbilLabel(), 'DaftarAda' => $daftar !== null, 'Diisi' => $diisi, 'Dilewati' => $dilewati];
+            [$pilihanDiisi, $pilihanDilewati] = $this->HitungPilihanDiisi($rencanaPilihan, $k, $timpa);
+            $ringkas[] = ['Kanal' => $k->value, 'Label' => $k->AmbilLabel(), 'DaftarAda' => $daftar !== null, 'Diisi' => $diisi, 'Dilewati' => $dilewati, 'PilihanDiisi' => $pilihanDiisi, 'PilihanDilewati' => $pilihanDilewati];
         }
 
-        return ['Kanal' => $ringkas, 'Contoh' => $this->AmbilContoh($rencana), 'TotalSatuan' => count($rencana)];
+        return [
+            'Kanal' => $ringkas,
+            'Contoh' => $this->AmbilContoh($rencana),
+            'TotalSatuan' => count($rencana),
+            'PilihanIkut' => $pilihanIkut,
+            'TotalPilihan' => count($rencanaPilihan),
+            'ContohPilihan' => $this->AmbilContohPilihan($rencanaPilihan),
+        ];
     }
 
     /**
@@ -77,7 +98,7 @@ final class AturHargaKanal
      * @param  list<int>|null  $idOutlet
      * @param  list<string>  $namaOutlet  nama outlet terpilih (untuk nama daftar), urut sama dengan `$idOutlet`
      * @param  list<int>|null  $idOutletBoleh  null = pelaku boleh semua outlet
-     * @return array{Kanal: list<array{Kanal: string, Label: string, UuidDaftar: string, DaftarBaru: bool, Diisi: int, Dilewati: int}>}
+     * @return array{Kanal: list<array{Kanal: string, Label: string, UuidDaftar: string, DaftarBaru: bool, Diisi: int, Dilewati: int, PilihanDiisi: int}>}
      *
      * @throws PelanggaranAturanBisnis
      */
@@ -87,8 +108,10 @@ final class AturHargaKanal
         $idOutlet = $this->RapikanOutlet($idOutlet);
         SimpanDaftarHarga::PastikanAksesOutlet($idOutlet, $idOutletBoleh);
         $rencana = $this->SusunRencana($mode, $nilai, $pembulatan);
+        $rencanaPilihan = $idOutlet === null ? $this->SusunRencanaPilihan($mode, $nilai, $pembulatan) : [];
 
-        return DB::transaction(function () use ($daftarKanal, $rencana, $timpa, $idOutlet, $namaOutlet, $idOutletBoleh): array {
+        return DB::transaction(function () use ($daftarKanal, $rencana, $rencanaPilihan, $timpa, $idOutlet, $namaOutlet, $idOutletBoleh): array {
+            $this->penguncian->Kunci($this->konteks->Wajib());
             $hasil = [];
 
             foreach ($daftarKanal as $k) {
@@ -104,7 +127,8 @@ final class AturHargaKanal
                 $sudahAda = $baru ? [] : $this->AmbilSatuanBerharga($daftar);
                 [$diisi, $dilewati] = $this->HitungDiisi($rencana, $sudahAda, $timpa);
                 $this->IsiDaftar($daftar, $rencana, $sudahAda, $timpa);
-                $hasil[] = ['Kanal' => $k->value, 'Label' => $k->AmbilLabel(), 'UuidDaftar' => $daftar->Uuid, 'DaftarBaru' => $baru, 'Diisi' => $diisi, 'Dilewati' => $dilewati];
+                $pilihanDiisi = $this->IsiPilihan($rencanaPilihan, $k, $timpa);
+                $hasil[] = ['Kanal' => $k->value, 'Label' => $k->AmbilLabel(), 'UuidDaftar' => $daftar->Uuid, 'DaftarBaru' => $baru, 'Diisi' => $diisi, 'Dilewati' => $dilewati, 'PilihanDiisi' => $pilihanDiisi];
             }
 
             return ['Kanal' => $hasil];
@@ -321,5 +345,124 @@ final class AturHargaKanal
         }
 
         return $contoh;
+    }
+
+    /**
+     * Rencana harga baru per pilihan tambahan aktif berharga, tanpa menyimpan.
+     *
+     * @return array<int, array{IdKelompok: int, Pilihan: string, Lama: Uang, Baru: Uang}> kunci Id pilihan
+     */
+    private function SusunRencanaPilihan(string $mode, string $nilai, int $pembulatan): array
+    {
+        $angka = PenghitungPerubahanHarga::AmbilAngka($nilai, str_ends_with($mode, 'Persen'));
+        $rencana = [];
+
+        foreach (Pilihan::query()->where('Aktif', true)->orderBy('IdKelompokPilihan')->orderBy('Urutan')->orderBy('Id')->get(['Id', 'IdKelompokPilihan', 'Nama', 'Harga']) as $p) {
+            $lama = Uang::Dari($p->Harga);
+
+            if ($lama->BernilaiNol()) {
+                continue;
+            }
+
+            $baru = PenghitungPerubahanHarga::Hitung($lama, $mode, $angka, $pembulatan);
+
+            if ($baru->BernilaiNegatif()) {
+                throw new PelanggaranAturanBisnis('HargaNegatif', "Harga pilihan {$p->Nama} akan menjadi negatif. Kurangi nilai penurunan.", 'Nilai');
+            }
+
+            $rencana[$p->Id] = ['IdKelompok' => $p->IdKelompokPilihan, 'Pilihan' => $p->Nama, 'Lama' => $lama, 'Baru' => $baru];
+        }
+
+        return $rencana;
+    }
+
+    /**
+     * @param  array<int, array{IdKelompok: int, Pilihan: string, Lama: Uang, Baru: Uang}>  $rencanaPilihan
+     * @return array{0: int, 1: int} [diisi, dilewati]
+     */
+    private function HitungPilihanDiisi(array $rencanaPilihan, KanalPenjualan $kanal, bool $timpa): array
+    {
+        if ($rencanaPilihan === [] || $timpa) {
+            return [count($rencanaPilihan), 0];
+        }
+
+        $sudahAda = Pilihan::query()->whereIn('Id', array_keys($rencanaPilihan))->get(['Id', 'HargaKanal'])
+            ->filter(fn (Pilihan $p): bool => isset(($p->HargaKanal ?? [])[$kanal->value]))
+            ->count();
+
+        return [count($rencanaPilihan) - $sudahAda, $sudahAda];
+    }
+
+    /**
+     * Menyimpan harga kanal di `Pilihan.HargaKanal`; mengembalikan jumlah pilihan yang diisi. Audit per kelompok pilihan.
+     *
+     * @param  array<int, array{IdKelompok: int, Pilihan: string, Lama: Uang, Baru: Uang}>  $rencanaPilihan
+     */
+    private function IsiPilihan(array $rencanaPilihan, KanalPenjualan $kanal, bool $timpa): int
+    {
+        if ($rencanaPilihan === []) {
+            return 0;
+        }
+
+        $baris = Pilihan::query()->whereIn('Id', array_keys($rencanaPilihan))->orderBy('Id')->lockForUpdate()->get()->keyBy('Id');
+        $kelompok = KelompokPilihan::query()->whereIn('Id', array_values(array_unique(array_column($rencanaPilihan, 'IdKelompok'))))->get()->keyBy('Id');
+        $diisi = 0;
+        /** @var array<int, array{Lama: array<string, string|null>, Baru: array<string, string>}> $jejak */
+        $jejak = [];
+
+        foreach ($rencanaPilihan as $id => $data) {
+            $pilihan = $baris->get($id);
+
+            if (! $pilihan instanceof Pilihan) {
+                continue;
+            }
+
+            $peta = $pilihan->HargaKanal ?? [];
+
+            if (isset($peta[$kanal->value]) && ! $timpa) {
+                continue;
+            }
+
+            $lama = $peta[$kanal->value] ?? null;
+            $baru = $data['Baru']->KeString();
+            $diisi++;
+
+            if ($lama === $baru) {
+                continue;
+            }
+
+            $peta[$kanal->value] = $baru;
+            ksort($peta);
+            $pilihan->forceFill(['HargaKanal' => $peta])->save();
+            $jejak[$data['IdKelompok']]['Lama'][$data['Pilihan']] = $lama;
+            $jejak[$data['IdKelompok']]['Baru'][$data['Pilihan']] = $baru;
+        }
+
+        foreach ($jejak as $idKelompok => $isi) {
+            $objek = $kelompok->get($idKelompok);
+
+            if ($objek instanceof KelompokPilihan) {
+                $this->audit->Catat('kelompok-pilihan.harga-kanal.ubah', $objek, ['Kanal' => $kanal->value, 'Harga' => $isi['Lama']], ['Kanal' => $kanal->value, 'Harga' => $isi['Baru']]);
+            }
+        }
+
+        return $diisi;
+    }
+
+    /**
+     * @param  array<int, array{IdKelompok: int, Pilihan: string, Lama: Uang, Baru: Uang}>  $rencanaPilihan
+     * @return list<array{Pilihan: string, Kelompok: string, HargaBiasa: string, HargaBaru: string}>
+     */
+    private function AmbilContohPilihan(array $rencanaPilihan): array
+    {
+        $terpilih = array_slice($rencanaPilihan, 0, 3, true);
+        $kelompok = KelompokPilihan::query()->whereIn('Id', array_values(array_unique(array_column($terpilih, 'IdKelompok'))))->pluck('Nama', 'Id');
+
+        return array_values(array_map(fn (array $d): array => [
+            'Pilihan' => $d['Pilihan'],
+            'Kelompok' => (string) ($kelompok[$d['IdKelompok']] ?? ''),
+            'HargaBiasa' => $d['Lama']->KeString(),
+            'HargaBaru' => $d['Baru']->KeString(),
+        ], $terpilih));
     }
 }

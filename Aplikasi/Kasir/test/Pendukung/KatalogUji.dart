@@ -223,11 +223,19 @@ Map<String, Object?> KatalogUji() => {
   'Terhapus': <Object?>[],
 };
 
-Map<String, Object?> PilihanUji(String uuid, String kelompok, String nama, String harga, int urutan) => {
+Map<String, Object?> PilihanUji(
+  String uuid,
+  String kelompok,
+  String nama,
+  String harga,
+  int urutan, {
+  Map<String, String>? hargaKanal,
+}) => {
   'Uuid': uuid,
   'UuidKelompokPilihan': kelompok,
   'Nama': nama,
   'Harga': harga,
+  'HargaKanal': hargaKanal,
   'UuidProdukBahan': null,
   'Jumlah': null,
   'Aktif': true,
@@ -260,6 +268,26 @@ Map<String, Object?> KatalogOjolUji() {
       'UuidDaftarHarga': '01K5DH000000000000G0F00DXX',
     },
   ]);
+  return katalog;
+}
+
+/// X8 v7.86: katalog ojol dengan harga pilihan tambahan per kanal (Extra shot GoFood 6.500, GrabFood 7.000; Oat milk
+/// tanpa harga kanal sehingga tetap 7.000).
+Map<String, Object?> KatalogOjolPilihanUji() {
+  final katalog = KatalogOjolUji();
+  katalog['Pilihan'] = [
+    PilihanUji(UuidUji.gulaNormal, UuidUji.kelompokGula, 'Normal', '0.00', 1),
+    PilihanUji(UuidUji.gulaKurang, UuidUji.kelompokGula, 'Kurang manis', '0.00', 2),
+    PilihanUji(
+      UuidUji.extraShot,
+      UuidUji.kelompokTambahan,
+      'Extra shot',
+      '5000.00',
+      1,
+      hargaKanal: {'GoFood': '6500.00', 'GrabFood': '7000.00'},
+    ),
+    PilihanUji(UuidUji.oatMilk, UuidUji.kelompokTambahan, 'Oat milk', '7000.00', 2),
+  ];
   return katalog;
 }
 

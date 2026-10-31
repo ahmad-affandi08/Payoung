@@ -149,7 +149,7 @@ final class DaftarHargaKontroler extends DasarKatalogKontroler
             $outlet['Nama'],
             $this->IdOutletBoleh(),
         );
-        $ringkas = implode(', ', array_map(fn (array $k): string => "{$k['Label']} {$k['Diisi']} produk", $hasil['Kanal']));
+        $ringkas = implode(', ', array_map(fn (array $k): string => "{$k['Label']} {$k['Diisi']} produk".($k['PilihanDiisi'] > 0 ? " dan {$k['PilihanDiisi']} pilihan tambahan" : ''), $hasil['Kanal']));
 
         return redirect()->route('kelola.daftar-harga.daftar')->with('Kilat', "Harga ojol diatur: {$ringkas}.");
     }
