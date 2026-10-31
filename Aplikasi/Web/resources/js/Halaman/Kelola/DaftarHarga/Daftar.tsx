@@ -1,8 +1,12 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
+import DialogAturHargaOjol from '@/Komponen/Katalog/DialogAturHargaOjol';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
+import Panel from '@/Komponen/Kelola/Panel';
+import Tombol from '@/Komponen/Formulir/Tombol';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import {
@@ -163,19 +167,34 @@ const kolomAksi: KolomTabel<BarisDaftarHarga> = {
 };
 
 /** F-03 daftar harga per outlet, kanal, tingkat pelanggan, dan periode. Tidak pernah dihapus, hanya dinonaktifkan. */
-export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Izin }: PropsDaftarDaftarHarga) {
+export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Outlet, Izin }: PropsDaftarDaftarHarga) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const [aturOjol, AturAturOjol] = useState(false);
 
     return (
         <TataLetakAplikasi judul="Daftar harga">
             {!Izin.UbahHarga ? <PesanHanyaLihat izin="produk.harga.ubah" objek="daftar harga" /> : null}
             <DaftarGalatServer galat={props.errors} />
+            {Izin.UbahHarga ? (
+                <Panel
+                    judul="Jualan lewat GoFood, GrabFood, atau ShopeeFood?"
+                    tingkat="h2"
+                    keterangan="Isi harga di platform ojol dari harga biasa dalam satu langkah, misalnya 30 persen lebih mahal. Tidak perlu membuat daftar satu per satu."
+                    aksi={<Tombol onClick={() => AturAturOjol(true)}>Atur harga ojol</Tombol>}
+                >
+                    <p className="text-keterangan text-teks-sekunder">
+                        Harga biasa di kasir tidak berubah. Anda bisa melihat contohnya dulu sebelum disimpan.
+                    </p>
+                </Panel>
+            ) : null}
+            {aturOjol ? <DialogAturHargaOjol Outlet={Outlet} saatTutup={() => AturAturOjol(false)} /> : null}
             <AksiHalaman
                 keterangan={
                     <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Harga khusus untuk outlet, kanal (misal online), tingkat pelanggan, atau periode tertentu. Bila
-                        beberapa daftar cocok, prioritas terbesar dipakai. Bila sama, yang syaratnya lebih spesifik.
-                        Produk yang tidak ada di daftar ini memakai harga jual biasa.
+                        Pakai daftar harga kalau harga produk perlu berbeda untuk situasi tertentu, misalnya harga di
+                        GoFood, harga anggota, harga satu cabang, atau harga promo bulan ini. Produk yang tidak ada di
+                        daftar memakai harga jual biasa. Kalau beberapa daftar cocok sekaligus, yang prioritasnya paling
+                        besar dipakai.
                     </p>
                 }
             >

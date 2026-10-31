@@ -35,6 +35,9 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::get('/daftar-harga', [DaftarHargaKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.daftar-harga.daftar');
     Route::get('/daftar-harga/buat', [DaftarHargaKontroler::class, 'Buat'])->middleware($ubahHarga)->name('kelola.daftar-harga.buat');
     Route::post('/daftar-harga', [DaftarHargaKontroler::class, 'Simpan'])->middleware($ubahHarga)->name('kelola.daftar-harga.simpan');
+    // "Atur harga ojol": isi daftar harga GoFood/GrabFood/ShopeeFood dari harga dasar (pratinjau lalu terapkan).
+    Route::post('/daftar-harga/atur-kanal/pratinjau', [DaftarHargaKontroler::class, 'PratinjauHargaKanal'])->middleware($ubahHarga)->name('kelola.daftar-harga.atur-kanal.pratinjau');
+    Route::post('/daftar-harga/atur-kanal', [DaftarHargaKontroler::class, 'TerapkanHargaKanal'])->middleware($ubahHarga)->name('kelola.daftar-harga.atur-kanal');
     Route::get('/daftar-harga/{daftarHarga}', [DaftarHargaKontroler::class, 'Detail'])->middleware($lihat)->where('daftarHarga', $ulid)->name('kelola.daftar-harga.detail');
     Route::put('/daftar-harga/{daftarHarga}', [DaftarHargaKontroler::class, 'Ubah'])->middleware($ubahHarga)->where('daftarHarga', $ulid)->name('kelola.daftar-harga.ubah');
     Route::post('/daftar-harga/{daftarHarga}/nonaktifkan', [DaftarHargaKontroler::class, 'Nonaktifkan'])->middleware($ubahHarga)->where('daftarHarga', $ulid)->name('kelola.daftar-harga.nonaktifkan');

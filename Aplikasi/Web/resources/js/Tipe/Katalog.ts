@@ -632,3 +632,10 @@ export type HasilCariLabel = { Data: BarisLabelServer[] };
 
 /** POST /kelola/produk/label/barcode-internal */
 export type HasilBarcodeLabel = { Data: { Uuid: string; Barcode: string; Baru: boolean }[] };
+
+/** "Atur harga ojol" (`POST /kelola/daftar-harga/atur-kanal/pratinjau`): contoh harga baru dan jumlah produk per platform. */
+export type PratinjauHargaKanal = {
+    Kanal: { Kanal: string; Label: string; DaftarAda: boolean; Diisi: number; Dilewati: number }[];
+    Contoh: { Produk: string; Sku: string | null; Satuan: string; HargaBiasa: string; HargaBaru: string }[];
+    TotalSatuan: number;
+};

@@ -9,10 +9,9 @@ use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Harga\Data\DataBarisHarga;
 use App\Domain\Katalog\Harga\Enum\SumberPerubahanHarga;
+use App\Domain\Katalog\Harga\Layanan\PenghitungPerubahanHarga;
 use App\Domain\Katalog\Model\Produk;
 use App\Domain\Katalog\Model\ProdukHarga;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,9 +25,9 @@ final class UbahHargaProdukMassal
 {
     public const MAKS = 200;
 
-    public const MODE = ['NaikPersen', 'TurunPersen', 'NaikNominal', 'TurunNominal'];
+    public const MODE = PenghitungPerubahanHarga::MODE;
 
-    public const PEMBULATAN = [0, 100, 500, 1000];
+    public const PEMBULATAN = PenghitungPerubahanHarga::PEMBULATAN;
 
     public function __construct(private readonly SimpanHargaProduk $simpan) {}
 
@@ -40,13 +39,7 @@ final class UbahHargaProdukMassal
      */
     public function Jalankan(string $mode, string $nilai, int $pembulatan, array $uuid): array
     {
-        if (! in_array($mode, self::MODE, true)) {
-            throw new PelanggaranAturanBisnis('ModeTidakDikenal', 'Cara ubah harga tidak dikenal.', 'Mode');
-        }
-
-        if (! in_array($pembulatan, self::PEMBULATAN, true)) {
-            throw new PelanggaranAturanBisnis('PembulatanTidakDikenal', 'Pembulatan tidak dikenal.', 'Pembulatan');
-        }
+        PenghitungPerubahanHarga::PastikanPilihanSah($mode, $pembulatan);
 
         $uuid = array_values(array_unique($uuid));
 
@@ -58,7 +51,7 @@ final class UbahHargaProdukMassal
             throw new PelanggaranAturanBisnis('TerlaluBanyak', 'Maksimal '.self::MAKS.' produk sekali proses.', 'Uuid');
         }
 
-        $angka = $this->AmbilAngka($nilai, str_ends_with($mode, 'Persen'));
+        $angka = PenghitungPerubahanHarga::AmbilAngka($nilai, str_ends_with($mode, 'Persen'));
 
         return DB::transaction(function () use ($mode, $angka, $pembulatan, $uuid): array {
             $produk = Produk::query()->whereIn('Uuid', $uuid)->orderBy('Id')->get();
@@ -84,7 +77,7 @@ final class UbahHargaProdukMassal
 
                 foreach ($baris as $harga) {
                     $lama = Uang::Dari($harga->Harga);
-                    $baru = $this->Hitung($lama, $mode, $angka, $pembulatan);
+                    $baru = PenghitungPerubahanHarga::Hitung($lama, $mode, $angka, $pembulatan);
 
                     if ($baru->BernilaiNegatif()) {
                         throw new PelanggaranAturanBisnis('HargaNegatif', "Harga {$p->Nama} akan menjadi negatif. Kurangi nilai penurunan.", 'Nilai');
@@ -105,34 +98,5 @@ final class UbahHargaProdukMassal
 
             return ['Produk' => $produkBerubah, 'Harga' => $hargaBerubah];
         });
-    }
-
-    private function AmbilAngka(string $nilai, bool $persen): BigDecimal
-    {
-        $teks = str_replace(',', '.', trim($nilai));
-
-        if (preg_match('/^\d{1,9}(\.\d{1,2})?$/', $teks) !== 1) {
-            throw new PelanggaranAturanBisnis('NilaiTidakValid', 'Isi angka lebih dari 0, tanpa tanda minus.', 'Nilai');
-        }
-
-        $angka = BigDecimal::of($teks);
-
-        if ($angka->isLessThanOrEqualTo(0) || ($persen && $angka->isGreaterThan(1000))) {
-            throw new PelanggaranAturanBisnis('NilaiTidakValid', $persen ? 'Persen harus lebih dari 0 dan paling banyak 1000.' : 'Isi angka lebih dari 0.', 'Nilai');
-        }
-
-        return $angka;
-    }
-
-    private function Hitung(Uang $lama, string $mode, BigDecimal $angka, int $pembulatan): Uang
-    {
-        $baru = match ($mode) {
-            'NaikPersen' => $lama->Kali(BigDecimal::one()->plus($angka->dividedBy(100, 6, RoundingMode::HalfUp))),
-            'TurunPersen' => $lama->Kali(BigDecimal::one()->minus($angka->dividedBy(100, 6, RoundingMode::HalfUp))),
-            'NaikNominal' => $lama->Tambah(Uang::Dari($angka)),
-            default => $lama->Kurangi(Uang::Dari($angka)),
-        };
-
-        return $pembulatan > 0 && ! $baru->BernilaiNegatif() ? $baru->BulatkanKeKelipatan($pembulatan, RoundingMode::HalfUp) : $baru;
     }
 }

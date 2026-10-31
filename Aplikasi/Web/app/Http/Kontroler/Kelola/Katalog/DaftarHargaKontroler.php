@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Kelola\Katalog;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Katalog\Harga\Aksi\AturHargaKanal;
 use App\Domain\Katalog\Harga\Aksi\SimpanDaftarHarga;
 use App\Domain\Katalog\Harga\Aksi\SimpanHargaDaftarHarga;
 use App\Domain\Katalog\Harga\Aksi\UbahStatusDaftarHarga;
@@ -14,6 +15,7 @@ use App\Domain\Katalog\Harga\Kueri\DaftarDaftarHarga;
 use App\Domain\Katalog\Harga\Kueri\DetailDaftarHarga;
 use App\Domain\Katalog\Harga\Model\DaftarHarga;
 use App\Domain\Pelanggan\Kueri\DaftarTierPelanggan;
+use App\Http\Permintaan\Kelola\Katalog\AturHargaKanalPermintaan;
 use App\Http\Permintaan\Kelola\Katalog\SimpanDaftarHargaPermintaan;
 use App\Http\Permintaan\Kelola\Katalog\SimpanHargaDaftarHargaPermintaan;
 use App\Http\Respons\ResponsTabel;
@@ -112,6 +114,44 @@ final class DaftarHargaKontroler extends DasarKatalogKontroler
         }
 
         return back()->with('Kilat', $hasil->CekAdaPerubahan() ? "Harga di {$baris->Nama} disimpan." : 'Tidak ada harga yang berubah.');
+    }
+
+    /**
+     * "Atur harga ojol" langkah 1: contoh harga baru dan jumlah produk yang akan diisi, tanpa menyimpan apa pun.
+     */
+    public function PratinjauHargaKanal(AturHargaKanalPermintaan $permintaan, AturHargaKanal $atur): JsonResponse
+    {
+        $outlet = $permintaan->AmbilOutlet();
+
+        return response()->json(['Data' => $atur->Pratinjau(
+            $permintaan->AmbilKanal(),
+            (string) $permintaan->validated('Mode'),
+            (string) $permintaan->validated('Nilai'),
+            (int) $permintaan->validated('Pembulatan'),
+            $permintaan->boolean('Timpa'),
+            $outlet['Id'],
+        )]);
+    }
+
+    /**
+     * "Atur harga ojol" langkah 2: membuat/mengisi daftar harga tiap platform dalam satu transaksi.
+     */
+    public function TerapkanHargaKanal(AturHargaKanalPermintaan $permintaan, AturHargaKanal $atur): RedirectResponse
+    {
+        $outlet = $permintaan->AmbilOutlet();
+        $hasil = $atur->Terapkan(
+            $permintaan->AmbilKanal(),
+            (string) $permintaan->validated('Mode'),
+            (string) $permintaan->validated('Nilai'),
+            (int) $permintaan->validated('Pembulatan'),
+            $permintaan->boolean('Timpa'),
+            $outlet['Id'],
+            $outlet['Nama'],
+            $this->IdOutletBoleh(),
+        );
+        $ringkas = implode(', ', array_map(fn (array $k): string => "{$k['Label']} {$k['Diisi']} produk", $hasil['Kanal']));
+
+        return redirect()->route('kelola.daftar-harga.daftar')->with('Kilat', "Harga ojol diatur: {$ringkas}.");
     }
 
     private function CariDaftarHarga(string $uuid): DaftarHarga

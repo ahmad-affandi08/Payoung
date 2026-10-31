@@ -2832,7 +2832,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-DbYuDtnf.js",
+    "file": "assets/Aplikasi-DpuD3DsB.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -4500,7 +4500,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/DaftarHarga/Daftar.tsx": {
-    "file": "assets/Daftar-jTy-ITj7.js",
+    "file": "assets/Daftar-CfQTQOXb.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/DaftarHarga/Daftar.tsx",
     "isDynamicEntry": true,
@@ -4509,13 +4509,21 @@
       "_dist-D4veJNCv.js",
       "_TabelData-CjIqjJfJ.js",
       "_TataLetakAplikasi-ByR6yyw3.js",
+      "_BidangTeks-wK61vZkG.js",
       "_DialogFormulir-DslDzvpI.js",
       "_button-BK_9L4NG.js",
+      "_Tombol-CEUGaUCz.js",
+      "_dialog-CJ-dC_7r.js",
+      "_PermintaanJson-B6kS0EWI.js",
+      "_Format-BVUTIH9q.js",
       "_FormatWaktu-bKvj24HB.js",
+      "_BidangPilihan-DPqp9T9v.js",
+      "_Panel-BunJRU2l.js",
       "_LabelStatus-BNjWuZG6.js",
       "_AksiHalaman-C-UKwu4J.js",
       "_PesanHanyaLihat-DUXZh0r1.js",
-      "_DaftarGalatServer-wOdDKC1l.js"
+      "_DaftarGalatServer-wOdDKC1l.js",
+      "_GrupCentang-Crrzr1Zs.js"
     ]
   },
   "resources/js/Halaman/Kelola/DaftarHarga/Detail.tsx": {
