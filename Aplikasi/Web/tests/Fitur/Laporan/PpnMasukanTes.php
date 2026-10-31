@@ -8,6 +8,7 @@ use App\Domain\Pembelian\Aksi\BatalkanFakturPembelian;
 use App\Domain\Pembelian\Aksi\SimpanReturPembelian;
 use App\Domain\Pembelian\Data\DataBarisReturPembelian;
 use App\Domain\Pembelian\Data\DataReturPembelian;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -21,6 +22,8 @@ use Tests\Pendukung\Tenant\BantuanPendaftaran;
  */
 
 beforeEach(function (): void {
+    // Jam dibekukan di tengah bulan dan tengah hari WIB, supaya hasil tidak bergantung kapan tes berjalan (batas bulan/hari).
+    $this->travelTo(CarbonImmutable::parse('2026-10-20 03:00:00', 'UTC'));
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 

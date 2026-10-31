@@ -96,6 +96,7 @@ describe('Bagian katalog POS Tim 3', function (): void {
                 'UuidKelompokPilihan' => $kelompok->Uuid,
                 'Nama' => 'Susu Ekstra',
                 'Harga' => '4000.00',
+                'HargaKanal' => null,
                 'UuidProdukBahan' => $susu->Uuid,
                 'Jumlah' => '50.0000',
                 'Aktif' => true,

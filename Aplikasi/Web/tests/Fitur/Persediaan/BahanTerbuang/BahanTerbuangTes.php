@@ -36,6 +36,8 @@ use Tests\TestCase;
  */
 
 beforeEach(function (): void {
+    // Jam dibekukan di tengah bulan dan tengah hari WIB, supaya hasil tidak bergantung kapan tes berjalan (batas bulan/hari).
+    $this->travelTo(CarbonImmutable::parse('2026-10-20 03:00:00', 'UTC'));
     BantuanPendaftaran::SiapkanPrasyarat();
 });
 
