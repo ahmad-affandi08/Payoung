@@ -31,7 +31,7 @@ final class TokenWarna extends ThemeExtension<TokenWarna> {
   });
 
   static const TokenWarna bawaan = TokenWarna(
-    latar: Color(0xFFEBF0EC),
+    latar: Color(0xFFEEF1F1),
     permukaan: Color(0xFFFFFFFF),
     garis: Color(0xFFD2DCD6),
     garisInput: Color(0xFF7A8F90),

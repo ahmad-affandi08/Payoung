@@ -35,7 +35,7 @@
     /* Matikan palet bawaan Tailwind: hanya token di file ini yang boleh dipakai. */
     --color-*: initial;
 
-    --color-latar: #ebf0ec; /* kanvas halaman: lebih gelap dari permukaan supaya panel putih terbaca */
+    --color-latar: #eef1f1; /* kanvas halaman: lebih gelap dari permukaan supaya panel putih terbaca */
     --color-permukaan: #ffffff; /* panel, tabel, dialog, input; juga teks di atas brand/bahaya */
     --color-garis: #d2dcd6; /* pemisah & tepi panel (kontras 1,37:1 di atas permukaan) */
     --color-garis-input: #7a8f90; /* tepi input & kontrol (kontras >= 3:1) */

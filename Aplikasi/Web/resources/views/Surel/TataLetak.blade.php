@@ -42,14 +42,14 @@
         }
     </style>
 </head>
-<body style="margin:0; padding:0; background-color:#ebf0ec; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<body style="margin:0; padding:0; background-color:#eef1f1; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
 {{-- Cuplikan kotak masuk. Deretan &#8199; mendorong isi email keluar dari cuplikan supaya tidak ikut terbaca. --}}
-<div style="display:none; font-size:1px; color:#ebf0ec; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+<div style="display:none; font-size:1px; color:#eef1f1; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
     @yield('Pratinjau')
     &#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;
 </div>
 
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#ebf0ec;">
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#eef1f1;">
     <tr>
         <td align="center" style="padding:32px 12px 48px 12px;">
 
