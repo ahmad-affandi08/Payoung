@@ -622,6 +622,13 @@ const menuPenjualan: ItemMenu[] = [
         kelompok: 'Atur kasir',
     },
     {
+        label: 'Pajak & biaya layanan',
+        href: '/kelola/kasir/pajak',
+        izin: IzinTenant.OutletKelola,
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Atur kasir',
+    },
+    {
         label: 'Pengaturan struk',
         href: '/kelola/kasir/struk',
         izin: IzinTenant.OutletKelola,

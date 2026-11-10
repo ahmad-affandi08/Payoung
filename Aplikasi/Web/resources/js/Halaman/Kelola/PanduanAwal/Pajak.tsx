@@ -12,11 +12,10 @@ import { Card } from '@/Komponen/Ui/card';
 import { FieldError, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
 import { RadioGroup, RadioGroupItem } from '@/Komponen/Ui/radio-group';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
-import { FormatPersen } from '@/Pustaka/Format';
-import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { JelaskanTarifPajak } from '@/Pustaka/JelaskanTarifPajak';
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import { FormatMasukanPersen, NormalisasiMasukanPersen } from '@/Pustaka/MasukanUang';
-import { AlamatPanduan, type PropsPajak, type TarifTampil } from '@/Tipe/PanduanAwal';
+import { AlamatPanduan, type PropsPajak } from '@/Tipe/PanduanAwal';
 
 type IsianPajak = PropsPajak['Nilai'];
 
@@ -46,15 +45,6 @@ const kolomKelompok: KolomTabel<PropsPajak['KelompokPajak'][number]>[] = [
             ),
     },
 ];
-
-/** "10.000000" berlaku "2024-01-01" → "10% berlaku mulai 1 Jan 2024 (Perda No. 1 Tahun 2024)". */
-function JelaskanTarif(tarif: TarifTampil): string {
-    const tanggal = /^\d{4}-\d{2}-\d{2}/.exec(tarif.BerlakuMulai)?.[0];
-    const berlaku = tanggal ? ` berlaku mulai ${FormatTanggal(tanggal)}` : '';
-    const dasarHukum = tarif.NomorDasarHukum ? ` (${tarif.NomorDasarHukum})` : '';
-
-    return `${FormatPersen(tarif.Tarif)}%${berlaku}${dasarHukum}`;
-}
 
 /** Langkah 3 F-01: konfirmasi usulan pajak dari template, status PKP, dan tarif kota (tarif dari server, CLAUDE.md #12). */
 export default function HalamanPajak({
@@ -122,7 +112,7 @@ export default function HalamanPajak({
                         </p>
                         {Pkp && TarifPpn ? (
                             <p className="text-isi text-teks-utama">
-                                Tarif PPN {JelaskanTarif(TarifPpn)}
+                                Tarif PPN {JelaskanTarifPajak(TarifPpn)}
                                 {TarifPpn.PengaliDppPembilang !== TarifPpn.PengaliDppPenyebut
                                     ? `, dihitung dari DPP ${String(TarifPpn.PengaliDppPembilang)}/${String(TarifPpn.PengaliDppPenyebut)} harga jual`
                                     : ''}
@@ -162,7 +152,7 @@ export default function HalamanPajak({
                                 </Pemberitahuan>
                             ) : TarifPbjt ? (
                                 <p className="text-isi text-teks-utama">
-                                    Tarif PBJT {Kota.Nama}: {JelaskanTarif(TarifPbjt)}. Biaya layanan{' '}
+                                    Tarif PBJT {Kota.Nama}: {JelaskanTarifPajak(TarifPbjt)}. Biaya layanan{' '}
                                     {TarifPbjt.BiayaLayananMasukDpp ? 'ikut' : 'tidak ikut'} dikenai PBJT di kota ini.
                                 </p>
                             ) : formulir.data.PungutPbjt ? (

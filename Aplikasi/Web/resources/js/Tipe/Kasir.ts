@@ -1,4 +1,5 @@
 import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
+import type { PropsPajak } from '@/Tipe/PanduanAwal';
 import type { PenjualanShift } from '@/Tipe/Penjualan';
 
 /** F-06 shift & kas (back-office). Uang = string desimal dari server; tidak pernah number/float. */
@@ -276,4 +277,10 @@ export type BarisTutupHarian = {
 export type PropsTutupHarian = {
     Hari: BarisTutupHarian[];
     Izin: { Kelola: boolean };
+};
+
+/** D-263: halaman Pajak & biaya layanan per outlet di Atur kasir (nilai tersimpan, bukan usulan template). */
+export type PropsPengaturanPajak = Pick<PropsPajak, 'Pkp' | 'Kota' | 'Nilai' | 'TarifPbjt' | 'TarifPpn'> & {
+    UuidOutlet: string;
+    OpsiOutlet: { Uuid: string; Nama: string }[];
 };

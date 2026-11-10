@@ -6,6 +6,7 @@ use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Kasir\KategoriKasKontroler;
 use App\Http\Kontroler\Kelola\Kasir\PengaturanKasirKontroler;
+use App\Http\Kontroler\Kelola\Kasir\PengaturanPajakKontroler;
 use App\Http\Kontroler\Kelola\Kasir\PengaturanStrukKontroler;
 use App\Http\Kontroler\Kelola\Kasir\ShiftKontroler;
 use App\Http\Kontroler\Kelola\Kasir\TutupHarianKontroler;
@@ -49,6 +50,10 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::get('/kasir/pengaturan', [PengaturanKasirKontroler::class, 'Tampilkan'])->middleware($outlet)->name('kelola.kasir.pengaturan');
     Route::put('/kasir/pengaturan', [PengaturanKasirKontroler::class, 'Simpan'])->middleware($outlet)->name('kelola.kasir.pengaturan.simpan');
     Route::put('/kasir/pengaturan/barcode-timbangan', [PengaturanKasirKontroler::class, 'SimpanBarcodeTimbangan'])->middleware($outlet)->name('kelola.kasir.pengaturan.barcode-timbangan');
+
+    // D-263: pajak & biaya layanan per outlet (dulu hanya lewat langkah Pajak di Panduan awal).
+    Route::get('/kasir/pajak', [PengaturanPajakKontroler::class, 'Tampilkan'])->middleware($outlet)->name('kelola.kasir.pajak');
+    Route::put('/kasir/pajak', [PengaturanPajakKontroler::class, 'Simpan'])->middleware($outlet)->name('kelola.kasir.pajak.simpan');
 
     // PLT-06 / POS-11 (PRD v1.79): pengaturan struk satu untuk semua outlet.
     Route::get('/kasir/struk', [PengaturanStrukKontroler::class, 'Tampilkan'])->middleware($outlet)->name('kelola.kasir.struk');
