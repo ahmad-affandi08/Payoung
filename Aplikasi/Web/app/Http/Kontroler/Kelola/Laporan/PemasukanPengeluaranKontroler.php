@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Laporan;
 
+use App\Domain\Akuntansi\Kueri\LabaRugi;
 use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Akuntansi\Layanan\PenyusunBukuPemasukanPengeluaran;
 use App\Domain\Bersama\Laporan\ItemRingkasan;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Laporan\PenulisXlsxLaporan;
+use App\Domain\Laporan\Kueri\LaporanStok;
+use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Http\Kontroler\Kelola\Akuntansi\DasarAkuntansiKontroler;
 use Carbon\CarbonImmutable;
@@ -96,11 +100,25 @@ final class PemasukanPengeluaranKontroler extends DasarAkuntansiKontroler
      * `PenyusunBukuPemasukanPengeluaran::KODE_LEMBAR`), Ringkasan selalu ikut. Lembar yang dibutuhkan rumus tetapi tidak
      * dipilih disembunyikan. Rute memasang `EksporDiLatarBelakang`, jadi berkas disiapkan lewat Pusat Unduhan.
      */
-    public function Buku(Request $permintaan, PemasukanPengeluaran $kueri, PenyusunBukuPemasukanPengeluaran $penyusun, PetaUuidOutlet $petaOutlet): SymfonyResponse
+    public function Buku(Request $permintaan, PemasukanPengeluaran $kueri, PenyusunBukuPemasukanPengeluaran $penyusun, PetaUuidOutlet $petaOutlet, LabaRugi $labaRugi, LaporanStok $laporanStok): SymfonyResponse
     {
         $saring = $this->AmbilSaringLaporan($permintaan);
         $diminta = $permintaan->query('lembar', []);
-        $dipilih = array_values(array_intersect(PenyusunBukuPemasukanPengeluaran::KODE_LEMBAR, is_array($diminta) ? array_map('strval', $diminta) : []));
+        $dipilih = PenyusunBukuPemasukanPengeluaran::NormalkanPilihan(is_array($diminta) ? array_values(array_map('strval', $diminta)) : []);
+        $hitungan = $kueri->Siapkan($saring);
+        $tambahan = [];
+
+        // Laba rugi memakai HPP dan Stok memakai data persediaan, jadi hanya disiapkan bila dipilih. Stok butuh izin lihat
+        // persediaan: tanpa izin itu lembarnya dilewati, bukan ditolak, supaya buku lain tetap bisa diunduh.
+        if (in_array(PenyusunBukuPemasukanPengeluaran::KODE_LABA_RUGI, $dipilih, true)) {
+            $tambahan['LabaRugi'] = $labaRugi->Ambil($hitungan->saring);
+        }
+
+        if (in_array(PenyusunBukuPemasukanPengeluaran::KODE_STOK, $dipilih, true) && app(AksesPengguna::class)->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::PersediaanLihat)) {
+            $idOutlet = $saring->idOutlet === null ? $this->IdOutletBoleh() : [$saring->idOutlet];
+            $tambahan['Stok'] = $laporanStok->NilaiPersediaan(CarbonImmutable::parse($hitungan->saring->sampai), $idOutlet);
+        }
+
         $namaOutlet = [];
         $namaDipilih = '';
 
@@ -112,7 +130,7 @@ final class PemasukanPengeluaranKontroler extends DasarAkuntansiKontroler
             }
         }
 
-        $lembar = $penyusun->Susun($this->IdTenant(), $kueri->Siapkan($saring), $namaOutlet, $dipilih, $this->LabelCakupan($namaDipilih));
+        $lembar = $penyusun->Susun($this->IdTenant(), $hitungan, $namaOutlet, $dipilih, $this->LabelCakupan($namaDipilih), $tambahan);
 
         return PenulisXlsxLaporan::AlirkanBuku($lembar, 'laporan-pemasukan-pengeluaran-'.$saring->dari.'-'.$saring->sampai);
     }

@@ -39,6 +39,9 @@ describe('DialogUnduhBuku (D-255)', () => {
             'Uang masuk dan uang keluar per kategori',
             'Per hari',
             'Daftar transaksi per hari dan kategori',
+            'Hutang dan piutang',
+            'Laba rugi',
+            'Nilai stok',
         ]);
         expect(pendek[0]?.terkunci).toBe(true);
         expect(BuatDaftarLembar(120, true).map((o) => o.judul)).toContain('Per bulan');
@@ -65,9 +68,39 @@ describe('DialogUnduhBuku (D-255)', () => {
         Pasang();
         const kotak = screen.getAllByRole('checkbox');
 
-        expect(kotak).toHaveLength(4);
-        kotak.forEach((k) => expect(k?.getAttribute('aria-checked')).toBe('true'));
+        expect(kotak).toHaveLength(7);
+        // Laba rugi (memakai HPP) dan Stok tidak tercentang bawaan, sisanya tercentang.
+        expect(kotak.map((k) => k.getAttribute('aria-checked'))).toEqual([
+            'true',
+            'true',
+            'true',
+            'true',
+            'true',
+            'false',
+            'false',
+        ]);
         expect((kotak[0] as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('memilih Laba rugi otomatis mencentang dan mengunci Stok, melepasnya melepas Stok lagi', () => {
+        Pasang();
+        const LabaRugi = () => screen.getByRole('checkbox', { name: /Laba rugi/ });
+        const Stok = () => screen.getByRole('checkbox', { name: /Nilai stok/ });
+
+        fireEvent.click(LabaRugi());
+        expect(Stok().getAttribute('aria-checked')).toBe('true');
+        expect((Stok() as HTMLButtonElement).disabled).toBe(true);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Siapkan Excel' }));
+        const alamat = String(tiruanRouter.get.mock.calls[0]?.[0]);
+        const lembar = new URL(alamat, 'http://x').searchParams.getAll('lembar[]');
+
+        expect(lembar).toContain('LabaRugi');
+        expect(lembar).toContain('Stok');
+        // Yang diingat hanya pilihan sendiri.
+        expect(JSON.parse(window.localStorage.getItem('Laporan.PemasukanPengeluaran.Lembar') ?? '[]')).not.toContain(
+            'Stok',
+        );
     });
 
     it('Siapkan Excel mengirim lembar terpilih, menyimpan pilihan, dan menutup dialog', () => {
@@ -81,7 +114,7 @@ describe('DialogUnduhBuku (D-255)', () => {
         const alamat = String(tiruanRouter.get.mock.calls[0]?.[0]);
         const lembar = new URL(alamat, 'http://x').searchParams.getAll('lembar[]');
 
-        expect(lembar).toEqual(['Ringkasan', 'Kategori', 'PerPeriode']);
+        expect(lembar).toEqual(['Ringkasan', 'Kategori', 'PerPeriode', 'HutangPiutang']);
         expect(SaatTutup).toHaveBeenCalled();
         expect(JSON.parse(window.localStorage.getItem('Laporan.PemasukanPengeluaran.Lembar') ?? '[]')).toEqual(lembar);
     });
@@ -94,12 +127,21 @@ describe('DialogUnduhBuku (D-255)', () => {
         expect(kotak[1]?.getAttribute('aria-checked')).toBe('true');
         expect(kotak[2]?.getAttribute('aria-checked')).toBe('false');
         expect(kotak[3]?.getAttribute('aria-checked')).toBe('false');
+        expect(kotak[4]?.getAttribute('aria-checked')).toBe('false');
     });
 
-    it('penyimpanan peramban yang rusak tidak mengganggu: semua lembar tercentang', () => {
+    it('penyimpanan peramban yang rusak tidak mengganggu: kembali ke pilihan bawaan', () => {
         window.localStorage.setItem('Laporan.PemasukanPengeluaran.Lembar', '{bukan json');
         Pasang();
 
-        screen.getAllByRole('checkbox').forEach((k) => expect(k?.getAttribute('aria-checked')).toBe('true'));
+        const kotak = screen.getAllByRole('checkbox');
+        expect(kotak.slice(0, 5).map((k) => k.getAttribute('aria-checked'))).toEqual([
+            'true',
+            'true',
+            'true',
+            'true',
+            'true',
+        ]);
+        expect(kotak[5]?.getAttribute('aria-checked')).toBe('false');
     });
 });

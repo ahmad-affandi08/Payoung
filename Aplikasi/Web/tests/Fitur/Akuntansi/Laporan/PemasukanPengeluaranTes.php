@@ -13,6 +13,7 @@ use App\Domain\Akuntansi\Enum\PeranAkun;
 use App\Domain\Akuntansi\Enum\TipeAkun;
 use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Akuntansi\Layanan\PenggolongUangKas;
+use App\Domain\Akuntansi\Layanan\PenyusunBukuPemasukanPengeluaran;
 use App\Domain\Akuntansi\Model\Akun;
 use App\Domain\Bersama\Laporan\PenulisXlsxLaporan;
 use App\Domain\Bersama\Nilai\Uang;
@@ -387,6 +388,64 @@ describe('D-255 pemasukan & pengeluaran', function (): void {
         $asing = $masuk->get($dasar.'&lembar[]=Rahasia&lembar[]=PerOutlet')->assertOk();
         expect(array_column(BacaBukuUang($asing->streamedContent())['Lembar'], 'Nama'))->toBe(['Ringkasan', 'Pemasukan', 'Pengeluaran', 'Per outlet', 'Transaksi']);
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir)->get($dasar)->assertForbidden();
+    });
+
+    it('lembar opsional: Hutang & piutang, Laba rugi berumus, dan Stok ikut Laba rugi; tanpa dipilih tidak ada (D-255)', function (): void {
+        expect(PenyusunBukuPemasukanPengeluaran::NormalkanPilihan(['LabaRugi', 'Ngawur']))->toBe(['LabaRugi', 'Stok'])
+            ->and(PenyusunBukuPemasukanPengeluaran::NormalkanPilihan(['Stok']))->toBe(['Stok'])
+            ->and(PenyusunBukuPemasukanPengeluaran::NormalkanPilihan([]))->toBe([]);
+
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $jual = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
+        $hari = CarbonImmutable::parse($jual->TanggalBisnis->toDateString());
+        $dasar = "/kelola/laporan/pemasukan-pengeluaran/buku?dari={$hari->startOfMonth()->toDateString()}&sampai={$hari->toDateString()}";
+        $masuk = BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Akuntan);
+
+        // Tanpa memilih lembar opsional, bukunya sama seperti sebelumnya.
+        $polos = BacaBukuUang($masuk->get($dasar.'&lembar[]=Kategori')->assertOk()->streamedContent())['Lembar'];
+        expect(array_column($polos, 'Nama'))->not->toContain('Laba rugi')->not->toContain('Stok')->not->toContain('Hutang & piutang');
+
+        $buku = BacaBukuUang($masuk->get($dasar.'&lembar[]=HutangPiutang&lembar[]=LabaRugi')->assertOk()->streamedContent())['Lembar'];
+        $nama = array_column($buku, 'Nama');
+        expect($nama)->toContain('Hutang & piutang')->toContain('Laba rugi')->toContain('Stok');
+
+        $perNama = array_column($buku, 'Sel', 'Nama');
+        $laba = $perNama['Laba rugi'];
+        // Label "Laba kotor" dan "Laba bersih" ada dua kali (kop ringkasan dan tabel): ambil yang di tabel, paling bawah.
+        $terakhir = function (string $label) use ($laba): ?array {
+            $hasil = null;
+
+            foreach (array_keys($laba) as $ref) {
+                if (preg_match('/^A\d+$/', $ref) === 1 && trim((string) $laba[$ref]['T']) === $label) {
+                    $hasil = $laba['B'.substr($ref, 1)] ?? null;
+                }
+            }
+
+            return $hasil;
+        };
+        $pendapatan = SelPadaBaris($laba, 'Total pendapatan', 'B');
+        $hpp = SelPadaBaris($laba, 'Total HPP', 'B');
+        $kotor = $terakhir('Laba kotor');
+        $bersih = $terakhir('Laba bersih');
+        $kotorKop = SelPadaBaris($laba, 'Laba kotor', 'B');
+        expect($kotorKop['F'])->toMatch('/^B\d+$/')->and($kotorKop['V'])->toBe($kotor['V']);
+
+        expect($pendapatan['F'])->toStartWith('SUM(B')
+            ->and($hpp['F'])->toStartWith('SUM(B')
+            ->and($kotor['F'])->toMatch('/^B\d+-B\d+$/')
+            ->and($bersih['F'])->toMatch('/^B\d+-B\d+$/')
+            ->and(Uang::Dari((string) $pendapatan['V'])->Kurangi(Uang::Dari((string) $hpp['V']))->KeString())->toBe(Uang::Dari((string) $kotor['V'])->KeString())
+            ->and($pendapatan['V'])->not->toBe('0.00');
+
+        // Stok: ada baris Jumlah berumus dan nilainya sama dengan nilai persediaan di kop.
+        $stok = $perNama['Stok'];
+        $nilai = SelPadaBaris($stok, 'Nilai persediaan', 'B');
+        expect($nilai)->not->toBeNull()
+            ->and(array_filter($stok, fn (array $sel): bool => str_starts_with((string) $sel['F'], 'SUM(C')))->not->toBeEmpty();
+
+        // Hutang & piutang: tiga baris tanpa rumus.
+        expect(SelPadaBaris($perNama['Hutang & piutang'], 'Hutang ke pemasok yang belum dibayar', 'B')['V'])->toBe('0.00');
     });
 
     it('penggolong: jenis sumber ke bahasa pemilik, akun beban gaji dan operasional, pajak, dan akun di luar usaha', function (): void {

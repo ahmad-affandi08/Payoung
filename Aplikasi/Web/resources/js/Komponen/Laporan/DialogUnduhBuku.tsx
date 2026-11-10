@@ -8,9 +8,19 @@ import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { Label } from '@/Komponen/Ui/label';
 import { cn } from '@/Komponen/Ui/utils';
 
-export type KodeLembar = 'Ringkasan' | 'Kategori' | 'PerPeriode' | 'PerOutlet' | 'Transaksi';
+export type KodeLembar =
+    'Ringkasan' | 'Kategori' | 'PerPeriode' | 'PerOutlet' | 'Transaksi' | 'HutangPiutang' | 'LabaRugi' | 'Stok';
 
-type OpsiLembar = { kode: KodeLembar; judul: string; keterangan: string; terkunci?: boolean };
+type OpsiLembar = {
+    kode: KodeLembar;
+    judul: string;
+    keterangan: string;
+    terkunci?: boolean;
+    /** Tidak tercentang bawaan, karena bahannya dari luar uang masuk dan keluar (HPP dan persediaan). */
+    bukanBawaan?: boolean;
+    /** Ikut tercentang dan terkunci selama lembar ini dipilih. */
+    ikutDari?: KodeLembar;
+};
 
 const KunciSimpan = 'Laporan.PemasukanPengeluaran.Lembar';
 const MaksHariHarian = 62;
@@ -50,12 +60,31 @@ export function BuatDaftarLembar(hariRentang: number, tawarkanPerOutlet: boolean
             judul: 'Daftar transaksi per hari dan kategori',
             keterangan: 'Dasar semua rumus, jadi setiap angka bisa dilacak',
         },
+        {
+            kode: 'HutangPiutang',
+            judul: 'Hutang dan piutang',
+            keterangan: 'Hutang ke pemasok dan piutang pelanggan pada akhir periode',
+        },
+        {
+            kode: 'LabaRugi',
+            judul: 'Laba rugi',
+            keterangan: 'Pendapatan dikurangi HPP dan beban. Memakai HPP, jadi lembar Stok ikut disertakan.',
+            bukanBawaan: true,
+        },
+        {
+            kode: 'Stok',
+            judul: 'Nilai stok',
+            keterangan: 'Nilai persediaan pada akhir periode',
+            bukanBawaan: true,
+            ikutDari: 'LabaRugi',
+        },
     ];
 }
 
-/** Pilihan terakhir pengguna di peramban ini, atau semua lembar bila belum pernah memilih. */
+/** Pilihan terakhir pengguna di peramban ini, atau semua lembar kecuali yang bukan bawaan bila belum pernah memilih. */
 function BacaPilihan(daftar: OpsiLembar[]): KodeLembar[] {
     const semua = daftar.map((o) => o.kode);
+    const bawaan = daftar.filter((o) => o.bukanBawaan !== true).map((o) => o.kode);
 
     try {
         const mentah = window.localStorage.getItem(KunciSimpan);
@@ -71,7 +100,7 @@ function BacaPilihan(daftar: OpsiLembar[]): KodeLembar[] {
         // Penyimpanan peramban bisa tidak tersedia (mode privat): pakai bawaan.
     }
 
-    return semua;
+    return bawaan;
 }
 
 function SimpanPilihan(pilihan: KodeLembar[]): void {
@@ -133,9 +162,14 @@ export default function DialogUnduhBuku({
     const Alihkan = (kode: KodeLembar) =>
         AturPilihan((lama) => (lama.includes(kode) ? lama.filter((k) => k !== kode) : [...lama, kode]));
 
+    /** Tercentang karena terkunci, dipilih, atau ikut lembar lain yang dipilih (Stok ikut Laba rugi). */
+    const Tercentang = (o: OpsiLembar): boolean =>
+        o.terkunci === true || pilihan.includes(o.kode) || (o.ikutDari !== undefined && pilihan.includes(o.ikutDari));
+
     const Unduh = () => {
-        const dipakai = daftar.map((o) => o.kode).filter((kode) => kode === 'Ringkasan' || pilihan.includes(kode));
-        SimpanPilihan(dipakai);
+        const dipakai = daftar.filter(Tercentang).map((o) => o.kode);
+        // Yang disimpan hanya pilihan sendiri: lembar yang cuma ikut (Stok) tidak ikut diingat.
+        SimpanPilihan(daftar.filter((o) => o.terkunci === true || pilihan.includes(o.kode)).map((o) => o.kode));
         router.get(BuatAlamatBuku(alamat, saring, dipakai));
         saatTutup();
     };
@@ -158,8 +192,10 @@ export default function DialogUnduhBuku({
                         >
                             <Checkbox
                                 id={`${id}-${String(indeks)}`}
-                                checked={o.terkunci === true || pilihan.includes(o.kode)}
-                                disabled={o.terkunci === true}
+                                checked={Tercentang(o)}
+                                disabled={
+                                    o.terkunci === true || (o.ikutDari !== undefined && pilihan.includes(o.ikutDari))
+                                }
                                 onCheckedChange={() => Alihkan(o.kode)}
                                 className="mt-1 border-garis-input"
                             />

@@ -42,8 +42,20 @@ final class PenyusunBukuPemasukanPengeluaran
 
     public const KODE_TRANSAKSI = 'Transaksi';
 
+    public const KODE_HUTANG_PIUTANG = 'HutangPiutang';
+
+    public const KODE_LABA_RUGI = 'LabaRugi';
+
+    public const KODE_STOK = 'Stok';
+
     /** Semua kode lembar yang boleh dipilih. */
-    public const KODE_LEMBAR = [self::KODE_RINGKASAN, self::KODE_KATEGORI, self::KODE_PER_PERIODE, self::KODE_PER_OUTLET, self::KODE_TRANSAKSI];
+    public const KODE_LEMBAR = [
+        self::KODE_RINGKASAN, self::KODE_KATEGORI, self::KODE_PER_PERIODE, self::KODE_PER_OUTLET, self::KODE_TRANSAKSI,
+        self::KODE_HUTANG_PIUTANG, self::KODE_LABA_RUGI, self::KODE_STOK,
+    ];
+
+    /** Lembar yang bahannya dari luar laporan uang kas, jadi tidak tercentang bawaan: Laba rugi memakai HPP. */
+    public const KODE_TIDAK_BAWAAN = [self::KODE_LABA_RUGI, self::KODE_STOK];
 
     private const NAMA_RINGKASAN = 'Ringkasan';
 
@@ -54,6 +66,10 @@ final class PenyusunBukuPemasukanPengeluaran
     private const NAMA_OUTLET = 'Per outlet';
 
     private const NAMA_TRANSAKSI = 'Transaksi';
+
+    private const NAMA_LABA_RUGI = 'Laba rugi';
+
+    private const NAMA_STOK = 'Stok';
 
     /** Rentang (hari) paling panjang yang rincian periodenya per hari, selebihnya per bulan. */
     private const MAKS_HARI_HARIAN = 62;
@@ -85,11 +101,28 @@ final class PenyusunBukuPemasukanPengeluaran
     public function __construct(private readonly PembuatDefinisiLaporan $pembuat) {}
 
     /**
+     * Memilih Laba rugi otomatis menyertakan Stok: laba kotor bergantung pada HPP, jadi pemilik perlu melihat nilai
+     * persediaan di sebelahnya. Hanya kode yang dikenal yang dipertahankan.
+     *
+     * @param  list<string>  $dipilih
+     * @return list<string>
+     */
+    public static function NormalkanPilihan(array $dipilih): array
+    {
+        if (in_array(self::KODE_LABA_RUGI, $dipilih, true)) {
+            $dipilih[] = self::KODE_STOK;
+        }
+
+        return array_values(array_intersect(self::KODE_LEMBAR, $dipilih));
+    }
+
+    /**
      * @param  array<int, string>  $namaOutlet  nama outlet menurut id
      * @param  list<string>  $dipilih  kode lembar yang dipilih pengguna, lihat `KODE_LEMBAR`
+     * @param  array{LabaRugi?: array<string, mixed>, Stok?: array<string, mixed>}  $tambahan  bahan lembar opsional dari domain lain
      * @return list<LembarBuku>
      */
-    public function Susun(int $idTenant, HitunganUangKas $h, array $namaOutlet, array $dipilih, string $cakupan): array
+    public function Susun(int $idTenant, HitunganUangKas $h, array $namaOutlet, array $dipilih, string $cakupan, array $tambahan = []): array
     {
         $this->idTenant = $idTenant;
         $this->cakupan = $cakupan;
@@ -124,6 +157,18 @@ final class PenyusunBukuPemasukanPengeluaran
         }
 
         $lembar[] = new LembarBuku($this->LembarTransaksi($rincian, $berumus), self::NAMA_TRANSAKSI, ! $ada(self::KODE_TRANSAKSI));
+
+        if ($ada(self::KODE_HUTANG_PIUTANG)) {
+            $lembar[] = new LembarBuku($this->LembarHutangPiutang($h), PenulisXlsxLaporan::AmankanNamaSheet('Hutang & piutang'));
+        }
+
+        if ($ada(self::KODE_LABA_RUGI) && isset($tambahan['LabaRugi'])) {
+            $lembar[] = new LembarBuku($this->LembarLabaRugi($tambahan['LabaRugi']), self::NAMA_LABA_RUGI);
+        }
+
+        if ($ada(self::KODE_STOK) && isset($tambahan['Stok'])) {
+            $lembar[] = new LembarBuku($this->LembarStok($tambahan['Stok'], $sampai), self::NAMA_STOK);
+        }
 
         return $lembar;
     }
@@ -576,13 +621,139 @@ final class PenyusunBukuPemasukanPengeluaran
         ], static fn (): array => $isi, $berumus);
     }
 
-    // ------------------------------------------------------------------------------------------------ bantuan
+    // ------------------------------------------------------------------------------------------------ lembar opsional
+
+    /** Hutang pemasok, piutang pelanggan, dan dana menunggu cair pada akhir periode (angka dari laporan, tanpa rumus). */
+    private function LembarHutangPiutang(HitunganUangKas $h): DefinisiLaporan
+    {
+        $hutang = Uang::Dari($h->catatan['Hutang'] ?? '0.00');
+        $piutang = Uang::Dari($h->catatan['Piutang'] ?? '0.00');
+        $menunggu = Uang::Dari($h->catatan['MenungguCair'] ?? '0.00');
+        $isi = [
+            ['Hutang ke pemasok yang belum dibayar', $hutang->KeString()],
+            ['Piutang dari pelanggan yang belum dibayar', $piutang->KeString()],
+            ['Dana non-tunai yang belum cair dari platform', $menunggu->KeString()],
+        ];
+
+        return $this->Definisi('Hutang & piutang', [
+            new ItemRingkasan('Posisi per tanggal', self::Tgl(CarbonImmutable::parse($h->saring->sampai)), JenisKolom::Teks),
+        ], [
+            new KolomLaporan('Keterangan', JenisKolom::Teks, 48),
+            new KolomLaporan('Jumlah', JenisKolom::Uang, 24),
+        ], static fn (): array => $isi, false, 'Saldo akun hutang, piutang, dan dana menunggu cair pada akhir periode');
+    }
 
     /**
-     * @param  list<ItemRingkasan>  $ringkasan
-     * @param  list<KolomLaporan>  $kolom
-     * @param  callable(): iterable<list<string|int|RumusExcel|null>>  $baris
+     * Laba rugi akuntansi (pendapatan − HPP − beban) untuk periode dan pembandingnya. Subtotal dan laba berumus atas
+     * baris akunnya. Sengaja terpisah dari angka uang masuk dan keluar: ini basis akrual dan memakai HPP.
+     *
+     * @param  array<string, mixed>  $laba  hasil `LabaRugi::Ambil`
      */
+    private function LembarLabaRugi(array $laba): DefinisiLaporan
+    {
+        /** @var list<array{Jenis: string, Kelompok: string, Label: string, Nilai: string|null, NilaiSebelumnya: string|null, Kode?: string|null}> $barisLaba */
+        $barisLaba = $laba['Baris'];
+        $pertama = PenulisXlsxLaporan::HitungBarisDataPertama(3, self::JUMLAH_SARINGAN, 2);
+        /** @var array<string, int> $subtotal baris Subtotal per kelompok */
+        $subtotal = [];
+        /** @var array<string, array{0: int, 1: int}> $rentangAkun baris akun pertama dan terakhir per kelompok */
+        $rentangAkun = [];
+
+        foreach ($barisLaba as $i => $b) {
+            $er = $pertama + $i;
+
+            if ($b['Jenis'] === 'Akun') {
+                $rentangAkun[$b['Kelompok']] = [$rentangAkun[$b['Kelompok']][0] ?? $er, $er];
+            } elseif ($b['Jenis'] === 'Subtotal') {
+                $subtotal[$b['Kelompok']] = $er;
+            }
+        }
+
+        /** @var array<string, array{Nilai: string, NilaiSebelumnya: string}> $ringkasanLaba */
+        $ringkasanLaba = $laba['Ringkasan'];
+        $isi = [];
+
+        foreach ($barisLaba as $i => $b) {
+            $er = $pertama + $i;
+            $nilai = $b['Nilai'];
+            $lalu = $b['NilaiSebelumnya'];
+            $label = $b['Jenis'] === 'Akun' && ($b['Kode'] ?? null) !== null ? $b['Kode'].' '.$b['Label'] : $b['Label'];
+
+            if ($b['Jenis'] === 'Kepala' || $nilai === null || $lalu === null) {
+                $isi[] = [$label, null, null];
+
+                continue;
+            }
+
+            $isi[] = match ($b['Jenis']) {
+                'Subtotal' => isset($rentangAkun[$b['Kelompok']])
+                    ? [$label, new RumusExcel(sprintf('SUM(B%d:B%d)', ...$rentangAkun[$b['Kelompok']]), $nilai), new RumusExcel(sprintf('SUM(C%d:C%d)', ...$rentangAkun[$b['Kelompok']]), $lalu)]
+                    : [$label, $nilai, $lalu],
+                'Laba' => $this->BarisLaba($b['Kelompok'], $label, $subtotal, $nilai, $lalu),
+                default => [$label, $nilai, $lalu],
+            };
+        }
+
+        $barisBersih = $pertama + count($barisLaba) - 1;
+
+        return $this->Definisi('Laba rugi', [
+            new ItemRingkasan('Laba kotor', isset($subtotal['Hpp']) ? new RumusExcel('B'.($subtotal['Hpp'] + 1), $ringkasanLaba['LabaKotor']['Nilai']) : $ringkasanLaba['LabaKotor']['Nilai'], JenisKolom::Uang),
+            new ItemRingkasan('Laba bersih', isset($subtotal['Beban']) ? new RumusExcel('B'.$barisBersih, $ringkasanLaba['LabaBersih']['Nilai']) : $ringkasanLaba['LabaBersih']['Nilai'], JenisKolom::Uang),
+        ], [
+            new KolomLaporan('Akun', JenisKolom::Teks, 44),
+            new KolomLaporan('Periode ini', JenisKolom::Uang, 22),
+            new KolomLaporan('Periode sebelumnya', JenisKolom::Uang, 24),
+        ], static fn (): array => $isi, false, 'Pendapatan dikurangi HPP dan beban (akuntansi, bukan uang masuk dan keluar)');
+    }
+
+    /**
+     * Laba kotor = subtotal Pendapatan − subtotal HPP. Laba bersih = laba kotor − subtotal Beban. Rumus hanya dipakai
+     * bila baris yang dirujuk memang ada.
+     *
+     * @param  array<string, int>  $subtotal
+     * @return list<string|RumusExcel>
+     */
+    private function BarisLaba(string $kelompok, string $label, array $subtotal, string $nilai, string $lalu): array
+    {
+        if ($kelompok === 'LabaKotor' && isset($subtotal['Pendapatan'], $subtotal['Hpp'])) {
+            return [$label, new RumusExcel(sprintf('B%d-B%d', $subtotal['Pendapatan'], $subtotal['Hpp']), $nilai), new RumusExcel(sprintf('C%d-C%d', $subtotal['Pendapatan'], $subtotal['Hpp']), $lalu)];
+        }
+
+        if ($kelompok === 'LabaBersih' && isset($subtotal['Hpp'], $subtotal['Beban'])) {
+            // Baris Laba kotor ditulis tepat setelah subtotal HPP.
+            $kotor = $subtotal['Hpp'] + 1;
+
+            return [$label, new RumusExcel(sprintf('B%d-B%d', $kotor, $subtotal['Beban']), $nilai), new RumusExcel(sprintf('C%d-C%d', $kotor, $subtotal['Beban']), $lalu)];
+        }
+
+        return [$label, $nilai, $lalu];
+    }
+
+    /**
+     * Nilai persediaan per kategori pada akhir periode. Barang titipan tidak ikut karena bukan aset toko.
+     *
+     * @param  array<string, mixed>  $stok  hasil `LaporanStok::NilaiPersediaan`
+     */
+    private function LembarStok(array $stok, CarbonImmutable $sampai): DefinisiLaporan
+    {
+        /** @var list<array{NamaKategori: string, JumlahProduk: int, Nilai: string}> $perKategori */
+        $perKategori = $stok['PerKategori'];
+        /** @var array{Nilai: string, JumlahProduk: int} $total */
+        $total = $stok['Total'];
+        $isi = array_map(static fn (array $k): array => [$k['NamaKategori'], $k['JumlahProduk'], $k['Nilai']], $perKategori);
+
+        return $this->Definisi('Stok', [
+            new ItemRingkasan('Posisi per tanggal', self::Tgl($sampai), JenisKolom::Teks),
+            new ItemRingkasan('Nilai persediaan', $total['Nilai'], JenisKolom::Uang),
+        ], [
+            new KolomLaporan('Kategori', JenisKolom::Teks, 40),
+            new KolomLaporan('Jumlah produk', JenisKolom::Bilangan, 18),
+            new KolomLaporan('Nilai persediaan', JenisKolom::Uang, 24, true),
+        ], static fn (): array => $isi, true, 'Nilai persediaan (HPP rata-rata) pada akhir periode, tanpa barang titipan');
+    }
+
+    // ------------------------------------------------------------------------------------------------ bantuan
+
     /** Tanggal dengan nama hari dan bulan berbahasa Indonesia. */
     private function BahasaIndonesia(CarbonImmutable $t): CarbonImmutable
     {
@@ -596,14 +767,20 @@ final class PenyusunBukuPemasukanPengeluaran
      * @param  list<KolomLaporan>  $kolom
      * @param  callable(): iterable<list<string|int|DateTimeInterface|RumusExcel|null>>  $baris
      */
-    private function Definisi(string $judul, array $ringkasan, array $kolom, callable $baris, bool $jumlahBerumus): DefinisiLaporan
+    private function Definisi(string $judul, array $ringkasan, array $kolom, callable $baris, bool $jumlahBerumus, ?string $dasarHitung = null): DefinisiLaporan
     {
+        $saringan = $this->saringan;
+
+        if ($dasarHitung !== null) {
+            $saringan[2] = ['Dasar hitung', $dasarHitung];
+        }
+
         $dasar = $this->pembuat->Buat(
             idTenant: $this->idTenant,
             judul: 'Pemasukan & Pengeluaran | '.$judul,
             namaBerkas: 'pemasukan-pengeluaran',
             cakupan: $this->cakupan,
-            saringan: $this->saringan,
+            saringan: $saringan,
             ringkasan: $ringkasan,
             kolom: $kolom,
             baris: $baris(...),
