@@ -29,6 +29,9 @@
         { "Kunci": "kanal.toko-online", "Nama": "Toko online", "Modul": "Kanal" },
         { "Kunci": "integrasi.whatsapp", "Nama": "Pesan WhatsApp", "Modul": "Integrasi" },
         { "Kunci": "laporan.insight", "Nama": "Forecast & insight", "Modul": "Laporan" },
-        { "Kunci": "invoice.penagihan", "Nama": "Invoice & penagihan", "Modul": "Piutang" }
+        { "Kunci": "invoice.penagihan", "Nama": "Invoice & penagihan", "Modul": "Piutang" },
+        { "Kunci": "reservasi.layanan", "Nama": "Reservasi & booking", "Modul": "Layanan" },
+        { "Kunci": "laundry.tiket", "Nama": "Tiket laundry", "Modul": "Layanan" },
+        { "Kunci": "bengkel.servis", "Nama": "Servis & perintah kerja bengkel", "Modul": "Layanan" }
     ]
 }

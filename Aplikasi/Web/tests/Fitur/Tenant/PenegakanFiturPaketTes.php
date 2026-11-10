@@ -186,3 +186,49 @@ describe('API aplikasi Kasir dan Owner', function (): void {
         $ambil()->assertOk();
     });
 });
+
+describe('D-259 halaman lanjutan dan fitur sektor punya kunci paket', function (): void {
+    it('Starter: nota debit, biaya tambahan, konsinyasi, dan kampanye pesan hanya bisa dilihat, membuatnya ditolak. Pro boleh', function (): void {
+        $t = TenantPaketUji('STARTER', 'Toko Kelontong Sragen');
+        $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+
+        $masuk()->get('/kelola/pembelian/nota-debit')->assertOk();
+        foreach (['/kelola/pembelian/nota-debit', '/kelola/pembelian/biaya-tambahan', '/kelola/pembelian/konsinyasi', '/kelola/pelanggan/kampanye'] as $alamat) {
+            $masuk()->post($alamat, [])->assertSessionHasErrors('Umum');
+        }
+        // Halaman rekonsiliasi tidak ditolak paket (tenant uji tanpa akun kas, jadi 404 dan bukan pengalihan ke beranda).
+        expect($masuk()->get('/kelola/akuntansi/rekonsiliasi')->status())->not->toBe(302);
+        $masuk()->get('/kelola/akuntansi/giro')->assertOk();
+
+        $pro = TenantPaketUji('PRO', 'Toko Bangunan Wonogiri');
+        BantuanOrganisasi::Masuk($this, $pro['Pemilik'], $pro['Tenant']->Id)->post('/kelola/pembelian/nota-debit', [])->assertSessionDoesntHaveErrors('Umum');
+    });
+
+    it('Gratis: reservasi, laundry, dan perintah kerja bengkel bisa dilihat tetapi tidak dibuat. Starter ke atas boleh', function (): void {
+        $t = TenantPaketUji('GRATIS', 'Salon Mawar Klaten');
+        $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+
+        $masuk()->post('/kelola/reservasi', [])->assertSessionHasErrors('Umum');
+        $masuk()->put('/kelola/laundry/pengaturan', [])->assertSessionHasErrors('Umum');
+        $masuk()->get('/kelola/bengkel/perintah-kerja/buat')->assertRedirect('/kelola')->assertSessionHasErrors('Umum');
+
+        $starter = TenantPaketUji('STARTER', 'Bengkel Maju Jaya Solo');
+        $masuk2 = fn () => BantuanOrganisasi::Masuk($this, $starter['Pemilik'], $starter['Tenant']->Id);
+        $masuk2()->post('/kelola/reservasi', [])->assertSessionDoesntHaveErrors('Umum');
+        $masuk2()->put('/kelola/laundry/pengaturan', [])->assertSessionDoesntHaveErrors('Umum');
+    });
+
+    it('katalog: kunci fitur sektor ada di katalog fitur, ada di Starter sampai Enterprise, dan tidak ada di Gratis', function (): void {
+        $paket = collect(json_decode((string) file_get_contents(database_path('Data/KatalogPaket.json')), true, flags: JSON_THROW_ON_ERROR)['Paket'])->keyBy('Kode');
+        $katalog = array_column(json_decode((string) file_get_contents(database_path('Data/KatalogFitur.json')), true, flags: JSON_THROW_ON_ERROR)['Fitur'], 'Kunci');
+
+        foreach (['reservasi.layanan', 'laundry.tiket', 'bengkel.servis'] as $kunci) {
+            expect($katalog)->toContain($kunci)
+                ->and($paket['GRATIS']['Fitur'])->not->toContain($kunci);
+
+            foreach (['STARTER', 'PRO', 'BISNIS', 'ENTERPRISE'] as $kode) {
+                expect($paket[$kode]['Fitur'])->toContain($kunci);
+            }
+        }
+    });
+});

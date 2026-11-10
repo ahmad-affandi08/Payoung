@@ -52,7 +52,10 @@
                 "stok.dasar",
                 "pelanggan.dasar",
                 "laporan.dasar",
-                "laporan.lengkap"
+                "laporan.lengkap",
+                "reservasi.layanan",
+                "laundry.tiket",
+                "bengkel.servis"
             ],
             "Promo": {
                 "Nama": "Diskon Peluncuran",
@@ -101,7 +104,10 @@
                 "promo.mesin",
                 "stok.dasar",
                 "stok.opname",
-                "struk.tanpa-watermark"
+                "struk.tanpa-watermark",
+                "reservasi.layanan",
+                "laundry.tiket",
+                "bengkel.servis"
             ],
             "Promo": {
                 "Nama": "Diskon Peluncuran",
@@ -158,7 +164,10 @@
                 "stok.multi-gudang",
                 "stok.opname",
                 "stok.transfer",
-                "struk.tanpa-watermark"
+                "struk.tanpa-watermark",
+                "reservasi.layanan",
+                "laundry.tiket",
+                "bengkel.servis"
             ],
             "Promo": {
                 "Nama": "Diskon Peluncuran",
@@ -212,7 +221,10 @@
                 "stok.multi-gudang",
                 "stok.opname",
                 "stok.transfer",
-                "struk.tanpa-watermark"
+                "struk.tanpa-watermark",
+                "reservasi.layanan",
+                "laundry.tiket",
+                "bengkel.servis"
             ]
         }
     ]

@@ -310,6 +310,7 @@ const menuPembelian: ItemMenu[] = [
         label: 'Nota debit',
         href: '/kelola/pembelian/nota-debit',
         izin: IzinTenant.PembelianKelola,
+        fitur: 'pembelian.po',
         lanjutan: true,
         kelompok: 'Hutang & retur',
     },
@@ -317,11 +318,18 @@ const menuPembelian: ItemMenu[] = [
         label: 'Biaya tambahan',
         href: '/kelola/pembelian/biaya-tambahan',
         izin: IzinTenant.PembelianKelola,
+        fitur: 'pembelian.po',
         lanjutan: true,
         kelompok: 'Hutang & retur',
     },
     { label: 'Pemasok', href: '/kelola/pembelian/pemasok', izin: IzinTenant.PembelianKelola },
-    { label: 'Konsinyasi', href: '/kelola/pembelian/konsinyasi', izin: IzinTenant.PembelianKelola, lanjutan: true },
+    {
+        label: 'Konsinyasi',
+        href: '/kelola/pembelian/konsinyasi',
+        izin: IzinTenant.PembelianKelola,
+        fitur: 'pembelian.po',
+        lanjutan: true,
+    },
     // D-253: persetujuan PO, toleransi penerimaan, dan draf PO otomatis, dulu di Pengaturan.
     { label: 'Pengaturan pembelian', href: '/kelola/pembelian/pengaturan', izin: IzinTenant.PembelianPoSetujui },
 ];
@@ -415,6 +423,7 @@ const menuPelanggan: ItemMenu[] = [
         label: 'Kampanye pesan',
         href: '/kelola/pelanggan/kampanye',
         izin: IzinTenant.PelangganKelola,
+        fitur: 'integrasi.whatsapp',
         kecualiSektor: ['BIZ'],
         kelompok: 'Promo & loyalti',
     },
@@ -575,11 +584,18 @@ const menuPenjualan: ItemMenu[] = [
         label: 'Reservasi',
         href: '/kelola/reservasi',
         izin: IzinTenant.ReservasiKelola,
+        fitur: 'reservasi.layanan',
         // Pet shop: janji grooming/penitipan hewan.
         sektor: ['SVC', 'FNB', 'RTL-PET'],
         gantiBilaSektor: { sektor: ['FNB'], kecuali: ['SVC'], label: 'Reservasi meja', href: '/kelola/reservasi-meja' },
     },
-    { label: 'Laundry', href: '/kelola/laundry', izin: IzinTenant.LaundryKelola, sektor: ['SVC-LDR'] },
+    {
+        label: 'Laundry',
+        href: '/kelola/laundry',
+        izin: IzinTenant.LaundryKelola,
+        fitur: 'laundry.tiket',
+        sektor: ['SVC-LDR'],
+    },
     {
         label: 'Shift kasir',
         href: '/kelola/kasir/shift',
@@ -684,6 +700,7 @@ const menuAkuntansi: ItemMenu[] = [
         label: 'Rekonsiliasi bank',
         href: '/kelola/akuntansi/rekonsiliasi',
         izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
         kelompok: 'Kas, bank & giro',
     },
     // F-12: giro/cek mundur dari pelanggan dan ke pemasok sampai cair atau ditolak.
@@ -691,6 +708,7 @@ const menuAkuntansi: ItemMenu[] = [
         label: 'Giro & cek mundur',
         href: '/kelola/akuntansi/giro',
         izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'akuntansi.penuh',
         kelompok: 'Kas, bank & giro',
     },
     // E8: uang QRIS yang masuk tanpa penjualan, diputuskan dikembalikan atau diakui sebagai pendapatan lain.

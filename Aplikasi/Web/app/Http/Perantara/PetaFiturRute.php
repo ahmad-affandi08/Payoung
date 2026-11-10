@@ -62,6 +62,19 @@ final class PetaFiturRute
         ['Pola' => 'kelola.pelanggan.gift-card.*', 'Fitur' => 'pelanggan.deposit', 'Mode' => 'tulis', 'Nama' => 'Deposit & gift card'],
         ['Pola' => 'kelola.pelanggan.impor.*', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
 
+        // D-259: halaman lanjutan yang dulu terbuka untuk semua paket. Rekonsiliasi bank dan giro sekelas jurnal & aset tetap
+        // (akuntansi penuh). Nota debit, biaya tambahan, dan konsinyasi sekelas PO. Kampanye pesan lewat WhatsApp.
+        ['Pola' => 'kelola.akuntansi.rekonsiliasi*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'tulis', 'Nama' => 'Akuntansi penuh'],
+        ['Pola' => 'kelola.akuntansi.giro*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'tulis', 'Nama' => 'Akuntansi penuh'],
+        ['Pola' => 'kelola.pembelian.nota-debit*', 'Fitur' => 'pembelian.po', 'Mode' => 'tulis', 'Nama' => 'Pesanan pembelian & pemasok'],
+        ['Pola' => 'kelola.pembelian.biaya-tambahan*', 'Fitur' => 'pembelian.po', 'Mode' => 'tulis', 'Nama' => 'Pesanan pembelian & pemasok'],
+        ['Pola' => 'kelola.pembelian.konsinyasi*', 'Fitur' => 'pembelian.po', 'Mode' => 'tulis', 'Nama' => 'Pesanan pembelian & pemasok'],
+        ['Pola' => 'kelola.pelanggan.kampanye*', 'Fitur' => 'integrasi.whatsapp', 'Mode' => 'tulis', 'Nama' => 'Pesan WhatsApp'],
+        // D-259: fitur sektor punya kunci paket sendiri supaya bisa diatur dari konsol.
+        ['Pola' => 'kelola.reservasi.*', 'Fitur' => 'reservasi.layanan', 'Mode' => 'tulis', 'Nama' => 'Reservasi & booking'],
+        ['Pola' => 'kelola.reservasi-meja.*', 'Fitur' => 'reservasi.layanan', 'Mode' => 'tulis', 'Nama' => 'Reservasi & booking'],
+        ['Pola' => 'kelola.laundry.*', 'Fitur' => 'laundry.tiket', 'Mode' => 'tulis', 'Nama' => 'Tiket laundry'],
+        ['Pola' => 'kelola.bengkel.*', 'Fitur' => 'bengkel.servis', 'Mode' => 'tulis', 'Nama' => 'Servis & perintah kerja bengkel'],
         // Akuntansi penuh (laba rugi masuk laporan lengkap, bukan akuntansi penuh)
         ['Pola' => 'kelola.akuntansi.laporan.laba-rugi*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.akuntansi.laporan.*', 'Fitur' => 'akuntansi.penuh', 'Mode' => 'semua', 'Nama' => 'Akuntansi penuh'],
@@ -85,6 +98,9 @@ final class PetaFiturRute
         ['Pola' => 'kelola.laporan.apotek*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
 
         // API POS (aplikasi Kasir) dan API Owner
+        ['Pola' => 'pos.reservasi*', 'Fitur' => 'reservasi.layanan', 'Mode' => 'tulis', 'Nama' => 'Reservasi & booking'],
+        ['Pola' => 'pos.laundry*', 'Fitur' => 'laundry.tiket', 'Mode' => 'tulis', 'Nama' => 'Tiket laundry'],
+        ['Pola' => 'pos.perintah-kerja*', 'Fitur' => 'bengkel.servis', 'Mode' => 'tulis', 'Nama' => 'Servis & perintah kerja bengkel'],
         ['Pola' => 'pos.dapur.*', 'Fitur' => 'pos.kds', 'Mode' => 'semua', 'Nama' => 'Kitchen display (KDS)'],
         ['Pola' => 'pos.gudang.opname*', 'Fitur' => 'stok.opname', 'Mode' => 'semua', 'Nama' => 'Stok opname'],
         ['Pola' => 'pos.gudang.transfer*', 'Fitur' => 'stok.transfer', 'Mode' => 'semua', 'Nama' => 'Transfer stok'],
