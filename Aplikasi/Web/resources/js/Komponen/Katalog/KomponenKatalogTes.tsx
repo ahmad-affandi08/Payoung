@@ -66,6 +66,32 @@ describe('BidangJumlah (kuantitas string, maks 4 desimal)', () => {
         expect(input.value).toBe('0,25');
     });
 
+    it('angka bukan jumlah (tahun) tampil polos tanpa titik ribuan', () => {
+        const SaatBerubah = vi.fn();
+        render(
+            <BidangJumlah
+                label="Tahun"
+                nilai="2004"
+                desimal={0}
+                digitBulat={4}
+                tanpaPemisah
+                saatBerubah={SaatBerubah}
+            />,
+        );
+        const input = screen.getByLabelText<HTMLInputElement>('Tahun');
+
+        expect(input.value).toBe('2004');
+
+        fireEvent.change(input, { target: { value: '2019' } });
+        expect(SaatBerubah).toHaveBeenLastCalledWith('2019');
+    });
+
+    it('jumlah biasa tetap memakai titik ribuan', () => {
+        render(<BidangJumlah label="KM" nilai="121000" desimal={0} digitBulat={7} saatBerubah={vi.fn()} />);
+
+        expect(screen.getByLabelText<HTMLInputElement>('KM').value).toBe('121.000');
+    });
+
     it('satuan tanpa desimal menolak koma', () => {
         const SaatBerubah = vi.fn();
         render(<JumlahUji desimal={0} saatBerubah={SaatBerubah} />);

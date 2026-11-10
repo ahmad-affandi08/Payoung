@@ -185,6 +185,7 @@ export default function DialogKendaraan({
                     galat={galat.Tahun}
                     desimal={0}
                     digitBulat={4}
+                    tanpaPemisah
                 />
                 <BidangTeks
                     label="Warna"

@@ -20,6 +20,8 @@ type PropsBidangJumlah = {
     digitBulat?: number;
     /** Akhiran tampilan, misal "kg" atau "%". */
     akhiran?: string;
+    /** Angka yang bukan jumlah (tahun, nomor): tampil polos tanpa titik ribuan ("2004", bukan "2.004"). */
+    tanpaPemisah?: boolean;
     galat?: string | undefined;
     keterangan?: string | undefined;
     disabled?: boolean;
@@ -45,6 +47,7 @@ export default function BidangJumlah({
     desimal = SkalaKuantitas,
     digitBulat = 14,
     akhiran,
+    tanpaPemisah = false,
     galat,
     keterangan,
     disabled,
@@ -56,7 +59,7 @@ export default function BidangJumlah({
     const idOtomatis = useId();
     const id = idKustom ?? idOtomatis;
     const [teksKetik, AturTeksKetik] = useState<string | null>(null);
-    const tampil = teksKetik ?? FormatMasukanJumlah(nilai).replace('−', '-');
+    const tampil = teksKetik ?? (tanpaPemisah ? nilai : FormatMasukanJumlah(nilai).replace('−', '-'));
     const opsi = { desimal, digitBulat };
     const dijelaskanOleh = [keterangan ? `${id}-keterangan` : null, galat ? `${id}-galat` : null]
         .filter(Boolean)
