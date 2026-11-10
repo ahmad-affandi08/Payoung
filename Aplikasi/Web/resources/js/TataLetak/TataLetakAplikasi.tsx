@@ -783,6 +783,14 @@ const menuLaporan: ItemMenu[] = [
         pintasanBeranda: true,
         keterangan: 'Penjualan obat wajib resep, psikotropika & narkotika, dan data pendukung SIPNAP.',
     },
+    // D-255: uang masuk dan keluar kas & bank per periode, bahasa pemilik tanpa HPP.
+    {
+        label: 'Pemasukan & Pengeluaran',
+        href: '/kelola/laporan/pemasukan-pengeluaran',
+        izin: IzinTenant.LaporanKeuanganLihat,
+        fitur: 'laporan.lengkap',
+        kelompok: 'Laporan keuangan',
+    },
     {
         label: 'Laba rugi',
         href: '/kelola/akuntansi/laporan/laba-rugi',

@@ -7,6 +7,7 @@ use App\Http\Kontroler\Kelola\Laporan\LaporanApotekKontroler;
 use App\Http\Kontroler\Kelola\Laporan\LaporanKontroler;
 use App\Http\Kontroler\Kelola\Laporan\LaporanPembelianKontroler;
 use App\Http\Kontroler\Kelola\Laporan\LaporanPphDipotongKontroler;
+use App\Http\Kontroler\Kelola\Laporan\PemasukanPengeluaranKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
@@ -31,6 +32,9 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): voi
         Route::get('/laporan/apotek/sipnap/ekspor', [LaporanApotekKontroler::class, 'EksporSipnap'])->name('kelola.laporan.apotek.sipnap.ekspor');
     });
     Route::middleware($izin(IzinTenant::LaporanKeuanganLihat))->group(function (): void {
+        // D-255: uang masuk dan keluar kas & bank per periode (bahasa pemilik, tanpa HPP).
+        Route::get('/laporan/pemasukan-pengeluaran', [PemasukanPengeluaranKontroler::class, 'Halaman'])->name('kelola.laporan.pemasukan-pengeluaran');
+        Route::get('/laporan/pemasukan-pengeluaran/ekspor', [PemasukanPengeluaranKontroler::class, 'Ekspor'])->name('kelola.laporan.pemasukan-pengeluaran.ekspor');
         Route::get('/laporan/pajak', [LaporanKontroler::class, 'Pajak'])->name('kelola.laporan.pajak');
         Route::get('/laporan/pajak/ekspor', [LaporanKontroler::class, 'EksporPajak'])->name('kelola.laporan.pajak.ekspor');
         Route::get('/laporan/pajak/faktur-keluaran', [LaporanKontroler::class, 'RingkasFakturKeluaran'])->name('kelola.laporan.pajak.faktur-keluaran');

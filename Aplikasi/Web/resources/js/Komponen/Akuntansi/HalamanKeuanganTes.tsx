@@ -123,6 +123,8 @@ describe('F-13a menu Akuntansi', () => {
         // Laba rugi, Neraca, dan Arus kas dicari pemilik sebagai laporan, jadi rumahnya di menu Laporan.
         expect(menu.find(({ menu: induk }) => induk.label === 'Laporan')?.sub.map((m) => m.label)).toEqual([
             'Laporan pajak',
+            // D-255: uang masuk dan keluar kas & bank dalam bahasa pemilik, di subgrup Laporan keuangan.
+            'Pemasukan & Pengeluaran',
             'Laba rugi',
             'Neraca',
             'Arus kas',

@@ -78,6 +78,7 @@ final class PetaFiturRute
         ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight', 'Query' => ['tab' => 'prediksi']],
         ['Pola' => 'kelola.laporan.penjualan*', 'Fitur' => 'laporan.insight', 'Mode' => 'semua', 'Nama' => 'Forecast & insight', 'Query' => ['tab' => 'bundling']],
         ['Pola' => 'kelola.laporan.penjualan.insight-whatsapp', 'Fitur' => 'laporan.insight', 'Mode' => 'tulis', 'Nama' => 'Forecast & insight'],
+        ['Pola' => 'kelola.laporan.pemasukan-pengeluaran*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.pajak*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.pembelian*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],
         ['Pola' => 'kelola.laporan.stok*', 'Fitur' => 'laporan.lengkap', 'Mode' => 'semua', 'Nama' => 'Laporan lengkap'],

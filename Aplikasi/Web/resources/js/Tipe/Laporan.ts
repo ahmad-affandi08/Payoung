@@ -759,3 +759,61 @@ export type RingkasanPphDipotong = {
     SudahBukti: { Jumlah: number; Nilai: string };
     BelumBukti: { Jumlah: number; Nilai: string };
 };
+
+/** D-255: laporan Pemasukan & Pengeluaran (uang yang benar-benar masuk dan keluar kas & bank). */
+export type BarisUang = {
+    Label: string;
+    Kelompok: string;
+    Nilai: string;
+    NilaiSebelumnya: string;
+    /** Persen dari total, satu desimal; null bila total nol. */
+    Porsi: string | null;
+};
+
+export type KelompokUang = {
+    Kelompok: string;
+    Nilai: string;
+    NilaiSebelumnya: string;
+    Porsi: string | null;
+};
+
+export type TitikUang = { Kunci: string; Masuk: string; Keluar: string };
+
+export type PropsPemasukanPengeluaran = {
+    Saring: { Dari: string; Sampai: string; Outlet: string };
+    Laporan: {
+        Periode: {
+            Dari: string;
+            Sampai: string;
+            DariSebelumnya: string;
+            SampaiSebelumnya: string;
+            /** `Kemarin`, `MingguLalu`, `BulanLalu`, `TahunLalu`, atau `PeriodeSebelumnya`. */
+            Pembanding: string;
+            Hari: number;
+        };
+        Ringkasan: {
+            Masuk: string;
+            Keluar: string;
+            Selisih: string;
+            MasukSebelumnya: string;
+            KeluarSebelumnya: string;
+            SelisihSebelumnya: string;
+            PerubahanMasuk: string | null;
+            PerubahanKeluar: string | null;
+            PerubahanSelisih: string | null;
+            DiLuarUsaha: string;
+            PerubahanKas: string;
+        };
+        Masuk: BarisUang[];
+        Keluar: BarisUang[];
+        KelompokMasuk: KelompokUang[];
+        KelompokKeluar: KelompokUang[];
+        DiLuarUsahaRincian: { Label: string; Kelompok: string; Nilai: string }[];
+        Grafik: { Satuan: 'Hari' | 'Bulan'; Titik: TitikUang[] };
+        Catatan: { Hutang: string; Piutang: string; MenungguCair: string };
+        BelumDikelompokkan: string;
+        Kecocokan: { Cocok: boolean; Selisih: string };
+        AdaAkunKas: boolean;
+    };
+    OpsiOutlet: { Uuid: string; Nama: string }[];
+};
