@@ -8,7 +8,7 @@ import type { TitikUang } from '@/Tipe/Laporan';
 
 const konfigurasi = {
     Masuk: { label: 'Uang masuk', color: 'var(--color-grafik-1)' },
-    Keluar: { label: 'Uang keluar', color: 'var(--color-aksen)' },
+    Keluar: { label: 'Uang keluar', color: 'var(--color-grafik-2)' },
 } satisfies ChartConfig;
 
 const namaBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -37,7 +37,7 @@ function FormatSumbu(nilai: number): string {
 
 /**
  * Grafik batang uang masuk dan uang keluar per hari (atau per bulan bila rentangnya panjang). Dua seri memakai token
- * `grafik-1` dan `aksen`, tanpa gradien. Nilai juga tersedia sebagai daftar bagi pembaca layar.
+ * `grafik-1` dan `grafik-2`, tanpa gradien. Nilai juga tersedia sebagai daftar bagi pembaca layar.
  */
 export default function GrafikUangHarian({
     titik,

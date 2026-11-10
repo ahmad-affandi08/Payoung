@@ -266,7 +266,7 @@ export default function HalamanPemasukanPengeluaran({ Saring, Laporan, OpsiOutle
                         kosong="Belum ada uang keluar."
                         kelompok={Laporan.KelompokKeluar}
                         rincian={Laporan.Keluar}
-                        kelasBatang="bg-aksen"
+                        kelasBatang="bg-grafik-2"
                     />
                 </div>
             )}
