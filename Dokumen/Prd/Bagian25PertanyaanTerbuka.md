@@ -297,6 +297,7 @@
 | D-261 | Dari pemilik produk, 10/11/2026 (template yang dilewati `template:terapkan`). Draf yang dibuat otomatis oleh perintah rilis saat validasi gagal bukan pekerjaan penyusun, jadi tidak boleh menahan rilis yang sudah diperbaiki. Pembeda: ada tidaknya catatan audit atas draf itu (draf konsol selalu punya). Agen memilih menghapus draf otomatis itu (diaudit) daripada meminta Super Admin menghapusnya manual tiap kali (mandat D-12). |
 | D-262 | Dari pemilik produk, 10/11/2026 (tahun kendaraan tampil "2.004"). Angka yang bukan jumlah (tahun, nomor) tidak boleh diberi pemisah ribuan. Isian jumlah bersama menyediakan `tanpaPemisah` untuk itu. |
 | D-263 | Dari pemilik produk, 10/11/2026 ("kenapa service charge hanya diatur di situ saja", lalu "kerjakan halaman sendiri di Atur kasir"). Pengaturan yang menentukan total transaksi (PBJT, biaya layanan, harga termasuk pajak) wajib punya halaman pengaturan sendiri di menu, tidak boleh hanya hidup di panduan untuk tenant baru. Halaman ditempatkan di subgrup Atur kasir (satu rumah, D-253) per outlet. |
+| D-264 | Dari pemilik produk, 10/11/2026. Angka yang membentuk total baris harus terlihat di baris itu sendiri, tidak boleh baru bisa dijelaskan lewat ringkasan di bagian lain halaman. Halaman pengaturan menautkan ke halaman pengaturan, bukan ke langkah panduan awal. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

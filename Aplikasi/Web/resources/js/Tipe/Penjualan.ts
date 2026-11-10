@@ -90,6 +90,8 @@ export type BarisDetailPenjualan = {
     JumlahDiskon: string;
     JumlahDiskonPesanan: string;
     JumlahPajak: string;
+    /** Bagian biaya layanan yang dibebankan ke baris ini (sudah termasuk di TotalBaris). */
+    BiayaLayanan: string;
     TotalBaris: string;
     /** F-09: jumlah (satuan jual) yang sudah diretur. */
     JumlahDiretur: string;

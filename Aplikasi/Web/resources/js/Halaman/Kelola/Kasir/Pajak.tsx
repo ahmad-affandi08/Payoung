@@ -15,9 +15,9 @@ import { FormatMasukanPersen, NormalisasiMasukanPersen } from '@/Pustaka/Masukan
 import { PakaiSektor } from '@/Pustaka/Sektor';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsPengaturanPajak } from '@/Tipe/Kasir';
-import { AlamatPanduan } from '@/Tipe/PanduanAwal';
 
 const alamat = '/kelola/kasir/pajak';
+const alamatProfilUsaha = '/kelola/pengaturan/profil-usaha';
 
 /**
  * D-263: pajak dan biaya layanan per outlet (PBJT, biaya layanan, harga termasuk pajak). Dulu hanya bisa diubah lewat
@@ -72,7 +72,7 @@ export default function HalamanPengaturanPajak({
                         {Pkp
                             ? 'Usaha Anda PKP, jadi penjualan barang kena pajak dipungut PPN.'
                             : 'Usaha Anda bukan PKP, jadi tidak memungut PPN.'}{' '}
-                        <Link href={AlamatPanduan.ProfilUsaha} className="font-semibold text-brand underline">
+                        <Link href={alamatProfilUsaha} className="font-semibold text-brand underline">
                             Ubah status PKP di Profil usaha
                         </Link>
                         .
@@ -108,7 +108,7 @@ export default function HalamanPengaturanPajak({
                         {Kota === null ? (
                             <Pemberitahuan jenis="peringatan" judul="Kota outlet belum diisi">
                                 Isi kota di{' '}
-                                <Link href={AlamatPanduan.ProfilUsaha} className="font-semibold text-brand underline">
+                                <Link href={alamatProfilUsaha} className="font-semibold text-brand underline">
                                     Profil usaha
                                 </Link>
                                 . Tarif PBJT mengikuti kota.

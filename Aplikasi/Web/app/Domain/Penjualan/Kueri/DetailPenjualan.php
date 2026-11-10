@@ -135,6 +135,7 @@ final class DetailPenjualan
                 'JumlahDiskon' => $d->JumlahDiskon,
                 'JumlahDiskonPesanan' => $d->JumlahDiskonPesanan,
                 'JumlahPajak' => $d->JumlahPajak,
+                'BiayaLayanan' => $d->BiayaLayanan,
                 'TotalBaris' => $d->TotalBaris,
                 'JumlahDiretur' => ($sudah[$d->Id] ?? DataSudahDiretur::Kosong())->jumlah->KeString(),
                 'HppSatuan' => $d->HppSatuan,

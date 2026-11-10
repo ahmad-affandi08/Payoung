@@ -93,6 +93,13 @@ const kolomBaris: KolomTabel<BarisDetailPenjualan>[] = [
         cell: ({ row: { original: b } }) => FormatRupiah(b.JumlahPajak),
     },
     {
+        id: 'BiayaLayanan',
+        header: 'Biaya layanan',
+        enableSorting: false,
+        meta: { label: 'Biaya layanan (sudah termasuk di Total)', angka: true, prioritas: 'rendah' },
+        cell: ({ row: { original: b } }) => (nol.test(b.BiayaLayanan) ? '—' : FormatRupiah(b.BiayaLayanan)),
+    },
+    {
         id: 'TotalHpp',
         header: 'HPP',
         enableSorting: false,

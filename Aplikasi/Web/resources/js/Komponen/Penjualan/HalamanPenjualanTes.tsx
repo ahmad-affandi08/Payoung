@@ -117,6 +117,7 @@ const propsDetail: PropsDetailPenjualan = {
             JumlahDiskon: '5000.00',
             JumlahDiskonPesanan: '0.00',
             JumlahPajak: '8470.00',
+            BiayaLayanan: '0.00',
             TotalBaris: '80470.00',
             JumlahDiretur: '0.0000',
             HppSatuan: '30000.000000',
@@ -215,6 +216,31 @@ describe('F-07b halaman penjualan back-office', () => {
         expect(mutasi.getByRole('link', { name: /Minyak Goreng/ }).getAttribute('href')).toContain(
             '/kelola/persediaan/kartu-stok?',
         );
+    });
+
+    it('detail: biaya layanan per baris tampil di kolomnya sendiri supaya total baris tidak membingungkan', () => {
+        const [dasar] = propsDetail.Baris as [(typeof propsDetail.Baris)[number]];
+
+        RenderUji(
+            <HalamanDetailPenjualan
+                {...propsDetail}
+                Baris={[
+                    { ...dasar, BiayaLayanan: '1600.00', TotalBaris: '82070.00' },
+                    {
+                        ...dasar,
+                        Uuid: '01K5BARIS0000000000000002',
+                        NamaProduk: 'Jasa Bongkar Mesin',
+                        BiayaLayanan: '0.00',
+                    },
+                ]}
+            />,
+        );
+
+        const tabel = within(screen.getByRole('table', { name: 'Baris penjualan' }));
+
+        expect(tabel.getByText('Biaya layanan')).toBeTruthy();
+        expect(tabel.getByText('Rp 1.600')).toBeTruthy();
+        expect(tabel.getAllByText('—').length).toBeGreaterThan(0);
     });
 
     it('detail tanpa jurnal, pajak, atau mutasi (jasa gratis): keadaan kosong jelas', () => {

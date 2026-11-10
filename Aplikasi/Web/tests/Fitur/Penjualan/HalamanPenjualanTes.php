@@ -8,6 +8,7 @@ use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\PeranIzin;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Layanan\PenyimpanGambarQris;
+use App\Domain\Penjualan\Model\PenjualanDetail;
 use App\Domain\Tenant\Kueri\PengaturanKasirTenant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -80,6 +81,29 @@ describe('F-07b halaman back-office penjualan', function (): void {
             ->where('Penjualan.DaftarTerpotong', false)
             ->where('Penjualan.TotalPenjualan', '85470.00')
             ->where('Penjualan.Daftar.0.Uuid', $item['Uuid']));
+    });
+
+    it('detail memuat biaya layanan per baris supaya Total baris bisa dijelaskan (jumlah × harga + biaya layanan = total)', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        BantuanPenjualan::AturProfilPajak($k, persenBiayaLayanan: '2');
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $item = BantuanPenjualan::Item($k, [
+            'PersenBiayaLayanan' => '2',
+            'Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']],
+            'Pembayaran' => [['Metode' => $k['Tunai'], 'Jumlah' => '100000.00']],
+        ]);
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$item]))->toBe([['Diterima', null]]);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $baris = PenjualanDetail::query()->sole();
+
+        BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
+
+        expect((float) $baris->BiayaLayanan)->toBeGreaterThan(0.0);
+        $this->get("/kelola/penjualan/{$item['Uuid']}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Penjualan.PersenBiayaLayanan', '2.00')
+            ->where('Baris.0.BiayaLayanan', $baris->BiayaLayanan)
+            ->where('Baris.0.TotalBaris', $baris->TotalBaris));
     });
 
     it('D-16 TabelData: JSON {Data, Meta} di URL yang sama. Cari nomor, filter tinjauan/status/tanggal, urut total', function (): void {
