@@ -8,19 +8,20 @@ use App\Domain\Pengelola\Katalog\Aksi\LengkapiFiturPaketBawaan;
 use Illuminate\Console\Command;
 
 /**
- * Jalankan setelah memperbarui rilis: menambahkan fitur katalog baru ke paket yang sudah terpasang (hanya menambah,
- * tidak pernah mencabut). `--kering` hanya menampilkan apa yang akan ditambahkan.
+ * Jalankan setelah memperbarui rilis: menambahkan fitur katalog yang BARU dibuat ke paket yang sudah terpasang (hanya
+ * menambah, tidak pernah mencabut). Fitur lama yang dicabut lewat konsol tidak dipasang ulang kecuali `--termasuk-lama`.
+ * `--kering` hanya menampilkan apa yang akan ditambahkan.
  */
 final class LengkapiFiturPaketPerintah extends Command
 {
-    protected $signature = 'katalog:lengkapi-fitur {--kering : Hanya tampilkan, jangan ubah data}';
+    protected $signature = 'katalog:lengkapi-fitur {--kering : Hanya tampilkan, jangan ubah data} {--termasuk-lama : Pasang juga fitur lama yang tercantum di berkas tetapi tidak dimiliki paket (termasuk yang sengaja dicabut di konsol)}';
 
-    protected $description = 'Menambahkan fitur katalog baru dari berkas data rilis ke paket yang sudah ada (tidak mencabut apa pun).';
+    protected $description = 'Menambahkan fitur katalog baru dari berkas data rilis ke paket yang sudah ada (tidak mencabut, tidak memasang ulang yang dicabut).';
 
     public function handle(LengkapiFiturPaketBawaan $lengkapi): int
     {
         $kering = (bool) $this->option('kering');
-        $hasil = $lengkapi->Jalankan(! $kering);
+        $hasil = $lengkapi->Jalankan(! $kering, null, null, (bool) $this->option('termasuk-lama'));
 
         foreach ($hasil['FiturBaru'] as $kunci) {
             $this->line(($kering ? '[kering] ' : '').'fitur baru: '.$kunci);
