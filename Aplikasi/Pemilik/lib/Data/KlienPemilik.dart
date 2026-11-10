@@ -231,6 +231,96 @@ class LabaRugiPemilik {
   }
 }
 
+/// D-255: satu angka uang kas (masuk, keluar, atau selisih) dengan pembanding dan persen perubahan dari server.
+/// [perubahan] null bila pembanding nol.
+class AngkaUangKas {
+  const AngkaUangKas({required this.nilai, required this.nilaiSebelumnya, required this.perubahan});
+
+  final String nilai;
+  final String nilaiSebelumnya;
+  final String? perubahan;
+}
+
+/// D-255: satu kelompok uang masuk atau keluar (Penjualan, Belanja stok, Gaji, ...) beserta porsinya.
+class KelompokUangKas {
+  const KelompokUangKas({
+    required this.kelompok,
+    required this.nilai,
+    required this.nilaiSebelumnya,
+    required this.porsi,
+  });
+
+  final String kelompok;
+  final String nilai;
+  final String nilaiSebelumnya;
+  final String? porsi;
+
+  static KelompokUangKas DariJson(Map<String, Object?> json) => KelompokUangKas(
+    kelompok: UraiJson.AmbilTeks(json['Kelompok']),
+    nilai: UraiJson.AmbilDesimal(json['Nilai']),
+    nilaiSebelumnya: UraiJson.AmbilDesimal(json['NilaiSebelumnya']),
+    porsi: UraiJson.AmbilDesimalAtauNull(json['Porsi']),
+  );
+}
+
+/// D-255: uang yang benar-benar masuk dan keluar kas & bank (`GET laporan/pemasukan-pengeluaran`), angkanya sama
+/// dengan halaman Pemasukan & Pengeluaran di back-office. Tanpa HPP.
+class UangKasPemilik {
+  const UangKasPemilik({
+    required this.dari,
+    required this.sampai,
+    required this.jenisPembanding,
+    required this.masuk,
+    required this.keluar,
+    required this.selisih,
+    required this.kelompokMasuk,
+    required this.kelompokKeluar,
+    required this.cocok,
+    required this.selisihKecocokan,
+    required this.adaAkunKas,
+  });
+
+  final String dari;
+  final String sampai;
+
+  /// `Kemarin`, `MingguLalu`, `BulanLalu`, `TahunLalu`, atau `PeriodeSebelumnya`.
+  final String jenisPembanding;
+  final AngkaUangKas masuk;
+  final AngkaUangKas keluar;
+  final AngkaUangKas selisih;
+  final List<KelompokUangKas> kelompokMasuk;
+  final List<KelompokUangKas> kelompokKeluar;
+
+  /// Selisih uang + di luar usaha sama dengan perubahan saldo kas & bank pada periode yang sama.
+  final bool cocok;
+  final String selisihKecocokan;
+  final bool adaAkunKas;
+
+  static UangKasPemilik DariJson(Map<String, Object?> json) {
+    final periode = UraiJson.AmbilPeta(json['Periode']);
+    final ringkasan = UraiJson.AmbilPeta(json['Ringkasan']);
+    final kecocokan = UraiJson.AmbilPeta(json['Kecocokan']);
+    AngkaUangKas Angka(String kunci, String sebelumnya, String perubahan) => AngkaUangKas(
+      nilai: UraiJson.AmbilDesimal(ringkasan[kunci]),
+      nilaiSebelumnya: UraiJson.AmbilDesimal(ringkasan[sebelumnya]),
+      perubahan: UraiJson.AmbilDesimalAtauNull(ringkasan[perubahan]),
+    );
+    return UangKasPemilik(
+      dari: UraiJson.AmbilTeks(periode['Dari']),
+      sampai: UraiJson.AmbilTeks(periode['Sampai']),
+      jenisPembanding: UraiJson.AmbilTeks(periode['Pembanding'], 'PeriodeSebelumnya'),
+      masuk: Angka('Masuk', 'MasukSebelumnya', 'PerubahanMasuk'),
+      keluar: Angka('Keluar', 'KeluarSebelumnya', 'PerubahanKeluar'),
+      selisih: Angka('Selisih', 'SelisihSebelumnya', 'PerubahanSelisih'),
+      kelompokMasuk: [for (final k in UraiJson.AmbilDaftarPeta(json['KelompokMasuk'])) KelompokUangKas.DariJson(k)],
+      kelompokKeluar: [for (final k in UraiJson.AmbilDaftarPeta(json['KelompokKeluar'])) KelompokUangKas.DariJson(k)],
+      cocok: UraiJson.AmbilBenar(kecocokan['Cocok'], true),
+      selisihKecocokan: UraiJson.AmbilDesimal(kecocokan['Selisih']),
+      adaAkunKas: UraiJson.AmbilBenar(json['AdaAkunKas'], true),
+    );
+  }
+}
+
 /// OWN-09: skor risiko satu kasir pada periode laporan, dengan alasan berteks (petunjuk untuk diperiksa, bukan bukti).
 class RisikoKasirPemilik {
   const RisikoKasirPemilik({
@@ -863,6 +953,16 @@ class KlienPemilik {
   Future<LabaRugiPemilik> AmbilLabaRugi({required String dari, required String sampai, String? outlet}) async =>
       LabaRugiPemilik.DariJson(
         await _Kirim('GET', _Jalur('laporan/laba-rugi', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}), null),
+      );
+
+  /// D-255: uang masuk dan keluar kas & bank periode [dari]–[sampai] (izin `laporan.keuangan.lihat`, paket Laporan lengkap).
+  Future<UangKasPemilik> AmbilUangKas({required String dari, required String sampai, String? outlet}) async =>
+      UangKasPemilik.DariJson(
+        await _Kirim(
+          'GET',
+          _Jalur('laporan/pemasukan-pengeluaran', {'dari': dari, 'sampai': sampai, 'outlet': ?outlet}),
+          null,
+        ),
       );
 
   /// OWN-09: skor risiko kasir periode [dari]–[sampai] (maks. 31 hari; izin laporan penjualan, paket Anti-fraud).

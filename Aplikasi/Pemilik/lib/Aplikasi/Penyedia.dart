@@ -355,7 +355,7 @@ final penyediaLaporan = FutureProvider.autoDispose<LaporanPenjualanPemilik>((ref
 
 /// OWN-05/09: layar Laporan menampilkan Penjualan (per kelompok), Laba rugi, atau Anti-fraud untuk rentang tanggal
 /// terpilih, atau Stok (OWN-06: nilai persediaan, kritis, saldo, kartu stok).
-enum ModeLaporan { Penjualan, LabaRugi, AntiFraud, Stok }
+enum ModeLaporan { Penjualan, UangKas, LabaRugi, AntiFraud, Stok }
 
 class PengaturModeLaporan extends Notifier<ModeLaporan> {
   @override
@@ -375,6 +375,40 @@ final penyediaLabaRugi = FutureProvider.autoDispose<LabaRugiPemilik>((ref) {
     () => ref.read(penyediaKlien).AmbilLabaRugi(dari: r.dariIso, sampai: r.sampaiIso, outlet: s.outlet),
   );
 });
+
+/// D-255: uang masuk dan keluar untuk rentang tanggal laporan terpilih (pembanding yang adil dihitung server).
+final penyediaUangKas = FutureProvider.autoDispose<UangKasPemilik>((ref) {
+  final s = ref.watch(penyediaSaringan);
+  final r = ref.watch(penyediaRentangLaporan);
+  return _Jaga(ref, () => ref.read(penyediaKlien).AmbilUangKas(dari: r.dariIso, sampai: r.sampaiIso, outlet: s.outlet));
+});
+
+/// D-255: kartu Beranda, selalu bulan berjalan sampai hari ini (tidak ikut rentang yang dipilih di Laporan), mengikuti
+/// outlet terpilih. Kartu hanya tambahan, jadi galatnya (tanpa izin, di luar paket, offline) tidak ditampilkan.
+final penyediaUangKasBulanIni = FutureProvider.autoDispose<UangKasPemilik>((ref) {
+  final s = ref.watch(penyediaSaringan);
+  final sekarang = ref.read(penyediaJam)();
+  final awal = RentangLaporan(
+    dari: DateTime(sekarang.year, sekarang.month),
+    sampai: DateTime(sekarang.year, sekarang.month, sekarang.day),
+  );
+  return _Jaga(
+    ref,
+    () => ref.read(penyediaKlien).AmbilUangKas(dari: awal.dariIso, sampai: awal.sampaiIso, outlet: s.outlet),
+  );
+});
+
+/// D-255: permintaan pindah tab dari dalam layar (kartu Beranda membuka Laporan). Bingkai membacanya lalu mengosongkan.
+class PengaturPermintaanTab extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void Minta(int tab) => state = tab;
+
+  void Selesai() => state = null;
+}
+
+final penyediaPermintaanTab = NotifierProvider<PengaturPermintaanTab, int?>(PengaturPermintaanTab.new);
 
 final penyediaAntiFraud = FutureProvider.autoDispose<List<RisikoKasirPemilik>>((ref) {
   final s = ref.watch(penyediaSaringan);

@@ -633,5 +633,10 @@
         "Metode": "POST",
         "Jalur": "api/pos/v1/gift-card/cek",
         "Nama": "pos.gift-card.cek"
+    },
+    "GET api/pemilik/v1/laporan/pemasukan-pengeluaran": {
+        "Metode": "GET",
+        "Jalur": "api/pemilik/v1/laporan/pemasukan-pengeluaran",
+        "Nama": "pemilik.laporan.pemasukan-pengeluaran"
     }
 }

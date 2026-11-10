@@ -57,7 +57,7 @@ function Props(sebagian: Partial<PropsPemasukanPengeluaran['Laporan']> = {}): Pr
             Keluar: [
                 {
                     Label: 'Belanja stok tunai',
-                    Kelompok: 'Belanja bahan dan dagangan',
+                    Kelompok: 'Belanja barang dagangan',
                     Nilai: '48700000.00',
                     NilaiSebelumnya: '46600000.00',
                     Porsi: '47.3',
@@ -69,7 +69,7 @@ function Props(sebagian: Partial<PropsPemasukanPengeluaran['Laporan']> = {}): Pr
             ],
             KelompokKeluar: [
                 {
-                    Kelompok: 'Belanja bahan dan dagangan',
+                    Kelompok: 'Belanja barang dagangan',
                     Nilai: '48700000.00',
                     NilaiSebelumnya: '46600000.00',
                     Porsi: '47.3',

@@ -43,6 +43,30 @@ abstract final class FormatTampilan {
     return '${persen > 0 ? '+' : ''}$persen%';
   }
 
+  /// Frasa pembanding uang kas: `dari bulan lalu`. Jenis dari server: Kemarin, MingguLalu, BulanLalu, TahunLalu.
+  static String FrasaPembanding(String jenis) => switch (jenis) {
+    'Kemarin' => 'dari kemarin',
+    'MingguLalu' => 'dari minggu lalu',
+    'BulanLalu' => 'dari bulan lalu',
+    'TahunLalu' => 'dari tahun lalu',
+    _ => 'dari periode sebelumnya',
+  };
+
+  /// Perubahan dalam kata: `naik 4,2% dari bulan lalu`, `turun 3,3% dari bulan lalu`, atau `sama seperti bulan lalu`.
+  /// Null bila server tidak punya pembanding (persen kosong). Persen hanya untuk tampilan, jadi aman dibaca `double`.
+  static String? KalimatPerubahan(String? persen, String jenis) {
+    final angka = persen == null ? null : double.tryParse(persen);
+    if (angka == null) {
+      return null;
+    }
+    final frasa = FrasaPembanding(jenis);
+    if (angka == 0) {
+      return 'sama ${frasa.replaceFirst('dari', 'seperti')}';
+    }
+    final teks = angka.abs().toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '').replaceFirst('.', ',');
+    return '${angka > 0 ? 'naik' : 'turun'} $teks% $frasa';
+  }
+
   /// Kuantitas desimal dari server ("25.5000") ke tampilan Indonesia ("25,5"), tanpa nol di belakang koma.
   static String Jumlah(String nilai) {
     var t = nilai;

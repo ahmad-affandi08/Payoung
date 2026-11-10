@@ -10,6 +10,7 @@ import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 import 'Komponen/GrafikKomposisi.dart';
 import 'Komponen/KomponenModern.dart';
+import 'Komponen/UangKas.dart';
 import 'LayarKunciAplikasi.dart';
 import 'LayarNotifikasi.dart';
 
@@ -127,6 +128,8 @@ class _IsiBeranda extends ConsumerWidget {
             ],
           ),
         ),
+        // D-255: uang masuk dan keluar bulan ini (basis kas, tanpa HPP). Kartu tersembunyi bila tanpa izin atau paket.
+        const KartuUangBulanIni(indeksTabLaporan: 1),
         _JudulBagian(judul: 'Perlu tindakan', lencana: d.perluTindakan.isEmpty ? null : d.perluTindakan.length),
         if (d.perluTindakan.isEmpty)
           const KartuModern(

@@ -23,7 +23,10 @@ final class PenggolongUangKas
 
     public const MASUK_LAINNYA = 'Lainnya';
 
-    public const KELUAR_BELANJA = 'Belanja bahan dan dagangan';
+    /** Belanja bahan baku (FnB, produksi): dipisah dari dagangan supaya pemilik tahu berapa yang habis untuk bahan. */
+    public const KELUAR_BELANJA_BAHAN = 'Belanja bahan baku';
+
+    public const KELUAR_BELANJA = 'Belanja barang dagangan';
 
     public const KELUAR_GAJI = 'Gaji dan tenaga kerja';
 
@@ -49,7 +52,7 @@ final class PenggolongUangKas
     public const URUT_MASUK = [self::MASUK_PENJUALAN, self::MASUK_PIUTANG, self::MASUK_LAINNYA];
 
     /** Urutan tampil kelompok pengeluaran. */
-    public const URUT_KELUAR = [self::KELUAR_BELANJA, self::KELUAR_GAJI, self::KELUAR_OPERASIONAL, self::KELUAR_PAJAK, self::KELUAR_PLATFORM, self::KELUAR_PELANGGAN, self::KELUAR_LAIN, self::BELUM_DIKELOMPOKKAN];
+    public const URUT_KELUAR = [self::KELUAR_BELANJA_BAHAN, self::KELUAR_BELANJA, self::KELUAR_GAJI, self::KELUAR_OPERASIONAL, self::KELUAR_PAJAK, self::KELUAR_PLATFORM, self::KELUAR_PELANGGAN, self::KELUAR_LAIN, self::BELUM_DIKELOMPOKKAN];
 
     /**
      * Penggolongan menurut jenis dokumen sumber jurnal. `$mentah` dipakai bila jenisnya tidak dikenal.

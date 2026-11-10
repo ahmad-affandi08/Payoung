@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Akuntansi\Data\SaringLaporanKeuangan;
 use App\Domain\Akuntansi\Kueri\LabaRugi;
+use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\Shift;
@@ -302,6 +303,38 @@ describe('OWN-05 laporan ringkas penjualan & shift', function (): void {
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $web = app(LabaRugi::class)->Ambil(new SaringLaporanKeuangan('2026-10-01', '2026-10-31', null, null));
         expect($respons->json('Baris'))->toBe($web['Baris'])->and($ringkasan)->toBe($web['Ringkasan']);
+    });
+
+    it('D-255 uang masuk dan keluar di Aplikasi Owner: angka sama dengan halaman web, hanya ringkasan dan kelompok, pembanding yang adil', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+
+        $respons = AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2026-10-01&sampai=2026-10-31')->assertOk();
+        expect(array_keys($respons->json()))->toBe(['Periode', 'Ringkasan', 'KelompokMasuk', 'KelompokKeluar', 'Kecocokan', 'AdaAkunKas'])
+            ->and($respons->json('Ringkasan.Masuk'))->toBe('77000.00')
+            ->and($respons->json('Ringkasan.Keluar'))->toBe('0.00')
+            ->and($respons->json('Periode.Pembanding'))->toBe('BulanLalu')
+            ->and($respons->json('KelompokMasuk.0.Kelompok'))->toBe('Penjualan');
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $web = app(PemasukanPengeluaran::class)->Ambil(new SaringLaporanKeuangan('2026-10-01', '2026-10-31', null, null));
+        expect($respons->json('Ringkasan'))->toBe($web['Ringkasan'])
+            ->and($respons->json('KelompokMasuk'))->toBe($web['KelompokMasuk'])
+            ->and($respons->json('KelompokKeluar'))->toBe($web['KelompokKeluar']);
+    });
+
+    it('D-255 uang masuk dan keluar di Aplikasi Owner: izin laporan.keuangan.lihat wajib, rentang maks 366 hari, outlet di luar akses 404', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $tokenKasir = TokenPemilikUji($this, $k['Kasir'], 'kata-sandi-uji');
+        AmbilPemilikUji($this, $tokenKasir, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2026-10-01&sampai=2026-10-07')->assertStatus(403)->assertJsonPath('Galat.Kode', 'TanpaIzin');
+
+        $token = TokenPemilikUji($this, $k['Pemilik']);
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2025-10-07&sampai=2026-10-07')->assertOk();
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2025-10-06&sampai=2026-10-07')->assertStatus(422)->assertJsonPath('Galat.Kode', 'RentangTerlaluPanjang');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2026-10-07&sampai=2026-10-01')->assertStatus(422)->assertJsonPath('Galat.Kode', 'ValidasiGagal');
+        AmbilPemilikUji($this, $token, $k['Tenant']->Uuid, '/laporan/pemasukan-pengeluaran?dari=2026-10-01&sampai=2026-10-07&outlet=01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertStatus(404);
     });
 
     it('OWN-05 laba rugi: izin laporan.keuangan.lihat wajib, rentang maks 366 hari, outlet di luar akses 404, tenant lain 403', function (): void {

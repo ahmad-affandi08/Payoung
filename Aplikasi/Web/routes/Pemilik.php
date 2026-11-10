@@ -54,6 +54,8 @@ Route::middleware(AutentikasiPemilik::class)->group(function () use ($izin): voi
         // OWN-05: laporan ringkas penjualan & shift.
         Route::get('/laporan/penjualan', [LaporanKontroler::class, 'Penjualan'])->middleware($izin(IzinTenant::LaporanPenjualanLihat))->name('pemilik.laporan.penjualan');
         Route::get('/laporan/laba-rugi', [LaporanKontroler::class, 'LabaRugi'])->middleware($izin(IzinTenant::LaporanKeuanganLihat))->name('pemilik.laporan.laba-rugi');
+        // D-255 tahap 3: uang masuk dan keluar kas & bank (sama dengan halaman Pemasukan & Pengeluaran di back-office).
+        Route::get('/laporan/pemasukan-pengeluaran', [LaporanKontroler::class, 'UangKas'])->middleware($izin(IzinTenant::LaporanKeuanganLihat))->name('pemilik.laporan.pemasukan-pengeluaran');
         // OWN-09: skor risiko kasir (sama dengan tab Anti-fraud di back-office).
         Route::get('/laporan/anti-fraud', [LaporanKontroler::class, 'AntiFraud'])->middleware($izin(IzinTenant::LaporanPenjualanLihat))->name('pemilik.laporan.anti-fraud');
         // OWN-11: insight mingguan (sama dengan pesan WhatsApp X6).

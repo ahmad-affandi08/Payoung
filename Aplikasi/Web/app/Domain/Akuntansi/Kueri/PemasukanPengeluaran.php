@@ -15,6 +15,7 @@ use App\Domain\Akuntansi\Model\Akun;
 use App\Domain\Akuntansi\Model\JurnalDetail;
 use App\Domain\Akuntansi\Model\PemetaanAkun;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Pembelian\Layanan\PemisahBelanjaBahanBaku;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
@@ -34,8 +35,13 @@ use Illuminate\Support\Facades\DB;
  */
 final class PemasukanPengeluaran
 {
+    public function __construct(private readonly PemisahBelanjaBahanBaku $pemisahBelanja) {}
+
     /** Sumber yang dirinci per akun lawan, bukan per jenis dokumen. */
     private const SUMBER_PER_AKUN = [JenisSumberJurnal::TransaksiKasBank, JenisSumberJurnal::MutasiKas];
+
+    /** Sumber belanja stok: uang keluarnya dipecah menjadi bahan baku dan dagangan menurut isi dokumennya. */
+    private const SUMBER_BELANJA = [JenisSumberJurnal::PenerimaanBarang, JenisSumberJurnal::PembayaranHutang, JenisSumberJurnal::FakturPembelian];
 
     /** Rentang (hari) paling panjang yang grafiknya per hari, selebihnya per bulan. */
     private const MAKS_HARI_GRAFIK_HARIAN = 62;
@@ -139,10 +145,11 @@ final class PemasukanPengeluaran
         $a = new AkumulatorUangKas;
         $perJurnal = $this->KueriPerJurnal($saring, $idKas, $dari, $sampai, null);
         $sumberAkun = array_map(fn (JenisSumberJurnal $j): string => $j->value, self::SUMBER_PER_AKUN);
+        $sumberBelanja = array_map(fn (JenisSumberJurnal $j): string => $j->value, self::SUMBER_BELANJA);
 
         // 1) Jurnal yang digolongkan menurut jenis dokumen sumbernya, dijumlah per tanggal dan arah di SQL.
         $baris = DB::query()->fromSub($perJurnal, 't')
-            ->whereNotIn('t.JenisSumber', $sumberAkun)
+            ->whereNotIn('t.JenisSumber', [...$sumberAkun, ...$sumberBelanja])
             ->selectRaw('`t`.`Tgl` AS `Tgl`, `t`.`IdOutlet` AS `IdOutlet`, `t`.`JenisSumber` AS `JenisSumber`, CASE WHEN `t`.`N` > 0 THEN 1 ELSE 0 END AS `Masuk`, CAST(SUM(ABS(`t`.`N`)) AS DECIMAL(20,2)) AS `Nilai`')
             ->groupBy('Tgl', 'IdOutlet', 'JenisSumber', 'Masuk')
             ->get();
@@ -174,11 +181,63 @@ final class PemasukanPengeluaran
             $a->Tambah($tanggal, $masuk, PenggolongUangKas::DariSumber($jenis, $masuk, (string) $satu->JenisSumber), $nilai, $idOutlet);
         }
 
+        $this->PisahkanBelanja($a, $perJurnal, $sumberBelanja);
         $this->PisahkanBiayaLayanan($a, $saring, $idKas, $idLayanan, $dari, $sampai, $penjualanMasuk);
         $this->PisahkanPotonganPencairan($a, $saring, $dari, $sampai, $pencairan);
         $this->GolongkanPerAkunLawan($a, $perJurnal, $idKas, $idPajak, $sumberAkun);
 
         return $a;
+    }
+
+    /**
+     * Belanja stok dipecah menjadi bahan baku dan dagangan menurut isi dokumen yang dibayar. Penerimaan barang tunai
+     * memakai barisnya sendiri, pembayaran hutang dan faktur memakai komposisi fakturnya. Jumlahnya tetap sama dengan
+     * uang yang keluar: bagian dagangan adalah sisa setelah bagian bahan baku dibulatkan. Pembatalan (uang kembali)
+     * tidak dipecah.
+     *
+     * @param  list<string>  $sumberBelanja
+     */
+    private function PisahkanBelanja(AkumulatorUangKas $a, KueriDasar $perJurnal, array $sumberBelanja): void
+    {
+        $jurnal = DB::query()->fromSub($perJurnal, 't')
+            ->join('Jurnal', 'Jurnal.Id', '=', 't.IdJurnal')
+            ->whereIn('t.JenisSumber', $sumberBelanja)
+            ->get(['t.IdOutlet', 't.Tgl', 't.JenisSumber', 't.N', 'Jurnal.IdSumber']);
+
+        if ($jurnal->isEmpty()) {
+            return;
+        }
+
+        $idPerJenis = [];
+
+        foreach ($jurnal as $satu) {
+            $idPerJenis[(string) $satu->JenisSumber][] = (int) $satu->IdSumber;
+        }
+
+        $unik = fn (JenisSumberJurnal $j): array => array_values(array_unique($idPerJenis[$j->value] ?? []));
+        $porsi = [
+            JenisSumberJurnal::PenerimaanBarang->value => $this->pemisahBelanja->PorsiPenerimaan($unik(JenisSumberJurnal::PenerimaanBarang)),
+            JenisSumberJurnal::FakturPembelian->value => $this->pemisahBelanja->PorsiFaktur($unik(JenisSumberJurnal::FakturPembelian)),
+            JenisSumberJurnal::PembayaranHutang->value => $this->pemisahBelanja->PorsiPembayaranHutang($unik(JenisSumberJurnal::PembayaranHutang)),
+        ];
+
+        foreach ($jurnal as $satu) {
+            $bersih = Uang::Dari((string) $satu->N);
+            $masuk = ! $bersih->BernilaiNegatif();
+            $nilai = $masuk ? $bersih : Uang::Nol()->Kurangi($bersih);
+            $idOutlet = $satu->IdOutlet === null ? null : (int) $satu->IdOutlet;
+            $golongan = PenggolongUangKas::DariSumber(JenisSumberJurnal::tryFrom((string) $satu->JenisSumber), $masuk, (string) $satu->JenisSumber);
+
+            if ($masuk) {
+                $a->Tambah((string) $satu->Tgl, true, $golongan, $nilai, $idOutlet);
+
+                continue;
+            }
+
+            $bahan = $nilai->Kali($porsi[(string) $satu->JenisSumber][(int) $satu->IdSumber] ?? '0');
+            $a->Tambah((string) $satu->Tgl, false, PenggolongUangKas::Hasil($golongan['Label'], PenggolongUangKas::KELUAR_BELANJA_BAHAN), $bahan, $idOutlet);
+            $a->Tambah((string) $satu->Tgl, false, $golongan, $nilai->Kurangi($bahan), $idOutlet);
+        }
     }
 
     /**
@@ -488,7 +547,7 @@ final class PemasukanPengeluaran
     }
 
     /**
-     * Total per kelompok (Penjualan, Belanja bahan dan dagangan, …) untuk dua panel utama.
+     * Total per kelompok (Penjualan, Belanja bahan baku, Belanja barang dagangan, …) untuk dua panel utama.
      *
      * @param  array<string, array{Label: string, Kelompok: string, Nilai: Uang}>  $kini
      * @param  array<string, array{Label: string, Kelompok: string, Nilai: Uang}>  $lalu

@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Pemilik\V1;
 
 use App\Domain\Akuntansi\Data\SaringLaporanKeuangan;
 use App\Domain\Akuntansi\Kueri\LabaRugi;
+use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Laporan\Kueri\LaporanRingkasPemilik;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
@@ -89,5 +90,36 @@ final class LaporanKontroler extends DasarPemilikKontroler
         $satu = $terpilih !== null && $terpilih !== '' && $idOutlet !== null ? $idOutlet[0] : null;
 
         return response()->json($kueri->Ambil(new SaringLaporanKeuangan($dari->toDateString(), $sampai->toDateString(), $satu, $boleh)));
+    }
+
+    /**
+     * Uang masuk dan uang keluar kas & bank (D-255, izin `laporan.keuangan.lihat`, paket Laporan lengkap): tiga angka
+     * dengan pembanding yang adil dan rincian per kelompok. Sumbernya kueri yang sama dengan halaman Pemasukan &
+     * Pengeluaran di back-office, jadi angkanya selalu sama. Rincian per kategori dan grafik sengaja tidak dikirim.
+     */
+    public function UangKas(LaporanRentangPermintaan $permintaan, PemasukanPengeluaran $kueri): JsonResponse
+    {
+        $dari = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('dari'));
+        $sampai = CarbonImmutable::createFromFormat('!Y-m-d', (string) $permintaan->string('sampai'));
+        abort_unless($dari instanceof CarbonImmutable && $sampai instanceof CarbonImmutable, 422);
+
+        if ($dari->diffInDays($sampai) + 1 > self::HARI_MAKS_LABA_RUGI) {
+            throw new PelanggaranAturanBisnis('RentangTerlaluPanjang', 'Rentang paling panjang '.self::HARI_MAKS_LABA_RUGI.' hari. Persempit tanggalnya.', 'sampai');
+        }
+
+        $boleh = $this->IdOutletBoleh($permintaan);
+        $terpilih = $permintaan->query('outlet') === null ? null : (string) $permintaan->string('outlet');
+        $idOutlet = $this->SaringOutlet($terpilih, $boleh);
+        $satu = $terpilih !== null && $terpilih !== '' && $idOutlet !== null ? $idOutlet[0] : null;
+        $isi = $kueri->Ambil(new SaringLaporanKeuangan($dari->toDateString(), $sampai->toDateString(), $satu, $boleh));
+
+        return response()->json([
+            'Periode' => $isi['Periode'],
+            'Ringkasan' => $isi['Ringkasan'],
+            'KelompokMasuk' => $isi['KelompokMasuk'],
+            'KelompokKeluar' => $isi['KelompokKeluar'],
+            'Kecocokan' => $isi['Kecocokan'],
+            'AdaAkunKas' => $isi['AdaAkunKas'],
+        ]);
     }
 }

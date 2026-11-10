@@ -11,9 +11,11 @@ import 'FormatTampilan.dart';
 import 'KeadaanData.dart';
 import 'Komponen/GrafikKomposisi.dart';
 import 'Komponen/KomponenModern.dart';
+import 'Komponen/UangKas.dart';
 
 const List<(ModeLaporan, String)> _modeLaporan = [
   (ModeLaporan.Penjualan, 'Penjualan'),
+  (ModeLaporan.UangKas, 'Uang masuk dan keluar'),
   (ModeLaporan.LabaRugi, 'Laba rugi'),
   (ModeLaporan.AntiFraud, 'Anti-fraud'),
   (ModeLaporan.Stok, 'Stok'),
@@ -51,6 +53,7 @@ class LayarLaporan extends ConsumerWidget {
         const SizedBox(height: TokenJarak.jarak12),
         switch (modeAktif) {
           ModeLaporan.Penjualan => const _Penjualan(),
+          ModeLaporan.UangKas => const _UangKas(),
           ModeLaporan.LabaRugi => const _LabaRugi(),
           ModeLaporan.AntiFraud => const _AntiFraud(),
           ModeLaporan.Stok => const _Stok(),
@@ -70,6 +73,7 @@ class _PilihanLaporan extends StatelessWidget {
 
   static IlustrasiOwner PilihIlustrasi(ModeLaporan mode) => switch (mode) {
     ModeLaporan.Penjualan => IlustrasiOwner.MiniPenjualan,
+    ModeLaporan.UangKas => IlustrasiOwner.MiniKas,
     ModeLaporan.LabaRugi => IlustrasiOwner.MiniLaba,
     ModeLaporan.AntiFraud => IlustrasiOwner.MiniWaspada,
     ModeLaporan.Stok => IlustrasiOwner.KotakStok,
@@ -275,6 +279,49 @@ class _GrafikPenjualan extends StatelessWidget {
 }
 
 /// Laba rugi sederhana (OWN-05): ringkasan lima angka dengan perubahan terhadap periode sebelumnya, lalu rincian akun.
+/// D-255: uang masuk dan keluar kas & bank untuk rentang terpilih, dengan pembanding yang adil dan rincian per kelompok.
+class _UangKas extends ConsumerWidget {
+  const _UangKas();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teks = Theme.of(context).textTheme;
+    final warna = TokenWarna.AmbilDari(context);
+    return KeadaanData(
+      nilai: ref.watch(penyediaUangKas),
+      saatCobaLagi: () => ref.invalidate(penyediaUangKas),
+      isi: (u) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Periode ${u.dari} s.d. ${u.sampai}', style: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+          const SizedBox(height: TokenJarak.jarak8),
+          KartuModern(
+            anak: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                RingkasanUangKas(uang: u),
+                CatatanUangKas(uang: u),
+              ],
+            ),
+          ),
+          const SizedBox(height: TokenJarak.jarak16),
+          Text('Uang masuk dari mana', style: teks.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: TokenJarak.jarak8),
+          KartuModern(
+            anak: DaftarKelompokUangKas(kelompok: u.kelompokMasuk, kosong: 'Belum ada uang masuk pada periode ini.'),
+          ),
+          const SizedBox(height: TokenJarak.jarak16),
+          Text('Uang keluar ke mana', style: teks.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: TokenJarak.jarak8),
+          KartuModern(
+            anak: DaftarKelompokUangKas(kelompok: u.kelompokKeluar, kosong: 'Belum ada uang keluar pada periode ini.'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LabaRugi extends ConsumerWidget {
   const _LabaRugi();
 

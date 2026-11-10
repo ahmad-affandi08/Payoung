@@ -124,6 +124,13 @@ class _BingkaiPemilikState extends ConsumerState<BingkaiPemilik> {
     final menunggu =
         (ref.watch(penyediaPersetujuan).value?.length ?? 0) +
         (ref.watch(penyediaDokumenPersetujuan).value?.where((d) => d.bisaDisetujui).length ?? 0);
+    // D-255: kartu di Beranda dapat meminta tab lain (mis. Laporan). Permintaan dijalankan sekali lalu dikosongkan.
+    ref.listen(penyediaPermintaanTab, (_, tab) {
+      if (tab != null) {
+        setState(() => _indeks = tab);
+        ref.read(penyediaPermintaanTab.notifier).Selesai();
+      }
+    });
     final indeks = _indeks.clamp(0, _tujuan.length - 1);
     return Scaffold(
       body: SafeArea(
