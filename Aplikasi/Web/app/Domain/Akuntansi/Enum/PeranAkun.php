@@ -37,7 +37,8 @@ enum PeranAkun: string
     case KliringTukarBarang = 'KliringTukarBarang';
     // D-256: uang laci kasir yang dipakai belanja stok. Kasir mencatatnya sebagai kas keluar (Dr akun ini, Cr kas), lalu
     // form Belanja stok di back-office melunasinya (Dr persediaan, Cr akun ini). Saldonya = uang laci yang barangnya
-    // belum dicatat.
+    // belum dicatat. Bukan akun kendali: tidak ada buku pembantunya, sehingga akuntan boleh membersihkannya lewat Jurnal
+    // umum bila uang laci ternyata bukan untuk stok (Dr beban / Cr akun ini).
     case KliringBelanjaLaci = 'KliringBelanjaLaci';
     case EkuitasSaldoAwal = 'EkuitasSaldoAwal';
     case LabaDitahan = 'LabaDitahan';
@@ -154,7 +155,7 @@ enum PeranAkun: string
             self::PiutangUsaha, self::PiutangBelumDifakturkan, self::PiutangPencairan, self::PiutangKaryawan, self::PiutangKlaimPemasok,
             self::HutangUsaha, self::HutangBelumDifakturkan, self::HutangKonsinyasi,
             self::UangMukaPelanggan, self::DepositPelanggan, self::SaldoGiftCard, self::PendapatanDiterimaDimuka, self::KliringTukarBarang,
-            self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima, self::HutangGiro, self::KliringBelanjaLaci => true,
+            self::AsetTetap, self::AkumulasiPenyusutan, self::GiroDiterima, self::HutangGiro => true,
             default => false,
         };
     }

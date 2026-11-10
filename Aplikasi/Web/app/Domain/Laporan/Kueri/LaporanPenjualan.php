@@ -469,6 +469,17 @@ final class LaporanPenjualan
     }
 
     /**
+     * Penjualan per produk urut penjualan bersih terbesar untuk lembar Excel laporan Pemasukan & Pengeluaran (D-258),
+     * maksimal `$batas` produk. Angka dari kueri yang sama dengan tab Produk.
+     *
+     * @return list<array{IdProduk: int, NamaProduk: string, Qty: string, Kotor: string, Diskon: string, Retur: string, Bersih: string, Pajak: string, BiayaLayanan: string, Hpp: string, LabaKotor: string, JumlahTransaksi: int, JumlahRetur: int}>
+     */
+    public function PerProdukUntukBuku(DataSaringLaporanPenjualan $saring, int $batas = 5000): array
+    {
+        return $saring->CekTanpaOutlet() ? [] : $this->agregat->PerProduk($saring, '', '-Bersih', $batas);
+    }
+
+    /**
      * Rekomendasi bundling (`PencariPasanganProduk`) dari keranjang penjualan pada periode saring: pasangan teratas dengan
      * harga normal (jumlah harga rata-rata satu unit masing-masing) dan harga paket saran (95%, dibulatkan ke bawah ke
      * kelipatan Rp 500).

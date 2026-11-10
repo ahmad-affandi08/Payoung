@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Pembelian\Layanan;
 
+use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Kueri\InfoProdukStok;
 use App\Domain\Pembelian\Model\FakturPembelianDetail;
+use App\Domain\Pembelian\Model\PembayaranHutang;
 use App\Domain\Pembelian\Model\PembayaranHutangAlokasi;
 use App\Domain\Pembelian\Model\PenerimaanBarangDetail;
 use Brick\Math\BigDecimal;
@@ -85,6 +88,42 @@ final class PemisahBelanjaBahanBaku
             $hasil[$id] = isset($total[$id]) && $total[$id]->isPositive()
                 ? (string) $bahan[$id]->dividedBy($total[$id], self::SKALA, RoundingMode::HalfUp)
                 : $this->Nol();
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Belanja stok yang dibayar dari akun tertentu (D-257: akun penampung uang laci), urut tanggal lalu Id, beserta
+     * bagian bahan bakunya. Pembayaran yang dibatalkan tidak ikut. Dipakai laporan untuk memecah kas keluar kasir.
+     *
+     * @param  list<int>  $idAkun
+     * @return list<array{IdOutlet: int|null, Total: Uang, Bahan: Uang}>
+     */
+    public function RincianBelanjaDariAkun(array $idAkun): array
+    {
+        if ($idAkun === []) {
+            return [];
+        }
+
+        $pembayaran = PembayaranHutang::query()
+            ->where('BelanjaStok', true)
+            ->where('Status', StatusDokumenTerposting::Diposting->value)
+            ->whereIn('IdAkun', $idAkun)
+            ->orderBy('Tanggal')
+            ->orderBy('Id')
+            ->get(['Id', 'IdOutlet', 'Jumlah']);
+        $porsi = $this->PorsiPembayaranHutang(array_values($pembayaran->map(fn (PembayaranHutang $p): int => (int) $p->Id)->all()));
+        $hasil = [];
+
+        foreach ($pembayaran as $p) {
+            $total = Uang::Dari((string) $p->Jumlah);
+            $bahan = $total->Kali($porsi[(int) $p->Id] ?? '0');
+            $hasil[] = [
+                'IdOutlet' => $p->IdOutlet === null ? null : (int) $p->IdOutlet,
+                'Total' => $total,
+                'Bahan' => $bahan->Bandingkan($total) > 0 ? $total : $bahan,
+            ];
         }
 
         return $hasil;

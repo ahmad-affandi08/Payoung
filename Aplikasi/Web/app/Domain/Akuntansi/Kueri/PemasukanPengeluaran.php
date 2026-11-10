@@ -12,6 +12,7 @@ use App\Domain\Akuntansi\Enum\PeranAkun;
 use App\Domain\Akuntansi\Enum\TipeAkun;
 use App\Domain\Akuntansi\Layanan\PenggolongUangKas;
 use App\Domain\Akuntansi\Model\Akun;
+use App\Domain\Akuntansi\Model\Jurnal;
 use App\Domain\Akuntansi\Model\JurnalDetail;
 use App\Domain\Akuntansi\Model\PemetaanAkun;
 use App\Domain\Bersama\Nilai\Uang;
@@ -357,6 +358,8 @@ final class PemasukanPengeluaran
 
         $lawan = $lawan->groupBy('IdJurnal');
         $idLaci = $this->IdAkunPeran(PeranAkun::KliringBelanjaLaci);
+        /** @var array<int, array{Bahan: Uang, Dagangan: Uang}>|null $alokasiLaci */
+        $alokasiLaci = null;
         $akun = Akun::query()->whereKey($lawan->flatten(1)->pluck('IdAkun')->unique()->values()->all())->get()->keyBy('Id');
 
         foreach ($jurnal as $satu) {
@@ -368,7 +371,14 @@ final class PemasukanPengeluaran
             $akunLawan = $idLawan->count() === 1 ? $akun->get($idLawan->first()) : null;
 
             if ($akunLawan instanceof Akun && in_array($akunLawan->Id, $idLaci, true)) {
-                $golongan = PenggolongUangKas::DariUangLaci($masuk);
+                if ($masuk) {
+                    $golongan = PenggolongUangKas::DariUangLaci(true);
+                } else {
+                    $alokasiLaci ??= $this->AlokasikanUangLaci($idLaci);
+                    $this->TambahUangLaciKeluar($a, (string) $satu->Tgl, $satu->IdOutlet === null ? null : (int) $satu->IdOutlet, $nilai, $alokasiLaci[(int) $satu->IdJurnal] ?? null);
+
+                    continue;
+                }
             } elseif ($akunLawan instanceof Akun) {
                 $golongan = PenggolongUangKas::DariAkun($akunLawan, $masuk, in_array($akunLawan->Id, $idPajak, true));
             } elseif ($idLawan->isEmpty()) {
@@ -379,6 +389,90 @@ final class PemasukanPengeluaran
 
             $a->Tambah((string) $satu->Tgl, $masuk, $golongan, $nilai, $satu->IdOutlet === null ? null : (int) $satu->IdOutlet);
         }
+    }
+
+    /**
+     * Kas keluar kasir ke penampung uang laci dipecah menurut belanja stok yang sudah mencatat barangnya (D-257): bagian
+     * bahan baku, bagian dagangan, dan sisanya "belum dirinci" (barangnya belum dicatat). Jumlahnya tetap sama dengan
+     * uang yang keluar.
+     *
+     * @param  array{Bahan: Uang, Dagangan: Uang}|null  $alokasi
+     */
+    private function TambahUangLaciKeluar(AkumulatorUangKas $a, string $tanggal, ?int $idOutlet, Uang $nilai, ?array $alokasi): void
+    {
+        $bahan = $alokasi === null ? Uang::Nol() : ($alokasi['Bahan']->Bandingkan($nilai) > 0 ? $nilai : $alokasi['Bahan']);
+        $sisa = $nilai->Kurangi($bahan);
+        $dagangan = $alokasi === null ? Uang::Nol() : ($alokasi['Dagangan']->Bandingkan($sisa) > 0 ? $sisa : $alokasi['Dagangan']);
+        $belumDirinci = $sisa->Kurangi($dagangan);
+        foreach ([
+            [$bahan, PenggolongUangKas::DariUangLaciTerpakai(true)],
+            [$dagangan, PenggolongUangKas::DariUangLaciTerpakai(false)],
+            [$belumDirinci, PenggolongUangKas::DariUangLaci(false)],
+        ] as [$bagian, $golongan]) {
+            if (! $bagian->BernilaiNol()) {
+                $a->Tambah($tanggal, false, $golongan, $bagian, $idOutlet);
+            }
+        }
+    }
+
+    /**
+     * Mencocokkan kas keluar kasir ke penampung uang laci dengan belanja stok yang dibayar dari penampung itu, urut
+     * tanggal per outlet (yang lebih dulu keluar, lebih dulu dipakai). Belanja stok mengambil bahan bakunya dulu lalu
+     * dagangannya dari ember kas keluar. Hasilnya per jurnal kas keluar. Dihitung dari seluruh riwayat, bukan hanya
+     * periode laporan, supaya kas keluar bulan lalu yang barangnya baru dicatat bulan ini tetap terpecah benar.
+     *
+     * @param  list<int>  $idLaci
+     * @return array<int, array{Bahan: Uang, Dagangan: Uang}> Id jurnal kas keluar => bagian terpakai
+     */
+    private function AlokasikanUangLaci(array $idLaci): array
+    {
+        $rincian = $this->pemisahBelanja->RincianBelanjaDariAkun($idLaci);
+
+        if ($rincian === [] || $idLaci === []) {
+            return [];
+        }
+
+        /** @var array<string, list<array{0: int, 1: Uang}>> $ember kunci outlet => [IdJurnal, sisa] */
+        $ember = [];
+
+        foreach (JurnalDetail::query()
+            ->whereIn('IdAkun', $idLaci)
+            ->where('Debit', '>', 0)
+            ->whereIn('IdJurnal', Jurnal::query()->where('JenisSumber', JenisSumberJurnal::MutasiKas->value)->select('Id'))
+            ->orderBy('Tanggal')
+            ->orderBy('IdJurnal')
+            ->toBase()
+            ->get(['IdJurnal', 'IdOutlet', 'Debit']) as $baris) {
+            $ember[(string) $baris->IdOutlet][] = [(int) $baris->IdJurnal, Uang::Dari((string) $baris->Debit)];
+        }
+
+        $hasil = [];
+
+        foreach ($rincian as $belanja) {
+            $kunci = (string) $belanja['IdOutlet'];
+            $butuhBahan = $belanja['Bahan'];
+            $butuhDagangan = $belanja['Total']->Kurangi($belanja['Bahan']);
+
+            foreach ($ember[$kunci] ?? [] as $i => [$idJurnal, $sisa]) {
+                if ($butuhBahan->BernilaiNol() && $butuhDagangan->BernilaiNol()) {
+                    break;
+                }
+
+                $ambilBahan = $butuhBahan->Bandingkan($sisa) > 0 ? $sisa : $butuhBahan;
+                $sisa = $sisa->Kurangi($ambilBahan);
+                $ambilDagangan = $butuhDagangan->Bandingkan($sisa) > 0 ? $sisa : $butuhDagangan;
+                $sisa = $sisa->Kurangi($ambilDagangan);
+                $butuhBahan = $butuhBahan->Kurangi($ambilBahan);
+                $butuhDagangan = $butuhDagangan->Kurangi($ambilDagangan);
+                $ember[$kunci][$i] = [$idJurnal, $sisa];
+                $hasil[$idJurnal] = [
+                    'Bahan' => ($hasil[$idJurnal]['Bahan'] ?? Uang::Nol())->Tambah($ambilBahan),
+                    'Dagangan' => ($hasil[$idJurnal]['Dagangan'] ?? Uang::Nol())->Tambah($ambilDagangan),
+                ];
+            }
+        }
+
+        return $hasil;
     }
 
     /**

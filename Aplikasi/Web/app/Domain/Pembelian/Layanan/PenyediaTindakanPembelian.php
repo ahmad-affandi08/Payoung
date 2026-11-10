@@ -122,7 +122,7 @@ final class PenyediaTindakanPembelian implements PenyediaTindakan
                 'Pembelian',
                 TingkatTindakan::Perhatian,
                 'Uang laci dipakai belanja stok',
-                $total->FormatRupiah().' sudah keluar dari laci kasir untuk belanja stok, tetapi barangnya belum dicatat. Catat lewat Belanja stok dengan pembayaran "Pakai uang laci kasir" supaya stok dan HPP-nya terbentuk.',
+                $total->FormatRupiah().' sudah keluar dari laci kasir untuk belanja stok, tetapi barangnya belum dicatat. Catat lewat Belanja stok dengan pembayaran "Pakai uang laci kasir" supaya stok dan HPP-nya terbentuk. Kalau uang itu ternyata bukan untuk stok, pindahkan ke biaya lewat Jurnal umum.',
                 count($rincian),
                 '/kelola/pembelian/belanja-stok',
                 'Catat barangnya',

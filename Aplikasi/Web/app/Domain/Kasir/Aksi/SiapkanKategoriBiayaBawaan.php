@@ -15,6 +15,7 @@ use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Kasir\Data\DataKategoriKas;
 use App\Domain\Kasir\Enum\JenisKategoriKas;
 use App\Domain\Kasir\Model\KategoriKas;
+use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Tenant\Layanan\PenguncianTenant;
 use Illuminate\Support\Facades\DB;
 
@@ -23,9 +24,10 @@ use Illuminate\Support\Facades\DB;
  * Internet & pulsa, Sewa, Transport & bensin, Parkir, Kebersihan, Perlengkapan, Perbaikan, Konsumsi) beserta akun
  * beban per jenis biaya, supaya laporan laba rugi merinci biaya, bukan satu angka.
  *
- * Satu kategori lagi bukan biaya: "Belanja stok dari uang laci" (D-256), kategori kas keluar yang uangnya masuk ke akun
- * penampung `KliringBelanjaLaci` (bukan beban), supaya kasir tetap mencatat uang laci yang dipakai belanja stok di POS
- * dan hitungan laci benar, sementara barangnya dicatat kemudian lewat Belanja stok di back-office.
+ * Kategori uang laci bukan biaya (D-256, D-257): "Belanja stok dari uang laci" (usaha FnB juga "Belanja bahan dari uang
+ * laci") dan kategori masuk "Kembalian belanja stok dari uang laci". Uangnya lewat akun penampung `KliringBelanjaLaci`
+ * (bukan beban), supaya kasir tetap mencatat uang laci yang dipakai belanja stok di POS dan hitungan laci benar,
+ * sementara barangnya dicatat kemudian lewat Belanja stok di back-office.
  *
  * Aditif & idempoten: kategori yang namanya sudah ada tidak disentuh; akun beban dengan kode yang sama dipakai ulang;
  * kode yang bentrok dengan akun lain (nonaktif/tipe lain) membuat kategori itu dilewati, bukan menimpa. Semua lewat
@@ -55,9 +57,14 @@ final class SiapkanKategoriBiayaBawaan
     /** D-256: kategori kas keluar untuk belanja stok memakai uang laci. Urutan 5 supaya tampil paling depan di kasir. */
     public const KATEGORI_BELANJA_LACI = 'Belanja stok dari uang laci';
 
+    public const KATEGORI_BELANJA_BAHAN_LACI = 'Belanja bahan dari uang laci';
+
+    public const KATEGORI_KEMBALIAN_LACI = 'Kembalian belanja stok dari uang laci';
+
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly PenyediaAkunPeran $penyediaAkun,
+        private readonly SektorOutletTenant $sektor,
         private readonly PenguncianTenant $penguncian,
         private readonly DaftarAkunPilihan $akun,
         private readonly TambahAkun $tambahAkun,
@@ -106,11 +113,29 @@ final class SiapkanKategoriBiayaBawaan
     }
 
     /**
-     * @param  array<int, string>  $ada  nama kategori keluar yang sudah ada (huruf kecil)
+     * D-256 dan D-257: kategori uang laci. Semuanya menunjuk satu akun penampung, bukan beban:
+     * - "Belanja stok dari uang laci" (keluar, semua jenis usaha);
+     * - "Belanja bahan dari uang laci" (keluar, hanya usaha FnB, nama yang dipakai kasir saat belanja ke pasar);
+     * - "Kembalian belanja stok dari uang laci" (masuk, untuk sisa uang yang dikembalikan ke laci).
+     *
+     * @param  array<int, string>  $adaKeluar  nama kategori keluar yang sudah ada (huruf kecil)
      */
-    private function SiapkanKategoriBelanjaLaci(array $ada): int
+    private function SiapkanKategoriBelanjaLaci(array $adaKeluar): int
     {
-        if (in_array(mb_strtolower(self::KATEGORI_BELANJA_LACI), $ada, true)) {
+        $adaMasuk = KategoriKas::query()->where('Jenis', JenisKategoriKas::Masuk->value)->pluck('Nama')->map(fn (string $n): string => mb_strtolower($n))->all();
+        $rencana = [];
+
+        foreach ([[self::KATEGORI_BELANJA_LACI, JenisKategoriKas::Keluar, 5], [self::KATEGORI_BELANJA_BAHAN_LACI, JenisKategoriKas::Keluar, 6], [self::KATEGORI_KEMBALIAN_LACI, JenisKategoriKas::Masuk, 5]] as [$nama, $jenis, $urutan]) {
+            if ($nama === self::KATEGORI_BELANJA_BAHAN_LACI && ! $this->CekUsahaFnb()) {
+                continue;
+            }
+
+            if (! in_array(mb_strtolower($nama), $jenis === JenisKategoriKas::Keluar ? $adaKeluar : $adaMasuk, true)) {
+                $rencana[] = [$nama, $jenis, $urutan];
+            }
+        }
+
+        if ($rencana === []) {
             return 0;
         }
 
@@ -121,9 +146,23 @@ final class SiapkanKategoriBiayaBawaan
             return 0;
         }
 
-        $this->simpanKategori->Jalankan(new DataKategoriKas(self::KATEGORI_BELANJA_LACI, JenisKategoriKas::Keluar, $uuid, 5));
+        foreach ($rencana as [$nama, $jenis, $urutan]) {
+            $this->simpanKategori->Jalankan(new DataKategoriKas($nama, $jenis, $uuid, $urutan));
+        }
 
-        return 1;
+        return count($rencana);
+    }
+
+    /** Usaha FnB: ada sektor tenant berawalan `FNB-` (outlet atau jenis usaha tambahan). */
+    private function CekUsahaFnb(): bool
+    {
+        foreach ($this->sektor->AmbilKode() as $kode) {
+            if (str_starts_with($kode, 'FNB-')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -54,17 +54,17 @@ final class PenjagaAkunKendali
     }
 
     /**
-     * Seperti `Pastikan`, tetapi akun dari satu peran kendali tertentu (`$kecuali`) boleh dipakai. Dipakai kategori kas
-     * (D-256): kategori boleh menunjuk akun penampung uang laci, tetapi tidak akun persediaan, piutang, hutang, dsb.
+     * Seperti `Pastikan`, tetapi menerima Id akun. Dipakai kategori kas (D-256): kategori tidak boleh menunjuk akun
+     * persediaan, piutang, hutang, dsb. karena saldonya turunan dokumen modulnya.
      *
      * @throws PelanggaranAturanBisnis AkunKendali pada bidang `$bidang`
      */
-    public function PastikanBukanKendali(int $idAkun, string $bidang, PeranAkun $kecuali): void
+    public function PastikanBukanKendali(int $idAkun, string $bidang): void
     {
         foreach (PemetaanAkun::query()->where('IdAkun', $idAkun)->get(['Kunci']) as $pemetaan) {
             $peran = PeranAkun::DariKunci($pemetaan->Kunci);
 
-            if ($peran instanceof PeranAkun && $peran !== $kecuali && $peran->CekAkunKendali()) {
+            if ($peran instanceof PeranAkun && $peran->CekAkunKendali()) {
                 throw new PelanggaranAturanBisnis(
                     'AkunKendali',
                     "Akun ini adalah akun kendali ({$peran->AmbilLabel()}), jadi tidak bisa dipakai kategori kas. Saldonya hanya berubah lewat dokumen modulnya. Pilih akun biaya atau akun lain.",

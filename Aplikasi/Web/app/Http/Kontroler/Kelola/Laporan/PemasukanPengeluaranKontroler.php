@@ -11,10 +11,12 @@ use App\Domain\Bersama\Laporan\ItemRingkasan;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
 use App\Domain\Bersama\Laporan\PenulisXlsxLaporan;
+use App\Domain\Laporan\Kueri\LaporanPenjualan;
 use App\Domain\Laporan\Kueri\LaporanStok;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
+use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Http\Kontroler\Kelola\Akuntansi\DasarAkuntansiKontroler;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -100,7 +102,7 @@ final class PemasukanPengeluaranKontroler extends DasarAkuntansiKontroler
      * `PenyusunBukuPemasukanPengeluaran::KODE_LEMBAR`), Ringkasan selalu ikut. Lembar yang dibutuhkan rumus tetapi tidak
      * dipilih disembunyikan. Rute memasang `EksporDiLatarBelakang`, jadi berkas disiapkan lewat Pusat Unduhan.
      */
-    public function Buku(Request $permintaan, PemasukanPengeluaran $kueri, PenyusunBukuPemasukanPengeluaran $penyusun, PetaUuidOutlet $petaOutlet, LabaRugi $labaRugi, LaporanStok $laporanStok): SymfonyResponse
+    public function Buku(Request $permintaan, PemasukanPengeluaran $kueri, PenyusunBukuPemasukanPengeluaran $penyusun, PetaUuidOutlet $petaOutlet, LabaRugi $labaRugi, LaporanStok $laporanStok, LaporanPenjualan $laporanPenjualan): SymfonyResponse
     {
         $saring = $this->AmbilSaringLaporan($permintaan);
         $diminta = $permintaan->query('lembar', []);
@@ -117,6 +119,16 @@ final class PemasukanPengeluaranKontroler extends DasarAkuntansiKontroler
         if (in_array(PenyusunBukuPemasukanPengeluaran::KODE_STOK, $dipilih, true) && app(AksesPengguna::class)->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::PersediaanLihat)) {
             $idOutlet = $saring->idOutlet === null ? $this->IdOutletBoleh() : [$saring->idOutlet];
             $tambahan['Stok'] = $laporanStok->NilaiPersediaan(CarbonImmutable::parse($hitungan->saring->sampai), $idOutlet);
+        }
+
+        // Penjualan per produk memakai HPP dan butuh izin laporan penjualan: tanpa izin itu lembarnya dilewati.
+        if (in_array(PenyusunBukuPemasukanPengeluaran::KODE_PENJUALAN_PRODUK, $dipilih, true) && app(AksesPengguna::class)->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::LaporanPenjualanLihat)) {
+            $idOutletProduk = $saring->idOutlet === null ? $this->IdOutletBoleh() : [$saring->idOutlet];
+            $tambahan['PenjualanProduk'] = $laporanPenjualan->PerProdukUntukBuku(new DataSaringLaporanPenjualan(
+                CarbonImmutable::parse($hitungan->saring->dari),
+                CarbonImmutable::parse($hitungan->saring->sampai),
+                $idOutletProduk,
+            ));
         }
 
         $namaOutlet = [];

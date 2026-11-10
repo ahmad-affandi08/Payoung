@@ -188,6 +188,18 @@ final class PenggolongUangKas
     }
 
     /**
+     * Bagian kas keluar kasir ke penampung uang laci yang barangnya sudah dicatat lewat Belanja stok (D-257).
+     *
+     * @return array{Label: string, Kelompok: string, DiLuar: bool}
+     */
+    public static function DariUangLaciTerpakai(bool $bahanBaku): array
+    {
+        return $bahanBaku
+            ? self::Hasil('Uang laci dipakai belanja bahan baku', self::KELUAR_BELANJA_BAHAN)
+            : self::Hasil('Uang laci dipakai belanja barang dagangan', self::KELUAR_BELANJA);
+    }
+
+    /**
      * @return array{Label: string, Kelompok: string, DiLuar: bool}
      */
     public static function Hasil(string $label, string $kelompok): array

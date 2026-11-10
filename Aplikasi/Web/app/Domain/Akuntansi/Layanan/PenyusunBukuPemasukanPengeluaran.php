@@ -48,14 +48,16 @@ final class PenyusunBukuPemasukanPengeluaran
 
     public const KODE_STOK = 'Stok';
 
+    public const KODE_PENJUALAN_PRODUK = 'PenjualanProduk';
+
     /** Semua kode lembar yang boleh dipilih. */
     public const KODE_LEMBAR = [
         self::KODE_RINGKASAN, self::KODE_KATEGORI, self::KODE_PER_PERIODE, self::KODE_PER_OUTLET, self::KODE_TRANSAKSI,
-        self::KODE_HUTANG_PIUTANG, self::KODE_LABA_RUGI, self::KODE_STOK,
+        self::KODE_HUTANG_PIUTANG, self::KODE_LABA_RUGI, self::KODE_STOK, self::KODE_PENJUALAN_PRODUK,
     ];
 
     /** Lembar yang bahannya dari luar laporan uang kas, jadi tidak tercentang bawaan: Laba rugi memakai HPP. */
-    public const KODE_TIDAK_BAWAAN = [self::KODE_LABA_RUGI, self::KODE_STOK];
+    public const KODE_TIDAK_BAWAAN = [self::KODE_LABA_RUGI, self::KODE_STOK, self::KODE_PENJUALAN_PRODUK];
 
     private const NAMA_RINGKASAN = 'Ringkasan';
 
@@ -70,6 +72,8 @@ final class PenyusunBukuPemasukanPengeluaran
     private const NAMA_LABA_RUGI = 'Laba rugi';
 
     private const NAMA_STOK = 'Stok';
+
+    private const NAMA_PENJUALAN_PRODUK = 'Penjualan per produk';
 
     /** Rentang (hari) paling panjang yang rincian periodenya per hari, selebihnya per bulan. */
     private const MAKS_HARI_HARIAN = 62;
@@ -119,7 +123,7 @@ final class PenyusunBukuPemasukanPengeluaran
     /**
      * @param  array<int, string>  $namaOutlet  nama outlet menurut id
      * @param  list<string>  $dipilih  kode lembar yang dipilih pengguna, lihat `KODE_LEMBAR`
-     * @param  array{LabaRugi?: array<string, mixed>, Stok?: array<string, mixed>}  $tambahan  bahan lembar opsional dari domain lain
+     * @param  array{LabaRugi?: array<string, mixed>, Stok?: array<string, mixed>, PenjualanProduk?: list<array<string, mixed>>}  $tambahan  bahan lembar opsional dari domain lain
      * @return list<LembarBuku>
      */
     public function Susun(int $idTenant, HitunganUangKas $h, array $namaOutlet, array $dipilih, string $cakupan, array $tambahan = []): array
@@ -168,6 +172,10 @@ final class PenyusunBukuPemasukanPengeluaran
 
         if ($ada(self::KODE_STOK) && isset($tambahan['Stok'])) {
             $lembar[] = new LembarBuku($this->LembarStok($tambahan['Stok'], $sampai), self::NAMA_STOK);
+        }
+
+        if ($ada(self::KODE_PENJUALAN_PRODUK) && isset($tambahan['PenjualanProduk'])) {
+            $lembar[] = new LembarBuku($this->LembarPenjualanProduk($tambahan['PenjualanProduk']), self::NAMA_PENJUALAN_PRODUK);
         }
 
         return $lembar;
@@ -750,6 +758,44 @@ final class PenyusunBukuPemasukanPengeluaran
             new KolomLaporan('Jumlah produk', JenisKolom::Bilangan, 18),
             new KolomLaporan('Nilai persediaan', JenisKolom::Uang, 24, true),
         ], static fn (): array => $isi, true, 'Nilai persediaan (HPP rata-rata) pada akhir periode, tanpa barang titipan');
+    }
+
+    /**
+     * Penjualan per produk pada periode (D-258): jumlah terjual, penjualan bersih, HPP, dan laba kotor per produk, urut
+     * penjualan bersih terbesar. HPP dan laba kotor ada di sini karena lembar ini untuk melihat produk mana yang paling
+     * menguntungkan, berbeda dengan lembar uang masuk dan keluar yang tanpa HPP.
+     *
+     * @param  list<array<string, mixed>>  $produk  hasil `LaporanPenjualan::PerProdukUntukBuku`
+     */
+    private function LembarPenjualanProduk(array $produk): DefinisiLaporan
+    {
+        $isi = array_map(static fn (array $p): array => [
+            (string) $p['NamaProduk'], (string) $p['Qty'], (string) $p['Kotor'], (string) $p['Diskon'], (string) $p['Retur'],
+            (string) $p['Bersih'], (string) $p['Hpp'], (string) $p['LabaKotor'], (int) $p['JumlahTransaksi'],
+        ], $produk);
+        $bersih = Uang::Nol();
+        $laba = Uang::Nol();
+
+        foreach ($produk as $p) {
+            $bersih = $bersih->Tambah(Uang::Dari((string) $p['Bersih']));
+            $laba = $laba->Tambah(Uang::Dari((string) $p['LabaKotor']));
+        }
+
+        return $this->Definisi('Penjualan per produk', [
+            new ItemRingkasan('Jumlah produk terjual', (string) count($produk), JenisKolom::Bilangan),
+            new ItemRingkasan('Penjualan bersih', $bersih->KeString(), JenisKolom::Uang),
+            new ItemRingkasan('Laba kotor', $laba->KeString(), JenisKolom::Uang),
+        ], [
+            new KolomLaporan('Produk', JenisKolom::Teks, 36),
+            new KolomLaporan('Jumlah terjual', JenisKolom::Kuantitas, 16),
+            new KolomLaporan('Kotor', JenisKolom::Uang, 18, true),
+            new KolomLaporan('Diskon', JenisKolom::Uang, 18, true),
+            new KolomLaporan('Retur', JenisKolom::Uang, 18, true),
+            new KolomLaporan('Penjualan bersih', JenisKolom::Uang, 20, true),
+            new KolomLaporan('HPP', JenisKolom::Uang, 18, true),
+            new KolomLaporan('Laba kotor', JenisKolom::Uang, 18, true),
+            new KolomLaporan('Jumlah transaksi', JenisKolom::Bilangan, 16),
+        ], static fn (): array => $isi, true, 'Penjualan per produk pada periode, memakai HPP (berbeda dari lembar uang masuk dan keluar)');
     }
 
     // ------------------------------------------------------------------------------------------------ bantuan

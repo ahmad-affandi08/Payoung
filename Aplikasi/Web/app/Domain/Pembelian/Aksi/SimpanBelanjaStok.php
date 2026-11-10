@@ -115,6 +115,8 @@ final class SimpanBelanjaStok
             throw new PelanggaranAturanBisnis('GudangTidakDikenal', 'Lokasi stok tidak ditemukan atau diarsipkan.', 'UuidGudang');
         }
 
+        $this->PastikanBukanCatatGanda($data, $gudang->idOutlet);
+
         $hasil = $this->pemroses->Buat(null, $pemasok, $gudang, $data->tanggal, $data->baris, $data->ongkir, $data->nomorNota, $data->catatan, $berkas, true, $data->idPengguna);
         $grn = $hasil['Dokumen'];
         $pajak = $hasil['Pajak'];
@@ -179,6 +181,29 @@ final class SimpanBelanjaStok
         ], idPengguna: $data->idPengguna);
 
         return $grn;
+    }
+
+    /**
+     * D-257: bila kasir sudah mencatat uang laci untuk belanja stok di outlet ini dan barangnya belum dicatat, belanja
+     * yang dibayar kas/bank harus dikonfirmasi bukan uang itu. Tanpa konfirmasi uangnya bisa tercatat dua kali.
+     *
+     * @throws PelanggaranAturanBisnis UangLaciMenunggu
+     */
+    private function PastikanBukanCatatGanda(DataBelanjaStok $data, ?int $idOutlet): void
+    {
+        if ($data->dariUangLaci || $data->bukanUangLaci) {
+            return;
+        }
+
+        $saldo = $this->saldoLaci->Outlet($idOutlet);
+
+        if (! $saldo->BernilaiNol()) {
+            throw new PelanggaranAturanBisnis(
+                'UangLaciMenunggu',
+                "Kasir sudah mencatat {$saldo->FormatRupiah()} dari uang laci untuk belanja stok di outlet ini, dan barangnya belum dicatat. Kalau belanja ini memakai uang itu, pilih \"Pakai uang laci kasir\" supaya tidak tercatat dua kali. Kalau bukan, centang \"Belanja ini bukan dari uang laci kasir\".",
+                'BukanUangLaci',
+            );
+        }
     }
 
     /**

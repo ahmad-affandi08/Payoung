@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Domain\Akuntansi\Data\SaringLaporanKeuangan;
 use App\Domain\Akuntansi\Enum\PeranAkun;
+use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Akuntansi\Kueri\SaldoUangLaci;
+use App\Domain\Akuntansi\Layanan\PenentuAkun;
 use App\Domain\Akuntansi\Layanan\PenggolongUangKas;
+use App\Domain\Akuntansi\Layanan\PenjagaAkunKendali;
 use App\Domain\Akuntansi\Model\PemetaanAkun;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Kuantitas;
@@ -24,6 +27,7 @@ use App\Domain\Pembelian\Layanan\PenyediaTindakanPembelian;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Katalog\BantuanKatalog;
+use Tests\Pendukung\Katalog\BantuanKomposisi;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Pembelian\BantuanPembelian;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
@@ -58,10 +62,10 @@ function SiapkanUangLaci(TestCase $tes, string $nilai = '150000.00'): array
     BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
     $gudang = Gudang::query()->where('IdOutlet', $k['Outlet']->Id)->orderBy('Id')->firstOrFail();
 
-    return $k + ['Gudang' => $gudang, 'Kategori' => $kategori];
+    return $k + ['Gudang' => $gudang, 'Kategori' => $kategori, 'Shift' => $shift];
 }
 
-function BelanjaDariLaci(array $k, Produk $produk, string $harga, string $jumlah = '1', bool $laci = true): DataBelanjaStok
+function BelanjaDariLaci(array $k, Produk $produk, string $harga, string $jumlah = '1', bool $laci = true, bool $bukanLaci = false): DataBelanjaStok
 {
     return new DataBelanjaStok(
         null,
@@ -75,6 +79,7 @@ function BelanjaDariLaci(array $k, Produk $produk, string $harga, string $jumlah
         null,
         $k['Pemilik']->Id,
         $laci,
+        $bukanLaci,
     );
 }
 
@@ -198,5 +203,64 @@ describe('D-256 uang laci dipakai belanja stok', function (): void {
             'Baris' => [['UuidProduk' => $kopi->Uuid, 'Jumlah' => '1', 'Harga' => '90000']],
         ])->assertSessionHasErrors('UuidAkun');
         expect(PenerimaanBarang::query()->count())->toBe(1);
+    });
+
+    it('laporan memecah kas keluar laci menurut belanja yang sudah dicatat: bahan baku, dagangan, dan sisa belum dirinci', function (): void {
+        $k = SiapkanUangLaci($this, '150000.00');
+        $bahan = BantuanKomposisi::BuatBahan();
+        $mi = BantuanKatalog::BuatProduk(['Nama' => 'Mi Instan Goreng Rasa Rendang isi 40']);
+
+        app(SimpanBelanjaStok::class)->Jalankan(new DataBelanjaStok(null, $k['Gudang']->Id, BantuanPembelian::Hari(), '', null, Uang::Nol(), null, [
+            new DataBarisPenerimaanBarang(null, $bahan->Uuid, null, Kuantitas::Dari('300'), Uang::Dari('300'), Uang::Nol()),
+        ], null, $k['Pemilik']->Id, true));
+        app(SimpanBelanjaStok::class)->Jalankan(BelanjaDariLaci($k, $mi, '40000', '1'));
+
+        $hari = BantuanPembelian::Hari();
+        $laporan = app(PemasukanPengeluaran::class)->Ambil(new SaringLaporanKeuangan($hari->startOfMonth()->toDateString(), $hari->toDateString(), null, null));
+        $keluar = collect($laporan['KelompokKeluar'])->keyBy('Kelompok');
+
+        expect($keluar[PenggolongUangKas::KELUAR_BELANJA_BAHAN]['Nilai'])->toBe('90000.00')
+            ->and($keluar[PenggolongUangKas::KELUAR_BELANJA]['Nilai'])->toBe('40000.00')
+            ->and($keluar[PenggolongUangKas::KELUAR_BELANJA_LACI]['Nilai'])->toBe('20000.00')
+            ->and($laporan['Ringkasan']['Keluar'])->toBe('150000.00');
+    });
+
+    it('kembalian ke laci tercatat sebagai uang masuk dan mengurangi saldo penampung', function (): void {
+        $k = SiapkanUangLaci($this, '150000.00');
+        $kembalian = KategoriKas::query()->where('Nama', SiapkanKategoriBiayaBawaan::KATEGORI_KEMBALIAN_LACI)->sole();
+        $masuk = BantuanKasir::ItemMutasiKas($k['Shift']['Uuid'], $k['Kasir'], 'Masuk', '30000.00', $kembalian, ['Catatan' => 'Kembalian belanja pasar']);
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [$masuk]))->toBe([['Diterima', null]]);
+
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $hari = BantuanPembelian::Hari();
+        $laporan = app(PemasukanPengeluaran::class)->Ambil(new SaringLaporanKeuangan($hari->startOfMonth()->toDateString(), $hari->toDateString(), null, null));
+
+        expect(app(SaldoUangLaci::class)->Outlet($k['Outlet']->Id)->KeString())->toBe('120000.00')
+            ->and($laporan['Ringkasan']['Masuk'])->toBe('30000.00')
+            ->and(collect($laporan['Masuk'])->pluck('Label')->all())->toContain('Sisa uang belanja stok kembali ke laci');
+    });
+
+    it('belanja kas/bank ditolak selama uang laci menunggu, kecuali dikonfirmasi bukan dari uang laci', function (): void {
+        $k = SiapkanUangLaci($this, '150000.00');
+        $kopi = BantuanKatalog::BuatProduk(['Nama' => 'Kopi Arabika Gayo Sangrai 1 kg']);
+
+        expect(fn () => app(SimpanBelanjaStok::class)->Jalankan(BelanjaDariLaci($k, $kopi, '50000', '1', false)))
+            ->toThrow(PelanggaranAturanBisnis::class, 'tidak tercatat dua kali');
+        expect(PenerimaanBarang::query()->count())->toBe(0);
+
+        app(SimpanBelanjaStok::class)->Jalankan(BelanjaDariLaci($k, $kopi, '50000', '1', false, true));
+
+        expect(PenerimaanBarang::query()->count())->toBe(1)
+            ->and(app(SaldoUangLaci::class)->Outlet($k['Outlet']->Id)->KeString())->toBe('150000.00');
+    });
+
+    it('saldo penampung yang keliru bisa dibersihkan lewat Jurnal umum karena bukan akun kendali', function (): void {
+        $k = SiapkanUangLaci($this, '150000.00');
+        $kode = collect(app(DaftarAkunPilihan::class)->AmbilUntukJurnalUmum([]))->pluck('Kode')->all();
+
+        expect($kode)->toContain('1-1490')
+            ->and(app(PenjagaAkunKendali::class)->AmbilPeta())->not->toHaveKey(app(PenentuAkun::class)->AmbilIdAkun(PeranAkun::KliringBelanjaLaci, null))
+            ->and($k['Tenant']->Id)->toBeInt();
     });
 });

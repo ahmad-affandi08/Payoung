@@ -42,6 +42,7 @@ describe('DialogUnduhBuku (D-255)', () => {
             'Hutang dan piutang',
             'Laba rugi',
             'Nilai stok',
+            'Penjualan per produk',
         ]);
         expect(pendek[0]?.terkunci).toBe(true);
         expect(BuatDaftarLembar(120, true).map((o) => o.judul)).toContain('Per bulan');
@@ -68,14 +69,15 @@ describe('DialogUnduhBuku (D-255)', () => {
         Pasang();
         const kotak = screen.getAllByRole('checkbox');
 
-        expect(kotak).toHaveLength(7);
-        // Laba rugi (memakai HPP) dan Stok tidak tercentang bawaan, sisanya tercentang.
+        expect(kotak).toHaveLength(8);
+        // Laba rugi, Stok, dan Penjualan per produk (memakai HPP) tidak tercentang bawaan, sisanya tercentang.
         expect(kotak.map((k) => k.getAttribute('aria-checked'))).toEqual([
             'true',
             'true',
             'true',
             'true',
             'true',
+            'false',
             'false',
             'false',
         ]);

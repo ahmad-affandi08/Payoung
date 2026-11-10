@@ -42,9 +42,9 @@ describe('PeranAkun: istilah kamus & alias kunci lama (P-03, BR-P03.4, DesainF01
             // F-21 (D-166): PPh yang dipotong pelanggan = kredit pajak (aset), bukan kontra.
             ->and(PeranAkun::PphDibayarDimuka->AmbilTipeAkun())->toBe(TipeAkun::Aset)
             ->and(PeranAkun::PphDibayarDimuka->CekWajibKontra())->toBeFalse()
-            // D-256: penampung uang laci untuk belanja stok (aset, akun kendali: saldonya mengikuti Belanja stok).
+            // D-256: penampung uang laci untuk belanja stok (aset, bukan akun kendali supaya saldo keliru bisa dibersihkan lewat Jurnal umum).
             ->and(PeranAkun::KliringBelanjaLaci->AmbilTipeAkun())->toBe(TipeAkun::Aset)
-            ->and(PeranAkun::KliringBelanjaLaci->CekAkunKendali())->toBeTrue()
+            ->and(PeranAkun::KliringBelanjaLaci->CekAkunKendali())->toBeFalse()
             ->and(PeranAkun::cases())->toHaveCount(45);
     });
 

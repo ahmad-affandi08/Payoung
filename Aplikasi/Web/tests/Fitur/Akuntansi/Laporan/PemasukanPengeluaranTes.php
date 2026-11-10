@@ -448,6 +448,38 @@ describe('D-255 pemasukan & pengeluaran', function (): void {
         expect(SelPadaBaris($perNama['Hutang & piutang'], 'Hutang ke pemasok yang belum dibayar', 'B')['V'])->toBe('0.00');
     });
 
+    it('lembar opsional Penjualan per produk: tidak ada bila tidak dipilih, berumus jumlah, dan butuh izin laporan penjualan (D-258)', function (): void {
+        expect(PenyusunBukuPemasukanPengeluaran::NormalkanPilihan(['PenjualanProduk']))->toBe(['PenjualanProduk']);
+
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $jual = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
+        $hari = CarbonImmutable::parse($jual->TanggalBisnis->toDateString());
+        $dasar = "/kelola/laporan/pemasukan-pengeluaran/buku?dari={$hari->startOfMonth()->toDateString()}&sampai={$hari->toDateString()}";
+        $masuk = BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Akuntan);
+
+        $polos = BacaBukuUang($masuk->get($dasar.'&lembar[]=Kategori')->assertOk()->streamedContent())['Lembar'];
+        expect(array_column($polos, 'Nama'))->not->toContain('Penjualan per produk');
+
+        $buku = BacaBukuUang($masuk->get($dasar.'&lembar[]=PenjualanProduk')->assertOk()->streamedContent())['Lembar'];
+        $sel = array_column($buku, 'Sel', 'Nama')['Penjualan per produk'] ?? null;
+
+        expect($sel)->not->toBeNull();
+
+        // Lembar 9 kolom: kop ringkasan ada di kolom H (label) dan I (nilai).
+        $baris = null;
+
+        foreach ($sel as $ref => $isi) {
+            if (preg_match('/^H(\d+)$/', $ref, $m) === 1 && trim((string) $isi['T']) === 'Penjualan bersih') {
+                $baris = $m[1];
+            }
+        }
+
+        expect($baris)->not->toBeNull()
+            ->and($sel['I'.$baris]['V'])->toBe('77000.00')
+            ->and(array_filter($sel, fn (array $s): bool => str_starts_with((string) $s['F'], 'SUM(')))->not->toBeEmpty();
+    });
+
     it('penggolong: jenis sumber ke bahasa pemilik, akun beban gaji dan operasional, pajak, dan akun di luar usaha', function (): void {
         $akun = fn (string $kode, string $nama, TipeAkun $tipe): Akun => (new Akun)->forceFill(['Kode' => $kode, 'Nama' => $nama, 'Jenis' => $tipe]);
 

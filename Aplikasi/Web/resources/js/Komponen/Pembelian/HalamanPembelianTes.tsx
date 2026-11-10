@@ -574,6 +574,35 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         expect(screen.getByRole('combobox', { name: 'Dibayar dari akun' })).toBeTruthy();
     });
 
+    it('belanja kas/bank saat uang laci menunggu: wajib dikonfirmasi bukan dari uang laci (D-257)', () => {
+        RenderUji(
+            <HalamanFormPenerimaan
+                Mode="BelanjaStok"
+                Pesanan={null}
+                OpsiPemasok={[Pemasok]}
+                OpsiGudang={[GudangUtama]}
+                OpsiAkun={[{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1100', Nama: 'Kas Toko' }]}
+                UangLaci={{ Total: '150000.00', PerGudang: { [GudangUtama.Uuid]: '150000.00' } }}
+                HariIni="2026-09-30"
+                Lampiran={{ Ekstensi: ['pdf', 'jpg'], UkuranMaksimalKb: 5120 }}
+                MaksimalBaris={500}
+            />,
+        );
+
+        expect(screen.getByText(/Kasir sudah mencatat Rp 150\.000 dari uang laci/)).toBeTruthy();
+        const kotak = screen.getByRole('checkbox', { name: 'Belanja ini bukan dari uang laci kasir' });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan belanja stok' }));
+        expect(screen.getByText(/Centang bila belanja ini bukan dari uang laci/)).toBeTruthy();
+        expect(tiruanRouter.post).not.toHaveBeenCalled();
+
+        fireEvent.click(kotak);
+        expect(screen.queryByText(/Centang bila belanja ini bukan dari uang laci/)).toBeNull();
+
+        // Memilih uang laci atau bayar nanti menghilangkan kewajiban konfirmasi.
+        PilihOpsi(screen.getByRole('combobox', { name: 'Pembayaran' }), 'Laci');
+        expect(screen.queryByRole('checkbox', { name: 'Belanja ini bukan dari uang laci kasir' })).toBeNull();
+    });
+
     it('faktur: harga faktur berbeda tampil sebagai selisih. Simpan mengirim harga per baris', () => {
         RenderUji(
             <HalamanFormFaktur

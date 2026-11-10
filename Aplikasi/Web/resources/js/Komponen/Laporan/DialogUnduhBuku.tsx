@@ -9,7 +9,15 @@ import { Label } from '@/Komponen/Ui/label';
 import { cn } from '@/Komponen/Ui/utils';
 
 export type KodeLembar =
-    'Ringkasan' | 'Kategori' | 'PerPeriode' | 'PerOutlet' | 'Transaksi' | 'HutangPiutang' | 'LabaRugi' | 'Stok';
+    | 'Ringkasan'
+    | 'Kategori'
+    | 'PerPeriode'
+    | 'PerOutlet'
+    | 'Transaksi'
+    | 'HutangPiutang'
+    | 'LabaRugi'
+    | 'Stok'
+    | 'PenjualanProduk';
 
 type OpsiLembar = {
     kode: KodeLembar;
@@ -77,6 +85,12 @@ export function BuatDaftarLembar(hariRentang: number, tawarkanPerOutlet: boolean
             keterangan: 'Nilai persediaan pada akhir periode',
             bukanBawaan: true,
             ikutDari: 'LabaRugi',
+        },
+        {
+            kode: 'PenjualanProduk',
+            judul: 'Penjualan per produk',
+            keterangan: 'Jumlah terjual, penjualan bersih, HPP, dan laba kotor tiap produk. Memakai HPP.',
+            bukanBawaan: true,
         },
     ];
 }

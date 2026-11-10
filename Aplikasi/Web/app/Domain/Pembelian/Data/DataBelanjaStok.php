@@ -11,7 +11,9 @@ use Illuminate\Http\UploadedFile;
 /**
  * Masukan `SimpanBelanjaStok` (F-04 fase 1, mode UMKM): pemasok opsional, lokasi stok (sudah diperiksa batas outlet),
  * baris tanpa PO, ongkir, akun kas/bank pembayar, dan nomor nota pemasok opsional. `dariUangLaci` (D-256): dibayar dari uang
- * laci kasir yang sudah dicatat keluar di POS (melunasi akun penampung), jadi `uuidAkun` kosong.
+ * laci kasir yang sudah dicatat keluar di POS (melunasi akun penampung), jadi `uuidAkun` kosong. `bukanUangLaci` (D-257)
+ * adalah konfirmasi pemilik bahwa belanja yang dibayar kas/bank ini bukan uang laci yang sudah dicatat kasir, supaya tidak
+ * tercatat dua kali.
  */
 final readonly class DataBelanjaStok
 {
@@ -30,5 +32,6 @@ final readonly class DataBelanjaStok
         public ?UploadedFile $lampiran,
         public int $idPengguna,
         public bool $dariUangLaci = false,
+        public bool $bukanUangLaci = false,
     ) {}
 }

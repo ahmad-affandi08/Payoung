@@ -8,6 +8,7 @@ import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import BidangUang from '@/Komponen/Formulir/BidangUang';
+import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
@@ -113,6 +114,8 @@ export default function HalamanFormPenerimaan({
     const [bayarNanti, AturBayarNanti] = useState(false);
     // D-256: dibayar dari uang laci kasir yang sudah dicatat keluar di POS (tanpa akun kas/bank).
     const [dariLaci, AturDariLaci] = useState(false);
+    // D-257: konfirmasi belanja kas/bank ini bukan uang laci yang sudah dicatat kasir (mencegah catat ganda).
+    const [bukanLaci, AturBukanLaci] = useState(false);
     const [termin, AturTermin] = useState('30');
     const [tanggal, AturTanggal] = useState(Pesanan?.TanggalPenerimaan ?? HariIni);
     const [nomor, AturNomor] = useState('');
@@ -138,6 +141,19 @@ export default function HalamanFormPenerimaan({
         ),
     );
     const [periksa, AturPeriksa] = useState(false);
+    // Uang laci yang dicatat kasir untuk lokasi ini dan belum ada barangnya (D-256).
+    const saldoLaciGudang = gudang === '' ? undefined : UangLaci.PerGudang[gudang];
+    const butuhKonfirmasiLaci =
+        belanja &&
+        !bayarNanti &&
+        !dariLaci &&
+        saldoLaciGudang !== undefined &&
+        BandingkanDesimal(saldoLaciGudang, '0') > 0;
+    const pesanKonfirmasiLaci =
+        galat.BukanUangLaci ??
+        (periksa && butuhKonfirmasiLaci && !bukanLaci
+            ? 'Centang bila belanja ini bukan dari uang laci, atau pilih "Pakai uang laci kasir".'
+            : undefined);
     // Draf otomatis hanya untuk penerimaan tanpa pesanan dan belanja stok (baris diketik sendiri).
     const draf = useDrafLokal({
         nama: belanja ? 'belanja-stok' : 'penerimaan-tanpa-pesanan',
@@ -215,6 +231,7 @@ export default function HalamanFormPenerimaan({
             adaGalat =
                 gudang === '' ||
                 (belanja && !bayarNanti && !dariLaci && akun === '') ||
+                (butuhKonfirmasiLaci && !bukanLaci) ||
                 (belanja && bayarNanti && (pemasok === '' || !CekTerminValid(termin))) ||
                 baris.length === 0 ||
                 baris.some((b) => Object.keys(PeriksaBaris(b, { wajibHarga: true, pelacakan: true })).length > 0);
@@ -234,6 +251,7 @@ export default function HalamanFormPenerimaan({
                 ? {
                       BayarNanti: bayarNanti,
                       DariUangLaci: dariLaci && !bayarNanti,
+                      BukanUangLaci: butuhKonfirmasiLaci && bukanLaci,
                       TerminHari: bayarNanti ? Number(termin) : null,
                   }
                 : {}),
@@ -267,6 +285,7 @@ export default function HalamanFormPenerimaan({
                     'UuidPemasok',
                     'UuidGudang',
                     'UuidAkun',
+                    'BukanUangLaci',
                     'TerminHari',
                     'Tanggal',
                     'NomorSuratJalan',
@@ -376,6 +395,23 @@ export default function HalamanFormPenerimaan({
                                     ? `Uang laci yang dicatat kasir untuk belanja stok di lokasi ini: ${FormatRupiah(UangLaci.PerGudang[gudang])}. Total belanja tidak boleh melebihi angka itu.`
                                     : 'Pilih lokasi stok untuk melihat uang laci yang dicatat kasir di outlet itu.'}
                             </p>
+                        ) : null}
+                        {butuhKonfirmasiLaci && saldoLaciGudang !== undefined ? (
+                            <div className="grid gap-1 sm:col-span-2 lg:col-span-3">
+                                <p className="text-keterangan text-teks-sekunder">
+                                    {`Kasir sudah mencatat ${FormatRupiah(saldoLaciGudang)} dari uang laci untuk belanja stok di lokasi ini, dan barangnya belum dicatat. Kalau belanja ini memakai uang itu, ubah pembayaran ke "Pakai uang laci kasir" supaya tidak tercatat dua kali.`}
+                                </p>
+                                <KotakCentang
+                                    label="Belanja ini bukan dari uang laci kasir"
+                                    nilai={bukanLaci}
+                                    saatBerubah={AturBukanLaci}
+                                />
+                                {pesanKonfirmasiLaci !== undefined ? (
+                                    <p role="alert" className="text-keterangan font-semibold text-bahaya">
+                                        {pesanKonfirmasiLaci}
+                                    </p>
+                                ) : null}
+                            </div>
                         ) : null}
                         {belanja && !bayarNanti && !dariLaci ? (
                             <BidangPilihan

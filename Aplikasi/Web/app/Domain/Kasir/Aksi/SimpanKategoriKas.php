@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Kasir\Aksi;
 
-use App\Domain\Akuntansi\Enum\PeranAkun;
 use App\Domain\Akuntansi\Enum\TipeAkun;
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
 use App\Domain\Akuntansi\Layanan\PenjagaAkunKendali;
@@ -19,8 +18,7 @@ use Illuminate\Support\Facades\DB;
  * Membuat atau mengubah kategori kas (back-office, F-06). Nama unik per jenis. Akun lawan: kategori Keluar ke akun
  * Beban/Aset/HPP/Kewajiban (misal kasbon karyawan = aset, bayar hutang kecil = kewajiban); kategori Masuk ke akun
  * Pendapatan/Ekuitas/Kewajiban/Aset (misal tambahan modal = ekuitas). Akun kendali (persediaan, piutang, hutang,
- * deposit, dst.) ditolak karena saldonya turunan dokumen modulnya (aturan #9); satu-satunya pengecualian adalah akun
- * penampung belanja stok dari uang laci (D-256). Jenis tidak bisa diubah setelah dibuat agar riwayat mutasi tetap
+ * deposit, dst.) ditolak karena saldonya turunan dokumen modulnya (aturan #9, D-256). Jenis tidak bisa diubah setelah dibuat agar riwayat mutasi tetap
  * konsisten. Audit `kas.kategori.simpan`.
  */
 final class SimpanKategoriKas
@@ -60,7 +58,7 @@ final class SimpanKategoriKas
             throw new PelanggaranAturanBisnis('AkunTidakValid', 'Pilih akun yang sesuai untuk kategori '.mb_strtolower($data->jenis->AmbilLabel()).'.', 'UuidAkun');
         }
 
-        $this->penjaga->PastikanBukanKendali($akun['Id'], 'UuidAkun', PeranAkun::KliringBelanjaLaci);
+        $this->penjaga->PastikanBukanKendali($akun['Id'], 'UuidAkun');
 
         return DB::transaction(function () use ($data, $kategori, $nama, $akun): KategoriKas {
             $ganda = KategoriKas::query()
