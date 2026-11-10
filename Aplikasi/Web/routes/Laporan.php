@@ -35,6 +35,8 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): voi
         // D-255: uang masuk dan keluar kas & bank per periode (bahasa pemilik, tanpa HPP).
         Route::get('/laporan/pemasukan-pengeluaran', [PemasukanPengeluaranKontroler::class, 'Halaman'])->name('kelola.laporan.pemasukan-pengeluaran');
         Route::get('/laporan/pemasukan-pengeluaran/ekspor', [PemasukanPengeluaranKontroler::class, 'Ekspor'])->name('kelola.laporan.pemasukan-pengeluaran.ekspor');
+        // Buku kerja Excel banyak lembar berumus (D-255 tahap 2), disiapkan lewat Pusat Unduhan.
+        Route::get('/laporan/pemasukan-pengeluaran/buku', [PemasukanPengeluaranKontroler::class, 'Buku'])->middleware(EksporDiLatarBelakang::class)->name('kelola.laporan.pemasukan-pengeluaran.buku');
         Route::get('/laporan/pajak', [LaporanKontroler::class, 'Pajak'])->name('kelola.laporan.pajak');
         Route::get('/laporan/pajak/ekspor', [LaporanKontroler::class, 'EksporPajak'])->name('kelola.laporan.pajak.ekspor');
         Route::get('/laporan/pajak/faktur-keluaran', [LaporanKontroler::class, 'RingkasFakturKeluaran'])->name('kelola.laporan.pajak.faktur-keluaran');

@@ -27,15 +27,34 @@ final class AkumulatorUangKas
     public array $perHari = [];
 
     /**
+     * Rincian per tanggal, outlet, arah, kelompok, dan kategori (dasar lembar Transaksi di Excel). `Arah` = `Masuk`,
+     * `Keluar` (nilai positif), atau `DiLuar` (nilai bertanda, masuk positif).
+     *
+     * @var array<string, array{Tanggal: string, IdOutlet: int|null, Arah: string, Kelompok: string, Label: string, Nilai: Uang}>
+     */
+    public array $rincian = [];
+
+    /**
      * @param  array{Label: string, Kelompok: string, DiLuar: bool}  $golongan
      */
-    public function Tambah(string $tanggal, bool $masuk, array $golongan, Uang $nilai): void
+    public function Tambah(string $tanggal, bool $masuk, array $golongan, Uang $nilai, ?int $idOutlet = null): void
     {
         if ($nilai->BernilaiNol()) {
             return;
         }
 
         $kunci = $golongan['Kelompok'].'|'.$golongan['Label'];
+        $arah = $golongan['DiLuar'] ? 'DiLuar' : ($masuk ? 'Masuk' : 'Keluar');
+        $kunciRincian = $tanggal.'|'.($idOutlet ?? '').'|'.$arah.'|'.$kunci;
+        $bertanda = $golongan['DiLuar'] && ! $masuk ? Uang::Nol()->Kurangi($nilai) : $nilai;
+        $this->rincian[$kunciRincian] = [
+            'Tanggal' => $tanggal,
+            'IdOutlet' => $idOutlet,
+            'Arah' => $arah,
+            'Kelompok' => $golongan['Kelompok'],
+            'Label' => $golongan['Label'],
+            'Nilai' => ($this->rincian[$kunciRincian]['Nilai'] ?? Uang::Nol())->Tambah($bertanda),
+        ];
 
         if ($golongan['DiLuar']) {
             $lama = $this->diLuar[$kunci]['Nilai'] ?? Uang::Nol();
@@ -63,9 +82,9 @@ final class AkumulatorUangKas
      *
      * @param  array{Label: string, Kelompok: string, DiLuar: bool}  $golongan
      */
-    public function TambahBertanda(string $tanggal, array $golongan, Uang $nilai): void
+    public function TambahBertanda(string $tanggal, array $golongan, Uang $nilai, ?int $idOutlet = null): void
     {
-        $this->Tambah($tanggal, ! $nilai->BernilaiNegatif(), $golongan, $nilai->BernilaiNegatif() ? Uang::Nol()->Kurangi($nilai) : $nilai);
+        $this->Tambah($tanggal, ! $nilai->BernilaiNegatif(), $golongan, $nilai->BernilaiNegatif() ? Uang::Nol()->Kurangi($nilai) : $nilai, $idOutlet);
     }
 
     public function TotalMasuk(): Uang

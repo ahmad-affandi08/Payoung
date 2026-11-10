@@ -11,7 +11,7 @@ final readonly class ItemRingkasan
 {
     public function __construct(
         public string $label,
-        public string|int|null $nilai,
+        public string|int|RumusExcel|null $nilai,
         public JenisKolom $jenis = JenisKolom::Uang,
     ) {}
 }

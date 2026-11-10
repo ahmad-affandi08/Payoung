@@ -14,6 +14,7 @@ use App\Domain\Akuntansi\Enum\TipeAkun;
 use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
 use App\Domain\Akuntansi\Layanan\PenggolongUangKas;
 use App\Domain\Akuntansi\Model\Akun;
+use App\Domain\Bersama\Laporan\PenulisXlsxLaporan;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use Carbon\CarbonImmutable;
@@ -68,6 +69,59 @@ function LaporanUang(mixed $uji, int $idTenant, string $dari, string $sampai, Pe
         });
 
     return $hasil;
+}
+
+/**
+ * Membaca buku kerja .xlsx hasil unduhan: nama lembar, status tersembunyi, dan sel tiap lembar (teks, nilai, rumus).
+ *
+ * @return array{Lembar: list<array{Nama: string, Tersembunyi: bool, Sel: array<string, array{T: string|null, V: string|null, F: string|null}>}>}
+ */
+function BacaBukuUang(string $isi): array
+{
+    $path = tempnam(sys_get_temp_dir(), 'buku');
+    file_put_contents($path, $isi);
+    $zip = new ZipArchive;
+    expect($zip->open($path))->toBeTrue();
+    $buku = new DOMDocument;
+    $buku->loadXML((string) $zip->getFromName('xl/workbook.xml'));
+    $lembar = [];
+
+    foreach ($buku->getElementsByTagName('sheet') as $i => $lembarXml) {
+        $dokumen = new DOMDocument;
+        $dokumen->loadXML((string) $zip->getFromName('xl/worksheets/sheet'.($i + 1).'.xml'));
+        $sel = [];
+
+        foreach ($dokumen->getElementsByTagName('c') as $c) {
+            $teks = $c->getElementsByTagName('t')->item(0);
+            $nilai = $c->getElementsByTagName('v')->item(0);
+            $rumus = $c->getElementsByTagName('f')->item(0);
+            $sel[$c->getAttribute('r')] = ['T' => $teks?->textContent, 'V' => $nilai?->textContent, 'F' => $rumus?->textContent];
+        }
+
+        $lembar[] = ['Nama' => $lembarXml->getAttribute('name'), 'Tersembunyi' => $lembarXml->getAttribute('state') === 'hidden', 'Sel' => $sel];
+    }
+
+    $zip->close();
+    unlink($path);
+
+    return ['Lembar' => $lembar];
+}
+
+/**
+ * Nilai tersimpan sel di kolom `$kolom` pada baris yang kolom A-nya berisi `$label` (teks, dipangkas).
+ *
+ * @param  array<string, array{T: string|null, V: string|null, F: string|null}>  $sel
+ * @return array{T: string|null, V: string|null, F: string|null}|null
+ */
+function SelPadaBaris(array $sel, string $label, string $kolom): ?array
+{
+    foreach ($sel as $ref => $isi) {
+        if (preg_match('/^A(\d+)$/', $ref, $m) === 1 && trim((string) $isi['T']) === $label) {
+            return $sel[$kolom.$m[1]] ?? null;
+        }
+    }
+
+    return null;
 }
 
 describe('D-255 pemasukan & pengeluaran', function (): void {
@@ -254,6 +308,86 @@ describe('D-255 pemasukan & pengeluaran', function (): void {
         'Januari berjalan' => ['2026-01-01', '2026-01-15', ['2025-12-01', '2025-12-15', 'BulanLalu']],
         'rentang bebas' => ['2026-10-05', '2026-10-14', ['2026-09-25', '2026-10-04', 'PeriodeSebelumnya']],
     ]);
+
+    it('buku Excel banyak lembar berumus: lembar terpilih tampil, lembar yang dibutuhkan rumus disembunyikan, angka sama dengan laporan', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        $minyak = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);
+        $jual = BantuanPenjualan::Jual($this, $k, ['Baris' => [['Produk' => $minyak, 'Jumlah' => '2', 'Harga' => '38500.00']]]);
+        $hari = CarbonImmutable::parse($jual->TanggalBisnis->toDateString());
+        $awal = $hari->startOfMonth()->toDateString();
+
+        CatatKasBankUang('Penerimaan', $hari->toDateString(), '3-1000', '1-1200', '5000000.00', 'Tambahan modal pemilik');
+        CatatKasBankUang('Pengeluaran', $hari->toDateString(), '1-1100', '6-2000', '250000.00', 'Bayar listrik PLN', $k['Outlet']->Id);
+        CatatKasBankUang('Transfer', $hari->toDateString(), '1-1200', '1-1150', '1000000.00', 'Ambil tunai ke brankas');
+
+        $penjualan = Uang::Dari($jual->TotalAkhir);
+        $selisih = $penjualan->Kurangi(Uang::Dari('250000.00'));
+        $masuk = BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Akuntan);
+        $dasar = "/kelola/laporan/pemasukan-pengeluaran/buku?dari={$awal}&sampai={$hari->toDateString()}";
+
+        $semua = $masuk->get($dasar.'&lembar[]=Ringkasan&lembar[]=Kategori&lembar[]=PerPeriode&lembar[]=PerOutlet&lembar[]=Transaksi')->assertOk();
+        $semua->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $buku = BacaBukuUang($semua->streamedContent())['Lembar'];
+        $nama = array_column($buku, 'Nama');
+
+        expect($nama)->toBe(['Ringkasan', 'Pemasukan', 'Pengeluaran', 'Per hari', 'Per outlet', 'Transaksi'])
+            ->and(array_column($buku, 'Tersembunyi'))->toBe([false, false, false, false, false, false]);
+
+        // Setiap rujukan lembar di rumus menunjuk lembar yang ada, dan semua lembar punya rumus kecuali Transaksi.
+        foreach ($buku as $lembar) {
+            foreach ($lembar['Sel'] as $sel) {
+                foreach ($sel['F'] !== null ? [$sel['F']] : [] as $rumus) {
+                    preg_match_all("/'([^']+)'!/", $rumus, $rujukan);
+                    expect(array_diff($rujukan[1], $nama))->toBe([]);
+                }
+            }
+        }
+
+        $ringkasan = $buku[0]['Sel'];
+        $uangMasuk = SelPadaBaris($ringkasan, 'Total uang masuk', 'B');
+        $uangKeluar = SelPadaBaris($ringkasan, 'Total uang keluar', 'B');
+        $selisihSel = SelPadaBaris($ringkasan, 'Selisih uang', 'B');
+        $diLuar = SelPadaBaris($ringkasan, 'Modal, prive, pinjaman, dan beli aset (bertanda)', 'B');
+        $perubahan = SelPadaBaris($ringkasan, 'Perubahan saldo kas dan bank', 'B');
+
+        expect($uangMasuk['V'])->toBe($penjualan->KeString())
+            ->and($uangMasuk['F'])->toStartWith('SUM(B')
+            ->and($uangKeluar['V'])->toBe('250000.00')
+            ->and($selisihSel['V'])->toBe($selisih->KeString())
+            ->and($selisihSel['F'])->toMatch('/^B\d+-B\d+$/')
+            ->and($diLuar['V'])->toBe('5000000.00')
+            ->and($diLuar['F'])->toStartWith("SUM('Transaksi'!\$H\$")
+            ->and($perubahan['V'])->toBe($selisih->Tambah(Uang::Dari('5000000.00'))->KeString());
+
+        // Lembar Transaksi: Σ uang masuk = penjualan, Σ uang keluar = beban, baris di luar usaha terpisah.
+        $transaksi = $buku[5]['Sel'];
+        // Data mulai di baris pertama setelah header (kop 8 kolom, 3 saringan, 3 item ringkasan).
+        $barisData = PenulisXlsxLaporan::HitungBarisDataPertama(8, 3, 3);
+        $total = fn (string $kolom): string => (string) array_reduce(
+            array_keys($transaksi),
+            fn (Uang $akum, string $ref): Uang => preg_match('/^'.$kolom.'(\d+)$/', $ref, $m) === 1 && (int) $m[1] >= $barisData && $transaksi[$ref]['F'] === null && is_numeric($transaksi[$ref]['V']) ? $akum->Tambah(Uang::Dari((string) $transaksi[$ref]['V'])) : $akum,
+            Uang::Nol(),
+        )->KeString();
+        expect($total('F'))->toBe($penjualan->KeString())
+            ->and($total('G'))->toBe('250000.00')
+            ->and($total('H'))->toBe('5000000.00');
+
+        // Lembar Per hari: jumlah baris Jumlah berumus SUM dan sama dengan total.
+        $perHari = $buku[3]['Sel'];
+        expect(SelPadaBaris($perHari, 'Jumlah', 'C')['F'])->toStartWith('SUM(C')
+            ->and(SelPadaBaris($perHari, 'Jumlah', 'C')['V'])->toBe($penjualan->KeString());
+
+        // Hanya Ringkasan dipilih: Pemasukan, Pengeluaran, dan Transaksi tetap ada tetapi tersembunyi, tanpa Per hari.
+        $hanya = $masuk->get($dasar.'&lembar[]=Ringkasan')->assertOk();
+        $ringkas = BacaBukuUang($hanya->streamedContent())['Lembar'];
+        expect(array_column($ringkas, 'Nama'))->toBe(['Ringkasan', 'Pemasukan', 'Pengeluaran', 'Transaksi'])
+            ->and(array_column($ringkas, 'Tersembunyi'))->toBe([false, true, true, true]);
+
+        // Kode lembar yang tidak dikenal diabaikan, izin dijaga.
+        $asing = $masuk->get($dasar.'&lembar[]=Rahasia&lembar[]=PerOutlet')->assertOk();
+        expect(array_column(BacaBukuUang($asing->streamedContent())['Lembar'], 'Nama'))->toBe(['Ringkasan', 'Pemasukan', 'Pengeluaran', 'Per outlet', 'Transaksi']);
+        BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::Kasir)->get($dasar)->assertForbidden();
+    });
 
     it('penggolong: jenis sumber ke bahasa pemilik, akun beban gaji dan operasional, pajak, dan akun di luar usaha', function (): void {
         $akun = fn (string $kode, string $nama, TipeAkun $tipe): Akun => (new Akun)->forceFill(['Kode' => $kode, 'Nama' => $nama, 'Jenis' => $tipe]);

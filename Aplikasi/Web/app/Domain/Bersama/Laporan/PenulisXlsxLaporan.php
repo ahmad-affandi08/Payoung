@@ -83,7 +83,21 @@ final class PenulisXlsxLaporan
 
     public static function Alirkan(DefinisiLaporan $definisi): StreamedResponse
     {
-        $berkas = self::Tulis($definisi);
+        return self::AlirkanBerkas(self::Tulis($definisi), $definisi->namaBerkas);
+    }
+
+    /**
+     * Buku kerja Excel banyak lembar (D-255), lembar boleh berumus dan disembunyikan.
+     *
+     * @param  list<LembarBuku>  $lembar
+     */
+    public static function AlirkanBuku(array $lembar, string $namaBerkas): StreamedResponse
+    {
+        return self::AlirkanBerkas(self::TulisBuku($lembar), $namaBerkas);
+    }
+
+    private static function AlirkanBerkas(string $berkas, string $namaBerkas): StreamedResponse
+    {
         $ukuran = filesize($berkas);
 
         return new StreamedResponse(function () use ($berkas): void {
@@ -100,7 +114,7 @@ final class PenulisXlsxLaporan
             self::Bersihkan($berkas);
         }, 200, [
             'Content-Type' => self::TIPE_KONTEN,
-            'Content-Disposition' => 'attachment; filename="'.self::AmankanNamaBerkas($definisi->namaBerkas).'.xlsx"',
+            'Content-Disposition' => 'attachment; filename="'.self::AmankanNamaBerkas($namaBerkas).'.xlsx"',
             'Content-Length' => $ukuran === false ? '' : (string) $ukuran,
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
@@ -118,6 +132,17 @@ final class PenulisXlsxLaporan
      */
     public static function Tulis(DefinisiLaporan $d): string
     {
+        return self::TulisBuku([new LembarBuku($d, self::AmankanNamaSheet($d->judul))]);
+    }
+
+    /**
+     * Menulis buku kerja satu atau banyak lembar. Nama lembar harus unik dan sudah aman (`AmankanNamaSheet`), karena
+     * rumus lembar lain merujuknya. Bila ada sel `RumusExcel`, buku dihitung ulang penuh saat dibuka.
+     *
+     * @param  list<LembarBuku>  $lembar
+     */
+    public static function TulisBuku(array $lembar): string
+    {
         $folder = sys_get_temp_dir().'/payoung-laporan-'.bin2hex(random_bytes(8));
 
         if (! mkdir($folder, 0700, true) && ! is_dir($folder)) {
@@ -125,7 +150,7 @@ final class PenulisXlsxLaporan
         }
 
         try {
-            return self::TulisKeFolder($d, $folder);
+            return self::RakitBuku($lembar, $folder);
         } catch (Throwable $galat) {
             self::BersihkanFolder($folder);
 
@@ -133,12 +158,112 @@ final class PenulisXlsxLaporan
         }
     }
 
-    private static function TulisKeFolder(DefinisiLaporan $d, string $folder): string
+    /**
+     * Nomor baris Excel data pertama pada sebuah lembar, dari jumlah kolom, baris saringan (tanpa baris Zona Waktu yang
+     * selalu ditambahkan penulis), dan item ringkasan. Dipakai penyusun buku kerja untuk menulis rumus yang merujuk lembar
+     * lain sebelum lembar itu ditulis. Rumusnya sama dengan `TulisLembar`: jaga keduanya tetap sejalan.
+     */
+    public static function HitungBarisDataPertama(int $jumlahKolom, int $jumlahSaringan, int $jumlahRingkasan): int
+    {
+        $saringan = $jumlahSaringan + 1;
+        $barisBlok = max(1, $jumlahKolom) >= 5 ? max($saringan, $jumlahRingkasan) : $saringan + $jumlahRingkasan;
+
+        return 3 + $barisBlok + 5 + 1;
+    }
+
+    /**
+     * @param  list<LembarBuku>  $lembar
+     */
+    private static function RakitBuku(array $lembar, string $folder): string
+    {
+        if ($lembar === []) {
+            throw new RuntimeException('Buku kerja minimal berisi satu lembar.');
+        }
+
+        $dibuat = $lembar[0]->definisi->dibuatPada ?? new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $info = [];
+        $berumus = false;
+        $namaPakai = [];
+
+        foreach ($lembar as $i => $satu) {
+            if (in_array(mb_strtolower($satu->nama), $namaPakai, true)) {
+                throw new RuntimeException('Nama lembar kembar: '.$satu->nama);
+            }
+
+            $namaPakai[] = mb_strtolower($satu->nama);
+            $hasil = self::TulisLembar($satu->definisi, $folder.'/sheet'.($i + 1).'.xml', $i === 0, $dibuat);
+            $berumus = $berumus || $hasil['Berumus'];
+            $info[$i] = $hasil;
+        }
+
+        $path = $folder.'/laporan.xlsx';
+        $zip = new ZipArchive;
+
+        if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('Berkas Excel gagal dibuat.');
+        }
+
+        $denganGambar = [];
+
+        foreach ($info as $i => $hasil) {
+            if ($hasil['Gambar'] !== []) {
+                $denganGambar[] = $i + 1;
+            }
+        }
+
+        $zip->addFromString('[Content_Types].xml', self::TipeKonten(count($lembar), $denganGambar));
+        $zip->addFromString('_rels/.rels', self::RelasiPaket());
+        $zip->addFromString('docProps/core.xml', self::PropertiInti($lembar[0]->definisi->judul, $dibuat));
+        $zip->addFromString('xl/workbook.xml', self::Buku($lembar, $info, $berumus));
+        $zip->addFromString('xl/_rels/workbook.xml.rels', self::RelasiBuku(count($lembar)));
+        $zip->addFromString('xl/styles.xml', self::Gaya());
+
+        // Berkas gambar diberi nomor berurutan di seluruh buku (image1.png, image2.png, …).
+        $nomorGambar = 0;
+
+        foreach ($info as $i => $hasil) {
+            $nomor = $i + 1;
+            $zip->addFile($folder.'/sheet'.$nomor.'.xml', 'xl/worksheets/sheet'.$nomor.'.xml');
+
+            if ($hasil['Gambar'] === []) {
+                continue;
+            }
+
+            $nomorMedia = [];
+
+            foreach ($hasil['Gambar'] as $g) {
+                $nomorGambar++;
+                $nomorMedia[] = $nomorGambar;
+                $zip->addFromString('xl/media/image'.$nomorGambar.'.png', $g['Png']);
+            }
+
+            $zip->addFromString('xl/worksheets/_rels/sheet'.$nomor.'.xml.rels', self::RelasiSheet($nomor));
+            $zip->addFromString('xl/drawings/drawing'.$nomor.'.xml', self::Gambar($hasil['Gambar']));
+            $zip->addFromString('xl/drawings/_rels/drawing'.$nomor.'.xml.rels', self::RelasiGambar($nomorMedia));
+        }
+
+        if (! $zip->close()) {
+            throw new RuntimeException('Berkas Excel gagal ditutup.');
+        }
+
+        foreach (array_keys($info) as $i) {
+            @unlink($folder.'/sheet'.($i + 1).'.xml');
+        }
+
+        return $path;
+    }
+
+    /**
+     * Menulis XML satu lembar ke `$berkasSheet` dan mengembalikan keterangan yang dibutuhkan perakit paket.
+     *
+     * @return array{BarisHeader: int, AkhirFilter: int, KolomTerakhir: int, Gambar: list<array{Png: string, Kolom: int, Baris: int, Lebar: int, Tinggi: int}>, Berumus: bool}
+     */
+    private static function TulisLembar(DefinisiLaporan $d, string $berkasSheet, bool $terpilih, DateTimeImmutable $dibuat): array
     {
         $zona = ZonaLaporan::Buat($d->zonaWaktu);
         $jumlahKolom = max(1, count($d->kolom));
         $kolomTerakhir = $jumlahKolom - 1;
-        $dibuat = $d->dibuatPada ?? new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $berumus = false;
 
         $logoUsaha = GambarLaporan::Siapkan($d->logo, 44);
         $logoPayoung = GambarLaporan::LogoPayoung(26);
@@ -153,9 +278,9 @@ final class PenulisXlsxLaporan
         $barisHeader = $akhirBlok + 5;
 
         // Sel kop dikumpulkan per baris lalu ditulis berurutan.
-        /** @var array<int, array<int, array{0: int, 1: string|int|null, 2: string}>> $kop */
+        /** @var array<int, array<int, array{0: int, 1: string|int|RumusExcel|null, 2: string}>> $kop */
         $kop = [];
-        $taruh = static function (int $baris, int $kolom, string|int|null $nilai, int $gaya, string $jenis = 's') use (&$kop): void {
+        $taruh = static function (int $baris, int $kolom, string|int|RumusExcel|null $nilai, int $gaya, string $jenis = 's') use (&$kop): void {
             $kop[$baris][$kolom] = [$gaya, $nilai, $jenis];
         };
 
@@ -185,7 +310,15 @@ final class PenulisXlsxLaporan
             // Rata kanan: label panjang meluap ke kiri (sel kosong) dan tidak terpotong oleh nilai di sebelahnya.
             $taruh($r, $kolomLabelRingkas, $item->label, self::G_LABEL_KANAN);
             [$gaya, $jenisSel] = self::GayaRingkasan($item);
-            $taruh($r, $kolomNilaiRingkas, $item->nilai, $gaya, $jenisSel === 'n' && self::CekAngkaTeks($item->nilai) ? 'n' : 's');
+
+            if ($item->nilai instanceof RumusExcel) {
+                $jenisIsi = 'f';
+                $berumus = true;
+            } else {
+                $jenisIsi = $jenisSel === 'n' && self::CekAngkaTeks($item->nilai) ? 'n' : 's';
+            }
+
+            $taruh($r, $kolomNilaiRingkas, $item->nilai, $gaya, $jenisIsi);
             $r++;
         }
 
@@ -196,7 +329,6 @@ final class PenulisXlsxLaporan
         }
 
         // Lembar kerja.
-        $berkasSheet = $folder.'/sheet1.xml';
         $x = new XMLWriter;
         $x->openUri($berkasSheet);
         $x->startDocument('1.0', 'UTF-8', 'yes');
@@ -213,7 +345,11 @@ final class PenulisXlsxLaporan
         $x->startElement('sheetView');
         $x->writeAttribute('workbookViewId', '0');
         $x->writeAttribute('showGridLines', '0');
-        $x->writeAttribute('tabSelected', '1');
+
+        if ($terpilih) {
+            $x->writeAttribute('tabSelected', '1');
+        }
+
         $x->startElement('pane');
         $x->writeAttribute('ySplit', (string) $barisHeader);
         $x->writeAttribute('topLeftCell', 'A'.($barisHeader + 1));
@@ -296,6 +432,11 @@ final class PenulisXlsxLaporan
                 $nilai = $isi[$i] ?? null;
                 self::TulisSelData($x, $barisTerakhir, $i, $nilai, $kolom, $zona);
 
+                if ($nilai instanceof RumusExcel) {
+                    $berumus = true;
+                    $nilai = $nilai->nilai;
+                }
+
                 if ($kolom->jumlahkan && $kolom->jenis->CekAngka() && is_string($nilai) && self::CekAngkaTeks($nilai)) {
                     $jumlah[$i] = ($jumlah[$i] ?? BigDecimal::zero())->plus(BigDecimal::of($nilai));
                 } elseif ($kolom->jumlahkan && $kolom->jenis->CekAngka() && is_int($nilai)) {
@@ -325,7 +466,15 @@ final class PenulisXlsxLaporan
                         JenisKolom::Kuantitas => self::G_JUM_KUANTITAS,
                         default => self::G_JUM_BILANGAN,
                     };
-                    self::TulisSelTerisi($x, $barisTerakhir, $i, $gaya, (string) ($jumlah[$i] ?? BigDecimal::zero()), 'n');
+                    $total = (string) ($jumlah[$i] ?? BigDecimal::zero());
+
+                    if ($d->jumlahBerumus && $barisDataTerakhir > $barisHeader) {
+                        $berumus = true;
+                        $huruf = self::Huruf($i);
+                        self::TulisSelTerisi($x, $barisTerakhir, $i, $gaya, new RumusExcel('SUM('.$huruf.($barisHeader + 1).':'.$huruf.$barisDataTerakhir.')', $total), 'f');
+                    } else {
+                        self::TulisSelTerisi($x, $barisTerakhir, $i, $gaya, $total, 'n');
+                    }
                 } elseif ($i === 0) {
                     self::TulisSelTerisi($x, $barisTerakhir, $i, self::G_JUM_TEKS, 'Jumlah', 's');
                 } else {
@@ -387,40 +536,7 @@ final class PenulisXlsxLaporan
         $x->endDocument();
         $x->flush();
 
-        // Paket zip.
-        $path = $folder.'/laporan.xlsx';
-        $zip = new ZipArchive;
-
-        if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new RuntimeException('Berkas Excel gagal dibuat.');
-        }
-
-        $namaSheet = self::AmankanNamaSheet($d->judul);
-        $zip->addFromString('[Content_Types].xml', self::TipeKonten($gambar !== []));
-        $zip->addFromString('_rels/.rels', self::RelasiPaket());
-        $zip->addFromString('docProps/core.xml', self::PropertiInti($d->judul, $dibuat));
-        $zip->addFromString('xl/workbook.xml', self::Buku($namaSheet, $barisHeader, $akhirFilter, $kolomTerakhir));
-        $zip->addFromString('xl/_rels/workbook.xml.rels', self::RelasiBuku());
-        $zip->addFromString('xl/styles.xml', self::Gaya());
-        $zip->addFile($berkasSheet, 'xl/worksheets/sheet1.xml');
-
-        if ($gambar !== []) {
-            $zip->addFromString('xl/worksheets/_rels/sheet1.xml.rels', self::RelasiSheet());
-            $zip->addFromString('xl/drawings/drawing1.xml', self::Gambar($gambar));
-            $zip->addFromString('xl/drawings/_rels/drawing1.xml.rels', self::RelasiGambar(count($gambar)));
-
-            foreach ($gambar as $i => $g) {
-                $zip->addFromString('xl/media/image'.($i + 1).'.png', $g['Png']);
-            }
-        }
-
-        if (! $zip->close()) {
-            throw new RuntimeException('Berkas Excel gagal ditutup.');
-        }
-
-        @unlink($berkasSheet);
-
-        return $path;
+        return ['BarisHeader' => $barisHeader, 'AkhirFilter' => $akhirFilter, 'KolomTerakhir' => $kolomTerakhir, 'Gambar' => $gambar, 'Berumus' => $berumus];
     }
 
     /**
@@ -443,6 +559,13 @@ final class PenulisXlsxLaporan
 
     private static function TulisSelData(XMLWriter $x, int $baris, int $kolom, mixed $nilai, KolomLaporan $kolomLaporan, DateTimeZone $zona): void
     {
+        if ($nilai instanceof RumusExcel) {
+            $gaya = $kolomLaporan->jenis === JenisKolom::Teks ? self::G_TEKS : self::GayaData($kolomLaporan->jenis, is_string($nilai->nilai) ? $nilai->nilai : null);
+            self::TulisSelTerisi($x, $baris, $kolom, $gaya, $nilai, 'f');
+
+            return;
+        }
+
         if ($nilai === null || $nilai === '') {
             self::TulisSelTerisi($x, $baris, $kolom, self::GayaData($kolomLaporan->jenis, null), null, 'e');
 
@@ -523,13 +646,26 @@ final class PenulisXlsxLaporan
         return $hari.substr(sprintf('%.9F', $sisa / 86400), 1);
     }
 
-    private static function TulisSelTerisi(XMLWriter $x, int $baris, int $kolom, int $gaya, string|int|null $nilai, string $jenis): void
+    private static function TulisSelTerisi(XMLWriter $x, int $baris, int $kolom, int $gaya, string|int|RumusExcel|null $nilai, string $jenis): void
     {
         $x->startElement('c');
         $x->writeAttribute('r', self::Huruf($kolom).$baris);
 
         if ($gaya !== 0) {
             $x->writeAttribute('s', (string) $gaya);
+        }
+
+        // Sel berumus: rumus ditulis bersama nilai tersimpan hasil hitungan server (angka, atau teks bila bukan angka).
+        if ($nilai instanceof RumusExcel) {
+            if ($nilai->nilai === null || ! self::CekAngkaTeks($nilai->nilai)) {
+                $x->writeAttribute('t', 'str');
+            }
+
+            $x->writeElement('f', $nilai->rumus);
+            $x->writeElement('v', $nilai->nilai === null ? '' : (string) $nilai->nilai);
+            $x->endElement();
+
+            return;
         }
 
         if ($nilai === null || $nilai === '' || $jenis === 'e') {
@@ -583,7 +719,8 @@ final class PenulisXlsxLaporan
         return trim($bersih, '-.') === '' ? 'laporan' : trim($bersih, '-.');
     }
 
-    private static function AmankanNamaSheet(string $judul): string
+    /** Nama lembar yang sah di Excel: tanpa karakter terlarang, maksimal 31 huruf. */
+    public static function AmankanNamaSheet(string $judul): string
     {
         $nama = trim(trim(preg_replace('/[\[\]:*?\/\\\\]+/', ' ', $judul) ?? ''), "' ");
 
@@ -599,18 +736,29 @@ final class PenulisXlsxLaporan
         @rmdir($folder);
     }
 
-    private static function TipeKonten(bool $adaGambar): string
+    /**
+     * @param  list<int>  $denganGambar  nomor lembar (mulai 1) yang punya gambar
+     */
+    private static function TipeKonten(int $jumlahLembar, array $denganGambar): string
     {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        $isi = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             .'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             .'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             .'<Default Extension="xml" ContentType="application/xml"/>'
-            .($adaGambar ? '<Default Extension="png" ContentType="image/png"/>' : '')
-            .'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            .'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            .'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
-            .($adaGambar ? '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : '')
-            .'<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
+            .($denganGambar !== [] ? '<Default Extension="png" ContentType="image/png"/>' : '')
+            .'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
+
+        for ($n = 1; $n <= $jumlahLembar; $n++) {
+            $isi .= '<Override PartName="/xl/worksheets/sheet'.$n.'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+        }
+
+        $isi .= '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
+
+        foreach ($denganGambar as $n) {
+            $isi .= '<Override PartName="/xl/drawings/drawing'.$n.'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>';
+        }
+
+        return $isi.'<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
             .'</Types>';
     }
 
@@ -635,44 +783,64 @@ final class PenulisXlsxLaporan
             .'</cp:coreProperties>';
     }
 
-    private static function Buku(string $namaSheet, int $barisHeader, int $akhirFilter, int $kolomTerakhir): string
+    /**
+     * @param  list<LembarBuku>  $lembar
+     * @param  array<int, array{BarisHeader: int, AkhirFilter: int, KolomTerakhir: int, Gambar: list<array{Png: string, Kolom: int, Baris: int, Lebar: int, Tinggi: int}>, Berumus: bool}>  $info
+     */
+    private static function Buku(array $lembar, array $info, bool $berumus): string
     {
-        $nama = htmlspecialchars($namaSheet, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $rujukan = "'".str_replace("'", "''", $nama)."'";
+        $daftar = '';
+        $nama = '';
+
+        foreach ($lembar as $i => $satu) {
+            $teks = htmlspecialchars($satu->nama, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $rujukan = "'".str_replace("'", "''", $teks)."'";
+            $hasil = $info[$i];
+            $daftar .= '<sheet name="'.$teks.'" sheetId="'.($i + 1).'"'.($satu->tersembunyi ? ' state="hidden"' : '').' r:id="rId'.($i + 1).'"/>';
+            $nama .= '<definedName name="_xlnm._FilterDatabase" localSheetId="'.$i.'" hidden="1">'.$rujukan.'!$A$'.$hasil['BarisHeader'].':$'.self::Huruf($hasil['KolomTerakhir']).'$'.$hasil['AkhirFilter'].'</definedName>'
+                .'<definedName name="_xlnm.Print_Titles" localSheetId="'.$i.'">'.$rujukan.'!$'.$hasil['BarisHeader'].':$'.$hasil['BarisHeader'].'</definedName>';
+        }
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             .'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-            .'<sheets><sheet name="'.$nama.'" sheetId="1" r:id="rId1"/></sheets>'
-            .'<definedNames>'
-            .'<definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'.$rujukan.'!$A$'.$barisHeader.':$'.self::Huruf($kolomTerakhir).'$'.$akhirFilter.'</definedName>'
-            .'<definedName name="_xlnm.Print_Titles" localSheetId="0">'.$rujukan.'!$'.$barisHeader.':$'.$barisHeader.'</definedName>'
-            .'</definedNames>'
+            .'<sheets>'.$daftar.'</sheets>'
+            .'<definedNames>'.$nama.'</definedNames>'
+            .($berumus ? '<calcPr calcId="191029" fullCalcOnLoad="1"/>' : '')
             .'</workbook>';
     }
 
-    private static function RelasiBuku(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-            .'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
-            .'</Relationships>';
-    }
-
-    private static function RelasiSheet(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/>'
-            .'</Relationships>';
-    }
-
-    private static function RelasiGambar(int $jumlah): string
+    private static function RelasiBuku(int $jumlahLembar): string
     {
         $isi = '';
 
-        for ($i = 1; $i <= $jumlah; $i++) {
-            $isi .= '<Relationship Id="rId'.$i.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image'.$i.'.png"/>';
+        for ($n = 1; $n <= $jumlahLembar; $n++) {
+            $isi .= '<Relationship Id="rId'.$n.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'.$n.'.xml"/>';
+        }
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .$isi
+            .'<Relationship Id="rId'.($jumlahLembar + 1).'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            .'</Relationships>';
+    }
+
+    private static function RelasiSheet(int $nomor): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing'.$nomor.'.xml"/>'
+            .'</Relationships>';
+    }
+
+    /**
+     * @param  list<int>  $nomorMedia  nomor berkas `xl/media/image{n}.png` milik gambar-gambar lembar ini, berurutan
+     */
+    private static function RelasiGambar(array $nomorMedia): string
+    {
+        $isi = '';
+
+        foreach ($nomorMedia as $urutan => $media) {
+            $isi .= '<Relationship Id="rId'.($urutan + 1).'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image'.$media.'.png"/>';
         }
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'

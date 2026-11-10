@@ -75,6 +75,31 @@ describe('D-124 Pusat Unduhan: ekspor ditunda ke latar belakang', function (): v
         @unlink((string) $sementara);
     });
 
+    it('buku Excel Pemasukan & Pengeluaran (D-255) disiapkan di Pusat Unduhan dan hanya memuat lembar yang dipilih', function (): void {
+        $d = BantuanLaporan::SiapkanDataPenjualan($this);
+        BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id, PeranTenantBawaan::Akuntan);
+
+        $this->get('/kelola/laporan/pemasukan-pengeluaran/buku?dari=2026-10-01&sampai=2026-10-07&lembar[]=Ringkasan&lembar[]=PerPeriode&format=xlsx&latarbelakang=1')
+            ->assertRedirect('/kelola/unduhan');
+
+        BantuanOrganisasi::AturKonteks($d['Tenant']->Id);
+        $berkas = BerkasUnduhan::query()->sole();
+        expect($berkas->Status)->toBe(StatusBerkasUnduhan::Siap)->and($berkas->Format)->toBe('xlsx');
+
+        $zip = new ZipArchive;
+        $sementara = tempnam(sys_get_temp_dir(), 'buku-uji-');
+        file_put_contents((string) $sementara, Storage::disk('local')->get((string) $berkas->PathBerkas));
+        expect($zip->open((string) $sementara))->toBeTrue();
+        $buku = (string) $zip->getFromName('xl/workbook.xml');
+        $zip->close();
+        @unlink((string) $sementara);
+
+        // Kategori tidak dipilih: lembar Pemasukan & Pengeluaran tetap ada (dibutuhkan rumus Ringkasan) tetapi tersembunyi.
+        expect($buku)->toContain('name="Ringkasan"')->toContain('name="Per hari"')
+            ->and($buku)->toMatch('/name="Pemasukan"[^>]*state="hidden"/')
+            ->and($buku)->toMatch('/name="Transaksi"[^>]*state="hidden"/');
+    });
+
     it('cetak tidak ditunda (halaman dirender peramban) dan tanpa flag ekspor tetap langsung', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);

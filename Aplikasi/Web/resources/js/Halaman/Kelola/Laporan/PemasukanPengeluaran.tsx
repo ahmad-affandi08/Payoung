@@ -1,8 +1,11 @@
 import { router } from '@inertiajs/react';
+import { useState } from 'react';
 
 import SaringLaporan, { BuatQueryLaporan } from '@/Komponen/Akuntansi/SaringLaporan';
+import DialogUnduhBuku from '@/Komponen/Laporan/DialogUnduhBuku';
 import GrafikUangHarian from '@/Komponen/Laporan/GrafikUangHarian';
 import Panel from '@/Komponen/Kelola/Panel';
+import Tombol from '@/Komponen/Formulir/Tombol';
 import { Button } from '@/Komponen/Ui/button';
 import { cn } from '@/Komponen/Ui/utils';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -148,6 +151,8 @@ export default function HalamanPemasukanPengeluaran({ Saring, Laporan, OpsiOutle
     const aktif = CariPeriodeAktif(Saring.Dari, Saring.Sampai);
     const kosong = Laporan.Masuk.length === 0 && Laporan.Keluar.length === 0;
     const adaDiLuar = Laporan.DiLuarUsahaRincian.length > 0;
+    const [bukaUnduh, AturBukaUnduh] = useState(false);
+    const hariRentang = Periode.Hari;
 
     const Pilih = (dari: string, sampai: string) =>
         router.get(
@@ -179,7 +184,21 @@ export default function HalamanPemasukanPengeluaran({ Saring, Laporan, OpsiOutle
                         {p.label}
                     </Button>
                 ))}
+                <div className="sm:ml-auto">
+                    <Tombol varian="sekunder" onClick={() => AturBukaUnduh(true)}>
+                        Unduh laporan lengkap
+                    </Tombol>
+                </div>
             </div>
+            {bukaUnduh ? (
+                <DialogUnduhBuku
+                    alamat={alamat}
+                    saring={Saring}
+                    hariRentang={hariRentang}
+                    tawarkanPerOutlet={OpsiOutlet.length > 1 && Saring.Outlet === ''}
+                    saatTutup={() => AturBukaUnduh(false)}
+                />
+            ) : null}
 
             <SaringLaporan
                 alamat={alamat}

@@ -19,7 +19,7 @@ final readonly class DefinisiLaporan
      * @param  list<array{0: string, 1: string}>  $saringan  pasangan label dan nilai yang terbaca manusia
      * @param  list<ItemRingkasan>  $ringkasan
      * @param  list<KolomLaporan>  $kolom
-     * @param  Closure(): iterable<list<string|int|DateTimeInterface|null>>  $baris
+     * @param  Closure(): iterable<list<string|int|DateTimeInterface|RumusExcel|null>>  $baris
      */
     public function __construct(
         public string $judul,
@@ -34,6 +34,8 @@ final readonly class DefinisiLaporan
         public ?DateTimeInterface $dataTerakhir = null,
         public ?DateTimeImmutable $dibuatPada = null,
         public ?string $logo = null,
+        /** Baris "Jumlah" di kaki tabel ditulis sebagai rumus SUM (D-255), bukan angka mati. */
+        public bool $jumlahBerumus = false,
     ) {}
 
     /** Indeks kolom yang punya `jumlahkan`. */

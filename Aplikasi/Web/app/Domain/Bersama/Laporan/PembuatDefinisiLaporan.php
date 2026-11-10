@@ -29,7 +29,7 @@ final class PembuatDefinisiLaporan
      * @param  list<array{0: string, 1: string}>  $saringan
      * @param  list<ItemRingkasan>|null  $ringkasan  null = otomatis: jumlah tiap kolom `jumlahkan` dan jumlah baris
      * @param  list<KolomLaporan>  $kolom
-     * @param  Closure(): iterable<list<string|int|DateTimeInterface|null>>  $baris
+     * @param  Closure(): iterable<list<string|int|DateTimeInterface|RumusExcel|null>>  $baris
      */
     public function Buat(
         int $idTenant,
@@ -67,7 +67,7 @@ final class PembuatDefinisiLaporan
      * (BigDecimal, tanpa float). Membaca baris sekali lagi, jadi untuk sumber besar berikan ringkasan sendiri.
      *
      * @param  list<KolomLaporan>  $kolom
-     * @param  Closure(): iterable<list<string|int|DateTimeInterface|null>>  $baris
+     * @param  Closure(): iterable<list<string|int|DateTimeInterface|RumusExcel|null>>  $baris
      * @return list<ItemRingkasan>
      */
     public static function RingkasanOtomatis(array $kolom, Closure $baris): array

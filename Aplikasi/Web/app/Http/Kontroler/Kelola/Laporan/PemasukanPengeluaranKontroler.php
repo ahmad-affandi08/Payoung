@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Laporan;
 
 use App\Domain\Akuntansi\Kueri\PemasukanPengeluaran;
+use App\Domain\Akuntansi\Layanan\PenyusunBukuPemasukanPengeluaran;
 use App\Domain\Bersama\Laporan\ItemRingkasan;
 use App\Domain\Bersama\Laporan\JenisKolom;
 use App\Domain\Bersama\Laporan\KolomLaporan;
+use App\Domain\Bersama\Laporan\PenulisXlsxLaporan;
+use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Http\Kontroler\Kelola\Akuntansi\DasarAkuntansiKontroler;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -86,5 +89,31 @@ final class PemasukanPengeluaranKontroler extends DasarAkuntansiKontroler
             ],
             $this->LabelCakupan($namaOutlet),
         );
+    }
+
+    /**
+     * Buku kerja Excel banyak lembar dengan rumus (D-255 tahap 2). `lembar[]` memilih lembar (lihat
+     * `PenyusunBukuPemasukanPengeluaran::KODE_LEMBAR`), Ringkasan selalu ikut. Lembar yang dibutuhkan rumus tetapi tidak
+     * dipilih disembunyikan. Rute memasang `EksporDiLatarBelakang`, jadi berkas disiapkan lewat Pusat Unduhan.
+     */
+    public function Buku(Request $permintaan, PemasukanPengeluaran $kueri, PenyusunBukuPemasukanPengeluaran $penyusun, PetaUuidOutlet $petaOutlet): SymfonyResponse
+    {
+        $saring = $this->AmbilSaringLaporan($permintaan);
+        $diminta = $permintaan->query('lembar', []);
+        $dipilih = array_values(array_intersect(PenyusunBukuPemasukanPengeluaran::KODE_LEMBAR, is_array($diminta) ? array_map('strval', $diminta) : []));
+        $namaOutlet = [];
+        $namaDipilih = '';
+
+        foreach ($petaOutlet->AmbilRingkas($this->IdOutletBoleh()) as $o) {
+            $namaOutlet[$o['Id']] = $o['Nama'];
+
+            if ($saring->idOutlet === $o['Id']) {
+                $namaDipilih = $o['Nama'];
+            }
+        }
+
+        $lembar = $penyusun->Susun($this->IdTenant(), $kueri->Siapkan($saring), $namaOutlet, $dipilih, $this->LabelCakupan($namaDipilih));
+
+        return PenulisXlsxLaporan::AlirkanBuku($lembar, 'laporan-pemasukan-pengeluaran-'.$saring->dari.'-'.$saring->sampai);
     }
 }

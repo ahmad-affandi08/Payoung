@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Akuntansi\Kueri;
 
 use App\Domain\Akuntansi\Data\AkumulatorUangKas;
+use App\Domain\Akuntansi\Data\HitunganUangKas;
 use App\Domain\Akuntansi\Data\SaringLaporanKeuangan;
 use App\Domain\Akuntansi\Enum\JenisSumberJurnal;
 use App\Domain\Akuntansi\Enum\PeranAkun;
@@ -44,6 +45,16 @@ final class PemasukanPengeluaran
      */
     public function Ambil(SaringLaporanKeuangan $saring): array
     {
+        $h = $this->Siapkan($saring);
+
+        return $this->Susun($h->saring, $h->dariSebelumnya, $h->sampaiSebelumnya, $h->jenisPembanding, $h->kini, $h->lalu, $h->kenaikanKas, $h->catatan, $h->adaAkunKas);
+    }
+
+    /**
+     * Menghitung periode ini dan pembandingnya beserta rinciannya (dipakai halaman dan buku kerja Excel).
+     */
+    public function Siapkan(SaringLaporanKeuangan $saring): HitunganUangKas
+    {
         // Hari yang belum terjadi tidak punya uang. Memotong sampai hari ini membuat pembanding adil (1 sampai 10 Nov
         // dibanding 1 sampai 10 Okt, bukan seluruh Oktober).
         $hariIni = CarbonImmutable::today()->toDateString();
@@ -56,7 +67,7 @@ final class PemasukanPengeluaran
         $idKas = array_values(Akun::query()->where('KasBank', true)->pluck('Id')->map(fn ($id): int => (int) $id)->all());
 
         if ($idKas === []) {
-            return $this->Susun($saring, $dariLalu, $sampaiLalu, $jenisPembanding, new AkumulatorUangKas, new AkumulatorUangKas, Uang::Nol(), [], false);
+            return new HitunganUangKas($saring, $dariLalu, $sampaiLalu, $jenisPembanding, new AkumulatorUangKas, new AkumulatorUangKas, Uang::Nol(), [], false);
         }
 
         $idPajak = $this->IdAkunPeran(PeranAkun::PpnKeluaran, PeranAkun::PpnMasukan, PeranAkun::HutangPbjt);
@@ -71,7 +82,7 @@ final class PemasukanPengeluaran
             'MenungguCair' => $this->Saldo($saring, $this->IdAkunPeran(PeranAkun::PiutangPencairan), $saring->sampai, false)->KeString(),
         ];
 
-        return $this->Susun($saring, $dariLalu, $sampaiLalu, $jenisPembanding, $kini, $lalu, $kenaikan, $catatan, true);
+        return new HitunganUangKas($saring, $dariLalu, $sampaiLalu, $jenisPembanding, $kini, $lalu, $kenaikan, $catatan, true);
     }
 
     /**
@@ -132,8 +143,8 @@ final class PemasukanPengeluaran
         // 1) Jurnal yang digolongkan menurut jenis dokumen sumbernya, dijumlah per tanggal dan arah di SQL.
         $baris = DB::query()->fromSub($perJurnal, 't')
             ->whereNotIn('t.JenisSumber', $sumberAkun)
-            ->selectRaw('`t`.`Tgl` AS `Tgl`, `t`.`JenisSumber` AS `JenisSumber`, CASE WHEN `t`.`N` > 0 THEN 1 ELSE 0 END AS `Masuk`, CAST(SUM(ABS(`t`.`N`)) AS DECIMAL(20,2)) AS `Nilai`')
-            ->groupBy('Tgl', 'JenisSumber', 'Masuk')
+            ->selectRaw('`t`.`Tgl` AS `Tgl`, `t`.`IdOutlet` AS `IdOutlet`, `t`.`JenisSumber` AS `JenisSumber`, CASE WHEN `t`.`N` > 0 THEN 1 ELSE 0 END AS `Masuk`, CAST(SUM(ABS(`t`.`N`)) AS DECIMAL(20,2)) AS `Nilai`')
+            ->groupBy('Tgl', 'IdOutlet', 'JenisSumber', 'Masuk')
             ->get();
         /** @var array<string, Uang> $penjualanMasuk */
         $penjualanMasuk = [];
@@ -145,20 +156,22 @@ final class PemasukanPengeluaran
             $masuk = (int) $satu->Masuk === 1;
             $nilai = Uang::Dari((string) $satu->Nilai);
             $tanggal = (string) $satu->Tgl;
+            $idOutlet = $satu->IdOutlet === null ? null : (int) $satu->IdOutlet;
+            $kunci = $tanggal.'|'.($idOutlet ?? '');
 
             if ($jenis === JenisSumberJurnal::Penjualan && $masuk) {
-                $penjualanMasuk[$tanggal] = ($penjualanMasuk[$tanggal] ?? Uang::Nol())->Tambah($nilai);
+                $penjualanMasuk[$kunci] = ($penjualanMasuk[$kunci] ?? Uang::Nol())->Tambah($nilai);
 
                 continue;
             }
 
             if ($jenis === JenisSumberJurnal::Pencairan) {
-                $pencairan[$tanggal] = ($pencairan[$tanggal] ?? Uang::Nol())->Tambah($masuk ? $nilai : Uang::Nol()->Kurangi($nilai));
+                $pencairan[$kunci] = ($pencairan[$kunci] ?? Uang::Nol())->Tambah($masuk ? $nilai : Uang::Nol()->Kurangi($nilai));
 
                 continue;
             }
 
-            $a->Tambah($tanggal, $masuk, PenggolongUangKas::DariSumber($jenis, $masuk, (string) $satu->JenisSumber), $nilai);
+            $a->Tambah($tanggal, $masuk, PenggolongUangKas::DariSumber($jenis, $masuk, (string) $satu->JenisSumber), $nilai, $idOutlet);
         }
 
         $this->PisahkanBiayaLayanan($a, $saring, $idKas, $idLayanan, $dari, $sampai, $penjualanMasuk);
@@ -191,24 +204,25 @@ final class PemasukanPengeluaran
 
             $hasil = DB::query()->fromSub($kas, 'c')
                 ->leftJoinSub($biaya, 's', 's.IdJurnal', '=', 'c.IdJurnal')
-                ->selectRaw('`c`.`Tgl` AS `Tgl`, CAST(SUM(LEAST(GREATEST(`c`.`N`, 0), COALESCE(`s`.`S`, 0))) AS DECIMAL(20,2)) AS `Layanan`')
-                ->groupBy('c.Tgl')
+                ->selectRaw('`c`.`Tgl` AS `Tgl`, `c`.`IdOutlet` AS `IdOutlet`, CAST(SUM(LEAST(GREATEST(`c`.`N`, 0), COALESCE(`s`.`S`, 0))) AS DECIMAL(20,2)) AS `Layanan`')
+                ->groupBy('c.Tgl', 'c.IdOutlet')
                 ->get();
 
             foreach ($hasil as $satu) {
-                $layanan[(string) $satu->Tgl] = Uang::Dari((string) $satu->Layanan);
+                $layanan[(string) $satu->Tgl.'|'.($satu->IdOutlet ?? '')] = Uang::Dari((string) $satu->Layanan);
             }
         }
 
-        foreach ($penjualanMasuk as $tanggal => $nilai) {
-            $biayaLayanan = $layanan[$tanggal] ?? Uang::Nol();
+        foreach ($penjualanMasuk as $kunci => $nilai) {
+            [$tanggal, $idOutlet] = self::PecahKunci($kunci);
+            $biayaLayanan = $layanan[$kunci] ?? Uang::Nol();
 
             if ($biayaLayanan->Bandingkan($nilai) > 0) {
                 $biayaLayanan = $nilai;
             }
 
-            $a->Tambah($tanggal, true, PenggolongUangKas::DariSumber(JenisSumberJurnal::Penjualan, true), $nilai->Kurangi($biayaLayanan));
-            $a->Tambah($tanggal, true, PenggolongUangKas::Hasil('Biaya layanan (service charge)', PenggolongUangKas::MASUK_PENJUALAN), $biayaLayanan);
+            $a->Tambah($tanggal, true, PenggolongUangKas::DariSumber(JenisSumberJurnal::Penjualan, true), $nilai->Kurangi($biayaLayanan), $idOutlet);
+            $a->Tambah($tanggal, true, PenggolongUangKas::Hasil('Biaya layanan (service charge)', PenggolongUangKas::MASUK_PENJUALAN), $biayaLayanan, $idOutlet);
         }
     }
 
@@ -233,24 +247,25 @@ final class PemasukanPengeluaran
         $potongan = [];
 
         foreach ($saring->TerapkanOutlet($kueri, 'JurnalDetail.IdOutlet')
-            ->groupByRaw('DATE(`JurnalDetail`.`Tanggal`)')
-            ->selectRaw('DATE(`JurnalDetail`.`Tanggal`) AS `Tgl`, CAST(SUM(`JurnalDetail`.`Debit` - `JurnalDetail`.`Kredit`) AS DECIMAL(20,2)) AS `Potongan`')
+            ->groupByRaw('DATE(`JurnalDetail`.`Tanggal`), `JurnalDetail`.`IdOutlet`')
+            ->selectRaw('DATE(`JurnalDetail`.`Tanggal`) AS `Tgl`, `JurnalDetail`.`IdOutlet` AS `IdOutlet`, CAST(SUM(`JurnalDetail`.`Debit` - `JurnalDetail`.`Kredit`) AS DECIMAL(20,2)) AS `Potongan`')
             ->toBase()
             ->get() as $satu) {
-            $potongan[(string) $satu->Tgl] = Uang::Dari((string) $satu->Potongan);
+            $potongan[(string) $satu->Tgl.'|'.($satu->IdOutlet ?? '')] = Uang::Dari((string) $satu->Potongan);
         }
 
-        foreach ($pencairan as $tanggal => $bersih) {
-            $potong = $potongan[$tanggal] ?? Uang::Nol();
+        foreach ($pencairan as $kunci => $bersih) {
+            [$tanggal, $idOutlet] = self::PecahKunci($kunci);
+            $potong = $potongan[$kunci] ?? Uang::Nol();
 
             if ($potong->BernilaiNegatif() || $potong->BernilaiNol()) {
-                $a->TambahBertanda($tanggal, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, true), $bersih);
+                $a->TambahBertanda($tanggal, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, true), $bersih, $idOutlet);
 
                 continue;
             }
 
-            $a->Tambah($tanggal, false, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, false), $potong);
-            $a->TambahBertanda($tanggal, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, true), $bersih->Tambah($potong));
+            $a->Tambah($tanggal, false, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, false), $potong, $idOutlet);
+            $a->TambahBertanda($tanggal, PenggolongUangKas::DariSumber(JenisSumberJurnal::Pencairan, true), $bersih->Tambah($potong), $idOutlet);
         }
     }
 
@@ -265,7 +280,7 @@ final class PemasukanPengeluaran
      */
     private function GolongkanPerAkunLawan(AkumulatorUangKas $a, KueriDasar $perJurnal, array $idKas, array $idPajak, array $sumberAkun): void
     {
-        $jurnal = DB::query()->fromSub($perJurnal, 't')->whereIn('t.JenisSumber', $sumberAkun)->get(['t.IdJurnal', 't.Tgl', 't.JenisSumber', 't.N']);
+        $jurnal = DB::query()->fromSub($perJurnal, 't')->whereIn('t.JenisSumber', $sumberAkun)->get(['t.IdJurnal', 't.IdOutlet', 't.Tgl', 't.JenisSumber', 't.N']);
 
         if ($jurnal->isEmpty()) {
             return;
@@ -300,7 +315,7 @@ final class PemasukanPengeluaran
                 $golongan = PenggolongUangKas::DariSumber(JenisSumberJurnal::tryFrom((string) $satu->JenisSumber), $masuk, (string) $satu->JenisSumber);
             }
 
-            $a->Tambah((string) $satu->Tgl, $masuk, $golongan, $nilai);
+            $a->Tambah((string) $satu->Tgl, $masuk, $golongan, $nilai, $satu->IdOutlet === null ? null : (int) $satu->IdOutlet);
         }
     }
 
@@ -321,8 +336,8 @@ final class PemasukanPengeluaran
         }
 
         return $saring->TerapkanOutlet($kueri, 'JurnalDetail.IdOutlet')
-            ->groupBy('JurnalDetail.IdJurnal', 'JurnalDetail.Tanggal', 'Jurnal.JenisSumber')
-            ->selectRaw('`JurnalDetail`.`IdJurnal` AS `IdJurnal`, DATE(`JurnalDetail`.`Tanggal`) AS `Tgl`, `Jurnal`.`JenisSumber` AS `JenisSumber`, CAST(SUM(`JurnalDetail`.`Debit` - `JurnalDetail`.`Kredit`) AS DECIMAL(20,2)) AS `N`')
+            ->groupBy('JurnalDetail.IdJurnal', 'JurnalDetail.Tanggal', 'JurnalDetail.IdOutlet', 'Jurnal.JenisSumber')
+            ->selectRaw('`JurnalDetail`.`IdJurnal` AS `IdJurnal`, `JurnalDetail`.`IdOutlet` AS `IdOutlet`, DATE(`JurnalDetail`.`Tanggal`) AS `Tgl`, `Jurnal`.`JenisSumber` AS `JenisSumber`, CAST(SUM(`JurnalDetail`.`Debit` - `JurnalDetail`.`Kredit`) AS DECIMAL(20,2)) AS `N`')
             ->havingRaw('SUM(`JurnalDetail`.`Debit` - `JurnalDetail`.`Kredit`) <> 0')
             ->toBase();
     }
@@ -543,6 +558,18 @@ final class PemasukanPengeluaran
         }
 
         return ['Satuan' => $harian ? 'Hari' : 'Bulan', 'Titik' => $hasil];
+    }
+
+    /**
+     * Kunci `tanggal|idOutlet` (outlet kosong = tanpa outlet) menjadi pasangan tanggal dan id outlet.
+     *
+     * @return array{0: string, 1: int|null}
+     */
+    private static function PecahKunci(string $kunci): array
+    {
+        [$tanggal, $outlet] = explode('|', $kunci, 2) + ['', ''];
+
+        return [$tanggal, $outlet === '' ? null : (int) $outlet];
     }
 
     /** Porsi `bagian` dari `total` dalam persen satu desimal; null bila total nol. */
