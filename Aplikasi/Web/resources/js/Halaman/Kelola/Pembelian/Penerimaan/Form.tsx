@@ -95,6 +95,7 @@ export default function HalamanFormPenerimaan({
     OpsiPemasok: OpsiPemasokAwal,
     OpsiGudang,
     OpsiAkun,
+    UangLaci,
     HariIni,
     Lampiran,
     MaksimalBaris,
@@ -110,6 +111,8 @@ export default function HalamanFormPenerimaan({
     const [akun, AturAkun] = useState(OpsiAkun[0]?.Uuid ?? '');
     // Audit kemudahan pakai #20: belanja dibayar nanti (tempo) = penerimaan + faktur belum dibayar, tanpa akun kas.
     const [bayarNanti, AturBayarNanti] = useState(false);
+    // D-256: dibayar dari uang laci kasir yang sudah dicatat keluar di POS (tanpa akun kas/bank).
+    const [dariLaci, AturDariLaci] = useState(false);
     const [termin, AturTermin] = useState('30');
     const [tanggal, AturTanggal] = useState(Pesanan?.TanggalPenerimaan ?? HariIni);
     const [nomor, AturNomor] = useState('');
@@ -139,7 +142,7 @@ export default function HalamanFormPenerimaan({
     const draf = useDrafLokal({
         nama: belanja ? 'belanja-stok' : 'penerimaan-tanpa-pesanan',
         aktif: !Pesanan,
-        nilai: { pemasok, gudang, akun, bayarNanti, termin, nomor, ongkir, catatan, baris },
+        nilai: { pemasok, gudang, akun, bayarNanti, dariLaci, termin, nomor, ongkir, catatan, baris },
         kosong: (n) => n.baris.length === 0 && n.catatan.trim() === '' && n.nomor.trim() === '',
     });
     const PulihkanDraf = () => {
@@ -153,6 +156,7 @@ export default function HalamanFormPenerimaan({
         AturGudang(isi.gudang);
         AturAkun(isi.akun);
         AturBayarNanti(isi.bayarNanti);
+        AturDariLaci(isi.dariLaci ?? false);
         AturTermin(isi.termin);
         AturNomor(isi.nomor);
         AturOngkir(isi.ongkir);
@@ -210,7 +214,7 @@ export default function HalamanFormPenerimaan({
         } else {
             adaGalat =
                 gudang === '' ||
-                (belanja && !bayarNanti && akun === '') ||
+                (belanja && !bayarNanti && !dariLaci && akun === '') ||
                 (belanja && bayarNanti && (pemasok === '' || !CekTerminValid(termin))) ||
                 baris.length === 0 ||
                 baris.some((b) => Object.keys(PeriksaBaris(b, { wajibHarga: true, pelacakan: true })).length > 0);
@@ -225,8 +229,14 @@ export default function HalamanFormPenerimaan({
             UuidPesananPembelian: Pesanan?.Uuid ?? null,
             UuidPemasok: Pesanan ? null : pemasok === '' ? null : pemasok,
             UuidGudang: Pesanan ? null : gudang,
-            UuidAkun: belanja && !bayarNanti ? akun : null,
-            ...(belanja ? { BayarNanti: bayarNanti, TerminHari: bayarNanti ? Number(termin) : null } : {}),
+            UuidAkun: belanja && !bayarNanti && !dariLaci ? akun : null,
+            ...(belanja
+                ? {
+                      BayarNanti: bayarNanti,
+                      DariUangLaci: dariLaci && !bayarNanti,
+                      TerminHari: bayarNanti ? Number(termin) : null,
+                  }
+                : {}),
             Tanggal: tanggal,
             [belanja ? 'NomorNota' : 'NomorSuratJalan']: nomor === '' ? null : nomor,
             Ongkir: ongkir === '' ? '0' : ongkir,
@@ -248,7 +258,7 @@ export default function HalamanFormPenerimaan({
         <TataLetakAplikasi judul={judul}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 {belanja
-                    ? 'Untuk belanja sehari-hari: sekali simpan mencatat barang masuk dan fakturnya. Bayar sekarang = lunas dari akun kas/bank. Bayar nanti = hutang ke pemasok.'
+                    ? 'Untuk belanja sehari-hari: sekali simpan mencatat barang masuk dan fakturnya. Bayar sekarang = lunas dari akun kas/bank. Uang laci = belanja yang sudah dicatat keluar di kasir. Bayar nanti = hutang ke pemasok.'
                     : 'Stok bertambah saat penerimaan disimpan. Harga, diskon, dan ongkos kirim menjadi dasar HPP; PPN masukan yang dapat dikreditkan tidak masuk HPP.'}
             </p>
             <DaftarGalatServer
@@ -339,15 +349,35 @@ export default function HalamanFormPenerimaan({
                         {belanja ? (
                             <BidangPilihan
                                 label="Pembayaran"
-                                nilai={bayarNanti ? 'Nanti' : 'Sekarang'}
+                                nilai={bayarNanti ? 'Nanti' : dariLaci ? 'Laci' : 'Sekarang'}
                                 opsi={[
                                     { Nilai: 'Sekarang', Label: 'Bayar sekarang (lunas)' },
+                                    ...(BandingkanDesimal(UangLaci.Total, '0') > 0 || dariLaci
+                                        ? [
+                                              {
+                                                  Nilai: 'Laci',
+                                                  Label: 'Pakai uang laci kasir',
+                                                  Keterangan: `${FormatRupiah(UangLaci.Total)} menunggu dicatat barangnya`,
+                                              },
+                                          ]
+                                        : []),
                                     { Nilai: 'Nanti', Label: 'Bayar nanti (tempo)' },
                                 ]}
-                                saatBerubah={(nilai) => AturBayarNanti(nilai === 'Nanti')}
+                                saatBerubah={(nilai) => {
+                                    AturBayarNanti(nilai === 'Nanti');
+                                    AturDariLaci(nilai === 'Laci');
+                                }}
+                                galat={dariLaci ? galat.UuidAkun : undefined}
                             />
                         ) : null}
-                        {belanja && !bayarNanti ? (
+                        {belanja && dariLaci ? (
+                            <p className="text-keterangan text-teks-sekunder sm:col-span-2 lg:col-span-3">
+                                {gudang !== '' && UangLaci.PerGudang[gudang] !== undefined
+                                    ? `Uang laci yang dicatat kasir untuk belanja stok di lokasi ini: ${FormatRupiah(UangLaci.PerGudang[gudang])}. Total belanja tidak boleh melebihi angka itu.`
+                                    : 'Pilih lokasi stok untuk melihat uang laci yang dicatat kasir di outlet itu.'}
+                            </p>
+                        ) : null}
+                        {belanja && !bayarNanti && !dariLaci ? (
                             <BidangPilihan
                                 label="Dibayar dari akun"
                                 nilai={akun}

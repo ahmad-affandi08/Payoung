@@ -6,8 +6,10 @@ namespace App\Domain\Kasir\Aksi;
 
 use App\Domain\Akuntansi\Aksi\TambahAkun;
 use App\Domain\Akuntansi\Data\DataAkun;
+use App\Domain\Akuntansi\Enum\PeranAkun;
 use App\Domain\Akuntansi\Enum\TipeAkun;
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
+use App\Domain\Akuntansi\Layanan\PenyediaAkunPeran;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Kasir\Data\DataKategoriKas;
@@ -20,6 +22,10 @@ use Illuminate\Support\Facades\DB;
  * D-106: pengguna baru tidak mulai dari nol untuk biaya harian. Menyiapkan kategori kas keluar umum (Listrik, Air,
  * Internet & pulsa, Sewa, Transport & bensin, Parkir, Kebersihan, Perlengkapan, Perbaikan, Konsumsi) beserta akun
  * beban per jenis biaya, supaya laporan laba rugi merinci biaya, bukan satu angka.
+ *
+ * Satu kategori lagi bukan biaya: "Belanja stok dari uang laci" (D-256), kategori kas keluar yang uangnya masuk ke akun
+ * penampung `KliringBelanjaLaci` (bukan beban), supaya kasir tetap mencatat uang laci yang dipakai belanja stok di POS
+ * dan hitungan laci benar, sementara barangnya dicatat kemudian lewat Belanja stok di back-office.
  *
  * Aditif & idempoten: kategori yang namanya sudah ada tidak disentuh; akun beban dengan kode yang sama dipakai ulang;
  * kode yang bentrok dengan akun lain (nonaktif/tipe lain) membuat kategori itu dilewati, bukan menimpa. Semua lewat
@@ -46,8 +52,12 @@ final class SiapkanKategoriBiayaBawaan
         'Konsumsi' => ['6-2800', 'Beban Konsumsi'],
     ];
 
+    /** D-256: kategori kas keluar untuk belanja stok memakai uang laci. Urutan 5 supaya tampil paling depan di kasir. */
+    public const KATEGORI_BELANJA_LACI = 'Belanja stok dari uang laci';
+
     public function __construct(
         private readonly KonteksTenant $konteks,
+        private readonly PenyediaAkunPeran $penyediaAkun,
         private readonly PenguncianTenant $penguncian,
         private readonly DaftarAkunPilihan $akun,
         private readonly TambahAkun $tambahAkun,
@@ -91,8 +101,29 @@ final class SiapkanKategoriBiayaBawaan
                 $baru++;
             }
 
-            return $baru;
+            return $baru + $this->SiapkanKategoriBelanjaLaci($ada);
         });
+    }
+
+    /**
+     * @param  array<int, string>  $ada  nama kategori keluar yang sudah ada (huruf kecil)
+     */
+    private function SiapkanKategoriBelanjaLaci(array $ada): int
+    {
+        if (in_array(mb_strtolower(self::KATEGORI_BELANJA_LACI), $ada, true)) {
+            return 0;
+        }
+
+        $idAkun = $this->penyediaAkun->Pastikan(PeranAkun::KliringBelanjaLaci, '1-1490', 'Uang Laci untuk Belanja Stok');
+        $uuid = $this->akun->AmbilBanyak([$idAkun])[$idAkun]['Uuid'] ?? null;
+
+        if ($uuid === null) {
+            return 0;
+        }
+
+        $this->simpanKategori->Jalankan(new DataKategoriKas(self::KATEGORI_BELANJA_LACI, JenisKategoriKas::Keluar, $uuid, 5));
+
+        return 1;
     }
 
     /**

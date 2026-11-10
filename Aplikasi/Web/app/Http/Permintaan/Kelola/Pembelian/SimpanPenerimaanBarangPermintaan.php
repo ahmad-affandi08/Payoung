@@ -30,6 +30,8 @@ final class SimpanPenerimaanBarangPermintaan extends FormRequest
             'UuidPemasok' => ['nullable', 'string', 'ulid'],
             'UuidGudang' => ['nullable', 'string', 'ulid', 'required_without:UuidPesananPembelian'],
             'UuidAkun' => ['nullable', 'string', 'ulid'],
+            // D-256: belanja stok dibayar dari uang laci kasir yang sudah dicatat keluar di POS (tanpa akun kas/bank).
+            'DariUangLaci' => ['nullable', 'boolean'],
             // Audit kemudahan pakai #20: belanja stok dibayar nanti (tempo) = penerimaan + faktur belum dibayar.
             'BayarNanti' => ['nullable', 'boolean'],
             'TerminHari' => ['nullable', 'integer', 'min:0', 'max:'.SimpanBelanjaStokTempo::MAKS_TERMIN],
@@ -103,7 +105,14 @@ final class SimpanPenerimaanBarangPermintaan extends FormRequest
             $this->AmbilBaris(),
             $this->AmbilLampiran(),
             $idPengguna,
+            $this->CekDariUangLaci(),
         );
+    }
+
+    /** Uang laci hanya untuk belanja yang dibayar sekarang: belanja tempo menjadi hutang ke pemasok. */
+    public function CekDariUangLaci(): bool
+    {
+        return ! $this->CekBayarNanti() && (bool) $this->validated('DariUangLaci', false);
     }
 
     public function CekBayarNanti(): bool

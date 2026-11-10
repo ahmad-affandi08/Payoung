@@ -28,6 +28,12 @@ final class PenggolongUangKas
 
     public const KELUAR_BELANJA = 'Belanja barang dagangan';
 
+    /**
+     * D-256: uang laci dipakai belanja stok yang dicatat kasir di POS. Pada saat kas keluar belum diketahui isinya bahan
+     * baku atau dagangan, jadi tampil terpisah. Barangnya dicatat kemudian lewat Belanja stok (tanpa kas bergerak).
+     */
+    public const KELUAR_BELANJA_LACI = 'Belanja stok dari uang laci';
+
     public const KELUAR_GAJI = 'Gaji dan tenaga kerja';
 
     public const KELUAR_OPERASIONAL = 'Biaya operasional';
@@ -52,7 +58,7 @@ final class PenggolongUangKas
     public const URUT_MASUK = [self::MASUK_PENJUALAN, self::MASUK_PIUTANG, self::MASUK_LAINNYA];
 
     /** Urutan tampil kelompok pengeluaran. */
-    public const URUT_KELUAR = [self::KELUAR_BELANJA_BAHAN, self::KELUAR_BELANJA, self::KELUAR_GAJI, self::KELUAR_OPERASIONAL, self::KELUAR_PAJAK, self::KELUAR_PLATFORM, self::KELUAR_PELANGGAN, self::KELUAR_LAIN, self::BELUM_DIKELOMPOKKAN];
+    public const URUT_KELUAR = [self::KELUAR_BELANJA_BAHAN, self::KELUAR_BELANJA, self::KELUAR_BELANJA_LACI, self::KELUAR_GAJI, self::KELUAR_OPERASIONAL, self::KELUAR_PAJAK, self::KELUAR_PLATFORM, self::KELUAR_PELANGGAN, self::KELUAR_LAIN, self::BELUM_DIKELOMPOKKAN];
 
     /**
      * Penggolongan menurut jenis dokumen sumber jurnal. `$mentah` dipakai bila jenisnya tidak dikenal.
@@ -167,6 +173,18 @@ final class PenggolongUangKas
                 : self::Hasil($akun->Nama, self::KELUAR_BELANJA),
             default => self::Hasil($akun->Nama, $masuk ? self::MASUK_LAINNYA : self::KELUAR_LAIN),
         };
+    }
+
+    /**
+     * Kas keluar kasir ke akun penampung uang laci (D-256), atau uang kembalian yang dikembalikan ke laci.
+     *
+     * @return array{Label: string, Kelompok: string, DiLuar: bool}
+     */
+    public static function DariUangLaci(bool $masuk): array
+    {
+        return $masuk
+            ? self::Hasil('Sisa uang belanja stok kembali ke laci', self::MASUK_LAINNYA)
+            : self::Hasil('Uang laci dipakai belanja stok (barangnya belum dicatat)', self::KELUAR_BELANJA_LACI);
     }
 
     /**

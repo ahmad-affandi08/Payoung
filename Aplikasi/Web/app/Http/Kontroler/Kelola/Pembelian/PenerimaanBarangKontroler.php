@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Pembelian;
 
 use App\Domain\Akuntansi\Kueri\DaftarAkunPilihan;
+use App\Domain\Akuntansi\Kueri\SaldoUangLaci;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Pembelian\Aksi\BatalkanPenerimaanBarang;
 use App\Domain\Pembelian\Aksi\SimpanBelanjaStok;
 use App\Domain\Pembelian\Aksi\SimpanBelanjaStokTempo;
@@ -67,6 +69,7 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
             'OpsiPemasok' => $pemasok->AmbilPilihan(),
             'OpsiGudang' => $this->AmbilOpsiGudang(),
             'OpsiAkun' => [],
+            'UangLaci' => ['Total' => '0.00', 'PerGudang' => (object) []],
             'HariIni' => $this->HariIni(),
             'Lampiran' => self::AturanLampiran(),
             'MaksimalBaris' => PemrosesPenerimaanBarang::MAKS_BARIS,
@@ -89,7 +92,7 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
         return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', "{$grn->Nomor} dicatat. Stok bertambah dan hutang belum difakturkan tercatat.");
     }
 
-    public function BuatBelanja(DaftarPemasok $pemasok, DaftarAkunPilihan $akun): Response
+    public function BuatBelanja(DaftarPemasok $pemasok, DaftarAkunPilihan $akun, SaldoUangLaci $saldoLaci): Response
     {
         return Inertia::render('Kelola/Pembelian/Penerimaan/Form', [
             'Mode' => 'BelanjaStok',
@@ -97,6 +100,7 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
             'OpsiPemasok' => $pemasok->AmbilPilihan(),
             'OpsiGudang' => $this->AmbilOpsiGudang(),
             'OpsiAkun' => array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Kode' => $a['Kode'], 'Nama' => $a['Nama']], $akun->AmbilKasBank()),
+            'UangLaci' => $this->AmbilUangLaci($saldoLaci),
             'HariIni' => $this->HariIni(),
             'Lampiran' => self::AturanLampiran(),
             'MaksimalBaris' => PemrosesPenerimaanBarang::MAKS_BARIS,
@@ -115,7 +119,31 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
 
         $grn = $simpan->Jalankan($permintaan->AmbilDataBelanja($gudang->id, $this->Pelaku()->Id));
 
-        return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', "Belanja stok {$grn->Nomor} dicatat: stok bertambah dan kas/bank berkurang.");
+        return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', $permintaan->CekDariUangLaci()
+            ? "Belanja stok {$grn->Nomor} dicatat: stok bertambah dan uang laci yang tadi dicatat di kasir sudah punya barangnya."
+            : "Belanja stok {$grn->Nomor} dicatat: stok bertambah dan kas/bank berkurang.");
+    }
+
+    /**
+     * D-256: uang laci kasir yang dicatat keluar untuk belanja stok tetapi barangnya belum dicatat, per lokasi stok
+     * (saldo outlet pemilik lokasi). Hanya lokasi dengan saldo positif yang dimuat.
+     *
+     * @return array{Total: string, PerGudang: array<string, string>|object}
+     */
+    private function AmbilUangLaci(SaldoUangLaci $saldoLaci): array
+    {
+        $perOutlet = $saldoLaci->PerOutlet();
+        $perGudang = [];
+
+        foreach (app(InfoGudang::class)->AmbilBoleh($this->IdOutletBoleh()) as $gudang) {
+            $saldo = $gudang->idOutlet === null ? null : ($perOutlet[$gudang->idOutlet] ?? null);
+
+            if ($saldo !== null) {
+                $perGudang[$gudang->uuid] = $saldo->KeString();
+            }
+        }
+
+        return ['Total' => $saldoLaci->Total()->KeString(), 'PerGudang' => $perGudang === [] ? (object) [] : $perGudang];
     }
 
     public function Detail(string $penerimaan, DetailPembelian $detail): Response

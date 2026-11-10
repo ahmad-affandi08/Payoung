@@ -84,6 +84,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -420,6 +427,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -655,6 +663,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -1005,6 +1020,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -1239,6 +1255,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -1589,6 +1612,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -1821,6 +1845,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -2171,6 +2202,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -2393,6 +2425,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -2743,6 +2782,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -2962,6 +3002,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -3298,6 +3345,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -3511,6 +3559,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -3847,6 +3902,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -4062,6 +4118,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -4398,6 +4461,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -4623,6 +4687,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -4959,6 +5030,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -5176,6 +5248,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -5512,6 +5591,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -5723,6 +5803,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -6059,6 +6146,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -6269,6 +6357,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -6605,6 +6700,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -6817,6 +6913,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -7153,6 +7256,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -7390,6 +7494,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -7726,6 +7837,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -7937,6 +8049,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -8273,6 +8392,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -8502,6 +8622,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -8838,6 +8965,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -9067,6 +9195,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -9403,6 +9538,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -9624,6 +9760,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -9960,6 +10103,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -10193,6 +10337,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -10529,6 +10680,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -10756,6 +10908,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -11092,6 +11251,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -11285,6 +11445,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -11621,6 +11788,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"
@@ -11820,6 +11988,13 @@
                         "Kontra": false
                     },
                     {
+                        "Kode": "1-1490",
+                        "Nama": "Uang Laci untuk Belanja Stok",
+                        "Tipe": "Aset",
+                        "SaldoNormal": "Debit",
+                        "Kontra": false
+                    },
+                    {
                         "Kode": "1-1500",
                         "Nama": "Persediaan Barang Dagang",
                         "Tipe": "Aset",
@@ -12156,6 +12331,7 @@
                     "AkumulasiPenyusutan": "1-2900",
                     "BebanPenyusutan": "6-5000",
                     "GiroDiterima": "1-1480",
+                    "KliringBelanjaLaci": "1-1490",
                     "HutangGiro": "2-1180",
                     "BebanPiutangTakTertagih": "6-5100",
                     "PphDibayarDimuka": "1-1750"

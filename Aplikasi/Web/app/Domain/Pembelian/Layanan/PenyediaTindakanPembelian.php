@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Pembelian\Layanan;
 
+use App\Domain\Akuntansi\Kueri\SaldoUangLaci;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tindakan\Data\DataButirTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataRincianTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Enum\StatusPesananPembelian;
 use App\Domain\Pembelian\Model\FakturPembelian;
@@ -20,11 +22,18 @@ use App\Domain\Pembelian\Model\PesananPembelian;
  * - hutang pemasok (faktur belum lunas) yang jatuh tempo dalam [HARI_HUTANG] hari atau sudah lewat (izin
  *   `pembelian.kelola`);
  * - draf PO otomatis dari stok menipis yang belum diajukan (D-23 D, izin `pembelian.kelola`);
- * - pesanan pembelian yang menunggu persetujuan (izin `pembelian.po.setujui`).
+ * - pesanan pembelian yang menunggu persetujuan (izin `pembelian.po.setujui`);
+ * - uang laci kasir yang dicatat keluar untuk belanja stok tetapi barangnya belum dicatat, per outlet (D-256, izin
+ *   `pembelian.kelola`).
  */
 final class PenyediaTindakanPembelian implements PenyediaTindakan
 {
     public const HARI_HUTANG = 7;
+
+    public function __construct(
+        private readonly SaldoUangLaci $saldoLaci,
+        private readonly NamaTampilUsaha $namaUsaha,
+    ) {}
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
@@ -84,6 +93,40 @@ final class PenyediaTindakanPembelian implements PenyediaTindakan
                 $jumlahDraf === 0 ? [] : array_values($draf->orderBy('Id')->limit(DataButirTindakan::BATAS_RINCIAN)->get()->map(
                     fn (PesananPembelian $p): DataRincianTindakan => new DataRincianTindakan($p->Uuid, $p->Nomor, 'Total '.Uang::Dari($p->Total)->FormatRupiah(), $p->Tanggal->toDateString(), '/kelola/pembelian/pesanan/'.$p->Uuid),
                 )->all()),
+            );
+        }
+
+        if ($konteks->CekIzin('pembelian.kelola')) {
+            // D-256: kasir mencatat uang laci yang dipakai belanja stok sebagai kas keluar. Selama saldo penampung belum
+            // nol, ada belanja yang barangnya belum masuk stok dan HPP-nya belum terbentuk.
+            $rincian = [];
+            $total = Uang::Nol();
+
+            foreach ($this->saldoLaci->PerOutlet() as $idOutletLaci => $saldo) {
+                if ($idOutlet !== null && ! in_array($idOutletLaci, $idOutlet, true)) {
+                    continue;
+                }
+
+                $total = $total->Tambah($saldo);
+                $rincian[] = new DataRincianTindakan(
+                    'outlet-'.$idOutletLaci,
+                    $this->namaUsaha->UntukOutlet($idOutletLaci, $konteks->idTenant),
+                    $saldo->FormatRupiah().' belum dicatat barangnya',
+                    null,
+                    '/kelola/pembelian/belanja-stok',
+                );
+            }
+
+            $butir[] = new DataButirTindakan(
+                'belanja-stok.uang-laci',
+                'Pembelian',
+                TingkatTindakan::Perhatian,
+                'Uang laci dipakai belanja stok',
+                $total->FormatRupiah().' sudah keluar dari laci kasir untuk belanja stok, tetapi barangnya belum dicatat. Catat lewat Belanja stok dengan pembayaran "Pakai uang laci kasir" supaya stok dan HPP-nya terbentuk.',
+                count($rincian),
+                '/kelola/pembelian/belanja-stok',
+                'Catat barangnya',
+                array_slice($rincian, 0, DataButirTindakan::BATAS_RINCIAN),
             );
         }
 

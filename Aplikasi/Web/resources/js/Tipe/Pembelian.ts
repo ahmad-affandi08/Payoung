@@ -317,6 +317,8 @@ export type PropsFormPenerimaan = {
     OpsiPemasok: OpsiPemasok[];
     OpsiGudang: OpsiGudang[];
     OpsiAkun: OpsiAkunKas[];
+    /** D-256: uang laci kasir yang dicatat keluar untuk belanja stok tetapi barangnya belum dicatat. */
+    UangLaci: { Total: string; PerGudang: Record<string, string> };
     HariIni: string;
     Lampiran: AturanLampiran;
     MaksimalBaris: number;

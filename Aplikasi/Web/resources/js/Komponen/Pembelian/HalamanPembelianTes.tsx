@@ -490,6 +490,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
                 OpsiPemasok={[Pemasok]}
                 OpsiGudang={[GudangUtama]}
                 OpsiAkun={[]}
+                UangLaci={{ Total: '0.00', PerGudang: {} }}
                 HariIni="2026-09-30"
                 Lampiran={{ Ekstensi: ['pdf', 'jpg'], UkuranMaksimalKb: 5120 }}
                 MaksimalBaris={500}
@@ -520,6 +521,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
                 OpsiPemasok={[{ ...Pemasok, TerminHari: 14 }]}
                 OpsiGudang={[GudangUtama]}
                 OpsiAkun={[{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1100', Nama: 'Kas Toko' }]}
+                UangLaci={{ Total: '0.00', PerGudang: {} }}
                 HariIni="2026-09-30"
                 Lampiran={{ Ekstensi: ['pdf', 'jpg'], UkuranMaksimalKb: 5120 }}
                 MaksimalBaris={500}
@@ -536,6 +538,40 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
 
         PilihOpsi(screen.getByRole('combobox', { name: /Pemasok/ }), Pemasok.Uuid);
         expect((screen.getByLabelText(/Tempo \(hari\)/) as HTMLInputElement).value).toBe('14');
+    });
+
+    it('belanja stok: pilihan "Pakai uang laci kasir" hanya ada bila kasir mencatat uang laci, akun kas disembunyikan (D-256)', () => {
+        const props = {
+            Mode: 'BelanjaStok' as const,
+            Pesanan: null,
+            OpsiPemasok: [Pemasok],
+            OpsiGudang: [GudangUtama],
+            OpsiAkun: [{ Uuid: '01J9AKN0000000000000000001', Kode: '1-1100', Nama: 'Kas Toko' }],
+            HariIni: '2026-09-30',
+            Lampiran: { Ekstensi: ['pdf', 'jpg'], UkuranMaksimalKb: 5120 },
+            MaksimalBaris: 500,
+        };
+        const { unmount: Lepas } = RenderUji(
+            <HalamanFormPenerimaan {...props} UangLaci={{ Total: '0.00', PerGudang: {} }} />,
+        );
+        const tanpa = screen.getByRole('combobox', { name: 'Pembayaran' });
+        fireEvent.click(tanpa);
+        expect(screen.queryByText('Pakai uang laci kasir')).toBeNull();
+        Lepas();
+
+        RenderUji(
+            <HalamanFormPenerimaan
+                {...props}
+                UangLaci={{ Total: '150000.00', PerGudang: { [GudangUtama.Uuid]: '150000.00' } }}
+            />,
+        );
+        PilihOpsi(screen.getByRole('combobox', { name: 'Pembayaran' }), 'Laci');
+        expect(screen.queryByRole('combobox', { name: 'Dibayar dari akun' })).toBeNull();
+        // Satu lokasi stok terpilih otomatis (aturan outlet-pertama), jadi saldonya langsung tampil.
+        expect(screen.getByText(/dicatat kasir untuk belanja stok di lokasi ini: Rp 150\.000/)).toBeTruthy();
+
+        PilihOpsi(screen.getByRole('combobox', { name: 'Pembayaran' }), 'Sekarang');
+        expect(screen.getByRole('combobox', { name: 'Dibayar dari akun' })).toBeTruthy();
     });
 
     it('faktur: harga faktur berbeda tampil sebagai selisih. Simpan mengirim harga per baris', () => {

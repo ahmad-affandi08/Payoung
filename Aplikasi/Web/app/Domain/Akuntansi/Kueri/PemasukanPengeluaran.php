@@ -356,6 +356,7 @@ final class PemasukanPengeluaran
         }
 
         $lawan = $lawan->groupBy('IdJurnal');
+        $idLaci = $this->IdAkunPeran(PeranAkun::KliringBelanjaLaci);
         $akun = Akun::query()->whereKey($lawan->flatten(1)->pluck('IdAkun')->unique()->values()->all())->get()->keyBy('Id');
 
         foreach ($jurnal as $satu) {
@@ -366,7 +367,9 @@ final class PemasukanPengeluaran
             $idLawan = $barisLawan === null ? collect() : $barisLawan->pluck('IdAkun')->unique()->values();
             $akunLawan = $idLawan->count() === 1 ? $akun->get($idLawan->first()) : null;
 
-            if ($akunLawan instanceof Akun) {
+            if ($akunLawan instanceof Akun && in_array($akunLawan->Id, $idLaci, true)) {
+                $golongan = PenggolongUangKas::DariUangLaci($masuk);
+            } elseif ($akunLawan instanceof Akun) {
                 $golongan = PenggolongUangKas::DariAkun($akunLawan, $masuk, in_array($akunLawan->Id, $idPajak, true));
             } elseif ($idLawan->isEmpty()) {
                 $golongan = PenggolongUangKas::Hasil($masuk ? 'Uang masuk dari akun kas lain' : 'Uang keluar ke akun kas lain', PenggolongUangKas::DI_LUAR_PINDAH);

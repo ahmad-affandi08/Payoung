@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Domain\Akuntansi\Enum\PeranAkun;
+use App\Domain\Akuntansi\Layanan\PenentuAkun;
 use App\Domain\Akuntansi\Model\Akun;
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Kasir\Aksi\SiapkanKategoriBiayaBawaan;
+use App\Domain\Kasir\Aksi\SimpanKategoriKas;
+use App\Domain\Kasir\Data\DataKategoriKas;
 use App\Domain\Kasir\Enum\JenisKategoriKas;
 use App\Domain\Kasir\Model\KategoriKas;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
@@ -25,7 +30,8 @@ describe('D-106 kategori biaya bawaan', function (): void {
 
         $baru = app(SiapkanKategoriBiayaBawaan::class)->Jalankan();
 
-        expect($baru)->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI))
+        // Sepuluh kategori biaya + satu kategori belanja stok dari uang laci (D-256).
+        expect($baru)->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI) + 1)
             ->and(KategoriKas::query()->count())->toBe($sebelum + $baru)
             ->and(KategoriKas::query()->where('Jenis', JenisKategoriKas::Keluar->value)->where('Nama', 'Listrik')->exists())->toBeTrue()
             ->and(KategoriKas::query()->where('Nama', 'Beli es batu & galon')->exists())->toBeTrue();
@@ -45,6 +51,36 @@ describe('D-106 kategori biaya bawaan', function (): void {
             ->and(KategoriKas::query()->count())->toBe($sebelum + $baru);
     });
 
+    it('D-256: kategori belanja stok dari uang laci menunjuk akun penampung (aset), bukan beban', function (): void {
+        $k = BantuanKasir::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+
+        app(SiapkanKategoriBiayaBawaan::class)->Jalankan();
+
+        $laci = KategoriKas::query()->where('Nama', SiapkanKategoriBiayaBawaan::KATEGORI_BELANJA_LACI)->sole();
+        $akun = Akun::query()->whereKey($laci->IdAkun)->sole();
+        expect($laci->Jenis)->toBe(JenisKategoriKas::Keluar)
+            ->and($akun->Kode)->toBe('1-1490')
+            ->and($akun->Jenis->value)->toBe('Aset')
+            ->and(app(PenentuAkun::class)->AmbilIdAkun(PeranAkun::KliringBelanjaLaci, null))->toBe($akun->Id);
+    });
+
+    it('D-256: kategori kas tidak boleh menunjuk akun persediaan atau akun kendali lain, penampung laci boleh', function (): void {
+        $k = BantuanKasir::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $penentu = app(PenentuAkun::class);
+        $persediaan = Akun::query()->whereKey($penentu->AmbilIdAkun(PeranAkun::PersediaanBarangDagang, null))->sole();
+        $simpan = app(SimpanKategoriKas::class);
+
+        expect(fn () => $simpan->Jalankan(new DataKategoriKas('Beli stok langsung', JenisKategoriKas::Keluar, $persediaan->Uuid, 0)))
+            ->toThrow(PelanggaranAturanBisnis::class, 'akun kendali');
+        expect(KategoriKas::query()->where('Nama', 'Beli stok langsung')->exists())->toBeFalse();
+
+        $penampung = Akun::query()->whereKey($penentu->AmbilIdAkun(PeranAkun::KliringBelanjaLaci, null))->sole();
+        $kategori = $simpan->Jalankan(new DataKategoriKas('Uang laci ke pasar', JenisKategoriKas::Keluar, $penampung->Uuid, 0));
+        expect($kategori->IdAkun)->toBe($penampung->Id);
+    });
+
     it('tidak menimpa kategori buatan pengguna dan melewati kode akun yang bentrok', function (): void {
         $k = BantuanKasir::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -55,7 +91,7 @@ describe('D-106 kategori biaya bawaan', function (): void {
 
         $baru = app(SiapkanKategoriBiayaBawaan::class)->Jalankan();
 
-        expect($baru)->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI) - 2)
+        expect($baru)->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI) - 1)
             ->and(KategoriKas::query()->where('Nama', 'Sewa tempat')->exists())->toBeFalse()
             ->and(KategoriKas::query()->where('Nama', 'Listrik')->pluck('Id')->all())->toBe([$kustom->Id])
             ->and($kustom->fresh()?->IdAkun)->toBe($beban->Id)
@@ -71,7 +107,7 @@ describe('D-106 kategori biaya bawaan', function (): void {
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         expect(KategoriKas::query()->where('Nama', 'Transport & bensin')->exists())->toBeTrue()
-            ->and(LogAudit::query()->where('Peristiwa', 'kas.kategori.simpan')->count())->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI))
+            ->and(LogAudit::query()->where('Peristiwa', 'kas.kategori.simpan')->count())->toBe(count(SiapkanKategoriBiayaBawaan::KATEGORI) + 1)
             ->and(LogAudit::query()->where('Peristiwa', 'akun.tambah')->count())->toBeGreaterThan(0);
 
         BantuanPersediaan::MasukSebagai($this, $k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet);
