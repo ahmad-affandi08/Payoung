@@ -23,7 +23,10 @@ use Throwable;
  * - template lama yang isinya sudah sama dengan rilis: tidak diubah;
  * - template lama yang isi rilisnya berubah: versi baru langsung terbit dan versi sebelumnya menjadi Usang. Tenant yang
  *   sudah memakai versi lama tidak berubah tanpa persetujuannya (BR-P03.1);
- * - template yang sedang punya draf di konsol dilewati (BR-P03.4): pekerjaan penyusun di konsol tidak ditimpa;
+ * - template yang sedang punya draf di konsol dilewati (BR-P03.4): pekerjaan penyusun di konsol tidak ditimpa.
+ *   Pengecualian: draf yang dibuat perintah ini sendiri saat rilis sebelumnya gagal validasi (tanpa catatan audit sama
+ *   sekali, sedangkan draf konsol selalu punya catatan duplikasi atau ubah isi) adalah salinan basi yang tidak pernah
+ *   disentuh manusia. Draf itu diganti, supaya rilis yang sudah diperbaiki tidak tertahan selamanya (D-261);
  * - template bawaan yang masih draf v1 dan belum pernah terbit (seeder lama) diisi isi rilis lalu diterbitkan;
  * - template yang gagal validasi tidak terbit; hasilnya disimpan sebagai draf supaya penyebabnya terlihat di konsol.
  *
@@ -117,15 +120,29 @@ final class TerapkanTemplateBawaan
         $draf = $template->Versi()->where('Status', StatusTemplateSektor::Draf->value)->first();
 
         if ($terbit !== null) {
+            $catatanDraf = [];
+
+            if ($draf !== null && ! $this->audit->AdaCatatanUntukObjek($draf)) {
+                $catatanDraf[] = "Draf otomatis versi {$draf->Versi} dari rilis yang gagal validasi sebelumnya diganti.";
+                $this->audit->Catat(
+                    'template.draf.hapus-rilis',
+                    $draf,
+                    nilaiLama: ['Kode' => $kode, 'Versi' => $draf->Versi, 'Isi' => $draf->Isi],
+                    alasan: self::ALASAN.': draf otomatis dari rilis yang gagal validasi diganti',
+                );
+                $draf->delete();
+                $draf = null;
+            }
+
             if ($this->SamaIsi($terbit->Isi, $isi)) {
-                return $this->Laporan($kode, 'Tanpa perubahan', $terbit->Versi);
+                return $this->Laporan($kode, 'Tanpa perubahan', $terbit->Versi, $catatanDraf);
             }
 
             if ($draf !== null) {
                 return $this->Laporan($kode, 'Dilewati', null, ["Punya draf versi {$draf->Versi} di konsol (BR-P03.4). Terbitkan atau hapus draf itu, lalu jalankan lagi."]);
             }
 
-            return $this->TerbitkanVersiBaru($template, $isi, $terbit, 'Isi rilis berubah, versi baru terbit');
+            return $this->TerbitkanVersiBaru($template, $isi, $terbit, 'Isi rilis berubah, versi baru terbit', $catatanDraf);
         }
 
         if ($draf !== null) {
@@ -140,9 +157,10 @@ final class TerapkanTemplateBawaan
      * draf berisi hasil validasi dan tidak ada yang berubah pada versi terbit.
      *
      * @param  array<string, mixed>  $isi
+     * @param  list<string>  $catatan
      * @return array{Kode: string, Tindakan: string, Versi: int|null, Catatan: list<string>}
      */
-    private function TerbitkanVersiBaru(TemplateSektor $template, array $isi, ?TemplateSektorVersi $lama, string $tindakan): array
+    private function TerbitkanVersiBaru(TemplateSektor $template, array $isi, ?TemplateSektorVersi $lama, string $tindakan, array $catatan = []): array
     {
         $validasi = $this->validator->Validasi($isi);
         $nomor = (int) $template->Versi()->max('Versi') + 1;
@@ -157,7 +175,10 @@ final class TerapkanTemplateBawaan
                 'DivalidasiPada' => now(),
             ]);
 
-            return $this->Gagal($template->Kode, $nomor, $validasi['Galat']);
+            $hasil = $this->Gagal($template->Kode, $nomor, $validasi['Galat']);
+            $hasil['Catatan'] = [...$catatan, ...$hasil['Catatan']];
+
+            return $hasil;
         }
 
         $lama?->update(['Status' => StatusTemplateSektor::Usang, 'DiusangkanPada' => now()]);
@@ -174,7 +195,7 @@ final class TerapkanTemplateBawaan
 
         $this->CatatAudit($versi, $template->Kode, $lama);
 
-        return $this->Laporan($template->Kode, $tindakan, $nomor);
+        return $this->Laporan($template->Kode, $tindakan, $nomor, $catatan);
     }
 
     /**

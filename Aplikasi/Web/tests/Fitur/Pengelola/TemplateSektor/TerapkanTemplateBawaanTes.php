@@ -12,6 +12,7 @@ use App\Domain\Pengelola\Katalog\Aksi\SiapkanKatalogBawaan;
 use App\Domain\Pengelola\Referensi\Aksi\SiapkanPajakBawaan;
 use App\Domain\Pengelola\TemplateSektor\Aksi\SiapkanTemplateSektorBawaan;
 use App\Domain\Pengelola\TemplateSektor\Aksi\TerapkanTemplateBawaan;
+use App\Domain\Pengelola\TimInternal\Layanan\PencatatAuditPengelola;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
 use App\Domain\Referensi\Model\SatuanStandar;
 use Illuminate\Support\Carbon;
@@ -165,6 +166,8 @@ describe('template:terapkan (D-88)', function (): void {
         $isiDraf = $template->Versi()->sole()->Isi;
         $isiDraf['Kategori'][] = 'Kategori dari konsol';
         $draf = $template->Versi()->create(['Versi' => 2, 'Status' => StatusTemplateSektor::Draf, 'Isi' => $isiDraf]);
+        // Draf konsol selalu punya catatan audit (duplikasi atau ubah isi): itulah pembeda dari draf otomatis rilis.
+        app(PencatatAuditPengelola::class)->Catat('template.versi.duplikasi', $draf, nilaiBaru: ['Kode' => 'FNB-RST', 'Versi' => 2]);
 
         $path = BuatBerkasRilisUji('FNB-RST', function (array $isi): array {
             $isi['Kategori'][] = 'Kategori rilis';
@@ -181,6 +184,46 @@ describe('template:terapkan (D-88)', function (): void {
             ->and($template->Versi()->where('Status', StatusTemplateSektor::Terbit->value)->sole()->Versi)->toBe(1);
 
         unlink($path);
+    });
+
+    it('draf otomatis dari rilis yang gagal validasi tidak menahan rilis yang sudah diperbaiki (D-261)', function (): void {
+        TerbitkanPpnUjiRilis();
+        app(TerapkanTemplateBawaan::class)->Jalankan();
+        $template = TemplateSektor::query()->where('Kode', 'SVC-GEN')->sole();
+
+        // Rilis lama gagal validasi: perintah sendiri menyimpannya sebagai draf (tanpa catatan audit).
+        $rusak = BuatBerkasRilisUji('SVC-GEN', function (array $isi): array {
+            $isi['KodeSatuan'][] = 'TIDAKADA';
+
+            return $isi;
+        });
+        app(TerapkanTemplateBawaan::class)->Jalankan(true, $rusak);
+        $drafOtomatis = $template->Versi()->where('Status', StatusTemplateSektor::Draf->value)->sole();
+
+        // Rilis berikutnya sudah benar tetapi isinya beda dari versi terbit.
+        $benar = BuatBerkasRilisUji('SVC-GEN', function (array $isi): array {
+            $isi['Kategori'][] = 'Kategori rilis baru';
+
+            return $isi;
+        });
+        $hasil = app(TerapkanTemplateBawaan::class)->Jalankan(true, $benar);
+        $baris = AmbilHasilTemplate($hasil, 'SVC-GEN');
+
+        expect($baris['Tindakan'])->toBe('Isi rilis berubah, versi baru terbit')
+            ->and($baris['Catatan'][0])->toContain('diganti')
+            ->and(TemplateSektorVersi::query()->whereKey($drafOtomatis->Id)->exists())->toBeFalse()
+            ->and($template->Versi()->where('Status', StatusTemplateSektor::Draf->value)->count())->toBe(0)
+            ->and($template->Versi()->where('Status', StatusTemplateSektor::Terbit->value)->sole()->Isi['Kategori'])->toContain('Kategori rilis baru')
+            ->and(LogAuditPengelola::query()->where('Aksi', 'template.draf.hapus-rilis')->count())->toBe(1);
+
+        // Rilis yang masih rusak: draf otomatis lama diganti satu draf baru, bukan menumpuk.
+        app(TerapkanTemplateBawaan::class)->Jalankan(true, $rusak);
+        app(TerapkanTemplateBawaan::class)->Jalankan(true, $rusak);
+
+        expect($template->Versi()->where('Status', StatusTemplateSektor::Draf->value)->count())->toBe(1);
+
+        unlink($rusak);
+        unlink($benar);
     });
 
     it('template yang gagal validasi tidak terbit (BR-P03.3): versi terbit lama tetap, hasil disimpan sebagai draf', function (): void {

@@ -54,6 +54,20 @@ final class PencatatAuditPengelola
         ]);
     }
 
+    /**
+     * Apakah ada catatan audit pengelola atas objek ini. Dipakai untuk membedakan draf yang pernah disentuh manusia
+     * di konsol (selalu ada catatan: duplikasi atau ubah isi) dari draf yang dibuat otomatis oleh perintah rilis.
+     */
+    public function AdaCatatanUntukObjek(ModelDasar $objek): bool
+    {
+        $idObjek = $objek->getKey();
+
+        return is_int($idObjek) && LogAuditPengelola::query()
+            ->where('JenisObjek', class_basename($objek))
+            ->where('IdObjek', $idObjek)
+            ->exists();
+    }
+
     // P-07 Siklus hidup tenant: riwayat tindakan pengelola pada satu tenant (BR-P07.3). Dibaca lewat kelas ini karena
     // `LogAuditPengelola` hanya boleh disentuh di sini dan di halaman log audit (test arsitektur Pengelola).
 

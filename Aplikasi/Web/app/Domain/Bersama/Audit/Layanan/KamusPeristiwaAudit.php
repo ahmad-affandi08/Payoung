@@ -640,6 +640,7 @@ final class KamusPeristiwaAudit
 
         'template.buat' => 'Template dibuat',
         'template.draf.hapus' => 'Draf template dihapus',
+        'template.draf.hapus-rilis' => 'Draf otomatis template dari rilis yang gagal validasi diganti',
         'template.hapus' => 'Template dihapus',
         'template.terbitkan' => 'Template diterbitkan',
         'template.terbitkan-rilis' => 'Template sektor diterbitkan dari rilis',
