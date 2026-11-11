@@ -16,7 +16,7 @@ workspace:
   - Aplikasi/Pemilik
 
 dev_dependencies:
-  melos: ^7.0.0
+  melos: ^8.9.0
 
 # K-7 (§17.2.6): basis data lokal kasir terenkripsi. Pustaka native `sqlite3` diganti SQLite3 Multiple Ciphers (lisensi
 # MIT, tanpa OpenSSL) untuk semua platform; aplikasi menolak membuka basis data bila pustaka tanpa enkripsi termuat.
