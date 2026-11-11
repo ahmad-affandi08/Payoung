@@ -9,8 +9,6 @@ use App\Domain\Karyawan\Aksi\IsiMassalJadwal;
 use App\Domain\Karyawan\Aksi\SalinJadwalMingguLalu;
 use App\Domain\Karyawan\Aksi\SimpanJadwalMingguan;
 use App\Domain\Karyawan\Aksi\SimpanKebutuhanStaf;
-use App\Domain\Karyawan\Aksi\SimpanPolaJadwal;
-use App\Domain\Karyawan\Aksi\TerapkanPolaJadwal;
 use App\Domain\Karyawan\Aksi\UmumkanJadwalMingguan;
 use App\Domain\Karyawan\Data\DataJadwalMingguan;
 use App\Domain\Karyawan\Kueri\JadwalMingguan;
@@ -106,37 +104,6 @@ final class JadwalKerjaKontroler extends DasarKelolaKontroler
         return back()->with('Kilat', $hasil['Terisi'] === 0
             ? 'Tidak ada hari kosong yang bisa diisi.'
             : "{$hasil['Terisi']} jadwal terisi".($hasil['Dilewati'] > 0 ? ", {$hasil['Dilewati']} hari dilewati karena sudah berjadwal atau bertumpuk." : '.'));
-    }
-
-    /** D-251: pola jadwal berulang satu karyawan (menggantikan seluruh pola karyawan itu). */
-    public function SimpanPola(Request $permintaan, string $karyawan, SimpanPolaJadwal $simpan): RedirectResponse
-    {
-        $valid = $permintaan->validate([
-            'UuidOutlet' => ['required', 'string', 'ulid'],
-            'Baris' => ['present', 'array', 'max:42'],
-            'Baris.*.HariKe' => ['required', 'integer', 'between:1,7'],
-            'Baris.*.JamMulai' => ['required', 'string', 'size:5'],
-            'Baris.*.JamSelesai' => ['required', 'string', 'size:5'],
-            'Baris.*.UuidShift' => ['nullable', 'string', 'ulid'],
-        ]);
-        $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
-        $jumlah = $simpan->Jalankan($outlet->Id, $karyawan, array_values(array_map(fn (array $b): array => [
-            'HariKe' => (int) $b['HariKe'],
-            'JamMulai' => (string) $b['JamMulai'],
-            'JamSelesai' => (string) $b['JamSelesai'],
-            'UuidShift' => ($b['UuidShift'] ?? '') === '' ? null : (string) $b['UuidShift'],
-        ], $valid['Baris'])), $this->Pelaku()->Id);
-
-        return back()->with('Kilat', $jumlah === 0 ? 'Pola jadwal dihapus.' : "Pola jadwal disimpan ({$jumlah} shift per minggu).");
-    }
-
-    public function TerapkanPola(Request $permintaan, TerapkanPolaJadwal $terapkan): RedirectResponse
-    {
-        $valid = $permintaan->validate(['UuidOutlet' => ['required', 'string', 'ulid'], 'Senin' => ['required', 'date_format:Y-m-d']]);
-        $outlet = $this->CariOutlet((string) $valid['UuidOutlet']);
-        $jumlah = $terapkan->Jalankan($outlet->Id, self::AmbilSenin($valid['Senin'], $outlet->Id), $this->Pelaku()->Id);
-
-        return back()->with('Kilat', $jumlah === 0 ? 'Tidak ada hari kosong yang bisa diisi dari pola.' : "{$jumlah} hari terisi dari pola jadwal.");
     }
 
     public function SimpanKebutuhan(Request $permintaan, SimpanKebutuhanStaf $simpan): RedirectResponse

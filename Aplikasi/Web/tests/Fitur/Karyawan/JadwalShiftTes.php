@@ -11,13 +11,11 @@ use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\PermintaanTukarShift;
-use App\Domain\Karyawan\Model\PolaJadwalKerja;
 use App\Domain\Karyawan\Model\ShiftKerja;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Pengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request as PermintaanHttp;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -28,7 +26,7 @@ use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
- * F-18 jadwal kerja (D-251): shift bernama, beberapa shift per hari, isi massal, pola berulang, kebutuhan staf dan
+ * F-18 jadwal kerja (D-251): shift bernama, beberapa shift per hari, isi massal, kebutuhan staf dan
  * kekurangan staf, pengumuman jadwal lewat WhatsApp, dan tukar shift antar karyawan.
  */
 
@@ -160,53 +158,6 @@ describe('isi massal', function (): void {
             'UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21', 'UuidShift' => '01J9SHF0000000000000000009',
             'UuidKaryawan' => [$rina->Uuid], 'Tanggal' => ['2026-09-21'],
         ])->assertSessionHasErrors('UuidShift');
-    });
-});
-
-describe('pola jadwal berulang', function (): void {
-    it('pola tersimpan, diterapkan ke hari kosong, melewati hari cuti dan hari yang sudah berjadwal', function (): void {
-        [$k, $rina] = SiapkanJadwalShift($this);
-        $pagi = BuatShiftUji();
-        $baris = collect(range(1, 5))->map(fn (int $h): array => ['HariKe' => $h, 'JamMulai' => '08:00', 'JamSelesai' => '16:00', 'UuidShift' => $pagi->Uuid])->all();
-
-        $this->put("/kelola/karyawan/jadwal/pola/{$rina->Uuid}", ['UuidOutlet' => $k['Outlet']->Uuid, 'Baris' => $baris])->assertSessionHasNoErrors();
-        expect(PolaJadwalKerja::query()->count())->toBe(5);
-
-        JadwalKerja::query()->create(['IdKaryawan' => $rina->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-21', 'JamMulai' => '10:00', 'JamSelesai' => '14:00']);
-        $this->post('/kelola/karyawan/cuti', ['Karyawan' => $rina->Uuid, 'Jenis' => 'Sakit', 'TanggalMulai' => '2026-09-23', 'TanggalSelesai' => '2026-09-23', 'Berbayar' => true, 'Alasan' => 'Demam'])->assertRedirect();
-        $this->post('/kelola/karyawan/jadwal/terapkan-pola', ['UuidOutlet' => $k['Outlet']->Uuid, 'Senin' => '2026-09-21'])->assertSessionHasNoErrors();
-        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-
-        // Senin sudah berjadwal, Rabu cuti, jadi Selasa, Kamis, Jumat yang terisi.
-        $terisi = JadwalKerja::query()->where('IdKaryawan', $rina->Id)->orderBy('Tanggal')->get()->map(fn (JadwalKerja $j): string => $j->Tanggal->toDateString().' '.$j->JamMulai)->all();
-        expect($terisi)->toBe(['2026-09-21 10:00', '2026-09-22 08:00', '2026-09-24 08:00', '2026-09-25 08:00']);
-
-        $this->put("/kelola/karyawan/jadwal/pola/{$rina->Uuid}", ['UuidOutlet' => $k['Outlet']->Uuid, 'Baris' => []])->assertSessionHasNoErrors();
-        expect(PolaJadwalKerja::query()->count())->toBe(0);
-    });
-
-    it('pola yang shiftnya saling bertumpuk ditolak', function (): void {
-        [$k, $rina] = SiapkanJadwalShift($this);
-        $this->put("/kelola/karyawan/jadwal/pola/{$rina->Uuid}", ['UuidOutlet' => $k['Outlet']->Uuid, 'Baris' => [
-            ['HariKe' => 1, 'JamMulai' => '08:00', 'JamSelesai' => '14:00'],
-            ['HariKe' => 1, 'JamMulai' => '13:00', 'JamSelesai' => '18:00'],
-        ]])->assertSessionHasErrors('Baris.0.JamMulai');
-    });
-
-    it('perintah terjadwal mengisi minggu yang belum berjadwal sama sekali, tidak minggu yang sudah punya jadwal', function (): void {
-        [$k, $rina, $dimas] = SiapkanJadwalShift($this);
-        foreach ([$rina, $dimas] as $orang) {
-            PolaJadwalKerja::query()->create(['IdKaryawan' => $orang->Id, 'IdOutlet' => $k['Outlet']->Id, 'HariKe' => 1, 'JamMulai' => '08:00', 'JamSelesai' => '16:00']);
-        }
-        // Dimas sengaja dikosongkan hari Senin di minggu ini tetapi punya jadwal Selasa, jadi minggunya tidak disentuh.
-        JadwalKerja::query()->create(['IdKaryawan' => $dimas->Id, 'IdOutlet' => $k['Outlet']->Id, 'Tanggal' => '2026-09-22', 'JamMulai' => '08:00', 'JamSelesai' => '16:00']);
-
-        Artisan::call('karyawan:terapkan-pola-jadwal', ['--tenant' => [$k['Tenant']->Id]]);
-        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
-
-        expect(JadwalKerja::query()->where('IdKaryawan', $rina->Id)->whereDate('Tanggal', '2026-09-21')->count())->toBe(1)
-            ->and(JadwalKerja::query()->where('IdKaryawan', $dimas->Id)->whereDate('Tanggal', '2026-09-21')->count())->toBe(0)
-            ->and(JadwalKerja::query()->where('IdKaryawan', $dimas->Id)->whereDate('Tanggal', '2026-09-28')->count())->toBe(1);
     });
 });
 

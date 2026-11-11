@@ -85,10 +85,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::get('/{karyawan}/wajah/foto/{indeks}', [AbsenHpKaryawanKontroler::class, 'Foto'])->where(['karyawan' => $ulid, 'indeks' => '[0-9]'])->name('kelola.karyawan.wajah.foto');
         Route::put('/jadwal', [JadwalKerjaKontroler::class, 'Simpan'])->name('kelola.karyawan.jadwal.simpan');
         Route::post('/jadwal/salin', [JadwalKerjaKontroler::class, 'Salin'])->name('kelola.karyawan.jadwal.salin');
-        // F-18 D-251: isi massal, pola berulang, kebutuhan staf, umumkan lewat WhatsApp, shift bernama, tukar shift.
+        // F-18 D-251: isi massal, kebutuhan staf, umumkan lewat WhatsApp, shift bernama, tukar shift.
         Route::post('/jadwal/isi-massal', [JadwalKerjaKontroler::class, 'IsiMassal'])->middleware('throttle:30,1')->name('kelola.karyawan.jadwal.isi-massal');
-        Route::put('/jadwal/pola/{karyawan}', [JadwalKerjaKontroler::class, 'SimpanPola'])->where('karyawan', $ulid)->name('kelola.karyawan.jadwal.pola.simpan');
-        Route::post('/jadwal/terapkan-pola', [JadwalKerjaKontroler::class, 'TerapkanPola'])->middleware('throttle:30,1')->name('kelola.karyawan.jadwal.terapkan-pola');
         Route::put('/jadwal/kebutuhan', [JadwalKerjaKontroler::class, 'SimpanKebutuhan'])->name('kelola.karyawan.jadwal.kebutuhan');
         Route::post('/jadwal/umumkan', [JadwalKerjaKontroler::class, 'Umumkan'])->middleware('throttle:6,1')->name('kelola.karyawan.jadwal.umumkan');
         Route::post('/jadwal/shift', [ShiftKerjaKontroler::class, 'Simpan'])->name('kelola.karyawan.jadwal.shift.simpan');

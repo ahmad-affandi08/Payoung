@@ -11,7 +11,6 @@ use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\KebutuhanStaf;
 use App\Domain\Karyawan\Model\PermintaanTukarShift;
-use App\Domain\Karyawan\Model\PolaJadwalKerja;
 use App\Domain\Karyawan\Model\ShiftKerja;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -21,7 +20,7 @@ use Illuminate\Support\Collection;
  * outlet ini minggu tersebut; kolom = Senin–Minggu. Sel jadwal di outlet lain ditandai (tidak bisa diubah dari
  * sini). `Cuti` memuat hari cuti/izin yang berlaku pada minggu itu (tanggal → jenis & berbayar) untuk tampil di sel jadwal.
  * Sejak D-251 satu sel memuat daftar shift (boleh lebih dari satu per hari) dan jawaban juga membawa daftar shift bernama,
- * pola berulang tiap karyawan, kebutuhan staf outlet, kekurangan staf minggu itu, dan permintaan tukar shift yang
+ * kebutuhan staf outlet, kekurangan staf minggu itu, dan permintaan tukar shift yang
  * menunggu keputusan pengelola.
  */
 final class JadwalMingguan
@@ -31,7 +30,7 @@ final class JadwalMingguan
     /**
      * @return array{
      *     Hari: list<string>,
-     *     Baris: list<array{Uuid: string, Nama: string, Jabatan: string|null, Aktif: bool, Jadwal: array<string, list<array{Uuid: string, JamMulai: string, JamSelesai: string, OutletLain: bool, UuidShift: string|null}>>, Cuti: array<string, array{Jenis: string, Berbayar: bool}>, Pola: list<array{HariKe: int, JamMulai: string, JamSelesai: string, UuidShift: string|null}>}>,
+     *     Baris: list<array{Uuid: string, Nama: string, Jabatan: string|null, Aktif: bool, Jadwal: array<string, list<array{Uuid: string, JamMulai: string, JamSelesai: string, OutletLain: bool, UuidShift: string|null}>>, Cuti: array<string, array{Jenis: string, Berbayar: bool}>}>,
      *     ShiftKerja: list<array{Uuid: string, Nama: string, JamMulai: string, JamSelesai: string, Aktif: bool, Urutan: int}>,
      *     Kebutuhan: list<array{HariKe: int, JamMulai: string, JamSelesai: string, Minimal: int}>,
      *     Kekurangan: list<array{Tanggal: string, JamMulai: string, JamSelesai: string, Minimal: int, Terjadwal: int, Kurang: int}>,
@@ -50,7 +49,6 @@ final class JadwalMingguan
         $jadwalLuas = JadwalKerja::query()->whereBetween('Tanggal', [$senin->subDay()->toDateString(), $hari[6]])->orderBy('JamMulai')->get();
         $jadwal = $jadwalLuas->filter(fn (JadwalKerja $j): bool => $j->Tanggal->toDateString() >= $hari[0]);
         $idDiOutlet = $jadwal->where('IdOutlet', $idOutlet)->pluck('IdKaryawan')->unique()->all();
-        $pola = PolaJadwalKerja::query()->where('IdOutlet', $idOutlet)->orderBy('HariKe')->orderBy('JamMulai')->get()->groupBy('IdKaryawan');
         $karyawan = Karyawan::query()
             ->where(fn ($k) => $k->where(fn ($q) => $q->where('IdOutlet', $idOutlet)->where('Status', StatusKaryawan::Aktif->value))->orWhereIn('Id', $idDiOutlet))
             ->orderBy('Nama')
@@ -86,12 +84,6 @@ final class JadwalMingguan
                 'Aktif' => $k->Status === StatusKaryawan::Aktif,
                 'Jadwal' => $sel,
                 'Cuti' => $cuti[$k->Id] ?? [],
-                'Pola' => array_values($pola->get($k->Id, collect())->map(fn (PolaJadwalKerja $p): array => [
-                    'HariKe' => $p->HariKe,
-                    'JamMulai' => $p->JamMulai,
-                    'JamSelesai' => $p->JamSelesai,
-                    'UuidShift' => $p->IdShiftKerja === null ? null : ($uuidShift[$p->IdShiftKerja] ?? null),
-                ])->all()),
             ];
         }
 

@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HalamanJadwalKerja from '@/Halaman/Kelola/Karyawan/Jadwal';
 import { KalimatKekurangan } from '@/Komponen/Karyawan/Jadwal/PanelPerhatianJadwal';
 import { CekBarisKebutuhan } from '@/Komponen/Karyawan/Jadwal/DialogKebutuhanStaf';
-import { UrutkanPola } from '@/Komponen/Karyawan/Jadwal/DialogPolaJadwal';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import {
     AdaGalatJam,
@@ -39,7 +38,6 @@ function BarisJadwalUji(): BarisJadwal {
         Jabatan: 'Barista',
         Aktif: true,
         Cuti: { '2026-09-23': { Jenis: 'Sakit', Berbayar: true } },
-        Pola: [],
         Jadwal: {
             ...Object.fromEntries(Hari.map((t) => [t, []])),
             '2026-09-21': [
@@ -206,14 +204,21 @@ describe('Jadwal kerja (F-18, D-251)', () => {
         expect(screen.getAllByText('Pagi').length).toBeGreaterThan(0);
     });
 
-    it('tombol Terapkan pola, Kirim ke karyawan, dan Salin memanggil rute yang tepat', () => {
+    it('Salin minggu lalu ada di menu Atur dan tidak ada lagi tombol pola', () => {
         RenderUji(<HalamanJadwalKerja {...PropsUji()} />);
-        fireEvent.click(screen.getByRole('button', { name: 'Terapkan pola' }));
+        expect(screen.queryByRole('button', { name: 'Terapkan pola' })).toBeNull();
+        fireEvent.pointerDown(screen.getByRole('button', { name: 'Atur' }), { button: 0, ctrlKey: false });
+        expect(screen.queryByRole('menuitem', { name: 'Pola berulang' })).toBeNull();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Salin minggu lalu' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
-            '/kelola/karyawan/jadwal/terapkan-pola',
+            '/kelola/karyawan/jadwal/salin',
             { UuidOutlet: Outlet.Uuid, Senin: '2026-09-21' },
             expect.anything(),
         );
+    });
+
+    it('tombol Kirim ke karyawan memanggil rute yang tepat', () => {
+        RenderUji(<HalamanJadwalKerja {...PropsUji()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Kirim ke karyawan' }));
         expect(tiruanRouter.post).toHaveBeenCalledWith(
             '/kelola/karyawan/jadwal/umumkan',
@@ -261,14 +266,7 @@ describe('Jadwal kerja (F-18, D-251)', () => {
         );
     });
 
-    it('bantuan dialog: urut pola, validasi baris kebutuhan staf', () => {
-        expect(
-            UrutkanPola([
-                { HariKe: 3, JamMulai: '08:00', JamSelesai: '12:00', UuidShift: null },
-                { HariKe: 1, JamMulai: '17:00', JamSelesai: '21:00', UuidShift: null },
-                { HariKe: 1, JamMulai: '08:00', JamSelesai: '12:00', UuidShift: null },
-            ]).map((b) => `${b.HariKe}-${b.JamMulai}`),
-        ).toEqual(['1-08:00', '1-17:00', '3-08:00']);
+    it('bantuan dialog: validasi baris kebutuhan staf', () => {
         const sah = { HariKe: '1', JamMulai: '10:00', JamSelesai: '14:00', Minimal: '2' };
         expect([
             CekBarisKebutuhan(sah),

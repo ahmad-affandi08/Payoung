@@ -61,9 +61,6 @@ export type SelJadwal = {
 
 export type JenisCuti = 'Cuti' | 'Sakit' | 'Izin';
 
-/** Satu shift dalam pola jadwal berulang. `HariKe` 1 = Senin sampai 7 = Minggu. */
-export type BarisPola = { HariKe: number; JamMulai: string; JamSelesai: string; UuidShift: string | null };
-
 export type BarisJadwal = {
     Uuid: string;
     Nama: string;
@@ -73,7 +70,6 @@ export type BarisJadwal = {
     Jadwal: Record<string, SelJadwal[]>;
     /** Hari cuti/izin yang berlaku minggu ini, kunci = tanggal `TTTT-BB-HH`. */
     Cuti: Record<string, { Jenis: JenisCuti; Berbayar: boolean }>;
-    Pola: BarisPola[];
 };
 
 /** Shift bernama milik usaha (Pagi, Siang, Malam). */

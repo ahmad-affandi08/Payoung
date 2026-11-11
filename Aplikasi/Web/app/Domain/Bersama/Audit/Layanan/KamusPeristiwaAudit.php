@@ -430,8 +430,6 @@ final class KamusPeristiwaAudit
         'penyesuaian-stok.tolak' => 'Penyesuaian stok ditolak',
         'penyesuaian-stok.ubah' => 'Penyesuaian stok diubah',
 
-        'pola-jadwal.simpan' => 'Pola jadwal berulang diatur',
-
         'peran.buat' => 'Peran dibuat',
         'peran.hapus' => 'Peran dihapus',
         'peran.ubah' => 'Peran diubah',

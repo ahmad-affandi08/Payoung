@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import DialogIsiMassal from '@/Komponen/Karyawan/Jadwal/DialogIsiMassal';
 import DialogKebutuhanStaf from '@/Komponen/Karyawan/Jadwal/DialogKebutuhanStaf';
-import DialogPolaJadwal from '@/Komponen/Karyawan/Jadwal/DialogPolaJadwal';
 import DialogShiftKerja from '@/Komponen/Karyawan/Jadwal/DialogShiftKerja';
 import PanelPerhatianJadwal from '@/Komponen/Karyawan/Jadwal/PanelPerhatianJadwal';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
@@ -35,17 +34,17 @@ import type { PropsJadwalKerja } from '@/Tipe/Karyawan';
 
 const alamat = '/kelola/karyawan/jadwal';
 
-type Dialog = 'shift' | 'massal' | 'pola' | 'kebutuhan' | null;
+type Dialog = 'shift' | 'massal' | 'kebutuhan' | null;
 
 /**
  * F-18 EMP-02, D-251: jadwal kerja mingguan per outlet (Senin–Minggu). Satu hari boleh punya beberapa shift, shift bisa
- * dipasang dari daftar shift bernama, diisi massal, atau ditarik dari pola berulang. Di atas jadwal tampil jam yang
+ * dipasang dari daftar shift bernama, atau diisi massal. Di atas jadwal tampil jam yang
  * kurang staf dan permintaan tukar shift. Jadwal bisa dikirim ke karyawan lewat WhatsApp.
  */
 export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadwal, Izin }: PropsJadwalKerja) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [isian, AturIsian] = useState<Isian>(() => BuatIsian(Jadwal.Baris));
-    // Jadwal dari server berubah (isi massal, salin, pola, tukar shift, atau simpan berhasil): isian dimuat ulang dari server.
+    // Jadwal dari server berubah (isi massal, salin, tukar shift, atau simpan berhasil): isian dimuat ulang dari server.
     // Dibandingkan menurut isinya, jadi simpan yang gagal (jadwal sama) tidak membuang ketikan pengguna.
     const jejakServer = JSON.stringify(Jadwal.Baris);
     const [jejakTerakhir, AturJejakTerakhir] = useState(jejakServer);
@@ -125,12 +124,6 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                     <Button variant="outline" onClick={() => AturDialog('massal')}>
                         Isi massal
                     </Button>
-                    <Button variant="outline" onClick={() => KirimAksi('salin')}>
-                        Salin minggu lalu
-                    </Button>
-                    <Button variant="outline" onClick={() => KirimAksi('terapkan-pola')}>
-                        Terapkan pola
-                    </Button>
                     <Button variant="outline" onClick={() => KirimAksi('umumkan')}>
                         Kirim ke karyawan
                     </Button>
@@ -142,8 +135,8 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
+                            <DropdownMenuItem onSelect={() => KirimAksi('salin')}>Salin minggu lalu</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => AturDialog('shift')}>Shift kerja</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => AturDialog('pola')}>Pola berulang</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => AturDialog('kebutuhan')}>Kebutuhan staf</DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <Link href="/kelola/karyawan/cuti">Cuti dan izin</Link>
@@ -366,15 +359,6 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                     uuidOutlet={UuidOutlet}
                     senin={Senin}
                     hari={Jadwal.Hari}
-                    karyawan={Jadwal.Baris}
-                    shift={Jadwal.ShiftKerja}
-                    saatTutup={Tutup}
-                />
-            ) : null}
-            {UuidOutlet && dialog === 'pola' ? (
-                <DialogPolaJadwal
-                    alamat={alamat}
-                    uuidOutlet={UuidOutlet}
                     karyawan={Jadwal.Baris}
                     shift={Jadwal.ShiftKerja}
                     saatTutup={Tutup}
