@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Katalog\Harga\Model\AturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Model\PengaturanHargaOtomatis;
+use App\Domain\Katalog\Harga\Tugas\TerapkanHargaOtomatisSemuaTugas;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Pendukung\Katalog\BantuanKatalog;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -46,7 +48,8 @@ describe('paket Pro ke atas', function (): void {
             ->has('Usulan', 0)
             ->has('OpsiKategori', 1)
             ->where('OpsiKategori.0.Uuid', $minuman->Uuid)
-            ->where('OpsiPembulatan', [0, 100, 500, 1000]));
+            ->where('OpsiPembulatan', [0, 100, 500, 1000])
+            ->where('ProdukBerstok', 0));
     });
 
     it('satu simpan menyalakan saklar, membuat untung utama, dan menyimpan untung khusus sekaligus', function (): void {
@@ -102,6 +105,58 @@ describe('paket Pro ke atas', function (): void {
             ->assertJsonPath('Data.Ringkasan.TanpaHargaBeli', 1);
         $this->postJson('/kelola/produk/harga-dari-modal/pratinjau', ['Uuid' => [], 'PersenUntung' => '20', 'Pembulatan' => 0])->assertUnprocessable();
     });
+
+    it('pratinjau pengaturan mengembalikan ringkasan dan contoh tanpa menyimpan apa pun (D-268)', function (): void {
+        $t = TenantHargaOtomatis('PRO');
+        BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+        BantuanKatalog::BuatProduk([], '11000.00');
+        $dasar = ['BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Khusus' => []];
+
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', $dasar)
+            ->assertOk()
+            ->assertJsonPath('Data.Ringkasan.TanpaHargaBeli', 1)
+            ->assertJsonPath('Data.Ringkasan.Berubah', 0)
+            ->assertJsonPath('Data.Contoh', []);
+
+        // Isian salah: 422 dengan pesan di bidangnya.
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', [...$dasar, 'PersenUntung' => 'banyak'])->assertUnprocessable();
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', [...$dasar, 'BatasPerubahanPersen' => '500'])->assertUnprocessable();
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', [...$dasar, 'Pembulatan' => 250])->assertUnprocessable()->assertJsonValidationErrors('Pembulatan');
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', ['PersenUntung' => '20'])->assertUnprocessable();
+
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(PengaturanHargaOtomatis::query()->count())->toBe(0)
+            ->and(AturanHargaOtomatis::query()->count())->toBe(0);
+    });
+
+    it('simpan dan hitung ulang sekarang: menyimpan lalu mengantrekan penghitungan semua harga, hanya bila saklar menyala (D-268)', function (): void {
+        Queue::fake();
+        $t = TenantHargaOtomatis('PRO');
+        BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+        $dasar = ['Aktif' => true, 'BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Khusus' => []];
+
+        // Simpan saja: tidak ada penghitungan ulang.
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', $dasar)->assertSessionHasNoErrors();
+        Queue::assertNotPushed(TerapkanHargaOtomatisSemuaTugas::class);
+
+        // Simpan dan hitung ulang: tersimpan dan satu tugas diantrekan.
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', [...$dasar, 'HitungUlang' => true])->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
+        Queue::assertPushed(TerapkanHargaOtomatisSemuaTugas::class, 1);
+
+        // Saklar mati: dimatikan tanpa menghitung apa pun walau diminta.
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', [...$dasar, 'Aktif' => false, 'HitungUlang' => true])->assertSessionHasNoErrors();
+        Queue::assertPushed(TerapkanHargaOtomatisSemuaTugas::class, 1);
+    });
+
+    it('isian salah saat simpan dan hitung ulang tidak mengantrekan apa pun', function (): void {
+        Queue::fake();
+        $t = TenantHargaOtomatis('PRO');
+        BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '20', 'PersenUntung' => 'banyak', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Khusus' => [], 'HitungUlang' => true])->assertSessionHasErrors('PersenUntung');
+
+        Queue::assertNothingPushed();
+    });
 });
 
 describe('di luar paket atau izin', function (): void {
@@ -112,6 +167,7 @@ describe('di luar paket atau izin', function (): void {
         $this->get('/kelola/produk/harga-otomatis')->assertOk();
         $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '20'])->assertSessionHasErrors('Umum');
         $this->postJson('/kelola/produk/harga-dari-modal/pratinjau', ['Uuid' => [], 'PersenUntung' => '20', 'Pembulatan' => 0])->assertForbidden();
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', ['BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Khusus' => []])->assertForbidden();
 
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
         expect(PengaturanHargaOtomatis::query()->count())->toBe(0)
@@ -131,5 +187,6 @@ describe('di luar paket atau izin', function (): void {
 
         $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '20'])->assertForbidden();
         $this->post('/kelola/produk/harga-otomatis/jalankan')->assertForbidden();
+        $this->postJson('/kelola/produk/harga-otomatis/pratinjau', ['BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Khusus' => []])->assertForbidden();
     });
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Katalog\Harga\Kueri;
 
+use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Harga\Enum\ArahHargaOtomatis;
 use App\Domain\Katalog\Harga\Enum\CakupanAturanHarga;
 use App\Domain\Katalog\Harga\Enum\StatusUsulanHarga;
@@ -34,6 +35,8 @@ final class HalamanHargaOtomatis
         $produk = Produk::query()->whereIn('Id', $aturan->pluck('IdProduk')->filter()->all())->get(['Id', 'Uuid', 'Nama', 'Sku'])->keyBy('Id');
 
         return [
+            // Produk berstok biasa yang bisa mengikuti harga beli (D-268), untuk kalimat "N produk ikut aturan ini".
+            'ProdukBerstok' => Produk::query()->where('Jenis', JenisProduk::Stok->value)->where('HargaTerbuka', false)->where('Aktif', true)->whereNull('DiarsipkanPada')->count(),
             'Pengaturan' => [
                 'Aktif' => $pengaturan->Aktif ?? false,
                 'BatasPerubahanPersen' => (string) ($pengaturan->BatasPerubahanPersen ?? PengaturanHargaOtomatis::BATAS_BAWAAN),

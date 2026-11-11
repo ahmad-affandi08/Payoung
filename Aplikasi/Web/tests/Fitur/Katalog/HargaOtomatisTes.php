@@ -21,6 +21,7 @@ use App\Domain\Katalog\Harga\Enum\ArahHargaOtomatis;
 use App\Domain\Katalog\Harga\Enum\CakupanAturanHarga;
 use App\Domain\Katalog\Harga\Enum\StatusUsulanHarga;
 use App\Domain\Katalog\Harga\Kueri\PratinjauHargaDariModal;
+use App\Domain\Katalog\Harga\Kueri\PratinjauPengaturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Layanan\PenyediaTindakanHargaOtomatis;
 use App\Domain\Katalog\Harga\Model\AturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Model\PengaturanHargaOtomatis;
@@ -617,5 +618,118 @@ describe('Harga dari harga beli massal (manual)', function (): void {
             ->and(fn () => $aksi->Ambil(array_map(fn (int $i): string => (string) Str::ulid(), range(1, 201)), '20', 0))->toThrow(PelanggaranAturanBisnis::class, 'Maksimal')
             ->and(fn () => $aksi->Ambil([$produk->Uuid], 'dua puluh', 0))->toThrow(PelanggaranAturanBisnis::class, 'angka')
             ->and(fn () => $aksi->Ambil([(string) Str::ulid()], '20', 0))->toThrow(PelanggaranAturanBisnis::class, 'tidak ditemukan');
+    });
+});
+
+describe('pratinjau pengaturan yang belum disimpan (D-268)', function (): void {
+    it('menghitung berubah, menunggu persetujuan, tetap, ditahan, dan tanpa harga beli, tanpa menyimpan apa pun', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+        $naik = ProdukBerharga($t, '11000.00', ['Nama' => 'Teh Botol Sosro 450 ml']);
+        $pas = ProdukBerharga($t, '12000.00', ['Nama' => 'Indomie Goreng']);
+        $salahKetik = ProdukBerharga($t, '12000.00', ['Nama' => 'Minyak Goreng 2 L']);
+        $turun = ProdukBerharga($t, '12000.00', ['Nama' => 'Gula Pasir 1 kg']);
+        ProdukBerharga($t, '5000.00', ['Nama' => 'Beras Belum Dibeli']);
+        TerimaDenganHarga($t, $naik, '10000');
+        TerimaDenganHarga($t, $pas, '10000');
+        TerimaDenganHarga($t, $salahKetik, '100000');
+        TerimaDenganHarga($t, $turun, '9500');
+        $riwayatSebelum = RiwayatHarga::query()->count();
+
+        $hasil = app(PratinjauPengaturanHargaOtomatis::class)->Ambil('20', 0, ArahHargaOtomatis::HanyaNaik, '20', []);
+
+        expect($hasil['Ringkasan'])->toBe(['Berubah' => 1, 'Menunggu' => 1, 'Tetap' => 2, 'TanpaHargaBeli' => 1]);
+        $menurutNama = collect($hasil['Contoh'])->keyBy('Nama');
+        expect($menurutNama['Teh Botol Sosro 450 ml']['Status'])->toBe('Berubah')
+            ->and($menurutNama['Teh Botol Sosro 450 ml']['HargaLama'])->toBe('11000.00')
+            ->and($menurutNama['Teh Botol Sosro 450 ml']['HargaBaru'])->toBe('12000.00')
+            ->and($menurutNama['Teh Botol Sosro 450 ml']['Modal'])->toBe('10000.00')
+            ->and($menurutNama['Minyak Goreng 2 L']['Status'])->toBe('Menunggu')
+            ->and($menurutNama['Minyak Goreng 2 L']['HargaBaru'])->toBe('120000.00')
+            ->and($menurutNama['Gula Pasir 1 kg']['Status'])->toBe('Ditahan')
+            ->and($menurutNama->has('Beras Belum Dibeli'))->toBeFalse();
+        // Urutan contoh: yang menunggu dulu, lalu yang berubah, lalu yang tetap.
+        expect(collect($hasil['Contoh'])->pluck('Status')->first())->toBe('Menunggu');
+
+        // Murni baca: tidak ada harga, riwayat, usulan, saklar, atau aturan yang berubah.
+        expect(HargaDasar($naik))->toBe('11000.00')
+            ->and(HargaDasar($salahKetik))->toBe('12000.00')
+            ->and(RiwayatHarga::query()->count())->toBe($riwayatSebelum)
+            ->and(UsulanHargaOtomatis::query()->count())->toBe(0)
+            ->and(PengaturanHargaOtomatis::query()->count())->toBe(0)
+            ->and(AturanHargaOtomatis::query()->count())->toBe(0);
+    });
+
+    it('batas persetujuan yang lebih longgar mengubah yang menunggu jadi berubah, arah naik dan turun menurunkan harga', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+        $loncat = ProdukBerharga($t, '9000.00');
+        $turun = ProdukBerharga($t, '12000.00');
+        TerimaDenganHarga($t, $loncat, '10000');
+        TerimaDenganHarga($t, $turun, '9500');
+
+        $ketat = app(PratinjauPengaturanHargaOtomatis::class)->Ambil('20', 0, ArahHargaOtomatis::NaikTurun, '20', []);
+        $longgar = app(PratinjauPengaturanHargaOtomatis::class)->Ambil('20', 0, ArahHargaOtomatis::NaikTurun, '50', []);
+
+        // 9.000 ke 12.000 naik 33,33%: menunggu di batas 20%, langsung berubah di batas 50%. Turun 12.000 ke 11.400 (5%) selalu berubah.
+        expect($ketat['Ringkasan'])->toMatchArray(['Berubah' => 1, 'Menunggu' => 1, 'Tetap' => 0])
+            ->and($longgar['Ringkasan'])->toMatchArray(['Berubah' => 2, 'Menunggu' => 0, 'Tetap' => 0])
+            ->and(collect($longgar['Contoh'])->firstWhere('HargaLama', '12000.00')['HargaBaru'])->toBe('11400.00');
+    });
+
+    it('untung khusus per kategori dan produk memakai aturan yang paling khusus, sama dengan yang diterapkan', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+        $minuman = BantuanKatalog::BuatKategori('Minuman');
+        $dingin = BantuanKatalog::BuatKategori('Minuman Dingin', $minuman);
+        $teh = ProdukBerharga($t, '10000.00', ['Nama' => 'Es Teh', 'IdKategori' => $dingin->Id]);
+        $gula = ProdukBerharga($t, '10000.00', ['Nama' => 'Gula Pasir']);
+        $beras = ProdukBerharga($t, '10000.00', ['Nama' => 'Beras']);
+
+        foreach ([$teh, $gula, $beras] as $p) {
+            TerimaDenganHarga($t, $p, '10000');
+        }
+
+        $khusus = [
+            new DataAturanHargaOtomatis(CakupanAturanHarga::Kategori, $minuman->Uuid, null, '35', 0, ArahHargaOtomatis::NaikTurun, true),
+            new DataAturanHargaOtomatis(CakupanAturanHarga::Produk, null, $gula->Uuid, '8', 0, ArahHargaOtomatis::NaikTurun, true),
+        ];
+
+        $hasil = app(PratinjauPengaturanHargaOtomatis::class)->Ambil('20', 0, ArahHargaOtomatis::NaikTurun, '100', $khusus);
+        $baru = collect($hasil['Contoh'])->pluck('HargaBaru', 'Nama');
+
+        // Subkategori mewarisi untung kategori induk, produk mengalahkan semuanya, sisanya memakai untung utama.
+        expect($hasil['Ringkasan']['Berubah'])->toBe(3)
+            ->and($baru['Es Teh'])->toBe('13500.00')
+            ->and($baru['Gula Pasir'])->toBe('10800.00')
+            ->and($baru['Beras'])->toBe('12000.00');
+
+        // Yang dipratinjau persis yang diterapkan setelah disimpan.
+        app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '100', '20', 0, ArahHargaOtomatis::NaikTurun, $khusus, $t['Pemilik']->Id);
+        app(TerapkanHargaOtomatis::class)->JalankanUntukSemua('uji', $t['Pemilik']->Id);
+
+        expect(HargaDasar($teh))->toBe('13500.00')
+            ->and(HargaDasar($gula))->toBe('10800.00')
+            ->and(HargaDasar($beras))->toBe('12000.00');
+    });
+
+    it('isian salah ditolak dengan galat di bidangnya dan produk berharga terbuka, arsip, atau jasa tidak dihitung', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+        $terbuka = ProdukBerharga($t, '9000.00', ['HargaTerbuka' => true]);
+        $arsip = ProdukBerharga($t, '9000.00');
+        TerimaDenganHarga($t, $terbuka, '10000');
+        TerimaDenganHarga($t, $arsip, '10000');
+        $arsip->forceFill(['DiarsipkanPada' => now()])->save();
+        $pratinjau = app(PratinjauPengaturanHargaOtomatis::class);
+
+        expect($pratinjau->Ambil('20', 0, ArahHargaOtomatis::NaikTurun, '20', [])['Ringkasan'])->toBe(['Berubah' => 0, 'Menunggu' => 0, 'Tetap' => 0, 'TanpaHargaBeli' => 0]);
+
+        foreach ([['banyak', 0, '20', 'UntungTidakValid'], ['20', 250, '20', 'PembulatanTidakDikenal'], ['20', 0, '500', 'BatasTidakValid']] as [$untung, $bulat, $batas, $kode]) {
+            try {
+                $pratinjau->Ambil($untung, $bulat, ArahHargaOtomatis::NaikTurun, $batas, []);
+                $diterima = null;
+            } catch (PelanggaranAturanBisnis $e) {
+                $diterima = $e->kode;
+            }
+
+            expect($diterima)->toBe($kode);
+        }
     });
 });

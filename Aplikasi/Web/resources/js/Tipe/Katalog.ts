@@ -688,7 +688,44 @@ export type UsulanHargaOtomatis = {
     DibuatPada: string | null;
 };
 
+/** D-268 pratinjau pengaturan yang belum disimpan: `Ditahan` = harga beli turun tetapi pengaturan "Harga jual tetap" menahannya. */
+export type StatusContohHargaOtomatis = 'Berubah' | 'Menunggu' | 'Tetap' | 'Ditahan';
+
+export type ContohHargaOtomatis = {
+    Uuid: string;
+    Nama: string;
+    Sku: string | null;
+    Status: StatusContohHargaOtomatis;
+    /** Harga beli terakhir per satuan jual. */
+    Modal: string;
+    HargaLama: string;
+    HargaBaru: string;
+    /** Bertanda, dua desimal ("-12.50"). */
+    PerubahanPersen: string;
+};
+
+export type PratinjauHargaOtomatis = {
+    Ringkasan: { Berubah: number; Menunggu: number; Tetap: number; TanpaHargaBeli: number };
+    Contoh: ContohHargaOtomatis[];
+};
+
+/** Badan permintaan pratinjau dan simpan: isian layar apa adanya. */
+export type MasukanHargaOtomatis = {
+    BatasPerubahanPersen: string;
+    PersenUntung: string;
+    Pembulatan: number;
+    Arah: ArahHargaOtomatis;
+    Khusus: {
+        Cakupan: 'Kategori' | 'Produk';
+        UuidKategori: string | null;
+        UuidProduk: string | null;
+        PersenUntung: string;
+    }[];
+};
+
 export type PropsHargaOtomatis = {
+    /** Jumlah produk berstok biasa yang bisa mengikuti harga beli. */
+    ProdukBerstok: number;
     Pengaturan: PengaturanHargaOtomatis;
     /** Aturan "Semua produk" yang tampil sebagai isian utama. Tanpa aturan = nilai bawaan yang disarankan. */
     Umum: { PersenUntung: string; Pembulatan: number; Arah: ArahHargaOtomatis };

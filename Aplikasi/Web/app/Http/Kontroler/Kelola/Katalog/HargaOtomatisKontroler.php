@@ -11,9 +11,11 @@ use App\Domain\Katalog\Harga\Aksi\TolakUsulanHarga;
 use App\Domain\Katalog\Harga\Enum\ArahHargaOtomatis;
 use App\Domain\Katalog\Harga\Kueri\HalamanHargaOtomatis;
 use App\Domain\Katalog\Harga\Kueri\PratinjauHargaDariModal;
+use App\Domain\Katalog\Harga\Kueri\PratinjauPengaturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Tugas\TerapkanHargaOtomatisSemuaTugas;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Permintaan\Kelola\Katalog\HargaDariModalPermintaan;
+use App\Http\Permintaan\Kelola\Katalog\PratinjauHargaOtomatisPermintaan;
 use App\Http\Permintaan\Kelola\Katalog\UbahPengaturanHargaOtomatisPermintaan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -50,9 +52,31 @@ final class HargaOtomatisKontroler extends DasarKatalogKontroler
             $this->Pelaku()->Id,
         );
 
+        // "Simpan dan hitung ulang sekarang" (D-268): hanya bila saklar menyala, supaya mematikan tidak ikut menghitung.
+        if ($pengaturan->Aktif && $permintaan->boolean('HitungUlang')) {
+            TerapkanHargaOtomatisSemuaTugas::dispatch($this->IdTenant(), (string) Str::ulid(), $this->Pelaku()->Id);
+
+            return redirect()->route(self::ALAMAT)->with('Kilat', 'Pengaturan disimpan. Harga sedang dihitung ulang dari harga beli terakhir, hasilnya muncul di notifikasi dan di daftar usulan.');
+        }
+
         return redirect()->route(self::ALAMAT)->with('Kilat', $pengaturan->Aktif
-            ? 'Harga otomatis menyala. Harga jual akan mengikuti harga beli setiap ada penerimaan barang.'
+            ? 'Pengaturan disimpan. Harga jual akan mengikuti harga beli setiap ada penerimaan barang.'
             : 'Harga otomatis dimatikan. Harga yang sudah berubah tetap seperti sekarang.');
+    }
+
+    /**
+     * Pratinjau pengaturan yang belum disimpan (D-268): berapa harga akan berubah, menunggu persetujuan, atau tetap, dengan
+     * beberapa contoh produk. Murni baca, tidak mengubah apa pun.
+     */
+    public function PratinjauPengaturan(PratinjauHargaOtomatisPermintaan $permintaan, PratinjauPengaturanHargaOtomatis $pratinjau): JsonResponse
+    {
+        return response()->json(['Data' => $pratinjau->Ambil(
+            (string) $permintaan->validated('PersenUntung'),
+            (int) $permintaan->validated('Pembulatan'),
+            ArahHargaOtomatis::from((string) $permintaan->validated('Arah')),
+            (string) $permintaan->validated('BatasPerubahanPersen'),
+            $permintaan->AmbilKhusus(),
+        )]);
     }
 
     public function TerapkanUsulan(string $usulan, TerapkanUsulanHarga $terapkan): RedirectResponse

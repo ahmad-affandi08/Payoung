@@ -28,9 +28,20 @@ final class PenentuAturanHarga
 
     public static function Muat(): self
     {
+        return self::DariAturan(AturanHargaOtomatis::query()->where('Aktif', true)->orderBy('Id')->get());
+    }
+
+    /**
+     * Penentu dari daftar aturan yang sudah ada di memori. Dipakai `Muat` dan pratinjau pengaturan yang belum disimpan
+     * (D-268), supaya yang dipratinjau memakai aturan "paling khusus menang" yang sama dengan yang diterapkan.
+     *
+     * @param  iterable<AturanHargaOtomatis>  $daftar  hanya yang aktif
+     */
+    public static function DariAturan(iterable $daftar): self
+    {
         $penentu = new self(PohonKategoriTenant::Muat());
 
-        foreach (AturanHargaOtomatis::query()->where('Aktif', true)->orderBy('Id')->get() as $aturan) {
+        foreach ($daftar as $aturan) {
             match ($aturan->Cakupan) {
                 CakupanAturanHarga::Produk => $aturan->IdProduk === null ?: $penentu->perProduk[$aturan->IdProduk] = $aturan,
                 CakupanAturanHarga::Kategori => $aturan->IdKategori === null ?: $penentu->perKategori[$aturan->IdKategori] = $aturan,

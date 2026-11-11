@@ -35,6 +35,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     // Harga jual otomatis mengikuti harga beli terakhir (D-266, paket Pro ke atas). Lihat = produk.lihat, ubah = produk.harga.ubah.
     Route::get('/produk/harga-otomatis', [HargaOtomatisKontroler::class, 'Tampilkan'])->middleware($lihat)->name('kelola.produk.harga-otomatis');
     Route::put('/produk/harga-otomatis/pengaturan', [HargaOtomatisKontroler::class, 'UbahPengaturan'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.pengaturan');
+    Route::post('/produk/harga-otomatis/pratinjau', [HargaOtomatisKontroler::class, 'PratinjauPengaturan'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.pratinjau');
     Route::post('/produk/harga-otomatis/usulan/{usulan}/terapkan', [HargaOtomatisKontroler::class, 'TerapkanUsulan'])->middleware($ubahHarga)->where('usulan', $ulid)->name('kelola.produk.harga-otomatis.usulan.terapkan');
     Route::post('/produk/harga-otomatis/usulan/{usulan}/tolak', [HargaOtomatisKontroler::class, 'TolakUsulan'])->middleware($ubahHarga)->where('usulan', $ulid)->name('kelola.produk.harga-otomatis.usulan.tolak');
     Route::post('/produk/harga-otomatis/jalankan', [HargaOtomatisKontroler::class, 'JalankanSekarang'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.jalankan');

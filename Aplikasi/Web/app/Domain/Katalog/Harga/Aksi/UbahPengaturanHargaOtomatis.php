@@ -31,7 +31,7 @@ final class UbahPengaturanHargaOtomatis
      */
     public function Jalankan(bool $aktif, string $batasPersen, int $idPengguna): PengaturanHargaOtomatis
     {
-        $batas = $this->AmbilBatas($batasPersen);
+        $batas = self::AmbilBatas($batasPersen);
 
         return DB::transaction(function () use ($aktif, $batas, $idPengguna): PengaturanHargaOtomatis {
             $this->penguncian->Kunci($this->konteks->Wajib());
@@ -53,7 +53,12 @@ final class UbahPengaturanHargaOtomatis
         });
     }
 
-    private function AmbilBatas(string $nilai): BigDecimal
+    /**
+     * Batas aman 1 sampai 100 persen (dua desimal). Publik supaya pratinjau (D-268) memvalidasi dengan aturan yang sama.
+     *
+     * @throws PelanggaranAturanBisnis BatasTidakValid
+     */
+    public static function AmbilBatas(string $nilai): BigDecimal
     {
         $teks = str_replace(',', '.', trim($nilai));
 

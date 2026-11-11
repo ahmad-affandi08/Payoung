@@ -1,1 +1,0 @@
-function e(e){return e===0?`Tanpa pembulatan`:`Dibulatkan ke Rp ${e.toLocaleString(`id-ID`)} terdekat`}function t(e){return(e.includes(`.`)?e.replace(/\.?0+$/,``):e).replace(`.`,`,`)}function n(e){return e.includes(`.`)?e.replace(/\.?0+$/,``):e}export{n,t as r,e as t};
