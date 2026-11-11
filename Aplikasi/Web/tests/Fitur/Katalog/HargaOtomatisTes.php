@@ -435,8 +435,8 @@ describe('satu simpan untuk pengaturan utama', function (): void {
         $t = SiapkanHargaOtomatis(nyala: false);
         $simpan = app(SimpanHargaOtomatisUmum::class);
 
-        $simpan->Jalankan(true, '20', '25', 500, ArahHargaOtomatis::NaikTurun, $t['Pemilik']->Id);
-        $simpan->Jalankan(true, '30', '40', 100, ArahHargaOtomatis::HanyaNaik, $t['Pemilik']->Id);
+        $simpan->Jalankan(true, '20', '25', 500, ArahHargaOtomatis::NaikTurun, [], $t['Pemilik']->Id);
+        $simpan->Jalankan(true, '30', '40', 100, ArahHargaOtomatis::HanyaNaik, [], $t['Pemilik']->Id);
 
         $umum = AturanHargaOtomatis::query()->sole();
         expect($umum->Cakupan)->toBe(CakupanAturanHarga::Semua)
@@ -447,25 +447,52 @@ describe('satu simpan untuk pengaturan utama', function (): void {
             ->and((string) PengaturanHargaOtomatis::query()->sole()->BatasPerubahanPersen)->toBe('30.00');
     });
 
-    it('pembulatan dan arah menular ke untung khusus, untungnya sendiri tidak berubah', function (): void {
+    it('daftar untung khusus menggantikan yang lama: ditambah, diperbarui, dan yang tidak dikirim dihapus. Pembulatan dan arah ikut pengaturan utama', function (): void {
         $t = SiapkanHargaOtomatis();
         $minuman = BantuanKatalog::BuatKategori('Minuman');
+        $snack = BantuanKatalog::BuatKategori('Camilan');
+        $produk = ProdukBerharga($t, '5000.00');
         AturHargaOtomatis($t, '20');
         AturHargaOtomatis($t, '35', pembulatan: 500, cakupan: CakupanAturanHarga::Kategori, uuidKategori: $minuman->Uuid);
+        AturHargaOtomatis($t, '40', pembulatan: 500, cakupan: CakupanAturanHarga::Kategori, uuidKategori: $snack->Uuid);
+        $khusus = fn (CakupanAturanHarga $c, ?string $kategori, ?string $produkUuid, string $persen): DataAturanHargaOtomatis => new DataAturanHargaOtomatis($c, $kategori, $produkUuid, $persen, 0, ArahHargaOtomatis::NaikTurun, true);
 
-        app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', '20', 1000, ArahHargaOtomatis::HanyaNaik, $t['Pemilik']->Id);
+        // Minuman diperbarui (35 → 50), Camilan tidak dikirim (dihapus), satu produk ditambah.
+        app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', '20', 1000, ArahHargaOtomatis::HanyaNaik, [
+            $khusus(CakupanAturanHarga::Kategori, $minuman->Uuid, null, '50'),
+            $khusus(CakupanAturanHarga::Produk, null, $produk->Uuid, '15.5'),
+        ], $t['Pemilik']->Id);
 
-        $khusus = AturanHargaOtomatis::query()->where('Cakupan', 'Kategori')->sole();
-        expect($khusus->Pembulatan)->toBe(1000)
-            ->and($khusus->Arah)->toBe(ArahHargaOtomatis::HanyaNaik)
-            ->and((string) $khusus->PersenUntung)->toBe('35.0000')
-            ->and(AturanHargaOtomatis::query()->count())->toBe(2);
+        $semua = AturanHargaOtomatis::query()->where('Cakupan', '!=', 'Semua')->get();
+        $kategoriMinuman = $semua->firstWhere('IdKategori', $minuman->Id);
+        $untukProduk = $semua->firstWhere('IdProduk', $produk->Id);
+        expect($semua)->toHaveCount(2)
+            ->and($semua->firstWhere('IdKategori', $snack->Id))->toBeNull()
+            ->and((string) $kategoriMinuman->PersenUntung)->toBe('50.0000')
+            ->and((string) $untukProduk->PersenUntung)->toBe('15.5000')
+            ->and($semua->every(fn ($a) => $a->Pembulatan === 1000 && $a->Arah === ArahHargaOtomatis::HanyaNaik))->toBeTrue()
+            ->and(AturanHargaOtomatis::query()->count())->toBe(3);
+
+        // Daftar kosong menghapus semua untung khusus, untung utama tetap.
+        app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', '20', 1000, ArahHargaOtomatis::HanyaNaik, [], $t['Pemilik']->Id);
+        expect(AturanHargaOtomatis::query()->count())->toBe(1);
+    });
+
+    it('kategori atau produk yang sama dua kali ditolak dan tidak ada yang berubah', function (): void {
+        $t = SiapkanHargaOtomatis();
+        $minuman = BantuanKatalog::BuatKategori('Minuman');
+        $baris = new DataAturanHargaOtomatis(CakupanAturanHarga::Kategori, $minuman->Uuid, null, '30', 0, ArahHargaOtomatis::NaikTurun, true);
+
+        expect(fn () => app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', '45', 500, ArahHargaOtomatis::NaikTurun, [$baris, $baris], $t['Pemilik']->Id))
+            ->toThrow(PelanggaranAturanBisnis::class, 'satu untung khusus');
+
+        expect(AturanHargaOtomatis::query()->count())->toBe(0);
     });
 
     it('isian salah menggagalkan semuanya: saklar dan aturan tidak berubah', function (): void {
         $t = SiapkanHargaOtomatis(nyala: false);
 
-        expect(fn () => app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', 'banyak', 500, ArahHargaOtomatis::NaikTurun, $t['Pemilik']->Id))
+        expect(fn () => app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', 'banyak', 500, ArahHargaOtomatis::NaikTurun, [], $t['Pemilik']->Id))
             ->toThrow(PelanggaranAturanBisnis::class);
 
         expect(AturanHargaOtomatis::query()->count())->toBe(0)

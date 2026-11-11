@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Katalog;
 
-use App\Domain\Katalog\Harga\Aksi\HapusAturanHargaOtomatis;
-use App\Domain\Katalog\Harga\Aksi\SimpanAturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Aksi\SimpanHargaOtomatisUmum;
 use App\Domain\Katalog\Harga\Aksi\TerapkanHargaDariModalMassal;
 use App\Domain\Katalog\Harga\Aksi\TerapkanUsulanHarga;
@@ -16,7 +14,6 @@ use App\Domain\Katalog\Harga\Kueri\PratinjauHargaDariModal;
 use App\Domain\Katalog\Harga\Tugas\TerapkanHargaOtomatisSemuaTugas;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Permintaan\Kelola\Katalog\HargaDariModalPermintaan;
-use App\Http\Permintaan\Kelola\Katalog\SimpanAturanHargaOtomatisPermintaan;
 use App\Http\Permintaan\Kelola\Katalog\UbahPengaturanHargaOtomatisPermintaan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +22,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Harga jual otomatis mengikuti harga beli (D-266, F-03 + F-04): halaman pengaturan, aturan, dan usulan; serta
+ * Harga jual otomatis mengikuti harga beli (D-266, F-03 + F-04): satu formulir pengaturan (termasuk untung khusus) dan usulan; serta
  * "Harga dari harga beli" massal dari daftar Produk (pratinjau lalu terapkan). Lihat = produk.lihat, semua perubahan =
  * produk.harga.ubah, dan fitur `harga.otomatis` (paket Pro ke atas) ditegakkan `WajibFiturPaket` lewat `PetaFiturRute`.
  */
@@ -49,33 +46,13 @@ final class HargaOtomatisKontroler extends DasarKatalogKontroler
             (string) $permintaan->validated('PersenUntung'),
             (int) $permintaan->validated('Pembulatan'),
             ArahHargaOtomatis::from((string) $permintaan->validated('Arah')),
+            $permintaan->AmbilKhusus(),
             $this->Pelaku()->Id,
         );
 
         return redirect()->route(self::ALAMAT)->with('Kilat', $pengaturan->Aktif
             ? 'Harga otomatis menyala. Harga jual akan mengikuti harga beli setiap ada penerimaan barang.'
             : 'Harga otomatis dimatikan. Harga yang sudah berubah tetap seperti sekarang.');
-    }
-
-    public function SimpanAturan(SimpanAturanHargaOtomatisPermintaan $permintaan, SimpanAturanHargaOtomatis $simpan): RedirectResponse
-    {
-        $simpan->Jalankan(null, $permintaan->AmbilData(), $this->Pelaku()->Id);
-
-        return redirect()->route(self::ALAMAT)->with('Kilat', 'Aturan harga otomatis disimpan.');
-    }
-
-    public function UbahAturan(SimpanAturanHargaOtomatisPermintaan $permintaan, string $aturan, SimpanAturanHargaOtomatis $simpan): RedirectResponse
-    {
-        $simpan->Jalankan($aturan, $permintaan->AmbilData(), $this->Pelaku()->Id);
-
-        return redirect()->route(self::ALAMAT)->with('Kilat', 'Aturan harga otomatis diperbarui.');
-    }
-
-    public function HapusAturan(string $aturan, HapusAturanHargaOtomatis $hapus): RedirectResponse
-    {
-        $hapus->Jalankan($aturan, $this->Pelaku()->Id);
-
-        return redirect()->route(self::ALAMAT)->with('Kilat', 'Aturan dihapus. Harga yang sudah berubah tidak ikut dikembalikan.');
     }
 
     public function TerapkanUsulan(string $usulan, TerapkanUsulanHarga $terapkan): RedirectResponse

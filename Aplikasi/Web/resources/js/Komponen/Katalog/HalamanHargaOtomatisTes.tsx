@@ -67,7 +67,7 @@ describe('Halaman Harga otomatis', () => {
 
     afterEach(() => cleanup());
 
-    it('awalnya mati: isian terkunci, Simpan mati, dan bagian lain tidak tampil', () => {
+    it('awalnya mati: isian terkunci, Simpan mati, untung khusus tidak bisa ditambah, dan tidak ada daftar persetujuan', () => {
         Pasang();
 
         expect(
@@ -75,7 +75,7 @@ describe('Halaman Harga otomatis', () => {
         ).toBe('unchecked');
         expect(Isian(/Untung dari harga beli/).disabled).toBe(true);
         expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan' }).disabled).toBe(true);
-        expect(screen.queryByText('Untung khusus')).toBeNull();
+        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Tambah untung khusus' }).disabled).toBe(true);
         expect(screen.queryByText('Menunggu persetujuan Anda')).toBeNull();
     });
 
@@ -89,7 +89,14 @@ describe('Halaman Harga otomatis', () => {
 
         expect(tiruanRouter.put).toHaveBeenCalledWith(
             '/kelola/produk/harga-otomatis/pengaturan',
-            { Aktif: true, BatasPerubahanPersen: '30', PersenUntung: '25', Pembulatan: 500, Arah: 'HanyaNaik' },
+            {
+                Aktif: true,
+                BatasPerubahanPersen: '30',
+                PersenUntung: '25',
+                Pembulatan: 500,
+                Arah: 'HanyaNaik',
+                Khusus: [],
+            },
             expect.anything(),
         );
     });
@@ -98,49 +105,81 @@ describe('Halaman Harga otomatis', () => {
         Pasang(Menyala);
 
         expect(screen.getByText('Untung khusus')).toBeTruthy();
-        expect(screen.getByText(/Semua produk memakai untung di atas/)).toBeTruthy();
+        expect(screen.getByText(/semua produk memakai untung di atas/)).toBeTruthy();
         expect(Isian(/Untung dari harga beli/).value).toBe('20');
     });
 
-    it('untung khusus tampil sebagai daftar sederhana, Hapus meminta konfirmasi lalu mengirim DELETE', () => {
+    it('untung khusus ikut ada di formulir yang sama: baris terisi dari server dan Simpan mengirim seluruh daftar', () => {
         Pasang({ ...Menyala, Pengecualian: [Khusus] });
 
-        expect(screen.getByText('Minuman › Literan')).toBeTruthy();
-        expect(screen.getByText('Untung 30%')).toBeTruthy();
+        expect(screen.getByText('Untung khusus')).toBeTruthy();
+        expect(
+            within(screen.getByRole('list', { name: 'Untung khusus' }))
+                .getAllByRole('textbox')[0]
+                ?.getAttribute('value'),
+        ).toBe('30');
+        // Tidak ada tombol Simpan kedua: semuanya satu formulir.
+        expect(screen.getAllByRole('button', { name: 'Simpan' })).toHaveLength(1);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Hapus' }));
-        expect(tiruanRouter.delete).not.toHaveBeenCalled();
-        fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Hapus' }));
-        expect(tiruanRouter.delete.mock.calls[0]?.[0]).toBe(
-            '/kelola/produk/harga-otomatis/aturan/01J9ATR0000000000000000001',
-        );
-    });
+        fireEvent.change(Isian(/Untung dari harga beli/), { target: { value: '22' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan' }));
 
-    it('tambah untung khusus untuk satu kategori: hanya menanyakan kategori dan untung, pembulatan mengikuti pengaturan utama', () => {
-        Pasang(Menyala);
-        fireEvent.click(screen.getByRole('button', { name: 'Tambah untung khusus' }));
-        const dialog = screen.getByRole('dialog');
-
-        expect(within(dialog).queryByText('Pembulatan harga')).toBeNull();
-        PilihOpsi(within(dialog).getByRole('combobox', { name: 'Kategori' }), '01J9KTG0000000000000000001');
-        fireEvent.change(within(dialog).getByRole('textbox', { name: /Untung dari harga beli/ }), {
-            target: { value: '35' },
-        });
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Simpan' }));
-
-        expect(tiruanRouter.post).toHaveBeenCalledWith(
-            '/kelola/produk/harga-otomatis/aturan',
+        expect(tiruanRouter.put).toHaveBeenCalledWith(
+            '/kelola/produk/harga-otomatis/pengaturan',
             {
-                Cakupan: 'Kategori',
-                UuidKategori: '01J9KTG0000000000000000001',
-                UuidProduk: null,
-                PersenUntung: '35',
+                Aktif: true,
+                BatasPerubahanPersen: '20',
+                PersenUntung: '22',
                 Pembulatan: 500,
                 Arah: 'NaikTurun',
-                Aktif: true,
+                Khusus: [
+                    {
+                        Cakupan: 'Kategori',
+                        UuidKategori: '01J9KTG0000000000000000001',
+                        UuidProduk: null,
+                        PersenUntung: '30',
+                    },
+                ],
             },
             expect.anything(),
         );
+    });
+
+    it('Hapus mengeluarkan baris dari formulir dan baru berlaku saat Simpan', () => {
+        Pasang({ ...Menyala, Pengecualian: [Khusus] });
+        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan' }).disabled).toBe(true);
+
+        fireEvent.click(
+            within(screen.getByRole('list', { name: 'Untung khusus' })).getByRole('button', { name: 'Hapus' }),
+        );
+        expect(screen.queryByRole('list', { name: 'Untung khusus' })).toBeNull();
+        expect(tiruanRouter.delete).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan' }));
+        expect(tiruanRouter.put.mock.calls[0]?.[1]).toMatchObject({ Khusus: [] });
+    });
+
+    it('Tambah untung khusus menambah baris kosong, Simpan baru aktif setelah baris lengkap', () => {
+        Pasang(Menyala);
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah untung khusus' }));
+        const daftar = screen.getByRole('list', { name: 'Untung khusus' });
+
+        // Baris kosong belum bisa disimpan.
+        expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Simpan' }).disabled).toBe(true);
+        PilihOpsi(within(daftar).getByRole('combobox', { name: 'Kategori' }), '01J9KTG0000000000000000001');
+        fireEvent.change(within(daftar).getByRole('textbox', { name: /Untung/ }), { target: { value: '35' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Simpan' }));
+
+        expect(tiruanRouter.put.mock.calls[0]?.[1]).toMatchObject({
+            Khusus: [
+                {
+                    Cakupan: 'Kategori',
+                    UuidKategori: '01J9KTG0000000000000000001',
+                    UuidProduk: null,
+                    PersenUntung: '35',
+                },
+            ],
+        });
     });
 
     it('harga yang menunggu persetujuan: tampil lama menjadi baru, Setujui dan Tolak mengirim POST', () => {

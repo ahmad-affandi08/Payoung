@@ -4,7 +4,7 @@ import { useState } from 'react';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
-import { LabelPembulatan, RapikanPersen } from '@/Komponen/Katalog/DialogAturanHargaOtomatis';
+import { LabelPembulatan, RapikanPersen } from '@/Pustaka/HargaOtomatis';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { FormatRupiah } from '@/Pustaka/Format';
