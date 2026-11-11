@@ -39,45 +39,57 @@ describe('paket Pro ke atas', function (): void {
             ->where('Pengaturan.Aktif', false)
             ->where('Pengaturan.BatasPerubahanPersen', '20.00')
             ->where('Izin.Ubah', true)
-            ->has('Aturan', 0)
+            ->where('Umum.PersenUntung', '20')
+            ->where('Umum.Pembulatan', 500)
+            ->where('Umum.Arah', 'NaikTurun')
+            ->has('Pengecualian', 0)
             ->has('Usulan', 0)
             ->has('OpsiKategori', 1)
             ->where('OpsiKategori.0.Uuid', $minuman->Uuid)
-            ->where('OpsiPembulatan', [0, 100, 500, 1000])
-            ->has('OpsiCakupan', 3)
-            ->has('OpsiArah', 2));
+            ->where('OpsiPembulatan', [0, 100, 500, 1000]));
     });
 
-    it('menyalakan saklar, menyimpan dan menghapus aturan', function (): void {
+    it('satu simpan menyalakan saklar dan membuat untung utama, lalu untung khusus bisa ditambah dan dihapus', function (): void {
         $t = TenantHargaOtomatis('PRO');
+        $minuman = BantuanKatalog::BuatKategori('Minuman');
         BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 
-        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '25'])
-            ->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
-        $this->post('/kelola/produk/harga-otomatis/aturan', ['Cakupan' => 'Semua', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Aktif' => true])
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '25', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun'])
             ->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
 
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
-        $aturan = AturanHargaOtomatis::query()->sole();
+        $umum = AturanHargaOtomatis::query()->sole();
         expect(PengaturanHargaOtomatis::query()->sole()->Aktif)->toBeTrue()
             ->and((string) PengaturanHargaOtomatis::query()->sole()->BatasPerubahanPersen)->toBe('25.00')
-            ->and($aturan->Pembulatan)->toBe(500);
+            ->and($umum->Cakupan->value)->toBe('Semua')
+            ->and($umum->Pembulatan)->toBe(500);
+
+        $this->post('/kelola/produk/harga-otomatis/aturan', ['Cakupan' => 'Kategori', 'UuidKategori' => $minuman->Uuid, 'PersenUntung' => '35', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Aktif' => true])
+            ->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
 
         $this->get('/kelola/produk/harga-otomatis')->assertInertia(fn (Assert $h) => $h
             ->where('Pengaturan.Aktif', true)
-            ->has('Aturan', 1)
-            ->where('Aturan.0.Sasaran', 'Semua produk berstok'));
+            ->where('Umum.PersenUntung', '20.0000')
+            ->has('Pengecualian', 1)
+            ->where('Pengecualian.0.Sasaran', 'Minuman')
+            ->where('Pengecualian.0.PersenUntung', '35.0000'));
 
-        $this->delete("/kelola/produk/harga-otomatis/aturan/{$aturan->Uuid}")->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
-        expect(AturanHargaOtomatis::query()->count())->toBe(0);
+        $khusus = AturanHargaOtomatis::query()->where('Cakupan', 'Kategori')->sole();
+        $this->delete("/kelola/produk/harga-otomatis/aturan/{$khusus->Uuid}")->assertRedirect('/kelola/produk/harga-otomatis')->assertSessionHasNoErrors();
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        expect(AturanHargaOtomatis::query()->count())->toBe(1);
     });
 
     it('isian salah ditolak dengan pesan di bidangnya', function (): void {
         $t = TenantHargaOtomatis('PRO');
         BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 
-        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '500'])->assertSessionHasErrors('BatasPerubahanPersen');
+        $dasar = ['Aktif' => true, 'BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun'];
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', [...$dasar, 'BatasPerubahanPersen' => '500'])->assertSessionHasErrors('BatasPerubahanPersen');
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', [...$dasar, 'PersenUntung' => 'banyak'])->assertSessionHasErrors('PersenUntung');
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', [...$dasar, 'Pembulatan' => 250])->assertSessionHasErrors('Pembulatan');
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true])->assertSessionHasErrors(['BatasPerubahanPersen', 'PersenUntung', 'Pembulatan', 'Arah']);
         $this->post('/kelola/produk/harga-otomatis/aturan', ['Cakupan' => 'Kategori', 'PersenUntung' => '20', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Aktif' => true])->assertSessionHasErrors('UuidKategori');
         $this->post('/kelola/produk/harga-otomatis/aturan', ['Cakupan' => 'Semua', 'PersenUntung' => 'banyak', 'Pembulatan' => 500, 'Arah' => 'NaikTurun', 'Aktif' => true])->assertSessionHasErrors('PersenUntung');
         $this->post('/kelola/produk/harga-otomatis/aturan', ['Cakupan' => 'Semua', 'PersenUntung' => '20', 'Pembulatan' => 250, 'Arah' => 'NaikTurun', 'Aktif' => true])->assertSessionHasErrors('Pembulatan');
@@ -115,7 +127,7 @@ describe('di luar paket atau izin', function (): void {
         $t = TenantHargaOtomatis('BISNIS');
         BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
 
-        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '20'])->assertSessionHasNoErrors();
+        $this->put('/kelola/produk/harga-otomatis/pengaturan', ['Aktif' => true, 'BatasPerubahanPersen' => '20', 'PersenUntung' => '20', 'Pembulatan' => 0, 'Arah' => 'HanyaNaik'])->assertSessionHasNoErrors();
     });
 
     it('kasir tidak boleh mengubah harga otomatis', function (): void {

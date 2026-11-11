@@ -29,6 +29,7 @@ final class HalamanHargaOtomatis
         $pengaturan = PengaturanHargaOtomatis::query()->first();
         $pohon = PohonKategoriTenant::Muat();
         $aturan = AturanHargaOtomatis::query()->orderBy('Cakupan')->orderBy('Id')->get();
+        $umum = $aturan->firstWhere('Cakupan', CakupanAturanHarga::Semua);
         $uuidKategori = Kategori::query()->whereIn('Id', $aturan->pluck('IdKategori')->filter()->all())->pluck('Uuid', 'Id')->all();
         $produk = Produk::query()->whereIn('Id', $aturan->pluck('IdProduk')->filter()->all())->get(['Id', 'Uuid', 'Nama', 'Sku'])->keyBy('Id');
 
@@ -37,7 +38,13 @@ final class HalamanHargaOtomatis
                 'Aktif' => $pengaturan->Aktif ?? false,
                 'BatasPerubahanPersen' => (string) ($pengaturan->BatasPerubahanPersen ?? PengaturanHargaOtomatis::BATAS_BAWAAN),
             ],
-            'Aturan' => array_values($aturan->map(function (AturanHargaOtomatis $a) use ($pohon, $uuidKategori, $produk): array {
+            // Aturan umum (Semua produk) tampil sebagai isian utama, tanpa aturan = nilai bawaan yang disarankan.
+            'Umum' => [
+                'PersenUntung' => (string) ($umum->PersenUntung ?? '20'),
+                'Pembulatan' => $umum->Pembulatan ?? 500,
+                'Arah' => ($umum->Arah ?? ArahHargaOtomatis::NaikTurun)->value,
+            ],
+            'Pengecualian' => array_values($aturan->where('Cakupan', '!=', CakupanAturanHarga::Semua)->map(function (AturanHargaOtomatis $a) use ($pohon, $uuidKategori, $produk): array {
                 $p = $a->IdProduk === null ? null : $produk->get($a->IdProduk);
 
                 return [

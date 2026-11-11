@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Katalog\Enum\JenisProduk;
 use App\Domain\Katalog\Harga\Aksi\HapusAturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Aksi\SimpanAturanHargaOtomatis;
+use App\Domain\Katalog\Harga\Aksi\SimpanHargaOtomatisUmum;
 use App\Domain\Katalog\Harga\Aksi\TerapkanHargaDariModalMassal;
 use App\Domain\Katalog\Harga\Aksi\TerapkanHargaOtomatis;
 use App\Domain\Katalog\Harga\Aksi\TerapkanUsulanHarga;
@@ -22,6 +23,7 @@ use App\Domain\Katalog\Harga\Enum\StatusUsulanHarga;
 use App\Domain\Katalog\Harga\Kueri\PratinjauHargaDariModal;
 use App\Domain\Katalog\Harga\Layanan\PenyediaTindakanHargaOtomatis;
 use App\Domain\Katalog\Harga\Model\AturanHargaOtomatis;
+use App\Domain\Katalog\Harga\Model\PengaturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Model\RiwayatHarga;
 use App\Domain\Katalog\Harga\Model\UsulanHargaOtomatis;
 use App\Domain\Katalog\Model\Produk;
@@ -425,6 +427,49 @@ describe('isolasi tenant', function (): void {
         BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
         expect(HargaDasar($produk))->toBe('11000.00')
             ->and(AturanHargaOtomatis::query()->count())->toBe(0);
+    });
+});
+
+describe('satu simpan untuk pengaturan utama', function (): void {
+    it('membuat untung utama bila belum ada dan memperbarui yang sama pada simpan berikutnya (tidak ganda)', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+        $simpan = app(SimpanHargaOtomatisUmum::class);
+
+        $simpan->Jalankan(true, '20', '25', 500, ArahHargaOtomatis::NaikTurun, $t['Pemilik']->Id);
+        $simpan->Jalankan(true, '30', '40', 100, ArahHargaOtomatis::HanyaNaik, $t['Pemilik']->Id);
+
+        $umum = AturanHargaOtomatis::query()->sole();
+        expect($umum->Cakupan)->toBe(CakupanAturanHarga::Semua)
+            ->and((string) $umum->PersenUntung)->toBe('40.0000')
+            ->and($umum->Pembulatan)->toBe(100)
+            ->and($umum->Arah)->toBe(ArahHargaOtomatis::HanyaNaik)
+            ->and(PengaturanHargaOtomatis::query()->sole()->Aktif)->toBeTrue()
+            ->and((string) PengaturanHargaOtomatis::query()->sole()->BatasPerubahanPersen)->toBe('30.00');
+    });
+
+    it('pembulatan dan arah menular ke untung khusus, untungnya sendiri tidak berubah', function (): void {
+        $t = SiapkanHargaOtomatis();
+        $minuman = BantuanKatalog::BuatKategori('Minuman');
+        AturHargaOtomatis($t, '20');
+        AturHargaOtomatis($t, '35', pembulatan: 500, cakupan: CakupanAturanHarga::Kategori, uuidKategori: $minuman->Uuid);
+
+        app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', '20', 1000, ArahHargaOtomatis::HanyaNaik, $t['Pemilik']->Id);
+
+        $khusus = AturanHargaOtomatis::query()->where('Cakupan', 'Kategori')->sole();
+        expect($khusus->Pembulatan)->toBe(1000)
+            ->and($khusus->Arah)->toBe(ArahHargaOtomatis::HanyaNaik)
+            ->and((string) $khusus->PersenUntung)->toBe('35.0000')
+            ->and(AturanHargaOtomatis::query()->count())->toBe(2);
+    });
+
+    it('isian salah menggagalkan semuanya: saklar dan aturan tidak berubah', function (): void {
+        $t = SiapkanHargaOtomatis(nyala: false);
+
+        expect(fn () => app(SimpanHargaOtomatisUmum::class)->Jalankan(true, '20', 'banyak', 500, ArahHargaOtomatis::NaikTurun, $t['Pemilik']->Id))
+            ->toThrow(PelanggaranAturanBisnis::class);
+
+        expect(AturanHargaOtomatis::query()->count())->toBe(0)
+            ->and(PengaturanHargaOtomatis::query()->count())->toBe(0);
     });
 });
 

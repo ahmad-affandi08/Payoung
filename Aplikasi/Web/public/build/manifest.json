@@ -363,8 +363,8 @@
       "_HitungDesimal-CM8lGat2.js"
     ]
   },
-  "_DialogAturanHargaOtomatis-BW7TNLCV.js": {
-    "file": "assets/DialogAturanHargaOtomatis-BW7TNLCV.js",
+  "_DialogAturanHargaOtomatis-DIfYnK95.js": {
+    "file": "assets/DialogAturanHargaOtomatis-DIfYnK95.js",
     "name": "DialogAturanHargaOtomatis",
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
@@ -375,7 +375,6 @@
       "_PilihanCari-CpZGTlDx.js",
       "_BidangPilihan-DPqp9T9v.js",
       "_PemilihProduk-CYF-sueX.js",
-      "_KotakCentang-1embKHjn.js",
       "_BidangJumlah-BscZUlQH.js"
     ]
   },
@@ -2909,7 +2908,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-BvOQ-5RQ.js",
+    "file": "assets/Aplikasi-CKL_TyMM.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -8625,7 +8624,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Produk/Daftar.tsx": {
-    "file": "assets/Daftar-B5iIwLsg.js",
+    "file": "assets/Daftar-B3a7ahK-.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/Produk/Daftar.tsx",
     "isDynamicEntry": true,
@@ -8652,7 +8651,7 @@
       "_DaftarGalatServer-wOdDKC1l.js",
       "_BidangJumlah-BscZUlQH.js",
       "_AjakanTambahBatas-JcxAM6Hx.js",
-      "_DialogAturanHargaOtomatis-BW7TNLCV.js",
+      "_DialogAturanHargaOtomatis-DIfYnK95.js",
       "_GambarProduk-CkF1lL-6.js"
     ]
   },
@@ -8756,24 +8755,23 @@
     ]
   },
   "resources/js/Halaman/Kelola/Produk/HargaOtomatis.tsx": {
-    "file": "assets/HargaOtomatis-ByxJYAmj.js",
+    "file": "assets/HargaOtomatis-DNyamNah.js",
     "name": "HargaOtomatis",
     "src": "resources/js/Halaman/Kelola/Produk/HargaOtomatis.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
       "_dist-D4veJNCv.js",
-      "_TabelData-BU14L1fo.js",
       "_TataLetakAplikasi-DpojB8Ec.js",
       "_Tombol-CEUGaUCz.js",
       "_Format-BVUTIH9q.js",
+      "_BidangPilihan-DPqp9T9v.js",
       "_Panel-BunJRU2l.js",
-      "_LabelStatus-BNjWuZG6.js",
       "_KotakCentang-1embKHjn.js",
       "_DialogKonfirmasi-nLJCoHeh.js",
       "_DaftarGalatServer-wOdDKC1l.js",
       "_BidangJumlah-BscZUlQH.js",
-      "_DialogAturanHargaOtomatis-BW7TNLCV.js"
+      "_DialogAturanHargaOtomatis-DIfYnK95.js"
     ]
   },
   "resources/js/Halaman/Kelola/Produk/Impor/Daftar.tsx": {

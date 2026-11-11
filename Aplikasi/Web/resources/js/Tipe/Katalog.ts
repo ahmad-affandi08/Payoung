@@ -690,7 +690,10 @@ export type UsulanHargaOtomatis = {
 
 export type PropsHargaOtomatis = {
     Pengaturan: PengaturanHargaOtomatis;
-    Aturan: AturanHargaOtomatis[];
+    /** Aturan "Semua produk" yang tampil sebagai isian utama. Tanpa aturan = nilai bawaan yang disarankan. */
+    Umum: { PersenUntung: string; Pembulatan: number; Arah: ArahHargaOtomatis };
+    /** Untung khusus per kategori atau produk (tanpa aturan Semua). */
+    Pengecualian: AturanHargaOtomatis[];
     Usulan: UsulanHargaOtomatis[];
     OpsiKategori: { Uuid: string; Nama: string }[];
     OpsiCakupan: { Nilai: CakupanAturanHarga; Label: string }[];

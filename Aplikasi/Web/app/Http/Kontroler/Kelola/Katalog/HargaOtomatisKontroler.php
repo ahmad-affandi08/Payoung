@@ -6,10 +6,11 @@ namespace App\Http\Kontroler\Kelola\Katalog;
 
 use App\Domain\Katalog\Harga\Aksi\HapusAturanHargaOtomatis;
 use App\Domain\Katalog\Harga\Aksi\SimpanAturanHargaOtomatis;
+use App\Domain\Katalog\Harga\Aksi\SimpanHargaOtomatisUmum;
 use App\Domain\Katalog\Harga\Aksi\TerapkanHargaDariModalMassal;
 use App\Domain\Katalog\Harga\Aksi\TerapkanUsulanHarga;
 use App\Domain\Katalog\Harga\Aksi\TolakUsulanHarga;
-use App\Domain\Katalog\Harga\Aksi\UbahPengaturanHargaOtomatis;
+use App\Domain\Katalog\Harga\Enum\ArahHargaOtomatis;
 use App\Domain\Katalog\Harga\Kueri\HalamanHargaOtomatis;
 use App\Domain\Katalog\Harga\Kueri\PratinjauHargaDariModal;
 use App\Domain\Katalog\Harga\Tugas\TerapkanHargaOtomatisSemuaTugas;
@@ -40,9 +41,16 @@ final class HargaOtomatisKontroler extends DasarKatalogKontroler
         ]);
     }
 
-    public function UbahPengaturan(UbahPengaturanHargaOtomatisPermintaan $permintaan, UbahPengaturanHargaOtomatis $ubah): RedirectResponse
+    public function UbahPengaturan(UbahPengaturanHargaOtomatisPermintaan $permintaan, SimpanHargaOtomatisUmum $simpan): RedirectResponse
     {
-        $pengaturan = $ubah->Jalankan($permintaan->boolean('Aktif'), (string) $permintaan->validated('BatasPerubahanPersen'), $this->Pelaku()->Id);
+        $pengaturan = $simpan->Jalankan(
+            $permintaan->boolean('Aktif'),
+            (string) $permintaan->validated('BatasPerubahanPersen'),
+            (string) $permintaan->validated('PersenUntung'),
+            (int) $permintaan->validated('Pembulatan'),
+            ArahHargaOtomatis::from((string) $permintaan->validated('Arah')),
+            $this->Pelaku()->Id,
+        );
 
         return redirect()->route(self::ALAMAT)->with('Kilat', $pengaturan->Aktif
             ? 'Harga otomatis menyala. Harga jual akan mengikuti harga beli setiap ada penerimaan barang.'

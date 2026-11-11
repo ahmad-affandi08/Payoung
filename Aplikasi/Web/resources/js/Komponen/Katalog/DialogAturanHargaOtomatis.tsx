@@ -2,7 +2,6 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
-import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
@@ -26,9 +25,11 @@ export function RapikanPersen(nilai: string): string {
 }
 
 type PropsDialogAturan = {
-    /** Aturan yang diubah; null = aturan baru. */
+    /** Untung khusus yang diubah; null = baru. */
     aturan: AturanHargaOtomatis | null;
-    opsi: Pick<PropsHargaOtomatis, 'OpsiKategori' | 'OpsiCakupan' | 'OpsiArah' | 'OpsiPembulatan'>;
+    opsi: Pick<PropsHargaOtomatis, 'OpsiKategori'>;
+    /** Pembulatan dan arah selalu sama dengan pengaturan utama, jadi tidak ditanyakan lagi di sini. */
+    umum: PropsHargaOtomatis['Umum'];
     saatTutup: () => void;
 };
 
@@ -37,16 +38,13 @@ type PropsDialogAturan = {
  * modal, pembulatan, dan arah perubahan. Menyimpan aturan tidak mengubah harga apa pun, harga baru berubah di
  * penerimaan barang berikutnya atau lewat "Terapkan sekarang".
  */
-export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: PropsDialogAturan) {
-    const [cakupan, AturCakupan] = useState<string>(aturan?.Cakupan ?? 'Semua');
+export default function DialogAturanHargaOtomatis({ aturan, opsi, umum, saatTutup }: PropsDialogAturan) {
+    const [cakupan, AturCakupan] = useState<string>(aturan?.Cakupan ?? 'Kategori');
     const [uuidKategori, AturUuidKategori] = useState(aturan?.UuidKategori ?? '');
     const [produk, AturProduk] = useState<{ Uuid: string; Nama: string } | null>(
         aturan?.Produk ? { Uuid: aturan.Produk.Uuid, Nama: aturan.Produk.Nama } : null,
     );
     const [persen, AturPersen] = useState(aturan === null ? '20' : aturan.PersenUntung.replace(/\.?0+$/, ''));
-    const [pembulatan, AturPembulatan] = useState(String(aturan?.Pembulatan ?? 500));
-    const [arah, AturArah] = useState<string>(aturan?.Arah ?? 'NaikTurun');
-    const [aktif, AturAktif] = useState(aturan?.Aktif ?? true);
     const [galat, AturGalat] = useState<Record<string, string>>({});
     const [memproses, AturMemproses] = useState(false);
     const baru = aturan === null;
@@ -62,9 +60,9 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
             UuidKategori: cakupan === 'Kategori' ? uuidKategori : null,
             UuidProduk: cakupan === 'Produk' ? (produk?.Uuid ?? null) : null,
             PersenUntung: persen,
-            Pembulatan: Number(pembulatan),
-            Arah: arah,
-            Aktif: aktif,
+            Pembulatan: umum.Pembulatan,
+            Arah: umum.Arah,
+            Aktif: true,
         };
         const pilihan = {
             preserveScroll: true,
@@ -83,8 +81,8 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
 
     return (
         <DialogFormulir
-            judul={baru ? 'Tambah aturan harga otomatis' : 'Ubah aturan harga otomatis'}
-            keterangan="Harga jual dihitung dari harga beli terakhir ditambah untung. Menyimpan aturan tidak langsung mengubah harga."
+            judul={baru ? 'Tambah untung khusus' : 'Ubah untung khusus'}
+            keterangan="Untuk kategori atau produk yang untungnya berbeda dari pengaturan utama."
             galatUmum={galat.Umum}
             saatTutup={saatTutup}
         >
@@ -99,7 +97,10 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
                 <BidangPilihan
                     label="Berlaku untuk"
                     nilai={cakupan}
-                    opsi={opsi.OpsiCakupan}
+                    opsi={[
+                        { Nilai: 'Kategori', Label: 'Satu kategori' },
+                        { Nilai: 'Produk', Label: 'Satu produk' },
+                    ]}
                     saatBerubah={AturCakupan}
                     galat={galat.Cakupan}
                     disabled={!baru}
@@ -111,6 +112,7 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
                         nilai={uuidKategori}
                         opsi={opsi.OpsiKategori.map((k) => ({ Nilai: k.Uuid, Label: k.Nama }))}
                         placeholder="Pilih kategori"
+                        aria-label="Kategori"
                         saatBerubah={AturUuidKategori}
                         galat={galat.UuidKategori}
                         disabled={!baru}
@@ -135,7 +137,7 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
                     </div>
                 ) : null}
                 <BidangJumlah
-                    label="Untung dari modal"
+                    label="Untung dari harga beli"
                     nilai={persen}
                     saatBerubah={AturPersen}
                     desimal={2}
@@ -143,27 +145,11 @@ export default function DialogAturanHargaOtomatis({ aturan, opsi, saatTutup }: P
                     akhiran="%"
                     galat={galat.PersenUntung}
                     required
-                    keterangan="Modal Rp 10.000 dengan untung 20% menjadi harga Rp 12.000."
+                    keterangan="Harga beli Rp 10.000 dengan untung 25% menjadi harga jual Rp 12.500."
                 />
-                <BidangPilihan
-                    label="Pembulatan harga"
-                    nilai={pembulatan}
-                    opsi={opsi.OpsiPembulatan.map((n) => ({ Nilai: String(n), Label: LabelPembulatan(n) }))}
-                    saatBerubah={AturPembulatan}
-                    galat={galat.Pembulatan}
-                />
-                <BidangPilihan
-                    label="Kapan harga berubah"
-                    nilai={arah}
-                    opsi={opsi.OpsiArah}
-                    saatBerubah={AturArah}
-                    galat={galat.Arah}
-                    required
-                />
-                <KotakCentang label="Aturan ini aktif" nilai={aktif} saatBerubah={AturAktif} />
                 <DialogFooter className="sm:justify-start">
                     <Tombol type="submit" memproses={memproses} disabled={!siap}>
-                        Simpan aturan
+                        Simpan
                     </Tombol>
                     <Tombol varian="sekunder" onClick={saatTutup}>
                         Batal
