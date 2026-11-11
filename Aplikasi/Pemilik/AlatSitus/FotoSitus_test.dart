@@ -15,8 +15,7 @@ import 'DataDemoPemilik.dart';
 /// ```
 Future<void> MuatFont() async {
   const berkas = {
-    'AtkinsonHyperlegibleNext': ['AtkinsonHyperlegibleNextVariable.ttf', 'AtkinsonHyperlegibleNextVariableMiring.ttf'],
-    'AtkinsonHyperlegibleMono': ['AtkinsonHyperlegibleMonoVariable.ttf'],
+    'Lato': ['Lato-Regular.ttf', 'Lato-Bold.ttf', 'Lato-Italic.ttf'],
   };
   for (final keluarga in berkas.entries) {
     final pemuat = FontLoader('packages/sistem_desain/${keluarga.key}');

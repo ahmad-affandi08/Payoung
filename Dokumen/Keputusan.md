@@ -11,7 +11,7 @@
 | D-05 | **Database, folder, file, dan function memakai Bahasa Indonesia + PascalCase.** Turunan yang diputuskan untuk konsistensi: class/enum PascalCase, key JSON API = nama kolom (PascalCase), variabel lokal camelCase Indonesia. Pengecualian hanya untuk nama yang diwajibkan framework/alat (§13.7.4) | 22/09/2026 | §8 (status/enum), §12.2, §13.0–§13.4, §13.7, §14.3, §15, §16.2, §17, §18, §23, Lampiran D |
 | D-06 | **URL/endpoint memakai Bahasa Indonesia**, huruf kecil kebab-case, kata benda tunggal (§13.7.1). Prefix API Owner menjadi `/api/pemilik/v1`. Diperluas ke nama event webhook, header HTTP kustom, dan nama permission | 22/09/2026 | §11–§13.6, §13.7, §14, §16, §17.3.4, §17.4, §18, §20, Lampiran C |
 | D-07 | **Platform Pengelola** dibangun sebagai lapisan pertama (Fase 0) sebelum modul tenant: flow P-01 s.d. P-12, subdomain `pengelola.`, akun & guard terpisah, akses dukungan berizin | 22/09/2026 | §5.2, §6.2, §7, §8 Bagian A, §10.0, §13.6, §13.8, §15.3, §19.3, §20.2, §22, §24 |
-| D-08 | Font resmi: **Atkinson Hyperlegible Next** untuk UI dan **Atkinson Hyperlegible Mono** untuk kode, di semua klien | 22/09/2026 | §17.5, `Spesifikasi/TokenDesain` |
+| D-08 | Font resmi: **Atkinson Hyperlegible Next** untuk UI dan **Atkinson Hyperlegible Mono** untuk kode, di semua klien. **Digantikan D-265 (Lato).** | 22/09/2026 | §17.5, `Spesifikasi/TokenDesain` |
 | D-09 | Pedoman UI/UX & Design System: prinsip alat kerja, aturan warna 90/10, token warna, dua mode kepadatan, keadaan wajib, microcopy Indonesia, checklist anti-slop | 22/09/2026 | §17.6, `Spesifikasi/TokenDesain`, §23.3 |
 | D-10 | Tata kelola AI agent tiga lapis: konteks (`CLAUDE.md`, `.claude/rules/`, `Dokumen/`), penjaga otomatis (hook, `Alat/CekKonvensi.py`, CI, CODEOWNERS), alur kerja (`/mulai-flow`, `/cek-dod`, subagent peninjau, template PR) | 22/09/2026 | §23.4, §13.7.4 |
 | D-11 | **Harga langganan per paket**, bukan per outlet. Outlet, perangkat, dan kuota WA di atas batas paket dijual sebagai add-on. Add-on & kupon tanpa four-eyes. Kunci fitur katalog dipertahankan apa adanya | 23/09/2026 | §8 P-04, §21, §25 |
@@ -266,6 +266,7 @@
 | D-262 | Dari pemilik produk, 10/11/2026 (tahun kendaraan tampil "2.004"). Angka yang bukan jumlah (tahun, nomor) tidak boleh diberi pemisah ribuan. Isian jumlah bersama menyediakan `tanpaPemisah` untuk itu. |
 | D-263 | Dari pemilik produk, 10/11/2026 ("kenapa service charge hanya diatur di situ saja", lalu "kerjakan halaman sendiri di Atur kasir"). Pengaturan yang menentukan total transaksi (PBJT, biaya layanan, harga termasuk pajak) wajib punya halaman pengaturan sendiri di menu, tidak boleh hanya hidup di panduan untuk tenant baru. Halaman ditempatkan di subgrup Atur kasir (satu rumah, D-253) per outlet. |
 | D-264 | Dari pemilik produk, 10/11/2026. Angka yang membentuk total baris harus terlihat di baris itu sendiri, tidak boleh baru bisa dijelaskan lewat ringkasan di bagian lain halaman. Halaman pengaturan menautkan ke halaman pengaturan, bukan ke langkah panduan awal. |
+| D-265 | Dari pemilik produk, 11/11/2026. Font resmi seluruh klien (web, Aplikasi Kasir, Aplikasi Owner) adalah **Lato**, termasuk untuk kode dan nomor dokumen karena Lato tidak punya varian mono. Mengganti D-08 (§17.5). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

@@ -11,9 +11,9 @@ void main() {
     expect(teks.textAlign, TextAlign.right);
   });
 
-  testWidgets('TeksKode memakai font Mono', (tester) async {
+  testWidgets('TeksKode memakai font Lato (tanpa varian mono, D-265)', (tester) async {
     await tester.pumpWidget(MaterialApp(theme: BuatTema(), home: const TeksKode('IL1O0-8B5S')));
     final teks = tester.widget<Text>(find.text('IL1O0-8B5S'));
-    expect(teks.style!.fontFamily, 'packages/sistem_desain/AtkinsonHyperlegibleMono');
+    expect(teks.style!.fontFamily, 'packages/sistem_desain/Lato');
   });
 }

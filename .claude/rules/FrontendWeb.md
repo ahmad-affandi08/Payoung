@@ -30,7 +30,7 @@ paths:
 - **Pilihan & dropdown:** pakai `Komponen/Formulir/PilihanCari` (atau `BidangPilihan`): daftar terbuka di bawah pemicu, tidak menutupinya, dan punya kotak cari. Dilarang `<select>`/`NativeSelect` di luar `Komponen/Ui` (dijaga test). Setiap dropdown berisi daftar pilihan (saring tabel, atur kolom, dsb.) wajib punya kotak cari.
 - **Hasil aksi (D-51):** pesan berhasil (`Kilat`) dan gagal (`errors.Umum`) tampil lewat `Komponen/Umpan/DialogHasil` yang sudah dipasang di `TataLetakAplikasi`/`TataLetakPengelola`; jangan merender `Kilat`/`errors.Umum` sebagai banner `Pemberitahuan` di tata letak. Banner `Pemberitahuan` hanya untuk status permanen (langganan, verifikasi, 2FA, dokumen legal) dan halaman publik.
 - Web publik (self-order, toko online) **tidak menghitung harga sendiri**: panggil endpoint server.
-- Tipografi dari token §17.5: Atkinson Hyperlegible Next (UI) & Mono (kode, nomor dokumen, SKU). Uang: `tabular-nums`, rata kanan.
+- Tipografi dari token §17.5: Lato (UI, kode, nomor dokumen, SKU; D-265). Uang: `tabular-nums`, rata kanan.
 - Gaya kepala tabel (tebal) diatur di `TableHead`; jangan menimpa ketebalan (`font-semibold`/`font-medium`) dari halaman (PRD v1.78).
 - Bidang wajib: beri prop `required` (sesuai aturan FormRequest) pada komponen `Komponen/Formulir`; tanda `*` merah muncul otomatis (PRD v1.77). Jangan menulis `*` manual di label; `<form>` memakai `noValidate`.
 - Semua yang bisa diklik memakai kursor tangan (aturan dasar di `Gaya/Aplikasi.css`, PRD v1.76). Jangan menambah `cursor-default` pada item yang bisa diklik; kontrol nonaktif memakai `disabled:cursor-not-allowed`.

@@ -676,12 +676,10 @@ ada di riwayat versi ini.
 
 | Peran | Font | Dipakai untuk |
 |---|---|---|
-| **Utama** | **Atkinson Hyperlegible Next** | Seluruh teks UI: menu, label, tombol, isi tabel, angka uang (dengan angka tabular) |
-| **Mono** | **Atkinson Hyperlegible Mono** | Kode yang harus dibaca persis: SKU, barcode, nomor dokumen (`INV/JKT1/260922/K02-0042`), kode voucher, kode aktivasi perangkat, nomor seri/IMEI, isi struk digital |
+| **Utama** | **Lato** (Regular 400, Bold 700, Italic 400) | Seluruh teks UI: menu, label, tombol, isi tabel, angka uang (dengan angka tabular) |
+| **Mono** | **Lato** (Lato tidak punya varian mono, D-265) | Kode yang harus dibaca persis: SKU, barcode, nomor dokumen (`INV/JKT1/260922/K02-0042`), kode voucher, kode aktivasi perangkat, nomor seri/IMEI, isi struk digital |
 
-**Alasan:** font ini dirancang oleh Braille Institute agar setiap huruf mudah dibedakan (1/l/I, 0/O, 5/S, 8/B). Kasir dan staf gudang membaca layar sekilas di bawah tekanan waktu, sering di tablet murah dan cahaya yang kurang ideal. Salah baca angka atau kode berarti salah transaksi. Font ini juga jarang dipakai template dan tool AI, sehingga tampilan {{APP}} punya identitas sendiri.
-
-Fakta teknis: tersedia gratis di Google Fonts dan situs Braille Institute. Varian Next punya 7 ketebalan (Light s.d. ExtraBold, tegak & miring) plus versi *variable*, mendukung 150+ bahasa, dan menyediakan angka tabular sebagai opsi. Varian Mono juga tersedia dalam versi *variable*.
+**Alasan (D-265, mengganti D-08):** pemilik produk memilih Lato untuk seluruh klien, karena tampilannya lebih hangat dan akrab. Konsekuensi yang diterima: Lato tidak punya varian mono, sehingga kode, SKU, dan nomor dokumen memakai Lato juga dan dibedakan lewat angka tabular serta konteksnya. Pembeda huruf mirip (1/l/I, 0/O) tidak sekuat font sebelumnya, jadi kode yang harus dibaca persis tetap ditampilkan dengan jarak yang cukup dan, bila perlu, bisa disalin. Lato versi statis hanya punya Regular (400) dan Bold (700) di aplikasi: ketebalan 500 dan 600 tampil sebagai 400 dan 700, 800 tampil sebagai 700. Lisensi SIL Open Font License. Tersedia di Google Fonts dan sebagai paket `@fontsource/lato`.
 
 **Skala tipografi (dua mode kepadatan):**
 
@@ -707,8 +705,8 @@ Format `ukuran/tinggi baris` dalam px (web) atau logical pixel (Flutter). KDS me
 
 | Stack | Cara |
 |---|---|
-| Web (Back-office, Web Publik, Pengelola) | *Self-host* file WOFF2 variable (subset Latin + Latin Extended) di `resources/`, `@font-face` dengan `font-display: swap`. Token di `@theme`: `--font-sans: "Atkinson Hyperlegible Next", system-ui, sans-serif;` dan `--font-mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;`. Kelas uang memakai `font-variant-numeric: tabular-nums` |
-| Flutter (POS & Owner) | File font variable **di-bundle** di `Paket/SistemDesain/assets/fonts/` dan dideklarasikan di `pubspec.yaml`. **Tidak** memakai paket `google_fonts` (mengunduh saat runtime, tidak cocok untuk offline). `ThemeData` memakai font ini. Widget `TeksUang` dan `TeksKode` menerapkan `FontFeature.tabularFigures()` |
+| Web (Back-office, Web Publik, Pengelola) | *Self-host* file WOFF2 statis dari `@fontsource/lato` (400, 700, miring 400; subset Latin + Latin Extended) di `resources/`, `@font-face` dengan `font-display: swap`. Token di `@theme`: `--font-sans: "Lato", system-ui, sans-serif;` dan `--font-mono` juga Lato (D-265). Kelas uang memakai `font-variant-numeric: tabular-nums` |
+| Flutter (POS & Owner) | File font statis `Lato-Regular.ttf`, `Lato-Bold.ttf`, dan `Lato-Italic.ttf` **di-bundle** di `Paket/SistemDesain/assets/fonts/` dan dideklarasikan di `pubspec.yaml`. **Tidak** memakai paket `google_fonts` (mengunduh saat runtime, tidak cocok untuk offline). `ThemeData` memakai font ini. Widget `TeksUang` dan `TeksKode` menerapkan `FontFeature.tabularFigures()` |
 | Struk thermal (ESC/POS) | Tetap memakai font internal printer demi kecepatan cetak. Hanya logo yang dicetak sebagai gambar raster. Struk digital (web) memakai font Mono |
 | Lisensi | SIL Open Font License. File lisensi disimpan di repo dan ditampilkan di menu "Lisensi Pihak Ketiga" aplikasi (`LicenseRegistry` di Flutter) |
 | Pengujian | Golden test Flutter dan screenshot test web memakai font asli. Kasus uji wajib: "Rp 1.250.000", nama produk panjang, kode `IL1O0-8B5S`, semua ketebalan yang dipakai |
@@ -899,7 +897,7 @@ Pengecualian terhadap §17.5 & §17.6 yang berlaku **hanya untuk email**:
 | Aturan | Pengecualian | Alasan |
 |---|---|---|
 | Warna & ukuran hanya dari token | Gaya ditulis *inline* dengan **hex literal** | Klien email tidak mendukung variabel CSS, `color-mix()`, maupun kelas Tailwind. Nilainya wajib sama dengan token `Gaya/Aplikasi.css`, dijaga `tests/Arsitektur/SurelTes.php` |
-| Tipografi Atkinson Hyperlegible | Hanya diminta lewat tumpukan fallback | Webfont tidak bisa diandalkan di klien email |
+| Tipografi Lato | Hanya diminta lewat tumpukan fallback | Webfont tidak bisa diandalkan di klien email |
 | Ilustrasi & aset merek | **Dilarang `<img>` sama sekali** | Gambar diblokir bawaan di banyak klien, dan struk digital berjanji tanpa piksel pelacak (K3) |
 | Tanpa mode gelap (D-14) | Diperkuat meta `color-scheme: light only` | Tanpa itu Gmail & Apple Mail membalik warna sendiri dan kontras rusak |
 

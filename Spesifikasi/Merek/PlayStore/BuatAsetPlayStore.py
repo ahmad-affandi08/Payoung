@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 AKAR = Path(__file__).resolve().parents[3]
 SUMBER = AKAR / "Spesifikasi/Merek/Sumber"
 KELUARAN = Path(__file__).resolve().parent
-FONT = AKAR / "Paket/SistemDesain/assets/fonts/AtkinsonHyperlegibleNextVariable.ttf"
+FONT = AKAR / "Paket/SistemDesain/assets/fonts/Lato-Bold.ttf"
 FOTO_KASIR = AKAR / "Aplikasi/Kasir/AlatSitus/Hasil/PlayStore"
 FOTO_PEMILIK = AKAR / "Aplikasi/Pemilik/AlatSitus/Hasil/PlayStore"
 

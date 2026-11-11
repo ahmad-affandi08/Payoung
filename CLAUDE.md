@@ -43,7 +43,7 @@ Jangan mencoba melewati penjaga tersebut. Kalau penjaga menolak, perbaiki kodeny
 17. Setiap perubahan perilaku disertai test. Flow keuangan/stok wajib invariant test (Σ debit = Σ kredit, `SaldoStok` = Σ `MutasiStok`).
 18. Kalkulasi harga/pajak/promo harus lolos test vector bersama di `Spesifikasi/VektorUjiKalkulasi/` (PHP & Dart).
 19. **Dilarang** melemahkan, men-skip, atau menghapus test, aturan lint, test arsitektur, atau konfigurasi CI supaya lolos.
-20. UI mengikuti §17.5 (font Atkinson Hyperlegible) dan §17.6 (token, keadaan wajib, microcopy Indonesia). Palet final Payoung (D-61, Muted Teal & Apricot) ada di token: pakai token, jangan hex lepas.
+20. UI mengikuti §17.5 (font Lato, D-265) dan §17.6 (token, keadaan wajib, microcopy Indonesia). Palet final Payoung (D-61, Muted Teal & Apricot) ada di token: pakai token, jangan hex lepas.
 21. **Semua tabel web memakai `TabelData`** (TanStack Table + TanStack Query, fitur lengkap §17.4.3); jangan merakit `<table>` sendiri. **Web responsif** 360px s.d. layar lebar (§17.4.4), diuji di 360/768/1280px (D-16).
 22. **Aplikasi POS adalah Ruang Kerja Kasir** (§17.2.7, D-16): semua layar setelah masuk berada di bingkai `RuangKerja`; elegan, tenang, dan mudah untuk kerja berjam-jam.
 

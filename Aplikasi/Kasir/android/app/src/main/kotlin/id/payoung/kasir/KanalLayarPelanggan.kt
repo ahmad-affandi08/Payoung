@@ -118,10 +118,9 @@ private class PresentasiPelanggan(konteks: Context, display: Display) : Presenta
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            val kunci = FlutterInjector.instance().flutterLoader()
-                .getLookupKeyForAsset("assets/fonts/AtkinsonHyperlegibleNextVariable.ttf", "sistem_desain")
-            huruf = Typeface.createFromAsset(context.assets, kunci)
-            hurufTebal = Typeface.create(huruf, Typeface.BOLD)
+            val pemuat = FlutterInjector.instance().flutterLoader()
+            huruf = Typeface.createFromAsset(context.assets, pemuat.getLookupKeyForAsset("assets/fonts/Lato-Regular.ttf", "sistem_desain"))
+            hurufTebal = Typeface.createFromAsset(context.assets, pemuat.getLookupKeyForAsset("assets/fonts/Lato-Bold.ttf", "sistem_desain"))
         } catch (_: Exception) {
             // Font bawaan sistem bila aset tidak ditemukan.
         }

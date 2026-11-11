@@ -61,7 +61,7 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                                 <td class="Sisi" style="padding:36px 40px 0 40px;">
-                                    <img src="{{ asset('surel/logo-payoung.png') }}" width="120" height="28" alt="{{ config('app.name') }}" style="display:block; border:0; outline:none; text-decoration:none; width:120px; height:28px; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:20px; line-height:28px; font-weight:bold; color:#22383a;" />
+                                    <img src="{{ asset('surel/logo-payoung.png') }}" width="120" height="28" alt="{{ config('app.name') }}" style="display:block; border:0; outline:none; text-decoration:none; width:120px; height:28px; font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:20px; line-height:28px; font-weight:bold; color:#22383a;" />
                                 </td>
                             </tr>
                             <tr>
@@ -71,7 +71,7 @@
                             </tr>
                             <tr>
                                 <td class="Sisi" style="padding:20px 40px 36px 40px;">
-                                    <h1 class="JudulKartu" style="margin:0 0 20px 0; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:26px; line-height:34px; font-weight:bold; letter-spacing:-0.3px; color:#1f3335;">@yield('Judul')</h1>
+                                    <h1 class="JudulKartu" style="margin:0 0 20px 0; font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:26px; line-height:34px; font-weight:bold; letter-spacing:-0.3px; color:#1f3335;">@yield('Judul')</h1>
                                     @yield('Isi')
                                 </td>
                             </tr>
@@ -79,7 +79,7 @@
                                 <tr>
                                     <td class="Sisi" style="padding:0 40px 32px 40px;">
                                         <div style="border-top:1px solid #d2dcd6; line-height:1px; font-size:1px;">&nbsp;</div>
-                                        <p style="margin:16px 0 0 0; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#4f6567;">@yield('CatatanKaki')</p>
+                                        <p style="margin:16px 0 0 0; font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#4f6567;">@yield('CatatanKaki')</p>
                                     </td>
                                 </tr>
                             @endif
@@ -89,7 +89,7 @@
 
                 {{-- Kaki bersama, di luar panel --}}
                 <tr>
-                    <td class="Sisi" style="padding:24px 8px 0 8px; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:19px; color:#4f6567; text-align:center;">
+                    <td class="Sisi" style="padding:24px 8px 0 8px; font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:19px; color:#4f6567; text-align:center;">
                         <p style="margin:0 0 6px 0;">
                             <strong style="color:#1f3335;">{{ config('app.name') }}</strong> &nbsp;|&nbsp; kasir, stok, dan pembukuan dalam satu aplikasi
                         </p>

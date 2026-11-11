@@ -1,0 +1,1 @@
+import{t as e}from"./Format-BVUTIH9q.js";import{n as t}from"./FormatWaktu-bKvj24HB.js";function n(n){let r=/^\d{4}-\d{2}-\d{2}/.exec(n.BerlakuMulai)?.[0],i=r?` berlaku mulai ${t(r)}`:``,a=n.NomorDasarHukum?` (${n.NomorDasarHukum})`:``;return`${e(n.Tarif)}%${i}${a}`}export{n as t};

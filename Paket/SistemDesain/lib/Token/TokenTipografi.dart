@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 /// Nama keluarga font yang di-bundle paket ini (PRD §17.5, D-08). Tidak memakai paket `google_fonts`.
 const String paketFont = 'sistem_desain';
-const String fontUtama = 'AtkinsonHyperlegibleNext';
-const String fontMono = 'AtkinsonHyperlegibleMono';
+const String fontUtama = 'Lato';
+
+/// Lato tidak punya varian mono (D-265), jadi kode & nomor memakai Lato juga. Konstanta dipertahankan supaya tempat
+/// yang memintanya tidak berubah.
+const String fontMono = fontUtama;
 
 /// Mode kepadatan tipografi (PRD §17.5): Nyaman untuk POS/KDS/Owner, Ringkas untuk back-office.
 enum KepadatanTipografi { Nyaman, Ringkas }
@@ -17,14 +20,13 @@ final class TokenTeks {
   final int tinggiBaris;
   final int ketebalan;
 
-  /// Font variable butuh sumbu `wght` eksplisit agar ketebalan tampil sama di semua platform.
+  /// Lato statis hanya punya Regular (400) dan Bold (700): bobot 500-600 jatuh ke 400/700, 800 ke 700.
   TextStyle KeGaya({String keluarga = fontUtama, List<FontFeature> fitur = const []}) => TextStyle(
     fontFamily: keluarga,
     package: paketFont,
     fontSize: ukuran.toDouble(),
     height: tinggiBaris / ukuran,
     fontWeight: FontWeight.values.firstWhere((bobot) => bobot.value == ketebalan),
-    fontVariations: [FontVariation.weight(ketebalan.toDouble())],
     fontFeatures: fitur,
     letterSpacing: 0,
   );

@@ -17,8 +17,10 @@
  * (back-office & konsol, memindai seluruh kode) dan Gaya/Situs.css (situs pemasaran, hanya kode yang dipakai situs).
  * Berkas ini tetap satu-satunya sumber token dan aturan dasar, diimpor kedua entri itu sesudah Tailwind.
  */
-@import '@fontsource-variable/atkinson-hyperlegible-next';
-@import '@fontsource-variable/atkinson-hyperlegible-mono';
+/* D-265: Lato statis (400, 700, miring 400). Bobot 500-600 jatuh ke 400/700 dan 800 ke 700. */
+@import '@fontsource/lato/400.css';
+@import '@fontsource/lato/700.css';
+@import '@fontsource/lato/400-italic.css';
 @import 'tw-animate-css';
 @import './UtilitasKomponen.css';
 @import './Muat.css';
@@ -106,8 +108,9 @@
  * 2. Bentuk & tipografi (bukan warna)
  * ============================================================================================ */
 @theme {
-    --font-sans: 'Atkinson Hyperlegible Next Variable', system-ui, sans-serif;
-    --font-mono: 'Atkinson Hyperlegible Mono Variable', ui-monospace, monospace;
+    --font-sans: 'Lato', system-ui, sans-serif;
+    /* Lato tidak punya varian mono, jadi kode & nomor memakai Lato juga (D-265). */
+    --font-mono: 'Lato', system-ui, sans-serif;
 
     /* Skala tipografi mode Ringkas (back-office). Mode Nyaman ada di aplikasi Flutter. */
     /* Situs pemasaran (D-21, kepadatan Nyaman): judul pembuka, judul bagian, dan paragraf pengantar. */

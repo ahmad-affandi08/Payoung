@@ -4,9 +4,9 @@ import 'package:sistem_desain/SistemDesain.dart';
 
 void main() {
   group('BuatTema (PRD §17.5, §17.6)', () {
-    test('memakai font Atkinson Hyperlegible Next yang di-bundle', () {
+    test('memakai font Lato yang di-bundle', () {
       final tema = BuatTema();
-      expect(tema.textTheme.bodyMedium!.fontFamily, 'packages/sistem_desain/AtkinsonHyperlegibleNext');
+      expect(tema.textTheme.bodyMedium!.fontFamily, 'packages/sistem_desain/Lato');
     });
 
     test('selalu tema terang dengan token warna bawaan (D-14)', () {

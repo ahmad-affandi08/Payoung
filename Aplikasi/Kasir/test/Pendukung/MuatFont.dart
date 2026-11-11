@@ -9,8 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 Future<void> MuatFontMerek() async {
   TestWidgetsFlutterBinding.ensureInitialized();
   const berkas = {
-    'AtkinsonHyperlegibleNext': ['AtkinsonHyperlegibleNextVariable.ttf', 'AtkinsonHyperlegibleNextVariableMiring.ttf'],
-    'AtkinsonHyperlegibleMono': ['AtkinsonHyperlegibleMonoVariable.ttf'],
+    'Lato': ['Lato-Regular.ttf', 'Lato-Bold.ttf', 'Lato-Italic.ttf'],
   };
   for (final keluarga in berkas.entries) {
     final pemuat = FontLoader('packages/sistem_desain/${keluarga.key}');

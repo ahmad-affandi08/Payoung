@@ -142,7 +142,7 @@ Repo ini adalah **monorepo**: satu server Laravel, dua aplikasi Flutter, paket D
 | Absensi wajah (web) | `@vladmandic/human` (model di `public/model-wajah`) |
 | Aplikasi mobile/desktop | Flutter 3.47 (CI), Dart ≥ 3.13, Riverpod 3, Drift (SQLite3 Multiple Ciphers), paket `decimal`, melos 7.8 |
 | Kualitas | Pest (termasuk `arch()`), Larastan/PHPStan, Pint, Vitest, ESLint, Prettier, `flutter analyze`, k6 (uji beban) |
-| Tipografi & merek | Atkinson Hyperlegible Next (UI) & Mono, palet Payoung (Muted Teal & Apricot) lewat token desain |
+| Tipografi & merek | Lato (D-265), palet Payoung (Muted Teal & Apricot) lewat token desain |
 
 ---
 
@@ -379,7 +379,7 @@ Ringkasan [`CLAUDE.md`](CLAUDE.md) (detail di PRD §13.7 dan `.claude/rules/`):
 - **Setiap query data tenant lewat `MilikTenant`**; jangan `withoutGlobalScope(s)` di luar `Domain/Pengelola`.
 - **Setiap aksi penting mencatat audit** (`LogAudit`). Kunci peristiwa audit baru wajib masuk `KamusPeristiwaAudit` agar log terbaca manusia.
 - **Hak fitur paket ditegakkan di server** (`PetaFiturRute`, `WajibFiturPaket`), bukan hanya disembunyikan di UI.
-- **UI web**: font Atkinson Hyperlegible, komponen `TabelData`, `Panel`, `AksiHalaman` (satu aksi utama berwarna di HP), `Tombol` (bukan `Button` mentah), `PemilihTanggal`/`PemilihJam`/`PilihanCari`, wizard bertahap untuk form tambah yang besar, microcopy Indonesia konkret ("Simpan produk"), format Rupiah `Rp 1.250.000`, pemisah keterangan ` | `. Tanpa gradien/efek kaca/emoji; `<h1>` hanya lewat `JudulHalaman`; blok halaman tidak disempitkan `max-w-*`.
+- **UI web**: font Lato, komponen `TabelData`, `Panel`, `AksiHalaman` (satu aksi utama berwarna di HP), `Tombol` (bukan `Button` mentah), `PemilihTanggal`/`PemilihJam`/`PilihanCari`, wizard bertahap untuk form tambah yang besar, microcopy Indonesia konkret ("Simpan produk"), format Rupiah `Rp 1.250.000`, pemisah keterangan ` | `. Tanpa gradien/efek kaca/emoji; `<h1>` hanya lewat `JudulHalaman`; blok halaman tidak disempitkan `max-w-*`.
 - **POS Flutter**: semua layar di bingkai Ruang Kerja Kasir, uang `decimal`, offline-first (Drift), hardware lewat `Paket/AdaptorPerangkat`, font di-bundle, target sentuh ≥ 48dp.
 - **Dilarang**: `git push --force`, `--no-verify`, menonaktifkan hook, membaca/menulis rahasia, melemahkan test/lint/CI.
 
@@ -448,7 +448,7 @@ PHP=/opt/alt/php83/usr/bin/php bash Alat/Perbarui.sh   # bila PHP bawaan hosting
 | [`Panduan/RunbookOperasional.md`](Panduan/RunbookOperasional.md) | Respons alert (penjadwal berhenti, antrean tertunda, error rate, outbox macet, …) |
 | [`Panduan/SkalaBesar.md`](Panduan/SkalaBesar.md) | Daftar kerja menjaga performa di skala 100.000 pengguna |
 
-**Aplikasi mobile/desktop:** build Android/iOS/Windows lewat `BangunAplikasi.yml`; penandatanganan Android wajib kunci rilis; Windows punya pembaruan otomatis ber-checksum SHA-256. Kode build ada di `pubspec.yaml` masing-masing aplikasi (saat ini Kasir `1.0.1+14`, Pemilik `1.0.1+11`) dan dinaikkan setiap perubahan yang dirilis. Langkah lengkap: [`Panduan/RilisAplikasi.md`](Panduan/RilisAplikasi.md) dan [`Panduan/RilisPlayStore.md`](Panduan/RilisPlayStore.md). Versi minimum, rilis bertahap, flag fitur, dan kill switch diatur dari konsol (P-10).
+**Aplikasi mobile/desktop:** build Android/iOS/Windows lewat `BangunAplikasi.yml`; penandatanganan Android wajib kunci rilis; Windows punya pembaruan otomatis ber-checksum SHA-256. Kode build ada di `pubspec.yaml` masing-masing aplikasi (saat ini Kasir `1.0.2+15`, Pemilik `1.0.2+13`) dan dinaikkan setiap perubahan yang dirilis. Langkah lengkap: [`Panduan/RilisAplikasi.md`](Panduan/RilisAplikasi.md) dan [`Panduan/RilisPlayStore.md`](Panduan/RilisPlayStore.md). Versi minimum, rilis bertahap, flag fitur, dan kill switch diatur dari konsol (P-10).
 
 ---
 

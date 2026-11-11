@@ -8,5 +8,5 @@
 
     Dipakai: @include('Surel.Komponen.TautanCadangan', ['Url' => $Tautan])
 --}}
-<p style="margin:0 0 4px 0; font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#4f6567;">Tombol tidak bisa diklik? Tempel alamat ini di peramban Anda:</p>
-<p style="margin:0 0 20px 0; font-family:'Atkinson Hyperlegible Mono','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#4f6567; word-break:break-all;"><a href="{{ $Url }}" style="color:#4f6567; text-decoration:underline;">{{ $Url }}</a></p>
+<p style="margin:0 0 4px 0; font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#4f6567;">Tombol tidak bisa diklik? Tempel alamat ini di peramban Anda:</p>
+<p style="margin:0 0 20px 0; font-family:'Lato','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#4f6567; word-break:break-all;"><a href="{{ $Url }}" style="color:#4f6567; text-decoration:underline;">{{ $Url }}</a></p>
