@@ -48,6 +48,47 @@ describe('AksiMassalSederhana', () => {
         );
     });
 
+    it('tombol dengan `berlaku` hanya tampil bila ada baris terpilih yang bisa dikenai aksinya', () => {
+        type BarisStatus = { Uuid: string; Status: 'Aktif' | 'Nonaktif' };
+        const tombol = [
+            { aksi: 'Aktifkan', label: 'Aktifkan', berlaku: (b: BarisStatus) => b.Status === 'Nonaktif' },
+            {
+                aksi: 'Nonaktifkan',
+                label: 'Nonaktifkan',
+                varian: 'bahaya' as const,
+                berlaku: (b: BarisStatus) => b.Status === 'Aktif',
+            },
+        ];
+        const Pasang = (status: BarisStatus['Status'][]) =>
+            RenderUji(
+                <AksiMassalSederhana<BarisStatus>
+                    konteks={{
+                        ...Konteks([]),
+                        terpilih: status.map((Status, i) => ({ Uuid: `U${String(i)}`, Status })),
+                    }}
+                    alamat="/kelola/voucher/massal"
+                    ambilUuid={(b) => b.Uuid}
+                    tombol={tombol}
+                    maksimal={200}
+                    objek="voucher"
+                />,
+            );
+
+        const semuaAktif = Pasang(['Aktif', 'Aktif']);
+        expect(screen.queryByRole('button', { name: 'Aktifkan' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Nonaktifkan' })).toBeTruthy();
+        semuaAktif.unmount();
+
+        const campuran = Pasang(['Aktif', 'Nonaktif']);
+        expect(screen.getByRole('button', { name: 'Aktifkan' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Nonaktifkan' })).toBeTruthy();
+        campuran.unmount();
+
+        Pasang(['Nonaktif']);
+        expect(screen.getByRole('button', { name: 'Aktifkan' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Nonaktifkan' })).toBeNull();
+    });
+
     it('menolak pilihan melebihi batas dengan penjelasan', () => {
         RenderUji(
             <AksiMassalSederhana<Baris>

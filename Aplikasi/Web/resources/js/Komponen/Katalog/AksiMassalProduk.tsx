@@ -53,6 +53,14 @@ export default function AksiMassalProduk({
             },
         );
     const nonaktif = memproses !== null || terlaluBanyak;
+    // Tombol hanya tampil bila ada baris terpilih yang memang bisa dikenai aksinya (sama seperti menu di tiap baris).
+    const Ada = (uji: (produk: BarisProduk) => boolean) => konteks.terpilih.some(uji);
+    const adaDiarsipkan = Ada((p) => p.Status === 'Diarsipkan');
+    const adaAktif = Ada((p) => p.Status === 'Aktif');
+    const adaTersembunyi = Ada((p) => !p.TampilDiPos);
+    const adaTampil = Ada((p) => p.TampilDiPos);
+    const adaBukanFavorit = Ada((p) => !p.Favorit);
+    const adaFavorit = Ada((p) => p.Favorit);
 
     return (
         <div className="flex flex-wrap items-end gap-2">
@@ -88,46 +96,56 @@ export default function AksiMassalProduk({
                     >
                         Pindahkan
                     </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        disabled={nonaktif}
-                        memproses={memproses === 'TampilDiPos'}
-                        onClick={() => Jalankan('TampilDiPos')}
-                    >
-                        Tampilkan di kasir
-                    </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        disabled={nonaktif}
-                        memproses={memproses === 'SembunyikanDariPos'}
-                        onClick={() => Jalankan('SembunyikanDariPos')}
-                    >
-                        Sembunyikan dari kasir
-                    </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        disabled={nonaktif}
-                        memproses={memproses === 'Favorit'}
-                        onClick={() => Jalankan('Favorit')}
-                    >
-                        Tandai favorit
-                    </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        disabled={nonaktif}
-                        memproses={memproses === 'HapusFavorit'}
-                        onClick={() => Jalankan('HapusFavorit')}
-                    >
-                        Lepas favorit
-                    </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        disabled={nonaktif}
-                        memproses={memproses === 'Pulihkan'}
-                        onClick={() => Jalankan('Pulihkan')}
-                    >
-                        Pulihkan
-                    </Tombol>
+                    {adaTersembunyi ? (
+                        <Tombol
+                            varian="sekunder"
+                            disabled={nonaktif}
+                            memproses={memproses === 'TampilDiPos'}
+                            onClick={() => Jalankan('TampilDiPos')}
+                        >
+                            Tampilkan di kasir
+                        </Tombol>
+                    ) : null}
+                    {adaTampil ? (
+                        <Tombol
+                            varian="sekunder"
+                            disabled={nonaktif}
+                            memproses={memproses === 'SembunyikanDariPos'}
+                            onClick={() => Jalankan('SembunyikanDariPos')}
+                        >
+                            Sembunyikan dari kasir
+                        </Tombol>
+                    ) : null}
+                    {adaBukanFavorit ? (
+                        <Tombol
+                            varian="sekunder"
+                            disabled={nonaktif}
+                            memproses={memproses === 'Favorit'}
+                            onClick={() => Jalankan('Favorit')}
+                        >
+                            Tandai favorit
+                        </Tombol>
+                    ) : null}
+                    {adaFavorit ? (
+                        <Tombol
+                            varian="sekunder"
+                            disabled={nonaktif}
+                            memproses={memproses === 'HapusFavorit'}
+                            onClick={() => Jalankan('HapusFavorit')}
+                        >
+                            Lepas favorit
+                        </Tombol>
+                    ) : null}
+                    {adaDiarsipkan ? (
+                        <Tombol
+                            varian="sekunder"
+                            disabled={nonaktif}
+                            memproses={memproses === 'Pulihkan'}
+                            onClick={() => Jalankan('Pulihkan')}
+                        >
+                            Pulihkan
+                        </Tombol>
+                    ) : null}
                     {bolehUbahHarga ? (
                         <Tombol varian="sekunder" disabled={nonaktif} onClick={() => AturDialogHarga(true)}>
                             Ubah harga…
@@ -158,14 +176,16 @@ export default function AksiMassalProduk({
                             }}
                         />
                     ) : null}
-                    <Tombol
-                        varian="bahaya"
-                        disabled={nonaktif}
-                        memproses={memproses === 'Arsipkan'}
-                        onClick={() => Jalankan('Arsipkan')}
-                    >
-                        Arsipkan
-                    </Tombol>
+                    {adaAktif ? (
+                        <Tombol
+                            varian="bahaya"
+                            disabled={nonaktif}
+                            memproses={memproses === 'Arsipkan'}
+                            onClick={() => Jalankan('Arsipkan')}
+                        >
+                            Arsipkan
+                        </Tombol>
+                    ) : null}
                 </>
             ) : null}
         </div>

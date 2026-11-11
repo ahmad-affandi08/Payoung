@@ -14,13 +14,20 @@ export const MaksTiketMassal = 100;
  * Aksi untuk tiket terpilih di antrean konsol (P-09): tandai selesai, atau tutup dengan satu alasan untuk semuanya.
  * Tiket yang tidak boleh berubah (sudah final) dilewati server dan alasannya dirangkum di dialog hasil.
  */
-export default function AksiMassalTiket<T extends { Uuid: string }>({ konteks }: { konteks: KonteksAksiMassal<T> }) {
+export default function AksiMassalTiket<T extends { Uuid: string; Status: string }>({
+    konteks,
+}: {
+    konteks: KonteksAksiMassal<T>;
+}) {
     const [tutup, AturTutup] = useState(false);
     const [alasan, AturAlasan] = useState('');
     const [galat, AturGalat] = useState<Record<string, string>>({});
     const [memproses, AturMemproses] = useState<'Selesai' | 'Ditutup' | null>(null);
     const uuid = konteks.terpilih.map((t) => t.Uuid);
     const terlaluBanyak = uuid.length > MaksTiketMassal;
+    // Selesai hanya untuk tiket yang masih berjalan, tutup untuk semua yang belum ditutup.
+    const adaBerjalan = konteks.terpilih.some((t) => ['Baru', 'Ditangani', 'MenungguPelanggan'].includes(t.Status));
+    const adaBelumDitutup = konteks.terpilih.some((t) => t.Status !== 'Ditutup');
 
     const Kirim = (status: 'Selesai' | 'Ditutup') =>
         router.put(
@@ -45,17 +52,21 @@ export default function AksiMassalTiket<T extends { Uuid: string }>({ konteks }:
                     Maksimal {MaksTiketMassal} tiket sekali proses. Kurangi pilihan.
                 </p>
             ) : null}
-            <Tombol
-                varian="sekunder"
-                disabled={memproses !== null || terlaluBanyak}
-                memproses={memproses === 'Selesai'}
-                onClick={() => Kirim('Selesai')}
-            >
-                Tandai selesai
-            </Tombol>
-            <Tombol varian="bahaya" disabled={memproses !== null || terlaluBanyak} onClick={() => AturTutup(true)}>
-                Tutup tiket…
-            </Tombol>
+            {adaBerjalan ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={memproses !== null || terlaluBanyak}
+                    memproses={memproses === 'Selesai'}
+                    onClick={() => Kirim('Selesai')}
+                >
+                    Tandai selesai
+                </Tombol>
+            ) : null}
+            {adaBelumDitutup ? (
+                <Tombol varian="bahaya" disabled={memproses !== null || terlaluBanyak} onClick={() => AturTutup(true)}>
+                    Tutup tiket…
+                </Tombol>
+            ) : null}
             {tutup ? (
                 <DialogFormulir
                     judul={`Tutup ${uuid.length.toLocaleString('id-ID')} tiket`}

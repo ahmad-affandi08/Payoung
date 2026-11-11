@@ -42,30 +42,36 @@ export default function AksiMassalInvoice({ konteks }: { konteks: KonteksAksiMas
                     Maksimal {MaksInvoiceMassal} invoice sekali proses. Kurangi pilihan.
                 </p>
             ) : null}
-            <Tombol
-                varian="sekunder"
-                disabled={draf.length === 0 || terlaluBanyak}
-                memproses={memproses === 'terbitkan'}
-                onClick={() => Proses('terbitkan', draf)}
-            >
-                Terbitkan draf ({draf.length.toLocaleString('id-ID')})
-            </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={terbit.length === 0 || terlaluBanyak}
-                memproses={memproses === 'kirim'}
-                onClick={() => Proses('kirim', terbit)}
-            >
-                Kirim lewat WhatsApp ({terbit.length.toLocaleString('id-ID')})
-            </Tombol>
-            <Tombol
-                varian="sekunder"
-                disabled={bersisa.length === 0 || terlaluBanyak}
-                memproses={memproses === 'ingatkan'}
-                onClick={() => Proses('ingatkan', bersisa)}
-            >
-                Kirim pengingat ({bersisa.length.toLocaleString('id-ID')})
-            </Tombol>
+            {draf.length > 0 ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={terlaluBanyak}
+                    memproses={memproses === 'terbitkan'}
+                    onClick={() => Proses('terbitkan', draf)}
+                >
+                    Terbitkan draf ({draf.length.toLocaleString('id-ID')})
+                </Tombol>
+            ) : null}
+            {terbit.length > 0 ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={terlaluBanyak}
+                    memproses={memproses === 'kirim'}
+                    onClick={() => Proses('kirim', terbit)}
+                >
+                    Kirim lewat WhatsApp ({terbit.length.toLocaleString('id-ID')})
+                </Tombol>
+            ) : null}
+            {bersisa.length > 0 ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={terlaluBanyak}
+                    memproses={memproses === 'ingatkan'}
+                    onClick={() => Proses('ingatkan', bersisa)}
+                >
+                    Kirim pengingat ({bersisa.length.toLocaleString('id-ID')})
+                </Tombol>
+            ) : null}
         </div>
     );
 }

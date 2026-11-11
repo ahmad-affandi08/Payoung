@@ -30,6 +30,9 @@ export default function AksiMassalPelanggan({
     const uuid = konteks.terpilih.map((p) => p.Uuid);
     const terlaluBanyak = uuid.length > MaksPelangganMassal;
     const nonaktif = memproses !== null || terlaluBanyak;
+    // Hanya aksi yang bisa dikenai ke minimal satu pelanggan terpilih yang ditampilkan.
+    const adaDiarsipkan = konteks.terpilih.some((p) => p.Status === 'Diarsipkan');
+    const adaAktif = konteks.terpilih.some((p) => p.Status === 'Aktif');
 
     const Jalankan = (aksi: AksiPelanggan) =>
         router.post(
@@ -80,22 +83,26 @@ export default function AksiMassalPelanggan({
                     </Tombol>
                 </>
             ) : null}
-            <Tombol
-                varian="sekunder"
-                disabled={nonaktif}
-                memproses={memproses === 'Pulihkan'}
-                onClick={() => Jalankan('Pulihkan')}
-            >
-                Pulihkan
-            </Tombol>
-            <Tombol
-                varian="bahaya"
-                disabled={nonaktif}
-                memproses={memproses === 'Arsipkan'}
-                onClick={() => Jalankan('Arsipkan')}
-            >
-                Arsipkan
-            </Tombol>
+            {adaDiarsipkan ? (
+                <Tombol
+                    varian="sekunder"
+                    disabled={nonaktif}
+                    memproses={memproses === 'Pulihkan'}
+                    onClick={() => Jalankan('Pulihkan')}
+                >
+                    Pulihkan
+                </Tombol>
+            ) : null}
+            {adaAktif ? (
+                <Tombol
+                    varian="bahaya"
+                    disabled={nonaktif}
+                    memproses={memproses === 'Arsipkan'}
+                    onClick={() => Jalankan('Arsipkan')}
+                >
+                    Arsipkan
+                </Tombol>
+            ) : null}
         </div>
     );
 }

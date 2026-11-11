@@ -108,18 +108,28 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
     });
 
     it('K-16: Tandai favorit & Lepas favorit mengirim aksi Favorit/HapusFavorit dengan Uuid terpilih', () => {
-        const { container } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
+        const { container, unmount: Bongkar } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
         const dalam = within(container);
         const uuid = ['01J9PRD0000000000000000001', '01J9PRD0000000000000000002'];
 
+        // Belum ada yang favorit: hanya "Tandai favorit" yang berarti.
+        expect(dalam.queryByRole('button', { name: 'Lepas favorit' })).toBeNull();
         fireEvent.click(dalam.getByRole('button', { name: 'Tandai favorit' }));
         expect(tiruanRouter.post).toHaveBeenLastCalledWith(
             '/kelola/produk/massal',
             { Aksi: 'Favorit', Uuid: uuid, UuidKategori: null },
             expect.anything(),
         );
+        Bongkar();
 
-        fireEvent.click(dalam.getByRole('button', { name: 'Lepas favorit' }));
+        const favorit = RenderUji(
+            <AksiMassalProduk
+                konteks={{ ...Konteks, terpilih: Konteks.terpilih.map((p) => ({ ...p, Favorit: true })) }}
+                kategori={[]}
+            />,
+        );
+        expect(within(favorit.container).queryByRole('button', { name: 'Tandai favorit' })).toBeNull();
+        fireEvent.click(within(favorit.container).getByRole('button', { name: 'Lepas favorit' }));
         expect(tiruanRouter.post).toHaveBeenLastCalledWith(
             '/kelola/produk/massal',
             { Aksi: 'HapusFavorit', Uuid: uuid, UuidKategori: null },

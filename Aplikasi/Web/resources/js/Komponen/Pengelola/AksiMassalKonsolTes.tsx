@@ -27,7 +27,10 @@ describe('Aksi massal konsol', () => {
     it('tiket: tandai selesai langsung terkirim. Tutup butuh alasan', () => {
         RenderUji(
             <AksiMassalTiket
-                konteks={Konteks([{ Uuid: '01J9TKT0000000000000000001' }, { Uuid: '01J9TKT0000000000000000002' }])}
+                konteks={Konteks([
+                    { Uuid: '01J9TKT0000000000000000001', Status: 'Baru' },
+                    { Uuid: '01J9TKT0000000000000000002', Status: 'Ditangani' },
+                ])}
             />,
         );
 
@@ -47,6 +50,26 @@ describe('Aksi massal konsol', () => {
             expect.objectContaining({ Status: 'Ditutup', Alasan: 'Duplikat' }),
             expect.anything(),
         );
+    });
+
+    it('tiket: tombol hanya tampil bila ada tiket yang bisa dikenai aksinya', () => {
+        const { unmount: Bongkar } = RenderUji(
+            <AksiMassalTiket
+                konteks={Konteks([
+                    { Uuid: '01J9TKT0000000000000000001', Status: 'Selesai' },
+                    { Uuid: '01J9TKT0000000000000000002', Status: 'Ditutup' },
+                ])}
+            />,
+        );
+
+        // Selesai dan ditutup sudah final untuk "Tandai selesai", tetapi yang Selesai masih bisa ditutup.
+        expect(screen.queryByRole('button', { name: 'Tandai selesai' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Tutup tiket…' })).toBeTruthy();
+        Bongkar();
+
+        RenderUji(<AksiMassalTiket konteks={Konteks([{ Uuid: '01J9TKT0000000000000000003', Status: 'Ditutup' }])} />);
+        expect(screen.queryByRole('button', { name: 'Tandai selesai' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Tutup tiket…' })).toBeNull();
     });
 
     it('verifikasi: menampilkan total dan baru aktif setelah dicentang sudah dicocokkan', () => {

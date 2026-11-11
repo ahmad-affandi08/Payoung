@@ -10,9 +10,9 @@ vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/Tiruan
 
 const Tier: OpsiTier[] = [{ Nilai: 'GOLD', Label: 'Gold', Uuid: '01J9TRR0000000000000000001' }];
 
-function Konteks(uuid: string[]) {
+function Konteks(uuid: string[], Status: 'Aktif' | 'Diarsipkan' = 'Aktif') {
     return {
-        terpilih: uuid.map((u) => ({ Uuid: u, Nama: `Pelanggan ${u}` }) as unknown as BarisPelanggan),
+        terpilih: uuid.map((u) => ({ Uuid: u, Nama: `Pelanggan ${u}`, Status }) as unknown as BarisPelanggan),
         semuaHasil: false,
         total: uuid.length,
         keadaan: { cari: '', urut: [], halaman: 1, perHalaman: 25, saring: {} },
@@ -35,6 +35,27 @@ describe('Aksi massal pelanggan', () => {
             expect.anything(),
         );
         expect(screen.queryByRole('button', { name: 'Atur tier' })).toBeNull();
+    });
+
+    it('Pulihkan hanya tampil untuk pelanggan yang diarsipkan, Arsipkan hanya untuk yang aktif', () => {
+        const { unmount: Bongkar } = RenderUji(
+            <AksiMassalPelanggan konteks={Konteks(['01J9PLG0000000000000000001'])} tier={[]} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Pulihkan' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Arsipkan' })).toBeTruthy();
+        Bongkar();
+
+        const kedua = RenderUji(
+            <AksiMassalPelanggan konteks={Konteks(['01J9PLG0000000000000000002'], 'Diarsipkan')} tier={[]} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Arsipkan' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Pulihkan' }));
+        expect(tiruanRouter.post).toHaveBeenLastCalledWith(
+            '/kelola/pelanggan/massal',
+            expect.objectContaining({ Aksi: 'Pulihkan' }),
+            expect.anything(),
+        );
+        kedua.unmount();
     });
 
     it('atur tier butuh pilihan tier, dan "Lepas tier" mengirim tier kosong', () => {

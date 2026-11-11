@@ -168,8 +168,17 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
                                   alamat={`${alamat}/massal`}
                                   ambilUuid={(p) => p.Uuid}
                                   tombol={[
-                                      { aksi: 'Pulihkan', label: 'Aktifkan' },
-                                      { aksi: 'Arsipkan', label: 'Arsipkan', varian: 'bahaya' },
+                                      {
+                                          aksi: 'Pulihkan',
+                                          label: 'Aktifkan',
+                                          berlaku: (p) => p.Status === 'Diarsipkan',
+                                      },
+                                      {
+                                          aksi: 'Arsipkan',
+                                          label: 'Arsipkan',
+                                          varian: 'bahaya',
+                                          berlaku: (p) => p.Status === 'Aktif',
+                                      },
                                   ]}
                                   maksimal={200}
                                   objek="promo"

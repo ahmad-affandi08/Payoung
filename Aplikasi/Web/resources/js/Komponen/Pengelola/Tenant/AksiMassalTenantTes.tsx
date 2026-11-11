@@ -21,8 +21,11 @@ function Konteks<T>(terpilih: T[]) {
     };
 }
 
-function Terpilih(jumlah: number) {
-    return Array.from({ length: jumlah }, (_, i) => ({ Uuid: `01J9TNT${String(i).padStart(19, '0')}` }));
+function Terpilih(jumlah: number, StatusLangganan: string | null = 'Trial') {
+    return Array.from({ length: jumlah }, (_, i) => ({
+        Uuid: `01J9TNT${String(i).padStart(19, '0')}`,
+        StatusLangganan,
+    }));
 }
 
 function Masuk(izin: string[]) {
@@ -88,6 +91,22 @@ describe('Aksi massal tenant (D-208)', () => {
             },
             expect.anything(),
         );
+    });
+
+    it('aksi yang bergantung status hanya tampil bila ada tenant terpilih yang bisa dikenai', () => {
+        Masuk(['tenant.trial.perpanjang', 'tenant.aktifkan', 'tenant.tangguhkan']);
+        const { unmount: Bongkar } = RenderUji(
+            <AksiMassalTenant konteks={Konteks(Terpilih(2, 'Aktif'))} pilihanKategori={KATEGORI} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Perpanjang uji coba…' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Aktifkan kembali…' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Tangguhkan…' })).toBeTruthy();
+        Bongkar();
+
+        RenderUji(<AksiMassalTenant konteks={Konteks(Terpilih(2, 'Ditangguhkan'))} pilihanKategori={KATEGORI} />);
+        expect(screen.getByRole('button', { name: 'Aktifkan kembali…' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Tangguhkan…' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Perpanjang uji coba…' })).toBeNull();
     });
 
     it('Kirim pesan membuka formulir siaran dengan tenant terpilih (hanya bagi yang berizin komunikasi)', () => {

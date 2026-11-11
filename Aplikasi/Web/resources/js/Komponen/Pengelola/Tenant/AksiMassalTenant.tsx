@@ -42,7 +42,7 @@ type Isian = { Hari: string; Alasan: string; Kategori: string; Catatan: string; 
  * tidak memenuhi syarat dilewati server dan alasannya dirangkum di dialog hasil. Tangguhkan/aktifkan minta kode 2FA baru
  * lewat perantara rute, sama dengan aksi satuan.
  */
-export default function AksiMassalTenant<T extends { Uuid: string }>({
+export default function AksiMassalTenant<T extends { Uuid: string; StatusLangganan: string | null }>({
     konteks,
     pilihanKategori,
 }: {
@@ -62,6 +62,12 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
     const [galat, AturGalat] = useState<Record<string, string>>({});
     const [memproses, AturMemproses] = useState(false);
     const uuid = konteks.terpilih.map((t) => t.Uuid);
+    // Aksi yang bergantung status langganan hanya tampil bila ada tenant terpilih yang bisa dikenai (BR-P07.6, BR-00.7).
+    const adaTrial = konteks.terpilih.some((t) => t.StatusLangganan === 'Trial');
+    const adaDitangguhkan = konteks.terpilih.some((t) => t.StatusLangganan === 'Ditangguhkan');
+    const adaBisaDitangguhkan = konteks.terpilih.some(
+        (t) => t.StatusLangganan !== null && !['Ditangguhkan', 'Berhenti'].includes(t.StatusLangganan),
+    );
     const terlaluBanyak = uuid.length > MaksTenantMassal;
     const Ubah = (kunci: keyof Isian, nilai: string) => AturIsian((lama) => ({ ...lama, [kunci]: nilai }));
 
@@ -137,7 +143,7 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                     Maksimal {MaksTenantMassal} tenant sekali proses. Kurangi pilihan.
                 </p>
             ) : null}
-            {PunyaIzin(pengguna, IzinPengelola.TenantTrialPerpanjang) ? (
+            {PunyaIzin(pengguna, IzinPengelola.TenantTrialPerpanjang) && adaTrial ? (
                 <Tombol varian="sekunder" disabled={terlaluBanyak} onClick={() => Buka('trial')}>
                     Perpanjang uji coba…
                 </Tombol>
@@ -156,12 +162,12 @@ export default function AksiMassalTenant<T extends { Uuid: string }>({
                     Beri catatan…
                 </Tombol>
             ) : null}
-            {PunyaIzin(pengguna, IzinPengelola.TenantAktifkan) ? (
+            {PunyaIzin(pengguna, IzinPengelola.TenantAktifkan) && adaDitangguhkan ? (
                 <Tombol varian="sekunder" disabled={terlaluBanyak} onClick={() => Buka('aktifkan')}>
                     Aktifkan kembali…
                 </Tombol>
             ) : null}
-            {PunyaIzin(pengguna, IzinPengelola.TenantTangguhkan) ? (
+            {PunyaIzin(pengguna, IzinPengelola.TenantTangguhkan) && adaBisaDitangguhkan ? (
                 <Tombol varian="bahaya" disabled={terlaluBanyak} onClick={() => Buka('tangguhkan')}>
                     Tangguhkan…
                 </Tombol>

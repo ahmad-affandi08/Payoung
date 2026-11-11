@@ -208,8 +208,13 @@ export default function HalamanVoucherPromo({ Promo, Voucher, Ringkasan, JumlahM
                                   alamat={`${alamat}/massal`}
                                   ambilUuid={(v) => v.Uuid}
                                   tombol={[
-                                      { aksi: 'Aktifkan', label: 'Aktifkan' },
-                                      { aksi: 'Nonaktifkan', label: 'Nonaktifkan', varian: 'bahaya' },
+                                      { aksi: 'Aktifkan', label: 'Aktifkan', berlaku: (v) => v.Status === 'Nonaktif' },
+                                      {
+                                          aksi: 'Nonaktifkan',
+                                          label: 'Nonaktifkan',
+                                          varian: 'bahaya',
+                                          berlaku: (v) => v.Status === 'Aktif',
+                                      },
                                   ]}
                                   maksimal={1000}
                                   objek="voucher"

@@ -4,11 +4,16 @@ import { useState } from 'react';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 
-export type TombolAksiMassal = {
+export type TombolAksiMassal<T = unknown> = {
     /** Nilai `Aksi` yang dikirim ke server. */
     aksi: string;
     label: string;
     varian?: 'sekunder' | 'bahaya';
+    /**
+     * Tombol hanya tampil bila ada baris terpilih yang bisa dikenai aksi ini (misal "Pulihkan" hanya bila ada yang
+     * diarsipkan). Tanpa ini tombol selalu tampil.
+     */
+    berlaku?: (baris: T) => boolean;
 };
 
 type PropsAksiMassalSederhana<T> = {
@@ -16,7 +21,7 @@ type PropsAksiMassalSederhana<T> = {
     /** Alamat POST yang menerima `{Aksi, Uuid[]}`. */
     alamat: string;
     ambilUuid: (baris: T) => string;
-    tombol: TombolAksiMassal[];
+    tombol: TombolAksiMassal<T>[];
     /** Batas server; pilihan lebih banyak ditolak dengan penjelasan. */
     maksimal: number;
     /** Kata benda untuk pesan batas, misal "voucher". */
@@ -38,6 +43,7 @@ export default function AksiMassalSederhana<T>({
     const [memproses, AturMemproses] = useState<string | null>(null);
     const uuid = konteks.terpilih.map(ambilUuid);
     const terlaluBanyak = uuid.length > maksimal;
+    const tampil = tombol.filter((t) => t.berlaku === undefined || konteks.terpilih.some(t.berlaku));
 
     return (
         <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +52,7 @@ export default function AksiMassalSederhana<T>({
                     Maksimal {maksimal.toLocaleString('id-ID')} {objek} sekali proses. Kurangi pilihan.
                 </p>
             ) : null}
-            {tombol.map((t) => (
+            {tampil.map((t) => (
                 <Tombol
                     key={t.aksi}
                     varian={t.varian ?? 'sekunder'}

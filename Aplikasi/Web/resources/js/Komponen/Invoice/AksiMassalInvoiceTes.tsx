@@ -75,12 +75,11 @@ describe('Aksi massal invoice', () => {
         );
     });
 
-    it('tombol nonaktif bila tidak ada baris yang sesuai', () => {
+    it('tombol tersembunyi bila tidak ada baris yang sesuai', () => {
         RenderUji(<AksiMassalInvoice konteks={Konteks([draf])} />);
 
-        expect((screen.getByRole('button', { name: 'Kirim lewat WhatsApp (0)' }) as HTMLButtonElement).disabled).toBe(
-            true,
-        );
-        expect((screen.getByRole('button', { name: 'Kirim pengingat (0)' }) as HTMLButtonElement).disabled).toBe(true);
+        expect(screen.getByRole('button', { name: 'Terbitkan draf (1)' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /Kirim lewat WhatsApp/ })).toBeNull();
+        expect(screen.queryByRole('button', { name: /Kirim pengingat/ })).toBeNull();
     });
 });
