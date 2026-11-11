@@ -41,6 +41,8 @@ final class PetaFiturRute
         ['Pola' => 'kelola.pembelian.pesanan.*', 'Fitur' => 'pembelian.po', 'Mode' => 'tulis', 'Nama' => 'Pesanan pembelian'],
         ['Pola' => 'kelola.pembelian.permintaan.*', 'Fitur' => 'pembelian.po', 'Mode' => 'tulis', 'Nama' => 'Pesanan pembelian'],
         ['Pola' => 'kelola.daftar-harga.*', 'Fitur' => 'harga.daftar-harga', 'Mode' => 'tulis', 'Nama' => 'Daftar harga'],
+        ['Pola' => 'kelola.produk.harga-otomatis.*', 'Fitur' => 'harga.otomatis', 'Mode' => 'tulis', 'Nama' => 'Harga otomatis dari harga beli'],
+        ['Pola' => 'kelola.produk.harga-dari-modal*', 'Fitur' => 'harga.otomatis', 'Mode' => 'tulis', 'Nama' => 'Harga otomatis dari harga beli'],
         ['Pola' => 'kelola.stasiun-dapur.*', 'Fitur' => 'pos.kds', 'Mode' => 'tulis', 'Nama' => 'Kitchen display (KDS)'],
         ['Pola' => 'kelola.karyawan.komisi.laporan*', 'Fitur' => 'karyawan.komisi', 'Mode' => 'semua', 'Nama' => 'Komisi karyawan'],
         ['Pola' => 'kelola.karyawan.komisi*', 'Fitur' => 'karyawan.komisi', 'Mode' => 'tulis', 'Nama' => 'Komisi karyawan'],

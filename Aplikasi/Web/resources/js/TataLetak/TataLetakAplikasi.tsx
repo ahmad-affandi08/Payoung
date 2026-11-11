@@ -145,6 +145,14 @@ const menuProduk: ItemMenu[] = [
     },
     // D-253: kelompok tarif pajak yang dipasang ke produk. Dulu di Pengaturan, kini bersama master katalog lainnya.
     { label: 'Kelompok pajak', href: '/kelola/kelompok-pajak', izin: IzinTenant.ProdukLihat, kelompok: 'Atur produk' },
+    // D-266: harga jual mengikuti harga beli terakhir (paket Pro ke atas).
+    {
+        label: 'Harga otomatis',
+        href: '/kelola/produk/harga-otomatis',
+        izin: IzinTenant.ProdukLihat,
+        fitur: 'harga.otomatis',
+        kelompok: 'Atur produk',
+    },
     // D-253: stasiun pembuatan pesanan dan tiket dapur per stasiun (usaha F&B).
     {
         label: 'Stasiun dapur',

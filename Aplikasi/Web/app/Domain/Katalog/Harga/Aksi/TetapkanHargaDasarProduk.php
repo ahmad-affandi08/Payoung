@@ -31,7 +31,7 @@ final class TetapkanHargaDasarProduk
      *
      * @throws PelanggaranAturanBisnis ProdukIndukVarian, HargaTidakValid, HargaDasarTidakAda
      */
-    public function Jalankan(Produk $produk, Uang $harga): array
+    public function Jalankan(Produk $produk, Uang $harga, SumberPerubahanHarga $sumber = SumberPerubahanHarga::AplikasiOwner): array
     {
         if ($produk->Jenis === JenisProduk::IndukVarian) {
             throw new PelanggaranAturanBisnis('ProdukIndukVarian', 'Ubah harga per varian, bukan produk induknya.', 'Harga');
@@ -41,8 +41,8 @@ final class TetapkanHargaDasarProduk
             throw new PelanggaranAturanBisnis('HargaTidakValid', 'Harga harus lebih dari Rp 0.', 'Harga');
         }
 
-        return DB::transaction(function () use ($produk, $harga): array {
-            $satuan = ProdukSatuan::query()->where('IdProduk', $produk->Id)->orderByDesc('DefaultJual')->orderBy('Id')->first();
+        return DB::transaction(function () use ($produk, $harga, $sumber): array {
+            $satuan = self::AmbilSatuanJualUtama($produk);
             $baris = $satuan === null ? collect() : ProdukHarga::query()
                 ->where('IdProdukSatuan', $satuan->Id)
                 ->whereNull('IdDaftarHarga')
@@ -59,9 +59,15 @@ final class TetapkanHargaDasarProduk
                 Kuantitas::Dari($h->JumlahMinimum),
                 $h->Id === $dasar->Id ? $harga : Uang::Dari($h->Harga),
             ))->all());
-            $hasil = $this->simpan->Jalankan($produk, [$satuan->Id => $daftar], SumberPerubahanHarga::AplikasiOwner);
+            $hasil = $this->simpan->Jalankan($produk, [$satuan->Id => $daftar], $sumber);
 
             return ['HargaLama' => $lama->KeString(), 'HargaBaru' => $harga->KeString(), 'Berubah' => $hasil->CekAdaPerubahan()];
         });
+    }
+
+    /** Satuan jual utama produk: yang ditandai default jual, atau satuan pertama. Harga dasarnya yang diubah aksi ini. */
+    public static function AmbilSatuanJualUtama(Produk $produk): ?ProdukSatuan
+    {
+        return ProdukSatuan::query()->where('IdProduk', $produk->Id)->orderByDesc('DefaultJual')->orderBy('Id')->first();
     }
 }

@@ -13,7 +13,8 @@ export type JenisNotifikasi =
     | 'KuotaTransaksi'
     | 'PermintaanStok'
     | 'TransferStokDiterima'
-    | 'TransferStokMacet';
+    | 'TransferStokMacet'
+    | 'HargaOtomatis';
 
 export type BarisNotifikasi = {
     Uuid: string;

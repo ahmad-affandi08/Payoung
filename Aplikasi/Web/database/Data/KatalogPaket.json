@@ -86,6 +86,7 @@
             },
             "Fitur": [
                 "akuntansi.penuh",
+                "harga.otomatis",
                 "integrasi.whatsapp",
                 "invoice.penagihan",
                 "kanal.self-order",
@@ -140,6 +141,7 @@
                 "akuntansi.penuh",
                 "api.publik",
                 "harga.daftar-harga",
+                "harga.otomatis",
                 "integrasi.whatsapp",
                 "invoice.penagihan",
                 "kanal.self-order",
@@ -197,6 +199,7 @@
                 "akuntansi.penuh",
                 "api.publik",
                 "harga.daftar-harga",
+                "harga.otomatis",
                 "integrasi.whatsapp",
                 "invoice.penagihan",
                 "kanal.self-order",

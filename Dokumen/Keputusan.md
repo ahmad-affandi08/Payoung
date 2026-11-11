@@ -267,6 +267,7 @@
 | D-263 | Dari pemilik produk, 10/11/2026 ("kenapa service charge hanya diatur di situ saja", lalu "kerjakan halaman sendiri di Atur kasir"). Pengaturan yang menentukan total transaksi (PBJT, biaya layanan, harga termasuk pajak) wajib punya halaman pengaturan sendiri di menu, tidak boleh hanya hidup di panduan untuk tenant baru. Halaman ditempatkan di subgrup Atur kasir (satu rumah, D-253) per outlet. |
 | D-264 | Dari pemilik produk, 10/11/2026. Angka yang membentuk total baris harus terlihat di baris itu sendiri, tidak boleh baru bisa dijelaskan lewat ringkasan di bagian lain halaman. Halaman pengaturan menautkan ke halaman pengaturan, bukan ke langkah panduan awal. |
 | D-265 | Dari pemilik produk, 11/11/2026. Font resmi seluruh klien (web, Aplikasi Kasir, Aplikasi Owner) adalah **Lato**, termasuk untuk kode dan nomor dokumen karena Lato tidak punya varian mono. Mengganti D-08 (§17.5). |
+| D-266 | Dari pemilik produk, 11/11/2026, untuk klien. Harga jual otomatis mengikuti harga beli terakhir (BR-03.7): dasar modal harga beli terakhir bersih (sesudah diskon, sebelum pajak dan ongkir), naik dan turun otomatis, batas aman 20% yang bisa diatur Owner (di atasnya jadi usulan), fitur paket Pro ke atas, harga sama untuk semua outlet. Untung dihitung dari modal, bukan margin dari harga jual. Cakupan HPP rata-rata sebagai dasar modal, saringan pemasok utama, peringatan margin tipis, dan pajak inklusif otomatis **belum** dibuat. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

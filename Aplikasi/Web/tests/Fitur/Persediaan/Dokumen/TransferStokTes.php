@@ -29,6 +29,7 @@ use Tests\Pendukung\Persediaan\BantuanDokumenPersediaan as B;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
 use Tests\Pendukung\Persediaan\PemeriksaInvarian;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
@@ -265,6 +266,7 @@ describe('F-05b transfer stok: batas tanggal di halaman', function (): void {
     it('HariIni di halaman = tanggal bisnis outlet (jam tutup buku 04:00), sama dengan batas server', function (): void {
         $t = SiapkanTransfer();
         $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '5')]), $t['Pemilik']->Id);
+        BantuanFitur::Beri($t['Tenant']->Id, 'stok.transfer');
         BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
 
         // 01.00 WIB tanggal 11: tanggal kalender 11, tanggal bisnis masih 10.

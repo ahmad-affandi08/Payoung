@@ -138,6 +138,12 @@ final class KamusPeristiwaAudit
         'gudang.buat' => 'Gudang dibuat',
         'gudang.ubah' => 'Gudang diubah',
 
+        'harga-otomatis.aturan.hapus' => 'Aturan harga otomatis dihapus',
+        'harga-otomatis.aturan.simpan' => 'Aturan harga otomatis disimpan',
+        'harga-otomatis.pengaturan.ubah' => 'Pengaturan harga otomatis diubah',
+        'harga-otomatis.usulan.terapkan' => 'Usulan harga otomatis diterapkan',
+        'harga-otomatis.usulan.tolak' => 'Usulan harga otomatis ditolak',
+
         'insiden.buka' => 'Insiden dibuka',
         'insiden.perbarui' => 'Insiden diperbarui',
         'insiden.post-mortem' => 'Ulasan akhir insiden ditulis',

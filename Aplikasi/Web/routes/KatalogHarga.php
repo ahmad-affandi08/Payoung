@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Http\Kontroler\Kelola\Katalog\DaftarHargaKontroler;
+use App\Http\Kontroler\Kelola\Katalog\HargaOtomatisKontroler;
 use App\Http\Kontroler\Kelola\Katalog\HargaProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\KelompokPajakKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
@@ -30,6 +31,19 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::put('/produk/{produk}/harga', [HargaProdukKontroler::class, 'Simpan'])->middleware($ubahHarga)->where('produk', $ulid)->name('kelola.produk.harga.simpan');
     Route::put('/produk/{produk}/harga/daftar-harga/{daftarHarga}', [HargaProdukKontroler::class, 'SimpanDaftarHarga'])
         ->middleware($ubahHarga)->where(['produk' => $ulid, 'daftarHarga' => $ulid])->name('kelola.produk.harga.daftar-harga.simpan');
+
+    // Harga jual otomatis mengikuti harga beli terakhir (D-266, paket Pro ke atas). Lihat = produk.lihat, ubah = produk.harga.ubah.
+    Route::get('/produk/harga-otomatis', [HargaOtomatisKontroler::class, 'Tampilkan'])->middleware($lihat)->name('kelola.produk.harga-otomatis');
+    Route::put('/produk/harga-otomatis/pengaturan', [HargaOtomatisKontroler::class, 'UbahPengaturan'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.pengaturan');
+    Route::post('/produk/harga-otomatis/aturan', [HargaOtomatisKontroler::class, 'SimpanAturan'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.aturan.simpan');
+    Route::put('/produk/harga-otomatis/aturan/{aturan}', [HargaOtomatisKontroler::class, 'UbahAturan'])->middleware($ubahHarga)->where('aturan', $ulid)->name('kelola.produk.harga-otomatis.aturan.ubah');
+    Route::delete('/produk/harga-otomatis/aturan/{aturan}', [HargaOtomatisKontroler::class, 'HapusAturan'])->middleware($ubahHarga)->where('aturan', $ulid)->name('kelola.produk.harga-otomatis.aturan.hapus');
+    Route::post('/produk/harga-otomatis/usulan/{usulan}/terapkan', [HargaOtomatisKontroler::class, 'TerapkanUsulan'])->middleware($ubahHarga)->where('usulan', $ulid)->name('kelola.produk.harga-otomatis.usulan.terapkan');
+    Route::post('/produk/harga-otomatis/usulan/{usulan}/tolak', [HargaOtomatisKontroler::class, 'TolakUsulan'])->middleware($ubahHarga)->where('usulan', $ulid)->name('kelola.produk.harga-otomatis.usulan.tolak');
+    Route::post('/produk/harga-otomatis/jalankan', [HargaOtomatisKontroler::class, 'JalankanSekarang'])->middleware($ubahHarga)->name('kelola.produk.harga-otomatis.jalankan');
+    // "Harga dari harga beli" massal dari daftar Produk: pratinjau lalu terapkan.
+    Route::post('/produk/harga-dari-modal/pratinjau', [HargaOtomatisKontroler::class, 'PratinjauDariModal'])->middleware($ubahHarga)->name('kelola.produk.harga-dari-modal.pratinjau');
+    Route::post('/produk/harga-dari-modal', [HargaOtomatisKontroler::class, 'TerapkanDariModal'])->middleware($ubahHarga)->name('kelola.produk.harga-dari-modal');
 
     // Daftar harga (E.7).
     Route::get('/daftar-harga', [DaftarHargaKontroler::class, 'Daftar'])->middleware($lihat)->name('kelola.daftar-harga.daftar');

@@ -208,7 +208,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(grupProduk.getAttribute('data-active')).toBe('true');
         expect(grupProduk.getAttribute('aria-expanded')).toBe('true');
         const sub = screen.getByRole('navigation', { name: 'Menu produk' });
-        // D-253: Kelompok pajak dan Stasiun dapur pindah dari Pengaturan ke subgrup "Atur produk".
+        // D-253: Kelompok pajak dan Stasiun dapur pindah dari Pengaturan ke subgrup "Atur produk". D-266: Harga otomatis (paket Pro).
         // Impor produk hanya untuk pemegang produk.kelola, jadi tidak tampil bagi produk.lihat saja.
         expect(Array.from(sub.querySelectorAll('a')).map((a) => a.textContent)).toEqual([
             'Produk',
@@ -218,6 +218,7 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
             'Satuan',
             'Pilihan (modifier)',
             'Kelompok pajak',
+            'Harga otomatis',
             'Stasiun dapur',
         ]);
         expect(sub.querySelector('a[aria-current="page"]')?.textContent).toBe('Kategori');

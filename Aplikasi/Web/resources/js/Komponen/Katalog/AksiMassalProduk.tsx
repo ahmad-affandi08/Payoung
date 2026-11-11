@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import PilihanCari from '@/Komponen/Formulir/PilihanCari';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import DialogHargaDariModal from '@/Komponen/Katalog/DialogHargaDariModal';
 import DialogHargaMassal from '@/Komponen/Katalog/DialogHargaMassal';
 import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { BarisProduk } from '@/Tipe/Katalog';
@@ -21,16 +22,20 @@ export default function AksiMassalProduk({
     konteks,
     kategori,
     bolehUbahHarga = false,
+    bolehHargaDariModal = false,
     bolehKelola = true,
 }: {
     konteks: KonteksAksiMassal<BarisProduk>;
     kategori: { Uuid: string; Jalur: string }[];
     /** Izin `produk.harga.ubah`: menampilkan tombol "Ubah harga…". */
     bolehUbahHarga?: boolean;
+    /** D-266: izin `produk.harga.ubah` dan fitur `harga.otomatis` ada di paket: menampilkan "Harga dari harga beli…". */
+    bolehHargaDariModal?: boolean;
     /** Izin `produk.kelola`: tanpa izin ini hanya "Cetak label" yang tampil (cukup `produk.lihat`). */
     bolehKelola?: boolean;
 }) {
     const [dialogHarga, AturDialogHarga] = useState(false);
+    const [dialogDariModal, AturDialogDariModal] = useState(false);
     const [uuidKategori, AturUuidKategori] = useState('');
     const [memproses, AturMemproses] = useState<AksiProduk | null>(null);
     const uuid = konteks.terpilih.map((p) => p.Uuid);
@@ -127,6 +132,21 @@ export default function AksiMassalProduk({
                         <Tombol varian="sekunder" disabled={nonaktif} onClick={() => AturDialogHarga(true)}>
                             Ubah harga…
                         </Tombol>
+                    ) : null}
+                    {bolehHargaDariModal ? (
+                        <Tombol varian="sekunder" disabled={nonaktif} onClick={() => AturDialogDariModal(true)}>
+                            Harga dari harga beli…
+                        </Tombol>
+                    ) : null}
+                    {dialogDariModal ? (
+                        <DialogHargaDariModal
+                            uuid={uuid}
+                            saatTutup={() => AturDialogDariModal(false)}
+                            saatSelesai={() => {
+                                AturDialogDariModal(false);
+                                konteks.bersihkan();
+                            }}
+                        />
                     ) : null}
                     {dialogHarga ? (
                         <DialogHargaMassal

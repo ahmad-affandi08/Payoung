@@ -651,3 +651,69 @@ export type PratinjauHargaKanal = {
     TotalPilihan: number;
     ContohPilihan: { Pilihan: string; Kelompok: string; HargaBiasa: string; HargaBaru: string }[];
 };
+
+/** D-266 harga jual otomatis mengikuti harga beli terakhir (`HargaOtomatisKontroler`). */
+export type CakupanAturanHarga = 'Semua' | 'Kategori' | 'Produk';
+
+export type ArahHargaOtomatis = 'NaikTurun' | 'HanyaNaik';
+
+export type PengaturanHargaOtomatis = {
+    Aktif: boolean;
+    /** Persen 1–100 dua desimal ("20.00"). Perubahan di atasnya jadi usulan. */
+    BatasPerubahanPersen: string;
+};
+
+export type AturanHargaOtomatis = {
+    Uuid: string;
+    Cakupan: CakupanAturanHarga;
+    /** Nama sasaran siap tampil: "Semua produk berstok", jalur kategori, atau nama produk. */
+    Sasaran: string;
+    UuidKategori: string | null;
+    Produk: { Uuid: string; Nama: string; Sku: string | null } | null;
+    PersenUntung: string;
+    Pembulatan: number;
+    Arah: ArahHargaOtomatis;
+    Aktif: boolean;
+};
+
+export type UsulanHargaOtomatis = {
+    Uuid: string;
+    Produk: { Uuid: string; Nama: string; Sku: string | null };
+    Modal: string;
+    PersenUntung: string;
+    HargaLama: string;
+    HargaBaru: string;
+    /** Bertanda, dua desimal ("-12.50"). */
+    PerubahanPersen: string;
+    DibuatPada: string | null;
+};
+
+export type PropsHargaOtomatis = {
+    Pengaturan: PengaturanHargaOtomatis;
+    Aturan: AturanHargaOtomatis[];
+    Usulan: UsulanHargaOtomatis[];
+    OpsiKategori: { Uuid: string; Nama: string }[];
+    OpsiCakupan: { Nilai: CakupanAturanHarga; Label: string }[];
+    OpsiArah: { Nilai: ArahHargaOtomatis; Label: string }[];
+    OpsiPembulatan: number[];
+    Izin: { Ubah: boolean };
+};
+
+/** Status satu produk di pratinjau "Harga dari harga beli". */
+export type StatusHargaDariModal = 'Berubah' | 'Sama' | 'TanpaHargaBeli' | 'TanpaHarga' | 'DilewatiJenis';
+
+export type BarisPratinjauHargaDariModal = {
+    Uuid: string;
+    Nama: string;
+    Sku: string | null;
+    Status: StatusHargaDariModal;
+    HargaLama: string | null;
+    Modal: string | null;
+    HargaBaru: string | null;
+    PerubahanPersen: string | null;
+};
+
+export type PratinjauHargaDariModal = {
+    Baris: BarisPratinjauHargaDariModal[];
+    Ringkasan: Record<StatusHargaDariModal, number>;
+};

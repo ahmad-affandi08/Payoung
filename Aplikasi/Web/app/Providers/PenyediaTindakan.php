@@ -10,6 +10,7 @@ use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan as KontrakPenyediaTinda
 use App\Domain\Integrasi\Layanan\PenyediaTindakanWhatsapp;
 use App\Domain\Karyawan\Layanan\PenyediaTindakanKehadiran;
 use App\Domain\Kasir\Layanan\PenyediaTindakanKasir;
+use App\Domain\Katalog\Harga\Layanan\PenyediaTindakanHargaOtomatis;
 use App\Domain\Laporan\Layanan\PenyediaTindakanStok;
 use App\Domain\Organisasi\Layanan\PenyediaTindakanPerangkat;
 use App\Domain\Pajak\Layanan\PenyediaTindakanPajak;
@@ -54,6 +55,7 @@ final class PenyediaTindakan extends ServiceProvider
             PenyediaTindakanBengkel::class,
             PenyediaTindakanKehadiran::class,
             PenyediaTindakanPerangkat::class,
+            PenyediaTindakanHargaOtomatis::class,
         ], KontrakPenyediaTindakan::TAG);
     }
 }

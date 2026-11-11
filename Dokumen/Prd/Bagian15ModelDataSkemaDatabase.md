@@ -94,6 +94,7 @@ erDiagram
 | `Resep` / `ResepDetail` | IdTenant, Uuid, IdProduk, JumlahHasil, Versi, Catatan, DibuatOleh (baris tidak pernah diubah/dihapus; perubahan = versi baru, BR-03.4) / IdTenant, IdProdukBahan, Jumlah, IdSatuan, JumlahDasar (snapshot konversi), PersenSusut, Urutan |
 | `PaketProdukDetail` (bundle) | IdTenant, Uuid, IdProdukPaket, IdProdukKomponen, Jumlah, AlokasiHarga (persen `decimal(9,6)`; kosong semua atau total tepat 100) |
 | `RiwayatHarga` | IdTenant, IdProduk, IdProdukSatuan, IdSatuan, IdDaftarHarga, JumlahMinimum, HargaLama (null = baru), HargaBaru (null = dihapus), DiubahOleh, Sumber (Manual/PanduanAwal/Impor/Varian); append-only |
+| `PengaturanHargaOtomatis` / `AturanHargaOtomatis` / `UsulanHargaOtomatis` | D-266. Pengaturan (satu baris per tenant): IdTenant, Aktif, BatasPerubahanPersen (bawaan 20). Aturan: IdTenant, Uuid, Cakupan (Semua/Kategori/Produk), IdKategori, IdProduk, PersenUntung (decimal 9,4), Pembulatan, Arah (NaikTurun/HanyaNaik), Aktif. Usulan: IdTenant, Uuid, IdProduk, IdProdukSatuan, IdPenerimaanBarang, Modal (19,6), PersenUntung, HargaLama, HargaBaru, PerubahanPersen, Status (Menunggu/Diterapkan/Ditolak/Digantikan), DiputuskanOleh/Pada. Satu usulan Menunggu per produk. |
 
 **Inventori**
 

@@ -44,6 +44,23 @@ final class PohonKategoriTenant
         return $kedalaman;
     }
 
+    /**
+     * Kategori ini lalu induk-induknya sampai akar (yang terdekat lebih dulu). Dipakai aturan yang diwariskan ke
+     * subkategori, misal harga otomatis.
+     *
+     * @return list<int>
+     */
+    public function AmbilIdDenganLeluhur(int $id): array
+    {
+        $hasil = [];
+
+        for ($saat = $id; $saat !== null && ! in_array($saat, $hasil, true); $saat = $this->induk[$saat] ?? null) {
+            $hasil[] = $saat;
+        }
+
+        return $hasil;
+    }
+
     /** Tinggi subpohon mulai dari kategori ini (tanpa anak = 1). */
     public function HitungTinggi(int $id): int
     {

@@ -177,6 +177,9 @@ export default function HalamanDaftarProduk({ Produk, Kategori, Jenis, BatasSku,
                         konteks={konteks}
                         kategori={Kategori}
                         bolehUbahHarga={Izin.UbahHarga}
+                        bolehHargaDariModal={
+                            Izin.UbahHarga && props.FiturPaket?.Terkunci['harga.otomatis'] === undefined
+                        }
                         bolehKelola={Izin.Kelola}
                     />
                 )}

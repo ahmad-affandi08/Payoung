@@ -21,6 +21,7 @@ use App\Domain\Integrasi\Billing\PembuatPenyediaTagihan;
 use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\Merchant\PembuatPendaftarMerchant;
 use App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran;
+use App\Domain\Katalog\Harga\Penangan\TerapkanHargaOtomatisSetelahPenerimaan;
 use App\Domain\Katalog\Layanan\PemberitahuProdukDiubah;
 use App\Domain\Lisensi\Kontrak\PengaturIntegrasiServer;
 use App\Domain\Lisensi\Kontrak\PenyiapDataBawaan;
@@ -29,6 +30,7 @@ use App\Domain\Organisasi\Model\Perangkat;
 use App\Domain\Organisasi\Model\TokenAksesPengguna;
 use App\Domain\PanduanAwal\Model\TemplateSektor;
 use App\Domain\PanduanAwal\Model\TemplateSektorVersi;
+use App\Domain\Pembelian\Peristiwa\PenerimaanBarangDicatat;
 use App\Domain\Pengelola\DataBawaan\Aksi\SiapkanDataBawaanLisensi;
 use App\Domain\Pengelola\Dukungan\Layanan\GerbangPengelolaDukungan;
 use App\Domain\Pengelola\Dukungan\Penangan\BeritahuPenanggungJawabBalasanPelapor;
@@ -325,6 +327,9 @@ final class PenyediaAplikasi extends ServiceProvider
         // BR-P08.11: email pelunasan tagihan langganan lewat gerbang (templat sama dengan jalur transfer manual).
         Event::listen(TagihanLanggananDilunasiGerbang::class, KirimSurelPelunasanGerbang::class);
         Event::listen(TiketDukunganDibalasPelapor::class, BeritahuPenanggungJawabBalasanPelapor::class);
+
+        // D-266: harga jual otomatis mengikuti harga beli terakhir setiap ada penerimaan barang atau belanja stok.
+        Event::listen(PenerimaanBarangDicatat::class, TerapkanHargaOtomatisSetelahPenerimaan::class);
 
         // X7 bagian 2: webhook keluar tenant untuk penjualan selesai, void, dan retur (antrean, setelah commit).
         foreach ([PenjualanDiterima::class, PenjualanDivoid::class, ReturPenjualanDiterima::class] as $peristiwa) {

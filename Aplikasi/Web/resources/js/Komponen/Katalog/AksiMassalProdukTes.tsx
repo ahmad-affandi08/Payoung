@@ -74,6 +74,20 @@ describe('Aksi massal produk (audit kemudahan pakai #19)', () => {
         );
     });
 
+    it('D-266: Harga dari harga beli hanya tampil bila izin ubah harga dan fitur paket ada, lalu membuka dialognya', () => {
+        const { container, unmount: Bongkar } = RenderUji(
+            <AksiMassalProduk konteks={Konteks} kategori={[]} bolehUbahHarga />,
+        );
+
+        expect(within(container).queryByRole('button', { name: 'Harga dari harga beli…' })).toBeNull();
+        Bongkar();
+
+        RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} bolehUbahHarga bolehHargaDariModal />);
+        fireEvent.click(screen.getByRole('button', { name: 'Harga dari harga beli…' }));
+
+        expect(screen.getByText('Harga dari harga beli, 2 produk')).toBeTruthy();
+    });
+
     it('PRD-10: Cetak label membuka halaman label dengan produk terpilih, tanpa izin kelola hanya tombol itu yang tampil', () => {
         const { container, unmount: Bongkar } = RenderUji(<AksiMassalProduk konteks={Konteks} kategori={[]} />);
 

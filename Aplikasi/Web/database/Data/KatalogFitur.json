@@ -23,6 +23,7 @@
         { "Kunci": "keamanan.anti-fraud", "Nama": "Anti-fraud", "Modul": "Organisasi" },
         { "Kunci": "keamanan.2fa-wajib", "Nama": "2FA wajib untuk owner/admin", "Modul": "Organisasi" },
         { "Kunci": "harga.daftar-harga", "Nama": "Daftar harga (price list)", "Modul": "Katalog" },
+        { "Kunci": "harga.otomatis", "Nama": "Harga jual otomatis mengikuti harga beli", "Modul": "Katalog" },
         { "Kunci": "piutang.grosir", "Nama": "Piutang & grosir", "Modul": "Piutang" },
         { "Kunci": "api.publik", "Nama": "API publik & webhook", "Modul": "Integrasi" },
         { "Kunci": "kanal.self-order", "Nama": "Self-order QR", "Modul": "Kanal" },

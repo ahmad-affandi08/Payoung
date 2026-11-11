@@ -25,6 +25,7 @@ use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Domain\Pembelian\Model\PenerimaanBarangDetail;
 use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pembelian\Model\PesananPembelianDetail;
+use App\Domain\Pembelian\Peristiwa\PenerimaanBarangDicatat;
 use App\Domain\Persediaan\Aksi\CatatMutasiStok;
 use App\Domain\Persediaan\Data\DataBarisMutasi;
 use App\Domain\Persediaan\Data\DataBatchMasuk;
@@ -193,6 +194,9 @@ final class PemrosesPenerimaanBarang
         foreach ($baris as $b) {
             $produk[$b->produk->id] = $b->produk;
         }
+
+        // D-266: harga beli terakhir produk-produk ini berubah; aturan harga otomatis (domain Katalog) diperiksa setelah commit.
+        PenerimaanBarangDicatat::dispatch($dokumen->IdTenant, $dokumen->Id, array_keys($produk));
 
         return ['Dokumen' => $dokumen, 'Mutasi' => $hasil, 'Produk' => $produk, 'Pajak' => $pajak];
     }

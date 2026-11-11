@@ -21,6 +21,7 @@ enum JenisNotifikasiPengguna: string
     case PermintaanStok = 'PermintaanStok';
     case TransferStokDiterima = 'TransferStokDiterima';
     case TransferStokMacet = 'TransferStokMacet';
+    case HargaOtomatis = 'HargaOtomatis';
 
     /**
      * D-183: awalan kode sektor yang punya jenis notifikasi ini; null = umum. Pengaturan notifikasi tidak menawarkan
@@ -55,6 +56,7 @@ enum JenisNotifikasiPengguna: string
             self::PermintaanStok => 'Permintaan stok antar-outlet',
             self::TransferStokDiterima => 'Kiriman stok sudah diterima',
             self::TransferStokMacet => 'Kiriman stok belum diterima',
+            self::HargaOtomatis => 'Harga jual mengikuti harga beli',
         };
     }
 
@@ -81,6 +83,7 @@ enum JenisNotifikasiPengguna: string
             self::KuotaTransaksi => '/kelola/langganan',
             self::PermintaanStok => '/kelola/persediaan/permintaan',
             self::TransferStokDiterima, self::TransferStokMacet => '/kelola/persediaan/transfer',
+            self::HargaOtomatis => '/kelola/produk/harga-otomatis',
         };
     }
 }
