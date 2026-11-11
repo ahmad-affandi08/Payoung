@@ -7,13 +7,12 @@ namespace App\Domain\Laporan\Kueri;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Kasir\Kueri\ShiftPerTanggal;
 use App\Domain\Organisasi\Kueri\AnggotaOutlet;
-use App\Domain\Organisasi\Kueri\DaftarPerangkat;
+use App\Domain\Organisasi\Kueri\PerangkatBermasalah;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Penjualan\Data\DataAgregatPenjualan;
 use App\Domain\Penjualan\Data\DataSaringLaporanPenjualan;
 use App\Domain\Penjualan\Kueri\AgregatPenjualan;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 
 /**
  * Dasbor Aplikasi Owner (OWN-02, `GET /api/pemilik/v1/dasbor`). Angka memakai definisi yang sama dengan dasbor
@@ -25,7 +24,7 @@ use Carbon\CarbonInterface;
  */
 final class DasborAplikasiPemilik
 {
-    public const MENIT_PERANGKAT_TIDAK_AKTIF = 30;
+    public const MENIT_PERANGKAT_TIDAK_AKTIF = PerangkatBermasalah::MENIT_TIDAK_TERHUBUNG;
 
     public function __construct(
         private readonly AgregatPenjualan $agregat,
@@ -33,7 +32,7 @@ final class DasborAplikasiPemilik
         private readonly PetaUuidOutlet $outlet,
         private readonly AnggotaOutlet $anggota,
         private readonly ShiftPerTanggal $shift,
-        private readonly DaftarPerangkat $perangkat,
+        private readonly PerangkatBermasalah $perangkat,
         private readonly LaporanStok $laporanStok,
     ) {}
 
@@ -126,11 +125,11 @@ final class DasborAplikasiPemilik
 
         $sekarang = CarbonImmutable::now();
 
-        foreach ($this->perangkat->AmbilTidakAktif($idOutlet, $sekarang->subMinutes(self::MENIT_PERANGKAT_TIDAK_AKTIF)) as $p) {
+        foreach ($this->perangkat->AmbilTidakTerhubung($idOutlet, $sekarang) as $p) {
             $hasil[] = [
                 'Jenis' => 'PerangkatTidakAktif',
                 'Judul' => "Perangkat {$p['Nama']} tidak aktif",
-                'Keterangan' => self::TulisTerakhirAktif($p['TerakhirAktifPada'], $sekarang).' di '.($namaOutlet[$p['IdOutlet']] ?? 'outlet'),
+                'Keterangan' => PerangkatBermasalah::TulisTerakhirTerhubung($p['TerakhirAktifPada'], $sekarang).' di '.($namaOutlet[$p['IdOutlet']] ?? 'outlet'),
             ];
         }
 
@@ -147,20 +146,5 @@ final class DasborAplikasiPemilik
         }
 
         return $hasil;
-    }
-
-    private static function TulisTerakhirAktif(?CarbonInterface $terakhir, CarbonImmutable $sekarang): string
-    {
-        if ($terakhir === null) {
-            return 'Belum pernah terhubung';
-        }
-
-        $menit = (int) $terakhir->diffInMinutes($sekarang, true);
-
-        return match (true) {
-            $menit < 120 => "Terakhir terhubung {$menit} menit lalu",
-            $menit < 2880 => 'Terakhir terhubung '.intdiv($menit, 60).' jam lalu',
-            default => 'Terakhir terhubung '.intdiv($menit, 1440).' hari lalu',
-        };
     }
 }

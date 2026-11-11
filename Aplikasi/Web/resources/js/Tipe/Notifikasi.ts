@@ -14,6 +14,7 @@ export type JenisNotifikasi =
     | 'PermintaanStok'
     | 'TransferStokDiterima'
     | 'TransferStokMacet'
+    | 'AntreanKasirMacet'
     | 'HargaOtomatis';
 
 export type BarisNotifikasi = {

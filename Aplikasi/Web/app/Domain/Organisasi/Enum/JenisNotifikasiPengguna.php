@@ -22,6 +22,7 @@ enum JenisNotifikasiPengguna: string
     case TransferStokDiterima = 'TransferStokDiterima';
     case TransferStokMacet = 'TransferStokMacet';
     case HargaOtomatis = 'HargaOtomatis';
+    case AntreanKasirMacet = 'AntreanKasirMacet';
 
     /**
      * D-183: awalan kode sektor yang punya jenis notifikasi ini; null = umum. Pengaturan notifikasi tidak menawarkan
@@ -45,7 +46,7 @@ enum JenisNotifikasiPengguna: string
             self::Persetujuan => 'Permintaan persetujuan',
             self::SelisihKas => 'Shift dan kas perlu dicek',
             self::StokKritis => 'Stok menipis',
-            self::PerangkatOffline => 'Perangkat kasir tidak aktif',
+            self::PerangkatOffline => 'Perangkat kasir tidak terhubung',
             self::PiutangJatuhTempo => 'Piutang lewat jatuh tempo',
             self::StokKedaluwarsa => 'Barang mendekati kedaluwarsa',
             self::TransaksiBesar => 'Void, retur, atau diskon besar',
@@ -57,6 +58,7 @@ enum JenisNotifikasiPengguna: string
             self::TransferStokDiterima => 'Kiriman stok sudah diterima',
             self::TransferStokMacet => 'Kiriman stok belum diterima',
             self::HargaOtomatis => 'Harga jual mengikuti harga beli',
+            self::AntreanKasirMacet => 'Data kasir belum terkirim ke server',
         };
     }
 
@@ -73,7 +75,7 @@ enum JenisNotifikasiPengguna: string
             self::Persetujuan => null,
             self::SelisihKas => '/kelola/kasir/shift?saring[PerluTinjauan]=Ya',
             self::StokKritis => '/kelola/laporan/stok?tab=kritis',
-            self::PerangkatOffline => '/kelola/perangkat',
+            self::PerangkatOffline, self::AntreanKasirMacet => '/kelola/perangkat',
             self::PiutangJatuhTempo => '/kelola/piutang',
             self::StokKedaluwarsa => '/kelola/laporan/stok?tab=kedaluwarsa',
             self::TransaksiBesar => '/kelola/laporan/penjualan?tab=anti-fraud',
