@@ -260,3 +260,21 @@ describe('F-05b transfer stok: periode terkunci', function (): void {
             ->and(PemeriksaInvarian::PeriksaSemua($t['Tenant']->Id))->toBe([]);
     });
 });
+
+describe('F-05b transfer stok: batas tanggal di halaman', function (): void {
+    it('HariIni di halaman = tanggal bisnis outlet (jam tutup buku 04:00), sama dengan batas server', function (): void {
+        $t = SiapkanTransfer();
+        $transfer = app(KirimTransferStok::class)->Jalankan(B::DrafTransfer($t['Gudang'], $t['GudangCabang'], [B::Baris($t['Produk']['Stok'], '5')]), $t['Pemilik']->Id);
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        // 01.00 WIB tanggal 11: tanggal kalender 11, tanggal bisnis masih 10.
+        $this->travelTo(CarbonImmutable::parse('2026-11-11 01:00', 'Asia/Jakarta'));
+
+        $this->get("/kelola/persediaan/transfer/{$transfer->Uuid}")->assertInertia(fn ($h) => $h->where('HariIni', '2026-11-10'));
+        $this->get('/kelola/persediaan/transfer/buat')->assertInertia(fn ($h) => $h->where('HariIni', '2026-11-10'));
+
+        $this->travelTo(CarbonImmutable::parse('2026-11-11 05:00', 'Asia/Jakarta'));
+
+        $this->get('/kelola/persediaan/transfer/buat')->assertInertia(fn ($h) => $h->where('HariIni', '2026-11-11'));
+    });
+});

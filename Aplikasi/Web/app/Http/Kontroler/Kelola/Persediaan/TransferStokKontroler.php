@@ -113,7 +113,7 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
                 'Tutup' => $kelola && $tujuan && $t->Status->CekDalamPerjalanan(),
             ],
             'Izin' => $this->AmbilIzinDokumen(),
-            'HariIni' => $this->HariIni(),
+            'HariIni' => $this->HariIni($t->IdOutletTujuan),
         ]);
     }
 

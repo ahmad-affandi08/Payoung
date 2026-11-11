@@ -9,6 +9,7 @@ use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Organisasi\Kueri\InfoGudang;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
+use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Persediaan\Kebijakan\DokumenPersediaanKebijakan;
 
 /**
@@ -64,8 +65,20 @@ abstract class DasarDokumenPersediaanKontroler extends DasarPersediaanKontroler
         return app(DokumenPersediaanKebijakan::class)->CekBolehOutlet($idOutlet, $this->IdOutletBoleh());
     }
 
-    protected function HariIni(): string
+    /**
+     * Batas atas tanggal dokumen = tanggal bisnis outlet (jam tutup buku, sama dengan `PemeriksaLokasiDokumen`), bukan
+     * tanggal kalender. Outlet belum diketahui (formulir): tanggal bisnis paling awal di antara outlet yang boleh diakses,
+     * supaya tidak pernah melewati batas server.
+     */
+    protected function HariIni(?int $idOutlet = null): string
     {
-        return app(TanggalBisnisOutlet::class)->Hitung(null)->format('Y-m-d');
+        $tanggalBisnis = app(TanggalBisnisOutlet::class);
+        $daftarOutlet = $idOutlet !== null ? [$idOutlet] : ($this->IdOutletBoleh() ?? Outlet::query()->pluck('Id')->all());
+
+        if ($daftarOutlet === []) {
+            return $tanggalBisnis->Hitung(null)->format('Y-m-d');
+        }
+
+        return min(array_map(fn (int $id): string => $tanggalBisnis->Hitung($id)->format('Y-m-d'), $daftarOutlet));
     }
 }
