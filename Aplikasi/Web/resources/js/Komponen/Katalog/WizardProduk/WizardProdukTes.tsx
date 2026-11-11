@@ -259,7 +259,7 @@ describe('PeriksaLangkahProduk (validasi klien per langkah, cermin aturan server
             Konteks({ Satuan: [{ ...BarisDasar, HargaAwal: harga }] });
 
         expect(PeriksaLangkahProduk('HargaStok', Konteks())).toEqual({
-            'Satuan.0.HargaAwal': 'Isi harga jual. Tulis 0 bila gratis.',
+            'Satuan.0.HargaAwal': 'Isi harga jual. Tulis 0 bila gratis, atau nyalakan "Harga diketik kasir saat menjual" di bawahnya.',
         });
         expect(PeriksaLangkahProduk('HargaStok', KonteksDenganHarga([{ JumlahMinimum: '1', Harga: '0' }]))).toEqual({});
         expect(PeriksaLangkahProduk('HargaStok', Konteks({}, { izinUbahHarga: false }))).toEqual({});

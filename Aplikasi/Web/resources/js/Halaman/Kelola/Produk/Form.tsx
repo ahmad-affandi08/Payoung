@@ -29,6 +29,7 @@ import {
     SusunLangkahProduk,
     type KonteksPeriksaLangkah,
     type KunciLangkah,
+    jenisHargaTerbuka,
 } from '@/Komponen/Katalog/WizardProduk/LangkahProduk';
 import RingkasanProduk from '@/Komponen/Katalog/WizardProduk/RingkasanProduk';
 import { useAlurWizardProduk } from '@/Komponen/Katalog/WizardProduk/useAlurWizardProduk';
@@ -120,9 +121,6 @@ const opsiPelacakan: { Nilai: PelacakanProduk; Label: string; Keterangan: string
             'Satu nomor per unit, misal ponsel. Satuan dasar harus bilangan bulat. Jual saat stok kosong dimatikan.',
     },
 ];
-
-/** K-25: jenis yang boleh berharga terbuka (sama dengan `JenisProduk::CekBolehHargaTerbuka`). */
-const jenisHargaTerbuka: JenisProduk[] = ['Stok', 'NonStok', 'Jasa', 'Resep'];
 
 /** Penjelasan jenis dengan contoh yang mudah dipahami (langkah "Jenis & nama" saat tambah produk). */
 const penjelasanJenis: Record<JenisProduk, string> = {

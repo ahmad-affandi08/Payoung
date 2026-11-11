@@ -305,7 +305,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         Lanjut();
 
         expect(LangkahAktif()).toBe('Harga & stok');
-        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis.')).toBeTruthy();
+        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis, atau nyalakan "Harga diketik kasir saat menjual" di bawahnya.')).toBeTruthy();
 
         IsiHargaDasar('0');
         Lanjut();
@@ -1372,10 +1372,10 @@ describe('Kelola/Produk: dialog & sakelar shadcn/ui', () => {
 
         // Harga kosong ditahan sampai kasir diizinkan mengetik harga sendiri.
         Lanjut();
-        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis.')).toBeTruthy();
+        expect(screen.getByText('Isi harga jual. Tulis 0 bila gratis, atau nyalakan "Harga diketik kasir saat menjual" di bawahnya.')).toBeTruthy();
         fireEvent.click(screen.getByRole('switch', { name: /Harga diketik kasir/ }));
         Lanjut();
-        expect(screen.queryByText('Isi harga jual. Tulis 0 bila gratis.')).toBeNull();
+        expect(screen.queryByText('Isi harga jual. Tulis 0 bila gratis, atau nyalakan "Harga diketik kasir saat menjual" di bawahnya.')).toBeNull();
         Lanjut();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan produk' }));
 

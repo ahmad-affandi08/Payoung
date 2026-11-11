@@ -23,6 +23,9 @@ export const urutanLangkahProduk: KunciLangkah[] = ['JenisNama', 'Satuan', 'Harg
  */
 const jenisTanpaLangkahSatuan: JenisProduk[] = ['Jasa', 'Resep', 'IndukVarian'];
 
+/** K-25: jenis yang boleh berharga terbuka (sama dengan `JenisProduk::CekBolehHargaTerbuka`). */
+export const jenisHargaTerbuka: JenisProduk[] = ['Stok', 'NonStok', 'Jasa', 'Resep'];
+
 export type OpsiSusunLangkah = {
     /** Langkah yang dipaksa tampil, misal karena server menolak isian di dalamnya. */
     paksa?: KunciLangkah[];
@@ -305,7 +308,9 @@ function PeriksaHargaStok(konteks: KonteksPeriksaLangkah): Record<string, string
 
         // Harga jual wajib diisi (0 untuk gratis) kecuali kasir mengetik harga sendiri (HargaTerbuka).
         if (indeksDasar >= 0 && izinUbahHarga && !(data.HargaTerbuka ?? false) && hargaDasarKosong) {
-            galat[kunciDasar] = 'Isi harga jual. Tulis 0 bila gratis.';
+            galat[kunciDasar] = jenisHargaTerbuka.includes(data.Jenis)
+                ? 'Isi harga jual. Tulis 0 bila gratis, atau nyalakan "Harga diketik kasir saat menjual" di bawahnya.'
+                : 'Isi harga jual. Tulis 0 bila gratis.';
         }
     }
 
