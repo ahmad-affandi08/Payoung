@@ -428,10 +428,10 @@
  * perlu disunting satu per satu.
  *
  * 1. Keterangan di bawah judul: `text-keterangan` dan rapat ke judulnya (margin negatif membatalkan jarak `gap`).
- * 2. Judul dan keterangan SELALU polos di atas isi, di semua halaman (D-281). Kartu putih hanya untuk isi (kartu
- *    tabel, panel, ringkasan), tidak pernah untuk judul. Dulu halaman daftar yang tabelnya langsung di bawah judul
- *    menaruh judul di dalam kartu (D-277, D-279), sehingga halaman daftar yang punya blok lain di atas tabel tampil
- *    berbeda. Pola itu dicabut supaya semua halaman seragam.
+ * 2. Halaman daftar (D-281): seluruh badan halaman, dari judul sampai ke bawah, adalah SATU kontainer putih. Isi di
+ *    dalamnya (panel, ringkasan angka, filter) tampil sebagai kartu kecil bergaris, dan tabel menyatu dengan
+ *    kontainer lewat garis pemisah, bukan kartu sendiri. Berlaku untuk setiap halaman yang `TabelData`-nya langsung
+ *    berada di badan halaman, jadi semua halaman daftar seragam tanpa disunting satu per satu.
  *
  * Bilah aksi baris terpilih berada di luar `kartu-tabel`, jadi tetap menempel di bawah layar di HP tanpa bantuan CSS.
  */
@@ -466,5 +466,57 @@
 @media (min-width: 640px) {
     .badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
         margin-top: calc(var(--spacing) * -4);
+    }
+}
+
+/*
+ * Kontainer halaman daftar (D-281). Tanpa overflow hidden supaya bilah aksi baris terpilih (sticky) tetap menempel
+ * di bawah layar. Judul dan keterangan memakai padding sendiri, blok lain di dalamnya diberi margin supaya tampak
+ * sebagai kartu di dalam kontainer, dan tabel dibuat selebar kontainer dengan garis atas sebagai pemisah.
+ */
+.badan-halaman:has(> section[data-slot='tabel-data']) {
+    gap: 0;
+    border: 1px solid var(--color-garis);
+    border-radius: var(--radius-panel);
+    background: var(--color-permukaan);
+
+    & > h1 {
+        padding: calc(var(--spacing) * 4) calc(var(--spacing) * 4) calc(var(--spacing) * 3);
+    }
+
+    & > h1:has(+ p, + [aria-live] + p) {
+        padding-bottom: calc(var(--spacing) * 1);
+    }
+
+    & > :is(h1 + p, h1 + [aria-live] + p) {
+        max-width: none;
+        margin-top: 0;
+        padding: 0 calc(var(--spacing) * 4) calc(var(--spacing) * 3);
+    }
+
+    & > :not(h1, [aria-live], section[data-slot='tabel-data'], :is(h1 + p, h1 + [aria-live] + p)) {
+        margin: calc(var(--spacing) * 3) calc(var(--spacing) * 4) 0;
+    }
+
+    & > :last-child:not(section) {
+        margin-bottom: calc(var(--spacing) * 4);
+    }
+
+    & > section[data-slot='tabel-data'] {
+        margin-top: calc(var(--spacing) * 3);
+    }
+
+    /* Ringkasan dan bilah aksi baris terpilih di dalam tabel sejajar dengan judul, tabelnya selebar kontainer. */
+    & > section[data-slot='tabel-data'] > :not([data-slot='kartu-tabel']) {
+        margin-inline: calc(var(--spacing) * 4);
+    }
+
+    & > section[data-slot='tabel-data'] > [data-slot='kartu-tabel'] {
+        border-width: 1px 0 0;
+        border-radius: 0;
+    }
+
+    & > section[data-slot='tabel-data']:last-child > [data-slot='kartu-tabel'] {
+        border-radius: 0 0 var(--radius-panel) var(--radius-panel);
     }
 }
