@@ -64,6 +64,11 @@ type PropsTataLetak = {
      * bertumpuk. Dijaga `JejakHalamanTes`.
      */
     jejak?: ButirJejak[];
+    /**
+     * Sembunyikan jejak halaman untuk halaman yang hanya salah satu tab dari halaman induknya (misal Kartu stok
+     * per nomor seri), supaya kedua tab tampil seragam: induknya tanpa jejak, jadi tab saudaranya juga tanpa jejak.
+     */
+    tanpaJejak?: boolean;
     children: ReactNode;
 };
 
@@ -1626,7 +1631,7 @@ export default function TataLetakAplikasi(props: PropsTataLetak) {
     );
 }
 
-function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
+function IsiTataLetakAplikasi({ judul, jejak = [], tanpaJejak = false, children }: PropsTataLetak) {
     const { props, url } = usePage<PropsBersamaAplikasi>();
     const tenantAktif = props.TenantAktif;
     const sektorOutlet = props.SektorOutlet ?? [];
@@ -1745,7 +1750,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                     />
                 </KepalaTataLetak>
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
-                    <JejakHalaman jejak={[...SusunJejak(url, menuTerlihat, jejak), ...jejak]} />
+                    {tanpaJejak ? null : <JejakHalaman jejak={[...SusunJejak(url, menuTerlihat, jejak), ...jejak]} />}
                     {/* PGL-16: petugas dukungan tidak mengurus akun Owner, jadi banner milik Owner tidak ditampilkan. */}
                     {!props.AksesDukungan && props.Pengguna && !props.Pengguna.EmailTerverifikasi ? (
                         <BannerVerifikasiEmail email={props.Pengguna.Email} />

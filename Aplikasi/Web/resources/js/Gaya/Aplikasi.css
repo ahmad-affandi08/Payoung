@@ -450,17 +450,22 @@
     }
 }
 
+/* Area aria-live yang masih kosong (galat server) tidak boleh memakan jarak flex di antara judul dan keterangan. */
+.badan-halaman > [aria-live]:empty {
+    position: absolute;
+}
+
 .badan-halaman > p:first-of-type {
     font-size: var(--text-keterangan);
     line-height: var(--text-keterangan--line-height);
 }
 
-.badan-halaman > h1 + p {
+.badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
     margin-top: calc(var(--spacing) * -3);
 }
 
 @media (min-width: 640px) {
-    .badan-halaman > h1 + p {
+    .badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
         margin-top: calc(var(--spacing) * -4);
     }
 }
@@ -487,7 +492,7 @@
                 )
                 ~ :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])
         )
-    ) {
+    ):not(:has(> section[data-slot='tabel-data'][data-ringkasan])) {
     flex-flow: row wrap;
     gap: 0;
 
@@ -497,7 +502,7 @@
     }
 
     & > h1,
-    & > h1 + p,
+    & > :is(h1 + p, h1 + [aria-live] + p),
     & > [data-slot='aksi-halaman']:not(section ~ *),
     &
         > :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']):not(
@@ -508,7 +513,7 @@
     }
 
     & > h1,
-    & > h1 + p,
+    & > :is(h1 + p, h1 + [aria-live] + p),
     & > [data-slot='aksi-halaman']:not(section ~ *) {
         border-inline: 1px solid var(--color-garis);
         background: var(--color-permukaan);
@@ -522,7 +527,7 @@
         padding-bottom: calc(var(--spacing) * 3);
     }
 
-    & > h1 + p {
+    & > :is(h1 + p, h1 + [aria-live] + p) {
         /* Batas lebar bacaan (max-w-3xl) dibuang: dengan batas itu keterangan muat di baris yang sama dengan judul. */
         max-width: none;
         margin-top: calc(var(--spacing) * -3);
@@ -564,13 +569,13 @@
                     )
                     ~ :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])
             )
-        ) {
+        ):not(:has(> section[data-slot='tabel-data'][data-ringkasan])) {
         & > h1 {
             order: -3;
             flex: 1 1 0%;
         }
 
-        & > h1 + p {
+        & > :is(h1 + p, h1 + [aria-live] + p) {
             order: -1;
         }
 

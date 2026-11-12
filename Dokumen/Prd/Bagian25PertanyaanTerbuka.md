@@ -313,6 +313,7 @@
 | D-277 | Dari pemilik produk, 13/11/2026. Pada halaman daftar, judul, keterangan, dan tombol aksi halaman berada di kepala kartu yang sama dengan tabelnya (judul kiri, aksi kanan), bukan tiga baris terpisah di atas kartu. Ini diatur sekali di tata letak dan CSS, bukan per halaman. Halaman yang punya blok lain di luar kerangka itu dikecualikan otomatis. |
 | D-278 | Dari pemilik produk, 13/11/2026. Di HP, kontrol yang berdampingan dalam satu baris aksi harus sama tinggi (44px) apa pun jenis penunjuknya. Jangan menggabung `h-11` tetap dengan `h-8 pointer-coarse:h-11` dalam satu baris. |
 | D-279 | Dari pemilik produk, 13/11/2026. Kartu halaman tidak boleh gagal hanya karena ada blok lain di bawah tabel, dan halaman non-tabel yang punya bilah pilihan di bawah judulnya memakai pola yang sama: kepala kartu (judul, keterangan, aksi) menyambung ke bilah, tanpa baris tombol lepas di atas halaman. Halaman non-tabel memberi tanda `data-slot="bilah-halaman"` pada bilahnya. |
+| D-280 | Dari pemilik produk, 13/11/2026. Halaman bersama tidak boleh tampil berbeda hanya karena isi di dalamnya: judul dan keterangan halaman daftar selalu dalam satu kartu atau sama sekali tidak (tidak setengah-setengah), halaman dengan ringkasan angka memakai judul biasa, paginasi di HP rata di tengah, dan halaman yang berupa tab dari induknya mengikuti induknya soal jejak halaman. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

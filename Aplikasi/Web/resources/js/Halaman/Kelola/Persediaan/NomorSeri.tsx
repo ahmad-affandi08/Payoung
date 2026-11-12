@@ -208,7 +208,7 @@ export default function HalamanNomorSeri({
         : '';
 
     return (
-        <TataLetakAplikasi judul="Kartu stok">
+        <TataLetakAplikasi judul="Kartu stok" tanpaJejak>
             <TabKartuStok aktif="nomor-seri" uuidProduk={Saring.Produk || null} />
 
             <form

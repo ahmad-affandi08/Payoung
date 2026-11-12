@@ -50,8 +50,9 @@ const kelasAngka =
 
 /**
  * Paginasi server `TabelData` (D-276): ukuran halaman (25/50/100), ringkasan "Menampilkan x sampai y dari N", dan nomor
- * halaman bergaya kartu (1 2 3 … 33 Berikutnya). Di HP nomor diganti "Halaman x dari y" dengan panah sebelumnya dan
- * berikutnya, karena deret nomor tidak muat. Berada di dasar kartu tabel, dipisah garis tipis dari barisnya.
+ * halaman bergaya kartu (1 2 3 … 33 Berikutnya). Di HP semuanya di tengah dan tersusun ke bawah: ringkasan, lalu
+ * "Halaman x dari y" dengan panah sebelumnya di kiri dan berikutnya di kanan (deret nomor tidak muat), lalu ukuran
+ * halaman. Berada di dasar kartu tabel, dipisah garis tipis dari barisnya.
  */
 export default function PaginasiTabel({ label, meta, jumlahBaris, AturHalaman, AturPerHalaman }: PropsPaginasi) {
     const awal = meta.Total === 0 ? 0 : (meta.Halaman - 1) * meta.PerHalaman + 1;
@@ -66,10 +67,10 @@ export default function PaginasiTabel({ label, meta, jumlahBaris, AturHalaman, A
     return (
         <nav
             aria-label={`Halaman ${label}`}
-            className="flex flex-col gap-3 text-label text-teks-sekunder sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col items-center gap-3 text-label text-teks-sekunder sm:flex-row sm:justify-between"
         >
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div className="flex items-center gap-2">
+            <div className="contents sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
+                <div className="order-3 flex items-center gap-2 sm:order-none">
                     <Label htmlFor={`per-halaman-${label}`} className="text-label font-normal text-teks-sekunder">
                         Tampilkan
                     </Label>
@@ -83,13 +84,13 @@ export default function PaginasiTabel({ label, meta, jumlahBaris, AturHalaman, A
                         className="h-11 w-20 sm:h-8"
                     />
                 </div>
-                <p aria-live="polite">
+                <p aria-live="polite" className="order-1 text-center sm:order-none sm:text-left">
                     Menampilkan <span className="font-semibold text-teks-utama tabular-nums">{angka.format(awal)}</span>{' '}
                     sampai <span className="font-semibold text-teks-utama tabular-nums">{angka.format(akhir)}</span>{' '}
                     dari <span className="font-semibold text-teks-utama tabular-nums">{angka.format(meta.Total)}</span>
                 </p>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="order-2 flex w-full items-center justify-between gap-1 sm:order-none sm:w-auto sm:justify-end">
                 <button
                     type="button"
                     className={kelasPanah}
@@ -99,7 +100,7 @@ export default function PaginasiTabel({ label, meta, jumlahBaris, AturHalaman, A
                 >
                     <ChevronLeftIcon aria-hidden="true" className="size-4" />
                 </button>
-                <span className="px-2 whitespace-nowrap text-teks-utama tabular-nums sm:hidden">
+                <span className="flex-1 px-2 text-center whitespace-nowrap text-teks-utama tabular-nums sm:hidden">
                     Halaman {angka.format(meta.Halaman)} dari {angka.format(meta.JumlahHalaman)}
                 </span>
                 <ol className="hidden items-center gap-1 sm:flex">
