@@ -215,8 +215,7 @@ export default function HalamanFormInvoice({
             ) : null}
             {uangMuka ? (
                 <Pemberitahuan jenis="info" judul="Invoice uang muka">
-                    Dipakai untuk meminta DP sebelum pekerjaan dimulai. Saat invoice akhir dibuat, DP yang sudah terbit
-                    dipotong dari tagihan. DP dicatat sebagai pendapatan diterima di muka sampai invoice akhir terbit.
+                    Untuk meminta DP sebelum pekerjaan dimulai. DP otomatis dipotong dari invoice akhir.
                 </Pemberitahuan>
             ) : null}
 
@@ -337,7 +336,7 @@ export default function HalamanFormInvoice({
 
                         <Panel
                             judul="PPh yang dipotong pelanggan"
-                            keterangan="Isi bila pelanggan Anda memotong PPh (misalnya PPh 23 atas jasa). Tarif diisi sesuai ketentuan atau bukti potong. Sistem tidak menebaknya."
+                            keterangan="Isi bila pelanggan memotong PPh, misalnya PPh 23 atas jasa. Tarif sesuai bukti potong."
                         >
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <BidangTeks

@@ -74,9 +74,8 @@ export default function HalamanAturanKomisi({ Aturan, OpsiKategori, Izin }: Prop
     return (
         <TataLetakAplikasi judul="Aturan komisi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Kasir memilih staf yang melayani tiap baris di aplikasi kasir. Komisi dihitung dari aturan yang paling
-                spesifik (produk, lalu kategori, lalu semua produk) dan dibagi rata bila beberapa staf. Perubahan aturan
-                berlaku untuk penjualan berikutnya.
+                Kasir memilih staf yang melayani tiap baris. Komisi memakai aturan paling spesifik dan dibagi rata bila
+                beberapa staf.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman>{tombol}</AksiHalaman>

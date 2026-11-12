@@ -132,8 +132,8 @@ export default function HalamanIsiDeposit({ IsiDeposit, Izin }: PropsIsiDeposit)
         <TataLetakAplikasi judul="Deposit & gift card">
             <TabDeposit aktif="isi-deposit" />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Saldo deposit yang diisi pelanggan di kasir. Uangnya masuk kas shift. Batalkan isi deposit hanya bila
-                uangnya dikembalikan dan saldo pelanggan masih cukup.
+                Saldo deposit yang diisi pelanggan di kasir. Batalkan hanya bila uangnya dikembalikan dan saldo masih
+                cukup.
             </p>
             <DaftarGalatServer galat={props.errors} />
             <TabelData

@@ -300,7 +300,7 @@ export default function HalamanFormStokAwal({
                                 ? 'Pilih lokasi stok dulu agar stok saat ini ikut tampil.'
                                 : penuh
                                   ? `Batas ${BatasBaris.toLocaleString('id-ID')} baris per dokumen tercapai. Simpan draf ini lalu buat dokumen baru, atau pakai impor Excel.`
-                                  : 'Hanya produk yang punya stok. Barang yang dipilih muncul paling atas, ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Produk batch boleh ditambah lebih dari sekali untuk batch berbeda.'
+                                  : 'Hanya produk yang punya stok. Ketik jumlah lalu Enter untuk lanjut. Produk batch boleh ditambah lagi untuk batch berbeda.'
                         }
                     />
                     {galatDaftar ? <GalatBidang>{galatDaftar}</GalatBidang> : null}

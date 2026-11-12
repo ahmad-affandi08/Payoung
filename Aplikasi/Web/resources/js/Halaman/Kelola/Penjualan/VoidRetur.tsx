@@ -146,9 +146,8 @@ export default function HalamanDaftarVoidRetur({ VoidRetur, OpsiOutlet }: PropsD
     return (
         <TataLetakAplikasi judul="Void & retur">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Void membatalkan seluruh transaksi di shift yang sama. Retur mengembalikan sebagian atau semua barang
-                dengan refund tunai atau transfer. Keduanya butuh PIN penyetuju. Perhatikan void atau retur yang terjadi
-                segera setelah bayar tunai.
+                Void membatalkan seluruh transaksi di shift yang sama. Retur mengembalikan sebagian atau semua barang.
+                Keduanya butuh PIN penyetuju.
             </p>
 
             <TabelData

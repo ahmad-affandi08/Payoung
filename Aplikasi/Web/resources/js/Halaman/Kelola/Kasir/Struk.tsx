@@ -170,7 +170,7 @@ function IsiPengaturanStruk({
                         <Panel
                             judul="Outlet"
                             idJudul="judul-outlet-struk"
-                            keterangan="Saklar tampil dan logo di bawah berlaku untuk outlet yang dipilih. Isian teks (nama, kepala, catatan kaki, penutup) dipakai bersama."
+                            keterangan="Saklar tampil dan logo di bawah berlaku untuk outlet terpilih. Isian teks dipakai bersama."
                         >
                             <BidangPilihan
                                 label="Atur struk untuk outlet"
@@ -220,7 +220,7 @@ function IsiPengaturanStruk({
                             label="Nama di struk"
                             nilai={isian.NamaDicetak}
                             saatBerubah={(teks) => Ubah('NamaDicetak', teks)}
-                            keterangan="Kosongkan agar struk memakai nama outlet masing-masing. Nama usaha atau akun pemilik tidak pernah dicetak. Isi hanya bila semua outlet harus memakai satu nama yang sama."
+                            keterangan="Kosongkan agar struk memakai nama outlet masing-masing. Isi hanya bila semua outlet memakai satu nama."
                             maxLength={PANJANG_BARIS}
                             galat={galat.NamaDicetak}
                         />

@@ -277,8 +277,7 @@ function BagianGudang({ alamatOutlet, gudang, jenis, bolehKelola }: PropsBagianG
                 </Pemberitahuan>
             ) : null}
             <p className="text-keterangan text-teks-sekunder">
-                Setiap outlet wajib punya minimal satu lokasi stok untuk barang jual. Tambah Dapur, Bar, atau Gudang
-                Belakang bila stoknya dipisah.
+                Setiap outlet wajib punya minimal satu lokasi stok. Tambah Dapur atau Bar bila stoknya dipisah.
             </p>
             {sunting !== null ? (
                 <DialogFormulir

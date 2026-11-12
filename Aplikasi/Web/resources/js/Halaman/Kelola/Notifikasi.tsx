@@ -94,9 +94,7 @@ export default function HalamanNotifikasi({
     return (
         <TataLetakAplikasi judul="Notifikasi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Kabar penting dari usaha Anda: shift dan kas yang perlu dicek, stok menipis, perangkat kasir yang tidak
-                aktif, piutang lewat jatuh tempo, dan barang mendekati kedaluwarsa. Isinya sama dengan yang tampil di
-                Aplikasi Owner.
+                Kabar penting usaha Anda: shift dan kas, stok menipis, perangkat kasir, piutang, dan barang kedaluwarsa.
             </p>
             <AksiHalaman
                 keterangan={

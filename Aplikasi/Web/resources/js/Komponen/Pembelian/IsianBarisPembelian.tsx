@@ -85,7 +85,7 @@ export default function IsianBarisPembelian({
                 keterangan={
                     penuh
                         ? `Batas ${maksimal.toLocaleString('id-ID')} baris per dokumen tercapai.`
-                        : 'Hanya produk yang punya stok. Barang yang dipilih muncul paling atas, ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Harga per satuan yang dipilih (misal per dus), terisi dari pembelian terakhir bila ada.'
+                        : 'Hanya produk yang punya stok. Ketik jumlah lalu Enter untuk lanjut ke barang berikutnya.'
                 }
             />
             {galatServer.Baris ? <GalatBidang>{galatServer.Baris}</GalatBidang> : null}

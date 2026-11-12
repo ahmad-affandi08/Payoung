@@ -117,9 +117,8 @@ function IsiSusun({ Tahun, Outlet, OpsiOutlet, SeluruhUsahaBoleh, Akun }: PropsS
         >
             <DaftarGalatServer galat={galat} kecuali={kecuali} />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Isi angka anggaran per akun dan per bulan. Kolom &quot;Semua bulan&quot; mengisi dua belas bulan
-                sekaligus; bulan yang dikosongkan atau diisi 0 berarti tidak dianggarkan. Anggaran seluruh usaha dan
-                anggaran tiap outlet disimpan terpisah.
+                Isi anggaran per akun dan per bulan. Kolom Semua bulan mengisi dua belas bulan sekaligus. Kosong berarti
+                tidak dianggarkan.
             </p>
             <section
                 aria-label="Cakupan anggaran"

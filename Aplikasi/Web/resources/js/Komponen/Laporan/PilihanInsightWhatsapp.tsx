@@ -32,7 +32,7 @@ export default function PilihanInsightWhatsapp({ insight }: { insight: InsightWh
                 </label>
                 <span className="text-label text-teks-sekunder">
                     {insight.BisaWhatsapp
-                        ? 'Tiap Senin pukul 07.15 WIB: penjualan minggu lalu dibanding minggu sebelumnya, produk naik & turun, dan stok yang segera habis.'
+                        ? 'Tiap Senin pukul 07.15 WIB: penjualan minggu lalu, produk naik dan turun, dan stok yang segera habis.'
                         : 'Akun Anda belum punya nomor HP, jadi insight tidak bisa dikirim. Tambahkan nomor HP di profil akun.'}
                 </span>
             </div>

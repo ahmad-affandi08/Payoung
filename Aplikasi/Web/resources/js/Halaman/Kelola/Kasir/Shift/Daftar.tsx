@@ -130,9 +130,7 @@ export default function HalamanDaftarShift({ Shift, OpsiOutlet, OpsiStatus }: Pr
     return (
         <TataLetakAplikasi judul="Shift kasir">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Shift dibuka kasir di aplikasi POS, termasuk saat offline, lalu terkirim ke sini begitu perangkat
-                online. Kas masuk, kas keluar, setoran, dan selisih kas saat tutup shift tercatat per shift beserta
-                jurnalnya.
+                Shift dibuka kasir di aplikasi, termasuk saat offline, dan terkirim saat online.
             </p>
 
             <TabelData

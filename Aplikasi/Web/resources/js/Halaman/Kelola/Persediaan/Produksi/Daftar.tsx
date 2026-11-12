@@ -116,8 +116,7 @@ export default function HalamanDaftarOrderProduksi({ Order, OpsiGudang, OpsiStat
     return (
         <TataLetakAplikasi judul="Produksi">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Catat produksi roti, kue, atau barang rakitan: bahan dikurangi dari stok sesuai resep, hasil bertambah
-                dengan HPP = nilai bahan + biaya overhead.
+                Catat produksi roti, kue, atau barang rakitan. Bahan dikurangi sesuai resep, hasil masuk stok.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="order produksi" /> : null}
             <DaftarGalatServer galat={props.errors} />

@@ -159,7 +159,7 @@ export default function HalamanPengaturanKasir({
                 <Panel
                     judul="Persetujuan kas keluar"
                     idJudul="judul-kas-keluar"
-                    keterangan="Kas keluar di atas batas ini wajib disetujui supervisor dengan PIN di aplikasi kasir. Isi 0 agar setiap kas keluar butuh persetujuan."
+                    keterangan="Kas keluar di atas batas ini butuh PIN supervisor. Isi 0 agar semuanya butuh persetujuan."
                 >
                     <BidangUang
                         label="Batas kas keluar tanpa persetujuan"
@@ -176,8 +176,8 @@ export default function HalamanPengaturanKasir({
                         saatBerubah={AturLaciPin}
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Setiap buka laci tanpa transaksi selalu dicatat beserta alasan dan nama kasirnya, dan tampil di
-                        detail shift. Jika dicentang, supervisor dengan izin menyetujui kas keluar harus memasukkan PIN.
+                        Buka laci tanpa transaksi selalu dicatat beserta alasan dan nama kasir. Bila dicentang,
+                        persetujuan kas keluar butuh PIN supervisor.
                     </p>
                 </Panel>
                 <Panel judul="Shift bersama" idJudul="judul-shift-bersama">
@@ -187,15 +187,14 @@ export default function HalamanPengaturanKasir({
                         saatBerubah={AturBersama}
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Cocok untuk kafe kecil. Setiap transaksi dan kas tetap mencatat nama kasirnya. Jika dimatikan,
-                        setiap kasir membuka shift sendiri dan hanya kasir itu atau supervisor yang bisa mencatat kas di
-                        shiftnya.
+                        Cocok untuk kafe kecil. Nama kasir tetap tercatat di setiap transaksi. Bila mati, tiap kasir
+                        membuka shift sendiri.
                     </p>
                 </Panel>
                 <Panel
                     judul="Diskon manual"
                     idJudul="judul-diskon-manual"
-                    keterangan="Kasir yang punya izin diskon boleh memberi diskon sampai batas kasir. Di atasnya wajib disetujui supervisor dengan PIN, sampai batas persetujuan. Hanya Pemilik yang boleh memberi diskon lebih besar."
+                    keterangan="Diskon sampai batas kasir boleh langsung. Di atasnya butuh PIN supervisor, dan lebih besar dari batas persetujuan hanya Pemilik."
                 >
                     <div className="grid gap-4 sm:grid-cols-2">
                         <BidangTeks
@@ -246,7 +245,7 @@ export default function HalamanPengaturanKasir({
                 <Panel
                     judul="Tutup shift"
                     idJudul="judul-tutup-shift"
-                    keterangan="Selisih kas di atas toleransi wajib diberi alasan dan disetujui supervisor dengan PIN saat tutup shift. Isi 0 agar setiap selisih butuh persetujuan."
+                    keterangan="Selisih kas di atas toleransi butuh alasan dan PIN supervisor saat tutup shift. Isi 0 agar semua selisih dicek."
                 >
                     <KotakCentang
                         label="Tutup shift buta: sembunyikan kas seharusnya sampai kasir menyimpan hitungan"
@@ -264,7 +263,7 @@ export default function HalamanPengaturanKasir({
                 <Panel
                     judul="Retur penjualan"
                     idJudul="judul-retur-penjualan"
-                    keterangan="Retur di aplikasi kasir hanya bisa untuk penjualan paling lama sekian hari sejak hari bisnis penjualannya. Isi 0 agar retur hanya di hari yang sama."
+                    keterangan="Retur di aplikasi kasir hanya untuk penjualan maksimal sekian hari lalu. Isi 0 untuk hari yang sama."
                 >
                     <BidangTeks
                         label="Batas hari retur"
@@ -282,17 +281,14 @@ export default function HalamanPengaturanKasir({
                         required
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Retur tanpa struk selalu butuh PIN pemilik atau pengguna berizin &quot;Menyetujui retur tanpa
-                        struk&quot;, dan hanya bisa dikembalikan sebagai tukar barang atau deposit pelanggan, tidak
-                        pernah uang tunai. Jika total retur tanpa struk di satu outlet hari itu melewati batas ini,
-                        returnya tetap tercatat dan masuk Kotak Tindakan untuk dicek. Isi 0 agar setiap retur tanpa
-                        struk dicek.
+                        Retur tanpa struk selalu butuh PIN penyetuju. Total harian di atas batas ini masuk Kotak
+                        Tindakan, isi 0 agar semuanya dicek.
                     </p>
                 </Panel>
                 <Panel
                     judul="Kabar transaksi besar"
                     idJudul="judul-kabar-transaksi"
-                    keterangan="Void, retur, dan penjualan berdiskon dengan nilai sama atau di atas batas ini dikabarkan lewat notifikasi ke pengguna yang boleh melihat laporan penjualan di outlet itu. Tiap pengguna bisa membisukan jenis notifikasinya sendiri. Isi 0 agar setiap kejadian dikabarkan."
+                    keterangan="Void, retur, dan diskon di atas batas ini diberitahukan ke pengguna yang boleh melihat laporan. Isi 0 untuk semuanya."
                 >
                     <BidangUang
                         label="Batas nilai transaksi yang dikabarkan"
@@ -305,7 +301,7 @@ export default function HalamanPengaturanKasir({
                 <Panel
                     judul="Penjualan tempo"
                     idJudul="judul-penjualan-tempo"
-                    keterangan="Penjualan tempo butuh PIN penyetuju bila melebihi limit kredit pelanggan atau pelanggan punya piutang yang lewat jatuh tempo lebih dari batas ini. Isi 0 agar piutang yang lewat jatuh tempo sehari pun butuh penyetuju."
+                    keterangan="Tempo butuh PIN penyetuju bila melewati limit kredit atau ada piutang terlambat lebih dari batas hari ini."
                 >
                     <BidangTeks
                         label="Batas hari lewat jatuh tempo"
@@ -358,7 +354,7 @@ function BagianBarcodeTimbangan({ awal, galat }: { awal: BarcodeTimbangan; galat
         <form noValidate onSubmit={Simpan} className="flex flex-col gap-4">
             <Panel
                 judul="Barcode timbangan"
-                keterangan="Untuk barang yang ditimbang (buah, daging, kue curah). Timbangan mencetak barcode berawalan 21–29 berisi berat atau harga. Kasir cukup memindainya."
+                keterangan="Untuk barang timbangan. Kasir cukup memindai barcode berawalan 21 sampai 29 dari timbangan."
             >
                 <KotakCentang label="Kasir membaca barcode timbangan" nilai={aktif} saatBerubah={AturAktif} />
                 {aktif ? (
@@ -383,8 +379,8 @@ function BagianBarcodeTimbangan({ awal, galat }: { awal: BarcodeTimbangan; galat
                             required
                         />
                         <p className="text-keterangan text-teks-sekunder">
-                            Isi barcode produk di katalog dengan 7 digit pertama label timbangan (awalan + kode produk 5
-                            digit), misal 2712345. Satuan produk yang dijual per berat harus boleh desimal.
+                            Isi barcode produk dengan 7 digit pertama label timbangan, misal 2712345. Satuannya harus
+                            boleh desimal.
                         </p>
                     </>
                 ) : null}

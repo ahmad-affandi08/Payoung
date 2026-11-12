@@ -116,9 +116,8 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
     return (
         <TataLetakAplikasi judul="Promo">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Promo diterapkan otomatis di kasir saat syaratnya terpenuhi (tanggal, hari & jam, outlet, kanal, tier
-                pelanggan, barang, minimal belanja), termasuk saat kasir offline. Potongan promo mengurangi harga
-                sebelum pajak.
+                Promo diterapkan otomatis di kasir saat syaratnya terpenuhi, termasuk saat offline. Potongan mengurangi
+                harga sebelum pajak.
             </p>
             {FiturAktif ? null : (
                 <Pemberitahuan jenis="peringatan" judul="Fitur promo tersedia di paket Pro ke atas">
@@ -139,7 +138,7 @@ export default function HalamanDaftarPromo({ Promo, ModeResolusi, FiturAktif, Iz
                 <p className="text-keterangan text-teks-sekunder lg:pt-6">
                     {mode === 'Terbaik'
                         ? 'Kasir memilih yang potongannya paling besar: semua promo biasa digabung, atau satu promo eksklusif.'
-                        : 'Promo dipakai urut prioritas (angka besar dulu). Promo eksklusif hanya dipakai bila belum ada promo lain dan menghentikan promo berikutnya.'}
+                        : 'Promo dipakai menurut prioritas, angka besar dulu. Promo eksklusif menghentikan promo berikutnya.'}
                 </p>
             </Card>
 

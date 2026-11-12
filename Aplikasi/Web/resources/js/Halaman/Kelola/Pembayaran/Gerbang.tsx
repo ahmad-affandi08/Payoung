@@ -141,9 +141,8 @@ export default function HalamanGerbangPembayaran({
                         ))}
                     </ol>
                     <p className="mt-2">
-                        Uang pelanggan langsung masuk ke rekening toko Anda, tidak lewat Payoung. Pilihan bayar
-                        &quot;QRIS&quot; di kasir dibuat otomatis saat QRIS diaktifkan. Biaya MDR mengikuti ketentuan
-                        Bank Indonesia dan ditagih penyedia ke toko.
+                        Uang pelanggan langsung masuk ke rekening toko, tidak lewat Payoung. Pilihan bayar QRIS dibuat
+                        otomatis.
                     </p>
                 </Pemberitahuan>
                 {galatUmum ? <Pemberitahuan jenis="bahaya">{galatUmum}</Pemberitahuan> : null}

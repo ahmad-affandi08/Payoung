@@ -127,8 +127,8 @@ export default function HalamanCuti({ Cuti, OpsiKaryawan, Izin }: PropsCuti) {
     return (
         <TataLetakAplikasi judul="Cuti & izin karyawan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Catat hari karyawan tidak bekerja. Yang tetap digaji tidak dihitung tidak masuk di rekap gaji, dan
-                pengingat shift serta peringatan belum masuk tidak dikirim pada harinya.
+                Catat hari karyawan tidak bekerja. Cuti berbayar tidak dihitung tidak masuk, dan pengingat shift tidak
+                dikirim.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman

@@ -42,7 +42,7 @@ function DialogTerbitkan({ uuidPenjualan, saatTutup }: { uuidPenjualan: string; 
     return (
         <DialogFormulir
             judul="Buat Faktur Pajak"
-            keterangan="Untuk pembeli yang meminta Faktur Pajak atas transaksi ini. Pembeli harus punya NPWP atau NIK di data pelanggannya."
+            keterangan="Untuk pembeli yang meminta Faktur Pajak. Pembeli harus punya NPWP atau NIK di data pelanggan."
             galatUmum={props.errors.Umum}
             saatTutup={saatTutup}
         >

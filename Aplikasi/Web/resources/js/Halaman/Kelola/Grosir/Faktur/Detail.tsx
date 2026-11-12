@@ -147,7 +147,7 @@ export default function HalamanDetailFakturGrosir({
             {batalkan ? (
                 <DialogAlasanGrosir
                     judul="Batalkan faktur penjualan"
-                    keterangan="Piutangnya dibatalkan dan surat jalannya dilepas untuk difakturkan ulang. Faktur yang piutangnya sudah dibayar sebagian tidak bisa dibatalkan."
+                    keterangan="Piutang dibatalkan dan surat jalan dilepas untuk difakturkan ulang. Tidak bisa bila sudah dibayar sebagian."
                     labelAksi="Batalkan faktur"
                     alamat={`${alamat}/${Faktur.Uuid}/batalkan`}
                     saatTutup={() => AturBatalkan(false)}

@@ -10,7 +10,7 @@ export type KeadaanBacaQris =
     | { Tahap: 'gagal'; Pesan: string };
 
 const PESAN_TIDAK_TERBACA =
-    'Kode QR belum terbaca dari gambar ini. QRIS tetap bisa dipakai sebagai gambar, tetapi pelanggan harus mengetik nominal sendiri. Untuk nominal otomatis, unggah gambar QRIS yang lebih jelas dan utuh (jangan terpotong).';
+    'Kode QR belum terbaca. QRIS tetap bisa dipakai, tetapi pelanggan mengetik nominal sendiri. Unggah gambar yang lebih jelas dan utuh.';
 
 /**
  * D-189: membaca teks QRIS dari gambar yang dipilih pemilik toko lalu memeriksanya (CRC, statis, rupiah). Hanya hasil

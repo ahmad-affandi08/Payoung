@@ -20,7 +20,7 @@ export default function HalamanBuatTierPelanggan({ FiturAktif }: PropsBuatTierPe
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((k) => isianForm.includes(k))}
             />
-            <KartuFormulir keterangan="Tier dinilai ulang setiap malam dari total belanja pelanggan: tier tertinggi yang ambangnya terpenuhi. Kode tier dipakai di Daftar harga untuk harga khusus.">
+            <KartuFormulir keterangan="Tier dinilai ulang tiap malam dari total belanja. Kode tier dipakai di Daftar harga untuk harga khusus.">
                 <FormulirTier uuid={null} awal={TierKosong} saatBatal={() => router.visit(AlamatTier)} />
             </KartuFormulir>
         </TataLetakAplikasi>

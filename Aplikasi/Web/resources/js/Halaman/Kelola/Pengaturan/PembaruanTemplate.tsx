@@ -45,8 +45,8 @@ export default function HalamanPembaruanTemplate({ Tawaran }: { Tawaran: Tawaran
         <TataLetakAplikasi judul="Pembaruan template usaha">
             <div className="grid gap-4">
                 <Pemberitahuan jenis="info" judul="Aman diterapkan">
-                    Pembaruan hanya menambahkan yang belum Anda miliki. Akun, kategori, satuan, pajak, dan pengaturan
-                    yang sudah ada atau sudah Anda ubah sendiri tidak diubah atau dihapus.
+                    Pembaruan hanya menambah yang belum Anda miliki. Data yang sudah ada atau sudah Anda ubah tidak
+                    berubah.
                 </Pemberitahuan>
                 {Tawaran.length === 0 ? (
                     <Panel judul="Semua template sudah terbaru" tingkat="h2">

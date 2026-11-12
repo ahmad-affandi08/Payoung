@@ -82,9 +82,8 @@ export default function HalamanJadwalKasBank({ Jadwal, Izin }: PropsJadwalKasBan
     return (
         <TataLetakAplikasi judul="Transaksi kas & bank berulang">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pengeluaran atau penerimaan rutin seperti sewa, listrik, dan internet dicatat otomatis setiap pagi pada
-                tanggal jatuh temponya, langsung dijurnal. Buat jadwal baru dengan memilih &quot;Ulangi otomatis&quot;
-                saat mencatat transaksi kas & bank.
+                Transaksi rutin seperti sewa dan listrik dicatat otomatis pada tanggalnya. Buat lewat pilihan Ulangi
+                otomatis saat mencatat.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="akuntansi.kelola" objek="jadwal transaksi berulang" /> : null}
             <TabelData

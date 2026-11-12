@@ -158,8 +158,7 @@ export default function HalamanBahanTerbuang({
     return (
         <TataLetakAplikasi judul="Bahan terbuang">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Catat bahan atau menu yang terbuang (basi, rusak, salah buat, sisa tidak terjual) supaya food cost
-                terlihat. Menu resep diuraikan otomatis ke bahannya.
+                Catat bahan atau menu yang terbuang (basi, rusak, salah buat) supaya food cost terlihat.
             </p>
             <DaftarGalatServer galat={props.errors} />
             {catat ? (

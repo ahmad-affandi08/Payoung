@@ -781,7 +781,7 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('table', { name: 'Anti-fraud per kasir' })).toBeTruthy();
         expect(screen.getAllByText('Tinggi | 80').length).toBeGreaterThan(0);
         expect(screen.getAllByText('3 void tunai ≤ 10 menit setelah bayar').length).toBeGreaterThan(0);
-        expect(screen.getByText(/Skor risiko adalah petunjuk untuk diperiksa, bukan bukti/)).toBeTruthy();
+        expect(screen.getByText(/Skor risiko hanya petunjuk untuk diperiksa, bukan bukti/)).toBeTruthy();
     });
 
     it('D-111: tab anti-fraud disembunyikan bila paket belum memuat fitur anti-fraud', () => {
@@ -1074,7 +1074,7 @@ describe('§10.10 laporan pembelian', () => {
         expect(screen.getByRole('table', { name: 'Pesanan pembelian outstanding' })).toBeTruthy();
         expect(screen.getByText('Terlambat 3 hari')).toBeTruthy();
         expect(screen.getAllByText('Rp 210.000').length).toBeGreaterThan(0);
-        expect(screen.getByText(/periode tidak berlaku/)).toBeTruthy();
+        expect(screen.getByText(/keadaan saat ini/)).toBeTruthy();
     });
 
     it('per produk: harga rata-rata dan keadaan kosong', () => {

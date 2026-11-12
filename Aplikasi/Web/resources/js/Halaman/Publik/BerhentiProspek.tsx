@@ -21,8 +21,7 @@ export default function HalamanBerhentiProspek({ Ditemukan, SudahBerhenti, Alama
             <Head title="Berhenti menerima email" />
             {!Ditemukan ? (
                 <PanelHasil jenis="netral" judul="Tautan tidak berlaku">
-                    Tautan ini rusak atau sudah tidak dikenal. Balas email yang Anda terima dan minta kami berhenti
-                    mengirim, maka kami akan menghentikannya.
+                    Tautan ini rusak atau tidak dikenal. Balas email yang Anda terima dan minta kami berhenti mengirim.
                 </PanelHasil>
             ) : SudahBerhenti ? (
                 <PanelHasil jenis="sukses" judul="Anda sudah berhenti berlangganan">
@@ -32,8 +31,8 @@ export default function HalamanBerhentiProspek({ Ditemukan, SudahBerhenti, Alama
                 <section className="flex flex-col gap-4 rounded-panel border border-garis bg-permukaan p-6">
                     <JudulHalaman>Berhenti menerima email dari Payoung?</JudulHalaman>
                     <p className="text-teks-sekunder">
-                        Alamat email Anda tidak akan dikirimi email perkenalan atau promosi lagi dari Payoung. Ini tidak
-                        memengaruhi akun Payoung yang mungkin sudah Anda punya.
+                        Alamat email Anda tidak akan dikirimi email perkenalan atau promosi lagi. Akun Payoung yang
+                        sudah ada tidak terpengaruh.
                     </p>
                     <div>
                         <Tombol

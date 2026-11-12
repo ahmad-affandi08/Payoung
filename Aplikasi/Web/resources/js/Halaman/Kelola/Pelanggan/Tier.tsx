@@ -100,9 +100,7 @@ export default function HalamanTierPelanggan({ Tier, FiturAktif, Izin }: PropsTi
     return (
         <TataLetakAplikasi judul="Tier pelanggan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Tier dinilai ulang setiap malam dari total belanja pelanggan selama periode di Pengaturan loyalti: tier
-                tertinggi yang ambangnya terpenuhi. Pengali poin melipatgandakan poin dari belanja. Kode tier dipakai di
-                Daftar harga untuk harga khusus, misal harga reseller.
+                Tier dinilai ulang tiap malam dari total belanja. Pengali poin melipatgandakan poin belanja.
             </p>
             {FiturAktif ? null : <PesanFiturLoyalti />}
             {Izin.Kelola ? (

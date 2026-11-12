@@ -148,8 +148,8 @@ export default function HalamanDaftarStokOpname({
     return (
         <TataLetakAplikasi judul="Stok opname">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Hitung fisik stok per lokasi. Penjualan dan transaksi lain tetap berjalan selama opname. Selisih
-                dihitung dari jumlah fisik dikurangi saldo saat mulai ditambah mutasi selama opname.
+                Hitung fisik stok per lokasi. Penjualan tetap berjalan selama opname, selisih memperhitungkan mutasi
+                selama itu.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="stok opname" /> : null}
             {!buka ? <DaftarGalatServer galat={galat} /> : null}

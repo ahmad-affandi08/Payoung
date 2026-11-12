@@ -87,7 +87,7 @@ export default function HalamanBuatNotaDebit({
                 <Panel
                     judul="Nota debit"
                     idJudul="judul-nota-debit"
-                    keterangan="Mengurangi hutang faktur tanpa ada barang yang kembali. Bagian stok yang masih ada menurunkan nilai persediaan. Bagian yang sudah terjual mengurangi HPP."
+                    keterangan="Mengurangi hutang faktur tanpa barang kembali. Bagian stok yang ada menurunkan nilai persediaan, yang terjual mengurangi HPP."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangPilihan

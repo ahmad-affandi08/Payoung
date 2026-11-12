@@ -110,7 +110,7 @@ export default function HalamanBuatReturGrosir({
     return (
         <HalamanGrosir
             judul={`Retur surat jalan ${SuratJalan.Nomor}`}
-            keterangan="Isi jumlah yang dikembalikan pembeli per baris. Barang layak jual kembali ke stok Toko, barang rusak masuk lokasi stok Rusak outlet."
+            keterangan="Isi jumlah yang dikembalikan per baris. Barang layak jual kembali ke stok Toko, yang rusak ke lokasi Rusak."
             izin={Izin}
             objek="retur grosir"
         >
@@ -262,8 +262,7 @@ export default function HalamanBuatReturGrosir({
                 ) : null}
                 {SuratJalan.NomorFaktur !== null ? (
                     <p className="text-keterangan text-teks-sekunder">
-                        Isi bila pembeli sudah membayar faktur ini sehingga nilai retur melebihi sisa tagihan:
-                        selebihnya dikembalikan sebagai uang dari akun ini.
+                        Isi bila retur melebihi sisa tagihan. Selebihnya dikembalikan sebagai uang dari akun ini.
                     </p>
                 ) : null}
             </Panel>

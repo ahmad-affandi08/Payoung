@@ -143,7 +143,7 @@ export default function HalamanDetailNotaDebit({ Nota, Baris, Jurnal, Izin, Tind
             {batal ? (
                 <DialogAlasan
                     judul={`Batalkan nota debit ${Nota.Nomor}?`}
-                    keterangan="Hutang faktur, nilai stok, dan jurnalnya dikembalikan. Nilai stok hanya bisa dikembalikan selama barangnya belum terjual atau berpindah sejak nota dicatat."
+                    keterangan="Hutang faktur, nilai stok, dan jurnal dikembalikan, selama barangnya belum terjual atau berpindah."
                     labelAksi="Batalkan nota debit"
                     alamat={`${AlamatNotaDebit}/${Nota.Uuid}/batalkan`}
                     saatTutup={() => AturBatal(false)}

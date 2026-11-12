@@ -157,9 +157,7 @@ export default function HalamanLaporanPphDipotong({ Pelunasan }: { Pelunasan: Ta
             jejak={[{ label: 'Laporan pajak', href: '/kelola/laporan/pajak' }]}
         >
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pelunasan invoice yang dipotong PPh oleh pelanggan, per tanggal pelunasan. Uang PPh tidak masuk ke
-                rekening Anda, tetapi menjadi kredit pajak bila Anda memegang bukti potongnya. Pelunasan yang dibatalkan
-                tidak dihitung. Ini bahan bantu pembukuan, bukan SPT.
+                Pelunasan invoice yang dipotong PPh oleh pelanggan. Bahan bantu pembukuan, bukan SPT.
             </p>
             <AksiHalaman>
                 <Button asChild variant="outline" className="h-8 pointer-coarse:h-11">

@@ -279,9 +279,8 @@ export default function HalamanBuatPencairan({
                     ) : null}
                     {biaya !== null && BandingkanDesimal(biaya, '0') < 0 ? (
                         <p className="text-keterangan text-teks-sekunder">
-                            Setorannya lebih besar daripada nilai transaksinya. Kelebihannya dibukukan sebagai
-                            Pendapatan Lain supaya terlihat dan bisa ditanyakan, bukan disembunyikan sebagai biaya
-                            negatif.
+                            Setoran lebih besar dari nilai transaksi. Kelebihannya dicatat sebagai Pendapatan Lain agar
+                            terlihat.
                         </p>
                     ) : null}
                 </dl>

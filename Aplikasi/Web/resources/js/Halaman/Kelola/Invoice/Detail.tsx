@@ -416,7 +416,7 @@ export default function HalamanDetailInvoice({
                     keterangan={
                         invoice.Status === 'Draf'
                             ? 'Draf dibatalkan tanpa jurnal. Draf yang sudah dibatalkan tidak bisa dibuka lagi.'
-                            : 'Jurnalnya dibalik dan piutangnya dibatalkan. Invoice yang sudah dibayar tidak bisa dibatalkan. Batalkan dulu pembayarannya. Uang muka yang dipotong dilepas dan bisa dipakai lagi.'
+                            : 'Jurnal dibalik dan piutang dibatalkan. Invoice yang sudah dibayar harus dibatalkan pembayarannya dulu. Uang muka dilepas kembali.'
                     }
                     labelAksi="Batalkan"
                     alamat={`${AlamatInvoice}/${invoice.Uuid}/batalkan`}
@@ -426,7 +426,7 @@ export default function HalamanDetailInvoice({
             {tolakKonfirmasi !== null ? (
                 <DialogAlasanGrosir
                     judul="Tolak konfirmasi pembayaran"
-                    keterangan="Beri alasan, misalnya uangnya tidak ditemukan di mutasi bank atau jumlahnya tidak cocok. Pelanggan tidak diberi tahu otomatis. Hubungi mereka bila perlu."
+                    keterangan="Beri alasan, misalnya uang tidak ditemukan di mutasi bank. Pelanggan tidak diberi tahu otomatis."
                     labelAksi="Tolak konfirmasi"
                     alamat={`${AlamatInvoice}/${invoice.Uuid}/konfirmasi/${tolakKonfirmasi.Uuid}/tolak`}
                     saatTutup={() => AturTolakKonfirmasi(null)}

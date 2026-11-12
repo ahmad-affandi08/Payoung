@@ -63,7 +63,7 @@ export default function HalamanBuatBiayaTambahan({
                 <Panel
                     judul="Biaya"
                     idJudul="judul-biaya-tambahan"
-                    keterangan="Dibayar dari kas/bank dan langsung dijurnal: bagian untuk stok yang masih ada menambah nilai persediaan, bagian untuk barang yang sudah terjual masuk HPP."
+                    keterangan="Dibayar dari kas atau bank. Bagian untuk stok yang ada menambah nilai persediaan, yang terjual masuk HPP."
                 >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <BidangPilihan

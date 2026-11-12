@@ -62,8 +62,7 @@ export default function HalamanPengaturan() {
             ) : null}
 
             <p className="text-isi text-teks-sekunder">
-                Pengaturan usaha dan integrasi ada di sini. Pengaturan kasir, struk, stok, pembelian, pelanggan, tim,
-                dan akuntansi ada di menu masing-masing.
+                Pengaturan usaha dan integrasi ada di sini. Pengaturan lain ada di menu modulnya.
             </p>
 
             <div className="max-w-md">

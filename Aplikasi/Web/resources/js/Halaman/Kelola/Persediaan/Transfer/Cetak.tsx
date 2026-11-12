@@ -87,8 +87,8 @@ export default function HalamanCetakTransferStok({ Transfer, Baris, Usaha }: Pro
             </Table>
 
             <p className="text-keterangan text-teks-sekunder">
-                Surat jalan ini memindahkan barang antar lokasi milik usaha yang sama, bukan tagihan, dan tidak memuat
-                nilai barang. Hitung barang saat serah terima. Selisih dicatat di aplikasi lewat Terima barang.
+                Surat jalan antar lokasi usaha yang sama, bukan tagihan dan tanpa nilai barang. Selisih dicatat lewat
+                Terima barang.
             </p>
 
             {Transfer.Catatan ? (

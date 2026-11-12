@@ -223,8 +223,8 @@ export default function HalamanDetailOrderProduksi({
                     judul="Batalkan produksi?"
                     keterangan={
                         <p>
-                            Hasil produksi dikeluarkan lagi dan bahan dikembalikan ke stok dengan nilai semula. Hanya
-                            bisa bila hasil belum terjual atau berpindah.
+                            Hasil produksi dikeluarkan lagi dan bahan dikembalikan. Hanya bisa bila hasil belum terjual
+                            atau berpindah.
                         </p>
                     }
                     labelAksi="Batalkan produksi"

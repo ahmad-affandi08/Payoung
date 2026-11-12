@@ -81,8 +81,8 @@ export default function HalamanDetailPenawaran({
             ) : null}
             {p.StatusTampil === 'Kedaluwarsa' ? (
                 <Pemberitahuan jenis="peringatan" judul="Masa berlaku sudah lewat">
-                    Pelanggan tidak bisa lagi menerima penawaran ini dari tautannya. Salin menjadi penawaran baru dengan
-                    masa berlaku yang baru, atau tandai diterima bila pelanggan sudah menyetujui lewat jalur lain.
+                    Pelanggan tidak bisa lagi menerima penawaran ini. Salin jadi penawaran baru, atau tandai diterima
+                    bila sudah setuju.
                 </Pemberitahuan>
             ) : null}
             {p.Keputusan !== null ? (

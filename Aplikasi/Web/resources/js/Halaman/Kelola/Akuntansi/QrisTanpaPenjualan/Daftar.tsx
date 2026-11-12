@@ -203,9 +203,8 @@ export default function HalamanDaftarQrisTanpaPenjualan({
     return (
         <TataLetakAplikasi judul="Uang QRIS tanpa penjualan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pelanggan membayar QRIS dinamis setelah tagihannya kedaluwarsa, dibatalkan, atau tidak pasti, sehingga
-                uangnya masuk tanpa penjualan. Kembalikan dananya ke pelanggan, atau akui sebagai pendapatan lain bila
-                tidak ada yang menuntutnya.
+                QRIS dibayar setelah tagihan kedaluwarsa, jadi uang masuk tanpa penjualan. Kembalikan ke pelanggan atau
+                akui sebagai pendapatan lain.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="akuntansi.kelola" objek="penutupan uang QRIS" /> : null}
             <TabelData

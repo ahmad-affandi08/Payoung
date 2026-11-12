@@ -371,7 +371,7 @@ function FormProdukCepat({
                                     label="Daftar produk"
                                     nilai={teksTempel}
                                     saatBerubah={AturTeksTempel}
-                                    keterangan="Satu produk per baris: nama lalu harga, misal Kopi Susu 15.000 atau Es Teh 5rb. Dari Excel, salin kolom Nama, Harga, dan Kategori (opsional) sekaligus."
+                                    keterangan="Satu produk per baris: nama lalu harga, misal Kopi Susu 15.000. Bisa tempel dari Excel."
                                     baris={6}
                                     maksimal={20000}
                                 />

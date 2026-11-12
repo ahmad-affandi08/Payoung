@@ -53,9 +53,7 @@ export default function HalamanDaftarSaldoSesi({ SaldoSesi }: PropsDaftarSaldoSe
     return (
         <TataLetakAplikasi judul="Saldo paket sesi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Paket sesi yang sudah dibeli pelanggan. Nilai tersisa adalah uang pelanggan yang belum diakui sebagai
-                pendapatan. Diakui per sesi saat dipakai di kasir. Buka paket untuk mengembalikan atau menghanguskan
-                sisanya.
+                Paket sesi yang dibeli pelanggan. Buka paket untuk mengembalikan atau menghanguskan sisanya.
             </p>
             <TabelData
                 id="pelanggan-saldo-sesi"

@@ -41,7 +41,7 @@ export default function HalamanDaftarRetur({ Retur, OpsiStatus, OpsiPemasok, Izi
     return (
         <HalamanDaftarPembelian
             judul="Retur pembelian"
-            keterangan="Barang rusak atau salah yang dikembalikan ke pemasok. Buat retur dari halaman detail penerimaan barang. Stok berkurang dan hutang ke pemasok ikut berkurang."
+            keterangan="Barang rusak atau salah yang dikembalikan ke pemasok. Buat dari detail penerimaan. Stok dan hutang ikut berkurang."
             izin={Izin}
             objek="retur pembelian"
         >

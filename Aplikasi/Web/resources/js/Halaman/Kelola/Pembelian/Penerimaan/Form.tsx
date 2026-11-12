@@ -276,7 +276,7 @@ export default function HalamanFormPenerimaan({
         <TataLetakAplikasi judul={judul}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 {belanja
-                    ? 'Untuk belanja sehari-hari: sekali simpan mencatat barang masuk dan fakturnya. Bayar sekarang = lunas dari akun kas/bank. Uang laci = belanja yang sudah dicatat keluar di kasir. Bayar nanti = hutang ke pemasok.'
+                    ? 'Sekali simpan mencatat barang masuk dan fakturnya. Pilih cara bayar: sekarang, uang laci, atau nanti (hutang).'
                     : 'Stok bertambah saat penerimaan disimpan. Harga, diskon, dan ongkos kirim menjadi dasar HPP; PPN masukan yang dapat dikreditkan tidak masuk HPP.'}
             </p>
             <DaftarGalatServer

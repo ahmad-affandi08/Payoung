@@ -50,8 +50,8 @@ export default function HalamanDaftarPenjualan({ Penjualan, OpsiOutlet, OpsiStat
     return (
         <TataLetakAplikasi judul="Penjualan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Penjualan dibuat kasir di aplikasi POS, termasuk saat offline, lalu terkirim ke sini begitu perangkat
-                online. Stok dan jurnal tercatat otomatis saat penjualan diterima.
+                Penjualan dibuat kasir di aplikasi, termasuk saat offline, dan terkirim saat online. Stok dan jurnal
+                tercatat otomatis.
             </p>
             {bengkel ? (
                 <AksiHalaman>

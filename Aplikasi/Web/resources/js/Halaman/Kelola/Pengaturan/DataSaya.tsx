@@ -74,9 +74,8 @@ export default function HalamanDataSaya({ Ekspor, Penghapusan, PerluKataSandi }:
                 >
                     <div className="grid gap-3">
                         <Pemberitahuan jenis="info" judul="Yang perlu Anda tahu">
-                            Berkas berisi data pelanggan dan karyawan, jadi simpan di tempat aman. Kata sandi, PIN,
-                            token, sidik wajah, identitas pajak terenkripsi, dan berkas foto tidak ikut. Berkas bisa
-                            diunduh selama 7 hari, dan ekspor baru bisa diminta sekali per 24 jam.
+                            Simpan berkas ini di tempat aman, isinya data pelanggan dan karyawan. Tersedia 7 hari, bisa
+                            diminta sekali per hari.
                         </Pemberitahuan>
                         {Ekspor.length === 0 ? (
                             <p className="text-isi text-teks-sekunder">

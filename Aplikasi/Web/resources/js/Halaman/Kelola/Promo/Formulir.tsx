@@ -342,7 +342,7 @@ export default function HalamanFormulirPromo({
                         label="Batas potongan ongkir"
                         nilai={isian.Jumlah}
                         saatBerubah={(nilai) => Ubah({ Jumlah: nilai })}
-                        keterangan="Kosongkan untuk menggratiskan seluruh ongkir. Isi untuk subsidi sebagian, misal Rp 10.000: ongkir Rp 15.000 menjadi Rp 5.000. Berlaku di checkout toko online saat ada ongkir. Syarat minimal belanja, kanal, dan jam ikut aturan promo di atas."
+                        keterangan="Kosongkan untuk gratis ongkir penuh. Isi untuk subsidi sebagian, misal Rp 10.000."
                         galat={galat.Jumlah}
                     />
                 ) : null}
@@ -354,7 +354,7 @@ export default function HalamanFormulirPromo({
                         desimal={1}
                         digitBulat={2}
                         akhiran="kali"
-                        keterangan="Poin loyalti transaksi yang memenuhi syarat dikalikan angka ini (lebih dari 1 sampai 10). Tidak mengubah harga dan bisa berjalan bersama promo potongan. Bila beberapa promo poin berlaku, dipakai pengali terbesar."
+                        keterangan="Poin transaksi yang memenuhi syarat dikalikan angka ini (lebih dari 1 sampai 10). Tidak mengubah harga."
                         galat={galat.Pengali}
                         required
                     />
@@ -570,8 +570,8 @@ export default function HalamanFormulirPromo({
     const isiPendanaan = (
         <>
             <p className="text-isi text-teks-sekunder">
-                Potongan ke pelanggan tetap tercatat sebagai diskon penjualan. Bila pemasok ikut menanggung, bagiannya
-                menjadi klaim ke pemasok di menu Klaim promo pemasok.
+                Potongan tercatat sebagai diskon penjualan. Bagian yang ditanggung pemasok menjadi klaim di Klaim promo
+                pemasok.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
                 <BidangPilihan
@@ -601,8 +601,7 @@ export default function HalamanFormulirPromo({
     const isiPelanggan = (
         <>
             <p className="text-isi text-teks-sekunder">
-                Syarat pelanggan berlaku hanya bila kasir memilih pelanggan. Saat kasir offline, riwayat pelanggan
-                memakai data terakhir di perangkat. Bila ternyata tidak memenuhi syarat, penjualan tetap diterima dan
+                Syarat pelanggan berlaku bila kasir memilih pelanggan. Yang tidak memenuhi syarat tetap diterima dan
                 masuk tinjauan.
             </p>
             {OpsiMetodeBayar.length > 0 ? (

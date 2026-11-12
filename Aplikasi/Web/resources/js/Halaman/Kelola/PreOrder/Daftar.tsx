@@ -98,8 +98,8 @@ export default function HalamanDaftarPreOrder({ Pesanan, OpsiStatus }: PropsDaft
     return (
         <TataLetakAplikasi judul="Pre-order">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pesanan yang dibayar uang muka di kasir, misalnya kue ulang tahun atau pesanan cetak. Uang muka belum
-                menjadi pendapatan sampai pesanan diambil dan dilunasi di kasir.
+                Pesanan dengan uang muka di kasir, misalnya kue ulang tahun. Uang muka jadi pendapatan setelah pesanan
+                diambil dan dilunasi.
             </p>
             <TabelData
                 id="pre-order"

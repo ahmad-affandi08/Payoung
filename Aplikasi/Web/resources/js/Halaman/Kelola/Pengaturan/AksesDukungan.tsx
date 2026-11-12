@@ -69,10 +69,8 @@ export default function HalamanAksesDukungan({ Riwayat, PilihanTiket, Aturan }: 
         <TataLetakAplikasi judul="Akses dukungan">
             <div className="grid gap-4">
                 <Pemberitahuan jenis="info" judul="Yang perlu Anda tahu">
-                    Tim dukungan Payoung tidak bisa melihat atau mengubah akun Anda tanpa izin ini. Setiap izin berbatas
-                    waktu, bisa dicabut kapan saja, dan setiap permintaan petugas tercatat di bawah. Kata sandi, PIN,
-                    dan pengaturan pembayaran tidak pernah bisa dibuka petugas, dan data pribadi pelanggan tersamar
-                    kecuali Anda membukanya.
+                    Izin berbatas waktu dan bisa dicabut kapan saja. Kata sandi, PIN, dan pembayaran tidak pernah
+                    terbuka bagi petugas.
                 </Pemberitahuan>
 
                 {aktif ? (

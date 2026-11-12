@@ -195,8 +195,8 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
                 ) : null}
             </div>
             <p className="text-keterangan text-teks-sekunder">
-                Meja dipilih kasir atau pelayan saat membuka pesanan makan di tempat. Area (misal Indoor, Teras, VIP)
-                mengelompokkan meja di layar kasir.
+                Meja dipilih kasir saat membuka pesanan makan di tempat. Area, misal Indoor atau Teras, mengelompokkan
+                meja.
             </p>
             <SakelarPesanSendiri alamatOutlet={alamatOutlet} pesanSendiri={pesanSendiri} bolehKelola={bolehKelola} />
             {qrMeja !== null ? (
@@ -211,8 +211,8 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
             ) : null}
             {modeMeja.Aktif ? null : (
                 <Pemberitahuan jenis="info" judul="Mode meja tidak aktif">
-                    Paket atau template outlet ini tidak memakai mode meja. Data meja lama tetap bisa diubah atau
-                    diarsipkan, tetapi meja baru tidak bisa ditambah.
+                    Outlet ini tidak memakai mode meja. Meja lama masih bisa diubah atau diarsipkan, meja baru tidak
+                    bisa ditambah.
                 </Pemberitahuan>
             )}
 
@@ -232,7 +232,7 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
             {banyakMeja ? (
                 <DialogFormulir
                     judul="Tambah banyak meja"
-                    keterangan="Buat meja bernomor berurutan sekaligus, misal Meja 1 sampai Meja 20. Semua atau tidak sama sekali: kalau ada nama yang sudah dipakai, tidak ada meja yang dibuat."
+                    keterangan="Buat meja bernomor berurutan sekaligus, misal Meja 1 sampai Meja 20. Semua atau tidak sama sekali."
                     saatTutup={() => AturBanyakMeja(false)}
                 >
                     <FormMejaBanyak

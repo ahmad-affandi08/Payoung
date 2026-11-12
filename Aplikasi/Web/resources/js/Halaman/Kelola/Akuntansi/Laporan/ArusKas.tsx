@@ -66,8 +66,7 @@ export default function HalamanArusKas({ Saring, Laporan, OpsiOutlet }: PropsAru
     return (
         <TataLetakAplikasi judul="Arus kas">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Uang masuk dan keluar dari akun kas & bank selama periode, dikelompokkan per aktivitas operasi,
-                investasi, dan pendanaan. Pemindahan antar akun kas & bank tidak dihitung.
+                Uang masuk dan keluar dari kas dan bank selama periode, per aktivitas operasi, investasi, dan pendanaan.
             </p>
             <SaringLaporan
                 alamat={alamat}

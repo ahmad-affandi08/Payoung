@@ -295,15 +295,14 @@ export default function DialogAturHargaOjol({ Outlet, saatTutup }: PropsDialogAt
                         {!pratinjau.PilihanIkut && pratinjau.TotalPilihan > 0 ? (
                             <p className="text-keterangan text-teks-sekunder">
                                 Pilihan tambahan tidak ikut karena harganya berlaku untuk semua outlet. Pilih Semua
-                                outlet bila ingin pilihan tambahan ikut naik.
+                                outlet agar ikut naik.
                             </p>
                         ) : null}
                     </section>
                 ) : null}
 
                 <p className="text-keterangan text-teks-sekunder">
-                    Pastikan metode bayar untuk platform ini sudah dibuat di menu Metode pembayaran, supaya pembayaran
-                    dari platform tercatat dan komisinya terhitung.
+                    Pastikan metode bayar platform ini sudah dibuat di Metode pembayaran, agar komisinya terhitung.
                 </p>
                 <DialogFooter className="sm:justify-start">
                     {pratinjau === null ? (

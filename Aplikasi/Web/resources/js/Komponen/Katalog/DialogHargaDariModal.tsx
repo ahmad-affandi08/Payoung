@@ -88,7 +88,7 @@ export default function DialogHargaDariModal({ uuid, saatTutup, saatSelesai }: P
     return (
         <DialogFormulir
             judul={`Harga dari harga beli, ${uuid.length.toLocaleString('id-ID')} produk`}
-            keterangan="Harga jual dihitung dari harga beli terakhir ditambah untung. Hanya harga dasar yang berubah, harga bertingkat dan daftar harga khusus tidak ikut. Setiap perubahan tercatat di riwayat harga."
+            keterangan="Harga jual dihitung dari harga beli terakhir ditambah untung. Hanya harga dasar yang berubah."
             galatUmum={galatUmum}
             saatTutup={saatTutup}
             lebar="lebar"

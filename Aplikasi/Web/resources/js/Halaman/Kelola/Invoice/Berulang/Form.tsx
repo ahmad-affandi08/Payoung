@@ -157,8 +157,8 @@ export default function HalamanFormInvoiceBerulang({
             <DaftarGalatServer galat={galat} />
             {terkunci ? (
                 <Pemberitahuan jenis="info" judul="Jadwal sudah terkunci">
-                    Invoice pertama sudah terbit, jadi frekuensi, interval, dan tanggal mulai tidak bisa diubah. Isi
-                    tagihan di bawah tetap bisa diubah dan berlaku mulai invoice berikutnya.
+                    Frekuensi, interval, dan tanggal mulai terkunci karena invoice pertama sudah terbit. Isi tagihan
+                    berlaku mulai invoice berikutnya.
                 </Pemberitahuan>
             ) : null}
 

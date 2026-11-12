@@ -115,7 +115,7 @@ export default function HalamanPerangkatPanduan({
             ) : (
                 <Panel
                     judul="Atur PIN kasir Anda"
-                    keterangan="Di aplikasi kasir Anda masuk dengan PIN 6 angka, bukan kata sandi. Hindari angka sama semua atau berurutan."
+                    keterangan="Di aplikasi kasir Anda masuk dengan PIN 6 angka. Hindari angka kembar atau berurutan."
                 >
                     <div className="max-w-md">
                         <FormPin alamat="/kelola/keamanan/pin" labelTombol="Simpan PIN" />

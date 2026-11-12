@@ -137,9 +137,7 @@ export default function HalamanDaftarAsetTetap({ Aset, OpsiKelompok, OpsiStatus,
     return (
         <TataLetakAplikasi judul="Aset tetap">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Peralatan, kendaraan, dan bangunan usaha. Penyusutan garis lurus dijurnal otomatis setiap awal bulan
-                untuk bulan sebelumnya (Dr Beban Penyusutan, Cr Akumulasi Penyusutan). Masa manfaat bawaan mengikuti
-                kelompok harta pajak.
+                Peralatan, kendaraan, dan bangunan usaha. Penyusutan garis lurus dicatat otomatis tiap awal bulan.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman

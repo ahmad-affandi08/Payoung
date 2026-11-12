@@ -119,8 +119,8 @@ export default function HalamanFormPesananGrosir({ Isian, OpsiOutlet, OpsiGudang
                 <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
             ) : null}
             <Pemberitahuan jenis="info" judul="Harga mengikuti daftar harga">
-                Harga grosir mengikuti daftar harga bertingkat & tier pelanggan. Harga dan total tampil setelah draf
-                disimpan. Periksa di halaman pesanan sebelum dikonfirmasi.
+                Harga mengikuti daftar harga bertingkat dan tier pelanggan. Harga dan total tampil setelah draf
+                disimpan.
             </Pemberitahuan>
 
             <form onSubmit={Kirim} noValidate className="flex flex-col gap-4" aria-label={judul}>

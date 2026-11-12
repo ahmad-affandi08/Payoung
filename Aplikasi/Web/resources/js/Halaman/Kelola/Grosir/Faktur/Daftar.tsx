@@ -64,7 +64,7 @@ export default function HalamanDaftarFakturGrosir({ Faktur, OpsiStatus, Izin }: 
     return (
         <HalamanGrosir
             judul="Faktur penjualan grosir"
-            keterangan="Tagihan atas barang yang sudah diserahkan. Satu faktur boleh memuat beberapa surat jalan milik satu pelanggan dalam satu bulan kalender, sesuai ketentuan Faktur Pajak gabungan."
+            keterangan="Tagihan atas barang yang sudah diserahkan, gabungan surat jalan satu pelanggan dalam satu bulan."
             izin={Izin}
             objek="faktur penjualan"
         >

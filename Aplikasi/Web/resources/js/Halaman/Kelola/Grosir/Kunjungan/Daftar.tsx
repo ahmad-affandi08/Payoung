@@ -144,7 +144,7 @@ export default function HalamanDaftarKunjunganSales({
     return (
         <HalamanGrosir
             judul="Kunjungan salesman"
-            keterangan="Kunjungan salesman ke pelanggan dari aplikasi salesman: waktu masuk & keluar, hasilnya, pesanan yang diambil, dan lokasi check-in. Pesanan dari lapangan masuk sebagai draf dan tetap dikonfirmasi di halaman pesanan grosir."
+            keterangan="Kunjungan salesman: waktu, hasil, pesanan, dan lokasi check-in. Pesanan lapangan masuk sebagai draf di pesanan grosir."
             izin={Izin}
             objek="kunjungan salesman"
         >

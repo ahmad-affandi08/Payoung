@@ -217,8 +217,8 @@ export default function HalamanDetailDaftarHarga({
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Nonaktifkan {DaftarHarga.Nama}?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Kasir berhenti memakai harga di daftar ini dan kembali ke harga jual biasa
-                                            atau daftar lain yang cocok. Daftar bisa diaktifkan lagi kapan saja.
+                                            Kasir kembali memakai harga biasa atau daftar lain yang cocok. Bisa
+                                            diaktifkan lagi kapan saja.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

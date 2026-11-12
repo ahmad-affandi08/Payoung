@@ -79,8 +79,7 @@ function TombolStatusDaftar({ daftar }: { daftar: BarisDaftarHarga }) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Nonaktifkan {daftar.Nama}?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Kasir berhenti memakai harga di daftar ini dan kembali ke harga jual biasa atau daftar lain yang
-                        cocok. Daftar bisa diaktifkan lagi kapan saja.
+                        Kasir kembali memakai harga biasa atau daftar lain yang cocok. Bisa diaktifkan lagi kapan saja.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -179,7 +178,7 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Outlet, I
                 <Panel
                     judul="Jualan lewat GoFood, GrabFood, atau ShopeeFood?"
                     tingkat="h2"
-                    keterangan="Isi harga di platform ojol dari harga biasa dalam satu langkah, misalnya 30 persen lebih mahal. Tidak perlu membuat daftar satu per satu."
+                    keterangan="Isi harga ojol dari harga biasa sekaligus, misalnya 30 persen lebih mahal."
                     aksi={<Tombol onClick={() => AturAturOjol(true)}>Atur harga ojol</Tombol>}
                 >
                     <p className="text-keterangan text-teks-sekunder">
@@ -191,10 +190,8 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Outlet, I
             <AksiHalaman
                 keterangan={
                     <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Pakai daftar harga kalau harga produk perlu berbeda untuk situasi tertentu, misalnya harga di
-                        GoFood, harga anggota, harga satu cabang, atau harga promo bulan ini. Produk yang tidak ada di
-                        daftar memakai harga jual biasa. Kalau beberapa daftar cocok sekaligus, yang prioritasnya paling
-                        besar dipakai.
+                        Harga berbeda per situasi, misalnya GoFood atau harga anggota. Produk di luar daftar memakai
+                        harga biasa.
                     </p>
                 }
             >

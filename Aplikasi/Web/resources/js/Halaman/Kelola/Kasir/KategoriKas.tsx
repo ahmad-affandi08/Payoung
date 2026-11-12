@@ -129,9 +129,7 @@ export default function HalamanKategoriKas({ Kategori, OpsiAkun }: PropsKategori
     return (
         <TataLetakAplikasi judul="Kategori kas">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Kasir memilih kategori ini saat mencatat kas keluar (misalnya beli es batu, bayar parkir) atau kas masuk
-                di luar penjualan. Setiap kategori dijurnal ke akun yang dipilih. Kategori yang sudah dipakai cukup
-                dinonaktifkan, tidak dihapus.
+                Dipilih kasir saat mencatat kas keluar atau kas masuk. Kategori yang sudah dipakai cukup dinonaktifkan.
             </p>
             <AksiHalaman
                 utama={<Button onClick={() => Buka(null)}>Tambah kategori kas</Button>}

@@ -214,8 +214,7 @@ export default function HalamanDetailPermintaan({
                 >
                     <div className="flex flex-col gap-3">
                         <p>
-                            Semua barang disalin ke draf pesanan pembelian, dengan perkiraan harga sebagai harga awal.
-                            Periksa dan ajukan pesanan itu setelahnya.
+                            Semua barang disalin ke draf pesanan dengan perkiraan harga. Periksa dan ajukan setelahnya.
                         </p>
                         <BidangPilihan
                             label="Pemasok"

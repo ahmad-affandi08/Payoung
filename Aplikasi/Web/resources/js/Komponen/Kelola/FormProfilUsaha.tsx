@@ -74,7 +74,7 @@ export default function FormProfilUsaha({ alamat, profil, kota, batasLogo }: Pro
                         nilai={formulir.data.NamaUsaha}
                         saatBerubah={(nilai) => formulir.setData('NamaUsaha', nilai)}
                         galat={formulir.errors.NamaUsaha}
-                        keterangan="Nama ini juga jadi nama outlet pertama dan tampil di struk, misal Kopi Nusantara. Cabang baru bisa diberi nama sendiri."
+                        keterangan="Nama ini jadi nama outlet pertama dan tampil di struk. Cabang baru bisa diberi nama sendiri."
                         maxLength={150}
                         autoComplete="organization"
                         required

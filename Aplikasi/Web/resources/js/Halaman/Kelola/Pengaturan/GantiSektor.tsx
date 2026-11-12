@@ -129,9 +129,8 @@ export default function HalamanGantiSektor({ Outlet, Template, Pratinjau }: Prop
         <TataLetakAplikasi judul="Ganti jenis usaha">
             <div className="grid gap-4">
                 <Pemberitahuan jenis="info" judul="Aman, tidak ada transaksi yang berubah">
-                    Salah memilih jenis usaha saat mendaftar? Pilih yang benar di sini. Produk, transaksi, jurnal, dan
-                    data pelanggan Anda tidak disentuh. Data bawaan jenis usaha lama (akun, kategori, fitur) hanya
-                    dibersihkan bila belum pernah dipakai, yang sudah dipakai tetap ada.
+                    Salah memilih jenis usaha? Pilih yang benar di sini. Produk, transaksi, dan pelanggan aman, data
+                    bawaan lama yang belum dipakai dibersihkan.
                 </Pemberitahuan>
                 <Panel judul="Pilih outlet dan jenis usaha baru" tingkat="h2">
                     <div className="grid gap-4 sm:grid-cols-2">

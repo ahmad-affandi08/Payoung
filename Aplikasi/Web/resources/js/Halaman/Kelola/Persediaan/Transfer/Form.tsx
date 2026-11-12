@@ -219,9 +219,8 @@ export default function HalamanFormTransferStok({
             ) : null}
             {Awal?.UuidPermintaanStok ? (
                 <Pemberitahuan jenis="info" judul={`Menjawab permintaan ${Awal.NomorPermintaan ?? ''}`.trim()}>
-                    Barang dan jumlah diisi dari permintaan. Ubah seperlunya, pilih batch atau nomor seri bila produknya
-                    dilacak, lalu kirim. Produk bernomor seri tidak diisi otomatis. Permintaan baru terhitung terpenuhi
-                    saat transfer ini dikirim.
+                    Barang dan jumlah diisi dari permintaan. Ubah seperlunya, lalu kirim. Permintaan terhitung terpenuhi
+                    saat transfer dikirim.
                     {galatServer.UuidPermintaanStok ? ` ${galatServer.UuidPermintaanStok}` : ''}
                 </Pemberitahuan>
             ) : null}
@@ -294,7 +293,7 @@ export default function HalamanFormTransferStok({
                         keterangan={
                             asal === ''
                                 ? 'Pilih lokasi asal dulu agar stok saat ini ikut tampil.'
-                                : 'Barang yang dipilih muncul paling atas. Ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Produk batch & nomor seri: satu baris per batch atau per nomor seri.'
+                                : 'Ketik jumlah lalu Enter untuk lanjut. Produk batch atau bernomor seri: satu baris per batch atau nomor seri.'
                         }
                     />
                     {galatDaftar ? <GalatBidang>{galatDaftar}</GalatBidang> : null}

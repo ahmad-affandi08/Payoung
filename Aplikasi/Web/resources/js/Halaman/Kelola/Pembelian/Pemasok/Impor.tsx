@@ -39,11 +39,10 @@ export default function HalamanImporPemasok({ Hasil, MaksimalBaris }: PropsImpor
             <Panel>
                 <form onSubmit={Periksa} className="grid gap-6 lg:grid-cols-2 lg:items-start" noValidate>
                     <p className="text-isi text-teks-sekunder">
-                        Baris pertama berisi judul kolom. Wajib: <strong>Nama</strong>. Opsional: Kode (tanpa kode,
-                        dibuat otomatis PMS-0001 dan seterusnya), NamaKontak, NoHp, Email, Alamat, Npwp, Pkp (Ya/Tidak),
-                        TerminHari (0 sampai 365 atau &quot;Tunai&quot;), NamaBank, NomorRekening, AtasNamaRekening,
-                        Catatan. Paling banyak {FormatAngka(MaksimalBaris)} baris per berkas. Pemasok yang kodenya sudah
-                        terdaftar dilewati, tidak ditimpa.{' '}
+                        Baris pertama berisi judul kolom. Wajib: <strong>Nama</strong>. Opsional: Kode, NamaKontak,
+                        NoHp, Email, Alamat, Npwp, Pkp (Ya/Tidak), TerminHari (0 sampai 365 atau &quot;Tunai&quot;),
+                        NamaBank, NomorRekening, AtasNamaRekening, Catatan. Paling banyak {FormatAngka(MaksimalBaris)}{' '}
+                        baris per berkas. Kode kosong dibuat otomatis, pemasok berkode sama dilewati.{' '}
                         <a href={`${alamat}/templat`} className="text-brand underline">
                             Unduh templat
                         </a>

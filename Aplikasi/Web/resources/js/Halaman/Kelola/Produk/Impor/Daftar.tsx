@@ -209,9 +209,8 @@ export default function HalamanDaftarImpor({
                             </PeringatanAsumsi>
                         ) : null}
                         <p className="text-keterangan text-teks-sekunder">
-                            Yang diimpor: produk, satuan, barcode, harga dan harga grosir, varian, kategori, dan
-                            kelompok pajak. Modifier, resep, daftar harga, stok awal, dan HPP tidak ikut diimpor. Produk
-                            terhitung paket saat ini:{' '}
+                            Yang diimpor: produk, satuan, barcode, harga, varian, kategori, dan kelompok pajak. Stok
+                            awal, resep, dan HPP tidak ikut. Produk terhitung paket saat ini:{' '}
                             <span className="tabular-nums">{FormatBatas(BatasSku, 'produk')}</span>.
                         </p>
                         <p className="text-keterangan text-teks-sekunder">

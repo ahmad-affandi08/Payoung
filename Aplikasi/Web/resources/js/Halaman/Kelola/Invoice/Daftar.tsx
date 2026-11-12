@@ -140,9 +140,7 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
     return (
         <TataLetakAplikasi judul="Invoice">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Tagihan untuk jasa dan barang tanpa stok. Kirim ke pelanggan lewat WhatsApp atau tautan, lalu catat
-                pembayarannya. Pengingat otomatis mengikuti pengaturan di Piutang pelanggan. Barang berstok ditagih
-                lewat pesanan grosir dan surat jalan.
+                Tagihan untuk jasa dan barang tanpa stok. Kirim lewat WhatsApp atau tautan, lalu catat pembayarannya.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice" /> : null}
             <DaftarGalatServer galat={props.errors} />

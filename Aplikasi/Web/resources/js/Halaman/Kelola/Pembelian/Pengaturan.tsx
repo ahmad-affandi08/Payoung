@@ -103,7 +103,7 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                     judul="Draf pesanan otomatis"
                     idJudul="judul-draf-otomatis"
                     className="lg:col-span-2"
-                    keterangan="Setiap pagi sistem menyiapkan draf pesanan pembelian ke pemasok dan harga pembelian terakhir. Draf tetap diperiksa dan diajukan oleh Anda."
+                    keterangan="Tiap pagi sistem menyiapkan draf pesanan ke pemasok dengan harga beli terakhir. Draf tetap Anda periksa dan ajukan."
                 >
                     <KotakCentang
                         label="Siapkan draf pesanan pembelian otomatis"
@@ -124,8 +124,8 @@ export default function HalamanPengaturanPembelian({ Pengaturan }: PropsPengatur
                     />
                     <p className="text-keterangan text-teks-sekunder">
                         {sumberDraf === 'Perkiraan'
-                            ? 'Jumlah dihitung dari rata-rata pemakaian 28 hari terakhir (penjualan, bahan resep, produksi, barang terbuang) dikali cakupan hari di bawah, dikurangi stok sekarang dan pesanan yang belum diterima. Berlaku juga untuk barang tanpa stok minimum.'
-                            : 'Barang dipesan sampai stok maksimum (atau 2 kali stok minimum) bila stoknya sudah sama dengan atau di bawah stok minimum.'}
+                            ? 'Dihitung dari rata-rata pemakaian 28 hari terakhir dikali cakupan hari, dikurangi stok dan pesanan yang belum datang.'
+                            : 'Barang dipesan sampai stok maksimum (atau 2 kali minimum) bila stok sudah di bawah minimum.'}
                     </p>
                     {sumberDraf === 'Perkiraan' ? (
                         <BidangPilihan

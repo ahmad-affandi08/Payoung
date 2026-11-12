@@ -58,7 +58,7 @@ describe('Pengaturan kios pesan sendiri di halaman outlet (F-17 bagian 4)', () =
 
         fireEvent.click(screen.getByRole('button', { name: 'Buat ulang tautan' }));
         expect(tiruanRouter.post).not.toHaveBeenCalled();
-        expect(screen.getByText(/Tautan kios dan layar antrian yang lama berhenti bekerja/)).toBeTruthy();
+        expect(screen.getByText(/Tautan kios dan layar antrian lama berhenti bekerja/)).toBeTruthy();
     });
 
     it('pengguna tanpa izin kelola hanya melihat, tanpa tombol aksi', () => {

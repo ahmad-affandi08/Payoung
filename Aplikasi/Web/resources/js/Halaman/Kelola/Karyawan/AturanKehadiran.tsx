@@ -63,15 +63,14 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
     return (
         <TataLetakAplikasi judul="Aturan kehadiran">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Mengatur bagaimana jadwal kerja dipakai saat karyawan absen, cara menilai terlambat, pulang cepat, dan
-                lembur (dasar rekap gaji), serta kapan karyawan dan pengelola diingatkan lewat WhatsApp.
+                Atur cara menilai terlambat, pulang cepat, dan lembur, serta kapan pengingat WhatsApp dikirim.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="aturan kehadiran" /> : null}
 
             <form onSubmit={Kirim} className="flex flex-col gap-4" aria-label="Aturan kehadiran" noValidate>
                 <Panel
                     judul="Bukti kehadiran"
-                    keterangan="Karyawan absen dari HP setelah login atau lewat tautan absen pribadinya. Wajahnya selalu dicocokkan dengan wajah terdaftar. Di sini Anda mengatur foto dan lokasinya."
+                    keterangan="Atur foto dan lokasi absen dari HP. Wajah selalu dicocokkan dengan wajah terdaftar."
                 >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
@@ -82,8 +81,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                                 disabled={!Izin.Kelola}
                             />
                             <p className="text-keterangan text-teks-sekunder">
-                                Foto bisa dilihat di rekap absensi. Jika dimatikan, wajah tetap dicocokkan tetapi
-                                fotonya tidak disimpan, hanya skor kemiripannya.
+                                Bila dimatikan, wajah tetap dicocokkan tetapi foto tidak disimpan.
                             </p>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -94,16 +92,15 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                                 disabled={!Izin.Kelola}
                             />
                             <p className="text-keterangan text-teks-sekunder">
-                                Dimatikan (bawaan): absen tetap tercatat dan ditandai &ldquo;perlu dicek&rdquo; bila
-                                lokasinya jauh dari outlet atau sinyal GPS lemah, supaya karyawan tidak tertolak hanya
-                                karena GPS meleset. Dinyalakan: absen di luar radius ditolak.
+                                Mati (bawaan): absen jauh dari outlet tetap tercatat dan ditandai perlu dicek. Nyala:
+                                absen di luar radius ditolak.
                             </p>
                         </div>
                     </div>
                 </Panel>
                 <Panel
                     judul="Absen mengikuti jadwal"
-                    keterangan="Berlaku untuk absen dari HP pribadi (ditolak langsung). Absen di aplikasi kasir tetap diterima karena bisa dilakukan offline, tetapi ditandai Di luar jadwal untuk ditinjau."
+                    keterangan="Berlaku untuk absen dari HP pribadi. Absen di aplikasi kasir tetap diterima dan ditandai Di luar jadwal."
                 >
                     <div className="flex flex-col gap-4">
                         <KotakCentang
@@ -145,7 +142,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
 
                 <Panel
                     judul="Lupa absen keluar"
-                    keterangan="Karyawan yang lupa absen keluar tidak boleh membuat jam kerjanya menyambung ke hari berikutnya. Absensinya ditutup otomatis sesuai jam selesai jadwal."
+                    keterangan="Absensi yang lupa keluar ditutup otomatis sesuai jam selesai jadwal."
                 >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
@@ -156,9 +153,8 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                                 disabled={!Izin.Kelola}
                             />
                             <p className="text-keterangan text-teks-sekunder">
-                                Jam keluar yang dicatat adalah jam selesai jadwal, bukan jam sistem menutupnya. Tanpa
-                                jadwal, dicatat pukul 23.59 di hari masuk. Absensi itu ditandai &ldquo;perlu
-                                dicek&rdquo; dan muncul di Kotak Tindakan, supaya jam pulangnya bisa Anda koreksi.
+                                Jam keluar dicatat sesuai jam selesai jadwal, atau 23.59 tanpa jadwal. Absensinya
+                                ditandai perlu dicek di Kotak Tindakan.
                             </p>
                         </div>
                         {Menit(
@@ -171,7 +167,7 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
 
                 <Panel
                     judul="Notifikasi WhatsApp"
-                    keterangan="Pengingat dikirim ke nomor HP akun karyawan. Peringatan dikirim ke anggota yang boleh melihat karyawan di outlet itu."
+                    keterangan="Pengingat dikirim ke karyawan, peringatan ke anggota yang boleh melihat karyawan di outlet itu."
                 >
                     <div className="flex flex-col gap-4">
                         {!WhatsappAktif ? (

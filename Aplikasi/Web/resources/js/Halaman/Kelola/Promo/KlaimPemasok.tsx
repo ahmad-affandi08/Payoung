@@ -122,9 +122,8 @@ export default function HalamanKlaimPemasok({ Terbuka, Penerimaan, OpsiAkunKasBa
     return (
         <TataLetakAplikasi judul="Klaim promo pemasok">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Promo yang ditanggung pemasok menimbulkan klaim di setiap transaksi dan langsung dicatat sebagai piutang
-                ke pemasok. Tagihkan klaim ke pemasok, lalu catat penyelesaiannya di sini: dibayar ke kas/bank atau
-                dipotong dari hutang ke pemasok. Transaksi yang dibatalkan (void) tidak diklaim.
+                Promo yang ditanggung pemasok jadi piutang ke pemasok. Catat penyelesaiannya di sini, dibayar atau
+                dipotong dari hutang.
             </p>
             <h2 className="text-subjudul font-semibold text-teks-utama">Klaim belum diterima</h2>
             <TabelData

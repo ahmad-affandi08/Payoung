@@ -161,6 +161,6 @@ describe('Pengaturan › Ganti jenis usaha (D-165)', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Ganti jenis usaha' }));
         fireEvent.click(screen.getAllByRole('button', { name: 'Ganti jenis usaha' }).at(-1) as HTMLElement);
 
-        expect(screen.getByText(/Tidak ada butir menu yang berubah/)).toBeTruthy();
+        expect(screen.getByText(/Menu tidak berubah/)).toBeTruthy();
     });
 });

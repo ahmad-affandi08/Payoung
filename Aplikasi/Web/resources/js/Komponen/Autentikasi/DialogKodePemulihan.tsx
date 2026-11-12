@@ -8,7 +8,7 @@ export default function DialogKodePemulihan({ kode, saatSelesai }: { kode: strin
     return (
         <DialogRahasia
             judul="Verifikasi dua langkah aktif"
-            peringatan="Simpan kode pemulihan ini di pengelola kata sandi atau tempat aman lain. Setiap kode hanya bisa dipakai satu kali untuk masuk bila ponsel Anda tidak tersedia."
+            peringatan="Simpan di pengelola kata sandi atau tempat aman. Tiap kode hanya sekali pakai bila ponsel tidak tersedia."
             saatSelesai={saatSelesai}
         >
             <DaftarNilaiRahasia nilai={kode} jenis="kode" />

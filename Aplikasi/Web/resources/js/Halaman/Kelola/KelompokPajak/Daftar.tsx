@@ -75,8 +75,8 @@ export default function HalamanDaftarKelompokPajak(propsHalaman: PropsDaftarKelo
             <AksiHalaman
                 keterangan={
                     <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Setiap produk yang dijual memakai satu kelompok pajak. PBJT makanan & minuman dan PPN tidak
-                        boleh dikenakan bersamaan pada satu produk.
+                        Setiap produk memakai satu kelompok pajak. PBJT makanan dan minuman serta PPN tidak boleh
+                        bersamaan pada satu produk.
                     </p>
                 }
             >

@@ -135,7 +135,7 @@ export default function HalamanFormFaktur({
         <TataLetakAplikasi judul="Catat faktur pembelian">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Pilih penerimaan barang yang ditagih pemasok, lalu cocokkan harga dengan faktur. Selisih harga
-                disesuaikan ke HPP: stok yang masih ada dinilai ulang, yang sudah terjual masuk HPP.
+                menyesuaikan HPP.
             </p>
             <DaftarGalatServer
                 galat={galat}

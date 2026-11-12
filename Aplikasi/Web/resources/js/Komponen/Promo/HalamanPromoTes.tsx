@@ -88,7 +88,7 @@ describe('Halaman promo (F-16c)', () => {
         cleanup();
         RenderUji(<HalamanDaftarPromo Promo={[]} ModeResolusi="PrioritasKetat" FiturAktif Izin={{ Kelola: false }} />);
         expect(screen.queryByRole('link', { name: 'Tambah promo' })).toBeNull();
-        expect(screen.getByText(/Promo dipakai urut prioritas/)).toBeTruthy();
+        expect(screen.getByText(/Promo dipakai menurut prioritas/)).toBeTruthy();
     });
 
     it('formulir: diskon persen kategori tertentu khusus tier GOLD dikirim sebagai POST', () => {

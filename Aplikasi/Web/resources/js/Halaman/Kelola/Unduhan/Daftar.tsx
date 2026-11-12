@@ -118,12 +118,11 @@ export default function HalamanDaftarUnduhan({ Unduhan, OpsiStatus, HariBerlaku 
     return (
         <TataLetakAplikasi judul="Pusat Unduhan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Laporan yang besar disiapkan di latar belakang, jadi Anda tidak perlu menunggu di halaman laporan. Pilih
-                &quot;Ekspor besar&quot; di tombol Ekspor laporan, lalu unduh hasilnya di sini begitu statusnya Siap.
+                Laporan besar disiapkan di latar belakang. Pilih Ekspor besar di tombol Ekspor, lalu unduh di sini saat
+                statusnya Siap.
             </p>
             <Pemberitahuan jenis="info" judul="Yang perlu Anda tahu">
-                Setiap berkas tersedia {HariBerlaku} hari, lalu dihapus otomatis. Berkas berisi data usaha dan hanya
-                bisa diunduh oleh Anda sendiri, sesuai izin dan outlet yang Anda kelola saat meminta.
+                Berkas tersedia {HariBerlaku} hari lalu dihapus otomatis, dan hanya bisa diunduh oleh Anda sendiri.
             </Pemberitahuan>
             <DaftarGalatServer galat={props.errors} />
             <TabelData

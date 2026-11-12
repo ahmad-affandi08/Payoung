@@ -272,7 +272,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         expect(jenis).toContain('Produksi');
         expect(jenis).not.toContain('BahanBaku');
         expect(jenis).not.toContain('Resep');
-        expect(screen.getByText(/beras pak 5 kg dari karung 25 kg/)).toBeTruthy();
+        expect(screen.getByText(/beras 5 kg dari karung 25 kg/)).toBeTruthy();
     });
 
     it.each([['SVC-SLN'], ['RTL-PHR']])('%s (salon/apotek) tidak ditawari jenis Produksi', (sektor) => {
@@ -359,7 +359,7 @@ describe('Kelola/Produk/Form tambah produk bertahap (DesainF03 E.3, D-128)', () 
         IsiNama('Kaos Polos');
         Lanjut();
         expect(LangkahAktif()).toBe('Varian');
-        expect(screen.getByText(/harga diisi per varian/)).toBeTruthy();
+        expect(screen.getByText(/harganya diisi per varian/)).toBeTruthy();
     });
 
     it('tanpa izin harga: tabel harga awal nonaktif, alasannya tertulis, dan harga tidak diwajibkan', () => {

@@ -18,7 +18,7 @@ export default function HalamanBuatAturanKomisi({ OpsiKategori }: PropsBuatAtura
     return (
         <TataLetakAplikasi judul="Tambah aturan komisi">
             <DaftarGalatServer galat={props.errors} kecuali={IsianAturanKomisi} />
-            <KartuFormulir keterangan="Komisi dihitung dari aturan yang paling spesifik (produk, lalu kategori, lalu semua produk) dan dibagi rata bila beberapa staf. Aturan berlaku untuk penjualan berikutnya.">
+            <KartuFormulir keterangan="Aturan paling spesifik dipakai (produk, lalu kategori, lalu semua). Berlaku untuk penjualan berikutnya.">
                 <IsiFormulirAturanKomisi
                     aturan={null}
                     opsiKategori={OpsiKategori}

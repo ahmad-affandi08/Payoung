@@ -245,8 +245,8 @@ function PanelEmail({ akun }: { akun: PropsKeamananAkun['Akun'] }) {
             {!akun.EmailTerverifikasi ? (
                 <Pemberitahuan jenis="peringatan" judul="Email belum terverifikasi">
                     <p>
-                        Buka tautan verifikasi yang kami kirim ke email ini. Belum menerimanya, atau emailnya salah
-                        ketik? Kirim ulang tautan, atau ganti email di bawah.
+                        Buka tautan verifikasi di email ini. Belum menerima atau emailnya salah? Kirim ulang atau ganti
+                        di bawah.
                     </p>
                     <div className="mt-2">
                         <Tombol varian="sekunder" memproses={kirimUlang.processing} onClick={KirimUlangVerifikasi}>
@@ -326,8 +326,8 @@ function PanelGoogle({ google }: { google: PropsKeamananAkun['Google'] }) {
                 <>
                     {google.KataSandiOtomatis ? (
                         <Pemberitahuan jenis="info" judul="Kata sandi belum diatur">
-                            Akun ini dibuat lewat Google, jadi belum punya kata sandi. Atur kata sandi dulu supaya Anda
-                            tetap bisa masuk bila ingin melepas Google.
+                            Akun ini dibuat lewat Google dan belum punya kata sandi. Atur dulu agar tetap bisa masuk
+                            bila Google dilepas.
                         </Pemberitahuan>
                     ) : null}
                     <div className="flex flex-wrap gap-2">
@@ -417,8 +417,7 @@ function FormulirNonaktifkan({ wajib, sisaKode }: { wajib: boolean; sisaKode: nu
             </p>
             {wajib ? (
                 <p className="text-isi text-teks-sekunder">
-                    Paket langganan usaha tempat Anda bergabung mewajibkan verifikasi dua langkah untuk peran Anda
-                    (Owner, Admin, atau Akuntan), jadi tidak bisa dinonaktifkan.
+                    Langganan usaha mewajibkan verifikasi dua langkah untuk peran Anda, jadi tidak bisa dinonaktifkan.
                 </p>
             ) : (
                 <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>

@@ -67,7 +67,7 @@ export default function PanelKalibrasiWajah() {
     return (
         <Panel
             judul="Kalibrasi pencocokan wajah"
-            keterangan="Seberapa mirip wajah saat absen dari HP dengan wajah terdaftar, 30 hari terakhir. Dipakai menilai apakah ambang terlalu longgar atau terlalu ketat."
+            keterangan="Seberapa mirip wajah saat absen dengan wajah terdaftar, 30 hari terakhir. Untuk menilai ambang terlalu longgar atau ketat."
         >
             {kueri.isPending ? (
                 <div role="status" aria-label="Memuat kalibrasi wajah" className="flex flex-col gap-2">

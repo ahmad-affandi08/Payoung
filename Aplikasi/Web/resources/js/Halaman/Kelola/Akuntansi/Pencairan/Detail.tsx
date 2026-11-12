@@ -208,7 +208,7 @@ export default function HalamanDetailPencairan({ Pencairan, Baris, Jurnal, Riway
             {batalkan ? (
                 <DialogFormulir
                     judul="Batalkan pencairan"
-                    keterangan="Setorannya ditarik kembali dari akun kas/bank di buku, potongannya dicabut dari beban, dan pembayarannya dilepas supaya bisa dicairkan ulang di dokumen yang benar."
+                    keterangan="Setoran ditarik dari kas atau bank, potongan dicabut dari biaya, dan pembayaran dilepas untuk dicairkan ulang."
                     galatUmum={props.errors.Umum}
                     saatTutup={() => AturBatalkan(false)}
                 >

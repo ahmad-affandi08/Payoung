@@ -81,9 +81,8 @@ export default function HalamanDaftarPaketSesi({ PaketSesi, Izin, FiturAktif }: 
             {FiturAktif ? null : <PesanFiturPaketSesi />}
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="paket sesi" /> : null}
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Paket sesi adalah produk Jasa yang dijual sekali bayar untuk beberapa kali layanan, misal 10x creambath.
-                Uangnya dicatat sebagai pendapatan diterima dimuka dan diakui per sesi saat pelanggan memakai sesinya di
-                kasir. Harga paket mengikuti harga jual produknya.
+                Produk Jasa yang dijual sekali bayar untuk beberapa sesi, misal 10x creambath. Pendapatan diakui saat
+                sesi dipakai.
             </p>
             {Izin.Kelola && FiturAktif ? (
                 <AksiHalaman>

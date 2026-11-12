@@ -84,7 +84,7 @@ export default function HalamanFormulirPaketSesi({ Paket, PilihanJasa, FiturAkti
                 galat={galat}
                 kecuali={Object.keys(galat).filter((k) => bidangForm.includes(k.split('.')[0] ?? k))}
             />
-            <KartuFormulir keterangan="Buat dulu produk berjenis Jasa untuk paketnya (misal Paket Creambath 10x) dengan harga jual paket. Pelanggan wajib dipilih saat paket dijual di kasir.">
+            <KartuFormulir keterangan="Buat dulu produk Jasa untuk paketnya, misal Paket Creambath 10x. Pelanggan wajib dipilih saat dijual.">
                 <form onSubmit={Simpan} className="flex flex-col gap-4" aria-label="Formulir paket sesi" noValidate>
                     <BidangPilihan
                         label="Produk paket (Jasa)"

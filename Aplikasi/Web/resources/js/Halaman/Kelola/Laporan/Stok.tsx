@@ -549,8 +549,7 @@ export default function HalamanLaporanStok({
                         Stok kritis ({String(Kritis.Jumlah)})
                     </h2>
                     <p className="text-label text-teks-sekunder">
-                        Produk yang saldonya sama dengan atau di bawah batas minimum lokasi stoknya. Atur batas minimum
-                        di halaman produk.
+                        Produk dengan saldo sama atau di bawah batas minimum. Atur batas di halaman produk.
                     </p>
                     <TabelData
                         id="laporan-stok-kritis"
@@ -574,9 +573,8 @@ export default function HalamanLaporanStok({
                         Batch kedaluwarsa ({String(Kedaluwarsa.Jumlah)})
                     </h2>
                     <p className="text-label text-teks-sekunder">
-                        Batch yang masih bersisa dan sudah lewat atau kedaluwarsa dalam 30 hari. Penjualan mengambil
-                        batch berkedaluwarsa terdekat lebih dulu. Barang yang sudah lewat dicatat sebagai bahan terbuang
-                        atau penyesuaian stok.
+                        Batch yang bersisa dan sudah lewat atau kedaluwarsa dalam 30 hari. Penjualan mengambil batch
+                        terdekat lebih dulu.
                     </p>
                     <TabelData
                         id="laporan-stok-kedaluwarsa"
@@ -601,9 +599,8 @@ export default function HalamanLaporanStok({
                         Slow &amp; fast moving ({String(Perputaran.Baris.length)})
                     </h2>
                     <p className="max-w-3xl text-label text-teks-sekunder">
-                        Perputaran = pemakaian {String(Perputaran.Rentang)} hari terakhir (sampai kemarin) ÷ saldo
-                        sekarang. Cepat laku: 1 atau lebih (stok habis dalam rentang itu). Normal: 0,25 sampai kurang
-                        dari 1. Lambat laku: di bawah 0,25. Tidak bergerak: ada saldo tetapi tidak ada pemakaian.
+                        Perputaran = pemakaian {String(Perputaran.Rentang)} hari terakhir ÷ saldo sekarang. Cepat laku
+                        di atas 1, lambat laku di bawah 0,25, tidak bergerak bila ada saldo tanpa pemakaian.
                     </p>
                     <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-5">
                         {(['Cepat', 'Normal', 'Lambat', 'Mati'] as const).map((kelas) => (
@@ -643,10 +640,9 @@ export default function HalamanLaporanStok({
                         Rencana produksi {FormatTanggal(Rencana.Target)} ({String(Rencana.Baris.length)})
                     </h2>
                     <p className="max-w-3xl text-label text-teks-sekunder">
-                        Kebutuhan = yang lebih besar antara rata-rata pemakaian pada hari yang sama dalam{' '}
-                        {String(Rencana.Minggu)} minggu terakhir dan pre-order yang diambil pada tanggal itu (pre-order
-                        biasanya sudah ikut di riwayat penjualan, jadi tidak dijumlahkan). Produksi = kebutuhan − saldo
-                        sekarang. Ini perkiraan. Sesuaikan dengan cuaca, promo, dan kapasitas oven sebelum produksi.
+                        Kebutuhan = rata-rata pemakaian hari yang sama dalam {String(Rencana.Minggu)} minggu terakhir
+                        atau pre-order yang diambil, mana yang lebih besar. Produksi = kebutuhan − saldo. Ini perkiraan,
+                        sesuaikan dengan cuaca dan promo.
                     </p>
                     <TabelData
                         id="laporan-stok-rencana"

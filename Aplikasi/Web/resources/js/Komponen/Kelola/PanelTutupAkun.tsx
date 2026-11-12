@@ -159,8 +159,8 @@ function FormAjukan({ perluKataSandi, saatSelesai }: { perluKataSandi: boolean; 
             judul="Ajukan penghapusan data"
             keterangan={
                 <p>
-                    Tim kami melaksanakannya setelah masa tunggu berakhir. Data pribadi dihapus, transaksi tetap
-                    disimpan dengan identitas dianonimkan, dan usaha tidak bisa dibuka kembali.
+                    Tim kami melaksanakannya setelah masa tunggu berakhir. Data pribadi dihapus dan usaha tidak bisa
+                    dibuka kembali.
                 </p>
             }
             labelKirim="Ajukan penghapusan data"

@@ -170,9 +170,7 @@ export default function HalamanTutupBuku({ Periode, Tahun, Izin }: PropsTutupBuk
         <TataLetakAplikasi judul="Tutup buku">
             <DaftarGalatServer galat={props.errors} kecuali={['Alasan']} />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Kunci periode setelah laporan bulan itu selesai. Transaksi back-office bertanggal di periode terkunci
-                akan ditolak. Penjualan kasir offline yang baru terkirim tetap diterima, ditandai untuk ditinjau, dan
-                dibukukan di periode terbuka berikutnya.
+                Kunci periode setelah laporan bulan itu selesai. Transaksi back-office di periode terkunci ditolak.
             </p>
             <TabelData
                 id="kelola-akuntansi-tutup-buku"
@@ -211,8 +209,8 @@ export default function HalamanTutupBuku({ Periode, Tahun, Izin }: PropsTutupBuk
             />
             <h2 className="mt-4 text-subjudul font-semibold text-teks-utama">Tutup tahun</h2>
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Setelah 12 bulan terkunci, tutup tahun buku untuk memindahkan laba atau rugi tahun itu ke Laba Ditahan.
-                Setelah ditutup, kunci bulan-bulannya tidak bisa dibuka lagi.
+                Setelah 12 bulan terkunci, tutup tahun memindahkan laba atau rugi ke Laba Ditahan. Kunci bulan tidak
+                bisa dibuka lagi.
             </p>
             <TabelData
                 id="kelola-akuntansi-tutup-tahun"

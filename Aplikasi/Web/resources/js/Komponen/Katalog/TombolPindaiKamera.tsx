@@ -39,7 +39,7 @@ function JudulDialog(jenisKode: JenisKode): string {
 function PetunjukDialog(jenisKode: JenisKode, berkelanjutan: boolean): string {
     if (jenisKode === 'Seri') {
         return berkelanjutan
-            ? 'Arahkan kamera ke label nomor seri atau IMEI satu per satu (barcode atau QR di kemasan atau perangkat). Kamera tetap terbuka. Tekan Selesai bila sudah.'
+            ? 'Arahkan kamera ke label nomor seri atau IMEI satu per satu. Tekan Selesai bila sudah.'
             : 'Arahkan kamera ke label nomor seri atau IMEI (barcode atau QR di kemasan atau perangkat) sampai terbaca sendiri.';
     }
 

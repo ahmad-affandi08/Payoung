@@ -58,7 +58,7 @@ export default function DialogShiftKerja({ alamat, shift, saatTutup }: Props) {
     return (
         <DialogFormulir
             judul="Shift kerja"
-            keterangan="Buat shift sekali (misal Pagi 08:00–16:00), lalu pasang ke jadwal dengan satu klik. Mengubah shift tidak mengubah jadwal yang sudah dibuat."
+            keterangan="Buat shift sekali, misal Pagi 08:00–16:00, lalu pasang ke jadwal. Mengubah shift tidak mengubah jadwal lama."
             galatUmum={galat.Umum}
             saatTutup={saatTutup}
             lebar="lebar"

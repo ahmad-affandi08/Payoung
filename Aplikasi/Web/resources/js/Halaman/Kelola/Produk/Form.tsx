@@ -132,7 +132,7 @@ const penjelasanJenis: Record<JenisProduk, string> = {
         'Satu produk dengan banyak pilihan, misal kaos dengan ukuran dan warna. Varian dibuat setelah disimpan.',
     Paket: 'Beberapa produk dijual sebagai satu paket berharga sendiri. Isi paket diatur setelah produk disimpan.',
     Produksi:
-        'Barang jadi dari bahan lain dan punya stok sendiri, misal beras pak 5 kg dari karung 25 kg. Resep diisi setelah produk disimpan.',
+        'Barang jadi dari bahan lain dengan stok sendiri, misal beras 5 kg dari karung 25 kg. Resep diisi setelah disimpan.',
     BahanBaku: 'Bahan untuk resep atau produksi. Tidak dijual langsung di kasir.',
     Konsinyasi: 'Barang titipan penitip. Hutang ke penitip baru tercatat saat barang terjual.',
 };
@@ -519,8 +519,7 @@ export default function HalamanFormProduk({
                     galat={galat.LokasiProduksi}
                 />
                 <p className="text-keterangan text-teks-sekunder">
-                    Bahan resep dikurangi dari lokasi stok ini saat terjual. Bila outlet tidak punya lokasi itu, stok
-                    toko yang dikurangi.
+                    Bahan resep dikurangi dari lokasi ini. Tanpa lokasi itu, stok toko yang dikurangi.
                 </p>
             </div>
         ) : null;
@@ -597,8 +596,7 @@ export default function HalamanFormProduk({
                 saatBerubah={(pilih) => AturPaketSesi(pilih ? { JumlahSesi: '', MasaBerlakuHari: '' } : null)}
             />
             <p className="text-keterangan text-teks-sekunder">
-                Pelanggan membayar di muka untuk beberapa kali layanan, misal 10 kali creambath. Sisa sesi tercatat di
-                data pelanggan dan dipakai di kasir.
+                Pelanggan membayar di muka untuk beberapa kali layanan, misal 10 kali creambath.
             </p>
             {paketSesi !== null ? (
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -826,8 +824,7 @@ export default function HalamanFormProduk({
                         })
                     )}
                     <p className="text-keterangan text-teks-sekunder">
-                        Harga bertingkat berlaku otomatis di kasir, misal 1–11 pcs Rp 5.000 dan mulai 12 pcs Rp 4.500.
-                        Harga per outlet, kanal, atau waktu diatur di Daftar harga.
+                        Harga bertingkat berlaku otomatis di kasir. Harga per outlet atau kanal diatur di Daftar harga.
                     </p>
                 </>
             )}
@@ -837,8 +834,7 @@ export default function HalamanFormProduk({
     const panelVarian = (
         <div className="flex flex-col gap-3">
             <p className="text-isi text-teks-sekunder">
-                Isi atribut (misal Ukuran) dan nilainya (S, M, L). Setelah produk disimpan, tombol Buat varian di
-                halaman produk membuat satu varian untuk setiap kombinasi.
+                Isi atribut (misal Ukuran) dan nilainya (S, M, L). Varian dibuat dari halaman produk setelah disimpan.
             </p>
             <PenyuntingAtributVarian
                 nilai={data.AtributVarian}
@@ -869,8 +865,7 @@ export default function HalamanFormProduk({
                     required={bisaDijual || induk}
                 />
                 <p className="text-keterangan text-teks-sekunder">
-                    Tarif pajak mengikuti ketentuan resmi dan berganti sendiri bila aturannya berubah. Kelompok baru
-                    dibuat di menu Kelompok pajak.
+                    Tarif pajak mengikuti ketentuan dan berganti sendiri bila aturan berubah.
                 </p>
             </div>
             <GrupRadio<TigaKeadaan>

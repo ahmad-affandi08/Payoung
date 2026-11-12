@@ -241,9 +241,8 @@ export default function HalamanLaporanApotek({
                         Penjualan obat keras, psikotropika & narkotika
                     </h2>
                     <p className="max-w-3xl text-label text-teks-sekunder">
-                        Setiap penyerahan obat keras (termasuk Obat Wajib Apotek tanpa resep), psikotropika, dan
-                        narkotika beserta resep, batch, dan apoteker yang menyerahkannya. Obat yang mendekati
-                        kedaluwarsa ada di{' '}
+                        Setiap penyerahan obat keras, psikotropika, dan narkotika beserta resep, batch, dan apotekernya.
+                        Obat yang mendekati kedaluwarsa ada di{' '}
                         <Link href="/kelola/laporan/stok?tab=kedaluwarsa" className="text-brand underline">
                             Laporan stok › Kedaluwarsa
                         </Link>
@@ -274,10 +273,7 @@ export default function HalamanLaporanApotek({
                         Data pendukung SIPNAP
                     </h2>
                     <p className="max-w-3xl text-label text-teks-sekunder">
-                        Rekap bulanan psikotropika dan narkotika dari buku stok, dalam satuan dasar. Ini data pendukung,
-                        bukan laporan resmi: periksa lalu isikan sendiri ke aplikasi SIPNAP. Stok akhir = stok awal +
-                        masuk dari pemasok + masuk lain − keluar penjualan − keluar lain (transfer, penyesuaian, opname,
-                        pemusnahan, retur ke pemasok).
+                        Rekap bulanan psikotropika dan narkotika. Data pendukung SIPNAP, bukan laporan resmi.
                     </p>
                     <div
                         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"

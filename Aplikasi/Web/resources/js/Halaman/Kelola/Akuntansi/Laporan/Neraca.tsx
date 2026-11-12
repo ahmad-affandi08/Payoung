@@ -77,8 +77,7 @@ export default function HalamanNeraca({ Saring, Laporan, OpsiOutlet }: PropsNera
     return (
         <TataLetakAplikasi judul="Neraca">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Posisi harta (aset), utang (kewajiban), dan modal (ekuitas) pada akhir periode, dibanding sehari sebelum
-                periode dimulai. Laba yang belum ditutup buku ikut dihitung di ekuitas.
+                Harta, utang, dan modal pada akhir periode, dibanding sehari sebelum periode dimulai.
             </p>
             <SaringLaporan
                 alamat={alamat}
@@ -92,8 +91,8 @@ export default function HalamanNeraca({ Saring, Laporan, OpsiOutlet }: PropsNera
                 </Pemberitahuan>
             ) : (
                 <Pemberitahuan jenis="peringatan" judul="Tidak seimbang">
-                    Total aset berbeda dengan total kewajiban dan ekuitas untuk filter ini, biasanya karena satu jurnal
-                    memuat baris beberapa outlet. Lihat tanpa filter outlet untuk memeriksa keseimbangan penuh.
+                    Total aset beda dengan kewajiban dan ekuitas, biasanya karena jurnal memuat beberapa outlet. Lihat
+                    tanpa filter outlet.
                 </Pemberitahuan>
             )}
             <RingkasanAngka

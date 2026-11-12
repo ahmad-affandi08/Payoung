@@ -19,7 +19,7 @@ export default function HalamanBuatKelompokPilihan({ Izin }: PropsBuatKelompokPi
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((k) => isianForm.some((i) => k.startsWith(i)))}
             />
-            <KartuFormulir keterangan="Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping. Atur batas pilih, harga tambahan, dan bahan yang dipotong dari stok.">
+            <KartuFormulir keterangan="Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping.">
                 <FormKelompokPilihan
                     kelompok={null}
                     bolehUbahHarga={Izin.UbahHarga}

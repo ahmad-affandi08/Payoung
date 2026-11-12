@@ -65,8 +65,8 @@ export function PanelLamaLangganan({
                 </ul>
             )}
             <p className="text-keterangan text-teks-sekunder">
-                Lama kelipatan 12 bulan memakai harga tahunan di katalog paket, bukan tangga ini. Perubahan hanya
-                berlaku untuk tagihan yang terbit sesudahnya.
+                Kelipatan 12 bulan memakai harga tahunan di katalog paket, bukan tangga ini. Berlaku untuk tagihan yang
+                terbit sesudahnya.
             </p>
             {dialog ? <FormUbahLama aturan={aturan} saatSelesai={() => AturDialog(false)} /> : null}
         </div>

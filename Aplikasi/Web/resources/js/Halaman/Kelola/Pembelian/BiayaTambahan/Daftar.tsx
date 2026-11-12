@@ -92,7 +92,7 @@ export default function HalamanDaftarBiayaTambahan({ Biaya, OpsiJenis, OpsiStatu
     return (
         <HalamanDaftarPembelian
             judul="Biaya tambahan pembelian"
-            keterangan="Ongkos ekspedisi, bea masuk, asuransi, atau bongkar muat yang ditagih pihak lain setelah barang diterima. Catat dari halaman penerimaan barangnya."
+            keterangan="Ongkos ekspedisi, bea masuk, atau asuransi yang ditagih setelah barang diterima. Catat dari halaman penerimaan."
             izin={Izin}
             objek="biaya tambahan"
         >

@@ -239,7 +239,7 @@ export default function HalamanFormKampanye({
             galat={galat.Isi}
             baris={6}
             maksimal={MaksIsi}
-            keterangan="Tulis {nama} untuk nama pelanggan dan {toko} untuk nama usaha. Nama usaha dan tautan berhenti berlangganan ditambahkan otomatis di akhir pesan."
+            keterangan="Tulis {nama} untuk nama pelanggan dan {toko} untuk nama usaha. Tautan berhenti berlangganan ditambahkan otomatis."
             required
         />
     );

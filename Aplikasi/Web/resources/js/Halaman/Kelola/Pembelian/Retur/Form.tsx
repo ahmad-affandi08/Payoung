@@ -104,9 +104,8 @@ export default function HalamanFormRetur({ Penerimaan: p, Baris, HariIni, OpsiAk
         <TataLetakAplikasi judul={`Retur dari ${p.Nomor}`}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Barang keluar dari {p.NamaGudang} senilai harga saat diterima, dan hutang ke{' '}
-                {p.Pemasok?.Nama ?? 'pemasok'} berkurang. Bila faktur sudah dibayar (termasuk belanja stok tunai),
-                bagian yang melebihi sisa hutang dicatat sebagai uang yang dikembalikan pemasok ke akun yang Anda pilih.
-                Jumlah dalam satuan dasar.
+                {p.Pemasok?.Nama ?? 'pemasok'} berkurang. Bila faktur sudah dibayar, kelebihannya dicatat sebagai uang
+                kembali dari pemasok ke akun pilihan Anda. Jumlah dalam satuan dasar.
             </p>
             <DaftarGalatServer galat={galat} kecuali={['Tanggal', 'Alasan', 'UuidAkunRefund']} />
             <form onSubmit={Simpan} noValidate aria-label="Retur pembelian" className="flex flex-col gap-4">

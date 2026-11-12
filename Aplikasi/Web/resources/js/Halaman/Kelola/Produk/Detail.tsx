@@ -234,8 +234,8 @@ export default function HalamanDetailProduk({
                                 Hapus {Produk.Nama}?
                             </AlertDialogTitle>
                             <AlertDialogDescription className="text-isi text-teks-sekunder">
-                                Produk, barcode, dan harganya dihapus permanen, dan SKU bisa dipakai produk lain. Bila
-                                produk hanya tidak dijual lagi, pilih Arsipkan.
+                                Produk, barcode, dan harganya dihapus permanen. Bila hanya tidak dijual lagi, pilih
+                                Arsipkan.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

@@ -426,10 +426,7 @@ function FormUbahBatasRefund({ batas, saatSelesai }: { batas: string; saatSelesa
         <KerangkaForm
             judul="Ubah batas refund"
             keterangan={
-                <p>
-                    Isi 0 bila semua refund harus disetujui Super Admin lebih dulu. Perubahan tercatat di audit dan
-                    hanya berlaku untuk pengajuan refund berikutnya.
-                </p>
+                <p>Isi 0 bila semua refund harus disetujui Super Admin. Berlaku untuk pengajuan refund berikutnya.</p>
             }
             labelKirim="Simpan batas"
             memproses={formulir.processing}

@@ -103,8 +103,8 @@ export default function HalamanDaftarTransferStok({ Transfer, OpsiGudang, OpsiSt
     return (
         <TataLetakAplikasi judul="Transfer stok">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Pindahkan stok antar lokasi atau antar outlet. Barang yang dikirim tercatat di lokasi dalam perjalanan
-                sampai diterima. Selisih kirim dan terima dicatat sebagai susut dengan alasan.
+                Pindahkan stok antar lokasi atau outlet. Barang tercatat di lokasi dalam perjalanan sampai diterima.
+                Selisih dicatat sebagai susut.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="transfer stok" /> : null}
             <DaftarGalatServer galat={props.errors} />

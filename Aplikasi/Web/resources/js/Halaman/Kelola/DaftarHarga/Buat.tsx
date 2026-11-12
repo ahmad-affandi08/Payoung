@@ -18,7 +18,7 @@ export default function HalamanBuatDaftarHarga({ Outlet, Kanal, OpsiTier, ZonaWa
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((k) => isianForm.some((i) => k.startsWith(i)))}
             />
-            <KartuFormulir keterangan="Atur untuk outlet, kanal, tingkat pelanggan, dan periode mana daftar ini berlaku. Harga per produk diisi setelah daftar dibuat.">
+            <KartuFormulir keterangan="Atur outlet, kanal, tingkat pelanggan, dan periode berlakunya. Harga per produk diisi setelah daftar dibuat.">
                 <FormDaftarHarga
                     uuid={null}
                     awal={DaftarHargaKosong}

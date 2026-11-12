@@ -49,7 +49,7 @@ export default function HalamanDaftarPesananGrosir({ Pesanan, OpsiStatus, Izin }
     return (
         <HalamanGrosir
             judul="Pesanan grosir"
-            keterangan="Pesanan dari pembeli grosir. Limit kredit pelanggan diperiksa saat pesanan dikonfirmasi, dan barangnya diserahkan bertahap lewat surat jalan."
+            keterangan="Pesanan pembeli grosir. Limit kredit diperiksa saat dikonfirmasi, barang diserahkan bertahap lewat surat jalan."
             izin={Izin}
             objek="pesanan grosir"
         >

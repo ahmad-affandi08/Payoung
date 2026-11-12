@@ -184,9 +184,8 @@ export default function HalamanSektor({ Progres, Template, TemplateTerpilih, Sek
                     <Card className="gap-2 p-4 shadow-none rounded-panel">
                         <h2 className="text-subjudul font-semibold text-teks-utama">Mulai jualan lebih cepat</h2>
                         <p className="text-isi text-teks-sekunder">
-                            Siapkan semuanya otomatis: template diterapkan, pajak diatur sesuai usulan untuk kota Anda,
-                            produk contoh ditambahkan dengan harga saran, dan pembayaran tunai langsung siap. Semua bisa
-                            diubah nanti.
+                            Template, pajak, produk contoh, dan pembayaran tunai disiapkan otomatis. Semua bisa diubah
+                            nanti.
                         </p>
                         <div className="flex flex-wrap gap-2">
                             <Tombol type="button" onClick={SiapkanOtomatis} memproses={formulir.processing}>

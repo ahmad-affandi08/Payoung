@@ -79,9 +79,8 @@ export default function HalamanLabaRugi({ Saring, Laporan, OpsiOutlet }: PropsLa
     return (
         <TataLetakAplikasi judul="Laba rugi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pendapatan dikurangi harga pokok penjualan (HPP) menjadi laba kotor, lalu dikurangi beban menjadi laba
-                bersih. Kolom kanan membandingkan dengan periode sebelumnya yang sama panjang. Untuk membandingkan
-                dengan target, buka{' '}
+                Pendapatan dikurangi HPP menjadi laba kotor, lalu dikurangi beban menjadi laba bersih. Kolom kanan
+                membandingkan dengan periode sebelumnya. Untuk target, buka{' '}
                 <Link
                     href="/kelola/akuntansi/anggaran"
                     className="font-semibold text-brand underline underline-offset-2"

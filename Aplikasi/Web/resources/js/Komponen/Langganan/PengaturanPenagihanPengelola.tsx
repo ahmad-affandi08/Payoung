@@ -116,8 +116,8 @@ function FormUbahPkp({ pkp, saatSelesai }: { pkp: boolean; saatSelesai: () => vo
             judul="Ubah status PKP"
             keterangan={
                 <p>
-                    Nyalakan hanya setelah SPPKP terbit. Tagihan yang terbit sesudah ini mengikuti status baru, yang
-                    sudah terbit tidak berubah. Perubahan tercatat di audit.
+                    Nyalakan hanya setelah SPPKP terbit. Berlaku untuk tagihan yang terbit sesudahnya dan tercatat di
+                    audit.
                 </p>
             }
             labelKirim="Simpan status PKP"
@@ -170,10 +170,7 @@ function FormUbahRekening({ rekening, saatSelesai }: { rekening: RekeningTujuan[
         <KerangkaForm
             judul="Ubah rekening tujuan transfer"
             keterangan={
-                <p>
-                    Rekening ini yang ditampilkan ke Owner untuk tagihan manual. Rekening pertama menjadi rekening
-                    utama. Bukti transfer yang sudah masuk menyimpan salinan rekeningnya sendiri, jadi tidak berubah.
-                </p>
+                <p>Rekening ini ditampilkan ke Owner untuk tagihan manual. Rekening pertama menjadi rekening utama.</p>
             }
             labelKirim="Simpan rekening"
             memproses={formulir.processing}

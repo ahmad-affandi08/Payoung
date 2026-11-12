@@ -128,9 +128,8 @@ export default function HalamanWebhook({ Webhook, Kiriman, OpsiPeristiwa, Rahasi
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Webhook memberi tahu aplikasi lain secara otomatis saat sesuatu terjadi di toko Anda. Tiap kiriman
                 membawa header <span className="font-mono">X-Id-Peristiwa</span> untuk mencegah dobel dan{' '}
-                <span className="font-mono">X-Tanda-Tangan: sha256=…</span>, yaitu HMAC-SHA256 dari{' '}
-                <span className="font-mono">X-Waktu-Kirim</span>, titik, lalu isi kiriman, memakai rahasia webhook.
-                Kiriman yang gagal dicoba lagi 1 menit, 5 menit, 30 menit, 2 jam, lalu 12 jam kemudian.{' '}
+                <span className="font-mono">X-Tanda-Tangan: sha256=…</span> (HMAC-SHA256 dengan rahasia webhook).
+                Kiriman gagal dicoba lagi bertahap sampai 12 jam.{' '}
                 <AjakanTambahBatas teksLisensi={null}>
                     Contoh kode pemeriksaan tanda tangan ada di{' '}
                     <a className="font-semibold text-brand underline" href="/pengembang#webhook">
@@ -203,7 +202,7 @@ function DialogRahasiaBaru({ nama, rahasia, saatSelesai }: { nama: string; rahas
     return (
         <DialogRahasia
             judul={`Webhook ${nama} dibuat`}
-            peringatan="Salin rahasia penandatangan ini sekarang dan pasang di aplikasi penerima untuk memeriksa tanda tangan. Rahasia tidak bisa ditampilkan lagi. Bila hilang, hapus lalu tambahkan webhook baru."
+            peringatan="Salin rahasia ini sekarang dan pasang di aplikasi penerima. Tidak bisa ditampilkan lagi, bila hilang buat webhook baru."
             saatSelesai={saatSelesai}
         >
             <NilaiRahasia nilai={rahasia} jenis="rahasia" />

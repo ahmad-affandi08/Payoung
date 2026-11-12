@@ -181,14 +181,13 @@ export default function HalamanGiftCard({
         <TataLetakAplikasi judul="Deposit & gift card">
             <TabDeposit aktif="gift-card" />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Kartu bernilai yang dibeli lalu dipakai pemegangnya membayar di kasir semua outlet. Uang kartu adalah
-                kewajiban sampai dipakai. Kartu tidak bisa diuangkan, kecuali dibatalkan sebelum terpakai.
+                Kartu bernilai untuk membayar di semua outlet. Tidak bisa diuangkan kecuali dibatalkan sebelum terpakai.
             </p>
             <DaftarGalatServer galat={galat} />
             {rahasia.aktif ? (
                 <DialogRahasia
                     judul={`Gift card senilai ${FormatRupiah(rahasia.aktif.Nilai)} dijual`}
-                    peringatan="Kode ini tidak bisa dilihat lagi. Catat atau cetak sekarang dan berikan kepada pembeli. Kartu hanya dipakai dengan kode ini."
+                    peringatan="Kode ini tidak bisa dilihat lagi. Catat atau cetak sekarang untuk pembeli."
                     saatSelesai={rahasia.selesai}
                 >
                     <NilaiRahasia nilai={rahasia.aktif.Kode} jenis="kode" besar />

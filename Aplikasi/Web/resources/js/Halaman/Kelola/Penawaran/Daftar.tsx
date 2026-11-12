@@ -106,8 +106,8 @@ export default function HalamanDaftarPenawaran({ Penawaran, OpsiStatus, Izin }: 
     return (
         <TataLetakAplikasi judul="Penawaran" jejak={[{ label: 'Invoice', href: '/kelola/invoice' }]}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Tawarkan harga lebih dulu. Pelanggan membuka tautan penawaran, lalu menerima atau menolaknya. Penawaran
-                yang diterima dijadikan draf invoice dengan satu klik. Penawaran tidak membukukan apa pun.
+                Tawarkan harga lebih dulu. Pelanggan menerima atau menolak lewat tautan, dan yang diterima dijadikan
+                draf invoice.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="penawaran" /> : null}
             <DaftarGalatServer galat={props.errors} />

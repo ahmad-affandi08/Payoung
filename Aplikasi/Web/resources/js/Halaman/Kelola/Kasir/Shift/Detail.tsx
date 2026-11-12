@@ -398,7 +398,7 @@ function FormTutupPaksa({ uuidShift, saatTutup }: { uuidShift: string; saatTutup
     return (
         <DialogFormulir
             judul="Tutup paksa shift"
-            keterangan="Shift ditutup sekarang atas nama Anda dan ditandai perlu ditinjau. Penjualan dan kas yang sudah tercatat tidak berubah."
+            keterangan="Shift ditutup atas nama Anda dan ditandai perlu ditinjau. Penjualan dan kas tidak berubah."
             saatTutup={saatTutup}
             galatUmum={(formulir.errors as Record<string, string | undefined>).Umum}
         >
@@ -415,7 +415,7 @@ function FormTutupPaksa({ uuidShift, saatTutup }: { uuidShift: string; saatTutup
                 />
                 <BidangUang
                     label="Uang di laci menurut hitungan Anda (opsional)"
-                    keterangan="Kosongkan bila tidak dihitung: kas dianggap sama dengan seharusnya (tanpa selisih). Bila diisi, selisihnya dibukukan sebagai selisih kas."
+                    keterangan="Kosongkan bila tidak dihitung, kas dianggap sama dengan seharusnya. Bila diisi, selisihnya dibukukan."
                     nilai={formulir.data.KasAktual}
                     saatBerubah={(v) => formulir.setData('KasAktual', v)}
                     galat={formulir.errors.KasAktual}
@@ -460,10 +460,7 @@ export default function HalamanDetailShift({
             {aktif && Izin.TutupPaksa ? (
                 <Pemberitahuan jenis="peringatan" judul="Shift ini masih terbuka">
                     <div className="flex flex-col items-start gap-2">
-                        <p>
-                            Kalau kasirnya sudah pulang atau perangkatnya tidak bisa menutup shift, Anda bisa menutupnya
-                            dari sini supaya kasir bisa membuka shift baru.
-                        </p>
+                        <p>Tutup dari sini bila kasir sudah pulang atau perangkatnya tidak bisa menutup shift.</p>
                         <Tombol varian="sekunder" onClick={() => AturTutupPaksa(true)}>
                             Tutup paksa shift
                         </Tombol>

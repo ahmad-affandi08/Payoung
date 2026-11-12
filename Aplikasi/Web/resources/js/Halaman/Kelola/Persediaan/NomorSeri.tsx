@@ -283,9 +283,7 @@ export default function HalamanNomorSeri({
 
             {!adaSaring ? (
                 <p className="text-label text-teks-sekunder">
-                    Masukkan nomor seri atau IMEI untuk melihat status dan riwayatnya: kapan masuk, kapan dijual, kepada
-                    siapa, sampai kapan garansinya, dan apakah pernah diretur. Nama produk menampilkan semua unitnya;
-                    sempitkan dengan status, misalnya hanya yang tersedia.
+                    Masukkan nomor seri atau IMEI untuk melihat status dan riwayatnya, termasuk pembeli dan garansi.
                 </p>
             ) : (
                 <section aria-labelledby="judul-hasil-seri" className="flex flex-col gap-2">

@@ -374,7 +374,7 @@ export default function HalamanDetailTransferStok({
                     jenis="dialog"
                     lebar="lebar"
                     judul="Terima barang"
-                    keterangan="Per barang: isi yang diterima baik, yang rusak, dan yang dikembalikan ke pengirim. Kosongkan barang yang belum datang."
+                    keterangan="Per barang: isi yang diterima baik, rusak, dan dikembalikan ke pengirim. Kosongkan yang belum datang."
                     galatUmum={galat.Umum}
                     saatTutup={() => AturDialog(null)}
                 >

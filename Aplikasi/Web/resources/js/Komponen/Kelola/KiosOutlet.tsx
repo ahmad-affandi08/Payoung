@@ -141,8 +141,8 @@ export default function KiosOutlet({ alamatOutlet, data, bolehKelola }: Props) {
                     saatKonfirmasi={() => router.post(`${alamatOutlet}/kios/buat-ulang`, {}, Opsi('ulang'))}
                 >
                     <p>
-                        Tautan kios dan layar antrian yang lama berhenti bekerja seketika. Buka tautan baru di tablet
-                        dan monitor outlet.
+                        Tautan kios dan layar antrian lama berhenti bekerja seketika. Buka tautan baru di tablet dan
+                        monitor outlet.
                     </p>
                 </DialogKonfirmasi>
             ) : null}

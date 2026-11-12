@@ -200,8 +200,8 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
 
                 {baris.length === 0 ? (
                     <p className="text-isi text-teks-sekunder">
-                        Belum ada barang. Cari atau pindai barcode di atas, atau pilih beberapa produk di daftar produk
-                        lalu pilih Cetak label.
+                        Belum ada barang. Cari atau pindai barcode di atas, atau pilih produk di daftar produk lalu
+                        Cetak label.
                     </p>
                 ) : (
                     <>
@@ -386,10 +386,9 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
                 </div>
 
                 <p className="text-keterangan text-teks-sekunder">
-                    Di jendela cetak: pilih printer dan ukuran kertas{' '}
-                    {`${String(tata.LebarHalamanMm)} × ${String(tata.TinggiHalamanMm)} mm`}, skala 100% (bukan Sesuaikan
-                    ke halaman), margin Tidak ada, dan matikan Header dan footer. Cetak satu lembar percobaan di kertas
-                    biasa lebih dulu. Bila posisinya bergeser, atur geseran di atas.
+                    Di jendela cetak, pilih ukuran kertas{' '}
+                    {`${String(tata.LebarHalamanMm)} × ${String(tata.TinggiHalamanMm)} mm`}, skala 100%, margin Tidak
+                    ada, dan matikan Header dan footer. Coba cetak di kertas biasa dulu.
                 </p>
             </Panel>
 
@@ -415,10 +414,7 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
                         {String(antreanBarcode.length)} barang akan diberi nomor barcode buatan toko yang tersimpan di
                         produk dan dipakai kasir saat memindai.
                     </p>
-                    <p>
-                        Buat hanya untuk barang yang memang tidak punya barcode dari pabrik. Barang yang sudah punya
-                        barcode tidak diubah.
-                    </p>
+                    <p>Buat hanya untuk barang tanpa barcode pabrik. Barang yang sudah punya barcode tidak diubah.</p>
                     {galatBarcode !== null ? (
                         <Pemberitahuan jenis="bahaya" judul="Barcode belum dibuat">
                             {galatBarcode}

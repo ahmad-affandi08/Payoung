@@ -252,8 +252,7 @@ export default function HalamanDaftarTim({
     return (
         <TataLetakAplikasi judul="Tim">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Semua orang yang bekerja di usaha Anda dalam satu daftar: siapa yang bisa masuk (kasir dengan PIN atau
-                dashboard dengan email), jadwal kerjanya, dan gajinya. Tambah, ubah, dan nonaktifkan dari sini.
+                Semua orang yang bekerja di usaha Anda: akses masuk, jadwal, dan gaji.
             </p>
             <AksiHalaman
                 keterangan={
@@ -316,7 +315,7 @@ export default function HalamanDaftarTim({
             {pilihan?.jenis === 'pin' && pilihan.orang.UuidPengguna !== null ? (
                 <DialogFormulir
                     judul={`Atur ulang PIN ${pilihan.orang.Nama}`}
-                    keterangan="PIN lama tidak bisa dilihat. Isi PIN baru 6 angka, lalu beritahukan langsung kepada yang bersangkutan. PIN baru berlaku di perangkat kasir setelah perangkat kasir tersambung internet."
+                    keterangan="PIN lama tidak bisa dilihat. Isi PIN baru 6 angka dan beritahukan langsung ke yang bersangkutan."
                     saatTutup={() => AturPilihan(null)}
                 >
                     <FormPin

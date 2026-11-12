@@ -19,7 +19,7 @@ export default function HalamanBuatKelompokPajak(propsHalaman: PropsBuatKelompok
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((k) => isianForm.some((i) => k.startsWith(i)))}
             />
-            <KartuFormulir keterangan="Setiap produk yang dijual memakai satu kelompok pajak. PBJT makanan & minuman dan PPN tidak boleh dikenakan bersamaan pada satu produk.">
+            <KartuFormulir keterangan="Setiap produk memakai satu kelompok pajak. PBJT makanan dan minuman serta PPN tidak boleh bersamaan pada satu produk.">
                 <FormKelompokPajak
                     kelompok={null}
                     props={propsHalaman}

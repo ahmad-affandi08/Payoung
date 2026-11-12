@@ -155,8 +155,7 @@ export default function HalamanHargaOtomatis(props: PropsHargaOtomatis) {
                 kecuali={['Umum', 'BatasPerubahanPersen', 'PersenUntung', 'Pembulatan', 'Arah']}
             />
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Harga jual ikut berubah saat harga beli berubah, jadi Anda tidak perlu mengubah harga satu per satu.
-                Harga beli diambil dari penerimaan barang atau belanja stok yang terakhir.
+                Harga jual ikut harga beli terakhir dari penerimaan barang atau belanja stok.
             </p>
 
             {Usulan.length > 0 ? (
@@ -270,8 +269,8 @@ export default function HalamanHargaOtomatis(props: PropsHargaOtomatis) {
                                 keterangan="Isi 1 sampai 100."
                             />
                             <p className="border-l-4 border-aksen bg-peringatan-lembut px-3 py-2 text-isi text-teks-utama">
-                                Contoh: harga beli Rp 10.000 salah diketik Rp 100.000. Harga jual akan naik 900%, jadi
-                                tidak langsung dipakai dan menunggu persetujuan Anda.
+                                Contoh: harga beli salah diketik 10 kali lipat, jadi harga jual menunggu persetujuan
+                                Anda.
                             </p>
                         </Panel>
 
@@ -337,7 +336,7 @@ export default function HalamanHargaOtomatis(props: PropsHargaOtomatis) {
                     <Panel
                         judul="Menunggu persetujuan Anda"
                         idJudul="judul-usulan"
-                        keterangan="Harga beli berubah cukup besar, jadi harga jual belum diubah. Setujui bila harga belinya benar, tolak bila salah ketik."
+                        keterangan="Harga beli naik cukup besar. Setujui bila benar, tolak bila salah ketik."
                     >
                         <ul
                             className="flex flex-col divide-y divide-garis"

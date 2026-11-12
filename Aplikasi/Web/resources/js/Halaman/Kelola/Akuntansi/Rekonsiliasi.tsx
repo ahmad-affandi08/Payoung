@@ -161,9 +161,7 @@ export default function HalamanRekonsiliasiBank({
             jejak={[{ label: 'Kas & bank', href: '/kelola/akuntansi/kas-bank' }]}
         >
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Unggah rekening koran dari internet banking (CSV atau Excel), lalu cocokkan setiap mutasi dengan
-                transaksi di buku. Yang tidak punya pasangan biasanya biaya admin, bunga, atau transaksi yang belum
-                dicatat.
+                Unggah rekening koran (CSV atau Excel), lalu cocokkan tiap mutasi dengan transaksi di buku.
             </p>
             <div className="max-w-md">
                 <BidangPilihan

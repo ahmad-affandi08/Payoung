@@ -75,8 +75,8 @@ export default function KonfirmasiBayarInvoicePublik({
         >
             <h2 className="text-subjudul font-semibold text-teks-utama">Sudah membayar?</h2>
             <p className="text-isi text-teks-sekunder">
-                Beri tahu penjual supaya pembayaran Anda segera dicocokkan. Ini bukan pembayaran: penjual akan memeriksa
-                mutasi rekeningnya dan mencatat pembayaran Anda.
+                Beri tahu penjual supaya pembayaran Anda segera dicocokkan. Ini bukan pembayaran, penjual akan memeriksa
+                mutasi rekeningnya.
             </p>
             {konfirmasi.Menunggu.length > 0 ? (
                 <Pemberitahuan jenis="info" judul="Menunggu diperiksa penjual">

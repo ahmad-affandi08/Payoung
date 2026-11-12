@@ -88,8 +88,8 @@ export default function PanelTurunPaket({ data }: { data: DataTurunPaket }) {
             <Card className="flex flex-col gap-2 rounded-panel p-4 shadow-none">
                 <h2 className="text-subjudul font-semibold text-teks-utama">Pindah ke paket Gratis</h2>
                 <p className="text-isi text-teks-sekunder">
-                    Langganan Anda ditangguhkan. Pindah ke paket Gratis supaya kasir terbuka lagi sekarang dalam batas
-                    paket Gratis. Tagihan yang belum dibayar dibatalkan dan data Anda tidak dihapus.
+                    Langganan Anda ditangguhkan. Pindah ke paket Gratis agar kasir terbuka lagi. Tagihan belum dibayar
+                    dibatalkan, data tidak dihapus.
                 </p>
                 <div>
                     <Tombol varian="sekunder" onClick={() => AturTerbuka(true)}>
@@ -116,8 +116,8 @@ export default function PanelTurunPaket({ data }: { data: DataTurunPaket }) {
         <Card className="flex flex-col gap-2 rounded-panel p-4 shadow-none">
             <h2 className="text-subjudul font-semibold text-teks-utama">Turun paket</h2>
             <p className="text-isi text-teks-sekunder">
-                Pindah ke paket yang lebih murah mulai perpanjangan berikutnya. Periode yang sudah dibayar tetap
-                berjalan penuh dan data Anda tidak dihapus.
+                Pindah ke paket lebih murah mulai perpanjangan berikutnya. Periode yang sudah dibayar tetap berjalan
+                penuh.
             </p>
             <div>
                 <Tombol varian="sekunder" onClick={() => AturTerbuka(true)}>

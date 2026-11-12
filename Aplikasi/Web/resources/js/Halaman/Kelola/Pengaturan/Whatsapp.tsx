@@ -80,9 +80,8 @@ function PanelKuota({ kuota, nomorPayoungTersedia }: { kuota: KuotaWhatsapp; nom
         <Panel judul="Kuota pesan nomor Payoung" tingkat="h2">
             <div className="grid gap-3">
                 <p className="text-isi text-teks-sekunder">
-                    Pesan ke pelanggan (struk digital, pengingat piutang, kampanye, pengingat reservasi, dan lainnya)
-                    memakai nomor WhatsApp Payoung dan dihitung ke kuota paket Anda, per bulan kalender. Pemasangan
-                    nomor sendiri di bawah tidak memakai kuota.
+                    Pesan ke pelanggan memakai nomor Payoung dan dihitung ke kuota bulanan. Nomor sendiri tidak memakai
+                    kuota.
                 </p>
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="text-judul font-semibold text-teks-utama tabular-nums">
@@ -264,10 +263,8 @@ export default function HalamanWhatsappTenant({
                     <form onSubmit={Simpan} className="grid gap-3 sm:grid-cols-2" noValidate>
                         <div className="sm:col-span-2">
                             <Pemberitahuan jenis="info">
-                                Pakai nomor khusus usaha. Penyedia tidak resmi (Fonnte, Wablas, StarSender, Watzap)
-                                murah dan mudah, tetapi nomor bisa diblokir WhatsApp bila mengirim massal. WhatsApp
-                                Cloud API (Meta) resmi dan lebih aman, tetapi perlu akun Meta Business dan templat pesan
-                                yang disetujui.
+                                Pakai nomor khusus usaha. Penyedia tidak resmi murah tetapi nomor bisa diblokir, Cloud
+                                API Meta lebih aman tetapi butuh akun Business.
                             </Pemberitahuan>
                         </div>
                         <BidangPilihan

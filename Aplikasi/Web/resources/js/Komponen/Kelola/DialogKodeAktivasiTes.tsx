@@ -33,7 +33,7 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
         expect(screen.getByRole('alertdialog', { name: 'Aktifkan Kasir Depan (JKT1-K02)' })).toBeTruthy();
         expect(screen.getByAltText('Kode QR aktivasi Kasir Depan')).toBeTruthy();
         expect(screen.getByText('Hanya ditampilkan sekali')).toBeTruthy();
-        expect(screen.getByText(/Biarkan dialog ini terbuka sampai perangkat selesai diaktifkan/)).toBeTruthy();
+        expect(screen.getByText(/Biarkan dialog ini terbuka sampai perangkat aktif/)).toBeTruthy();
         expect(screen.getByRole('button', { name: LABEL_SELESAI_RAHASIA })).toBeTruthy();
     });
 
@@ -63,7 +63,7 @@ describe('DialogKodeAktivasi (F-02b BR-02.3)', () => {
         // Pemindai (mobile_scanner) hanya ada di Android & iOS, jadi janji "pindai" harus disertai
         // keterangan bahwa di Windows kodenya diketik.
         expect(screen.getByText(/pindai QR ini atau ketik/i)).toBeTruthy();
-        expect(screen.getByText(/Windows tidak punya pemindai/i)).toBeTruthy();
+        expect(screen.getByText(/Di Windows, ketik kodenya/i)).toBeTruthy();
     });
 
     it('menawarkan tautan unduh aplikasi bila belum terpasang (v7.35)', () => {

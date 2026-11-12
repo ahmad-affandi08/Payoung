@@ -116,13 +116,13 @@ export default function HalamanBuatFakturGrosir({ SuratJalan, HariIni, Izin }: P
     return (
         <HalamanGrosir
             judul="Buat faktur penjualan"
-            keterangan="Surat jalan dikelompokkan per pelanggan, outlet, dan bulan penyerahan karena satu faktur hanya untuk satu kelompok. Tekan Pilih semua pada kelompok yang mau ditagihkan."
+            keterangan="Surat jalan dikelompokkan per pelanggan, outlet, dan bulan karena satu faktur hanya untuk satu kelompok."
             izin={Izin}
             objek="faktur penjualan"
         >
             <Pemberitahuan jenis="info" judul="Faktur tidak menambah pendapatan">
-                Pendapatan dan stok sudah tercatat saat barangnya diserahkan. Faktur hanya menagihkan nilainya ke
-                pelanggan, dengan jatuh tempo mengikuti termin pelanggan.
+                Pendapatan dan stok sudah tercatat saat barang diserahkan. Faktur hanya menagih ke pelanggan sesuai
+                termin.
             </Pemberitahuan>
 
             <Panel judul="Surat jalan belum difakturkan">

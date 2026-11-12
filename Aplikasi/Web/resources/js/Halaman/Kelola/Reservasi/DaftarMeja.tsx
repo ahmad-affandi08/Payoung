@@ -564,8 +564,8 @@ export default function HalamanDaftarReservasiMeja(props: PropsDaftarReservasiMe
     return (
         <TataLetakAplikasi judul="Reservasi meja">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Catat tamu yang memesan meja lebih dulu. Satu meja tidak bisa dipesan dua kali pada jam yang beririsan.
-                Uang muka (DP) dipotong dari tagihan saat tamu membayar di kasir. Reservasi layanan per staf ada di{' '}
+                Catat tamu yang memesan meja lebih dulu. Uang muka (DP) dipotong dari tagihan di kasir. Reservasi
+                layanan per staf ada di{' '}
                 <Link href="/kelola/reservasi" className="font-semibold text-brand underline">
                     Reservasi layanan
                 </Link>

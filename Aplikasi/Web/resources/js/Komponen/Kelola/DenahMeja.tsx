@@ -191,7 +191,7 @@ export default function DenahMeja({ alamatOutlet, meja, bolehKelola }: PropsDena
             </div>
             <p className="text-keterangan text-teks-sekunder">
                 {mengatur
-                    ? 'Seret meja ke tempatnya, atau pilih meja lalu tekan tombol panah (Shift untuk loncat jauh). Hapus mengembalikan meja ke baris "Belum ditata".'
+                    ? 'Seret meja ke tempatnya, atau pilih lalu tekan tombol panah. Hapus mengembalikan meja ke baris Belum ditata.'
                     : 'Letak meja seperti yang tampil di layar Meja kasir. Meja yang belum ditata tetap muncul sebagai daftar di kasir.'}
             </p>
             {tertata.length === 0 && !mengatur ? (

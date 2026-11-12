@@ -141,9 +141,7 @@ function PanelBagikan({ props }: { props: Props }) {
                 <div>
                     <h2 className="text-subjudul font-semibold">Bagikan toko online Anda</h2>
                     <p className="text-keterangan text-teks-sekunder">
-                        Pembeli tidak akan menemukan toko ini sendiri. Bagikan tautan atau QR ini lewat WhatsApp, bio
-                        Instagram, dan tempel posternya di kasir, pintu, atau meja. Struk digital pelanggan juga
-                        otomatis memuat tautan ini.
+                        Bagikan tautan atau QR ini lewat WhatsApp atau Instagram, atau tempel posternya di kasir.
                     </p>
                 </div>
                 {siap ? null : (

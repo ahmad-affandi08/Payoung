@@ -68,9 +68,8 @@ export default function PanelDaftarWajah({
                 <Pemberitahuan jenis="peringatan">Alasan pengelola: {Wajah.AlasanTolak}</Pemberitahuan>
             ) : null}
             <p className="text-isi text-teks-sekunder">
-                Sekali saja sebelum absen pertama. Anda mengambil {JumlahFotoDaftar} foto wajah dengan kamera depan:
-                ketuk Ambil foto saat lingkaran berwarna hijau, ubah sedikit posisi kepala di tiap foto. Setelah itu
-                Anda langsung bisa absen.
+                Sekali saja sebelum absen pertama. Ambil {JumlahFotoDaftar} foto wajah dengan kamera depan, ketuk Ambil
+                foto saat lingkaran hijau dan ubah sedikit posisi kepala.
             </p>
 
             <ol className="grid grid-cols-2 gap-2 text-keterangan" aria-label="Langkah pendaftaran">

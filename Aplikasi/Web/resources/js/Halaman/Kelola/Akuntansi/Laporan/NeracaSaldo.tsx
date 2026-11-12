@@ -66,8 +66,7 @@ export default function HalamanNeracaSaldo({ Saring, Laporan, OpsiOutlet }: Prop
     return (
         <TataLetakAplikasi judul="Neraca saldo">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Saldo setiap akun dari jurnal: saldo awal sebelum periode, mutasi debit & kredit selama periode, dan
-                saldo akhir. Karena setiap jurnal seimbang, total debit selalu sama dengan total kredit.
+                Saldo awal, mutasi, dan saldo akhir setiap akun. Total debit selalu sama dengan total kredit.
             </p>
             <SaringLaporan
                 alamat={alamat}
@@ -82,8 +81,8 @@ export default function HalamanNeracaSaldo({ Saring, Laporan, OpsiOutlet }: Prop
                 </Pemberitahuan>
             ) : (
                 <Pemberitahuan jenis="peringatan" judul="Tidak seimbang">
-                    Total debit dan kredit berbeda untuk filter ini, biasanya karena satu jurnal memuat baris beberapa
-                    outlet. Lihat tanpa filter outlet untuk memeriksa keseimbangan penuh.
+                    Total debit dan kredit beda, biasanya karena jurnal memuat beberapa outlet. Lihat tanpa filter
+                    outlet.
                 </Pemberitahuan>
             )}
             <RingkasanAngka

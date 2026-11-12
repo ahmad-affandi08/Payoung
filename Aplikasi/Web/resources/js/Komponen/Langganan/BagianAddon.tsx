@@ -61,7 +61,7 @@ export default function BagianAddon({ addon }: { addon: DataAddonLangganan }) {
     return (
         <Panel
             judul="Add-on"
-            keterangan="Tambahan fitur atau kapasitas tanpa ganti paket. Dibayar prorata sampai akhir periode berjalan, lalu ikut tagihan perpanjangan paket."
+            keterangan="Tambahan fitur atau kapasitas tanpa ganti paket. Dibayar prorata sampai akhir periode, lalu ikut tagihan perpanjangan."
         >
             {addon.Dimiliki.length > 0 ? (
                 <ul className="flex flex-col divide-y divide-garis" aria-label="Add-on Anda">

@@ -892,10 +892,9 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Perkiraan = rata-rata penjualan bersih pada hari yang sama dalam minggu selama 8 minggu terakhir
-                        (hari tutup dihitung nol) × faktor tren {ramal.FaktorTren.replace('.', ',')} (penjualan 4 minggu
-                        terakhir dibanding 4 minggu sebelumnya, dibatasi 0,80 sampai 1,25). Ini perkiraan statistik
-                        sederhana, bukan jaminan. Promo, cuaca, dan hari libur belum diperhitungkan.
+                        Perkiraan = rata-rata penjualan hari yang sama selama 8 minggu terakhir × faktor tren{' '}
+                        {ramal.FaktorTren.replace('.', ',')}. Ini perkiraan sederhana, promo, cuaca, dan hari libur
+                        belum diperhitungkan.
                     </p>
                     <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:max-w-xl">
                         <div>
@@ -939,10 +938,9 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Pasangan produk yang dibeli dalam satu transaksi (minimal 3 kali) dari{' '}
-                        {String(bundling.JumlahTransaksi)} transaksi pada periode ini. Lift di atas 1 berarti keduanya
-                        dibeli bersama lebih sering daripada kebetulan. Saran harga paket 95% dari harga normal,
-                        dibulatkan ke bawah ke kelipatan Rp 500.
+                        Pasangan produk yang dibeli bersama (minimal 3 kali) dari {String(bundling.JumlahTransaksi)}{' '}
+                        transaksi. Lift di atas 1 berarti sering dibeli bersama. Saran harga paket 95% dari harga
+                        normal.
                     </p>
                     {bundling.Terpotong ? (
                         <Pemberitahuan jenis="peringatan">
@@ -980,8 +978,8 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Penilaian pelanggan dari struk digital (1 sampai 5). Tingkat respons = penilaian masuk dibanding
-                        jumlah transaksi pada periode. Pelanggan yang tidak membuka struk digital tidak ikut menilai.
+                        Penilaian pelanggan 1 sampai 5 dari struk digital. Pelanggan yang tidak membuka struk tidak ikut
+                        menilai.
                     </p>
                     <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-4">
                         <div>
@@ -1056,9 +1054,8 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Dari tiket dapur yang sudah siap. Total = dikirim ke dapur sampai siap. Tunggu dan masak hanya
-                        terisi bila KDS menandai tahap Dimasak. Persentil 90 berarti 9 dari 10 tiket selesai lebih cepat
-                        dari angka itu.
+                        Dari tiket dapur yang sudah siap. Persentil 90: 9 dari 10 tiket selesai lebih cepat dari angka
+                        itu.
                     </p>
                     <TabelData
                         id="laporan-penjualan-waktu-saji"
@@ -1089,9 +1086,7 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Teoretis = nilai bahan yang seharusnya terpakai menurut penjualan dan produksi (resep × jumlah
-                        terjual). Aktual = teoretis + bahan terbuang + selisih stok dari penyesuaian dan opname. Selisih
-                        positif berarti kerugian. Persentase terhadap penjualan bersih periode.
+                        Selisih positif berarti bahan terpakai lebih banyak dari seharusnya.
                     </p>
                     <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-4">
                         {(
@@ -1181,10 +1176,8 @@ function IsiTab({
             return (
                 <>
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Item pesanan meja yang sudah dikirim ke dapur lalu dibatalkan, terbaru dulu (paling banyak 200
-                        baris; persempit periode untuk melihat yang lebih lama). Nilai adalah petunjuk kerugian, bukan
-                        angka akuntansi. &quot;Dicatat terbuang&quot; berarti bahan sudah dikurangi dari stok sebagai
-                        bahan terbuang karena item sempat dibuat.
+                        Item meja yang sudah dikirim ke dapur lalu dibatalkan, terbaru dulu (maks. 200 baris). Nilainya
+                        petunjuk kerugian.
                     </p>
                     <TabelData
                         id="laporan-penjualan-void-item"
@@ -1212,9 +1205,8 @@ function IsiTab({
             return (
                 <>
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Skor risiko adalah petunjuk untuk diperiksa, bukan bukti. Dibandingkan dengan rata-rata kasir
-                        lain pada periode yang sama: void tunai ≤ 10 menit setelah bayar, rasio void/diskon/retur
-                        minimal 2× rata-rata, buka laci tanpa transaksi, dan kas kurang saat tutup shift.
+                        Skor risiko hanya petunjuk untuk diperiksa, bukan bukti. Dibandingkan dengan rata-rata kasir
+                        lain.
                     </p>
                     <TabelData
                         id="laporan-penjualan-anti-fraud"
@@ -1244,8 +1236,8 @@ function IsiTab({
             return (
                 <div className="flex flex-col gap-3">
                     <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                        Produk diurutkan dari penjualan bersih terbesar. Kelas A menyumbang ±80% penjualan, B sampai
-                        95%, dan C sisanya. Produk tanpa penjualan bersih tidak ditampilkan.
+                        Produk diurutkan dari penjualan bersih terbesar. Kelas A sekitar 80% penjualan, B sampai 95%, C
+                        sisanya.
                     </p>
                     <dl className="grid gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-3">
                         {(['A', 'B', 'C'] as const).map((k) => (
@@ -1384,8 +1376,7 @@ export default function HalamanLaporanPenjualan(props: PropsLaporanPenjualan) {
     return (
         <TataLetakAplikasi judul="Laporan penjualan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Angka dihitung dari penjualan yang sudah diterima server. Penjualan yang di-void tidak dihitung. Retur
-                mengurangi penjualan pada tanggal returnya. Bersih = kotor − diskon − retur, di luar pajak dan biaya
+                Dari penjualan yang sudah diterima server, tanpa yang di-void. Bersih tidak termasuk pajak dan biaya
                 layanan.
             </p>
 

@@ -118,8 +118,7 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
                 <SheetHeader>
                     <SheetTitle className="text-subjudul text-teks-utama">Absen dari HP | {karyawan.Nama}</SheetTitle>
                     <SheetDescription>
-                        Karyawan masuk dengan akunnya atau membuka tautan pribadinya di HP, mendaftarkan wajah sekali,
-                        lalu absen dengan pencocokan wajah. Wajah yang tidak cocok ditolak.
+                        Karyawan masuk dengan akun atau tautan pribadi di HP, daftarkan wajah sekali, lalu absen.
                     </SheetDescription>
                 </SheetHeader>
 

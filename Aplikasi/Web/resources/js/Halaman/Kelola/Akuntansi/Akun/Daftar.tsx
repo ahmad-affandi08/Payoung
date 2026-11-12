@@ -149,9 +149,7 @@ export default function HalamanBaganAkun({ Akun, OpsiTipe, Izin }: PropsBaganAku
     return (
         <TataLetakAplikasi judul="Bagan akun">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Daftar akun yang dipakai jurnal usaha Anda. Akun yang sudah punya jurnal atau dipakai pemetaan, metode
-                pembayaran, atau kategori kas tidak bisa dihapus, cukup dinonaktifkan. Kode dan tipe akun terkunci
-                setelah akun punya jurnal.
+                Akun yang dipakai jurnal usaha. Akun yang sudah dipakai hanya bisa dinonaktifkan, tidak dihapus.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman>

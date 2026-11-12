@@ -71,9 +71,8 @@ export default function DialogHapusPermanenProduk({
                         retur, mutasi stok, dan resep miliknya. Tidak bisa dibatalkan.
                     </p>
                     <p>
-                        Nota dan jurnal lama tetap ada, tetapi baris produk ini hilang dari nota itu, sehingga total
-                        nota tidak lagi sama dengan jumlah barisnya dan laporan penjualan, pembelian, dan laba lama ikut
-                        berubah. Bila produk hanya tidak dijual lagi, pilih Arsipkan.
+                        Produk hilang dari nota lama, jadi total dan laporan lama ikut berubah. Bila hanya tidak dijual
+                        lagi, pilih Arsipkan.
                     </p>
                 </div>
             }

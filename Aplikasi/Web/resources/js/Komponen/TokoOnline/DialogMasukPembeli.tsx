@@ -121,7 +121,7 @@ export default function DialogMasukPembeli({ slug, namaToko, saatMasuk, saatTutu
 
     const keterangan =
         tahap === 'Nomor'
-            ? 'Masuk untuk mengisi data otomatis, melihat riwayat belanja, dan mengumpulkan poin. Tanpa kata sandi: kami kirim kode ke WhatsApp Anda.'
+            ? 'Masuk untuk mengisi data otomatis, melihat riwayat belanja, dan mengumpulkan poin. Kode dikirim ke WhatsApp Anda.'
             : tahap === 'Kode'
               ? `Kode 6 digit sudah dikirim ke WhatsApp ${noHp}. Berlaku 5 menit.`
               : `Nomor terverifikasi. Lengkapi data Anda untuk menjadi pelanggan ${namaToko}.`;

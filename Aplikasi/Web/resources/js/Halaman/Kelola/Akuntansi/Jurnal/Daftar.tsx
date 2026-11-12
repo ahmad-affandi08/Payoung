@@ -96,10 +96,7 @@ export default function HalamanDaftarJurnal({ Jurnal, OpsiJenisSumber, Izin }: P
     return (
         <TataLetakAplikasi judul="Jurnal">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Jurnal dibuat otomatis dari dokumen seperti penjualan, pembelian, dan stok awal. Jurnal yang sudah
-                diposting tidak bisa diubah. Koreksi dilakukan dengan membatalkan dokumen sumbernya sehingga terbentuk
-                jurnal pembalik. Untuk pencatatan yang tidak punya dokumen sendiri, misalnya penyesuaian akhir bulan,
-                catat jurnal umum.
+                Jurnal dibuat otomatis dari dokumen dan tidak bisa diubah. Koreksi dengan membatalkan dokumen sumbernya.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman>

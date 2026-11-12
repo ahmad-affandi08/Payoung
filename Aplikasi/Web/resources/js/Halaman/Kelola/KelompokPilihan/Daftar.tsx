@@ -91,8 +91,8 @@ export default function HalamanDaftarKelompokPilihan({ KelompokPilihan, Izin }: 
             <AksiHalaman
                 keterangan={
                     <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping. Pasang ke produk dari
-                        halaman produk, tab Pilihan.
+                        Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping. Pasang ke produk di
+                        tab Pilihan.
                     </p>
                 }
             >

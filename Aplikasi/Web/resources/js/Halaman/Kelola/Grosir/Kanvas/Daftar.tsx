@@ -264,7 +264,7 @@ function DialogTambahKanvas({ saatTutup }: { saatTutup: () => void }) {
     return (
         <DialogFormulir
             judul="Tambah kendaraan kanvas"
-            keterangan="Kendaraan dibuat sebagai outlet baru bernama “Kanvas {nomor kendaraan}” lengkap dengan lokasi stok Toko (bak kendaraan), dan dihitung dalam batas outlet paket."
+            keterangan="Kendaraan dibuat sebagai outlet baru bernama Kanvas dan nomor kendaraannya, dihitung dalam batas outlet paket."
             galatUmum={props.errors.Umum ?? props.errors.Kode ?? props.errors.Merek}
             saatTutup={saatTutup}
         >
@@ -321,7 +321,7 @@ export default function HalamanDaftarKanvas({
     return (
         <HalamanGrosir
             judul="Kanvas"
-            keterangan="Salesman kanvas membawa barang di kendaraan dan menjual langsung, tunai atau tempo. Muat stok pagi dan bongkar sisa sore lewat transfer stok, jual lewat aplikasi kasir di outlet kendaraan, dan setor kas saat tutup shift. Rekap harian di bawah merangkum semuanya per kendaraan."
+            keterangan="Rekap harian per kendaraan salesman kanvas."
             izin={Izin}
             objek="kanvas"
         >
@@ -435,8 +435,7 @@ export default function HalamanDaftarKanvas({
                         }}
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Sisa akhir = stok awal + muat − terjual + retur − bongkar ± penyesuaian lain. Terjual sudah
-                        dikurangi void pada hari yang sama.
+                        Sisa akhir = stok awal + muat − terjual + retur − bongkar ± penyesuaian.
                     </p>
                 </Panel>
             ) : null}

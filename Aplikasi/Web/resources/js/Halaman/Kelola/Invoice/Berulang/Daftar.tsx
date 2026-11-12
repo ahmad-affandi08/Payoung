@@ -100,8 +100,7 @@ export default function HalamanDaftarInvoiceBerulang({ Templat, OpsiStatus, Izin
     return (
         <TataLetakAplikasi judul="Invoice berulang" jejak={[{ label: 'Invoice', href: AlamatInvoice }]}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Templat tagihan yang terbit sendiri tiap minggu, bulan, atau tahun, misalnya hosting, sewa, atau
-                retainer. Isi invoice dihitung ulang tiap siklus dengan tarif pajak yang berlaku pada tanggalnya.
+                Tagihan yang terbit sendiri tiap minggu, bulan, atau tahun, misalnya hosting atau sewa.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice berulang" /> : null}
             <DaftarGalatServer galat={props.errors} />

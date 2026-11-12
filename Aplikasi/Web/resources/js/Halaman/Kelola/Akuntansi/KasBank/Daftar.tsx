@@ -133,9 +133,8 @@ export default function HalamanTransaksiKasBank({
     return (
         <TataLetakAplikasi judul="Kas & bank">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Catat pengeluaran operasional, penerimaan di luar penjualan, dan transfer antar kas/bank. Setiap
-                transaksi langsung dijurnal. Transaksi yang sudah disimpan tidak bisa diubah. Koreksi dengan dokumen
-                pembalik.
+                Catat pengeluaran operasional, penerimaan di luar penjualan, dan transfer antar kas dan bank. Koreksi
+                dengan dokumen pembalik.
             </p>
 
             <TabelData

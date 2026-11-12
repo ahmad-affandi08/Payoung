@@ -60,8 +60,8 @@ export default function HalamanPin({ PinSayaDiatur, Anggota }: PropsPin) {
                         <h2>PIN saya</h2>
                     </CardTitle>
                     <CardDescription className="text-isi text-teks-sekunder">
-                        Dipakai untuk masuk cepat di perangkat kasir bersama. Jangan pakai angka yang sama semua atau
-                        berurutan. Setelah 5 kali salah, PIN terkunci 5 menit di perangkat itu.
+                        Untuk masuk cepat di perangkat kasir bersama. Hindari angka kembar atau berurutan. Salah 5 kali,
+                        PIN terkunci 5 menit.
                     </CardDescription>
                     <p className="text-label font-semibold text-teks-utama">
                         Status: {PinSayaDiatur ? 'Sudah diatur' : 'Belum diatur'}

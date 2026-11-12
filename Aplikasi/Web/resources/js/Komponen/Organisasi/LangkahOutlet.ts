@@ -14,7 +14,7 @@ const keteranganLangkah: Record<KunciLangkahOutlet, { Label: string; Keterangan:
     Identitas: {
         Label: 'Nama & kode',
         Keterangan:
-            'Nama yang dikenal pelanggan, dan kode singkat untuk nomor dokumen dan perangkat kasir. Kode tidak bisa diubah setelah outlet bertransaksi.',
+            'Nama yang dikenal pelanggan dan kode singkat untuk nomor dokumen. Kode tidak bisa diubah setelah outlet bertransaksi.',
     },
     Lokasi: {
         Label: 'Lokasi & jam',

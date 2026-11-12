@@ -79,8 +79,8 @@ export default function HalamanIntegrasiServer({ Integrasi }: { Integrasi: SlotI
     return (
         <TataLetakAplikasi judul="Email & WhatsApp server">
             <p className="text-isi text-teks-sekunder">
-                Hubungkan akun email, WhatsApp, dan penyimpanan berkas milik toko Anda. Kredensial disimpan terenkripsi
-                dan tidak pernah ditampilkan lagi. Setiap perubahan baru berlaku setelah uji koneksi berhasil.
+                Hubungkan email, WhatsApp, dan penyimpanan berkas milik toko. Perubahan berlaku setelah uji koneksi
+                berhasil.
             </p>
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
             <div className="grid gap-4 lg:grid-cols-3">

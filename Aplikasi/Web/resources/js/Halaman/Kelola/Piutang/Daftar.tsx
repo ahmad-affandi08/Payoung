@@ -141,7 +141,7 @@ function DialogPengingatOtomatis({
     return (
         <DialogFormulir
             judul="Pengingat piutang otomatis"
-            keterangan="Pelanggan diingatkan lewat WhatsApp (bila nomor HP ada dan WhatsApp aktif), sekitar pukul 09.00. Setiap pengingat hanya dikirim sekali per nota."
+            keterangan="Pelanggan diingatkan lewat WhatsApp sekitar pukul 09.00 bila nomornya ada. Satu pengingat per nota."
             saatTutup={saatTutup}
             galatUmum={(formulir.errors as Record<string, string | undefined>).Umum}
         >
@@ -264,7 +264,7 @@ export default function HalamanDaftarPiutangPelanggan({
     return (
         <HalamanDaftarPiutang
             judul="Piutang pelanggan"
-            keterangan="Penjualan tempo yang belum lunas, diurutkan dari jatuh tempo terdekat. Terima pelunasan satu atau beberapa penjualan satu pelanggan sekaligus."
+            keterangan="Penjualan tempo yang belum lunas, dari jatuh tempo terdekat. Pelunasan bisa untuk beberapa penjualan satu pelanggan sekaligus."
             izin={Izin}
             objek="pelunasan piutang"
         >

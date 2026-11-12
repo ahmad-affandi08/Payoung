@@ -158,9 +158,8 @@ export default function HalamanPemetaanAkun({ Pemetaan, OpsiAkun, OpsiOutlet, Iz
     return (
         <TataLetakAplikasi judul="Pemetaan akun">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Jurnal otomatis (penjualan, kas, stok) memakai akun yang dipetakan di sini. Akun khusus outlet
-                menggantikan akun umum hanya untuk outlet itu. Perubahan berlaku untuk jurnal berikutnya. Jurnal yang
-                sudah diposting tidak berubah.
+                Jurnal otomatis memakai akun yang dipetakan di sini. Akun khusus outlet menggantikan akun umum. Berlaku
+                untuk jurnal berikutnya.
             </p>
             {Izin.Kelola ? null : <PesanHanyaLihat izin="akuntansi.kelola" objek="pemetaan akun" />}
             {/* Audit kemudahan pakai #12: lengkapi peran yang belum dipetakan dari template sektor (aditif). */}

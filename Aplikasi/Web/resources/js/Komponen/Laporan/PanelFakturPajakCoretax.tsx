@@ -39,7 +39,7 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
     return (
         <Panel
             judul="Faktur Pajak Keluaran (Coretax)"
-            keterangan="Dari faktur penjualan grosir dan Faktur Pajak per transaksi kasir pada periode ini. Unduh XML lalu impor di Coretax. Nomor Faktur Pajak diisi Coretax, bukan Payoung."
+            keterangan="Dari faktur grosir dan Faktur Pajak kasir pada periode ini. Unduh XML lalu impor di Coretax."
             aksi={
                 data?.BisaDiekspor ? (
                     <TautanUnduh
@@ -98,9 +98,8 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
 
                     {data.Selisih.length > 0 ? (
                         <Pemberitahuan jenis="info" judul="Selisih pembulatan dengan faktur internal">
-                            Coretax membulatkan DPP dan PPN per baris, jadi angkanya bisa berbeda beberapa sen dari
-                            faktur di Payoung (yang dibulatkan per dokumen). Pembukuan tidak diubah. Cocokkan saat
-                            rekonsiliasi SPT Masa PPN.
+                            Coretax membulatkan per baris, jadi angka bisa beda beberapa sen dari faktur Payoung.
+                            Pembukuan tidak berubah.
                             <ul className="mt-1 flex list-disc flex-col gap-1 pl-5">
                                 {data.Selisih.map((s) => (
                                     <li key={s.Nomor}>
@@ -113,8 +112,8 @@ export default function PanelFakturPajakCoretax({ query }: { query: Record<strin
                     ) : null}
 
                     <p className="text-keterangan text-teks-sekunder">
-                        Format mengikuti contoh berkas impor DJP dan belum dicocokkan dengan validasi resmi Coretax:
-                        coba impor satu faktur dulu sebelum mengunggah seluruh periode.
+                        Format belum dicocokkan dengan validasi resmi Coretax. Coba impor satu faktur dulu sebelum
+                        seluruh periode.
                     </p>
                 </>
             ) : null}

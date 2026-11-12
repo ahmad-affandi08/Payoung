@@ -63,7 +63,7 @@ export default function HalamanLaporanKomisi({ Komisi, OpsiOutlet }: PropsLapora
         <TataLetakAplikasi judul="Laporan komisi">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Komisi per karyawan dari baris penjualan yang dilayaninya. Void membatalkan komisi, retur memotongnya
-                sebanding jumlah yang diretur. Komisi belum dijurnal sampai rekap gaji.
+                sebanding.
             </p>
             <TabelData
                 id="laporan-komisi"

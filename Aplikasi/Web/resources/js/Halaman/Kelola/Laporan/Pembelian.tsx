@@ -123,8 +123,8 @@ export default function HalamanLaporanPembelian({
         <TataLetakAplikasi judul="Laporan pembelian">
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 {Saring.Tab === 'po'
-                    ? 'Pesanan pembelian yang sudah disetujui dan masih menunggu barang, keadaan saat ini (periode tidak berlaku). Nilai sisa dihitung dari harga pesanan untuk barang yang belum diterima.'
-                    : 'Dihitung dari faktur pembelian pada periode (tanggal faktur). Faktur yang dibatalkan tidak dihitung. Pembelian bersih = total faktur − retur. Nilai beli per produk di luar pajak dan ongkir.'}
+                    ? 'Pesanan yang sudah disetujui dan masih menunggu barang, keadaan saat ini. Nilai sisa dari harga pesanan.'
+                    : 'Dihitung dari faktur pembelian pada periode, tanpa faktur batal. Pembelian bersih = total faktur − retur.'}
             </p>
 
             <SaringLaporan

@@ -265,9 +265,8 @@ export default function AktivasiQris({
         <TataLetakAplikasi judul="Aktivasi QRIS">
             <div className="grid gap-4">
                 <Pemberitahuan jenis="info" judul="Aktifkan QRIS toko dengan KTP dan rekening">
-                    Siapkan foto KTP, foto selfie sambil memegang KTP, foto tempat usaha, dan nomor rekening toko.
-                    Setelah disetujui DOKU, uang pembayaran QRIS masuk ke rekening toko Anda. Foto hanya dipakai untuk
-                    mendaftar ke DOKU dan dihapus dari server Payoung begitu terkirim.
+                    Siapkan foto KTP, selfie memegang KTP, foto tempat usaha, dan nomor rekening. Foto hanya untuk
+                    pendaftaran dan dihapus setelah terkirim.
                 </Pemberitahuan>
 
                 {galatUmum ? <Pemberitahuan jenis="bahaya">{galatUmum}</Pemberitahuan> : null}

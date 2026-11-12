@@ -164,8 +164,7 @@ export default function HalamanPemasukanPengeluaran({ Saring, Laporan, OpsiOutle
     return (
         <TataLetakAplikasi judul="Pemasukan & Pengeluaran">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Uang yang benar-benar masuk dan keluar dari kas dan bank Anda. Belanja stok dihitung sebagai uang keluar
-                saat dibayar, jadi angkanya bisa dicocokkan dengan saldo rekening.
+                Uang yang benar-benar masuk dan keluar dari kas dan bank, jadi bisa dicocokkan dengan saldo rekening.
             </p>
 
             <div className="flex flex-wrap gap-2" role="group" aria-label="Pilihan cepat periode">
@@ -248,8 +247,7 @@ export default function HalamanPemasukanPengeluaran({ Saring, Laporan, OpsiOutle
             {kosong ? (
                 <Panel judul="Belum ada uang masuk atau keluar">
                     <p className="text-isi text-teks-sekunder">
-                        Pada periode ini belum ada uang yang masuk atau keluar dari kas dan bank. Coba ganti periode
-                        atau pilih outlet lain.
+                        Belum ada uang masuk atau keluar pada periode ini. Coba ganti periode atau outlet.
                     </p>
                 </Panel>
             ) : (

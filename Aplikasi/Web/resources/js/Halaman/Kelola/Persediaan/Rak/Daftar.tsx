@@ -119,9 +119,7 @@ export default function HalamanDaftarRakGudang({ Rak, OpsiGudang, Saring, Izin }
     return (
         <TataLetakAplikasi judul="Rak gudang">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Bagi lokasi stok menjadi rak atau zona lalu tempatkan produknya. Opname per rak hanya menghitung produk
-                di rak itu, jadi beberapa orang bisa menghitung rak berbeda di waktu yang sama. Rak tidak menyimpan
-                saldo: stok tetap dicatat per lokasi stok.
+                Bagi lokasi stok menjadi rak atau zona. Opname per rak hanya menghitung produk di rak itu.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="persediaan.kelola" objek="rak gudang" /> : null}
             {isian === null ? <DaftarGalatServer galat={galat} /> : null}

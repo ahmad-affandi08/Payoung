@@ -35,7 +35,7 @@ export const TurDashboard: DefinisiTur = {
         {
             Kunci: 'menu',
             Judul: 'Menu samping',
-            Isi: 'Semua fitur ada di sini, dikelompokkan menurut pekerjaan sehari-hari: penjualan, stok, pembelian, dan laporan. Di HP, buka lewat tombol menu di kiri atas.',
+            Isi: 'Semua fitur ada di sini, dikelompokkan menurut pekerjaan harian. Di HP, buka lewat tombol menu kiri atas.',
             Target: ['menu-samping', 'tombol-menu'],
         },
         {

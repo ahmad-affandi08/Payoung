@@ -317,7 +317,7 @@ export default function HalamanFormPenyesuaianStok({
                         keterangan={
                             gudang === ''
                                 ? 'Pilih lokasi stok dulu.'
-                                : 'Barang yang dipilih muncul paling atas. Ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Stok keluar dinilai HPP saat dicatat. Stok masuk hanya untuk alasan Lainnya.'
+                                : 'Ketik jumlah lalu Enter untuk lanjut. Stok keluar dinilai HPP, stok masuk hanya untuk alasan Lainnya.'
                         }
                     />
                     {galatServer.Baris ? (

@@ -109,8 +109,7 @@ export default function HalamanDaftarPelanggan({ Pelanggan, Izin, OpsiTag, OpsiT
     return (
         <TataLetakAplikasi judul="Pelanggan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Data pelanggan untuk riwayat belanja, loyalti, dan promo. Nomor HP menjadi kunci pelanggan. Kasir bisa
-                memilih atau menambah pelanggan langsung dari aplikasi POS, juga saat offline.
+                Data pelanggan untuk riwayat belanja, loyalti, dan promo. Nomor HP menjadi kunci pelanggan.
             </p>
             {Izin.Kelola ? (
                 <AksiHalaman

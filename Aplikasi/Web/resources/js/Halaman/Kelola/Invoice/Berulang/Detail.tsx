@@ -179,7 +179,7 @@ export default function HalamanDetailInvoiceBerulang({
                 <DialogFormulir
                     jenis="konfirmasi"
                     judul="Hentikan templat ini?"
-                    keterangan="Tidak ada invoice baru yang terbit dari templat ini. Invoice yang sudah terbit tidak berubah. Templat yang dihentikan tidak bisa dihidupkan lagi. Buat templat baru bila perlu. Untuk berhenti sementara, pakai Jeda."
+                    keterangan="Invoice baru tidak terbit lagi dan templat tidak bisa dihidupkan kembali. Untuk berhenti sementara, pakai Jeda."
                     saatTutup={() => AturHentikan(false)}
                 >
                     <div className="flex flex-wrap justify-end gap-2">

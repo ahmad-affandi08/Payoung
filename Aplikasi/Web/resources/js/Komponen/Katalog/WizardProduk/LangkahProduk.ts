@@ -62,7 +62,7 @@ function BuatLangkah(kunci: KunciLangkah, aturan: AturanJenisProduk | undefined)
                 Kunci: kunci,
                 Label: 'Varian',
                 Keterangan:
-                    'Tentukan atribut seperti ukuran atau warna. Produk bervarian tidak punya harga sendiri: varian dibuat setelah produk disimpan, dan harga diisi per varian.',
+                    'Tentukan atribut seperti ukuran atau warna. Varian dibuat setelah produk disimpan dan harganya diisi per varian.',
             };
         case 'Pajak':
             return {

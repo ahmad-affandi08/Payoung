@@ -223,7 +223,7 @@ export default function HalamanFormPermintaanStok({
                         keterangan={
                             tujuan === ''
                                 ? 'Pilih lokasi Anda dulu agar stok saat ini ikut tampil.'
-                                : 'Barang yang dipilih muncul paling atas, ketik jumlahnya lalu tekan Enter untuk lanjut ke barang berikutnya. Stok yang tampil adalah stok di lokasi Anda. Minta dalam satuan dasar produk.'
+                                : 'Ketik jumlah lalu Enter untuk lanjut. Stok yang tampil ada di lokasi Anda, minta dalam satuan dasar.'
                         }
                     />
                     {galatDaftar ? <GalatBidang>{galatDaftar}</GalatBidang> : null}

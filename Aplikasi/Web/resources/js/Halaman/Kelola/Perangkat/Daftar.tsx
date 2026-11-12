@@ -132,8 +132,8 @@ export default function HalamanDaftarPerangkat({
     return (
         <TataLetakAplikasi judul="Perangkat">
             <p className="text-isi text-teks-sekunder">
-                Setiap aplikasi kasir, layar dapur, atau perangkat gudang didaftarkan di sini lalu diaktifkan dengan
-                kode 8 karakter atau QR. Kode perangkat dipakai untuk nomor transaksi saat offline.
+                Daftarkan aplikasi kasir, layar dapur, atau perangkat gudang di sini, lalu aktifkan dengan kode 8
+                karakter atau QR.
             </p>
 
             <UnduhAplikasi Unduhan={UnduhanAplikasi} />
@@ -316,7 +316,7 @@ function FormUbahNama({ perangkat, saatSelesai }: { perangkat: Perangkat; saatSe
                             formulir.setData('AwalanAntrian', nilai.replace(/[^A-Za-z]/g, '').toUpperCase())
                         }
                         galat={formulir.errors.AwalanAntrian}
-                        keterangan="Satu atau dua huruf, misal A, supaya nomor antrian kasir ini jadi A-042 dan tidak sama dengan kasir lain di outlet. Kosongkan untuk nomor polos."
+                        keterangan="Satu atau dua huruf, misal A, agar nomor antrian jadi A-042. Kosongkan untuk nomor polos."
                         maxLength={2}
                         kode
                     />
@@ -357,9 +357,8 @@ function KonfirmasiCabut({ perangkat, saatSelesai }: { perangkat: Perangkat; saa
             }
         >
             <p>
-                Aplikasi di perangkat ini langsung tidak bisa dipakai. Transaksi offline yang sudah dibuat sebelumnya
-                tetap diterima begitu tersambung internet, lalu ditandai untuk diperiksa. Pencabutan tidak bisa
-                dibatalkan; kode {perangkat.Kode} tidak akan dipakai lagi.
+                Aplikasi di perangkat ini langsung tidak bisa dipakai. Transaksi offline sebelumnya tetap diterima dan
+                ditandai untuk diperiksa. Pencabutan tidak bisa dibatalkan, kode {perangkat.Kode} tidak dipakai lagi.
             </p>
         </DialogKonfirmasi>
     );

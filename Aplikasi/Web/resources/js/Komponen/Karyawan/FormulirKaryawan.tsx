@@ -145,7 +145,7 @@ function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, 
                     ? {
                           required: true,
                           keterangan:
-                              'Gaji pokok rekap = upah × hari masuk (dari absensi dan cuti berbayar). Hari masuk bisa disesuaikan di draf rekap.',
+                              'Gaji pokok rekap = upah × hari masuk. Hari masuk bisa disesuaikan di draf rekap.',
                       }
                     : {})}
             />
@@ -193,8 +193,8 @@ function IsiFormulirKaryawan({ karyawan, opsiPengguna, opsiOutlet, saatSelesai, 
                     saatBerubah={(nilai) => Ubah({ IkutAbsensi: nilai })}
                 />
                 <p className="text-keterangan text-teks-sekunder">
-                    Butuh akun masuk dengan email (Gmail) atau tautan absen pribadi. Yang tidak ikut absensi tidak
-                    dianggap terlambat atau tidak masuk dan tidak kena potongan gaji.
+                    Butuh akun masuk dengan email atau tautan absen pribadi. Yang tidak ikut absensi tidak dihitung
+                    terlambat dan tidak dipotong.
                 </p>
                 {galat.IkutAbsensi ? (
                     <p className="text-keterangan font-semibold text-bahaya">{galat.IkutAbsensi}</p>

@@ -54,8 +54,8 @@ export default function PanelMenuSektor({ sebelum = null }: PropsPanelMenuSektor
                 <Pemberitahuan jenis="sukses" judul="Menu sudah menyesuaikan jenis usaha baru">
                     {perubahan.Muncul.length === 0 && perubahan.Hilang.length === 0 ? (
                         <>
-                            Tidak ada butir menu yang berubah, karena jenis usaha lama dan baru memakai menu yang sama.
-                            Perbedaannya ada di tampilan kasir, akun, kategori, dan fitur outlet.
+                            Menu tidak berubah karena kedua jenis usaha memakai menu yang sama. Perbedaannya ada di
+                            tampilan kasir, akun, dan kategori.
                         </>
                     ) : (
                         <>

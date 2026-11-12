@@ -89,7 +89,7 @@ export default function DialogKirimGrosir({
     return (
         <DialogFormulir
             judul="Kirim barang (surat jalan)"
-            keterangan="Surat jalan langsung dicatat: stok keluar, HPP & pendapatan diakui, dan PPN keluaran terutang pada tanggal penyerahan ini."
+            keterangan="Surat jalan langsung dicatat: stok keluar, pendapatan dan PPN keluaran diakui pada tanggal penyerahan."
             galatUmum={props.errors.Umum}
             saatTutup={saatTutup}
         >

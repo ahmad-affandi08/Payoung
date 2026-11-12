@@ -139,7 +139,7 @@ export default function HalamanDetailJurnalUmum({ JurnalUmum: j, Jurnal, Baris, 
             {balik !== null ? (
                 <DialogFormulir
                     judul={`Buat dokumen pembalik ${j.Nomor}`}
-                    keterangan="Dokumen pembalik membatalkan pengaruh jurnal ini dengan jurnal kebalikannya. Jurnal asal tetap tersimpan. Pembalik akrual biasanya diberi tanggal awal bulan berikutnya."
+                    keterangan="Dokumen pembalik membatalkan pengaruh jurnal ini dengan jurnal kebalikannya. Jurnal asal tetap tersimpan."
                     galatUmum={galat.Umum}
                     saatTutup={() => AturBalik(null)}
                 >

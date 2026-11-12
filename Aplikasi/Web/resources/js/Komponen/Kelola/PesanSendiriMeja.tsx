@@ -65,8 +65,8 @@ export function SakelarPesanSendiri({ alamatOutlet, pesanSendiri, bolehKelola }:
                 </div>
             </div>
             <p className="text-keterangan text-teks-sekunder">
-                Tamu memindai QR di meja, memilih menu, lalu pesanannya masuk ke kasir atau pelayan untuk diterima.
-                Pembayaran tetap di kasir.
+                Tamu memindai QR di meja, memilih menu, lalu pesanan masuk ke kasir atau pelayan. Pembayaran tetap di
+                kasir.
             </p>
             {bolehHidupkan ? null : (
                 <Pemberitahuan jenis="info" judul="Fitur Self-order QR belum aktif">

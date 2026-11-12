@@ -97,8 +97,7 @@ export default function HalamanCetakAmbilBarang({ Pesanan, Baris, Usaha }: Props
             )}
 
             <p className="text-keterangan text-teks-sekunder">
-                Daftar ini belum memotong stok. Stok baru berkurang saat surat jalannya dicatat, jadi barang yang
-                diambil tetap harus dicatat di surat jalan sebelum meninggalkan gudang.
+                Daftar ini belum memotong stok. Stok baru berkurang saat surat jalan dicatat.
             </p>
 
             {Pesanan.Catatan ? (

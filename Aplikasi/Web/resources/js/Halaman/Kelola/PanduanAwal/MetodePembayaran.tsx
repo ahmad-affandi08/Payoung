@@ -88,8 +88,7 @@ export default function HalamanMetodePembayaran({
         <>
             {hanyaTunai ? (
                 <p className="text-isi text-teks-sekunder">
-                    Saat ini kasir hanya menerima Tunai. Tambahkan QRIS, EDC, atau transfer bank yang Anda pakai supaya
-                    kasir bisa mencatat pembayaran non-tunai dengan benar.
+                    Saat ini kasir hanya menerima Tunai. Tambahkan QRIS, EDC, atau transfer bank yang Anda pakai.
                 </p>
             ) : (
                 <p className="text-isi text-teks-sekunder">
@@ -250,9 +249,8 @@ function AturNominalOtomatis({
                     <DialogHeader>
                         <DialogTitle>Nominal otomatis untuk {metode.Nama}</DialogTitle>
                         <DialogDescription>
-                            Unggah gambar QRIS toko Anda yang sama. Kode QR dibaca di peramban ini, lalu kasir
-                            menampilkan QRIS dengan nominal transaksi yang sudah terisi. Gambar yang tersimpan tidak
-                            berubah.
+                            Unggah gambar QRIS toko Anda yang sama. Kasir menampilkannya dengan nominal transaksi
+                            terisi.
                         </DialogDescription>
                     </DialogHeader>
                     <BidangGambar
@@ -599,9 +597,8 @@ function FormTambahMetode({
                     {Jenis === 'QrisDinamis' ? <InfoQrisDinamis gerbangPembayaran={gerbangPembayaran} /> : null}
                     {platform ? (
                         <Pemberitahuan jenis="info" judul="Pesanan ojol dicatat manual di kasir">
-                            Kasir memilih kanal (misal GoFood) di keranjang, lalu membayar dengan metode ini. Harga
-                            khusus platform diatur lewat Daftar harga dengan kanal yang sama. Dana tercatat sebagai
-                            piutang pencairan sampai platform mentransfer ke rekening toko.
+                            Kasir memilih kanal di keranjang lalu bayar dengan metode ini. Dana jadi piutang pencairan
+                            sampai platform mentransfer.
                         </Pemberitahuan>
                     ) : null}
                     {Jenis === 'QrisStatis' ? (
@@ -615,7 +612,7 @@ function FormTambahMetode({
                                 }}
                                 ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
                                 ekstensi={batasGambarQris.Ekstensi}
-                                keterangan="Foto atau unduh QRIS dari aplikasi bank/penyedia Anda. Pastikan kode QR terlihat utuh. Kode QR dibaca di peramban Anda, supaya kasir bisa menampilkan QRIS dengan nominal yang sudah terisi."
+                                keterangan="Foto atau unduh QRIS dari aplikasi bank, pastikan kode QR utuh. Kasir menampilkannya dengan nominal terisi."
                                 galat={formulir.errors.GambarQris}
                             />
                             <HasilBacaQris keadaan={bacaQris.keadaan} />
@@ -643,8 +640,7 @@ function InfoQrisDinamis({
 }) {
     return gerbangPembayaran.Aktif ? (
         <Pemberitahuan jenis="info" judul={`Gerbang pembayaran aktif: ${gerbangPembayaran.Penyedia ?? 'tersedia'}`}>
-            Kasir membuat kode QR berisi jumlah tagihan untuk setiap transaksi. Status lunas masuk otomatis, jadi kasir
-            tidak perlu memeriksa mutasi rekening. Aplikasi kasir harus tersambung internet saat memakai metode ini.
+            Kasir membuat kode QR per transaksi dan status lunas masuk otomatis. Kasir harus tersambung internet.
         </Pemberitahuan>
     ) : (
         <Pemberitahuan jenis="peringatan" judul="Gerbang pembayaran belum aktif">

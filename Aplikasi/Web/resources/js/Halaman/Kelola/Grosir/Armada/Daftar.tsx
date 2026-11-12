@@ -116,8 +116,8 @@ export default function HalamanDaftarArmada({ Armada, Izin }: PropsDaftarArmada)
     return (
         <TataLetakAplikasi judul="Armada pengiriman">
             <p className="max-w-2xl text-isi text-teks-sekunder">
-                Kendaraan yang membawa surat jalan grosir. Saat barang berangkat, pilih armadanya supaya nomor kendaraan
-                dan pengemudinya ikut tercetak di surat jalan.
+                Kendaraan pembawa surat jalan. Pilih armada saat barang berangkat agar nomor kendaraan dan pengemudi
+                tercetak.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="grosir.kelola" objek="armada pengiriman" /> : null}
             {isian === null ? <DaftarGalatServer galat={galat} /> : null}

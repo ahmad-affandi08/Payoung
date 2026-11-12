@@ -123,8 +123,8 @@ export default function HalamanLaporanPajak({
     return (
         <TataLetakAplikasi judul="Laporan pajak">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Pajak keluaran dari penjualan yang diterima server, dikelompokkan per bulan tanggal bisnis. Penjualan
-                yang di-void tidak dihitung. Pajak retur mengurangi pada bulan returnya.
+                Pajak keluaran dari penjualan, per bulan tanggal bisnis. Yang di-void tidak dihitung, retur mengurangi
+                di bulan returnya.
             </p>
 
             <SaringLaporan
@@ -194,9 +194,7 @@ export default function HalamanLaporanPajak({
                     />
                 </div>
                 <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                    PPN pada faktur pembelian (tanggal faktur) dikurangi PPN retur pembelian. PPN masukan yang tidak
-                    dapat dikreditkan menjadi beban dan tidak mengurangi PPN keluaran. Selisih = PPN keluaran − PPN
-                    masukan yang dikreditkan. Ini angka bantu pembukuan, bukan SPT Masa PPN.
+                    PPN pada faktur pembelian dikurangi PPN retur. Angka bantu pembukuan, bukan SPT Masa PPN.
                 </p>
                 <dl className="grid grid-cols-2 gap-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-4">
                     {(
@@ -240,9 +238,7 @@ export default function HalamanLaporanPajak({
                     </Button>
                 </div>
                 <p className="max-w-3xl text-keterangan text-teks-sekunder">
-                    PPh 23 dan sejenisnya yang dipotong pelanggan saat membayar invoice jasa. Uangnya tidak masuk kas,
-                    sehingga nomor bukti potong perlu ditagih dari pelanggan. Rincian per pelunasan, pelanggan, dan
-                    status bukti potongnya ada di halaman rincian.
+                    PPh yang dipotong pelanggan saat membayar invoice jasa. Tagih nomor bukti potongnya dari pelanggan.
                 </p>
             </section>
 

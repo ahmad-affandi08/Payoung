@@ -222,7 +222,7 @@ function FormLepas({
     return (
         <DialogFormulir
             judul="Jual atau hapus aset"
-            keterangan="Penyusutan disusul dulu sampai bulan pelepasan. Selisih nilai jual dengan nilai buku dicatat sebagai laba atau rugi pelepasan."
+            keterangan="Penyusutan disusul sampai bulan pelepasan. Selisih nilai jual dan nilai buku jadi laba atau rugi pelepasan."
             saatTutup={saatSelesai}
         >
             <form onSubmit={Kirim} className="grid gap-4 sm:grid-cols-2" noValidate>

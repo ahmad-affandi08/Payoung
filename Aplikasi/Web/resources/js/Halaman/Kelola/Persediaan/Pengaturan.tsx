@@ -111,9 +111,8 @@ export default function HalamanPengaturanPersediaan({
                         saatBerubah={AturBolehMinus}
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Berguna untuk usaha yang menjual sebelum stok dicatat, misalnya F&amp;B. Pengaturan per produk
-                        di halaman produk menimpa pengaturan ini. Produk dengan batch atau nomor seri tidak pernah boleh
-                        minus.
+                        Berguna bila Anda menjual sebelum stok dicatat. Pengaturan per produk menimpa ini, produk batch
+                        atau seri tidak boleh minus.
                     </p>
                     {galat.StokBolehMinus ? (
                         <p className="text-keterangan font-semibold text-bahaya">{galat.StokBolehMinus}</p>

@@ -91,9 +91,7 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
     return (
         <TataLetakAplikasi judul="Jadwal kerja">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Isi jam kerja per hari: ketik (misal 830 → 08:30), klik isian untuk memilih, atau pasang shift dengan
-                tombol Tambah. Satu hari boleh punya beberapa shift. Kosongkan untuk libur. Jam selesai lebih kecil dari
-                jam mulai berarti shift lewat tengah malam. Keterlambatan di rekap absensi dihitung dari jadwal ini.
+                Ketik jam (830 jadi 08:30) atau klik untuk memilih. Kosongkan untuk libur.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="jadwal kerja" /> : null}
             <DaftarGalatServer galat={props.errors} />

@@ -49,7 +49,7 @@ describe('X7 halaman Token API', () => {
         expect(screen.getAllByText('payoung_12_Ab3D…').length).toBeGreaterThan(0);
         expect(screen.getByText('payoung_12_' + 'x'.repeat(40))).toBeTruthy();
         expect(screen.getByRole('button', { name: /Salin token/ })).toBeTruthy();
-        expect(screen.getByText(/tidak bisa ditampilkan lagi/)).toBeTruthy();
+        expect(screen.getByText(/ditampilkan lagi/)).toBeTruthy();
     });
 
     it('formulir buat token mengirim nama & akses terpilih', () => {

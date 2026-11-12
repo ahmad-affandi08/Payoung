@@ -81,8 +81,7 @@ export default function PemilihSlot({
                 </p>
             ) : kueri.data.length === 0 ? (
                 <p className="text-keterangan text-teks-sekunder">
-                    Tidak ada jam kosong di tanggal ini. Pilih tanggal atau staf lain, atau pastikan jadwal kerja staf
-                    sudah diisi.
+                    Tidak ada jam kosong di tanggal ini. Pilih tanggal atau staf lain, atau isi jadwal kerja staf.
                 </p>
             ) : (
                 <div className="flex flex-wrap gap-2">

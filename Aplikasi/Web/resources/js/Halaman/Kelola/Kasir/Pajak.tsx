@@ -61,9 +61,8 @@ export default function HalamanPengaturanPajak({
                         />
                     </div>
                     <p className="text-keterangan text-teks-sekunder">
-                        Pengaturan ini menentukan total setiap transaksi di outlet ini. Perubahan berlaku untuk
-                        penjualan berikutnya, penjualan yang sudah tercatat tidak berubah. Kasir perlu sinkron dulu
-                        supaya angka barunya terpakai.
+                        Menentukan total setiap transaksi di outlet ini. Berlaku untuk penjualan berikutnya, dan kasir
+                        perlu sinkron dulu.
                     </p>
                 </Panel>
 

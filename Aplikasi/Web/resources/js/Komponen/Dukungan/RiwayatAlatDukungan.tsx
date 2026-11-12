@@ -130,8 +130,7 @@ export default function RiwayatAlatDukungan({ alat }: PropsRiwayatAlat) {
     if (alat.length === 0) {
         return (
             <p className="text-isi text-teks-sekunder">
-                Belum ada alat bantu yang dijalankan. Setiap kali petugas memakai alat (misalnya membangun ulang saldo
-                stok), hasil dan keadaan sebelum-sesudahnya tercatat di sini.
+                Belum ada alat bantu yang dijalankan. Hasil dan keadaan sebelum-sesudahnya tercatat di sini.
             </p>
         );
     }

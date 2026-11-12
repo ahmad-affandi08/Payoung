@@ -708,10 +708,7 @@ export default function HalamanDetailStokOpname({
                     saatKonfirmasi={() => Kirim('setujui')}
                     saatBatal={() => AturDialog(null)}
                 >
-                    <p>
-                        Selisih dicatat ke stok dengan tanggal hari ini dan jurnal selisih dibuat otomatis. Tindakan ini
-                        tidak bisa dibatalkan.
-                    </p>
+                    <p>Selisih dicatat ke stok bertanggal hari ini dan tidak bisa dibatalkan.</p>
                 </DialogKonfirmasi>
             ) : null}
             {dialog === 'Kembalikan' ? (

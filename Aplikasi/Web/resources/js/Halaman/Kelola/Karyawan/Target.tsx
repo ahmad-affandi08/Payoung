@@ -125,8 +125,8 @@ export default function HalamanTargetPenjualan({
     return (
         <TataLetakAplikasi judul="Target penjualan">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Realisasi outlet adalah penjualan bersih outlet itu. Realisasi karyawan adalah nilai baris penjualan
-                yang ia layani (dipilih kasir sebagai staf), dikurangi void dan retur.
+                Realisasi outlet adalah penjualan bersih outlet. Realisasi karyawan adalah nilai baris yang ia layani,
+                dikurangi void dan retur.
             </p>
             <AksiHalaman
                 keterangan={

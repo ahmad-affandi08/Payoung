@@ -1569,8 +1569,8 @@ function BannerLangganan({ tenant, bolehBayar }: { tenant: TenantAktif; bolehBay
         return (
             <Pemberitahuan jenis="bahaya" judul="Langganan ditangguhkan">
                 <p>
-                    Anda masih bisa masuk, melihat data dan laporan, serta mengekspor data. Menambah atau mengubah data
-                    dan berjualan di POS terkunci sampai tagihan dibayar.
+                    Anda masih bisa masuk, melihat dan mengekspor data. Mengubah data dan berjualan di POS terkunci
+                    sampai tagihan dibayar.
                 </p>
                 <p className="mt-1">{ajakan}</p>
             </Pemberitahuan>
@@ -1762,8 +1762,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                     {!props.AksesDukungan && props.PengingatDuaFaktor ? (
                         <Pemberitahuan jenis="info" judul="Aktifkan verifikasi dua langkah">
                             Paket Bisnis mewajibkan verifikasi dua langkah untuk Pemilik, Admin, dan Akuntan. Selama
-                            masa coba Anda masih bisa memakai semua menu. Setelahnya menu dibuka setelah verifikasi
-                            aktif.{' '}
+                            masa coba semua menu tetap terbuka.{' '}
                             <Link href="/kelola/keamanan" className="font-semibold text-brand underline">
                                 Aktifkan sekarang
                             </Link>

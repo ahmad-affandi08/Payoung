@@ -167,8 +167,7 @@ export default function HalamanDaftarPencairan({
     return (
         <TataLetakAplikasi judul="Pencairan dana">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Setoran QRIS, kartu, gerbang, dan ojol yang masuk ke rekening toko. Mencatatnya melunasi akun kliring
-                dan membebankan potongan platform, sehingga laba yang terbaca sudah bersih dari MDR dan komisi.
+                Setoran QRIS, kartu, dan ojol ke rekening toko. Potongan platform dicatat sebagai biaya.
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="akuntansi.kelola" objek="pencairan" /> : null}
 
@@ -208,8 +207,8 @@ export default function HalamanDaftarPencairan({
 
             {OpsiMetode.length === 0 ? (
                 <Pemberitahuan jenis="info" judul="Belum ada metode non-tunai">
-                    Pencairan hanya berlaku untuk metode yang uangnya tidak langsung diterima kasir — QRIS, kartu/EDC,
-                    e-wallet, transfer, dan platform ojol. Tambahkan metodenya dulu di Pengaturan.
+                    Berlaku untuk metode yang uangnya tidak langsung diterima kasir, seperti QRIS, EDC, dan ojol.
+                    Tambahkan metodenya dulu di Pengaturan.
                 </Pemberitahuan>
             ) : null}
 

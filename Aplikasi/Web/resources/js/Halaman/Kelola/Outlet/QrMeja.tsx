@@ -38,8 +38,8 @@ export default function HalamanQrMeja({ Outlet, NamaUsaha, PesanSendiriAktif, Me
             {PesanSendiriAktif ? null : (
                 <div className="print:hidden">
                     <Pemberitahuan jenis="peringatan" judul="Pesan sendiri belum aktif">
-                        Tamu yang memindai QR akan melihat pesan bahwa pesan sendiri belum aktif. Hidupkan di halaman
-                        outlet bagian Meja & area.
+                        Tamu yang memindai akan melihat pesan bahwa pesan sendiri belum aktif. Hidupkan di halaman
+                        outlet.
                     </Pemberitahuan>
                 </div>
             )}

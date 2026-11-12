@@ -407,8 +407,8 @@ export default function HalamanTambahTim({
                         saatBerubah={(nilai) => formulir.setData('IkutAbsensi', nilai)}
                     />
                     <p className="text-keterangan text-teks-sekunder">
-                        Matikan untuk manajer, supervisor, atau pemilik yang tidak perlu absen. Yang tidak ikut absensi
-                        tidak dianggap terlambat atau tidak masuk dan tidak kena potongan gaji.
+                        Matikan untuk manajer atau pemilik yang tidak perlu absen. Tidak dihitung terlambat dan tidak
+                        dipotong gaji.
                     </p>
                     {galat.IkutAbsensi ? (
                         <p className="text-keterangan font-semibold text-bahaya">{galat.IkutAbsensi}</p>
@@ -478,7 +478,7 @@ export default function HalamanTambahTim({
                     ? {
                           required: true,
                           keterangan:
-                              'Gaji pokok rekap = upah × hari masuk (dari absensi dan cuti berbayar). Hari masuk bisa disesuaikan di draf rekap.',
+                              'Gaji pokok rekap = upah × hari masuk. Hari masuk bisa disesuaikan di draf rekap.',
                       }
                     : {})}
             />

@@ -132,9 +132,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Perintah kerja', href: AlamatPerintahKerja }]}>
             <DaftarGalatServer galat={galat} />
             <Pemberitahuan jenis="info" judul="Harga diambil dari daftar harga">
-                Harga jasa & sparepart mengikuti daftar harga (termasuk harga tier pelanggan). Simpan dulu, lalu periksa
-                estimasinya di halaman perintah kerja sebelum meminta persetujuan pelanggan. Stok sparepart baru
-                berkurang saat ditagih di kasir.
+                Harga jasa dan sparepart mengikuti daftar harga. Stok sparepart baru berkurang saat ditagih di kasir.
             </Pemberitahuan>
 
             <form onSubmit={Kirim} noValidate className="flex flex-col gap-4" aria-label={judul}>

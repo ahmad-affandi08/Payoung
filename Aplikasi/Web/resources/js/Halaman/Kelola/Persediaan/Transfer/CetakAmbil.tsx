@@ -81,8 +81,8 @@ export default function HalamanCetakAmbilTransferStok({ Transfer, Baris, Usaha }
             </Table>
 
             <p className="text-keterangan text-teks-sekunder">
-                Centang tiap barang setelah diambil dari rak. Ini hanya daftar kerja gudang: stok baru berpindah saat
-                transfer dikirim, dan surat jalan yang menyertai barang dicetak terpisah.
+                Centang tiap barang setelah diambil dari rak. Hanya daftar kerja, stok baru berpindah saat transfer
+                dikirim.
             </p>
 
             {Transfer.Catatan ? (

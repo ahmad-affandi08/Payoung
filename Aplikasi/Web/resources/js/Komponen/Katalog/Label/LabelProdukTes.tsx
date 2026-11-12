@@ -211,7 +211,7 @@ describe('Kelola/Produk/Label (PRD-10 cetak label)', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Buat barcode' }));
         const dialog = await screen.findByRole('alertdialog');
-        expect(within(dialog).getByText(/hanya untuk barang yang memang tidak punya barcode dari pabrik/)).toBeTruthy();
+        expect(within(dialog).getByText(/hanya untuk barang tanpa barcode pabrik/)).toBeTruthy();
         expect(Ambil).not.toHaveBeenCalled();
 
         fireEvent.click(within(dialog).getByRole('button', { name: 'Buat barcode' }));

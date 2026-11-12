@@ -221,9 +221,8 @@ export default function DialogUnduhBuku({
                     ))}
                 </ul>
                 <p className="rounded-panel bg-brand-tint px-3 py-2 text-keterangan text-teks-utama">
-                    Angka di Excel berupa rumus, jadi kalau Anda mengubah kategori satu baris di lembar transaksi,
-                    lembar lain ikut berubah. Lembar yang tidak dicentang tetapi dibutuhkan rumus tetap ada dan
-                    disembunyikan. Berkas disiapkan di Pusat Unduhan.
+                    Angka di Excel berupa rumus, jadi mengubah lembar transaksi ikut mengubah lembar lain. Berkas
+                    disiapkan di Pusat Unduhan.
                 </p>
                 <DialogFooter className="sm:justify-start">
                     <Tombol onClick={Unduh}>Siapkan Excel</Tombol>

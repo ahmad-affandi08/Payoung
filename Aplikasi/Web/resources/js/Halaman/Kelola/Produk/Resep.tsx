@@ -32,7 +32,7 @@ import type { PropsResepProduk } from '@/Tipe/Katalog';
 
 /** Rumus susut yang disetujui lead (DesainF03 H.7, diamandemen). Tampil sebagai teks bantuan. */
 export const TeksRumusSusut =
-    'Jumlah kotor = jumlah bersih ÷ (1 − susut/100). Susut 0 sampai kurang dari 100 %. Contoh: 150 ml dengan susut 10 % → 166,6667 ml.';
+    'Jumlah kotor = bersih ÷ (1 − susut/100). Contoh: 150 ml dengan susut 10 % butuh 166,6667 ml.';
 
 type OpsiSatuanBahan = { Uuid: string; Simbol: string; BolehDesimal: boolean };
 

@@ -113,9 +113,8 @@ export default function HalamanRekapGaji({
             <AksiHalaman
                 keterangan={
                     <p className="max-w-3xl text-isi text-teks-sekunder">
-                        Gaji pokok diambil dari data karyawan dan komisi dari laporan komisi periode itu. Karyawan
-                        bergaji bulanan masuk rekap bulanan, yang bergaji mingguan masuk rekap tujuh hari. Sisa kasbon
-                        dipotong otomatis dan bisa diubah sebelum gaji dibayar.
+                        Gaji pokok dari data karyawan, komisi dari laporan komisi. Sisa kasbon dipotong otomatis dan
+                        bisa diubah sebelum dibayar.
                     </p>
                 }
             >

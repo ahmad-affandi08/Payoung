@@ -68,7 +68,7 @@ describe('tab Rencana produksi di laporan stok', () => {
         expect(screen.getAllByText('Roti Tawar Gandum Utuh').length).toBeGreaterThan(0);
         expect(screen.getAllByText('8 pcs').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Cukup').length).toBeGreaterThan(0);
-        expect(screen.getByText(/pre-order biasanya sudah ikut di riwayat penjualan/)).toBeTruthy();
+        expect(screen.getByText(/mana yang lebih besar/)).toBeTruthy();
     });
 
     it('tombol Siapkan draf produksi hanya ada untuk yang perlu produksi dan membawa produk, lokasi, jumlah, tanggal', () => {
