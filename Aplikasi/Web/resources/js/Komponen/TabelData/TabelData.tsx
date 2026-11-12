@@ -698,12 +698,7 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
     }
 
     return (
-        <section
-            data-slot="tabel-data"
-            data-ringkasan={props.ringkasan ? 'ada' : undefined}
-            className="flex min-w-0 flex-col gap-3"
-            aria-label={props.label}
-        >
+        <section data-slot="tabel-data" className="flex min-w-0 flex-col gap-3" aria-label={props.label}>
             {props.ringkasan ? props.ringkasan(server ? kueri.data : undefined) : null}
             {terpilih.length > 0 && props.aksiMassal ? (
                 <div

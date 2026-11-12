@@ -421,18 +421,17 @@
 }
 
 /*
- * Badan halaman back-office tenant (D-275, D-277): judul halaman beserta isinya.
+ * Badan halaman back-office tenant (D-275, D-281): judul halaman beserta isinya.
  *
  * Aturan di sini sengaja **di luar `@layer`** supaya mengalahkan utilitas Tailwind pada elemen yang sama
  * (`text-isi` pada keterangan halaman). Gaya dipasang lewat CSS, bukan lewat kelas, supaya ratusan halaman tidak
  * perlu disunting satu per satu.
  *
  * 1. Keterangan di bawah judul: `text-keterangan` dan rapat ke judulnya (margin negatif membatalkan jarak `gap`).
- * 2. Halaman daftar: bila semua yang berada di atas tabel hanya judul, keterangan, baris aksi, dan area aria-live,
- *    potongan-potongan itu menempel menjadi SATU kartu bersama tabelnya (referensi A, `Panduan/ReferensiTampilan`):
- *    judul + keterangan di kiri, aksi halaman di kanan baris judul (layar >= 1024px, di bawahnya baris sendiri), lalu
- *    bilah alat, tabel, dan paginasi. Blok lain di atas tabel (panel, ringkasan, tab) membatalkan kartu dan halaman
- *    tampil biasa. Blok di bawah tabel tidak membatalkan dan tetap kartu sendiri (lihat blok kartu di bawah).
+ * 2. Judul dan keterangan SELALU polos di atas isi, di semua halaman (D-281). Kartu putih hanya untuk isi (kartu
+ *    tabel, panel, ringkasan), tidak pernah untuk judul. Dulu halaman daftar yang tabelnya langsung di bawah judul
+ *    menaruh judul di dalam kartu (D-277, D-279), sehingga halaman daftar yang punya blok lain di atas tabel tampil
+ *    berbeda. Pola itu dicabut supaya semua halaman seragam.
  *
  * Bilah aksi baris terpilih berada di luar `kartu-tabel`, jadi tetap menempel di bawah layar di HP tanpa bantuan CSS.
  */
@@ -467,131 +466,5 @@
 @media (min-width: 640px) {
     .badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
         margin-top: calc(var(--spacing) * -4);
-    }
-}
-
-/*
- * Kartu halaman daftar (D-277). Aktif bila badan punya `TabelData` dan semua yang berada SEBELUM tabel hanya judul,
- * keterangan, baris aksi, atau area aria-live (blok lain di atas tabel, mis. panel atau ringkasan, membatalkan kartu
- * dan halaman memakai tampilan biasa). Blok di BAWAH tabel (mis. panel kalibrasi) tidak membatalkan: ia tetap kartu
- * sendiri di bawah kartu halaman.
- *
- * Kartu dibentuk dari potongan yang menempel (judul, keterangan, aksi, lalu kartu tabel) dengan bingkai samping yang
- * sama dan tanpa jarak, bukan dari satu pembungkus, supaya blok sesudah tabel bisa berada di luar kartu. Baris dibuat
- * `flex-wrap` agar aksi halaman duduk di kanan baris judul (layar >= 1024px) lewat `order`, tanpa grid.
- */
-.badan-halaman:has(> :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])):not(
-        :has(
-            > :not(
-                    h1,
-                    p,
-                    section[data-slot='tabel-data'],
-                    [data-slot='bilah-halaman'],
-                    [data-slot='aksi-halaman'],
-                    [aria-live]
-                )
-                ~ :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])
-        )
-    ):not(:has(> section[data-slot='tabel-data'][data-ringkasan])) {
-    flex-flow: row wrap;
-    gap: 0;
-
-    & > * {
-        flex: 0 0 100%;
-        margin-top: var(--jarak-badan);
-    }
-
-    & > h1,
-    & > :is(h1 + p, h1 + [aria-live] + p),
-    & > [data-slot='aksi-halaman']:not(section ~ *),
-    &
-        > :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']):not(
-            :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']) ~ *
-        ),
-    & > [aria-live] {
-        margin-top: 0;
-    }
-
-    & > h1,
-    & > :is(h1 + p, h1 + [aria-live] + p),
-    & > [data-slot='aksi-halaman']:not(section ~ *) {
-        border-inline: 1px solid var(--color-garis);
-        background: var(--color-permukaan);
-        padding-inline: calc(var(--spacing) * 4);
-    }
-
-    & > h1 {
-        border-top: 1px solid var(--color-garis);
-        border-radius: var(--radius-panel) var(--radius-panel) 0 0;
-        padding-top: calc(var(--spacing) * 4);
-        padding-bottom: calc(var(--spacing) * 3);
-    }
-
-    & > :is(h1 + p, h1 + [aria-live] + p) {
-        /* Batas lebar bacaan (max-w-3xl) dibuang: dengan batas itu keterangan muat di baris yang sama dengan judul. */
-        max-width: none;
-        margin-top: calc(var(--spacing) * -3);
-        padding-bottom: calc(var(--spacing) * 3);
-    }
-
-    & > [data-slot='aksi-halaman']:not(section ~ *) {
-        padding-bottom: calc(var(--spacing) * 3);
-    }
-
-    /* Kartu tabel menyambung ke bawah kepala: bingkai samping sama, sudut atas rata, garis atas jadi pemisah. */
-    &
-        > :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']):not(
-            :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']) ~ *
-        )
-        > [data-slot='kartu-tabel'] {
-        border-radius: 0 0 var(--radius-panel) var(--radius-panel);
-    }
-
-    /* Bilah halaman (mis. pilih outlet dan minggu) menjadi bagian bawah kartu: bingkai sama, padding sendiri. */
-    & > [data-slot='bilah-halaman']:not(:is(section[data-slot='tabel-data'], [data-slot='bilah-halaman']) ~ *) {
-        border: 1px solid var(--color-garis);
-        border-radius: 0 0 var(--radius-panel) var(--radius-panel);
-        background: var(--color-permukaan);
-        padding: calc(var(--spacing) * 4);
-    }
-}
-
-@media (min-width: 1024px) {
-    .badan-halaman:has(> :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])):not(
-            :has(
-                > :not(
-                        h1,
-                        p,
-                        section[data-slot='tabel-data'],
-                        [data-slot='bilah-halaman'],
-                        [data-slot='aksi-halaman'],
-                        [aria-live]
-                    )
-                    ~ :is(section[data-slot='tabel-data'], [data-slot='bilah-halaman'])
-            )
-        ):not(:has(> section[data-slot='tabel-data'][data-ringkasan])) {
-        & > h1 {
-            order: -3;
-            flex: 1 1 0%;
-        }
-
-        & > :is(h1 + p, h1 + [aria-live] + p) {
-            order: -1;
-        }
-
-        /* Aksi halaman tanpa keterangan: di kanan baris judul. */
-        & > [data-slot='aksi-halaman']:not([data-keterangan]):not(section ~ *) {
-            order: -2;
-            flex: 0 0 auto;
-            border-left-width: 0;
-            border-top: 1px solid var(--color-garis);
-            border-top-right-radius: var(--radius-panel);
-            padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4) calc(var(--spacing) * 3) 0;
-        }
-
-        & > h1:has(~ [data-slot='aksi-halaman']:not([data-keterangan])) {
-            border-right-width: 0;
-            border-top-right-radius: 0;
-        }
     }
 }
