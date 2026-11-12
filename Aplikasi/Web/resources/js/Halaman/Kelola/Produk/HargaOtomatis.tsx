@@ -268,7 +268,7 @@ export default function HalamanHargaOtomatis(props: PropsHargaOtomatis) {
                                 required
                                 keterangan="Isi 1 sampai 100."
                             />
-                            <p className="border-l-4 border-aksen bg-peringatan-lembut px-3 py-2 text-isi text-teks-utama">
+                            <p className="border-l-4 border-peringatan bg-peringatan-lembut px-3 py-2 text-isi text-teks-utama">
                                 Contoh: harga beli salah diketik 10 kali lipat, jadi harga jual menunggu persetujuan
                                 Anda.
                             </p>
