@@ -26,6 +26,7 @@ use App\Domain\Pelanggan\Kueri\PengaturanSesiTenant;
 use App\Domain\Pelanggan\Kueri\RiwayatDeposit;
 use App\Domain\Pelanggan\Kueri\RiwayatPoin;
 use App\Domain\Pelanggan\Layanan\BukuPoin;
+use App\Domain\Pelanggan\Layanan\NomorHp;
 use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\TierPelanggan;
 use App\Domain\Penjualan\Kueri\BelanjaPelanggan;
@@ -186,6 +187,24 @@ final class PelangganKontroler extends DasarKelolaKontroler
         }
 
         return redirect()->route('kelola.pelanggan.detail', ['pelanggan' => $pelanggan->Uuid])->with('Kilat', "Pelanggan {$pelanggan->Nama} ditambahkan.");
+    }
+
+    /**
+     * Tambah pelanggan dari dalam formulir lain (invoice, penawaran, pesanan grosir, bengkel), tanpa meninggalkan
+     * halaman. Aturan isian dan Aksi sama dengan `Simpan`, jawabannya JSON berisi pilihan untuk dropdown pemilih.
+     */
+    public function SimpanCepat(SimpanPelangganPermintaan $permintaan, SimpanPelanggan $simpan): JsonResponse
+    {
+        $pelanggan = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id));
+
+        return response()->json(['Data' => [
+            'Uuid' => $pelanggan->Uuid,
+            'Nama' => $pelanggan->Nama,
+            'NoHp' => NomorHp::Samarkan($pelanggan->NoHp),
+            'LimitKredit' => null,
+            'SisaPiutang' => '0.00',
+            'TerminHari' => (int) $pelanggan->TerminHari,
+        ]], 201);
     }
 
     public function Perbarui(SimpanPelangganPermintaan $permintaan, string $pelanggan, SimpanPelanggan $simpan): RedirectResponse

@@ -7,6 +7,7 @@ import {
     useNilaiTertunda,
     useSorotPertama,
 } from '@/Komponen/Katalog/PemilihProduk';
+import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
 import { CommandItem } from '@/Komponen/Ui/command';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
@@ -109,36 +110,39 @@ export default function PemilihPelangganGrosir({
     }
 
     return (
-        <KerangkaPemilihProduk
-            label="Pelanggan"
-            galat={galat}
-            placeholder="Pilih pelanggan"
-            wajib
-            nilaiTerpilih={uuidTerpilih === '' ? undefined : namaTerpilih}
-            kata={kata}
-            saatKata={AturKata}
-            terbuka={terbuka}
-            saatTerbuka={Buka}
-            sorot={sorot}
-            saatSorot={AturSorot}
-            status={status}
-        >
-            {hasil.map((p) => (
-                <CommandItem
-                    key={p.Uuid}
-                    value={p.Uuid}
-                    onSelect={() => {
-                        saatPilih(p.Uuid, p.Nama, p.TerminHari);
-                        Buka(false);
-                    }}
-                    className="min-h-9 cursor-pointer flex-col items-start gap-0 rounded-kontrol px-2 py-1.5 text-isi text-teks-utama data-[selected=true]:bg-brand-lembut data-[selected=true]:text-teks-utama pointer-coarse:min-h-11"
-                >
-                    <span className={p.Uuid === uuidTerpilih ? 'font-semibold break-words' : 'break-words'}>
-                        {p.Nama}
-                    </span>
-                    <span className="text-keterangan text-teks-sekunder">{KeteranganKredit(p)}</span>
-                </CommandItem>
-            ))}
-        </KerangkaPemilihProduk>
+        <div className="flex flex-col gap-1.5">
+            <KerangkaPemilihProduk
+                label="Pelanggan"
+                galat={galat}
+                placeholder="Pilih pelanggan"
+                wajib
+                nilaiTerpilih={uuidTerpilih === '' ? undefined : namaTerpilih}
+                kata={kata}
+                saatKata={AturKata}
+                terbuka={terbuka}
+                saatTerbuka={Buka}
+                sorot={sorot}
+                saatSorot={AturSorot}
+                status={status}
+            >
+                {hasil.map((p) => (
+                    <CommandItem
+                        key={p.Uuid}
+                        value={p.Uuid}
+                        onSelect={() => {
+                            saatPilih(p.Uuid, p.Nama, p.TerminHari);
+                            Buka(false);
+                        }}
+                        className="min-h-9 cursor-pointer flex-col items-start gap-0 rounded-kontrol px-2 py-1.5 text-isi text-teks-utama data-[selected=true]:bg-brand-lembut data-[selected=true]:text-teks-utama pointer-coarse:min-h-11"
+                    >
+                        <span className={p.Uuid === uuidTerpilih ? 'font-semibold break-words' : 'break-words'}>
+                            {p.Nama}
+                        </span>
+                        <span className="text-keterangan text-teks-sekunder">{KeteranganKredit(p)}</span>
+                    </CommandItem>
+                ))}
+            </KerangkaPemilihProduk>
+            <TombolPelangganBaru saatTersimpan={(p) => saatPilih(p.Uuid, p.Nama, p.TerminHari)} />
+        </div>
     );
 }

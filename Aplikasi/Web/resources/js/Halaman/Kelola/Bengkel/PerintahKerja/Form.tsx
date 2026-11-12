@@ -17,6 +17,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
+import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
 import PemilihTanggalWaktu from '@/Komponen/Tanggal/PemilihTanggalWaktu';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -62,6 +63,15 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
             }
         } catch {
             // Pencarian gagal tidak mengganggu: unit tetap bisa dipilih manual.
+        }
+    };
+
+    const PilihPelanggan = (p: { Uuid: string; Nama: string }) => {
+        AturPelanggan({ Uuid: p.Uuid, Nama: p.Nama });
+
+        if (pelanggan?.Uuid !== p.Uuid) {
+            AturKendaraan(null);
+            void PilihKendaraanTunggal(p.Uuid);
         }
     };
 
@@ -148,29 +158,25 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                             />
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <PemilihCariBengkel<PelangganPilihan>
-                                sumber="pelanggan"
-                                label="Pelanggan"
-                                placeholder="Pilih pelanggan"
-                                buatUrl={(kata) =>
-                                    `/kelola/bengkel/pelanggan/cari?${new URLSearchParams({ kata }).toString()}`
-                                }
-                                ambilId={(p) => p.Uuid}
-                                ambilJudul={(p) => p.Nama}
-                                ambilKeterangan={(p) => p.NoHp}
-                                saatPilih={(p) => {
-                                    AturPelanggan({ Uuid: p.Uuid, Nama: p.Nama });
-
-                                    if (pelanggan?.Uuid !== p.Uuid) {
-                                        AturKendaraan(null);
-                                        void PilihKendaraanTunggal(p.Uuid);
+                            <div className="flex flex-col gap-1.5">
+                                <PemilihCariBengkel<PelangganPilihan>
+                                    sumber="pelanggan"
+                                    label="Pelanggan"
+                                    placeholder="Pilih pelanggan"
+                                    buatUrl={(kata) =>
+                                        `/kelola/bengkel/pelanggan/cari?${new URLSearchParams({ kata }).toString()}`
                                     }
-                                }}
-                                nilaiTerpilih={pelanggan?.Nama}
-                                pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
-                                galat={galat.UuidPelanggan}
-                                wajib
-                            />
+                                    ambilId={(p) => p.Uuid}
+                                    ambilJudul={(p) => p.Nama}
+                                    ambilKeterangan={(p) => p.NoHp}
+                                    saatPilih={PilihPelanggan}
+                                    nilaiTerpilih={pelanggan?.Nama}
+                                    pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
+                                    galat={galat.UuidPelanggan}
+                                    wajib
+                                />
+                                <TombolPelangganBaru saatTersimpan={PilihPelanggan} />
+                            </div>
                             <div className="flex flex-col gap-2">
                                 <PemilihCariBengkel<KendaraanPilihan>
                                     sumber="kendaraan"

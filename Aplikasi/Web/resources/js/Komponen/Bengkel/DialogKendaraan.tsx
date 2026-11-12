@@ -9,6 +9,7 @@ import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
+import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { type JenisUnit, KataUnit, LabelJenisUnit, LabelPengenal, PakaiJenisUnitBawaan } from '@/Pustaka/UnitServis';
@@ -110,25 +111,33 @@ export default function DialogKendaraan({
                 ) : null}
                 <div className="sm:col-span-2">
                     {pelanggan === null ? (
-                        <PemilihCariBengkel<PelangganPilihan>
-                            sumber="pelanggan"
-                            label="Pemilik (pelanggan)"
-                            placeholder="Pilih pelanggan"
-                            buatUrl={(kata) =>
-                                `/kelola/bengkel/pelanggan/cari?${new URLSearchParams({ kata }).toString()}`
-                            }
-                            ambilId={(p) => p.Uuid}
-                            ambilJudul={(p) => p.Nama}
-                            ambilKeterangan={(p) => p.NoHp}
-                            saatPilih={(p) => {
-                                formulir.setData('UuidPelanggan', p.Uuid);
-                                AturNamaPelanggan(p.Nama);
-                            }}
-                            nilaiTerpilih={d.UuidPelanggan === '' ? undefined : namaPelanggan}
-                            pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
-                            galat={galat.UuidPelanggan}
-                            wajib
-                        />
+                        <div className="flex flex-col gap-1.5">
+                            <PemilihCariBengkel<PelangganPilihan>
+                                sumber="pelanggan"
+                                label="Pemilik (pelanggan)"
+                                placeholder="Pilih pelanggan"
+                                buatUrl={(kata) =>
+                                    `/kelola/bengkel/pelanggan/cari?${new URLSearchParams({ kata }).toString()}`
+                                }
+                                ambilId={(p) => p.Uuid}
+                                ambilJudul={(p) => p.Nama}
+                                ambilKeterangan={(p) => p.NoHp}
+                                saatPilih={(p) => {
+                                    formulir.setData('UuidPelanggan', p.Uuid);
+                                    AturNamaPelanggan(p.Nama);
+                                }}
+                                nilaiTerpilih={d.UuidPelanggan === '' ? undefined : namaPelanggan}
+                                pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
+                                galat={galat.UuidPelanggan}
+                                wajib
+                            />
+                            <TombolPelangganBaru
+                                saatTersimpan={(p) => {
+                                    formulir.setData('UuidPelanggan', p.Uuid);
+                                    AturNamaPelanggan(p.Nama);
+                                }}
+                            />
+                        </div>
                     ) : (
                         <p className="text-isi text-teks-utama">
                             Pemilik: <span className="font-semibold">{pelanggan.Nama}</span>

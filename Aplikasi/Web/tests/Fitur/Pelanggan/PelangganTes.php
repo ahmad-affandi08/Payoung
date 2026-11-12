@@ -134,6 +134,26 @@ describe('F-16a back-office pelanggan', function (): void {
         expect(LogAudit::query()->whereIn('Peristiwa', ['pelanggan.arsipkan', 'pelanggan.pulihkan'])->count())->toBe(2);
     });
 
+    it('tambah pelanggan cepat dari formulir lain mengembalikan pilihan pelanggan. Nomor ganda ditolak, tanpa izin 403', function (): void {
+        $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
+        BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id);
+        $isi = ['Nama' => 'CV Mitra Sejahtera Abadi', 'NoHp' => '0812-3456-7890', 'SetujuPemasaran' => false];
+
+        $this->postJson('/kelola/pelanggan/cepat', $isi)
+            ->assertCreated()
+            ->assertJsonPath('Data.Nama', 'CV Mitra Sejahtera Abadi')
+            ->assertJsonPath('Data.LimitKredit', null)
+            ->assertJsonPath('Data.SisaPiutang', '0.00')
+            ->assertJsonPath('Data.NoHp', '0812****7890')
+            ->assertJsonStructure(['Data' => ['Uuid', 'Nama', 'NoHp', 'LimitKredit', 'SisaPiutang', 'TerminHari']]);
+        $this->postJson('/kelola/pelanggan/cepat', $isi)->assertUnprocessable();
+
+        expect(Pelanggan::query()->where('Nama', 'CV Mitra Sejahtera Abadi')->count())->toBe(1);
+
+        BantuanKatalog::MasukSebagai($this, $t['Tenant']->Id, PeranTenantBawaan::Supervisor);
+        $this->postJson('/kelola/pelanggan/cepat', ['Nama' => 'Lain', 'NoHp' => '081200000001', 'SetujuPemasaran' => false])->assertForbidden();
+    });
+
     it('halaman buat (halaman penuh): pemilik 200. Supervisor & kasir 403', function (): void {
         $t = BantuanKatalog::SiapkanTenantProduk('Toko Roti Manis Sejahtera');
 

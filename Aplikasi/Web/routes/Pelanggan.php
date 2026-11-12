@@ -77,6 +77,8 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
         Route::get('/ekspor', [ImporPelangganKontroler::class, 'Ekspor'])->middleware('throttle:10,1')->name('kelola.pelanggan.ekspor');
         Route::post('/massal', [PelangganKontroler::class, 'Massal'])->name('kelola.pelanggan.massal');
         Route::post('/', [PelangganKontroler::class, 'Simpan'])->name('kelola.pelanggan.simpan');
+        // Tambah dari dalam formulir lain (pemilih pelanggan), jawaban JSON.
+        Route::post('/cepat', [PelangganKontroler::class, 'SimpanCepat'])->middleware('throttle:30,1')->name('kelola.pelanggan.simpan-cepat');
         Route::put('/{pelanggan}', [PelangganKontroler::class, 'Perbarui'])->where('pelanggan', $ulid)->name('kelola.pelanggan.perbarui');
         Route::post('/{pelanggan}/arsipkan', [PelangganKontroler::class, 'Arsipkan'])->where('pelanggan', $ulid)->name('kelola.pelanggan.arsipkan');
         Route::post('/{pelanggan}/pulihkan', [PelangganKontroler::class, 'Pulihkan'])->where('pelanggan', $ulid)->name('kelola.pelanggan.pulihkan');
