@@ -421,64 +421,29 @@
 }
 
 /*
- * Badan halaman back-office tenant (D-275, D-281): judul halaman beserta isinya.
+ * Badan halaman back-office tenant (D-275, D-281, D-282): judul halaman beserta isinya.
  *
  * Aturan di sini sengaja **di luar `@layer`** supaya mengalahkan utilitas Tailwind pada elemen yang sama
  * (`text-isi` pada keterangan halaman). Gaya dipasang lewat CSS, bukan lewat kelas, supaya ratusan halaman tidak
  * perlu disunting satu per satu.
  *
- * 1. Keterangan di bawah judul: `text-keterangan` dan rapat ke judulnya (margin negatif membatalkan jarak `gap`).
- * 2. Halaman daftar (D-281): seluruh badan halaman, dari judul sampai ke bawah, adalah SATU kontainer putih. Isi di
- *    dalamnya (panel, ringkasan angka, filter) tampil sebagai kartu kecil bergaris, dan tabel menyatu dengan
- *    kontainer lewat garis pemisah, bukan kartu sendiri. Berlaku untuk setiap halaman yang `TabelData`-nya langsung
- *    berada di badan halaman, jadi semua halaman daftar seragam tanpa disunting satu per satu.
+ * Seluruh badan halaman, dari judul sampai ke bawah, adalah SATU kontainer putih di SEMUA halaman (daftar, form,
+ * laporan, pengaturan). Judul dan keterangan memakai padding 16px, blok lain di dalamnya (panel, ringkasan angka,
+ * filter, bidang form) diberi margin 16px supaya tampak sebagai kartu kecil di dalam kontainer, dan tabel dibuat
+ * selebar kontainer dengan garis atas sebagai pemisah, bukan kartu sendiri. Keterangan di bawah judul: `text-keterangan`
+ * dan rapat ke judulnya.
  *
- * Bilah aksi baris terpilih berada di luar `kartu-tabel`, jadi tetap menempel di bawah layar di HP tanpa bantuan CSS.
+ * Tanpa `overflow: hidden` supaya bilah aksi baris terpilih (sticky) tetap menempel di bawah layar di HP.
  */
 .badan-halaman {
     --jarak-badan: calc(var(--spacing) * 3);
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: var(--jarak-badan);
-}
-
-@media (min-width: 640px) {
-    .badan-halaman {
-        --jarak-badan: calc(var(--spacing) * 4);
-    }
-}
-
-/* Area aria-live yang masih kosong (galat server) tidak boleh memakan jarak flex di antara judul dan keterangan. */
-.badan-halaman > [aria-live]:empty {
-    position: absolute;
-}
-
-.badan-halaman > p:first-of-type {
-    font-size: var(--text-keterangan);
-    line-height: var(--text-keterangan--line-height);
-}
-
-.badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
-    margin-top: calc(var(--spacing) * -3);
-}
-
-@media (min-width: 640px) {
-    .badan-halaman > :is(h1 + p, h1 + [aria-live] + p) {
-        margin-top: calc(var(--spacing) * -4);
-    }
-}
-
-/*
- * Kontainer halaman daftar (D-281). Tanpa overflow hidden supaya bilah aksi baris terpilih (sticky) tetap menempel
- * di bawah layar. Judul dan keterangan memakai padding sendiri, blok lain di dalamnya diberi margin supaya tampak
- * sebagai kartu di dalam kontainer, dan tabel dibuat selebar kontainer dengan garis atas sebagai pemisah.
- */
-.badan-halaman:has(> section[data-slot='tabel-data']) {
-    gap: 0;
     border: 1px solid var(--color-garis);
     border-radius: var(--radius-panel);
     background: var(--color-permukaan);
+    padding-bottom: calc(var(--spacing) * 4);
 
     & > h1 {
         padding: calc(var(--spacing) * 4) calc(var(--spacing) * 4) calc(var(--spacing) * 3);
@@ -488,22 +453,27 @@
         padding-bottom: calc(var(--spacing) * 1);
     }
 
+    & > p:first-of-type {
+        font-size: var(--text-keterangan);
+        line-height: var(--text-keterangan--line-height);
+    }
+
     & > :is(h1 + p, h1 + [aria-live] + p) {
         max-width: none;
-        margin-top: 0;
-        padding: 0 calc(var(--spacing) * 4) calc(var(--spacing) * 3);
+        padding: 0 calc(var(--spacing) * 4);
+    }
+
+    /* Area aria-live yang masih kosong (galat server) tidak boleh memakan jarak di antara judul dan keterangan. */
+    & > [aria-live]:empty {
+        position: absolute;
     }
 
     & > :not(h1, [aria-live], section[data-slot='tabel-data'], :is(h1 + p, h1 + [aria-live] + p)) {
-        margin: calc(var(--spacing) * 3) calc(var(--spacing) * 4) 0;
-    }
-
-    & > :last-child:not(section) {
-        margin-bottom: calc(var(--spacing) * 4);
+        margin: var(--jarak-badan) calc(var(--spacing) * 4) 0;
     }
 
     & > section[data-slot='tabel-data'] {
-        margin-top: calc(var(--spacing) * 3);
+        margin-top: var(--jarak-badan);
     }
 
     /* Ringkasan dan bilah aksi baris terpilih di dalam tabel sejajar dengan judul, tabelnya selebar kontainer. */
@@ -517,6 +487,13 @@
     }
 
     & > section[data-slot='tabel-data']:last-child > [data-slot='kartu-tabel'] {
+        margin-bottom: calc(var(--spacing) * -4);
         border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+    }
+}
+
+@media (min-width: 640px) {
+    .badan-halaman {
+        --jarak-badan: calc(var(--spacing) * 4);
     }
 }
