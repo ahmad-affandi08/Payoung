@@ -243,12 +243,16 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
             />,
         );
 
-        expect(screen.getByText(/Menampilkan/).textContent).toBe('Menampilkan 1–25 dari 60');
+        expect(screen.getByText(/Menampilkan/).textContent).toBe('Menampilkan 1 sampai 25 dari 60');
+        // D-276: nomor halaman bergaya kartu, halaman aktif ditandai aria-current.
+        expect(screen.getByRole('button', { name: 'Halaman 1' }).getAttribute('aria-current')).toBe('page');
+        expect(screen.getByRole('button', { name: 'Halaman 3' }).getAttribute('aria-current')).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'Halaman berikutnya' }));
         await waitFor(() => expect(screen.getByText('Roti 1')).toBeTruthy());
-        expect(screen.getByText(/Menampilkan/).textContent).toBe('Menampilkan 26–50 dari 60');
+        expect(screen.getByText(/Menampilkan/).textContent).toBe('Menampilkan 26 sampai 50 dari 60');
+        expect(screen.getByRole('button', { name: 'Halaman 2' }).getAttribute('aria-current')).toBe('page');
 
-        UbahNilai(screen.getByLabelText('Baris per halaman'), '50');
+        UbahNilai(screen.getByLabelText('Tampilkan baris per halaman'), '50');
         await waitFor(() => expect(panggilanFetch.at(-1)).toBe('/kelola/produk?perHalaman=50'));
     });
 

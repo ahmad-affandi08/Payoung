@@ -1746,7 +1746,6 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                 </KepalaTataLetak>
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
                     <JejakHalaman jejak={[...SusunJejak(url, menuTerlihat, jejak), ...jejak]} />
-                    <JudulHalaman>{judul}</JudulHalaman>
                     {/* PGL-16: petugas dukungan tidak mengurus akun Owner, jadi banner milik Owner tidak ditampilkan. */}
                     {!props.AksesDukungan && props.Pengguna && !props.Pengguna.EmailTerverifikasi ? (
                         <BannerVerifikasiEmail email={props.Pengguna.Email} />
@@ -1788,7 +1787,11 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                             bolehBayar={PunyaIzinTenant(props.Akses, IzinTenant.LanggananKelola)}
                         />
                     ) : null}
-                    <PenyediaAksiHalaman>{children}</PenyediaAksiHalaman>
+                    {/* D-277: judul dan isi halaman satu badan. Halaman yang hanya berisi keterangan, aksi, dan tabel tampil sebagai satu kartu (Gaya/Aplikasi.css). */}
+                    <div data-slot="badan-halaman" className="badan-halaman">
+                        <JudulHalaman>{judul}</JudulHalaman>
+                        <PenyediaAksiHalaman>{children}</PenyediaAksiHalaman>
+                    </div>
                 </main>
             </div>
             <DialogHasil berhasil={props.Kilat} gagal={props.errors.Umum} penanda={props} galatBidang={props.errors} />

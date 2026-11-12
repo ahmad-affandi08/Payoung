@@ -89,7 +89,7 @@ export function SlotAksiUtama() {
         <div
             ref={Referensi}
             data-slot="aksi-utama-halaman"
-            className="flex min-w-0 flex-1 basis-32 flex-wrap items-center justify-end gap-2 [&>*]:min-w-28 [&>*]:flex-1"
+            className="flex min-w-0 flex-1 basis-32 flex-wrap items-center justify-end gap-2 [&>*]:h-11 [&>*]:min-w-28 [&>*]:flex-1"
         />
     );
 }

@@ -609,6 +609,23 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         expect(within(jejakSendiri).queryByRole('link', { name: 'Pesanan pembelian' })).toBeNull();
     });
 
+    it('D-277: judul dan isi halaman satu badan, dengan banner di atasnya (CSS membentuk kartu halaman daftar)', () => {
+        propsHalaman = BuatProps({}, ['produk.lihat']);
+        urlHalaman = '/kelola/produk';
+        render(
+            <TataLetakAplikasi judul="Produk">
+                <p>keterangan</p>
+            </TataLetakAplikasi>,
+        );
+
+        const badan = screen.getByRole('main').querySelector('[data-slot="badan-halaman"]');
+        expect(badan).not.toBeNull();
+        expect(badan?.querySelector('h1')?.textContent).toBe('Produk');
+        expect(badan?.textContent).toContain('keterangan');
+        // Jejak berada di luar badan: kartu halaman tidak boleh ikut membungkus breadcrumb.
+        expect(badan?.querySelector('nav[aria-label="Jejak halaman"]')).toBeNull();
+    });
+
     it('D-274: Beranda tidak punya jejak', () => {
         propsHalaman = BuatProps({}, []);
         urlHalaman = '/kelola';

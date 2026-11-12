@@ -74,13 +74,15 @@ final class PerangkatBermasalah
             ->where('OutboxTertundaSejak', '<=', now()->subHours(self::BatasMacetJam()))
             ->orderBy('OutboxTertundaSejak')
             ->get(['Id', 'IdOutlet', 'Kode', 'Nama', 'JumlahOutboxTertunda', 'OutboxTertundaSejak'])
-            ->map(fn (Perangkat $p): array => [
+            // Kolomnya nullable di model walau kueri sudah `whereNotNull`: baris tanpa waktu dilewati, bukan dipaksa.
+            ->map(fn (Perangkat $p): ?array => $p->OutboxTertundaSejak === null ? null : [
                 'Nama' => $p->Nama,
                 'Kode' => $p->Kode,
                 'IdOutlet' => $p->IdOutlet,
                 'JumlahOutbox' => $p->JumlahOutboxTertunda,
                 'TertundaSejak' => $p->OutboxTertundaSejak,
             ])
+            ->filter()
             ->all());
     }
 

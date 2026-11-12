@@ -8,6 +8,7 @@ import DialogShiftKerja from '@/Komponen/Karyawan/Jadwal/DialogShiftKerja';
 import PanelPerhatianJadwal from '@/Komponen/Karyawan/Jadwal/PanelPerhatianJadwal';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import { Button } from '@/Komponen/Ui/button';
@@ -96,7 +97,41 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="jadwal kerja" /> : null}
             <DaftarGalatServer galat={props.errors} />
 
-            <div className="flex flex-wrap items-end gap-3">
+            <AksiHalaman
+                utama={
+                    Izin.Kelola && UuidOutlet ? (
+                        <Tombol onClick={() => AturDialog('massal')}>Isi massal</Tombol>
+                    ) : undefined
+                }
+                lainnya={[
+                    ...(Izin.Kelola && UuidOutlet
+                        ? [{ label: 'Kirim ke karyawan', saatKlik: () => KirimAksi('umumkan') }]
+                        : []),
+                    ...(Izin.Kelola && UuidOutlet ? [] : [{ label: 'Cuti & izin', href: '/kelola/karyawan/cuti' }]),
+                ]}
+            >
+                {Izin.Kelola && UuidOutlet ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Atur
+                                <ChevronDownIcon aria-hidden="true" className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => KirimAksi('salin')}>Salin minggu lalu</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => AturDialog('shift')}>Shift kerja</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => AturDialog('kebutuhan')}>Kebutuhan staf</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/kelola/karyawan/cuti">Cuti dan izin</Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : null}
+            </AksiHalaman>
+
+            {/* D-279: bilah ini menyambung ke kepala halaman sebagai satu kartu (Gaya/Aplikasi.css). */}
+            <div data-slot="bilah-halaman" className="flex flex-wrap items-end gap-3">
                 <div className="w-full sm:w-64">
                     <BidangOutlet
                         nilai={UuidOutlet ?? ''}
@@ -116,39 +151,6 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                     </Button>
                 </div>
             </div>
-
-            {Izin.Kelola && UuidOutlet ? (
-                <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="outline" onClick={() => AturDialog('massal')}>
-                        Isi massal
-                    </Button>
-                    <Button variant="outline" onClick={() => KirimAksi('umumkan')}>
-                        Kirim ke karyawan
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                Atur
-                                <ChevronDownIcon aria-hidden="true" className="size-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                            <DropdownMenuItem onSelect={() => KirimAksi('salin')}>Salin minggu lalu</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => AturDialog('shift')}>Shift kerja</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => AturDialog('kebutuhan')}>Kebutuhan staf</DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/kelola/karyawan/cuti">Cuti dan izin</Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            ) : (
-                <div>
-                    <Button asChild variant="outline">
-                        <Link href="/kelola/karyawan/cuti">Cuti & izin</Link>
-                    </Button>
-                </div>
-            )}
 
             <PanelPerhatianJadwal
                 alamat={alamat}

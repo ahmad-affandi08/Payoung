@@ -67,7 +67,7 @@ final class PemisahBelanjaBahanBaku
      */
     public function PorsiPembayaranHutang(array $idPembayaran): array
     {
-        $alokasi = $idPembayaran === [] ? collect() : PembayaranHutangAlokasi::query()
+        $alokasi = PembayaranHutangAlokasi::query()
             ->whereIn('IdPembayaranHutang', $idPembayaran)
             ->get(['IdPembayaranHutang', 'IdFakturPembelian', 'Jumlah']);
         $porsiFaktur = $this->PorsiFaktur(array_values(array_unique($alokasi->map(fn (PembayaranHutangAlokasi $a): int => (int) $a->IdFakturPembelian)->all())));

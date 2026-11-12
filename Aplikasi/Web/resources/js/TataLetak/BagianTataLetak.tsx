@@ -220,7 +220,7 @@ export function JejakHalaman({ jejak }: { jejak: ButirJejak[] }) {
 
     return (
         <Breadcrumb aria-label="Jejak halaman" className={cn('-mb-1', !adaTautan && 'max-sm:hidden')}>
-            <BreadcrumbList className="text-keterangan text-teks-sekunder">
+            <BreadcrumbList className="text-isi text-teks-sekunder">
                 {jejak.map((butir, urutan) => (
                     <Fragment key={`${butir.label}-${String(urutan)}`}>
                         {urutan > 0 ? <BreadcrumbSeparator /> : null}

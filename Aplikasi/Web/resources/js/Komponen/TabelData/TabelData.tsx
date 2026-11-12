@@ -87,7 +87,8 @@ export type PropsTabelData<T> = {
 const BATAS_VIRTUAL = 100;
 const TINGGI_BARIS = 44;
 // Ketebalan (tebal) datang dari TableHead; di sini hanya ukuran, warna, dan jarak.
-const kelasKepala = 'h-auto bg-permukaan px-3 py-2 text-label text-teks-sekunder';
+// D-276: kepala kolom huruf kapital kecil, tanpa warna latar, mengikuti referensi A (kartu bersih).
+const kelasKepala = 'h-auto bg-permukaan px-3 py-3 text-keterangan tracking-wide text-teks-sekunder uppercase';
 
 /** Penyaring kolom mode lokal sesuai jenis definisi saring (nilai dari `saring[...]`). */
 function BuatPenyaringLokal(saring: DefinisiSaring[]): FilterFn<unknown> {
@@ -697,9 +698,8 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
     }
 
     return (
-        <section className="flex min-w-0 flex-col gap-3" aria-label={props.label}>
+        <section data-slot="tabel-data" className="flex min-w-0 flex-col gap-3" aria-label={props.label}>
             {props.ringkasan ? props.ringkasan(server ? kueri.data : undefined) : null}
-            {bilahAlat}
             {terpilih.length > 0 && props.aksiMassal ? (
                 <div
                     role="region"
@@ -740,7 +740,9 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
                     </Button>
                 </Pemberitahuan>
             ) : null}
+            {/* D-276: bilah alat, tabel, dan paginasi satu kartu (referensi A), bukan tiga blok terpisah. */}
             <div
+                data-slot="kartu-tabel"
                 aria-busy={server && kueri.isFetching}
                 className="relative overflow-hidden rounded-panel border border-garis bg-permukaan"
             >
@@ -751,27 +753,33 @@ export default function TabelData<T>(props: PropsTabelData<T>) {
                         className="absolute inset-x-0 top-0 z-[3] h-0.5 animate-pulse bg-brand"
                     />
                 ) : null}
+                <div className="border-b border-garis p-3 sm:p-4">{bilahAlat}</div>
                 {isi}
+                {meta && baris.length > 0 ? (
+                    <div className="border-t border-garis px-3 py-3 sm:px-4">
+                        <PaginasiTabel
+                            label={props.label}
+                            meta={meta}
+                            jumlahBaris={baris.length}
+                            AturHalaman={(halaman) => {
+                                keadaanTabel.AturHalaman(halaman);
+                                BersihkanPilihan();
+                            }}
+                            AturPerHalaman={(ukuran) => {
+                                keadaanTabel.AturPerHalaman(ukuran);
+                                BersihkanPilihan();
+                            }}
+                        />
+                    </div>
+                ) : !server && baris.length > 0 ? (
+                    <p
+                        className="border-t border-garis px-3 py-3 text-label text-teks-sekunder sm:px-4"
+                        aria-live="polite"
+                    >
+                        {baris.length} baris
+                    </p>
+                ) : null}
             </div>
-            {meta && baris.length > 0 ? (
-                <PaginasiTabel
-                    label={props.label}
-                    meta={meta}
-                    jumlahBaris={baris.length}
-                    AturHalaman={(halaman) => {
-                        keadaanTabel.AturHalaman(halaman);
-                        BersihkanPilihan();
-                    }}
-                    AturPerHalaman={(ukuran) => {
-                        keadaanTabel.AturPerHalaman(ukuran);
-                        BersihkanPilihan();
-                    }}
-                />
-            ) : !server && baris.length > 0 ? (
-                <p className="text-label text-teks-sekunder" aria-live="polite">
-                    {baris.length} baris
-                </p>
-            ) : null}
         </section>
     );
 }

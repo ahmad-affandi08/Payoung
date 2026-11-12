@@ -430,7 +430,8 @@ export default function BilahAlat<T>(props: PropsBilahAlat<T>) {
     const barisHp = (
         <div className="flex flex-col gap-2">
             {kotakCari}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* D-278: semua kontrol baris ini 44px di HP, tidak bergantung jenis penunjuk (sama dengan kotak cari). */}
+            <div className="flex flex-wrap items-center gap-2 [&>a]:h-11 [&>button]:h-11">
                 {adaSaringAtauUrut ? sheetFilter : null}
                 <MenuLainnya butir={butirMenu} />
                 {props.ekspor?.laporan ? ekspor : null}

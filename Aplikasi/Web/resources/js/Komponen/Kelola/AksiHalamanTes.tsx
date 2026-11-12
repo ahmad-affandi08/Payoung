@@ -37,6 +37,27 @@ describe('AksiHalaman', () => {
         expect(baris?.firstElementChild?.textContent).toBe('Keterangan halaman');
         expect(baris?.lastElementChild?.className).toContain('ml-auto');
     });
+
+    it('D-277: baris aksi bertanda untuk CSS kartu halaman, dan keterangan ditandai supaya tidak ditaruh di kolom kanan', () => {
+        const tanpa = render(
+            <AksiHalaman>
+                <button type="button">Tambah sesuatu</button>
+            </AksiHalaman>,
+        );
+        const barisTanpa = tanpa.container.querySelector('[data-slot="aksi-halaman"]');
+        expect(barisTanpa).not.toBeNull();
+        expect(barisTanpa?.hasAttribute('data-keterangan')).toBe(false);
+        tanpa.unmount();
+
+        const dengan = render(
+            <AksiHalaman keterangan={<p>Keterangan halaman</p>}>
+                <button type="button">Tambah sesuatu</button>
+            </AksiHalaman>,
+        );
+        expect(dengan.container.querySelector('[data-slot="aksi-halaman"]')?.hasAttribute('data-keterangan')).toBe(
+            true,
+        );
+    });
 });
 
 /** Semua berkas `.tsx` di bawah folder ini, rekursif. */

@@ -19,6 +19,7 @@ import IkonNavigasi, { type NamaIkonNavigasi } from '@/Komponen/Navigasi/IkonNav
 import PenandaLingkungan from '@/Komponen/Umpan/PenandaLingkungan';
 import DialogHasil from '@/Komponen/Umpan/DialogHasil';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import { cn } from '@/Komponen/Ui/utils';
 import { IzinPengelola, PunyaIzin, type KunciIzinPengelola, type PropsBersamaPengelola } from '@/Tipe/Pengelola';
 
 import {
@@ -288,7 +289,13 @@ export default function TataLetakPengelola({ judul, jejak = [], aksi, children }
                         <MenuAkun nama={pengguna?.Nama} email={pengguna?.Email} tautanKeamanan="/keamanan" />
                     </KepalaTataLetak>
                 </div>
-                <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
+                <main
+                    className={cn(
+                        'mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6',
+                        // D-275: keterangan di bawah judul lebih kecil dan rapat ke judulnya, di semua halaman.
+                        '[&>p:first-of-type]:text-keterangan [&>div:has(>h1)+p]:-mt-3 sm:[&>div:has(>h1)+p]:-mt-4',
+                    )}
+                >
                     <JejakHalaman jejak={jejak} />
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <JudulHalaman>{judul}</JudulHalaman>

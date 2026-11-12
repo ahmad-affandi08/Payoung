@@ -19,13 +19,7 @@ export default function MenuLainnya({ butir, label = 'Aksi lainnya' }: { butir: 
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    aria-label={label}
-                    className="h-8 pointer-coarse:h-11 w-8 pointer-coarse:w-11 shrink-0"
-                >
+                <Button type="button" variant="outline" size="icon" aria-label={label} className="size-11 shrink-0">
                     <EllipsisIcon aria-hidden="true" className="size-4" />
                 </Button>
             </DropdownMenuTrigger>
