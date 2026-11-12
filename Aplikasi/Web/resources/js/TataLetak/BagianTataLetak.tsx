@@ -211,9 +211,12 @@ export function JejakHalaman({ jejak }: { jejak: ButirJejak[] }) {
         return null;
     }
 
-    // D-228: jejak tanpa satu pun tautan (mis. "Nama usaha › Produk") tidak memberi jalan ke mana-mana dan hanya
-    // memakan satu baris di HP. Jejak yang punya jalan kembali tetap tampil.
-    const adaTautan = jejak.some((butir) => butir.href !== undefined);
+    // D-228, D-274: tautan Beranda otomatis di butir pertama tidak dihitung, karena ia ada di setiap halaman. Yang
+    // menentukan adalah ada-tidaknya jalan kembali yang lebih spesifik (induk atau Pengaturan). Tanpa itu jejak hanya
+    // memakan satu baris di HP dan disembunyikan.
+    const adaTautan = jejak.some(
+        (butir, urutan) => butir.href !== undefined && !(urutan === 0 && butir.href === '/kelola'),
+    );
 
     return (
         <Breadcrumb aria-label="Jejak halaman" className={cn('-mb-1', !adaTautan && 'max-sm:hidden')}>

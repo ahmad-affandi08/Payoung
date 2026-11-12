@@ -1,6 +1,7 @@
 import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from 'lucide-react';
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 
+import BarisTambahPilihan, { type AksiTambahPilihan } from '@/Komponen/Formulir/BarisTambahPilihan';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/Komponen/Ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Komponen/Ui/popover';
 import { cn } from '@/Komponen/Ui/utils';
@@ -28,6 +29,8 @@ export type PropsPilihanCari = {
     /** Nama aksesibel bila tidak ada label terlihat (mis. di sel tabel isian). */
     'aria-label'?: string | undefined;
     className?: string | undefined;
+    /** Baris aksi di dasar daftar, mis. "Tambah pemasok baru" (D-273). */
+    aksiTambah?: AksiTambahPilihan | undefined;
 };
 
 /** Pencocokan cari: tanpa beda huruf besar/kecil & tanda baca ringan, setiap kata harus ada. */
@@ -61,11 +64,14 @@ export default function PilihanCari({
     'aria-describedby': dijelaskanOleh,
     'aria-label': labelAria,
     className,
+    aksiTambah,
 }: PropsPilihanCari) {
     const idOtomatis = useId();
     const idDaftar = `${id ?? idOtomatis}-daftar`;
     const [terbuka, AturTerbuka] = useState(false);
     const pemicu = useRef<HTMLButtonElement>(null);
+    // Aksi tambah membuka dialog: fokus tidak boleh kembali ke pemicu, sebab itu mengeluarkannya dari dialog yang baru terbuka.
+    const lewatiFokusTutup = useRef(false);
     const [kata, AturKata] = useState('');
     // Sorotan keyboard (nilai item cmdk). Diatur sendiri karena penyaringan juga milik kita.
     const [sorot, AturSorot] = useState('');
@@ -167,6 +173,11 @@ export default function PilihanCari({
                     // Kembalikan fokus ke pemicu hanya bila masih terpasang. Di kalender, pemicu bulan/tahun dibuat
                     // ulang saat bulan berganti; fokus bawaan Radix lalu jatuh ke luar dan menutup popover induk.
                     peristiwa.preventDefault();
+                    if (lewatiFokusTutup.current) {
+                        lewatiFokusTutup.current = false;
+
+                        return;
+                    }
                     if (pemicu.current?.isConnected) {
                         pemicu.current.focus();
                     }
@@ -237,6 +248,15 @@ export default function PilihanCari({
                         </CommandGroup>
                     </CommandList>
                 </Command>
+                {aksiTambah ? (
+                    <BarisTambahPilihan
+                        aksi={aksiTambah}
+                        saatTutup={() => {
+                            lewatiFokusTutup.current = true;
+                            Buka(false);
+                        }}
+                    />
+                ) : null}
             </PopoverContent>
         </Popover>
     );

@@ -18,7 +18,7 @@ import {
     PeriksaBaris,
     SusunMasukanBaris,
 } from '@/Komponen/Pembelian/AturanPembelian';
-import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
+import { usePemasokBaru } from '@/Komponen/Pembelian/PemasokBaru';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import IsianBarisPembelian from '@/Komponen/Pembelian/IsianBarisPembelian';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -141,6 +141,11 @@ export default function HalamanFormPesanan({
         }
     };
 
+    const tambahPemasok = usePemasokBaru((pemasokDibuat) => {
+        AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+        PilihPemasok(pemasokDibuat.Uuid);
+    });
+
     return (
         <TataLetakAplikasi judul={judul}>
             <DaftarGalatServer
@@ -168,7 +173,7 @@ export default function HalamanFormPesanan({
                             saatBerubah={AturGudang}
                             galat={galat.UuidGudang ?? (periksa && gudang === '' ? 'Pilih lokasi tujuan.' : undefined)}
                         />
-                        <div className="flex flex-col gap-1.5">
+                        <>
                             <BidangPilihan
                                 label="Pemasok"
                                 nilai={pemasok}
@@ -179,16 +184,12 @@ export default function HalamanFormPesanan({
                                     Keterangan: `${p.Kode}${p.Pkp ? ' | PKP' : ''}`,
                                 }))}
                                 saatBerubah={PilihPemasok}
+                                aksiTambah={tambahPemasok.aksiTambah}
                                 required
                                 galat={galat.UuidPemasok ?? (periksa && pemasok === '' ? 'Pilih pemasok.' : undefined)}
                             />
-                            <TombolPemasokBaru
-                                saatTersimpan={(pemasokDibuat) => {
-                                    AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
-                                    PilihPemasok(pemasokDibuat.Uuid);
-                                }}
-                            />
-                        </div>
+                            {tambahPemasok.dialog}
+                        </>
                         <PemilihTanggal
                             id="tanggal-pesanan"
                             label="Tanggal pesanan"

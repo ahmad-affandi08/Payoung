@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import type { AksiTambahPilihan } from '@/Komponen/Formulir/BarisTambahPilihan';
 import {
     AmbilHasilCari,
     KerangkaPemilihProduk,
@@ -32,6 +33,8 @@ type PropsPemilihCariBengkel<T> = {
      * (dicari lewat nomor polisi atau IMEI); pelanggan dan jasa tidak memakainya.
      */
     pindaiKamera?: boolean | 'Seri';
+    /** Baris aksi di dasar daftar, mis. "Tambah pelanggan baru" (D-273). */
+    aksiTambah?: AksiTambahPilihan | undefined;
 };
 
 /**
@@ -55,6 +58,7 @@ export default function PemilihCariBengkel<T>({
     wajib,
     disabled,
     pindaiKamera = false,
+    aksiTambah,
 }: PropsPemilihCariBengkel<T>) {
     const [kata, AturKata] = useState('');
     const [terbuka, AturTerbuka] = useState(false);
@@ -121,6 +125,7 @@ export default function PemilihCariBengkel<T>({
             status={status}
             saatPindai={pindaiKamera !== false ? SaatPindai : undefined}
             jenisKodePindai={pindaiKamera === 'Seri' ? 'Seri' : 'Produk'}
+            aksiTambah={aksiTambah}
         >
             {hasil.map((item) => {
                 const keteranganItem = ambilKeterangan?.(item) ?? null;

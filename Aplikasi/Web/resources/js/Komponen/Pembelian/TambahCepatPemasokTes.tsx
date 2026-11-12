@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import FormPemasok, { IsianPemasokKosong } from '@/Komponen/Pembelian/FormPemasok';
-import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
+import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
+import { usePemasokBaru } from '@/Komponen/Pembelian/PemasokBaru';
 import { IsiFormulirPelanggan } from '@/Komponen/Pelanggan/FormulirPelanggan';
 import type { OpsiPemasok } from '@/Tipe/Pembelian';
 
@@ -30,16 +31,36 @@ describe('Tambah pemasok dari dalam formulir lain', () => {
     });
 
     function PasangDalamFormInduk(saatTersimpan: (p: OpsiPemasok) => void, saatKirimInduk: () => void) {
-        render(
-            <form
-                onSubmit={(peristiwa) => {
-                    peristiwa.preventDefault();
-                    saatKirimInduk();
-                }}
-            >
-                <TombolPemasokBaru saatTersimpan={saatTersimpan} />
-            </form>,
-        );
+        function Induk() {
+            const tambah = usePemasokBaru(saatTersimpan);
+
+            return (
+                <form
+                    onSubmit={(peristiwa) => {
+                        peristiwa.preventDefault();
+                        saatKirimInduk();
+                    }}
+                >
+                    <BidangPilihan
+                        label="Pemasok"
+                        nilai=""
+                        opsi={[]}
+                        saatBerubah={vi.fn()}
+                        aksiTambah={tambah.aksiTambah}
+                    />
+                    {tambah.dialog}
+                </form>
+            );
+        }
+
+        render(<Induk />);
+    }
+
+    /** Baris "Tambah pemasok baru" ada di dasar daftar dropdown; mengkliknya menutup daftar lalu membuka dialog. */
+    async function BukaDialog() {
+        fireEvent.click(screen.getByRole('combobox', { name: /Pemasok/ }));
+        fireEvent.click(await screen.findByRole('button', { name: /Tambah pemasok baru/ }));
+        await screen.findByRole('textbox', { name: /Nama pemasok/ });
     }
 
     it('menyimpan lewat JSON, mengembalikan pilihan pemasok, dan tidak ikut mengirim formulir induk', async () => {
@@ -53,7 +74,7 @@ describe('Tambah pemasok dari dalam formulir lain', () => {
         const KirimInduk = vi.fn();
 
         PasangDalamFormInduk(Tersimpan, KirimInduk);
-        fireEvent.click(screen.getByRole('button', { name: /Tambah pemasok baru/ }));
+        await BukaDialog();
         fireEvent.change(screen.getByRole('textbox', { name: /Nama pemasok/ }), {
             target: { value: 'CV Tani Makmur' },
         });
@@ -90,7 +111,7 @@ describe('Tambah pemasok dari dalam formulir lain', () => {
         const Tersimpan = vi.fn();
 
         PasangDalamFormInduk(Tersimpan, vi.fn());
-        fireEvent.click(screen.getByRole('button', { name: /Tambah pemasok baru/ }));
+        await BukaDialog();
         fireEvent.change(screen.getByRole('textbox', { name: /Nama pemasok/ }), {
             target: { value: 'CV Tani Makmur' },
         });
@@ -101,12 +122,12 @@ describe('Tambah pemasok dari dalam formulir lain', () => {
         expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
-    it('nama dan kode wajib diisi sebelum dikirim', () => {
+    it('nama dan kode wajib diisi sebelum dikirim', async () => {
         const FetchTiruan = vi.fn();
         vi.stubGlobal('fetch', FetchTiruan);
 
         PasangDalamFormInduk(vi.fn(), vi.fn());
-        fireEvent.click(screen.getByRole('button', { name: /Tambah pemasok baru/ }));
+        await BukaDialog();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan pemasok' }));
 
         expect(screen.getByText('Isi nama dan kode pemasok.')).toBeTruthy();
@@ -121,21 +142,29 @@ describe('Tambah pemasok dari dalam formulir lain', () => {
 
         function Induk() {
             const [daftar, AturDaftar] = useState<OpsiPemasok[]>([]);
+            const tambah = usePemasokBaru((p) => AturDaftar((lama) => [...lama, p]));
 
             return (
                 <div>
-                    <ul aria-label="Pemasok">
+                    <ul aria-label="Pemasok dibuat">
                         {daftar.map((p) => (
                             <li key={p.Uuid}>{p.Nama}</li>
                         ))}
                     </ul>
-                    <TombolPemasokBaru saatTersimpan={(p) => AturDaftar((lama) => [...lama, p])} />
+                    <BidangPilihan
+                        label="Pemasok"
+                        nilai=""
+                        opsi={[]}
+                        saatBerubah={vi.fn()}
+                        aksiTambah={tambah.aksiTambah}
+                    />
+                    {tambah.dialog}
                 </div>
             );
         }
 
         render(<Induk />);
-        fireEvent.click(screen.getByRole('button', { name: /Tambah pemasok baru/ }));
+        await BukaDialog();
         fireEvent.change(screen.getByRole('textbox', { name: /Nama pemasok/ }), {
             target: { value: 'CV Tani Makmur' },
         });

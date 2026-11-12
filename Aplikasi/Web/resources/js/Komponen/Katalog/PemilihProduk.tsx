@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ChevronsUpDownIcon, SearchIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
+import BarisTambahPilihan, { type AksiTambahPilihan } from '@/Komponen/Formulir/BarisTambahPilihan';
 import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
 import { Command, CommandItem, CommandList } from '@/Komponen/Ui/command';
 import { Label } from '@/Komponen/Ui/label';
@@ -87,6 +88,8 @@ type PropsKerangka = {
      * yang baru dipilih) dan fokus **tidak** dikembalikan ke tombol pemicu seperti biasa.
      */
     alihkanFokusTutup?: (() => boolean) | undefined;
+    /** Baris aksi di dasar daftar, mis. "Tambah pelanggan baru" (D-273). */
+    aksiTambah?: AksiTambahPilihan | undefined;
     children: ReactNode;
 };
 
@@ -120,12 +123,15 @@ export function KerangkaPemilihProduk({
     jenisKodePindai = 'Produk',
     id: idKustom,
     alihkanFokusTutup,
+    aksiTambah,
     children,
 }: PropsKerangka) {
     const idOtomatis = useId();
     const id = idKustom ?? idOtomatis;
     const idDaftar = `${id}-daftar`;
     const pemicu = useRef<HTMLButtonElement>(null);
+    // Aksi tambah membuka dialog: fokus tidak boleh kembali ke pemicu, sebab itu mengeluarkannya dari dialog yang baru terbuka.
+    const lewatiFokusTutup = useRef(false);
     const { modal, isi, SiapkanBuka, SaatBukaFokus } = usePerilakuPopoverCari(pemicu, terbuka);
     const AturBuka = (buka: boolean) => {
         if (buka) {
@@ -207,6 +213,11 @@ export function KerangkaPemilihProduk({
                             onOpenAutoFocus={SaatBukaFokus}
                             onCloseAutoFocus={(peristiwa) => {
                                 peristiwa.preventDefault();
+                                if (lewatiFokusTutup.current) {
+                                    lewatiFokusTutup.current = false;
+
+                                    return;
+                                }
                                 if (alihkanFokusTutup?.() === true) {
                                     return;
                                 }
@@ -251,6 +262,15 @@ export function KerangkaPemilihProduk({
                                     {status ?? ''}
                                 </p>
                             </Command>
+                            {aksiTambah ? (
+                                <BarisTambahPilihan
+                                    aksi={aksiTambah}
+                                    saatTutup={() => {
+                                        lewatiFokusTutup.current = true;
+                                        AturBuka(false);
+                                    }}
+                                />
+                            ) : null}
                         </PopoverContent>
                     </Popover>
                 </div>

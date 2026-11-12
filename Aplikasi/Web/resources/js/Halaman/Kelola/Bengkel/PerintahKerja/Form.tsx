@@ -17,7 +17,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
-import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
+import { usePelangganBaru } from '@/Komponen/Pelanggan/PelangganBaru';
 import PemilihTanggalWaktu from '@/Komponen/Tanggal/PemilihTanggalWaktu';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -66,6 +66,10 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
         }
     };
 
+    const [kendaraan, AturKendaraan] = useState<(RingkasKendaraan & { KmTerakhir: number | null }) | null>(
+        Isian?.Kendaraan ?? Awal?.Kendaraan ?? null,
+    );
+
     const PilihPelanggan = (p: { Uuid: string; Nama: string }) => {
         AturPelanggan({ Uuid: p.Uuid, Nama: p.Nama });
 
@@ -74,10 +78,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
             void PilihKendaraanTunggal(p.Uuid);
         }
     };
-
-    const [kendaraan, AturKendaraan] = useState<(RingkasKendaraan & { KmTerakhir: number | null }) | null>(
-        Isian?.Kendaraan ?? Awal?.Kendaraan ?? null,
-    );
+    const pelangganBaru = usePelangganBaru(PilihPelanggan);
     const bawaan = PakaiJenisUnitBawaan();
     const kata = kendaraan === null ? (bawaan === null ? 'Unit servis' : KataUnit(bawaan)) : KataUnit(kendaraan.Jenis);
     const tampilKm = kendaraan === null ? bawaan !== 'Perangkat' : kendaraan.Jenis === 'Kendaraan';
@@ -158,7 +159,7 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                             />
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="flex flex-col gap-1.5">
+                            <>
                                 <PemilihCariBengkel<PelangganPilihan>
                                     sumber="pelanggan"
                                     label="Pelanggan"
@@ -173,10 +174,11 @@ export default function HalamanFormPerintahKerja({ Isian, Awal, OpsiOutlet, Opsi
                                     nilaiTerpilih={pelanggan?.Nama}
                                     pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
                                     galat={galat.UuidPelanggan}
+                                    aksiTambah={pelangganBaru.aksiTambah}
                                     wajib
                                 />
-                                <TombolPelangganBaru saatTersimpan={PilihPelanggan} />
-                            </div>
+                                {pelangganBaru.dialog}
+                            </>
                             <div className="flex flex-col gap-2">
                                 <PemilihCariBengkel<KendaraanPilihan>
                                     sumber="kendaraan"

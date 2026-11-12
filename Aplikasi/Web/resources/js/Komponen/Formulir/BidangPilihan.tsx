@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
 import { GalatBidang, KerangkaBidang, LabelBidang } from './BagianBidang';
+import type { AksiTambahPilihan } from './BarisTambahPilihan';
 import PilihanCari, { type OpsiPilihan } from './PilihanCari';
 
 type PropsBidangPilihan = {
@@ -15,6 +16,8 @@ type PropsBidangPilihan = {
     required?: boolean;
     /** Label hanya untuk pembaca layar, misal di dalam baris tabel yang judul kolomnya sudah ada. */
     labelTersembunyi?: boolean;
+    /** Baris aksi di dasar daftar, mis. "Tambah pemasok baru" (D-273). */
+    aksiTambah?: AksiTambahPilihan | undefined;
 };
 
 /** Pilihan tunggal dengan kotak cari (`PilihanCari`), label & galat terhubung (PRD §17.6). */
@@ -28,6 +31,7 @@ export default function BidangPilihan({
     disabled,
     required,
     labelTersembunyi = false,
+    aksiTambah,
 }: PropsBidangPilihan) {
     const id = useId();
 
@@ -46,6 +50,7 @@ export default function BidangPilihan({
                 galat={galat}
                 disabled={disabled}
                 required={required}
+                aksiTambah={aksiTambah}
                 aria-label={labelTersembunyi ? label : undefined}
                 aria-describedby={galat ? `${id}-galat` : undefined}
             />

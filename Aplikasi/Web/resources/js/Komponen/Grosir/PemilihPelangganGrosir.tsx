@@ -7,7 +7,7 @@ import {
     useNilaiTertunda,
     useSorotPertama,
 } from '@/Komponen/Katalog/PemilihProduk';
-import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
+import { usePelangganBaru } from '@/Komponen/Pelanggan/PelangganBaru';
 import { CommandItem } from '@/Komponen/Ui/command';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
@@ -109,8 +109,10 @@ export default function PemilihPelangganGrosir({
         status = 'Menampilkan 20 pelanggan pertama. Ketik nama atau nomor untuk mencari yang lain.';
     }
 
+    const pelangganBaru = usePelangganBaru((p) => saatPilih(p.Uuid, p.Nama, p.TerminHari));
+
     return (
-        <div className="flex flex-col gap-1.5">
+        <>
             <KerangkaPemilihProduk
                 label="Pelanggan"
                 galat={galat}
@@ -124,6 +126,7 @@ export default function PemilihPelangganGrosir({
                 sorot={sorot}
                 saatSorot={AturSorot}
                 status={status}
+                aksiTambah={pelangganBaru.aksiTambah}
             >
                 {hasil.map((p) => (
                     <CommandItem
@@ -142,7 +145,7 @@ export default function PemilihPelangganGrosir({
                     </CommandItem>
                 ))}
             </KerangkaPemilihProduk>
-            <TombolPelangganBaru saatTersimpan={(p) => saatPilih(p.Uuid, p.Nama, p.TerminHari)} />
-        </div>
+            {pelangganBaru.dialog}
+        </>
     );
 }

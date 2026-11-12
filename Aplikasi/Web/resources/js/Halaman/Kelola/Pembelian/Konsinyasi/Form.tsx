@@ -14,7 +14,7 @@ import TawaranDraf from '@/Komponen/Formulir/TawaranDraf';
 import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
-import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
+import { usePemasokBaru } from '@/Komponen/Pembelian/PemasokBaru';
 import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
@@ -175,6 +175,11 @@ export default function HalamanFormKonsinyasi({
         );
     };
 
+    const tambahPemasok = usePemasokBaru((pemasokDibuat) => {
+        AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+        AturPemasok(pemasokDibuat.Uuid);
+    });
+
     return (
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Konsinyasi', href: AlamatKonsinyasi }]}>
             <DaftarGalatServer
@@ -208,7 +213,7 @@ export default function HalamanFormKonsinyasi({
                                 galatServer.UuidGudang ?? (periksa && gudang === '' ? 'Pilih lokasi stok.' : undefined)
                             }
                         />
-                        <div className="flex flex-col gap-1.5">
+                        <>
                             <BidangPilihan
                                 label="Penitip"
                                 nilai={pemasok}
@@ -218,19 +223,15 @@ export default function HalamanFormKonsinyasi({
                                     Label: `${p.Nama} (${p.Kode})`,
                                 }))}
                                 saatBerubah={AturPemasok}
+                                aksiTambah={tambahPemasok.aksiTambah}
                                 required
                                 galat={
                                     galatServer.UuidPemasok ??
                                     (periksa && pemasok === '' ? 'Pilih penitip.' : undefined)
                                 }
                             />
-                            <TombolPemasokBaru
-                                saatTersimpan={(pemasokDibuat) => {
-                                    AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
-                                    AturPemasok(pemasokDibuat.Uuid);
-                                }}
-                            />
-                        </div>
+                            {tambahPemasok.dialog}
+                        </>
                         <PemilihTanggal
                             id="tanggal-konsinyasi"
                             label="Tanggal"

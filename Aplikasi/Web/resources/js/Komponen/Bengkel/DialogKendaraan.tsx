@@ -9,7 +9,7 @@ import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import TombolPindaiKamera from '@/Komponen/Katalog/TombolPindaiKamera';
-import TombolPelangganBaru from '@/Komponen/Pelanggan/TombolPelangganBaru';
+import { usePelangganBaru } from '@/Komponen/Pelanggan/PelangganBaru';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { type JenisUnit, KataUnit, LabelJenisUnit, LabelPengenal, PakaiJenisUnitBawaan } from '@/Pustaka/UnitServis';
@@ -67,6 +67,10 @@ export default function DialogKendaraan({
     });
     const d = formulir.data;
     const galat = formulir.errors as Record<string, string | undefined>;
+    const pelangganBaru = usePelangganBaru((p) => {
+        formulir.setData('UuidPelanggan', p.Uuid);
+        AturNamaPelanggan(p.Nama);
+    });
     const perangkat = d.Jenis === 'Perangkat';
     const kata = KataUnit(d.Jenis).toLowerCase();
     const judul =
@@ -111,7 +115,7 @@ export default function DialogKendaraan({
                 ) : null}
                 <div className="sm:col-span-2">
                     {pelanggan === null ? (
-                        <div className="flex flex-col gap-1.5">
+                        <>
                             <PemilihCariBengkel<PelangganPilihan>
                                 sumber="pelanggan"
                                 label="Pemilik (pelanggan)"
@@ -129,15 +133,11 @@ export default function DialogKendaraan({
                                 nilaiTerpilih={d.UuidPelanggan === '' ? undefined : namaPelanggan}
                                 pesanKosong="Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan."
                                 galat={galat.UuidPelanggan}
+                                aksiTambah={pelangganBaru.aksiTambah}
                                 wajib
                             />
-                            <TombolPelangganBaru
-                                saatTersimpan={(p) => {
-                                    formulir.setData('UuidPelanggan', p.Uuid);
-                                    AturNamaPelanggan(p.Nama);
-                                }}
-                            />
-                        </div>
+                            {pelangganBaru.dialog}
+                        </>
                     ) : (
                         <p className="text-isi text-teks-utama">
                             Pemilik: <span className="font-semibold">{pelanggan.Nama}</span>

@@ -289,9 +289,13 @@ describe('Jejak halaman di HP (D-228)', () => {
         expect(screen.getByRole('navigation', { name: 'Jejak halaman' }).className).toContain('max-sm:hidden');
         bagian.unmount();
 
-        render(
+        const bagianBeranda = render(
             <JejakHalaman jejak={[{ label: 'Kopi Nusantara' }, { label: 'Pengaturan', href: '/kelola/pengaturan' }]} />,
         );
         expect(screen.getByRole('navigation', { name: 'Jejak halaman' }).className).not.toContain('max-sm:hidden');
+        // D-274: tautan Beranda otomatis di butir pertama tidak dihitung sebagai jalan kembali.
+        bagianBeranda.unmount();
+        render(<JejakHalaman jejak={[{ label: 'Beranda', href: '/kelola' }, { label: 'Produk' }]} />);
+        expect(screen.getByRole('navigation', { name: 'Jejak halaman' }).className).toContain('max-sm:hidden');
     });
 });

@@ -529,7 +529,9 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         // D-27: remah roti tidak lagi di kepala halaman, tetapi di atas judul di dalam <main>.
         expect(screen.queryByRole('navigation', { name: 'Remah roti' })).toBeNull();
         const jejak = screen.getByRole('navigation', { name: 'Jejak halaman' });
-        expect(within(jejak).getByText('Kopi Nusantara')).toBeTruthy();
+        // D-274: butir pertama jejak adalah tautan Beranda (nama usaha sudah ada di kepala halaman).
+        expect(within(jejak).getByRole('link', { name: 'Beranda' }).getAttribute('href')).toBe('/kelola');
+        expect(within(jejak).queryByText('Kopi Nusantara')).toBeNull();
         expect(screen.getByRole('main').contains(jejak)).toBe(true);
         expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Outlet');
         expect(screen.getByRole('main').textContent).toContain('isi');
@@ -570,6 +572,49 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         const jejakPeran = screen.getByRole('navigation', { name: 'Jejak halaman' });
         expect(within(jejakPeran).getByText('Tim')).toBeTruthy();
         expect(within(jejakPeran).queryByRole('link', { name: 'Pengaturan' })).toBeNull();
+    });
+
+    it('D-274: halaman yang lebih dalam dari butir menunya punya tautan kembali ke daftarnya, otomatis dari menu', () => {
+        propsHalaman = BuatProps({}, ['pembelian.kelola']);
+        urlHalaman = '/kelola/pembelian/pesanan/buat';
+        render(<TataLetakAplikasi judul="Buat pesanan pembelian">isi</TataLetakAplikasi>);
+
+        const jejak = screen.getByRole('navigation', { name: 'Jejak halaman' });
+        expect(within(jejak).getByRole('link', { name: 'Beranda' }).getAttribute('href')).toBe('/kelola');
+        expect(within(jejak).getByText('Pembelian')).toBeTruthy();
+        expect(within(jejak).getByRole('link', { name: 'Pesanan pembelian' }).getAttribute('href')).toBe(
+            '/kelola/pembelian/pesanan',
+        );
+        cleanup();
+
+        // Halaman daftar itu sendiri tidak menautkan dirinya (judulnya sudah jadi h1).
+        urlHalaman = '/kelola/pembelian/pesanan';
+        render(<TataLetakAplikasi judul="Pesanan pembelian">isi</TataLetakAplikasi>);
+        expect(
+            within(screen.getByRole('navigation', { name: 'Jejak halaman' })).queryByRole('link', {
+                name: 'Pesanan pembelian',
+            }),
+        ).toBeNull();
+        cleanup();
+
+        // Halaman yang mengisi `jejak` sendiri memegang rantainya: induk otomatis tidak dobel.
+        urlHalaman = '/kelola/pembelian/pesanan/buat';
+        render(
+            <TataLetakAplikasi judul="Buat" jejak={[{ label: 'Daftar khusus', href: '/kelola/pembelian/khusus' }]}>
+                isi
+            </TataLetakAplikasi>,
+        );
+        const jejakSendiri = screen.getByRole('navigation', { name: 'Jejak halaman' });
+        expect(within(jejakSendiri).getByRole('link', { name: 'Daftar khusus' })).toBeTruthy();
+        expect(within(jejakSendiri).queryByRole('link', { name: 'Pesanan pembelian' })).toBeNull();
+    });
+
+    it('D-274: Beranda tidak punya jejak', () => {
+        propsHalaman = BuatProps({}, []);
+        urlHalaman = '/kelola';
+        render(<TataLetakAplikasi judul="Beranda">isi</TataLetakAplikasi>);
+
+        expect(screen.queryByRole('navigation', { name: 'Jejak halaman' })).toBeNull();
     });
 
     it('kepala sidebar memakai gradasi merek dan logo putih, bukan nama pelanggan', () => {

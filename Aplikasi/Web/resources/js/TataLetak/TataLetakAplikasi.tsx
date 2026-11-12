@@ -1199,15 +1199,23 @@ function CariGrupPengaturan(jalur: string): GrupPengaturan | undefined {
 }
 
 /**
- * Jejak halaman di atas judul (D-27): nama usaha, lalu induk halaman ini.
+ * Jejak halaman di atas judul (D-27, D-274): **Beranda** (tautan), nama grup menu, lalu halaman induk (tautan) bila
+ * halaman ini lebih dalam dari butir menunya, misalnya formulir Buat atau rincian dokumen. Induk dicari otomatis dari
+ * menu, jadi ratusan halaman rincian punya jalan kembali ke daftarnya tanpa mengisi `jejak` satu per satu. Halaman yang
+ * mengisi `jejak` sendiri memegang rantainya (induk otomatis dilewati agar tidak ganda). Halaman saat ini tidak
+ * diulang karena sudah menjadi `<h1>`, dan Beranda sendiri tidak punya jejak.
  *
  * Untuk halaman yang rumahnya di Pengaturan, induknya adalah tautan **Pengaturan** beserta nama grupnya — tanpa itu
- * halaman yang keluar dari menu samping tidak punya petunjuk letak maupun jalan kembali. Halaman saat ini tidak
- * diulang karena sudah menjadi `<h1>`.
+ * halaman yang keluar dari menu samping tidak punya petunjuk letak maupun jalan kembali.
  */
-export function SusunJejak(url: string, namaInduk: string, menuTerlihat: MenuTerlihat[]): ButirJejak[] {
+export function SusunJejak(url: string, menuTerlihat: MenuTerlihat[], jejakHalaman: ButirJejak[] = []): ButirJejak[] {
     const jalur = url.split('?')[0] ?? url;
-    const awal: ButirJejak[] = [{ label: namaInduk }];
+
+    if (jalur === '/kelola') {
+        return [];
+    }
+
+    const awal: ButirJejak[] = [{ label: 'Beranda', href: '/kelola' }];
     const grupPengaturan = CariGrupPengaturan(jalur);
 
     if (grupPengaturan !== undefined) {
@@ -1218,7 +1226,21 @@ export function SusunJejak(url: string, namaInduk: string, menuTerlihat: MenuTer
         ({ labelSub, sub }) => labelSub !== null && CariSubMenuAktif(sub, jalur) !== null,
     );
 
-    return grupMenu === undefined ? awal : [...awal, { label: grupMenu.menu.label }];
+    if (grupMenu === undefined) {
+        return awal;
+    }
+
+    const butirGrup: ButirJejak = { label: grupMenu.menu.label };
+    const hrefInduk = CariSubMenuAktif(grupMenu.sub, jalur);
+    const induk = grupMenu.sub.find((item) => item.href === hrefInduk);
+    const halamanMemegangJejak = jejakHalaman.some((butir) => butir.href !== undefined);
+
+    // Halaman lebih dalam dari butir menunya (Buat, rincian, cetak): butir itu jadi tautan kembali ke daftarnya.
+    if (induk !== undefined && hrefInduk !== jalur && !halamanMemegangJejak) {
+        return [...awal, butirGrup, { label: induk.label, href: induk.href }];
+    }
+
+    return [...awal, butirGrup];
 }
 
 /**
@@ -1723,7 +1745,7 @@ function IsiTataLetakAplikasi({ judul, jejak = [], children }: PropsTataLetak) {
                     />
                 </KepalaTataLetak>
                 <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:gap-4 sm:py-6">
-                    <JejakHalaman jejak={[...SusunJejak(url, namaInduk, menuTerlihat), ...jejak]} />
+                    <JejakHalaman jejak={[...SusunJejak(url, menuTerlihat, jejak), ...jejak]} />
                     <JudulHalaman>{judul}</JudulHalaman>
                     {/* PGL-16: petugas dukungan tidak mengurus akun Owner, jadi banner milik Owner tidak ditampilkan. */}
                     {!props.AksesDukungan && props.Pengguna && !props.Pengguna.EmailTerverifikasi ? (

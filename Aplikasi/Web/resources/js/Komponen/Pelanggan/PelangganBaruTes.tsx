@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import { AturHalamanUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
-import TombolPelangganBaru, { type PelangganBaru } from '@/Komponen/Pelanggan/TombolPelangganBaru';
+import { usePelangganBaru, type PelangganBaru } from '@/Komponen/Pelanggan/PelangganBaru';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -15,7 +16,40 @@ const PelangganDibuat: PelangganBaru = {
     TerminHari: 30,
 };
 
-describe('Tambah pelanggan dari dalam pemilih pelanggan (D-272)', () => {
+function PasangDalamFormInduk(saatTersimpan: (p: PelangganBaru) => void, saatKirimInduk: () => void = vi.fn()) {
+    function Induk() {
+        const tambah = usePelangganBaru(saatTersimpan);
+
+        return (
+            <form
+                onSubmit={(peristiwa) => {
+                    peristiwa.preventDefault();
+                    saatKirimInduk();
+                }}
+            >
+                <BidangPilihan
+                    label="Pelanggan"
+                    nilai=""
+                    opsi={[]}
+                    saatBerubah={vi.fn()}
+                    aksiTambah={tambah.aksiTambah}
+                />
+                {tambah.dialog}
+            </form>
+        );
+    }
+
+    render(<Induk />);
+}
+
+/** Baris "Tambah pelanggan baru" ada di dasar daftar dropdown; mengkliknya menutup daftar lalu membuka dialog. */
+async function BukaDialog() {
+    fireEvent.click(screen.getByRole('combobox', { name: /Pelanggan/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Tambah pelanggan baru/ }));
+    await screen.findByRole('textbox', { name: /Nama pelanggan/ });
+}
+
+describe('Tambah pelanggan dari dalam pemilih pelanggan (D-272, D-273)', () => {
     afterEach(() => {
         cleanup();
         vi.unstubAllGlobals();
@@ -32,17 +66,8 @@ describe('Tambah pelanggan dari dalam pemilih pelanggan (D-272)', () => {
         const Tersimpan = vi.fn();
         const KirimInduk = vi.fn();
 
-        render(
-            <form
-                onSubmit={(peristiwa) => {
-                    peristiwa.preventDefault();
-                    KirimInduk();
-                }}
-            >
-                <TombolPelangganBaru saatTersimpan={Tersimpan} />
-            </form>,
-        );
-        fireEvent.click(screen.getByRole('button', { name: 'Pelanggan belum ada? Tambah pelanggan baru' }));
+        PasangDalamFormInduk(Tersimpan, KirimInduk);
+        await BukaDialog();
         fireEvent.change(screen.getByRole('textbox', { name: /Nama pelanggan/ }), {
             target: { value: 'CV Mitra Sejahtera Abadi' },
         });
@@ -67,20 +92,23 @@ describe('Tambah pelanggan dari dalam pemilih pelanggan (D-272)', () => {
         const FetchTiruan = vi.fn();
         vi.stubGlobal('fetch', FetchTiruan);
 
-        render(<TombolPelangganBaru saatTersimpan={vi.fn()} />);
-        fireEvent.click(screen.getByRole('button', { name: /Tambah pelanggan baru/ }));
+        PasangDalamFormInduk(vi.fn());
+        await BukaDialog();
         fireEvent.click(screen.getByRole('button', { name: 'Simpan pelanggan' }));
 
         expect(await screen.findByText('Isi nama dan nomor HP pelanggan.')).toBeTruthy();
         expect(FetchTiruan).not.toHaveBeenCalled();
     });
 
-    it('tidak tampil bagi pengguna tanpa izin mengelola pelanggan', () => {
+    it('tidak ada baris tambah bagi pengguna tanpa izin mengelola pelanggan', async () => {
         AturHalamanUji();
         TambahPropsHalamanUji({ Akses: { Pemilik: false, Izin: ['pelanggan.lihat'] } });
 
-        render(<TombolPelangganBaru saatTersimpan={vi.fn()} />);
+        PasangDalamFormInduk(vi.fn());
+        fireEvent.click(screen.getByRole('combobox', { name: /Pelanggan/ }));
 
+        // Daftar sudah terbuka (kotak cari tampil), tetapi tanpa baris aksi.
+        await screen.findByRole('textbox', { name: 'Cari Pelanggan' });
         expect(screen.queryByRole('button', { name: /Tambah pelanggan baru/ })).toBeNull();
     });
 });

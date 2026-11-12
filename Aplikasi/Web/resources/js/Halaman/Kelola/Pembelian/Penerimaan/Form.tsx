@@ -22,7 +22,7 @@ import {
     SusunMasukanBaris,
     type MasukanBarisPembelian,
 } from '@/Komponen/Pembelian/AturanPembelian';
-import TombolPemasokBaru from '@/Komponen/Pembelian/TombolPemasokBaru';
+import { usePemasokBaru } from '@/Komponen/Pembelian/PemasokBaru';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import IsianBarisPembelian from '@/Komponen/Pembelian/IsianBarisPembelian';
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
@@ -272,6 +272,14 @@ export default function HalamanFormPenerimaan({
         });
     };
 
+    const tambahPemasok = usePemasokBaru((pemasokDibuat) => {
+        AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
+        AturPemasok(pemasokDibuat.Uuid);
+        if (pemasokDibuat.TerminHari > 0) {
+            AturTermin(String(pemasokDibuat.TerminHari));
+        }
+    });
+
     return (
         <TataLetakAplikasi judul={judul}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
@@ -328,7 +336,7 @@ export default function HalamanFormPenerimaan({
                                         (periksa && gudang === '' ? 'Pilih lokasi stok.' : undefined)
                                     }
                                 />
-                                <div className="flex flex-col gap-1.5">
+                                <>
                                     <BidangPilihan
                                         label={belanja && !bayarNanti ? 'Pemasok (opsional)' : 'Pemasok'}
                                         nilai={pemasok}
@@ -345,6 +353,7 @@ export default function HalamanFormPenerimaan({
                                                 AturTermin(String(dipilih.TerminHari));
                                             }
                                         }}
+                                        aksiTambah={tambahPemasok.aksiTambah}
                                         required={belanja && bayarNanti}
                                         galat={
                                             galat.UuidPemasok ??
@@ -353,16 +362,8 @@ export default function HalamanFormPenerimaan({
                                                 : undefined)
                                         }
                                     />
-                                    <TombolPemasokBaru
-                                        saatTersimpan={(pemasokDibuat) => {
-                                            AturPemasokBaru((lama) => [...lama, pemasokDibuat]);
-                                            AturPemasok(pemasokDibuat.Uuid);
-                                            if (pemasokDibuat.TerminHari > 0) {
-                                                AturTermin(String(pemasokDibuat.TerminHari));
-                                            }
-                                        }}
-                                    />
-                                </div>
+                                    {tambahPemasok.dialog}
+                                </>
                             </>
                         )}
                         {belanja ? (

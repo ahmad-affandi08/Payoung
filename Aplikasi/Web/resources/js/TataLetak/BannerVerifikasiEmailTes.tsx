@@ -25,11 +25,11 @@ describe('BannerVerifikasiEmail (D-271)', () => {
     });
 
     it('bisa ditutup dan tetap tertutup selama sesi peramban', () => {
-        const { unmount } = render(<BannerVerifikasiEmail email="owner@contoh.test" />);
+        const { unmount: Lepas } = render(<BannerVerifikasiEmail email="owner@contoh.test" />);
         fireEvent.click(screen.getByRole('button', { name: 'Tutup pengingat verifikasi email' }));
         expect(screen.queryByRole('alert')).toBeNull();
 
-        unmount();
+        Lepas();
         render(<BannerVerifikasiEmail email="owner@contoh.test" />);
         expect(screen.queryByRole('alert')).toBeNull();
     });
