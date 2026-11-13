@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -15,7 +16,6 @@ import {
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
@@ -135,53 +135,42 @@ export default function HalamanDetailPesanan({
                 </Pemberitahuan>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline">
-                        <Link href={`${alamat}/${Pesanan.Uuid}/ubah`}>Ubah draf</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Ajukan ? (
-                    <Button onClick={() => Kirim('ajukan')} disabled={memproses}>
-                        Ajukan pesanan
-                    </Button>
-                ) : null}
-                {Tindakan.Setujui ? (
-                    <>
-                        <Button onClick={() => Kirim('setujui')} disabled={memproses}>
-                            Setujui pesanan
-                        </Button>
-                        <Button variant="outline" onClick={() => AturDialog('Tolak')}>
-                            Tolak
-                        </Button>
-                    </>
-                ) : null}
-                {Tindakan.Terima ? (
-                    <Button asChild>
-                        <Link href={`${AlamatPembelian}/penerimaan/buat?pesanan=${Pesanan.Uuid}`}>Terima barang</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.KirimWhatsapp ? (
-                    <Button variant="outline" onClick={() => Kirim('kirim-whatsapp')} disabled={memproses}>
-                        Kirim ke WhatsApp pemasok
-                    </Button>
-                ) : null}
-                {Tindakan.Tutup ? (
-                    <Button variant="outline" onClick={() => AturDialog('Tutup')}>
-                        Tutup pesanan
-                    </Button>
-                ) : null}
-                <Button asChild variant="outline">
-                    <a href={`${alamat}/${Pesanan.Uuid}/cetak`} target="_blank" rel="noreferrer">
-                        Cetak pesanan
-                    </a>
-                </Button>
-                {Tindakan.Batalkan ? (
-                    <Button variant="destructive" onClick={() => AturDialog('Batalkan')}>
-                        Batalkan pesanan
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.Ajukan
+                        ? [{ label: 'Ajukan pesanan', saatKlik: () => Kirim('ajukan'), nonaktif: memproses }]
+                        : []),
+                    ...(Tindakan.Setujui
+                        ? [{ label: 'Setujui pesanan', saatKlik: () => Kirim('setujui'), nonaktif: memproses }]
+                        : []),
+                    ...(Tindakan.Terima
+                        ? [
+                              {
+                                  label: 'Terima barang',
+                                  href: `${AlamatPembelian}/penerimaan/buat?pesanan=${Pesanan.Uuid}`,
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${Pesanan.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Setujui ? [{ label: 'Tolak', saatKlik: () => AturDialog('Tolak') }] : []),
+                    ...(Tindakan.KirimWhatsapp
+                        ? [
+                              {
+                                  label: 'Kirim ke WhatsApp pemasok',
+                                  saatKlik: () => Kirim('kirim-whatsapp'),
+                                  nonaktif: memproses,
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Tutup ? [{ label: 'Tutup pesanan', saatKlik: () => AturDialog('Tutup') }] : []),
+                    { label: 'Cetak pesanan', href: `${alamat}/${Pesanan.Uuid}/cetak`, tabBaru: true },
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan pesanan', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

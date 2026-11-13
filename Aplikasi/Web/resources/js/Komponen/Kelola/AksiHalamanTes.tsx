@@ -264,4 +264,21 @@ describe('Baris aksi di halaman daftar', () => {
 
         expect(pelanggar).toEqual([]);
     });
+
+    it('halaman rincian dokumen tidak merakit deretan tombol aksi sendiri (D-232)', () => {
+        // Deretan `<div className="flex flex-wrap gap-2">{Tindakan.… ? <Button/>}` di bawah judul menumpuk tak rata di HP
+        // (dua baris, lebar tombol berbeda-beda). Aksi dokumen masuk `AksiHalaman langkah`/`lainnya`: satu tombol
+        // berwarna di depan, sisanya tombol sekunder di layar lebar dan menu "Lainnya" di HP.
+        const pelanggar: string[] = [];
+
+        for (const jalur of BerkasBackOffice()) {
+            const isi = readFileSync(jalur, 'utf8');
+
+            if (/<div className="flex flex-wrap (?:items-center )?gap-2">\s*\{(?:Tindakan|Izin)\./.test(isi)) {
+                pelanggar.push(Ringkas(jalur));
+            }
+        }
+
+        expect(pelanggar).toEqual([]);
+    });
 });

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -15,7 +16,6 @@ import {
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatHppSatuan, FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -133,19 +133,6 @@ export default function HalamanDetailPenerimaan({
 
     return (
         <TataLetakAplikasi judul={`${p.BelanjaStok ? 'Belanja stok' : 'Penerimaan'} ${p.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatusPembelian status={p.Status} label={p.LabelStatus} />
-                {p.Faktur ? (
-                    <Link
-                        href={`${AlamatPembelian}/faktur/${p.Faktur.Uuid}`}
-                        className="font-mono text-isi text-brand underline"
-                    >
-                        Faktur {p.Faktur.Nomor}
-                    </Link>
-                ) : (
-                    <span className="text-isi text-teks-sekunder">Belum difakturkan</span>
-                )}
-            </div>
             {p.AlasanBatal ? (
                 <Pemberitahuan jenis="bahaya" judul="Penerimaan dibatalkan">
                     {p.AlasanBatal}. Stok dan jurnalnya sudah dibalik
@@ -153,37 +140,52 @@ export default function HalamanDetailPenerimaan({
                 </Pemberitahuan>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
-                {Tindakan.Fakturkan && p.Pemasok ? (
-                    <Button asChild>
-                        <Link href={`${AlamatPembelian}/faktur/buat?pemasok=${p.Pemasok.Uuid}&penerimaan=${p.Uuid}`}>
-                            Catat faktur
-                        </Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Retur ? (
-                    <Button asChild variant="outline">
-                        <Link href={`${AlamatPembelian}/retur/buat?penerimaan=${p.Uuid}`}>Retur ke pemasok</Link>
-                    </Button>
-                ) : null}
-                {p.Status !== 'Dibatalkan' && tautanLabel !== null ? (
-                    <Button asChild variant="outline">
-                        <Link href={tautanLabel}>Cetak label barang diterima</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.BiayaTambahan === true ? (
-                    <Button asChild variant="outline">
-                        <Link href={`${AlamatPembelian}/biaya-tambahan/buat?penerimaan=${p.Uuid}`}>
-                            Catat biaya tambahan
-                        </Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                        Batalkan penerimaan
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatusPembelian status={p.Status} label={p.LabelStatus} />
+                        {p.Faktur ? (
+                            <Link
+                                href={`${AlamatPembelian}/faktur/${p.Faktur.Uuid}`}
+                                className="font-mono text-isi text-brand underline"
+                            >
+                                Faktur {p.Faktur.Nomor}
+                            </Link>
+                        ) : (
+                            <span className="text-isi text-teks-sekunder">Belum difakturkan</span>
+                        )}
+                    </>
+                }
+                langkah={[
+                    ...(Tindakan.Fakturkan && p.Pemasok
+                        ? [
+                              {
+                                  label: 'Catat faktur',
+                                  href: `${AlamatPembelian}/faktur/buat?pemasok=${p.Pemasok.Uuid}&penerimaan=${p.Uuid}`,
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Retur
+                        ? [{ label: 'Retur ke pemasok', href: `${AlamatPembelian}/retur/buat?penerimaan=${p.Uuid}` }]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(p.Status !== 'Dibatalkan' && tautanLabel !== null
+                        ? [{ label: 'Cetak label barang diterima', href: tautanLabel }]
+                        : []),
+                    ...(Tindakan.BiayaTambahan === true
+                        ? [
+                              {
+                                  label: 'Catat biaya tambahan',
+                                  href: `${AlamatPembelian}/biaya-tambahan/buat?penerimaan=${p.Uuid}`,
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan penerimaan', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

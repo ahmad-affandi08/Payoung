@@ -3,10 +3,10 @@ import { useState, type FormEvent } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import { KartuKeterangan, Keterangan, RingkasanNilai } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -56,9 +56,6 @@ export default function HalamanDetailPreOrder({ Pesanan: p, OpsiAkun, OpsiCara, 
 
     return (
         <TataLetakAplikasi judul={`Pre-order ${p.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatus jenis={AmbilJenisStatusPreOrder(p.Status)} teks={p.LabelStatus} />
-            </div>
             {p.AlasanBatal ? (
                 <Pemberitahuan jenis="bahaya" judul="Pre-order dibatalkan">
                     {p.AlasanBatal}
@@ -69,20 +66,25 @@ export default function HalamanDetailPreOrder({ Pesanan: p, OpsiAkun, OpsiCara, 
                     Uang muka lebih besar dari tagihan saat diambil. Kembalikan ke pelanggan atau catat hangus.
                 </Pemberitahuan>
             ) : null}
-            <div className="flex flex-wrap gap-2">
-                {Izin.Siap && p.Status === 'Dipesan' ? (
-                    <Button
-                        onClick={() => router.post(`${AlamatPreOrder}/${p.Uuid}/siap`, {}, { preserveScroll: true })}
-                    >
-                        Tandai siap diambil
-                    </Button>
-                ) : null}
-                {bolehSelesaikan ? (
-                    <Button variant={terbuka ? 'destructive' : 'outline'} onClick={() => AturDialog(true)}>
-                        {labelSelesaikan}
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={<LabelStatus jenis={AmbilJenisStatusPreOrder(p.Status)} teks={p.LabelStatus} />}
+                langkah={
+                    Izin.Siap && p.Status === 'Dipesan'
+                        ? [
+                              {
+                                  label: 'Tandai siap diambil',
+                                  saatKlik: () =>
+                                      router.post(`${AlamatPreOrder}/${p.Uuid}/siap`, {}, { preserveScroll: true }),
+                              },
+                          ]
+                        : []
+                }
+                lainnya={
+                    bolehSelesaikan
+                        ? [{ label: labelSelesaikan, saatKlik: () => AturDialog(true), bahaya: terbuka }]
+                        : []
+                }
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

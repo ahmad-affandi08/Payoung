@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     DaftarJurnalDokumen,
@@ -11,7 +12,6 @@ import {
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import { AlamatPiutang, LabelStatusPiutang } from '@/Komponen/Piutang/BagianPiutang';
 import DialogBuktiPotong from '@/Komponen/Piutang/DialogBuktiPotong';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
@@ -36,28 +36,27 @@ export default function HalamanDetailPelunasan({
 
     return (
         <TataLetakAplikasi judul={`Pelunasan ${p.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatusPiutang status={p.Status} label={p.LabelStatus} />
-            </div>
             {p.AlasanBatal ? (
                 <Pemberitahuan jenis="bahaya" judul="Pelunasan dibatalkan">
                     {p.AlasanBatal}. Sisa piutang sudah dikembalikan.
                 </Pemberitahuan>
             ) : null}
-            {Tindakan.Batalkan || Tindakan.CatatBuktiPotong ? (
-                <div className="flex flex-wrap gap-2">
-                    {Tindakan.CatatBuktiPotong ? (
-                        <Button variant="outline" onClick={() => AturBuktiPotong(true)}>
-                            {p.NomorBuktiPotong ? 'Ubah nomor bukti potong' : 'Catat bukti potong'}
-                        </Button>
-                    ) : null}
-                    {Tindakan.Batalkan ? (
-                        <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                            Batalkan pelunasan
-                        </Button>
-                    ) : null}
-                </div>
-            ) : null}
+            <AksiHalaman
+                keterangan={<LabelStatusPiutang status={p.Status} label={p.LabelStatus} />}
+                lainnya={[
+                    ...(Tindakan.CatatBuktiPotong
+                        ? [
+                              {
+                                  label: p.NomorBuktiPotong ? 'Ubah nomor bukti potong' : 'Catat bukti potong',
+                                  saatKlik: () => AturBuktiPotong(true),
+                              },
+                          ]
+                        : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan pelunasan', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

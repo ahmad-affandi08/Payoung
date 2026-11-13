@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -14,7 +15,6 @@ import {
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
@@ -116,36 +116,26 @@ export default function HalamanDetailPermintaan({
                 </Pemberitahuan>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
-                {Tindakan.Ubah ? (
-                    <Button asChild variant="outline">
-                        <Link href={`${alamat}/${Permintaan.Uuid}/ubah`}>Ubah draf</Link>
-                    </Button>
-                ) : null}
-                {Tindakan.Ajukan ? (
-                    <Button onClick={() => Kirim('ajukan')} disabled={memproses}>
-                        Ajukan permintaan
-                    </Button>
-                ) : null}
-                {Tindakan.Putuskan ? (
-                    <>
-                        <Button onClick={() => Kirim('setujui')} disabled={memproses}>
-                            Setujui permintaan
-                        </Button>
-                        <Button variant="outline" onClick={() => AturDialog('Tolak')}>
-                            Tolak
-                        </Button>
-                    </>
-                ) : null}
-                {Tindakan.JadikanPo ? (
-                    <Button onClick={() => AturDialog('JadikanPo')}>Jadikan pesanan pembelian</Button>
-                ) : null}
-                {Tindakan.Batalkan ? (
-                    <Button variant="destructive" onClick={() => AturDialog('Batalkan')}>
-                        Batalkan permintaan
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                langkah={[
+                    ...(Tindakan.Ajukan
+                        ? [{ label: 'Ajukan permintaan', saatKlik: () => Kirim('ajukan'), nonaktif: memproses }]
+                        : []),
+                    ...(Tindakan.Putuskan
+                        ? [{ label: 'Setujui permintaan', saatKlik: () => Kirim('setujui'), nonaktif: memproses }]
+                        : []),
+                    ...(Tindakan.JadikanPo
+                        ? [{ label: 'Jadikan pesanan pembelian', saatKlik: () => AturDialog('JadikanPo') }]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${Permintaan.Uuid}/ubah` }] : []),
+                    ...(Tindakan.Putuskan ? [{ label: 'Tolak', saatKlik: () => AturDialog('Tolak') }] : []),
+                    ...(Tindakan.Batalkan
+                        ? [{ label: 'Batalkan permintaan', saatKlik: () => AturDialog('Batalkan'), bahaya: true }]
+                        : []),
+                ]}
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">
