@@ -321,6 +321,48 @@ describe('TabelData (D-16, PRD §17.4.3)', () => {
         expect(screen.getByRole('button', { name: 'Filter' })).toBeTruthy();
     });
 
+    it('HP: penuhDiHp menaruh label di atas sel selebar kartu, bukan berdampingan dengan nilai (D-291)', () => {
+        AturLebar('hp');
+        type BarisHarga = { Id: string; Nama: string; Harga: string };
+        const kolomHarga: KolomTabel<BarisHarga>[] = [
+            { id: 'Nama', accessorKey: 'Nama', enableSorting: false, meta: { label: 'Produk', prioritas: 'utama' } },
+            {
+                id: 'Pendek',
+                accessorKey: 'Id',
+                enableSorting: false,
+                meta: { label: 'Kode', prioritas: 'penting' },
+            },
+            {
+                id: 'Lebar',
+                accessorKey: 'Harga',
+                enableSorting: false,
+                meta: { label: 'Harga bertingkat', prioritas: 'penting', penuhDiHp: true },
+                cell: () => <span>Isi lebar</span>,
+            },
+        ];
+        Render(
+            <TabelData
+                id="harga"
+                label="Daftar harga"
+                kolom={kolomHarga}
+                sumber={{ mode: 'lokal', data: [{ Id: 'k1', Nama: 'Beras 25 kg', Harga: '315000' }] }}
+                ambilIdBaris={(b) => b.Id}
+                cari={false}
+                kosong={{ judul: 'Kosong.' }}
+            />,
+        );
+
+        const baris = within(screen.getByRole('list', { name: 'Daftar harga' })).getAllByRole(
+            'listitem',
+        )[0] as HTMLElement;
+        const lebar = within(baris).getByText('Harga bertingkat').parentElement as HTMLElement;
+        const pendek = within(baris).getByText('Kode').parentElement as HTMLElement;
+
+        expect(lebar.className).toContain('basis-full');
+        expect(lebar.className).toContain('flex-col');
+        expect(pendek.className).not.toContain('basis-full');
+    });
+
     it('HP: sembunyiBilaKosong melewati label nilai null (baris judul laporan), tanpa filter & urut tidak ada tombol Filter', () => {
         AturLebar('hp');
         type BarisLaporan = { Id: string; Label: string; Nilai: string | null };

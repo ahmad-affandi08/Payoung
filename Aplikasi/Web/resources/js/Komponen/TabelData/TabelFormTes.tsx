@@ -105,6 +105,7 @@ describe('Tabel isian/rincian', () => {
             'Halaman/Kelola/Akuntansi/JurnalUmum/Buat.tsx',
             'Halaman/Kelola/Pembelian/NotaDebit/Buat.tsx',
             'Halaman/Kelola/Pembelian/BiayaTambahan/Buat.tsx',
+            'Komponen/Katalog/TabelHargaBertingkat.tsx',
         ];
         const belum = wajib.filter((berkas) => !/<TabelForm\s+tumpuk/.test(readFileSync(join(AKAR, berkas), 'utf8')));
 

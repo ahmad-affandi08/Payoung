@@ -284,7 +284,13 @@ function BarisBertumpuk<T>({ row, alamatDetail }: { row: Row<T>; alamatDetail: (
                 {penting.length > 0 ? (
                     <dl className="flex flex-wrap gap-x-3 gap-y-0.5 text-label">
                         {penting.map((c) => (
-                            <div key={c.id} className="flex min-w-0 gap-1">
+                            <div
+                                key={c.id}
+                                className={cn(
+                                    'flex min-w-0 gap-1',
+                                    AmbilMeta(c.column.columnDef.meta)?.penuhDiHp && 'w-full basis-full flex-col',
+                                )}
+                            >
                                 <dt className="text-teks-sekunder">{AmbilMeta(c.column.columnDef.meta)?.label}</dt>
                                 <dd
                                     className={cn(

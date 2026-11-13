@@ -134,7 +134,7 @@ export default function TabelHargaBertingkat({
                         : 'Belum ada harga.'}
                 </p>
             ) : (
-                <TabelForm label="Harga bertingkat" lebar="sempit">
+                <TabelForm tumpuk label="Harga bertingkat" lebar="sempit">
                     <TableCaption className="sr-only">{judul}</TableCaption>
                     <TableHeader>
                         <TableRow className="border-garis hover:bg-transparent">
@@ -159,7 +159,10 @@ export default function TabelHargaBertingkat({
 
                             return (
                                 <TableRow key={indeks} className="border-0 align-top hover:bg-transparent">
-                                    <TableCell className="py-1 pl-0 whitespace-normal">
+                                    <TableCell
+                                        data-label={`Mulai jumlah (${simbolSatuan})`}
+                                        className="py-1 pl-0 whitespace-normal"
+                                    >
                                         <BidangJumlah
                                             label={`Mulai jumlah baris ${String(indeks + 1)}`}
                                             labelTersembunyi
@@ -175,7 +178,10 @@ export default function TabelHargaBertingkat({
                                             required
                                         />
                                     </TableCell>
-                                    <TableCell className="py-1 whitespace-normal">
+                                    <TableCell
+                                        data-label={`Harga per ${simbolSatuan}`}
+                                        className="py-1 whitespace-normal"
+                                    >
                                         <BidangUang
                                             label={`Harga baris ${String(indeks + 1)}`}
                                             labelTersembunyi
@@ -186,7 +192,7 @@ export default function TabelHargaBertingkat({
                                             required={!barisKosong}
                                         />
                                     </TableCell>
-                                    <TableCell className="py-1 pr-0">
+                                    <TableCell data-aksi className="py-1 pr-0">
                                         {dasar ? (
                                             <span className="inline-flex h-8 pointer-coarse:h-11 items-center text-keterangan text-teks-sekunder">
                                                 Harga jual

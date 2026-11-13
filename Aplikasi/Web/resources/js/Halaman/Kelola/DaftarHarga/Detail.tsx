@@ -144,7 +144,7 @@ export default function HalamanDetailDaftarHarga({
             id: 'HargaDaftar',
             header: 'Harga di daftar ini',
             enableSorting: false,
-            meta: { label: 'Harga di daftar ini', prioritas: 'penting', wajib: true },
+            meta: { label: 'Harga di daftar ini', prioritas: 'penting', wajib: true, penuhDiHp: true },
             cell: ({ row: { original: baris } }) => {
                 const indeksKiriman = urutanKiriman.indexOf(baris.UuidProdukSatuan);
 

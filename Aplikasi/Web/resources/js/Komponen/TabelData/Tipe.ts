@@ -56,6 +56,8 @@ export type MetaKolom = {
     kelasSel?: string;
     /** Daftar bertumpuk HP: lewati pasangan label–nilai bila nilai kolom (accessor) null, misal baris judul laporan. */
     sembunyiBilaKosong?: boolean;
+    /** Daftar bertumpuk HP: sel selebar kartu dengan label di atasnya, untuk isi lebar seperti tabel isian. */
+    penuhDiHp?: boolean;
 };
 
 /** Definisi kolom halaman: kolom TanStack dengan `meta` bertipe `MetaKolom`. */
