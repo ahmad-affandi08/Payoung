@@ -9,6 +9,7 @@ import HasilBacaQris from '@/Komponen/PanduanAwal/HasilBacaQris';
 import { useBacaQris } from '@/Komponen/PanduanAwal/useBacaQris';
 import RingkasanGalatFormulir, { FokusGalatPertama } from '@/Komponen/PanduanAwal/RingkasanGalatFormulir';
 import TataLetakPanduan from '@/Komponen/PanduanAwal/TataLetakPanduan';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -24,7 +25,6 @@ import {
     AlertDialogTrigger,
 } from '@/Komponen/Ui/alert-dialog';
 import { Button } from '@/Komponen/Ui/button';
-import { Card, CardContent, CardHeader } from '@/Komponen/Ui/card';
 import {
     Dialog,
     DialogContent,
@@ -84,6 +84,7 @@ export default function HalamanMetodePembayaran({
     PersenBiayaMaksimal = { Umum: '10', Platform: '40' },
 }: PropsMetodePembayaranPanduan) {
     const hanyaTunai = MetodePembayaran.every((metode) => metode.Wajib);
+    const [tambahTerbuka, AturTambahTerbuka] = useState(false);
     const isi = (
         <>
             {hanyaTunai ? (
@@ -96,16 +97,28 @@ export default function HalamanMetodePembayaran({
                 </p>
             )}
 
+            <AksiHalaman utama={<Tombol onClick={() => AturTambahTerbuka(true)}>Tambah metode pembayaran</Tombol>} />
+
             <TabelMetodePembayaran metodePembayaran={MetodePembayaran} batasGambarQris={BatasGambarQris} />
 
-            <FormTambahMetode
-                jenisTersedia={JenisTersedia}
-                bank={Bank}
-                batasGambarQris={BatasGambarQris}
-                gerbangPembayaran={GerbangPembayaran}
-                kanalPlatform={KanalPlatform}
-                persenBiayaMaksimal={PersenBiayaMaksimal}
-            />
+            <Dialog open={tambahTerbuka} onOpenChange={AturTambahTerbuka}>
+                {/* Isi dialog dilepas saat tertutup, jadi form selalu mulai kosong. */}
+                <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Tambah metode pembayaran</DialogTitle>
+                        <DialogDescription>Metode baru tampil sebagai tombol di layar bayar kasir.</DialogDescription>
+                    </DialogHeader>
+                    <FormTambahMetode
+                        jenisTersedia={JenisTersedia}
+                        bank={Bank}
+                        batasGambarQris={BatasGambarQris}
+                        gerbangPembayaran={GerbangPembayaran}
+                        kanalPlatform={KanalPlatform}
+                        persenBiayaMaksimal={PersenBiayaMaksimal}
+                        saatSelesai={() => AturTambahTerbuka(false)}
+                    />
+                </DialogContent>
+            </Dialog>
         </>
     );
 
@@ -440,6 +453,7 @@ type PropsFormTambahMetode = {
     gerbangPembayaran: PropsMetodePembayaranPanduan['GerbangPembayaran'];
     kanalPlatform: NonNullable<PropsMetodePembayaranPanduan['KanalPlatform']>;
     persenBiayaMaksimal: NonNullable<PropsMetodePembayaranPanduan['PersenBiayaMaksimal']>;
+    saatSelesai: () => void;
 };
 
 function FormTambahMetode({
@@ -449,6 +463,7 @@ function FormTambahMetode({
     gerbangPembayaran,
     kanalPlatform,
     persenBiayaMaksimal,
+    saatSelesai,
 }: PropsFormTambahMetode) {
     const elemenFormulir = useRef<HTMLFormElement>(null);
     const formulir = useForm<IsianMetodePembayaran>({
@@ -492,143 +507,133 @@ function FormTambahMetode({
         formulir.post(AlamatPanduan.MetodePembayaran, {
             preserveScroll: true,
             onSuccess: () => {
-                formulir.reset();
                 bacaQris.Ulang();
+                saatSelesai();
             },
             onError: () => FokusGalatPertama(elemenFormulir.current),
         });
     };
 
     return (
-        <Card
-            aria-labelledby="judul-tambah-metode"
-            className="gap-4 p-4 sm:p-6 rounded-panel shadow-none"
-            role="region"
-        >
-            <CardHeader className="px-0">
-                <h2 id="judul-tambah-metode" className="text-subjudul font-semibold text-teks-utama">
-                    Tambah metode pembayaran
-                </h2>
-            </CardHeader>
-            <CardContent className="px-0">
-                <form ref={elemenFormulir} onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
-                    <RingkasanGalatFormulir galat={formulir.errors} />
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <>
+            <form ref={elemenFormulir} onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
+                <RingkasanGalatFormulir galat={formulir.errors} />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <BidangPilihan
+                        label="Jenis"
+                        nilai={Jenis}
+                        opsi={jenisTersedia}
+                        saatBerubah={GantiJenis}
+                        galat={formulir.errors.Jenis}
+                        required
+                    />
+                    <BidangTeks
+                        label="Nama di kasir"
+                        nilai={formulir.data.Nama}
+                        saatBerubah={(nilai) => formulir.setData('Nama', nilai)}
+                        galat={formulir.errors.Nama}
+                        keterangan={contohNama[Jenis] ?? 'Tampil sebagai tombol di kasir.'}
+                        maxLength={60}
+                        required
+                    />
+                    {Jenis === 'Edc' || Jenis === 'Transfer' ? (
                         <BidangPilihan
-                            label="Jenis"
-                            nilai={Jenis}
-                            opsi={jenisTersedia}
-                            saatBerubah={GantiJenis}
-                            galat={formulir.errors.Jenis}
+                            label={Jenis === 'Edc' ? 'Bank penerbit mesin EDC' : 'Bank atau e-wallet tujuan'}
+                            nilai={formulir.data.KodeBank}
+                            opsi={opsiBank}
+                            saatBerubah={(nilai) => formulir.setData('KodeBank', nilai)}
+                            galat={formulir.errors.KodeBank}
                             required
+                            kosong={opsiBank.length === 0 ? 'Data bank belum tersedia' : 'Pilih bank'}
                         />
-                        <BidangTeks
-                            label="Nama di kasir"
-                            nilai={formulir.data.Nama}
-                            saatBerubah={(nilai) => formulir.setData('Nama', nilai)}
-                            galat={formulir.errors.Nama}
-                            keterangan={contohNama[Jenis] ?? 'Tampil sebagai tombol di kasir.'}
-                            maxLength={60}
-                            required
-                        />
-                        {Jenis === 'Edc' || Jenis === 'Transfer' ? (
-                            <BidangPilihan
-                                label={Jenis === 'Edc' ? 'Bank penerbit mesin EDC' : 'Bank atau e-wallet tujuan'}
-                                nilai={formulir.data.KodeBank}
-                                opsi={opsiBank}
-                                saatBerubah={(nilai) => formulir.setData('KodeBank', nilai)}
-                                galat={formulir.errors.KodeBank}
-                                required
-                                kosong={opsiBank.length === 0 ? 'Data bank belum tersedia' : 'Pilih bank'}
-                            />
-                        ) : null}
-                        {platform ? (
-                            <BidangPilihan
-                                label="Platform"
-                                nilai={formulir.data.Kanal}
-                                opsi={kanalPlatform}
-                                saatBerubah={(nilai) => formulir.setData('Kanal', nilai)}
-                                galat={formulir.errors.Kanal}
-                                required
-                                kosong="Pilih platform"
-                            />
-                        ) : null}
-                        {Jenis === 'Transfer' ? (
-                            <>
-                                <BidangTeks
-                                    label="Nomor rekening"
-                                    nilai={formulir.data.NomorRekening}
-                                    saatBerubah={(nilai) => formulir.setData('NomorRekening', nilai.replace(/\D/g, ''))}
-                                    galat={formulir.errors.NomorRekening}
-                                    keterangan="Angka saja, 5 sampai 30 digit."
-                                    inputMode="numeric"
-                                    maxLength={30}
-                                    kode
-                                    required
-                                />
-                                <BidangTeks
-                                    label="Nama pemilik rekening"
-                                    nilai={formulir.data.NamaPemilikRekening}
-                                    saatBerubah={(nilai) => formulir.setData('NamaPemilikRekening', nilai)}
-                                    galat={formulir.errors.NamaPemilikRekening}
-                                    maxLength={100}
-                                    required
-                                />
-                            </>
-                        ) : null}
-                        <BidangTeks
-                            label={
-                                platform
-                                    ? 'Komisi platform (persen, opsional)'
-                                    : 'Biaya per transaksi (persen, opsional)'
-                            }
-                            nilai={FormatMasukanPersen(formulir.data.PersenBiaya)}
-                            saatBerubah={(nilai) => formulir.setData('PersenBiaya', NormalisasiMasukanPersen(nilai))}
-                            galat={formulir.errors.PersenBiaya}
-                            keterangan={
-                                platform
-                                    ? `Potongan komisi dari platform, 0 sampai ${persenBiayaMaksimal.Platform} persen, misal 20. Dipakai untuk laporan biaya.`
-                                    : `Potongan dari penyedia (MDR), 0 sampai ${persenBiayaMaksimal.Umum} persen, misal 0,7. Dipakai untuk laporan biaya.`
-                            }
-                            inputMode="decimal"
-                            maxLength={7}
-                        />
-                    </div>
-                    {Jenis === 'QrisDinamis' ? <InfoQrisDinamis gerbangPembayaran={gerbangPembayaran} /> : null}
-                    {platform ? (
-                        <Pemberitahuan jenis="info" judul="Pesanan ojol dicatat manual di kasir">
-                            Kasir memilih kanal di keranjang lalu bayar dengan metode ini. Dana jadi piutang pencairan
-                            sampai platform mentransfer.
-                        </Pemberitahuan>
                     ) : null}
-                    {Jenis === 'QrisStatis' ? (
+                    {platform ? (
+                        <BidangPilihan
+                            label="Platform"
+                            nilai={formulir.data.Kanal}
+                            opsi={kanalPlatform}
+                            saatBerubah={(nilai) => formulir.setData('Kanal', nilai)}
+                            galat={formulir.errors.Kanal}
+                            required
+                            kosong="Pilih platform"
+                        />
+                    ) : null}
+                    {Jenis === 'Transfer' ? (
                         <>
-                            <BidangGambar
-                                label="Gambar QRIS"
-                                berkas={formulir.data.GambarQris}
-                                saatBerubah={(berkas) => {
-                                    formulir.setData('GambarQris', berkas);
-                                    void bacaQris.Baca(berkas);
-                                }}
-                                ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
-                                ekstensi={batasGambarQris.Ekstensi}
-                                keterangan="Foto atau unduh QRIS dari aplikasi bank, pastikan kode QR utuh. Kasir menampilkannya dengan nominal terisi."
-                                galat={formulir.errors.GambarQris}
+                            <BidangTeks
+                                label="Nomor rekening"
+                                nilai={formulir.data.NomorRekening}
+                                saatBerubah={(nilai) => formulir.setData('NomorRekening', nilai.replace(/\D/g, ''))}
+                                galat={formulir.errors.NomorRekening}
+                                keterangan="Angka saja, 5 sampai 30 digit."
+                                inputMode="numeric"
+                                maxLength={30}
+                                kode
+                                required
                             />
-                            <HasilBacaQris keadaan={bacaQris.keadaan} />
-                            {formulir.errors.TeksQris ? (
-                                <Pemberitahuan jenis="bahaya">{formulir.errors.TeksQris}</Pemberitahuan>
-                            ) : null}
+                            <BidangTeks
+                                label="Nama pemilik rekening"
+                                nilai={formulir.data.NamaPemilikRekening}
+                                saatBerubah={(nilai) => formulir.setData('NamaPemilikRekening', nilai)}
+                                galat={formulir.errors.NamaPemilikRekening}
+                                maxLength={100}
+                                required
+                            />
                         </>
                     ) : null}
-                    <div>
-                        <Tombol type="submit" memproses={formulir.processing}>
-                            Tambah metode pembayaran
-                        </Tombol>
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
+                    <BidangTeks
+                        label={
+                            platform ? 'Komisi platform (persen, opsional)' : 'Biaya per transaksi (persen, opsional)'
+                        }
+                        nilai={FormatMasukanPersen(formulir.data.PersenBiaya)}
+                        saatBerubah={(nilai) => formulir.setData('PersenBiaya', NormalisasiMasukanPersen(nilai))}
+                        galat={formulir.errors.PersenBiaya}
+                        keterangan={
+                            platform
+                                ? `Potongan komisi dari platform, 0 sampai ${persenBiayaMaksimal.Platform} persen, misal 20. Dipakai untuk laporan biaya.`
+                                : `Potongan dari penyedia (MDR), 0 sampai ${persenBiayaMaksimal.Umum} persen, misal 0,7. Dipakai untuk laporan biaya.`
+                        }
+                        inputMode="decimal"
+                        maxLength={7}
+                    />
+                </div>
+                {Jenis === 'QrisDinamis' ? <InfoQrisDinamis gerbangPembayaran={gerbangPembayaran} /> : null}
+                {platform ? (
+                    <Pemberitahuan jenis="info" judul="Pesanan ojol dicatat manual di kasir">
+                        Kasir memilih kanal di keranjang lalu bayar dengan metode ini. Dana jadi piutang pencairan
+                        sampai platform mentransfer.
+                    </Pemberitahuan>
+                ) : null}
+                {Jenis === 'QrisStatis' ? (
+                    <>
+                        <BidangGambar
+                            label="Gambar QRIS"
+                            berkas={formulir.data.GambarQris}
+                            saatBerubah={(berkas) => {
+                                formulir.setData('GambarQris', berkas);
+                                void bacaQris.Baca(berkas);
+                            }}
+                            ukuranMaksimalKb={batasGambarQris.UkuranMaksimalKb}
+                            ekstensi={batasGambarQris.Ekstensi}
+                            keterangan="Foto atau unduh QRIS dari aplikasi bank, pastikan kode QR utuh. Kasir menampilkannya dengan nominal terisi."
+                            galat={formulir.errors.GambarQris}
+                        />
+                        <HasilBacaQris keadaan={bacaQris.keadaan} />
+                        {formulir.errors.TeksQris ? (
+                            <Pemberitahuan jenis="bahaya">{formulir.errors.TeksQris}</Pemberitahuan>
+                        ) : null}
+                    </>
+                ) : null}
+                <DialogFooter>
+                    <Tombol type="button" varian="sekunder" onClick={saatSelesai}>
+                        Batal
+                    </Tombol>
+                    <Tombol type="submit" memproses={formulir.processing}>
+                        Simpan metode pembayaran
+                    </Tombol>
+                </DialogFooter>
+            </form>
+        </>
     );
 }
 

@@ -187,11 +187,13 @@ describe('Langkah 5 Metode pembayaran (F-01): daftar TabelData & nonaktifkan lew
             <HalamanMetodePembayaranPanduan {...props} GerbangPembayaran={{ Aktif: false, Penyedia: null }} />,
         );
 
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
         expect(screen.getByText('Gerbang pembayaran belum aktif')).toBeTruthy();
         expect(screen.queryByText('Gambar QRIS')).toBeNull();
         Lepas();
 
         RenderUji(<HalamanMetodePembayaranPanduan {...props} GerbangPembayaran={{ Aktif: true, Penyedia: 'DOKU' }} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
         expect(screen.getByText('Gerbang pembayaran aktif: DOKU')).toBeTruthy();
     });
     it('F-08: batas hari menunggu pencairan tampil hanya untuk metode berpencairan; Atur mengirim angka (kosong = bawaan)', () => {
@@ -272,6 +274,7 @@ describe('Langkah 5 Metode pembayaran (F-01): daftar TabelData & nonaktifkan lew
         );
 
         expect(screen.getByText('Pesanan GoFood')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
         expect(screen.getByText('Pesanan ojol dicatat manual di kasir')).toBeTruthy();
         expect(screen.getByText('Platform')).toBeTruthy();
         expect(screen.getByText('Komisi platform (persen, opsional)')).toBeTruthy();

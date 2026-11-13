@@ -39,6 +39,30 @@ describe('Halaman metode pembayaran', () => {
         expect(screen.queryByRole('button', { name: 'Lanjutkan' })).toBeNull();
     });
 
+    it('form tambah tidak terpampang di bawah tabel: muncul di dialog lewat tombol Tambah metode pembayaran', () => {
+        RenderUji(<HalamanMetodePembayaran {...BuatProps('2026-10-01T01:00:00Z')} />);
+
+        expect(screen.queryByLabelText(/Nama di kasir/)).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
+
+        expect(screen.getByRole('dialog')).not.toBeNull();
+        expect(screen.getByLabelText(/Nama di kasir/)).not.toBeNull();
+    });
+
+    it('form tambah selalu mulai kosong: isian yang ditutup tanpa simpan tidak terbawa ke pembukaan berikutnya', () => {
+        RenderUji(<HalamanMetodePembayaran {...BuatProps('2026-10-01T01:00:00Z')} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
+        fireEvent.change(screen.getByLabelText(/Nama di kasir/), { target: { value: 'QRIS Setengah Jadi' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Batal' }));
+        expect(screen.queryByLabelText(/Nama di kasir/)).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
+
+        expect((screen.getByLabelText(/Nama di kasir/) as HTMLInputElement).value).toBe('');
+    });
+
     it('panduan belum selesai: tetap langkah panduan dengan tombol Lanjutkan', () => {
         RenderUji(<HalamanMetodePembayaran {...BuatProps(null)} />);
 
@@ -60,6 +84,10 @@ describe('QRIS statis dengan nominal otomatis', () => {
         URL.revokeObjectURL = vi.fn();
     });
 
+    function BukaFormTambah() {
+        fireEvent.click(screen.getByRole('button', { name: 'Tambah metode pembayaran' }));
+    }
+
     function PilihGambar() {
         const masukan = screen.getByLabelText(/Gambar QRIS/);
         fireEvent.change(masukan, { target: { files: [new File(['x'], 'qris.png', { type: 'image/png' })] } });
@@ -68,6 +96,7 @@ describe('QRIS statis dengan nominal otomatis', () => {
     it('gambar terbaca dan sah: pemilik diberi tahu nama merchant dan nominal akan terisi otomatis', async () => {
         vi.mocked(BacaQrDariBerkas).mockResolvedValue(vektor.Kasus[0]?.Statis ?? '');
         RenderUji(<HalamanMetodePembayaran {...BuatProps('2026-10-01T01:00:00Z')} />);
+        BukaFormTambah();
 
         PilihGambar();
 
@@ -78,6 +107,7 @@ describe('QRIS statis dengan nominal otomatis', () => {
     it('gambar tidak terbaca, atau bukan QRIS statis yang sah: peringatan jelas, gambar tetap boleh dipakai', async () => {
         vi.mocked(BacaQrDariBerkas).mockResolvedValueOnce(null);
         RenderUji(<HalamanMetodePembayaran {...BuatProps('2026-10-01T01:00:00Z')} />);
+        BukaFormTambah();
         PilihGambar();
         expect(await screen.findByText('Nominal belum bisa otomatis')).not.toBeNull();
         expect(screen.getByText(/Kode QR belum terbaca/)).not.toBeNull();
