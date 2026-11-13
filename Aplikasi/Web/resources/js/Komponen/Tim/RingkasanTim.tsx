@@ -1,5 +1,6 @@
 import { BagianRingkasan, BarisRingkasan, TampilYaTidak } from '@/Komponen/Formulir/Wizard/RingkasanWizard';
 import { FormatRupiah } from '@/Pustaka/Format';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import type { OpsiOutletPengguna, OpsiPeranPengguna } from '@/Tipe/Organisasi';
 
 import type { IsianTim, KunciLangkahTim, LangkahTim } from './LangkahTim';
@@ -37,6 +38,7 @@ export default function RingkasanTim({
     dicatatKaryawan,
     saatUbah,
 }: PropsRingkasanTim) {
+    const whatsappTersedia = useWhatsappTersedia();
     const Cari = (kunci: KunciLangkahTim) => langkah.find((item) => item.Kunci === kunci);
     const langkahSiapa = Cari('Siapa');
     const langkahAkun = Cari('Akun');
@@ -69,7 +71,7 @@ export default function RingkasanTim({
                     <BarisRingkasan nama="PIN kasir">
                         {isian.Pin === '' ? 'Tidak diisi' : 'Sudah diisi (6 angka, tidak ditampilkan)'}
                     </BarisRingkasan>
-                    <BarisRingkasan nama="Nomor WhatsApp">
+                    <BarisRingkasan nama={whatsappTersedia ? 'Nomor WhatsApp' : 'Nomor HP'}>
                         {isian.NoHp.trim() === '' ? 'Tidak diisi' : isian.NoHp}
                     </BarisRingkasan>
                 </BagianRingkasan>

@@ -39,6 +39,16 @@ final class BantuanTokoOnline
             'Alasan' => 'Uji toko online',
             'DibuatOleh' => BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin)->Id,
         ]);
+        // D-299: akun pembeli (kode masuk WhatsApp) hanya ada bila paket memuat fitur WhatsApp. Layanan platform tetap
+        // diatur tes lewat `config('integrasi.Whatsapp')`.
+        OverrideTenant::query()->create([
+            'IdTenant' => $k['Tenant']->Id,
+            'Jenis' => JenisOverride::Fitur,
+            'Kunci' => PemeriksaFiturTenant::KUNCI_WHATSAPP,
+            'BerakhirPada' => now()->addDays(30),
+            'Alasan' => 'Uji WhatsApp toko online',
+            'DibuatOleh' => BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin)->Id,
+        ]);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
 
         /** @var Outlet $outlet */

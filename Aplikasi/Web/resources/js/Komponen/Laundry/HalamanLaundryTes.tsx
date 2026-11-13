@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDaftarLaundry from '@/Halaman/Kelola/Laundry/Daftar';
 import { BuatHasilTabel } from '@/Komponen/Katalog/DataUjiKatalog';
-import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import {
+    AturHalamanUji,
+    kirimanForm,
+    RenderUji,
+    TambahPropsHalamanUji,
+    tiruanRouter,
+} from '@/Komponen/Katalog/TiruanInertia';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
 import { RingkasIsiLaundry, type PropsDaftarLaundry, type TiketLaundry } from '@/Tipe/Laundry';
 
@@ -59,6 +65,7 @@ function Props(ubah: Partial<PropsDaftarLaundry> = {}): PropsDaftarLaundry {
 describe('Laundry (§9.9)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/laundry');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         kirimanForm.length = 0;
         tiruanRouter.post.mockClear();
     });
@@ -85,6 +92,24 @@ describe('Laundry (§9.9)', () => {
             { Status: 'Siap' },
             { preserveScroll: true },
         );
+    });
+
+    it('D-299: kabar WhatsApp (kotak centang pengaturan, keterangan, status dikabari) hanya ada bila layanan tersedia', () => {
+        const siap: TiketLaundry = { ...tiket, Status: 'Siap', LabelStatus: 'Siap', NotifikasiTerkirim: true };
+        const propsSiap = Props({ Tiket: BuatHasilTabel([siap]) });
+        RenderUji(<HalamanDaftarLaundry {...propsSiap} />);
+        expect(screen.getAllByText('Pelanggan sudah dikabari').length).toBeGreaterThan(0);
+        expect(screen.getByText(/pelanggan dikabari/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Pengaturan' }));
+        expect(screen.getByRole('checkbox', { name: /Kabari pelanggan lewat WhatsApp/ })).toBeTruthy();
+        cleanup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<HalamanDaftarLaundry {...propsSiap} />);
+        expect(screen.queryByText('Pelanggan sudah dikabari')).toBeNull();
+        expect(screen.queryByText(/dikabari/)).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Pengaturan' }));
+        expect(screen.queryByRole('checkbox', { name: /WhatsApp/ })).toBeNull();
     });
 
     it('pengaturan: parfum dipisah koma dikirim sebagai daftar, tanpa izin tidak ada tombol', () => {

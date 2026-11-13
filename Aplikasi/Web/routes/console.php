@@ -120,6 +120,12 @@ Schedule::command('tindakan:kirim-ringkasan-harian')->dailyAt('07:00')->timezone
 // X6 (v3.79): insight penjualan minggu lalu ke pemilik tiap Senin pagi (setelah ringkasan Kotak Tindakan).
 Schedule::command('laporan:kirim-insight-mingguan')->weeklyOn(1, '07:15')->timezone('Asia/Jakarta')->withoutOverlapping(240)->runInBackground();
 
+// D-299: periksa sambungan nomor pengirim WhatsApp tenant (terputus = ditandai dan dimatikan).
+Schedule::command('whatsapp:periksa-sambungan')->everyFifteenMinutes()->withoutOverlapping(14)->runInBackground();
+
+// D-299 tahap 3: penjualan per jam ke penerima laporan WhatsApp outlet (09.00 sampai 21.00 waktu outlet).
+Schedule::command('whatsapp:kirim-penjualan-per-jam')->hourlyAt(5)->withoutOverlapping(50)->runInBackground();
+
 // OWN-03: push kondisi operasional penting; idempoten per pengguna, jenis, dan tanggal bisnis.
 Schedule::command('tindakan:buat-notifikasi-operasional')->hourlyAt(10)->withoutOverlapping(120)->runInBackground();
 

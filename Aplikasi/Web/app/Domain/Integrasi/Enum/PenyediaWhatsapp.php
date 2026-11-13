@@ -61,11 +61,22 @@ enum PenyediaWhatsapp: string
     /**
      * @return list<array{Kunci: string, Label: string, Wajib: bool}>
      */
+    public function AmbilBidangKredensialTenant(): array
+    {
+        return array_values(array_filter($this->AmbilBidangKredensial(), static fn (array $bidang): bool => $bidang['Kunci'] !== 'TokenAkun'));
+    }
+
+    /**
+     * @return list<array{Kunci: string, Label: string, Wajib: bool}>
+     */
     public function AmbilBidangKredensial(): array
     {
         return match ($this) {
             self::MetaCloud => [['Kunci' => 'TokenAkses', 'Label' => 'Token akses permanen (system user)', 'Wajib' => true]],
-            self::Fonnte => [['Kunci' => 'Token', 'Label' => 'Token perangkat Fonnte', 'Wajib' => true]],
+            self::Fonnte => [
+                ['Kunci' => 'Token', 'Label' => 'Token perangkat Fonnte', 'Wajib' => true],
+                ['Kunci' => 'TokenAkun', 'Label' => 'Token akun Fonnte (untuk nomor pengirim per outlet)', 'Wajib' => false],
+            ],
             self::Wablas => [
                 ['Kunci' => 'Token', 'Label' => 'Token Wablas', 'Wajib' => true],
                 ['Kunci' => 'KunciRahasia', 'Label' => 'Secret key Wablas (bila diaktifkan)', 'Wajib' => false],

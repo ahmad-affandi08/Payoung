@@ -54,7 +54,7 @@ final class SimpanWhatsappTenant
         $kredensialBaru = [];
         $kredensialBerubah = [];
 
-        foreach ($data->penyedia->AmbilBidangKredensial() as $bidang) {
+        foreach ($data->penyedia->AmbilBidangKredensialTenant() as $bidang) {
             $kunci = $bidang['Kunci'];
             $nilai = $data->kredensial[$kunci] ?? '';
 

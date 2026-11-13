@@ -69,6 +69,7 @@ use App\Http\Perantara\WajibGantiKataSandiTenant;
 use App\Http\Perantara\WajibIzinTenant;
 use App\Http\Perantara\WajibPanduanAwal;
 use App\Http\Perantara\WajibPersetujuanLegal;
+use App\Http\Perantara\WhatsappHanyaBilaTersedia;
 use App\Http\Rute\ValidatorHalamanSitus;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Session\Middleware\AuthenticateSession;
@@ -270,7 +271,7 @@ Route::middleware([TolakDomainPengelola::class, ArahkanDomainAplikasi::class, Ba
             Route::post('/tur/{kodeTur}', [TurProdukKontroler::class, 'Catat'])->where('kodeTur', '[a-z0-9.]+')->middleware('throttle:30,1')->name('kelola.tur.catat');
             Route::delete('/tur/{kodeTur}', [TurProdukKontroler::class, 'Ulangi'])->where('kodeTur', '[a-z0-9.]+')->middleware('throttle:30,1')->name('kelola.tur.ulangi');
             // D-23 D: berlangganan ringkasan pagi Kotak Tindakan lewat email (pilihan pribadi tiap pengguna).
-            Route::put('/tindakan/ringkasan-whatsapp', [TindakanKontroler::class, 'UbahRingkasanWhatsapp'])->middleware(SiapkanAuditTenant::class)->name('kelola.tindakan.ringkasan-whatsapp');
+            Route::put('/tindakan/ringkasan-whatsapp', [TindakanKontroler::class, 'UbahRingkasanWhatsapp'])->middleware(SiapkanAuditTenant::class)->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.tindakan.ringkasan-whatsapp');
 
             Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $saas): void {
                 // D-35: edisi Lisensi dibeli sekali, tanpa langganan & tagihan.

@@ -8,9 +8,11 @@ use App\Domain\Bersama\Tindakan\Data\DataButirTindakan;
 use App\Domain\Bersama\Tindakan\Data\DataKonteksTindakan;
 use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
+use App\Domain\Integrasi\Enum\StatusNomorWhatsapp;
+use App\Domain\Integrasi\Model\NomorPengirimWhatsapp;
 use App\Domain\Integrasi\Model\WhatsappTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Integrasi\Whatsapp\MeterKuotaWhatsapp;
-use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 
 /**
  * Kotak Tindakan domain Integrasi (D-108, izin `integrasi.api.kelola`): kuota pesan WhatsApp nomor Payoung hampir
@@ -24,32 +26,44 @@ final class PenyediaTindakanWhatsapp implements PenyediaTindakan
 
     public function __construct(
         private readonly MeterKuotaWhatsapp $meter,
-        private readonly PemeriksaFiturTenant $fitur,
+        private readonly KetersediaanWhatsapp $ketersediaan,
     ) {}
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
-        if (! $konteks->CekIzin('integrasi.api.kelola') || ! $this->fitur->CekAktif($konteks->idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
+        if (! $konteks->CekIzin('integrasi.api.kelola') || ! $this->ketersediaan->TersediaUntuk($konteks->idTenant)) {
             return [];
         }
 
+        $terputus = NomorPengirimWhatsapp::query()->where('Status', StatusNomorWhatsapp::Terputus->value)->count();
+        $butir = $terputus === 0 ? [] : [new DataButirTindakan(
+            'whatsapp.nomor-terputus',
+            'WhatsApp',
+            TingkatTindakan::Penting,
+            $terputus === 1 ? 'Satu nomor pengirim WhatsApp terputus' : "{$terputus} nomor pengirim WhatsApp terputus",
+            'Pesan ke pelanggan dan laporan karyawan tidak terkirim lewat nomor itu. Pindai QR lagi untuk menyambungkannya.',
+            $terputus,
+            '/kelola/pelanggan/whatsapp',
+            'Sambungkan nomor',
+        )];
+
         if (WhatsappTenant::query()->where('Aktif', true)->exists()) {
-            return [];
+            return $butir;
         }
 
         $kuota = $this->meter->AmbilRingkasan($konteks->idTenant);
 
         if ($kuota['Batas'] === null || $kuota['Batas'] === 0 || $kuota['Sisa'] === null) {
-            return [];
+            return $butir;
         }
 
         $habis = $kuota['Sisa'] === 0;
 
         if (! $habis && $kuota['Sisa'] / $kuota['Batas'] > self::AMBANG_HAMPIR_HABIS) {
-            return [];
+            return $butir;
         }
 
-        return [new DataButirTindakan(
+        return [...$butir, new DataButirTindakan(
             'whatsapp.kuota',
             'WhatsApp',
             $habis ? TingkatTindakan::Penting : TingkatTindakan::Perhatian,

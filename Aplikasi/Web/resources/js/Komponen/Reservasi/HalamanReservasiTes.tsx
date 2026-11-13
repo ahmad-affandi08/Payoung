@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HalamanDaftarReservasi, { FormatWaktuReservasi } from '@/Halaman/Kelola/Reservasi/Daftar';
 import HalamanReservasiPublik from '@/Halaman/Publik/Reservasi';
 import { BuatHasilTabel } from '@/Komponen/Katalog/DataUjiKatalog';
-import { AturHalamanUji, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
 import type { BarisReservasi, PropsDaftarReservasi } from '@/Tipe/Reservasi';
 
@@ -65,7 +65,10 @@ function Props(ubah: Partial<PropsDaftarReservasi> = {}): PropsDaftarReservasi {
 }
 
 describe('Reservasi (F-07 mode service)', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/reservasi'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/reservasi');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
     afterEach(() => {
         cleanup();
         vi.unstubAllGlobals();
@@ -114,6 +117,19 @@ describe('Reservasi (F-07 mode service)', () => {
         await waitFor(() =>
             expect(screen.getByRole('button', { name: '11:00' }).getAttribute('aria-pressed')).toBe('true'),
         );
+    });
+
+    it('D-299: pengingat WhatsApp dan label nomor WhatsApp hanya ada bila layanan tersedia', () => {
+        RenderUji(<HalamanDaftarReservasi {...Props()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Catat reservasi' }));
+        expect(screen.getByLabelText(/Nomor HP \(WhatsApp\)/)).toBeTruthy();
+        cleanup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<HalamanDaftarReservasi {...Props()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Catat reservasi' }));
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
+        expect(screen.getByLabelText(/Nomor HP/)).toBeTruthy();
     });
 
     it('tanpa layanan berdurasi: tombol catat nonaktif dengan petunjuk. Halaman publik tutup', () => {

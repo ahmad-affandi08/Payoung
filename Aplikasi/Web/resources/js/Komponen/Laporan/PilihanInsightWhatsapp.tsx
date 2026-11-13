@@ -2,11 +2,18 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Switch } from '@/Komponen/Ui/switch';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import type { InsightWhatsappLaporan } from '@/Tipe/Laporan';
 
 /** X6 (v3.79): berlangganan insight penjualan mingguan lewat WhatsApp (pilihan pribadi; Owner bawaan aktif). */
 export default function PilihanInsightWhatsapp({ insight }: { insight: InsightWhatsappLaporan }) {
     const [memproses, AturMemproses] = useState(false);
+    const whatsappTersedia = useWhatsappTersedia();
+
+    // D-299: tanpa layanan WhatsApp, sakelar ini hilang total.
+    if (!whatsappTersedia) {
+        return null;
+    }
 
     return (
         <div className="flex max-w-3xl items-start gap-3 rounded-panel border border-garis bg-permukaan p-4">

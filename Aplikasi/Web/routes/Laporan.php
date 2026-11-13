@@ -11,6 +11,7 @@ use App\Http\Kontroler\Kelola\Laporan\PemasukanPengeluaranKontroler;
 use App\Http\Perantara\EksporDiLatarBelakang;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
+use App\Http\Perantara\WhatsappHanyaBilaTersedia;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,7 +26,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin): voi
     Route::middleware($izin(IzinTenant::LaporanPenjualanLihat))->group(function (): void {
         Route::get('/laporan/penjualan', [LaporanKontroler::class, 'Penjualan'])->name('kelola.laporan.penjualan');
         Route::get('/laporan/penjualan/ekspor', [LaporanKontroler::class, 'EksporPenjualan'])->middleware(EksporDiLatarBelakang::class)->name('kelola.laporan.penjualan.ekspor');
-        Route::put('/laporan/penjualan/insight-whatsapp', [LaporanKontroler::class, 'UbahInsightWhatsapp'])->name('kelola.laporan.penjualan.insight-whatsapp');
+        Route::put('/laporan/penjualan/insight-whatsapp', [LaporanKontroler::class, 'UbahInsightWhatsapp'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.laporan.penjualan.insight-whatsapp');
         // Apotek (§9.5): penjualan obat wajib resep & data pendukung SIPNAP (data pasien utuh butuh apotek.resep.lihat).
         Route::get('/laporan/apotek', [LaporanApotekKontroler::class, 'Halaman'])->name('kelola.laporan.apotek');
         Route::get('/laporan/apotek/ekspor', [LaporanApotekKontroler::class, 'EksporResep'])->name('kelola.laporan.apotek.ekspor');

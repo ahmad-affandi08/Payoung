@@ -32,7 +32,7 @@ final class SimpanWhatsappTenantPermintaan extends FormRequest
             $aturan["Pengaturan.{$bidang['Kunci']}"] = $bidang['Wajib'] ? ['required', 'string', 'max:255'] : ['nullable', 'string', 'max:255'];
         }
 
-        foreach ($penyedia?->AmbilBidangKredensial() ?? [] as $bidang) {
+        foreach ($penyedia?->AmbilBidangKredensialTenant() ?? [] as $bidang) {
             $aturan["Kredensial.{$bidang['Kunci']}"] = ['nullable', 'string', 'max:2000'];
         }
 

@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanTokoOnline from '@/Halaman/Kelola/TokoOnline/Daftar';
-import { AturHalamanUji, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
 
@@ -83,7 +83,28 @@ describe('D-298 tombol Buka toko', () => {
 });
 
 describe('Toko online › Kabar pesanan lewat WhatsApp', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/toko-online');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
+
+    it('D-299: kabar pesanan dan masuk dengan kode WhatsApp hilang bila layanan WhatsApp tidak tersedia, ada bila tersedia', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const { unmount: Tutup } = RenderUji(<HalamanTokoOnline {...propsSiap} />);
+
+        expect(screen.queryByRole('checkbox', { name: /Kabari pembeli lewat WhatsApp/ })).toBeNull();
+        expect(screen.queryByRole('checkbox', { name: /Pembeli bisa masuk dengan kode WhatsApp/ })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Kirim lewat WhatsApp' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Salin tautan' })).toBeTruthy();
+        Tutup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+        RenderUji(<HalamanTokoOnline {...propsSiap} />);
+
+        expect(screen.getByRole('checkbox', { name: /Kabari pembeli lewat WhatsApp/ })).toBeTruthy();
+        expect(screen.getByRole('checkbox', { name: /Pembeli bisa masuk dengan kode WhatsApp/ })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Kirim lewat WhatsApp' })).toBeTruthy();
+    });
 
     it('memperingatkan bila sakelar menyala tetapi WhatsApp belum bisa mengirim, dan menghitung kabar yang gagal', () => {
         const propsKuotaHabis: ComponentProps<typeof HalamanTokoOnline> = {
@@ -114,7 +135,10 @@ describe('Toko online › Kabar pesanan lewat WhatsApp', () => {
 });
 
 describe('D-110 bagikan toko online', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/toko-online');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
 
     it('menampilkan tautan, QR, salin, WhatsApp, unduh QR, dan poster. Peringatan bila toko belum menerima pesanan', () => {
         RenderUji(<HalamanTokoOnline {...props} />);

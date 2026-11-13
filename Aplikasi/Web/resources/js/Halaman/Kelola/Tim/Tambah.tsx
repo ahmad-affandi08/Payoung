@@ -98,6 +98,7 @@ export default function HalamanTambahTim({
     BatasPengguna,
 }: PropsTambahTim) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const whatsappTersedia = props.WhatsappTersedia === true;
     const sayaPemilik = props.Akses?.Pemilik ?? false;
     const peranTerlihat = Peran.filter((peran) => sayaPemilik || !peran.Pemilik);
     const jenisTersedia = JENIS_AKSES.filter((j) =>
@@ -326,7 +327,7 @@ export default function HalamanTambahTim({
                 required={kasir}
             />
             <BidangTeks
-                label="Nomor WhatsApp (opsional)"
+                label={whatsappTersedia ? 'Nomor WhatsApp (opsional)' : 'Nomor HP (opsional)'}
                 inputMode="tel"
                 nilai={d.NoHp}
                 saatBerubah={(nilai) => formulir.setData('NoHp', nilai)}

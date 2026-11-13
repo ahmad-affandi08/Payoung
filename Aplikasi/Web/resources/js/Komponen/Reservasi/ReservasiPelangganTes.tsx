@@ -23,6 +23,7 @@ function PropsPesan(ubah: Record<string, unknown> = {}) {
     return {
         Aktif: true,
         Slug: 'salon-ayu',
+        WhatsappTersedia: true,
         Toko: { Nama: NAMA_TOKO, UrlLogo: null },
         Outlet: [{ Uuid: '01JOUTLET00000000000000001', Nama: 'Outlet Solo' }],
         Layanan: LAYANAN,
@@ -94,6 +95,20 @@ describe('Reservasi pelanggan (D-240)', () => {
 
         fireEvent.click(screen.getByRole('checkbox', { name: /Saya setuju/ }));
         await waitFor(() => expect(kirim.disabled).toBe(false));
+    });
+
+    it('D-299: janji WhatsApp (konfirmasi, pengingat) hilang bila layanan WhatsApp tidak tersedia', () => {
+        const { unmount: Lepas } = RenderUji(<HalamanReservasiPublik {...PropsPesan()} />);
+        expect(screen.getByLabelText(/Nomor WhatsApp/)).toBeTruthy();
+        expect(screen.getByText(/Pengingat dikirim ke nomor ini/)).toBeTruthy();
+        expect(screen.getByText(/toko akan mengonfirmasi lewat WhatsApp/)).toBeTruthy();
+        Lepas();
+
+        RenderUji(<HalamanReservasiPublik {...PropsPesan({ WhatsappTersedia: false })} />);
+        expect(screen.queryByLabelText(/WhatsApp/)).toBeNull();
+        expect(screen.getByLabelText(/Nomor HP/)).toBeTruthy();
+        expect(screen.queryByText(/Pengingat dikirim/)).toBeNull();
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
     });
 
     it('tanpa layanan online: pesan ramah, tanpa formulir', () => {

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import AksiMassalPiutang from '@/Komponen/Piutang/AksiMassalPiutang';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
@@ -17,7 +17,11 @@ function Konteks(terpilih: { Uuid: string; UuidPelanggan: string | null }[]) {
 }
 
 describe('Aksi massal piutang (pengingat WhatsApp)', () => {
-    beforeEach(() => tiruanRouter.post.mockClear());
+    beforeEach(() => {
+        AturHalamanUji();
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+        tiruanRouter.post.mockClear();
+    });
     afterEach(() => cleanup());
 
     it('mengirim hanya piutang berpelanggan dan menyebut yang tidak ikut', () => {
@@ -49,5 +53,17 @@ describe('Aksi massal piutang (pengingat WhatsApp)', () => {
         expect(
             (screen.getByRole('button', { name: 'Kirim pengingat WhatsApp (0)' }) as HTMLButtonElement).disabled,
         ).toBe(true);
+    });
+
+    it('D-299: tanpa layanan WhatsApp, aksi pengingat hilang seluruhnya', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const { container } = RenderUji(
+            <AksiMassalPiutang
+                konteks={Konteks([{ Uuid: '01J9PTG0000000000000000001', UuidPelanggan: '01J9PLG0000000000000000001' }])}
+            />,
+        );
+
+        expect(screen.queryByRole('button', { name: /WhatsApp/ })).toBeNull();
+        expect(container.querySelector('button')).toBeNull();
     });
 });

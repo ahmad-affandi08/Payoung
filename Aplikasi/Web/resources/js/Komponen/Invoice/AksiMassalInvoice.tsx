@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { AlamatInvoice } from '@/Komponen/Invoice/BagianInvoice';
 import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import type { BarisDaftarInvoice } from '@/Tipe/Invoice';
 
 /** Batas server `ProsesInvoiceMassal::MAKS`. */
@@ -17,6 +18,7 @@ type Aksi = 'terbitkan' | 'kirim' | 'ingatkan';
  * dirangkum, sehingga satu masalah tidak menggagalkan sisanya.
  */
 export default function AksiMassalInvoice({ konteks }: { konteks: KonteksAksiMassal<BarisDaftarInvoice> }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [memproses, AturMemproses] = useState<Aksi | null>(null);
     const draf = konteks.terpilih.filter((i) => i.Status === 'Draf');
     const terbit = konteks.terpilih.filter((i) => i.Status === 'Terbit');
@@ -35,6 +37,11 @@ export default function AksiMassalInvoice({ konteks }: { konteks: KonteksAksiMas
             },
         );
 
+    // D-299: kirim invoice & pengingat memakai WhatsApp, jadi hilang bila layanannya tidak tersedia.
+    if (!whatsappTersedia && draf.length === 0) {
+        return null;
+    }
+
     return (
         <div className="flex flex-wrap items-center gap-2">
             {terlaluBanyak ? (
@@ -52,7 +59,7 @@ export default function AksiMassalInvoice({ konteks }: { konteks: KonteksAksiMas
                     Terbitkan draf ({draf.length.toLocaleString('id-ID')})
                 </Tombol>
             ) : null}
-            {terbit.length > 0 ? (
+            {whatsappTersedia && terbit.length > 0 ? (
                 <Tombol
                     varian="sekunder"
                     disabled={terlaluBanyak}
@@ -62,7 +69,7 @@ export default function AksiMassalInvoice({ konteks }: { konteks: KonteksAksiMas
                     Kirim lewat WhatsApp ({terbit.length.toLocaleString('id-ID')})
                 </Tombol>
             ) : null}
-            {bersisa.length > 0 ? (
+            {whatsappTersedia && bersisa.length > 0 ? (
                 <Tombol
                     varian="sekunder"
                     disabled={terlaluBanyak}

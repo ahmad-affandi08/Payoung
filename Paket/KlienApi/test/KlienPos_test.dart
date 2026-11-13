@@ -34,6 +34,38 @@ void main() {
     expect(lama.persetujuanJarakJauh, isNull, reason: 'Server lama tidak boleh mengubah keadaan lokal.');
   });
 
+  test(
+    'D-299: Whatsapp.Tersedia dibaca di konfigurasi aplikasi dan data awal. Server lama tanpa kunci = tidak tersedia',
+    () async {
+      Future<KonfigurasiAplikasi> Ambil(Map<String, Object?> isi) =>
+          BuatKlien((_) async => Json(isi, 200)).AmbilKonfigurasiAplikasi();
+
+      final ada = await Ambil({
+        'Whatsapp': {'Tersedia': true},
+      });
+      final mati = await Ambil({
+        'Whatsapp': {'Tersedia': false},
+      });
+      final lama = await Ambil({'Aplikasi': <String, Object?>{}});
+
+      expect(ada.whatsappAktif, isTrue);
+      expect(mati.whatsappAktif, isFalse);
+      expect(mati.whatsappTersedia, isFalse);
+      expect(lama.whatsappTersedia, isNull, reason: 'Server lama tidak boleh mengubah keadaan lokal Kasir.');
+      expect(lama.whatsappAktif, isFalse, reason: 'Owner memperlakukan kunci yang tidak ada sebagai tidak tersedia.');
+
+      DataAwal Awal(Map<String, Object?> tambahan) =>
+          DataAwal.DariJson({'Pengaturan': <String, Object?>{}, 'PinOffline': <String, Object?>{}, ...tambahan});
+      expect(
+        Awal({
+          'Whatsapp': {'Tersedia': true},
+        }).whatsappTersedia,
+        isTrue,
+      );
+      expect(Awal(const {}).whatsappTersedia, isFalse);
+    },
+  );
+
   test('CekGalatPerantara: 429/413 dan balasan proxy tanpa badan Galat bukan item salah; Galat server tetap', () {
     GalatApi Galat(int status, String kode) => GalatApi(kode: kode, pesan: 'x', statusHttp: status);
 

@@ -9,8 +9,9 @@ import '../../Aplikasi/Penyedia.dart';
 import '../../Domain/GalatKasir.dart';
 
 /// Tombol "Kirim struk" (v2.05) di layar selesai bayar dan riwayat: membuka dialog kirim struk digital lewat WhatsApp
-/// (D-33: tanpa email).
-class TombolKirimStruk extends StatelessWidget {
+/// (D-33: tanpa email). D-299: hilang seluruhnya bila layanan WhatsApp tidak tersedia (belum diaktifkan di konsol atau
+/// paket tenant tidak memuatnya), termasuk saat data belum termuat.
+class TombolKirimStruk extends ConsumerWidget {
   const TombolKirimStruk({super.key, required this.uuidPenjualan, this.diAtasMerek = false});
 
   final String uuidPenjualan;
@@ -19,7 +20,10 @@ class TombolKirimStruk extends StatelessWidget {
   final bool diAtasMerek;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(penyediaKonteksPenjualan).value?.whatsappTersedia != true) {
+      return const SizedBox.shrink();
+    }
     final warna = TokenWarna.AmbilDari(context);
     return SizedBox(
       height: TokenJarak.targetSentuh,

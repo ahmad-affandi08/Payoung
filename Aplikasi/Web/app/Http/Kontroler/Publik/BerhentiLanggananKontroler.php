@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Publik;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Pelanggan\Aksi\HentikanPemasaranPelanggan;
 use App\Domain\Pelanggan\Layanan\TautanBerhentiLangganan;
@@ -28,6 +29,7 @@ final class BerhentiLanggananKontroler extends Kontroler
     {
         return $this->DenganPelanggan($permintaan, $kode, $konteks, $profil, fn (Pelanggan $p, string $toko): SymfonyResponse => Inertia::render('Publik/BerhentiLangganan', [
             'Ditemukan' => true,
+            'WhatsappTersedia' => $this->WhatsappTersedia($p),
             'NamaToko' => $toko,
             'SudahBerhenti' => ! $p->SetujuPemasaran,
             'AlamatKirim' => $permintaan->fullUrl(),
@@ -41,6 +43,7 @@ final class BerhentiLanggananKontroler extends Kontroler
 
             return Inertia::render('Publik/BerhentiLangganan', [
                 'Ditemukan' => true,
+                'WhatsappTersedia' => $this->WhatsappTersedia($p),
                 'NamaToko' => $toko,
                 'SudahBerhenti' => true,
                 'AlamatKirim' => null,
@@ -70,9 +73,18 @@ final class BerhentiLanggananKontroler extends Kontroler
         }
     }
 
+    /**
+     * D-299: halaman berhenti berlangganan tetap berfungsi tanpa WhatsApp (hak menarik persetujuan, UU PDP), tetapi
+     * kalimatnya tidak menyebut WhatsApp bila layanan itu tidak tersedia. Konteks tenant sudah dipasang pemanggil.
+     */
+    private function WhatsappTersedia(Pelanggan $pelanggan): bool
+    {
+        return app(KetersediaanWhatsapp::class)->TersediaUntuk($pelanggan->IdTenant);
+    }
+
     private function TidakDitemukan(Request $permintaan): SymfonyResponse
     {
-        return Inertia::render('Publik/BerhentiLangganan', ['Ditemukan' => false, 'NamaToko' => null, 'SudahBerhenti' => false, 'AlamatKirim' => null])
+        return Inertia::render('Publik/BerhentiLangganan', ['Ditemukan' => false, 'WhatsappTersedia' => false, 'NamaToko' => null, 'SudahBerhenti' => false, 'AlamatKirim' => null])
             ->toResponse($permintaan)
             ->setStatusCode(404);
     }

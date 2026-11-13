@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Publik;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Katalog\Kueri\MenuPesanSendiri;
 use App\Domain\Katalog\Layanan\PenyimpanGambarProduk;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
@@ -73,12 +74,16 @@ final class TokoOnlineKontroler extends Kontroler
             $qrisSiap = $atur->QrisAktif && app(KesiapanQrisOnline::class)->CekSiap();
             $bisaAmbil = $outlet->AmbilSendiriAktif && ($atur->BayarSaatAmbilAktif || $qrisSiap);
             $bisaKirim = $outlet->KirimAktif && ($atur->CodAktif || $qrisSiap);
-            $akunAktif = $this->akun->CekAktif();
+            // D-299: tanpa layanan WhatsApp (konsol belum aktif atau paket tidak memuat) akun pembeli ikut hilang,
+            // karena satu-satunya cara masuk adalah kode lewat WhatsApp. Checkout tamu tetap berjalan.
+            $whatsappTersedia = app(KetersediaanWhatsapp::class)->TersediaUntuk($idTenant);
+            $akunAktif = $whatsappTersedia && $this->akun->CekAktif();
             $pembeli = $akunAktif ? $this->CariPembeli($request) : null;
 
             return [
                 'Aktif' => $k->aktif && ($bisaAmbil || $bisaKirim),
                 'Slug' => $slugTenant,
+                'WhatsappTersedia' => $whatsappTersedia,
                 'Toko' => [
                     'Nama' => app(NamaTampilUsaha::class)->UntukOutlet($k->idOutlet, $idTenant),
                     'NamaOutlet' => $k->namaOutlet,
@@ -107,7 +112,7 @@ final class TokoOnlineKontroler extends Kontroler
         }, fn (): null => null);
 
         return Inertia::render('Publik/TokoOnline', $props ?? [
-            'Aktif' => false, 'Slug' => $slugTenant, 'Toko' => null,
+            'Aktif' => false, 'Slug' => $slugTenant, 'WhatsappTersedia' => false, 'Toko' => null,
             'Outlet' => [], 'OutletDipilih' => '',
             'Pemenuhan' => ['AmbilSendiri' => false, 'Kirim' => false],
             'Pembayaran' => ['BayarSaatAmbil' => false, 'Cod' => false, 'QrisOnline' => false],

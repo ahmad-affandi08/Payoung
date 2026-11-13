@@ -13,6 +13,7 @@ import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 
 type Outlet = {
@@ -118,6 +119,7 @@ const kelasKotak = 'rounded-xl border border-garis bg-permukaan p-4 shadow-sm';
 
 /** D-110: cara pembeli tahu toko online: tautan, QR, kirim lewat WhatsApp, dan poster cetak. */
 function PanelBagikan({ props }: { props: Props }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [tersalin, AturTersalin] = useState(false);
     const siap = props.Pengaturan.Aktif && props.Outlet.some((o) => o.TokoOnlineAktif);
     const pesan = `Sekarang bisa pesan online di toko kami. Pilih menu dan pesan di sini: ${props.TautanPublik}`;
@@ -142,7 +144,9 @@ function PanelBagikan({ props }: { props: Props }) {
                 <div>
                     <h2 className="text-subjudul font-semibold">Bagikan toko online Anda</h2>
                     <p className="text-keterangan text-teks-sekunder">
-                        Bagikan tautan atau QR ini lewat WhatsApp atau Instagram, atau tempel posternya di kasir.
+                        Bagikan tautan atau QR ini{' '}
+                        {whatsappTersedia ? 'lewat WhatsApp atau Instagram' : 'lewat Instagram atau media sosial lain'},
+                        atau tempel posternya di kasir.
                     </p>
                 </div>
                 {siap ? null : (
@@ -158,18 +162,20 @@ function PanelBagikan({ props }: { props: Props }) {
                     <Tombol varian="sekunder" onClick={Salin}>
                         {tersalin ? 'Tautan tersalin' : 'Salin tautan'}
                     </Tombol>
-                    <Tombol
-                        varian="sekunder"
-                        onClick={() =>
-                            window.open(
-                                `https://wa.me/?text=${encodeURIComponent(pesan)}`,
-                                '_blank',
-                                'noopener,noreferrer',
-                            )
-                        }
-                    >
-                        Kirim lewat WhatsApp
-                    </Tombol>
+                    {whatsappTersedia ? (
+                        <Tombol
+                            varian="sekunder"
+                            onClick={() =>
+                                window.open(
+                                    `https://wa.me/?text=${encodeURIComponent(pesan)}`,
+                                    '_blank',
+                                    'noopener,noreferrer',
+                                )
+                            }
+                        >
+                            Kirim lewat WhatsApp
+                        </Tombol>
+                    ) : null}
                     <Button asChild variant="outline" className="font-semibold">
                         <a
                             href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(props.QrSvg)}`}
@@ -190,6 +196,7 @@ function PanelBagikan({ props }: { props: Props }) {
 }
 
 function FormPengaturan({ props }: { props: Props }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const awal = props.Outlet[0];
     const form = useForm({
         Outlet: awal?.Uuid ?? '',
@@ -274,35 +281,39 @@ function FormPengaturan({ props }: { props: Props }) {
                 />
             </div>
             <div className="flex flex-col gap-1 sm:col-span-2">
-                <KotakCentang
-                    label="Kabari pembeli lewat WhatsApp saat status pesanan berubah (dikonfirmasi, siap diambil, dikirim, ditolak)"
-                    nilai={form.data.NotifikasiWhatsappAktif}
-                    saatBerubah={(v) => form.setData('NotifikasiWhatsappAktif', v)}
-                />
-                {form.data.NotifikasiWhatsappAktif && !props.Notifikasi.Siap ? (
-                    <Pemberitahuan jenis="peringatan" judul="Kabar pesanan belum bisa terkirim">
-                        {props.Notifikasi.Alasan}{' '}
-                        <Link href="/kelola/pengaturan/whatsapp" className="font-semibold underline">
-                            Atur WhatsApp
-                        </Link>
-                    </Pemberitahuan>
+                {whatsappTersedia ? (
+                    <>
+                        <KotakCentang
+                            label="Kabari pembeli lewat WhatsApp saat status pesanan berubah (dikonfirmasi, siap diambil, dikirim, ditolak)"
+                            nilai={form.data.NotifikasiWhatsappAktif}
+                            saatBerubah={(v) => form.setData('NotifikasiWhatsappAktif', v)}
+                        />
+                        {form.data.NotifikasiWhatsappAktif && !props.Notifikasi.Siap ? (
+                            <Pemberitahuan jenis="peringatan" judul="Kabar pesanan belum bisa terkirim">
+                                {props.Notifikasi.Alasan}{' '}
+                                <Link href="/kelola/pengaturan/whatsapp" className="font-semibold underline">
+                                    Atur WhatsApp
+                                </Link>
+                            </Pemberitahuan>
+                        ) : null}
+                        {props.Notifikasi.GagalBulanIni > 0 ? (
+                            <p className="text-keterangan text-teks-sekunder">
+                                {props.Notifikasi.GagalBulanIni} kabar pesanan gagal terkirim dalam 30 hari terakhir.
+                                Hubungi pembeli langsung untuk pesanan yang terdampak.
+                            </p>
+                        ) : null}
+                        <KotakCentang
+                            label="Pembeli bisa masuk dengan kode WhatsApp (riwayat belanja, poin, harga member)"
+                            nilai={form.data.AkunPelangganAktif}
+                            saatBerubah={(v) => form.setData('AkunPelangganAktif', v)}
+                        />
+                        <p className="text-keterangan text-teks-sekunder">
+                            {props.AkunPembeliTersedia
+                                ? 'Pembeli yang masuk tercatat sebagai pelanggan toko, sama dengan pelanggan di kasir. Tanpa masuk tetap bisa memesan.'
+                                : 'Belum aktif: WhatsApp platform belum tersambung, jadi tombol Masuk belum tampil di toko. Pesanan tamu tetap berjalan.'}
+                        </p>
+                    </>
                 ) : null}
-                {props.Notifikasi.GagalBulanIni > 0 ? (
-                    <p className="text-keterangan text-teks-sekunder">
-                        {props.Notifikasi.GagalBulanIni} kabar pesanan gagal terkirim dalam 30 hari terakhir. Hubungi
-                        pembeli langsung untuk pesanan yang terdampak.
-                    </p>
-                ) : null}
-                <KotakCentang
-                    label="Pembeli bisa masuk dengan kode WhatsApp (riwayat belanja, poin, harga member)"
-                    nilai={form.data.AkunPelangganAktif}
-                    saatBerubah={(v) => form.setData('AkunPelangganAktif', v)}
-                />
-                <p className="text-keterangan text-teks-sekunder">
-                    {props.AkunPembeliTersedia
-                        ? 'Pembeli yang masuk tercatat sebagai pelanggan toko, sama dengan pelanggan di kasir. Tanpa masuk tetap bisa memesan.'
-                        : 'Belum aktif: WhatsApp platform belum tersambung, jadi tombol Masuk belum tampil di toko. Pesanan tamu tetap berjalan.'}
-                </p>
             </div>
             <div className="sm:col-span-2">
                 <BidangTeks

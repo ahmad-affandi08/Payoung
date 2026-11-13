@@ -8,6 +8,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import Panel from '@/Komponen/Kelola/Panel';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { AturanKehadiran, PropsAturanKehadiran } from '@/Tipe/Karyawan';
 
@@ -41,6 +42,7 @@ function BuatIsian(a: AturanKehadiran): Isian {
  */
 export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: PropsAturanKehadiran) {
     const formulir = useForm<Isian>(BuatIsian(Aturan));
+    const whatsappTersedia = useWhatsappTersedia();
     const Menit = (kunci: keyof Isian, label: string, keterangan: string, wajib = true) => (
         <BidangTeks
             label={`${label} (menit)`}
@@ -63,7 +65,8 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
     return (
         <TataLetakAplikasi judul="Aturan kehadiran">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Atur cara menilai terlambat, pulang cepat, dan lembur, serta kapan pengingat WhatsApp dikirim.
+                Atur cara menilai terlambat, pulang cepat, dan lembur
+                {whatsappTersedia ? ', serta kapan pengingat WhatsApp dikirim.' : '.'}
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="karyawan.kelola" objek="aturan kehadiran" /> : null}
 
@@ -165,38 +168,40 @@ export default function HalamanAturanKehadiran({ Aturan, WhatsappAktif, Izin }: 
                     </div>
                 </Panel>
 
-                <Panel
-                    judul="Notifikasi WhatsApp"
-                    keterangan="Pengingat dikirim ke karyawan, peringatan ke anggota yang boleh melihat karyawan di outlet itu."
-                >
-                    <div className="flex flex-col gap-4">
-                        {!WhatsappAktif ? (
-                            <Pemberitahuan jenis="info" judul="WhatsApp belum aktif untuk usaha ini">
-                                Notifikasi baru terkirim setelah pengiriman WhatsApp aktif. Pengaturannya tersimpan.
-                            </Pemberitahuan>
-                        ) : null}
-                        <KotakCentang
-                            label="Ingatkan karyawan sebelum shift dimulai"
-                            nilai={formulir.data.PengingatShiftAktif}
-                            saatBerubah={(nilai) => formulir.setData('PengingatShiftAktif', nilai)}
-                        />
-                        {Menit(
-                            'PengingatShiftMenitSebelum',
-                            'Kirim pengingat sebelum jam mulai',
-                            'Tidak dikirim bila karyawan sudah absen. Karyawan tanpa akun atau nomor HP dilewati.',
-                        )}
-                        <KotakCentang
-                            label="Beritahu pengelola bila karyawan terlambat atau belum masuk"
-                            nilai={formulir.data.PeringatanPengelolaAktif}
-                            saatBerubah={(nilai) => formulir.setData('PeringatanPengelolaAktif', nilai)}
-                        />
-                        {Menit(
-                            'PeringatanPengelolaSetelahMenit',
-                            'Kirim peringatan setelah jam mulai',
-                            'Tidak boleh lebih awal dari toleransi terlambat. Satu pesan per kejadian.',
-                        )}
-                    </div>
-                </Panel>
+                {whatsappTersedia ? (
+                    <Panel
+                        judul="Notifikasi WhatsApp"
+                        keterangan="Pengingat dikirim ke karyawan, peringatan ke anggota yang boleh melihat karyawan di outlet itu."
+                    >
+                        <div className="flex flex-col gap-4">
+                            {!WhatsappAktif ? (
+                                <Pemberitahuan jenis="info" judul="WhatsApp belum aktif untuk usaha ini">
+                                    Notifikasi baru terkirim setelah pengiriman WhatsApp aktif. Pengaturannya tersimpan.
+                                </Pemberitahuan>
+                            ) : null}
+                            <KotakCentang
+                                label="Ingatkan karyawan sebelum shift dimulai"
+                                nilai={formulir.data.PengingatShiftAktif}
+                                saatBerubah={(nilai) => formulir.setData('PengingatShiftAktif', nilai)}
+                            />
+                            {Menit(
+                                'PengingatShiftMenitSebelum',
+                                'Kirim pengingat sebelum jam mulai',
+                                'Tidak dikirim bila karyawan sudah absen. Karyawan tanpa akun atau nomor HP dilewati.',
+                            )}
+                            <KotakCentang
+                                label="Beritahu pengelola bila karyawan terlambat atau belum masuk"
+                                nilai={formulir.data.PeringatanPengelolaAktif}
+                                saatBerubah={(nilai) => formulir.setData('PeringatanPengelolaAktif', nilai)}
+                            />
+                            {Menit(
+                                'PeringatanPengelolaSetelahMenit',
+                                'Kirim peringatan setelah jam mulai',
+                                'Tidak boleh lebih awal dari toleransi terlambat. Satu pesan per kejadian.',
+                            )}
+                        </div>
+                    </Panel>
+                ) : null}
 
                 {Izin.Kelola ? (
                     <BilahAksiForm>

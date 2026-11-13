@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Pelanggan;
 
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Aksi\BatalkanKampanyePesan;
@@ -146,7 +147,7 @@ final class KampanyePesanKontroler extends DasarKelolaKontroler
      */
     private function PropsFormulir(DaftarPelanggan $pelanggan, DaftarTierPelanggan $tier, PembuatPengirimWhatsapp $whatsapp, PemeriksaFiturTenant $fitur): array
     {
-        $pengirim = $whatsapp->AmbilAktif();
+        $pengirim = $whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Broadcast);
 
         return [
             'OpsiKanal' => self::OpsiKanal(),

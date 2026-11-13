@@ -9,6 +9,7 @@ use App\Domain\Bersama\Tindakan\Enum\TingkatTindakan;
 use App\Domain\Bersama\Tindakan\Kueri\KotakTindakan;
 use App\Domain\Bersama\Tindakan\Model\LanggananRingkasanTindakan;
 use App\Domain\Bersama\Web\AlamatDomain;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Organisasi\Kueri\KontakAnggotaTenant;
@@ -40,7 +41,7 @@ final class KirimRingkasanTindakanHarian
     /** @return int jumlah pesan terkirim */
     public function Jalankan(int $idTenant, CarbonImmutable $hariIni): int
     {
-        $pengirim = $this->whatsapp->AmbilAktif();
+        $pengirim = $this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Karyawan);
 
         if ($pengirim === null) {
             return 0;

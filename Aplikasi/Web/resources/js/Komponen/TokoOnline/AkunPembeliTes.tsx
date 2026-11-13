@@ -109,6 +109,7 @@ describe('Halaman Akun saya', () => {
         RenderUji(
             <HalamanAkunTokoOnline
                 Slug="kopi-senja"
+                WhatsappTersedia
                 Toko={{ Nama: 'Kopi Senja' }}
                 AkunAktif
                 Pelanggan={profil}
@@ -159,6 +160,7 @@ describe('Halaman Akun saya', () => {
         RenderUji(
             <HalamanAkunTokoOnline
                 Slug="kopi-senja"
+                WhatsappTersedia
                 Toko={{ Nama: 'Kopi Senja' }}
                 AkunAktif
                 Pelanggan={null}
@@ -171,12 +173,30 @@ describe('Halaman Akun saya', () => {
         RenderUji(
             <HalamanAkunTokoOnline
                 Slug="kopi-senja"
+                WhatsappTersedia
                 Toko={{ Nama: 'Kopi Senja' }}
                 AkunAktif={false}
                 Pelanggan={null}
                 Riwayat={null}
             />,
         );
+        expect(screen.getByText(/Anda tetap bisa memesan tanpa masuk/)).toBeTruthy();
+    });
+
+    it('D-299: WhatsApp tidak tersedia: tombol dan dialog masuk hilang walau akun pembeli aktif', () => {
+        RenderUji(
+            <HalamanAkunTokoOnline
+                Slug="kopi-senja"
+                WhatsappTersedia={false}
+                Toko={{ Nama: 'Kopi Senja' }}
+                AkunAktif
+                Pelanggan={null}
+                Riwayat={null}
+            />,
+        );
+
+        expect(screen.queryByRole('button', { name: 'Masuk dengan WhatsApp' })).toBeNull();
+        expect(screen.queryByText(/Masuk tanpa kata sandi/)).toBeNull();
         expect(screen.getByText(/Anda tetap bisa memesan tanpa masuk/)).toBeTruthy();
     });
 });

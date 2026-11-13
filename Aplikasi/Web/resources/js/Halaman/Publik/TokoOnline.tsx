@@ -23,6 +23,8 @@ import { BuatUlid } from '@/Pustaka/Ulid';
 type Props = {
     Aktif: boolean;
     Slug: string;
+    /** D-299: false = layanan WhatsApp tidak tersedia, masuk pembeli dengan kode WhatsApp disembunyikan. */
+    WhatsappTersedia: boolean;
     Toko: { Nama: string; NamaOutlet: string; Alamat: string | null; UrlLogo?: string | null } | null;
     Outlet: { Uuid: string; Nama: string }[];
     OutletDipilih: string;
@@ -54,6 +56,7 @@ function CekBarisPolos(b: BarisKeranjang, uuidProduk: string): boolean {
 export default function TokoOnline({
     Aktif,
     Slug,
+    WhatsappTersedia,
     Toko,
     Outlet,
     OutletDipilih,
@@ -65,7 +68,9 @@ export default function TokoOnline({
     Akun,
 }: Props) {
     const desktop = useLebarLayar() === 'desktop';
-    const [pembeli, AturPembeli] = useState<ProfilPembeli | null>(Akun.Pelanggan);
+    // Satu-satunya cara masuk adalah kode WhatsApp, jadi akun pembeli ikut hilang bila WhatsApp tidak tersedia.
+    const akunTersedia = Akun.Aktif && WhatsappTersedia;
+    const [pembeli, AturPembeli] = useState<ProfilPembeli | null>(akunTersedia ? Akun.Pelanggan : null);
     const [dialogMasuk, AturDialogMasuk] = useState(false);
     const [baris, AturBaris] = useState<BarisKeranjang[]>([]);
     const [produkOpsi, AturProdukOpsi] = useState<ProdukToko | null>(null);
@@ -302,7 +307,8 @@ export default function TokoOnline({
             minimalPesanan={MinimalPesanan}
             galat={galat}
             pembeli={pembeli}
-            akunAktif={Akun.Aktif}
+            akunAktif={akunTersedia}
+            whatsappTersedia={WhatsappTersedia}
             saatBukaMasuk={() => AturDialogMasuk(true)}
             penerima={penerima}
             saatGantiPenerima={(ubah) => AturPenerima((x) => ({ ...x, ...ubah }))}
@@ -340,7 +346,7 @@ export default function TokoOnline({
                 minimalPesanan={MinimalPesanan}
                 pembeli={pembeli}
                 slug={Slug}
-                akunAktif={Akun.Aktif}
+                akunAktif={akunTersedia}
                 jumlahItem={jumlahItem}
                 saatBukaKeranjang={BukaKeranjang}
                 saatBukaMasuk={() => AturDialogMasuk(true)}
@@ -526,7 +532,7 @@ export default function TokoOnline({
                 />
             ) : null}
 
-            {dialogMasuk && Toko ? (
+            {dialogMasuk && akunTersedia && Toko ? (
                 <DialogMasukPembeli
                     slug={Slug}
                     namaToko={Toko.Nama}

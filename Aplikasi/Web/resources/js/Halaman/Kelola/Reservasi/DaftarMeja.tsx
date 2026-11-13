@@ -18,6 +18,7 @@ import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { UbahIsoKeWaktuLokal } from '@/Pustaka/Tanggal';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { BarisReservasiMeja, PropsDaftarReservasiMeja, StatusReservasiMeja } from '@/Tipe/Reservasi';
 
@@ -156,6 +157,7 @@ type PropsDialogReservasi = Pick<PropsDaftarReservasiMeja, 'OpsiOutlet' | 'Pilih
 
 /** Catat reservasi baru (telepon/WhatsApp/datang langsung) atau ubah yang belum datang. */
 function DialogReservasi({ reservasi, OpsiOutlet, PilihanMeja, HariIni, saatTutup }: PropsDialogReservasi) {
+    const whatsappTersedia = useWhatsappTersedia();
     const awal = reservasi === null ? '' : UbahIsoKeWaktuLokal(reservasi.MulaiPada);
     const formulir = useForm({
         Outlet: reservasi?.Outlet.Uuid ?? (OpsiOutlet.length === 1 ? (OpsiOutlet[0]?.Uuid ?? '') : ''),
@@ -216,7 +218,7 @@ function DialogReservasi({ reservasi, OpsiOutlet, PilihanMeja, HariIni, saatTutu
                     maxLength={100}
                 />
                 <BidangTeks
-                    label="Nomor HP (WhatsApp)"
+                    label={whatsappTersedia ? 'Nomor HP (WhatsApp)' : 'Nomor HP'}
                     nilai={d.NoHp}
                     saatBerubah={(nilai) => formulir.setData('NoHp', nilai)}
                     galat={galat.NoHp}

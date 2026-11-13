@@ -37,6 +37,8 @@ type BelanjaRiwayat = {
 
 type Props = {
     Slug: string;
+    /** D-299: false = layanan WhatsApp tidak tersedia, akun pembeli (masuk dengan kode WhatsApp) tidak ditawarkan. */
+    WhatsappTersedia: boolean;
     Toko: { Nama: string; UrlLogo?: string | null } | null;
     AkunAktif: boolean;
     Pelanggan: ProfilPembeli | null;
@@ -56,7 +58,8 @@ function AmbilJenisStatus(status: string): 'sukses' | 'bahaya' | 'netral' {
  * F-17 bagian 3: "Akun saya" pembeli toko online. Belum masuk → ajakan masuk dengan WhatsApp. Sudah masuk → profil,
  * poin & tier, riwayat pesanan online dan belanja di kasir (satu pelanggan, satu riwayat), ubah profil, keluar.
  */
-export default function AkunTokoOnline({ Slug, Toko, AkunAktif, Pelanggan, Riwayat }: Props) {
+export default function AkunTokoOnline({ Slug, WhatsappTersedia, Toko, AkunAktif, Pelanggan, Riwayat }: Props) {
+    const akunTersedia = AkunAktif && WhatsappTersedia;
     const [dialogMasuk, AturDialogMasuk] = useState(false);
     const [profil, AturProfil] = useState(() => ({
         Nama: Pelanggan?.Nama ?? '',
@@ -123,9 +126,11 @@ export default function AkunTokoOnline({ Slug, Toko, AkunAktif, Pelanggan, Riway
                 <Pemberitahuan jenis="peringatan">Toko tidak ditemukan.</Pemberitahuan>
             ) : Pelanggan === null ? (
                 <section className="flex flex-col gap-4 rounded-3xl bg-permukaan p-5">
-                    <h2 className="text-judul-bagian-hp font-extrabold text-teks-utama">Masuk tanpa kata sandi</h2>
-                    {AkunAktif ? (
+                    {akunTersedia ? (
                         <>
+                            <h2 className="text-judul-bagian-hp font-extrabold text-teks-utama">
+                                Masuk tanpa kata sandi
+                            </h2>
                             <p className="text-isi text-teks-sekunder">
                                 Masuk dengan nomor WhatsApp untuk melihat riwayat belanja dan poin Anda. Tidak perlu
                                 kata sandi.
@@ -313,7 +318,7 @@ export default function AkunTokoOnline({ Slug, Toko, AkunAktif, Pelanggan, Riway
                     </section>
                 </>
             )}
-            {dialogMasuk && Toko ? (
+            {dialogMasuk && akunTersedia && Toko ? (
                 <DialogMasukPembeli
                     slug={Slug}
                     namaToko={Toko.Nama}

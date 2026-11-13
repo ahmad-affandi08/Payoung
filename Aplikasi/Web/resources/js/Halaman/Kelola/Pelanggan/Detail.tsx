@@ -21,6 +21,7 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import PanelKendaraanPelanggan from '@/Komponen/Bengkel/PanelKendaraanPelanggan';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type {
@@ -198,6 +199,7 @@ export default function HalamanDetailPelanggan({
 }: PropsDetailPelanggan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
+    const whatsappTersedia = useWhatsappTersedia();
     const [ubah, AturUbah] = useState(false);
     const [dialog, AturDialog] = useState<'tier' | 'poin' | 'tarik' | 'sesuaikan' | null>(null);
     const [tier, AturTier] = useState({
@@ -338,10 +340,12 @@ export default function HalamanDetailPelanggan({
             <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
                 <Card className="gap-4 rounded-panel p-4 shadow-none">
                     <dl className="grid gap-4 sm:grid-cols-2">
-                        <Nilai label="No. HP/WA">
+                        <Nilai label={whatsappTersedia ? 'No. HP/WA' : 'No. HP'}>
                             <span className="flex flex-wrap items-center gap-2">
                                 <span className="font-mono">{p.NoHp}</span>
-                                {NoHpTerverifikasi ? <LabelStatus jenis="sukses" teks="WA terverifikasi" /> : null}
+                                {whatsappTersedia && NoHpTerverifikasi ? (
+                                    <LabelStatus jenis="sukses" teks="WA terverifikasi" />
+                                ) : null}
                             </span>
                         </Nilai>
                         <Nilai label="Email">{p.Email ?? '—'}</Nilai>

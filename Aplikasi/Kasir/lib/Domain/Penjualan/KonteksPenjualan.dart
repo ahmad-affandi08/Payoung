@@ -140,6 +140,7 @@ class KonteksPenjualan {
     this.deposit = const DepositPos(),
     this.laundry = const LaundryPos(),
     this.tokoOnlineAktif = false,
+    this.whatsappTersedia = false,
     this.kodeSektor = const [],
     this.jenisPesanan = const [],
     this.barcodeTimbangan = const BarcodeTimbanganPos(),
@@ -191,6 +192,10 @@ class KonteksPenjualan {
 
   /// F-17: toko online melayani outlet ini, jadi menu Pesanan toko online ditampilkan.
   final bool tokoOnlineAktif;
+
+  /// D-299: layanan WhatsApp aktif di konsol dan termuat di paket tenant. False = semua tombol, isian, dan teks WhatsApp
+  /// disembunyikan (nilai terakhir dari server tersimpan untuk offline; belum pernah dimuat = false).
+  final bool whatsappTersedia;
 
   /// D-183: sektor yang memakai pre-order + uang muka. Di Indonesia lazim untuk kue & katering (F&B), pre-order fashion,
   /// inden HP/elektronik, buket florist, dan pesanan kustom (percetakan, konveksi).
@@ -306,6 +311,7 @@ class KonteksPenjualan {
       deposit: await MuatDeposit(repositori),
       laundry: await MuatLaundry(repositori),
       tokoOnlineAktif: await repositori.AmbilPengaturan(KunciPengaturan.tokoOnlineAktif) == '1',
+      whatsappTersedia: await repositori.AmbilPengaturan(KunciPengaturan.whatsappTersedia) == '1',
       kodeSektor: await MuatKodeSektor(repositori),
       minimumCharge: MinimumChargePos.DariJson(
         jsonDecode(await repositori.AmbilPengaturan(KunciPengaturan.minimumChargeMeja) ?? 'null'),

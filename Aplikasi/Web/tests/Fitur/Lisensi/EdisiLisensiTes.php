@@ -332,6 +332,7 @@ describe('Edisi Lisensi (D-35)', function (): void {
         $this->artisan('lisensi:atur-integrasi', ['jenis' => 'Whatsapp'])
             ->expectsChoice('Penyedia', 'Fonnte', array_map(fn (PenyediaIntegrasi $p): string => $p->value, array_values(array_filter(PenyediaIntegrasi::cases(), fn (PenyediaIntegrasi $p): bool => $p->AmbilJenis() === JenisIntegrasi::Whatsapp))))
             ->expectsQuestion('Token perangkat Fonnte', 'tok-fonnte-rahasia-1234')
+            ->expectsQuestion('Token akun Fonnte (untuk nomor pengirim per outlet) (boleh kosong)', '')
             ->expectsOutputToContain('tersambung dan aktif')
             ->assertSuccessful();
 

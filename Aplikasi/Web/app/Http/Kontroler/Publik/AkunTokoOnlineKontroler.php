@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Publik;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Organisasi\Kueri\UrlLogoPublik;
 use App\Domain\Pelanggan\Aksi\DaftarkanPelangganOnline;
@@ -53,22 +54,26 @@ final class AkunTokoOnlineKontroler extends Kontroler
                 return null;
             }
 
-            $pelanggan = $this->sesi->CariPelanggan($request->cookie(SesiPembeliOnline::NAMA_COOKIE));
+            // D-299: tanpa layanan WhatsApp akun pembeli tidak tersedia. Sesi lama tidak dipakai lagi, halaman
+            // menampilkan keadaan "belum membuka akun pembeli".
+            $whatsappTersedia = app(KetersediaanWhatsapp::class)->TersediaUntuk($idTenant);
+            $pelanggan = $whatsappTersedia ? $this->sesi->CariPelanggan($request->cookie(SesiPembeliOnline::NAMA_COOKIE)) : null;
 
             return [
                 'Slug' => $slugTenant,
+                'WhatsappTersedia' => $whatsappTersedia,
                 'Toko' => [
                     'Nama' => app(NamaTampilUsaha::class)->UntukTenant($idTenant),
                     // D-241: logo yang sama dengan toko online; null = kepala memakai inisial toko.
                     'UrlLogo' => app(UrlLogoPublik::class)->Ambil($idTenant),
                 ],
-                'AkunAktif' => $this->akun->CekAktif(),
+                'AkunAktif' => $whatsappTersedia && $this->akun->CekAktif(),
                 'Pelanggan' => $pelanggan === null ? null : $this->profilPembeli->Ambil($pelanggan),
                 'Riwayat' => $pelanggan === null ? null : $this->riwayat->Ambil($idTenant, $pelanggan->Id, $slugTenant),
             ];
         }, fn (): null => null);
 
-        return Inertia::render('Publik/AkunTokoOnline', $props ?? ['Slug' => $slugTenant, 'Toko' => null, 'AkunAktif' => false, 'Pelanggan' => null, 'Riwayat' => null])
+        return Inertia::render('Publik/AkunTokoOnline', $props ?? ['Slug' => $slugTenant, 'WhatsappTersedia' => false, 'Toko' => null, 'AkunAktif' => false, 'Pelanggan' => null, 'Riwayat' => null])
             ->toResponse($request)->setStatusCode($props === null ? 404 : 200);
     }
 
@@ -121,6 +126,7 @@ final class AkunTokoOnlineKontroler extends Kontroler
     public function PerbaruiProfil(string $slugTenant, AkunTokoOnlinePermintaan $permintaan, PerbaruiProfilPelangganOnline $perbarui): JsonResponse
     {
         return $this->DalamTenant($slugTenant, function () use ($permintaan, $perbarui): JsonResponse {
+            $this->WajibAkunAktif();
             $pelanggan = $this->WajibMasuk($permintaan);
             $baru = $perbarui->Jalankan(
                 $pelanggan,
@@ -175,7 +181,11 @@ final class AkunTokoOnlineKontroler extends Kontroler
     {
         $this->penentu->WajibAktif();
 
-        if (! $this->akun->CekAktif()) {
+        // D-299: pintu penjaga WhatsApp diperiksa lebih dulu dan eksplisit, supaya permintaan langsung (tanpa halaman)
+        // tidak bisa memicu kode masuk saat layanan WhatsApp tidak aktif di konsol atau tidak ada di paket tenant.
+        $idTenant = $this->konteks->Ambil();
+
+        if ($idTenant === null || ! app(KetersediaanWhatsapp::class)->TersediaUntuk($idTenant) || ! $this->akun->CekAktif()) {
             throw new PelanggaranAturanBisnis('MasukBelumTersedia', 'Masuk dengan WhatsApp sedang tidak tersedia. Anda tetap bisa memesan tanpa masuk.', 'Umum', 409);
         }
     }

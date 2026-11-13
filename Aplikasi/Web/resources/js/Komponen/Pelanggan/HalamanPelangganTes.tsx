@@ -8,7 +8,7 @@ import HalamanDetailPelanggan from '@/Halaman/Kelola/Pelanggan/Detail';
 import HalamanIsiDeposit from '@/Halaman/Kelola/Pelanggan/IsiDeposit';
 import HalamanPengaturanLoyalti from '@/Halaman/Kelola/Pelanggan/PengaturanLoyalti';
 import HalamanTierPelanggan, { FormatPengali } from '@/Halaman/Kelola/Pelanggan/Tier';
-import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import FormulirPelanggan from '@/Komponen/Pelanggan/FormulirPelanggan';
 import { BuatHasilTabel } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { PilihOpsi } from '@/Pengujian/InteraksiPilihan';
@@ -51,6 +51,7 @@ const OpsiTierUji = [
 describe('Halaman pelanggan (F-16a)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/pelanggan');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         window.history.replaceState({}, '', '/kelola/pelanggan');
     });
     afterEach(() => cleanup());
@@ -194,6 +195,35 @@ describe('Halaman pelanggan (F-16a)', () => {
             { Poin: -50, Alasan: 'Salah input kasir' },
             expect.anything(),
         );
+    });
+
+    it('D-299: label No. HP/WA dan lencana "WA terverifikasi" di detail hanya ada bila layanan WhatsApp tersedia', () => {
+        const Detail = () => (
+            <HalamanDetailPelanggan
+                PesananOnline={[]}
+                NoHpTerverifikasi
+                Pelanggan={Ani}
+                Kredit={null}
+                Deposit={DepositKosong}
+                PaketSesi={{ Berlaku: false, Daftar: [] }}
+                Riwayat={[]}
+                RiwayatPoin={[]}
+                OpsiTier={OpsiTierUji}
+                LoyaltiBerlaku
+                Izin={{ Kelola: true, LihatPenjualan: true, KelolaDeposit: false }}
+            />
+        );
+        RenderUji(<Detail />);
+        expect(screen.getByText('No. HP/WA')).toBeTruthy();
+        expect(screen.getByText('WA terverifikasi')).toBeTruthy();
+        cleanup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<Detail />);
+        expect(screen.getByText('No. HP')).toBeTruthy();
+        expect(screen.getByText('0812-3456-7890')).toBeTruthy();
+        expect(screen.queryByText('WA terverifikasi')).toBeNull();
+        expect(screen.queryByText('No. HP/WA')).toBeNull();
     });
 
     it('F-16b tier: daftar tier dengan pengali. Tambah lewat halaman /buat, tanpa fitur tampil ajakan paket', () => {

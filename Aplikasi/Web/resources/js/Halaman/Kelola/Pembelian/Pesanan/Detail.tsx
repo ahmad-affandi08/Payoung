@@ -21,6 +21,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { BarisDetailPesanan, PropsDetailPesanan } from '@/Tipe/Pembelian';
 
@@ -95,6 +96,7 @@ export default function HalamanDetailPesanan({
     Riwayat,
     Tindakan,
 }: PropsDetailPesanan) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [dialog, AturDialog] = useState<Dialog>(null);
     const [memproses, AturMemproses] = useState(false);
     const Kirim = (aksi: string) =>
@@ -155,7 +157,7 @@ export default function HalamanDetailPesanan({
                 lainnya={[
                     ...(Tindakan.Ubah ? [{ label: 'Ubah draf', href: `${alamat}/${Pesanan.Uuid}/ubah` }] : []),
                     ...(Tindakan.Setujui ? [{ label: 'Tolak', saatKlik: () => AturDialog('Tolak') }] : []),
-                    ...(Tindakan.KirimWhatsapp
+                    ...(whatsappTersedia && Tindakan.KirimWhatsapp
                         ? [
                               {
                                   label: 'Kirim ke WhatsApp pemasok',
@@ -240,7 +242,7 @@ export default function HalamanDetailPesanan({
                 dokumen={Penerimaan.map((p) => ({ ...p, Nilai: p.TotalNilai }))}
                 kosong="Belum ada barang diterima untuk pesanan ini."
             />
-            {Pengiriman.length > 0 ? (
+            {whatsappTersedia && Pengiriman.length > 0 ? (
                 <Panel judul="Pengiriman ke pemasok" idJudul="judul-pengiriman-pesanan">
                     <ul aria-label="Riwayat pengiriman ke pemasok" className="flex flex-col divide-y divide-garis">
                         {Pengiriman.map((p) => (

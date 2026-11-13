@@ -7,6 +7,7 @@ namespace App\Domain\Pelanggan\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Pelanggan\Enum\KanalKampanye;
 use App\Domain\Pelanggan\Enum\StatusKampanye;
@@ -124,7 +125,7 @@ final class JalankanKampanyePesan
     public function PastikanKanalAktif(KanalKampanye $kanal): void
     {
         if ($kanal === KanalKampanye::Whatsapp) {
-            $pengirim = $this->whatsapp->AmbilAktif();
+            $pengirim = $this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Broadcast);
 
             if ($pengirim === null || ! $this->fitur->CekAktif($this->konteks->Wajib(), PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
                 throw new PelanggaranAturanBisnis('KanalTidakAktif', 'Pengiriman WhatsApp belum aktif untuk usaha ini.', 'Kanal', 422);

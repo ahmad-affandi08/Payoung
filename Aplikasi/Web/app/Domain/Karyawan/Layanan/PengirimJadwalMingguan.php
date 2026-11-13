@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Karyawan\Layanan;
 
 use App\Domain\Bersama\Web\AlamatDomain;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
 use App\Domain\Karyawan\Enum\StatusKaryawan;
@@ -74,7 +75,7 @@ final class PengirimJadwalMingguan
     /** @return int jumlah pesan terkirim */
     public function Kirim(int $idTenant, int $idOutlet, CarbonImmutable $senin): int
     {
-        $pengirim = $this->whatsapp->AmbilAktif();
+        $pengirim = $this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Karyawan);
 
         if ($pengirim === null) {
             return 0;

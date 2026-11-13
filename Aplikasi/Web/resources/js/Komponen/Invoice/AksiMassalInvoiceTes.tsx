@@ -2,7 +2,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AksiMassalInvoice from '@/Komponen/Invoice/AksiMassalInvoice';
-import { RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import type { BarisDaftarInvoice } from '@/Tipe/Invoice';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
@@ -42,7 +42,11 @@ function Konteks(terpilih: BarisDaftarInvoice[]) {
 }
 
 describe('Aksi massal invoice', () => {
-    beforeEach(() => tiruanRouter.post.mockClear());
+    beforeEach(() => {
+        AturHalamanUji();
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+        tiruanRouter.post.mockClear();
+    });
     afterEach(() => cleanup());
 
     const draf = Baris('01J9INV0000000000000000001', { Status: 'Draf', Sisa: null, StatusBayar: 'Draf' });
@@ -81,5 +85,21 @@ describe('Aksi massal invoice', () => {
         expect(screen.getByRole('button', { name: 'Terbitkan draf (1)' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: /Kirim lewat WhatsApp/ })).toBeNull();
         expect(screen.queryByRole('button', { name: /Kirim pengingat/ })).toBeNull();
+    });
+
+    it('D-299: tanpa layanan WhatsApp, kirim invoice & pengingat hilang, terbitkan draf tetap ada', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<AksiMassalInvoice konteks={Konteks([draf, belumLunas, lunas])} />);
+
+        expect(screen.getByRole('button', { name: 'Terbitkan draf (1)' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /WhatsApp/ })).toBeNull();
+        expect(screen.queryByRole('button', { name: /Kirim pengingat/ })).toBeNull();
+    });
+
+    it('D-299: tanpa layanan WhatsApp dan tanpa draf, tidak ada aksi sama sekali', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const { container } = RenderUji(<AksiMassalInvoice konteks={Konteks([belumLunas])} />);
+
+        expect(container.querySelector('button')).toBeNull();
     });
 });

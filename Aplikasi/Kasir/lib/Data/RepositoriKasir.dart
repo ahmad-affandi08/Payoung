@@ -41,6 +41,10 @@ abstract final class KunciPengaturan {
   /// F-17: `1` bila toko online melayani outlet perangkat ini (menu Pesanan toko online di kasir).
   static const String tokoOnlineAktif = 'TokoOnlineAktif';
 
+  /// D-299: `1` bila layanan WhatsApp aktif di konsol dan termuat di paket tenant. Selain itu semua tombol, isian, dan
+  /// teks WhatsApp disembunyikan. Belum pernah dimuat = tersembunyi.
+  static const String whatsappTersedia = 'WhatsappTersedia';
+
   /// D-48: JSON larik kode sektor outlet (template + jenis usaha tambahan) untuk menyaring fitur khusus sektor.
   static const String kodeSektor = 'KodeSektor';
 
@@ -285,6 +289,7 @@ class RepositoriKasir {
     await SimpanPengaturan(KunciPengaturan.laundry, jsonEncode(data.laundry.KeJson()));
     await SimpanPengaturan(KunciPengaturan.tokoOnlineAktif, data.tokoOnlineAktif ? '1' : '0');
     await SimpanPengaturan(KunciPengaturan.kodeSektor, jsonEncode(data.kodeSektor));
+    await SimpanPengaturan(KunciPengaturan.whatsappTersedia, data.whatsappTersedia ? '1' : '0');
     final outlet = data.outlet;
     if (outlet != null) {
       await SimpanPengaturan(KunciPengaturan.uuidOutlet, outlet.uuid);

@@ -18,6 +18,8 @@ import type { LayananReservasi } from '@/Tipe/Reservasi';
 type PropsReservasiPublik = {
     Aktif: boolean;
     Slug: string;
+    /** D-299: false = layanan WhatsApp tidak tersedia, janji konfirmasi dan pengingat WhatsApp disembunyikan. */
+    WhatsappTersedia?: boolean;
     Toko?: { Nama: string; UrlLogo?: string | null };
     Outlet?: { Uuid: string; Nama: string }[];
     Layanan?: LayananReservasi[];
@@ -92,6 +94,8 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
     const outlet = props.Outlet ?? [];
     const layanan = props.Layanan ?? [];
     const staf = props.Staf ?? [];
+    // D-299: tanpa layanan WhatsApp, kolom nomor tetap ada sebagai kontak tetapi tanpa janji pesan WhatsApp.
+    const whatsapp = props.WhatsappTersedia === true;
     const formulir = useForm({
         Outlet: '',
         UuidLayanan: '',
@@ -137,7 +141,9 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
             keterangan={
                 props.KonfirmasiOtomatis
                     ? 'Pilih waktu, langsung terkonfirmasi.'
-                    : 'Pilih waktu, toko akan mengonfirmasi lewat WhatsApp.'
+                    : whatsapp
+                      ? 'Pilih waktu, toko akan mengonfirmasi lewat WhatsApp.'
+                      : 'Pilih waktu, toko akan mengonfirmasi reservasimu.'
             }
         >
             <Head title={`Reservasi ${props.Toko?.Nama ?? ''}`} />
@@ -238,12 +244,12 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
                             required
                         />
                         <BidangTeks
-                            label="Nomor WhatsApp"
+                            label={whatsapp ? 'Nomor WhatsApp' : 'Nomor HP'}
                             nilai={d.NoHp}
                             saatBerubah={(nilai) => formulir.setData('NoHp', nilai)}
                             galat={galat.NoHp}
                             inputMode="tel"
-                            keterangan="Pengingat dikirim ke nomor ini sehari sebelumnya."
+                            {...(whatsapp ? { keterangan: 'Pengingat dikirim ke nomor ini sehari sebelumnya.' } : {})}
                             required
                         />
                         <BidangTeks
@@ -253,7 +259,11 @@ export default function HalamanReservasiPublik(props: PropsReservasiPublik) {
                             galat={galat.Catatan}
                         />
                         <KotakCentang
-                            label="Saya setuju nama & nomor WhatsApp dipakai toko untuk reservasi dan pengingat."
+                            label={
+                                whatsapp
+                                    ? 'Saya setuju nama & nomor WhatsApp dipakai toko untuk reservasi dan pengingat.'
+                                    : 'Saya setuju nama & nomor HP dipakai toko untuk reservasi.'
+                            }
                             nilai={d.Setuju}
                             saatBerubah={(nilai) => formulir.setData('Setuju', nilai)}
                         />

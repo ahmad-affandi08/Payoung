@@ -170,7 +170,10 @@ function PropsDetail(ubah: Partial<PropsDetailPerintahKerja> = {}): PropsDetailP
 }
 
 describe('Bengkel (§9.10)', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/bengkel/perintah-kerja'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/bengkel/perintah-kerja');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
     afterEach(() => {
         cleanup();
         vi.unstubAllGlobals();
@@ -231,6 +234,27 @@ describe('Bengkel (§9.10)', () => {
             { Setuju: true, Baris: ['01JBARIS000000000000000001'], Catatan: null },
             expect.objectContaining({ preserveScroll: true }),
         );
+    });
+
+    it('D-299: tanpa layanan WhatsApp, tombol kirim lewat WhatsApp dan status kirimnya hilang, tautan tetap ada', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<HalamanDetailPerintahKerja {...PropsDetail()} />);
+
+        expect(screen.getByRole('button', { name: 'Salin tautan' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Buat tautan baru' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /WhatsApp/ })).toBeNull();
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
+        cleanup();
+
+        RenderUji(
+            <HalamanDaftarPerintahKerja
+                PerintahKerja={BuatHasilTabel([])}
+                OpsiStatus={[]}
+                OpsiOutlet={[]}
+                OpsiMekanik={[]}
+            />,
+        );
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
     });
 
     it('detail: batalkan butuh alasan minimal 5 huruf. Ditagih menautkan penjualan', () => {

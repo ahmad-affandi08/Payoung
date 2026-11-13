@@ -50,7 +50,7 @@ final class HalamanWhatsappTenant
                 'Label' => $p->AmbilLabel(),
                 'Keterangan' => $p->AmbilKeterangan(),
                 'BidangPengaturan' => DaftarPenyediaWhatsapp::AmbilBidangPengaturan($p),
-                'BidangKredensial' => $p->AmbilBidangKredensial(),
+                'BidangKredensial' => $p->AmbilBidangKredensialTenant(),
             ], DaftarPenyediaWhatsapp::Ambil()),
         ];
     }

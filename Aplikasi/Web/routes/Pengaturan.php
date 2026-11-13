@@ -16,6 +16,7 @@ use App\Http\Kontroler\Kelola\WebhookKontroler;
 use App\Http\Kontroler\Kelola\WhatsappTenantKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
+use App\Http\Perantara\WhatsappHanyaBilaTersedia;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,11 +81,11 @@ Route::prefix('pengaturan')->group(function () use ($izin): void {
         // D-108: WhatsApp milik tenant (nomor sendiri, tanpa kuota Payoung) + pemantau kuota. Edisi Lisensi punya halaman
         // integrasi server sendiri di bawah, jadi tidak memakai halaman ini.
         if (! EdisiAplikasi::CekLisensi()) {
-            Route::get('/whatsapp', [WhatsappTenantKontroler::class, 'Tampilkan'])->name('kelola.pengaturan.whatsapp');
-            Route::post('/whatsapp', [WhatsappTenantKontroler::class, 'Simpan'])->name('kelola.pengaturan.whatsapp.simpan');
-            Route::post('/whatsapp/uji', [WhatsappTenantKontroler::class, 'Uji'])->name('kelola.pengaturan.whatsapp.uji');
-            Route::post('/whatsapp/aktifkan', [WhatsappTenantKontroler::class, 'Aktifkan'])->name('kelola.pengaturan.whatsapp.aktifkan');
-            Route::post('/whatsapp/nonaktifkan', [WhatsappTenantKontroler::class, 'Nonaktifkan'])->name('kelola.pengaturan.whatsapp.nonaktifkan');
+            Route::get('/whatsapp', [WhatsappTenantKontroler::class, 'Tampilkan'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.pengaturan.whatsapp');
+            Route::post('/whatsapp', [WhatsappTenantKontroler::class, 'Simpan'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.pengaturan.whatsapp.simpan');
+            Route::post('/whatsapp/uji', [WhatsappTenantKontroler::class, 'Uji'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.pengaturan.whatsapp.uji');
+            Route::post('/whatsapp/aktifkan', [WhatsappTenantKontroler::class, 'Aktifkan'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.pengaturan.whatsapp.aktifkan');
+            Route::post('/whatsapp/nonaktifkan', [WhatsappTenantKontroler::class, 'Nonaktifkan'])->middleware(WhatsappHanyaBilaTersedia::class)->name('kelola.pengaturan.whatsapp.nonaktifkan');
         }
 
         // D-35: email, WhatsApp, dan penyimpanan berkas server toko. Hanya edisi Lisensi; di SaaS milik konsol.

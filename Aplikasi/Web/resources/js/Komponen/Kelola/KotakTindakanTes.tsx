@@ -10,7 +10,7 @@ import type { ButirTindakan } from '@/Tipe/Tindakan';
  * Jenis + Uuid) dan keadaan kosong "Semua beres". Ringkasan di Beranda sudah dihapus (D-247).
  */
 
-const uji = vi.hoisted(() => ({ kiriman: [] as { url: string; data: unknown }[] }));
+const uji = vi.hoisted(() => ({ kiriman: [] as { url: string; data: unknown }[], whatsapp: true }));
 
 vi.mock('@inertiajs/react', () => ({
     Link: ({ href, children, ...sisa }: { href: string; children?: ReactNode }) => (
@@ -22,7 +22,7 @@ vi.mock('@inertiajs/react', () => ({
         post: (url: string, data: unknown) => uji.kiriman.push({ url, data }),
         put: (url: string, data: unknown) => uji.kiriman.push({ url, data }),
     },
-    usePage: () => ({ props: { errors: {} }, url: '/kelola/tindakan' }),
+    usePage: () => ({ props: { errors: {}, WhatsappTersedia: uji.whatsapp }, url: '/kelola/tindakan' }),
 }));
 
 vi.mock('@/TataLetak/TataLetakAplikasi', () => ({
@@ -75,6 +75,7 @@ const penjualan = BuatButir('penjualan.tinjauan', 'Penting', {
 describe('Kotak Tindakan (D-23 C)', () => {
     beforeEach(() => {
         uji.kiriman = [];
+        uji.whatsapp = true;
     });
     afterEach(() => cleanup());
 
@@ -109,6 +110,29 @@ describe('Kotak Tindakan (D-23 C)', () => {
 
         render(<HalamanKotakTindakan Butir={[]} Izin={{ Tandai: false }} />);
         expect(screen.getByText('Semua beres')).toBeTruthy();
+    });
+
+    it('D-299: sakelar ringkasan pagi WhatsApp hilang bila layanan WhatsApp tidak tersedia, ada bila tersedia', () => {
+        uji.whatsapp = false;
+        render(
+            <HalamanKotakTindakan
+                Butir={[]}
+                Izin={{ Tandai: false }}
+                RingkasanWhatsapp={{ BisaWhatsapp: true, Aktif: true }}
+            />,
+        );
+        expect(screen.queryByRole('switch', { name: 'Kirim ringkasan ke WhatsApp saya setiap pagi' })).toBeNull();
+        cleanup();
+
+        uji.whatsapp = true;
+        render(
+            <HalamanKotakTindakan
+                Butir={[]}
+                Izin={{ Tandai: false }}
+                RingkasanWhatsapp={{ BisaWhatsapp: true, Aktif: true }}
+            />,
+        );
+        expect(screen.getByRole('switch', { name: 'Kirim ringkasan ke WhatsApp saya setiap pagi' })).toBeTruthy();
     });
 
     it('D-23 D: ringkasan pagi lewat WhatsApp bisa dimatikan. Akun tanpa nomor HP tidak bisa mengaktifkan', () => {

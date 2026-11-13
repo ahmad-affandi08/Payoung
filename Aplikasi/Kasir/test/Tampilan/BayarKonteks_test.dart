@@ -18,7 +18,7 @@ import '../Pendukung/PasangAplikasi.dart';
 void main() {
   Future<LingkunganUji> MasukJual(WidgetTester tester, Size ukuran, {Map<String, Object?>? dataAwal}) async {
     final u = LingkunganUji.Buat();
-    final awal = dataAwal ?? DataAwalUji();
+    final awal = dataAwal ?? DataAwalUji(whatsapp: true);
     await tester.runAsync(() async {
       await u.SiapkanAktif(dataAwal: awal);
       await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));

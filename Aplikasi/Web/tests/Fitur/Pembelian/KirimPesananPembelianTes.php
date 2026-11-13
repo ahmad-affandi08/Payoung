@@ -127,7 +127,8 @@ it('ditolak: PO belum disetujui, pemasok tanpa nomor sah, WhatsApp usaha tidak a
     Pemasok::query()->whereKey($t['Pemasok']->Id)->update(['NoHp' => '081234567890']);
     OverrideTenant::query()->delete();
     config(['integrasi.Whatsapp' => ['Penyedia' => '', 'Pengaturan' => [], 'Kredensial' => []]]);
-    $this->post("/kelola/pembelian/pesanan/{$po->Uuid}/kirim-whatsapp")->assertSessionHasErrors('Umum');
+    // D-299: konsol belum mengaktifkan WhatsApp = rute kirim hilang (404), bukan sekadar galat.
+    $this->post("/kelola/pembelian/pesanan/{$po->Uuid}/kirim-whatsapp")->assertNotFound();
     expect(PesanPoTerkirim())->toHaveCount(2);
 });
 

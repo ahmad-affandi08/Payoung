@@ -57,6 +57,8 @@ type PropsPanelKeranjang = {
     galat: string | null;
     pembeli: ProfilPembeli | null;
     akunAktif: boolean;
+    /** D-299: false = kolom nomor hanya disebut nomor HP, tanpa kata WhatsApp. */
+    whatsappTersedia: boolean;
     saatBukaMasuk: () => void;
     penerima: DataPenerima;
     saatGantiPenerima: (ubah: Partial<DataPenerima>) => void;
@@ -368,7 +370,7 @@ export default function PanelKeranjang(p: PropsPanelKeranjang) {
                 />
                 {p.pembeli ? null : (
                     <BidangTeks
-                        label="Nomor WhatsApp"
+                        label={p.whatsappTersedia ? 'Nomor WhatsApp' : 'Nomor HP'}
                         nilai={p.penerima.NoHp}
                         saatBerubah={(v) => p.saatGantiPenerima({ NoHp: v })}
                         inputMode="tel"

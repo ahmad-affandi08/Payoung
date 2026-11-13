@@ -7,6 +7,7 @@ namespace App\Domain\Karyawan\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Karyawan\Layanan\PengirimJadwalMingguan;
 use App\Domain\Karyawan\Tugas\KirimJadwalMingguanTugas;
@@ -34,7 +35,7 @@ final class UmumkanJadwalMingguan
     {
         $idTenant = $this->konteks->Wajib();
 
-        if ($this->whatsapp->AmbilAktif() === null || ! $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
+        if ($this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Karyawan) === null || ! $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
             throw new PelanggaranAturanBisnis('WhatsappBelumSiap', 'WhatsApp belum aktif untuk usaha ini. Aktifkan dulu di Pengaturan › WhatsApp.', 'Umum');
         }
 

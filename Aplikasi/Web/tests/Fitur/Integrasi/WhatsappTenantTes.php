@@ -166,7 +166,7 @@ describe('D-108 WhatsApp milik tenant', function (): void {
 
         $c = BantuanOrganisasi::BuatTenant('Toko Tanpa Fitur Solo');
         PaketFitur::query()->where('KunciFitur', 'integrasi.whatsapp')->delete();
-        MasukWa($this, $c)->post('/kelola/pengaturan/whatsapp', ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenTokoC-1122']])->assertSessionHasErrors('Penyedia');
+        MasukWa($this, $c)->post('/kelola/pengaturan/whatsapp', ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'tokenTokoC-1122']])->assertNotFound(); // D-299: halaman WhatsApp hilang bagi paket tanpa fitur
     });
 
     it('turun ke paket tanpa fitur WhatsApp: nomor milik tenant berhenti dipakai di semua jalur dan pesan kembali ke nomor Payoung berkuota', function (): void {
@@ -185,6 +185,7 @@ describe('D-108 WhatsApp milik tenant', function (): void {
 
         expect($baris->refresh()->Aktif)->toBeTrue()
             ->and($pembuat->AmbilMilikTenant())->toBeNull()
-            ->and($pembuat->AmbilAktif())->toBeInstanceOf(PengirimWhatsappBerkuota::class);
+            // D-299: paket tanpa fitur WhatsApp = tidak ada pengirim sama sekali (bukan lagi jatuh ke nomor Payoung berkuota).
+            ->and($pembuat->AmbilAktif())->toBeNull();
     });
 });

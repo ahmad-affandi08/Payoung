@@ -37,6 +37,7 @@ class KonfigurasiAplikasi {
     required this.flagFitur,
     this.pengumuman = const [],
     this.persetujuanJarakJauh,
+    this.whatsappTersedia,
     this.logDiminta = false,
     this.sha256Unduhan,
     this.hanyaPerusahaan = false,
@@ -69,6 +70,14 @@ class KonfigurasiAplikasi {
   /// Fitur paket `persetujuan.jarak-jauh` aktif untuk tenant ini sekarang. Null = server lama yang belum mengirimnya
   /// (jangan mengubah keadaan lokal).
   final bool? persetujuanJarakJauh;
+
+  /// D-299: layanan WhatsApp aktif di konsol DAN termuat di paket tenant (`Whatsapp.Tersedia`). Bila bukan `true`, semua
+  /// tombol, isian, dan teks WhatsApp disembunyikan. Null = server lama yang belum mengirimnya: Kasir tidak mengubah
+  /// keadaan lokal, Owner memperlakukannya sebagai tidak tersedia ([whatsappAktif]).
+  final bool? whatsappTersedia;
+
+  /// [whatsappTersedia] sebagai keputusan tampil: hanya `true` yang menampilkan fitur WhatsApp.
+  bool get whatsappAktif => whatsappTersedia == true;
 
   /// PGL-16 bagian 2: dukungan Payoung meminta perangkat ini mengunggah log lokalnya (`POST perangkat/log`). Server lama
   /// tanpa kunci = false.
@@ -126,6 +135,7 @@ class KonfigurasiAplikasi {
       }
     });
     final jarakJauh = UraiJson.AmbilPeta(json['FiturPaket'])['PersetujuanJarakJauh'];
+    final whatsapp = UraiJson.AmbilPeta(json['Whatsapp'])['Tersedia'];
     return KonfigurasiAplikasi(
       versiSaatIni: UraiJson.AmbilTeksAtauNull(aplikasi['VersiSaatIni']),
       versiTerbaru: UraiJson.AmbilTeksAtauNull(aplikasi['VersiTerbaru']),
@@ -142,6 +152,7 @@ class KonfigurasiAplikasi {
             .where((p) => p.uuid.isNotEmpty && p.judul.isNotEmpty),
       ),
       persetujuanJarakJauh: jarakJauh is bool ? jarakJauh : null,
+      whatsappTersedia: whatsapp is bool ? whatsapp : null,
       logDiminta: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['PermintaanLog'])['Diminta']),
       hanyaPerusahaan: UraiJson.AmbilBenar(json['HanyaPerusahaan']),
       sektor: List.unmodifiable(UraiJson.AmbilDaftarTeks(json['Sektor']).where((k) => k.isNotEmpty)),

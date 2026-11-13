@@ -29,6 +29,7 @@ import {
     type BarisIsian,
     type Isian,
 } from '@/Fitur/Karyawan/LogikaJadwal';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { PropsJadwalKerja } from '@/Tipe/Karyawan';
@@ -44,6 +45,7 @@ type Dialog = 'shift' | 'massal' | 'kebutuhan' | null;
  */
 export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadwal, Izin }: PropsJadwalKerja) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const whatsappTersedia = useWhatsappTersedia();
     const [isian, AturIsian] = useState<Isian>(() => BuatIsian(Jadwal.Baris));
     // Jadwal dari server berubah (isi massal, salin, tukar shift, atau simpan berhasil): isian dimuat ulang dari server.
     // Dibandingkan menurut isinya, jadi simpan yang gagal (jadwal sama) tidak membuang ketikan pengguna.
@@ -104,7 +106,7 @@ export default function HalamanJadwalKerja({ OpsiOutlet, UuidOutlet, Senin, Jadw
                     ) : undefined
                 }
                 lainnya={[
-                    ...(Izin.Kelola && UuidOutlet
+                    ...(whatsappTersedia && Izin.Kelola && UuidOutlet
                         ? [{ label: 'Kirim ke karyawan', saatKlik: () => KirimAksi('umumkan') }]
                         : []),
                     ...(Izin.Kelola && UuidOutlet ? [] : [{ label: 'Cuti & izin', href: '/kelola/karyawan/cuti' }]),

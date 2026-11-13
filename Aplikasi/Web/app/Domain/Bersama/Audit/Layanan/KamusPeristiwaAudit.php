@@ -313,6 +313,11 @@ final class KamusPeristiwaAudit
         'komunikasi.siaran.batal' => 'Siaran dibatalkan',
         'komunikasi.siaran.buat' => 'Siaran dijadwalkan',
 
+        'nomor-whatsapp.hapus' => 'Nomor pengirim WhatsApp dihapus',
+        'nomor-whatsapp.status' => 'Status nomor pengirim WhatsApp berubah',
+        'nomor-whatsapp.tambah' => 'Nomor pengirim WhatsApp ditambahkan',
+        'nomor-whatsapp.ubah' => 'Nomor pengirim WhatsApp diubah',
+
         'nota-debit.batalkan' => 'Nota debit dibatalkan',
         'nota-debit.posting' => 'Nota debit dicatat',
 
@@ -388,6 +393,9 @@ final class KamusPeristiwaAudit
         'pencairan.batalkan' => 'Pencairan dibatalkan',
         'pencairan.buat' => 'Pencairan dana non-tunai dicatat',
 
+        'penerima-laporan-whatsapp.hapus' => 'Penerima laporan WhatsApp dihapus',
+        'penerima-laporan-whatsapp.tambah' => 'Penerima laporan WhatsApp ditambahkan',
+
         'penerimaan-barang.batalkan' => 'Penerimaan barang dibatalkan',
         'penerimaan-barang.posting' => 'Penerimaan barang dicatat',
 
@@ -458,6 +466,8 @@ final class KamusPeristiwaAudit
 
         'pesan-sendiri.terima' => 'Pesanan pesan-sendiri diterima kasir',
         'pesan-sendiri.tolak' => 'Pesanan pesan-sendiri ditolak kasir',
+
+        'pesan-whatsapp.atur' => 'Pesan WhatsApp otomatis diatur',
 
         'pesanan-online.dibayar' => 'Pesanan online dibayar',
         'pesanan-online.kedaluwarsa' => 'Pesanan online kedaluwarsa',

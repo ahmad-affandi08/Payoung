@@ -16,6 +16,7 @@ import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type {
     BarisReservasi,
@@ -139,6 +140,7 @@ type PropsDialogCatat = Pick<PropsDaftarReservasi, 'OpsiOutlet' | 'OpsiStaf' | '
 
 /** Catat reservasi dari telepon/WhatsApp/datang langsung. */
 function DialogCatat({ OpsiOutlet, OpsiStaf, OpsiLayanan: layanan, HariIni, saatTutup }: PropsDialogCatat) {
+    const whatsappTersedia = useWhatsappTersedia();
     const formulir = useForm({
         Outlet: '',
         UuidLayanan: '',
@@ -216,7 +218,7 @@ function DialogCatat({ OpsiOutlet, OpsiStaf, OpsiLayanan: layanan, HariIni, saat
                     required
                 />
                 <BidangTeks
-                    label="Nomor HP (WhatsApp)"
+                    label={whatsappTersedia ? 'Nomor HP (WhatsApp)' : 'Nomor HP'}
                     nilai={d.NoHp}
                     saatBerubah={(nilai) => formulir.setData('NoHp', nilai)}
                     galat={formulir.errors.NoHp}
@@ -374,6 +376,7 @@ const OpsiMinimal = [0, 30, 60, 120, 180, 1440].map((m) => ({
 const OpsiHariKeDepan = [7, 14, 30, 60, 90].map((h) => ({ Nilai: String(h), Label: `${String(h)} hari ke depan` }));
 
 function DialogPengaturan({ pengaturan, saatTutup }: { pengaturan: PengaturanReservasi; saatTutup: () => void }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const formulir = useForm<PengaturanReservasi>({ ...pengaturan });
     const d = formulir.data;
     const AturAngka = (kunci: keyof PengaturanReservasi) => (nilai: string) => formulir.setData(kunci, Number(nilai));
@@ -404,11 +407,13 @@ function DialogPengaturan({ pengaturan, saatTutup }: { pengaturan: PengaturanRes
                         nilai={d.KonfirmasiOtomatis}
                         saatBerubah={(nilai) => formulir.setData('KonfirmasiOtomatis', nilai)}
                     />
-                    <KotakCentang
-                        label="Kirim pengingat WhatsApp sehari sebelumnya"
-                        nilai={d.PengingatAktif}
-                        saatBerubah={(nilai) => formulir.setData('PengingatAktif', nilai)}
-                    />
+                    {whatsappTersedia ? (
+                        <KotakCentang
+                            label="Kirim pengingat WhatsApp sehari sebelumnya"
+                            nilai={d.PengingatAktif}
+                            saatBerubah={(nilai) => formulir.setData('PengingatAktif', nilai)}
+                        />
+                    ) : null}
                 </div>
                 <BidangPilihan
                     label="Pilihan jam mulai"

@@ -16,6 +16,7 @@ import { DialogFooter } from '@/Komponen/Ui/dialog';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import type {
     BarisPiutang,
     PengaturanPengingatPiutang,
@@ -29,7 +30,7 @@ import AksiMassalPiutang from '@/Komponen/Piutang/AksiMassalPiutang';
 import DialogHapusBukuPiutang from '@/Komponen/Piutang/DialogHapusBukuPiutang';
 import { AlamatPiutang, HalamanDaftarPiutang, LabelStatusPiutang } from '@/Komponen/Piutang/BagianPiutang';
 
-const kolom: KolomTabel<BarisPiutang>[] = [
+const kolomDasar: KolomTabel<BarisPiutang>[] = [
     {
         id: 'Nomor',
         accessorKey: 'Nomor',
@@ -86,14 +87,16 @@ const kolom: KolomTabel<BarisPiutang>[] = [
     },
     KolomUang('Jumlah', 'Jumlah', (p) => p.Jumlah, true),
     KolomUang('Sisa', 'Sisa piutang', (p) => p.Sisa),
-    {
-        id: 'Pengingat',
-        header: 'Pengingat',
-        enableSorting: false,
-        meta: { label: 'Pengingat terakhir', prioritas: 'rendah' },
-        cell: ({ row: { original: p } }) => <SelPengingat pengingat={p.PengingatTerakhir ?? null} />,
-    },
 ];
+
+/** D-299: kolom pengingat (lewat WhatsApp) hanya ada bila layanan WhatsApp tersedia. */
+const kolomPengingat: KolomTabel<BarisPiutang> = {
+    id: 'Pengingat',
+    header: 'Pengingat',
+    enableSorting: false,
+    meta: { label: 'Pengingat terakhir', prioritas: 'rendah' },
+    cell: ({ row: { original: p } }) => <SelPengingat pengingat={p.PengingatTerakhir ?? null} />,
+};
 
 const JenisLabelPengingat = {
     Diantrekan: 'netral',
@@ -210,7 +213,10 @@ export default function HalamanDaftarPiutangPelanggan({
 }: PropsDaftarPiutang) {
     const [aturPengingat, AturAturPengingat] = useState(false);
     const [dihapusBuku, AturDihapusBuku] = useState<BarisPiutang | null>(null);
-    const bolehIngatkan = Izin.Ingatkan === true;
+    const whatsappTersedia = useWhatsappTersedia();
+    const kolom = whatsappTersedia ? [...kolomDasar, kolomPengingat] : kolomDasar;
+    // D-299: seluruh pengingat piutang memakai WhatsApp, jadi hilang bila layanannya tidak tersedia.
+    const bolehIngatkan = whatsappTersedia && Izin.Ingatkan === true;
     const saring: DefinisiSaring[] = [
         {
             id: 'Umur',
@@ -329,7 +335,7 @@ export default function HalamanDaftarPiutangPelanggan({
                     saatTutup={() => AturDihapusBuku(null)}
                 />
             ) : null}
-            {aturPengingat && Pengingat ? (
+            {whatsappTersedia && aturPengingat && Pengingat ? (
                 <DialogPengingatOtomatis pengaturan={Pengingat} saatTutup={() => AturAturPengingat(false)} />
             ) : null}
         </HalamanDaftarPiutang>

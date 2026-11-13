@@ -13,7 +13,7 @@ import HalamanDaftarPesanan from '@/Halaman/Kelola/Pembelian/Pesanan/Daftar';
 import HalamanDetailPesanan from '@/Halaman/Kelola/Pembelian/Pesanan/Detail';
 import HalamanFormPesanan from '@/Halaman/Kelola/Pembelian/Pesanan/Form';
 import HalamanFormRetur, { PeriksaBarisRetur } from '@/Halaman/Kelola/Pembelian/Retur/Form';
-import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel, GudangUtama, NamaPanjang } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { PilihOpsi, UbahNilai } from '@/Pengujian/InteraksiPilihan';
 import { SiapkanKameraTiruan } from '@/Pengujian/KameraTiruan';
@@ -266,6 +266,7 @@ describe('Aturan halaman pembelian (F-04 fase 1)', () => {
 describe('Halaman pembelian (F-04 fase 1)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/pembelian/pesanan');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         window.history.replaceState({}, '', '/kelola/pembelian/pesanan');
         vi.clearAllMocks();
     });
@@ -469,6 +470,28 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         expect(within(riwayat).getByText('Gagal')).toBeTruthy();
         expect(within(riwayat).getByText('Terkirim')).toBeTruthy();
         expect(within(riwayat).getByText('Integrasi WhatsApp tidak aktif.')).toBeTruthy();
+    });
+
+    it('D-299: tanpa layanan WhatsApp, kirim ke WhatsApp pemasok dan riwayat pengirimannya hilang', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(
+            <HalamanDetailPesanan
+                {...PropsDetail({ KirimWhatsapp: true })}
+                Pengiriman={[
+                    {
+                        Uuid: '01J9ZC5V7Q8R2T4W6Y8A0B2C4E',
+                        Status: 'Terkirim',
+                        LabelStatus: 'Terkirim',
+                        PesanGalat: null,
+                        DibuatPada: '2026-09-28T03:00:00Z',
+                        TerkirimPada: '2026-09-28T03:00:05Z',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.queryByRole('button', { name: 'Kirim ke WhatsApp pemasok' })).toBeNull();
+        expect(screen.queryByRole('list', { name: 'Riwayat pengiriman ke pemasok' })).toBeNull();
     });
 
     it('terima dari PO: tanggal bawaan mundur sehari, jumlah bawaan = sisa, baris 0 tidak dikirim', () => {

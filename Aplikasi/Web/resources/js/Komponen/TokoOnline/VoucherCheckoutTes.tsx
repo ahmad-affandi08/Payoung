@@ -35,6 +35,7 @@ const props = {
             },
         ],
     },
+    WhatsappTersedia: true,
     Akun: { Aktif: false, Pelanggan: null, AlamatTerakhir: null },
 };
 

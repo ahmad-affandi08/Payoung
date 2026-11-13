@@ -58,7 +58,7 @@ class LayananReservasi {
       throw const GalatKasir('NamaWajib', 'Isi nama pelanggan.');
     }
     if (noHp.replaceAll(RegExp(r'\D'), '').length < 9) {
-      throw const GalatKasir('NoHpTidakValid', 'Isi nomor HP pelanggan (minimal 9 angka) untuk pengingat WhatsApp.');
+      throw const GalatKasir('NoHpTidakValid', 'Isi nomor HP pelanggan (minimal 9 angka).');
     }
     final catatanRapi = catatan?.trim();
     return _Online(

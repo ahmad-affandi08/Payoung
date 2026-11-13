@@ -103,8 +103,11 @@ Map<String, Object?> DataAwalUji({
   bool tukar = false,
   bool giftCard = false,
   String? awalanAntrian,
+  bool whatsapp = false,
 }) => {
   'Karyawan': ?karyawan,
+  // D-299: semua yang berkaitan dengan WhatsApp tersembunyi kecuali server menyatakan layanan tersedia.
+  if (whatsapp) 'Whatsapp': {'Tersedia': true},
   // F-16d: deposit pelanggan (fitur paket) hanya bila diminta test.
   if (deposit) 'Deposit': {'Berlaku': true, 'MinimalIsi': '1000.00', 'MaksimalIsi': '10000000.00'},
   // F-17: menu Pesanan toko online hanya muncul bila outlet melayani toko online.

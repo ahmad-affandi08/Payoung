@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Kasir\Kueri;
 
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Karyawan\Kueri\KaryawanPos;
 use App\Domain\Kasir\Model\KategoriKas;
 use App\Domain\Organisasi\Kueri\JenisPesananOutlet;
@@ -47,6 +48,7 @@ use stdClass;
  * K-8: `Outlet.ModeKasir` (mode kasir template sektor, enum `ModeKasir`) & `Outlet.ModeKasirBawaan`.
  * D-16: `Outlet.AdaLogo` = logo merek outlet tersedia untuk bilah atas (diunduh lewat `/logo-outlet`, terpisah dari
  * `/logo-struk` yang tunduk pada saklar tampil struk).
+ * D-299: `Whatsapp.Tersedia` (konsol mengaktifkan WhatsApp + paket tenant memuatnya).
  */
 final class DataAwalKasir
 {
@@ -70,6 +72,7 @@ final class DataAwalKasir
         private readonly PengaturanBarcodeTimbanganTenant $barcodeTimbangan,
         private readonly FiturOutlet $fiturOutlet,
         private readonly SektorOutletTenant $sektorOutlet,
+        private readonly KetersediaanWhatsapp $whatsapp,
     ) {}
 
     /**
@@ -142,6 +145,9 @@ final class DataAwalKasir
             'TokoOnline' => ['Aktif' => $this->statusTokoOnline->CekAktif($outlet?->idOutlet)],
             // D-48 (aditif): sektor outlet ini (template + jenis usaha tambahan); kasir menyaring fitur khusus sektor.
             'KodeSektor' => $outlet === null ? [] : $this->sektorOutlet->AmbilKodeUntukOutlet($perangkat->IdTenant, $outlet->idOutlet),
+            // D-299 (aditif): layanan WhatsApp aktif di konsol dan termuat di paket tenant. Bila false, kasir menyembunyikan
+            // semua tombol, isian, dan teks WhatsApp. Server lama tanpa kunci = false di aplikasi.
+            'Whatsapp' => ['Tersedia' => $this->whatsapp->TersediaUntuk($perangkat->IdTenant)],
             'ProfilPajak' => [
                 'Pkp' => $profil->pkp ?? false,
                 'PungutPbjt' => $profil->pungutPbjt ?? false,

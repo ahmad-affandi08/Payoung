@@ -47,6 +47,7 @@ const props = {
             },
         ],
     },
+    WhatsappTersedia: true,
     Akun: { Aktif: false, Pelanggan: null, AlamatTerakhir: null },
 };
 
@@ -72,6 +73,18 @@ describe('tampilan toko online', () => {
         expect(screen.getByText('Bayar QRIS')).toBeTruthy();
         expect(screen.getByText('Min. Rp 15.000')).toBeTruthy();
         expect(screen.getByText(/Jl\. Slamet Riyadi 10/)).toBeTruthy();
+    });
+
+    it('D-299: tombol Masuk dengan WhatsApp hanya ada bila layanan WhatsApp tersedia', () => {
+        const akunAktif = { Aktif: true, Pelanggan: null, AlamatTerakhir: null };
+        const { unmount: Lepas } = RenderUji(<HalamanTokoOnline {...props} WhatsappTersedia Akun={akunAktif} />);
+        expect(screen.getByRole('button', { name: 'Masuk' })).toBeTruthy();
+        Lepas();
+
+        // Konsol belum mengaktifkan WhatsApp atau paket tidak memuatnya: akun pembeli hilang, checkout tamu tetap ada.
+        RenderUji(<HalamanTokoOnline {...props} WhatsappTersedia={false} Akun={akunAktif} />);
+        expect(screen.queryByRole('button', { name: 'Masuk' })).toBeNull();
+        expect(screen.getByRole('button', { name: /keranjang/i })).toBeTruthy();
     });
 
     it('kategori dan pencarian memfilter menu. Hasil kosong memberi petunjuk', () => {

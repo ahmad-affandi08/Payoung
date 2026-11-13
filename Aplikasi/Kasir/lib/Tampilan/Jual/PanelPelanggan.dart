@@ -169,6 +169,7 @@ class _PanelPelangganState extends ConsumerState<PanelPelanggan> {
     final kataCukup = _cari.text.trim().length >= LayananPelanggan.panjangKataMinimal;
     final tukar = ref.watch(penyediaKeranjang.select((k) => k.tukarPoin));
     final depositBerlaku = ref.watch(penyediaKonteksPenjualan).value?.deposit.berlaku ?? false;
+    final adaWhatsapp = ref.watch(penyediaKonteksPenjualan).value?.whatsappTersedia ?? false;
     // F-16d bagian 2: tombol "Pakai sesi" bila katalog punya produk paket sesi.
     final adaPaketSesi = ref.watch(penyediaKatalog).value?.produk.any((p) => p.paketSesi) ?? false;
 
@@ -225,10 +226,11 @@ class _PanelPelangganState extends ConsumerState<PanelPelanggan> {
                 controller: _noHp,
                 keyboardType: TextInputType.phone,
                 maxLength: 30,
-                decoration: const InputDecoration(
-                  labelText: 'No. HP/WA',
+                decoration: InputDecoration(
+                  // D-299: tanpa layanan WhatsApp, isian hanya "No. HP".
+                  labelText: adaWhatsapp ? 'No. HP/WA' : 'No. HP',
                   hintText: '0812-3456-7890',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 onSubmitted: (_) => unawaited(_SimpanBaru()),
               ),

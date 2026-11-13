@@ -77,6 +77,13 @@ export type PropsBersamaAplikasi = {
     /** P-10 PGL-19: banner pengumuman & pemeliharaan platform (kosong/absen di luar back-office). */
     PengumumanPlatform?: PengumumanPlatform[];
     /** Audit #33: kode template sektor outlet tenant aktif (`FNB-RST`, `WHS-DST`, …); kosong = tidak diketahui. */
+    /**
+     * D-299: layanan WhatsApp tersedia bagi tenant ini (konsol sudah mengaktifkan dan paket memuatnya). `undefined` atau
+     * `false` = semua fitur WhatsApp disembunyikan. Pakai `useWhatsappTersedia()`.
+     */
+    WhatsappTersedia?: boolean;
+    /** Konsol sudah mengaktifkan layanan WhatsApp platform (tanpa memandang paket). `false` = menu WhatsApp tidak tampil sama sekali. */
+    WhatsappPlatformAktif?: boolean;
     SektorOutlet?: string[];
     /** PGL-16: ada hanya selama petugas Payoung masuk lewat akses dukungan. */
     AksesDukungan?: AksesDukunganAktif | null;

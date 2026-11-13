@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HalamanJadwalKerja from '@/Halaman/Kelola/Karyawan/Jadwal';
 import { KalimatKekurangan } from '@/Komponen/Karyawan/Jadwal/PanelPerhatianJadwal';
 import { CekBarisKebutuhan } from '@/Komponen/Karyawan/Jadwal/DialogKebutuhanStaf';
-import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import {
     AdaGalatJam,
     BuatIsian,
@@ -83,6 +83,7 @@ function PropsUji(sambungan: Partial<PropsJadwalKerja['Jadwal']> = {}): PropsJad
 describe('Jadwal kerja (F-18, D-251)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/karyawan/jadwal');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         window.history.replaceState({}, '', '/kelola/karyawan/jadwal');
         vi.clearAllMocks();
     });
@@ -225,6 +226,14 @@ describe('Jadwal kerja (F-18, D-251)', () => {
             { UuidOutlet: Outlet.Uuid, Senin: '2026-09-21' },
             expect.anything(),
         );
+    });
+
+    it('D-299: Kirim ke karyawan (WhatsApp) hilang bila layanan WhatsApp tidak tersedia', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<HalamanJadwalKerja {...PropsUji()} />);
+
+        expect(screen.queryByRole('button', { name: 'Kirim ke karyawan' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Isi massal' })).toBeTruthy();
     });
 
     it('menampilkan kekurangan staf dan menyetujui tukar shift', () => {

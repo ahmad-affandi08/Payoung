@@ -9,6 +9,9 @@ use App\Domain\Akuntansi\Model\JurnalDetail;
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Dokumen\Model\RiwayatStatusDokumen;
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Integrasi\Enum\JenisPesanWhatsapp;
+use App\Domain\Integrasi\Layanan\PengaturPesanWhatsapp;
+use App\Domain\Integrasi\Model\PenerimaLaporanWhatsapp;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Model\MutasiKas;
 use App\Domain\Kasir\Model\Shift;
@@ -16,12 +19,17 @@ use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Enum\StatusKeanggotaan;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\TenantPengguna;
+use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Penjualan\Model\Penjualan;
+use App\Domain\Tenant\Enum\JenisOverride;
 use App\Domain\Tenant\Kueri\PengaturanKasirTenant;
+use App\Domain\Tenant\Model\OverrideTenant;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Akuntansi\BantuanJurnal;
 use Tests\Pendukung\Kasir\BantuanKasir;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
+use Tests\Pendukung\Pengelola\BantuanPengelola;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\PemeriksaInvarian;
@@ -103,6 +111,26 @@ function AmbilShiftUji(string $uuid): Shift
 }
 
 describe('F-11 tutup shift lewat sinkron', function (): void {
+    it('D-299: tutup shift mengirim laporan tutup kasir ke penerima WhatsApp outlet bila layanan aktif dan sakelarnya menyala', function (): void {
+        $k = SiapkanShiftTutupUji($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        config(['integrasi.Whatsapp' => ['Penyedia' => 'Fonnte', 'Pengaturan' => [], 'Kredensial' => ['Token' => 'token-payoung']]]);
+        Http::fake(['api.fonnte.com/send' => Http::response(['status' => true, 'id' => ['ID1']])]);
+        OverrideTenant::query()->create([
+            'IdTenant' => $k['Tenant']->Id, 'Jenis' => JenisOverride::Fitur->value, 'Kunci' => 'integrasi.whatsapp', 'Nilai' => null,
+            'BerakhirPada' => now()->addDays(30), 'Alasan' => 'Uji laporan tutup kasir',
+            'DibuatOleh' => BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin)->Id,
+        ]);
+        $idOutlet = AmbilShiftUji($k['UuidShift'])->IdOutlet;
+        PenerimaLaporanWhatsapp::query()->create(['IdTenant' => $k['Tenant']->Id, 'IdOutlet' => $idOutlet, 'Nama' => 'Bu Rina', 'NomorTelepon' => '6281200000041']);
+        app(PengaturPesanWhatsapp::class)->Atur(JenisPesanWhatsapp::LaporanTutupKasir, true, $k['Tenant']->Id);
+
+        expect(BantuanKasir::KirimRingkas($this, $k['Token'], [ItemTutupShiftUji($k, '450000.00')]))->toBe([['Diterima', null]]);
+
+        $pesan = Http::recorded(fn ($r) => str_ends_with($r->url(), '/send'))->map(fn ($p) => $p[0]['message'])->all();
+        expect($pesan)->toHaveCount(1)->and($pesan[0])->toContain('Kasir ditutup')->toContain('Kas seharusnya: Rp 452.000')->toContain('kas kurang Rp 2.000');
+    });
+
     it('diterima: kas seharusnya dihitung server, kolom tutup & non-tunai per metode tersimpan, riwayat & audit. Kirim ulang = Duplikat. Data lain = ShiftSudahDitutup', function (): void {
         $k = SiapkanShiftTutupUji($this);
         $pecahan = [['Nominal' => '100000.00', 'Jumlah' => 4], ['Nominal' => '50000.00', 'Jumlah' => 1], ['Nominal' => '2000.00', 'Jumlah' => 1]];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Karyawan\Aksi;
 
 use App\Domain\Bersama\Web\AlamatDomain;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
@@ -66,7 +67,7 @@ final class KirimNotifikasiKehadiran
             return $hasil;
         }
 
-        $pengirim = $this->whatsapp->AmbilAktif();
+        $pengirim = $this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Karyawan);
 
         if ($pengirim === null || ! $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
             return $hasil;

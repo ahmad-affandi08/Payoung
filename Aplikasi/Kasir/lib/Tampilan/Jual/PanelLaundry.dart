@@ -114,6 +114,7 @@ class _PanelLaundryState extends ConsumerState<PanelLaundry> {
     final warna = TokenWarna.AmbilDari(context);
     final k = ref.watch(penyediaKonteksPenjualan).value;
     final pengaturan = k?.laundry ?? const LaundryPos();
+    final adaWhatsapp = k?.whatsappTersedia ?? false;
     final pelanggan = ref.watch(penyediaKeranjang.select((k) => k.pelanggan));
     final adaTiket = ref.watch(penyediaKeranjang.select((k) => k.laundry != null));
     final estimasi = ref.read(penyediaLayananLaundry).HitungEstimasi(_jenis, pengaturan);
@@ -231,9 +232,10 @@ class _PanelLaundryState extends ConsumerState<PanelLaundry> {
               controller: _hp,
               keyboardType: TextInputType.phone,
               maxLength: 20,
-              decoration: const InputDecoration(
-                labelText: 'Nomor WhatsApp (untuk kabar cucian siap)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                // D-299: tanpa layanan WhatsApp, isian tetap nomor HP biasa tanpa menyebut kabar lewat WhatsApp.
+                labelText: adaWhatsapp ? 'Nomor WhatsApp (untuk kabar cucian siap)' : 'Nomor HP',
+                border: const OutlineInputBorder(),
               ),
             ),
           ] else

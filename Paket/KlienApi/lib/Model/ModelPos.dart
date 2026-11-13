@@ -476,6 +476,7 @@ class DataAwal {
     this.laundry = const LaundryPos(),
     this.tokoOnlineAktif = false,
     this.kodeSektor = const [],
+    this.whatsappTersedia = false,
   });
 
   static const String batasDiskonManualBawaan = '10';
@@ -559,6 +560,10 @@ class DataAwal {
   /// fitur khusus sektor (Servis, Reservasi) darinya. Server lama / kosong = sektor belum diketahui, semua tampil.
   final List<String> kodeSektor;
 
+  /// D-299: layanan WhatsApp aktif di konsol dan termuat di paket tenant (`Whatsapp.Tersedia`). Bila false, kasir
+  /// menyembunyikan semua tombol, isian, dan teks WhatsApp. Server lama tanpa kunci = false.
+  final bool whatsappTersedia;
+
   static DataAwal DariJson(Map<String, Object?> json) {
     final pengaturan = _Peta(json['Pengaturan']);
     final pin = _Peta(json['PinOffline']);
@@ -597,6 +602,7 @@ class DataAwal {
       laundry: LaundryPos.DariJson(json['Laundry']),
       tokoOnlineAktif: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['TokoOnline'])['Aktif']),
       kodeSektor: UraiJson.AmbilDaftarTeks(json['KodeSektor']),
+      whatsappTersedia: UraiJson.AmbilBenar(UraiJson.AmbilPeta(json['Whatsapp'])['Tersedia']),
     );
   }
 }

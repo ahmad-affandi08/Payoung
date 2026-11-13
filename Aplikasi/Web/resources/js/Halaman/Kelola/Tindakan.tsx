@@ -11,6 +11,7 @@ import { Switch } from '@/Komponen/Ui/switch';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import { JenisLabelTingkat } from '@/Pustaka/TingkatTindakan';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { ButirTindakan, PropsKotakTindakan, RingkasanWhatsappTindakan } from '@/Tipe/Tindakan';
@@ -182,6 +183,7 @@ function PilihanRingkasanWhatsapp({ ringkasan }: { ringkasan: RingkasanWhatsappT
  */
 export default function HalamanKotakTindakan({ Butir, RingkasanWhatsapp }: PropsKotakTindakan) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const whatsappTersedia = useWhatsappTersedia();
 
     return (
         <TataLetakAplikasi judul="Kotak tindakan">
@@ -189,7 +191,7 @@ export default function HalamanKotakTindakan({ Butir, RingkasanWhatsapp }: Props
                 Semua yang perlu Anda perhatikan hari ini, dari yang paling penting. Butir hilang sendiri setelah
                 diselesaikan.
             </p>
-            {RingkasanWhatsapp ? <PilihanRingkasanWhatsapp ringkasan={RingkasanWhatsapp} /> : null}
+            {whatsappTersedia && RingkasanWhatsapp ? <PilihanRingkasanWhatsapp ringkasan={RingkasanWhatsapp} /> : null}
             <DaftarGalatServer galat={props.errors} />
             {Butir.length === 0 ? (
                 <Empty className="rounded-panel border border-garis bg-permukaan px-4 py-6 md:p-8">

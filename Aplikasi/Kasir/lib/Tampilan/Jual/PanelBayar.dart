@@ -2209,6 +2209,8 @@ class TampilanSelesai extends ConsumerWidget {
     final putihRedup = putih.withValues(alpha: 0.78);
     final printer = ref.watch(penyediaPrinter);
     final belumDiaturPrinter = printer.profil == null;
+    // D-299: tombol Kirim struk (WhatsApp) hilang bila layanan WhatsApp tidak tersedia.
+    final adaWhatsapp = ref.watch(penyediaKonteksPenjualan).value?.whatsappTersedia ?? false;
 
     final ringkasan = <Widget>[
       Row(
@@ -2275,6 +2277,9 @@ class TampilanSelesai extends ConsumerWidget {
                 label: const Text('Atur printer'),
               ),
             );
+            if (!adaWhatsapp) {
+              return atur;
+            }
             final kirim = TombolKirimStruk(uuidPenjualan: hasil.uuid, diAtasMerek: true);
             // HP: dua tombol bertumpuk supaya label tidak berdesakan dalam satu baris sempit.
             if (batas.maxWidth < 420) {

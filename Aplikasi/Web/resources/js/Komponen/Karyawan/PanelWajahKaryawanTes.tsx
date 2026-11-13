@@ -2,7 +2,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PanelAbsenHp from '@/Komponen/Karyawan/PanelAbsenHp';
-import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import LokasiAbsensiOutlet from '@/Komponen/Kelola/LokasiAbsensiOutlet';
 import type { AbsenHpKaryawan, BarisKaryawan } from '@/Tipe/Karyawan';
 
@@ -44,7 +44,10 @@ function TiruFetch(isi: AbsenHpKaryawan) {
     );
 }
 
-beforeEach(() => AturHalamanUji({}, '/kelola/karyawan'));
+beforeEach(() => {
+    AturHalamanUji({}, '/kelola/karyawan');
+    TambahPropsHalamanUji({ WhatsappTersedia: true });
+});
 afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
@@ -127,6 +130,17 @@ describe('Tautan absen pribadi (D-198)', () => {
             {},
             expect.anything(),
         );
+    });
+
+    it('D-299: tombol Kirim lewat WhatsApp hilang bila layanan WhatsApp tidak tersedia', async () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const alamat = 'https://payoung.id/kedai-senja/absen/aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789AbCd';
+        TiruFetch({ Tautan: alamat, TautanDibuatPada: '2026-10-25T03:00:00+00:00', Wajah: wajahKosong });
+        RenderUji(<PanelAbsenHp karyawan={karyawan} saatTutup={() => undefined} />);
+
+        expect(await screen.findByText(alamat)).not.toBeNull();
+        expect(screen.queryByRole('link', { name: 'Kirim lewat WhatsApp' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Salin tautan' })).toBeTruthy();
     });
 
     it('karyawan nonaktif tidak bisa diberi tautan', async () => {

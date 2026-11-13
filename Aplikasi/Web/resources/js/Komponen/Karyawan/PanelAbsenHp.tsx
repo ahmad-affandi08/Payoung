@@ -13,6 +13,7 @@ import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { KunciKueri } from '@/Pustaka/KunciKueri';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import type { AbsenHpKaryawan, BarisKaryawan, StatusWajahKaryawan } from '@/Tipe/Karyawan';
 
 async function AmbilAbsenHp(uuid: string, sinyal: AbortSignal): Promise<AbsenHpKaryawan> {
@@ -62,12 +63,13 @@ const isiKonfirmasi: Record<AksiBerisiko, { judul: string; akibat: string; label
 
 /**
  * F-18 bagian 4 (D-37, D-180, D-198): panel absen satu karyawan (`karyawan.kelola`). Karyawan absen setelah login atau
- * lewat tautan pribadinya (buat ulang, salin, kirim lewat WhatsApp, cabut) dan mendaftarkan wajahnya sendiri di halaman
+ * lewat tautan pribadinya (buat ulang, salin, kirim lewat WhatsApp bila tersedia, cabut) dan mendaftarkan wajahnya sendiri di halaman
  * Absen; di sini pengelola melihat 3 foto pendaftaran, bisa menolaknya dengan alasan, dan mengatur ulang wajah supaya
  * karyawan mendaftar lagi.
  */
 export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisKaryawan; saatTutup: () => void }) {
     const klien = useQueryClient();
+    const whatsappTersedia = useWhatsappTersedia();
     const kunci = KunciKueri.Karyawan.AbsenHp(karyawan.Uuid);
     const kueri = useQuery({ queryKey: kunci, queryFn: ({ signal }) => AmbilAbsenHp(karyawan.Uuid, signal) });
     const [memproses, AturMemproses] = useState<string | null>(null);
@@ -159,19 +161,21 @@ export default function PanelAbsenHp({ karyawan, saatTutup }: { karyawan: BarisK
                                             <Tombol varian="sekunder" onClick={() => void Salin(data.Tautan ?? '')}>
                                                 {tersalin ? 'Tersalin' : 'Salin tautan'}
                                             </Tombol>
-                                            <Button
-                                                asChild
-                                                variant="outline"
-                                                className="h-8 px-4 text-label font-semibold pointer-coarse:h-11"
-                                            >
-                                                <a
-                                                    href={`https://wa.me/?text=${encodeURIComponent(`Tautan absen ${karyawan.Nama}: ${data.Tautan} (simpan ke layar utama HP, jangan dibagikan)`)}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
+                                            {whatsappTersedia ? (
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    className="h-8 px-4 text-label font-semibold pointer-coarse:h-11"
                                                 >
-                                                    Kirim lewat WhatsApp
-                                                </a>
-                                            </Button>
+                                                    <a
+                                                        href={`https://wa.me/?text=${encodeURIComponent(`Tautan absen ${karyawan.Nama}: ${data.Tautan} (simpan ke layar utama HP, jangan dibagikan)`)}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        Kirim lewat WhatsApp
+                                                    </a>
+                                                </Button>
+                                            ) : null}
                                             <Tombol
                                                 varian="sekunder"
                                                 disabled={memproses !== null}

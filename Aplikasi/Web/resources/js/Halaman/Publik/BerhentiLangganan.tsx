@@ -7,6 +7,8 @@ import JudulHalaman from '@/Komponen/Umpan/JudulHalaman';
 
 type PropsBerhentiLangganan = {
     Ditemukan: boolean;
+    /** D-299: false = layanan WhatsApp tidak tersedia di toko ini, kalimat tidak menyebut WhatsApp. */
+    WhatsappTersedia: boolean;
     NamaToko: string | null;
     SudahBerhenti: boolean;
     /** Alamat bertanda tangan untuk POST; null setelah berhasil. */
@@ -16,6 +18,7 @@ type PropsBerhentiLangganan = {
 /** CRM-07: pelanggan berhenti menerima pesan promosi dari satu toko (UU PDP, hak menarik persetujuan). */
 export default function HalamanBerhentiLangganan({
     Ditemukan,
+    WhatsappTersedia,
     NamaToko,
     SudahBerhenti,
     AlamatKirim,
@@ -39,8 +42,9 @@ export default function HalamanBerhentiLangganan({
                 <section className="flex flex-col gap-4 rounded-panel border border-garis bg-permukaan p-6">
                     <JudulHalaman>Berhenti menerima promosi dari {NamaToko}?</JudulHalaman>
                     <p className="text-teks-sekunder">
-                        Anda tidak akan menerima pesan promosi WhatsApp atau email dari {NamaToko}. Struk dan
-                        pemberitahuan transaksi tetap dikirim. Anda bisa berlangganan lagi lewat kasir toko.
+                        Anda tidak akan menerima pesan promosi {WhatsappTersedia ? 'WhatsApp atau ' : ''}email dari{' '}
+                        {NamaToko}. Struk dan pemberitahuan transaksi tetap dikirim. Anda bisa berlangganan lagi lewat
+                        kasir toko.
                     </p>
                     <div>
                         <Tombol

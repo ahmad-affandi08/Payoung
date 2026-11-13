@@ -6,8 +6,10 @@ namespace App\Domain\Pelanggan\Model;
 
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Pelanggan\Enum\JenisMutasiDeposit;
 use App\Domain\Pelanggan\Enum\SumberMutasiDeposit;
+use App\Domain\Pelanggan\Tugas\KirimPesanLoyaltiTugas;
 use Illuminate\Support\Carbon;
 
 /**
@@ -36,6 +38,16 @@ final class MutasiDeposit extends ModelDasar
     use MilikTenant;
 
     protected $table = 'MutasiDeposit';
+
+    protected static function booted(): void
+    {
+        // D-299: pesan WhatsApp otomatis deposit diisi/dipakai dari semua jalur; tugas baru jalan setelah commit.
+        self::created(static function (MutasiDeposit $mutasi): void {
+            if (app(KetersediaanWhatsapp::class)->PlatformAktif() && in_array($mutasi->Jenis, [JenisMutasiDeposit::Isi, JenisMutasiDeposit::Pemakaian], true)) {
+                KirimPesanLoyaltiTugas::dispatch($mutasi->IdTenant, 'deposit', $mutasi->Id)->afterCommit();
+            }
+        });
+    }
 
     /**
      * @return array<string, string>

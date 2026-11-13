@@ -29,15 +29,15 @@ void main() {
     'StatusBerikutnya': ['Diambil'],
   };
 
-  Future<LingkunganUji> Masuk(WidgetTester tester, Size ukuran) async {
+  Future<LingkunganUji> Masuk(WidgetTester tester, Size ukuran, {bool whatsapp = true}) async {
     final u = LingkunganUji.Buat();
     await tester.runAsync(() async {
-      await u.SiapkanAktif(dataAwal: DataAwalUji(laundry: true));
+      await u.SiapkanAktif(dataAwal: DataAwalUji(laundry: true, whatsapp: whatsapp));
       await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
     });
     u.server.penangan = (p) async {
       if (p.url.path.endsWith('/data-awal')) {
-        return JsonUji(DataAwalUji(laundry: true));
+        return JsonUji(DataAwalUji(laundry: true, whatsapp: whatsapp));
       }
       if (p.url.path.endsWith('/katalog')) {
         return JsonUji(KatalogUji());
@@ -72,6 +72,19 @@ void main() {
     await tester.tap(finder);
     await Tunggu(tester);
   }
+
+  testWidgets('D-299: tanpa layanan WhatsApp, isian tiket laundry tidak menyebut WhatsApp', (tester) async {
+    final u = await Masuk(tester, const Size(1280, 900), whatsapp: false);
+    await Ketuk(tester, find.byWidgetPredicate((w) => w is UbinProduk && w.nama.startsWith('Americano')));
+    await BukaOpsiKeranjang(tester);
+    await Ketuk(tester, find.text('Tanpa tiket laundry | ketuk untuk mengisi'));
+
+    expect(find.widgetWithText(TextField, 'Nomor WhatsApp (untuk kabar cucian siap)'), findsNothing);
+    expect(find.widgetWithText(TextField, 'Nomor HP'), findsOneWidget);
+    expect(find.textContaining('WhatsApp'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await Lepas(tester, u);
+  });
 
   for (final ukuran in const [Size(1280, 900), Size(800, 1000)]) {
     testWidgets('isi tiket laundry dari keranjang lalu bayar (${ukuran.width.toInt()} dp)', (tester) async {

@@ -649,7 +649,8 @@ void main() {
 
   testWidgets('golden: layar Jual berisi keranjang & halaman Bayar tunai (1280dp)', (tester) async {
     await MuatFontMerek();
-    final u = await MasukJual(tester);
+    // D-299: golden mendokumentasikan layar selesai dengan tombol Kirim struk (WhatsApp tersedia).
+    final u = await MasukJual(tester, dataAwal: DataAwalUji(whatsapp: true));
     await Ketuk(tester, Ubin('Americano Panas'));
     await Ketuk(tester, Ubin('Croissant Mentega Prancis Isi Cokelat Lumer Ukuran Jumbo'));
     await Ketuk(tester, Ubin('Americano Panas'));

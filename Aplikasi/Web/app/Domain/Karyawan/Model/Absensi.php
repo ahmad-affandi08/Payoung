@@ -6,6 +6,8 @@ namespace App\Domain\Karyawan\Model;
 
 use App\Domain\Bersama\Model\ModelDasar;
 use App\Domain\Bersama\Tenant\MilikTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
+use App\Domain\Karyawan\Tugas\KirimLaporanAbsensiTugas;
 use Illuminate\Support\Carbon;
 
 /**
@@ -54,6 +56,23 @@ final class Absensi extends ModelDasar
 
     /** F-18 bagian 4 (D-37): absen dari HP pribadi lewat web dengan geofence & pencocokan wajah. */
     public const SUMBER_WEB = 'Web';
+
+    protected static function booted(): void
+    {
+        // D-299 tahap 3: kabar absen masuk/pulang ke penerima laporan WhatsApp outlet (setelah commit, hanya absen
+        // asli dari kasir atau HP, bukan catatan manual atau keluar otomatis sistem).
+        self::created(static function (Absensi $absensi): void {
+            if (app(KetersediaanWhatsapp::class)->PlatformAktif() && $absensi->Sumber !== self::SUMBER_MANUAL) {
+                KirimLaporanAbsensiTugas::dispatch($absensi->IdTenant, $absensi->Id, 'masuk')->afterCommit();
+            }
+        });
+        self::updated(static function (Absensi $absensi): void {
+            if (app(KetersediaanWhatsapp::class)->PlatformAktif() && $absensi->wasChanged('KeluarPada') && $absensi->KeluarPada !== null
+                && ! $absensi->KeluarOtomatis && $absensi->Sumber !== self::SUMBER_MANUAL && $absensi->DikoreksiOleh === null) {
+                KirimLaporanAbsensiTugas::dispatch($absensi->IdTenant, $absensi->Id, 'keluar')->afterCommit();
+            }
+        });
+    }
 
     /** @var array<string, mixed> */
     protected $attributes = ['Sumber' => self::SUMBER_POS, 'DiluarJadwal' => false, 'PerluDicek' => false, 'KeluarOtomatis' => false];

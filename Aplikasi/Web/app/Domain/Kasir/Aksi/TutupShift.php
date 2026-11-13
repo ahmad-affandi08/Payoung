@@ -12,12 +12,14 @@ use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Peristiwa\PeristiwaIntegrasi;
 use App\Domain\Bersama\Sinkron\Enum\StatusItemSinkron;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Kasir\Data\DataTutupShift;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Kueri\LaporanShift;
 use App\Domain\Kasir\Layanan\PenyusunJurnalSelisihKas;
 use App\Domain\Kasir\Model\BukaUlangShift;
 use App\Domain\Kasir\Model\Shift;
+use App\Domain\Kasir\Tugas\KirimLaporanTutupKasirTugas;
 use App\Domain\Organisasi\Data\DataAnggotaOutlet;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AnggotaOutlet;
@@ -171,6 +173,11 @@ final class TutupShift
             'DisetujuiOleh' => $penyetuju?->nama,
             'PerluTinjauan' => $shift->PerluTinjauan,
         ], idPengguna: $penutup->id);
+
+        // D-299 tahap 3: laporan tutup kasir ke penerima WhatsApp outlet (setelah commit).
+        if (app(KetersediaanWhatsapp::class)->PlatformAktif()) {
+            KirimLaporanTutupKasirTugas::dispatch($idTenant, $shift->Id)->afterCommit();
+        }
 
         // X7 §16.4: webhook `shift.ditutup` (setelah commit; hanya angka kas, tanpa data pribadi kasir).
         PeristiwaIntegrasi::dispatch($idTenant, 'shift.ditutup', $shift->Id, [

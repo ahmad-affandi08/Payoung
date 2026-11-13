@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pelanggan\Layanan;
 
 use App\Domain\Bersama\Antrean\KunciPengiriman;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\HasilKirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
@@ -189,7 +190,7 @@ final class PengirimKampanyePesan
 
     private function KirimWhatsapp(PenerimaKampanye $penerima, KampanyePesan $kampanye, string $namaPelanggan, string $namaUsaha, string $tautan, string $teks): HasilKirimWhatsapp
     {
-        $pengirim = $this->whatsapp->AmbilAktif();
+        $pengirim = $this->whatsapp->AmbilAktif(fungsi: FungsiNomorWhatsapp::Broadcast);
 
         if ($pengirim === null) {
             return HasilKirimWhatsapp::Gagal('Integrasi WhatsApp tidak aktif.');

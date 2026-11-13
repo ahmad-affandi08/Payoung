@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Pemilik\V1;
 
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Organisasi\Enum\PlatformPerangkat;
 use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Tenant\Enum\AplikasiRilis;
@@ -24,7 +25,7 @@ use Illuminate\Http\Request;
  */
 final class KonfigurasiAplikasiKontroler extends DasarPemilikKontroler
 {
-    public function Tampilkan(Request $permintaan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, SektorOutletTenant $sektor): JsonResponse
+    public function Tampilkan(Request $permintaan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, SektorOutletTenant $sektor, KetersediaanWhatsapp $whatsapp): JsonResponse
     {
         $pengguna = $this->Pengguna($permintaan);
         $idTenant = $this->IdTenant();
@@ -57,6 +58,9 @@ final class KonfigurasiAplikasiKontroler extends DasarPemilikKontroler
             // D-183: sinyal sektor untuk menyaring tab; `HanyaPerusahaan` = usaha tanpa kasir (tab Shift & Perangkat tidak berguna).
             'Sektor' => $sektor->AmbilKode(),
             'HanyaPerusahaan' => $sektor->CekHanyaPerusahaan(),
+            // D-299 (aditif): layanan WhatsApp aktif di konsol dan termuat di paket tenant; false = Aplikasi Owner menyembunyikan
+            // semua yang berkaitan dengan WhatsApp.
+            'Whatsapp' => ['Tersedia' => $whatsapp->TersediaUntuk($idTenant)],
             'WaktuServer' => now()->utc()->toIso8601ZuluString(),
         ]);
     }

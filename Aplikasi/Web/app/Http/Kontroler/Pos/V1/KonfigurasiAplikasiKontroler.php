@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Pos\V1;
 
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Organisasi\Aksi\AjukanPersetujuanJarakJauh;
 use App\Domain\Organisasi\Enum\PlatformPerangkat;
 use App\Domain\Organisasi\Model\Outlet;
@@ -33,7 +34,7 @@ use Illuminate\Http\Request;
  */
 final class KonfigurasiAplikasiKontroler extends Kontroler
 {
-    public function Tampilkan(Request $permintaan, StatusLanggananTenant $statusLangganan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, PengumumanBerlaku $pengumuman, RingkasanLanggananTenant $ringkasanLangganan, PemeriksaFiturTenant $fiturTenant, KuotaTransaksiTenant $kuotaTransaksi): JsonResponse
+    public function Tampilkan(Request $permintaan, StatusLanggananTenant $statusLangganan, VersiAplikasiPerangkat $versi, FlagFiturTenant $flag, PengumumanBerlaku $pengumuman, RingkasanLanggananTenant $ringkasanLangganan, PemeriksaFiturTenant $fiturTenant, KuotaTransaksiTenant $kuotaTransaksi, KetersediaanWhatsapp $whatsapp): JsonResponse
     {
         $perangkat = AutentikasiPerangkat::AmbilPerangkat($permintaan);
         $outlet = Outlet::query()->findOrFail($perangkat->IdOutlet);
@@ -69,6 +70,9 @@ final class KonfigurasiAplikasiKontroler extends Kontroler
             'FiturPaket' => [
                 'PersetujuanJarakJauh' => $fiturTenant->CekAktif($perangkat->IdTenant, AjukanPersetujuanJarakJauh::KUNCI_FITUR),
             ],
+            // D-299 (aditif): sama dengan `Whatsapp` di data-awal, dibaca ulang tiap pemeriksaan supaya konsol/paket yang
+            // berubah sampai ke kasir tanpa menunggu "Perbarui data kasir".
+            'Whatsapp' => ['Tersedia' => $whatsapp->TersediaUntuk($perangkat->IdTenant)],
             // P-04 (aditif): kuota transaksi penjualan bulan ini. Aplikasi Kasir menampilkan peringatan pada HampirHabis
             // dan mengunci layar jual pada Habis (transaksi yang sudah terjadi tetap diterima saat sinkron). Server lama
             // tidak mengirimnya, dan aplikasi lama mengabaikannya.

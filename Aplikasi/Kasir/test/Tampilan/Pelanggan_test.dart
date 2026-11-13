@@ -26,12 +26,12 @@ void main() {
   }) async {
     final u = LingkunganUji.Buat();
     await tester.runAsync(() async {
-      await u.SiapkanAktif(dataAwal: dataAwal);
+      await u.SiapkanAktif(dataAwal: dataAwal ?? DataAwalUji(whatsapp: true));
       await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
     });
     u.server.penangan = (p) async {
       if (p.url.path.endsWith('/data-awal')) {
-        return JsonUji(dataAwal ?? DataAwalUji());
+        return JsonUji(dataAwal ?? DataAwalUji(whatsapp: true));
       }
       if (p.url.path.endsWith('/katalog')) {
         return JsonUji(katalog ?? KatalogUji());
@@ -60,6 +60,18 @@ void main() {
     await tester.tap(finder);
     await Tunggu(tester);
   }
+
+  testWidgets('D-299: tanpa layanan WhatsApp, isian pelanggan baru berlabel No. HP saja', (tester) async {
+    final u = await MasukJual(tester, const Size(1280, 900), dataAwal: DataAwalUji());
+    await Ketuk(tester, find.byWidgetPredicate((w) => w is UbinProduk && w.nama == 'Americano Panas'));
+    await KetukOpsiKeranjang(tester, find.byKey(const ValueKey('PilihPelanggan')));
+    await Ketuk(tester, find.widgetWithText(FilledButton, 'Pelanggan baru'));
+
+    expect(find.widgetWithText(TextField, 'No. HP/WA'), findsNothing);
+    expect(find.widgetWithText(TextField, 'No. HP'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await Lepas(tester, u);
+  });
 
   for (final (nama, ukuran, pakaiF2) in [
     ('1280', const Size(1280, 900), false),

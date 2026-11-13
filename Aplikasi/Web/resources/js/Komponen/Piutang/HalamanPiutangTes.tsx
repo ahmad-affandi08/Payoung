@@ -7,7 +7,13 @@ import HalamanDaftarPelunasan from '@/Halaman/Kelola/Piutang/Pelunasan/Daftar';
 import HalamanDetailPelunasan from '@/Halaman/Kelola/Piutang/Pelunasan/Detail';
 import HalamanFormPelunasan, { PeriksaAlokasiPiutang } from '@/Halaman/Kelola/Piutang/Pelunasan/Form';
 import DialogHapusBukuPiutang from '@/Komponen/Piutang/DialogHapusBukuPiutang';
-import { AturHalamanUji, kirimanForm, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
+import {
+    AturHalamanUji,
+    kirimanForm,
+    RenderUji,
+    TambahPropsHalamanUji,
+    tiruanRouter,
+} from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import { UbahNilai } from '@/Pengujian/InteraksiPilihan';
 import type { BarisPiutang, IzinPiutang, PiutangTerbuka } from '@/Tipe/Piutang';
@@ -34,6 +40,7 @@ function Piutang(perubahan: Partial<PiutangTerbuka> = {}): PiutangTerbuka {
 describe('Halaman piutang pelanggan (F-12)', () => {
     beforeEach(() => {
         AturHalamanUji({}, '/kelola/piutang');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         window.history.replaceState({}, '', '/kelola/piutang');
         vi.clearAllMocks();
     });
@@ -127,6 +134,45 @@ describe('Halaman piutang pelanggan (F-12)', () => {
         cleanup();
 
         RenderUji(<HalamanDaftarPiutangPelanggan {...props} Izin={IzinLihat} />);
+        expect(screen.queryByRole('button', { name: /Pengingat otomatis/ })).toBeNull();
+    });
+
+    it('D-299: tanpa layanan WhatsApp, kolom pengingat, menu pengingat otomatis, dan aksi pengingat hilang', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const baris: BarisPiutang = {
+            Uuid: '01J9PTG0000000000000000001',
+            Nomor: 'UTM-K01-260924-0001',
+            Tanggal: '2026-09-01',
+            JatuhTempo: '2026-10-01',
+            HariLewat: 0,
+            Umur: 'BelumJatuhTempo',
+            LabelUmur: 'Belum jatuh tempo',
+            UuidPelanggan: Toko.Uuid,
+            NamaPelanggan: Toko.Nama,
+            Jumlah: '1250000000.00',
+            Sisa: '1250000000.00',
+            Status: 'BelumLunas',
+            LabelStatus: 'Belum lunas',
+            PengingatTerakhir: {
+                Waktu: '2026-09-28T02:00:00Z',
+                Kanal: 'Whatsapp',
+                Status: 'Terkirim',
+                LabelStatus: 'Terkirim',
+            },
+        };
+        RenderUji(
+            <HalamanDaftarPiutangPelanggan
+                Piutang={{ ...BuatHasilTabel([baris]), Ringkasan: { Total: '1250000000.00', Kelompok: [] } }}
+                OpsiUmur={[]}
+                OpsiPelanggan={[Toko]}
+                HariIni="2026-09-28"
+                Pengingat={{ Aktif: false, HariSebelum: 3, IngatkanSaatLewat: true }}
+                Izin={{ ...IzinLihat, Ingatkan: true }}
+            />,
+        );
+
+        expect(screen.queryByText('Terkirim')).toBeNull();
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
         expect(screen.queryByRole('button', { name: /Pengingat otomatis/ })).toBeNull();
     });
 

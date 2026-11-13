@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { AlamatPiutang } from '@/Komponen/Piutang/BagianPiutang';
 import type { KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 
 /** Batas server `AntrekanPengingatPiutangMassal::MAKS`. */
 export const MaksPengingatMassal = 100;
@@ -15,9 +16,15 @@ type BarisDenganPelanggan = { Uuid: string; UuidPelanggan: string | null };
  * dikirim (tidak ada nomor); server melewati yang baru diingatkan atau tanpa nomor sah dan merangkum alasannya.
  */
 export default function AksiMassalPiutang({ konteks }: { konteks: KonteksAksiMassal<BarisDenganPelanggan> }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [memproses, AturMemproses] = useState(false);
     const dapatDiingatkan = konteks.terpilih.filter((p) => p.UuidPelanggan !== null);
     const terlaluBanyak = dapatDiingatkan.length > MaksPengingatMassal;
+
+    // D-299: seluruh aksi ini memakai WhatsApp, jadi hilang bila layanannya tidak tersedia.
+    if (!whatsappTersedia) {
+        return null;
+    }
 
     return (
         <div className="flex flex-wrap items-center gap-2">

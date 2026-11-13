@@ -11,11 +11,13 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Peristiwa\PeristiwaIntegrasi;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Kasir\Enum\StatusShift;
 use App\Domain\Kasir\Kueri\LaporanShift;
 use App\Domain\Kasir\Layanan\PenyusunJurnalSelisihKas;
 use App\Domain\Kasir\Model\BukaUlangShift;
 use App\Domain\Kasir\Model\Shift;
+use App\Domain\Kasir\Tugas\KirimLaporanTutupKasirTugas;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use Carbon\CarbonImmutable;
@@ -106,6 +108,11 @@ final class TutupShiftPaksa
                 'Selisih' => $shift->Selisih,
                 'Alasan' => $alasan,
             ], idPengguna: $idPelaku);
+
+            // D-299 tahap 3: laporan tutup kasir ke penerima WhatsApp outlet (setelah commit).
+            if (app(KetersediaanWhatsapp::class)->PlatformAktif()) {
+                KirimLaporanTutupKasirTugas::dispatch($idTenant, $shift->Id)->afterCommit();
+            }
 
             PeristiwaIntegrasi::dispatch($idTenant, 'shift.ditutup', $shift->Id, [
                 'Uuid' => $shift->Uuid,

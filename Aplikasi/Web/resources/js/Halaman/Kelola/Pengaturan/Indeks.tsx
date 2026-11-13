@@ -5,6 +5,7 @@ import { useState } from 'react';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import DialogNaikPaket from '@/Komponen/Langganan/DialogNaikPaket';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
+import { CekButirWhatsappTampil } from '@/Pustaka/Whatsapp';
 import {
     CekButirSesuaiEdisi,
     daftarPengaturan,
@@ -32,6 +33,7 @@ export default function HalamanPengaturan() {
     const CekBoleh = (butir: ButirPengaturan) =>
         CekButirSesuaiEdisi(butir, props.Edisi) &&
         CekSesuaiSektor(butir, props.SektorOutlet ?? []) &&
+        CekButirWhatsappTampil(butir.fitur, props.WhatsappPlatformAktif === true) &&
         (butir.izin === null ||
             PunyaIzinTenant(props.Akses, butir.izin) ||
             (butir.atau !== undefined && PunyaIzinTenant(props.Akses, butir.atau)));

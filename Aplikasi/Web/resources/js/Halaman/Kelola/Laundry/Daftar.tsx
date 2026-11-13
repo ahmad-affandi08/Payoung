@@ -13,6 +13,7 @@ import { DialogFooter } from '@/Komponen/Ui/dialog';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import { RingkasIsiLaundry, type PengaturanLaundry, type PropsDaftarLaundry, type TiketLaundry } from '@/Tipe/Laundry';
 
@@ -35,6 +36,17 @@ const LabelAksiStatus: Record<string, string> = {
     Siap: 'Tandai siap diambil',
     Diambil: 'Sudah diambil pelanggan',
 };
+
+/** D-299: kabar "siap diambil" ke pelanggan lewat WhatsApp, jadi tidak tampil bila layanannya tidak tersedia. */
+function KabarPelanggan({ tiket }: { tiket: TiketLaundry }) {
+    const whatsappTersedia = useWhatsappTersedia();
+
+    if (!whatsappTersedia || tiket.Status !== 'Siap' || !tiket.NotifikasiTerkirim) {
+        return null;
+    }
+
+    return <span className="text-keterangan text-teks-sekunder">Pelanggan sudah dikabari</span>;
+}
 
 const kolom: KolomTabel<TiketLaundry>[] = [
     {
@@ -106,9 +118,7 @@ const kolom: KolomTabel<TiketLaundry>[] = [
                 {t.TerlambatDiambil ? (
                     <span className="text-keterangan font-semibold text-bahaya">Lama belum diambil</span>
                 ) : null}
-                {t.Status === 'Siap' && t.NotifikasiTerkirim ? (
-                    <span className="text-keterangan text-teks-sekunder">Pelanggan sudah dikabari</span>
-                ) : null}
+                <KabarPelanggan tiket={t} />
             </span>
         ),
     },
@@ -130,6 +140,7 @@ const OpsiHari = [2, 3, 5, 7, 14, 30].map((h) => ({ Nilai: String(h), Label: `${
 
 /** Pengaturan laundry: aktif di kasir, durasi layanan, parfum, notifikasi, batas belum diambil. */
 function DialogPengaturan({ pengaturan, saatTutup }: { pengaturan: PengaturanLaundry; saatTutup: () => void }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const formulir = useForm<PengaturanLaundry>({ ...pengaturan });
     const [parfum, AturParfum] = useState(pengaturan.Parfum.join(', '));
     const d = formulir.data;
@@ -151,11 +162,13 @@ function DialogPengaturan({ pengaturan, saatTutup }: { pengaturan: PengaturanLau
                         nilai={d.Aktif}
                         saatBerubah={(nilai) => formulir.setData('Aktif', nilai)}
                     />
-                    <KotakCentang
-                        label="Kabari pelanggan lewat WhatsApp saat cucian siap"
-                        nilai={d.NotifikasiSiap}
-                        saatBerubah={(nilai) => formulir.setData('NotifikasiSiap', nilai)}
-                    />
+                    {whatsappTersedia ? (
+                        <KotakCentang
+                            label="Kabari pelanggan lewat WhatsApp saat cucian siap"
+                            nilai={d.NotifikasiSiap}
+                            saatBerubah={(nilai) => formulir.setData('NotifikasiSiap', nilai)}
+                        />
+                    ) : null}
                 </div>
                 <BidangPilihan
                     label="Lama layanan reguler"
@@ -213,6 +226,7 @@ function DialogPengaturan({ pengaturan, saatTutup }: { pengaturan: PengaturanLau
  * aplikasi kasir; saat "Siap" pelanggan dikabari lewat WhatsApp dan bisa melacak lewat QR di nota.
  */
 export default function HalamanDaftarLaundry({ Tiket, OpsiStatus, OpsiOutlet, Pengaturan, Izin }: PropsDaftarLaundry) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [dialog, AturDialog] = useState<'pengaturan' | null>(null);
     const UbahStatus = (t: TiketLaundry, status: string) =>
         router.post(`${alamat}/${t.Uuid}/status`, { Status: status }, { preserveScroll: true });
@@ -248,8 +262,10 @@ export default function HalamanDaftarLaundry({ Tiket, OpsiStatus, OpsiOutlet, Pe
     return (
         <TataLetakAplikasi judul="Laundry">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Cucian dicatat kasir saat pelanggan menyerahkan pakaian. Ubah statusnya sesuai proses. Saat siap,
-                pelanggan dikabari dan bisa melacak lewat QR di nota.
+                Cucian dicatat kasir saat pelanggan menyerahkan pakaian. Ubah statusnya sesuai proses.{' '}
+                {whatsappTersedia
+                    ? 'Saat siap, pelanggan dikabari dan bisa melacak lewat QR di nota.'
+                    : 'Pelanggan bisa melacak lewat QR di nota.'}
                 {Pengaturan.Aktif ? null : ' Isian laundry di aplikasi kasir belum aktif (buka Pengaturan).'}
             </p>
             <AksiHalaman>

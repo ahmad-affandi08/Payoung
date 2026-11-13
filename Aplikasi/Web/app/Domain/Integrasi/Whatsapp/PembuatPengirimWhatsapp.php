@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Integrasi\Whatsapp;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
+use App\Domain\Integrasi\Model\NomorPengirimWhatsapp;
 use App\Domain\Integrasi\Model\WhatsappTenant;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorFonnte;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorMetaCloud;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorStarSender;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorWablas;
 use App\Domain\Integrasi\Whatsapp\Adaptor\AdaptorWatzap;
-use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +31,7 @@ final class PembuatPengirimWhatsapp
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly MeterKuotaWhatsapp $meter,
-        private readonly PemeriksaFiturTenant $fitur,
+        private readonly KetersediaanWhatsapp $ketersediaan,
     ) {}
 
     /**
@@ -49,13 +50,28 @@ final class PembuatPengirimWhatsapp
         };
     }
 
-    /** Pengirim atas nama tenant aktif: nomor milik tenant (tanpa kuota) atau nomor Payoung berkuota. */
-    public function AmbilAktif(): ?PengirimWhatsapp
+    /**
+     * Pengirim atas nama tenant aktif. Urutan (D-299): nomor pengirim yang terhubung dan melayani [fungsi] (nomor outlet
+     * [idOutlet] dulu, lalu nomor tingkat usaha, lalu nomor outlet lain), WhatsApp akun sendiri (tanpa kuota), terakhir
+     * nomor Payoung berkuota. Tanpa [idOutlet] semua nomor yang melayani fungsi itu dipertimbangkan.
+     */
+    public function AmbilAktif(?int $idOutlet = null, FungsiNomorWhatsapp $fungsi = FungsiNomorWhatsapp::Pelanggan): ?PengirimWhatsapp
     {
         $idTenant = $this->konteks->Ambil();
 
         if ($idTenant === null) {
             return $this->AmbilAktifPlatform();
+        }
+
+        // Pintu penjaga: konsol belum mengaktifkan WhatsApp atau paket tidak memuatnya = tidak ada pengirim sama sekali.
+        if (! $this->ketersediaan->TersediaUntuk($idTenant)) {
+            return null;
+        }
+
+        $nomor = $this->AmbilNomorPengirim($idOutlet, $fungsi);
+
+        if ($nomor !== null) {
+            return $nomor;
         }
 
         $milik = $this->AmbilMilikTenant();
@@ -67,6 +83,26 @@ final class PembuatPengirimWhatsapp
         $platform = $this->AmbilAktifPlatform();
 
         return $platform === null ? null : new PengirimWhatsappBerkuota($platform, $this->meter, $idTenant);
+    }
+
+    /** Pengirim dari nomor pengirim terdaftar (pindai QR) yang siap kirim dan melayani [fungsi]; null bila tidak ada. */
+    public function AmbilNomorPengirim(?int $idOutlet, FungsiNomorWhatsapp $fungsi): ?PengirimWhatsapp
+    {
+        $kandidat = NomorPengirimWhatsapp::query()->where('Aktif', true)->where('Status', 'Terhubung')->orderBy('Id')->get()
+            ->filter(fn (NomorPengirimWhatsapp $nomor): bool => $nomor->SiapKirim() && $nomor->Fungsi->Melayani($fungsi))
+            ->sortBy(fn (NomorPengirimWhatsapp $nomor): int => match (true) {
+                $idOutlet !== null && $nomor->IdOutlet === $idOutlet => 0,
+                $nomor->IdOutlet === null => 2,
+                default => 4,
+            } + ($nomor->Fungsi === $fungsi ? 0 : 1))->values();
+        // Tingkat outlet/usaha dulu, di tingkat yang sama nomor berfungsi persis didahulukan atas nomor "Umum".
+        $dipilih = $kandidat->first();
+
+        if ($dipilih === null || $dipilih->TokenPerangkat === null) {
+            return null;
+        }
+
+        return $this->Buat($dipilih->Penyedia, [], ['Token' => $dipilih->TokenPerangkat]);
     }
 
     /** Nomor Payoung apa adanya, tanpa meteran: pesan Payoung ke pemilik, uji koneksi, dan tanpa konteks tenant. */
@@ -89,11 +125,11 @@ final class PembuatPengirimWhatsapp
     /** WhatsApp milik tenant aktif bila sudah diuji dan diaktifkan; null bila belum ada atau kredensialnya rusak. */
     public function AmbilMilikTenant(): ?PengirimWhatsapp
     {
-        // Nomor sendiri tidak berkuota, jadi satu-satunya penjaganya adalah fitur paket: tenant yang turun paket tidak
-        // boleh terus mengirim tanpa batas lewat nomor yang sudah tersimpan (laundry, reservasi, servis, insight).
+        // Nomor sendiri tidak berkuota, jadi penjaganya adalah pintu `KetersediaanWhatsapp` (konsol aktif + fitur paket):
+        // tenant yang turun paket tidak boleh terus mengirim tanpa batas lewat nomor yang sudah tersimpan.
         $idTenant = $this->konteks->Ambil();
 
-        if ($idTenant !== null && ! $this->fitur->CekAktif($idTenant, PemeriksaFiturTenant::KUNCI_WHATSAPP)) {
+        if ($idTenant !== null && ! $this->ketersediaan->TersediaUntuk($idTenant)) {
             return null;
         }
 

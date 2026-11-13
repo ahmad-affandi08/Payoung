@@ -12,12 +12,36 @@ import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import { usePage } from '@inertiajs/react';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisDaftarInvoice, PropsDaftarInvoice } from '@/Tipe/Invoice';
 
-const kolom: KolomTabel<BarisDaftarInvoice>[] = [
+/** D-299: status kirim (lewat WhatsApp) hanya ada bila layanan WhatsApp tersedia, tanpa itu tinggal status dilihat. */
+function BuatKolomDikirim(whatsappTersedia: boolean): KolomTabel<BarisDaftarInvoice> {
+    const label = whatsappTersedia ? 'Dikirim / dilihat' : 'Dilihat';
+
+    return {
+        id: 'Dikirim',
+        header: label,
+        enableSorting: false,
+        meta: { label, prioritas: 'rendah' },
+        cell: ({ row: { original: d } }) => (
+            <span className="text-keterangan text-teks-sekunder">
+                {whatsappTersedia ? (
+                    <>
+                        {d.TerkirimPada === null ? 'Belum dikirim' : `Dikirim ${FormatTanggalWaktu(d.TerkirimPada)}`}
+                        <br />
+                    </>
+                ) : null}
+                {d.DilihatPada === null ? 'Belum dilihat' : `Dilihat ${FormatTanggalWaktu(d.DilihatPada)}`}
+            </span>
+        ),
+    };
+}
+
+const kolomDasar: KolomTabel<BarisDaftarInvoice>[] = [
     {
         id: 'Nomor',
         accessorKey: 'Nomor',
@@ -90,19 +114,6 @@ const kolom: KolomTabel<BarisDaftarInvoice>[] = [
         meta: { label: 'Sisa tagihan', angka: true, prioritas: 'penting' },
         cell: ({ row: { original: d } }) => (d.Sisa === null ? '—' : FormatRupiah(d.Sisa)),
     },
-    {
-        id: 'Dikirim',
-        header: 'Dikirim / dilihat',
-        enableSorting: false,
-        meta: { label: 'Dikirim / dilihat', prioritas: 'rendah' },
-        cell: ({ row: { original: d } }) => (
-            <span className="text-keterangan text-teks-sekunder">
-                {d.TerkirimPada === null ? 'Belum dikirim' : `Dikirim ${FormatTanggalWaktu(d.TerkirimPada)}`}
-                <br />
-                {d.DilihatPada === null ? 'Belum dilihat' : `Dilihat ${FormatTanggalWaktu(d.DilihatPada)}`}
-            </span>
-        ),
-    },
 ];
 
 /**
@@ -111,6 +122,8 @@ const kolom: KolomTabel<BarisDaftarInvoice>[] = [
  */
 export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, Izin, Ringkasan }: PropsDaftarInvoice) {
     const { props } = usePage<PropsBersamaAplikasi>();
+    const whatsappTersedia = useWhatsappTersedia();
+    const kolom = [...kolomDasar, BuatKolomDikirim(whatsappTersedia)];
     const saring: DefinisiSaring[] = [
         {
             id: 'Pembayaran',
@@ -140,7 +153,9 @@ export default function HalamanDaftarInvoice({ Invoice, OpsiStatus, OpsiJenis, I
     return (
         <TataLetakAplikasi judul="Invoice">
             <p className="max-w-3xl text-isi text-teks-sekunder">
-                Tagihan untuk jasa dan barang tanpa stok. Kirim lewat WhatsApp atau tautan, lalu catat pembayarannya.
+                {whatsappTersedia
+                    ? 'Tagihan untuk jasa dan barang tanpa stok. Kirim lewat WhatsApp atau tautan, lalu catat pembayarannya.'
+                    : 'Tagihan untuk jasa dan barang tanpa stok. Bagikan lewat tautan, lalu catat pembayarannya.'}
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="invoice.kelola" objek="invoice" /> : null}
             <DaftarGalatServer galat={props.errors} />

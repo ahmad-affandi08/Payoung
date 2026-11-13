@@ -18,6 +18,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Kompon
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { KeputusanPenawaran, PropsDetailPenawaran } from '@/Tipe/Penawaran';
 
@@ -35,6 +36,7 @@ export default function HalamanDetailPenawaran({
     Pengiriman,
     Tindakan,
 }: PropsDetailPenawaran) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [batalkan, AturBatalkan] = useState(false);
     const [putuskan, AturPutuskan] = useState<KeputusanPenawaran | null>(null);
     const [memproses, AturMemproses] = useState<string | null>(null);
@@ -124,7 +126,7 @@ export default function HalamanDetailPenawaran({
                               },
                           ]
                         : []),
-                    ...(Tindakan.Kirim
+                    ...(whatsappTersedia && Tindakan.Kirim
                         ? [
                               {
                                   label: 'Kirim lewat WhatsApp',
@@ -179,9 +181,15 @@ export default function HalamanDetailPenawaran({
                     {p.HargaTermasukPajak ? 'Sudah termasuk pajak' : 'Belum termasuk pajak'}
                 </KeteranganGrosir>
                 {p.Status !== 'Draf' ? (
-                    <KeteranganGrosir label="Dikirim / dilihat pelanggan">
-                        {p.TerkirimPada === null ? 'Belum dikirim' : `Dikirim ${FormatTanggalWaktu(p.TerkirimPada)}`}
-                        {' | '}
+                    <KeteranganGrosir label={whatsappTersedia ? 'Dikirim / dilihat pelanggan' : 'Dilihat pelanggan'}>
+                        {whatsappTersedia ? (
+                            <>
+                                {p.TerkirimPada === null
+                                    ? 'Belum dikirim'
+                                    : `Dikirim ${FormatTanggalWaktu(p.TerkirimPada)}`}
+                                {' | '}
+                            </>
+                        ) : null}
                         {p.DilihatPada === null
                             ? 'Belum dilihat'
                             : `Dilihat ${FormatTanggalWaktu(p.DilihatPada)} (${String(p.JumlahDilihat)}x)`}
@@ -248,7 +256,7 @@ export default function HalamanDetailPenawaran({
                 />
             </section>
 
-            {Pengiriman.length > 0 ? (
+            {whatsappTersedia && Pengiriman.length > 0 ? (
                 <Panel judul="Pengiriman WhatsApp">
                     <ul className="flex flex-col gap-1 text-isi">
                         {Pengiriman.map((k) => (

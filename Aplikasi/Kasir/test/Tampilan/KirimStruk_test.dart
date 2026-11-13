@@ -45,16 +45,17 @@ void main() {
   Future<LingkunganUji> BayarTunai(
     WidgetTester tester,
     Size ukuran,
-    Future<http.Response> Function(http.Request p) kirim,
-  ) async {
+    Future<http.Response> Function(http.Request p) kirim, {
+    bool tersedia = true,
+  }) async {
     final u = LingkunganUji.Buat();
     await tester.runAsync(() async {
-      await u.SiapkanAktif();
+      await u.SiapkanAktif(dataAwal: DataAwalUji(whatsapp: tersedia));
       await u.shift.BukaShift(kasir: await u.Staf('Rina Wulandari'), kasAwal: Uang.DariBulat(500000));
     });
     u.server.penangan = (p) async {
       if (p.url.path.endsWith('/data-awal')) {
-        return JsonUji(DataAwalUji());
+        return JsonUji(DataAwalUji(whatsapp: tersedia));
       }
       if (p.url.path.endsWith('/katalog')) {
         return JsonUji(KatalogUji());
@@ -88,6 +89,9 @@ void main() {
     // D-66: layar berhasil berlatar warna primer merek.
     final latarBerhasil = tester.widget<DecoratedBox>(find.byKey(const ValueKey('LayarBerhasilBayar')));
     expect((latarBerhasil.decoration as BoxDecoration).color, TokenWarna.bawaan.brand);
+    if (!tersedia) {
+      return u;
+    }
     await Ketuk(find.widgetWithText(OutlinedButton, 'Kirim struk'));
     expect(find.byType(DialogKirimStruk), findsOneWidget);
     return u;
@@ -125,6 +129,21 @@ void main() {
       expect(tester.takeException(), isNull);
       await Lepas(tester, u);
     });
+  }
+
+  for (final ukuran in const [Size(1280, 900), Size(360, 740)]) {
+    testWidgets(
+      'D-299: tombol Kirim struk hilang dari layar berhasil saat WhatsApp tidak tersedia (${ukuran.width.toInt()} dp)',
+      (tester) async {
+        final u = await BayarTunai(tester, ukuran, (p) async => throw http.ClientException('offline'), tersedia: false);
+        expect(find.text('Pembayaran berhasil'), findsOneWidget);
+        expect(find.widgetWithText(OutlinedButton, 'Kirim struk'), findsNothing);
+        expect(find.byType(TombolKirimStruk), findsNothing);
+        expect(find.byKey(const ValueKey('AturPrinterSelesai')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await Lepas(tester, u);
+      },
+    );
   }
 
   testWidgets('D-33: tanpa pilihan Email. Nomor tidak sah ditolak di perangkat. Belum tersinkron → pesan jelas', (

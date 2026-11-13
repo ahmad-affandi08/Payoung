@@ -13,6 +13,7 @@ import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
+import { LabelTanpaWhatsapp, useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsDetailInvoiceBerulang } from '@/Tipe/Invoice';
 
@@ -27,6 +28,7 @@ export default function HalamanDetailInvoiceBerulang({
     InvoiceTerbit,
     Tindakan,
 }: PropsDetailInvoiceBerulang) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [memproses, AturMemproses] = useState<string | null>(null);
     const [hentikan, AturHentikan] = useState(false);
 
@@ -63,7 +65,9 @@ export default function HalamanDetailInvoiceBerulang({
                             jenis={t.Status === 'Aktif' ? 'sukses' : t.Status === 'Dijeda' ? 'peringatan' : 'netral'}
                             teks={t.LabelStatus}
                         />
-                        <span className="text-isi text-teks-sekunder">{t.LabelMode}</span>
+                        <span className="text-isi text-teks-sekunder">
+                            {LabelTanpaWhatsapp(t.LabelMode, whatsappTersedia)}
+                        </span>
                     </>
                 }
                 langkah={[

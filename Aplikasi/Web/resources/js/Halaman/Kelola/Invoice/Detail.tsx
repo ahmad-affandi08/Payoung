@@ -25,6 +25,7 @@ import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { JumlahkanDesimal, KurangiDesimal, AmbilTandaDesimal } from '@/Pustaka/HitungDesimal';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { KonfirmasiInvoice, PropsDetailInvoice } from '@/Tipe/Invoice';
 
@@ -49,6 +50,7 @@ export default function HalamanDetailInvoice({
     OpsiAkun,
     Tindakan,
 }: PropsDetailInvoice) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [batalkan, AturBatalkan] = useState(false);
     const [bayar, AturBayar] = useState(false);
     // Klaim pelanggan yang sedang diterima (membuka dialog pembayaran terisi) atau ditolak (dialog alasan).
@@ -122,7 +124,7 @@ export default function HalamanDetailInvoice({
                     ...(Tindakan.CatatPembayaran
                         ? [{ label: 'Catat pembayaran', saatKlik: () => AturBayar(true) }]
                         : []),
-                    ...(Tindakan.Kirim
+                    ...(whatsappTersedia && Tindakan.Kirim
                         ? [
                               {
                                   label: 'Kirim lewat WhatsApp',
@@ -131,7 +133,7 @@ export default function HalamanDetailInvoice({
                               },
                           ]
                         : []),
-                    ...(Tindakan.Ingatkan
+                    ...(whatsappTersedia && Tindakan.Ingatkan
                         ? [
                               {
                                   label: 'Kirim pengingat',
@@ -179,11 +181,15 @@ export default function HalamanDetailInvoice({
                     <KeteranganGrosir label="Sisa tagihan">{FormatRupiah(invoice.Sisa)}</KeteranganGrosir>
                 ) : null}
                 {invoice.Status === 'Terbit' ? (
-                    <KeteranganGrosir label="Dikirim / dilihat pelanggan">
-                        {invoice.TerkirimPada === null
-                            ? 'Belum dikirim'
-                            : `Dikirim ${FormatTanggalWaktu(invoice.TerkirimPada)}`}
-                        {' | '}
+                    <KeteranganGrosir label={whatsappTersedia ? 'Dikirim / dilihat pelanggan' : 'Dilihat pelanggan'}>
+                        {whatsappTersedia ? (
+                            <>
+                                {invoice.TerkirimPada === null
+                                    ? 'Belum dikirim'
+                                    : `Dikirim ${FormatTanggalWaktu(invoice.TerkirimPada)}`}
+                                {' | '}
+                            </>
+                        ) : null}
                         {invoice.DilihatPada === null
                             ? 'Belum dilihat'
                             : `Dilihat ${FormatTanggalWaktu(invoice.DilihatPada)} (${String(invoice.JumlahDilihat)}x)`}
@@ -379,7 +385,7 @@ export default function HalamanDetailInvoice({
                 </Panel>
             ) : null}
 
-            {Pengiriman.length > 0 ? (
+            {whatsappTersedia && Pengiriman.length > 0 ? (
                 <Panel judul="Pengiriman WhatsApp">
                     <ul className="flex flex-col gap-1 text-isi">
                         {Pengiriman.map((k) => (

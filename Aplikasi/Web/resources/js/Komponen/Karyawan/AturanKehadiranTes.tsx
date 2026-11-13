@@ -2,7 +2,7 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanAturanKehadiran from '@/Halaman/Kelola/Karyawan/AturanKehadiran';
-import { AturHalamanUji, kirimanForm, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, kirimanForm, RenderUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
 import type { PropsAturanKehadiran } from '@/Tipe/Karyawan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
@@ -36,7 +36,10 @@ function Props(ubah: Partial<PropsAturanKehadiran> = {}): PropsAturanKehadiran {
 }
 
 describe('Aturan kehadiran (F-18 bagian 5)', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/karyawan/aturan-kehadiran'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/karyawan/aturan-kehadiran');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
     afterEach(() => cleanup());
 
     it('menyimpan semua aturan sebagai teks menit. Wajib jadwal dan notifikasi bisa dinyalakan', () => {
@@ -92,6 +95,26 @@ describe('Aturan kehadiran (F-18 bagian 5)', () => {
         expect(screen.getByText('Hanya bisa melihat')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Simpan aturan kehadiran' })).toBeNull();
         expect((screen.getByLabelText(/Toleransi terlambat \(menit\)/) as HTMLInputElement).disabled).toBe(true);
+    });
+
+    it('D-299: panel Notifikasi WhatsApp hilang total bila layanan WhatsApp tidak tersedia, ada bila tersedia', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const { unmount: Tutup } = RenderUji(<HalamanAturanKehadiran {...Props()} />);
+
+        expect(screen.queryByText('Notifikasi WhatsApp')).toBeNull();
+        expect(screen.queryByRole('checkbox', { name: 'Ingatkan karyawan sebelum shift dimulai' })).toBeNull();
+        expect(
+            screen.queryByRole('checkbox', { name: 'Beritahu pengelola bila karyawan terlambat atau belum masuk' }),
+        ).toBeNull();
+        expect(screen.queryByText(/pengingat WhatsApp/)).toBeNull();
+        expect(screen.getByRole('checkbox', { name: 'Tutup otomatis absensi yang lupa keluar' })).toBeTruthy();
+        Tutup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+        RenderUji(<HalamanAturanKehadiran {...Props()} />);
+
+        expect(screen.getByText('Notifikasi WhatsApp')).toBeTruthy();
+        expect(screen.getByRole('checkbox', { name: 'Ingatkan karyawan sebelum shift dimulai' })).toBeTruthy();
     });
 
     it('WhatsApp belum aktif: pengaturan tetap bisa disimpan tetapi ada peringatan', () => {

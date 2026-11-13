@@ -18,6 +18,7 @@ import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { HitungSubtotalInvoice } from '@/Pustaka/HitungInvoice';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisIsianInvoice, PropsFormInvoiceBerulang } from '@/Tipe/Invoice';
@@ -49,6 +50,7 @@ export default function HalamanFormInvoiceBerulang({
 }: PropsFormInvoiceBerulang) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
+    const whatsappTersedia = useWhatsappTersedia();
     const ubah = Isian !== null;
     const terkunci = Isian?.JadwalTerkunci ?? false;
     const [nama, AturNama] = useState(Isian?.Nama ?? '');
@@ -62,7 +64,11 @@ export default function HalamanFormInvoiceBerulang({
     const [mulai, AturMulai] = useState(Isian?.TanggalMulai ?? HariIni);
     const [berakhir, AturBerakhir] = useState(Isian?.TanggalBerakhir ?? '');
     const [batas, AturBatas] = useState(Isian?.BatasKali ?? '');
-    const [mode, AturMode] = useState<string>(Isian?.Mode ?? 'Terbitkan');
+    const [mode, AturMode] = useState<string>(
+        // D-299: tanpa WhatsApp, templat yang dulu "terbitkan dan kirim" tampil sebagai "terbitkan otomatis".
+        Isian?.Mode === 'TerbitkanDanKirim' && !whatsappTersedia ? 'Terbitkan' : (Isian?.Mode ?? 'Terbitkan'),
+    );
+    const opsiMode = OpsiMode.filter((o) => whatsappTersedia || o.Nilai !== 'TerbitkanDanKirim');
     const [termin, AturTermin] = useState(Isian?.TerminHari ?? '');
     // Termin dari data pelanggan yang terisi otomatis; diganti lagi bila pelanggan lain dipilih dan belum diubah manual.
     const [terminOtomatis, AturTerminOtomatis] = useState('');
@@ -206,7 +212,7 @@ export default function HalamanFormInvoiceBerulang({
                             <BidangPilihan
                                 label="Yang dilakukan sistem"
                                 nilai={mode}
-                                opsi={OpsiMode}
+                                opsi={opsiMode}
                                 saatBerubah={AturMode}
                                 galat={galat.Mode}
                                 required

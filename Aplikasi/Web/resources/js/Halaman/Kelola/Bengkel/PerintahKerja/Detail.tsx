@@ -19,6 +19,7 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { JudulUnit, KataUnit, RincianUnit } from '@/Pustaka/UnitServis';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import {
@@ -107,6 +108,7 @@ function PanelPersetujuan({
     bolehCatat: boolean;
     saatCatat: () => void;
 }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const [tersalin, AturTersalin] = useState(false);
     const [memproses, AturMemproses] = useState(false);
     const Minta = (kirimWhatsapp: boolean) =>
@@ -136,10 +138,14 @@ function PanelPersetujuan({
                             {p.Tautan}
                         </code>
                         <p className="text-keterangan text-teks-sekunder">
-                            Berlaku sampai {FormatTanggalWaktu(p.KedaluwarsaPada)} |{' '}
-                            {p.DikirimPada
-                                ? `terkirim lewat WhatsApp ${FormatTanggalWaktu(p.DikirimPada)}`
-                                : 'belum terkirim lewat WhatsApp'}
+                            Berlaku sampai {FormatTanggalWaktu(p.KedaluwarsaPada)}
+                            {whatsappTersedia
+                                ? ` | ${
+                                      p.DikirimPada
+                                          ? `terkirim lewat WhatsApp ${FormatTanggalWaktu(p.DikirimPada)}`
+                                          : 'belum terkirim lewat WhatsApp'
+                                  }`
+                                : ''}
                         </p>
                     </>
                 ) : null}
@@ -156,11 +162,21 @@ function PanelPersetujuan({
                     ) : null}
                     {bolehMinta ? (
                         <>
-                            <Tombol memproses={memproses} onClick={() => Minta(true)}>
-                                {p.Tautan ? 'Kirim ulang lewat WhatsApp' : 'Minta persetujuan lewat WhatsApp'}
-                            </Tombol>
-                            <Tombol varian="sekunder" memproses={memproses} onClick={() => Minta(false)}>
-                                {p.Tautan ? 'Buat tautan baru' : 'Buat tautan saja'}
+                            {whatsappTersedia ? (
+                                <Tombol memproses={memproses} onClick={() => Minta(true)}>
+                                    {p.Tautan ? 'Kirim ulang lewat WhatsApp' : 'Minta persetujuan lewat WhatsApp'}
+                                </Tombol>
+                            ) : null}
+                            <Tombol
+                                varian={whatsappTersedia ? 'sekunder' : 'utama'}
+                                memproses={memproses}
+                                onClick={() => Minta(false)}
+                            >
+                                {p.Tautan
+                                    ? 'Buat tautan baru'
+                                    : whatsappTersedia
+                                      ? 'Buat tautan saja'
+                                      : 'Buat tautan persetujuan'}
                             </Tombol>
                         </>
                     ) : null}
@@ -307,6 +323,7 @@ function DialogStatus({
 
 /** Jadwal servis berkala (tanggal dan/atau KM); pengingat WhatsApp dikirim H-3. */
 function PanelServisBerikutnya({ pk, hariIni }: { pk: PerintahKerja; hariIni: string }) {
+    const whatsappTersedia = useWhatsappTersedia();
     const { props } = usePage<PropsBersamaAplikasi>();
     const [tanggal, AturTanggal] = useState(pk.ServisBerikutnyaPada ?? '');
     const [km, AturKm] = useState(pk.ServisBerikutnyaKm === null ? '' : String(pk.ServisBerikutnyaKm));
@@ -315,7 +332,11 @@ function PanelServisBerikutnya({ pk, hariIni }: { pk: PerintahKerja; hariIni: st
     return (
         <Panel
             judul="Servis berikutnya"
-            keterangan="Pelanggan diingatkan lewat WhatsApp 3 hari sebelum tanggalnya, dan muncul di Kotak Tindakan saat jatuh tempo."
+            keterangan={
+                whatsappTersedia
+                    ? 'Pelanggan diingatkan lewat WhatsApp 3 hari sebelum tanggalnya, dan muncul di Kotak Tindakan saat jatuh tempo.'
+                    : 'Servis yang jatuh tempo muncul di Kotak Tindakan.'
+            }
         >
             <form
                 onSubmit={(e: FormEvent) => {
@@ -357,7 +378,7 @@ function PanelServisBerikutnya({ pk, hariIni }: { pk: PerintahKerja; hariIni: st
                         />
                     )}
                 </div>
-                {pk.PengingatServisTerkirimPada ? (
+                {whatsappTersedia && pk.PengingatServisTerkirimPada ? (
                     <p className="text-keterangan text-teks-sekunder">
                         Pengingat terkirim {FormatTanggalWaktu(pk.PengingatServisTerkirimPada)}.
                     </p>

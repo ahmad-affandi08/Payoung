@@ -1242,6 +1242,21 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
     }
   }
 
+  /// D-299: WhatsApp dimatikan/diaktifkan di konsol atau paket berubah → keadaan lokal ikut berubah dan layar yang
+  /// membaca [KonteksPenjualan] dimuat ulang. Null (server lama) = tidak mengubah.
+  Future<void> _SimpanKetersediaanWhatsapp(bool? tersedia) async {
+    if (tersedia == null) {
+      return;
+    }
+    final repositori = ref.read(penyediaRepositori);
+    final baru = tersedia ? '1' : '0';
+    if (await repositori.AmbilPengaturan(KunciPengaturan.whatsappTersedia) == baru) {
+      return;
+    }
+    await repositori.SimpanPengaturan(KunciPengaturan.whatsappTersedia, baru);
+    ref.invalidate(penyediaKonteksPenjualan);
+  }
+
   Future<void> Periksa({bool paksa = false}) async {
     final sekarang = ref.read(penyediaJam)();
     final terakhir = _terakhir;
@@ -1260,6 +1275,7 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
       state = konfigurasi;
       // Fitur paket yang diubah di konsol ikut sampai ke perangkat tanpa menunggu "Perbarui data kasir".
       await ref.read(penyediaLayananPersetujuanJarakJauh).SimpanKeadaan(konfigurasi.persetujuanJarakJauh);
+      await _SimpanKetersediaanWhatsapp(konfigurasi.whatsappTersedia);
       if (konfigurasi.logDiminta) {
         await _UnggahLogBilaDiminta();
       }

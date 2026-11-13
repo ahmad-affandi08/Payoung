@@ -8,6 +8,7 @@ import IkonNavigasi, { type NamaIkonNavigasi } from '@/Komponen/Navigasi/IkonNav
 import DialogNaikPaket from '@/Komponen/Langganan/DialogNaikPaket';
 import { butirAkun, CekButirSesuaiEdisi, daftarPengaturan, type GrupPengaturan } from '@/Pustaka/DaftarPengaturan';
 import { CekSesuaiSektor } from '@/Pustaka/Sektor';
+import { CekButirWhatsappTampil } from '@/Pustaka/Whatsapp';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Komponen/Ui/collapsible';
 import {
     Sidebar,
@@ -427,6 +428,15 @@ const menuPelanggan: ItemMenu[] = [
         href: '/kelola/promo/klaim-pemasok',
         izin: IzinTenant.PelangganLihat,
         fitur: 'promo.mesin',
+        kecualiSektor: ['BIZ'],
+        kelompok: 'Promo & loyalti',
+    },
+    // D-299: Pusat WhatsApp, nomor pengirim per outlet (pindai QR). Hilang bila konsol belum mengaktifkan WhatsApp.
+    {
+        label: 'Pusat WhatsApp',
+        href: '/kelola/pelanggan/whatsapp',
+        izin: IzinTenant.PelangganKelola,
+        fitur: 'integrasi.whatsapp',
         kecualiSektor: ['BIZ'],
         kelompok: 'Promo & loyalti',
     },
@@ -1139,6 +1149,7 @@ export function SusunPencarian(
     akses: PropsBersamaAplikasi['Akses'],
     edisi?: PropsBersamaAplikasi['Edisi'],
     sektorOutlet: string[] = [],
+    whatsappPlatformAktif = false,
 ): {
     halaman: HalamanPencarian[];
     sumber: SumberPencarian[];
@@ -1154,6 +1165,7 @@ export function SusunPencarian(
                 (item) =>
                     CekButirSesuaiEdisi(item, edisi) &&
                     CekSesuaiSektor(item, sektorOutlet) &&
+                    CekButirWhatsappTampil(item.fitur, whatsappPlatformAktif) &&
                     (item.izin === null ||
                         PunyaIzinTenant(akses, item.izin) ||
                         (item.atau !== undefined && PunyaIzinTenant(akses, item.atau))),
@@ -1307,7 +1319,12 @@ function PilihTampilanItem(akses: PropsBersamaAplikasi['Akses'], sektorOutlet: s
 
 export function SaringMenuTerlihat(
     akses: PropsBersamaAplikasi['Akses'],
-    opsi: { sektorOutlet?: string[]; sederhana?: boolean; edisi?: 'Saas' | 'Lisensi' | undefined } = {},
+    opsi: {
+        sektorOutlet?: string[];
+        sederhana?: boolean;
+        edisi?: 'Saas' | 'Lisensi' | undefined;
+        whatsappPlatformAktif?: boolean;
+    } = {},
 ): MenuTerlihat[] {
     const CekBoleh = (menu: ItemMenu) =>
         (menu.edisi === undefined || menu.edisi === (opsi.edisi ?? 'Saas')) &&
@@ -1315,6 +1332,7 @@ export function SaringMenuTerlihat(
             PunyaIzinTenant(akses, menu.izin) ||
             (menu.atau !== undefined && PunyaIzinTenant(akses, menu.atau))) &&
         CekSesuaiSektor(menu, opsi.sektorOutlet ?? []) &&
+        CekButirWhatsappTampil(menu.fitur, opsi.whatsappPlatformAktif === true) &&
         !(opsi.sederhana === true && menu.lanjutan === true);
 
     return daftarMenu.flatMap((menu): MenuTerlihat[] => {
@@ -1636,13 +1654,20 @@ function IsiTataLetakAplikasi({ judul, jejak = [], tanpaJejak = false, children 
     const tenantAktif = props.TenantAktif;
     const sektorOutlet = props.SektorOutlet ?? [];
     const [sederhana, AturSederhana] = useState(BacaModeSederhana);
-    const menuTerlihat = SaringMenuTerlihat(props.Akses, { sektorOutlet, sederhana, edisi: props.Edisi });
+    const whatsappPlatformAktif = props.WhatsappPlatformAktif === true;
+    const menuTerlihat = SaringMenuTerlihat(props.Akses, {
+        sektorOutlet,
+        sederhana,
+        edisi: props.Edisi,
+        whatsappPlatformAktif,
+    });
     // Ctrl+K tetap menemukan menu lanjutan walau mode sederhana aktif.
     const pencarian = SusunPencarian(
-        SaringMenuTerlihat(props.Akses, { sektorOutlet, edisi: props.Edisi }),
+        SaringMenuTerlihat(props.Akses, { sektorOutlet, edisi: props.Edisi, whatsappPlatformAktif }),
         props.Akses,
         props.Edisi,
         sektorOutlet,
+        whatsappPlatformAktif,
     );
     const UbahSederhana = (aktif: boolean) => {
         AturSederhana(aktif);

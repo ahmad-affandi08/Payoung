@@ -6,6 +6,7 @@ import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import { DropdownMenuItem } from '@/Komponen/Ui/dropdown-menu';
+import { useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import { LabelAksiStatusBengkel, type BarisDaftarPerintahKerja, type PropsDaftarPerintahKerja } from '@/Tipe/Bengkel';
 
@@ -19,6 +20,7 @@ export default function HalamanDaftarPerintahKerja({
     OpsiOutlet,
     OpsiMekanik,
 }: PropsDaftarPerintahKerja) {
+    const whatsappTersedia = useWhatsappTersedia();
     const UbahStatus = (p: BarisDaftarPerintahKerja, status: string) =>
         router.post(`${AlamatPerintahKerja}/${p.Uuid}/status`, { Status: status }, { preserveScroll: true });
     const saring: DefinisiSaring[] = [
@@ -63,7 +65,11 @@ export default function HalamanDaftarPerintahKerja({
     return (
         <TataLetakAplikasi judul="Perintah kerja bengkel">
             <AksiHalaman
-                keterangan="Catat keluhan, susun estimasi jasa & sparepart, minta persetujuan pelanggan lewat WhatsApp, lalu tagih di kasir."
+                keterangan={
+                    whatsappTersedia
+                        ? 'Catat keluhan, susun estimasi jasa & sparepart, minta persetujuan pelanggan lewat WhatsApp, lalu tagih di kasir.'
+                        : 'Catat keluhan, susun estimasi jasa & sparepart, minta persetujuan pelanggan lewat tautan, lalu tagih di kasir.'
+                }
                 utama={
                     <Button asChild className="h-8 pointer-coarse:h-11">
                         <Link href={`${AlamatPerintahKerja}/buat`}>Buat perintah kerja</Link>

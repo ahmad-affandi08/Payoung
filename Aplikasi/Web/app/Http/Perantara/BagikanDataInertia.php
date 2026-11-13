@@ -7,6 +7,7 @@ namespace App\Http\Perantara;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Dukungan\Enum\JenisAksesDukungan;
 use App\Domain\Dukungan\Layanan\KonteksAksesDukungan;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Karyawan\Kueri\AbsenSaya;
 use App\Domain\Lisensi\Enum\EdisiAplikasi;
 use App\Domain\Organisasi\Enum\IzinTenant;
@@ -205,6 +206,20 @@ final class BagikanDataInertia extends Middleware
             },
             // Audit kemudahan pakai #33 (D-38): menu modul khusus sektor (grosir, laundry, reservasi, apotek, …) hanya
             // tampil bila ada outlet bersektor itu; kosong = sektor belum diketahui, semua menu tampil.
+            // D-299: layanan WhatsApp tersedia bagi tenant ini hanya bila sudah diaktifkan di konsol dan dimuat paketnya.
+            // Bila false, semua tombol, menu, dan isian WhatsApp di layar tenant disembunyikan.
+            'WhatsappTersedia' => function () use ($pengguna): bool {
+                return $pengguna instanceof Pengguna
+                    && app(KonteksTenant::class)->Ambil() !== null
+                    && app(KetersediaanWhatsapp::class)->Tersedia();
+            },
+            // Konsol sudah mengaktifkan layanan WhatsApp platform (tanpa memandang paket). Dipakai menyembunyikan menu WhatsApp
+            // sepenuhnya, sedangkan `WhatsappTersedia` (plus paket) menentukan tombol di dalam halaman.
+            'WhatsappPlatformAktif' => function () use ($pengguna): bool {
+                return $pengguna instanceof Pengguna
+                    && app(KonteksTenant::class)->Ambil() !== null
+                    && app(KetersediaanWhatsapp::class)->PlatformAktif();
+            },
             'SektorOutlet' => function () use ($pengguna): array {
                 return $pengguna instanceof Pengguna && app(KonteksTenant::class)->Ambil() !== null
                     ? app(SektorOutletTenant::class)->AmbilKode()

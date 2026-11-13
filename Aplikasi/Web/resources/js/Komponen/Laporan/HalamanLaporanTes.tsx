@@ -477,7 +477,24 @@ describe('F-14a laporan penjualan', () => {
         expect(screen.getByRole('table', { name: 'Ringkasan penjualan harian' })).toBeTruthy();
     });
 
+    it('D-299: sakelar insight mingguan WhatsApp hilang bila layanan WhatsApp tidak tersedia, ada bila tersedia', () => {
+        const props = PropsPenjualan({ InsightWhatsapp: { BisaWhatsapp: true, Aktif: true } });
+        const { unmount: Tutup } = RenderUji(<HalamanLaporanPenjualan {...props} />);
+        expect(screen.queryByRole('switch', { name: 'Kirim insight mingguan ke WhatsApp saya' })).toBeNull();
+        Tutup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        const { unmount: TutupLagi } = RenderUji(<HalamanLaporanPenjualan {...props} />);
+        expect(screen.queryByRole('switch', { name: 'Kirim insight mingguan ke WhatsApp saya' })).toBeNull();
+        TutupLagi();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+        RenderUji(<HalamanLaporanPenjualan {...props} />);
+        expect(screen.getByRole('switch', { name: 'Kirim insight mingguan ke WhatsApp saya' })).toBeTruthy();
+    });
+
     it('X6: sakelar insight mingguan mengirim pilihan langganan ke server', () => {
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
         RenderUji(
             <HalamanLaporanPenjualan {...PropsPenjualan({ InsightWhatsapp: { BisaWhatsapp: true, Aktif: true } })} />,
         );

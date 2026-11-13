@@ -568,7 +568,9 @@ class _IsiRincian extends ConsumerWidget {
     final tombol = <Widget>[
       _TombolCetakUlang(uuidPenjualan: p.Uuid),
       TombolStrukTamu(uuidPenjualan: p.Uuid, cetakUlang: true),
-      TombolKirimStruk(uuidPenjualan: p.Uuid),
+      // D-299: Kirim struk (WhatsApp) hanya bila layanan WhatsApp tersedia.
+      if (ref.watch(penyediaKonteksPenjualan.select((k) => k.value?.whatsappTersedia ?? false)))
+        TombolKirimStruk(uuidPenjualan: p.Uuid),
       if (saatRetur != null)
         SizedBox(
           height: TokenJarak.targetSentuh,

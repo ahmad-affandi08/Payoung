@@ -319,6 +319,7 @@ class _PanelKalenderBookingState extends ConsumerState<PanelKalenderBooking> {
     final layanan = kalender?.layanan ?? const <LayananReservasiPos>[];
     final staf = kalender?.staf ?? const <StafReservasiPos>[];
     final slot = _slot;
+    final adaWhatsapp = ref.watch(penyediaKonteksPenjualan).value?.whatsappTersedia ?? false;
     return Column(
       key: const ValueKey('FormulirBooking'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -395,9 +396,10 @@ class _PanelKalenderBookingState extends ConsumerState<PanelKalenderBooking> {
           controller: _noHp,
           maxLength: 20,
           keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(
-            labelText: 'Nomor HP (WhatsApp)',
-            helperText: 'Untuk pengingat H-1 lewat WhatsApp.',
+          decoration: InputDecoration(
+            // D-299: tanpa layanan WhatsApp, tidak ada pengingat H-1, jadi label dan keterangannya hilang.
+            labelText: adaWhatsapp ? 'Nomor HP (WhatsApp)' : 'Nomor HP',
+            helperText: adaWhatsapp ? 'Untuk pengingat H-1 lewat WhatsApp.' : null,
           ),
         ),
         TextField(

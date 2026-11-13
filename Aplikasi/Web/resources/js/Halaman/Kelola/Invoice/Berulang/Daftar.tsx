@@ -9,6 +9,7 @@ import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
+import { LabelTanpaWhatsapp, useWhatsappTersedia } from '@/Pustaka/Whatsapp';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisDaftarInvoiceBerulang, PropsDaftarInvoiceBerulang, StatusInvoiceBerulang } from '@/Tipe/Invoice';
@@ -67,7 +68,7 @@ const kolom: KolomTabel<BarisDaftarInvoiceBerulang>[] = [
         header: 'Mode',
         enableSorting: false,
         meta: { label: 'Mode', prioritas: 'rendah' },
-        cell: ({ row }) => row.original.LabelMode,
+        cell: ({ row }) => <LabelModeBerulang label={row.original.LabelMode} />,
     },
     {
         id: 'Status',
@@ -125,4 +126,8 @@ export default function HalamanDaftarInvoiceBerulang({ Templat, OpsiStatus, Izin
             />
         </TataLetakAplikasi>
     );
+}
+
+function LabelModeBerulang({ label }: { label: string }) {
+    return <>{LabelTanpaWhatsapp(label, useWhatsappTersedia())}</>;
 }

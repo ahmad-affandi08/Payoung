@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDaftarReservasiMeja from '@/Halaman/Kelola/Reservasi/DaftarMeja';
 import { BuatHasilTabel } from '@/Komponen/Katalog/DataUjiKatalog';
-import { AturHalamanUji, RenderUji } from '@/Komponen/Katalog/TiruanInertia';
+import { AturHalamanUji, RenderUji, TambahPropsHalamanUji } from '@/Komponen/Katalog/TiruanInertia';
 import { BukaMenu } from '@/Pengujian/InteraksiRadix';
 import type { BarisReservasiMeja, PropsDaftarReservasiMeja } from '@/Tipe/Reservasi';
 
@@ -72,7 +72,10 @@ function Props(
 }
 
 describe('Reservasi meja (D-145)', () => {
-    beforeEach(() => AturHalamanUji({}, '/kelola/reservasi-meja'));
+    beforeEach(() => {
+        AturHalamanUji({}, '/kelola/reservasi-meja');
+        TambahPropsHalamanUji({ WhatsappTersedia: true });
+    });
     afterEach(() => cleanup());
 
     it('aksi baris: datang, ubah, catat uang muka, tidak datang, batalkan, tanpa uang muka tampil "Tanpa uang muka"', () => {
@@ -110,6 +113,19 @@ describe('Reservasi meja (D-145)', () => {
         expect(screen.getByText(/Masih ada uang muka/)).toBeTruthy();
         expect(screen.getByRole('combobox', { name: /Uang muka/ })).toBeTruthy();
         expect(screen.getByRole('textbox', { name: /Alasan pembatalan/ })).toBeTruthy();
+    });
+
+    it('D-299: label nomor WhatsApp hanya ada bila layanan tersedia', () => {
+        RenderUji(<HalamanDaftarReservasiMeja {...Props()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Catat reservasi' }));
+        expect(screen.getByLabelText(/Nomor HP \(WhatsApp\)/)).toBeTruthy();
+        cleanup();
+
+        TambahPropsHalamanUji({ WhatsappTersedia: false });
+        RenderUji(<HalamanDaftarReservasiMeja {...Props()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Catat reservasi' }));
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
+        expect(screen.getByLabelText(/Nomor HP/)).toBeTruthy();
     });
 
     it('catat reservasi: meja menampilkan kapasitas dan jam wajib diisi', () => {

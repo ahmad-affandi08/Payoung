@@ -139,6 +139,7 @@ describe('CRM-07 kampanye pesan', () => {
         RenderUji(
             <HalamanBerhentiLangganan
                 Ditemukan
+                WhatsappTersedia
                 NamaToko="Kopi Senja"
                 SudahBerhenti={false}
                 AlamatKirim="https://contoh.id/berhenti-langganan/x?signature=1"
@@ -147,12 +148,26 @@ describe('CRM-07 kampanye pesan', () => {
         expect(screen.getByRole('button', { name: 'Berhenti berlangganan' })).toBeTruthy();
         cleanup();
 
-        RenderUji(<HalamanBerhentiLangganan Ditemukan NamaToko="Kopi Senja" SudahBerhenti AlamatKirim={null} />);
+        RenderUji(
+            <HalamanBerhentiLangganan
+                Ditemukan
+                WhatsappTersedia
+                NamaToko="Kopi Senja"
+                SudahBerhenti
+                AlamatKirim={null}
+            />,
+        );
         expect(screen.getByText(/Kopi Senja tidak akan mengirim pesan promosi lagi/)).toBeTruthy();
         cleanup();
 
         RenderUji(
-            <HalamanBerhentiLangganan Ditemukan={false} NamaToko={null} SudahBerhenti={false} AlamatKirim={null} />,
+            <HalamanBerhentiLangganan
+                Ditemukan={false}
+                WhatsappTersedia={false}
+                NamaToko={null}
+                SudahBerhenti={false}
+                AlamatKirim={null}
+            />,
         );
         expect(screen.getByText('Tautan tidak berlaku')).toBeTruthy();
     });
@@ -240,5 +255,33 @@ describe('Wizard buat kampanye (CRM-07)', () => {
 
         expect(screen.queryByText(/Langkah \d dari/)).toBeNull();
         expect(screen.getByRole('button', { name: 'Simpan draf' })).toBeTruthy();
+    });
+
+    it('D-299: halaman berhenti berlangganan tidak menyebut WhatsApp bila layanannya tidak tersedia', () => {
+        const alamat = 'https://contoh.id/berhenti-langganan/x?signature=1';
+        const { unmount: Lepas } = RenderUji(
+            <HalamanBerhentiLangganan
+                Ditemukan
+                WhatsappTersedia
+                NamaToko="Kopi Senja"
+                SudahBerhenti={false}
+                AlamatKirim={alamat}
+            />,
+        );
+        expect(screen.getByText(/pesan promosi WhatsApp atau email/)).toBeTruthy();
+        Lepas();
+
+        RenderUji(
+            <HalamanBerhentiLangganan
+                Ditemukan
+                WhatsappTersedia={false}
+                NamaToko="Kopi Senja"
+                SudahBerhenti={false}
+                AlamatKirim={alamat}
+            />,
+        );
+        expect(screen.queryByText(/WhatsApp/)).toBeNull();
+        expect(screen.getByText(/pesan promosi email dari Kopi Senja/)).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Berhenti berlangganan' })).toBeTruthy();
     });
 });

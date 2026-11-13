@@ -6,6 +6,7 @@ namespace App\Http\Kontroler\Publik;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Karyawan\Kueri\JadwalStafReservasi;
 use App\Domain\Katalog\Kueri\LayananReservasi;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
@@ -61,6 +62,8 @@ final class ReservasiPublikKontroler extends Kontroler
                     'UrlLogo' => app(UrlLogoPublik::class)->Ambil($idTenant),
                 ],
                 'Slug' => $slugTenant,
+                // D-299: tanpa layanan WhatsApp, janji konfirmasi dan pengingat lewat WhatsApp tidak ditampilkan.
+                'WhatsappTersedia' => app(KetersediaanWhatsapp::class)->TersediaUntuk($idTenant),
                 'Outlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas(null, hanyaAktif: true)),
                 'Layanan' => array_map(fn (array $l): array => ['Uuid' => $l['Uuid'], 'Nama' => $l['Nama'], 'DurasiMenit' => $l['DurasiMenit'], 'Harga' => $l['Harga']], $layanan->Ambil(true)),
                 'Staf' => $staf->AmbilOpsi(),
