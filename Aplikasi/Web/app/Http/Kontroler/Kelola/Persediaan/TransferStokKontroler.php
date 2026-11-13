@@ -308,6 +308,7 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
     /**
      * @param  array<string, mixed>|null  $transfer
      * @param  array<string, mixed>  $awal
+     * @param  list<array<string, mixed>>  $permintaanMenunggu  permintaan stok yang menunggu dipenuhi, sudah bertautan (D-287)
      */
     private function RenderForm(string $mode, ?array $transfer, array $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''], array $permintaanMenunggu = []): Response
     {

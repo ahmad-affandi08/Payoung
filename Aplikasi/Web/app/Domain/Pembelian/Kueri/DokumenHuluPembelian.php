@@ -34,7 +34,7 @@ final class DokumenHuluPembelian
      */
     public function PenerimaanUntukRetur(?array $idOutletBoleh, int $batas = self::BATAS_BAWAAN): array
     {
-        return $this->SusunPenerimaan($this->KueriPenerimaanBerstok($idOutletBoleh)->limit($batas)->get()->all());
+        return $this->SusunPenerimaan(array_values($this->KueriPenerimaanBerstok($idOutletBoleh)->limit($batas)->get()->all()));
     }
 
     /**
@@ -45,7 +45,7 @@ final class DokumenHuluPembelian
      */
     public function PenerimaanUntukBiayaTambahan(?array $idOutletBoleh, int $batas = self::BATAS_BAWAAN): array
     {
-        return $this->SusunPenerimaan($this->KueriPenerimaanBerstok($idOutletBoleh)->limit($batas)->get()->all());
+        return $this->SusunPenerimaan(array_values($this->KueriPenerimaanBerstok($idOutletBoleh)->limit($batas)->get()->all()));
     }
 
     /**
@@ -68,7 +68,7 @@ final class DokumenHuluPembelian
             ->get()
             ->all();
 
-        return $this->SusunPenerimaan($penerimaan);
+        return $this->SusunPenerimaan(array_values($penerimaan));
     }
 
     /**

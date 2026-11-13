@@ -191,6 +191,7 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
 
     /**
      * @param  array<string, mixed>|null  $pesanan
+     * @param  list<array<string, mixed>>  $permintaanSiap  permintaan disetujui yang belum jadi PO, sudah bertautan (D-287)
      */
     private function RenderForm(string $mode, ?array $pesanan, array $permintaanSiap = []): Response
     {

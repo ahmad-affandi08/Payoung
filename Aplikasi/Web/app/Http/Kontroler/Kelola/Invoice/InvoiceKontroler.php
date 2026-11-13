@@ -318,6 +318,7 @@ final class InvoiceKontroler extends DasarKelolaKontroler
 
     /**
      * @param  array<string, mixed>|null  $isian
+     * @param  list<array<string, mixed>>  $penawaranSiap  penawaran diterima yang belum jadi invoice, sudah bertautan (D-287)
      */
     private function RenderForm(?array $isian, JenisInvoice $jenis, IsianFormInvoice $kueri, array $penawaranSiap = []): Response
     {
