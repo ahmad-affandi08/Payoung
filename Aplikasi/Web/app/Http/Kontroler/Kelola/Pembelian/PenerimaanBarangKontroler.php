@@ -17,6 +17,7 @@ use App\Domain\Pembelian\Kueri\DaftarDokumenPembelian;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
 use App\Domain\Pembelian\Kueri\IsianFormPembelian;
+use App\Domain\Pembelian\Kueri\PesananTerbukaUntukDiterima;
 use App\Domain\Pembelian\Layanan\PemrosesPenerimaanBarang;
 use App\Domain\Pembelian\Layanan\PenyimpanLampiranPembelian;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
@@ -24,6 +25,7 @@ use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
 use App\Http\Permintaan\Kelola\Pembelian\SimpanPenerimaanBarangPermintaan;
 use App\Http\Respons\ResponsTabel;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,7 +50,12 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, IsianFormPembelian $isian, DaftarPemasok $pemasok): Response|RedirectResponse
+    /**
+     * `?pesanan={uuid}` = form terisi dari sisa pesanan. Tanpa itu, bila ada pesanan yang masih menunggu barang, tampil
+     * halaman "pilih pesanan" lebih dulu (penerimaan tanpa pesanan tetap lewat `?tanpa-pesanan=1`). Tanpa pesanan terbuka,
+     * langsung ke form tanpa pesanan supaya tidak ada langkah tambahan.
+     */
+    public function Buat(Request $permintaan, IsianFormPembelian $isian, DaftarPemasok $pemasok, PesananTerbukaUntukDiterima $terbuka): Response|RedirectResponse
     {
         $uuidPesanan = $permintaan->query('pesanan');
         $pesanan = null;
@@ -63,9 +70,16 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
             $pesanan = $isian->PenerimaanDariPesanan($po);
         }
 
+        $pesananTerbuka = $terbuka->Daftar(CarbonImmutable::parse($this->HariIni()), $this->IdOutletBoleh());
+
+        if ($pesanan === null && $pesananTerbuka !== [] && ! $permintaan->boolean('tanpa-pesanan')) {
+            return Inertia::render('Kelola/Pembelian/Penerimaan/Pilih', ['PesananTerbuka' => $pesananTerbuka]);
+        }
+
         return Inertia::render('Kelola/Pembelian/Penerimaan/Form', [
             'Mode' => 'Penerimaan',
             'Pesanan' => $pesanan,
+            'PesananTerbuka' => $pesanan === null ? $pesananTerbuka : [],
             'OpsiPemasok' => $pemasok->AmbilPilihan(),
             'OpsiGudang' => $this->AmbilOpsiGudang(),
             'OpsiAkun' => [],
@@ -92,11 +106,12 @@ final class PenerimaanBarangKontroler extends DasarPembelianKontroler
         return to_route('kelola.pembelian.penerimaan.detail', ['penerimaan' => $grn->Uuid])->with('Kilat', "{$grn->Nomor} dicatat. Stok bertambah dan hutang belum difakturkan tercatat.");
     }
 
-    public function BuatBelanja(DaftarPemasok $pemasok, DaftarAkunPilihan $akun, SaldoUangLaci $saldoLaci): Response
+    public function BuatBelanja(DaftarPemasok $pemasok, DaftarAkunPilihan $akun, SaldoUangLaci $saldoLaci, PesananTerbukaUntukDiterima $terbuka): Response
     {
         return Inertia::render('Kelola/Pembelian/Penerimaan/Form', [
             'Mode' => 'BelanjaStok',
             'Pesanan' => null,
+            'PesananTerbuka' => $terbuka->Daftar(CarbonImmutable::parse($this->HariIni()), $this->IdOutletBoleh()),
             'OpsiPemasok' => $pemasok->AmbilPilihan(),
             'OpsiGudang' => $this->AmbilOpsiGudang(),
             'OpsiAkun' => array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Kode' => $a['Kode'], 'Nama' => $a['Nama']], $akun->AmbilKasBank()),

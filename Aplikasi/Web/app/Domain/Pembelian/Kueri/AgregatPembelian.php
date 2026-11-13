@@ -111,7 +111,7 @@ final class AgregatPembelian
      * akhir), lalu tanggal. Bukan laporan berperiode: ini keadaan saat ini.
      *
      * @param  list<int>|null  $idOutletBoleh
-     * @return list<array{Uuid: string, Nomor: string, IdPemasok: int, Tanggal: string, PerkiraanTiba: string|null, Status: string, LabelStatus: string, UmurHari: int, HariTerlambat: int, JumlahBaris: int, JumlahBarisSisa: int, Total: string, NilaiSisa: string}>
+     * @return list<array{Uuid: string, Nomor: string, IdPemasok: int, IdGudang: int, Tanggal: string, PerkiraanTiba: string|null, Status: string, LabelStatus: string, UmurHari: int, HariTerlambat: int, JumlahBaris: int, JumlahBarisSisa: int, Total: string, NilaiSisa: string}>
      */
     public function PesananOutstanding(CarbonImmutable $hariIni, ?array $idOutletBoleh, int $batas = 500): array
     {
@@ -150,6 +150,7 @@ final class AgregatPembelian
                 'Uuid' => $po->Uuid,
                 'Nomor' => $po->Nomor,
                 'IdPemasok' => $po->IdPemasok,
+                'IdGudang' => $po->IdGudang,
                 'Tanggal' => $po->Tanggal->toDateString(),
                 'PerkiraanTiba' => $perkiraan?->toDateString(),
                 'Status' => $po->Status->value,

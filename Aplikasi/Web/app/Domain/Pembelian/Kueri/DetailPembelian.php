@@ -20,6 +20,7 @@ use App\Domain\Pembelian\Model\PembayaranHutangAlokasi;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Domain\Pembelian\Model\PenerimaanBarangDetail;
 use App\Domain\Pembelian\Model\PengirimanPesananPembelian;
+use App\Domain\Pembelian\Model\PermintaanPembelian;
 use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Pembelian\Model\PesananPembelianDetail;
 use App\Domain\Pembelian\Model\ReturPembelian;
@@ -49,6 +50,7 @@ final class DetailPembelian
         $gudang = $this->peta->Gudang([$po->IdGudang])[$po->IdGudang] ?? null;
         $pengguna = $this->peta->Pengguna([$po->DibuatOleh, $po->DisetujuiOleh, $po->DibatalkanOleh]);
         $pemasok = $po->Pemasok;
+        $permintaan = PermintaanPembelian::query()->where('IdPesananPembelian', $po->Id)->first(['Uuid', 'Nomor']);
 
         return [
             'Pesanan' => [
@@ -90,6 +92,8 @@ final class DetailPembelian
                 'JumlahDiterima' => $d->JumlahDiterima,
                 'Sisa' => self::TidakNegatif(Kuantitas::Dari($d->Jumlah)->Kurangi(Kuantitas::Dari($d->JumlahDiterima)))->KeString(),
             ])->all()),
+            // Rantai dokumen: permintaan pembelian yang dijadikan pesanan ini (bila ada).
+            'Permintaan' => $permintaan === null ? null : ['Uuid' => $permintaan->Uuid, 'Nomor' => $permintaan->Nomor],
             'Penerimaan' => $this->RingkasPenerimaan(PenerimaanBarang::query()->where('IdPesananPembelian', $po->Id)->orderBy('Id')->get()),
             'Pengiriman' => array_values(PengirimanPesananPembelian::query()->where('IdPesananPembelian', $po->Id)->orderByDesc('Id')->limit(10)->get()->map(fn (PengirimanPesananPembelian $p): array => [
                 'Uuid' => $p->Uuid,

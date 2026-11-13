@@ -14,6 +14,7 @@ use App\Domain\Bersama\Tindakan\Kontrak\PenyediaTindakan;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Enum\StatusPesananPembelian;
+use App\Domain\Pembelian\Kueri\PesananTerbukaUntukDiterima;
 use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\PesananPembelian;
 
@@ -23,6 +24,8 @@ use App\Domain\Pembelian\Model\PesananPembelian;
  *   `pembelian.kelola`);
  * - draf PO otomatis dari stok menipis yang belum diajukan (D-23 D, izin `pembelian.kelola`);
  * - pesanan pembelian yang menunggu persetujuan (izin `pembelian.po.setujui`);
+ * - pesanan pembelian yang disetujui tetapi barangnya terlambat datang (lewat perkiraan tiba, atau lebih dari
+ *   [PesananTerbukaUntukDiterima::HARI_TANPA_PERKIRAAN] hari tanpa perkiraan), izin `pembelian.kelola`;
  * - uang laci kasir yang dicatat keluar untuk belanja stok tetapi barangnya belum dicatat, per outlet (D-256, izin
  *   `pembelian.kelola`).
  */
@@ -33,6 +36,7 @@ final class PenyediaTindakanPembelian implements PenyediaTindakan
     public function __construct(
         private readonly SaldoUangLaci $saldoLaci,
         private readonly NamaTampilUsaha $namaUsaha,
+        private readonly PesananTerbukaUntukDiterima $pesananTerbuka,
     ) {}
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
@@ -147,6 +151,34 @@ final class PenyediaTindakanPembelian implements PenyediaTindakan
                 $jumlah === 0 ? [] : array_values($po->orderBy('Id')->limit(DataButirTindakan::BATAS_RINCIAN)->get()->map(
                     fn (PesananPembelian $p): DataRincianTindakan => new DataRincianTindakan($p->Uuid, $p->Nomor, null, null, '/kelola/pembelian/pesanan/'.$p->Uuid),
                 )->all()),
+            );
+        }
+
+        if ($konteks->CekIzin('pembelian.kelola')) {
+            // Pesanan disetujui yang barangnya belum lengkap datang dan sudah lewat perkiraan tiba.
+            $terlambat = array_values(array_filter(
+                $this->pesananTerbuka->Daftar($konteks->hariIni, $idOutlet),
+                fn (array $p): bool => $p['Terlambat'],
+            ));
+            $butir[] = new DataButirTindakan(
+                'pesanan-pembelian.menunggu-barang',
+                'Pembelian',
+                TingkatTindakan::Perhatian,
+                'Pesanan pembelian belum diterima',
+                'Barang dari pesanan ini belum datang atau belum lengkap. Hubungi pemasok, atau catat penerimaannya kalau barangnya sudah ada.',
+                count($terlambat),
+                '/kelola/pembelian/penerimaan/buat',
+                'Terima barang',
+                array_map(
+                    fn (array $p): DataRincianTindakan => new DataRincianTindakan(
+                        $p['Uuid'],
+                        $p['Nomor'],
+                        $p['NamaPemasok'].', '.($p['PerkiraanTiba'] === null ? 'tanpa perkiraan tiba' : 'terlambat '.$p['HariTerlambat'].' hari').', sisa '.Uang::Dari($p['NilaiSisa'])->FormatRupiah(),
+                        $p['PerkiraanTiba'] ?? $p['Tanggal'],
+                        '/kelola/pembelian/penerimaan/buat?pesanan='.$p['Uuid'],
+                    ),
+                    array_slice($terlambat, 0, DataButirTindakan::BATAS_RINCIAN),
+                ),
             );
         }
 

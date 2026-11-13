@@ -287,6 +287,7 @@
 | D-283 | Dari pemilik produk, 13/11/2026. Panduan awal ikut pola satu kontainer putih (D-282) walau tanpa menu samping. Halaman cetak dan halaman Absen mobile dikecualikan karena fungsinya berbeda (dokumen A4 dan layar karyawan). |
 | D-284 | Dari pemilik produk, 13/11/2026. Tabel baris dokumen berkolom banyak (Invoice, Penawaran, Pesanan grosir, Retur grosir) tampil sebagai kartu bertumpuk di bawah 1024px, bukan tabel yang digeser ke samping. Mekanismenya satu, yaitu prop `tumpuk` pada `TabelForm`, dan tabel dokumen lain bisa memakainya dengan menambah `data-label` pada selnya. |
 | D-285 | Dari pemilik produk, 13/11/2026. Di HP kontainer terluar halaman back-office full page dan rapat, dan tidak ada kontainer di dalam kontainer: kartu di dalamnya diratakan menjadi bagian yang dipisah garis tipis. Aturan diatur sekali di `.badan-halaman`, tidak per halaman. Layar lebar tetap memakai kontainer berborder (D-282). |
+| D-286 | Dari pemilik produk, 13/11/2026. Jalan masuk *Terima barang* mengutamakan pesanan yang masih menunggu barang: pengguna memilih pesanan lalu formulir terisi dari pesanan itu (BR-04.1), bukan mengetik ulang pemasok dan barang. Penerimaan tanpa pesanan tetap sah dan tidak diblokir, hanya dibuat lebih sulit tersalah pilih lewat saran dan halaman pilih. Wajib beralasan untuk penerimaan tanpa pesanan **ditangguhkan** sampai pemilik produk memutuskan. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

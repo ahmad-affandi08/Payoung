@@ -81,6 +81,7 @@ function BarisPesananPenerimaan(perubahan: Partial<BarisPesananUntukPenerimaan> 
 
 function PropsDetail(perubahan: Partial<PropsDetailPesanan['Tindakan']> = {}): PropsDetailPesanan {
     return {
+        Permintaan: null,
         Pesanan: {
             Uuid,
             Nomor: 'PO/UTAMA/2609/0001',
@@ -473,6 +474,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         RenderUji(
             <HalamanFormPenerimaan
                 Mode="Penerimaan"
+                PesananTerbuka={[]}
                 Pesanan={{
                     Uuid,
                     Nomor: 'PO/UTAMA/2609/0001',
@@ -517,6 +519,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         RenderUji(
             <HalamanFormPenerimaan
                 Mode="BelanjaStok"
+                PesananTerbuka={[]}
                 Pesanan={null}
                 OpsiPemasok={[{ ...Pemasok, TerminHari: 14 }]}
                 OpsiGudang={[GudangUtama]}
@@ -543,6 +546,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
     it('belanja stok: pilihan "Pakai uang laci kasir" hanya ada bila kasir mencatat uang laci, akun kas disembunyikan (D-256)', () => {
         const props = {
             Mode: 'BelanjaStok' as const,
+            PesananTerbuka: [],
             Pesanan: null,
             OpsiPemasok: [Pemasok],
             OpsiGudang: [GudangUtama],
@@ -578,6 +582,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         RenderUji(
             <HalamanFormPenerimaan
                 Mode="BelanjaStok"
+                PesananTerbuka={[]}
                 Pesanan={null}
                 OpsiPemasok={[Pemasok]}
                 OpsiGudang={[GudangUtama]}

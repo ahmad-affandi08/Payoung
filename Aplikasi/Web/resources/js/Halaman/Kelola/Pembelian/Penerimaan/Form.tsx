@@ -25,6 +25,7 @@ import {
 import { usePemasokBaru } from '@/Komponen/Pembelian/PemasokBaru';
 import { AlamatPembelian } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import IsianBarisPembelian from '@/Komponen/Pembelian/IsianBarisPembelian';
+import SaranPesananTerbuka, { PetunjukPesananDiBelanja } from '@/Komponen/Pembelian/SaranPesananTerbuka';
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
@@ -93,6 +94,7 @@ function CekTerminValid(termin: string): boolean {
 export default function HalamanFormPenerimaan({
     Mode,
     Pesanan,
+    PesananTerbuka,
     OpsiPemasok: OpsiPemasokAwal,
     OpsiGudang,
     OpsiAkun,
@@ -468,6 +470,11 @@ export default function HalamanFormPenerimaan({
                             galat={galat.Ongkir}
                         />
                     </div>
+                    {Pesanan ? null : belanja ? (
+                        <PetunjukPesananDiBelanja jumlah={PesananTerbuka.length} />
+                    ) : (
+                        <SaranPesananTerbuka pesanan={PesananTerbuka} uuidPemasok={pemasok} />
+                    )}
                     <BidangTeksPanjang
                         label="Catatan (opsional)"
                         nilai={catatan}

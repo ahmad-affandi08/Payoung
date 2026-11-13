@@ -88,6 +88,7 @@ type Dialog = 'Tolak' | 'Batalkan' | 'Tutup' | null;
 /** F-04 fase 1: detail pesanan pembelian (ajukan, setujui/tolak, terima barang, batalkan, tutup, cetak). */
 export default function HalamanDetailPesanan({
     Pesanan,
+    Permintaan,
     Baris,
     Penerimaan,
     Pengiriman,
@@ -186,6 +187,16 @@ export default function HalamanDetailPesanan({
                 <Keterangan label="Nomor">
                     <span className="font-mono">{Pesanan.Nomor}</span>
                 </Keterangan>
+                {Permintaan ? (
+                    <Keterangan label="Dari permintaan">
+                        <Link
+                            href={`${AlamatPembelian}/permintaan/${Permintaan.Uuid}`}
+                            className="font-mono font-semibold text-brand underline"
+                        >
+                            {Permintaan.Nomor}
+                        </Link>
+                    </Keterangan>
+                ) : null}
                 <Keterangan label="Tanggal">{FormatTanggal(Pesanan.Tanggal)}</Keterangan>
                 <Keterangan label="Perkiraan tiba">
                     {Pesanan.PerkiraanTiba ? FormatTanggal(Pesanan.PerkiraanTiba) : '—'}

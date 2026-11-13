@@ -258,6 +258,8 @@ export type BarisDetailPesanan = {
 };
 export type PropsDetailPesanan = {
     Pesanan: DetailPesanan;
+    /** Permintaan pembelian yang dijadikan pesanan ini (rantai dokumen), bila ada. */
+    Permintaan: { Uuid: string; Nomor: string } | null;
     Baris: BarisDetailPesanan[];
     Penerimaan: (RingkasDokumen & { TotalNilai: string })[];
     /** F-e: riwayat pengiriman PO ke pemasok lewat WhatsApp (10 terbaru). */
@@ -311,9 +313,30 @@ export type PesananUntukPenerimaan = {
     OngkirTerpakai: string;
     Baris: BarisPesananUntukPenerimaan[];
 };
+/** Pesanan yang masih menunggu barang (Disetujui atau Diterima sebagian), untuk halaman pilih pesanan dan saran di form. */
+export type PesananTerbukaDiterima = {
+    Uuid: string;
+    Nomor: string;
+    UuidPemasok: string;
+    NamaPemasok: string;
+    NamaGudang: string;
+    Tanggal: string;
+    PerkiraanTiba: string | null;
+    HariTerlambat: number;
+    Terlambat: boolean;
+    Status: string;
+    LabelStatus: string;
+    JumlahBarisSisa: number;
+    NilaiSisa: string;
+};
+export type PropsPilihPenerimaan = {
+    PesananTerbuka: PesananTerbukaDiterima[];
+};
 export type PropsFormPenerimaan = {
     Mode: 'Penerimaan' | 'BelanjaStok';
     Pesanan: PesananUntukPenerimaan | null;
+    /** Pesanan terbuka untuk saran "terima dari pesanan" (kosong bila form sudah terisi dari satu pesanan). */
+    PesananTerbuka: PesananTerbukaDiterima[];
     OpsiPemasok: OpsiPemasok[];
     OpsiGudang: OpsiGudang[];
     OpsiAkun: OpsiAkunKas[];
