@@ -134,7 +134,7 @@ export default function HalamanBuatBiayaTambahan({
                     idJudul="judul-barang-biaya"
                     keterangan={`${Penerimaan.Nomor} | ${FormatTanggal(Penerimaan.Tanggal)} | ${Penerimaan.NamaGudang}${Penerimaan.NamaPemasok ? ` | ${Penerimaan.NamaPemasok}` : ''}${adaPelacakan ? ' | Barang ber-batch/nomor seri dibebankan ke HPP.' : ''}`}
                 >
-                    <TabelForm label="Barang penerimaan" lebar="sedang">
+                    <TabelForm tumpuk label="Barang penerimaan" lebar="sedang">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Produk</TableHead>
@@ -145,16 +145,18 @@ export default function HalamanBuatBiayaTambahan({
                         <TableBody>
                             {Penerimaan.Baris.map((b) => (
                                 <TableRow key={b.Id}>
-                                    <TableCell>
+                                    <TableCell data-penuh data-label="Produk">
                                         <span className="block break-words">{b.NamaProduk}</span>
                                         <span className="block font-mono text-keterangan text-teks-sekunder">
                                             {b.Sku ?? 'Tanpa SKU'}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-right tabular-nums">
+                                    <TableCell data-label="Jumlah (setelah retur)" className="text-right tabular-nums">
                                         {FormatJumlahStok(b.Jumlah)}
                                     </TableCell>
-                                    <TableCell className="text-right tabular-nums">{FormatRupiah(b.Nilai)}</TableCell>
+                                    <TableCell data-label="Nilai" className="text-right tabular-nums">
+                                        {FormatRupiah(b.Nilai)}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

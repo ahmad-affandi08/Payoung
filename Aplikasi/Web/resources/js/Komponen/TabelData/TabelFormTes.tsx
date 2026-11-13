@@ -98,6 +98,19 @@ describe('Tabel isian/rincian', () => {
         );
     });
 
+    it('tumpuk: tabel isian dokumen berkolom banyak (D-289) tidak kembali bergulir ke samping di HP', () => {
+        const wajib = [
+            'Komponen/Pembelian/IsianBarisPembelian.tsx',
+            'Halaman/Kelola/Persediaan/StokAwal/Form.tsx',
+            'Halaman/Kelola/Akuntansi/JurnalUmum/Buat.tsx',
+            'Halaman/Kelola/Pembelian/NotaDebit/Buat.tsx',
+            'Halaman/Kelola/Pembelian/BiayaTambahan/Buat.tsx',
+        ];
+        const belum = wajib.filter((berkas) => !/<TabelForm\s+tumpuk/.test(readFileSync(join(AKAR, berkas), 'utf8')));
+
+        expect(belum).toEqual([]);
+    });
+
     it('tumpuk: setiap halaman yang memakainya memberi judul kolom (data-label) pada selnya', () => {
         const tanpaLabel: string[] = [];
 

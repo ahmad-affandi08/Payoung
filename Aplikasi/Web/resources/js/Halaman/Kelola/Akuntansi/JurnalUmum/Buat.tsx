@@ -229,7 +229,7 @@ export default function HalamanBuatJurnalUmum({
                             Baris jurnal
                         </h2>
                         <div className="rounded-panel border border-garis bg-card">
-                            <TabelForm label="Isian baris jurnal" lebar="lebar">
+                            <TabelForm tumpuk label="Isian baris jurnal" lebar="lebar">
                                 <TableCaption className="sr-only">
                                     Isi akun, lalu debit atau kredit. Total debit harus sama dengan total kredit.
                                 </TableCaption>
@@ -260,7 +260,7 @@ export default function HalamanBuatJurnalUmum({
                                 <TableBody>
                                     {baris.map((b, indeks) => (
                                         <TableRow key={b.Kunci} className="border-garis align-top">
-                                            <TableCell className="px-3 py-2">
+                                            <TableCell data-penuh data-label="Akun" className="px-3 py-2">
                                                 <BidangPilihan
                                                     label={`Akun baris ${String(indeks + 1)}`}
                                                     labelTersembunyi
@@ -272,7 +272,7 @@ export default function HalamanBuatJurnalUmum({
                                                 />
                                             </TableCell>
                                             {perBaris ? (
-                                                <TableCell className="px-3 py-2">
+                                                <TableCell data-penuh data-label="Outlet" className="px-3 py-2">
                                                     <BidangPilihan
                                                         label={`Outlet baris ${String(indeks + 1)}`}
                                                         labelTersembunyi
@@ -286,7 +286,7 @@ export default function HalamanBuatJurnalUmum({
                                                     />
                                                 </TableCell>
                                             ) : null}
-                                            <TableCell className="px-3 py-2">
+                                            <TableCell data-label="Debit" className="px-3 py-2">
                                                 <BidangUang
                                                     label={`Debit baris ${String(indeks + 1)}`}
                                                     labelTersembunyi
@@ -300,7 +300,7 @@ export default function HalamanBuatJurnalUmum({
                                                     galat={GalatBaris(indeks, 'Debit')}
                                                 />
                                             </TableCell>
-                                            <TableCell className="px-3 py-2">
+                                            <TableCell data-label="Kredit" className="px-3 py-2">
                                                 <BidangUang
                                                     label={`Kredit baris ${String(indeks + 1)}`}
                                                     labelTersembunyi
@@ -316,7 +316,7 @@ export default function HalamanBuatJurnalUmum({
                                                     galat={GalatBaris(indeks, 'Kredit')}
                                                 />
                                             </TableCell>
-                                            <TableCell className="px-3 py-2">
+                                            <TableCell data-penuh data-label="Memo" className="px-3 py-2">
                                                 <BidangTeks
                                                     label={`Memo baris ${String(indeks + 1)}`}
                                                     labelTersembunyi
@@ -326,7 +326,7 @@ export default function HalamanBuatJurnalUmum({
                                                     maxLength={255}
                                                 />
                                             </TableCell>
-                                            <TableCell className="px-3 py-2">
+                                            <TableCell data-aksi className="px-3 py-2">
                                                 <Button
                                                     type="button"
                                                     variant="ghost"
@@ -349,10 +349,16 @@ export default function HalamanBuatJurnalUmum({
                                         >
                                             Total
                                         </TableCell>
-                                        <TableCell className="px-3 text-right font-semibold whitespace-nowrap tabular-nums">
+                                        <TableCell
+                                            data-label="Total debit"
+                                            className="px-3 text-right font-semibold whitespace-nowrap tabular-nums"
+                                        >
                                             {FormatRupiah(totalDebit)}
                                         </TableCell>
-                                        <TableCell className="px-3 text-right font-semibold whitespace-nowrap tabular-nums">
+                                        <TableCell
+                                            data-label="Total kredit"
+                                            className="px-3 text-right font-semibold whitespace-nowrap tabular-nums"
+                                        >
                                             {FormatRupiah(totalKredit)}
                                         </TableCell>
                                         <TableCell colSpan={2} className="px-3" />

@@ -310,7 +310,7 @@ export default function HalamanFormStokAwal({
                             Belum ada barang. Cari produk di atas untuk menambah baris.
                         </p>
                     ) : (
-                        <TabelForm label="Baris stok awal" lebar="dokumen">
+                        <TabelForm tumpuk label="Baris stok awal" lebar="dokumen">
                             <TableCaption className="sr-only">Barang stok awal</TableCaption>
                             <TableHeader>
                                 <TableRow className="border-garis hover:bg-transparent">
@@ -348,7 +348,11 @@ export default function HalamanFormStokAwal({
                                             <TableRow
                                                 className={baris.Pelacakan === 'Tidak' ? 'border-garis' : 'border-0'}
                                             >
-                                                <th scope="row" className={KelasSel('text-left font-normal')}>
+                                                <th
+                                                    scope="row"
+                                                    data-penuh
+                                                    className={KelasSel('text-left font-normal')}
+                                                >
                                                     <span className="block font-semibold break-words text-teks-utama">
                                                         {nama}
                                                     </span>
@@ -364,7 +368,7 @@ export default function HalamanFormStokAwal({
                                                         </span>
                                                     ) : null}
                                                 </th>
-                                                <TableCell className={KelasSel()}>
+                                                <TableCell data-label="Jumlah" className={KelasSel()}>
                                                     {baris.Pelacakan === 'Seri' ? (
                                                         <p className="h-8 pointer-coarse:h-11 py-2 text-right text-teks-utama tabular-nums">
                                                             {FormatJumlahStok(
@@ -392,7 +396,7 @@ export default function HalamanFormStokAwal({
                                                         />
                                                     )}
                                                 </TableCell>
-                                                <TableCell className={KelasSel()}>
+                                                <TableCell data-label="Harga modal per satuan" className={KelasSel()}>
                                                     <BidangHpp
                                                         label={`Harga modal per satuan ${nama}`}
                                                         labelTersembunyi
@@ -411,13 +415,15 @@ export default function HalamanFormStokAwal({
                                                     />
                                                 </TableCell>
                                                 <TableCell
+                                                    data-ringkas
+                                                    data-label="Nilai (perkiraan)"
                                                     className={KelasSel('text-right whitespace-nowrap tabular-nums')}
                                                 >
                                                     <span className="inline-block py-2">
                                                         {nilai === null ? '—' : FormatNilai(nilai)}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell className={KelasSel('text-right')}>
+                                                <TableCell data-aksi className={KelasSel('text-right')}>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
@@ -430,7 +436,7 @@ export default function HalamanFormStokAwal({
                                                 </TableCell>
                                             </TableRow>
                                             {baris.Pelacakan === 'Batch' ? (
-                                                <TableRow className="border-garis hover:bg-transparent">
+                                                <TableRow data-lanjutan className="border-garis hover:bg-transparent">
                                                     <TableCell colSpan={5} className="px-2 pt-0 pb-3 whitespace-normal">
                                                         <div className="grid gap-3 rounded-kontrol bg-permukaan-redup p-3 sm:grid-cols-2">
                                                             <BidangTeks
@@ -461,7 +467,7 @@ export default function HalamanFormStokAwal({
                                                 </TableRow>
                                             ) : null}
                                             {baris.Pelacakan === 'Seri' ? (
-                                                <TableRow className="border-garis hover:bg-transparent">
+                                                <TableRow data-lanjutan className="border-garis hover:bg-transparent">
                                                     <TableCell colSpan={5} className="px-2 pt-0 pb-3 whitespace-normal">
                                                         <div className="rounded-kontrol bg-permukaan-redup p-3">
                                                             <BidangNomorSeri

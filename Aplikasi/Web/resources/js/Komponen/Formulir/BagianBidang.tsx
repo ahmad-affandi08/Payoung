@@ -53,7 +53,9 @@ export function LabelBidang({
     return (
         <FieldLabel
             htmlFor={htmlFor}
-            className={tersembunyi ? 'sr-only' : 'text-label leading-[inherit] font-semibold text-teks-utama'}
+            // `max-w-px`: di dalam `Field` aturan `[&>.sr-only]:w-auto` membuat label tersembunyi selebar teksnya, dan lebar itu
+            // memperluas area gulir tabel dan kartu walau tak terlihat.
+            className={tersembunyi ? 'max-w-px sr-only' : 'text-label leading-[inherit] font-semibold text-teks-utama'}
         >
             {children}
         </FieldLabel>

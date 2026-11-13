@@ -462,7 +462,8 @@
         padding: calc(var(--spacing) * 3);
     }
 
-    .tabel-form[data-tumpuk] tbody > tr > td {
+    .tabel-form[data-tumpuk] tbody > tr > td,
+    .tabel-form[data-tumpuk] tbody > tr > th {
         display: block;
         min-width: 0;
         padding: 0;
@@ -480,8 +481,24 @@
     }
 
     .tabel-form[data-tumpuk] tbody > tr > td[data-penuh],
+    .tabel-form[data-tumpuk] tbody > tr > th[data-penuh],
     .tabel-form[data-tumpuk] tbody > tr > td[colspan] {
         grid-column: 1 / -1;
+    }
+
+    /* Baris lanjutan (isian batch/nomor seri) menyambung ke kartu barisnya, bukan kartu terpisah. */
+    .tabel-form[data-tumpuk] tbody > tr[data-lanjutan] {
+        margin-top: calc(var(--spacing) * -3);
+        border-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: 0;
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr:has(+ tr[data-lanjutan]) {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: 0;
     }
 
     .tabel-form[data-tumpuk] tbody > tr > td[data-ringkas] {
@@ -501,6 +518,48 @@
     .tabel-form[data-tumpuk] tbody > tr > td[data-aksi] {
         display: flex;
         justify-content: flex-end;
+        grid-column: 1 / -1;
+    }
+
+    /* Kaki tabel (total) menjadi satu kartu berlabel di bawah kartu baris. */
+    .tabel-form[data-tumpuk] tfoot {
+        display: block;
+        margin-top: calc(var(--spacing) * 3);
+    }
+
+    .tabel-form[data-tumpuk] tfoot > tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: calc(var(--spacing) * 3);
+        border: 1px solid var(--color-garis);
+        border-radius: var(--radius-panel);
+        background: var(--color-permukaan-redup);
+        padding: calc(var(--spacing) * 3);
+    }
+
+    .tabel-form[data-tumpuk] tfoot > tr > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        text-align: left;
+        white-space: normal;
+    }
+
+    .tabel-form[data-tumpuk] tfoot > tr > td:empty {
+        display: none;
+    }
+
+    .tabel-form[data-tumpuk] tfoot > tr > td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: calc(var(--spacing) * 1);
+        color: var(--color-teks-sekunder);
+        font-size: var(--text-keterangan);
+        line-height: var(--text-keterangan--line-height);
+        font-weight: 400;
+    }
+
+    .tabel-form[data-tumpuk] tfoot > tr > td[colspan] {
         grid-column: 1 / -1;
     }
 }

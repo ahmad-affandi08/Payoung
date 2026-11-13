@@ -166,7 +166,7 @@ export default function HalamanBuatNotaDebit({
                     idJudul="judul-baris-nota-debit"
                     keterangan={`${Faktur.Nomor} | ${FormatTanggal(Faktur.Tanggal)}${Faktur.NamaPemasok ? ` | ${Faktur.NamaPemasok}` : ''} | Tanpa centang = dibagi ke semua baris.`}
                 >
-                    <TabelForm label="Baris faktur" lebar="sedang">
+                    <TabelForm tumpuk label="Baris faktur" lebar="sedang">
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-10">
@@ -180,7 +180,7 @@ export default function HalamanBuatNotaDebit({
                         <TableBody>
                             {Faktur.Baris.map((b) => (
                                 <TableRow key={b.Id}>
-                                    <TableCell>
+                                    <TableCell data-penuh data-label="Pilih">
                                         <Checkbox
                                             aria-label={`Pilih ${b.NamaProduk}`}
                                             checked={dipilih.includes(b.Id)}
@@ -189,11 +189,13 @@ export default function HalamanBuatNotaDebit({
                                             className="border-garis-input"
                                         />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell data-penuh data-label="Produk">
                                         <span className="block break-words">{b.NamaProduk}</span>
                                     </TableCell>
-                                    <TableCell className="text-right tabular-nums">{FormatRupiah(b.Nilai)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">
+                                    <TableCell data-label="Nilai faktur" className="text-right tabular-nums">
+                                        {FormatRupiah(b.Nilai)}
+                                    </TableCell>
+                                    <TableCell data-label="Sisa bisa diklaim" className="text-right tabular-nums">
                                         {FormatRupiah(b.SisaKlaim)}
                                     </TableCell>
                                 </TableRow>
