@@ -16,6 +16,7 @@ use App\Domain\Pembelian\Enum\StatusPesananPembelian;
 use App\Domain\Pembelian\Kueri\DaftarDokumenPembelian;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
+use App\Domain\Pembelian\Kueri\DokumenHuluPembelian;
 use App\Domain\Pembelian\Kueri\IsianFormPembelian;
 use App\Domain\Pembelian\Model\PesananPembelian;
 use App\Domain\Tenant\Data\DataPengaturanPembelian;
@@ -23,6 +24,7 @@ use App\Domain\Tenant\Kueri\PengaturanPembelianTenant;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
 use App\Http\Permintaan\Kelola\Pembelian\SimpanPesananPembelianPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -47,9 +49,16 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(): Response
+    public function Buat(DokumenHuluPembelian $hulu): Response
     {
-        return $this->RenderForm('Buat', null);
+        // D-287: permintaan yang sudah disetujui tetapi belum jadi PO ditawarkan di atas form, supaya PO dimulai dari
+        // permintaannya (pemasok dan barisnya terbawa) dan permintaannya ikut selesai.
+        $siap = HalamanPilihDokumen::SertakanTautan(
+            $hulu->PermintaanSiapJadiPo($this->IdOutletBoleh()),
+            fn (string $uuid): string => route('kelola.pembelian.permintaan.detail', ['permintaan' => $uuid], false),
+        );
+
+        return $this->RenderForm('Buat', null, $siap);
     }
 
     public function Simpan(SimpanPesananPembelianPermintaan $permintaan, SimpanPesananPembelian $simpan): RedirectResponse
@@ -183,11 +192,12 @@ final class PesananPembelianKontroler extends DasarPembelianKontroler
     /**
      * @param  array<string, mixed>|null  $pesanan
      */
-    private function RenderForm(string $mode, ?array $pesanan): Response
+    private function RenderForm(string $mode, ?array $pesanan, array $permintaanSiap = []): Response
     {
         return Inertia::render('Kelola/Pembelian/Pesanan/Form', [
             'Mode' => $mode,
             'Pesanan' => $pesanan,
+            'PermintaanSiap' => $permintaanSiap,
             'OpsiPemasok' => app(DaftarPemasok::class)->AmbilPilihan(),
             'OpsiGudang' => $this->AmbilOpsiGudang(),
             'HariIni' => $this->HariIni(),

@@ -28,6 +28,7 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatLabelGudang } from '@/Pustaka/FormatPersediaan';
 import { BandingkanDesimal, JumlahkanDesimal } from '@/Pustaka/HitungDesimal';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import SaranDokumenHulu from '@/Komponen/Kelola/SaranDokumenHulu';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisIsianBebas, OpsiPemasok, PropsFormPesanan } from '@/Tipe/Pembelian';
 
@@ -42,6 +43,7 @@ export default function HalamanFormPesanan({
     HariIni,
     BatasPersetujuanPo,
     MaksimalBaris,
+    PermintaanSiap,
 }: PropsFormPesanan) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galat = props.errors;
@@ -155,6 +157,14 @@ export default function HalamanFormPesanan({
             {draf.tawaran ? (
                 <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
             ) : null}
+            <SaranDokumenHulu
+                butir={PermintaanSiap}
+                judulSatu="Ada satu permintaan yang sudah disetujui"
+                judulBanyak="Ada {n} permintaan yang sudah disetujui"
+                keterangan="Kalau pesanan ini untuk permintaan itu, mulai dari permintaannya supaya barang dan pemasoknya terbawa dan permintaannya ikut selesai."
+                labelAksi="Jadikan PO dari"
+                tautanSemua={`${AlamatPembelian}/permintaan?saring[Status]=Disetujui`}
+            />
             <form onSubmit={Simpan} noValidate aria-label={judul} className="flex flex-col gap-4">
                 <Panel
                     judul="Dokumen"

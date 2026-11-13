@@ -30,6 +30,7 @@ function PasangForm() {
 
     return RenderUji(
         <HalamanFormTransferStok
+            PermintaanMenunggu={[]}
             Mode="Buat"
             Transfer={null}
             OpsiGudangAsal={[GudangUtama, GudangKedua]}

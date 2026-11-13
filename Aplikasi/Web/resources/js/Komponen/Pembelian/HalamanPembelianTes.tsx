@@ -336,6 +336,7 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
     it('form pesanan: di atas batas persetujuan tampil peringatan. Simpan mengirim PUT dengan baris', () => {
         RenderUji(
             <HalamanFormPesanan
+                PermintaanSiap={[]}
                 Mode="Ubah"
                 Pesanan={{
                     Uuid,

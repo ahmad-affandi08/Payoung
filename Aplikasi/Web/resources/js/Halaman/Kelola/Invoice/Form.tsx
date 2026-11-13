@@ -16,6 +16,7 @@ import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import { AmbilHasilCari } from '@/Komponen/Katalog/PemilihProduk';
 import Panel from '@/Komponen/Kelola/Panel';
+import SaranDokumenHulu from '@/Komponen/Kelola/SaranDokumenHulu';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -43,6 +44,7 @@ function BuatKunci(): string {
  */
 export default function HalamanFormInvoice({
     Isian,
+    PenawaranSiap,
     Jenis,
     Kebiasaan,
     OpsiOutlet,
@@ -213,6 +215,14 @@ export default function HalamanFormInvoice({
             {draf.tawaran ? (
                 <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
             ) : null}
+            <SaranDokumenHulu
+                butir={PenawaranSiap}
+                judulSatu="Ada satu penawaran yang sudah diterima pelanggan"
+                judulBanyak="Ada {n} penawaran yang sudah diterima pelanggan"
+                keterangan="Kalau invoice ini untuk penawaran itu, mulai dari penawarannya supaya pelanggan, baris, harga, dan termin terbawa."
+                labelAksi="Jadikan invoice dari"
+                tautanSemua="/kelola/penawaran?saring[Status]=Diterima"
+            />
             {uangMuka ? (
                 <Pemberitahuan jenis="info" judul="Invoice uang muka">
                     Untuk meminta DP sebelum pekerjaan dimulai. DP otomatis dipotong dari invoice akhir.

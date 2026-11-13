@@ -12,10 +12,12 @@ use App\Domain\Pembelian\Aksi\SimpanReturPembelian;
 use App\Domain\Pembelian\Kueri\DaftarDokumenPembelian;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
+use App\Domain\Pembelian\Kueri\DokumenHuluPembelian;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Domain\Pembelian\Model\ReturPembelian;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
 use App\Http\Permintaan\Kelola\Pembelian\SimpanReturPembelianPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -37,12 +39,20 @@ final class ReturPembelianKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DetailPembelian $detail, DaftarAkunPilihan $akun): Response|RedirectResponse
+    public function Buat(Request $permintaan, DetailPembelian $detail, DaftarAkunPilihan $akun, DokumenHuluPembelian $hulu): Response
     {
         $uuid = $permintaan->query('penerimaan');
 
+        // D-287: dibuka dari menu tanpa penerimaan asal, pilih dari penerimaan yang masih punya barang untuk diretur.
         if (! is_string($uuid) || $uuid === '') {
-            return to_route('kelola.pembelian.penerimaan.daftar')->withErrors(['Umum' => 'Pilih penerimaan barang yang akan diretur, lalu tekan "Retur barang".']);
+            return HalamanPilihDokumen::Kirim([
+                'Judul' => 'Retur barang ke pemasok',
+                'Petunjuk' => 'Pilih penerimaan barang yang akan diretur. Barisnya terisi dari barang yang masih ada.',
+                'JudulDaftar' => 'Penerimaan yang bisa diretur',
+                'LabelCari' => 'Cari penerimaan',
+                'LabelAksi' => 'Retur barang',
+                'Kosong' => 'Belum ada penerimaan barang yang bisa diretur.',
+            ], $hulu->PenerimaanUntukRetur($this->IdOutletBoleh()), 'kelola.pembelian.retur.buat', 'penerimaan');
         }
 
         $grn = $this->CariDokumen(PenerimaanBarang::class, $uuid);

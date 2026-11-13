@@ -21,6 +21,7 @@ use App\Domain\Persediaan\Enum\StatusTransferStok;
 use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -273,5 +274,40 @@ describe('D-105 HTTP permintaan stok', function (): void {
 
         $kasir = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Kasir);
         BantuanOrganisasi::Masuk($this, $kasir, $t['Tenant']->Id)->get('/kelola/persediaan/permintaan')->assertForbidden();
+    });
+});
+
+describe('D-287 transfer stok ditawari permintaan yang menunggu', function (): void {
+    it('form transfer dari menu menawarkan permintaan yang menunggu dipenuhi, hanya untuk pengirim, dan hilang setelah ditutup', function (): void {
+        $t = SiapkanPermintaan();
+        $uuid = (string) Str::ulid();
+        $permintaan = AjukanPermintaanUji($t, [BarisPermintaanUji($t['Produk']['Stok'], '30'), BarisPermintaanUji($t['Produk']['BahanBaku'], '10')], $uuid);
+        $penggunaGudang = BuatAnggotaOutletPermintaan($t['Tenant']->Id, $t['Outlet']->Id);
+        $penggunaCabang = BuatAnggotaOutletPermintaan($t['Tenant']->Id, $t['Cabang']->Id);
+        $gudang = BantuanOrganisasi::Masuk($this, $penggunaGudang, $t['Tenant']->Id);
+
+        // Pengirim melihat satu permintaan dengan tautan yang membuka form terisi.
+        $gudang->get('/kelola/persediaan/transfer/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Persediaan/Transfer/Form')
+            ->has('PermintaanMenunggu', 1)
+            ->where('PermintaanMenunggu.0.Uuid', $uuid)
+            ->where('PermintaanMenunggu.0.Nomor', $permintaan->Nomor)
+            ->where('PermintaanMenunggu.0.Tautan', "/kelola/persediaan/transfer/buat?permintaan={$uuid}")
+            ->where('PermintaanMenunggu.0.Lencana', null)
+            ->where('PermintaanMenunggu.0.Rincian', fn ($rincian) => str_contains((string) $rincian, '2 barang')));
+
+        // Alur yang membawa parameter sudah tahu tujuannya sendiri, jadi tidak ditawari apa pun.
+        $gudang->get("/kelola/persediaan/transfer/buat?asal={$t['Gudang']->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('PermintaanMenunggu', 0));
+
+        // Peminta bukan pengirim: permintaannya tidak ditawarkan kepadanya.
+        BantuanOrganisasi::Masuk($this, $penggunaCabang, $t['Tenant']->Id)->get('/kelola/persediaan/transfer/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('PermintaanMenunggu', 0));
+
+        // Permintaan yang sudah ditutup tidak menunggu lagi.
+        BantuanOrganisasi::AturKonteks($t['Tenant']->Id);
+        DB::table('PermintaanStok')->where('Uuid', $uuid)->update(['Status' => StatusPermintaanStok::Ditutup->value]);
+        BantuanOrganisasi::Masuk($this, $penggunaGudang, $t['Tenant']->Id)->get('/kelola/persediaan/transfer/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('PermintaanMenunggu', 0));
     });
 });

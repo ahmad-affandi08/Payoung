@@ -1,3 +1,4 @@
+import type { ButirPilihDokumen } from '@/Tipe/PilihDokumen';
 import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
 import type { OpsiGudang, PelacakanProduk } from '@/Tipe/Persediaan';
 
@@ -208,6 +209,8 @@ export type PropsFormPesanan = {
     HariIni: string;
     BatasPersetujuanPo: string;
     MaksimalBaris: number;
+    /** Permintaan yang sudah disetujui dan belum jadi PO (hanya mode Buat), dengan tautan ke rinciannya. */
+    PermintaanSiap: ButirPilihDokumen[];
 };
 export type DetailPesanan = {
     Uuid: string;

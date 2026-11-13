@@ -1,3 +1,4 @@
+import type { ButirPilihDokumen } from '@/Tipe/PilihDokumen';
 import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
 import type { OpsiGudang, PelacakanProduk } from '@/Tipe/Persediaan';
 
@@ -87,6 +88,8 @@ export type AwalFormTransferStok = {
 };
 export type PropsFormTransferStok = {
     Mode: 'Buat' | 'Ubah';
+    /** Permintaan stok yang menunggu dipenuhi, hanya saat form dibuka tanpa parameter (D-287). */
+    PermintaanMenunggu: ButirPilihDokumen[];
     Transfer: {
         Uuid: string;
         UuidGudangAsal: string;

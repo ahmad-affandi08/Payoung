@@ -12,12 +12,14 @@ use App\Domain\Pembelian\Kueri\DaftarDokumenPembelian;
 use App\Domain\Pembelian\Kueri\DaftarNotaDebit;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
 use App\Domain\Pembelian\Kueri\DetailPembelian;
+use App\Domain\Pembelian\Kueri\DokumenHuluPembelian;
 use App\Domain\Pembelian\Layanan\PenyimpanLampiranPembelian;
 use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\Pemasok;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
 use App\Http\Permintaan\Kelola\Pembelian\SimpanFakturPembelianPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -43,10 +45,31 @@ final class FakturPembelianKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DaftarPemasok $pemasok, DetailPembelian $detail): Response
+    public function Buat(Request $permintaan, DaftarPemasok $pemasok, DetailPembelian $detail, DokumenHuluPembelian $hulu): Response
     {
         $uuidPemasok = $permintaan->query('pemasok');
         $uuidPenerimaan = $permintaan->query('penerimaan');
+
+        // D-287: dibuka dari menu tanpa pemasok maupun penerimaan, tawarkan penerimaan yang belum difakturkan dari semua
+        // pemasok. `?manual=1` tetap membuka form lama untuk yang ingin memilih pemasok sendiri.
+        if (! $permintaan->boolean('manual') && ! is_string($uuidPemasok) && ! is_string($uuidPenerimaan)) {
+            $belum = $hulu->PenerimaanBelumDifakturkan($this->IdOutletBoleh());
+
+            if ($belum !== []) {
+                return HalamanPilihDokumen::Kirim([
+                    'Judul' => 'Faktur pembelian',
+                    'Petunjuk' => 'Pilih penerimaan barang yang fakturnya sudah datang. Beberapa penerimaan dari pemasok yang sama bisa digabung di form berikutnya.',
+                    'JudulDaftar' => 'Penerimaan yang belum difakturkan',
+                    'LabelCari' => 'Cari penerimaan',
+                    'LabelAksi' => 'Catat faktur',
+                    'Kosong' => 'Semua penerimaan sudah difakturkan.',
+                ], $belum, 'kelola.pembelian.faktur.buat', 'penerimaan', [
+                    'Judul' => 'Pilih pemasok sendiri?',
+                    'Teks' => 'Buka form faktur dan pilih pemasoknya dulu, lalu centang penerimaan yang termasuk.',
+                    'Tautan' => [['Teks' => 'Pilih pemasok sendiri', 'Href' => route('kelola.pembelian.faktur.buat', ['manual' => 1], false)]],
+                ]);
+            }
+        }
 
         if ((! is_string($uuidPemasok) || $uuidPemasok === '') && is_string($uuidPenerimaan) && $uuidPenerimaan !== '') {
             $grn = $this->CariDokumen(PenerimaanBarang::class, $uuidPenerimaan);

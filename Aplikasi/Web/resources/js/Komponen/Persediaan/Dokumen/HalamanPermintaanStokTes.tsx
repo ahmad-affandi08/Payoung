@@ -224,6 +224,7 @@ describe('D-105 form transfer yang menjawab permintaan', () => {
     it('menampilkan pemberitahuan permintaan dan memuat baris dari permintaan', () => {
         RenderUji(
             <HalamanFormTransferStok
+                PermintaanMenunggu={[]}
                 Mode="Buat"
                 Transfer={null}
                 OpsiGudangAsal={[GudangUtama]}

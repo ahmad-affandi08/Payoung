@@ -113,8 +113,9 @@ describe('F-04 HTTP pembelian', function (): void {
             ->assertRedirect("/kelola/pembelian/pesanan/{$po->Uuid}")->assertSessionHasErrors('Umum')->assertSessionMissing('Kilat');
         $this->get("/kelola/pembelian/pesanan/{$po->Uuid}/ubah")
             ->assertRedirect("/kelola/pembelian/pesanan/{$po->Uuid}")->assertSessionHasErrors('Umum')->assertSessionMissing('Kilat');
-        $this->get('/kelola/pembelian/retur/buat')
-            ->assertRedirect('/kelola/pembelian/penerimaan')->assertSessionHasErrors('Umum')->assertSessionMissing('Kilat');
+        // D-287: tanpa penerimaan asal, retur menawarkan penerimaan yang masih ada barangnya (bukan lagi dilempar ke daftar).
+        $this->get('/kelola/pembelian/retur/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Bersama/PilihDokumen')->has('Butir', 1)->where('Butir.0.Uuid', PenerimaanBarang::query()->sole()->Uuid));
         $this->get("/kelola/pembelian/penerimaan/{$grn->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Pembelian/Penerimaan/Detail')->where('Tindakan.Fakturkan', true)->where('Penerimaan.TotalNilai', '756000.00')
             // PRD-10: pintasan Cetak label barang diterima = satu stiker per satuan dasar (24 pcs).

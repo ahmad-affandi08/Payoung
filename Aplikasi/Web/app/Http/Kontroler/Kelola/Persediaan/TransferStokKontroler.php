@@ -18,6 +18,7 @@ use App\Domain\Persediaan\Kueri\DaftarTransferStok;
 use App\Domain\Persediaan\Kueri\DetailPermintaanStok;
 use App\Domain\Persediaan\Kueri\DetailTransferStok;
 use App\Domain\Persediaan\Kueri\DokumenCetakTransferStok;
+use App\Domain\Persediaan\Kueri\PermintaanStokMenunggu;
 use App\Domain\Persediaan\Kueri\SisaStokUntukTransfer;
 use App\Domain\Persediaan\Model\PermintaanStok;
 use App\Domain\Persediaan\Model\TransferStok;
@@ -25,6 +26,7 @@ use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Persediaan\AlasanDokumenPersediaanPermintaan;
 use App\Http\Permintaan\Kelola\Persediaan\SimpanTransferStokPermintaan;
 use App\Http\Permintaan\Kelola\Persediaan\TerimaTransferStokPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -53,7 +55,7 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DetailPermintaanStok $detailPermintaan, SisaStokUntukTransfer $sisaStok): Response
+    public function Buat(Request $permintaan, DetailPermintaanStok $detailPermintaan, SisaStokUntukTransfer $sisaStok, PermintaanStokMenunggu $menunggu): Response
     {
         // D-105: tombol "Penuhi" di permintaan stok membawa isi permintaan (`?permintaan=` uuid) ke form transfer.
         $uuidPermintaan = $permintaan->query('permintaan');
@@ -82,7 +84,13 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
             }
         }
 
-        return $this->RenderForm('Buat', null, $awal);
+        // D-287: dibuka dari menu tanpa parameter apa pun, tawarkan permintaan stok yang menunggu dipenuhi. Alur yang
+        // membawa parameter (kanvas, retur ke gudang) sudah tahu tujuannya sendiri.
+        $saran = $permintaan->query() === []
+            ? HalamanPilihDokumen::SertakanTautan($menunggu->Daftar($this->IdOutletBoleh()), fn (string $uuid): string => route('kelola.persediaan.transfer.buat', ['permintaan' => $uuid], false))
+            : [];
+
+        return $this->RenderForm('Buat', null, $awal, $saran);
     }
 
     public function Simpan(SimpanTransferStokPermintaan $permintaan, SimpanTransferStok $simpan): RedirectResponse
@@ -301,12 +309,13 @@ final class TransferStokKontroler extends DasarDokumenPersediaanKontroler
      * @param  array<string, mixed>|null  $transfer
      * @param  array<string, mixed>  $awal
      */
-    private function RenderForm(string $mode, ?array $transfer, array $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => '']): Response
+    private function RenderForm(string $mode, ?array $transfer, array $awal = ['UuidGudangAsal' => '', 'UuidGudangTujuan' => ''], array $permintaanMenunggu = []): Response
     {
         return Inertia::render('Kelola/Persediaan/Transfer/Form', [
             'Mode' => $mode,
             'Transfer' => $transfer,
             'Awal' => $awal,
+            'PermintaanMenunggu' => $permintaanMenunggu,
             'OpsiGudangAsal' => $this->AmbilOpsiGudangDokumen(),
             'OpsiGudangTujuan' => $this->AmbilOpsiGudangDokumen(semuaOutlet: true),
             'HariIni' => $this->HariIni(),

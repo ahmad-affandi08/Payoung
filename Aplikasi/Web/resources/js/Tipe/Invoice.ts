@@ -1,3 +1,4 @@
+import type { ButirPilihDokumen } from '@/Tipe/PilihDokumen';
 import type { JurnalGrosir, Opsi, RiwayatGrosir, Tabel } from '@/Tipe/Grosir';
 
 /*
@@ -99,6 +100,8 @@ export type UangMukaTersedia = {
 
 export type PropsFormInvoice = {
     Isian: IsianInvoice | null;
+    /** Penawaran yang sudah diterima dan belum jadi invoice, hanya untuk invoice penjualan baru (D-287). */
+    PenawaranSiap: ButirPilihDokumen[];
     Jenis: JenisInvoice;
     Kebiasaan: { Syarat: string; InfoPembayaran: string } | null;
     OpsiOutlet: OpsiOutletInvoice[];

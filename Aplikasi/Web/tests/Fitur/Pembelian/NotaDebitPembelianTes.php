@@ -260,7 +260,9 @@ describe('v6.07 nota debit pembelian (BR-04.10)', function (): void {
         $this->get("/kelola/pembelian/nota-debit/buat?faktur={$faktur->Uuid}")->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/Pembelian/NotaDebit/Buat')->where('Faktur.Nomor', $faktur->Nomor)->where('Faktur.SisaHutang', '20000.00')
             ->where('Faktur.Baris.0.SisaKlaim', '20000.00')->where('BatasPersetujuan', '5000000.00')->where('BolehMelebihiBatas', true));
-        $this->get('/kelola/pembelian/nota-debit/buat')->assertRedirect('/kelola/pembelian/faktur');
+        // D-287: tanpa faktur asal, nota debit menawarkan faktur yang belum dibatalkan (bukan lagi dilempar ke daftar faktur).
+        $this->get('/kelola/pembelian/nota-debit/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Bersama/PilihDokumen')->has('Butir', 1)->where('Butir.0.Uuid', $faktur->Uuid));
         $this->post('/kelola/pembelian/nota-debit', [
             'UuidFaktur' => $faktur->Uuid,
             'Jenis' => 'DiskonSusulan',

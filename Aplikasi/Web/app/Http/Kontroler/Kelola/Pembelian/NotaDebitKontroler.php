@@ -15,10 +15,12 @@ use App\Domain\Pembelian\Data\DataNotaDebitPembelian;
 use App\Domain\Pembelian\Enum\JenisNotaDebit;
 use App\Domain\Pembelian\Enum\StatusFakturPembelian;
 use App\Domain\Pembelian\Kueri\DaftarNotaDebit;
+use App\Domain\Pembelian\Kueri\DokumenHuluPembelian;
 use App\Domain\Pembelian\Model\FakturPembelian;
 use App\Domain\Pembelian\Model\NotaDebitPembelian;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
 use App\Http\Permintaan\Kelola\Pembelian\SimpanNotaDebitPembelianPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -44,12 +46,20 @@ final class NotaDebitKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DaftarNotaDebit $daftar, DaftarAkunPilihan $akun): Response|RedirectResponse
+    public function Buat(Request $permintaan, DaftarNotaDebit $daftar, DaftarAkunPilihan $akun, DokumenHuluPembelian $hulu): Response|RedirectResponse
     {
         $uuid = $permintaan->string('faktur')->toString();
 
+        // D-287: dibuka dari menu tanpa faktur asal, pilih dari faktur pemasok yang belum dibatalkan.
         if ($uuid === '') {
-            return to_route('kelola.pembelian.faktur.daftar')->withErrors(['Umum' => 'Buka fakturnya, lalu tekan "Buat nota debit".']);
+            return HalamanPilihDokumen::Kirim([
+                'Judul' => 'Nota debit pembelian',
+                'Petunjuk' => 'Pilih faktur pemasok yang akan dikurangi karena selisih harga atau klaim tanpa barang kembali.',
+                'JudulDaftar' => 'Faktur pembelian',
+                'LabelCari' => 'Cari faktur',
+                'LabelAksi' => 'Buat nota debit',
+                'Kosong' => 'Belum ada faktur pembelian yang bisa dibuatkan nota debit.',
+            ], $hulu->FakturUntukNotaDebit($this->IdOutletBoleh()), 'kelola.pembelian.nota-debit.buat', 'faktur');
         }
 
         /** @var FakturPembelian $faktur */

@@ -514,6 +514,37 @@ describe('Penawaran: Kotak Tindakan dan tautan ke invoice', function (): void {
         $lain = Invoice::query()->where('Id', '!=', $invoice->Id)->sole();
         $this->get("/kelola/invoice/{$lain->Uuid}")->assertInertia(fn (AssertableInertia $h) => $h->where('Invoice.Penawaran', null));
     });
+
+    it('D-287 form invoice penjualan baru menawarkan penawaran yang sudah diterima, hilang setelah ditagih, dan muncul lagi bila invoicenya dibatalkan', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+        $this->get('/kelola/invoice/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Invoice/Form')->has('PenawaranSiap', 0));
+
+        $this->post('/kelola/penawaran', IsianPenawaranHttp($this, ['Lanjutkan' => true, 'Perihal' => 'Renovasi kantor lantai dua']))->assertSessionHasNoErrors();
+        $penawaran = Penawaran::query()->sole();
+
+        // Terbit tetapi belum diterima pelanggan: belum ditawarkan.
+        $this->get('/kelola/invoice/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('PenawaranSiap', 0));
+
+        $this->post("/kelola/penawaran/{$penawaran->Uuid}/putuskan", ['Keputusan' => 'Terima'])->assertSessionHasNoErrors();
+        $this->get('/kelola/invoice/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->has('PenawaranSiap', 1)
+            ->where('PenawaranSiap.0.Uuid', $penawaran->Uuid)
+            ->where('PenawaranSiap.0.Nomor', $penawaran->refresh()->Nomor)
+            ->where('PenawaranSiap.0.Tautan', "/kelola/penawaran/{$penawaran->Uuid}")
+            ->where('PenawaranSiap.0.Pihak', fn ($nama) => is_string($nama) && $nama !== '')
+            ->where('PenawaranSiap.0.Rincian', fn ($rincian) => str_contains((string) $rincian, 'Renovasi kantor lantai dua') && str_contains((string) $rincian, 'total Rp')));
+
+        // Invoice uang muka tidak berasal dari penawaran: tidak ditawari.
+        $this->get('/kelola/invoice/buat?jenis=UangMuka')->assertInertia(fn (AssertableInertia $h) => $h->has('PenawaranSiap', 0));
+
+        // Sudah dijadikan invoice aktif: hilang. Invoice dibatalkan: ditawarkan lagi (sama dengan Kotak Tindakan).
+        $this->post("/kelola/penawaran/{$penawaran->Uuid}/jadikan-invoice")->assertSessionHasNoErrors();
+        $this->get('/kelola/invoice/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('PenawaranSiap', 0));
+        $invoice = Invoice::query()->sole();
+        $this->post("/kelola/invoice/{$invoice->Uuid}/batalkan", ['Alasan' => 'Salah pelanggan'])->assertSessionHasNoErrors();
+        $this->get('/kelola/invoice/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('PenawaranSiap', 1));
+    });
 });
 
 describe('Penawaran: izin dan isolasi tenant', function (): void {

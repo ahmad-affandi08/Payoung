@@ -12,6 +12,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import BidangJumlah from '@/Komponen/Katalog/BidangJumlah';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
+import SaranDokumenHulu from '@/Komponen/Kelola/SaranDokumenHulu';
 import PemilihPelacakan from '@/Komponen/Persediaan/Dokumen/PemilihPelacakan';
 import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
 import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
@@ -63,6 +64,7 @@ export default function HalamanFormTransferStok({
     HariIni,
     BatasBaris,
     Awal,
+    PermintaanMenunggu,
 }: PropsFormTransferStok) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const galatServer = props.errors;
@@ -217,6 +219,14 @@ export default function HalamanFormTransferStok({
             {draf.tawaran ? (
                 <TawaranDraf disimpan={draf.tawaran.Disimpan} saatLanjutkan={PulihkanDraf} saatBuang={draf.Buang} />
             ) : null}
+            <SaranDokumenHulu
+                butir={PermintaanMenunggu}
+                judulSatu="Ada satu permintaan stok yang menunggu dipenuhi"
+                judulBanyak="Ada {n} permintaan stok yang menunggu dipenuhi"
+                keterangan="Kalau barang ini untuk permintaan outlet lain, mulai dari permintaannya supaya barisnya terisi dan permintaannya ikut terpenuhi."
+                labelAksi="Penuhi"
+                tautanSemua="/kelola/persediaan/permintaan"
+            />
             {Awal?.UuidPermintaanStok ? (
                 <Pemberitahuan jenis="info" judul={`Menjawab permintaan ${Awal.NomorPermintaan ?? ''}`.trim()}>
                     Barang dan jumlah diisi dari permintaan. Ubah seperlunya, lalu kirim. Permintaan terhitung terpenuhi

@@ -15,9 +15,11 @@ use App\Domain\Pembelian\Enum\DasarAlokasiBiaya;
 use App\Domain\Pembelian\Enum\JenisBiayaTambahan;
 use App\Domain\Pembelian\Kueri\DaftarBiayaTambahan;
 use App\Domain\Pembelian\Kueri\DaftarPemasok;
+use App\Domain\Pembelian\Kueri\DokumenHuluPembelian;
 use App\Domain\Pembelian\Model\BiayaTambahanPembelian;
 use App\Domain\Pembelian\Model\PenerimaanBarang;
 use App\Http\Permintaan\Kelola\Pembelian\AlasanPembelianPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -44,12 +46,20 @@ final class BiayaTambahanKontroler extends DasarPembelianKontroler
         ]);
     }
 
-    public function Buat(Request $permintaan, DaftarBiayaTambahan $daftar, DaftarAkunPilihan $akun, DaftarPemasok $pemasok): Response|RedirectResponse
+    public function Buat(Request $permintaan, DaftarBiayaTambahan $daftar, DaftarAkunPilihan $akun, DaftarPemasok $pemasok, DokumenHuluPembelian $hulu): Response
     {
         $uuid = $permintaan->string('penerimaan')->toString();
 
+        // D-287: dibuka dari menu tanpa penerimaan asal, pilih dari penerimaan yang barangnya masih ada.
         if ($uuid === '') {
-            return to_route('kelola.pembelian.penerimaan.daftar')->withErrors(['Umum' => 'Buka penerimaan barangnya, lalu tekan "Catat biaya tambahan".']);
+            return HalamanPilihDokumen::Kirim([
+                'Judul' => 'Biaya tambahan pembelian',
+                'Petunjuk' => 'Pilih penerimaan barang yang kena biaya ekspedisi, bea masuk, atau asuransi susulan.',
+                'JudulDaftar' => 'Penerimaan barang',
+                'LabelCari' => 'Cari penerimaan',
+                'LabelAksi' => 'Catat biaya',
+                'Kosong' => 'Belum ada penerimaan barang yang bisa dibebani biaya tambahan.',
+            ], $hulu->PenerimaanUntukBiayaTambahan($this->IdOutletBoleh()), 'kelola.pembelian.biaya-tambahan.buat', 'penerimaan');
         }
 
         $grn = $this->CariDokumen(PenerimaanBarang::class, strtoupper($uuid));

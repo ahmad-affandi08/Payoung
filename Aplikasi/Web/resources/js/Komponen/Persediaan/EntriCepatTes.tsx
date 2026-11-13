@@ -31,6 +31,7 @@ function PasangForm() {
     AturHalamanUji({}, '/kelola/persediaan/transfer/buat');
     RenderUji(
         <HalamanFormTransferStok
+            PermintaanMenunggu={[]}
             Mode="Buat"
             Transfer={null}
             OpsiGudangAsal={[GudangUtama, GudangKedua]}

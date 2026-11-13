@@ -30,6 +30,7 @@ use App\Domain\Penjualan\Kueri\DetailInvoice;
 use App\Domain\Penjualan\Kueri\DokumenInvoice;
 use App\Domain\Penjualan\Kueri\DokumenKuitansiInvoice;
 use App\Domain\Penjualan\Kueri\IsianFormInvoice;
+use App\Domain\Penjualan\Kueri\PenawaranSiapDitagih;
 use App\Domain\Penjualan\Kueri\RingkasanInvoice;
 use App\Domain\Penjualan\Layanan\PenyimpanBuktiBayarInvoice;
 use App\Domain\Penjualan\Model\Invoice;
@@ -38,6 +39,7 @@ use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Invoice\AlasanInvoicePermintaan;
 use App\Http\Permintaan\Kelola\Invoice\CatatPembayaranInvoicePermintaan;
 use App\Http\Permintaan\Kelola\Invoice\SimpanInvoicePermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -90,11 +92,16 @@ final class InvoiceKontroler extends DasarKelolaKontroler
         return $this->SajikanLaporan($permintaan, 'Daftar Invoice', 'daftar-invoice', $kolom, $isi, [['Per tanggal', CarbonImmutable::parse($hariIni)->format('d/m/Y')]]);
     }
 
-    public function Buat(Request $permintaan, IsianFormInvoice $isian): Response
+    public function Buat(Request $permintaan, IsianFormInvoice $isian, PenawaranSiapDitagih $siapDitagih): Response
     {
         $jenis = JenisInvoice::tryFrom((string) $permintaan->query('jenis', JenisInvoice::Penjualan->value)) ?? JenisInvoice::Penjualan;
+        // D-287: penawaran yang sudah diterima pelanggan ditawarkan di atas form invoice penjualan, supaya tagihan
+        // dimulai dari penawarannya (baris, harga, dan termin terbawa) dan tidak diketik ulang.
+        $penawaran = $jenis === JenisInvoice::Penjualan
+            ? HalamanPilihDokumen::SertakanTautan($siapDitagih->Daftar($this->IdOutletBoleh()), fn (string $uuid): string => route('kelola.penawaran.detail', ['penawaran' => $uuid], false))
+            : [];
 
-        return $this->RenderForm(null, $jenis, $isian);
+        return $this->RenderForm(null, $jenis, $isian, $penawaran);
     }
 
     public function Simpan(SimpanInvoicePermintaan $permintaan, SimpanInvoice $simpan): RedirectResponse
@@ -312,7 +319,7 @@ final class InvoiceKontroler extends DasarKelolaKontroler
     /**
      * @param  array<string, mixed>|null  $isian
      */
-    private function RenderForm(?array $isian, JenisInvoice $jenis, IsianFormInvoice $kueri): Response
+    private function RenderForm(?array $isian, JenisInvoice $jenis, IsianFormInvoice $kueri, array $penawaranSiap = []): Response
     {
         $peta = app(PetaUuidOutlet::class);
         $ringkas = $peta->AmbilRingkas($this->IdOutletBoleh(), true);
@@ -320,6 +327,7 @@ final class InvoiceKontroler extends DasarKelolaKontroler
 
         return Inertia::render('Kelola/Invoice/Form', [
             'Isian' => $isian,
+            'PenawaranSiap' => $penawaranSiap,
             'Jenis' => $jenis->value,
             'Kebiasaan' => $isian === null ? $kueri->Kebiasaan() : null,
             'OpsiOutlet' => array_map(fn (array $o): array => [...$o, 'Kode' => $identitas[$o['Id']]['Kode'] ?? ''], $ringkas),
