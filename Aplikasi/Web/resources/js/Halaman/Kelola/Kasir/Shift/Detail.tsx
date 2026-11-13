@@ -9,7 +9,6 @@ import { kolomPenjualan } from '@/Komponen/Penjualan/KolomPenjualan';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -453,10 +452,6 @@ export default function HalamanDetailShift({
 
     return (
         <TataLetakAplikasi judul={`Shift ${Shift.NamaKasir} | ${FormatTanggalWaktu(Shift.DibukaPada)}`}>
-            <Button asChild variant="link" className="h-auto self-start px-0">
-                <Link href="/kelola/kasir/shift">Kembali ke daftar shift</Link>
-            </Button>
-
             {aktif && Izin.TutupPaksa ? (
                 <Pemberitahuan jenis="peringatan" judul="Shift ini masih terbuka">
                     <div className="flex flex-col items-start gap-2">

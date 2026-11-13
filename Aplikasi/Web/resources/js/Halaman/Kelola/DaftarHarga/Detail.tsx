@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 
 import Tombol from '@/Komponen/Formulir/Tombol';
@@ -7,6 +7,7 @@ import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import FormDaftarHarga from '@/Komponen/Katalog/FormDaftarHarga';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import TabelHargaBertingkat, { PeriksaBarisHarga } from '@/Komponen/Katalog/TabelHargaBertingkat';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import {
@@ -18,9 +19,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '@/Komponen/Ui/alert-dialog';
-import { Button } from '@/Komponen/Ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Komponen/Ui/sheet';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -52,6 +51,7 @@ export default function HalamanDetailDaftarHarga({
 }: PropsDetailDaftarHarga) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [ubahPengaturan, AturUbahPengaturan] = useState(false);
+    const [nonaktifkan, AturNonaktifkan] = useState(false);
     const [memproses, AturMemproses] = useState(false);
     const [periksa, AturPeriksa] = useState(false);
     // Isian yang diubah (per produk-satuan) dan baris yang sudah pernah tampil, agar perubahan di beberapa
@@ -171,72 +171,73 @@ export default function HalamanDetailDaftarHarga({
 
     return (
         <TataLetakAplikasi judul={DaftarHarga.Nama}>
-            <p className="text-label">
-                <Link href="/kelola/daftar-harga" className="font-semibold text-brand underline">
-                    Kembali ke daftar harga
-                </Link>
-            </p>
             {!Izin.UbahHarga ? <PesanHanyaLihat izin="produk.harga.ubah" objek="daftar harga ini" /> : null}
             <DaftarGalatServer
                 galat={props.errors}
                 kecuali={Object.keys(props.errors).filter((kunci) => ubahPengaturan || /^Baris\./.test(kunci))}
             />
 
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatus
-                    jenis={DaftarHarga.Aktif ? 'sukses' : 'netral'}
-                    teks={DaftarHarga.Aktif ? 'Aktif' : 'Nonaktif'}
-                />
-                <span className="text-isi text-teks-sekunder">
-                    {[
-                        DaftarHarga.UuidOutlet.length === 0
-                            ? 'Semua outlet'
-                            : Outlet.filter((item) => DaftarHarga.UuidOutlet.includes(item.Nilai))
-                                  .map((item) => item.Label)
-                                  .join(', '),
-                        Kanal.find((item) => item.Nilai === DaftarHarga.Kanal)?.Label ?? 'Semua kanal',
-                        DaftarHarga.TierPelanggan ? `Pelanggan ${DaftarHarga.TierPelanggan}` : null,
-                        `Prioritas ${DaftarHarga.Prioritas}`,
-                    ]
-                        .filter(Boolean)
-                        .join(' | ')}
-                </span>
-                {Izin.UbahHarga ? (
-                    <span className="flex flex-wrap gap-2">
-                        <Button type="button" variant="outline" onClick={() => AturUbahPengaturan(true)}>
-                            Ubah pengaturan
-                        </Button>
-                        {DaftarHarga.Aktif ? (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button type="button" variant="outline">
-                                        Nonaktifkan daftar
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Nonaktifkan {DaftarHarga.Nama}?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Kasir kembali memakai harga biasa atau daftar lain yang cocok. Bisa
-                                            diaktifkan lagi kapan saja.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                                        <AlertDialogAction variant="destructive" onClick={UbahStatus}>
-                                            Nonaktifkan daftar
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        ) : (
-                            <Button type="button" variant="outline" onClick={UbahStatus}>
-                                Aktifkan daftar
-                            </Button>
-                        )}
-                    </span>
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatus
+                            jenis={DaftarHarga.Aktif ? 'sukses' : 'netral'}
+                            teks={DaftarHarga.Aktif ? 'Aktif' : 'Nonaktif'}
+                        />
+                        <span className="text-isi text-teks-sekunder">
+                            {[
+                                DaftarHarga.UuidOutlet.length === 0
+                                    ? 'Semua outlet'
+                                    : Outlet.filter((item) => DaftarHarga.UuidOutlet.includes(item.Nilai))
+                                          .map((item) => item.Label)
+                                          .join(', '),
+                                Kanal.find((item) => item.Nilai === DaftarHarga.Kanal)?.Label ?? 'Semua kanal',
+                                DaftarHarga.TierPelanggan ? `Pelanggan ${DaftarHarga.TierPelanggan}` : null,
+                                `Prioritas ${DaftarHarga.Prioritas}`,
+                            ]
+                                .filter(Boolean)
+                                .join(' | ')}
+                        </span>
+                    </>
+                }
+                langkah={
+                    Izin.UbahHarga && !DaftarHarga.Aktif ? [{ label: 'Aktifkan daftar', saatKlik: UbahStatus }] : []
+                }
+                lainnya={
+                    Izin.UbahHarga
+                        ? [
+                              { label: 'Ubah pengaturan', saatKlik: () => AturUbahPengaturan(true) },
+                              ...(DaftarHarga.Aktif
+                                  ? [
+                                        {
+                                            label: 'Nonaktifkan daftar',
+                                            saatKlik: () => AturNonaktifkan(true),
+                                            bahaya: true,
+                                        },
+                                    ]
+                                  : []),
+                          ]
+                        : []
+                }
+            />
+
+            <AlertDialog open={nonaktifkan} onOpenChange={AturNonaktifkan}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Nonaktifkan {DaftarHarga.Nama}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Kasir kembali memakai harga biasa atau daftar lain yang cocok. Bisa diaktifkan lagi kapan
+                            saja.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={UbahStatus}>
+                            Nonaktifkan daftar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <Sheet open={ubahPengaturan} onOpenChange={AturUbahPengaturan}>
                 {ubahPengaturan ? (

@@ -299,4 +299,33 @@ describe('Baris aksi di halaman daftar', () => {
 
         expect(pelanggar).toEqual([]);
     });
+
+    it('halaman rincian tidak merakit tautan "Kembali ke …" sendiri, jalan kembali lewat jejak halaman (D-290)', () => {
+        // `TataLetakAplikasi` membuat jejak dari menu, dan halaman di luar menu mengisi `jejak`. Tautan Kembali buatan
+        // sendiri menambah baris yang tidak seragam. Pengecualian sah: halaman cetak tanpa tata letak, halaman tanpa
+        // izin atau galat, teks isi yang kebetulan memuat kata itu, dan tombol pengaturan bernama "Kembali ke …".
+        const pengecualian = new Set([
+            'Kelola/Outlet/QrMeja.tsx',
+            'Kelola/TokoOnline/Poster.tsx',
+            'Kelola/TanpaIzin.tsx',
+            'Kelola/Grosir/Retur/Buat.tsx',
+            'Kelola/Pengaturan/Whatsapp.tsx',
+            'Pengelola/Galat.tsx',
+            'Pengelola/Dukungan/Obrolan.tsx',
+        ]);
+        const pelanggar: string[] = [];
+        const berkas = [...BerkasBackOffice(), 'resources/js/Komponen/Katalog/KepalaProduk.tsx'];
+
+        for (const jalur of berkas) {
+            if (pengecualian.has(Ringkas(jalur))) {
+                continue;
+            }
+
+            if (/Kembali ke/.test(readFileSync(jalur, 'utf8'))) {
+                pelanggar.push(Ringkas(jalur));
+            }
+        }
+
+        expect(pelanggar).toEqual([]);
+    });
 });

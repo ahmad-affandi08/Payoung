@@ -96,11 +96,6 @@ export default function HalamanDetailInvoice({
 
     return (
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Invoice', href: AlamatInvoice }]}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusBayarInvoice status={invoice.StatusBayar} label={invoice.LabelStatusBayar} />
-                <span className="text-isi text-teks-sekunder">{invoice.LabelJenis}</span>
-            </div>
-
             {invoice.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Invoice dibatalkan">
                     {invoice.AlasanBatal}. Jurnalnya sudah dibalik. Pelanggan yang membuka tautan melihat tanda
@@ -114,6 +109,12 @@ export default function HalamanDetailInvoice({
             ) : null}
 
             <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatusBayarInvoice status={invoice.StatusBayar} label={invoice.LabelStatusBayar} />
+                        <span className="text-isi text-teks-sekunder">{invoice.LabelJenis}</span>
+                    </>
+                }
                 langkah={[
                     ...(Tindakan.Terbitkan
                         ? [{ label: 'Terbitkan invoice', saatKlik: Terbitkan, nonaktif: memproses === 'Terbit' }]

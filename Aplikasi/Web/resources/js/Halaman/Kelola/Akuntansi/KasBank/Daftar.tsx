@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { DefinisiSaring, KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -136,6 +137,20 @@ export default function HalamanTransaksiKasBank({
                 Catat pengeluaran operasional, penerimaan di luar penjualan, dan transfer antar kas dan bank. Koreksi
                 dengan dokumen pembalik.
             </p>
+            <AksiHalaman
+                utama={
+                    Izin.Kelola ? (
+                        <Button asChild>
+                            <Link href={`${alamat}/buat`}>Catat transaksi kas & bank</Link>
+                        </Button>
+                    ) : undefined
+                }
+                lainnya={[
+                    ...(Izin.Kelola ? [{ label: 'Transaksi berulang', href: `${alamat}/berulang` }] : []),
+                    { label: 'Rekonsiliasi bank', href: '/kelola/akuntansi/rekonsiliasi' },
+                    { label: 'Giro & cek mundur', href: '/kelola/akuntansi/giro' },
+                ]}
+            />
 
             <TabelData
                 id="akuntansi-saldo-kas-bank"
@@ -150,34 +165,7 @@ export default function HalamanTransaksiKasBank({
                 }}
             />
 
-            {Izin.Kelola ? (
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild>
-                        <Link href={`${alamat}/buat`}>Catat transaksi kas & bank</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                        <Link href={`${alamat}/berulang`}>Transaksi berulang</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                        <Link href="/kelola/akuntansi/rekonsiliasi">Rekonsiliasi bank</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                        <Link href="/kelola/akuntansi/giro">Giro & cek mundur</Link>
-                    </Button>
-                </div>
-            ) : (
-                <>
-                    <PesanHanyaLihat izin="akuntansi.kelola" objek="transaksi kas & bank" />
-                    <div>
-                        <Button asChild variant="outline">
-                            <Link href="/kelola/akuntansi/rekonsiliasi">Rekonsiliasi bank</Link>
-                        </Button>
-                        <Button asChild variant="outline">
-                            <Link href="/kelola/akuntansi/giro">Giro & cek mundur</Link>
-                        </Button>
-                    </div>
-                </>
-            )}
+            {Izin.Kelola ? null : <PesanHanyaLihat izin="akuntansi.kelola" objek="transaksi kas & bank" />}
 
             <TabelData
                 id="akuntansi-kas-bank"

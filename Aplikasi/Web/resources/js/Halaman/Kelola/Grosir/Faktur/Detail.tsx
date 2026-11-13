@@ -54,10 +54,6 @@ export default function HalamanDetailFakturGrosir({
 
     return (
         <TataLetakAplikasi judul={`Faktur ${Faktur.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusGrosir status={Faktur.Status} label={Faktur.LabelStatus} />
-            </div>
-
             {Faktur.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Faktur dibatalkan">
                     {Faktur.AlasanBatal} — surat jalannya dilepas dan bisa difakturkan ulang.
@@ -65,6 +61,8 @@ export default function HalamanDetailFakturGrosir({
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatusGrosir status={Faktur.Status} label={Faktur.LabelStatus} />}
+                langkah={[]}
                 lainnya={[
                     { label: 'Cetak faktur', href: `${alamat}/${Faktur.Uuid}/cetak`, tabBaru: true },
                     ...(Tindakan.Batalkan

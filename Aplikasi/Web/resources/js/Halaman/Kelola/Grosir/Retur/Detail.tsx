@@ -89,10 +89,6 @@ export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat
 
     return (
         <TataLetakAplikasi judul={`Retur ${Retur.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusGrosir status={Retur.Status} label={Retur.LabelStatus} />
-            </div>
-
             {Retur.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Retur dibatalkan">
                     {Retur.AlasanBatal}
@@ -112,6 +108,8 @@ export default function HalamanDetailReturGrosir({ Retur, Baris, Jurnal, Riwayat
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatusGrosir status={Retur.Status} label={Retur.LabelStatus} />}
+                langkah={[]}
                 lainnya={[
                     {
                         label: Retur.MengurangiPiutang ? 'Cetak nota kredit' : 'Cetak tanda terima retur',

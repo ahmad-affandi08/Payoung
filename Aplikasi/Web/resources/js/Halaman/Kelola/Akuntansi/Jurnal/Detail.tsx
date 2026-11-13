@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import PenandaJurnal from '@/Komponen/Akuntansi/PenandaJurnal';
 import TabelBarisJurnal from '@/Komponen/Akuntansi/TabelBarisJurnal';
-import { Button } from '@/Komponen/Ui/button';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import { Card } from '@/Komponen/Ui/card';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -26,12 +26,7 @@ function Keterangan({ label, children }: { label: string; children: ReactNode })
 export default function HalamanDetailJurnal({ Jurnal, Baris, Total }: PropsDetailJurnal) {
     return (
         <TataLetakAplikasi judul={`Jurnal ${Jurnal.Nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <Button asChild variant="link" className="h-auto px-0">
-                    <Link href={alamatDaftar}>Kembali ke daftar jurnal</Link>
-                </Button>
-                <PenandaJurnal jurnal={Jurnal} />
-            </div>
+            <AksiHalaman keterangan={<PenandaJurnal jurnal={Jurnal} />} langkah={[]} />
 
             {Jurnal.Pembalik && Jurnal.UuidJurnalDibalik ? (
                 <Pemberitahuan jenis="info" judul="Jurnal pembalik">

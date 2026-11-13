@@ -397,10 +397,6 @@ export default function HalamanDetailPerintahKerja({
             judul={`Perintah kerja ${pk.Nomor}`}
             jejak={[{ label: 'Perintah kerja', href: AlamatPerintahKerja }]}
         >
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatus jenis={JenisStatusPerintahKerja(pk.Status)} teks={pk.LabelStatus} />
-            </div>
-
             {pk.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Perintah kerja dibatalkan">
                     {pk.AlasanBatal}
@@ -417,6 +413,7 @@ export default function HalamanDetailPerintahKerja({
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatus jenis={JenisStatusPerintahKerja(pk.Status)} teks={pk.LabelStatus} />}
                 langkah={Tindakan.TujuanStatus.filter((s) => s.Nilai !== 'Dibatalkan')
                     .sort((a, b) => Number(a.Nilai === 'Diagnosis') - Number(b.Nilai === 'Diagnosis'))
                     .map((s) => ({

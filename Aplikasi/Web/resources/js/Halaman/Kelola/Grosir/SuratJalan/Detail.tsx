@@ -101,10 +101,6 @@ export default function HalamanDetailSuratJalan({
 
     return (
         <TataLetakAplikasi judul={`Surat jalan ${SuratJalan.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusGrosir status={SuratJalan.Status} label={SuratJalan.LabelStatus} />
-            </div>
-
             {SuratJalan.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Surat jalan dibatalkan">
                     {SuratJalan.AlasanBatal}
@@ -118,6 +114,7 @@ export default function HalamanDetailSuratJalan({
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatusGrosir status={SuratJalan.Status} label={SuratJalan.LabelStatus} />}
                 langkah={
                     Izin.Kelola && SuratJalan.NomorFaktur === null && SuratJalan.Status === 'Diposting'
                         ? [{ label: 'Buat faktur', href: `${AlamatGrosir}/faktur/buat?surat-jalan=${SuratJalan.Uuid}` }]

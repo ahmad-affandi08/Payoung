@@ -106,10 +106,6 @@ export default function HalamanDetailPesananGrosir({
 
     return (
         <TataLetakAplikasi judul={`Pesanan grosir ${Pesanan.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusGrosir status={Pesanan.Status} label={Pesanan.LabelStatus} />
-            </div>
-
             {Pesanan.AlasanPersetujuanKredit !== null ? (
                 <Pemberitahuan jenis="peringatan" judul="Dikonfirmasi dengan persetujuan kredit">
                     {Pesanan.AlasanPersetujuanKredit}
@@ -122,6 +118,7 @@ export default function HalamanDetailPesananGrosir({
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatusGrosir status={Pesanan.Status} label={Pesanan.LabelStatus} />}
                 langkah={[
                     ...(Tindakan.Konfirmasi
                         ? [{ label: 'Konfirmasi pesanan', saatKlik: Konfirmasi, nonaktif: memproses }]

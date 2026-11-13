@@ -179,6 +179,7 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
     });
 
     it('detail: baris akun, outlet/tingkat usaha, total seimbang, tautan pembalik dan sumber', () => {
+        AturHalamanUji({}, `/kelola/akuntansi/jurnal/${propsDetail.Jurnal.Uuid}`);
         render(<HalamanDetailJurnal {...propsDetail} />);
 
         const tabel = screen.getByRole('table');
@@ -199,9 +200,13 @@ describe('Kelola/Akuntansi/Jurnal (F-05a, DesainF05a E)', () => {
             barisJurnal.TautanSumber,
         );
         expect(screen.getByText(/Otomatis oleh Rina Wulandari/)).toBeTruthy();
-        expect(screen.getByRole('link', { name: 'Kembali ke daftar jurnal' }).getAttribute('href')).toBe(
-            '/kelola/akuntansi/jurnal',
-        );
+        // D-232: tautan "Kembali ke daftar jurnal" buatan sendiri diganti jejak halaman otomatis dari menu.
+        expect(screen.queryByRole('link', { name: 'Kembali ke daftar jurnal' })).toBeNull();
+        expect(
+            within(screen.getByRole('navigation', { name: 'Jejak halaman' }))
+                .getByRole('link', { name: 'Jurnal' })
+                .getAttribute('href'),
+        ).toBe('/kelola/akuntansi/jurnal');
     });
 
     it('detail jurnal pembalik manual: tautan ke jurnal yang dibalik, sumber tanpa tautan', () => {

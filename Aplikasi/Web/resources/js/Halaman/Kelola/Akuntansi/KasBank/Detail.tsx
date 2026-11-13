@@ -2,10 +2,10 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { Badge } from '@/Komponen/Ui/badge';
-import { Button } from '@/Komponen/Ui/button';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { Card } from '@/Komponen/Ui/card';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -53,19 +53,18 @@ export default function HalamanDetailTransaksiKasBank({ Transaksi: t, Jurnal, Iz
 
     return (
         <TataLetakAplikasi judul={`${t.LabelJenis} ${t.Nomor}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <Button asChild variant="link" className="h-auto px-0">
-                    <Link href={alamatDaftar}>Kembali ke kas & bank</Link>
-                </Button>
-                {bolehDibalik ? (
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBalik({ Tanggal: TulisTanggal(new Date()), Alasan: '' })}
-                    >
-                        Buat dokumen pembalik
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                langkah={
+                    bolehDibalik
+                        ? [
+                              {
+                                  label: 'Buat dokumen pembalik',
+                                  saatKlik: () => AturBalik({ Tanggal: TulisTanggal(new Date()), Alasan: '' }),
+                              },
+                          ]
+                        : []
+                }
+            />
 
             {t.Pembalik && t.UuidDibalik ? (
                 <Pemberitahuan jenis="info" judul="Dokumen pembalik">

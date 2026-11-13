@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import TabelBarisJurnal from '@/Komponen/Akuntansi/TabelBarisJurnal';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { Badge } from '@/Komponen/Ui/badge';
@@ -56,16 +57,18 @@ export default function HalamanDetailJurnalUmum({ JurnalUmum: j, Jurnal, Baris, 
             judul={`${j.LabelJenis} ${j.Nomor}`}
             jejak={[{ label: 'Jurnal', href: '/kelola/akuntansi/jurnal' }]}
         >
-            {bolehDibalik ? (
-                <div className="flex flex-wrap items-center">
-                    <Tombol
-                        varian="sekunder"
-                        onClick={() => AturBalik({ Tanggal: TulisTanggal(new Date()), Alasan: '' })}
-                    >
-                        Buat dokumen pembalik
-                    </Tombol>
-                </div>
-            ) : null}
+            <AksiHalaman
+                langkah={
+                    bolehDibalik
+                        ? [
+                              {
+                                  label: 'Buat dokumen pembalik',
+                                  saatKlik: () => AturBalik({ Tanggal: TulisTanggal(new Date()), Alasan: '' }),
+                              },
+                          ]
+                        : []
+                }
+            />
 
             {j.Pembalik && j.UuidDibalik ? (
                 <Pemberitahuan jenis="info" judul="Dokumen pembalik">

@@ -50,14 +50,6 @@ export default function HalamanDetailInvoiceBerulang({
                 { label: 'Invoice berulang', href: alamat },
             ]}
         >
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatus
-                    jenis={t.Status === 'Aktif' ? 'sukses' : t.Status === 'Dijeda' ? 'peringatan' : 'netral'}
-                    teks={t.LabelStatus}
-                />
-                <span className="text-isi text-teks-sekunder">{t.LabelMode}</span>
-            </div>
-
             {t.GalatTerakhir !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Siklus terakhir gagal terbit">
                     {t.GalatTerakhir} Sistem mencoba lagi besok pagi. Perbaiki masalahnya agar invoice terbit.
@@ -65,6 +57,15 @@ export default function HalamanDetailInvoiceBerulang({
             ) : null}
 
             <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatus
+                            jenis={t.Status === 'Aktif' ? 'sukses' : t.Status === 'Dijeda' ? 'peringatan' : 'netral'}
+                            teks={t.LabelStatus}
+                        />
+                        <span className="text-isi text-teks-sekunder">{t.LabelMode}</span>
+                    </>
+                }
                 langkah={[
                     ...(Tindakan.Lanjut
                         ? [{ label: 'Lanjutkan', saatKlik: () => Ubah('lanjut'), nonaktif: memproses === 'lanjut' }]

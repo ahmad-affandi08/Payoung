@@ -12,11 +12,6 @@ type PropsKepalaProduk = { kepala: DataKepalaProduk; tabAktif: DataTabProduk['Ku
 export default function KepalaProduk({ kepala, tabAktif }: PropsKepalaProduk) {
     return (
         <div className="flex flex-col gap-3">
-            <p className="text-label">
-                <Link href="/kelola/produk" className="font-semibold text-brand underline">
-                    Kembali ke daftar produk
-                </Link>
-            </p>
             <div className="flex items-start gap-3">
                 <GambarProduk
                     nama={kepala.Nama}

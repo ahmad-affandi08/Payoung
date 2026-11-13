@@ -21,10 +21,10 @@ export default function HalamanDetailKendaraan({ Kendaraan: k, Riwayat }: PropsD
             judul={`${KataUnit(k.Jenis)} ${JudulUnit(k)}`}
             jejak={[{ label: `${KataUnit(k.Jenis)} pelanggan`, href: AlamatKendaraan }]}
         >
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatus jenis={k.Aktif ? 'sukses' : 'netral'} teks={k.Aktif ? 'Aktif' : 'Diarsipkan'} />
-            </div>
             <AksiHalaman
+                keterangan={
+                    <LabelStatus jenis={k.Aktif ? 'sukses' : 'netral'} teks={k.Aktif ? 'Aktif' : 'Diarsipkan'} />
+                }
                 langkah={
                     k.Aktif
                         ? [{ label: 'Buat perintah kerja', href: `${AlamatPerintahKerja}/buat?kendaraan=${k.Uuid}` }]

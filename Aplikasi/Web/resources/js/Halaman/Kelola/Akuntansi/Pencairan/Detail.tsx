@@ -3,11 +3,11 @@ import { useState, type FormEvent } from 'react';
 
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
-import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -90,12 +90,20 @@ export default function HalamanDetailPencairan({ Pencairan, Baris, Jurnal, Riway
 
     return (
         <TataLetakAplikasi judul={`Pencairan ${Pencairan.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatus
-                    jenis={Pencairan.Status === 'Diposting' ? 'sukses' : 'bahaya'}
-                    teks={Pencairan.LabelStatus}
-                />
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <LabelStatus
+                        jenis={Pencairan.Status === 'Diposting' ? 'sukses' : 'bahaya'}
+                        teks={Pencairan.LabelStatus}
+                    />
+                }
+                langkah={[]}
+                lainnya={
+                    Tindakan.Batalkan
+                        ? [{ label: 'Batalkan pencairan', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []
+                }
+            />
 
             {Pencairan.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Pencairan dibatalkan">
@@ -115,18 +123,6 @@ export default function HalamanDetailPencairan({ Pencairan, Baris, Jurnal, Riway
                     Kelebihannya dibukukan sebagai Pendapatan Lain, bukan sebagai biaya bernilai negatif, supaya
                     terlihat di laba-rugi dan bisa ditanyakan ke platform.
                 </Pemberitahuan>
-            ) : null}
-
-            {Tindakan.Batalkan ? (
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={() => AturBatalkan(true)}
-                        className="h-8 text-bahaya pointer-coarse:h-11"
-                    >
-                        Batalkan pencairan
-                    </Button>
-                </div>
             ) : null}
 
             <Card className="gap-0 rounded-panel p-4 shadow-none">

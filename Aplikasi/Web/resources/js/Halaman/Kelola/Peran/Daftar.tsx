@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import FormPeran from '@/Komponen/Kelola/FormPeran';
 import TabPengguna from '@/Komponen/Kelola/TabPengguna';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
@@ -34,16 +35,20 @@ export default function HalamanDaftarPeran({ Peran, DaftarIzin }: PropsDaftar) {
     return (
         <TataLetakAplikasi judul="Peran & izin">
             <TabPengguna />
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-isi text-teks-sekunder">
-                    Peran bawaan disiapkan sistem. Buat peran kustom bila tim Anda butuh kombinasi izin lain.
-                </p>
-                {bolehKelola ? (
-                    <Button asChild>
-                        <Link href="/kelola/peran/buat">Buat peran</Link>
-                    </Button>
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <p className="text-isi text-teks-sekunder">
+                        Peran bawaan disiapkan sistem. Buat peran kustom bila tim Anda butuh kombinasi izin lain.
+                    </p>
+                }
+                utama={
+                    bolehKelola ? (
+                        <Button asChild>
+                            <Link href="/kelola/peran/buat">Buat peran</Link>
+                        </Button>
+                    ) : undefined
+                }
+            />
 
             {sunting !== null ? (
                 <DialogFormulir jenis="panel" judul={`Ubah ${sunting.Nama}`} saatTutup={() => AturSunting(null)}>
