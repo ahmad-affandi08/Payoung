@@ -15,6 +15,7 @@ use App\Domain\Penjualan\Model\PesananGrosir;
 use App\Domain\Penjualan\Model\ReturGrosir;
 use App\Domain\Penjualan\Model\SuratJalan;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Katalog\BantuanHarga;
@@ -352,5 +353,59 @@ describe('HTTP back-office grosir', function (): void {
 
         BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
         $this->get('/kelola/grosir/pesanan/'.strtoupper((string) Str::ulid()))->assertNotFound();
+    });
+    it('D-288 retur grosir dari menu: pilih surat jalan yang masih punya barang, jalan lama tetap bekerja', function (): void {
+        BantuanPersediaan::MasukSebagai($this, $this->k['Tenant']->Id);
+
+        // Belum ada surat jalan: halaman pilih tampil kosong, bukan galat.
+        $this->get('/kelola/grosir/retur/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Bersama/PilihDokumen')->where('Teks.Judul', 'Retur grosir')->where('Teks.LabelAksi', 'Buat retur')->has('Butir', 0));
+
+        $this->post('/kelola/grosir/pesanan', [
+            'UuidPelanggan' => $this->toko->Uuid,
+            'UuidOutlet' => $this->k['Outlet']->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Baris' => [['UuidProduk' => $this->gula->Uuid, 'UuidProdukSatuan' => $this->satuan->Uuid, 'Jumlah' => '40']],
+        ])->assertSessionHasNoErrors();
+        $pesanan = PesananGrosir::query()->sole();
+        $this->post("/kelola/grosir/pesanan/{$pesanan->Uuid}/konfirmasi")->assertSessionHasNoErrors();
+        $this->post("/kelola/grosir/pesanan/{$pesanan->Uuid}/kirim", [
+            'UuidGudang' => $this->k['Gudang']->Uuid,
+            'Tanggal' => '2026-09-27',
+            'Baris' => [['Urutan' => 1, 'Jumlah' => '40']],
+        ])->assertSessionHasNoErrors();
+        $suratJalan = SuratJalan::query()->sole();
+
+        $this->get('/kelola/grosir/retur/buat')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Bersama/PilihDokumen')
+            ->has('Butir', 1)
+            ->where('Butir.0.Uuid', $suratJalan->Uuid)
+            ->where('Butir.0.Nomor', $suratJalan->Nomor)
+            ->where('Butir.0.Pihak', 'Toko Makmur Jaya')
+            ->where('Butir.0.Tautan', "/kelola/grosir/retur/buat/{$suratJalan->Uuid}")
+            ->where('Butir.0.Lencana', null)
+            ->where('Butir.0.Rincian', fn ($r) => str_contains((string) $r, 'total Rp 600.000') && str_contains((string) $r, 'belum difakturkan')));
+
+        // Sesudah difakturkan, retur menjadi nota kredit: pengguna diberi tahu lewat lencana.
+        $this->post('/kelola/grosir/faktur', ['UuidSuratJalan' => [$suratJalan->Uuid], 'Tanggal' => '2026-09-27'])->assertSessionHasNoErrors();
+        $this->get('/kelola/grosir/retur/buat')->assertInertia(fn (AssertableInertia $h) => $h->where('Butir.0.Lencana.Teks', 'Sudah difakturkan'));
+
+        // Jalan lama (surat jalan di URL) tetap membuka form.
+        $this->get("/kelola/grosir/retur/buat/{$suratJalan->Uuid}")->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->component('Kelola/Grosir/Retur/Buat'));
+
+        // Seluruh barang sudah diretur, atau surat jalan dibatalkan: tidak ditawarkan lagi.
+        DB::table('SuratJalanDetail')->where('IdSuratJalan', $suratJalan->Id)->update(['JumlahDiretur' => DB::raw('Jumlah')]);
+        $this->get('/kelola/grosir/retur/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('Butir', 0));
+        DB::table('SuratJalanDetail')->where('IdSuratJalan', $suratJalan->Id)->update(['JumlahDiretur' => 0]);
+        DB::table('SuratJalan')->where('Id', $suratJalan->Id)->update(['Status' => StatusDokumenTerposting::Dibatalkan->value]);
+        $this->get('/kelola/grosir/retur/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('Butir', 0));
+
+        // Isolasi tenant: tenant lain tidak melihat surat jalan ini.
+        DB::table('SuratJalan')->where('Id', $suratJalan->Id)->update(['Status' => StatusDokumenTerposting::Diposting->value]);
+        $lain = BantuanPersediaan::SiapkanTenant('Warung Kelontong Berkah');
+        BantuanFitur::Beri($lain['Tenant']->Id, 'piutang.grosir');
+        BantuanPersediaan::MasukSebagai($this, $lain['Tenant']->Id);
+        $this->get('/kelola/grosir/retur/buat')->assertInertia(fn (AssertableInertia $h) => $h->has('Butir', 0));
     });
 });

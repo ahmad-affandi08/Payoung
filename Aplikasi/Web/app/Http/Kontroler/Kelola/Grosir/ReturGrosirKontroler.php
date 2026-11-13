@@ -13,11 +13,13 @@ use App\Domain\Penjualan\Enum\KondisiBarangRetur;
 use App\Domain\Penjualan\Kueri\DaftarDokumenGrosir;
 use App\Domain\Penjualan\Kueri\DetailGrosir;
 use App\Domain\Penjualan\Kueri\DokumenCetakGrosir;
+use App\Domain\Penjualan\Kueri\DokumenHuluGrosir;
 use App\Domain\Penjualan\Model\ReturGrosir;
 use App\Domain\Penjualan\Model\SuratJalan;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Http\Permintaan\Kelola\Grosir\AlasanGrosirPermintaan;
 use App\Http\Permintaan\Kelola\Grosir\BuatReturGrosirPermintaan;
+use App\Http\Respons\HalamanPilihDokumen;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -40,6 +42,19 @@ final class ReturGrosirKontroler extends DasarGrosirKontroler
             'OpsiStatus' => self::Opsi(StatusDokumenTerposting::class),
             'Izin' => $this->AmbilIzinGrosir(),
         ]);
+    }
+
+    /** D-288: dibuka dari menu tanpa surat jalan asal, pilih dari surat jalan yang masih punya barang untuk diretur. */
+    public function Pilih(DokumenHuluGrosir $hulu): Response
+    {
+        return HalamanPilihDokumen::Kirim([
+            'Judul' => 'Retur grosir',
+            'Petunjuk' => 'Pilih surat jalan yang barangnya dikembalikan pembeli. Barisnya terisi dari barang yang masih bisa diretur.',
+            'JudulDaftar' => 'Surat jalan yang bisa diretur',
+            'LabelCari' => 'Cari surat jalan',
+            'LabelAksi' => 'Buat retur',
+            'Kosong' => 'Belum ada surat jalan yang barangnya bisa diretur.',
+        ], $hulu->SuratJalanUntukRetur($this->IdOutletBoleh()), 'kelola.grosir.retur.buat', 'suratJalan');
     }
 
     /** Form retur atas satu surat jalan; sisa yang masih bisa diretur per baris datang dari server. */

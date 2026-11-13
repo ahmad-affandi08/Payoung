@@ -58,6 +58,7 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::GrosirKelola)])-
     Route::post('/faktur/{faktur}/batalkan', [FakturPenjualanKontroler::class, 'Batalkan'])->where('faktur', $ulid)->name('kelola.grosir.faktur.batalkan');
 
     Route::get('/retur', [ReturGrosirKontroler::class, 'Daftar'])->name('kelola.grosir.retur.daftar');
+    Route::get('/retur/buat', [ReturGrosirKontroler::class, 'Pilih'])->name('kelola.grosir.retur.pilih');
     Route::get('/retur/buat/{suratJalan}', [ReturGrosirKontroler::class, 'Buat'])->where('suratJalan', $ulid)->name('kelola.grosir.retur.buat');
     Route::post('/retur', [ReturGrosirKontroler::class, 'Simpan'])->name('kelola.grosir.retur.simpan');
     Route::get('/retur/{retur}', [ReturGrosirKontroler::class, 'Detail'])->where('retur', $ulid)->name('kelola.grosir.retur.detail');

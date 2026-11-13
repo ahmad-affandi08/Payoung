@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+
 import {
     AlamatGrosir,
     BuatSaringGrosir,
@@ -8,8 +10,10 @@ import {
     KolomTanggalGrosir,
     KolomUangGrosir,
 } from '@/Komponen/Grosir/BagianDokumenGrosir';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
+import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import type { BarisDaftarRetur, PropsDaftarRetur } from '@/Tipe/Grosir';
 
@@ -72,6 +76,15 @@ export default function HalamanDaftarReturGrosir({ Retur, OpsiStatus, Izin }: Pr
             izin={Izin}
             objek="retur grosir"
         >
+            <AksiHalaman
+                utama={
+                    Izin.Kelola ? (
+                        <Button asChild className="h-8 pointer-coarse:h-11">
+                            <Link href={`${alamat}/buat`}>Buat retur</Link>
+                        </Button>
+                    ) : undefined
+                }
+            />
             <TabelData
                 id="grosir-retur"
                 label="Daftar retur grosir"
@@ -84,7 +97,7 @@ export default function HalamanDaftarReturGrosir({ Retur, OpsiStatus, Izin }: Pr
                 alamatDetail={(d) => `${alamat}/${d.Uuid}`}
                 kosong={{
                     ilustrasi: true,
-                    judul: 'Belum ada retur grosir. Retur dibuat dari halaman surat jalan yang barangnya dikembalikan.',
+                    judul: 'Belum ada retur grosir. Tekan Buat retur, lalu pilih surat jalan yang barangnya dikembalikan.',
                 }}
             />
         </HalamanGrosir>

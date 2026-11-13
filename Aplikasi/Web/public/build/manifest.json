@@ -2936,7 +2936,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-CP_j0LVg.js",
+    "file": "assets/Aplikasi-EBW5ynZ-.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -4936,14 +4936,17 @@
     ]
   },
   "resources/js/Halaman/Kelola/Grosir/Retur/Daftar.tsx": {
-    "file": "assets/Daftar-DlXenJrU.js",
+    "file": "assets/Daftar-DInI2mBh.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/Grosir/Retur/Daftar.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_jsx-runtime-B23tBWN-.js",
+      "_dist-D4veJNCv.js",
       "_TabelData-DtrWEHM2.js",
+      "_button-BK_9L4NG.js",
       "_LabelStatus-BNjWuZG6.js",
+      "_AksiHalaman-2H92RzZn.js",
       "_BagianDokumenGrosir-CZxIqjoN.js"
     ]
   },
