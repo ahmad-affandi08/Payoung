@@ -44,7 +44,7 @@ final class PesananTerbukaUntukDiterima
                 'Nomor' => $b['Nomor'],
                 'UuidPemasok' => $pemasok[$b['IdPemasok']]['Uuid'] ?? '',
                 'NamaPemasok' => $pemasok[$b['IdPemasok']]['Nama'] ?? 'Pemasok dihapus',
-                'NamaGudang' => ($gudang[$b['IdGudang']] ?? null)?->nama ?? '',
+                'NamaGudang' => $gudang[$b['IdGudang']]->nama ?? '',
                 'Tanggal' => $b['Tanggal'],
                 'PerkiraanTiba' => $b['PerkiraanTiba'],
                 'HariTerlambat' => $b['HariTerlambat'],

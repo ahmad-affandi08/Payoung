@@ -88,7 +88,7 @@ final class DokumenHuluPembelian
             ->limit($batas)
             ->get()
             ->all();
-        $pemasok = $this->peta->Pemasok(array_column(array_map(fn (FakturPembelian $f): array => ['IdPemasok' => $f->IdPemasok], $faktur), 'IdPemasok'));
+        $pemasok = $this->peta->Pemasok(array_map(fn (FakturPembelian $f): ?int => $f->IdPemasok, $faktur));
 
         return array_map(function (FakturPembelian $f) use ($pemasok): array {
             $sisa = $f->AmbilSisa();
@@ -96,7 +96,7 @@ final class DokumenHuluPembelian
             return [
                 'Uuid' => $f->Uuid,
                 'Nomor' => $f->Nomor,
-                'Pihak' => $pemasok[$f->IdPemasok]['Nama'] ?? 'Tanpa pemasok',
+                'Pihak' => $f->IdPemasok === null ? 'Tanpa pemasok' : ($pemasok[$f->IdPemasok]['Nama'] ?? 'Pemasok dihapus'),
                 'Tanggal' => $f->Tanggal->format('Y-m-d'),
                 'Rincian' => 'Faktur pemasok '.$f->NomorFakturPemasok.' | total '.Uang::Dari((string) $f->Total)->FormatRupiah().' | sisa hutang '.($sisa->BernilaiNegatif() ? Uang::Nol() : $sisa)->FormatRupiah(),
                 'Lencana' => ['Jenis' => $f->Status === StatusFakturPembelian::Lunas ? 'sukses' : 'netral', 'Teks' => $f->Status->AmbilLabel()],
@@ -123,7 +123,7 @@ final class DokumenHuluPembelian
             ->limit($batas)
             ->get()
             ->all();
-        $pemasok = $this->peta->Pemasok(array_column(array_map(fn (PermintaanPembelian $p): array => ['IdPemasok' => $p->IdPemasok], $permintaan), 'IdPemasok'));
+        $pemasok = $this->peta->Pemasok(array_map(fn (PermintaanPembelian $p): ?int => $p->IdPemasok, $permintaan));
         $gudang = $this->peta->Gudang(array_map(fn (PermintaanPembelian $p): int => $p->IdGudang, $permintaan));
 
         return array_map(function (PermintaanPembelian $p) use ($pemasok, $gudang): array {
