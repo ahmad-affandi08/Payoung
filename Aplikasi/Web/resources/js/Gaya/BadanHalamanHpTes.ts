@@ -28,6 +28,17 @@ describe('Badan halaman di HP (D-285)', () => {
         );
     });
 
+    it('D-297 kontainer menyambung ke kepala halaman dan ke dasar layar tanpa pita abu-abu', () => {
+        const rapi = blokHp.replace(/\s+/g, ' ');
+
+        // Pemilih mencakup anak pertama dan kontainer yang hanya didahului jejak halaman yang disembunyikan di HP.
+        expect(rapi).toContain('main > .badan-halaman:is(:first-child, .max-sm\\:hidden:first-child + *)');
+        expect(rapi).toMatch(
+            /:first-child \+ \*\) \{ margin-top: calc\(var\(--spacing\) \* -4\); border-top-width: 0;/,
+        );
+        expect(rapi).toMatch(/main > \.badan-halaman:last-child \{ margin-bottom: calc\(var\(--spacing\) \* -4\);/);
+    });
+
     it('tautan, tombol, dan kotak bergaris putus atau berwarna merek tidak ikut diratakan', () => {
         expect(blokHp.replace(/\s+/g, ' ')).toContain(
             ".border-brand, .border-dashed, a, button, label, summary, [role='button']",

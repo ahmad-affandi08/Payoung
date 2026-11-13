@@ -709,4 +709,20 @@
     .badan-halaman > section[data-slot='tabel-data']:last-child > [data-slot='kartu-tabel'] {
         border-radius: 0;
     }
+
+    /*
+     * Penuh sampai kepala (v7.133, D-297): bila tidak ada yang terlihat di atas kontainer (banner), pita abu-abu
+     * `py-4` milik `main` dibuang supaya putih langsung menyambung dari kepala halaman, seperti aplikasi seluler
+     * lazimnya. Jejak halaman yang disembunyikan di HP tetap anak pertama `main`, jadi ikut dihitung "tidak ada".
+     * Garis atas kontainer dibuang karena kepala halaman sudah punya garis bawah.
+     */
+    main > .badan-halaman:is(:first-child, .max-sm\:hidden:first-child + *) {
+        margin-top: calc(var(--spacing) * -4);
+        border-top-width: 0;
+    }
+
+    /* Ujung bawah sama: putih sampai dasar layar, tanpa pita abu-abu di bawahnya. */
+    main > .badan-halaman:last-child {
+        margin-bottom: calc(var(--spacing) * -4);
+    }
 }
