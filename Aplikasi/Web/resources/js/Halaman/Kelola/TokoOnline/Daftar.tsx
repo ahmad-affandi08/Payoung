@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ExternalLinkIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -658,7 +659,16 @@ export default function DaftarTokoOnline(props: Props) {
             <p className="text-keterangan text-teks-sekunder">
                 Kelola kanal publik, pesanan masuk, zona ongkir, dan kurir.
             </p>
-            <AksiHalaman lainnya={[{ label: 'Buka toko', href: props.TautanPublik, tabBaru: true }]} />
+            <AksiHalaman
+                utama={
+                    <Button asChild className="h-8 pointer-coarse:h-11">
+                        <a href={props.TautanPublik} target="_blank" rel="noreferrer">
+                            Buka toko
+                            <ExternalLinkIcon aria-hidden="true" />
+                        </a>
+                    </Button>
+                }
+            />
             <div className="flex flex-col gap-6">
                 <PanelBagikan props={props} />
                 <FormPengaturan props={props} />

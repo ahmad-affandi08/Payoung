@@ -68,6 +68,20 @@ describe('Toko online › Pengaturan toko', () => {
     });
 });
 
+describe('D-298 tombol Buka toko', () => {
+    beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
+    afterEach(cleanup);
+
+    it('Buka toko selalu terlihat sebagai tautan ke toko publik di tab baru, bukan tersembunyi di menu', () => {
+        RenderUji(<HalamanTokoOnline {...propsSiap} />);
+
+        const tautan = screen.getByRole('link', { name: /Buka toko/ });
+        expect(tautan.getAttribute('href')).toBe(propsSiap.TautanPublik);
+        expect(tautan.getAttribute('target')).toBe('_blank');
+        expect(tautan.getAttribute('rel')).toContain('noreferrer');
+    });
+});
+
 describe('Toko online › Kabar pesanan lewat WhatsApp', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
 

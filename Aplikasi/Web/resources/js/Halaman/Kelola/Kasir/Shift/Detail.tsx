@@ -10,6 +10,7 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { AmbilTandaDesimal, KurangiDesimal } from '@/Pustaka/HitungDesimal';
@@ -452,15 +453,12 @@ export default function HalamanDetailShift({
 
     return (
         <TataLetakAplikasi judul={`Shift ${Shift.NamaKasir} | ${FormatTanggalWaktu(Shift.DibukaPada)}`}>
+            {/* Shift yang masih terbuka: tutup paksa jadi langkah utama halaman (satu tombol berwarna di bawah judul), bukan tombol di dalam banner. */}
             {aktif && Izin.TutupPaksa ? (
-                <Pemberitahuan jenis="peringatan" judul="Shift ini masih terbuka">
-                    <div className="flex flex-col items-start gap-2">
-                        <p>Tutup dari sini bila kasir sudah pulang atau perangkatnya tidak bisa menutup shift.</p>
-                        <Tombol varian="sekunder" onClick={() => AturTutupPaksa(true)}>
-                            Tutup paksa shift
-                        </Tombol>
-                    </div>
-                </Pemberitahuan>
+                <AksiHalaman
+                    keterangan="Shift ini masih terbuka. Tutup dari sini bila kasir sudah pulang atau perangkatnya tidak bisa menutup shift."
+                    langkah={[{ label: 'Tutup paksa shift', saatKlik: () => AturTutupPaksa(true) }]}
+                />
             ) : null}
             {tutupPaksa ? <FormTutupPaksa uuidShift={Shift.Uuid} saatTutup={() => AturTutupPaksa(false)} /> : null}
 
