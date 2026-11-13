@@ -316,6 +316,7 @@
 | D-280 | Dari pemilik produk, 13/11/2026. Halaman bersama tidak boleh tampil berbeda hanya karena isi di dalamnya: judul dan keterangan halaman daftar selalu dalam satu kartu atau sama sekali tidak (tidak setengah-setengah), halaman dengan ringkasan angka memakai judul biasa, paginasi di HP rata di tengah, dan halaman yang berupa tab dari induknya mengikuti induknya soal jejak halaman. |
 | D-281 | Dari pemilik produk, 13/11/2026. Halaman daftar adalah satu kontainer putih dari judul sampai ke bawah, tidak dipecah menjadi kartu-kartu terpisah. Blok di dalamnya (panel, ringkasan, filter) tampil sebagai kartu kecil di dalam kontainer, dan tabel menyatu dengan kontainer lewat garis pemisah. Ini menggantikan D-277 dan D-279, yang hanya berlaku bila tidak ada blok lain di atas tabel. Diatur sekali di CSS, bukan per halaman. |
 | D-282 | Dari pemilik produk, 13/11/2026. Semua halaman back-office (form, laporan, pengaturan, daftar) adalah satu kontainer putih dari judul sampai ke bawah, dan blok di dalamnya tampil sebagai kartu kecil. Memperluas D-281 yang hanya berlaku untuk halaman ber-`TabelData`. Diatur sekali di `.badan-halaman`, bukan per halaman. |
+| D-283 | Dari pemilik produk, 13/11/2026. Panduan awal ikut pola satu kontainer putih (D-282) walau tanpa menu samping. Halaman cetak dan halaman Absen mobile dikecualikan karena fungsinya berbeda (dokumen A4 dan layar karyawan). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

@@ -56,11 +56,14 @@ export default function TataLetakPanduanAwal({ judul, wajib, children }: PropsTa
                         </div>
                     </div>
                 </header>
-                <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6 md:py-8">
-                    <JudulHalaman>{judul}</JudulHalaman>
-                    {props.Kilat ? <Pemberitahuan jenis="sukses">{props.Kilat}</Pemberitahuan> : null}
-                    {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
-                    {children}
+                <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-6 md:py-8">
+                    {/* D-282: sama dengan halaman back-office lain, satu kontainer putih dari judul sampai bawah. */}
+                    <div data-slot="badan-halaman" className="badan-halaman">
+                        <JudulHalaman>{judul}</JudulHalaman>
+                        {props.Kilat ? <Pemberitahuan jenis="sukses">{props.Kilat}</Pemberitahuan> : null}
+                        {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
+                        {children}
+                    </div>
                 </main>
             </div>
             <PemberitahuanMelayang />

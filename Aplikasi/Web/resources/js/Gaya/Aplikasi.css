@@ -453,12 +453,9 @@
         padding-bottom: calc(var(--spacing) * 1);
     }
 
-    & > p:first-of-type {
+    & > :is(h1 + p, h1 + [aria-live] + p) {
         font-size: var(--text-keterangan);
         line-height: var(--text-keterangan--line-height);
-    }
-
-    & > :is(h1 + p, h1 + [aria-live] + p) {
         max-width: none;
         padding: 0 calc(var(--spacing) * 4);
     }

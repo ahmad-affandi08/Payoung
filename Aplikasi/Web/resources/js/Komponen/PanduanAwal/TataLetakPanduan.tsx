@@ -104,7 +104,7 @@ export default function TataLetakPanduan({ progres, langkah, lanjut = 'formulir'
 
             {children}
 
-            <Separator className="bg-garis" />
+            <Separator className="bg-garis data-[orientation=horizontal]:w-auto" />
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <Link href={sebelumnya?.Tautan ?? AlamatPanduan.Indeks} className={kelasTautanTombol}>
                     {sebelumnya ? `Kembali ke ${sebelumnya.Judul}` : 'Kembali ke ringkasan'}
