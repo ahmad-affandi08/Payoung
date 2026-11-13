@@ -19,6 +19,22 @@ export const DAFTAR_WIDGET: readonly { Kode: KodeWidget; Judul: string }[] = [
     { Kode: 'stok', Judul: 'Stok kritis' },
 ];
 
+const JUDUL_TAB: Record<KodeWidget, string> = {
+    metode: 'Metode bayar',
+    pesanan: 'Jenis pesanan',
+    kategori: 'Kategori',
+    antifraud: 'Anti-fraud',
+    terlaris: 'Produk terlaris',
+    komisi: 'Komisi',
+    kasir: 'Kasir',
+    stok: 'Stok kritis',
+};
+
+/** Judul pendek widget untuk tab Ringkasan cepat. */
+export function JudulTabWidget(kode: KodeWidget): string {
+    return JUDUL_TAB[kode];
+}
+
 const KUNCI_PENYIMPANAN = 'payoung.beranda.widget-tersembunyi';
 
 const SEMUA_KODE = DAFTAR_WIDGET.map((w) => w.Kode);

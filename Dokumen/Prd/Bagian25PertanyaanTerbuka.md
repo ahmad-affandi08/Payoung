@@ -329,6 +329,7 @@
 | D-293 | Dari pemilik produk, 13/11/2026. Keterangan halaman back-office tenant adalah `<p>` yang langsung mengikuti judul (anak langsung badan halaman), huruf keterangan dan rapat ke judulnya. Dilarang membungkusnya dengan `<div>` dan dilarang menaruhnya di slot `keterangan` AksiHalaman (slot itu hanya untuk status dan penghitung). Komponen pembungkus halaman tidak boleh menyisipkan elemen di antara badan halaman dan keterangan. Dijaga test. |
 | D-294 | Dari pemilik produk, 13/11/2026. Formulir *Tambah* metode pembayaran dibuka lewat tombol aksi utama halaman dan tampil di dialog, bukan terpampang di bawah tabel. Berlaku sama bagi halaman daftar lain: tabel dulu, tombol Tambah di `AksiHalaman`, formulir di dialog atau halaman sendiri. Isi dialog dilepas saat ditutup sehingga formulir selalu mulai kosong. |
 | D-295 | Dari pemilik produk, 13/11/2026. Di HP, tombol ikon bilah atas (cari, bantuan, notifikasi) tidak berborder dan dirapatkan. Border dan latar tombol ikon hanya dari lebar `lg` ke atas. |
+| D-296 | Dari pemilik produk, 13/11/2026. Beranda tenant memakai hierarki: satu kartu angka utama, peringatan hanya bila ada, grafik hanya bila ada data, Ringkasan cepat bertab dengan widget kosong digabung. Blok kosong ("Rp 0", "Belum ada …") tidak boleh menjadi blok sendiri di Beranda, dan setiap blok Beranda adalah anak langsung badan halaman supaya terpisah di HP. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

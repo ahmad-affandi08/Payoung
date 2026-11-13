@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import { AlamatInvoice } from '@/Komponen/Invoice/BagianInvoice';
+import Panel from '@/Komponen/Kelola/Panel';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import { AmbilTandaDesimal } from '@/Pustaka/HitungDesimal';
@@ -11,17 +12,31 @@ import type { RingkasanPenagihan } from '@/Tipe/Invoice';
  * Dipakai di Beranda (bagi usaha yang menagih lewat invoice) dan di atas daftar Invoice. Status lewat tempo tidak hanya
  * berwarna: angkanya disertai teks jumlah invoice.
  */
-export default function RingkasanPenagihanKartu({ ringkasan }: { ringkasan: RingkasanPenagihan }) {
+export default function RingkasanPenagihanKartu({
+    ringkasan,
+    sembunyiBilaKosong = false,
+}: {
+    ringkasan: RingkasanPenagihan;
+    /** Beranda: tanpa invoice sama sekali, kartu berisi empat "Rp 0" tidak ditampilkan. */
+    sembunyiBilaKosong?: boolean;
+}) {
     const adaLewat = ringkasan.LewatTempo.Jumlah > 0;
+    const kosong =
+        AmbilTandaDesimal(ringkasan.Ditagih) === 0 &&
+        AmbilTandaDesimal(ringkasan.Diterima) === 0 &&
+        ringkasan.Beredar.Jumlah === 0 &&
+        ringkasan.Draf === 0;
+
+    if (sembunyiBilaKosong && kosong) {
+        return null;
+    }
 
     return (
-        <section aria-label="Ringkasan penagihan invoice" className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-subjudul font-semibold text-teks-utama">Penagihan invoice</h2>
-                <p className="text-keterangan text-teks-sekunder">
-                    {FormatTanggal(ringkasan.Dari)} sampai {FormatTanggal(ringkasan.Sampai)}
-                </p>
-            </div>
+        <Panel
+            tingkat="h2"
+            judul="Penagihan invoice"
+            keterangan={`${FormatTanggal(ringkasan.Dari)} sampai ${FormatTanggal(ringkasan.Sampai)}`}
+        >
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                 <Kartu judul="Ditagihkan bulan ini" nilai={ringkasan.Ditagih} />
                 <Kartu judul="Diterima bulan ini" nilai={ringkasan.Diterima} />
@@ -51,7 +66,7 @@ export default function RingkasanPenagihanKartu({ ringkasan }: { ringkasan: Ring
                     </Link>
                 </p>
             ) : null}
-        </section>
+        </Panel>
     );
 }
 

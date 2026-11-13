@@ -9,26 +9,12 @@ import { HitungLebarBatang } from '@/Pustaka/WidgetBeranda';
 
 export type BarisPeringkat = { kunci: string; nama: string; kanan: string; nilai: string };
 
-/** Judul widget lewat `Panel` (satu-satunya permukaan panel, D-28); isi dibuat memanjang supaya tautan sejajar di dasar kartu. */
-export function KartuWidget({
-    judul,
-    angka,
-    tautan,
-    teksTautan,
-    children,
-}: {
-    judul: string;
-    angka: ReactNode;
-    tautan: string;
-    teksTautan: string;
-    children: ReactNode;
-}) {
+type PropsIsiWidget = { angka: ReactNode; tautan: string; teksTautan: string; children: ReactNode };
+
+/** Isi widget tanpa kartu: angka utama, isi, lalu tautan ke laporan asal. Dipakai kartu widget dan tab Ringkasan cepat. */
+export function IsiWidget({ angka, tautan, teksTautan, children }: PropsIsiWidget) {
     return (
-        <Panel
-            tingkat="h3"
-            judul={judul}
-            className="h-full [&_[data-slot=card-content]]:flex-1 [&_[data-slot=card-header]]:px-4"
-        >
+        <>
             <p className="text-judul font-semibold text-teks-utama tabular-nums">{angka}</p>
             <div className="flex flex-1 flex-col gap-3">{children}</div>
             <div className="border-t border-garis pt-3">
@@ -36,6 +22,19 @@ export function KartuWidget({
                     <Link href={tautan}>{teksTautan}</Link>
                 </Button>
             </div>
+        </>
+    );
+}
+
+/** Judul widget lewat `Panel` (satu-satunya permukaan panel, D-28); isi dibuat memanjang supaya tautan sejajar di dasar kartu. */
+export function KartuWidget({ judul, ...isi }: PropsIsiWidget & { judul: string }) {
+    return (
+        <Panel
+            tingkat="h3"
+            judul={judul}
+            className="h-full [&_[data-slot=card-content]]:flex-1 [&_[data-slot=card-header]]:px-4"
+        >
+            <IsiWidget {...isi} />
         </Panel>
     );
 }

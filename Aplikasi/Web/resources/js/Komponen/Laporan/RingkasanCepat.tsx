@@ -1,7 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
-import { DaftarPeringkat, KartuWidget } from '@/Komponen/Kelola/KartuWidget';
+import { DaftarPeringkat, IsiWidget } from '@/Komponen/Kelola/KartuWidget';
+import DaftarTab from '@/Komponen/Katalog/DaftarTab';
+import Panel from '@/Komponen/Kelola/Panel';
 import DialogAturWidget from '@/Komponen/Laporan/DialogAturWidget';
 import { Button } from '@/Komponen/Ui/button';
 import { cn } from '@/Komponen/Ui/utils';
@@ -13,6 +15,7 @@ import {
     BacaWidgetTersembunyi,
     DAFTAR_WIDGET,
     HitungPersenBagian,
+    JudulTabWidget,
     JenisStatusStok,
     LabelTingkatAntiFraud,
     SimpanWidgetTersembunyi,
@@ -27,12 +30,7 @@ function WidgetMetode({ data, tautan }: { data: DasborPemilik; tautan: string })
     const { Total, Baris } = data.Widget.MetodeBayar;
 
     return (
-        <KartuWidget
-            judul="Metode pembayaran"
-            angka={FormatRupiah(Total)}
-            tautan={`${tautan}&tab=metode`}
-            teksTautan="Buka laporan metode"
-        >
+        <IsiWidget angka={FormatRupiah(Total)} tautan={`${tautan}&tab=metode`} teksTautan="Buka laporan metode">
             {Baris.length === 0 ? (
                 <p className="text-isi text-teks-sekunder">Belum ada pembayaran pada periode ini.</p>
             ) : (
@@ -68,7 +66,7 @@ function WidgetMetode({ data, tautan }: { data: DasborPemilik; tautan: string })
                     </ul>
                 </>
             )}
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
@@ -90,8 +88,7 @@ function WidgetAntiFraud({ data, tautan }: { data: DasborPemilik; tautan: string
     ];
 
     return (
-        <KartuWidget
-            judul="Kontrol anti-fraud"
+        <IsiWidget
             angka={LabelTingkatAntiFraud(a.Tingkat)}
             tautan={`${tautan}&tab=anti-fraud`}
             teksTautan="Buka tab anti-fraud"
@@ -115,7 +112,7 @@ function WidgetAntiFraud({ data, tautan }: { data: DasborPemilik; tautan: string
                     </li>
                 ))}
             </ul>
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
@@ -127,8 +124,7 @@ function WidgetKomisi({ data }: { data: DasborPemilik }) {
     }
 
     return (
-        <KartuWidget
-            judul="Komisi staf"
+        <IsiWidget
             angka={FormatRupiah(komisi.Total)}
             tautan="/kelola/karyawan/komisi/laporan"
             teksTautan="Buka laporan komisi"
@@ -158,26 +154,24 @@ function WidgetKomisi({ data }: { data: DasborPemilik }) {
                     kosong=""
                 />
             )}
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
 /** Peringkat uang sederhana (jenis pesanan, kategori, kasir). */
 function WidgetPeringkatUang({
-    judul,
     data,
     tautan,
     teksTautan,
     kosong,
 }: {
-    judul: string;
     data: DasborPemilik['Widget']['Kasir'];
     tautan: string;
     teksTautan: string;
     kosong: string;
 }) {
     return (
-        <KartuWidget judul={judul} angka={FormatRupiah(data.Total)} tautan={tautan} teksTautan={teksTautan}>
+        <IsiWidget angka={FormatRupiah(data.Total)} tautan={tautan} teksTautan={teksTautan}>
             <DaftarPeringkat
                 baris={data.Baris.map((b) => ({
                     kunci: b.Kunci,
@@ -187,16 +181,15 @@ function WidgetPeringkatUang({
                 }))}
                 kosong={kosong}
             />
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
-function WidgetTerlaris({ data, judul }: { data: DasborPemilik; judul: string }) {
+function WidgetTerlaris({ data }: { data: DasborPemilik }) {
     const nilai = JumlahkanDesimal(data.ProdukTerlaris.map((p) => p.Bersih));
 
     return (
-        <KartuWidget
-            judul={judul}
+        <IsiWidget
             angka={FormatRupiah(nilai)}
             tautan="/kelola/laporan/penjualan?tab=produk"
             teksTautan="Buka laporan produk"
@@ -210,7 +203,7 @@ function WidgetTerlaris({ data, judul }: { data: DasborPemilik; judul: string })
                 }))}
                 kosong="Belum ada penjualan pada periode ini."
             />
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
@@ -222,8 +215,7 @@ function WidgetStok({ data }: { data: DasborPemilik }) {
     }
 
     return (
-        <KartuWidget
-            judul="Stok kritis"
+        <IsiWidget
             angka={stok.Jumlah === 0 ? 'Aman' : `${String(stok.Jumlah)} produk`}
             tautan="/kelola/laporan/stok?tab=kritis"
             teksTautan="Buka laporan stok"
@@ -258,36 +250,87 @@ function WidgetStok({ data }: { data: DasborPemilik }) {
                     </p>
                 </>
             )}
-        </KartuWidget>
+        </IsiWidget>
     );
 }
 
+/** Widget yang belum punya isi untuk periode ini tidak mendapat tab sendiri, supaya layar tidak penuh "Rp 0". */
+function WidgetKosong(kode: KodeWidget, data: DasborPemilik): boolean {
+    const w = data.Widget;
+
+    switch (kode) {
+        case 'metode':
+            return w.MetodeBayar.Baris.length === 0;
+        case 'pesanan':
+            return w.JenisPesanan.Baris.length === 0;
+        case 'kategori':
+            return w.Kategori.Baris.length === 0;
+        case 'kasir':
+            return w.Kasir.Baris.length === 0;
+        case 'terlaris':
+            return data.ProdukTerlaris.length === 0;
+        case 'komisi':
+            return w.Komisi === null || w.Komisi.Baris.length === 0;
+        case 'stok':
+            return data.StokKritis === null || data.StokKritis.Jumlah === 0;
+        case 'antifraud': {
+            const a = w.AntiFraud;
+
+            return (
+                a.NamaKasirTertinggi === '' &&
+                a.VoidCepatTunai === 0 &&
+                a.JumlahBerdiskon === 0 &&
+                a.BukaLaciManual === 0 &&
+                a.ShiftSelisihKurang === 0
+            );
+        }
+    }
+}
+
 /**
- * Widget "Ringkasan cepat" di Beranda (D-203): delapan kartu peringkat untuk periode yang sama dengan angka di atasnya.
- * Tanpa ikon dan tanpa grafik bersumbu: nama + nilai sebaris dengan batang tipis, satu angka utama per kartu, dan
- * tautan ke laporan asal yang membawa periode yang sama. Widget yang datanya di luar izin pengguna (komisi, stok)
- * tidak dirender; pengguna boleh menyembunyikan widget (disimpan per peramban).
+ * Ringkasan cepat di Beranda (D-203, D-296): satu panel dengan tab, bukan delapan blok bertumpuk. Hanya widget yang
+ * punya isi untuk periode itu mendapat tab (urutan tetap), dan bila semuanya kosong cukup satu kalimat. Widget yang
+ * datanya di luar izin pengguna (komisi, stok) tidak dirender; pengguna boleh menyembunyikan widget (disimpan per
+ * peramban). Tautan ke laporan asal membawa periode yang sama.
  */
 export default function RingkasanCepat({ data, judulTerlaris }: { data: DasborPemilik; judulTerlaris: string }) {
     const [tersembunyi, AturTersembunyi] = useState<KodeWidget[]>(BacaWidgetTersembunyi);
     const [aturBuka, AturAturBuka] = useState(false);
+    const [pilihan, AturPilihan] = useState<KodeWidget | null>(null);
     const { Periode: periode, Widget: w } = data;
     const tautan = `/kelola/laporan/penjualan?dari=${periode.Dari}&sampai=${periode.Sampai}`;
     const tersedia: KodeWidget[] = DAFTAR_WIDGET.map((d) => d.Kode).filter(
         (kode) => !(kode === 'komisi' && w.Komisi === null) && !(kode === 'stok' && data.StokKritis === null),
     );
-    const Tampil = (kode: KodeWidget) => tersedia.includes(kode) && !tersembunyi.includes(kode);
+    const berisi = tersedia.filter((kode) => !tersembunyi.includes(kode) && !WidgetKosong(kode, data));
+    const aktif: KodeWidget | null = pilihan !== null && berisi.includes(pilihan) ? pilihan : (berisi[0] ?? null);
     const Ubah = (daftar: KodeWidget[]) => {
         AturTersembunyi(daftar);
         SimpanWidgetTersembunyi(daftar);
     };
+    const Peringkat = (kode: 'pesanan' | 'kategori' | 'kasir'): ReactNode => (
+        <WidgetPeringkatUang
+            data={kode === 'pesanan' ? w.JenisPesanan : kode === 'kategori' ? w.Kategori : w.Kasir}
+            tautan={`${tautan}&tab=${kode === 'pesanan' ? 'kanal' : kode}`}
+            teksTautan={`Buka laporan ${JudulTabWidget(kode).toLowerCase()}`}
+            kosong="Belum ada penjualan pada periode ini."
+        />
+    );
+    const isi: Record<KodeWidget, ReactNode> = {
+        metode: <WidgetMetode data={data} tautan={tautan} />,
+        pesanan: Peringkat('pesanan'),
+        kategori: Peringkat('kategori'),
+        antifraud: <WidgetAntiFraud data={data} tautan={tautan} />,
+        terlaris: <WidgetTerlaris data={data} />,
+        komisi: <WidgetKomisi data={data} />,
+        kasir: Peringkat('kasir'),
+        stok: <WidgetStok data={data} />,
+    };
 
     return (
-        <section aria-labelledby="judul-ringkasan-cepat" className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 id="judul-ringkasan-cepat" className="text-subjudul font-semibold text-teks-utama">
-                    Ringkasan cepat
-                </h3>
+        <Panel
+            judul="Ringkasan cepat"
+            aksi={
                 <Button
                     type="button"
                     variant="outline"
@@ -296,57 +339,42 @@ export default function RingkasanCepat({ data, judulTerlaris }: { data: DasborPe
                 >
                     Atur widget
                 </Button>
-            </div>
-
-            {tersedia.every((kode) => !Tampil(kode)) ? (
-                <p className="rounded-panel border border-garis bg-permukaan px-4 py-3 text-isi text-teks-sekunder">
+            }
+        >
+            {tersedia.every((kode) => tersembunyi.includes(kode)) ? (
+                <p className="text-isi text-teks-sekunder">
                     Semua widget disembunyikan. Pilih "Atur widget" untuk menampilkannya lagi.
                 </p>
+            ) : aktif === null ? (
+                <p className="text-isi text-teks-sekunder">
+                    Belum ada data pada periode ini. Metode bayar, kategori, kasir, dan lainnya muncul di sini setelah
+                    ada penjualan.
+                </p>
             ) : (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {Tampil('metode') ? <WidgetMetode data={data} tautan={tautan} /> : null}
-                    {Tampil('pesanan') ? (
-                        <WidgetPeringkatUang
-                            judul="Jenis pesanan"
-                            data={w.JenisPesanan}
-                            tautan={`${tautan}&tab=kanal`}
-                            teksTautan="Buka laporan jenis pesanan"
-                            kosong="Belum ada penjualan pada periode ini."
-                        />
-                    ) : null}
-                    {Tampil('kategori') ? (
-                        <WidgetPeringkatUang
-                            judul="Penjualan per kategori"
-                            data={w.Kategori}
-                            tautan={`${tautan}&tab=kategori`}
-                            teksTautan="Buka laporan kategori"
-                            kosong="Belum ada penjualan pada periode ini."
-                        />
-                    ) : null}
-                    {Tampil('antifraud') ? <WidgetAntiFraud data={data} tautan={tautan} /> : null}
-                    {Tampil('terlaris') ? <WidgetTerlaris data={data} judul={judulTerlaris} /> : null}
-                    {Tampil('komisi') ? <WidgetKomisi data={data} /> : null}
-                    {Tampil('kasir') ? (
-                        <WidgetPeringkatUang
-                            judul="Penjualan per kasir"
-                            data={w.Kasir}
-                            tautan={`${tautan}&tab=kasir`}
-                            teksTautan="Buka laporan kasir"
-                            kosong="Belum ada penjualan pada periode ini."
-                        />
-                    ) : null}
-                    {Tampil('stok') ? <WidgetStok data={data} /> : null}
-                </div>
+                <DaftarTab
+                    label="Ringkasan cepat"
+                    tab={berisi.map((kode) => ({
+                        Kunci: kode,
+                        Label: kode === 'terlaris' ? judulTerlaris.replace(/ sampai .*/, '') : JudulTabWidget(kode),
+                    }))}
+                    aktif={aktif}
+                    saatPilih={AturPilihan}
+                    panel={
+                        Object.fromEntries(
+                            berisi.map((kode) => [kode, <div className="flex flex-col gap-3">{isi[kode]}</div>]),
+                        ) as Record<KodeWidget, ReactNode>
+                    }
+                />
             )}
 
             {aturBuka ? (
                 <DialogAturWidget
-                    daftar={DAFTAR_WIDGET.filter((w) => tersedia.includes(w.Kode))}
+                    daftar={DAFTAR_WIDGET.filter((d) => tersedia.includes(d.Kode))}
                     tersembunyi={tersembunyi}
                     saatUbah={Ubah}
                     saatTutup={() => AturAturBuka(false)}
                 />
             ) : null}
-        </section>
+        </Panel>
     );
 }

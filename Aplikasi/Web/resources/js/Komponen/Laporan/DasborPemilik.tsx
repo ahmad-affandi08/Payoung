@@ -5,7 +5,6 @@ import RingkasanCepat from '@/Komponen/Laporan/RingkasanCepat';
 import PemilihRentangTanggal from '@/Komponen/Tanggal/PemilihRentangTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import Panel from '@/Komponen/Kelola/Panel';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Komponen/Ui/card';
 import { Skeleton } from '@/Komponen/Ui/skeleton';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -51,45 +50,72 @@ function NamaPembanding(pembanding: PembandingDasbor, namaMingguLalu: string): s
     return pembanding.Nama === 'kemarin' ? 'kemarin' : 'periode sebelumnya';
 }
 
-function KartuAngka({
-    judul,
-    kunci,
-    ukuran,
-    data,
-    namaMingguLalu,
-}: {
+type PropsAngka = {
     judul: string;
     kunci: keyof AngkaPenjualan;
     ukuran: Ukuran;
     data: DataDasbor;
     namaMingguLalu: string;
-}) {
+};
+
+/** Pengambil nilai dan pemformat bersama untuk angka utama dan strip angka. */
+function SiapkanAngka({ kunci, ukuran }: Pick<PropsAngka, 'kunci' | 'ukuran'>) {
     const Ambil = (a: AngkaPenjualan) => String(a[kunci] ?? '0');
     const Tampil = (nilai: string) => (ukuran === 'uang' ? FormatRupiah(nilai) : nilai);
     const KeAngka = (nilai: string) => (ukuran === 'uang' ? nilai : `${nilai}.00`);
 
+    return { Ambil, Tampil, KeAngka };
+}
+
+function BandingAngka({ kunci, ukuran, data, namaMingguLalu, semua }: Omit<PropsAngka, 'judul'> & { semua: boolean }) {
+    const { Ambil, Tampil, KeAngka } = SiapkanAngka({ kunci, ukuran });
+    // Di HP cukup satu pembanding (yang pertama) supaya baris tidak berlipat ganda.
+    const daftar = semua ? data.Pembanding : data.Pembanding.slice(0, 1);
+
     return (
-        <Card className="gap-1 py-4 rounded-panel shadow-none">
-            <CardHeader className="px-4">
-                <CardTitle>
-                    <h3 className="text-label font-semibold text-teks-sekunder">{judul}</h3>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-1 px-4">
-                <p className="text-judul font-semibold text-teks-utama tabular-nums">{Tampil(Ambil(data.Angka))}</p>
-                <p className="text-keterangan text-teks-sekunder tabular-nums">
-                    {data.Pembanding.map((p) => (
-                        <TeksBanding
-                            key={p.Nama}
-                            sekarang={KeAngka(Ambil(data.Angka))}
-                            pembanding={KeAngka(Ambil(p.Angka))}
-                            nama={NamaPembanding(p, namaMingguLalu)}
-                            tampil={Tampil(Ambil(p.Angka))}
-                        />
-                    ))}
-                </p>
-            </CardContent>
-        </Card>
+        <p className="text-keterangan text-teks-sekunder tabular-nums">
+            {daftar.map((p) => (
+                <TeksBanding
+                    key={p.Nama}
+                    sekarang={KeAngka(Ambil(data.Angka))}
+                    pembanding={KeAngka(Ambil(p.Angka))}
+                    nama={NamaPembanding(p, namaMingguLalu)}
+                    tampil={Tampil(Ambil(p.Angka))}
+                />
+            ))}
+        </p>
+    );
+}
+
+/** Angka utama kartu Ringkasan: satu angka besar dengan pembandingnya. */
+function AngkaUtama(props: Omit<PropsAngka, 'judul'> & { judul: string }) {
+    const { Ambil, Tampil } = SiapkanAngka(props);
+
+    return (
+        <div className="flex flex-col gap-1">
+            <p className="text-label text-teks-sekunder">{props.judul}</p>
+            <p className="text-tampilan font-semibold text-teks-utama tabular-nums wrap-anywhere">
+                {Tampil(Ambil(props.data.Angka))}
+            </p>
+            <BandingAngka {...props} semua />
+        </div>
+    );
+}
+
+/** Angka pendamping di bawah angka utama: tiga kolom rapat di HP, pembanding hanya dari layar sedang. */
+function AngkaPendamping(props: PropsAngka) {
+    const { Ambil, Tampil } = SiapkanAngka(props);
+
+    return (
+        <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="text-keterangan text-teks-sekunder">{props.judul}</p>
+            <p className="text-isi font-semibold text-teks-utama tabular-nums wrap-anywhere">
+                {Tampil(Ambil(props.data.Angka))}
+            </p>
+            <div className="hidden sm:block">
+                <BandingAngka {...props} semua />
+            </div>
+        </div>
     );
 }
 
@@ -171,20 +197,32 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
         });
     };
 
+    // Setiap blok jadi anak langsung badan halaman (fragmen, bukan `<section>`): di HP kartu diratakan dan hanya anak
+    // langsung yang mendapat garis pemisah (D-285), jadi pembungkus apa pun membuat blok-blok menyatu.
+    const kelasMuat = memuat ? 'opacity-60 transition-opacity' : 'transition-opacity';
+    const grafikAdaIsi = data.Grafik.some((t) => AmbilTandaDesimal(t.Bersih) !== 0);
+    const perhatian = [
+        data.JumlahPerluTinjauan > 0,
+        data.Shift.JumlahTerbuka > 0,
+        data.StokKritis !== null && data.StokKritis.Jumlah > 0,
+    ].some(Boolean);
+    const props = { data, namaMingguLalu };
+
     return (
-        <section
-            aria-labelledby="judul-dasbor"
-            aria-busy={memuat}
-            className={`flex flex-col gap-4 transition-opacity ${memuat ? 'opacity-60' : ''}`}
-        >
-            <div className="flex flex-wrap items-end justify-between gap-3">
-                <div className="flex flex-col gap-1">
-                    <h2 id="judul-dasbor" className="text-subjudul font-semibold text-teks-utama">
-                        Ringkasan {JudulPeriode(periode)}
-                    </h2>
-                    <TautanPanel href="/kelola/laporan/penjualan">Buka laporan penjualan</TautanPanel>
+        <>
+            <Panel
+                tingkat="h2"
+                judul={`Ringkasan ${JudulPeriode(periode)}`}
+                className={kelasMuat}
+                aksi={<TautanPanel href="/kelola/laporan/penjualan">Laporan lengkap</TautanPanel>}
+            >
+                <AngkaUtama judul="Penjualan bersih" kunci="Bersih" ukuran="uang" {...props} />
+                <div className="grid grid-cols-3 gap-3 border-t border-garis pt-3">
+                    <AngkaPendamping judul="Transaksi" kunci="JumlahTransaksi" ukuran="bilangan" {...props} />
+                    <AngkaPendamping judul="Rata-rata" kunci="RataRataKeranjang" ukuran="uang" {...props} />
+                    <AngkaPendamping judul="Laba kotor" kunci="LabaKotor" ukuran="uang" {...props} />
                 </div>
-                <div className="w-full sm:w-72">
+                <div className="border-t border-garis pt-3">
                     <PemilihRentangTanggal
                         label="Periode"
                         nilai={nilaiRentang}
@@ -194,75 +232,13 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
                         kosong="Hari ini"
                     />
                 </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <KartuAngka
-                    judul="Penjualan bersih"
-                    kunci="Bersih"
-                    ukuran="uang"
-                    data={data}
-                    namaMingguLalu={namaMingguLalu}
-                />
-                <KartuAngka
-                    judul="Transaksi"
-                    kunci="JumlahTransaksi"
-                    ukuran="bilangan"
-                    data={data}
-                    namaMingguLalu={namaMingguLalu}
-                />
-                <KartuAngka
-                    judul="Rata-rata keranjang"
-                    kunci="RataRataKeranjang"
-                    ukuran="uang"
-                    data={data}
-                    namaMingguLalu={namaMingguLalu}
-                />
-                <KartuAngka
-                    judul="Laba kotor"
-                    kunci="LabaKotor"
-                    ukuran="uang"
-                    data={data}
-                    namaMingguLalu={namaMingguLalu}
-                />
-            </div>
-
-            <Panel tingkat="h3" judul={judulGrafik}>
-                <Suspense fallback={<Skeleton className="h-64 w-full" aria-label="Memuat grafik" />}>
-                    <GrafikPenjualanHarian data={data.Grafik} judul={judulGrafik} />
-                </Suspense>
             </Panel>
 
-            <RingkasanCepat data={data} judulTerlaris={judulTerlaris} />
-
-            <div className="grid gap-3 lg:grid-cols-2">
+            {perhatian ? (
                 <Panel
-                    tingkat="h3"
-                    judul={
-                        periode.SatuHari
-                            ? `Penjualan per outlet ${periode.Sampai === periode.HariIni ? 'hari ini' : FormatTanggal(periode.Sampai)}`
-                            : 'Penjualan per outlet pada periode'
-                    }
-                >
-                    {data.PerOutlet.length === 0 ? (
-                        <p className="text-isi text-teks-sekunder">Belum ada outlet.</p>
-                    ) : (
-                        <ul>
-                            {data.PerOutlet.map((o) => (
-                                <BarisDaftar
-                                    key={o.Kunci}
-                                    kiri={o.NamaOutlet}
-                                    keterangan={`${String(o.JumlahTransaksi)} transaksi`}
-                                    kanan={FormatRupiah(o.Bersih)}
-                                />
-                            ))}
-                        </ul>
-                    )}
-                </Panel>
-
-                <Panel
-                    tingkat="h3"
+                    tingkat="h2"
                     judul="Perlu perhatian"
+                    className={kelasMuat}
                     aksi={
                         data.JumlahPerluTinjauan > 0 ? (
                             <TautanPanel href="/kelola/penjualan?saring[PerluTinjauan]=1">Tinjau penjualan</TautanPanel>
@@ -270,23 +246,22 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
                     }
                 >
                     <ul>
-                        <BarisDaftar
-                            kiri="Penjualan perlu ditinjau"
-                            kanan={
-                                <LabelStatus
-                                    jenis={data.JumlahPerluTinjauan > 0 ? 'peringatan' : 'netral'}
-                                    teks={String(data.JumlahPerluTinjauan)}
-                                />
-                            }
-                        />
-                        <BarisDaftar
-                            kiri="Shift masih terbuka"
-                            keterangan={
-                                data.Shift.Terbuka.map((s) => `${s.NamaKasir} | ${s.NamaOutlet}`).join(', ') || null
-                            }
-                            kanan={String(data.Shift.JumlahTerbuka)}
-                        />
-                        {data.StokKritis ? (
+                        {data.JumlahPerluTinjauan > 0 ? (
+                            <BarisDaftar
+                                kiri="Penjualan perlu ditinjau"
+                                kanan={<LabelStatus jenis="peringatan" teks={String(data.JumlahPerluTinjauan)} />}
+                            />
+                        ) : null}
+                        {data.Shift.JumlahTerbuka > 0 ? (
+                            <BarisDaftar
+                                kiri="Shift masih terbuka"
+                                keterangan={
+                                    data.Shift.Terbuka.map((s) => `${s.NamaKasir} | ${s.NamaOutlet}`).join(', ') || null
+                                }
+                                kanan={String(data.Shift.JumlahTerbuka)}
+                            />
+                        ) : null}
+                        {data.StokKritis && data.StokKritis.Jumlah > 0 ? (
                             <BarisDaftar
                                 kiri={
                                     <Link href="/kelola/laporan/stok?tab=kritis" className="text-brand underline">
@@ -298,57 +273,81 @@ export default function DasborPemilik({ data }: { data: DataDasbor }) {
                                         (b) => `${b.NamaProduk} (${FormatJumlahStok(b.Saldo, b.SimbolSatuan)})`,
                                     ).join(', ') || null
                                 }
-                                kanan={
-                                    <LabelStatus
-                                        jenis={data.StokKritis.Jumlah > 0 ? 'peringatan' : 'netral'}
-                                        teks={String(data.StokKritis.Jumlah)}
-                                    />
-                                }
+                                kanan={<LabelStatus jenis="peringatan" teks={String(data.StokKritis.Jumlah)} />}
                             />
                         ) : null}
                     </ul>
                 </Panel>
+            ) : null}
 
+            {grafikAdaIsi ? (
+                <Panel tingkat="h2" judul={judulGrafik} className={kelasMuat}>
+                    <Suspense fallback={<Skeleton className="h-64 w-full" aria-label="Memuat grafik" />}>
+                        <GrafikPenjualanHarian data={data.Grafik} judul={judulGrafik} />
+                    </Suspense>
+                </Panel>
+            ) : null}
+
+            <RingkasanCepat data={data} judulTerlaris={judulTerlaris} />
+
+            {data.PerOutlet.length > 1 ? (
                 <Panel
-                    tingkat="h3"
+                    tingkat="h2"
+                    judul={
+                        periode.SatuHari
+                            ? `Penjualan per outlet ${periode.Sampai === periode.HariIni ? 'hari ini' : FormatTanggal(periode.Sampai)}`
+                            : 'Penjualan per outlet pada periode'
+                    }
+                    className={kelasMuat}
+                >
+                    <ul>
+                        {data.PerOutlet.map((o) => (
+                            <BarisDaftar
+                                key={o.Kunci}
+                                kiri={o.NamaOutlet}
+                                keterangan={`${String(o.JumlahTransaksi)} transaksi`}
+                                kanan={FormatRupiah(o.Bersih)}
+                            />
+                        ))}
+                    </ul>
+                </Panel>
+            ) : null}
+
+            {data.Shift.Tertutup.length > 0 ? (
+                <Panel
+                    tingkat="h2"
                     judul="Selisih kas shift terbaru"
+                    className={kelasMuat}
                     aksi={<TautanPanel href="/kelola/kasir/shift">Semua shift</TautanPanel>}
                 >
-                    {data.Shift.Tertutup.length === 0 ? (
-                        <p className="text-isi text-teks-sekunder">Belum ada shift yang ditutup.</p>
-                    ) : (
-                        <ul>
-                            {data.Shift.Tertutup.map((s) => {
-                                const tanda = s.Selisih === null ? 0 : AmbilTandaDesimal(s.Selisih);
+                    <ul>
+                        {data.Shift.Tertutup.map((s) => {
+                            const tanda = s.Selisih === null ? 0 : AmbilTandaDesimal(s.Selisih);
 
-                                return (
-                                    <BarisDaftar
-                                        key={s.Uuid}
-                                        kiri={
-                                            <Link
-                                                href={`/kelola/kasir/shift/${s.Uuid}`}
-                                                className="text-brand underline"
-                                            >
-                                                {s.NamaKasir || 'Shift'} | {s.NamaOutlet}
-                                            </Link>
-                                        }
-                                        keterangan={FormatTanggalWaktu(s.DitutupPada)}
-                                        kanan={
-                                            <span className="flex flex-col items-end gap-1">
-                                                <span>{s.Selisih === null ? '—' : FormatRupiah(s.Selisih)}</span>
-                                                <LabelStatus
-                                                    jenis={tanda === 0 ? 'sukses' : 'peringatan'}
-                                                    teks={tanda === 0 ? 'Pas' : tanda > 0 ? 'Lebih' : 'Kurang'}
-                                                />
-                                            </span>
-                                        }
-                                    />
-                                );
-                            })}
-                        </ul>
-                    )}
+                            return (
+                                <BarisDaftar
+                                    key={s.Uuid}
+                                    kiri={
+                                        <Link href={`/kelola/kasir/shift/${s.Uuid}`} className="text-brand underline">
+                                            {s.NamaKasir || 'Shift'} | {s.NamaOutlet}
+                                        </Link>
+                                    }
+                                    keterangan={FormatTanggalWaktu(s.DitutupPada)}
+                                    kanan={
+                                        <span className="flex flex-col items-end gap-1">
+                                            <span>{s.Selisih === null ? '—' : FormatRupiah(s.Selisih)}</span>
+                                            <LabelStatus
+                                                jenis={tanda === 0 ? 'sukses' : 'peringatan'}
+                                                teks={tanda === 0 ? 'Pas' : tanda > 0 ? 'Lebih' : 'Kurang'}
+                                            />
+                                        </span>
+                                    }
+                                />
+                            );
+                        })}
+                    </ul>
                 </Panel>
-            </div>
-        </section>
+            ) : null}
+        </>
     );
 }

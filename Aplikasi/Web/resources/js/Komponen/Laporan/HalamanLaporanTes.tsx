@@ -229,6 +229,10 @@ describe('F-14a dasbor pemilik di beranda', () => {
                 JumlahHariTerlaris: 7,
             },
             Pembanding: [{ Nama: 'periodeSebelumnya', Angka: Angka('10000000.00', 100, '3000000.00') }],
+            PerOutlet: [
+                ...dasbor.PerOutlet,
+                { Kunci: '01K5OUTLET2', NamaOutlet: 'Cabang Laweyan', Bersih: '500000.00', JumlahTransaksi: 5 },
+            ],
         };
 
         RenderUji(<HalamanBerandaKelola Dasbor={rentang} />);
@@ -268,44 +272,114 @@ describe('F-14a dasbor pemilik di beranda', () => {
         expect(opsi).toMatchObject({ only: ['Dasbor'], preserveState: true, preserveScroll: true, replace: true });
     });
 
-    it('D-203 Ringkasan cepat: delapan widget berperingkat tanpa ikon, tautan membawa periode, status anti-fraud berteks', () => {
+    it('D-296 Ringkasan cepat: satu panel bertab hanya untuk widget berisi, tautan membawa periode, status anti-fraud berteks', () => {
         window.localStorage.clear();
         RenderUji(<HalamanBerandaKelola Dasbor={dasbor} />);
 
         const wadah = screen.getByRole('region', { name: 'Ringkasan cepat' });
         const bagian = within(wadah);
+        // Komisi kosong (tanpa baris) tidak mendapat tab, sedangkan widget lain yang berisi mendapat satu tab.
         for (const judul of [
-            'Metode pembayaran',
+            'Metode bayar',
             'Jenis pesanan',
-            'Penjualan per kategori',
-            'Kontrol anti-fraud',
+            'Kategori',
+            'Anti-fraud',
             'Produk terlaris 7 hari',
-            'Komisi staf',
-            'Penjualan per kasir',
+            'Kasir',
             'Stok kritis',
         ]) {
-            expect(bagian.getByRole('region', { name: judul })).toBeTruthy();
+            expect(bagian.getByRole('tab', { name: judul })).toBeTruthy();
         }
-        expect(bagian.getByText('Makan di tempat')).toBeTruthy();
-        expect(bagian.getByText('Waspada')).toBeTruthy();
-        expect(bagian.getByText('Skor risiko tertinggi 35 dari 100 (Rina Wulandari).')).toBeTruthy();
-        expect(bagian.getByText('Belum ada komisi pada periode ini.')).toBeTruthy();
+        expect(bagian.queryByRole('tab', { name: 'Komisi' })).toBeNull();
+
+        // Tab pertama aktif: metode bayar dengan batang proporsi dan tautan membawa periode.
         expect(bagian.getByRole('link', { name: 'Buka laporan metode' }).getAttribute('href')).toBe(
             '/kelola/laporan/penjualan?dari=2026-10-07&sampai=2026-10-07&tab=metode',
         );
         expect(bagian.getByText('72%')).toBeTruthy();
         expect(bagian.getByText('28%')).toBeTruthy();
+        // Hanya satu widget terlihat pada satu waktu.
+        expect(bagian.queryByRole('link', { name: 'Buka laporan jenis pesanan' })).toBeNull();
+
+        fireEvent.click(bagian.getByRole('tab', { name: 'Jenis pesanan' }));
+        expect(bagian.getByText('Makan di tempat')).toBeTruthy();
+        expect(bagian.getByRole('link', { name: 'Buka laporan jenis pesanan' }).getAttribute('href')).toBe(
+            '/kelola/laporan/penjualan?dari=2026-10-07&sampai=2026-10-07&tab=kanal',
+        );
+        expect(bagian.queryByRole('link', { name: 'Buka laporan metode' })).toBeNull();
+
+        fireEvent.click(bagian.getByRole('tab', { name: 'Anti-fraud' }));
+        expect(bagian.getByText('Waspada')).toBeTruthy();
+        expect(bagian.getByText('Skor risiko tertinggi 35 dari 100 (Rina Wulandari).')).toBeTruthy();
+
+        fireEvent.click(bagian.getByRole('tab', { name: 'Stok kritis' }));
         expect(bagian.getByText('Menipis')).toBeTruthy();
-        expect(wadah.querySelector('svg')).toBeNull();
+        // Tanpa ikon di isi widget (panah geser jalur tab bukan bagian widget).
+        expect(wadah.querySelector('[role="tabpanel"] svg')).toBeNull();
+    });
+
+    it('D-296 Ringkasan cepat: widget tanpa isi digabung jadi satu kalimat, tanpa tab dan tanpa "Rp 0" berulang', () => {
+        window.localStorage.clear();
+        const kosongSemua: DasborPemilik = {
+            ...dasbor,
+            Angka: Angka('0.00', 0, '0.00'),
+            Grafik: dasbor.Grafik.map((t) => ({ ...t, Bersih: '0.00', JumlahTransaksi: 0 })),
+            ProdukTerlaris: [],
+            StokKritis: { Jumlah: 0, Baris: [] },
+            Shift: { JumlahTerbuka: 0, Terbuka: [], Tertutup: [] },
+            JumlahPerluTinjauan: 0,
+            Widget: {
+                MetodeBayar: { Total: '0.00', Jumlah: 0, Baris: [] },
+                JenisPesanan: { Total: '0.00', Jumlah: 0, Baris: [] },
+                Kategori: { Total: '0.00', Jumlah: 0, Baris: [] },
+                Kasir: { Total: '0.00', Jumlah: 0, Baris: [] },
+                AntiFraud: {
+                    Tingkat: 'Rendah',
+                    SkorTertinggi: 0,
+                    NamaKasirTertinggi: '',
+                    JumlahKasirPerluDicek: 0,
+                    VoidCepatTunai: 0,
+                    JumlahVoid: 0,
+                    JumlahBerdiskon: 0,
+                    BukaLaciManual: 0,
+                    ShiftSelisihKurang: 0,
+                },
+                Komisi: { Total: '0.00', Jumlah: 0, Baris: [] },
+            },
+        };
+
+        RenderUji(<HalamanBerandaKelola Dasbor={kosongSemua} />);
+
+        const wadah = within(screen.getByRole('region', { name: 'Ringkasan cepat' }));
+        expect(wadah.getByText(/Belum ada data pada periode ini/)).toBeTruthy();
+        expect(wadah.queryByRole('tab')).toBeNull();
+        // Grafik nol, perhatian kosong, satu outlet, dan tanpa shift tertutup: semua blok kosong disembunyikan.
+        expect(screen.queryByRole('region', { name: /Penjualan bersih 14 hari/ })).toBeNull();
+        expect(screen.queryByRole('region', { name: 'Perlu perhatian' })).toBeNull();
+        expect(screen.queryByRole('region', { name: /Penjualan per outlet/ })).toBeNull();
+        expect(screen.queryByRole('region', { name: 'Selisih kas shift terbaru' })).toBeNull();
+        expect(screen.getAllByText('Rp 0').length).toBeLessThanOrEqual(4);
+    });
+
+    it('D-296 Perlu perhatian dan per outlet tampil hanya bila ada isinya, dan satu outlet tidak mendapat blok sendiri', () => {
+        RenderUji(<HalamanBerandaKelola Dasbor={dasbor} />);
+
+        const perhatian = within(screen.getByRole('region', { name: 'Perlu perhatian' }));
+        expect(perhatian.getByText('Penjualan perlu ditinjau')).toBeTruthy();
+        expect(perhatian.getByText('Shift masih terbuka')).toBeTruthy();
+        expect(perhatian.getByRole('link', { name: 'Stok kritis' })).toBeTruthy();
+        expect(screen.queryByRole('region', { name: /Penjualan per outlet/ })).toBeNull();
     });
 
     it('D-203 widget tanpa izin (komisi, stok) tidak dirender. Widget bisa disembunyikan lewat Atur widget dan diingat', () => {
         window.localStorage.clear();
         const terbatas: DasborPemilik = { ...dasbor, StokKritis: null, Widget: { ...dasbor.Widget, Komisi: null } };
         const { unmount: Lepas } = RenderUji(<HalamanBerandaKelola Dasbor={terbatas} />);
+        const Tab = (nama: string) =>
+            within(screen.getByRole('region', { name: 'Ringkasan cepat' })).queryByRole('tab', { name: nama });
 
-        expect(screen.queryByRole('region', { name: 'Komisi staf' })).toBeNull();
-        expect(screen.queryByRole('region', { name: 'Stok kritis' })).toBeNull();
+        expect(Tab('Komisi')).toBeNull();
+        expect(Tab('Stok kritis')).toBeNull();
 
         fireEvent.click(screen.getByRole('button', { name: 'Atur widget' }));
         const dialog = within(screen.getByRole('dialog'));
@@ -313,19 +387,63 @@ describe('F-14a dasbor pemilik di beranda', () => {
         fireEvent.click(dialog.getByRole('checkbox', { name: 'Metode pembayaran' }));
         fireEvent.click(dialog.getByRole('button', { name: 'Selesai' }));
 
-        expect(screen.queryByRole('region', { name: 'Metode pembayaran' })).toBeNull();
-        expect(screen.getByRole('region', { name: 'Jenis pesanan' })).toBeTruthy();
+        expect(Tab('Metode bayar')).toBeNull();
+        expect(Tab('Jenis pesanan')).toBeTruthy();
 
         // Dimuat ulang: pilihan diingat di peramban ini.
         Lepas();
         RenderUji(<HalamanBerandaKelola Dasbor={terbatas} />);
-        expect(screen.queryByRole('region', { name: 'Metode pembayaran' })).toBeNull();
+        expect(Tab('Metode bayar')).toBeNull();
 
         fireEvent.click(screen.getByRole('button', { name: 'Atur widget' }));
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Tampilkan semua' }));
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Selesai' }));
-        expect(screen.getByRole('region', { name: 'Metode pembayaran' })).toBeTruthy();
+        expect(Tab('Metode bayar')).toBeTruthy();
         window.localStorage.clear();
+    });
+
+    it('D-296 urutan Beranda: penjualan dulu bagi usaha berkasir, penagihan invoice dulu bagi usaha tanpa kasir', () => {
+        const penagihan = {
+            Dari: '2026-10-01',
+            Sampai: '2026-10-31',
+            Ditagih: '10000000.00',
+            Diterima: '0.00',
+            Beredar: { Jumlah: 1, Sisa: '10000000.00' },
+            LewatTempo: { Jumlah: 0, Sisa: '0.00' },
+            Draf: 0,
+        };
+        const Urutan = () =>
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((h) => h.textContent ?? '')
+                .filter((t) => /Penagihan invoice|Ringkasan hari ini/.test(t));
+
+        const { unmount: Lepas } = RenderUji(<HalamanBerandaKelola Dasbor={dasbor} Penagihan={penagihan} />);
+        expect(Urutan()).toEqual([expect.stringMatching(/Ringkasan hari ini/), 'Penagihan invoice']);
+        Lepas();
+
+        TambahPropsHalamanUji({ SektorOutlet: ['BIZ-JSA'] });
+        RenderUji(<HalamanBerandaKelola Dasbor={dasbor} Penagihan={penagihan} />);
+        expect(Urutan()).toEqual(['Penagihan invoice', expect.stringMatching(/Ringkasan hari ini/)]);
+    });
+
+    it('D-296 kartu Penagihan invoice tidak tampil di Beranda bila tidak ada invoice sama sekali', () => {
+        RenderUji(
+            <HalamanBerandaKelola
+                Dasbor={dasbor}
+                Penagihan={{
+                    Dari: '2026-10-01',
+                    Sampai: '2026-10-31',
+                    Ditagih: '0.00',
+                    Diterima: '0.00',
+                    Beredar: { Jumlah: 0, Sisa: '0.00' },
+                    LewatTempo: { Jumlah: 0, Sisa: '0.00' },
+                    Draf: 0,
+                }}
+            />,
+        );
+
+        expect(screen.queryByRole('region', { name: 'Penagihan invoice' })).toBeNull();
     });
 
     it('tanpa izin laporan: tanpa angka', () => {
