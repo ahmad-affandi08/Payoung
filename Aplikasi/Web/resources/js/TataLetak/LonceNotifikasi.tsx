@@ -15,7 +15,7 @@ export default function LonceNotifikasi({ belumDibaca }: { belumDibaca: number }
             asChild
             data-tur="notifikasi"
             variant="outline"
-            className="relative size-10 min-w-0 rounded-lg border-garis bg-permukaan px-0 text-teks-sekunder after:absolute after:-inset-0.5 has-[>svg]:px-0 pointer-coarse:size-10 lg:mr-1 lg:size-8 lg:after:hidden lg:pointer-coarse:size-11"
+            className="relative size-9 min-w-0 rounded-lg border-transparent bg-transparent px-0 text-teks-sekunder shadow-none after:absolute after:-inset-1 has-[>svg]:px-0 pointer-coarse:size-9 max-lg:-mx-0.5 lg:mr-1 lg:border-garis lg:bg-permukaan lg:size-8 lg:after:hidden lg:pointer-coarse:size-11"
         >
             <Link href="/kelola/notifikasi" aria-label={label}>
                 <BellIcon aria-hidden="true" />

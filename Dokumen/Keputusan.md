@@ -296,6 +296,7 @@
 | D-292 | Dari pemilik produk, 13/11/2026. Isian lebar di dalam sel `TabelData` (tabel harga bertingkat dan sejenisnya) tidak boleh dijepit di sisi nilai pasangan label–nilai di HP: kolomnya diberi `meta.penuhDiHp` supaya selebar kartu, dan tabel isian di dalamnya memakai `TabelForm tumpuk`. Perubahan tampilan halaman back-office diperiksa di peramban pada 390 dan 1280px, bukan hanya lewat tes. |
 | D-293 | Dari pemilik produk, 13/11/2026. Keterangan halaman back-office tenant adalah `<p>` yang langsung mengikuti judul (anak langsung badan halaman), huruf keterangan dan rapat ke judulnya. Dilarang membungkusnya dengan `<div>` dan dilarang menaruhnya di slot `keterangan` AksiHalaman (slot itu hanya untuk status dan penghitung). Komponen pembungkus halaman tidak boleh menyisipkan elemen di antara badan halaman dan keterangan. Dijaga test. |
 | D-294 | Dari pemilik produk, 13/11/2026. Formulir *Tambah* metode pembayaran dibuka lewat tombol aksi utama halaman dan tampil di dialog, bukan terpampang di bawah tabel. Berlaku sama bagi halaman daftar lain: tabel dulu, tombol Tambah di `AksiHalaman`, formulir di dialog atau halaman sendiri. Isi dialog dilepas saat ditutup sehingga formulir selalu mulai kosong. |
+| D-295 | Dari pemilik produk, 13/11/2026. Di HP, tombol ikon bilah atas (cari, bantuan, notifikasi) tidak berborder dan dirapatkan. Border dan latar tombol ikon hanya dari lebar `lg` ke atas. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)
