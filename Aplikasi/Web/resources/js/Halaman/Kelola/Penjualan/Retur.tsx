@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import DaftarAlasanTinjauan from '@/Komponen/Penjualan/DaftarAlasanTinjauan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
@@ -150,11 +149,10 @@ function BarisAngka({ label, nilai, tebal = false }: { label: string; nilai: str
 /** F-09 fase 1: detail retur penjualan (baca saja): ringkasan, baris, refund, mutasi stok, shift, dan jurnal. */
 export default function HalamanDetailRetur({ Retur: r, Baris, Refund, MutasiStok, Jurnal }: PropsDetailRetur) {
     return (
-        <TataLetakAplikasi judul={`Retur ${r.Nomor}`}>
-            <Button asChild variant="link" className="h-auto self-start px-0">
-                <Link href="/kelola/penjualan/void-retur">Kembali ke daftar void & retur</Link>
-            </Button>
-
+        <TataLetakAplikasi
+            judul={`Retur ${r.Nomor}`}
+            jejak={[{ label: 'Void & retur', href: '/kelola/penjualan/void-retur' }]}
+        >
             {r.PerluTinjauan ? (
                 <Pemberitahuan jenis="peringatan" judul="Retur ini perlu ditinjau">
                     <DaftarAlasanTinjauan

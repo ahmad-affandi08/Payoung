@@ -1,6 +1,7 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import PanelBayarSnap from '@/Komponen/Langganan/PanelBayarSnap';
 import PanelTransferManual, { type RekeningTujuan } from '@/Komponen/Langganan/PanelTransferManual';
 import RincianTagihan from '@/Komponen/Langganan/RincianTagihan';
@@ -16,9 +17,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '@/Komponen/Ui/alert-dialog';
-import { Button } from '@/Komponen/Ui/button';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -55,6 +54,7 @@ export default function HalamanTagihanLangganan({
     RekeningTujuan = [],
 }: PropsTagihan) {
     const [membatalkan, AturMembatalkan] = useState(false);
+    const [konfirmasiBatal, AturKonfirmasiBatal] = useState(false);
 
     const Batalkan = () =>
         router.post(
@@ -64,12 +64,25 @@ export default function HalamanTagihanLangganan({
         );
 
     return (
-        <TataLetakAplikasi judul={`Tagihan ${Tagihan.Nomor}`}>
-            <p>
-                <Link href="/kelola/langganan" className="text-label font-semibold text-brand underline">
-                    Kembali ke langganan
-                </Link>
-            </p>
+        <TataLetakAplikasi
+            judul={`Tagihan ${Tagihan.Nomor}`}
+            jejak={[{ label: 'Langganan', href: '/kelola/langganan' }]}
+        >
+            <AksiHalaman
+                langkah={[]}
+                lainnya={
+                    BolehBatalkan
+                        ? [
+                              {
+                                  label: 'Batalkan tagihan',
+                                  saatKlik: () => AturKonfirmasiBatal(true),
+                                  nonaktif: membatalkan,
+                                  bahaya: true,
+                              },
+                          ]
+                        : []
+                }
+            />
             {Tagihan.Status === 'Lunas' ? (
                 <Pemberitahuan jenis="sukses" judul="Tagihan lunas">
                     Terima kasih. Langganan Anda sudah aktif sesuai periode di bawah.
@@ -110,35 +123,20 @@ export default function HalamanTagihanLangganan({
             ) : null}
             <RiwayatPembayaran pembayaran={Pembayaran} />
             {BolehBatalkan ? (
-                <div>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="border-destructive text-destructive"
-                                disabled={membatalkan}
-                                aria-busy={membatalkan || undefined}
-                            >
-                                {membatalkan ? 'Memproses…' : 'Batalkan tagihan'}
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Batalkan tagihan {Tagihan.Nomor}?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Anda bisa membuat tagihan baru setelahnya.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Jangan batalkan</AlertDialogCancel>
-                                <AlertDialogAction variant="destructive" onClick={Batalkan}>
-                                    Batalkan tagihan
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
+                <AlertDialog open={konfirmasiBatal} onOpenChange={AturKonfirmasiBatal}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Batalkan tagihan {Tagihan.Nomor}?</AlertDialogTitle>
+                            <AlertDialogDescription>Anda bisa membuat tagihan baru setelahnya.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Jangan batalkan</AlertDialogCancel>
+                            <AlertDialogAction variant="destructive" onClick={Batalkan}>
+                                Batalkan tagihan
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             ) : null}
         </TataLetakAplikasi>
     );

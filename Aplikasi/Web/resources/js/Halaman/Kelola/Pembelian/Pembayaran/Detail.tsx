@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -11,7 +12,6 @@ import {
     Keterangan,
     LabelStatusPembelian,
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
@@ -33,25 +33,28 @@ export default function HalamanDetailPembayaran({
 
     return (
         <TataLetakAplikasi judul={`Pembayaran ${p.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatusPembelian status={p.Status} label={p.LabelStatus} />
-                {p.BelanjaStok ? <span className="text-isi text-teks-sekunder">Dari belanja stok</span> : null}
-                {p.Kompensasi ? (
-                    <span className="text-isi text-teks-sekunder">Potong klaim promo pemasok (tanpa kas)</span>
-                ) : null}
-            </div>
             {p.AlasanBatal ? (
                 <Pemberitahuan jenis="bahaya" judul="Pembayaran dibatalkan">
                     {p.AlasanBatal}. Sisa hutang faktur sudah dikembalikan.
                 </Pemberitahuan>
             ) : null}
-            {Tindakan.Batalkan ? (
-                <div>
-                    <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                        Batalkan pembayaran
-                    </Button>
-                </div>
-            ) : null}
+            <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatusPembelian status={p.Status} label={p.LabelStatus} />
+                        {p.BelanjaStok ? <span className="text-isi text-teks-sekunder">Dari belanja stok</span> : null}
+                        {p.Kompensasi ? (
+                            <span className="text-isi text-teks-sekunder">Potong klaim promo pemasok (tanpa kas)</span>
+                        ) : null}
+                    </>
+                }
+                langkah={[]}
+                lainnya={
+                    Tindakan.Batalkan
+                        ? [{ label: 'Batalkan pembayaran', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []
+                }
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

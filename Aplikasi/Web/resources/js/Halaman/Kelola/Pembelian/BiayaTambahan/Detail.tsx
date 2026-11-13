@@ -26,13 +26,14 @@ export default function HalamanDetailBiayaTambahan({ Biaya, Baris, Jurnal, Tinda
             judul={`${Biaya.Nomor} ${Biaya.LabelJenis}`}
             jejak={[{ label: 'Biaya tambahan pembelian', href: AlamatBiayaTambahan }]}
         >
-            {Tindakan.Batalkan ? (
-                <AksiHalaman>
-                    <Tombol varian="sekunder" onClick={() => AturBatal(true)}>
-                        Batalkan biaya
-                    </Tombol>
-                </AksiHalaman>
-            ) : null}
+            <AksiHalaman
+                langkah={[]}
+                lainnya={
+                    Tindakan.Batalkan
+                        ? [{ label: 'Batalkan biaya', saatKlik: () => AturBatal(true), bahaya: true }]
+                        : []
+                }
+            />
 
             <Panel>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-isi sm:grid-cols-4">

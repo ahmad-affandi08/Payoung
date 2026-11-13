@@ -65,10 +65,6 @@ export default function HalamanDetailPenawaran({
 
     return (
         <TataLetakAplikasi judul={judul} jejak={[{ label: 'Penawaran', href: AlamatPenawaran }]}>
-            <div className="flex flex-wrap items-center gap-3">
-                <LabelStatusPenawaran status={p.StatusTampil} label={p.LabelStatusTampil} />
-            </div>
-
             {p.AlasanBatal !== null ? (
                 <Pemberitahuan jenis="bahaya" judul="Penawaran dibatalkan">
                     {p.AlasanBatal}. Pelanggan yang membuka tautan melihat tanda dibatalkan.
@@ -105,6 +101,7 @@ export default function HalamanDetailPenawaran({
             ) : null}
 
             <AksiHalaman
+                keterangan={<LabelStatusPenawaran status={p.StatusTampil} label={p.LabelStatusTampil} />}
                 langkah={[
                     ...(Tindakan.JadikanInvoice
                         ? [

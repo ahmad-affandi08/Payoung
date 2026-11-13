@@ -6,7 +6,6 @@ import LencanaPenjualan from '@/Komponen/Penjualan/LencanaPenjualan';
 import PanelFakturPajak from '@/Komponen/Penjualan/PanelFakturPajak';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatPersen, FormatRupiah } from '@/Pustaka/Format';
@@ -298,10 +297,6 @@ export default function HalamanDetailPenjualan({
 }: PropsDetailPenjualan) {
     return (
         <TataLetakAplikasi judul={`Penjualan ${p.Nomor}`}>
-            <Button asChild variant="link" className="h-auto self-start px-0">
-                <Link href="/kelola/penjualan">Kembali ke daftar penjualan</Link>
-            </Button>
-
             {p.PerluTinjauan ? (
                 <Pemberitahuan jenis="peringatan" judul="Penjualan ini perlu ditinjau">
                     <DaftarAlasanTinjauan

@@ -214,11 +214,13 @@ export default function HalamanGiftCard({
                     </div>
                 </dl>
             </Panel>
-            <AksiHalaman>
-                {Izin.Kelola && Pengaturan.Berlaku ? (
-                    <Tombol onClick={() => AturDialog({ jenis: 'jual', kartu: null })}>Jual gift card</Tombol>
-                ) : null}
-            </AksiHalaman>
+            <AksiHalaman
+                utama={
+                    Izin.Kelola && Pengaturan.Berlaku ? (
+                        <Tombol onClick={() => AturDialog({ jenis: 'jual', kartu: null })}>Jual gift card</Tombol>
+                    ) : undefined
+                }
+            />
             <TabelData
                 id="pelanggan-gift-card"
                 label="Daftar gift card"

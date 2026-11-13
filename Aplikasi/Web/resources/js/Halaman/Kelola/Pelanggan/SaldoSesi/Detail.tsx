@@ -3,13 +3,13 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import { AlamatSaldoSesi, JenisStatusSaldoSesi } from '@/Komponen/Pelanggan/KolomSaldoSesi';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
-import { Button } from '@/Komponen/Ui/button';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { Card } from '@/Komponen/Ui/card';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
@@ -165,13 +165,32 @@ export default function HalamanDetailSaldoSesi({ Saldo: s, AkunKasBank, Izin }: 
     return (
         <TataLetakAplikasi judul={`Paket ${s.NamaPaket}`}>
             <DaftarGalatServer galat={galat} kecuali={tutup !== null || batal !== null ? ['Alasan', 'UuidAkun'] : []} />
+            <AksiHalaman
+                keterangan={<LabelStatus jenis={JenisStatusSaldoSesi[s.Status]} teks={s.LabelStatus} />}
+                langkah={
+                    bolehTutup
+                        ? [
+                              {
+                                  label: 'Kembalikan sisa ke pelanggan',
+                                  saatKlik: () =>
+                                      AturTutup({ Jenis: 'Refund', UuidAkun: AkunKasBank[0]?.Uuid ?? '', Alasan: '' }),
+                              },
+                          ]
+                        : []
+                }
+                lainnya={
+                    bolehTutup
+                        ? [
+                              {
+                                  label: 'Hanguskan sisa sesi',
+                                  saatKlik: () => AturTutup({ Jenis: 'Hangus', UuidAkun: '', Alasan: '' }),
+                                  bahaya: true,
+                              },
+                          ]
+                        : []
+                }
+            />
             <Card className="gap-4 rounded-panel p-4 shadow-none">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    <LabelStatus jenis={JenisStatusSaldoSesi[s.Status]} teks={s.LabelStatus} />
-                    <Link href={AlamatSaldoSesi} className="text-brand underline">
-                        Semua paket sesi
-                    </Link>
-                </div>
                 <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Nilai label="Pelanggan">
                         {s.Pelanggan ? (
@@ -200,24 +219,6 @@ export default function HalamanDetailSaldoSesi({ Saldo: s, AkunKasBank, Izin }: 
                         {s.BerlakuSampai ? FormatTanggal(s.BerlakuSampai) : 'Tanpa batas'}
                     </Nilai>
                 </dl>
-                {bolehTutup ? (
-                    <div className="flex flex-wrap gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() =>
-                                AturTutup({ Jenis: 'Refund', UuidAkun: AkunKasBank[0]?.Uuid ?? '', Alasan: '' })
-                            }
-                        >
-                            Kembalikan sisa ke pelanggan
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => AturTutup({ Jenis: 'Hangus', UuidAkun: '', Alasan: '' })}
-                        >
-                            Hanguskan sisa sesi
-                        </Button>
-                    </div>
-                ) : null}
             </Card>
 
             <h2 className="text-subjudul font-semibold text-teks-utama">Pemakaian sesi</h2>

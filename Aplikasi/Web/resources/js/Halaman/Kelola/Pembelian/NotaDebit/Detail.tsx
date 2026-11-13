@@ -12,7 +12,6 @@ import {
     RingkasanNilai,
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import TabelForm from '@/Komponen/TabelData/TabelForm';
-import Tombol from '@/Komponen/Formulir/Tombol';
 import { TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
@@ -31,13 +30,14 @@ export default function HalamanDetailNotaDebit({ Nota, Baris, Jurnal, Izin, Tind
             judul={`${Nota.Nomor} ${Nota.LabelJenis}`}
             jejak={[{ label: 'Nota debit pembelian', href: AlamatNotaDebit }]}
         >
-            {Tindakan.Batalkan ? (
-                <AksiHalaman>
-                    <Tombol varian="sekunder" onClick={() => AturBatal(true)}>
-                        Batalkan nota debit
-                    </Tombol>
-                </AksiHalaman>
-            ) : null}
+            <AksiHalaman
+                langkah={[]}
+                lainnya={
+                    Tindakan.Batalkan
+                        ? [{ label: 'Batalkan nota debit', saatKlik: () => AturBatal(true), bahaya: true }]
+                        : []
+                }
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Status">

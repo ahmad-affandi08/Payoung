@@ -90,30 +90,39 @@ export default function HalamanDetailOutlet({
     return (
         // D-27: jalan kembali ke daftar ikut jejak halaman di tata letak; halaman tidak merender remah roti sendiri.
         <TataLetakAplikasi judul={Outlet.Nama} jejak={[{ label: 'Semua outlet', href: '/kelola/outlet' }]}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-label text-teks-utama">{Outlet.Kode}</span>
-                    {Outlet.Status === 'Aktif' ? (
-                        <LabelStatus jenis="sukses" teks="Aktif" />
-                    ) : (
-                        <LabelStatus jenis="netral" teks="Diarsipkan" />
-                    )}
-                </div>
-                {bolehKelola ? (
-                    Outlet.Status === 'Aktif' ? (
-                        <Tombol
-                            varian="bahaya"
-                            onClick={() => router.post(`${alamat}/arsipkan`, {}, { preserveScroll: true })}
-                        >
-                            Arsipkan outlet
-                        </Tombol>
-                    ) : (
-                        <Tombol onClick={() => router.post(`${alamat}/pulihkan`, {}, { preserveScroll: true })}>
-                            Pulihkan outlet
-                        </Tombol>
-                    )
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <>
+                        <span className="font-mono text-label text-teks-utama">{Outlet.Kode}</span>
+                        {Outlet.Status === 'Aktif' ? (
+                            <LabelStatus jenis="sukses" teks="Aktif" />
+                        ) : (
+                            <LabelStatus jenis="netral" teks="Diarsipkan" />
+                        )}
+                    </>
+                }
+                langkah={
+                    bolehKelola && Outlet.Status !== 'Aktif'
+                        ? [
+                              {
+                                  label: 'Pulihkan outlet',
+                                  saatKlik: () => router.post(`${alamat}/pulihkan`, {}, { preserveScroll: true }),
+                              },
+                          ]
+                        : []
+                }
+                lainnya={
+                    bolehKelola && Outlet.Status === 'Aktif'
+                        ? [
+                              {
+                                  label: 'Arsipkan outlet',
+                                  saatKlik: () => router.post(`${alamat}/arsipkan`, {}, { preserveScroll: true }),
+                                  bahaya: true,
+                              },
+                          ]
+                        : []
+                }
+            />
 
             {bolehKelola ? (
                 <FormOutlet

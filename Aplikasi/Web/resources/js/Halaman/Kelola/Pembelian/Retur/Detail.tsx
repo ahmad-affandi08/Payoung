@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import {
     AlamatPembelian,
@@ -14,7 +15,6 @@ import {
 } from '@/Komponen/Pembelian/BagianDokumenPembelian';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Button } from '@/Komponen/Ui/button';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { BandingkanDesimal } from '@/Pustaka/HitungDesimal';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -78,21 +78,20 @@ export default function HalamanDetailRetur({ Retur: r, Baris, Jurnal, Riwayat, I
 
     return (
         <TataLetakAplikasi judul={`Retur ${r.Nomor}`}>
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatusPembelian status={r.Status} label={r.LabelStatus} />
-            </div>
             {r.AlasanBatal ? (
                 <Pemberitahuan jenis="bahaya" judul="Retur dibatalkan">
                     {r.AlasanBatal}. Stok dan hutang sudah dikembalikan.
                 </Pemberitahuan>
             ) : null}
-            {Tindakan.Batalkan ? (
-                <div>
-                    <Button variant="destructive" onClick={() => AturBatalkan(true)}>
-                        Batalkan retur
-                    </Button>
-                </div>
-            ) : null}
+            <AksiHalaman
+                keterangan={<LabelStatusPembelian status={r.Status} label={r.LabelStatus} />}
+                langkah={[]}
+                lainnya={
+                    Tindakan.Batalkan
+                        ? [{ label: 'Batalkan retur', saatKlik: () => AturBatalkan(true), bahaya: true }]
+                        : []
+                }
+            />
 
             <KartuKeterangan>
                 <Keterangan label="Nomor">

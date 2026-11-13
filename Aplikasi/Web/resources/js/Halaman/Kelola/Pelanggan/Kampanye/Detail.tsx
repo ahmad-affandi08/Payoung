@@ -1,8 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
-import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import Panel from '@/Komponen/Kelola/Panel';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -94,20 +93,42 @@ export default function HalamanDetailKampanye({
             {props.errors.Umum ? <Pemberitahuan jenis="bahaya">{props.errors.Umum}</Pemberitahuan> : null}
             {props.errors.Kanal ? <Pemberitahuan jenis="bahaya">{props.errors.Kanal}</Pemberitahuan> : null}
 
-            <div className="flex flex-wrap items-center gap-2">
-                <LabelStatus jenis={JenisStatusKampanye[k.Status]} teks={k.LabelStatus} />
-                {k.Status === 'Dijadwalkan' && k.DijadwalkanPada ? (
-                    <span className="text-label text-teks-sekunder">
-                        Dikirim mulai {FormatTanggalWaktu(k.DijadwalkanPada)}
-                    </span>
-                ) : null}
-                {k.MulaiPada ? (
-                    <span className="text-label text-teks-sekunder">Mulai {FormatTanggalWaktu(k.MulaiPada)}</span>
-                ) : null}
-                {k.SelesaiPada ? (
-                    <span className="text-label text-teks-sekunder">Berakhir {FormatTanggalWaktu(k.SelesaiPada)}</span>
-                ) : null}
-            </div>
+            <AksiHalaman
+                keterangan={
+                    <>
+                        <LabelStatus jenis={JenisStatusKampanye[k.Status]} teks={k.LabelStatus} />
+                        {k.Status === 'Dijadwalkan' && k.DijadwalkanPada ? (
+                            <span className="text-label text-teks-sekunder">
+                                Dikirim mulai {FormatTanggalWaktu(k.DijadwalkanPada)}
+                            </span>
+                        ) : null}
+                        {k.MulaiPada ? (
+                            <span className="text-label text-teks-sekunder">
+                                Mulai {FormatTanggalWaktu(k.MulaiPada)}
+                            </span>
+                        ) : null}
+                        {k.SelesaiPada ? (
+                            <span className="text-label text-teks-sekunder">
+                                Berakhir {FormatTanggalWaktu(k.SelesaiPada)}
+                            </span>
+                        ) : null}
+                    </>
+                }
+                langkah={
+                    draf
+                        ? [
+                              { label: 'Kirim sekarang', saatKlik: () => AturKonfirmasi('kirim') },
+                              { label: 'Jadwalkan', saatKlik: () => AturKonfirmasi('jadwal') },
+                              { label: 'Ubah draf', href: `${AlamatKampanye}/${k.Uuid}/ubah` },
+                          ]
+                        : []
+                }
+                lainnya={
+                    bisaBatal
+                        ? [{ label: 'Batalkan kampanye', saatKlik: () => AturKonfirmasi('batal'), bahaya: true }]
+                        : []
+                }
+            />
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-panel border border-garis bg-permukaan p-4 md:grid-cols-5">
                 {ringkasan.map(([label, nilai]) => (
@@ -133,27 +154,6 @@ export default function HalamanDetailKampanye({
                     </p>
                 ) : null}
             </Panel>
-
-            {draf || bisaBatal ? (
-                <BilahAksiForm>
-                    {draf ? (
-                        <>
-                            <Tombol onClick={() => AturKonfirmasi('kirim')}>Kirim sekarang</Tombol>
-                            <Tombol varian="sekunder" onClick={() => AturKonfirmasi('jadwal')}>
-                                Jadwalkan
-                            </Tombol>
-                            <Tombol varian="sekunder" onClick={() => router.visit(`${AlamatKampanye}/${k.Uuid}/ubah`)}>
-                                Ubah draf
-                            </Tombol>
-                        </>
-                    ) : null}
-                    {bisaBatal ? (
-                        <Tombol varian="bahaya" onClick={() => AturKonfirmasi('batal')}>
-                            Batalkan kampanye
-                        </Tombol>
-                    ) : null}
-                </BilahAksiForm>
-            ) : null}
 
             {k.JumlahPenerima > 0 ? (
                 <section aria-labelledby="judul-daftar-penerima" className="flex flex-col gap-2">
