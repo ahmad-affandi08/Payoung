@@ -70,16 +70,13 @@ export default function HalamanDaftarKelompokPajak(propsHalaman: PropsDaftarKelo
 
     return (
         <TataLetakAplikasi judul="Kelompok pajak">
+            <p className="text-keterangan text-teks-sekunder">
+                Setiap produk memakai satu kelompok pajak. PBJT makanan dan minuman serta PPN tidak boleh bersamaan pada
+                satu produk.
+            </p>
             {!Izin.KelolaPajak ? <PesanHanyaLihat izin="akuntansi.kelola" objek="kelompok pajak" /> : null}
             <DaftarGalatServer galat={props.errors} kecuali={sunting !== null ? Object.keys(props.errors) : []} />
-            <AksiHalaman
-                keterangan={
-                    <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Setiap produk memakai satu kelompok pajak. PBJT makanan dan minuman serta PPN tidak boleh
-                        bersamaan pada satu produk.
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.KelolaPajak ? (
                     <Button asChild>
                         <Link href="/kelola/kelompok-pajak/buat">Tambah kelompok pajak</Link>

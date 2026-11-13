@@ -203,18 +203,15 @@ export default function HalamanDaftarKategori({ Kategori, OpsiStasiunDapur, Izin
 
     return (
         <TataLetakAplikasi judul="Kategori produk">
+            <p className="text-keterangan text-teks-sekunder">
+                Kelompokkan produk sampai 3 tingkat, misal Minuman › Kopi › Kopi susu.
+            </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="kategori" /> : null}
             <DaftarGalatServer
                 galat={props.errors}
                 kecuali={sunting !== null ? ['Nama', 'UuidInduk', 'Urutan', 'UuidStasiunDapur'] : []}
             />
-            <AksiHalaman
-                keterangan={
-                    <p className="text-isi text-teks-sekunder">
-                        Kelompokkan produk sampai 3 tingkat, misal Minuman › Kopi › Kopi susu.
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.Kelola ? (
                     <Button type="button" onClick={() => AturSunting('baru')}>
                         Tambah kategori

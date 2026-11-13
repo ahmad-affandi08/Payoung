@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ExternalLinkIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangOutlet from '@/Komponen/Formulir/BidangOutlet';
 import BidangPilihan from '@/Komponen/Formulir/BidangPilihan';
@@ -655,22 +655,11 @@ export default function DaftarTokoOnline(props: Props) {
     return (
         <TataLetakAplikasi judul="Toko online & pengiriman">
             <Head title="Toko online & pengiriman" />
+            <p className="text-keterangan text-teks-sekunder">
+                Kelola kanal publik, pesanan masuk, zona ongkir, dan kurir.
+            </p>
+            <AksiHalaman lainnya={[{ label: 'Buka toko', href: props.TautanPublik, tabBaru: true }]} />
             <div className="flex flex-col gap-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <p className="text-teks-sekunder">
-                            Kelola kanal publik, pesanan masuk, zona ongkir, dan kurir.
-                        </p>
-                    </div>
-                    <a
-                        href={props.TautanPublik}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-label font-semibold text-brand hover:underline"
-                    >
-                        Buka toko <ExternalLinkIcon className="size-4" />
-                    </a>
-                </div>
                 <PanelBagikan props={props} />
                 <FormPengaturan props={props} />
                 <div className="grid gap-4 xl:grid-cols-2">

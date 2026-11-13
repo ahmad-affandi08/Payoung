@@ -86,16 +86,13 @@ export default function HalamanDaftarKelompokPilihan({ KelompokPilihan, Izin }: 
 
     return (
         <TataLetakAplikasi judul="Pilihan (modifier)">
+            <p className="text-keterangan text-teks-sekunder">
+                Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping. Pasang ke produk di tab
+                Pilihan.
+            </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="kelompok pilihan" /> : null}
             <DaftarGalatServer galat={props.errors} kecuali={sunting !== null ? Object.keys(props.errors) : []} />
-            <AksiHalaman
-                keterangan={
-                    <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Pilihan yang ditanyakan kasir saat menjual, misal Level gula atau Topping. Pasang ke produk di
-                        tab Pilihan.
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.Kelola ? (
                     <Button asChild>
                         <Link href="/kelola/kelompok-pilihan/buat">Tambah kelompok pilihan</Link>

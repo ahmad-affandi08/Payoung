@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{t}from"./card-CQJxkcU5.js";var n=e();function r({keterangan:e,children:r}){return(0,n.jsxs)(n.Fragment,{children:[e?(0,n.jsx)(`p`,{className:`max-w-3xl text-isi text-teks-sekunder`,children:e}):null,(0,n.jsx)(t,{className:`gap-0 rounded-panel p-4 shadow-none`,children:r})]})}export{r as t};

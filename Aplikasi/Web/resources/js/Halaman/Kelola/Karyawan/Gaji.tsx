@@ -110,14 +110,11 @@ export default function HalamanRekapGaji({
 
     return (
         <TataLetakAplikasi judul="Rekap gaji">
-            <AksiHalaman
-                keterangan={
-                    <p className="max-w-3xl text-isi text-teks-sekunder">
-                        Gaji pokok dari data karyawan, komisi dari laporan komisi. Sisa kasbon dipotong otomatis dan
-                        bisa diubah sebelum dibayar.
-                    </p>
-                }
-            >
+            <p className="text-keterangan text-teks-sekunder">
+                Gaji pokok dari data karyawan, komisi dari laporan komisi. Sisa kasbon dipotong otomatis dan bisa diubah
+                sebelum dibayar.
+            </p>
+            <AksiHalaman>
                 <Tombol onClick={() => AturBuat(true)}>Buat rekap gaji</Tombol>
             </AksiHalaman>
             {UsulanMingguan.JumlahKaryawan > 0 && UsulanMingguan.SudahLewat ? (

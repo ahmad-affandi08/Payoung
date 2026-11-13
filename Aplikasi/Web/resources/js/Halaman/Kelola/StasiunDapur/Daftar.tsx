@@ -55,23 +55,20 @@ export default function HalamanDaftarStasiunDapur({ Stasiun, Izin }: PropsDaftar
 
     return (
         <TataLetakAplikasi judul="Stasiun dapur">
+            <p className="text-keterangan text-teks-sekunder">
+                Pesanan dikirim ke layar dapur (KDS) atau printer dapur per stasiun. Atur stasiun tiap kategori di
+                halaman{' '}
+                <Link href="/kelola/kategori" className="font-semibold text-brand underline">
+                    kategori produk
+                </Link>
+                .{' '}
+                {bawaan
+                    ? `Kategori tanpa stasiun masuk ke ${bawaan.Nama} (stasiun bawaan).`
+                    : 'Tambah minimal satu stasiun bila usaha Anda memakai dapur atau bar.'}
+            </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="stasiun dapur" /> : null}
             <DaftarGalatServer galat={props.errors} kecuali={sunting !== null ? ['Nama', 'Urutan'] : []} />
-            <AksiHalaman
-                keterangan={
-                    <p className="max-w-3xl text-isi text-teks-sekunder">
-                        Pesanan dikirim ke layar dapur (KDS) atau printer dapur per stasiun. Atur stasiun tiap kategori
-                        di halaman{' '}
-                        <Link href="/kelola/kategori" className="font-semibold text-brand underline">
-                            kategori produk
-                        </Link>
-                        .{' '}
-                        {bawaan
-                            ? `Kategori tanpa stasiun masuk ke ${bawaan.Nama} (stasiun bawaan).`
-                            : 'Tambah minimal satu stasiun bila usaha Anda memakai dapur atau bar.'}
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.Kelola ? <Tombol onClick={() => AturSunting('baru')}>Tambah stasiun</Tombol> : null}
             </AksiHalaman>
             {sunting !== null ? (

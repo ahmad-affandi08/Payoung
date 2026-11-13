@@ -251,17 +251,15 @@ export default function HalamanDaftarTim({
 
     return (
         <TataLetakAplikasi judul="Tim">
+            <p className="text-keterangan text-teks-sekunder">
+                Jumlah akun masuk yang terpakai (anggota aktif + undangan menunggu):{' '}
+                <span className="font-semibold text-teks-utama">{FormatBatas(BatasPengguna, 'pengguna')}</span>.
+                Karyawan tanpa akun tidak dihitung.
+            </p>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Semua orang yang bekerja di usaha Anda: akses masuk, jadwal, dan gaji.
             </p>
             <AksiHalaman
-                keterangan={
-                    <p className="text-isi text-teks-sekunder">
-                        Jumlah akun masuk yang terpakai (anggota aktif + undangan menunggu):{' '}
-                        <span className="font-semibold text-teks-utama">{FormatBatas(BatasPengguna, 'pengguna')}</span>.
-                        Karyawan tanpa akun tidak dihitung.
-                    </p>
-                }
                 {...(Izin.Tambah
                     ? {
                           utama: (

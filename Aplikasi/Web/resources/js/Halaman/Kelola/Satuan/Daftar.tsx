@@ -151,18 +151,15 @@ export default function HalamanDaftarSatuan({ Satuan, Izin }: PropsDaftarSatuan)
 
     return (
         <TataLetakAplikasi judul="Satuan">
+            <p className="text-keterangan text-teks-sekunder">
+                Satuan dipakai untuk stok, harga, dan resep. Konversi (misal 1 dus = 24 pcs) diatur per produk.
+            </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="satuan" /> : null}
             <DaftarGalatServer
                 galat={props.errors}
                 kecuali={sunting !== null ? ['Nama', 'Simbol', 'BolehDesimal'] : []}
             />
-            <AksiHalaman
-                keterangan={
-                    <p className="text-isi text-teks-sekunder">
-                        Satuan dipakai untuk stok, harga, dan resep. Konversi (misal 1 dus = 24 pcs) diatur per produk.
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.Kelola ? (
                     <Button type="button" onClick={() => AturSunting('baru')}>
                         Tambah satuan

@@ -172,6 +172,10 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Outlet, I
 
     return (
         <TataLetakAplikasi judul="Daftar harga">
+            <p className="text-keterangan text-teks-sekunder">
+                Harga berbeda per situasi, misalnya GoFood atau harga anggota. Produk di luar daftar memakai harga
+                biasa.
+            </p>
             {!Izin.UbahHarga ? <PesanHanyaLihat izin="produk.harga.ubah" objek="daftar harga" /> : null}
             <DaftarGalatServer galat={props.errors} />
             {Izin.UbahHarga ? (
@@ -187,14 +191,7 @@ export default function HalamanDaftarDaftarHarga({ DaftarHarga, Kanal, Outlet, I
                 </Panel>
             ) : null}
             {aturOjol ? <DialogAturHargaOjol Outlet={Outlet} saatTutup={() => AturAturOjol(false)} /> : null}
-            <AksiHalaman
-                keterangan={
-                    <p className="max-w-2xl text-isi text-teks-sekunder">
-                        Harga berbeda per situasi, misalnya GoFood atau harga anggota. Produk di luar daftar memakai
-                        harga biasa.
-                    </p>
-                }
-            >
+            <AksiHalaman>
                 {Izin.UbahHarga ? (
                     <Button asChild>
                         <Link href="/kelola/daftar-harga/buat">Buat daftar harga</Link>

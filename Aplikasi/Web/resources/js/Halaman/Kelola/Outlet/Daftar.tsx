@@ -100,13 +100,11 @@ export default function HalamanDaftarOutlet({ Outlet, Merek, BatasOutlet }: Prop
 
     return (
         <TataLetakAplikasi judul="Outlet">
+            <p className="text-keterangan text-teks-sekunder">
+                Outlet aktif:{' '}
+                <span className="font-semibold text-teks-utama">{FormatBatas(BatasOutlet, 'outlet')}</span>
+            </p>
             <AksiHalaman
-                keterangan={
-                    <p className="text-isi text-teks-sekunder">
-                        Outlet aktif:{' '}
-                        <span className="font-semibold text-teks-utama">{FormatBatas(BatasOutlet, 'outlet')}</span>
-                    </p>
-                }
                 {...(bolehKelola
                     ? {
                           utama: penuh ? (

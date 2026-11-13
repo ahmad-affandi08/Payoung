@@ -34,13 +34,11 @@ export default function HalamanDaftarPeran({ Peran, DaftarIzin }: PropsDaftar) {
 
     return (
         <TataLetakAplikasi judul="Peran & izin">
+            <p className="text-keterangan text-teks-sekunder">
+                Peran bawaan disiapkan sistem. Buat peran kustom bila tim Anda butuh kombinasi izin lain.
+            </p>
             <TabPengguna />
             <AksiHalaman
-                keterangan={
-                    <p className="text-isi text-teks-sekunder">
-                        Peran bawaan disiapkan sistem. Buat peran kustom bila tim Anda butuh kombinasi izin lain.
-                    </p>
-                }
                 utama={
                     bolehKelola ? (
                         <Button asChild>

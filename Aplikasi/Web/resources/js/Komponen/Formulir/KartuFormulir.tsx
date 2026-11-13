@@ -13,10 +13,12 @@ type PropsKartuFormulir = {
  * formulir di dalam satu kartu. Dipakai menggantikan formulir tambah di panel samping.
  */
 export default function KartuFormulir({ keterangan, children }: PropsKartuFormulir) {
+    // Fragmen, bukan `<div>`: keterangan harus anak langsung badan halaman supaya CSS `.badan-halaman` memasangnya rapat
+    // ke judul dengan huruf keterangan, dan kartunya mendapat jarak serta perataan HP yang sama dengan blok lain.
     return (
-        <div className="flex flex-col gap-4">
+        <>
             {keterangan ? <p className="max-w-3xl text-isi text-teks-sekunder">{keterangan}</p> : null}
             <Card className="gap-0 rounded-panel p-4 shadow-none">{children}</Card>
-        </div>
+        </>
     );
 }
