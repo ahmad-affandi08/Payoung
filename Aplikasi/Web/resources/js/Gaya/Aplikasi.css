@@ -579,3 +579,75 @@
         --jarak-badan: calc(var(--spacing) * 4);
     }
 }
+
+/*
+ * Di HP (D-285): kontainer terluar rapat sampai tepi layar (menembus gutter `px-4` tata letak) supaya isian dan tabel
+ * leluasa, dan tidak ada kontainer di dalam kontainer. Kartu apa pun di dalamnya (`Card`/`Panel`, `kartu-tabel`,
+ * kotak `rounded-panel`/`rounded-xl` berborder) diratakan: tanpa border, sudut, bayangan, dan latar. Kartu yang
+ * langsung di badan halaman menjadi bagian yang dipisah garis tipis selebar layar, dan padding sisi kartu
+ * dipindah ke badan itu supaya isi tidak menjorok dua kali. Pengecualian: kotak bergaris putus (keadaan kosong) dan
+ * kotak berwarna merek (penekanan) tetap kotak. Kontrol formulir (`input-group`) tidak disentuh.
+ */
+@media (max-width: 639px) {
+    .badan-halaman {
+        margin-inline: calc(var(--spacing) * -4);
+        border-inline-width: 0;
+        border-radius: 0;
+    }
+
+    .badan-halaman
+        :is([data-slot='card'], .rounded-panel.border, .rounded-xl.border):not(
+            .border-brand,
+            .border-dashed,
+            a,
+            button,
+            label,
+            summary,
+            [role='button']
+        ) {
+        border-width: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        padding-inline: 0;
+    }
+
+    .badan-halaman
+        :is([data-slot='card'], .rounded-panel.border, .rounded-xl.border):not(
+            .border-brand,
+            .border-dashed,
+            a,
+            button,
+            label,
+            summary,
+            [role='button']
+        )
+        > :is([data-slot='card-header'], [data-slot='card-content'], [data-slot='card-footer']) {
+        padding-inline: 0;
+    }
+
+    .badan-halaman
+        > :is([data-slot='card'], .rounded-panel.border, .rounded-xl.border):not(
+            .border-brand,
+            .border-dashed,
+            a,
+            button,
+            label,
+            summary,
+            [role='button']
+        ) {
+        margin: 0;
+        border-top: 1px solid var(--color-garis);
+        padding-inline: calc(var(--spacing) * 4);
+        padding-top: calc(var(--spacing) * 4);
+    }
+
+    .badan-halaman [data-slot='kartu-tabel'] {
+        border-width: 1px 0 0;
+        border-radius: 0;
+    }
+
+    .badan-halaman > section[data-slot='tabel-data']:last-child > [data-slot='kartu-tabel'] {
+        border-radius: 0;
+    }
+}

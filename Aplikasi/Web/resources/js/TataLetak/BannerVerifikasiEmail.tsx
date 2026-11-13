@@ -2,7 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { XIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import { KelasBilahStatus, TitikBilahStatus } from '@/Komponen/Umpan/Pemberitahuan';
+import { KelasBilahStatus, KelasTautanBilahStatus, TitikBilahStatus } from '@/Komponen/Umpan/Pemberitahuan';
 
 const KUNCI_TUTUP = 'payoung.verifikasi-email.ditutup';
 
@@ -55,7 +55,7 @@ export default function BannerVerifikasiEmail({ email }: { email: string }) {
                         type="button"
                         onClick={KirimUlang}
                         disabled={mengirim}
-                        className={`${kelasTautan} font-semibold text-aksen underline underline-offset-2 disabled:opacity-60`}
+                        className={`${kelasTautan} ${KelasTautanBilahStatus} disabled:opacity-60`}
                     >
                         {mengirim ? 'Mengirim…' : 'Kirim ulang'}
                     </button>

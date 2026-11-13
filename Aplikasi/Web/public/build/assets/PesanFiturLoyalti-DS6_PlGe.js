@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{r as t}from"./Pemberitahuan-C_pLBkah.js";var n=e();function r(){return(0,n.jsx)(t,{jenis:`info`,judul:`Loyalti tersedia di paket Pro ke atas`,children:`Tier dan poin bisa disiapkan sekarang, tetapi baru berjalan setelah paket dinaikkan di menu Langganan.`})}export{r as t};

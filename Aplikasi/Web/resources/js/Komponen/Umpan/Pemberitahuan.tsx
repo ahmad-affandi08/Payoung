@@ -29,6 +29,9 @@ export function KelasBilahStatus(): string {
     return 'flex items-start gap-2.5 rounded-kontrol bg-brand-gelap px-3 py-2.5 text-isi text-brand-teks [&_a]:font-semibold [&_a]:text-aksen [&_a]:underline [&_a]:underline-offset-2 [&_button[data-variant=outline]]:text-teks-utama';
 }
 
+/** Gaya tautan (dan tombol bergaya tautan) di dalam bilah status gelap. Satu tempat supaya warna aksen tidak tersebar (D-25). */
+export const KelasTautanBilahStatus = 'font-semibold text-aksen underline underline-offset-2';
+
 export function TitikBilahStatus({ jenis }: { jenis: JenisPemberitahuan }) {
     return <span aria-hidden="true" className={cn('mt-2 size-2 shrink-0 rounded-full', titikJenis[jenis])} />;
 }

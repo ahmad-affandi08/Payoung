@@ -152,7 +152,9 @@ describe('CRM-06 jual gift card di back-office', function (): void {
 
         // Flash kartu baru menampilkan kode lengkap sekali; audit hanya menyimpan samaran.
         $audit = DB::table('LogAudit')->where('IdTenant', $k['Tenant']->Id)->where('Peristiwa', 'pelanggan.gift-card-jual')->sole();
-        expect((string) $audit->NilaiBaru)->not->toContain($kartu->Kode)->and((string) $audit->NilaiBaru)->toContain(KodeGiftCard::Samarkan($kartu->Kode));
+        // JSON diperiksa setelah di-decode: MariaDB menyimpan karakter non-ASCII (penyamar ••••) sebagai \uXXXX, MySQL tidak.
+        $nilaiAudit = json_decode((string) $audit->NilaiBaru, true, flags: JSON_THROW_ON_ERROR);
+        expect((string) $audit->NilaiBaru)->not->toContain($kartu->Kode)->and($nilaiAudit['Kartu'])->toBe(KodeGiftCard::Samarkan($kartu->Kode));
 
         // Uuid sama dikirim lagi (klik dua kali): tidak membuat kartu kedua dan tidak menggandakan jurnal.
         $this->post('/kelola/pelanggan/gift-card', ['Uuid' => $kartu->Uuid, 'Nilai' => '100000', 'UuidAkun' => BantuanPembelian::AkunKas()->Uuid])->assertSessionHasNoErrors();

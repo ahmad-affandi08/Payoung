@@ -318,6 +318,7 @@
 | D-282 | Dari pemilik produk, 13/11/2026. Semua halaman back-office (form, laporan, pengaturan, daftar) adalah satu kontainer putih dari judul sampai ke bawah, dan blok di dalamnya tampil sebagai kartu kecil. Memperluas D-281 yang hanya berlaku untuk halaman ber-`TabelData`. Diatur sekali di `.badan-halaman`, bukan per halaman. |
 | D-283 | Dari pemilik produk, 13/11/2026. Panduan awal ikut pola satu kontainer putih (D-282) walau tanpa menu samping. Halaman cetak dan halaman Absen mobile dikecualikan karena fungsinya berbeda (dokumen A4 dan layar karyawan). |
 | D-284 | Dari pemilik produk, 13/11/2026. Tabel baris dokumen berkolom banyak (Invoice, Penawaran, Pesanan grosir, Retur grosir) tampil sebagai kartu bertumpuk di bawah 1024px, bukan tabel yang digeser ke samping. Mekanismenya satu, yaitu prop `tumpuk` pada `TabelForm`, dan tabel dokumen lain bisa memakainya dengan menambah `data-label` pada selnya. |
+| D-285 | Dari pemilik produk, 13/11/2026. Di HP kontainer terluar halaman back-office full page dan rapat, dan tidak ada kontainer di dalam kontainer: kartu di dalamnya diratakan menjadi bagian yang dipisah garis tipis. Aturan diatur sekali di `.badan-halaman`, tidak per halaman. Layar lebar tetap memakai kontainer berborder (D-282). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

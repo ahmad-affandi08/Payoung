@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B23tBWN-.js";import{r as t}from"./Pemberitahuan-C_pLBkah.js";var n=e();function r({children:e}){return(0,n.jsx)(t,{jenis:`peringatan`,judul:`Periksa pemetaan kolom sebelum mengimpor`,children:e})}export{r as t};
