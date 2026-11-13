@@ -159,12 +159,10 @@ export default function HalamanDaftarImporStokAwal({
     };
 
     return (
-        <TataLetakAplikasi judul="Impor stok awal">
-            <p className="text-label">
-                <Link href="/kelola/persediaan/stok-awal" className="font-semibold text-brand underline">
-                    Kembali ke daftar stok awal
-                </Link>
-            </p>
+        <TataLetakAplikasi
+            judul="Impor stok awal"
+            jejak={[{ label: 'Stok awal', href: '/kelola/persediaan/stok-awal' }]}
+        >
             <LangkahImpor status={null} />
             <DaftarGalatServer galat={props.errors} kecuali={['Berkas', 'UuidGudangBawaan']} />
 

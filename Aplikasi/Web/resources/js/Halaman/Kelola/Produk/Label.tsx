@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
@@ -175,14 +175,8 @@ export default function HalamanLabelProduk({ Baris, Terpotong, Batas, Izin }: Pr
     const skala = lebarPratinjau > 0 ? Math.min(1.2, lebarPratinjau / (tata.LebarHalamanMm * pikselPerMm)) : 0.6;
 
     return (
-        <TataLetakAplikasi judul="Cetak label">
+        <TataLetakAplikasi judul="Cetak label" jejak={[{ label: 'Produk', href: '/kelola/produk' }]}>
             <Head title="Cetak label" />
-            <div className="flex flex-wrap items-center gap-2">
-                <Link href="/kelola/produk" className="text-label font-semibold text-brand underline">
-                    Kembali ke daftar produk
-                </Link>
-            </div>
-
             {Terpotong ? (
                 <Pemberitahuan jenis="peringatan" judul="Daftar dipotong">
                     Hanya {String(Batas.Baris)} baris pertama yang dimuat. Cetak dalam beberapa kali atau kurangi

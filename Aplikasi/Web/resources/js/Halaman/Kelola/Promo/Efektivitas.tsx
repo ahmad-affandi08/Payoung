@@ -1,6 +1,3 @@
-import { Link } from '@inertiajs/react';
-
-import { Button } from '@/Komponen/Ui/button';
 import { Card } from '@/Komponen/Ui/card';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
@@ -46,10 +43,10 @@ export default function HalamanEfektivitasPromo({ Promo, Efektivitas: e }: Props
     const naik = uplift !== null && !uplift.startsWith('-');
 
     return (
-        <TataLetakAplikasi judul={`Efektivitas promo ${Promo.Kode}`}>
-            <Button asChild variant="link" className="h-auto self-start px-0">
-                <Link href="/kelola/promo">Kembali ke daftar promo</Link>
-            </Button>
+        <TataLetakAplikasi
+            judul={`Efektivitas promo ${Promo.Kode}`}
+            jejak={[{ label: 'Promo', href: '/kelola/promo' }]}
+        >
             <p className="text-isi text-teks-sekunder">{Promo.Nama}</p>
 
             {!e.Berjalan ? (

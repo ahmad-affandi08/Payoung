@@ -1,7 +1,7 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { ExternalLink } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
@@ -93,43 +93,7 @@ export default function HalamanUbahArtikelBantuan({
     };
 
     return (
-        <TataLetakPengelola
-            judul={artikel.Judul}
-            aksi={
-                <div className="flex flex-wrap gap-2">
-                    {terbit ? (
-                        <a
-                            href={UrlArtikel}
-                            target="_blank"
-                            rel="noopener"
-                            className="inline-flex h-8 items-center gap-2 rounded-kontrol border border-garis-input px-3 text-isi font-medium text-teks-utama hover:bg-permukaan-sorot pointer-coarse:h-11"
-                        >
-                            Lihat di Pusat Bantuan <ExternalLink className="size-4" aria-hidden />
-                        </a>
-                    ) : null}
-                    {Izin.Kelola ? (
-                        terbit ? (
-                            <Tombol varian="sekunder" onClick={() => AturKonfirmasi('tarik')}>
-                                Tarik ke draf
-                            </Tombol>
-                        ) : (
-                            <>
-                                <Tombol varian="sekunder" onClick={() => AturKonfirmasi('hapus')}>
-                                    Hapus
-                                </Tombol>
-                                <Tombol
-                                    disabled={formulir.isDirty}
-                                    title={formulir.isDirty ? 'Simpan dulu' : undefined}
-                                    onClick={() => AturKonfirmasi('terbit')}
-                                >
-                                    Terbitkan
-                                </Tombol>
-                            </>
-                        )
-                    ) : null}
-                </div>
-            }
-        >
+        <TataLetakPengelola judul={artikel.Judul}>
             <TabSitus />
             <Link href="/situs/bantuan" className="text-label font-semibold text-brand underline">
                 Semua artikel bantuan
@@ -140,6 +104,28 @@ export default function HalamanUbahArtikelBantuan({
                 <span className="font-mono break-all">payoung.id{artikel.Jalur}</span>
                 {artikel.DiterbitkanPada ? <span>Terbit {FormatTanggalWaktu(artikel.DiterbitkanPada)}</span> : null}
             </div>
+            <AksiHalaman
+                langkah={
+                    Izin.Kelola && !terbit
+                        ? [
+                              {
+                                  label: 'Terbitkan',
+                                  saatKlik: () => AturKonfirmasi('terbit'),
+                                  nonaktif: formulir.isDirty,
+                              },
+                          ]
+                        : []
+                }
+                lainnya={[
+                    ...(terbit ? [{ label: 'Lihat di Pusat Bantuan', href: UrlArtikel, tabBaru: true }] : []),
+                    ...(Izin.Kelola && terbit
+                        ? [{ label: 'Tarik ke draf', saatKlik: () => AturKonfirmasi('tarik') }]
+                        : []),
+                    ...(Izin.Kelola && !terbit
+                        ? [{ label: 'Hapus', saatKlik: () => AturKonfirmasi('hapus'), bahaya: true }]
+                        : []),
+                ]}
+            />
             {formulir.isDirty ? (
                 <Pemberitahuan jenis="peringatan">
                     Ada perubahan yang belum disimpan.

@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -158,12 +158,7 @@ export default function HalamanVoucherPromo({ Promo, Voucher, Ringkasan, JumlahM
     };
 
     return (
-        <TataLetakAplikasi judul={`Voucher ${Promo.Nama}`}>
-            <div>
-                <Button asChild variant="outline">
-                    <Link href="/kelola/promo">Kembali ke daftar promo</Link>
-                </Button>
-            </div>
+        <TataLetakAplikasi judul={`Voucher ${Promo.Nama}`} jejak={[{ label: 'Promo', href: '/kelola/promo' }]}>
             <p className="max-w-3xl text-isi text-teks-sekunder">
                 Promo <span className="font-mono">{Promo.Kode}</span> ({Promo.LabelAksi}) hanya berlaku bila kasir
                 memasukkan salah satu kode di bawah. Kasir perlu online saat memasukkan kode. {Ringkasan.Total} kode,{' '}

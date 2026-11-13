@@ -139,12 +139,7 @@ export default function HalamanDaftarImpor({
     };
 
     return (
-        <TataLetakAplikasi judul="Impor produk">
-            <p className="text-label">
-                <Link href="/kelola/produk" className="font-semibold text-brand underline">
-                    Kembali ke daftar produk
-                </Link>
-            </p>
+        <TataLetakAplikasi judul="Impor produk" jejak={[{ label: 'Produk', href: '/kelola/produk' }]}>
             <LangkahImpor status={null} />
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="riwayat impor" /> : null}
             <DaftarGalatServer galat={props.errors} kecuali={['Berkas']} />

@@ -1,5 +1,4 @@
 import { Link, useForm } from '@inertiajs/react';
-import { ExternalLink } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -102,21 +101,10 @@ export default function HalamanDaftarArtikelBantuan({
         <TataLetakPengelola judul="Situs pemasaran">
             <TabSitus />
             {buat ? <FormBuatArtikelBantuan saatTutup={() => AturBuat(false)} /> : null}
-            <AksiHalaman>
-                {
-                    <div className="flex flex-wrap gap-2">
-                        <a
-                            href={UrlPusatBantuan}
-                            target="_blank"
-                            rel="noopener"
-                            className="inline-flex h-8 items-center gap-2 rounded-kontrol border border-garis-input px-3 text-isi font-medium text-teks-utama hover:bg-permukaan-sorot pointer-coarse:h-11"
-                        >
-                            Buka Pusat Bantuan <ExternalLink className="size-4" aria-hidden />
-                        </a>
-                        {Izin.Kelola ? <Tombol onClick={() => AturBuat(true)}>Tulis artikel bantuan</Tombol> : null}
-                    </div>
-                }
-            </AksiHalaman>
+            <AksiHalaman
+                utama={Izin.Kelola ? <Tombol onClick={() => AturBuat(true)}>Tulis artikel bantuan</Tombol> : undefined}
+                lainnya={[{ label: 'Buka Pusat Bantuan', href: UrlPusatBantuan, tabBaru: true }]}
+            />
             <TabelData
                 id="pengelola-situs-bantuan"
                 label="Artikel bantuan"

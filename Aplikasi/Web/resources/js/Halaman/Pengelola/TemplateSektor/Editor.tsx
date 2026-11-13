@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-import Tombol from '@/Komponen/Formulir/Tombol';
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import FormAkun from '@/Komponen/Pengelola/TemplateSektor/FormAkun';
 import FormIsiBisnis from '@/Komponen/Pengelola/TemplateSektor/FormIsiBisnis';
@@ -101,42 +101,7 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
     const HapusDraf = () => router.delete(url, opsiKonfirmasi);
 
     return (
-        <TataLetakPengelola
-            judul={`${Template.Nama} | ${Template.Kode}`}
-            aksi={
-                <div className="flex flex-wrap gap-2">
-                    {bolehKelolaDraf ? (
-                        <Tombol varian="sekunder" memproses={ujiCoba.memproses} onClick={JalankanUjiCoba}>
-                            Uji coba di tenant sementara
-                        </Tombol>
-                    ) : null}
-                    {draf && bolehKelolaDraf ? (
-                        <Tombol
-                            varian="sekunder"
-                            memproses={memproses}
-                            onClick={() => router.post(`${url}/validasi`, {}, opsiKirim)}
-                        >
-                            Validasi ulang
-                        </Tombol>
-                    ) : null}
-                    {draf && PunyaIzin(pengguna, IzinPengelola.TemplateTerbitkan) ? (
-                        <Tombol memproses={memproses} onClick={() => AturKonfirmasi('terbitkan')}>
-                            Terbitkan
-                        </Tombol>
-                    ) : null}
-                    {!draf && !AdaDraf && bolehKelolaDraf ? (
-                        <Tombol memproses={memproses} onClick={() => router.post(`${url}/duplikasi`, {}, opsiKirim)}>
-                            Buat draf versi baru
-                        </Tombol>
-                    ) : null}
-                    {draf && bolehKelolaDraf ? (
-                        <Tombol varian="bahaya" memproses={memproses} onClick={() => AturKonfirmasi('hapus')}>
-                            Hapus draf
-                        </Tombol>
-                    ) : null}
-                </div>
-            }
-        >
+        <TataLetakPengelola judul={`${Template.Nama} | ${Template.Kode}`}>
             {konfirmasi === 'terbitkan' ? (
                 <DialogKonfirmasi
                     judul={`Terbitkan ${Template.Kode} versi ${Versi.Versi}?`}
@@ -161,6 +126,45 @@ export default function HalamanEditorTemplate({ Template, Versi, DaftarVersi, Ad
                     Perubahan di draf ini hilang.
                 </DialogKonfirmasi>
             ) : null}
+            <AksiHalaman
+                langkah={[
+                    ...(draf && PunyaIzin(pengguna, IzinPengelola.TemplateTerbitkan)
+                        ? [{ label: 'Terbitkan', saatKlik: () => AturKonfirmasi('terbitkan'), nonaktif: memproses }]
+                        : []),
+                    ...(!draf && !AdaDraf && bolehKelolaDraf
+                        ? [
+                              {
+                                  label: 'Buat draf versi baru',
+                                  saatKlik: () => router.post(`${url}/duplikasi`, {}, opsiKirim),
+                                  nonaktif: memproses,
+                              },
+                          ]
+                        : []),
+                ]}
+                lainnya={[
+                    ...(bolehKelolaDraf
+                        ? [
+                              {
+                                  label: 'Uji coba di tenant sementara',
+                                  saatKlik: JalankanUjiCoba,
+                                  nonaktif: ujiCoba.memproses,
+                              },
+                          ]
+                        : []),
+                    ...(draf && bolehKelolaDraf
+                        ? [
+                              {
+                                  label: 'Validasi ulang',
+                                  saatKlik: () => router.post(`${url}/validasi`, {}, opsiKirim),
+                                  nonaktif: memproses,
+                              },
+                          ]
+                        : []),
+                    ...(draf && bolehKelolaDraf
+                        ? [{ label: 'Hapus draf', saatKlik: () => AturKonfirmasi('hapus'), bahaya: true }]
+                        : []),
+                ]}
+            />
             <nav aria-label="Versi template" className="flex flex-wrap items-center gap-2">
                 <Button asChild variant="link" className="h-auto px-0 text-label font-semibold">
                     <Link href="/template-sektor">Semua template</Link>

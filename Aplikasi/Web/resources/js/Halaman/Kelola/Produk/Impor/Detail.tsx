@@ -82,12 +82,13 @@ export default function HalamanDetailImpor({
     const bolehBatal = Izin.Kelola && (Impor.Status === 'MenungguPemetaan' || Impor.Status === 'Pratinjau');
 
     return (
-        <TataLetakAplikasi judul={`Impor ${Impor.NamaBerkas}`}>
-            <p className="text-label">
-                <Link href="/kelola/produk/impor" className="font-semibold text-brand underline">
-                    Kembali ke riwayat impor
-                </Link>
-            </p>
+        <TataLetakAplikasi
+            judul={`Impor ${Impor.NamaBerkas}`}
+            jejak={[
+                { label: 'Produk', href: '/kelola/produk' },
+                { label: 'Impor produk', href: '/kelola/produk/impor' },
+            ]}
+        >
             <LangkahImpor status={Impor.Status} />
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="impor ini" /> : null}
             <DaftarGalatServer

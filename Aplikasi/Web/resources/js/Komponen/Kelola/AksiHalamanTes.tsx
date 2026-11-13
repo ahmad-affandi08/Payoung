@@ -281,4 +281,22 @@ describe('Baris aksi di halaman daftar', () => {
 
         expect(pelanggar).toEqual([]);
     });
+
+    it('AksiHalaman tidak dibungkus <div> flex-wrap buatan sendiri di dalamnya (D-290)', () => {
+        // `<AksiHalaman>{<div className="flex flex-wrap gap-2">…</div>}</AksiHalaman>` menyembunyikan tombol dari penjaga
+        // di atas dan memaksa semuanya tampil di HP. Aksi utama masuk `utama`/`langkah`, sisanya `lainnya`.
+        const pelanggar: string[] = [];
+
+        for (const jalur of BerkasBackOffice()) {
+            const isi = readFileSync(jalur, 'utf8');
+
+            for (const blok of isi.matchAll(/<AksiHalaman>([\s\S]*?)<\/AksiHalaman>/g)) {
+                if ((blok[1] ?? '').includes('flex flex-wrap')) {
+                    pelanggar.push(Ringkas(jalur));
+                }
+            }
+        }
+
+        expect(pelanggar).toEqual([]);
+    });
 });

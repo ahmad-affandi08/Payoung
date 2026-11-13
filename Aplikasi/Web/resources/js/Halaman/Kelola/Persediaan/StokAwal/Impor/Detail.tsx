@@ -173,12 +173,13 @@ export default function HalamanDetailImporStokAwal({
         : [];
 
     return (
-        <TataLetakAplikasi judul={`Impor ${Impor.NamaBerkas}`}>
-            <p className="text-label">
-                <Link href={alamatImpor} className="font-semibold text-brand underline">
-                    Kembali ke riwayat impor stok awal
-                </Link>
-            </p>
+        <TataLetakAplikasi
+            judul={`Impor ${Impor.NamaBerkas}`}
+            jejak={[
+                { label: 'Stok awal', href: '/kelola/persediaan/stok-awal' },
+                { label: 'Impor stok awal', href: alamatImpor },
+            ]}
+        >
             <LangkahImpor status={Impor.Status} />
             <DaftarGalatServer galat={props.errors} kecuali={galatPemetaan} />
 
