@@ -118,7 +118,7 @@ export default function HalamanDetailInvoiceBerulang({
 
             <section aria-label="Isi tagihan" className="flex flex-col gap-2">
                 <h2 className="text-subjudul font-semibold text-teks-utama">Isi tagihan tiap siklus</h2>
-                <TabelForm label="Isi tagihan" lebar="sedang">
+                <TabelForm tumpuk label="Isi tagihan" lebar="sedang">
                     <TableHeader>
                         <TableRow>
                             <TableHead className={kelasKepala}>Uraian</TableHead>
@@ -130,19 +130,19 @@ export default function HalamanDetailInvoiceBerulang({
                     <TableBody>
                         {Baris.map((b) => (
                             <TableRow key={b.Kunci}>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-penuh className={kelasSel}>
                                     <span className="font-semibold break-words">{b.Nama}</span>
                                     {b.Keterangan ? (
                                         <span className="block text-keterangan text-teks-sekunder">{b.Keterangan}</span>
                                     ) : null}
                                 </TableCell>
-                                <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                <TableCell data-label="Jumlah" className={`${kelasSel} text-right tabular-nums`}>
                                     {FormatJumlahInvoice(b.Jumlah)} {b.SimbolSatuan ?? ''}
                                 </TableCell>
-                                <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                <TableCell data-label="Harga" className={`${kelasSel} text-right tabular-nums`}>
                                     {FormatRupiah(b.Harga)}
                                 </TableCell>
-                                <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                <TableCell data-label="Diskon" className={`${kelasSel} text-right tabular-nums`}>
                                     {FormatRupiah(b.Diskon)}
                                 </TableCell>
                             </TableRow>

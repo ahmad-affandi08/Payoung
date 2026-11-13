@@ -77,4 +77,38 @@ describe('Tabel isian/rincian', () => {
 
         expect(css).toMatch(/\.tabel-form > \[data-slot='table-container'\]\s*\{[^}]*overflow:\s*visible/);
     });
+    it('tumpuk: wadah menandai data-tumpuk dan CSS mengubah baris jadi kartu di bawah 1024px', () => {
+        render(
+            <TabelForm label="Baris dokumen" lebar="dokumen" tumpuk>
+                <TableBody>
+                    <TableRow>
+                        <TableCell data-label="Jumlah">2</TableCell>
+                    </TableRow>
+                </TableBody>
+            </TabelForm>,
+        );
+
+        expect(screen.getByRole('region', { name: 'Baris dokumen' }).hasAttribute('data-tumpuk')).toBe(true);
+
+        const css = readFileSync(join(AKAR, 'Gaya/Aplikasi.css'), 'utf8');
+
+        expect(css).toMatch(/@media \(max-width: 1023px\)\s*\{\s*\.tabel-form\[data-tumpuk\]/);
+        expect(css).toMatch(
+            /\.tabel-form\[data-tumpuk\] tbody > tr > td\[data-label\]::before\s*\{[^}]*attr\(data-label\)/,
+        );
+    });
+
+    it('tumpuk: setiap halaman yang memakainya memberi judul kolom (data-label) pada selnya', () => {
+        const tanpaLabel: string[] = [];
+
+        for (const jalur of BerkasSumber(AKAR)) {
+            const isi = readFileSync(jalur, 'utf8');
+
+            if (/<TabelForm\s+tumpuk/.test(isi) && !isi.includes('data-label=')) {
+                tanpaLabel.push(jalur.replace(`${AKAR}/`, ''));
+            }
+        }
+
+        expect(tanpaLabel).toEqual([]);
+    });
 });

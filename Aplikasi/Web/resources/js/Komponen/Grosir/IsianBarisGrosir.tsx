@@ -122,7 +122,7 @@ export default function IsianBarisGrosir({
                 </p>
             ) : null}
 
-            <TabelForm label="Barang pesanan grosir">
+            <TabelForm tumpuk label="Barang pesanan grosir">
                 <TableCaption className="sr-only">Barang pesanan grosir</TableCaption>
                 <TableHeader>
                     <TableRow>
@@ -145,13 +145,13 @@ export default function IsianBarisGrosir({
                     ) : (
                         baris.map((b, indeks) => (
                             <TableRow key={b.Kunci}>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-penuh className={kelasSel}>
                                     <span className="font-semibold break-words">{b.NamaProduk}</span>
                                     {galatServer[`Baris.${String(indeks)}.UuidProduk`] ? (
                                         <GalatBidang>{galatServer[`Baris.${String(indeks)}.UuidProduk`]}</GalatBidang>
                                     ) : null}
                                 </TableCell>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-penuh data-label="Satuan" className={kelasSel}>
                                     <PilihanCari
                                         label="Satuan"
                                         nilai={b.UuidProdukSatuan}
@@ -159,7 +159,7 @@ export default function IsianBarisGrosir({
                                         saatBerubah={(nilai) => Ubah(b.Kunci, { UuidProdukSatuan: nilai })}
                                     />
                                 </TableCell>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-label="Jumlah" className={kelasSel}>
                                     <BidangJumlah
                                         label={`Jumlah ${b.NamaProduk}`}
                                         labelTersembunyi
@@ -176,7 +176,7 @@ export default function IsianBarisGrosir({
                                         akhiran={b.SimbolSatuan}
                                     />
                                 </TableCell>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-label="Diskon baris" className={kelasSel}>
                                     <BidangUang
                                         label={`Diskon ${b.NamaProduk}`}
                                         labelTersembunyi
@@ -185,7 +185,7 @@ export default function IsianBarisGrosir({
                                         galat={galatServer[`Baris.${String(indeks)}.Diskon`]}
                                     />
                                 </TableCell>
-                                <TableCell className={kelasSel}>
+                                <TableCell data-aksi className={kelasSel}>
                                     <Button
                                         type="button"
                                         variant="ghost"

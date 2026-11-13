@@ -421,6 +421,91 @@
 }
 
 /*
+ * Tabel dokumen bertumpuk di HP dan tablet (`TabelForm tumpuk`): di bawah 1024px tiap baris menjadi kartu kecil dua kolom, bukan
+ * tabel selebar 896px yang harus digeser ke samping. Strukturnya tetap tabel di DOM (isian, fokus, dan id tidak
+ * berubah), hanya tampilannya yang diubah. Di luar `@layer` agar mengalahkan `min-w-*` dan `text-right` pada sel.
+ * Atribut sel: `data-label` judul kolom di kartu, `data-penuh` selebar kartu, `data-ringkas` label dan nilai sebaris
+ * (subtotal), `data-aksi` tombol di ujung kanan. Judul kolom asli tetap ada untuk pembaca layar.
+ */
+@media (max-width: 1023px) {
+    .tabel-form[data-tumpuk] {
+        overflow-x: visible;
+    }
+
+    .tabel-form[data-tumpuk] table {
+        display: block;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .tabel-form[data-tumpuk] thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .tabel-form[data-tumpuk] tbody {
+        display: flex;
+        flex-direction: column;
+        gap: calc(var(--spacing) * 3);
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: calc(var(--spacing) * 3);
+        border: 1px solid var(--color-garis);
+        border-radius: var(--radius-panel);
+        background: var(--color-permukaan);
+        padding: calc(var(--spacing) * 3);
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        text-align: left;
+        white-space: normal;
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: calc(var(--spacing) * 1);
+        color: var(--color-teks-sekunder);
+        font-size: var(--text-keterangan);
+        line-height: var(--text-keterangan--line-height);
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td[data-penuh],
+    .tabel-form[data-tumpuk] tbody > tr > td[colspan] {
+        grid-column: 1 / -1;
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td[data-ringkas] {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--color-garis);
+        padding-top: calc(var(--spacing) * 2);
+        font-weight: 600;
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td[data-ringkas]::before {
+        margin-bottom: 0;
+    }
+
+    .tabel-form[data-tumpuk] tbody > tr > td[data-aksi] {
+        display: flex;
+        justify-content: flex-end;
+        grid-column: 1 / -1;
+    }
+}
+
+/*
  * Badan halaman back-office tenant (D-275, D-281, D-282): judul halaman beserta isinya.
  *
  * Aturan di sini sengaja **di luar `@layer`** supaya mengalahkan utilitas Tailwind pada elemen yang sama

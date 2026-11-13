@@ -133,7 +133,7 @@ export default function HalamanBuatReturGrosir({
                         Seluruh barang surat jalan ini sudah diretur. Tidak ada sisa yang bisa dikembalikan lagi.
                     </p>
                 ) : (
-                    <TabelForm label="Barang yang dikembalikan">
+                    <TabelForm tumpuk label="Barang yang dikembalikan">
                         <TableCaption className="sr-only">Barang yang dikembalikan</TableCaption>
                         <TableHeader>
                             <TableRow>
@@ -152,7 +152,7 @@ export default function HalamanBuatReturGrosir({
 
                                 return (
                                     <TableRow key={b.Urutan}>
-                                        <TableCell className={kelasSel}>
+                                        <TableCell data-penuh className={kelasSel}>
                                             <span className="flex flex-col">
                                                 <span className="font-semibold break-words">{b.NamaProduk}</span>
                                                 <span className="font-mono text-keterangan text-teks-sekunder">
@@ -160,13 +160,19 @@ export default function HalamanBuatReturGrosir({
                                                 </span>
                                             </span>
                                         </TableCell>
-                                        <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                        <TableCell
+                                            data-label="Diserahkan"
+                                            className={`${kelasSel} text-right tabular-nums`}
+                                        >
                                             {FormatJumlahStok(b.Jumlah, b.SimbolSatuan)}
                                         </TableCell>
-                                        <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                        <TableCell
+                                            data-label="Sisa bisa diretur"
+                                            className={`${kelasSel} text-right tabular-nums`}
+                                        >
                                             {FormatJumlahStok(b.SisaRetur, b.SimbolSatuan)}
                                         </TableCell>
-                                        <TableCell className={kelasSel}>
+                                        <TableCell data-penuh data-label="Jumlah retur" className={kelasSel}>
                                             {AdalahSeri(b) ? (
                                                 <div className="flex flex-col gap-2">
                                                     <GrupCentang
@@ -200,7 +206,7 @@ export default function HalamanBuatReturGrosir({
                                                 </>
                                             )}
                                         </TableCell>
-                                        <TableCell className={kelasSel}>
+                                        <TableCell data-penuh data-label="Kondisi" className={kelasSel}>
                                             <BidangPilihan
                                                 label={`Kondisi ${b.NamaProduk}`}
                                                 labelTersembunyi

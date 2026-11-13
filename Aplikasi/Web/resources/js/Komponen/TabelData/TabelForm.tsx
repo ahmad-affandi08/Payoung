@@ -24,6 +24,12 @@ type PropsTabelForm = {
     lebar?: keyof typeof kelasLebar;
     /** Kelas tambahan untuk elemen `<table>`, mis. `text-label` pada tabel ringkas. */
     kelasTabel?: string;
+    /**
+     * Di bawah 1024px tiap baris tampil sebagai kartu kecil, bukan tabel yang digulir ke samping. Sel memberi
+     * `data-label` (judul kolom di kartu), `data-penuh` (selebar kartu), `data-ringkas` (label dan nilai sebaris, untuk
+     * subtotal), atau `data-aksi` (tombol di ujung kanan). Hanya untuk tabel dokumen berkolom banyak.
+     */
+    tumpuk?: boolean;
     className?: string;
     children: ReactNode;
 };
@@ -41,11 +47,19 @@ type PropsTabelForm = {
  *    sini yang menggulir dan bisa difokus, sementara container bawaan dimatikan lewat aturan `.tabel-form` di
  *    `Gaya/Aplikasi.css` — `Komponen/Ui/` tidak disentuh, jadi komponennya tetap boleh dipasang ulang lewat CLI.
  */
-export default function TabelForm({ label, lebar = 'sedang', kelasTabel, className, children }: PropsTabelForm) {
+export default function TabelForm({
+    label,
+    lebar = 'sedang',
+    kelasTabel,
+    tumpuk = false,
+    className,
+    children,
+}: PropsTabelForm) {
     return (
         <div
             role="region"
             aria-label={label}
+            data-tumpuk={tumpuk ? '' : undefined}
             tabIndex={0}
             className={cn('tabel-form overflow-x-auto focus-visible:ring-2 focus-visible:ring-brand', className)}
         >

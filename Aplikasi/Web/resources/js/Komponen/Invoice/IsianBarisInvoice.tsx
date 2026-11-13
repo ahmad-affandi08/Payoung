@@ -131,7 +131,7 @@ export default function IsianBarisInvoice({
                 </p>
             ) : null}
 
-            <TabelForm label="Baris invoice" lebar="dokumen">
+            <TabelForm tumpuk label="Baris invoice" lebar="dokumen">
                 <TableCaption className="sr-only">Baris invoice</TableCaption>
                 <TableHeader>
                     <TableRow>
@@ -162,7 +162,7 @@ export default function IsianBarisInvoice({
 
                             return (
                                 <TableRow key={b.Kunci} data-baris={b.Kunci}>
-                                    <TableCell className={`${kelasSel} min-w-56`}>
+                                    <TableCell data-penuh data-label="Uraian" className={`${kelasSel} min-w-56`}>
                                         <div className="flex flex-col gap-2">
                                             <BidangTeks
                                                 label={`Uraian baris ${String(indeks + 1)}`}
@@ -191,7 +191,7 @@ export default function IsianBarisInvoice({
                                             ) : null}
                                         </div>
                                     </TableCell>
-                                    <TableCell className={`${kelasSel} min-w-28`}>
+                                    <TableCell data-label="Jenis" className={`${kelasSel} min-w-28`}>
                                         <PilihanCari
                                             label="Jenis baris"
                                             aria-label={`Jenis baris ${String(indeks + 1)}`}
@@ -202,7 +202,7 @@ export default function IsianBarisInvoice({
                                             }
                                         />
                                     </TableCell>
-                                    <TableCell className={`${kelasSel} min-w-24`}>
+                                    <TableCell data-label="Jumlah" className={`${kelasSel} min-w-24`}>
                                         <BidangJumlah
                                             label={`Jumlah baris ${String(indeks + 1)}`}
                                             labelTersembunyi
@@ -218,7 +218,7 @@ export default function IsianBarisInvoice({
                                             }
                                         />
                                     </TableCell>
-                                    <TableCell className={`${kelasSel} min-w-20`}>
+                                    <TableCell data-label="Satuan" className={`${kelasSel} min-w-20`}>
                                         <BidangTeks
                                             label={`Satuan baris ${String(indeks + 1)}`}
                                             labelTersembunyi
@@ -227,7 +227,7 @@ export default function IsianBarisInvoice({
                                             maxLength={20}
                                         />
                                     </TableCell>
-                                    <TableCell className={`${kelasSel} min-w-36`}>
+                                    <TableCell data-label="Harga" className={`${kelasSel} min-w-36`}>
                                         <BidangUang
                                             label={`Harga baris ${String(indeks + 1)}`}
                                             labelTersembunyi
@@ -240,7 +240,7 @@ export default function IsianBarisInvoice({
                                         />
                                     </TableCell>
                                     {sembunyikanDiskon ? null : (
-                                        <TableCell className={`${kelasSel} min-w-32`}>
+                                        <TableCell data-label="Diskon" className={`${kelasSel} min-w-32`}>
                                             <BidangUang
                                                 label={`Diskon baris ${String(indeks + 1)}`}
                                                 labelTersembunyi
@@ -250,7 +250,7 @@ export default function IsianBarisInvoice({
                                             />
                                         </TableCell>
                                     )}
-                                    <TableCell className={`${kelasSel} min-w-36`}>
+                                    <TableCell data-penuh data-label="Pajak" className={`${kelasSel} min-w-36`}>
                                         <PilihanCari
                                             label="Pajak"
                                             aria-label={`Pajak baris ${String(indeks + 1)}`}
@@ -262,10 +262,14 @@ export default function IsianBarisInvoice({
                                             }
                                         />
                                     </TableCell>
-                                    <TableCell className={`${kelasSel} text-right tabular-nums`}>
+                                    <TableCell
+                                        data-ringkas
+                                        data-label="Subtotal"
+                                        className={`${kelasSel} text-right tabular-nums`}
+                                    >
                                         {subtotal === null ? '—' : FormatRupiah(subtotal)}
                                     </TableCell>
-                                    <TableCell className={kelasSel}>
+                                    <TableCell data-aksi className={kelasSel}>
                                         <Button
                                             type="button"
                                             variant="ghost"
