@@ -16,6 +16,7 @@ import 'Komponen/FormatWaktu.dart';
 import 'LembarMutasiKas.dart';
 import 'Pengaturan/BagianPerangkat.dart';
 import 'Pengaturan/DaftarKategoriPengaturan.dart';
+import 'Pengaturan/DialogUbahPin.dart';
 import 'Pengaturan/KategoriPengaturan.dart';
 import 'Pengaturan/KesiapanPerangkat.dart';
 import 'RuangKerja/BagianKerja.dart';
@@ -47,6 +48,16 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
   /// Audit kemudahan pakai #32: menyalakan mode latihan butuh PIN supervisor (izin `shift.selisih.setujui`) supaya
   /// penjualan sungguhan tidak hilang karena kasir lupa; kasir yang sudah ber-izin (atau Pemilik) tidak ditanya lagi.
   /// Mematikan selalu bebas.
+  Future<void> _UbahPin(BuildContext context, StafLokal kasir) async {
+    final berhasil = await showDialog<bool>(
+      context: context,
+      builder: (_) => DialogUbahPin(kasir: kasir),
+    );
+    if (berhasil == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN sudah diganti.')));
+    }
+  }
+
   Future<void> _AturModeLatihan(BuildContext context, WidgetRef ref, bool nilai) async {
     if (nilai && !(ref.read(penyediaSesi).kasir?.PunyaIzin(IzinKasir.shiftSelisihSetujui) ?? false)) {
       final penyetuju = await showDialog<StafLokal>(
@@ -77,6 +88,7 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
       selisihJamDetik: int.tryParse(pengaturanSinkron[KunciPengaturan.selisihJamDetik] ?? ''),
       dataDiperbarui: DateTime.tryParse(pengaturanSinkron[KunciPengaturan.dataAwalPada] ?? '')?.toLocal(),
       sekarang: ref.watch(penyediaJam)(),
+      responsServerMs: ref.watch(penyediaWaktuResponsServer),
     );
     final perluCek = kesiapan.any((b) => b.nada == NadaStatus.Peringatan);
     final identitas = ref.watch(penyediaIdentitas).value;
@@ -297,6 +309,17 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
               ),
             ),
           ),
+          if (ref.watch(penyediaSesi).kasir case final kasir?)
+            Bagian(
+              'PIN saya',
+              Icons.pin_outlined,
+              'Ganti PIN ${kasir.nama} tanpa ke back-office. Perlu tersambung ke internet dan PIN lama.',
+              OutlinedButton(
+                key: const ValueKey('UbahPin'),
+                onPressed: () => unawaited(_UbahPin(context, kasir)),
+                child: const Text('Ubah PIN'),
+              ),
+            ),
           Bagian(
             'Mode latihan',
             Icons.school_outlined,

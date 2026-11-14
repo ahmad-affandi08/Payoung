@@ -1269,7 +1269,10 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
       // P-04: penjualan yang masih di outbox saat konfigurasi diminta belum tercakup hitungan kuota server; dicatat
       // sebagai patokan supaya kuota efektif perangkat ini = hitungan server + penjualan yang belum tercakup.
       final tertundaSaatAmbil = await ref.read(penyediaRepositoriPenjualan).AmbilUuidPenjualanTertunda();
+      final stopwatch = Stopwatch()..start();
       final konfigurasi = await ref.read(penyediaKlienPos).AmbilKonfigurasiAplikasi();
+      stopwatch.stop();
+      ref.read(penyediaWaktuResponsServer.notifier).Atur(stopwatch.elapsedMilliseconds);
       ref
           .read(penyediaPatokanKuota.notifier)
           .Atur(PatokanKuota(sejak: sekarang, uuidTertundaSaatAmbil: tertundaSaatAmbil));
@@ -1287,6 +1290,17 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
     }
   }
 }
+
+/// D-301: lama (milidetik) server menjawab pemeriksaan konfigurasi terakhir yang berhasil, ditampilkan di daftar periksa
+/// kesiapan perangkat. Null = belum pernah terukur. Diukur dari permintaan yang memang sudah berjalan, bukan ping baru.
+class PengaturWaktuResponsServer extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void Atur(int milidetik) => state = milidetik;
+}
+
+final penyediaWaktuResponsServer = NotifierProvider<PengaturWaktuResponsServer, int?>(PengaturWaktuResponsServer.new);
 
 final penyediaKonfigurasiAplikasi = NotifierProvider<PengaturKonfigurasiAplikasi, KonfigurasiAplikasi?>(
   PengaturKonfigurasiAplikasi.new,

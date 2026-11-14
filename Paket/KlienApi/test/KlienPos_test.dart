@@ -179,6 +179,33 @@ void main() {
     },
   );
 
+  test('ubah PIN: kirim PIN lama & baru ke kasir/ubah-pin, PIN lama salah jadi GalatApi PinSalah', () async {
+    http.Request? diterima;
+    final klien = BuatKlien((permintaan) async {
+      diterima = permintaan;
+      return Json({'Berhasil': true}, 200);
+    });
+    await klien.UbahPin(uuidPengguna: 'U1', pinLama: '482915', pinBaru: '739204');
+    expect(diterima!.method, 'POST');
+    expect(diterima!.url.path, endsWith('/kasir/ubah-pin'));
+    expect(jsonDecode(diterima!.body), {'UuidPengguna': 'U1', 'PinLama': '482915', 'PinBaru': '739204'});
+
+    final salah = BuatKlien(
+      (_) async => Json({
+        'Galat': {
+          'Kode': 'PinSalah',
+          'Pesan': 'PIN salah. Sisa 4 percobaan sebelum PIN dikunci sementara.',
+          'Bidang': 'Pin',
+          'Detail': {'SisaPercobaan': 4},
+        },
+      }, 422),
+    );
+    await expectLater(
+      salah.UbahPin(uuidPengguna: 'U1', pinLama: '111222', pinBaru: '739204'),
+      throwsA(isA<GalatApi>().having((g) => g.kode, 'kode', 'PinSalah')),
+    );
+  });
+
   test('data awal: staf, izin, PIN terbungkus, kategori, parameter Argon2id', () async {
     final klien = BuatKlien(
       (_) async => Json({

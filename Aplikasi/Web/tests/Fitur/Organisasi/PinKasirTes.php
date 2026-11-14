@@ -233,6 +233,69 @@ describe('POST /api/pos/v1/kasir/masuk-pin (§20.2)', function (): void {
     });
 });
 
+describe('POST /api/pos/v1/kasir/ubah-pin (D-301)', function (): void {
+    it('PIN lama benar mengganti PIN, PIN lama tidak berlaku lagi, dan audit tanpa PIN', function (): void {
+        ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
+        $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
+        BantuanPerangkat::AturPin($tenant->Id, $kasir->Id, '482915');
+        ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
+
+        $this->withToken($token)->postJson('/api/pos/v1/kasir/ubah-pin', ['UuidPengguna' => $kasir->Uuid, 'PinLama' => '482915', 'PinBaru' => '739204'])
+            ->assertOk()->assertExactJson(['Berhasil' => true]);
+
+        expect(Hash::check('739204', (string) PinUjiHash($tenant->Id, $kasir->Id)))->toBeTrue();
+        $this->withToken($token)->postJson('/api/pos/v1/kasir/masuk-pin', ['UuidPengguna' => $kasir->Uuid, 'Pin' => '482915'])->assertUnprocessable();
+        $this->withToken($token)->postJson('/api/pos/v1/kasir/masuk-pin', ['UuidPengguna' => $kasir->Uuid, 'Pin' => '739204'])->assertOk();
+        $log = LogAudit::query()->where('IdTenant', $tenant->Id)->where('Peristiwa', 'pengguna.pin.atur')->latest('Id')->firstOrFail();
+        expect($log->IdPengguna)->toBe($kasir->Id)->and(json_encode($log->NilaiBaru))->not->toContain('739204')->not->toContain('482915');
+    });
+
+    it('PIN lama salah ditolak dan menghitung percobaan, 5 kali salah mengunci, PIN tidak berubah', function (): void {
+        $this->freezeTime();
+
+        ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
+        $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
+        BantuanPerangkat::AturPin($tenant->Id, $kasir->Id, '482915');
+        ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
+        $kirim = fn (string $lama) => $this->withToken($token)->postJson('/api/pos/v1/kasir/ubah-pin', ['UuidPengguna' => $kasir->Uuid, 'PinLama' => $lama, 'PinBaru' => '739204']);
+
+        $kirim('111222')->assertUnprocessable()->assertJsonPath('Galat.Kode', 'PinSalah')->assertJsonPath('Galat.Detail.SisaPercobaan', 4);
+        foreach (range(1, 4) as $ke) {
+            $kirim('111222');
+        }
+        $kirim('482915')->assertStatus(429)->assertJsonPath('Galat.Kode', 'PinTerkunci');
+        expect(Hash::check('482915', (string) PinUjiHash($tenant->Id, $kasir->Id)))->toBeTrue();
+    });
+
+    it('menolak PIN baru yang sama, lemah, atau bukan 6 angka tanpa mengubah PIN', function (string $pinBaru, string $kode): void {
+        ['Tenant' => $tenant] = BantuanOrganisasi::BuatTenant();
+        $kasir = BantuanOrganisasi::TambahAnggota($tenant->Id, PeranTenantBawaan::Kasir);
+        BantuanPerangkat::AturPin($tenant->Id, $kasir->Id, '482915');
+        ['Token' => $token] = BantuanPerangkat::BuatDanAktifkan($this, $tenant->Id);
+
+        $this->withToken($token)->postJson('/api/pos/v1/kasir/ubah-pin', ['UuidPengguna' => $kasir->Uuid, 'PinLama' => '482915', 'PinBaru' => $pinBaru])
+            ->assertUnprocessable();
+        expect(Hash::check('482915', (string) PinUjiHash($tenant->Id, $kasir->Id)))->toBeTrue();
+    })->with([
+        'sama dengan lama' => ['482915', 'PinBaruSama'],
+        'angka sama semua' => ['777777', 'PinLemah'],
+        'urut naik' => ['123456', 'PinLemah'],
+        'lima angka' => ['48291', 'Format'],
+    ]);
+
+    it('isolasi tenant: kasir tenant lain tidak bisa diubah PIN-nya lewat perangkat tenant ini', function (): void {
+        ['Tenant' => $tenantA] = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
+        ['Tenant' => $tenantB] = BantuanOrganisasi::BuatTenant('Toko Budi');
+        $kasirB = BantuanOrganisasi::TambahAnggota($tenantB->Id, PeranTenantBawaan::Kasir);
+        BantuanPerangkat::AturPin($tenantB->Id, $kasirB->Id, '482915');
+        ['Token' => $tokenA] = BantuanPerangkat::BuatDanAktifkan($this, $tenantA->Id);
+
+        $this->withToken($tokenA)->postJson('/api/pos/v1/kasir/ubah-pin', ['UuidPengguna' => $kasirB->Uuid, 'PinLama' => '482915', 'PinBaru' => '739204'])
+            ->assertNotFound()->assertJsonPath('Galat.Kode', 'KasirTidakDitemukan');
+        expect(Hash::check('482915', (string) PinUjiHash($tenantB->Id, $kasirB->Id)))->toBeTrue();
+    });
+});
+
 describe('§20.2 percobaan PIN dipesan sebelum PIN diperiksa', function (): void {
     it('hanya PercobaanPinMaksimal percobaan yang boleh memeriksa PIN walau datang serentak: yang berikutnya ditolak dan PIN terkunci', function (): void {
         config(['organisasi.PercobaanPinMaksimal' => 5, 'organisasi.MenitKunciPin' => 5]);

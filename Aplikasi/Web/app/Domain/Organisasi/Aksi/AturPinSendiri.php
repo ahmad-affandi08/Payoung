@@ -41,7 +41,7 @@ final class AturPinSendiri
             $anggota->VerifierPinOffline = VerifierPinOffline::Buat($pin);
             $anggota->save();
 
-            $this->audit->Catat('pengguna.pin.atur', $anggota, nilaiBaru: ['IdPengguna' => $idPengguna, 'Mengganti' => $sudahAda]);
+            $this->audit->Catat('pengguna.pin.atur', $anggota, nilaiBaru: ['IdPengguna' => $idPengguna, 'Mengganti' => $sudahAda], idPengguna: $idPengguna);
         });
     }
 }

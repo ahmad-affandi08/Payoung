@@ -189,6 +189,11 @@
         "Jalur": "api/pos/v1/kasir/masuk-pin",
         "Nama": "pos.kasir.masuk-pin"
     },
+    "POST api/pos/v1/kasir/ubah-pin": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/kasir/ubah-pin",
+        "Nama": "pos.kasir.ubah-pin"
+    },
     "POST api/pos/v1/laundry/{tiket}/status": {
         "Metode": "POST",
         "Jalur": "api/pos/v1/laundry/{tiket}/status",

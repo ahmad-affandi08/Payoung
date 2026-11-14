@@ -9,6 +9,9 @@ import '../LayarStatusSinkron.dart';
 /// diketahui.
 typedef ButirKesiapan = ({String judul, String keterangan, NadaStatus nada});
 
+/// Server dianggap lambat bila pemeriksaan konfigurasi memakan lebih dari ini (milidetik).
+const int batasResponsLambatMs = 2000;
+
 /// Ringkasan kesiapan perangkat untuk panel kanan Pengaturan dan lencana kategori (D-301). Murni: semua masukan
 /// diberikan pemanggil sehingga mudah diuji tanpa basis data.
 List<ButirKesiapan> SusunKesiapanPerangkat({
@@ -18,6 +21,7 @@ List<ButirKesiapan> SusunKesiapanPerangkat({
   required int? selisihJamDetik,
   required DateTime? dataDiperbarui,
   required DateTime sekarang,
+  int? responsServerMs,
 }) {
   return [
     switch (koneksi) {
@@ -33,6 +37,19 @@ List<ButirKesiapan> SusunKesiapanPerangkat({
         nada: NadaStatus.Netral,
       ),
     },
+    if (koneksi == StatusKoneksi.Online && responsServerMs != null)
+      responsServerMs > batasResponsLambatMs
+          ? (
+              judul: 'Server lambat menjawab',
+              keterangan:
+                  'Menjawab dalam ${(responsServerMs / 1000).toStringAsFixed(1).replaceAll('.', ',')} detik. Cek sinyal atau Wi-Fi.',
+              nada: NadaStatus.Peringatan,
+            )
+          : (
+              judul: 'Server cepat menjawab',
+              keterangan: 'Menjawab dalam $responsServerMs ms.',
+              nada: NadaStatus.Sukses,
+            ),
     tertunda == 0
         ? (judul: 'Semua data sudah terkirim', keterangan: 'Tidak ada transaksi tertunda.', nada: NadaStatus.Sukses)
         : (

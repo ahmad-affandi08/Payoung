@@ -78,6 +78,13 @@ class KlienPos {
   Future<HasilMasukPin> MasukPin({required String uuidPengguna, required String pin}) async =>
       HasilMasukPin.DariJson(await _Kirim('POST', 'kasir/masuk-pin', {'UuidPengguna': uuidPengguna, 'Pin': pin}));
 
+  /// D-301: kasir mengganti PIN miliknya (perlu online). Server memeriksa [pinLama] dengan batas percobaan yang sama
+  /// dengan masuk PIN (`PinSalah` 422 dengan `SisaPercobaan`, `PinTerkunci` 429), lalu menolak PIN baru yang sama atau
+  /// lemah (`PinBaruSama`, galat bidang `PinBaru`).
+  Future<void> UbahPin({required String uuidPengguna, required String pinLama, required String pinBaru}) async {
+    await _Kirim('POST', 'kasir/ubah-pin', {'UuidPengguna': uuidPengguna, 'PinLama': pinLama, 'PinBaru': pinBaru});
+  }
+
   /// Katalog lengkap (tanpa [kursor]) atau delta sejak [kursor] (F-03 D.3). Kursor rusak/kedaluwarsa → `GalatApi`
   /// ber-kode `KursorTidakValid` (pemanggil lalu mengulang tanpa kursor).
   Future<KatalogPos> AmbilKatalog({String? kursor}) async => KatalogPos.DariJson(

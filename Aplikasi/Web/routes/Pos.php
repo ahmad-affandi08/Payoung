@@ -94,6 +94,8 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
     Route::middleware([PastikanLanggananPosAktif::class, WajibFiturPaket::class])->group(function (): void {
         // F-02b: masuk kasir dengan PIN (kunci 5 menit setelah 5 kali salah, §20.2).
         Route::post('/kasir/masuk-pin', [KasirKontroler::class, 'MasukPin'])->middleware('throttle:pos-60')->name('pos.kasir.masuk-pin');
+        // D-301: kasir mengganti PIN miliknya dari aplikasi (online; PIN lama diperiksa dengan kunci sementara §20.2).
+        Route::post('/kasir/ubah-pin', [KasirKontroler::class, 'UbahPin'])->middleware('throttle:pos-10')->name('pos.kasir.ubah-pin');
 
         // F-06: data awal kerja offline (staf & verifier PIN offline, kategori kas, pengaturan kasir).
         Route::get('/data-awal', [DataAwalKontroler::class, 'Ambil'])->middleware('throttle:pos-30')->name('pos.data-awal');
