@@ -746,42 +746,54 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
         bottom: pakaiRel || penuh,
         child: Column(
           children: [
-            // Setiap anak berkunci supaya area kerja (dan layar Jual di dalamnya) tidak dibangun ulang saat bingkai
-            // disembunyikan atau ditampilkan lagi.
-            if (!penuh)
-              BilahAtasRuangKerja(
-                key: const ValueKey('BilahAtas'),
+            // Layar penuh menyembunyikan bagian bingkai dengan `Offstage`, bukan membuangnya: widget tetap hidup (tanpa
+            // berlangganan ulang ke basis data) dan layar jual di area kerja tidak dibangun ulang.
+            Offstage(
+              offstage: penuh,
+              child: BilahAtasRuangKerja(
                 kasir: widget.kasir,
                 saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
                 saatKunci: ref.read(penyediaSesi.notifier).Kunci,
                 status: itemStatus,
               ),
+            ),
             // D-16: di layar lebar status sudah berada di bawah nama outlet pada bilah atas. Di layar yang belum
             // cukup lebar, status menempel sebagai bilah gelap 28dp di bawah bilah atas — bukan pita putih di kaki
             // layar: kaki layar dipakai untuk aksi, dan pita putih di sana terbaca sebagai footer yang memakan ruang
             // kerja.
-            if (!penuh && !statusDiBilah)
-              BilahStatus(key: const ValueKey('BilahStatus'), item: itemStatus, gelap: true),
+            if (!statusDiBilah)
+              Offstage(
+                offstage: penuh,
+                child: BilahStatus(item: itemStatus, gelap: true),
+              ),
             // P-10 PGL-19: pengumuman & jadwal pemeliharaan dari pengelola platform.
-            if (!penuh)
-              if (_konfigurasi case final k? when k.pengumuman.isNotEmpty)
-                BannerPengumuman(key: const ValueKey('BannerPengumuman'), pengumuman: k.pengumuman),
+            if (_konfigurasi case final k? when k.pengumuman.isNotEmpty)
+              Offstage(
+                offstage: penuh,
+                child: BannerPengumuman(pengumuman: k.pengumuman),
+              ),
             // K-23: mode latihan selalu terlihat.
-            if (!penuh && ref.watch(penyediaModeLatihan)) const BannerModeLatihan(key: ValueKey('BannerLatihan')),
+            if (ref.watch(penyediaModeLatihan)) Offstage(offstage: penuh, child: const BannerModeLatihan()),
             Expanded(
-              key: const ValueKey('AreaKerjaBingkai'),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (pakaiRel && !penuh) ...[
-                    _BangunRel(item, indeks, lebarPenuh: lebar >= RuangKerja.lebarPanelSamping),
-                    VerticalDivider(width: TokenJarak.tebalGaris, thickness: TokenJarak.tebalGaris, color: warna.garis),
+                  if (pakaiRel) ...[
+                    Offstage(
+                      offstage: penuh,
+                      child: _BangunRel(item, indeks, lebarPenuh: lebar >= RuangKerja.lebarPanelSamping),
+                    ),
+                    Offstage(
+                      offstage: penuh,
+                      child: VerticalDivider(
+                        width: TokenJarak.tebalGaris,
+                        thickness: TokenJarak.tebalGaris,
+                        color: warna.garis,
+                      ),
+                    ),
                   ],
                   // Batas lukis sendiri: perubahan keranjang tidak melukis ulang bilah atas, rel, dan bilah status.
-                  Expanded(
-                    key: const ValueKey('AreaKerja'),
-                    child: RepaintBoundary(child: _BangunAreaKerja(item, indeks, lebar)),
-                  ),
+                  Expanded(child: RepaintBoundary(child: _BangunAreaKerja(item, indeks, lebar))),
                 ],
               ),
             ),
