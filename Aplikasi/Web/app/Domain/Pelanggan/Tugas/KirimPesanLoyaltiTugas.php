@@ -52,7 +52,7 @@ final class KirimPesanLoyaltiTugas implements ShouldQueue
             $toko = $namaTampil->UntukTenant($this->idTenant);
             $pengirim->Kirim($jenis, null, (string) $pelanggan->NoHp, ($nama === '' ? 'Halo' : "Halo {$nama}").", {$kalimat} di {$toko}. Terima kasih.");
         } finally {
-            $konteks->Atur($sebelumnya);
+            $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
         }
     }
 

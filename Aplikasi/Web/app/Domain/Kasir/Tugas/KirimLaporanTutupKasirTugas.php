@@ -51,7 +51,7 @@ final class KirimLaporanTutupKasirTugas implements ShouldQueue
                 'Kas dihitung: '.Uang::Dari((string) ($shift->KasAktual ?? '0'))->FormatRupiah()." ({$keteranganSelisih})",
             ]));
         } finally {
-            $konteks->Atur($sebelumnya);
+            $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
         }
     }
 }

@@ -7,6 +7,7 @@ namespace App\Console\Perintah;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Pengelola\DataBawaan\Aksi\ImporDataMasterLisensi;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 /**
  * D-35 edisi Lisensi: memasang paket data master dari Payoung (tarif pajak & hari libur yang sudah terbit di konsol).
@@ -20,7 +21,7 @@ final class ImporDataMasterLisensiPerintah extends Command
 
     public function handle(ImporDataMasterLisensi $impor): int
     {
-        $berkas = (string) $this->argument('berkas');
+        $berkas = Str::of(is_string($this->argument('berkas')) ? $this->argument('berkas') : '')->toString();
         $isi = is_readable($berkas) ? file_get_contents($berkas) : false;
 
         if ($isi === false) {

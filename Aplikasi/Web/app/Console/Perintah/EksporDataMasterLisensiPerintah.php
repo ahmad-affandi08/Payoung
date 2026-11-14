@@ -6,6 +6,7 @@ namespace App\Console\Perintah;
 
 use App\Domain\Pengelola\DataBawaan\Aksi\EksporDataMasterLisensi;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 /**
  * D-35: dijalankan di server SaaS Payoung untuk membuat paket data master (tarif pajak & hari libur terbit) bagi server
@@ -19,7 +20,7 @@ final class EksporDataMasterLisensiPerintah extends Command
 
     public function handle(EksporDataMasterLisensi $ekspor): int
     {
-        $keluaran = (string) $this->argument('keluaran');
+        $keluaran = Str::of(is_string($this->argument('keluaran')) ? $this->argument('keluaran') : '')->toString();
         $paket = $ekspor->Jalankan();
 
         if (file_put_contents($keluaran, json_encode($paket, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)."\n") === false) {

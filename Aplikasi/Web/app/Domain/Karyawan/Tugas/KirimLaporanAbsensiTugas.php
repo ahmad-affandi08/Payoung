@@ -54,7 +54,7 @@ final class KirimLaporanAbsensiTugas implements ShouldQueue
             $kalimat = $this->arah === 'masuk' ? 'absen masuk' : 'absen pulang';
             $pelapor->Kirim(JenisPesanWhatsapp::LaporanAbsensi, $absensi->IdOutlet, "{$karyawan->Nama} {$kalimat} pukul {$jam} di {$namaOutlet}.");
         } finally {
-            $konteks->Atur($sebelumnya);
+            $sebelumnya === null ? $konteks->Kosongkan() : $konteks->Atur($sebelumnya);
         }
     }
 }

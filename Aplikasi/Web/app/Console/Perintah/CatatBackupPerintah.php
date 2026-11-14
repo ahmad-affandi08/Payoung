@@ -61,8 +61,8 @@ final class CatatBackupPerintah extends Command
 
         try {
             $catatan = $catat->Jalankan(new DataCatatanBackup(
-                jenis: JenisCatatanBackup::from((string) $isian['Jenis']),
-                hasil: HasilBackup::from((string) $isian['Hasil']),
+                jenis: JenisCatatanBackup::from(is_string($isian['Jenis']) ? $isian['Jenis'] : ''),
+                hasil: HasilBackup::from(is_string($isian['Hasil']) ? $isian['Hasil'] : ''),
                 selesaiPada: is_string($isian['Selesai']) && $isian['Selesai'] !== '' ? Carbon::parse($isian['Selesai']) : now(),
                 ukuranByte: is_numeric($isian['Ukuran']) ? (int) $isian['Ukuran'] : null,
                 lokasi: is_string($isian['Lokasi']) && $isian['Lokasi'] !== '' ? $isian['Lokasi'] : null,

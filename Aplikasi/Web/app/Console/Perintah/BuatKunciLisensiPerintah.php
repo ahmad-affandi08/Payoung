@@ -6,6 +6,7 @@ namespace App\Console\Perintah;
 
 use App\Domain\Lisensi\Layanan\PenandaLisensi;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 /**
  * D-35: membuat pasangan kunci penerbit lisensi. Dijalankan SEKALI oleh pemilik produk di mesin pribadi, bukan di
@@ -20,7 +21,7 @@ final class BuatKunciLisensiPerintah extends Command
 
     public function handle(PenandaLisensi $penanda): int
     {
-        $berkas = (string) $this->argument('berkasKunciPrivat');
+        $berkas = Str::of(is_string($this->argument('berkasKunciPrivat')) ? $this->argument('berkasKunciPrivat') : '')->toString();
 
         if (file_exists($berkas)) {
             $this->error("Berkas {$berkas} sudah ada. Kunci lama tidak ditimpa: lisensi yang sudah terbit bergantung padanya.");

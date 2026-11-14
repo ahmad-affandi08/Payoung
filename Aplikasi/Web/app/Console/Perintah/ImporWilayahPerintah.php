@@ -10,6 +10,7 @@ use App\Domain\Pengelola\Referensi\Data\DataWilayah;
 use App\Domain\Referensi\Enum\TingkatWilayah;
 use App\Domain\Referensi\Enum\ZonaWaktu;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 /**
  * Memuat kode wilayah resmi dari CSV (P-02). Kolom: Kode,Nama,Tingkat,KodeInduk,ZonaWaktu
@@ -25,7 +26,7 @@ final class ImporWilayahPerintah extends Command
 
     public function handle(ImporWilayah $impor): int
     {
-        $path = (string) $this->argument('berkas');
+        $path = Str::of(is_string($this->argument('berkas')) ? $this->argument('berkas') : '')->toString();
         $berkas = is_readable($path) ? fopen($path, 'r') : false;
 
         if ($berkas === false) {

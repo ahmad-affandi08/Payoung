@@ -34,7 +34,7 @@ final class PasangLisensiPerintah extends Command
 
     public function handle(PasangLisensi $pasang): int
     {
-        $berkas = (string) $this->argument('berkas');
+        $berkas = Str::of(is_string($this->argument('berkas')) ? $this->argument('berkas') : '')->toString();
         $isi = is_readable($berkas) ? file_get_contents($berkas) : false;
 
         if ($isi === false) {
