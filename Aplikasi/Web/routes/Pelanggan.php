@@ -10,6 +10,7 @@ use App\Http\Kontroler\Kelola\Pelanggan\KampanyePesanKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\LoyaltiKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\PelangganKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\PusatWhatsappKontroler;
+use App\Http\Kontroler\Kelola\Pelanggan\SaldoWhatsappKontroler;
 use App\Http\Kontroler\Kelola\Pelanggan\SesiPelangganKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
@@ -60,17 +61,24 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::PelangganLihat)]
         Route::post('/pemakaian-sesi/{pemakaianSesi}/batal', [SesiPelangganKontroler::class, 'BatalPemakaian'])->where('pemakaianSesi', $ulid)->name('kelola.pelanggan.pemakaian-sesi.batal');
     });
 
-    Route::middleware($izin(IzinTenant::PelangganKelola))->group(function () use ($ulid): void {
+    Route::middleware($izin(IzinTenant::PelangganKelola))->group(function () use ($ulid, $izin): void {
         Route::get('/buat', [PelangganKontroler::class, 'Buat'])->name('kelola.pelanggan.buat');
         // v3.36: impor (periksa → terapkan) & ekspor pelanggan; data pribadi, jadi `pelanggan.kelola`.
         // D-299: Pusat WhatsApp, nomor pengirim per outlet (pindai QR). Semua rute hilang bila konsol belum mengaktifkan WhatsApp.
-        Route::middleware(WhatsappHanyaBilaTersedia::class)->prefix('whatsapp')->group(function () use ($ulid): void {
+        Route::middleware(WhatsappHanyaBilaTersedia::class)->prefix('whatsapp')->group(function () use ($ulid, $izin): void {
             Route::get('/', [PusatWhatsappKontroler::class, 'Tampilkan'])->name('kelola.pelanggan.whatsapp');
             Route::post('/nomor', [PusatWhatsappKontroler::class, 'Tambah'])->middleware('throttle:20,1')->name('kelola.pelanggan.whatsapp.nomor.tambah');
             Route::put('/nomor/{uuidNomor}', [PusatWhatsappKontroler::class, 'Ubah'])->where('uuidNomor', $ulid)->name('kelola.pelanggan.whatsapp.nomor.ubah');
             Route::delete('/nomor/{uuidNomor}', [PusatWhatsappKontroler::class, 'Hapus'])->where('uuidNomor', $ulid)->name('kelola.pelanggan.whatsapp.nomor.hapus');
             Route::post('/nomor/{uuidNomor}/qr', [PusatWhatsappKontroler::class, 'MintaQr'])->where('uuidNomor', $ulid)->middleware('throttle:30,1')->name('kelola.pelanggan.whatsapp.nomor.qr');
             Route::post('/nomor/{uuidNomor}/status', [PusatWhatsappKontroler::class, 'Status'])->where('uuidNomor', $ulid)->middleware('throttle:60,1')->name('kelola.pelanggan.whatsapp.nomor.status');
+            // D-300: saldo WhatsApp. Uang, jadi hanya Owner/Admin (`integrasi.api.kelola`).
+            Route::middleware($izin(IzinTenant::IntegrasiApiKelola))->prefix('saldo')->group(function (): void {
+                Route::post('/top-up', [SaldoWhatsappKontroler::class, 'TopUp'])->middleware('throttle:10,1')->name('kelola.pelanggan.whatsapp.saldo.top-up');
+                Route::post('/alokasi/kode', [SaldoWhatsappKontroler::class, 'MintaKode'])->middleware('throttle:10,1')->name('kelola.pelanggan.whatsapp.saldo.kode');
+                Route::post('/alokasi', [SaldoWhatsappKontroler::class, 'Alokasikan'])->middleware('throttle:20,1')->name('kelola.pelanggan.whatsapp.saldo.alokasi');
+                Route::post('/tarik', [SaldoWhatsappKontroler::class, 'Tarik'])->name('kelola.pelanggan.whatsapp.saldo.tarik');
+            });
             Route::put('/pesan-otomatis/{jenis}', [PusatWhatsappKontroler::class, 'UbahPesanOtomatis'])->where('jenis', '[A-Za-z]{3,40}')->name('kelola.pelanggan.whatsapp.pesan-otomatis');
             Route::post('/penerima', [PusatWhatsappKontroler::class, 'TambahPenerima'])->middleware('throttle:20,1')->name('kelola.pelanggan.whatsapp.penerima.tambah');
             Route::delete('/penerima/{uuidPenerima}', [PusatWhatsappKontroler::class, 'HapusPenerima'])->where('uuidPenerima', $ulid)->name('kelola.pelanggan.whatsapp.penerima.hapus');

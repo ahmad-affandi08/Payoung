@@ -8,6 +8,7 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Aksi\TerimaNotifikasiTopUpWhatsapp;
 use App\Domain\Integrasi\Billing\NotifikasiBilling;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
@@ -46,6 +47,7 @@ final class TerimaNotifikasiBillingLangganan
         private readonly KonteksTenant $konteks,
         private readonly PelunasTagihanLangganan $pelunas,
         private readonly PencatatAudit $audit,
+        private readonly TerimaNotifikasiTopUpWhatsapp $topUpWhatsapp,
     ) {}
 
     /** @return bool `false` = notifikasi tidak dikenal atau tidak bisa diproses; tetap dijawab 200 agar tidak diulang. */
@@ -57,6 +59,11 @@ final class TerimaNotifikasiBillingLangganan
         // tertangkap test: pemilik yang menekan "Bayar online" ikut tercatat di audit notifikasi webhook.
         $this->audit->AturKonteks(null, null, null);
         $awal = PembayaranLangganan::query()->where('RefGateway', $notifikasi->nomorPesanan)->first();
+
+        // D-300: nomor pesanan yang bukan pembayaran langganan bisa milik top-up saldo WhatsApp (jalur gerbang yang sama).
+        if ($awal === null && $this->topUpWhatsapp->Jalankan($notifikasi)) {
+            return true;
+        }
 
         if ($awal === null || $awal->Metode !== MetodePembayaranLangganan::Gateway) {
             Log::warning('Notifikasi gerbang billing tanpa pembayaran yang cocok.', ['NomorPesanan' => $notifikasi->nomorPesanan, 'Status' => $notifikasi->statusAsli]);

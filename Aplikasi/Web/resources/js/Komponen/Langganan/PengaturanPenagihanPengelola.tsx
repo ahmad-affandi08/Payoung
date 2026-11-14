@@ -9,6 +9,7 @@ import { AmbilGalatUmum, KerangkaForm } from '@/Komponen/Pengelola/Tenant/FormTi
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 
 import { PanelLamaLangganan, type PengaturanLamaLangganan } from './PengaturanLamaLanggananPengelola';
+import { PanelSaldoWhatsapp, type PengaturanSaldoWhatsapp } from './PengaturanSaldoWhatsappPengelola';
 
 export type RekeningTujuan = { Kode: string; NamaBank: string; NomorRekening: string; AtasNama: string };
 
@@ -20,6 +21,7 @@ export type PengaturanPenagihan = {
     RekeningDariKonsol: boolean;
     LamaLangganan: PengaturanLamaLangganan;
     LamaLanggananDariKonsol: boolean;
+    SaldoWhatsapp?: PengaturanSaldoWhatsapp;
 };
 
 const MAKS_REKENING = 5;
@@ -92,6 +94,10 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
                 dariKonsol={pengaturan.LamaLanggananDariKonsol}
                 boleh={pengaturan.Boleh}
             />
+
+            {pengaturan.SaldoWhatsapp ? (
+                <PanelSaldoWhatsapp pengaturan={pengaturan.SaldoWhatsapp} boleh={pengaturan.Boleh} />
+            ) : null}
 
             {dialog === 'pkp' ? <FormUbahPkp pkp={pengaturan.PlatformPkp} saatSelesai={Tutup} /> : null}
             {dialog === 'rekening' ? <FormUbahRekening rekening={pengaturan.Rekening} saatSelesai={Tutup} /> : null}

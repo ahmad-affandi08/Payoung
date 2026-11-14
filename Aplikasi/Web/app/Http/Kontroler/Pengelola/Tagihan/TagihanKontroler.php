@@ -18,6 +18,7 @@ use App\Domain\Tenant\Enum\StatusTagihanLangganan;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Layanan\PengaturanLamaLangganan;
 use App\Domain\Tenant\Layanan\PengaturanPenagihanPlatform;
+use App\Domain\Tenant\Layanan\PengaturanSaldoWhatsapp;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Kontroler\Pengelola\PelakuPengelola;
@@ -40,7 +41,7 @@ final class TagihanKontroler extends Kontroler
 {
     use PelakuPengelola;
 
-    public function __construct(private readonly DaftarTagihanPlatform $kueri, private readonly BatasRefundLangganan $batasRefund, private readonly PengaturanPenagihanPlatform $pengaturan, private readonly PengaturanLamaLangganan $lamaLangganan) {}
+    public function __construct(private readonly DaftarTagihanPlatform $kueri, private readonly BatasRefundLangganan $batasRefund, private readonly PengaturanPenagihanPlatform $pengaturan, private readonly PengaturanLamaLangganan $lamaLangganan, private readonly PengaturanSaldoWhatsapp $saldoWhatsapp) {}
 
     public function Daftar(Request $permintaan): Response|JsonResponse
     {
@@ -60,6 +61,10 @@ final class TagihanKontroler extends Kontroler
                 'RekeningDariKonsol' => $this->pengaturan->RekeningDariKonsol(),
                 'LamaLangganan' => $this->lamaLangganan->Ambil(),
                 'LamaLanggananDariKonsol' => $this->lamaLangganan->DariKonsol(),
+                'SaldoWhatsapp' => [
+                    'HargaPerPesan' => $this->saldoWhatsapp->HargaPerPesan()->KeString(),
+                    'TopUpMinimal' => $this->saldoWhatsapp->TopUpMinimal()->KeString(),
+                ],
             ],
             'BolehSetujuiRefund' => $this->AmbilPelaku()->PunyaIzin(IzinPengelola::TagihanRefundSetujui),
             'OpsiStatus' => array_map(fn (StatusTagihanLangganan $pilihan): array => ['Nilai' => $pilihan->value, 'Label' => $pilihan->AmbilLabel()], StatusTagihanLangganan::cases()),

@@ -567,6 +567,11 @@ final class KamusPeristiwaAudit
         'rilis.versi-minimum.atur' => 'Versi minimum aplikasi diatur',
         'rilis.versi-minimum.batal' => 'Versi minimum aplikasi dibatalkan',
 
+        'saldo-whatsapp.alokasi' => 'Kredit broadcast WhatsApp dialokasikan ke outlet',
+        'saldo-whatsapp.tarik' => 'Kredit broadcast WhatsApp outlet ditarik ke saldo utama',
+        'saldo-whatsapp.top-up-lunas' => 'Isi saldo WhatsApp lunas',
+        'saldo-whatsapp.top-up-mulai' => 'Isi saldo WhatsApp dimulai',
+
         'satuan.buat' => 'Satuan dibuat',
         'satuan.hapus' => 'Satuan dihapus',
         'satuan.tambah-template' => 'Satuan ditambahkan dari template',
@@ -639,6 +644,7 @@ final class KamusPeristiwaAudit
         'tagihan.refund.setuju' => 'Pengembalian dana tagihan disetujui',
         'tagihan.refund.tolak' => 'Pengembalian dana tagihan ditolak',
         'tagihan.rekening-tujuan.ubah' => 'Rekening tujuan transfer diubah',
+        'tagihan.saldo-whatsapp.ubah' => 'Harga broadcast dan minimal isi saldo WhatsApp diubah',
 
         'tagihan-qris.batal' => 'Tagihan qris dibatalkan',
         'tagihan-qris.buat' => 'Tagihan qris dibuat',

@@ -122,6 +122,8 @@ Schedule::command('laporan:kirim-insight-mingguan')->weeklyOn(1, '07:15')->timez
 
 // D-299: periksa sambungan nomor pengirim WhatsApp tenant (terputus = ditandai dan dimatikan).
 Schedule::command('whatsapp:periksa-sambungan')->everyFifteenMinutes()->withoutOverlapping(14)->runInBackground();
+// D-300: jalur cadangan webhook untuk isi saldo WhatsApp yang masih menunggu.
+Schedule::command('whatsapp:rekonsiliasi-topup')->everyFifteenMinutes()->withoutOverlapping(14)->runInBackground();
 
 // D-299 tahap 3: penjualan per jam ke penerima laporan WhatsApp outlet (09.00 sampai 21.00 waktu outlet).
 Schedule::command('whatsapp:kirim-penjualan-per-jam')->hourlyAt(5)->withoutOverlapping(50)->runInBackground();

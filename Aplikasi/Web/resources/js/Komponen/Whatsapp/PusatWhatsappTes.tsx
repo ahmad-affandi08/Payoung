@@ -10,6 +10,24 @@ vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/Tiruan
 /* D-299 tahap 1: Pusat WhatsApp menampilkan nomor pengirim per outlet, tanpa isian token atau templat. */
 
 const props: PropsHalamanPusatWhatsapp = {
+    Saldo: {
+        Berbayar: true,
+        HargaPerPesan: '150.00',
+        TopUpMinimal: '10000.00',
+        TopUpTersedia: true,
+        SaldoUtama: '50000.00',
+        KreditOutlet: [{ UuidOutlet: '01K5OUTLET0000000000000AA1', NamaOutlet: 'Cabang Solo Baru', Saldo: '20000.00' }],
+        TopUp: [
+            {
+                Uuid: '01K5TOPUP00000000000000AA1',
+                Jumlah: '50000.00',
+                Status: 'Lunas',
+                LabelStatus: 'Lunas',
+                DibuatPada: null,
+            },
+        ],
+        Mutasi: [],
+    },
     PesanOtomatis: [
         {
             Kunci: 'PoinBertambah',
@@ -132,5 +150,34 @@ describe('D-299 Pusat WhatsApp', () => {
 
         expect(screen.getByText('Layanan nomor pengirim belum siap')).toBeTruthy();
         expect((screen.getByRole('button', { name: 'Tambah nomor' }) as HTMLButtonElement).disabled).toBe(true);
+    });
+    it('tab Saldo menampilkan saldo utama, kredit outlet, dan isi saldo mengirim jumlah ke server', () => {
+        RenderUji(<HalamanPusatWhatsapp {...props} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'Saldo' }));
+
+        expect(screen.getAllByText('Rp 50.000').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Rp 20.000').length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/memotong saldo Rp 150 per pesan/).length).toBeGreaterThan(0);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Isi saldo' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Lanjut ke pembayaran' }));
+
+        expect(kirimanForm.at(-1)).toMatchObject({
+            url: '/kelola/pelanggan/whatsapp/saldo/top-up',
+            data: { Jumlah: '10000' },
+        });
+    });
+
+    it('tab Saldo: tombol isi saldo nonaktif bila pembayaran belum tersedia dan broadcast gratis dijelaskan', () => {
+        RenderUji(
+            <HalamanPusatWhatsapp
+                {...props}
+                Saldo={{ ...props.Saldo, TopUpTersedia: false, Berbayar: false, HargaPerPesan: '0.00' }}
+            />,
+        );
+        fireEvent.click(screen.getByRole('tab', { name: 'Saldo' }));
+
+        expect((screen.getByRole('button', { name: 'Isi saldo' }) as HTMLButtonElement).disabled).toBe(true);
+        expect(screen.getAllByText(/saat ini gratis/).length).toBeGreaterThan(0);
     });
 });

@@ -88,21 +88,21 @@ final class PembuatPengirimWhatsapp
     /** Pengirim dari nomor pengirim terdaftar (pindai QR) yang siap kirim dan melayani [fungsi]; null bila tidak ada. */
     public function AmbilNomorPengirim(?int $idOutlet, FungsiNomorWhatsapp $fungsi): ?PengirimWhatsapp
     {
-        $kandidat = NomorPengirimWhatsapp::query()->where('Aktif', true)->where('Status', 'Terhubung')->orderBy('Id')->get()
+        $dipilih = $this->PilihNomorPengirim($idOutlet, $fungsi);
+
+        return $dipilih === null || $dipilih->TokenPerangkat === null ? null : $this->Buat($dipilih->Penyedia, [], ['Token' => $dipilih->TokenPerangkat]);
+    }
+
+    /** Nomor pengirim terdaftar yang dipilih untuk [fungsi]: tingkat outlet/usaha dulu, lalu fungsi persis atas "Umum". */
+    public function PilihNomorPengirim(?int $idOutlet, FungsiNomorWhatsapp $fungsi): ?NomorPengirimWhatsapp
+    {
+        return NomorPengirimWhatsapp::query()->where('Aktif', true)->where('Status', 'Terhubung')->orderBy('Id')->get()
             ->filter(fn (NomorPengirimWhatsapp $nomor): bool => $nomor->SiapKirim() && $nomor->Fungsi->Melayani($fungsi))
             ->sortBy(fn (NomorPengirimWhatsapp $nomor): int => match (true) {
                 $idOutlet !== null && $nomor->IdOutlet === $idOutlet => 0,
                 $nomor->IdOutlet === null => 2,
                 default => 4,
-            } + ($nomor->Fungsi === $fungsi ? 0 : 1))->values();
-        // Tingkat outlet/usaha dulu, di tingkat yang sama nomor berfungsi persis didahulukan atas nomor "Umum".
-        $dipilih = $kandidat->first();
-
-        if ($dipilih === null || $dipilih->TokenPerangkat === null) {
-            return null;
-        }
-
-        return $this->Buat($dipilih->Penyedia, [], ['Token' => $dipilih->TokenPerangkat]);
+            } + ($nomor->Fungsi === $fungsi ? 0 : 1))->values()->first();
     }
 
     /** Nomor Payoung apa adanya, tanpa meteran: pesan Payoung ke pemilik, uji koneksi, dan tanpa konteks tenant. */

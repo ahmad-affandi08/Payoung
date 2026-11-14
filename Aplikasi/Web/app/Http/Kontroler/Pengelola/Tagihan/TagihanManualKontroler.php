@@ -12,6 +12,7 @@ use App\Domain\Pengelola\Tagihan\Aksi\SimpanRekeningTujuanPlatform;
 use App\Domain\Pengelola\Tagihan\Aksi\TerbitkanTagihanManualLangganan;
 use App\Domain\Pengelola\Tagihan\Aksi\UbahBatasRefundLangganan;
 use App\Domain\Pengelola\Tagihan\Aksi\UbahLamaLangganan;
+use App\Domain\Pengelola\Tagihan\Aksi\UbahPengaturanSaldoWhatsapp;
 use App\Domain\Pengelola\Tagihan\Aksi\UbahStatusPkpPlatform;
 use App\Domain\Tenant\Enum\StatusRefundLangganan;
 use App\Domain\Tenant\Model\Tenant;
@@ -24,6 +25,7 @@ use App\Http\Permintaan\Pengelola\Tagihan\SimpanRekeningTujuanPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\TerbitkanTagihanManualPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\UbahBatasRefundPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\UbahLamaLanggananPermintaan;
+use App\Http\Permintaan\Pengelola\Tagihan\UbahPengaturanSaldoWhatsappPermintaan;
 use App\Http\Permintaan\Pengelola\Tagihan\UbahStatusPkpPermintaan;
 use Illuminate\Http\RedirectResponse;
 
@@ -94,6 +96,14 @@ final class TagihanManualKontroler extends Kontroler
         $baru = $ubah->Jalankan($this->AmbilPelaku(), $permintaan->string('Batas')->toString(), $permintaan->AmbilAlasan());
 
         return back()->with('Kilat', "Batas refund tanpa persetujuan kedua sekarang {$baru->FormatRupiah()}. Berlaku untuk pengajuan berikutnya.");
+    }
+
+    /** D-300: Super Admin mengatur harga per pesan broadcast WhatsApp dan minimal isi saldo. */
+    public function UbahSaldoWhatsapp(UbahPengaturanSaldoWhatsappPermintaan $permintaan, UbahPengaturanSaldoWhatsapp $ubah): RedirectResponse
+    {
+        $ubah->Jalankan($this->AmbilPelaku(), $permintaan->string('HargaPerPesan')->toString(), $permintaan->string('TopUpMinimal')->toString(), $permintaan->AmbilAlasan());
+
+        return back()->with('Kilat', 'Pengaturan saldo WhatsApp disimpan. Berlaku untuk pesan dan isi saldo berikutnya.');
     }
 
     /** D-114: Super Admin mengatur rekening tujuan transfer dari konsol. */

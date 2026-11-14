@@ -430,6 +430,7 @@ Route::middleware(['auth:pengelola', PastikanPenggunaPengelola::class, WajibGant
                 Route::put('/tagihan/pengaturan/rekening-tujuan', [TagihanManualKontroler::class, 'SimpanRekeningTujuan'])->name('pengelola.tagihan.rekening-tujuan.simpan');
                 Route::put('/tagihan/pengaturan/pkp', [TagihanManualKontroler::class, 'UbahStatusPkp'])->name('pengelola.tagihan.pkp.ubah');
                 Route::put('/tagihan/pengaturan/lama-langganan', [TagihanManualKontroler::class, 'UbahLamaLangganan'])->name('pengelola.tagihan.lama-langganan.ubah');
+                Route::put('/tagihan/pengaturan/saldo-whatsapp', [TagihanManualKontroler::class, 'UbahSaldoWhatsapp'])->name('pengelola.tagihan.saldo-whatsapp.ubah');
             });
             Route::middleware([$izin(IzinPengelola::TagihanRefundSetujui), WajibDuaFaktorBaru::class])->group(function (): void {
                 Route::post('/tagihan/refund/{refund}/setujui', [TagihanManualKontroler::class, 'SetujuiRefund'])->name('pengelola.tagihan.refund.setujui');

@@ -9,6 +9,7 @@ use App\Domain\Integrasi\Enum\FungsiNomorWhatsapp;
 use App\Domain\Integrasi\Whatsapp\HasilKirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PembuatPengirimWhatsapp;
 use App\Domain\Integrasi\Whatsapp\PesanWhatsapp;
+use App\Domain\Integrasi\Whatsapp\Saldo\BukuSaldoWhatsapp;
 use App\Domain\Organisasi\Kueri\NamaTampilUsaha;
 use App\Domain\Pelanggan\Enum\KanalKampanye;
 use App\Domain\Pelanggan\Enum\StatusKampanye;
@@ -19,6 +20,7 @@ use App\Domain\Pelanggan\Model\Pelanggan;
 use App\Domain\Pelanggan\Model\PenerimaKampanye;
 use App\Domain\Pelanggan\Surel\PesanKampanyePelanggan;
 use App\Domain\Tenant\Kueri\ProfilTenant;
+use App\Domain\Tenant\Layanan\PengaturanSaldoWhatsapp;
 use Carbon\CarbonImmutable;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -46,6 +48,8 @@ final class PengirimKampanyePesan
     public function __construct(
         private readonly PembuatPengirimWhatsapp $whatsapp,
         private readonly ProfilTenant $profil,
+        private readonly BukuSaldoWhatsapp $saldo,
+        private readonly PengaturanSaldoWhatsapp $hargaPesan,
     ) {}
 
     /** @return int|null detik sampai giliran berikutnya; null bila kampanye selesai/berhenti. */
@@ -157,11 +161,33 @@ final class PengirimKampanyePesan
         }
 
         $penerima->Percobaan++;
+
+        // D-300: broadcast WhatsApp berbayar dipotong dari saldo (kredit outlet pengirim bila dialokasikan) sebelum dikirim;
+        // saldo tidak cukup = penerima dilewati, pesan gagal = potongan dikembalikan.
+        $pemakaian = null;
+
+        if ($kampanye->Kanal === KanalKampanye::Whatsapp && $this->hargaPesan->BroadcastBerbayar()) {
+            $nomorPengirim = $this->whatsapp->PilihNomorPengirim(null, FungsiNomorWhatsapp::Broadcast);
+            $pemakaian = $this->saldo->Pakai($nomorPengirim?->IdOutlet, $this->hargaPesan->HargaPerPesan(), "K{$penerima->Id}-{$penerima->Percobaan}", 'Broadcast '.$kampanye->Nama);
+
+            if ($pemakaian === null) {
+                $penerima->UbahStatus(StatusPenerimaKampanye::Dilewati);
+                $penerima->PesanGalat = 'Saldo WhatsApp tidak cukup. Isi saldo lalu buat kampanye ulang untuk penerima ini.';
+                $penerima->save();
+
+                return;
+            }
+        }
+
         $tautan = TautanBerhentiLangganan::Buat($kampanye->IdTenant, $pelanggan->Uuid);
         $teks = self::SusunTeks($kampanye->Isi, $pelanggan->Nama, $namaUsaha, $tautan);
         $hasil = $kampanye->Kanal === KanalKampanye::Whatsapp
             ? $this->KirimWhatsapp($penerima, $kampanye, $pelanggan->Nama, $namaUsaha, $tautan, $teks)
             : $this->KirimEmail($penerima, $kampanye, $namaUsaha, $tautan, $teks);
+
+        if (! $hasil->berhasil && $pemakaian !== null) {
+            $this->saldo->Kembalikan($pemakaian, "R{$penerima->Id}-{$penerima->Percobaan}");
+        }
 
         if ($hasil->berhasil) {
             $penerima->UbahStatus(StatusPenerimaKampanye::Terkirim);

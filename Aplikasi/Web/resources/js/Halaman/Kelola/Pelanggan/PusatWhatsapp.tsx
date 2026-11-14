@@ -15,6 +15,7 @@ import DialogKonfirmasi from '@/Komponen/Tindakan/DialogKonfirmasi';
 import { ItemAksiBaris } from '@/Komponen/Tindakan/MenuAksiBaris';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import DialogPindaiQr from '@/Komponen/Whatsapp/DialogPindaiQr';
+import PanelSaldoWhatsapp from '@/Komponen/Whatsapp/PanelSaldoWhatsapp';
 import { Switch } from '@/Komponen/Ui/switch';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -37,9 +38,10 @@ const jenisStatus: Record<StatusNomorWhatsapp, 'sukses' | 'peringatan' | 'bahaya
  * D-299: Pusat WhatsApp. Tahap 1: nomor pengirim per outlet. Tenant mendaftarkan nomor, memindai QR dengan WhatsApp di
  * ponsel, dan memilih untuk apa nomor itu dipakai. Tidak ada token, ID nomor, atau nama templat yang diisi tenant.
  */
-type KunciTab = 'Nomor' | 'Pesan' | 'Laporan' | 'Riwayat';
+type KunciTab = 'Nomor' | 'Pesan' | 'Laporan' | 'Saldo' | 'Riwayat';
 
 export default function HalamanPusatWhatsapp({
+    Saldo,
     PesanOtomatis,
     Penerima,
     MaksPenerima,
@@ -55,7 +57,11 @@ export default function HalamanPusatWhatsapp({
     const [ubah, AturUbah] = useState<NomorPengirimWhatsapp | null>(null);
     const [hapus, AturHapus] = useState<NomorPengirimWhatsapp | null>(null);
     const [pindaiBaru, AturPindaiBaru] = useState(false);
-    const [tab, AturTab] = useState<KunciTab>('Nomor');
+    const [tab, AturTab] = useState<KunciTab>(() =>
+        typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'saldo'
+            ? 'Saldo'
+            : 'Nomor',
+    );
 
     // Setelah nomor ditambah, langsung buka dialog pindai untuk nomor yang menunggu.
     const menungguPindai = pindaiBaru ? Nomor.find((n) => n.Status === 'MenungguPindai') : undefined;
@@ -127,6 +133,7 @@ export default function HalamanPusatWhatsapp({
                     { Kunci: 'Nomor', Label: 'Nomor pengirim' },
                     { Kunci: 'Pesan', Label: 'Pesan otomatis' },
                     { Kunci: 'Laporan', Label: 'Laporan karyawan' },
+                    { Kunci: 'Saldo', Label: 'Saldo' },
                     { Kunci: 'Riwayat', Label: 'Riwayat' },
                 ]}
                 panel={{
@@ -209,6 +216,7 @@ export default function HalamanPusatWhatsapp({
                     Laporan: (
                         <PanelLaporan penerima={Penerima} outlet={Outlet} maks={MaksPenerima} pesan={PesanOtomatis} />
                     ),
+                    Saldo: <PanelSaldoWhatsapp saldo={Saldo} outlet={Outlet} />,
                     Riwayat: <PanelRiwayat riwayat={Riwayat} />,
                 }}
             />

@@ -44,7 +44,27 @@ export type RiwayatPesanWhatsapp = {
     DibuatPada: string | null;
 };
 
+export type SaldoWhatsapp = {
+    Berbayar: boolean;
+    HargaPerPesan: string;
+    TopUpMinimal: string;
+    TopUpTersedia: boolean;
+    SaldoUtama: string;
+    KreditOutlet: { UuidOutlet: string; NamaOutlet: string; Saldo: string }[];
+    TopUp: { Uuid: string; Jumlah: string; Status: string; LabelStatus: string; DibuatPada: string | null }[];
+    Mutasi: {
+        Id: number;
+        Jenis: string;
+        Jumlah: string;
+        SaldoSetelah: string;
+        Kolam: string;
+        Keterangan: string | null;
+        DibuatPada: string | null;
+    }[];
+};
+
 export type PropsHalamanPusatWhatsapp = {
+    Saldo: SaldoWhatsapp;
     PesanOtomatis: PesanOtomatisWhatsapp[];
     Penerima: PenerimaLaporanWhatsapp[];
     MaksPenerima: number;
