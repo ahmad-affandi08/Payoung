@@ -7,6 +7,7 @@ import 'package:kasir/Aplikasi/Penyedia.dart';
 import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Domain/Penjualan/Keranjang.dart';
 import 'package:kasir/Domain/Perangkat/PengaturanPerangkat.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/BilahAtasRuangKerja.dart';
 import 'package:kasir/Tampilan/RuangKerja/IsiAreaKerja.dart';
 import 'package:kasir/Tampilan/RuangKerja/LayarKunci.dart';
@@ -432,6 +433,7 @@ void main() {
     await tester.tap(find.text('Pengaturan'));
     await Tunggu(tester);
     expect(find.text('Perbarui data kasir'), findsOneWidget);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.tampilan);
 
     double Skala() => MediaQuery.textScalerOf(tester.element(find.text('Ukuran tampilan'))).scale(100) / 100;
     expect(Skala(), closeTo(1, 0.001));
@@ -445,6 +447,7 @@ void main() {
     await Tunggu(tester);
     expect(await BacaPengaturan(tester, u, KunciPengaturan.posisiKeranjang), 'Kiri');
 
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.keamanan);
     await tester.tap(find.text('15 menit'));
     await Tunggu(tester);
     await tester.tap(find.text('10 menit').last);

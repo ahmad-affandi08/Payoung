@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -46,6 +47,7 @@ void main() {
 
       await tester.tap(NavPengaturan().last);
       await Tunggu(tester);
+      await BukaKategoriPengaturan(tester, KategoriPengaturan.keamanan);
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('ModeLatihan')),
         300,

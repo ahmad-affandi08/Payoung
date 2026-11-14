@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 import 'package:kasir/Domain/Diagnostik/LogLokal.dart';
 import 'package:kasir/Tampilan/LayarPengaturan.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 
 import '../Pendukung/KatalogUji.dart';
@@ -78,6 +79,7 @@ void main() {
 
     await tester.tap(NavPengaturan().last);
     await Tunggu(tester);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.bantuan);
     final daftarPengaturan = find.descendant(of: find.byType(LayarPengaturan), matching: find.byType(Scrollable)).first;
     Future<void> Tampakkan(Finder finder) async {
       await tester.scrollUntilVisible(finder, 300, scrollable: daftarPengaturan);

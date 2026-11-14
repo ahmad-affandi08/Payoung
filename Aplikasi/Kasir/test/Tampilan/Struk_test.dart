@@ -8,6 +8,7 @@ import 'package:kasir/Domain/Dapur/LayananTiketDapur.dart';
 import 'package:kasir/Domain/Struk/PemindaiPrinter.dart';
 import 'package:kasir/Domain/Struk/ProfilPrinter.dart';
 import 'package:kasir/Tampilan/LayarPengaturan.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:kasir/Tampilan/Struk/BagianPrinter.dart';
 import 'package:sistem_desain/SistemDesain.dart';
@@ -93,6 +94,7 @@ void main() {
     ) async {
       final u = await Masuk(tester, ukuran);
       await Ketuk(tester, NavPengaturan().last);
+      await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Atur printer'));
 
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Simpan printer'));
@@ -203,6 +205,7 @@ void main() {
         PrinterDitemukan(jenis: JenisTransport.BluetoothKlasik, alamat: '00:11:22:33:44:55', nama: 'MTP-II'),
       ];
       await Ketuk(tester, NavPengaturan().last);
+      await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Atur printer'));
       await Ketuk(tester, find.text('Bluetooth'));
       expect(find.widgetWithText(TextField, 'Alamat IP printer'), findsNothing);
@@ -240,6 +243,7 @@ void main() {
         PrinterDitemukan(jenis: JenisTransport.BluetoothKlasik, alamat: '66:22:11:AA:BB:DD', nama: 'Printer Dapur'),
       ];
       await Ketuk(tester, NavPengaturan().last);
+      await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
       await GulirKe(tester, find.widgetWithText(OutlinedButton, 'Tambah printer'));
       // Satu daftar: printer struk yang sudah ada tampil dengan lencana kegunaannya.
       expect(find.text('Struk kasir'), findsOneWidget);
@@ -280,6 +284,7 @@ void main() {
   ) async {
     final u = await Masuk(tester, const Size(1280, 900), meja: true);
     await Ketuk(tester, NavPengaturan().last);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Atur printer'));
     await tester.enterText(find.widgetWithText(TextField, 'Alamat IP printer'), '192.168.1.70');
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Simpan printer'));
@@ -298,6 +303,7 @@ void main() {
   testWidgets('D-67 printer harus punya kegunaan: tanpa struk dan tanpa stasiun tidak bisa disimpan', (tester) async {
     final u = await Masuk(tester, const Size(1280, 900), meja: true);
     await Ketuk(tester, NavPengaturan().last);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Atur printer'));
     await tester.enterText(find.widgetWithText(TextField, 'Alamat IP printer'), '192.168.1.60');
     // Printer pertama = satu printer untuk semuanya: struk menyala dan semua stasiun terpilih.
@@ -319,6 +325,7 @@ void main() {
   ) async {
     final u = await Masuk(tester, const Size(1280, 900));
     await Ketuk(tester, NavPengaturan().last);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Atur printer'));
     await Ketuk(tester, find.text('Bluetooth LE'));
 
@@ -353,6 +360,7 @@ void main() {
     ) async {
       final u = await Masuk(tester, ukuran, printer: const ProfilPrinter(alamat: '192.168.1.50'));
       await Ketuk(tester, NavPengaturan().last);
+      await BukaKategoriPengaturan(tester, KategoriPengaturan.printer);
       // Bagian uji perangkat berada di bawah printer struk: gulir turun (daftar Pengaturan dibangun lazy).
       await tester.scrollUntilVisible(find.text('Mulai uji perangkat'), 200, scrollable: find.byType(Scrollable).first);
       await tester.pump();

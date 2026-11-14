@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 import 'package:kasir/Domain/Perangkat/LayananLayarPelanggan.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -87,6 +88,7 @@ void main() {
   testWidgets('Pengaturan: pilih layar kedua, tampilkan contoh, matikan (360 dp)', (tester) async {
     final u = await Masuk(tester, const Size(360, 740), mode: ModeLayarPelanggan.mati);
     await Ketuk(tester, NavPengaturan().last);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.tampilan);
     await tester.scrollUntilVisible(
       find.widgetWithText(ChoiceChip, 'Layar kedua / HDMI'),
       300,

@@ -13,6 +13,7 @@ import 'package:mesin_kasir/MesinKasir.dart' show KanalPenjualan, Uang;
 import 'package:path_provider/path_provider.dart';
 import 'package:sistem_desain/SistemDesain.dart' show TokenWarna;
 
+import 'VersiAplikasi.dart';
 import '../Data/Printer/InfoPerangkatPlatform.dart';
 import '../Data/CacheGambarProduk.dart';
 import '../Data/KameraBuktiPlatform.dart';
@@ -174,7 +175,7 @@ final penyediaKlienPos = Provider<KlienPos>((ref) {
   final rahasia = ref.watch(penyediaRahasia);
   return KlienPos(
     alamatDasar: ref.watch(penyediaLingkungan).AmbilAlamatServer(tersimpan: ref.watch(penyediaAlamatServer)),
-    versiAplikasi: '1.0.2',
+    versiAplikasi: VersiAplikasi.versi,
     ambilToken: () => rahasia.Baca(PenyimpanRahasia.kunciToken),
     klien: ref.watch(penyediaKlienHttp),
     // P-10 BR-P10.2: server tahu perangkat mana yang masih menyimpan transaksi belum terkirim.

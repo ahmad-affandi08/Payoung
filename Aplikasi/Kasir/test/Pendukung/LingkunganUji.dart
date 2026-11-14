@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:kasir/Data/BasisData/BasisDataKasir.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Data/PenyimpanRahasia.dart';
 import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Data/RepositoriKatalog.dart';
@@ -49,6 +50,16 @@ import 'KatalogUji.dart';
 import 'PrinterTiruan.dart';
 
 /// Item navigasi Pengaturan di lebar mana pun: "Pengaturan" di rel (≥ 600dp), "Atur" di bilah bawah HP.
+/// D-301: Pengaturan dibagi enam kategori. Membuka satu kategori (di layar lebar Perangkat terbuka lebih dulu; di HP
+/// daftar kategori tampil dulu). Baris kategori sama di kedua bentuk, jadi satu ketukan cukup.
+Future<void> BukaKategoriPengaturan(WidgetTester tester, KategoriPengaturan kategori) async {
+  final baris = find.byKey(ValueKey('Kategori-${kategori.name}'));
+  await tester.ensureVisible(baris);
+  await tester.tap(baris);
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
 Finder NavPengaturan() => find.byWidgetPredicate((w) => w is Text && (w.data == 'Pengaturan' || w.data == 'Atur'));
 
 /// Vektor PIN bersama PHP & Dart: staf uji memakai PIN, garam, dan verifier terbungkus dari sini sehingga verifikasi

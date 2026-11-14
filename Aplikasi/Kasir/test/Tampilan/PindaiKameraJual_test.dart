@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 import 'package:kasir/Aplikasi/Penyedia.dart';
 import 'package:kasir/Domain/Perangkat/PemindaiKamera.dart';
+import 'package:kasir/Tampilan/Pengaturan/KategoriPengaturan.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
@@ -245,6 +246,7 @@ void main() {
     final (u, pabrik) = await Masuk(tester);
     await tester.tap(find.text('Pengaturan'));
     await Tunggu(tester);
+    await BukaKategoriPengaturan(tester, KategoriPengaturan.tampilan);
 
     await tester.ensureVisible(find.byKey(const ValueKey('KameraPindai')));
     await tester.tap(find.text('Kamera depan'));
