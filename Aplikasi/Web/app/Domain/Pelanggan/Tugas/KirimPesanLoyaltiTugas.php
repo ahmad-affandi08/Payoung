@@ -56,6 +56,14 @@ final class KirimPesanLoyaltiTugas implements ShouldQueue
         }
     }
 
+    /** 12500 → "12.500" (tanpa number_format, aturan arsitektur D-05). */
+    private static function FormatRibuan(int $nilai): string
+    {
+        $angka = strrev(implode('.', str_split(strrev((string) abs($nilai)), 3)));
+
+        return $nilai < 0 ? "-{$angka}" : $angka;
+    }
+
     /**
      * @return array{0: JenisPesanWhatsapp, 1: Pelanggan, 2: string}|null
      */
@@ -69,8 +77,8 @@ final class KirimPesanLoyaltiTugas implements ShouldQueue
         }
 
         $saldo = (int) MutasiPoin::query()->where('IdPelanggan', $pelanggan->Id)->sum('Poin');
-        $poin = number_format(abs($mutasi->Poin), 0, ',', '.');
-        $total = number_format($saldo, 0, ',', '.');
+        $poin = self::FormatRibuan(abs($mutasi->Poin));
+        $total = self::FormatRibuan($saldo);
 
         return match ($mutasi->Jenis) {
             JenisMutasiPoin::Perolehan => $mutasi->Poin > 0
