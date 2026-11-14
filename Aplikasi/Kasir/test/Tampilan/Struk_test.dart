@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:adaptor_perangkat/AdaptorPerangkat.dart';
 import 'package:inti/Inti.dart';
+import 'package:kasir/Aplikasi/Penyedia.dart';
 import 'package:kasir/Data/RepositoriKasir.dart';
 import 'package:kasir/Domain/Dapur/LayananTiketDapur.dart';
 import 'package:kasir/Domain/Struk/PemindaiPrinter.dart';
@@ -148,7 +150,10 @@ void main() {
     await BayarUangPas(tester, const Size(1280, 900));
     await Tunggu(tester);
     expect(find.textContaining('tidak tersambung'), findsOneWidget);
-    expect(find.text('Printer bermasalah'), findsOneWidget);
+    // D-303: layar berhasil bayar tampil penuh tanpa bilah status, jadi keadaan printer dibaca dari penyedianya.
+    final wadah = ProviderScope.containerOf(tester.element(find.byType(RuangKerja)));
+    expect(wadah.read(penyediaPrinter).keadaan, KeadaanPrinter.Gagal);
+    expect(find.text('Printer bermasalah'), findsNothing);
     expect(find.widgetWithText(OutlinedButton, 'Coba cetak lagi'), findsOneWidget);
     expect(await tester.runAsync(() => u.db.select(u.db.penjualan).get()), hasLength(1));
 
@@ -159,15 +164,16 @@ void main() {
     final (dokumen, lebar) = u.pemindai.sistem.dokumen.single;
     expect(lebar, LebarKertas.Mm58);
     expect(dokumen.baris.whereType<BarisDuaKolom>().map((b) => b.kiri), contains('TOTAL'));
-    expect(find.text('Printer bermasalah'), findsOneWidget);
+    expect(wadah.read(penyediaPrinter).keadaan, KeadaanPrinter.Gagal);
 
     u.printer.galat = null;
     await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Cetak ulang struk'));
     expect(find.text('Struk sudah dicetak.'), findsOneWidget);
-    expect(find.text('Printer siap'), findsOneWidget);
+    expect(wadah.read(penyediaPrinter).keadaan, KeadaanPrinter.Siap);
 
-    // Riwayat: cetak ulang dari daftar transaksi hari ini.
+    // Riwayat: cetak ulang dari daftar transaksi hari ini. Bingkai Ruang Kerja kembali bersama bilah statusnya.
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Transaksi baru'));
+    expect(find.text('Printer siap'), findsOneWidget);
     await Ketuk(tester, find.text('Riwayat').last);
     await Ketuk(tester, find.textContaining('INV/SLB/').first);
     await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Cetak ulang struk'));

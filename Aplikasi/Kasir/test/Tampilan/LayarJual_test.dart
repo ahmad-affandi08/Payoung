@@ -198,9 +198,10 @@ void main() {
       expect((outbox.single['Ringkasan']! as Map<String, Object?>)['TotalAkhir'], '60500.00');
       expect((outbox.single['Ringkasan']! as Map<String, Object?>)['Kembalian'], '39500.00');
       expect((outbox.single['Pembayaran']! as List<Object?>).single, containsPair('Jumlah', '100000.00'));
-      expect(find.text('2 belum terkirim'), findsOneWidget, reason: 'Shift.Buka + Penjualan.Buat menunggu sinkron.');
 
       await Ketuk(tester, find.widgetWithText(FilledButton, 'Transaksi baru'));
+      // D-303: layar berhasil tampil penuh, jadi bilah status baru terlihat lagi setelah Transaksi baru.
+      expect(find.text('2 belum terkirim'), findsOneWidget, reason: 'Shift.Buka + Penjualan.Buat menunggu sinkron.');
       expect(find.byType(PanelTugas), findsNothing);
       expect(find.text('Rp 60.500'), findsNothing, reason: 'Keranjang kosong untuk transaksi baru.');
 

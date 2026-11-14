@@ -192,6 +192,24 @@ class _LayarJualState extends ConsumerState<LayarJual> {
   ({String teks, bool galat})? _pesan;
   bool _memperbarui = false;
 
+  /// Pengatur layar penuh diambil sekali supaya `dispose` tidak memakai `ref`.
+  late final PengaturLayarPenuh _layarPenuh = ref.read(penyediaLayarPenuh.notifier);
+  bool _layarPenuhTerkirim = false;
+
+  /// Layar berhasil bayar tampil penuh: bingkai Ruang Kerja disembunyikan selama layar itu terbuka. Dikirim setelah
+  /// frame karena penyedia tidak boleh diubah saat widget sedang dibangun.
+  void _SinkronkanLayarPenuh(bool penuh) {
+    if (penuh == _layarPenuhTerkirim) {
+      return;
+    }
+    _layarPenuhTerkirim = penuh;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _layarPenuh.Atur(penuh);
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -243,6 +261,11 @@ class _LayarJualState extends ConsumerState<LayarJual> {
     final kunci = _uuidKunciBayar;
     if (kunci != null) {
       unawaited(ref.read(penyediaLayananPesananMeja).LepasKunciBayar(kunci));
+    }
+    if (_layarPenuhTerkirim) {
+      // Bingkai harus kembali bila layar jual dilepas saat layar selesai masih tampil.
+      final pengatur = _layarPenuh;
+      unawaited(Future.microtask(pengatur.Lepas));
     }
     _cari.dispose();
     _fokusCari.dispose();
@@ -2248,6 +2271,7 @@ class _LayarJualState extends ConsumerState<LayarJual> {
 
   @override
   Widget build(BuildContext context) {
+    _SinkronkanLayarPenuh(_panel == _JenisPanel.Selesai && widget.aktif);
     final katalog = ref.watch(penyediaKatalog).value;
     final k = ref.watch(penyediaKonteksPenjualan).value;
     final keranjang = ref.watch(penyediaKeranjangEfektif);

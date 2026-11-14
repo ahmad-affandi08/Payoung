@@ -720,6 +720,8 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     final warna = TokenWarna.AmbilDari(context);
     final lebar = MediaQuery.sizeOf(context).width;
     final pakaiRel = lebar >= RuangKerja.lebarRel;
+    // Layar berhasil bayar menutup seluruh layar: tanpa bilah atas, rel, bilah status, dan navigasi bawah.
+    final penuh = ref.watch(penyediaLayarPenuh);
     final statusDiBilah = lebar >= BilahAtasRuangKerja.lebarStatus;
     // Dihitung sekali: di layar lebar isinya tampil di bawah nama outlet (bilah atas), selain itu di bilah status.
     final itemStatus = _AmbilItemStatus();
@@ -735,45 +737,58 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
     final indeks = item.indexWhere((i) => i.tujuan == _tujuan).clamp(0, item.length - 1);
 
     final bingkai = Scaffold(
+      // Layar penuh berlatar merek: area status bar & indikator home ikut berwarna merek, bukan putih.
+      backgroundColor: penuh ? warna.brand : null,
       // `top: false`: bilah atas yang menangani inset atas sendiri, supaya warna merek ikut mengisi area
       // status bar dan bingkai tidak terpotong garis putih di puncak layar.
       body: SafeArea(
-        top: false,
-        bottom: pakaiRel,
+        top: penuh,
+        bottom: pakaiRel || penuh,
         child: Column(
           children: [
-            BilahAtasRuangKerja(
-              kasir: widget.kasir,
-              saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
-              saatKunci: ref.read(penyediaSesi.notifier).Kunci,
-              status: itemStatus,
-            ),
+            // Setiap anak berkunci supaya area kerja (dan layar Jual di dalamnya) tidak dibangun ulang saat bingkai
+            // disembunyikan atau ditampilkan lagi.
+            if (!penuh)
+              BilahAtasRuangKerja(
+                key: const ValueKey('BilahAtas'),
+                kasir: widget.kasir,
+                saatGantiKasir: () => ref.read(penyediaSesi.notifier).Kunci(gantiKasir: true),
+                saatKunci: ref.read(penyediaSesi.notifier).Kunci,
+                status: itemStatus,
+              ),
             // D-16: di layar lebar status sudah berada di bawah nama outlet pada bilah atas. Di layar yang belum
             // cukup lebar, status menempel sebagai bilah gelap 28dp di bawah bilah atas — bukan pita putih di kaki
             // layar: kaki layar dipakai untuk aksi, dan pita putih di sana terbaca sebagai footer yang memakan ruang
             // kerja.
-            if (!statusDiBilah) BilahStatus(item: itemStatus, gelap: true),
+            if (!penuh && !statusDiBilah)
+              BilahStatus(key: const ValueKey('BilahStatus'), item: itemStatus, gelap: true),
             // P-10 PGL-19: pengumuman & jadwal pemeliharaan dari pengelola platform.
-            if (_konfigurasi case final k? when k.pengumuman.isNotEmpty) BannerPengumuman(pengumuman: k.pengumuman),
+            if (!penuh)
+              if (_konfigurasi case final k? when k.pengumuman.isNotEmpty)
+                BannerPengumuman(key: const ValueKey('BannerPengumuman'), pengumuman: k.pengumuman),
             // K-23: mode latihan selalu terlihat.
-            if (ref.watch(penyediaModeLatihan)) const BannerModeLatihan(),
+            if (!penuh && ref.watch(penyediaModeLatihan)) const BannerModeLatihan(key: ValueKey('BannerLatihan')),
             Expanded(
+              key: const ValueKey('AreaKerjaBingkai'),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (pakaiRel) ...[
+                  if (pakaiRel && !penuh) ...[
                     _BangunRel(item, indeks, lebarPenuh: lebar >= RuangKerja.lebarPanelSamping),
                     VerticalDivider(width: TokenJarak.tebalGaris, thickness: TokenJarak.tebalGaris, color: warna.garis),
                   ],
                   // Batas lukis sendiri: perubahan keranjang tidak melukis ulang bilah atas, rel, dan bilah status.
-                  Expanded(child: RepaintBoundary(child: _BangunAreaKerja(item, indeks, lebar))),
+                  Expanded(
+                    key: const ValueKey('AreaKerja'),
+                    child: RepaintBoundary(child: _BangunAreaKerja(item, indeks, lebar)),
+                  ),
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: pakaiRel
+      bottomNavigationBar: pakaiRel || penuh
           ? null
           : NavigationBarTheme(
               data: TemaNavigasiRuangKerja.BuatTemaBilah(warna, Theme.of(context).textTheme),

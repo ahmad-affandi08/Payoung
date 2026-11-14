@@ -1291,6 +1291,28 @@ class PengaturKonfigurasiAplikasi extends Notifier<KonfigurasiAplikasi?> {
   }
 }
 
+/// D-66 (lanjutan): layar berhasil bayar adalah halaman merek penuh tanpa bilah atas, rel, dan bilah status Ruang Kerja.
+/// `LayarJual` menyalakannya selama layar itu tampil, `RuangKerja` menyembunyikan bingkainya.
+class PengaturLayarPenuh extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void Atur(bool nilai) {
+    if (state != nilai) {
+      state = nilai;
+    }
+  }
+
+  /// Dipakai saat layar jual dilepas: aman dipanggil walau wadah penyedia sudah dibuang.
+  void Lepas() {
+    if (ref.mounted) {
+      state = false;
+    }
+  }
+}
+
+final penyediaLayarPenuh = NotifierProvider<PengaturLayarPenuh, bool>(PengaturLayarPenuh.new);
+
 /// D-301: lama (milidetik) server menjawab pemeriksaan konfigurasi terakhir yang berhasil, ditampilkan di daftar periksa
 /// kesiapan perangkat. Null = belum pernah terukur. Diukur dari permintaan yang memang sudah berjalan, bukan ping baru.
 class PengaturWaktuResponsServer extends Notifier<int?> {

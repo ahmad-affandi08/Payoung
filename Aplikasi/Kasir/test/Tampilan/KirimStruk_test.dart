@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:inti/Inti.dart';
 import 'package:kasir/Domain/GalatKasir.dart';
 import 'package:kasir/Domain/Struk/LayananKirimStruk.dart';
+import 'package:kasir/Tampilan/RuangKerja/BilahAtasRuangKerja.dart';
 import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:kasir/Tampilan/Struk/TombolKirimStruk.dart';
 import 'package:sistem_desain/SistemDesain.dart';
@@ -89,6 +90,10 @@ void main() {
     // D-66: layar berhasil berlatar warna primer merek.
     final latarBerhasil = tester.widget<DecoratedBox>(find.byKey(const ValueKey('LayarBerhasilBayar')));
     expect((latarBerhasil.decoration as BoxDecoration).color, TokenWarna.bawaan.brand);
+    // Layar penuh: bilah atas dan navigasi Ruang Kerja tidak tampil selama layar berhasil terbuka.
+    expect(find.byType(BilahAtasRuangKerja), findsNothing);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(NavigationRail), findsNothing);
     if (!tersedia) {
       return u;
     }
@@ -96,6 +101,22 @@ void main() {
     expect(find.byType(DialogKirimStruk), findsOneWidget);
     return u;
   }
+
+  testWidgets('layar berhasil bayar tampil penuh, bingkai Ruang Kerja kembali setelah Transaksi baru', (tester) async {
+    final u = await BayarTunai(
+      tester,
+      const Size(1280, 900),
+      (p) async => throw http.ClientException('offline'),
+      tersedia: false,
+    );
+    expect(find.byType(BilahAtasRuangKerja), findsNothing);
+
+    await tester.tap(find.byTooltip('Transaksi baru').first);
+    await Tunggu(tester);
+    expect(find.byKey(const ValueKey('LayarBerhasilBayar')), findsNothing);
+    expect(find.byType(BilahAtasRuangKerja), findsOneWidget);
+    await Lepas(tester, u);
+  });
 
   for (final ukuran in const [Size(1280, 900), Size(360, 740)]) {
     testWidgets('kirim struk WhatsApp → antre → terkirim (${ukuran.width.toInt()} dp)', (tester) async {
