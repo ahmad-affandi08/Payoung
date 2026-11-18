@@ -14,7 +14,8 @@ use Carbon\CarbonImmutable;
 /**
  * Pemeriksaan lokasi stok & tanggal dokumen persediaan F-05b: lokasi milik tenant, aktif, dan bukan lokasi
  * "Dalam perjalanan" (hanya dipakai transfer secara otomatis); tanggal dokumen tidak di masa depan menurut tanggal
- * bisnis outlet lokasi itu.
+ * kalender (zona waktu) outlet lokasi itu. Bukan tanggal bisnis: sesudah tengah malam sebelum jam tutup buku pengguna tetap
+ * melihat tanggal kalender baru di ponsel/layar dan wajar mendokumentasikan dengan tanggal itu.
  */
 final class PemeriksaLokasiDokumen
 {
@@ -44,7 +45,9 @@ final class PemeriksaLokasiDokumen
 
     public function HariIni(?int $idOutlet): CarbonImmutable
     {
-        return CarbonImmutable::parse($this->tanggalBisnis->Hitung($idOutlet)->format('Y-m-d'));
+        $hari = $idOutlet === null ? $this->tanggalBisnis->Hitung(null) : $this->tanggalBisnis->HitungKalender($idOutlet);
+
+        return CarbonImmutable::parse($hari->format('Y-m-d'));
     }
 
     public function PastikanBukanMasaDepan(CarbonImmutable $tanggal, ?int $idOutlet): void

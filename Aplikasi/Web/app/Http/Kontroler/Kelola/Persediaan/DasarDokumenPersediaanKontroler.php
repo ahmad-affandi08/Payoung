@@ -66,8 +66,8 @@ abstract class DasarDokumenPersediaanKontroler extends DasarPersediaanKontroler
     }
 
     /**
-     * Batas atas tanggal dokumen = tanggal bisnis outlet (jam tutup buku, sama dengan `PemeriksaLokasiDokumen`), bukan
-     * tanggal kalender. Outlet belum diketahui (formulir): tanggal bisnis paling awal di antara outlet yang boleh diakses,
+     * Batas atas tanggal dokumen = tanggal kalender outlet (sama dengan `PemeriksaLokasiDokumen`), bukan tanggal bisnis
+     * menurut jam tutup buku: sesudah tengah malam pengguna sudah melihat tanggal baru. Outlet belum diketahui (formulir): tanggal bisnis paling awal di antara outlet yang boleh diakses,
      * supaya tidak pernah melewati batas server.
      */
     protected function HariIni(?int $idOutlet = null): string
@@ -79,6 +79,6 @@ abstract class DasarDokumenPersediaanKontroler extends DasarPersediaanKontroler
             return $tanggalBisnis->Hitung(null)->format('Y-m-d');
         }
 
-        return min(array_map(fn (int $id): string => $tanggalBisnis->Hitung($id)->format('Y-m-d'), $daftarOutlet));
+        return min(array_map(fn (int $id): string => $tanggalBisnis->HitungKalender($id)->format('Y-m-d'), $daftarOutlet));
     }
 }

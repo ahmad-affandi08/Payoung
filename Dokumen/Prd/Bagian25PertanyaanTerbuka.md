@@ -337,6 +337,7 @@
 | D-301 | Dari pemilik produk, 14/11/2026. Pengaturan aplikasi Kasir dibagi enam kategori dengan isi di kanan dan panel kesiapan perangkat (HP: daftar kategori lalu isi), menggantikan satu daftar panjang. Hanya data yang sudah ada di perangkat yang ditampilkan di kesiapan dan info perangkat, tanpa permintaan server baru. Versi aplikasi punya satu sumber di kode. |
 | D-302 | Dari pemilik produk, 14/11/2026 ("lanjutkan sampai selesai" atas sisa D-301). Kasir boleh mengganti PIN-nya sendiri dari aplikasi, hanya saat online dan dengan PIN lama yang diperiksa dengan batas percobaan yang sama seperti masuk PIN. Waktu respons server diukur dari permintaan yang sudah berjalan, bukan ping tambahan. |
 | D-303 | Dari pemilik produk, 14/11/2026. Layar berhasil bayar kasir adalah halaman penuh tanpa bingkai Ruang Kerja (bilah atas, rel, bilah status). Mengecualikan layar itu dari aturan 'semua layar setelah masuk berada di bingkai RuangKerja' (§17.2.7); layar selesai pre-order dan pesanan grosir tidak termasuk. |
+| D-304 | Dari pemilik produk, 18/11/2026. Batas atas tanggal dokumen persediaan (transfer, penyesuaian, stok awal, opname, produksi, permintaan) = tanggal kalender outlet, supaya pengguna yang bekerja lewat tengah malam bisa memakai tanggal yang tampil di kalender. Tanggal bisnis (jam tutup buku) tetap menentukan hari penjualan dan tutup harian. Membalik sebagian pilihan lama "batas = tanggal bisnis" di F-05b. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)
