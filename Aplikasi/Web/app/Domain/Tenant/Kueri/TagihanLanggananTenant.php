@@ -9,6 +9,7 @@ use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Snap\PembuatQrSnap;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
+use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
@@ -29,6 +30,13 @@ use Carbon\CarbonImmutable;
  */
 final class TagihanLanggananTenant
 {
+    /** Alasan tertulis pembayaran gerbang yang ditutup sistem. Awalannya dibaca `AmbilKeadaanBayar`. */
+    public const ALASAN_KEDALUWARSA = 'Batas bayar lewat dan pembayaran tidak kami terima.';
+
+    public const ALASAN_TIDAK_PASTI = 'Batas bayar lewat dan penyedia pembayaran belum bisa memastikan pembayaran ini.';
+
+    public const ALASAN_GAGAL = 'Pembayaran dibatalkan atau gagal di penyedia pembayaran.';
+
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly HargaPaketBerlaku $hargaBerlaku,
@@ -285,8 +293,48 @@ final class TagihanLanggananTenant
             'DiunggahPada' => $pembayaran->DibuatPada?->toIso8601ZuluString(),
             'DiverifikasiPada' => $pembayaran->DiverifikasiPada?->toIso8601ZuluString(),
             'AlasanTolak' => $pembayaran->AlasanTolak,
+            'Keadaan' => self::AmbilKeadaanBayar($pembayaran),
+            'KodeReferensi' => self::AmbilKodeReferensi($pembayaran),
             'TampilanBayar' => self::PetakanTampilanBayar($pembayaran),
         ];
+    }
+
+    /**
+     * Keadaan pembayaran dalam bahasa layar, diturunkan dari status + waktu (tanpa kolom baru):
+     * `Menunggu` | `TidakPasti` (lewat batas bayar tetapi penyedia belum bisa memastikan) | `Berhasil` | `Kedaluwarsa` |
+     * `Gagal` | `Ditolak` (transfer manual yang ditolak Keuangan). `TidakPasti` bukan kegagalan pengguna: uang bisa saja
+     * sudah masuk, jadi layar tidak boleh menyebutnya ditolak.
+     */
+    public static function AmbilKeadaanBayar(PembayaranLangganan $pembayaran): string
+    {
+        if ($pembayaran->Status === StatusPembayaranLangganan::Diterima) {
+            return 'Berhasil';
+        }
+
+        if ($pembayaran->Metode !== MetodePembayaranLangganan::Gateway) {
+            return $pembayaran->Status === StatusPembayaranLangganan::Ditolak ? 'Ditolak' : 'Menunggu';
+        }
+
+        if ($pembayaran->Status === StatusPembayaranLangganan::Menunggu) {
+            $batas = $pembayaran->KedaluwarsaPada;
+
+            return $batas !== null && $batas->copy()->addMinutes(15)->isPast() ? 'TidakPasti' : 'Menunggu';
+        }
+
+        $alasan = (string) $pembayaran->AlasanTolak;
+
+        return match (true) {
+            str_starts_with($alasan, self::ALASAN_KEDALUWARSA) => 'Kedaluwarsa',
+            // Catatan lama berbunyi "(status gerbang: 4002601)": kode galat 7 angka berarti hasilnya tak terpastikan.
+            str_starts_with($alasan, self::ALASAN_TIDAK_PASTI), preg_match('/status gerbang: \d{7}\)/', $alasan) === 1 => 'TidakPasti',
+            default => 'Gagal',
+        };
+    }
+
+    /** Kode pendek untuk disebut ke dukungan, bukan kode gerbang: `PYG-` + delapan karakter terakhir ID pembayaran. */
+    public static function AmbilKodeReferensi(PembayaranLangganan $pembayaran): string
+    {
+        return 'PYG-'.strtoupper(substr($pembayaran->Uuid, -8));
     }
 
     /** "QRIS", "Virtual account BNI", "DANA"; selain SNAP memakai label metode biasa. */

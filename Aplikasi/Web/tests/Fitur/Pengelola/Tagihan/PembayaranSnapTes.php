@@ -6,8 +6,10 @@ use App\Domain\Integrasi\Billing\NomorPesananBilling;
 use App\Domain\Integrasi\Snap\PembuatKunciSnap;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Pengelola\Tagihan\Aksi\RekonsiliasiPembayaranGerbangLangganan;
+use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
 use App\Domain\Tenant\Model\Tenant;
@@ -536,6 +538,53 @@ describe('D-159 rekonsiliasi & kedaluwarsa', function (): void {
         $this->flushSession();
         BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'Qris'])->assertOk();
         expect(PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->count())->toBe(2);
+    });
+
+    it('permintaan status VA yang terus ditolak DOKU tidak menutup pembayaran saat lewat batas: tampil "belum bisa dipastikan", baru ditutup setelah 24 jam', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'VirtualAccount', 'Kanal' => 'VIRTUAL_ACCOUNT_BNI'])->assertOk();
+        AturStatusSnap('/orders/v1.0/transfer-va/status', ['responseCode' => '4002601', 'responseMessage' => 'Invalid Field Format [virtualAccountNo]'], 400);
+
+        // Lewat batas bayar (+ jeda 15 menit) tetapi pertanyaan status masih ditolak: pembayaran tetap menunggu.
+        Carbon::setTestNow('2026-09-27 04:20:00');
+        app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan();
+        $pembayaran = PembayaranSnapUji($tagihan);
+
+        expect($pembayaran->Status)->toBe(StatusPembayaranLangganan::Menunggu)
+            ->and(TagihanLanggananTenant::AmbilKeadaanBayar($pembayaran))->toBe('TidakPasti');
+
+        // Jauh sesudah batas, pembayaran ditutup dengan alasan ramah (kode DOKU hanya di audit), bukan "Ditolak 4002601".
+        Carbon::setTestNow('2026-09-28 05:00:00');
+        app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan();
+        $pembayaran = PembayaranSnapUji($tagihan);
+
+        expect($pembayaran->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and($pembayaran->AlasanTolak)->toBe(TagihanLanggananTenant::ALASAN_TIDAK_PASTI)
+            ->and($pembayaran->AlasanTolak)->not->toContain('4002601')
+            ->and(TagihanLanggananTenant::AmbilKeadaanBayar($pembayaran))->toBe('TidakPasti')
+            ->and(TagihanLanggananTenant::AmbilKodeReferensi($pembayaran))->toStartWith('PYG-')
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit);
+    });
+
+    it('keadaan pembayaran: kedaluwarsa biasa, gagal, dan catatan lama berkode galat dibedakan, transfer manual yang ditolak tetap Ditolak', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'Qris'])->assertOk();
+        $pembayaran = PembayaranSnapUji($tagihan);
+        $Keadaan = function (string $alasan) use ($pembayaran): string {
+            $pembayaran->forceFill(['Status' => StatusPembayaranLangganan::Ditolak, 'AlasanTolak' => $alasan]);
+
+            return TagihanLanggananTenant::AmbilKeadaanBayar($pembayaran);
+        };
+
+        expect($Keadaan(TagihanLanggananTenant::ALASAN_KEDALUWARSA))->toBe('Kedaluwarsa')
+            ->and($Keadaan(TagihanLanggananTenant::ALASAN_GAGAL))->toBe('Gagal')
+            ->and($Keadaan('Gerbang pembayaran menolak permintaan: uji'))->toBe('Gagal')
+            ->and($Keadaan('Pembayaran online tidak selesai (status gerbang: 4002601).'))->toBe('TidakPasti');
+
+        $pembayaran->forceFill(['Metode' => MetodePembayaranLangganan::TransferManual, 'Status' => StatusPembayaranLangganan::Ditolak]);
+        expect(TagihanLanggananTenant::AmbilKeadaanBayar($pembayaran))->toBe('Ditolak');
     });
 
     it('DOKU Checkout lama tetap jalan berdampingan: tanpa Metode, transaksi Checkout dibuat seperti sebelumnya', function (): void {

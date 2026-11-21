@@ -1,11 +1,24 @@
 import { router } from '@inertiajs/react';
-import { ChevronRightIcon, ClockIcon } from 'lucide-react';
+import {
+    ChevronDownIcon,
+    ClockIcon,
+    CreditCardIcon,
+    ExternalLinkIcon,
+    LandmarkIcon,
+    LockIcon,
+    QrCodeIcon,
+    WalletIcon,
+    type LucideIcon,
+} from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import BilahAksiForm from '@/Komponen/Formulir/BilahAksiForm';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import HasilPembayaran from '@/Komponen/Langganan/Bayar/HasilPembayaran';
 import LogoBayar from '@/Komponen/Langganan/LogoBayar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Komponen/Ui/accordion';
 import { Card } from '@/Komponen/Ui/card';
+import { cn } from '@/Komponen/Ui/utils';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { AmbilPetunjukBayar } from '@/Pustaka/PetunjukBayar';
@@ -23,6 +36,8 @@ type PropsPanelBayarSnap = {
     awal?: TampilanBayar | null;
     /** Jeda pertanyaan status ke server (ms). */
     jedaPolling?: number;
+    /** D-305: DOKU Checkout (kartu, QRIS, e-wallet di halaman DOKU) tersedia sebagai pilihan terakhir. */
+    bolehCheckout?: boolean;
 };
 
 /** Sisa waktu "mm:ss" menuju batas bayar; null bila batasnya tidak ada atau sudah lewat. */
@@ -44,15 +59,37 @@ export function FormatSisaWaktu(sampai: string | null, sekarang: number): string
 
 const KunciPilihan = (baris: PilihanBayar) => `${baris.Metode}|${baris.Kanal ?? ''}`;
 
+const NamaBank = (baris: PilihanBayar) => baris.Label.replace(/^Virtual account\s+/i, '');
+
+/** Bank yang paling sering dipakai, ditampilkan langsung. Bank lain ada di "Bank lain". */
+const bankUtama = ['BCA', 'BRI', 'MANDIRI', 'BNI'];
+
+/** Memisahkan bank populer (urutannya tetap) dari sisanya. */
+export function PisahBank(bank: PilihanBayar[]): { utama: PilihanBayar[]; lain: PilihanBayar[] } {
+    const utama = bankUtama.flatMap((nama) =>
+        bank.filter((baris) => new RegExp(`\\b${nama}\\b`).test(NamaBank(baris).toUpperCase())),
+    );
+
+    return { utama, lain: bank.filter((baris) => !utama.includes(baris)) };
+}
+
+type KunciOpsi = 'transfer' | 'qris' | 'dompet' | 'doku';
+
+type Opsi = {
+    kunci: KunciOpsi;
+    judul: string;
+    keterangan: string;
+    ikon: LucideIcon;
+    /** Lencana di samping judul (hanya opsi pertama). */
+    lencana?: string;
+    keluarSitus?: boolean;
+};
+
 /**
- * D-159: halaman bayar milik Payoung untuk tagihan langganan, dengan DOKU SNAP di belakangnya. Tenant memilih QRIS,
- * dompet digital, atau virtual account (per bank); QR, nomor VA, atau tombol ke aplikasi dompet tampil di sini, bukan di
- * halaman DOKU. Susunannya mengikuti halaman bayar yang sudah dikenal pembeli: ringkasan total di atas, pilihan berlogo,
- * lalu layar bayar dengan hitung mundur dan petunjuk langkah.
- *
- * Lunasnya tagihan **tidak pernah** diputuskan di peramban: halaman hanya menanyakan status ke server (tiap beberapa detik
- * dan saat "Cek status pembayaran" ditekan), dan server menanyakannya ke DOKU. Saat server menjawab lunas (atau pembayaran
- * sudah tak menunggu), halaman dimuat ulang menurut keadaan server.
+ * D-305: layar pilih cara bayar tagihan langganan. Dua jalur nyata: transfer bank (halaman bayar Payoung lewat DOKU
+ * SNAP) dan DOKU Checkout (QRIS, e-wallet, kartu di halaman DOKU). QRIS dan dompet digital SNAP hanya muncul bila
+ * server menawarkannya, jadi layar tidak menjanjikan cara bayar yang belum aktif. Satu pilihan terpilih sejak awal
+ * dan satu tombol utama yang labelnya mengikuti pilihan, tertempel di bawah layar HP.
  */
 export default function PanelBayarSnap({
     uuidTagihan,
@@ -61,10 +98,83 @@ export default function PanelBayarSnap({
     pilihan,
     awal = null,
     jedaPolling = 6000,
+    bolehCheckout = false,
 }: PropsPanelBayarSnap) {
     const [aktif, AturAktif] = useState<TampilanBayar | null>(awal);
     const [memproses, AturMemproses] = useState<string | null>(null);
     const [galat, AturGalat] = useState<string | null>(null);
+
+    const qris = pilihan.filter((baris) => baris.Metode === 'Qris');
+    const dompet = pilihan.filter((baris) => baris.Metode === 'Dana' || baris.Metode === 'ShopeePay');
+    const bank = pilihan.filter((baris) => baris.Metode === 'VirtualAccount');
+    const { utama: bankPopuler, lain: bankLain } = PisahBank(bank);
+
+    const opsi: Opsi[] = [];
+
+    if (bank.length > 0) {
+        opsi.push({
+            kunci: 'transfer',
+            judul: 'Transfer bank',
+            keterangan:
+                'Dapat nomor rekening khusus, bayar lewat m-banking, ATM, atau internet banking. Dicek otomatis.',
+            ikon: LandmarkIcon,
+        });
+    }
+
+    if (qris.length > 0) {
+        opsi.unshift({
+            kunci: 'qris',
+            judul: 'QRIS',
+            keterangan: 'Pindai dengan aplikasi bank atau e-wallet apa pun. Langsung terkonfirmasi.',
+            ikon: QrCodeIcon,
+        });
+    }
+
+    if (dompet.length > 0) {
+        opsi.push({
+            kunci: 'dompet',
+            judul: 'Dompet digital',
+            keterangan: 'Selesaikan di aplikasi dompet digital Anda.',
+            ikon: WalletIcon,
+        });
+    }
+
+    if (bolehCheckout) {
+        const adaQrisSendiri = qris.length > 0 || dompet.length > 0;
+        opsi.push({
+            kunci: 'doku',
+            judul: adaQrisSendiri ? 'Kartu kredit atau debit' : 'QRIS, e-wallet, atau kartu',
+            keterangan: adaQrisSendiri
+                ? 'Anda pindah sebentar ke halaman pembayaran DOKU, lalu kembali ke sini.'
+                : 'GoPay, OVO, DANA, ShopeePay, QRIS, kartu kredit atau debit. Anda pindah sebentar ke halaman pembayaran DOKU, lalu kembali ke sini.',
+            ikon: adaQrisSendiri ? CreditCardIcon : QrCodeIcon,
+            keluarSitus: true,
+        });
+    }
+
+    const pertama = opsi[0];
+
+    if (pertama !== undefined && (pertama.kunci === 'qris' || pertama.kunci === 'transfer')) {
+        pertama.lencana = pertama.kunci === 'qris' ? 'Tercepat' : 'Paling mudah';
+    }
+
+    const [kunciAktif, AturKunciAktif] = useState<KunciOpsi | null>(null);
+    const [bankDipilih, AturBankDipilih] = useState<string | null>(null);
+    const [dompetDipilih, AturDompetDipilih] = useState<string | null>(null);
+    const [lainTerbuka, AturLainTerbuka] = useState(false);
+
+    // Pembayaran DOKU Checkout membuka halaman lain: tombol kembali peramban bisa memulihkan halaman ini dari cache
+    // dalam keadaan "memproses".
+    useEffect(() => {
+        const Pulihkan = (kejadian: PageTransitionEvent) => {
+            if (kejadian.persisted) {
+                AturMemproses(null);
+            }
+        };
+        window.addEventListener('pageshow', Pulihkan);
+
+        return () => window.removeEventListener('pageshow', Pulihkan);
+    }, []);
 
     const Pilih = async (baris: PilihanBayar) => {
         AturGalat(null);
@@ -88,6 +198,23 @@ export default function PanelBayarSnap({
         }
     };
 
+    const LanjutKeDoku = async () => {
+        AturGalat(null);
+        AturMemproses('doku');
+
+        try {
+            const hasil = await KirimJson<{ UrlBayar: string }>(
+                `/kelola/langganan/tagihan/${uuidTagihan}/bayar-online`,
+            );
+
+            // Dibiarkan "memproses" sampai halaman berganti, supaya tidak terklik dua kali.
+            window.location.assign(hasil.UrlBayar);
+        } catch (kegagalan) {
+            AturGalat(kegagalan instanceof Error ? kegagalan.message : 'Pembayaran online tidak bisa dimulai.');
+            AturMemproses(null);
+        }
+    };
+
     if (aktif !== null) {
         return (
             <LayarBayar
@@ -95,68 +222,215 @@ export default function PanelBayarSnap({
                 uuidTagihan={uuidTagihan}
                 nomorTagihan={nomorTagihan}
                 jedaPolling={jedaPolling}
+                saatGanti={() => AturAktif(null)}
             />
         );
     }
 
-    const qris = pilihan.filter((baris) => baris.Metode === 'Qris');
-    const dompet = pilihan.filter((baris) => baris.Metode === 'Dana' || baris.Metode === 'ShopeePay');
-    const bank = pilihan.filter((baris) => baris.Metode === 'VirtualAccount');
+    const kunciSaatIni: KunciOpsi | null = kunciAktif ?? opsi[0]?.kunci ?? null;
+    const bankTerpilih =
+        bank.find((baris) => KunciPilihan(baris) === bankDipilih) ?? bankPopuler[0] ?? bankLain[0] ?? null;
+    const dompetTerpilih = dompet.find((baris) => KunciPilihan(baris) === dompetDipilih) ?? dompet[0] ?? null;
+
+    const HitungTujuan = (): { label: string; jalankan: () => void } | null => {
+        switch (kunciSaatIni) {
+            case 'transfer':
+                return bankTerpilih
+                    ? { label: `Lanjut dengan ${NamaBank(bankTerpilih)}`, jalankan: () => void Pilih(bankTerpilih) }
+                    : null;
+            case 'qris':
+                return qris[0]
+                    ? { label: 'Tampilkan kode QRIS', jalankan: () => void Pilih(qris[0] as PilihanBayar) }
+                    : null;
+            case 'dompet':
+                return dompetTerpilih
+                    ? { label: `Lanjut dengan ${dompetTerpilih.Label}`, jalankan: () => void Pilih(dompetTerpilih) }
+                    : null;
+            case 'doku':
+                return { label: 'Lanjut ke halaman DOKU', jalankan: () => void LanjutKeDoku() };
+            default:
+                return null;
+        }
+    };
+
+    const tujuan = HitungTujuan();
 
     return (
-        <Kerangka nomorTagihan={nomorTagihan} total={total}>
-            {galat ? (
-                <Pemberitahuan jenis="bahaya" judul="Pembayaran gagal dimulai">
-                    {galat}
-                </Pemberitahuan>
-            ) : null}
-            <p className="text-isi text-teks-sekunder">
-                Pilih cara bayar. Kode bayar berlaku 60 menit dan tagihan lunas otomatis begitu pembayaran masuk.
-            </p>
-            {qris.length > 0 ? (
-                <Bagian judul="QRIS">
-                    {qris.map((baris) => (
-                        <BarisPilihan
-                            key={KunciPilihan(baris)}
-                            baris={baris}
-                            keterangan="Bayar dari GoPay, OVO, DANA, ShopeePay, atau m-banking"
-                            memproses={memproses === KunciPilihan(baris)}
-                            dikunci={memproses !== null}
-                            saatPilih={() => void Pilih(baris)}
-                        />
-                    ))}
-                </Bagian>
-            ) : null}
-            {dompet.length > 0 ? (
-                <Bagian judul="Dompet digital">
-                    {dompet.map((baris) => (
-                        <BarisPilihan
-                            key={KunciPilihan(baris)}
-                            baris={baris}
-                            keterangan="Selesaikan di aplikasi dompet digital"
-                            memproses={memproses === KunciPilihan(baris)}
-                            dikunci={memproses !== null}
-                            saatPilih={() => void Pilih(baris)}
-                        />
-                    ))}
-                </Bagian>
-            ) : null}
-            {bank.length > 0 ? (
-                <Bagian judul="Virtual account">
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                        {bank.map((baris) => (
-                            <UbinBank
-                                key={KunciPilihan(baris)}
-                                baris={baris}
-                                memproses={memproses === KunciPilihan(baris)}
-                                dikunci={memproses !== null}
-                                saatPilih={() => void Pilih(baris)}
-                            />
-                        ))}
-                    </div>
-                </Bagian>
-            ) : null}
-        </Kerangka>
+        <>
+            <Kerangka nomorTagihan={nomorTagihan} total={total}>
+                {galat ? (
+                    <Pemberitahuan jenis="bahaya" judul="Pembayaran gagal dimulai">
+                        {galat}
+                    </Pemberitahuan>
+                ) : null}
+                <div className="flex flex-col gap-1">
+                    <h3 className="text-subjudul font-semibold text-teks-utama">Pilih cara bayar</h3>
+                    <p className="text-isi text-teks-sekunder">
+                        Kode bayar berlaku 60 menit dan tagihan lunas otomatis begitu pembayaran masuk.
+                    </p>
+                </div>
+                <div
+                    role="radiogroup"
+                    aria-label="Cara bayar"
+                    className="flex flex-col divide-y divide-garis overflow-hidden rounded-panel border border-garis"
+                >
+                    {opsi.map((baris) => {
+                        const terpilih = baris.kunci === kunciSaatIni;
+                        const Ikon = baris.ikon;
+
+                        return (
+                            <div
+                                key={baris.kunci}
+                                className={cn(
+                                    terpilih
+                                        ? 'bg-brand-lembut shadow-[inset_3px_0_0_var(--color-brand)]'
+                                        : 'bg-permukaan',
+                                )}
+                            >
+                                <button
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={terpilih}
+                                    disabled={memproses !== null}
+                                    className="flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-60 pointer-coarse:py-4"
+                                    onClick={() => AturKunciAktif(baris.kunci)}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className={cn(
+                                            'mt-2 grid size-5 shrink-0 place-items-center rounded-full border-2 bg-permukaan',
+                                            terpilih ? 'border-brand' : 'border-garis-input',
+                                        )}
+                                    >
+                                        {terpilih ? <span className="size-2.5 rounded-full bg-brand" /> : null}
+                                    </span>
+                                    <span
+                                        aria-hidden="true"
+                                        className="grid size-10 shrink-0 place-items-center rounded-panel bg-brand-lembut text-brand"
+                                    >
+                                        <Ikon className="size-5" />
+                                    </span>
+                                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                        <span className="flex flex-wrap items-center gap-2 text-subjudul font-semibold text-teks-utama">
+                                            {baris.judul}
+                                            {baris.lencana ? (
+                                                <span className="rounded-full bg-aksen px-2 text-keterangan font-semibold text-brand-gelap">
+                                                    {baris.lencana}
+                                                </span>
+                                            ) : null}
+                                            {baris.keluarSitus ? (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-permukaan-sorot px-2 text-keterangan font-semibold text-teks-sekunder">
+                                                    <ExternalLinkIcon aria-hidden="true" className="size-3" />
+                                                    Halaman DOKU
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                        <span className="text-isi text-teks-sekunder">{baris.keterangan}</span>
+                                    </span>
+                                </button>
+                                {terpilih && baris.kunci === 'transfer' ? (
+                                    <div className="flex flex-col gap-2 px-4 pt-0 pb-4 sm:pl-[4.75rem]">
+                                        <span className="text-keterangan text-teks-sekunder">Pilih bank Anda</span>
+                                        <div
+                                            role="radiogroup"
+                                            aria-label="Bank"
+                                            className="grid grid-cols-2 gap-2 sm:grid-cols-5"
+                                        >
+                                            {bankPopuler.map((bankIni) => (
+                                                <UbinBank
+                                                    key={KunciPilihan(bankIni)}
+                                                    baris={bankIni}
+                                                    terpilih={
+                                                        bankTerpilih !== null &&
+                                                        KunciPilihan(bankIni) === KunciPilihan(bankTerpilih)
+                                                    }
+                                                    dikunci={memproses !== null}
+                                                    saatPilih={() => AturBankDipilih(KunciPilihan(bankIni))}
+                                                />
+                                            ))}
+                                            {bankLain.length > 0 ? (
+                                                <button
+                                                    type="button"
+                                                    aria-expanded={lainTerbuka}
+                                                    className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-panel border border-garis bg-permukaan px-2 text-label font-semibold text-brand hover:bg-brand-lembut focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+                                                    onClick={() => AturLainTerbuka((buka) => !buka)}
+                                                >
+                                                    Bank lain ({bankLain.length})
+                                                    <ChevronDownIcon
+                                                        aria-hidden="true"
+                                                        className={cn(
+                                                            'size-4 transition-transform',
+                                                            lainTerbuka && 'rotate-180',
+                                                        )}
+                                                    />
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                        {lainTerbuka ? (
+                                            <div
+                                                role="radiogroup"
+                                                aria-label="Bank lain"
+                                                className="grid grid-cols-2 gap-2 sm:grid-cols-5"
+                                            >
+                                                {bankLain.map((bankIni) => (
+                                                    <UbinBank
+                                                        key={KunciPilihan(bankIni)}
+                                                        baris={bankIni}
+                                                        terpilih={
+                                                            bankTerpilih !== null &&
+                                                            KunciPilihan(bankIni) === KunciPilihan(bankTerpilih)
+                                                        }
+                                                        dikunci={memproses !== null}
+                                                        saatPilih={() => AturBankDipilih(KunciPilihan(bankIni))}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : null}
+                                        <span className="text-keterangan text-teks-sekunder">
+                                            Bingung memilih? Pilih bank yang aplikasinya ada di HP Anda.
+                                        </span>
+                                    </div>
+                                ) : null}
+                                {terpilih && baris.kunci === 'dompet' ? (
+                                    <div
+                                        role="radiogroup"
+                                        aria-label="Dompet digital"
+                                        className="grid grid-cols-2 gap-2 px-4 pb-4 sm:grid-cols-5 sm:pl-[4.75rem]"
+                                    >
+                                        {dompet.map((dompetIni) => (
+                                            <UbinBank
+                                                key={KunciPilihan(dompetIni)}
+                                                baris={dompetIni}
+                                                terpilih={
+                                                    dompetTerpilih !== null &&
+                                                    KunciPilihan(dompetIni) === KunciPilihan(dompetTerpilih)
+                                                }
+                                                dikunci={memproses !== null}
+                                                saatPilih={() => AturDompetDipilih(KunciPilihan(dompetIni))}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
+                <p className="flex items-center gap-1 text-keterangan text-teks-sekunder">
+                    <LockIcon aria-hidden="true" className="size-3.5" />
+                    Pembayaran diproses DOKU dan terenkripsi.
+                </p>
+            </Kerangka>
+            <BilahAksiForm>
+                <Tombol
+                    ukuran="besar"
+                    memproses={memproses !== null}
+                    disabled={tujuan === null}
+                    onClick={() => tujuan?.jalankan()}
+                >
+                    {tujuan?.label ?? 'Pilih cara bayar'}
+                </Tombol>
+            </BilahAksiForm>
+        </>
     );
 }
 
@@ -192,80 +466,48 @@ function Kerangka({
     );
 }
 
-function Bagian({ judul, children }: { judul: string; children: ReactNode }) {
-    return (
-        <section className="flex flex-col gap-2">
-            <h3 className="text-label font-semibold text-teks-utama">{judul}</h3>
-            {children}
-        </section>
-    );
-}
-
-const kelasPilihan =
-    'cursor-pointer rounded-panel border border-garis bg-permukaan text-left transition-colors hover:border-brand hover:bg-brand-lembut focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60';
-
-function BarisPilihan({
-    baris,
-    keterangan,
-    memproses,
-    dikunci,
-    saatPilih,
-}: {
-    baris: PilihanBayar;
-    keterangan: string;
-    memproses: boolean;
-    dikunci: boolean;
-    saatPilih: () => void;
-}) {
-    return (
-        <button
-            type="button"
-            className={`${kelasPilihan} flex min-h-14 items-center gap-3 px-3 py-2 pointer-coarse:min-h-16`}
-            disabled={dikunci}
-            aria-busy={memproses || undefined}
-            onClick={saatPilih}
-        >
-            <LogoBayar metode={baris.Metode} teks={baris.Kanal ?? baris.Label} />
-            <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-label font-semibold text-teks-utama">{baris.Label}</span>
-                <span className="text-keterangan text-teks-sekunder">{memproses ? 'Memproses…' : keterangan}</span>
-            </span>
-            <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
-        </button>
-    );
-}
-
 function UbinBank({
     baris,
-    memproses,
+    terpilih,
     dikunci,
     saatPilih,
 }: {
     baris: PilihanBayar;
-    memproses: boolean;
+    terpilih: boolean;
     dikunci: boolean;
     saatPilih: () => void;
 }) {
-    const nama = baris.Label.replace(/^Virtual account\s+/i, '');
+    const nama = NamaBank(baris);
 
     return (
         <button
             type="button"
-            className={`${kelasPilihan} flex min-h-24 flex-col items-center justify-center gap-1 px-2 py-3 text-center pointer-coarse:min-h-28`}
+            role="radio"
+            aria-checked={terpilih}
+            aria-label={nama}
             disabled={dikunci}
-            aria-busy={memproses || undefined}
-            aria-label={`Virtual account ${nama}`}
+            className={cn(
+                'flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-panel border bg-permukaan px-2 py-2 text-label font-semibold text-teks-utama transition-colors hover:bg-brand-lembut focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60',
+                terpilih ? 'border-2 border-brand' : 'border-garis',
+            )}
             onClick={saatPilih}
         >
-            <LogoBayar metode={baris.Metode} teks={baris.Kanal ?? baris.Label} className="h-12 w-20" />
-            <span className="text-label font-semibold text-teks-utama">{memproses ? 'Memproses…' : nama}</span>
+            <LogoBayar metode={baris.Metode} teks={baris.Kanal ?? baris.Label} className="h-6 w-10" />
+            <span className="truncate">{nama}</span>
         </button>
     );
 }
 
-type PropsLayarBayar = { tampilan: TampilanBayar; uuidTagihan: string; nomorTagihan: string; jedaPolling: number };
+type PropsLayarBayar = {
+    tampilan: TampilanBayar;
+    uuidTagihan: string;
+    nomorTagihan: string;
+    jedaPolling: number;
+    /** Kembali ke pilihan cara bayar (dipakai setelah batas bayar lewat). */
+    saatGanti: () => void;
+};
 
-function LayarBayar({ tampilan, uuidTagihan, nomorTagihan, jedaPolling }: PropsLayarBayar) {
+function LayarBayar({ tampilan, uuidTagihan, nomorTagihan, jedaPolling, saatGanti }: PropsLayarBayar) {
     const [sekarang, AturSekarang] = useState(() => Date.now());
     const [tersalin, AturTersalin] = useState<string | null>(null);
     const [memeriksa, AturMemeriksa] = useState(false);
@@ -458,11 +700,26 @@ function LayarBayar({ tampilan, uuidTagihan, nomorTagihan, jedaPolling }: PropsL
                 </Accordion>
             </section>
 
-            <p className="text-keterangan text-teks-sekunder" role="status">
-                {sisa !== null
-                    ? 'Halaman ini berganti otomatis begitu pembayaran terkonfirmasi.'
-                    : 'Batas bayar sudah lewat. Muat ulang halaman untuk memilih cara bayar lain.'}
-            </p>
+            {sisa !== null ? (
+                <div role="status" className="flex items-center gap-3 rounded-panel bg-brand-lembut px-3 py-3">
+                    <span className="denyut-bayar" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                    </span>
+                    <div className="flex flex-col">
+                        <span className="text-label font-semibold text-teks-utama">Menunggu pembayaran</span>
+                        <span className="text-keterangan text-teks-sekunder">
+                            Dicek otomatis, boleh ditinggal. Halaman ini berganti sendiri begitu pembayaran
+                            terkonfirmasi.
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                <HasilPembayaran keadaan="Kedaluwarsa">
+                    <Tombol onClick={saatGanti}>Pilih cara bayar</Tombol>
+                </HasilPembayaran>
+            )}
         </Kerangka>
     );
 }

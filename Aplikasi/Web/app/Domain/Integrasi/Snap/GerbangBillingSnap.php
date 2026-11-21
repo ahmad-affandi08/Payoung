@@ -35,6 +35,9 @@ final class GerbangBillingSnap
     /** Batas bayar satu pembayaran; setelahnya tenant membuat pembayaran baru dari tagihan yang sama. */
     public const MENIT_KEDALUWARSA = 60;
 
+    /** Jam setelah batas bayar sebelum pembayaran yang statusnya terus gagal ditanyakan ditutup sebagai kedaluwarsa. */
+    public const JEDA_GALAT_CEK_JAM = 24;
+
     private const TARGET_QRIS_BUAT = '/snap-adapter/b2b/v1.0/qr/qr-mpm-generate';
 
     private const TARGET_QRIS_STATUS = '/snap-adapter/b2b/v1.0/qr/qr-mpm-query';
@@ -167,6 +170,13 @@ final class GerbangBillingSnap
                 'KodeJawaban' => self::Teks($data['responseCode'] ?? null),
                 'PesanJawaban' => self::Teks($data['responseMessage'] ?? null),
             ]);
+        }
+
+        // Permintaan status yang ditolak DOKU tidak membuktikan apa pun tentang pembayarannya (bisa saja sudah dibayar).
+        // Pembayaran jangan ditutup sebagai kedaluwarsa selama jawabannya masih galat: dibiarkan menunggu dan dicek lagi,
+        // sampai `JEDA_GALAT_CEK_JAM` lewat dari batas bayar. Di layar tampil sebagai "belum bisa dipastikan".
+        if (! $respons->successful() && $kedaluwarsaPada->getTimestamp() + self::JEDA_GALAT_CEK_JAM * 3600 > CarbonImmutable::now()->getTimestamp()) {
+            return null;
         }
 
         $paid = $status === StatusPembayaranGerbang::Lunas;

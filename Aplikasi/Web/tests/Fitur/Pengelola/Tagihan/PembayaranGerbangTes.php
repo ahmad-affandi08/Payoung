@@ -12,6 +12,7 @@ use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
@@ -398,7 +399,9 @@ describe('BR-P08.11 notifikasi webhook', function (): void {
             ->assertJson(['Diterima' => true]);
 
         expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Ditolak)
-            ->and($pembayaran->AlasanTolak)->toContain($status)
+            // Alasan dibaca pemilik usaha: kalimat sehari-hari, tanpa kode gerbang (kode ada di audit).
+            ->and($pembayaran->AlasanTolak)->toBe($status === 'FAILED' ? TagihanLanggananTenant::ALASAN_GAGAL : TagihanLanggananTenant::ALASAN_KEDALUWARSA)
+            ->and($pembayaran->AlasanTolak)->not->toContain($status)
             ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit)
             ->and(LanggananGerbangUji($tenant)->Status)->not->toBe(StatusLangganan::Aktif);
     })->with(['FAILED', 'EXPIRED']);

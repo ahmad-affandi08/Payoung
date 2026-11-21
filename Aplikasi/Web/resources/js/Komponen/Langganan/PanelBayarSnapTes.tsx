@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
-import PanelBayarSnap, { FormatSisaWaktu } from '@/Komponen/Langganan/PanelBayarSnap';
+import PanelBayarSnap, { FormatSisaWaktu, PisahBank } from '@/Komponen/Langganan/PanelBayarSnap';
 import type { PilihanBayar, TampilanBayar } from '@/Tipe/TagihanLangganan';
 
 vi.mock('@inertiajs/react', async () => (await import('@/Komponen/Katalog/TiruanInertia')).TiruanInertia);
@@ -69,21 +69,72 @@ describe('PanelBayarSnap (D-159)', () => {
         vi.clearAllMocks();
     });
 
-    it('kepala menampilkan total dan nomor tagihan. Pilihan dikelompokkan QRIS, dompet digital, virtual account', () => {
+    it('kepala menampilkan total dan nomor tagihan. Cara bayar berupa pilihan tunggal dengan QRIS terpilih dan lencana Tercepat', () => {
         Panel();
 
         expect(screen.getByText('Total pembayaran')).toBeTruthy();
         expect(screen.getByText('Rp 222.000')).toBeTruthy();
         expect(screen.getByText('Tagihan INV-2026-0042')).toBeTruthy();
-        expect(screen.getByRole('heading', { name: 'QRIS' })).toBeTruthy();
-        expect(screen.getByRole('heading', { name: 'Dompet digital' })).toBeTruthy();
-        expect(screen.getByRole('heading', { name: 'Virtual account' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: /^DANA/ })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Virtual account BNI' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Virtual account BRI' })).toBeTruthy();
+        expect(screen.getByRole('heading', { name: 'Pilih cara bayar' })).toBeTruthy();
+        expect(screen.getByRole('radio', { name: /^QRIS/ }).getAttribute('aria-checked')).toBe('true');
+        expect(screen.getByRole('radio', { name: /^Transfer bank/ }).getAttribute('aria-checked')).toBe('false');
+        expect(screen.getByRole('radio', { name: /^Dompet digital/ })).toBeTruthy();
+        expect(screen.getByText('Tercepat')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Tampilkan kode QRIS' })).toBeTruthy();
     });
 
-    it('logo yang berkasnya terpasang tampil sebagai gambar, yang belum ada tampil sebagai lencana teks', () => {
+    it('D-305: hanya virtual account tersedia = dua jalur nyata: Transfer bank (Paling mudah) dan QRIS, e-wallet, atau kartu di halaman DOKU', () => {
+        Panel({
+            pilihan: pilihan.filter((baris) => baris.Metode === 'VirtualAccount'),
+            bolehCheckout: true,
+        });
+
+        expect(screen.getAllByRole('radio', { name: /^(Transfer bank|QRIS, e-wallet, atau kartu)/ }).length).toBe(2);
+        expect(screen.queryByRole('radio', { name: /^QRIS$/ })).toBeNull();
+        expect(screen.queryByRole('radio', { name: /^Dompet digital/ })).toBeNull();
+        expect(screen.getByRole('radio', { name: /^Transfer bank/ }).getAttribute('aria-checked')).toBe('true');
+        expect(screen.getByText('Paling mudah')).toBeTruthy();
+        expect(screen.getByText('Halaman DOKU')).toBeTruthy();
+        // Bank populer lebih dulu (BRI sebelum BNI), yang pertama terpilih, dan tombol utama menyebut banknya.
+        expect(screen.getByRole('radio', { name: 'BRI' }).getAttribute('aria-checked')).toBe('true');
+        expect(screen.getByRole('button', { name: 'Lanjut dengan BRI' })).toBeTruthy();
+    });
+
+    it('D-305: Bank lain membuka sisa bank, dan memilihnya mengubah label tombol utama', () => {
+        Panel({
+            pilihan: [
+                ...pilihan.filter((baris) => baris.Metode === 'VirtualAccount'),
+                {
+                    Metode: 'VirtualAccount',
+                    Label: 'Virtual account Bank Antah Berantah',
+                    Kanal: 'VIRTUAL_ACCOUNT_ANTAH',
+                },
+            ],
+            bolehCheckout: true,
+        });
+
+        expect(screen.queryByRole('radio', { name: 'Bank Antah Berantah' })).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: /^Bank lain \(1\)/ }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Bank Antah Berantah' }));
+
+        expect(screen.getByRole('button', { name: 'Lanjut dengan Bank Antah Berantah' })).toBeTruthy();
+    });
+
+    it('PisahBank: bank populer berurutan BCA, BRI, Mandiri, BNI. Sisanya di lain', () => {
+        const bank = ['BNI', 'Permata', 'BCA', 'Mandiri', 'BRI'].map((nama): PilihanBayar => ({
+            Metode: 'VirtualAccount',
+            Label: `Virtual account ${nama}`,
+            Kanal: nama,
+        }));
+
+        const { utama, lain } = PisahBank(bank);
+
+        expect(utama.map((baris) => baris.Kanal)).toEqual(['BCA', 'BRI', 'Mandiri', 'BNI']);
+        expect(lain.map((baris) => baris.Kanal)).toEqual(['Permata']);
+    });
+
+    it('logo bank yang berkasnya terpasang tampil sebagai gambar, yang belum ada sebagai lencana teks', () => {
         const { container } = Panel({
             pilihan: [
                 ...pilihan,
@@ -95,17 +146,20 @@ describe('PanelBayarSnap (D-159)', () => {
             ],
         });
 
-        // QRIS, DANA, BNI, dan BRI punya berkas di Aset/Bayar; bank tak dikenal jatuh ke lencana, bukan gambar rusak.
-        expect(container.querySelectorAll('[data-logo] img').length).toBeGreaterThanOrEqual(4);
+        fireEvent.click(screen.getByRole('radio', { name: /^Transfer bank/ }));
+        fireEvent.click(screen.getByRole('button', { name: /^Bank lain/ }));
+
+        // BRI dan BNI punya berkas di Aset/Bayar. Bank tak dikenal jatuh ke lencana, bukan gambar rusak.
+        expect(container.querySelectorAll('[data-logo] img').length).toBeGreaterThanOrEqual(2);
         expect(container.querySelectorAll('[data-logo="cadangan"]').length).toBe(1);
     });
 
-    it('memilih QRIS meminta server lalu menampilkan QR, hitung mundur, dan petunjuk', async () => {
+    it('QRIS terpilih sejak awal: satu ketukan meminta server lalu menampilkan QR, hitung mundur, dan petunjuk', async () => {
         const Ambil = vi.fn().mockResolvedValue(JawabJson({ Pembayaran: { TampilanBayar: tampilanQr } }));
         vi.stubGlobal('fetch', Ambil);
         Panel();
 
-        fireEvent.click(screen.getByRole('button', { name: /^QRIS/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Tampilkan kode QRIS' }));
 
         await waitFor(() => expect(screen.getByAltText('Kode QRIS tagihan langganan')).toBeTruthy());
         expect(Ambil).toHaveBeenCalledWith(
@@ -115,6 +169,35 @@ describe('PanelBayarSnap (D-159)', () => {
         expect(screen.getByRole('timer').textContent).toMatch(/Selesaikan dalam \d{2}:\d{2}/);
         expect(screen.getByRole('button', { name: 'Unduh QR' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Pindai dari aplikasi bank atau dompet digital' })).toBeTruthy();
+        expect(screen.getByText('Menunggu pembayaran')).toBeTruthy();
+    });
+
+    it('D-305: Lanjut ke halaman DOKU meminta transaksi Checkout lalu mengarahkan peramban', async () => {
+        const Alihkan = vi.fn();
+        vi.stubGlobal('location', { ...window.location, assign: Alihkan });
+        const Ambil = vi.fn().mockResolvedValue(JawabJson({ UrlBayar: 'https://sandbox.doku.com/checkout/link/abc' }));
+        vi.stubGlobal('fetch', Ambil);
+        Panel({ pilihan: pilihan.filter((baris) => baris.Metode === 'VirtualAccount'), bolehCheckout: true });
+
+        fireEvent.click(screen.getByRole('radio', { name: /^QRIS, e-wallet, atau kartu/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Lanjut ke halaman DOKU' }));
+
+        await waitFor(() => expect(Alihkan).toHaveBeenCalledWith('https://sandbox.doku.com/checkout/link/abc'));
+        expect(Ambil).toHaveBeenCalledWith(
+            '/kelola/langganan/tagihan/TG-1/bayar-online',
+            expect.objectContaining({ method: 'POST' }),
+        );
+    });
+
+    it('batas bayar yang lewat menampilkan Waktu bayar habis dan Pilih cara bayar kembali ke pilihan', () => {
+        Panel({ awal: { ...tampilanVa, KedaluwarsaPada: new Date(Date.now() - 60_000).toISOString() } });
+
+        expect(screen.getByText('Waktu bayar habis')).toBeTruthy();
+        expect(screen.getByText(/tidak ada uang Anda yang terpotong/)).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Pilih cara bayar' }));
+
+        expect(screen.getByRole('radiogroup', { name: 'Cara bayar' })).toBeTruthy();
     });
 
     it('Unduh QR menyimpan gambar dengan nama berkas dari nomor tagihan', async () => {
@@ -142,7 +225,9 @@ describe('PanelBayarSnap (D-159)', () => {
         Object.defineProperty(navigator, 'clipboard', { value: { writeText: Tulis }, configurable: true });
         Panel();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Virtual account BNI' }));
+        fireEvent.click(screen.getByRole('radio', { name: /^Transfer bank/ }));
+        fireEvent.click(screen.getByRole('radio', { name: 'BNI' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Lanjut dengan BNI' }));
 
         await waitFor(() => expect(screen.getByText('9882917230000000000000000001')).toBeTruthy());
         expect(Ambil).toHaveBeenCalledWith(
@@ -201,10 +286,10 @@ describe('PanelBayarSnap (D-159)', () => {
         );
         Panel();
 
-        fireEvent.click(screen.getByRole('button', { name: /^QRIS/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Tampilkan kode QRIS' }));
 
         await waitFor(() => expect(screen.getByText('DOKU menolak permintaan.')).toBeTruthy());
-        expect((screen.getByRole('button', { name: /^QRIS/ }) as HTMLButtonElement).disabled).toBe(false);
+        expect((screen.getByRole('button', { name: 'Tampilkan kode QRIS' }) as HTMLButtonElement).disabled).toBe(false);
     });
 
     it('menanyakan status ke server berkala dan memuat ulang halaman begitu tagihan lunas', async () => {

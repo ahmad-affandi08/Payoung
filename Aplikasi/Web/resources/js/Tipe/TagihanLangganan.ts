@@ -59,6 +59,13 @@ export type StatusPembayaranLangganan = 'Menunggu' | 'Diterima' | 'Ditolak';
 
 export type MetodePembayaranLangganan = 'TransferManual' | 'Gateway' | 'Kupon';
 
+/**
+ * D-305: keadaan pembayaran dalam bahasa layar, diturunkan server (`TagihanLanggananTenant::AmbilKeadaanBayar`).
+ * `TidakPasti` = lewat batas bayar tetapi penyedia belum bisa memastikan hasilnya, BUKAN kegagalan pengguna.
+ * `Ditolak` hanya untuk bukti transfer manual yang ditolak Keuangan.
+ */
+export type KeadaanBayar = 'Menunggu' | 'TidakPasti' | 'Berhasil' | 'Kedaluwarsa' | 'Gagal' | 'Ditolak';
+
 export type MetodeBayarSnap = 'Qris' | 'VirtualAccount' | 'Dana' | 'ShopeePay';
 
 /** D-159: satu cara bayar SNAP yang ditawarkan (bank untuk virtual account lewat `Kanal`). */
@@ -94,6 +101,9 @@ export type PembayaranLangganan = {
     DiunggahPada: string | null;
     DiverifikasiPada: string | null;
     AlasanTolak: string | null;
+    Keadaan: KeadaanBayar;
+    /** Kode pendek `PYG-XXXXXXXX` untuk disebut ke dukungan. */
+    KodeReferensi: string;
     /** D-159: ada hanya untuk pembayaran SNAP yang masih menunggu. */
     TampilanBayar?: TampilanBayar | null;
 };

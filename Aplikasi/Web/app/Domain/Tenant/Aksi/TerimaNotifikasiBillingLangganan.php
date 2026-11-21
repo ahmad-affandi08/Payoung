@@ -15,6 +15,7 @@ use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Layanan\PelunasTagihanLangganan;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\PembayaranLangganan;
@@ -122,7 +123,7 @@ final class TerimaNotifikasiBillingLangganan
         if ($notifikasi->status !== StatusPembayaranGerbang::Lunas) {
             $pembayaran->update([
                 'Status' => StatusPembayaranLangganan::Ditolak,
-                'AlasanTolak' => "Pembayaran online tidak selesai (status gerbang: {$notifikasi->statusAsli}).",
+                'AlasanTolak' => $this->SusunAlasanTidakSelesai($notifikasi),
             ]);
             $this->audit->Catat(
                 'langganan.pembayaran-gerbang-gagal',
@@ -168,6 +169,22 @@ final class TerimaNotifikasiBillingLangganan
         $this->BeritahuOwner($pembayaran, $tagihan);
 
         return true;
+    }
+
+    /**
+     * Alasan yang dibaca pemilik usaha: kalimat sehari-hari, tanpa kode gerbang (kode ada di audit). Awalan kalimatnya
+     * dipakai `TagihanLanggananTenant::AmbilKeadaanBayar` untuk membedakan kedaluwarsa, belum pasti, dan gagal.
+     */
+    private function SusunAlasanTidakSelesai(NotifikasiBilling $notifikasi): string
+    {
+        if ($notifikasi->status === StatusPembayaranGerbang::Gagal) {
+            return TagihanLanggananTenant::ALASAN_GAGAL;
+        }
+
+        // Kode galat DOKU (7 angka, misal 4002601) pada pembayaran yang lewat batas: DOKU tak bisa memastikan hasilnya.
+        return preg_match('/^\d{7}$/', $notifikasi->statusAsli) === 1
+            ? TagihanLanggananTenant::ALASAN_TIDAK_PASTI
+            : TagihanLanggananTenant::ALASAN_KEDALUWARSA;
     }
 
     /**

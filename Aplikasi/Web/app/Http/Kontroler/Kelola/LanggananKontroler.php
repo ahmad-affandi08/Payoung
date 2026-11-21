@@ -177,10 +177,13 @@ final class LanggananKontroler extends Kontroler
 
         $menunggu = $data->Pembayaran->contains(fn (PembayaranLangganan $baris): bool => $baris->Status === StatusPembayaranLangganan::Menunggu);
 
+        $terbaru = $data->Pembayaran->sortByDesc('Id')->first();
+
         return response()->json([
             'StatusTagihan' => $data->Status->value,
             'Lunas' => $data->Status === StatusTagihanLangganan::Lunas,
             'MasihMenunggu' => $menunggu,
+            'Keadaan' => $terbaru instanceof PembayaranLangganan ? TagihanLanggananTenant::AmbilKeadaanBayar($terbaru) : null,
         ]);
     }
 
