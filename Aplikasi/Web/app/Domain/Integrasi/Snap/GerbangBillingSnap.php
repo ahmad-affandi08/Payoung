@@ -17,6 +17,7 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Pembayaran tagihan langganan Payoung lewat DOKU SNAP (D-159): QRIS dinamis, virtual account per bank, dan e-wallet
@@ -155,6 +156,19 @@ final class GerbangBillingSnap
         }
 
         $data = $respons->json();
+
+        // 4xx dari DOKU berarti permintaan status kita ditolak (misal `4002601` = format isian tidak sah), bukan kabar
+        // tentang pembayarannya. Dicatat supaya penyebabnya terbaca; kode & pesan saja, tanpa nomor VA atau kunci.
+        if (! $respons->successful()) {
+            Log::warning('DOKU SNAP menolak permintaan status pembayaran.', [
+                'NomorPesanan' => $nomorPesanan,
+                'Metode' => $metode->value,
+                'HttpStatus' => $respons->status(),
+                'KodeJawaban' => self::Teks($data['responseCode'] ?? null),
+                'PesanJawaban' => self::Teks($data['responseMessage'] ?? null),
+            ]);
+        }
+
         $paid = $status === StatusPembayaranGerbang::Lunas;
 
         // Belum lunas dan lewat batas bayar (ditambah jeda notifikasi DOKU) = kedaluwarsa.

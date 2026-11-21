@@ -16,6 +16,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use Tests\Pendukung\Tenant\BantuanTagihan;
@@ -425,6 +426,26 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
 
         expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu)
             ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit);
+    });
+
+    it('DOKU menolak permintaan status VA (4002601): pembayaran tidak dianggap lunas atau ditolak, kode DOKU dicatat di log', function (): void {
+        Log::spy();
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'VirtualAccount', 'Kanal' => 'VIRTUAL_ACCOUNT_BNI'])->assertOk();
+        $pembayaran = PembayaranSnapUji($tagihan);
+        AturStatusSnap('/orders/v1.0/transfer-va/status', ['responseCode' => '4002601', 'responseMessage' => 'Invalid Field Format [virtualAccountNo]'], 400);
+
+        KirimNotifikasiSnap($this, 'v1.0/transfer-va/payment', ['trxId' => $pembayaran->RefGateway, 'virtualAccountNo' => 'x'])->assertOk();
+
+        expect($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu);
+        Log::shouldHaveReceived('warning')->withArgs(
+            fn (string $pesan, array $konteks = []): bool => str_contains($pesan, 'menolak permintaan status')
+                && ($konteks['KodeJawaban'] ?? null) === '4002601'
+                && ($konteks['HttpStatus'] ?? null) === 400
+                && str_contains((string) ($konteks['PesanJawaban'] ?? ''), 'virtualAccountNo')
+                && ! array_key_exists('NomorVa', $konteks),
+        )->atLeast()->once();
     });
 
     it('e-wallet: status debit 00 melunasi, 06 menolak pembayaran sehingga tagihan bisa dibayar ulang', function (): void {
