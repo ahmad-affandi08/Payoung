@@ -53,6 +53,7 @@ function Panel(tambahan: Partial<React.ComponentProps<typeof PanelBayarSnap>> = 
             nomorTagihan="INV-2026-0042"
             total="222000.00"
             pilihan={pilihan}
+            namaPenyedia="DOKU"
             {...tambahan}
         />,
     );
@@ -119,6 +120,19 @@ describe('PanelBayarSnap (D-159)', () => {
         fireEvent.click(screen.getByRole('radio', { name: 'Bank Antah Berantah' }));
 
         expect(screen.getByRole('button', { name: 'Lanjut dengan Bank Antah Berantah' })).toBeTruthy();
+    });
+
+    it('D-305: nama penyedia di teks layar datang dari server, bukan tertulis di halaman (ganti penyedia tanpa sentuh teks)', () => {
+        Panel({
+            pilihan: pilihan.filter((baris) => baris.Metode === 'VirtualAccount'),
+            bolehCheckout: true,
+            namaPenyedia: 'Xendit',
+        });
+
+        expect(screen.getByText('Halaman Xendit')).toBeTruthy();
+        expect(screen.getByText(/Pembayaran diproses Xendit/)).toBeTruthy();
+        expect(screen.getByText(/halaman pembayaran Xendit/)).toBeTruthy();
+        expect(document.body.textContent).not.toContain('DOKU');
     });
 
     it('PisahBank: bank populer berurutan BCA, BRI, Mandiri, BNI. Sisanya di lain', () => {

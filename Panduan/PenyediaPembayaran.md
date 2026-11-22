@@ -98,3 +98,9 @@ tanpa mempertahankan rute webhook dan rekonsiliasi untuk penyedia lama.
 - Kunci SNAP (`BuatKunciSnapIntegrasi`) dan pengujian koneksi P-05 per penyedia (`PengujiDoku*`) khusus DOKU; penyedia lain
   membawa pengujinya sendiri.
 - Aliran dana QRIS ke sub-akun/agregator (D-82/D-83) menunggu jawaban penyedia; itu soal kontrak bisnis, bukan soal kode.
+
+## Yang sudah tidak perlu disentuh saat mengganti penyedia (D-307)
+
+- **Teks halaman bayar:** nama penyedia ("Halaman DOKU", "Pembayaran diproses DOKU") datang dari `AmbilLabel()` adaptor lewat prop `NamaPenyedia`. Jangan menulis nama penyedia di komponen React.
+- **Hasil tak pasti:** adaptor yang tidak bisa memastikan status (pertanyaan statusnya ditolak penyedia) mengisi `NotifikasiBilling.hasilTidakPasti`. Lapisan umum tidak menebak dari bentuk kode galat penyedia.
+- **Keadaan di layar** (Menunggu, Belum pasti, Berhasil, Kedaluwarsa, Gagal) diturunkan `TagihanLanggananTenant::AmbilKeadaanBayar` dari status dan waktu, sama untuk semua penyedia.

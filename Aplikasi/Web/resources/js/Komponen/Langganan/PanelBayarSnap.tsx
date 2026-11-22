@@ -36,8 +36,10 @@ type PropsPanelBayarSnap = {
     awal?: TampilanBayar | null;
     /** Jeda pertanyaan status ke server (ms). */
     jedaPolling?: number;
-    /** D-305: DOKU Checkout (kartu, QRIS, e-wallet di halaman DOKU) tersedia sebagai pilihan terakhir. */
+    /** D-305: halaman bayar milik penyedia (kartu, QRIS, e-wallet) tersedia sebagai pilihan terakhir. */
     bolehCheckout?: boolean;
+    /** Nama penyedia dari server untuk teks layar. Mengganti penyedia tidak menyentuh teks halaman ini. */
+    namaPenyedia?: string;
 };
 
 /** Sisa waktu "mm:ss" menuju batas bayar; null bila batasnya tidak ada atau sudah lewat. */
@@ -99,6 +101,7 @@ export default function PanelBayarSnap({
     awal = null,
     jedaPolling = 6000,
     bolehCheckout = false,
+    namaPenyedia = 'penyedia pembayaran',
 }: PropsPanelBayarSnap) {
     const [aktif, AturAktif] = useState<TampilanBayar | null>(awal);
     const [memproses, AturMemproses] = useState<string | null>(null);
@@ -145,8 +148,8 @@ export default function PanelBayarSnap({
             kunci: 'doku',
             judul: adaQrisSendiri ? 'Kartu kredit atau debit' : 'QRIS, e-wallet, atau kartu',
             keterangan: adaQrisSendiri
-                ? 'Anda pindah sebentar ke halaman pembayaran DOKU, lalu kembali ke sini.'
-                : 'GoPay, OVO, DANA, ShopeePay, QRIS, kartu kredit atau debit. Anda pindah sebentar ke halaman pembayaran DOKU, lalu kembali ke sini.',
+                ? `Anda pindah sebentar ke halaman pembayaran ${namaPenyedia}, lalu kembali ke sini.`
+                : `GoPay, OVO, DANA, ShopeePay, QRIS, kartu kredit atau debit. Anda pindah sebentar ke halaman pembayaran ${namaPenyedia}, lalu kembali ke sini.`,
             ikon: adaQrisSendiri ? CreditCardIcon : QrCodeIcon,
             keluarSitus: true,
         });
@@ -247,7 +250,7 @@ export default function PanelBayarSnap({
                     ? { label: `Lanjut dengan ${dompetTerpilih.Label}`, jalankan: () => void Pilih(dompetTerpilih) }
                     : null;
             case 'doku':
-                return { label: 'Lanjut ke halaman DOKU', jalankan: () => void LanjutKeDoku() };
+                return { label: `Lanjut ke halaman ${namaPenyedia}`, jalankan: () => void LanjutKeDoku() };
             default:
                 return null;
         }
@@ -321,7 +324,7 @@ export default function PanelBayarSnap({
                                             {baris.keluarSitus ? (
                                                 <span className="inline-flex items-center gap-1 rounded-full bg-permukaan-sorot px-2 text-keterangan font-semibold text-teks-sekunder">
                                                     <ExternalLinkIcon aria-hidden="true" className="size-3" />
-                                                    Halaman DOKU
+                                                    Halaman {namaPenyedia}
                                                 </span>
                                             ) : null}
                                         </span>
@@ -417,7 +420,7 @@ export default function PanelBayarSnap({
                 </div>
                 <p className="flex items-center gap-1 text-keterangan text-teks-sekunder">
                     <LockIcon aria-hidden="true" className="size-3.5" />
-                    Pembayaran diproses DOKU dan terenkripsi.
+                    Pembayaran diproses {namaPenyedia} dan terenkripsi.
                 </p>
             </Kerangka>
             <BilahAksiForm>

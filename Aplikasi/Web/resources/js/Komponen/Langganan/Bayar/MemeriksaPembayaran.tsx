@@ -11,6 +11,7 @@ type PropsMemeriksaPembayaran = {
     uuidTagihan: string;
     /** Jeda pertanyaan status ke server (ms). */
     jedaPolling?: number;
+    namaPenyedia?: string;
 };
 
 /**
@@ -18,7 +19,11 @@ type PropsMemeriksaPembayaran = {
  * halaman menanyakan status ke server (yang menanyakannya ke DOKU) tiap beberapa detik, dan memuat ulang begitu
  * hasilnya berubah. Lunasnya tagihan tetap tidak pernah diputuskan di peramban.
  */
-export default function MemeriksaPembayaran({ uuidTagihan, jedaPolling = 6000 }: PropsMemeriksaPembayaran) {
+export default function MemeriksaPembayaran({
+    uuidTagihan,
+    jedaPolling = 6000,
+    namaPenyedia = 'penyedia pembayaran',
+}: PropsMemeriksaPembayaran) {
     const [memeriksa, AturMemeriksa] = useState(false);
     const [kabar, AturKabar] = useState<string | null>(null);
     const jalan = useRef(true);
@@ -80,8 +85,8 @@ export default function MemeriksaPembayaran({ uuidTagihan, jedaPolling = 6000 }:
                 </Pemberitahuan>
             ) : null}
             <p className="text-center text-keterangan text-teks-sekunder">
-                Belum membayar di halaman DOKU? Selesaikan di sana. Kalau waktunya habis, Anda bisa memilih cara bayar
-                lain di sini.
+                Belum membayar di halaman {namaPenyedia}? Selesaikan di sana. Kalau waktunya habis, Anda bisa memilih
+                cara bayar lain di sini.
             </p>
         </Card>
     );

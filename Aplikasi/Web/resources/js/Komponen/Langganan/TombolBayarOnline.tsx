@@ -11,6 +11,7 @@ export type PropsTombolBayarOnline = {
     keterangan?: string;
     /** `sekunder` saat ada cara bayar SNAP yang menjadi aksi utama halaman. */
     varian?: 'utama' | 'sekunder';
+    namaPenyedia?: string;
 };
 
 /**
@@ -26,6 +27,7 @@ export default function TombolBayarOnline({
     label = 'Bayar online',
     keterangan,
     varian = 'utama',
+    namaPenyedia = 'penyedia pembayaran',
 }: PropsTombolBayarOnline) {
     const [memproses, AturMemproses] = useState(false);
     const [galat, AturGalat] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export default function TombolBayarOnline({
             </div>
             <p className="text-keterangan text-teks-sekunder">
                 {keterangan ??
-                    'Anda akan diarahkan ke halaman pembayaran DOKU (QRIS, virtual account, e-wallet, dan kartu). Tagihan otomatis lunas setelah pembayaran dikonfirmasi.'}
+                    `Anda akan diarahkan ke halaman pembayaran ${namaPenyedia} (QRIS, virtual account, e-wallet, dan kartu). Tagihan otomatis lunas setelah pembayaran dikonfirmasi.`}
             </p>
             {galat ? (
                 <Pemberitahuan jenis="bahaya" judul="Pembayaran online gagal dimulai">

@@ -33,6 +33,8 @@ type PropsTagihan = {
     /** D-159: cara bayar SNAP (halaman bayar Payoung) dan apakah DOKU Checkout juga tersedia. */
     PilihanBayar?: PilihanBayar[];
     BolehCheckout?: boolean;
+    /** D-305: nama penyedia dari server (mis. "DOKU") untuk teks layar. */
+    NamaPenyedia?: string;
     BolehBatalkan: boolean;
     BolehUnggahBukti?: boolean;
     RekeningTujuan?: RekeningTujuan[];
@@ -45,6 +47,7 @@ export default function HalamanTagihanLangganan({
     BolehBayarOnline,
     PilihanBayar = [],
     BolehCheckout = BolehBayarOnline,
+    NamaPenyedia = 'penyedia pembayaran',
     BolehBatalkan,
     BolehUnggahBukti = false,
     RekeningTujuan = [],
@@ -91,6 +94,7 @@ export default function HalamanTagihanLangganan({
                     pembayaran={Pembayaran}
                     pilihan={PilihanBayar}
                     bolehCheckout={BolehCheckout}
+                    namaPenyedia={NamaPenyedia}
                 />
             ) : null}
             <RincianTagihan tagihan={Tagihan} />
@@ -130,6 +134,7 @@ type PropsAreaBayar = {
     pembayaran: PembayaranLangganan[];
     pilihan: PilihanBayar[];
     bolehCheckout: boolean;
+    namaPenyedia: string;
 };
 
 /** Pembayaran SNAP yang kode bayarnya masih berlaku, bila ada. */
@@ -151,14 +156,14 @@ function AmbilTampilanBerlaku(pembayaran: PembayaranLangganan | null) {
  * sebagai instruksi, kembali dari halaman DOKU tampil sebagai "memeriksa", hasil yang belum selesai (kedaluwarsa, belum
  * pasti, gagal) dijelaskan dulu sebelum pilihan cara bayar dibuka lagi, selain itu langsung pilihan cara bayar.
  */
-function AreaBayar({ tagihan, pembayaran, pilihan, bolehCheckout }: PropsAreaBayar) {
+function AreaBayar({ tagihan, pembayaran, pilihan, bolehCheckout, namaPenyedia }: PropsAreaBayar) {
     const [lihatPilihan, AturLihatPilihan] = useState(false);
     const [memeriksa, AturMemeriksa] = useState(false);
     const terbaru = pembayaran.find((baris) => baris.Metode === 'Gateway') ?? null;
     const tampilan = AmbilTampilanBerlaku(terbaru);
 
     if (pilihan.length === 0) {
-        return bolehCheckout ? <TombolBayarOnline uuidTagihan={tagihan.Uuid} /> : null;
+        return bolehCheckout ? <TombolBayarOnline uuidTagihan={tagihan.Uuid} namaPenyedia={namaPenyedia} /> : null;
     }
 
     if (tampilan !== null) {
@@ -170,12 +175,13 @@ function AreaBayar({ tagihan, pembayaran, pilihan, bolehCheckout }: PropsAreaBay
                 pilihan={pilihan}
                 awal={tampilan}
                 bolehCheckout={bolehCheckout}
+                namaPenyedia={namaPenyedia}
             />
         );
     }
 
     if (terbaru !== null && terbaru.Keadaan === 'Menunggu') {
-        return <MemeriksaPembayaran uuidTagihan={tagihan.Uuid} />;
+        return <MemeriksaPembayaran uuidTagihan={tagihan.Uuid} namaPenyedia={namaPenyedia} />;
     }
 
     const belumSelesai =
@@ -215,6 +221,7 @@ function AreaBayar({ tagihan, pembayaran, pilihan, bolehCheckout }: PropsAreaBay
             total={tagihan.Total}
             pilihan={pilihan}
             bolehCheckout={bolehCheckout}
+            namaPenyedia={namaPenyedia}
         />
     );
 }

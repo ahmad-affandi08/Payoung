@@ -572,7 +572,11 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
         expect(collect($props['PilihanBayar'])->pluck('Label')->all())->toBe(['QRIS', 'Virtual account BNI', 'Virtual account Mandiri', 'DANA', 'ShopeePay'])
             ->and($props['BolehBayarOnline'])->toBeTrue()
             ->and($props['Pembayaran'][0]['TampilanBayar']['Tampilan'])->toBe('Qr')
-            ->and($props['Pembayaran'][0]['LabelMetode'])->toBe('QRIS');
+            ->and($props['Pembayaran'][0]['LabelMetode'])->toBe('QRIS')
+            // D-305: nama penyedia untuk teks layar datang dari colokan, bukan tertulis di halaman.
+            ->and($props['NamaPenyedia'])->toBe('DOKU')
+            ->and($props['Pembayaran'][0]['Keadaan'])->toBe('Menunggu')
+            ->and($props['Pembayaran'][0]['KodeReferensi'])->toStartWith('PYG-');
     });
 });
 

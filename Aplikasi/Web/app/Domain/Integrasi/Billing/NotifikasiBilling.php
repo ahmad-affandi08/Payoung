@@ -19,5 +19,10 @@ final class NotifikasiBilling
         public readonly string $jumlah,
         public readonly string $idTransaksi,
         public readonly string $statusAsli,
+        /**
+         * Adaptor tidak bisa memastikan hasil pembayaran (pertanyaan status ke penyedia terus ditolak sampai lewat batas
+         * tunggu), bukan penyedia yang menyatakan belum dibayar. Lapisan umum tidak menebak dari kode galat penyedia.
+         */
+        public readonly bool $hasilTidakPasti = false,
     ) {}
 }

@@ -181,10 +181,7 @@ final class TerimaNotifikasiBillingLangganan
             return TagihanLanggananTenant::ALASAN_GAGAL;
         }
 
-        // Kode galat DOKU (7 angka, misal 4002601) pada pembayaran yang lewat batas: DOKU tak bisa memastikan hasilnya.
-        return preg_match('/^\d{7}$/', $notifikasi->statusAsli) === 1
-            ? TagihanLanggananTenant::ALASAN_TIDAK_PASTI
-            : TagihanLanggananTenant::ALASAN_KEDALUWARSA;
+        return $notifikasi->hasilTidakPasti ? TagihanLanggananTenant::ALASAN_TIDAK_PASTI : TagihanLanggananTenant::ALASAN_KEDALUWARSA;
     }
 
     /**

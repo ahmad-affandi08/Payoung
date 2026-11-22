@@ -118,6 +118,8 @@ final class LanggananKontroler extends Kontroler
             // D-159: cara bayar SNAP (halaman bayar Payoung) dan apakah DOKU Checkout (kartu & lainnya) juga tersedia.
             'PilihanBayar' => $terbuka && ! $data->Manual ? $penyedia->AmbilPilihanHalamanBayar() : [],
             'BolehCheckout' => $penyedia->CekCheckoutAktif(),
+            // D-305: nama penyedia untuk teks layar ("Halaman DOKU"), supaya mengganti penyedia tidak menyentuh teks halaman.
+            'NamaPenyedia' => $penyedia->AmbilLabel(),
             'BolehUnggahBukti' => $terbuka && $data->Manual && ! $adaPembayaranMenunggu && $rekening->Ambil() !== [],
             'RekeningTujuan' => $data->Manual ? $rekening->Ambil() : [],
             'BolehBatalkan' => $terbuka && ! $adaPembayaranMenunggu,

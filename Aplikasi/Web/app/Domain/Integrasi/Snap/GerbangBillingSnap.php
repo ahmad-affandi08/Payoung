@@ -194,6 +194,7 @@ final class GerbangBillingSnap
             jumlah: $paid ? PenguraiStatusSnap::AmbilJumlah($data) : '',
             idTransaksi: (string) ($rincian['ReferensiGerbang'] ?? ''),
             statusAsli: (string) ($data['latestTransactionStatus'] ?? $data['virtualAccountData']['paymentFlagStatus'] ?? $data['responseCode'] ?? ''),
+            hasilTidakPasti: ! $paid && ! $respons->successful(),
         );
     }
 
