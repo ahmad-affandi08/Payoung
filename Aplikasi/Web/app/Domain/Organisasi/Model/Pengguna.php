@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property string $KataSandi
  * @property bool $WajibGantiKataSandi kata sandi awal dibuat admin (D-22), wajib diganti saat pertama masuk
  * @property Carbon|null $EmailDiverifikasiPada
+ * @property bool $EmailBelumDibuktikan
  * @property string|null $Rahasia2fa
  * @property list<string>|null $KodePemulihan2fa
  * @property Carbon|null $DuaFaktorAktifPada
@@ -119,6 +120,7 @@ final class Pengguna extends ModelDasar implements KontrakDapatDiautentikasi, Ko
             'EmailDiverifikasiPada' => 'datetime',
             'WajibGantiKataSandi' => 'boolean',
             'KataSandiOtomatis' => 'boolean',
+            'EmailBelumDibuktikan' => 'boolean',
             'GoogleDitautkanPada' => 'datetime',
         ];
     }

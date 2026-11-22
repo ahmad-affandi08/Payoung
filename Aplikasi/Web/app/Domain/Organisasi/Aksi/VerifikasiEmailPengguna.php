@@ -22,8 +22,8 @@ final class VerifikasiEmailPengguna
             throw new PelanggaranAturanBisnis('TautanTidakValid', 'Tautan verifikasi tidak valid. Minta tautan baru.');
         }
 
-        if ($pengguna->EmailDiverifikasiPada === null) {
-            $pengguna->forceFill(['EmailDiverifikasiPada' => now()])->save();
+        if ($pengguna->EmailDiverifikasiPada === null || $pengguna->EmailBelumDibuktikan) {
+            $pengguna->forceFill(['EmailDiverifikasiPada' => $pengguna->EmailDiverifikasiPada ?? now(), 'EmailBelumDibuktikan' => false])->save();
         }
     }
 }

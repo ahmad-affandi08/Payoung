@@ -103,11 +103,12 @@ final class MasukDenganGoogle
     private function Tautkan(Pengguna $pengguna, IdentitasGoogle $identitas): void
     {
         DB::transaction(function () use ($pengguna, $identitas): void {
-            $tidakTepercaya = $pengguna->EmailDiverifikasiPada === null || $pengguna->WajibGantiKataSandi;
+            $tidakTepercaya = $pengguna->EmailDiverifikasiPada === null || $pengguna->WajibGantiKataSandi || $pengguna->EmailBelumDibuktikan;
             $perubahan = [
                 'GoogleSub' => $identitas->sub,
                 'GoogleDitautkanPada' => now(),
                 'EmailDiverifikasiPada' => $pengguna->EmailDiverifikasiPada ?? now(),
+                'EmailBelumDibuktikan' => false,
             ];
 
             if ($tidakTepercaya) {

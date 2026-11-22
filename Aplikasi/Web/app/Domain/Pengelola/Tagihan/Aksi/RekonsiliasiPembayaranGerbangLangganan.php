@@ -10,7 +10,10 @@ use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Tenant\Aksi\TerimaNotifikasiBillingLangganan;
 use App\Domain\Tenant\Enum\MetodePembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
+use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
+use App\Domain\Tenant\Model\PembayaranLangganan;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Throwable;
 
 /**
@@ -66,32 +69,72 @@ final class RekonsiliasiPembayaranGerbangLangganan
             ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada', 'Jumlah', 'MetodeBayar', 'RincianBayar', 'KedaluwarsaPada']);
 
         foreach ($daftar as $pembayaran) {
-            $hasil['Diperiksa']++;
-            $notifikasi = $this->penyedia->CekAktifUntuk($pembayaran->MetodeBayar)
-                ? $this->penyedia->TanyaStatus((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
-                : null;
+            $this->Periksa($pembayaran, $hasil);
+        }
 
-            if ($notifikasi === null) {
-                $hasil['Gagal']++;
-
-                continue;
-            }
-
-            if ($notifikasi->status === StatusPembayaranGerbang::Menunggu) {
-                $hasil['Menunggu']++;
-
-                continue;
-            }
-
-            try {
-                $this->terima->Jalankan($notifikasi) ? $hasil['Selesai']++ : $hasil['Gagal']++;
-            } catch (Throwable $galat) {
-                report($galat);
-                $hasil['Gagal']++;
-            }
+        // D-308: pembayaran yang ditutup "belum pasti" (pertanyaan status ke gerbang sendiri yang gagal) bisa jadi sudah
+        // dibayar. Tanpa putaran ini ia baru ditanyakan ulang saat pemilik membuka halaman tagihan, padahal pemilik yang
+        // sudah membayar belum tentu membukanya lagi. Hanya selama tagihannya masih terbuka dan paling lama `HARI_JENDELA`.
+        foreach ($this->AmbilDitutupBelumPasti() as $pembayaran) {
+            $this->Periksa($pembayaran, $hasil);
         }
 
         return $hasil;
+    }
+
+    /**
+     * @param  Hasil  $hasil
+     */
+    private function Periksa(PembayaranLangganan $pembayaran, array &$hasil): void
+    {
+        $hasil['Diperiksa']++;
+        $notifikasi = $this->penyedia->CekAktifUntuk($pembayaran->MetodeBayar)
+            ? $this->penyedia->TanyaStatus((string) $pembayaran->RefGateway, $pembayaran->MetodeBayar, $pembayaran->RincianBayar, $pembayaran->KedaluwarsaPada, $pembayaran->DibuatPada ?? CarbonImmutable::now(), $pembayaran->Jumlah)
+            : null;
+
+        if ($notifikasi === null) {
+            $hasil['Gagal']++;
+
+            return;
+        }
+
+        if ($notifikasi->status === StatusPembayaranGerbang::Menunggu) {
+            $hasil['Menunggu']++;
+
+            return;
+        }
+
+        try {
+            $this->terima->Jalankan($notifikasi) ? $hasil['Selesai']++ : $hasil['Gagal']++;
+        } catch (Throwable $galat) {
+            report($galat);
+            $hasil['Gagal']++;
+        }
+    }
+
+    /**
+     * @return Collection<int, PembayaranLangganan>
+     */
+    private function AmbilDitutupBelumPasti(): Collection
+    {
+        $kandidat = DaftarTagihanPlatform::KueriPembayaran()
+            ->where('Metode', MetodePembayaranLangganan::Gateway->value)
+            ->where('Status', StatusPembayaranLangganan::Ditolak->value)
+            ->where('AlasanTolak', 'like', TagihanLanggananTenant::ALASAN_TIDAK_PASTI.'%')
+            ->whereNotNull('RefGateway')
+            ->where('DibuatPada', '>=', CarbonImmutable::now()->subDays(self::HARI_JENDELA))
+            ->orderBy('DibuatPada')
+            ->limit(self::BATAS_PER_PUTARAN)
+            ->get(['Id', 'IdTenant', 'IdTagihanLangganan', 'RefGateway', 'DibuatPada', 'Jumlah', 'MetodeBayar', 'RincianBayar', 'KedaluwarsaPada']);
+
+        if ($kandidat->isEmpty()) {
+            return $kandidat;
+        }
+
+        $terbuka = DaftarTagihanPlatform::KueriTagihan()->whereKey($kandidat->pluck('IdTagihanLangganan')->all())->get()
+            ->filter(fn ($tagihan): bool => $tagihan->Status->CekTerbuka())->pluck('Id')->all();
+
+        return $kandidat->filter(fn (PembayaranLangganan $p): bool => in_array($p->IdTagihanLangganan, $terbuka, true))->values();
     }
 
     /**

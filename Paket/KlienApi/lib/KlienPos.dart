@@ -831,6 +831,10 @@ class KlienPos {
       throw const GalatJaringan('Tidak ada koneksi ke server.');
     } on http.ClientException catch (galat) {
       throw GalatJaringan(galat.message);
+    } on IOException {
+      // Jabat tangan TLS gagal (jam perangkat salah, sertifikat), koneksi diputus di tengah jalan, dan sejenisnya:
+      // masalah jalur ke server, bukan salah isi permintaan, jadi diperlakukan sama dengan offline dan dicoba lagi.
+      throw const GalatJaringan('Koneksi ke server gagal. Periksa jaringan dan jam perangkat.');
     }
 
     if (respons.statusCode >= 500) {
@@ -884,7 +888,9 @@ class KlienPos {
     }
 
     return GalatApi(
-      kode: status == 401 ? 'TokenPerangkatTidakValid' : 'GalatServer',
+      // Server Payoung selalu menjawab token tidak berlaku dengan badan `Galat` berkode (lihat atas). 401 tanpa badan itu
+      // datang dari perantara (proksi, WAF, halaman login jaringan), dan tidak boleh menghapus aktivasi perangkat.
+      kode: 'GalatServer',
       pesan: json['message'] is String ? json['message']! as String : 'Permintaan ditolak server ($status).',
       statusHttp: status,
     );

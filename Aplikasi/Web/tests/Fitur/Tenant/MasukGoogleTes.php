@@ -134,6 +134,32 @@ describe('Masuk akun yang sudah ada', function (): void {
         expect($anggota->WajibGantiKataSandi)->toBeFalse()->and($anggota->KataSandiOtomatis)->toBeTrue();
     });
 
+    it('akun buatan admin yang kata sandinya sudah diganti penyerang tetap diambil alih saat pemilik email menautkan Google (D-309)', function (): void {
+        $t = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
+        $anggota = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Admin);
+        // Keadaan setelah penyerang menambah email korban lewat Tambah staf lalu mengganti kata sandi awalnya.
+        $anggota->forceFill(['EmailDiverifikasiPada' => now(), 'WajibGantiKataSandi' => false, 'EmailBelumDibuktikan' => true])->save();
+        $lama = $anggota->KataSandi;
+
+        MasukLewatGoogleUji($this, ['email' => $anggota->Email])->assertRedirect();
+
+        $anggota->refresh();
+        expect($anggota->KataSandi)->not->toBe($lama)
+            ->and($anggota->KataSandiOtomatis)->toBeTrue()
+            ->and($anggota->EmailBelumDibuktikan)->toBeFalse();
+    });
+
+    it('akun yang email-nya sudah dibuktikan pemiliknya tidak diganti kata sandinya saat Google ditautkan', function (): void {
+        $t = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
+        $anggota = BantuanOrganisasi::TambahAnggota($t['Tenant']->Id, PeranTenantBawaan::Admin);
+        $anggota->forceFill(['EmailDiverifikasiPada' => now(), 'WajibGantiKataSandi' => false, 'EmailBelumDibuktikan' => false])->save();
+        $lama = $anggota->KataSandi;
+
+        MasukLewatGoogleUji($this, ['email' => $anggota->Email])->assertRedirect();
+
+        expect($anggota->refresh()->KataSandi)->toBe($lama)->and($anggota->KataSandiOtomatis)->toBeFalse();
+    });
+
     it('state tidak cocok atau alur kedaluwarsa: tidak ada yang masuk', function (): void {
         $t = BantuanOrganisasi::BuatTenant('Kopi Nusantara');
 

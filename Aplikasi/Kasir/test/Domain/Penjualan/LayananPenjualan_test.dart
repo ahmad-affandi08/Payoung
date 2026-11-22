@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:klien_api/KlienApi.dart' show DataAwal;
 import 'package:kasir/Data/BasisData/BasisDataKasir.dart';
 import 'package:kasir/Data/RepositoriKasir.dart';
+import 'package:kasir/Data/RepositoriPelanggan.dart';
 import 'package:kasir/Domain/GalatKasir.dart';
 import 'package:kasir/Domain/Katalog/KatalogLokal.dart';
 import 'package:kasir/Domain/Meja/KonteksPesananMeja.dart';
@@ -425,6 +426,36 @@ void main() {
   });
 
   group('bayar & simpan (BR-07.1, BR-07.4, BR-08.1, BR-08.6)', () {
+    test(
+      'galat cache pelanggan sesudah penjualan tersimpan tidak menggagalkan Bayar (tidak memancing penjualan ganda)',
+      () async {
+        await Siapkan();
+        final rusak = LayananPenjualan(
+          repositori: u.repositori,
+          repositoriPenjualan: u.repositoriPenjualan,
+          repositoriPelanggan: _PelangganRusak(u.db, u.repositori),
+          jam: () => u.jam,
+        );
+        final keranjang = KeranjangContoh().Salin(
+          pelanggan: () => const PelangganTerpilih(
+            uuid: '01K5PELANGGAN0000000000009',
+            nama: 'Toko Makmur Jaya',
+            noHpSamar: '0813****0001',
+          ),
+        );
+
+        final hasil = await rusak.Bayar(
+          keranjang: keranjang,
+          pembayaran: [PembayaranMasukan(metode: Metode('Tunai'), jumlah: Uang.DariBulat(100000))],
+          kasir: rina,
+          k: k,
+        );
+
+        expect(hasil.nomor, isNotEmpty);
+        expect(await u.db.select(u.db.penjualan).get(), hasLength(1));
+      },
+    );
+
     test('BR-07.4: tanpa shift terbuka tidak bisa menjual', () async {
       await Siapkan(bukaShift: false);
       await expectLater(
@@ -1044,5 +1075,15 @@ class _UlidTetap extends PembuatUlid {
       return nilai;
     }
     return super.Buat();
+  }
+}
+
+/// Cache pelanggan yang selalu gagal: dipakai membuktikan galatnya tidak sampai ke kasir.
+class _PelangganRusak extends RepositoriPelanggan {
+  _PelangganRusak(super.db, super.repositoriKasir);
+
+  @override
+  Future<void> CatatTransaksi(String uuid, String tanggal, List<String> uuidPromo) async {
+    throw StateError('cache rusak');
   }
 }

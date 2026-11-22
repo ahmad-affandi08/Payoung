@@ -45,7 +45,7 @@ final class TerapkanGantiEmail
                 throw new PelanggaranAturanBisnis('EmailTidakDapatDipakai', 'Email ini tidak dapat dipakai. Minta tautan untuk alamat lain dari halaman Keamanan akun.');
             }
 
-            $pengguna->forceFill(['Email' => $emailBaru, 'EmailDiverifikasiPada' => now()])->save();
+            $pengguna->forceFill(['Email' => $emailBaru, 'EmailDiverifikasiPada' => now(), 'EmailBelumDibuktikan' => false])->save();
             $this->auditAkun->Catat('akun.email-diganti', $pengguna);
         });
     }

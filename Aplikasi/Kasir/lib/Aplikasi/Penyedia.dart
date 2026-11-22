@@ -99,7 +99,16 @@ final penyediaFolderAplikasi = Provider<Directory?>((ref) => null);
 /// transaksi nyata tidak ikut hilang karena lupa mematikannya.
 class ModeLatihan extends Notifier<bool> {
   @override
-  bool build() => false;
+  bool build() {
+    // Mode latihan milik satu sesi kasir. Ganti kasir atau keluar ke layar pilih kasir mengembalikannya ke mati, supaya kasir
+    // berikutnya tidak menjual dalam mode latihan tanpa sadar (penjualan latihan tidak pernah disimpan atau dikirim).
+    ref.listen<String?>(penyediaSesi.select((s) => s.tahap == TahapSesi.Masuk ? s.kasir?.uuid : null), (lama, baru) {
+      if (lama != baru && state) {
+        state = false;
+      }
+    });
+    return false;
+  }
 
   void Atur(bool aktif) => state = aktif;
 }

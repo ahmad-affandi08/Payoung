@@ -1,3 +1,4 @@
+import 'dart:io' show HandshakeException;
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -1266,6 +1267,30 @@ void main() {
       await expectLater(klien.AmbilDataAwal(), throwsA(isA<GalatApi>()));
 
       expect(dilaporkan, ['TokenPerangkatTidakValid']);
+    });
+
+    test('jabat tangan TLS gagal dipetakan ke GalatJaringan (dicoba lagi), bukan galat tak terduga', () async {
+      final dilaporkan = <String>[];
+      final klien = BuatKlienBerkait(
+        (_) async => throw const HandshakeException('Certificate has expired'),
+        dilaporkan,
+      );
+
+      await expectLater(klien.AmbilDataAwal(), throwsA(isA<GalatJaringan>()));
+
+      expect(dilaporkan, isEmpty);
+    });
+
+    test('401 tanpa badan Galat (proksi, WAF, jaringan) tidak dianggap perangkat dicabut', () async {
+      final dilaporkan = <String>[];
+      final klien = BuatKlienBerkait((_) async => Json({'message': 'Unauthorized'}, 401), dilaporkan);
+
+      await expectLater(
+        klien.AmbilDataAwal(),
+        throwsA(isA<GalatApi>().having((g) => g.CekGalatPerantara(), 'perantara', isTrue)),
+      );
+
+      expect(dilaporkan, isEmpty);
     });
 
     test('aktivasi kode perangkat yang sudah dicabut tidak melaporkan apa pun', () async {

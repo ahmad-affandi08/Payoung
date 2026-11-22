@@ -97,8 +97,8 @@ final class TerimaUndanganAnggota
                 throw new PelanggaranAturanBisnis('EmailBerbeda', "Undangan ini untuk {$email}. Keluar, lalu masuk dengan email tersebut.");
             }
 
-            if ($penggunaMasuk->EmailDiverifikasiPada === null) {
-                $penggunaMasuk->forceFill(['EmailDiverifikasiPada' => now()])->save();
+            if ($penggunaMasuk->EmailDiverifikasiPada === null || $penggunaMasuk->EmailBelumDibuktikan) {
+                $penggunaMasuk->forceFill(['EmailDiverifikasiPada' => $penggunaMasuk->EmailDiverifikasiPada ?? now(), 'EmailBelumDibuktikan' => false])->save();
             }
 
             return $penggunaMasuk;

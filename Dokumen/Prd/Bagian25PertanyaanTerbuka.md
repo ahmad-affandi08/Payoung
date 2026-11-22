@@ -342,6 +342,7 @@
 | D-306 | Dari temuan lapangan, 22/11/2026. Pembayaran gerbang yang ditutup karena Payoung sendiri gagal menanyakan statusnya (hasil tak pasti) tidak boleh dianggap final: ditanyakan ulang selama 7 hari dan dilunasi lewat pembayaran penerus bila DOKU menyatakan lunas. Melengkapi D-159 dan D-305. |
 | D-307 | Dari pertanyaan pemilik produk, 22/11/2026. Lapisan umum (aksi tenant, kontroler, halaman) tidak boleh mengandung pengetahuan khusus penyedia pembayaran, termasuk bentuk kode galat dan nama penyedia pada teks layar. Penyedia menyatakan sendiri lewat colokan (`NotifikasiBilling.hasilTidakPasti`, `AmbilLabel()`). Memperketat D-179. |
 | D-308 | Dari permintaan pemindaian bug, 22/11/2026. Pembalikan pelunasan tidak boleh menyentuh piutang yang sudah dihapus-buku; satu nomor pesanan gerbang hanya boleh dipakai satu cara bayar; nominal isi saldo harus rupiah utuh; tautan email berisi token memakai alamat konfigurasi, bukan header Host. Temuan keamanan yang butuh keputusan desain (bukti PIN penyetuju di server, verifikasi email akun buatan admin) dicatat sebagai usulan, bukan diputuskan diam-diam. |
+| D-309 | Dari arahan pemilik produk, 22/11/2026: perbaikan keamanan dan keandalan tidak boleh menambah langkah bagi pengguna biasa. Karena itu akun buatan admin tetap langsung bisa masuk (penanda `EmailBelumDibuktikan` hanya mengubah apa yang terjadi saat Google ditautkan), dan PIN offline serta persetujuan wajah absensi tetap seperti keputusan sebelumnya (D-45, §25.2 no. 3). |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

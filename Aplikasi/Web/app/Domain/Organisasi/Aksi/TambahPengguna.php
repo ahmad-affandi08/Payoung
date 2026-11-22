@@ -83,6 +83,8 @@ final class TambahPengguna
                 'WajibGantiKataSandi' => $email !== null,
                 // Email diisi & dijamin admin tenant; tidak perlu verifikasi ulang agar bisa langsung masuk.
                 'EmailDiverifikasiPada' => $email === null ? null : now(),
+                // D-309: dijamin admin, bukan dibuktikan pemilik email. Bila Google ditautkan lewat kecocokan email, kata sandi diganti.
+                'EmailBelumDibuktikan' => $email !== null,
             ]);
 
             $peran = $hasilAkses['Peran'];

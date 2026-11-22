@@ -45,6 +45,7 @@ final class AturUlangKataSandi
                         'TokenIngat' => Str::random(60),
                         'KataSandiOtomatis' => false,
                         'EmailDiverifikasiPada' => $pengguna->EmailDiverifikasiPada ?? now(),
+                        'EmailBelumDibuktikan' => false,
                     ])->save();
                     // OWN-01 (PRD §16): token Aplikasi Owner ikut dicabut saat kata sandi diganti.
                     TokenAksesPengguna::query()->where('IdPengguna', $pengguna->Id)->whereNull('DicabutPada')->update(['DicabutPada' => now()]);

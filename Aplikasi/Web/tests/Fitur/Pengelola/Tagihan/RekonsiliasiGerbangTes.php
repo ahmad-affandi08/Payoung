@@ -7,6 +7,7 @@ use App\Domain\Pengelola\Tagihan\Aksi\RekonsiliasiPembayaranGerbangLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
@@ -143,6 +144,26 @@ describe('BR-P08.11 rekonsiliasi pembayaran gerbang tersangkut', function (): vo
         expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Gagal'])->toBe(1)
             ->and($pembayaran->refresh()->Status)->toBe(StatusPembayaranLangganan::Menunggu)
             ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Terbit);
+    });
+
+    it('D-308: pembayaran yang ditutup belum pasti dan ternyata sudah dibayar dilunasi oleh putaran terjadwal tanpa menunggu pemilik membuka halaman', function (): void {
+        ['Tagihan' => $tagihan, 'Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
+        $pembayaran->forceFill(['Status' => StatusPembayaranLangganan::Ditolak, 'AlasanTolak' => TagihanLanggananTenant::ALASAN_TIDAK_PASTI])->save();
+        AturStatusGerbangRekonsiliasi(JawabanStatusDoku($pembayaran, 'SUCCESS', $tagihan->Total));
+        Carbon::setTestNow('2026-09-27 03:30:00');
+
+        expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Selesai'])->toBe(1)
+            ->and($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Diperiksa'])->toBe(0);
+    });
+
+    it('D-308: pembayaran ditutup belum pasti pada tagihan yang sudah tidak terbuka tidak ditanyakan lagi', function (): void {
+        ['Tagihan' => $tagihan, 'Pembayaran' => $pembayaran] = SiapkanPembayaranTersangkut($this);
+        $pembayaran->forceFill(['Status' => StatusPembayaranLangganan::Ditolak, 'AlasanTolak' => TagihanLanggananTenant::ALASAN_TIDAK_PASTI])->save();
+        $tagihan->forceFill(['Status' => StatusTagihanLangganan::Dibatalkan])->save();
+        Carbon::setTestNow('2026-09-27 03:30:00');
+
+        expect(app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan()['Diperiksa'])->toBe(0);
     });
 
     it('jumlah dibayar berbeda tetap menunggu verifikasi manual dan berhenti ditanyakan setelah 7 hari', function (): void {

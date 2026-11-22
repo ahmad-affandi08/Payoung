@@ -1496,14 +1496,21 @@ class LayananPenjualan {
     });
     final tempo = pembayaran.where((p) => p.metode.Jenis == JenisMetodeBayar.tempo).firstOrNull;
     final uuidPelanggan = keranjang.pelanggan?.uuid;
-    if (tempo != null && uuidPelanggan != null) {
-      await repositoriPelanggan?.TambahSisaPiutang(uuidPelanggan, tempo.jumlah.KeString());
-    }
-    // F-16c bagian 3: jumlah transaksi & pemakaian promo pelanggan di cache ikut bertambah (promo offline berikutnya).
-    if (uuidPelanggan != null) {
-      await repositoriPelanggan?.CatatTransaksi(uuidPelanggan, hitungan.tanggalBisnis, [
-        for (final p in hitungan.promoTerpakai) p.uuid,
-      ]);
+    // Penjualan sudah tersimpan. Cache pelanggan di bawah hanya bantuan tampilan dan promo offline, dan disegarkan lagi
+    // oleh sinkron berikutnya. Galat di sini tidak boleh sampai ke kasir: ia akan mengira bayar gagal, mengetuk Bayar
+    // lagi, dan membuat penjualan kedua dengan uuid baru (penjualan ganda).
+    try {
+      if (tempo != null && uuidPelanggan != null) {
+        await repositoriPelanggan?.TambahSisaPiutang(uuidPelanggan, tempo.jumlah.KeString());
+      }
+      // F-16c bagian 3: jumlah transaksi & pemakaian promo pelanggan di cache ikut bertambah (promo offline berikutnya).
+      if (uuidPelanggan != null) {
+        await repositoriPelanggan?.CatatTransaksi(uuidPelanggan, hitungan.tanggalBisnis, [
+          for (final p in hitungan.promoTerpakai) p.uuid,
+        ]);
+      }
+    } on Object {
+      // Disengaja diam: lihat komentar di atas.
     }
 
     return PenjualanTersimpan(
