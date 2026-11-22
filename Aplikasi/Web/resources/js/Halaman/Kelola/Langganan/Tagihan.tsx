@@ -22,6 +22,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/Komponen/Ui/alert-dialog';
+import { AmbilJson } from '@/Pustaka/PermintaanJson';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PembayaranLangganan, PilihanBayar, TagihanLangganan } from '@/Tipe/TagihanLangganan';
 
@@ -193,7 +194,10 @@ function AreaBayar({ tagihan, pembayaran, pilihan, bolehCheckout }: PropsAreaBay
                             memproses={memeriksa}
                             onClick={() => {
                                 AturMemeriksa(true);
-                                router.reload({ onFinish: () => AturMemeriksa(false) });
+                                // Menanyakan status ke server (yang bertanya ke DOKU), lalu memuat ulang apa pun hasilnya.
+                                void AmbilJson(`/kelola/langganan/tagihan/${tagihan.Uuid}/status-bayar`)
+                                    .catch(() => undefined)
+                                    .finally(() => router.reload({ onFinish: () => AturMemeriksa(false) }));
                             }}
                         >
                             Cek lagi

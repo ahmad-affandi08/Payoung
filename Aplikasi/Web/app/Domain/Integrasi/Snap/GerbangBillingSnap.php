@@ -305,10 +305,22 @@ final class GerbangBillingSnap
      */
     private function TanyaVa(array $rincian): array
     {
+        // Rincian menyimpan nilai yang sudah dipangkas (nomor VA tampil ke pembeli tanpa spasi). SNAP meminta
+        // `partnerServiceId` rata kanan 8 karakter berspasi dan `virtualAccountNo` = awalan berspasi + `customerNo`;
+        // kalau spasinya hilang (BIN 5 digit seperti BRI dan Mandiri) DOKU menjawab 4002601 "format isian tidak sah".
+        $awalan = trim((string) ($rincian['PartnerServiceId'] ?? ''));
+        $nomorVa = trim((string) ($rincian['NomorVa'] ?? ''));
+        $pelanggan = trim((string) ($rincian['CustomerNo'] ?? ''));
+
+        if ($pelanggan === '' && $awalan !== '' && str_starts_with($nomorVa, $awalan)) {
+            $pelanggan = substr($nomorVa, strlen($awalan));
+        }
+
+        $awalanBerspasi = str_pad($awalan, 8, ' ', STR_PAD_LEFT);
         $respons = $this->klien->Kirim(self::TARGET_VA_STATUS, [
-            'partnerServiceId' => (string) ($rincian['PartnerServiceId'] ?? ''),
-            'customerNo' => (string) ($rincian['CustomerNo'] ?? ''),
-            'virtualAccountNo' => (string) ($rincian['NomorVa'] ?? ''),
+            'partnerServiceId' => $awalanBerspasi,
+            'customerNo' => $pelanggan,
+            'virtualAccountNo' => $awalanBerspasi.$pelanggan,
         ]);
 
         return [$respons, $respons->successful() && is_array($respons->json()) ? PenguraiStatusSnap::UraiVirtualAccount($respons->json()) : StatusPembayaranGerbang::Menunggu];

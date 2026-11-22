@@ -253,6 +253,30 @@ describe('D-159 membuat pembayaran SNAP', function (): void {
             ->and($kirim['additionalInfo']['channel'])->toBe('VIRTUAL_ACCOUNT_BANK_MANDIRI');
     });
 
+    it('status virtual account BIN 5 digit: partnerServiceId dikirim 8 karakter berspasi dan virtualAccountNo = awalan + customerNo (penyebab 4002601)', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        // DOKU menjawab dengan awalan berspasi dan nomor VA berspasi. Nomor yang tampil ke pembeli dipangkas.
+        AturStatusSnap('/virtual-accounts/bi-snap-va/v1.1/transfer-va/create-va', [
+            'responseCode' => '2002700',
+            'responseMessage' => 'Successful',
+            'virtualAccountData' => ['partnerServiceId' => '   86188', 'customerNo' => '0123456789', 'virtualAccountNo' => '   861880123456789'],
+        ]);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'VirtualAccount', 'Kanal' => 'VIRTUAL_ACCOUNT_BANK_MANDIRI'])
+            ->assertOk()
+            ->assertJsonPath('Pembayaran.TampilanBayar.NomorVa', '861880123456789');
+        $pembayaran = PembayaranSnapUji($tagihan);
+        AturStatusSnap('/orders/v1.0/transfer-va/status', ['responseCode' => '2002600', 'virtualAccountData' => ['paymentFlagStatus' => '01']]);
+
+        KirimNotifikasiSnap($this, 'v1.0/transfer-va/payment', ['trxId' => $pembayaran->RefGateway, 'virtualAccountNo' => 'x'])->assertOk();
+
+        $kirim = PermintaanSnapKe('/orders/v1.0/transfer-va/status')[0]->data();
+        expect($kirim['partnerServiceId'])->toBe('   86188')
+            ->and($kirim['customerNo'])->toBe('0123456789')
+            ->and($kirim['virtualAccountNo'])->toBe('   861880123456789')
+            ->and(strlen($kirim['partnerServiceId']))->toBe(8);
+    });
+
     it('DANA dan ShopeePay: tautan aplikasi dompet tampil; DANA memakai urlParam, ShopeePay urlParams', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
@@ -489,6 +513,54 @@ describe('D-159 pelunasan hanya dari status DOKU', function (): void {
         Cache::flush();
         AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-query', ['responseCode' => '2005100', 'latestTransactionStatus' => '00']);
         BantuanTagihan::Masuk($this, $pemilik, $tenant)->getJson($url)->assertOk()->assertJson(['Lunas' => true, 'MasihMenunggu' => false, 'StatusTagihan' => 'Lunas']);
+    });
+
+    it('pembayaran yang ditutup belum pasti ditanyakan ulang: begitu DOKU menjawab lunas, tagihan lunas lewat pembayaran penerus (kasus client sudah transfer)', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'VirtualAccount', 'Kanal' => 'VIRTUAL_ACCOUNT_BNI'])->assertOk();
+        $asli = PembayaranSnapUji($tagihan);
+        AturStatusSnap('/orders/v1.0/transfer-va/status', ['responseCode' => '4002601', 'responseMessage' => 'Invalid Field Format'], 400);
+
+        // Pertanyaan status terus ditolak sampai lewat 24 jam: pembayaran ditutup sebagai belum pasti.
+        Carbon::setTestNow('2026-09-28 05:00:00');
+        app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan();
+        expect(PembayaranSnapUji($tagihan)->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and(TagihanLanggananTenant::AmbilKeadaanBayar(PembayaranSnapUji($tagihan)))->toBe('TidakPasti');
+
+        // Isian diperbaiki: DOKU kini menjawab, dan ternyata VA itu sudah dibayar.
+        Cache::flush();
+        AturStatusSnap('/orders/v1.0/transfer-va/status', ['responseCode' => '2002600', 'virtualAccountData' => ['paymentFlagStatus' => '00']]);
+        BantuanTagihan::Masuk($this, $pemilik, $tenant)
+            ->getJson(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}/status-bayar"))
+            ->assertOk()
+            ->assertJson(['Lunas' => true, 'StatusTagihan' => 'Lunas']);
+
+        $semua = PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->orderBy('Id')->get();
+        expect($tagihan->refresh()->Status)->toBe(StatusTagihanLangganan::Lunas)
+            ->and($semua)->toHaveCount(2)
+            ->and($semua[0]->Status)->toBe(StatusPembayaranLangganan::Ditolak)
+            ->and($semua[1]->Status)->toBe(StatusPembayaranLangganan::Diterima)
+            ->and($semua[1]->RefGateway)->toBe($asli->RefGateway.'+T');
+    });
+
+    it('pembayaran ditutup kedaluwarsa biasa (DOKU menjawab belum dibayar) tidak ditanyakan ulang', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'Qris'])->assertOk();
+        AturStatusSnap('/snap-adapter/b2b/v1.0/qr/qr-mpm-query', ['responseCode' => '2005100', 'latestTransactionStatus' => '01']);
+        Carbon::setTestNow('2026-09-27 04:20:00');
+        app(RekonsiliasiPembayaranGerbangLangganan::class)->Jalankan();
+        expect(TagihanLanggananTenant::AmbilKeadaanBayar(PembayaranSnapUji($tagihan)))->toBe('Kedaluwarsa');
+        $sebelum = count(PermintaanSnapKe('/snap-adapter/b2b/v1.0/qr/qr-mpm-query'));
+
+        Cache::flush();
+        BantuanTagihan::Masuk($this, $pemilik, $tenant)
+            ->getJson(BantuanTagihan::Url("/kelola/langganan/tagihan/{$tagihan->Uuid}/status-bayar"))
+            ->assertOk()
+            ->assertJson(['Lunas' => false, 'MasihMenunggu' => false, 'Keadaan' => 'Kedaluwarsa']);
+
+        expect(count(PermintaanSnapKe('/snap-adapter/b2b/v1.0/qr/qr-mpm-query')))->toBe($sebelum);
     });
 
     it('halaman tagihan membawa pilihan bayar dan menampilkan ulang QR yang masih berlaku', function (): void {
