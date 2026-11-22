@@ -25,6 +25,7 @@ import { AmbilTandaDesimal, BandingkanDesimal, CekDesimalValid, JumlahkanDesimal
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
 import type { BarisDetailTransferStok, PropsDetailTransferStok } from '@/Tipe/DokumenPersediaan';
+import { RingkasDesimal } from '@/Pustaka/Format';
 
 const alamat = '/kelola/persediaan/transfer';
 
@@ -164,7 +165,7 @@ export default function HalamanDetailTransferStok({
     const [tanggalTerima, AturTanggalTerima] = useState(HariIni);
     const [terima, AturTerima] = useState<Record<number, string>>(() =>
         Object.fromEntries(
-            Baris.map((b) => [b.Urutan, AmbilTandaDesimal(b.JumlahSisa) > 0 ? b.JumlahSisa.replace(/\.?0+$/, '') : '']),
+            Baris.map((b) => [b.Urutan, AmbilTandaDesimal(b.JumlahSisa) > 0 ? RingkasDesimal(b.JumlahSisa) : '']),
         ),
     );
     const [rusak, AturRusak] = useState<Record<number, string>>({});

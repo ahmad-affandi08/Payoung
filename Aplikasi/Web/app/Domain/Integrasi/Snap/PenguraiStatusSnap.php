@@ -47,6 +47,11 @@ final class PenguraiStatusSnap
         $alasan = is_array($va['paymentFlagReason'] ?? null) ? $va['paymentFlagReason'] : [];
         $teks = mb_strtolower(self::Teks($alasan['english'] ?? null).' '.self::Teks($alasan['indonesia'] ?? null));
 
+        // Teks bernegasi ("belum dibayar", "not paid", "payment failed") tidak boleh dibaca lunas hanya karena memuat kata "dibayar".
+        if (preg_match('/\b(belum|bukan|tidak|not|no|unpaid|failed|gagal|pending|expired|kedaluwarsa|menunggu|waiting)\b/u', $teks) === 1) {
+            return StatusPembayaranGerbang::Menunggu;
+        }
+
         return preg_match('/\b(success|successful|paid|lunas|berhasil|dibayar|sukses)\b/u', $teks) === 1
             ? StatusPembayaranGerbang::Lunas
             : StatusPembayaranGerbang::Menunggu;

@@ -10,7 +10,7 @@ import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
-import { FormatRupiah } from '@/Pustaka/Format';
+import { FormatRupiah, RingkasDesimal } from '@/Pustaka/Format';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
 import type { PropsBersamaAplikasi } from '@/Tipe/Aplikasi';
@@ -120,7 +120,7 @@ export default function HalamanDetailPreOrder({ Pesanan: p, OpsiAkun, OpsiCara, 
                                 <span className="font-semibold break-words">{b.NamaProduk}</span>
                                 <span className="text-keterangan text-teks-sekunder">
                                     {[
-                                        `${b.Jumlah.replace(/\.?0+$/, '')} × ${FormatRupiah(b.HargaSatuan)}`,
+                                        `${RingkasDesimal(b.Jumlah)} × ${FormatRupiah(b.HargaSatuan)}`,
                                         ...b.Pilihan,
                                         b.Catatan,
                                     ]

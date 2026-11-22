@@ -68,11 +68,11 @@ describe('IlustrasiBayar (D-305): gerak SVG per hasil', () => {
 });
 
 describe('HasilPembayaran (D-305): hasil yang belum selesai dijelaskan, bukan "ditolak"', () => {
-    it('kedaluwarsa: jelas tidak ada uang terpotong dan tanpa kode referensi', () => {
+    it('kedaluwarsa: sudah sempat bayar jangan bayar ulang, dan tanpa kode referensi', () => {
         render(<HasilPembayaran keadaan="Kedaluwarsa" kodeReferensi="PYG-TVWXYZ00" />);
 
         expect(screen.getByRole('heading', { name: 'Waktu bayar habis' })).toBeTruthy();
-        expect(screen.getByText(/tidak ada uang Anda yang terpotong/)).toBeTruthy();
+        expect(screen.getByText(/jangan bayar ulang dan hubungi Bantuan/)).toBeTruthy();
         expect(screen.queryByText('PYG-TVWXYZ00')).toBeNull();
     });
 

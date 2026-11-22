@@ -1,1 +1,0 @@
-function e(e){let t=[];e.Berat&&t.push(`${e.Berat.replace(/\.?0+$/,``).replace(`.`,`,`)} kg`);for(let n of e.Item)t.push(`${n.Nama} ×${n.Jumlah}`);return t.length>0?t.join(` | `):`-`}export{e as t};

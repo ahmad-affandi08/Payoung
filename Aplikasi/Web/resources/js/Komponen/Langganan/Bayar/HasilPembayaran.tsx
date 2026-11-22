@@ -15,7 +15,7 @@ const isiHasil: Record<KeadaanHasil, { ilustrasi: JenisIlustrasiBayar; judul: st
     Kedaluwarsa: {
         ilustrasi: 'kedaluwarsa',
         judul: 'Waktu bayar habis',
-        teks: 'Kode bayar sebelumnya sudah tidak berlaku dan tidak ada uang Anda yang terpotong. Pilih cara bayar untuk membuat kode baru.',
+        teks: 'Kode bayar sebelumnya sudah tidak berlaku. Kalau Anda sudah sempat membayar, jangan bayar ulang dan hubungi Bantuan. Kalau belum, pilih cara bayar untuk membuat kode baru.',
     },
     TidakPasti: {
         ilustrasi: 'tidakPasti',
@@ -25,7 +25,7 @@ const isiHasil: Record<KeadaanHasil, { ilustrasi: JenisIlustrasiBayar; judul: st
     Gagal: {
         ilustrasi: 'gagal',
         judul: 'Pembayaran belum selesai',
-        teks: 'Pembayaran dibatalkan atau tidak diteruskan oleh penyedia pembayaran. Tidak ada uang Anda yang terpotong. Silakan pilih cara bayar lagi.',
+        teks: 'Pembayaran dibatalkan atau tidak diteruskan oleh penyedia pembayaran. Kalau saldo Anda sempat terpotong, jangan bayar ulang dan hubungi Bantuan. Kalau tidak, silakan pilih cara bayar lagi.',
     },
 };
 

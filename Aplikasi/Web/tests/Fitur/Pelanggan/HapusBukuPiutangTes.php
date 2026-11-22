@@ -8,10 +8,12 @@ use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Bersama\Dokumen\Enum\StatusDokumenTerposting;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Pelanggan\Enum\StatusPembayaranPiutang;
 use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Layanan\PencatatPiutangPenjualan;
 use App\Domain\Pelanggan\Model\HapusBukuPiutang;
 use App\Domain\Pelanggan\Model\Pelanggan;
+use App\Domain\Pelanggan\Model\PembayaranPiutang;
 use App\Domain\Pelanggan\Model\Piutang;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
@@ -166,6 +168,30 @@ describe('E8 hapus-buku piutang', function (): void {
             ->and($pencatat->PeriksaBisaDiretur((int) $k['P1']->IdPenjualan))->toContain('sudah dihapus-buku')
             ->and($pencatat->PeriksaBisaBatal((int) $k['P2']->IdPenjualan))->toBeNull()
             ->and($pencatat->PeriksaBisaDiretur((int) $k['P2']->IdPenjualan))->toBeNull();
+    });
+
+    it('pelunasan sebagian atas piutang yang kemudian dihapus-buku tidak bisa dibatalkan sebelum hapus-bukunya dibatalkan', function (): void {
+        $k = SiapkanPiutangHapusBuku($this);
+        $idTenant = $k['Tenant']->Id;
+        $this->post('/kelola/piutang/pelunasan', [
+            'UuidPelanggan' => $k['Toko']->Uuid,
+            'UuidAkun' => BantuanPembelian::AkunKas()->Uuid,
+            'Tanggal' => BantuanPembelian::Hari()->format('Y-m-d'),
+            'Alokasi' => [['UuidPiutang' => $k['P1']->Uuid, 'Jumlah' => '10000']],
+        ])->assertSessionHasNoErrors();
+        $bayar = PembayaranPiutang::query()->sole();
+        $this->post("/kelola/piutang/{$k['P1']->Uuid}/hapus-buku", IsianHapusBuku())->assertSessionHasNoErrors();
+        $dokumen = HapusBukuPiutang::query()->sole();
+        $saldoSebelum = BantuanPembelian::SaldoPeran($idTenant, PeranAkun::PiutangUsaha);
+
+        $this->post("/kelola/piutang/pelunasan/{$bayar->Uuid}/batalkan", ['Alasan' => 'Salah pilih pelanggan'])->assertSessionHasErrors('Umum');
+        expect($bayar->refresh()->Status)->toBe(StatusPembayaranPiutang::Diposting)
+            ->and(BantuanPembelian::SaldoPeran($idTenant, PeranAkun::PiutangUsaha))->toBe($saldoSebelum);
+
+        // Setelah hapus-buku dibatalkan, pelunasan boleh dibatalkan dan buku besar tetap cocok.
+        $this->post("/kelola/piutang/hapus-buku/{$dokumen->Uuid}/batalkan", ['Alasan' => 'Pelanggan ternyata sanggup membayar'])->assertSessionHasNoErrors();
+        $this->post("/kelola/piutang/pelunasan/{$bayar->Uuid}/batalkan", ['Alasan' => 'Salah pilih pelanggan'])->assertSessionHasNoErrors();
+        expect(BantuanPembelian::PeriksaInvarian($idTenant))->toBe([]);
     });
 
     it('izin: kasir tidak bisa melihat. Supervisor melihat riwayat tetapi tidak bisa menghapus-buku. Tenant lain tidak melihat dokumennya', function (): void {

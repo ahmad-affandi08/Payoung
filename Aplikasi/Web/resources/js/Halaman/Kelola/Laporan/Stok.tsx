@@ -8,7 +8,7 @@ import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import { Label } from '@/Komponen/Ui/label';
-import { FormatRupiah } from '@/Pustaka/Format';
+import { FormatRupiah, RingkasDesimal } from '@/Pustaka/Format';
 import { BuatUrlKartuStok, FormatJumlahStok } from '@/Pustaka/FormatPersediaan';
 import { FormatTanggal } from '@/Pustaka/FormatWaktu';
 import { PakaiSektor } from '@/Pustaka/Sektor';
@@ -294,7 +294,7 @@ export function BuatUrlDrafProduksi(b: BarisRencanaProduksi, tanggal: string): s
     const kueri = new URLSearchParams({
         produk: b.UuidProduk,
         gudang: b.UuidGudang,
-        jumlah: b.Rekomendasi.replace(/\.?0+$/, ''),
+        jumlah: RingkasDesimal(b.Rekomendasi),
         tanggal,
     });
 

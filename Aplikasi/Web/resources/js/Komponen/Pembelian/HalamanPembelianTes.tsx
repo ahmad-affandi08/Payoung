@@ -539,6 +539,52 @@ describe('Halaman pembelian (F-04 fase 1)', () => {
         );
     });
 
+    it('terima dari PO: sisa bilangan bulat berakhiran nol dari server ("100", "20") tidak boleh terpangkas jadi "1" dan "2"', () => {
+        // Server meringkas "100.0000" jadi "100" (strippedOfTrailingZeros), jadi Sisa sungguhan tidak punya titik desimal.
+        RenderUji(
+            <HalamanFormPenerimaan
+                Mode="Penerimaan"
+                PesananTerbuka={[]}
+                Pesanan={{
+                    Uuid,
+                    Nomor: 'PO/UTAMA/2609/0002',
+                    TanggalPenerimaan: '2026-09-29',
+                    NamaPemasok: Pemasok.Nama,
+                    UuidGudang: GudangUtama.Uuid,
+                    NamaGudang: 'Toko Utama',
+                    Ongkir: '0.00',
+                    OngkirTerpakai: '0.00',
+                    Baris: [
+                        BarisPesananPenerimaan({ Sisa: '100', Jumlah: '100', JumlahDiterima: '0' }),
+                        BarisPesananPenerimaan({
+                            IdBarisPesanan: 12,
+                            NamaProduk: 'Gula Pasir 1 kg',
+                            Sku: 'GLA',
+                            Sisa: '20',
+                        }),
+                        BarisPesananPenerimaan({
+                            IdBarisPesanan: 13,
+                            NamaProduk: 'Beras Pandan Wangi 5 kg',
+                            Sku: 'BRS',
+                            Sisa: '12.5',
+                        }),
+                    ],
+                }}
+                OpsiPemasok={[Pemasok]}
+                OpsiGudang={[GudangUtama]}
+                OpsiAkun={[]}
+                UangLaci={{ Total: '0.00', PerGudang: {} }}
+                HariIni="2026-09-30"
+                Lampiran={{ Ekstensi: ['pdf', 'jpg'], UkuranMaksimalKb: 5120 }}
+                MaksimalBaris={500}
+            />,
+        );
+
+        expect((screen.getByLabelText('Diterima Minyak Goreng Sawit 2 L') as HTMLInputElement).value).toBe('100');
+        expect((screen.getByLabelText('Diterima Gula Pasir 1 kg') as HTMLInputElement).value).toBe('20');
+        expect((screen.getByLabelText('Diterima Beras Pandan Wangi 5 kg') as HTMLInputElement).value).toBe('12,5');
+    });
+
     it('belanja stok bayar nanti: tanpa akun kas, pemasok wajib, tempo terisi dari termin pemasok (audit #20)', () => {
         RenderUji(
             <HalamanFormPenerimaan

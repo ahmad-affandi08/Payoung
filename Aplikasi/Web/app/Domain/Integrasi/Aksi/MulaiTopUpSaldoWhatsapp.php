@@ -49,6 +49,11 @@ final class MulaiTopUpSaldoWhatsapp
             throw new PelanggaranAturanBisnis('JumlahTidakSah', 'Jumlah isi saldo antara '.$minimal->FormatRupiah().' dan '.Uang::Dari(self::MAKS_JUMLAH)->FormatRupiah().'.', 'Jumlah');
         }
 
+        // Gerbang menagih rupiah utuh. Pecahan akan dibulatkan di sisi gerbang sehingga uang masuk tidak sama dengan saldo.
+        if (preg_match('/^\d+(\.0+)?$/', $jumlah->KeString()) !== 1) {
+            throw new PelanggaranAturanBisnis('JumlahTidakSah', 'Jumlah isi saldo harus rupiah utuh, tanpa sen.', 'Jumlah');
+        }
+
         if (! $this->penyedia->CekCheckoutAktif()) {
             throw new PelanggaranAturanBisnis('PembayaranBelumSiap', 'Pembayaran online belum tersedia. Hubungi dukungan Payoung.', statusHttp: 409);
         }

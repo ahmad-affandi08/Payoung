@@ -51,7 +51,13 @@ final class MulaiPembayaranGerbangLangganan
             throw new PelanggaranAturanBisnis('GerbangBillingTidakAktif', 'Pembayaran online belum tersedia. Silakan transfer manual dan unggah buktinya.');
         }
 
-        $pembayaran = $this->Siapkan($uuidTagihan, $idPengguna, $namaPengguna, $emailPengguna, null, null)[0];
+        [$pembayaran, $baru] = $this->Siapkan($uuidTagihan, $idPengguna, $namaPengguna, $emailPengguna, null, null);
+
+        // Pembayaran SNAP yang masih berlaku dikembalikan apa adanya oleh `Siapkan`. Memakai ulang nomor pesanannya untuk
+        // transaksi Checkout berarti dua cara bayar hidup bersamaan di nomor pesanan yang sama.
+        if (! $baru) {
+            throw new PelanggaranAturanBisnis('PembayaranBerjalan', 'Masih ada pembayaran online untuk tagihan ini yang belum selesai. Selesaikan dulu atau tunggu sampai kedaluwarsa.');
+        }
 
         return $this->BuatDiGerbang($pembayaran, $namaPengguna, $emailPengguna, $urlKembali);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Organisasi\Aksi;
 
+use App\Domain\Bersama\Web\AlamatDomain;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Surel\TautanAturUlangKataSandi;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -29,7 +30,9 @@ final class KirimTautanAturUlangKataSandi
                     return;
                 }
 
-                $tautan = route('atur-ulang-kata-sandi', ['token' => $token, 'email' => $pengguna->Email]);
+                // Alamat dasar dari konfigurasi, bukan header Host permintaan: host yang dipalsukan penyerang tidak boleh sampai ke
+                // tautan resmi berisi token atur ulang (host-header poisoning).
+                $tautan = AlamatDomain::BuatUrlAbsolutTenant(route('atur-ulang-kata-sandi', ['token' => $token, 'email' => $pengguna->Email], false));
                 $menit = (int) config('auth.passwords.users.expire');
 
                 try {

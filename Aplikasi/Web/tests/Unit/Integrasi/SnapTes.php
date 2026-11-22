@@ -37,6 +37,8 @@ describe('PenguraiStatusSnap', function (): void {
                 'virtualAccountData' => ['paymentFlagReason' => ['english' => 'Pending', 'indonesia' => 'Menunggu'], 'paidAmount' => ['value' => '149000.00']],
             ]))->toBe(StatusPembayaranGerbang::Menunggu)
             ->and(PenguraiStatusSnap::UraiVirtualAccount(['virtualAccountData' => ['paymentFlagReason' => ['english' => 'Success']]]))->toBe(StatusPembayaranGerbang::Lunas)
+            ->and(PenguraiStatusSnap::UraiVirtualAccount(['virtualAccountData' => ['paymentFlagReason' => ['english' => 'Not paid', 'indonesia' => 'Belum dibayar']]]))->toBe(StatusPembayaranGerbang::Menunggu)
+            ->and(PenguraiStatusSnap::UraiVirtualAccount(['virtualAccountData' => ['paymentFlagReason' => ['english' => 'Payment failed']]]))->toBe(StatusPembayaranGerbang::Menunggu)
             ->and(PenguraiStatusSnap::UraiVirtualAccount([]))->toBe(StatusPembayaranGerbang::Menunggu);
     });
 

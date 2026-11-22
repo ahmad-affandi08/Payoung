@@ -15,6 +15,7 @@ use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Pelanggan\Enum\StatusPembayaranPiutang;
+use App\Domain\Pelanggan\Enum\StatusPiutang;
 use App\Domain\Pelanggan\Model\PembayaranPiutang;
 use App\Domain\Pelanggan\Model\PembayaranPiutangAlokasi;
 use App\Domain\Pelanggan\Model\Piutang;
@@ -62,6 +63,16 @@ final class BatalkanPembayaranPiutang
 
             if ($statusGiro === StatusGiro::Menunggu && ! $olehGiro) {
                 throw new PelanggaranAturanBisnis('PakaiTolakGiro', 'Pembayaran ini memakai giro yang belum cair. Batalkan lewat "Tolak giro" di halaman Giro.');
+            }
+
+            // Piutang yang sudah dihapus-buku tidak boleh menerima kembali sisanya: jurnal pembaliknya menambah Dr Piutang Usaha
+            // sementara hapus-bukunya sudah mengkreditnya, sehingga buku besar menyimpang dari Σ sisa piutang.
+            foreach ($alokasi as $a) {
+                $dihapusBuku = $piutang->get($a->IdPiutang);
+
+                if ($dihapusBuku !== null && $dihapusBuku->Status === StatusPiutang::DihapusBuku) {
+                    throw new PelanggaranAturanBisnis('PiutangDihapusBuku', "Piutang {$dihapusBuku->Nomor} sudah dihapus-buku. Batalkan hapus-bukunya dulu di halaman Piutang.");
+                }
             }
 
             foreach ($alokasi as $a) {

@@ -70,9 +70,27 @@ final class PenjagaAlamatWebhook
 
     public static function CekIpPublik(string $ip): bool
     {
-        // IPv6 yang memetakan IPv4 (::ffff:10.0.0.1) diperiksa sebagai IPv4-nya.
-        if (preg_match('/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i', $ip, $cocok) === 1) {
-            $ip = $cocok[1];
+        // IPv6 yang menyematkan IPv4 (::ffff:a.b.c.d maupun heksadesimal ::ffff:7f00:1, NAT64 64:ff9b::/96, 6to4 2002::/16,
+        // kompatibel ::/96) diperiksa sebagai IPv4-nya. Memakai bentuk biner supaya semua penulisan setara.
+        $biner = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false ? @inet_pton($ip) : false;
+
+        if (is_string($biner) && strlen($biner) === 16) {
+            $awal80 = substr($biner, 0, 10) === str_repeat("\0", 10);
+            $tersemat = null;
+
+            if ($awal80 && (substr($biner, 10, 2) === "\xff\xff" || substr($biner, 10, 2) === "\0\0")) {
+                $tersemat = substr($biner, 12, 4);
+            } elseif (str_starts_with($biner, "\x00\x64\xff\x9b".str_repeat("\0", 8))) {
+                $tersemat = substr($biner, 12, 4);
+            } elseif (str_starts_with($biner, "\x20\x02")) {
+                $tersemat = substr($biner, 2, 4);
+            }
+
+            if ($tersemat !== null) {
+                $ipv4 = inet_ntop($tersemat);
+
+                return $ipv4 !== false && self::CekIpPublik($ipv4);
+            }
         }
 
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {

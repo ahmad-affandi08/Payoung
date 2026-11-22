@@ -60,6 +60,19 @@ describe('Minta tautan (BR-00.9, §25 no. 18)', function (): void {
             ->not->toBe(AmbilTokenAturUlangUji());
     });
 
+    it('tautan atur ulang memakai alamat dari konfigurasi, bukan header Host yang dipalsukan penyerang', function (): void {
+        $this->withServerVariables(['HTTP_HOST' => 'jahat.example'])->post('http://jahat.example/lupa-kata-sandi', ['Email' => 'rina@kopinusantara.id']);
+
+        $tautan = '';
+        Mail::assertQueued(TautanAturUlangKataSandi::class, function (TautanAturUlangKataSandi $surel) use (&$tautan): bool {
+            $tautan = $surel->tautan;
+
+            return true;
+        });
+
+        expect($tautan)->not->toContain('jahat.example')->and($tautan)->toContain('/atur-ulang-kata-sandi/');
+    });
+
     it('permintaan dibatasi per IP. Batas per email tidak membuka apa pun', function (): void {
         foreach (range(1, LupaKataSandiKontroler::BATAS_PERMINTAAN_PER_EMAIL_PER_JAM + 1) as $_) {
             $this->post('/lupa-kata-sandi', ['Email' => 'rina@kopinusantara.id'])->assertSessionHasNoErrors();

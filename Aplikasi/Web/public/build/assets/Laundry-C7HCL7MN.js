@@ -1,0 +1,1 @@
+import{i as e}from"./Format-Bu1-LHLA.js";function t(t){let n=[];t.Berat&&n.push(`${e(t.Berat).replace(`.`,`,`)} kg`);for(let e of t.Item)n.push(`${e.Nama} ×${e.Jumlah}`);return n.length>0?n.join(` | `):`-`}export{t};

@@ -17,17 +17,17 @@ const tampilanKeadaan: Record<KeadaanBayar, TampilanKeadaan> = {
     TidakPasti: {
         jenis: 'netral',
         label: 'Belum pasti',
-        catatan: 'Kami belum bisa memastikan pembayaran ini. Tidak ada uang yang kami catat masuk.',
+        catatan: 'Kami belum bisa memastikan pembayaran ini. Uang yang masuk belum kami catat.',
     },
     Kedaluwarsa: {
         jenis: 'netral',
         label: 'Kedaluwarsa',
-        catatan: 'Batas bayar lewat. Tidak ada uang yang terpotong.',
+        catatan: 'Batas bayar lewat. Kalau sudah membayar, hubungi Bantuan.',
     },
     Gagal: {
         jenis: 'netral',
         label: 'Tidak selesai',
-        catatan: 'Pembayaran tidak selesai. Tidak ada uang yang terpotong.',
+        catatan: 'Pembayaran tidak selesai. Kalau sudah membayar, hubungi Bantuan.',
     },
     Ditolak: { jenis: 'bahaya', label: 'Ditolak', catatan: null },
 };

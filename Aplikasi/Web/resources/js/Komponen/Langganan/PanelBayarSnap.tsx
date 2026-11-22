@@ -652,7 +652,7 @@ function LayarBayar({ tampilan, uuidTagihan, nomorTagihan, jedaPolling, saatGant
                             nilai={tampilan.Jumlah}
                             tampil={FormatRupiah(tampilan.Jumlah)}
                             tersalin={tersalin === 'jumlah'}
-                            saatSalin={() => void Salin('jumlah', String(Math.trunc(Number(tampilan.Jumlah))))}
+                            saatSalin={() => void Salin('jumlah', tampilan.Jumlah.replace(/\.\d+$/, ''))}
                             namaTombol="Salin jumlah"
                         />
                     </dl>

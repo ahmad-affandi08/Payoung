@@ -22,9 +22,16 @@ export default function DialogPindaiQr({ nomor, saatTutup }: PropsDialogPindaiQr
     const [terhubung, AturTerhubung] = useState(false);
     const [memuat, AturMemuat] = useState(true);
     const aktif = useRef(true);
+    const sudahSelesai = useRef(false);
     const dasar = `/kelola/pelanggan/whatsapp/nomor/${nomor.Uuid}`;
 
     const Selesai = useCallback(() => {
+        // Sekali saja: tanpa penjaga ini daftar dimuat ulang tiap 3 detik selama dialog "terhubung" masih terbuka.
+        if (sudahSelesai.current) {
+            return;
+        }
+
+        sudahSelesai.current = true;
         AturTerhubung(true);
         router.reload({ only: ['Nomor'] });
     }, []);
@@ -63,6 +70,10 @@ export default function DialogPindaiQr({ nomor, saatTutup }: PropsDialogPindaiQr
         const awal = window.setTimeout(() => void MintaQr(), 0);
         const qr = window.setInterval(() => void MintaQr(), JEDA_QR_MS);
         const status = window.setInterval(() => {
+            if (sudahSelesai.current) {
+                return;
+            }
+
             void KirimJson<HasilStatusNomor>(`${dasar}/status`)
                 .then((hasil) => {
                     if (aktif.current && hasil.Terhubung) {

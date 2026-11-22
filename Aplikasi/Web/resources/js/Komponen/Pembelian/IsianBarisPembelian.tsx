@@ -13,7 +13,7 @@ import PemilihProdukStok from '@/Komponen/Persediaan/PemilihProdukStok';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
 import { TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
-import { FormatRupiah } from '@/Pustaka/Format';
+import { FormatRupiah, RingkasDesimal } from '@/Pustaka/Format';
 import type { BarisIsianBebas, ProdukPembelian } from '@/Tipe/Pembelian';
 
 import {
@@ -157,7 +157,7 @@ export default function IsianBarisPembelian({
                                                         (s) => ({
                                                             Nilai: s.Uuid,
                                                             Label: s.Simbol,
-                                                            Keterangan: `isi ${s.Konversi.replace(/\.?0+$/, '')} ${b.SimbolSatuan}`,
+                                                            Keterangan: `isi ${RingkasDesimal(s.Konversi)} ${b.SimbolSatuan}`,
                                                         }),
                                                     )}
                                                     saatBerubah={(nilai) =>
@@ -171,7 +171,7 @@ export default function IsianBarisPembelian({
                                             )}
                                             {konversi !== '1' && !/^1(\.0+)?$/.test(konversi) ? (
                                                 <span className="block text-keterangan text-teks-sekunder">
-                                                    1 {simbol} = {konversi.replace(/\.?0+$/, '')} {b.SimbolSatuan}
+                                                    1 {simbol} = {RingkasDesimal(konversi)} {b.SimbolSatuan}
                                                 </span>
                                             ) : null}
                                         </TableCell>

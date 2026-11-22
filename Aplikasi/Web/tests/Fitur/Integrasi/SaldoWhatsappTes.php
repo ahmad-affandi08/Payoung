@@ -167,6 +167,7 @@ describe('D-300 isi saldo lewat gerbang billing', function (): void {
 
         $this->post('/kelola/pelanggan/whatsapp/saldo/top-up', ['Jumlah' => '20000'])->assertSessionHasErrors();
         $this->post('/kelola/pelanggan/whatsapp/saldo/top-up', ['Jumlah' => '99999999'])->assertSessionHasErrors();
+        $this->post('/kelola/pelanggan/whatsapp/saldo/top-up', ['Jumlah' => '25000.50'])->assertSessionHasErrors('Jumlah');
         expect(TopUpSaldoWhatsapp::query()->count())->toBe(0);
 
         $this->post('/kelola/pelanggan/whatsapp/saldo/top-up', ['Jumlah' => '25000'])->assertRedirect(BantuanTagihan::URL_BAYAR_DOKU);

@@ -85,8 +85,8 @@ export default function MemeriksaPembayaran({
                 </Pemberitahuan>
             ) : null}
             <p className="text-center text-keterangan text-teks-sekunder">
-                Belum membayar di halaman {namaPenyedia}? Selesaikan di sana. Kalau waktunya habis, Anda bisa memilih
-                cara bayar lain di sini.
+                Belum membayar di halaman {namaPenyedia}? Selesaikan di sana. Kalau waktunya habis, halaman ini akan
+                berubah dan Anda bisa memilih cara bayar lagi.
             </p>
         </Card>
     );

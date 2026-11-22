@@ -207,7 +207,7 @@ describe('PanelBayarSnap (D-159)', () => {
         Panel({ awal: { ...tampilanVa, KedaluwarsaPada: new Date(Date.now() - 60_000).toISOString() } });
 
         expect(screen.getByText('Waktu bayar habis')).toBeTruthy();
-        expect(screen.getByText(/tidak ada uang Anda yang terpotong/)).toBeTruthy();
+        expect(screen.getByText(/jangan bayar ulang dan hubungi Bantuan/)).toBeTruthy();
 
         fireEvent.click(screen.getByRole('button', { name: 'Pilih cara bayar' }));
 

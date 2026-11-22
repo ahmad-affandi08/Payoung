@@ -254,6 +254,13 @@ it('cek IP publik menolak rentang privat, CGNAT, link-local, dan IPv6 lokal', fu
     ['fd00::1', false],
     ['fe80::1', false],
     ['::ffff:10.0.0.1', false],
+    ['::ffff:7f00:1', false],
+    ['::ffff:a00:1', false],
+    ['0:0:0:0:0:ffff:7f00:1', false],
+    ['64:ff9b::7f00:1', false],
+    ['2002:7f00:1::', false],
+    ['::127.0.0.1', false],
+    ['::ffff:808:808', true],
 ]);
 
 it('hanya webhook aktif yang melanggan peristiwa itu, dengan fitur api.publik, dan milik tenant sendiri yang dikirimi', function (): void {

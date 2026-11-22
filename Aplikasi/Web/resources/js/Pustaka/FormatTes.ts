@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { FormatPersen, FormatRupiah } from './Format';
+import { FormatPersen, FormatRupiah, RingkasDesimal } from './Format';
 
 describe('FormatRupiah (PRD §17.6.7)', () => {
     it('memformat string desimal dari API gaya Indonesia', () => {
@@ -35,5 +35,22 @@ describe('FormatPersen (PRD §17.6.7)', () => {
 
     it('menolak masukan yang bukan string desimal', () => {
         expect(() => FormatPersen('12,5')).toThrow();
+    });
+});
+
+describe('RingkasDesimal: nol di belakang koma dihapus, bilangan bulat tidak pernah dipangkas', () => {
+    it('server meringkas "100.0000" jadi "100", dan itu tidak boleh menjadi "1"', () => {
+        expect(RingkasDesimal('100')).toBe('100');
+        expect(RingkasDesimal('10')).toBe('10');
+        expect(RingkasDesimal('20')).toBe('20');
+        expect(RingkasDesimal('1000')).toBe('1000');
+    });
+
+    it('menghapus nol desimal dan titik yang tersisa', () => {
+        expect(RingkasDesimal('100.0000')).toBe('100');
+        expect(RingkasDesimal('12.5000')).toBe('12.5');
+        expect(RingkasDesimal('0.5000')).toBe('0.5');
+        expect(RingkasDesimal('10.50')).toBe('10.5');
+        expect(RingkasDesimal('7.000')).toBe('7');
     });
 });

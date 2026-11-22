@@ -1,4 +1,5 @@
 import type { HasilTabel } from '@/Komponen/TabelData/Tipe';
+import { RingkasDesimal } from '@/Pustaka/Format';
 
 /** Laundry (§9.9): tipe bersama back-office & halaman lacak publik. */
 
@@ -53,7 +54,7 @@ export type PengaturanLaundry = {
 export function RingkasIsiLaundry(t: { Berat: string | null; Item: ItemLaundry[] }): string {
     const bagian: string[] = [];
     if (t.Berat) {
-        bagian.push(`${t.Berat.replace(/\.?0+$/, '').replace('.', ',')} kg`);
+        bagian.push(`${RingkasDesimal(t.Berat).replace('.', ',')} kg`);
     }
     for (const i of t.Item) {
         bagian.push(`${i.Nama} ×${i.Jumlah}`);

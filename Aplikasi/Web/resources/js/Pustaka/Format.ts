@@ -20,6 +20,15 @@ export function FormatPersen(nilai: string): string {
     return pecahanRingkas === '' ? bulat : `${bulat},${pecahanRingkas}`;
 }
 
+/**
+ * Menghapus nol di belakang koma dari angka desimal teks ("12.5000" → "12.5", "100.0000" → "100"). Angka tanpa titik
+ * desimal dikembalikan apa adanya: server meringkas "100.0000" menjadi "100", dan memangkas nol langsung pada "100"
+ * akan menghasilkan "1" (jumlah terima barang salah). Tanpa konversi ke number (CLAUDE.md #7).
+ */
+export function RingkasDesimal(nilai: string): string {
+    return nilai.includes('.') ? nilai.replace(/\.?0+$/, '') : nilai;
+}
+
 export function FormatRupiah(nilai: string): string {
     const cocok = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(nilai.trim());
 

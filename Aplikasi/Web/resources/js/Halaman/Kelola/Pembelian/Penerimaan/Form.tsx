@@ -29,7 +29,7 @@ import SaranPesananTerbuka, { PetunjukPesananDiBelanja } from '@/Komponen/Pembel
 import BidangNomorSeri from '@/Komponen/Persediaan/BidangNomorSeri';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
-import { FormatRupiah } from '@/Pustaka/Format';
+import { FormatRupiah, RingkasDesimal } from '@/Pustaka/Format';
 import { FormatJumlahStok, FormatLabelGudang } from '@/Pustaka/FormatPersediaan';
 import {
     BandingkanDesimal,
@@ -138,7 +138,7 @@ export default function HalamanFormPenerimaan({
         Object.fromEntries(
             (Pesanan?.Baris ?? []).map((b) => [
                 b.IdBarisPesanan,
-                { Jumlah: b.Sisa.replace(/\.?0+$/, ''), NomorBatch: '', TanggalKedaluwarsa: '', NomorSeri: [] },
+                { Jumlah: RingkasDesimal(b.Sisa), NomorBatch: '', TanggalKedaluwarsa: '', NomorSeri: [] },
             ]),
         ),
     );

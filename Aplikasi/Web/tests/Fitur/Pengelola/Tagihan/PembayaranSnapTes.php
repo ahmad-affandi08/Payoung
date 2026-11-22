@@ -207,6 +207,19 @@ describe('D-159 membuat pembayaran SNAP', function (): void {
             ->and($ulang->json('Pembayaran.TampilanBayar.Metode'))->toBe('Qris');
     });
 
+    it('Checkout ditolak selama pembayaran SNAP untuk tagihan itu masih berlaku, dan tidak memakai ulang nomor pesanannya', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
+
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, ['Metode' => 'Qris'])->assertOk();
+        BayarSnapUji($this, $pemilik, $tenant, $tagihan, [])
+            ->assertStatus(422)
+            ->assertJsonPath('Galat.Kode', 'PembayaranBerjalan');
+
+        expect(PermintaanSnapKe('/checkout/v1/payment'))->toBe([])
+            ->and(PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->count())->toBe(1);
+    });
+
     it('virtual account: nomor VA tampil, badan sesuai skema DGPC, bank yang tidak dikenal ditolak', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanSnapUji($this, $pemilik, $tenant);
