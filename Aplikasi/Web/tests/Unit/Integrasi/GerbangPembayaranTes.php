@@ -8,14 +8,17 @@ use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\PermintaanQris;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Tests\Pendukung\Penjualan\BantuanGerbangTenant;
 
 /*
- * Adaptor gerbang pembayaran QRIS dinamis (v2.04): bentuk permintaan & tanda tangan sesuai dokumentasi penyedia,
- * verifikasi notifikasi (tanda tangan palsu ditolak), dan pemetaan status. Sejak seluruh tenant memakai DOKU, DOKU
- * satu-satunya penyedia gerbang toko; kode penyedia lama (Midtrans, Xendit, Tripay, Duitku, iPaymu) tidak dikenal.
+ * Adaptor gerbang pembayaran QRIS dinamis: bentuk permintaan & tanda tangan sesuai dokumentasi penyedia, notifikasi
+ * sebagai pemicu (status ditanyakan balik ke DOKU, D-314), dan pemetaan status. Sejak seluruh tenant memakai DOKU,
+ * DOKU satu-satunya penyedia gerbang toko, lewat DOKU SNAP (D-314); kode penyedia lama (Midtrans, Xendit, Tripay,
+ * Duitku, iPaymu) tidak dikenal.
  */
 
 function PermintaanQrisUji(): PermintaanQris
@@ -23,9 +26,38 @@ function PermintaanQrisUji(): PermintaanQris
     return new PermintaanQris('QR-SLB-0001', Uang::Dari('25000'), 'Penjualan Kopi Senja', CarbonImmutable::now()->addMinutes(15), 'https://payoung.id/webhook/uji');
 }
 
-function Gerbang(string $penyedia, array $pengaturan, array $kredensial)
+/** Gerbang DOKU SNAP uji: Client ID, Merchant ID, Terminal ID, kode pos, secret key, dan kunci RSA yang sungguhan. */
+function Gerbang(array $ubahPengaturan = [], array $ubahKredensial = [])
 {
-    return app(PembuatGerbangPembayaran::class)->Buat($penyedia, $pengaturan, $kredensial);
+    return app(PembuatGerbangPembayaran::class)->Buat(
+        'Doku',
+        ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001', 'IdPedagangQris' => '111642', 'IdTerminalQris' => 'A01', 'KodePosQris' => '57214', ...$ubahPengaturan],
+        ['KunciRahasia' => 'SK-doku', 'KunciPribadiSnap' => BantuanGerbangTenant::AmbilPasanganKunci()['Pribadi'], ...$ubahKredensial],
+    );
+}
+
+/** `Http::fake` berulang menumpuk (stub pertama menang), jadi pabrik HTTP diganti baru sebelum tiap skenario. */
+function SegarkanHttpUji(): void
+{
+    Http::swap(new HttpFactory);
+    Http::preventStrayRequests();
+}
+
+const NOMOR_QRIS_UJI = 'PY1-01M84D56XTCTT66D3DNC7YQJ63';
+
+/** DOKU SNAP palsu: token B2B, `qr-mpm-generate`, dan `qr-mpm-query` dengan `latestTransactionStatus` tertentu. */
+function PalsukanDokuSnap(string $kodeStatus = '03', ?string $jumlah = null): void
+{
+    SegarkanHttpUji();
+    Http::fake([
+        'api-sandbox.doku.com/authorization/v1/access-token/b2b' => Http::response(['accessToken' => 'token-b2b-uji', 'tokenType' => 'Bearer', 'expiresIn' => '900']),
+        'api-sandbox.doku.com/snap-adapter/b2b/v1.0/qr/qr-mpm-generate' => Http::response(['responseCode' => '2004700', 'responseMessage' => 'Successful', 'referenceNo' => 'REF-DOKU-1', 'qrContent' => '00020101021226UJI']),
+        'api-sandbox.doku.com/snap-adapter/b2b/v1.0/qr/qr-mpm-query' => Http::response([
+            'responseCode' => '2005100',
+            'latestTransactionStatus' => $kodeStatus,
+            ...($jumlah === null ? [] : ['amount' => ['value' => $jumlah, 'currency' => 'IDR']]),
+        ]),
+    ]);
 }
 
 function WebhookJson(array $isi, array $header = []): Request
@@ -42,83 +74,107 @@ beforeEach(function (): void {
     Http::preventStrayRequests();
 });
 
-it('DOKU: header tanda tangan HMACSHA256 & notifikasi palsu ditolak. Hasil berupa halaman bayar', function (): void {
-    Http::fake(['api-sandbox.doku.com/checkout/v1/payment' => Http::response(['response' => ['payment' => ['url' => 'https://sandbox.doku.com/checkout/link/abc', 'token_id' => 'tok']]])]);
-    $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
-    $hasil = $gerbang->BuatQris(PermintaanQrisUji());
-    expect($hasil->halamanBayar)->toBeTrue()->and($hasil->isiQr)->toBe('https://sandbox.doku.com/checkout/link/abc');
+it('DOKU SNAP: QRIS dibuat dengan tanda tangan HMAC-SHA512 atas token, hasil berupa muatan QRIS (bukan halaman bayar)', function (): void {
+    PalsukanDokuSnap();
+    $hasil = Gerbang()->BuatQris(PermintaanQrisUji());
+
+    expect($hasil->halamanBayar)->toBeFalse()
+        ->and($hasil->isiQr)->toBe('00020101021226UJI')
+        ->and($hasil->idReferensi)->toBe('REF-DOKU-1');
     Http::assertSent(function (PermintaanHttp $r): bool {
-        $komponen = 'Client-Id:BRN-001'."\nRequest-Id:".$r->header('Request-Id')[0]."\nRequest-Timestamp:".$r->header('Request-Timestamp')[0]
-            ."\nRequest-Target:/checkout/v1/payment\nDigest:".base64_encode(hash('sha256', $r->body(), true));
+        if (! str_ends_with($r->url(), '/qr/qr-mpm-generate')) {
+            return false;
+        }
 
-        return $r->hasHeader('Signature', 'HMACSHA256='.base64_encode(hash_hmac('sha256', $komponen, 'SK-doku', true)));
+        $waktu = $r->header('X-TIMESTAMP')[0];
+        $teks = 'POST:/snap-adapter/b2b/v1.0/qr/qr-mpm-generate:token-b2b-uji:'.strtolower(hash('sha256', $r->body())).':'.$waktu;
+
+        return $r['amount'] === ['value' => '25000.00', 'currency' => 'IDR']
+            && $r['partnerReferenceNo'] === 'QR-SLB-0001'
+            && $r->hasHeader('X-SIGNATURE', base64_encode(hash_hmac('sha512', $teks, 'SK-doku', true)))
+            && $r->hasHeader('Authorization', 'Bearer token-b2b-uji');
     });
-
-    $notif = WebhookJson(['order' => ['invoice_number' => 'QR-SLB-0001', 'amount' => 25000], 'transaction' => ['status' => 'SUCCESS']], [
-        'Client-Id' => 'BRN-001', 'Request-Id' => 'r1', 'Request-Timestamp' => '2026-09-26T03:00:00Z', 'Signature' => 'HMACSHA256=palsu',
-    ]);
-    expect($gerbang->UraiWebhook($notif))->toBeNull();
 });
 
-it('DOKU: notifikasi bertanda tangan sah = lunas dengan jumlah; Client-Id lain atau isi diubah ditolak', function (): void {
-    $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
-    $isi = (string) json_encode(['order' => ['invoice_number' => 'QR-SLB-0001', 'amount' => 25000], 'transaction' => ['status' => 'SUCCESS']]);
-    $buat = function (string $isiKirim, string $idKlien = 'BRN-001', string $kunci = 'SK-doku') use ($isi): Request {
-        $komponen = "Client-Id:BRN-001\nRequest-Id:r1\nRequest-Timestamp:2026-09-26T03:00:00Z\nRequest-Target:/webhook/doku/token\nDigest:".base64_encode(hash('sha256', $isi, true));
-        $permintaan = Request::create('/webhook/doku/token', 'POST', [], [], [], ['CONTENT_TYPE' => 'application/json'], $isiKirim);
-        $permintaan->headers->add([
-            'Client-Id' => $idKlien, 'Request-Id' => 'r1', 'Request-Timestamp' => '2026-09-26T03:00:00Z',
-            'Signature' => 'HMACSHA256='.base64_encode(hash_hmac('sha256', $komponen, $kunci, true)),
-        ]);
+it('DOKU SNAP: notifikasi hanya pemicu. Status & jumlah dari jawaban DOKU, notifikasi palsu yang mengaku SUCCESS tidak melunasi', function (): void {
+    $isi = ['order' => ['invoice_number' => NOMOR_QRIS_UJI, 'amount' => 25000], 'transaction' => ['status' => 'SUCCESS']];
 
-        return $permintaan;
-    };
-
-    $sah = $gerbang->UraiWebhook($buat($isi));
+    PalsukanDokuSnap('00', '25000.00');
+    $sah = Gerbang()->UraiWebhook(WebhookJson($isi));
     expect($sah?->status)->toBe(StatusPembayaranGerbang::Lunas)
-        ->and($sah?->nomorPesanan)->toBe('QR-SLB-0001')
-        ->and($sah?->jumlah)->toBe('25000')
-        ->and($gerbang->UraiWebhook($buat($isi, kunci: 'kunci-lain')))->toBeNull()
-        ->and($gerbang->UraiWebhook($buat($isi, idKlien: 'BRN-LAIN')))->toBeNull()
-        ->and($gerbang->UraiWebhook($buat(str_replace('25000', '1', $isi))))->toBeNull();
-});
+        ->and($sah?->nomorPesanan)->toBe(NOMOR_QRIS_UJI)
+        ->and($sah?->jumlah)->toBe('25000.00');
 
-it('DOKU: status order dipetakan (SUCCESS lunas, EXPIRED kedaluwarsa, FAILED gagal, lainnya menunggu) lewat nomor pesanan', function (): void {
+    // DOKU menjawab belum dibayar: pengiriman palsu yang mengaku SUCCESS tidak mengubah apa pun.
+    PalsukanDokuSnap('03');
+    expect(Gerbang()->UraiWebhook(WebhookJson($isi))?->status)->toBe(StatusPembayaranGerbang::Menunggu);
+
+    // DOKU tidak bisa ditanya (5xx): tetap Menunggu, bukan Lunas dan bukan galat.
+    SegarkanHttpUji();
     Http::fake([
-        'api-sandbox.doku.com/orders/v1/status/QR-LUNAS' => Http::response(['transaction' => ['status' => 'SUCCESS']]),
-        'api-sandbox.doku.com/orders/v1/status/QR-HABIS' => Http::response(['transaction' => ['status' => 'EXPIRED']]),
-        'api-sandbox.doku.com/orders/v1/status/QR-GAGAL' => Http::response(['transaction' => ['status' => 'FAILED']]),
-        'api-sandbox.doku.com/orders/v1/status/QR-TUNGGU' => Http::response(['transaction' => ['status' => 'PENDING']]),
+        'api-sandbox.doku.com/authorization/v1/access-token/b2b' => Http::response(['accessToken' => 'token-b2b-uji', 'expiresIn' => '900']),
+        '*' => Http::response('gangguan', 503),
     ]);
-    $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
+    expect(Gerbang()->UraiWebhook(WebhookJson($isi))?->status)->toBe(StatusPembayaranGerbang::Menunggu);
 
-    expect($gerbang->CekDapatCekDariNomorPesanan())->toBeTrue()
-        ->and($gerbang->CekStatus('QR-LUNAS', ''))->toBe(StatusPembayaranGerbang::Lunas)
-        ->and($gerbang->CekStatus('QR-HABIS', ''))->toBe(StatusPembayaranGerbang::Kedaluwarsa)
-        ->and($gerbang->CekStatus('QR-GAGAL', ''))->toBe(StatusPembayaranGerbang::Gagal)
-        ->and($gerbang->CekStatus('QR-TUNGGU', ''))->toBe(StatusPembayaranGerbang::Menunggu);
+    // Badan tanpa nomor pesanan Payoung tidak dikenali.
+    expect(Gerbang()->UraiWebhook(WebhookJson(['order' => ['invoice_number' => 'ORDER-LAIN-1']])))->toBeNull();
 });
 
-it('DOKU: masalah gerbang dilempar sebagai GalatGerbang tanpa membocorkan secret key. Uji koneksi menolak tanda tangan tidak sah', function (): void {
-    Http::fake(['*' => Http::response(['message' => ['Invalid signature for SK-doku']], 401)]);
-    $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
+it('DOKU SNAP: status dipetakan (00 lunas, 05/06 gagal, lainnya menunggu) lewat nomor pesanan', function (): void {
+    $gerbang = Gerbang();
+    expect($gerbang->CekDapatCekDariNomorPesanan())->toBeTrue();
 
-    expect(fn () => $gerbang->BuatQris(PermintaanQrisUji()))->toThrow(GalatGerbang::class, 'Invalid signature for ••••')
-        ->and($gerbang->UjiKoneksi()->berhasil)->toBeFalse();
+    foreach (['00' => StatusPembayaranGerbang::Lunas, '05' => StatusPembayaranGerbang::Gagal, '06' => StatusPembayaranGerbang::Gagal, '03' => StatusPembayaranGerbang::Menunggu, '99' => StatusPembayaranGerbang::Menunggu] as $kode => $status) {
+        PalsukanDokuSnap((string) $kode);
+        expect(Gerbang()->CekStatus(NOMOR_QRIS_UJI, ''))->toBe($status);
+    }
+
+    Http::assertSent(fn (PermintaanHttp $r): bool => str_ends_with($r->url(), '/qr/qr-mpm-query')
+        && $r['originalPartnerReferenceNo'] === NOMOR_QRIS_UJI
+        && $r['merchantId'] === '111642'
+        && ! isset($r['originalReferenceNo']));
 });
 
-it('DOKU: pembuatan tagihan tanpa halaman bayar di jawaban = hasil tidak pasti', function (): void {
-    Http::fake(['*' => Http::response(['response' => ['payment' => []]])]);
-    $gerbang = Gerbang('Doku', ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], ['KunciRahasia' => 'SK-doku']);
+it('DOKU SNAP: masalah gerbang dilempar sebagai GalatGerbang tanpa membocorkan secret key. Uji koneksi menolak token', function (): void {
+    SegarkanHttpUji();
+    Http::fake(['*' => Http::response(['responseCode' => '4017300', 'responseMessage' => 'Unauthorized SK-doku'], 401)]);
+    $gerbang = Gerbang();
+
+    expect(fn () => $gerbang->BuatQris(PermintaanQrisUji()))->toThrow(GalatGerbang::class)
+        ->and($gerbang->UjiKoneksi()->berhasil)->toBeFalse()
+        ->and($gerbang->UjiKoneksi()->pesan)->not->toContain('SK-doku');
+});
+
+it('DOKU SNAP: jawaban sukses tanpa isi QRIS = hasil tidak pasti. Pengaturan tidak lengkap = galat pasti tanpa panggilan jaringan', function (): void {
+    SegarkanHttpUji();
+    Http::fake([
+        'api-sandbox.doku.com/authorization/v1/access-token/b2b' => Http::response(['accessToken' => 'token-b2b-uji', 'expiresIn' => '900']),
+        '*' => Http::response(['responseCode' => '2004700', 'responseMessage' => 'Successful']),
+    ]);
 
     try {
-        $gerbang->BuatQris(PermintaanQrisUji());
+        Gerbang()->BuatQris(PermintaanQrisUji());
         $galat = null;
     } catch (GalatGerbang $e) {
         $galat = $e;
     }
 
     expect($galat)->toBeInstanceOf(GalatGerbang::class)->and($galat->tidakPasti)->toBeTrue();
+
+    SegarkanHttpUji();
+    Http::fake();
+    $kurang = Gerbang(['IdPedagangQris' => '']);
+
+    try {
+        $kurang->BuatQris(PermintaanQrisUji());
+        $galat = null;
+    } catch (GalatGerbang $e) {
+        $galat = $e;
+    }
+
+    expect($galat?->tidakPasti)->toBeFalse()->and($galat?->getMessage())->toContain('Merchant ID QRIS');
+    Http::assertNothingSent();
 });
 
 // v2.06: gerbang aktif dibaca per tenant (`AmbilAktifTenant`, diuji di GerbangPembayaranTenantTes); di sini hanya pabrik.

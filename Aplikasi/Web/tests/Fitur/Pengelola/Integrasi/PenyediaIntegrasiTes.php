@@ -95,7 +95,7 @@ describe('v2.04 katalog penyedia', function (): void {
         MasukTeknisPenyedia($this);
         $this->post(BantuanPengelola::Url('/integrasi'), [
             'Jenis' => 'Whatsapp', 'Lingkungan' => 'Staging', 'Penyedia' => 'Doku',
-            'Pengaturan' => ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], 'Kredensial' => ['KunciRahasia' => 'SK-doku-xxxxxxxx'], 'RotasiSetiapHari' => 90,
+            'Pengaturan' => ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001', 'IdPedagangQris' => '111642', 'IdTerminalQris' => 'A01', 'KodePosQris' => '57214'], 'Kredensial' => ['KunciRahasia' => 'SK-doku-xxxxxxxx'], 'RotasiSetiapHari' => 90,
         ])->assertSessionHasErrors('Penyedia');
         expect(KonfigurasiIntegrasi::query()->count())->toBe(0);
     });
@@ -140,7 +140,7 @@ describe('v2.04 katalog penyedia', function (): void {
         MasukTeknisPenyedia($this);
         $this->post(BantuanPengelola::Url('/integrasi'), [
             'Jenis' => 'GerbangPembayaran', 'Lingkungan' => 'Staging', 'Penyedia' => 'Doku',
-            'Pengaturan' => ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001'], 'Kredensial' => ['KunciRahasia' => 'SK-doku-rahasia-4321'], 'RotasiSetiapHari' => 90,
+            'Pengaturan' => ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-001', 'IdPedagangQris' => '111642', 'IdTerminalQris' => 'A01', 'KodePosQris' => '57214'], 'Kredensial' => ['KunciRahasia' => 'SK-doku-rahasia-4321'], 'RotasiSetiapHari' => 90,
         ])->assertSessionHasErrors('Jenis');
 
         expect(KonfigurasiIntegrasi::query()->count())->toBe(0)

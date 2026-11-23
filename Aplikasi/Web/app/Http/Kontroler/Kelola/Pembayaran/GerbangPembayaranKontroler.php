@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Kelola\Pembayaran;
 
+use App\Domain\Integrasi\Aksi\BuatUlangKunciSnapGerbangTenant;
 use App\Domain\Integrasi\Aksi\SimpanGerbangPembayaranTenant;
 use App\Domain\Integrasi\Aksi\UbahStatusGerbangPembayaranTenant;
 use App\Domain\Integrasi\Aksi\UjiGerbangPembayaranTenant;
@@ -42,6 +43,13 @@ final class GerbangPembayaranKontroler extends DasarKelolaKontroler
         return $hasil->berhasil
             ? to_route('kelola.pembayaran.gerbang')->with('Kilat', "Koneksi berhasil. {$hasil->pesan}")
             : to_route('kelola.pembayaran.gerbang')->withErrors(['Umum' => "Koneksi gagal. {$hasil->pesan}"]);
+    }
+
+    public function BuatUlangKunci(BuatUlangKunciSnapGerbangTenant $buat): RedirectResponse
+    {
+        $buat->Jalankan();
+
+        return to_route('kelola.pembayaran.gerbang')->with('Kilat', 'Kunci SNAP baru dibuat. Daftarkan kunci publik yang baru di dasbor DOKU, lalu uji koneksi lagi.');
     }
 
     public function Aktifkan(UbahStatusGerbangPembayaranTenant $ubah, SiapkanMetodeQrisDinamis $siapkanMetode): RedirectResponse

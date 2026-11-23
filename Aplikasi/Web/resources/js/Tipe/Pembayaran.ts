@@ -35,6 +35,9 @@ export type GerbangPembayaranTenant = {
     DiujiPada: string | null;
     Aktif: boolean;
     UrlWebhook: string;
+    /** D-314: kunci publik RSA SNAP untuk didaftarkan di dasbor DOKU, dan alamat token B2B. */
+    KunciPublikSnap: string | null;
+    UrlToken: string;
     WebhookDiterimaPada: string | null;
     WebhookDitolakPada: string | null;
 };

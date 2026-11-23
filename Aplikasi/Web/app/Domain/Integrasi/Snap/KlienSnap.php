@@ -27,10 +27,37 @@ use OpenSSLAsymmetricKey;
  */
 final class KlienSnap
 {
+    /**
+     * Kredensial mandiri (gerbang QRIS milik tenant, D-314). Bila terisi, dipakai menggantikan konfigurasi akun induk
+     * Payoung (`GerbangBilling`); tanpa ini perilaku klien tidak berubah.
+     *
+     * @var array{IdKlien: string, KunciRahasia: string, KunciPribadiSnap: string, Sandbox: bool, Pengaturan: array<string, string>}|null
+     */
+    private ?array $mandiri = null;
+
     private const TARGET_TOKEN = '/authorization/v1/access-token/b2b';
 
     /** Token B2B DOKU berlaku 900 detik; dipakai 60 detik lebih singkat supaya tidak kedaluwarsa di tengah panggilan. */
     private const DETIK_TOKEN_MAKS = 840;
+
+    /**
+     * Klien untuk akun merchant milik satu tenant (D-314): Client ID, secret key, dan kunci pribadi RSA tenant itu.
+     *
+     * @param  array<string, string>  $pengaturan  nilai pengaturan tak rahasia (Merchant ID, Terminal ID, kode pos)
+     */
+    public static function DariKredensial(string $idKlien, string $kunciRahasia, string $kunciPribadiPem, bool $sandbox, array $pengaturan = []): self
+    {
+        $klien = new self;
+        $klien->mandiri = [
+            'IdKlien' => trim($idKlien),
+            'KunciRahasia' => trim($kunciRahasia),
+            'KunciPribadiSnap' => trim($kunciPribadiPem),
+            'Sandbox' => $sandbox,
+            'Pengaturan' => $pengaturan,
+        ];
+
+        return $klien;
+    }
 
     public function CekSiap(): bool
     {
@@ -39,6 +66,10 @@ final class KlienSnap
 
     public function CekSandbox(): bool
     {
+        if ($this->mandiri !== null) {
+            return $this->mandiri['Sandbox'];
+        }
+
         return trim((string) config('integrasi.GerbangBilling.Pengaturan.Mode', '')) !== 'Produksi';
     }
 
@@ -49,16 +80,28 @@ final class KlienSnap
 
     public function IdKlien(): string
     {
+        if ($this->mandiri !== null) {
+            return $this->mandiri['IdKlien'];
+        }
+
         return trim((string) config('integrasi.GerbangBilling.Pengaturan.IdKlien', ''));
     }
 
     public function Pengaturan(string $kunci): string
     {
+        if ($this->mandiri !== null) {
+            return trim($this->mandiri['Pengaturan'][$kunci] ?? '');
+        }
+
         return trim((string) config("integrasi.GerbangBilling.Pengaturan.{$kunci}", ''));
     }
 
     public function Kredensial(string $kunci): string
     {
+        if ($this->mandiri !== null) {
+            return $kunci === 'KunciRahasia' ? $this->mandiri['KunciRahasia'] : ($kunci === 'KunciPribadiSnap' ? $this->mandiri['KunciPribadiSnap'] : '');
+        }
+
         return trim((string) config("integrasi.GerbangBilling.Kredensial.{$kunci}", ''));
     }
 
@@ -69,7 +112,7 @@ final class KlienSnap
      */
     public function AmbilTokenB2b(bool $paksaBaru = false): string
     {
-        $kunciCache = 'snap.b2b.'.hash('sha256', $this->IdKlien().'|'.($this->CekSandbox() ? 'S' : 'P'));
+        $kunciCache = 'snap.b2b.'.hash('sha256', $this->IdKlien().'|'.($this->CekSandbox() ? 'S' : 'P').'|'.hash('sha256', $this->Kredensial('KunciPribadiSnap')));
 
         if ($paksaBaru) {
             Cache::forget($kunciCache);

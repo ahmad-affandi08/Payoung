@@ -84,13 +84,13 @@ function BuatQrisPos(TestCase $tes, array $k, MetodePembayaran $metode, string $
 
 /**
  * Notifikasi DOKU ke URL webhook tenant pemilik `$k` (v2.06 `/webhook/{penyedia}/{tokenWebhook}`), bertanda tangan
- * HMACSHA256 dengan secret key `$kunci`.
+ * (D-314: isinya hanya pemicu, status ditanyakan balik ke DOKU palsu).
  *
  * @param  array<string, mixed>  $k
  */
-function WebhookDoku(TestCase $tes, array $k, string $nomor, string $jumlah = '38500.00', string $status = 'SUCCESS', string $kunci = BantuanGerbangTenant::KUNCI_RAHASIA_UJI, string $penyedia = 'doku'): TestResponse
+function WebhookDoku(TestCase $tes, array $k, string $nomor, string $jumlah = '38500.00', string $status = 'SUCCESS', string $penyedia = 'doku', string $jalur = ''): TestResponse
 {
-    return BantuanGerbangTenant::KirimWebhook($tes, $k['TokenWebhook'], $nomor, $jumlah, $status, $kunci, kodeUrl: $penyedia);
+    return BantuanGerbangTenant::KirimWebhook($tes, $k['TokenWebhook'], $nomor, $jumlah, $status, $jalur, $penyedia);
 }
 
 /**
@@ -134,8 +134,8 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
         expect($pertama->json())->toBe([
             'Uuid' => $uuid,
             'NomorPesanan' => $nomor,
-            'IsiQr' => "https://sandbox.doku.com/checkout/link/{$nomor}",
-            'HalamanBayar' => true,
+            'IsiQr' => "00020101021226QRISUJI{$nomor}",
+            'HalamanBayar' => false,
             'KedaluwarsaPada' => $pertama->json('KedaluwarsaPada'),
             'Status' => 'Menunggu',
             'Jumlah' => '38500.00',
@@ -144,11 +144,17 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
 
         BuatQrisPos($this, $k, $k['QrisDinamis'], '38500.00', $uuid)->assertOk()->assertExactJson($pertama->json());
 
-        expect(HitungPanggilanDoku('/checkout/v1/payment'))->toBe(1);
+        expect(HitungPanggilanDoku('/qr/qr-mpm-generate'))->toBe(1);
+        // D-314: DOKU SNAP QRIS dengan Merchant ID, Terminal ID, dan kode pos toko; nominal dua desimal, tanda tangan HMAC-SHA512.
         Http::assertSent(fn (PermintaanHttp $r) => BantuanGerbangTenant::CekPermintaanBuat($r)
-            && $r['order'] === ['amount' => 38500, 'invoice_number' => $nomor, 'callback_url' => url('/webhook/doku/'.$k['TokenWebhook'])]
-            && $r['payment']['payment_method_types'] === ['QRIS']
-            && $r->hasHeader('Client-Id', BantuanGerbangTenant::ID_KLIEN_UJI));
+            && $r['partnerReferenceNo'] === $nomor
+            && $r['amount'] === ['value' => '38500.00', 'currency' => 'IDR']
+            && $r['merchantId'] === BantuanGerbangTenant::ID_PEDAGANG_UJI
+            && $r['terminalId'] === 'A01'
+            && $r['additionalInfo']['postalCode'] === '57214'
+            && $r->hasHeader('X-PARTNER-ID', BantuanGerbangTenant::ID_KLIEN_UJI)
+            && $r->hasHeader('Authorization', 'Bearer token-b2b-uji')
+            && ($r->header('X-SIGNATURE')[0] ?? '') !== '');
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $tagihan = TagihanQris::query()->sole();
@@ -178,7 +184,7 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
 
         BantuanGerbangTenant::Nonaktifkan($k['Tenant']->Id);
         expect($galat(BuatQrisPos($this, $k, $k['QrisDinamis'])))->toBe([409, 'GerbangBelumAktif'])
-            ->and(HitungPanggilanDoku('/checkout/v1/payment'))->toBe(1);
+            ->and(HitungPanggilanDoku('/qr/qr-mpm-generate'))->toBe(1);
     });
 
     it('gerbang menolak: 502 GerbangGagal tanpa membocorkan secret key. Tidak ada tagihan tersisa sehingga Uuid sama bisa dicoba lagi', function (): void {
@@ -202,7 +208,7 @@ describe('F-08 QRIS dinamis: buat tagihan dari POS', function (): void {
 
 /**
  * DOKU palsu untuk hasil tidak pasti (audit P0 F-02): `$charge` = 'putus' (koneksi putus/waktu habis), '500', atau
- * 'rusak' (HTTP 200 tanpa halaman bayar); status order = isi `$status`, atau per Uuid tagihan (`[Uuid => status]`,
+ * 'rusak' (HTTP 200 tanpa isi QRIS); status order = isi `$status`, atau per Uuid tagihan (`[Uuid => status]`,
  * lainnya 'PENDING').
  *
  * @param  string|array<string, string>  $status
@@ -214,12 +220,14 @@ function PalsukanDokuTidakPasti(string &$charge, string|array &$status): void
             return match ($charge) {
                 'putus' => throw new ConnectionException('cURL error 28: Operation timed out'),
                 '500' => Http::response(['message' => ['Internal error']], 500),
-                'rusak' => Http::response(['response' => ['payment' => []]]),
+                'rusak' => Http::response(['responseCode' => '2004700', 'responseMessage' => 'Successful']),
                 default => BantuanGerbangTenant::ResponsBuat($r),
             };
         }
 
-        $hasil = is_string($status) ? $status : (collect($status)->first(fn (string $nilai, string $uuid): bool => str_contains($r->url(), $uuid)) ?? 'PENDING');
+        // D-314: nomor pesanan yang ditanyakan ada di badan permintaan `qr-mpm-query` (`originalPartnerReferenceNo`).
+        $ditanya = (string) ($r['originalPartnerReferenceNo'] ?? '');
+        $hasil = is_string($status) ? $status : (collect($status)->first(fn (string $nilai, string $uuid): bool => str_contains($ditanya, $uuid)) ?? 'PENDING');
 
         return BantuanGerbangTenant::ResponsStatus($hasil);
     });
@@ -261,7 +269,7 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $nomor = TagihanQris::query()->sole()->NomorPesanan;
 
-        WebhookDoku($this, $k, $nomor)->assertOk()->assertExactJson(['Diterima' => true]);
+        WebhookDoku($this, $k, $nomor)->assertOk()->assertJsonPath('Diterima', true);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $tagihan = TagihanQris::query()->sole();
 
@@ -294,7 +302,7 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
         $this->artisan('penjualan:rekonsiliasi-qris')->assertSuccessful();
         expect($ambil($satu)->Status)->toBe(StatusTagihanQris::TidakPasti)
             ->and($ambil($satu)->PercobaanRekonsiliasi)->toBe(1)
-            ->and(HitungPanggilanDoku('/orders/v1/status/'))->toBe(2);
+            ->and(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(2);
 
         // Tagihan pertama ternyata dibayar; yang kedua tidak pernah ada kabar.
         $status = [strtoupper($satu) => 'SUCCESS'];
@@ -380,22 +388,22 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         $cek = fn () => $this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$uuid}")->assertOk();
 
         expect($cek()->json())->toBe(['Uuid' => $uuid, 'Status' => 'Menunggu', 'Jumlah' => '38500.00', 'LunasPada' => null, 'KedaluwarsaPada' => $cek()->json('KedaluwarsaPada')])
-            ->and(HitungPanggilanDoku('/orders/v1/status/'))->toBe(1);
+            ->and(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(1);
 
         $this->travel(6)->seconds();
         $cek();
-        expect(HitungPanggilanDoku('/orders/v1/status/'))->toBe(2);
+        expect(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(2);
 
         $status = 'SUCCESS';
         $cek();
-        expect(HitungPanggilanDoku('/orders/v1/status/'))->toBe(2);
+        expect(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(2);
         $this->travel(6)->seconds();
         $lunas = $cek()->json();
         expect($lunas['Status'])->toBe('Lunas')->and($lunas['LunasPada'])->toEndWith('Z')
-            ->and(HitungPanggilanDoku('/orders/v1/status/'))->toBe(3);
+            ->and(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(3);
         $this->travel(6)->seconds();
         $cek();
-        expect(HitungPanggilanDoku('/orders/v1/status/'))->toBe(3);
+        expect(HitungPanggilanDoku('/qr/qr-mpm-query'))->toBe(3);
 
         // Tagihan lain yang tidak pernah dibayar.
         $status = 'PENDING';
@@ -406,25 +414,28 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         expect($this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$lain}")->json('Status'))->toBe('Kedaluwarsa');
     });
 
-    it('webhook DOKU bertanda tangan sah = Lunas (idempoten). Tanda tangan salah 401. Penyedia lain/yang sudah dihapus 404. Jumlah berbeda tidak melunasi (tercatat). Tagihan tak dikenal 200 Diterima false', function (): void {
+    it('webhook DOKU = pemicu yang ditanyakan balik ke DOKU, Lunas (idempoten). Isi tanpa nomor pesanan 400. Penyedia lain/yang sudah dihapus 404. Jumlah berbeda tidak melunasi (tercatat). Tagihan tak dikenal 200 Diterima false', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);
         $k = SiapkanQrisDinamis($this);
         $buat = BuatQrisPos($this, $k, $k['QrisDinamis'])->json();
 
-        WebhookDoku($this, $k, $buat['NomorPesanan'], kunci: 'kunci-palsu')->assertStatus(401);
+        // D-314: isi notifikasi hanya pemicu. Badan tanpa nomor pesanan Payoung ditolak 400, dan DOKU yang meminta token B2B
+        // ke alamat webhook dilayani.
+        $this->postJson('/webhook/doku/'.$k['TokenWebhook'], ['order' => ['invoice_number' => 'ORDER-LAIN-1']])->assertStatus(400)->assertJsonPath('Galat.Kode', 'NotifikasiTidakDikenal');
+        WebhookDoku($this, $k, $buat['NomorPesanan'], jalur: 'authorization/v1/access-token/b2b')->assertOk()->assertJsonPath('responseCode', '2007300')->assertJsonStructure(['accessToken']);
         WebhookDoku($this, $k, $buat['NomorPesanan'], penyedia: 'xendit')->assertNotFound();
         // Penyedia lama yang sudah dihapus tidak punya jalur webhook sama sekali.
         WebhookDoku($this, $k, $buat['NomorPesanan'], penyedia: 'midtrans')->assertNotFound();
-        WebhookDoku($this, $k, $buat['NomorPesanan'], '20000.00')->assertOk()->assertExactJson(['Diterima' => true]);
+        WebhookDoku($this, $k, $buat['NomorPesanan'], '20000.00')->assertOk()->assertJsonPath('Diterima', true);
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
         $tagihan = TagihanQris::query()->sole();
         expect($tagihan->Status)->toBe(StatusTagihanQris::Menunggu)
             ->and(LogAudit::query()->where('Peristiwa', 'tagihan-qris.jumlah-berbeda')->count())->toBe(1);
 
-        WebhookDoku($this, $k, $buat['NomorPesanan'])->assertOk()->assertExactJson(['Diterima' => true]);
-        WebhookDoku($this, $k, $buat['NomorPesanan'])->assertOk()->assertExactJson(['Diterima' => true]);
+        WebhookDoku($this, $k, $buat['NomorPesanan'])->assertOk()->assertJsonPath('Diterima', true);
+        WebhookDoku($this, $k, $buat['NomorPesanan'])->assertOk()->assertJsonPath('Diterima', true);
         WebhookDoku($this, $k, $buat['NomorPesanan'], status: 'EXPIRED')->assertOk();
 
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
@@ -434,8 +445,8 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
             ->and($tagihan->LunasPada)->not->toBeNull()
             ->and(RiwayatStatusDokumen::query()->where('JenisDokumen', 'TagihanQris')->where('StatusKe', 'Lunas')->count())->toBe(1);
 
-        WebhookDoku($this, $k, 'PY'.base_convert((string) $k['Tenant']->Id, 10, 36).'-'.BantuanKasir::Uuid())->assertOk()->assertExactJson(['Diterima' => false]);
-        WebhookDoku($this, $k, 'ORDER-LAIN-1')->assertOk()->assertExactJson(['Diterima' => false]);
+        WebhookDoku($this, $k, 'PY'.base_convert((string) $k['Tenant']->Id, 10, 36).'-'.BantuanKasir::Uuid())->assertOk()->assertJsonPath('Diterima', false);
+        WebhookDoku($this, $k, 'ORDER-LAIN-1')->assertStatus(400);
 
         BantuanGerbangTenant::Nonaktifkan($k['Tenant']->Id);
         WebhookDoku($this, $k, $buat['NomorPesanan'])->assertNotFound();
@@ -476,8 +487,8 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         expect(BuatQrisPos($this, $b, $a['QrisDinamis'])->assertStatus(422)->json('Galat.Kode'))->toBe('MetodeBukanQrisDinamis');
 
         // v2.06: notifikasi sah lewat URL webhook tenant A tidak bisa melunasi tagihan tenant B.
-        WebhookDoku($this, $a, $tagihanB['NomorPesanan'], '12000.00')->assertOk()->assertExactJson(['Diterima' => false]);
-        WebhookDoku($this, $b, $tagihanB['NomorPesanan'], '12000.00')->assertOk()->assertExactJson(['Diterima' => true]);
+        WebhookDoku($this, $a, $tagihanB['NomorPesanan'], '12000.00')->assertOk()->assertJsonPath('Diterima', false);
+        WebhookDoku($this, $b, $tagihanB['NomorPesanan'], '12000.00')->assertOk()->assertJsonPath('Diterima', true);
 
         BantuanOrganisasi::AturKonteks($b['Tenant']->Id);
         expect(TagihanQris::query()->sole()->Status)->toBe(StatusTagihanQris::Lunas);

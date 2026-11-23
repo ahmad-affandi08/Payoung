@@ -120,3 +120,19 @@ melihat tombol DOKU Checkout. Pembayaran SNAP yang sudah berjalan tetap bisa dil
 
 `app/Domain/Integrasi/Snap/` (klien, gerbang, pengurai status, pembuat kunci), `ProsesPemicuSnapLangganan` (pemicu notifikasi),
 `WebhookBillingSnapKontroler`, `PanelBayarSnap.tsx` (halaman bayar). Tes: `PembayaranSnapTes`, `KunciSnapTes`, `SnapTes`.
+
+## QRIS toko milik tenant lewat SNAP (D-314)
+
+Berbeda dari akun induk Payoung di atas, QRIS kasir dan toko online memakai akun DOKU **milik tiap toko** (DOKU tidak
+mendukung sub account). Alurnya sama dengan SNAP akun induk, per toko:
+
+1. Toko mengisi di Pengaturan › Gerbang pembayaran: Client ID, Secret key, Merchant ID QRIS, Terminal ID QRIS, dan kode pos QRIS
+   (dari dasbor DOKU › Layanan › QRIS). Simpan: pasangan kunci RSA dibuat server otomatis.
+2. Toko menempel **kunci publik** yang tampil di halaman itu ke dasbor DOKU (API Keys › Merchant Public Key), dan mengisi
+   **URL token** serta **URL notifikasi** (keduanya tampil di halaman itu, berakhiran `/authorization/v1/access-token/b2b`
+   untuk token dan URL webhook biasa untuk notifikasi QRIS).
+3. Uji koneksi (membuktikan Client ID dan kunci publik benar), lalu Aktifkan.
+
+Notifikasi hanya pemicu: server mengambil nomor pesanan dari isinya, lalu menanyakan status ke `qr-mpm-query`. QRIS tidak
+didukung di sandbox DOKU, jadi uji pembayaran sungguhan dilakukan di Produksi dengan nominal kecil. Merchant ID dan Terminal ID
+baru terbukti benar saat QRIS pertama dibuat.

@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Aturan protokol DOKU (non-SNAP) yang dipakai bersama oleh dua jalur yang akunnya berbeda: gerbang QRIS milik toko
- * (`AdaptorDoku`, akun tenant) dan gerbang tagihan langganan milik Payoung (`GerbangBillingPlatform`, akun platform).
+ * Aturan protokol DOKU (non-SNAP) yang dipakai bersama oleh dua jalur yang akunnya berbeda: Checkout untuk tagihan langganan milik Payoung
+ * (`GerbangBillingPlatform`, akun platform), pendaftaran merchant, dan penguji kredensial. QRIS toko memakai DOKU SNAP
+ * (`AdaptorDokuSnap`, D-314), bukan protokol ini.
  *
  * Tanda tangan: `HMACSHA256=` + base64(HMAC-SHA256(kunci rahasia,
  * "Client-Id:..\nRequest-Id:..\nRequest-Timestamp:..\nRequest-Target:..[\nDigest:base64(sha256(badan))]")).

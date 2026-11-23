@@ -37,19 +37,19 @@ export function IsiAwalPengaturan(
 export function LangkahQris(gerbang: PropsGerbangPembayaran['Gerbang']): { Teks: string; Selesai: boolean }[] {
     return [
         {
-            Teks: 'Daftar akun merchant DOKU, lalu salin Client ID dan Secret key dari dasbor DOKU.',
+            Teks: 'Salin Client ID, Secret key, Merchant ID, Terminal ID, dan kode pos QRIS dari dasbor DOKU.',
             Selesai: gerbang !== null,
         },
         {
-            Teks: 'Tempel Client ID dan Secret key di bawah, lalu klik "Simpan akun merchant".',
+            Teks: 'Tempel semuanya di bawah, lalu klik "Simpan akun merchant". Kunci SNAP dibuat otomatis.',
             Selesai: gerbang !== null,
         },
         {
-            Teks: 'Klik "Uji koneksi" untuk memastikan kunci benar.',
+            Teks: 'Daftarkan kunci publik, URL token, dan URL notifikasi yang tampil di dasbor DOKU.',
             Selesai: gerbang?.StatusUji === 'Berhasil' || gerbang?.Aktif === true,
         },
         {
-            Teks: 'Klik "Aktifkan gerbang", lalu salin URL webhook ke dasbor DOKU agar pembayaran terkonfirmasi otomatis.',
+            Teks: 'Klik "Uji koneksi", lalu "Aktifkan gerbang".',
             Selesai: gerbang?.Aktif === true,
         },
     ];
@@ -109,7 +109,7 @@ export default function HalamanGerbangPembayaran({
         });
     };
 
-    const Jalankan = (aksi: 'uji' | 'aktifkan' | 'nonaktifkan') => {
+    const Jalankan = (aksi: 'uji' | 'aktifkan' | 'nonaktifkan' | 'kunci-snap') => {
         router.post(
             `${alamat}/${aksi}`,
             {},
@@ -184,7 +184,9 @@ export default function HalamanGerbangPembayaran({
                                 </p>
                             ) : null}
                             <div className="grid gap-1">
-                                <span className="text-label font-semibold text-teks-utama">URL webhook</span>
+                                <span className="text-label font-semibold text-teks-utama">
+                                    URL notifikasi (webhook)
+                                </span>
                                 <p className="text-keterangan text-teks-sekunder">
                                     Salin ke pengaturan notifikasi/callback di dasbor {Gerbang.LabelPenyedia} agar
                                     pembayaran langsung terkonfirmasi di kasir.
@@ -203,10 +205,40 @@ export default function HalamanGerbangPembayaran({
                                         ? FormatTanggalWaktu(Gerbang.WebhookDiterimaPada)
                                         : 'belum ada'}
                                     {Gerbang.WebhookDitolakPada
-                                        ? ` | Ditolak (tanda tangan salah) terakhir: ${FormatTanggalWaktu(Gerbang.WebhookDitolakPada)}`
+                                        ? ` | Ditolak (isi tidak dikenali) terakhir: ${FormatTanggalWaktu(Gerbang.WebhookDitolakPada)}`
                                         : ''}
                                 </p>
                             </div>
+                            {Gerbang.KunciPublikSnap ? (
+                                <div className="grid gap-1">
+                                    <span className="text-label font-semibold text-teks-utama">Kunci publik SNAP</span>
+                                    <p className="text-keterangan text-teks-sekunder">
+                                        Tempel di dasbor DOKU, menu API Keys › Merchant Public Key. Tanpa ini uji
+                                        koneksi akan ditolak. URL token ditempel di pengaturan SNAP › Token URL.
+                                    </p>
+                                    <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-kontrol border border-garis bg-latar px-2 py-1 font-mono text-keterangan text-teks-utama">
+                                        {Gerbang.KunciPublikSnap}
+                                    </pre>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Tombol varian="sekunder" onClick={() => Salin(Gerbang.KunciPublikSnap ?? '')}>
+                                            Salin kunci publik
+                                        </Tombol>
+                                        <Tombol varian="sekunder" onClick={() => Salin(Gerbang.UrlToken)}>
+                                            Salin URL token
+                                        </Tombol>
+                                        <Tombol
+                                            varian="bahaya"
+                                            disabled={memproses !== null}
+                                            onClick={() => Jalankan('kunci-snap')}
+                                        >
+                                            Buat ulang kunci
+                                        </Tombol>
+                                    </div>
+                                    <code className="min-w-0 break-all font-mono text-keterangan text-teks-sekunder">
+                                        {Gerbang.UrlToken}
+                                    </code>
+                                </div>
+                            ) : null}
                             <div className="flex flex-wrap gap-2">
                                 <Tombol
                                     varian="sekunder"

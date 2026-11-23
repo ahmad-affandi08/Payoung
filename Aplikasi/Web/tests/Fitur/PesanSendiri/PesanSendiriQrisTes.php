@@ -101,7 +101,7 @@ describe('bayar QRIS dari HP tamu', function (): void {
         $this->postJson("{$k['Alamat9']}/pesan-qris", $kiriman)->assertStatus(409)->assertJsonPath('Galat.Kode', 'UuidDipakai');
     });
 
-    it('QR/halaman bayar dibuat sekali, pembayaran masuk memindahkan pesanan ke menunggu kasir', function (): void {
+    it('QR dibuat sekali, pembayaran masuk memindahkan pesanan ke menunggu kasir', function (): void {
         Http::fake(function (PermintaanHttp $r) {
             if (BantuanGerbangTenant::CekPermintaanBuat($r)) {
                 return BantuanGerbangTenant::ResponsBuat($r, 'trx-meja');
@@ -113,7 +113,7 @@ describe('bayar QRIS dari HP tamu', function (): void {
         $kode = $this->postJson("{$k['Alamat']}/pesan-qris", BantuanPesanSendiri::Kiriman([[$k['Nasi'], 1]]))->assertCreated()->json('KodeAkses');
 
         $bayar = $this->postJson("{$k['Alamat']}/pesan-qris/{$kode}/bayar")->assertCreated()->assertJsonPath('SudahDibayar', false);
-        expect($bayar->json('UrlBayar'))->toStartWith('https://sandbox.doku.com/checkout/link/');
+        expect($bayar->json('Qr'))->toContain('<svg')->and($bayar->json('UrlBayar'))->toBeNull();
         $this->postJson("{$k['Alamat']}/pesan-qris/{$kode}/bayar")->assertOk();
         expect(count(Http::recorded(fn (PermintaanHttp $r): bool => BantuanGerbangTenant::CekPermintaanBuat($r))))->toBe(1);
         $this->getJson("{$k['Alamat']}/pesan-qris/{$kode}/status")->assertOk()->assertJsonPath('PerluBayar', true)->assertJsonPath('StatusTagihan', 'Menunggu');

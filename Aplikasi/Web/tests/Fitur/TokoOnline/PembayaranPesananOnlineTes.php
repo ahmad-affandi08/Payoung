@@ -115,9 +115,9 @@ it('checkout QRIS menunggu pembayaran, QR-nya idempoten per pesanan, dan tidak t
 
     $pertama = $this->postJson("/{$k['Slug']}/pesanan/{$pesanan->KodeAkses}/bayar")->assertCreated()
         ->assertJsonPath('Jumlah', '60000.00')->assertJsonPath('Status', StatusTagihanQris::Menunggu->value);
-    // DOKU Checkout memberi halaman bayar (bukan muatan QRIS): pembeli diarahkan ke URL itu, bukan digambarkan QR.
-    expect($pertama->json('Qr'))->toBeNull()
-        ->and($pertama->json('UrlBayar'))->toStartWith('https://sandbox.doku.com/checkout/link/');
+    // D-314: DOKU SNAP memberi muatan QRIS (EMVCo) yang digambar sebagai QR, bukan halaman bayar.
+    expect($pertama->json('Qr'))->toContain('<svg')
+        ->and($pertama->json('UrlBayar'))->toBeNull();
 
     // Halaman bayar dimuat ulang: tagihan yang sama, gerbang tidak dipanggil dua kali.
     $this->postJson("/{$k['Slug']}/pesanan/{$pesanan->KodeAkses}/bayar")->assertOk()

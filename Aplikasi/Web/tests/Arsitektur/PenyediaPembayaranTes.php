@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Integrasi\Billing\AdaptorTagihanDoku;
 use App\Domain\Integrasi\Billing\GerbangBillingPlatform;
-use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDoku;
+use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDokuSnap;
 use App\Domain\Integrasi\GerbangPembayaran\ProtokolDoku;
 use App\Domain\Integrasi\Merchant\AdaptorPendaftarDoku;
 use App\Domain\Integrasi\Merchant\GalatPartnerDoku;
@@ -33,7 +33,7 @@ $khususDoku = [
     PembentukBadanPendaftaranDoku::class,
     HasilBisnisDoku::class,
     GalatPartnerDoku::class,
-    AdaptorDoku::class,
+    AdaptorDokuSnap::class,
     ProtokolDoku::class,
 ];
 
@@ -70,4 +70,4 @@ arch('aksi tenant, pengelola, kontroler, dan perintah tidak mengimpor adaptor at
 arch('adaptor penyedia mengimplementasikan colokannya')
     ->expect(AdaptorTagihanDoku::class)->toImplement('App\Domain\Integrasi\Billing\PenyediaTagihanPlatform')
     ->and(AdaptorPendaftarDoku::class)->toImplement('App\Domain\Integrasi\Merchant\PendaftarMerchantPembayaran')
-    ->and(AdaptorDoku::class)->toImplement('App\Domain\Integrasi\GerbangPembayaran\GerbangPembayaran');
+    ->and(AdaptorDokuSnap::class)->toImplement('App\Domain\Integrasi\GerbangPembayaran\GerbangPembayaran');

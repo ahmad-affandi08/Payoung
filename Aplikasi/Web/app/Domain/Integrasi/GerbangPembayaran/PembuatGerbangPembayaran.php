@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Integrasi\GerbangPembayaran;
 
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
-use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDoku;
+use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDokuSnap;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -32,7 +32,7 @@ final class PembuatGerbangPembayaran
     public function Buat(string $penyedia, array $pengaturan, array $kredensial): ?GerbangPembayaran
     {
         return match ($penyedia) {
-            'Doku' => new AdaptorDoku($pengaturan, $kredensial),
+            'Doku' => new AdaptorDokuSnap($pengaturan, $kredensial),
             default => null,
         };
     }

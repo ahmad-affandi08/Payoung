@@ -47,7 +47,7 @@ enum PenyediaGerbang: string
     public function AmbilKeterangan(): string
     {
         return match ($this) {
-            self::Doku => 'DOKU Checkout (halaman bayar QRIS). Salin URL webhook ke pengaturan notifikasi di dasbor DOKU.',
+            self::Doku => 'DOKU SNAP: QRIS dinamis langsung bisa dipindai e-wallet dan mobile banking mana pun, dana masuk ke akun DOKU toko.',
         };
     }
 
@@ -58,7 +58,10 @@ enum PenyediaGerbang: string
     {
         return match ($this) {
             self::Doku => [
-                ['Kunci' => 'IdKlien', 'Label' => 'Client ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'DOKU Checkout menampilkan halaman bayar QRIS (QR berisi tautan halaman bayar).'],
+                ['Kunci' => 'IdKlien', 'Label' => 'Client ID', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Dari dasbor DOKU, menu API Keys.'],
+                ['Kunci' => 'IdPedagangQris', 'Label' => 'Merchant ID QRIS', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Dari dasbor DOKU, menu Layanan › QRIS (Mall ID).'],
+                ['Kunci' => 'IdTerminalQris', 'Label' => 'Terminal ID QRIS', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Dari dasbor DOKU, menu Layanan › QRIS (Terminal ID).'],
+                ['Kunci' => 'KodePosQris', 'Label' => 'Kode pos QRIS', 'Jenis' => 'Teks', 'Wajib' => true, 'Keterangan' => 'Kode pos toko seperti yang didaftarkan di DOKU.'],
             ],
         };
     }

@@ -7,7 +7,7 @@ use App\Domain\Integrasi\Billing\AdaptorTagihanDoku;
 use App\Domain\Integrasi\Billing\PembuatPenyediaTagihan;
 use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
-use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDoku;
+use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDokuSnap;
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PermintaanRefund;
@@ -85,7 +85,7 @@ describe('D-179 pemilihan adaptor lewat konfigurasi', function (): void {
 
 describe('D-179 kemampuan gerbang QRIS', function (): void {
     it('DOKU menyatakan QRIS dinamis + cek dari nomor pesanan, belum refund; Refund ditolak jelas tanpa menyentuh jaringan', function (): void {
-        $doku = new AdaptorDoku(['IdKlien' => 'BRN-1', 'Mode' => 'Sandbox'], ['KunciRahasia' => 'rahasia']);
+        $doku = new AdaptorDokuSnap(['IdKlien' => 'BRN-1', 'Mode' => 'Sandbox'], ['KunciRahasia' => 'rahasia']);
 
         expect($doku->AmbilKemampuan())->toBe([KemampuanGerbang::QrisDinamis, KemampuanGerbang::CekStatusDariNomorPesanan])
             ->and($doku->CekMendukung(KemampuanGerbang::Refund))->toBeFalse();
@@ -106,7 +106,7 @@ describe('D-179 kemampuan gerbang QRIS', function (): void {
     it('label & isian penyedia gerbang dibaca dari penyedianya, bukan angka mati di pemanggil', function (): void {
         expect(PenyediaGerbang::Doku->AmbilLabel())->toBe('DOKU')
             ->and(PenyediaGerbang::Doku->AmbilBidangKredensial())->toBe([['Kunci' => 'KunciRahasia', 'Label' => 'Secret key', 'Wajib' => true]])
-            ->and(array_column(PenyediaGerbang::Doku->AmbilBidangPengaturan(), 'Kunci'))->toBe(['IdKlien']);
+            ->and(array_column(PenyediaGerbang::Doku->AmbilBidangPengaturan(), 'Kunci'))->toBe(['IdKlien', 'IdPedagangQris', 'IdTerminalQris', 'KodePosQris']);
     });
 
     it('semua kemampuan punya label', function (): void {

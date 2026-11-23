@@ -8,9 +8,11 @@ use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Data\DataGerbangPembayaranTenant;
+use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\Enum\StatusUjiGerbang;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
+use App\Domain\Integrasi\Snap\PembuatKunciSnap;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -29,7 +31,13 @@ final class SimpanGerbangPembayaranTenant
         private readonly KonteksTenant $konteks,
         private readonly KatalogPenyediaGerbang $katalog,
         private readonly PencatatAudit $audit,
+        private readonly PembuatKunciSnap $pembuatKunci,
     ) {}
+
+    /** Kunci pribadi RSA SNAP (dibuat server, bukan isian pengguna) dan pasangan publiknya di pengaturan. */
+    public const KUNCI_PRIBADI = 'KunciPribadiSnap';
+
+    public const KUNCI_PUBLIK = 'KunciPublikSnap';
 
     public function Jalankan(DataGerbangPembayaranTenant $data): GerbangPembayaranTenant
     {
@@ -73,10 +81,28 @@ final class SimpanGerbangPembayaranTenant
             }
         }
 
+        // D-314: DOKU SNAP butuh pasangan kunci RSA per tenant. Dibuat server sekali (kunci pribadi terenkripsi bersama
+        // kredensial, kunci publik di pengaturan untuk didaftarkan tenant di dasbor DOKU) dan dipertahankan sesudahnya.
+        $pengaturanBaru = $data->pengaturan;
+
+        if ($data->penyedia === PenyediaGerbang::Doku) {
+            $adaKunci = isset($kredensialLama[self::KUNCI_PRIBADI], $gerbang?->Pengaturan[self::KUNCI_PUBLIK]) && ! $gantiPenyedia;
+
+            if ($adaKunci) {
+                $kredensialBaru[self::KUNCI_PRIBADI] = $kredensialLama[self::KUNCI_PRIBADI];
+                $pengaturanBaru[self::KUNCI_PUBLIK] = $gerbang->Pengaturan[self::KUNCI_PUBLIK];
+            } else {
+                $pasangan = $this->pembuatKunci->Buat();
+                $kredensialBaru[self::KUNCI_PRIBADI] = $pasangan['Pribadi'];
+                $pengaturanBaru[self::KUNCI_PUBLIK] = $pasangan['Publik'];
+                $kredensialBerubah[] = self::KUNCI_PRIBADI;
+            }
+        }
+
         $isiBerubah = $gerbang === null
             || $gantiPenyedia
             || $gerbang->Lingkungan !== $data->lingkungan
-            || $gerbang->Pengaturan !== $data->pengaturan
+            || self::Urutkan($gerbang->Pengaturan) !== self::Urutkan($pengaturanBaru)
             || $kredensialBerubah !== [];
         $nilaiLama = $gerbang === null ? null : self::AmbilRingkasan($gerbang);
 
@@ -84,9 +110,9 @@ final class SimpanGerbangPembayaranTenant
         $gerbang->fill([
             'Penyedia' => $data->penyedia,
             'Lingkungan' => $data->lingkungan,
-            'Pengaturan' => $data->pengaturan,
+            'Pengaturan' => $pengaturanBaru,
             'Kredensial' => $kredensialBaru,
-            'PetunjukKredensial' => array_map(self::BuatPetunjuk(...), $kredensialBaru),
+            'PetunjukKredensial' => array_map(self::BuatPetunjuk(...), array_diff_key($kredensialBaru, [self::KUNCI_PRIBADI => true])),
         ]);
 
         if ($isiBerubah) {
@@ -104,6 +130,19 @@ final class SimpanGerbangPembayaranTenant
         );
 
         return $gerbang;
+    }
+
+    /**
+     * Kolom JSON basis data tidak mempertahankan urutan kunci, jadi perbandingan pengaturan tidak boleh bergantung padanya.
+     *
+     * @param  array<string, string|int>  $nilai
+     * @return array<string, string|int>
+     */
+    private static function Urutkan(array $nilai): array
+    {
+        ksort($nilai);
+
+        return $nilai;
     }
 
     /** `{IdTenant basis-36}-{acak}`: bagian tenant menetapkan scope pencarian webhook tanpa query lintas tenant. */
@@ -126,7 +165,7 @@ final class SimpanGerbangPembayaranTenant
         return [
             'Penyedia' => $gerbang->Penyedia->value,
             'Lingkungan' => $gerbang->Lingkungan->value,
-            'Pengaturan' => $gerbang->Pengaturan,
+            'Pengaturan' => array_diff_key($gerbang->Pengaturan, [self::KUNCI_PUBLIK => true]),
             'StatusUji' => $gerbang->StatusUji->value,
             'Aktif' => $gerbang->Aktif,
         ];

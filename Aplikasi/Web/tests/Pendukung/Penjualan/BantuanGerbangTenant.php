@@ -9,6 +9,7 @@ use App\Domain\Integrasi\Enum\LingkunganGerbang;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\Enum\StatusUjiGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
+use App\Domain\Integrasi\Snap\PembuatKunciSnap;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Http\Response;
@@ -20,15 +21,37 @@ use Tests\TestCase;
 
 /**
  * Gerbang pembayaran QRIS dinamis milik tenant (v2.06) untuk test: langsung aktif & lolos uji (jalur simpan → uji →
- * aktifkan diuji terpisah di `GerbangPembayaranTenantTes`). Sejak seluruh tenant memakai DOKU, helper ini membuat
- * gerbang DOKU beserta DOKU palsu (`Http::fake`) dan notifikasi bertanda tangan `HMACSHA256` yang sama dengan yang
- * diverifikasi `AdaptorDoku`.
+ * aktifkan diuji terpisah di `GerbangPembayaranTenantTes`). Sejak D-314 tenant memakai DOKU SNAP, jadi helper ini
+ * membuat gerbang DOKU berkunci RSA beserta DOKU palsu (`Http::fake`): pembuatan QR (`qr-mpm-generate`), pertanyaan status
+ * (`qr-mpm-query`), dan token B2B dijawab satu bentuk jawaban gabungan (`ResponsStatus`).
+ *
+ * Notifikasi DOKU hanya pemicu: status yang "diumumkan" webhook palsu ditanyakan balik oleh aplikasi ke DOKU palsu, jadi
+ * `KirimWebhook` mengumumkannya lewat `$diumumkan` selama permintaan berjalan, supaya jawaban `qr-mpm-query` ikut berubah
+ * seperti DOKU sungguhan yang sudah menerima uangnya.
  */
 final class BantuanGerbangTenant
 {
     public const ID_KLIEN_UJI = 'BRN-UJI-0001';
 
     public const KUNCI_RAHASIA_UJI = 'SK-doku-uji-rahasia-9911';
+
+    public const ID_PEDAGANG_UJI = '111642';
+
+    /** @var array{Status: string, Jumlah: string}|null */
+    private static ?array $diumumkan = null;
+
+    /** @var array{Pribadi: string, Publik: string}|null */
+    private static ?array $pasanganKunci = null;
+
+    /**
+     * Pasangan kunci RSA uji (dibuat sekali per proses tes, 2048 bit lambat dibuat).
+     *
+     * @return array{Pribadi: string, Publik: string}
+     */
+    public static function AmbilPasanganKunci(): array
+    {
+        return self::$pasanganKunci ??= (new PembuatKunciSnap)->Buat();
+    }
 
     /**
      * @param  array<string, string>|null  $kredensial
@@ -40,8 +63,15 @@ final class BantuanGerbangTenant
         ?array $kredensial = null,
         ?array $pengaturan = null,
     ): GerbangPembayaranTenant {
-        $kredensial ??= ['KunciRahasia' => self::KUNCI_RAHASIA_UJI];
-        $pengaturan ??= ['IdKlien' => self::ID_KLIEN_UJI];
+        $kunci = self::AmbilPasanganKunci();
+        $kredensial ??= ['KunciRahasia' => self::KUNCI_RAHASIA_UJI, 'KunciPribadiSnap' => $kunci['Pribadi']];
+        $pengaturan ??= [
+            'IdKlien' => self::ID_KLIEN_UJI,
+            'IdPedagangQris' => self::ID_PEDAGANG_UJI,
+            'IdTerminalQris' => 'A01',
+            'KodePosQris' => '57214',
+            'KunciPublikSnap' => $kunci['Publik'],
+        ];
         BantuanOrganisasi::AturKonteks($idTenant);
 
         return GerbangPembayaranTenant::query()->create([
@@ -50,7 +80,7 @@ final class BantuanGerbangTenant
             'Lingkungan' => LingkunganGerbang::Sandbox,
             'Pengaturan' => $pengaturan,
             'Kredensial' => $kredensial,
-            'PetunjukKredensial' => array_map(SimpanGerbangPembayaranTenant::BuatPetunjuk(...), $kredensial),
+            'PetunjukKredensial' => array_map(SimpanGerbangPembayaranTenant::BuatPetunjuk(...), array_diff_key($kredensial, ['KunciPribadiSnap' => true])),
             'StatusUji' => StatusUjiGerbang::Berhasil,
             'Aktif' => true,
             'TokenWebhook' => SimpanGerbangPembayaranTenant::BuatToken($idTenant),
@@ -63,45 +93,72 @@ final class BantuanGerbangTenant
         GerbangPembayaranTenant::query()->update(['Aktif' => false]);
     }
 
-    /** Permintaan membuat tagihan ke DOKU Checkout. */
+    /** Permintaan membuat QRIS ke DOKU SNAP. */
     public static function CekPermintaanBuat(PermintaanHttp $permintaan): bool
     {
-        return str_ends_with($permintaan->url(), '/checkout/v1/payment');
+        return str_ends_with($permintaan->url(), '/qr/qr-mpm-generate');
     }
 
-    /** Permintaan menanyakan status order ke DOKU. */
+    /** Permintaan menanyakan status QRIS ke DOKU SNAP. */
     public static function CekPermintaanStatus(PermintaanHttp $permintaan): bool
     {
-        return str_contains($permintaan->url(), '/orders/v1/status/');
+        return str_ends_with($permintaan->url(), '/qr/qr-mpm-query');
     }
 
-    /** Jawaban DOKU Checkout yang sukses: halaman bayar + token transaksi `{awalan}-{nomor pesanan}`. */
+    /** Jawaban DOKU SNAP yang sukses: isi QRIS (EMVCo) dan nomor referensi DOKU `{awalan}-{nomor pesanan}`. */
     public static function ResponsBuat(PermintaanHttp $permintaan, string $awalan = 'trx'): PromiseInterface
     {
-        $nomor = (string) ($permintaan['order']['invoice_number'] ?? '');
+        $nomor = (string) ($permintaan['partnerReferenceNo'] ?? '');
 
-        return Http::response(['response' => ['payment' => [
-            'url' => "https://sandbox.doku.com/checkout/link/{$nomor}",
-            'token_id' => "{$awalan}-{$nomor}",
-        ]]]);
+        return Http::response([
+            'responseCode' => '2004700',
+            'responseMessage' => 'Successful',
+            'referenceNo' => "{$awalan}-{$nomor}",
+            'partnerReferenceNo' => $nomor,
+            'qrContent' => "00020101021226QRISUJI{$nomor}",
+        ]);
     }
 
-    /** Jawaban status order DOKU (`PENDING`, `SUCCESS`, `EXPIRED`, `FAILED`). */
+    /**
+     * Jawaban status DOKU SNAP (`PENDING`, `SUCCESS`, `EXPIRED`, `FAILED`). Satu jawaban gabungan juga memuat
+     * `accessToken`, jadi permintaan token B2B yang jatuh ke fake yang sama tetap sukses tanpa mengubah fake di tes.
+     */
     public static function ResponsStatus(string $status): PromiseInterface
     {
-        return Http::response(['transaction' => ['status' => $status]]);
+        $jumlah = null;
+
+        if (self::$diumumkan !== null) {
+            $status = self::$diumumkan['Status'];
+            $jumlah = self::$diumumkan['Jumlah'];
+        }
+
+        $kode = match ($status) {
+            'SUCCESS' => '00',
+            'FAILED', 'EXPIRED' => '06',
+            default => '03',
+        };
+
+        return Http::response([
+            'responseCode' => '2004700',
+            'responseMessage' => 'Successful',
+            'accessToken' => 'token-b2b-uji',
+            'tokenType' => 'Bearer',
+            'expiresIn' => '900',
+            'latestTransactionStatus' => $kode,
+            ...($jumlah !== null && $kode === '00' ? ['amount' => ['value' => $jumlah, 'currency' => 'IDR']] : []),
+        ]);
     }
 
     /** Jawaban penolakan DOKU (HTTP 401) yang pesannya memuat kunci rahasia, untuk menguji penyaringan. */
     public static function ResponsTolak(string $kunci = self::KUNCI_RAHASIA_UJI): PromiseInterface
     {
-        return Http::response(['message' => ["Invalid signature for key {$kunci}"]], 401);
+        return Http::response(['responseCode' => '4014700', 'responseMessage' => "Invalid signature for key {$kunci}"], 401);
     }
 
     /**
-     * Notifikasi DOKU ke URL webhook tenant: `/webhook/{kode}/{tokenWebhook}`, ditandatangani HMACSHA256 atas
-     * Client-Id, Request-Id, Request-Timestamp, Request-Target, dan Digest isi mentah, persis seperti yang
-     * diverifikasi `AdaptorDoku::UraiWebhook`. `$jumlah` boleh berbentuk desimal ('38500.00'); DOKU mengirim bilangan bulat.
+     * Notifikasi DOKU ke URL webhook tenant: `/webhook/{kode}/{tokenWebhook}`. Isinya hanya memuat nomor pesanan; status
+     * dan jumlah (`$status`, `$jumlah`) diumumkan ke DOKU palsu selama permintaan berjalan, karena aplikasi menanyakannya
+     * sendiri ke DOKU (D-314).
      *
      * @return TestResponse<Response>
      */
@@ -111,27 +168,23 @@ final class BantuanGerbangTenant
         string $nomorPesanan,
         string $jumlah = '38500.00',
         string $status = 'SUCCESS',
-        string $kunci = self::KUNCI_RAHASIA_UJI,
-        string $idKlien = self::ID_KLIEN_UJI,
+        string $jalur = '',
         string $kodeUrl = 'doku',
     ): TestResponse {
         $isi = (string) json_encode([
             'order' => ['invoice_number' => $nomorPesanan, 'amount' => (int) explode('.', $jumlah)[0]],
             'transaction' => ['status' => $status],
         ]);
-        $target = "/webhook/{$kodeUrl}/{$tokenWebhook}";
-        $idPermintaan = (string) Str::uuid();
-        $waktu = now()->utc()->format('Y-m-d\TH:i:s\Z');
-        $komponen = "Client-Id:{$idKlien}\nRequest-Id:{$idPermintaan}\nRequest-Timestamp:{$waktu}\nRequest-Target:{$target}"
-            ."\nDigest:".base64_encode(hash('sha256', $isi, true));
+        $target = "/webhook/{$kodeUrl}/{$tokenWebhook}".($jalur === '' ? '' : "/{$jalur}");
+        self::$diumumkan = ['Status' => $status, 'Jumlah' => $jumlah];
 
-        return $tes->call('POST', $target, [], [], [], [
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_CLIENT_ID' => $idKlien,
-            'HTTP_REQUEST_ID' => $idPermintaan,
-            'HTTP_REQUEST_TIMESTAMP' => $waktu,
-            'HTTP_SIGNATURE' => 'HMACSHA256='.base64_encode(hash_hmac('sha256', $komponen, $kunci, true)),
-        ], $isi);
+        try {
+            return $tes->call('POST', $target, [], [], [], [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+            ], $isi);
+        } finally {
+            self::$diumumkan = null;
+        }
     }
 }

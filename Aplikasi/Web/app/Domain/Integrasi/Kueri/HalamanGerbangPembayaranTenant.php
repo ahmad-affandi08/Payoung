@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Integrasi\Kueri;
 
+use App\Domain\Integrasi\Aksi\SimpanGerbangPembayaranTenant;
 use App\Domain\Integrasi\Enum\LingkunganGerbang;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
@@ -36,7 +37,10 @@ final class HalamanGerbangPembayaranTenant
                 'LabelPenyedia' => $gerbang->Penyedia->AmbilLabel(),
                 'PenyediaDiizinkan' => in_array($gerbang->Penyedia, $diizinkan, true),
                 'Lingkungan' => $gerbang->Lingkungan->value,
-                'Pengaturan' => $gerbang->Pengaturan,
+                'Pengaturan' => array_diff_key($gerbang->Pengaturan, [SimpanGerbangPembayaranTenant::KUNCI_PUBLIK => true]),
+                // D-314: kunci publik RSA SNAP untuk didaftarkan di dasbor DOKU; URL token B2B untuk pengaturan SNAP di sana.
+                'KunciPublikSnap' => is_string($gerbang->Pengaturan[SimpanGerbangPembayaranTenant::KUNCI_PUBLIK] ?? null) ? $gerbang->Pengaturan[SimpanGerbangPembayaranTenant::KUNCI_PUBLIK] : null,
+                'UrlToken' => PembuatGerbangPembayaran::BuatUrlWebhook($gerbang->Penyedia, $gerbang->TokenWebhook).'/authorization/v1/access-token/b2b',
                 'PetunjukKredensial' => $gerbang->PetunjukKredensial,
                 'StatusUji' => $gerbang->StatusUji->value,
                 'LabelStatusUji' => $gerbang->StatusUji->AmbilLabel(),

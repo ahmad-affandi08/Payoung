@@ -52,8 +52,13 @@ const penyedia: OpsiPenyediaGerbang[] = [
     {
         Nilai: 'Doku',
         Label: 'DOKU',
-        Keterangan: 'DOKU Checkout (halaman bayar QRIS).',
-        BidangPengaturan: [{ Kunci: 'IdKlien', Label: 'Client ID', Jenis: 'Teks', Wajib: true }],
+        Keterangan: 'DOKU SNAP: QRIS dinamis langsung bisa dipindai.',
+        BidangPengaturan: [
+            { Kunci: 'IdKlien', Label: 'Client ID', Jenis: 'Teks', Wajib: true },
+            { Kunci: 'IdPedagangQris', Label: 'Merchant ID QRIS', Jenis: 'Teks', Wajib: true },
+            { Kunci: 'IdTerminalQris', Label: 'Terminal ID QRIS', Jenis: 'Teks', Wajib: true },
+            { Kunci: 'KodePosQris', Label: 'Kode pos QRIS', Jenis: 'Teks', Wajib: true },
+        ],
         BidangKredensial: [{ Kunci: 'KunciRahasia', Label: 'Secret key', Wajib: true }],
     },
 ];
@@ -69,7 +74,7 @@ function Gerbang(ubah: Partial<GerbangPembayaranTenant> = {}): GerbangPembayaran
         LabelPenyedia: 'DOKU',
         PenyediaDiizinkan: true,
         Lingkungan: 'Sandbox',
-        Pengaturan: { IdKlien: 'BRN-0012-7788' },
+        Pengaturan: { IdKlien: 'BRN-0012-7788', IdPedagangQris: '111642', IdTerminalQris: 'A01', KodePosQris: '57214' },
         PetunjukKredensial: { KunciRahasia: '••••7788' },
         StatusUji: 'BelumDiuji',
         LabelStatusUji: 'Belum diuji',
@@ -77,6 +82,8 @@ function Gerbang(ubah: Partial<GerbangPembayaranTenant> = {}): GerbangPembayaran
         DiujiPada: null,
         Aktif: false,
         UrlWebhook: 'https://payoung.id/webhook/doku/1a-TokenWebhookToko',
+        KunciPublikSnap: '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkq\n-----END PUBLIC KEY-----',
+        UrlToken: 'https://payoung.id/webhook/doku/1a-TokenWebhookToko/authorization/v1/access-token/b2b',
         WebhookDiterimaPada: null,
         WebhookDitolakPada: null,
         ...ubah,
@@ -99,6 +106,13 @@ describe('Gerbang pembayaran toko (v2.06)', () => {
         fireEvent.change(screen.getByLabelText(/Client ID/, { selector: 'input' }), {
             target: { value: 'BRN-0012-7788' },
         });
+        fireEvent.change(screen.getByLabelText(/Merchant ID QRIS/, { selector: 'input' }), {
+            target: { value: '111642' },
+        });
+        fireEvent.change(screen.getByLabelText(/Terminal ID QRIS/, { selector: 'input' }), {
+            target: { value: 'A01' },
+        });
+        fireEvent.change(screen.getByLabelText(/Kode pos QRIS/, { selector: 'input' }), { target: { value: '57214' } });
         fireEvent.change(screen.getByLabelText(/Secret key/, { selector: 'input' }), {
             target: { value: 'SK-rahasia-toko-7788' },
         });
@@ -109,7 +123,12 @@ describe('Gerbang pembayaran toko (v2.06)', () => {
             data: {
                 Penyedia: 'Doku',
                 Lingkungan: 'Sandbox',
-                Pengaturan: { IdKlien: 'BRN-0012-7788' },
+                Pengaturan: {
+                    IdKlien: 'BRN-0012-7788',
+                    IdPedagangQris: '111642',
+                    IdTerminalQris: 'A01',
+                    KodePosQris: '57214',
+                },
                 Kredensial: { KunciRahasia: 'SK-rahasia-toko-7788' },
             },
         });
@@ -125,6 +144,17 @@ describe('Gerbang pembayaran toko (v2.06)', () => {
         expect((screen.getByRole('button', { name: 'Aktifkan gerbang' }) as HTMLButtonElement).disabled).toBe(true);
         fireEvent.click(screen.getByRole('button', { name: 'Uji koneksi' }));
         expect(uji.router).toEqual(['/kelola/pembayaran/gerbang/uji']);
+    });
+
+    it('D-314 kunci publik SNAP dan URL token tampil untuk didaftarkan di DOKU, kunci bisa dibuat ulang', () => {
+        render(
+            <HalamanGerbangPembayaran Gerbang={Gerbang()} DaftarPenyedia={penyedia} DaftarLingkungan={lingkungan} />,
+        );
+
+        expect(screen.getByText(/BEGIN PUBLIC KEY/)).toBeTruthy();
+        expect(screen.getByText(/access-token\/b2b$/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Buat ulang kunci' }));
+        expect(uji.router).toEqual(['/kelola/pembayaran/gerbang/kunci-snap']);
     });
 
     it('uji berhasil: bisa diaktifkan. Penyedia dilarang platform menampilkan peringatan dan tidak bisa diaktifkan', () => {

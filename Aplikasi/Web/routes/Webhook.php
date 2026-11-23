@@ -52,8 +52,10 @@ if (! EdisiAplikasi::CekLisensi()) {
 
 // F-08 BR-08.5, v2.06: notifikasi gerbang pembayaran QRIS dinamis milik tenant (kode adaptor huruf kecil + token
 // webhook tenant). URL ini ditampilkan di back-office tenant untuk disalin ke dasbor penyedia.
-Route::post('/webhook/{penyedia}/{tokenWebhook}', [WebhookGerbangPembayaranKontroler::class, 'TerimaTenant'])
-    ->where(['penyedia' => $penyedia, 'tokenWebhook' => PencariGerbangWebhook::POLA_TOKEN])
+// D-314: DOKU SNAP menambahkan jalur tetap ke URL yang disetel di dasbor (token B2B `authorization/v1/access-token/b2b`,
+// notifikasi `v1.0/qr/qr-mpm-notify`), jadi sisa jalur ditampung.
+Route::post('/webhook/{penyedia}/{tokenWebhook}/{jalur?}', [WebhookGerbangPembayaranKontroler::class, 'TerimaTenant'])
+    ->where(['penyedia' => $penyedia, 'tokenWebhook' => PencariGerbangWebhook::POLA_TOKEN, 'jalur' => '.*'])
     ->middleware('throttle:webhook')
     ->name('webhook.gerbang-pembayaran.tenant');
 

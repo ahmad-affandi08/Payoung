@@ -213,9 +213,9 @@ describe('Bayar QRIS di kios', function (): void {
         $dibuat = $this->postJson("{$k['AlamatKios']}/pesan", KirimanKios($k, 'QrisOnline'))->assertCreated()->assertJsonPath('NomorAntrian', 'K001');
         $kode = $dibuat->json('KodeAkses');
         $bayar = $this->postJson("{$k['AlamatKios']}/pesanan/{$kode}/bayar")->assertCreated()->assertJsonPath('SudahDibayar', false);
-        // DOKU Checkout memberi halaman bayar (bukan muatan QRIS): layar kios menampilkan tautan itu.
-        expect($bayar->json('Qr'))->toBeNull()
-            ->and($bayar->json('UrlBayar'))->toStartWith('https://sandbox.doku.com/checkout/link/');
+        // D-314: DOKU SNAP memberi muatan QRIS (EMVCo) yang digambar sebagai QR di layar kios.
+        expect($bayar->json('Qr'))->toContain('<svg')
+            ->and($bayar->json('UrlBayar'))->toBeNull();
         $this->postJson("{$k['AlamatKios']}/pesanan/{$kode}/bayar")->assertOk();
         expect(count(Http::recorded(fn (PermintaanHttp $r): bool => BantuanGerbangTenant::CekPermintaanBuat($r))))->toBe(1);
         $this->getJson("{$k['AlamatKios']}/pesanan/{$kode}/status-bayar")->assertOk()->assertJsonPath('PerluBayar', true)->assertJsonPath('StatusTagihan', 'Menunggu');
