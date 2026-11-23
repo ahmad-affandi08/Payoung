@@ -673,6 +673,32 @@ class KlienPos {
     return UraiJson.AmbilBenar(json['Habis'], habis);
   }
 
+  /// D-310: atur stasiun dapur/bar sebuah kategori ([uuidStasiun] null = ikut kategori induk atau stasiun bawaan).
+  /// Berlaku untuk seluruh usaha. Mengembalikan Uuid stasiun akhir menurut server. Pelaku tanpa izin
+  /// `dapur.rute.atur` → `GalatApi` 403. Offline → `GalatJaringan`.
+  Future<String?> AturStasiunDapurKategori(
+    String uuidKategori, {
+    required String? uuidStasiun,
+    required String uuidPengguna,
+  }) async => UraiJson.AmbilTeksAtauNull(
+    (await _Kirim('POST', 'dapur/rute/kategori/${Uri.encodeComponent(uuidKategori)}', {
+      'UuidPengguna': uuidPengguna,
+      'UuidStasiun': uuidStasiun,
+    }))['UuidStasiun'],
+  );
+
+  /// D-310: atur stasiun dapur/bar satu menu (menimpa stasiun kategorinya; [uuidStasiun] null = ikut kategori).
+  Future<String?> AturStasiunDapurProduk(
+    String uuidProduk, {
+    required String? uuidStasiun,
+    required String uuidPengguna,
+  }) async => UraiJson.AmbilTeksAtauNull(
+    (await _Kirim('POST', 'dapur/rute/produk/${Uri.encodeComponent(uuidProduk)}', {
+      'UuidPengguna': uuidPengguna,
+      'UuidStasiun': uuidStasiun,
+    }))['UuidStasiun'],
+  );
+
   /// K-24: ringkasan akhir hari outlet perangkat (semua perangkat) pada [tanggal] (`YYYY-MM-DD`, bawaan hari ini).
   Future<RingkasanHarianPos> AmbilRingkasanHarian({String? tanggal}) async => RingkasanHarianPos.DariJson(
     await _Kirim(

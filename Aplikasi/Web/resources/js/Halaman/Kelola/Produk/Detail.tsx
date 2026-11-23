@@ -13,6 +13,7 @@ import PembuatVarian from '@/Komponen/Katalog/PembuatVarian';
 import TabelUbahVarian from '@/Komponen/Katalog/TabelUbahVarian';
 import KepalaProduk from '@/Komponen/Katalog/KepalaProduk';
 import PanelKetersediaan from '@/Komponen/Katalog/PanelKetersediaan';
+import PanelStasiunDapur from '@/Komponen/Katalog/PanelStasiunDapur';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
@@ -107,6 +108,7 @@ export default function HalamanDetailProduk({
     StokAwalVarian,
     BatasStok,
     Ketersediaan,
+    StasiunDapur = null,
     Riwayat,
     Jenis,
     BatasSku,
@@ -423,6 +425,15 @@ export default function HalamanDetailProduk({
 
             {Ketersediaan !== null ? (
                 <PanelKetersediaan uuidProduk={Produk.Uuid} baris={Ketersediaan} bolehUbah={Izin.Kelola} />
+            ) : null}
+
+            {StasiunDapur !== null ? (
+                <PanelStasiunDapur
+                    key={StasiunDapur.UuidStasiun ?? 'ikut-kategori'}
+                    uuidProduk={Produk.Uuid}
+                    data={StasiunDapur}
+                    bolehUbah={Izin.Kelola}
+                />
             ) : null}
 
             <Panel judul="Riwayat perubahan" idJudul="judul-riwayat">

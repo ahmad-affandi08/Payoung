@@ -101,8 +101,8 @@ describe('Master katalog: formulir di dialog, hapus/nonaktifkan lewat konfirmasi
         RenderUji(
             <HalamanDaftarStasiunDapur
                 Stasiun={[
-                    { Uuid: 'S1', Nama: 'Bar', Urutan: 0, Status: 'Aktif' },
-                    { Uuid: 'S2', Nama: 'Dapur', Urutan: 1, Status: 'Aktif' },
+                    { Uuid: 'S1', Nama: 'Bar', Urutan: 0, Status: 'Aktif', Salinan: false },
+                    { Uuid: 'S2', Nama: 'Dapur', Urutan: 1, Status: 'Aktif', Salinan: false },
                 ]}
                 Izin={IzinPenuh}
             />,

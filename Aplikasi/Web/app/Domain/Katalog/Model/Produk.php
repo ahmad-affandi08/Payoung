@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property array<int, array<string, mixed>>|null $AtributVarian
  * @property string|null $KunciVarian
  * @property int|null $IdKategori
+ * @property int|null $IdStasiunDapur D-310: stasiun dapur khusus produk ini (menimpa stasiun kategori); null = ikut kategori
  * @property int $IdSatuanDasar
  * @property PelacakanProduk $Pelacakan
  * @property int|null $IdKelompokPajak
@@ -83,6 +84,7 @@ final class Produk extends ModelDasar
         'AtributVarian' => null,
         'KunciVarian' => null,
         'IdKategori' => null,
+        'IdStasiunDapur' => null,
         'Pelacakan' => 'Tidak',
         'IdKelompokPajak' => null,
         'HargaTermasukPajak' => null,

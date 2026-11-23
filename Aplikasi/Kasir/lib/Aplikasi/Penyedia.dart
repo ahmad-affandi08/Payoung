@@ -80,6 +80,7 @@ import '../Domain/Sesi/LayananMasuk.dart';
 import '../Domain/Sesi/LayananPerangkat.dart';
 import '../Domain/Sesi/LayananPersetujuanJarakJauh.dart';
 import '../Domain/Sesi/StafLokal.dart';
+import '../Domain/Dapur/LayananRuteDapur.dart';
 import '../Domain/Dapur/LayananTiketDapur.dart';
 import '../Domain/Shift/LayananBukaLaci.dart';
 import '../Domain/Shift/LayananShift.dart';
@@ -299,6 +300,11 @@ final penyediaLayananBukaLaci = Provider<LayananBukaLaci>(
     struk: ref.watch(penyediaLayananStruk),
     jam: ref.watch(penyediaJam),
   ),
+);
+
+/// D-310: kasir mengatur stasiun dapur/bar tiap kategori dan menu (online, izin `dapur.rute.atur`).
+final penyediaLayananRuteDapur = Provider<LayananRuteDapur>(
+  (ref) => LayananRuteDapur(klien: ref.watch(penyediaKlienPos), repositori: ref.watch(penyediaRepositori)),
 );
 
 /// Cetak struk bagian 4c: tiket dapur per stasiun di printer.

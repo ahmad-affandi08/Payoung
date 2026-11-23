@@ -2956,7 +2956,7 @@
     "isDynamicEntry": true
   },
   "resources/js/Aplikasi.tsx": {
-    "file": "assets/Aplikasi-vB220duR.js",
+    "file": "assets/Aplikasi-BZhbrqXQ.js",
     "name": "Aplikasi",
     "src": "resources/js/Aplikasi.tsx",
     "isEntry": true,
@@ -8784,7 +8784,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/Produk/Detail.tsx": {
-    "file": "assets/Detail-Dz4RCGXy.js",
+    "file": "assets/Detail-B_JG7v0D.js",
     "name": "Detail",
     "src": "resources/js/Halaman/Kelola/Produk/Detail.tsx",
     "isDynamicEntry": true,
@@ -9255,7 +9255,7 @@
     ]
   },
   "resources/js/Halaman/Kelola/StasiunDapur/Daftar.tsx": {
-    "file": "assets/Daftar-CjzDOwhn.js",
+    "file": "assets/Daftar-ElHS-cYD.js",
     "name": "Daftar",
     "src": "resources/js/Halaman/Kelola/StasiunDapur/Daftar.tsx",
     "isDynamicEntry": true,
@@ -9268,6 +9268,7 @@
       "_DialogFormulir-BSeYBf39.js",
       "_Tombol-CEUGaUCz.js",
       "_LabelStatus-BNjWuZG6.js",
+      "_KotakCentang-1embKHjn.js",
       "_AksiHalaman-Ctm7c88W.js",
       "_PesanHanyaLihat-CGnIgspG.js",
       "_MenuAksiBaris-DBSFP7i1.js",

@@ -84,6 +84,8 @@ final class KamusPeristiwaAudit
         'daftar-harga.harga.ubah' => 'Harga di daftar harga diubah',
         'daftar-harga.ubah' => 'Daftar harga diubah',
 
+        'dapur.rute-atur' => 'Stasiun dapur kategori atau menu diatur',
+
         'data.ekspor-minta' => 'Ekspor data usaha diminta',
         'data.ekspor-siap' => 'Ekspor data usaha siap diunduh',
         'data.ekspor-unduh' => 'Ekspor data usaha diunduh',

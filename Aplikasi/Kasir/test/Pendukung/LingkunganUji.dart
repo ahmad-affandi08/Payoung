@@ -277,7 +277,12 @@ Map<String, Object?> DataAwalUji({
     {'Uuid': '01K5KATEGORI00000000000002', 'Nama': 'Tambahan uang receh', 'Jenis': 'Masuk'},
   ],
   'Staf': [
-    StafJson('01K5STAF000000000000000001', 'Rina Wulandari', ['penjualan.buat', 'penjualan.diskon.manual'], 0),
+    // D-310: peran Kasir bawaan otomatis memegang `dapur.rute.atur`.
+    StafJson('01K5STAF000000000000000001', 'Rina Wulandari', [
+      'penjualan.buat',
+      'penjualan.diskon.manual',
+      'dapur.rute.atur',
+    ], 0),
     StafJson('01K5STAF000000000000000002', 'Budi Santoso', [
       'penjualan.buat',
       'kas.keluar.setujui',

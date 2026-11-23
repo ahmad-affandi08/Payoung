@@ -13,6 +13,7 @@ use App\Http\Kontroler\Kelola\Katalog\PaketSesiKontroler;
 use App\Http\Kontroler\Kelola\Katalog\ProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\SatuanKontroler;
 use App\Http\Kontroler\Kelola\Katalog\StasiunDapurKontroler;
+use App\Http\Kontroler\Kelola\Katalog\StasiunDapurProdukKontroler;
 use App\Http\Kontroler\Kelola\Katalog\VarianProdukKontroler;
 use App\Http\Perantara\SiapkanAuditTenant;
 use App\Http\Perantara\WajibIzinTenant;
@@ -52,6 +53,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
     Route::get('/produk/{produk}', [ProdukKontroler::class, 'Detail'])->middleware($lihat)->where('produk', $ulid)->name('kelola.produk.detail');
     Route::get('/produk/{produk}/ubah', [ProdukKontroler::class, 'Ubah'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.ubah');
     Route::put('/produk/{produk}', [ProdukKontroler::class, 'Perbarui'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.perbarui');
+    Route::post('/produk/{produk}/stasiun-dapur', [StasiunDapurProdukKontroler::class, 'Ubah'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.stasiun-dapur');
     Route::post('/produk/{produk}/habis', [KetersediaanProdukKontroler::class, 'Ubah'])->middleware($kelola)->where('produk', $ulid)->name('kelola.produk.habis');
     // Audit kemudahan pakai #19: aksi massal produk terpilih (arsip, kategori, tampil di kasir).
     Route::post('/produk/massal', [ProdukKontroler::class, 'Massal'])->middleware($kelola)->name('kelola.produk.massal');

@@ -58,13 +58,19 @@ class MejaPos {
 }
 
 class StasiunDapurPos {
-  const StasiunDapurPos({required this.uuid, required this.nama});
+  const StasiunDapurPos({required this.uuid, required this.nama, this.salinan = false});
 
   final String uuid;
   final String nama;
 
-  static StasiunDapurPos DariJson(Map<String, Object?> json) =>
-      StasiunDapurPos(uuid: UraiJson.AmbilTeks(json['Uuid']), nama: UraiJson.AmbilTeks(json['Nama']));
+  /// D-310: stasiun checker. Tidak memasak, hanya menerima salinan semua tiket di printer (server lama = false).
+  final bool salinan;
+
+  static StasiunDapurPos DariJson(Map<String, Object?> json) => StasiunDapurPos(
+    uuid: UraiJson.AmbilTeks(json['Uuid']),
+    nama: UraiJson.AmbilTeks(json['Nama']),
+    salinan: UraiJson.AmbilBenar(json['Salinan']),
+  );
 }
 
 /// Data meja outlet perangkat untuk kerja offline.
@@ -76,6 +82,7 @@ class DataMejaPos {
     required this.stasiunDapur,
     required this.uuidStasiunBawaan,
     this.kategoriStasiun = const {},
+    this.produkStasiun = const {},
     this.uuidProdukMinimumCharge,
   });
 
@@ -87,6 +94,9 @@ class DataMejaPos {
 
   /// Cetak struk bagian 4c: Uuid stasiun aktif per Uuid kategori yang diatur langsung (server lama = kosong).
   final Map<String, String> kategoriStasiun;
+
+  /// D-310: Uuid stasiun per Uuid produk yang diatur langsung (menimpa kategorinya; server lama = kosong).
+  final Map<String, String> produkStasiun;
 
   /// D-144: Uuid produk "Selisih minimum charge" (harga terbuka) yang ditagihkan kasir saat belanja meja kurang dari
   /// minimum; null = belum ada meja/area ber-minimum.
@@ -101,6 +111,10 @@ class DataMejaPos {
     kategoriStasiun: {
       for (final k in UraiJson.AmbilDaftarPeta(json['KategoriStasiun']))
         UraiJson.AmbilTeks(k['UuidKategori']): UraiJson.AmbilTeks(k['UuidStasiun']),
+    },
+    produkStasiun: {
+      for (final p in UraiJson.AmbilDaftarPeta(json['ProdukStasiun']))
+        UraiJson.AmbilTeks(p['UuidProduk']): UraiJson.AmbilTeks(p['UuidStasiun']),
     },
     uuidProdukMinimumCharge: UraiJson.AmbilTeksAtauNull(json['UuidProdukMinimumCharge']),
   );

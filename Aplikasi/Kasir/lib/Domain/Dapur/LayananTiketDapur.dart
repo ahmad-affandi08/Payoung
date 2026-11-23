@@ -15,23 +15,43 @@ import '../Struk/ProfilPrinter.dart';
 
 /// Stasiun dapur aktif outlet untuk perutean tiket tercetak.
 class StasiunDapurLokal {
-  const StasiunDapurLokal(this.uuid, this.nama);
+  const StasiunDapurLokal(this.uuid, this.nama, {this.salinan = false});
 
   final String uuid;
   final String nama;
+
+  /// D-310: stasiun checker. Tidak memasak: hanya mencetak salinan semua tiket yang dikirim ke dapur.
+  final bool salinan;
 }
 
-/// Perutean tiket dapur di perangkat (cetak struk bagian 4c), sama dengan server (F-10b): stasiun kategori produk,
-/// diwarisi dari kategori induk terdekat; kategori tanpa stasiun → stasiun bawaan; tanpa stasiun sama sekali → tidak
-/// ada tiket. Data dari `GET /api/pos/v1/meja` (disimpan saat data meja diperbarui) sehingga jalan offline.
+/// Perutean tiket dapur di perangkat (cetak struk bagian 4c), sama dengan server (F-10b): stasiun yang diatur
+/// langsung di menu (D-310, varian ikut produk induknya) menang atas stasiun kategori produk, yang diwarisi dari
+/// kategori induk terdekat; menu tanpa stasiun → stasiun bawaan; tanpa stasiun sama sekali → tidak ada tiket.
+/// Stasiun checker (salinan) tidak ikut perutean: ia hanya menerima salinan semua tiket. Data dari
+/// `GET /api/pos/v1/meja` (disimpan saat data meja diperbarui) sehingga jalan offline.
 class RuteDapur {
-  const RuteDapur({this.stasiun = const [], this.uuidBawaan, this.kategori = const {}});
+  const RuteDapur({this.stasiun = const [], this.uuidBawaan, this.kategori = const {}, this.produk = const {}});
 
   final List<StasiunDapurLokal> stasiun;
   final String? uuidBawaan;
 
   /// Uuid stasiun per Uuid kategori yang diatur langsung.
   final Map<String, String> kategori;
+
+  /// D-310: Uuid stasiun per Uuid produk yang diatur langsung (menimpa kategori).
+  final Map<String, String> produk;
+
+  /// Stasiun checker (salinan) yang aktif.
+  List<StasiunDapurLokal> get salinan => [
+    for (final s in stasiun)
+      if (s.salinan) s,
+  ];
+
+  /// Stasiun yang memasak (bukan checker): tujuan kategori dan menu, serta layar dapur.
+  List<StasiunDapurLokal> get memasak => [
+    for (final s in stasiun)
+      if (!s.salinan) s,
+  ];
 
   static Future<RuteDapur> Muat(RepositoriKasir repositori) async {
     final teks = await repositori.AmbilPengaturan(KunciPengaturan.ruteDapur);
@@ -42,17 +62,27 @@ class RuteDapur {
       }
       final daftar = json['Stasiun'];
       final peta = json['Kategori'];
+      final petaProduk = json['Produk'];
       return RuteDapur(
         stasiun: [
           if (daftar is List<Object?>)
             for (final s in daftar.whereType<Map<String, Object?>>())
               if (s['Uuid'] case final String uuid)
-                StasiunDapurLokal(uuid, s['Nama'] is String ? s['Nama']! as String : uuid),
+                StasiunDapurLokal(
+                  uuid,
+                  s['Nama'] is String ? s['Nama']! as String : uuid,
+                  salinan: s['Salinan'] == true,
+                ),
         ],
         uuidBawaan: json['Bawaan'] is String ? json['Bawaan']! as String : null,
         kategori: {
           if (peta is Map<String, Object?>)
             for (final e in peta.entries)
+              if (e.value case final String uuidStasiun) e.key: uuidStasiun,
+        },
+        produk: {
+          if (petaProduk is Map<String, Object?>)
+            for (final e in petaProduk.entries)
               if (e.value case final String uuidStasiun) e.key: uuidStasiun,
         },
       );
@@ -63,8 +93,42 @@ class RuteDapur {
 
   StasiunDapurLokal? CariStasiun(String uuid) => stasiun.where((s) => s.uuid == uuid).firstOrNull;
 
-  /// Stasiun untuk produk berkategori [uuidKategori]; [indukKategori] = Uuid induk per Uuid kategori.
-  StasiunDapurLokal? AmbilStasiun(String? uuidKategori, Map<String, String?> indukKategori) {
+  /// Salinan dengan peta kategori/produk diganti (D-310: setelah kasir mengatur stasiun, tanpa menunggu sinkron).
+  RuteDapur Salin({Map<String, String>? kategori, Map<String, String>? produk}) => RuteDapur(
+    stasiun: stasiun,
+    uuidBawaan: uuidBawaan,
+    kategori: kategori ?? this.kategori,
+    produk: produk ?? this.produk,
+  );
+
+  /// Bentuk simpan yang sama dengan yang ditulis saat data meja diperbarui (`RepositoriPesananMeja`).
+  Map<String, Object?> KeJson() => {
+    'Stasiun': [
+      for (final s in stasiun) {'Uuid': s.uuid, 'Nama': s.nama, 'Salinan': s.salinan},
+    ],
+    'Bawaan': uuidBawaan,
+    'Kategori': kategori,
+    'Produk': produk,
+  };
+
+  Future<void> Simpan(RepositoriKasir repositori) =>
+      repositori.SimpanPengaturan(KunciPengaturan.ruteDapur, jsonEncode(KeJson()));
+
+  /// Stasiun untuk produk berkategori [uuidKategori]; [indukKategori] = Uuid induk per Uuid kategori. D-310: stasiun
+  /// yang diatur langsung di produk ([uuidProduk], atau produk induknya untuk varian) menang atas kategori.
+  StasiunDapurLokal? AmbilStasiun(
+    String? uuidKategori,
+    Map<String, String?> indukKategori, {
+    String? uuidProduk,
+    String? uuidIndukProduk,
+  }) {
+    for (final kunci in [uuidProduk, uuidIndukProduk]) {
+      final uuidLangsung = kunci == null ? null : produk[kunci];
+      final langsung = uuidLangsung == null ? null : CariStasiun(uuidLangsung);
+      if (langsung != null && !langsung.salinan) {
+        return langsung;
+      }
+    }
     var kategoriSaatIni = uuidKategori;
     for (var langkah = 0; kategoriSaatIni != null && langkah < 5; langkah++) {
       final uuidStasiun = kategori[kategoriSaatIni];
@@ -234,12 +298,24 @@ class LayananTiketDapur {
     final induk = {for (final k in katalog.kategori) k.Uuid: k.UuidInduk};
     final dipilih = uuidBaris.toSet();
     final perStasiun = <StasiunDapurLokal, List<BarisPesananMeja>>{};
+    // D-310: untuk salinan checker, kelompokkan semua baris yang dikirim menurut stasiun memasaknya (urut stasiun).
+    final kelompokSalinan = <String, ({String nama, List<BarisPesananMeja> baris})>{};
+    final urutStasiun = {for (var i = 0; i < rute.stasiun.length; i++) rute.stasiun[i].uuid: i};
     for (final b in pesanan.AmbilBarisAktif().where((b) => dipilih.contains(b.uuid))) {
       final produk = b.uuidProduk == null ? null : katalog.CariProduk(b.uuidProduk!);
-      final stasiun = rute.AmbilStasiun(produk?.uuidKategori, induk);
+      final indukProduk = produk?.uuidInduk == null ? null : katalog.CariProduk(produk!.uuidInduk!);
+      // Varian anak mengikuti kategori produk induknya bila ia sendiri tidak punya kategori (sama dengan server).
+      final stasiun = rute.AmbilStasiun(
+        produk?.uuidKategori ?? indukProduk?.uuidKategori,
+        induk,
+        uuidProduk: produk?.uuid ?? b.uuidProduk,
+        uuidIndukProduk: produk?.uuidInduk,
+      );
       if (stasiun != null && printer.containsKey(stasiun.uuid)) {
         (perStasiun[stasiun] ??= []).add(b);
       }
+      final kunciKelompok = stasiun?.uuid ?? '';
+      (kelompokSalinan[kunciKelompok] ??= (nama: stasiun?.nama ?? 'Tanpa stasiun', baris: [])).baris.add(b);
     }
 
     final hasil = <HasilTiketDapur>[];
@@ -257,6 +333,29 @@ class LayananTiketDapur {
         hasil.add(HasilTiketDapur(stasiun, null));
       } on GalatPrinter catch (galat) {
         hasil.add(HasilTiketDapur(stasiun, galat.pesan));
+      }
+    }
+
+    // D-310: stasiun checker mencetak satu tiket salinan berisi semua baris yang dikirim, dikelompokkan per stasiun.
+    if (kelompokSalinan.isNotEmpty) {
+      final urut = kelompokSalinan.entries.toList()
+        ..sort((a, b) => (urutStasiun[a.key] ?? 1 << 20).compareTo(urutStasiun[b.key] ?? 1 << 20));
+      for (final checker in rute.salinan.where((s) => printer.containsKey(s.uuid))) {
+        final dokumen = PenyusunDokumenKasir.SusunTiketDapur(
+          namaStasiun: checker.nama,
+          pesanan: pesanan,
+          baris: [for (final e in urut) ...e.value.baris],
+          waktu: waktu,
+          namaKasir: namaKasir,
+          cetakUlang: cetakUlang,
+          kelompokSalinan: [for (final e in urut) (stasiun: e.value.nama, baris: e.value.baris)],
+        );
+        try {
+          await struk.CetakDokumenKe(printer[checker.uuid]!.profil, dokumen);
+          hasil.add(HasilTiketDapur(checker, null));
+        } on GalatPrinter catch (galat) {
+          hasil.add(HasilTiketDapur(checker, galat.pesan));
+        }
       }
     }
     return hasil;

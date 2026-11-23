@@ -270,11 +270,15 @@ void main() {
           ],
           'UuidProdukMinimumCharge': 'PR-MIN',
           'StasiunDapur': [
-            {'Uuid': 'S1', 'Nama': 'Bar'},
+            {'Uuid': 'S1', 'Nama': 'Bar', 'Salinan': false},
+            {'Uuid': 'S2', 'Nama': 'Checker', 'Salinan': true},
           ],
           'UuidStasiunBawaan': 'S1',
           'KategoriStasiun': [
             {'UuidKategori': 'K1', 'UuidStasiun': 'S1'},
+          ],
+          'ProdukStasiun': [
+            {'UuidProduk': 'PR1', 'UuidStasiun': 'S1'},
           ],
         }, 200);
       }
@@ -332,6 +336,11 @@ void main() {
     expect(meja.meja.single.uuidArea, 'A1');
     expect(meja.uuidStasiunBawaan, 'S1');
     expect(meja.kategoriStasiun, {'K1': 'S1'});
+    // D-310: menu yang diatur langsung dan stasiun checker (server lama = tanpa kedua kolom).
+    expect(meja.produkStasiun, {'PR1': 'S1'});
+    expect(meja.stasiunDapur.map((s) => (s.nama, s.salinan)), [('Bar', false), ('Checker', true)]);
+    expect(StasiunDapurPos.DariJson({'Uuid': 'S9', 'Nama': 'Lama'}).salinan, isFalse);
+    expect(DataMejaPos.DariJson({'ModeMejaAktif': true}).produkStasiun, isEmpty);
     // D-144: minimum charge yang berlaku per meja + produk penampung selisihnya (server lama = null).
     expect(meja.meja.single.minimumCharge, '150000.00');
     expect(meja.uuidProdukMinimumCharge, 'PR-MIN');
@@ -1279,6 +1288,25 @@ void main() {
       await expectLater(klien.AmbilDataAwal(), throwsA(isA<GalatJaringan>()));
 
       expect(dilaporkan, isEmpty);
+    });
+
+    test('D-310: atur stasiun dapur kategori dan menu memakai alamat, badan, dan jawaban keadaan akhir', () async {
+      final alamat = <String>[];
+      final badan = <Map<String, Object?>>[];
+      final klien = BuatKlien((p) async {
+        alamat.add('${p.method} ${p.url.path}');
+        badan.add(jsonDecode(p.body) as Map<String, Object?>);
+        return Json({'Uuid': 'X', 'UuidStasiun': (jsonDecode(p.body) as Map<String, Object?>)['UuidStasiun']}, 200);
+      });
+
+      expect(await klien.AturStasiunDapurKategori('K1', uuidStasiun: 'S1', uuidPengguna: 'U1'), 'S1');
+      expect(await klien.AturStasiunDapurProduk('PR1', uuidStasiun: null, uuidPengguna: 'U1'), isNull);
+
+      expect(alamat, ['POST /api/pos/v1/dapur/rute/kategori/K1', 'POST /api/pos/v1/dapur/rute/produk/PR1']);
+      expect(badan, [
+        {'UuidPengguna': 'U1', 'UuidStasiun': 'S1'},
+        {'UuidPengguna': 'U1', 'UuidStasiun': null},
+      ]);
     });
 
     test('401 tanpa badan Galat (proksi, WAF, jaringan) tidak dianggap perangkat dicabut', () async {

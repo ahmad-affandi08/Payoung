@@ -12,5 +12,7 @@ final readonly class DataStasiunDapur
     public function __construct(
         public string $nama,
         public int $urutan,
+        /** D-310: null = tidak diubah (pemanggil lama); true = stasiun checker (hanya menerima salinan tiket). */
+        public ?bool $salinan = null,
     ) {}
 }

@@ -56,10 +56,11 @@ class RepositoriPesananMeja {
       KunciPengaturan.ruteDapur,
       jsonEncode({
         'Stasiun': [
-          for (final s in data.stasiunDapur) {'Uuid': s.uuid, 'Nama': s.nama},
+          for (final s in data.stasiunDapur) {'Uuid': s.uuid, 'Nama': s.nama, 'Salinan': s.salinan},
         ],
         'Bawaan': data.uuidStasiunBawaan,
         'Kategori': data.kategoriStasiun,
+        'Produk': data.produkStasiun,
       }),
     );
   });

@@ -643,5 +643,15 @@
         "Metode": "GET",
         "Jalur": "api/pemilik/v1/laporan/pemasukan-pengeluaran",
         "Nama": "pemilik.laporan.pemasukan-pengeluaran"
+    },
+    "POST api/pos/v1/dapur/rute/kategori/{kategori}": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/dapur/rute/kategori/{kategori}",
+        "Nama": "pos.dapur.rute.kategori"
+    },
+    "POST api/pos/v1/dapur/rute/produk/{produk}": {
+        "Metode": "POST",
+        "Jalur": "api/pos/v1/dapur/rute/produk/{produk}",
+        "Nama": "pos.dapur.rute.produk"
     }
 }

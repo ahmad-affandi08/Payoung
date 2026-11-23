@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 
 import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
 import BidangTeks from '@/Komponen/Formulir/BidangTeks';
+import KotakCentang from '@/Komponen/Formulir/KotakCentang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import PesanHanyaLihat from '@/Komponen/Katalog/PesanHanyaLihat';
@@ -23,6 +24,18 @@ const kolom: KolomTabel<StasiunDapur>[] = [
         accessorKey: 'Nama',
         header: 'Stasiun',
         meta: { label: 'Stasiun', prioritas: 'utama', wajib: true, kelasSel: 'font-semibold text-teks-utama' },
+    },
+    {
+        id: 'Jenis',
+        accessorKey: 'Salinan',
+        header: 'Jenis',
+        meta: { label: 'Jenis', prioritas: 'penting' },
+        cell: ({ row }) =>
+            row.original.Salinan ? (
+                <LabelStatus jenis="netral" teks="Checker (salinan semua tiket)" />
+            ) : (
+                <span className="text-teks-sekunder">Memasak</span>
+            ),
     },
     {
         id: 'Urutan',
@@ -51,23 +64,22 @@ const kolom: KolomTabel<StasiunDapur>[] = [
 export default function HalamanDaftarStasiunDapur({ Stasiun, Izin }: PropsDaftarStasiunDapur) {
     const { props } = usePage<PropsBersamaAplikasi>();
     const [sunting, AturSunting] = useState<StasiunDapur | 'baru' | null>(null);
-    const bawaan = Stasiun.find((s) => s.Status === 'Aktif');
+    const bawaan = Stasiun.find((s) => s.Status === 'Aktif' && !s.Salinan);
 
     return (
         <TataLetakAplikasi judul="Stasiun dapur">
             <p className="text-keterangan text-teks-sekunder">
-                Pesanan dikirim ke layar dapur (KDS) atau printer dapur per stasiun. Atur stasiun tiap kategori di
-                halaman{' '}
+                Pesanan dikirim ke layar dapur (KDS) atau printer per stasiun. Atur stasiun tiap kategori di halaman{' '}
                 <Link href="/kelola/kategori" className="font-semibold text-brand underline">
                     kategori produk
                 </Link>
-                .{' '}
+                , dan tiap menu di halamannya. Kasir juga bisa mengaturnya langsung dari aplikasi kasir.{' '}
                 {bawaan
                     ? `Kategori tanpa stasiun masuk ke ${bawaan.Nama} (stasiun bawaan).`
                     : 'Tambah minimal satu stasiun bila usaha Anda memakai dapur atau bar.'}
             </p>
             {!Izin.Kelola ? <PesanHanyaLihat izin="produk.kelola" objek="stasiun dapur" /> : null}
-            <DaftarGalatServer galat={props.errors} kecuali={sunting !== null ? ['Nama', 'Urutan'] : []} />
+            <DaftarGalatServer galat={props.errors} kecuali={sunting !== null ? ['Nama', 'Urutan', 'Salinan'] : []} />
             <AksiHalaman>
                 {Izin.Kelola ? <Tombol onClick={() => AturSunting('baru')}>Tambah stasiun</Tombol> : null}
             </AksiHalaman>
@@ -122,7 +134,11 @@ export default function HalamanDaftarStasiunDapur({ Stasiun, Izin }: PropsDaftar
 }
 
 function FormStasiun({ stasiun, saatSelesai }: { stasiun: StasiunDapur | null; saatSelesai: () => void }) {
-    const formulir = useForm({ Nama: stasiun?.Nama ?? '', Urutan: String(stasiun?.Urutan ?? 0) });
+    const formulir = useForm({
+        Nama: stasiun?.Nama ?? '',
+        Urutan: String(stasiun?.Urutan ?? 0),
+        Salinan: stasiun?.Salinan ?? false,
+    });
 
     const Kirim = (peristiwa: FormEvent) => {
         peristiwa.preventDefault();
@@ -156,6 +172,18 @@ function FormStasiun({ stasiun, saatSelesai }: { stasiun: StasiunDapur | null; s
                 inputMode="numeric"
                 maxLength={3}
             />
+            <KotakCentang
+                label="Checker: terima salinan semua tiket di printer"
+                nilai={formulir.data.Salinan}
+                saatBerubah={(nilai) => formulir.setData('Salinan', nilai)}
+            />
+            {formulir.errors.Salinan ? (
+                <p className="text-keterangan font-semibold text-bahaya">{formulir.errors.Salinan}</p>
+            ) : null}
+            <p className="text-keterangan text-teks-sekunder">
+                Checker mencetak salinan semua menu yang dikirim ke dapur atau bar, untuk dicek sebelum disajikan. Ia
+                tidak memasak, jadi tidak dipilih sebagai tujuan kategori atau menu dan tidak punya layar dapur.
+            </p>
             <div className="flex flex-wrap gap-2">
                 <Tombol type="submit" memproses={formulir.processing}>
                     Simpan stasiun

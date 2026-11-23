@@ -69,7 +69,7 @@ final class JenisPesananOutlet
             return true;
         }
 
-        return StasiunDapur::query()->where('Status', StatusOrganisasi::Aktif->value)->exists();
+        return StasiunDapur::query()->where('Status', StatusOrganisasi::Aktif->value)->where('Salinan', false)->exists();
     }
 
     /**

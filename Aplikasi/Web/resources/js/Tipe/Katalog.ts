@@ -204,6 +204,13 @@ export type BarisBatasStok = {
 };
 /** Kanal tunggal tempat ketersediaan ditandai (PRD-11); "Semua kanal" dikirim tanpa `Kanal`. */
 export type KanalKetersediaan = 'Kasir' | 'TokoOnline' | 'SelfOrder';
+/** D-310: panel Stasiun dapur di detail produk. */
+export type StasiunDapurProduk = {
+    Opsi: { Nilai: string; Label: string }[];
+    UuidStasiun: string | null;
+    NamaStasiunKategori: string | null;
+    NamaStasiunDiarsipkan: string | null;
+};
 export type BarisKetersediaanOutlet = {
     UuidOutlet: string;
     NamaOutlet: string;
@@ -255,6 +262,8 @@ export type PropsDetailProduk = {
     BatasStok: BarisBatasStok[] | null;
     /** null = produk induk varian (ditandai per varian). */
     Ketersediaan: BarisKetersediaanOutlet[] | null;
+    /** D-310: stasiun dapur khusus menu (null = panel tidak relevan). */
+    StasiunDapur?: StasiunDapurProduk | null;
     Riwayat: { Peristiwa: string; NamaPengguna: string | null; DibuatPada: string }[];
     Jenis: AturanJenisProduk[];
     BatasSku: Batas;
@@ -289,7 +298,13 @@ export type PropsDaftarKategori = {
 // PUT/DELETE /kelola/kategori/{uuid}. UuidStasiunDapur (F-10a) hanya dikirim bila tenant punya stasiun dapur.
 
 // F-10a Kelola/StasiunDapur/Daftar.
-export type StasiunDapur = { Uuid: string; Nama: string; Urutan: number; Status: 'Aktif' | 'Diarsipkan' };
+export type StasiunDapur = {
+    Uuid: string;
+    Nama: string;
+    Urutan: number;
+    Status: 'Aktif' | 'Diarsipkan';
+    Salinan: boolean;
+};
 export type PropsDaftarStasiunDapur = { Stasiun: StasiunDapur[]; Izin: IzinKatalog };
 export type PropsDaftarSatuan = {
     Satuan: (OpsiSatuan & { KodeStandar: string | null; JumlahProduk: number })[];

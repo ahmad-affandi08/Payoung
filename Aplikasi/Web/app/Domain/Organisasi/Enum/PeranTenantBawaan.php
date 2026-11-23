@@ -153,6 +153,8 @@ enum PeranTenantBawaan: string
                 IzinTenant::InvoiceKelola,
                 IzinTenant::TokoOnlineKelola,
                 IzinTenant::PengirimanKelola,
+                // D-310: stasiun dapur tiap kategori/menu dari kasir.
+                IzinTenant::DapurRuteAtur,
             ],
             self::Supervisor => [
                 IzinTenant::ProdukLihat,
@@ -181,8 +183,10 @@ enum PeranTenantBawaan: string
                 IzinTenant::GrosirKelola,
                 IzinTenant::TokoOnlineKelola,
                 IzinTenant::PengirimanKelola,
+                IzinTenant::DapurRuteAtur,
             ],
-            self::Kasir => [IzinTenant::ProdukLihat, IzinTenant::PenjualanBuat],
+            // D-310: Kasir otomatis boleh mengatur ke stasiun mana (dapur, bar, checker) tiap kategori/menu dikirim.
+            self::Kasir => [IzinTenant::ProdukLihat, IzinTenant::PenjualanBuat, IzinTenant::DapurRuteAtur],
             // D-180: tidak ada izin back-office; halaman Absen terbuka bagi siapa pun yang ikut absensi (bukan izin).
             self::Karyawan => [],
             self::Pelayan => [IzinTenant::ProdukLihat, IzinTenant::PesananMejaCatat],

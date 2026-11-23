@@ -37,7 +37,7 @@ describe('F-10a stasiun dapur', function (): void {
 
         $this->get('/kelola/stasiun-dapur')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
             ->component('Kelola/StasiunDapur/Daftar')
-            ->where('Stasiun.0', ['Uuid' => $bar->Uuid, 'Nama' => 'Bar Kopi', 'Urutan' => 1, 'Status' => 'Aktif'])
+            ->where('Stasiun.0', ['Uuid' => $bar->Uuid, 'Nama' => 'Bar Kopi', 'Urutan' => 1, 'Status' => 'Aktif', 'Salinan' => false])
             ->where('Stasiun.1.Nama', 'Dapur')
             ->where('Izin.Kelola', true));
 

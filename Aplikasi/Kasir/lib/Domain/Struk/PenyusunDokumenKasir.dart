@@ -292,24 +292,36 @@ abstract final class PenyusunDokumenKasir {
     required DateTime waktu,
     String? namaKasir,
     bool cetakUlang = false,
+    List<({String stasiun, List<BarisPesananMeja> baris})>? kelompokSalinan,
   }) {
     final (tanggal, jam) = PenyusunStrukPenjualan.TanggalJam(waktu);
     final ronde = baris.fold(0, (maks, b) => b.ronde > maks ? b.ronde : maks);
-    return DokumenStruk([
-      BarisTeks('TIKET ${namaStasiun.toUpperCase()}', rata: RataStruk.Tengah, tebal: true),
-      if (cetakUlang) const BarisTeks('CETAK ULANG', rata: RataStruk.Tengah, tebal: true),
-      BarisTeks(pesanan.AmbilJudul(), rata: RataStruk.Tengah, tebal: true, besar: true),
-      BarisTeks(pesanan.nomor),
-      BarisDuaKolom('Ronde $ronde', '$tanggal $jam'),
-      if (namaKasir != null && namaKasir.isNotEmpty) BarisTeks('Kasir: $namaKasir'),
-      const BarisGaris(),
-      for (final b in baris) ...[
+    // D-310: tiket salinan (checker) memuat semua baris dikelompokkan per stasiun memasak, judulnya "SALINAN".
+    List<BarisStruk> Isi(Iterable<BarisPesananMeja> daftar) => [
+      for (final b in daftar) ...[
         BarisTeks('${PenyusunStrukPenjualan.Jumlah(b.jumlah)} x ${b.namaProduk}', tebal: true, besar: true),
         for (final p in b.pilihan)
           if (p['Nama'] case final String nama when nama.isNotEmpty) BarisTeks('  + $nama'),
         if (b.catatan case final String catatan when catatan.trim().isNotEmpty)
           BarisTeks('  Catatan: ${catatan.trim()}'),
       ],
+    ];
+    return DokumenStruk([
+      BarisTeks(
+        kelompokSalinan == null ? 'TIKET ${namaStasiun.toUpperCase()}' : 'SALINAN ${namaStasiun.toUpperCase()}',
+        rata: RataStruk.Tengah,
+        tebal: true,
+      ),
+      if (cetakUlang) const BarisTeks('CETAK ULANG', rata: RataStruk.Tengah, tebal: true),
+      BarisTeks(pesanan.AmbilJudul(), rata: RataStruk.Tengah, tebal: true, besar: true),
+      BarisTeks(pesanan.nomor),
+      BarisDuaKolom('Ronde $ronde', '$tanggal $jam'),
+      if (namaKasir != null && namaKasir.isNotEmpty) BarisTeks('Kasir: $namaKasir'),
+      const BarisGaris(),
+      if (kelompokSalinan == null)
+        ...Isi(baris)
+      else
+        for (final k in kelompokSalinan) ...[BarisTeks('[${k.stasiun}]', tebal: true), ...Isi(k.baris)],
       const BarisGaris(),
       BarisTeks('${baris.length} item', rata: RataStruk.Kanan),
     ]);

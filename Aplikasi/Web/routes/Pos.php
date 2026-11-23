@@ -32,6 +32,7 @@ use App\Http\Kontroler\Pos\V1\PromoKontroler;
 use App\Http\Kontroler\Pos\V1\ReservasiKontroler;
 use App\Http\Kontroler\Pos\V1\ReservasiMejaKontroler;
 use App\Http\Kontroler\Pos\V1\RingkasanHarianKontroler;
+use App\Http\Kontroler\Pos\V1\RuteDapurKontroler;
 use App\Http\Kontroler\Pos\V1\SalesmanKontroler;
 use App\Http\Kontroler\Pos\V1\ShiftKontroler;
 use App\Http\Kontroler\Pos\V1\SinkronKontroler;
@@ -154,6 +155,11 @@ Route::middleware([AutentikasiPerangkat::class, IdempotensiPos::class])->group(f
         Route::get('/dapur/tiket', [DapurKontroler::class, 'Ambil'])->middleware('throttle:pos-30')->name('pos.dapur.tiket');
         Route::post('/dapur/tiket/{tiketDapur}/status', [DapurKontroler::class, 'UbahStatus'])
             ->middleware('throttle:pos-120')->where('tiketDapur', $ulid)->name('pos.dapur.tiket.status');
+        // D-310: atur stasiun dapur/bar/checker tiap kategori dan menu dari kasir (izin `dapur.rute.atur`, bawaan Kasir).
+        Route::post('/dapur/rute/kategori/{kategori}', [RuteDapurKontroler::class, 'AturKategori'])
+            ->middleware('throttle:pos-60')->where('kategori', $ulid)->name('pos.dapur.rute.kategori');
+        Route::post('/dapur/rute/produk/{produk}', [RuteDapurKontroler::class, 'AturProduk'])
+            ->middleware('throttle:pos-60')->where('produk', $ulid)->name('pos.dapur.rute.produk');
         // F-08 QRIS dinamis (wajib online): buat tagihan lewat gerbang aktif, cek status (polling), batalkan.
         Route::post('/qris', [TagihanQrisKontroler::class, 'Buat'])->middleware('throttle:pos-30')->name('pos.qris.buat');
         Route::get('/qris/{tagihanQris}', [TagihanQrisKontroler::class, 'Status'])

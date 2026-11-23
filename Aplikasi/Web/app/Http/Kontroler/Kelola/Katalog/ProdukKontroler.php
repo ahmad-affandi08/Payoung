@@ -30,6 +30,7 @@ use App\Domain\Katalog\Kueri\KepalaProduk;
 use App\Domain\Katalog\Kueri\KetersediaanProdukPerOutlet;
 use App\Domain\Katalog\Kueri\PemakaianSku;
 use App\Domain\Katalog\Kueri\PohonKategori;
+use App\Domain\Katalog\Kueri\StasiunDapurDetailProduk;
 use App\Domain\Katalog\Layanan\OpsiKelompokPajakKatalog;
 use App\Domain\Katalog\Model\Kategori;
 use App\Domain\Katalog\Model\Produk;
@@ -174,7 +175,7 @@ final class ProdukKontroler extends DasarKatalogKontroler
             ->with('Kilat', "Produk {$produk->Nama} disimpan dengan stok {$jumlah} di {$gudang->nama}.");
     }
 
-    public function Detail(string $produk, DetailProduk $detail, KepalaProduk $kepala, KetersediaanProdukPerOutlet $ketersediaan): Response
+    public function Detail(string $produk, DetailProduk $detail, KepalaProduk $kepala, KetersediaanProdukPerOutlet $ketersediaan, StasiunDapurDetailProduk $stasiunDapur): Response
     {
         $baris = $this->CariProduk($produk);
         $varian = $detail->AmbilVarian($baris);
@@ -187,6 +188,8 @@ final class ProdukKontroler extends DasarKatalogKontroler
             'StokAwalVarian' => $varian === [] ? null : $this->AmbilOpsiStokAwal(),
             'BatasStok' => $detail->AmbilBatasStok($baris),
             'Ketersediaan' => $ketersediaan->Ambil($baris, $this->IdOutletBoleh()),
+            // D-310: stasiun dapur/bar khusus menu ini (null = panel tidak relevan).
+            'StasiunDapur' => $stasiunDapur->Ambil($baris),
             'Riwayat' => $detail->AmbilRiwayat($baris),
             'Jenis' => JenisProduk::AmbilDaftarAturan(),
             'BatasSku' => $this->AmbilBatasSku(),

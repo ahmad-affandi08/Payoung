@@ -58,7 +58,9 @@ class LayananDapur {
   Future<void> SimpanTampilanAntrian(bool antrian) =>
       repositori.SimpanPengaturan(KunciPengaturan.tampilanKds, antrian ? 'Antrian' : 'Tiket');
 
-  Future<List<StasiunDapurPos>> AmbilStasiun() async => _Jalankan(() async => (await klien.AmbilMeja()).stasiunDapur);
+  /// Stasiun yang punya layar dapur (tanpa checker: ia hanya menerima salinan di printer, D-310).
+  Future<List<StasiunDapurPos>> AmbilStasiun() async =>
+      _Jalankan(() async => (await klien.AmbilMeja()).stasiunDapur.where((s) => !s.salinan).toList());
 
   Future<DaftarTiketDapur> AmbilTiket(List<String> stasiun) => _Jalankan(() => klien.AmbilTiketDapur(stasiun: stasiun));
 

@@ -84,7 +84,8 @@ class _BagianPrinterState extends ConsumerState<BagianPrinter> {
       // tinggal mematikan yang tidak perlu. Printer berikutnya kosong: kegunaannya dipilih sendiri.
       final pertama = daftar.isEmpty;
       _struk = !daftar.any((p) => p.struk);
-      _stasiun = pertama ? {for (final s in _rute.stasiun) s.uuid} : {};
+      // Checker tidak ikut otomatis: ia mencetak salinan semua tiket, dan menaruhnya di printer yang sama hanya mengganda.
+      _stasiun = pertama ? {for (final s in _rute.memasak) s.uuid} : {};
     }
   });
 
@@ -127,7 +128,11 @@ class _BagianPrinterState extends ConsumerState<BagianPrinter> {
     });
   }
 
-  String _NamaStasiun(String uuid) => _rute.CariStasiun(uuid)?.nama ?? 'Stasiun';
+  String _NamaStasiun(String uuid) {
+    final s = _rute.CariStasiun(uuid);
+
+    return s == null ? 'Stasiun' : (s.salinan ? '${s.nama} (checker)' : s.nama);
+  }
 
   Widget _Kegunaan(TextTheme teks, TokenWarna warna) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +161,7 @@ class _BagianPrinterState extends ConsumerState<BagianPrinter> {
           children: [
             for (final s in _rute.stasiun)
               FilterChip(
-                label: Text(s.nama),
+                label: Text(s.salinan ? '${s.nama} (checker)' : s.nama),
                 selected: _stasiun.contains(s.uuid),
                 onSelected: (pilih) => setState(() {
                   _stasiun = pilih ? {..._stasiun, s.uuid} : ({..._stasiun}..remove(s.uuid));
@@ -167,7 +172,7 @@ class _BagianPrinterState extends ConsumerState<BagianPrinter> {
         ),
         const SizedBox(height: TokenJarak.jarak4),
         Text(
-          'Stasiun yang sudah dipakai printer lain dipindah ke printer ini.',
+          'Stasiun yang sudah dipakai printer lain dipindah ke printer ini. Checker mencetak salinan semua tiket untuk dicek sebelum disajikan.',
           style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
         ),
       ] else

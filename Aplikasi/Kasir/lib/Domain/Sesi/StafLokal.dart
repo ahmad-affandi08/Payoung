@@ -30,6 +30,9 @@ abstract final class IzinKasir {
   /// v2.00 mode Pelayan: mencatat pesanan meja & mengirim ke dapur tanpa berjualan/menerima pembayaran.
   static const String pesananMejaCatat = 'pesanan.meja.catat';
 
+  /// D-310: mengatur stasiun dapur/bar/checker tiap kategori dan menu dari kasir (bawaan Kasir, Supervisor, Manajer).
+  static const String dapurRuteAtur = 'dapur.rute.atur';
+
   /// F-07 mode service: mengelola reservasi (check-in pelanggan juga boleh dengan `penjualan.buat`).
   static const String reservasiKelola = 'reservasi.kelola';
 

@@ -88,6 +88,8 @@ enum IzinTenant: string
     case KaryawanKelola = 'karyawan.kelola';
     // v2.00 mode Pelayan: mencatat pesanan meja & mengirim ke dapur tanpa berjualan/menerima pembayaran.
     case PesananMejaCatat = 'pesanan.meja.catat';
+    // D-310: mengatur stasiun dapur/bar/checker tiap kategori dan menu langsung dari kasir (bawaan Kasir, Supervisor, Manajer).
+    case DapurRuteAtur = 'dapur.rute.atur';
     // D-23 C: menandai dokumen offline yang perlu ditinjau "sudah dicek" di Kotak Tindakan.
     case TindakanTinjau = 'tindakan.tinjau';
     // F-07 mode service: melihat & mengelola reservasi layanan (buat, konfirmasi, check-in, pindah jadwal, batal).
@@ -126,7 +128,7 @@ enum IzinTenant: string
     public function AmbilSektor(): ?array
     {
         return match ($this) {
-            self::PesananMejaCatat => ['FNB'],
+            self::PesananMejaCatat, self::DapurRuteAtur => ['FNB'],
             self::ReservasiKelola => ['SVC', 'FNB', 'RTL-PET'],
             self::TokoOnlineKelola, self::PengirimanKelola => ['FNB', 'RTL', 'WHS', 'SVC-LDR', 'SVC-GEN'],
             self::LaundryKelola => ['SVC-LDR'],
@@ -190,6 +192,7 @@ enum IzinTenant: string
             self::KaryawanLihat => 'Melihat karyawan, jadwal kerja, dan rekap absensi',
             self::KaryawanKelola => 'Mengelola data karyawan dan jadwal kerja',
             self::PesananMejaCatat => 'Mencatat pesanan meja & mengirim ke dapur tanpa menerima pembayaran (Pelayan)',
+            self::DapurRuteAtur => 'Mengatur stasiun dapur, bar, atau checker tiap kategori dan menu dari kasir',
             self::TindakanTinjau => 'Menandai transaksi yang perlu dicek sebagai sudah dicek (Kotak Tindakan)',
             self::ReservasiKelola => 'Melihat & mengelola reservasi layanan (buat, konfirmasi, check-in, pindah jadwal, batal)',
             self::LaundryKelola => 'Melihat tiket laundry & mengubah status proses cucian (cuci, kering, setrika, siap, diambil)',
@@ -218,7 +221,7 @@ enum IzinTenant: string
             self::PersediaanLihat, self::PersediaanKelola, self::PersediaanPenyesuaianSetujui, self::PersediaanStokAwalPosting, self::PersediaanTerbuangCatat,
             self::PembelianKelola, self::PembelianPoSetujui => 'Persediaan & pembelian',
             self::PenjualanBuat, self::PenjualanVoid, self::PenjualanRetur, self::PenjualanReturTanpaStruk, self::PenjualanDiskonManual, self::PosHargaTimpa, self::KasKeluarSetujui,
-            self::PenjualanDiskonSetujui, self::PenjualanTempoSetujui, self::ShiftSelisihSetujui, self::PesananMejaCatat,
+            self::PenjualanDiskonSetujui, self::PenjualanTempoSetujui, self::ShiftSelisihSetujui, self::PesananMejaCatat, self::DapurRuteAtur,
             self::ReservasiKelola, self::LaundryKelola, self::BengkelKelola, self::GrosirKelola, self::GrosirSetujuiKredit, self::InvoiceKelola, self::SalesmanKunjungan,
             self::TokoOnlineKelola, self::PengirimanKelola => 'Penjualan',
             self::LaporanPenjualanLihat, self::LaporanKeuanganLihat, self::AkuntansiKelola, self::TindakanTinjau => 'Keuangan & laporan',

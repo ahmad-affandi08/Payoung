@@ -78,6 +78,128 @@ void main() {
     expect(const RuteDapur().AmbilStasiun('KOPI', induk), isNull);
   });
 
+  test('D-310 rute: menu menimpa kategori, varian ikut induknya, checker tidak pernah jadi tujuan', () {
+    const checker = '01K5STAS1VN00000000CHECK01';
+    const rute = RuteDapur(
+      stasiun: [
+        StasiunDapurLokal(bar, 'Bar'),
+        StasiunDapurLokal(dapur, 'Dapur'),
+        StasiunDapurLokal(checker, 'Checker', salinan: true),
+      ],
+      uuidBawaan: dapur,
+      kategori: {'KOPI': bar},
+      produk: {'ES-TEH': dapur, 'PRODUK-CHECKER': checker, 'INDUK-X': bar},
+    );
+    const induk = {'KOPI': null};
+    expect(rute.AmbilStasiun('KOPI', induk, uuidProduk: 'ES-TEH')?.nama, 'Dapur', reason: 'menu menimpa kategori');
+    expect(rute.AmbilStasiun('KOPI', induk, uuidProduk: 'KOPI-LAIN')?.nama, 'Bar', reason: 'tanpa aturan menu');
+    expect(
+      rute.AmbilStasiun('MAKANAN', induk, uuidProduk: 'VARIAN-1', uuidIndukProduk: 'INDUK-X')?.nama,
+      'Bar',
+      reason: 'varian ikut produk induknya',
+    );
+    expect(
+      rute.AmbilStasiun('KOPI', induk, uuidProduk: 'PRODUK-CHECKER')?.nama,
+      'Bar',
+      reason: 'aturan menu ke checker diabaikan, jatuh ke kategori',
+    );
+    expect(rute.memasak.map((s) => s.nama), ['Bar', 'Dapur']);
+    expect(rute.salinan.map((s) => s.nama), ['Checker']);
+  });
+
+  test('D-310 rute: JSON simpan memuat checker dan menu, dan terbaca lagi dengan isi sama', () async {
+    await u.SiapkanAktif();
+    const rute = RuteDapur(
+      stasiun: [StasiunDapurLokal(bar, 'Bar'), StasiunDapurLokal('CHK', 'Checker', salinan: true)],
+      uuidBawaan: bar,
+      kategori: {'K': bar},
+      produk: {'P': bar},
+    );
+    await rute.Simpan(u.repositori);
+
+    final baca = await RuteDapur.Muat(u.repositori);
+
+    expect(baca.stasiun.map((s) => (s.nama, s.salinan)), [('Bar', false), ('Checker', true)]);
+    expect(baca.kategori, {'K': bar});
+    expect(baca.produk, {'P': bar});
+    expect(baca.uuidBawaan, bar);
+  });
+
+  test('D-310 cetak: menu yang diatur ke stasiun lain dicetak di stasiun itu, bukan di stasiun kategorinya', () async {
+    await Siapkan();
+    await PrinterDapur.SimpanSemua(u.repositori, {
+      bar: const PrinterDapur.Struk(),
+      dapur: const PrinterDapur.Sendiri(ProfilPrinter(alamat: '192.168.1.60')),
+    });
+    final rute = await RuteDapur.Muat(u.repositori);
+    await rute.Salin(produk: {UuidUji.croissant: bar}).Simpan(u.repositori);
+    final pesanan = await KirimPesanan();
+
+    final hasil = await layanan.Cetak(pesanan: pesanan, uuidBaris: Semua(pesanan), katalog: katalog, waktu: u.jam);
+
+    expect(hasil.map((h) => h.stasiun.nama), ['Bar']);
+    final tiket = u.printer.AmbilTeks(0);
+    expect(tiket, contains('TIKET BAR'));
+    expect(tiket, contains('Es Kopi Susu'));
+    expect(tiket, contains('1 x Croissant'));
+    expect(u.printer.kiriman, hasLength(1), reason: 'Dapur tidak lagi punya baris untuk dicetak');
+  });
+
+  test(
+    'D-310 checker: mencetak satu tiket salinan berisi semua baris yang dikirim, dikelompokkan per stasiun',
+    () async {
+      await Siapkan();
+      const checker = '01K5STAS1VN00000000CHECK01';
+      final rute = await RuteDapur.Muat(u.repositori);
+      await RuteDapur(
+        stasiun: [...rute.stasiun, const StasiunDapurLokal(checker, 'Checker', salinan: true)],
+        uuidBawaan: rute.uuidBawaan,
+        kategori: rute.kategori,
+        produk: rute.produk,
+      ).Simpan(u.repositori);
+      await PrinterDapur.SimpanSemua(u.repositori, {
+        bar: const PrinterDapur.Struk(),
+        dapur: const PrinterDapur.Sendiri(ProfilPrinter(alamat: '192.168.1.60')),
+        checker: const PrinterDapur.Sendiri(ProfilPrinter(alamat: '192.168.1.70')),
+      });
+      final pesanan = await KirimPesanan();
+
+      final hasil = await layanan.Cetak(pesanan: pesanan, uuidBaris: Semua(pesanan), katalog: katalog, waktu: u.jam);
+
+      expect(hasil.map((h) => (h.stasiun.nama, h.galat)), [('Bar', null), ('Dapur', null), ('Checker', null)]);
+      expect(u.printer.kiriman, hasLength(3));
+      final salinan = u.printer.AmbilTeks(2);
+      expect(salinan, contains('SALINAN CHECKER'));
+      expect(salinan, contains('[Bar]'));
+      expect(salinan, contains('[Dapur]'));
+      expect(salinan, contains('2 x Es Kopi Susu'));
+      expect(salinan, contains('1 x Croissant'));
+      expect(salinan, contains('2 item'));
+      expect(salinan.indexOf('[Bar]'), lessThan(salinan.indexOf('[Dapur]')));
+      // Tiket stasiun memasak tetap hanya berisi bagiannya, tanpa judul salinan.
+      expect(u.printer.AmbilTeks(0), isNot(contains('SALINAN')));
+      expect(u.printer.AmbilTeks(0), isNot(contains('Croissant')));
+    },
+  );
+
+  test('D-310 checker: tanpa printer di perangkat ini, atau tanpa pesanan, tidak ada salinan', () async {
+    await Siapkan();
+    const checker = '01K5STAS1VN00000000CHECK01';
+    final rute = await RuteDapur.Muat(u.repositori);
+    await RuteDapur(
+      stasiun: [...rute.stasiun, const StasiunDapurLokal(checker, 'Checker', salinan: true)],
+      uuidBawaan: rute.uuidBawaan,
+      kategori: rute.kategori,
+    ).Simpan(u.repositori);
+    await PrinterDapur.SimpanSemua(u.repositori, {bar: const PrinterDapur.Struk()});
+    final pesanan = await KirimPesanan();
+
+    final hasil = await layanan.Cetak(pesanan: pesanan, uuidBaris: Semua(pesanan), katalog: katalog, waktu: u.jam);
+
+    expect(hasil.map((h) => h.stasiun.nama), ['Bar']);
+    expect(u.printer.kiriman, hasLength(1));
+  });
+
   test('tanpa printer dapur di perangkat ini: tidak ada tiket yang dicetak', () async {
     await Siapkan();
     final pesanan = await KirimPesanan();

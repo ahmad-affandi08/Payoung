@@ -23,6 +23,7 @@ import 'RuangKerja/BagianKerja.dart';
 import 'RuangKerja/IsiAreaKerja.dart';
 import 'Struk/BagianLayarPelanggan.dart';
 import 'Struk/BagianPrinter.dart';
+import 'Struk/BagianRuteDapur.dart';
 import 'Struk/BagianUjiPerangkat.dart';
 
 /// Pengaturan perangkat kasir (PRD §17.2.7, D-301): enam kategori (Perangkat, Printer & struk, Tampilan & jual,
@@ -211,6 +212,13 @@ class _LayarPengaturanState extends ConsumerState<LayarPengaturan> {
                 'atau tiket bar. Sambungan: LAN/Wi-Fi, Bluetooth, USB, atau printer bawaan mesin kasir (Sunmi, iMin). '
                 'Isi kepala & kaki struk diatur di back-office.',
             const BagianPrinter(),
+          ),
+          Bagian(
+            'Stasiun dapur & bar',
+            Icons.restaurant_menu_outlined,
+            'Atur ke stasiun mana tiap kategori dan menu dikirim: dapur, bar, atau stasiun lain. Tiketnya dicetak di '
+                'printer stasiun itu. Stasiun checker mencetak salinan semua tiket.',
+            const BagianRuteDapur(),
           ),
           Bagian(
             'Uji perangkat',

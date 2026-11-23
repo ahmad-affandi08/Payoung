@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $IdTenant
  * @property string $Nama
  * @property int $Urutan
+ * @property bool $Salinan D-310: stasiun checker, hanya menerima salinan semua tiket dan tidak dipilih sebagai stasiun kategori/produk
  * @property StatusOrganisasi $Status
  * @property Carbon|null $DiarsipkanPada
  */
@@ -29,13 +30,13 @@ final class StasiunDapur extends ModelDasar
     protected $table = 'StasiunDapur';
 
     /** @var array<string, mixed> */
-    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Urutan' => 0];
+    protected $attributes = ['Status' => 'Aktif', 'DiarsipkanPada' => null, 'Urutan' => 0, 'Salinan' => false];
 
     /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
-        return ['Status' => StatusOrganisasi::class, 'DiarsipkanPada' => 'datetime', 'Urutan' => 'integer'];
+        return ['Status' => StatusOrganisasi::class, 'DiarsipkanPada' => 'datetime', 'Urutan' => 'integer', 'Salinan' => 'boolean'];
     }
 }
