@@ -7,6 +7,8 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import { AmbilGalatUmum, KerangkaForm } from '@/Komponen/Pengelola/Tenant/FormTindakan';
 import { FormatRupiah } from '@/Pustaka/Format';
 
+import BarisPengaturanKonsol from './BarisPengaturanKonsol';
+
 export type PengaturanSaldoWhatsapp = { HargaPerPesan: string; TopUpMinimal: string };
 
 const TanpaDesimal = (nilai: string) => nilai.replace(/\.\d+$/, '');
@@ -20,16 +22,18 @@ export function PanelSaldoWhatsapp({ pengaturan, boleh }: { pengaturan: Pengatur
     const gratis = Number(pengaturan.HargaPerPesan) === 0;
 
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-isi font-semibold text-teks-utama">Saldo WhatsApp tenant</h3>
-                {boleh ? (
+        <BarisPengaturanKonsol
+            judul="Saldo WhatsApp tenant"
+            aksi={
+                boleh ? (
                     <Tombol varian="sekunder" onClick={() => AturMengubah(true)}>
                         Ubah harga dan minimal isi
                     </Tombol>
-                ) : null}
-            </div>
-            <p className="text-isi text-teks-sekunder">
+                ) : undefined
+            }
+            keterangan="Hanya broadcast yang memotong saldo. Pesan struk, poin, dan laporan karyawan tetap lewat kuota paket."
+        >
+            <p>
                 Broadcast WhatsApp:{' '}
                 <strong className="tabular-nums text-teks-utama">
                     {gratis ? 'gratis' : `${FormatRupiah(pengaturan.HargaPerPesan)} per pesan`}
@@ -37,11 +41,8 @@ export function PanelSaldoWhatsapp({ pengaturan, boleh }: { pengaturan: Pengatur
                 . Minimal isi saldo{' '}
                 <strong className="tabular-nums text-teks-utama">{FormatRupiah(pengaturan.TopUpMinimal)}</strong>.
             </p>
-            <p className="text-keterangan text-teks-sekunder">
-                Hanya broadcast yang memotong saldo. Pesan struk, poin, dan laporan karyawan tetap lewat kuota paket.
-            </p>
             {mengubah ? <FormUbahSaldo pengaturan={pengaturan} saatSelesai={() => AturMengubah(false)} /> : null}
-        </div>
+        </BarisPengaturanKonsol>
     );
 }
 

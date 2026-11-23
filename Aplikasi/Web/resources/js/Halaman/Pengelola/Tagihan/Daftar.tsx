@@ -6,10 +6,14 @@ import {
 import { PanelPengaturanPenagihan, type PengaturanPenagihan } from '@/Komponen/Langganan/PengaturanPenagihanPengelola';
 import { Link } from '@inertiajs/react';
 
+import AksiHalaman from '@/Komponen/Kelola/AksiHalaman';
+import Panel from '@/Komponen/Kelola/Panel';
+import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import AksiMassalVerifikasi from '@/Komponen/Pengelola/AksiMassalVerifikasi';
 import TabelData, { type KonteksAksiMassal } from '@/Komponen/TabelData/TabelData';
 import type { HasilTabel, KolomTabel } from '@/Komponen/TabelData/Tipe';
 import { Card } from '@/Komponen/Ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Komponen/Ui/tabs';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggal, FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
@@ -162,7 +166,13 @@ function KartuRingkasan({ nilai, label }: { nilai: number; label: string }) {
     );
 }
 
-/** Tagihan langganan & antrean "Menunggu Verifikasi" transfer manual (P-08 langkah 3), TabelData D-16. */
+/**
+ * Tagihan langganan di konsol (P-08). Dua tab supaya kerja harian dan pengaturan tidak bercampur:
+ * - **Tagihan**: ringkasan, antrean yang perlu tindakan (refund, bukti transfer; tampil hanya bila ada isinya), dan
+ *   semua tagihan.
+ * - **Pengaturan**: satu panel berisi baris-baris pengaturan penagihan (jarang diubah, hanya Super Admin yang bisa
+ *   mengubah).
+ */
 export default function HalamanDaftarTagihan({
     Antrean,
     Tagihan,
@@ -176,74 +186,99 @@ export default function HalamanDaftarTagihan({
 }: PropsDaftarTagihan) {
     return (
         <TataLetakPengelola judul="Tagihan langganan">
-            <p className="text-label">
-                <Link href="/laporan-langganan" className="text-brand underline">
-                    Laporan langganan (MRR, churn)
-                </Link>
-            </p>
-            <ul className="grid gap-3 sm:grid-cols-2" aria-label="Ringkasan tagihan">
-                <li>
-                    <KartuRingkasan nilai={Ringkasan.MenungguVerifikasi} label="bukti transfer menunggu verifikasi" />
-                </li>
-                <li>
-                    <KartuRingkasan nilai={Ringkasan.BelumDibayar} label="tagihan belum dibayar" />
-                </li>
-            </ul>
-            <AntreanRefund antrean={RefundMenunggu} boleh={BolehSetujuiRefund} />
-            <PanelBatasRefund batas={BatasRefund} boleh={BolehSetujuiRefund} />
-            {PengaturanPenagihan ? <PanelPengaturanPenagihan pengaturan={PengaturanPenagihan} /> : null}
-            <section aria-labelledby="judul-antrean" className="flex flex-col gap-2">
-                <h2 id="judul-antrean" className="text-subjudul font-semibold text-teks-utama">
-                    Menunggu verifikasi
-                </h2>
-                <TabelData
-                    id="pengelola-tagihan-antrean"
-                    label="Bukti transfer menunggu verifikasi, terlama di atas"
-                    kolom={kolomAntrean}
-                    sumber={{ mode: 'lokal', data: Antrean }}
-                    ambilIdBaris={(baris) => baris.Uuid}
-                    {...(BolehVerifikasi
-                        ? {
-                              aksiMassal: (konteks: KonteksAksiMassal<BarisAntrean>) => (
-                                  <AksiMassalVerifikasi konteks={konteks} />
-                              ),
-                          }
-                        : {})}
-                    alamatDetail={(baris) => (baris.UuidTagihan ? `/tagihan/${baris.UuidTagihan}` : '')}
-                    kosong={{
-                        ilustrasi: true,
-                        judul: 'Antrean kosong. Belum ada bukti transfer yang perlu diperiksa.',
-                    }}
-                />
-            </section>
-            <section aria-labelledby="judul-semua" className="flex flex-col gap-2">
-                <h2 id="judul-semua" className="text-subjudul font-semibold text-teks-utama">
-                    Semua tagihan
-                </h2>
-                <TabelData
-                    id="pengelola-tagihan"
-                    label="Daftar tagihan langganan"
-                    kolom={kolomTagihan}
-                    sumber={{ mode: 'server', alamat: '/tagihan', awal: Tagihan }}
-                    ambilIdBaris={(baris) => baris.Uuid}
-                    urutBawaan="-TerbitPada"
-                    cari="Cari nomor tagihan atau nama usaha"
-                    saring={[
-                        {
-                            id: 'Status',
-                            label: 'Status',
-                            jenis: 'pilihanBanyak',
-                            opsi: OpsiStatus.map((o) => ({ nilai: o.Nilai, label: o.Label })),
-                        },
-                        { id: 'TerbitPada', label: 'Tanggal terbit', jenis: 'rentangTanggal' },
-                    ]}
-                    alamatDetail={(baris) => `/tagihan/${baris.Uuid}`}
-                    kosong={{
-                        ilustrasi: true,
-                        judul: 'Belum ada tagihan. Tagihan terbit otomatis saat tenant berlangganan paket.',
-                    }}
-                />
-            </section>
+            <Tabs defaultValue="tagihan" className="gap-4">
+                <div className="overflow-x-auto">
+                    <JalurGulirTab>
+                        <TabsList aria-label="Bagian halaman tagihan" className={kelasDaftarTabPanel}>
+                            <TabsTrigger value="tagihan" className={kelasItemTabPanel}>
+                                Tagihan
+                            </TabsTrigger>
+                            <TabsTrigger value="pengaturan" className={kelasItemTabPanel}>
+                                Pengaturan
+                            </TabsTrigger>
+                        </TabsList>
+                    </JalurGulirTab>
+                </div>
+
+                <TabsContent value="tagihan" className="flex flex-col gap-6">
+                    <AksiHalaman lainnya={[{ label: 'Laporan langganan', href: '/laporan-langganan' }]} />
+                    <ul className="grid gap-3 sm:grid-cols-2" aria-label="Ringkasan tagihan">
+                        <li>
+                            <KartuRingkasan
+                                nilai={Ringkasan.MenungguVerifikasi}
+                                label="bukti transfer menunggu verifikasi"
+                            />
+                        </li>
+                        <li>
+                            <KartuRingkasan nilai={Ringkasan.BelumDibayar} label="tagihan belum dibayar" />
+                        </li>
+                    </ul>
+                    <AntreanRefund antrean={RefundMenunggu} boleh={BolehSetujuiRefund} />
+                    {Antrean.length > 0 ? (
+                        <section aria-labelledby="judul-antrean" className="flex flex-col gap-2">
+                            <h2 id="judul-antrean" className="text-subjudul font-semibold text-teks-utama">
+                                Menunggu verifikasi
+                            </h2>
+                            <TabelData
+                                id="pengelola-tagihan-antrean"
+                                label="Bukti transfer menunggu verifikasi, terlama di atas"
+                                kolom={kolomAntrean}
+                                sumber={{ mode: 'lokal', data: Antrean }}
+                                ambilIdBaris={(baris) => baris.Uuid}
+                                {...(BolehVerifikasi
+                                    ? {
+                                          aksiMassal: (konteks: KonteksAksiMassal<BarisAntrean>) => (
+                                              <AksiMassalVerifikasi konteks={konteks} />
+                                          ),
+                                      }
+                                    : {})}
+                                alamatDetail={(baris) => (baris.UuidTagihan ? `/tagihan/${baris.UuidTagihan}` : '')}
+                                kosong={{ judul: 'Antrean kosong. Belum ada bukti transfer yang perlu diperiksa.' }}
+                            />
+                        </section>
+                    ) : null}
+                    <section aria-labelledby="judul-semua" className="flex flex-col gap-2">
+                        <h2 id="judul-semua" className="text-subjudul font-semibold text-teks-utama">
+                            Semua tagihan
+                        </h2>
+                        <TabelData
+                            id="pengelola-tagihan"
+                            label="Daftar tagihan langganan"
+                            kolom={kolomTagihan}
+                            sumber={{ mode: 'server', alamat: '/tagihan', awal: Tagihan }}
+                            ambilIdBaris={(baris) => baris.Uuid}
+                            urutBawaan="-TerbitPada"
+                            cari="Cari nomor tagihan atau nama usaha"
+                            saring={[
+                                {
+                                    id: 'Status',
+                                    label: 'Status',
+                                    jenis: 'pilihanBanyak',
+                                    opsi: OpsiStatus.map((o) => ({ nilai: o.Nilai, label: o.Label })),
+                                },
+                                { id: 'TerbitPada', label: 'Tanggal terbit', jenis: 'rentangTanggal' },
+                            ]}
+                            alamatDetail={(baris) => `/tagihan/${baris.Uuid}`}
+                            kosong={{
+                                ilustrasi: true,
+                                judul: 'Belum ada tagihan. Tagihan terbit otomatis saat tenant berlangganan paket.',
+                            }}
+                        />
+                    </section>
+                </TabsContent>
+
+                <TabsContent value="pengaturan">
+                    <Panel
+                        judul="Pengaturan penagihan"
+                        keterangan="Berlaku untuk tagihan dan refund yang terbit sesudah diubah. Hanya Super Admin yang bisa mengubah."
+                    >
+                        <div className="flex flex-col divide-y divide-garis">
+                            <PanelBatasRefund batas={BatasRefund} boleh={BolehSetujuiRefund} />
+                            {PengaturanPenagihan ? <PanelPengaturanPenagihan pengaturan={PengaturanPenagihan} /> : null}
+                        </div>
+                    </Panel>
+                </TabsContent>
+            </Tabs>
         </TataLetakPengelola>
     );
 }

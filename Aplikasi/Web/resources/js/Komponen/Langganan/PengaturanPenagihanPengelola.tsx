@@ -6,8 +6,8 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { AmbilGalatUmum, KerangkaForm } from '@/Komponen/Pengelola/Tenant/FormTindakan';
-import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 
+import BarisPengaturanKonsol from './BarisPengaturanKonsol';
 import { PanelLamaLangganan, type PengaturanLamaLangganan } from './PengaturanLamaLanggananPengelola';
 import { PanelSaldoWhatsapp, type PengaturanSaldoWhatsapp } from './PengaturanSaldoWhatsappPengelola';
 
@@ -27,7 +27,8 @@ export type PengaturanPenagihan = {
 const MAKS_REKENING = 5;
 
 /**
- * D-114: rekening tujuan transfer dan status PKP platform. Semua peran Tagihan boleh melihat; hanya Super Admin
+ * D-114: rekening tujuan transfer dan status PKP platform (kini baris-baris di dalam satu panel Pengaturan penagihan,
+ * lihat `Halaman/Pengelola/Tagihan/Daftar`). Semua peran Tagihan boleh melihat; hanya Super Admin
  * (izin `tagihan.pengaturan`) yang bisa mengubah. Selama belum pernah disimpan dari konsol, yang tampil adalah nilai
  * awal server, dan panel menyebutnya supaya tidak dikira sudah diatur.
  */
@@ -36,50 +37,43 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
     const Tutup = () => AturDialog(null);
 
     return (
-        <section aria-labelledby="judul-pengaturan-penagihan" className="flex flex-col gap-3">
-            <h2 id="judul-pengaturan-penagihan" className="text-subjudul font-semibold text-teks-utama">
-                Pengaturan penagihan
-            </h2>
-
-            <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-isi text-teks-sekunder">
-                        Status PKP platform:{' '}
-                        <strong className="text-teks-utama">
-                            {pengaturan.PlatformPkp ? 'PKP (tagihan memuat PPN)' : 'Bukan PKP (tagihan tanpa PPN)'}
-                        </strong>
-                    </p>
-                    {pengaturan.PkpDariKonsol ? null : <LabelStatus jenis="peringatan" teks="Nilai awal server" />}
-                    {pengaturan.Boleh ? (
+        <>
+            <BarisPengaturanKonsol
+                judul="Status PKP platform"
+                nilaiAwal={!pengaturan.PkpDariKonsol}
+                aksi={
+                    pengaturan.Boleh ? (
                         <Tombol varian="sekunder" onClick={() => AturDialog('pkp')}>
                             Ubah status PKP
                         </Tombol>
-                    ) : null}
-                </div>
-                <p className="text-keterangan text-teks-sekunder">
-                    Perubahan hanya berlaku untuk tagihan yang terbit sesudahnya. Tagihan yang sudah terbit tidak
-                    berubah.
+                    ) : undefined
+                }
+                keterangan="Perubahan hanya berlaku untuk tagihan yang terbit sesudahnya. Tagihan yang sudah terbit tidak berubah."
+            >
+                <p>
+                    <strong className="text-teks-utama">
+                        {pengaturan.PlatformPkp ? 'PKP (tagihan memuat PPN)' : 'Bukan PKP (tagihan tanpa PPN)'}
+                    </strong>
                 </p>
-            </div>
+            </BarisPengaturanKonsol>
 
-            <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-isi font-semibold text-teks-utama">Rekening tujuan transfer</h3>
-                    {pengaturan.RekeningDariKonsol ? null : <LabelStatus jenis="peringatan" teks="Nilai awal server" />}
-                    {pengaturan.Boleh ? (
+            <BarisPengaturanKonsol
+                judul="Rekening tujuan transfer"
+                nilaiAwal={!pengaturan.RekeningDariKonsol}
+                aksi={
+                    pengaturan.Boleh ? (
                         <Tombol varian="sekunder" onClick={() => AturDialog('rekening')}>
                             Ubah rekening
                         </Tombol>
-                    ) : null}
-                </div>
+                    ) : undefined
+                }
+            >
                 {pengaturan.Rekening.length === 0 ? (
-                    <p className="text-isi text-teks-sekunder">
-                        Belum ada rekening tujuan. Tagihan manual belum bisa dibayar sampai rekening diisi.
-                    </p>
+                    <p>Belum ada rekening tujuan. Tagihan manual belum bisa dibayar sampai rekening diisi.</p>
                 ) : (
-                    <ul className="flex flex-col gap-1">
+                    <ul className="flex flex-col gap-0.5">
                         {pengaturan.Rekening.map((rekening) => (
-                            <li key={rekening.Kode} className="text-isi text-teks-sekunder">
+                            <li key={rekening.Kode}>
                                 <strong className="text-teks-utama">{rekening.NamaBank}</strong>{' '}
                                 <span className="font-mono tabular-nums">{rekening.NomorRekening}</span> a.n.{' '}
                                 {rekening.AtasNama}
@@ -87,7 +81,7 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
                         ))}
                     </ul>
                 )}
-            </div>
+            </BarisPengaturanKonsol>
 
             <PanelLamaLangganan
                 aturan={pengaturan.LamaLangganan}
@@ -101,7 +95,7 @@ export function PanelPengaturanPenagihan({ pengaturan }: { pengaturan: Pengatura
 
             {dialog === 'pkp' ? <FormUbahPkp pkp={pengaturan.PlatformPkp} saatSelesai={Tutup} /> : null}
             {dialog === 'rekening' ? <FormUbahRekening rekening={pengaturan.Rekening} saatSelesai={Tutup} /> : null}
-        </section>
+        </>
     );
 }
 

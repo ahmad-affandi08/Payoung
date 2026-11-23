@@ -5,7 +5,7 @@ import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import BidangTeksPanjang from '@/Komponen/Formulir/BidangTeksPanjang';
 import Tombol from '@/Komponen/Formulir/Tombol';
 import { AmbilGalatUmum, KerangkaForm } from '@/Komponen/Pengelola/Tenant/FormTindakan';
-import LabelStatus from '@/Komponen/Umpan/LabelStatus';
+import BarisPengaturanKonsol from './BarisPengaturanKonsol';
 
 export type AnakTanggaDiskon = { DariBulan: number; Persen: string };
 
@@ -35,17 +35,19 @@ export function PanelLamaLangganan({
     const [dialog, AturDialog] = useState(false);
 
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-isi font-semibold text-teks-utama">Lama langganan</h3>
-                {dariKonsol ? null : <LabelStatus jenis="peringatan" teks="Nilai awal server" />}
-                {boleh ? (
+        <BarisPengaturanKonsol
+            judul="Lama langganan"
+            nilaiAwal={!dariKonsol}
+            aksi={
+                boleh ? (
                     <Tombol varian="sekunder" onClick={() => AturDialog(true)}>
                         Ubah lama langganan
                     </Tombol>
-                ) : null}
-            </div>
-            <p className="text-isi text-teks-sekunder">
+                ) : undefined
+            }
+            keterangan="Kelipatan 12 bulan memakai harga tahunan di katalog paket, bukan tangga ini. Berlaku untuk tagihan yang terbit sesudahnya."
+        >
+            <p>
                 Tenant memilih bebas{' '}
                 <strong className="text-teks-utama">
                     {aturan.MinimalBulan} sampai {aturan.MaksimalBulan} bulan
@@ -53,23 +55,19 @@ export function PanelLamaLangganan({
                 .
             </p>
             {aturan.TanggaDiskon.length === 0 ? (
-                <p className="text-isi text-teks-sekunder">Tanpa diskon menurut lama.</p>
+                <p>Tanpa diskon menurut lama.</p>
             ) : (
-                <ul className="flex flex-col gap-1">
+                <ul className="flex flex-col gap-0.5">
                     {aturan.TanggaDiskon.map((anak) => (
-                        <li key={anak.DariBulan} className="text-isi text-teks-sekunder">
+                        <li key={anak.DariBulan}>
                             Mulai {anak.DariBulan} bulan: diskon{' '}
                             <strong className="text-teks-utama tabular-nums">{anak.Persen}%</strong>
                         </li>
                     ))}
                 </ul>
             )}
-            <p className="text-keterangan text-teks-sekunder">
-                Kelipatan 12 bulan memakai harga tahunan di katalog paket, bukan tangga ini. Berlaku untuk tagihan yang
-                terbit sesudahnya.
-            </p>
             {dialog ? <FormUbahLama aturan={aturan} saatSelesai={() => AturDialog(false)} /> : null}
-        </div>
+        </BarisPengaturanKonsol>
     );
 }
 

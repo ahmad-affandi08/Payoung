@@ -13,6 +13,8 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import { JenisLabelRefund, type RefundLangganan, type TagihanLangganan } from '@/Tipe/TagihanLangganan';
 
+import BarisPengaturanKonsol from './BarisPengaturanKonsol';
+
 type IzinTindakanTagihan = { Terbitkan: boolean; Refund: boolean; SetujuiRefund: boolean };
 
 type PropsPanelTindakan = {
@@ -395,23 +397,22 @@ export function PanelBatasRefund({ batas, boleh }: { batas: string; boleh: boole
     const [mengubah, AturMengubah] = useState(false);
 
     return (
-        <section aria-labelledby="judul-batas-refund" className="flex flex-col gap-2">
-            <h2 id="judul-batas-refund" className="text-subjudul font-semibold text-teks-utama">
-                Batas refund tanpa persetujuan kedua
-            </h2>
-            <div className="flex flex-wrap items-center gap-3">
-                <p className="text-isi text-teks-sekunder">
-                    Refund sampai <strong className="tabular-nums text-teks-utama">{FormatRupiah(batas)}</strong>{' '}
-                    langsung dilaksanakan. Di atasnya menunggu persetujuan Super Admin.
-                </p>
-                {boleh ? (
+        <BarisPengaturanKonsol
+            judul="Batas refund tanpa persetujuan kedua"
+            aksi={
+                boleh ? (
                     <Tombol varian="sekunder" onClick={() => AturMengubah(true)}>
                         Ubah batas
                     </Tombol>
-                ) : null}
-            </div>
+                ) : undefined
+            }
+        >
+            <p>
+                Refund sampai <strong className="tabular-nums text-teks-utama">{FormatRupiah(batas)}</strong> langsung
+                dilaksanakan. Di atasnya menunggu persetujuan Super Admin.
+            </p>
             {mengubah ? <FormUbahBatasRefund batas={batas} saatSelesai={() => AturMengubah(false)} /> : null}
-        </section>
+        </BarisPengaturanKonsol>
     );
 }
 
