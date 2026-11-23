@@ -671,14 +671,14 @@ const menuPenjualan: ItemMenu[] = [
         kecualiSektor: ['BIZ'],
         kelompok: 'Atur kasir',
     },
-    // D-162: tenant SaaS tidak menempel akun DOKU sendiri. D-190: Aktivasi QRIS (DOKU) juga disembunyikan, QRIS toko = QRIS
-    // statis bernominal otomatis di Metode pembayaran (D-189). Jadi gerbang milik toko hanya ada di edisi Lisensi.
+    // D-312: DOKU tidak mendukung sub account, jadi tiap tenant menempel akun merchant DOKU-nya sendiri (dana langsung ke
+    // toko) di semua edisi. D-162 pernah menyembunyikannya di SaaS; sakelar server `integrasi.GerbangTokoTampil=false`
+    // masih bisa menyembunyikannya (halaman dialihkan ke Metode pembayaran).
     {
         label: 'Gerbang pembayaran',
         href: '/kelola/pembayaran/gerbang',
         izin: IzinTenant.PembayaranGerbangAtur,
         kecualiSektor: ['BIZ'],
-        edisi: 'Lisensi',
         kelompok: 'Atur kasir',
     },
 ];

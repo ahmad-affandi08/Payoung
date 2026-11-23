@@ -22,9 +22,11 @@ return [
     // Disk `Objek` (S3-compatible) tersedia bila konfigurasi penyimpanan aktif.
     'PenyimpananObjekAktif' => false,
 
-    // D-162: halaman & aksi kredensial gerbang pembayaran milik toko (tenant menempel Client ID/Secret DOKU sendiri).
-    // Kosong (null) = ikut edisi: hanya edisi Lisensi. Isi `true` untuk membukanya kembali di SaaS.
-    'GerbangTokoTampil' => null,
+    // D-162, dibuka kembali D-312: halaman & aksi kredensial gerbang pembayaran milik toko (tenant menempel Client ID
+    // dan Secret key DOKU sendiri, dana langsung ke akun merchant toko). DOKU tidak mendukung sub account, jadi bawaannya
+    // terbuka di semua edisi. Isi `false` untuk menyembunyikannya di SaaS (halaman dialihkan, aksi tulis 404),
+    // atau `null` untuk mengikuti edisi (hanya edisi Lisensi).
+    'GerbangTokoTampil' => true,
 
     // D-190: halaman Aktivasi QRIS lewat DOKU (KYB merchant, D-83) disembunyikan di SaaS karena DOKU hanya dipakai
     // untuk tagihan langganan; QRIS toko = QRIS statis milik toko yang diberi nominal di kasir (D-189). Isi `true`

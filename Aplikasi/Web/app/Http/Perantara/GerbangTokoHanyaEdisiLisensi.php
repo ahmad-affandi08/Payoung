@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * D-162: halaman & aksi kredensial gerbang pembayaran milik toko (tenant menempel Client ID/Secret DOKU sendiri) hanya
- * hidup di edisi Lisensi, yang tidak punya akun Partner Payoung. Di edisi SaaS tenant memakai Aktivasi QRIS (foto KTP):
- * halaman dialihkan ke sana dan aksi tulisnya tidak dilayani. Diperiksa saat permintaan (bukan saat rute didaftarkan)
- * supaya mudah dibuka kembali dan tetap bisa diuji.
+ * Halaman & aksi kredensial gerbang pembayaran milik toko (tenant menempel Client ID/Secret DOKU sendiri). D-162
+ * menyembunyikannya di SaaS, D-312 membukanya kembali karena DOKU tidak mendukung sub account. Sakelar
+ * `integrasi.GerbangTokoTampil` (bawaan `true`): bila dimatikan, halaman dialihkan dan aksi tulisnya tidak dilayani.
+ * Diperiksa saat permintaan (bukan saat rute didaftarkan) supaya mudah diganti dan tetap bisa diuji.
  */
 final class GerbangTokoHanyaEdisiLisensi
 {

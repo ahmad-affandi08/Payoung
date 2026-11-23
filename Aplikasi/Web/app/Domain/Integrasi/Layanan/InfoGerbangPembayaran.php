@@ -16,13 +16,16 @@ final class InfoGerbangPembayaran
 {
     public const TAUTAN = '/kelola/pembayaran/gerbang';
 
-    /** D-162: tenant SaaS mengaktifkan QRIS lewat Aktivasi QRIS (foto KTP); edisi Lisensi lewat akun merchant sendiri. */
+    /** D-162: Aktivasi QRIS (foto KTP) hanya bila gerbang milik toko disembunyikan dan sakelar Aktivasi QRIS dinyalakan. */
     public const TAUTAN_AKTIVASI = '/kelola/pembayaran/aktivasi-qris';
 
     /** D-190: tanpa gerbang dan tanpa Aktivasi QRIS, QRIS toko = QRIS statis yang diunggah di Metode pembayaran. */
     public const TAUTAN_METODE = '/kelola/panduan-awal/metode-pembayaran';
 
-    /** D-162: halaman kredensial gerbang milik toko dibuka hanya di edisi Lisensi, kecuali `integrasi.GerbangTokoTampil` diisi. */
+    /**
+     * D-312: halaman kredensial gerbang milik toko terbuka di semua edisi secara bawaan (`integrasi.GerbangTokoTampil` =
+     * true). `false` menyembunyikannya, `null` mengikuti edisi (hanya Lisensi, perilaku D-162).
+     */
     public static function CekGerbangTokoTampil(): bool
     {
         $sakelar = config('integrasi.GerbangTokoTampil');

@@ -9,15 +9,33 @@ use Tests\Pendukung\Penjualan\BantuanGerbangTenant;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 /*
- * D-162: di edisi SaaS tenant tidak lagi diminta mendaftar di dasbor DOKU dan menempel Client ID/Secret key. Halaman
- * gerbang dialihkan ke Aktivasi QRIS (foto KTP), dan aksi simpan/uji/aktifkan tidak ada. Edisi Lisensi tetap memakainya
- * (lihat `GerbangPembayaranTenantTes`). Gerbang yang sudah terlanjur aktif tetap berjalan untuk kasir & toko online.
+ * D-162 lalu D-312: gerbang pembayaran milik toko (tenant menempel Client ID/Secret key DOKU sendiri) terbuka secara
+ * bawaan di semua edisi. Sakelar `integrasi.GerbangTokoTampil` = false menyembunyikannya (halaman dialihkan, aksi
+ * simpan/uji/aktifkan tidak ada, 404), dan itulah yang diuji di bawah ini. Gerbang yang sudah terlanjur aktif tetap
+ * berjalan untuk kasir & toko online. Keadaan bawaan yang terbuka diuji di `GerbangPembayaranTenantTes`.
  */
 beforeEach(function (): void {
     BantuanPendaftaran::SiapkanPrasyarat();
+    config(['integrasi.GerbangTokoTampil' => false]);
 });
 
-describe('D-162 gerbang pembayaran milik toko disembunyikan di edisi SaaS', function (): void {
+describe('D-312 keadaan bawaan: gerbang pembayaran milik toko terbuka di edisi SaaS', function (): void {
+    it('sakelar bawaan terbuka. Halaman gerbang tampil, panduan awal menautkannya, dan menu tersedia', function (): void {
+        config(['integrasi.GerbangTokoTampil' => true]);
+        expect(config('integrasi.GerbangTokoTampil'))->toBeTrue();
+        ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
+
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/pembayaran/gerbang')->assertOk();
+        BantuanPanduanAwal::Masuk($this, $pemilik, $tenant)->get('/kelola/panduan-awal/metode-pembayaran')
+            ->assertInertia(fn ($h) => $h
+                ->where('GerbangPembayaran.Aktif', false)
+                ->where('GerbangPembayaran.Tautan', '/kelola/pembayaran/gerbang')
+                ->where('GerbangPembayaran.NamaMenu', 'Gerbang pembayaran')
+                ->where('GerbangPembayaran.Petunjuk', fn (string $teks) => str_contains($teks, 'akun merchant toko') && ! str_contains($teks, 'foto KTP')));
+    });
+});
+
+describe('D-162 gerbang pembayaran milik toko disembunyikan lewat sakelar integrasi.GerbangTokoTampil=false', function (): void {
     it('alamat lama dialihkan ke Metode pembayaran (Aktivasi QRIS juga disembunyikan, D-190)', function (): void {
         ['Tenant' => $tenant, 'Pemilik' => $pemilik] = BantuanPanduanAwal::BuatTenant();
 
