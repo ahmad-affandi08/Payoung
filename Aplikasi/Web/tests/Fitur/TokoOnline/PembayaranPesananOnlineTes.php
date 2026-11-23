@@ -16,6 +16,7 @@ use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Enum\SumberTagihanQris;
+use App\Domain\Penjualan\Layanan\NomorPesananQris;
 use App\Domain\Penjualan\Layanan\PenyediaTindakanPenjualan;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Penjualan\Model\Penjualan;
@@ -26,6 +27,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request as PermintaanHttp;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Pendukung\Kasir\BantuanKasir;
@@ -158,6 +160,44 @@ it('pembayaran masuk membukukan uang muka (J-17.1) dan memindahkan pesanan ke me
     expect($jurnal->TotalDebit)->toBe($jurnal->TotalKredit)
         ->and(SaldoPeranOnline($jurnal->Id, PeranAkun::UangMukaPelanggan, $pesanan->IdOutlet))->toBe('-60000.00')
         ->and(SaldoPeranOnline($jurnal->Id, PeranAkun::PiutangPencairan, $pesanan->IdOutlet))->toBe('60000.00');
+});
+
+it('D-313 pembayaran dari tagihan kedua untuk pesanan yang sudah dibayar tetap dibukukan sebagai uang muka tambahan dan ditandai tinjauan, sekali saja', function (): void {
+    $status = 'PENDING';
+    PalsukanGerbangOnline($status);
+    $k = SiapkanBayarOnline($this);
+    [$pesanan] = PesanBayarQris($this, $k);
+    $this->postJson("/{$k['Slug']}/pesanan/{$pesanan->KodeAkses}/bayar")->assertCreated();
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $pertama = TagihanQris::query()->sole();
+    WebhookBayarOnline($this, $k, $pertama->NomorPesanan, '60000.00')->assertOk();
+
+    // QR kedua untuk pesanan yang sama (misalnya QR lama yang masih dibayar pembeli) juga terbayar.
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $uuidKedua = (string) Str::ulid();
+    $kedua = $pertama->replicate(['Uuid', 'NomorPesanan', 'Status', 'LunasPada', 'JumlahDiterima', 'PerluTinjauan', 'AlasanTinjauan']);
+    $kedua->forceFill([
+        'Uuid' => $uuidKedua,
+        'NomorPesanan' => NomorPesananQris::Buat($k['Tenant']->Id, $uuidKedua),
+        'Status' => StatusTagihanQris::Menunggu,
+        'PerluTinjauan' => false,
+    ])->save();
+
+    WebhookBayarOnline($this, $k, $kedua->NomorPesanan, '60000.00')->assertOk();
+    // Notifikasi berulang tidak membukukan dua kali.
+    WebhookBayarOnline($this, $k, $kedua->NomorPesanan, '60000.00')->assertOk();
+
+    BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+    $pesanan->refresh();
+    $kedua->refresh();
+    $jurnal = Jurnal::query()->where('JenisSumber', JenisSumberJurnal::PesananOnline->value)->get();
+    expect($kedua->Status)->toBe(StatusTagihanQris::Lunas)
+        ->and($kedua->PerluTinjauan)->toBeTrue()
+        ->and($jurnal)->toHaveCount(2)
+        ->and($jurnal->every(fn (Jurnal $j): bool => $j->TotalDebit === $j->TotalKredit))->toBeTrue()
+        ->and($pesanan->JumlahDibayar)->toBe('120000.00')
+        ->and($pesanan->AmbilSisaUangMuka()->KeString())->toBe('120000.00')
+        ->and($pesanan->Status)->toBe(StatusPesananOnline::MenungguKonfirmasi);
 });
 
 it('kasir menagih pesanan berbayar dengan metode Uang muka. Void mengembalikan uang mukanya', function (): void {

@@ -60,7 +60,13 @@ final class PenerapPembayaranPesananOnline
 
         $pesanan = PesananOnline::query()->whereKey($tagihan->IdPesananOnline)->lockForUpdate()->first();
 
-        if (! $pesanan instanceof PesananOnline || $pesanan->DibayarPada !== null) {
+        if (! $pesanan instanceof PesananOnline) {
+            return null;
+        }
+
+        if ($pesanan->DibayarPada !== null) {
+            $this->BukukanPembayaranTambahan($pesanan, $tagihan);
+
             return null;
         }
 
@@ -128,5 +134,56 @@ final class PenerapPembayaranPesananOnline
         ]);
 
         return $pesanan;
+    }
+
+    /**
+     * Pesanan yang sudah dibayar lewat tagihan lain menerima uang lagi dari tagihan **berbeda** (pembeli memindai QR lama
+     * dan QR baru, atau QR `TidakPasti` yang ternyata terbayar). Uangnya nyata, jadi dibukukan sebagai uang muka tambahan
+     * (Dr kliring metode, Cr Uang Muka Pelanggan, `kunciSumber` per tagihan) dan tagihannya ditandai `PerluTinjauan`
+     * supaya kelebihannya dikembalikan. Notifikasi gerbang berulang tidak membukukan dua kali: tagihan `Lunas` bersifat
+     * final dan tidak pernah sampai ke sini lagi, dan jurnal dijaga idempoten per tagihan. `JumlahDibayar` hanya
+     * bertambah selama uang mukanya belum dikembalikan, supaya pengembalian yang sudah tercatat tidak terhitung dua kali.
+     */
+    private function BukukanPembayaranTambahan(PesananOnline $pesanan, TagihanQris $tagihan): void
+    {
+        $metode = MetodePembayaran::query()->whereKey($tagihan->IdMetodePembayaran)->first();
+        $diterima = Uang::Dari($tagihan->JumlahDiterima ?? $tagihan->Jumlah);
+
+        if (! $metode instanceof MetodePembayaran || $diterima->Bandingkan(Uang::Nol()) <= 0) {
+            return;
+        }
+
+        [$idAkun, $peran] = PenyusunJurnalPenjualan::TentukanAkunMetode($metode);
+        $debit = $idAkun !== null
+            ? new DataBarisJurnal(null, $idAkun, $pesanan->IdOutlet, $diterima, Uang::Nol(), $metode->Nama)
+            : DataBarisJurnal::Debit($peran, $diterima, $pesanan->IdOutlet, $metode->Nama);
+        $tanggal = CarbonImmutable::parse($this->tanggalBisnis->Hitung($pesanan->IdOutlet)->toDateString());
+
+        $this->postingJurnal->Jalankan(new DataJurnal(
+            jenisSumber: JenisSumberJurnal::PesananOnline,
+            idSumber: $pesanan->Id,
+            uuidSumber: $pesanan->Uuid,
+            nomorSumber: $pesanan->Nomor,
+            tanggal: $tanggal,
+            keterangan: mb_substr("Pembayaran QRIS tambahan pesanan online {$pesanan->Nomor} ({$tagihan->NomorPesanan})", 0, 255),
+            baris: [$debit, DataBarisJurnal::Kredit(PeranAkun::UangMukaPelanggan, $diterima, $pesanan->IdOutlet, $pesanan->Nomor)],
+            idPengguna: null,
+            kunciSumber: 'Tambahan-'.$tagihan->Id,
+        ));
+
+        if ($pesanan->DikembalikanPada === null) {
+            $pesanan->JumlahDibayar = $pesanan->AmbilJumlahDibayar()->Tambah($diterima)->KeString();
+            $pesanan->save();
+        }
+
+        $tagihan->PerluTinjauan = true;
+        $tagihan->AlasanTinjauan = mb_substr("Pesanan {$pesanan->Nomor} sudah dibayar lewat tagihan lain. Uang ini dibukukan sebagai uang muka tambahan, kembalikan kelebihannya ke pelanggan.", 0, 255);
+        $tagihan->save();
+
+        $this->audit->Catat('pesanan-online.bayar-tambahan', $pesanan, nilaiBaru: [
+            'NomorPesananQris' => $tagihan->NomorPesanan,
+            'Jumlah' => $diterima->KeString(),
+            'JumlahDibayar' => $pesanan->JumlahDibayar,
+        ], idTenant: $pesanan->IdTenant);
     }
 }

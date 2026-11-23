@@ -51,7 +51,17 @@ final class RekonsiliasiTagihanQris
         // F-08: tagihan `Menunggu` yang tidak pernah dibaca lagi (kasir pindah metode, aplikasi ditutup) tetap `Menunggu`
         // selamanya bila kedaluwarsanya hanya diterapkan saat dibaca. Jadwal ini menutupnya; uang yang masuk sesudahnya tetap
         // `Lunas` lewat webhook (bukan status final).
+        // Gerbang ditanya lebih dulu: webhook lunas yang hilang (jaringan, server tenant sedang mati) tidak boleh membuat uang
+        // yang sebenarnya sudah masuk tampak "kedaluwarsa" tanpa jurnal.
         foreach (TagihanQris::query()->where('Status', StatusTagihanQris::Menunggu->value)->where('KedaluwarsaPada', '<', $batas)->orderBy('Id')->limit(500)->get() as $tagihan) {
+            $status = $this->TanyaGerbang($tagihan);
+
+            if ($status === StatusPembayaranGerbang::Lunas) {
+                $berubah += $this->penerap->Terapkan($tagihan->Id, $status, null, 'Rekonsiliasi gerbang')->Status === StatusTagihanQris::Lunas ? 1 : 0;
+
+                continue;
+            }
+
             $berubah += $this->penerap->TandaiKedaluwarsa($tagihan->Id)->Status === StatusTagihanQris::Kedaluwarsa ? 1 : 0;
         }
 

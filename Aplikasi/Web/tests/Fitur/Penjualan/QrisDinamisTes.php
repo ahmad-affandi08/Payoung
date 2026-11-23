@@ -328,6 +328,32 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
         expect($ambil()->Status)->toBe(StatusTagihanQris::Kedaluwarsa);
     });
 
+    it('D-313 kedaluwarsa terjadwal menanyakan gerbang dulu: webhook lunas yang hilang tidak membuat uang masuk tampak kedaluwarsa', function (): void {
+        $charge = 'ok';
+        $status = 'PENDING';
+        PalsukanDokuTidakPasti($charge, $status);
+        $k = SiapkanQrisDinamis($this);
+        $dibayar = BantuanKasir::Uuid();
+        $tidak = BantuanKasir::Uuid();
+        BuatQrisPos($this, $k, $k['QrisDinamis'], '38500', $dibayar)->assertCreated();
+        BuatQrisPos($this, $k, $k['QrisDinamis'], '12000', $tidak)->assertCreated();
+        $ambil = function (string $uuid) use ($k): TagihanQris {
+            BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+
+            return TagihanQris::query()->where('Uuid', strtoupper($uuid))->sole();
+        };
+
+        // Pembeli membayar tagihan pertama, tetapi webhook DOKU tidak pernah sampai ke server.
+        $status = [strtoupper($dibayar) => 'SUCCESS'];
+        $this->travel(18)->minutes();
+        $this->artisan('penjualan:rekonsiliasi-qris')->assertSuccessful();
+
+        expect($ambil($dibayar)->Status)->toBe(StatusTagihanQris::Lunas)
+            ->and($ambil($dibayar)->JumlahDiterima)->toBe('38500.00')
+            ->and($ambil($dibayar)->LunasPada)->not->toBeNull()
+            ->and($ambil($tidak)->Status)->toBe(StatusTagihanQris::Kedaluwarsa);
+    });
+
     it('proses terhenti setelah memanggil gerbang (cadangan basi tanpa QR) tidak dihapus lagi: menjadi TidakPasti', function (): void {
         $charge = 'ok';
         $status = 'PENDING';
