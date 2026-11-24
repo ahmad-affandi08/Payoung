@@ -1,7 +1,7 @@
 name: kasir
 description: "Aplikasi POS: kasir, KDS, dan gudang (Android, iOS/iPadOS, Windows)."
 publish_to: none
-version: 1.0.7+20
+version: 1.0.8+21
 resolution: workspace
 
 environment:
@@ -72,3 +72,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/suara/
+    - assets/logo/

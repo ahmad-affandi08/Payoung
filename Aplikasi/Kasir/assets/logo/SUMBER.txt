@@ -1,0 +1,12 @@
+Qris.png adalah logo QRIS milik Bank Indonesia, dipakai hanya untuk menandai bahwa pembayaran QRIS diterima.
+
+Sumber: Wikimedia Commons, File:Logo_QRIS.svg
+  https://commons.wikimedia.org/wiki/File:Logo_QRIS.svg
+  https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg
+Pembuat asli: Bank Indonesia (bi.go.id, Bahan Sosialisasi QRIS).
+Tag lisensi di halaman Commons (dibaca 24/11/2026): PD-textlogo dan PD-IDGov (Pasal 43 UU 28/2014).
+Halaman itu juga menandai berkas ini sebagai merek dagang. Hak merek tetap pada Bank Indonesia,
+jadi logo tidak boleh diubah bentuk atau warnanya dan hanya dipakai sebagai penanda QRIS.
+
+Pengolahan: SVG dirender ke PNG transparan lebar 480 px tanpa perubahan bentuk.
+Sebelum rilis komersial, pastikan ketentuan logo QRIS terbaru ke Bank Indonesia atau DOKU.

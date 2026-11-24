@@ -446,7 +446,9 @@ class _KartuQr extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(judul, style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 1)),
+                child: judul == 'QRIS'
+                    ? Image.asset('assets/logo/Qris.png', height: 28, semanticLabel: 'Logo QRIS')
+                    : Text(judul, style: teks.titleMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 1)),
               ),
               const SizedBox(height: TokenJarak.jarak12),
               GambarQr(data: data, ukuran: ukuran, label: label),
