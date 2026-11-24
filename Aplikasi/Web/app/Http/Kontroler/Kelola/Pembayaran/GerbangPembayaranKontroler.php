@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Kontroler\Kelola\Pembayaran;
 
 use App\Domain\Integrasi\Aksi\BuatUlangKunciSnapGerbangTenant;
+use App\Domain\Integrasi\Aksi\PakaiAkunPayoungUntukGerbangTenant;
 use App\Domain\Integrasi\Aksi\SimpanGerbangPembayaranTenant;
 use App\Domain\Integrasi\Aksi\UbahStatusGerbangPembayaranTenant;
 use App\Domain\Integrasi\Aksi\UjiGerbangPembayaranTenant;
@@ -43,6 +44,13 @@ final class GerbangPembayaranKontroler extends DasarKelolaKontroler
         return $hasil->berhasil
             ? to_route('kelola.pembayaran.gerbang')->with('Kilat', "Koneksi berhasil. {$hasil->pesan}")
             : to_route('kelola.pembayaran.gerbang')->withErrors(['Umum' => "Koneksi gagal. {$hasil->pesan}"]);
+    }
+
+    public function PakaiAkunPayoung(PakaiAkunPayoungUntukGerbangTenant $pakai): RedirectResponse
+    {
+        $pakai->Jalankan();
+
+        return to_route('kelola.pembayaran.gerbang')->with('Kilat', 'Gerbang memakai akun DOKU Payoung (khusus uji coba). Uji koneksi lalu aktifkan.');
     }
 
     public function BuatUlangKunci(BuatUlangKunciSnapGerbangTenant $buat): RedirectResponse

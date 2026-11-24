@@ -8,6 +8,7 @@ use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDokuSnap;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
+use App\Domain\Tenant\Kueri\TenantBerpenanda;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +24,10 @@ final class PembuatGerbangPembayaran
     /** @var list<string> */
     public const PENYEDIA = ['Doku'];
 
-    public function __construct(private readonly KatalogPenyediaGerbang $katalog) {}
+    public function __construct(
+        private readonly KatalogPenyediaGerbang $katalog,
+        private readonly TenantBerpenanda $tenantBerpenanda,
+    ) {}
 
     /**
      * @param  array<string, string|int>  $pengaturan
@@ -40,6 +44,14 @@ final class PembuatGerbangPembayaran
     /** Adaptor dari gerbang tenant (tanpa memeriksa status aktif). Null bila kredensial tidak bisa didekripsi. */
     public function BuatDariTenant(GerbangPembayaranTenant $baris): ?GerbangPembayaran
     {
+        // D-316: akun DOKU induk Payoung hanya boleh dipakai tenant uji. Tenant yang penandanya dicabut (menjadi tenant
+        // komersial) tidak pernah lagi mendapat adaptor dari baris itu, jadi uang pelanggan toko tidak bisa mendarat di akun Payoung.
+        if (($baris->Pengaturan['SumberAkun'] ?? null) === AdaptorDokuSnap::SUMBER_AKUN_PAYOUNG && ! $this->tenantBerpenanda->Cek($baris->IdTenant)) {
+            Log::warning('Gerbang akun Payoung dipakai tenant yang bukan tenant uji. Adaptor tidak dibuat.', ['IdTenant' => $baris->IdTenant]);
+
+            return null;
+        }
+
         try {
             // Didekripsi eksplisit (bukan lewat cast) agar kunci APP_KEY yang salah tertangkap di sini.
             $isi = json_decode(Crypt::decryptString((string) $baris->getRawOriginal('Kredensial')), true);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Integrasi\Kueri;
 
+use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Integrasi\Aksi\SimpanGerbangPembayaranTenant;
 use App\Domain\Integrasi\Enum\LingkunganGerbang;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
@@ -11,6 +12,7 @@ use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 use App\Domain\Integrasi\Layanan\KatalogPenyediaGerbang;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
+use App\Domain\Tenant\Kueri\TenantBerpenanda;
 
 /**
  * Data halaman gerbang pembayaran tenant (v2.06): penyedia yang diizinkan platform beserta bidangnya, dan gerbang
@@ -18,7 +20,11 @@ use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
  */
 final class HalamanGerbangPembayaranTenant
 {
-    public function __construct(private readonly KatalogPenyediaGerbang $katalog) {}
+    public function __construct(
+        private readonly KatalogPenyediaGerbang $katalog,
+        private readonly TenantBerpenanda $tenantBerpenanda,
+        private readonly KonteksTenant $konteks,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -31,7 +37,10 @@ final class HalamanGerbangPembayaranTenant
         return [
             // Aktivasi QRIS otomatis (DOKU Partner) hanya ada di edisi SaaS.
             'AktivasiQrisTersedia' => InfoGerbangPembayaran::CekAktivasiQrisTampil(),
+            // D-316: tenant uji boleh memakai akun DOKU induk Payoung (tanpa kunci sendiri).
+            'AkunPayoungTersedia' => $this->tenantBerpenanda->Cek($this->konteks->Wajib()),
             'Gerbang' => $gerbang === null ? null : [
+                'SumberAkun' => ($gerbang->Pengaturan['SumberAkun'] ?? null) === 'Payoung' ? 'Payoung' : 'Sendiri',
                 'Uuid' => $gerbang->Uuid,
                 'Penyedia' => $gerbang->Penyedia->value,
                 'LabelPenyedia' => $gerbang->Penyedia->AmbilLabel(),

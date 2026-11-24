@@ -349,6 +349,7 @@
 | D-313 | Audit uang QRIS dinamis tenant (agent, 23/11/2026): pembayaran QRIS yang diterima gerbang tidak pernah boleh hilang dari buku. Pembayaran tambahan atas pesanan online yang sudah dibayar dibukukan sebagai uang muka tambahan dan ditandai tinjauan, dan kedaluwarsa terjadwal wajib menanyakan status ke gerbang lebih dulu. Adaptor QRIS SNAP per tenant (QR langsung, bukan halaman bayar) menunggu keputusan pemilik produk. |
 | D-314 | Dari pemilik produk, 23/11/2026: gerbang QRIS tenant harus DOKU SNAP (QRIS EMV yang langsung dipindai), bukan DOKU Checkout. Kunci RSA per tenant dibuat server, notifikasi DOKU hanya pemicu dan status ditanyakan ke DOKU lewat API bertanda tangan (konsisten dengan D-159). Membalik pilihan Checkout di D-82/D-312 untuk jalur QRIS toko; DOKU Checkout tetap hanya untuk tagihan langganan Payoung (kartu). |
 | D-315 | Agent, 23/11/2026: gambar raster ESC/POS selalu dikirim dalam blok `GS v 0` berisi paling banyak 120 baris (tinggi muat satu byte), karena printer thermal murah tidak andal membaca byte tinggi atas. |
+| D-316 | Dari pemilik produk, 24/11/2026: tenant uji boleh memakai akun DOKU Payoung sebagai gerbang QRIS karena DOKU hanya mengizinkan satu kunci publik per Client ID. Dibatasi tenant berpenanda Uji/Demo/Internal, ditegakkan saat memilih dan saat adaptor dibuat. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

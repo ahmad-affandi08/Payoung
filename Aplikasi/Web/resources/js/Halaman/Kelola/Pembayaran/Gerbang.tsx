@@ -67,6 +67,7 @@ function KredensialKosong(penyedia: OpsiPenyediaGerbang | undefined): Record<str
  */
 export default function HalamanGerbangPembayaran({
     AktivasiQrisTersedia = false,
+    AkunPayoungTersedia = false,
     Gerbang,
     DaftarPenyedia,
     DaftarLingkungan,
@@ -109,7 +110,7 @@ export default function HalamanGerbangPembayaran({
         });
     };
 
-    const Jalankan = (aksi: 'uji' | 'aktifkan' | 'nonaktifkan' | 'kunci-snap') => {
+    const Jalankan = (aksi: 'uji' | 'aktifkan' | 'nonaktifkan' | 'kunci-snap' | 'akun-payoung') => {
         router.post(
             `${alamat}/${aksi}`,
             {},
@@ -146,6 +147,29 @@ export default function HalamanGerbangPembayaran({
                     </p>
                 </Pemberitahuan>
                 {galatUmum ? <Pemberitahuan jenis="bahaya">{galatUmum}</Pemberitahuan> : null}
+                {AkunPayoungTersedia && Gerbang?.SumberAkun !== 'Payoung' ? (
+                    <Pemberitahuan jenis="info" judul="Tenant uji: pakai akun DOKU Payoung">
+                        <p>
+                            Tenant ini berpenanda uji. Tanpa mengisi kredensial sendiri, kasir bisa memakai akun DOKU
+                            Payoung untuk mencoba QRIS. Uang uji masuk ke akun Payoung, bukan ke rekening toko.
+                        </p>
+                        <div className="mt-2">
+                            <Tombol
+                                varian="sekunder"
+                                disabled={memproses !== null}
+                                onClick={() => Jalankan('akun-payoung')}
+                            >
+                                Pakai akun DOKU Payoung
+                            </Tombol>
+                        </div>
+                    </Pemberitahuan>
+                ) : null}
+                {Gerbang?.SumberAkun === 'Payoung' ? (
+                    <Pemberitahuan jenis="peringatan" judul="Memakai akun DOKU Payoung (khusus uji)">
+                        Uang pembayaran masuk ke akun Payoung. Status pembayaran dicek otomatis oleh server, jadi URL
+                        notifikasi tidak perlu dipasang. Untuk toko sungguhan, isi akun merchant sendiri di bawah.
+                    </Pemberitahuan>
+                ) : null}
                 {AktivasiQrisTersedia ? (
                     <Pemberitahuan jenis="info" judul="Belum punya akun merchant DOKU?">
                         Payoung bisa mendaftarkannya untuk Anda. Cukup foto KTP, foto selfie, foto tempat usaha, dan
@@ -183,32 +207,34 @@ export default function HalamanGerbangPembayaran({
                                     {Gerbang.PesanUji}
                                 </p>
                             ) : null}
-                            <div className="grid gap-1">
-                                <span className="text-label font-semibold text-teks-utama">
-                                    URL notifikasi (webhook)
-                                </span>
-                                <p className="text-keterangan text-teks-sekunder">
-                                    Salin ke pengaturan notifikasi/callback di dasbor {Gerbang.LabelPenyedia} agar
-                                    pembayaran langsung terkonfirmasi di kasir.
-                                </p>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <code className="min-w-0 break-all rounded-kontrol border border-garis bg-latar px-2 py-1 font-mono text-keterangan text-teks-utama">
-                                        {Gerbang.UrlWebhook}
-                                    </code>
-                                    <Tombol varian="sekunder" onClick={() => Salin(Gerbang.UrlWebhook)}>
-                                        {tersalin ? 'Tersalin' : 'Salin URL'}
-                                    </Tombol>
+                            {Gerbang.SumberAkun === 'Payoung' ? null : (
+                                <div className="grid gap-1">
+                                    <span className="text-label font-semibold text-teks-utama">
+                                        URL notifikasi (webhook)
+                                    </span>
+                                    <p className="text-keterangan text-teks-sekunder">
+                                        Salin ke pengaturan notifikasi/callback di dasbor {Gerbang.LabelPenyedia} agar
+                                        pembayaran langsung terkonfirmasi di kasir.
+                                    </p>
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                        <code className="min-w-0 break-all rounded-kontrol border border-garis bg-latar px-2 py-1 font-mono text-keterangan text-teks-utama">
+                                            {Gerbang.UrlWebhook}
+                                        </code>
+                                        <Tombol varian="sekunder" onClick={() => Salin(Gerbang.UrlWebhook)}>
+                                            {tersalin ? 'Tersalin' : 'Salin URL'}
+                                        </Tombol>
+                                    </div>
+                                    <p className="text-keterangan text-teks-sekunder">
+                                        Notifikasi sah terakhir:{' '}
+                                        {Gerbang.WebhookDiterimaPada
+                                            ? FormatTanggalWaktu(Gerbang.WebhookDiterimaPada)
+                                            : 'belum ada'}
+                                        {Gerbang.WebhookDitolakPada
+                                            ? ` | Ditolak (isi tidak dikenali) terakhir: ${FormatTanggalWaktu(Gerbang.WebhookDitolakPada)}`
+                                            : ''}
+                                    </p>
                                 </div>
-                                <p className="text-keterangan text-teks-sekunder">
-                                    Notifikasi sah terakhir:{' '}
-                                    {Gerbang.WebhookDiterimaPada
-                                        ? FormatTanggalWaktu(Gerbang.WebhookDiterimaPada)
-                                        : 'belum ada'}
-                                    {Gerbang.WebhookDitolakPada
-                                        ? ` | Ditolak (isi tidak dikenali) terakhir: ${FormatTanggalWaktu(Gerbang.WebhookDitolakPada)}`
-                                        : ''}
-                                </p>
-                            </div>
+                            )}
                             {Gerbang.KunciPublikSnap ? (
                                 <div className="grid gap-1">
                                     <span className="text-label font-semibold text-teks-utama">Kunci publik SNAP</span>

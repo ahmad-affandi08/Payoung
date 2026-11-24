@@ -41,7 +41,16 @@ final class AdaptorDokuSnap extends AdaptorDasar
     /** Nomor pesanan Payoung di mana pun ia muncul dalam badan notifikasi (bentuk badan QRIS DOKU bisa berubah). */
     private const POLA_NOMOR = '/PY[0-9a-z]{1,13}-[0-9A-HJKMNP-TV-Z]{26}/';
 
+    /** Nilai `Pengaturan.SumberAkun` untuk gerbang uji yang memakai akun DOKU induk Payoung (D-316). */
+    public const SUMBER_AKUN_PAYOUNG = 'Payoung';
+
     private ?KlienSnap $klien = null;
+
+    /** Gerbang tenant uji yang memakai akun DOKU induk Payoung, bukan akun merchant milik toko. */
+    private function CekAkunPayoung(): bool
+    {
+        return $this->Pengaturan('SumberAkun') === self::SUMBER_AKUN_PAYOUNG;
+    }
 
     public function AmbilKode(): string
     {
@@ -51,6 +60,14 @@ final class AdaptorDokuSnap extends AdaptorDasar
     /** Bidang yang wajib terisi sebelum gerbang bisa dipakai, dengan nama yang dikenal pengguna di formulir. */
     public function AmbilKekurangan(): array
     {
+        if ($this->CekAkunPayoung()) {
+            $klien = $this->Klien();
+
+            return $klien->CekSiap() && $klien->Pengaturan('IdPedagangQris') !== '' && $klien->Pengaturan('IdTerminalQris') !== '' && $klien->Pengaturan('KodePosQris') !== ''
+                ? []
+                : ['Akun DOKU Payoung belum lengkap di konsol (Integrasi › Akun DOKU Payoung)'];
+        }
+
         $kurang = [];
 
         foreach ([
@@ -83,6 +100,16 @@ final class AdaptorDokuSnap extends AdaptorDasar
             return HasilUjiLayanan::Gagal('Lengkapi dulu: '.implode(', ', $kurang).'.');
         }
 
+        if ($this->CekAkunPayoung()) {
+            try {
+                $this->Klien()->AmbilTokenB2b(paksaBaru: true);
+            } catch (GalatGerbang $galat) {
+                return HasilUjiLayanan::Gagal($this->Saring($galat->getMessage()));
+            }
+
+            return HasilUjiLayanan::Berhasil('Akun DOKU Payoung menerbitkan token SNAP. Gerbang uji ini memakai akun itu, jadi uang masuk ke akun Payoung.');
+        }
+
         $hasil = KlienSnap::UjiTokenB2b($this->Pengaturan('IdKlien'), $this->Kredensial('KunciPribadiSnap'), $this->CekSandbox());
 
         return $hasil['Berhasil']
@@ -101,10 +128,10 @@ final class AdaptorDokuSnap extends AdaptorDasar
         $respons = $this->Klien()->Kirim(self::TARGET_BUAT, [
             'partnerReferenceNo' => $permintaan->nomorPesanan,
             'amount' => ['value' => self::FormatNominal($permintaan->jumlah), 'currency' => 'IDR'],
-            'merchantId' => $this->Pengaturan('IdPedagangQris'),
-            'terminalId' => $this->Pengaturan('IdTerminalQris'),
+            'merchantId' => $this->Klien()->Pengaturan('IdPedagangQris'),
+            'terminalId' => $this->Klien()->Pengaturan('IdTerminalQris'),
             'validityPeriod' => $permintaan->kedaluwarsaPada->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP'),
-            'additionalInfo' => ['postalCode' => $this->Pengaturan('KodePosQris'), 'feeType' => '1'],
+            'additionalInfo' => ['postalCode' => $this->Klien()->Pengaturan('KodePosQris'), 'feeType' => '1'],
         ]);
         $isiQr = $respons->json('qrContent');
 
@@ -162,7 +189,7 @@ final class AdaptorDokuSnap extends AdaptorDasar
         $badan = [
             'originalPartnerReferenceNo' => $nomorPesanan,
             'serviceCode' => '47',
-            'merchantId' => $this->Pengaturan('IdPedagangQris'),
+            'merchantId' => $this->Klien()->Pengaturan('IdPedagangQris'),
         ];
 
         if (trim($idReferensi) !== '' && trim($idReferensi) !== $nomorPesanan) {
@@ -201,6 +228,11 @@ final class AdaptorDokuSnap extends AdaptorDasar
 
     private function Klien(): KlienSnap
     {
+        if ($this->CekAkunPayoung()) {
+            // Akun DOKU induk Payoung (konfigurasi integrasi `GerbangBilling`): hanya untuk tenant uji (`PembuatGerbangPembayaran`).
+            return $this->klien ??= new KlienSnap;
+        }
+
         return $this->klien ??= KlienSnap::DariKredensial(
             $this->Pengaturan('IdKlien'),
             $this->Kredensial('KunciRahasia'),

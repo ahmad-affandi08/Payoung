@@ -120,6 +120,8 @@ final class KamusPeristiwaAudit
         'flag-fitur.hapus' => 'Flag fitur dihapus',
         'flag-fitur.simpan' => 'Flag fitur disimpan',
 
+        'gerbang-pembayaran.kunci-snap-baru' => 'Kunci SNAP gerbang pembayaran dibuat ulang',
+        'gerbang-pembayaran.pakai-akun-payoung' => 'Gerbang pembayaran memakai akun DOKU Payoung (uji coba)',
         'gerbang-pembayaran.uji' => 'Koneksi gerbang pembayaran diuji',
 
         'giro.cair' => 'Giro dicairkan',
@@ -471,6 +473,7 @@ final class KamusPeristiwaAudit
 
         'pesan-whatsapp.atur' => 'Pesan WhatsApp otomatis diatur',
 
+        'pesanan-online.bayar-tambahan' => 'Pesanan online menerima pembayaran tambahan',
         'pesanan-online.dibayar' => 'Pesanan online dibayar',
         'pesanan-online.kedaluwarsa' => 'Pesanan online kedaluwarsa',
         'pesanan-online.kembalikan-uang' => 'Uang pesanan online dikembalikan',

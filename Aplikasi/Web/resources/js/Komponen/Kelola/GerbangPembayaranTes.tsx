@@ -69,6 +69,7 @@ const lingkungan = [
 
 function Gerbang(ubah: Partial<GerbangPembayaranTenant> = {}): GerbangPembayaranTenant {
     return {
+        SumberAkun: 'Sendiri',
         Uuid: '01K5GERBANG000000000000001',
         Penyedia: 'Doku',
         LabelPenyedia: 'DOKU',
@@ -144,6 +145,39 @@ describe('Gerbang pembayaran toko (v2.06)', () => {
         expect((screen.getByRole('button', { name: 'Aktifkan gerbang' }) as HTMLButtonElement).disabled).toBe(true);
         fireEvent.click(screen.getByRole('button', { name: 'Uji koneksi' }));
         expect(uji.router).toEqual(['/kelola/pembayaran/gerbang/uji']);
+    });
+
+    it('D-316 tenant uji bisa memakai akun DOKU Payoung, tenant biasa tidak melihat pilihannya', () => {
+        const { unmount: Lepas } = render(
+            <HalamanGerbangPembayaran Gerbang={null} DaftarPenyedia={penyedia} DaftarLingkungan={lingkungan} />,
+        );
+        expect(screen.queryByRole('button', { name: 'Pakai akun DOKU Payoung' })).toBeNull();
+        Lepas();
+
+        const { unmount: Lepas2 } = render(
+            <HalamanGerbangPembayaran
+                AkunPayoungTersedia
+                Gerbang={null}
+                DaftarPenyedia={penyedia}
+                DaftarLingkungan={lingkungan}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Pakai akun DOKU Payoung' }));
+        expect(uji.router).toEqual(['/kelola/pembayaran/gerbang/akun-payoung']);
+        Lepas2();
+
+        // Sudah memakai akun Payoung: peringatan tampil, URL notifikasi dan kunci publik tidak.
+        render(
+            <HalamanGerbangPembayaran
+                AkunPayoungTersedia
+                Gerbang={Gerbang({ SumberAkun: 'Payoung', KunciPublikSnap: null, Pengaturan: {} })}
+                DaftarPenyedia={penyedia}
+                DaftarLingkungan={lingkungan}
+            />,
+        );
+        expect(screen.getByText(/Memakai akun DOKU Payoung \(khusus uji\)/)).toBeTruthy();
+        expect(screen.queryByText('URL notifikasi (webhook)')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Pakai akun DOKU Payoung' })).toBeNull();
     });
 
     it('D-314 kunci publik SNAP dan URL token tampil untuk didaftarkan di DOKU, kunci bisa dibuat ulang', () => {

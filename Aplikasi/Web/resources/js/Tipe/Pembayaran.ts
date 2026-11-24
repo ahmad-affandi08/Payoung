@@ -22,6 +22,8 @@ export type OpsiPenyediaGerbang = {
 
 /** Gerbang pembayaran QRIS dinamis milik tenant (F-08, v2.06). Kredensial hanya petunjuk 4 karakter terakhir. */
 export type GerbangPembayaranTenant = {
+    /** D-316: 'Payoung' = tenant uji memakai akun DOKU induk Payoung. */
+    SumberAkun: 'Sendiri' | 'Payoung';
     Uuid: string;
     Penyedia: string;
     LabelPenyedia: string;
@@ -45,6 +47,8 @@ export type GerbangPembayaranTenant = {
 export type PropsGerbangPembayaran = {
     /** Aktivasi QRIS otomatis (DOKU Partner) hanya ada di edisi SaaS. */
     AktivasiQrisTersedia?: boolean;
+    /** D-316: tenant berpenanda Uji/Demo/Internal boleh memakai akun DOKU induk Payoung. */
+    AkunPayoungTersedia?: boolean;
     Gerbang: GerbangPembayaranTenant | null;
     DaftarPenyedia: OpsiPenyediaGerbang[];
     DaftarLingkungan: { Nilai: string; Label: string }[];

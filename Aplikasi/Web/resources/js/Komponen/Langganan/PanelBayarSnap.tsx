@@ -317,7 +317,7 @@ export default function PanelBayarSnap({
                                         <span className="flex flex-wrap items-center gap-2 text-subjudul font-semibold text-teks-utama">
                                             {baris.judul}
                                             {baris.lencana ? (
-                                                <span className="rounded-full bg-aksen px-2 text-keterangan font-semibold text-brand-gelap">
+                                                <span className="rounded-full bg-brand-lembut px-2 text-keterangan font-semibold text-brand">
                                                     {baris.lencana}
                                                 </span>
                                             ) : null}

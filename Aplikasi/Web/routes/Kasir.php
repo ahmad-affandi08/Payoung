@@ -67,6 +67,7 @@ Route::middleware(SiapkanAuditTenant::class)->group(function () use ($izin, $uli
         Route::get('/', [GerbangPembayaranKontroler::class, 'Tampilkan'])->name('kelola.pembayaran.gerbang');
         Route::post('/', [GerbangPembayaranKontroler::class, 'Simpan'])->name('kelola.pembayaran.gerbang.simpan');
         Route::post('/uji', [GerbangPembayaranKontroler::class, 'Uji'])->name('kelola.pembayaran.gerbang.uji');
+        Route::post('/akun-payoung', [GerbangPembayaranKontroler::class, 'PakaiAkunPayoung'])->name('kelola.pembayaran.gerbang.akun-payoung');
         Route::post('/kunci-snap', [GerbangPembayaranKontroler::class, 'BuatUlangKunci'])->name('kelola.pembayaran.gerbang.kunci-snap');
         Route::post('/aktifkan', [GerbangPembayaranKontroler::class, 'Aktifkan'])->name('kelola.pembayaran.gerbang.aktifkan');
         Route::post('/nonaktifkan', [GerbangPembayaranKontroler::class, 'Nonaktifkan'])->name('kelola.pembayaran.gerbang.nonaktifkan');

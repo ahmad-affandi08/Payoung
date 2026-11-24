@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
+use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Integrasi\Enum\PenyediaGerbang;
 use App\Domain\Integrasi\Enum\StatusUjiGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\Adaptor\AdaptorDokuSnap;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
+use App\Domain\Integrasi\GerbangPembayaran\PermintaanQris;
 use App\Domain\Integrasi\Model\GerbangPembayaranTenant;
 use App\Domain\Integrasi\Model\KatalogGerbangPembayaran;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
@@ -14,6 +16,8 @@ use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Pengelola\TimInternal\Model\LogAuditPengelola;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Model\MetodePembayaran;
+use App\Domain\Tenant\Enum\PenandaTenant;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
@@ -71,6 +75,15 @@ function SimpanDokuToko(TestCase $tes, array $toko, string $kunci = KUNCI_DOKU_T
         'Pengaturan' => PENGATURAN_DOKU_TOKO,
         'Kredensial' => ['KunciRahasia' => $kunci],
     ])->assertSessionHasNoErrors();
+}
+
+/** Akun DOKU induk Payoung (integrasi `GerbangBilling`) terisi lengkap, seperti di server yang sudah diatur konsol. */
+function SiapkanAkunPayoungUji(): void
+{
+    config([
+        'integrasi.GerbangBilling.Pengaturan' => ['Mode' => 'Sandbox', 'IdKlien' => 'BRN-PAYOUNG-1', 'IdPedagangQris' => '999001', 'IdTerminalQris' => 'P01', 'KodePosQris' => '57214'],
+        'integrasi.GerbangBilling.Kredensial' => ['KunciRahasia' => 'SK-payoung-induk-1', 'KunciPribadiSnap' => BantuanGerbangTenant::AmbilPasanganKunci()['Pribadi']],
+    ]);
 }
 
 /** URL absolut back-office toko: setelah request ke subdomain pengelola, path relatif ikut host pengelola. */
@@ -321,5 +334,58 @@ describe('v2.06 gerbang pembayaran milik toko', function (): void {
         MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/uji')->assertSessionHasErrors('Umum');
         expect(GerbangToko($toko)->PesanUji)->toContain('Merchant ID QRIS')->toContain('Terminal ID QRIS')->toContain('Kode pos QRIS');
         Http::assertNothingSent();
+    });
+
+    it('D-316 tenant uji memakai akun DOKU Payoung: uji lalu aktif, QRIS dibuat dengan merchant Payoung. Tenant biasa ditolak, penanda dicabut = adaptor mati', function (): void {
+        SiapkanAkunPayoungUji();
+        Http::fake(fn ($r) => BantuanGerbangTenant::CekPermintaanBuat($r) ? BantuanGerbangTenant::ResponsBuat($r) : BantuanGerbangTenant::ResponsStatus('PENDING'));
+        $toko = TokoGerbang();
+
+        // Tenant biasa (tanpa penanda): ditolak, tidak ada gerbang yang dibuat.
+        MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/akun-payoung')->assertSessionHasErrors('Umum');
+        expect(GerbangToko($toko))->toBeNull();
+        MasukToko($this, $toko)->get('/kelola/pembayaran/gerbang')->assertInertia(fn (AssertableInertia $h) => $h->where('AkunPayoungTersedia', false));
+
+        // Tenant uji: pilihan tersedia dan gerbang terpasang tanpa kredensial toko.
+        $toko['Tenant']->forceFill(['Penanda' => PenandaTenant::Uji])->save();
+        MasukToko($this, $toko)->get('/kelola/pembayaran/gerbang')->assertInertia(fn (AssertableInertia $h) => $h->where('AkunPayoungTersedia', true));
+        MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/akun-payoung')->assertSessionHasNoErrors();
+        $gerbang = GerbangToko($toko);
+        expect($gerbang->Pengaturan)->toBe(['SumberAkun' => 'Payoung'])
+            ->and($gerbang->Kredensial)->toBe([])
+            ->and($gerbang->StatusUji)->toBe(StatusUjiGerbang::BelumDiuji)
+            ->and($gerbang->Aktif)->toBeFalse()
+            ->and(LogAudit::query()->where('Peristiwa', 'gerbang-pembayaran.pakai-akun-payoung')->count())->toBe(1);
+        MasukToko($this, $toko)->get('/kelola/pembayaran/gerbang')->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Gerbang.SumberAkun', 'Payoung')->where('Gerbang.KunciPublikSnap', null));
+
+        // Uji memakai token akun Payoung (Client ID Payoung), lalu aktif.
+        MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/uji')->assertSessionHasNoErrors();
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/authorization/v1/access-token/b2b') && $r->hasHeader('X-CLIENT-KEY', 'BRN-PAYOUNG-1'));
+        MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/aktifkan')->assertSessionHasNoErrors();
+
+        // QRIS dibuat dengan merchant, terminal, dan kode pos akun Payoung.
+        BantuanOrganisasi::AturKonteks($toko['Tenant']->Id);
+        $aktif = app(PembuatGerbangPembayaran::class)->AmbilAktifTenant();
+        expect($aktif)->not->toBeNull();
+        $hasil = $aktif->gerbang->BuatQris(new PermintaanQris('PY1-01M84D56XTCTT66D3DNC7YQJ63', Uang::Dari('25000'), 'Uji', CarbonImmutable::now()->addMinutes(15), 'https://x'));
+        expect($hasil->isiQr)->toStartWith('00020101021226');
+        Http::assertSent(fn ($r) => BantuanGerbangTenant::CekPermintaanBuat($r)
+            && $r['merchantId'] === '999001' && $r['terminalId'] === 'P01' && $r['additionalInfo']['postalCode'] === '57214'
+            && $r->hasHeader('X-PARTNER-ID', 'BRN-PAYOUNG-1'));
+
+        // Penanda dicabut (tenant menjadi komersial): gerbang akun Payoung tidak pernah lagi menghasilkan adaptor.
+        $toko['Tenant']->forceFill(['Penanda' => null])->save();
+        BantuanOrganisasi::AturKonteks($toko['Tenant']->Id);
+        expect(app(PembuatGerbangPembayaran::class)->AmbilAktifTenant())->toBeNull();
+    });
+
+    it('D-316 akun DOKU Payoung belum diatur di konsol: pilihan ditolak dengan pesan jelas', function (): void {
+        config(['integrasi.GerbangBilling.Pengaturan' => [], 'integrasi.GerbangBilling.Kredensial' => []]);
+        $toko = TokoGerbang();
+        $toko['Tenant']->forceFill(['Penanda' => PenandaTenant::Demo])->save();
+
+        MasukToko($this, $toko)->post('/kelola/pembayaran/gerbang/akun-payoung')->assertSessionHasErrors('Umum');
+        expect(GerbangToko($toko))->toBeNull();
     });
 });
