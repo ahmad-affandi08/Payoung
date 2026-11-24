@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -251,6 +252,52 @@ void main() {
         ((await AmbilOutboxPenjualan(tester, u)).single['Pembayaran']! as List<Object?>).single!
             as Map<String, Object?>;
     expect(bayar['Referensi'], dibuat!['Uuid']);
+    await Lepas(tester, u);
+  });
+
+  testWidgets('QRIS dinamis: lunas dan batal berbarengan hanya menutup dialog sekali (aplikasi tidak jadi kosong)', (
+    tester,
+  ) async {
+    Map<String, Object?>? dibuat;
+    var tahanStatus = false;
+    final statusTertahan = Completer<http.Response>();
+    final batalTertahan = Completer<http.Response>();
+    final u = await MasukJual(tester, const Size(1280, 900), (p) {
+      if (p.url.path.endsWith('/batal')) {
+        return batalTertahan.future;
+      }
+      if (p.method == 'POST') {
+        dibuat = jsonDecode(p.body) as Map<String, Object?>;
+        return Future.value(Tagihan(dibuat!));
+      }
+      if (tahanStatus) {
+        return statusTertahan.future;
+      }
+      return Future.value(JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null}));
+    });
+    await BukaBayarQris(tester, const Size(1280, 900));
+    tahanStatus = true;
+    // Putaran pantau berikutnya menggantung menunggu jawaban status.
+    await Tunggu(tester, const Duration(seconds: 3));
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
+    // Pelanggan membayar tepat saat itu: status lunas tiba lebih dulu, lalu penolakan batal (SudahLunas) menyusul
+    // selagi dialog masih dalam animasi keluar.
+    statusTertahan.complete(JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Lunas', 'LunasPada': null}));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester.pump();
+    batalTertahan.complete(
+      http.Response(
+        jsonEncode({
+          'Galat': {'Kode': 'SudahLunas', 'Pesan': 'Tagihan sudah lunas.'},
+        }),
+        409,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+    await Tunggu(tester, const Duration(seconds: 1));
+    expect(find.byType(RuangKerja), findsOneWidget, reason: 'Rute akar tidak boleh ikut tertutup oleh pop kedua.');
+    expect(find.text('Pembayaran berhasil'), findsOneWidget);
+    expect(tester.takeException(), isNull);
     await Lepas(tester, u);
   });
 

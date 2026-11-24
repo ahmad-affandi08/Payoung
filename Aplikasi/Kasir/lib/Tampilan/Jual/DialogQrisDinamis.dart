@@ -47,6 +47,11 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
   Timer? _detik;
   bool _mengecek = false;
   bool _mengecekManual = false;
+  bool _membuat = false;
+
+  /// Dialog hanya boleh ditutup sekali: status lunas dan jawaban batal bisa tiba berbarengan, dan `pop` kedua akan
+  /// membuang rute di bawah dialog (layar Jual), bukan dialog ini.
+  bool _sudahTutup = false;
 
   /// Lama berlaku tagihan saat dibuat, untuk cincin hitung mundur.
   Duration? _durasiAwal;
@@ -71,17 +76,22 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
   }
 
   Future<void> _Buat() async {
+    if (_membuat) {
+      return;
+    }
+    _membuat = true;
     setState(() {
       _galat = null;
       _tagihan = null;
       _durasiAwal = null;
       _selesaiTanpaBayar = false;
     });
+    final layanan = ref.read(penyediaLayananQrisDinamis);
     try {
-      final tagihan = await ref
-          .read(penyediaLayananQrisDinamis)
-          .Buat(metode: widget.metode, jumlah: widget.jumlah, keterangan: widget.keterangan);
+      final tagihan = await layanan.Buat(metode: widget.metode, jumlah: widget.jumlah, keterangan: widget.keterangan);
       if (!mounted) {
+        // Dialog ditutup selagi tagihan dibuat: tagihan yatim dibatalkan, bukan dibiarkan berlaku di server.
+        unawaited(layanan.Batalkan(tagihan.uuid).then<void>((_) {}, onError: (Object _) {}));
         return;
       }
       setState(() {
@@ -99,6 +109,8 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
       if (mounted) {
         setState(() => _galat = galat.pesan);
       }
+    } finally {
+      _membuat = false;
     }
   }
 
@@ -143,9 +155,12 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
       return;
     }
     setState(() => _mengecekManual = true);
-    await _Cek();
-    if (mounted) {
-      setState(() => _mengecekManual = false);
+    try {
+      await _Cek();
+    } finally {
+      if (mounted) {
+        setState(() => _mengecekManual = false);
+      }
     }
   }
 
@@ -156,6 +171,10 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
   }
 
   void _Tutup(TagihanQrisPos? hasil) {
+    if (_sudahTutup) {
+      return;
+    }
+    _sudahTutup = true;
     _Berhenti();
     Navigator.of(context).pop(hasil);
   }

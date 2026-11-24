@@ -97,6 +97,23 @@ void main() {
     await pertama;
   });
 
+  test(
+    'batas waktu dihitung sejak pekerjaan mulai, bukan sejak masuk antrean (tumpukan tetap satu per satu)',
+    () async {
+      // Lima pekerjaan 60 ms dengan batas 100 ms: total 300 ms melewati batas, tetapi tiap pekerjaan sendiri tidak.
+      final antrean = _Antrean(batas: const Duration(milliseconds: 100));
+      final printer = _PrinterLambat(const Duration(milliseconds: 60));
+      final transport = TransportBerantre(printer, 'P', antrean);
+      await Future.wait([for (var i = 0; i < 5; i++) transport.Kirim('k$i'.codeUnits)]);
+      expect(
+        printer.puncak,
+        1,
+        reason: 'antrean yang menumpuk tidak boleh melepas pekerjaan di belakangnya lebih awal',
+      );
+      expect(printer.urutan, ['k0', 'k1', 'k2', 'k3', 'k4']);
+    },
+  );
+
   test('Bungkus mempertahankan printer sistem sebagai TransportDokumen', () async {
     final antrean = _Antrean();
     final sistem = _Sistem();

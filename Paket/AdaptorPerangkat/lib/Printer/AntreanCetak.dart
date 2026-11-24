@@ -31,9 +31,10 @@ class AntreanCetak {
     final sebelum = _ekor[kunci] ?? Future<void>.value();
     final hasil = sebelum.then((_) => pekerjaan());
     late final Future<void> ekor;
-    ekor = hasil
-        .then<void>((_) {}, onError: (Object _) {})
-        .timeout(batasPekerjaan, onTimeout: () {})
+    // Batas waktu baru mulai berjalan saat giliran pekerjaan ini tiba (setelah [sebelum] selesai). Dipasang pada
+    // rantai yang ikut menunggu [sebelum], batas itu habis selama antre dan melepas pekerjaan di belakangnya terlalu dini.
+    ekor = sebelum
+        .then<void>((_) => hasil.then<void>((_) {}, onError: (Object _) {}).timeout(batasPekerjaan, onTimeout: () {}))
         .then<void>((_) => Future<void>.delayed(jedaAntarPekerjaan))
         .whenComplete(() {
           _ekor.removeWhere((k, v) => k == kunci && identical(v, ekor));

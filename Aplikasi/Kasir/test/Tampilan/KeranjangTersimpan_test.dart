@@ -68,7 +68,12 @@ void main() {
 
     await Ketuk(tester, find.widgetWithText(FilledButton, 'Bayar'));
     await Ketuk(tester, find.widgetWithText(ChoiceChip, 'Tunai'));
-    await Ketuk(tester, find.widgetWithText(FilledButton, 'Uang pas'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Uang pas'));
+    // Penjualan tersimpan, lalu draf harus hilang saat itu juga: kurang dari jeda simpan 300 ms, aplikasi yang mati
+    // di sela itu tidak boleh memulihkan keranjang yang sudah dibayar.
+    await Tunggu(tester, const Duration(milliseconds: 140));
+    expect(find.text('Transaksi baru'), findsOneWidget, reason: 'Penjualan sudah selesai.');
+    expect(await Draf(tester, u), isNull, reason: 'Draf dihapus seketika setelah penjualan tersimpan.');
     await Ketuk(tester, find.text('Transaksi baru'));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));

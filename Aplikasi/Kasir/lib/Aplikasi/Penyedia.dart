@@ -834,7 +834,12 @@ class PengaturKeranjang extends Notifier<Keranjang> {
 
   void Ganti(Keranjang keranjang) => _Atur(keranjang);
 
-  void Kosongkan() => _Atur(_AmbilKosong());
+  /// Mengosongkan keranjang dan menghapus draf **saat itu juga**, tidak menunggu jeda simpan: dipanggil sesudah
+  /// penjualan tersimpan, dan aplikasi yang mati dalam jeda itu akan memulihkan keranjang yang sudah dibayar.
+  void Kosongkan() {
+    _Atur(_AmbilKosong());
+    unawaited(SimpanSekarang());
+  }
 
   void _Atur(Keranjang keranjang) {
     _sudahDipulihkan = true;
