@@ -47,7 +47,9 @@ final class PenghitungHargaPeriode
         $penuh = $hargaBulanan->Kali($jumlahBulan);
 
         if ($tahunan !== null && $jumlahBulan % 12 === 0) {
-            return ['Subtotal' => $tahunan->Kali(intdiv($jumlahBulan, 12)), 'HargaPenuh' => $penuh, 'DiskonPersen' => '0', 'Dasar' => 'Tahunan'];
+            $subtotalTahunan = $tahunan->Kali(intdiv($jumlahBulan, 12));
+
+            return ['Subtotal' => $subtotalTahunan, 'HargaPenuh' => $penuh, 'DiskonPersen' => self::PersenHemat($penuh, $subtotalTahunan), 'Dasar' => 'Tahunan'];
         }
 
         $persen = '0';
@@ -68,10 +70,32 @@ final class PenghitungHargaPeriode
             $batas = $tahunan->Kali(intdiv($jumlahBulan + 11, 12));
 
             if ($subtotal->Bandingkan($batas) > 0) {
-                return ['Subtotal' => $batas, 'HargaPenuh' => $penuh, 'DiskonPersen' => $persen, 'Dasar' => 'Tahunan'];
+                return ['Subtotal' => $batas, 'HargaPenuh' => $penuh, 'DiskonPersen' => self::PersenHemat($penuh, $batas), 'Dasar' => 'Tahunan'];
             }
         }
 
         return ['Subtotal' => $subtotal, 'HargaPenuh' => $penuh, 'DiskonPersen' => $persen, 'Dasar' => $dasar];
+    }
+
+    /**
+     * Persen hemat yang benar-benar didapat dibanding harga bulanan penuh, satu desimal tanpa nol di belakang ('20',
+     * '12.7'), atau '0' bila tidak lebih murah. Dipakai saat harga ditentukan harga tahunan katalog, yang tidak punya
+     * persen sendiri, supaya layar memperlihatkan hematnya (D-323).
+     */
+    private static function PersenHemat(Uang $penuh, Uang $subtotal): string
+    {
+        $selisih = $penuh->Kurangi($subtotal);
+
+        if ($penuh->Bandingkan(Uang::Nol()) <= 0 || $selisih->Bandingkan(Uang::Nol()) <= 0) {
+            return '0';
+        }
+
+        $persen = BigDecimal::of($selisih->KeString())
+            ->multipliedBy(100)
+            ->dividedBy($penuh->KeString(), 1, RoundingMode::HalfUp);
+
+        $teks = (string) $persen;
+
+        return $persen->isZero() ? '0' : (str_ends_with($teks, '.0') ? substr($teks, 0, -2) : $teks);
     }
 }

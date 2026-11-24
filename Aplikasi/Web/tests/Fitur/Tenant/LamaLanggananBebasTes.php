@@ -74,6 +74,23 @@ describe('PenghitungHargaPeriode (D-249): harga menurut lama', function (): void
             ->and($penghitung->Hitung(Uang::Dari('249000'), Uang::Dari('2390400'), 11, $tangga)['Subtotal']->KeString())->toBe('2390400.00');
     });
 
+    it('lama kelipatan 12 bulan melaporkan persen hemat yang sebenarnya dari harga tahunan katalog (D-323)', function () use ($tangga): void {
+        $penghitung = new PenghitungHargaPeriode(new PengaturanLamaLangganan);
+
+        // Pro: 149.000/bulan, harga tahunan katalog 1.430.400 → hemat tepat 20% dari 1.788.000.
+        $setahun = $penghitung->Hitung(Uang::Dari('149000'), Uang::Dari('1430400'), 12, $tangga);
+        $duaTahun = $penghitung->Hitung(Uang::Dari('149000'), Uang::Dari('1430400'), 24, $tangga);
+
+        expect($setahun['Subtotal']->KeString())->toBe('1430400.00')
+            ->and($setahun['HargaPenuh']->KeString())->toBe('1788000.00')
+            ->and($setahun['DiskonPersen'])->toBe('20')
+            ->and($duaTahun['DiskonPersen'])->toBe('20')
+            // Pengaman harga setahun (11 bulan dibatasi harga tahunan) juga jujur soal hematnya, bukan persen tangga.
+            ->and($penghitung->Hitung(Uang::Dari('249000'), Uang::Dari('2390400'), 11, $tangga)['DiskonPersen'])->toBe('12.7')
+            // Harga tahunan yang tidak lebih murah dari 12 × bulanan tidak diumumkan sebagai hemat.
+            ->and($penghitung->Hitung(Uang::Dari('100000'), Uang::Dari('1200000'), 12, $tangga)['DiskonPersen'])->toBe('0');
+    });
+
     it('tanpa harga tahunan katalog, tangga diskon tetap berlaku di semua lama', function () use ($tangga): void {
         $hitung = (new PenghitungHargaPeriode(new PengaturanLamaLangganan))->Hitung(Uang::Dari('249000'), null, 12, $tangga);
 
