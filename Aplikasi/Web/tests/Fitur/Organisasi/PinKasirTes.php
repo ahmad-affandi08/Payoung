@@ -154,7 +154,7 @@ describe('POST /api/pos/v1/kasir/masuk-pin (§20.2)', function (): void {
             ->assertExactJson([
                 'Pengguna' => ['Uuid' => $kasir->Uuid, 'Nama' => $kasir->Nama],
                 'Pemilik' => false,
-                'Izin' => ['penjualan.buat', 'produk.lihat'],
+                'Izin' => ['dapur.rute.atur', 'penjualan.buat', 'produk.lihat'],
             ]);
 
         $log = LogAudit::query()->where('IdTenant', $tenant->Id)->where('Peristiwa', 'kasir.masuk-pin')->sole();

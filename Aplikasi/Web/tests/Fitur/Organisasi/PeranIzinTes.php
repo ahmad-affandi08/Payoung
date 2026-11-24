@@ -46,7 +46,8 @@ describe('Peran bawaan tenant (§19.1)', function (): void {
             ->and($izinAdmin)->not->toContain(IzinTenant::DataKelola->value)
             ->and($izinAdmin)->not->toContain(IzinTenant::DukunganAksesKelola->value)
             ->and(count($izinAdmin))->toBe(count(IzinTenant::cases()) - 4)
-            ->and($izinKasir)->toBe([IzinTenant::PenjualanBuat->value, IzinTenant::ProdukLihat->value]);
+            // D-310: Kasir juga boleh mengatur rute dapur dari aplikasi kasir.
+            ->and($izinKasir)->toBe([IzinTenant::DapurRuteAtur->value, IzinTenant::PenjualanBuat->value, IzinTenant::ProdukLihat->value]);
     });
 
     it('perintah organisasi:siapkan-peran mengisi tenant lama dan idempoten', function (): void {
@@ -67,7 +68,7 @@ describe('Peran bawaan tenant (§19.1)', function (): void {
 
         BantuanOrganisasi::AturKonteks($baru->Id);
         expect(Peran::query()->count())->toBe(count(PeranTenantBawaan::cases()))
-            ->and(PeranIzin::query()->where('IdPeran', BantuanOrganisasi::Peran($baru->Id, PeranTenantBawaan::Kasir)->Id)->count())->toBe(2);
+            ->and(PeranIzin::query()->where('IdPeran', BantuanOrganisasi::Peran($baru->Id, PeranTenantBawaan::Kasir)->Id)->count())->toBe(3);
     });
 
     it('F-01: Admin tenant lama menerima izin panduan-awal.kelola setelah organisasi:siapkan-peran; Kasir tidak', function (): void {
@@ -134,7 +135,7 @@ describe('Izin per peran di rute back-office (WajibIzinTenant)', function (): vo
         BantuanOrganisasi::Masuk($this, $kasir, $tenant->Id)->get('/kelola')
             ->assertInertia(fn (AssertableInertia $halaman) => $halaman
                 ->where('Akses.Pemilik', false)
-                ->where('Akses.Izin', [IzinTenant::PenjualanBuat->value, IzinTenant::ProdukLihat->value]));
+                ->where('Akses.Izin', [IzinTenant::DapurRuteAtur->value, IzinTenant::PenjualanBuat->value, IzinTenant::ProdukLihat->value]));
     });
 });
 
@@ -189,7 +190,7 @@ describe('Peran kustom', function (): void {
             ->put("/kelola/peran/{$kasir->Uuid}", ['Nama' => 'Kasir', 'Izin' => ['penjualan.buat', 'penjualan.void']])
             ->assertSessionHasErrors('Umum');
 
-        expect($kasir->refresh()->AmbilKunciIzin())->toBe(['penjualan.buat', 'produk.lihat']);
+        expect($kasir->refresh()->AmbilKunciIzin())->toBe(['dapur.rute.atur', 'penjualan.buat', 'produk.lihat']);
     });
 
     it('anti-eskalasi: Admin tidak bisa membuat peran dengan izin yang tidak ia miliki (Manajer tanpa peran.kelola ditolak)', function (): void {
