@@ -212,7 +212,6 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
     final teks = Theme.of(context).textTheme;
     final warna = TokenWarna.AmbilDari(context);
     final tagihan = _tagihan;
-    final namaOutlet = ref.watch(penyediaIdentitas).value?.outlet;
     final menunggu = tagihan != null && !_selesaiTanpaBayar;
     final bisaUlang = _galat != null && (tagihan == null || _selesaiTanpaBayar);
     final ukuranLayar = MediaQuery.sizeOf(context);
@@ -224,7 +223,7 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
     // supaya seluruh dialog muat tanpa digulir. Layar tinggi: satu kolom. HP pendek: satu kolom yang dipadatkan.
     final duaKolom = tampilQr && lebarTersedia >= 640 && tinggiTersedia < 820;
     final padat = tampilQr && !duaKolom && tinggiTersedia < 780;
-    final ukuranQr = (duaKolom ? tinggiTersedia - 200 : tinggiTersedia - (padat ? 525 : 630))
+    final ukuranQr = (duaKolom ? tinggiTersedia - 168 : tinggiTersedia - (padat ? 493 : 598))
         .clamp(150.0, 280.0)
         .toDouble();
 
@@ -258,7 +257,6 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
         data: tagihan.isiQr,
         label: 'Kode QRIS ${widget.jumlah.FormatRupiah()}',
         judul: tagihan.halamanBayar ? 'Halaman bayar' : 'QRIS',
-        namaOutlet: namaOutlet,
         ukuranMaks: ukuranQr,
       );
       petunjuk = Text(
@@ -339,21 +337,7 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
           )
         : null;
 
-    final Widget judulDialog = Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Expanded(child: Text('Bayar dengan ${widget.metode.Nama}', style: teks.titleLarge)),
-        if (namaOutlet != null && namaOutlet.isNotEmpty)
-          Flexible(
-            child: Text(
-              namaOutlet,
-              overflow: TextOverflow.ellipsis,
-              style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
-            ),
-          ),
-      ],
-    );
+    final Widget judulDialog = Text('Bayar dengan ${widget.metode.Nama}', style: teks.titleLarge);
 
     final Widget badan;
     if (duaKolom) {
@@ -494,20 +478,13 @@ class _ChipStatus extends StatelessWidget {
   }
 }
 
-/// Kartu putih berpinggir berisi QR, label jenis kode, dan nama toko (identitas yang membuat QR terlihat resmi).
+/// Kartu putih berpinggir berisi logo jenis kode dan QR.
 class _KartuQr extends StatelessWidget {
-  const _KartuQr({
-    required this.data,
-    required this.label,
-    required this.judul,
-    this.namaOutlet,
-    this.ukuranMaks = 280,
-  });
+  const _KartuQr({required this.data, required this.label, required this.judul, this.ukuranMaks = 280});
 
   final String data;
   final String label;
   final String judul;
-  final String? namaOutlet;
 
   /// Sisi terbesar QR; mengecil di layar pendek agar dialog muat tanpa digulir.
   final double ukuranMaks;
@@ -537,14 +514,6 @@ class _KartuQr extends StatelessWidget {
               ),
               const SizedBox(height: TokenJarak.jarak12),
               GambarQr(data: data, ukuran: ukuran, label: label),
-              if (namaOutlet != null && namaOutlet!.isNotEmpty) ...[
-                const SizedBox(height: TokenJarak.jarak12),
-                Text(
-                  namaOutlet!.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: teks.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
             ],
           );
         },

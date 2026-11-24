@@ -358,6 +358,7 @@
 | D-322 | Dari pemilik produk, 24/11/2026: dialog QRIS kasir memakai logo bank dan e-wallet yang sama dengan halaman bayar back-office. Syarat penggantian dengan logo resmi sebelum rilis komersial (D-161) berlaku juga untuk berkas di aplikasi Kasir. |
 | D-323 | Agent, 24/11/2026: persen hemat yang tampil di pilihan lama langganan adalah selisih sebenarnya terhadap 12 × harga bulanan, termasuk saat harga ditentukan harga tahunan katalog. Aturan harga D-249 dan jumlah tagihan tidak berubah. |
 | D-324 | Agent, 24/11/2026: dialog Bayar dengan QRIS kasir tidak boleh membutuhkan gulir di ukuran layar kasir yang lazim. Tata letak menyesuaikan ruang tersedia (dua kolom di layar lebar pendek, QR mengecil di HP pendek), gulir hanya pengaman. |
+| D-325 | Agent, 24/11/2026 (atas permintaan pemilik produk): dialog Bayar dengan QRIS kasir tidak menampilkan nama toko. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)
