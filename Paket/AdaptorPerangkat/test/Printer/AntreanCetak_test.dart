@@ -33,8 +33,7 @@ class _Sistem implements TransportDokumen {
   final List<String> dokumen = [];
 
   @override
-  Future<void> CetakDokumen(DokumenStruk d, LebarKertas lebar) async =>
-      dokumen.add('dokumen');
+  Future<void> CetakDokumen(DokumenStruk d, LebarKertas lebar) async => dokumen.add('dokumen');
 
   @override
   Future<void> Kirim(List<int> data) async {}
@@ -55,18 +54,10 @@ void main() {
       dapur.Kirim('checker'.codeUnits),
       struk.Kirim('laci'.codeUnits),
     ]);
-    expect(
-      printer.puncak,
-      1,
-      reason: 'tidak boleh ada dua kiriman bersamaan ke printer yang sama',
-    );
+    expect(printer.puncak, 1, reason: 'tidak boleh ada dua kiriman bersamaan ke printer yang sama');
     expect(printer.urutan, ['struk', 'dapur', 'checker', 'laci']);
     await Future<void>.delayed(const Duration(milliseconds: 10));
-    expect(
-      antrean.jumlahAktif,
-      0,
-      reason: 'antrean dibersihkan setelah semua selesai',
-    );
+    expect(antrean.jumlahAktif, 0, reason: 'antrean dibersihkan setelah semua selesai');
   });
 
   test('printer berbeda tetap berjalan paralel', () async {
@@ -85,10 +76,7 @@ void main() {
 
   test('pekerjaan gagal tidak menghentikan antrean dan galatnya sampai ke pemanggil yang benar', () async {
     final antrean = _Antrean();
-    final printer = _PrinterLambat(
-      const Duration(milliseconds: 5),
-      gagalUntuk: 'rusak',
-    );
+    final printer = _PrinterLambat(const Duration(milliseconds: 5), gagalUntuk: 'rusak');
     final transport = TransportBerantre(printer, 'P', antrean);
     final pertama = transport.Kirim('rusak'.codeUnits);
     final kedua = transport.Kirim('lanjut'.codeUnits);
@@ -109,24 +97,14 @@ void main() {
     await pertama;
   });
 
-  test(
-    'Bungkus mempertahankan printer sistem sebagai TransportDokumen',
-    () async {
-      final antrean = _Antrean();
-      final sistem = _Sistem();
-      final bungkus = AntreanCetak.Bungkus(sistem, 'Sistem', antrean: antrean);
-      expect(bungkus, isA<TransportDokumen>());
-      await PrinterStruk(
-        bungkus,
-        LebarKertas.Mm58,
-      ).Cetak(const DokumenStruk([BarisTeks('Halo')]));
-      expect(sistem.dokumen, ['dokumen']);
-      final thermal = AntreanCetak.Bungkus(
-        _PrinterLambat(Duration.zero),
-        'T',
-        antrean: antrean,
-      );
-      expect(thermal, isNot(isA<TransportDokumen>()));
-    },
-  );
+  test('Bungkus mempertahankan printer sistem sebagai TransportDokumen', () async {
+    final antrean = _Antrean();
+    final sistem = _Sistem();
+    final bungkus = AntreanCetak.Bungkus(sistem, 'Sistem', antrean: antrean);
+    expect(bungkus, isA<TransportDokumen>());
+    await PrinterStruk(bungkus, LebarKertas.Mm58).Cetak(const DokumenStruk([BarisTeks('Halo')]));
+    expect(sistem.dokumen, ['dokumen']);
+    final thermal = AntreanCetak.Bungkus(_PrinterLambat(Duration.zero), 'T', antrean: antrean);
+    expect(thermal, isNot(isA<TransportDokumen>()));
+  });
 }

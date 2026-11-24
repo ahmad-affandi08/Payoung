@@ -36,20 +36,14 @@ class AntreanCetak {
         .timeout(batasPekerjaan, onTimeout: () {})
         .then<void>((_) => Future<void>.delayed(jedaAntarPekerjaan))
         .whenComplete(() {
-          if (identical(_ekor[kunci], ekor)) {
-            _ekor.remove(kunci);
-          }
+          _ekor.removeWhere((k, v) => k == kunci && identical(v, ekor));
         });
     _ekor[kunci] = ekor;
     return hasil;
   }
 
   /// Membungkus [dalam] supaya setiap kirimannya lewat antrean [kunci] (satu kunci = satu printer fisik).
-  static TransportPrinter Bungkus(
-    TransportPrinter dalam,
-    String kunci, {
-    AntreanCetak? antrean,
-  }) {
+  static TransportPrinter Bungkus(TransportPrinter dalam, String kunci, {AntreanCetak? antrean}) {
     final dipakai = antrean ?? bersama;
     return dalam is TransportDokumen
         ? TransportDokumenBerantre(dalam, kunci, dipakai)
@@ -66,23 +60,14 @@ class TransportBerantre implements TransportPrinter {
   final AntreanCetak antrean;
 
   @override
-  Future<void> Kirim(List<int> data) =>
-      antrean.Jalankan(kunci, () => dalam.Kirim(data));
+  Future<void> Kirim(List<int> data) => antrean.Jalankan(kunci, () => dalam.Kirim(data));
 }
 
 /// Versi untuk printer sistem: tetap [TransportDokumen] supaya [PrinterStruk] mengirim dokumen utuh.
-class TransportDokumenBerantre extends TransportBerantre
-    implements TransportDokumen {
-  TransportDokumenBerantre(
-    TransportDokumen super.dalam,
-    super.kunci,
-    super.antrean,
-  );
+class TransportDokumenBerantre extends TransportBerantre implements TransportDokumen {
+  TransportDokumenBerantre(TransportDokumen super.dalam, super.kunci, super.antrean);
 
   @override
   Future<void> CetakDokumen(DokumenStruk dokumen, LebarKertas lebar) =>
-      antrean.Jalankan(
-        kunci,
-        () => (dalam as TransportDokumen).CetakDokumen(dokumen, lebar),
-      );
+      antrean.Jalankan(kunci, () => (dalam as TransportDokumen).CetakDokumen(dokumen, lebar));
 }

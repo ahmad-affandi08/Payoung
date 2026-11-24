@@ -46,8 +46,7 @@ abstract final class PengodeEscPos {
     LebarKertas lebar, {
     int umpanAkhir = PerintahEscPos.umpanAkhirBawaan,
   }) {
-    final keluaran = BytesBuilder(copy: false)
-      ..add(PerintahEscPos.inisialisasi);
+    final keluaran = BytesBuilder(copy: false)..add(PerintahEscPos.inisialisasi);
     if (dokumen.bukaLaci) {
       keluaran.add(PerintahEscPos.bukaLaci);
     }
@@ -82,29 +81,19 @@ abstract final class PengodeEscPos {
   }
 
   /// Hanya pulsa laci (tombol "Buka laci" tanpa mencetak).
-  static Uint8List KodekanBukaLaci() => Uint8List.fromList([
-    ...PerintahEscPos.inisialisasi,
-    ...PerintahEscPos.bukaLaci,
-  ]);
+  static Uint8List KodekanBukaLaci() =>
+      Uint8List.fromList([...PerintahEscPos.inisialisasi, ...PerintahEscPos.bukaLaci]);
 
   /// QR sebagai gambar raster selebar kertas (QR di tengah, zona tenang 2 modul): jalan di semua printer ESC/POS
   /// yang bisa mencetak gambar `GS v 0`, termasuk yang tidak mengenal perintah QR bawaan. Ukuran modul mengecil
   /// otomatis bila QR terlalu lebar untuk kertas.
-  static List<int> KodekanQrRaster(
-    String data,
-    int ukuranModul,
-    LebarKertas lebar,
-  ) {
-    final qr = QrImage(
-      QrCode.fromData(data: data, errorCorrectLevel: QrErrorCorrectLevel.M),
-    );
+  static List<int> KodekanQrRaster(String data, int ukuranModul, LebarKertas lebar) {
+    final qr = QrImage(QrCode.fromData(data: data, errorCorrectLevel: QrErrorCorrectLevel.M));
     final jumlah = qr.moduleCount;
     const zonaTenang = 2;
     final modulMaksimal = lebar.titik ~/ (jumlah + 2 * zonaTenang);
     final modulDiminta = ukuranModul.clamp(1, 16);
-    final modul = modulMaksimal < 1
-        ? 1
-        : (modulDiminta > modulMaksimal ? modulMaksimal : modulDiminta);
+    final modul = modulMaksimal < 1 ? 1 : (modulDiminta > modulMaksimal ? modulMaksimal : modulDiminta);
     final sisi = (jumlah + 2 * zonaTenang) * modul;
     final lebarGambar = lebar.titik;
     final kiri = (lebarGambar - sisi) ~/ 2 < 0 ? 0 : (lebarGambar - sisi) ~/ 2;
@@ -116,10 +105,7 @@ abstract final class PengodeEscPos {
       }
       for (var x = 0; x < sisi; x++) {
         final kolom = x ~/ modul - zonaTenang;
-        if (kolom >= 0 &&
-            kolom < jumlah &&
-            qr.isDark(baris, kolom) &&
-            kiri + x < lebarGambar) {
+        if (kolom >= 0 && kolom < jumlah && qr.isDark(baris, kolom) && kiri + x < lebarGambar) {
           titik[y * lebarGambar + kiri + x] = 1;
         }
       }
@@ -135,17 +121,7 @@ abstract final class PengodeEscPos {
       ...[0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00],
       ...[0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, ukuranModul],
       ...[0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31],
-      ...[
-        0x1D,
-        0x28,
-        0x6B,
-        panjang & 0xFF,
-        panjang >> 8,
-        0x31,
-        0x50,
-        0x30,
-        ...isi,
-      ],
+      ...[0x1D, 0x28, 0x6B, panjang & 0xFF, panjang >> 8, 0x31, 0x50, 0x30, ...isi],
       ...[0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30],
     ];
   }
@@ -164,9 +140,7 @@ abstract final class PengodeEscPos {
     final lebarByte = (lebarTitik + 7) ~/ 8;
     final keluaran = <int>[];
     for (var awal = 0; awal < gambar.tinggi; awal += barisMaksimalPerBlok) {
-      final tinggiBlok = gambar.tinggi - awal < barisMaksimalPerBlok
-          ? gambar.tinggi - awal
-          : barisMaksimalPerBlok;
+      final tinggiBlok = gambar.tinggi - awal < barisMaksimalPerBlok ? gambar.tinggi - awal : barisMaksimalPerBlok;
       final data = Uint8List(lebarByte * tinggiBlok);
       for (var y = 0; y < tinggiBlok; y++) {
         for (var x = 0; x < lebarTitik; x++) {
@@ -177,12 +151,7 @@ abstract final class PengodeEscPos {
       }
       keluaran
         ..addAll([0x1D, 0x76, 0x30, 0x00])
-        ..addAll([
-          lebarByte & 0xFF,
-          lebarByte >> 8,
-          tinggiBlok & 0xFF,
-          tinggiBlok >> 8,
-        ])
+        ..addAll([lebarByte & 0xFF, lebarByte >> 8, tinggiBlok & 0xFF, tinggiBlok >> 8])
         ..addAll(data);
     }
     return keluaran;
