@@ -130,6 +130,36 @@ void main() {
     });
   }
 
+  testWidgets('QRIS dinamis: tombol Cek status sekarang langsung menanyakan server', (tester) async {
+    Map<String, Object?>? dibuat;
+    var cek = 0;
+    final u = await MasukJual(tester, const Size(1280, 900), (p) async {
+      if (p.url.path.endsWith('/batal')) {
+        return http.Response('', 204);
+      }
+      if (p.method == 'POST' && p.url.path.endsWith('/qris')) {
+        dibuat = jsonDecode(p.body) as Map<String, Object?>;
+        return Tagihan(dibuat!);
+      }
+      cek++;
+      return JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null});
+    });
+    await BukaBayarQris(tester, const Size(1280, 900));
+
+    // Nominal besar, status berupa kapsul, dan identitas tagihan tampil.
+    expect(find.text('Total tagihan'), findsOneWidget);
+    expect(find.text('Menunggu pembayaran'), findsOneWidget);
+    expect(find.text('PAYOUNG-QR-0001'), findsOneWidget);
+
+    final sebelum = cek;
+    await Ketuk(tester, find.widgetWithText(FilledButton, 'Cek status sekarang'));
+    expect(cek, greaterThan(sebelum), reason: 'Tombol harus memanggil status tanpa menunggu putaran berikutnya.');
+    expect(find.byType(DialogQrisDinamis), findsOneWidget, reason: 'Belum lunas: dialog tetap terbuka.');
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
+    expect(tester.takeException(), isNull);
+    await Lepas(tester, u);
+  });
+
   testWidgets('QRIS dinamis dibatalkan kasir → batal di server, tidak ada penjualan', (tester) async {
     Map<String, Object?>? dibuat;
     var batal = 0;
@@ -145,7 +175,7 @@ void main() {
       return JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null});
     });
     await BukaBayarQris(tester, const Size(1280, 900));
-    await Ketuk(tester, find.widgetWithText(TextButton, 'Batalkan QRIS'));
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
     expect(batal, 1);
     expect(find.byType(DialogQrisDinamis), findsNothing);
     expect(find.text('Pembayaran berhasil'), findsNothing);
@@ -172,7 +202,7 @@ void main() {
       return JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null});
     });
     await BukaBayarQris(tester, const Size(1280, 900));
-    await Ketuk(tester, find.widgetWithText(TextButton, 'Batalkan QRIS'));
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
     await Tunggu(tester);
     expect(find.text('Pembayaran berhasil'), findsOneWidget);
     final bayar =
@@ -187,7 +217,7 @@ void main() {
     await BukaBayarQris(tester, const Size(1280, 900));
     expect(find.textContaining('QRIS dinamis butuh internet'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Buat QRIS lagi'), findsOneWidget);
-    await Ketuk(tester, find.widgetWithText(TextButton, 'Tutup'));
+    await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Tutup'));
     expect(find.byType(DialogQrisDinamis), findsNothing);
     expect(await AmbilOutboxPenjualan(tester, u), isEmpty);
     await Lepas(tester, u);
