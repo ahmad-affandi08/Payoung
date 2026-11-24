@@ -12,6 +12,7 @@ import 'package:kasir/Tampilan/RuangKerja/RuangKerja.dart';
 import 'package:sistem_desain/SistemDesain.dart';
 
 import '../Pendukung/LingkunganUji.dart';
+import '../Pendukung/MuatFont.dart';
 import '../Pendukung/KatalogUji.dart';
 import '../Pendukung/PasangAplikasi.dart';
 
@@ -19,6 +20,9 @@ import '../Pendukung/PasangAplikasi.dart';
 /// penjualan tersimpan dengan referensi Uuid tagihan. Batal → tagihan dibatalkan di server, tidak ada penjualan.
 /// Offline → pesan jelas dan saran metode lain.
 void main() {
+  // Font sungguhan: lebar teks Lato menentukan apakah dialog muat tanpa digulir (font pengganti test jauh lebih lebar).
+  setUpAll(MuatFontMerek);
+
   Future<LingkunganUji> MasukJual(
     WidgetTester tester,
     Size ukuran,
@@ -163,6 +167,40 @@ void main() {
     expect(tester.takeException(), isNull);
     await Lepas(tester, u);
   });
+
+  // Dialog harus muat tanpa digulir di tablet mendatar (1280x800), jendela pendek, tablet tegak, dan HP.
+  for (final ukuran in const [Size(1280, 800), Size(1024, 720), Size(800, 1280), Size(360, 740)]) {
+    testWidgets('QRIS dinamis: dialog muat tanpa digulir (${ukuran.width.toInt()}x${ukuran.height.toInt()} dp)', (
+      tester,
+    ) async {
+      Map<String, Object?>? dibuat;
+      final u = await MasukJual(tester, ukuran, (p) async {
+        if (p.url.path.endsWith('/batal')) {
+          return http.Response('', 204);
+        }
+        if (p.method == 'POST' && p.url.path.endsWith('/qris')) {
+          dibuat = jsonDecode(p.body) as Map<String, Object?>;
+          return Tagihan(dibuat!);
+        }
+        return JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null});
+      });
+      await BukaBayarQris(tester, ukuran);
+
+      expect(find.byType(DialogQrisDinamis), findsOneWidget);
+      final gulir = find.descendant(of: find.byType(DialogQrisDinamis), matching: find.byType(Scrollable));
+      final posisi = tester.state<ScrollableState>(gulir.first).position;
+      expect(
+        posisi.maxScrollExtent,
+        0,
+        reason:
+            'Seluruh dialog QRIS (termasuk tombol) harus terlihat tanpa menggulir (lebih ${posisi.maxScrollExtent} dp).',
+      );
+      expect(find.widgetWithText(FilledButton, 'Cek status sekarang'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
+      await Lepas(tester, u);
+    });
+  }
 
   testWidgets('QRIS dinamis dibatalkan kasir → batal di server, tidak ada penjualan', (tester) async {
     Map<String, Object?>? dibuat;

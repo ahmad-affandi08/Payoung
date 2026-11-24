@@ -34,6 +34,10 @@ class DialogQrisDinamis extends ConsumerStatefulWidget {
 }
 
 class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
+  /// Jarak dialog ke tepi layar (total kiri+kanan dan atas+bawah), dipakai juga untuk menghitung ruang yang tersedia.
+  static const double _jarakTepiKiriKanan = 32;
+  static const double _jarakTepiAtasBawah = 48;
+
   TagihanQrisPos? _tagihan;
   String? _galat;
   bool _terputus = false;
@@ -211,99 +215,100 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
     final namaOutlet = ref.watch(penyediaIdentitas).value?.outlet;
     final menunggu = tagihan != null && !_selesaiTanpaBayar;
     final bisaUlang = _galat != null && (tagihan == null || _selesaiTanpaBayar);
-    final Widget isi;
-    if (tagihan == null && _galat == null) {
-      isi = const Padding(
-        padding: EdgeInsets.all(TokenJarak.jarak24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: TokenJarak.jarak12),
-            Text('Membuat QRIS…'),
-          ],
+    final ukuranLayar = MediaQuery.sizeOf(context);
+    // Tinggi dan lebar yang benar-benar bisa dipakai dialog (setelah jarak tepi dan keyboard layar).
+    final tinggiTersedia = ukuranLayar.height - MediaQuery.viewInsetsOf(context).bottom - _jarakTepiAtasBawah;
+    final lebarTersedia = ukuranLayar.width - _jarakTepiKiriKanan;
+    final tampilQr = tagihan != null && !_selesaiTanpaBayar;
+    // Layar lebar tetapi pendek (tablet mendatar, jendela Windows): QR di kiri, rincian dan tombol di kanan,
+    // supaya seluruh dialog muat tanpa digulir. Layar tinggi: satu kolom. HP pendek: satu kolom yang dipadatkan.
+    final duaKolom = tampilQr && lebarTersedia >= 640 && tinggiTersedia < 820;
+    final padat = tampilQr && !duaKolom && tinggiTersedia < 780;
+    final ukuranQr = (duaKolom ? tinggiTersedia - 200 : tinggiTersedia - (padat ? 525 : 630))
+        .clamp(150.0, 280.0)
+        .toDouble();
+
+    final Widget nominal = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Nominal jadi pusat perhatian: ini yang dicek pelanggan sebelum membayar.
+        Text(
+          'Total tagihan',
+          textAlign: TextAlign.center,
+          style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
         ),
+        const SizedBox(height: TokenJarak.jarak4),
+        Text(
+          widget.jumlah.FormatRupiah(),
+          textAlign: TextAlign.center,
+          style: teks.displaySmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+    Widget? kartuQr;
+    Widget? petunjuk;
+    Widget? stripCaraBayar;
+    Widget? sisaWaktu;
+    if (tagihan != null && tampilQr) {
+      kartuQr = _KartuQr(
+        data: tagihan.isiQr,
+        label: 'Kode QRIS ${widget.jumlah.FormatRupiah()}',
+        judul: tagihan.halamanBayar ? 'Halaman bayar' : 'QRIS',
+        namaOutlet: namaOutlet,
+        ukuranMaks: ukuranQr,
       );
-    } else {
-      isi = Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Nominal jadi pusat perhatian: ini yang dicek pelanggan sebelum membayar.
-          Text(
-            'Total tagihan',
-            textAlign: TextAlign.center,
-            style: teks.bodyMedium?.copyWith(color: warna.teksSekunder),
-          ),
-          const SizedBox(height: TokenJarak.jarak4),
-          Text(
-            widget.jumlah.FormatRupiah(),
-            textAlign: TextAlign.center,
-            style: teks.displaySmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-          if (tagihan != null && !_selesaiTanpaBayar) ...[
-            const SizedBox(height: TokenJarak.jarak12),
-            Center(child: _ChipStatus(terputus: _terputus)),
-            const SizedBox(height: TokenJarak.jarak16),
-            _KartuQr(
-              data: tagihan.isiQr,
-              label: 'Kode QRIS ${widget.jumlah.FormatRupiah()}',
-              judul: tagihan.halamanBayar ? 'Halaman bayar' : 'QRIS',
-              namaOutlet: namaOutlet,
-            ),
-            const SizedBox(height: TokenJarak.jarak12),
-            Text(
-              tagihan.halamanBayar
-                  ? 'Minta pelanggan memindai kode untuk membuka halaman bayar.'
-                  : 'Minta pelanggan memindai dengan aplikasi bank atau e-wallet mana pun.',
-              textAlign: TextAlign.center,
-              style: teks.bodyMedium,
-            ),
-            if (!tagihan.halamanBayar) ...[const SizedBox(height: TokenJarak.jarak12), const _StripCaraBayar()],
-            if (tagihan.kedaluwarsaPada case final kedaluwarsa?) ...[
-              const SizedBox(height: TokenJarak.jarak12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      petunjuk = Text(
+        tagihan.halamanBayar
+            ? 'Minta pelanggan memindai kode untuk membuka halaman bayar.'
+            : 'Minta pelanggan memindai dengan aplikasi bank atau e-wallet mana pun.',
+        textAlign: TextAlign.center,
+        style: teks.bodyMedium,
+      );
+      if (!tagihan.halamanBayar && !padat) {
+        stripCaraBayar = const _StripCaraBayar();
+      }
+      if (tagihan.kedaluwarsaPada case final kedaluwarsa?) {
+        sisaWaktu = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _CincinWaktu(sisa: _SisaPecahan(kedaluwarsa), warnaBusur: warna.aksen, warnaLatar: warna.brandTint),
+            const SizedBox(width: TokenJarak.jarak12),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _CincinWaktu(sisa: _SisaPecahan(kedaluwarsa), warnaBusur: warna.aksen, warnaLatar: warna.brandTint),
-                  const SizedBox(width: TokenJarak.jarak12),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Berlaku ${_SisaWaktu(kedaluwarsa)} lagi',
-                          style: teks.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        Text(
-                          'Setelah waktu habis, buat QRIS baru.',
-                          style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
-                        ),
-                      ],
+                  Text(
+                    'Berlaku ${_SisaWaktu(kedaluwarsa)} lagi',
+                    style: teks.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
+                  ),
+                  Text(
+                    'Setelah waktu habis, buat QRIS baru.',
+                    style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
                   ),
                 ],
               ),
-            ],
-          ],
-          if (_galat != null)
-            Padding(
-              padding: const EdgeInsets.only(top: TokenJarak.jarak12),
-              child: Text(
-                _galat!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: warna.bahaya),
-              ),
             ),
-        ],
-      );
+          ],
+        );
+      }
     }
+    final Widget? teksGalat = _galat == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(top: TokenJarak.jarak12),
+            child: Text(
+              _galat!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: warna.bahaya),
+            ),
+          );
     final tombolBatal = OutlinedButton(
       onPressed: _membatalkan ? null : _Batalkan,
       child: Text(_membatalkan ? 'Membatalkan…' : (tagihan == null || _selesaiTanpaBayar ? 'Tutup' : 'Batalkan QRIS')),
@@ -316,55 +321,125 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
                   child: Text(_mengecekManual ? 'Memeriksa…' : 'Cek status sekarang'),
                 )
               : null);
-    return PopScope(
-      canPop: false,
-      child: Dialog(
-        backgroundColor: warna.permukaan,
-        insetPadding: const EdgeInsets.symmetric(horizontal: TokenJarak.jarak16, vertical: TokenJarak.jarak24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKartu)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(TokenJarak.jarak24),
+    final Widget barisTombol = Row(
+      children: [
+        Expanded(
+          flex: tombolUtama == null ? 1 : 2,
+          child: SizedBox(height: 52, child: tombolBatal),
+        ),
+        if (tombolUtama != null) ...[
+          const SizedBox(width: TokenJarak.jarak12),
+          Expanded(flex: 3, child: SizedBox(height: 52, child: tombolUtama)),
+        ],
+      ],
+    );
+    final Widget? kodeReferensi = tagihan != null && !_selesaiTanpaBayar && !padat
+        ? Center(
+            child: TeksKode(tagihan.nomorPesanan, gaya: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
+          )
+        : null;
+
+    final Widget judulDialog = Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Expanded(child: Text('Bayar dengan ${widget.metode.Nama}', style: teks.titleLarge)),
+        if (namaOutlet != null && namaOutlet.isNotEmpty)
+          Flexible(
+            child: Text(
+              namaOutlet,
+              overflow: TextOverflow.ellipsis,
+              style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
+            ),
+          ),
+      ],
+    );
+
+    final Widget badan;
+    if (duaKolom) {
+      badan = Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: ukuranQr + 36, child: kartuQr),
+          const SizedBox(width: TokenJarak.jarak24),
+          Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Expanded(child: Text('Bayar dengan ${widget.metode.Nama}', style: teks.titleLarge)),
-                    if (namaOutlet != null && namaOutlet.isNotEmpty)
-                      Flexible(
-                        child: Text(
-                          namaOutlet,
-                          overflow: TextOverflow.ellipsis,
-                          style: teks.bodySmall?.copyWith(color: warna.teksSekunder),
-                        ),
-                      ),
-                  ],
-                ),
+                nominal,
+                const SizedBox(height: TokenJarak.jarak12),
+                Center(child: _ChipStatus(terputus: _terputus)),
+                const SizedBox(height: TokenJarak.jarak12),
+                ?petunjuk,
+                if (stripCaraBayar != null) ...[const SizedBox(height: TokenJarak.jarak12), stripCaraBayar],
+                if (sisaWaktu != null) ...[const SizedBox(height: TokenJarak.jarak12), sisaWaktu],
+                ?teksGalat,
                 const SizedBox(height: TokenJarak.jarak16),
-                isi,
-                const SizedBox(height: TokenJarak.jarak16),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: tombolUtama == null ? 1 : 2,
-                      child: SizedBox(height: 52, child: tombolBatal),
-                    ),
-                    if (tombolUtama != null) ...[
-                      const SizedBox(width: TokenJarak.jarak12),
-                      Expanded(flex: 3, child: SizedBox(height: 52, child: tombolUtama)),
-                    ],
-                  ],
-                ),
-                if (tagihan != null && !_selesaiTanpaBayar) ...[
-                  const SizedBox(height: TokenJarak.jarak12),
-                  Center(
-                    child: TeksKode(tagihan.nomorPesanan, gaya: teks.bodySmall?.copyWith(color: warna.teksSekunder)),
-                  ),
+                barisTombol,
+                if (kodeReferensi != null) ...[const SizedBox(height: TokenJarak.jarak12), kodeReferensi],
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (tagihan == null && _galat == null) {
+      badan = const Padding(
+        padding: EdgeInsets.all(TokenJarak.jarak24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: TokenJarak.jarak12),
+            Text('Membuat QRIS…'),
+          ],
+        ),
+      );
+    } else {
+      final jarak = padat ? TokenJarak.jarak8 : TokenJarak.jarak12;
+      badan = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          nominal,
+          if (kartuQr != null) ...[
+            SizedBox(height: jarak),
+            Center(child: _ChipStatus(terputus: _terputus)),
+            SizedBox(height: padat ? TokenJarak.jarak12 : TokenJarak.jarak16),
+            kartuQr,
+            SizedBox(height: jarak),
+            ?petunjuk,
+            if (stripCaraBayar != null) ...[SizedBox(height: jarak), stripCaraBayar],
+            if (sisaWaktu != null) ...[SizedBox(height: jarak), sisaWaktu],
+          ],
+          ?teksGalat,
+        ],
+      );
+    }
+    return PopScope(
+      canPop: false,
+      child: Dialog(
+        backgroundColor: warna.permukaan,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: _jarakTepiKiriKanan / 2,
+          vertical: _jarakTepiAtasBawah / 2,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TokenJarak.radiusKartu)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: duaKolom ? 760 : 520),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(padat ? TokenJarak.jarak16 : TokenJarak.jarak24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                judulDialog,
+                SizedBox(height: padat ? TokenJarak.jarak8 : TokenJarak.jarak16),
+                badan,
+                if (!duaKolom) ...[
+                  SizedBox(height: padat ? TokenJarak.jarak12 : TokenJarak.jarak16),
+                  barisTombol,
+                  if (kodeReferensi != null) ...[const SizedBox(height: TokenJarak.jarak12), kodeReferensi],
                 ],
               ],
             ),
@@ -421,12 +496,21 @@ class _ChipStatus extends StatelessWidget {
 
 /// Kartu putih berpinggir berisi QR, label jenis kode, dan nama toko (identitas yang membuat QR terlihat resmi).
 class _KartuQr extends StatelessWidget {
-  const _KartuQr({required this.data, required this.label, required this.judul, this.namaOutlet});
+  const _KartuQr({
+    required this.data,
+    required this.label,
+    required this.judul,
+    this.namaOutlet,
+    this.ukuranMaks = 280,
+  });
 
   final String data;
   final String label;
   final String judul;
   final String? namaOutlet;
+
+  /// Sisi terbesar QR; mengecil di layar pendek agar dialog muat tanpa digulir.
+  final double ukuranMaks;
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +525,7 @@ class _KartuQr extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (konteks, batas) {
-          final ukuran = batas.maxWidth.clamp(160.0, 280.0).toDouble();
+          final ukuran = batas.maxWidth.clamp(120.0, ukuranMaks).toDouble();
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
