@@ -161,8 +161,9 @@ final class AdaptorDokuSnap extends AdaptorDasar
 
     /**
      * Notifikasi = pemicu. Nomor pesanan diambil dari badan, lalu status dan jumlahnya ditanyakan ke DOKU. Badan tanpa
-     * nomor pesanan Payoung = null (dijawab "tidak dikenali"). Pertanyaan yang gagal dijawab = `Menunggu` (tidak ada
-     * yang berubah; rekonsiliasi terjadwal dan polling kasir menjadi jaring pengaman).
+     * nomor pesanan Payoung = null (dijawab "tidak dikenali"). Pertanyaan yang gagal dijawab = `Menunggu` bertanda
+     * `belumTerkonfirmasi`: penerima menanyakan ulang dengan id transaksi tersimpan, dan bila masih gagal menjawab 503
+     * supaya DOKU mengirim ulang (rekonsiliasi terjadwal tetap jaring pengaman terakhir).
      */
     public function UraiWebhook(Request $permintaan): ?HasilWebhook
     {
@@ -177,10 +178,17 @@ final class AdaptorDokuSnap extends AdaptorDasar
         try {
             $hasil = $this->TanyaStatus($cocok[0], $idReferensi);
         } catch (GalatGerbang) {
-            return new HasilWebhook($cocok[0], StatusPembayaranGerbang::Menunggu);
+            // Status belum bisa dipastikan sekarang. Ditandai agar penerima menanyakan ulang memakai id transaksi
+            // yang tersimpan, atau menjawab agar DOKU mengirim ulang, bukan menganggapnya "tidak ada kabar".
+            return new HasilWebhook(
+                $cocok[0],
+                StatusPembayaranGerbang::Menunggu,
+                idReferensi: $idReferensi !== '' ? $idReferensi : null,
+                belumTerkonfirmasi: true,
+            );
         }
 
-        return new HasilWebhook($cocok[0], $hasil['Status'], $hasil['Jumlah']);
+        return new HasilWebhook($cocok[0], $hasil['Status'], $hasil['Jumlah'], $idReferensi !== '' ? $idReferensi : null);
     }
 
     /**

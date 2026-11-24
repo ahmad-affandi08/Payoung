@@ -83,6 +83,16 @@ describe('back-office /kelola', function (): void {
         $masuk()->get('/kelola/pembelian/pesanan/buat')->assertRedirect('/kelola')->assertSessionHasErrors('Umum');
     });
 
+    it('deposit pelanggan dari back-office ditolak di paket tanpa fitur pelanggan.deposit (tidak ada jurnal deposit)', function (): void {
+        $t = TenantPaketUji('STARTER', 'Warung Deposit Delanggu');
+        $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);
+        $uuid = '01K5MTD0000000000000000099';
+
+        $masuk()->post("/kelola/pelanggan/{$uuid}/deposit/sesuaikan", ['Jumlah' => '500000'])->assertSessionHasErrors('Umum');
+        $masuk()->post("/kelola/pelanggan/{$uuid}/deposit/tarik", ['Jumlah' => '1000'])->assertSessionHasErrors('Umum');
+        $masuk()->post("/kelola/pelanggan/isi-deposit/{$uuid}/batal", [])->assertSessionHasErrors('Umum');
+    });
+
     it('fitur yang halamannya sendiri adalah fitur (akuntansi, laporan lengkap) ditutup seluruhnya; JSON mendapat 403 FiturTidakAktif', function (): void {
         $t = TenantPaketUji('STARTER', 'Warung Sedap Klaten');
         $masuk = fn () => BantuanOrganisasi::Masuk($this, $t['Pemilik'], $t['Tenant']->Id);

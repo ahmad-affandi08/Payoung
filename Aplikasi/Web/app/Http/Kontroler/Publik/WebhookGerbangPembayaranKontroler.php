@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Kontroler\Publik;
 
+use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\Layanan\PencariGerbangWebhook;
 use App\Domain\Integrasi\Snap\PenerbitTokenSnap;
 use App\Domain\Penjualan\Aksi\TerimaNotifikasiQris;
@@ -53,11 +54,18 @@ final class WebhookGerbangPembayaranKontroler extends Kontroler
             return GalatApi::Buat('NotifikasiTidakDikenal', 'Isi notifikasi tidak memuat nomor pesanan yang dikenal.', 400);
         }
 
+        try {
+            $diterima = $terima->Jalankan($notifikasi, $gerbang->gerbang->AmbilKode(), $gerbang->idTenant, $gerbang->gerbang);
+        } catch (GalatGerbang) {
+            // Status belum bisa dipastikan: bukan 2xx supaya gerbang mengirim ulang, bukan menganggap pembayaran tidak ada.
+            return response()->json(['responseCode' => '5035200', 'responseMessage' => 'Service Unavailable'], 503);
+        }
+
         // Jawaban bentuk SNAP (kode 200 + layanan QRIS 52 + kasus 00) ditambah `Diterima` untuk pemakai kita sendiri.
         return response()->json([
             'responseCode' => '2005200',
             'responseMessage' => 'Successful',
-            'Diterima' => $terima->Jalankan($notifikasi, $gerbang->gerbang->AmbilKode(), $gerbang->idTenant),
+            'Diterima' => $diterima,
         ]);
     }
 }

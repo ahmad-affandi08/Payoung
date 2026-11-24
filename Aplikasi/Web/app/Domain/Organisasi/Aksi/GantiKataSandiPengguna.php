@@ -7,11 +7,13 @@ namespace App\Domain\Organisasi\Aksi;
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Organisasi\Model\Pengguna;
+use App\Domain\Organisasi\Model\TokenAksesPengguna;
 use Illuminate\Support\Facades\Hash;
 
 /**
  * D-22: pengguna tenant mengganti kata sandinya sendiri. Wajib bila kata sandi awal dibuat admin
- * (`WajibGantiKataSandi`), boleh kapan saja. Sesi lain akun ini otomatis keluar (AuthenticateSession, BR-00.9).
+ * (`WajibGantiKataSandi`), boleh kapan saja. Sesi web lain akun ini otomatis keluar (AuthenticateSession, BR-00.9) dan
+ * token Aplikasi Owner dicabut.
  */
 final class GantiKataSandiPengguna
 {
@@ -30,6 +32,9 @@ final class GantiKataSandiPengguna
 
         $wajib = $pengguna->WajibGantiKataSandi;
         $pengguna->forceFill(['KataSandi' => $kataSandiBaru, 'WajibGantiKataSandi' => false, 'KataSandiOtomatis' => false])->save();
+        // OWN-01: token Aplikasi Owner ikut dicabut seperti pada atur ulang lewat email. Token yang dicuri tidak boleh
+        // bertahan sampai 30 hari hanya karena pemiliknya sudah mengganti kata sandi.
+        TokenAksesPengguna::query()->where('IdPengguna', $pengguna->Id)->whereNull('DicabutPada')->update(['DicabutPada' => now()]);
 
         $this->audit->CatatSesi('pengguna.ganti-kata-sandi', $idTenant, $pengguna->Id, $ip, $agenPengguna, ['Wajib' => $wajib]);
     }

@@ -359,6 +359,7 @@
 | D-323 | Agent, 24/11/2026: persen hemat yang tampil di pilihan lama langganan adalah selisih sebenarnya terhadap 12 × harga bulanan, termasuk saat harga ditentukan harga tahunan katalog. Aturan harga D-249 dan jumlah tagihan tidak berubah. |
 | D-324 | Agent, 24/11/2026: dialog Bayar dengan QRIS kasir tidak boleh membutuhkan gulir di ukuran layar kasir yang lazim. Tata letak menyesuaikan ruang tersedia (dua kolom di layar lebar pendek, QR mengecil di HP pendek), gulir hanya pengaman. |
 | D-325 | Agent, 24/11/2026 (atas permintaan pemilik produk): dialog Bayar dengan QRIS kasir tidak menampilkan nama toko. |
+| D-326 | Agent, 24/11/2026 (atas permintaan pemilik produk memindai bug): perbaikan hasil pemindaian bug sebagaimana v7.165. Perubahan kontrak: `Widget.AntiFraud` pada props Beranda boleh null, dan webhook QRIS tenant dapat menjawab 503 (`5035200`) saat status tidak bisa dipastikan. Temuan yang menyangkut izin peran atau perilaku bisnis (izin gaji Manajer Outlet, refund naik paket, turun paket ke Gratis saat tertunggak, butir Kotak Tindakan uang QRIS yatim) tidak diputuskan sendiri dan dicatat sebagai pertanyaan. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

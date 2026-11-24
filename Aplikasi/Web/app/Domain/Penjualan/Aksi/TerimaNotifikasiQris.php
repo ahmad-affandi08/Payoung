@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Penjualan\Aksi;
 
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
+use App\Domain\Integrasi\GerbangPembayaran\GerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\HasilWebhook;
+use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
+use App\Domain\Penjualan\Enum\StatusTagihanQris;
 use App\Domain\Penjualan\Layanan\NomorPesananQris;
 use App\Domain\Penjualan\Layanan\PenerapStatusTagihanQris;
 use App\Domain\Penjualan\Model\TagihanQris;
@@ -28,7 +32,12 @@ final class TerimaNotifikasiQris
         private readonly PenerapStatusTagihanQris $penerap,
     ) {}
 
-    public function Jalankan(HasilWebhook $notifikasi, string $kodePenyedia, int $idTenantWebhook): bool
+    /**
+     * @param  GerbangPembayaran|null  $gerbang  dipakai menanyakan ulang status bila penyedia belum bisa memastikannya saat notifikasi tiba
+     *
+     * @throws GalatGerbang bila status tetap tidak bisa dipastikan: pemanggil menjawab 503 supaya gerbang mengirim ulang
+     */
+    public function Jalankan(HasilWebhook $notifikasi, string $kodePenyedia, int $idTenantWebhook, ?GerbangPembayaran $gerbang = null): bool
     {
         $nomor = NomorPesananQris::Urai($notifikasi->nomorPesanan);
 
@@ -50,12 +59,41 @@ final class TerimaNotifikasiQris
                 return $this->Abaikan($notifikasi, $kodePenyedia, $tagihan === null ? 'tagihan tidak ditemukan' : 'penyedia berbeda');
             }
 
+            if ($notifikasi->belumTerkonfirmasi) {
+                return $this->TanyakanUlang($tagihan, $gerbang, $kodePenyedia);
+            }
+
             $this->penerap->Terapkan($tagihan->Id, $notifikasi->status, $notifikasi->jumlah, "Webhook {$kodePenyedia}");
 
             return true;
         } finally {
             $konteksLama === null ? $this->konteks->Kosongkan() : $this->konteks->Atur($konteksLama);
         }
+    }
+
+    /**
+     * Penyedia gagal memastikan status saat notifikasi. Tagihan yang sudah selesai tidak perlu ditanya lagi. Selain itu
+     * ditanyakan ulang dengan id transaksi yang tersimpan di tagihan (notifikasi sering tidak membawanya).
+     *
+     * @throws GalatGerbang
+     */
+    private function TanyakanUlang(TagihanQris $tagihan, ?GerbangPembayaran $gerbang, string $kodePenyedia): bool
+    {
+        if ($tagihan->Status !== StatusTagihanQris::Menunggu) {
+            return true;
+        }
+
+        if ($gerbang === null) {
+            throw new GalatGerbang('Status QRIS belum bisa dipastikan.', tidakPasti: true);
+        }
+
+        $status = $gerbang->CekStatus($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
+
+        if ($status !== StatusPembayaranGerbang::Menunggu) {
+            $this->penerap->Terapkan($tagihan->Id, $status, null, "Webhook {$kodePenyedia}");
+        }
+
+        return true;
     }
 
     private function Abaikan(HasilWebhook $notifikasi, string $kodePenyedia, string $alasan): bool

@@ -9,6 +9,7 @@ use App\Domain\Penjualan\Data\DataPenjualanPos;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Enum\KodeAlasanTinjauan;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
+use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use App\Domain\Penjualan\Model\MetodePembayaran;
 use App\Domain\Penjualan\Model\TagihanQris;
 
@@ -41,7 +42,7 @@ final class PenautTagihanQrisPenjualan
             }
 
             $referensi = $bayar->referensi === null ? '' : strtoupper(trim($bayar->referensi));
-            $tagihan = $referensi === '' ? null : TagihanQris::query()->where('Uuid', $referensi)->where('IsiQr', '!=', '')->lockForUpdate()->first();
+            $tagihan = $referensi === '' ? null : TagihanQris::query()->where('Uuid', $referensi)->where('Sumber', SumberTagihanQris::Pos)->where('IsiQr', '!=', '')->lockForUpdate()->first();
 
             if ($tagihan === null) {
                 $masalah[KodeAlasanTinjauan::QrisDinamisTidakDikenal->value][] = "pembayaran {$bayar->jumlah->FormatRupiah()} tanpa tagihan QRIS yang dikenal server";

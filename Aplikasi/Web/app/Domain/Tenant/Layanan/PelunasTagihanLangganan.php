@@ -12,6 +12,7 @@ use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\HargaPaketBerlaku;
 use App\Domain\Tenant\Model\Langganan;
 use App\Domain\Tenant\Model\LanggananAddon;
 use App\Domain\Tenant\Model\PembayaranLangganan;
@@ -127,7 +128,7 @@ final class PelunasTagihanLangganan
             'DibayarPada' => $sekarang,
             'PeriodeMulai' => $periode['Mulai'],
             'PeriodeSelesai' => $periode['Selesai'],
-            'MulaiLanggananPaket' => ($mulaiPaket ?? $periode['Mulai'])->toDateString(),
+            'MulaiLanggananPaket' => HargaPaketBerlaku::TanggalWib($mulaiPaket ?? $periode['Mulai']),
         ]);
 
         $langganan->update([

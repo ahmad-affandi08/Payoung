@@ -46,10 +46,11 @@ final class DasborPemilik
      * @param  CarbonImmutable|null  $dari  awal periode; null = hari ini
      * @param  CarbonImmutable|null  $sampai  akhir periode; null = hari ini
      * @param  list<int>|null  $idOutletBoleh
-     * @param  bool  $bolehKomisi  widget komisi staf hanya untuk pemegang `karyawan.lihat`
+     * @param  bool  $bolehKomisi  widget komisi staf hanya untuk pemegang `karyawan.lihat` di paket yang memuat komisi
+     * @param  bool  $bolehAntiFraud  widget anti-fraud hanya untuk paket yang memuat fitur anti-fraud
      * @return array<string, mixed>
      */
-    public function Ambil(CarbonImmutable $hariIni, ?array $idOutletBoleh, bool $bolehStok, ?CarbonImmutable $dari = null, ?CarbonImmutable $sampai = null, bool $bolehKomisi = false): array
+    public function Ambil(CarbonImmutable $hariIni, ?array $idOutletBoleh, bool $bolehStok, ?CarbonImmutable $dari = null, ?CarbonImmutable $sampai = null, bool $bolehKomisi = false, bool $bolehAntiFraud = true): array
     {
         // Semua tanggal disamakan ke tengah malam zona bawaan aplikasi: zona `$hariIni` (tanggal bisnis outlet) bisa berbeda
         // dari zona tanggal query, dan selisih hari antar-zona akan meleset sehari.
@@ -117,7 +118,7 @@ final class DasborPemilik
                 'Bersih' => ($perOutlet[(string) $o['Id']]['Agregat'] ?? DataAgregatPenjualan::Nol())->Bersih()->KeString(),
                 'JumlahTransaksi' => ($perOutlet[(string) $o['Id']]['Agregat'] ?? DataAgregatPenjualan::Nol())->jumlahTransaksi,
             ], $outlet),
-            'Widget' => $this->widget->Ambil($saringPeriode, $idOutletBoleh, $bolehKomisi),
+            'Widget' => $this->widget->Ambil($saringPeriode, $idOutletBoleh, $bolehKomisi, $bolehAntiFraud),
             'StokKritis' => $bolehStok ? $this->laporanStok->StokKritis($idOutletBoleh, batas: 5) : null,
             'Shift' => [
                 'JumlahTerbuka' => $shift['JumlahTerbuka'],

@@ -63,6 +63,33 @@ it('Fonnte, Wablas, StarSender, Watzap: kirim teks sesuai format tiap penyedia',
     Http::assertSent(fn (PermintaanHttp $r) => str_contains($r->url(), 'watzap') && $r['number_key'] === 'nk' && $r['phone_no'] === '62812345');
 });
 
+it('Wablas: domain buatan tenant yang menunjuk ke jaringan dalam ditolak tanpa permintaan keluar (SSRF)', function (string $domain): void {
+    Http::fake();
+    $pengirim = Pengirim('Wablas', ['Domain' => $domain], ['Token' => 'tw']);
+
+    $kirim = $pengirim->Kirim(new PesanWhatsapp('0812345', 'x'));
+    $uji = $pengirim->UjiKoneksi();
+
+    expect($kirim->berhasil)->toBeFalse()->and($uji->berhasil)->toBeFalse();
+    Http::assertNothingSent();
+})->with([
+    'metadata awan' => ['http://169.254.169.254'],
+    'localhost' => ['https://localhost'],
+    'jaringan privat' => ['https://10.0.0.5'],
+    'tanpa https' => ['http://jkt.wablas.com'],
+    'bukan domain wablas, alamat IP privat' => ['https://192.168.1.10'],
+    'kredensial di URL' => ['https://user:kunci@jkt.wablas.com'],
+]);
+
+it('Wablas: domain resmi wablas.com tidak mengikuti pengalihan', function (): void {
+    Http::fake(['jkt.wablas.com/api/send-message' => Http::response('', 302, ['Location' => 'http://169.254.169.254/'])]);
+
+    $hasil = Pengirim('Wablas', ['Domain' => 'https://jkt.wablas.com'], ['Token' => 'tw'])->Kirim(new PesanWhatsapp('0812345', 'x'));
+
+    expect($hasil->berhasil)->toBeFalse();
+    Http::assertSentCount(1);
+});
+
 it('kegagalan dikembalikan sebagai hasil, kredensial tidak ikut dalam pesan', function (): void {
     Http::fake(['api.fonnte.com/send' => Http::response(['status' => false, 'reason' => 'invalid token tf-rahasia'])]);
     $hasil = Pengirim('Fonnte', [], ['Token' => 'tf-rahasia'])->Kirim(new PesanWhatsapp('0812', 'x'));

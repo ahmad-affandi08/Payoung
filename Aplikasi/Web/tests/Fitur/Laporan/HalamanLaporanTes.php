@@ -22,6 +22,7 @@ use Tests\Pendukung\PanduanAwal\BantuanPanduanAwal;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
 use Tests\Pendukung\Persediaan\BantuanStokAwal;
+use Tests\Pendukung\Tenant\BantuanFitur;
 use Tests\Pendukung\Tenant\BantuanPendaftaran;
 
 beforeEach(function (): void {
@@ -167,6 +168,8 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
 
     it('D-203 widget Ringkasan cepat: peringkat kasir, kategori, jenis pesanan, metode bayar mengikuti periode. Anti-fraud diringkas. Komisi tanpa data = nol', function (): void {
         $d = BantuanLaporan::SiapkanDataPenjualan($this);
+        // Anti-fraud dan komisi adalah fitur paket: widgetnya baru berisi di paket yang memuatnya.
+        BantuanFitur::PindahPaket($d['Tenant']->Id, 'BISNIS');
 
         BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
         $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
@@ -177,6 +180,24 @@ describe('F-14a dasbor pemilik di beranda /kelola', function (): void {
             ->has('Dasbor.Widget.MetodeBayar.Baris')
             ->whereType('Dasbor.Widget.AntiFraud.Tingkat', 'string')
             ->whereType('Dasbor.Widget.AntiFraud.SkorTertinggi', 'integer')
+            ->where('Dasbor.Widget.Komisi', ['Total' => '0.00', 'Jumlah' => 0, 'Baris' => []]));
+    });
+});
+
+describe('Beranda: widget anti-fraud dan komisi mengikuti fitur paket', function (): void {
+    it('Starter: data anti-fraud dan komisi tidak ikut terkirim, Bisnis: terkirim. Widget lain tetap', function (): void {
+        $d = BantuanLaporan::SiapkanDataPenjualan($this);
+        BantuanPersediaan::MasukSebagai($this, $d['Tenant']->Id);
+
+        BantuanFitur::PindahPaket($d['Tenant']->Id, 'STARTER');
+        $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->where('Dasbor.Widget.AntiFraud', null)
+            ->where('Dasbor.Widget.Komisi', null)
+            ->where('Dasbor.Widget.Kasir.Total', '83150.00'));
+
+        BantuanFitur::PindahPaket($d['Tenant']->Id, 'BISNIS');
+        $this->get('/kelola')->assertOk()->assertInertia(fn (AssertableInertia $h) => $h
+            ->whereType('Dasbor.Widget.AntiFraud.Tingkat', 'string')
             ->where('Dasbor.Widget.Komisi', ['Total' => '0.00', 'Jumlah' => 0, 'Baris' => []]));
     });
 });

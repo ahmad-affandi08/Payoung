@@ -72,6 +72,11 @@ function WidgetMetode({ data, tautan }: { data: DasborPemilik; tautan: string })
 
 function WidgetAntiFraud({ data, tautan }: { data: DasborPemilik; tautan: string }) {
     const a = data.Widget.AntiFraud;
+
+    if (a === null) {
+        return null;
+    }
+
     const indikator: { label: string; nilai: string; perhatian: boolean }[] = [
         { label: 'Void tunai cepat', nilai: `${String(a.VoidCepatTunai)} kali`, perhatian: a.VoidCepatTunai > 0 },
         { label: 'Transaksi didiskon', nilai: `${String(a.JumlahBerdiskon)} kali`, perhatian: false },
@@ -277,6 +282,7 @@ function WidgetKosong(kode: KodeWidget, data: DasborPemilik): boolean {
             const a = w.AntiFraud;
 
             return (
+                a === null ||
                 a.NamaKasirTertinggi === '' &&
                 a.VoidCepatTunai === 0 &&
                 a.JumlahBerdiskon === 0 &&
@@ -300,7 +306,10 @@ export default function RingkasanCepat({ data, judulTerlaris }: { data: DasborPe
     const { Periode: periode, Widget: w } = data;
     const tautan = `/kelola/laporan/penjualan?dari=${periode.Dari}&sampai=${periode.Sampai}`;
     const tersedia: KodeWidget[] = DAFTAR_WIDGET.map((d) => d.Kode).filter(
-        (kode) => !(kode === 'komisi' && w.Komisi === null) && !(kode === 'stok' && data.StokKritis === null),
+        (kode) =>
+            !(kode === 'komisi' && w.Komisi === null) &&
+            !(kode === 'antifraud' && w.AntiFraud === null) &&
+            !(kode === 'stok' && data.StokKritis === null),
     );
     const berisi = tersedia.filter((kode) => !tersembunyi.includes(kode) && !WidgetKosong(kode, data));
     const aktif: KodeWidget | null = pilihan !== null && berisi.includes(pilihan) ? pilihan : (berisi[0] ?? null);

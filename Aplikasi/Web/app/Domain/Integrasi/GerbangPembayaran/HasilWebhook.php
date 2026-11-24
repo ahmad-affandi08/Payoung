@@ -14,5 +14,7 @@ final readonly class HasilWebhook
         public StatusPembayaranGerbang $status,
         public ?string $jumlah = null,
         public ?string $idReferensi = null,
+        /** Penyedia tidak bisa memastikan status saat notifikasi tiba: penerima harus menanyakannya lagi atau meminta kirim ulang. */
+        public bool $belumTerkonfirmasi = false,
     ) {}
 }

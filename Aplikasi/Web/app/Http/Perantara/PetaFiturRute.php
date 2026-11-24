@@ -62,6 +62,8 @@ final class PetaFiturRute
         ['Pola' => 'kelola.pelanggan.pulihkan', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
         ['Pola' => 'kelola.pelanggan.massal', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
         ['Pola' => 'kelola.pelanggan.gift-card.*', 'Fitur' => 'pelanggan.deposit', 'Mode' => 'tulis', 'Nama' => 'Deposit & gift card'],
+        ['Pola' => 'kelola.pelanggan.deposit.*', 'Fitur' => 'pelanggan.deposit', 'Mode' => 'tulis', 'Nama' => 'Deposit & gift card'],
+        ['Pola' => 'kelola.pelanggan.isi-deposit.batal', 'Fitur' => 'pelanggan.deposit', 'Mode' => 'tulis', 'Nama' => 'Deposit & gift card'],
         ['Pola' => 'kelola.pelanggan.impor.*', 'Fitur' => 'pelanggan.dasar', 'Mode' => 'tulis', 'Nama' => 'Data pelanggan'],
 
         // D-259: halaman lanjutan yang dulu terbuka untuk semua paket. Rekonsiliasi bank dan giro sekelas jurnal & aset tetap

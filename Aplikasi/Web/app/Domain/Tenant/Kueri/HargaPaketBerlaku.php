@@ -6,6 +6,7 @@ namespace App\Domain\Tenant\Kueri;
 
 use App\Domain\Bersama\Status\StatusDataMaster;
 use App\Domain\Tenant\Model\HargaPaket;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
 /**
@@ -18,17 +19,27 @@ use Carbon\CarbonInterface;
  */
 final class HargaPaketBerlaku
 {
+    /**
+     * Tanggal kalender WIB dari suatu waktu. Tanggal berlaku harga ditetapkan operator dalam WIB ("mulai 1 Februari"),
+     * sedangkan aplikasi berjalan dalam UTC: tanpa konversi, pembayaran antara 00.00 dan 07.00 WIB pada hari pergantian
+     * harga dihitung memakai harga hari sebelumnya, dan tanggal itu menjadi jangkar harga lama selamanya.
+     */
+    public static function TanggalWib(CarbonInterface $waktu): string
+    {
+        return CarbonImmutable::instance($waktu)->setTimezone('Asia/Jakarta')->toDateString();
+    }
+
     public function Cari(int $idPaket, CarbonInterface $tanggalTagihan, ?CarbonInterface $langgananMulai = null): ?HargaPaket
     {
         $versi = HargaPaket::query()
             ->where('IdPaket', $idPaket)
             ->where('Status', StatusDataMaster::Terbit->value)
-            ->whereDate('BerlakuMulai', '<=', $tanggalTagihan->toDateString())
+            ->whereDate('BerlakuMulai', '<=', self::TanggalWib($tanggalTagihan))
             ->orderByDesc('BerlakuMulai')
             ->get();
 
         foreach ($versi as $harga) {
-            $sudahBerlakuSaatMulai = $langgananMulai === null || $harga->BerlakuMulai->toDateString() <= $langgananMulai->toDateString();
+            $sudahBerlakuSaatMulai = $langgananMulai === null || $harga->BerlakuMulai->toDateString() <= self::TanggalWib($langgananMulai);
 
             if ($sudahBerlakuSaatMulai || $harga->TerapkanKePelangganLama) {
                 return $harga;
@@ -45,8 +56,8 @@ final class HargaPaketBerlaku
         return HargaPaket::query()
             ->where('IdPaket', $idPaket)
             ->where('Status', StatusDataMaster::Terbit->value)
-            ->whereDate('BerlakuMulai', '<=', $tanggal->toDateString())
-            ->where(fn ($kueri) => $kueri->whereNull('BerlakuSampai')->orWhereDate('BerlakuSampai', '>=', $tanggal->toDateString()))
+            ->whereDate('BerlakuMulai', '<=', self::TanggalWib($tanggal))
+            ->where(fn ($kueri) => $kueri->whereNull('BerlakuSampai')->orWhereDate('BerlakuSampai', '>=', self::TanggalWib($tanggal)))
             ->exists();
     }
 }

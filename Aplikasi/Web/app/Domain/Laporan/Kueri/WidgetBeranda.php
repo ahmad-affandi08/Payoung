@@ -27,7 +27,7 @@ final class WidgetBeranda
      * @param  list<int>|null  $idOutletBoleh
      * @return array<string, mixed>
      */
-    public function Ambil(DataSaringLaporanPenjualan $saring, ?array $idOutletBoleh, bool $bolehKomisi): array
+    public function Ambil(DataSaringLaporanPenjualan $saring, ?array $idOutletBoleh, bool $bolehKomisi, bool $bolehAntiFraud = true): array
     {
         return [
             'MetodeBayar' => $this->Peringkat(
@@ -42,7 +42,8 @@ final class WidgetBeranda
             'Kasir' => $this->Peringkat(
                 array_map(fn (array $k): array => ['Kunci' => $k['Kunci'], 'Nama' => $k['NamaKasir'], 'Nilai' => $k['Bersih'], 'Keterangan' => $k['JumlahTransaksi'].' transaksi'], $this->laporan->PerKasir($saring)),
             ),
-            'AntiFraud' => $this->RingkasAntiFraud($this->laporan->AntiFraud($saring)),
+            // Anti-fraud dan komisi adalah fitur paket tertentu: di luar paket datanya tidak boleh ikut terkirim ke Beranda.
+            'AntiFraud' => $bolehAntiFraud ? $this->RingkasAntiFraud($this->laporan->AntiFraud($saring)) : null,
             'Komisi' => $bolehKomisi ? $this->RingkasKomisi($saring, $idOutletBoleh) : null,
         ];
     }

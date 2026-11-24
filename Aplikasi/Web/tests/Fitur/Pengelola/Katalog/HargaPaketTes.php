@@ -174,6 +174,24 @@ describe('Harga paket berversi (P-04, BR-P04.1, BR-P04.5)', function (): void {
         expect($pro->refresh()->Status->value)->toBe('Aktif');
     });
 
+    it('BR-P04.1: tanggal berlaku harga dihitung dalam WIB, pembayaran dini hari WIB di hari pergantian memakai harga baru', function (): void {
+        $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
+        $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);
+        TinjauHarga($this, $superAdmin, UsulkanHargaPro($this, $keuangan, '149000', '2026-10-01'));
+        TinjauHarga($this, $superAdmin, UsulkanHargaPro($this, $keuangan, '249000', '2027-02-01'));
+        $idPro = Paket::query()->where('Kode', 'PRO')->sole()->Id;
+        $kueri = app(HargaPaketBerlaku::class);
+
+        // 1 Februari 2027 pukul 03.00 WIB = 31 Januari 2027 pukul 20.00 UTC.
+        $diniHariWib = Carbon::parse('2027-01-31 20:00:00', 'UTC');
+        // Pembayaran pertama (tanpa jangkar) dan pembayaran sebulan sesudahnya dengan jangkar hasil pembayaran pertama.
+        expect($kueri->Cari($idPro, $diniHariWib)?->HargaBulanan)->toBe('249000.00')
+            ->and(HargaPaketBerlaku::TanggalWib($diniHariWib))->toBe('2027-02-01')
+            ->and($kueri->Cari($idPro, Carbon::parse('2027-03-01 00:00:00', 'UTC'), Carbon::parse(HargaPaketBerlaku::TanggalWib($diniHariWib)))?->HargaBulanan)->toBe('249000.00')
+            // Sebelum pergantian di WIB (31 Januari 23.00 WIB = 16.00 UTC) harga lama tetap berlaku.
+            ->and($kueri->Cari($idPro, Carbon::parse('2027-01-31 16:00:00', 'UTC'))?->HargaBulanan)->toBe('149000.00');
+    });
+
     it('BR-P04.1: langganan yang dimulai sebelum versi harga pertama memakai versi paling awal (tidak pernah kosong)', function (): void {
         $keuangan = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::Keuangan);
         $superAdmin = BantuanPengelola::BuatAnggota(PeranPengelolaBawaan::SuperAdmin);

@@ -12,6 +12,7 @@ use App\Domain\Organisasi\Kueri\SektorOutletTenant;
 use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Organisasi\Kueri\TurProdukPengguna;
 use App\Domain\Penjualan\Kueri\RingkasanInvoice;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ use Inertia\Response;
  */
 final class BerandaKelolaKontroler extends DasarKelolaKontroler
 {
-    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen): Response|RedirectResponse
+    public function Beranda(Request $permintaan, AksesPengguna $akses, DasborPemilik $dasbor, TanggalBisnisOutlet $tanggal, TurProdukPengguna $tur, RingkasanInvoice $penagihan, SektorOutletTenant $sektor, AbsenSaya $absen, PemeriksaFiturTenant $fitur): Response|RedirectResponse
     {
         $idTenant = $this->IdTenant();
         $idPengguna = $this->Pelaku()->Id;
@@ -53,7 +54,8 @@ final class BerandaKelolaKontroler extends DasarKelolaKontroler
                     $akses->CekIzin($idTenant, $idPengguna, IzinTenant::PersediaanLihat),
                     $this->UraiTanggal($permintaan->query('dari')),
                     $this->UraiTanggal($permintaan->query('sampai')),
-                    $akses->CekIzin($idTenant, $idPengguna, IzinTenant::KaryawanLihat),
+                    $akses->CekIzin($idTenant, $idPengguna, IzinTenant::KaryawanLihat) && $fitur->CekAktif($idTenant, 'karyawan.komisi'),
+                    $fitur->CekAktif($idTenant, 'keamanan.anti-fraud'),
                 )
                 : null,
         ]);

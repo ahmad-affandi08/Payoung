@@ -95,7 +95,8 @@ export type WidgetBeranda = {
     JenisPesanan: PeringkatWidget;
     Kategori: PeringkatWidget;
     Kasir: PeringkatWidget;
-    AntiFraud: RingkasanAntiFraud;
+    /** Null bila paket tidak memuat fitur anti-fraud. */
+    AntiFraud: RingkasanAntiFraud | null;
     /** null = pengguna tanpa izin `karyawan.lihat`: widget tidak ditampilkan. */
     Komisi: PeringkatWidget | null;
 };

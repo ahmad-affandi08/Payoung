@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Domain\Bersama\Audit\Model\LogAudit;
 use App\Domain\Karyawan\Model\Karyawan;
+use App\Domain\Organisasi\Aksi\TerbitkanTokenPengguna;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Organisasi\Model\TenantPengguna;
+use App\Domain\Organisasi\Model\TokenAksesPengguna;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
@@ -115,10 +117,15 @@ describe('D-22 tambah pengguna langsung di tenant', function (): void {
         $this->get('/kelola')->assertRedirect(route('kata-sandi.ganti'));
         $this->get('/pilih-tenant')->assertRedirect(route('kata-sandi.ganti'));
 
+        // Token Aplikasi Owner yang sudah terbit (mis. dicuri) harus mati begitu kata sandi diganti.
+        app(TerbitkanTokenPengguna::class)->Jalankan($andi, 'HP Andi', null, null);
+        expect(TokenAksesPengguna::query()->where('IdPengguna', $andi->Id)->whereNull('DicabutPada')->count())->toBe(1);
+
         $this->post('/ganti-kata-sandi', ['KataSandiLama' => 'awal12345', 'KataSandi' => 'baru67890x', 'KonfirmasiKataSandi' => 'baru67890x'])
             ->assertRedirect(route('kelola.beranda'));
         expect($andi->refresh()->WajibGantiKataSandi)->toBeFalse()
-            ->and(Hash::check('baru67890x', $andi->KataSandi))->toBeTrue();
+            ->and(Hash::check('baru67890x', $andi->KataSandi))->toBeTrue()
+            ->and(TokenAksesPengguna::query()->where('IdPengguna', $andi->Id)->whereNull('DicabutPada')->count())->toBe(0);
         $this->get('/kelola')->assertOk();
     });
 

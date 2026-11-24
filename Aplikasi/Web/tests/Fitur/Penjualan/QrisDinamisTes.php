@@ -260,6 +260,44 @@ describe('audit P0 F-02 QRIS dinamis: hasil gerbang tidak pasti', function (): v
         expect(TagihanQris::query()->count())->toBe(2);
     })->with(['putus', '500', 'rusak']);
 
+    it('webhook saat status belum bisa ditanyakan ke DOKU: ditanya ulang dengan id tersimpan, bila tetap gagal 503 supaya DOKU mengirim ulang', function (): void {
+        // Satu Http::fake dengan mode yang bisa diubah (fake kedua tidak menimpa yang pertama).
+        $mode = 'normal';
+        $panggilan = 0;
+        Http::fake(function (PermintaanHttp $r) use (&$mode, &$panggilan) {
+            if (BantuanGerbangTenant::CekPermintaanBuat($r)) {
+                return BantuanGerbangTenant::ResponsBuat($r);
+            }
+
+            if ($mode === 'error') {
+                return Http::response(['responseCode' => '5004700'], 500);
+            }
+
+            if ($mode === 'sekali-gagal' && str_contains($r->url(), '/qr/qr-mpm-query') && ++$panggilan === 1) {
+                return Http::response(['responseCode' => '5004700'], 500);
+            }
+
+            return BantuanGerbangTenant::ResponsStatus('PENDING');
+        });
+        $k = SiapkanQrisDinamis($this);
+        BuatQrisPos($this, $k, $k['QrisDinamis'], '38500')->assertCreated();
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $nomor = TagihanQris::query()->sole()->NomorPesanan;
+
+        // DOKU error pada semua pertanyaan: bukan 200 (yang menghentikan kiriman ulang), tagihan tetap menunggu.
+        $mode = 'error';
+        WebhookDoku($this, $k, $nomor)->assertStatus(503);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(TagihanQris::query()->sole()->Status)->toBe(StatusTagihanQris::Menunggu);
+
+        // Pertanyaan pertama (dari badan notifikasi) gagal, pertanyaan ulang dengan id tersimpan berhasil.
+        $mode = 'sekali-gagal';
+        WebhookDoku($this, $k, $nomor)->assertOk()->assertJsonPath('Diterima', true);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(TagihanQris::query()->sole()->Status)->toBe(StatusTagihanQris::Lunas)
+            ->and($panggilan)->toBe(2);
+    });
+
     it('webhook lunas untuk tagihan tidak pasti = Lunas (uang nyata menang) + tinjauan di Kotak Tindakan', function (): void {
         $charge = 'putus';
         $status = 'PENDING';
