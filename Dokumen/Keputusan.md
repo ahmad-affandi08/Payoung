@@ -323,6 +323,7 @@
 | D-319 | Agent, 24/11/2026: permintaan status QRIS DOKU SNAP wajib memuat `originalReferenceNo` (id transaksi DOKU, atau nomor pesanan bila belum diketahui), sesuai dokumentasi DOKU. Kode status tak dikenal dicatat ke log. |
 | D-320 | Dari pemilik produk, 24/11/2026: dialog QRIS kasir memakai gaya bersih ala halaman bayar Midtrans (pilihan A): nominal besar, QR dalam kartu beridentitas, status berkapsul, hitung mundur berupa cincin, dan tombol Cek status sekarang. Logo QRIS, logo bank/e-wallet, dan NMID menunggu keputusan aset dan sumber data. |
 | D-321 | Dari pemilik produk, 24/11/2026: dialog QRIS memakai logo QRIS resmi. Agent memakai berkas SVG di Wikimedia Commons berasal dari Bank Indonesia (berlabel public domain dan merek dagang) karena BI tidak menyediakan unduhan. Logo tidak diubah, dan kepastian izin merek diminta ke BI atau DOKU sebelum rilis komersial. |
+| D-322 | Dari pemilik produk, 24/11/2026: dialog QRIS kasir memakai logo bank dan e-wallet yang sama dengan halaman bayar back-office. Syarat penggantian dengan logo resmi sebelum rilis komersial (D-161) berlaku juga untuk berkas di aplikasi Kasir. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

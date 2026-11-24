@@ -149,6 +149,9 @@ void main() {
     // Nominal besar, status berupa kapsul, dan identitas tagihan tampil.
     expect(find.text('Total tagihan'), findsOneWidget);
     expect(find.image(const AssetImage('assets/logo/Qris.png')), findsOneWidget, reason: 'Logo QRIS resmi tampil.');
+    for (final nama in const ['Dana', 'ShopeePay', 'Bca', 'Mandiri', 'Bri', 'Bni']) {
+      expect(find.image(AssetImage('assets/logo/$nama.png')), findsOneWidget, reason: 'Logo $nama tampil.');
+    }
     expect(find.text('Menunggu pembayaran'), findsOneWidget);
     expect(find.text('PAYOUNG-QR-0001'), findsOneWidget);
 

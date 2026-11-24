@@ -262,6 +262,7 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
               textAlign: TextAlign.center,
               style: teks.bodyMedium,
             ),
+            if (!tagihan.halamanBayar) ...[const SizedBox(height: TokenJarak.jarak12), const _StripCaraBayar()],
             if (tagihan.kedaluwarsaPada case final kedaluwarsa?) ...[
               const SizedBox(height: TokenJarak.jarak12),
               Row(
@@ -508,4 +509,26 @@ class _PelukisCincin extends CustomPainter {
   @override
   bool shouldRepaint(_PelukisCincin lama) =>
       lama.sisa != sisa || lama.warnaBusur != warnaBusur || lama.warnaLatar != warnaLatar;
+}
+
+/// Logo bank dan e-wallet yang lazim memindai QRIS. Sama dengan logo di halaman bayar back-office (D-161): masih
+/// logo komunitas CC BY-NC, ganti dengan logo resmi sebelum rilis komersial (lihat `assets/logo/SUMBER.txt`).
+class _StripCaraBayar extends StatelessWidget {
+  const _StripCaraBayar();
+
+  static const List<String> _berkas = ['Dana', 'ShopeePay', 'Bca', 'Mandiri', 'Bri', 'Bni'];
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Bisa dibayar lewat DANA, ShopeePay, BCA, Mandiri, BRI, BNI, dan aplikasi lain',
+    child: ExcludeSemantics(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: TokenJarak.jarak16,
+        runSpacing: TokenJarak.jarak8,
+        children: [for (final nama in _berkas) Image.asset('assets/logo/$nama.png', height: 20)],
+      ),
+    ),
+  );
 }

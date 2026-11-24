@@ -10,3 +10,12 @@ jadi logo tidak boleh diubah bentuk atau warnanya dan hanya dipakai sebagai pena
 
 Pengolahan: SVG dirender ke PNG transparan lebar 480 px tanpa perubahan bentuk.
 Sebelum rilis komersial, pastikan ketentuan logo QRIS terbaru ke Bank Indonesia atau DOKU.
+
+Dana.png, ShopeePay.png, Bca.png, Mandiri.png, Bri.png, Bni.png
+Sumber: berkas SVG yang sama dengan logo cara bayar di back-office (`Aplikasi/Web/resources/js/Aset/Bayar/`), diambil dari paket
+komunitas `idn-finlogos` (CC BY-NC 4.0, pengumpul: Hafidz Noor Fauzi). Atas permintaan pemilik produk (24/11/2026) dipakai juga
+di dialog QRIS kasir. Dirender ke PNG transparan tinggi 72 px tanpa mengubah bentuk.
+Lisensi CC BY-NC 4.0 melarang pemakaian komersial dan logo adalah merek dagang pemiliknya (DANA, ShopeePay, BCA, Bank Mandiri,
+BRI, BNI). Sebelum rilis komersial ganti berkas ini dengan logo resmi dari DOKU atau pedoman merek tiap bank
+(lihat juga `Aplikasi/Web/resources/js/Aset/Bayar/README.md`). Cukup timpa berkas dengan nama yang sama.
+
