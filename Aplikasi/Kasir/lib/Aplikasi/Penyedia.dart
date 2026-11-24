@@ -283,7 +283,13 @@ final penyediaRepositoriPenjualan = Provider<RepositoriPenjualan>(
 /// Cetak struk (PRD v1.79): transport printer dari profil (test menggantinya dengan printer tiruan).
 final penyediaPemindaiPrinter = Provider<PemindaiPrinter>((ref) => const PemindaiPrinterPlatform());
 
-final penyediaPembuatTransport = Provider<PembuatTransport>((ref) => ref.watch(penyediaPemindaiPrinter).BuatTransport);
+/// D-317: semua pekerjaan cetak ke printer fisik yang sama (struk, tiket dapur, salinan checker, laci) lewat satu antrean
+/// serial, kuncinya jenis sambungan + alamat + port. Printer berbeda tetap paralel.
+final penyediaPembuatTransport = Provider<PembuatTransport>((ref) {
+  final pemindai = ref.watch(penyediaPemindaiPrinter);
+  return (profil) =>
+      AntreanCetak.Bungkus(pemindai.BuatTransport(profil), '${profil.jenis.name}|${profil.alamat}|${profil.port}');
+});
 
 final penyediaLayananStruk = Provider<LayananStruk>(
   (ref) => LayananStruk(
@@ -415,6 +421,28 @@ class PengaturPrinter extends Notifier<StatusPrinter> {
   }
 
   final Set<String> _sudahOtomatis = {};
+
+  /// D-317: urutan di layar selesai bayar. Struk dicetak lebih dulu, baru tiket dapur dan salinan checker, supaya
+  /// kertas di printer yang sama keluar berurutan (antrean serial menjaga tidak bertabrakan). Layar struk mendaftar
+  /// sejak dibangun dan menandai selesai; tiket dapur menunggu (maksimal [batasTungguStruk]) sebelum mulai.
+  static const Duration batasTungguStruk = Duration(seconds: 45);
+  final Map<String, Completer<void>> _strukOtomatisBerjalan = {};
+
+  void RencanakanStrukOtomatis(String uuidPenjualan) =>
+      _strukOtomatisBerjalan.putIfAbsent(uuidPenjualan, Completer<void>.new);
+
+  void SelesaiStrukOtomatis(String uuidPenjualan) {
+    final penunggu = _strukOtomatisBerjalan.remove(uuidPenjualan);
+    if (penunggu != null && !penunggu.isCompleted) {
+      penunggu.complete();
+    }
+  }
+
+  /// Selesai segera bila tidak ada struk otomatis yang direncanakan untuk penjualan ini.
+  Future<void> TungguStrukOtomatis(String uuidPenjualan) {
+    final penunggu = _strukOtomatisBerjalan[uuidPenjualan];
+    return penunggu == null ? Future<void>.value() : penunggu.future.timeout(batasTungguStruk, onTimeout: () {});
+  }
 
   /// Cetak dokumen kasir selain struk penjualan (bukti void, nota retur, laporan shift); galat → pesan untuk kasir.
   Future<String?> CetakDokumen(Future<void> Function(LayananStruk layanan) aksi) => _Jalankan(aksi);

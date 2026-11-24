@@ -44,6 +44,11 @@ class _BagianTiketDapurState extends ConsumerState<BagianTiketDapur> {
     }
     setState(() => _tampil = true);
     if (BagianTiketDapur._sudahOtomatis.add(widget.uuidPenjualan)) {
+      // D-317: struk dicetak dulu (bila ada), baru tiket dapur dan salinan checker.
+      await ref.read(penyediaPrinter.notifier).TungguStrukOtomatis(widget.uuidPenjualan);
+      if (!mounted) {
+        return;
+      }
       await _Cetak();
     } else {
       setState(() => _jumlahCetak = 1);

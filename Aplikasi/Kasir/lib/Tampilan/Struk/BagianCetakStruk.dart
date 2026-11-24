@@ -38,10 +38,21 @@ class _BagianCetakStrukState extends ConsumerState<BagianCetakStruk> {
   @override
   void initState() {
     super.initState();
+    // D-317: tiket dapur di layar yang sama menunggu struk ini selesai (struk dulu, baru dapur, lalu checker).
+    ref.read(penyediaPrinter.notifier).RencanakanStrukOtomatis(widget.uuidPenjualan);
     WidgetsBinding.instance.addPostFrameCallback((_) => _CetakOtomatis());
   }
 
   Future<void> _CetakOtomatis() async {
+    final pengatur = ref.read(penyediaPrinter.notifier);
+    try {
+      await _CetakOtomatisLangkah();
+    } finally {
+      pengatur.SelesaiStrukOtomatis(widget.uuidPenjualan);
+    }
+  }
+
+  Future<void> _CetakOtomatisLangkah() async {
     if (!await ref.read(penyediaLayananStruk).CekCetakOtomatis() || !mounted) {
       return;
     }

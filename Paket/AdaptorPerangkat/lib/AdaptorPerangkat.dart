@@ -2,6 +2,7 @@
 library;
 
 export 'LayarPelanggan/LayarPelanggan.dart';
+export 'Printer/AntreanCetak.dart';
 export 'Printer/DokumenStruk.dart';
 export 'Printer/PengodeEscPos.dart';
 export 'Printer/PrinterStruk.dart';
