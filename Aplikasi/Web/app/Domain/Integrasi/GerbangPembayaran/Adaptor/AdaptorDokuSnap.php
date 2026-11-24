@@ -170,8 +170,12 @@ final class AdaptorDokuSnap extends AdaptorDasar
             return null;
         }
 
+        // `originalReferenceNo` wajib di permintaan status DOKU. Notifikasi membawanya (id transaksi DOKU) di badan.
+        $badan = json_decode($permintaan->getContent(), true);
+        $idReferensi = is_array($badan) && is_string($badan['originalReferenceNo'] ?? null) ? $badan['originalReferenceNo'] : '';
+
         try {
-            $hasil = $this->TanyaStatus($cocok[0], '');
+            $hasil = $this->TanyaStatus($cocok[0], $idReferensi);
         } catch (GalatGerbang) {
             return new HasilWebhook($cocok[0], StatusPembayaranGerbang::Menunggu);
         }
@@ -186,15 +190,14 @@ final class AdaptorDokuSnap extends AdaptorDasar
      */
     private function TanyaStatus(string $nomorPesanan, string $idReferensi): array
     {
+        // Menurut dokumentasi DOKU, keempat isian ini wajib. Tanpa id transaksi DOKU, nomor pesanan Payoung dipakai
+        // sebagai gantinya (generate QRIS memakainya sebagai `partnerReferenceNo`, dan DOKU sering menyamakannya).
         $badan = [
+            'originalReferenceNo' => trim($idReferensi) !== '' ? trim($idReferensi) : $nomorPesanan,
             'originalPartnerReferenceNo' => $nomorPesanan,
             'serviceCode' => '47',
             'merchantId' => $this->Klien()->Pengaturan('IdPedagangQris'),
         ];
-
-        if (trim($idReferensi) !== '' && trim($idReferensi) !== $nomorPesanan) {
-            $badan['originalReferenceNo'] = trim($idReferensi);
-        }
 
         $respons = $this->Klien()->Kirim(self::TARGET_STATUS, $badan);
         $data = $respons->json();
@@ -211,9 +214,27 @@ final class AdaptorDokuSnap extends AdaptorDasar
         }
 
         $status = PenguraiStatusSnap::UraiDompetAtauQris($data);
+        $this->CatatStatusTakDikenal($nomorPesanan, $data);
         $jumlah = $status === StatusPembayaranGerbang::Lunas ? PenguraiStatusSnap::AmbilJumlah($data) : '';
 
         return ['Status' => $status, 'Jumlah' => $jumlah === '' ? null : $jumlah];
+    }
+
+    /** Kode status di luar yang kita kenal dicatat supaya pembayaran yang "tidak sampai" bisa diusut dari log. */
+    private function CatatStatusTakDikenal(string $nomorPesanan, array $data): void
+    {
+        $kode = is_scalar($data['latestTransactionStatus'] ?? null) ? (string) $data['latestTransactionStatus'] : '';
+
+        if (in_array($kode, ['00', '03', '05', '06'], true)) {
+            return;
+        }
+
+        Log::warning('DOKU SNAP menjawab status QRIS tenant dengan kode yang belum dikenal.', [
+            'NomorPesanan' => $nomorPesanan,
+            'KodeJawaban' => is_string($data['responseCode'] ?? null) ? $data['responseCode'] : '',
+            'StatusTerakhir' => $kode,
+            'KeteranganStatus' => $this->Saring(is_string($data['transactionStatusDesc'] ?? null) ? $data['transactionStatusDesc'] : ''),
+        ]);
     }
 
     private function CatatPenolakanStatus(string $nomorPesanan, Response $respons): void

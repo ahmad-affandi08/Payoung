@@ -133,7 +133,20 @@ it('DOKU SNAP: status dipetakan (00 lunas, 05/06 gagal, lainnya menunggu) lewat 
     Http::assertSent(fn (PermintaanHttp $r): bool => str_ends_with($r->url(), '/qr/qr-mpm-query')
         && $r['originalPartnerReferenceNo'] === NOMOR_QRIS_UJI
         && $r['merchantId'] === '111642'
-        && ! isset($r['originalReferenceNo']));
+        // DOKU mewajibkan `originalReferenceNo`: tanpa id transaksi DOKU dipakai nomor pesanan sebagai gantinya.
+        && $r['originalReferenceNo'] === NOMOR_QRIS_UJI);
+});
+
+it('DOKU SNAP: id transaksi DOKU diteruskan ke pertanyaan status, juga saat berasal dari badan notifikasi', function (): void {
+    PalsukanDokuSnap('00', '25000.00');
+    Gerbang()->CekStatus(NOMOR_QRIS_UJI, 'REF-DOKU-77');
+    Http::assertSent(fn (PermintaanHttp $r): bool => str_ends_with($r->url(), '/qr/qr-mpm-query') && $r['originalReferenceNo'] === 'REF-DOKU-77');
+
+    SegarkanHttpUji();
+    PalsukanDokuSnap('00', '25000.00');
+    $hasil = Gerbang()->UraiWebhook(WebhookJson(['originalPartnerReferenceNo' => NOMOR_QRIS_UJI, 'originalReferenceNo' => 'REF-DOKU-88', 'latestTransactionStatus' => '00']));
+    expect($hasil?->status)->toBe(StatusPembayaranGerbang::Lunas);
+    Http::assertSent(fn (PermintaanHttp $r): bool => str_ends_with($r->url(), '/qr/qr-mpm-query') && $r['originalReferenceNo'] === 'REF-DOKU-88');
 });
 
 it('DOKU SNAP: masalah gerbang dilempar sebagai GalatGerbang tanpa membocorkan secret key. Uji koneksi menolak token', function (): void {
