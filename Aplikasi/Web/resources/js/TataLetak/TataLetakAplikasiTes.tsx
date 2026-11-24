@@ -597,6 +597,15 @@ describe('TataLetakAplikasi: menu berbasis izin & banner langganan (F-00, §19.1
         ).toBeNull();
         cleanup();
 
+        // Nama grup sama dengan nama halaman induknya (grup Produk berisi halaman Produk): satu tautan, bukan "Produk › Produk".
+        propsHalaman = BuatProps({}, ['produk.lihat']);
+        urlHalaman = '/kelola/produk/0190aaaa-0000-7000-8000-000000000001';
+        render(<TataLetakAplikasi judul="Americano">isi</TataLetakAplikasi>);
+        const jejakProduk = screen.getByRole('navigation', { name: 'Jejak halaman' });
+        expect(within(jejakProduk).getAllByText('Produk')).toHaveLength(1);
+        expect(within(jejakProduk).getByRole('link', { name: 'Produk' }).getAttribute('href')).toBe('/kelola/produk');
+        cleanup();
+
         // Halaman yang mengisi `jejak` sendiri memegang rantainya: induk otomatis tidak dobel.
         urlHalaman = '/kelola/pembelian/pesanan/buat';
         render(

@@ -319,6 +319,7 @@
 | D-315 | Agent, 23/11/2026: gambar raster ESC/POS selalu dikirim dalam blok `GS v 0` berisi paling banyak 120 baris (tinggi muat satu byte), karena printer thermal murah tidak andal membaca byte tinggi atas. |
 | D-316 | Dari pemilik produk, 24/11/2026: tenant uji boleh memakai akun DOKU Payoung sebagai gerbang QRIS karena DOKU hanya mengizinkan satu kunci publik per Client ID. Dibatasi tenant berpenanda Uji/Demo/Internal, ditegakkan saat memilih dan saat adaptor dibuat. |
 | D-317 | Agent, 24/11/2026: semua pekerjaan cetak ke printer fisik yang sama dijalankan serial lewat satu antrean (`AntreanCetak`), dan di layar selesai bayar urutannya struk, tiket dapur per stasiun, lalu salinan checker. Menggantikan asumsi bahwa tiap cetak boleh membuka sambungan sendiri bersamaan. |
+| D-318 | Agent, 24/11/2026: jejak halaman otomatis tidak boleh menampilkan dua butir berlabel sama berurutan. Bila nama grup menu sama dengan nama halaman induknya, hanya tautan induknya yang ditampilkan. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

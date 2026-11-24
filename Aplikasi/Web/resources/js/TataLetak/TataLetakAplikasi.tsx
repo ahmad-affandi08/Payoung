@@ -1254,6 +1254,12 @@ export function SusunJejak(url: string, menuTerlihat: MenuTerlihat[], jejakHalam
 
     // Halaman lebih dalam dari butir menunya (Buat, rincian, cetak): butir itu jadi tautan kembali ke daftarnya.
     if (induk !== undefined && hrefInduk !== jalur && !halamanMemegangJejak) {
+        // Nama grup dan nama halaman induknya sering sama (grup Produk berisi halaman Produk): cukup satu tautan,
+        // bukan "Produk › Produk".
+        if (induk.label === butirGrup.label) {
+            return [...awal, { label: induk.label, href: induk.href }];
+        }
+
         return [...awal, butirGrup, { label: induk.label, href: induk.href }];
     }
 
