@@ -206,7 +206,7 @@ void main() {
     expect(await Teks(), isNot(contains('Poin masuk setelah transaksi tersinkron')));
   });
 
-  test('POS-11 struk digital: QR & tautan = awalan dari server + Uuid penjualan, tanpa awalan tidak dicetak', () async {
+  test('POS-11 struk digital: QR = awalan dari server + Uuid penjualan (tanpa tautan tertulis), tanpa awalan tidak dicetak', () async {
     await Siapkan(struk: {'AwalanStrukDigital': 'https://payoung.id/s/1c.'});
     final hasil = await Jual(JenisMetodeBayar.tunai);
     Future<DokumenStruk> Susun() async => PenyusunStrukPenjualan.Susun(
@@ -220,7 +220,10 @@ void main() {
     final tautan = 'https://payoung.id/s/1c.${hasil.uuid.toUpperCase()}';
     final dokumen = await Susun();
     expect(dokumen.baris.whereType<BarisQr>().single.data, tautan);
-    expect(dokumen.baris.whereType<BarisTeks>().map((b) => b.teks), containsAll(['Struk digital:', tautan]));
+    // D-329: hanya QR, tautan tidak dicetak sebagai teks di bawahnya.
+    final teks = dokumen.baris.whereType<BarisTeks>().map((b) => b.teks);
+    expect(teks, isNot(contains(tautan)));
+    expect(teks, isNot(contains('Struk digital:')));
 
     await u.repositori.SimpanPengaturan(
       KunciPengaturan.struk,

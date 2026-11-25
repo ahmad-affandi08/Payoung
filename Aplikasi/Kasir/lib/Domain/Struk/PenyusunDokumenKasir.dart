@@ -247,7 +247,6 @@ abstract final class PenyusunDokumenKasir {
       if (awalanLacak != null && awalanLacak.isNotEmpty) ...[
         BarisQr(PenyusunStrukPenjualan.TautanStrukDigital(awalanLacak, tiket.uuid)),
         const BarisTeks('Lacak cucian:', rata: RataStruk.Tengah),
-        BarisTeks(PenyusunStrukPenjualan.TautanStrukDigital(awalanLacak, tiket.uuid), rata: RataStruk.Tengah),
       ],
       ...PenyusunStrukPenjualan.SusunKaki(identitas),
     ]);

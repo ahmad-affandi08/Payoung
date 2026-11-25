@@ -257,21 +257,17 @@ abstract final class PenyusunStrukPenjualan {
         )
         ..add(const BarisGaris());
     }
-    // POS-11: QR & tautan struk digital (bisa dibuat offline; halaman tersedia setelah penjualan terkirim).
+    // POS-11: QR struk digital (bisa dibuat offline; halaman tersedia setelah penjualan terkirim).
     final awalanStruk = p.awalanStrukDigital;
     final awalan = laundry != null && awalanLacak != null && awalanLacak.isNotEmpty ? awalanLacak : awalanStruk;
     if (laundry != null && awalan != null && awalan.isNotEmpty) {
       final tautan = TautanStrukDigital(awalan, jual.Uuid);
       baris
         ..add(BarisQr(tautan))
-        ..add(const BarisTeks('Lacak cucian:', rata: RataStruk.Tengah))
-        ..add(BarisTeks(tautan, rata: RataStruk.Tengah));
+        ..add(const BarisTeks('Lacak cucian:', rata: RataStruk.Tengah));
     } else if (awalan != null && awalan.isNotEmpty) {
-      final tautan = TautanStrukDigital(awalan, jual.Uuid);
-      baris
-        ..add(BarisQr(tautan))
-        ..add(const BarisTeks('Struk digital:', rata: RataStruk.Tengah))
-        ..add(BarisTeks(tautan, rata: RataStruk.Tengah));
+      // D-329: hanya QR, tanpa tautan tertulis di bawahnya.
+      baris.add(BarisQr(TautanStrukDigital(awalan, jual.Uuid)));
     }
     baris.addAll(SusunKaki(identitas));
     return DokumenStruk(baris, bukaLaci: bukaLaci);

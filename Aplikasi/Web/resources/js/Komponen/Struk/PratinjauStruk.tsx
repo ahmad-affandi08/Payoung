@@ -100,7 +100,7 @@ export function SusunPratinjauStruk(
         baris.push(...Tengah(pengaturan.CatatanKaki));
     }
     if (pengaturan.TampilkanStrukDigital) {
-        baris.push(...Tengah('[QR] Struk digital: payoung.id/s/…'));
+        baris.push(...Tengah('[QR]'));
     }
     baris.push(...Tengah(pengaturan.TeksPenutup ?? PENUTUP_BAWAAN));
     if (profil.TandaAir) {
