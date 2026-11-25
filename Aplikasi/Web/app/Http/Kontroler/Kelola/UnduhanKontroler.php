@@ -6,9 +6,12 @@ namespace App\Http\Kontroler\Kelola;
 
 use App\Domain\Bersama\Audit\Layanan\PencatatAudit;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
+use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Bersama\Unduhan\Enum\StatusBerkasUnduhan;
 use App\Domain\Bersama\Unduhan\Kueri\DaftarBerkasUnduhan;
 use App\Domain\Bersama\Unduhan\Model\BerkasUnduhan;
+use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Http\Respons\ResponsTabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,9 +37,11 @@ final class UnduhanKontroler extends DasarKelolaKontroler
         ]);
     }
 
-    public function Unduh(string $uuidBerkas, PencatatAudit $audit): StreamedResponse
+    public function Unduh(string $uuidBerkas, PencatatAudit $audit, KonteksTenant $konteks, AksesPengguna $akses): StreamedResponse
     {
         $berkas = $this->AmbilBerkasMilikSaya($uuidBerkas);
+        // D-328: izin dicek ulang saat mengunduh, bukan hanya saat berkas dibuat (izin bisa dicabut dalam masa berlaku berkas).
+        abort_unless($this->CekMasihBerizin($berkas, $konteks, $akses), 403, 'Anda tidak lagi punya izin untuk laporan ini.');
         abort_unless($berkas->Status === StatusBerkasUnduhan::Siap && $berkas->PathBerkas !== null && $berkas->KedaluwarsaPada?->isFuture() === true, 404);
         $disk = Storage::disk((string) config('tenant.DiskUnduhan'));
         abort_unless($disk->exists($berkas->PathBerkas), 404);
@@ -65,6 +70,30 @@ final class UnduhanKontroler extends DasarKelolaKontroler
         $berkas->delete();
 
         return back()->with('Kilat', 'Berkas dihapus dari Pusat Unduhan.');
+    }
+
+    private function CekMasihBerizin(BerkasUnduhan $berkas, KonteksTenant $konteks, AksesPengguna $akses): bool
+    {
+        $idTenant = $konteks->Ambil();
+
+        foreach ($berkas->IzinDiperlukan ?? [] as $butir) {
+            $lolos = false;
+
+            foreach (explode('|', $butir) as $kunci) {
+                $izin = IzinTenant::tryFrom($kunci);
+
+                if ($izin !== null && $idTenant !== null && $akses->CekIzin($idTenant, $this->Pelaku()->Id, $izin)) {
+                    $lolos = true;
+                    break;
+                }
+            }
+
+            if (! $lolos) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function AmbilBerkasMilikSaya(string $uuidBerkas): BerkasUnduhan

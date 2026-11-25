@@ -26,15 +26,17 @@ final class DaftarCutiKaryawan
     public const URUT_BAWAAN = '-TanggalMulai';
 
     /**
+     * @param  list<int>|null  $idOutletBoleh  cakupan outlet pelihat (null = semua, D-328)
      * @return array{Data: list<array<string, mixed>>, Meta: array{Halaman: int, PerHalaman: int, Total: int, JumlahHalaman: int}}
      */
-    public function Ambil(DataPermintaanTabel $p): array
+    public function Ambil(DataPermintaanTabel $p, ?array $idOutletBoleh = null): array
     {
         $tanggal = $p->AmbilRentangTanggal('Tanggal');
         $status = $p->AmbilDaftar('Status', array_map(fn (StatusCuti $s): string => $s->value, StatusCuti::cases()));
         $jenis = $p->AmbilDaftar('Jenis', array_map(fn (JenisCuti $j): string => $j->value, JenisCuti::cases()));
         $uuidKaryawan = $p->AmbilDaftar('Karyawan');
         $kueri = CutiKaryawan::query()
+            ->when($idOutletBoleh !== null, fn (Builder $k) => $k->whereIn('IdKaryawan', Karyawan::query()->whereIn('IdOutlet', $idOutletBoleh)->select('Id')))
             ->when($status !== [], fn (Builder $k) => $k->whereIn('Status', $status))
             ->when($jenis !== [], fn (Builder $k) => $k->whereIn('Jenis', $jenis))
             ->when($uuidKaryawan !== [], fn (Builder $k) => $k->whereIn('IdKaryawan', Karyawan::query()->whereIn('Uuid', $uuidKaryawan)->select('Id')))

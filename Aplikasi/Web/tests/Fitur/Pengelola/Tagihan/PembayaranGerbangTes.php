@@ -191,6 +191,19 @@ describe('BR-P08.11 membuat transaksi di gerbang', function (): void {
         });
     });
 
+    it('D-328: Bayar diketuk dua kali berturut-turut hanya membuat satu transaksi Checkout, setelah jeda boleh membuat yang baru', function (): void {
+        ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
+        $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);
+
+        MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan)->assertOk();
+        MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan)->assertStatus(422)->assertJsonPath('Galat.Kode', 'PembayaranBerjalan');
+        expect(PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->count())->toBe(1);
+
+        Carbon::setTestNow('2026-09-27 03:00:30');
+        MulaiBayarOnlineUji($this, $pemilik, $tenant, $tagihan)->assertOk();
+        expect(PembayaranLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $tagihan->Id)->count())->toBe(2);
+    });
+
     it('DOKU menolak permintaan dengan pasti (4xx): pembayaran ditutup Ditolak dan pesan tidak membocorkan secret key', function (): void {
         ['Tenant' => $tenant, 'Pengguna' => $pemilik] = BantuanTagihan::DaftarTenant();
         $tagihan = BuatTagihanGerbangUji($this, $pemilik, $tenant);

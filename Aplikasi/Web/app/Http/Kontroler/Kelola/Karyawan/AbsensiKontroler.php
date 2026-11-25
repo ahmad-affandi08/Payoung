@@ -42,7 +42,7 @@ final class AbsensiKontroler extends DasarKelolaKontroler
         $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarAbsensi::KOLOM_URUT, DaftarAbsensi::URUT_BAWAAN, DaftarAbsensi::KOLOM_SARING);
 
         return ResponsTabel::Kirim($permintaan, 'Kelola/Karyawan/Absensi', 'Absensi', fn (): array => $daftar->Ambil($tabel, $this->IdOutletBoleh()), fn (): array => [
-            'OpsiKaryawan' => $karyawan->AmbilPilihan(),
+            'OpsiKaryawan' => $karyawan->AmbilPilihan($this->IdOutletBoleh()),
             'OpsiOutlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas($this->IdOutletBoleh())),
             // v3.34: koreksi & tambah absensi manual hanya untuk `karyawan.kelola`.
             'BolehKoreksi' => $bolehKoreksi,

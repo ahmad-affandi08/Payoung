@@ -10,6 +10,7 @@ use App\Domain\Karyawan\Enum\JenisCuti;
 use App\Domain\Karyawan\Kueri\DaftarCutiKaryawan;
 use App\Domain\Karyawan\Kueri\DaftarKaryawan;
 use App\Domain\Karyawan\Model\CutiKaryawan;
+use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
@@ -31,8 +32,8 @@ final class CutiKaryawanKontroler extends DasarKelolaKontroler
     {
         $tabel = DataPermintaanTabel::Dari($permintaan->query(), DaftarCutiKaryawan::KOLOM_URUT, DaftarCutiKaryawan::URUT_BAWAAN, DaftarCutiKaryawan::KOLOM_SARING);
 
-        return ResponsTabel::Kirim($permintaan, 'Kelola/Karyawan/Cuti', 'Cuti', fn (): array => $daftar->Ambil($tabel), fn (): array => [
-            'OpsiKaryawan' => $karyawan->AmbilPilihan(),
+        return ResponsTabel::Kirim($permintaan, 'Kelola/Karyawan/Cuti', 'Cuti', fn (): array => $daftar->Ambil($tabel, $this->IdOutletBoleh()), fn (): array => [
+            'OpsiKaryawan' => $karyawan->AmbilPilihan($this->IdOutletBoleh()),
             'Izin' => ['Kelola' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanKelola)],
         ]);
     }
@@ -54,6 +55,7 @@ final class CutiKaryawanKontroler extends DasarKelolaKontroler
             'Berbayar.*' => 'Pilih apakah tetap digaji.',
             'Alasan.*' => 'Alasan paling panjang 255 karakter.',
         ]);
+        $this->PastikanKaryawanBerizin(Karyawan::query()->where('Uuid', $data['Karyawan'])->firstOrFail());
         $alasan = is_string($data['Alasan'] ?? null) && trim($data['Alasan']) !== '' ? trim($data['Alasan']) : null;
         $cuti = $kelola->Catat(
             $data['Karyawan'],
@@ -71,7 +73,9 @@ final class CutiKaryawanKontroler extends DasarKelolaKontroler
     public function Batalkan(string $cuti, Request $permintaan, KelolaCutiKaryawan $kelola): RedirectResponse
     {
         $permintaan->validate(['Alasan' => ['required', 'string', 'max:500']], ['Alasan.*' => 'Tulis alasan membatalkan catatan ini.']);
-        $kelola->Batalkan(CutiKaryawan::query()->where('Uuid', $cuti)->firstOrFail(), $permintaan->string('Alasan')->toString(), $this->Pelaku()->Id);
+        $baris = CutiKaryawan::query()->where('Uuid', $cuti)->firstOrFail();
+        $this->PastikanKaryawanBerizin(Karyawan::query()->whereKey($baris->IdKaryawan)->firstOrFail());
+        $kelola->Batalkan($baris, $permintaan->string('Alasan')->toString(), $this->Pelaku()->Id);
 
         return to_route('kelola.karyawan.cuti')->with('Kilat', 'Catatan dibatalkan.');
     }

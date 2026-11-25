@@ -8,6 +8,7 @@ use App\Domain\Bersama\Unduhan\Enum\StatusBerkasUnduhan;
 use App\Domain\Bersama\Unduhan\Layanan\BatasEksporLaporan;
 use App\Domain\Bersama\Unduhan\Model\BerkasUnduhan;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -161,6 +162,24 @@ describe('D-124 Pusat Unduhan: daftar, unduh, hapus, isolasi', function (): void
         $b = BantuanLaporan::SiapkanDataPenjualan($this);
         BantuanPersediaan::MasukSebagai($this, $b['Tenant']->Id);
         $this->get("/kelola/unduhan/{$milikku->Uuid}/unduh")->assertNotFound();
+    });
+
+    it('D-328: izin dicek ulang saat mengunduh, pengguna yang izinnya dicabut sesudah berkas siap tidak bisa mengambilnya', function (): void {
+        $d = BantuanLaporan::SiapkanDataPenjualan($this);
+        $admin = BantuanOrganisasi::TambahAnggota($d['Tenant']->Id, PeranTenantBawaan::Admin);
+        BantuanOrganisasi::Masuk($this, $admin, $d['Tenant']->Id);
+        $this->get(ALAMAT_EKSPOR.'&format=csv&latarbelakang=1')->assertRedirect('/kelola/unduhan');
+        BantuanOrganisasi::AturKonteks($d['Tenant']->Id);
+        $berkas = BerkasUnduhan::query()->sole();
+        expect($berkas->IzinDiperlukan)->toBe(['laporan.penjualan.lihat']);
+        $this->get("/kelola/unduhan/{$berkas->Uuid}/unduh")->assertOk();
+
+        // Peran diganti ke Kasir (tanpa izin laporan penjualan): berkas yang sama kini ditolak.
+        DB::table('TenantPengguna')->where('IdTenant', $d['Tenant']->Id)->where('IdPengguna', $admin->Id)
+            ->update(['IdPeran' => BantuanOrganisasi::Peran($d['Tenant']->Id, PeranTenantBawaan::Kasir)->Id]);
+        app(AksesPengguna::class)->Lupakan();
+        BantuanOrganisasi::Masuk($this, $admin, $d['Tenant']->Id);
+        $this->get("/kelola/unduhan/{$berkas->Uuid}/unduh")->assertForbidden();
     });
 
     it('halaman daftar dirender Inertia dengan opsi status dan masa berlaku', function (): void {

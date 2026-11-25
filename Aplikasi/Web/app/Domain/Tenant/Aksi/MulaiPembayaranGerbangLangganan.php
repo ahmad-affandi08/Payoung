@@ -37,6 +37,13 @@ final class MulaiPembayaranGerbangLangganan
     /** Pembayaran SNAP tanpa kode bayar yang lebih muda dari ini masih dianggap sedang diproses, bukan yatim. */
     private const MENIT_TUNGGU_YATIM = 5;
 
+    /**
+     * Checkout yang baru dibuat sekian detik lalu dianggap ketukan ganda tombol Bayar: yang kedua ditolak supaya tidak
+     * ada dua transaksi Checkout hidup untuk satu tagihan (D-328). Setelah jeda ini tenant boleh membuat yang baru,
+     * misalnya sesudah menutup halaman DOKU tanpa membayar.
+     */
+    private const DETIK_TAHAN_KETUKAN_GANDA = 20;
+
     public function __construct(
         private readonly PenyediaTagihanPlatform $penyedia,
         private readonly PencatatAudit $audit,
@@ -142,6 +149,11 @@ final class MulaiPembayaranGerbangLangganan
                 ->where('Status', StatusPembayaranLangganan::Menunggu->value)
                 ->orderByDesc('Id')
                 ->first();
+
+            if ($berjalan !== null && $metodeBayar === null && $berjalan->MetodeBayar === null
+                && $berjalan->DibuatPada !== null && $berjalan->DibuatPada->gt(CarbonImmutable::now()->subSeconds(self::DETIK_TAHAN_KETUKAN_GANDA))) {
+                throw new PelanggaranAturanBisnis('PembayaranBerjalan', 'Pembayaran untuk tagihan ini sedang disiapkan. Tunggu sebentar, halaman bayar akan terbuka sendiri.');
+            }
 
             if ($berjalan !== null && ($metodeBayar !== null || $berjalan->MetodeBayar !== null)) {
                 if ($this->CekMasihBerlaku($berjalan)) {

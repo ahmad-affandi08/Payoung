@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string $Judul
  * @property string|null $NamaBerkas
  * @property string $Format
+ * @property list<string>|null $IzinDiperlukan
  * @property StatusBerkasUnduhan $Status
  * @property string|null $PathBerkas
  * @property int $UkuranByte
@@ -52,6 +53,7 @@ final class BerkasUnduhan extends ModelDasar
     {
         return [
             'Status' => StatusBerkasUnduhan::class,
+            'IzinDiperlukan' => 'array',
             'UkuranByte' => 'integer',
             'MulaiPada' => 'datetime',
             'SelesaiPada' => 'datetime',

@@ -26,22 +26,25 @@ final class DaftarKaryawan
 
     /**
      * D-101: semua karyawan tenant dalam bentuk baris daftar (untuk halaman Tim yang menggabungkan akun & karyawan).
+     * D-328: `$idOutletBoleh` (null = semua outlet) membatasi ke karyawan beroutlet utama di dalam cakupan pelihat.
      *
+     * @param  list<int>|null  $idOutletBoleh
      * @return list<array<string, mixed>>
      */
-    public function AmbilSemua(bool $lihatGaji): array
+    public function AmbilSemua(bool $lihatGaji, ?array $idOutletBoleh = null): array
     {
-        return $this->Petakan(Karyawan::query()->orderBy('Nama')->get(), $lihatGaji);
+        return $this->Petakan(Karyawan::query()->when($idOutletBoleh !== null, fn ($k) => $k->whereIn('IdOutlet', $idOutletBoleh))->orderBy('Nama')->get(), $lihatGaji);
     }
 
     /**
-     * Karyawan aktif (pilihan saring & jadwal).
+     * Karyawan aktif (pilihan saring & jadwal). `$idOutletBoleh` null = semua outlet (D-328).
      *
+     * @param  list<int>|null  $idOutletBoleh
      * @return list<array{Uuid: string, Nama: string}>
      */
-    public function AmbilPilihan(): array
+    public function AmbilPilihan(?array $idOutletBoleh = null): array
     {
-        return array_values(Karyawan::query()->where('Status', StatusKaryawan::Aktif->value)->orderBy('Nama')->get(['Uuid', 'Nama'])
+        return array_values(Karyawan::query()->where('Status', StatusKaryawan::Aktif->value)->when($idOutletBoleh !== null, fn ($k) => $k->whereIn('IdOutlet', $idOutletBoleh))->orderBy('Nama')->get(['Uuid', 'Nama'])
             ->map(fn (Karyawan $k): array => ['Uuid' => $k->Uuid, 'Nama' => $k->Nama])->all());
     }
 

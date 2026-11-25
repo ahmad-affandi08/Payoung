@@ -83,6 +83,6 @@ final class AbsenHpKaryawanKontroler extends DasarKelolaKontroler
 
     private function CariKaryawan(string $uuid): Karyawan
     {
-        return Karyawan::query()->where('Uuid', $uuid)->firstOrFail();
+        return $this->PastikanKaryawanBerizin(Karyawan::query()->where('Uuid', $uuid)->firstOrFail());
     }
 }

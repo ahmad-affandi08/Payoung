@@ -11,6 +11,7 @@ use App\Domain\Bersama\Laporan\PembuatDefinisiLaporan;
 use App\Domain\Bersama\Tabel\Data\DataPermintaanTabel;
 use App\Domain\Bersama\Tenant\KonteksTenant;
 use App\Domain\Bersama\Unduhan\Layanan\BatasEksporLaporan;
+use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Model\Outlet;
 use App\Domain\Organisasi\Model\Pengguna;
@@ -51,6 +52,31 @@ abstract class DasarKelolaKontroler extends Kontroler
     protected function IdOutletBoleh(): ?array
     {
         return app(AksesPengguna::class)->AmbilIdOutlet($this->IdTenant(), $this->Pelaku()->Id);
+    }
+
+    /**
+     * D-328: karyawan di luar cakupan outlet pelaku dianggap tidak ada (404). Pelaku berakses semua outlet lolos. Karyawan
+     * tanpa outlet utama hanya terbuka bagi pelaku berakses semua outlet.
+     */
+    protected function PastikanKaryawanBerizin(Karyawan $karyawan): Karyawan
+    {
+        $boleh = $this->IdOutletBoleh();
+        abort_if($boleh !== null && ($karyawan->IdOutlet === null || ! in_array($karyawan->IdOutlet, $boleh, true)), 404);
+
+        return $karyawan;
+    }
+
+    /**
+     * D-328: outlet utama karyawan yang dipilih harus di dalam cakupan pelaku. Pelaku yang dibatasi per outlet wajib
+     * memilih salah satu outletnya (karyawan tanpa outlet tidak akan terjangkau olehnya lagi).
+     */
+    protected function PastikanOutletKaryawanBerizin(?string $uuidOutlet): void
+    {
+        if ($uuidOutlet !== null && $uuidOutlet !== '') {
+            $this->CariOutlet($uuidOutlet);
+        } elseif ($this->IdOutletBoleh() !== null) {
+            throw new PelanggaranAturanBisnis('OutletKaryawanWajib', 'Pilih outlet karyawan.', 'UuidOutlet');
+        }
     }
 
     protected function CariOutlet(string $uuid): Outlet

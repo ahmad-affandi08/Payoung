@@ -21,9 +21,10 @@ final class DaftarTim
     ) {}
 
     /**
+     * @param  list<int>|null  $idOutletBoleh  cakupan outlet pelihat untuk baris karyawan (null = semua, D-328)
      * @return list<array<string, mixed>>
      */
-    public function Ambil(int $idTenant, bool $lihatGaji, bool $lihatAkun = true, bool $lihatKaryawan = true): array
+    public function Ambil(int $idTenant, bool $lihatGaji, bool $lihatAkun = true, bool $lihatKaryawan = true, ?array $idOutletBoleh = null): array
     {
         // Pelihat tanpa `pengguna.lihat` tidak boleh melihat email & peran; tanpa `karyawan.lihat` tidak melihat data karyawan.
         $anggota = $lihatAkun ? $this->anggota->AmbilAnggota($idTenant) : [];
@@ -32,7 +33,7 @@ final class DaftarTim
         /** @var array<string, array<string, mixed>> $karyawan */
         $karyawan = [];
 
-        foreach ($lihatKaryawan ? $this->karyawan->AmbilSemua($lihatGaji) : [] as $baris) {
+        foreach ($lihatKaryawan ? $this->karyawan->AmbilSemua($lihatGaji, $idOutletBoleh) : [] as $baris) {
             $karyawan[(string) $baris['Uuid']] = $baris;
         }
 

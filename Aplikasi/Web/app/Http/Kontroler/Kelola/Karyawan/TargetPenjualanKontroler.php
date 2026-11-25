@@ -38,7 +38,7 @@ final class TargetPenjualanKontroler extends DasarKelolaKontroler
             'OpsiPeriode' => $opsi['Opsi'],
             'Target' => $progres->Ambil($periode, $this->IdOutletBoleh()),
             'OpsiOutlet' => array_map(fn (array $o): array => ['Uuid' => $o['Uuid'], 'Nama' => $o['Nama']], $outlet->AmbilRingkas($this->IdOutletBoleh(), true)),
-            'OpsiKaryawan' => $karyawan->AmbilPilihan(),
+            'OpsiKaryawan' => $karyawan->AmbilPilihan($this->IdOutletBoleh()),
             'Izin' => ['Kelola' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanKelola)],
         ]);
     }

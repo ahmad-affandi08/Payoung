@@ -51,7 +51,7 @@ final class TimKontroler extends DasarKelolaKontroler
         $kelolaKaryawan = $boleh(IzinTenant::KaryawanKelola);
 
         return Inertia::render('Kelola/Tim/Daftar', [
-            'Tim' => $tim->Ambil($idTenant, $kelolaKaryawan, $lihatAkun, $lihatKaryawan),
+            'Tim' => $tim->Ambil($idTenant, $kelolaKaryawan, $lihatAkun, $lihatKaryawan, $this->IdOutletBoleh()),
             'Undangan' => $lihatAkun ? $anggota->AmbilUndanganMenunggu($idTenant) : [],
             'Peran' => self::AmbilOpsiPeran($sektor),
             'Outlet' => self::AmbilOpsiOutlet(),
@@ -99,7 +99,9 @@ final class TimKontroler extends DasarKelolaKontroler
 
         if ($permintaan->AmbilJenisAkses() === 'Tanpa') {
             abort_unless($bolehKaryawan, 403);
-            $karyawan = $simpan->Jalankan($permintaan->AmbilRincianKaryawan($this->Pelaku()->Id));
+            $rincian = $permintaan->AmbilRincianKaryawan($this->Pelaku()->Id);
+            $this->PastikanOutletKaryawanBerizin($rincian->uuidOutlet);
+            $karyawan = $simpan->Jalankan($rincian);
 
             return redirect()->route('kelola.tim.daftar')->with('Kilat', "{$karyawan->Nama} ditambahkan ke tim tanpa akun masuk. Atur jadwal dan gajinya di menu Tim. Kasih akses masuk kapan saja dari daftar tim.");
         }
@@ -148,7 +150,7 @@ final class TimKontroler extends DasarKelolaKontroler
 
         DB::transaction(function () use ($uuidPengguna, $uuidKaryawan, $nonaktif, $ubahAkun, $ubahKaryawan, &$nama): void {
             if ($uuidKaryawan !== null) {
-                $karyawan = Karyawan::query()->where('Uuid', $uuidKaryawan)->firstOrFail();
+                $karyawan = $this->PastikanKaryawanBerizin(Karyawan::query()->where('Uuid', $uuidKaryawan)->firstOrFail());
                 $nama = $karyawan->Nama;
                 $ubahKaryawan->Jalankan($karyawan, $nonaktif ? StatusKaryawan::Nonaktif : StatusKaryawan::Aktif, $this->Pelaku()->Id);
             }

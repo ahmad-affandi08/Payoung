@@ -12,6 +12,7 @@ use App\Domain\Karyawan\Model\JadwalKerja;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Karyawan\Model\RekapGajiBaris;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Model\OutletPengguna;
 use App\Domain\Organisasi\Model\Pengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request as PermintaanHttp;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
+use Tests\Pendukung\Akuntansi\BantuanJurnal;
 use Tests\Pendukung\Organisasi\BantuanOrganisasi;
 use Tests\Pendukung\Penjualan\BantuanPenjualan;
 use Tests\Pendukung\Persediaan\BantuanPersediaan;
@@ -235,5 +237,40 @@ describe('jadwal kerja menandai hari cuti', function (): void {
             ->where('Jadwal.Baris.0.Cuti.2026-10-14', ['Jenis' => 'Izin', 'Berbayar' => false])
             ->missing('Jadwal.Baris.0.Cuti.2026-10-12'));
         $this->get('/kelola/karyawan/jadwal?minggu=2026-10-19')->assertInertia(fn (AssertableInertia $h) => $h->where('Jadwal.Baris.0.Cuti', []));
+    });
+});
+
+describe('D-328 cakupan outlet pengelola karyawan', function (): void {
+    it('Manajer Outlet cabang tidak melihat dan tidak bisa mengubah karyawan outlet lain, tetapi mengelola karyawan outletnya sendiri', function (): void {
+        $k = BantuanPenjualan::Siapkan($this, 'Salon Cakupan Cuti');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        $cabang = BantuanJurnal::BuatOutlet();
+        $rina = Karyawan::query()->create(['Nama' => 'Rina Pusat', 'IdOutlet' => $k['Outlet']->Id]);
+        $dewi = Karyawan::query()->create(['Nama' => 'Dewi Cabang', 'IdOutlet' => $cabang->Id]);
+        $manajer = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet, semuaOutlet: false);
+        OutletPengguna::query()->create(['IdOutlet' => $cabang->Id, 'IdPengguna' => $manajer->Id, 'IdPeran' => BantuanOrganisasi::Peran($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet)->Id]);
+        BantuanOrganisasi::Masuk($this, $manajer, $k['Tenant']->Id);
+
+        // Pilihan karyawan di halaman Cuti hanya karyawan cabangnya.
+        $this->get('/kelola/karyawan/cuti')->assertInertia(fn (AssertableInertia $h) => $h->has('OpsiKaryawan', 1)->where('OpsiKaryawan.0.Nama', 'Dewi Cabang'));
+
+        // Karyawan outlet lain: catat cuti, ubah data, dan panel absen HP = 404.
+        $this->post('/kelola/karyawan/cuti', KirimanCuti($rina))->assertNotFound();
+        $this->putJson("/kelola/karyawan/{$rina->Uuid}", ['Nama' => 'Rina Diganti'])->assertNotFound();
+        $this->getJson("/kelola/karyawan/{$rina->Uuid}/absen-hp")->assertNotFound();
+        $this->postJson("/kelola/karyawan/{$rina->Uuid}/tautan-absen")->assertNotFound();
+        expect($rina->refresh()->Nama)->toBe('Rina Pusat');
+
+        // Karyawan outlet sendiri tetap bisa dikelola, dan catatan cuti outlet lain tidak tampil di daftarnya.
+        $this->post('/kelola/karyawan/cuti', KirimanCuti($dewi))->assertRedirect('/kelola/karyawan/cuti');
+        $this->getJson("/kelola/karyawan/{$dewi->Uuid}/absen-hp")->assertOk();
+        BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id)->post('/kelola/karyawan/cuti', KirimanCuti($rina, ['TanggalMulai' => '2026-10-20', 'TanggalSelesai' => '2026-10-21']))->assertRedirect();
+        BantuanOrganisasi::Masuk($this, $manajer, $k['Tenant']->Id);
+        $baris = $this->getJson('/kelola/karyawan/cuti')->assertOk()->json('Data');
+        expect($baris)->toHaveCount(1)->and($baris[0]['Karyawan'])->toBe('Dewi Cabang');
+
+        // Pemilik (semua outlet) melihat keduanya.
+        BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id);
+        expect($this->getJson('/kelola/karyawan/cuti')->json('Data'))->toHaveCount(2);
     });
 });

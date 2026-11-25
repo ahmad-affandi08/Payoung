@@ -23,11 +23,14 @@ final class AntrekanBerkasUnduhan
         private readonly PencatatAudit $audit,
     ) {}
 
-    public function Jalankan(int $idPengguna, string $format, string $judul): BerkasUnduhan
+    /**
+     * @param  list<string>  $izinDiperlukan  izin rute ekspor asal, diperiksa ulang saat berkas diunduh (D-328)
+     */
+    public function Jalankan(int $idPengguna, string $format, string $judul, array $izinDiperlukan = []): BerkasUnduhan
     {
         $idTenant = $this->konteks->Wajib();
 
-        return DB::transaction(function () use ($idTenant, $idPengguna, $format, $judul): BerkasUnduhan {
+        return DB::transaction(function () use ($idTenant, $idPengguna, $format, $judul, $izinDiperlukan): BerkasUnduhan {
             // Serial per tenant: baris tenant dikunci supaya permintaan bersamaan tidak sama-sama lolos batas.
             DB::table('Tenant')->where('Id', $idTenant)->lockForUpdate()->first();
 
@@ -47,6 +50,7 @@ final class AntrekanBerkasUnduhan
                 'IdPengguna' => $idPengguna,
                 'Judul' => mb_substr($judul, 0, 150),
                 'Format' => $format,
+                'IzinDiperlukan' => $izinDiperlukan === [] ? null : $izinDiperlukan,
                 'Status' => StatusBerkasUnduhan::Menunggu,
             ]);
             $this->audit->Catat('unduhan.minta', $baru, nilaiBaru: ['Judul' => $baru->Judul, 'Format' => $format], idTenant: $idTenant, idPengguna: $idPengguna);

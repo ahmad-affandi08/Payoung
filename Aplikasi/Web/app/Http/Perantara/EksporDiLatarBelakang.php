@@ -40,7 +40,7 @@ final class EksporDiLatarBelakang
         abort_if($pelaku === null, 403);
 
         try {
-            $berkas = $this->antrekan->Jalankan((int) $pelaku->getAuthIdentifier(), $format, $this->JudulAwal($permintaan));
+            $berkas = $this->antrekan->Jalankan((int) $pelaku->getAuthIdentifier(), $format, $this->JudulAwal($permintaan), $this->IzinRute($permintaan));
         } catch (PelanggaranAturanBisnis $galat) {
             return redirect()->route('kelola.unduhan.daftar')->withErrors(['Umum' => $galat->getMessage()]);
         }
@@ -58,6 +58,25 @@ final class EksporDiLatarBelakang
         });
 
         return redirect()->route('kelola.unduhan.daftar')->with('Kilat', 'Berkas sedang disiapkan. Halaman ini diperbarui otomatis. Unduh begitu statusnya Siap.');
+    }
+
+    /**
+     * Kunci izin tenant yang dipasang rute ini lewat `WajibIzinTenant` (tiap butir boleh berisi alternatif `a|b`).
+     *
+     * @return list<string>
+     */
+    private function IzinRute(Request $permintaan): array
+    {
+        $awalan = WajibIzinTenant::class.':';
+        $izin = [];
+
+        foreach ($permintaan->route()?->gatherMiddleware() ?? [] as $perantara) {
+            if (is_string($perantara) && str_starts_with($perantara, $awalan)) {
+                $izin[] = substr($perantara, strlen($awalan));
+            }
+        }
+
+        return $izin;
     }
 
     /** "kelola.laporan.penjualan.ekspor" → "Laporan penjualan"; diganti nama berkas sebenarnya setelah selesai. */

@@ -18,7 +18,10 @@ final class KaryawanKontroler extends DasarKelolaKontroler
 {
     public function Perbarui(SimpanKaryawanPermintaan $permintaan, string $karyawan, SimpanKaryawan $simpan): RedirectResponse
     {
-        $k = $simpan->Jalankan($permintaan->AmbilData($this->Pelaku()->Id), $this->Cari($karyawan));
+        $data = $permintaan->AmbilData($this->Pelaku()->Id);
+        $asal = $this->PastikanKaryawanBerizin($this->Cari($karyawan));
+        $this->PastikanOutletKaryawanBerizin($data->uuidOutlet);
+        $k = $simpan->Jalankan($data, $asal);
 
         return back()->with('Kilat', "Karyawan {$k->Nama} disimpan.");
     }
