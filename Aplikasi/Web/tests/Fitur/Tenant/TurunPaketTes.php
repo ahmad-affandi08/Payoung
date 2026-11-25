@@ -232,6 +232,19 @@ describe('Turun paket mandiri (BR-P04.4)', function (): void {
             ->and(PermintaanTurunPaket::query()->sole()->Status)->toBe(StatusPermintaanTurunPaket::Diterapkan);
     });
 
+    it('turun ke Gratis tidak didahului penjadwal tunggakan: langganan berpermintaan Gratis tetap Aktif lalu dipindah ke Gratis, bukan Tertunggak', function (): void {
+        AjukanTurunPaketUji($this, 'GRATIS')->assertSessionHasNoErrors();
+        Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->update(['PeriodeSelesai' => now()->addDays(5)]);
+        $this->travelTo(now()->addDays(6));
+
+        // Penjadwal tunggakan jalan lebih dulu pada jam yang sama dengan penerapan turun paket.
+        $this->artisan('tagihan:proses-tunggakan')->assertSuccessful();
+        expect(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->Status)->toBe(StatusLangganan::Aktif);
+
+        $this->artisan('langganan:terapkan-turun-paket')->assertSuccessful();
+        expect(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->Status)->toBe(StatusLangganan::Gratis);
+    });
+
     it('naik paket menggantikan rencana turun paket yang menunggu', function (): void {
         AjukanTurunPaketUji($this, 'STARTER')->assertSessionHasNoErrors();
 

@@ -255,6 +255,17 @@ final class AdaptorDokuSnap extends AdaptorDasar
         ]);
     }
 
+    /**
+     * Pesan galat yang tampil ke tenant disaring dari rahasia. Pada akun Payoung (tenant uji, D-316) rahasianya milik
+     * platform, bukan kredensial tenant yang disaring `AdaptorDasar`, jadi klien SNAP ikut menyamarkan kuncinya sendiri.
+     */
+    protected function Saring(string $pesan): string
+    {
+        $pesan = parent::Saring($pesan);
+
+        return $this->CekAkunPayoung() ? $this->Klien()->Saring($pesan) : $pesan;
+    }
+
     private function Klien(): KlienSnap
     {
         if ($this->CekAkunPayoung()) {

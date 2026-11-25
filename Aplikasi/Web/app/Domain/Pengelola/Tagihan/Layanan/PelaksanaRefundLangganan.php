@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengelola\Tagihan\Layanan;
 
 use App\Domain\Pengelola\Mitra\Aksi\BatalkanKomisiMitra;
+use App\Domain\Pengelola\Tagihan\Kueri\DaftarTagihanPlatform;
 use App\Domain\Pengelola\TimInternal\Model\PenggunaPengelola;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusKomisiMitra;
@@ -115,12 +116,14 @@ final class PelaksanaRefundLangganan
             return false;
         }
 
-        return TagihanLangganan::query()
+        // Jalur konsol tanpa tenant aktif: kueri lintas tenant resmi milik domain Pengelola (bukan scope MilikTenant).
+        return DaftarTagihanPlatform::KueriTagihan()
             ->where('IdTenant', $tagihan->IdTenant)
-            ->whereKeyNot($tagihan->Id)
             ->where('Status', StatusTagihanLangganan::Lunas->value)
             ->where('Jenis', '!=', JenisTagihanLangganan::Addon->value)
-            ->where('DibayarPada', '>', $tagihan->DibayarPada)
+            // Lebih baru menurut waktu bayar; pada waktu yang sama (satu detik) urutan nomor tagihan yang menentukan.
+            ->where(fn ($kueri) => $kueri->where('DibayarPada', '>', $tagihan->DibayarPada)
+                ->orWhere(fn ($sama) => $sama->where('DibayarPada', $tagihan->DibayarPada)->where('Id', '>', $tagihan->Id)))
             ->exists();
     }
 

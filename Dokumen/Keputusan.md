@@ -328,6 +328,7 @@
 | D-324 | Agent, 24/11/2026: dialog Bayar dengan QRIS kasir tidak boleh membutuhkan gulir di ukuran layar kasir yang lazim. Tata letak menyesuaikan ruang tersedia (dua kolom di layar lebar pendek, QR mengecil di HP pendek), gulir hanya pengaman. |
 | D-325 | Agent, 24/11/2026 (atas permintaan pemilik produk): dialog Bayar dengan QRIS kasir tidak menampilkan nama toko. |
 | D-326 | Agent, 24/11/2026 (atas permintaan pemilik produk memindai bug): perbaikan hasil pemindaian bug sebagaimana v7.165. Perubahan kontrak: `Widget.AntiFraud` pada props Beranda boleh null, dan webhook QRIS tenant dapat menjawab 503 (`5035200`) saat status tidak bisa dipastikan. Temuan yang menyangkut izin peran atau perilaku bisnis (izin gaji Manajer Outlet, refund naik paket, turun paket ke Gratis saat tertunggak, butir Kotak Tindakan uang QRIS yatim) tidak diputuskan sendiri dan dicatat sebagai pertanyaan. |
+| D-327 | Agent, 25/11/2026 (pemilik produk: "kerjakan semua"): izin gaji dipisah dari `karyawan.kelola` menjadi `karyawan.gaji.kelola` (Pemilik, Admin, Akuntan), dan sisa temuan pemindaian bug diperbaiki sebagaimana v7.166. Perubahan perilaku yang terlihat pengguna: Manajer Outlet tidak lagi membuka Rekap gaji dan Kasbon, token Open API mati bila pembuatnya dinonaktifkan, webhook QRIS tenant memakai kuota per token. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

@@ -18,6 +18,8 @@ use App\Domain\Integrasi\Kueri\HalamanPusatWhatsapp;
 use App\Domain\Integrasi\Layanan\PengaturPesanWhatsapp;
 use App\Domain\Integrasi\Model\NomorPengirimWhatsapp;
 use App\Domain\Integrasi\Model\PenerimaLaporanWhatsapp;
+use App\Domain\Organisasi\Enum\IzinTenant;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\PetaUuidOutlet;
 use App\Http\Kontroler\Kelola\DasarKelolaKontroler;
 use App\Http\Permintaan\Kelola\Pelanggan\SimpanNomorPengirimWhatsappPermintaan;
@@ -96,6 +98,9 @@ final class PusatWhatsappKontroler extends DasarKelolaKontroler
 
     public function TambahPenerima(Request $permintaan, TambahPenerimaLaporanWhatsapp $tambah, PetaUuidOutlet $peta): RedirectResponse
     {
+        // Penerima laporan menerima ringkasan penjualan, kas, dan absensi outlet: yang boleh menambahnya hanya yang sendiri
+        // berhak melihat laporan penjualan (izin `pelanggan.kelola` saja tidak cukup).
+        abort_unless(app(AksesPengguna::class)->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::LaporanPenjualanLihat), 403);
         $data = $permintaan->validate([
             'UuidOutlet' => ['required', 'string', 'size:26'],
             'Nama' => ['required', 'string', 'min:2', 'max:60'],

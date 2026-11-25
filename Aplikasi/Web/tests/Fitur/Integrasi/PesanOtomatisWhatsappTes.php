@@ -13,7 +13,9 @@ use App\Domain\Karyawan\Model\Absensi;
 use App\Domain\Karyawan\Model\Karyawan;
 use App\Domain\Laporan\Aksi\KirimPenjualanPerJam;
 use App\Domain\Laporan\Model\RingkasanPenjualanHarian;
+use App\Domain\Organisasi\Enum\PeranTenantBawaan;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Organisasi\Model\PeranIzin;
 use App\Domain\Pelanggan\Enum\JenisMutasiDeposit;
 use App\Domain\Pelanggan\Enum\JenisMutasiPoin;
 use App\Domain\Pelanggan\Enum\SumberMutasiDeposit;
@@ -119,6 +121,20 @@ describe('D-299 pesan otomatis ke pelanggan', function (): void {
 });
 
 describe('D-299 laporan otomatis ke karyawan', function (): void {
+    it('menambah penerima laporan butuh izin melihat laporan penjualan, pelanggan.kelola saja tidak cukup', function (): void {
+        $toko = TokoPesanOtomatis();
+        $admin = BantuanOrganisasi::TambahAnggota($toko['Tenant']->Id, PeranTenantBawaan::Admin);
+        // Peran Admin dicabut izin laporan penjualannya (peran kustom serupa): tetap memegang pelanggan.kelola.
+        PeranIzin::query()->where('IdPeran', BantuanOrganisasi::Peran($toko['Tenant']->Id, PeranTenantBawaan::Admin)->Id)->where('KunciIzin', 'laporan.penjualan.lihat')->delete();
+        $kirim = fn ($sesi) => $sesi->post('/kelola/pelanggan/whatsapp/penerima', ['UuidOutlet' => $toko['Outlet']->Uuid, 'Nama' => 'Penerima', 'NomorTelepon' => '081212345600']);
+
+        $kirim(BantuanOrganisasi::Masuk($this, $admin, $toko['Tenant']->Id))->assertForbidden();
+        expect(PenerimaLaporanWhatsapp::query()->count())->toBe(0);
+
+        $kirim(BantuanOrganisasi::Masuk($this, $toko['Pemilik'], $toko['Tenant']->Id))->assertSessionHasNoErrors();
+        expect(PenerimaLaporanWhatsapp::query()->count())->toBe(1);
+    });
+
     it('penerima laporan maksimal enam per outlet dan nomor ganda ditolak, sakelar jenis tersimpan', function (): void {
         $toko = TokoPesanOtomatis();
         $sesi = BantuanOrganisasi::Masuk($this, $toko['Pemilik'], $toko['Tenant']->Id);
