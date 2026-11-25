@@ -1,57 +1,25 @@
-import { Link, useForm } from '@inertiajs/react';
-import { useId, type FormEvent } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 
-import BidangTeks from '@/Komponen/Formulir/BidangTeks';
 import Tombol from '@/Komponen/Formulir/Tombol';
+import DaftarTab, { type ItemTab } from '@/Komponen/Katalog/DaftarTab';
+import Panel from '@/Komponen/Kelola/Panel';
 import BagianAddon, { type DataAddonLangganan } from '@/Komponen/Langganan/BagianAddon';
-import PilihLamaLangganan, {
-    CariHargaLama,
-    UraiLama,
-    type AturanLamaLangganan,
-    type HargaPerLama,
-} from '@/Komponen/Langganan/PilihLamaLangganan';
+import FormPilihPaket, { type PilihanPaket } from '@/Komponen/Langganan/FormPilihPaket';
+import KepalaPaket from '@/Komponen/Langganan/KepalaPaket';
 import PanelKuotaTransaksi, { type DataKuotaTransaksi } from '@/Komponen/Langganan/PanelKuotaTransaksi';
 import PanelTurunPaket, { type DataTurunPaket } from '@/Komponen/Langganan/PanelTurunPaket';
+import PemakaianPaket from '@/Komponen/Langganan/PemakaianPaket';
+import type { AturanLamaLangganan } from '@/Komponen/Langganan/PilihLamaLangganan';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
-import { Card } from '@/Komponen/Ui/card';
-import { FieldError, FieldLegend, FieldSet } from '@/Komponen/Ui/field';
-import { RadioGroup, RadioGroupItem } from '@/Komponen/Ui/radio-group';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Komponen/Ui/table';
 import LabelStatus from '@/Komponen/Umpan/LabelStatus';
 import Pemberitahuan from '@/Komponen/Umpan/Pemberitahuan';
 import { FormatRupiah } from '@/Pustaka/Format';
 import { FormatTanggalWaktu } from '@/Pustaka/FormatWaktu';
 import TataLetakAplikasi from '@/TataLetak/TataLetakAplikasi';
+import type { KapasitasLangganan, RingkasanLangganan } from '@/Tipe/Langganan';
 import { JenisLabelTagihan, type TagihanLangganan } from '@/Tipe/TagihanLangganan';
-
-type RingkasanLangganan = {
-    Status: 'Trial' | 'Aktif' | 'Tertunggak' | 'Ditangguhkan' | 'Berhenti' | 'Gratis';
-    LabelStatus: string;
-    KodePaket: string;
-    NamaPaket: string;
-    SiklusTagihan: 'Bulanan' | 'Tahunan' | 'Kustom';
-    /** D-249: lama langganan berjalan dalam bulan. */
-    JumlahBulanSiklus: number;
-    TrialBerakhirPada: string | null;
-    PeriodeMulai: string | null;
-    PeriodeSelesai: string | null;
-    BatasTenggangPada: string | null;
-};
-
-type PilihanPaket = {
-    Kode: string;
-    Nama: string;
-    Keterangan: string | null;
-    HargaBulanan: string;
-    HargaTahunan: string;
-    /** D-249: harga server untuk setiap lama yang boleh dipilih (sudah termasuk tangga diskon). */
-    HargaPerLama: HargaPerLama[];
-    PaketBerjalan: boolean;
-    /** D-98: pratinjau naik paket (selisih prorata sebelum PPN); null bila bukan naik paket. */
-    NaikPaket: { Selisih: string; Subtotal: string; HariDitagih: number; HariPeriode: number } | null;
-    BisaDipilih: boolean;
-};
 
 type PropsLangganan = {
     Langganan: RingkasanLangganan | null;
@@ -60,21 +28,37 @@ type PropsLangganan = {
     AturanLama: AturanLamaLangganan;
     Tagihan: TagihanLangganan[];
     HariMasaTenggang: number;
+    Kapasitas?: KapasitasLangganan;
     TurunPaket?: DataTurunPaket;
     KuotaTransaksi?: DataKuotaTransaksi | null;
     KuotaTransaksiHarian?: DataKuotaTransaksi | null;
 };
 
-const jenisStatusLangganan = {
-    Trial: 'peringatan',
-    Aktif: 'sukses',
-    Tertunggak: 'bahaya',
-    Ditangguhkan: 'bahaya',
-    Berhenti: 'netral',
-    Gratis: 'netral',
-} as const;
+type KunciTab = 'ikhtisar' | 'paket' | 'addon' | 'tagihan';
 
-/** Langganan & tagihan tenant (P-08/F-19 Fase 0): pilih paket, buat tagihan, bayar lewat transfer manual. */
+const kunciTabSah: readonly KunciTab[] = ['ikhtisar', 'paket', 'addon', 'tagihan'];
+
+/** Tab awal: `?tab=`, atau Paket & harga bila dibuka dari dialog fitur terkunci (`?paket=KODE`, D-23). */
+function AmbilTabAwal(): KunciTab {
+    if (typeof window === 'undefined') {
+        return 'ikhtisar';
+    }
+
+    const parameter = new URLSearchParams(window.location.search);
+    const diminta = parameter.get('tab');
+    const sah = kunciTabSah.find((kunci) => kunci === diminta);
+
+    return sah ?? (parameter.get('paket') ? 'paket' : 'ikhtisar');
+}
+
+function TampakTagihanTerbuka(tagihan: TagihanLangganan): boolean {
+    return tagihan.Status === 'Terbit' || tagihan.Status === 'JatuhTempo';
+}
+
+/**
+ * Langganan & tagihan tenant (P-08, D-332): kepala paket dengan sisa masa berlaku, lalu empat tab. Ikhtisar memuat
+ * pemakaian paket dan tagihan berikutnya, Paket & harga untuk memperpanjang atau naik paket, Add-on, dan Tagihan.
+ */
 export default function HalamanLangganan({
     Langganan,
     Addon,
@@ -82,11 +66,34 @@ export default function HalamanLangganan({
     AturanLama,
     Tagihan,
     HariMasaTenggang,
+    Kapasitas,
     TurunPaket,
     KuotaTransaksi,
     KuotaTransaksiHarian,
 }: PropsLangganan) {
-    const tagihanTerbuka = Tagihan.find((tagihan) => tagihan.Status === 'Terbit' || tagihan.Status === 'JatuhTempo');
+    const [tab, AturTab] = useState<KunciTab>(AmbilTabAwal);
+    const tagihanTerbuka = Tagihan.find(TampakTagihanTerbuka);
+    const jumlahTerbuka = Tagihan.filter(TampakTagihanTerbuka).length;
+
+    const PilihTab = (kunci: KunciTab) => {
+        AturTab(kunci);
+
+        // Alamat ikut tab supaya muat ulang dan kembali dari aksi (turun paket, add-on) tetap di tab yang sama.
+        const alamat = new URL(window.location.href);
+        alamat.searchParams.set('tab', kunci);
+        window.history.replaceState(window.history.state, '', alamat);
+    };
+
+    const itemTab: ItemTab<KunciTab>[] = [
+        { Kunci: 'ikhtisar', Label: 'Ikhtisar' },
+        { Kunci: 'paket', Label: 'Paket & harga' },
+        { Kunci: 'addon', Label: 'Add-on' },
+        {
+            Kunci: 'tagihan',
+            Label: 'Tagihan',
+            ...(jumlahTerbuka > 0 ? { Lencana: `${String(jumlahTerbuka)} menunggu` } : {}),
+        },
+    ];
 
     return (
         <TataLetakAplikasi judul="Langganan">
@@ -97,30 +104,63 @@ export default function HalamanLangganan({
             ) : (
                 <>
                     <BannerStatus langganan={Langganan} hariMasaTenggang={HariMasaTenggang} />
-                    <RingkasanStatus langganan={Langganan} />
+                    <KepalaPaket langganan={Langganan} saatPilihPaket={() => PilihTab('paket')} />
                 </>
             )}
-            <PanelKuotaTransaksi kuota={KuotaTransaksiHarian} />
-            <PanelKuotaTransaksi kuota={KuotaTransaksi} />
-            {tagihanTerbuka ? (
-                <Pemberitahuan jenis="peringatan" judul={`Tagihan ${tagihanTerbuka.Nomor} menunggu pembayaran`}>
-                    <p>
-                        Total {FormatRupiah(tagihanTerbuka.Total)}, jatuh tempo{' '}
-                        {FormatTanggalWaktu(tagihanTerbuka.JatuhTempoPada)}.{' '}
-                        <Link
-                            href={`/kelola/langganan/tagihan/${tagihanTerbuka.Uuid}`}
-                            className="font-semibold text-brand underline"
-                        >
-                            Bayar tagihan
-                        </Link>
-                    </p>
-                </Pemberitahuan>
-            ) : Langganan !== null && Langganan.Status !== 'Berhenti' ? (
-                <FormPilihPaket pilihan={PilihanPaket} langganan={Langganan} aturan={AturanLama} />
-            ) : null}
-            {TurunPaket ? <PanelTurunPaket data={TurunPaket} /> : null}
-            <BagianAddon addon={Addon} />
-            <RiwayatTagihan tagihan={Tagihan} />
+            <DaftarTab
+                label="Bagian halaman langganan"
+                tab={itemTab}
+                aktif={tab}
+                saatPilih={PilihTab}
+                panel={{
+                    ikhtisar: (
+                        <>
+                            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+                                <div className="order-2 flex flex-col gap-4 lg:order-1">
+                                    <PemakaianPaket kapasitas={Kapasitas} />
+                                    <PanelKuotaTransaksi kuota={KuotaTransaksiHarian} />
+                                    <PanelKuotaTransaksi kuota={KuotaTransaksi} />
+                                </div>
+                                <div className="order-1 lg:order-2">
+                                    <TagihanBerikutnya
+                                        tagihan={tagihanTerbuka}
+                                        bolehPilihPaket={Langganan !== null && Langganan.Status !== 'Berhenti'}
+                                        saatPilihPaket={() => PilihTab('paket')}
+                                    />
+                                </div>
+                            </div>
+                            <TagihanTerakhir tagihan={Tagihan} saatLihatSemua={() => PilihTab('tagihan')} />
+                        </>
+                    ),
+                    paket: (
+                        <>
+                            {tagihanTerbuka ? (
+                                <Pemberitahuan
+                                    jenis="peringatan"
+                                    judul={`Tagihan ${tagihanTerbuka.Nomor} menunggu pembayaran`}
+                                >
+                                    <p>
+                                        Total {FormatRupiah(tagihanTerbuka.Total)}, jatuh tempo{' '}
+                                        {FormatTanggalWaktu(tagihanTerbuka.JatuhTempoPada)}. Selesaikan atau batalkan
+                                        tagihan ini sebelum membuat tagihan baru.{' '}
+                                        <Link
+                                            href={`/kelola/langganan/tagihan/${tagihanTerbuka.Uuid}`}
+                                            className="font-semibold text-brand underline"
+                                        >
+                                            Bayar tagihan
+                                        </Link>
+                                    </p>
+                                </Pemberitahuan>
+                            ) : Langganan !== null && Langganan.Status !== 'Berhenti' ? (
+                                <FormPilihPaket pilihan={PilihanPaket} langganan={Langganan} aturan={AturanLama} />
+                            ) : null}
+                            {TurunPaket ? <PanelTurunPaket data={TurunPaket} /> : null}
+                        </>
+                    ),
+                    addon: <BagianAddon addon={Addon} />,
+                    tagihan: <RiwayatTagihan tagihan={Tagihan} />,
+                }}
+            />
         </TataLetakAplikasi>
     );
 }
@@ -131,7 +171,7 @@ function BannerStatus({ langganan, hariMasaTenggang }: { langganan: RingkasanLan
             return (
                 <Pemberitahuan jenis="info" judul="Masa trial">
                     Trial berakhir {FormatTanggalWaktu(langganan.TrialBerakhirPada)}. Setelah itu usaha Anda turun ke
-                    paket Gratis. Pilih paket di bawah untuk tetap memakai semua fitur.
+                    paket Gratis. Pilih paket di tab Paket & harga untuk tetap memakai semua fitur.
                 </Pemberitahuan>
             );
         case 'Tertunggak':
@@ -153,226 +193,105 @@ function BannerStatus({ langganan, hariMasaTenggang }: { langganan: RingkasanLan
     }
 }
 
-function RingkasanStatus({ langganan }: { langganan: RingkasanLangganan }) {
-    return (
-        <Card aria-labelledby="judul-status" role="region" className="px-4 py-3 rounded-panel shadow-none">
-            <h2 id="judul-status" className="sr-only">
-                Status langganan
-            </h2>
-            <dl className="grid gap-x-6 gap-y-2 text-isi sm:grid-cols-4">
-                <div>
-                    <dt className="text-keterangan text-teks-sekunder">Paket</dt>
-                    <dd className="font-semibold text-teks-utama">{langganan.NamaPaket}</dd>
-                </div>
-                <div>
-                    <dt className="text-keterangan text-teks-sekunder">Status</dt>
-                    <dd>
-                        <LabelStatus jenis={jenisStatusLangganan[langganan.Status]} teks={langganan.LabelStatus} />
-                    </dd>
-                </div>
-                <div>
-                    <dt className="text-keterangan text-teks-sekunder">Lama langganan</dt>
-                    <dd>
-                        {langganan.Status === 'Aktif' || langganan.Status === 'Tertunggak'
-                            ? `${langganan.JumlahBulanSiklus} bulan`
-                            : '—'}
-                    </dd>
-                </div>
-                <div>
-                    <dt className="text-keterangan text-teks-sekunder">Berlaku sampai</dt>
-                    <dd>
-                        {langganan.Status === 'Trial'
-                            ? FormatTanggalWaktu(langganan.TrialBerakhirPada)
-                            : FormatTanggalWaktu(langganan.PeriodeSelesai)}
-                    </dd>
-                </div>
-            </dl>
-        </Card>
-    );
-}
-
-function FormPilihPaket({
-    pilihan,
-    langganan,
-    aturan,
+function TagihanBerikutnya({
+    tagihan,
+    bolehPilihPaket,
+    saatPilihPaket,
 }: {
-    pilihan: PilihanPaket[];
-    langganan: RingkasanLangganan;
-    aturan: AturanLamaLangganan;
+    tagihan: TagihanLangganan | undefined;
+    bolehPilihPaket: boolean;
+    saatPilihPaket: () => void;
 }) {
-    const idLegenda = useId();
-    const bisaDipilih = pilihan.filter((paket) => paket.BisaDipilih);
-    // D-23: dialog fitur terkunci menautkan `?paket=KODE` agar paket yang memuat fitur itu langsung terpilih.
-    const diminta = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('paket');
-    const bawaan =
-        bisaDipilih.find((paket) => paket.Kode === diminta) ??
-        bisaDipilih.find((paket) => paket.PaketBerjalan) ??
-        bisaDipilih.find((paket) => paket.Kode === langganan.KodePaket) ??
-        bisaDipilih[0];
-    // Bawaan lama = lama yang dipakai sekarang bila masih dalam rentang, selain itu batas minimal (dari aturan server).
-    const lamaBawaan =
-        langganan.JumlahBulanSiklus >= aturan.MinimalBulan && langganan.JumlahBulanSiklus <= aturan.MaksimalBulan
-            ? langganan.JumlahBulanSiklus
-            : aturan.MinimalBulan;
-    const formulir = useForm<{ KodePaket: string; JumlahBulan: string; KodeKupon: string }>({
-        KodePaket: bawaan?.Kode ?? '',
-        JumlahBulan: String(lamaBawaan),
-        KodeKupon: '',
-    });
-    const perpanjangan = langganan.Status === 'Aktif' || langganan.Status === 'Tertunggak';
-    const paketTerpilih = pilihan.find((paket) => paket.Kode === formulir.data.KodePaket);
-    const naikPaket = paketTerpilih?.NaikPaket ?? null;
-    const lamaTerpilih = UraiLama(formulir.data.JumlahBulan, aturan);
-    const adaNaikPaket = pilihan.some((paket) => paket.NaikPaket !== null);
-
-    const Kirim = (peristiwa: FormEvent) => {
-        peristiwa.preventDefault();
-        formulir.post('/kelola/langganan/tagihan', { preserveScroll: true });
-    };
-
-    if (pilihan.length === 0) {
+    if (tagihan === undefined) {
         return (
-            <Pemberitahuan jenis="info" judul="Belum ada paket yang bisa dibeli">
-                Harga paket sedang disiapkan. Coba lagi nanti atau hubungi tim kami.
-            </Pemberitahuan>
+            <Panel judul="Tagihan berikutnya">
+                <p className="text-isi text-teks-sekunder">
+                    Tidak ada tagihan yang menunggu pembayaran. Tagihan perpanjangan terbit otomatis menjelang masa
+                    berlaku berakhir.
+                </p>
+                {bolehPilihPaket ? (
+                    <div>
+                        <Tombol varian="sekunder" onClick={saatPilihPaket}>
+                            Lihat paket dan harga
+                        </Tombol>
+                    </div>
+                ) : null}
+            </Panel>
         );
     }
 
     return (
-        <Card className="p-4 rounded-panel shadow-none">
-            <form onSubmit={Kirim} className="flex flex-col gap-4" noValidate>
-                <h2 className="text-subjudul font-semibold text-teks-utama">
-                    {adaNaikPaket
-                        ? 'Perpanjang atau naik paket'
-                        : perpanjangan
-                          ? 'Perpanjang langganan'
-                          : 'Pilih paket berbayar'}
-                </h2>
-                <FieldSet className="gap-2">
-                    <FieldLegend id={idLegenda} className="mb-0 text-label font-semibold text-teks-utama">
-                        Paket
-                    </FieldLegend>
-                    <RadioGroup
-                        name="KodePaket"
-                        value={formulir.data.KodePaket}
-                        onValueChange={(nilai) => formulir.setData('KodePaket', nilai)}
-                        aria-labelledby={idLegenda}
-                        aria-invalid={formulir.errors.KodePaket ? true : undefined}
-                        className="block"
-                    >
-                        <Table className="text-isi">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead scope="col" className="px-3">
-                                        Paket
-                                    </TableHead>
-                                    <TableHead scope="col" className="px-3 text-right">
-                                        Per bulan
-                                    </TableHead>
-                                    <TableHead scope="col" className="px-3 text-right">
-                                        {lamaTerpilih === null ? 'Lama dipilih' : `Untuk ${lamaTerpilih} bulan`}
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pilihan.map((paket) => (
-                                    <TableRow
-                                        key={paket.Kode}
-                                        data-state={formulir.data.KodePaket === paket.Kode ? 'selected' : undefined}
-                                    >
-                                        <TableCell className="px-3 whitespace-normal">
-                                            <div className="flex items-start gap-2">
-                                                <RadioGroupItem
-                                                    id={`${idLegenda}-${paket.Kode}`}
-                                                    value={paket.Kode}
-                                                    disabled={!paket.BisaDipilih}
-                                                    className="mt-1"
-                                                />
-                                                <label
-                                                    htmlFor={`${idLegenda}-${paket.Kode}`}
-                                                    className={paket.BisaDipilih ? 'cursor-pointer' : undefined}
-                                                >
-                                                    <span className="font-semibold text-teks-utama">{paket.Nama}</span>
-                                                    {paket.PaketBerjalan ? (
-                                                        <span className="block text-keterangan text-teks-sekunder">
-                                                            Paket Anda saat ini
-                                                        </span>
-                                                    ) : null}
-                                                    {paket.NaikPaket ? (
-                                                        <span className="block text-keterangan text-teks-sekunder">
-                                                            Naik paket: bayar selisih{' '}
-                                                            {FormatRupiah(paket.NaikPaket.Subtotal)} untuk{' '}
-                                                            {paket.NaikPaket.HariDitagih} dari{' '}
-                                                            {paket.NaikPaket.HariPeriode} hari periode ini (belum
-                                                            termasuk PPN). Paket langsung berganti setelah lunas.
-                                                        </span>
-                                                    ) : null}
-                                                    {!paket.BisaDipilih ? (
-                                                        <span className="block text-keterangan text-teks-sekunder">
-                                                            Turun paket berlaku mulai periode berikutnya. Hubungi tim
-                                                            kami untuk mengaturnya.
-                                                        </span>
-                                                    ) : null}
-                                                </label>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="px-3 text-right tabular-nums">
-                                            {FormatRupiah(paket.HargaBulanan)}
-                                        </TableCell>
-                                        <TableCell className="px-3 text-right tabular-nums">
-                                            {(() => {
-                                                const hargaLama = CariHargaLama(paket.HargaPerLama, lamaTerpilih);
-
-                                                return hargaLama === null ? '—' : FormatRupiah(hargaLama.Subtotal);
-                                            })()}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </RadioGroup>
-                    {formulir.errors.KodePaket ? (
-                        <FieldError className="text-keterangan font-semibold">{formulir.errors.KodePaket}</FieldError>
-                    ) : null}
-                </FieldSet>
-                {naikPaket ? (
-                    <p className="text-keterangan text-teks-sekunder">
-                        Lama langganan tetap {langganan.JumlahBulanSiklus} bulan dan masa berlangganan tidak berubah.
-                        Perpanjangan berikutnya memakai harga paket baru.
-                    </p>
-                ) : (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <PilihLamaLangganan
-                            aturan={aturan}
-                            nilai={formulir.data.JumlahBulan}
-                            saatBerubah={(nilai) => formulir.setData('JumlahBulan', nilai)}
-                            harga={paketTerpilih?.HargaPerLama ?? []}
-                            galat={formulir.errors.JumlahBulan}
-                        />
-                        <BidangTeks
-                            label="Kode kupon (opsional)"
-                            kode
-                            maxLength={30}
-                            nilai={formulir.data.KodeKupon}
-                            saatBerubah={(nilai) => formulir.setData('KodeKupon', nilai.toUpperCase())}
-                            galat={formulir.errors.KodeKupon}
-                        />
-                    </div>
-                )}
-                <p className="text-keterangan text-teks-sekunder">
-                    Harga belum termasuk PPN. Rincian PPN dan total tampil di tagihan sebelum Anda membayar.
-                </p>
-                <div>
-                    <Tombol
-                        type="submit"
-                        memproses={formulir.processing}
-                        disabled={formulir.data.KodePaket === '' || (!naikPaket && lamaTerpilih === null)}
-                    >
-                        {naikPaket ? 'Buat tagihan naik paket' : 'Buat tagihan'}
-                    </Tombol>
+        <Panel
+            judul="Tagihan berikutnya"
+            keterangan={`${tagihan.Nomor} | ${tagihan.LabelJenis}`}
+            aksi={<LabelStatus jenis={JenisLabelTagihan(tagihan.Status)} teks={tagihan.LabelStatus} />}
+        >
+            <span className="text-tampilan font-semibold tabular-nums text-teks-utama">
+                {FormatRupiah(tagihan.Total)}
+            </span>
+            <dl className="flex flex-col gap-1 text-isi">
+                <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-teks-sekunder">Jatuh tempo</dt>
+                    <dd className="font-semibold text-teks-utama">{FormatTanggalWaktu(tagihan.JatuhTempoPada)}</dd>
                 </div>
-            </form>
-        </Card>
+                {tagihan.JumlahPpn !== '0.00' ? (
+                    <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-teks-sekunder">Sudah termasuk PPN</dt>
+                        <dd className="tabular-nums">{FormatRupiah(tagihan.JumlahPpn)}</dd>
+                    </div>
+                ) : null}
+            </dl>
+            <Tombol onClick={() => router.visit(`/kelola/langganan/tagihan/${tagihan.Uuid}`)}>Bayar tagihan</Tombol>
+        </Panel>
+    );
+}
+
+function TagihanTerakhir({ tagihan, saatLihatSemua }: { tagihan: TagihanLangganan[]; saatLihatSemua: () => void }) {
+    const terakhir = [...tagihan].sort((a, b) => b.TerbitPada.localeCompare(a.TerbitPada)).slice(0, 3);
+
+    return (
+        <Panel
+            judul="Tagihan terakhir"
+            aksi={
+                tagihan.length > terakhir.length ? (
+                    <Tombol varian="sekunder" onClick={saatLihatSemua}>
+                        Lihat semua tagihan
+                    </Tombol>
+                ) : undefined
+            }
+        >
+            {terakhir.length === 0 ? (
+                <p className="text-isi text-teks-sekunder">Belum ada tagihan.</p>
+            ) : (
+                <ul className="flex flex-col divide-y divide-garis">
+                    {terakhir.map((baris) => (
+                        <li
+                            key={baris.Uuid}
+                            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
+                        >
+                            <div className="flex min-w-0 flex-col">
+                                <Link
+                                    href={`/kelola/langganan/tagihan/${baris.Uuid}`}
+                                    className="font-mono text-label text-brand underline"
+                                >
+                                    {baris.Nomor}
+                                </Link>
+                                <span className="text-keterangan text-teks-sekunder">
+                                    {baris.NamaPaket} | {baris.Siklus} | jatuh tempo{' '}
+                                    {FormatTanggalWaktu(baris.JatuhTempoPada)}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-isi font-semibold tabular-nums text-teks-utama">
+                                    {FormatRupiah(baris.Total)}
+                                </span>
+                                <LabelStatus jenis={JenisLabelTagihan(baris.Status)} teks={baris.LabelStatus} />
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Panel>
     );
 }
 

@@ -134,6 +134,15 @@ describe('Langganan/Tagihan (P-08): bayar online & konfirmasi batal', () => {
         expect(screen.getByText(/prorata 10 dari 30 hari periode berjalan/)).toBeTruthy();
     });
 
+    it('D-332: tagihan terbuka menampilkan perjalanan tagihan dan panel bayar sebagai kolom terpisah dari rincian', () => {
+        RenderTagihan({ BolehBayarOnline: true, PilihanBayar: pilihanVa });
+
+        const perjalanan = screen.getByRole('list', { name: 'Perjalanan tagihan' });
+        expect(within(perjalanan).getAllByRole('listitem')[1]?.getAttribute('aria-current')).toBe('step');
+        expect(screen.getByRole('region', { name: 'Pembayaran tagihan' })).toBeTruthy();
+        expect(screen.getByRole('region', { name: /INV-2026-0001/ })).toBeTruthy();
+    });
+
     it('tanpa izin batalkan: tidak ada tombol batalkan', () => {
         RenderTagihan({ BolehBatalkan: false });
 

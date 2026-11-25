@@ -333,6 +333,7 @@
 | D-329 | Agent, 25/11/2026 (pemilik produk: "di bawah QR code di struk itu tidak perlu ada link nota online, cukup QR saja"): struk cetak hanya memuat QR struk digital, tanpa tautan tertulis, sebagaimana v7.168. |
 | D-330 | Agent, 25/11/2026 (pemilik produk: "kerjakan nomor 3"): outlet wajib untuk pengeluaran Aplikasi Owner bagi pengguna yang dibatasi dua outlet atau lebih, ditegakkan server hanya untuk aplikasi 1.0.3 ke atas, sebagaimana v7.169. Perubahan perilaku yang terlihat pengguna: formulir Catat pengeluaran meminta outlet (tanpa "Seluruh usaha") bagi pengguna yang berakses beberapa outlet tertentu. |
 | D-331 | Agent, 25/11/2026 (pemilik produk: "pada menu produksi, saat membuat produksi pastikan yang tampil hanya menu yang sesuai"): pemilih produk hasil di Order produksi disaring ke produk jenis Produksi tanpa nomor seri, sebagaimana v7.170. Ditafsirkan sebagai penyaringan pilihan hasil; bila maksudnya hal lain, dikoreksi pada perubahan berikutnya. |
+| D-332 | Agent, 25/11/2026 (pemilik produk: "gas kerjakan sesuai saran kamu, harus responsif, build lalu push ke main"): Langganan memakai kepala paket + tab (Langganan B) dan Tagihan memakai penunjuk perjalanan + dua kolom (Tagihan A), sebagaimana v7.171. Perubahan perilaku yang terlihat pengguna: halaman Langganan kini berisi tab, bukan satu halaman panjang, dan aksi Perpanjang ada di kepala halaman. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

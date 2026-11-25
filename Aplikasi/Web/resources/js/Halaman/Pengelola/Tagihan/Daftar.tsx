@@ -233,7 +233,10 @@ export default function HalamanDaftarTagihan({
                                       }
                                     : {})}
                                 alamatDetail={(baris) => (baris.UuidTagihan ? `/tagihan/${baris.UuidTagihan}` : '')}
-                                kosong={{ judul: 'Antrean kosong. Belum ada bukti transfer yang perlu diperiksa.' }}
+                                kosong={{
+                                    ilustrasi: true,
+                                    judul: 'Antrean kosong. Belum ada bukti transfer yang perlu diperiksa.',
+                                }}
                             />
                         </section>
                     ) : null}

@@ -79,6 +79,17 @@ describe('Halaman langganan Owner (P-08, F-19 Fase 0)', function (): void {
                 ->where('PilihanPaket.1.BisaDipilih', true));
     });
 
+    it('D-332: halaman langganan membawa pemakaian outlet dan pengguna terhadap batas paket untuk meteran Ikhtisar', function (): void {
+        BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)->get('/kelola/langganan')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $halaman) => $halaman
+                ->component('Kelola/Langganan/Indeks')
+                ->has('Kapasitas.Outlet.Batas')
+                ->has('Kapasitas.Pengguna.Batas')
+                ->where('Kapasitas.Pengguna.Terpakai', 1)
+                ->where('Kapasitas.Outlet.Terpakai', fn ($terpakai) => is_int($terpakai) && $terpakai >= 0));
+    });
+
     it('§19.1: izin langganan.kelola khusus Pemilik; Admin & anggota tanpa peran mendapat halaman Tanpa izin', function (): void {
         $admin = BantuanOrganisasi::TambahAnggota($this->tenant->Id, PeranTenantBawaan::Admin);
         $staf = Pengguna::factory()->createOne();

@@ -337,7 +337,7 @@ export default function PanelBayarSnap({
                                         <div
                                             role="radiogroup"
                                             aria-label="Bank"
-                                            className="grid grid-cols-2 gap-2 sm:grid-cols-5"
+                                            className="grid grid-cols-2 gap-2 @md:grid-cols-5"
                                         >
                                             {bankPopuler.map((bankIni) => (
                                                 <UbinBank
@@ -373,7 +373,7 @@ export default function PanelBayarSnap({
                                             <div
                                                 role="radiogroup"
                                                 aria-label="Bank lain"
-                                                className="grid grid-cols-2 gap-2 sm:grid-cols-5"
+                                                className="grid grid-cols-2 gap-2 @md:grid-cols-5"
                                             >
                                                 {bankLain.map((bankIni) => (
                                                     <UbinBank
@@ -398,7 +398,7 @@ export default function PanelBayarSnap({
                                     <div
                                         role="radiogroup"
                                         aria-label="Dompet digital"
-                                        className="grid grid-cols-2 gap-2 px-4 pb-4 sm:grid-cols-5 sm:pl-[4.75rem]"
+                                        className="grid grid-cols-2 gap-2 px-4 pb-4 @md:grid-cols-5 sm:pl-[4.75rem]"
                                     >
                                         {dompet.map((dompetIni) => (
                                             <UbinBank
@@ -451,7 +451,7 @@ function Kerangka({
     return (
         <Card
             role="region"
-            className="gap-0 overflow-hidden rounded-panel p-0 shadow-none"
+            className="@container gap-0 overflow-hidden rounded-panel p-0 shadow-none"
             aria-label="Pembayaran tagihan"
         >
             <div className="flex flex-wrap items-center justify-between gap-3 bg-brand-gelap px-4 py-4 text-brand-gelap-teks">

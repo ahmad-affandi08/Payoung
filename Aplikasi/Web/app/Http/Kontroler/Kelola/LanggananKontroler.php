@@ -13,6 +13,7 @@ use App\Domain\Dukungan\Enum\KategoriTiketDukungan;
 use App\Domain\Dukungan\Enum\PrioritasTiketDukungan;
 use App\Domain\Integrasi\Billing\PenyediaTagihanPlatform;
 use App\Domain\Integrasi\Snap\Enum\MetodeBayarSnap;
+use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
 use App\Domain\Organisasi\Model\Pengguna;
 use App\Domain\Penjualan\Enum\JangkaKuotaTransaksi;
 use App\Domain\Penjualan\Layanan\KuotaTransaksiTenant;
@@ -33,6 +34,7 @@ use App\Domain\Tenant\Kueri\PenawaranFiturTenant;
 use App\Domain\Tenant\Kueri\PratinjauTurunPaket;
 use App\Domain\Tenant\Kueri\RekeningTujuanPlatform;
 use App\Domain\Tenant\Kueri\TagihanLanggananTenant;
+use App\Domain\Tenant\Layanan\PastikanBatasPaket;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Permintaan\Kelola\Langganan\BatalkanTagihanLanggananPermintaan;
@@ -53,9 +55,16 @@ final class LanggananKontroler extends Kontroler
 {
     public function __construct(private readonly TagihanLanggananTenant $kueri) {}
 
-    public function Tampilkan(AddonLanggananTenant $addon, PratinjauTurunPaket $turunPaket, KuotaTransaksiTenant $kuotaTransaksi): Response
+    public function Tampilkan(AddonLanggananTenant $addon, PratinjauTurunPaket $turunPaket, KuotaTransaksiTenant $kuotaTransaksi, PastikanBatasPaket $batasPaket, PemakaianBatasOrganisasi $pemakaian): Response
     {
+        $idTenant = app(KonteksTenant::class)->Wajib();
+
         return Inertia::render('Kelola/Langganan/Indeks', [
+            // D-332: meteran kapasitas di Ikhtisar (batas null = tanpa batas).
+            'Kapasitas' => [
+                'Outlet' => $batasPaket->AmbilRingkasan($idTenant, 'BatasOutlet', $pemakaian->HitungOutlet()),
+                'Pengguna' => $batasPaket->AmbilRingkasan($idTenant, 'BatasPengguna', $pemakaian->HitungPengguna($idTenant)),
+            ],
             'TurunPaket' => $turunPaket->Ambil(),
             'Langganan' => $this->kueri->AmbilLangganan(),
             // P-04: kuota transaksi penjualan bulan ini (panel hanya tampil bila paket punya batas).

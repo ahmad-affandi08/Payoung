@@ -182,7 +182,7 @@ function FormStasiun({ stasiun, saatSelesai }: { stasiun: StasiunDapur | null; s
             ) : null}
             <p className="text-keterangan text-teks-sekunder">
                 Checker mencetak salinan semua menu yang dikirim ke dapur atau bar, untuk dicek sebelum disajikan. Ia
-                tidak memasak, jadi tidak dipilih sebagai tujuan kategori atau menu dan tidak punya layar dapur.
+                tidak memasak, jadi tidak dipilih sebagai tujuan kategori atau menu dan tanpa layar dapur.
             </p>
             <div className="flex flex-wrap gap-2">
                 <Tombol type="submit" memproses={formulir.processing}>

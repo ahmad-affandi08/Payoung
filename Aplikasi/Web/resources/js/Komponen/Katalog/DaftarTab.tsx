@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { JalurGulirTab, kelasDaftarTabPanel, kelasItemTabPanel } from '@/Komponen/Navigasi/TabTautan';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Komponen/Ui/tabs';
 
-export type ItemTab<K extends string> = { Kunci: K; Label: string; AdaGalat?: boolean };
+/** `Lencana`: teks pendek penanda ada yang perlu dilihat di tab itu (misal jumlah tagihan menunggu). */
+export type ItemTab<K extends string> = { Kunci: K; Label: string; AdaGalat?: boolean; Lencana?: string };
 
 type PropsDaftarTab<K extends string> = {
     label: string;
@@ -42,6 +43,11 @@ export default function DaftarTab<K extends string>({ label, tab, aktif, saatPil
                         >
                             {item.Label}
                             {item.AdaGalat ? <span className="ml-1 text-bahaya">(perlu diperbaiki)</span> : null}
+                            {item.Lencana ? (
+                                <span className="ml-1 rounded-full bg-peringatan-lembut px-2 text-keterangan font-semibold text-peringatan">
+                                    {item.Lencana}
+                                </span>
+                            ) : null}
                         </TabsTrigger>
                     ))}
                 </TabsList>

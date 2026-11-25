@@ -6,6 +6,7 @@ import Tombol from '@/Komponen/Formulir/Tombol';
 import HasilPembayaran from '@/Komponen/Langganan/Bayar/HasilPembayaran';
 import LayarBerhasil from '@/Komponen/Langganan/Bayar/LayarBerhasil';
 import MemeriksaPembayaran from '@/Komponen/Langganan/Bayar/MemeriksaPembayaran';
+import PenunjukTagihan from '@/Komponen/Langganan/PenunjukTagihan';
 import PanelBayarSnap from '@/Komponen/Langganan/PanelBayarSnap';
 import PanelTransferManual, { type RekeningTujuan } from '@/Komponen/Langganan/PanelTransferManual';
 import RincianTagihan from '@/Komponen/Langganan/RincianTagihan';
@@ -54,6 +55,8 @@ export default function HalamanTagihanLangganan({
 }: PropsTagihan) {
     const [membatalkan, AturMembatalkan] = useState(false);
     const [konfirmasiBatal, AturKonfirmasiBatal] = useState(false);
+    // Panel bayar (atau layar berhasil) jadi kolom kanan, rincian dan riwayat di kiri (D-332). Tanpa keduanya satu kolom.
+    const adaPanelBayar = Tagihan.Status === 'Lunas' || BolehBayarOnline;
 
     const Batalkan = () =>
         router.post(
@@ -82,33 +85,48 @@ export default function HalamanTagihanLangganan({
                         : []
                 }
             />
-            {Tagihan.Status === 'Lunas' ? (
-                <LayarBerhasil
-                    tagihan={Tagihan}
-                    pembayaran={Pembayaran.find((baris) => baris.Keadaan === 'Berhasil') ?? null}
-                />
-            ) : null}
-            {BolehBayarOnline && Tagihan.Status !== 'Lunas' ? (
-                <AreaBayar
-                    tagihan={Tagihan}
-                    pembayaran={Pembayaran}
-                    pilihan={PilihanBayar}
-                    bolehCheckout={BolehCheckout}
-                    namaPenyedia={NamaPenyedia}
-                />
-            ) : null}
-            <RincianTagihan tagihan={Tagihan} />
-            {Tagihan.Manual &&
-            RekeningTujuan.length > 0 &&
-            (Tagihan.Status === 'Terbit' || Tagihan.Status === 'JatuhTempo') ? (
-                <PanelTransferManual
-                    uuidTagihan={Tagihan.Uuid}
-                    total={Tagihan.Total}
-                    rekening={RekeningTujuan}
-                    bolehUnggah={BolehUnggahBukti}
-                />
-            ) : null}
-            <RiwayatPembayaranTagihan pembayaran={Pembayaran} />
+            <PenunjukTagihan status={Tagihan.Status} labelStatus={Tagihan.LabelStatus} />
+            <div
+                className={
+                    adaPanelBayar
+                        ? 'grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]'
+                        : 'flex flex-col gap-4'
+                }
+            >
+                {adaPanelBayar ? (
+                    <div className="order-1 flex flex-col gap-4 lg:order-2">
+                        {Tagihan.Status === 'Lunas' ? (
+                            <LayarBerhasil
+                                tagihan={Tagihan}
+                                pembayaran={Pembayaran.find((baris) => baris.Keadaan === 'Berhasil') ?? null}
+                            />
+                        ) : null}
+                        {BolehBayarOnline && Tagihan.Status !== 'Lunas' ? (
+                            <AreaBayar
+                                tagihan={Tagihan}
+                                pembayaran={Pembayaran}
+                                pilihan={PilihanBayar}
+                                bolehCheckout={BolehCheckout}
+                                namaPenyedia={NamaPenyedia}
+                            />
+                        ) : null}
+                    </div>
+                ) : null}
+                <div className="order-2 flex min-w-0 flex-col gap-4 lg:order-1">
+                    <RincianTagihan tagihan={Tagihan} />
+                    {Tagihan.Manual &&
+                    RekeningTujuan.length > 0 &&
+                    (Tagihan.Status === 'Terbit' || Tagihan.Status === 'JatuhTempo') ? (
+                        <PanelTransferManual
+                            uuidTagihan={Tagihan.Uuid}
+                            total={Tagihan.Total}
+                            rekening={RekeningTujuan}
+                            bolehUnggah={BolehUnggahBukti}
+                        />
+                    ) : null}
+                    <RiwayatPembayaranTagihan pembayaran={Pembayaran} />
+                </div>
+            </div>
             {BolehBatalkan ? (
                 <AlertDialog open={konfirmasiBatal} onOpenChange={AturKonfirmasiBatal}>
                     <AlertDialogContent>
